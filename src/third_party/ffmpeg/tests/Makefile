@@ -121,6 +121,7 @@ include $(SRC_PATH)/tests/fate/atrac.mak
 include $(SRC_PATH)/tests/fate/audio.mak
 include $(SRC_PATH)/tests/fate/bmp.mak
 include $(SRC_PATH)/tests/fate/build.mak
+include $(SRC_PATH)/tests/fate/caf.mak
 include $(SRC_PATH)/tests/fate/canopus.mak
 include $(SRC_PATH)/tests/fate/cbs.mak
 include $(SRC_PATH)/tests/fate/cdxl.mak
@@ -172,6 +173,7 @@ include $(SRC_PATH)/tests/fate/mpeg4.mak
 include $(SRC_PATH)/tests/fate/mpegps.mak
 include $(SRC_PATH)/tests/fate/mpegts.mak
 include $(SRC_PATH)/tests/fate/mxf.mak
+include $(SRC_PATH)/tests/fate/oma.mak
 include $(SRC_PATH)/tests/fate/opus.mak
 include $(SRC_PATH)/tests/fate/pcm.mak
 include $(SRC_PATH)/tests/fate/pixfmt.mak

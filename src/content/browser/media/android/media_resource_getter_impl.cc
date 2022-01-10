@@ -5,7 +5,6 @@
 #include "content/browser/media/android/media_resource_getter_impl.h"
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/task/single_thread_task_runner.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -93,7 +92,7 @@ void ReturnResultOnUIThreadAndClosePipe(
       FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
-void OnSyncGetPlatformPathDone(
+void OnGetPlatformPathDone(
     scoped_refptr<storage::FileSystemContext> file_system_context,
     media::MediaResourceGetter::GetPlatformPathCB callback,
     const base::FilePath& platform_path) {
@@ -117,10 +116,10 @@ void RequestPlatformPathFromFileSystemURL(
              ->RunsTasksInCurrentSequence());
   // TODO (https://crbug.com/1258029): determine how to pipe in the correct
   // third-party StorageKey and replace the in-line conversion below.
-  SyncGetPlatformPath(file_system_context.get(), render_process_id, url,
-                      blink::StorageKey(url::Origin::Create(url)),
-                      base::BindOnce(&OnSyncGetPlatformPathDone,
-                                     file_system_context, std::move(callback)));
+  DoGetPlatformPath(file_system_context, render_process_id, url,
+                    blink::StorageKey(url::Origin::Create(url)),
+                    base::BindOnce(&OnGetPlatformPathDone, file_system_context,
+                                   std::move(callback)));
 }
 
 }  // namespace
@@ -214,7 +213,7 @@ void MediaResourceGetterImpl::GetPlatformPathFromURL(
       base::BindOnce(&MediaResourceGetterImpl::GetPlatformPathCallback,
                      weak_factory_.GetWeakPtr(), std::move(callback));
 
-  scoped_refptr<storage::FileSystemContext> context(file_system_context_);
+  scoped_refptr<storage::FileSystemContext> context(file_system_context_.get());
   context->default_file_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&RequestPlatformPathFromFileSystemURL, url,
                                 render_process_id_, context, std::move(cb)));

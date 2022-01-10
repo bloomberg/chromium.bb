@@ -176,7 +176,8 @@ bool ValidateTexStorageMemFlags2DANGLE(const Context *context,
                                        MemoryObjectID memoryPacked,
                                        GLuint64 offset,
                                        GLbitfield createFlags,
-                                       GLbitfield usageFlags);
+                                       GLbitfield usageFlags,
+                                       const void *imageCreateInfoPNext);
 bool ValidateTexStorageMemFlags2DMultisampleANGLE(const Context *context,
                                                   angle::EntryPoint entryPoint,
                                                   TextureType targetPacked,
@@ -188,7 +189,8 @@ bool ValidateTexStorageMemFlags2DMultisampleANGLE(const Context *context,
                                                   MemoryObjectID memoryPacked,
                                                   GLuint64 offset,
                                                   GLbitfield createFlags,
-                                                  GLbitfield usageFlags);
+                                                  GLbitfield usageFlags,
+                                                  const void *imageCreateInfoPNext);
 bool ValidateTexStorageMemFlags3DANGLE(const Context *context,
                                        angle::EntryPoint entryPoint,
                                        TextureType targetPacked,
@@ -200,7 +202,8 @@ bool ValidateTexStorageMemFlags3DANGLE(const Context *context,
                                        MemoryObjectID memoryPacked,
                                        GLuint64 offset,
                                        GLbitfield createFlags,
-                                       GLbitfield usageFlags);
+                                       GLbitfield usageFlags,
+                                       const void *imageCreateInfoPNext);
 bool ValidateTexStorageMemFlags3DMultisampleANGLE(const Context *context,
                                                   angle::EntryPoint entryPoint,
                                                   TextureType targetPacked,
@@ -213,7 +216,8 @@ bool ValidateTexStorageMemFlags3DMultisampleANGLE(const Context *context,
                                                   MemoryObjectID memoryPacked,
                                                   GLuint64 offset,
                                                   GLbitfield createFlags,
-                                                  GLbitfield usageFlags);
+                                                  GLbitfield usageFlags,
+                                                  const void *imageCreateInfoPNext);
 
 // GL_ANGLE_memory_object_fuchsia
 bool ValidateImportMemoryZirconHandleANGLE(const Context *context,
@@ -824,6 +828,18 @@ bool ValidateGetTranslatedShaderSourceANGLE(const Context *context,
                                             const GLsizei *length,
                                             const GLchar *source);
 
+// GL_ANGLE_vulkan_image
+bool ValidateAcquireTexturesANGLE(const Context *context,
+                                  angle::EntryPoint entryPoint,
+                                  GLuint numTextures,
+                                  const TextureID *texturesPacked,
+                                  const GLenum *layouts);
+bool ValidateReleaseTexturesANGLE(const Context *context,
+                                  angle::EntryPoint entryPoint,
+                                  GLuint numTextures,
+                                  const TextureID *texturesPacked,
+                                  const GLenum *layouts);
+
 // GL_APPLE_clip_distance
 
 // GL_ARB_sync
@@ -1272,6 +1288,21 @@ bool ValidateImportMemoryFdEXT(const Context *context,
                                GLuint64 size,
                                HandleType handleTypePacked,
                                GLint fd);
+
+// GL_EXT_multi_draw_indirect
+bool ValidateMultiDrawArraysIndirectEXT(const Context *context,
+                                        angle::EntryPoint entryPoint,
+                                        GLenum mode,
+                                        const void *indirect,
+                                        GLsizei drawcount,
+                                        GLsizei stride);
+bool ValidateMultiDrawElementsIndirectEXT(const Context *context,
+                                          angle::EntryPoint entryPoint,
+                                          GLenum mode,
+                                          GLenum type,
+                                          const void *indirect,
+                                          GLsizei drawcount,
+                                          GLsizei stride);
 
 // GL_EXT_multisampled_render_to_texture
 bool ValidateFramebufferTexture2DMultisampleEXT(const Context *context,

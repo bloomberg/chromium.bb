@@ -1,53 +1,362 @@
 import { Colors } from '../../../../common/util/colors.js';
-import {
-  TypedArrayBufferView,
-  TypedArrayBufferViewConstructor,
-} from '../../../../common/util/util.js';
 import { GPUTest } from '../../../gpu_test.js';
-import { NumberType, NumberRepr } from '../../../util/conversion.js';
+import {
+  ScalarType,
+  Scalar,
+  Vector,
+  Value,
+  Type,
+  TypeVec,
+  TypeU32,
+  VectorType,
+} from '../../../util/conversion.js';
+import { diffULP } from '../../../util/math.js';
 
-export type Case<T extends NumberType> = {
-  input: NumberRepr<T>;
-  expected: Array<NumberRepr<T>>;
-};
+/** Comparison describes the result of a Comparator function. */
+export interface Comparison {
+  matched: boolean; // True if the two values were considered a match
+  got: string; // The string representation of the 'got' value (possibly with markup)
+  expected: string; // The string representation of the 'expected' value (possibly with markup)
+}
 
-export function runShaderTestImpl<F extends NumberType>(
-  t: GPUTest,
-  storageClass: string,
-  storageMode: string,
-  type: string,
-  arrayLength: number,
-  builtin: string,
-  arrayType: TypedArrayBufferViewConstructor,
-  cases: Array<Case<F>>,
-  source: string
-): void {
-  const inputData: TypedArrayBufferView = new arrayType(cases.length * 4);
+/** FloatMatch is a function that compares whether the two floating point numbers match. */
+export interface FloatMatch {
+  (got: number, expected: number): boolean;
+}
 
-  // an arbitrary approach of mapping cases into inputData:
-  // if the arrayLength > 1, ie. type is a vector, or matrix then
-  //   fill the i-th element with the input value of cases[i+j]
-  // if arrayLength = 1 or i+j > length of cases
-  //   fill the i-th element with input value of  cases[i]
-  // TODO(sarahM0): This is using a TypedArray to convert the value into bits,
-  // but NumberRepr already has bits. There's a chance some numbers won't get the same bit pattern both ways
-  // (having been converted from bits to double back to bits). Probably best to copy the bits in directly.
-  for (let i = 0; i < cases.length; i++) {
-    for (let j = 0; j < arrayLength; j++) {
-      inputData[i * 4 + j] = (i + j < cases.length
-        ? cases[i + j].input.value
-        : cases[i].input.value) as number;
+/** Comparator is a function that compares whether the provided value matches an expectation. */
+export interface Comparator {
+  (got: Value, cmpFloats: FloatMatch): Comparison;
+}
+
+/**
+ * @returns a FloatMatch that returns true iff the two numbers are equal to, or
+ * less than the specified absolute error threshold.
+ */
+export function absThreshold(diff: number): FloatMatch {
+  return (got, expected) => {
+    if (got === expected) {
+      return true;
+    }
+    if (!Number.isFinite(got) || !Number.isFinite(expected)) {
+      return false;
+    }
+    return Math.abs(got - expected) <= diff;
+  };
+}
+
+/**
+ * @returns a FloatMatch that returns true iff the two numbers are within or
+ * equal to the specified ULP threshold value.
+ */
+export function ulpThreshold(ulp: number): FloatMatch {
+  return (got, expected) => {
+    if (got === expected) {
+      return true;
+    }
+    return diffULP(got, expected) <= ulp;
+  };
+}
+
+// compare() compares 'got' to 'expected', returning the Comparison information.
+function compare(got: Value, expected: Value, cmpFloats: FloatMatch): Comparison {
+  {
+    // Check types
+    const gTy = got.type;
+    const eTy = expected.type;
+    if (gTy !== eTy) {
+      return {
+        matched: false,
+        got: `${Colors.red(gTy.toString())}(${got})`,
+        expected: `${Colors.red(eTy.toString())}(${expected})`,
+      };
     }
   }
 
-  const inputBuffer = t.makeBufferWithContents(
-    inputData,
-    GPUBufferUsage.COPY_SRC | GPUBufferUsage.STORAGE
+  if (got instanceof Scalar) {
+    const g = got;
+    const e = expected as Scalar;
+    const isFloat = g.type.kind === 'f32';
+    const matched =
+      (isFloat && cmpFloats(g.value as number, e.value as number)) ||
+      (!isFloat && g.value === e.value);
+    return {
+      matched,
+      got: g.toString(),
+      expected: matched ? Colors.green(e.toString()) : Colors.red(e.toString()),
+    };
+  }
+  if (got instanceof Vector) {
+    const gLen = got.elements.length;
+    const eLen = (expected as Vector).elements.length;
+    let matched = gLen === eLen;
+    const gElements = new Array<string>(gLen);
+    const eElements = new Array<string>(eLen);
+    for (let i = 0; i < Math.max(gLen, eLen); i++) {
+      if (i < gLen && i < eLen) {
+        const g = got.elements[i];
+        const e = (expected as Vector).elements[i];
+        const cmp = compare(g, e, cmpFloats);
+        matched = matched && cmp.matched;
+        gElements[i] = cmp.got;
+        eElements[i] = cmp.expected;
+        continue;
+      }
+      matched = false;
+      if (i < gLen) {
+        gElements[i] = got.elements[i].toString();
+      }
+      if (i < eLen) {
+        eElements[i] = (expected as Vector).elements[i].toString();
+      }
+    }
+    return {
+      matched,
+      got: `${got.type}(${gElements.join(', ')})`,
+      expected: `${expected.type}(${eElements.join(', ')})`,
+    };
+  }
+  throw new Error(`unhandled type '${typeof got}`);
+}
+
+/** @returns a Comparator that checks whether a test value matches any of the provided values */
+export function anyOf(...values: Value[]): Comparator {
+  return (got, cmpFloats) => {
+    const failed: Array<string> = [];
+    for (const e of values) {
+      const cmp = compare(got, e, cmpFloats);
+      if (cmp.matched) {
+        return cmp;
+      }
+      failed.push(cmp.expected);
+    }
+    return { matched: false, got: got.toString(), expected: failed.join(' or ') };
+  };
+}
+
+// Helper for converting Values to Comparators.
+function toComparator(input: Value | Comparator): Comparator {
+  if ((input as Value).type !== undefined) {
+    return (got, cmpFloats) => compare(got, input as Value, cmpFloats);
+  }
+  return input as Comparator;
+}
+
+/** Case is a single builtin test case. */
+export type Case = {
+  // The input value to the builtin
+  input: Value | Array<Value>;
+  // The expected value, or comparator
+  expected: Value | Comparator;
+};
+
+/** CaseList is a list of Cases */
+export type CaseList = Array<Case>;
+
+/** The storage class to use on test input buffers */
+export type StorageClass = 'uniform' | 'storage_r' | 'storage_rw';
+
+/** Configuration for running a builtin test */
+export type Config = {
+  // Where the input values are read from
+  storageClass: StorageClass;
+  // If defined, scalar test cases will be packed into vectors of the given
+  // width, which must be 2, 3 or 4.
+  // Requires that all parameters of the builtin overload are of a scalar type,
+  // and the return type of the builtin overload is also a scalar type.
+  // If the number of test cases is not a multiple of the vector width, then the
+  // last scalar value is repeated to fill the last vector value.
+  vectorize?: number;
+  // The FloatMatch to use when comparing floating point numbers.
+  // If undefined, floating point numbers must match exactly.
+  cmpFloats?: FloatMatch;
+};
+
+// Helper for returning the WGSL storage type for the given Type.
+function storageType(ty: Type): Type {
+  if (ty instanceof ScalarType) {
+    if (ty.kind === 'bool') {
+      return TypeU32;
+    }
+  }
+  if (ty instanceof VectorType) {
+    return TypeVec(ty.width, storageType(ty.elementType) as ScalarType);
+  }
+  return ty;
+}
+
+// Helper for converting a value of the type 'ty' from the storage type.
+function fromStorage(ty: Type, expr: string): string {
+  if (ty instanceof ScalarType) {
+    if (ty.kind === 'bool') {
+      return `${expr} != 0u`;
+    }
+  }
+  if (ty instanceof VectorType) {
+    if (ty.elementType.kind === 'bool') {
+      return `${expr} != vec${ty.width}<u32>(0u)`;
+    }
+  }
+  return expr;
+}
+
+// Helper for converting a value of the type 'ty' to the storage type.
+function toStorage(ty: Type, expr: string): string {
+  if (ty instanceof ScalarType) {
+    if (ty.kind === 'bool') {
+      return `select(0u, 1u, ${expr})`;
+    }
+  }
+  if (ty instanceof VectorType) {
+    if (ty.elementType.kind === 'bool') {
+      return `select(vec${ty.width}<u32>(0u), vec${ty.width}<u32>(1u), ${expr})`;
+    }
+  }
+  return expr;
+}
+
+// Currently all values are packed into buffers of 16 byte strides
+const kValueStride = 16;
+
+/**
+ * Runs the list of builtin tests, possibly splitting the tests into multiple
+ * dispatches to keep the input data within the buffer binding limits.
+ * run() will pack the scalar test cases into smaller set of vectorized tests
+ * if `cfg.vectorize` is defined.
+ * @param t the GPUTest
+ * @param builtin the builtin being tested
+ * @param parameterTypes the list of builtin parameter types
+ * @param returnType the return type for the builtin overload
+ * @param cfg test configuration values
+ * @param cases list of test cases
+ */
+export function run(
+  t: GPUTest,
+  builtin: string,
+  parameterTypes: Array<Type>,
+  returnType: Type,
+  cfg: Config = { storageClass: 'storage_r' },
+  cases: CaseList
+) {
+  const cmpFloats =
+    cfg.cmpFloats !== undefined ? cfg.cmpFloats : (got: number, expect: number) => got === expect;
+
+  // If the 'vectorize' config option was provided, pack the cases into vectors.
+  if (cfg.vectorize !== undefined) {
+    const packed = packScalarsToVector(parameterTypes, returnType, cases, cfg.vectorize);
+    cases = packed.cases;
+    parameterTypes = packed.parameterTypes;
+    returnType = packed.returnType;
+  }
+
+  // The size of the input buffer max exceed the maximum buffer binding size,
+  // so chunk the tests up into batches that fit into the limits.
+  const maxInputSize =
+    cfg.storageClass === 'uniform'
+      ? t.device.limits.maxUniformBufferBindingSize
+      : t.device.limits.maxStorageBufferBindingSize;
+  const casesPerBatch = Math.floor(maxInputSize / (parameterTypes.length * kValueStride));
+  for (let i = 0; i < cases.length; i += casesPerBatch) {
+    const batchCases = cases.slice(i, Math.min(i + casesPerBatch, cases.length));
+    runBatch(t, builtin, parameterTypes, returnType, batchCases, cfg.storageClass, cmpFloats);
+  }
+}
+
+/**
+ * Runs the list of builtin tests. The input data must fit within the buffer
+ * binding limits of the given storageClass.
+ * @param t the GPUTest
+ * @param builtin the builtin being tested
+ * @param parameterTypes the list of builtin parameter types
+ * @param returnType the return type for the builtin overload
+ * @param cases list of test cases that fit within the binding limits of the device
+ * @param storageClass the storage class to use for the input buffer
+ * @param cmpFloats the method to compare floating point numbers
+ */
+function runBatch(
+  t: GPUTest,
+  builtin: string,
+  parameterTypes: Array<Type>,
+  returnType: Type,
+  cases: CaseList,
+  storageClass: StorageClass,
+  cmpFloats: FloatMatch
+) {
+  // returns the WGSL expression to load the ith parameter of the given type from the input buffer
+  const paramExpr = (ty: Type, i: number) => fromStorage(ty, `inputs.test[i].param${i}`);
+
+  // resolves to the expression that calls the builtin
+  const expr = toStorage(
+    returnType,
+    builtin + '(' + parameterTypes.map(paramExpr).join(', ') + ')'
   );
 
+  // the full WGSL shader source
+  const source = `
+struct Parameters {
+${parameterTypes
+  .map((ty, i) => `  [[size(${kValueStride})]] param${i} : ${storageType(ty)};`)
+  .join('\n')}
+};
+
+[[block]]
+struct Inputs {
+  test : array<Parameters, ${cases.length}>;
+};
+
+[[block]]
+struct Outputs {
+  test : [[stride(${kValueStride})]] array<${storageType(returnType)}, ${cases.length}>;
+};
+
+${
+  storageClass === 'uniform'
+    ? `[[group(0), binding(0)]] var<uniform> inputs : Inputs;`
+    : `[[group(0), binding(0)]] var<storage, ${
+        storageClass === 'storage_r' ? 'read' : 'read_write'
+      }> inputs : Inputs;`
+}
+[[group(0), binding(1)]] var<storage, write> outputs : Outputs;
+
+[[stage(compute), workgroup_size(1)]]
+fn main() {
+  for(var i = 0; i < ${cases.length}; i = i + 1) {
+    outputs.test[i] = ${expr};
+  }
+}
+`;
+
+  const inputSize = cases.length * parameterTypes.length * kValueStride;
+
+  // Holds all the parameter values for all cases
+  const inputData = new Uint8Array(inputSize);
+
+  // Pack all the input parameter values into the inputData buffer
+  {
+    const caseStride = kValueStride * parameterTypes.length;
+    for (let caseIdx = 0; caseIdx < cases.length; caseIdx++) {
+      const caseBase = caseIdx * caseStride;
+      for (let paramIdx = 0; paramIdx < parameterTypes.length; paramIdx++) {
+        const offset = caseBase + paramIdx * kValueStride;
+        const params = cases[caseIdx].input;
+        if (params instanceof Array) {
+          params[paramIdx].copyTo(inputData, offset);
+        } else {
+          params.copyTo(inputData, offset);
+        }
+      }
+    }
+  }
+  const inputBuffer = t.makeBufferWithContents(
+    inputData,
+    GPUBufferUsage.COPY_SRC |
+      (storageClass === 'uniform' ? GPUBufferUsage.UNIFORM : GPUBufferUsage.STORAGE)
+  );
+
+  // Construct a buffer to hold the results of the builtin tests
+  const outputBufferSize = cases.length * kValueStride;
   const outputBuffer = t.device.createBuffer({
-    // TODO(sarahM0): investigate why "size: cases.length*4*arrayLength" returns zero
-    size: inputData.length * 4,
+    size: outputBufferSize,
     usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST | GPUBufferUsage.STORAGE,
   });
 
@@ -73,94 +382,123 @@ export function runShaderTestImpl<F extends NumberType>(
 
   t.queue.submit([encoder.finish()]);
 
-  // Returns the string representation of num using the specified color.
-  const formatNum = (num: number | bigint, color = Colors.reset) => {
-    switch (num) {
-      case 0:
-      case Infinity:
-      case -Infinity:
-        return color.bold(num.toString());
-      default:
-        return color.bold(num.toString()) + color(' (0x' + num.toString(16) + ')');
+  const checkExpectation = (outputData: Uint8Array) => {
+    // Read the outputs from the output buffer
+    const outputs = new Array<Value>(cases.length);
+    for (let i = 0; i < cases.length; i++) {
+      outputs[i] = returnType.read(outputData, i * kValueStride);
     }
-  };
 
-  const checkExpectation = (outputData: typeof inputData) => {
     // The list of expectation failures
     const errs: string[] = [];
 
     // For each case...
-    for (let i = 0; i < cases.length; i++) {
-      // String representations of the input, output and expectation values for this case.
-      const inputValue: string[] = [];
-      const outputValue: string[] = [];
-      const expectedValue: string[] = [];
-      let caseMatched = true;
-
-      // For each element in the case...
-      for (let j = 0; j < arrayLength; j++) {
-        const idx = i * 4 + j;
-        const expectedIndex = i + j < cases.length ? i + j : i;
-        inputValue.push(formatNum(inputData[idx]));
-
-        // `cases[expectedIndex].expected` is an array of values that are treated as a pass.
-        // Do any of these expected values match?
-        const elementMatched = cases[expectedIndex].expected.some(e => e.value === outputData[idx]);
-        outputValue.push(formatNum(outputData[idx], elementMatched ? Colors.green : Colors.red));
-
-        const caseExpected: string[] = [];
-        for (const e of cases[expectedIndex].expected) {
-          if (outputData[idx] === e.value) {
-            // This expected value matched
-            caseExpected.push(formatNum(e.value, Colors.green));
-          } else if (elementMatched) {
-            // The element matched, but it wasn't for this value.
-            caseExpected.push(formatNum(e.value, Colors.grey));
-          } else {
-            // The element did not match any expected value
-            caseExpected.push(formatNum(e.value, Colors.red));
-          }
-        }
-        expectedValue.push(caseExpected.join(' or '));
-
-        // If none of the expected values matched, then the case has failed.
-        caseMatched = caseMatched && elementMatched;
-      }
-
-      if (!caseMatched) {
-        if (arrayLength > 1) {
-          errs.push(
-            `${builtin}(${type}(${inputValue.join(', ')}))\n` +
-              `    returned: ${type}(${outputValue.join(', ')})\n` +
-              `    expected: ${type}(${expectedValue.join(', ')})`
-          );
-        } else {
-          errs.push(
-            `${builtin}(${inputValue.join(', ')})\n` +
-              `    returned: ${outputValue.join(', ')}\n` +
-              `    expected: ${expectedValue.join(', ')}`
-          );
-        }
+    for (let caseIdx = 0; caseIdx < cases.length; caseIdx++) {
+      const c = cases[caseIdx];
+      const got = outputs[caseIdx];
+      const cmp = toComparator(c.expected)(got, cmpFloats);
+      if (!cmp.matched) {
+        errs.push(`${builtin}(${c.input instanceof Array ? c.input.join(', ') : c.input})
+    returned: ${cmp.got}
+    expected: ${cmp.expected}`);
       }
     }
 
-    if (errs.length > 0) {
-      return new Error(errs.join('\n\n'));
-    }
-    return undefined;
+    return errs.length > 0 ? new Error(errs.join('\n\n')) : undefined;
   };
 
   t.expectGPUBufferValuesPassCheck(outputBuffer, checkExpectation, {
-    type: arrayType,
-    typedLength: inputData.length,
+    type: Uint8Array,
+    typedLength: outputBufferSize,
   });
 }
 
+/**
+ * Packs a list of scalar test cases into a smaller list of vector cases.
+ * Requires that all parameters of the builtin overload are of a scalar type,
+ * and the return type of the builtin overload is also a scalar type.
+ * If `cases.length` is not a multiple of `vectorWidth`, then the last scalar
+ * test case value is repeated to fill the vector value.
+ */
+function packScalarsToVector(
+  parameterTypes: Array<Type>,
+  returnType: Type,
+  cases: CaseList,
+  vectorWidth: number
+): { cases: CaseList; parameterTypes: Array<Type>; returnType: Type } {
+  // Validate that the parameters and return type are all vectorizable
+  for (let i = 0; i < parameterTypes.length; i++) {
+    const ty = parameterTypes[i];
+    if (!(ty instanceof ScalarType)) {
+      throw new Error(
+        `packScalarsToVector() can only be used on scalar parameter types, but the ${i}'th parameter type is a ${ty}'`
+      );
+    }
+  }
+  if (!(returnType instanceof ScalarType)) {
+    throw new Error(
+      `packScalarsToVector() can only be used with a scalar return type, but the return type is a ${returnType}'`
+    );
+  }
+
+  const packedCases: Array<Case> = [];
+  const packedParameterTypes = parameterTypes.map(p => TypeVec(vectorWidth, p as ScalarType));
+  const packedReturnType = new VectorType(vectorWidth, returnType as ScalarType);
+
+  const clampCaseIdx = (idx: number) => Math.min(idx, cases.length - 1);
+
+  let caseIdx = 0;
+  while (caseIdx < cases.length) {
+    // Construct the vectorized inputs from the scalar cases
+    const packedInputs = new Array<Vector>(parameterTypes.length);
+    for (let paramIdx = 0; paramIdx < parameterTypes.length; paramIdx++) {
+      const inputElements = new Array<Scalar>(vectorWidth);
+      for (let i = 0; i < vectorWidth; i++) {
+        const input = cases[clampCaseIdx(caseIdx + i)].input;
+        inputElements[i] = (input instanceof Array ? input[paramIdx] : input) as Scalar;
+      }
+      packedInputs[paramIdx] = new Vector(inputElements);
+    }
+
+    // Gather the comparators for the packed cases
+    const comparators = new Array<Comparator>(vectorWidth);
+    for (let i = 0; i < vectorWidth; i++) {
+      comparators[i] = toComparator(cases[clampCaseIdx(caseIdx + i)].expected);
+    }
+    const packedComparator = (got: Value, cmpFloats: FloatMatch) => {
+      let matched = true;
+      const gElements = new Array<string>(vectorWidth);
+      const eElements = new Array<string>(vectorWidth);
+      for (let i = 0; i < vectorWidth; i++) {
+        const d = comparators[i]((got as Vector).elements[i], cmpFloats);
+        matched = matched && d.matched;
+        gElements[i] = d.got;
+        eElements[i] = d.expected;
+      }
+      return {
+        matched,
+        got: `${packedReturnType}(${gElements.join(', ')})`,
+        expected: `${packedReturnType}(${eElements.join(', ')})`,
+      };
+    };
+
+    // Append the new packed case
+    packedCases.push({ input: packedInputs, expected: packedComparator });
+    caseIdx += vectorWidth;
+  }
+
+  return {
+    cases: packedCases,
+    parameterTypes: packedParameterTypes,
+    returnType: packedReturnType,
+  };
+}
+
 // TODO(sarahM0): Perhaps instead of kBit and kValue tables we could have one table
-// where every value is a NumberRepr instead of either bits or value?
-// Then tests wouldn't need most of the NumberRepr.fromX calls,
+// where every value is a Scalar instead of either bits or value?
+// Then tests wouldn't need most of the Scalar.fromX calls,
 // and you would probably need fewer table entries in total
-// (since each NumberRepr has both bits and value).
+// (since each Scalar has both bits and value).
 export const kBit = {
   // Limits of int32
   i32: {
@@ -196,6 +534,10 @@ export const kBit = {
       positive: {
         min: 0x0000_0001,
         max: 0x007f_ffff,
+      },
+      negative: {
+        max: 0x8000_0001,
+        min: 0x807f_ffff,
       },
     },
     nan: {
@@ -492,45 +834,4 @@ export const kValue = {
     toMinus31: -Math.pow(2, -31),
     toMinus32: -Math.pow(2, -32),
   },
-};
-
-export function runShaderTest<F extends NumberType>(
-  t: GPUTest,
-  storageClass: string,
-  storageMode: string,
-  type: string,
-  arrayLength: number,
-  builtin: string,
-  arrayType: TypedArrayBufferViewConstructor,
-  cases: Array<Case<F>>
-): void {
-  const source = `
-    [[block]]
-    struct Data {
-      values : [[stride(16)]] array<${type}, ${cases.length}>;
-    };
-
-    [[group(0), binding(0)]] var<${storageClass}, ${storageMode}> inputs : Data;
-    [[group(0), binding(1)]] var<${storageClass}, write> outputs : Data;
-
-    [[stage(compute), workgroup_size(1)]]
-    fn main() {
-      for(var i = 0; i < ${cases.length}; i = i + 1) {
-          let input : ${type} = inputs.values[i];
-          let result : ${type} = ${builtin}(input);
-          outputs.values[i] = result;
-      }
-    }
-  `;
-  runShaderTestImpl(
-    t,
-    storageClass,
-    storageMode,
-    type,
-    arrayLength,
-    builtin,
-    arrayType,
-    cases,
-    source
-  );
-}
+} as const;

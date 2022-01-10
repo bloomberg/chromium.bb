@@ -5,6 +5,7 @@
 #include "components/embedder_support/user_agent_utils.h"
 
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
@@ -37,7 +38,7 @@ namespace embedder_support {
 
 namespace {
 
-constexpr char kMajorVersion100[] = "100";
+constexpr char kVersion100[] = "100";
 
 #if defined(OS_WIN)
 
@@ -125,7 +126,7 @@ const std::string& GetUniversalApiContractVersion() {
 const std::string& GetM100VersionNumber() {
   static const base::NoDestructor<std::string> m100_version_number([] {
     base::Version version(version_info::GetVersionNumber());
-    std::string version_str(kMajorVersion100);
+    std::string version_str(kVersion100);
     const std::vector<uint32_t>& components = version.components();
     // Rest of the version string remains the same.
     for (size_t i = 1; i < components.size(); ++i) {
@@ -137,11 +138,35 @@ const std::string& GetM100VersionNumber() {
   return *m100_version_number;
 }
 
+const std::string& GetM100InMinorVersionNumber() {
+  static const base::NoDestructor<std::string> m100_version_number([] {
+    base::Version version(version_info::GetVersionNumber());
+    std::string version_str;
+    const std::vector<uint32_t>& components = version.components();
+    // Rest of the version string remains the same.
+    for (size_t i = 0; i < components.size(); ++i) {
+      if (i > 0) {
+        version_str.append(".");
+      }
+      if (i == 1) {
+        // Populate "100" for the minor version.
+        version_str.append(kVersion100);
+      } else {
+        version_str.append(base::NumberToString(components[i]));
+      }
+    }
+    return version_str;
+  }());
+  return *m100_version_number;
+}
+
 const blink::UserAgentBrandList GetUserAgentBrandList(
     const std::string& major_version,
-    bool enable_updated_grease_by_policy) {
-  int major_version_number;
-  base::StringToInt(major_version, &major_version_number);
+    bool enable_updated_grease_by_policy,
+    const std::string& full_version,
+    blink::UserAgentBrandVersionType output_version_type) {
+  int major_version_number = 0;
+  DCHECK(base::StringToInt(major_version, &major_version_number));
   absl::optional<std::string> brand;
 #if !BUILDFLAG(CHROMIUM_BRANDING)
   brand = version_info::GetProductName();
@@ -157,43 +182,88 @@ const blink::UserAgentBrandList GetUserAgentBrandList(
   if (maybe_version_override->empty())
     maybe_version_override = absl::nullopt;
 
-  return GenerateBrandVersionList(major_version_number, brand, major_version,
+  std::string brand_version =
+      output_version_type == blink::UserAgentBrandVersionType::kFullVersion
+          ? full_version
+          : major_version;
+
+  return GenerateBrandVersionList(major_version_number, brand, brand_version,
                                   maybe_brand_override, maybe_version_override,
-                                  enable_updated_grease_by_policy);
+                                  enable_updated_grease_by_policy,
+                                  output_version_type);
 }
 
-const blink::UserAgentBrandList& GetUserAgentBrandList(
+const blink::UserAgentBrandList GetUserAgentBrandMajorVersionList(
     bool enable_updated_grease_by_policy) {
-  static const base::NoDestructor<blink::UserAgentBrandList> brand_list(
-      GetUserAgentBrandList(version_info::GetMajorVersionNumber(),
-                            enable_updated_grease_by_policy));
-  return *brand_list;
+  return GetUserAgentBrandList(version_info::GetMajorVersionNumber(),
+                               enable_updated_grease_by_policy,
+                               version_info::GetVersionNumber(),
+                               blink::UserAgentBrandVersionType::kMajorVersion);
 }
 
-const blink::UserAgentBrandList& GetForcedM100UserAgentBrandList(
+blink::UserAgentBrandList GetForcedM100UserAgentBrandMajorVersionList(
     bool enable_updated_grease_by_policy) {
-  static const base::NoDestructor<blink::UserAgentBrandList> brand_list(
-      GetUserAgentBrandList(kMajorVersion100, enable_updated_grease_by_policy));
-  return *brand_list;
+  return GetUserAgentBrandList(kVersion100, enable_updated_grease_by_policy,
+                               GetM100VersionNumber(),
+                               blink::UserAgentBrandVersionType::kMajorVersion);
 }
 
-const blink::UserAgentBrandList& GetBrandVersionList(
+blink::UserAgentBrandList GetUserAgentBrandFullVersionList(
+    bool enable_updated_grease_by_policy) {
+  return GetUserAgentBrandList(version_info::GetMajorVersionNumber(),
+                               enable_updated_grease_by_policy,
+                               version_info::GetVersionNumber(),
+                               blink::UserAgentBrandVersionType::kFullVersion);
+}
+
+blink::UserAgentBrandList GetForcedM100UserAgentBrandFullVersionList(
+    bool enable_updated_grease_by_policy) {
+  return GetUserAgentBrandList(kVersion100, enable_updated_grease_by_policy,
+                               GetM100VersionNumber(),
+                               blink::UserAgentBrandVersionType::kFullVersion);
+}
+
+// Return UserAgentBrandList with the major version populated in the brand
+// `version` value.
+blink::UserAgentBrandList GetBrandMajorVersionList(
     bool enable_updated_grease_by_policy) {
   if (base::FeatureList::IsEnabled(
           blink::features::kForceMajorVersion100InUserAgent))
-    return GetForcedM100UserAgentBrandList(enable_updated_grease_by_policy);
+    return GetForcedM100UserAgentBrandMajorVersionList(
+        enable_updated_grease_by_policy);
 
-  return GetUserAgentBrandList(enable_updated_grease_by_policy);
+  return GetUserAgentBrandMajorVersionList(enable_updated_grease_by_policy);
+}
+
+// Return UserAgentBrandList with the full version populated in the brand
+// `version` value.
+blink::UserAgentBrandList GetBrandFullVersionList(
+    bool enable_updated_grease_by_policy) {
+  if (base::FeatureList::IsEnabled(
+          blink::features::kForceMajorVersion100InUserAgent))
+    return GetForcedM100UserAgentBrandFullVersionList(
+        enable_updated_grease_by_policy);
+
+  return GetUserAgentBrandFullVersionList(enable_updated_grease_by_policy);
+}
+
+std::string GetProduct(const bool allow_version_override) {
+  if (allow_version_override &&
+      base::FeatureList::IsEnabled(
+          blink::features::kForceMajorVersion100InUserAgent))
+    return "Chrome/" + GetM100VersionNumber();
+  if (allow_version_override &&
+      base::FeatureList::IsEnabled(
+          blink::features::kForceMinorVersion100InUserAgent))
+    return "Chrome/" + GetM100InMinorVersionNumber();
+
+  return version_info::GetProductNameAndVersionForUserAgent();
 }
 
 }  // namespace
 
 std::string GetProduct() {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kForceMajorVersion100InUserAgent))
-    return "Chrome/" + GetM100VersionNumber();
-
-  return version_info::GetProductNameAndVersionForUserAgent();
+  return GetProduct(/*allow_version_override=*/false);
 }
 
 std::string GetUserAgent() {
@@ -208,12 +278,7 @@ std::string GetUserAgent() {
   if (base::FeatureList::IsEnabled(blink::features::kReduceUserAgent))
     return GetReducedUserAgent();
 
-  std::string product = GetProduct();
-#if defined(OS_ANDROID)
-  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
-    product += " Mobile";
-#endif
-  return content::BuildUserAgentFromProduct(product);
+  return GetFullUserAgent();
 }
 
 std::string GetReducedUserAgent() {
@@ -222,8 +287,18 @@ std::string GetReducedUserAgent() {
           switches::kUseMobileUserAgent),
       base::FeatureList::IsEnabled(
           blink::features::kForceMajorVersion100InUserAgent)
-          ? kMajorVersion100
+          ? kVersion100
           : version_info::GetMajorVersionNumber());
+}
+
+std::string GetFullUserAgent() {
+  std::string product = GetProduct(/*allow_version_override=*/true);
+#if defined(OS_ANDROID)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseMobileUserAgent))
+    product += " Mobile";
+#endif
+  return content::BuildUserAgentFromProduct(product);
 }
 
 // Generate a pseudo-random permutation of the following brand/version pairs:
@@ -235,10 +310,11 @@ std::string GetReducedUserAgent() {
 blink::UserAgentBrandList GenerateBrandVersionList(
     int seed,
     absl::optional<std::string> brand,
-    std::string major_version,
+    const std::string& version,
     absl::optional<std::string> maybe_greasey_brand,
     absl::optional<std::string> maybe_greasey_version,
-    bool enable_updated_grease_by_policy) {
+    bool enable_updated_grease_by_policy,
+    blink::UserAgentBrandVersionType output_version_type) {
   DCHECK_GE(seed, 0);
   const int npermutations = 6;  // 3!
   int permutation = seed % npermutations;
@@ -253,12 +329,12 @@ blink::UserAgentBrandList GenerateBrandVersionList(
 
   blink::UserAgentBrandVersion greasey_bv = GetGreasedUserAgentBrandVersion(
       order, seed, maybe_greasey_brand, maybe_greasey_version,
-      enable_updated_grease_by_policy);
-  blink::UserAgentBrandVersion chromium_bv = {"Chromium", major_version};
+      enable_updated_grease_by_policy, output_version_type);
+  blink::UserAgentBrandVersion chromium_bv = {"Chromium", version};
   blink::UserAgentBrandList greased_brand_version_list(3);
 
   if (brand) {
-    blink::UserAgentBrandVersion brand_bv = {brand.value(), major_version};
+    blink::UserAgentBrandVersion brand_bv = {brand.value(), version};
 
     greased_brand_version_list[order[0]] = greasey_bv;
     greased_brand_version_list[order[1]] = chromium_bv;
@@ -274,12 +350,47 @@ blink::UserAgentBrandList GenerateBrandVersionList(
   return greased_brand_version_list;
 }
 
+// Process greased overridden brand version which is either major version or
+// full version, return the corresponding output version type.
+blink::UserAgentBrandVersion GetProcessedGreasedBrandVersion(
+    const std::string& greasey_brand,
+    const std::string& greasey_version,
+    blink::UserAgentBrandVersionType output_version_type) {
+  std::string greasey_major_version;
+  std::string greasey_full_version;
+  base::Version version(greasey_version);
+  DCHECK(version.IsValid());
+
+  // If the greased overridden version is a significant version type:
+  // * Major version: set the major version as the overridden version
+  // * Full version number: extending the version number with ".0.0.0"
+  // If the overridden version is full version format:
+  // * Major version: set the major version to match significant version format
+  // * Full version: set the full version as the overridden version
+  // https://wicg.github.io/ua-client-hints/#user-agent-full-version
+  if (version.components().size() > 1) {
+    greasey_major_version = base::NumberToString(version.components()[0]);
+    greasey_full_version = greasey_version;
+  } else {
+    greasey_major_version = greasey_version;
+    greasey_full_version = base::StrCat({greasey_version, ".0.0.0"});
+  }
+
+  blink::UserAgentBrandVersion output_greasey_bv = {
+      greasey_brand,
+      output_version_type == blink::UserAgentBrandVersionType::kFullVersion
+          ? greasey_full_version
+          : greasey_major_version};
+  return output_greasey_bv;
+}
+
 blink::UserAgentBrandVersion GetGreasedUserAgentBrandVersion(
     std::vector<int> permuted_order,
     int seed,
     absl::optional<std::string> maybe_greasey_brand,
     absl::optional<std::string> maybe_greasey_version,
-    bool enable_updated_grease_by_policy) {
+    bool enable_updated_grease_by_policy,
+    blink::UserAgentBrandVersionType output_version_type) {
   std::string greasey_brand;
   std::string greasey_version;
   if (enable_updated_grease_by_policy &&
@@ -303,11 +414,10 @@ blink::UserAgentBrandVersion GetGreasedUserAgentBrandVersion(
                                   greasey_chars[permuted_order[2]], "Brand"});
     greasey_version = "99";
   }
-  blink::UserAgentBrandVersion greasey_bv = {
-      maybe_greasey_brand.value_or(greasey_brand),
-      maybe_greasey_version.value_or(greasey_version)};
 
-  return greasey_bv;
+  return GetProcessedGreasedBrandVersion(
+      maybe_greasey_brand.value_or(greasey_brand),
+      maybe_greasey_version.value_or(greasey_version), output_version_type);
 }
 // TODO(crbug.com/1103047): This can be removed/re-refactored once we use
 // "macOS" by default
@@ -333,7 +443,9 @@ blink::UserAgentMetadata GetUserAgentMetadata(PrefService* pref_service) {
         policy::policy_prefs::kUserAgentClientHintsGREASEUpdateEnabled);
   }
   metadata.brand_version_list =
-      GetBrandVersionList(enable_updated_grease_by_policy);
+      GetBrandMajorVersionList(enable_updated_grease_by_policy);
+  metadata.brand_full_version_list =
+      GetBrandFullVersionList(enable_updated_grease_by_policy);
   metadata.full_version = base::FeatureList::IsEnabled(
                               blink::features::kForceMajorVersion100InUserAgent)
                               ? GetM100VersionNumber()
@@ -363,7 +475,7 @@ blink::UserAgentMetadata GetUserAgentMetadata(PrefService* pref_service) {
   metadata.bitness = content::GetLowEntropyCpuBitness();
 
   return metadata;
-}
+}  // namespace embedder_support
 
 #if defined(OS_ANDROID)
 void SetDesktopUserAgentOverride(content::WebContents* web_contents,
@@ -372,8 +484,8 @@ void SetDesktopUserAgentOverride(content::WebContents* web_contents,
   const char kLinuxInfoStr[] = "X11; Linux x86_64";
 
   blink::UserAgentOverride spoofed_ua;
-  spoofed_ua.ua_string_override =
-      content::BuildUserAgentFromOSAndProduct(kLinuxInfoStr, GetProduct());
+  spoofed_ua.ua_string_override = content::BuildUserAgentFromOSAndProduct(
+      kLinuxInfoStr, GetProduct(/*allow_version_override=*/true));
   spoofed_ua.ua_metadata_override = metadata;
   spoofed_ua.ua_metadata_override->platform = "Linux";
   spoofed_ua.ua_metadata_override->platform_version =

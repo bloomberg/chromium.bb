@@ -301,44 +301,6 @@ static av_cold int config_output(AVFilterLink *outlink)
     return 0;
 }
 
-static av_cold int query_formats(AVFilterContext *avctx)
-{
-    static const enum AVPixelFormat pixel_fmts[] = {
-        AV_PIX_FMT_YUVA420P,
-        AV_PIX_FMT_YUVA422P,
-        AV_PIX_FMT_YUVA444P,
-        AV_PIX_FMT_YUVA420P9,  AV_PIX_FMT_YUVA422P9,  AV_PIX_FMT_YUVA444P9,
-        AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA444P10,
-        AV_PIX_FMT_YUVA422P12, AV_PIX_FMT_YUVA444P12,
-        AV_PIX_FMT_YUVA420P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA444P16,
-        AV_PIX_FMT_NONE
-    };
-
-    static const enum AVPixelFormat hold_pixel_fmts[] = {
-        AV_PIX_FMT_YUV420P,
-        AV_PIX_FMT_YUV422P,
-        AV_PIX_FMT_YUV444P,
-        AV_PIX_FMT_YUVA420P,
-        AV_PIX_FMT_YUVA422P,
-        AV_PIX_FMT_YUVA444P,
-        AV_PIX_FMT_YUV420P9,   AV_PIX_FMT_YUV422P9,   AV_PIX_FMT_YUV444P9,
-        AV_PIX_FMT_YUV420P10,  AV_PIX_FMT_YUV422P10,  AV_PIX_FMT_YUV444P10,
-        AV_PIX_FMT_YUV444P12,  AV_PIX_FMT_YUV422P12,  AV_PIX_FMT_YUV420P12,
-        AV_PIX_FMT_YUV444P14,  AV_PIX_FMT_YUV422P14,  AV_PIX_FMT_YUV420P14,
-        AV_PIX_FMT_YUV420P16,  AV_PIX_FMT_YUV422P16,  AV_PIX_FMT_YUV444P16,
-        AV_PIX_FMT_YUVA420P9,  AV_PIX_FMT_YUVA422P9,  AV_PIX_FMT_YUVA444P9,
-        AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA444P10,
-        AV_PIX_FMT_YUVA422P12, AV_PIX_FMT_YUVA444P12,
-        AV_PIX_FMT_YUVA420P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA444P16,
-        AV_PIX_FMT_NONE
-    };
-    const enum AVPixelFormat *pix_fmts;
-
-    pix_fmts = !strcmp(avctx->filter->name, "chromahold") ? hold_pixel_fmts : pixel_fmts;
-
-    return ff_set_common_formats_from_list(avctx, pix_fmts);
-}
-
 static av_cold int config_input(AVFilterLink *inlink)
 {
     AVFilterContext *avctx = inlink->dst;
@@ -392,6 +354,17 @@ static const AVOption chromakey_options[] = {
     { NULL }
 };
 
+static const enum AVPixelFormat chromakey_fmts[] = {
+    AV_PIX_FMT_YUVA420P,
+    AV_PIX_FMT_YUVA422P,
+    AV_PIX_FMT_YUVA444P,
+    AV_PIX_FMT_YUVA420P9,  AV_PIX_FMT_YUVA422P9,  AV_PIX_FMT_YUVA444P9,
+    AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA444P10,
+    AV_PIX_FMT_YUVA422P12, AV_PIX_FMT_YUVA444P12,
+    AV_PIX_FMT_YUVA420P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA444P16,
+    AV_PIX_FMT_NONE
+};
+
 AVFILTER_DEFINE_CLASS(chromakey);
 
 const AVFilter ff_vf_chromakey = {
@@ -399,9 +372,9 @@ const AVFilter ff_vf_chromakey = {
     .description   = NULL_IF_CONFIG_SMALL("Turns a certain color into transparency. Operates on YUV colors."),
     .priv_size     = sizeof(ChromakeyContext),
     .priv_class    = &chromakey_class,
-    .query_formats = query_formats,
     FILTER_INPUTS(chromakey_inputs),
     FILTER_OUTPUTS(chromakey_outputs),
+    FILTER_PIXFMTS_ARRAY(chromakey_fmts),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,
 };
@@ -432,6 +405,25 @@ static const AVFilterPad chromahold_outputs[] = {
     },
 };
 
+static const enum AVPixelFormat hold_pixel_fmts[] = {
+    AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_YUV422P,
+    AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_YUVA420P,
+    AV_PIX_FMT_YUVA422P,
+    AV_PIX_FMT_YUVA444P,
+    AV_PIX_FMT_YUV420P9,   AV_PIX_FMT_YUV422P9,   AV_PIX_FMT_YUV444P9,
+    AV_PIX_FMT_YUV420P10,  AV_PIX_FMT_YUV422P10,  AV_PIX_FMT_YUV444P10,
+    AV_PIX_FMT_YUV444P12,  AV_PIX_FMT_YUV422P12,  AV_PIX_FMT_YUV420P12,
+    AV_PIX_FMT_YUV444P14,  AV_PIX_FMT_YUV422P14,  AV_PIX_FMT_YUV420P14,
+    AV_PIX_FMT_YUV420P16,  AV_PIX_FMT_YUV422P16,  AV_PIX_FMT_YUV444P16,
+    AV_PIX_FMT_YUVA420P9,  AV_PIX_FMT_YUVA422P9,  AV_PIX_FMT_YUVA444P9,
+    AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA444P10,
+    AV_PIX_FMT_YUVA422P12, AV_PIX_FMT_YUVA444P12,
+    AV_PIX_FMT_YUVA420P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA444P16,
+    AV_PIX_FMT_NONE
+};
+
 AVFILTER_DEFINE_CLASS(chromahold);
 
 const AVFilter ff_vf_chromahold = {
@@ -439,9 +431,9 @@ const AVFilter ff_vf_chromahold = {
     .description   = NULL_IF_CONFIG_SMALL("Turns a certain color range into gray."),
     .priv_size     = sizeof(ChromakeyContext),
     .priv_class    = &chromahold_class,
-    .query_formats = query_formats,
     FILTER_INPUTS(chromahold_inputs),
     FILTER_OUTPUTS(chromahold_outputs),
+    FILTER_PIXFMTS_ARRAY(hold_pixel_fmts),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,
 };

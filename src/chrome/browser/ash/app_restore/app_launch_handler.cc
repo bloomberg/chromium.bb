@@ -36,16 +36,17 @@ apps::AppTypeName GetHistogrameAppType(apps::mojom::AppType app_type) {
     case apps::mojom::AppType::kBuiltIn:
     case apps::mojom::AppType::kCrostini:
       return apps::AppTypeName::kUnknown;
-    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kChromeApp:
       return apps::AppTypeName::kChromeApp;
     case apps::mojom::AppType::kWeb:
       return apps::AppTypeName::kWeb;
     case apps::mojom::AppType::kMacOs:
     case apps::mojom::AppType::kPluginVm:
     case apps::mojom::AppType::kStandaloneBrowser:
-    case apps::mojom::AppType::kStandaloneBrowserExtension:
+    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
     case apps::mojom::AppType::kRemote:
     case apps::mojom::AppType::kBorealis:
+    case apps::mojom::AppType::kExtension:
       return apps::AppTypeName::kUnknown;
     case apps::mojom::AppType::kSystemWeb:
       return apps::AppTypeName::kSystemWeb;
@@ -161,7 +162,7 @@ void AppLaunchHandler::LaunchApp(apps::mojom::AppType app_type,
       // restoration could be delayed, so return to preserve the restore data
       // for ARC apps.
       return;
-    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kChromeApp:
     case apps::mojom::AppType::kWeb:
     case apps::mojom::AppType::kSystemWeb:
       if (ShouldLaunchSystemWebAppOrChromeApp(app_id, it->second))
@@ -173,9 +174,10 @@ void AppLaunchHandler::LaunchApp(apps::mojom::AppType app_type,
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kMacOs:
     case apps::mojom::AppType::kStandaloneBrowser:
-    case apps::mojom::AppType::kStandaloneBrowserExtension:
+    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
     case apps::mojom::AppType::kRemote:
     case apps::mojom::AppType::kBorealis:
+    case apps::mojom::AppType::kExtension:
       NOTREACHED();
       break;
   }
@@ -191,7 +193,7 @@ void AppLaunchHandler::LaunchSystemWebAppOrChromeApp(
   if (!launcher)
     return;
 
-  if (app_type == apps::mojom::AppType::kExtension)
+  if (app_type == apps::mojom::AppType::kChromeApp)
     OnExtensionLaunching(app_id);
 
   for (const auto& it : launch_list) {

@@ -1291,6 +1291,8 @@ std::vector<std::string> DisplayExtensions::getStrings() const
     InsertExtensionString("EGL_EXT_protected_content",                           protectedContentEXT,                &extensionStrings);
     InsertExtensionString("EGL_ANGLE_create_surface_swap_interval",              createSurfaceSwapIntervalANGLE,     &extensionStrings);
     InsertExtensionString("EGL_ANGLE_context_virtualization",                    contextVirtualizationANGLE,         &extensionStrings);
+    InsertExtensionString("EGL_KHR_lock_surface3",                               lockSurface3KHR,                    &extensionStrings);
+    InsertExtensionString("EGL_ANGLE_vulkan_image",                              vulkanImageANGLE,                   &extensionStrings);
     // clang-format on
 
     return extensionStrings;
@@ -1346,6 +1348,7 @@ std::vector<std::string> ClientExtensions::getStrings() const
     InsertExtensionString("EGL_KHR_client_get_all_proc_addresses",            clientGetAllProcAddresses,          &extensionStrings);
     InsertExtensionString("EGL_KHR_debug",                                    debug,                              &extensionStrings);
     InsertExtensionString("EGL_ANGLE_feature_control",                        featureControlANGLE,                &extensionStrings);
+    InsertExtensionString("EGL_ANGLE_display_power_preference",               displayPowerPreferenceANGLE,        &extensionStrings);
     // clang-format on
 
     return extensionStrings;

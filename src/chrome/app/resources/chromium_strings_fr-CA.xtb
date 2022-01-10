@@ -28,6 +28,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="1981611865800294956">Relancer &amp;Chromium OS pour le mettre à jour</translation>
 <translation id="2008474315282236005">Cette action entraînera la suppression d'un élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="2020032459870799438">Pour vérifier si vos autres mots de passe sont en sécurité contre les violations de données et d'autres risques de sécurité, <ph name="BEGIN_LINK" />connectez-vous à Chromium<ph name="END_LINK" />.</translation>
+<translation id="2049376729098081731">Choisissez si vous souhaitez inclure l'historique de Chromium pour rendre vos expériences des services Google plus personnalisées</translation>
 <translation id="2174178932569897599">Personnaliser Chromium</translation>
 <translation id="2185166961232948079">Chromium – Connexion au réseau – <ph name="PAGE_TITLE" /></translation>
 <translation id="2241627712206172106">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Google Chrome comme bon leur semble et naviguer sur le Web à leur manière.</translation>
@@ -35,14 +36,15 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="2313870531055795960">Il vérifie les URL en fonction d'une liste de sites non sécuritaires stockée dans Chromium. Si un site tente de voler votre mot de passe ou si vous téléchargez un fichier dangereux, Chromium peut également envoyer les URL concernées, y compris des extraits du contenu de pages, à la navigation sécurisée.</translation>
 <translation id="2343156876103232566">Pour envoyer un numéro d'ici vers votre téléphone Android, connectez-vous à Chromium sur vos deux appareils.</translation>
 <translation id="2347108572062610441">Cette extension a modifié la page qui s'affiche au démarrage de Chromium.</translation>
+<translation id="2359808026110333948">Continuer</translation>
 <translation id="2396765026452590966">L'extension « <ph name="EXTENSION_NAME" /> » a modifié la page qui s'affiche au démarrage de Chromium.</translation>
 <translation id="2401032172288869980">Chromium requiert l'autorisation d'accéder au microphone et à l'appareil photo pour ce site</translation>
 <translation id="2483889755041906834">Dans Chromium</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
+<translation id="251127392410688874">Découvrez comment Chromium planifie de vous protéger du suivi intersites, tout en préservant le caractère ouvert du Web</translation>
 <translation id="2535480412977113886">Chromium OS n'a pas pu synchroniser vos données, car vos renseignements de connexion ne sont plus à jour.</translation>
 <translation id="2560420686485554789">Chromium a besoin d'accéder au stockage pour télécharger des fichiers</translation>
 <translation id="2572494885440352020">Aide de Chromium</translation>
-<translation id="2577788541081224677">Pour accéder à vos données Chromium sur tous vos appareils, connectez-vous afin de pouvoir activer la synchronisation.</translation>
 <translation id="2583187216237139145">L'administrateur du profil professionnel peut retirer toutes les données Chromium générées durant l'utilisation de ce profil (comme la création de favoris, l'historique, les mots de passe et d'autres paramètres). <ph name="LEARN_MORE" /></translation>
 <translation id="2587578672395088481">Redémarrez Chromium OS pour appliquer la mise à jour.</translation>
 <translation id="2614883797045469742">Les paramètres par défaut fonctionnent pour la plupart des gens, mais vous pouvez les personnaliser pour qu'ils correspondent aux façons dont vous aimez utiliser Chromium</translation>
@@ -111,6 +113,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="4407044323746248786">Quitter Chromium quand même?</translation>
 <translation id="4415566066719264597">Laisser Chromium s'exécuter en arrière-plan</translation>
 <translation id="4423735387467980091">Personnaliser et commander Chrome</translation>
+<translation id="4427306783828095590">La protection renforcée en fait plus pour bloquer l'hameçonnage et les logiciels nuisibles</translation>
 <translation id="452711251841752011">Bienvenue à Chromium, une nouvelle fenêtre de navigateur a été ouverte</translation>
 <translation id="4544142686420020088">La mise à jour de Chromium n'a pas été installée. Une erreur s'est produite. <ph name="BEGIN_LINK" />Découvrez comment résoudre les problèmes de mise à jour de Chromium.<ph name="END_LINK" /></translation>
 <translation id="454579500955453258">Continuer avec un nouveau profil Chromium?</translation>
@@ -225,6 +228,7 @@ Chromium est incapable de récupérer vos paramètres.</translation>
 <translation id="7339898014177206373">Nouvelle fenêtre</translation>
 <translation id="734373864078049451">Votre contenu Web, vos favoris et toutes vos données de Chromium sont conservés ici.</translation>
 <translation id="7349591376906416160">Votre administrateur système a configuré Chromium de manière à ouvrir <ph name="ALTERNATIVE_BROWSER_NAME" /> pour accéder à <ph name="TARGET_URL_HOSTNAME" />.</translation>
+<translation id="7398989605938454041">Utilisez les profils Chromium pour dissocier toutes vos données Chromium. Cette façon de faire facilite la distinction entre le travail et le divertissement.</translation>
 <translation id="7448255348454382571">Redémarrer Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - Chromium pour les concepteurs</translation>
 <translation id="7451052299415159299">Chromium a besoin de votre autorisation pour accéder à votre appareil photo pour ce site</translation>
@@ -233,6 +237,7 @@ Chromium est incapable de récupérer vos paramètres.</translation>
 <translation id="7549178288319965365">À propos de Chromium OS</translation>
 <translation id="7561906087460245826">Effacer les données également dans Chromium (<ph name="URL" />)</translation>
 <translation id="7585853947355360626">Si un paramètre ne s'affiche pas sur cette page, consultez les <ph name="LINK_BEGIN" />paramètres de Chromium OS<ph name="LINK_END" /></translation>
+<translation id="7597596667193879455">Vous avez activé la navigation sécurisée améliorée dans votre compte. Maintenant, activez-la dans Chromium.</translation>
 <translation id="761356813943268536">Chromium utilise votre caméra et votre microphone</translation>
 <translation id="7617377681829253106">Chrome vient de s'améliorer</translation>
 <translation id="7686590090926151193">Chromium n'est pas votre navigateur par défaut</translation>
@@ -244,11 +249,11 @@ Chromium est incapable de récupérer vos paramètres.</translation>
 <translation id="7828947555739565424">Il existe déjà un profil Chromium associé à ce compte sur cet appareil</translation>
 <translation id="7857220146454061152">Vous devez disposer de macOS X 10.11 ou d'une version ultérieure pour recevoir les futures mises à jour de Chromium. Or, c'est la version macOS X 10.10 qui est installée sur cet ordinateur.</translation>
 <translation id="7867198900892795913">Chromium n'a pas pu installer la nouvelle version, vous ne pouvez donc pas profiter des nouvelles fonctionnalités ni des correctifs relatifs à la sécurité.</translation>
+<translation id="788352880609666695">Les comptes suivants sont accessibles pour ce profil Chromium</translation>
 <translation id="7898472181347242998">Pour voir si votre appareil est à jour, sélectionnez les <ph name="LINK_BEGIN" />paramètres de Chromium OS<ph name="LINK_END" /></translation>
 <translation id="7937630085815544518">Vous étiez connecté à Chromium en tant que <ph name="USER_EMAIL_ADDRESS" />. Veuillez utiliser le même compte pour vous reconnecter.</translation>
 <translation id="7975919845073681630">Cette installation de Chromium est secondaire. Celui-ci ne peut donc pas servir de navigateur par défaut.</translation>
 <translation id="8013436988911883588">Lorsque Chromium y aura accès, les sites Web pourront vous demander l'accès.</translation>
-<translation id="8045118833343856403">Les comptes suivants ne sont connectés à aucun profil Chromium. Si vous voulez utiliser un compte dans un autre profil, retirer d'abord ce profil.</translation>
 <translation id="8105840573057009683">Chromium requiert l'autorisation de localisation pour ce site</translation>
 <translation id="81770708095080097">Chromium a bloqué ce fichier, car il est dangereux.</translation>
 <translation id="8248265253516264921">Si une image n'est pas accompagnée d'une description utile, Chromium essaiera de vous en proposer une. Pour créer des descriptions, les images sont envoyées à Google. Vous pouvez désactiver cette option dans les paramètres à tout moment.</translation>
@@ -257,6 +262,7 @@ Chromium est incapable de récupérer vos paramètres.</translation>
 <translation id="8290862415967981663">Chromium a bloqué ce fichier, car il peut être dangereux.</translation>
 <translation id="8330519371938183845">Se connecter pour synchroniser et personnaliser Chromium sur vos appareils</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> utilisait précédemment Chromium</translation>
+<translation id="8357820681460164151">Pour accéder à vos données de navigation Chromium sur tous vos appareils, connectez-vous et activez la synchronisation</translation>
 <translation id="8417404458978023919">{0,plural, =1{Redémarrer Chromium d'ici un jour}one{Redémarrer Chromium d'ici # jour}other{Redémarrer Chromium d'ici # jours}}</translation>
 <translation id="8453117565092476964">L'archive du programme d'installation est corrompue ou n'est pas valide. Veuillez télécharger Chromium à nouveau.</translation>
 <translation id="8493179195440786826">Chromium n'est pas à jour</translation>
@@ -291,5 +297,6 @@ Chromium est incapable de récupérer vos paramètres.</translation>
 <translation id="9214764063801632699">Système Chromium OS</translation>
 <translation id="93478295209880648">Il se peut que Chromium ne fonctionne pas correctement, car il n'est plus compatible avec Windows XP ni Windows Vista</translation>
 <translation id="965162752251293939">Qui utilise Chromium?</translation>
+<translation id="967427899662692980">Profiter de la sécurité la plus robuste de Chromium</translation>
 <translation id="985602178874221306">Les auteurs de Chrome</translation>
 </translationbundle>

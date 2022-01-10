@@ -3,6 +3,8 @@ export const description = `Validation tests for entry point user-defined IO`;
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { ShaderValidationTest } from '../shader_validation_test.js';
 
+import { generateShader } from './util.js';
+
 export const g = makeTestGroup(ShaderValidationTest);
 
 // List of types to test against.
@@ -40,85 +42,6 @@ const kTestTypes = [
   { type: 'array<f32,4>', _valid: false },
   { type: 'MyStruct', _valid: false },
 ] as const;
-
-/**
- * Generate an entry point that uses a user-defined IO variable.
- *
- * @param attribute The attribute to use for the user-defined IO.
- * @param type The type to use for the user-defined IO.
- * @param stage The shader stage.
- * @param io An "in|out" string specifying whether the user-defined IO is an input or an output.
- * @param use_struct True to wrap the user-defined IO in a struct.
- * @returns The generated shader code.
- */
-function generateShader({
-  attribute,
-  type,
-  stage,
-  io,
-  use_struct,
-}: {
-  attribute: string;
-  type: string;
-  stage: string;
-  io: string;
-  use_struct: boolean;
-}) {
-  let code = '';
-
-  if (use_struct) {
-    // Generate a struct that wraps the location attribute variable.
-    code += 'struct S {\n';
-    code += `  ${attribute} value : ${type};\n`;
-    if (stage === 'vertex' && io === 'out') {
-      // Add position builtin for vertex outputs.
-      code += `  [[builtin(position)]] position : vec4<f32>;\n`;
-    }
-    code += '};\n\n';
-  }
-
-  if (stage !== '') {
-    // Generate the entry point attributes.
-    code += `[[stage(${stage})]]`;
-    if (stage === 'compute') {
-      code += ' [[workgroup_size(1)]]';
-    }
-  }
-
-  // Generate the entry point parameter and return type.
-  let param = '';
-  let retType = '';
-  let retVal = '';
-  if (io === 'in') {
-    if (use_struct) {
-      param = `in : S`;
-    } else {
-      param = `${attribute} value : ${type}`;
-    }
-
-    // Vertex shaders must always return `builtin(position)`.
-    if (stage === 'vertex') {
-      retType = `-> [[builtin(position)]] vec4<f32>`;
-      retVal = `return vec4<f32>();`;
-    }
-  } else if (io === 'out') {
-    if (use_struct) {
-      retType = '-> S';
-      retVal = `return S();`;
-    } else {
-      retType = `-> ${attribute} ${type}`;
-      retVal = `return ${type}();`;
-    }
-  }
-
-  code += `
-    fn main(${param}) ${retType} {
-      ${retVal}
-    }
-  `;
-
-  return code;
-}
 
 g.test('stage_inout')
   .desc(`Test validation of user-defined IO stage and in/out usage`)
@@ -203,10 +126,60 @@ g.test('nesting')
       use_struct: false,
     });
 
-    // Expect to fail pass only if the struct is not used for entry point IO.
+    // Expect to pass only if the struct is not used for entry point IO.
     t.expectCompileResult(t.params.target_stage === '', code);
   });
 
 g.test('duplicates')
-  .desc(`Test validation of duplicate user-defined IO attributes`)
-  .unimplemented();
+  .desc(`Test that duplicated user-defined IO attributes are validated.`)
+  .params(u =>
+    u
+      // Place two [[location(0)]] attributes onto the entry point function.
+      // The function:
+      // - has two non-struct parameters (`p1` and `p2`)
+      // - has two struct parameters each with two members (`s1{a,b}` and `s2{a,b}`)
+      // - returns a struct with two members (`ra` and `rb`)
+      // By default, all of these user-defined IO variables will have unique location attributes.
+      .combine('first', ['p1', 's1a', 's2a', 'ra'] as const)
+      .combine('second', ['p2', 's1b', 's2b', 'rb'] as const)
+      .beginSubcases()
+  )
+  .fn(t => {
+    const p1 = t.params.first === 'p1' ? '0' : '1';
+    const p2 = t.params.second === 'p2' ? '0' : '2';
+    const s1a = t.params.first === 's1a' ? '0' : '3';
+    const s1b = t.params.second === 's1b' ? '0' : '4';
+    const s2a = t.params.first === 's2a' ? '0' : '5';
+    const s2b = t.params.second === 's2b' ? '0' : '6';
+    const ra = t.params.first === 'ra' ? '0' : '1';
+    const rb = t.params.second === 'rb' ? '0' : '2';
+    const code = `
+    struct S1 {
+      [[location(${s1a})]] a : f32;
+      [[location(${s1b})]] b : f32;
+    };
+    struct S2 {
+      [[location(${s2a})]] a : f32;
+      [[location(${s2b})]] b : f32;
+    };
+    struct R {
+      [[location(${ra})]] a : f32;
+      [[location(${rb})]] b : f32;
+    };
+    [[stage(fragment)]]
+    fn main([[location(${p1})]] p1 : f32,
+            [[location(${p2})]] p2 : f32,
+            s1 : S1,
+            s2 : S2,
+            ) -> R {
+      return R();
+    }
+    `;
+
+    // The test should fail if both [[location(0)]] attributes are on the input parameters or
+    // structures, or it they are both on the output struct. Otherwise it should pass.
+    const firstIsRet = t.params.first === 'ra';
+    const secondIsRet = t.params.second === 'rb';
+    const expectation = firstIsRet !== secondIsRet;
+    t.expectCompileResult(expectation, code);
+  });

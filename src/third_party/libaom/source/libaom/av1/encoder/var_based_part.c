@@ -348,10 +348,14 @@ static AOM_INLINE void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[],
       (int64_t)(threshold_multiplier *
                 cpi->enc_quant_dequant_params.dequants.y_dequant_QTX[q][1]);
   const int current_qindex = cm->quant_params.base_qindex;
+  const int threshold_left_shift = cpi->sf.rt_sf.var_part_split_threshold_shift;
 
   if (is_key_frame) {
     if (cpi->sf.rt_sf.force_large_partition_blocks_intra) {
-      threshold_base <<= cpi->oxcf.speed - 7;
+      const int shift_steps =
+          threshold_left_shift - (cpi->oxcf.mode == ALLINTRA ? 7 : 8);
+      assert(shift_steps >= 0);
+      threshold_base <<= shift_steps;
     }
     thresholds[0] = threshold_base;
     thresholds[1] = threshold_base;
@@ -403,7 +407,7 @@ static AOM_INLINE void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[],
 #endif
     thresholds[0] = threshold_base >> 1;
     thresholds[1] = threshold_base;
-    thresholds[3] = threshold_base << cpi->oxcf.speed;
+    thresholds[3] = threshold_base << threshold_left_shift;
     if (cm->width >= 1280 && cm->height >= 720)
       thresholds[3] = thresholds[3] << 1;
     if (cm->width * cm->height <= 352 * 288) {
@@ -624,18 +628,11 @@ static AOM_INLINE void set_low_temp_var_flag(
     VP128x128 *vt, int64_t thresholds[], MV_REFERENCE_FRAME ref_frame_partition,
     int mi_col, int mi_row) {
   AV1_COMMON *const cm = &cpi->common;
-  const int mv_thr = cm->width > 640 ? 8 : 4;
-  // Check temporal variance for bsize >= 16x16, if LAST_FRAME was selected and
-  // int_pro mv is small. If the temporal variance is small set the flag
+  // Check temporal variance for bsize >= 16x16, if LAST_FRAME was selected.
+  // If the temporal variance is small set the flag
   // variance_low for the block. The variance threshold can be adjusted, the
   // higher the more aggressive.
-  if (ref_frame_partition == LAST_FRAME &&
-      (cpi->sf.rt_sf.short_circuit_low_temp_var == 1 ||
-       (cpi->sf.rt_sf.estimate_motion_for_var_based_partition &&
-        xd->mi[0]->mv[0].as_mv.col < mv_thr &&
-        xd->mi[0]->mv[0].as_mv.col > -mv_thr &&
-        xd->mi[0]->mv[0].as_mv.row < mv_thr &&
-        xd->mi[0]->mv[0].as_mv.row > -mv_thr))) {
+  if (ref_frame_partition == LAST_FRAME) {
     const int is_small_sb = (cm->seq_params->sb_size == BLOCK_64X64);
     if (is_small_sb)
       set_low_temp_var_flag_64x64(&cm->mi_params, part_info, xd,
@@ -644,6 +641,132 @@ static AOM_INLINE void set_low_temp_var_flag(
       set_low_temp_var_flag_128x128(&cm->mi_params, part_info, xd, vt,
                                     thresholds, mi_col, mi_row);
   }
+}
+
+static const int pos_shift_16x16[4][4] = {
+  { 9, 10, 13, 14 }, { 11, 12, 15, 16 }, { 17, 18, 21, 22 }, { 19, 20, 23, 24 }
+};
+
+int av1_get_force_skip_low_temp_var_small_sb(const uint8_t *variance_low,
+                                             int mi_row, int mi_col,
+                                             BLOCK_SIZE bsize) {
+  // Relative indices of MB inside the superblock.
+  const int mi_x = mi_row & 0xF;
+  const int mi_y = mi_col & 0xF;
+  // Relative indices of 16x16 block inside the superblock.
+  const int i = mi_x >> 2;
+  const int j = mi_y >> 2;
+  int force_skip_low_temp_var = 0;
+  // Set force_skip_low_temp_var based on the block size and block offset.
+  switch (bsize) {
+    case BLOCK_64X64: force_skip_low_temp_var = variance_low[0]; break;
+    case BLOCK_64X32:
+      if (!mi_y && !mi_x) {
+        force_skip_low_temp_var = variance_low[1];
+      } else if (!mi_y && mi_x) {
+        force_skip_low_temp_var = variance_low[2];
+      }
+      break;
+    case BLOCK_32X64:
+      if (!mi_y && !mi_x) {
+        force_skip_low_temp_var = variance_low[3];
+      } else if (mi_y && !mi_x) {
+        force_skip_low_temp_var = variance_low[4];
+      }
+      break;
+    case BLOCK_32X32:
+      if (!mi_y && !mi_x) {
+        force_skip_low_temp_var = variance_low[5];
+      } else if (mi_y && !mi_x) {
+        force_skip_low_temp_var = variance_low[6];
+      } else if (!mi_y && mi_x) {
+        force_skip_low_temp_var = variance_low[7];
+      } else if (mi_y && mi_x) {
+        force_skip_low_temp_var = variance_low[8];
+      }
+      break;
+    case BLOCK_32X16:
+    case BLOCK_16X32:
+    case BLOCK_16X16:
+      force_skip_low_temp_var = variance_low[pos_shift_16x16[i][j]];
+      break;
+    default: break;
+  }
+
+  return force_skip_low_temp_var;
+}
+
+int av1_get_force_skip_low_temp_var(const uint8_t *variance_low, int mi_row,
+                                    int mi_col, BLOCK_SIZE bsize) {
+  int force_skip_low_temp_var = 0;
+  int x, y;
+  x = (mi_col & 0x1F) >> 4;
+  // y = (mi_row & 0x1F) >> 4;
+  // const int idx64 = (y << 1) + x;
+  y = (mi_row & 0x17) >> 3;
+  const int idx64 = y + x;
+
+  x = (mi_col & 0xF) >> 3;
+  // y = (mi_row & 0xF) >> 3;
+  // const int idx32 = (y << 1) + x;
+  y = (mi_row & 0xB) >> 2;
+  const int idx32 = y + x;
+
+  x = (mi_col & 0x7) >> 2;
+  // y = (mi_row & 0x7) >> 2;
+  // const int idx16 = (y << 1) + x;
+  y = (mi_row & 0x5) >> 1;
+  const int idx16 = y + x;
+  // Set force_skip_low_temp_var based on the block size and block offset.
+  switch (bsize) {
+    case BLOCK_128X128: force_skip_low_temp_var = variance_low[0]; break;
+    case BLOCK_128X64:
+      assert((mi_col & 0x1F) == 0);
+      force_skip_low_temp_var = variance_low[1 + ((mi_row & 0x1F) != 0)];
+      break;
+    case BLOCK_64X128:
+      assert((mi_row & 0x1F) == 0);
+      force_skip_low_temp_var = variance_low[3 + ((mi_col & 0x1F) != 0)];
+      break;
+    case BLOCK_64X64:
+      // Location of this 64x64 block inside the 128x128 superblock
+      force_skip_low_temp_var = variance_low[5 + idx64];
+      break;
+    case BLOCK_64X32:
+      x = (mi_col & 0x1F) >> 4;
+      y = (mi_row & 0x1F) >> 3;
+      /*
+      .---------------.---------------.
+      | x=0,y=0,idx=0 | x=0,y=0,idx=2 |
+      :---------------+---------------:
+      | x=0,y=1,idx=1 | x=1,y=1,idx=3 |
+      :---------------+---------------:
+      | x=0,y=2,idx=4 | x=1,y=2,idx=6 |
+      :---------------+---------------:
+      | x=0,y=3,idx=5 | x=1,y=3,idx=7 |
+      '---------------'---------------'
+      */
+      const int idx64x32 = (x << 1) + (y % 2) + ((y >> 1) << 2);
+      force_skip_low_temp_var = variance_low[9 + idx64x32];
+      break;
+    case BLOCK_32X64:
+      x = (mi_col & 0x1F) >> 3;
+      y = (mi_row & 0x1F) >> 4;
+      const int idx32x64 = (y << 2) + x;
+      force_skip_low_temp_var = variance_low[17 + idx32x64];
+      break;
+    case BLOCK_32X32:
+      force_skip_low_temp_var = variance_low[25 + (idx64 << 2) + idx32];
+      break;
+    case BLOCK_32X16:
+    case BLOCK_16X32:
+    case BLOCK_16X16:
+      force_skip_low_temp_var =
+          variance_low[41 + (idx64 << 4) + (idx32 << 2) + idx16];
+      break;
+    default: break;
+  }
+  return force_skip_low_temp_var;
 }
 
 void av1_set_variance_partition_thresholds(AV1_COMP *cpi, int q,
@@ -869,10 +992,13 @@ static void setup_planes(AV1_COMP *cpi, MACROBLOCK *x, unsigned int *y_sad,
         cpi->sf.rt_sf.nonrd_prune_ref_frame_search;
   }
 
-  set_ref_ptrs(cm, xd, mi->ref_frame[0], mi->ref_frame[1]);
-  av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL,
-                                cm->seq_params->sb_size, AOM_PLANE_Y,
-                                AOM_PLANE_Y);
+  // Only calculate the predictor for non-zero MV.
+  if (mi->mv[0].as_int != 0) {
+    set_ref_ptrs(cm, xd, mi->ref_frame[0], mi->ref_frame[1]);
+    av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL,
+                                  cm->seq_params->sb_size, AOM_PLANE_Y,
+                                  AOM_PLANE_Y);
+  }
 }
 
 int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
@@ -933,9 +1059,9 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
   const int segment_id = xd->mi[0]->segment_id;
 
   if (cpi->oxcf.q_cfg.aq_mode == CYCLIC_REFRESH_AQ && cm->seg.enabled &&
-      cyclic_refresh_segment_id_boosted(segment_id) &&
-      cpi->sf.rt_sf.use_nonrd_pick_mode) {
-    int q = av1_get_qindex(&cm->seg, segment_id, cm->quant_params.base_qindex);
+      cyclic_refresh_segment_id_boosted(segment_id)) {
+    const int q =
+        av1_get_qindex(&cm->seg, segment_id, cm->quant_params.base_qindex);
     set_vbp_thresholds(cpi, thresholds, q, x->content_state_sb.low_sumdiff,
                        x->content_state_sb.source_sad, 1);
   } else {
@@ -974,8 +1100,16 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
   if (!is_key_frame) {
     setup_planes(cpi, x, &y_sad, &y_sad_g, &ref_frame_partition, mi_row,
                  mi_col);
-    d = xd->plane[0].dst.buf;
-    dp = xd->plane[0].dst.stride;
+
+    MB_MODE_INFO *mi = xd->mi[0];
+    // Use reference SB directly for zero mv.
+    if (mi->mv[0].as_int != 0) {
+      d = xd->plane[0].dst.buf;
+      dp = xd->plane[0].dst.stride;
+    } else {
+      d = xd->plane[0].pre[0].buf;
+      dp = xd->plane[0].pre[0].stride;
+    }
   } else {
     d = AV1_VAR_OFFS;
     dp = 0;
@@ -1062,8 +1196,7 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
           (max_var_32x32[m] - min_var_32x32[m]) > 3 * (thresholds[1] >> 3) &&
           max_var_32x32[m] > thresholds[1] >> 1 &&
           (noise_level >= kMedium || cpi->ppi->use_svc ||
-           cpi->sf.rt_sf.force_large_partition_blocks ||
-           !cpi->sf.rt_sf.use_nonrd_pick_mode)) {
+           cpi->sf.rt_sf.force_large_partition_blocks)) {
         force_split[1 + m] = 1;
         force_split[0] = 1;
       }

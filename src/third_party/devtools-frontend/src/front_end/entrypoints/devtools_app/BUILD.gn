@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
-import("../../../third_party/typescript/typescript.gni")
 import("../visibility.gni")
 
-devtools_entrypoint("devtools_app-meta-files") {
-  entrypoint = "devtools_app-meta-files.ts"
+devtools_entrypoint("entrypoint") {
+  entrypoint = "devtools_app.ts"
 
   deps = [
     "../../entrypoints/inspector_main:meta",
@@ -18,7 +17,6 @@ devtools_entrypoint("devtools_app-meta-files") {
     "../../panels/developer_resources:meta",
     "../../panels/elements:meta",
     "../../panels/emulation:meta",
-    "../../panels/help:meta",
     "../../panels/issues:meta",
     "../../panels/layer_viewer:meta",
     "../../panels/layers:meta",
@@ -32,20 +30,15 @@ devtools_entrypoint("devtools_app-meta-files") {
     "../../panels/timeline:meta",
     "../../panels/web_audio:meta",
     "../../panels/webauthn:meta",
-  ]
-
-  visibility = [ ":*" ]
-
-  visibility += devtools_entrypoints_visibility
-}
-
-ts_library("devtools_app") {
-  no_emit = true
-  sources = [ "devtools_app.js" ]
-
-  deps = [
-    ":devtools_app-meta-files",
-    "../../entrypoints/startup:bundle",
+    "../main:bundle",
     "../shell",
   ]
+
+  visibility = [
+    "../../:*",
+    "../../legacy_test_runner:*",
+    "../inspector:*",
+  ]
+
+  visibility += devtools_entrypoints_visibility
 }

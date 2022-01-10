@@ -56,28 +56,24 @@ typedef struct ChromaNRContext {
     int (*filter_slice)(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs);
 } ChromaNRContext;
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_YUV444P,
-        AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUVA444P,
-        AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P, AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ411P,
-        AV_PIX_FMT_YUV420P9,   AV_PIX_FMT_YUV422P9,   AV_PIX_FMT_YUV444P9,
-        AV_PIX_FMT_YUV420P10,  AV_PIX_FMT_YUV422P10,  AV_PIX_FMT_YUV440P10, AV_PIX_FMT_YUV444P10,
-        AV_PIX_FMT_YUV444P12,  AV_PIX_FMT_YUV422P12,  AV_PIX_FMT_YUV440P12, AV_PIX_FMT_YUV420P12,
-        AV_PIX_FMT_YUV444P14,  AV_PIX_FMT_YUV422P14,  AV_PIX_FMT_YUV420P14,
-        AV_PIX_FMT_YUV420P16,  AV_PIX_FMT_YUV422P16,  AV_PIX_FMT_YUV444P16,
-        AV_PIX_FMT_YUVA420P9,  AV_PIX_FMT_YUVA422P9,  AV_PIX_FMT_YUVA444P9,
-        AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA444P10,
-        AV_PIX_FMT_YUVA422P12, AV_PIX_FMT_YUVA444P12,
-        AV_PIX_FMT_YUVA420P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA444P16,
-        AV_PIX_FMT_NONE
-    };
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUVA444P,
+    AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P, AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ411P,
+    AV_PIX_FMT_YUV420P9,   AV_PIX_FMT_YUV422P9,   AV_PIX_FMT_YUV444P9,
+    AV_PIX_FMT_YUV420P10,  AV_PIX_FMT_YUV422P10,  AV_PIX_FMT_YUV440P10, AV_PIX_FMT_YUV444P10,
+    AV_PIX_FMT_YUV444P12,  AV_PIX_FMT_YUV422P12,  AV_PIX_FMT_YUV440P12, AV_PIX_FMT_YUV420P12,
+    AV_PIX_FMT_YUV444P14,  AV_PIX_FMT_YUV422P14,  AV_PIX_FMT_YUV420P14,
+    AV_PIX_FMT_YUV420P16,  AV_PIX_FMT_YUV422P16,  AV_PIX_FMT_YUV444P16,
+    AV_PIX_FMT_YUVA420P9,  AV_PIX_FMT_YUVA422P9,  AV_PIX_FMT_YUVA444P9,
+    AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA444P10,
+    AV_PIX_FMT_YUVA422P12, AV_PIX_FMT_YUVA444P12,
+    AV_PIX_FMT_YUVA420P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA444P16,
+    AV_PIX_FMT_NONE
+};
 
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
-
-#define SQR(x) ((x)*(x))
+#define MANHATTAN_DISTANCE(x, y, z) ((x) + (y) + (z))
+#define EUCLIDEAN_DISTANCE(x, y, z) (sqrtf((x)*(x) + (y)*(y) + (z)*(z)))
 
 #define FILTER_FUNC(distance, name, ctype, type, fun)                                    \
 static int distance ## _slice##name(AVFilterContext *ctx, void *arg,                     \
@@ -141,19 +137,22 @@ static int distance ## _slice##name(AVFilterContext *ctx, void *arg,            
             int sv = cv;                                                                 \
             int cn = 1;                                                                  \
                                                                                          \
-            for (int yy = FFMAX(0, y - sizeh); yy < FFMIN(y + sizeh, h); yy += steph) {           \
+            for (int yy = FFMAX(0, y - sizeh); yy <= FFMIN(y + sizeh, h - 1); yy += steph) {      \
                 const type *in_yptr = (const type *)(in->data[0] + yy * chroma_h * in_ylinesize); \
                 const type *in_uptr = (const type *)(in->data[1] + yy * in_ulinesize);            \
                 const type *in_vptr = (const type *)(in->data[2] + yy * in_vlinesize);            \
                                                                                                   \
-                for (int xx = FFMAX(0, x - sizew); xx < FFMIN(x + sizew, w); xx += stepw) {       \
+                for (int xx = FFMAX(0, x - sizew); xx <= FFMIN(x + sizew, w - 1); xx += stepw) {  \
                     const ctype Y = in_yptr[xx * chroma_w];                            \
                     const ctype U = in_uptr[xx];                                       \
                     const ctype V = in_vptr[xx];                                       \
+                    const ctype cyY = FFABS(cy - Y);                                   \
+                    const ctype cuU = FFABS(cu - U);                                   \
+                    const ctype cvV = FFABS(cv - V);                                   \
                                                                                        \
-                    if (fun(cu - U) + fun(cv - V) + fun(cy - Y) < thres &&             \
-                        fun(cu - U) < thres_u && fun(cv - V) < thres_v &&              \
-                        fun(cy - Y) < thres_y &&                                       \
+                    if (fun(cyY, cuU, cvV) < thres &&                                  \
+                        cuU < thres_u && cvV < thres_v &&                              \
+                        cyY < thres_y &&                                               \
                         xx != x && yy != y) {                                          \
                         su += U;                                                       \
                         sv += V;                                                       \
@@ -173,11 +172,11 @@ static int distance ## _slice##name(AVFilterContext *ctx, void *arg,            
     return 0;                                                                          \
 }
 
-FILTER_FUNC(manhattan, 8,  int, uint8_t, FFABS)
-FILTER_FUNC(manhattan, 16, int, uint16_t, FFABS)
+FILTER_FUNC(manhattan, 8,  int, uint8_t, MANHATTAN_DISTANCE)
+FILTER_FUNC(manhattan, 16, int, uint16_t, MANHATTAN_DISTANCE)
 
-FILTER_FUNC(euclidean, 8,  int, uint8_t, SQR)
-FILTER_FUNC(euclidean, 16, int64_t, uint16_t, SQR)
+FILTER_FUNC(euclidean, 8,  int, uint8_t, EUCLIDEAN_DISTANCE)
+FILTER_FUNC(euclidean, 16, int64_t, uint16_t, EUCLIDEAN_DISTANCE)
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
@@ -243,14 +242,14 @@ static int config_input(AVFilterLink *inlink)
 #define VF AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_FILTERING_PARAM | AV_OPT_FLAG_RUNTIME_PARAM
 
 static const AVOption chromanr_options[] = {
-    { "thres", "set y+u+v threshold", OFFSET(threshold), AV_OPT_TYPE_FLOAT, {.dbl=30}, 1,  5000, VF },
+    { "thres", "set y+u+v threshold", OFFSET(threshold), AV_OPT_TYPE_FLOAT, {.dbl=30}, 1,   200, VF },
     { "sizew", "set horizontal size", OFFSET(sizew),     AV_OPT_TYPE_INT,   {.i64=5},  1,   100, VF },
     { "sizeh", "set vertical size",   OFFSET(sizeh),     AV_OPT_TYPE_INT,   {.i64=5},  1,   100, VF },
     { "stepw", "set horizontal step", OFFSET(stepw),     AV_OPT_TYPE_INT,   {.i64=1},  1,    50, VF },
     { "steph", "set vertical step",   OFFSET(steph),     AV_OPT_TYPE_INT,   {.i64=1},  1,    50, VF },
-    { "threy", "set y threshold",   OFFSET(threshold_y), AV_OPT_TYPE_FLOAT, {.dbl=5000},1, 5000, VF },
-    { "threu", "set u threshold",   OFFSET(threshold_u), AV_OPT_TYPE_FLOAT, {.dbl=5000},1, 5000, VF },
-    { "threv", "set v threshold",   OFFSET(threshold_v), AV_OPT_TYPE_FLOAT, {.dbl=5000},1, 5000, VF },
+    { "threy", "set y threshold",   OFFSET(threshold_y), AV_OPT_TYPE_FLOAT, {.dbl=200},1,   200, VF },
+    { "threu", "set u threshold",   OFFSET(threshold_u), AV_OPT_TYPE_FLOAT, {.dbl=200},1,   200, VF },
+    { "threv", "set v threshold",   OFFSET(threshold_v), AV_OPT_TYPE_FLOAT, {.dbl=200},1,   200, VF },
     { "distance", "set distance type", OFFSET(distance), AV_OPT_TYPE_INT, {.i64=0}, 0, 1, VF, "distance" },
     {   "manhattan", "", 0, AV_OPT_TYPE_CONST, {.i64=0}, 0, 0, VF, "distance" },
     {   "euclidean", "", 0, AV_OPT_TYPE_CONST, {.i64=1}, 0, 0, VF, "distance" },
@@ -280,9 +279,9 @@ const AVFilter ff_vf_chromanr = {
     .description   = NULL_IF_CONFIG_SMALL("Reduce chrominance noise."),
     .priv_size     = sizeof(ChromaNRContext),
     .priv_class    = &chromanr_class,
-    .query_formats = query_formats,
     FILTER_OUTPUTS(outputs),
     FILTER_INPUTS(inputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };

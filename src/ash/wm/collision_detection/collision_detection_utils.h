@@ -14,7 +14,7 @@ namespace ash {
 
 // The inset into the work area for a window's resting position. Visible for
 // testing.
-const static int kCollisionWindowWorkAreaInsetsDp = 8;
+constexpr int kCollisionWindowWorkAreaInsetsDp = 8;
 
 // Provides utility functions to compute resting positions for windows which
 // wish to avoid other system windows, for example, the PIP and the Automatic
@@ -44,7 +44,8 @@ class ASH_EXPORT CollisionDetectionUtils {
     kSwitchAccessMenu = 1,
     kAutomaticClicksMenu = 2,
     kAutomaticClicksScrollMenu = 3,
-    kDefault = 4,
+    kDictationBubble = 4,
+    kDefault = 5,
   };
 
   CollisionDetectionUtils() = delete;

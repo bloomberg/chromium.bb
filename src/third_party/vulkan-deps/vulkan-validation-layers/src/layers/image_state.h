@@ -188,7 +188,7 @@ class IMAGE_STATE : public BINDABLE {
   protected:
     void AddAliasingImage(IMAGE_STATE *bound_image);
     void Unlink();
-    void NotifyInvalidate(const LogObjectList &invalid_handles, bool unlink) override;
+    void NotifyInvalidate(const BASE_NODE::NodeList &invalid_nodes, bool unlink) override;
 };
 
 // State for VkImageView objects.
@@ -203,6 +203,7 @@ class IMAGE_VIEW_STATE : public BASE_NODE {
     const unsigned descriptor_format_bits;
     const VkSamplerYcbcrConversion samplerConversion;  // Handle of the ycbcr sampler conversion the image was created with, if any
     const VkFilterCubicImageViewImageFormatPropertiesEXT filter_cubic_props;
+    const float min_lod;
     const VkFormatFeatureFlags format_features;
     const VkImageUsageFlags inherited_usage;  // from spec #resources-image-inherited-usage
     std::shared_ptr<IMAGE_STATE> image_state;
@@ -268,10 +269,10 @@ class SWAPCHAIN_NODE : public BASE_NODE {
 
     void Destroy() override;
 
-    const BindingsType &ObjectBindings() const { return parent_nodes_; }
+    const NodeSet &ObjectBindings() const { return parent_nodes_; }
 
   protected:
-    void NotifyInvalidate(const LogObjectList &invalid_handles, bool unlink) override;
+    void NotifyInvalidate(const BASE_NODE::NodeList &invalid_nodes, bool unlink) override;
 };
 
 struct GpuQueue {

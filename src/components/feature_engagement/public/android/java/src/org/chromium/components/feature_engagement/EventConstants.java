@@ -268,8 +268,7 @@ public final class EventConstants {
             "start_surface_tab_switcher_home_button_clicked";
 
     /** Shared Highlighting button event */
-    public static final String IPH_SHARED_HIGHLIGHTING_BUTTON_CLICKED =
-            "iph_shared_highlighting_button_clicked";
+    public static final String IPH_SHARED_HIGHLIGHTING_USED = "iph_shared_highlighting_used";
 
     /** Webnotes Stylize feature used from Sharing Hub */
     public static final String SHARING_HUB_WEBNOTES_STYLIZE_USED =
@@ -283,6 +282,14 @@ public final class EventConstants {
 
     /** The feed swipe refresh event. */
     public static final String FEED_SWIPE_REFRESHED = "feed_swipe_refresh_shown";
+
+    /** The option to track the price of a product was selected from the main menu. */
+    public static final String SHOPPING_LIST_PRICE_TRACK_FROM_MENU =
+            "shopping_list_track_price_from_menu";
+
+    /** A tap on the folder icon in the enhanced bookmark save flow. */
+    public static final String SHOPPING_LIST_SAVE_FLOW_FOLDER_TAP =
+            "shopping_list_save_flow_folder_tap";
 
     /**
      * Do not instantiate.

@@ -263,7 +263,7 @@ V8_WARN_UNUSED_RESULT Maybe<bool> FastAssign(
 
         PropertyDetails details = descriptors->GetDetails(i);
         if (!details.IsEnumerable()) continue;
-        if (details.kind() == kData) {
+        if (details.kind() == PropertyKind::kData) {
           if (details.location() == PropertyLocation::kDescriptor) {
             prop_value = handle(descriptors->GetStrongValue(i), isolate);
           } else {
@@ -2014,7 +2014,7 @@ V8_WARN_UNUSED_RESULT Maybe<bool> FastGetOwnValuesOrEntries(
 
       PropertyDetails details = descriptors->GetDetails(index);
       if (!details.IsEnumerable()) continue;
-      if (details.kind() == kData) {
+      if (details.kind() == PropertyKind::kData) {
         if (details.location() == PropertyLocation::kDescriptor) {
           prop_value = handle(descriptors->GetStrongValue(index), isolate);
         } else {
@@ -2372,6 +2372,8 @@ int JSObject::GetHeaderSize(InstanceType type,
       return WasmMemoryObject::kHeaderSize;
     case WASM_MODULE_OBJECT_TYPE:
       return WasmModuleObject::kHeaderSize;
+    case WASM_SUSPENDER_OBJECT_TYPE:
+      return WasmSuspenderObject::kHeaderSize;
     case WASM_TABLE_OBJECT_TYPE:
       return WasmTableObject::kHeaderSize;
     case WASM_VALUE_OBJECT_TYPE:
@@ -2908,7 +2910,7 @@ void MigrateFastToFast(Isolate* isolate, Handle<JSObject> object,
       value = isolate->factory()->uninitialized_value();
     }
     DCHECK_EQ(PropertyLocation::kField, details.location());
-    DCHECK_EQ(kData, details.kind());
+    DCHECK_EQ(PropertyKind::kData, details.kind());
     DCHECK(!index.is_inobject());  // Must be a backing store index.
     new_storage->set(index.outobject_array_index(), *value);
 
@@ -2958,13 +2960,13 @@ void MigrateFastToFast(Isolate* isolate, Handle<JSObject> object,
   for (InternalIndex i : InternalIndex::Range(old_nof)) {
     PropertyDetails details = new_descriptors->GetDetails(i);
     if (details.location() != PropertyLocation::kField) continue;
-    DCHECK_EQ(kData, details.kind());
+    DCHECK_EQ(PropertyKind::kData, details.kind());
     PropertyDetails old_details = old_descriptors->GetDetails(i);
     Representation old_representation = old_details.representation();
     Representation representation = details.representation();
     Handle<Object> value;
     if (old_details.location() == PropertyLocation::kDescriptor) {
-      if (old_details.kind() == kAccessor) {
+      if (old_details.kind() == PropertyKind::kAccessor) {
         // In case of kAccessor -> kData property reconfiguration, the property
         // must already be prepared for data of certain type.
         DCHECK(!details.representation().IsNone());
@@ -2974,7 +2976,7 @@ void MigrateFastToFast(Isolate* isolate, Handle<JSObject> object,
           value = isolate->factory()->uninitialized_value();
         }
       } else {
-        DCHECK_EQ(kData, old_details.kind());
+        DCHECK_EQ(PropertyKind::kData, old_details.kind());
         value = handle(old_descriptors->GetStrongValue(isolate, i), isolate);
         DCHECK(!old_representation.IsDouble() && !representation.IsDouble());
       }
@@ -3002,7 +3004,7 @@ void MigrateFastToFast(Isolate* isolate, Handle<JSObject> object,
   for (InternalIndex i : InternalIndex::Range(old_nof, new_nof)) {
     PropertyDetails details = new_descriptors->GetDetails(i);
     if (details.location() != PropertyLocation::kField) continue;
-    DCHECK_EQ(kData, details.kind());
+    DCHECK_EQ(PropertyKind::kData, details.kind());
     Handle<Object> value;
     if (details.representation().IsDouble()) {
       value = isolate->factory()->NewHeapNumberWithHoleNaN();
@@ -3092,7 +3094,7 @@ void MigrateFastToSlow(Isolate* isolate, Handle<JSObject> object,
     Handle<Object> value;
     if (details.location() == PropertyLocation::kField) {
       FieldIndex index = FieldIndex::ForDescriptor(isolate, *map, i);
-      if (details.kind() == kData) {
+      if (details.kind() == PropertyKind::kData) {
         value = handle(object->RawFastPropertyAt(isolate, index), isolate);
         if (details.representation().IsDouble()) {
           DCHECK(value->IsHeapNumber(isolate));
@@ -3100,7 +3102,7 @@ void MigrateFastToSlow(Isolate* isolate, Handle<JSObject> object,
           value = isolate->factory()->NewHeapNumber(old_value);
         }
       } else {
-        DCHECK_EQ(kAccessor, details.kind());
+        DCHECK_EQ(PropertyKind::kAccessor, details.kind());
         value = handle(object->RawFastPropertyAt(isolate, index), isolate);
       }
 
@@ -3558,7 +3560,7 @@ void JSObject::MigrateSlowToFast(Handle<JSObject> object,
       kind = dictionary->DetailsAt(index).kind();
     }
 
-    if (kind == kData) {
+    if (kind == PropertyKind::kData) {
       number_of_fields += 1;
     }
   }
@@ -3652,7 +3654,7 @@ void JSObject::MigrateSlowToFast(Handle<JSObject> object,
                    details.constness() == PropertyConstness::kMutable);
 
     Descriptor d;
-    if (details.kind() == kData) {
+    if (details.kind() == PropertyKind::kData) {
       // Ensure that we make constant field only when elements kind is not
       // transitionable.
       PropertyConstness constness = is_transitionable_elements_kind
@@ -3667,7 +3669,7 @@ void JSObject::MigrateSlowToFast(Handle<JSObject> object,
           // TODO(verwaest): value->OptimalRepresentation();
           Representation::Tagged(), MaybeObjectHandle(FieldType::Any(isolate)));
     } else {
-      DCHECK_EQ(kAccessor, details.kind());
+      DCHECK_EQ(PropertyKind::kAccessor, details.kind());
       d = Descriptor::AccessorConstant(key, handle(value, isolate),
                                        details.attributes());
     }
@@ -3861,7 +3863,8 @@ bool TestDictionaryPropertiesIntegrityLevel(Dictionary dict,
     if (key.FilterKey(ALL_PROPERTIES)) continue;
     PropertyDetails details = dict.DetailsAt(i);
     if (details.IsConfigurable()) return false;
-    if (level == FROZEN && details.kind() == kData && !details.IsReadOnly()) {
+    if (level == FROZEN && details.kind() == PropertyKind::kData &&
+        !details.IsReadOnly()) {
       return false;
     }
   }
@@ -3878,7 +3881,8 @@ bool TestFastPropertiesIntegrityLevel(Map map, PropertyAttributes level) {
     if (descriptors.GetKey(i).IsPrivate()) continue;
     PropertyDetails details = descriptors.GetDetails(i);
     if (details.IsConfigurable()) return false;
-    if (level == FROZEN && details.kind() == kData && !details.IsReadOnly()) {
+    if (level == FROZEN && details.kind() == PropertyKind::kData &&
+        !details.IsReadOnly()) {
       return false;
     }
   }
@@ -4040,7 +4044,7 @@ void JSObject::ApplyAttributesToDictionary(
     PropertyDetails details = dictionary->DetailsAt(i);
     int attrs = attributes;
     // READ_ONLY is an invalid attribute for JS setters/getters.
-    if ((attributes & READ_ONLY) && details.kind() == kAccessor) {
+    if ((attributes & READ_ONLY) && details.kind() == PropertyKind::kAccessor) {
       Object v = dictionary->ValueAt(i);
       if (v.IsAccessorPair()) attrs &= ~READ_ONLY;
     }
@@ -4473,7 +4477,7 @@ Object JSObject::SlowReverseLookup(Object value) {
     for (InternalIndex i : map().IterateOwnDescriptors()) {
       PropertyDetails details = descs.GetDetails(i);
       if (details.location() == PropertyLocation::kField) {
-        DCHECK_EQ(kData, details.kind());
+        DCHECK_EQ(PropertyKind::kData, details.kind());
         FieldIndex field_index = FieldIndex::ForDescriptor(map(), i);
         Object property = RawFastPropertyAt(field_index);
         if (field_index.is_double()) {
@@ -4486,7 +4490,7 @@ Object JSObject::SlowReverseLookup(Object value) {
         }
       } else {
         DCHECK_EQ(PropertyLocation::kDescriptor, details.location());
-        if (details.kind() == kData) {
+        if (details.kind() == PropertyKind::kData) {
           if (descs.GetStrongValue(i) == value) {
             return descs.GetKey(i);
           }
@@ -4739,8 +4743,10 @@ void InvalidateOnePrototypeValidityCellInternal(Map map) {
   // of the validity cell is not used. Therefore, we always trigger the de-opt
   // here, even if the cell was already invalid.
   if (V8_DICT_PROPERTY_CONST_TRACKING_BOOL && map.is_dictionary_map()) {
+    // TODO(11527): pass Isolate as an argument.
+    Isolate* isolate = GetIsolateFromWritableObject(map);
     map.dependent_code().DeoptimizeDependentCodeGroup(
-        DependentCode::kPrototypeCheckGroup);
+        isolate, DependentCode::kPrototypeCheckGroup);
   }
 }
 
@@ -5441,6 +5447,9 @@ void JSMessageObject::EnsureSourcePositionsAvailable(
     DCHECK_GE(message->bytecode_offset().value(), kFunctionEntryBytecodeOffset);
     Handle<SharedFunctionInfo> shared_info(
         SharedFunctionInfo::cast(message->shared_info()), isolate);
+    IsCompiledScope is_compiled_scope;
+    SharedFunctionInfo::EnsureBytecodeArrayAvailable(
+        isolate, shared_info, &is_compiled_scope, CreateSourcePositions::kYes);
     SharedFunctionInfo::EnsureSourcePositionsAvailable(isolate, shared_info);
     DCHECK(shared_info->HasBytecodeArray());
     int position = shared_info->abstract_code(isolate).SourcePosition(

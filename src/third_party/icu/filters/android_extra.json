@@ -795,7 +795,10 @@
         "-/calendar/*",
         "+/calendar/default",
         "+/calendar/gregorian",
-        "+/calendar/generic"
+        "+/calendar/generic",
+        "-/calendar/default/DateTimeSkeletons",
+        "-/calendar/gregorian/DateTimeSkeletons",
+        "-/calendar/generic/DateTimeSkeletons"
       ]
     },
 // Based on

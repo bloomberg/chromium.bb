@@ -60,8 +60,8 @@ Queries are used to:
 - Identify a subtree of a suite (by identifying the root node of that subtree).
 - Identify individual cases.
 - Represent the list of tests that a test runner (standalone, wpt, or cmdline) should run.
-- Identify subtrees which should not be "collapsed" during WPT `cts.html` generation,
-  so that that cts.html "variants" can have individual test expectations
+- Identify subtrees which should not be "collapsed" during WPT `cts.https.html` generation,
+  so that that cts.https.html "variants" can have individual test expectations
   (i.e. marked as "expected to fail", "skip", etc.).
 
 There are four types of `TestQuery`:

@@ -13,39 +13,21 @@ group("front_end") {
     ":embedder-scripts",
     ":html_entrypoints",
     ":integration_test_runner",
-    ":legacy_css",
     ":legacy_entrypoints",
     "Images",
     "entrypoints/device_mode_emulation_frame",
-    "entrypoints/devtools_app",
+    "entrypoints/devtools_app:entrypoint",
     "entrypoints/formatter_worker:worker_entrypoint",
     "entrypoints/heap_snapshot_worker:worker_entrypoint",
-    "entrypoints/inspector",
-    "entrypoints/js_app",
+    "entrypoints/inspector:entrypoint",
+    "entrypoints/js_app:entrypoint",
     "entrypoints/lighthouse_worker:bundle",
-    "entrypoints/ndb_app",
-    "entrypoints/node_app",
+    "entrypoints/ndb_app:entrypoint",
+    "entrypoints/node_app:entrypoint",
     "entrypoints/shell",
     "entrypoints/wasmparser_worker:worker_entrypoint",
-    "entrypoints/worker_app",
+    "entrypoints/worker_app:entrypoint",
     "legacy_test_runner",
-  ]
-}
-
-group("legacy_css") {
-  public_deps = [
-    "entrypoints/inspector_main:legacy_css",
-    "models/persistence:legacy_css",
-    "panels/application:legacy_css",
-    "panels/elements:legacy_css",
-    "panels/emulation:legacy_css",
-    "panels/help:legacy_css",
-    "panels/mobile_throttling:legacy_css",
-    "panels/protocol_monitor:legacy_css",
-    "third_party/codemirror:legacy_css",
-    "ui/legacy:legacy_css",
-    "ui/legacy/components/data_grid:legacy_css",
-    "ui/legacy/components/text_editor:legacy_css",
   ]
 }
 
@@ -98,7 +80,6 @@ group("legacy_entrypoints") {
     "ui/legacy/components/perf_ui:legacy",
     "ui/legacy/components/quick_open:legacy",
     "ui/legacy/components/source_frame:legacy",
-    "ui/legacy/components/text_editor:legacy",
     "ui/legacy/components/utils:legacy",
   ]
 }

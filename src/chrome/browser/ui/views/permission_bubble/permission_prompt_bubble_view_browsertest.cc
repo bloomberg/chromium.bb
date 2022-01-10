@@ -30,6 +30,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/permissions/permission_request_manager_test_api.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_ui_selector.h"
@@ -160,7 +161,7 @@ class PermissionPromptBubbleViewBrowserTest
     std::string protocol = "mailto";
     ProtocolHandler handler =
         ProtocolHandler::CreateProtocolHandler(protocol, GetTestUrl());
-    ProtocolHandlerRegistry* registry =
+    custom_handlers::ProtocolHandlerRegistry* registry =
         ProtocolHandlerRegistryFactory::GetForBrowserContext(
             browser()->profile());
     // Deleted in RegisterProtocolHandlerPermissionRequest::RequestFinished().
@@ -238,9 +239,8 @@ class PermissionPromptBubbleViewBrowserTest
   std::unique_ptr<test::PermissionRequestManagerTestApi> test_api_;
 };
 
-// TODO(crbug.com/1266750): Add verification for MAC.
 IN_PROC_BROWSER_TEST_P(PermissionPromptBubbleViewBrowserTest,
-                       DISABLED_AlertAccessibleEvent) {
+                       AlertAccessibleEvent) {
   views::test::AXEventCounter counter(views::AXEventManager::Get());
   EXPECT_EQ(0, counter.GetCount(ax::mojom::Event::kAlert));
   ShowUi("geolocation");

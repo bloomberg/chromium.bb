@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding=utf-8
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -23,8 +23,8 @@ class FixEncodingTest(unittest.TestCase):
 
   def test_code_page(self):
     # Make sure printing garbage won't throw.
-    print(self.text.encode() + '\xff')
-    print(self.text.encode() + '\xff', file=sys.stderr)
+    print(self.text.encode() + b'\xff')
+    print(self.text.encode() + b'\xff', file=sys.stderr)
 
   def test_utf8(self):
     # Make sure printing utf-8 works.
@@ -58,5 +58,5 @@ class FixEncodingTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  assert fix_encoding.fix_encoding()
+  fix_encoding.fix_encoding()
   unittest.main()

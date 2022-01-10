@@ -14,6 +14,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "quic/core/crypto/null_encrypter.h"
+#include "quic/core/crypto/quic_client_session_cache.h"
 #include "quic/core/http/http_constants.h"
 #include "quic/core/http/quic_spdy_client_stream.h"
 #include "quic/core/http/web_transport_http3.h"
@@ -46,6 +47,7 @@
 #include "quic/test_tools/qpack/qpack_encoder_test_utils.h"
 #include "quic/test_tools/qpack/qpack_test_utils.h"
 #include "quic/test_tools/quic_client_peer.h"
+#include "quic/test_tools/quic_client_session_cache_peer.h"
 #include "quic/test_tools/quic_config_peer.h"
 #include "quic/test_tools/quic_connection_peer.h"
 #include "quic/test_tools/quic_dispatcher_peer.h"
@@ -64,7 +66,6 @@
 #include "quic/test_tools/quic_test_utils.h"
 #include "quic/test_tools/quic_transport_test_tools.h"
 #include "quic/test_tools/server_thread.h"
-#include "quic/test_tools/simple_session_cache.h"
 #include "quic/tools/quic_backend_response.h"
 #include "quic/tools/quic_client.h"
 #include "quic/tools/quic_memory_cache_backend.h"
@@ -220,7 +221,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
         new QuicTestClient(server_address_, server_hostname_, client_config_,
                            client_supported_versions_,
                            crypto_test_utils::ProofVerifierForTesting(),
-                           std::make_unique<SimpleSessionCache>());
+                           std::make_unique<QuicClientSessionCache>());
     client->SetUserAgentID(kTestUserAgentId);
     client->UseWriter(writer);
     if (!pre_shared_key_client_.empty()) {
@@ -1650,7 +1651,7 @@ TEST_P(EndToEndTest, AddressToken) {
 
   // The 0-RTT handshake should succeed.
   client_->Connect();
-  EXPECT_TRUE(client_->client()->WaitForOneRttKeysAvailable());
+  EXPECT_TRUE(client_->client()->WaitForHandshakeConfirmed());
   ASSERT_TRUE(client_->client()->connected());
   SendSynchronousFooRequestAndCheckResponse();
 
@@ -1676,7 +1677,7 @@ TEST_P(EndToEndTest, AddressToken) {
             server_session->GetCryptoStream())
             ->PreviousCachedNetworkParams();
     if (GetQuicReloadableFlag(
-            quic_add_cached_network_parameters_to_address_token)) {
+            quic_add_cached_network_parameters_to_address_token2)) {
       ASSERT_NE(server_received_network_params, nullptr);
       // QuicSentPacketManager::SetInitialRtt clamps the initial_rtt to between
       // [min_initial_rtt, max_initial_rtt].
@@ -1702,10 +1703,65 @@ TEST_P(EndToEndTest, AddressToken) {
   server_thread_->Resume();
 
   client_->Disconnect();
+
+  // Regression test for b/206087883.
+  // Mock server crash.
+  StopServer();
+
+  // The handshake fails due to idle timeout.
+  client_->Connect();
+  ASSERT_FALSE(client_->client()->WaitForOneRttKeysAvailable());
+  client_->WaitForWriteToFlush();
+  client_->WaitForResponse();
+  ASSERT_FALSE(client_->client()->connected());
+  EXPECT_THAT(client_->connection_error(), IsError(QUIC_NETWORK_IDLE_TIMEOUT));
+
+  // Server restarts.
+  server_writer_ = new PacketDroppingTestWriter();
+  StartServer();
+
+  // Client re-connect.
+  client_->Connect();
+  ASSERT_TRUE(client_->client()->WaitForHandshakeConfirmed());
+  client_->WaitForWriteToFlush();
+  client_->WaitForResponse();
+  ASSERT_TRUE(client_->client()->connected());
+  client_session = GetClientSession();
+  ASSERT_TRUE(client_session);
+  EXPECT_FALSE(client_session->EarlyDataAccepted());
+  EXPECT_FALSE(client_->client()->EarlyDataAccepted());
+  server_thread_->Pause();
+  server_session = GetServerSession();
+  server_connection = GetServerConnection();
+  if (!GetQuicReloadableFlag(quic_tls_use_token_in_session_cache)) {
+    // Address token is reused.
+    if (server_session != nullptr && server_connection != nullptr) {
+      // Verify address is validated via validating token received in INITIAL
+      // packet.
+      EXPECT_FALSE(server_connection->GetStats()
+                       .address_validated_via_decrypting_packet);
+      EXPECT_TRUE(server_connection->GetStats().address_validated_via_token);
+    } else {
+      ADD_FAILURE() << "Missing server connection";
+    }
+  } else {
+    // Verify address token is only used once.
+    if (server_session != nullptr && server_connection != nullptr) {
+      // Verify address is validated via decrypting packet.
+      EXPECT_TRUE(server_connection->GetStats()
+                      .address_validated_via_decrypting_packet);
+      EXPECT_FALSE(server_connection->GetStats().address_validated_via_token);
+    } else {
+      ADD_FAILURE() << "Missing server connection";
+    }
+  }
+  server_thread_->Resume();
+
+  client_->Disconnect();
 }
 
 TEST_P(EndToEndTest, AddressTokenRefreshedByServer) {
-  SetQuicReloadableFlag(quic_add_cached_network_parameters_to_address_token,
+  SetQuicReloadableFlag(quic_add_cached_network_parameters_to_address_token2,
                         true);
   ASSERT_TRUE(Initialize());
   if (!version_.HasIetfQuicFrames()) {
@@ -1721,11 +1777,19 @@ TEST_P(EndToEndTest, AddressTokenRefreshedByServer) {
 
   client_->Disconnect();
 
-  std::string old_address_token =
-      client_crypto_config->LookupOrCreate(server_id)->source_address_token();
+  QuicClientSessionCache* session_cache = static_cast<QuicClientSessionCache*>(
+      client_crypto_config->mutable_session_cache());
+  std::string old_address_token;
+  if (GetQuicReloadableFlag(quic_tls_use_token_in_session_cache)) {
+    old_address_token =
+        QuicClientSessionCachePeer::GetToken(session_cache, server_id);
+  } else {
+    old_address_token =
+        client_crypto_config->LookupOrCreate(server_id)->source_address_token();
+  }
   ASSERT_TRUE(!old_address_token.empty());
 
-  SetQuicReloadableFlag(quic_add_cached_network_parameters_to_address_token,
+  SetQuicReloadableFlag(quic_add_cached_network_parameters_to_address_token2,
                         false);
 
   // The 0-RTT handshake should succeed.
@@ -1750,8 +1814,14 @@ TEST_P(EndToEndTest, AddressTokenRefreshedByServer) {
 
   client_->Disconnect();
 
-  std::string new_address_token =
-      client_crypto_config->LookupOrCreate(server_id)->source_address_token();
+  std::string new_address_token;
+  if (GetQuicReloadableFlag(quic_tls_use_token_in_session_cache)) {
+    new_address_token =
+        QuicClientSessionCachePeer::GetToken(session_cache, server_id);
+  } else {
+    new_address_token =
+        client_crypto_config->LookupOrCreate(server_id)->source_address_token();
+  }
   ASSERT_TRUE(!new_address_token.empty());
   ASSERT_NE(new_address_token, old_address_token);
 }
@@ -1772,8 +1842,16 @@ TEST_P(EndToEndTest, AddressTokenNotReusedByClient) {
 
   client_->Disconnect();
 
-  std::string old_address_token =
-      client_crypto_config->LookupOrCreate(server_id)->source_address_token();
+  QuicClientSessionCache* session_cache = static_cast<QuicClientSessionCache*>(
+      client_crypto_config->mutable_session_cache());
+  std::string old_address_token;
+  if (GetQuicReloadableFlag(quic_tls_use_token_in_session_cache)) {
+    old_address_token =
+        QuicClientSessionCachePeer::GetToken(session_cache, server_id);
+  } else {
+    old_address_token =
+        client_crypto_config->LookupOrCreate(server_id)->source_address_token();
+  }
   ASSERT_TRUE(!old_address_token.empty());
 
   // Pause the server thread again to blackhole packets from client.
@@ -1782,10 +1860,17 @@ TEST_P(EndToEndTest, AddressTokenNotReusedByClient) {
   EXPECT_FALSE(client_->client()->WaitForOneRttKeysAvailable());
   EXPECT_FALSE(client_->client()->connected());
 
-  std::string new_address_token =
-      client_crypto_config->LookupOrCreate(server_id)->source_address_token();
-  // TODO(b/206087883): This currently fails, fix the client and uncomment it.
-  // ASSERT_TRUE(new_address_token.empty());
+  std::string new_address_token;
+  if (GetQuicReloadableFlag(quic_tls_use_token_in_session_cache)) {
+    new_address_token =
+        QuicClientSessionCachePeer::GetToken(session_cache, server_id);
+    // Verify address token gets cleared.
+    ASSERT_TRUE(new_address_token.empty());
+  } else {
+    new_address_token =
+        client_crypto_config->LookupOrCreate(server_id)->source_address_token();
+    ASSERT_FALSE(new_address_token.empty());
+  }
   server_thread_->Resume();
 }
 
@@ -4142,7 +4227,7 @@ TEST_P(EndToEndTest, VersionNegotiationDowngradeAttackIsDetected) {
   client_.reset(new QuicTestClient(server_address_, server_hostname_,
                                    client_config_, client_supported_versions_,
                                    crypto_test_utils::ProofVerifierForTesting(),
-                                   std::make_unique<SimpleSessionCache>()));
+                                   std::make_unique<QuicClientSessionCache>()));
   delete client_writer_;
   client_writer_ = new DowngradePacketWriter(target_version, downgrade_versions,
                                              client_.get(), server_writer_,
@@ -6327,7 +6412,7 @@ TEST_P(EndToEndTest, TlsResumptionDisabledOnTheFly) {
     client_->Disconnect();
 
     if (early_data_reason != ssl_early_data_session_not_resumed) {
-      EXPECT_EQ(early_data_reason, ssl_early_data_no_session_offered);
+      EXPECT_EQ(early_data_reason, ssl_early_data_unsupported_for_session);
       return;
     }
   }

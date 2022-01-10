@@ -89,6 +89,14 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
                                       ThreadData *td, MACROBLOCK *x, int mi_row,
                                       int mi_col);
 
+// Read out the block's temporal variance for 64x64 SB case.
+int av1_get_force_skip_low_temp_var_small_sb(const uint8_t *variance_low,
+                                             int mi_row, int mi_col,
+                                             BLOCK_SIZE bsize);
+// Read out the block's temporal variance for 128x128 SB case.
+int av1_get_force_skip_low_temp_var(const uint8_t *variance_low, int mi_row,
+                                    int mi_col, BLOCK_SIZE bsize);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

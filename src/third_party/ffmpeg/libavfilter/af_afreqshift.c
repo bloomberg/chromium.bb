@@ -49,23 +49,9 @@ typedef struct AFreqShift {
                            AVFrame *in, AVFrame *out);
 } AFreqShift;
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVSampleFormat sample_fmts[] = {
-        AV_SAMPLE_FMT_FLTP,
-        AV_SAMPLE_FMT_DBLP,
-        AV_SAMPLE_FMT_NONE
-    };
-    int ret = ff_set_common_formats_from_list(ctx, sample_fmts);
-    if (ret < 0)
-        return ret;
-
-    ret = ff_set_common_all_channel_counts(ctx);
-    if (ret < 0)
-        return ret;
-
-    return ff_set_common_all_samplerates(ctx);
-}
+static const enum AVSampleFormat sample_fmts[] = {
+    AV_SAMPLE_FMT_FLTP, AV_SAMPLE_FMT_DBLP, AV_SAMPLE_FMT_NONE
+};
 
 #define PFILTER(name, type, sin, cos, cc)                     \
 static void pfilter_channel_## name(AVFilterContext *ctx,     \
@@ -388,12 +374,12 @@ static const AVFilterPad outputs[] = {
 const AVFilter ff_af_afreqshift = {
     .name            = "afreqshift",
     .description     = NULL_IF_CONFIG_SMALL("Apply frequency shifting to input audio."),
-    .query_formats   = query_formats,
     .priv_size       = sizeof(AFreqShift),
     .priv_class      = &afreqshift_class,
     .uninit          = uninit,
     FILTER_INPUTS(inputs),
     FILTER_OUTPUTS(outputs),
+    FILTER_SAMPLEFMTS_ARRAY(sample_fmts),
     .process_command = ff_filter_process_command,
     .flags           = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC |
                        AVFILTER_FLAG_SLICE_THREADS,
@@ -411,12 +397,12 @@ AVFILTER_DEFINE_CLASS(aphaseshift);
 const AVFilter ff_af_aphaseshift = {
     .name            = "aphaseshift",
     .description     = NULL_IF_CONFIG_SMALL("Apply phase shifting to input audio."),
-    .query_formats   = query_formats,
     .priv_size       = sizeof(AFreqShift),
     .priv_class      = &aphaseshift_class,
     .uninit          = uninit,
     FILTER_INPUTS(inputs),
     FILTER_OUTPUTS(outputs),
+    FILTER_SAMPLEFMTS_ARRAY(sample_fmts),
     .process_command = ff_filter_process_command,
     .flags           = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC |
                        AVFILTER_FLAG_SLICE_THREADS,

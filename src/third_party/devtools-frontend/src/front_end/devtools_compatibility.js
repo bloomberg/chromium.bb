@@ -389,13 +389,18 @@
     ExperimentEnabledAtLaunch: 'DevTools.ExperimentEnabledAtLaunch',
     ExperimentEnabled: 'DevTools.ExperimentEnabled',
     ExperimentDisabled: 'DevTools.ExperimentDisabled',
-    CssEditorOpened: 'DevTools.CssEditorOpened',
     DeveloperResourceLoaded: 'DevTools.DeveloperResourceLoaded',
     DeveloperResourceScheme: 'DevTools.DeveloperResourceScheme',
     LinearMemoryInspectorRevealedFrom: 'DevTools.LinearMemoryInspector.RevealedFrom',
     LinearMemoryInspectorTarget: 'DevTools.LinearMemoryInspector.Target',
     Language: 'DevTools.Language',
     ConsoleShowsCorsErrors: 'DevTools.ConsoleShowsCorsErrors',
+    RecordingEdited: 'DevTools.RecordingEdited',
+    RecordingExported: 'DevTools.RecordingExported',
+    RecordingReplayFinished: 'DevTools.RecordingReplayFinished',
+    RecordingReplayStarted: 'DevTools.RecordingReplayStarted',
+    RecordingToggled: 'DevTools.RecordingToggled',
+    SyncSetting: 'DevTools.SyncSetting',
   };
 
   /**
@@ -1485,13 +1490,6 @@
       styleRules.push('* { min-width: 0; min-height: 0; }');
     }
 
-    if (majorVersion <= 51) {
-      // Support for quirky border-image behavior (<M51), see:
-      // https://bugs.chromium.org/p/chromium/issues/detail?id=559258
-      styleRules.push('.cm-breakpoint .CodeMirror-linenumber { border-style: solid !important; }');
-      styleRules.push(
-          '.cm-breakpoint.cm-breakpoint-conditional .CodeMirror-linenumber { border-style: solid !important; }');
-    }
     if (majorVersion <= 71) {
       styleRules.push(
           '.coverage-toolbar-container, .animation-timeline-toolbar-container, .computed-properties { flex-basis: auto; }');

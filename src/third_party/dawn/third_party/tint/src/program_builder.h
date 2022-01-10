@@ -21,27 +21,30 @@
 
 #include "src/ast/alias.h"
 #include "src/ast/array.h"
-#include "src/ast/array_accessor_expression.h"
 #include "src/ast/assignment_statement.h"
 #include "src/ast/atomic.h"
 #include "src/ast/binary_expression.h"
 #include "src/ast/binding_decoration.h"
 #include "src/ast/bitcast_expression.h"
 #include "src/ast/bool.h"
-#include "src/ast/bool_literal.h"
+#include "src/ast/bool_literal_expression.h"
 #include "src/ast/break_statement.h"
 #include "src/ast/call_expression.h"
 #include "src/ast/call_statement.h"
 #include "src/ast/case_statement.h"
+#include "src/ast/continue_statement.h"
 #include "src/ast/depth_multisampled_texture.h"
 #include "src/ast/depth_texture.h"
 #include "src/ast/disable_validation_decoration.h"
+#include "src/ast/discard_statement.h"
 #include "src/ast/external_texture.h"
 #include "src/ast/f32.h"
-#include "src/ast/float_literal.h"
+#include "src/ast/fallthrough_statement.h"
+#include "src/ast/float_literal_expression.h"
 #include "src/ast/for_loop_statement.h"
 #include "src/ast/i32.h"
 #include "src/ast/if_statement.h"
+#include "src/ast/index_accessor_expression.h"
 #include "src/ast/interpolate_decoration.h"
 #include "src/ast/invariant_decoration.h"
 #include "src/ast/loop_statement.h"
@@ -55,8 +58,7 @@
 #include "src/ast/return_statement.h"
 #include "src/ast/sampled_texture.h"
 #include "src/ast/sampler.h"
-#include "src/ast/scalar_constructor_expression.h"
-#include "src/ast/sint_literal.h"
+#include "src/ast/sint_literal_expression.h"
 #include "src/ast/stage_decoration.h"
 #include "src/ast/storage_texture.h"
 #include "src/ast/stride_decoration.h"
@@ -65,10 +67,9 @@
 #include "src/ast/struct_member_offset_decoration.h"
 #include "src/ast/struct_member_size_decoration.h"
 #include "src/ast/switch_statement.h"
-#include "src/ast/type_constructor_expression.h"
 #include "src/ast/type_name.h"
 #include "src/ast/u32.h"
-#include "src/ast/uint_literal.h"
+#include "src/ast/uint_literal_expression.h"
 #include "src/ast/unary_op_expression.h"
 #include "src/ast/variable_decl_statement.h"
 #include "src/ast/vector.h"
@@ -1038,57 +1039,53 @@ class ProgramBuilder {
   /// @param source the source information
   /// @param value the boolean value
   /// @return a Scalar constructor for the given value
-  const ast::ScalarConstructorExpression* Expr(const Source& source,
-                                               bool value) {
-    return create<ast::ScalarConstructorExpression>(source, Literal(value));
+  const ast::BoolLiteralExpression* Expr(const Source& source, bool value) {
+    return create<ast::BoolLiteralExpression>(source, value);
   }
 
   /// @param value the boolean value
   /// @return a Scalar constructor for the given value
-  const ast::ScalarConstructorExpression* Expr(bool value) {
-    return create<ast::ScalarConstructorExpression>(Literal(value));
+  const ast::BoolLiteralExpression* Expr(bool value) {
+    return create<ast::BoolLiteralExpression>(value);
   }
 
   /// @param source the source information
   /// @param value the float value
   /// @return a Scalar constructor for the given value
-  const ast::ScalarConstructorExpression* Expr(const Source& source,
-                                               f32 value) {
-    return create<ast::ScalarConstructorExpression>(source, Literal(value));
+  const ast::FloatLiteralExpression* Expr(const Source& source, f32 value) {
+    return create<ast::FloatLiteralExpression>(source, value);
   }
 
   /// @param value the float value
   /// @return a Scalar constructor for the given value
-  const ast::ScalarConstructorExpression* Expr(f32 value) {
-    return create<ast::ScalarConstructorExpression>(Literal(value));
+  const ast::FloatLiteralExpression* Expr(f32 value) {
+    return create<ast::FloatLiteralExpression>(value);
   }
 
   /// @param source the source information
   /// @param value the integer value
   /// @return a Scalar constructor for the given value
-  const ast::ScalarConstructorExpression* Expr(const Source& source,
-                                               i32 value) {
-    return create<ast::ScalarConstructorExpression>(source, Literal(value));
+  const ast::SintLiteralExpression* Expr(const Source& source, i32 value) {
+    return create<ast::SintLiteralExpression>(source, value);
   }
 
   /// @param value the integer value
   /// @return a Scalar constructor for the given value
-  const ast::ScalarConstructorExpression* Expr(i32 value) {
-    return create<ast::ScalarConstructorExpression>(Literal(value));
+  const ast::SintLiteralExpression* Expr(i32 value) {
+    return create<ast::SintLiteralExpression>(value);
   }
 
   /// @param source the source information
   /// @param value the unsigned int value
   /// @return a Scalar constructor for the given value
-  const ast::ScalarConstructorExpression* Expr(const Source& source,
-                                               u32 value) {
-    return create<ast::ScalarConstructorExpression>(source, Literal(value));
+  const ast::UintLiteralExpression* Expr(const Source& source, u32 value) {
+    return create<ast::UintLiteralExpression>(source, value);
   }
 
   /// @param value the unsigned int value
   /// @return a Scalar constructor for the given value
-  const ast::ScalarConstructorExpression* Expr(u32 value) {
-    return create<ast::ScalarConstructorExpression>(Literal(value));
+  const ast::UintLiteralExpression* Expr(u32 value) {
+    return create<ast::UintLiteralExpression>(value);
   }
 
   /// Converts `arg` to an `ast::Expression` using `Expr()`, then appends it to
@@ -1129,88 +1126,34 @@ class ProgramBuilder {
   /// @return `list`
   ast::ExpressionList ExprList(ast::ExpressionList list) { return list; }
 
-  /// @param source the source location for the literal
-  /// @param val the boolan value
-  /// @return a boolean literal with the given value
-  const ast::BoolLiteral* Literal(const Source& source, bool val) {
-    return create<ast::BoolLiteral>(source, val);
-  }
-
-  /// @param val the boolan value
-  /// @return a boolean literal with the given value
-  const ast::BoolLiteral* Literal(bool val) {
-    return create<ast::BoolLiteral>(val);
-  }
-
-  /// @param source the source location for the literal
-  /// @param val the float value
-  /// @return a float literal with the given value
-  const ast::FloatLiteral* Literal(const Source& source, f32 val) {
-    return create<ast::FloatLiteral>(source, val);
-  }
-
-  /// @param val the float value
-  /// @return a float literal with the given value
-  const ast::FloatLiteral* Literal(f32 val) {
-    return create<ast::FloatLiteral>(val);
-  }
-
-  /// @param source the source location for the literal
-  /// @param val the unsigned int value
-  /// @return a ast::UintLiteral with the given value
-  const ast::UintLiteral* Literal(const Source& source, u32 val) {
-    return create<ast::UintLiteral>(source, val);
-  }
-
-  /// @param val the unsigned int value
-  /// @return a ast::UintLiteral with the given value
-  const ast::UintLiteral* Literal(u32 val) {
-    return create<ast::UintLiteral>(val);
-  }
-
-  /// @param source the source location for the literal
-  /// @param val the integer value
-  /// @return the ast::SintLiteral with the given value
-  const ast::SintLiteral* Literal(const Source& source, i32 val) {
-    return create<ast::SintLiteral>(source, val);
-  }
-
-  /// @param val the integer value
-  /// @return the ast::SintLiteral with the given value
-  const ast::SintLiteral* Literal(i32 val) {
-    return create<ast::SintLiteral>(val);
-  }
-
   /// @param args the arguments for the type constructor
-  /// @return an `ast::TypeConstructorExpression` of type `ty`, with the values
+  /// @return an `ast::CallExpression` of type `ty`, with the values
   /// of `args` converted to `ast::Expression`s using `Expr()`
   template <typename T, typename... ARGS>
-  const ast::TypeConstructorExpression* Construct(ARGS&&... args) {
+  const ast::CallExpression* Construct(ARGS&&... args) {
     return Construct(ty.Of<T>(), std::forward<ARGS>(args)...);
   }
 
   /// @param type the type to construct
   /// @param args the arguments for the constructor
-  /// @return an `ast::TypeConstructorExpression` of `type` constructed with the
+  /// @return an `ast::CallExpression` of `type` constructed with the
   /// values `args`.
   template <typename... ARGS>
-  const ast::TypeConstructorExpression* Construct(const ast::Type* type,
-                                                  ARGS&&... args) {
-    return create<ast::TypeConstructorExpression>(
-        type, ExprList(std::forward<ARGS>(args)...));
+  const ast::CallExpression* Construct(const ast::Type* type, ARGS&&... args) {
+    return Construct(source_, type, std::forward<ARGS>(args)...);
   }
 
   /// @param source the source information
   /// @param type the type to construct
   /// @param args the arguments for the constructor
-  /// @return an `ast::TypeConstructorExpression` of `type` constructed with the
+  /// @return an `ast::CallExpression` of `type` constructed with the
   /// values `args`.
   template <typename... ARGS>
-  const ast::TypeConstructorExpression* Construct(const Source& source,
-                                                  const ast::Type* type,
-                                                  ARGS&&... args) {
-    return create<ast::TypeConstructorExpression>(
-        source, type, ExprList(std::forward<ARGS>(args)...));
+  const ast::CallExpression* Construct(const Source& source,
+                                       const ast::Type* type,
+                                       ARGS&&... args) {
+    return create<ast::CallExpression>(source, type,
+                                       ExprList(std::forward<ARGS>(args)...));
   }
 
   /// @param expr the expression for the bitcast
@@ -1246,128 +1189,128 @@ class ProgramBuilder {
   /// @param args the arguments for the vector constructor
   /// @param type the vector type
   /// @param size the vector size
-  /// @return an `ast::TypeConstructorExpression` of a `size`-element vector of
+  /// @return an `ast::CallExpression` of a `size`-element vector of
   /// type `type`, constructed with the values `args`.
   template <typename... ARGS>
-  const ast::TypeConstructorExpression* vec(const ast::Type* type,
-                                            uint32_t size,
-                                            ARGS&&... args) {
+  const ast::CallExpression* vec(const ast::Type* type,
+                                 uint32_t size,
+                                 ARGS&&... args) {
     return Construct(ty.vec(type, size), std::forward<ARGS>(args)...);
   }
 
   /// @param args the arguments for the vector constructor
-  /// @return an `ast::TypeConstructorExpression` of a 2-element vector of type
+  /// @return an `ast::CallExpression` of a 2-element vector of type
   /// `T`, constructed with the values `args`.
   template <typename T, typename... ARGS>
-  const ast::TypeConstructorExpression* vec2(ARGS&&... args) {
+  const ast::CallExpression* vec2(ARGS&&... args) {
     return Construct(ty.vec2<T>(), std::forward<ARGS>(args)...);
   }
 
   /// @param args the arguments for the vector constructor
-  /// @return an `ast::TypeConstructorExpression` of a 3-element vector of type
+  /// @return an `ast::CallExpression` of a 3-element vector of type
   /// `T`, constructed with the values `args`.
   template <typename T, typename... ARGS>
-  const ast::TypeConstructorExpression* vec3(ARGS&&... args) {
+  const ast::CallExpression* vec3(ARGS&&... args) {
     return Construct(ty.vec3<T>(), std::forward<ARGS>(args)...);
   }
 
   /// @param args the arguments for the vector constructor
-  /// @return an `ast::TypeConstructorExpression` of a 4-element vector of type
+  /// @return an `ast::CallExpression` of a 4-element vector of type
   /// `T`, constructed with the values `args`.
   template <typename T, typename... ARGS>
-  const ast::TypeConstructorExpression* vec4(ARGS&&... args) {
+  const ast::CallExpression* vec4(ARGS&&... args) {
     return Construct(ty.vec4<T>(), std::forward<ARGS>(args)...);
   }
 
   /// @param args the arguments for the matrix constructor
-  /// @return an `ast::TypeConstructorExpression` of a 2x2 matrix of type
+  /// @return an `ast::CallExpression` of a 2x2 matrix of type
   /// `T`, constructed with the values `args`.
   template <typename T, typename... ARGS>
-  const ast::TypeConstructorExpression* mat2x2(ARGS&&... args) {
+  const ast::CallExpression* mat2x2(ARGS&&... args) {
     return Construct(ty.mat2x2<T>(), std::forward<ARGS>(args)...);
   }
 
   /// @param args the arguments for the matrix constructor
-  /// @return an `ast::TypeConstructorExpression` of a 2x3 matrix of type
+  /// @return an `ast::CallExpression` of a 2x3 matrix of type
   /// `T`, constructed with the values `args`.
   template <typename T, typename... ARGS>
-  const ast::TypeConstructorExpression* mat2x3(ARGS&&... args) {
+  const ast::CallExpression* mat2x3(ARGS&&... args) {
     return Construct(ty.mat2x3<T>(), std::forward<ARGS>(args)...);
   }
 
   /// @param args the arguments for the matrix constructor
-  /// @return an `ast::TypeConstructorExpression` of a 2x4 matrix of type
+  /// @return an `ast::CallExpression` of a 2x4 matrix of type
   /// `T`, constructed with the values `args`.
   template <typename T, typename... ARGS>
-  const ast::TypeConstructorExpression* mat2x4(ARGS&&... args) {
+  const ast::CallExpression* mat2x4(ARGS&&... args) {
     return Construct(ty.mat2x4<T>(), std::forward<ARGS>(args)...);
   }
 
   /// @param args the arguments for the matrix constructor
-  /// @return an `ast::TypeConstructorExpression` of a 3x2 matrix of type
+  /// @return an `ast::CallExpression` of a 3x2 matrix of type
   /// `T`, constructed with the values `args`.
   template <typename T, typename... ARGS>
-  const ast::TypeConstructorExpression* mat3x2(ARGS&&... args) {
+  const ast::CallExpression* mat3x2(ARGS&&... args) {
     return Construct(ty.mat3x2<T>(), std::forward<ARGS>(args)...);
   }
 
   /// @param args the arguments for the matrix constructor
-  /// @return an `ast::TypeConstructorExpression` of a 3x3 matrix of type
+  /// @return an `ast::CallExpression` of a 3x3 matrix of type
   /// `T`, constructed with the values `args`.
   template <typename T, typename... ARGS>
-  const ast::TypeConstructorExpression* mat3x3(ARGS&&... args) {
+  const ast::CallExpression* mat3x3(ARGS&&... args) {
     return Construct(ty.mat3x3<T>(), std::forward<ARGS>(args)...);
   }
 
   /// @param args the arguments for the matrix constructor
-  /// @return an `ast::TypeConstructorExpression` of a 3x4 matrix of type
+  /// @return an `ast::CallExpression` of a 3x4 matrix of type
   /// `T`, constructed with the values `args`.
   template <typename T, typename... ARGS>
-  const ast::TypeConstructorExpression* mat3x4(ARGS&&... args) {
+  const ast::CallExpression* mat3x4(ARGS&&... args) {
     return Construct(ty.mat3x4<T>(), std::forward<ARGS>(args)...);
   }
 
   /// @param args the arguments for the matrix constructor
-  /// @return an `ast::TypeConstructorExpression` of a 4x2 matrix of type
+  /// @return an `ast::CallExpression` of a 4x2 matrix of type
   /// `T`, constructed with the values `args`.
   template <typename T, typename... ARGS>
-  const ast::TypeConstructorExpression* mat4x2(ARGS&&... args) {
+  const ast::CallExpression* mat4x2(ARGS&&... args) {
     return Construct(ty.mat4x2<T>(), std::forward<ARGS>(args)...);
   }
 
   /// @param args the arguments for the matrix constructor
-  /// @return an `ast::TypeConstructorExpression` of a 4x3 matrix of type
+  /// @return an `ast::CallExpression` of a 4x3 matrix of type
   /// `T`, constructed with the values `args`.
   template <typename T, typename... ARGS>
-  const ast::TypeConstructorExpression* mat4x3(ARGS&&... args) {
+  const ast::CallExpression* mat4x3(ARGS&&... args) {
     return Construct(ty.mat4x3<T>(), std::forward<ARGS>(args)...);
   }
 
   /// @param args the arguments for the matrix constructor
-  /// @return an `ast::TypeConstructorExpression` of a 4x4 matrix of type
+  /// @return an `ast::CallExpression` of a 4x4 matrix of type
   /// `T`, constructed with the values `args`.
   template <typename T, typename... ARGS>
-  const ast::TypeConstructorExpression* mat4x4(ARGS&&... args) {
+  const ast::CallExpression* mat4x4(ARGS&&... args) {
     return Construct(ty.mat4x4<T>(), std::forward<ARGS>(args)...);
   }
 
   /// @param args the arguments for the array constructor
-  /// @return an `ast::TypeConstructorExpression` of an array with element type
+  /// @return an `ast::CallExpression` of an array with element type
   /// `T` and size `N`, constructed with the values `args`.
   template <typename T, int N, typename... ARGS>
-  const ast::TypeConstructorExpression* array(ARGS&&... args) {
+  const ast::CallExpression* array(ARGS&&... args) {
     return Construct(ty.array<T, N>(), std::forward<ARGS>(args)...);
   }
 
   /// @param subtype the array element type
   /// @param n the array size. nullptr represents a runtime-array.
   /// @param args the arguments for the array constructor
-  /// @return an `ast::TypeConstructorExpression` of an array with element type
+  /// @return an `ast::CallExpression` of an array with element type
   /// `subtype`, constructed with the values `args`.
   template <typename EXPR, typename... ARGS>
-  const ast::TypeConstructorExpression* array(const ast::Type* subtype,
-                                              EXPR&& n,
-                                              ARGS&&... args) {
+  const ast::CallExpression* array(const ast::Type* subtype,
+                                   EXPR&& n,
+                                   ARGS&&... args) {
     return Construct(ty.array(subtype, std::forward<EXPR>(n)),
                      std::forward<ARGS>(args)...);
   }
@@ -1742,30 +1685,40 @@ class ProgramBuilder {
                                          Expr(std::forward<RHS>(rhs)));
   }
 
-  /// @param source the source information
-  /// @param arr the array argument for the array accessor expression
-  /// @param idx the index argument for the array accessor expression
-  /// @returns a `ast::ArrayAccessorExpression` that indexes `arr` with `idx`
-  template <typename ARR, typename IDX>
-  const ast::ArrayAccessorExpression* IndexAccessor(const Source& source,
-                                                    ARR&& arr,
-                                                    IDX&& idx) {
-    return create<ast::ArrayAccessorExpression>(
-        source, Expr(std::forward<ARR>(arr)), Expr(std::forward<IDX>(idx)));
+  /// @param lhs the left hand argument to the equal expression
+  /// @param rhs the right hand argument to the equal expression
+  /// @returns a `ast::BinaryExpression` comparing `lhs` equal to `rhs`
+  template <typename LHS, typename RHS>
+  const ast::BinaryExpression* Equal(LHS&& lhs, RHS&& rhs) {
+    return create<ast::BinaryExpression>(ast::BinaryOp::kEqual,
+                                         Expr(std::forward<LHS>(lhs)),
+                                         Expr(std::forward<RHS>(rhs)));
   }
 
-  /// @param arr the array argument for the array accessor expression
-  /// @param idx the index argument for the array accessor expression
-  /// @returns a `ast::ArrayAccessorExpression` that indexes `arr` with `idx`
-  template <typename ARR, typename IDX>
-  const ast::ArrayAccessorExpression* IndexAccessor(ARR&& arr, IDX&& idx) {
-    return create<ast::ArrayAccessorExpression>(Expr(std::forward<ARR>(arr)),
+  /// @param source the source information
+  /// @param obj the object for the index accessor expression
+  /// @param idx the index argument for the index accessor expression
+  /// @returns a `ast::IndexAccessorExpression` that indexes `arr` with `idx`
+  template <typename OBJ, typename IDX>
+  const ast::IndexAccessorExpression* IndexAccessor(const Source& source,
+                                                    OBJ&& obj,
+                                                    IDX&& idx) {
+    return create<ast::IndexAccessorExpression>(
+        source, Expr(std::forward<OBJ>(obj)), Expr(std::forward<IDX>(idx)));
+  }
+
+  /// @param obj the object for the index accessor expression
+  /// @param idx the index argument for the index accessor expression
+  /// @returns a `ast::IndexAccessorExpression` that indexes `arr` with `idx`
+  template <typename OBJ, typename IDX>
+  const ast::IndexAccessorExpression* IndexAccessor(OBJ&& obj, IDX&& idx) {
+    return create<ast::IndexAccessorExpression>(Expr(std::forward<OBJ>(obj)),
                                                 Expr(std::forward<IDX>(idx)));
   }
 
   /// @param source the source information
   /// @param obj the object for the member accessor expression
-  /// @param idx the index argument for the array accessor expression
+  /// @param idx the index argument for the member accessor expression
   /// @returns a `ast::MemberAccessorExpression` that indexes `obj` with `idx`
   template <typename OBJ, typename IDX>
   const ast::MemberAccessorExpression* MemberAccessor(const Source& source,
@@ -1776,7 +1729,7 @@ class ProgramBuilder {
   }
 
   /// @param obj the object for the member accessor expression
-  /// @param idx the index argument for the array accessor expression
+  /// @param idx the index argument for the member accessor expression
   /// @returns a `ast::MemberAccessorExpression` that indexes `obj` with `idx`
   template <typename OBJ, typename IDX>
   const ast::MemberAccessorExpression* MemberAccessor(OBJ&& obj, IDX&& idx) {
@@ -1912,6 +1865,19 @@ class ProgramBuilder {
   /// @returns the break statement pointer
   const ast::BreakStatement* Break() { return create<ast::BreakStatement>(); }
 
+  /// Creates an ast::ContinueStatement
+  /// @param source the source information
+  /// @returns the continue statement pointer
+  const ast::ContinueStatement* Continue(const Source& source) {
+    return create<ast::ContinueStatement>(source);
+  }
+
+  /// Creates an ast::ContinueStatement
+  /// @returns the continue statement pointer
+  const ast::ContinueStatement* Continue() {
+    return create<ast::ContinueStatement>();
+  }
+
   /// Creates an ast::ReturnStatement with no return value
   /// @param source the source information
   /// @returns the return statement pointer
@@ -1940,6 +1906,19 @@ class ProgramBuilder {
   template <typename EXPR, typename = DisableIfSource<EXPR>>
   const ast::ReturnStatement* Return(EXPR&& val) {
     return create<ast::ReturnStatement>(Expr(std::forward<EXPR>(val)));
+  }
+
+  /// Creates an ast::DiscardStatement
+  /// @param source the source information
+  /// @returns the discard statement pointer
+  const ast::DiscardStatement* Discard(const Source& source) {
+    return create<ast::DiscardStatement>(source);
+  }
+
+  /// Creates an ast::DiscardStatement
+  /// @returns the discard statement pointer
+  const ast::DiscardStatement* Discard() {
+    return create<ast::DiscardStatement>();
   }
 
   /// Creates a ast::Alias registering it with the AST().TypeDecls().
@@ -2076,6 +2055,13 @@ class ProgramBuilder {
                                       body);
   }
 
+  /// Creates a ast::ElseStatement with no condition and body
+  /// @param body the else body
+  /// @returns the else statement pointer
+  const ast::ElseStatement* Else(const ast::BlockStatement* body) {
+    return create<ast::ElseStatement>(nullptr, body);
+  }
+
   /// Creates a ast::IfStatement with input condition, body, and optional
   /// variadic else statements
   /// @param condition the if statement condition expression
@@ -2116,6 +2102,18 @@ class ProgramBuilder {
     return create<ast::AssignmentStatement>(
         Expr(std::forward<LhsExpressionInit>(lhs)),
         Expr(std::forward<RhsExpressionInit>(rhs)));
+  }
+
+  /// Creates a ast::LoopStatement with input body and optional continuing
+  /// @param source the source information
+  /// @param body the loop body
+  /// @param continuing the optional continuing block
+  /// @returns the loop statement pointer
+  const ast::LoopStatement* Loop(
+      const Source& source,
+      const ast::BlockStatement* body,
+      const ast::BlockStatement* continuing = nullptr) {
+    return create<ast::LoopStatement>(source, body, continuing);
   }
 
   /// Creates a ast::LoopStatement with input body and optional continuing
@@ -2232,7 +2230,7 @@ class ProgramBuilder {
   /// @param selector a single case selector
   /// @param body the case body
   /// @returns the case statement pointer
-  const ast::CaseStatement* Case(const ast::IntLiteral* selector,
+  const ast::CaseStatement* Case(const ast::IntLiteralExpression* selector,
                                  const ast::BlockStatement* body = nullptr) {
     return Case(ast::CaseSelectorList{selector}, body);
   }
@@ -2253,6 +2251,19 @@ class ProgramBuilder {
   const ast::CaseStatement* DefaultCase(
       const ast::BlockStatement* body = nullptr) {
     return Case(ast::CaseSelectorList{}, body);
+  }
+
+  /// Creates an ast::FallthroughStatement
+  /// @param source the source information
+  /// @returns the fallthrough statement pointer
+  const ast::FallthroughStatement* Fallthrough(const Source& source) {
+    return create<ast::FallthroughStatement>(source);
+  }
+
+  /// Creates an ast::FallthroughStatement
+  /// @returns the fallthrough statement pointer
+  const ast::FallthroughStatement* Fallthrough() {
+    return create<ast::FallthroughStatement>();
   }
 
   /// Creates an ast::BuiltinDecoration
@@ -2502,12 +2513,6 @@ class ProgramBuilder {
   /// the type declaration has no resolved type.
   const sem::Type* TypeOf(const ast::TypeDecl* type_decl) const;
 
-  /// Wraps the ast::Literal in a statement. This is used by tests that
-  /// construct a partial AST and require the Resolver to reach these
-  /// nodes.
-  /// @param lit the ast::Literal to be wrapped by an ast::Statement
-  /// @return the ast::Statement that wraps the ast::Statement
-  const ast::Statement* WrapInStatement(const ast::Literal* lit);
   /// Wraps the ast::Expression in a statement. This is used by tests that
   /// construct a partial AST and require the Resolver to reach these
   /// nodes.

@@ -1,5 +1,5 @@
 diff --git a/source/common/ucmndata.h b/source/common/ucmndata.h
-index c3eba9f4..15c1a6c4 100644
+index 486b4fd7..1e63833f 100644
 --- a/source/common/ucmndata.h
 +++ b/source/common/ucmndata.h
 @@ -45,6 +45,20 @@ typedef struct  {

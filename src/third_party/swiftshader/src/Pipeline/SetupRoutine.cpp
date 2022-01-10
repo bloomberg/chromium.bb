@@ -13,13 +13,14 @@
 // limitations under the License.
 
 #include "SetupRoutine.hpp"
-#include <Device/Vertex.hpp>
 
 #include "Constants.hpp"
 #include "Device/Polygon.hpp"
 #include "Device/Primitive.hpp"
 #include "Device/Renderer.hpp"
+#include "Device/Vertex.hpp"
 #include "Reactor/Reactor.hpp"
+#include "Vulkan/VkDevice.hpp"
 
 namespace sw {
 
@@ -36,12 +37,13 @@ void SetupRoutine::generate()
 {
 	SetupFunction function;
 	{
-		Pointer<Byte> primitive(function.Arg<0>());
-		Pointer<Byte> tri(function.Arg<1>());
-		Pointer<Byte> polygon(function.Arg<2>());
-		Pointer<Byte> data(function.Arg<3>());
+		Pointer<Byte> device(function.Arg<0>());
+		Pointer<Byte> primitive(function.Arg<1>());
+		Pointer<Byte> tri(function.Arg<2>());
+		Pointer<Byte> polygon(function.Arg<3>());
+		Pointer<Byte> data(function.Arg<4>());
 
-		Pointer<Byte> constants = *Pointer<Pointer<Byte> >(data + OFFSET(DrawData, constants));
+		Pointer<Byte> constants = device + OFFSET(vk::Device, constants);
 
 		const bool point = state.isDrawPoint;
 		const bool line = state.isDrawLine;
@@ -487,15 +489,17 @@ void SetupRoutine::generate()
 			}
 		}
 
-		for(int interpolant = 0; interpolant < MAX_INTERFACE_COMPONENTS; interpolant++)
+		int packedInterpolant = 0;
+		for(int interfaceInterpolant = 0; interfaceInterpolant < MAX_INTERFACE_COMPONENTS; interfaceInterpolant++)
 		{
-			if(state.gradient[interpolant].Type != SpirvShader::ATTRIBTYPE_UNUSED)
+			if(state.gradient[interfaceInterpolant].Type != SpirvShader::ATTRIBTYPE_UNUSED)
 			{
 				setupGradient(primitive, tri, w012, M, v0, v1, v2,
-				              OFFSET(Vertex, v[interpolant]),
-				              OFFSET(Primitive, V[interpolant]),
-				              state.gradient[interpolant].Flat,
-				              !state.gradient[interpolant].NoPerspective);
+				              OFFSET(Vertex, v[interfaceInterpolant]),
+				              OFFSET(Primitive, V[packedInterpolant]),
+				              state.gradient[interfaceInterpolant].Flat,
+				              !state.gradient[interfaceInterpolant].NoPerspective);
+				packedInterpolant++;
 			}
 		}
 

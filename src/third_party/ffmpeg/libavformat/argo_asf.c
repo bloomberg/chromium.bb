@@ -52,8 +52,8 @@ void ff_argo_asf_parse_file_header(ArgoASFFileHeader *hdr, const uint8_t *buf)
     hdr->version_minor  = AV_RL16(buf + 6);
     hdr->num_chunks     = AV_RL32(buf + 8);
     hdr->chunk_offset   = AV_RL32(buf + 12);
-    for (int i = 0; i < FF_ARRAY_ELEMS(hdr->name); i++)
-        hdr->name[i]    = AV_RL8(buf + 16 + i);
+    memcpy(hdr->name, buf + 16, ASF_NAME_SIZE);
+    hdr->name[ASF_NAME_SIZE] = '\0';
 }
 
 int ff_argo_asf_validate_file_header(AVFormatContext *s, const ArgoASFFileHeader *hdr)
@@ -209,6 +209,8 @@ static int argo_asf_read_header(AVFormatContext *s)
 
     ff_argo_asf_parse_chunk_header(&asf->ckhdr, buf);
 
+    av_dict_set(&s->metadata, "title", asf->fhdr.name, 0);
+
     return ff_argo_asf_fill_stream(s, st, &asf->fhdr, &asf->ckhdr);
 }
 
@@ -331,7 +333,7 @@ static void argo_asf_write_file_header(const ArgoASFFileHeader *fhdr, AVIOContex
     avio_wl16( pb, fhdr->version_minor);
     avio_wl32( pb, fhdr->num_chunks);
     avio_wl32( pb, fhdr->chunk_offset);
-    avio_write(pb, fhdr->name, sizeof(fhdr->name));
+    avio_write(pb, fhdr->name, ASF_NAME_SIZE);
 }
 
 static void argo_asf_write_chunk_header(const ArgoASFChunkHeader *ckhdr, AVIOContext *pb)
@@ -356,25 +358,27 @@ static int argo_asf_write_header(AVFormatContext *s)
         .num_chunks    = 1,
         .chunk_offset  = ASF_FILE_HEADER_SIZE
     };
+    AVDictionaryEntry *t;
+    const char *name, *end;
+    size_t len;
 
     /*
-     * If the user specified a name, use it as is. Otherwise take the
-     * basename and lop off the extension (if any).
+     * If the user specified a name, use it as is. Otherwise,
+     * try to use metadata (if present), then fall back to the
+     * filename (minus extension).
      */
     if (ctx->name) {
-        strncpy(fhdr.name, ctx->name, sizeof(fhdr.name));
+        name = ctx->name;
+        len  = strlen(ctx->name);
+    } else if ((t = av_dict_get(s->metadata, "title", NULL, 0))) {
+        name = t->value;
+        len  = strlen(t->value);
+    } else if (!(end = strrchr((name = av_basename(s->url)), '.'))) {
+        len = strlen(name);
     } else {
-        const char *start = av_basename(s->url);
-        const char *end   = strrchr(start, '.');
-        size_t      len;
-
-        if (end)
-            len = end - start;
-        else
-            len = strlen(start);
-
-        memcpy(fhdr.name, start, FFMIN(len, sizeof(fhdr.name)));
+        len = end - name;
     }
+    memcpy(fhdr.name, name, FFMIN(len, ASF_NAME_SIZE));
 
     chdr.num_blocks    = 0;
     chdr.num_samples   = ASF_SAMPLE_COUNT;

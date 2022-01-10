@@ -156,15 +156,6 @@ static av_cold void qsvscale_uninit(AVFilterContext *ctx)
     s->nb_surface_ptrs_out = 0;
 }
 
-static int qsvscale_query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pixel_formats[] = {
-        AV_PIX_FMT_QSV, AV_PIX_FMT_NONE,
-    };
-
-    return ff_set_common_formats_from_list(ctx, pixel_formats);
-}
-
 static int init_out_pool(AVFilterContext *ctx,
                          int out_width, int out_height)
 {
@@ -343,16 +334,16 @@ static int init_out_session(AVFilterContext *ctx)
     memset(&par, 0, sizeof(par));
 
     if (opaque) {
-        s->surface_ptrs_in = av_mallocz_array(in_frames_hwctx->nb_surfaces,
-                                              sizeof(*s->surface_ptrs_in));
+        s->surface_ptrs_in = av_calloc(in_frames_hwctx->nb_surfaces,
+                                       sizeof(*s->surface_ptrs_in));
         if (!s->surface_ptrs_in)
             return AVERROR(ENOMEM);
         for (i = 0; i < in_frames_hwctx->nb_surfaces; i++)
             s->surface_ptrs_in[i] = in_frames_hwctx->surfaces + i;
         s->nb_surface_ptrs_in = in_frames_hwctx->nb_surfaces;
 
-        s->surface_ptrs_out = av_mallocz_array(out_frames_hwctx->nb_surfaces,
-                                               sizeof(*s->surface_ptrs_out));
+        s->surface_ptrs_out = av_calloc(out_frames_hwctx->nb_surfaces,
+                                        sizeof(*s->surface_ptrs_out));
         if (!s->surface_ptrs_out)
             return AVERROR(ENOMEM);
         for (i = 0; i < out_frames_hwctx->nb_surfaces; i++)
@@ -383,16 +374,16 @@ static int init_out_session(AVFilterContext *ctx)
             .Free   = frame_free,
         };
 
-        s->mem_ids_in = av_mallocz_array(in_frames_hwctx->nb_surfaces,
-                                         sizeof(*s->mem_ids_in));
+        s->mem_ids_in = av_calloc(in_frames_hwctx->nb_surfaces,
+                                  sizeof(*s->mem_ids_in));
         if (!s->mem_ids_in)
             return AVERROR(ENOMEM);
         for (i = 0; i < in_frames_hwctx->nb_surfaces; i++)
             s->mem_ids_in[i] = in_frames_hwctx->surfaces[i].Data.MemId;
         s->nb_mem_ids_in = in_frames_hwctx->nb_surfaces;
 
-        s->mem_ids_out = av_mallocz_array(out_frames_hwctx->nb_surfaces,
-                                          sizeof(*s->mem_ids_out));
+        s->mem_ids_out = av_calloc(out_frames_hwctx->nb_surfaces,
+                                   sizeof(*s->mem_ids_out));
         if (!s->mem_ids_out)
             return AVERROR(ENOMEM);
         for (i = 0; i < out_frames_hwctx->nb_surfaces; i++)
@@ -671,13 +662,14 @@ const AVFilter ff_vf_scale_qsv = {
 
     .init          = qsvscale_init,
     .uninit        = qsvscale_uninit,
-    .query_formats = qsvscale_query_formats,
 
     .priv_size = sizeof(QSVScaleContext),
     .priv_class = &qsvscale_class,
 
     FILTER_INPUTS(qsvscale_inputs),
     FILTER_OUTPUTS(qsvscale_outputs),
+
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_QSV),
 
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };

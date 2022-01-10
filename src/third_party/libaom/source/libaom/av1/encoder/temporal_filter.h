@@ -17,6 +17,7 @@ extern "C" {
 #endif
 /*!\cond */
 struct AV1_COMP;
+struct AV1EncoderConfig;
 struct ThreadData;
 // TODO(any): These two variables are only used in avx2, sse2, sse4
 // implementations, where the block size is still hard coded. This should be
@@ -75,6 +76,13 @@ struct ThreadData;
 
 #define NOISE_ESTIMATION_EDGE_THRESHOLD 50
 
+// Sum and SSE source vs filtered frame difference returned by
+// temporal filter.
+typedef struct {
+  int64_t sum;
+  int64_t sse;
+} FRAME_DIFF;
+
 /*!\endcond */
 
 /*!
@@ -102,7 +110,7 @@ typedef struct {
   /*!
    * Whether to accumulate diff for show existing condition check.
    */
-  int check_show_existing;
+  int compute_frame_diff;
   /*!
    * Frame scaling factor.
    */
@@ -133,14 +141,96 @@ typedef struct {
   int q_factor;
 } TemporalFilterCtx;
 
-/*!\cond */
+/*!
+ * buffer count in TEMPORAL_FILTER_INFO
+ * Currently we only apply filtering on KEY and ARF after
+ * define_gf_group(). Hence, the count is two.
+ */
+#define TF_INFO_BUF_COUNT 2
 
-// Sum and SSE source vs filtered frame difference returned by
-// temporal filter.
-typedef struct {
-  int64_t sum;
-  int64_t sse;
-} FRAME_DIFF;
+/*!
+ * \brief Temporal filter info for a gop
+ */
+typedef struct TEMPORAL_FILTER_INFO {
+  /*!
+   * A flag indicate whether temporal filter shoud be applied.
+   * This flag will stored the result of
+   * av1_is_temporal_filter_on()
+   */
+  int is_temporal_filter_on;
+  /*!
+   * buffers used for temporal filtering in a GOP
+   * index 0 for key frame and index 1 for ARF
+   */
+  YV12_BUFFER_CONFIG tf_buf[TF_INFO_BUF_COUNT];
+
+  /*!
+   * buffers used for temporal filtering for
+   * INTNL_ARF_UPDATE
+   * Check av1_gop_is_second_arf() for the
+   * definition of second_arf in detail
+   */
+  YV12_BUFFER_CONFIG tf_buf_second_arf;
+  /*!
+   * whether to show the buffer directly or not.
+   */
+  FRAME_DIFF frame_diff[TF_INFO_BUF_COUNT];
+  /*!
+   * the corresponding gf_index for the buffer.
+   */
+  int tf_buf_gf_index[TF_INFO_BUF_COUNT];
+  /*!
+   * the display_index offset between next show frame and the frames in the GOP
+   */
+  int tf_buf_display_index_offset[TF_INFO_BUF_COUNT];
+  /*!
+   * whether the buf is valid or not.
+   */
+  int tf_buf_valid[TF_INFO_BUF_COUNT];
+} TEMPORAL_FILTER_INFO;
+
+/*!\brief Check whether we should apply temporal filter at all.
+ * \param[in]   oxcf           AV1 encoder config
+ *
+ * \return 1: temporal filter is on 0: temporal is off
+ */
+int av1_is_temporal_filter_on(const struct AV1EncoderConfig *oxcf);
+
+/*!\brief Allocate buffers for TEMPORAL_FILTER_INFO
+ * \param[in,out]   tf_info           Temporal filter info for a gop
+ * \param[in,out]   cpi               Top level encoder instance structure
+ */
+void av1_tf_info_alloc(TEMPORAL_FILTER_INFO *tf_info, struct AV1_COMP *cpi);
+
+/*!\brief Free buffers for TEMPORAL_FILTER_INFO
+ * \param[in,out]   tf_info           Temporal filter info for a gop
+ */
+void av1_tf_info_free(TEMPORAL_FILTER_INFO *tf_info);
+
+/*!\brief Reset validity of tf_buf in TEMPORAL_FILTER_INFO
+ * \param[in,out]   tf_info           Temporal filter info for a gop
+ */
+void av1_tf_info_reset(TEMPORAL_FILTER_INFO *tf_info);
+
+/*!\brief Apply temporal filter for key frame and ARF in a gop
+ * \param[in,out]   tf_info           Temporal filter info for a gop
+ * \param[in,out]   cpi               Top level encoder instance structure
+ * \param[in]       gf_group          GF/ARF group data structure
+ */
+void av1_tf_info_filtering(TEMPORAL_FILTER_INFO *tf_info, struct AV1_COMP *cpi,
+                           const GF_GROUP *gf_group);
+
+/*!\brief Get a filtered buffer from TEMPORAL_FILTER_INFO
+ * \param[in,out]   tf_info           Temporal filter info for a gop
+ * \param[in]       gf_index          gf_index for the target buffer
+ * \param[out]      show_tf_buf       whether the target buffer can be shown
+ * directly
+ */
+YV12_BUFFER_CONFIG *av1_tf_info_get_filtered_buf(TEMPORAL_FILTER_INFO *tf_info,
+                                                 int gf_index,
+                                                 FRAME_DIFF *frame_diff);
+
+/*!\cond */
 
 // Data related to temporal filtering.
 typedef struct {
@@ -182,7 +272,8 @@ typedef struct {
 //   The estimated noise, or -1.0 if there are too few smooth pixels.
 double av1_estimate_noise_from_single_plane(const YV12_BUFFER_CONFIG *frame,
                                             const int plane,
-                                            const int bit_depth);
+                                            const int bit_depth,
+                                            const int edge_thresh);
 /*!\endcond */
 
 /*!\brief Does temporal filter for a given macroblock row.
@@ -214,21 +305,37 @@ void av1_tf_do_filtering_row(struct AV1_COMP *cpi, struct ThreadData *td,
  *
  * \ingroup src_frame_proc
  * \param[in]      cpi                        Top level encoder instance
- * structure \param[in]      filter_frame_lookahead_idx The index of the
- * to-filter frame in the lookahead buffer cpi->lookahead. \param[in]
- * update_type                This frame's update type. \param[in]
- * is_forward_keyframe        Indicate whether this is a forward keyframe.
- * \param[in,out]  show_existing_arf          Whether to show existing ARF. This
- *                                            field is updated in this function.
+ *                                            structure
+ * \param[in]      filter_frame_lookahead_idx The index of the
+ *                                            to-filter frame in the lookahead
+ *                                            buffer cpi->lookahead.
+ * \param[in]      gf_frame_index             Index of GOP
+ * \param[in,out]  frame_diff                 structure of sse and sum of the
+ *                                            filtered frame.
  * \param[out]     output_frame               Ouput filtered frame.
- *
- * \return Whether temporal filtering is successfully done.
  */
-int av1_temporal_filter(struct AV1_COMP *cpi,
-                        const int filter_frame_lookahead_idx,
-                        FRAME_UPDATE_TYPE update_type, int is_forward_keyframe,
-                        int *show_existing_arf,
-                        YV12_BUFFER_CONFIG *output_frame);
+void av1_temporal_filter(struct AV1_COMP *cpi,
+                         const int filter_frame_lookahead_idx,
+                         int gf_frame_index, FRAME_DIFF *frame_diff,
+                         YV12_BUFFER_CONFIG *output_frame);
+
+/*!\brief Check whether a filtered frame can be show directly
+ *
+ * This function will use the filtered frame's sse and current q index
+ * to make decision.
+ *
+ * \ingroup src_frame_proc
+ * \param[in]  frame        filtered frame's buffer
+ * \param[in]  frame_diff   structure of sse and sum of the
+ *                          filtered frame.
+ * \param[in]  q_index      q_index used for this frame
+ * \param[in]  bit_depth    bit depth
+ * \return     return 1 if this frame can be shown directly, otherwise
+ *             return 0
+ */
+int av1_check_show_filtered_frame(const YV12_BUFFER_CONFIG *frame,
+                                  const FRAME_DIFF *frame_diff, int q_index,
+                                  aom_bit_depth_t bit_depth);
 
 /*!\cond */
 // Helper function to get `q` used for encoding.

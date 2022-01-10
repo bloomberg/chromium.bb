@@ -19,15 +19,16 @@
 #include "dawn_native/Error.h"
 #include "dawn_native/Forward.h"
 #include "dawn_native/PassResourceUsageTracker.h"
-#include "dawn_native/ProgrammablePassEncoder.h"
+#include "dawn_native/ProgrammableEncoder.h"
 
 namespace dawn_native {
 
     class SyncScopeUsageTracker;
 
-    class ComputePassEncoder final : public ProgrammablePassEncoder {
+    class ComputePassEncoder final : public ProgrammableEncoder {
       public:
         ComputePassEncoder(DeviceBase* device,
+                           const ComputePassDescriptor* descriptor,
                            CommandEncoder* commandEncoder,
                            EncodingContext* encodingContext);
 
@@ -62,8 +63,10 @@ namespace dawn_native {
                            ErrorTag errorTag);
 
       private:
-        ResultOrError<std::pair<Ref<BufferBase>, uint64_t>> ValidateIndirectDispatch(
-            BufferBase* indirectBuffer,
+        void DestroyImpl() override;
+
+        ResultOrError<std::pair<Ref<BufferBase>, uint64_t>> TransformIndirectDispatchBuffer(
+            Ref<BufferBase> indirectBuffer,
             uint64_t indirectOffset);
 
         void RestoreCommandBufferState(CommandBufferStateTracker state);

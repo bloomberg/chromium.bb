@@ -265,8 +265,8 @@ void IMAGE_STATE::Destroy() {
     BINDABLE::Destroy();
 }
 
-void IMAGE_STATE::NotifyInvalidate(const LogObjectList &invalid_handles, bool unlink) {
-    BINDABLE::NotifyInvalidate(invalid_handles, unlink);
+void IMAGE_STATE::NotifyInvalidate(const BASE_NODE::NodeList &invalid_nodes, bool unlink) {
+    BINDABLE::NotifyInvalidate(invalid_nodes, unlink);
     if (unlink) {
         Unlink();
     }
@@ -331,7 +331,7 @@ void IMAGE_STATE::AddAliasingImage(IMAGE_STATE *bound_image) {
 void IMAGE_STATE::SetMemBinding(std::shared_ptr<DEVICE_MEMORY_STATE> &mem, VkDeviceSize memory_offset) {
     if ((createInfo.flags & VK_IMAGE_CREATE_ALIAS_BIT) != 0) {
         for (auto *base_node : mem->ObjectBindings()) {
-            if (base_node->Handle().type == kVulkanObjectTypeImage) {
+            if (base_node->Type() == kVulkanObjectTypeImage) {
                 auto other_image = static_cast<IMAGE_STATE *>(base_node);
                 AddAliasingImage(other_image);
             }
@@ -346,7 +346,7 @@ void IMAGE_STATE::SetSwapchain(std::shared_ptr<SWAPCHAIN_NODE> &swapchain, uint3
     swapchain_image_index = swapchain_index;
     bind_swapchain->AddParent(this);
     for (auto *base_node : swapchain->ObjectBindings()) {
-        if (base_node->Handle().type == kVulkanObjectTypeImage) {
+        if (base_node->Type() == kVulkanObjectTypeImage) {
             auto other_image = static_cast<IMAGE_STATE *>(base_node);
             if (swapchain_image_index == other_image->swapchain_image_index) {
                 AddAliasingImage(other_image);
@@ -412,6 +412,11 @@ static VkImageUsageFlags GetInheritedUsage(const VkImageViewCreateInfo *ci, cons
     return (usage_create_info) ? usage_create_info->usage : image_state.createInfo.usage;
 }
 
+static float GetImageViewMinLod(const VkImageViewCreateInfo* ci) {
+    auto image_view_min_lod = LvlFindInChain<VkImageViewMinLodCreateInfoEXT>(ci->pNext);
+    return (image_view_min_lod) ? image_view_min_lod->minLod : 0.0f;
+}
+
 IMAGE_VIEW_STATE::IMAGE_VIEW_STATE(const std::shared_ptr<IMAGE_STATE> &im, VkImageView iv, const VkImageViewCreateInfo *ci,
                                    VkFormatFeatureFlags ff, const VkFilterCubicImageViewImageFormatPropertiesEXT &cubic_props)
     : BASE_NODE(iv, kVulkanObjectTypeImageView),
@@ -426,6 +431,7 @@ IMAGE_VIEW_STATE::IMAGE_VIEW_STATE(const std::shared_ptr<IMAGE_STATE> &im, VkIma
                                                 : DescriptorRequirementsBitsFromFormat(ci->format)),
       samplerConversion(GetSamplerConversion(ci)),
       filter_cubic_props(cubic_props),
+      min_lod(GetImageViewMinLod(ci)),
       format_features(ff),
       inherited_usage(GetInheritedUsage(ci, *im)),
       image_state(im) {
@@ -551,8 +557,8 @@ void SWAPCHAIN_NODE::Destroy() {
     BASE_NODE::Destroy();
 }
 
-void SWAPCHAIN_NODE::NotifyInvalidate(const LogObjectList &invalid_handles, bool unlink) {
-    BASE_NODE::NotifyInvalidate(invalid_handles, unlink);
+void SWAPCHAIN_NODE::NotifyInvalidate(const BASE_NODE::NodeList &invalid_nodes, bool unlink) {
+    BASE_NODE::NotifyInvalidate(invalid_nodes, unlink);
     if (unlink) {
         surface = nullptr;
     }

@@ -303,6 +303,35 @@ static AOM_INLINE void recode_loop_update_q(
     if (*low_cr_seen) return;
   }
 
+  if (cpi->ppi->level_params.keep_level_stats &&
+      !is_stat_generation_stage(cpi)) {
+    // Initialize level info. at the beginning of each sequence.
+    if (cm->current_frame.frame_type == KEY_FRAME &&
+        cpi->ppi->gf_group.refbuf_state[cpi->gf_frame_index] == REFBUF_RESET) {
+      av1_init_level_info(cpi);
+    }
+    const AV1LevelParams *const level_params = &cpi->ppi->level_params;
+    // TODO(any): currently only checking operating point 0
+    const AV1LevelInfo *const level_info = level_params->level_info[0];
+    const DECODER_MODEL *const decoder_models = level_info->decoder_models;
+    const AV1_LEVEL target_level = level_params->target_seq_level_idx[0];
+
+    if (target_level < SEQ_LEVELS) {
+      DECODER_MODEL_STATUS status = av1_decoder_model_try_smooth_buf(
+          cpi, rc->projected_frame_size, &decoder_models[target_level]);
+
+      if ((status == SMOOTHING_BUFFER_UNDERFLOW ||
+           status == SMOOTHING_BUFFER_OVERFLOW) &&
+          *q < rc->worst_quality) {
+        *q = AOMMIN(*q + 10, rc->worst_quality);
+        *q_low = AOMMAX(*q, *q_low);
+        *q_high = AOMMAX(*q, *q_high);
+        *loop = 1;
+        return;
+      }
+    }
+  }
+
   if (rc_cfg->mode == AOM_Q) return;
 
   const int last_q = *q;

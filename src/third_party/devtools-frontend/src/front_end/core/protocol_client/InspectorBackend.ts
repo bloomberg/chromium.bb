@@ -644,6 +644,10 @@ export class TargetBase {
     return this.getAgent('Emulation');
   }
 
+  eventBreakpointsAgent(): ProtocolProxyApi.EventBreakpointsApi {
+    return this.getAgent('EventBreakpoints');
+  }
+
   heapProfilerAgent(): ProtocolProxyApi.HeapProfilerApi {
     return this.getAgent('HeapProfiler');
   }
@@ -758,6 +762,10 @@ export class TargetBase {
       return;
     }
     manager.removeDomainDispatcher(dispatcher);
+  }
+
+  registerAccessibilityDispatcher(dispatcher: ProtocolProxyApi.AccessibilityDispatcher): void {
+    this.registerDispatcher('Accessibility', dispatcher);
   }
 
   registerAnimationDispatcher(dispatcher: ProtocolProxyApi.AnimationDispatcher): void {

@@ -618,8 +618,10 @@ void LayoutBlock::AddVisualOverflowFromBlockChildren() {
     // the outline which may enclose continuations.
     auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
     if (child_block_flow &&
-        child_block_flow->ContainsInlineWithOutlineAndContinuation())
+        child_block_flow->ContainsInlineWithOutlineAndContinuation() &&
+        !child_block_flow->ChildPrePaintBlockedByDisplayLock()) {
       child_block_flow->AddVisualOverflowFromInlineChildren();
+    }
     AddVisualOverflowFromChild(*child);
   }
 }
@@ -639,8 +641,10 @@ void LayoutBlock::AddLayoutOverflowFromBlockChildren() {
     // the outline which may enclose continuations.
     auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
     if (child_block_flow &&
-        child_block_flow->ContainsInlineWithOutlineAndContinuation())
+        child_block_flow->ContainsInlineWithOutlineAndContinuation() &&
+        !child_block_flow->ChildPrePaintBlockedByDisplayLock()) {
       child_block_flow->AddLayoutOverflowFromInlineChildren();
+    }
 
     AddLayoutOverflowFromChild(*child);
   }
@@ -701,7 +705,7 @@ void LayoutBlock::UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,
        ChangeInAvailableLogicalHeightAffectsChild(this, child)) ||
       (child.IsListMarker() && IsListItem() &&
        To<LayoutBlockFlow>(this)->ContainsFloats())) {
-    if (child.IsLayoutNGMixin())
+    if (child.IsLayoutNGObject())
       child.SetSelfNeedsLayoutForAvailableSpace(true);
     else
       child.SetChildNeedsLayout(kMarkOnlyThis);
@@ -993,7 +997,7 @@ void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
   LayoutObject* parent = positioned_object->Parent();
   bool layout_changed = false;
   if ((parent->IsLayoutNGFlexibleBox() &&
-       !positioned_object->IsLayoutNGMixin() &&
+       !positioned_object->IsLayoutNGObject() &&
        LayoutFlexibleBox::SetStaticPositionForChildInFlexNGContainer(
            *positioned_object, To<LayoutBlock>(parent))) ||
       (parent->IsFlexibleBox() &&
@@ -1133,23 +1137,8 @@ void LayoutBlock::ImageChanged(WrappedImagePtr image,
 static void ProcessPositionedObjectRemoval(
     ContainingBlockState containing_block_state,
     LayoutObject* positioned_object) {
-  if (containing_block_state == kNewContainingBlock) {
+  if (containing_block_state == kNewContainingBlock)
     positioned_object->SetChildNeedsLayout(kMarkOnlyThis);
-
-    // The positioned object changing containing block may change paint
-    // invalidation container.
-    // Invalidate it (including non-compositing descendants) on its original
-    // paint invalidation container.
-    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      // This valid because we need to invalidate based on the current
-      // status.
-      DisableCompositingQueryAsserts compositing_disabler;
-      if (!positioned_object->IsPaintInvalidationContainer()) {
-        ObjectPaintInvalidator(*positioned_object)
-            .InvalidatePaintIncludingNonCompositingDescendants();
-      }
-    }
-  }
 
   // It is parent blocks job to add positioned child to positioned objects
   // list of its containing block.
@@ -1627,9 +1616,9 @@ MinMaxSizes LayoutBlock::ComputeIntrinsicLogicalWidths() const {
   if (UNLIKELY(IsListBox(this) && StyleRef().LogicalWidth().IsPercentOrCalc()))
     child_sizes.min_size = LayoutUnit();
 
-  if (IsTableCell()) {
+  if (IsTableCellLegacy()) {
     Length table_cell_width =
-        ToInterface<LayoutNGTableCellInterface>(this)->StyleOrColLogicalWidth();
+        To<LayoutTableCell>(this)->StyleOrColLogicalWidth();
     if (table_cell_width.IsFixed() && table_cell_width.Value() > 0) {
       child_sizes.max_size = std::max(
           child_sizes.min_size, AdjustContentBoxLogicalWidthForBoxSizing(
@@ -1686,7 +1675,7 @@ MinMaxSizes LayoutBlock::PreferredLogicalWidths() const {
     sizes.max_size = LayoutUnit(sizes.max_size.Ceil());
   }
 
-  if (IsLayoutNGMixin() && IsTable()) {
+  if (IsLayoutNGObject() && IsTable()) {
     sizes.Encompass(IntrinsicLogicalWidths().min_size);
   }
 

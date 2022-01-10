@@ -25,10 +25,13 @@ namespace dawn_native {
     class BindGroupMock : public BindGroupBase {
       public:
         BindGroupMock(DeviceBase* device) : BindGroupBase(device) {
+            ON_CALL(*this, DestroyImpl).WillByDefault([this]() {
+                this->BindGroupBase::DestroyImpl();
+            });
         }
         ~BindGroupMock() override = default;
 
-        MOCK_METHOD(void, DestroyApiObjectImpl, (), (override));
+        MOCK_METHOD(void, DestroyImpl, (), (override));
     };
 
 }  // namespace dawn_native

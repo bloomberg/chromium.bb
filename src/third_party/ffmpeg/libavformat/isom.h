@@ -237,6 +237,8 @@ typedef struct MOVStreamContext {
     int has_sidx;  // If there is an sidx entry for this stream.
     struct {
         struct AVAESCTR* aes_ctr;
+        struct AVAES *aes_ctx;
+        unsigned int frag_index_entry_base;
         unsigned int per_sample_iv_size;  // Either 0, 8, or 16.
         AVEncryptionInfo *default_encrypted_sample;
         MOVEncryptionIndex *encryption_index;
@@ -389,5 +391,17 @@ static inline enum AVCodecID ff_mov_get_lpcm_codec_id(int bps, int flags)
 
 #define MOV_ISMV_TTML_TAG MKTAG('d', 'f', 'x', 'p')
 #define MOV_MP4_TTML_TAG  MKTAG('s', 't', 'p', 'p')
+
+struct MP4TrackKindValueMapping {
+    int         disposition;
+    const char *value;
+};
+
+struct MP4TrackKindMapping {
+    const char   *scheme_uri;
+    const struct  MP4TrackKindValueMapping *value_maps;
+};
+
+extern const struct MP4TrackKindMapping ff_mov_track_kind_table[];
 
 #endif /* AVFORMAT_ISOM_H */

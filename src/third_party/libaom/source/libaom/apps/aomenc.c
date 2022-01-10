@@ -64,8 +64,8 @@ static size_t wrap_fwrite(const void *ptr, size_t size, size_t nmemb,
 
 static const char *exec_name;
 
-static void warn_or_exit_on_errorv(aom_codec_ctx_t *ctx, int fatal,
-                                   const char *s, va_list ap) {
+static AOM_TOOLS_FORMAT_PRINTF(3, 0) void warn_or_exit_on_errorv(
+    aom_codec_ctx_t *ctx, int fatal, const char *s, va_list ap) {
   if (ctx->err) {
     const char *detail = aom_codec_error_detail(ctx);
 
@@ -78,7 +78,9 @@ static void warn_or_exit_on_errorv(aom_codec_ctx_t *ctx, int fatal,
   }
 }
 
-static void ctx_exit_on_error(aom_codec_ctx_t *ctx, const char *s, ...) {
+static AOM_TOOLS_FORMAT_PRINTF(2,
+                               3) void ctx_exit_on_error(aom_codec_ctx_t *ctx,
+                                                         const char *s, ...) {
   va_list ap;
 
   va_start(ap, s);
@@ -86,8 +88,8 @@ static void ctx_exit_on_error(aom_codec_ctx_t *ctx, const char *s, ...) {
   va_end(ap);
 }
 
-static void warn_or_exit_on_error(aom_codec_ctx_t *ctx, int fatal,
-                                  const char *s, ...) {
+static AOM_TOOLS_FORMAT_PRINTF(3, 4) void warn_or_exit_on_error(
+    aom_codec_ctx_t *ctx, int fatal, const char *s, ...) {
   va_list ap;
 
   va_start(ap, s);
@@ -191,6 +193,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ERROR_RESILIENT_MODE,
                                         AV1E_SET_AQ_MODE,
                                         AV1E_SET_DELTAQ_MODE,
+                                        AV1E_SET_DELTAQ_STRENGTH,
                                         AV1E_SET_DELTALF_MODE,
                                         AV1E_SET_FRAME_PERIODIC_BOOST,
                                         AV1E_SET_NOISE_SENSITIVITY,
@@ -231,6 +234,8 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_PARTITION_INFO_PATH,
                                         AV1E_SET_ENABLE_DIRECTIONAL_INTRA,
                                         AV1E_SET_ENABLE_TX_SIZE_SEARCH,
+                                        AV1E_SET_LOOPFILTER_CONTROL,
+                                        AV1E_SET_AUTO_INTRA_TOOLS_OFF,
                                         0 };
 
 const arg_def_t *main_args[] = { &g_av1_codec_arg_defs.help,
@@ -390,6 +395,7 @@ const arg_def_t *av1_ctrl_args[] = {
   &g_av1_codec_arg_defs.error_resilient_mode,
   &g_av1_codec_arg_defs.aq_mode,
   &g_av1_codec_arg_defs.deltaq_mode,
+  &g_av1_codec_arg_defs.deltaq_strength,
   &g_av1_codec_arg_defs.deltalf_mode,
   &g_av1_codec_arg_defs.frame_periodic_boost,
   &g_av1_codec_arg_defs.noise_sens,
@@ -430,12 +436,15 @@ const arg_def_t *av1_ctrl_args[] = {
   &g_av1_codec_arg_defs.partition_info_path,
   &g_av1_codec_arg_defs.enable_directional_intra,
   &g_av1_codec_arg_defs.enable_tx_size_search,
+  &g_av1_codec_arg_defs.loopfilter_control,
+  &g_av1_codec_arg_defs.auto_intra_tools_off,
   NULL,
 };
 
 const arg_def_t *av1_key_val_args[] = {
   &g_av1_codec_arg_defs.passes,
   &g_av1_codec_arg_defs.two_pass_output,
+  &g_av1_codec_arg_defs.second_pass_log,
   &g_av1_codec_arg_defs.fwd_kf_dist,
   NULL,
 };
@@ -551,7 +560,7 @@ struct stream_state {
   unsigned int orig_height;
   int orig_write_webm;
   int orig_write_ivf;
-  char tmp_out_fn[40];
+  char tmp_out_fn[1000];
 };
 
 static void validate_positive_rational(const char *msg,
@@ -1194,8 +1203,9 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
 
   // set the two_pass_output field
   if (!config->two_pass_output && global->passes == 3) {
+    // If not specified, set the name of two_pass_output file here.
     snprintf(stream->tmp_out_fn, sizeof(stream->tmp_out_fn),
-             "tmp_2pass_output_%d.ivf", stream->index);
+             "%.980s_pass2_%d.ivf", stream->config.out_fn, stream->index);
     stream->config.two_pass_output = stream->tmp_out_fn;
   }
   if (config->two_pass_output) {

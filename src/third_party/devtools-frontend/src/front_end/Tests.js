@@ -141,6 +141,21 @@
     this.domAutomationController_.send('[FAILED] ' + error);
   };
 
+  TestSuite.prototype.setupLegacyFilesForTest = async function() {
+    try {
+      await Promise.all([
+        self.runtime.loadLegacyModule('core/common/common-legacy.js'),
+        self.runtime.loadLegacyModule('core/sdk/sdk-legacy.js'),
+        self.runtime.loadLegacyModule('core/host/host-legacy.js'),
+        self.runtime.loadLegacyModule('ui/legacy/legacy-legacy.js'),
+        self.runtime.loadLegacyModule('models/workspace/workspace-legacy.js'),
+      ]);
+      this.reportOk_();
+    } catch (e) {
+      this.reportFailure_(e);
+    }
+  };
+
   /**
    * Run specified test on a fresh instance of the test suite.
    * @param {Array<string>} args method name followed by its parameters.
@@ -1290,6 +1305,7 @@
 
   TestSuite.prototype.testInspectedElementIs = async function(nodeName) {
     this.takeControl();
+    await self.runtime.loadLegacyModule('panels/elements/elements-legacy.js');
     if (!Elements.ElementsPanel.firstInspectElementNodeNameForTest) {
       await new Promise(f => this.addSniffer(Elements.ElementsPanel, 'firstInspectElementCompletedForTest', f));
     }
@@ -1331,8 +1347,8 @@
     const browserContextIds = [];
     const targetAgent = self.SDK.targetManager.mainTarget().targetAgent();
 
-    const target1 = await createIsolatedTarget(url);
-    const target2 = await createIsolatedTarget(url);
+    const target1 = await createIsolatedTarget(url, browserContextIds);
+    const target2 = await createIsolatedTarget(url, browserContextIds);
 
     const response = await targetAgent.invoke_getBrowserContexts();
     this.assertEquals(response.browserContextIds.length, 2);
@@ -1356,34 +1372,37 @@
     this.assertEquals(removedTargets.indexOf(target2) !== -1, true);
 
     this.releaseControl();
-
-    /**
-     * @param {string} url
-     * @return {!Promise<!SDK.Target>}
-     */
-    async function createIsolatedTarget(url) {
-      const {browserContextId} = await targetAgent.invoke_createBrowserContext();
-      browserContextIds.push(browserContextId);
-
-      const {targetId} = await targetAgent.invoke_createTarget({url: 'about:blank', browserContextId});
-      await targetAgent.invoke_attachToTarget({targetId, flatten: true});
-
-      const target = self.SDK.targetManager.targets().find(target => target.id() === targetId);
-      const pageAgent = target.pageAgent();
-      await pageAgent.invoke_enable();
-      await pageAgent.invoke_navigate({url});
-      return target;
-    }
-
-    async function disposeBrowserContext(browserContextId) {
-      const targetAgent = self.SDK.targetManager.mainTarget().targetAgent();
-      await targetAgent.invoke_disposeBrowserContext({browserContextId});
-    }
-
-    async function evalCode(target, code) {
-      return (await target.runtimeAgent().invoke_evaluate({expression: code})).result.value;
-    }
   };
+
+  /**
+   * @param {string} url
+   * @return {!Promise<!SDK.Target>}
+   */
+  async function createIsolatedTarget(url, opt_browserContextIds) {
+    const targetAgent = self.SDK.targetManager.mainTarget().targetAgent();
+    const {browserContextId} = await targetAgent.invoke_createBrowserContext();
+    if (opt_browserContextIds) {
+      opt_browserContextIds.push(browserContextId);
+    }
+
+    const {targetId} = await targetAgent.invoke_createTarget({url: 'about:blank', browserContextId});
+    await targetAgent.invoke_attachToTarget({targetId, flatten: true});
+
+    const target = self.SDK.targetManager.targets().find(target => target.id() === targetId);
+    const pageAgent = target.pageAgent();
+    await pageAgent.invoke_enable();
+    await pageAgent.invoke_navigate({url});
+    return target;
+  }
+
+  async function disposeBrowserContext(browserContextId) {
+    const targetAgent = self.SDK.targetManager.mainTarget().targetAgent();
+    await targetAgent.invoke_disposeBrowserContext({browserContextId});
+  }
+
+  async function evalCode(target, code) {
+    return (await target.runtimeAgent().invoke_evaluate({expression: code})).result.value;
+  }
 
   TestSuite.prototype.testInputDispatchEventsToOOPIF = async function() {
     this.takeControl();
@@ -1391,14 +1410,12 @@
     await new Promise(callback => this._waitForTargets(2, callback));
 
     async function takeLogs(target) {
-      const code = `
+      return await evalCode(target, `
         (function() {
           var result = window.logs.join(' ');
           window.logs = [];
           return result;
-        })()
-      `;
-      return (await target.runtimeAgent().invoke_evaluate({expression: code})).result.value;
+        })()`);
     }
 
     let parentFrameOutput;

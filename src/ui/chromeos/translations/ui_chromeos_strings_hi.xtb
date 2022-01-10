@@ -305,13 +305,13 @@
 <translation id="3620292326130836921">सभी का बैक अप लिया गया!</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, आपका एडमिन प्रबंधित करता है, जानकारी</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> आइटम भेजे गए.</translation>
-<translation id="3645531960514756307">फ़ोल्डर को अनपिन करें</translation>
 <translation id="3685122418104378273">मोबाइल डेटा का उपयोग करते समय, Google डिस्‍क समन्‍वयन डिफ़ॉल्‍ट रूप से अक्षम रहता है.</translation>
 <translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> रद्द करें.</translation>
 <translation id="3690128548376345212"><ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /> का नेटवर्क <ph name="NETWORK_INDEX" />, चालू नहीं किया गया, <ph name="CONNECTION_STATUS" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />%, जानकारी</translation>
 <translation id="3691184985318546178">सिंहला</translation>
 <translation id="3726463242007121105">यह डिवाइस नहीं खोला जा सकता क्‍योंकि इसका फ़ाइल सिस्‍टम समर्थित नहीं है.</translation>
 <translation id="3727148787322499904">यह सेटिंग बदलने से सभी शेयर नेटवर्क प्रभावित होंगे</translation>
+<translation id="3737576078404241332">साइडबार से हटाएं</translation>
 <translation id="3741243925913727067">अपने मीडिया डिवाइस की फ़ोटो और वीडियो का Google डिस्‍क पर बैक अप लें.</translation>
 <translation id="3749289110408117711">फ़ाइल नाम</translation>
 <translation id="3780536599611287598">आपके पास फ़ाइलों को '<ph name="FOLDER_NAME" />' में ले जाने की मंज़ूरी नहीं है.</translation>
@@ -372,6 +372,7 @@
 <translation id="4326142238881453352">बॉटनिस्ट</translation>
 <translation id="4326192123064055915">कॉफ़ी</translation>
 <translation id="4336032328163998280">कॉपी बनाने का काम विफल रहा. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4340491671558548972">साइडबार में जोड़ें</translation>
 <translation id="4348495354623233847">अरेबिक कीबोर्ड के साथ सोरानी कुर्दिश</translation>
 <translation id="4363958938297989186">फ़ोनेटिक कीबोर्ड के साथ रशियन</translation>
 <translation id="4364327530094270451">खरबूजा</translation>
@@ -927,7 +928,6 @@
 <translation id="9110990317705400362">हम आपकी ब्राउज़िंग को सुरक्षित रखने के तरीकों पर लगातार काम कर रहे हैं. पूर्व में, कोई भी वेबसाइट आपको अपने ब्राउज़र में एक्सटेंशन जोड़ने के लिए संकेत दे सकती थी. Google Chrome के नवीनतम संस्करणों में, आपको एक्सटेंशन पेज के माध्यम से इन एक्सटेंशन को जोड़कर Chrome को स्पष्ट रूप से बताना होगा कि आप इन्हें इंस्टॉल करना चाहते हैं. <ph name="BEGIN_LINK" />और जानें<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">अनलॉक करें</translation>
 <translation id="912419004897138677">कोडेक</translation>
-<translation id="9129931661813833980">फ़ोल्डर को पिन करें</translation>
 <translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' के सदस्यों को इन आइटम का एक्सेस मिल जाएगा.</translation>
 <translation id="9131598836763251128">एक या ज़्यादा फ़ाइल को चुनें</translation>
 <translation id="9133055936679483811">ज़िप करना विफल रहा. <ph name="ERROR_MESSAGE" /></translation>

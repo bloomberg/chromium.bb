@@ -37,9 +37,10 @@ bool ImageGatherOperation(uint32_t opcode);
 bool ImageFetchOperation(uint32_t opcode);
 bool ImageSampleOperation(uint32_t opcode);
 
-uint32_t MemoryScopeParam(uint32_t opcode);
-uint32_t ExecutionScopeParam(uint32_t opcode);
-uint32_t ImageOperandsParam(uint32_t opcode);
+uint32_t MemoryScopeParamPosition(uint32_t opcode);
+uint32_t ExecutionScopeParamPosition(uint32_t opcode);
+uint32_t ImageOperandsParamPosition(uint32_t opcode);
+uint32_t ImageOperandsParamCount(uint32_t opcode);
 
 static inline const char* string_SpvOpcode(uint32_t opcode) {
     switch ((spv::Op)opcode) {
@@ -723,6 +724,20 @@ static inline const char* string_SpvOpcode(uint32_t opcode) {
             return "OpDemoteToHelperInvocationEXT";
          case spv::OpIsHelperInvocationEXT:
             return "OpIsHelperInvocationEXT";
+         case spv::OpConvertUToImageNV:
+            return "OpConvertUToImageNV";
+         case spv::OpConvertUToSamplerNV:
+            return "OpConvertUToSamplerNV";
+         case spv::OpConvertImageToUNV:
+            return "OpConvertImageToUNV";
+         case spv::OpConvertSamplerToUNV:
+            return "OpConvertSamplerToUNV";
+         case spv::OpConvertUToSampledImageNV:
+            return "OpConvertUToSampledImageNV";
+         case spv::OpConvertSampledImageToUNV:
+            return "OpConvertSampledImageToUNV";
+         case spv::OpSamplerImageAddressingModeNV:
+            return "OpSamplerImageAddressingModeNV";
          case spv::OpSubgroupShuffleINTEL:
             return "OpSubgroupShuffleINTEL";
          case spv::OpSubgroupShuffleDownINTEL:
@@ -771,8 +786,8 @@ static inline const char* string_SpvOpcode(uint32_t opcode) {
             return "OpIMul32x16INTEL";
          case spv::OpUMul32x16INTEL:
             return "OpUMul32x16INTEL";
-         case spv::OpConstFunctionPointerINTEL:
-            return "OpConstFunctionPointerINTEL";
+         case spv::OpConstantFunctionPointerINTEL:
+            return "OpConstantFunctionPointerINTEL";
          case spv::OpFunctionPointerCallINTEL:
             return "OpFunctionPointerCallINTEL";
          case spv::OpAsmTargetINTEL:

@@ -15,6 +15,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/policy/dlp/dlp_content_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -136,15 +137,26 @@ bool ChromeCaptureModeDelegate::IsCaptureModeInitRestrictedByDlp() const {
   return policy::DlpContentManager::Get()->IsCaptureModeInitRestricted();
 }
 
-bool ChromeCaptureModeDelegate::IsCaptureAllowedByDlp(
+void ChromeCaptureModeDelegate::CheckCaptureModeInitRestrictionByDlp(
+    ash::OnCaptureModeDlpRestrictionChecked callback) {
+  policy::DlpContentManager::Get()->CheckCaptureModeInitRestriction(
+      std::move(callback));
+}
+
+void ChromeCaptureModeDelegate::CheckCaptureOperationRestrictionByDlp(
     const aura::Window* window,
     const gfx::Rect& bounds,
-    bool for_video) const {
-  policy::DlpContentManager* dlp_content_manager =
-      policy::DlpContentManager::Get();
+    ash::OnCaptureModeDlpRestrictionChecked callback) {
   const ScreenshotArea area = ConvertToScreenshotArea(window, bounds);
-  return for_video ? !dlp_content_manager->IsVideoCaptureRestricted(area)
-                   : !dlp_content_manager->IsScreenshotRestricted(area);
+  policy::DlpContentManager::Get()->CheckScreenshotRestriction(
+      area, std::move(callback));
+}
+
+bool ChromeCaptureModeDelegate::IsCaptureAllowedByDlp(
+    const aura::Window* window,
+    const gfx::Rect& bounds) const {
+  return !policy::DlpContentManager::Get()->IsScreenshotRestricted(
+      ConvertToScreenshotArea(window, bounds));
 }
 
 bool ChromeCaptureModeDelegate::IsCaptureAllowedByPolicy() const {
@@ -203,6 +215,10 @@ bool ChromeCaptureModeDelegate::GetDriveFsMountPointPath(
 
   *result = integration_service->GetMountPointPath();
   return true;
+}
+
+base::FilePath ChromeCaptureModeDelegate::GetAndroidFilesPath() const {
+  return file_manager::util::GetAndroidFilesPath();
 }
 
 std::unique_ptr<ash::RecordingOverlayView>

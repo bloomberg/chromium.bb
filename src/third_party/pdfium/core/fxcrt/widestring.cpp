@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <sstream>
 
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_extension.h"
@@ -35,23 +36,22 @@ namespace {
 constexpr wchar_t kWideTrimChars[] = L"\x09\x0a\x0b\x0c\x0d\x20";
 
 const wchar_t* FX_wcsstr(const wchar_t* haystack,
-                         int haystack_len,
+                         size_t haystack_len,
                          const wchar_t* needle,
-                         int needle_len) {
-  if (needle_len > haystack_len || needle_len == 0) {
+                         size_t needle_len) {
+  if (needle_len > haystack_len || needle_len == 0)
     return nullptr;
-  }
+
   const wchar_t* end_ptr = haystack + haystack_len - needle_len;
   while (haystack <= end_ptr) {
-    int i = 0;
+    size_t i = 0;
     while (1) {
-      if (haystack[i] != needle[i]) {
+      if (haystack[i] != needle[i])
         break;
-      }
+
       i++;
-      if (i == needle_len) {
+      if (i == needle_len)
         return haystack;
-      }
     }
     haystack++;
   }
@@ -66,38 +66,39 @@ absl::optional<size_t> GuessSizeForVSWPrintf(const wchar_t* pFormat,
       ++nMaxLen;
       continue;
     }
-    int nItemLen = 0;
-    int nWidth = 0;
+    int iWidth = 0;
     for (; *pStr != 0; pStr++) {
       if (*pStr == '#') {
         nMaxLen += 2;
       } else if (*pStr == '*') {
-        nWidth = va_arg(argList, int);
+        iWidth = va_arg(argList, int);
       } else if (*pStr != '-' && *pStr != '+' && *pStr != '0' && *pStr != ' ') {
         break;
       }
     }
-    if (nWidth == 0) {
-      nWidth = FXSYS_wtoi(pStr);
+    if (iWidth == 0) {
+      iWidth = FXSYS_wtoi(pStr);
       while (FXSYS_IsDecimalDigit(*pStr))
         ++pStr;
     }
-    if (nWidth < 0 || nWidth > 128 * 1024)
+    if (iWidth < 0 || iWidth > 128 * 1024)
       return absl::nullopt;
-    int nPrecision = 0;
+    uint32_t nWidth = static_cast<uint32_t>(iWidth);
+    int iPrecision = 0;
     if (*pStr == '.') {
       pStr++;
       if (*pStr == '*') {
-        nPrecision = va_arg(argList, int);
+        iPrecision = va_arg(argList, int);
         pStr++;
       } else {
-        nPrecision = FXSYS_wtoi(pStr);
+        iPrecision = FXSYS_wtoi(pStr);
         while (FXSYS_IsDecimalDigit(*pStr))
           ++pStr;
       }
     }
-    if (nPrecision < 0 || nPrecision > 128 * 1024)
+    if (iPrecision < 0 || iPrecision > 128 * 1024)
       return absl::nullopt;
+    uint32_t nPrecision = static_cast<uint32_t>(iPrecision);
     int nModifier = 0;
     if (*pStr == L'I' && *(pStr + 1) == L'6' && *(pStr + 2) == L'4') {
       pStr += 3;
@@ -119,6 +120,7 @@ absl::optional<size_t> GuessSizeForVSWPrintf(const wchar_t* pFormat,
           break;
       }
     }
+    size_t nItemLen = 0;
     switch (*pStr | nModifier) {
       case 'c':
       case 'C':
@@ -679,11 +681,11 @@ ByteString WideString::ToUTF16LE() const {
     return ByteString("\0\0", 2);
 
   ByteString result;
-  int len = m_pData->m_nDataLength;
+  size_t len = m_pData->m_nDataLength;
   {
     // Span's lifetime must end before ReleaseBuffer() below.
     pdfium::span<char> buffer = result.GetBuffer(len * 2 + 2);
-    for (int i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
       buffer[i * 2] = m_pData->m_String[i] & 0xff;
       buffer[i * 2 + 1] = m_pData->m_String[i] >> 8;
     }
@@ -705,9 +707,7 @@ WideString WideString::EncodeEntities() const {
 }
 
 WideString WideString::Substr(size_t offset) const {
-  if (offset >= GetLength())
-    return WideString();
-
+  // Unsigned underflow is well-defined and out-of-range is handled by Substr().
   return Substr(offset, GetLength() - offset);
 }
 

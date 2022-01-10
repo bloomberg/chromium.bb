@@ -62,16 +62,11 @@ static av_cold int init(AVFilterContext *ctx)
 
 static int query_formats(AVFilterContext *ctx)
 {
-    AVFilterFormats *formats = NULL;
-    int ret;
+    int reject_flags = AV_PIX_FMT_FLAG_HWACCEL   |
+                       AV_PIX_FMT_FLAG_BITSTREAM |
+                       FF_PIX_FMT_FLAG_SW_FLAT_SUB;
 
-    ret = ff_formats_pixdesc_filter(&formats, 0,
-                                    AV_PIX_FMT_FLAG_HWACCEL |
-                                    AV_PIX_FMT_FLAG_BITSTREAM |
-                                    FF_PIX_FMT_FLAG_SW_FLAT_SUB);
-    if (ret < 0)
-        return ret;
-    return ff_set_common_formats(ctx, formats);
+    return ff_set_common_formats(ctx, ff_formats_pixdesc_filter(0, reject_flags));
 }
 
 static int config_output(AVFilterLink *outlink)
@@ -187,10 +182,10 @@ const AVFilter ff_vf_untile = {
     .description   = NULL_IF_CONFIG_SMALL("Untile a frame into a sequence of frames."),
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
     .activate      = activate,
     .priv_size     = sizeof(UntileContext),
     FILTER_INPUTS(untile_inputs),
     FILTER_OUTPUTS(untile_outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .priv_class    = &untile_class,
 };

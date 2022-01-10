@@ -12,8 +12,10 @@
 //* See the License for the specific language governing permissions and
 //* limitations under the License.
 
-#include "dawn_native/dawn_platform.h"
-#include "dawn_native/DawnNative.h"
+{% set Prefix = metadata.proc_table_prefix %}
+{% set prefix = Prefix.lower() %}
+#include "dawn_native/{{prefix}}_platform.h"
+#include "dawn_native/{{Prefix}}Native.h"
 
 #include <algorithm>
 #include <vector>
@@ -26,51 +28,51 @@
 
 namespace dawn_native {
 
-    namespace {
+    {% for type in by_category["object"] %}
+        {% for method in c_methods(type) %}
+            {% set suffix = as_MethodSuffix(type.name, method.name) %}
 
-        {% for type in by_category["object"] %}
-            {% for method in c_methods(type) %}
-                {% set suffix = as_MethodSuffix(type.name, method.name) %}
+            {{as_cType(method.return_type.name)}} Native{{suffix}}(
+                {{-as_cType(type.name)}} cSelf
+                {%- for arg in method.arguments -%}
+                    , {{as_annotated_cType(arg)}}
+                {%- endfor -%}
+            ) {
+                //* Perform conversion between C types and frontend types
+                auto self = FromAPI(cSelf);
 
-                {{as_cType(method.return_type.name)}} Native{{suffix}}(
-                    {{-as_cType(type.name)}} cSelf
-                    {%- for arg in method.arguments -%}
-                        , {{as_annotated_cType(arg)}}
-                    {%- endfor -%}
-                ) {
-                    //* Perform conversion between C types and frontend types
-                    auto self = reinterpret_cast<{{as_frontendType(type)}}>(cSelf);
-
-                    {% for arg in method.arguments %}
-                        {% set varName = as_varName(arg.name) %}
-                        {% if arg.type.category in ["enum", "bitmask"] %}
-                            auto {{varName}}_ = static_cast<{{as_frontendType(arg.type)}}>({{varName}});
-                        {% elif arg.annotation != "value" or arg.type.category == "object" %}
-                            auto {{varName}}_ = reinterpret_cast<{{decorate("", as_frontendType(arg.type), arg)}}>({{varName}});
-                        {% else %}
-                            auto {{varName}}_ = {{as_varName(arg.name)}};
-                        {% endif %}
-                    {%- endfor-%}
-
-                    {% if method.return_type.name.canonical_case() != "void" %}
-                        auto result =
-                    {%- endif %}
-                    self->API{{method.name.CamelCase()}}(
-                        {%- for arg in method.arguments -%}
-                            {%- if not loop.first %}, {% endif -%}
-                            {{as_varName(arg.name)}}_
-                        {%- endfor -%}
-                    );
-                    {% if method.return_type.name.canonical_case() != "void" %}
-                        {% if method.return_type.category == "object" %}
-                            return reinterpret_cast<{{as_cType(method.return_type.name)}}>(result);
-                        {% else %}
-                            return result;
-                        {% endif %}
+                {% for arg in method.arguments %}
+                    {% set varName = as_varName(arg.name) %}
+                    {% if arg.type.category in ["enum", "bitmask"] %}
+                        auto {{varName}}_ = static_cast<{{as_frontendType(arg.type)}}>({{varName}});
+                    {% elif arg.annotation != "value" or arg.type.category == "object" %}
+                        auto {{varName}}_ = reinterpret_cast<{{decorate("", as_frontendType(arg.type), arg)}}>({{varName}});
+                    {% else %}
+                        auto {{varName}}_ = {{as_varName(arg.name)}};
                     {% endif %}
-                }
-            {% endfor %}
+                {%- endfor-%}
+
+                {% if method.return_type.name.canonical_case() != "void" %}
+                    auto result =
+                {%- endif %}
+                self->API{{method.name.CamelCase()}}(
+                    {%- for arg in method.arguments -%}
+                        {%- if not loop.first %}, {% endif -%}
+                        {{as_varName(arg.name)}}_
+                    {%- endfor -%}
+                );
+                {% if method.return_type.name.canonical_case() != "void" %}
+                    {% if method.return_type.category == "object" %}
+                        return ToAPI(result);
+                    {% else %}
+                        return result;
+                    {% endif %}
+                {% endif %}
+            }
         {% endfor %}
+    {% endfor %}
+
+    namespace {
 
         struct ProcEntry {
             WGPUProc proc;
@@ -82,12 +84,11 @@ namespace dawn_native {
             {% endfor %}
         };
         static constexpr size_t sProcMapSize = sizeof(sProcMap) / sizeof(sProcMap[0]);
-    }
 
-    WGPUInstance NativeCreateInstance(WGPUInstanceDescriptor const* cDescriptor) {
-        const dawn_native::InstanceDescriptor* descriptor =
-            reinterpret_cast<const dawn_native::InstanceDescriptor*>(cDescriptor);
-        return reinterpret_cast<WGPUInstance>(InstanceBase::Create(descriptor));
+    }  // anonymous namespace
+
+    WGPUInstance NativeCreateInstance(WGPUInstanceDescriptor const* descriptor) {
+        return ToAPI(InstanceBase::Create(FromAPI(descriptor)));
     }
 
     WGPUProc NativeGetProcAddress(WGPUDevice, const char* procName) {
@@ -126,9 +127,10 @@ namespace dawn_native {
         return result;
     }
 
-    static DawnProcTable gProcTable = {
-        NativeGetProcAddress,
-        NativeCreateInstance,
+    static {{Prefix}}ProcTable gProcTable = {
+        {% for function in by_category["function"] %}
+            Native{{as_cppType(function.name)}},
+        {% endfor %}
         {% for type in by_category["object"] %}
             {% for method in c_methods(type) %}
                 Native{{as_MethodSuffix(type.name, method.name)}},
@@ -136,7 +138,7 @@ namespace dawn_native {
         {% endfor %}
     };
 
-    const DawnProcTable& GetProcsAutogen() {
+    const {{Prefix}}ProcTable& GetProcsAutogen() {
         return gProcTable;
     }
 }

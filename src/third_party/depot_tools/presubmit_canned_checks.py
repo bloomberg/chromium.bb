@@ -1739,7 +1739,9 @@ def CheckChangedLUCIConfigs(input_api, output_api):
         out_f = output_api.PresubmitError
       else:
         out_f = output_api.PresubmitNotifyResult
-      outputs.append(out_f('Config validation: %s' % msg['text']))
+      outputs.append(
+          out_f('Config validation for %s: %s' % ([str(obj['path'])
+                                                   for obj in f], msg['text'])))
   return outputs
 
 

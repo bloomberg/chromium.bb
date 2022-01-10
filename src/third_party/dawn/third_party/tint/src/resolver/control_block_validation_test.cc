@@ -30,7 +30,7 @@ TEST_F(ResolverControlBlockValidationTest,
   // switch (a) {
   //   default: {}
   // }
-  auto* var = Var("a", ty.f32(), ast::StorageClass::kNone, Expr(3.14f));
+  auto* var = Var("a", ty.f32(), Expr(3.14f));
 
   auto* block = Block(Decl(var), Switch(Expr(Source{{12, 34}}, "a"),  //
                                         DefaultCase()));
@@ -48,11 +48,11 @@ TEST_F(ResolverControlBlockValidationTest, SwitchWithoutDefault_Fail) {
   // switch (a) {
   //   case 1: {}
   // }
-  auto* var = Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2));
+  auto* var = Var("a", ty.i32(), Expr(2));
 
   auto* block = Block(Decl(var),                     //
                       Switch(Source{{12, 34}}, "a",  //
-                             Case(Literal(1))));
+                             Case(Expr(1))));
 
   WrapInFunction(block);
 
@@ -68,12 +68,12 @@ TEST_F(ResolverControlBlockValidationTest, SwitchWithTwoDefault_Fail) {
   //   case 1: {}
   //   default: {}
   // }
-  auto* var = Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2));
+  auto* var = Var("a", ty.i32(), Expr(2));
 
-  auto* block = Block(Decl(var),                //
-                      Switch("a",               //
-                             DefaultCase(),     //
-                             Case(Literal(1)),  //
+  auto* block = Block(Decl(var),             //
+                      Switch("a",            //
+                             DefaultCase(),  //
+                             Case(Expr(1)),  //
                              DefaultCase(Source{{12, 34}})));
 
   WrapInFunction(block);
@@ -90,12 +90,16 @@ TEST_F(ResolverControlBlockValidationTest, UnreachableCode_Loop_continue) {
   //   continue;
   //   z = 1;
   // }
-  WrapInFunction(Loop(Block(Decl(Var("z", ty.i32(), ast::StorageClass::kNone)),
-                            create<ast::ContinueStatement>(),
-                            Assign(Source{{12, 34}}, "z", 1))));
+  auto* decl_z = Decl(Var("z", ty.i32()));
+  auto* cont = Continue();
+  auto* assign_z = Assign(Source{{12, 34}}, "z", 1);
+  WrapInFunction(Loop(Block(decl_z, cont, assign_z)));
 
-  EXPECT_FALSE(r()->Resolve()) << r()->error();
-  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
+  ASSERT_TRUE(r()->Resolve()) << r()->error();
+  EXPECT_EQ(r()->error(), "12:34 warning: code is unreachable");
+  EXPECT_TRUE(Sem().Get(decl_z)->IsReachable());
+  EXPECT_TRUE(Sem().Get(cont)->IsReachable());
+  EXPECT_FALSE(Sem().Get(assign_z)->IsReachable());
 }
 
 TEST_F(ResolverControlBlockValidationTest,
@@ -105,13 +109,16 @@ TEST_F(ResolverControlBlockValidationTest,
   //   {{{continue;}}}
   //   z = 1;
   // }
-  WrapInFunction(
-      Loop(Block(Decl(Var("z", ty.i32(), ast::StorageClass::kNone)),
-                 Block(Block(Block(create<ast::ContinueStatement>()))),
-                 Assign(Source{{12, 34}}, "z", 1))));
+  auto* decl_z = Decl(Var("z", ty.i32()));
+  auto* cont = Continue();
+  auto* assign_z = Assign(Source{{12, 34}}, "z", 1);
+  WrapInFunction(Loop(Block(decl_z, Block(Block(Block(cont))), assign_z)));
 
-  EXPECT_FALSE(r()->Resolve()) << r()->error();
-  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
+  ASSERT_TRUE(r()->Resolve()) << r()->error();
+  EXPECT_EQ(r()->error(), "12:34 warning: code is unreachable");
+  EXPECT_TRUE(Sem().Get(decl_z)->IsReachable());
+  EXPECT_TRUE(Sem().Get(cont)->IsReachable());
+  EXPECT_FALSE(Sem().Get(assign_z)->IsReachable());
 }
 
 TEST_F(ResolverControlBlockValidationTest, UnreachableCode_ForLoop_continue) {
@@ -120,14 +127,17 @@ TEST_F(ResolverControlBlockValidationTest, UnreachableCode_ForLoop_continue) {
   //   continue;
   //   z = 1;
   // }
-  WrapInFunction(
-      For(nullptr, nullptr, nullptr,
-          Block(create<ast::ContinueStatement>(),
-                Decl(Source{{12, 34}},
-                     Var("z", ty.i32(), ast::StorageClass::kNone)))));
+  auto* decl_z = Decl(Var("z", ty.i32()));
+  auto* cont = Continue();
+  auto* assign_z = Assign(Source{{12, 34}}, "z", 1);
+  WrapInFunction(For(nullptr, nullptr, nullptr,  //
+                     Block(decl_z, cont, assign_z)));
 
-  EXPECT_FALSE(r()->Resolve()) << r()->error();
-  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
+  ASSERT_TRUE(r()->Resolve()) << r()->error();
+  EXPECT_EQ(r()->error(), "12:34 warning: code is unreachable");
+  EXPECT_TRUE(Sem().Get(decl_z)->IsReachable());
+  EXPECT_TRUE(Sem().Get(cont)->IsReachable());
+  EXPECT_FALSE(Sem().Get(assign_z)->IsReachable());
 }
 
 TEST_F(ResolverControlBlockValidationTest,
@@ -137,31 +147,40 @@ TEST_F(ResolverControlBlockValidationTest,
   //   {{{continue;}}}
   //   z = 1;
   // }
-  WrapInFunction(
-      For(nullptr, nullptr, nullptr,
-          Block(Decl(Var("z", ty.i32(), ast::StorageClass::kNone)),
-                Block(Block(Block(create<ast::ContinueStatement>()))),
-                Assign(Source{{12, 34}}, "z", 1))));
+  auto* decl_z = Decl(Var("z", ty.i32()));
+  auto* cont = Continue();
+  auto* assign_z = Assign(Source{{12, 34}}, "z", 1);
+  WrapInFunction(For(nullptr, nullptr, nullptr,
+                     Block(decl_z, Block(Block(Block(cont))), assign_z)));
 
-  EXPECT_FALSE(r()->Resolve()) << r()->error();
-  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
+  ASSERT_TRUE(r()->Resolve()) << r()->error();
+  EXPECT_EQ(r()->error(), "12:34 warning: code is unreachable");
+  EXPECT_TRUE(Sem().Get(decl_z)->IsReachable());
+  EXPECT_TRUE(Sem().Get(cont)->IsReachable());
+  EXPECT_FALSE(Sem().Get(assign_z)->IsReachable());
 }
 
 TEST_F(ResolverControlBlockValidationTest, UnreachableCode_break) {
   // switch (1) {
-  //   case 1: { break; var a : u32 = 2;}
+  //   case 1: {
+  //     var z: i32;
+  //     break;
+  //     z = 1;
   //   default: {}
   // }
-  auto* decl = Decl(Source{{12, 34}},
-                    Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2)));
-
-  WrapInFunction(                                                //
-      Loop(Block(Switch(1,                                       //
-                        Case(Literal(1), Block(Break(), decl)),  //
+  auto* decl_z = Decl(Var("z", ty.i32()));
+  auto* brk = Break();
+  auto* assign_z = Assign(Source{{12, 34}}, "z", 1);
+  WrapInFunction(                                                     //
+      Loop(Block(Switch(1,                                            //
+                        Case(Expr(1), Block(decl_z, brk, assign_z)),  //
                         DefaultCase()))));
 
-  EXPECT_FALSE(r()->Resolve());
-  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
+  ASSERT_TRUE(r()->Resolve()) << r()->error();
+  EXPECT_EQ(r()->error(), "12:34 warning: code is unreachable");
+  EXPECT_TRUE(Sem().Get(decl_z)->IsReachable());
+  EXPECT_TRUE(Sem().Get(brk)->IsReachable());
+  EXPECT_FALSE(Sem().Get(assign_z)->IsReachable());
 }
 
 TEST_F(ResolverControlBlockValidationTest, UnreachableCode_break_InBlocks) {
@@ -171,16 +190,19 @@ TEST_F(ResolverControlBlockValidationTest, UnreachableCode_break_InBlocks) {
   //     default: {}
   //   }
   // }
-  auto* decl = Decl(Source{{12, 34}},
-                    Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2)));
+  auto* decl_z = Decl(Var("z", ty.i32()));
+  auto* brk = Break();
+  auto* assign_z = Assign(Source{{12, 34}}, "z", 1);
+  WrapInFunction(Loop(Block(
+      Switch(1,  //
+             Case(Expr(1), Block(decl_z, Block(Block(Block(brk))), assign_z)),
+             DefaultCase()))));
 
-  WrapInFunction(Loop(
-      Block(Switch(1,  //
-                   Case(Literal(1), Block(Block(Block(Block(Break()))), decl)),
-                   DefaultCase()))));
-
-  EXPECT_FALSE(r()->Resolve());
-  EXPECT_EQ(r()->error(), "12:34 error: code is unreachable");
+  ASSERT_TRUE(r()->Resolve()) << r()->error();
+  EXPECT_EQ(r()->error(), "12:34 warning: code is unreachable");
+  EXPECT_TRUE(Sem().Get(decl_z)->IsReachable());
+  EXPECT_TRUE(Sem().Get(brk)->IsReachable());
+  EXPECT_FALSE(Sem().Get(assign_z)->IsReachable());
 }
 
 TEST_F(ResolverControlBlockValidationTest,
@@ -190,12 +212,11 @@ TEST_F(ResolverControlBlockValidationTest,
   //   case 1: {}
   //   default: {}
   // }
-  auto* var = Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2));
+  auto* var = Var("a", ty.i32(), Expr(2));
 
-  auto* block =
-      Block(Decl(var), Switch("a",                                    //
-                              Case(Source{{12, 34}}, {Literal(1u)}),  //
-                              DefaultCase()));
+  auto* block = Block(Decl(var), Switch("a",                                 //
+                                        Case(Source{{12, 34}}, {Expr(1u)}),  //
+                                        DefaultCase()));
   WrapInFunction(block);
 
   EXPECT_FALSE(r()->Resolve());
@@ -211,11 +232,11 @@ TEST_F(ResolverControlBlockValidationTest,
   //   case -1: {}
   //   default: {}
   // }
-  auto* var = Var("a", ty.u32(), ast::StorageClass::kNone, Expr(2u));
+  auto* var = Var("a", ty.u32(), Expr(2u));
 
-  auto* block = Block(Decl(var),                                     //
-                      Switch("a",                                    //
-                             Case(Source{{12, 34}}, {Literal(-1)}),  //
+  auto* block = Block(Decl(var),                                  //
+                      Switch("a",                                 //
+                             Case(Source{{12, 34}}, {Expr(-1)}),  //
                              DefaultCase()));
   WrapInFunction(block);
 
@@ -233,15 +254,15 @@ TEST_F(ResolverControlBlockValidationTest,
   //   case 2u, 3u, 2u: {}
   //   default: {}
   // }
-  auto* var = Var("a", ty.u32(), ast::StorageClass::kNone, Expr(3u));
+  auto* var = Var("a", ty.u32(), Expr(3u));
 
   auto* block = Block(Decl(var),   //
                       Switch("a",  //
-                             Case(Literal(0u)),
+                             Case(Expr(0u)),
                              Case({
-                                 Literal(Source{{12, 34}}, 2u),
-                                 Literal(3u),
-                                 Literal(Source{{56, 78}}, 2u),
+                                 Expr(Source{{12, 34}}, 2u),
+                                 Expr(3u),
+                                 Expr(Source{{56, 78}}, 2u),
                              }),
                              DefaultCase()));
   WrapInFunction(block);
@@ -260,16 +281,16 @@ TEST_F(ResolverControlBlockValidationTest,
   //   case 0,1,2,-10: {}
   //   default: {}
   // }
-  auto* var = Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2));
+  auto* var = Var("a", ty.i32(), Expr(2));
 
   auto* block = Block(Decl(var),   //
                       Switch("a",  //
-                             Case(Literal(Source{{12, 34}}, -10)),
+                             Case(Expr(Source{{12, 34}}, -10)),
                              Case({
-                                 Literal(0),
-                                 Literal(1),
-                                 Literal(2),
-                                 Literal(Source{{56, 78}}, -10),
+                                 Expr(0),
+                                 Expr(1),
+                                 Expr(2),
+                                 Expr(Source{{56, 78}}, -10),
                              }),
                              DefaultCase()));
   WrapInFunction(block);
@@ -286,7 +307,7 @@ TEST_F(ResolverControlBlockValidationTest,
   // switch (a) {
   //   default: { fallthrough; }
   // }
-  auto* var = Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2));
+  auto* var = Var("a", ty.i32(), Expr(2));
   auto* fallthrough = create<ast::FallthroughStatement>(Source{{12, 34}});
   auto* block = Block(Decl(var),   //
                       Switch("a",  //
@@ -295,8 +316,8 @@ TEST_F(ResolverControlBlockValidationTest,
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: a fallthrough statement must not appear as the last "
-            "statement in last clause of a switch");
+            "12:34 error: a fallthrough statement must not be used in the last "
+            "switch case");
 }
 
 TEST_F(ResolverControlBlockValidationTest, SwitchCase_Pass) {
@@ -305,12 +326,12 @@ TEST_F(ResolverControlBlockValidationTest, SwitchCase_Pass) {
   //   default: {}
   //   case 5: {}
   // }
-  auto* var = Var("a", ty.i32(), ast::StorageClass::kNone, Expr(2));
+  auto* var = Var("a", ty.i32(), Expr(2));
 
   auto* block = Block(Decl(var),                             //
                       Switch("a",                            //
                              DefaultCase(Source{{12, 34}}),  //
-                             Case(Literal(5))));
+                             Case(Expr(5))));
   WrapInFunction(block);
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -324,7 +345,7 @@ TEST_F(ResolverControlBlockValidationTest, SwitchCaseAlias_Pass) {
   // }
 
   auto* my_int = Alias("MyInt", ty.u32());
-  auto* var = Var("a", ty.Of(my_int), ast::StorageClass::kNone, Expr(2u));
+  auto* var = Var("a", ty.Of(my_int), Expr(2u));
   auto* block = Block(Decl(var),  //
                       Switch("a", DefaultCase(Source{{12, 34}})));
 

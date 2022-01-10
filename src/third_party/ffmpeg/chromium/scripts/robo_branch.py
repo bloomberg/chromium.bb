@@ -66,12 +66,22 @@ def CreateAndCheckoutDatedSushiBranch(cfg):
 
   cfg.SetBranchName(branch_name)
 
+def AreThereAnyUntrackedAutorenamesUnderCwd(cfg):
+  """Return true if and only if there are untracked autorename files."""
+  # Note that this only sees files that are somewhere under `pwd`.
+  return shell.output_or_error(["git", "ls-files", "--other",
+                                "--exclude-standard", "*autorename*"]) != ""
 
 def CreateAndCheckoutDatedSushiBranchIfNeeded(cfg):
   """Create a dated branch from origin/master if we're not already on one."""
   if cfg.sushi_branch_name():
     shell.log(f"Already on sushi branch {cfg.sushi_branch_name()}")
     return
+
+  cfg.chdir_to_ffmpeg_home();
+  if AreThereAnyUntrackedAutorenamesUnderCwd(cfg):
+    raise Exception("Untracked autorename files found.  Probably delete them.")
+
   CreateAndCheckoutDatedSushiBranch(cfg)
 
 
@@ -348,3 +358,4 @@ def TryFakeDepsRoll(robo_configuration):
   # TODO: get mad otherwise.
   shell.output_or_error(["roll-deps.py", "third_party/ffmpeg", sha1])
   # TODO: -1 it.
+

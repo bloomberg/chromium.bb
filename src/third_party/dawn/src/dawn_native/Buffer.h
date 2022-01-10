@@ -52,7 +52,6 @@ namespace dawn_native {
 
         static BufferBase* MakeError(DeviceBase* device, const BufferDescriptor* descriptor);
 
-        bool DestroyApiObject() override;
         ObjectType GetType() const override;
 
         uint64_t GetSize() const;
@@ -65,6 +64,7 @@ namespace dawn_native {
         MaybeError ValidateCanUseOnQueueNow() const;
 
         bool IsFullBufferRange(uint64_t offset, uint64_t size) const;
+        bool NeedsInitialization() const;
         bool IsDataInitialized() const;
         void SetIsDataInitialized();
 
@@ -89,6 +89,7 @@ namespace dawn_native {
 
         // Constructor used only for mocking and testing.
         BufferBase(DeviceBase* device, BufferState state);
+        void DestroyImpl() override;
 
         ~BufferBase() override;
 

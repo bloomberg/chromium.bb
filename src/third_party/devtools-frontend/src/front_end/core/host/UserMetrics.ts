@@ -164,18 +164,6 @@ export class UserMetrics {
         EnumeratedHistogram.DualScreenDeviceEmulated, emulationAction, size);
   }
 
-  cssEditorOpened(editorName: string): void {
-    const size = Object.keys(CssEditorOpened).length + 1;
-    const key = editorName;
-    const value = CssEditorOpened[key];
-
-    if (value === undefined) {
-      return;
-    }
-
-    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.CssEditorOpened, value, size);
-  }
-
   experimentEnabledAtLaunch(experimentId: string): void {
     const size = DevtoolsExperiments['__lastValidEnumPosition'] + 1;
     const experiment = DevtoolsExperiments[experimentId];
@@ -260,6 +248,31 @@ export class UserMetrics {
 
       InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.SyncSetting, settingValue, size);
     });
+  }
+
+  recordingToggled(value: RecordingToggled): void {
+    const size = Object.keys(RecordingToggled).length + 1;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.RecordingToggled, value, size);
+  }
+
+  recordingReplayFinished(value: RecordingReplayFinished): void {
+    const size = Object.keys(RecordingReplayFinished).length + 1;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.RecordingReplayFinished, value, size);
+  }
+
+  recordingReplayStarted(value: RecordingReplayStarted): void {
+    const size = Object.keys(RecordingReplayStarted).length + 1;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.RecordingReplayStarted, value, size);
+  }
+
+  recordingEdited(value: RecordingEdited): void {
+    const size = Object.keys(RecordingEdited).length + 1;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.RecordingEdited, value, size);
+  }
+
+  recordingExported(value: RecordingExported): void {
+    const size = Object.keys(RecordingExported).length + 1;
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(EnumeratedHistogram.RecordingExported, value, size);
   }
 }
 
@@ -378,6 +391,7 @@ export const PanelCodes: {
   'issues-pane': 37,
   'settings-keybinds': 38,
   'cssoverview': 39,
+  'chrome_recorder': 40,
 };
 
 export const SidebarPaneCodes: {
@@ -531,15 +545,6 @@ export enum DualScreenDeviceEmulated {
   PlatformSupportUsed = 2,  // user starts to use platform dual screen support feature.
 }
 
-export const CssEditorOpened: {
-  [x: string]: number,
-} = {
-  'colorPicker': 0,
-  'shadowEditor': 1,
-  'bezierEditor': 2,
-  'fontEditor': 3,
-};
-
 /**
  * This list should contain the currently active Devtools Experiments.
  * Therefore, it is possible that the id's will no longer be continuous
@@ -585,13 +590,13 @@ export const DevtoolsExperiments: {
   'ignoreListJSFramesOnTimeline': 43,
   'contrastIssues': 44,
   'experimentalCookieFeatures': 45,
-  'bfcacheDebugging': 47,
   'hideIssuesFeature': 48,
   'reportingApiDebugging': 49,
   'syncSettings': 50,
   'groupAndHideIssuesByKind': 51,
   'cssTypeComponentLength': 52,
-  '__lastValidEnumPosition': 52,
+  'preciseChanges': 53,
+  '__lastValidEnumPosition': 53,
 };
 
 export const IssueExpanded: {
@@ -669,7 +674,6 @@ export const IssueCreated: {
   'TrustedWebActivityIssue::kDigitalAssetLinks': 40,
   LowTextContrastIssue: 41,
   'CorsIssue::InsecurePrivateNetwork': 42,
-  'CorsIssue::InsecurePrivateNetworkPreflight': 43,
   'CorsIssue::InvalidHeaders': 44,
   'CorsIssue::WildcardOriginWithCredentials': 45,
   'CorsIssue::PreflightResponseInvalid': 46,
@@ -682,10 +686,11 @@ export const IssueCreated: {
   'CorsIssue::CorsDisabledScheme': 53,
   'CorsIssue::PreflightMissingAllowExternal': 54,
   'CorsIssue::PreflightInvalidAllowExternal': 55,
-  'CorsIssue::InvalidResponse': 56,
   'CorsIssue::NoCorsRedirectModeNotFollow': 57,
   'QuirksModeIssue::QuirksMode': 58,
   'QuirksModeIssue::LimitedQuirksMode': 59,
+  DeprecationIssue: 60,
+  'CorsIssue::PreflightAllowPrivateNetworkError': 61,
 };
 
 // TODO(crbug.com/1167717): Make this a const enum again
@@ -824,4 +829,49 @@ export enum SyncSetting {
   ChromeSyncSettingsDisabled = 2,
   DevToolsSyncSettingDisabled = 3,
   DevToolsSyncSettingEnabled = 4,
+}
+
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum RecordingToggled {
+  RecordingStarted = 1,
+  RecordingFinished = 2,
+}
+
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum RecordingReplayFinished {
+  Success = 1,
+  TimeoutErrorSelectors = 2,
+  TimeoutErrorTarget = 3,
+  OtherError = 4,
+}
+
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum RecordingReplayStarted {
+  ReplayOnly = 1,
+  ReplayWithPerformanceTracing = 2,
+}
+
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum RecordingEdited {
+  SelectorPickerUsed = 1,
+  StepAdded = 2,
+  StepRemoved = 3,
+  SelectorAdded = 4,
+  SelectorRemoved = 5,
+  SelectorPartAdded = 6,
+  SelectorPartEdited = 7,
+  SelectorPartRemoved = 8,
+  TypeChanged = 9,
+  OtherEditing = 10,
+}
+
+// TODO(crbug.com/1167717): Make this a const enum again
+// eslint-disable-next-line rulesdir/const_enum
+export enum RecordingExported {
+  ToPuppeteer = 1,
+  ToJSON = 2,
 }

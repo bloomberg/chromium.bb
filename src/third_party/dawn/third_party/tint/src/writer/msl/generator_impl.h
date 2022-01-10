@@ -17,27 +17,28 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
-#include "src/ast/array_accessor_expression.h"
 #include "src/ast/assignment_statement.h"
 #include "src/ast/binary_expression.h"
 #include "src/ast/bitcast_expression.h"
 #include "src/ast/break_statement.h"
 #include "src/ast/continue_statement.h"
 #include "src/ast/discard_statement.h"
+#include "src/ast/expression.h"
 #include "src/ast/if_statement.h"
+#include "src/ast/index_accessor_expression.h"
 #include "src/ast/interpolate_decoration.h"
 #include "src/ast/loop_statement.h"
 #include "src/ast/member_accessor_expression.h"
 #include "src/ast/return_statement.h"
-#include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/switch_statement.h"
-#include "src/ast/type_constructor_expression.h"
 #include "src/ast/unary_op_expression.h"
 #include "src/program.h"
 #include "src/scope_stack.h"
 #include "src/sem/struct.h"
+#include "src/writer/array_length_from_uniform_options.h"
 #include "src/writer/text_generator.h"
 
 namespace tint {
@@ -46,6 +47,8 @@ namespace tint {
 namespace sem {
 class Call;
 class Intrinsic;
+class TypeConstructor;
+class TypeConversion;
 }  // namespace sem
 
 namespace writer {
@@ -53,10 +56,20 @@ namespace msl {
 
 /// The result of sanitizing a program for generation.
 struct SanitizedResult {
+  /// Constructor
+  SanitizedResult();
+  /// Destructor
+  ~SanitizedResult();
+  /// Move constructor
+  SanitizedResult(SanitizedResult&&);
+
   /// The sanitized program.
   Program program;
   /// True if the shader needs a UBO of buffer sizes.
   bool needs_storage_buffer_sizes = false;
+  /// Indices into the array_length_from_uniform binding that are statically
+  /// used.
+  std::unordered_set<uint32_t> used_array_length_from_uniform_indices;
 };
 
 /// Sanitize a program in preparation for generating MSL.
@@ -65,11 +78,13 @@ struct SanitizedResult {
 /// @param emit_vertex_point_size `true` to emit a vertex point size builtin
 /// @param disable_workgroup_init `true` to disable workgroup memory zero
 /// @returns the sanitized program and any supplementary information
-SanitizedResult Sanitize(const Program* program,
-                         uint32_t buffer_size_ubo_index,
-                         uint32_t fixed_sample_mask = 0xFFFFFFFF,
-                         bool emit_vertex_point_size = false,
-                         bool disable_workgroup_init = false);
+SanitizedResult Sanitize(
+    const Program* program,
+    uint32_t buffer_size_ubo_index,
+    uint32_t fixed_sample_mask = 0xFFFFFFFF,
+    bool emit_vertex_point_size = false,
+    bool disable_workgroup_init = false,
+    const ArrayLengthFromUniformOptions& array_length_from_uniform = {});
 
 /// Implementation class for MSL generator
 class GeneratorImpl : public TextGenerator {
@@ -83,7 +98,7 @@ class GeneratorImpl : public TextGenerator {
   bool Generate();
 
   /// @returns true if an invariant attribute was generated
-  bool HasInvariant() { return has_invariant_; }
+  bool HasInvariant() { return !invariant_define_name_.empty(); }
 
   /// @returns a map from entry point to list of required workgroup allocations
   const std::unordered_map<std::string, std::vector<uint32_t>>&
@@ -95,12 +110,12 @@ class GeneratorImpl : public TextGenerator {
   /// @param ty the declared type to generate
   /// @returns true if the declared type was emitted
   bool EmitTypeDecl(const sem::Type* ty);
-  /// Handles an array accessor expression
+  /// Handles an index accessor expression
   /// @param out the output of the expression stream
   /// @param expr the expression to emit
-  /// @returns true if the array accessor was emitted
-  bool EmitArrayAccessor(std::ostream& out,
-                         const ast::ArrayAccessorExpression* expr);
+  /// @returns true if the index accessor was emitted
+  bool EmitIndexAccessor(std::ostream& out,
+                         const ast::IndexAccessorExpression* expr);
   /// Handles an assignment statement
   /// @param stmt the statement to emit
   /// @returns true if the statement was emitted successfully
@@ -130,12 +145,36 @@ class GeneratorImpl : public TextGenerator {
   bool EmitCall(std::ostream& out, const ast::CallExpression* expr);
   /// Handles generating an intrinsic call expression
   /// @param out the output of the expression stream
-  /// @param expr the call expression
+  /// @param call the call expression
   /// @param intrinsic the intrinsic being called
   /// @returns true if the call expression is emitted
   bool EmitIntrinsicCall(std::ostream& out,
-                         const ast::CallExpression* expr,
+                         const sem::Call* call,
                          const sem::Intrinsic* intrinsic);
+  /// Handles generating a type conversion expression
+  /// @param out the output of the expression stream
+  /// @param call the call expression
+  /// @param conv the type conversion
+  /// @returns true if the expression is emitted
+  bool EmitTypeConversion(std::ostream& out,
+                          const sem::Call* call,
+                          const sem::TypeConversion* conv);
+  /// Handles generating a type constructor
+  /// @param out the output of the expression stream
+  /// @param call the call expression
+  /// @param ctor the type constructor
+  /// @returns true if the constructor is emitted
+  bool EmitTypeConstructor(std::ostream& out,
+                           const sem::Call* call,
+                           const sem::TypeConstructor* ctor);
+  /// Handles generating a function call
+  /// @param out the output of the expression stream
+  /// @param call the call expression
+  /// @param func the target function
+  /// @returns true if the call is emitted
+  bool EmitFunctionCall(std::ostream& out,
+                        const sem::Call* call,
+                        const sem::Function* func);
   /// Handles generating a call to an atomic function (`atomicAdd`,
   /// `atomicMax`, etc)
   /// @param out the output of the expression stream
@@ -148,12 +187,20 @@ class GeneratorImpl : public TextGenerator {
   /// Handles generating a call to a texture function (`textureSample`,
   /// `textureSampleGrad`, etc)
   /// @param out the output of the expression stream
-  /// @param expr the call expression
+  /// @param call the call expression
   /// @param intrinsic the semantic information for the texture intrinsic
   /// @returns true if the call expression is emitted
   bool EmitTextureCall(std::ostream& out,
-                       const ast::CallExpression* expr,
+                       const sem::Call* call,
                        const sem::Intrinsic* intrinsic);
+  /// Handles generating a call to the `dot()` intrinsic
+  /// @param out the output of the expression stream
+  /// @param expr the call expression
+  /// @param intrinsic the semantic information for the intrinsic
+  /// @returns true if the call expression is emitted
+  bool EmitDotCall(std::ostream& out,
+                   const ast::CallExpression* expr,
+                   const sem::Intrinsic* intrinsic);
   /// Handles generating a call to the `modf()` intrinsic
   /// @param out the output of the expression stream
   /// @param expr the call expression
@@ -174,12 +221,6 @@ class GeneratorImpl : public TextGenerator {
   /// @param stmt the statement
   /// @returns true if the statement was emitted successfully
   bool EmitCase(const ast::CaseStatement* stmt);
-  /// Handles generating constructor expressions
-  /// @param out the output of the expression stream
-  /// @param expr the constructor expression
-  /// @returns true if the expression was emitted
-  bool EmitConstructor(std::ostream& out,
-                       const ast::ConstructorExpression* expr);
   /// Handles a continue statement
   /// @param stmt the statement to emit
   /// @returns true if the statement was emitted successfully
@@ -214,7 +255,7 @@ class GeneratorImpl : public TextGenerator {
   /// @param out the output of the expression stream
   /// @param lit the literal to emit
   /// @returns true if the literal was successfully emitted
-  bool EmitLiteral(std::ostream& out, const ast::Literal* lit);
+  bool EmitLiteral(std::ostream& out, const ast::LiteralExpression* lit);
   /// Handles a loop statement
   /// @param stmt the statement to emit
   /// @returns true if the statement was emitted
@@ -233,12 +274,6 @@ class GeneratorImpl : public TextGenerator {
   /// @param stmt the statement to emit
   /// @returns true if the statement was successfully emitted
   bool EmitReturn(const ast::ReturnStatement* stmt);
-  /// Handles generating a scalar constructor
-  /// @param out the output of the expression stream
-  /// @param expr the scalar constructor expression
-  /// @returns true if the scalar constructor is emitted
-  bool EmitScalarConstructor(std::ostream& out,
-                             const ast::ScalarConstructorExpression* expr);
   /// Handles emitting a pipeline stage name
   /// @param out the output of the expression stream
   /// @param stage the stage to emit
@@ -297,12 +332,6 @@ class GeneratorImpl : public TextGenerator {
   /// @param str the struct to generate
   /// @returns true if the struct is emitted
   bool EmitStructType(TextBuffer* buffer, const sem::Struct* str);
-  /// Handles emitting a type constructor
-  /// @param out the output of the expression stream
-  /// @param expr the type constructor expression
-  /// @returns true if the constructor is emitted
-  bool EmitTypeConstructor(std::ostream& out,
-                           const ast::TypeConstructorExpression* expr);
   /// Handles a unary op expression
   /// @param out the output of the expression stream
   /// @param expr the expression to emit
@@ -381,8 +410,9 @@ class GeneratorImpl : public TextGenerator {
   /// class.
   StorageClassToString atomicCompareExchangeWeak_;
 
-  /// True if an invariant attribute has been generated.
-  bool has_invariant_ = false;
+  /// Unique name of the 'TINT_INVARIANT' preprocessor define. Non-empty only if
+  /// an invariant attribute has been generated.
+  std::string invariant_define_name_;
 
   /// True if matrix-packed_vector operator overloads have been generated.
   bool matrix_packed_vector_overloads_ = false;
@@ -394,6 +424,7 @@ class GeneratorImpl : public TextGenerator {
 
   std::unordered_map<const sem::Intrinsic*, std::string> intrinsics_;
   std::unordered_map<const sem::Type*, std::string> unary_minus_funcs_;
+  std::unordered_map<uint32_t, std::string> int_dot_funcs_;
 };
 
 }  // namespace msl

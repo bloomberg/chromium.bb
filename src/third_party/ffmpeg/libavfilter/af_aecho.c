@@ -152,24 +152,6 @@ static av_cold int init(AVFilterContext *ctx)
     return 0;
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVSampleFormat sample_fmts[] = {
-        AV_SAMPLE_FMT_S16P, AV_SAMPLE_FMT_S32P,
-        AV_SAMPLE_FMT_FLTP, AV_SAMPLE_FMT_DBLP,
-        AV_SAMPLE_FMT_NONE
-    };
-    int ret = ff_set_common_all_channel_counts(ctx);
-    if (ret < 0)
-        return ret;
-
-    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
-    if (ret < 0)
-        return ret;
-
-    return ff_set_common_all_samplerates(ctx);
-}
-
 #define MOD(a, b) (((a) >= (b)) ? (a) - (b) : (a))
 
 #define ECHO(name, type, min, max)                                          \
@@ -364,7 +346,6 @@ static const AVFilterPad aecho_outputs[] = {
 const AVFilter ff_af_aecho = {
     .name          = "aecho",
     .description   = NULL_IF_CONFIG_SMALL("Add echoing to the audio."),
-    .query_formats = query_formats,
     .priv_size     = sizeof(AudioEchoContext),
     .priv_class    = &aecho_class,
     .init          = init,
@@ -372,4 +353,6 @@ const AVFilter ff_af_aecho = {
     .uninit        = uninit,
     FILTER_INPUTS(aecho_inputs),
     FILTER_OUTPUTS(aecho_outputs),
+    FILTER_SAMPLEFMTS(AV_SAMPLE_FMT_S16P, AV_SAMPLE_FMT_S32P,
+                      AV_SAMPLE_FMT_FLTP, AV_SAMPLE_FMT_DBLP),
 };

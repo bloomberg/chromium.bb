@@ -8,6 +8,8 @@
 # be found in the AUTHORS file in the root of the source tree.
 """Script to automatically roll dependencies in the WebRTC DEPS file."""
 
+from __future__ import absolute_import
+
 import argparse
 import base64
 import collections
@@ -16,7 +18,10 @@ import os
 import re
 import subprocess
 import sys
-import urllib2
+
+import six.moves.urllib.request
+import six.moves.urllib.error
+import six.moves.urllib.parse
 
 
 def FindSrcDirPath():
@@ -224,7 +229,7 @@ def ReadUrlContent(url):
     Returns:
       A list of lines.
     """
-    conn = urllib2.urlopen(url)
+    conn = six.moves.urllib.request.urlopen(url)
     try:
         return conn.readlines()
     except IOError as e:
@@ -248,7 +253,7 @@ def GetMatchingDepsEntries(depsentry_dict, dir_path):
       A list of DepsEntry objects.
     """
     result = []
-    for path, depsentry in depsentry_dict.iteritems():
+    for path, depsentry in depsentry_dict.items():
         if path == dir_path:
             result.append(depsentry)
         else:
@@ -264,7 +269,7 @@ def BuildDepsentryDict(deps_dict):
     result = {}
 
     def AddDepsEntries(deps_subdict):
-        for path, dep in deps_subdict.iteritems():
+        for path, dep in deps_subdict.items():
             if path in result:
                 continue
             if not isinstance(dep, dict):
@@ -374,14 +379,14 @@ def FindRemovedDeps(webrtc_deps, new_cr_deps):
         A list of paths of unexpected disappearing dependencies.
     """
     all_removed_deps = _FindNewDeps(new_cr_deps, webrtc_deps)
-    generated_android_deps = [
+    generated_android_deps = sorted([
         path for path in all_removed_deps if path.startswith(ANDROID_DEPS_PATH)
-    ]
+    ])
     # Webrtc-only dependencies are handled in CalculateChangedDeps.
-    other_deps = [
+    other_deps = sorted([
         path for path in all_removed_deps
         if path not in generated_android_deps and path not in WEBRTC_ONLY_DEPS
-    ]
+    ])
     return generated_android_deps, other_deps
 
 
@@ -403,7 +408,7 @@ def CalculateChangedDeps(webrtc_deps, new_cr_deps):
     result = []
     webrtc_entries = BuildDepsentryDict(webrtc_deps)
     new_cr_entries = BuildDepsentryDict(new_cr_deps)
-    for path, webrtc_deps_entry in webrtc_entries.iteritems():
+    for path, webrtc_deps_entry in webrtc_entries.items():
         if path in DONT_AUTOROLL_THESE:
             continue
         cr_deps_entry = new_cr_entries.get(path)
@@ -486,7 +491,6 @@ def GenerateCommitMessage(
         noun = 'dependency' if len(deps) == 1 else 'dependencies'
         commit_msg.append('%s %s' % (adjective, noun))
 
-    tbr_authors = ''
     if changed_deps_list:
         Section('Changed', changed_deps_list)
 
@@ -498,8 +502,6 @@ def GenerateCommitMessage(
                 commit_msg.append(
                     '* %s: %s/+log/%s..%s' %
                     (c.path, c.url, c.current_rev[0:10], c.new_rev[0:10]))
-            if 'libvpx' in c.path or 'libaom' in c.path:
-                tbr_authors += 'marpan@webrtc.org, jianj@chromium.org, '
 
     if added_deps_paths:
         Section('Added', added_deps_paths)
@@ -524,12 +526,6 @@ def GenerateCommitMessage(
     else:
         commit_msg.append('No update to Clang.\n')
 
-    # TBR needs to be non-empty for Gerrit to process it.
-    git_author = _RunCommand(['git', 'config', 'user.email'],
-                             working_dir=CHECKOUT_SRC_DIR)[0].splitlines()[0]
-    tbr_authors = git_author + ',' + tbr_authors
-
-    commit_msg.append('TBR=%s' % tbr_authors)
     commit_msg.append('BUG=None')
     return '\n'.join(commit_msg)
 
@@ -537,7 +533,7 @@ def GenerateCommitMessage(
 def UpdateDepsFile(deps_filename, rev_update, changed_deps, new_cr_content):
     """Update the DEPS file with the new revision."""
 
-    with open(deps_filename, 'rb') as deps_file:
+    with open(deps_filename, 'r') as deps_file:
         deps_content = deps_file.read()
 
     # Update the chromium_revision variable.
@@ -558,7 +554,7 @@ def UpdateDepsFile(deps_filename, rev_update, changed_deps, new_cr_content):
                         (ANDROID_DEPS_START, ANDROID_DEPS_END, faulty))
     deps_content = deps_re.sub(new_deps.group(0), deps_content)
 
-    with open(deps_filename, 'wb') as deps_file:
+    with open(deps_filename, 'w') as deps_file:
         deps_file.write(deps_content)
 
     # Update each individual DEPS entry.
@@ -634,22 +630,39 @@ def ChooseCQMode(skip_cq, cq_over, current_commit_pos, new_commit_pos):
     return 2
 
 
-def _UploadCL(commit_queue_mode):
+def _GetCcRecipients(changed_deps_list):
+    """Returns a list of emails to notify based on the changed deps list.
+    """
+    cc_recipients = []
+    for c in changed_deps_list:
+        if 'libvpx' in c.path or 'libaom' in c.path:
+            cc_recipients.append('marpan@webrtc.org')
+            cc_recipients.append('jianj@chromium.org')
+    return cc_recipients
+
+
+def _UploadCL(commit_queue_mode, add_cc=None):
     """Upload the committed changes as a changelist to Gerrit.
 
     commit_queue_mode:
      - 2: Submit to commit queue.
      - 1: Run trybots but do not submit to CQ.
      - 0: Skip CQ, upload only.
+
+    add_cc: A list of email addresses to add as CC recipients.
     """
+    cc_recipients = [NOTIFY_EMAIL]
+    if add_cc:
+        cc_recipients.extend(add_cc)
     cmd = ['git', 'cl', 'upload', '--force', '--bypass-hooks']
     if commit_queue_mode >= 2:
         logging.info('Sending the CL to the CQ...')
-        cmd.extend(['--use-commit-queue'])
-        cmd.extend(['--send-mail', '--cc', NOTIFY_EMAIL])
+        cmd.extend(['-o', 'label=Bot-Commit+1'])
+        cmd.extend(['-o', 'label=Commit-Queue+2'])
+        cmd.extend(['--send-mail', '--cc', ','.join(cc_recipients)])
     elif commit_queue_mode >= 1:
         logging.info('Starting CQ dry run...')
-        cmd.extend(['--cq-dry-run'])
+        cmd.extend(['-o', 'label=Commit-Queue+1'])
     extra_env = {
         'EDITOR': 'true',
         'SKIP_GCE_AUTH_FOR_GIT': '1',
@@ -769,7 +782,7 @@ def main():
                                          current_commit_pos, new_commit_pos)
         logging.info('Uploading CL...')
         if not opts.dry_run:
-            _UploadCL(commit_queue_mode)
+            _UploadCL(commit_queue_mode, _GetCcRecipients(changed_deps))
     return 0
 
 

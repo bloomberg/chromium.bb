@@ -68,7 +68,7 @@ static int filter_horizontally(AVFilterContext *ctx, int width, int height)
 
     if (s->R3 > 0) {
         for (int y = 1; y < height - 1; y++) {
-            g = q * f(0, 0) + c * f(0, 0);
+            g = q * f(y, 0) + c * f(y, 0);
             for (int x = 0; x < width; x++) {
                 f(y, x) = b0 * f(y, x) + b1 * f(y - 1, x) + g;
                 g = q * f(y, x) + c * f(y - 1, x);
@@ -84,7 +84,7 @@ static int filter_horizontally(AVFilterContext *ctx, int width, int height)
         }
     } else {
         for (int y = 1; y < height - 1; y++) {
-            g = q * f(0, width - 1) + c * f(0, width - 1);
+            g = q * f(y, width - 1) + c * f(y, width - 1);
             for (int x = width - 1; x >= 0; x--) {
                 f(y, x) = b0 * f(y, x) + b1 * f(y - 1, x) + g;
                 g = q * f(y, x) + c * f(y - 1, x);
@@ -112,32 +112,27 @@ static void diriir2d(AVFilterContext *ctx, int plane)
     filter_horizontally(ctx, width, height);
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUVA444P, AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUV440P,
-        AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P,
-        AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUV420P,
-        AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ420P,
-        AV_PIX_FMT_YUVJ411P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_YUV410P,
-        AV_PIX_FMT_YUV420P9, AV_PIX_FMT_YUV422P9, AV_PIX_FMT_YUV444P9,
-        AV_PIX_FMT_YUV420P10, AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV444P10,
-        AV_PIX_FMT_YUV420P12, AV_PIX_FMT_YUV422P12, AV_PIX_FMT_YUV444P12, AV_PIX_FMT_YUV440P12,
-        AV_PIX_FMT_YUV420P14, AV_PIX_FMT_YUV422P14, AV_PIX_FMT_YUV444P14,
-        AV_PIX_FMT_YUV420P16, AV_PIX_FMT_YUV422P16, AV_PIX_FMT_YUV444P16,
-        AV_PIX_FMT_YUVA420P9, AV_PIX_FMT_YUVA422P9, AV_PIX_FMT_YUVA444P9,
-        AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA444P10,
-        AV_PIX_FMT_YUVA422P12, AV_PIX_FMT_YUVA444P12,
-        AV_PIX_FMT_YUVA420P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA444P16,
-        AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRP9, AV_PIX_FMT_GBRP10,
-        AV_PIX_FMT_GBRP12, AV_PIX_FMT_GBRP14, AV_PIX_FMT_GBRP16,
-        AV_PIX_FMT_GBRAP, AV_PIX_FMT_GBRAP10, AV_PIX_FMT_GBRAP12, AV_PIX_FMT_GBRAP16,
-        AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY9, AV_PIX_FMT_GRAY10, AV_PIX_FMT_GRAY12, AV_PIX_FMT_GRAY14, AV_PIX_FMT_GRAY16,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_YUVA444P, AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUV440P,
+    AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P,
+    AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ420P,
+    AV_PIX_FMT_YUVJ411P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_YUV410P,
+    AV_PIX_FMT_YUV420P9, AV_PIX_FMT_YUV422P9, AV_PIX_FMT_YUV444P9,
+    AV_PIX_FMT_YUV420P10, AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV444P10,
+    AV_PIX_FMT_YUV420P12, AV_PIX_FMT_YUV422P12, AV_PIX_FMT_YUV444P12, AV_PIX_FMT_YUV440P12,
+    AV_PIX_FMT_YUV420P14, AV_PIX_FMT_YUV422P14, AV_PIX_FMT_YUV444P14,
+    AV_PIX_FMT_YUV420P16, AV_PIX_FMT_YUV422P16, AV_PIX_FMT_YUV444P16,
+    AV_PIX_FMT_YUVA420P9, AV_PIX_FMT_YUVA422P9, AV_PIX_FMT_YUVA444P9,
+    AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA444P10,
+    AV_PIX_FMT_YUVA422P12, AV_PIX_FMT_YUVA444P12,
+    AV_PIX_FMT_YUVA420P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA444P16,
+    AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRP9, AV_PIX_FMT_GBRP10,
+    AV_PIX_FMT_GBRP12, AV_PIX_FMT_GBRP14, AV_PIX_FMT_GBRP16,
+    AV_PIX_FMT_GBRAP, AV_PIX_FMT_GBRAP10, AV_PIX_FMT_GBRAP12, AV_PIX_FMT_GBRAP16,
+    AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY9, AV_PIX_FMT_GRAY10, AV_PIX_FMT_GRAY12, AV_PIX_FMT_GRAY14, AV_PIX_FMT_GRAY16,
+    AV_PIX_FMT_NONE
+};
 
 static int config_input(AVFilterLink *inlink)
 {
@@ -246,7 +241,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         if (s->depth == 8) {
             for (y = 0; y < height; y++) {
                 for (x = 0; x < width; x++) {
-                    dst[x] = bptr[x];
+                    dst[x] = av_clip_uint8(lrintf(bptr[x]));
                 }
                 bptr += width;
                 dst += out->linesize[plane];
@@ -254,7 +249,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         } else {
             for (y = 0; y < height; y++) {
                 for (x = 0; x < width; x++) {
-                    dst16[x] = bptr[x];
+                    dst16[x] = av_clip_uintp2_c(lrintf(bptr[x]), s->depth);
                 }
                 bptr += width;
                 dst16 += out->linesize[plane] / 2;
@@ -296,9 +291,9 @@ const AVFilter ff_vf_dblur = {
     .priv_size     = sizeof(DBlurContext),
     .priv_class    = &dblur_class,
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(dblur_inputs),
     FILTER_OUTPUTS(dblur_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
     .process_command = ff_filter_process_command,
 };

@@ -44,6 +44,7 @@ devtools_module("sources") {
     "OpenFileQuickOpen.ts",
     "OutlineQuickOpen.ts",
     "Plugin.ts",
+    "ProfilePlugin.ts",
     "ScopeChainSidebarPane.ts",
     "ScriptFormatterEditorAction.ts",
     "ScriptOriginPlugin.ts",
@@ -89,7 +90,6 @@ devtools_module("sources") {
     "../../ui/legacy/components/object_ui:bundle",
     "../../ui/legacy/components/quick_open:bundle",
     "../../ui/legacy/components/source_frame:bundle",
-    "../../ui/legacy/components/text_editor:bundle",
     "../../ui/legacy/components/utils:bundle",
   ]
 }

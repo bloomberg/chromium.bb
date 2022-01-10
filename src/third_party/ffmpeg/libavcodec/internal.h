@@ -112,20 +112,14 @@
 #   define STRIDE_ALIGN 8
 #endif
 
-typedef struct DecodeSimpleContext {
-    AVPacket *in_pkt;
-} DecodeSimpleContext;
-
 typedef struct EncodeSimpleContext {
     AVFrame *in_frame;
 } EncodeSimpleContext;
 
 typedef struct AVCodecInternal {
     /**
-     * Whether the parent AVCodecContext is a copy of the context which had
-     * init() called on it.
-     * This is used by multithreading - shared tables and picture pointers
-     * should be freed from the original context only.
+     * When using frame-threaded decoding, this field is set for the first
+     * worker thread (e.g. to decode extradata just once).
      */
     int is_copy;
 
@@ -139,7 +133,15 @@ typedef struct AVCodecInternal {
 
     void *thread_ctx;
 
-    DecodeSimpleContext ds;
+    /**
+     * This packet is used to hold the packet given to decoders
+     * implementing the .decode API; it is unused by the generic
+     * code for decoders implementing the .receive_frame API and
+     * may be freely used (but not freed) by them with the caveat
+     * that the packet will be unreferenced generically in
+     * avcodec_flush_buffers().
+     */
+    AVPacket *in_pkt;
     AVBSFContext *bsf;
 
     /**
@@ -154,6 +156,13 @@ typedef struct AVCodecInternal {
      */
     uint8_t *byte_buffer;
     unsigned int byte_buffer_size;
+
+    /**
+     * This is set to AV_PKT_FLAG_KEY for encoders that encode intra-only
+     * formats (i.e. whose codec descriptor has AV_CODEC_PROP_INTRA_ONLY set).
+     * This is used to set said flag generically for said encoders.
+     */
+    int intra_only_flag;
 
     void *frame_thread_encoder;
 

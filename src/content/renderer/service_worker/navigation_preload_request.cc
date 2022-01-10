@@ -6,19 +6,19 @@
 
 #include <utility>
 
-#include "content/renderer/service_worker/service_worker_context_client.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
+#include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
 
 namespace content {
 
 NavigationPreloadRequest::NavigationPreloadRequest(
-    ServiceWorkerContextClient* owner,
+    blink::WebServiceWorkerContextClient* owner,
     int fetch_event_id,
-    const GURL& url,
+    const blink::WebURL& url,
     mojo::PendingReceiver<network::mojom::URLLoaderClient>
         preload_url_loader_client_receiver)
     : owner_(owner),
@@ -86,7 +86,7 @@ void NavigationPreloadRequest::OnStartLoadingResponseBody(
 void NavigationPreloadRequest::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
   if (status.error_code != net::OK) {
-    std::string message;
+    blink::WebString message;
     blink::WebServiceWorkerError::Mode error_mode =
         blink::WebServiceWorkerError::Mode::kNone;
     if (status.error_code == net::ERR_ABORTED) {
@@ -130,13 +130,13 @@ void NavigationPreloadRequest::MaybeReportResponseToOwner() {
 }
 
 void NavigationPreloadRequest::ReportErrorToOwner(
-    const std::string& message,
+    const blink::WebString& message,
     blink::WebServiceWorkerError::Mode error_mode) {
   // This will delete |this|.
   owner_->OnNavigationPreloadError(
-      fetch_event_id_, std::make_unique<blink::WebServiceWorkerError>(
-                           blink::mojom::ServiceWorkerErrorType::kNetwork,
-                           blink::WebString::FromUTF8(message), error_mode));
+      fetch_event_id_,
+      std::make_unique<blink::WebServiceWorkerError>(
+          blink::mojom::ServiceWorkerErrorType::kNetwork, message, error_mode));
 }
 
 }  // namespace content

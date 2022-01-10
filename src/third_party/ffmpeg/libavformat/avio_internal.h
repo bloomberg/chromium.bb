@@ -52,6 +52,11 @@ typedef struct FFIOContext {
     int64_t bytes_read;
 
     /**
+     * Bytes written statistic
+     */
+    int64_t bytes_written;
+
+    /**
      * seek statistic
      */
     int seek_count;
@@ -66,6 +71,12 @@ typedef struct FFIOContext {
      * used after probing to ensure seekback and to reset the buffer size
      */
     int orig_buffer_size;
+
+    /**
+     * Written output size
+     * is updated each time a successful writeout ends up further position-wise
+     */
+    int64_t written_output_size;
 } FFIOContext;
 
 static av_always_inline FFIOContext *ffiocontext(AVIOContext *ctx)
@@ -100,7 +111,7 @@ void ffio_init_context(FFIOContext *s,
  */
 int ffio_read_indirect(AVIOContext *s, unsigned char *buf, int size, const unsigned char **data);
 
-void ffio_fill(AVIOContext *s, int b, int count);
+void ffio_fill(AVIOContext *s, int b, int64_t count);
 
 static av_always_inline void ffio_wfourcc(AVIOContext *pb, const uint8_t *s)
 {
@@ -244,5 +255,24 @@ struct AVBPrint;
  *         negative on error, or if the buffer becomes truncated.
  */
 int64_t ff_read_line_to_bprint_overwrite(AVIOContext *s, struct AVBPrint *bp);
+
+/**
+ * Read a whole null-terminated string of text from AVIOContext to an AVBPrint
+ * buffer overwriting its contents. Stop reading after reaching the maximum
+ * length, a \\0 or EOF.
+ *
+ * @param s the read-only AVIOContext
+ * @param bp the AVBPrint buffer
+ * @param max_len the maximum length to be read from the AVIOContext.
+ *                Negative (< 0) values signal that there is no known maximum
+ *                length applicable. A maximum length of zero means that the
+ *                AVIOContext is not touched, and the function returns
+ *                with a read length of zero. In all cases the AVBprint
+ *                is cleared.
+ * @return the length of the read string not including the terminating null,
+ *         negative on error, or if the buffer becomes truncated.
+ */
+int64_t ff_read_string_to_bprint_overwrite(AVIOContext *s, struct AVBPrint *bp,
+                                           int64_t max_len);
 
 #endif /* AVFORMAT_AVIO_INTERNAL_H */

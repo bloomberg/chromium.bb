@@ -643,6 +643,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   def _deps_to_objects(self, deps, use_relative_paths):
     """Convert a deps dict to a dict of Dependency objects."""
     deps_to_add = []
+    cached_conditions = {}
     for name, dep_value in deps.items():
       should_process = self.should_process
       if dep_value is None:
@@ -651,9 +652,12 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       condition = dep_value.get('condition')
       dep_type = dep_value.get('dep_type')
 
+
       if condition and not self._get_option('process_all_deps', False):
-        should_process = should_process and gclient_eval.EvaluateCondition(
-            condition, self.get_vars())
+        if condition not in cached_conditions:
+          cached_conditions[condition] = gclient_eval.EvaluateCondition(
+              condition, self.get_vars())
+        should_process = should_process and cached_conditions[condition]
 
       # The following option is only set by the 'revinfo' command.
       if self._get_option('ignore_dep_type', None) == dep_type:

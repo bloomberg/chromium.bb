@@ -251,9 +251,9 @@ const AVFilter ff_vf_ass = {
     .priv_size     = sizeof(AssContext),
     .init          = init_ass,
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(ass_inputs),
     FILTER_OUTPUTS(ass_outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .priv_class    = &ass_class,
 };
 #endif
@@ -395,7 +395,6 @@ static av_cold int init_subtitles(AVFilterContext *ctx)
     }
     if (ass->charenc)
         av_dict_set(&codec_opts, "sub_charenc", ass->charenc, 0);
-    av_dict_set(&codec_opts, "sub_text_format", "ass", 0);
 
     dec_ctx = avcodec_alloc_context3(dec);
     if (!dec_ctx) {
@@ -485,9 +484,9 @@ const AVFilter ff_vf_subtitles = {
     .priv_size     = sizeof(AssContext),
     .init          = init_subtitles,
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(ass_inputs),
     FILTER_OUTPUTS(ass_outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .priv_class    = &subtitles_class,
 };
 #endif

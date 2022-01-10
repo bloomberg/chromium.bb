@@ -404,18 +404,6 @@ static int config_input(AVFilterLink *inlink)
     return 0;
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUV444P,
-        AV_PIX_FMT_YUV422P,
-        AV_PIX_FMT_YUV420P,
-        AV_PIX_FMT_UYVY422,
-        AV_PIX_FMT_NONE
-    };
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
-
 static int filter_frame(AVFilterLink *link, AVFrame *in)
 {
     AVFilterContext *ctx = link->dst;
@@ -507,9 +495,12 @@ const AVFilter ff_vf_colormatrix = {
     .description   = NULL_IF_CONFIG_SMALL("Convert color matrix."),
     .priv_size     = sizeof(ColorMatrixContext),
     .init          = init,
-    .query_formats = query_formats,
     FILTER_INPUTS(colormatrix_inputs),
     FILTER_OUTPUTS(colormatrix_outputs),
+    FILTER_PIXFMTS(AV_PIX_FMT_YUV444P,
+                   AV_PIX_FMT_YUV422P,
+                   AV_PIX_FMT_YUV420P,
+                   AV_PIX_FMT_UYVY422),
     .priv_class    = &colormatrix_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
 };

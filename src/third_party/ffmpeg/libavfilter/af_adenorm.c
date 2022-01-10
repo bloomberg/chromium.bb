@@ -43,23 +43,6 @@ typedef struct ADenormContext {
                    const void *src, int nb_samples);
 } ADenormContext;
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVSampleFormat sample_fmts[] = {
-        AV_SAMPLE_FMT_FLTP, AV_SAMPLE_FMT_DBLP,
-        AV_SAMPLE_FMT_NONE
-    };
-    int ret = ff_set_common_formats_from_list(ctx, sample_fmts);
-    if (ret < 0)
-        return ret;
-
-    ret = ff_set_common_all_channel_counts(ctx);
-    if (ret < 0)
-        return ret;
-
-    return ff_set_common_all_samplerates(ctx);
-}
-
 static void dc_denorm_fltp(AVFilterContext *ctx, void *dstp,
                            const void *srcp, int nb_samples)
 {
@@ -307,10 +290,10 @@ AVFILTER_DEFINE_CLASS(adenorm);
 const AVFilter ff_af_adenorm = {
     .name            = "adenorm",
     .description     = NULL_IF_CONFIG_SMALL("Remedy denormals by adding extremely low-level noise."),
-    .query_formats   = query_formats,
     .priv_size       = sizeof(ADenormContext),
     FILTER_INPUTS(adenorm_inputs),
     FILTER_OUTPUTS(adenorm_outputs),
+    FILTER_SAMPLEFMTS(AV_SAMPLE_FMT_FLTP, AV_SAMPLE_FMT_DBLP),
     .priv_class      = &adenorm_class,
     .process_command = process_command,
     .flags           = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC |

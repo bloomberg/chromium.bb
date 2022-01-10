@@ -1237,10 +1237,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   bool validate_client_address() const { return validate_client_addresses_; }
 
-  bool support_multiple_connection_ids() const {
-    return support_multiple_connection_ids_;
-  }
-
   bool connection_migration_use_new_cid() const {
     return connection_migration_use_new_cid_;
   }
@@ -1257,6 +1253,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   void set_tracer(std::unique_ptr<QuicConnectionTracer> tracer) {
     context_.tracer.swap(tracer);
+  }
+
+  void set_bug_listener(std::unique_ptr<QuicBugListener> bug_listener) {
+    context_.bug_listener.swap(bug_listener);
   }
 
   absl::optional<QuicWallTime> quic_bug_10511_43_timestamp() const {
@@ -2277,8 +2277,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // If true, upon seeing a new client address, validate the client address.
   bool validate_client_addresses_ = false;
-
-  bool support_multiple_connection_ids_ = false;
 
   // Indicates whether we should proactively validate peer address on a
   // PATH_CHALLENGE received.

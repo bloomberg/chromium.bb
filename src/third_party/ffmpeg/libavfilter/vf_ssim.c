@@ -31,7 +31,7 @@
 
 /*
  * @file
- * Caculate the SSIM between two input videos.
+ * Calculate the SSIM between two input videos.
  */
 
 #include "libavutil/avstring.h"
@@ -420,23 +420,18 @@ static av_cold int init(AVFilterContext *ctx)
     return 0;
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY9, AV_PIX_FMT_GRAY10,
-        AV_PIX_FMT_GRAY12, AV_PIX_FMT_GRAY14, AV_PIX_FMT_GRAY16,
-        AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV444P,
-        AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_YUV410P,
-        AV_PIX_FMT_YUVJ411P, AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P,
-        AV_PIX_FMT_YUVJ440P, AV_PIX_FMT_YUVJ444P,
-        AV_PIX_FMT_GBRP,
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY9, AV_PIX_FMT_GRAY10,
+    AV_PIX_FMT_GRAY12, AV_PIX_FMT_GRAY14, AV_PIX_FMT_GRAY16,
+    AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_YUV410P,
+    AV_PIX_FMT_YUVJ411P, AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P,
+    AV_PIX_FMT_YUVJ440P, AV_PIX_FMT_YUVJ444P,
+    AV_PIX_FMT_GBRP,
 #define PF(suf) AV_PIX_FMT_YUV420##suf,  AV_PIX_FMT_YUV422##suf,  AV_PIX_FMT_YUV444##suf, AV_PIX_FMT_GBR##suf
-        PF(P9), PF(P10), PF(P12), PF(P14), PF(P16),
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+    PF(P9), PF(P10), PF(P12), PF(P14), PF(P16),
+    AV_PIX_FMT_NONE
+};
 
 static int config_input_ref(AVFilterLink *inlink)
 {
@@ -451,10 +446,6 @@ static int config_input_ref(AVFilterLink *inlink)
     if (ctx->inputs[0]->w != ctx->inputs[1]->w ||
         ctx->inputs[0]->h != ctx->inputs[1]->h) {
         av_log(ctx, AV_LOG_ERROR, "Width and height of input videos must be same.\n");
-        return AVERROR(EINVAL);
-    }
-    if (ctx->inputs[0]->format != ctx->inputs[1]->format) {
-        av_log(ctx, AV_LOG_ERROR, "Inputs must be of same pixel format.\n");
         return AVERROR(EINVAL);
     }
 
@@ -478,7 +469,7 @@ static int config_input_ref(AVFilterLink *inlink)
         return AVERROR(ENOMEM);
 
     for (int t = 0; t < s->nb_threads; t++) {
-        s->temp[t] = av_mallocz_array(2 * SUM_LEN(inlink->w), (desc->comp[0].depth > 8) ? sizeof(int64_t[4]) : sizeof(int[4]));
+        s->temp[t] = av_calloc(2 * SUM_LEN(inlink->w), (desc->comp[0].depth > 8) ? sizeof(int64_t[4]) : sizeof(int[4]));
         if (!s->temp[t])
             return AVERROR(ENOMEM);
     }
@@ -595,11 +586,11 @@ const AVFilter ff_vf_ssim = {
     .preinit       = ssim_framesync_preinit,
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
     .activate      = activate,
     .priv_size     = sizeof(SSIMContext),
     .priv_class    = &ssim_class,
     FILTER_INPUTS(ssim_inputs),
     FILTER_OUTPUTS(ssim_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL | AVFILTER_FLAG_SLICE_THREADS,
 };

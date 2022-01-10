@@ -184,31 +184,27 @@ static int config_props(AVFilterLink *inlink)
     return 0;
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pixel_fmts[] = {
-        AV_PIX_FMT_GRAY8,
-        AV_PIX_FMT_NV12,
-        AV_PIX_FMT_NV16,
-        AV_PIX_FMT_NV21,
-        AV_PIX_FMT_YUV410P,
-        AV_PIX_FMT_YUV411P,
-        AV_PIX_FMT_YUV420P,
-        AV_PIX_FMT_YUV422P,
-        AV_PIX_FMT_YUV440P,
-        AV_PIX_FMT_YUV444P,
-        AV_PIX_FMT_YUVA420P,
-        AV_PIX_FMT_YUVA422P,
-        AV_PIX_FMT_YUVA444P,
-        AV_PIX_FMT_YUVJ411P,
-        AV_PIX_FMT_YUVJ420P,
-        AV_PIX_FMT_YUVJ422P,
-        AV_PIX_FMT_YUVJ440P,
-        AV_PIX_FMT_YUVJ444P,
-        AV_PIX_FMT_NONE
-    };
-    return ff_set_common_formats_from_list(ctx, pixel_fmts);
-}
+static const enum AVPixelFormat pixel_fmts[] = {
+    AV_PIX_FMT_GRAY8,
+    AV_PIX_FMT_NV12,
+    AV_PIX_FMT_NV16,
+    AV_PIX_FMT_NV21,
+    AV_PIX_FMT_YUV410P,
+    AV_PIX_FMT_YUV411P,
+    AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_YUV422P,
+    AV_PIX_FMT_YUV440P,
+    AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_YUVA420P,
+    AV_PIX_FMT_YUVA422P,
+    AV_PIX_FMT_YUVA444P,
+    AV_PIX_FMT_YUVJ411P,
+    AV_PIX_FMT_YUVJ420P,
+    AV_PIX_FMT_YUVJ422P,
+    AV_PIX_FMT_YUVJ440P,
+    AV_PIX_FMT_YUVJ444P,
+    AV_PIX_FMT_NONE
+};
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 {
@@ -248,6 +244,6 @@ const AVFilter ff_vf_readvitc = {
     .priv_class    = &readvitc_class,
     FILTER_INPUTS(inputs),
     FILTER_OUTPUTS(outputs),
+    FILTER_PIXFMTS_ARRAY(pixel_fmts),
     .init          = init,
-    .query_formats = query_formats,
 };

@@ -54,17 +54,6 @@ static const AVOption cover_rect_options[] = {
 
 AVFILTER_DEFINE_CLASS(cover_rect);
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUV420P,
-        AV_PIX_FMT_YUVJ420P,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
-
 static int config_input(AVFilterLink *inlink)
 {
     return 0;
@@ -251,8 +240,8 @@ const AVFilter ff_vf_cover_rect = {
     .priv_size       = sizeof(CoverContext),
     .init            = init,
     .uninit          = uninit,
-    .query_formats   = query_formats,
     FILTER_INPUTS(cover_rect_inputs),
     FILTER_OUTPUTS(cover_rect_outputs),
+    FILTER_PIXFMTS(AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUVJ420P),
     .priv_class      = &cover_rect_class,
 };

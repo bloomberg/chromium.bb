@@ -21,12 +21,12 @@
 #include "src/ast/array.h"
 #include "src/ast/atomic.h"
 #include "src/ast/bool.h"
-#include "src/ast/bool_literal.h"
+#include "src/ast/bool_literal_expression.h"
 #include "src/ast/call_statement.h"
 #include "src/ast/depth_texture.h"
 #include "src/ast/external_texture.h"
 #include "src/ast/f32.h"
-#include "src/ast/float_literal.h"
+#include "src/ast/float_literal_expression.h"
 #include "src/ast/i32.h"
 #include "src/ast/internal_decoration.h"
 #include "src/ast/interpolate_decoration.h"
@@ -37,7 +37,7 @@
 #include "src/ast/override_decoration.h"
 #include "src/ast/pointer.h"
 #include "src/ast/sampled_texture.h"
-#include "src/ast/sint_literal.h"
+#include "src/ast/sint_literal_expression.h"
 #include "src/ast/stage_decoration.h"
 #include "src/ast/storage_texture.h"
 #include "src/ast/stride_decoration.h"
@@ -47,7 +47,7 @@
 #include "src/ast/struct_member_size_decoration.h"
 #include "src/ast/type_name.h"
 #include "src/ast/u32.h"
-#include "src/ast/uint_literal.h"
+#include "src/ast/uint_literal_expression.h"
 #include "src/ast/variable_decl_statement.h"
 #include "src/ast/vector.h"
 #include "src/ast/void.h"
@@ -116,8 +116,8 @@ bool GeneratorImpl::EmitTypeDecl(const ast::TypeDecl* ty) {
 
 bool GeneratorImpl::EmitExpression(std::ostream& out,
                                    const ast::Expression* expr) {
-  if (auto* a = expr->As<ast::ArrayAccessorExpression>()) {
-    return EmitArrayAccessor(out, a);
+  if (auto* a = expr->As<ast::IndexAccessorExpression>()) {
+    return EmitIndexAccessor(out, a);
   }
   if (auto* b = expr->As<ast::BinaryExpression>()) {
     return EmitBinary(out, b);
@@ -131,8 +131,8 @@ bool GeneratorImpl::EmitExpression(std::ostream& out,
   if (auto* i = expr->As<ast::IdentifierExpression>()) {
     return EmitIdentifier(out, i);
   }
-  if (auto* c = expr->As<ast::ConstructorExpression>()) {
-    return EmitConstructor(out, c);
+  if (auto* l = expr->As<ast::LiteralExpression>()) {
+    return EmitLiteral(out, l);
   }
   if (auto* m = expr->As<ast::MemberAccessorExpression>()) {
     return EmitMemberAccessor(out, m);
@@ -149,18 +149,17 @@ bool GeneratorImpl::EmitExpression(std::ostream& out,
   return false;
 }
 
-bool GeneratorImpl::EmitArrayAccessor(
+bool GeneratorImpl::EmitIndexAccessor(
     std::ostream& out,
-    const ast::ArrayAccessorExpression* expr) {
+    const ast::IndexAccessorExpression* expr) {
   bool paren_lhs =
-      !expr->array
-           ->IsAnyOf<ast::ArrayAccessorExpression, ast::CallExpression,
-                     ast::IdentifierExpression, ast::MemberAccessorExpression,
-                     ast::TypeConstructorExpression>();
+      !expr->object->IsAnyOf<ast::IndexAccessorExpression, ast::CallExpression,
+                             ast::IdentifierExpression,
+                             ast::MemberAccessorExpression>();
   if (paren_lhs) {
     out << "(";
   }
-  if (!EmitExpression(out, expr->array)) {
+  if (!EmitExpression(out, expr->object)) {
     return false;
   }
   if (paren_lhs) {
@@ -180,10 +179,9 @@ bool GeneratorImpl::EmitMemberAccessor(
     std::ostream& out,
     const ast::MemberAccessorExpression* expr) {
   bool paren_lhs =
-      !expr->structure
-           ->IsAnyOf<ast::ArrayAccessorExpression, ast::CallExpression,
-                     ast::IdentifierExpression, ast::MemberAccessorExpression,
-                     ast::TypeConstructorExpression>();
+      !expr->structure->IsAnyOf<ast::IndexAccessorExpression,
+                                ast::CallExpression, ast::IdentifierExpression,
+                                ast::MemberAccessorExpression>();
   if (paren_lhs) {
     out << "(";
   }
@@ -217,7 +215,17 @@ bool GeneratorImpl::EmitBitcast(std::ostream& out,
 
 bool GeneratorImpl::EmitCall(std::ostream& out,
                              const ast::CallExpression* expr) {
-  if (!EmitExpression(out, expr->func)) {
+  if (expr->target.name) {
+    if (!EmitExpression(out, expr->target.name)) {
+      return false;
+    }
+  } else if (expr->target.type) {
+    if (!EmitType(out, expr->target.type)) {
+      return false;
+    }
+  } else {
+    TINT_ICE(Writer, diagnostics_)
+        << "CallExpression target had neither a name or type";
     return false;
   }
   out << "(";
@@ -240,53 +248,15 @@ bool GeneratorImpl::EmitCall(std::ostream& out,
   return true;
 }
 
-bool GeneratorImpl::EmitConstructor(std::ostream& out,
-                                    const ast::ConstructorExpression* expr) {
-  if (auto* scalar = expr->As<ast::ScalarConstructorExpression>()) {
-    return EmitScalarConstructor(out, scalar);
-  }
-  return EmitTypeConstructor(out, expr->As<ast::TypeConstructorExpression>());
-}
-
-bool GeneratorImpl::EmitTypeConstructor(
-    std::ostream& out,
-    const ast::TypeConstructorExpression* expr) {
-  if (!EmitType(out, expr->type)) {
-    return false;
-  }
-
-  out << "(";
-
-  bool first = true;
-  for (auto* e : expr->values) {
-    if (!first) {
-      out << ", ";
-    }
-    first = false;
-
-    if (!EmitExpression(out, e)) {
-      return false;
-    }
-  }
-
-  out << ")";
-  return true;
-}
-
-bool GeneratorImpl::EmitScalarConstructor(
-    std::ostream& out,
-    const ast::ScalarConstructorExpression* expr) {
-  return EmitLiteral(out, expr->literal);
-}
-
-bool GeneratorImpl::EmitLiteral(std::ostream& out, const ast::Literal* lit) {
-  if (auto* bl = lit->As<ast::BoolLiteral>()) {
+bool GeneratorImpl::EmitLiteral(std::ostream& out,
+                                const ast::LiteralExpression* lit) {
+  if (auto* bl = lit->As<ast::BoolLiteralExpression>()) {
     out << (bl->value ? "true" : "false");
-  } else if (auto* fl = lit->As<ast::FloatLiteral>()) {
+  } else if (auto* fl = lit->As<ast::FloatLiteralExpression>()) {
     out << FloatToBitPreservingString(fl->value);
-  } else if (auto* sl = lit->As<ast::SintLiteral>()) {
+  } else if (auto* sl = lit->As<ast::SintLiteralExpression>()) {
     out << sl->value;
-  } else if (auto* ul = lit->As<ast::UintLiteral>()) {
+  } else if (auto* ul = lit->As<ast::UintLiteralExpression>()) {
     out << ul->value << "u";
   } else {
     diagnostics_.add_error(diag::System::Writer, "unknown literal type");

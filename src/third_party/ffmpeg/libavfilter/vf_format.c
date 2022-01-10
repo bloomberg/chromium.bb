@@ -140,10 +140,9 @@ static const AVOption options[] = {
     { NULL }
 };
 
-#if CONFIG_FORMAT_FILTER
+AVFILTER_DEFINE_CLASS_EXT(format, "(no)format", options);
 
-#define format_options options
-AVFILTER_DEFINE_CLASS(format);
+#if CONFIG_FORMAT_FILTER
 
 static const AVFilterPad avfilter_vf_format_inputs[] = {
     {
@@ -167,20 +166,17 @@ const AVFilter ff_vf_format = {
     .init          = init,
     .uninit        = uninit,
 
-    .query_formats = query_formats,
-
     .priv_size     = sizeof(FormatContext),
     .priv_class    = &format_class,
 
     FILTER_INPUTS(avfilter_vf_format_inputs),
     FILTER_OUTPUTS(avfilter_vf_format_outputs),
+
+    FILTER_QUERY_FUNC(query_formats),
 };
 #endif /* CONFIG_FORMAT_FILTER */
 
 #if CONFIG_NOFORMAT_FILTER
-
-#define noformat_options options
-AVFILTER_DEFINE_CLASS(noformat);
 
 static const AVFilterPad avfilter_vf_noformat_inputs[] = {
     {
@@ -200,16 +196,16 @@ static const AVFilterPad avfilter_vf_noformat_outputs[] = {
 const AVFilter ff_vf_noformat = {
     .name          = "noformat",
     .description   = NULL_IF_CONFIG_SMALL("Force libavfilter not to use any of the specified pixel formats for the input to the next filter."),
+    .priv_class    = &format_class,
 
     .init          = init,
     .uninit        = uninit,
 
-    .query_formats = query_formats,
-
     .priv_size     = sizeof(FormatContext),
-    .priv_class    = &noformat_class,
 
     FILTER_INPUTS(avfilter_vf_noformat_inputs),
     FILTER_OUTPUTS(avfilter_vf_noformat_outputs),
+
+    FILTER_QUERY_FUNC(query_formats),
 };
 #endif /* CONFIG_NOFORMAT_FILTER */

@@ -75,16 +75,6 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     return ff_filter_frame(ctx->outputs[0], frame);
 }
 
-static av_cold int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pixel_fmts[] = {
-        AV_PIX_FMT_GBRPF32, AV_PIX_FMT_GBRAPF32,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pixel_fmts);
-}
-
 static av_cold int config_input(AVFilterLink *inlink)
 {
     AVFilterContext *ctx = inlink->dst;
@@ -128,9 +118,9 @@ const AVFilter ff_vf_exposure = {
     .description   = NULL_IF_CONFIG_SMALL("Adjust exposure of the video stream."),
     .priv_size     = sizeof(ExposureContext),
     .priv_class    = &exposure_class,
-    .query_formats = query_formats,
     FILTER_INPUTS(exposure_inputs),
     FILTER_OUTPUTS(exposure_outputs),
+    FILTER_PIXFMTS(AV_PIX_FMT_GBRPF32, AV_PIX_FMT_GBRAPF32),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };

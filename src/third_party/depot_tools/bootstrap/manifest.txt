@@ -21,7 +21,7 @@ $VerifiedPlatform windows-amd64 linux-amd64 mac-amd64 mac-arm64
 infra/3pp/tools/cpython/${platform} version:2@2.7.18.chromium.39
 
 @Subdir python3
-infra/3pp/tools/cpython3/${platform} version:2@3.8.10.chromium.20
+infra/3pp/tools/cpython3/${platform} version:2@3.8.10.chromium.23
 
 @Subdir git
 infra/3pp/tools/git/${platform} version:2@2.33.0.chromium.6

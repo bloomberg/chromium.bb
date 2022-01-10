@@ -92,6 +92,8 @@ class AudioCodingModuleImpl final : public AudioCodingModule {
 
   ANAStats GetANAStats() const override;
 
+  int GetTargetBitrate() const override;
+
  private:
   struct InputData {
     InputData() : buffer(kInitialInputDataBufferSize) {}
@@ -342,13 +344,13 @@ int AudioCodingModuleImpl::Add10MsData(const AudioFrame& audio_frame) {
 int AudioCodingModuleImpl::Add10MsDataInternal(const AudioFrame& audio_frame,
                                                InputData* input_data) {
   if (audio_frame.samples_per_channel_ == 0) {
-    RTC_NOTREACHED();
+    RTC_DCHECK_NOTREACHED();
     RTC_LOG(LS_ERROR) << "Cannot Add 10 ms audio, payload length is zero";
     return -1;
   }
 
   if (audio_frame.sample_rate_hz_ > kMaxInputSampleRateHz) {
-    RTC_NOTREACHED();
+    RTC_DCHECK_NOTREACHED();
     RTC_LOG(LS_ERROR) << "Cannot Add 10 ms audio, input frequency not valid";
     return -1;
   }
@@ -601,6 +603,14 @@ ANAStats AudioCodingModuleImpl::GetANAStats() const {
     return encoder_stack_->GetANAStats();
   // If no encoder is set, return default stats.
   return ANAStats();
+}
+
+int AudioCodingModuleImpl::GetTargetBitrate() const {
+  MutexLock lock(&acm_mutex_);
+  if (!encoder_stack_) {
+    return -1;
+  }
+  return encoder_stack_->GetTargetBitrate();
 }
 
 }  // namespace

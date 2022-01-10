@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-// eslint-disable-next-line rulesdir/es_modules_import
 import type * as Security from './security.js';
 
 const UIStrings = {
@@ -26,8 +24,6 @@ let loadedSecurityModule: (typeof Security|undefined);
 
 async function loadSecurityModule(): Promise<typeof Security> {
   if (!loadedSecurityModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('panels/security');
     loadedSecurityModule = await import('./security.js');
   }
   return loadedSecurityModule;

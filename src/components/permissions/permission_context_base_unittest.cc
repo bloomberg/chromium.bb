@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
@@ -804,7 +803,8 @@ TEST_F(PermissionContextBaseTests, TestGrantAndRevoke) {
 }
 
 // Tests the global kill switch by enabling/disabling the Field Trials.
-TEST_F(PermissionContextBaseTests, TestGlobalKillSwitch) {
+// TODO(crbug.com/1278842): Fix flaky test on Linux TSan.
+TEST_F(PermissionContextBaseTests, DISABLED_TestGlobalKillSwitch) {
   TestGlobalPermissionsKillSwitch(ContentSettingsType::GEOLOCATION);
   TestGlobalPermissionsKillSwitch(ContentSettingsType::NOTIFICATIONS);
   TestGlobalPermissionsKillSwitch(ContentSettingsType::MIDI_SYSEX);

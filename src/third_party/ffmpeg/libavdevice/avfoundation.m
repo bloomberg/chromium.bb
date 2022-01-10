@@ -693,6 +693,7 @@ static int get_audio_config(AVFormatContext *s)
     const AudioStreamBasicDescription *basic_desc = CMAudioFormatDescriptionGetStreamBasicDescription(format_desc);
 
     if (!basic_desc) {
+        unlock_frames(ctx);
         av_log(s, AV_LOG_ERROR, "audio format not available\n");
         return 1;
     }
@@ -731,6 +732,7 @@ static int get_audio_config(AVFormatContext *s)
         ctx->audio_packed) {
         stream->codecpar->codec_id = ctx->audio_be ? AV_CODEC_ID_PCM_S32BE : AV_CODEC_ID_PCM_S32LE;
     } else {
+        unlock_frames(ctx);
         av_log(s, AV_LOG_ERROR, "audio format is not supported\n");
         return 1;
     }
@@ -740,6 +742,7 @@ static int get_audio_config(AVFormatContext *s)
         ctx->audio_buffer_size        = CMBlockBufferGetDataLength(block_buffer);
         ctx->audio_buffer             = av_malloc(ctx->audio_buffer_size);
         if (!ctx->audio_buffer) {
+            unlock_frames(ctx);
             av_log(s, AV_LOG_ERROR, "error allocating audio buffer\n");
             return 1;
         }
@@ -1064,10 +1067,12 @@ static int avf_read_packet(AVFormatContext *s, AVPacket *pkt)
             } else if (block_buffer != nil) {
                 length = (int)CMBlockBufferGetDataLength(block_buffer);
             } else  {
+                unlock_frames(ctx);
                 return AVERROR(EINVAL);
             }
 
             if (av_new_packet(pkt, length) < 0) {
+                unlock_frames(ctx);
                 return AVERROR(EIO);
             }
 
@@ -1094,21 +1099,26 @@ static int avf_read_packet(AVFormatContext *s, AVPacket *pkt)
             CFRelease(ctx->current_frame);
             ctx->current_frame = nil;
 
-            if (status < 0)
+            if (status < 0) {
+                unlock_frames(ctx);
                 return status;
+            }
         } else if (ctx->current_audio_frame != nil) {
             CMBlockBufferRef block_buffer = CMSampleBufferGetDataBuffer(ctx->current_audio_frame);
             int block_buffer_size         = CMBlockBufferGetDataLength(block_buffer);
 
             if (!block_buffer || !block_buffer_size) {
+                unlock_frames(ctx);
                 return AVERROR(EIO);
             }
 
             if (ctx->audio_non_interleaved && block_buffer_size > ctx->audio_buffer_size) {
+                unlock_frames(ctx);
                 return AVERROR_BUFFER_TOO_SMALL;
             }
 
             if (av_new_packet(pkt, block_buffer_size) < 0) {
+                unlock_frames(ctx);
                 return AVERROR(EIO);
             }
 
@@ -1128,6 +1138,7 @@ static int avf_read_packet(AVFormatContext *s, AVPacket *pkt)
 
                 OSStatus ret = CMBlockBufferCopyDataBytes(block_buffer, 0, pkt->size, ctx->audio_buffer);
                 if (ret != kCMBlockBufferNoErr) {
+                    unlock_frames(ctx);
                     return AVERROR(EIO);
                 }
 
@@ -1139,7 +1150,11 @@ static int avf_read_packet(AVFormatContext *s, AVPacket *pkt)
                     int##bps##_t **src;                                                \
                     int##bps##_t *dest;                                                \
                     src = av_malloc(ctx->audio_channels * sizeof(int##bps##_t*));      \
-                    if (!src) return AVERROR(EIO);                                     \
+                    if (!src) {                                                        \
+                        unlock_frames(ctx);                                            \
+                        return AVERROR(EIO);                                           \
+                    }                                                                  \
+                                                                                       \
                     for (c = 0; c < ctx->audio_channels; c++) {                        \
                         src[c] = ((int##bps##_t*)ctx->audio_buffer) + c * num_samples; \
                     }                                                                  \
@@ -1159,6 +1174,7 @@ static int avf_read_packet(AVFormatContext *s, AVPacket *pkt)
             } else {
                 OSStatus ret = CMBlockBufferCopyDataBytes(block_buffer, 0, pkt->size, pkt->data);
                 if (ret != kCMBlockBufferNoErr) {
+                    unlock_frames(ctx);
                     return AVERROR(EIO);
                 }
             }

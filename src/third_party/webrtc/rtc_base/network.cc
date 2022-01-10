@@ -138,7 +138,7 @@ uint16_t ComputeNetworkCostByType(int type,
       return kNetworkCostMax + vpnCost;
     case rtc::ADAPTER_TYPE_VPN:
       // The cost of a VPN should be computed using its underlying network type.
-      RTC_NOTREACHED();
+      RTC_DCHECK_NOTREACHED();
       return kNetworkCostUnknown;
     default:
       return kNetworkCostUnknown + vpnCost;
@@ -511,6 +511,9 @@ bool NetworkManagerBase::IsVpnMacAddress(
 BasicNetworkManager::BasicNetworkManager()
     : BasicNetworkManager(nullptr, nullptr) {}
 
+BasicNetworkManager::BasicNetworkManager(SocketFactory* socket_factory)
+    : BasicNetworkManager(nullptr, socket_factory) {}
+
 BasicNetworkManager::BasicNetworkManager(
     NetworkMonitorFactory* network_monitor_factory)
     : BasicNetworkManager(network_monitor_factory, nullptr) {}
@@ -537,7 +540,7 @@ void BasicNetworkManager::OnNetworksChanged() {
 
 bool BasicNetworkManager::CreateNetworks(bool include_ignored,
                                          NetworkList* networks) const {
-  RTC_NOTREACHED();
+  RTC_DCHECK_NOTREACHED();
   RTC_LOG(LS_WARNING) << "BasicNetworkManager doesn't work on NaCl yet";
   return false;
 }
@@ -652,8 +655,8 @@ bool BasicNetworkManager::CreateNetworks(bool include_ignored,
   struct ifaddrs* interfaces;
   int error = getifaddrs(&interfaces);
   if (error != 0) {
-    RTC_LOG_ERR(LERROR) << "getifaddrs failed to gather interface data: "
-                        << error;
+    RTC_LOG_ERR(LS_ERROR) << "getifaddrs failed to gather interface data: "
+                          << error;
     return false;
   }
 
@@ -965,7 +968,7 @@ void BasicNetworkManager::OnMessage(Message* msg) {
       break;
     }
     default:
-      RTC_NOTREACHED();
+      RTC_DCHECK_NOTREACHED();
   }
 }
 
@@ -983,7 +986,7 @@ IPAddress BasicNetworkManager::QueryDefaultLocalAddress(int family) const {
   std::unique_ptr<Socket> socket(
       socket_factory->CreateSocket(family, SOCK_DGRAM));
   if (!socket) {
-    RTC_LOG_ERR(LERROR) << "Socket creation failed";
+    RTC_LOG_ERR(LS_ERROR) << "Socket creation failed";
     return IPAddress();
   }
 

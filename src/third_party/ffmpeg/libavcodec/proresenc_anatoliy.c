@@ -795,7 +795,6 @@ static int prores_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     }
 
     AV_WB32(pkt->data, compress_frame_size);/* update frame size */
-    pkt->flags |= AV_PKT_FLAG_KEY;
     pkt->size = compress_frame_size;
     *got_packet = 1;
 
@@ -853,9 +852,6 @@ static av_cold int prores_encode_init(AVCodecContext *avctx)
             avctx->profile = FF_PROFILE_PRORES_4444;
             av_log(avctx, AV_LOG_INFO,
                    "encoding with ProRes 4444+ (ap4h) profile\n");
-        } else {
-            av_log(avctx, AV_LOG_ERROR, "Unknown pixel format\n");
-            return AVERROR(EINVAL);
         }
     } else if (avctx->profile < FF_PROFILE_PRORES_PROXY
             || avctx->profile > FF_PROFILE_PRORES_XQ) {

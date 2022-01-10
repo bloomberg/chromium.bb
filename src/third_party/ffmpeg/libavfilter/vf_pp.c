@@ -75,21 +75,16 @@ static int pp_process_command(AVFilterContext *ctx, const char *cmd, const char 
     return AVERROR(ENOSYS);
 }
 
-static int pp_query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUVJ420P,
-        AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUVJ422P,
-        AV_PIX_FMT_YUV411P,
-        AV_PIX_FMT_GBRP,
-        AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUVJ444P,
-        AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUVJ440P,
-        AV_PIX_FMT_GRAY8,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUVJ420P,
+    AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUVJ422P,
+    AV_PIX_FMT_YUV411P,
+    AV_PIX_FMT_GBRP,
+    AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUVJ444P,
+    AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUVJ440P,
+    AV_PIX_FMT_GRAY8,
+    AV_PIX_FMT_NONE
+};
 
 static int pp_config_props(AVFilterLink *inlink)
 {
@@ -192,9 +187,9 @@ const AVFilter ff_vf_pp = {
     .priv_size       = sizeof(PPFilterContext),
     .init            = pp_init,
     .uninit          = pp_uninit,
-    .query_formats   = pp_query_formats,
     FILTER_INPUTS(pp_inputs),
     FILTER_OUTPUTS(pp_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .process_command = pp_process_command,
     .priv_class      = &pp_class,
     .flags           = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,

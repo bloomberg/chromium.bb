@@ -43,6 +43,8 @@ namespace tint {
 namespace sem {
 class Call;
 class Intrinsic;
+class TypeConstructor;
+class TypeConversion;
 }  // namespace sem
 
 namespace writer {
@@ -59,12 +61,12 @@ class GeneratorImpl : public TextGenerator {
   /// @returns true on successful generation; false otherwise
   bool Generate();
 
-  /// Handles an array accessor expression
+  /// Handles an index accessor expression
   /// @param out the output of the expression stream
   /// @param expr the expression to emit
-  /// @returns true if the array accessor was emitted
-  bool EmitArrayAccessor(std::ostream& out,
-                         const ast::ArrayAccessorExpression* expr);
+  /// @returns true if the index accessor was emitted
+  bool EmitIndexAccessor(std::ostream& out,
+                         const ast::IndexAccessorExpression* expr);
   /// Handles an assignment statement
   /// @param stmt the statement to emit
   /// @returns true if the statement was emitted successfully
@@ -76,8 +78,14 @@ class GeneratorImpl : public TextGenerator {
   bool EmitBinary(std::ostream& out, const ast::BinaryExpression* expr);
   /// Handles generating a bitcast expression
   /// @param out the output of the expression stream
-  /// @param expr the as expression
-  /// @returns true if the bitcast was emitted
+  /// @param expr the expression
+  /// @returns true if the binary expression was emitted
+  bool EmitVectorRelational(std::ostream& out,
+                            const ast::BinaryExpression* expr);
+  /// Handles generating a vector relational expression
+  /// @param out the output of the expression stream
+  /// @param expr the expression
+  /// @returns true if the vector relational expression was emitted
   bool EmitBitcast(std::ostream& out, const ast::BitcastExpression* expr);
   /// Emits a list of statements
   /// @param stmts the statement list
@@ -100,6 +108,38 @@ class GeneratorImpl : public TextGenerator {
   /// @param expr the call expression
   /// @returns true if the call expression is emitted
   bool EmitCall(std::ostream& out, const ast::CallExpression* expr);
+  /// Handles generating a function call expression
+  /// @param out the output of the expression stream
+  /// @param call the call expression
+  /// @param function the function being called
+  /// @returns true if the expression is emitted
+  bool EmitFunctionCall(std::ostream& out,
+                        const sem::Call* call,
+                        const sem::Function* function);
+  /// Handles generating an intrinsic call expression
+  /// @param out the output of the expression stream
+  /// @param call the call expression
+  /// @param intrinsic the intrinsic being called
+  /// @returns true if the expression is emitted
+  bool EmitIntrinsicCall(std::ostream& out,
+                         const sem::Call* call,
+                         const sem::Intrinsic* intrinsic);
+  /// Handles generating a type conversion expression
+  /// @param out the output of the expression stream
+  /// @param call the call expression
+  /// @param conv the type conversion
+  /// @returns true if the expression is emitted
+  bool EmitTypeConversion(std::ostream& out,
+                          const sem::Call* call,
+                          const sem::TypeConversion* conv);
+  /// Handles generating a type constructor expression
+  /// @param out the output of the expression stream
+  /// @param call the call expression
+  /// @param ctor the type constructor
+  /// @returns true if the expression is emitted
+  bool EmitTypeConstructor(std::ostream& out,
+                           const sem::Call* call,
+                           const sem::TypeConstructor* ctor);
   /// Handles generating a barrier intrinsic call
   /// @param out the output of the expression stream
   /// @param intrinsic the semantic information for the barrier intrinsic
@@ -125,17 +165,25 @@ class GeneratorImpl : public TextGenerator {
   /// Handles generating a call to a texture function (`textureSample`,
   /// `textureSampleGrad`, etc)
   /// @param out the output of the expression stream
-  /// @param expr the call expression
+  /// @param call the call expression
   /// @param intrinsic the semantic information for the texture intrinsic
   /// @returns true if the call expression is emitted
   bool EmitTextureCall(std::ostream& out,
-                       const ast::CallExpression* expr,
+                       const sem::Call* call,
                        const sem::Intrinsic* intrinsic);
   /// Handles generating a call to the `select()` intrinsic
   /// @param out the output of the expression stream
   /// @param expr the call expression
   /// @returns true if the call expression is emitted
   bool EmitSelectCall(std::ostream& out, const ast::CallExpression* expr);
+  /// Handles generating a call to the `dot()` intrinsic
+  /// @param out the output of the expression stream
+  /// @param expr the call expression
+  /// @param intrinsic the semantic information for the intrinsic
+  /// @returns true if the call expression is emitted
+  bool EmitDotCall(std::ostream& out,
+                   const ast::CallExpression* expr,
+                   const sem::Intrinsic* intrinsic);
   /// Handles generating a call to the `modf()` intrinsic
   /// @param out the output of the expression stream
   /// @param expr the call expression
@@ -180,28 +228,10 @@ class GeneratorImpl : public TextGenerator {
   /// @param stmt the statement
   /// @returns true if the statement was emitted successfully
   bool EmitCase(const ast::CaseStatement* stmt);
-  /// Handles generating constructor expressions
-  /// @param out the output of the expression stream
-  /// @param expr the constructor expression
-  /// @returns true if the expression was emitted
-  bool EmitConstructor(std::ostream& out,
-                       const ast::ConstructorExpression* expr);
   /// Handles generating a discard statement
   /// @param stmt the discard statement
   /// @returns true if the statement was successfully emitted
   bool EmitDiscard(const ast::DiscardStatement* stmt);
-  /// Handles generating a scalar constructor
-  /// @param out the output of the expression stream
-  /// @param expr the scalar constructor expression
-  /// @returns true if the scalar constructor is emitted
-  bool EmitScalarConstructor(std::ostream& out,
-                             const ast::ScalarConstructorExpression* expr);
-  /// Handles emitting a type constructor
-  /// @param out the output of the expression stream
-  /// @param expr the type constructor expression
-  /// @returns true if the constructor is emitted
-  bool EmitTypeConstructor(std::ostream& out,
-                           const ast::TypeConstructorExpression* expr);
   /// Handles a continue statement
   /// @param stmt the statement to emit
   /// @returns true if the statement was emitted successfully
@@ -258,7 +288,7 @@ class GeneratorImpl : public TextGenerator {
   /// @param out the output stream
   /// @param lit the literal to emit
   /// @returns true if the literal was successfully emitted
-  bool EmitLiteral(std::ostream& out, const ast::Literal* lit);
+  bool EmitLiteral(std::ostream& out, const ast::LiteralExpression* lit);
   /// Handles a loop statement
   /// @param stmt the statement to emit
   /// @returns true if the statement was emitted
@@ -351,8 +381,9 @@ class GeneratorImpl : public TextGenerator {
   std::string generate_builtin_name(const sem::Intrinsic* intrinsic);
   /// Converts a builtin to a gl_ string
   /// @param builtin the builtin to convert
+  /// @param stage pipeline stage in which this builtin is used
   /// @returns the string name of the builtin or blank on error
-  const char* builtin_to_string(ast::Builtin builtin) const;
+  const char* builtin_to_string(ast::Builtin builtin, ast::PipelineStage stage);
   /// Converts a builtin to a sem::Type appropriate for GLSL.
   /// @param builtin the builtin to convert
   /// @returns the appropriate semantic type or null on error.
@@ -416,6 +447,7 @@ class GeneratorImpl : public TextGenerator {
   std::unordered_map<const sem::Intrinsic*, std::string> intrinsics_;
   std::unordered_map<const sem::Struct*, std::string> structure_builders_;
   std::unordered_map<const sem::Vector*, std::string> dynamic_vector_write_;
+  std::unordered_map<const sem::Vector*, std::string> int_dot_funcs_;
 };
 
 }  // namespace glsl

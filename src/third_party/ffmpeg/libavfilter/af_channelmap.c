@@ -310,7 +310,7 @@ static int channelmap_filter_frame(AVFilterLink *inlink, AVFrame *buf)
     if (nch_out > nch_in) {
         if (nch_out > FF_ARRAY_ELEMS(buf->data)) {
             uint8_t **new_extended_data =
-                av_mallocz_array(nch_out, sizeof(*buf->extended_data));
+                av_calloc(nch_out, sizeof(*buf->extended_data));
             if (!new_extended_data) {
                 av_frame_free(&buf);
                 return AVERROR(ENOMEM);
@@ -400,9 +400,9 @@ const AVFilter ff_af_channelmap = {
     .name          = "channelmap",
     .description   = NULL_IF_CONFIG_SMALL("Remap audio channels."),
     .init          = channelmap_init,
-    .query_formats = channelmap_query_formats,
     .priv_size     = sizeof(ChannelMapContext),
     .priv_class    = &channelmap_class,
     FILTER_INPUTS(avfilter_af_channelmap_inputs),
     FILTER_OUTPUTS(avfilter_af_channelmap_outputs),
+    FILTER_QUERY_FUNC(channelmap_query_formats),
 };

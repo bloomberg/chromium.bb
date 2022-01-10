@@ -22,7 +22,6 @@ Test coverage:
 	- required_bytes_in_copy: testing minimal data size and data size too small for various combinations of bytesPerRow, rowsPerImage, copyExtent and offset. for the copy method, bytesPerRow is computed as bytesInACompleteRow aligned to be a multiple of 256 + bytesPerRowPadding * 256.
 	- texel_block_alignment_on_rows_per_image: for all formats.
 	- offset_alignment: for all formats.
-	- bound_on_bytes_per_row: for all formats and various combinations of bytesPerRow and copyExtent. for writeTexture, bytesPerRow is computed as (blocksPerRow * blockWidth * bytesPerBlock + additionalBytesPerRow) and copyExtent.width is computed as copyWidthInBlocks * blockWidth. for the copy methods, both values are mutliplied by 256.
 	- bound_on_offset: for various combinations of offset and dataSize.
 
 * texture copy range:

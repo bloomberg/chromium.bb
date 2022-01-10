@@ -15,7 +15,6 @@ import {SDKModel} from './SDKModel.js';
 
 export class EmulationModel extends SDKModel<void> {
   readonly #emulationAgent: ProtocolProxyApi.EmulationApi;
-  readonly #pageAgent: ProtocolProxyApi.PageApi;
   readonly #deviceOrientationAgent: ProtocolProxyApi.DeviceOrientationApi;
   #cssModel: CSSModel|null;
   readonly #overlayModelInternal: OverlayModel|null;
@@ -31,7 +30,6 @@ export class EmulationModel extends SDKModel<void> {
   constructor(target: Target) {
     super(target);
     this.#emulationAgent = target.emulationAgent();
-    this.#pageAgent = target.pageAgent();
     this.#deviceOrientationAgent = target.deviceOrientationAgent();
     this.#cssModel = target.model(CSSModel);
     this.#overlayModelInternal = target.model(OverlayModel);
@@ -76,6 +74,8 @@ export class EmulationModel extends SDKModel<void> {
         Common.Settings.Settings.instance().moduleSetting<string>('emulatedCSSMediaFeatureColorGamut');
     const mediaFeaturePrefersColorSchemeSetting =
         Common.Settings.Settings.instance().moduleSetting<string>('emulatedCSSMediaFeaturePrefersColorScheme');
+    const mediaFeatureForcedColorsSetting =
+        Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeatureForcedColors');
     const mediaFeaturePrefersContrastSetting =
         Common.Settings.Settings.instance().moduleSetting<string>('emulatedCSSMediaFeaturePrefersContrast');
     const mediaFeaturePrefersReducedDataSetting =
@@ -90,6 +90,7 @@ export class EmulationModel extends SDKModel<void> {
       ['type', mediaTypeSetting.get()],
       ['color-gamut', mediaFeatureColorGamutSetting.get()],
       ['prefers-color-scheme', mediaFeaturePrefersColorSchemeSetting.get()],
+      ['forced-colors', mediaFeatureForcedColorsSetting.get()],
       ['prefers-contrast', mediaFeaturePrefersContrastSetting.get()],
       ['prefers-reduced-data', mediaFeaturePrefersReducedDataSetting.get()],
       ['prefers-reduced-motion', mediaFeaturePrefersReducedMotionSetting.get()],
@@ -104,6 +105,10 @@ export class EmulationModel extends SDKModel<void> {
     });
     mediaFeaturePrefersColorSchemeSetting.addChangeListener(() => {
       this.#mediaConfiguration.set('prefers-color-scheme', mediaFeaturePrefersColorSchemeSetting.get());
+      this.updateCssMedia();
+    });
+    mediaFeatureForcedColorsSetting.addChangeListener(() => {
+      this.#mediaConfiguration.set('forced-colors', mediaFeatureForcedColorsSetting.get());
       this.updateCssMedia();
     });
     mediaFeaturePrefersContrastSetting.addChangeListener(() => {
@@ -366,6 +371,10 @@ export class EmulationModel extends SDKModel<void> {
       {
         name: 'prefers-color-scheme',
         value: this.#mediaConfiguration.get('prefers-color-scheme') ?? '',
+      },
+      {
+        name: 'forced-colors',
+        value: this.#mediaConfiguration.get('forced-colors') ?? '',
       },
       {
         name: 'prefers-contrast',

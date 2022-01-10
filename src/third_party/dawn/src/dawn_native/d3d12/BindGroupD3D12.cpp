@@ -203,9 +203,26 @@ namespace dawn_native { namespace d3d12 {
                 }
             }
         }
+
+        // Loop through the dynamic storage buffers and build a flat map from the index of the
+        // dynamic storage buffer to its binding size. The index |dynamicStorageBufferIndex|
+        // means that it is the i'th buffer that is both dynamic and storage, in increasing order
+        // of BindingNumber.
+        mDynamicStorageBufferLengths.resize(bgl->GetBindingCountInfo().dynamicStorageBufferCount);
+        uint32_t dynamicStorageBufferIndex = 0;
+        for (BindingIndex bindingIndex(0); bindingIndex < bgl->GetDynamicBufferCount();
+             ++bindingIndex) {
+            if (bgl->IsStorageBufferBinding(bindingIndex)) {
+                mDynamicStorageBufferLengths[dynamicStorageBufferIndex++] =
+                    GetBindingAsBufferBinding(bindingIndex).size;
+            }
+        }
     }
 
-    BindGroup::~BindGroup() {
+    BindGroup::~BindGroup() = default;
+
+    void BindGroup::DestroyImpl() {
+        BindGroupBase::DestroyImpl();
         ToBackend(GetLayout())->DeallocateBindGroup(this, &mCPUViewAllocation);
         ASSERT(!mCPUViewAllocation.IsValid());
     }
@@ -259,4 +276,10 @@ namespace dawn_native { namespace d3d12 {
     void BindGroup::SetSamplerAllocationEntry(Ref<SamplerHeapCacheEntry> entry) {
         mSamplerAllocationEntry = std::move(entry);
     }
+
+    const BindGroup::DynamicStorageBufferLengths& BindGroup::GetDynamicStorageBufferLengths()
+        const {
+        return mDynamicStorageBufferLengths;
+    }
+
 }}  // namespace dawn_native::d3d12

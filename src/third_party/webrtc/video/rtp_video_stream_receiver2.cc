@@ -503,12 +503,6 @@ void RtpVideoStreamReceiver2::OnReceivedPayloadData(
   video_header.video_timing.flags = VideoSendTiming::kInvalid;
   video_header.is_last_packet_in_frame |= rtp_packet.Marker();
 
-  if (const auto* vp9_header =
-          absl::get_if<RTPVideoHeaderVP9>(&video_header.video_type_header)) {
-    video_header.is_last_packet_in_frame |= vp9_header->end_of_frame;
-    video_header.is_first_packet_in_frame |= vp9_header->beginning_of_frame;
-  }
-
   rtp_packet.GetExtension<VideoOrientation>(&video_header.rotation);
   rtp_packet.GetExtension<VideoContentTypeExtension>(
       &video_header.content_type);
@@ -737,8 +731,6 @@ void RtpVideoStreamReceiver2::OnInsertedPacket(
       max_nack_count = packet->times_nacked;
       min_recv_time = packet_info.receive_time().ms();
       max_recv_time = packet_info.receive_time().ms();
-      payloads.clear();
-      packet_infos.clear();
     } else {
       max_nack_count = std::max(max_nack_count, packet->times_nacked);
       min_recv_time = std::min(min_recv_time, packet_info.receive_time().ms());
@@ -778,6 +770,8 @@ void RtpVideoStreamReceiver2::OnInsertedPacket(
           last_packet.video_header.color_space,              //
           RtpPacketInfos(std::move(packet_infos)),           //
           std::move(bitstream)));
+      payloads.clear();
+      packet_infos.clear();
     }
   }
   RTC_DCHECK(frame_boundary);

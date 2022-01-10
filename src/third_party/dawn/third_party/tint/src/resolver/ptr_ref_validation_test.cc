@@ -66,6 +66,34 @@ TEST_F(ResolverPtrRefValidationTest, AddressOfHandle) {
             "storage class");
 }
 
+TEST_F(ResolverPtrRefValidationTest, AddressOfVectorComponent_MemberAccessor) {
+  // var v : vec4<i32>;
+  // &v.y
+  auto* v = Var("v", ty.vec4<i32>());
+  auto* expr = AddressOf(MemberAccessor(Source{{12, 34}}, "v", "y"));
+
+  WrapInFunction(v, expr);
+
+  EXPECT_FALSE(r()->Resolve());
+
+  EXPECT_EQ(r()->error(),
+            "12:34 error: cannot take the address of a vector component");
+}
+
+TEST_F(ResolverPtrRefValidationTest, AddressOfVectorComponent_IndexAccessor) {
+  // var v : vec4<i32>;
+  // &v[2]
+  auto* v = Var("v", ty.vec4<i32>());
+  auto* expr = AddressOf(IndexAccessor(Source{{12, 34}}, "v", 2));
+
+  WrapInFunction(v, expr);
+
+  EXPECT_FALSE(r()->Resolve());
+
+  EXPECT_EQ(r()->error(),
+            "12:34 error: cannot take the address of a vector component");
+}
+
 TEST_F(ResolverPtrRefValidationTest, IndirectOfAddressOfHandle) {
   // [[group(0), binding(0)]] var t: texture_3d<f32>;
   // *&t
@@ -139,7 +167,7 @@ TEST_F(ResolverPtrRefValidationTest, InferredPtrAccessMismatch) {
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
             "12:34 error: cannot initialize let of type "
-            "'ptr<storage, i32>' with value of type "
+            "'ptr<storage, i32, read>' with value of type "
             "'ptr<storage, i32, read_write>'");
 }
 

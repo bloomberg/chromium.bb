@@ -102,7 +102,7 @@ uint32_t ConvertIceTransportTypeToCandidateFilter(
     case PeerConnectionInterface::kAll:
       return cricket::CF_ALL;
     default:
-      RTC_NOTREACHED();
+      RTC_DCHECK_NOTREACHED();
   }
   return cricket::CF_NONE;
 }
@@ -220,7 +220,7 @@ cricket::IceConfig ParseIceConfig(
       gathering_policy = cricket::GATHER_CONTINUALLY;
       break;
     default:
-      RTC_NOTREACHED();
+      RTC_DCHECK_NOTREACHED();
       gathering_policy = cricket::GATHER_ONCE;
   }
 
@@ -338,6 +338,7 @@ bool PeerConnectionInterface::RTCConfiguration::operator==(
     absl::optional<int> stable_writable_connection_ping_interval_ms;
     webrtc::VpnPreference vpn_preference;
     std::vector<rtc::NetworkMask> vpn_list;
+    PortAllocatorConfig port_allocator_config;
   };
   static_assert(sizeof(stuff_being_tested_for_equality) == sizeof(*this),
                 "Did you add something to RTCConfiguration and forget to "
@@ -400,7 +401,10 @@ bool PeerConnectionInterface::RTCConfiguration::operator==(
          report_usage_pattern_delay_ms == o.report_usage_pattern_delay_ms &&
          stable_writable_connection_ping_interval_ms ==
              o.stable_writable_connection_ping_interval_ms &&
-         vpn_preference == o.vpn_preference && vpn_list == o.vpn_list;
+         vpn_preference == o.vpn_preference && vpn_list == o.vpn_list &&
+         port_allocator_config.min_port == o.port_allocator_config.min_port &&
+         port_allocator_config.max_port == o.port_allocator_config.max_port &&
+         port_allocator_config.flags == o.port_allocator_config.flags;
 }
 
 bool PeerConnectionInterface::RTCConfiguration::operator!=(
@@ -2300,7 +2304,7 @@ void PeerConnection::OnTransportControllerConnectionState(
       NoteUsageEvent(UsageEvent::ICE_STATE_CONNECTED);
       break;
     default:
-      RTC_NOTREACHED();
+      RTC_DCHECK_NOTREACHED();
   }
 }
 
@@ -2536,7 +2540,7 @@ void PeerConnection::ReportSdpBundleUsage(
     } else {
       usage = kBundleUsageEmpty;
     }
-  } else if (configuration_.sdp_semantics == SdpSemantics::kPlanB) {
+  } else if (configuration_.sdp_semantics == SdpSemantics::kPlanB_DEPRECATED) {
     // In plan-b, simple/complex usage will not show up in the number of
     // m-lines or BUNDLE.
     usage = using_bundle ? kBundleUsageBundlePlanB : kBundleUsageNoBundlePlanB;
@@ -2652,7 +2656,7 @@ void PeerConnection::OnTransportControllerGatheringState(
     OnIceGatheringChange(PeerConnectionInterface::kIceGatheringNew);
   } else {
     RTC_LOG(LS_ERROR) << "Unknown state received: " << state;
-    RTC_NOTREACHED();
+    RTC_DCHECK_NOTREACHED();
   }
 }
 
@@ -2776,7 +2780,7 @@ void PeerConnection::ReportNegotiatedCiphers(
               rtc::kSrtpCryptoSuiteMaxValue);
           break;
         default:
-          RTC_NOTREACHED();
+          RTC_DCHECK_NOTREACHED();
           continue;
       }
     }
@@ -2801,7 +2805,7 @@ void PeerConnection::ReportNegotiatedCiphers(
               rtc::kSslCipherSuiteMaxValue);
           break;
         default:
-          RTC_NOTREACHED();
+          RTC_DCHECK_NOTREACHED();
           continue;
       }
     }

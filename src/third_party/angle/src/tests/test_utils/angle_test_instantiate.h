@@ -53,24 +53,7 @@ bool IsQualcomm();
 bool IsSwiftshaderDevice();
 bool IsIntelUHD630Mobile();
 
-// Compiler configs.
-inline bool IsASan()
-{
-#if defined(ANGLE_WITH_ASAN)
-    return true;
-#else
-    return false;
-#endif  // defined(ANGLE_WITH_ASAN)
-}
-
-inline bool IsTSan()
-{
-#if defined(THREAD_SANITIZER)
-    return true;
-#else
-    return false;
-#endif  // defined(THREAD_SANITIZER)
-}
+bool Is64Bit();
 
 bool IsPlatformAvailable(const PlatformParameters &param);
 

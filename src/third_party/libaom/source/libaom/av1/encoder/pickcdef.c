@@ -572,7 +572,18 @@ static void pick_cdef_from_qp(AV1_COMMON *const cm, int skip_cdef,
 void av1_cdef_search(MultiThreadInfo *mt_info, const YV12_BUFFER_CONFIG *frame,
                      const YV12_BUFFER_CONFIG *ref, AV1_COMMON *cm,
                      MACROBLOCKD *xd, CDEF_PICK_METHOD pick_method, int rdmult,
-                     int skip_cdef_feature, int frames_since_key) {
+                     int skip_cdef_feature, int frames_since_key,
+                     CDEF_CONTROL cdef_control, int non_reference_frame) {
+  assert(cdef_control != CDEF_NONE);
+  if (cdef_control == CDEF_REFERENCE && non_reference_frame) {
+    CdefInfo *const cdef_info = &cm->cdef_info;
+    cdef_info->nb_cdef_strengths = 1;
+    cdef_info->cdef_bits = 0;
+    cdef_info->cdef_strengths[0] = 0;
+    cdef_info->cdef_uv_strengths[0] = 0;
+    return;
+  }
+
   if (pick_method == CDEF_PICK_FROM_Q) {
     pick_cdef_from_qp(cm, skip_cdef_feature, frames_since_key);
     return;

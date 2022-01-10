@@ -10,6 +10,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
@@ -40,6 +41,9 @@ public class StartSurfaceConfiguration {
     public static final BooleanCachedFieldTrialParameter START_SURFACE_EXCLUDE_MV_TILES =
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.START_SURFACE_ANDROID, "exclude_mv_tiles", false);
+    public static final BooleanCachedFieldTrialParameter START_SURFACE_EXCLUDE_QUERY_TILES =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.START_SURFACE_ANDROID, "exclude_query_tiles", true);
     public static final BooleanCachedFieldTrialParameter
             START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB =
                     new BooleanCachedFieldTrialParameter(ChromeFeatureList.START_SURFACE_ANDROID,
@@ -284,6 +288,11 @@ public class StartSurfaceConfiguration {
      */
     public static boolean shouldShowAnimationsForFinale() {
         return HOME_BUTTON_ON_GRID_TAB_SWITCHER.getValue() && FINALE_ANIMATION_ENABLED.getValue();
+    }
+
+    @CalledByNative
+    private static boolean isBehaviouralTargetingEnabled() {
+        return !TextUtils.isEmpty(BEHAVIOURAL_TARGETING.getValue());
     }
 
     @VisibleForTesting

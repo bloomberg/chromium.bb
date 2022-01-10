@@ -116,6 +116,7 @@ typedef struct SVC {
   int temporal_layer_fb[REF_FRAMES];
   int num_encoded_top_layer;
   int first_layer_denoise;
+  int high_source_sad_superframe;
   /*!\endcond */
 
   /*!

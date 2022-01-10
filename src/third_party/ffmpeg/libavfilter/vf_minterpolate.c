@@ -235,22 +235,17 @@ static const AVOption minterpolate_options[] = {
 
 AVFILTER_DEFINE_CLASS(minterpolate);
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUV410P, AV_PIX_FMT_YUV411P,
-        AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P,
-        AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV444P,
-        AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P,
-        AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ420P,
-        AV_PIX_FMT_YUVJ411P,
-        AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUVA444P,
-        AV_PIX_FMT_GRAY8,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_YUV410P, AV_PIX_FMT_YUV411P,
+    AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P,
+    AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P,
+    AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ420P,
+    AV_PIX_FMT_YUVJ411P,
+    AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUVA444P,
+    AV_PIX_FMT_GRAY8,
+    AV_PIX_FMT_NONE
+};
 
 static uint64_t get_sbad(AVMotionEstContext *me_ctx, int x, int y, int x_mv, int y_mv)
 {
@@ -353,7 +348,7 @@ static int config_input(AVFilterLink *inlink)
 
     for (i = 0; i < NB_FRAMES; i++) {
         Frame *frame = &mi_ctx->frames[i];
-        frame->blocks = av_mallocz_array(mi_ctx->b_count, sizeof(Block));
+        frame->blocks = av_calloc(mi_ctx->b_count, sizeof(*frame->blocks));
         if (!frame->blocks)
             return AVERROR(ENOMEM);
     }
@@ -373,19 +368,19 @@ static int config_input(AVFilterLink *inlink)
         else if (mi_ctx->me_mode == ME_MODE_BILAT)
             me_ctx->get_cost = &get_sbad_ob;
 
-        mi_ctx->pixel_mvs = av_mallocz_array(width * height, sizeof(PixelMVS));
-        mi_ctx->pixel_weights = av_mallocz_array(width * height, sizeof(PixelWeights));
-        mi_ctx->pixel_refs = av_mallocz_array(width * height, sizeof(PixelRefs));
+        mi_ctx->pixel_mvs     = av_calloc(width * height, sizeof(*mi_ctx->pixel_mvs));
+        mi_ctx->pixel_weights = av_calloc(width * height, sizeof(*mi_ctx->pixel_weights));
+        mi_ctx->pixel_refs    = av_calloc(width * height, sizeof(*mi_ctx->pixel_refs));
         if (!mi_ctx->pixel_mvs || !mi_ctx->pixel_weights || !mi_ctx->pixel_refs)
             return AVERROR(ENOMEM);
 
         if (mi_ctx->me_mode == ME_MODE_BILAT)
-            if (!(mi_ctx->int_blocks = av_mallocz_array(mi_ctx->b_count, sizeof(Block))))
+            if (!FF_ALLOCZ_TYPED_ARRAY(mi_ctx->int_blocks, mi_ctx->b_count))
                 return AVERROR(ENOMEM);
 
         if (mi_ctx->me_method == AV_ME_METHOD_EPZS) {
             for (i = 0; i < 3; i++) {
-                mi_ctx->mv_table[i] = av_mallocz_array(mi_ctx->b_count, sizeof(*mi_ctx->mv_table[0]));
+                mi_ctx->mv_table[i] = av_calloc(mi_ctx->b_count, sizeof(*mi_ctx->mv_table[0]));
                 if (!mi_ctx->mv_table[i])
                     return AVERROR(ENOMEM);
             }
@@ -601,7 +596,7 @@ static int var_size_bme(MIContext *mi_ctx, Block *block, int x_mb, int y_mb, int
     }
 
     if (!block->subs) {
-        block->subs = av_mallocz_array(4, sizeof(Block));
+        block->subs = av_mallocz(4 * sizeof(*block->subs));
         if (!block->subs)
             return AVERROR(ENOMEM);
     }
@@ -1258,7 +1253,7 @@ const AVFilter ff_vf_minterpolate = {
     .priv_size     = sizeof(MIContext),
     .priv_class    = &minterpolate_class,
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(minterpolate_inputs),
     FILTER_OUTPUTS(minterpolate_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
 };

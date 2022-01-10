@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 load("//lib/bootstrap.star", "PROPERTIES_OPTIONAL", "register_recipe_bootstrappability")
+load("//lib/recipe_experiments.star", "register_recipe_experiments")
 
 _RECIPE_NAME_PREFIX = "recipe:"
 
@@ -13,7 +14,8 @@ def _recipe_for_package(cipd_package):
             cipd_version = None,
             recipe = None,
             use_python3 = False,
-            bootstrappable = False):
+            bootstrappable = False,
+            experiments = None):
         """Declare a recipe for the given package.
 
         A wrapper around luci.recipe with a fixed cipd_package and some
@@ -44,6 +46,9 @@ def _recipe_for_package(cipd_package):
               changed to the bootstrapper in properties optional mode, which
               will by default not bootstrap any properties. On a per-run basis
               the $bootstrap/properties property can be set to bootstrap properties.
+            experiments: Experiments to apply to a builder using the recipe. If
+              the builder specifies an experiment, the experiment value from the
+              recipe will be ignored.
         """
 
         # Force the caller to put the recipe prefix rather than adding it
@@ -64,6 +69,8 @@ def _recipe_for_package(cipd_package):
 
         register_recipe_bootstrappability(name, bootstrappable)
 
+        register_recipe_experiments(name, experiments or {})
+
         return ret
 
     return recipe
@@ -82,6 +89,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:android/sdk_packager",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -94,6 +102,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:binary_size_generator_tot",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -111,6 +120,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:branch_configuration/tester",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -120,12 +130,15 @@ build_recipe(
 build_recipe(
     name = "recipe:chromium",
     bootstrappable = True,
-    use_python3 = True,
+    experiments = {
+        "luci.recipes.use_python3": 100,
+    },
 )
 
 build_recipe(
     name = "recipe:chromium/orchestrator",
     bootstrappable = True,
+    use_python3 = True,
 )
 
 build_recipe(
@@ -140,10 +153,12 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_afl",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:chromium_clang_coverage_tot",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -152,31 +167,43 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_export_metadata",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:chromium_libfuzzer",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:chromium_libfuzzer_trybot",
+    experiments = {
+        "luci.recipes.use_python3": 25,
+    },
 )
 
 build_recipe(
     name = "recipe:chromium_rts/create_model",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:chromium_trybot",
     bootstrappable = True,
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:chromium_upload_clang",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:cronet",
+)
+
+build_recipe(
+    name = "recipe:flakiness/generate_builder_test_data",
 )
 
 build_recipe(
@@ -185,6 +212,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:findit/chromium/export_bot_db",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -210,10 +238,17 @@ build_recipe(
 
 build_recipe(
     name = "recipe:swarming/deterministic_build",
+    use_python3 = True,
+)
+
+build_recipe(
+    name = "recipe:swarming/staging",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:tricium_clang_tidy_wrapper",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -222,10 +257,12 @@ build_recipe(
 
 build_recipe(
     name = "recipe:tricium_oilpan",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:tricium_simple",
+    use_python3 = True,
 )
 
 build_recipe(

@@ -271,8 +271,7 @@ static av_cold int program_opencl_init(AVFilterContext *avctx)
     } else {
         int i;
 
-        ctx->frames = av_mallocz_array(ctx->nb_inputs,
-                                       sizeof(*ctx->frames));
+        ctx->frames = av_calloc(ctx->nb_inputs, sizeof(*ctx->frames));
         if (!ctx->frames)
             return AVERROR(ENOMEM);
 
@@ -365,10 +364,10 @@ const AVFilter ff_vf_program_opencl = {
     .preinit        = &program_opencl_framesync_preinit,
     .init           = &program_opencl_init,
     .uninit         = &program_opencl_uninit,
-    .query_formats  = &ff_opencl_filter_query_formats,
     .activate       = &program_opencl_activate,
     .inputs         = NULL,
     FILTER_OUTPUTS(program_opencl_outputs),
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_OPENCL),
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };
 
@@ -416,9 +415,9 @@ const AVFilter ff_vsrc_openclsrc = {
     .priv_class     = &openclsrc_class,
     .init           = &program_opencl_init,
     .uninit         = &program_opencl_uninit,
-    .query_formats  = &ff_opencl_filter_query_formats,
     .inputs         = NULL,
     FILTER_OUTPUTS(openclsrc_outputs),
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_OPENCL),
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };
 

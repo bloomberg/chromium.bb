@@ -411,18 +411,19 @@ static double get_presentation_time(const DECODER_MODEL *const decoder_model,
 }
 
 #define MAX_TIME 1e16
-double time_next_buffer_is_free(const DECODER_MODEL *const decoder_model) {
-  if (decoder_model->num_decoded_frame == 0) {
-    return (double)decoder_model->decoder_buffer_delay / 90000.0;
+double time_next_buffer_is_free(int num_decoded_frame, int decoder_buffer_delay,
+                                const FRAME_BUFFER *frame_buffer_pool,
+                                double current_time) {
+  if (num_decoded_frame == 0) {
+    return (double)decoder_buffer_delay / 90000.0;
   }
 
   double buf_free_time = MAX_TIME;
   for (int i = 0; i < BUFFER_POOL_MAX_SIZE; ++i) {
-    const FRAME_BUFFER *const this_buffer =
-        &decoder_model->frame_buffer_pool[i];
+    const FRAME_BUFFER *const this_buffer = &frame_buffer_pool[i];
     if (this_buffer->decoder_ref_count == 0) {
       if (this_buffer->player_ref_count == 0) {
-        return decoder_model->current_time;
+        return current_time;
       }
       const double presentation_time = this_buffer->presentation_time;
       if (presentation_time >= 0.0 && presentation_time < buf_free_time) {
@@ -434,12 +435,16 @@ double time_next_buffer_is_free(const DECODER_MODEL *const decoder_model) {
 }
 #undef MAX_TIME
 
-static double get_removal_time(const DECODER_MODEL *const decoder_model) {
-  if (decoder_model->mode == SCHEDULE_MODE) {
+static double get_removal_time(int mode, int num_decoded_frame,
+                               int decoder_buffer_delay,
+                               const FRAME_BUFFER *frame_buffer_pool,
+                               double current_time) {
+  if (mode == SCHEDULE_MODE) {
     assert(0 && "SCHEDULE_MODE IS NOT SUPPORTED YET");
     return INVALID_TIME;
   } else {
-    return time_next_buffer_is_free(decoder_model);
+    return time_next_buffer_is_free(num_decoded_frame, decoder_buffer_delay,
+                                    frame_buffer_pool, current_time);
   }
 }
 
@@ -520,6 +525,88 @@ void av1_decoder_model_init(const AV1_COMP *const cpi, AV1_LEVEL level,
   decoder_model->decode_rate = av1_level_defs[level].max_decode_rate;
 }
 
+DECODER_MODEL_STATUS av1_decoder_model_try_smooth_buf(
+    const AV1_COMP *const cpi, size_t coded_bits,
+    const DECODER_MODEL *const decoder_model) {
+  DECODER_MODEL_STATUS status = DECODER_MODEL_OK;
+
+  if (!decoder_model || decoder_model->status != DECODER_MODEL_OK) {
+    return status;
+  }
+
+  const AV1_COMMON *const cm = &cpi->common;
+  const int show_existing_frame = cm->show_existing_frame;
+
+  size_t cur_coded_bits = decoder_model->coded_bits + coded_bits;
+  int num_decoded_frame = decoder_model->num_decoded_frame;
+  if (!show_existing_frame) ++num_decoded_frame;
+
+  if (show_existing_frame) {
+    return status;
+  } else {
+    const double removal_time = get_removal_time(
+        decoder_model->mode, num_decoded_frame,
+        decoder_model->decoder_buffer_delay, decoder_model->frame_buffer_pool,
+        decoder_model->current_time);
+    if (removal_time < 0.0) {
+      status = DECODE_FRAME_BUF_UNAVAILABLE;
+      return status;
+    }
+
+    // A frame with show_existing_frame being false indicates the end of a DFG.
+    // Update the bits arrival time of this DFG.
+    const double buffer_delay = (decoder_model->encoder_buffer_delay +
+                                 decoder_model->decoder_buffer_delay) /
+                                90000.0;
+    const double latest_arrival_time = removal_time - buffer_delay;
+    const double first_bit_arrival_time =
+        AOMMAX(decoder_model->last_bit_arrival_time, latest_arrival_time);
+    const double last_bit_arrival_time =
+        first_bit_arrival_time +
+        (double)cur_coded_bits / decoder_model->bit_rate;
+    // Smoothing buffer underflows if the last bit arrives after the removal
+    // time.
+    if (last_bit_arrival_time > removal_time &&
+        !decoder_model->is_low_delay_mode) {
+      status = SMOOTHING_BUFFER_UNDERFLOW;
+      return status;
+    }
+
+    // Check if the smoothing buffer overflows.
+    const DFG_INTERVAL_QUEUE *const queue = &decoder_model->dfg_interval_queue;
+    if (queue->size >= DFG_INTERVAL_QUEUE_SIZE) {
+      assert(0);
+    }
+
+    double total_interval = queue->total_interval;
+    int qhead = queue->head;
+    int qsize = queue->size;
+    // Remove the DFGs with removal time earlier than last_bit_arrival_time.
+    while (queue->buf[qhead].removal_time <= last_bit_arrival_time &&
+           qsize > 0) {
+      if (queue->buf[qhead].removal_time - first_bit_arrival_time +
+              total_interval >
+          1.0) {
+        status = SMOOTHING_BUFFER_OVERFLOW;
+        return status;
+      }
+      total_interval -= queue->buf[qhead].last_bit_arrival_time -
+                        queue->buf[qhead].first_bit_arrival_time;
+      qhead = (qhead + 1) % DFG_INTERVAL_QUEUE_SIZE;
+      --qsize;
+    }
+    total_interval += last_bit_arrival_time - first_bit_arrival_time;
+    // The smoothing buffer can hold at most "bit_rate" bits, which is
+    // equivalent to 1 second of total interval.
+    if (total_interval > 1.0) {
+      status = SMOOTHING_BUFFER_OVERFLOW;
+      return status;
+    }
+
+    return status;
+  }
+}
+
 void av1_decoder_model_process_frame(const AV1_COMP *const cpi,
                                      size_t coded_bits,
                                      DECODER_MODEL *const decoder_model) {
@@ -545,7 +632,10 @@ void av1_decoder_model_process_frame(const AV1_COMP *const cpi,
       update_ref_buffers(decoder_model, display_idx, 0xFF);
     }
   } else {
-    const double removal_time = get_removal_time(decoder_model);
+    const double removal_time = get_removal_time(
+        decoder_model->mode, decoder_model->num_decoded_frame,
+        decoder_model->decoder_buffer_delay, decoder_model->frame_buffer_pool,
+        decoder_model->current_time);
     if (removal_time < 0.0) {
       decoder_model->status = DECODE_FRAME_BUF_UNAVAILABLE;
       return;
@@ -635,7 +725,7 @@ void av1_decoder_model_process_frame(const AV1_COMP *const cpi,
     if (decoder_model->initial_presentation_delay < 0.0) {
       // Display can begin after required number of frames have been buffered.
       if (frames_in_buffer_pool(decoder_model) >=
-          decoder_model->initial_display_delay) {
+          decoder_model->initial_display_delay - 1) {
         decoder_model->initial_presentation_delay = decoder_model->current_time;
         // Update presentation time for each shown frame in the frame buffer.
         for (int i = 0; i < BUFFER_POOL_MAX_SIZE; ++i) {

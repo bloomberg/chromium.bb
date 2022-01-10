@@ -235,9 +235,7 @@
     "infra_step": true,
     "name": "update contents in CL 91827.store the new content for chrome/VERSION",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@tmp_tmp_1@99.99.99.99@@@",
-      "@@@STEP_LOG_END@tmp_tmp_1@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {

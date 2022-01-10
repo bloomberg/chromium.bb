@@ -29,7 +29,7 @@
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/secure_payment_confirmation_app.h"
 #include "components/payments/core/journey_logger.h"
-#include "components/payments/core/secure_payment_confirmation_instrument.h"
+#include "components/payments/core/secure_payment_confirmation_credential.h"
 #include "components/payments/core/secure_payment_confirmation_metrics.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "components/webdata_services/web_data_service_wrapper_factory.h"
@@ -94,7 +94,12 @@ class SecurePaymentConfirmationTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-std::string GetNotSupportedError() {
+std::string GetIconDownloadErrorMessage() {
+  return "The payment method \"secure-payment-confirmation\" is not supported. "
+         "The \"instrument.icon\" either could not be downloaded or decoded.";
+}
+
+std::string GetWebAuthnErrorMessage() {
   return "The operation either timed out or was not allowed. See: "
          "https://www.w3.org/TR/webauthn-2/"
          "#sctn-privacy-considerations-client.";
@@ -106,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest, NoAuthenticator) {
   close_dialog_on_error_ = true;
 
   // EvalJs waits for JavaScript promise to resolve.
-  EXPECT_EQ(GetNotSupportedError(),
+  EXPECT_EQ(GetWebAuthnErrorMessage(),
             content::EvalJs(GetActiveWebContents(),
                             "getSecurePaymentConfirmationStatus()"));
 }
@@ -117,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest, NoInstrumentInStorage) {
   close_dialog_on_error_ = true;
 
   // EvalJs waits for JavaScript promise to resolve.
-  EXPECT_EQ(GetNotSupportedError(),
+  EXPECT_EQ(GetWebAuthnErrorMessage(),
             content::EvalJs(GetActiveWebContents(),
                             "getSecurePaymentConfirmationStatus()"));
 }
@@ -130,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest,
 
   // EvalJs waits for JavaScript promise to resolve.
   EXPECT_EQ(
-      GetNotSupportedError(),
+      GetWebAuthnErrorMessage(),
       content::EvalJs(
           GetActiveWebContents(),
           base::StringPrintf(
@@ -141,13 +146,15 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest, PaymentSheetShowsApp) {
   test_controller()->SetHasAuthenticator(true);
   NavigateTo("a.com", "/secure_payment_confirmation.html");
   std::vector<uint8_t> credential_id = {'c', 'r', 'e', 'd'};
+  std::vector<uint8_t> user_id = {'u', 's', 'e', 'r'};
   webdata_services::WebDataServiceWrapperFactory::
       GetPaymentManifestWebDataServiceForBrowserContext(
           GetActiveWebContents()->GetBrowserContext(),
           ServiceAccessType::EXPLICIT_ACCESS)
-          ->AddSecurePaymentConfirmationInstrument(
-              std::make_unique<SecurePaymentConfirmationInstrument>(
-                  std::move(credential_id), "relying-party.example"),
+          ->AddSecurePaymentConfirmationCredential(
+              std::make_unique<SecurePaymentConfirmationCredential>(
+                  std::move(credential_id), "relying-party.example",
+                  std::move(user_id)),
               /*consumer=*/this);
   ResetEventWaiterForSingleEvent(TestEvent::kUIDisplayed);
   ExecuteScriptAsync(GetActiveWebContents(),
@@ -159,6 +166,53 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest, PaymentSheetShowsApp) {
   EXPECT_EQ(1u, test_controller()->app_descriptions().size());
   EXPECT_EQ("display_name_for_instrument",
             test_controller()->app_descriptions().front().label);
+}
+
+// Tests that a failed icon download immediately rejects the show() promise,
+// without any browser UI being shown.
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationTest, IconDownloadFailure) {
+  test_controller()->SetHasAuthenticator(true);
+  NavigateTo("a.com", "/secure_payment_confirmation.html");
+
+  // We test both with and without a matching credential, so add a credential
+  // for the former case.
+  std::vector<uint8_t> credential_id = {'c', 'r', 'e', 'd'};
+  std::vector<uint8_t> user_id = {'u', 's', 'e', 'r'};
+  webdata_services::WebDataServiceWrapperFactory::
+      GetPaymentManifestWebDataServiceForBrowserContext(
+          GetActiveWebContents()->GetBrowserContext(),
+          ServiceAccessType::EXPLICIT_ACCESS)
+          ->AddSecurePaymentConfirmationCredential(
+              std::make_unique<SecurePaymentConfirmationCredential>(
+                  std::move(credential_id), "relying-party.example",
+                  std::move(user_id)),
+              /*consumer=*/this);
+
+  // canMakePayment does not check for a valid icon, so should return true.
+  EXPECT_EQ("true",
+            content::EvalJs(GetActiveWebContents(),
+                            "securePaymentConfirmationCanMakePayment(window."
+                            "location.origin + '/non-existant-icon.png')"));
+
+  // The show() promise, however, should reject without showing any UX -
+  // whether or not a valid credential is passed.
+  std::string credBase64 = "Y3JlZA==";
+  EXPECT_EQ(
+      GetIconDownloadErrorMessage(),
+      content::EvalJs(GetActiveWebContents(),
+                      content::JsReplace(
+                          "getSecurePaymentConfirmationStatus($1, "
+                          "window.location.origin + '/non-existant-icon.png')",
+                          credBase64)));
+
+  std::string invalidCred = "ZGVyYw==";
+  EXPECT_EQ(
+      GetIconDownloadErrorMessage(),
+      content::EvalJs(GetActiveWebContents(),
+                      content::JsReplace(
+                          "getSecurePaymentConfirmationStatus($1, "
+                          "window.location.origin + '/non-existant-icon.png')",
+                          invalidCred)));
 }
 
 class SecurePaymentConfirmationDisableDebugTest
@@ -587,17 +641,17 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationCreationTest,
   NavigateTo("a.com", "/secure_payment_confirmation.html");
 
   std::string first_credential_identifier =
-      content::EvalJs(
-          GetActiveWebContents(),
-          "createPublicKeyCredentialWithPaymentExtensionAndReturnItsId()")
+      content::EvalJs(GetActiveWebContents(),
+                      "createPublicKeyCredentialWithPaymentExtensionAndReturnIt"
+                      "sId('user_123')")
           .ExtractString();
   ASSERT_EQ(std::string::npos, first_credential_identifier.find("Error"))
       << first_credential_identifier;
 
   std::string second_credential_identifier =
-      content::EvalJs(
-          GetActiveWebContents(),
-          "createPublicKeyCredentialWithPaymentExtensionAndReturnItsId()")
+      content::EvalJs(GetActiveWebContents(),
+                      "createPublicKeyCredentialWithPaymentExtensionAndReturnIt"
+                      "sId('user_456')")
           .ExtractString();
   ASSERT_EQ(std::string::npos, second_credential_identifier.find("Error"))
       << second_credential_identifier;

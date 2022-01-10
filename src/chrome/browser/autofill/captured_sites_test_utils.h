@@ -13,6 +13,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/values.h"
 #include "chrome/browser/ui/browser.h"
@@ -129,10 +130,44 @@ class IFrameWaiter : public content::WebContentsObserver {
 
   QueryType query_type_;
   base::RunLoop run_loop_;
-  content::RenderFrameHost* target_frame_;
+  raw_ptr<content::RenderFrameHost> target_frame_;
   std::string frame_name_;
   GURL origin_;
   GURL url_;
+};
+
+// WebPageReplayServerWrapper
+
+// WebPageReplayServerWrapper is a helper wrapper that controls the configuring
+// and running the WebPageReplay Server instance.
+class WebPageReplayServerWrapper {
+ public:
+  explicit WebPageReplayServerWrapper(int hostHttpPort = 8080,
+                                      int hostHttpsPort = 8081);
+
+  WebPageReplayServerWrapper(const WebPageReplayServerWrapper&) = delete;
+  WebPageReplayServerWrapper& operator=(const WebPageReplayServerWrapper&) =
+      delete;
+
+  ~WebPageReplayServerWrapper();
+
+  bool Start(const base::FilePath& capture_file_path);
+  bool Stop();
+
+ private:
+  bool RunWebPageReplayCmdAndWaitForExit(
+      const std::string& cmd,
+      const std::vector<std::string>& args,
+      const base::TimeDelta& timeout = base::Seconds(5));
+  bool RunWebPageReplayCmd(const std::string& cmd,
+                           const std::vector<std::string>& args,
+                           base::Process* process);
+
+  // The Web Page Replay server that serves the captured sites.
+  base::Process web_page_replay_server_;
+
+  int host_http_port_;
+  int host_https_port_;
 };
 
 // TestRecipeReplayChromeFeatureActionExecutor
@@ -257,17 +292,13 @@ class TestRecipeReplayer {
   Browser* browser();
 
   TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor();
+  WebPageReplayServerWrapper* web_page_replay_server_wrapper();
   content::WebContents* GetWebContents();
   void CleanupSiteData();
-  bool StartWebPageReplayServer(const base::FilePath& capture_file_path);
-  bool StopWebPageReplayServer();
-  bool RunWebPageReplayCmdAndWaitForExit(
-      const std::string& cmd,
-      const std::vector<std::string>& args,
-      const base::TimeDelta& timeout = base::Seconds(5));
-  bool RunWebPageReplayCmd(const std::string& cmd,
-                           const std::vector<std::string>& args,
-                           base::Process* process);
+  bool StartWebPageReplayServer(base::Process* web_page_replay_server,
+                                const base::FilePath& capture_file_path,
+                                const bool start_as_replay = true);
+  bool StopWebPageReplayServer(base::Process* web_page_replay_server);
   bool ReplayRecordedActions(
       const base::FilePath& recipe_file_path,
       const absl::optional<base::FilePath>& command_file_path);
@@ -364,13 +395,13 @@ class TestRecipeReplayer {
   // timeout elapses.
   bool WaitForVisualUpdate(base::TimeDelta timeout = visual_update_timeout);
 
-  Browser* browser_;
-  TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor_;
+  raw_ptr<Browser> browser_;
+  raw_ptr<TestRecipeReplayChromeFeatureActionExecutor> feature_action_executor_;
+  // The Web Page Replay server that serves the captured sites.
+  std::unique_ptr<captured_sites_test_utils::WebPageReplayServerWrapper>
+      web_page_replay_server_wrapper_;
 
   std::vector<testing::AssertionResult> validation_failures_;
-
-  // The Web Page Replay server that serves the captured sites.
-  base::Process web_page_replay_server_;
 
   // Overrides the AutofillClock to use the recorded date.
   autofill::TestAutofillClock test_clock_;

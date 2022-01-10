@@ -23,7 +23,7 @@
 #include "src/ast/variable_decl_statement.h"
 #include "src/program_builder.h"
 #include "src/sem/variable.h"
-#include "src/utils/get_or_create.h"
+#include "src/utils/map.h"
 #include "src/utils/math.h"
 
 TINT_INSTANTIATE_TYPEINFO(tint::transform::VertexPulling);
@@ -715,8 +715,8 @@ struct State {
           LoadPrimitive(array_base, primitive_offset, buffer, base_format));
     }
 
-    return ctx.dst->create<ast::TypeConstructorExpression>(
-        ctx.dst->create<ast::Vector>(base_type, count), std::move(expr_list));
+    return ctx.dst->Construct(ctx.dst->create<ast::Vector>(base_type, count),
+                              std::move(expr_list));
   }
 
   /// Process a non-struct entry point parameter.

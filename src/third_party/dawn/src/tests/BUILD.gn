@@ -144,8 +144,10 @@ source_set("dawn_native_mocks_sources") {
   sources = [
     "unittests/native/mocks/BindGroupLayoutMock.h",
     "unittests/native/mocks/BindGroupMock.h",
+    "unittests/native/mocks/CommandBufferMock.h",
     "unittests/native/mocks/ComputePipelineMock.h",
     "unittests/native/mocks/DeviceMock.h",
+    "unittests/native/mocks/ExternalTextureMock.h",
     "unittests/native/mocks/PipelineLayoutMock.h",
     "unittests/native/mocks/QuerySetMock.h",
     "unittests/native/mocks/RenderPipelineMock.h",
@@ -153,6 +155,7 @@ source_set("dawn_native_mocks_sources") {
     "unittests/native/mocks/ShaderModuleMock.cpp",
     "unittests/native/mocks/ShaderModuleMock.h",
     "unittests/native/mocks/SwapChainMock.h",
+    "unittests/native/mocks/TextureMock.h",
   ]
 }
 
@@ -332,6 +335,7 @@ source_set("dawn_end2end_tests_sources") {
     "ParamGenerator.h",
     "ToggleParser.cpp",
     "ToggleParser.h",
+    "end2end/AdapterDiscoveryTests.cpp",
     "end2end/BasicTests.cpp",
     "end2end/BindGroupTests.cpp",
     "end2end/BufferTests.cpp",

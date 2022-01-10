@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "components/media_control/renderer/media_playback_options.h"
 #include "components/memory_pressure/multi_source_memory_pressure_monitor.h"
@@ -51,7 +50,7 @@ class PlayreadyKeySystemProperties : public ::media::KeySystemProperties {
       : key_system_name_(key_system_name),
         supported_codecs_(supported_codecs) {}
 
-  std::string GetKeySystemName() const override { return key_system_name_; }
+  std::string GetBaseKeySystemName() const override { return key_system_name_; }
 
   bool IsSupportedInitDataType(
       media::EmeInitDataType init_data_type) const override {
@@ -67,7 +66,8 @@ class PlayreadyKeySystemProperties : public ::media::KeySystemProperties {
   }
 
   media::EmeConfigRule GetRobustnessConfigRule(
-      media::EmeMediaType media_type,
+      const std::string& /*key_system*/,
+      media::EmeMediaType /*media_type*/,
       const std::string& requested_robustness,
       const bool* /*hw_secure_requirement*/) const override {
     // Only empty robustness string is currently supported.

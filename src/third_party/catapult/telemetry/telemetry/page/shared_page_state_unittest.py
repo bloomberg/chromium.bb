@@ -46,8 +46,8 @@ class SharedPageStateTests(unittest.TestCase):
         test, self.options, story_module.StorySet(), self.possible_browser)
     try:
       self.assertTrue(run_state.platform.network_controller.is_open)
-      self.assertEquals(run_state.platform.network_controller.wpr_mode,
-                        wpr_modes.WPR_OFF)
+      self.assertEqual(run_state.platform.network_controller.wpr_mode,
+                       wpr_modes.WPR_OFF)
       self.assertTrue(run_state.platform.network_controller.use_live_traffic)
     finally:
       run_state.TearDownState()
@@ -58,8 +58,8 @@ class SharedPageStateTests(unittest.TestCase):
         test, self.options, story_module.StorySet(), self.possible_browser)
     try:
       self.assertTrue(run_state.platform.network_controller.is_open)
-      self.assertEquals(run_state.platform.network_controller.wpr_mode,
-                        wpr_modes.WPR_REPLAY)
+      self.assertEqual(run_state.platform.network_controller.wpr_mode,
+                       wpr_modes.WPR_REPLAY)
       self.assertFalse(run_state.platform.network_controller.use_live_traffic)
     finally:
       run_state.TearDownState()
@@ -71,8 +71,8 @@ class SharedPageStateTests(unittest.TestCase):
         test, self.options, story_module.StorySet(), self.possible_browser)
     try:
       self.assertTrue(run_state.platform.network_controller.is_open)
-      self.assertEquals(run_state.platform.network_controller.wpr_mode,
-                        wpr_modes.WPR_RECORD)
+      self.assertEqual(run_state.platform.network_controller.wpr_mode,
+                       wpr_modes.WPR_RECORD)
       self.assertFalse(run_state.platform.network_controller.use_live_traffic)
     finally:
       run_state.TearDownState()
@@ -119,6 +119,11 @@ class SharedPageStateTests(unittest.TestCase):
         shared_page_state.Shared10InchTabletPageState, 'tablet_10_inch')
     self.assertUserAgentSetCorrectly(
         shared_page_state.SharedPageState, None)
+    self.possible_browser.browser_type = 'web-engine-shell'
+    self.assertUserAgentSetCorrectly(
+        shared_page_state.SharedDesktopPageState, None)
+    self.assertUserAgentSetCorrectly(
+        shared_page_state.SharedMobilePageState, None)
 
 
 class FakeBrowserStorySetRunTests(unittest.TestCase):

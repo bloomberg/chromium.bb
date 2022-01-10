@@ -91,10 +91,6 @@ namespace dawn_native {
                 mFakeMappedData.reset();
             }
 
-            void DestroyApiObjectImpl() override {
-                mFakeMappedData.reset();
-            }
-
             std::unique_ptr<uint8_t[]> mFakeMappedData;
         };
 
@@ -152,9 +148,11 @@ namespace dawn_native {
             mUsage |= kInternalStorageBuffer;
         }
 
-        // We also add internal storage usage for Indirect buffers if validation is enabled, since
-        // validation involves binding them as storage buffers for use in a compute pass.
-        if ((mUsage & wgpu::BufferUsage::Indirect) && device->IsValidationEnabled()) {
+        // We also add internal storage usage for Indirect buffers for some transformations before
+        // DispatchIndirect calls on the backend (e.g. validations, support of [[num_workgroups]] on
+        // D3D12), since these transformations involve binding them as storage buffers for use in a
+        // compute pass.
+        if (mUsage & wgpu::BufferUsage::Indirect) {
             mUsage |= kInternalStorageBuffer;
         }
 
@@ -181,12 +179,7 @@ namespace dawn_native {
         ASSERT(mState == BufferState::Unmapped || mState == BufferState::Destroyed);
     }
 
-    bool BufferBase::DestroyApiObject() {
-        bool marked = MarkDestroyed();
-        if (!marked) {
-            return false;
-        }
-
+    void BufferBase::DestroyImpl() {
         if (mState == BufferState::Mapped) {
             UnmapInternal(WGPUBufferMapAsyncStatus_DestroyedBeforeCallback);
         } else if (mState == BufferState::MappedAtCreation) {
@@ -196,10 +189,7 @@ namespace dawn_native {
                 UnmapInternal(WGPUBufferMapAsyncStatus_DestroyedBeforeCallback);
             }
         }
-
-        DestroyApiObjectImpl();
         mState = BufferState::Destroyed;
-        return true;
     }
 
     // static
@@ -261,30 +251,32 @@ namespace dawn_native {
 
     MaybeError BufferBase::MapAtCreationInternal() {
         ASSERT(!IsError());
-        mState = BufferState::MappedAtCreation;
         mMapOffset = 0;
         mMapSize = mSize;
 
-        // 0-sized buffers are not supposed to be written to, Return back any non-null pointer.
-        // Handle 0-sized buffers first so we don't try to map them in the backend.
-        if (mSize == 0) {
-            return {};
+        // 0-sized buffers are not supposed to be written to. Return back any non-null pointer.
+        // Skip handling 0-sized buffers so we don't try to map them in the backend.
+        if (mSize != 0) {
+            // Mappable buffers don't use a staging buffer and are just as if mapped through
+            // MapAsync.
+            if (IsCPUWritableAtCreation()) {
+                DAWN_TRY(MapAtCreationImpl());
+            } else {
+                // If any of these fail, the buffer will be deleted and replaced with an error
+                // buffer. The staging buffer is used to return mappable data to inititalize the
+                // buffer contents. Allocate one as large as the real buffer size so that every byte
+                // is initialized.
+                // TODO(crbug.com/dawn/828): Suballocate and reuse memory from a larger staging
+                // buffer so we don't create many small buffers.
+                DAWN_TRY_ASSIGN(mStagingBuffer,
+                                GetDevice()->CreateStagingBuffer(GetAllocatedSize()));
+            }
         }
 
-        // Mappable buffers don't use a staging buffer and are just as if mapped through MapAsync.
-        if (IsCPUWritableAtCreation()) {
-            DAWN_TRY(MapAtCreationImpl());
-        } else {
-            // If any of these fail, the buffer will be deleted and replaced with an
-            // error buffer.
-            // The staging buffer is used to return mappable data to inititalize the buffer
-            // contents. Allocate one as large as the real buffer size so that every byte is
-            // initialized.
-            // TODO(crbug.com/dawn/828): Suballocate and reuse memory from a larger staging buffer
-            // so we don't create many small buffers.
-            DAWN_TRY_ASSIGN(mStagingBuffer, GetDevice()->CreateStagingBuffer(GetAllocatedSize()));
-        }
-
+        // Only set the state to mapped at creation if we did no fail any point in this helper.
+        // Otherwise, if we override the default unmapped state before succeeding to create a
+        // staging buffer, we will have issues when we try to destroy the buffer.
+        mState = BufferState::MappedAtCreation;
         return {};
     }
 
@@ -327,17 +319,6 @@ namespace dawn_native {
         // Handle the defaulting of size required by WebGPU, even if in webgpu_cpp.h it is not
         // possible to default the function argument (because there is the callback later in the
         // argument list)
-        if (size == 0) {
-            // Using 0 to indicating default size is deprecated.
-            // Temporarily treat 0 as undefined for size, and give a warning
-            // TODO(dawn:1058): Remove this if block
-            size = wgpu::kWholeMapSize;
-            GetDevice()->EmitDeprecationWarning(
-                "Using size=0 to indicate default mapping size for mapAsync "
-                "is deprecated. In the future it will result in a zero-size mapping. "
-                "Use `undefined` (wgpu::kWholeMapSize) or just omit the parameter instead.");
-        }
-
         if ((size == wgpu::kWholeMapSize) && (offset <= mSize)) {
             size = mSize - offset;
         }
@@ -395,7 +376,7 @@ namespace dawn_native {
     }
 
     void BufferBase::APIDestroy() {
-        DestroyApiObject();
+        Destroy();
     }
 
     MaybeError BufferBase::CopyFromStagingBuffer() {
@@ -557,6 +538,11 @@ namespace dawn_native {
 
     void BufferBase::OnMapRequestCompleted(MapRequestID mapID, WGPUBufferMapAsyncStatus status) {
         CallMapCallback(mapID, status);
+    }
+
+    bool BufferBase::NeedsInitialization() const {
+        return !mIsDataInitialized &&
+               GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse);
     }
 
     bool BufferBase::IsDataInitialized() const {

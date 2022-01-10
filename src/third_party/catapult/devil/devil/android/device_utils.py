@@ -295,7 +295,9 @@ _WEBVIEW_SYSUPDATE_MIN_VERSION_CODE = re.compile(
 
 _GOOGLE_FEATURES_RE = re.compile(r'^\s*com\.google\.')
 
-_EMULATOR_RE = re.compile(r'^generic_.*$')
+# On Android < 12, "ro.product.device" starts with "generic_"
+# On Android >= 12, "ro.product.device" starts with "emulator64_"
+_EMULATOR_RE = re.compile(r'^(generic_|emulator64_).*$')
 
 # Regular expressions for determining if a package is installed using the
 # output of `dumpsys package`.
@@ -1067,18 +1069,27 @@ class DeviceUtils(object):
         self.RunShellCommand(
             ['test', '-d', self.GetExternalStoragePath()], check_return=True)
         return True
+      except device_errors.DeviceUnreachableError:
+        logging.warn('Failed to check sd_card_ready: device unreachable')
+        return False
       except device_errors.AdbCommandFailedError:
         return False
 
     def pm_ready():
       try:
         return self._GetApplicationPathsInternal('android', skip_cache=True)
+      except device_errors.DeviceUnreachableError:
+        logging.warn('Failed to check pm_ready: device unreachable')
+        return False
       except device_errors.CommandFailedError:
         return False
 
     def boot_completed():
       try:
         return self.GetProp('sys.boot_completed', cache=False) == '1'
+      except device_errors.DeviceUnreachableError:
+        logging.warn('Failed to check boot_completed: device unreachable')
+        return False
       except device_errors.CommandFailedError:
         return False
 
@@ -1241,11 +1252,9 @@ class DeviceUtils(object):
     with tempfile_ext.NamedTemporaryDirectory() as modules_dir:
       tmp_dir = posixpath.join(self.MODULES_TMP_DIRECTORY_PATH, package_name)
       dest_dir = self.MODULES_LOCAL_TESTING_PATH_TEMPLATE.format(package_name)
+      # Always clear MODULES_LOCAL_TESTING_PATH_TEMPLATE of stale files.
+      self.RunShellCommand(['rm', '-rf', dest_dir], as_root=True)
       if not fake_modules:
-        # Push empty module dir to clear tmp dir. Remove any previous apks.
-        self.PushChangedFiles([(modules_dir, tmp_dir)],
-                              delete_device_stale=True)
-        self.RunShellCommand(['rm', '-rf', dest_dir], as_root=True)
         return
 
       still_need_master = set(fake_modules)
@@ -1267,14 +1276,17 @@ class DeviceUtils(object):
       assert not still_need_master, (
           'Missing master apk file for %s' % still_need_master)
       self.PushChangedFiles([(modules_dir, tmp_dir)], delete_device_stale=True)
-      # Create new directories until the parent of our destination since we
-      # want to copy that directory over from the temporary location. This
-      # indirection is necessary on Android 11 emulator as there is a permission
-      # issue for the files under /sdcard/Android/data.
-      self.RunShellCommand(
-          ['mkdir', '-p', posixpath.dirname(dest_dir)], as_root=True)
-      # Use cp instead of mv in case destinations are on different disks.
-      self.RunShellCommand(['cp', '-a', tmp_dir, dest_dir], as_root=True)
+      # Make sure the destination dir exists since we want to copy the contents
+      # of the temporary location to this dir. This indirection is necessary on
+      # Android 11 emulator as there is a permission issue for the files under
+      # /sdcard/Android/data.
+      self.RunShellCommand(['mkdir', '-p', dest_dir], as_root=True)
+      # Use cp instead of mv in case destinations are on different disks. Use
+      # shell=True to use the * wild card so that the contents of tmp_dir not
+      # the dir itself is copied into dest_dir.
+      self.RunShellCommand('cp -a {}/* {}/'.format(tmp_dir, dest_dir),
+                           shell=True,
+                           as_root=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance(
       min_default_timeout=INSTALL_DEFAULT_TIMEOUT)
@@ -1460,7 +1472,8 @@ class DeviceUtils(object):
                       large_output=False,
                       raw_output=False,
                       timeout=None,
-                      retries=None):
+                      retries=None,
+                      encoding='utf8'):
     """Run an ADB shell command.
 
     The command to run |cmd| should be a sequence of program arguments
@@ -1505,6 +1518,8 @@ class DeviceUtils(object):
           (no splitting into lines).
       timeout: timeout in seconds
       retries: number of retries
+      encoding: the expected encoding when reading the large_output. No encoding
+          when the value is None.
 
     Returns:
       If single_line is False, the output of the command as a list of lines,
@@ -1556,9 +1571,13 @@ class DeviceUtils(object):
                        'device and read results from file.')
           try:
             handle_large_command(large_output_cmd)
-            return self.ReadFile(large_output_file.name, force_pull=True)
+            return self.ReadFile(large_output_file.name,
+                                 force_pull=True,
+                                 encoding=encoding)
           except device_errors.AdbShellCommandFailedError as exc:
-            output = self.ReadFile(large_output_file.name, force_pull=True)
+            output = self.ReadFile(large_output_file.name,
+                                   force_pull=True,
+                                   encoding=encoding)
             raise device_errors.AdbShellCommandFailedError(
                 cmd, output, exc.status, exc.device_serial)
       else:
@@ -2429,13 +2448,15 @@ class DeviceUtils(object):
     else:
       self.adb.Pull(device_path, host_path)
 
-  def _ReadFileWithPull(self, device_path):
+  def _ReadFileWithPull(self, device_path, encoding='utf8', errors='replace'):
     try:
       d = tempfile.mkdtemp()
       host_temp_path = os.path.join(d, 'tmp_ReadFileWithPull')
       self.adb.Pull(device_path, host_temp_path)
       with open(host_temp_path, 'rb') as host_temp:
-        return six.ensure_str(host_temp.read(), errors='replace')
+        file_content = host_temp.read()
+        return (file_content if encoding is None
+                else six.ensure_str(file_content, encoding, errors))
     finally:
       if os.path.exists(d):
         shutil.rmtree(d)
@@ -2446,8 +2467,17 @@ class DeviceUtils(object):
                as_root=False,
                force_pull=False,
                timeout=None,
-               retries=None):
+               retries=None,
+               encoding='utf8',
+               errors='replace'):
     """Reads the contents of a file from the device.
+
+    Parameters |encoding| and |errors| are used in Python3 for decoding
+    bytes to |str|. UTF8 encoding and errors handling scheme 'replace' are
+    using by default. Return type is |str| by default.
+
+    For read file as bytes instead of text |encoding=None| can be used
+    in Python3. In Python2 this method return bytes always.
 
     Args:
       device_path: A string containing the absolute path of the file to read
@@ -2459,6 +2489,8 @@ class DeviceUtils(object):
           contents are short, to retrieve the contents using cat instead.
       timeout: timeout in seconds
       retries: number of retries
+      encoding: file encoding
+      errors: encoding errors handling
 
     Returns:
       The contents of |device_path| as a string. Contents are intepreted using
@@ -2485,9 +2517,10 @@ class DeviceUtils(object):
                                  check_return=True))
       else:
         with self._CopyToReadableLocation(device_path) as readable_temp_file:
-          return self._ReadFileWithPull(readable_temp_file.name)
+          return self._ReadFileWithPull(readable_temp_file.name,
+                                        encoding, errors)
     else:
-      return self._ReadFileWithPull(device_path)
+      return self._ReadFileWithPull(device_path, encoding, errors)
 
   def _WriteFileWithPush(self, device_path, contents):
     with tempfile.NamedTemporaryFile(mode='w+') as host_temp:

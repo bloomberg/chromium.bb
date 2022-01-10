@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_TREE_FORMATTER_MAC_H_
 
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_mac.h"
+#include "content/common/content_export.h"
 #include "ui/accessibility/platform/inspect/ax_tree_formatter_base.h"
 
 @class BrowserAccessibilityCocoa;
@@ -18,6 +19,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatterMac
   AccessibilityTreeFormatterMac();
   ~AccessibilityTreeFormatterMac() override;
 
+  // AXTreeFormatter
   base::Value BuildTree(ui::AXPlatformNodeDelegate* root) const override;
   base::Value BuildTreeForSelector(
       const AXTreeSelector& selector) const override;
@@ -30,6 +32,9 @@ class CONTENT_EXPORT AccessibilityTreeFormatterMac
       size_t start_index,
       size_t end_index) const override;
 
+  // AccessibilityTreeFormatterMac
+  base::Value BuildNode(const id node) const;
+
  protected:
   void AddDefaultFilters(
       std::vector<ui::AXPropertyFilter>* property_filters) override;
@@ -38,41 +43,31 @@ class CONTENT_EXPORT AccessibilityTreeFormatterMac
   base::Value BuildTree(const id root) const;
   base::Value BuildTreeForAXUIElement(AXUIElementRef node) const;
 
-  base::Value BuildNode(const id node) const;
-
   void RecursiveBuildTree(const id node,
                           const NSRect& root_rect,
-                          const a11y::LineIndexer* line_indexer,
+                          const ui::AXTreeIndexerMac* indexer,
                           base::Value* dict) const;
 
   void AddProperties(const id node,
                      const NSRect& root_rect,
-                     const a11y::LineIndexer* line_indexer,
+                     const ui::AXTreeIndexerMac* indexer,
                      base::Value* dict) const;
 
   // Invokes an attributes by a property node.
   a11y::OptionalNSObject InvokeAttributeFor(
       const BrowserAccessibilityCocoa* cocoa_node,
       const ui::AXPropertyNode& property_node,
-      const a11y::LineIndexer* line_indexer) const;
+      const ui::AXTreeIndexerMac* indexer) const;
 
   base::Value PopulateLocalPosition(const id node,
                                     const NSRect& root_rect) const;
-  base::Value PopulatePoint(NSPoint) const;
-  base::Value PopulateSize(NSSize) const;
-  base::Value PopulateRect(NSRect) const;
-  base::Value PopulateRange(NSRange) const;
   base::Value PopulateTextPosition(
       const BrowserAccessibility::AXPosition& position,
-      const a11y::LineIndexer* line_indexer) const;
-  base::Value PopulateTextMarkerRange(
-      id marker_range,
-      const a11y::LineIndexer* line_indexer) const;
-  base::Value PopulateObject(id, const a11y::LineIndexer* line_indexer) const;
-  base::Value PopulateArray(NSArray*,
-                            const a11y::LineIndexer* line_indexer) const;
-
-  std::string NodeToLineIndex(id, const a11y::LineIndexer*) const;
+      const ui::AXTreeIndexerMac*) const;
+  base::Value PopulateTextMarkerRange(id marker_range,
+                                      const ui::AXTreeIndexerMac*) const;
+  base::Value PopulateObject(id, const ui::AXTreeIndexerMac*) const;
+  base::Value PopulateArray(NSArray*, const ui::AXTreeIndexerMac*) const;
 
   std::string ProcessTreeForOutput(
       const base::DictionaryValue& node) const override;

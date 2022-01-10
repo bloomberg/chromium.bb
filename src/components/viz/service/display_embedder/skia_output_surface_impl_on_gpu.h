@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/containers/span.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/types/id_type.h"
 #include "base/types/pass_key.h"
@@ -150,7 +150,8 @@ class SkiaOutputSurfaceImplOnGpu
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane&
           output_surface_plane);
   void SwapBuffers(OutputSurfaceFrame frame, bool release_frame_buffer);
-  void ReleaseFrameBuffers(int n);
+  void AllocateFrameBuffers(size_t n);
+  void ReleaseFrameBuffers(size_t n);
 
   void SetDependenciesResolvedTimings(base::TimeTicks task_ready);
   void SetDrawTimings(base::TimeTicks task_ready);
@@ -400,15 +401,15 @@ class SkiaOutputSurfaceImplOnGpu
   // dtors are called first.
   absl::optional<ReleaseCurrent> release_current_last_;
 
-  SkiaOutputSurfaceDependency* const dependency_;
-  gpu::DisplayCompositorMemoryAndTaskControllerOnGpu* shared_gpu_deps_;
+  const raw_ptr<SkiaOutputSurfaceDependency> dependency_;
+  raw_ptr<gpu::DisplayCompositorMemoryAndTaskControllerOnGpu> shared_gpu_deps_;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
   std::unique_ptr<gpu::SharedImageFactory> shared_image_factory_;
   std::unique_ptr<gpu::SharedImageRepresentationFactory>
       shared_image_representation_factory_;
-  VulkanContextProvider* const vulkan_context_provider_;
-  DawnContextProvider* const dawn_context_provider_;
+  const raw_ptr<VulkanContextProvider> vulkan_context_provider_;
+  const raw_ptr<DawnContextProvider> dawn_context_provider_;
   const RendererSettings renderer_settings_;
 
   // Should only be run on the client thread with PostTaskToClientThread().
@@ -460,7 +461,7 @@ class SkiaOutputSurfaceImplOnGpu
     void EndAccess();
 
    private:
-    SkiaOutputSurfaceImplOnGpu* const impl_on_gpu_;
+    const raw_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;
     base::flat_set<ImageContextImpl*> image_contexts_;
   };
   PromiseImageAccessHelper promise_image_access_helper_{this};

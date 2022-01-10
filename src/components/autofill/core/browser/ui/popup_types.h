@@ -58,7 +58,9 @@ enum class PopupHidingReason {
   // The anchor element for which the popup would be shown is not visible in the
   // content area.
   kElementOutsideOfContentArea = 15,
-  kMaxValue = kElementOutsideOfContentArea
+  // The frame holds a pointer lock.
+  kMouseLocked = 16,
+  kMaxValue = kMouseLocked
 };
 
 }  // namespace autofill

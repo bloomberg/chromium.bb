@@ -12,13 +12,14 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
 #include "content/browser/renderer_host/frame_navigation_entry.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_entry.h"
@@ -82,7 +83,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
         ClonePolicy clone_policy) const;
 
     // The parent of this node.
-    TreeNode* parent;
+    raw_ptr<TreeNode> parent;
 
     // Ref counted pointer that keeps the FrameNavigationEntry alive as long as
     // it is needed by this node's NavigationEntry.
@@ -107,7 +108,8 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       const std::u16string& title,
       ui::PageTransition transition_type,
       bool is_renderer_initiated,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      bool is_initial_entry);
 
   NavigationEntryImpl(const NavigationEntryImpl&) = delete;
   NavigationEntryImpl& operator=(const NavigationEntryImpl&) = delete;
@@ -115,6 +117,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   ~NavigationEntryImpl() override;
 
   // NavigationEntry implementation:
+  bool IsInitialEntry() override;
   int GetUniqueID() override;
   PageType GetPageType() override;
   void SetURL(const GURL& url) override;
@@ -427,6 +430,20 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
     back_forward_cache_metrics_ = metrics;
   }
 
+  void set_is_initial_entry(bool is_initial_entry) {
+    is_initial_entry_ = is_initial_entry;
+  }
+
+  void set_did_not_exist_without_initial_navigation_entry(
+      bool did_not_exist_without_initial_navigation_entry) {
+    did_not_exist_without_initial_navigation_entry_ =
+        did_not_exist_without_initial_navigation_entry;
+  }
+
+  bool did_not_exist_without_initial_navigation_entry() {
+    return did_not_exist_without_initial_navigation_entry_;
+  }
+
  private:
   std::unique_ptr<NavigationEntryImpl> CloneAndReplaceInternal(
       scoped_refptr<FrameNavigationEntry> frame_entry,
@@ -556,6 +573,32 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // with implement back-forward cache.
   // It is preserved at commit but not persisted.
   scoped_refptr<BackForwardCacheMetrics> back_forward_cache_metrics_;
+
+  // Whether this NavigationEntry is the initial NavigationEntry or not. The
+  // initial NavigationEntry is created when the FrameTree is created, so it is
+  // not really associated with any navigation, but represents a placeholder
+  // NavigationEntry for the "initial empty document", which commits in the
+  // renderer on frame creation but doesn't notify the browser of the commit.
+  // The initial NavigationEntry gets replaced or loses its "initial" status on
+  // the next navigation on the main frame, even if the frame stays on the
+  // initial empty document (e.g. same-document navigation on the initial empty
+  // document). The initial NavigationEntry also never gets restored on session
+  // restore, because we never restore tabs with only the initial
+  // NavigationEntry.
+  bool is_initial_entry_ = false;
+
+  // True if this NavigationEntry used to not exist before the introduction of
+  // the initial NavigationEntry (see above). This will be true for initial
+  // NavigationEntries, but also for any NavigationEntry that are copied from
+  // the initial NavigationEntry, such as when a subframe navigation uses or
+  // copies the initial NavigationEntry to attach to. This is also true for the
+  // NavigationEntry created after the synchronous about:blank navigation for
+  // window.open() with no URL, which used to get ignored as the browser doesn't
+  // know what to do with it. This information is needed for Android WebView to
+  // ignore the NavigationStateChanged() call in some cases to avoid firing
+  // onPageFinished etc in more cases than it previously did.
+  // See also https://crbug.com/1277414.
+  bool did_not_exist_without_initial_navigation_entry_ = false;
 };
 
 }  // namespace content

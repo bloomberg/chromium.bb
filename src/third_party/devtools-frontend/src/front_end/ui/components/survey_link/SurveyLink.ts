@@ -51,85 +51,85 @@ const enum State {
 export class SurveyLink extends HTMLElement {
   static readonly litTagName = LitHtml.literal`devtools-survey-link`;
 
-  private readonly shadow = this.attachShadow({mode: 'open'});
-  private trigger = '';
-  private promptText = Common.UIString.LocalizedEmptyString;
-  private canShowSurvey: (trigger: string, callback: CanShowSurveyCallback) => void = () => {};
-  private showSurvey: (trigger: string, callback: ShowSurveyCallback) => void = () => {};
-  private state: State = State.Checking;
+  readonly #shadow = this.attachShadow({mode: 'open'});
+  #trigger = '';
+  #promptText = Common.UIString.LocalizedEmptyString;
+  #canShowSurvey: (trigger: string, callback: CanShowSurveyCallback) => void = () => {};
+  #showSurvey: (trigger: string, callback: ShowSurveyCallback) => void = () => {};
+  #state: State = State.Checking;
 
   connectedCallback(): void {
-    this.shadow.adoptedStyleSheets = [surveyLinkStyles];
+    this.#shadow.adoptedStyleSheets = [surveyLinkStyles];
   }
 
   // Re-setting data will cause the state to go back to 'Checking' which hides the link.
   set data(data: SurveyLinkData) {
-    this.trigger = data.trigger;
-    this.promptText = data.promptText;
-    this.canShowSurvey = data.canShowSurvey;
-    this.showSurvey = data.showSurvey;
+    this.#trigger = data.trigger;
+    this.#promptText = data.promptText;
+    this.#canShowSurvey = data.canShowSurvey;
+    this.#showSurvey = data.showSurvey;
 
     this.checkSurvey();
   }
 
   private checkSurvey(): void {
-    this.state = State.Checking;
-    this.canShowSurvey(this.trigger, ({canShowSurvey}) => {
+    this.#state = State.Checking;
+    this.#canShowSurvey(this.#trigger, ({canShowSurvey}) => {
       if (!canShowSurvey) {
-        this.state = State.DontShowLink;
+        this.#state = State.DontShowLink;
       } else {
-        this.state = State.ShowLink;
+        this.#state = State.ShowLink;
       }
       this.render();
     });
   }
 
   private sendSurvey(): void {
-    this.state = State.Sending;
+    this.#state = State.Sending;
     this.render();
-    this.showSurvey(this.trigger, ({surveyShown}) => {
+    this.#showSurvey(this.#trigger, ({surveyShown}) => {
       if (!surveyShown) {
-        this.state = State.Failed;
+        this.#state = State.Failed;
       } else {
-        this.state = State.SurveyShown;
+        this.#state = State.SurveyShown;
       }
       this.render();
     });
   }
 
   private render(): void {
-    if (this.state === State.Checking || this.state === State.DontShowLink) {
+    if (this.#state === State.Checking || this.#state === State.DontShowLink) {
       return;
     }
 
-    let linkText = this.promptText;
-    if (this.state === State.Sending) {
+    let linkText = this.#promptText;
+    if (this.#state === State.Sending) {
       linkText = i18nString(UIStrings.openingSurvey);
-    } else if (this.state === State.SurveyShown) {
+    } else if (this.#state === State.SurveyShown) {
       linkText = i18nString(UIStrings.thankYouForYourFeedback);
-    } else if (this.state === State.Failed) {
+    } else if (this.#state === State.Failed) {
       linkText = i18nString(UIStrings.anErrorOccurredWithTheSurvey);
     }
 
     let linkState = '';
-    if (this.state === State.Sending) {
+    if (this.#state === State.Sending) {
       linkState = 'pending-link';
-    } else if (this.state === State.Failed || this.state === State.SurveyShown) {
+    } else if (this.#state === State.Failed || this.#state === State.SurveyShown) {
       linkState = 'disabled-link';
     }
 
-    const ariaDisabled = this.state !== State.ShowLink;
+    const ariaDisabled = this.#state !== State.ShowLink;
 
     // clang-format off
     // eslint-disable-next-line rulesdir/ban_style_tags_in_lit_html
     const output = LitHtml.html`
       <button class="link ${linkState}" tabindex=${ariaDisabled ? '-1' : '0'} .disabled=${ariaDisabled} aria-disabled=${ariaDisabled} @click=${this.sendSurvey}>
-        <${IconButton.Icon.Icon.litTagName} class="link-icon" .data=${{iconName: 'feedback_thin_16x16_icon', color: 'var(--color-link)', width: 'var(--issue-link-icon-size, 16px)', height: 'var(--issue-link-icon-size, 16px)'} as IconButton.Icon.IconData}></${IconButton.Icon.Icon.litTagName}><!--
+        <${IconButton.Icon.Icon.litTagName} class="link-icon" .data=${{iconName: 'feedback_button_icon', color: 'var(--color-link)', width: 'var(--issue-link-icon-size, 16px)', height: 'var(--issue-link-icon-size, 16px)'} as IconButton.Icon.IconData}></${IconButton.Icon.Icon.litTagName}><!--
       -->${linkText}
       </button>
     `;
     // clang-format on
-    LitHtml.render(output, this.shadow, {host: this});
+    LitHtml.render(output, this.#shadow, {host: this});
   }
 }
 

@@ -401,6 +401,21 @@
   "core/sdk/DOMDebuggerModel.ts | xhr": {
     "message": "XHR"
   },
+  "core/sdk/EventBreakpointsModel.ts | auctionWorklet": {
+    "message": "Ad Auction Worklet"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletBiddingStart": {
+    "message": "Bidder Bidding Phase Start"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletReportingStart": {
+    "message": "Bidder Reporting Phase Start"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletReportingStart": {
+    "message": "Seller Reporting Phase Start"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletScoringStart": {
+    "message": "Seller Scoring Phase Start"
+  },
   "core/sdk/NetworkManager.ts | crossoriginReadBlockingCorb": {
     "message": "Cross-Origin Read Blocking (CORB) blocked cross-origin response {PH1} with MIME type {PH2}. See https://www.chromestatus.com/feature/5629709824032768 for more details."
   },
@@ -569,6 +584,9 @@
   "core/sdk/sdk-meta.ts | disabledDarkMode": {
     "message": "Disable"
   },
+  "core/sdk/sdk-meta.ts | disableEmulateAutoDarkMode": {
+    "message": "Disable auto dark mode"
+  },
   "core/sdk/sdk-meta.ts | disableJavascript": {
     "message": "Disable JavaScript"
   },
@@ -599,6 +617,9 @@
   "core/sdk/sdk-meta.ts | doNotEmulateCssMediaType": {
     "message": "Do not emulate CSS media type"
   },
+  "core/sdk/sdk-meta.ts | doNotEmulateDarkMode": {
+    "message": "Do not emulate auto dark mode"
+  },
   "core/sdk/sdk-meta.ts | doNotExtendGridLines": {
     "message": "Do not extend grid lines"
   },
@@ -616,6 +637,9 @@
   },
   "core/sdk/sdk-meta.ts | doNotShowGridTrackSizes": {
     "message": "Do not show grid track sizes"
+  },
+  "core/sdk/sdk-meta.ts | doNotShowRulersOnHover": {
+    "message": "Do not show rulers on hover"
   },
   "core/sdk/sdk-meta.ts | emulateAchromatopsia": {
     "message": "Emulate achromatopsia"
@@ -668,6 +692,9 @@
   "core/sdk/sdk-meta.ts | enabledDarkMode": {
     "message": "Enable"
   },
+  "core/sdk/sdk-meta.ts | enableEmulateAutoDarkMode": {
+    "message": "Enable auto dark mode"
+  },
   "core/sdk/sdk-meta.ts | enableJavascript": {
     "message": "Enable JavaScript"
   },
@@ -691,9 +718,6 @@
   },
   "core/sdk/sdk-meta.ts | hideFramesPerSecondFpsMeter": {
     "message": "Hide frames per second (FPS) meter"
-  },
-  "core/sdk/sdk-meta.ts | hideHittestBorders": {
-    "message": "Hide hit-test borders"
   },
   "core/sdk/sdk-meta.ts | hideLayerBorders": {
     "message": "Hide layer borders"
@@ -749,9 +773,6 @@
   "core/sdk/sdk-meta.ts | showGridTrackSizes": {
     "message": "Show grid track sizes"
   },
-  "core/sdk/sdk-meta.ts | showHittestBorders": {
-    "message": "Show hit-test borders"
-  },
   "core/sdk/sdk-meta.ts | showLayerBorders": {
     "message": "Show layer borders"
   },
@@ -770,8 +791,8 @@
   "core/sdk/sdk-meta.ts | showPaintFlashingRectangles": {
     "message": "Show paint flashing rectangles"
   },
-  "core/sdk/sdk-meta.ts | showRulers": {
-    "message": "Show rulers"
+  "core/sdk/sdk-meta.ts | showRulersOnHover": {
+    "message": "Show rulers on hover"
   },
   "core/sdk/sdk-meta.ts | showScrollPerformanceBottlenecks": {
     "message": "Show scroll performance bottlenecks"
@@ -935,6 +956,9 @@
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssColorgamutMediaFeature": {
     "message": "Forces CSS color-gamut media feature"
   },
+  "entrypoints/inspector_main/RenderingOptions.ts | forcesCssForcedColors": {
+    "message": "Forces CSS forced-colors media feature"
+  },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssPreferscolorschemeMedia": {
     "message": "Forces CSS prefers-color-scheme media feature"
   },
@@ -971,9 +995,6 @@
   "entrypoints/inspector_main/RenderingOptions.ts | highlightsFramesRedDetectedToBe": {
     "message": "Highlights frames (red) detected to be ads."
   },
-  "entrypoints/inspector_main/RenderingOptions.ts | hittestBorders": {
-    "message": "Hit-test borders"
-  },
   "entrypoints/inspector_main/RenderingOptions.ts | layerBorders": {
     "message": "Layer borders"
   },
@@ -995,13 +1016,10 @@
   "entrypoints/inspector_main/RenderingOptions.ts | showsAnOverlayWithCoreWebVitals": {
     "message": "Shows an overlay with Core Web Vitals."
   },
-  "entrypoints/inspector_main/RenderingOptions.ts | showsBordersAroundHittestRegions": {
-    "message": "Shows borders around hit-test regions."
-  },
   "entrypoints/inspector_main/RenderingOptions.ts | showsLayerBordersOrangeoliveAnd": {
     "message": "Shows layer borders (orange/olive) and tiles (cyan)."
   },
-  "entrypoints/js_app/JsMain.ts | main": {
+  "entrypoints/js_app/js_app.ts | main": {
     "message": "Main"
   },
   "entrypoints/main/main-meta.ts | asAuthored": {
@@ -1190,40 +1208,40 @@
   "entrypoints/main/MainImpl.ts | undockIntoSeparateWindow": {
     "message": "Undock into separate window"
   },
-  "entrypoints/node_app/node_app-meta.ts | node": {
-    "message": "Node"
-  },
-  "entrypoints/node_app/node_app-meta.ts | showNode": {
-    "message": "Node"
-  },
-  "entrypoints/node_main/node_main-meta.ts | connection": {
+  "entrypoints/node_app/node_app.ts | connection": {
     "message": "Connection"
   },
-  "entrypoints/node_main/node_main-meta.ts | node": {
+  "entrypoints/node_app/node_app.ts | networkTitle": {
+    "message": "Node"
+  },
+  "entrypoints/node_app/node_app.ts | node": {
     "message": "node"
   },
-  "entrypoints/node_main/node_main-meta.ts | showConnection": {
+  "entrypoints/node_app/node_app.ts | showConnection": {
     "message": "Show Connection"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | addConnection": {
+  "entrypoints/node_app/node_app.ts | showNode": {
+    "message": "Node"
+  },
+  "entrypoints/node_app/NodeConnectionsPanel.ts | addConnection": {
     "message": "Add connection"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
     "message": "Network address (e.g. localhost:9229)"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | noConnectionsSpecified": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | noConnectionsSpecified": {
     "message": "No connections specified"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
     "message": "Node.js debugging guide"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
     "message": "Specify network endpoint and DevTools will connect to it automatically. Read {PH1} to learn more."
   },
-  "entrypoints/node_main/NodeMain.ts | main": {
+  "entrypoints/node_app/NodeMain.ts | main": {
     "message": "Main"
   },
-  "entrypoints/node_main/NodeMain.ts | nodejsS": {
+  "entrypoints/node_app/NodeMain.ts | nodejsS": {
     "message": "Node.js: {PH1}"
   },
   "entrypoints/worker_app/WorkerMain.ts | main": {
@@ -1322,8 +1340,8 @@
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "Cross-Origin Resource Sharing (CORS)"
   },
-  "models/issues_manager/CorsIssue.ts | corsForPrivateNetworksRfc": {
-    "message": "CORS for private networks (RFC1918)"
+  "models/issues_manager/CorsIssue.ts | corsPrivateNetworkAccess": {
+    "message": "Private Network Access"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | coopAndCoep": {
     "message": "COOP and COEP"
@@ -1937,8 +1955,17 @@
   "panels/accessibility/AXBreadcrumbsPane.ts | accessibilityTree": {
     "message": "Accessibility Tree"
   },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentDescription": {
+    "message": "The accessibility tree moved to the top right corner of the DOM tree."
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentName": {
+    "message": "Enable full-page accessibility tree"
+  },
   "panels/accessibility/AXBreadcrumbsPane.ts | ignored": {
     "message": "Ignored"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | reloadRequired": {
+    "message": "Reload required before the change takes effect."
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | scrollIntoView": {
     "message": "Scroll into view"
@@ -2034,7 +2061,7 @@
     "message": "Stop recording events"
   },
   "panels/application/ApplicationPanelCacheSection.ts | backForwardCache": {
-    "message": "Back-forward Cache"
+    "message": "Back/forward cache"
   },
   "panels/application/ApplicationPanelCacheSection.ts | cacheStorage": {
     "message": "Cache Storage"
@@ -2408,51 +2435,6 @@
   "panels/application/BackForwardCacheStrings.ts | documentLoaded": {
     "message": "The document did not finish loading before navigating away."
   },
-  "panels/application/BackForwardCacheStrings.ts | embedderAppBannerManager": {
-    "message": "EmbedderAppBannerManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
-    "message": "EmbedderChromePasswordManagerClientBindCredentialManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
-    "message": "EmbedderDomDistillerSelfDeletingRequestDelegate"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
-    "message": "EmbedderDomDistillerViewerSource"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
-    "message": "EmbedderExtensionMessaging"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
-    "message": "EmbedderExtensionMessagingForOpenPort"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensions": {
-    "message": "EmbedderExtensions"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
-    "message": "EmbedderExtensionSentMessageToCachedFrame"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderModalDialog": {
-    "message": "EmbedderModalDialog"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOfflinePage": {
-    "message": "EmbedderOfflinePage"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
-    "message": "EmbedderOomInterventionTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
-    "message": "EmbedderPermissionRequestManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
-    "message": "EmbedderPopupBlockerTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
-    "message": "EmbedderSafeBrowsingThreatDetails"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
-    "message": "EmbedderSafeBrowsingTriggeredPopupBlocker"
-  },
   "panels/application/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
     "message": "A service worker was activated while the page was in back/forward cache."
   },
@@ -2525,9 +2507,6 @@
   "panels/application/BackForwardCacheStrings.ts | notMainFrame": {
     "message": "Navigation happened in a frame other than the main frame."
   },
-  "panels/application/BackForwardCacheStrings.ts | optInUnloadHeaderNotPresent": {
-    "message": "The page has unload handler without the back/forward cache opt-in header."
-  },
   "panels/application/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
     "message": "Page with ongoing indexed DB transactions are not currently eligible for back/forward cache."
   },
@@ -2556,7 +2535,7 @@
     "message": "Pages that show Printing UI are not currently eligible for back/forward cache."
   },
   "panels/application/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
-    "message": "The page was opened using window.open() and another tab has a reference to it, or the page opened a window."
+    "message": "The page was opened using 'window.open()' and another tab has a reference to it, or the page opened a window."
   },
   "panels/application/BackForwardCacheStrings.ts | rendererProcessCrashed": {
     "message": "The renderer process for the page in back/forward cache crashed."
@@ -2670,10 +2649,7 @@
     "message": "Pages that use WebXR are not currently eligible for back/forward cache."
   },
   "panels/application/BackForwardCacheView.ts | backForwardCacheTitle": {
-    "message": "Back-forward Cache"
-  },
-  "panels/application/BackForwardCacheView.ts | bfcacheStatus": {
-    "message": "Back-forward Cache Status"
+    "message": "Back/forward cache"
   },
   "panels/application/BackForwardCacheView.ts | circumstantial": {
     "message": "Not Actionable"
@@ -2681,38 +2657,44 @@
   "panels/application/BackForwardCacheView.ts | circumstantialExplanation": {
     "message": "These reasons are not actionable i.e. caching was prevented by something outside of the direct control of the page."
   },
+  "panels/application/BackForwardCacheView.ts | learnMore": {
+    "message": "Learn more: back/forward cache eligibility"
+  },
   "panels/application/BackForwardCacheView.ts | mainFrame": {
     "message": "Main Frame"
   },
   "panels/application/BackForwardCacheView.ts | normalNavigation": {
-    "message": "Normal navigation (Not restored from back-forward cache)"
+    "message": "Not served from back/forward cache: to trigger back/forward cache, use Chrome's back/forward buttons, or use the test button below to automatically navigate away and back."
   },
   "panels/application/BackForwardCacheView.ts | pageSupportNeeded": {
     "message": "Actionable"
   },
   "panels/application/BackForwardCacheView.ts | pageSupportNeededExplanation": {
-    "message": "These reasons are actionable i.e. they can be cleaned up to make the page eligible for back-forward cache."
+    "message": "These reasons are actionable i.e. they can be cleaned up to make the page eligible for back/forward cache."
   },
   "panels/application/BackForwardCacheView.ts | restoredFromBFCache": {
-    "message": "Restored from back-forward cache"
+    "message": "Successfully served from back/forward cache."
+  },
+  "panels/application/BackForwardCacheView.ts | runningTest": {
+    "message": "Running test"
   },
   "panels/application/BackForwardCacheView.ts | runTest": {
-    "message": "Run Test"
+    "message": "Test back/forward cache"
   },
   "panels/application/BackForwardCacheView.ts | supportPending": {
     "message": "Pending Support"
   },
   "panels/application/BackForwardCacheView.ts | supportPendingExplanation": {
-    "message": "Chrome support for these reasons is pending i.e. they will not prevent the page from being eligible for back-forward cache in a future version of Chrome."
+    "message": "Chrome support for these reasons is pending i.e. they will not prevent the page from being eligible for back/forward cache in a future version of Chrome."
   },
   "panels/application/BackForwardCacheView.ts | unavailable": {
     "message": "unavailable"
   },
   "panels/application/BackForwardCacheView.ts | unknown": {
-    "message": "unknown"
+    "message": "Unknown Status"
   },
   "panels/application/BackForwardCacheView.ts | url": {
-    "message": "URL"
+    "message": "URL:"
   },
   "panels/application/BackgroundServiceView.ts | backgroundFetch": {
     "message": "Background Fetch"
@@ -2840,14 +2822,8 @@
   "panels/application/components/FrameDetailsView.ts | creationStackTraceExplanation": {
     "message": "This frame was created programmatically. The stack trace shows where this happened."
   },
-  "panels/application/components/FrameDetailsView.ts | crossoriginEmbedderPolicy": {
-    "message": "Cross-Origin Embedder Policy"
-  },
   "panels/application/components/FrameDetailsView.ts | crossoriginIsolated": {
     "message": "Cross-Origin Isolated"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginOpenerPolicy": {
-    "message": "Cross-Origin Opener Policy"
   },
   "panels/application/components/FrameDetailsView.ts | document": {
     "message": "Document"
@@ -2872,9 +2848,6 @@
   },
   "panels/application/components/FrameDetailsView.ts | origin": {
     "message": "Origin"
-  },
-  "panels/application/components/FrameDetailsView.ts | originTrials": {
-    "message": "Origin Trials"
   },
   "panels/application/components/FrameDetailsView.ts | ownerElement": {
     "message": "Owner Element"
@@ -4097,20 +4070,11 @@
   "panels/coverage/CoverageView.ts | urlFilter": {
     "message": "URL filter"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | activelyWorkingAndLookingForS": {
-    "message": "Our team is actively working on this feature and we are looking for your {PH1}!"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | captureOverview": {
     "message": "Capture overview"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | capturePageCSSOverview": {
     "message": "Capture an overview of your page’s CSS"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackInline": {
-    "message": "feedback"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackStandalone": {
-    "message": "Feedback"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | identifyCSSImprovements": {
     "message": "Identify potential CSS improvements"
@@ -4121,14 +4085,8 @@
   "panels/css_overview/components/CSSOverviewStartView.ts | locateAffectedElements": {
     "message": "Locate the affected elements in the Elements panel"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | previewFeature": {
-    "message": "Preview feature"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | quickStartWithCSSOverview": {
     "message": "Quick start: get started with the new CSS Overview panel"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | videoAndDocumentation": {
-    "message": "Video and documentation"
   },
   "panels/css_overview/css_overview-meta.ts | cssOverview": {
     "message": "CSS Overview"
@@ -4721,6 +4679,21 @@
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
     "message": "Rendered Fonts"
   },
+  "panels/elements/PropertiesWidget.ts | filter": {
+    "message": "Filter"
+  },
+  "panels/elements/PropertiesWidget.ts | filterProperties": {
+    "message": "Filter Properties"
+  },
+  "panels/elements/PropertiesWidget.ts | noMatchingProperty": {
+    "message": "No matching property"
+  },
+  "panels/elements/PropertiesWidget.ts | showAll": {
+    "message": "Show all"
+  },
+  "panels/elements/PropertiesWidget.ts | showAllTooltip": {
+    "message": "When unchecked, only properties whose values are neither null nor undefined will be shown"
+  },
   "panels/elements/StylePropertyTreeElement.ts | copyAllCssDeclarationsAsJs": {
     "message": "Copy all declarations as JS"
   },
@@ -4977,7 +4950,7 @@
     "message": "Hide media queries"
   },
   "panels/emulation/emulation-meta.ts | hideRulers": {
-    "message": "Hide rulers"
+    "message": "Hide rulers in the Device Mode toolbar"
   },
   "panels/emulation/emulation-meta.ts | showDeviceFrame": {
     "message": "Show device frame"
@@ -4986,7 +4959,7 @@
     "message": "Show media queries"
   },
   "panels/emulation/emulation-meta.ts | showRulers": {
-    "message": "Show rulers"
+    "message": "Show rulers in the Device Mode toolbar"
   },
   "panels/emulation/emulation-meta.ts | toggleDeviceToolbar": {
     "message": "Toggle device toolbar"
@@ -5014,36 +4987,6 @@
   },
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "Toggle whether event listener is passive or blocking"
-  },
-  "panels/help/help-meta.ts | bug": {
-    "message": "bug"
-  },
-  "panels/help/help-meta.ts | doNotShowWhatsNewAfterEachUpdate": {
-    "message": "Do not show What's New after each update"
-  },
-  "panels/help/help-meta.ts | releaseNotes": {
-    "message": "Release notes"
-  },
-  "panels/help/help-meta.ts | reportADevtoolsIssue": {
-    "message": "Report a DevTools issue"
-  },
-  "panels/help/help-meta.ts | reportTranslationIssue": {
-    "message": "Report a translation issue"
-  },
-  "panels/help/help-meta.ts | showWhatsNew": {
-    "message": "Show What's New"
-  },
-  "panels/help/help-meta.ts | showWhatsNewAfterEachUpdate": {
-    "message": "Show What's New after each update"
-  },
-  "panels/help/help-meta.ts | whatsNew": {
-    "message": "What's New"
-  },
-  "panels/help/ReleaseNoteView.ts | close": {
-    "message": "Close"
-  },
-  "panels/help/ReleaseNoteView.ts | learnMore": {
-    "message": "Learn more"
   },
   "panels/input/input-meta.ts | inputs": {
     "message": "Inputs"
@@ -5261,8 +5204,20 @@
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceEventId": {
     "message": "Invalid attributionsourceeventid"
   },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceExpiry": {
+    "message": "Invalid attributionexpiry"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourcePriority": {
+    "message": "Invalid attributionsourcepriority"
+  },
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerData": {
     "message": "Invalid trigger-data"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerDedupKey": {
+    "message": "Invalid dedup-key"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerPriority": {
+    "message": "Invalid priority"
   },
   "panels/issues/AttributionReportingIssueDetailsView.ts | nViolations": {
     "message": "{n, plural, =1 {# violation} other {# violations}}"
@@ -5290,6 +5245,9 @@
   },
   "panels/issues/CorsIssueDetailsView.ts | disallowedRequestMethod": {
     "message": "Disallowed Request Method"
+  },
+  "panels/issues/CorsIssueDetailsView.ts | failedRequest": {
+    "message": "Failed Request"
   },
   "panels/issues/CorsIssueDetailsView.ts | header": {
     "message": "Header"
@@ -5369,8 +5327,14 @@
   "panels/issues/HiddenIssuesRow.ts | unhideAll": {
     "message": "Unhide all"
   },
-  "panels/issues/IssueKindView.ts | hideAllCurrent": {
-    "message": "Hide all current {PH1}"
+  "panels/issues/IssueKindView.ts | hideAllCurrentBreakingChanges": {
+    "message": "Hide all current Breaking Changes"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentImprovements": {
+    "message": "Hide all current Improvements"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentPageErrors": {
+    "message": "Hide all current Page Errors"
   },
   "panels/issues/issues-meta.ts | cspViolations": {
     "message": "CSP Violations"
@@ -6433,6 +6397,9 @@
   },
   "panels/network/NetworkConfigView.ts | caching": {
     "message": "Caching"
+  },
+  "panels/network/NetworkConfigView.ts | clientHintsStatusText": {
+    "message": "User agent updated."
   },
   "panels/network/NetworkConfigView.ts | custom": {
     "message": "Custom..."
@@ -9147,7 +9114,7 @@
     "message": "Coverage: n/a"
   },
   "panels/sources/CoveragePlugin.ts | coverageS": {
-    "message": "Coverage: {PH1} %"
+    "message": "Coverage: {PH1}"
   },
   "panels/sources/CoveragePlugin.ts | showDetails": {
     "message": "Show Details"
@@ -9412,6 +9379,15 @@
   },
   "panels/sources/OutlineQuickOpen.ts | openAJavascriptOrCssFileToSee": {
     "message": "Open a JavaScript or CSS file to see symbols"
+  },
+  "panels/sources/ProfilePlugin.ts | kb": {
+    "message": "kB"
+  },
+  "panels/sources/ProfilePlugin.ts | mb": {
+    "message": "MB"
+  },
+  "panels/sources/ProfilePlugin.ts | ms": {
+    "message": "ms"
   },
   "panels/sources/ScopeChainSidebarPane.ts | closure": {
     "message": "Closure"
@@ -11429,6 +11405,24 @@
   "ui/components/linear_memory_inspector/ValueInterpreterSettings.ts | otherGroup": {
     "message": "Other"
   },
+  "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
+    "message": "Feedback"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewFeature": {
+    "message": "Preview feature"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewText": {
+    "message": "Our team is actively working on this feature and we would love to know what you think."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewTextFeedbackLink": {
+    "message": "Send us your feedback."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | videoAndDocumentation": {
+    "message": "Video and documentation"
+  },
+  "ui/components/panel_feedback/PreviewToggle.ts | previewTextFeedbackLink": {
+    "message": "Send us your feedback."
+  },
   "ui/components/request_link_icon/RequestLinkIcon.ts | clickToShowRequestInTheNetwork": {
     "message": "Click to open the network panel and show request for URL: {url}"
   },
@@ -11545,6 +11539,9 @@
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | name": {
     "message": "Name"
+  },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | opaquePartitionKey": {
+    "message": "(opaque)"
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | session": {
     "message": "Session"
@@ -11714,15 +11711,6 @@
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "Show as JavaScript object"
   },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keys": {
-    "message": "Keys"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keywords": {
-    "message": "keywords"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | lexicalScopeVariables": {
-    "message": "Lexical scope variables"
-  },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | collapseChildren": {
     "message": "Collapse children"
   },
@@ -11809,15 +11797,6 @@
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | sSelected": {
     "message": "{PH1} selected"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | kb": {
-    "message": "kB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | mb": {
-    "message": "MB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | ms": {
-    "message": "ms"
   },
   "ui/legacy/components/perf_ui/NetworkPriorities.ts | high": {
     "message": "High"
@@ -11996,9 +11975,6 @@
   "ui/legacy/components/source_frame/XMLView.ts | find": {
     "message": "Find"
   },
-  "ui/legacy/components/text_editor/CodeMirrorTextEditor.ts | codeEditor": {
-    "message": "Code editor"
-  },
   "ui/legacy/components/utils/ImagePreview.ts | currentSource": {
     "message": "Current source:"
   },
@@ -12106,6 +12082,12 @@
   },
   "ui/legacy/InspectorView.ts | drawer": {
     "message": "Tool drawer"
+  },
+  "ui/legacy/InspectorView.ts | drawerHidden": {
+    "message": "Drawer hidden"
+  },
+  "ui/legacy/InspectorView.ts | drawerShown": {
+    "message": "Drawer shown"
   },
   "ui/legacy/InspectorView.ts | mainToolbar": {
     "message": "Main toolbar"

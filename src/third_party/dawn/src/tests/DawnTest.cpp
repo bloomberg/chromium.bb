@@ -436,9 +436,11 @@ std::unique_ptr<dawn_native::Instance> DawnTestEnvironment::CreateInstanceAndDis
 
 #ifdef DAWN_ENABLE_BACKEND_OPENGLES
 
-    if (GetEnvironmentVar("ANGLE_DEFAULT_PLATFORM").empty()) {
-        SetEnvironmentVar("ANGLE_DEFAULT_PLATFORM", "swiftshader");
+    ScopedEnvironmentVar angleDefaultPlatform;
+    if (GetEnvironmentVar("ANGLE_DEFAULT_PLATFORM").first.empty()) {
+        angleDefaultPlatform.Set("ANGLE_DEFAULT_PLATFORM", "swiftshader");
     }
+
     if (!glfwInit()) {
         return instance;
     }
@@ -920,7 +922,7 @@ void DawnTestBase::SetUp() {
     for (const char* forceDisabledWorkaround : mParam.forceDisabledWorkarounds) {
         ASSERT(gTestEnv->GetInstance()->GetToggleInfo(forceDisabledWorkaround) != nullptr);
     }
-    dawn_native::DeviceDescriptor deviceDescriptor = {};
+    dawn_native::DawnDeviceDescriptor deviceDescriptor = {};
     deviceDescriptor.forceEnabledToggles = mParam.forceEnabledWorkarounds;
     deviceDescriptor.forceDisabledToggles = mParam.forceDisabledWorkarounds;
     deviceDescriptor.requiredFeatures = GetRequiredFeatures();
@@ -1005,15 +1007,25 @@ void DawnTestBase::TearDown() {
         EXPECT_EQ(mLastWarningCount,
                   dawn_native::GetDeprecationWarningCountForTesting(device.Get()));
     }
+
+    // The device will be destroyed soon after, so we want to set the expectation.
+    ExpectDeviceDestruction();
 }
 
-void DawnTestBase::StartExpectDeviceError() {
+void DawnTestBase::StartExpectDeviceError(testing::Matcher<std::string> errorMatcher) {
     mExpectError = true;
     mError = false;
+    mErrorMatcher = errorMatcher;
 }
+
 bool DawnTestBase::EndExpectDeviceError() {
     mExpectError = false;
+    mErrorMatcher = testing::_;
     return mError;
+}
+
+void DawnTestBase::ExpectDeviceDestruction() {
+    mExpectDestruction = true;
 }
 
 // static
@@ -1023,13 +1035,21 @@ void DawnTestBase::OnDeviceError(WGPUErrorType type, const char* message, void* 
 
     ASSERT_TRUE(self->mExpectError) << "Got unexpected device error: " << message;
     ASSERT_FALSE(self->mError) << "Got two errors in expect block";
+    if (self->mExpectError) {
+        ASSERT_THAT(message, self->mErrorMatcher);
+    }
     self->mError = true;
 }
 
 void DawnTestBase::OnDeviceLost(WGPUDeviceLostReason reason, const char* message, void* userdata) {
+    DawnTestBase* self = static_cast<DawnTestBase*>(userdata);
+    if (self->mExpectDestruction) {
+        EXPECT_EQ(reason, WGPUDeviceLostReason_Destroyed);
+        return;
+    }
     // Using ADD_FAILURE + ASSERT instead of FAIL to prevent the current test from continuing with a
     // corrupt state.
-    ADD_FAILURE() << "Device Lost during test: " << message;
+    ADD_FAILURE() << "Device lost during test: " << message;
     ASSERT(false);
 }
 

@@ -55,7 +55,7 @@ class BrowserDataMigratorTest : public ::testing::Test {
     //     |- Downloads/data          /* ash */
     //     |- FullRestoreData         /* ash */
     //     |- Bookmarks               /* lacros */
-    //     |- Cookies                 /* common */
+    //     |- Cookies                 /* lacros */
     //     |- Affiliation Database/  /* common */
     //         |- data
     //         |- Downloads/data
@@ -111,23 +111,6 @@ class BrowserDataMigratorTest : public ::testing::Test {
   TestingPrefServiceSimple pref_service_;
 };
 
-TEST_F(BrowserDataMigratorTest, IsMigrationRequiredOnWorker) {
-  const std::string user_id_hash = "user";
-  const base::FilePath user_data_dir_path = user_data_dir_.GetPath();
-
-  // Lacros UDD does not exist.
-  EXPECT_TRUE(BrowserDataMigrator::IsMigrationRequiredOnWorker(
-      user_data_dir_path, user_id_hash));
-
-  // Create lacros user data dir.
-  ASSERT_TRUE(base::CreateDirectory(
-      user_data_dir_path.Append("user").Append(kLacrosDir)));
-
-  // Lacros UDD exists.
-  EXPECT_FALSE(BrowserDataMigrator::IsMigrationRequiredOnWorker(
-      user_data_dir_path, user_id_hash));
-}
-
 TEST_F(BrowserDataMigratorTest, ManipulateMigrationAttemptCount) {
   const std::string user_id_hash = "user";
 
@@ -159,9 +142,8 @@ TEST_F(BrowserDataMigratorTest, GetTargetInfo) {
 
   EXPECT_EQ(target_info.ash_data_size, kFileSize * 2 /* expect two files */);
   EXPECT_EQ(target_info.no_copy_data_size, kFileSize /* expect one file */);
-  EXPECT_EQ(target_info.lacros_data_size, kFileSize /* expect one file */);
-  EXPECT_EQ(target_info.common_data_size,
-            kFileSize * 3 /* expect three file */);
+  EXPECT_EQ(target_info.lacros_data_size, kFileSize * 2 /* expect two files */);
+  EXPECT_EQ(target_info.common_data_size, kFileSize * 2 /* expect two file */);
 
   // Check for ash data.
   std::vector<BrowserDataMigrator::TargetItem> expected_ash_data_items = {
@@ -181,18 +163,22 @@ TEST_F(BrowserDataMigratorTest, GetTargetInfo) {
   std::vector<BrowserDataMigrator::TargetItem> expected_lacros_data_items = {
       {from_dir_.Append(kBookmarks), kFileSize,
        BrowserDataMigrator::TargetItem::ItemType::kFile},
+      {from_dir_.Append(kCookies), kFileSize,
+       BrowserDataMigrator::TargetItem::ItemType::kFile},
   };
   ASSERT_EQ(target_info.lacros_data_items.size(),
             expected_lacros_data_items.size());
-  EXPECT_EQ(target_info.lacros_data_items[0], expected_lacros_data_items[0]);
+  std::sort(target_info.lacros_data_items.begin(),
+            target_info.lacros_data_items.end(), TargetItemComparator());
+  for (int i = 0; i < target_info.common_data_items.size(); i++) {
+    SCOPED_TRACE(target_info.lacros_data_items[i].path.value());
+    EXPECT_EQ(target_info.lacros_data_items[i], expected_lacros_data_items[i]);
+  }
 
   // Check for common data.
   std::vector<BrowserDataMigrator::TargetItem> expected_common_data_items = {
-
       {from_dir_.Append(kAffiliationDatabase), kFileSize * 2,
-       BrowserDataMigrator::TargetItem::ItemType::kDirectory},
-      {from_dir_.Append(kCookies), kFileSize,
-       BrowserDataMigrator::TargetItem::ItemType::kFile}};
+       BrowserDataMigrator::TargetItem::ItemType::kDirectory}};
   ASSERT_EQ(target_info.common_data_items.size(),
             expected_common_data_items.size());
   std::sort(target_info.common_data_items.begin(),
@@ -419,6 +405,8 @@ TEST_F(BrowserDataMigratorTest, CancelSetupTmpDir) {
   EXPECT_FALSE(base::PathExists(tmp_dir.Append(kFirstRun)));
   EXPECT_FALSE(
       base::PathExists(tmp_dir.Append(kLacrosProfilePath).Append(kBookmarks)));
+  EXPECT_FALSE(
+      base::PathExists(tmp_dir.Append(kLacrosProfilePath).Append(kCookies)));
 }
 
 TEST_F(BrowserDataMigratorTest, Migrate) {

@@ -120,7 +120,7 @@ static Dav1dPlayRendererPrivateContext*
 }
 
 #ifdef HAVE_PLACEBO_OPENGL
-static void *placebo_renderer_create_gl()
+static void *placebo_renderer_create_gl(void)
 {
     SDL_Window *sdlwin = NULL;
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
@@ -134,7 +134,7 @@ static void *placebo_renderer_create_gl()
     sdlwin = rd_priv_ctx->win;
 
     // Init OpenGL
-    struct pl_opengl_params params = pl_opengl_default_params;
+    struct pl_opengl_params params = { 0 };
 # ifndef NDEBUG
     params.debug = true;
 # endif
@@ -177,7 +177,7 @@ static void *placebo_renderer_create_gl()
 #endif
 
 #ifdef HAVE_PLACEBO_VULKAN
-static void *placebo_renderer_create_vk()
+static void *placebo_renderer_create_vk(void)
 {
     SDL_Window *sdlwin = NULL;
 
@@ -211,7 +211,7 @@ static void *placebo_renderer_create_vk()
             printf("    %s\n", extensions[i]);
     }
 
-    struct pl_vk_inst_params iparams = pl_vk_inst_default_params;
+    struct pl_vk_inst_params iparams = { 0 };
     iparams.extensions = extensions;
     iparams.num_extensions = num;
 
@@ -374,7 +374,7 @@ static int placebo_alloc_pic(Dav1dPicture *const pic, void *cookie)
     assert(rd_priv_ctx != NULL);
 
     SDL_LockMutex(rd_priv_ctx->lock);
-    int ret = pl_allocate_dav1dpicture(pic, rd_priv_ctx->gpu);
+    int ret = pl_allocate_dav1dpicture(pic, (void *) rd_priv_ctx->gpu);
     SDL_UnlockMutex(rd_priv_ctx->lock);
     return ret;
 }
@@ -385,7 +385,7 @@ static void placebo_release_pic(Dav1dPicture *pic, void *cookie)
     assert(rd_priv_ctx != NULL);
 
     SDL_LockMutex(rd_priv_ctx->lock);
-    pl_release_dav1dpicture(pic, rd_priv_ctx->gpu);
+    pl_release_dav1dpicture(pic, (void *) rd_priv_ctx->gpu);
     SDL_UnlockMutex(rd_priv_ctx->lock);
 }
 

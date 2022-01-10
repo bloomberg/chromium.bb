@@ -98,7 +98,7 @@ struct ModuleScopeVarToEntryPointParam::State {
       auto* func_sem = ctx.src->Sem().Get(func_ast);
 
       bool needs_processing = false;
-      for (auto* var : func_sem->ReferencedModuleVariables()) {
+      for (auto* var : func_sem->TransitivelyReferencedGlobals()) {
         if (var->StorageClass() != ast::StorageClass::kNone) {
           needs_processing = true;
           break;
@@ -109,8 +109,8 @@ struct ModuleScopeVarToEntryPointParam::State {
 
         // Find all of the calls to this function that will need to be replaced.
         for (auto* call : func_sem->CallSites()) {
-          auto* call_sem = ctx.src->Sem().Get(call);
-          calls_to_replace[call_sem->Stmt()->Function()].push_back(call);
+          calls_to_replace[call->Stmt()->Function()->Declaration()].push_back(
+              call->Declaration());
         }
       }
     }
@@ -155,7 +155,7 @@ struct ModuleScopeVarToEntryPointParam::State {
         return workgroup_parameter_symbol;
       };
 
-      for (auto* var : func_sem->ReferencedModuleVariables()) {
+      for (auto* var : func_sem->TransitivelyReferencedGlobals()) {
         auto sc = var->StorageClass();
         if (sc == ast::StorageClass::kNone) {
           continue;
@@ -268,7 +268,7 @@ struct ModuleScopeVarToEntryPointParam::State {
         // Replace all uses of the module-scope variable.
         // For non-entry points, dereference non-handle pointer parameters.
         for (auto* user : var->Users()) {
-          if (user->Stmt()->Function() == func_ast) {
+          if (user->Stmt()->Function()->Declaration() == func_ast) {
             const ast::Expression* expr = ctx.dst->Expr(new_var_symbol);
             if (is_pointer) {
               // If this identifier is used by an address-of operator, just
@@ -307,12 +307,13 @@ struct ModuleScopeVarToEntryPointParam::State {
 
       // Pass the variables as pointers to any functions that need them.
       for (auto* call : calls_to_replace[func_ast]) {
-        auto* target = ctx.src->AST().Functions().Find(call->func->symbol);
+        auto* target =
+            ctx.src->AST().Functions().Find(call->target.name->symbol);
         auto* target_sem = ctx.src->Sem().Get(target);
 
         // Add new arguments for any variables that are needed by the callee.
         // For entry points, pass non-handle types as pointers.
-        for (auto* target_var : target_sem->ReferencedModuleVariables()) {
+        for (auto* target_var : target_sem->TransitivelyReferencedGlobals()) {
           auto sc = target_var->StorageClass();
           if (sc == ast::StorageClass::kNone) {
             continue;

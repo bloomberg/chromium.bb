@@ -29,14 +29,7 @@
 
 static int query_formats(AVFilterContext *ctx)
 {
-    AVFilterFormats *formats = NULL;
-    int ret;
-
-    ret = ff_formats_pixdesc_filter(&formats, 0,
-                                    AV_PIX_FMT_FLAG_HWACCEL);
-    if (ret < 0)
-        return ret;
-    return ff_set_common_formats(ctx, formats);
+    return ff_set_common_formats(ctx, ff_formats_pixdesc_filter(0, AV_PIX_FMT_FLAG_HWACCEL));
 }
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
@@ -84,5 +77,5 @@ const AVFilter ff_vf_copy = {
     .description = NULL_IF_CONFIG_SMALL("Copy the input video unchanged to the output."),
     FILTER_INPUTS(avfilter_vf_copy_inputs),
     FILTER_OUTPUTS(avfilter_vf_copy_outputs),
-    .query_formats = query_formats,
+    FILTER_QUERY_FUNC(query_formats),
 };

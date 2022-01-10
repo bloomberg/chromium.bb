@@ -44,21 +44,16 @@ static const AVOption removegrain_options[] = {
 
 AVFILTER_DEFINE_CLASS(removegrain);
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_GRAY8,
-        AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV444P,
-        AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUVA444P,
-        AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_YUV410P,
-        AV_PIX_FMT_YUVJ411P, AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P,
-        AV_PIX_FMT_YUVJ440P, AV_PIX_FMT_YUVJ444P,
-        AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRAP,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_GRAY8,
+    AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUVA444P,
+    AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_YUV410P,
+    AV_PIX_FMT_YUVJ411P, AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P,
+    AV_PIX_FMT_YUVJ440P, AV_PIX_FMT_YUVJ444P,
+    AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRAP,
+    AV_PIX_FMT_NONE
+};
 
 #define REMOVE_GRAIN_SORT_AXIS       \
     const int ma1 = FFMAX(a1, a8);   \
@@ -647,9 +642,9 @@ const AVFilter ff_vf_removegrain = {
     .name          = "removegrain",
     .description   = NULL_IF_CONFIG_SMALL("Remove grain."),
     .priv_size     = sizeof(RemoveGrainContext),
-    .query_formats = query_formats,
     FILTER_INPUTS(removegrain_inputs),
     FILTER_OUTPUTS(removegrain_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .priv_class    = &removegrain_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
 };

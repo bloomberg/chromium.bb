@@ -93,15 +93,11 @@ static av_cold int init(AVFilterContext *ctx)
     return 0;
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_ARGB, AV_PIX_FMT_RGBA, AV_PIX_FMT_ABGR, AV_PIX_FMT_BGRA,
-        AV_PIX_FMT_RGB24, AV_PIX_FMT_BGR24,
-        AV_PIX_FMT_NONE
-    };
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_ARGB, AV_PIX_FMT_RGBA, AV_PIX_FMT_ABGR, AV_PIX_FMT_BGRA,
+    AV_PIX_FMT_RGB24, AV_PIX_FMT_BGR24,
+    AV_PIX_FMT_NONE
+};
 
 static int config_input(AVFilterLink *inlink)
 {
@@ -270,9 +266,9 @@ const AVFilter ff_vf_histeq = {
     .description   = NULL_IF_CONFIG_SMALL("Apply global color histogram equalization."),
     .priv_size     = sizeof(HisteqContext),
     .init          = init,
-    .query_formats = query_formats,
     FILTER_INPUTS(histeq_inputs),
     FILTER_OUTPUTS(histeq_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .priv_class    = &histeq_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

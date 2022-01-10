@@ -6,7 +6,7 @@ import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {fakeRsuChallengeQrCode} from 'chrome://shimless-rma/fake_data.js';
 import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_service.js';
 import {setShimlessRmaServiceForTesting} from 'chrome://shimless-rma/mojo_interface_provider.js';
-import {OnboardingEnterRsuWpDisableCodePageElement} from 'chrome://shimless-rma/onboarding_enter_rsu_wp_disable_code_page.js';
+import {OnboardingEnterRsuWpDisableCodePage} from 'chrome://shimless-rma/onboarding_enter_rsu_wp_disable_code_page.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {flushTasks} from '../../test_util.js';
 
@@ -21,7 +21,7 @@ function suppressedComponentCanvasSize_(component) {
 }
 
 export function onboardingEnterRsuWpDisableCodePageTest() {
-  /** @type {?OnboardingEnterRsuWpDisableCodePageElement} */
+  /** @type {?OnboardingEnterRsuWpDisableCodePage} */
   let component = null;
 
   /** @type {?FakeShimlessRmaService} */
@@ -56,7 +56,7 @@ export function onboardingEnterRsuWpDisableCodePageTest() {
     service.setGetRsuDisableWriteProtectChallengeQrCodeResponse(
         fakeRsuChallengeQrCode);
 
-    component = /** @type {!OnboardingEnterRsuWpDisableCodePageElement} */ (
+    component = /** @type {!OnboardingEnterRsuWpDisableCodePage} */ (
         document.createElement('onboarding-enter-rsu-wp-disable-code-page'));
     assertTrue(!!component);
     document.body.appendChild(component);
@@ -68,27 +68,6 @@ export function onboardingEnterRsuWpDisableCodePageTest() {
     await initializeEnterRsuWpDisableCodePage('rsu challenge', '');
     const rsuCodeComponent = component.shadowRoot.querySelector('#rsuCode');
     assertFalse(rsuCodeComponent.hidden);
-  });
-
-  test('EnterRsuWpDisableCodePageDisplaysChallenge', async () => {
-    let expectedParts = ['rsu &nbsp;', 'chal&nbsp;', 'leng&nbsp;', 'e&nbsp;'];
-    await initializeEnterRsuWpDisableCodePage('rsu challenge', '');
-    const rsuChallengeComponent =
-        component.shadowRoot.querySelector('#rsuChallenge');
-    assertEquals(7, rsuChallengeComponent.childElementCount);
-
-    // Confirm all the parts match the expected challenge.
-    let parts = component.shadowRoot.querySelector('#rsuChallengeParts')
-                    .querySelectorAll('span');
-    for (let i = 0; i < parts.length; i++) {
-      assertEquals(expectedParts[i], parts[i].innerHTML);
-    }
-  });
-
-  test('EnterRsuWpDisableCodePageDisplaysHwid', async () => {
-    await initializeEnterRsuWpDisableCodePage('', 'device hwid');
-    const rsuHwidComponent = component.shadowRoot.querySelector('#rsuHwid');
-    assertEquals('device hwid', rsuHwidComponent.innerHTML);
   });
 
   test('EnterRsuWpDisableCodePageRendersQrCode', async () => {
@@ -131,4 +110,11 @@ export function onboardingEnterRsuWpDisableCodePageTest() {
         assertDeepEquals(savedCode, expectedCode);
         assertDeepEquals(savedResult, expectedResult);
       });
+
+  test('EnterRsuWpDisableCodePageOpenChallengeDialog', async () => {
+    await initializeEnterRsuWpDisableCodePage('', '');
+
+    component.shadowRoot.querySelector('#rsuCodeDialogLink').click();
+    assertTrue(component.shadowRoot.querySelector('#rsuChallengeDialog').open);
+  });
 }

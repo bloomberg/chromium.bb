@@ -32,6 +32,7 @@
 #include "internal.h"
 #include "packet_internal.h"
 #include "atsc_a53.h"
+#include "sei.h"
 
 #if defined(_MSC_VER)
 #define X264_API_IMPORTS 1
@@ -292,6 +293,18 @@ static void reconfig_encoder(AVCodecContext *ctx, const AVFrame *frame)
     }
 }
 
+static void free_picture(AVCodecContext *ctx)
+{
+    X264Context *x4 = ctx->priv_data;
+    x264_picture_t *pic = &x4->pic;
+
+    for (int i = 0; i < pic->extra_sei.num_payloads; i++)
+        av_free(pic->extra_sei.payloads[i].payload);
+    av_freep(&pic->extra_sei.payloads);
+    av_freep(&pic->prop.quant_offsets);
+    pic->extra_sei.num_payloads = 0;
+}
+
 static int X264_frame(AVCodecContext *ctx, AVPacket *pkt, const AVFrame *frame,
                       int *got_packet)
 {
@@ -317,6 +330,9 @@ static int X264_frame(AVCodecContext *ctx, AVPacket *pkt, const AVFrame *frame,
     x4->pic.img.i_plane = avfmt2_num_planes(ctx->pix_fmt);
 
     if (frame) {
+        x264_sei_t *sei = &x4->pic.extra_sei;
+        unsigned int sei_data_size = 0;
+
         for (i = 0; i < x4->pic.img.i_plane; i++) {
             x4->pic.img.plane[i]    = frame->data[i];
             x4->pic.img.i_stride[i] = frame->linesize[i];
@@ -392,15 +408,17 @@ static int X264_frame(AVCodecContext *ctx, AVPacket *pkt, const AVFrame *frame,
                     roi = (const AVRegionOfInterest*)sd->data;
                     roi_size = roi->self_size;
                     if (!roi_size || sd->size % roi_size != 0) {
+                        free_picture(ctx);
                         av_log(ctx, AV_LOG_ERROR, "Invalid AVRegionOfInterest.self_size.\n");
                         return AVERROR(EINVAL);
                     }
                     nb_rois = sd->size / roi_size;
 
-                    qoffsets = av_mallocz_array(mbx * mby, sizeof(*qoffsets));
-                    if (!qoffsets)
+                    qoffsets = av_calloc(mbx * mby, sizeof(*qoffsets));
+                    if (!qoffsets) {
+                        free_picture(ctx);
                         return AVERROR(ENOMEM);
-
+                    }
                     // This list must be iterated in reverse because the first
                     // region in the list applies when regions overlap.
                     for (int i = nb_rois - 1; i >= 0; i--) {
@@ -416,6 +434,7 @@ static int X264_frame(AVCodecContext *ctx, AVPacket *pkt, const AVFrame *frame,
 
                         if (roi->qoffset.den == 0) {
                             av_free(qoffsets);
+                            free_picture(ctx);
                             av_log(ctx, AV_LOG_ERROR, "AVRegionOfInterest.qoffset.den must not be zero.\n");
                             return AVERROR(EINVAL);
                         }
@@ -438,6 +457,30 @@ static int X264_frame(AVCodecContext *ctx, AVPacket *pkt, const AVFrame *frame,
                     }
                 }
             }
+        }
+
+        for (int j = 0; j < frame->nb_side_data; j++) {
+            AVFrameSideData *side_data = frame->side_data[j];
+            void *tmp;
+            x264_sei_payload_t *sei_payload;
+            if (side_data->type != AV_FRAME_DATA_SEI_UNREGISTERED)
+                continue;
+            tmp = av_fast_realloc(sei->payloads, &sei_data_size, (sei->num_payloads + 1) * sizeof(*sei_payload));
+            if (!tmp) {
+                free_picture(ctx);
+                return AVERROR(ENOMEM);
+            }
+            sei->payloads = tmp;
+            sei->sei_free = av_free;
+            sei_payload = &sei->payloads[sei->num_payloads];
+            sei_payload->payload = av_memdup(side_data->data, side_data->size);
+            if (!sei_payload->payload) {
+                free_picture(ctx);
+                return AVERROR(ENOMEM);
+            }
+            sei_payload->payload_size = side_data->size;
+            sei_payload->payload_type = SEI_TYPE_USER_DATA_UNREGISTERED;
+            sei->num_payloads++;
         }
     }
 

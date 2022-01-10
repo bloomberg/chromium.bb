@@ -60,6 +60,8 @@ message AudioDecoderConfig {
     kCodecALAC = 15;
     kCodecAC3 = 16;
     kCodecMpegHAudio = 17;
+    kCodecDTS = 18;
+    kCodecDTSXP2 = 19;
   }
 
   // Proto version of Chrome's media::SampleFormat.
@@ -77,6 +79,8 @@ message AudioDecoderConfig {
     kSampleFormatEac3 = 10;
     kSampleFormatMpegHAudio = 11;
     kSampleFormatPlanarU8 = 12;
+    kSampleFormatDts = 13;
+    kSampleFormatDtsxP2 = 14;
   };
 
   // Proto version of Chrome's media::ChannelLayout.

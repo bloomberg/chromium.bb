@@ -117,29 +117,24 @@ typedef struct ThreadData {
     float progress;
 } ThreadData;
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUVA444P,
-        AV_PIX_FMT_YUVJ444P,
-        AV_PIX_FMT_YUV444P,
-        AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRAP, AV_PIX_FMT_GRAY8,
-        AV_PIX_FMT_YUVA444P9, AV_PIX_FMT_GBRP9,
-        AV_PIX_FMT_YUV444P10,
-        AV_PIX_FMT_YUVA444P10,
-        AV_PIX_FMT_GBRP10, AV_PIX_FMT_GBRAP10, AV_PIX_FMT_GRAY10,
-        AV_PIX_FMT_YUV444P12,
-        AV_PIX_FMT_YUVA444P12,
-        AV_PIX_FMT_GBRP12, AV_PIX_FMT_GBRAP12, AV_PIX_FMT_GRAY12,
-        AV_PIX_FMT_YUV444P14, AV_PIX_FMT_GBRP14,
-        AV_PIX_FMT_YUV444P16,
-        AV_PIX_FMT_YUVA444P16,
-        AV_PIX_FMT_GBRP16, AV_PIX_FMT_GBRAP16, AV_PIX_FMT_GRAY16,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_YUVA444P,
+    AV_PIX_FMT_YUVJ444P,
+    AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRAP, AV_PIX_FMT_GRAY8,
+    AV_PIX_FMT_YUVA444P9, AV_PIX_FMT_GBRP9,
+    AV_PIX_FMT_YUV444P10,
+    AV_PIX_FMT_YUVA444P10,
+    AV_PIX_FMT_GBRP10, AV_PIX_FMT_GBRAP10, AV_PIX_FMT_GRAY10,
+    AV_PIX_FMT_YUV444P12,
+    AV_PIX_FMT_YUVA444P12,
+    AV_PIX_FMT_GBRP12, AV_PIX_FMT_GBRAP12, AV_PIX_FMT_GRAY12,
+    AV_PIX_FMT_YUV444P14, AV_PIX_FMT_GBRP14,
+    AV_PIX_FMT_YUV444P16,
+    AV_PIX_FMT_YUVA444P16,
+    AV_PIX_FMT_GBRP16, AV_PIX_FMT_GBRAP16, AV_PIX_FMT_GRAY16,
+    AV_PIX_FMT_NONE
+};
 
 static av_cold void uninit(AVFilterContext *ctx)
 {
@@ -1717,10 +1712,6 @@ static int config_output(AVFilterLink *outlink)
     XFadeContext *s = ctx->priv;
     const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get(inlink0->format);
 
-    if (inlink0->format != inlink1->format) {
-        av_log(ctx, AV_LOG_ERROR, "inputs must be of same pixel format\n");
-        return AVERROR(EINVAL);
-    }
     if (inlink0->w != inlink1->w || inlink0->h != inlink1->h) {
         av_log(ctx, AV_LOG_ERROR, "First input link %s parameters "
                "(size %dx%d) do not match the corresponding "
@@ -2005,10 +1996,10 @@ const AVFilter ff_vf_xfade = {
     .description   = NULL_IF_CONFIG_SMALL("Cross fade one video with another video."),
     .priv_size     = sizeof(XFadeContext),
     .priv_class    = &xfade_class,
-    .query_formats = query_formats,
     .activate      = xfade_activate,
     .uninit        = uninit,
     FILTER_INPUTS(xfade_inputs),
     FILTER_OUTPUTS(xfade_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .flags         = AVFILTER_FLAG_SLICE_THREADS,
 };

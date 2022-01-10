@@ -157,8 +157,8 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     for name in ('LC_ALL', 'LC_MESSAGES', 'LANG'):
       encoding = 'en_US.UTF-8'
       if env.get(name, encoding) != encoding:
-        logging.warn('Overriding env[%s]=="%s" with default value "%s"',
-                     name, env[name], encoding)
+        logging.warning('Overriding env[%s]=="%s" with default value "%s"',
+                        name, env[name], encoding)
       env[name] = 'en_US.UTF-8'
 
     self.LogStartCommand(cmd, env)
@@ -243,8 +243,7 @@ class DesktopBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
       # We assume that if there are more than 10 symbols the executable is not
       # stripped.
       return num_symbols < 10
-    else:
-      return False
+    return False
 
   def _GetStackFromMinidump(self, minidump):
     # Create an executable-specific directory if necessary to store symbols

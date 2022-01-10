@@ -131,12 +131,24 @@ extern "C" {
 #define AOM_NO_RETURN
 #endif
 
+// Tells the compiler to perform `printf` format string checking if the
+// compiler supports it; see the 'format' attribute in
+// <https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html>.
+#define AOM_TOOLS_FORMAT_PRINTF(string_index, first_to_check)
+#if defined(__has_attribute)
+#if __has_attribute(format)
+#undef AOM_TOOLS_FORMAT_PRINTF
+#define AOM_TOOLS_FORMAT_PRINTF(string_index, first_to_check) \
+  __attribute__((__format__(__printf__, string_index, first_to_check)))
+#endif
+#endif
+
 /* Sets a stdio stream into binary mode */
 FILE *set_binary_mode(FILE *stream);
 
-AOM_NO_RETURN void die(const char *fmt, ...);
-AOM_NO_RETURN void fatal(const char *fmt, ...);
-void aom_tools_warn(const char *fmt, ...);
+AOM_NO_RETURN void die(const char *fmt, ...) AOM_TOOLS_FORMAT_PRINTF(1, 2);
+AOM_NO_RETURN void fatal(const char *fmt, ...) AOM_TOOLS_FORMAT_PRINTF(1, 2);
+void aom_tools_warn(const char *fmt, ...) AOM_TOOLS_FORMAT_PRINTF(1, 2);
 
 AOM_NO_RETURN void die_codec(aom_codec_ctx_t *ctx, const char *s);
 

@@ -13,7 +13,7 @@ Easy to integrate Vulkan memory allocation library.
 **Build status:**
 
 - Windows: [![Build status](https://ci.appveyor.com/api/projects/status/4vlcrb0emkaio2pn/branch/master?svg=true)](https://ci.appveyor.com/project/adam-sawicki-amd/vulkanmemoryallocator/branch/master)  
-- Linux: [![Build Status](https://travis-ci.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.svg?branch=master)](https://travis-ci.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
+- Linux: [![Build Status](https://app.travis-ci.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.svg?branch=master)](https://app.travis-ci.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
 
 # Problem
 
@@ -60,10 +60,12 @@ Additional features:
 - Convert this JSON dump into a picture to visualize your memory. See [tools/VmaDumpVis](tools/VmaDumpVis/README.md).
 - Debugging incorrect memory usage: Enable initialization of all allocated memory with a bit pattern to detect usage of uninitialized or freed memory. Enable validation of a magic number before and after every allocation to detect out-of-bounds memory corruption.
 - Record and replay sequence of calls to library functions to a file to check correctness, measure performance, and gather statistics.
+- Support for interoperability with OpenGL.
+- Virtual allocator: Interface for using core allocation algorithm to allocate any custom data, e.g. pieces of one large buffer.
 
 # Prequisites
 
-- Self-contained C++ library in single header file. No external dependencies other than standard C and C++ library and of course Vulkan. STL containers are not used by default.
+- Self-contained C++ library in single header file. No external dependencies other than standard C and C++ library and of course Vulkan. Some features of C++11 used. STL containers are not used by default.
 - Public interface in C, in same convention as Vulkan API. Implementation in C++.
 - Error handling implemented by returning `VkResult` error codes - same way as in Vulkan.
 - Interface documented using Doxygen-style comments.
@@ -165,6 +167,6 @@ See **[Documentation](https://gpuopen-librariesandsdks.github.io/VulkanMemoryAll
 - **[VulkanMemoryAllocator-Hpp](https://github.com/malte-v/VulkanMemoryAllocator-Hpp)** - C++ binding for this library. License: CC0-1.0.
 - **[PyVMA](https://github.com/realitix/pyvma)** - Python wrapper for this library. Author: Jean-Sébastien B. (@realitix). License: Apache 2.0.
 - **[vk-mem](https://github.com/gwihlidal/vk-mem-rs)** - Rust binding for this library. Author: Graham Wihlidal. License: Apache 2.0 or MIT.
-- **[Haskell bindings](https://hackage.haskell.org/package/VulkanMemoryAllocator)**, **[github](https://github.com/expipiplus1/vulkan/tree/master/VulkanMemoryAllocator)** - Haskell bindings for this library. Author: Joe Hermaszewski (@expipiplus1). License BSD-3-Clause.
+- **[Haskell bindings](https://hackage.haskell.org/package/VulkanMemoryAllocator)**, **[github](https://github.com/expipiplus1/vulkan/tree/master/VulkanMemoryAllocator)** - Haskell bindings for this library. Author: Ellie Hermaszewska (@expipiplus1). License BSD-3-Clause.
 - **[vma_sample_sdl](https://github.com/rextimmy/vma_sample_sdl)** - SDL port of the sample app of this library (with the goal of running it on multiple platforms, including MacOS). Author: @rextimmy. License: MIT.
 - **[vulkan-malloc](https://github.com/dylanede/vulkan-malloc)** - Vulkan memory allocation library for Rust. Based on version 1 of this library. Author: Dylan Ede (@dylanede). License: MIT / Apache 2.0.

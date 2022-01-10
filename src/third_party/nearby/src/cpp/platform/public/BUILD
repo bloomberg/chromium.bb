@@ -29,6 +29,7 @@ cc_library(
         "cancelable_alarm.h",
         "cancellable_task.h",
         "condition_variable.h",
+        "core_config.h",
         "count_down_latch.h",
         "crypto.h",
         "file.h",
@@ -75,6 +76,7 @@ cc_library(
     srcs = [
         "ble.cc",
         "bluetooth_classic.cc",
+        "file.cc",
         "wifi_lan.cc",
     ],
     hdrs = [
@@ -88,6 +90,7 @@ cc_library(
     copts = ["-DCORE_ADAPTER_DLL"],
     visibility = [
         "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
+        "//analytics:__subpackages__",
         "//core:__subpackages__",
         "//platform/public:__pkg__",
     ],

@@ -50,9 +50,17 @@ def _CommonChecks(input_api, output_api):
   pylint_checks = input_api.canned_checks.GetPylint(
       input_api,
       output_api,
+      version='2.7',
       # pylint complains about Checkfreeze not being defined, its probably
       # finding a different PRESUBMIT.py
       files_to_skip=['PRESUBMIT_test.py'],
+      # Disabling certain python3-specific warnings until the conversion
+      # is complete.
+      disabled_warnings=[
+          'super-with-arguments',
+          'raise-missing-from',
+          'useless-object-inheritance',
+      ],
   )
   results.extend(input_api.RunTests(pylint_checks))
 

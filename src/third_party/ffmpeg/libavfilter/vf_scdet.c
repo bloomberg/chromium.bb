@@ -59,23 +59,18 @@ static const AVOption scdet_options[] = {
 
 AVFILTER_DEFINE_CLASS(scdet);
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-            AV_PIX_FMT_RGB24, AV_PIX_FMT_BGR24, AV_PIX_FMT_RGBA,
-            AV_PIX_FMT_ABGR, AV_PIX_FMT_BGRA, AV_PIX_FMT_GRAY8,
-            AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUVJ420P,
-            AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUVJ422P,
-            AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUVJ440P,
-            AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUVJ444P,
-            AV_PIX_FMT_YUV420P9, AV_PIX_FMT_YUV420P10, AV_PIX_FMT_YUV420P12,
-            AV_PIX_FMT_YUV422P9, AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV422P12,
-            AV_PIX_FMT_YUV444P9, AV_PIX_FMT_YUV444P10, AV_PIX_FMT_YUV444P12,
-            AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+        AV_PIX_FMT_RGB24, AV_PIX_FMT_BGR24, AV_PIX_FMT_RGBA,
+        AV_PIX_FMT_ABGR, AV_PIX_FMT_BGRA, AV_PIX_FMT_GRAY8,
+        AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUVJ420P,
+        AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUVJ422P,
+        AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUVJ440P,
+        AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUVJ444P,
+        AV_PIX_FMT_YUV420P9, AV_PIX_FMT_YUV420P10, AV_PIX_FMT_YUV420P12,
+        AV_PIX_FMT_YUV422P9, AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV422P12,
+        AV_PIX_FMT_YUV444P9, AV_PIX_FMT_YUV444P10, AV_PIX_FMT_YUV444P12,
+        AV_PIX_FMT_NONE
+};
 
 static int config_input(AVFilterLink *inlink)
 {
@@ -211,8 +206,8 @@ const AVFilter ff_vf_scdet = {
     .priv_size     = sizeof(SCDetContext),
     .priv_class    = &scdet_class,
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(scdet_inputs),
     FILTER_OUTPUTS(scdet_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .activate      = activate,
 };

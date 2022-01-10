@@ -890,7 +890,7 @@ void GarbageObject::destroy(RendererVk *renderer)
             break;
     }
 
-    renderer->getActiveHandleCounts().onDeallocate(mHandleType);
+    renderer->onDeallocateHandle(mHandleType);
 }
 
 void MakeDebugUtilsLabel(GLenum source, const char *marker, VkDebugUtilsLabelEXT *label)
@@ -1017,6 +1017,9 @@ PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHR = nullptr;
 // VK_EXT_external_memory_host
 PFN_vkGetMemoryHostPointerPropertiesEXT vkGetMemoryHostPointerPropertiesEXT = nullptr;
 
+// VK_EXT_host_query_reset
+PFN_vkResetQueryPoolEXT vkResetQueryPoolEXT = nullptr;
+
 // VK_EXT_transform_feedback
 PFN_vkCmdBindTransformFeedbackBuffersEXT vkCmdBindTransformFeedbackBuffersEXT = nullptr;
 PFN_vkCmdBeginTransformFeedbackEXT vkCmdBeginTransformFeedbackEXT             = nullptr;
@@ -1080,6 +1083,9 @@ PFN_vkCreateStreamDescriptorSurfaceGGP vkCreateStreamDescriptorSurfaceGGP = null
             vkName = reinterpret_cast<PFN_##vkName>(vkGetDeviceProcAddr(device, #vkName)); \
             ASSERT(vkName);                                                                \
         } while (0)
+
+// VK_KHR_shared_presentable_image
+PFN_vkGetSwapchainStatusKHR vkGetSwapchainStatusKHR = nullptr;
 
 void InitDebugUtilsEXTFunctions(VkInstance instance)
 {
@@ -1158,6 +1164,11 @@ void InitExternalMemoryHostFunctions(VkInstance instance)
     GET_INSTANCE_FUNC(vkGetMemoryHostPointerPropertiesEXT);
 }
 
+void InitHostQueryResetFunctions(VkInstance instance)
+{
+    GET_INSTANCE_FUNC(vkGetMemoryHostPointerPropertiesEXT);
+}
+
 // VK_KHR_get_memory_requirements2
 void InitGetMemoryRequirements2KHRFunctions(VkDevice device)
 {
@@ -1189,6 +1200,12 @@ void InitExternalFenceFdFunctions(VkInstance instance)
 void InitExternalSemaphoreCapabilitiesFunctions(VkInstance instance)
 {
     GET_INSTANCE_FUNC(vkGetPhysicalDeviceExternalSemaphorePropertiesKHR);
+}
+
+// VK_KHR_shared_presentable_image
+void InitGetSwapchainStatusKHRFunctions(VkDevice device)
+{
+    GET_DEVICE_FUNC(vkGetSwapchainStatusKHR);
 }
 
 #    undef GET_INSTANCE_FUNC
@@ -1607,6 +1624,7 @@ vk::LevelIndex GetLevelIndex(gl::LevelIndex levelGL, gl::LevelIndex baseLevel)
     ASSERT(baseLevel <= levelGL);
     return vk::LevelIndex(levelGL.get() - baseLevel.get());
 }
+
 }  // namespace gl_vk
 
 namespace vk_gl

@@ -30,11 +30,12 @@
 namespace dawn_native {
 
     RenderEncoderBase::RenderEncoderBase(DeviceBase* device,
+                                         const char* label,
                                          EncodingContext* encodingContext,
                                          Ref<AttachmentState> attachmentState,
                                          bool depthReadOnly,
                                          bool stencilReadOnly)
-        : ProgrammablePassEncoder(device, encodingContext),
+        : ProgrammableEncoder(device, label, encodingContext),
           mIndirectDrawMetadata(device->GetLimits()),
           mAttachmentState(std::move(attachmentState)),
           mDisableBaseVertex(device->IsToggleEnabled(Toggle::DisableBaseVertex)),
@@ -46,10 +47,16 @@ namespace dawn_native {
     RenderEncoderBase::RenderEncoderBase(DeviceBase* device,
                                          EncodingContext* encodingContext,
                                          ErrorTag errorTag)
-        : ProgrammablePassEncoder(device, encodingContext, errorTag),
+        : ProgrammableEncoder(device, encodingContext, errorTag),
           mIndirectDrawMetadata(device->GetLimits()),
           mDisableBaseVertex(device->IsToggleEnabled(Toggle::DisableBaseVertex)),
           mDisableBaseInstance(device->IsToggleEnabled(Toggle::DisableBaseInstance)) {
+    }
+
+    void RenderEncoderBase::DestroyImpl() {
+        // Remove reference to the attachment state so that we don't have lingering references to
+        // it preventing it from being uncached in the device.
+        mAttachmentState = nullptr;
     }
 
     const AttachmentState* RenderEncoderBase::GetAttachmentState() const {
@@ -285,17 +292,6 @@ namespace dawn_native {
 
                     uint64_t remainingSize = bufferSize - offset;
 
-                    // Temporarily treat 0 as undefined for size, and give a warning
-                    // TODO(dawn:1058): Remove this if block
-                    if (size == 0) {
-                        size = wgpu::kWholeSize;
-                        GetDevice()->EmitDeprecationWarning(
-                            "Using size=0 to indicate default binding size for setIndexBuffer "
-                            "is deprecated. In the future it will result in a zero-size binding. "
-                            "Use `undefined` (wgpu::kWholeSize) or just omit the parameter "
-                            "instead.");
-                    }
-
                     if (size == wgpu::kWholeSize) {
                         size = remainingSize;
                     } else {
@@ -352,17 +348,6 @@ namespace dawn_native {
                                     offset, bufferSize, buffer);
 
                     uint64_t remainingSize = bufferSize - offset;
-
-                    // Temporarily treat 0 as undefined for size, and give a warning
-                    // TODO(dawn:1058): Remove this if block
-                    if (size == 0) {
-                        size = wgpu::kWholeSize;
-                        GetDevice()->EmitDeprecationWarning(
-                            "Using size=0 to indicate default binding size for setVertexBuffer "
-                            "is deprecated. In the future it will result in a zero-size binding. "
-                            "Use `undefined` (wgpu::kWholeSize) or just omit the parameter "
-                            "instead.");
-                    }
 
                     if (size == wgpu::kWholeSize) {
                         size = remainingSize;

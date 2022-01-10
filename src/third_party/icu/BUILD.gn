@@ -92,6 +92,12 @@ config("icu_code") {
         # Ignore some msvc warnings here because V8 still supports msvc.
         "/wd4244",  # Conversion: possible loss of data.
       ]
+      defines += [
+        # https://crbug.com/1274247
+        # <ctgmath> is deprecated in C++17, but ICU still uses it, so we should
+        # silence the warning for now.
+        "_SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING"
+      ]
     }
   } else if (is_linux || is_chromeos || is_android || icu_is_in_fuchsia) {
     cflags += [ "-Wno-unused-function" ]

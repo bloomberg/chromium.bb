@@ -17,7 +17,7 @@ import {
   kTextureFormatInfo,
   kValidTextureFormatsForCopyE2T,
 } from '../../capability_info.js';
-import { CopyToTextureUtils } from '../../util/copy_to_texture.js';
+import { CopyToTextureUtils, isFp16Format } from '../../util/copy_to_texture.js';
 import { kTexelRepresentationInfo } from '../../util/texture/texel_data.js';
 
 enum Color {
@@ -206,7 +206,8 @@ g.test('from_ImageData')
       },
       { width: imageBitmap.width, height: imageBitmap.height, depthOrArrayLayers: 1 },
       dstBytesPerPixel,
-      expectedPixels
+      expectedPixels,
+      isFp16Format(dstColorFormat)
     );
   });
 
@@ -302,6 +303,7 @@ g.test('from_canvas')
       },
       { width: imageBitmap.width, height: imageBitmap.height, depthOrArrayLayers: 1 },
       dstBytesPerPixel,
-      expectedPixels
+      expectedPixels,
+      isFp16Format(dstColorFormat)
     );
   });

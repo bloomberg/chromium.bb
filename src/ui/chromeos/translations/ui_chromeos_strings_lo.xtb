@@ -305,13 +305,13 @@
 <translation id="3620292326130836921">ສຳ​ຮອງ​ທັງ​ໝົດ​ແລ້ວ!</translation>
 <translation id="3634507049637220048">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ຈັດການໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ, ລາຍລະອຽດ</translation>
 <translation id="3645233063072417428">ຍ້າຍ <ph name="NUMBER_OF_ITEMS" /> ລາຍການແລ້ວ.</translation>
-<translation id="3645531960514756307">ຖອດປັກໝຸດໂຟນເດີ</translation>
 <translation id="3685122418104378273">ການ​ຊິງ​ຄ໌ Google Drive ປິດ​ໃຊ້​ງານ​ໂດຍ​ມາດ​ຕະ​ຖານ​ແລ້ວ, ເມື່ອ​ກຳ​ລັງ​ໃຊ້​ຂໍ້​ມູນ​ມື​ຖື.</translation>
 <translation id="3689865792480713551">ຍົກເລີກ <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3690128548376345212">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, ບໍ່ໄດ້ເປີດໃຊ້, <ph name="CONNECTION_STATUS" />, ຄວາມແຮງສັນຍານ <ph name="SIGNAL_STRENGTH" />%, ລາຍລະອຽດ</translation>
 <translation id="3691184985318546178">ພາສາຊິນຮາລາ</translation>
 <translation id="3726463242007121105">ບໍ່ສາມາດເປີດອຸປະກອນນີ້ໄດ້ ເພາະວ່າລະບົບໄຟລ໌ຂອງມັນບໍ່ຮອງຮັບ.</translation>
 <translation id="3727148787322499904">ການປ່ຽນການຕັ້ງຄ່ານີ້ຈະມີຜົນຕໍ່ກັບທຸກເຄືອຂ່າຍທີ່ໃຊ້ຮ່ວມກັນ</translation>
+<translation id="3737576078404241332">ລຶບອອກຈາກແຖບດ້ານຂ້າງ</translation>
 <translation id="3741243925913727067">ສຳ​ຮອງ​ຮູບ ແລະ​ວິ​ດີ​ໂອ​ຂອງ​ອຸ​ປະ​ກອນ​ມີ​ເດຍ​ຂອງ​ທ່ານ​ໃສ່ Google Drive.</translation>
 <translation id="3749289110408117711">ຊື່​ໄຟລ​໌</translation>
 <translation id="3780536599611287598">ທ່ານບໍ່ມີການອະນຸຍາດຍ້າຍໄຟລ໌ໄປໃສ່ '<ph name="FOLDER_NAME" />'.</translation>
@@ -372,6 +372,7 @@
 <translation id="4326142238881453352">ນັກພຶກສາສາດ</translation>
 <translation id="4326192123064055915">ກາ​ເຟ</translation>
 <translation id="4336032328163998280">ກັອບປີ້ການດໍາເນີນການບໍ່ສໍາເລັດ. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4340491671558548972">ເພີ່ມໃສ່ແຖບດ້ານຂ້າງ</translation>
 <translation id="4348495354623233847">ພາສາເຄີດໂຊຣານີທີ່ໃຊ້ແປ້ນພິມແບບອາຣັບ</translation>
 <translation id="4363958938297989186">ພາສາຣັດເຊຍທີ່ໃຊ້ແປ້ນພິມຕາມການອອກສຽງ</translation>
 <translation id="4364327530094270451">ໝາກໂມ</translation>
@@ -926,7 +927,6 @@
 <translation id="9110990317705400362">ພວກເຮົາກໍາລັງຊອກຫາວິທີເຮັດໃຫ້ການທ່ອງເວັບຂອງທ່ານມີຄວາມປອດໄພກ່ວາ​ເກົ່າຢ່າງຕໍ່ເນື່ອງ. ກ່ອນນັ້ນ, ເວັບໄຊທ໌ໃດໜຶ່ງສາມາດເຕືອນໃຫ້ທ່ານເພີມສ່ວນຂະຫຍາຍເຂົ້າໃສ່ບຣາວເຊີຂອງທ່ານ. ຢູ່ໃນ Google Chrome ລຸ້ນຫຼ້າສຸດ, ທ່ານບອກ Chrome ຢ່າງຈະແຈ້ງວ່າ ທ່ານຕ້ອງການຕິດຕັ້ງສ່ວນຂະຫຍາຍນີ້ໂດຍການເພີ່ມພວກມັນຜ່ານໜ້າສ່ວນຂະຫຍາຍ. <ph name="BEGIN_LINK" />ຮຽນຮູ້ເພີ່ມເຕີມ<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">ປົດລັອກ</translation>
 <translation id="912419004897138677">Codec</translation>
-<translation id="9129931661813833980">ປັກໝຸດໂຟນເດີ</translation>
 <translation id="9130775360844693113">ສະມາຊິກຂອງ '<ph name="DESTINATION_NAME" />' ຈະມີການເຂົ້າເຖິງລາຍການເຫຼົ່ານີ້.</translation>
 <translation id="9131598836763251128">ເລືອກໜຶ່ງ ຫຼືຫຼາຍໄຟລ໌</translation>
 <translation id="9133055936679483811">ການຊິບບໍ່ສໍາເລັດ. <ph name="ERROR_MESSAGE" /></translation>

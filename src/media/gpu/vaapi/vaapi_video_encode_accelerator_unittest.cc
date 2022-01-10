@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
+#include "media/gpu/gpu_video_encode_accelerator_helpers.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/gpu/vaapi/vp9_svc_layers.h"
@@ -124,8 +125,7 @@ MATCHER_P2(MatchesEncoderInfo,
     if (fps_allocation.back() != kFullFramerate)
       return false;
     if (fps_allocation.size() != 1 &&
-        fps_allocation !=
-            VP9SVCLayers::GetFpsAllocation(num_of_temporal_layers)) {
+        fps_allocation != GetFpsAllocation(num_of_temporal_layers)) {
       return false;
     }
   }
@@ -608,6 +608,7 @@ class VaapiVideoEncodeAcceleratorTest
           .WillOnce(Return(kEncodedChunkSize));
       EXPECT_CALL(*mock_encoder_, BitrateControlUpdate(kEncodedChunkSize))
           .WillOnce(Return());
+
       EXPECT_CALL(*mock_encoder_, GetMetadata(_, _))
           .WillOnce(
               WithArgs<0, 1>([](const VaapiVideoEncoderDelegate::EncodeJob& job,
@@ -620,6 +621,11 @@ class VaapiVideoEncodeAcceleratorTest
                                    ->metadata_for_encoding;
                 return metadata;
               }));
+    }
+
+    for (size_t i = 0; i < num_spatial_layers; ++i) {
+      const VABufferID kCodedBufferId = kCodedBufferIds[i];
+      const uint64_t kEncodedChunkSize = kEncodedChunkSizes[i];
       EXPECT_CALL(
           *mock_vaapi_wrapper_,
           DownloadFromVABuffer(kCodedBufferId, _, _, output_buffer_size_, _))

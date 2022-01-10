@@ -245,7 +245,6 @@ inline bool IsLittleEndian()
 
 #define GL_A1RGB5_ANGLEX 0x6AC5
 #define GL_BGRX8_ANGLEX 0x6ABA
-#define GL_RGBX8_ANGLEX 0x6AFA
 #define GL_BGR565_ANGLEX 0x6ABB
 #define GL_BGRA4_ANGLEX 0x6ABC
 #define GL_BGR5_A1_ANGLEX 0x6ABD
@@ -436,4 +435,31 @@ inline bool IsLittleEndian()
 #    define ANGLE_FALLTHROUGH
 #endif
 
+// Compiler configs.
+inline bool IsASan()
+{
+#if defined(ANGLE_WITH_ASAN)
+    return true;
+#else
+    return false;
+#endif  // defined(ANGLE_WITH_ASAN)
+}
+
+inline bool IsTSan()
+{
+#if defined(ANGLE_WITH_TSAN)
+    return true;
+#else
+    return false;
+#endif  // defined(ANGLE_WITH_TSAN)
+}
+
+inline bool IsUBSan()
+{
+#if defined(ANGLE_WITH_UBSAN)
+    return true;
+#else
+    return false;
+#endif  // defined(ANGLE_WITH_UBSAN)
+}
 #endif  // COMMON_ANGLEUTILS_H_

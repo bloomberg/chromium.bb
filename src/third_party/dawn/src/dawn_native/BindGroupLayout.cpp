@@ -374,7 +374,7 @@ namespace dawn_native {
                                              const BindGroupLayoutDescriptor* descriptor,
                                              PipelineCompatibilityToken pipelineCompatibilityToken,
                                              ApiObjectBase::UntrackedByDeviceTag tag)
-        : ApiObjectBase(device, kLabelNotImplemented),
+        : ApiObjectBase(device, descriptor->label),
           mBindingInfo(BindingIndex(descriptor->entryCount)),
           mPipelineCompatibilityToken(pipelineCompatibilityToken) {
         std::vector<BindGroupLayoutEntry> sortedBindings(
@@ -418,13 +418,11 @@ namespace dawn_native {
 
     BindGroupLayoutBase::~BindGroupLayoutBase() = default;
 
-    bool BindGroupLayoutBase::DestroyApiObject() {
-        bool wasDestroyed = ApiObjectBase::DestroyApiObject();
-        if (wasDestroyed && IsCachedReference()) {
-            // Do not uncache the actual cached object if we are a blueprint or already destroyed.
+    void BindGroupLayoutBase::DestroyImpl() {
+        if (IsCachedReference()) {
+            // Do not uncache the actual cached object if we are a blueprint.
             GetDevice()->UncacheBindGroupLayout(this);
         }
-        return wasDestroyed;
     }
 
     // static
@@ -551,6 +549,20 @@ namespace dawn_native {
         return {{bufferData, GetBufferCount()},
                 {bindings, GetBindingCount()},
                 {unverifiedBufferSizes, mBindingCounts.unverifiedBufferCount}};
+    }
+
+    bool BindGroupLayoutBase::IsStorageBufferBinding(BindingIndex bindingIndex) const {
+        ASSERT(bindingIndex < GetBufferCount());
+        switch (GetBindingInfo(bindingIndex).buffer.type) {
+            case wgpu::BufferBindingType::Uniform:
+                return false;
+            case kInternalStorageBufferBinding:
+            case wgpu::BufferBindingType::Storage:
+            case wgpu::BufferBindingType::ReadOnlyStorage:
+                return true;
+            case wgpu::BufferBindingType::Undefined:
+                UNREACHABLE();
+        }
     }
 
 }  // namespace dawn_native

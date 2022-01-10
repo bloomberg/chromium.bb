@@ -1338,21 +1338,34 @@ void av1_upscale_normative_and_extend_frame(const AV1_COMMON *cm,
   aom_extend_frame_borders(dst, num_planes);
 }
 
-YV12_BUFFER_CONFIG *av1_scale_if_required(
+YV12_BUFFER_CONFIG *av1_realloc_and_scale_if_required(
     AV1_COMMON *cm, YV12_BUFFER_CONFIG *unscaled, YV12_BUFFER_CONFIG *scaled,
     const InterpFilter filter, const int phase, const bool use_optimized_scaler,
-    const bool for_psnr) {
+    const bool for_psnr, const int border_in_pixels,
+    const bool alloc_y_buffer_8bit) {
   // If scaling is performed for the sole purpose of calculating PSNR, then our
   // target dimensions are superres upscaled width/height. Otherwise our target
   // dimensions are coded width/height.
-  const bool scaling_required =
-      for_psnr ? (cm->superres_upscaled_width != unscaled->y_crop_width ||
-                  cm->superres_upscaled_height != unscaled->y_crop_height)
-               : (cm->width != unscaled->y_crop_width ||
-                  cm->height != unscaled->y_crop_height);
+  const int scaled_width = for_psnr ? cm->superres_upscaled_width : cm->width;
+  const int scaled_height =
+      for_psnr ? cm->superres_upscaled_height : cm->height;
+  const bool scaling_required = (scaled_width != unscaled->y_crop_width) ||
+                                (scaled_height != unscaled->y_crop_height);
 
   if (scaling_required) {
     const int num_planes = av1_num_planes(cm);
+    const SequenceHeader *seq_params = cm->seq_params;
+
+    // Reallocate the frame buffer based on the target dimensions when scaling
+    // is required.
+    if (aom_realloc_frame_buffer(
+            scaled, scaled_width, scaled_height, seq_params->subsampling_x,
+            seq_params->subsampling_y, seq_params->use_highbitdepth,
+            border_in_pixels, cm->features.byte_alignment, NULL, NULL, NULL,
+            alloc_y_buffer_8bit))
+      aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
+                         "Failed to allocate scaled buffer");
+
 #if CONFIG_AV1_HIGHBITDEPTH
     if (use_optimized_scaler && cm->seq_params->bit_depth == AOM_BITS_8) {
       av1_resize_and_extend_frame(unscaled, scaled, filter, phase, num_planes);

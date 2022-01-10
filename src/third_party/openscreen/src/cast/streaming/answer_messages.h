@@ -99,9 +99,6 @@ struct DisplayDescription {
 };
 
 struct Answer {
-  // TODO(jophba): DEPRECATED, remove separately.
-  static bool ParseAndValidate(const Json::Value& value, Answer* out);
-
   static bool TryParse(const Json::Value& value, Answer* out);
   Json::Value ToJson() const;
   bool IsValid() const;

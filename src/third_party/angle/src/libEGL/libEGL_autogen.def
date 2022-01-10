@@ -115,6 +115,9 @@ EXPORTS
     ; EGL_ANGLE_sync_control_rate
     eglGetMscRateANGLE
 
+    ; EGL_ANGLE_vulkan_image
+    eglExportVkImageANGLE
+
     ; EGL_CHROMIUM_sync_control
     eglGetSyncValuesCHROMIUM
 
@@ -142,6 +145,11 @@ EXPORTS
     ; EGL_KHR_image
     eglCreateImageKHR
     eglDestroyImageKHR
+
+    ; EGL_KHR_lock_surface3
+    eglLockSurfaceKHR
+    eglQuerySurface64KHR
+    eglUnlockSurfaceKHR
 
     ; EGL_KHR_reusable_sync
     eglSignalSyncKHR

@@ -146,15 +146,11 @@ function (set_if_not_defined name value)
     endif()
 endfunction()
 
-option_if_not_defined(SWIFTSHADER_BUILD_EGL "Build the EGL library" TRUE)
-option_if_not_defined(SWIFTSHADER_BUILD_GLESv2 "Build the OpenGL ES 2 library" TRUE)
-option_if_not_defined(SWIFTSHADER_BUILD_VULKAN "Build the Vulkan library" TRUE)
 option_if_not_defined(SWIFTSHADER_BUILD_WSI_WAYLAND "Build the Wayland WSI support" FALSE)
 option_if_not_defined(SWIFTSHADER_BUILD_WSI_DIRECTFB "Build the DirectFB WSI support" FALSE)
 option_if_not_defined(SWIFTSHADER_BUILD_WSI_D2D "Build the Direct-to-Display WSI support" FALSE)
 option_if_not_defined(SWIFTSHADER_BUILD_PVR "Build the PowerVR examples" TRUE)
 option_if_not_defined(SWIFTSHADER_GET_PVR "Check out the PowerVR submodule" FALSE)
-option_if_not_defined(SWIFTSHADER_BUILD_ANGLE "Build angle" FALSE)
 
 option_if_not_defined(SWIFTSHADER_USE_GROUP_SOURCES "Group the source files in a folder tree for Visual Studio" TRUE)
 
@@ -179,13 +175,7 @@ option_if_not_defined(SWIFTSHADER_LESS_DEBUG_INFO "Generate less debug info to r
 option_if_not_defined(SWIFTSHADER_ENABLE_VULKAN_DEBUGGER "Enable Vulkan debugger support" FALSE)
 option_if_not_defined(SWIFTSHADER_ENABLE_ASTC "Enable ASTC compressed textures support" TRUE)  # TODO(b/150130101)
 
-set(BUILD_MARL ${SWIFTSHADER_BUILD_VULKAN})
-
-if(${SWIFTSHADER_BUILD_VULKAN} AND ${SWIFTSHADER_ENABLE_VULKAN_DEBUGGER})
-    set_if_not_defined(SWIFTSHADER_BUILD_CPPDAP TRUE)
-else()
-    set_if_not_defined(SWIFTSHADER_BUILD_CPPDAP FALSE)
-endif()
+set_if_not_defined(SWIFTSHADER_BUILD_CPPDAP ${SWIFTSHADER_ENABLE_VULKAN_DEBUGGER})
 
 set(DEFAULT_REACTOR_BACKEND "LLVM")
 set(REACTOR_BACKEND ${DEFAULT_REACTOR_BACKEND} CACHE STRING "JIT compiler back-end used by Reactor")
@@ -277,10 +267,6 @@ endif()
 if(SWIFTSHADER_BUILD_CPPDAP)
     InitSubmodule(json ${THIRD_PARTY_DIR}/json)
     InitSubmodule(cppdap ${THIRD_PARTY_DIR}/cppdap)
-endif()
-
-if(SWIFTSHADER_BUILD_ANGLE)
-    InitSubmodule(angle ${THIRD_PARTY_DIR}/angle/angle)
 endif()
 
 ###########################################################
@@ -419,9 +405,11 @@ if(MSVC)
     # Treat specific warnings as errors
     list(APPEND SWIFTSHADER_COMPILE_OPTIONS
         "/we4018" # 'expression' : signed/unsigned mismatch
+        "/we4062" # enumerator 'identifier' in switch of enum 'enumeration' is not handled
         "/we4471" # 'enumeration': a forward declaration of an unscoped enumeration must have an underlying type (int assumed)
         "/we4838" # conversion from 'type_1' to 'type_2' requires a narrowing conversion
         "/we5038" # data member 'member1' will be initialized after data member 'member2' data member 'member' will be initialized after base class 'base_class'
+        "/we4101" # 'identifier' : unreferenced local variable
     )
 else()
     # Explicitly enable these warnings.
@@ -447,6 +435,8 @@ else()
             "-Wextra-semi"
             "-Wignored-qualifiers"
             "-Wdeprecated-copy"  # implicit copy constructor for 'X' is deprecated because of user-declared copy assignment operator.
+            # TODO(b/208256248): Avoid exit-time destructor.
+            #"-Wexit-time-destructors"  # declaration requires an exit-time destructor
         )
     endif()
 
@@ -540,8 +530,6 @@ else()
 
     set_cpp_flag("-DNDEBUG" RELEASE)
     set_cpp_flag("-DNDEBUG" RELWITHDEBINFO)
-    set_cpp_flag("-DANGLE_DISABLE_TRACE" RELEASE)
-    set_cpp_flag("-DANGLE_DISABLE_TRACE" RELWITHDEBINFO)
 
     # Put each variable and function in its own section so that when linking
     # with -gc-sections unused functions and variables are removed.
@@ -674,11 +662,9 @@ set_target_properties(subzero PROPERTIES FOLDER "third_party")
 ###########################################################
 # marl
 ###########################################################
-if(BUILD_MARL)
-    set(MARL_THIRD_PARTY_DIR ${THIRD_PARTY_DIR})
-    add_subdirectory(${THIRD_PARTY_DIR}/marl)
-    set_target_properties(marl PROPERTIES FOLDER "third_party")
-endif()
+set(MARL_THIRD_PARTY_DIR ${THIRD_PARTY_DIR})
+add_subdirectory(${THIRD_PARTY_DIR}/marl)
+set_target_properties(marl PROPERTIES FOLDER "third_party")
 
 if(MARL_THREAD_SAFETY_ANALYSIS_SUPPORTED)
     list(APPEND SWIFTSHADER_COMPILE_OPTIONS "-Wthread-safety")
@@ -764,102 +750,66 @@ else()
     message(FATAL_ERROR "REACTOR_BACKEND must be 'LLVM' or 'Subzero'")
 endif()
 
-add_subdirectory(src/Common) # Add gl_common target
-add_subdirectory(src/Main) # Add gl_main target
-add_subdirectory(src/Shader) # Add gl_shader target
-add_subdirectory(src/Renderer) # Add gl_renderer target
-
-# Combine all gl_* targets into an interface target
-# along with other dependencies
-add_library(gl_swiftshader_core INTERFACE)
-target_link_libraries(gl_swiftshader_core INTERFACE
-    # Transitively depends on shader, main, core, Reactor,
-    # OS_LIBS and SWIFTSHADER_LIBS
-    gl_renderer
-)
-
-add_subdirectory(src/OpenGL/common EXCLUDE_FROM_ALL) # Add libGLESCommon target
-add_subdirectory(src/OpenGL/compiler EXCLUDE_FROM_ALL) # Add GLCompiler target
-
-if(SWIFTSHADER_BUILD_EGL)
-    add_subdirectory(src/OpenGL/libEGL) # Add libEGL target
+if (NOT TARGET SPIRV-Tools)
+    # This variable is also used by SPIRV-Tools to locate SPIRV-Headers
+    set(SPIRV-Headers_SOURCE_DIR "${THIRD_PARTY_DIR}/SPIRV-Headers")
+    set(SPIRV_SKIP_TESTS TRUE CACHE BOOL "" FORCE)
+    set(SPIRV_SKIP_EXECUTABLES TRUE CACHE BOOL "" FORCE)
+    add_subdirectory(${THIRD_PARTY_DIR}/SPIRV-Tools) # Add SPIRV-Tools target
 endif()
 
-if(SWIFTSHADER_BUILD_GLESv2)
-    add_subdirectory(src/OpenGL/libGLESv2) # Add libGLESv2 target
+# Add a vk_base interface library for shared vulkan build options.
+# TODO: Create src/Base and make this a lib target, and move stuff from
+# src/Vulkan into it that is needed by vk_pipeline, vk_device, and vk_wsi.
+add_library(vk_base INTERFACE)
+
+if(SWIFTSHADER_ENABLE_VULKAN_DEBUGGER)
+    target_compile_definitions(vk_base INTERFACE "ENABLE_VK_DEBUGGER")
 endif()
 
-if(SWIFTSHADER_BUILD_VULKAN)
-    if (NOT TARGET SPIRV-Tools)
-        # This variable is also used by SPIRV-Tools to locate SPIRV-Headers
-        set(SPIRV-Headers_SOURCE_DIR "${THIRD_PARTY_DIR}/SPIRV-Headers")
-        set(SPIRV_SKIP_TESTS TRUE CACHE BOOL "" FORCE)
-        add_subdirectory(${THIRD_PARTY_DIR}/SPIRV-Tools) # Add SPIRV-Tools target
+if(WIN32)
+    target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_WIN32_KHR")
+elseif(LINUX)
+    if(X11)
+        target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_XLIB_KHR")
     endif()
-
-    # Add a vk_base interface library for shared vulkan build options.
-    # TODO: Create src/Base and make this a lib target, and move stuff from
-    # src/Vulkan into it that is needed by vk_pipeline, vk_device, and vk_wsi.
-    add_library(vk_base INTERFACE)
-
-    if(SWIFTSHADER_ENABLE_VULKAN_DEBUGGER)
-        target_compile_definitions(vk_base INTERFACE "ENABLE_VK_DEBUGGER")
+    if(XCB)
+        target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_XCB_KHR")
     endif()
-
-    if(WIN32)
-        target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_WIN32_KHR")
-    elseif(LINUX)
-        if(X11)
-            target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_XLIB_KHR")
+    if(SWIFTSHADER_BUILD_WSI_WAYLAND)
+        if(WAYLAND)
+            target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_WAYLAND_KHR")
         endif()
-        if(XCB)
-            target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_XCB_KHR")
+    endif(SWIFTSHADER_BUILD_WSI_WAYLAND)
+    if(SWIFTSHADER_BUILD_WSI_DIRECTFB)
+        if(DIRECTFB AND DIRECTFB_INCLUDE_DIR)
+            target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_DIRECTFB_EXT")
         endif()
-        if(SWIFTSHADER_BUILD_WSI_WAYLAND)
-            if(WAYLAND)
-                target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_WAYLAND_KHR")
-            endif()
-        endif(SWIFTSHADER_BUILD_WSI_WAYLAND)
-        if(SWIFTSHADER_BUILD_WSI_DIRECTFB)
-            if(DIRECTFB AND DIRECTFB_INCLUDE_DIR)
-                target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_DIRECTFB_EXT")
-            endif()
-        endif(SWIFTSHADER_BUILD_WSI_DIRECTFB)
-        if(SWIFTSHADER_BUILD_WSI_D2D)
-            if(D2D)
-                target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_DISPLAY_KHR")
-            endif()
-        endif(SWIFTSHADER_BUILD_WSI_D2D)
-    elseif(APPLE)
-        target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_MACOS_MVK")
-    elseif(FUCHSIA)
-        target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_FUCHSIA")
-    else()
-        message(FATAL_ERROR "Platform does not support Vulkan yet")
-    endif()
-
-    add_subdirectory(src/System) # Add vk_system target
-    add_subdirectory(src/Pipeline) # Add vk_pipeline target
-    add_subdirectory(src/WSI) # Add vk_wsi target
-    add_subdirectory(src/Device) # Add vk_device target
-    add_subdirectory(src/Vulkan) # Add vk_swiftshader target
-
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND # turbo-cov is only useful for clang coverage info
-       SWIFTSHADER_EMIT_COVERAGE)
-        add_subdirectory(${TESTS_DIR}/regres/cov/turbo-cov)
-    endif()
-
+    endif(SWIFTSHADER_BUILD_WSI_DIRECTFB)
+    if(SWIFTSHADER_BUILD_WSI_D2D)
+        if(D2D)
+            target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_DISPLAY_KHR")
+        endif()
+    endif(SWIFTSHADER_BUILD_WSI_D2D)
+elseif(APPLE)
+    target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_MACOS_MVK")
+    target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_METAL_EXT")
+elseif(FUCHSIA)
+    target_compile_definitions(vk_base INTERFACE "VK_USE_PLATFORM_FUCHSIA")
+else()
+    message(FATAL_ERROR "Platform does not support Vulkan yet")
 endif()
 
-if(SWIFTSHADER_BUILD_ANGLE)
-    add_subdirectory(${THIRD_PARTY_DIR}/angle)
+add_subdirectory(src/System) # Add vk_system target
+add_subdirectory(src/Pipeline) # Add vk_pipeline target
+add_subdirectory(src/WSI) # Add vk_wsi target
+add_subdirectory(src/Device) # Add vk_device target
+add_subdirectory(src/Vulkan) # Add vk_swiftshader target
 
-    # Make angle depend on vk_swiftshader so we can test SWANGLE
-    if (TARGET vk_swiftshader)
-        add_dependencies(angle vk_swiftshader)
-    endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND # turbo-cov is only useful for clang coverage info
+    SWIFTSHADER_EMIT_COVERAGE)
+    add_subdirectory(${TESTS_DIR}/regres/cov/turbo-cov)
 endif()
-
 
 ###########################################################
 # Sample programs and tests
@@ -881,6 +831,10 @@ if(HAVE_PVR_SUBMODULE AND SWIFTSHADER_BUILD_PVR)
     endif()
 
     set(PVR_BUILD_EXAMPLES TRUE CACHE BOOL "Build the PowerVR SDK Examples" FORCE)
+    set(PVR_BUILD_OPENGLES_EXAMPLES FALSE CACHE BOOL "Build the OpenGLES PowerVR SDK Examples" FORCE)
+    set(PVR_BUILD_VULKAN_EXAMPLES TRUE CACHE BOOL "Build the Vulkan PowerVR SDK Examples" FORCE)
+    set(PVR_BUILD_OPENCL_EXAMPLES FALSE CACHE BOOL "Build the OpenCL PowerVR SDK Examples" FORCE)
+    set(PVR_BUILD_OPENGLES2_EXAMPLES FALSE CACHE BOOL "Only build OpenGL ES 2.0 examples" FORCE)
     add_subdirectory(${THIRD_PARTY_DIR}/PowerVR_Examples)
 
     # Samples known to work well
@@ -899,12 +853,6 @@ if(HAVE_PVR_SUBMODULE AND SWIFTSHADER_BUILD_PVR)
         VulkanSkinning
     )
 
-    set(PVR_GLES_TARGET_GOOD
-        OpenGLESHelloAPI
-        OpenGLESIntroducingPVRUtils
-        OpenGLESNavigation2D
-    )
-
     set(PVR_VULKAN_TARGET_OTHER
         VulkanDeferredShading
         VulkanDeferredShadingPFX
@@ -921,39 +869,17 @@ if(HAVE_PVR_SUBMODULE AND SWIFTSHADER_BUILD_PVR)
         VulkanPVRScopeRemote
     )
 
-    set(PVR_GLES_TARGET_OTHER
-        OpenGLESDeferredShading
-        OpenGLESGaussianBlur
-        OpenGLESImageBasedLighting
-        OpenGLESIMGFramebufferDownsample
-        OpenGLESIMGTextureFilterCubic
-        OpenGLESIntroducingPVRCamera
-        OpenGLESIntroducingPVRShell
-        OpenGLESIntroducingUIRenderer
-        OpenGLESMultiviewVR
-        OpenGLESNavigation3D
-        OpenGLESOpenCLExample
-        OpenGLESParticleSystem
-        OpenGLESPostProcessing
-        OpenGLESPVRScopeExample
-        OpenGLESPVRScopeRemote
-        OpenGLESSkinning
-    )
-
     set(PVR_TARGET_OTHER
         glslang
         glslangValidator
         glslang-default-resource-limits
-        OGLCompiler
         OSDependent
-        OpenCLMatrixMultiplication
         pugixml
         PVRAssets
         PVRCamera
         PVRCore
         PVRPfx
         PVRShell
-        PVRUtilsGles
         PVRUtilsVk
         PVRVk
         SPIRV
@@ -967,34 +893,17 @@ if(HAVE_PVR_SUBMODULE AND SWIFTSHADER_BUILD_PVR)
         ${PVR_VULKAN_TARGET_OTHER}
     )
 
-    set(PVR_GLES_TARGET
-        ${PVR_GLES_TARGET_GOOD}
-        ${PVR_GLES_TARGET_OTHER}
-    )
-
     foreach(pvr_target ${PVR_VULKAN_TARGET})
         add_dependencies(${pvr_target} vk_swiftshader)
     endforeach()
 
-    foreach(pvr_target ${PVR_GLES_TARGET})
-        add_dependencies(${pvr_target} libGLESv2_deprecated)
-        add_dependencies(${pvr_target} libEGL_deprecated)
-    endforeach()
-
-    foreach(pvr_target ${PVR_VULKAN_TARGET_GOOD} ${PVR_GLES_TARGET_GOOD})
+    foreach(pvr_target ${PVR_VULKAN_TARGET_GOOD})
         set_target_properties(${pvr_target} PROPERTIES FOLDER Samples)
     endforeach()
 
-    foreach(pvr_target ${PVR_TARGET_OTHER} ${PVR_VULKAN_TARGET_OTHER} ${PVR_GLES_TARGET_OTHER})
+    foreach(pvr_target ${PVR_TARGET_OTHER} ${PVR_VULKAN_TARGET_OTHER})
         set_target_properties(${pvr_target} PROPERTIES FOLDER Samples/PowerVR-Build)
     endforeach()
-
-    # Make angle target depend on PowerVR GL examples
-    if (TARGET angle)
-        foreach(pvr_target ${PVR_GLES_TARGET})
-            add_dependencies(angle ${pvr_target})
-        endforeach()
-    endif()
 endif()
 
 if(BUILD_VULKAN_WRAPPER)
@@ -1006,7 +915,6 @@ endif()
 
 if(SWIFTSHADER_BUILD_TESTS)
     add_subdirectory(${TESTS_DIR}/ReactorUnitTests) # Add ReactorUnitTests target
-    add_subdirectory(${TESTS_DIR}/GLESUnitTests) # Add gles-unittests target
     add_subdirectory(${TESTS_DIR}/MathUnitTests) # Add math-unittests target
     add_subdirectory(${TESTS_DIR}/SystemUnitTests) # Add system-unittests target
 endif()
@@ -1024,6 +932,6 @@ if(SWIFTSHADER_BUILD_BENCHMARKS)
     add_subdirectory(${TESTS_DIR}/VulkanBenchmarks) # Add VulkanBenchmarks target
 endif()
 
-if(SWIFTSHADER_BUILD_TESTS AND SWIFTSHADER_BUILD_VULKAN)
+if(SWIFTSHADER_BUILD_TESTS)
     add_subdirectory(${TESTS_DIR}/VulkanUnitTests) # Add VulkanUnitTests target
 endif()

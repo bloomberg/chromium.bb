@@ -80,7 +80,7 @@ class PivotTableHeader implements m.ClassComponent<PivotTableHeaderAttrs> {
           'td',
           {
             class: pivotTable.isLoadingQuery ? 'disabled' : '',
-            draggable: pivotTable.isLoadingQuery ? false : true,
+            draggable: !pivotTable.isLoadingQuery,
             ondragstart: (e: DragEvent) => {
               helper.selectedColumnOnDrag(e, isPivot, column.index);
             },
@@ -129,10 +129,10 @@ class ExpandableCell implements m.ClassComponent<ExpandableCellAttrs> {
           'expand_less' :
           'expand_more';
     }
-    let spinnerVsibility = 'hidden';
+    let spinnerVisibility = 'hidden';
     let animationState = 'paused';
     if (row.loadingColumn === column.name) {
-      spinnerVsibility = 'visible';
+      spinnerVisibility = 'visible';
       animationState = 'running';
     }
     const padValue = new Array(row.depth * 2).join(' ');
@@ -183,8 +183,10 @@ class ExpandableCell implements m.ClassComponent<ExpandableCellAttrs> {
         ' ',
         // Adds a loading spinner while querying the expanded column.
         m('.pivot-table-spinner', {
-          style:
-              {visibility: spinnerVsibility, animationPlayState: animationState}
+          style: {
+            visibility: spinnerVisibility,
+            animationPlayState: animationState
+          }
         }));
   }
 }
@@ -211,21 +213,17 @@ class PivotTableRow implements m.ClassComponent<PivotTableRowAttrs> {
               {pivotTableId, row, column, rowIndices, expandedRowColumns}));
         continue;
       }
-      let indentationLevel = 0;
-      let expandIconSpace = 0;
-      if (column.aggregation !== undefined) {
-        indentationLevel = rowIndices.length - 1;
-      } else {
-        indentationLevel = row.depth;
-        if (row.depth > 0 && column.isStackColumn) {
-          expandIconSpace = 3;
-        }
-      }
-      // For each indentation level add 2 spaces, if we have an expansion button
-      // add 3 spaces to cover the icon size.
+
       let value = row.row[column.name]!.toString();
-      value = value.padStart(
-          (indentationLevel * 2) + expandIconSpace + value.length, ' ');
+      if (column.aggregation === undefined) {
+        // For each indentation level add 2 spaces, if we have an expansion
+        // button add 3 spaces to cover the icon size.
+        let padding = 2 * row.depth;
+        if (row.depth > 0 && column.isStackColumn) {
+          padding += 3;
+        }
+        value = value.padStart(padding + value.length, ' ');
+      }
       cells.push(m('td.allow-white-space', value));
     }
     return m('tr', cells);

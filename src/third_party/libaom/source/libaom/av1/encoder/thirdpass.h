@@ -19,17 +19,43 @@ extern "C" {
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/ratectrl.h"
 
+struct AV1_COMP;
+
 // TODO(bohanli): optimize this number
-#define MAX_THIRD_PASS_BUF (2 * MAX_GF_INTERVAL + 1)
+#define MAX_THIRD_PASS_BUF \
+  (AOMMAX((2 * MAX_GF_INTERVAL + 1), MAX_STATIC_GF_GROUP_LENGTH))
+
+// Struct to store useful information related to a GOP, in addition to what is
+// available in the bitstream
+typedef struct {
+  int gf_length;
+  int num_frames;
+  int use_arf;
+} THIRD_PASS_GOP_INFO;
+
+typedef struct {
+  BLOCK_SIZE bsize;
+  PARTITION_TYPE partition;
+  int mi_row_start;
+  int mi_col_start;
+  int_mv mv[2];
+  MV_REFERENCE_FRAME ref_frame[2];
+} THIRD_PASS_MI_INFO;
 
 // Struct to store useful information about a frame for the third pass.
 // The members are extracted from the decoder by function get_frame_info.
 typedef struct {
+  int width;
+  int height;
+  int mi_stride;
+  int mi_rows;
+  int mi_cols;
   int base_q_idx;
   int is_show_existing_frame;
   int is_show_frame;
   FRAME_TYPE frame_type;
   unsigned int order_hint;
+  THIRD_PASS_MI_INFO *mi_info;
 } THIRD_PASS_FRAME_INFO;
 
 typedef struct {
@@ -65,6 +91,7 @@ typedef struct {
   int frame_info_count;
   // the end of the previous GOP (order hint)
   int prev_gop_end;
+  THIRD_PASS_GOP_INFO gop_info;
 } THIRD_PASS_DEC_CTX;
 
 void av1_init_thirdpass_ctx(AV1_COMMON *cm, THIRD_PASS_DEC_CTX **ctx,
@@ -75,12 +102,50 @@ void av1_free_thirdpass_ctx(THIRD_PASS_DEC_CTX *ctx);
 // TODO(bohanli): this is currently a skeleton and we only return the gop
 // length. This function also saves all frame information in the array
 // ctx->frame_info for this GOP.
-void av1_set_gop_third_pass(THIRD_PASS_DEC_CTX *ctx, GF_GROUP *gf_group,
-                            int order_hint_bits, int *gf_len);
+void av1_set_gop_third_pass(THIRD_PASS_DEC_CTX *ctx);
 
 // Pop one frame out of the array ctx->frame_info. This function is used to make
 // sure that frame_info[0] always corresponds to the current frame.
 void av1_pop_third_pass_info(THIRD_PASS_DEC_CTX *ctx);
+
+// Write the current GOP information into the second pass log file.
+void av1_write_second_pass_gop_info(struct AV1_COMP *cpi);
+
+// Read the next GOP information from the second pass log file.
+void av1_read_second_pass_gop_info(struct AV1_COMP *cpi,
+                                   THIRD_PASS_GOP_INFO *gop_info);
+
+int av1_check_use_arf(THIRD_PASS_DEC_CTX *ctx);
+
+// Calculate the ratio of third pass frame dimensions over second pass frame
+// dimensions. Return them in ratio_h and ratio_w.
+void av1_get_third_pass_ratio(THIRD_PASS_DEC_CTX *ctx, int fidx, int fheight,
+                              int fwidth, double *ratio_h, double *ratio_w);
+
+// Get the pointer to a second pass mi info, where mi_row and mi_col are the mi
+// location in the thirdpass frame.
+THIRD_PASS_MI_INFO *av1_get_third_pass_mi(THIRD_PASS_DEC_CTX *ctx, int fidx,
+                                          int mi_row, int mi_col,
+                                          double ratio_h, double ratio_w);
+
+// Get the adjusted MVs of this_mi, associated with the reference frame. If no
+// MV is found with the reference frame, INVALID_MV is returned.
+int_mv av1_get_third_pass_adjusted_mv(THIRD_PASS_MI_INFO *this_mi,
+                                      double ratio_h, double ratio_w,
+                                      MV_REFERENCE_FRAME frame);
+
+// Get the adjusted block size of this_mi.
+BLOCK_SIZE av1_get_third_pass_adjusted_blk_size(THIRD_PASS_MI_INFO *this_mi,
+                                                double ratio_h, double ratio_w);
+
+// Get the adjusted mi position in the third pass frame, of a given
+// third_pass_mi. Location is returned in mi_row and mi_col.
+void av1_third_pass_get_adjusted_mi(THIRD_PASS_MI_INFO *third_pass_mi,
+                                    double ratio_h, double ratio_w, int *mi_row,
+                                    int *mi_col);
+
+PARTITION_TYPE av1_third_pass_get_sb_part_type(THIRD_PASS_DEC_CTX *ctx,
+                                               THIRD_PASS_MI_INFO *this_mi);
 
 #ifdef __cplusplus
 }  // extern "C"

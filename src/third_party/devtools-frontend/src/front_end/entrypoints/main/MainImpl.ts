@@ -139,19 +139,47 @@ export class MainImpl {
 
   private async loaded(): Promise<void> {
     console.timeStamp('Main._loaded');
-    await Root.Runtime.appStarted;
     Root.Runtime.Runtime.setPlatform(Host.Platform.platform());
     const prefs = await new Promise<{[key: string]: string}>(resolve => {
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.getPreferences(resolve);
     });
 
     console.timeStamp('Main._gotPreferences');
+    this.initializeGlobalsForLayoutTests();
     this.createSettings(prefs);
     await this.requestAndRegisterLocaleData();
 
-    Host.userMetrics.syncSetting(Common.Settings.Settings.instance().moduleSetting<boolean>('sync_preferences').get());
+    if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.SYNC_SETTINGS)) {
+      Host.userMetrics.syncSetting(
+          Common.Settings.Settings.instance().moduleSetting<boolean>('sync_preferences').get());
+    }
 
     this.createAppUI();
+  }
+
+  private initializeGlobalsForLayoutTests(): void {
+    // @ts-ignore layout test global
+    self.Common = self.Common || {};
+    // @ts-ignore layout test global
+    self.UI = self.UI || {};
+    // @ts-ignore layout test global
+    self.UI.panels = self.UI.panels || {};
+    // @ts-ignore layout test global
+    self.SDK = self.SDK || {};
+    // @ts-ignore layout test global
+    self.Bindings = self.Bindings || {};
+    // @ts-ignore layout test global
+    self.Persistence = self.Persistence || {};
+    // @ts-ignore layout test global
+    self.Workspace = self.Workspace || {};
+    // @ts-ignore layout test global
+    self.Extensions = self.Extensions || {};
+    // @ts-ignore e2e test global
+    self.Host = self.Host || {};
+    // @ts-ignore e2e test global
+    self.Host.userMetrics = self.Host.userMetrics || Host.userMetrics;
+    // @ts-ignore e2e test global
+    self.Host.UserMetrics = self.Host.UserMetrics || Host.UserMetrics;
   }
 
   async requestAndRegisterLocaleData(): Promise<void> {
@@ -270,9 +298,6 @@ export class MainImpl {
         'keyboardShortcutEditor', 'Enable keyboard shortcut editor', true,
         'https://developer.chrome.com/blog/new-in-devtools-88/#keyboard-shortcuts');
 
-    // Back-forward cache
-    Root.Runtime.experiments.register('bfcacheDebugging', 'Enable back-forward cache debugging support');
-
     // Timeline
     Root.Runtime.experiments.register('timelineEventInitiators', 'Timeline: event initiators');
     Root.Runtime.experiments.register('timelineInvalidationTracking', 'Timeline: invalidation tracking', true);
@@ -336,11 +361,14 @@ export class MainImpl {
         'Enable CSS <length> authoring tool in the Styles pane (https://goo.gle/length-feedback)', undefined,
         'https://developer.chrome.com/blog/new-in-devtools-96/#length');
 
+    // Display precise changes in the Changes tab.
+    Root.Runtime.experiments.register('preciseChanges', 'Display more precise changes in the Changes tab');
+
     Root.Runtime.experiments.enableExperimentsByDefault([
       'sourceOrderViewer',
       'hideIssuesFeature',
-      'bfcacheDebugging',
       'cssTypeComponentLength',
+      'preciseChanges',
       Root.Runtime.ExperimentName.SYNC_SETTINGS,
     ]);
 
@@ -978,5 +1006,3 @@ export class ReloadActionDelegate implements UI.ActionRegistration.ActionDelegat
     return false;
   }
 }
-
-new MainImpl();

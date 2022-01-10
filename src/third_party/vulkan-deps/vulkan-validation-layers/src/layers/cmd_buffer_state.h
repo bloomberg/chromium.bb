@@ -167,11 +167,7 @@ struct CBVertexBufferBindingInfo {
     std::vector<BufferBinding> vertex_buffer_bindings;
 };
 
-typedef subresource_adapter::BothRangeMap<VkImageLayout, 16> GlobalImageLayoutRangeMap;
-typedef layer_data::unordered_map<VkImage, layer_data::optional<GlobalImageLayoutRangeMap>> GlobalImageLayoutMap;
-
-typedef layer_data::unordered_map<VkImage, layer_data::optional<ImageSubresourceLayoutMap>> CommandBufferImageLayoutMap;
-
+typedef layer_data::unordered_map<const IMAGE_STATE *, layer_data::optional<ImageSubresourceLayoutMap>> CommandBufferImageLayoutMap;
 
 class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
   public:
@@ -262,7 +258,7 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     layer_data::unordered_set<std::shared_ptr<FRAMEBUFFER_STATE>> framebuffers;
     // Unified data structs to track objects bound to this command buffer as well as object
     //  dependencies that have been broken : either destroyed objects, or updated descriptor sets
-    layer_data::unordered_set<VulkanTypedHandle> object_bindings;
+    BASE_NODE::NodeSet object_bindings;
     layer_data::unordered_map<VulkanTypedHandle, LogObjectList> broken_bindings;
 
     QFOTransferBarrierSets<QFOBufferTransferBarrier> qfo_transfer_buffer_barriers;
@@ -282,14 +278,15 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     // If secondary, the primary command buffers we will be called by.
     layer_data::unordered_set<CMD_BUFFER_STATE *> linkedCommandBuffers;
     // Validation functions run at primary CB queue submit time
-    std::vector<std::function<bool(const ValidationStateTracker *device_data, const class QUEUE_STATE *queue_state)>>
-        queue_submit_functions;
+    using QueueCallback = std::function<bool(const ValidationStateTracker &device_data, const class QUEUE_STATE &queue_state,
+                                             const CMD_BUFFER_STATE &cb_state)>;
+    std::vector<QueueCallback> queue_submit_functions;
     // Used by some layers to defer actions until vkCmdEndRenderPass time.
     // Layers using this are responsible for inserting the callbacks into queue_submit_functions.
-    std::vector<std::function<bool(const ValidationStateTracker *device_data, const class QUEUE_STATE *queue_state)>>
-        queue_submit_functions_after_render_pass;
+    std::vector<QueueCallback> queue_submit_functions_after_render_pass;
     // Validation functions run when secondary CB is executed in primary
-    std::vector<std::function<bool(const CMD_BUFFER_STATE *, const FRAMEBUFFER_STATE *)>> cmd_execute_commands_functions;
+    std::vector<std::function<bool(const CMD_BUFFER_STATE &secondary, const CMD_BUFFER_STATE *primary, const FRAMEBUFFER_STATE *)>>
+        cmd_execute_commands_functions;
     std::vector<
         std::function<bool(const ValidationStateTracker *device_data, bool do_validate, EventToStageMap *localEventToStageMap)>>
         eventUpdates;
@@ -344,8 +341,9 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
 
     void ResetPushConstantDataIfIncompatible(const PIPELINE_LAYOUT_STATE *pipeline_layout_state);
 
+    const ImageSubresourceLayoutMap *GetImageSubresourceLayoutMap(const IMAGE_STATE &image_state) const;
     ImageSubresourceLayoutMap *GetImageSubresourceLayoutMap(const IMAGE_STATE &image_state);
-    const ImageSubresourceLayoutMap *GetImageSubresourceLayoutMap(VkImage image) const;
+    const CommandBufferImageLayoutMap& GetImageSubresourceLayoutMap() const;
 
     const QFOTransferBarrierSets<QFOImageTransferBarrier> &GetQFOBarrierSets(const QFOImageTransferBarrier &type_tag) const {
         return qfo_transfer_image_barriers;
@@ -404,6 +402,8 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     void NextSubpass(CMD_TYPE cmd_type, VkSubpassContents contents);
     void EndRenderPass(CMD_TYPE cmd_type);
 
+    void BeginRendering(CMD_TYPE cmd_type, const VkRenderingInfoKHR *pRenderingInfo);
+
     void ExecuteCommands(uint32_t commandBuffersCount, const VkCommandBuffer *pCommandBuffers);
 
     void UpdateLastBoundDescriptorSets(VkPipelineBindPoint pipeline_bind_point, const PIPELINE_LAYOUT_STATE *pipeline_layout,
@@ -445,8 +445,26 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     void Submit(uint32_t perf_submit_pass);
     void Retire(uint32_t perf_submit_pass);
 
+    uint32_t GetDynamicColorAttachmentCount() {
+        if (activeRenderPass) {
+            if (activeRenderPass->use_dynamic_rendering_inherited) {
+                return activeRenderPass->inheritance_rendering_info.colorAttachmentCount;
+            }
+            if (activeRenderPass->use_dynamic_rendering) {
+                return activeRenderPass->dynamic_rendering_begin_rendering_info.colorAttachmentCount;
+            }
+        }
+        return 0;
+    }
+    uint32_t GetDynamicColorAttachmentImageIndex(uint32_t index) { return index; }
+    uint32_t GetDynamicColorResolveAttachmentImageIndex(uint32_t index) { return index + GetDynamicColorAttachmentCount(); }
+    uint32_t GetDynamicDepthAttachmentImageIndex() { return 2 * GetDynamicColorAttachmentCount(); }
+    uint32_t GetDynamicDepthResolveAttachmentImageIndex() { return 2 * GetDynamicColorAttachmentCount() + 1; }
+    uint32_t GetDynamicStencilAttachmentImageIndex() { return 2 * GetDynamicColorAttachmentCount() + 2; }
+    uint32_t GetDynamicStencilResolveAttachmentImageIndex() { return 2 * GetDynamicColorAttachmentCount() + 3; }
+
   protected:
-    void NotifyInvalidate(const LogObjectList &invalid_handles, bool unlink) override;
+    void NotifyInvalidate(const BASE_NODE::NodeList &invalid_nodes, bool unlink) override;
     void UpdateAttachmentsView(const VkRenderPassBeginInfo *pRenderPassBegin);
 };
 

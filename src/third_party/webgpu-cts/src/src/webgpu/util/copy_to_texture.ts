@@ -1,8 +1,19 @@
 import { GPUTest } from '../gpu_test.js';
 
-import { checkElementsEqual } from './check_contents.js';
+import { checkElementsEqual, checkElementsBetween } from './check_contents.js';
 import { align } from './math.js';
 import { kBytesPerRowAlignment } from './texture/layout.js';
+
+export function isFp16Format(format: GPUTextureFormat): boolean {
+  switch (format) {
+    case 'r16float':
+    case 'rg16float':
+    case 'rgba16float':
+      return true;
+    default:
+      return false;
+  }
+}
 
 export class CopyToTextureUtils extends GPUTest {
   // TODO(crbug.com/dawn/868): Should be possible to consolidate this along with texture checking
@@ -11,7 +22,8 @@ export class CopyToTextureUtils extends GPUTest {
     expected: ArrayBufferView,
     width: number,
     height: number,
-    bytesPerPixel: number
+    bytesPerPixel: number,
+    isFp16: boolean
   ): void {
     const exp = new Uint8Array(expected.buffer, expected.byteOffset, expected.byteLength);
     const rowPitch = align(width * bytesPerPixel, kBytesPerRowAlignment);
@@ -29,7 +41,8 @@ export class CopyToTextureUtils extends GPUTest {
         width,
         height,
         rowPitch,
-        bytesPerPixel
+        bytesPerPixel,
+        isFp16
       );
       if (check !== undefined) {
         niceStack.message = check;
@@ -46,15 +59,30 @@ export class CopyToTextureUtils extends GPUTest {
     width: number,
     height: number,
     rowPitch: number,
-    bytesPerPixel: number
+    bytesPerPixel: number,
+    isFp16: boolean
   ): string | undefined {
     const bytesPerRow = width * bytesPerPixel;
-    for (let y = 0; y < height; ++y) {
-      const checkResult = checkElementsEqual(
-        actual.subarray(y * rowPitch, bytesPerRow),
-        exp.subarray(y * bytesPerRow, bytesPerRow)
-      );
-      if (checkResult !== undefined) return `on row ${y}: ${checkResult}`;
+    // When dst format is fp16 formats, the expectation and real result always has 1 bit difference in the ending
+    // (e.g. CC vs CD) if there needs some alpha ops (if alpha channel is not 0.0 or 1.0). Suspect it is errors when
+    // doing encoding. We check fp16 dst texture format with 1-bit ULP tolerance.
+    if (isFp16) {
+      for (let y = 0; y < height; ++y) {
+        const expRow = exp.subarray(y * bytesPerRow, bytesPerRow);
+        const checkResult = checkElementsBetween(actual.subarray(y * rowPitch, bytesPerRow), [
+          i => (expRow[i] > 0 ? expRow[i] - 1 : expRow[i]),
+          i => expRow[i] + 1,
+        ]);
+        if (checkResult !== undefined) return `on row ${y}: ${checkResult}`;
+      }
+    } else {
+      for (let y = 0; y < height; ++y) {
+        const checkResult = checkElementsEqual(
+          actual.subarray(y * rowPitch, bytesPerRow),
+          exp.subarray(y * bytesPerRow, bytesPerRow)
+        );
+        if (checkResult !== undefined) return `on row ${y}: ${checkResult}`;
+      }
     }
     return undefined;
   }
@@ -64,7 +92,8 @@ export class CopyToTextureUtils extends GPUTest {
     dstTextureCopyView: GPUImageCopyTextureTagged,
     copySize: GPUExtent3DDict,
     bytesPerPixel: number,
-    expectedData: Uint8ClampedArray
+    expectedData: Uint8ClampedArray,
+    isFp16: boolean
   ): void {
     this.device.queue.copyExternalImageToTexture(
       imageCopyExternalImage,
@@ -96,7 +125,8 @@ export class CopyToTextureUtils extends GPUTest {
       expectedData,
       externalImage.width,
       externalImage.height,
-      bytesPerPixel
+      bytesPerPixel,
+      isFp16
     );
   }
 }

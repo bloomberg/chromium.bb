@@ -234,7 +234,23 @@ else
   ft2_sources += 'src/base/ftdebug.c'
 endif
 
+
 ft2_deps = []
+common_ldflags = []
+
+
+# Correct compatibility version for OS x.
+#
+# OSX sets the compatibility_version (aka libtools version) differently from
+# the library name.
+#
+if host_machine.system() == 'darwin'
+  # maintain compatibility with autotools on macOS
+  common_ldflags = [
+    '-compatibility_version', ft2_pkgconfig_version.split('.')[0],
+    '-current_version', ft2_pkgconfig_version
+  ]
+endif
 
 
 # Generate `ftoption.h` based on available dependencies.
@@ -344,6 +360,7 @@ ft2_lib = library('freetype',
   dependencies: ft2_deps,
   install: true,
   version: ft2_so_version,
+  link_args: common_ldflags,
 )
 
 

@@ -282,7 +282,7 @@ def orchestrator_pair_builders(
             },
         },
         service_account = "chromium-orchestrator@chops-service-accounts.iam.gserviceaccount.com",
-        ssd = False,
+        ssd = None,
     ))
     orchestrator_builder = try_.builder(
         name = name,

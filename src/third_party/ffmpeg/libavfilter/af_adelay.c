@@ -61,24 +61,6 @@ static const AVOption adelay_options[] = {
 
 AVFILTER_DEFINE_CLASS(adelay);
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVSampleFormat sample_fmts[] = {
-        AV_SAMPLE_FMT_U8P, AV_SAMPLE_FMT_S16P, AV_SAMPLE_FMT_S32P,
-        AV_SAMPLE_FMT_FLTP, AV_SAMPLE_FMT_DBLP,
-        AV_SAMPLE_FMT_NONE
-    };
-    int ret = ff_set_common_all_channel_counts(ctx);
-    if (ret < 0)
-        return ret;
-
-    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
-    if (ret < 0)
-        return ret;
-
-    return ff_set_common_all_samplerates(ctx);
-}
-
 #define DELAY(name, type, fill)                                           \
 static void delay_channel_## name ##p(ChanDelay *d, int nb_samples,       \
                                       const uint8_t *ssrc, uint8_t *ddst) \
@@ -207,14 +189,15 @@ static int config_input(AVFilterLink *inlink)
 static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 {
     AVFilterContext *ctx = inlink->dst;
+    AVFilterLink *outlink = ctx->outputs[0];
     AudioDelayContext *s = ctx->priv;
     AVFrame *out_frame;
     int i;
 
     if (ctx->is_disabled || !s->delays)
-        return ff_filter_frame(ctx->outputs[0], frame);
+        return ff_filter_frame(outlink, frame);
 
-    out_frame = ff_get_audio_buffer(ctx->outputs[0], frame->nb_samples);
+    out_frame = ff_get_audio_buffer(outlink, frame->nb_samples);
     if (!out_frame) {
         av_frame_free(&frame);
         return AVERROR(ENOMEM);
@@ -233,9 +216,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     }
 
     out_frame->pts = s->next_pts;
-    s->next_pts += av_rescale_q(frame->nb_samples, (AVRational){1, inlink->sample_rate}, inlink->time_base);
+    s->next_pts += av_rescale_q(frame->nb_samples, (AVRational){1, outlink->sample_rate}, outlink->time_base);
     av_frame_free(&frame);
-    return ff_filter_frame(ctx->outputs[0], out_frame);
+    return ff_filter_frame(outlink, out_frame);
 }
 
 static int activate(AVFilterContext *ctx)
@@ -338,12 +321,13 @@ static const AVFilterPad adelay_outputs[] = {
 const AVFilter ff_af_adelay = {
     .name          = "adelay",
     .description   = NULL_IF_CONFIG_SMALL("Delay one or more audio channels."),
-    .query_formats = query_formats,
     .priv_size     = sizeof(AudioDelayContext),
     .priv_class    = &adelay_class,
     .activate      = activate,
     .uninit        = uninit,
     FILTER_INPUTS(adelay_inputs),
     FILTER_OUTPUTS(adelay_outputs),
+    FILTER_SAMPLEFMTS(AV_SAMPLE_FMT_U8P, AV_SAMPLE_FMT_S16P, AV_SAMPLE_FMT_S32P,
+                      AV_SAMPLE_FMT_FLTP, AV_SAMPLE_FMT_DBLP),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
 };

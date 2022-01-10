@@ -73,7 +73,10 @@ namespace dawn_native { namespace metal {
         return swapchain;
     }
 
-    SwapChain::~SwapChain() {
+    SwapChain::~SwapChain() = default;
+
+    void SwapChain::DestroyImpl() {
+        SwapChainBase::DestroyImpl();
         DetachFromSurface();
     }
 

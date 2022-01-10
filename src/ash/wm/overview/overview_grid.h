@@ -19,7 +19,6 @@
 #include "ash/wm/splitview/split_view_observer.h"
 #include "ash/wm/window_state.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
@@ -33,6 +32,7 @@ class Widget;
 namespace ash {
 
 class DesksBarView;
+class DesksTemplatesGridView;
 class OverviewGridEventHandler;
 class OverviewItem;
 class PresentationTimeRecorder;
@@ -222,20 +222,6 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // Called by |OverviewSession::OnUserWorkAreaInsetsChanged|.
   void OnUserWorkAreaInsetsChanged(aura::Window* root_window);
 
-  // SplitViewObserver:
-  void OnSplitViewStateChanged(SplitViewController::State previous_state,
-                               SplitViewController::State state) override;
-  void OnSplitViewDividerPositionChanged() override;
-
-  // ScreenRotationAnimatorObserver:
-  void OnScreenCopiedBeforeRotation() override;
-  void OnScreenRotationAnimationFinished(ScreenRotationAnimator* animator,
-                                         bool canceled) override;
-
-  // WallpaperControllerObserver:
-  void OnWallpaperChanging() override;
-  void OnWallpaperChanged() override;
-
   // Called when overview starting animation completes.
   void OnStartingAnimationComplete(bool canceled);
 
@@ -335,8 +321,8 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // grid.
   bool IsDeskNameBeingModified() const;
 
-  // Commits any on-going desk name changes if any.
-  void CommitDeskNameChanges();
+  // Commits any on-going name changes if any.
+  void CommitNameChanges();
 
   // Shows the grid of the desks templates. Creates the widget if needed. If
   // `was_zero_state` is true then we will expand the desks bar.
@@ -348,6 +334,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // True if the grid of desks templates is shown.
   bool IsShowingDesksTemplatesGrid() const;
+
+  // Returns true if any template name is being modified in its item view on
+  // this grid.
+  bool IsTemplateNameBeingModified() const;
 
   // Updates the visibility of the `no_windows_widget_`. If `no_items` is true,
   // the widget will be shown. If `no_items` is false or the desk templates grid
@@ -361,6 +351,20 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // Updates the button that saves the active desk as a template. Creates the
   // button if it hasn't been created already, else it just sets its bounds.
   void UpdateSaveDeskAsTemplateButton();
+
+  // SplitViewObserver:
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
+  void OnSplitViewDividerPositionChanged() override;
+
+  // ScreenRotationAnimatorObserver:
+  void OnScreenCopiedBeforeRotation() override;
+  void OnScreenRotationAnimationFinished(ScreenRotationAnimator* animator,
+                                         bool canceled) override;
+
+  // WallpaperControllerObserver:
+  void OnWallpaperChanging() override;
+  void OnWallpaperChanged() override;
 
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
@@ -405,6 +409,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   views::Widget* desks_templates_grid_widget() const {
     return desks_templates_grid_widget_.get();
+  }
+
+  views::Widget* save_desk_as_template_widget_for_testing() const {
+    return save_desk_as_template_widget_.get();
   }
 
  private:
@@ -565,6 +573,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // The widget that contains the view for all the existing templates.
   views::UniqueWidgetPtr desks_templates_grid_widget_;
+
+  // The contents view of the above `desks_templates_grid_widget_` if created.
+  DesksTemplatesGridView* desks_templates_grid_view_ = nullptr;
 
   // A widget that contains a button which creates a new desk template when
   // pressed.

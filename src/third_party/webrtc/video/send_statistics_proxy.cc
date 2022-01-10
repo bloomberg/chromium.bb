@@ -60,7 +60,7 @@ const char* GetUmaPrefix(VideoEncoderConfig::ContentType content_type) {
     case VideoEncoderConfig::ContentType::kScreen:
       return kScreenPrefix;
   }
-  RTC_NOTREACHED();
+  RTC_DCHECK_NOTREACHED();
   return nullptr;
 }
 
@@ -737,7 +737,7 @@ VideoSendStream::Stats SendStatisticsProxy::GetStats() {
   MutexLock lock(&mutex_);
   PurgeOldStats();
   stats_.input_frame_rate =
-      round(uma_container_->input_frame_rate_tracker_.ComputeRate());
+      uma_container_->input_frame_rate_tracker_.ComputeRate();
   stats_.frames =
       uma_container_->input_frame_rate_tracker_.TotalSampleCount();
   stats_.content_type =
@@ -795,7 +795,7 @@ VideoSendStream::StreamStats* SendStatisticsProxy::GetStatsEntry(
   } else if (is_flexfec) {
     entry->type = VideoSendStream::StreamStats::StreamType::kFlexfec;
   } else {
-    RTC_NOTREACHED();
+    RTC_DCHECK_NOTREACHED();
   }
   switch (entry->type) {
     case VideoSendStream::StreamStats::StreamType::kMedia:

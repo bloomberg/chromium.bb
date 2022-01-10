@@ -74,7 +74,7 @@ export const DefaultLimits = {
   maxStorageTexturesPerShaderStage: 4,
   maxUniformBuffersPerShaderStage: 12,
 
-  maxUniformBufferBindingSize: 16384,
+  maxUniformBufferBindingSize: 65536,
   maxStorageBufferBindingSize: 134217728,
   minUniformBufferOffsetAlignment: 256,
   minStorageBufferOffsetAlignment: 256,

@@ -135,10 +135,6 @@ passed to every invocation of `gn gen`.
 
 # Building targets
 
-## Cast Streaming sender and receiver
-
-TODO(jophba): Fill in details
-
 ## OSP demo
 
 The following commands will build the Open Screen Protocol demo and run it.
@@ -163,12 +159,44 @@ the working directory for the build.  So the same could be done as follows:
 After editing a file, only `ninja` needs to be rerun, not `gn`.  If you have
 edited a `BUILD.gn` file, `ninja` will re-run `gn` for you.
 
-Unless you like to wait longer than necessary for builds to complete, run
-`autoninja` instead of `ninja`, which takes the same command-line arguments.
-This will automatically parallelize the build for your system, depending on
-number of processor cores, RAM, etc.
+We recommend using `autoninja` instead of `ninja`, which takes the same
+command-line arguments but automatically parallelizes the build for your system,
+depending on number of processor cores, amount of RAM, etc.
+
+Also, while specifying build targets is possible while using ninja, typically
+for development it is sufficient to just build everything, especially since the
+Open Screen repository is still quite small. That makes the invokation to the
+build system simplify to:
+
+```bash
+  autoninja -C out/debug
+```
 
 For details on running `osp_demo`, see its [README.md](osp/demo/README.md).
+
+## Cast Streaming sender and receiver
+
+The process for running the Cast Streaming sender and receiver applications
+is detailed in the [cast/README.md](cast/README.md). The build process is the
+same as the osp_demo, excepting the choice of targets:
+
+```bash
+gn gen out/debug
+autoninja -C out/debug cast_sender cast_receiver
+```
+
+However invokation is more complicated due to certificate requirements, as well
+as requiring a valid network address and path to a video for the sender to play.
+An example is provided below but the cast readme should be consulted for
+more information.
+
+```bash
+/path/to/out/Default/cast_receiver -g
+
+./out/Default/cast_receiver -d generated_root_cast_receiver.crt -p generated_root_cast_receiver.key lo0
+
+./out/Default/cast_sender -d generated_root_cast_receiver.crt lo0 ~/video-1080-mp4.mp4
+```
 
 ## Building other targets
 

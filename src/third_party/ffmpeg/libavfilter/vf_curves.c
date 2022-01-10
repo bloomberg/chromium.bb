@@ -513,27 +513,6 @@ static av_cold int curves_init(AVFilterContext *ctx)
     return 0;
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_RGB24,  AV_PIX_FMT_BGR24,
-        AV_PIX_FMT_RGBA,   AV_PIX_FMT_BGRA,
-        AV_PIX_FMT_ARGB,   AV_PIX_FMT_ABGR,
-        AV_PIX_FMT_0RGB,   AV_PIX_FMT_0BGR,
-        AV_PIX_FMT_RGB0,   AV_PIX_FMT_BGR0,
-        AV_PIX_FMT_RGB48,  AV_PIX_FMT_BGR48,
-        AV_PIX_FMT_RGBA64, AV_PIX_FMT_BGRA64,
-        AV_PIX_FMT_GBRP,   AV_PIX_FMT_GBRAP,
-        AV_PIX_FMT_GBRP9,
-        AV_PIX_FMT_GBRP10, AV_PIX_FMT_GBRAP10,
-        AV_PIX_FMT_GBRP12, AV_PIX_FMT_GBRAP12,
-        AV_PIX_FMT_GBRP14,
-        AV_PIX_FMT_GBRP16, AV_PIX_FMT_GBRAP16,
-        AV_PIX_FMT_NONE
-    };
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
-
 static int filter_slice_packed(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs)
 {
     int x, y;
@@ -666,7 +645,7 @@ static int config_input(AVFilterLink *inlink)
 
     for (i = 0; i < NB_COMP + 1; i++) {
         if (!curves->graph[i])
-            curves->graph[i] = av_mallocz_array(curves->lut_size, sizeof(*curves->graph[0]));
+            curves->graph[i] = av_calloc(curves->lut_size, sizeof(*curves->graph[0]));
         if (!curves->graph[i])
             return AVERROR(ENOMEM);
         ret = parse_points_str(ctx, comp_points + i, curves->comp_points_str[i], curves->lut_size);
@@ -815,9 +794,21 @@ const AVFilter ff_vf_curves = {
     .priv_size     = sizeof(CurvesContext),
     .init          = curves_init,
     .uninit        = curves_uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(curves_inputs),
     FILTER_OUTPUTS(curves_outputs),
+    FILTER_PIXFMTS(AV_PIX_FMT_RGB24,  AV_PIX_FMT_BGR24,
+                   AV_PIX_FMT_RGBA,   AV_PIX_FMT_BGRA,
+                   AV_PIX_FMT_ARGB,   AV_PIX_FMT_ABGR,
+                   AV_PIX_FMT_0RGB,   AV_PIX_FMT_0BGR,
+                   AV_PIX_FMT_RGB0,   AV_PIX_FMT_BGR0,
+                   AV_PIX_FMT_RGB48,  AV_PIX_FMT_BGR48,
+                   AV_PIX_FMT_RGBA64, AV_PIX_FMT_BGRA64,
+                   AV_PIX_FMT_GBRP,   AV_PIX_FMT_GBRAP,
+                   AV_PIX_FMT_GBRP9,
+                   AV_PIX_FMT_GBRP10, AV_PIX_FMT_GBRAP10,
+                   AV_PIX_FMT_GBRP12, AV_PIX_FMT_GBRAP12,
+                   AV_PIX_FMT_GBRP14,
+                   AV_PIX_FMT_GBRP16, AV_PIX_FMT_GBRAP16),
     .priv_class    = &curves_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,

@@ -8,6 +8,7 @@ HEADERS = avformat.h                                                    \
 OBJS = allformats.o         \
        avio.o               \
        aviobuf.o            \
+       demux.o              \
        dump.o               \
        format.o             \
        id3v1.o              \
@@ -19,6 +20,7 @@ OBJS = allformats.o         \
        protocols.o          \
        riff.o               \
        sdp.o                \
+       seek.o               \
        url.o                \
        utils.o              \
 
@@ -128,6 +130,7 @@ OBJS-$(CONFIG_AVS_DEMUXER)               += avs.o voc_packet.o voc.o
 OBJS-$(CONFIG_AVS2_DEMUXER)              += avs2dec.o rawdec.o
 OBJS-$(CONFIG_AVS2_MUXER)                += rawenc.o
 OBJS-$(CONFIG_AVS3_DEMUXER)              += avs3dec.o rawdec.o
+OBJS-$(CONFIG_AVS3_MUXER)                += rawenc.o
 OBJS-$(CONFIG_BETHSOFTVID_DEMUXER)       += bethsoftvid.o
 OBJS-$(CONFIG_BFI_DEMUXER)               += bfi.o
 OBJS-$(CONFIG_BINK_DEMUXER)              += bink.o
@@ -238,7 +241,7 @@ OBJS-$(CONFIG_HCOM_DEMUXER)              += hcom.o pcm.o
 OBJS-$(CONFIG_HDS_MUXER)                 += hdsenc.o
 OBJS-$(CONFIG_HEVC_DEMUXER)              += hevcdec.o rawdec.o
 OBJS-$(CONFIG_HEVC_MUXER)                += rawenc.o
-OBJS-$(CONFIG_HLS_DEMUXER)               += hls.o
+OBJS-$(CONFIG_HLS_DEMUXER)               += hls.o hls_sample_encryption.o
 OBJS-$(CONFIG_HLS_MUXER)                 += hlsenc.o hlsplaylist.o avc.o
 OBJS-$(CONFIG_HNM_DEMUXER)               += hnm.o
 OBJS-$(CONFIG_ICO_DEMUXER)               += icodec.o

@@ -22,7 +22,7 @@ module.exports = function (grunt) {
       },
       'generate-wpt-cts-html': {
         cmd: 'node',
-        args: ['tools/gen_wpt_cts_html', 'out-wpt/cts.html', 'src/common/templates/cts.html'],
+        args: ['tools/gen_wpt_cts_html', 'out-wpt/cts.https.html', 'src/common/templates/cts.https.html'],
       },
       unittest: {
         cmd: 'node',

@@ -13,6 +13,7 @@
 #include "aom/aomdx.h"
 #include "aom_mem/aom_mem.h"
 #include "av1/av1_iface_common.h"
+#include "av1/encoder/encoder.h"
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/thirdpass.h"
 #include "av1/common/blockd.h"
@@ -116,6 +117,12 @@ static int read_frame(THIRD_PASS_DEC_CTX *ctx) {
   return 0;
 }
 
+static void free_frame_info(THIRD_PASS_FRAME_INFO *frame_info) {
+  if (!frame_info) return;
+  aom_free(frame_info->mi_info);
+  frame_info->mi_info = NULL;
+}
+
 // This function gets the information needed from the recently decoded frame,
 // via various decoder APIs, and saves the info into ctx->frame_info.
 // Return 0: success
@@ -145,6 +152,38 @@ static int get_frame_info(THIRD_PASS_DEC_CTX *ctx) {
     ctx->frame_info[cur].frame_type = INTER_FRAME;
   }
 
+  // Get frame width and height
+  int frame_size[2];
+  if (aom_codec_control(&ctx->decoder, AV1D_GET_FRAME_SIZE, frame_size) !=
+      AOM_CODEC_OK) {
+    aom_internal_error(ctx->err_info, AOM_CODEC_ERROR,
+                       "Failed to read frame size.");
+  }
+
+  // Check if we need to re-alloc the mi fields.
+  const int mi_cols = (frame_size[0] + 3) >> 2;
+  const int mi_rows = (frame_size[1] + 3) >> 2;
+  ctx->frame_info[cur].mi_stride = mi_cols;
+  ctx->frame_info[cur].mi_rows = mi_rows;
+  ctx->frame_info[cur].mi_cols = mi_cols;
+
+  if (ctx->frame_info[cur].width != frame_size[0] ||
+      ctx->frame_info[cur].height != frame_size[1] ||
+      !ctx->frame_info[cur].mi_info) {
+    free_frame_info(&ctx->frame_info[cur]);
+
+    ctx->frame_info[cur].mi_info =
+        aom_malloc(mi_cols * mi_rows * sizeof(*ctx->frame_info[cur].mi_info));
+
+    if (!ctx->frame_info[cur].mi_info) {
+      aom_internal_error(ctx->err_info, AOM_CODEC_MEM_ERROR,
+                         "Failed to allocate mi buffer for the third pass.");
+    }
+  }
+
+  ctx->frame_info[cur].width = frame_size[0];
+  ctx->frame_info[cur].height = frame_size[1];
+
   // Get frame base q idx
   if (aom_codec_control(&ctx->decoder, AOMD_GET_BASE_Q_IDX,
                         &ctx->frame_info[cur].base_q_idx) != AOM_CODEC_OK) {
@@ -173,10 +212,60 @@ static int get_frame_info(THIRD_PASS_DEC_CTX *ctx) {
     aom_internal_error(ctx->err_info, AOM_CODEC_ERROR,
                        "Failed to read order hint.");
   }
+
+  // Clear MI info
+  for (int mi_row = 0; mi_row < mi_rows; mi_row++) {
+    for (int mi_col = 0; mi_col < mi_cols; mi_col++) {
+      ctx->frame_info[cur].mi_info[mi_row * mi_cols + mi_col].bsize =
+          BLOCK_INVALID;
+    }
+  }
+
+  // Get relevant information regarding each 4x4 MI
+  MB_MODE_INFO cur_mi_info;
+  THIRD_PASS_MI_INFO *const this_mi = ctx->frame_info[cur].mi_info;
+  for (int mi_row = 0; mi_row < mi_rows; mi_row++) {
+    for (int mi_col = 0; mi_col < mi_cols; mi_col++) {
+      const int offset = mi_row * mi_cols + mi_col;
+      if (this_mi[offset].bsize != BLOCK_INVALID) {
+        continue;
+      }
+      // Get info of this MI
+      if (aom_codec_control(&ctx->decoder, AV1D_GET_MI_INFO, mi_row, mi_col,
+                            &cur_mi_info) != AOM_CODEC_OK) {
+        aom_internal_error(ctx->err_info, AOM_CODEC_ERROR,
+                           "Failed to read mi info.");
+      }
+      const int blk_mi_rows = mi_size_high[cur_mi_info.bsize];
+      const int blk_mi_cols = mi_size_wide[cur_mi_info.bsize];
+
+      for (int h = 0; h < blk_mi_rows; h++) {
+        for (int w = 0; w < blk_mi_cols; w++) {
+          if (h + mi_row >= mi_rows || w + mi_col >= mi_cols) {
+            continue;
+          }
+          const int this_offset = offset + h * mi_cols + w;
+          this_mi[this_offset].bsize = cur_mi_info.bsize;
+          this_mi[this_offset].partition = cur_mi_info.partition;
+          this_mi[this_offset].mi_row_start = mi_row;
+          this_mi[this_offset].mi_col_start = mi_col;
+          this_mi[this_offset].mv[0] = cur_mi_info.mv[0];
+          this_mi[this_offset].mv[1] = cur_mi_info.mv[1];
+          this_mi[this_offset].ref_frame[0] = cur_mi_info.ref_frame[0];
+          this_mi[this_offset].ref_frame[1] = cur_mi_info.ref_frame[1];
+        }
+      }
+    }
+  }
+
   ctx->frame_info_count++;
+
   return 0;
 }
 
+#define USE_SECOND_PASS_FILE 1
+
+#if !USE_SECOND_PASS_FILE
 // Parse the frames in the gop and determine the last frame of the current GOP.
 // Decode more frames if necessary. The variable max_num is the maximum static
 // GOP length if we detect an IPPP structure, and it is expected that max_mum >=
@@ -246,25 +335,39 @@ static void get_current_gop_end(THIRD_PASS_DEC_CTX *ctx, int max_num,
   *last_idx = max_num - 1;
   return;
 }
+#endif
 
-void av1_set_gop_third_pass(THIRD_PASS_DEC_CTX *ctx, GF_GROUP *gf_group,
-                            int order_hint_bits, int *gf_len) {
-  // Read in future frames and find the last frame in the current GOP.
-  int last_idx;
-  get_current_gop_end(ctx, MAX_GF_INTERVAL, &last_idx);
-
-  // Determine the GOP length.
-  // TODO(bohanli): Define and set the GOP structure here. Then we also
-  // dont't need to store prev_gop_end here.
-  (void)gf_group;
-  if (last_idx < 0) {
-    aom_internal_error(ctx->err_info, AOM_CODEC_ERROR,
-                       "Failed to derive GOP length.");
+static AOM_INLINE void read_gop_frames(THIRD_PASS_DEC_CTX *ctx) {
+  int cur_idx = 0;
+  while (cur_idx < ctx->gop_info.num_frames) {
+    assert(cur_idx < MAX_THIRD_PASS_BUF);
+    // Read in from bitstream if needed.
+    if (cur_idx >= ctx->frame_info_count) {
+      int ret = get_frame_info(ctx);
+      if (ret != 0) {
+        aom_internal_error(ctx->err_info, AOM_CODEC_ERROR,
+                           "Failed to read frame for third pass.");
+      }
+    }
+    cur_idx++;
   }
-  *gf_len = ctx->frame_info[last_idx].order_hint - ctx->prev_gop_end;
-  *gf_len = (*gf_len + (1 << order_hint_bits)) % (1 << order_hint_bits);
+  return;
+}
 
-  ctx->prev_gop_end = ctx->frame_info[last_idx].order_hint;
+void av1_set_gop_third_pass(THIRD_PASS_DEC_CTX *ctx) {
+  // Read in future frames in the current GOP.
+  read_gop_frames(ctx);
+
+  int gf_len = 0;
+  // Check the GOP length against the value read from second_pass_file
+  for (int i = 0; i < ctx->gop_info.num_frames; i++) {
+    if (ctx->frame_info[i].is_show_frame) gf_len++;
+  }
+
+  if (gf_len != ctx->gop_info.gf_length) {
+    aom_internal_error(ctx->err_info, AOM_CODEC_ERROR,
+                       "Mismatch in third pass GOP length!");
+  }
 }
 
 void av1_pop_third_pass_info(THIRD_PASS_DEC_CTX *ctx) {
@@ -273,9 +376,11 @@ void av1_pop_third_pass_info(THIRD_PASS_DEC_CTX *ctx) {
                        "No available frame info for third pass.");
   }
   ctx->frame_info_count--;
+  free_frame_info(&ctx->frame_info[0]);
   for (int i = 0; i < ctx->frame_info_count; i++) {
     ctx->frame_info[i] = ctx->frame_info[i + 1];
   }
+  ctx->frame_info[ctx->frame_info_count].mi_info = NULL;
 }
 
 void av1_init_thirdpass_ctx(AV1_COMMON *cm, THIRD_PASS_DEC_CTX **ctx,
@@ -298,5 +403,207 @@ void av1_free_thirdpass_ctx(THIRD_PASS_DEC_CTX *ctx) {
   aom_free(ctx->input_ctx);
 #endif
   if (ctx->buf) free(ctx->buf);
+  for (int i = 0; i < MAX_THIRD_PASS_BUF; i++) {
+    free_frame_info(&ctx->frame_info[i]);
+  }
   aom_free(ctx);
+}
+
+void av1_write_second_pass_gop_info(AV1_COMP *cpi) {
+  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
+  const GF_GROUP *const gf_group = &cpi->ppi->gf_group;
+  const PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
+
+  if (oxcf->pass == AOM_RC_SECOND_PASS && oxcf->second_pass_log) {
+    // Write the GOP length to a log file.
+    if (!cpi->second_pass_log_stream) {
+      cpi->second_pass_log_stream = fopen(cpi->oxcf.second_pass_log, "wb");
+      if (!cpi->second_pass_log_stream) {
+        aom_internal_error(cpi->common.error, AOM_CODEC_ERROR,
+                           "Could not open second pass log file!");
+      }
+    }
+
+    THIRD_PASS_GOP_INFO gop_info;
+
+    gop_info.num_frames = gf_group->size;
+    gop_info.use_arf = (gf_group->arf_index >= 0);
+    gop_info.gf_length = p_rc->baseline_gf_interval;
+
+    size_t count =
+        fwrite(&gop_info, sizeof(gop_info), 1, cpi->second_pass_log_stream);
+    if (count < 1) {
+      aom_internal_error(cpi->common.error, AOM_CODEC_ERROR,
+                         "Could not write to second pass log file!");
+    }
+  }
+}
+
+void av1_read_second_pass_gop_info(AV1_COMP *cpi,
+                                   THIRD_PASS_GOP_INFO *gop_info) {
+  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
+
+  if (oxcf->pass == AOM_RC_THIRD_PASS) {
+    if (oxcf->second_pass_log == NULL) {
+      aom_internal_error(
+          cpi->common.error, AOM_CODEC_INVALID_PARAM,
+          "No second pass log file specified for the third pass!");
+    }
+    // Read the GOP length from a file.
+    if (!cpi->second_pass_log_stream) {
+      cpi->second_pass_log_stream = fopen(cpi->oxcf.second_pass_log, "rb");
+      if (!cpi->second_pass_log_stream) {
+        aom_internal_error(cpi->common.error, AOM_CODEC_ERROR,
+                           "Could not open second pass log file!");
+      }
+    }
+
+    size_t count =
+        fread(gop_info, sizeof(*gop_info), 1, cpi->second_pass_log_stream);
+    if (count < 1) {
+      aom_internal_error(cpi->common.error, AOM_CODEC_ERROR,
+                         "Could not read from second pass log file!");
+    }
+  }
+}
+
+int av1_check_use_arf(THIRD_PASS_DEC_CTX *ctx) {
+  if (ctx == NULL) return -1;
+  int use_arf = 0;
+  for (int i = 0; i < ctx->gop_info.gf_length; i++) {
+    if (ctx->frame_info[i].order_hint != 0 &&
+        ctx->frame_info[i].is_show_frame == 0) {
+      use_arf = 1;
+    }
+  }
+  if (use_arf != ctx->gop_info.use_arf) {
+    aom_internal_error(ctx->err_info, AOM_CODEC_ERROR,
+                       "Mismatch in third pass GOP length!");
+  }
+  return use_arf;
+}
+
+void av1_get_third_pass_ratio(THIRD_PASS_DEC_CTX *ctx, int fidx, int fheight,
+                              int fwidth, double *ratio_h, double *ratio_w) {
+  assert(ctx);
+  assert(fidx < ctx->frame_info_count);
+  const int fheight_second_pass = ctx->frame_info[fidx].height;
+  const int fwidth_second_pass = ctx->frame_info[fidx].width;
+  assert(fheight_second_pass <= fheight && fwidth_second_pass <= fwidth);
+
+  *ratio_h = (double)fheight / fheight_second_pass;
+  *ratio_w = (double)fwidth / fwidth_second_pass;
+}
+
+THIRD_PASS_MI_INFO *av1_get_third_pass_mi(THIRD_PASS_DEC_CTX *ctx, int fidx,
+                                          int mi_row, int mi_col,
+                                          double ratio_h, double ratio_w) {
+  assert(ctx);
+  assert(fidx < ctx->frame_info_count);
+
+  const int mi_rows_second_pass = ctx->frame_info[fidx].mi_rows;
+  const int mi_cols_second_pass = ctx->frame_info[fidx].mi_cols;
+
+  const int mi_row_second_pass =
+      clamp((int)round(mi_row / ratio_h), 0, mi_rows_second_pass - 1);
+  const int mi_col_second_pass =
+      clamp((int)round(mi_col / ratio_w), 0, mi_cols_second_pass - 1);
+
+  const int mi_stride_second_pass = ctx->frame_info[fidx].mi_stride;
+  THIRD_PASS_MI_INFO *this_mi = ctx->frame_info[fidx].mi_info +
+                                mi_row_second_pass * mi_stride_second_pass +
+                                mi_col_second_pass;
+  return this_mi;
+}
+
+void av1_third_pass_get_adjusted_mi(THIRD_PASS_MI_INFO *third_pass_mi,
+                                    double ratio_h, double ratio_w, int *mi_row,
+                                    int *mi_col) {
+  *mi_row = (int)round(third_pass_mi->mi_row_start * ratio_h);
+  *mi_col = (int)round(third_pass_mi->mi_col_start * ratio_w);
+}
+
+int_mv av1_get_third_pass_adjusted_mv(THIRD_PASS_MI_INFO *this_mi,
+                                      double ratio_h, double ratio_w,
+                                      MV_REFERENCE_FRAME frame) {
+  assert(this_mi != NULL);
+  int_mv cur_mv;
+  cur_mv.as_int = INVALID_MV;
+
+  if (frame < LAST_FRAME || frame > ALTREF_FRAME) return cur_mv;
+
+  for (int r = 0; r < 2; r++) {
+    if (this_mi->ref_frame[r] == frame) {
+      cur_mv.as_mv.row = (int16_t)round(this_mi->mv[r].as_mv.row * ratio_h);
+      cur_mv.as_mv.col = (int16_t)round(this_mi->mv[r].as_mv.col * ratio_w);
+    }
+  }
+
+  return cur_mv;
+}
+
+BLOCK_SIZE av1_get_third_pass_adjusted_blk_size(THIRD_PASS_MI_INFO *this_mi,
+                                                double ratio_h,
+                                                double ratio_w) {
+  assert(this_mi != NULL);
+  BLOCK_SIZE bsize = BLOCK_INVALID;
+
+  const BLOCK_SIZE bsize_second_pass = this_mi->bsize;
+  assert(bsize_second_pass != BLOCK_INVALID);
+
+  const int w_second_pass = block_size_wide[bsize_second_pass];
+  const int h_second_pass = block_size_high[bsize_second_pass];
+
+  int part_type;
+
+  if (w_second_pass == h_second_pass) {
+    part_type = PARTITION_NONE;
+  } else if (w_second_pass / h_second_pass == 2) {
+    part_type = PARTITION_HORZ;
+  } else if (w_second_pass / h_second_pass == 4) {
+    part_type = PARTITION_HORZ_4;
+  } else if (h_second_pass / w_second_pass == 2) {
+    part_type = PARTITION_VERT;
+  } else if (h_second_pass / w_second_pass == 4) {
+    part_type = PARTITION_VERT_4;
+  } else {
+    part_type = PARTITION_INVALID;
+  }
+  assert(part_type != PARTITION_INVALID);
+
+  const int w = (int)(round(w_second_pass * ratio_w));
+  const int h = (int)(round(h_second_pass * ratio_h));
+
+  for (int i = 0; i < SQR_BLOCK_SIZES; i++) {
+    const BLOCK_SIZE this_bsize = subsize_lookup[part_type][i];
+    if (this_bsize == BLOCK_INVALID) continue;
+
+    const int this_w = block_size_wide[this_bsize];
+    const int this_h = block_size_high[this_bsize];
+
+    if (this_w >= w && this_h >= h) {
+      // find the smallest block size that contains the mapped block
+      bsize = this_bsize;
+      break;
+    }
+  }
+  if (bsize == BLOCK_INVALID) {
+    // could not find a proper one, just use the largest then.
+    bsize = BLOCK_128X128;
+  }
+
+  return bsize;
+}
+
+PARTITION_TYPE av1_third_pass_get_sb_part_type(THIRD_PASS_DEC_CTX *ctx,
+                                               THIRD_PASS_MI_INFO *this_mi) {
+  int mi_stride = ctx->frame_info[0].mi_stride;
+
+  int mi_row = this_mi->mi_row_start;
+  int mi_col = this_mi->mi_col_start;
+
+  THIRD_PASS_MI_INFO *corner_mi =
+      &ctx->frame_info[0].mi_info[mi_row * mi_stride + mi_col];
+
+  return corner_mi->partition;
 }

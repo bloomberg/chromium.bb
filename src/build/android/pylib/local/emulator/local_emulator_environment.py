@@ -19,6 +19,9 @@ from pylib.local.emulator import avd
 _MAX_ANDROID_EMULATORS = 16
 
 
+# TODO(1262303): After Telemetry is supported by python3 we can re-add
+# super without arguments in this script.
+# pylint: disable=super-with-arguments
 class LocalEmulatorEnvironment(local_device_environment.LocalDeviceEnvironment):
 
   def __init__(self, args, output_manager, error_func):
@@ -67,8 +70,9 @@ class LocalEmulatorEnvironment(local_device_environment.LocalDeviceEnvironment):
         return e
 
       def retry_on_timeout(exc):
-        return (isinstance(exc, device_errors.CommandTimeoutError)
-                or isinstance(exc, reraiser_thread.TimeoutError))
+        return isinstance(
+            exc,
+            (device_errors.CommandTimeoutError, reraiser_thread.TimeoutError))
 
       return timeout_retry.Run(
           impl,
@@ -87,7 +91,7 @@ class LocalEmulatorEnvironment(local_device_environment.LocalDeviceEnvironment):
 
     if not self._emulator_instances:
       raise Exception('Failed to start any instances of the emulator.')
-    elif len(self._emulator_instances) < self._emulator_count:
+    if len(self._emulator_instances) < self._emulator_count:
       logging.warning(
           'Running with fewer emulator instances than requested (%d vs %d)',
           len(self._emulator_instances), self._emulator_count)

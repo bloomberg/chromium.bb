@@ -135,6 +135,13 @@ enum {
 } UENUM1BYTE(FRAMETYPE_FLAGS);
 
 #if CONFIG_FRAME_PARALLEL_ENCODE
+#if CONFIG_FPMT_TEST
+enum {
+  PARALLEL_ENCODE = 0,
+  PARALLEL_SIMULATION_ENCODE,
+  NUM_FPMT_TEST_ENCODES
+} UENUM1BYTE(FPMT_TEST_ENC_CFG);
+#endif
 // 0 level frames are sometimes used for rate control purposes, but for
 // reference mapping purposes, the minimum level should be 1.
 #define MIN_PYR_LEVEL 1
@@ -223,6 +230,17 @@ typedef enum {
   COST_UPD_OFF,   /*!< Turn off cost updates. */
 } COST_UPDATE_TYPE;
 
+/*!\enum LOOPFILTER_CONTROL
+ * \brief This enum controls to which frames loopfilter is applied.
+ */
+typedef enum {
+  LOOPFILTER_NONE = 0,      /*!< Disable loopfilter on all frames. */
+  LOOPFILTER_ALL = 1,       /*!< Enable loopfilter for all frames. */
+  LOOPFILTER_REFERENCE = 2, /*!< Disable loopfilter on non reference frames. */
+  LOOPFILTER_SELECTIVELY =
+      3, /*!< Disable loopfilter on frames with low motion. */
+} LOOPFILTER_CONTROL;
+
 /*!
  * \brief Encoder config related to resize.
  */
@@ -310,6 +328,20 @@ typedef struct {
    * enabled.
    */
   bool enable_angle_delta;
+  /*!
+   * Flag to indicate whether to automatically turn off several intral coding
+   * tools.
+   * This flag is only used when "--deltaq-mode=3" is true.
+   * When set to 1, the encoder will analyze the reconstruction quality
+   * as compared to the source image in the preprocessing pass.
+   * If the recontruction quality is considered high enough, we disable
+   * the following intra coding tools, for better encoding speed:
+   * "--enable_smooth_intra",
+   * "--enable_paeth_intra",
+   * "--enable_cfl_intra",
+   * "--enable_diagonal_intra".
+   */
+  bool auto_intra_tools_off;
 } IntraModeCfg;
 
 /*!
@@ -759,6 +791,8 @@ typedef struct {
   AQ_MODE aq_mode;
   // Indicates the delta q mode to be used.
   DELTAQ_MODE deltaq_mode;
+  // Indicates the delta q mode strength.
+  DELTAQ_MODE deltaq_strength;
   // Indicates if delta quantization should be enabled in chroma planes.
   bool enable_chroma_deltaq;
   // Indicates if delta quantization should be enabled for hdr video
@@ -817,6 +851,15 @@ typedef struct {
    * enabled.
    */
   bool enable_overlay;
+
+  /*!
+   * Controls loop filtering
+   * 0: Loop filter is disabled for all frames
+   * 1: Loop filter is enabled for all frames
+   * 2: Loop filter is disabled for non-reference frames
+   * 3: Loop filter is disables for the frames with low motion
+   */
+  LOOPFILTER_CONTROL loopfilter_control;
 } AlgoCfg;
 /*!\cond */
 
@@ -827,8 +870,8 @@ typedef struct {
   aom_superblock_size_t superblock_size;
   // Indicates if loopfilter modulation should be enabled.
   bool enable_deltalf_mode;
-  // Indicates if CDEF should be enabled.
-  bool enable_cdef;
+  // Indicates how CDEF should be applied.
+  CDEF_CONTROL cdef_control;
   // Indicates if loop restoration filter should be enabled.
   bool enable_restoration;
   // When enabled, video mode should be used even for single frame input.
@@ -995,6 +1038,9 @@ typedef struct AV1EncoderConfig {
 
   // the name of the second pass output file when passes > 2
   const char *two_pass_output;
+
+  // the name of the second pass log file when passes > 2
+  const char *second_pass_log;
 
   // Indicates if the encoding is GOOD or REALTIME.
   MODE mode;
@@ -1349,12 +1395,12 @@ typedef struct TileDataEnc {
 } TileDataEnc;
 
 typedef struct RD_COUNTS {
-  int64_t comp_pred_diff[REFERENCE_MODES];
   int compound_ref_used_flag;
   int skip_mode_used_flag;
   int tx_type_used[TX_SIZES_ALL][TX_TYPES];
   int obmc_used[BLOCK_SIZES_ALL][2];
   int warped_used[2];
+  int newmv_or_intra_blocks;
 } RD_COUNTS;
 
 typedef struct ThreadData {
@@ -2330,6 +2376,33 @@ typedef struct AV1_PRIMARY {
    */
   int filter_level_v;
 
+#if CONFIG_FPMT_TEST
+  /*!
+   * Flag which enables/disables simulation path for fpmt unit test.
+   * 0 - FPMT integration
+   * 1 - FPMT simulation
+   */
+  FPMT_TEST_ENC_CFG fpmt_unit_test_cfg;
+
+  /*!
+   * Temporary variable simulating the delayed frame_probability update.
+   */
+  FrameProbInfo temp_frame_probs;
+
+  /*!
+   * Temporary variable holding the updated frame probability across
+   * frames. Copy its value to temp_frame_probs for frame_parallel_level 0
+   * frames or last frame in parallel encode set.
+   */
+  FrameProbInfo temp_frame_probs_simulation;
+
+  /*!
+   * Temporary variable simulating the delayed update of valid global motion
+   * model across frames.
+   */
+  int temp_valid_gm_model_found[FRAME_UPDATE_TYPES];
+#endif
+
   /*!
    * Start time stamp of the last encoded show frame
    */
@@ -2429,11 +2502,9 @@ typedef struct AV1_PRIMARY {
   PRIMARY_RATE_CONTROL p_rc;
 
   /*!
-   * Frame buffer holding the temporally filtered source frame. It can be KEY
-   * frame or ARF frame.
+   * Info and resources used by temporal filtering.
    */
-  YV12_BUFFER_CONFIG alt_ref_buffer;
-
+  TEMPORAL_FILTER_INFO tf_info;
   /*!
    * Elements part of the sequence header, that are applicable for all the
    * frames in the video.
@@ -2922,7 +2993,13 @@ typedef struct AV1_COMP {
    * Retain condition for fast_extra_bits calculation.
    */
   int do_update_vbr_bits_off_target_fast;
-
+#if CONFIG_FPMT_TEST
+  /*!
+   * Temporary variable for simulation.
+   * Previous frame's framerate.
+   */
+  double temp_framerate;
+#endif
   /*!
    * Updated framerate for the current parallel frame.
    * cpi->framerate is updated with new_framerate during
@@ -3155,6 +3232,15 @@ typedef struct AV1_COMP {
    * encode set of lower layer frames.
    */
   int ref_idx_to_skip;
+#if CONFIG_FPMT_TEST
+  /*!
+   * Stores the wanted frame buffer index for choosing primary ref frame by a
+   * frame_parallel_level 2 frame in a parallel encode set of lower layer
+   * frames.
+   */
+
+  int wanted_fb;
+#endif
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
 #if CONFIG_RD_COMMAND
@@ -3205,6 +3291,11 @@ typedef struct AV1_COMP {
    * Context needed for third pass encoding.
    */
   THIRD_PASS_DEC_CTX *third_pass_ctx;
+
+  /*!
+   * File pointer to second pass log
+   */
+  FILE *second_pass_log_stream;
 } AV1_COMP;
 
 /*!
@@ -3478,6 +3569,32 @@ static INLINE void init_ref_map_pair(
     ref_frame_map_pairs[map_idx].pyr_level = buf->pyramid_level;
   }
 }
+
+#if CONFIG_FPMT_TEST
+static AOM_INLINE void calc_frame_data_update_flag(
+    GF_GROUP *const gf_group, int gf_frame_index,
+    bool *const do_frame_data_update) {
+  *do_frame_data_update = true;
+  // Set the flag to false for all frames in a given parallel encode set except
+  // the last frame in the set with frame_parallel_level = 2.
+  if (gf_group->frame_parallel_level[gf_frame_index] == 1) {
+    *do_frame_data_update = false;
+  } else if (gf_group->frame_parallel_level[gf_frame_index] == 2) {
+    // Check if this is the last frame in the set with frame_parallel_level = 2.
+    for (int i = gf_frame_index + 1; i < gf_group->size; i++) {
+      if ((gf_group->frame_parallel_level[i] == 0 &&
+           (gf_group->update_type[i] == ARF_UPDATE ||
+            gf_group->update_type[i] == INTNL_ARF_UPDATE)) ||
+          gf_group->frame_parallel_level[i] == 1) {
+        break;
+      } else if (gf_group->frame_parallel_level[i] == 2) {
+        *do_frame_data_update = false;
+        break;
+      }
+    }
+  }
+}
+#endif
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
 
 // TODO(jingning): Move these functions as primitive members for the new cpi

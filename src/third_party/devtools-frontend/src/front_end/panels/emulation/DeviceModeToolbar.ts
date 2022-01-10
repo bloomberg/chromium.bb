@@ -11,6 +11,8 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as EmulationComponents from './components/components.js';
 
+import deviceModeToolbarStyles from './deviceModeToolbar.css.legacy.js';
+
 const UIStrings = {
   /**
   * @description Title of the device dimensions selection iteam in the Device Mode Toolbar.
@@ -223,10 +225,6 @@ export class DeviceModeToolbar {
       showMediaInspectorSetting: Common.Settings.Setting<boolean>,
       showRulersSetting: Common.Settings.Setting<boolean>) {
     this.model = model;
-    const device = model.device();
-    if (device) {
-      this.recordDeviceChange(device, null);
-    }
     this.showMediaInspectorSetting = showMediaInspectorSetting;
     this.showRulersSetting = showRulersSetting;
 
@@ -297,16 +295,6 @@ export class DeviceModeToolbar {
       rightToolbar.setEnabled(enabled);
       modeToolbar.setEnabled(enabled);
       optionsToolbar.setEnabled(enabled);
-    }
-  }
-
-  private recordDeviceChange(
-      device: EmulationModel.EmulatedDevices.EmulatedDevice,
-      oldDevice: EmulationModel.EmulatedDevices.EmulatedDevice|null): void {
-    if (device !== oldDevice && device && device.isDualScreen) {
-      // When we start emulating a device, whether we start a new emulation session, or switch to
-      // a new device, if the device is dual screen, we count this once.
-      Host.userMetrics.dualScreenDeviceEmulated(Host.UserMetrics.DualScreenDeviceEmulated.DualScreenDeviceSelected);
     }
   }
 
@@ -414,7 +402,7 @@ export class DeviceModeToolbar {
   private appendScaleMenuItems(contextMenu: UI.ContextMenu.ContextMenu): void {
     if (this.model.type() === EmulationModel.DeviceModeModel.Type.Device) {
       contextMenu.footerSection().appendItem(
-          i18nString(UIStrings.fitToWindowF, {PH1: this.getPrettyZoomPercentage()}),
+          i18nString(UIStrings.fitToWindowF, {PH1: this.getPrettyFitZoomPercentage()}),
           this.onScaleMenuChanged.bind(this, this.model.fitScale()), false);
     }
     contextMenu.footerSection().appendCheckboxItem(
@@ -518,14 +506,13 @@ export class DeviceModeToolbar {
   private wrapToolbarItem(element: Element): UI.Toolbar.ToolbarItem {
     const container = document.createElement('div');
     const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
-        container, {cssFile: 'panels/emulation/deviceModeToolbar.css', delegatesFocus: undefined});
+        container, {cssFile: deviceModeToolbarStyles, delegatesFocus: undefined});
     shadowRoot.appendChild(element);
     return new UI.Toolbar.ToolbarItem(container);
   }
 
   private emulateDevice(device: EmulationModel.EmulatedDevices.EmulatedDevice): void {
     const scale = this.autoAdjustScaleSetting.get() ? undefined : this.model.scaleSetting().get();
-    this.recordDeviceChange(device, this.model.device());
     this.model.emulate(
         EmulationModel.DeviceModeModel.Type.Device, device, this.lastMode.get(device) || device.modes[0], scale);
   }
@@ -613,7 +600,6 @@ export class DeviceModeToolbar {
       return;
     }
 
-    Host.userMetrics.dualScreenDeviceEmulated(Host.UserMetrics.DualScreenDeviceEmulated.SpanButtonClicked);
     const scale = this.autoAdjustScaleSetting.get() ? undefined : this.model.scaleSetting().get();
     const mode = this.model.mode();
     if (!mode) {
@@ -705,6 +691,10 @@ export class DeviceModeToolbar {
       const scale = autoAdjustScaleSetting.get() ? undefined : model.scaleSetting().get();
       model.emulate(model.type(), model.device(), mode, scale);
     }
+  }
+
+  private getPrettyFitZoomPercentage(): string {
+    return `${(this.model.fitScale() * 100).toFixed(0)}`;
   }
 
   private getPrettyZoomPercentage(): string {

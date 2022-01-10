@@ -93,7 +93,8 @@ DECLARE_ALIGNED(8, static const uint8_t, ldither)[8][8] = {
     { 42,  26,  38,  22,  41,  25,  37,  21 },
 };
 
-static const uint8_t offset[127][2] = {
+static const uint8_t offset[128][2] = {
+    {0,0},                                                  // unused
     {0,0},
     {0,0}, {4,4},                                           // quality = 1
     {0,0}, {2,2}, {6,4}, {4,6},                             // quality = 2
@@ -283,8 +284,8 @@ static void filter(SPPContext *p, uint8_t *dst, uint8_t *src,
                 qp = FFMAX(1, ff_norm_qscale(qp, p->qscale_type));
             }
             for (i = 0; i < count; i++) {
-                const int x1 = x + offset[i + count - 1][0];
-                const int y1 = y + offset[i + count - 1][1];
+                const int x1 = x + offset[i + count][0];
+                const int y1 = y + offset[i + count][1];
                 const int index = x1 + y1*linesize;
                 p->dct->get_pixels_unaligned(block, p->src + sample_bytes*index, sample_bytes*linesize);
                 p->dct->fdct(block);
@@ -309,27 +310,22 @@ static void filter(SPPContext *p, uint8_t *dst, uint8_t *src,
     }
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUV444P,  AV_PIX_FMT_YUV422P,
-        AV_PIX_FMT_YUV420P,  AV_PIX_FMT_YUV411P,
-        AV_PIX_FMT_YUV410P,  AV_PIX_FMT_YUV440P,
-        AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ422P,
-        AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ440P,
-        AV_PIX_FMT_YUV444P10,  AV_PIX_FMT_YUV422P10,
-        AV_PIX_FMT_YUV420P10,
-        AV_PIX_FMT_YUV444P9,  AV_PIX_FMT_YUV422P9,
-        AV_PIX_FMT_YUV420P9,
-        AV_PIX_FMT_GRAY8,
-        AV_PIX_FMT_GBRP,
-        AV_PIX_FMT_GBRP9,
-        AV_PIX_FMT_GBRP10,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_YUV444P,  AV_PIX_FMT_YUV422P,
+    AV_PIX_FMT_YUV420P,  AV_PIX_FMT_YUV411P,
+    AV_PIX_FMT_YUV410P,  AV_PIX_FMT_YUV440P,
+    AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ422P,
+    AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ440P,
+    AV_PIX_FMT_YUV444P10,  AV_PIX_FMT_YUV422P10,
+    AV_PIX_FMT_YUV420P10,
+    AV_PIX_FMT_YUV444P9,  AV_PIX_FMT_YUV422P9,
+    AV_PIX_FMT_YUV420P9,
+    AV_PIX_FMT_GRAY8,
+    AV_PIX_FMT_GBRP,
+    AV_PIX_FMT_GBRP9,
+    AV_PIX_FMT_GBRP10,
+    AV_PIX_FMT_NONE
+};
 
 static int config_input(AVFilterLink *inlink)
 {
@@ -337,6 +333,12 @@ static int config_input(AVFilterLink *inlink)
     const int h = FFALIGN(inlink->h + 16, 16);
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(inlink->format);
     const int bps = desc->comp[0].depth;
+
+    s->store_slice = store_slice_c;
+    switch (s->mode) {
+    case MODE_HARD: s->requantize = hardthresh_c; break;
+    case MODE_SOFT: s->requantize = softthresh_c; break;
+    }
 
     av_opt_set_int(s->dct, "bits_per_sample", bps, 0);
     avcodec_dct_init(s->dct);
@@ -451,30 +453,14 @@ static int process_command(AVFilterContext *ctx, const char *cmd, const char *ar
     return AVERROR(ENOSYS);
 }
 
-static av_cold int init_dict(AVFilterContext *ctx, AVDictionary **opts)
+static av_cold int preinit(AVFilterContext *ctx)
 {
     SPPContext *s = ctx->priv;
-    int ret;
 
     s->dct = avcodec_dct_alloc();
     if (!s->dct)
         return AVERROR(ENOMEM);
 
-    if (opts) {
-        AVDictionaryEntry *e = NULL;
-
-        while ((e = av_dict_get(*opts, "", e, AV_DICT_IGNORE_SUFFIX))) {
-            if ((ret = av_opt_set(s->dct, e->key, e->value, 0)) < 0)
-                return ret;
-        }
-        av_dict_free(opts);
-    }
-
-    s->store_slice = store_slice_c;
-    switch (s->mode) {
-    case MODE_HARD: s->requantize = hardthresh_c; break;
-    case MODE_SOFT: s->requantize = softthresh_c; break;
-    }
     return 0;
 }
 
@@ -508,11 +494,11 @@ const AVFilter ff_vf_spp = {
     .name            = "spp",
     .description     = NULL_IF_CONFIG_SMALL("Apply a simple post processing filter."),
     .priv_size       = sizeof(SPPContext),
-    .init_dict       = init_dict,
+    .preinit         = preinit,
     .uninit          = uninit,
-    .query_formats   = query_formats,
     FILTER_INPUTS(spp_inputs),
     FILTER_OUTPUTS(spp_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .process_command = process_command,
     .priv_class      = &spp_class,
     .flags           = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,

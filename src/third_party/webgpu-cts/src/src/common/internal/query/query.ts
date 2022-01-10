@@ -155,7 +155,7 @@ export class TestQuerySingleCase extends TestQueryMultiCase {
  *
  * The `rawExpectations` are parsed and validated that they are in the correct format.
  * If `wptURL` is passed, the query string should be of the full path format such
- * as `path/to/cts.html?worker=0&q=suite:test_path:test_name:foo=1;bar=2;*`.
+ * as `path/to/cts.https.html?worker=0&q=suite:test_path:test_name:foo=1;bar=2;*`.
  * If `wptURL` is `undefined`, the query string should be only the query
  * `suite:test_path:test_name:foo=1;bar=2;*`.
  */
@@ -188,7 +188,7 @@ export function parseExpectationsForTestQuery(
       assert(
         expectationURL.pathname === wptURL.pathname,
         `Invalid expectation path ${expectationURL.pathname}
-Expectation should be of the form path/to/cts.html?worker=0&q=suite:test_path:test_name:foo=1;bar=2;...
+Expectation should be of the form path/to/cts.https.html?worker=0&q=suite:test_path:test_name:foo=1;bar=2;...
         `
       );
 

@@ -18,6 +18,15 @@
 extern "C" {
 #endif
 
+/*!\enum CDEF_CONTROL
+ * \brief This enum controls to which frames CDEF is applied.
+ */
+typedef enum {
+  CDEF_NONE = 0,      /*!< Disable CDEF on all frames. */
+  CDEF_ALL = 1,       /*!< Enable CDEF for all frames. */
+  CDEF_REFERENCE = 2, /*!< Disable CDEF on non reference frames. */
+} CDEF_CONTROL;
+
 /*!\cond */
 struct MultiThreadInfo;
 
@@ -218,6 +227,9 @@ void av1_cdef_mse_calc_block(CdefSearchCtx *cdef_search_ctx, int fbr, int fbc,
  * \param[in]      rdmult       rd multiplier to use in making param choices
  * \param[in]      skip_cdef_feature Speed feature to skip cdef
  * \param[in]      frames_since_key Number of frames since key frame
+ * \param[in]      cdef_control  Parameter that controls CDEF application
+ * \param[in]      non_reference_frame Indicates if current frame is
+ * non-reference
  *
  * \return Nothing is returned. Instead, optimal CDEF parameters are stored
  * in the \c cdef_info structure of type \ref CdefInfo inside \c cm:
@@ -234,7 +246,8 @@ void av1_cdef_search(struct MultiThreadInfo *mt_info,
                      const YV12_BUFFER_CONFIG *frame,
                      const YV12_BUFFER_CONFIG *ref, AV1_COMMON *cm,
                      MACROBLOCKD *xd, CDEF_PICK_METHOD pick_method, int rdmult,
-                     int skip_cdef_feature, int frames_since_key);
+                     int skip_cdef_feature, int frames_since_key,
+                     CDEF_CONTROL cdef_control, int non_reference_frame);
 
 #ifdef __cplusplus
 }  // extern "C"

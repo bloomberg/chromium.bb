@@ -54,6 +54,19 @@ struct MetalNode {
   MetalNode& operator=(const MetalNode&) = delete;
 };
 
+struct GpuNode {
+  std::unique_ptr<GPUOperation> gpu_operation;
+  std::vector<ValueId> inputs;
+  std::vector<ValueId> outputs;
+  std::string name;
+
+  GpuNode() = default;
+  GpuNode(GpuNode&& node) = default;
+  GpuNode& operator=(GpuNode&& node) = default;
+  GpuNode(const GpuNode&) = delete;
+  GpuNode& operator=(const GpuNode&) = delete;
+};
+
 class InferenceContext {
  public:
   struct CreateInferenceInfo {
@@ -68,13 +81,26 @@ class InferenceContext {
     //   3) Layout must be without Batch dimension if tensor.shape.b == 1
     //      Layout must be with Batch dimension if tensor.shape.b != 1
     std::map<ValueId, TensorDescriptor> preallocated;
+
+    // User can provide immutable external tensors for inference context.
+    // Some restrictions apply:
+    //   1) ValueId must be input or output id of GraphFloat32
+    //   2) Provided ptrs must be valid during life of InferenceContext.
+    //   3) data_type must be equal to DeduceDataTypeFromPrecision(precision);
+    //      for example for precision F16, data_type must be FLOAT16
+    //   4) Layout must be without Batch dimension if tensor.shape.b == 1
+    //      Layout must be with Batch dimension if tensor.shape.b != 1
+    // InitFromGraph will fail if gpu can not allocate tensor with requested
+    // tensor descriptor
+    // WARNING: This is an experimental API and subject to change.
+    absl::flat_hash_map<ValueId, GpuSpatialTensor*> external_immutable_tensors;
   };
 
   struct GpuModel {
     std::vector<std::pair<ValueId, ValueId>> input_ids_and_refs;
     std::vector<std::pair<ValueId, ValueId>> variable_ids_and_refs;
     std::vector<std::pair<ValueId, ValueId>> output_ids_and_refs;
-    std::vector<MetalNode> nodes;
+    std::vector<GpuNode> nodes;
     absl::flat_hash_map<ValueId, TensorDescriptor> tensors;
     absl::flat_hash_map<ValueId, TensorDescriptor> const_tensors;
   };
@@ -132,7 +158,19 @@ class InferenceContext {
   void EncodeWithCommandQueue(id<MTLCommandQueue> command_queue,
                               int flush_period);
 
+  API_AVAILABLE(ios(13.0), macos(11.00), tvos(13.0))
+  void AddResources(id<MTLComputeCommandEncoder> command_encoder);
+  API_AVAILABLE(ios(13.0), macos(11.00), tvos(13.0))
+  void EncodeWithICB(id<MTLComputeCommandEncoder> command_encoder);
+
   void Profile(id<MTLDevice> device, ProfilingInfo* result);
+  // Returns size in bytes for all intermediate(runtime) tensors that owned by
+  // this inference context. Do not include constant tensors.
+  uint64_t GetIntermediateTensorsSize() const;
+
+  MetalSpatialTensor* GetTensor(ValueId tensor_id);
+  absl::Status SetInputTensor(ValueId id, const TensorFloat32& tensor);
+  absl::Status GetOutputTensor(ValueId id, TensorFloat32* result);
 
  private:
   enum class TensorMemoryType {
@@ -140,7 +178,7 @@ class InferenceContext {
     kBuffer,
     kVariable,
     kConst,
-    kPreallocated
+    kExternal
   };
 
   absl::Status CompileOperations(MetalDevice* device);
@@ -153,7 +191,6 @@ class InferenceContext {
   absl::Status AllocateMemoryForStrongShapes(MetalDevice* device);
   void BindTensorsToOperations();
   absl::Status UpdateParams(const GpuInfo& gpu_info);
-  MetalSpatialTensor* GetTensor(ValueId tensor_id);
   void GetUsages(const std::function<bool(ValueId)>& functor,
                  std::map<ValueId, int2>* usages);
   TensorMemoryType GetTensorMemoryType(ValueId id);
@@ -168,6 +205,7 @@ class InferenceContext {
   std::vector<ValueId> output_ids_;
   std::map<ValueId, MetalSpatialTensor> preallocated_tensors_;
 
+  absl::flat_hash_map<ValueId, MetalSpatialTensor*> external_immutable_tensors_;
   absl::flat_hash_map<ValueId, TensorDescriptor> const_tensors_descs_;
   std::map<ValueId, MetalSpatialTensor> const_tensors_;
 
@@ -179,6 +217,9 @@ class InferenceContext {
 
   std::map<ValueId, MetalSpatialTensor> strong_shape_tensors_;
   std::map<ValueId, ValueId> graph_ids_to_strong_shape_tensors_;
+
+  id<MTLIndirectCommandBuffer> icb_ = nullptr;
+  id<MTLDevice> device_ = nullptr;
 };
 
 // Runs specific transforms for the graph.

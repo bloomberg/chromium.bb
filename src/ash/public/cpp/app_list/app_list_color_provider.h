@@ -49,13 +49,12 @@ class ASH_PUBLIC_EXPORT AppListColorProvider {
   virtual SkColor GetGridBackgroundCardInactiveColor() const = 0;
   virtual SkColor GetSeparatorColor() const = 0;
   virtual SkColor GetFocusRingColor() const = 0;
-  virtual SkColor GetRippleAttributesBaseColor(
+  virtual SkColor GetInkDropBaseColor(
       SkColor bg_color = gfx::kPlaceholderColor) const = 0;
-  virtual float GetRippleAttributesInkDropOpacity(
-      SkColor bg_color = gfx::kPlaceholderColor) const = 0;
-  virtual float GetRippleAttributesHighlightOpacity(
+  virtual float GetInkDropOpacity(
       SkColor bg_color = gfx::kPlaceholderColor) const = 0;
   virtual SkColor GetSearchResultViewHighlightColor() const = 0;
+  virtual SkColor GetTextColorURL() const = 0;
 
  protected:
   AppListColorProvider();

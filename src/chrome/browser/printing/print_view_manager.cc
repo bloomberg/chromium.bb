@@ -13,6 +13,7 @@
 #include "base/lazy_instance.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/bad_message.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,8 +27,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/policy/dlp/dlp_content_manager.h"
-#include "chrome/browser/ash/policy/dlp/dlp_notification_helper.h"
-#include "chrome/browser/ash/policy/dlp/dlp_warn_dialog.h"
 #endif
 
 using content::BrowserThread;
@@ -55,7 +54,8 @@ content::WebContents* GetPrintPreviewDialog(
 }  // namespace
 
 PrintViewManager::PrintViewManager(content::WebContents* web_contents)
-    : PrintViewManagerBase(web_contents) {}
+    : PrintViewManagerBase(web_contents),
+      content::WebContentsUserData<PrintViewManager>(*web_contents) {}
 
 PrintViewManager::~PrintViewManager() {
   DCHECK_EQ(NOT_PREVIEWING, print_preview_state_);
@@ -192,14 +192,13 @@ void PrintViewManager::PrintPreviewDone() {
 
 void PrintViewManager::RejectPrintPreviewRequestIfRestricted(
     base::OnceCallback<void(bool should_proceed)> callback) {
-  if (IsPrintingRestricted()) {
-    ShowBlockedNotification();
-    std::move(callback).Run(false);
-  } else if (ShouldWarnBeforePrinting()) {
-    ShowWarning(std::move(callback));
-  } else {
-    std::move(callback).Run(true);
-  }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Don't print DLP restricted content on Chrome OS.
+  policy::DlpContentManager::Get()->CheckPrintingRestriction(
+      web_contents(), std::move(callback));
+#else
+  std::move(callback).Run(true);
+#endif
 }
 
 void PrintViewManager::OnPrintPreviewRequestRejected(int render_process_id,
@@ -263,10 +262,20 @@ void PrintViewManager::DidShowPrintDialog() {
 void PrintViewManager::SetupScriptedPrintPreview(
     SetupScriptedPrintPreviewCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto& map = g_scripted_print_preview_closure_map.Get();
   content::RenderFrameHost* rfh = GetCurrentTargetFrame();
   content::RenderProcessHost* rph = rfh->GetProcess();
 
+  if (rfh->IsNestedWithinFencedFrame()) {
+    // The renderer should have checked and disallowed the request for fenced
+    // frames in ChromeClient. Ignore the request and mark it as bad if it
+    // didn't happen for some reason.
+    bad_message::ReceivedBadMessage(
+        rph, bad_message::PVM_SCRIPTED_PRINT_FENCED_FRAME);
+    std::move(callback).Run();
+    return;
+  }
+
+  auto& map = g_scripted_print_preview_closure_map.Get();
   if (base::Contains(map, rph)) {
     // Renderer already handling window.print(). Abort this attempt to prevent
     // the renderer from having multiple nested loops. If multiple nested loops
@@ -412,41 +421,6 @@ void PrintViewManager::MaybeUnblockScriptedPreviewRPH() {
     scripted_print_preview_rph_->SetBlocked(false);
     scripted_print_preview_rph_set_blocked_ = false;
   }
-}
-
-bool PrintViewManager::IsPrintingRestricted() const {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Don't print DLP restricted content on Chrome OS.
-  return policy::DlpContentManager::Get()->IsPrintingRestricted(web_contents());
-#else
-  return false;
-#endif
-}
-
-bool PrintViewManager::ShouldWarnBeforePrinting() const {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  return policy::DlpContentManager::Get()->ShouldWarnBeforePrinting(
-      web_contents());
-#else
-  return false;
-#endif
-}
-
-void PrintViewManager::ShowWarning(
-    base::OnceCallback<void(bool should_proceed)> callback) const {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  policy::DlpWarnDialog::ShowDlpPrintWarningDialog(std::move(callback));
-#else
-  NOTREACHED();
-#endif
-}
-
-void PrintViewManager::ShowBlockedNotification() const {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  policy::ShowDlpPrintDisabledNotification();
-#else
-  NOTREACHED();
-#endif
 }
 
 void PrintViewManager::PrintPreviewRejectedForTesting() {

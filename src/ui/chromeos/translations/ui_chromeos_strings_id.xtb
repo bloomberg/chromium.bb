@@ -305,13 +305,13 @@
 <translation id="3620292326130836921">Semua dicadangkan!</translation>
 <translation id="3634507049637220048">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Dikelola oleh Administrator Anda, Detail</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> item dipindahkan.</translation>
-<translation id="3645531960514756307">Lepas pin pada folder</translation>
 <translation id="3685122418104378273">Sinkronisasi Google Drive dinonaktifkan secara default saat menggunakan data seluler.</translation>
 <translation id="3689865792480713551">Batalkan <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3690128548376345212">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Tidak Diaktifkan, <ph name="CONNECTION_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />%, Detail</translation>
 <translation id="3691184985318546178">Sinhala</translation>
 <translation id="3726463242007121105">Perangkat ini tidak dapat dibuka karena sistem berkasnya tidak didukung.</translation>
 <translation id="3727148787322499904">Perubahan pada setelan ini akan berpengaruh pada semua jaringan bersama</translation>
+<translation id="3737576078404241332">Hapus dari sidebar</translation>
 <translation id="3741243925913727067">Mencadangkan foto dan video perangkat media ke Google Drive.</translation>
 <translation id="3749289110408117711">Nama file</translation>
 <translation id="3780536599611287598">Anda tidak memiliki izin untuk memindahkan file ke '<ph name="FOLDER_NAME" />'.</translation>
@@ -372,6 +372,7 @@
 <translation id="4326142238881453352">Ahli botani</translation>
 <translation id="4326192123064055915">Kopi</translation>
 <translation id="4336032328163998280">Operasi penyalinan gagal. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4340491671558548972">Tambahkan ke sidebar</translation>
 <translation id="4348495354623233847">Kurdi Sorani dengan keyboard berbasis bahasa Arab</translation>
 <translation id="4363958938297989186">Rusia dengan keyboard Fonetik</translation>
 <translation id="4364327530094270451">Melon</translation>
@@ -927,7 +928,6 @@
 <translation id="9110990317705400362">Kami terus mencari cara agar penjelajahan Anda lebih aman. Sebelumnya, situs web apa pun dapat meminta Anda untuk menambahkan ekstensi ke browser. Pada versi terbaru Google Chrome, Anda harus memberitahukan dengan jelas kepada Chrome bahwa Anda ingin memasang ekstensi ini dengan menambahkannya melalui halaman Ekstensi. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">Buka kunci</translation>
 <translation id="912419004897138677">Codec</translation>
-<translation id="9129931661813833980">Pasang pin pada folder</translation>
 <translation id="9130775360844693113">Anggota '<ph name="DESTINATION_NAME" />' akan mendapatkan akses ke item berikut.</translation>
 <translation id="9131598836763251128">Pilih satu atau beberapa file</translation>
 <translation id="9133055936679483811">Gagal membuat file zip. <ph name="ERROR_MESSAGE" /></translation>

@@ -53,8 +53,11 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   virtual bool IsNativeWidgetInitialized() const = 0;
 
   // Called when the activation state of a window has changed.
-  // Returns true if this event should be handled.
+  // Returns true if this event was handled.
   virtual bool OnNativeWidgetActivationChanged(bool active) = 0;
+
+  // Returns true if the window's activation change event should be handled.
+  virtual bool ShouldHandleNativeWidgetActivationChanged(bool active) = 0;
 
   // Called when native focus moves from one native view to another.
   virtual void OnNativeFocus() = 0;
@@ -72,6 +75,9 @@ class VIEWS_EXPORT NativeWidgetDelegate {
 
   // Called just after the native widget is destroyed.
   virtual void OnNativeWidgetDestroyed() = 0;
+
+  // Called after the native widget's parent has changed.
+  virtual void OnNativeWidgetParentChanged(gfx::NativeView parent) = 0;
 
   // Returns the smallest size the window can be resized to by the user.
   virtual gfx::Size GetMinimumSize() const = 0;

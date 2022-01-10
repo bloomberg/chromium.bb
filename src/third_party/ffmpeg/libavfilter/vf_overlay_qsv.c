@@ -325,8 +325,8 @@ static int overlay_qsv_init(AVFilterContext *ctx)
     vpp->comp_conf.Header.BufferId = MFX_EXTBUFF_VPP_COMPOSITE;
     vpp->comp_conf.Header.BufferSz = sizeof(vpp->comp_conf);
     vpp->comp_conf.NumInputStream  = ctx->nb_inputs;
-    vpp->comp_conf.InputStream     = av_mallocz_array(ctx->nb_inputs,
-                                                      sizeof(*vpp->comp_conf.InputStream));
+    vpp->comp_conf.InputStream     = av_calloc(ctx->nb_inputs,
+                                               sizeof(*vpp->comp_conf.InputStream));
     if (!vpp->comp_conf.InputStream)
         return AVERROR(ENOMEM);
 
@@ -417,13 +417,13 @@ const AVFilter ff_vf_overlay_qsv = {
     .name           = "overlay_qsv",
     .description    = NULL_IF_CONFIG_SMALL("Quick Sync Video overlay."),
     .priv_size      = sizeof(QSVOverlayContext),
-    .query_formats  = overlay_qsv_query_formats,
     .preinit        = overlay_qsv_framesync_preinit,
     .init           = overlay_qsv_init,
     .uninit         = overlay_qsv_uninit,
     .activate       = activate,
     FILTER_INPUTS(overlay_qsv_inputs),
     FILTER_OUTPUTS(overlay_qsv_outputs),
+    FILTER_QUERY_FUNC(overlay_qsv_query_formats),
     .priv_class     = &overlay_qsv_class,
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };

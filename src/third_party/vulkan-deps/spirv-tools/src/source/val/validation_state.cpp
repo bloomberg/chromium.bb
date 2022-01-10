@@ -497,15 +497,13 @@ void ValidationState_t::RegisterDebugInstruction(const Instruction* inst) {
   switch (inst->opcode()) {
     case SpvOpName: {
       const auto target = inst->GetOperandAs<uint32_t>(0);
-      const auto* str = reinterpret_cast<const char*>(inst->words().data() +
-                                                      inst->operand(1).offset);
+      const std::string str = inst->GetOperandAs<std::string>(1);
       AssignNameToId(target, str);
       break;
     }
     case SpvOpMemberName: {
       const auto target = inst->GetOperandAs<uint32_t>(0);
-      const auto* str = reinterpret_cast<const char*>(inst->words().data() +
-                                                      inst->operand(2).offset);
+      const std::string str = inst->GetOperandAs<std::string>(2);
       AssignNameToId(target, str);
       break;
     }
@@ -1839,6 +1837,8 @@ std::string ValidationState_t::VkErrorID(uint32_t id,
       return VUID_WRAP(VUID-StandaloneSpirv-None-04667);
     case 4669:
       return VUID_WRAP(VUID-StandaloneSpirv-GLSLShared-04669);
+    case 4670:
+      return VUID_WRAP(VUID-StandaloneSpirv-Flat-04670);
     case 4675:
       return VUID_WRAP(VUID-StandaloneSpirv-FPRoundingMode-04675);
     case 4677:

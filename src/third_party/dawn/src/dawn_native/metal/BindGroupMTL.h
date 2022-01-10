@@ -30,6 +30,8 @@ namespace dawn_native { namespace metal {
 
       private:
         ~BindGroup() override;
+
+        void DestroyImpl() override;
     };
 
 }}  // namespace dawn_native::metal

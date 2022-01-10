@@ -463,7 +463,7 @@ bool ValidateES2CopyTexImageParameters(const Context *context,
                     colorbufferFormat != GL_RGBA8_OES && colorbufferFormat != GL_RGB32F &&
                     colorbufferFormat != GL_RGBA32F && colorbufferFormat != GL_BGRA8_EXT &&
                     colorbufferFormat != GL_BGR5_A1_ANGLEX &&
-                    colorbufferFormat != GL_BGRX8_ANGLEX && colorbufferFormat != GL_RGBX8_ANGLEX &&
+                    colorbufferFormat != GL_BGRX8_ANGLEX && colorbufferFormat != GL_RGBX8_ANGLE &&
                     !Valid3to4ComponentFloatColorBufferFormat(context, colorbufferFormat))
                 {
                     context->validationError(entryPoint, GL_INVALID_OPERATION, kInvalidFormat);
@@ -6310,8 +6310,8 @@ bool ValidateFramebufferTexture2DMultisampleEXT(const Context *context,
     if (texture.value != 0 && context->getClientMajorVersion() >= 3)
     {
         Texture *tex                  = context->getTexture(texture);
-        GLenum internalformat         = tex->getFormat(textarget, level).info->internalFormat;
-        const TextureCaps &formatCaps = context->getTextureCaps().get(internalformat);
+        GLenum sizedInternalFormat    = tex->getFormat(textarget, level).info->sizedInternalFormat;
+        const TextureCaps &formatCaps = context->getTextureCaps().get(sizedInternalFormat);
         if (static_cast<GLuint>(samples) > formatCaps.getMaxSamples())
         {
             context->validationError(entryPoint, GL_INVALID_OPERATION, kSamplesOutOfRange);

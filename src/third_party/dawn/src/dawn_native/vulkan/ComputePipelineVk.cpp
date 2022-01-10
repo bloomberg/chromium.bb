@@ -53,7 +53,7 @@ namespace dawn_native { namespace vulkan {
 
         createInfo.stage.pName = computeStage.entryPoint.c_str();
 
-        std::vector<SpecializationDataEntry> specializationDataEntries;
+        std::vector<OverridableConstantScalar> specializationDataEntries;
         std::vector<VkSpecializationMapEntry> specializationMapEntries;
         VkSpecializationInfo specializationInfo{};
         createInfo.stage.pSpecializationInfo =
@@ -89,7 +89,11 @@ namespace dawn_native { namespace vulkan {
                      reinterpret_cast<uint64_t&>(mHandle), "Dawn_ComputePipeline", GetLabel());
     }
 
-    ComputePipeline::~ComputePipeline() {
+    ComputePipeline::~ComputePipeline() = default;
+
+    void ComputePipeline::DestroyImpl() {
+        ComputePipelineBase::DestroyImpl();
+
         if (mHandle != VK_NULL_HANDLE) {
             ToBackend(GetDevice())->GetFencedDeleter()->DeleteWhenUnused(mHandle);
             mHandle = VK_NULL_HANDLE;

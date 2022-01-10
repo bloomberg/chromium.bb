@@ -6,6 +6,7 @@
 #
 # Various functions to help build / test ffmpeg.
 
+import glob
 import os
 from robo_lib import shell
 
@@ -26,8 +27,8 @@ def ObliterateOldBuildOutputIfNeeded(robo_configuration):
 
   shell.log("Removing all build output from build_ffmpeg.py")
   robo_configuration.chdir_to_ffmpeg_home();
-  command = ["rm", "-rf", "build.*.*"]
-  robo_configuration.Call(command)
+  for file in glob.glob("build.*.*"):
+    robo_configuration.Call(["rm", "-r", file])
 
 def ConfigureAndBuildFFmpeg(robo_configuration, platform, architecture):
   """Run FFmpeg's configure script, and build ffmpeg.

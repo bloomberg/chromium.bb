@@ -1,4 +1,4 @@
-// Implements the wpt-embedded test runner (see also: wpt/cts.html).
+// Implements the wpt-embedded test runner (see also: wpt/cts.https.html).
 
 import { DefaultTestFileLoader } from '../internal/file_loader.js';
 import { prettyPrintLog } from '../internal/logging/log_message.js';

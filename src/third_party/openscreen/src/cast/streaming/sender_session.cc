@@ -412,7 +412,7 @@ std::unique_ptr<Sender> SenderSession::CreateSender(Ssrc receiver_ssrc,
                        stream.aes_key,
                        stream.aes_iv_mask,
                        /* is_pli_enabled*/ true};
-
+  OSP_DCHECK(config.IsValid());
   return std::make_unique<Sender>(config_.environment, &packet_router_,
                                   std::move(config), type);
 }

@@ -26,6 +26,7 @@ namespace dawn_native {
     class RenderPassEncoder final : public RenderEncoderBase {
       public:
         RenderPassEncoder(DeviceBase* device,
+                          const RenderPassDescriptor* descriptor,
                           CommandEncoder* commandEncoder,
                           EncodingContext* encodingContext,
                           RenderPassResourceUsageTracker usageTracker,
@@ -67,6 +68,8 @@ namespace dawn_native {
                           ErrorTag errorTag);
 
       private:
+        void DestroyImpl() override;
+
         void TrackQueryAvailability(QuerySetBase* querySet, uint32_t queryIndex);
 
         // For render and compute passes, the encoding context is borrowed from the command encoder.

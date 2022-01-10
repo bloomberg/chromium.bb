@@ -45,6 +45,7 @@
 #include "dawn_native/ValidationUtils_autogen.h"
 #include "dawn_platform/DawnPlatform.h"
 #include "dawn_platform/tracing/TraceEvent.h"
+#include "utils/WGPUHelpers.h"
 
 #include <array>
 #include <mutex>
@@ -171,7 +172,7 @@ namespace dawn_native {
 
     // DeviceBase
 
-    DeviceBase::DeviceBase(AdapterBase* adapter, const DeviceDescriptor* descriptor)
+    DeviceBase::DeviceBase(AdapterBase* adapter, const DawnDeviceDescriptor* descriptor)
         : mInstance(adapter->GetInstance()), mAdapter(adapter), mNextPipelineCompatibilityToken(1) {
         if (descriptor != nullptr) {
             ApplyToggleOverrides(descriptor);
@@ -179,8 +180,7 @@ namespace dawn_native {
         }
 
         if (descriptor != nullptr && descriptor->requiredLimits != nullptr) {
-            mLimits.v1 = ReifyDefaultLimits(
-                reinterpret_cast<const RequiredLimits*>(descriptor->requiredLimits)->limits);
+            mLimits.v1 = ReifyDefaultLimits(FromAPI(descriptor->requiredLimits)->limits);
         } else {
             GetDefaultLimits(&mLimits.v1);
         }
@@ -251,7 +251,7 @@ namespace dawn_native {
             ShaderModuleDescriptor descriptor;
             ShaderModuleWGSLDescriptor wgslDesc;
             wgslDesc.source = kEmptyFragmentShader;
-            descriptor.nextInChain = reinterpret_cast<ChainedStruct*>(&wgslDesc);
+            descriptor.nextInChain = &wgslDesc;
 
             DAWN_TRY_ASSIGN(mInternalPipelineStore->dummyFragmentShader,
                             CreateShaderModule(&descriptor));
@@ -266,10 +266,20 @@ namespace dawn_native {
         // a ref to A, then B depends on A. We therefore try to destroy B before destroying A. Note
         // that this only considers the immediate frontend dependencies, while backend objects could
         // add complications and extra dependencies.
-        // TODO(dawn/628) Add types into the array as they are implemented.
+        //
+        // Note that AttachmentState is not an ApiObject so it cannot be eagerly destroyed. However,
+        // since AttachmentStates are cached by the device, objects that hold references to
+        // AttachmentStates should make sure to un-ref them in their Destroy operation so that we
+        // can destroy the frontend cache.
 
         // clang-format off
-        static constexpr std::array<ObjectType, 10> kObjectTypeDependencyOrder = {
+        static constexpr std::array<ObjectType, 19> kObjectTypeDependencyOrder = {
+            ObjectType::ComputePassEncoder,
+            ObjectType::RenderPassEncoder,
+            ObjectType::RenderBundleEncoder,
+            ObjectType::RenderBundle,
+            ObjectType::CommandEncoder,
+            ObjectType::CommandBuffer,
             ObjectType::RenderPipeline,
             ObjectType::ComputePipeline,
             ObjectType::PipelineLayout,
@@ -277,6 +287,9 @@ namespace dawn_native {
             ObjectType::BindGroup,
             ObjectType::BindGroupLayout,
             ObjectType::ShaderModule,
+            ObjectType::ExternalTexture,
+            ObjectType::TextureView,
+            ObjectType::Texture,
             ObjectType::QuerySet,
             ObjectType::Sampler,
             ObjectType::Buffer,
@@ -293,13 +306,25 @@ namespace dawn_native {
             objList.objects.MoveInto(&objects);
         }
         for (LinkNode<ApiObjectBase>* node : objects) {
-            node->value()->DestroyApiObject();
+            node->value()->Destroy();
         }
     }
 
     void DeviceBase::Destroy() {
+        // Skip if we are already destroyed.
+        if (mState == State::Destroyed) {
+            return;
+        }
+
         // Skip handling device facilities if they haven't even been created (or failed doing so)
         if (mState != State::BeingCreated) {
+            // The device is being destroyed so it will be lost, call the application callback.
+            if (mDeviceLostCallback != nullptr) {
+                mDeviceLostCallback(WGPUDeviceLostReason_Destroyed, "Device was destroyed.",
+                                    mDeviceLostUserdata);
+                mDeviceLostCallback = nullptr;
+            }
+
             // Call all the callbacks immediately as the device is about to shut down.
             // TODO(crbug.com/dawn/826): Cancel the tasks that are in flight if possible.
             mAsyncTaskManager->WaitAllPendingTasks();
@@ -332,15 +357,21 @@ namespace dawn_native {
 
             case State::Disconnected:
                 break;
+
+            case State::Destroyed:
+                // If we are already destroyed we should've skipped this work entirely.
+                UNREACHABLE();
+                break;
         }
         ASSERT(mCompletedSerial == mLastSubmittedSerial);
         ASSERT(mFutureSerial <= mCompletedSerial);
 
         if (mState != State::BeingCreated) {
             // The GPU timeline is finished.
-            // Tick the queue-related tasks since they should be complete. This must be done before
-            // DestroyImpl() it may relinquish resources that will be freed by backends in the
-            // DestroyImpl() call.
+            // Finish destroying all objects owned by the device and tick the queue-related tasks
+            // since they should be complete. This must be done before DestroyImpl() it may
+            // relinquish resources that will be freed by backends in the DestroyImpl() call.
+            DestroyObjects();
             mQueue->Tick(GetCompletedCommandSerial());
             // Call TickImpl once last time to clean up resources
             // Ignore errors so that we can continue with destruction
@@ -348,6 +379,8 @@ namespace dawn_native {
         }
 
         // At this point GPU operations are always finished, so we are in the disconnected state.
+        // Note that currently this state change is required because some of the backend
+        // implementations of DestroyImpl checks that we are disconnected before doing work.
         mState = State::Disconnected;
 
         mDynamicUploader = nullptr;
@@ -359,12 +392,15 @@ namespace dawn_native {
 
         AssumeCommandsComplete();
 
-        // Now that the GPU timeline is empty, destroy all objects owned by the device, and then the
-        // backend device.
-        DestroyObjects();
+        // Now that the GPU timeline is empty, destroy the backend device.
         DestroyImpl();
 
         mCaches = nullptr;
+        mState = State::Destroyed;
+    }
+
+    void DeviceBase::APIDestroy() {
+        Destroy();
     }
 
     void DeviceBase::HandleError(InternalErrorType type, const char* message) {
@@ -407,8 +443,6 @@ namespace dawn_native {
         if (type == InternalErrorType::DeviceLost) {
             // The device was lost, call the application callback.
             if (mDeviceLostCallback != nullptr) {
-                // TODO(crbug.com/dawn/628): Make sure the "Destroyed" reason is passed if
-                // the device was destroyed.
                 mDeviceLostCallback(WGPUDeviceLostReason_Undefined, message, mDeviceLostUserdata);
                 mDeviceLostCallback = nullptr;
             }
@@ -447,6 +481,9 @@ namespace dawn_native {
         // resetting) the resources pointed by such pointer may be freed. Flush all deferred
         // callback tasks to guarantee we are never going to use the previous callback after
         // this call.
+        if (IsLost()) {
+            return;
+        }
         FlushCallbackTaskQueue();
         mLoggingCallback = callback;
         mLoggingUserdata = userdata;
@@ -458,6 +495,9 @@ namespace dawn_native {
         // resetting) the resources pointed by such pointer may be freed. Flush all deferred
         // callback tasks to guarantee we are never going to use the previous callback after
         // this call.
+        if (IsLost()) {
+            return;
+        }
         FlushCallbackTaskQueue();
         mUncapturedErrorCallback = callback;
         mUncapturedErrorUserdata = userdata;
@@ -469,6 +509,9 @@ namespace dawn_native {
         // resetting) the resources pointed by such pointer may be freed. Flush all deferred
         // callback tasks to guarantee we are never going to use the previous callback after
         // this call.
+        if (IsLost()) {
+            return;
+        }
         FlushCallbackTaskQueue();
         mDeviceLostCallback = callback;
         mDeviceLostUserdata = userdata;
@@ -894,11 +937,17 @@ namespace dawn_native {
     }
     CommandEncoder* DeviceBase::APICreateCommandEncoder(
         const CommandEncoderDescriptor* descriptor) {
+        const CommandEncoderDescriptor defaultDescriptor = {};
+        if (descriptor == nullptr) {
+            descriptor = &defaultDescriptor;
+        }
         return new CommandEncoder(this, descriptor);
     }
     ComputePipelineBase* DeviceBase::APICreateComputePipeline(
         const ComputePipelineDescriptor* descriptor) {
-        TRACE_EVENT0(GetPlatform(), General, "DeviceBase::APICreateComputePipeline");
+        TRACE_EVENT1(GetPlatform(), General, "DeviceBase::APICreateComputePipeline", "label",
+                     utils::GetLabelForTrace(descriptor->label));
+
         Ref<ComputePipelineBase> result;
         if (ConsumedError(CreateComputePipeline(descriptor), &result,
                           "calling %s.CreateComputePipeline(%s).", this, descriptor)) {
@@ -909,7 +958,9 @@ namespace dawn_native {
     void DeviceBase::APICreateComputePipelineAsync(const ComputePipelineDescriptor* descriptor,
                                                    WGPUCreateComputePipelineAsyncCallback callback,
                                                    void* userdata) {
-        TRACE_EVENT0(GetPlatform(), General, "DeviceBase::APICreateComputePipelineAsync");
+        TRACE_EVENT1(GetPlatform(), General, "DeviceBase::APICreateComputePipelineAsync", "label",
+                     utils::GetLabelForTrace(descriptor->label));
+
         MaybeError maybeResult = CreateComputePipelineAsync(descriptor, callback, userdata);
 
         // Call the callback directly when a validation error has been found in the front-end
@@ -949,7 +1000,8 @@ namespace dawn_native {
     void DeviceBase::APICreateRenderPipelineAsync(const RenderPipelineDescriptor* descriptor,
                                                   WGPUCreateRenderPipelineAsyncCallback callback,
                                                   void* userdata) {
-        TRACE_EVENT0(GetPlatform(), General, "DeviceBase::APICreateRenderPipelineAsync");
+        TRACE_EVENT1(GetPlatform(), General, "DeviceBase::APICreateRenderPipelineAsync", "label",
+                     utils::GetLabelForTrace(descriptor->label));
         // TODO(dawn:563): Add validation error context.
         MaybeError maybeResult = CreateRenderPipelineAsync(descriptor, callback, userdata);
 
@@ -973,7 +1025,9 @@ namespace dawn_native {
     }
     RenderPipelineBase* DeviceBase::APICreateRenderPipeline(
         const RenderPipelineDescriptor* descriptor) {
-        TRACE_EVENT0(GetPlatform(), General, "DeviceBase::APICreateRenderPipeline");
+        TRACE_EVENT1(GetPlatform(), General, "DeviceBase::APICreateRenderPipeline", "label",
+                     utils::GetLabelForTrace(descriptor->label));
+
         Ref<RenderPipelineBase> result;
         if (ConsumedError(CreateRenderPipeline(descriptor), &result,
                           "calling %s.CreateRenderPipeline(%s).", this, descriptor)) {
@@ -982,7 +1036,9 @@ namespace dawn_native {
         return result.Detach();
     }
     ShaderModuleBase* DeviceBase::APICreateShaderModule(const ShaderModuleDescriptor* descriptor) {
-        TRACE_EVENT0(GetPlatform(), General, "DeviceBase::APICreateShaderModule");
+        TRACE_EVENT1(GetPlatform(), General, "DeviceBase::APICreateShaderModule", "label",
+                     utils::GetLabelForTrace(descriptor->label));
+
         Ref<ShaderModuleBase> result;
         std::unique_ptr<OwnedCompilationMessages> compilationMessages(
             std::make_unique<OwnedCompilationMessages>());
@@ -1084,7 +1140,7 @@ namespace dawn_native {
         return result.Detach();
     }
 
-    void DeviceBase::ApplyFeatures(const DeviceDescriptor* deviceDescriptor) {
+    void DeviceBase::ApplyFeatures(const DawnDeviceDescriptor* deviceDescriptor) {
         ASSERT(deviceDescriptor);
         ASSERT(GetAdapter()->SupportsAllRequestedFeatures(deviceDescriptor->requiredFeatures));
 
@@ -1258,9 +1314,8 @@ namespace dawn_native {
         Ref<ComputePipelineBase> cachedComputePipeline =
             GetCachedComputePipeline(uninitializedComputePipeline.Get());
         if (cachedComputePipeline.Get() != nullptr) {
-            callback(WGPUCreatePipelineAsyncStatus_Success,
-                     reinterpret_cast<WGPUComputePipeline>(cachedComputePipeline.Detach()), "",
-                     userdata);
+            callback(WGPUCreatePipelineAsyncStatus_Success, ToAPI(cachedComputePipeline.Detach()),
+                     "", userdata);
         } else {
             // Otherwise we will create the pipeline object in InitializeComputePipelineAsyncImpl(),
             // where the pipeline object may be initialized asynchronously and the result will be
@@ -1405,9 +1460,8 @@ namespace dawn_native {
         Ref<RenderPipelineBase> cachedRenderPipeline =
             GetCachedRenderPipeline(uninitializedRenderPipeline.Get());
         if (cachedRenderPipeline != nullptr) {
-            callback(WGPUCreatePipelineAsyncStatus_Success,
-                     reinterpret_cast<WGPURenderPipeline>(cachedRenderPipeline.Detach()), "",
-                     userdata);
+            callback(WGPUCreatePipelineAsyncStatus_Success, ToAPI(cachedRenderPipeline.Detach()),
+                     "", userdata);
         } else {
             // Otherwise we will create the pipeline object in InitializeRenderPipelineAsyncImpl(),
             // where the pipeline object may be initialized asynchronously and the result will be
@@ -1538,7 +1592,7 @@ namespace dawn_native {
         SetToggle(Toggle::DisallowUnsafeAPIs, true);
     }
 
-    void DeviceBase::ApplyToggleOverrides(const DeviceDescriptor* deviceDescriptor) {
+    void DeviceBase::ApplyToggleOverrides(const DawnDeviceDescriptor* deviceDescriptor) {
         ASSERT(deviceDescriptor);
 
         for (const char* toggleName : deviceDescriptor->forceEnabledToggles) {
@@ -1655,6 +1709,11 @@ namespace dawn_native {
     }
 
     void DeviceBase::SetLabelImpl() {
+    }
+
+    bool DeviceBase::ShouldDuplicateNumWorkgroupsForDispatchIndirect(
+        ComputePipelineBase* computePipeline) const {
+        return false;
     }
 
 }  // namespace dawn_native

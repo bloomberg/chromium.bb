@@ -44,7 +44,7 @@
 
 .close::before,
 .close::after {
-  content: '';
+  content: "";
   display: inline-block;
   position: absolute;
   left: 0;
@@ -64,8 +64,4 @@
 
 .close::after {
   transform: rotate(-45deg);
-}
-
-:host-context(.-theme-with-dark-background) input[type="checkbox"] {
-  filter: invert(80%);
 }

@@ -307,27 +307,39 @@ static AOM_INLINE void compute_gradient_info_sb(MACROBLOCK *const x,
   lowbd_compute_gradient_info_sb(x, sb_size, plane);
 }
 
+// Gradient caching at superblock level is allowed only if all of the following
+// conditions are satisfied:
+// (1) The current frame is an intra only frame
+// (2) Non-RD mode decisions are not enabled
+// (3) The sf partition_search_type is set to SEARCH_PARTITION
+// (4) Either intra_pruning_with_hog or chroma_intra_pruning_with_hog is enabled
+//
+// SB level caching of gradient data may not help in speedup for the following
+// cases:
+// (1) Inter frames (due to early intra gating)
+// (2) When partition_search_type is not SEARCH_PARTITION
+// Hence, gradient data is computed at block level in such cases.
+static AOM_INLINE bool is_gradient_caching_for_hog_enabled(
+    const AV1_COMP *const cpi) {
+  const SPEED_FEATURES *const sf = &cpi->sf;
+  return frame_is_intra_only(&cpi->common) && !sf->rt_sf.use_nonrd_pick_mode &&
+         (sf->part_sf.partition_search_type == SEARCH_PARTITION) &&
+         (sf->intra_sf.intra_pruning_with_hog ||
+          sf->intra_sf.chroma_intra_pruning_with_hog);
+}
+
 // Function to generate pixel level gradient information for a given superblock.
 // Sets the flags 'is_sb_gradient_cached' for the specific plane-type if
 // gradient info is generated for the same.
 static AOM_INLINE void produce_gradients_for_sb(AV1_COMP *cpi, MACROBLOCK *x,
                                                 BLOCK_SIZE sb_size, int mi_row,
                                                 int mi_col) {
-  const SPEED_FEATURES *sf = &cpi->sf;
   // Initialise flags related to hog data caching.
   x->is_sb_gradient_cached[PLANE_TYPE_Y] = false;
   x->is_sb_gradient_cached[PLANE_TYPE_UV] = false;
+  if (!is_gradient_caching_for_hog_enabled(cpi)) return;
 
-  // SB level caching of gradient data may not help in speedup for the following
-  // cases:
-  // (1) Inter frames (due to early intra gating)
-  // (2) When partition_search_type is not SEARCH_PARTITION
-  // Hence, gradient data is computed at block level in such cases.
-
-  if (!frame_is_intra_only(&cpi->common) ||
-      sf->part_sf.partition_search_type != SEARCH_PARTITION)
-    return;
-
+  const SPEED_FEATURES *sf = &cpi->sf;
   const int num_planes = av1_num_planes(&cpi->common);
 
   av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes, sb_size);

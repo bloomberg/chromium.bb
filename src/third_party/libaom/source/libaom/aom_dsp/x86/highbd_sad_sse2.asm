@@ -46,9 +46,9 @@ cglobal highbd_sad%1x%2_avg, 5, ARCH_X86_64 + %3, %5, src, src_stride, \
 %endif ; %3 == 5/7
 %else  ; %4 == 2, skip rows
 %if %3 == 5
-cglobal highbd_sad_skip_%1x%2, 4, %3, 7, src, src_stride, ref, ref_stride, n_rows
+cglobal highbd_sad_skip_%1x%2, 4, %3, %5, src, src_stride, ref, ref_stride, n_rows
 %else ; %3 == 7
-cglobal highbd_sad_skip_%1x%2, 4, %3, 7, src, src_stride, ref, ref_stride, \
+cglobal highbd_sad_skip_%1x%2, 4, %3, %5, src, src_stride, ref, ref_stride, \
                             src_stride3, ref_stride3, n_rows
 %endif ; %3 == 5/7
 %endif ; sad/avg/skip

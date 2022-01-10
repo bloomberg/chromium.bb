@@ -339,7 +339,7 @@ TEST_F(ResolverIntrinsicTest, Dot_Vec2) {
 }
 
 TEST_F(ResolverIntrinsicTest, Dot_Vec3) {
-  Global("my_var", ty.vec3<f32>(), ast::StorageClass::kPrivate);
+  Global("my_var", ty.vec3<i32>(), ast::StorageClass::kPrivate);
 
   auto* expr = Call("dot", "my_var", "my_var");
   WrapInFunction(expr);
@@ -347,11 +347,11 @@ TEST_F(ResolverIntrinsicTest, Dot_Vec3) {
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
   ASSERT_NE(TypeOf(expr), nullptr);
-  EXPECT_TRUE(TypeOf(expr)->Is<sem::F32>());
+  EXPECT_TRUE(TypeOf(expr)->Is<sem::I32>());
 }
 
 TEST_F(ResolverIntrinsicTest, Dot_Vec4) {
-  Global("my_var", ty.vec4<f32>(), ast::StorageClass::kPrivate);
+  Global("my_var", ty.vec4<u32>(), ast::StorageClass::kPrivate);
 
   auto* expr = Call("dot", "my_var", "my_var");
   WrapInFunction(expr);
@@ -359,7 +359,7 @@ TEST_F(ResolverIntrinsicTest, Dot_Vec4) {
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
   ASSERT_NE(TypeOf(expr), nullptr);
-  EXPECT_TRUE(TypeOf(expr)->Is<sem::F32>());
+  EXPECT_TRUE(TypeOf(expr)->Is<sem::U32>());
 }
 
 TEST_F(ResolverIntrinsicTest, Dot_Error_Scalar) {
@@ -372,23 +372,7 @@ TEST_F(ResolverIntrinsicTest, Dot_Error_Scalar) {
             R"(error: no matching call to dot(f32, f32)
 
 1 candidate function:
-  dot(vecN<f32>, vecN<f32>) -> f32
-)");
-}
-
-TEST_F(ResolverIntrinsicTest, Dot_Error_VectorInt) {
-  Global("my_var", ty.vec4<i32>(), ast::StorageClass::kPrivate);
-
-  auto* expr = Call("dot", "my_var", "my_var");
-  WrapInFunction(expr);
-
-  EXPECT_FALSE(r()->Resolve());
-
-  EXPECT_EQ(r()->error(),
-            R"(error: no matching call to dot(vec4<i32>, vec4<i32>)
-
-1 candidate function:
-  dot(vecN<f32>, vecN<f32>) -> f32
+  dot(vecN<T>, vecN<T>) -> T  where: T is f32, i32 or u32
 )");
 }
 
@@ -840,8 +824,8 @@ TEST_F(ResolverIntrinsicDataTest, FrexpVector) {
 }
 
 TEST_F(ResolverIntrinsicDataTest, Frexp_Error_FirstParamInt) {
-  Global("exp", ty.i32(), ast::StorageClass::kWorkgroup);
-  auto* call = Call("frexp", 1, AddressOf("exp"));
+  Global("v", ty.i32(), ast::StorageClass::kWorkgroup);
+  auto* call = Call("frexp", 1, AddressOf("v"));
   WrapInFunction(call);
 
   EXPECT_FALSE(r()->Resolve());
@@ -851,14 +835,14 @@ TEST_F(ResolverIntrinsicDataTest, Frexp_Error_FirstParamInt) {
       R"(error: no matching call to frexp(i32, ptr<workgroup, i32, read_write>)
 
 2 candidate functions:
-  frexp(f32) -> _frexp_result
-  frexp(vecN<f32>) -> _frexp_result_vecN
+  frexp(f32) -> __frexp_result
+  frexp(vecN<f32>) -> __frexp_result_vecN
 )");
 }
 
 TEST_F(ResolverIntrinsicDataTest, Frexp_Error_SecondParamFloatPtr) {
-  Global("exp", ty.f32(), ast::StorageClass::kWorkgroup);
-  auto* call = Call("frexp", 1.0f, AddressOf("exp"));
+  Global("v", ty.f32(), ast::StorageClass::kWorkgroup);
+  auto* call = Call("frexp", 1.0f, AddressOf("v"));
   WrapInFunction(call);
 
   EXPECT_FALSE(r()->Resolve());
@@ -868,8 +852,8 @@ TEST_F(ResolverIntrinsicDataTest, Frexp_Error_SecondParamFloatPtr) {
       R"(error: no matching call to frexp(f32, ptr<workgroup, f32, read_write>)
 
 2 candidate functions:
-  frexp(f32) -> _frexp_result
-  frexp(vecN<f32>) -> _frexp_result_vecN
+  frexp(f32) -> __frexp_result
+  frexp(vecN<f32>) -> __frexp_result_vecN
 )");
 }
 
@@ -882,14 +866,14 @@ TEST_F(ResolverIntrinsicDataTest, Frexp_Error_SecondParamNotAPointer) {
   EXPECT_EQ(r()->error(), R"(error: no matching call to frexp(f32, i32)
 
 2 candidate functions:
-  frexp(f32) -> _frexp_result
-  frexp(vecN<f32>) -> _frexp_result_vecN
+  frexp(f32) -> __frexp_result
+  frexp(vecN<f32>) -> __frexp_result_vecN
 )");
 }
 
 TEST_F(ResolverIntrinsicDataTest, Frexp_Error_VectorSizesDontMatch) {
-  Global("exp", ty.vec4<i32>(), ast::StorageClass::kWorkgroup);
-  auto* call = Call("frexp", vec2<f32>(1.0f, 2.0f), AddressOf("exp"));
+  Global("v", ty.vec4<i32>(), ast::StorageClass::kWorkgroup);
+  auto* call = Call("frexp", vec2<f32>(1.0f, 2.0f), AddressOf("v"));
   WrapInFunction(call);
 
   EXPECT_FALSE(r()->Resolve());
@@ -899,8 +883,8 @@ TEST_F(ResolverIntrinsicDataTest, Frexp_Error_VectorSizesDontMatch) {
       R"(error: no matching call to frexp(vec2<f32>, ptr<workgroup, vec4<i32>, read_write>)
 
 2 candidate functions:
-  frexp(vecN<f32>) -> _frexp_result_vecN
-  frexp(f32) -> _frexp_result
+  frexp(vecN<f32>) -> __frexp_result_vecN
+  frexp(f32) -> __frexp_result
 )");
 }
 
@@ -978,8 +962,8 @@ TEST_F(ResolverIntrinsicDataTest, Modf_Error_FirstParamInt) {
       R"(error: no matching call to modf(i32, ptr<workgroup, f32, read_write>)
 
 2 candidate functions:
-  modf(f32) -> _modf_result
-  modf(vecN<f32>) -> _modf_result_vecN
+  modf(f32) -> __modf_result
+  modf(vecN<f32>) -> __modf_result_vecN
 )");
 }
 
@@ -995,8 +979,8 @@ TEST_F(ResolverIntrinsicDataTest, Modf_Error_SecondParamIntPtr) {
       R"(error: no matching call to modf(f32, ptr<workgroup, i32, read_write>)
 
 2 candidate functions:
-  modf(f32) -> _modf_result
-  modf(vecN<f32>) -> _modf_result_vecN
+  modf(f32) -> __modf_result
+  modf(vecN<f32>) -> __modf_result_vecN
 )");
 }
 
@@ -1009,8 +993,8 @@ TEST_F(ResolverIntrinsicDataTest, Modf_Error_SecondParamNotAPointer) {
   EXPECT_EQ(r()->error(), R"(error: no matching call to modf(f32, f32)
 
 2 candidate functions:
-  modf(f32) -> _modf_result
-  modf(vecN<f32>) -> _modf_result_vecN
+  modf(f32) -> __modf_result
+  modf(vecN<f32>) -> __modf_result_vecN
 )");
 }
 
@@ -1026,8 +1010,8 @@ TEST_F(ResolverIntrinsicDataTest, Modf_Error_VectorSizesDontMatch) {
       R"(error: no matching call to modf(vec2<f32>, ptr<workgroup, vec4<f32>, read_write>)
 
 2 candidate functions:
-  modf(vecN<f32>) -> _modf_result_vecN
-  modf(f32) -> _modf_result
+  modf(vecN<f32>) -> __modf_result_vecN
+  modf(f32) -> __modf_result
 )");
 }
 
@@ -1760,6 +1744,42 @@ const char* expected_texture_overload(
     case ValidTextureOverload::kDimensionsStorageWO2dArray:
     case ValidTextureOverload::kDimensionsStorageWO3d:
       return R"(textureDimensions(texture))";
+    case ValidTextureOverload::kGather2dF32:
+      return R"(textureGather(component, texture, sampler, coords))";
+    case ValidTextureOverload::kGather2dOffsetF32:
+      return R"(textureGather(component, texture, sampler, coords, offset))";
+    case ValidTextureOverload::kGather2dArrayF32:
+      return R"(textureGather(component, texture, sampler, coords, array_index))";
+    case ValidTextureOverload::kGather2dArrayOffsetF32:
+      return R"(textureGather(component, texture, sampler, coords, array_index, offset))";
+    case ValidTextureOverload::kGatherCubeF32:
+      return R"(textureGather(component, texture, sampler, coords))";
+    case ValidTextureOverload::kGatherCubeArrayF32:
+      return R"(textureGather(component, texture, sampler, coords, array_index))";
+    case ValidTextureOverload::kGatherDepth2dF32:
+      return R"(textureGather(texture, sampler, coords))";
+    case ValidTextureOverload::kGatherDepth2dOffsetF32:
+      return R"(textureGather(texture, sampler, coords, offset))";
+    case ValidTextureOverload::kGatherDepth2dArrayF32:
+      return R"(textureGather(texture, sampler, coords, array_index))";
+    case ValidTextureOverload::kGatherDepth2dArrayOffsetF32:
+      return R"(textureGather(texture, sampler, coords, array_index, offset))";
+    case ValidTextureOverload::kGatherDepthCubeF32:
+      return R"(textureGather(texture, sampler, coords))";
+    case ValidTextureOverload::kGatherDepthCubeArrayF32:
+      return R"(textureGather(texture, sampler, coords, array_index))";
+    case ValidTextureOverload::kGatherCompareDepth2dF32:
+      return R"(textureGatherCompare(texture, sampler, coords, depth_ref))";
+    case ValidTextureOverload::kGatherCompareDepth2dOffsetF32:
+      return R"(textureGatherCompare(texture, sampler, coords, depth_ref, offset))";
+    case ValidTextureOverload::kGatherCompareDepth2dArrayF32:
+      return R"(textureGatherCompare(texture, sampler, coords, array_index, depth_ref))";
+    case ValidTextureOverload::kGatherCompareDepth2dArrayOffsetF32:
+      return R"(textureGatherCompare(texture, sampler, coords, array_index, depth_ref, offset))";
+    case ValidTextureOverload::kGatherCompareDepthCubeF32:
+      return R"(textureGatherCompare(texture, sampler, coords, depth_ref))";
+    case ValidTextureOverload::kGatherCompareDepthCubeArrayF32:
+      return R"(textureGatherCompare(texture, sampler, coords, array_index, depth_ref))";
     case ValidTextureOverload::kNumLayers2dArray:
     case ValidTextureOverload::kNumLayersCubeArray:
     case ValidTextureOverload::kNumLayersDepth2dArray:
@@ -1981,6 +2001,26 @@ TEST_P(ResolverIntrinsicTest_Texture, Call) {
     EXPECT_TRUE(TypeOf(call)->Is<sem::I32>());
   } else if (std::string(param.function) == "textureStore") {
     EXPECT_TRUE(TypeOf(call)->Is<sem::Void>());
+  } else if (std::string(param.function) == "textureGather") {
+    auto* vec = As<sem::Vector>(TypeOf(call));
+    ASSERT_NE(vec, nullptr);
+    EXPECT_EQ(vec->Width(), 4u);
+    switch (param.texture_data_type) {
+      case ast::intrinsic::test::TextureDataType::kF32:
+        EXPECT_TRUE(vec->type()->Is<sem::F32>());
+        break;
+      case ast::intrinsic::test::TextureDataType::kU32:
+        EXPECT_TRUE(vec->type()->Is<sem::U32>());
+        break;
+      case ast::intrinsic::test::TextureDataType::kI32:
+        EXPECT_TRUE(vec->type()->Is<sem::I32>());
+        break;
+    }
+  } else if (std::string(param.function) == "textureGatherCompare") {
+    auto* vec = As<sem::Vector>(TypeOf(call));
+    ASSERT_NE(vec, nullptr);
+    EXPECT_EQ(vec->Width(), 4u);
+    EXPECT_TRUE(vec->type()->Is<sem::F32>());
   } else {
     switch (param.texture_kind) {
       case ast::intrinsic::test::TextureKind::kRegular:

@@ -30,7 +30,7 @@ namespace dawn_native {
       public:
         CommandEncoder(DeviceBase* device, const CommandEncoderDescriptor* descriptor);
 
-        ObjectType GetType() const;
+        ObjectType GetType() const override;
 
         CommandIterator AcquireCommands();
         CommandBufferResourceUsage AcquireResourceUsages();
@@ -59,6 +59,7 @@ namespace dawn_native {
         void APICopyTextureToTextureInternal(const ImageCopyTexture* source,
                                              const ImageCopyTexture* destination,
                                              const Extent3D* copySize);
+        void APIClearBuffer(BufferBase* destination, uint64_t destinationOffset, uint64_t size);
 
         void APIInjectValidationError(const char* message);
         void APIInsertDebugMarker(const char* groupLabel);
@@ -79,6 +80,7 @@ namespace dawn_native {
         CommandBufferBase* APIFinish(const CommandBufferDescriptor* descriptor = nullptr);
 
       private:
+        void DestroyImpl() override;
         ResultOrError<Ref<CommandBufferBase>> FinishInternal(
             const CommandBufferDescriptor* descriptor);
 

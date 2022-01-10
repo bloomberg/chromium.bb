@@ -305,13 +305,13 @@
 <translation id="3620292326130836921">Mindenről készült biztonsági másolat!</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_INDEX" />. hálózat (összesen <ph name="NETWORK_COUNT" />), <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, a rendszergazdája kezeli, részletek</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> elem áthelyezve.</translation>
-<translation id="3645531960514756307">Mappa rögzítésének feloldása</translation>
 <translation id="3685122418104378273">A Google Drive szinkronizálása alapértelmezés szerint le van tiltva mobiladat-kapcsolat használatakor.</translation>
 <translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> megszakítása.</translation>
 <translation id="3690128548376345212"><ph name="NETWORK_COUNT" />/<ph name="NETWORK_INDEX" /> hálózat, <ph name="NETWORK_NAME" />, Inaktiválva, <ph name="CONNECTION_STATUS" />, Jelerősség <ph name="SIGNAL_STRENGTH" />%, Részletek</translation>
 <translation id="3691184985318546178">szingaléz</translation>
 <translation id="3726463242007121105">Ezt az eszközt nem lehet megnyitni, mert a fájlrendszere nem támogatott.</translation>
 <translation id="3727148787322499904">A beállítás módosítása az összes megosztott hálózatot érinti</translation>
+<translation id="3737576078404241332">Eltávolítás az oldalsávról</translation>
 <translation id="3741243925913727067">Biztonsági másolat készítése az adathordozón lévő fotókról és videókról a Google Drive-on.</translation>
 <translation id="3749289110408117711">Fájlnév</translation>
 <translation id="3780536599611287598">Nincs jogosultsága fájlok áthelyezésére a(z) „<ph name="FOLDER_NAME" />” mappába.</translation>
@@ -372,6 +372,7 @@
 <translation id="4326142238881453352">Botanikus</translation>
 <translation id="4326192123064055915">Kávé</translation>
 <translation id="4336032328163998280">A másolási művelet sikertelen. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4340491671558548972">Felvétel az oldalsávra</translation>
 <translation id="4348495354623233847">szoráni kurd, arabalapú billentyűzettel</translation>
 <translation id="4363958938297989186">orosz, fonetikus billentyűzettel</translation>
 <translation id="4364327530094270451">Dinnye</translation>
@@ -927,7 +928,6 @@
 <translation id="9110990317705400362">Folyamatosan keressük az új módszereket, hogy a böngészést biztonságosabbá tegyük. Korábban bármelyik webhely megkérhette Önt, hogy adjon hozzá egy bővítményt a böngészőjéhez. A Google Chrome legújabb verzióiban kifejezetten meg kell mondania a Chrome-nak, hogy telepíteni szeretné ezeket a bővítményeket. Ehhez a Bővítmények oldalon kell hozzáadnia őket. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">Feloldás</translation>
 <translation id="912419004897138677">Kodek</translation>
-<translation id="9129931661813833980">Mappa rögzítése</translation>
 <translation id="9130775360844693113">A(z) „<ph name="DESTINATION_NAME" />” tagjai hozzá fognak férni ezekhez az elemekhez.</translation>
 <translation id="9131598836763251128">Válasszon ki egy vagy több fájlt</translation>
 <translation id="9133055936679483811">A tömörítés sikertelen. <ph name="ERROR_MESSAGE" /></translation>

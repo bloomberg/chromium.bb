@@ -5,6 +5,7 @@
 
 load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
+load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "goma", "os", "sheriff_rotations")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
@@ -151,6 +152,21 @@ ci.builder(
 
 ci.builder(
     name = "chromeos-arm-generic-rel",
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_arch = builder_config.target_arch.ARM,
+            target_bits = 32,
+            target_platform = builder_config.target_platform.CHROMEOS,
+            target_cros_boards = ["arm-generic"],
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["chromeos"],
+        ),
+    ),
     branch_selector = branches.CROS_LTS_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "simple|release",
@@ -167,6 +183,16 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "simple|release",
         short_name = "kvn",
+    ),
+    main_console_view = "main",
+)
+
+ci.builder(
+    name = "linux-chromeos-annotator-rel",
+    branch_selector = branches.STANDARD_MILESTONE,
+    console_view_entry = consoles.console_view_entry(
+        category = "release",
+        short_name = "rel",
     ),
     main_console_view = "main",
 )
@@ -208,6 +234,7 @@ ci.builder(
 
 ci.builder(
     name = "lacros-amd64-generic-rel",
+    branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "lacros|x64",
         short_name = "rel",
@@ -219,6 +246,7 @@ ci.builder(
 
 ci.builder(
     name = "lacros-arm-generic-rel",
+    branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "lacros|arm",
         short_name = "arm",

@@ -67,11 +67,18 @@ try_.orchestrator_pair_builders(
     compilator_name = "mac-rel-compilator",
 )
 
-try_.builder(
+try_.orchestrator_pair_builders(
     name = "mac11-arm64-rel",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
-    goma_jobs = goma.jobs.J150,
+    main_list_view = "try",
+    orchestrator_cores = 2,
+    orchestrator_tryjob = try_.job(
+        experiment_percentage = 50,
+    ),
+    compilator_goma_jobs = goma.jobs.J150,
     os = os.MAC_11,
+    compilator_name = "mac11-arm64-rel-compilator",
+    # TODO (crbug/1271287): Revert when root issue is fixed
+    compilator_grace_period = 4 * time.minute,
 )
 
 # NOTE: the following trybots aren't sensitive to Mac version on which

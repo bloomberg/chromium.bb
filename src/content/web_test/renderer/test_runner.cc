@@ -18,7 +18,6 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
@@ -231,7 +230,10 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void PostV8Callback(v8::Local<v8::Function> v8_callback,
                       std::vector<v8::Local<v8::Value>> args = {});
 
-  blink::WebLocalFrame* GetWebFrame() { return frame_->GetWebFrame(); }
+  blink::WebLocalFrame* GetWebFrame() {
+    CHECK(!invalid_);
+    return frame_->GetWebFrame();
+  }
 
  private:
   // Watches for the RenderFrame that the TestRunnerBindings is attached to
@@ -488,7 +490,7 @@ void TestRunnerBindings::Install(TestRunner* test_runner,
   // because WPT reftests never access this object.
   if (is_wpt_test && is_main_test_window && !web_frame->Parent() &&
       !web_frame->Opener()) {
-    web_frame->ExecuteScript(blink::WebString(
+    web_frame->ExecuteScript(blink::WebScriptSource(blink::WebString(
         R"(if (!window.testRunner._wpt_reftest_setup) {
           window.testRunner._wpt_reftest_setup = true;
 
@@ -517,7 +519,7 @@ void TestRunnerBindings::Install(TestRunner* test_runner,
               document.fonts.ready.then(() => window.testRunner.notifyDone());
             }
           });
-        })"));
+        })")));
   }
 }
 
@@ -871,6 +873,8 @@ base::OnceClosure TestRunnerBindings::WrapV8Closure(
 void TestRunnerBindings::PostV8Callback(
     v8::Local<v8::Function> v8_callback,
     std::vector<v8::Local<v8::Value>> args) {
+  if (invalid_)
+    return;
   const auto& task_runner =
       GetWebFrame()->GetTaskRunner(blink::TaskType::kInternalTest);
   task_runner->PostTask(FROM_HERE,
@@ -881,6 +885,8 @@ void TestRunnerBindings::InvokeV8Callback(
     v8::UniquePersistent<v8::Function> callback,
     std::vector<v8::UniquePersistent<v8::Value>> bound_args,
     const std::vector<v8::Local<v8::Value>>& runtime_args) {
+  if (invalid_)
+    return;
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
 
@@ -1105,7 +1111,7 @@ TestRunnerBindings::EvaluateScriptInIsolatedWorldAndReturnValue(
   if (invalid_ || world_id <= 0 || world_id >= (1 << 29))
     return {};
 
-  blink::WebScriptSource source = blink::WebString::FromUTF8(script);
+  blink::WebScriptSource source(blink::WebString::FromUTF8(script));
   return GetWebFrame()->ExecuteScriptInIsolatedWorldAndReturnValue(
       world_id, source, blink::BackForwardCacheAware::kAllow);
 }
@@ -1116,7 +1122,7 @@ void TestRunnerBindings::EvaluateScriptInIsolatedWorld(
   if (invalid_ || world_id <= 0 || world_id >= (1 << 29))
     return;
 
-  blink::WebScriptSource source = blink::WebString::FromUTF8(script);
+  blink::WebScriptSource source(blink::WebString::FromUTF8(script));
   GetWebFrame()->ExecuteScriptInIsolatedWorld(
       world_id, source, blink::BackForwardCacheAware::kAllow);
 }
@@ -1953,6 +1959,8 @@ void TestRunnerBindings::CheckForLeakedWindows() {
 void TestRunnerBindings::CopyImageThen(int x,
                                        int y,
                                        v8::Local<v8::Function> v8_callback) {
+  if (invalid_)
+    return;
   mojo::Remote<blink::mojom::ClipboardHost> remote_clipboard;
   frame_->GetBrowserInterfaceBroker()->GetInterface(
       remote_clipboard.BindNewPipeAndPassReceiver());

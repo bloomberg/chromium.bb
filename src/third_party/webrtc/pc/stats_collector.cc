@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <cmath>
 #include <memory>
 #include <set>
 #include <utility>
@@ -385,7 +386,7 @@ void ExtractStats(const cricket::VideoSenderInfo& info,
        info.encode_usage_percent},
       {StatsReport::kStatsValueNameFirsReceived, info.firs_rcvd},
       {StatsReport::kStatsValueNameFrameHeightSent, info.send_frame_height},
-      {StatsReport::kStatsValueNameFrameRateInput, info.framerate_input},
+      {StatsReport::kStatsValueNameFrameRateInput, round(info.framerate_input)},
       {StatsReport::kStatsValueNameFrameRateSent, info.framerate_sent},
       {StatsReport::kStatsValueNameFrameWidthSent, info.send_frame_width},
       {StatsReport::kStatsValueNameNacksReceived, info.nacks_rcvd},
@@ -505,7 +506,7 @@ const char* IceCandidateTypeToStatsType(const std::string& candidate_type) {
   if (candidate_type == cricket::RELAY_PORT_TYPE) {
     return STATSREPORT_RELAY_PORT_TYPE;
   }
-  RTC_NOTREACHED();
+  RTC_DCHECK_NOTREACHED();
   return "unknown";
 }
 
@@ -530,7 +531,7 @@ const char* AdapterTypeToStatsType(rtc::AdapterType type) {
     case rtc::ADAPTER_TYPE_ANY:
       return STATSREPORT_ADAPTER_TYPE_WILDCARD;
     default:
-      RTC_NOTREACHED();
+      RTC_DCHECK_NOTREACHED();
       return "";
   }
 }
@@ -572,7 +573,7 @@ void StatsCollector::AddTrack(MediaStreamTrackInterface* track) {
     CreateTrackReport(static_cast<VideoTrackInterface*>(track), &reports_,
                       &track_ids_);
   } else {
-    RTC_NOTREACHED() << "Illegal track kind";
+    RTC_DCHECK_NOTREACHED() << "Illegal track kind";
   }
 }
 
@@ -807,6 +808,8 @@ StatsReport* StatsCollector::AddConnectionInfoReport(
                     info.remote_candidate.type());
   report->AddString(StatsReport::kStatsValueNameTransportType,
                     info.local_candidate.protocol());
+  report->AddString(StatsReport::kStatsValueNameLocalCandidateRelayProtocol,
+                    info.local_candidate.relay_protocol());
 
   return report;
 }

@@ -20,7 +20,7 @@ QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_donot_check_amplification_limit_with_p
 // If bytes in flight has dipped below 1.25*MaxBW in the last round, do not exit PROBE_UP due to excess queue buildup.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_bbr2_no_probe_up_exit_if_no_queue, true)
 // If true, 1) NEW_TOKENs sent from a IETF QUIC session will include the cached network parameters proto, 2) A min_rtt received from a validated token will be used to set the initial rtt, 3) Enable bandwidth resumption for IETF QUIC when connection options BWRE or BWMX exists.
-QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_add_cached_network_parameters_to_address_token, false)
+QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_add_cached_network_parameters_to_address_token2, false)
 // If true, QUIC will default enable MTU discovery at server, with a target of 1450 bytes.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_enable_mtu_discovery_at_server, false)
 // If true, QUIC won\'t honor the connection option TLPR
@@ -59,20 +59,20 @@ QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_disable_version_q050, false)
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_disable_version_rfcv1, false)
 // If true, disable QUIC version h3-29.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_disable_version_draft_29, false)
-// If true, disable QUIC version h3-T051.
-QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_disable_version_t051, true)
 // If true, disable blackhole detection on server side.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_disable_server_blackhole_detection, false)
 // If true, discard INITIAL packet if the key has been dropped.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_discard_initial_packet_with_key_dropped, true)
 // If true, do not bundle 2nd ACK with connection close if there is an ACK queued.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_single_ack_in_packet2, false)
+// If true, do not call ProofSourceHandle::SelectCertificate if QUIC connection has disconnected.
+QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_tls_no_select_cert_if_disconnected, true)
 // If true, do not count bytes sent/received on the alternative path into the bytes sent/received on the default path.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_count_bytes_on_alternative_path_seperately, true)
 // If true, do not re-arm PTO while sending application data during handshake.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_donot_rearm_pto_on_application_data_during_handshake, true)
 // If true, do not use the gQUIC common certificate set for certificate compression.
-QUIC_FLAG(FLAGS_quic_restart_flag_quic_no_common_cert_set, false)
+QUIC_FLAG(FLAGS_quic_restart_flag_quic_no_common_cert_set, true)
 // If true, drop unsent PATH_RESPONSEs and rely on peer\'s retry.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_drop_unsent_path_response, true)
 // If true, enable server retransmittable on wire PING.
@@ -80,15 +80,13 @@ QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_enable_server_on_wire_ping, true)
 // If true, flush pending frames as well as pending padding bytes on connection migration.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_flush_pending_frames_and_padding_bytes_on_migration, true)
 // If true, ietf connection migration is no longer conditioned on connection option RVCM.
-QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_remove_connection_migration_connection_option, true)
+QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_remove_connection_migration_connection_option, false)
 // If true, ignore peer_max_ack_delay during handshake.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_ignore_peer_max_ack_delay_during_handshake, true)
 // If true, include stream information in idle timeout connection close detail.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_add_stream_info_to_idle_close_detail, true)
 // If true, pass the received PATH_RESPONSE payload to path validator to move forward the path validation.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_pass_path_response_to_validator, true)
-// If true, quic dispatcher supports one connection to use multiple connection IDs. 
-QUIC_FLAG(FLAGS_quic_restart_flag_quic_dispatcher_support_multiple_cid_per_connection_v2, true)
 // If true, quic server will send ENABLE_CONNECT_PROTOCOL setting and and endpoint will validate required request/response headers and extended CONNECT mechanism and update code counts of valid/invalid headers.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_verify_request_headers_2, true)
 // If true, record addresses that server has sent reset to recently, and do not send reset if the address lives in the set.
@@ -117,6 +115,8 @@ QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_connection_migration_use_new_cid_v2, t
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_conservative_cwnd_and_pacing_gains, false)
 // If true, validate that peer owns the new address once the server detects peer migration or is probed from that address, and also apply anti-amplification limit while sending to that address.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_server_reverse_validate_new_path3, true)
+// If true, when client attempts TLS resumption, use token in session_cache_ instead of cached_states_ in QuicCryptoClientConfig.
+QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_tls_use_token_in_session_cache, true)
 // When receiving STOP_SENDING, send a RESET_STREAM with a matching error code.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_match_ietf_reset_code, true)
 // When the flag is true, exit STARTUP after the same number of loss events as PROBE_UP.
@@ -127,8 +127,6 @@ QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_ignore_key_update_not_yet_supported, t
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_ignore_user_agent_transport_parameter, true)
 // When true, QUIC will both send and validate the version_information transport parameter.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_version_information, false)
-// When true, QuicDispatcher will silently drop incoming packets whose UDP source port is on the blocklist.
-QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_blocked_ports, true)
 // When true, defaults to BBR congestion control instead of Cubic.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_default_to_bbr, false)
 // When true, prevents QUIC\'s PacingSender from generating bursts when the congestion controller is CWND limited and not pacing limited.

@@ -14,13 +14,11 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
@@ -183,7 +181,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                SetCookiesCallback callback) override;
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const CookieOptions& options,
-                                     const CookiePartitionKeychain& s,
+                                     const CookiePartitionKeyCollection& s,
                                      GetCookieListCallback callback) override;
   void GetAllCookiesAsync(GetAllCookiesCallback callback) override;
   void GetAllCookiesWithAccessSemanticsAsync(
@@ -382,7 +380,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void GetCookieListWithOptions(
       const GURL& url,
       const CookieOptions& options,
-      const CookiePartitionKeychain& cookie_partition_keychain,
+      const CookiePartitionKeyCollection& cookie_partition_key_collection,
       GetCookieListCallback callback);
 
   void DeleteAllCreatedInTimeRange(

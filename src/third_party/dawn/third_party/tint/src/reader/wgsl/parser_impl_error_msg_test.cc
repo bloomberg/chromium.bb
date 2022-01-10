@@ -58,16 +58,16 @@ TEST_F(ParserImplErrorTest, AliasDeclInvalidDeco) {
          "  ^^^^^\n");
 }
 
-TEST_F(ParserImplErrorTest, ArrayIndexExprInvalidExpr) {
+TEST_F(ParserImplErrorTest, IndexExprInvalidExpr) {
   EXPECT("fn f() { x = y[^]; }",
          "test.wgsl:1:16 error: unable to parse expression inside []\n"
          "fn f() { x = y[^]; }\n"
          "               ^\n");
 }
 
-TEST_F(ParserImplErrorTest, ArrayIndexExprMissingRBracket) {
+TEST_F(ParserImplErrorTest, IndexExprMissingRBracket) {
   EXPECT("fn f() { x = y[1; }",
-         "test.wgsl:1:17 error: expected ']' for array accessor\n"
+         "test.wgsl:1:17 error: expected ']' for index accessor\n"
          "fn f() { x = y[1; }\n"
          "                ^\n");
 }
@@ -224,13 +224,6 @@ TEST_F(ParserImplErrorTest, EqualityInvalidExpr) {
          "test.wgsl:1:22 error: unable to parse right side of == expression\n"
          "fn f() { return 1 == >; }\n"
          "                     ^\n");
-}
-
-TEST_F(ParserImplErrorTest, FloatLiteralSuffixedWithF) {
-  EXPECT("var f : f32 = 1.23f;",
-         "test.wgsl:1:19 error: float literals must not be suffixed with 'f'\n"
-         "var f : f32 = 1.23f;\n"
-         "                  ^\n");
 }
 
 TEST_F(ParserImplErrorTest, ForLoopInitializerMissingSemicolon) {
@@ -492,22 +485,6 @@ TEST_F(ParserImplErrorTest, GlobalDeclConstNotConstExpr) {
       "test.wgsl:2:9 error: unable to parse const_expr\n"
       "let b = a;\n"
       "        ^\n");
-}
-
-TEST_F(ParserImplErrorTest, GlobalDeclConstNotConstExprWithParn) {
-  EXPECT(
-      "let a = 1;\n"
-      "let b = a();",
-      "test.wgsl:2:9 error: unable to parse const_expr\n"
-      "let b = a();\n"
-      "        ^\n");
-}
-
-TEST_F(ParserImplErrorTest, GlobalDeclConstConstExprRegisteredType) {
-  EXPECT("let a = S0(0);",
-         "test.wgsl:1:9 error: unable to parse const_expr\n"
-         "let a = S0(0);\n"
-         "        ^^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclConstExprMaxDepth) {
@@ -782,13 +759,6 @@ TEST_F(ParserImplErrorTest, GlobalDeclTypeAliasMissingSemicolon) {
          "test.wgsl:1:16 error: expected ';' for type alias\n"
          "type meow = f32\n"
          "               ^\n");
-}
-
-TEST_F(ParserImplErrorTest, GlobalDeclTypeInvalid) {
-  EXPECT("var x : fish;",
-         "test.wgsl:1:9 error: unknown type 'fish'\n"
-         "var x : fish;\n"
-         "        ^^^^\n");
 }
 
 TEST_F(ParserImplErrorTest, GlobalDeclTypeDecoInvalid) {

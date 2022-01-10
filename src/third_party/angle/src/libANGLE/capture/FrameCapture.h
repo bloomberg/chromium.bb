@@ -1,10 +1,10 @@
-
+//
 // Copyright 2019 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // FrameCapture.h:
-//   ANGLE Frame capture inteface.
+//   ANGLE Frame capture interface.
 //
 
 #ifndef LIBANGLE_FRAME_CAPTURE_H_
@@ -190,8 +190,8 @@ class StringCounters final : angle::NonCopyable
     StringCounters();
     ~StringCounters();
 
-    int getStringCounter(std::vector<std::string> &str);
-    void setStringCounter(std::vector<std::string> &str, int &counter);
+    int getStringCounter(const std::vector<std::string> &str);
+    void setStringCounter(const std::vector<std::string> &str, int &counter);
 
   private:
     std::map<std::vector<std::string>, int> mStringCounterMap;
@@ -209,6 +209,61 @@ class DataTracker final : angle::NonCopyable
   private:
     DataCounters mCounters;
     StringCounters mStringCounters;
+};
+
+class ReplayWriter final : angle::NonCopyable
+{
+  public:
+    ReplayWriter();
+    ~ReplayWriter();
+
+    void setFilenamePattern(const std::string &pattern);
+    void setCaptureLabel(const std::string &label);
+    void setSourcePrologue(const std::string &prologue);
+    void setHeaderPrologue(const std::string &prologue);
+
+    void addPublicFunction(const std::string &functionProto,
+                           const std::stringstream &headerStream,
+                           const std::stringstream &bodyStream);
+    void addPrivateFunction(const std::string &functionProto,
+                            const std::stringstream &headerStream,
+                            const std::stringstream &bodyStream);
+    std::string getInlineVariableName(EntryPoint entryPoint, const std::string &paramName);
+
+    std::string getInlineStringSetVariableName(EntryPoint entryPoint,
+                                               const std::string &paramName,
+                                               const std::vector<std::string> &strings,
+                                               bool *isNewEntryOut);
+
+    void saveFrame(uint32_t frameIndex);
+    void saveIndexFilesAndHeader();
+    void saveSetupFile();
+
+    std::vector<std::string> getAndResetWrittenFiles();
+
+  private:
+    static std::string GetVarName(EntryPoint entryPoint, const std::string &paramName, int counter);
+
+    void saveHeader();
+    void writeReplaySource(const std::string &filename);
+    void addWrittenFile(const std::string &filename);
+
+    DataTracker mDataTracker;
+    std::string mFilenamePattern;
+    std::string mCaptureLabel;
+    std::string mSourcePrologue;
+    std::string mHeaderPrologue;
+
+    std::vector<std::string> mReplayHeaders;
+    std::vector<std::string> mGlobalVariableDeclarations;
+
+    std::vector<std::string> mPublicFunctionPrototypes;
+    std::vector<std::string> mPublicFunctions;
+
+    std::vector<std::string> mPrivateFunctionPrototypes;
+    std::vector<std::string> mPrivateFunctions;
+
+    std::vector<std::string> mWrittenFiles;
 };
 
 using BufferCalls = std::map<GLuint, std::vector<CallCapture>>;
@@ -236,6 +291,7 @@ class TrackedResource final : angle::NonCopyable
     void setGennedResource(GLuint id);
     void setDeletedResource(GLuint id);
     void setModifiedResource(GLuint id);
+    bool resourceIsGenerated(GLuint id);
 
     ResourceCalls &getResourceRegenCalls() { return mResourceRegenCalls; }
     ResourceCalls &getResourceRestoreCalls() { return mResourceRestoreCalls; }
@@ -487,6 +543,14 @@ class FrameCaptureShared final : angle::NonCopyable
     }
 
     template <typename ResourceType>
+    bool resourceIsGenerated(ResourceType resourceID)
+    {
+        ResourceIDType idType    = GetResourceIDTypeFromType<ResourceType>::IDType;
+        TrackedResource &tracker = mResourceTracker.getTrackedResource(idType);
+        return tracker.resourceIsGenerated(resourceID.value);
+    }
+
+    template <typename ResourceType>
     void handleDeletedResource(ResourceType resourceID)
     {
         if (isCaptureActive())
@@ -498,7 +562,8 @@ class FrameCaptureShared final : angle::NonCopyable
     }
 
   private:
-    void writeCppReplayIndexFiles(const gl::Context *, bool writeResetContextCall);
+    void writeJSON(const gl::Context *context);
+    void writeCppReplayIndexFiles(const gl::Context *context, bool writeResetContextCall);
     void writeMainContextCppReplay(const gl::Context *context,
                                    const std::vector<CallCapture> &setupCalls);
 
@@ -518,6 +583,8 @@ class FrameCaptureShared final : angle::NonCopyable
                                     CallCapture &call,
                                     std::vector<CallCapture> *shareGroupSetupCalls,
                                     ResourceIDToSetupCallsMap *resourceIDToSetupCalls);
+    template <typename ParamValueType>
+    void maybeGenResourceOnBind(CallCapture &call);
     void maybeCapturePostCallUpdates(const gl::Context *context);
     void maybeCaptureDrawArraysClientData(const gl::Context *context,
                                           CallCapture &call,
@@ -529,7 +596,8 @@ class FrameCaptureShared final : angle::NonCopyable
     void overrideProgramBinary(const gl::Context *context,
                                CallCapture &call,
                                std::vector<CallCapture> &outCalls);
-    void updateResourceCounts(const CallCapture &call);
+    void updateResourceCountsFromParamCapture(const ParamCapture &param, ResourceIDType idType);
+    void updateResourceCountsFromCallCapture(const CallCapture &call);
 
     void runMidExecutionCapture(const gl::Context *context);
 
@@ -569,6 +637,7 @@ class FrameCaptureShared final : angle::NonCopyable
     PackedEnumMap<ResourceIDType, uint32_t> mMaxAccessedResourceIDs;
 
     ResourceTracker mResourceTracker;
+    ReplayWriter mReplayWriter;
 
     // If you don't know which frame you want to start capturing at, use the capture trigger.
     // Initialize it to the number of frames you want to capture, and then clear the value to 0 when

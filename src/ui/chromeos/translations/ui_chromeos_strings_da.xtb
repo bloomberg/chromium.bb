@@ -305,13 +305,13 @@
 <translation id="3620292326130836921">Alt er sikkerhedskopieret.</translation>
 <translation id="3634507049637220048">Netværk <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, administreret af din administrator, oplysninger</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> elementer blev flyttet.</translation>
-<translation id="3645531960514756307">Frigør mappe</translation>
 <translation id="3685122418104378273">Synkronisering af Google Drev er som standard deaktiveret, når du bruger mobildata.</translation>
 <translation id="3689865792480713551">Annuller <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3690128548376345212">Netværk <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, ikke aktiveret, <ph name="CONNECTION_STATUS" />, signalstyrke på <ph name="SIGNAL_STRENGTH" /> %, oplysninger</translation>
 <translation id="3691184985318546178">Singalesisk</translation>
 <translation id="3726463242007121105">Denne enhed kan ikke åbnes, fordi dens filsystem ikke understøttes.</translation>
 <translation id="3727148787322499904">Hvis denne indstilling ændres, påvirker det alle delte netværk</translation>
+<translation id="3737576078404241332">Fjern fra sidebjælke</translation>
 <translation id="3741243925913727067">Sikkerhedskopiér billeder og videoer på din medieenhed til Google Drev.</translation>
 <translation id="3749289110408117711">Filnavn</translation>
 <translation id="3780536599611287598">Du har ikke tilladelse til at flytte filer til "<ph name="FOLDER_NAME" />".</translation>
@@ -372,6 +372,7 @@
 <translation id="4326142238881453352">Botaniker</translation>
 <translation id="4326192123064055915">Kaffe</translation>
 <translation id="4336032328163998280">Kopieringen mislykkedes. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4340491671558548972">Føj til sidebjælke</translation>
 <translation id="4348495354623233847">Sorani-kurdisk med arabiskbaseret tastatur</translation>
 <translation id="4363958938297989186">Russisk med fonetisk tastatur</translation>
 <translation id="4364327530094270451">Melon</translation>
@@ -927,7 +928,6 @@
 <translation id="9110990317705400362">Vi leder hele tiden efter nye metoder til at gøre din browsing mere sikker. Før kunne ethvert website anmode dig om at tilføje en udvidelse i din browser. I de nyeste versioner af Google Chrome skal du udtrykkeligt give Chrome besked om, at du vil installere udvidelser, ved at tilføje dem via siden Udvidelser. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">Lås op</translation>
 <translation id="912419004897138677">Codec</translation>
-<translation id="9129931661813833980">Fastgør mappe</translation>
 <translation id="9130775360844693113">Medlemmer af "<ph name="DESTINATION_NAME" />" får adgang til disse elementer.</translation>
 <translation id="9131598836763251128">Vælg en eller flere filer</translation>
 <translation id="9133055936679483811">Komprimering mislykkedes. <ph name="ERROR_MESSAGE" /></translation>

@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
@@ -352,6 +352,20 @@ class ExtensionPrefs : public KeyedService {
   bool ReadPrefAsDictionary(const std::string& extension_id,
                             base::StringPiece pref_key,
                             const base::DictionaryValue** out_value) const;
+
+  // Interprets the list pref, |pref_key| in |extension_id|'s preferences, as a
+  // URLPatternSet. The |valid_schemes| specify how to parse the URLPatterns.
+  bool ReadPrefAsURLPatternSet(const std::string& extension_id,
+                               base::StringPiece pref_key,
+                               URLPatternSet* result,
+                               int valid_schemes) const;
+
+  // Converts |set| to a list of strings and sets the |pref_key| pref belonging
+  // to |extension_id|. If |set| is empty, the preference for |pref_key| is
+  // cleared.
+  void SetExtensionPrefURLPatternSet(const std::string& extension_id,
+                                     base::StringPiece pref_key,
+                                     const URLPatternSet& set);
 
   bool HasPrefForExtension(const std::string& extension_id) const;
 
@@ -792,24 +806,10 @@ class ExtensionPrefs : public KeyedService {
       const base::DictionaryValue* extension,
       bool include_component_extensions) const;
 
-  // Interprets the list pref, |pref_key| in |extension_id|'s preferences, as a
-  // URLPatternSet. The |valid_schemes| specify how to parse the URLPatterns.
-  bool ReadPrefAsURLPatternSet(const std::string& extension_id,
-                               base::StringPiece pref_key,
-                               URLPatternSet* result,
-                               int valid_schemes) const;
-
   // Deprecated kPrefBlocklistAcknowledged kPrefBlocklist. Use
   // kPrefBlocklistState instead.
   // TODO(crbug.com/1193695): Remove kPrefBlocklistAcknowledged kPrefBlocklist
   // once all clients are updated.
-
-  // Converts |set| to a list of strings and sets the |pref_key| pref belonging
-  // to |extension_id|. If |set| is empty, the preference for |pref_key| is
-  // cleared.
-  void SetExtensionPrefURLPatternSet(const std::string& extension_id,
-                                     base::StringPiece pref_key,
-                                     const URLPatternSet& set);
 
   // Read the boolean preference entry and return true if the preference exists
   // and the preference's value is true; false otherwise.
@@ -910,19 +910,19 @@ class ExtensionPrefs : public KeyedService {
   // Clears the bit indicating that an external extension was uninstalled.
   void ClearExternalUninstallBit(const ExtensionId& extension_id);
 
-  content::BrowserContext* browser_context_;
+  raw_ptr<content::BrowserContext> browser_context_;
 
   // The pref service specific to this set of extension prefs. Owned by the
   // BrowserContext.
-  PrefService* prefs_;
+  raw_ptr<PrefService> prefs_;
 
   // Base extensions install directory.
   base::FilePath install_directory_;
 
   // Weak pointer, owned by BrowserContext.
-  ExtensionPrefValueMap* extension_pref_value_map_;
+  raw_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
 
-  base::Clock* clock_;
+  raw_ptr<base::Clock> clock_;
 
   bool extensions_disabled_;
 

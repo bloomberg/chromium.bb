@@ -11,11 +11,11 @@ import './namespace_test2_namespace_c_generated.dart' as namespace_c;
 class TableInFirstNS {
   TableInFirstNS._(this._bc, this._bcOffset);
   factory TableInFirstNS(List<int> bytes) {
-    fb.BufferContext rootRef = new fb.BufferContext.fromBytes(bytes);
+    final rootRef = fb.BufferContext.fromBytes(bytes);
     return reader.read(rootRef, 0);
   }
 
-  static const fb.Reader<TableInFirstNS> reader = const _TableInFirstNSReader();
+  static const fb.Reader<TableInFirstNS> reader = _TableInFirstNSReader();
 
   final fb.BufferContext _bc;
   final int _bcOffset;
@@ -23,7 +23,7 @@ class TableInFirstNS {
   namespace_a_namespace_b.TableInNestedNS? get fooTable => namespace_a_namespace_b.TableInNestedNS.reader.vTableGetNullable(_bc, _bcOffset, 4);
   EnumInNestedNS get fooEnum => EnumInNestedNS.fromValue(const fb.Int8Reader().vTableGet(_bc, _bcOffset, 6, 0));
   UnionInNestedNSTypeId? get fooUnionType => UnionInNestedNSTypeId._createOrNull(const fb.Uint8Reader().vTableGetNullable(_bc, _bcOffset, 8));
-  dynamic? get fooUnion {
+  dynamic get fooUnion {
     switch (fooUnionType?.value) {
       case 1: return TableInNestedNS.reader.vTableGetNullable(_bc, _bcOffset, 10);
       default: return null;
@@ -49,11 +49,11 @@ class TableInFirstNS {
   }
 }
 
-class TableInFirstNST {
+class TableInFirstNST implements fb.Packable {
   namespace_a_namespace_b.TableInNestedNST? fooTable;
   EnumInNestedNS fooEnum;
   UnionInNestedNSTypeId? fooUnionType;
-  dynamic? fooUnion;
+  dynamic fooUnion;
   namespace_a_namespace_b.StructInNestedNST? fooStruct;
 
   TableInFirstNST({
@@ -63,10 +63,11 @@ class TableInFirstNST {
       this.fooUnion,
       this.fooStruct});
 
+  @override
   int pack(fb.Builder fbBuilder) {
     final int? fooTableOffset = fooTable?.pack(fbBuilder);
     final int? fooUnionOffset = fooUnion?.pack(fbBuilder);
-    fbBuilder.startTable();
+    fbBuilder.startTable(5);
     fbBuilder.addOffset(0, fooTableOffset);
     fbBuilder.addInt8(1, fooEnum.value);
     fbBuilder.addUint8(2, fooUnionType?.value);
@@ -88,16 +89,16 @@ class _TableInFirstNSReader extends fb.TableReader<TableInFirstNS> {
 
   @override
   TableInFirstNS createObject(fb.BufferContext bc, int offset) => 
-    new TableInFirstNS._(bc, offset);
+    TableInFirstNS._(bc, offset);
 }
 
 class TableInFirstNSBuilder {
-  TableInFirstNSBuilder(this.fbBuilder) {}
+  TableInFirstNSBuilder(this.fbBuilder);
 
   final fb.Builder fbBuilder;
 
   void begin() {
-    fbBuilder.startTable();
+    fbBuilder.startTable(5);
   }
 
   int addFooTableOffset(int? offset) {
@@ -130,14 +131,14 @@ class TableInFirstNSObjectBuilder extends fb.ObjectBuilder {
   final namespace_a_namespace_b.TableInNestedNSObjectBuilder? _fooTable;
   final EnumInNestedNS? _fooEnum;
   final UnionInNestedNSTypeId? _fooUnionType;
-  final dynamic? _fooUnion;
+  final dynamic _fooUnion;
   final namespace_a_namespace_b.StructInNestedNSObjectBuilder? _fooStruct;
 
   TableInFirstNSObjectBuilder({
     namespace_a_namespace_b.TableInNestedNSObjectBuilder? fooTable,
     EnumInNestedNS? fooEnum,
     UnionInNestedNSTypeId? fooUnionType,
-    dynamic? fooUnion,
+    dynamic fooUnion,
     namespace_a_namespace_b.StructInNestedNSObjectBuilder? fooStruct,
   })
       : _fooTable = fooTable,
@@ -151,7 +152,7 @@ class TableInFirstNSObjectBuilder extends fb.ObjectBuilder {
   int finish(fb.Builder fbBuilder) {
     final int? fooTableOffset = _fooTable?.getOrCreateOffset(fbBuilder);
     final int? fooUnionOffset = _fooUnion?.getOrCreateOffset(fbBuilder);
-    fbBuilder.startTable();
+    fbBuilder.startTable(5);
     fbBuilder.addOffset(0, fooTableOffset);
     fbBuilder.addInt8(1, _fooEnum?.value);
     fbBuilder.addUint8(2, _fooUnionType?.value);
@@ -165,19 +166,19 @@ class TableInFirstNSObjectBuilder extends fb.ObjectBuilder {
   /// Convenience method to serialize to byte list.
   @override
   Uint8List toBytes([String? fileIdentifier]) {
-    fb.Builder fbBuilder = new fb.Builder();
-    int offset = finish(fbBuilder);
-    return fbBuilder.finish(offset, fileIdentifier);
+    final fbBuilder = fb.Builder(deduplicateTables: false);
+    fbBuilder.finish(finish(fbBuilder), fileIdentifier);
+    return fbBuilder.buffer;
   }
 }
 class SecondTableInA {
   SecondTableInA._(this._bc, this._bcOffset);
   factory SecondTableInA(List<int> bytes) {
-    fb.BufferContext rootRef = new fb.BufferContext.fromBytes(bytes);
+    final rootRef = fb.BufferContext.fromBytes(bytes);
     return reader.read(rootRef, 0);
   }
 
-  static const fb.Reader<SecondTableInA> reader = const _SecondTableInAReader();
+  static const fb.Reader<SecondTableInA> reader = _SecondTableInAReader();
 
   final fb.BufferContext _bc;
   final int _bcOffset;
@@ -198,15 +199,16 @@ class SecondTableInA {
   }
 }
 
-class SecondTableInAT {
+class SecondTableInAT implements fb.Packable {
   namespace_c.TableInCT? referToC;
 
   SecondTableInAT({
       this.referToC});
 
+  @override
   int pack(fb.Builder fbBuilder) {
     final int? referToCOffset = referToC?.pack(fbBuilder);
-    fbBuilder.startTable();
+    fbBuilder.startTable(1);
     fbBuilder.addOffset(0, referToCOffset);
     return fbBuilder.endTable();
   }
@@ -222,16 +224,16 @@ class _SecondTableInAReader extends fb.TableReader<SecondTableInA> {
 
   @override
   SecondTableInA createObject(fb.BufferContext bc, int offset) => 
-    new SecondTableInA._(bc, offset);
+    SecondTableInA._(bc, offset);
 }
 
 class SecondTableInABuilder {
-  SecondTableInABuilder(this.fbBuilder) {}
+  SecondTableInABuilder(this.fbBuilder);
 
   final fb.Builder fbBuilder;
 
   void begin() {
-    fbBuilder.startTable();
+    fbBuilder.startTable(1);
   }
 
   int addReferToCOffset(int? offset) {
@@ -256,7 +258,7 @@ class SecondTableInAObjectBuilder extends fb.ObjectBuilder {
   @override
   int finish(fb.Builder fbBuilder) {
     final int? referToCOffset = _referToC?.getOrCreateOffset(fbBuilder);
-    fbBuilder.startTable();
+    fbBuilder.startTable(1);
     fbBuilder.addOffset(0, referToCOffset);
     return fbBuilder.endTable();
   }
@@ -264,8 +266,8 @@ class SecondTableInAObjectBuilder extends fb.ObjectBuilder {
   /// Convenience method to serialize to byte list.
   @override
   Uint8List toBytes([String? fileIdentifier]) {
-    fb.Builder fbBuilder = new fb.Builder();
-    int offset = finish(fbBuilder);
-    return fbBuilder.finish(offset, fileIdentifier);
+    final fbBuilder = fb.Builder(deduplicateTables: false);
+    fbBuilder.finish(finish(fbBuilder), fileIdentifier);
+    return fbBuilder.buffer;
   }
 }

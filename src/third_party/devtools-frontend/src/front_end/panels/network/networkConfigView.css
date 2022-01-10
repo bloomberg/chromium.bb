@@ -72,7 +72,7 @@
   width: calc(100% - 20px);
 }
 
-.network-config-ua input[type=text],
+.network-config-ua input[type="text"],
 .network-config-ua .chrome-select {
   margin-top: 8px;
 }
@@ -98,4 +98,9 @@
 .client-hints-form {
   margin-top: 14px;
   width: min(100%, 400px);
+}
+
+.status-text {
+  padding: 10px;
+  color: var(--color-accent-green);
 }

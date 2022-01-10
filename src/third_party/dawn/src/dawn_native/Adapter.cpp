@@ -25,9 +25,19 @@ namespace dawn_native {
     }
 
     MaybeError AdapterBase::Initialize() {
-        DAWN_TRY(InitializeImpl());
-        DAWN_TRY(InitializeSupportedFeaturesImpl());
-        DAWN_TRY(InitializeSupportedLimitsImpl(&mLimits));
+        DAWN_TRY_CONTEXT(InitializeImpl(), "initializing adapter (backend=%s)", mBackend);
+        DAWN_TRY_CONTEXT(
+            InitializeSupportedFeaturesImpl(),
+            "gathering supported features for \"%s\" - \"%s\" (vendorId=%#06x deviceId=%#06x "
+            "backend=%s type=%s)",
+            mPCIInfo.name, mDriverDescription, mPCIInfo.vendorId, mPCIInfo.deviceId, mBackend,
+            mAdapterType);
+        DAWN_TRY_CONTEXT(
+            InitializeSupportedLimitsImpl(&mLimits),
+            "gathering supported limits for \"%s\" - \"%s\" (vendorId=%#06x deviceId=%#06x "
+            "backend=%s type=%s)",
+            mPCIInfo.name, mDriverDescription, mPCIInfo.vendorId, mPCIInfo.deviceId, mBackend,
+            mAdapterType);
 
         // Enforce internal Dawn constants.
         mLimits.v1.maxVertexBufferArrayStride =
@@ -101,6 +111,7 @@ namespace dawn_native {
         WGPUDeviceProperties adapterProperties = {};
         adapterProperties.deviceID = mPCIInfo.deviceId;
         adapterProperties.vendorID = mPCIInfo.vendorId;
+        adapterProperties.adapterType = static_cast<WGPUAdapterType>(mAdapterType);
 
         mSupportedFeatures.InitializeDeviceProperties(&adapterProperties);
         // This is OK for now because there are no limit feature structs.
@@ -108,7 +119,7 @@ namespace dawn_native {
         // to store them (ex. by calling GetLimits directly instead). Currently,
         // we keep this function as it's only used internally in Chromium to
         // send the adapter properties across the wire.
-        GetLimits(reinterpret_cast<SupportedLimits*>(&adapterProperties.limits));
+        GetLimits(FromAPI(&adapterProperties.limits));
         return adapterProperties;
     }
 
@@ -125,7 +136,7 @@ namespace dawn_native {
         return true;
     }
 
-    DeviceBase* AdapterBase::CreateDevice(const DeviceDescriptor* descriptor) {
+    DeviceBase* AdapterBase::CreateDevice(const DawnDeviceDescriptor* descriptor) {
         DeviceBase* result = nullptr;
 
         if (mInstance->ConsumedError(CreateDeviceInternal(&result, descriptor))) {
@@ -135,26 +146,25 @@ namespace dawn_native {
         return result;
     }
 
-    void AdapterBase::RequestDevice(const DeviceDescriptor* descriptor,
+    void AdapterBase::RequestDevice(const DawnDeviceDescriptor* descriptor,
                                     WGPURequestDeviceCallback callback,
                                     void* userdata) {
-        DeviceBase* result = nullptr;
-        MaybeError err = CreateDeviceInternal(&result, descriptor);
-        WGPUDevice device = reinterpret_cast<WGPUDevice>(result);
+        DeviceBase* device = nullptr;
+        MaybeError err = CreateDeviceInternal(&device, descriptor);
 
         if (err.IsError()) {
             std::unique_ptr<ErrorData> errorData = err.AcquireError();
-            callback(WGPURequestDeviceStatus_Error, device,
+            callback(WGPURequestDeviceStatus_Error, ToAPI(device),
                      errorData->GetFormattedMessage().c_str(), userdata);
             return;
         }
         WGPURequestDeviceStatus status =
             device == nullptr ? WGPURequestDeviceStatus_Unknown : WGPURequestDeviceStatus_Success;
-        callback(status, device, nullptr, userdata);
+        callback(status, ToAPI(device), nullptr, userdata);
     }
 
     MaybeError AdapterBase::CreateDeviceInternal(DeviceBase** result,
-                                                 const DeviceDescriptor* descriptor) {
+                                                 const DawnDeviceDescriptor* descriptor) {
         if (descriptor != nullptr) {
             for (const char* featureStr : descriptor->requiredFeatures) {
                 Feature featureEnum = mInstance->FeatureNameToEnum(featureStr);
@@ -167,9 +177,8 @@ namespace dawn_native {
 
         if (descriptor != nullptr && descriptor->requiredLimits != nullptr) {
             DAWN_TRY_CONTEXT(
-                ValidateLimits(
-                    mUseTieredLimits ? ApplyLimitTiers(mLimits.v1) : mLimits.v1,
-                    reinterpret_cast<const RequiredLimits*>(descriptor->requiredLimits)->limits),
+                ValidateLimits(mUseTieredLimits ? ApplyLimitTiers(mLimits.v1) : mLimits.v1,
+                               FromAPI(descriptor->requiredLimits)->limits),
                 "validating required limits");
 
             DAWN_INVALID_IF(descriptor->requiredLimits->nextInChain != nullptr,

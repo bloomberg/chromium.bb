@@ -599,6 +599,16 @@ EGLBoolean EGLAPIENTRY eglGetMscRateANGLE(EGLDisplay dpy,
     return EGL_GetMscRateANGLE(dpy, surface, numerator, denominator);
 }
 
+// EGL_ANGLE_vulkan_image
+EGLBoolean EGLAPIENTRY eglExportVkImageANGLE(EGLDisplay dpy,
+                                             EGLImage image,
+                                             void *vk_image,
+                                             void *vk_image_create_info)
+{
+    EnsureEGLLoaded();
+    return EGL_ExportVkImageANGLE(dpy, image, vk_image, vk_image_create_info);
+}
+
 // EGL_CHROMIUM_sync_control
 EGLBoolean EGLAPIENTRY eglGetSyncValuesCHROMIUM(EGLDisplay dpy,
                                                 EGLSurface surface,
@@ -726,6 +736,30 @@ EGLBoolean EGLAPIENTRY eglDestroyImageKHR(EGLDisplay dpy, EGLImageKHR image)
 {
     EnsureEGLLoaded();
     return EGL_DestroyImageKHR(dpy, image);
+}
+
+// EGL_KHR_lock_surface3
+EGLBoolean EGLAPIENTRY eglLockSurfaceKHR(EGLDisplay dpy,
+                                         EGLSurface surface,
+                                         const EGLint *attrib_list)
+{
+    EnsureEGLLoaded();
+    return EGL_LockSurfaceKHR(dpy, surface, attrib_list);
+}
+
+EGLBoolean EGLAPIENTRY eglQuerySurface64KHR(EGLDisplay dpy,
+                                            EGLSurface surface,
+                                            EGLint attribute,
+                                            EGLAttribKHR *value)
+{
+    EnsureEGLLoaded();
+    return EGL_QuerySurface64KHR(dpy, surface, attribute, value);
+}
+
+EGLBoolean EGLAPIENTRY eglUnlockSurfaceKHR(EGLDisplay dpy, EGLSurface surface)
+{
+    EnsureEGLLoaded();
+    return EGL_UnlockSurfaceKHR(dpy, surface);
 }
 
 // EGL_KHR_reusable_sync

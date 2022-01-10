@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import * as Common from '../../core/common/common.js';
-import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
@@ -150,7 +149,7 @@ export class ResourceMapping implements SDK.TargetManager.SDKModelObserver<SDK.R
         uiLocation.uiSourceCode.url(), uiLocation.lineNumber, uiLocation.columnNumber);
   }
 
-  private resetForTest(target: SDK.Target.Target): void {
+  resetForTest(target: SDK.Target.Target): void {
     const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
     const info = resourceTreeModel ? this.#modelToInfo.get(resourceTreeModel) : null;
     if (info) {
@@ -421,7 +420,7 @@ class Binding implements TextUtils.ContentProvider.ContentProvider {
     return this.resources.values().next().value;
   }
 
-  contentURL(): Platform.DevToolsPath.RawPathString {
+  contentURL(): string {
     return this.firstResource().contentURL();
   }
 

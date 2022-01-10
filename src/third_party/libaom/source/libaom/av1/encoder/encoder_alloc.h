@@ -16,6 +16,7 @@
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/encodetxb.h"
 #include "av1/encoder/ethread.h"
+#include "av1/encoder/intra_mode_search_utils.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,12 +56,11 @@ static AOM_INLINE void alloc_context_buffers_ext(
 
 static AOM_INLINE void alloc_compressor_data(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
-  TokenInfo *token_info = &cpi->token_info;
+  CommonModeInfoParams *const mi_params = &cm->mi_params;
 
-  if (av1_alloc_context_buffers(cm, cm->width, cm->height)) {
-    aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
-                       "Failed to allocate context buffers");
-  }
+  // Setup mi_params
+  mi_params->set_mb_mi(mi_params, cm->width, cm->height, cpi->oxcf.mode,
+                       cpi->sf.part_sf.default_min_partition_size);
 
   if (!is_stat_generation_stage(cpi)) {
     av1_alloc_txb_buf(cpi);
@@ -68,11 +68,6 @@ static AOM_INLINE void alloc_compressor_data(AV1_COMP *cpi) {
     alloc_context_buffers_ext(cm, &cpi->mbmi_ext_info);
   }
 
-  free_token_info(token_info);
-
-  if (!is_stat_generation_stage(cpi)) {
-    alloc_token_info(cm, token_info);
-  }
   if (cpi->td.mb.mv_costs) {
     aom_free(cpi->td.mb.mv_costs);
     cpi->td.mb.mv_costs = NULL;
@@ -95,6 +90,17 @@ static AOM_INLINE void alloc_compressor_data(AV1_COMP *cpi) {
   av1_setup_sms_tree(cpi, &cpi->td);
   cpi->td.firstpass_ctx =
       av1_alloc_pmc(cpi, BLOCK_16X16, &cpi->td.shared_coeff_buf);
+}
+
+// Allocate mbmi buffers which are used to store mode information at block
+// level.
+static AOM_INLINE void alloc_mb_mode_info_buffers(AV1_COMP *const cpi) {
+  AV1_COMMON *const cm = &cpi->common;
+  if (av1_alloc_context_buffers(cm, cm->width, cm->height, cpi->oxcf.mode,
+                                cpi->sf.part_sf.default_min_partition_size)) {
+    aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
+                       "Failed to allocate context buffers");
+  }
 }
 
 static AOM_INLINE void realloc_segmentation_maps(AV1_COMP *cpi) {
@@ -304,6 +310,7 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
 
 static AOM_INLINE void allocate_gradient_info_for_hog(
     PixelLevelGradientInfo **pixel_gradient_info, AV1_COMP *cpi) {
+  if (!is_gradient_caching_for_hog_enabled(cpi)) return;
   const AV1_COMMON *const cm = &cpi->common;
 
   if (!*pixel_gradient_info) {
@@ -329,70 +336,6 @@ static AOM_INLINE void variance_partition_alloc(AV1_COMP *cpi) {
     CHECK_MEM_ERROR(cm, cpi->td.vt64x64,
                     aom_malloc(sizeof(*cpi->td.vt64x64) * num_64x64_blocks));
     cpi->td.num_64x64_blocks = num_64x64_blocks;
-  }
-}
-
-static AOM_INLINE void alloc_altref_frame_buffer(AV1_COMP *cpi) {
-  AV1_COMMON *cm = &cpi->common;
-  const SequenceHeader *const seq_params = cm->seq_params;
-  const AV1EncoderConfig *oxcf = &cpi->oxcf;
-
-  // When lag_in_frames <= 1, alt-ref frames are not enabled. In this case,
-  // temporal filtering of key frames is disabled as well. Hence alt_ref_buffer
-  // allocation is avoided.
-  if (oxcf->gf_cfg.lag_in_frames <= 1) return;
-
-  // TODO(agrange) Check if ARF is enabled and skip allocation if not.
-  if (aom_realloc_frame_buffer(
-          &cpi->ppi->alt_ref_buffer, oxcf->frm_dim_cfg.width,
-          oxcf->frm_dim_cfg.height, seq_params->subsampling_x,
-          seq_params->subsampling_y, seq_params->use_highbitdepth,
-          cpi->oxcf.border_in_pixels, cm->features.byte_alignment, NULL, NULL,
-          NULL, cpi->oxcf.tool_cfg.enable_global_motion))
-    aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
-                       "Failed to allocate altref buffer");
-}
-
-static AOM_INLINE void alloc_util_frame_buffers(AV1_COMP *cpi) {
-  AV1_COMMON *const cm = &cpi->common;
-  const SequenceHeader *const seq_params = cm->seq_params;
-  const int byte_alignment = cm->features.byte_alignment;
-
-  // The frame buffer trial_frame_rst is used during loop restoration filter
-  // search. Hence it is allocated only when loop restoration is used.
-  if (is_restoration_used(cm)) {
-    if (aom_realloc_frame_buffer(
-            &cpi->trial_frame_rst, cm->superres_upscaled_width,
-            cm->superres_upscaled_height, seq_params->subsampling_x,
-            seq_params->subsampling_y, seq_params->use_highbitdepth,
-            AOM_RESTORATION_FRAME_BORDER, byte_alignment, NULL, NULL, NULL, 0))
-      aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
-                         "Failed to allocate trial restored frame buffer");
-  }
-
-  if (aom_realloc_frame_buffer(
-          &cpi->scaled_source, cm->width, cm->height, seq_params->subsampling_x,
-          seq_params->subsampling_y, seq_params->use_highbitdepth,
-          cpi->oxcf.border_in_pixels, byte_alignment, NULL, NULL, NULL,
-          cpi->oxcf.tool_cfg.enable_global_motion))
-    aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
-                       "Failed to allocate scaled source buffer");
-
-  // The frame buffer cpi->scaled_last_source is used to hold the previous
-  // source frame information. As the previous source frame buffer allocation in
-  // the lookahead queue is avoided for all-intra frame encoding,
-  // cpi->unscaled_last_source will be NULL in such cases. As
-  // cpi->unscaled_last_source is NULL, cpi->scaled_last_source will not be used
-  // for all-intra frame encoding. Hence, the buffer is allocated conditionally.
-  if (cpi->oxcf.kf_cfg.key_freq_max > 0) {
-    if (aom_realloc_frame_buffer(
-            &cpi->scaled_last_source, cm->width, cm->height,
-            seq_params->subsampling_x, seq_params->subsampling_y,
-            seq_params->use_highbitdepth, cpi->oxcf.border_in_pixels,
-            byte_alignment, NULL, NULL, NULL,
-            cpi->oxcf.tool_cfg.enable_global_motion))
-      aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
-                         "Failed to allocate scaled last source buffer");
   }
 }
 

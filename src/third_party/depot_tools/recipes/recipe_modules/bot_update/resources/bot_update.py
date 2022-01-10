@@ -202,7 +202,11 @@ def call(*args, **kwargs):  # pragma: no cover
   print('%s ===Running %s ===' % (datetime.now(), ' '.join(args),))
   print('In directory: %s' % cwd)
   start_time = time.time()
-  proc = subprocess.Popen(args, **kwargs)
+  try:
+    proc = subprocess.Popen(args, **kwargs)
+  except:
+    print('\t%s failed to exectute.' % ' '.join(args)) 
+    raise
   observers = [
       RepeatingTimer(300, _print_pstree),
       RepeatingTimer(int(stale_process_duration), _kill_process, [proc])]

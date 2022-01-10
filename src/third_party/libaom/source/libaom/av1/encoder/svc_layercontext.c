@@ -11,6 +11,7 @@
 #include <math.h>
 
 #include "av1/encoder/encoder.h"
+#include "av1/encoder/encoder_alloc.h"
 
 static void swap_ptr(void *a, void *b) {
   void **a_p = (void **)a;
@@ -92,7 +93,6 @@ void av1_update_layer_context_change_config(AV1_COMP *const cpi,
   int layer = 0;
   int64_t spatial_layer_target = 0;
   float bitrate_alloc = 1.0;
-
   for (int sl = 0; sl < svc->number_spatial_layers; ++sl) {
     for (int tl = 0; tl < svc->number_temporal_layers; ++tl) {
       layer = LAYER_IDS_TO_IDX(sl, tl, svc->number_temporal_layers);
@@ -335,7 +335,9 @@ void av1_one_pass_cbr_svc_start_layer(AV1_COMP *const cpi) {
 
   cpi->common.width = width;
   cpi->common.height = height;
+  alloc_mb_mode_info_buffers(cpi);
   av1_update_frame_size(cpi);
+  if (svc->spatial_layer_id == 0) svc->high_source_sad_superframe = 0;
 }
 
 enum {

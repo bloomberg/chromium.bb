@@ -41,13 +41,14 @@ try_.builder(
     ),
 )
 
-try_.builder(
+try_.orchestrator_pair_builders(
     name = "chromeos-amd64-generic-rel",
     branch_selector = branches.CROS_LTS_MILESTONE,
-    builderless = not settings.is_main,
     main_list_view = "try",
-    os = os.LINUX_BIONIC_REMOVE,
-    tryjob = try_.job(),
+    orchestrator_cores = 2,
+    orchestrator_tryjob = try_.job(),
+    compilator_cores = 16,
+    compilator_name = "chromeos-amd64-generic-rel-compilator",
 )
 
 try_.builder(
@@ -57,6 +58,7 @@ try_.builder(
 try_.builder(
     name = "chromeos-arm-generic-rel",
     branch_selector = branches.CROS_LTS_MILESTONE,
+    mirrors = ["ci/chromeos-arm-generic-rel"],
     builderless = not settings.is_main,
     main_list_view = "try",
     os = os.LINUX_BIONIC_REMOVE,
@@ -65,6 +67,7 @@ try_.builder(
 
 try_.builder(
     name = "lacros-amd64-generic-rel",
+    branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -73,6 +76,7 @@ try_.builder(
 
 try_.builder(
     name = "lacros-arm-generic-rel",
+    branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -173,6 +177,10 @@ try_.builder(
 
 try_.builder(
     name = "linux-chromeos-dbg",
+)
+
+try_.builder(
+    name = "linux-chromeos-annotator-rel",
 )
 
 try_.builder(

@@ -116,7 +116,7 @@ static int set_gauss(AVFilterContext *ctx)
     int i;
 
     for (i = 0; i <= difford; ++i) {
-        s->gauss[i] = av_mallocz_array(filtersize, sizeof(*s->gauss[i]));
+        s->gauss[i] = av_calloc(filtersize, sizeof(*s->gauss[i]));
         if (!s->gauss[i]) {
             for (; i >= 0; --i) {
                 av_freep(&s->gauss[i]);
@@ -219,7 +219,8 @@ static int setup_derivative_buffers(AVFilterContext* ctx, ThreadData *td)
     av_log(ctx, AV_LOG_TRACE, "Allocating %d buffer(s) for grey edge.\n", nb_buff);
     for (b = 0; b <= nb_buff; ++b) { // We need difford + 1 buffers
         for (p = 0; p < NUM_PLANES; ++p) {
-            td->data[b][p] = av_mallocz_array(s->planeheight[p] * s->planewidth[p], sizeof(*td->data[b][p]));
+            td->data[b][p] = av_calloc(s->planeheight[p] * s->planewidth[p],
+                                       sizeof(*td->data[b][p]));
             if (!td->data[b][p]) {
                 cleanup_derivative_buffers(td, b + 1, p);
                 return AVERROR(ENOMEM);
@@ -635,18 +636,6 @@ static void chromatic_adaptation(AVFilterContext *ctx, AVFrame *in, AVFrame *out
     ff_filter_execute(ctx, diagonal_transformation, &td, NULL, nb_jobs);
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        // TODO: support more formats
-        // FIXME: error when saving to .jpg
-        AV_PIX_FMT_GBRP,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
-
 static int config_props(AVFilterLink *inlink)
 {
     AVFilterContext *ctx = inlink->dst;
@@ -751,10 +740,12 @@ const AVFilter ff_vf_greyedge = {
     .description   = NULL_IF_CONFIG_SMALL("Estimates scene illumination by grey edge assumption."),
     .priv_size     = sizeof(ColorConstancyContext),
     .priv_class    = &greyedge_class,
-    .query_formats = query_formats,
     .uninit        = uninit,
     FILTER_INPUTS(colorconstancy_inputs),
     FILTER_OUTPUTS(colorconstancy_outputs),
+    // TODO: support more formats
+    // FIXME: error when saving to .jpg
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_GBRP),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
 };
 

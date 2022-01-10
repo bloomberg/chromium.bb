@@ -53,10 +53,6 @@ typedef struct PICK_MODE_CONTEXT {
 #if CONFIG_INTERNAL_STATS
   THR_MODES best_mode_index;
 #endif  // CONFIG_INTERNAL_STATS
-  int hybrid_pred_diff;
-  int comp_pred_diff;
-  int single_pred_diff;
-
   RD_STATS rd_stats;
 
   int rd_mode_is_ready;  // Flag to indicate whether rd pick mode decision has

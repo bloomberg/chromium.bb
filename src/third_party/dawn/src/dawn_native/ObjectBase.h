@@ -60,22 +60,18 @@ namespace dawn_native {
         // by the owning device.
         bool IsAlive() const;
 
-        // Allow virtual overriding of actual destroy call in order to allow for re-using of base
-        // destruction oerations. Classes that override this function should almost always call this
-        // class's implementation in the override. This needs to be public because it can be called
-        // from the device owning the object. Returns true iff destruction occurs. Upon any re-calls
-        // of the function it will return false to indicate no further operations should be taken.
-        virtual bool DestroyApiObject();
+        // This needs to be public because it can be called from the device owning the object.
+        void Destroy();
 
         // Dawn API
         void APISetLabel(const char* label);
 
       protected:
         // Overriding of the RefCounted's DeleteThis function ensures that instances of objects
-        // always call their derived class implementation of DestroyApiObject prior to the derived
+        // always call their derived class implementation of Destroy prior to the derived
         // class being destroyed. This guarantees that when ApiObjects' reference counts drop to 0,
         // then the underlying backend's Destroy calls are executed. We cannot naively put the call
-        // to DestroyApiObject in the destructor of this class because it calls DestroyApiObjectImpl
+        // to Destroy in the destructor of this class because it calls DestroyImpl
         // which is a virtual function often implemented in the Derived class which would already
         // have been destroyed by the time ApiObject's destructor is called by C++'s destruction
         // order. Note that some classes like BindGroup may override the DeleteThis function again,
@@ -84,12 +80,11 @@ namespace dawn_native {
         void DeleteThis() override;
         void TrackInDevice();
 
-        // Thread-safe manner to mark an object as destroyed. Returns true iff the call was the
-        // "winning" attempt to destroy the object. This is useful when sub-classes may have extra
-        // pre-destruction steps that need to occur only once, i.e. Buffer needs to be unmapped
-        // before being destroyed.
-        bool MarkDestroyed();
-        virtual void DestroyApiObjectImpl();
+        // Sub-classes may override this function multiple times. Whenever overriding this function,
+        // however, users should be sure to call their parent's version in the new override to make
+        // sure that all destroy functionality is kept. This function is guaranteed to only be
+        // called once through the exposed Destroy function.
+        virtual void DestroyImpl() = 0;
 
       private:
         virtual void SetLabelImpl();

@@ -23,6 +23,10 @@ self.Platform = self.Platform || {};
 self.Platform.StringUtilities = Platform.StringUtilities;
 self.Platform.MapUtilities = Platform.MapUtilities;
 self.Platform.ArrayUtilities = Platform.ArrayUtilities;
+self.createPlainTextSearchRegex = Platform.StringUtilities.createPlainTextSearchRegex;
+String.sprintf = Platform.StringUtilities.sprintf;
+String.regexSpecialCharacters = Platform.StringUtilities.regexSpecialCharacters;
+String.caseInsensetiveComparator = Platform.StringUtilities.caseInsensetiveComparator;
 
 /**
  * @return {boolean}
@@ -229,23 +233,36 @@ export function addSnifferPromise(receiver, methodName) {
   });
 }
 
-/** @type {function():void} */
-let _resolveOnFinishInits;
-
-/**
- * @param {string} module
- * @return {!Promise<undefined>}
- */
-export async function loadModule(module) {
-  const promise = new Promise(resolve => {
-    _resolveOnFinishInits = resolve;
-  });
-  await self.runtime.loadModulePromise(module);
-  if (!_pendingInits) {
-    return;
-  }
-  return promise;
-}
+const mappingForLayoutTests = new Map([
+  ['panels/animation', 'animation'],
+  ['panels/browser_debugger', 'browser_debugger'],
+  ['panels/changes', 'changes'],
+  ['panels/console', 'console'],
+  ['panels/elements', 'elements'],
+  ['panels/emulation', 'emulation'],
+  ['panels/mobile_throttling', 'mobile_throttling'],
+  ['panels/network', 'network'],
+  ['panels/profiler', 'profiler'],
+  ['panels/application', 'resources'],
+  ['panels/search', 'search'],
+  ['panels/sources', 'sources'],
+  ['panels/snippets', 'snippets'],
+  ['panels/settings', 'settings'],
+  ['panels/timeline', 'timeline'],
+  ['panels/web_audio', 'web_audio'],
+  ['models/persistence', 'persistence'],
+  ['models/workspace_diff', 'workspace_diff'],
+  ['entrypoints/main', 'main'],
+  ['third_party/diff', 'diff'],
+  ['ui/legacy/components/inline_editor', 'inline_editor'],
+  ['ui/legacy/components/data_grid', 'data_grid'],
+  ['ui/legacy/components/perf_ui', 'perf_ui'],
+  ['ui/legacy/components/source_frame', 'source_frame'],
+  ['ui/legacy/components/color_picker', 'color_picker'],
+  ['ui/legacy/components/cookie_table', 'cookie_table'],
+  ['ui/legacy/components/quick_open', 'quick_open'],
+  ['ui/legacy/components/utils', 'components'],
+]);
 
 /**
  * @param {string} module
@@ -253,7 +270,7 @@ export async function loadModule(module) {
  */
 export async function loadLegacyModule(module) {
   let containingFolder = module;
-  for (const [remappedFolder, originalFolder] of Root.Runtime.mappingForLayoutTests.entries()) {
+  for (const [remappedFolder, originalFolder] of mappingForLayoutTests.entries()) {
     if (originalFolder === module) {
       containingFolder = remappedFolder;
     }
@@ -391,6 +408,16 @@ export function textContentWithLineBreaks(node) {
     }
   }
   return buffer;
+}
+
+/**
+ * @param {!Node} node
+ * @return {string}
+ */
+export function textContentWithLineBreaksTrimmed(node) {
+  // We want to allow single empty lines (2 white space characters), but
+  // compress occurences of 3 or more whitespaces.
+  return textContentWithLineBreaks(node).replace(/\s{3,}/g, ' ');
 }
 
 /**
@@ -657,9 +684,6 @@ export function addIframe(path, options = {}) {
   `);
 }
 
-/** @type {number} */
-let _pendingInits = 0;
-
 /**
  * The old test framework executed certain snippets in the inspected page
  * context as part of loading a test helper file.
@@ -675,12 +699,7 @@ let _pendingInits = 0;
  * @param {string} code
  */
 export async function deprecatedInitAsync(code) {
-  _pendingInits++;
   await TestRunner.RuntimeAgent.invoke_evaluate({expression: code, objectGroup: 'console'});
-  _pendingInits--;
-  if (!_pendingInits && _resolveOnFinishInits !== undefined) {
-    _resolveOnFinishInits();
-  }
 }
 
 /**
@@ -1281,36 +1300,6 @@ export class MockSetting {
 }
 
 /**
- * @return {!Array<!Root.Runtime.Module>}
- */
-export function loadedModules() {
-  return self.runtime.modules.filter(module => module.loadedForTest)
-      .filter(module => module.name() !== 'help')
-      .filter(module => module.name().indexOf('test_runner') === -1);
-}
-
-/**
- * @param {!Array<!Root.Runtime.Module>} relativeTo
- * @return {!Array<!Root.Runtime.Module>}
- */
-export function dumpLoadedModules(relativeTo) {
-  const previous = new Set(relativeTo || []);
-  function moduleSorter(left, right) {
-    return Platform.StringUtilities.naturalOrderComparator(left.descriptor.name, right.descriptor.name);
-  }
-
-  addResult('Loaded modules:');
-  const sortedLoadedModules = loadedModules().sort(moduleSorter);
-  for (const module of sortedLoadedModules) {
-    if (previous.has(module)) {
-      continue;
-    }
-    addResult('    ' + module.descriptor.name);
-  }
-  return sortedLoadedModules;
-}
-
-/**
  * @param {string} urlSuffix
  * @param {!Workspace.Workspace.projectTypes=} projectType
  * @return {!Promise}
@@ -1459,6 +1448,7 @@ TestRunner.showPanel = showPanel;
 TestRunner.createKeyEvent = createKeyEvent;
 TestRunner.safeWrap = safeWrap;
 TestRunner.textContentWithLineBreaks = textContentWithLineBreaks;
+TestRunner.textContentWithLineBreaksTrimmed = textContentWithLineBreaksTrimmed;
 TestRunner.textContentWithoutStyles = textContentWithoutStyles;
 TestRunner.evaluateInPagePromise = evaluateInPagePromise;
 TestRunner.callFunctionInPageAsync = callFunctionInPageAsync;
@@ -1500,13 +1490,10 @@ TestRunner.override = override;
 TestRunner.clearSpecificInfoFromStackFrames = clearSpecificInfoFromStackFrames;
 TestRunner.hideInspectorView = hideInspectorView;
 TestRunner.mainFrame = mainFrame;
-TestRunner.loadedModules = loadedModules;
-TestRunner.dumpLoadedModules = dumpLoadedModules;
 TestRunner.waitForUISourceCode = waitForUISourceCode;
 TestRunner.waitForUISourceCodeRemoved = waitForUISourceCodeRemoved;
 TestRunner.url = url;
 TestRunner.dumpSyntaxHighlight = dumpSyntaxHighlight;
-TestRunner.loadModule = loadModule;
 TestRunner.loadLegacyModule = loadLegacyModule;
 TestRunner.loadTestModule = loadTestModule;
 TestRunner.evaluateInPageRemoteObject = evaluateInPageRemoteObject;

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/cxx17_backports.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
@@ -121,11 +122,12 @@ class SynchronousCookieManager {
   std::vector<net::CanonicalCookie> GetCookieList(
       const GURL& url,
       net::CookieOptions options,
-      const net::CookiePartitionKeychain& cookie_partition_keychain) {
+      const net::CookiePartitionKeyCollection&
+          cookie_partition_key_collection) {
     base::RunLoop run_loop;
     std::vector<net::CanonicalCookie> cookies_out;
     cookie_service_->GetCookieList(
-        url, options, cookie_partition_keychain,
+        url, options, cookie_partition_key_collection,
         base::BindLambdaForTesting(
             [&run_loop, &cookies_out](
                 const net::CookieAccessResultList& cookies,
@@ -138,14 +140,15 @@ class SynchronousCookieManager {
   }
 
   // TODO(crbug.com/1225444): CookieManager should be able to see which cookies
-  // are excluded because their partition key is not contained in the keychain.
+  // are excluded because their partition key is not contained in the
+  // key collection.
   net::CookieAccessResultList GetExcludedCookieList(
       const GURL& url,
       net::CookieOptions options) {
     base::RunLoop run_loop;
     net::CookieAccessResultList cookies_out;
     cookie_service_->GetCookieList(
-        url, options, net::CookiePartitionKeychain::Todo(),
+        url, options, net::CookiePartitionKeyCollection::Todo(),
         base::BindLambdaForTesting(
             [&run_loop, &cookies_out](
                 const net::CookieAccessResultList& cookies,
@@ -301,7 +304,7 @@ class SynchronousCookieManager {
   // No need to wrap Add*Listener and CloneInterface, since their use
   // is purely async.
  private:
-  mojom::CookieManager* cookie_service_;
+  raw_ptr<mojom::CookieManager> cookie_service_;
   uint32_t callback_counter_;
 };
 
@@ -678,9 +681,9 @@ TEST_F(CookieManagerTest, GetCookieList) {
   net::CookieOptions options;
   options.set_same_site_cookie_context(
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
-  std::vector<net::CanonicalCookie> cookies =
-      service_wrapper()->GetCookieList(GURL("https://foo_host.com/with/path"),
-                                       options, net::CookiePartitionKeychain());
+  std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(
+      GURL("https://foo_host.com/with/path"), options,
+      net::CookiePartitionKeyCollection());
 
   ASSERT_EQ(2u, cookies.size());
   std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
@@ -732,9 +735,9 @@ TEST_F(CookieManagerTest, GetCookieListHttpOnly) {
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
 
   EXPECT_TRUE(options.exclude_httponly());
-  std::vector<net::CanonicalCookie> cookies =
-      service_wrapper()->GetCookieList(GURL("https://foo_host.com/with/path"),
-                                       options, net::CookiePartitionKeychain());
+  std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(
+      GURL("https://foo_host.com/with/path"), options,
+      net::CookiePartitionKeyCollection());
   ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ("C", cookies[0].Name());
 
@@ -748,9 +751,9 @@ TEST_F(CookieManagerTest, GetCookieListHttpOnly) {
 
   // Retrieve with httponly cookies.
   options.set_include_httponly();
-  cookies =
-      service_wrapper()->GetCookieList(GURL("https://foo_host.com/with/path"),
-                                       options, net::CookiePartitionKeychain());
+  cookies = service_wrapper()->GetCookieList(
+      GURL("https://foo_host.com/with/path"), options,
+      net::CookiePartitionKeyCollection());
   ASSERT_EQ(2u, cookies.size());
   std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
 
@@ -793,9 +796,9 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
       net::CookieOptions::SameSiteCookieContext(
           net::CookieOptions::SameSiteCookieContext::ContextType::CROSS_SITE),
       options.same_site_cookie_context());
-  std::vector<net::CanonicalCookie> cookies =
-      service_wrapper()->GetCookieList(GURL("https://foo_host.com/with/path"),
-                                       options, net::CookiePartitionKeychain());
+  std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(
+      GURL("https://foo_host.com/with/path"), options,
+      net::CookiePartitionKeyCollection());
   ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ("A", cookies[0].Name());
 
@@ -811,9 +814,9 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
       net::CookieOptions::SameSiteCookieContext(
           net::CookieOptions::SameSiteCookieContext::ContextType::
               SAME_SITE_LAX));
-  cookies =
-      service_wrapper()->GetCookieList(GURL("https://foo_host.com/with/path"),
-                                       options, net::CookiePartitionKeychain());
+  cookies = service_wrapper()->GetCookieList(
+      GURL("https://foo_host.com/with/path"), options,
+      net::CookiePartitionKeyCollection());
   ASSERT_EQ(2u, cookies.size());
   std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
   EXPECT_EQ("A", cookies[0].Name());
@@ -826,9 +829,9 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
   // Retrieve everything.
   options.set_same_site_cookie_context(
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
-  cookies =
-      service_wrapper()->GetCookieList(GURL("https://foo_host.com/with/path"),
-                                       options, net::CookiePartitionKeychain());
+  cookies = service_wrapper()->GetCookieList(
+      GURL("https://foo_host.com/with/path"), options,
+      net::CookiePartitionKeyCollection());
   ASSERT_EQ(3u, cookies.size());
   std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
   EXPECT_EQ("A", cookies[0].Name());
@@ -909,7 +912,7 @@ TEST_F(CookieManagerTest, GetCookieListSameParty) {
     // non-SameSite=None cookies are excluded.
     EXPECT_THAT(
         service_wrapper()->GetCookieList(cookie_url, options,
-                                         net::CookiePartitionKeychain()),
+                                         net::CookiePartitionKeyCollection()),
         UnorderedElementsAre(net::MatchesCookieWithName("nonSameParty-None")));
 
     EXPECT_THAT(
@@ -927,7 +930,7 @@ TEST_F(CookieManagerTest, GetCookieListSameParty) {
     options.set_same_party_context(
         net::SamePartyContext(net::SamePartyContext::Type::kSameParty));
     EXPECT_THAT(service_wrapper()->GetCookieList(
-                    cookie_url, options, net::CookiePartitionKeychain()),
+                    cookie_url, options, net::CookiePartitionKeyCollection()),
                 UnorderedElementsAre(
                     net::MatchesCookieWithName("SameParty-Unspecified"),
                     net::MatchesCookieWithName("SameParty-None"),
@@ -943,7 +946,7 @@ TEST_F(CookieManagerTest, GetCookieListSameParty) {
     options.set_same_site_cookie_context(
         net::CookieOptions::SameSiteCookieContext::MakeInclusive());
     EXPECT_THAT(service_wrapper()->GetCookieList(
-                    cookie_url, options, net::CookiePartitionKeychain()),
+                    cookie_url, options, net::CookiePartitionKeyCollection()),
                 UnorderedElementsAre(
                     net::MatchesCookieWithName("SameParty-Unspecified"),
                     net::MatchesCookieWithName("SameParty-None"),
@@ -972,7 +975,7 @@ TEST_F(CookieManagerTest, GetCookieListSameParty) {
     // Cross-party, cross-site.
     EXPECT_THAT(
         service_wrapper()->GetCookieList(cookie_url, options,
-                                         net::CookiePartitionKeychain()),
+                                         net::CookiePartitionKeyCollection()),
         UnorderedElementsAre(net::MatchesCookieWithName("SameParty-None"),
                              net::MatchesCookieWithName("nonSameParty-None")));
 
@@ -989,7 +992,7 @@ TEST_F(CookieManagerTest, GetCookieListSameParty) {
         net::SamePartyContext(net::SamePartyContext::Type::kSameParty));
     EXPECT_THAT(
         service_wrapper()->GetCookieList(cookie_url, options,
-                                         net::CookiePartitionKeychain()),
+                                         net::CookiePartitionKeyCollection()),
         UnorderedElementsAre(net::MatchesCookieWithName("SameParty-None"),
                              net::MatchesCookieWithName("nonSameParty-None")));
     EXPECT_THAT(
@@ -1004,7 +1007,7 @@ TEST_F(CookieManagerTest, GetCookieListSameParty) {
     options.set_same_site_cookie_context(
         net::CookieOptions::SameSiteCookieContext::MakeInclusive());
     EXPECT_THAT(service_wrapper()->GetCookieList(
-                    cookie_url, options, net::CookiePartitionKeychain()),
+                    cookie_url, options, net::CookiePartitionKeyCollection()),
                 UnorderedElementsAre(
                     net::MatchesCookieWithName("SameParty-Unspecified"),
                     net::MatchesCookieWithName("SameParty-None"),
@@ -1017,7 +1020,7 @@ TEST_F(CookieManagerTest, GetCookieListSameParty) {
   }
 }
 
-TEST_F(CookieManagerTest, GetCookieListCookiePartitionKeychain) {
+TEST_F(CookieManagerTest, GetCookieListCookiePartitionKeyCollection) {
   // Add unpartitioned cookie.
   ASSERT_TRUE(SetCanonicalCookie(
       *net::CanonicalCookie::CreateUnsafeCookieForTesting(
@@ -1059,28 +1062,30 @@ TEST_F(CookieManagerTest, GetCookieListCookiePartitionKeychain) {
                   GURL("https://www.c.com")))),
       "https", true));
 
-  // Test empty keychain.
-  std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(
-      GURL("https://foo_host.com/with/path"),
-      net::CookieOptions::MakeAllInclusive(), net::CookiePartitionKeychain());
+  // Test empty key_collection.
+  std::vector<net::CanonicalCookie> cookies =
+      service_wrapper()->GetCookieList(GURL("https://foo_host.com/with/path"),
+                                       net::CookieOptions::MakeAllInclusive(),
+                                       net::CookiePartitionKeyCollection());
   ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ("__Host-A", cookies[0].Name());
 
-  // Test keychain with single partition key.
+  // Test key_collection with single partition key.
   cookies = service_wrapper()->GetCookieList(
       GURL("https://foo_host.com/with/path"),
       net::CookieOptions::MakeAllInclusive(),
-      net::CookiePartitionKeychain(net::CookiePartitionKey::FromURLForTesting(
-          GURL("https://subdomain.a.com"))));
+      net::CookiePartitionKeyCollection(
+          net::CookiePartitionKey::FromURLForTesting(
+              GURL("https://subdomain.a.com"))));
   ASSERT_EQ(2u, cookies.size());
   EXPECT_EQ("__Host-A", cookies[0].Name());
   EXPECT_EQ("__Host-B", cookies[1].Name());
 
-  // Test keychain with multiple partition keys.
+  // Test key_collection with multiple partition keys.
   cookies = service_wrapper()->GetCookieList(
       GURL("https://foo_host.com/with/path"),
       net::CookieOptions::MakeAllInclusive(),
-      net::CookiePartitionKeychain({
+      net::CookiePartitionKeyCollection({
           net::CookiePartitionKey::FromURLForTesting(
               GURL("https://subdomain.a.com")),
           net::CookiePartitionKey::FromURLForTesting(
@@ -1091,11 +1096,11 @@ TEST_F(CookieManagerTest, GetCookieListCookiePartitionKeychain) {
   EXPECT_EQ("__Host-B", cookies[1].Name());
   EXPECT_EQ("__Host-C", cookies[2].Name());
 
-  // Test keychain with all partition keys.
+  // Test key_collection with all partition keys.
   cookies = service_wrapper()->GetCookieList(
       GURL("https://foo_host.com/with/path"),
       net::CookieOptions::MakeAllInclusive(),
-      net::CookiePartitionKeychain::ContainsAll());
+      net::CookiePartitionKeyCollection::ContainsAll());
   ASSERT_EQ(4u, cookies.size());
   EXPECT_EQ("__Host-A", cookies[0].Name());
   EXPECT_EQ("__Host-B", cookies[1].Name());
@@ -1120,9 +1125,9 @@ TEST_F(CookieManagerTest, GetCookieListAccessTime) {
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
 
   options.set_do_not_update_access_time();
-  std::vector<net::CanonicalCookie> cookies =
-      service_wrapper()->GetCookieList(GURL("https://foo_host.com/with/path"),
-                                       options, net::CookiePartitionKeychain());
+  std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(
+      GURL("https://foo_host.com/with/path"), options,
+      net::CookiePartitionKeyCollection());
   ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ("A", cookies[0].Name());
   EXPECT_TRUE(cookies[0].LastAccessDate().is_null());
@@ -1131,9 +1136,9 @@ TEST_F(CookieManagerTest, GetCookieListAccessTime) {
   // that it's a valid value.
   base::Time start(base::Time::Now());
   options.set_update_access_time();
-  cookies =
-      service_wrapper()->GetCookieList(GURL("https://foo_host.com/with/path"),
-                                       options, net::CookiePartitionKeychain());
+  cookies = service_wrapper()->GetCookieList(
+      GURL("https://foo_host.com/with/path"), options,
+      net::CookiePartitionKeyCollection());
   ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ("A", cookies[0].Name());
   EXPECT_FALSE(cookies[0].LastAccessDate().is_null());
@@ -1251,7 +1256,7 @@ TEST_F(CookieManagerTest, SecureCookieNonCryptographicPotentiallyTrustworthy) {
   std::vector<net::CanonicalCookie> http_localhost_cookies =
       service_wrapper()->GetCookieList(http_localhost_url,
                                        net::CookieOptions::MakeAllInclusive(),
-                                       net::CookiePartitionKeychain());
+                                       net::CookiePartitionKeyCollection());
   ASSERT_EQ(1u, http_localhost_cookies.size());
   EXPECT_EQ("http_localhost", http_localhost_cookies[0].Name());
   EXPECT_EQ(net::CookieSourceScheme::kNonSecure,
@@ -1295,7 +1300,7 @@ TEST_F(CookieManagerTest, SecureCookieNonCryptographicPotentiallyTrustworthy) {
   std::vector<net::CanonicalCookie> http_other_cookies =
       service_wrapper()->GetCookieList(http_other_url,
                                        net::CookieOptions::MakeAllInclusive(),
-                                       net::CookiePartitionKeychain());
+                                       net::CookiePartitionKeyCollection());
   ASSERT_EQ(1u, http_other_cookies.size());
   EXPECT_EQ("http_other", http_other_cookies[0].Name());
   EXPECT_EQ(net::CookieSourceScheme::kNonSecure,
@@ -2354,7 +2359,7 @@ class CookieChangeListener : public mojom::CookieChangeListener {
   std::vector<net::CookieChangeInfo> observed_changes_;
 
   // Loop to signal on receiving a notification if not null.
-  base::RunLoop* run_loop_;
+  raw_ptr<base::RunLoop> run_loop_;
 
   mojo::Receiver<mojom::CookieChangeListener> receiver_;
 };
@@ -2611,7 +2616,7 @@ TEST_F(CookieManagerTest, CloningAndClientDestructVisible) {
 
   std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(
       GURL("http://www.other.host/"), net::CookieOptions::MakeAllInclusive(),
-      net::CookiePartitionKeychain());
+      net::CookiePartitionKeyCollection());
   ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ("X", cookies[0].Name());
   EXPECT_EQ("Y", cookies[0].Value());
@@ -2912,6 +2917,129 @@ TEST_F(SessionCleanupCookieManagerTest, HttpCookieAllowedOnHttps) {
 TEST_F(CookieManagerTest, SetStorageAccessGrantSettingsRunsCallback) {
   service_wrapper()->SetStorageAccessGrantSettings();
   ASSERT_EQ(1U, service_wrapper()->callback_count());
+}
+
+class FPSPartitionedCookiesCookieManagerTest : public CookieManagerTest {
+ public:
+  FPSPartitionedCookiesCookieManagerTest()
+      : owner_url_(GURL("https://owner.test")),
+        owner_site_(owner_url_),
+        owner_partition_key_(
+            net::CookiePartitionKey::FromURLForTesting(owner_url_)),
+        member_url_(GURL("https://member.test")),
+        member_site_(member_url_),
+        member_partition_key_(
+            net::CookiePartitionKey::FromURLForTesting(GURL(member_url_))),
+        non_member_url_(GURL("https://nonmember.test")),
+        non_member_partition_key_(
+            net::CookiePartitionKey::FromURLForTesting(non_member_url_)) {
+    delegate_ = std::make_unique<net::TestCookieAccessDelegate>();
+    first_party_sets_.insert(std::make_pair(
+        owner_site_,
+        std::set<net::SchemefulSite>({owner_site_, member_site_})));
+    delegate_->SetFirstPartySets(first_party_sets_);
+    cookie_store()->SetCookieAccessDelegate(std::move(delegate_));
+  }
+
+ protected:
+  const GURL owner_url_;
+  const net::SchemefulSite owner_site_;
+  const net::CookiePartitionKey owner_partition_key_;
+
+  const GURL member_url_;
+  const net::SchemefulSite member_site_;
+  const net::CookiePartitionKey member_partition_key_;
+
+  const GURL non_member_url_;
+  const net::CookiePartitionKey non_member_partition_key_;
+
+  base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
+      first_party_sets_;
+  std::unique_ptr<net::TestCookieAccessDelegate> delegate_;
+};
+
+TEST_F(FPSPartitionedCookiesCookieManagerTest, GetCookieList) {
+  // Add unpartitioned cookie.
+  ASSERT_TRUE(SetCanonicalCookie(
+      *net::CanonicalCookie::CreateUnsafeCookieForTesting(
+          "__Host-unpartitioned", "1", kCookieDomain, "/", base::Time(),
+          base::Time(), base::Time(),
+          /*secure=*/true, /*httponly=*/false, net::CookieSameSite::LAX_MODE,
+          net::COOKIE_PRIORITY_MEDIUM, /*same_party=*/false,
+          /*partition_key=*/absl::nullopt),
+      "https", true));
+  // Add partitioned cookies. One is in the First-Party Set's partition, the
+  // other is not.
+  ASSERT_TRUE(SetCanonicalCookie(
+      *net::CanonicalCookie::CreateUnsafeCookieForTesting(
+          "__Host-intheset", "2", kCookieDomain, "/", base::Time(),
+          base::Time(), base::Time(),
+          /*secure=*/true, /*httponly=*/false, net::CookieSameSite::LAX_MODE,
+          net::COOKIE_PRIORITY_MEDIUM, /*same_party=*/false,
+          absl::make_optional<net::CookiePartitionKey>(owner_partition_key_)),
+      "https", true));
+  ASSERT_TRUE(SetCanonicalCookie(
+      *net::CanonicalCookie::CreateUnsafeCookieForTesting(
+          "__Host-nonmember", "4", kCookieDomain, "/", base::Time(),
+          base::Time(), base::Time(),
+          /*secure=*/true, /*httponly=*/false, net::CookieSameSite::LAX_MODE,
+          net::COOKIE_PRIORITY_MEDIUM, /*same_party=*/false,
+          absl::make_optional<net::CookiePartitionKey>(
+              non_member_partition_key_)),
+      "https", true));
+
+  // Query cookies when the top-level site is a member of the First-Party Set.
+  // It should have access to the cookie set with the owner site as a partition
+  // key the unpartitioned cookie.
+  auto cookies = service_wrapper()->GetCookieList(
+      GURL("https://foo_host.com/with/path"),
+      net::CookieOptions::MakeAllInclusive(),
+      net::CookiePartitionKeyCollection(member_partition_key_));
+  EXPECT_EQ(2u, cookies.size());
+  EXPECT_EQ("__Host-unpartitioned", cookies[0].Name());
+  EXPECT_EQ("__Host-intheset", cookies[1].Name());
+  EXPECT_EQ(owner_partition_key_, cookies[1].PartitionKey().value());
+}
+
+TEST_F(FPSPartitionedCookiesCookieManagerTest, SetCanonicalCookie) {
+  // Add unpartitioned cookie.
+  ASSERT_TRUE(service_wrapper()->SetCanonicalCookie(
+      *net::CanonicalCookie::CreateUnsafeCookieForTesting(
+          "__Host-unpartitioned", "1", kCookieDomain, "/", base::Time(),
+          base::Time(), base::Time(),
+          /*secure=*/true, /*httponly=*/false, net::CookieSameSite::LAX_MODE,
+          net::COOKIE_PRIORITY_MEDIUM, /*same_party=*/false,
+          /*partition_key=*/absl::nullopt),
+      "https", true));
+  // Add partitioned cookies. One is in the First-Party Set's partition, and is
+  // first set with a member site as the partition key. SetCanonicalCookie
+  // should change the partition key to the First-Party Set's owner site.
+  ASSERT_TRUE(service_wrapper()->SetCanonicalCookie(
+      *net::CanonicalCookie::CreateUnsafeCookieForTesting(
+          "__Host-intheset", "2", kCookieDomain, "/", base::Time(),
+          base::Time(), base::Time(),
+          /*secure=*/true, /*httponly=*/false, net::CookieSameSite::LAX_MODE,
+          net::COOKIE_PRIORITY_MEDIUM, /*same_party=*/false,
+          absl::make_optional<net::CookiePartitionKey>(member_partition_key_)),
+      "https", true));
+  ASSERT_TRUE(service_wrapper()->SetCanonicalCookie(
+      *net::CanonicalCookie::CreateUnsafeCookieForTesting(
+          "__Host-nonmember", "4", kCookieDomain, "/", base::Time(),
+          base::Time(), base::Time(),
+          /*secure=*/true, /*httponly=*/false, net::CookieSameSite::LAX_MODE,
+          net::COOKIE_PRIORITY_MEDIUM, /*same_party=*/false,
+          absl::make_optional<net::CookiePartitionKey>(
+              non_member_partition_key_)),
+      "https", true));
+
+  auto cookies = service_wrapper()->GetCookieList(
+      GURL("https://foo_host.com/with/path"),
+      net::CookieOptions::MakeAllInclusive(),
+      net::CookiePartitionKeyCollection(owner_partition_key_));
+  EXPECT_EQ(2u, cookies.size());
+  EXPECT_EQ("__Host-unpartitioned", cookies[0].Name());
+  EXPECT_EQ("__Host-intheset", cookies[1].Name());
+  EXPECT_EQ(owner_partition_key_, cookies[1].PartitionKey().value());
 }
 
 }  // namespace

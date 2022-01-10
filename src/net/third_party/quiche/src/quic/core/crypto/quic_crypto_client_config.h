@@ -49,6 +49,9 @@ struct QUIC_EXPORT_PRIVATE QuicResumptionState {
   // client received from the server at the application layer that the client
   // needs to remember when performing a 0-RTT handshake.
   std::unique_ptr<ApplicationState> application_state = nullptr;
+
+  // Opaque token received in NEW_TOKEN frame if any.
+  std::string token;
 };
 
 // SessionCache is an interface for managing storing and retrieving
@@ -74,12 +77,21 @@ class QUIC_EXPORT_PRIVATE SessionCache {
   // delete cache entries after returning them in Lookup so that session tickets
   // are used only once.
   virtual std::unique_ptr<QuicResumptionState> Lookup(
-      const QuicServerId& server_id,
-      const SSL_CTX* ctx) = 0;
+      const QuicServerId& server_id, QuicWallTime now, const SSL_CTX* ctx) = 0;
 
   // Called when 0-RTT is rejected. Disables early data for all the TLS tickets
   // associated with |server_id|.
   virtual void ClearEarlyData(const QuicServerId& server_id) = 0;
+
+  // Called when NEW_TOKEN frame is received.
+  virtual void OnNewTokenReceived(const QuicServerId& server_id,
+                                  absl::string_view token) = 0;
+
+  // Called to remove expired entries.
+  virtual void RemoveExpiredEntries(QuicWallTime now) = 0;
+
+  // Clear the session cache.
+  virtual void Clear() = 0;
 };
 
 // QuicCryptoClientConfig contains crypto-related configuration settings for a
@@ -388,6 +400,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
   bool pad_full_hello() const { return pad_full_hello_; }
   void set_pad_full_hello(bool new_value) { pad_full_hello_ = new_value; }
+
+  SessionCache* mutable_session_cache() { return session_cache_.get(); }
 
  private:
   // Sets the members to reasonable, default values.

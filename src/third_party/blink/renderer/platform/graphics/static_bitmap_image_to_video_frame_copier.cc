@@ -48,7 +48,7 @@ void StaticBitmapImageToVideoFrameCopier::Convert(
   if (!image)
     return;
 
-  const auto size = ToGfxSize(image->Size());
+  const auto size = image->Size();
   if (!media::VideoFrame::IsValidSize(size, gfx::Rect(size), size)) {
     DVLOG(1) << __func__ << " received frame with invalid size "
              << size.ToString();
@@ -124,6 +124,9 @@ void StaticBitmapImageToVideoFrameCopier::Convert(
                                    : kBottomLeft_GrSurfaceOrigin,
           image->GetMailboxHolder(), gfx::ColorSpace::CreateREC709(),
           std::move(blit_done_callback));
+      // Early out even if the above fails since it would've already invoked the
+      // FrameReadyCallback with a null VideoFrame to indicate failure, and that
+      // will cause us to the take the fallback path in |blit_done_lambda|.
       return;
     }
     ReadYUVPixelsAsync(image, context_provider->ContextProvider(),

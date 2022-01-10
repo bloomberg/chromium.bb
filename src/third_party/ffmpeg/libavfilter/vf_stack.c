@@ -60,21 +60,16 @@ typedef struct StackContext {
 
 static int query_formats(AVFilterContext *ctx)
 {
-    AVFilterFormats *formats = NULL;
     StackContext *s = ctx->priv;
-    int ret;
+    int reject_flags = AV_PIX_FMT_FLAG_BITSTREAM |
+                       AV_PIX_FMT_FLAG_HWACCEL   |
+                       AV_PIX_FMT_FLAG_PAL;
 
     if (s->fillcolor_enable) {
         return ff_set_common_formats(ctx, ff_draw_supported_pixel_formats(0));
     }
 
-    ret = ff_formats_pixdesc_filter(&formats, 0,
-                                    AV_PIX_FMT_FLAG_HWACCEL |
-                                    AV_PIX_FMT_FLAG_BITSTREAM |
-                                    AV_PIX_FMT_FLAG_PAL);
-    if (ret < 0)
-        return ret;
-    return ff_set_common_formats(ctx, formats);
+    return ff_set_common_formats(ctx, ff_formats_pixdesc_filter(0, reject_flags));
 }
 
 static av_cold int init(AVFilterContext *ctx)
@@ -390,6 +385,8 @@ static const AVOption stack_options[] = {
     { NULL },
 };
 
+AVFILTER_DEFINE_CLASS_EXT(stack, "(h|v)stack", stack_options);
+
 static const AVFilterPad outputs[] = {
     {
         .name          = "default",
@@ -400,16 +397,13 @@ static const AVFilterPad outputs[] = {
 
 #if CONFIG_HSTACK_FILTER
 
-#define hstack_options stack_options
-AVFILTER_DEFINE_CLASS(hstack);
-
 const AVFilter ff_vf_hstack = {
     .name          = "hstack",
     .description   = NULL_IF_CONFIG_SMALL("Stack video inputs horizontally."),
+    .priv_class    = &stack_class,
     .priv_size     = sizeof(StackContext),
-    .priv_class    = &hstack_class,
-    .query_formats = query_formats,
     FILTER_OUTPUTS(outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .init          = init,
     .uninit        = uninit,
     .activate      = activate,
@@ -420,16 +414,13 @@ const AVFilter ff_vf_hstack = {
 
 #if CONFIG_VSTACK_FILTER
 
-#define vstack_options stack_options
-AVFILTER_DEFINE_CLASS(vstack);
-
 const AVFilter ff_vf_vstack = {
     .name          = "vstack",
     .description   = NULL_IF_CONFIG_SMALL("Stack video inputs vertically."),
+    .priv_class    = &stack_class,
     .priv_size     = sizeof(StackContext),
-    .priv_class    = &vstack_class,
-    .query_formats = query_formats,
     FILTER_OUTPUTS(outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .init          = init,
     .uninit        = uninit,
     .activate      = activate,
@@ -455,8 +446,8 @@ const AVFilter ff_vf_xstack = {
     .description   = NULL_IF_CONFIG_SMALL("Stack video inputs into custom layout."),
     .priv_size     = sizeof(StackContext),
     .priv_class    = &xstack_class,
-    .query_formats = query_formats,
     FILTER_OUTPUTS(outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .init          = init,
     .uninit        = uninit,
     .activate      = activate,

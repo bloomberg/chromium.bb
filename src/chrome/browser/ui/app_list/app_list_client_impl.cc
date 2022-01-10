@@ -18,7 +18,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/strcat.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/crosapi/url_handler_ash.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -44,8 +46,11 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
+#include "chromeos/crosapi/cpp/gurl_os_handler_utils.h"
 #include "components/session_manager/core/session_manager.h"
 #include "extensions/common/extension.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
@@ -122,6 +127,13 @@ void AppListClientImpl::OnAppListControllerDestroyed() {
   app_list_controller_ = nullptr;
   if (current_model_updater_)
     current_model_updater_->SetActive(false);
+}
+
+void AppListClientImpl::StartZeroStateSearch(base::OnceClosure on_done,
+                                             base::TimeDelta timeout) {
+  // TODO(https://crbug.com/1269115): Refresh the zero state results.
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, std::move(on_done), timeout);
 }
 
 void AppListClientImpl::StartSearch(const std::u16string& trimmed_query) {
@@ -273,6 +285,7 @@ void AppListClientImpl::ActivateItem(int profile_id,
 void AppListClientImpl::GetContextMenuModel(
     int profile_id,
     const std::string& id,
+    bool add_sort_options,
     GetContextMenuModelCallback callback) {
   auto* requested_model_updater = profile_model_mappings_[profile_id];
   if (requested_model_updater != current_model_updater_ ||
@@ -281,12 +294,13 @@ void AppListClientImpl::GetContextMenuModel(
     return;
   }
   requested_model_updater->GetContextMenuModel(
-      id, base::BindOnce(
-              [](GetContextMenuModelCallback callback,
-                 std::unique_ptr<ui::SimpleMenuModel> menu_model) {
-                std::move(callback).Run(std::move(menu_model));
-              },
-              std::move(callback)));
+      id, add_sort_options,
+      base::BindOnce(
+          [](GetContextMenuModelCallback callback,
+             std::unique_ptr<ui::SimpleMenuModel> menu_model) {
+            std::move(callback).Run(std::move(menu_model));
+          },
+          std::move(callback)));
 }
 
 void AppListClientImpl::OnAppListVisibilityWillChange(bool visible) {
@@ -297,8 +311,12 @@ void AppListClientImpl::OnAppListVisibilityWillChange(bool visible) {
 
 void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
   app_list_visible_ = visible;
-  if (visible && search_controller_)
-    search_controller_->AppListShown();
+  if (visible) {
+    if (search_controller_)
+      search_controller_->AppListShown();
+  } else if (current_model_updater_) {
+    current_model_updater_->OnAppListHidden();
+  }
 }
 
 void AppListClientImpl::OnSearchResultVisibilityChanged(const std::string& id,
@@ -420,6 +438,11 @@ app_list::SearchController* AppListClientImpl::search_controller() {
   return search_controller_.get();
 }
 
+void AppListClientImpl::SetSearchControllerForTest(
+    std::unique_ptr<app_list::SearchController> test_controller) {
+  search_controller_ = std::move(test_controller);
+}
+
 AppListModelUpdater* AppListClientImpl::GetModelUpdaterForTest() {
   return current_model_updater_;
 }
@@ -517,7 +540,18 @@ void AppListClientImpl::OpenURL(Profile* profile,
                                 ui::PageTransition transition,
                                 WindowOpenDisposition disposition) {
   if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
-    ash::NewWindowDelegate::GetPrimary()->OpenUrl(url, true);
+    const GURL sanitized_url =
+        crosapi::gurl_os_handler_utils::SanitizeAshURL(url);
+    if ((PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) ||
+         PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_GENERATED)) &&
+        ChromeWebUIControllerFactory::GetInstance()->CanHandleUrl(
+            sanitized_url)) {
+      // Let our os url handler take care of the call.
+      crosapi::UrlHandlerAsh().OpenUrl(sanitized_url);
+    } else {
+      // Send the url to the current primary browser.
+      ash::NewWindowDelegate::GetPrimary()->OpenUrl(url, true);
+    }
   } else {
     NavigateParams params(profile, url, transition);
     params.disposition = disposition;
@@ -546,25 +580,6 @@ void AppListClientImpl::LoadIcon(int profile_id, const std::string& app_id) {
     return;
   }
   requested_model_updater->LoadAppIcon(app_id);
-}
-
-void AppListClientImpl::OnAppListSortRequested(int profile_id,
-                                               ash::AppListSortOrder order) {
-  auto* requested_model_updater = profile_model_mappings_[profile_id];
-  if (requested_model_updater != current_model_updater_ ||
-      !requested_model_updater) {
-    return;
-  }
-  requested_model_updater->OnSortRequested(order);
-}
-
-void AppListClientImpl::OnAppListSortRevertRequested(int profile_id) {
-  auto* requested_model_updater = profile_model_mappings_[profile_id];
-  if (requested_model_updater != current_model_updater_ ||
-      !requested_model_updater) {
-    return;
-  }
-  requested_model_updater->OnSortRevertRequested();
 }
 
 void AppListClientImpl::MaybeRecordViewShown() {
@@ -657,7 +672,8 @@ void AppListClientImpl::MaybeRecordLauncherAction(
   DCHECK(launched_from == ash::AppListLaunchedFrom::kLaunchedFromGrid ||
          launched_from ==
              ash::AppListLaunchedFrom::kLaunchedFromSuggestionChip ||
-         launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox);
+         launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox ||
+         launched_from == ash::AppListLaunchedFrom::kLaunchedFromContinueTask);
 
   // Return early if the current user is not new.
   if (!user_manager::UserManager::Get()->IsCurrentUserNew()) {

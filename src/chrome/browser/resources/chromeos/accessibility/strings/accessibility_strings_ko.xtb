@@ -30,6 +30,7 @@
 <translation id="1189258430971676908">연습 영역: 드롭다운 목록</translation>
 <translation id="1195238899008218998">후기</translation>
 <translation id="1197088940767939838">오렌지색</translation>
+<translation id="1198865190323699001">터치 동작</translation>
 <translation id="1201402288615127009">다음</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">다음 수준 4 제목이 없습니다</translation>
@@ -389,7 +390,9 @@
 <translation id="3492609944033322585">{COUNT,plural, =1{오른쪽 꺾음 괄호}other{오른쪽 꺾음 괄호 #개}}</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{물음표}other{물음표 #개}}</translation>
+<translation id="3505359110822747654">ChromeVox 메뉴 접기</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{탈자 기호}other{탈자 기호 #개}}</translation>
+<translation id="3518600448524470129">{COUNT,plural, =1{흰색 글머리기호}other{흰색 글머리기호 #개}}</translation>
 <translation id="352577523970648069">수정할 수 있는 텍스트 입력란</translation>
 <translation id="3538907380453898475">설명목록</translation>
 <translation id="3549141990712742152"><ph name="TEXT" /> 잘라내기</translation>
@@ -673,6 +676,7 @@
 <translation id="5597170376237141345">다음 체크박스</translation>
 <translation id="5598905979683743333"><ph name="NAME" />, 라디오 버튼 선택 안 됨</translation>
 <translation id="5601172225407283979">기본 작업 수행</translation>
+<translation id="5604302400025591178">{COUNT,plural, =1{정사각형 글머리기호}other{정사각형 글머리기호 #개}}</translation>
 <translation id="5608798115546226984">자동완성 본문</translation>
 <translation id="5616029807486814372">다음 과정</translation>
 <translation id="561939826962581046">time</translation>
@@ -1095,6 +1099,7 @@
 <translation id="8659501358298941449">드롭다운 목록</translation>
 <translation id="8666733765751421568"><ph name="TYPE" /> 끝</translation>
 <translation id="867187640362843212">제목 5</translation>
+<translation id="8690400660839620419">{COUNT,plural, =1{}other{#번째 하위 항목}}</translation>
 <translation id="8693391540059827073">내가 가장 좋아하는 계절</translation>
 <translation id="8696284982970258155">허니듀</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{수직 기호}other{수직 기호 #개}}</translation>

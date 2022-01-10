@@ -99,6 +99,7 @@ static const char *VkDriverIdString(VkDriverId value) {
         case (18): return "DRIVER_ID_MESA_TURNIP";
         case (19): return "DRIVER_ID_MESA_V3DV";
         case (20): return "DRIVER_ID_MESA_PANVK";
+        case (21): return "DRIVER_ID_SAMSUNG_PROPRIETARY";
         default: return "UNKNOWN_VkDriverId";
     }
 }
@@ -1181,6 +1182,10 @@ void DumpVkPhysicalDeviceCustomBorderColorPropertiesEXT(Printer &p, std::string 
     ObjectWrapper object{p, name};
     p.PrintKeyValue("maxCustomBorderColorSamplers", obj.maxCustomBorderColorSamplers, 28);
 }
+void DumpVkPhysicalDeviceDepthClipControlFeaturesEXT(Printer &p, std::string name, VkPhysicalDeviceDepthClipControlFeaturesEXT &obj) {
+    ObjectWrapper object{p, name};
+    p.PrintKeyBool("depthClipControl", static_cast<bool>(obj.depthClipControl), 16);
+}
 void DumpVkPhysicalDeviceDepthClipEnableFeaturesEXT(Printer &p, std::string name, VkPhysicalDeviceDepthClipEnableFeaturesEXT &obj) {
     ObjectWrapper object{p, name};
     p.PrintKeyBool("depthClipEnable", static_cast<bool>(obj.depthClipEnable), 15);
@@ -1435,6 +1440,10 @@ void DumpVkPhysicalDeviceIDProperties(Printer &p, std::string name, VkPhysicalDe
 void DumpVkPhysicalDeviceImageRobustnessFeaturesEXT(Printer &p, std::string name, VkPhysicalDeviceImageRobustnessFeaturesEXT &obj) {
     ObjectWrapper object{p, name};
     p.PrintKeyBool("robustImageAccess", static_cast<bool>(obj.robustImageAccess), 17);
+}
+void DumpVkPhysicalDeviceImageViewMinLodFeaturesEXT(Printer &p, std::string name, VkPhysicalDeviceImageViewMinLodFeaturesEXT &obj) {
+    ObjectWrapper object{p, name};
+    p.PrintKeyBool("minLod", static_cast<bool>(obj.minLod), 6);
 }
 void DumpVkPhysicalDeviceImagelessFramebufferFeatures(Printer &p, std::string name, VkPhysicalDeviceImagelessFramebufferFeatures &obj) {
     ObjectWrapper object{p, name};
@@ -2312,6 +2321,7 @@ pNextChainInfos get_chain_infos() {
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COLOR_WRITE_ENABLE_FEATURES_EXT, sizeof(VkPhysicalDeviceColorWriteEnableFeaturesEXT)},
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT, sizeof(VkPhysicalDeviceConditionalRenderingFeaturesEXT)},
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT, sizeof(VkPhysicalDeviceCustomBorderColorFeaturesEXT)},
+        {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT, sizeof(VkPhysicalDeviceDepthClipControlFeaturesEXT)},
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT, sizeof(VkPhysicalDeviceDepthClipEnableFeaturesEXT)},
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES, sizeof(VkPhysicalDeviceDescriptorIndexingFeatures)},
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_MEMORY_REPORT_FEATURES_EXT, sizeof(VkPhysicalDeviceDeviceMemoryReportFeaturesEXT)},
@@ -2325,6 +2335,7 @@ pNextChainInfos get_chain_infos() {
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GLOBAL_PRIORITY_QUERY_FEATURES_EXT, sizeof(VkPhysicalDeviceGlobalPriorityQueryFeaturesEXT)},
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES, sizeof(VkPhysicalDeviceHostQueryResetFeatures)},
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT, sizeof(VkPhysicalDeviceImageRobustnessFeaturesEXT)},
+        {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_MIN_LOD_FEATURES_EXT, sizeof(VkPhysicalDeviceImageViewMinLodFeaturesEXT)},
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES, sizeof(VkPhysicalDeviceImagelessFramebufferFeatures)},
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INDEX_TYPE_UINT8_FEATURES_EXT, sizeof(VkPhysicalDeviceIndexTypeUint8FeaturesEXT)},
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES_EXT, sizeof(VkPhysicalDeviceInlineUniformBlockFeaturesEXT)},
@@ -2361,7 +2372,7 @@ pNextChainInfos get_chain_infos() {
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES, sizeof(VkPhysicalDeviceShaderDrawParametersFeatures)},
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES, sizeof(VkPhysicalDeviceShaderFloat16Int8Features)},
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_IMAGE_ATOMIC_INT64_FEATURES_EXT, sizeof(VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT)},
-        {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES_KHR, sizeof(VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR)},
+        {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES_KHR, sizeof(VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR) + 256},
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES, sizeof(VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures)},
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_UNIFORM_CONTROL_FLOW_FEATURES_KHR, sizeof(VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR)},
         {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_TERMINATE_INVOCATION_FEATURES_KHR, sizeof(VkPhysicalDeviceShaderTerminateInvocationFeaturesKHR)},
@@ -2754,6 +2765,12 @@ void chain_iterator_phys_device_features2(Printer &p, AppGpu &gpu, void * place,
             DumpVkPhysicalDeviceCustomBorderColorFeaturesEXT(p, "VkPhysicalDeviceCustomBorderColorFeaturesEXT", *props);
             p.AddNewline();
         }
+        if (structure->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT && 
+           (gpu.CheckPhysicalDeviceExtensionIncluded(VK_EXT_DEPTH_CLIP_CONTROL_EXTENSION_NAME))) {
+            VkPhysicalDeviceDepthClipControlFeaturesEXT* props = (VkPhysicalDeviceDepthClipControlFeaturesEXT*)structure;
+            DumpVkPhysicalDeviceDepthClipControlFeaturesEXT(p, "VkPhysicalDeviceDepthClipControlFeaturesEXT", *props);
+            p.AddNewline();
+        }
         if (structure->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT && 
            (gpu.CheckPhysicalDeviceExtensionIncluded(VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME))) {
             VkPhysicalDeviceDepthClipEnableFeaturesEXT* props = (VkPhysicalDeviceDepthClipEnableFeaturesEXT*)structure;
@@ -2832,6 +2849,12 @@ void chain_iterator_phys_device_features2(Printer &p, AppGpu &gpu, void * place,
            (gpu.CheckPhysicalDeviceExtensionIncluded(VK_EXT_IMAGE_ROBUSTNESS_EXTENSION_NAME))) {
             VkPhysicalDeviceImageRobustnessFeaturesEXT* props = (VkPhysicalDeviceImageRobustnessFeaturesEXT*)structure;
             DumpVkPhysicalDeviceImageRobustnessFeaturesEXT(p, "VkPhysicalDeviceImageRobustnessFeaturesEXT", *props);
+            p.AddNewline();
+        }
+        if (structure->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_VIEW_MIN_LOD_FEATURES_EXT && 
+           (gpu.CheckPhysicalDeviceExtensionIncluded(VK_EXT_IMAGE_VIEW_MIN_LOD_EXTENSION_NAME))) {
+            VkPhysicalDeviceImageViewMinLodFeaturesEXT* props = (VkPhysicalDeviceImageViewMinLodFeaturesEXT*)structure;
+            DumpVkPhysicalDeviceImageViewMinLodFeaturesEXT(p, "VkPhysicalDeviceImageViewMinLodFeaturesEXT", *props);
             p.AddNewline();
         }
         if (structure->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES && 

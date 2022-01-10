@@ -51,7 +51,7 @@ try_.builder(
     builderless = not settings.is_main,
     # TODO (kimstephanie): Change to cores = 16 and ssd = True once bots have
     # landed
-    cores = "8|16",
+    cores = 16,
     executable = "recipe:binary_size_trybot",
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
@@ -74,6 +74,7 @@ try_.builder(
     tryjob = try_.job(),
     # TODO(crbug/1202741)
     os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
+    ssd = True,
 )
 
 try_.builder(
@@ -157,19 +158,17 @@ try_.builder(
     name = "android-inverse-fieldtrials-pie-x86-fyi-rel",
 )
 
-try_.builder(
+try_.orchestrator_pair_builders(
     name = "android-marshmallow-arm64-rel",
     branch_selector = branches.STANDARD_MILESTONE,
-    builderless = not settings.is_main,
-    cores = 32 if settings.is_main else 16,
-    goma_jobs = goma.jobs.J300,
     main_list_view = "try",
-    ssd = True,
     use_java_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    tryjob = try_.job(),
-    # TODO(crbug/1202741)
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
+    orchestrator_cores = 4,
+    orchestrator_tryjob = try_.job(),
+    compilator_cores = 64 if settings.is_main else 32,
+    compilator_goma_jobs = goma.jobs.J300,
+    compilator_name = "android-marshmallow-arm64-rel-compilator",
 )
 
 try_.builder(
@@ -188,20 +187,17 @@ try_.builder(
     os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )
 
-try_.builder(
+try_.orchestrator_pair_builders(
     name = "android-marshmallow-x86-rel",
     branch_selector = branches.STANDARD_MILESTONE,
-    builderless = not settings.is_main,
-    # TODO(crbug.com/1251739): Go back to targeting one core amount after
-    # collecting experiment results.
-    cores = "16|32",
-    goma_jobs = goma.jobs.J300,
-    ssd = True,
+    main_list_view = "try",
     use_java_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    tryjob = try_.job(),
-    # TODO(crbug/1202741)
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
+    orchestrator_cores = 4,
+    orchestrator_tryjob = try_.job(),
+    compilator_cores = 32,
+    compilator_goma_jobs = goma.jobs.J300,
+    compilator_name = "android-marshmallow-x86-rel-compilator",
 )
 
 try_.builder(
@@ -257,17 +253,15 @@ try_.builder(
     ),
 )
 
-try_.builder(
+try_.orchestrator_pair_builders(
     name = "android-pie-arm64-rel",
     branch_selector = branches.STANDARD_MILESTONE,
-    builderless = not settings.is_main,
-    cores = 16,
-    goma_jobs = goma.jobs.J300,
-    ssd = True,
     main_list_view = "try",
-    tryjob = try_.job(),
-    # TODO(crbug/1202741)
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
+    orchestrator_cores = 4,
+    orchestrator_tryjob = try_.job(),
+    compilator_cores = 32,
+    compilator_goma_jobs = goma.jobs.J300,
+    compilator_name = "android-pie-arm64-rel-compilator",
 )
 
 try_.builder(
@@ -391,6 +385,8 @@ try_.builder(
 try_.builder(
     name = "android_compile_x64_dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    cores = 16,
+    ssd = True,
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [
@@ -409,6 +405,8 @@ try_.builder(
 try_.builder(
     name = "android_compile_x86_dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    cores = 16,
+    ssd = True,
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [

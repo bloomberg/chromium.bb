@@ -145,7 +145,8 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
                                            gl::MemoryObject *memoryObject,
                                            GLuint64 offset,
                                            GLbitfield createFlags,
-                                           GLbitfield usageFlags) override;
+                                           GLbitfield usageFlags,
+                                           const void *imageCreateInfoPNext) override;
 
     angle::Result setEGLImageTarget(const gl::Context *context,
                                     gl::TextureType type,
@@ -351,6 +352,7 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
                                                   gl::LevelIndex sourceLevelGL,
                                                   uint32_t layerCount,
                                                   const gl::Box &sourceArea,
+                                                  RenderPassClosureReason reason,
                                                   uint8_t **outDataPtr);
 
     angle::Result copyBufferDataToImage(ContextVk *contextVk,

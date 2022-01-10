@@ -13,6 +13,15 @@
 export namespace ProtocolMapping {
   export interface Events {
     /**
+     * The loadComplete event mirrors the load complete event sent by the browser to assistive
+     * technology when the web page has finished loading.
+     */
+    'Accessibility.loadComplete': [Protocol.Accessibility.LoadCompleteEvent];
+    /**
+     * The nodesUpdated event is sent every time a previously requested node has changed the in tree.
+     */
+    'Accessibility.nodesUpdated': [Protocol.Accessibility.NodesUpdatedEvent];
+    /**
      * Event for when an animation has been cancelled.
      */
     'Animation.animationCanceled': [Protocol.Animation.AnimationCanceledEvent];
@@ -296,6 +305,7 @@ export namespace ProtocolMapping {
      */
     'Network.reportingApiReportAdded': [Protocol.Network.ReportingApiReportAddedEvent];
     'Network.reportingApiReportUpdated': [Protocol.Network.ReportingApiReportUpdatedEvent];
+    'Network.reportingApiEndpointsChangedForOrigin': [Protocol.Network.ReportingApiEndpointsChangedForOriginEvent];
     /**
      * Fired when the node should be inspected. This happens after call to `setInspectMode` or when
      * user manually inspects an element.
@@ -438,7 +448,7 @@ export namespace ProtocolMapping {
      */
     'Security.visibleSecurityStateChanged': [Protocol.Security.VisibleSecurityStateChangedEvent];
     /**
-     * The security state of the page changed.
+     * The security state of the page changed. No longer being sent.
      */
     'Security.securityStateChanged': [Protocol.Security.SecurityStateChangedEvent];
     'ServiceWorker.workerErrorReported': [Protocol.ServiceWorker.WorkerErrorReportedEvent];
@@ -700,6 +710,22 @@ export namespace ProtocolMapping {
     'Accessibility.getFullAXTree': {
       paramsType: [Protocol.Accessibility.GetFullAXTreeRequest?];
       returnType: Protocol.Accessibility.GetFullAXTreeResponse;
+    };
+    /**
+     * Fetches the root node.
+     * Requires `enable()` to have been called previously.
+     */
+    'Accessibility.getRootAXNode': {
+      paramsType: [Protocol.Accessibility.GetRootAXNodeRequest?];
+      returnType: Protocol.Accessibility.GetRootAXNodeResponse;
+    };
+    /**
+     * Fetches a node and all ancestors up to and including the root.
+     * Requires `enable()` to have been called previously.
+     */
+    'Accessibility.getAXNodeAndAncestors': {
+      paramsType: [Protocol.Accessibility.GetAXNodeAndAncestorsRequest?];
+      returnType: Protocol.Accessibility.GetAXNodeAndAncestorsResponse;
     };
     /**
      * Fetches a particular accessibility node by AXNodeId.
@@ -1060,6 +1086,10 @@ export namespace ProtocolMapping {
      * sink via Presentation API, Remote Playback API, or Cast SDK.
      */
     'Cast.setSinkToUse': {paramsType: [Protocol.Cast.SetSinkToUseRequest]; returnType: void;};
+    /**
+     * Starts mirroring the desktop to the sink.
+     */
+    'Cast.startDesktopMirroring': {paramsType: [Protocol.Cast.StartDesktopMirroringRequest]; returnType: void;};
     /**
      * Starts mirroring the tab to the sink.
      */
@@ -2327,6 +2357,11 @@ export namespace ProtocolMapping {
      * Clears seeded compilation cache.
      */
     'Page.clearCompilationCache': {paramsType: []; returnType: void;};
+    /**
+     * Sets the Secure Payment Confirmation transaction mode.
+     * https://w3c.github.io/secure-payment-confirmation/#sctn-automation-set-spc-transaction-mode
+     */
+    'Page.setSPCTransactionMode': {paramsType: [Protocol.Page.SetSPCTransactionModeRequest]; returnType: void;};
     /**
      * Generates a report for testing.
      */

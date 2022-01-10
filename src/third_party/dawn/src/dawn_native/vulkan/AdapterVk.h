@@ -17,16 +17,19 @@
 
 #include "dawn_native/Adapter.h"
 
+#include "common/RefCounted.h"
 #include "common/vulkan_platform.h"
 #include "dawn_native/vulkan/VulkanInfo.h"
 
 namespace dawn_native { namespace vulkan {
 
-    class Backend;
+    class VulkanInstance;
 
     class Adapter : public AdapterBase {
       public:
-        Adapter(Backend* backend, VkPhysicalDevice physicalDevice);
+        Adapter(InstanceBase* instance,
+                VulkanInstance* vulkanInstance,
+                VkPhysicalDevice physicalDevice);
         ~Adapter() override = default;
 
         // AdapterBase Implementation
@@ -34,17 +37,20 @@ namespace dawn_native { namespace vulkan {
 
         const VulkanDeviceInfo& GetDeviceInfo() const;
         VkPhysicalDevice GetPhysicalDevice() const;
-        Backend* GetBackend() const;
+        VulkanInstance* GetVulkanInstance() const;
+
+        bool IsDepthStencilFormatSupported(VkFormat format);
 
       private:
         MaybeError InitializeImpl() override;
         MaybeError InitializeSupportedFeaturesImpl() override;
         MaybeError InitializeSupportedLimitsImpl(CombinedLimits* limits) override;
 
-        ResultOrError<DeviceBase*> CreateDeviceImpl(const DeviceDescriptor* descriptor) override;
+        ResultOrError<DeviceBase*> CreateDeviceImpl(
+            const DawnDeviceDescriptor* descriptor) override;
 
         VkPhysicalDevice mPhysicalDevice;
-        Backend* mBackend;
+        Ref<VulkanInstance> mVulkanInstance;
         VulkanDeviceInfo mDeviceInfo = {};
     };
 

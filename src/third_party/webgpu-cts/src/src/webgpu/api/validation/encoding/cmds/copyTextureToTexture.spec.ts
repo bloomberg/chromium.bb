@@ -586,8 +586,13 @@ g.test('copy_ranges_with_compressed_texture_formats')
   .fn(async t => {
     const { format, copyBoxOffsets, srcCopyLevel, dstCopyLevel } = t.params;
     await t.selectDeviceOrSkipTestCase(kTextureFormatInfo[format].feature);
+    const { blockWidth, blockHeight } = kTextureFormatInfo[format];
 
-    const kTextureSize = { width: 60, height: 48, depthOrArrayLayers: 3 };
+    const kTextureSize = {
+      width: 15 * blockWidth,
+      height: 12 * blockHeight,
+      depthOrArrayLayers: 3,
+    };
     const kMipLevelCount = 4;
 
     const srcTexture = t.device.createTexture({

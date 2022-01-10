@@ -142,7 +142,7 @@ int32_t AudioDeviceModuleImpl::CheckPlatform() {
   RTC_LOG(LS_INFO) << "current platform is Mac";
 #endif
   if (platform == kPlatformNotSupported) {
-    RTC_LOG(LERROR)
+    RTC_LOG(LS_ERROR)
         << "current platform is not supported => this module will self "
            "destruct!";
     return -1;
@@ -251,7 +251,7 @@ int32_t AudioDeviceModuleImpl::CreatePlatformSpecificObjects() {
   // - kPlatformDefaultAudio => ALSA, and
   // - kLinuxAlsaAudio => ALSA, and
   // - kLinuxPulseAudio => Invalid selection.
-  RTC_LOG(WARNING) << "PulseAudio is disabled using build flag.";
+  RTC_LOG(LS_WARNING) << "PulseAudio is disabled using build flag.";
   if ((audio_layer == kLinuxAlsaAudio) ||
       (audio_layer == kPlatformDefaultAudio)) {
     audio_device_.reset(new AudioDeviceLinuxALSA());
@@ -271,7 +271,7 @@ int32_t AudioDeviceModuleImpl::CreatePlatformSpecificObjects() {
     RTC_LOG(LS_INFO) << "Linux PulseAudio APIs will be utilized";
   } else if (audio_layer == kLinuxAlsaAudio) {
     audio_device_.reset(new AudioDeviceLinuxALSA());
-    RTC_LOG(WARNING) << "Linux ALSA APIs will be utilized.";
+    RTC_LOG(LS_WARNING) << "Linux ALSA APIs will be utilized.";
   }
 #endif  // #if !defined(WEBRTC_ENABLE_LINUX_PULSE)
 #endif  // #if defined(WEBRTC_LINUX)
@@ -546,13 +546,13 @@ int32_t AudioDeviceModuleImpl::SetStereoRecording(bool enable) {
   RTC_LOG(LS_INFO) << __FUNCTION__ << "(" << enable << ")";
   CHECKinitialized_();
   if (audio_device_->RecordingIsInitialized()) {
-    RTC_LOG(LERROR)
+    RTC_LOG(LS_ERROR)
         << "unable to set stereo mode after recording is initialized";
     return -1;
   }
   if (audio_device_->SetStereoRecording(enable) == -1) {
     if (enable) {
-      RTC_LOG(WARNING) << "failed to enable stereo recording";
+      RTC_LOG(LS_WARNING) << "failed to enable stereo recording";
     }
     return -1;
   }
@@ -592,12 +592,12 @@ int32_t AudioDeviceModuleImpl::SetStereoPlayout(bool enable) {
   RTC_LOG(LS_INFO) << __FUNCTION__ << "(" << enable << ")";
   CHECKinitialized_();
   if (audio_device_->PlayoutIsInitialized()) {
-    RTC_LOG(LERROR)
+    RTC_LOG(LS_ERROR)
         << "unable to set stereo mode while playing side is initialized";
     return -1;
   }
   if (audio_device_->SetStereoPlayout(enable)) {
-    RTC_LOG(WARNING) << "stereo playout is not supported";
+    RTC_LOG(LS_WARNING) << "stereo playout is not supported";
     return -1;
   }
   int8_t nChannels(1);
@@ -856,7 +856,7 @@ int32_t AudioDeviceModuleImpl::PlayoutDelay(uint16_t* delayMS) const {
   CHECKinitialized_();
   uint16_t delay = 0;
   if (audio_device_->PlayoutDelay(delay) == -1) {
-    RTC_LOG(LERROR) << "failed to retrieve the playout delay";
+    RTC_LOG(LS_ERROR) << "failed to retrieve the playout delay";
     return -1;
   }
   *delayMS = delay;

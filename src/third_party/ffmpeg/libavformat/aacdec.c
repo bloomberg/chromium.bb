@@ -83,10 +83,12 @@ static int adts_aac_probe(const AVProbeData *p)
 static int adts_aac_resync(AVFormatContext *s)
 {
     uint16_t state;
+    int64_t start_pos = avio_tell(s->pb);
 
     // skip data until an ADTS frame is found
     state = avio_r8(s->pb);
-    while (!avio_feof(s->pb) && avio_tell(s->pb) < s->probesize) {
+    while (!avio_feof(s->pb) &&
+           (avio_tell(s->pb) - start_pos) < s->probesize) {
         state = (state << 8) | avio_r8(s->pb);
         if ((state >> 4) != 0xFFF)
             continue;
@@ -112,7 +114,7 @@ static int adts_aac_read_header(AVFormatContext *s)
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id   = s->iformat->raw_codec_id;
-    st->internal->need_parsing         = AVSTREAM_PARSE_FULL_RAW;
+    ffstream(st)->need_parsing = AVSTREAM_PARSE_FULL_RAW;
 
     ff_id3v1_read(s);
     if ((s->pb->seekable & AVIO_SEEKABLE_NORMAL) &&

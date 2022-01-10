@@ -58,6 +58,7 @@
 #include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
+#import "ios/chrome/browser/signin/signin_util.h"
 #include "ios/chrome/browser/translate/translate_service_ios.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/thread/web_task_traits.h"
@@ -146,8 +147,9 @@ void IOSChromeMainParts::PreCreateMainMessageLoop() {
 void IOSChromeMainParts::PreCreateThreads() {
   // Create and start the stack sampling profiler if CANARY or DEV. The warning
   // below doesn't apply.
-  if (::GetChannel() == version_info::Channel::CANARY ||
-      ::GetChannel() == version_info::Channel::DEV) {
+  const version_info::Channel channel = ::GetChannel();
+  if (channel == version_info::Channel::CANARY ||
+      channel == version_info::Channel::DEV) {
     sampling_profiler_ = IOSThreadProfiler::CreateAndStartOnMainThread();
     IOSThreadProfiler::SetMainThreadTaskRunner(
         base::ThreadTaskRunnerHandle::Get());
@@ -179,6 +181,10 @@ void IOSChromeMainParts::PreCreateThreads() {
   static crash_reporter::CrashKeyString<4> key("first-run");
   if (FirstRun::IsChromeFirstRun())
     key.Set("yes");
+
+  // Compute device restore flag before IO is disallowed on UI thread, so the
+  // value is available from cache synchronously.
+  IsFirstSessionAfterDeviceRestore();
 
   // Convert freeform experimental settings into switches before initializing
   // local state, in case any of the settings affect policy.
@@ -223,7 +229,8 @@ void IOSChromeMainParts::PreCreateThreads() {
     if (malloc_intercepted) {
       // Start heap profiling as early as possible so it can start recording
       // memory allocations. Requires the allocator shim to be enabled.
-      heap_profiler_controller_ = std::make_unique<HeapProfilerController>();
+      heap_profiler_controller_ =
+          std::make_unique<HeapProfilerController>(channel);
       heap_profiler_controller_->Start();
     }
   }

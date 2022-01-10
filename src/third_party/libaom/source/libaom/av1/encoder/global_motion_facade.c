@@ -458,8 +458,13 @@ void av1_compute_global_motion_facade(AV1_COMP *cpi) {
 
   if (cpi->oxcf.tool_cfg.enable_global_motion) {
     if (cpi->gf_frame_index == 0) {
-      for (int i = 0; i < FRAME_UPDATE_TYPES; i++)
+      for (int i = 0; i < FRAME_UPDATE_TYPES; i++) {
         cpi->ppi->valid_gm_model_found[i] = INT32_MAX;
+#if CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
+        if (cpi->ppi->fpmt_unit_test_cfg == PARALLEL_SIMULATION_ENCODE)
+          cpi->ppi->temp_valid_gm_model_found[i] = INT32_MAX;
+#endif
+      }
     }
   }
 

@@ -1457,7 +1457,6 @@ DECLARE_REG_TMP 7, 8
 %endif
 
 %define PUT_8TAP_FN FN put_8tap,
-
 PUT_8TAP_FN sharp,          SHARP,   SHARP
 PUT_8TAP_FN sharp_smooth,   SHARP,   SMOOTH
 PUT_8TAP_FN smooth_sharp,   SMOOTH,  SHARP
@@ -2123,7 +2122,6 @@ DECLARE_REG_TMP 6, 7
 %endif
 
 %define PREP_8TAP_FN FN prep_8tap,
-
 PREP_8TAP_FN sharp,          SHARP,   SHARP
 PREP_8TAP_FN sharp_smooth,   SHARP,   SMOOTH
 PREP_8TAP_FN smooth_sharp,   SMOOTH,  SHARP
@@ -2816,7 +2814,7 @@ cglobal prep_8tap_scaled_8bpc, 4, 14, 16, 128, tmp, src, ss, w, h, mx, my, dx, d
     dec                srcq
     movd               xm15, t0d
     punpckldq            m8, m9, m8
-    paddd               m14, m8 ; mx+dx*[0-1]
+    paddd               m14, m8 ; mx+dx*[0,1]
     vpbroadcastd        m11, [base+pd_0x4000]
     vpbroadcastd       xm15, xm15
     pand                 m8, m14, m10
@@ -2867,8 +2865,7 @@ cglobal prep_8tap_scaled_8bpc, 4, 14, 16, 128, tmp, src, ss, w, h, mx, my, dx, d
     lea                 r4d, [t1+r4]
     cmovnz              r6q, [base+subpel_filters+r4*8]
     movq               xm11, r6q
-    punpcklbw          xm11, xm11
-    psraw              xm11, 8
+    pmovsxbw           xm11, xm11
     pshufd              xm8, xm11, q0000
     pshufd              xm9, xm11, q1111
     pshufd             xm10, xm11, q2222
@@ -2996,8 +2993,7 @@ cglobal prep_8tap_scaled_8bpc, 4, 14, 16, 128, tmp, src, ss, w, h, mx, my, dx, d
     lea                 r4d, [t1+r4]
     cmovnz              r6q, [base+subpel_filters+r4*8]
     movq               xm10, r6q
-    punpcklbw          xm10, xm10
-    psraw              xm10, 8
+    pmovsxbw           xm10, xm10
     pshufd              xm7, xm10, q0000
     pshufd              xm8, xm10, q1111
     pshufd              xm9, xm10, q2222
@@ -3171,9 +3167,8 @@ cglobal prep_8tap_scaled_8bpc, 4, 14, 16, 128, tmp, src, ss, w, h, mx, my, dx, d
     lea                 r4d, [t1+r4]
     cmovnz              r6q, [base+subpel_filters+r4*8]
     movq               xm11, r6q
-    punpcklbw          xm11, xm11
-    psraw              xm11, 8
-    vinserti128         m11, xm11, 1
+    punpcklqdq         xm11, xm11
+    pmovsxbw            m11, xm11
     pshufd               m8, m11, q0000
     pshufd               m9, m11, q1111
     pmaddwd              m4, m0, m8
@@ -3319,8 +3314,7 @@ cglobal prep_8tap_scaled_8bpc, 4, 14, 16, 128, tmp, src, ss, w, h, mx, my, dx, d
     vpbroadcastq         m2, [srcq+ssq*1]
     add                srcq, ss3q
     movq               xm10, r4q
-    punpcklbw          xm10, xm10
-    psraw              xm10, 8
+    pmovsxbw           xm10, xm10
     vpblendd            m15, m7, 0xaa
     pblendvb            m15, m11, m8
     pshufd              xm8, xm10, q0000
@@ -3416,9 +3410,8 @@ cglobal prep_8tap_scaled_8bpc, 4, 14, 16, 128, tmp, src, ss, w, h, mx, my, dx, d
     punpcklqdq          m15, m15
     pblendvb            m15, m11, m8
     movq               xm10, r4q
-    punpcklbw          xm10, xm10
-    psraw              xm10, 8
-    vinserti128         m10, xm10, 1
+    punpcklqdq         xm10, xm10
+    pmovsxbw            m10, xm10
     pshufb               m2, m14
     pshufb               m3, m14
     pshufb               m4, m14
@@ -3525,8 +3518,7 @@ cglobal prep_8tap_scaled_8bpc, 4, 14, 16, 128, tmp, src, ss, w, h, mx, my, dx, d
     vpbroadcastd        m15, xm15
     paddd               m14, m8 ; mx+dx*[0-7]
     movq                xm0, r4q
-    punpcklbw           xm0, xm0
-    psraw               xm0, 8
+    pmovsxbw            xm0, xm0
     mova           [rsp+96], xm0
     jmp .dy1_hloop
 .dy1_hloop_prep:
@@ -3694,8 +3686,7 @@ cglobal prep_8tap_scaled_8bpc, 4, 14, 16, 128, tmp, src, ss, w, h, mx, my, dx, d
     pmaddubsw            m0, m15
     pmaddubsw            m1, m15
     movq               xm11, r4q
-    punpcklbw          xm11, xm11
-    psraw              xm11, 8
+    pmovsxbw           xm11, xm11
     phaddw               m0, m1
     pmulhrsw             m0, m12            ; 0 2 _ 4  1 3 _ 5
     pshufd              xm8, xm11, q0000
@@ -3791,9 +3782,8 @@ cglobal prep_8tap_scaled_8bpc, 4, 14, 16, 128, tmp, src, ss, w, h, mx, my, dx, d
     pmaddubsw           xm1, xm15
     pmaddubsw            m3, m15
     movq               xm11, r4q
-    punpcklbw          xm11, xm11
-    psraw              xm11, 8
-    vinserti128         m11, xm11, 1
+    punpcklqdq         xm11, xm11
+    pmovsxbw            m11, xm11
     phaddw               m0, m2
     phaddw               m1, m3
     pmulhrsw             m0, m12    ; 0 2  _ 4
@@ -3888,8 +3878,7 @@ cglobal prep_8tap_scaled_8bpc, 4, 14, 16, 128, tmp, src, ss, w, h, mx, my, dx, d
     vpbroadcastd        m15, xm15
     paddd               m14, m8 ; mx+dx*[0-7]
     movq                xm0, r4q
-    punpcklbw           xm0, xm0
-    psraw               xm0, 8
+    pmovsxbw            xm0, xm0
     mova         [rsp+0x50], xm0
     jmp .dy2_hloop
 .dy2_hloop_prep:
@@ -4515,11 +4504,12 @@ cglobal blend_8bpc, 3, 7, 7, dst, ds, tmp, w, h, mask
 %define base r6-blend_avx2_table
     lea                  r6, [blend_avx2_table]
     tzcnt                wd, wm
-    movifnidn            hd, hm
     movifnidn         maskq, maskmp
+    movifnidn            hd, hm
     movsxd               wq, dword [r6+wq*4]
     vpbroadcastd         m4, [base+pb_64]
     vpbroadcastd         m5, [base+pw_512]
+    sub                tmpq, maskq
     add                  wq, r6
     lea                  r6, [dsq*3]
     jmp                  wq
@@ -4532,9 +4522,8 @@ cglobal blend_8bpc, 3, 7, 7, dst, ds, tmp, w, h, mask
     psubb               xm3, xm4, xm6
     punpcklbw           xm2, xm3, xm6
     punpckhbw           xm3, xm6
-    mova                xm6, [tmpq]
+    mova                xm6, [maskq+tmpq]
     add               maskq, 4*4
-    add                tmpq, 4*4
     punpcklbw           xm0, xm6
     punpckhbw           xm1, xm6
     pmaddubsw           xm0, xm2
@@ -4557,9 +4546,8 @@ ALIGN function_align
     vpbroadcastq         m2, [dstq+dsq*2]
     vpbroadcastq         m3, [dstq+r6   ]
     mova                 m0, [maskq]
-    mova                 m6, [tmpq]
+    mova                 m6, [maskq+tmpq]
     add               maskq, 8*4
-    add                tmpq, 8*4
     vpblendd             m1, m2, 0x30
     vpblendd             m1, m3, 0xc0
     psubb                m3, m4, m0
@@ -4589,9 +4577,8 @@ ALIGN function_align
     psubb                m3, m4, m0
     punpcklbw            m2, m3, m0
     punpckhbw            m3, m0
-    mova                 m6, [tmpq]
+    mova                 m6, [maskq+tmpq]
     add               maskq, 16*2
-    add                tmpq, 16*2
     punpcklbw            m0, m1, m6
     punpckhbw            m1, m6
     pmaddubsw            m0, m2
@@ -4609,9 +4596,8 @@ ALIGN function_align
 .w32:
     mova                 m0, [maskq]
     mova                 m1, [dstq]
-    mova                 m6, [tmpq]
+    mova                 m6, [maskq+tmpq]
     add               maskq, 32
-    add                tmpq, 32
     psubb                m3, m4, m0
     punpcklbw            m2, m3, m0
     punpckhbw            m3, m0
@@ -4675,21 +4661,21 @@ ALIGN function_align
     RET
 ALIGN function_align
 .w8:
-    vbroadcasti128       m4, [maskq+8*2]
+    mova                xm3, [maskq+8*2]
 .w8_loop:
-    vpbroadcastq         m2, [dstq+dsq*0]
-    movq                xm0, [dstq+dsq*1]
-    vpblendd             m0, m2, 0x30
-    movq                xm1, [tmpq+8*1]
-    vinserti128          m1, [tmpq+8*0], 1
+    movq                xm0, [dstq+dsq*0]
+    vpbroadcastq        xm1, [dstq+dsq*1]
+    mova                xm2, [tmpq]
     add                tmpq, 8*2
-    punpcklbw            m0, m1
-    pmaddubsw            m0, m4
-    pmulhrsw             m0, m5
-    vextracti128        xm1, m0, 1
+    punpcklbw           xm0, xm2
+    punpckhbw           xm1, xm2
+    pmaddubsw           xm0, xm3
+    pmaddubsw           xm1, xm3
+    pmulhrsw            xm0, xm5
+    pmulhrsw            xm1, xm5
     packuswb            xm0, xm1
-    movhps     [dstq+dsq*0], xm0
-    movq       [dstq+dsq*1], xm0
+    movq       [dstq+dsq*0], xm0
+    movhps     [dstq+dsq*1], xm0
     lea                dstq, [dstq+dsq*2]
     sub                  hd, 2
     jg .w8_loop

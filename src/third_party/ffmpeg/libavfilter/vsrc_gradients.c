@@ -83,17 +83,6 @@ static const AVOption gradients_options[] = {
 
 AVFILTER_DEFINE_CLASS(gradients);
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_RGBA,
-        AV_PIX_FMT_RGBA64,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
-
 static uint32_t lerp_color(uint8_t c0[4], uint8_t c1[4], float x)
 {
     const float y = 1.f - x;
@@ -299,9 +288,9 @@ const AVFilter ff_vsrc_gradients = {
     .description   = NULL_IF_CONFIG_SMALL("Draw a gradients."),
     .priv_size     = sizeof(GradientsContext),
     .priv_class    = &gradients_class,
-    .query_formats = query_formats,
     .inputs        = NULL,
     FILTER_OUTPUTS(gradients_outputs),
+    FILTER_PIXFMTS(AV_PIX_FMT_RGBA, AV_PIX_FMT_RGBA64),
     .activate      = activate,
     .flags         = AVFILTER_FLAG_SLICE_THREADS,
 };

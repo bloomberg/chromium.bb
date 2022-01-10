@@ -42,9 +42,6 @@
 1662 WIN : dEQP-EGL.functional.native_color_mapping.native_window.other_clear = SKIP
 1662 WIN : dEQP-EGL.functional.native_color_mapping.native_window.other_render = SKIP
 
-// Intentionally causes TDRs that eventually blocklist the application
-2319 : dEQP-EGL.functional.robustness.reset_context.shaders.infinite_loop.* = SKIP
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  Temprory entries: they should be removed once the bugs are fixed.
@@ -68,7 +65,6 @@
 1340 WIN : dEQP-EGL.functional.render.multi_context.gles3.rgba5551_pbuffer = FAIL
 1340 WIN : dEQP-EGL.functional.render.multi_context.gles2_gles3.rgba5551_window = FAIL
 1340 WIN : dEQP-EGL.functional.render.multi_context.gles2_gles3.rgba5551_pbuffer = FAIL
-1340 WIN : dEQP-EGL.functional.negative_api.choose_config = SKIP
 1340 WIN : dEQP-EGL.functional.negative_api.surface_attrib = SKIP
 1340 WIN : dEQP-EGL.functional.negative_api.swap_interval = FAIL
 2382 WIN : dEQP-EGL.functional.native_color_mapping.native_window.* = SKIP
@@ -91,7 +87,6 @@
 2546 LINUX : dEQP-EGL.functional.thread_cleanup.* = SKIP
 2546 LINUX : dEQP-EGL.functional.native_color_mapping.native_window.* = FAIL
 2546 LINUX : dEQP-EGL.functional.native_coord_mapping.native_window.* = FAIL
-2546 LINUX : dEQP-EGL.functional.negative_api.choose_config = FAIL
 2546 LINUX : dEQP-EGL.functional.negative_api.swap_interval = FAIL
 2546 LINUX : dEQP-EGL.functional.query_surface.simple.pbuffer.rgba8888_depth_stencil = FAIL
 2546 LINUX : dEQP-EGL.functional.query_surface.simple.pbuffer.rgba8888_no_depth_no_stencil = FAIL
@@ -103,7 +98,6 @@
 // Mac failures
 2546 MAC : dEQP-EGL.functional.native_color_mapping.native_window.* = FAIL
 2546 MAC : dEQP-EGL.functional.native_coord_mapping.native_window.* = FAIL
-2546 MAC : dEQP-EGL.functional.negative_api.choose_config = FAIL
 2546 MAC : dEQP-EGL.functional.negative_api.copy_buffers = FAIL
 2546 MAC : dEQP-EGL.functional.negative_api.swap_interval = FAIL
 2546 MAC : dEQP-EGL.functional.query_surface.simple.pbuffer.rgba8888_depth_stencil = FAIL
@@ -119,16 +113,16 @@
 6533 ANDROID : dEQP-EGL.functional.native_coord_mapping.native_window.* = SKIP
 
 // Android Vulkan
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.api.create_image_gles2_android_native_rgb8 = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles2_android_native_rgb8_read_pixels = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles2_android_native_rgb8_texture = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles3_android_native_array_rgb565_texture_array = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles3_android_native_array_rgb8_texture_array = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles3_android_native_array_rgba8_texture_array = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.modify.android_native_rgb8_renderbuffer_clear_color = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.modify.android_native_rgb8_tex_subimage_rgb8 = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.render_multiple_contexts.gles2_android_native_rgb8_read_pixels = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.render_multiple_contexts.gles2_android_native_rgb8_texture = SKIP
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.api.create_image_gles2_android_native_rgb8 = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles2_android_native_rgb8_read_pixels = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles2_android_native_rgb8_texture = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles3_android_native_array_rgb565_texture_array = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles3_android_native_array_rgb8_texture_array = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles3_android_native_array_rgba8_texture_array = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.modify.android_native_rgb8_renderbuffer_clear_color = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.modify.android_native_rgb8_tex_subimage_rgb8 = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.render_multiple_contexts.gles2_android_native_rgb8_read_pixels = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.render_multiple_contexts.gles2_android_native_rgb8_texture = FAIL
 
 // Robustness failures on multiple platforms
 3711 : dEQP-EGL.functional.robustness.reset_context.shaders.out_of_bounds.reset_status.reads.* = FAIL
@@ -274,3 +268,11 @@
 6528 PIXEL4ORXL GLES : dEQP-EGL.functional.choose_config.simple.selection_and_sort.transparent_blue_value = FAIL
 6528 PIXEL4ORXL GLES : dEQP-EGL.functional.thread_cleanup.multi_context_* = FAIL
 6528 PIXEL4ORXL GLES : dEQP-EGL.functional.thread_cleanup.single_context_* = FAIL
+
+6707 NVIDIA : dEQP-EGL.functional.robustness.reset_context.shaders.out_of_bounds.reset_status.reads.uniform_block.compute = SKIP
+6707 NVIDIA : dEQP-EGL.functional.robustness.reset_context.shaders.out_of_bounds.reset_status.writes.uniform_block.compute = SKIP
+
+6678 TSAN : dEQP-EGL.functional.multithread.* = SKIP
+6678 TSAN : dEQP-EGL.functional.sharing.gles2.multithread.random* = FLAKY
+
+6678 UBSAN : dEQP-EGL.functional.sharing.gles2.multithread.* = SKIP

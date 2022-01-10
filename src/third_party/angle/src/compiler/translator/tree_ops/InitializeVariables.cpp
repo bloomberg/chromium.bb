@@ -59,18 +59,16 @@ void AddZeroInitSequence(const TIntermTyped *initializedNode,
     }
     else if (initializedNode->getType().isInterfaceBlock())
     {
-        const ImmutableString &name =
-            static_cast<const TIntermSymbol *>(initializedNode)->getName();
         const TType &type                     = initializedNode->getType();
         const TInterfaceBlock &interfaceBlock = *type.getInterfaceBlock();
         const TFieldList &fieldList           = interfaceBlock.fields();
         for (size_t fieldIndex = 0; fieldIndex < fieldList.size(); ++fieldIndex)
         {
-            const TField &field          = *fieldList[fieldIndex];
-            TIntermTyped *blockReference = ReferenceGlobalVariable(name, *symbolTable);
-            TIntermTyped *fieldIndexRef  = CreateIndexNode(static_cast<int>(fieldIndex));
-            TIntermTyped *fieldReference = new TIntermBinary(
-                TOperator::EOpIndexDirectInterfaceBlock, blockReference, fieldIndexRef);
+            const TField &field         = *fieldList[fieldIndex];
+            TIntermTyped *fieldIndexRef = CreateIndexNode(static_cast<int>(fieldIndex));
+            TIntermTyped *fieldReference =
+                new TIntermBinary(TOperator::EOpIndexDirectInterfaceBlock,
+                                  initializedNode->deepCopy(), fieldIndexRef);
             TIntermTyped *fieldZero = CreateZeroNode(*field.type());
             TIntermTyped *assignment =
                 new TIntermBinary(TOperator::EOpAssign, fieldReference, fieldZero);
@@ -215,7 +213,30 @@ void InsertInitCode(TCompiler *compiler,
         }
         else
         {
-            initializedSymbol = ReferenceGlobalVariable(tempVariableName, *symbolTable);
+            if (tempVariableName != "")
+            {
+                initializedSymbol = ReferenceGlobalVariable(tempVariableName, *symbolTable);
+            }
+            else
+            {
+                // Must be a nameless interface block.
+                ASSERT(var.structOrBlockName != "");
+                const TSymbol *symbol = symbolTable->findGlobal(var.structOrBlockName);
+                ASSERT(symbol && symbol->isInterfaceBlock());
+                const TInterfaceBlock *block = static_cast<const TInterfaceBlock *>(symbol);
+
+                for (const TField *field : block->fields())
+                {
+                    initializedSymbol = ReferenceGlobalVariable(field->name(), *symbolTable);
+
+                    TIntermSequence initCode;
+                    CreateInitCode(initializedSymbol, canUseLoopsToInitialize,
+                                   highPrecisionSupported, &initCode, symbolTable);
+                    mainBody->insert(mainBody->begin(), initCode.begin(), initCode.end());
+                }
+                // Already inserted init code in this case
+                continue;
+            }
         }
         ASSERT(initializedSymbol != nullptr);
 

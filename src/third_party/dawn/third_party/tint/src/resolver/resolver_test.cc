@@ -23,7 +23,7 @@
 #include "src/ast/break_statement.h"
 #include "src/ast/call_statement.h"
 #include "src/ast/continue_statement.h"
-#include "src/ast/float_literal.h"
+#include "src/ast/float_literal_expression.h"
 #include "src/ast/if_statement.h"
 #include "src/ast/intrinsic_texture_helper_test.h"
 #include "src/ast/loop_statement.h"
@@ -114,7 +114,7 @@ TEST_F(ResolverTest, Stmt_Case) {
   auto* assign = Assign(lhs, rhs);
   auto* block = Block(assign);
   ast::CaseSelectorList lit;
-  lit.push_back(create<ast::SintLiteral>(3));
+  lit.push_back(create<ast::SintLiteralExpression>(3));
   auto* cse = create<ast::CaseStatement>(lit, block);
   auto* cond_var = Var("c", ty.i32());
   auto* sw = Switch(cond_var, cse, DefaultCase());
@@ -248,7 +248,7 @@ TEST_F(ResolverTest, Stmt_Switch) {
   auto* lhs = Expr("v");
   auto* rhs = Expr(2.3f);
   auto* case_block = Block(Assign(lhs, rhs));
-  auto* stmt = Switch(Expr(2), Case(Literal(3), case_block), DefaultCase());
+  auto* stmt = Switch(Expr(2), Case(Expr(3), case_block), DefaultCase());
   WrapInFunction(v, stmt);
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -305,17 +305,6 @@ TEST_F(ResolverTest, Stmt_VariableDecl_Alias) {
 
   ASSERT_NE(TypeOf(init), nullptr);
   EXPECT_TRUE(TypeOf(init)->Is<sem::I32>());
-}
-
-TEST_F(ResolverTest, Stmt_VariableDecl_AliasRedeclared) {
-  Alias(Source{{12, 34}}, "MyInt", ty.i32());
-  Alias(Source{{56, 78}}, "MyInt", ty.i32());
-  WrapInFunction();
-
-  EXPECT_FALSE(r()->Resolve());
-  EXPECT_EQ(r()->error(),
-            "56:78 error: type with the name 'MyInt' was already declared\n"
-            "12:34 note: first declared here");
 }
 
 TEST_F(ResolverTest, Stmt_VariableDecl_ModuleScope) {
@@ -667,7 +656,7 @@ TEST_F(ResolverTest, Expr_Identifier_FunctionVariable_Const) {
   EXPECT_EQ(VarOf(my_var_a)->Declaration(), var);
 }
 
-TEST_F(ResolverTest, ArrayAccessor_Dynamic_Ref_F32) {
+TEST_F(ResolverTest, IndexAccessor_Dynamic_Ref_F32) {
   // var a : array<bool, 10> = 0;
   // var idx : f32 = f32();
   // var f : f32 = a[idx];
@@ -819,7 +808,7 @@ TEST_F(ResolverTest, Function_RegisterInputOutputVariables) {
   EXPECT_EQ(func_sem->Parameters().size(), 0u);
   EXPECT_TRUE(func_sem->ReturnType()->Is<sem::Void>());
 
-  const auto& vars = func_sem->ReferencedModuleVariables();
+  const auto& vars = func_sem->TransitivelyReferencedGlobals();
   ASSERT_EQ(vars.size(), 3u);
   EXPECT_EQ(vars[0]->Declaration(), wg_var);
   EXPECT_EQ(vars[1]->Declaration(), sb_var);
@@ -856,7 +845,7 @@ TEST_F(ResolverTest, Function_RegisterInputOutputVariables_SubFunction) {
   ASSERT_NE(func2_sem, nullptr);
   EXPECT_EQ(func2_sem->Parameters().size(), 0u);
 
-  const auto& vars = func2_sem->ReferencedModuleVariables();
+  const auto& vars = func2_sem->TransitivelyReferencedGlobals();
   ASSERT_EQ(vars.size(), 3u);
   EXPECT_EQ(vars[0]->Declaration(), wg_var);
   EXPECT_EQ(vars[1]->Declaration(), sb_var);
@@ -875,7 +864,7 @@ TEST_F(ResolverTest, Function_NotRegisterFunctionVariable) {
   auto* func_sem = Sem().Get(func);
   ASSERT_NE(func_sem, nullptr);
 
-  EXPECT_EQ(func_sem->ReferencedModuleVariables().size(), 0u);
+  EXPECT_EQ(func_sem->TransitivelyReferencedGlobals().size(), 0u);
   EXPECT_TRUE(func_sem->ReturnType()->Is<sem::Void>());
 }
 
@@ -890,7 +879,7 @@ TEST_F(ResolverTest, Function_NotRegisterFunctionConstant) {
   auto* func_sem = Sem().Get(func);
   ASSERT_NE(func_sem, nullptr);
 
-  EXPECT_EQ(func_sem->ReferencedModuleVariables().size(), 0u);
+  EXPECT_EQ(func_sem->TransitivelyReferencedGlobals().size(), 0u);
   EXPECT_TRUE(func_sem->ReturnType()->Is<sem::Void>());
 }
 
@@ -902,32 +891,8 @@ TEST_F(ResolverTest, Function_NotRegisterFunctionParams) {
   auto* func_sem = Sem().Get(func);
   ASSERT_NE(func_sem, nullptr);
 
-  EXPECT_EQ(func_sem->ReferencedModuleVariables().size(), 0u);
+  EXPECT_EQ(func_sem->TransitivelyReferencedGlobals().size(), 0u);
   EXPECT_TRUE(func_sem->ReturnType()->Is<sem::Void>());
-}
-
-TEST_F(ResolverTest, Function_ReturnStatements) {
-  auto* var = Var("foo", ty.f32());
-
-  auto* ret_1 = Return(1.f);
-  auto* ret_foo = Return("foo");
-  auto* func = Func("my_func", ast::VariableList{}, ty.f32(),
-                    {
-                        Decl(var),
-                        If(true, Block(ret_1)),
-                        ret_foo,
-                    });
-
-  EXPECT_TRUE(r()->Resolve()) << r()->error();
-
-  auto* func_sem = Sem().Get(func);
-  ASSERT_NE(func_sem, nullptr);
-  EXPECT_EQ(func_sem->Parameters().size(), 0u);
-
-  EXPECT_EQ(func_sem->ReturnStatements().size(), 2u);
-  EXPECT_EQ(func_sem->ReturnStatements()[0], ret_1);
-  EXPECT_EQ(func_sem->ReturnStatements()[1], ret_foo);
-  EXPECT_TRUE(func_sem->ReturnType()->Is<sem::F32>());
 }
 
 TEST_F(ResolverTest, Function_CallSites) {
@@ -937,8 +902,8 @@ TEST_F(ResolverTest, Function_CallSites) {
   auto* call_2 = Call("foo");
   auto* bar = Func("bar", ast::VariableList{}, ty.void_(),
                    {
-                       WrapInStatement(call_1),
-                       WrapInStatement(call_2),
+                       CallStmt(call_1),
+                       CallStmt(call_2),
                    });
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -946,8 +911,8 @@ TEST_F(ResolverTest, Function_CallSites) {
   auto* foo_sem = Sem().Get(foo);
   ASSERT_NE(foo_sem, nullptr);
   ASSERT_EQ(foo_sem->CallSites().size(), 2u);
-  EXPECT_EQ(foo_sem->CallSites()[0], call_1);
-  EXPECT_EQ(foo_sem->CallSites()[1], call_2);
+  EXPECT_EQ(foo_sem->CallSites()[0]->Declaration(), call_1);
+  EXPECT_EQ(foo_sem->CallSites()[1]->Declaration(), call_2);
 
   auto* bar_sem = Sem().Get(bar);
   ASSERT_NE(bar_sem, nullptr);
@@ -964,12 +929,12 @@ TEST_F(ResolverTest, Function_WorkgroupSize_NotSet) {
   auto* func_sem = Sem().Get(func);
   ASSERT_NE(func_sem, nullptr);
 
-  EXPECT_EQ(func_sem->workgroup_size()[0].value, 1u);
-  EXPECT_EQ(func_sem->workgroup_size()[1].value, 1u);
-  EXPECT_EQ(func_sem->workgroup_size()[2].value, 1u);
-  EXPECT_EQ(func_sem->workgroup_size()[0].overridable_const, nullptr);
-  EXPECT_EQ(func_sem->workgroup_size()[1].overridable_const, nullptr);
-  EXPECT_EQ(func_sem->workgroup_size()[2].overridable_const, nullptr);
+  EXPECT_EQ(func_sem->WorkgroupSize()[0].value, 1u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[1].value, 1u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[2].value, 1u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[0].overridable_const, nullptr);
+  EXPECT_EQ(func_sem->WorkgroupSize()[1].overridable_const, nullptr);
+  EXPECT_EQ(func_sem->WorkgroupSize()[2].overridable_const, nullptr);
 }
 
 TEST_F(ResolverTest, Function_WorkgroupSize_Literals) {
@@ -984,12 +949,12 @@ TEST_F(ResolverTest, Function_WorkgroupSize_Literals) {
   auto* func_sem = Sem().Get(func);
   ASSERT_NE(func_sem, nullptr);
 
-  EXPECT_EQ(func_sem->workgroup_size()[0].value, 8u);
-  EXPECT_EQ(func_sem->workgroup_size()[1].value, 2u);
-  EXPECT_EQ(func_sem->workgroup_size()[2].value, 3u);
-  EXPECT_EQ(func_sem->workgroup_size()[0].overridable_const, nullptr);
-  EXPECT_EQ(func_sem->workgroup_size()[1].overridable_const, nullptr);
-  EXPECT_EQ(func_sem->workgroup_size()[2].overridable_const, nullptr);
+  EXPECT_EQ(func_sem->WorkgroupSize()[0].value, 8u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[1].value, 2u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[2].value, 3u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[0].overridable_const, nullptr);
+  EXPECT_EQ(func_sem->WorkgroupSize()[1].overridable_const, nullptr);
+  EXPECT_EQ(func_sem->WorkgroupSize()[2].overridable_const, nullptr);
 }
 
 TEST_F(ResolverTest, Function_WorkgroupSize_Consts) {
@@ -1010,12 +975,12 @@ TEST_F(ResolverTest, Function_WorkgroupSize_Consts) {
   auto* func_sem = Sem().Get(func);
   ASSERT_NE(func_sem, nullptr);
 
-  EXPECT_EQ(func_sem->workgroup_size()[0].value, 16u);
-  EXPECT_EQ(func_sem->workgroup_size()[1].value, 8u);
-  EXPECT_EQ(func_sem->workgroup_size()[2].value, 2u);
-  EXPECT_EQ(func_sem->workgroup_size()[0].overridable_const, nullptr);
-  EXPECT_EQ(func_sem->workgroup_size()[1].overridable_const, nullptr);
-  EXPECT_EQ(func_sem->workgroup_size()[2].overridable_const, nullptr);
+  EXPECT_EQ(func_sem->WorkgroupSize()[0].value, 16u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[1].value, 8u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[2].value, 2u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[0].overridable_const, nullptr);
+  EXPECT_EQ(func_sem->WorkgroupSize()[1].overridable_const, nullptr);
+  EXPECT_EQ(func_sem->WorkgroupSize()[2].overridable_const, nullptr);
 }
 
 TEST_F(ResolverTest, Function_WorkgroupSize_Consts_NestedInitializer) {
@@ -1036,12 +1001,12 @@ TEST_F(ResolverTest, Function_WorkgroupSize_Consts_NestedInitializer) {
   auto* func_sem = Sem().Get(func);
   ASSERT_NE(func_sem, nullptr);
 
-  EXPECT_EQ(func_sem->workgroup_size()[0].value, 8u);
-  EXPECT_EQ(func_sem->workgroup_size()[1].value, 4u);
-  EXPECT_EQ(func_sem->workgroup_size()[2].value, 1u);
-  EXPECT_EQ(func_sem->workgroup_size()[0].overridable_const, nullptr);
-  EXPECT_EQ(func_sem->workgroup_size()[1].overridable_const, nullptr);
-  EXPECT_EQ(func_sem->workgroup_size()[2].overridable_const, nullptr);
+  EXPECT_EQ(func_sem->WorkgroupSize()[0].value, 8u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[1].value, 4u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[2].value, 1u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[0].overridable_const, nullptr);
+  EXPECT_EQ(func_sem->WorkgroupSize()[1].overridable_const, nullptr);
+  EXPECT_EQ(func_sem->WorkgroupSize()[2].overridable_const, nullptr);
 }
 
 TEST_F(ResolverTest, Function_WorkgroupSize_OverridableConsts) {
@@ -1062,12 +1027,12 @@ TEST_F(ResolverTest, Function_WorkgroupSize_OverridableConsts) {
   auto* func_sem = Sem().Get(func);
   ASSERT_NE(func_sem, nullptr);
 
-  EXPECT_EQ(func_sem->workgroup_size()[0].value, 16u);
-  EXPECT_EQ(func_sem->workgroup_size()[1].value, 8u);
-  EXPECT_EQ(func_sem->workgroup_size()[2].value, 2u);
-  EXPECT_EQ(func_sem->workgroup_size()[0].overridable_const, width);
-  EXPECT_EQ(func_sem->workgroup_size()[1].overridable_const, height);
-  EXPECT_EQ(func_sem->workgroup_size()[2].overridable_const, depth);
+  EXPECT_EQ(func_sem->WorkgroupSize()[0].value, 16u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[1].value, 8u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[2].value, 2u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[0].overridable_const, width);
+  EXPECT_EQ(func_sem->WorkgroupSize()[1].overridable_const, height);
+  EXPECT_EQ(func_sem->WorkgroupSize()[2].overridable_const, depth);
 }
 
 TEST_F(ResolverTest, Function_WorkgroupSize_OverridableConsts_NoInit) {
@@ -1088,12 +1053,12 @@ TEST_F(ResolverTest, Function_WorkgroupSize_OverridableConsts_NoInit) {
   auto* func_sem = Sem().Get(func);
   ASSERT_NE(func_sem, nullptr);
 
-  EXPECT_EQ(func_sem->workgroup_size()[0].value, 0u);
-  EXPECT_EQ(func_sem->workgroup_size()[1].value, 0u);
-  EXPECT_EQ(func_sem->workgroup_size()[2].value, 0u);
-  EXPECT_EQ(func_sem->workgroup_size()[0].overridable_const, width);
-  EXPECT_EQ(func_sem->workgroup_size()[1].overridable_const, height);
-  EXPECT_EQ(func_sem->workgroup_size()[2].overridable_const, depth);
+  EXPECT_EQ(func_sem->WorkgroupSize()[0].value, 0u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[1].value, 0u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[2].value, 0u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[0].overridable_const, width);
+  EXPECT_EQ(func_sem->WorkgroupSize()[1].overridable_const, height);
+  EXPECT_EQ(func_sem->WorkgroupSize()[2].overridable_const, depth);
 }
 
 TEST_F(ResolverTest, Function_WorkgroupSize_Mixed) {
@@ -1112,12 +1077,12 @@ TEST_F(ResolverTest, Function_WorkgroupSize_Mixed) {
   auto* func_sem = Sem().Get(func);
   ASSERT_NE(func_sem, nullptr);
 
-  EXPECT_EQ(func_sem->workgroup_size()[0].value, 8u);
-  EXPECT_EQ(func_sem->workgroup_size()[1].value, 2u);
-  EXPECT_EQ(func_sem->workgroup_size()[2].value, 3u);
-  EXPECT_EQ(func_sem->workgroup_size()[0].overridable_const, nullptr);
-  EXPECT_EQ(func_sem->workgroup_size()[1].overridable_const, height);
-  EXPECT_EQ(func_sem->workgroup_size()[2].overridable_const, nullptr);
+  EXPECT_EQ(func_sem->WorkgroupSize()[0].value, 8u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[1].value, 2u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[2].value, 3u);
+  EXPECT_EQ(func_sem->WorkgroupSize()[0].overridable_const, nullptr);
+  EXPECT_EQ(func_sem->WorkgroupSize()[1].overridable_const, height);
+  EXPECT_EQ(func_sem->WorkgroupSize()[2].overridable_const, nullptr);
 }
 
 TEST_F(ResolverTest, Expr_MemberAccessor_Struct) {
@@ -1932,17 +1897,17 @@ TEST_F(ResolverTest, Function_EntryPoints_StageDecoration) {
 
   const auto& b_eps = func_b_sem->AncestorEntryPoints();
   ASSERT_EQ(2u, b_eps.size());
-  EXPECT_EQ(Symbols().Register("ep_1"), b_eps[0]);
-  EXPECT_EQ(Symbols().Register("ep_2"), b_eps[1]);
+  EXPECT_EQ(Symbols().Register("ep_1"), b_eps[0]->Declaration()->symbol);
+  EXPECT_EQ(Symbols().Register("ep_2"), b_eps[1]->Declaration()->symbol);
 
   const auto& a_eps = func_a_sem->AncestorEntryPoints();
   ASSERT_EQ(1u, a_eps.size());
-  EXPECT_EQ(Symbols().Register("ep_1"), a_eps[0]);
+  EXPECT_EQ(Symbols().Register("ep_1"), a_eps[0]->Declaration()->symbol);
 
   const auto& c_eps = func_c_sem->AncestorEntryPoints();
   ASSERT_EQ(2u, c_eps.size());
-  EXPECT_EQ(Symbols().Register("ep_1"), c_eps[0]);
-  EXPECT_EQ(Symbols().Register("ep_2"), c_eps[1]);
+  EXPECT_EQ(Symbols().Register("ep_1"), c_eps[0]->Declaration()->symbol);
+  EXPECT_EQ(Symbols().Register("ep_2"), c_eps[1]->Declaration()->symbol);
 
   EXPECT_TRUE(ep_1_sem->AncestorEntryPoints().empty());
   EXPECT_TRUE(ep_2_sem->AncestorEntryPoints().empty());
@@ -2003,9 +1968,9 @@ TEST_F(ResolverTest, ASTNodesAreReached) {
 TEST_F(ResolverTest, ASTNodeNotReached) {
   EXPECT_FATAL_FAILURE(
       {
-        ProgramBuilder builder;
-        builder.Expr("1");
-        Resolver(&builder).Resolve();
+        ProgramBuilder b;
+        b.Expr("expr");
+        Resolver(&b).Resolve();
       },
       "internal compiler error: AST node 'tint::ast::IdentifierExpression' was "
       "not reached by the resolver");
@@ -2014,15 +1979,14 @@ TEST_F(ResolverTest, ASTNodeNotReached) {
 TEST_F(ResolverTest, ASTNodeReachedTwice) {
   EXPECT_FATAL_FAILURE(
       {
-        ProgramBuilder builder;
-        auto* expr = builder.Expr("1");
-        auto* usesExprTwice = builder.Add(expr, expr);
-        builder.Global("g", builder.ty.i32(), ast::StorageClass::kPrivate,
-                       usesExprTwice);
-        Resolver(&builder).Resolve();
+        ProgramBuilder b;
+        auto* expr = b.Expr(1);
+        b.Global("a", b.ty.i32(), ast::StorageClass::kPrivate, expr);
+        b.Global("b", b.ty.i32(), ast::StorageClass::kPrivate, expr);
+        Resolver(&b).Resolve();
       },
-      "internal compiler error: AST node 'tint::ast::IdentifierExpression' was "
-      "encountered twice in the same AST of a Program");
+      "internal compiler error: AST node 'tint::ast::SintLiteralExpression' "
+      "was encountered twice in the same AST of a Program");
 }
 
 TEST_F(ResolverTest, UnaryOp_Not) {

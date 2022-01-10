@@ -654,7 +654,8 @@ enum aome_enc_control_id {
    * in-loop filter aiming to remove coding artifacts
    *
    * - 0 = disable
-   * - 1 = enable (default)
+   * - 1 = enable for all frames (default)
+   * - 2 = disable for non-reference frames
    */
   AV1E_SET_ENABLE_CDEF = 58,
 
@@ -1377,6 +1378,39 @@ enum aome_enc_control_id {
    */
   AV1E_SET_SVC_REF_FRAME_COMP_PRED = 147,
 
+  /*!\brief Set --deltaq-mode strength.
+   *
+   * Valid range: [0, 1000]
+   */
+  AV1E_SET_DELTAQ_STRENGTH = 148,
+
+  /*!\brief Codec control to control loop filter
+   *
+   * - 0 = Loop filter is disabled for all frames
+   * - 1 = Loop filter is enabled for all frames
+   * - 2 = Loop filter is disabled for non-reference frames
+   * - 3 = Loop filter is disabled for the frames with low motion
+   */
+  AV1E_SET_LOOPFILTER_CONTROL = 149,
+
+  /*!\brief Codec control function to get the loopfilter chosen by the encoder,
+   * int* parameter
+   */
+  AOME_GET_LOOPFILTER_LEVEL = 150,
+
+  /*!\brief Codec control to automatically turn off several intra coding tools
+   * - 0 = do not use the feature
+   * - 1 = enable the automatic decision to turn off several intra tools
+   */
+  AV1E_SET_AUTO_INTRA_TOOLS_OFF = 151,
+
+  /*!\brief Codec control function to set flag for rate control used by external
+   * encoders.
+   * - 1 = Enable rate control for external encoders. This will disable content
+   * dependency in rate control and cyclic refresh.
+   * - 0 = Default. Disable rate control for external encoders.
+   */
+  AV1E_SET_RTC_EXTERNAL_RC = 152,
   // Any new encoder control IDs should be added above.
   // Maximum allowed encoder control ID is 229.
   // No encoder control ID should be added below.
@@ -1773,6 +1807,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_AQ_MODE, unsigned int)
 AOM_CTRL_USE_TYPE(AV1E_SET_DELTAQ_MODE, unsigned int)
 #define AOM_CTRL_AV1E_SET_DELTAQ_MODE
 
+AOM_CTRL_USE_TYPE(AV1E_SET_DELTAQ_STRENGTH, unsigned int)
+#define AOM_CTRL_AV1E_SET_DELTAQ_STRENGTH
+
 AOM_CTRL_USE_TYPE(AV1E_SET_DELTALF_MODE, unsigned int)
 #define AOM_CTRL_AV1E_SET_DELTALF_MODE
 
@@ -1935,6 +1972,18 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_TX_SIZE_SEARCH, int)
 AOM_CTRL_USE_TYPE(AV1E_SET_SVC_REF_FRAME_COMP_PRED,
                   aom_svc_ref_frame_comp_pred_t *)
 #define AOME_CTRL_AV1E_SET_SVC_REF_FRAME_COMP_PRED
+
+AOM_CTRL_USE_TYPE(AV1E_SET_LOOPFILTER_CONTROL, int)
+#define AOM_CTRL_AV1E_SET_LOOPFILTER_CONTROL
+
+AOM_CTRL_USE_TYPE(AOME_GET_LOOPFILTER_LEVEL, int *)
+#define AOM_CTRL_AOME_GET_LOOPFILTER_LEVEL
+
+AOM_CTRL_USE_TYPE(AV1E_SET_AUTO_INTRA_TOOLS_OFF, unsigned int)
+#define AOM_CTRL_AV1E_SET_AUTO_INTRA_TOOLS_OFF
+
+AOM_CTRL_USE_TYPE(AV1E_SET_RTC_EXTERNAL_RC, int)
+#define AOM_CTRL_AV1E_SET_RTC_EXTERNAL_RC
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

@@ -35,8 +35,17 @@ using libaom_test::ACMRandom;
       tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, \
       const int16_t *scan, const int16_t *iscan
 
+#define LP_QUANTIZE_PARAM_LIST                                             \
+  const int16_t *coeff_ptr, intptr_t n_coeffs, const int16_t *round_ptr,   \
+      const int16_t *quant_ptr, int16_t *qcoeff_ptr, int16_t *dqcoeff_ptr, \
+      const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan,  \
+      const int16_t *iscan
+
+typedef void (*LPQuantizeFunc)(LP_QUANTIZE_PARAM_LIST);
 typedef void (*QuantizeFunc)(QUAN_PARAM_LIST);
 typedef void (*QuantizeFuncHbd)(QUAN_PARAM_LIST, int log_scale);
+
+#undef LP_QUANTIZE_PARAM_LIST
 
 #define HBD_QUAN_FUNC                                                      \
   fn(coeff_ptr, n_coeffs, zbin_ptr, round_ptr, quant_ptr, quant_shift_ptr, \
@@ -67,8 +76,10 @@ void highbd_quan64x64_wrapper(QUAN_PARAM_LIST) {
 enum QuantType { TYPE_B, TYPE_DC, TYPE_FP };
 
 using std::tuple;
-typedef tuple<QuantizeFunc, QuantizeFunc, TX_SIZE, QuantType, aom_bit_depth_t>
-    QuantizeParam;
+
+template <typename FuncType>
+using QuantizeParam =
+    tuple<FuncType, FuncType, TX_SIZE, QuantType, aom_bit_depth_t>;
 
 typedef struct {
   QUANTS quant;
@@ -77,12 +88,16 @@ typedef struct {
 
 const int kTestNum = 1000;
 
-template <typename CoeffType>
-class QuantizeTestBase : public ::testing::TestWithParam<QuantizeParam> {
+#define GET_TEMPLATE_PARAM(k) std::get<k>(this->GetParam())
+
+template <typename CoeffType, typename FuncType>
+class QuantizeTestBase
+    : public ::testing::TestWithParam<QuantizeParam<FuncType>> {
  protected:
   QuantizeTestBase()
-      : quant_ref_(GET_PARAM(0)), quant_(GET_PARAM(1)), tx_size_(GET_PARAM(2)),
-        type_(GET_PARAM(3)), bd_(GET_PARAM(4)) {}
+      : quant_ref_(GET_TEMPLATE_PARAM(0)), quant_(GET_TEMPLATE_PARAM(1)),
+        tx_size_(GET_TEMPLATE_PARAM(2)), type_(GET_TEMPLATE_PARAM(3)),
+        bd_(GET_TEMPLATE_PARAM(4)) {}
 
   virtual ~QuantizeTestBase() {}
 
@@ -152,14 +167,6 @@ class QuantizeTestBase : public ::testing::TestWithParam<QuantizeParam> {
       RunQuantizeFunc(coeff_ptr, n_coeffs, zbin, round, quant, quant_shift,
                       qcoeff, qcoeff_ref, dqcoeff, dqcoeff_ref, dequant,
                       &eob[0], &eob[1], sc->scan, sc->iscan);
-
-      quant_ref_(coeff_ptr, n_coeffs, zbin, round, quant, quant_shift,
-                 qcoeff_ref, dqcoeff_ref, dequant, &eob[0], sc->scan,
-                 sc->iscan);
-
-      API_REGISTER_STATE_CHECK(quant_(coeff_ptr, n_coeffs, zbin, round, quant,
-                                      quant_shift, qcoeff, dqcoeff, dequant,
-                                      &eob[1], sc->scan, sc->iscan));
 
       for (int j = 0; j < n_coeffs; ++j) {
         ASSERT_EQ(qcoeff_ref[j], qcoeff[j])
@@ -248,14 +255,15 @@ class QuantizeTestBase : public ::testing::TestWithParam<QuantizeParam> {
   ACMRandom rnd_;
   QuanTable *qtab_;
   CoeffType *coeff_;
-  QuantizeFunc quant_ref_;
-  QuantizeFunc quant_;
+  FuncType quant_ref_;
+  FuncType quant_;
   TX_SIZE tx_size_;
   QuantType type_;
   aom_bit_depth_t bd_;
 };
 
-class FullPrecisionQuantizeTest : public QuantizeTestBase<tran_low_t> {
+class FullPrecisionQuantizeTest
+    : public QuantizeTestBase<tran_low_t, QuantizeFunc> {
   void RunQuantizeFunc(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                        const int16_t *zbin_ptr, const int16_t *round_ptr,
                        const int16_t *quant_ptr, const int16_t *quant_shift_ptr,
@@ -271,6 +279,25 @@ class FullPrecisionQuantizeTest : public QuantizeTestBase<tran_low_t> {
     API_REGISTER_STATE_CHECK(quant_(
         coeff_ptr, n_coeffs, zbin_ptr, round_ptr, quant_ptr, quant_shift_ptr,
         qcoeff_ptr, dqcoeff_ptr, dequant_ptr, eob_ptr, scan, iscan));
+  }
+};
+
+class LowPrecisionQuantizeTest
+    : public QuantizeTestBase<int16_t, LPQuantizeFunc> {
+  void RunQuantizeFunc(const int16_t *coeff_ptr, intptr_t n_coeffs,
+                       const int16_t * /*zbin_ptr*/, const int16_t *round_ptr,
+                       const int16_t *quant_ptr,
+                       const int16_t * /*quant_shift_ptr*/, int16_t *qcoeff_ptr,
+                       int16_t *qcoeff_ref_ptr, int16_t *dqcoeff_ptr,
+                       int16_t *dqcoeff_ref_ptr, const int16_t *dequant_ptr,
+                       uint16_t *eob_ref_ptr, uint16_t *eob_ptr,
+                       const int16_t *scan, const int16_t *iscan) override {
+    quant_ref_(coeff_ptr, n_coeffs, round_ptr, quant_ptr, qcoeff_ref_ptr,
+               dqcoeff_ref_ptr, dequant_ptr, eob_ref_ptr, scan, iscan);
+
+    API_REGISTER_STATE_CHECK(quant_(coeff_ptr, n_coeffs, round_ptr, quant_ptr,
+                                    qcoeff_ptr, dqcoeff_ptr, dequant_ptr,
+                                    eob_ptr, scan, iscan));
   }
 };
 
@@ -358,10 +385,106 @@ TEST_P(FullPrecisionQuantizeTest, DISABLED_Speed) {
   }
 }
 
+// TODO(crbug.com/aomedia/2796)
+TEST_P(LowPrecisionQuantizeTest, ZeroInput) {
+  FillCoeffZero();
+  QuantizeRun(false);
+}
+
+TEST_P(LowPrecisionQuantizeTest, LargeNegativeInput) {
+  FillDcLargeNegative();
+  QuantizeRun(false, 0, 1);
+}
+
+TEST_P(LowPrecisionQuantizeTest, DcOnlyInput) {
+  FillDcOnly();
+  QuantizeRun(false, 0, 1);
+}
+
+TEST_P(LowPrecisionQuantizeTest, RandomInput) {
+  QuantizeRun(true, 0, kTestNum);
+}
+
+TEST_P(LowPrecisionQuantizeTest, MultipleQ) {
+  for (int q = 0; q < QINDEX_RANGE; ++q) {
+    QuantizeRun(true, q, kTestNum);
+  }
+}
+
+// Force the coeff to be half the value of the dequant.  This exposes a
+// mismatch found in av1_quantize_fp_sse2().
+TEST_P(LowPrecisionQuantizeTest, CoeffHalfDequant) {
+  FillCoeff(16);
+  QuantizeRun(false, 25, 1);
+}
+
+TEST_P(LowPrecisionQuantizeTest, DISABLED_Speed) {
+  int16_t *coeff_ptr = coeff_;
+  const intptr_t n_coeffs = coeff_num();
+
+  int16_t *qcoeff_ref = coeff_ptr + n_coeffs;
+  int16_t *dqcoeff_ref = qcoeff_ref + n_coeffs;
+
+  int16_t *qcoeff = dqcoeff_ref + n_coeffs;
+  int16_t *dqcoeff = qcoeff + n_coeffs;
+  uint16_t *eob = (uint16_t *)(dqcoeff + n_coeffs);
+
+  // Testing uses 2-D DCT scan order table
+  const SCAN_ORDER *const sc = get_default_scan(tx_size_, DCT_DCT);
+
+  // Testing uses luminance quantization table
+  const int q = 22;
+  const int16_t *round_fp = qtab_->quant.y_round_fp[q];
+  const int16_t *quant_fp = qtab_->quant.y_quant_fp[q];
+  const int16_t *dequant = qtab_->dequant.y_dequant_QTX[q];
+  const int kNumTests = 5000000;
+  aom_usec_timer timer, simd_timer;
+  int rows = tx_size_high[tx_size_];
+  int cols = tx_size_wide[tx_size_];
+  rows = AOMMIN(32, rows);
+  cols = AOMMIN(32, cols);
+  for (int cnt = 0; cnt <= rows; cnt++) {
+    FillCoeffRandomRows(cnt * cols);
+
+    aom_usec_timer_start(&timer);
+    for (int n = 0; n < kNumTests; ++n) {
+      quant_ref_(coeff_ptr, n_coeffs, round_fp, quant_fp, qcoeff, dqcoeff,
+                 dequant, eob, sc->scan, sc->iscan);
+    }
+    aom_usec_timer_mark(&timer);
+
+    aom_usec_timer_start(&simd_timer);
+    for (int n = 0; n < kNumTests; ++n) {
+      quant_(coeff_ptr, n_coeffs, round_fp, quant_fp, qcoeff, dqcoeff, dequant,
+             eob, sc->scan, sc->iscan);
+    }
+    aom_usec_timer_mark(&simd_timer);
+
+    const int elapsed_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
+    const int simd_elapsed_time =
+        static_cast<int>(aom_usec_timer_elapsed(&simd_timer));
+    printf("c_time = %d \t simd_time = %d \t Gain = %f \n", elapsed_time,
+           simd_elapsed_time, ((float)elapsed_time / simd_elapsed_time));
+  }
+}
+
 using std::make_tuple;
 
 #if HAVE_AVX2
-const QuantizeParam kQParamArrayAvx2[] = {
+
+const QuantizeParam<LPQuantizeFunc> kLPQParamArrayAvx2[] = {
+  make_tuple(&av1_quantize_lp_c, &av1_quantize_lp_avx2,
+             static_cast<TX_SIZE>(TX_16X16), TYPE_FP, AOM_BITS_8),
+  make_tuple(&av1_quantize_lp_c, &av1_quantize_lp_avx2,
+             static_cast<TX_SIZE>(TX_32X32), TYPE_FP, AOM_BITS_8),
+  make_tuple(&av1_quantize_lp_c, &av1_quantize_lp_avx2,
+             static_cast<TX_SIZE>(TX_64X64), TYPE_FP, AOM_BITS_8)
+};
+
+INSTANTIATE_TEST_SUITE_P(AVX2, LowPrecisionQuantizeTest,
+                         ::testing::ValuesIn(kLPQParamArrayAvx2));
+
+const QuantizeParam<QuantizeFunc> kQParamArrayAvx2[] = {
   make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_avx2,
              static_cast<TX_SIZE>(TX_16X16), TYPE_FP, AOM_BITS_8),
   make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_avx2,
@@ -446,7 +569,20 @@ INSTANTIATE_TEST_SUITE_P(AVX2, FullPrecisionQuantizeTest,
 #endif  // HAVE_AVX2
 
 #if HAVE_SSE2
-const QuantizeParam kQParamArraySSE2[] = {
+
+const QuantizeParam<LPQuantizeFunc> kLPQParamArraySSE2[] = {
+  make_tuple(&av1_quantize_lp_c, &av1_quantize_lp_sse2,
+             static_cast<TX_SIZE>(TX_16X16), TYPE_FP, AOM_BITS_8),
+  make_tuple(&av1_quantize_lp_c, &av1_quantize_lp_sse2,
+             static_cast<TX_SIZE>(TX_8X8), TYPE_FP, AOM_BITS_8),
+  make_tuple(&av1_quantize_lp_c, &av1_quantize_lp_sse2,
+             static_cast<TX_SIZE>(TX_4X4), TYPE_FP, AOM_BITS_8)
+};
+
+INSTANTIATE_TEST_SUITE_P(SSE2, LowPrecisionQuantizeTest,
+                         ::testing::ValuesIn(kLPQParamArraySSE2));
+
+const QuantizeParam<QuantizeFunc> kQParamArraySSE2[] = {
   make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_sse2,
              static_cast<TX_SIZE>(TX_16X16), TYPE_FP, AOM_BITS_8),
   make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_sse2,
@@ -537,7 +673,20 @@ INSTANTIATE_TEST_SUITE_P(SSE2, FullPrecisionQuantizeTest,
 #endif
 
 #if HAVE_NEON
-const QuantizeParam kQParamArrayNEON[] = {
+
+const QuantizeParam<LPQuantizeFunc> kLPQParamArrayNEON[] = {
+  make_tuple(av1_quantize_lp_c, av1_quantize_lp_neon,
+             static_cast<TX_SIZE>(TX_16X16), TYPE_FP, AOM_BITS_8),
+  make_tuple(av1_quantize_lp_c, av1_quantize_lp_neon,
+             static_cast<TX_SIZE>(TX_32X32), TYPE_FP, AOM_BITS_8),
+  make_tuple(av1_quantize_lp_c, av1_quantize_lp_neon,
+             static_cast<TX_SIZE>(TX_64X64), TYPE_FP, AOM_BITS_8)
+};
+
+INSTANTIATE_TEST_SUITE_P(NEON, LowPrecisionQuantizeTest,
+                         ::testing::ValuesIn(kLPQParamArrayNEON));
+
+const QuantizeParam<QuantizeFunc> kQParamArrayNEON[] = {
   make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_neon,
              static_cast<TX_SIZE>(TX_16X16), TYPE_FP, AOM_BITS_8),
   make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_neon,

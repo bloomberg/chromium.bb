@@ -38,7 +38,7 @@ class BrowserTest(
     self.action_runner.Navigate(url)
     actual_sum = self.action_runner.EvaluateJavaScript(
         '{{ num_1 }} + {{ num_2 }}', num_1=num_1, num_2=num_2)
-    self.assertEquals(expected_sum, actual_sum)
+    self.assertEqual(expected_sum, actual_sum)
 
   def TestClickablePage(self):
     url = self.UrlOfStaticFilePath('page_with_clickables.html')
@@ -138,7 +138,6 @@ class FlakyTest(
     if cls._retry_count < 3:
       cls._retry_count += 1
       self.fail()
-    return
 
   @staticmethod
   def GetJSONResultsDelimiter():

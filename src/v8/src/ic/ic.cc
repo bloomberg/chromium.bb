@@ -50,6 +50,18 @@
 namespace v8 {
 namespace internal {
 
+// Aliases to avoid having to repeat the class.
+// With C++20 we can use "using" to introduce scoped enums.
+constexpr InlineCacheState NO_FEEDBACK = InlineCacheState::NO_FEEDBACK;
+constexpr InlineCacheState UNINITIALIZED = InlineCacheState::UNINITIALIZED;
+constexpr InlineCacheState MONOMORPHIC = InlineCacheState::MONOMORPHIC;
+constexpr InlineCacheState RECOMPUTE_HANDLER =
+    InlineCacheState::RECOMPUTE_HANDLER;
+constexpr InlineCacheState POLYMORPHIC = InlineCacheState::POLYMORPHIC;
+constexpr InlineCacheState MEGAMORPHIC = InlineCacheState::MEGAMORPHIC;
+constexpr InlineCacheState MEGADOM = InlineCacheState::MEGADOM;
+constexpr InlineCacheState GENERIC = InlineCacheState::GENERIC;
+
 char IC::TransitionMarkFromState(IC::State state) {
   switch (state) {
     case NO_FEEDBACK:
@@ -353,8 +365,8 @@ bool IC::ConfigureVectorState(IC::State new_state, Handle<Object> key) {
   // Even though we don't change the feedback data, we still want to reset the
   // profiler ticks. Real-world observations suggest that optimizing these
   // functions doesn't improve performance.
-  bool changed =
-      nexus()->ConfigureMegamorphic(key->IsName() ? PROPERTY : ELEMENT);
+  bool changed = nexus()->ConfigureMegamorphic(
+      key->IsName() ? IcCheckType::kProperty : IcCheckType::kElement);
   OnFeedbackChanged("Megamorphic");
   return changed;
 }
@@ -460,7 +472,7 @@ MaybeHandle<Object> LoadIC::Load(Handle<Object> object, Handle<Name> name,
             (name_string->length() == 0)
                 ? isolate()->factory()->anonymous_string()
                 : name_string;
-        return TypeError(MessageTemplate::kInvalidPrivateBrand, object,
+        return TypeError(MessageTemplate::kInvalidPrivateBrandInstance, object,
                          class_name);
       }
       return TypeError(MessageTemplate::kInvalidPrivateMemberRead, object,
@@ -1116,7 +1128,7 @@ Handle<Object> LoadIC::ComputeHandler(LookupIterator* lookup) {
 
     case LookupIterator::DATA: {
       Handle<JSReceiver> holder = lookup->GetHolder<JSReceiver>();
-      DCHECK_EQ(kData, lookup->property_details().kind());
+      DCHECK_EQ(PropertyKind::kData, lookup->property_details().kind());
       Handle<Smi> smi_handler;
       if (lookup->is_dictionary_holder()) {
         if (holder->IsJSGlobalObject(isolate())) {
@@ -2005,7 +2017,7 @@ MaybeObjectHandle StoreIC::ComputeHandler(LookupIterator* lookup) {
       Handle<JSObject> holder = lookup->GetHolder<JSObject>();
       DCHECK(!receiver->IsAccessCheckNeeded() || lookup->name()->IsPrivate());
 
-      DCHECK_EQ(kData, lookup->property_details().kind());
+      DCHECK_EQ(PropertyKind::kData, lookup->property_details().kind());
       if (lookup->is_dictionary_holder()) {
         if (holder->IsJSGlobalObject()) {
           TRACE_HANDLER_STATS(isolate(), StoreIC_StoreGlobalDH);
@@ -2751,6 +2763,27 @@ RUNTIME_FUNCTION(Runtime_StoreOwnIC_Miss) {
   RETURN_RESULT_OR_FAILURE(isolate, ic.Store(receiver, key, value));
 }
 
+RUNTIME_FUNCTION(Runtime_StoreOwnIC_Slow) {
+  HandleScope scope(isolate);
+  DCHECK_EQ(3, args.length());
+
+  Handle<Object> value = args.at(0);
+  Handle<Object> object = args.at(1);
+  Handle<Object> key = args.at(2);
+
+  // Unlike DefineOwn, StoreOwn doesn't handle private fields and is used for
+  // defining data properties in object literals and defining public class
+  // fields.
+  DCHECK(!key->IsSymbol() || !Symbol::cast(*key).is_private_name());
+
+  PropertyKey lookup_key(isolate, key);
+  LookupIterator it(isolate, object, lookup_key, LookupIterator::OWN);
+  MAYBE_RETURN(JSObject::DefineOwnPropertyIgnoreAttributes(
+                   &it, value, NONE, Nothing<ShouldThrow>()),
+               ReadOnlyRoots(isolate).exception());
+  return *value;
+}
+
 RUNTIME_FUNCTION(Runtime_StoreGlobalIC_Miss) {
   HandleScope scope(isolate);
   DCHECK_EQ(4, args.length());
@@ -3003,7 +3036,7 @@ static bool CanFastCloneObject(Handle<Map> map) {
   for (InternalIndex i : map->IterateOwnDescriptors()) {
     PropertyDetails details = descriptors.GetDetails(i);
     Name key = descriptors.GetKey(i);
-    if (details.kind() != kData || !details.IsEnumerable() ||
+    if (details.kind() != PropertyKind::kData || !details.IsEnumerable() ||
         key.IsPrivateName()) {
       return false;
     }

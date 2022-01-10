@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "components/viz/host/client_frame_sink_video_capturer.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -49,7 +48,7 @@ class DevToolsEyeDropper : public content::WebContentsObserver,
 
   // viz::mojom::FrameSinkVideoConsumer implementation.
   void OnFrameCaptured(
-      base::ReadOnlySharedMemoryRegion data,
+      ::media::mojom::VideoBufferHandlePtr data,
       ::media::mojom::VideoFrameInfoPtr info,
       const gfx::Rect& content_rect,
       mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>

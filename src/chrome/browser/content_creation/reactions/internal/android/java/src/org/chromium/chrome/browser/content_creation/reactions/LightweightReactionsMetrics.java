@@ -5,14 +5,18 @@
 package org.chromium.chrome.browser.content_creation.reactions;
 
 import android.content.ComponentName;
+import android.content.res.Configuration;
 
 import androidx.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.content_creation.reactions.scene.ReactionLayout;
 import org.chromium.chrome.browser.share.share_sheet.ChromeProvidedSharingOptionsProvider;
+import org.chromium.components.content_creation.reactions.ReactionType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,6 +40,14 @@ public final class LightweightReactionsMetrics {
     private @interface ShareDestination {
         int FIRST_PARTY = 0;
         int THIRD_PARTY = 1;
+        int NUM_ENTRIES = 2;
+    }
+
+    // Constants used to log the device orientation changes.
+    @IntDef({DeviceOrientation.LANDSCAPE, DeviceOrientation.PORTRAIT})
+    private @interface DeviceOrientation {
+        int LANDSCAPE = 0;
+        int PORTRAIT = 1;
         int NUM_ENTRIES = 2;
     }
 
@@ -63,7 +75,8 @@ public final class LightweightReactionsMetrics {
     public static void recordAssetsFetched(boolean success, long fetchDuration) {
         RecordHistogram.recordBooleanHistogram("LightweightReactions.AssetsFetchSuccess", success);
         RecordHistogram.recordMediumTimesHistogram(
-                "LightweightReactions.AssetsFetchDuration", fetchDuration);
+                "LightweightReactions.AssetsFetchDuration." + (success ? "Success" : "Failure"),
+                fetchDuration);
     }
 
     /**
@@ -189,6 +202,30 @@ public final class LightweightReactionsMetrics {
                     "LightweightReactions.Editing.TappedCancel.NumberOfDelete", nbDelete);
             RecordHistogram.recordCount100Histogram(
                     "LightweightReactions.Editing.TappedCancel.NumberOfMove", nbMove);
+        }
+    }
+
+    /**
+     * Records that a device orientation change happened during Lightweight Reactions scene editing.
+     *
+     * @param newOrientation The new orientation, taken from a {@link Configuration} object.
+     */
+    public static void recordOrientationChange(int newOrientation) {
+        RecordHistogram.recordEnumeratedHistogram("LightweightReactions.OrientationChange",
+                newOrientation == Configuration.ORIENTATION_PORTRAIT ? DeviceOrientation.PORTRAIT
+                                                                     : DeviceOrientation.LANDSCAPE,
+                DeviceOrientation.NUM_ENTRIES);
+    }
+
+    /**
+     * Records the types of the reactions that were used in the final GIF.
+     *
+     * @param reactions The set of reactions added to the scene.
+     */
+    public static void recordReactionsUsed(Set<ReactionLayout> reactions) {
+        for (ReactionLayout rl : reactions) {
+            RecordHistogram.recordEnumeratedHistogram("LightweightReactions.ReactionsUsed",
+                    rl.getReaction().getMetadata().type, ReactionType.MAX_VALUE + 1);
         }
     }
 

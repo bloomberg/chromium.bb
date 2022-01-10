@@ -136,10 +136,6 @@ class NetEq {
     bool enable_rtx_handling = false;
     absl::optional<AudioCodecPairId> codec_pair_id;
     bool for_test_no_time_stretching = false;  // Use only for testing.
-    // Adds extra delay to the output of NetEq, without affecting jitter or
-    // loss behavior. This is mainly for testing. Value must be a non-negative
-    // multiple of 10 ms.
-    int extra_output_delay_ms = 0;
   };
 
   enum ReturnCodes { kOK = 0, kFail = -1 };
@@ -182,14 +178,6 @@ class NetEq {
     int num_channels;
     SdpAudioFormat sdp_format;
   };
-
-  // Creates a new NetEq object, with parameters set in `config`. The `config`
-  // object will only have to be valid for the duration of the call to this
-  // method.
-  static NetEq* Create(
-      const NetEq::Config& config,
-      Clock* clock,
-      const rtc::scoped_refptr<AudioDecoderFactory>& decoder_factory);
 
   virtual ~NetEq() {}
 

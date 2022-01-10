@@ -178,7 +178,7 @@ pcm(){
 fmtstdout(){
     fmt=$1
     shift 1
-    ffmpeg -bitexact "$@" -f $fmt -
+    ffmpeg -bitexact "$@" -bitexact -f $fmt -
 }
 
 enc_dec_pcm(){
@@ -232,12 +232,14 @@ transcode(){
     enc_opt=$4
     final_decode=$5
     ffprobe_opts=$7
+    additional_input=$8
+    test -z "$additional_input" || additional_input="$DEC_OPTS $additional_input"
     encfile="${outdir}/${test}.${enc_fmt}"
     test "$6" = -keep || cleanfiles="$cleanfiles $encfile"
     tsrcfile=$(target_path $srcfile)
     tencfile=$(target_path $encfile)
-    ffmpeg -f $src_fmt $DEC_OPTS -i $tsrcfile $ENC_OPTS $enc_opt $FLAGS \
-        -f $enc_fmt -y $tencfile || return
+    ffmpeg -f $src_fmt $DEC_OPTS -i $tsrcfile $additional_input \
+           $ENC_OPTS $enc_opt $FLAGS -f $enc_fmt -y $tencfile || return
     do_md5sum $encfile
     echo $(wc -c $encfile)
     ffmpeg $DEC_OPTS -i $tencfile $ENC_OPTS $FLAGS $final_decode \

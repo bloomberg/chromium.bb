@@ -9,6 +9,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/bind_post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -222,8 +223,8 @@ class SkiaOutputSurfaceImplOnGpu::DisplayContext : public gpu::DisplayContext {
   }
 
  private:
-  SkiaOutputSurfaceDependency* const dependency_;
-  SkiaOutputSurfaceImplOnGpu* const owner_;
+  const raw_ptr<SkiaOutputSurfaceDependency> dependency_;
+  const raw_ptr<SkiaOutputSurfaceImplOnGpu> owner_;
 };
 
 // static
@@ -487,9 +488,16 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame,
   SwapBuffersInternal(std::move(frame));
 }
 
-void SkiaOutputSurfaceImplOnGpu::ReleaseFrameBuffers(int n) {
+void SkiaOutputSurfaceImplOnGpu::AllocateFrameBuffers(size_t n) {
   MakeCurrent(/*need_framebuffer=*/false);
-  for (int i = 0; i < n; ++i) {
+  if (!output_device_->AllocateFrameBuffers(n)) {
+    MarkContextLost(CONTEXT_LOST_ALLOCATE_FRAME_BUFFERS_FAILED);
+  }
+}
+
+void SkiaOutputSurfaceImplOnGpu::ReleaseFrameBuffers(size_t n) {
+  MakeCurrent(/*need_framebuffer=*/false);
+  for (size_t i = 0; i < n; ++i) {
     output_device_->ReleaseOneFrameBuffer();
   }
 }
@@ -1119,10 +1127,11 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
         mailbox, context_state_.get());
     DCHECK(backing_representation);
 
+    SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
     // TODO(https://crbug.com/1226672): Use BeginScopedReadAccess instead
     scoped_access = backing_representation->BeginScopedWriteAccess(
-        /*final_msaa_count=*/0, skia::LegacyDisplayGlobals::GetSkSurfaceProps(),
-        &begin_semaphores, &end_semaphores,
+        /*final_msaa_count=*/0, surface_props, &begin_semaphores,
+        &end_semaphores,
         gpu::SharedImageRepresentation::AllowUnclearedAccess::kNo);
     surface = scoped_access->surface();
     if (!begin_semaphores.empty()) {

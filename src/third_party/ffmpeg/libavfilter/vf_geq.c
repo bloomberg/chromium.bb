@@ -250,9 +250,7 @@ static av_cold int geq_init(AVFilterContext *ctx)
     }
 
     if (!geq->expr_str[A]) {
-        char bps_string[8];
-        snprintf(bps_string, sizeof(bps_string), "%d", (1<<geq->bps) - 1);
-        geq->expr_str[A] = av_strdup(bps_string);
+        geq->expr_str[A] = av_asprintf("%d", (1<<geq->bps) - 1);
     }
     if (!geq->expr_str[G])
         geq->expr_str[G] = av_strdup("g(X,Y)");
@@ -491,9 +489,9 @@ const AVFilter ff_vf_geq = {
     .priv_size     = sizeof(GEQContext),
     .init          = geq_init,
     .uninit        = geq_uninit,
-    .query_formats = geq_query_formats,
     FILTER_INPUTS(geq_inputs),
     FILTER_OUTPUTS(geq_outputs),
+    FILTER_QUERY_FUNC(geq_query_formats),
     .priv_class    = &geq_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
 };

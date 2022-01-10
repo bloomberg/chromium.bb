@@ -3,15 +3,12 @@
 // found in the LICENSE file.
 
 import * as Common from '../../core/common/common.js';
-import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import type * as Profiler from '../profiler/profiler.js';
+import * as i18n from '../../core/i18n/i18n.js';
 
-// eslint-disable-next-line rulesdir/es_modules_import
 import type * as Timeline from './timeline.js';
 
-import type * as Profiler from '../profiler/profiler.js';
-
-import * as i18n from '../../core/i18n/i18n.js';
 const UIStrings = {
   /**
   *@description Text for the performance of something
@@ -86,8 +83,6 @@ let loadedProfilerModule: (typeof Profiler|undefined);
 
 async function loadTimelineModule(): Promise<typeof Timeline> {
   if (!loadedTimelineModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('panels/timeline');
     loadedTimelineModule = await import('./timeline.js');
   }
   return loadedTimelineModule;
@@ -103,8 +98,6 @@ async function loadTimelineModule(): Promise<typeof Timeline> {
 
 async function loadProfilerModule(): Promise<typeof Profiler> {
   if (!loadedProfilerModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('profiler');
     loadedProfilerModule = await import('../profiler/profiler.js');
   }
   return loadedProfilerModule;

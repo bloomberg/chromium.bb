@@ -278,9 +278,9 @@ const AVFilter ff_vf_erosion_opencl = {
     .priv_class     = &erosion_opencl_class,
     .init           = &ff_opencl_filter_init,
     .uninit         = &neighbor_opencl_uninit,
-    .query_formats  = &ff_opencl_filter_query_formats,
     FILTER_INPUTS(neighbor_opencl_inputs),
     FILTER_OUTPUTS(neighbor_opencl_outputs),
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_OPENCL),
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };
 
@@ -306,9 +306,9 @@ const AVFilter ff_vf_dilation_opencl = {
     .priv_class     = &dilation_opencl_class,
     .init           = &ff_opencl_filter_init,
     .uninit         = &neighbor_opencl_uninit,
-    .query_formats  = &ff_opencl_filter_query_formats,
     FILTER_INPUTS(neighbor_opencl_inputs),
     FILTER_OUTPUTS(neighbor_opencl_outputs),
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_OPENCL),
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };
 

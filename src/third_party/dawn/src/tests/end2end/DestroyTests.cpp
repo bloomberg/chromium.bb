@@ -17,6 +17,8 @@
 #include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/WGPUHelpers.h"
 
+using ::testing::HasSubstr;
+
 constexpr uint32_t kRTSize = 4;
 
 class DestroyTest : public DawnTest {
@@ -162,6 +164,35 @@ TEST_P(DestroyTest, DestroyThenSetLabel) {
     wgpu::Buffer buffer = device.CreateBuffer(&descriptor);
     buffer.Destroy();
     buffer.SetLabel(label.c_str());
+}
+
+// Device destroy before buffer submit will result in error.
+TEST_P(DestroyTest, DestroyDeviceBeforeSubmit) {
+    // TODO(crbug.com/dawn/628) Add more comprehensive tests with destroy and backends.
+    DAWN_TEST_UNSUPPORTED_IF(UsesWire());
+    wgpu::CommandBuffer commands = CreateTriangleCommandBuffer();
+
+    // Tests normally don't expect a device lost error, but since we are destroying the device, we
+    // actually do, so we need to override the default device lost callback.
+    ExpectDeviceDestruction();
+    device.Destroy();
+    ASSERT_DEVICE_ERROR_MSG(queue.Submit(1, &commands), HasSubstr("[Device] is lost."));
+}
+
+// Regression test for crbug.com/1276928 where a lingering BGL reference in Vulkan with at least one
+// BG instance could cause bad memory reads because members in the BGL whose destuctors expected a
+// live device were not released until after the device was destroyed.
+TEST_P(DestroyTest, DestroyDeviceLingeringBGL) {
+    // Create and hold the layout reference so that its destructor gets called after the device has
+    // been destroyed via device.Destroy().
+    wgpu::BindGroupLayout layout = utils::MakeBindGroupLayout(
+        device, {{0, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering}});
+    utils::MakeBindGroup(device, layout, {{0, device.CreateSampler()}});
+
+    // Tests normally don't expect a device lost error, but since we are destroying the device, we
+    // actually do, so we need to override the default device lost callback.
+    ExpectDeviceDestruction();
+    device.Destroy();
 }
 
 DAWN_INSTANTIATE_TEST(DestroyTest,

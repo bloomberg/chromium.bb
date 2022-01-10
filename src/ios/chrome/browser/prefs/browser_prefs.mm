@@ -6,6 +6,7 @@
 
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/browsing_data/core/pref_names.h"
+#include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/installer_policies/autofill_states_component_installer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
@@ -148,6 +149,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
   fre_field_trial::RegisterLocalStatePrefs(registry);
+  component_updater::RegisterComponentUpdateServicePrefs(registry);
   component_updater::AutofillStatesComponentInstallerPolicy::RegisterPrefs(
       registry);
 
@@ -251,6 +253,10 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       translate::prefs::kOfferTranslateEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kTrackPricesOnTabsEnabled, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
   registry->RegisterStringPref(prefs::kDefaultCharset,
                                l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

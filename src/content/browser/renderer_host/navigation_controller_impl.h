@@ -14,9 +14,8 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -24,6 +23,7 @@
 #include "content/browser/renderer_host/navigation_controller_delegate.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/ssl/ssl_manager.h"
+#include "content/common/content_export.h"
 #include "content/common/navigation_client.mojom-forward.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"
@@ -152,6 +152,17 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const DeletionPredicate& deletionPredicate) override;
   bool IsEntryMarkedToBeSkipped(int index) override;
   BackForwardCacheImpl& GetBackForwardCache() override;
+
+  // Discards the pending entry if any. If this is caused by a navigation
+  // committing a new entry, `commit_details` will contain the committed
+  // navigation's details.
+  void DiscardNonCommittedEntriesWithCommitDetails(
+      LoadCommittedDetails* commit_details);
+
+  // Creates the initial NavigationEntry for the NavigationController when its
+  // FrameTree is being initialized. See NavigationEntry::IsInitialEntry() on
+  // what this means.
+  void CreateInitialEntry();
 
   // Starts a navigation in a newly created subframe as part of a history
   // navigation. Returns true if the history navigation could start, false
@@ -550,7 +561,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   NavigationType ClassifyNavigation(
       RenderFrameHostImpl* rfh,
       const mojom::DidCommitProvisionalLoadParams& params,
-      NavigationRequest* navigation_request);
+      NavigationRequest* navigation_request,
+      LoadCommittedDetails* load_committed_details);
 
   // Handlers for the different types of navigation types. They will actually
   // handle the navigations corresponding to the different NavClasses above.
@@ -572,27 +584,31 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       bool is_same_document,
       bool replace_entry,
       bool previous_document_was_activated,
-      NavigationRequest* request);
+      NavigationRequest* request,
+      LoadCommittedDetails* details);
   void RendererDidNavigateToExistingEntry(
       RenderFrameHostImpl* rfh,
       const mojom::DidCommitProvisionalLoadParams& params,
       bool is_same_document,
       bool was_restored,
       NavigationRequest* request,
-      bool keep_pending_entry);
+      bool keep_pending_entry,
+      LoadCommittedDetails* details);
   void RendererDidNavigateNewSubframe(
       RenderFrameHostImpl* rfh,
       const mojom::DidCommitProvisionalLoadParams& params,
       bool is_same_document,
       bool replace_entry,
       bool previous_document_was_activated,
-      NavigationRequest* request);
+      NavigationRequest* request,
+      LoadCommittedDetails* details);
   bool RendererDidNavigateAutoSubframe(
       RenderFrameHostImpl* rfh,
       const mojom::DidCommitProvisionalLoadParams& params,
       bool is_same_document,
       bool was_on_initial_empty_document,
-      NavigationRequest* request);
+      NavigationRequest* request,
+      LoadCommittedDetails* details);
 
   // Allows the derived class to issue notifications that a load has been
   // committed. This will fill in the active entry to the details structure.
@@ -614,7 +630,9 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // entry or on reloads, the old one will replace |entry|.
   void InsertOrReplaceEntry(std::unique_ptr<NavigationEntryImpl> entry,
                             bool replace,
-                            bool was_post_commit_error);
+                            bool was_post_commit_error,
+                            bool is_in_fenced_frame_tree,
+                            LoadCommittedDetails* details);
 
   // Removes the entry at |index|, as long as it is not the current entry.
   void RemoveEntryAtIndexInternal(int index);
@@ -675,7 +693,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   std::unique_ptr<PolicyContainerPolicies>
   ComputePolicyContainerPoliciesForFrameEntry(RenderFrameHostImpl* rfh,
                                               bool is_same_document,
-                                              NavigationRequest* request);
+                                              const GURL& url);
 
   // Adds details from a committed navigation to `entry` and the
   // FrameNavigationEntry corresponding to `rfh`.
@@ -685,7 +703,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const mojom::DidCommitProvisionalLoadParams& params,
       NavigationRequest* request,
       NavigationEntryImpl::UpdatePolicy update_policy,
-      bool is_new_entry);
+      bool is_new_entry,
+      LoadCommittedDetails* commit_details);
 
   // Broadcasts this controller's session history offset and length to all
   // renderers involved in rendering the current page. The offset is
@@ -725,12 +744,17 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       FrameNavigationEntry* target_entry,
       const std::string& app_history_key);
 
-  // Whether to maintain a trivial session history.
+  // Whether to maintain a session history with just one entry.
   //
-  // One example is prerender.
+  // This returns true for a prerendering page and for fenced frames.
+  // `frame_tree_node` is checked to see if it belongs to a frame tree for
+  // prerendering or for a fenced frame.
   // Explainer:
-  // https://github.com/jeremyroman/alternate-loading-modes/blob/main/browsing-context.md#session-history
-  bool ShouldMaintainTrivialSessionHistory() const;
+  // https://github.com/jeremyroman/alternate-loading-modes/blob/main/browsing-context.md#session-history)
+  //
+  // Portals will be added to this in the future.
+  bool ShouldMaintainTrivialSessionHistory(
+      const FrameTreeNode* frame_tree_node) const;
 
   // ---------------------------------------------------------------------------
 
@@ -739,7 +763,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   FrameTree& frame_tree_;
 
   // The user browser context associated with this controller.
-  BrowserContext* const browser_context_;
+  const raw_ptr<BrowserContext> browser_context_;
 
   // List of |NavigationEntry|s for this controller.
   std::vector<std::unique_ptr<NavigationEntryImpl>> entries_;
@@ -751,7 +775,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // This may refer to an item in the entries_ list if the pending_entry_index_
   // != -1, or it may be its own entry that should be deleted. Be careful with
   // the memory management.
-  NavigationEntryImpl* pending_entry_ = nullptr;
+  raw_ptr<NavigationEntryImpl> pending_entry_ = nullptr;
 
   // This keeps track of the NavigationRequests associated with the pending
   // NavigationEntry. When all of them have been deleted, or have stopped
@@ -780,7 +804,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // The delegate associated with the controller. Possibly null during
   // setup.
-  NavigationControllerDelegate* delegate_;
+  raw_ptr<NavigationControllerDelegate> delegate_;
 
   // Manages the SSL security UI.
   SSLManager ssl_manager_;

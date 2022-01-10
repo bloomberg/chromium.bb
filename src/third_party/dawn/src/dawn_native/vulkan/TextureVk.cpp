@@ -419,6 +419,10 @@ namespace dawn_native { namespace vulkan {
             case wgpu::TextureFormat::R8BG8Biplanar420Unorm:
             // TODO(dawn:666): implement stencil8
             case wgpu::TextureFormat::Stencil8:
+            // TODO(dawn:690): implement depth24unorm-stencil8
+            case wgpu::TextureFormat::Depth24UnormStencil8:
+            // TODO(dawn:690): implement depth32float-stencil8
+            case wgpu::TextureFormat::Depth32FloatStencil8:
             case wgpu::TextureFormat::Undefined:
                 break;
         }
@@ -792,12 +796,11 @@ namespace dawn_native { namespace vulkan {
         mSignalSemaphore = VK_NULL_HANDLE;
 
         // Destroy the texture so it can't be used again
-        DestroyInternal();
+        Destroy();
         return {};
     }
 
     Texture::~Texture() {
-        DestroyInternal();
     }
 
     void Texture::SetLabelHelper(const char* prefix) {
@@ -830,6 +833,9 @@ namespace dawn_native { namespace vulkan {
             // If a signal semaphore exists it should be requested before we delete the texture
             ASSERT(mSignalSemaphore == VK_NULL_HANDLE);
         }
+        // For Vulkan, we currently run the base destruction code after the internal changes because
+        // of the dependency on the texture state which the base code overwrites too early.
+        TextureBase::DestroyImpl();
     }
 
     VkImage Texture::GetHandle() const {
@@ -1294,12 +1300,19 @@ namespace dawn_native { namespace vulkan {
         createInfo.subresourceRange.layerCount = subresources.layerCount;
         createInfo.subresourceRange.aspectMask = VulkanAspectMask(subresources.aspects);
 
-        return CheckVkSuccess(
+        DAWN_TRY(CheckVkSuccess(
             device->fn.CreateImageView(device->GetVkDevice(), &createInfo, nullptr, &*mHandle),
-            "CreateImageView");
+            "CreateImageView"));
+
+        SetLabelImpl();
+
+        return {};
     }
 
     TextureView::~TextureView() {
+    }
+
+    void TextureView::DestroyImpl() {
         Device* device = ToBackend(GetTexture()->GetDevice());
 
         if (mHandle != VK_NULL_HANDLE) {
@@ -1310,6 +1323,11 @@ namespace dawn_native { namespace vulkan {
 
     VkImageView TextureView::GetHandle() const {
         return mHandle;
+    }
+
+    void TextureView::SetLabelImpl() {
+        SetDebugName(ToBackend(GetDevice()), VK_OBJECT_TYPE_IMAGE_VIEW,
+                     reinterpret_cast<uint64_t&>(mHandle), "Dawn_InternalTextureView", GetLabel());
     }
 
 }}  // namespace dawn_native::vulkan

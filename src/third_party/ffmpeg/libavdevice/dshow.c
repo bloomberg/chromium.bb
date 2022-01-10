@@ -422,28 +422,20 @@ dshow_cycle_formats(AVFormatContext *avctx, enum dshowDeviceType devtype,
                 goto next;
             }
             if (!pformat_set) {
-                av_log(avctx, AV_LOG_INFO, "  min ch=%lu bits=%lu rate=%6lu max ch=%lu bits=%lu rate=%6lu\n",
-                       acaps->MinimumChannels, acaps->MinimumBitsPerSample, acaps->MinimumSampleFrequency,
-                       acaps->MaximumChannels, acaps->MaximumBitsPerSample, acaps->MaximumSampleFrequency);
+                av_log(
+                    avctx,
+                    AV_LOG_INFO,
+                    "  ch=%2lu, bits=%2lu, rate=%6lu\n",
+                    fx->nChannels, fx->wBitsPerSample, fx->nSamplesPerSec
+                );
                 continue;
             }
-            if (ctx->sample_rate) {
-                if (ctx->sample_rate > acaps->MaximumSampleFrequency ||
-                    ctx->sample_rate < acaps->MinimumSampleFrequency)
-                    goto next;
-                fx->nSamplesPerSec = ctx->sample_rate;
-            }
-            if (ctx->sample_size) {
-                if (ctx->sample_size > acaps->MaximumBitsPerSample ||
-                    ctx->sample_size < acaps->MinimumBitsPerSample)
-                    goto next;
-                fx->wBitsPerSample = ctx->sample_size;
-            }
-            if (ctx->channels) {
-                if (ctx->channels > acaps->MaximumChannels ||
-                    ctx->channels < acaps->MinimumChannels)
-                    goto next;
-                fx->nChannels = ctx->channels;
+            if (
+                (ctx->sample_rate && ctx->sample_rate != fx->nSamplesPerSec) ||
+                (ctx->sample_size && ctx->sample_size != fx->wBitsPerSample) ||
+                (ctx->channels    && ctx->channels    != fx->nChannels     )
+            ) {
+                goto next;
             }
         }
         if (IAMStreamConfig_SetFormat(config, type) != S_OK)
@@ -577,7 +569,7 @@ dshow_cycle_pins(AVFormatContext *avctx, enum dshowDeviceType devtype,
                                                 (ctx->requested_width && ctx->requested_height) ||
                                                  ctx->pixel_format != AV_PIX_FMT_NONE ||
                                                  ctx->video_codec_id != AV_CODEC_ID_RAWVIDEO))
-                  || (devtype == AudioDevice && (ctx->channels || ctx->sample_rate));
+                  || (devtype == AudioDevice && (ctx->channels || ctx->sample_rate || ctx->sample_size));
     int format_set = 0;
     int should_show_properties = (devtype == VideoDevice) ? ctx->show_video_device_dialog : ctx->show_audio_device_dialog;
 

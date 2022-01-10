@@ -69,23 +69,18 @@ static const AVOption signature_options[] = {
 
 AVFILTER_DEFINE_CLASS(signature);
 
-static int query_formats(AVFilterContext *ctx)
-{
-    /* all formats with a separate gray value */
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_GRAY8,
-        AV_PIX_FMT_YUV410P, AV_PIX_FMT_YUV411P,
-        AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P,
-        AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV444P,
-        AV_PIX_FMT_YUVJ411P, AV_PIX_FMT_YUVJ420P,
-        AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ444P,
-        AV_PIX_FMT_YUVJ440P,
-        AV_PIX_FMT_NV12, AV_PIX_FMT_NV21,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+/* all formats with a separate gray value */
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_GRAY8,
+    AV_PIX_FMT_YUV410P, AV_PIX_FMT_YUV411P,
+    AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P,
+    AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_YUVJ411P, AV_PIX_FMT_YUVJ420P,
+    AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ444P,
+    AV_PIX_FMT_YUVJ440P,
+    AV_PIX_FMT_NV12, AV_PIX_FMT_NV21,
+    AV_PIX_FMT_NONE
+};
 
 static int config_input(AVFilterLink *inlink)
 {
@@ -760,8 +755,8 @@ const AVFilter ff_vf_signature = {
     .priv_class    = &signature_class,
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_OUTPUTS(signature_outputs),
     .inputs        = NULL,
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .flags         = AVFILTER_FLAG_DYNAMIC_INPUTS,
 };

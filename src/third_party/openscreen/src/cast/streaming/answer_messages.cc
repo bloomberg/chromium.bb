@@ -359,10 +359,6 @@ Json::Value DisplayDescription::ToJson() const {
   return root;
 }
 
-bool Answer::ParseAndValidate(const Json::Value& value, Answer* out) {
-  return TryParse(value, out);
-}
-
 bool Answer::TryParse(const Json::Value& root, Answer* out) {
   if (!json::TryParseInt(root[kUdpPort], &(out->udp_port)) ||
       !json::TryParseIntArray(root[kSendIndexes], &(out->send_indexes)) ||

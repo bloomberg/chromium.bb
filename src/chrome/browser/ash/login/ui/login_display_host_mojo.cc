@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -92,15 +93,44 @@ bool AllAllowlistedUsersPresent() {
   const base::ListValue* allowlist = nullptr;
   if (!cros_settings->GetList(kAccountsPrefUsers, &allowlist) || !allowlist)
     return false;
-  for (size_t i = 0; i < allowlist->GetList().size(); ++i) {
-    std::string allowlisted_user;
+  for (const base::Value& i : allowlist->GetList()) {
+    const std::string* allowlisted_user = i.GetIfString();
     // NB: Wildcards in the allowlist are also detected as not present here.
-    if (!allowlist->GetString(i, &allowlisted_user) ||
-        !user_manager->IsKnownUser(
-            AccountId::FromUserEmail(allowlisted_user))) {
+    if (!allowlisted_user || !user_manager->IsKnownUser(
+                                 AccountId::FromUserEmail(*allowlisted_user))) {
       return false;
     }
   }
+  return true;
+}
+
+bool IsLazyWebUILoadingEnabled() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::chromeos::switches::kEnableOobeTestAPI)) {
+    // Load WebUI for the test API explicitly because it's Web API.
+    return false;
+  }
+
+  // Policy override.
+  if (g_browser_process->local_state()->IsManagedPreference(
+          prefs::kLoginScreenWebUILazyLoading)) {
+    return g_browser_process->local_state()->GetBoolean(
+        ash::prefs::kLoginScreenWebUILazyLoading);
+  }
+
+  // Feature override.
+  if (base::FeatureList::GetInstance()->IsFeatureOverridden(
+          features::kEnableLazyLoginWebUILoading.name)) {
+    return base::FeatureList::IsEnabled(features::kEnableLazyLoginWebUILoading);
+  }
+
+  // Disable for stable and beta.
+  if ((chrome::GetChannel() == version_info::Channel::STABLE) ||
+      (chrome::GetChannel() == version_info::Channel::BETA)) {
+    return false;
+  }
+
+  // Enable for dev builds.
   return true;
 }
 
@@ -121,22 +151,9 @@ LoginDisplayHostMojo::LoginDisplayHostMojo(DisplayedScreen displayed_screen)
       system_info_updater_(std::make_unique<MojoSystemInfoDispatcher>()) {
   user_selection_screen_->SetView(user_board_view_mojo_.get());
 
-  // Do not load WebUI before it is needed if feature permits.
-  bool enable_lazy_webui_loading = false;
-  if (base::FeatureList::GetInstance()->IsFeatureOverridden(
-          features::kEnableLazyLoginWebUILoading.name)) {
-    enable_lazy_webui_loading =
-        base::FeatureList::IsEnabled(features::kEnableLazyLoginWebUILoading);
-  } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                 ::chromeos::switches::kEnableOobeTestAPI)) {
-    // Load WebUI for the test API explicitly because it's Web API.
-    enable_lazy_webui_loading = false;
-  } else if ((chrome::GetChannel() != version_info::Channel::STABLE) &&
-             (chrome::GetChannel() != version_info::Channel::BETA)) {
-    enable_lazy_webui_loading = true;
-  }
+  // Do not load WebUI before it is needed if policy and feature permit.
   // Force load WebUI if feature is not enabled.
-  if (!enable_lazy_webui_loading &&
+  if (!IsLazyWebUILoadingEnabled() &&
       displayed_screen == DisplayedScreen::SIGN_IN_SCREEN) {
     EnsureOobeDialogLoaded();
   }
@@ -149,7 +166,7 @@ LoginDisplayHostMojo::~LoginDisplayHostMojo() {
 
   GetLoginScreenCertProviderService()
       ->pin_dialog_manager()
-      ->RemovePinDialogHost(&security_token_pin_dialog_host_impl_);
+      ->RemovePinDialogHost(&security_token_pin_dialog_host_login_impl_);
   dialog_->GetOobeUI()->signin_screen_handler()->SetDelegate(nullptr);
   StopObservingOobeUI();
   dialog_->Close();
@@ -480,6 +497,10 @@ bool LoginDisplayHostMojo::GetKeyboardRemappedPrefValue(
          known_user.GetIntegerPref(focused_pod_account_id_, pref_name, value);
 }
 
+bool LoginDisplayHostMojo::IsWebUIStarted() const {
+  return dialog_;
+}
+
 void LoginDisplayHostMojo::HandleAuthenticateUserWithPasswordOrPin(
     const AccountId& account_id,
     const std::string& password,
@@ -670,7 +691,7 @@ void LoginDisplayHostMojo::EnsureOobeDialogLoaded() {
   wizard_controller_ = std::make_unique<WizardController>(GetWizardContext());
 
   GetLoginScreenCertProviderService()->pin_dialog_manager()->AddPinDialogHost(
-      &security_token_pin_dialog_host_impl_);
+      &security_token_pin_dialog_host_login_impl_);
 
   // Update status of add user button in the shelf.
   UpdateAddUserButtonStatus();

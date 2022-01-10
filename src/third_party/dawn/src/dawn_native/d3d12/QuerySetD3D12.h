@@ -35,7 +35,8 @@ namespace dawn_native { namespace d3d12 {
         MaybeError Initialize();
 
         // Dawn API
-        void DestroyApiObjectImpl() override;
+        void DestroyImpl() override;
+        void SetLabelImpl() override;
 
         ComPtr<ID3D12QueryHeap> mQueryHeap;
     };

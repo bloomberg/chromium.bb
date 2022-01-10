@@ -39,14 +39,15 @@ namespace dawn_native {
         ObjectType GetType() const override;
 
         MaybeError ValidateCanUseInSubmitNow() const;
-        void Destroy();
 
         const CommandBufferResourceUsage& GetResourceUsages() const;
 
         CommandIterator* GetCommandIteratorForTesting();
 
       protected:
-        ~CommandBufferBase() override;
+        // Constructor used only for mocking and testing.
+        CommandBufferBase(DeviceBase* device);
+        void DestroyImpl() override;
 
         CommandIterator mCommands;
 
@@ -54,7 +55,6 @@ namespace dawn_native {
         CommandBufferBase(DeviceBase* device, ObjectBase::ErrorTag tag);
 
         CommandBufferResourceUsage mResourceUsages;
-        bool mDestroyed = false;
     };
 
     bool IsCompleteSubresourceCopiedTo(const TextureBase* texture,

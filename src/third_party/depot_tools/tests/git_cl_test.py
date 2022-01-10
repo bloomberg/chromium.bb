@@ -2663,6 +2663,16 @@ class TestGitCl(unittest.TestCase):
              u'id': u'f5a6c25ecbd3b3b54a43ae418ed97eff046d4568',
              u'message': u'Patch Set 2: Code-Review+1',
           },
+          {
+             u'_revision_number': 2,
+             u'author': {
+               u'_account_id': 42,
+               u'name': u'reviewer'
+             },
+             u'date': u'2017-03-17 05:19:37.900000000',
+             u'id': u'f5a6c25ecbd3b3b54a43ae418ed97eff046d0000',
+             u'message': u'A bot with no email set',
+          },
         ]
       }
     self.calls = [

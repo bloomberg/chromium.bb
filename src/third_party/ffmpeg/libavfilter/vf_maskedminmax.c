@@ -63,32 +63,27 @@ static av_cold int maskedmin_init(AVFilterContext *ctx)
     return 0;
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUVA444P, AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUV440P,
-        AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P,
-        AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUV420P,
-        AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ420P,
-        AV_PIX_FMT_YUVJ411P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_YUV410P,
-        AV_PIX_FMT_YUV420P9, AV_PIX_FMT_YUV422P9, AV_PIX_FMT_YUV444P9,
-        AV_PIX_FMT_YUV420P10, AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV444P10,
-        AV_PIX_FMT_YUV420P12, AV_PIX_FMT_YUV422P12, AV_PIX_FMT_YUV444P12, AV_PIX_FMT_YUV440P12,
-        AV_PIX_FMT_YUV420P14, AV_PIX_FMT_YUV422P14, AV_PIX_FMT_YUV444P14,
-        AV_PIX_FMT_YUV420P16, AV_PIX_FMT_YUV422P16, AV_PIX_FMT_YUV444P16,
-        AV_PIX_FMT_YUVA420P9, AV_PIX_FMT_YUVA422P9, AV_PIX_FMT_YUVA444P9,
-        AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA444P10,
-        AV_PIX_FMT_YUVA422P12, AV_PIX_FMT_YUVA444P12,
-        AV_PIX_FMT_YUVA420P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA444P16,
-        AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRP9, AV_PIX_FMT_GBRP10,
-        AV_PIX_FMT_GBRP12, AV_PIX_FMT_GBRP14, AV_PIX_FMT_GBRP16,
-        AV_PIX_FMT_GBRAP, AV_PIX_FMT_GBRAP10, AV_PIX_FMT_GBRAP12, AV_PIX_FMT_GBRAP16,
-        AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY9, AV_PIX_FMT_GRAY10, AV_PIX_FMT_GRAY12, AV_PIX_FMT_GRAY14, AV_PIX_FMT_GRAY16,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_YUVA444P, AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUV440P,
+    AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P,
+    AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ420P,
+    AV_PIX_FMT_YUVJ411P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_YUV410P,
+    AV_PIX_FMT_YUV420P9, AV_PIX_FMT_YUV422P9, AV_PIX_FMT_YUV444P9,
+    AV_PIX_FMT_YUV420P10, AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV444P10,
+    AV_PIX_FMT_YUV420P12, AV_PIX_FMT_YUV422P12, AV_PIX_FMT_YUV444P12, AV_PIX_FMT_YUV440P12,
+    AV_PIX_FMT_YUV420P14, AV_PIX_FMT_YUV422P14, AV_PIX_FMT_YUV444P14,
+    AV_PIX_FMT_YUV420P16, AV_PIX_FMT_YUV422P16, AV_PIX_FMT_YUV444P16,
+    AV_PIX_FMT_YUVA420P9, AV_PIX_FMT_YUVA422P9, AV_PIX_FMT_YUVA444P9,
+    AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA444P10,
+    AV_PIX_FMT_YUVA422P12, AV_PIX_FMT_YUVA444P12,
+    AV_PIX_FMT_YUVA420P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA444P16,
+    AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRP9, AV_PIX_FMT_GBRP10,
+    AV_PIX_FMT_GBRP12, AV_PIX_FMT_GBRP14, AV_PIX_FMT_GBRP16,
+    AV_PIX_FMT_GBRAP, AV_PIX_FMT_GBRAP10, AV_PIX_FMT_GBRAP12, AV_PIX_FMT_GBRAP16,
+    AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY9, AV_PIX_FMT_GRAY10, AV_PIX_FMT_GRAY12, AV_PIX_FMT_GRAY14, AV_PIX_FMT_GRAY16,
+    AV_PIX_FMT_NONE
+};
 
 static void maskedmin8(const uint8_t *src, uint8_t *dst, const uint8_t *f1, const uint8_t *f2, int w)
 {
@@ -239,11 +234,6 @@ static int config_output(AVFilterLink *outlink)
     FFFrameSyncIn *in;
     int ret;
 
-    if (source->format != f1->format ||
-        source->format != f2->format) {
-        av_log(ctx, AV_LOG_ERROR, "inputs must be of same pixel format\n");
-        return AVERROR(EINVAL);
-    }
     if (source->w != f1->w || source->h != f1->h ||
         source->w != f2->w || source->h != f2->h) {
         av_log(ctx, AV_LOG_ERROR, "First input link %s parameters "
@@ -323,37 +313,33 @@ static const AVFilterPad maskedminmax_outputs[] = {
     },
 };
 
-#define maskedmin_options maskedminmax_options
-AVFILTER_DEFINE_CLASS(maskedmin);
+AVFILTER_DEFINE_CLASS_EXT(maskedminmax, "masked(min|max)", maskedminmax_options);
 
 const AVFilter ff_vf_maskedmin = {
     .name          = "maskedmin",
     .description   = NULL_IF_CONFIG_SMALL("Apply filtering with minimum difference of two streams."),
-    .priv_class    = &maskedmin_class,
+    .priv_class    = &maskedminmax_class,
     .priv_size     = sizeof(MaskedMinMaxContext),
     .init          = maskedmin_init,
     .uninit        = uninit,
     .activate      = activate,
-    .query_formats = query_formats,
     FILTER_INPUTS(maskedminmax_inputs),
     FILTER_OUTPUTS(maskedminmax_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };
 
-#define maskedmax_options maskedminmax_options
-AVFILTER_DEFINE_CLASS(maskedmax);
-
 const AVFilter ff_vf_maskedmax = {
     .name          = "maskedmax",
     .description   = NULL_IF_CONFIG_SMALL("Apply filtering with maximum difference of two streams."),
-    .priv_class    = &maskedmax_class,
+    .priv_class    = &maskedminmax_class,
     .priv_size     = sizeof(MaskedMinMaxContext),
     .uninit        = uninit,
     .activate      = activate,
-    .query_formats = query_formats,
     FILTER_INPUTS(maskedminmax_inputs),
     FILTER_OUTPUTS(maskedminmax_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };

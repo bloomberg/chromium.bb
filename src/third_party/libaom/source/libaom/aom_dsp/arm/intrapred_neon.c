@@ -10,6 +10,7 @@
  */
 
 #include <arm_neon.h>
+#include <assert.h>
 
 #include "config/aom_config.h"
 #include "config/aom_dsp_rtcd.h"
@@ -1513,12 +1514,12 @@ static void dr_prediction_z2_HxW_neon(int H, int W, uint8_t *dst,
                                 vreinterpretq_s16_u16(c1234.val[0]));
         c256.val[1] = vaddq_s16(vreinterpretq_s16_u16(j256),
                                 vreinterpretq_s16_u16(c1234.val[1]));
-        mul16.val[0] = vminq_s16(vmulq_s16(c256.val[0], dy256),
-                                 vreinterpretq_s16_u16(vshrq_n_u16(
-                                     vreinterpretq_u16_s16(min_base_y256), 1)));
-        mul16.val[1] = vminq_s16(vmulq_s16(c256.val[1], dy256),
-                                 vreinterpretq_s16_u16(vshrq_n_u16(
-                                     vreinterpretq_u16_s16(min_base_y256), 1)));
+        mul16.val[0] = vreinterpretq_s16_u16(
+            vminq_u16(vreinterpretq_u16_s16(vmulq_s16(c256.val[0], dy256)),
+                      vshrq_n_u16(vreinterpretq_u16_s16(min_base_y256), 1)));
+        mul16.val[1] = vreinterpretq_s16_u16(
+            vminq_u16(vreinterpretq_u16_s16(vmulq_s16(c256.val[1], dy256)),
+                      vshrq_n_u16(vreinterpretq_u16_s16(min_base_y256), 1)));
         y_c256.val[0] = vsubq_s16(v_r6, mul16.val[0]);
         y_c256.val[1] = vsubq_s16(v_r6, mul16.val[1]);
 
@@ -1541,6 +1542,7 @@ static void dr_prediction_z2_HxW_neon(int H, int W, uint8_t *dst,
         int16_t offset_diff = max_y - min_y;
 
         if (offset_diff < 16) {
+          assert(offset_diff >= 0);
           int16x8_t min_y256 =
               vdupq_lane_s16(vget_high_s16(base_y_c256.val[1]), 3);
 

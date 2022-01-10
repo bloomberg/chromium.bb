@@ -305,13 +305,13 @@
 <translation id="3620292326130836921">Hamısı yedəklənib!</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> şəbəkə, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Administratorunuz tərəfindən idarə olunur, Detallar</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> element köçürüldü</translation>
-<translation id="3645531960514756307">Qovluğu paneldən çıxarın</translation>
 <translation id="3685122418104378273">Mobil data istifadə edərkən Google Disk sinxronizasiyası defolt olaraq deaktiv edilib.</translation>
 <translation id="3689865792480713551">Ləğv edin: <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3690128548376345212">Şəbəkə <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Deaktivdir, <ph name="CONNECTION_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Detallar</translation>
 <translation id="3691184985318546178">Sinhala</translation>
 <translation id="3726463242007121105">Bu fayl açıla bilməz, çünki onun fayl sistemi dəstəklənmir.</translation>
 <translation id="3727148787322499904">Bu ayarın dəyişdirilməsi bütün paylaşılan şəbəkələrə təsir edəcək</translation>
+<translation id="3737576078404241332">Yan paneldən silin</translation>
 <translation id="3741243925913727067">Fotolarınızı və videolarınızı Google Diskə yedəkləyin</translation>
 <translation id="3749289110408117711">Fayl adı</translation>
 <translation id="3780536599611287598">Faylları "<ph name="FOLDER_NAME" />" ünvanına köçürmək üçün icazəniz yoxdur.</translation>
@@ -372,6 +372,7 @@
 <translation id="4326142238881453352">Botanik</translation>
 <translation id="4326192123064055915">Qəhvə</translation>
 <translation id="4336032328163998280">Kopyalama əməliyyatı uğursuz oldu. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4340491671558548972">Yan panelə əlavə edin</translation>
 <translation id="4348495354623233847">Ərəb dili klaviaturası ilə Sorani Kürd dili</translation>
 <translation id="4363958938297989186">Fonetik klaviatura ilə Rus dili</translation>
 <translation id="4364327530094270451">Yemiş</translation>
@@ -924,7 +925,6 @@
 <translation id="9110990317705400362">Brauzerinizi güvənli etməyin yollarını daima axtarırıq. Son Chrome versiyasında artırmaları əlavə etmək üçün bunu Chrome'a açıq şəkildə deməlisiniz. <ph name="BEGIN_LINK" />Ətraflı məlumat<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">Kiliddən çıxarın</translation>
 <translation id="912419004897138677">Kodeks</translation>
-<translation id="9129931661813833980">Qovluğu panelə bərkidin</translation>
 <translation id="9130775360844693113">"<ph name="DESTINATION_NAME" />" üzvləri bu elementlərə daxil ola biləcək.</translation>
 <translation id="9131598836763251128">Bir və ya daha çox fayl seçin</translation>
 <translation id="9133055936679483811">Sızlaşdırma uğursuz oldu. <ph name="ERROR_MESSAGE" /></translation>

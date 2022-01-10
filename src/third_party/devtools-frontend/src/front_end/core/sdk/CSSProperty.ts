@@ -6,8 +6,8 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as HostModule from '../host/host.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 import type * as Protocol from '../../generated/protocol.js';
-import type * as CodeMirrorModule from '../../third_party/codemirror/codemirror-legacy.js'; // eslint-disable-line @typescript-eslint/no-unused-vars
 
 import {cssMetadata, GridAreaRowRegex} from './CSSMetadata.js';
 import type {Edit} from './CSSModel.js';
@@ -27,7 +27,6 @@ export class CSSProperty {
   #active: boolean;
   #nameRangeInternal: TextUtils.TextRange.TextRange|null;
   #valueRangeInternal: TextUtils.TextRange.TextRange|null;
-  readonly #invalidProperty: string|null;
   #invalidString?: Common.UIString.LocalizedString;
 
   constructor(
@@ -46,7 +45,6 @@ export class CSSProperty {
     this.#active = true;
     this.#nameRangeInternal = null;
     this.#valueRangeInternal = null;
-    this.#invalidProperty = null;
   }
 
   static parsePayload(ownerStyle: CSSStyleDeclaration, index: number, payload: Protocol.CSS.CSSProperty): CSSProperty {
@@ -178,7 +176,7 @@ export class CSSProperty {
 
   static formatStyle(
       styleText: string, indentation: string, endIndentation: string,
-      tokenizerFactory: TextUtils.TextUtils.TokenizerFactory, codeMirrorMode?: CodeMirror.Mode<unknown>): string {
+      tokenizerFactory: TextUtils.TextUtils.TokenizerFactory): string {
     const doubleIndent = indentation.substring(endIndentation.length) + indentation;
     if (indentation) {
       indentation = '\n' + indentation;
@@ -188,7 +186,7 @@ export class CSSProperty {
     let propertyText = '';
     let insideProperty = false;
     let needsSemi = false;
-    const tokenize = tokenizerFactory.createTokenizer('text/css', codeMirrorMode);
+    const tokenize = tokenizerFactory.createTokenizer('text/css');
 
     tokenize('*{' + styleText + '}', processToken);
     if (insideProperty) {
@@ -199,10 +197,10 @@ export class CSSProperty {
 
     function processToken(token: string, tokenType: string|null, _column: number, _newColumn: number): void {
       if (!insideProperty) {
-        const disabledProperty = tokenType && tokenType.includes('css-comment') && isDisabledProperty(token);
+        const disabledProperty = tokenType && tokenType.includes('comment') && isDisabledProperty(token);
         const isPropertyStart = tokenType &&
-            (tokenType.includes('css-string') || tokenType.includes('css-meta') || tokenType.includes('css-property') ||
-             tokenType.includes('css-variable-2'));
+            (tokenType.includes('string') || tokenType.includes('meta') || tokenType.includes('property') ||
+             tokenType.includes('variable-2'));
         if (disabledProperty) {
           result = result.trimRight() + indentation + token;
         } else if (isPropertyStart) {
@@ -210,7 +208,7 @@ export class CSSProperty {
           propertyText = token;
         } else if (token !== ';' || needsSemi) {
           result += token;
-          if (token.trim() && !(tokenType && tokenType.includes('css-comment'))) {
+          if (token.trim() && !(tokenType && tokenType.includes('comment'))) {
             needsSemi = token !== ';';
           }
         }
@@ -227,11 +225,18 @@ export class CSSProperty {
         // implementation takes special care to restore a single
         // whitespace token in this edge case. https://crbug.com/1071296
         const trimmedPropertyText = propertyText.trim();
-        result = result.trimRight() + indentation + trimmedPropertyText +
-            (trimmedPropertyText.endsWith(':') ? ' ' : '') + ';';
+        result =
+            result.trimRight() + indentation + trimmedPropertyText + (trimmedPropertyText.endsWith(':') ? ' ' : '');
         needsSemi = false;
         insideProperty = false;
         propertyName = '';
+        if (Root.Runtime.experiments.isEnabled('preciseChanges')) {
+          result += token;
+          return;
+        }
+        // We preserve the legacy behavior to always add semicolon to
+        // declarations regardless of its original text.
+        result += ';';
         if (token === '}') {
           result += '}';
         }

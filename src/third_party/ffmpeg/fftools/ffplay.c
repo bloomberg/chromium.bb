@@ -1925,7 +1925,8 @@ static int configure_video_filters(AVFilterGraph *graph, VideoState *is, const c
 } while (0)
 
     if (autorotate) {
-        double theta  = get_rotation(is->video_st);
+        int32_t *displaymatrix = (int32_t *)av_stream_get_side_data(is->video_st, AV_PKT_DATA_DISPLAYMATRIX, NULL);
+        double theta = get_rotation(displaymatrix);
 
         if (fabs(theta - 90) < 1.0) {
             INSERT_FILT("transpose", "clock");
@@ -3745,6 +3746,10 @@ int main(int argc, char **argv)
             flags |= SDL_WINDOW_BORDERLESS;
         else
             flags |= SDL_WINDOW_RESIZABLE;
+
+#ifdef SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR
+        SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
+#endif
         window = SDL_CreateWindow(program_name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, default_width, default_height, flags);
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
         if (window) {

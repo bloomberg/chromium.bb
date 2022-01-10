@@ -53,8 +53,9 @@ struct ProgramTransformOptions final
     uint8_t removeEarlyFragmentTestsOptimization : 1;
     uint8_t surfaceRotation : 3;
     uint8_t enableDepthCorrection : 1;
-    uint8_t reserved : 2;  // must initialize to zero
-    static constexpr uint32_t kPermutationCount = 0x1 << 6;
+    uint8_t removeTransformFeedbackEmulation : 1;
+    uint8_t reserved : 1;  // must initialize to zero
+    static constexpr uint32_t kPermutationCount = 0x1 << 7;
 };
 static_assert(sizeof(ProgramTransformOptions) == 1, "Size check failed");
 static_assert(static_cast<int>(SurfaceRotation::EnumCount) <= 8, "Size check failed");
@@ -101,9 +102,8 @@ struct DefaultUniformBlock final : private angle::NonCopyable
 };
 
 // Performance and resource counters.
-using DescriptorSetCountList = angle::PackedEnumMap<DescriptorSetIndex, uint32_t>;
-template <typename T>
-using FormatIndexMap = angle::HashMap<T, uint32_t>;
+using DescriptorSetCountList   = angle::PackedEnumMap<DescriptorSetIndex, uint32_t>;
+using ImmutableSamplerIndexMap = angle::HashMap<vk::YcbcrConversionDesc, uint32_t>;
 
 struct ProgramExecutablePerfCounters
 {
@@ -196,11 +196,10 @@ class ProgramExecutableVk
         return mUniformBufferDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     }
 
-    bool isImmutableSamplerFormatCompatible(const FormatIndexMap<uint64_t> &externalFormatIndexMap,
-                                            const FormatIndexMap<VkFormat> &vkFormatIndexMap) const
+    bool areImmutableSamplersCompatible(
+        const ImmutableSamplerIndexMap &immutableSamplerIndexMap) const
     {
-        return (mExternalFormatIndexMap == externalFormatIndexMap &&
-                mVkFormatIndexMap == vkFormatIndexMap);
+        return (mImmutableSamplerIndexMap == immutableSamplerIndexMap);
     }
 
     void accumulateCacheStats(VulkanCacheType cacheType, const CacheStats &cacheStats);
@@ -288,8 +287,7 @@ class ProgramExecutableVk
     // We keep a reference to the pipeline and descriptor set layouts. This ensures they don't get
     // deleted while this program is in use.
     uint32_t mImmutableSamplersMaxDescriptorCount;
-    FormatIndexMap<uint64_t> mExternalFormatIndexMap;
-    FormatIndexMap<VkFormat> mVkFormatIndexMap;
+    ImmutableSamplerIndexMap mImmutableSamplerIndexMap;
     vk::BindingPointer<vk::PipelineLayout> mPipelineLayout;
     vk::DescriptorSetLayoutPointerArray mDescriptorSetLayouts;
 

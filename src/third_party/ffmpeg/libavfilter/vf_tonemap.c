@@ -71,17 +71,6 @@ typedef struct TonemapContext {
     const struct LumaCoefficients *coeffs;
 } TonemapContext;
 
-static const enum AVPixelFormat pix_fmts[] = {
-    AV_PIX_FMT_GBRPF32,
-    AV_PIX_FMT_GBRAPF32,
-    AV_PIX_FMT_NONE,
-};
-
-static int query_formats(AVFilterContext *ctx)
-{
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
-
 static av_cold int init(AVFilterContext *ctx)
 {
     TonemapContext *s = ctx->priv;
@@ -337,10 +326,10 @@ const AVFilter ff_vf_tonemap = {
     .name            = "tonemap",
     .description     = NULL_IF_CONFIG_SMALL("Conversion to/from different dynamic ranges."),
     .init            = init,
-    .query_formats   = query_formats,
     .priv_size       = sizeof(TonemapContext),
     .priv_class      = &tonemap_class,
     FILTER_INPUTS(tonemap_inputs),
     FILTER_OUTPUTS(tonemap_outputs),
+    FILTER_PIXFMTS(AV_PIX_FMT_GBRPF32, AV_PIX_FMT_GBRAPF32),
     .flags           = AVFILTER_FLAG_SLICE_THREADS,
 };

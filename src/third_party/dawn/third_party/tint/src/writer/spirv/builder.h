@@ -46,6 +46,8 @@ namespace tint {
 namespace sem {
 class Call;
 class Reference;
+class TypeConstructor;
+class TypeConversion;
 }  // namespace sem
 
 namespace writer {
@@ -299,7 +301,7 @@ class Builder {
   /// @param var the variable to generate
   /// @returns true if the variable is emited.
   bool GenerateGlobalVariable(const ast::Variable* var);
-  /// Generates an array accessor expression.
+  /// Generates an index accessor expression.
   ///
   /// For more information on accessors see the "Pointer evaluation" section of
   /// the WGSL specification.
@@ -307,11 +309,11 @@ class Builder {
   /// @param expr the expresssion to generate
   /// @returns the id of the expression or 0 on failure
   uint32_t GenerateAccessorExpression(const ast::Expression* expr);
-  /// Generates an array accessor
+  /// Generates an index accessor
   /// @param expr the accessor to generate
   /// @param info the current accessor information
   /// @returns true if the accessor was generated successfully
-  bool GenerateArrayAccessor(const ast::ArrayAccessorExpression* expr,
+  bool GenerateIndexAccessor(const ast::IndexAccessorExpression* expr,
                              AccessorInfo* info);
   /// Generates a member accessor
   /// @param expr the accessor to generate
@@ -339,22 +341,14 @@ class Builder {
   /// @param var the variable generated for, nullptr if no variable associated.
   /// @param expr the expression to generate
   /// @returns the ID of the expression or 0 on failure.
-  uint32_t GenerateConstructorExpression(
-      const ast::Variable* var,
-      const ast::ConstructorExpression* expr);
-  /// Generates a type constructor expression
-  /// @param var the variable generated for, nullptr if no variable associated.
-  /// @param init the expression to generate
-  /// @returns the ID of the expression or 0 on failure.
-  uint32_t GenerateTypeConstructorExpression(
-      const ast::Variable* var,
-      const ast::TypeConstructorExpression* init);
+  uint32_t GenerateConstructorExpression(const ast::Variable* var,
+                                         const ast::Expression* expr);
   /// Generates a literal constant if needed
   /// @param var the variable generated for, nullptr if no variable associated.
   /// @param lit the literal to generate
   /// @returns the ID on success or 0 on failure
   uint32_t GenerateLiteralIfNeeded(const ast::Variable* var,
-                                   const ast::Literal* lit);
+                                   const ast::LiteralExpression* lit);
   /// Generates a binary expression
   /// @param expr the expression to generate
   /// @returns the expression ID on success or 0 otherwise
@@ -372,12 +366,24 @@ class Builder {
   /// @param expr the expression to generate
   /// @returns the expression ID on success or 0 otherwise
   uint32_t GenerateCallExpression(const ast::CallExpression* expr);
-  /// Generates an intrinsic call
+  /// Handles generating a function call expression
   /// @param call the call expression
-  /// @param intrinsic the semantic information for the intrinsic
+  /// @param function the function being called
   /// @returns the expression ID on success or 0 otherwise
-  uint32_t GenerateIntrinsic(const ast::CallExpression* call,
-                             const sem::Intrinsic* intrinsic);
+  uint32_t GenerateFunctionCall(const sem::Call* call,
+                                const sem::Function* function);
+  /// Handles generating an intrinsic call expression
+  /// @param call the call expression
+  /// @param intrinsic the intrinsic being called
+  /// @returns the expression ID on success or 0 otherwise
+  uint32_t GenerateIntrinsicCall(const sem::Call* call,
+                                 const sem::Intrinsic* intrinsic);
+  /// Handles generating a type constructor or type conversion expression
+  /// @param call the call expression
+  /// @param var the variable that is being initialized. May be null.
+  /// @returns the expression ID on success or 0 otherwise
+  uint32_t GenerateTypeConstructorOrConversion(const sem::Call* call,
+                                               const ast::Variable* var);
   /// Generates a texture intrinsic call. Emits an error and returns false if
   /// we're currently outside a function.
   /// @param call the call expression
@@ -386,7 +392,7 @@ class Builder {
   /// @param result_id result identifier operand of the texture instruction
   /// parameters
   /// @returns true on success
-  bool GenerateTextureIntrinsic(const ast::CallExpression* call,
+  bool GenerateTextureIntrinsic(const sem::Call* call,
                                 const sem::Intrinsic* intrinsic,
                                 spirv::Operand result_type,
                                 spirv::Operand result_id);
@@ -400,7 +406,7 @@ class Builder {
   /// @param result_type result type operand of the texture instruction
   /// @param result_id result identifier operand of the texture instruction
   /// @returns true on success
-  bool GenerateAtomicIntrinsic(const ast::CallExpression* call,
+  bool GenerateAtomicIntrinsic(const sem::Call* call,
                                const sem::Intrinsic* intrinsic,
                                Operand result_type,
                                Operand result_id);
@@ -537,9 +543,8 @@ class Builder {
 
   /// Determines if the given type constructor is created from constant values
   /// @param expr the expression to check
-  /// @param is_global_init if this is a global initializer
   /// @returns true if the constructor is constant
-  bool is_constructor_const(const ast::Expression* expr, bool is_global_init);
+  bool IsConstructorConst(const ast::Expression* expr);
 
  private:
   /// @returns an Operand with a new result ID in it. Increments the next_id_

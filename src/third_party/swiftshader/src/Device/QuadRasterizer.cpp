@@ -19,6 +19,7 @@
 #include "Pipeline/Constants.hpp"
 #include "System/Debug.hpp"
 #include "System/Math.hpp"
+#include "Vulkan/VkDevice.hpp"
 
 namespace sw {
 
@@ -34,7 +35,7 @@ QuadRasterizer::~QuadRasterizer()
 
 void QuadRasterizer::generate()
 {
-	constants = *Pointer<Pointer<Byte>>(data + OFFSET(DrawData, constants));
+	constants = device + OFFSET(vk::Device, constants);
 	occlusion = 0;
 
 	Do
@@ -147,17 +148,19 @@ void QuadRasterizer::rasterize(Int &yMin, Int &yMax)
 
 			if(spirvShader)
 			{
-				for(int interpolant = 0; interpolant < MAX_INTERFACE_COMPONENTS; interpolant++)
+				int packedInterpolant = 0;
+				for(int interfaceInterpolant = 0; interfaceInterpolant < MAX_INTERFACE_COMPONENTS; interfaceInterpolant++)
 				{
-					if(spirvShader->inputs[interpolant].Type == SpirvShader::ATTRIBTYPE_UNUSED)
+					if(spirvShader->inputs[interfaceInterpolant].Type == SpirvShader::ATTRIBTYPE_UNUSED)
 						continue;
 
-					Dv[interpolant] = *Pointer<Float4>(primitive + OFFSET(Primitive, V[interpolant].C), 16);
-					if(!spirvShader->inputs[interpolant].Flat)
+					Dv[interfaceInterpolant] = *Pointer<Float4>(primitive + OFFSET(Primitive, V[packedInterpolant].C), 16);
+					if(!spirvShader->inputs[interfaceInterpolant].Flat)
 					{
-						Dv[interpolant] +=
-						    yyyy * *Pointer<Float4>(primitive + OFFSET(Primitive, V[interpolant].B), 16);
+						Dv[interfaceInterpolant] +=
+						    yyyy * *Pointer<Float4>(primitive + OFFSET(Primitive, V[packedInterpolant].B), 16);
 					}
+					packedInterpolant++;
 				}
 
 				for(unsigned int i = 0; i < state.numClipDistances; i++)

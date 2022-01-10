@@ -180,23 +180,6 @@ static av_cold void uninit(AVFilterContext *ctx)
     av_freep(&s->gain_entry_cmd);
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVSampleFormat sample_fmts[] = {
-        AV_SAMPLE_FMT_FLTP,
-        AV_SAMPLE_FMT_NONE
-    };
-    int ret = ff_set_common_all_channel_counts(ctx);
-    if (ret < 0)
-        return ret;
-
-    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
-    if (ret < 0)
-        return ret;
-
-    return ff_set_common_all_samplerates(ctx);
-}
-
 static void fast_convolute(FIREqualizerContext *av_restrict s, const float *av_restrict kernel_buf, float *av_restrict conv_buf,
                            OverlapIndex *av_restrict idx, float *av_restrict data, int nsamples)
 {
@@ -958,10 +941,10 @@ const AVFilter ff_af_firequalizer = {
     .name               = "firequalizer",
     .description        = NULL_IF_CONFIG_SMALL("Finite Impulse Response Equalizer."),
     .uninit             = uninit,
-    .query_formats      = query_formats,
     .process_command    = process_command,
     .priv_size          = sizeof(FIREqualizerContext),
     FILTER_INPUTS(firequalizer_inputs),
     FILTER_OUTPUTS(firequalizer_outputs),
+    FILTER_SINGLE_SAMPLEFMT(AV_SAMPLE_FMT_FLTP),
     .priv_class         = &firequalizer_class,
 };

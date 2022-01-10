@@ -304,23 +304,27 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 
 static av_cold void uninit(AVFilterContext *ctx)
 {
-    int i;
     ThumbnailCudaContext *s = ctx->priv;
-    CudaFunctions *cu = s->hwctx->internal->cuda_dl;
 
-    if (s->data) {
-        CHECK_CU(cu->cuMemFree(s->data));
-        s->data = 0;
+    if (s->hwctx) {
+        CudaFunctions *cu = s->hwctx->internal->cuda_dl;
+
+        if (s->data) {
+            CHECK_CU(cu->cuMemFree(s->data));
+            s->data = 0;
+        }
+
+        if (s->cu_module) {
+            CHECK_CU(cu->cuModuleUnload(s->cu_module));
+            s->cu_module = NULL;
+        }
     }
 
-    if (s->cu_module) {
-        CHECK_CU(cu->cuModuleUnload(s->cu_module));
-        s->cu_module = NULL;
+    if (s->frames) {
+        for (int i = 0; i < s->n_frames && s->frames[i].buf; i++)
+            av_frame_free(&s->frames[i].buf);
+        av_freep(&s->frames);
     }
-
-    for (i = 0; i < s->n_frames && s->frames[i].buf; i++)
-        av_frame_free(&s->frames[i].buf);
-    av_freep(&s->frames);
 }
 
 static int request_frame(AVFilterLink *link)
@@ -412,15 +416,6 @@ static int config_props(AVFilterLink *inlink)
     return 0;
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_CUDA,
-        AV_PIX_FMT_NONE
-    };
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
-
 static const AVFilterPad thumbnail_cuda_inputs[] = {
     {
         .name         = "default",
@@ -444,9 +439,9 @@ const AVFilter ff_vf_thumbnail_cuda = {
     .priv_size     = sizeof(ThumbnailCudaContext),
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(thumbnail_cuda_inputs),
     FILTER_OUTPUTS(thumbnail_cuda_outputs),
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_CUDA),
     .priv_class    = &thumbnail_cuda_class,
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };

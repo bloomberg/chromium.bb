@@ -30,6 +30,7 @@
 #include "api/task_queue/task_queue_factory.h"
 #include "api/test/audio_quality_analyzer_interface.h"
 #include "api/test/frame_generator_interface.h"
+#include "api/test/peer_network_dependencies.h"
 #include "api/test/simulated_network.h"
 #include "api/test/stats_observer_interface.h"
 #include "api/test/track_id_stream_info_map.h"
@@ -494,14 +495,13 @@ class PeerConnectionE2EQualityTestFixture {
 
   // Add a new peer to the call and return an object through which caller
   // can configure peer's behavior.
-  // `network_thread` will be used as network thread for peer's peer connection
-  // `network_manager` will be used to provide network interfaces for peer's
-  // peer connection.
+  // `network_dependencies` are used to provide networking for peer's peer
+  // connection. Members must be non-null.
   // `configurer` function will be used to configure peer in the call.
   virtual PeerHandle* AddPeer(
-      rtc::Thread* network_thread,
-      rtc::NetworkManager* network_manager,
+      const PeerNetworkDependencies& network_dependencies,
       rtc::FunctionView<void(PeerConfigurer*)> configurer) = 0;
+
   // Runs the media quality test, which includes setting up the call with
   // configured participants, running it according to provided `run_params` and
   // terminating it properly at the end. During call duration media quality

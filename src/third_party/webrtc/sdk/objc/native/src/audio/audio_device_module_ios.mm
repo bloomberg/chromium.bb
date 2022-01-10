@@ -291,7 +291,7 @@ AudioDeviceModuleIOS::AudioDeviceModuleIOS(bool bypass_voice_processing)
     RTC_DLOG(LS_INFO) << __FUNCTION__ << "(" << enable << ")";
     CHECKinitialized_();
     if (enable) {
-      RTC_LOG(WARNING) << "recording in stereo is not supported";
+      RTC_LOG(LS_WARNING) << "recording in stereo is not supported";
     }
     return -1;
   }
@@ -324,12 +324,11 @@ AudioDeviceModuleIOS::AudioDeviceModuleIOS(bool bypass_voice_processing)
     RTC_DLOG(LS_INFO) << __FUNCTION__ << "(" << enable << ")";
     CHECKinitialized_();
     if (audio_device_->PlayoutIsInitialized()) {
-      RTC_LOG(LERROR)
-      << "unable to set stereo mode while playing side is initialized";
+      RTC_LOG(LS_ERROR) << "unable to set stereo mode while playing side is initialized";
       return -1;
     }
     if (audio_device_->SetStereoPlayout(enable)) {
-      RTC_LOG(WARNING) << "stereo playout is not supported";
+      RTC_LOG(LS_WARNING) << "stereo playout is not supported";
       return -1;
     }
     int8_t nChannels(1);
@@ -588,7 +587,7 @@ AudioDeviceModuleIOS::AudioDeviceModuleIOS(bool bypass_voice_processing)
     CHECKinitialized_();
     uint16_t delay = 0;
     if (audio_device_->PlayoutDelay(delay) == -1) {
-      RTC_LOG(LERROR) << "failed to retrieve the playout delay";
+      RTC_LOG(LS_ERROR) << "failed to retrieve the playout delay";
       return -1;
     }
     *delayMS = delay;

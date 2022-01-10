@@ -25,12 +25,15 @@ namespace dawn_native {
     class RenderPipelineMock : public RenderPipelineBase {
       public:
         RenderPipelineMock(DeviceBase* device) : RenderPipelineBase(device) {
+            ON_CALL(*this, DestroyImpl).WillByDefault([this]() {
+                this->RenderPipelineBase::DestroyImpl();
+            });
         }
         ~RenderPipelineMock() override = default;
 
         MOCK_METHOD(MaybeError, Initialize, (), (override));
         MOCK_METHOD(size_t, ComputeContentHash, (), (override));
-        MOCK_METHOD(void, DestroyApiObjectImpl, (), (override));
+        MOCK_METHOD(void, DestroyImpl, (), (override));
     };
 
 }  // namespace dawn_native

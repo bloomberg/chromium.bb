@@ -305,13 +305,13 @@
 <translation id="3620292326130836921">បានបម្រុងទុកអស់ហើយ!</translation>
 <translation id="3634507049637220048">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, គ្រប់គ្រងដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក, ព័ត៌មាន​លម្អិត</translation>
 <translation id="3645233063072417428">បានផ្លាស់ទី​ធាតុ <ph name="NUMBER_OF_ITEMS" />។</translation>
-<translation id="3645531960514756307">ដក​ខ្ទាស់ថត</translation>
 <translation id="3685122418104378273">សមកម្ម Google Drive ត្រូវបានបិទដំណើរការតាមលំនាំដើម នៅពេលប្រើទិន្នន័យចល័ត។</translation>
 <translation id="3689865792480713551">បោះបង់ <ph name="ACTIVITY_DESCRIPTION" /> ។</translation>
 <translation id="3690128548376345212">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, បានបិទដំណើរការ, <ph name="CONNECTION_STATUS" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, ព័ត៌មានលម្អិត</translation>
 <translation id="3691184985318546178">ភាសាស៊ីនហាឡា</translation>
 <translation id="3726463242007121105">ឧបករណ៍នេះមិនអាចបើកទេ ពីព្រោះប្រព័ន្ធឯកសាររបស់វាមិនត្រូវបានគាំទ្រទេ។</translation>
 <translation id="3727148787322499904">ការផ្លាស់​ប្តូរការ​កំណត់នេះ​នឹង​ប៉ះពាល់​ដល់​បណ្តាញ​ដែល​បានចែករំលែក​ទាំងអស់</translation>
+<translation id="3737576078404241332">លុបចេញពី​របារចំហៀង</translation>
 <translation id="3741243925913727067">បម្រុងទុករូបថត និងវីដេអូលើឧបករណ៍កំសាន្តរបស់អ្នកទៅកាន់ Google Drive។</translation>
 <translation id="3749289110408117711">ឈ្មោះឯកសារ</translation>
 <translation id="3780536599611287598">អ្នក​មិនត្រូវបាន​អនុញ្ញាតឱ្យ​ផ្លាស់ទី​ឯកសារ​ទៅ '<ph name="FOLDER_NAME" />' ទេ។</translation>
@@ -372,6 +372,7 @@
 <translation id="4326142238881453352">អ្នកជំនាញផ្នែករុក្ខជាតិ</translation>
 <translation id="4326192123064055915">កាហ្វេ</translation>
 <translation id="4336032328163998280">ប្រតិបត្តិការចម្លងបានបរាជ័យ។ <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4340491671558548972">បញ្ចូលក្នុង​របារចំហៀង</translation>
 <translation id="4348495354623233847">ភាសាសូរ៉ានី​ឃឺដ​ដែលប្រើ​ក្ដារចុច​ផ្អែកលើ​ភាសា​អារ៉ាប់</translation>
 <translation id="4363958938297989186">ភាសារុស្ស៊ី​ដែលប្រើ​ក្ដារចុច​តាម​សូរសព្ទ</translation>
 <translation id="4364327530094270451">ត្រសក់​ផ្អែម</translation>
@@ -926,7 +927,6 @@
 <translation id="9110990317705400362">យើងតែងតែស្វែងរកមធ្យោបាយដើម្បីធ្វើឲ្យការរុករករបស់អ្នកមានសុវត្ថិភាពជាងមុនជានិច្ច។ កាលពីមុន គេហទំព័រទាំងឡាយអាចជម្រុញអ្នកឲ្យបន្ថែមកម្មវិធីបន្ថែមទៅក្នុងកម្មវិធីរុករករបស់អ្នក។ នៅក្នុងកំណែចុងក្រោយនៃ Google Chrome អ្នកត្រូវប្រាប់ Chrome ឲ្យច្បាស់ថាអ្នកចង់តំឡើងកម្មវិធីទាំងនេះ ដោយការបន្ថែមពួកវាតាមរយៈទំព័រកម្មវិធីបន្ថែម។ <ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">ដោះសោរ</translation>
 <translation id="912419004897138677">កូឌិក</translation>
-<translation id="9129931661813833980">ខ្ទាស់ថត</translation>
 <translation id="9130775360844693113">សមាជិក​របស់ '<ph name="DESTINATION_NAME" />' នឹងទទួល​បានសិទិ្ធ​ចូលប្រើ​ធាតុទាំង​នេះ។</translation>
 <translation id="9131598836763251128">ជ្រើសរើសឯកសារមួយ ឬច្រើន</translation>
 <translation id="9133055936679483811">ការបង្រួមបានបរាជ័យ។ <ph name="ERROR_MESSAGE" /></translation>

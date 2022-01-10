@@ -67,7 +67,7 @@
   user-select: none;
   -webkit-mask-image: var(--image-file-treeoutlineTriangles);
   -webkit-mask-size: 32px 24px;
-  content: '\A0\A0';
+  content: "\A0\A0";
   color: transparent;
   text-shadow: none;
   margin-right: -3px;
@@ -184,19 +184,6 @@
 .elements-tree-editor {
   box-shadow: var(--drop-shadow);
   margin-right: 4px;
-}
-
-.CodeMirror {
-  background-color: var(--color-background);
-  height: 300px !important; /* stylelint-disable-line declaration-no-important */
-}
-
-.CodeMirror-lines {
-  padding: 0;
-}
-
-.CodeMirror pre {
-  padding: 0;
 }
 
 button,

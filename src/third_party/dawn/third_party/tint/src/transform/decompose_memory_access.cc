@@ -23,7 +23,6 @@
 #include "src/ast/assignment_statement.h"
 #include "src/ast/call_statement.h"
 #include "src/ast/disable_validation_decoration.h"
-#include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/type_name.h"
 #include "src/ast/unary_op.h"
 #include "src/block_allocator.h"
@@ -36,7 +35,7 @@
 #include "src/sem/statement.h"
 #include "src/sem/struct.h"
 #include "src/sem/variable.h"
-#include "src/utils/get_or_create.h"
+#include "src/utils/map.h"
 #include "src/utils/hash.h"
 
 TINT_INSTANTIATE_TYPEINFO(tint::transform::DecomposeMemoryAccess);
@@ -331,13 +330,11 @@ struct DecomposeMemoryAccess::State {
   /// @param expr the expression to convert to an Offset
   /// @returns an Offset for the given ast::Expression
   const Offset* ToOffset(const ast::Expression* expr) {
-    if (auto* scalar = expr->As<ast::ScalarConstructorExpression>()) {
-      if (auto* u32 = scalar->literal->As<ast::UintLiteral>()) {
-        return offsets_.Create<OffsetLiteral>(u32->value);
-      } else if (auto* i32 = scalar->literal->As<ast::SintLiteral>()) {
-        if (i32->value > 0) {
-          return offsets_.Create<OffsetLiteral>(i32->value);
-        }
+    if (auto* u32 = expr->As<ast::UintLiteralExpression>()) {
+      return offsets_.Create<OffsetLiteral>(u32->value);
+    } else if (auto* i32 = expr->As<ast::SintLiteralExpression>()) {
+      if (i32->value > 0) {
+        return offsets_.Create<OffsetLiteral>(i32->value);
       }
     }
     return offsets_.Create<OffsetExpr>(expr);
@@ -525,11 +522,11 @@ struct DecomposeMemoryAccess::State {
                 values.emplace_back(b.Call(load, "buffer", offset));
               }
             }
-            b.Func(name, params, CreateASTTypeFor(ctx, el_ty),
-                   {
-                       b.Return(b.create<ast::TypeConstructorExpression>(
-                           CreateASTTypeFor(ctx, el_ty), values)),
-                   });
+            b.Func(
+                name, params, CreateASTTypeFor(ctx, el_ty),
+                {
+                    b.Return(b.Construct(CreateASTTypeFor(ctx, el_ty), values)),
+                });
           }
           return name;
         });
@@ -854,8 +851,8 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
       continue;
     }
 
-    if (auto* accessor = node->As<ast::ArrayAccessorExpression>()) {
-      if (auto access = state.TakeAccess(accessor->array)) {
+    if (auto* accessor = node->As<ast::IndexAccessorExpression>()) {
+      if (auto access = state.TakeAccess(accessor->object)) {
         // X[Y]
         if (auto* arr = access.type->As<sem::Array>()) {
           auto* offset = state.Mul(arr->Stride(), accessor->index);

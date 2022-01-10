@@ -17,7 +17,6 @@
 
 #include <string>
 
-#include "src/ast/array_accessor_expression.h"
 #include "src/ast/assignment_statement.h"
 #include "src/ast/binary_expression.h"
 #include "src/ast/bitcast_expression.h"
@@ -27,12 +26,11 @@
 #include "src/ast/fallthrough_statement.h"
 #include "src/ast/for_loop_statement.h"
 #include "src/ast/if_statement.h"
+#include "src/ast/index_accessor_expression.h"
 #include "src/ast/loop_statement.h"
 #include "src/ast/member_accessor_expression.h"
 #include "src/ast/return_statement.h"
-#include "src/ast/scalar_constructor_expression.h"
 #include "src/ast/switch_statement.h"
-#include "src/ast/type_constructor_expression.h"
 #include "src/ast/unary_op_expression.h"
 #include "src/program.h"
 #include "src/sem/storage_texture_type.h"
@@ -59,12 +57,12 @@ class GeneratorImpl : public TextGenerator {
   /// @param ty the declared type to generate
   /// @returns true if the declared type was emitted
   bool EmitTypeDecl(const ast::TypeDecl* ty);
-  /// Handles an array accessor expression
+  /// Handles an index accessor expression
   /// @param out the output of the expression stream
   /// @param expr the expression to emit
-  /// @returns true if the array accessor was emitted
-  bool EmitArrayAccessor(std::ostream& out,
-                         const ast::ArrayAccessorExpression* expr);
+  /// @returns true if the index accessor was emitted
+  bool EmitIndexAccessor(std::ostream& out,
+                         const ast::IndexAccessorExpression* expr);
   /// Handles an assignment statement
   /// @param stmt the statement to emit
   /// @returns true if the statement was emitted successfully
@@ -96,12 +94,11 @@ class GeneratorImpl : public TextGenerator {
   /// @param stmt the statement
   /// @returns true if the statment was emitted successfully
   bool EmitCase(const ast::CaseStatement* stmt);
-  /// Handles generating a scalar constructor
+  /// Handles generating a literal expression
   /// @param out the output of the expression stream
-  /// @param expr the scalar constructor expression
-  /// @returns true if the scalar constructor is emitted
-  bool EmitScalarConstructor(std::ostream& out,
-                             const ast::ScalarConstructorExpression* expr);
+  /// @param expr the literal expression expression
+  /// @returns true if the literal expression is emitted
+  bool EmitLiteral(std::ostream& out, const ast::LiteralExpression* expr);
   /// Handles a continue statement
   /// @param stmt the statement to emit
   /// @returns true if the statement was emitted successfully
@@ -122,27 +119,16 @@ class GeneratorImpl : public TextGenerator {
   /// Handles generating an identifier expression
   /// @param out the output of the expression stream
   /// @param expr the identifier expression
-  /// @returns true if the identifeir was emitted
+  /// @returns true if the identifier was emitted
   bool EmitIdentifier(std::ostream& out, const ast::IdentifierExpression* expr);
   /// Handles an if statement
   /// @param stmt the statement to emit
   /// @returns true if the statement was successfully emitted
   bool EmitIf(const ast::IfStatement* stmt);
-  /// Handles generating constructor expressions
-  /// @param out the output of the expression stream
-  /// @param expr the constructor expression
-  /// @returns true if the expression was emitted
-  bool EmitConstructor(std::ostream& out,
-                       const ast::ConstructorExpression* expr);
   /// Handles generating a discard statement
   /// @param stmt the discard statement
   /// @returns true if the statement was successfully emitted
   bool EmitDiscard(const ast::DiscardStatement* stmt);
-  /// Handles a literal
-  /// @param out the output of the expression stream
-  /// @param lit the literal to emit
-  /// @returns true if the literal was successfully emitted
-  bool EmitLiteral(std::ostream& out, const ast::Literal* lit);
   /// Handles a loop statement
   /// @param stmt the statement to emit
   /// @returns true if the statement was emtited
@@ -196,12 +182,6 @@ class GeneratorImpl : public TextGenerator {
   /// @param access the access to generate
   /// @returns true if the access is emitted
   bool EmitAccess(std::ostream& out, const ast::Access access);
-  /// Handles emitting a type constructor
-  /// @param out the output of the expression stream
-  /// @param expr the type constructor expression
-  /// @returns true if the constructor is emitted
-  bool EmitTypeConstructor(std::ostream& out,
-                           const ast::TypeConstructorExpression* expr);
   /// Handles a unary op expression
   /// @param out the output of the expression stream
   /// @param expr the expression to emit

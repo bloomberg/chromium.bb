@@ -136,6 +136,17 @@ void ClickOnView(const views::View* view,
   event_generator->ClickLeftButton();
 }
 
+void TouchOnView(const views::View* view,
+                 ui::test::EventGenerator* event_generator) {
+  DCHECK(view);
+  DCHECK(event_generator);
+
+  const gfx::Point view_center = view->GetBoundsInScreen().CenterPoint();
+  event_generator->MoveTouch(view_center);
+  event_generator->PressTouch();
+  event_generator->ReleaseTouch();
+}
+
 // Sends a press release key combo |count| times.
 void SendKey(ui::KeyboardCode key_code,
              ui::test::EventGenerator* event_generator,
@@ -336,6 +347,8 @@ class CaptureModeSessionTestApi {
            session_->folder_selection_dialog_controller_->dialog_window();
   }
 
+  bool IsAllUisVisible() const { return session_->is_all_uis_visible_; }
+
  private:
   const CaptureModeSession* const session_;
 };
@@ -383,6 +396,12 @@ class CaptureModeTest : public AshTestBase {
     auto* session = CaptureModeController::Get()->capture_mode_session();
     DCHECK(session);
     return CaptureModeSessionTestApi(session).IsFolderSelectionDialogShown();
+  }
+
+  bool IsAllCaptureSessionUisVisible() const {
+    auto* session = CaptureModeController::Get()->capture_mode_session();
+    DCHECK(session);
+    return CaptureModeSessionTestApi(session).IsAllUisVisible();
   }
 
   CaptureModeToggleButton* GetImageToggleButton() const {
@@ -588,10 +607,10 @@ class CaptureModeTest : public AshTestBase {
 
   base::FilePath CreateFolderOnDriveFS(const std::string& custom_folder_name) {
     auto* test_delegate = CaptureModeController::Get()->delegate_for_testing();
-    base::FilePath root_drive_folder;
-    EXPECT_TRUE(test_delegate->GetDriveFsMountPointPath(&root_drive_folder));
+    base::FilePath mount_point_path;
+    EXPECT_TRUE(test_delegate->GetDriveFsMountPointPath(&mount_point_path));
     base::FilePath folder_on_drive_fs =
-        root_drive_folder.Append(custom_folder_name);
+        mount_point_path.Append("root").Append(custom_folder_name);
     base::ScopedAllowBlockingForTesting allow_blocking;
     const bool result = base::CreateDirectory(folder_on_drive_fs);
     EXPECT_TRUE(result);
@@ -2469,8 +2488,9 @@ TEST_P(CaptureModeSaveFileTest, CaptureModeSaveToLocationMetric) {
   // a specific folder on drive.
   const auto downloads_folder = test_delegate->GetUserDefaultDownloadsFolder();
   const base::FilePath custom_folder = CreateCustomFolder("test");
-  base::FilePath root_drive_folder;
-  test_delegate->GetDriveFsMountPointPath(&root_drive_folder);
+  base::FilePath mount_point_path;
+  test_delegate->GetDriveFsMountPointPath(&mount_point_path);
+  const auto root_drive_folder = mount_point_path.Append("root");
   const base::FilePath non_root_drive_folder = CreateFolderOnDriveFS("test");
   struct {
     base::FilePath set_save_file_folder;
@@ -4766,7 +4786,8 @@ class ProjectorCaptureModeIntegrationTests
     auto* projector_controller = ProjectorController::Get();
     projector_controller->SetClient(&projector_client_);
     // Simulate the availability of speech recognition.
-    projector_controller->OnSpeechRecognitionAvailable(true);
+    projector_controller->OnSpeechRecognitionAvailabilityChanged(
+        SpeechRecognitionAvailability::kAvailable);
     window_ = CreateTestWindow(gfx::Rect(20, 30, 200, 200));
     CaptureModeController::Get()->SetUserCaptureRegion(kUserRegion,
                                                        /*by_user=*/true);
@@ -4783,6 +4804,7 @@ class ProjectorCaptureModeIntegrationTests
     auto* projector_session = ProjectorSession::Get();
     EXPECT_FALSE(projector_session->is_active());
     auto* projector_controller = ProjectorController::Get();
+    EXPECT_CALL(projector_client_, MinimizeProjectorApp());
     projector_controller->StartProjectorSession("projector_data");
     EXPECT_TRUE(projector_session->is_active());
   }
@@ -4957,9 +4979,9 @@ TEST_F(ProjectorCaptureModeIntegrationTests,
   ASSERT_TRUE(settings_menu);
 
   CaptureModeAdvancedSettingsTestApi advanced_settings_test_api;
-  // Tab once, check the `Off` option is skipped and remains disabled. The
+  // Tab twice, check the `Off` option is skipped and remains disabled. The
   // current focused view is the `Microphone` option.
-  SendKey(ui::VKEY_TAB, event_generator);
+  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/2);
   EXPECT_FALSE(advanced_settings_test_api.GetAudioOffOption()->GetEnabled());
   EXPECT_EQ(test_api.GetCurrentFocusedView()->GetView(),
             advanced_settings_test_api.GetMicrophoneOption());
@@ -5463,6 +5485,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, SelectFolderFromDialog) {
 
   ClickOnView(test_api.GetSelectFolderMenuItem(), event_generator);
   EXPECT_TRUE(IsFolderSelectionDialogShown());
+  EXPECT_FALSE(IsAllCaptureSessionUisVisible());
 
   auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
   auto* dialog_window = dialog_factory->GetDialogWindow();
@@ -5478,6 +5501,7 @@ TEST_F(CaptureModeAdvancedSettingsTest, SelectFolderFromDialog) {
   dialog_factory->AcceptPath(custom_folder);
   WaitForSettingsMenuToBeRefreshed();
   EXPECT_FALSE(IsFolderSelectionDialogShown());
+  EXPECT_TRUE(IsAllCaptureSessionUisVisible());
   EXPECT_TRUE(save_to_menu_group->IsOptionChecked(kCustomFolder));
   EXPECT_FALSE(save_to_menu_group->IsOptionChecked(kDownloadsFolder));
   EXPECT_EQ(u"test",
@@ -5718,13 +5742,13 @@ TEST_F(CaptureModeAdvancedSettingsTest, SwitchWhichFolderToUserFromOptions) {
   EXPECT_FALSE(capture_folder.is_default_downloads_folder);
 }
 
-// Tests that when capture label widget overlaps with settings widget, hide
-// capture label widget. Show capture label widget after closing settings
-// widget.
+// Tests that when there's no overlap betwwen capture label widget and settings
+// widget, capture label widget is shown/hidden correctly after open/close the
+// folder selection window.
 TEST_F(CaptureModeAdvancedSettingsTest,
-       CaptureLabelViewOverlapsWithSettingsView) {
-  // Update the display size to make sure capture label widget will not overlap
-  // with settings widget
+       CaptureLabelViewNotOverlapsWithSettingsView) {
+  // Update the display size to make sure capture label widget will not
+  // overlap with settings widget
   UpdateDisplay("1200x1000");
 
   auto* controller = StartImageRegionCapture();
@@ -5740,29 +5764,69 @@ TEST_F(CaptureModeAdvancedSettingsTest,
   EXPECT_TRUE(capture_label_widget->IsVisible());
   EXPECT_TRUE(settings_widget->IsVisible());
 
+  // Open folder selection window, check that both capture label widget and
+  // settings widget are invisible.
+  CaptureModeAdvancedSettingsTestApi test_api;
+  auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
+  ClickOnView(test_api.GetSelectFolderMenuItem(), event_generator);
+  EXPECT_TRUE(IsFolderSelectionDialogShown());
+  EXPECT_FALSE(capture_label_widget->IsVisible());
+  EXPECT_FALSE(settings_widget->IsVisible());
+
+  // Now close folder selection window, check that capture label widget and
+  // settings widget become visible.
+  dialog_factory->CancelDialog();
+  EXPECT_FALSE(IsFolderSelectionDialogShown());
+  EXPECT_TRUE(capture_label_widget->IsVisible());
+  EXPECT_EQ(capture_label_widget->GetLayer()->GetTargetOpacity(), 1.f);
+  EXPECT_TRUE(settings_widget->IsVisible());
+
   // Close settings widget. Capture label widget is visible.
   ClickOnView(GetSettingsButton(), event_generator);
   EXPECT_TRUE(capture_label_widget->IsVisible());
   controller->Stop();
+}
 
+// Tests that when capture label widget overlaps with settings widget, capture
+// label widget is shown/hidden correctly after open/close the folder selection
+// window, open/close settings menu. Regression test for
+// https://crbug.com/1279606.
+TEST_F(CaptureModeAdvancedSettingsTest,
+       CaptureLabelViewOverlapsWithSettingsView) {
   // Update display size to make capture label widget overlap with settings
   // widget.
   UpdateDisplay("1100x700");
-  controller = StartImageRegionCapture();
+  auto* controller = StartImageRegionCapture();
+  auto* event_generator = GetEventGenerator();
 
-  // Tests that capture label widget overlaps with settings widget and is hidden
-  // after setting widget is shown.
-  capture_label_widget = GetCaptureModeLabelWidget();
+  // Tests that capture label widget overlaps with settings widget and is
+  // hidden after setting widget is shown.
+  auto* capture_label_widget = GetCaptureModeLabelWidget();
   ClickOnView(GetSettingsButton(), event_generator);
-  settings_widget = GetCaptureModeSettingsWidget();
+  auto* settings_widget = GetCaptureModeSettingsWidget();
   EXPECT_TRUE(capture_label_widget->GetWindowBoundsInScreen().Intersects(
       settings_widget->GetWindowBoundsInScreen()));
   EXPECT_FALSE(GetCaptureModeLabelWidget()->IsVisible());
   EXPECT_TRUE(settings_widget->IsVisible());
 
-  // Tests that capture label widget is visible after settings widget is closed.
+  // Open folder selection window, capture label widget is invisible.
+  CaptureModeAdvancedSettingsTestApi test_api;
+  auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
+  ClickOnView(test_api.GetSelectFolderMenuItem(), event_generator);
+  EXPECT_TRUE(IsFolderSelectionDialogShown());
+  EXPECT_FALSE(capture_label_widget->IsVisible());
+
+  // Close folder selection window, capture label widget is invisible.
+  dialog_factory->CancelDialog();
+  EXPECT_FALSE(IsFolderSelectionDialogShown());
+  EXPECT_FALSE(capture_label_widget->IsVisible());
+
+  // Tests that capture label widget is visible after settings widget is
+  // closed.
   ClickOnView(GetSettingsButton(), event_generator);
   EXPECT_TRUE(capture_label_widget->IsVisible());
+  EXPECT_EQ(capture_label_widget->GetLayer()->GetTargetOpacity(), 1.f);
+  controller->Stop();
 }
 
 // Tests the basic keyboard navigation functions for the settings menu.
@@ -5788,11 +5852,15 @@ TEST_F(CaptureModeAdvancedSettingsTest, KeyboardNavigationForSettingsMenu) {
   CaptureModeAdvancedSettingsTestApi advanced_settings_test_api;
   CaptureModeMenuGroup* audio_input_menu_group =
       advanced_settings_test_api.GetAudioInputMenuGroup();
-  // Tab once to focus the first item on the settings menu (`Off` option). Check
-  // `Off` option is the checked option not the `Microphone`.
+  // Tab once to focus the first item on the settings menu (`Audio input`
+  // header).
   SendKey(ui::VKEY_TAB, event_generator);
   EXPECT_EQ(FocusGroup::kSettingsMenu, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+
+  // Tab once to focus the `Off` option on the settings menu. Check `Off` option
+  // is the checked option not the `Microphone`.
+  SendKey(ui::VKEY_TAB, event_generator);
   EXPECT_TRUE(audio_input_menu_group->IsOptionChecked(kAudioOff));
   EXPECT_FALSE(audio_input_menu_group->IsOptionChecked(kAudioMicrophone));
 
@@ -5803,9 +5871,9 @@ TEST_F(CaptureModeAdvancedSettingsTest, KeyboardNavigationForSettingsMenu) {
   EXPECT_FALSE(audio_input_menu_group->IsOptionChecked(kAudioOff));
   EXPECT_TRUE(audio_input_menu_group->IsOptionChecked(kAudioMicrophone));
 
-  // Tab twice to focus the `Select folder...` menu item and enter space to open
-  // the selection window.
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/2);
+  // Tab three times to focus the `Select folder...` menu item and enter space
+  // to open the selection window.
+  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/3);
   SendKey(ui::VKEY_SPACE, event_generator);
   auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
   EXPECT_TRUE(IsFolderSelectionDialogShown());
@@ -5864,8 +5932,8 @@ TEST_F(CaptureModeAdvancedSettingsTest,
                      return item->GetView() == custom_folder_view;
                    }) == highlightable_items.end());
 
-  // Tab three times to focus the default `Downloads` option.
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/3);
+  // Tab five times to focus the default `Downloads` option.
+  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/5);
   EXPECT_EQ(test_api.GetCurrentFocusedView()->GetView(),
             advanced_settings_test_api.GetDefaultDownloadsOption());
 
@@ -5876,24 +5944,131 @@ TEST_F(CaptureModeAdvancedSettingsTest,
             advanced_settings_test_api.GetSelectFolderMenuItem());
 }
 
+// Tests that selecting the default `Downloads` folder as the custom folder via
+// keyboard navigation doesn't lead to a crash. Regression test for
+// https://crbug.com/1269373.
+TEST_F(CaptureModeAdvancedSettingsTest,
+       KeyboardNavigationForRemovingCustomFolderOption) {
+  // Begin a new session with a pre-configured custom folder.
+  auto* controller = CaptureModeController::Get();
+  const base::FilePath custom_folder(CreateCustomFolder("test"));
+  controller->SetCustomCaptureFolder(custom_folder);
+  StartImageRegionCapture();
+
+  using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
+  CaptureModeSessionTestApi test_api(controller->capture_mode_session());
+
+  // Tab six times to focus the settings button, then enter space to open the
+  // setting menu. Wait for the setting menu to be refreshed.
+  auto* event_generator = GetEventGenerator();
+  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/6);
+  SendKey(ui::VKEY_SPACE, event_generator);
+  WaitForSettingsMenuToBeRefreshed();
+  EXPECT_EQ(FocusGroup::kPendingSettings, test_api.GetCurrentFocusGroup());
+  CaptureModeAdvancedSettingsView* settings_menu =
+      GetCaptureModeAdvancedSettingsView();
+  ASSERT_TRUE(settings_menu);
+
+  // Tab seven times to focus the `Select folder...` menu item and enter space
+  // to open the selection window.
+  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/7);
+  SendKey(ui::VKEY_SPACE, event_generator);
+  EXPECT_TRUE(IsFolderSelectionDialogShown());
+  // The current focus group is `FocusGroup::kSettingsMenu` and focus index is
+  // 6u.
+  EXPECT_EQ(FocusGroup::kSettingsMenu, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(6u, test_api.GetCurrentFocusIndex());
+
+  // Select the default `Downloads` folder as the custom folder which will
+  // have custom folder option get removed.
+  auto* test_delegate = controller->delegate_for_testing();
+  const auto default_downloads_folder =
+      test_delegate->GetUserDefaultDownloadsFolder();
+  auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
+  dialog_factory->AcceptPath(default_downloads_folder);
+
+  // Press space to ensure the selection window can be opened after the custom
+  // folder is removed from the settings menu.
+  SendKey(ui::VKEY_SPACE, event_generator);
+  EXPECT_TRUE(IsFolderSelectionDialogShown());
+  dialog_factory->CancelDialog();
+
+  // Tab once to make sure there's no crash and the focus gets moved to
+  // settings button.
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+}
+
+// Tests that first time selecting a custom folder via keyboard navigation.
+// After the custom folder is selected, tabbing one more time will move focus
+// from the settings menu to the settings button.
+TEST_F(CaptureModeAdvancedSettingsTest,
+       KeyboardNavigationForAddingCustomFolderOption) {
+  auto* controller = CaptureModeController::Get();
+  StartImageRegionCapture();
+
+  using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
+  CaptureModeSessionTestApi test_api(controller->capture_mode_session());
+
+  // Tab six times to focus the settings button, then enter space to open the
+  // setting menu.
+  auto* event_generator = GetEventGenerator();
+  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/6);
+  SendKey(ui::VKEY_SPACE, event_generator);
+  EXPECT_EQ(FocusGroup::kPendingSettings, test_api.GetCurrentFocusGroup());
+  CaptureModeAdvancedSettingsView* settings_menu =
+      GetCaptureModeAdvancedSettingsView();
+  ASSERT_TRUE(settings_menu);
+
+  // Tab six times to focus the `Select folder...` menu item and enter space
+  // to open the selection window.
+  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/6);
+  SendKey(ui::VKEY_SPACE, event_generator);
+  EXPECT_TRUE(IsFolderSelectionDialogShown());
+  // The current focus group is `FocusGroup::kSettingsMenu` and focus index is
+  // 5u.
+  EXPECT_EQ(FocusGroup::kSettingsMenu, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(5u, test_api.GetCurrentFocusIndex());
+
+  // Select the custom folder. Wait for the settings menu to be refreshed. The
+  // custom folder option should be added to the settings menu and checked.
+  const base::FilePath custom_folder(CreateCustomFolder("test"));
+  controller->SetCustomCaptureFolder(custom_folder);
+  auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
+  dialog_factory->AcceptPath(custom_folder);
+  WaitForSettingsMenuToBeRefreshed();
+  CaptureModeAdvancedSettingsTestApi advanced_test_api;
+  EXPECT_TRUE(advanced_test_api.GetCustomFolderOptionIfAny());
+
+  // Press space to ensure the selection window can be opened after the custom
+  // folder is added to the settings menu.
+  SendKey(ui::VKEY_SPACE, event_generator);
+  EXPECT_TRUE(IsFolderSelectionDialogShown());
+  dialog_factory->CancelDialog();
+
+  // Tab once to make sure the focus gets moved to settings button.
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+}
+
 // -----------------------------------------------------------------------------
-// CaptureModeAudioSettingHistogramTest:
+// CaptureModeHistogramTest:
 
-// Test fixture to verify screen recording audio histogram depending on the test
+// Test fixture to verify screen capture histograms depending on the test
 // param (true for tablet mode, false for clamshell mode).
-class CaptureModeAudioSettingHistogramTest
-    : public CaptureModeTest,
-      public ::testing::WithParamInterface<bool> {
+class CaptureModeHistogramTest : public CaptureModeAdvancedSettingsTest,
+                                 public ::testing::WithParamInterface<bool> {
  public:
-  CaptureModeAudioSettingHistogramTest() = default;
-  ~CaptureModeAudioSettingHistogramTest() override = default;
+  CaptureModeHistogramTest() = default;
+  ~CaptureModeHistogramTest() override = default;
 
-  // CaptureModeTest:
+  // CaptureModeAdvancedSettingsTest:
   void SetUp() override {
-    CaptureModeTest::SetUp();
-    if (GetParam()) {
+    CaptureModeAdvancedSettingsTest::SetUp();
+    if (GetParam())
       SwitchToTabletMode();
-    }
   }
 
   void StartSessionForVideo() {
@@ -5904,9 +6079,17 @@ class CaptureModeAudioSettingHistogramTest
   void StartRecording() { CaptureModeTestApi().PerformCapture(); }
 
   void StopRecording() { CaptureModeTestApi().StopVideoRecording(); }
+
+  void OpenView(const views::View* view,
+                ui::test::EventGenerator* event_generator) {
+    if (GetParam())
+      TouchOnView(view, event_generator);
+    else
+      ClickOnView(view, event_generator);
+  }
 };
 
-TEST_P(CaptureModeAudioSettingHistogramTest, VideoRecordingAudioMetric) {
+TEST_P(CaptureModeHistogramTest, VideoRecordingAudioMetric) {
   constexpr char kHistogramNameBase[] =
       "Ash.CaptureModeController.CaptureAudioOnMetric";
   base::HistogramTester histogram_tester;
@@ -5935,8 +6118,74 @@ TEST_P(CaptureModeAudioSettingHistogramTest, VideoRecordingAudioMetric) {
   StopRecording();
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         CaptureModeAudioSettingHistogramTest,
-                         testing::Values(false, true));
+TEST_P(CaptureModeHistogramTest, CaptureModeSwitchToDefaultReasonMetric) {
+  constexpr char kHistogramNameBase[] =
+      "Ash.CaptureModeController.SwitchToDefaultReason";
+  base::HistogramTester histogram_tester;
+  auto* controller = CaptureModeController::Get();
+  const auto downloads_folder =
+      controller->delegate_for_testing()->GetUserDefaultDownloadsFolder();
+  const base::FilePath non_available_custom_folder(
+      FILE_PATH_LITERAL("/home/test"));
+  const base::FilePath available_custom_folder = CreateCustomFolder("test");
+
+  histogram_tester.ExpectBucketCount(
+      GetCaptureModeHistogramName(kHistogramNameBase),
+      CaptureModeSwitchToDefaultReason::kFolderUnavailable, 0);
+  histogram_tester.ExpectBucketCount(
+      GetCaptureModeHistogramName(kHistogramNameBase),
+      CaptureModeSwitchToDefaultReason::kUserSelectedFromFolderSelectionDialog,
+      0);
+  histogram_tester.ExpectBucketCount(
+      GetCaptureModeHistogramName(kHistogramNameBase),
+      CaptureModeSwitchToDefaultReason::kUserSelectedFromSettingsMenu, 0);
+
+  StartImageRegionCapture();
+
+  // Set the custom folder to an unavailable folder the switch to default
+  // reason should be recorded as kFolderUnavailable.
+  controller->SetCustomCaptureFolder(non_available_custom_folder);
+  EXPECT_EQ(controller->GetCurrentCaptureFolder().path,
+            non_available_custom_folder);
+  auto* event_generator = GetEventGenerator();
+  OpenView(GetSettingsButton(), event_generator);
+  WaitForSettingsMenuToBeRefreshed();
+  CaptureModeAdvancedSettingsTestApi test_api;
+  CaptureModeMenuGroup* save_to_menu_group = test_api.GetSaveToMenuGroup();
+  EXPECT_TRUE(save_to_menu_group->IsOptionChecked(kDownloadsFolder));
+  histogram_tester.ExpectBucketCount(
+      GetCaptureModeHistogramName(kHistogramNameBase),
+      CaptureModeSwitchToDefaultReason::kFolderUnavailable, 1);
+
+  // Select the save-to location to default downloads folder from folder
+  // selection dialog and the switch to default reason should be recorded as
+  // kUserSelectedFromSettingsMenu.
+  controller->SetCustomCaptureFolder(available_custom_folder);
+  EXPECT_EQ(controller->GetCurrentCaptureFolder().path,
+            available_custom_folder);
+  OpenView(test_api.GetSelectFolderMenuItem(), event_generator);
+  EXPECT_TRUE(IsFolderSelectionDialogShown());
+  auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
+  dialog_factory->AcceptPath(downloads_folder);
+  EXPECT_TRUE(save_to_menu_group->IsOptionChecked(kDownloadsFolder));
+  histogram_tester.ExpectBucketCount(
+      GetCaptureModeHistogramName(kHistogramNameBase),
+      CaptureModeSwitchToDefaultReason::kUserSelectedFromFolderSelectionDialog,
+      1);
+
+  // Select the save-to location to default downloads folder from settings
+  // menu and the switch to default reason should be recorded as
+  // kUserSelectedFromFolderSelectionDialog.
+  controller->SetCustomCaptureFolder(available_custom_folder);
+  EXPECT_EQ(controller->GetCurrentCaptureFolder().path,
+            available_custom_folder);
+  OpenView(test_api.GetDefaultDownloadsOption(), event_generator);
+  EXPECT_TRUE(save_to_menu_group->IsOptionChecked(kDownloadsFolder));
+  histogram_tester.ExpectBucketCount(
+      GetCaptureModeHistogramName(kHistogramNameBase),
+      CaptureModeSwitchToDefaultReason::kUserSelectedFromSettingsMenu, 1);
+}
+
+INSTANTIATE_TEST_SUITE_P(All, CaptureModeHistogramTest, ::testing::Bool());
 
 }  // namespace ash

@@ -444,7 +444,7 @@ RTC_NORETURN RTC_EXPORT void UnreachableCodeReached();
 #endif
 
 #define RTC_UNREACHABLE_CODE_HIT false
-#define RTC_NOTREACHED() RTC_DCHECK(RTC_UNREACHABLE_CODE_HIT)
+#define RTC_DCHECK_NOTREACHED() RTC_DCHECK(RTC_UNREACHABLE_CODE_HIT)
 
 // Kills the process with an error message. Never returns. Use when you wish to
 // assert that a point in the code is never reached.

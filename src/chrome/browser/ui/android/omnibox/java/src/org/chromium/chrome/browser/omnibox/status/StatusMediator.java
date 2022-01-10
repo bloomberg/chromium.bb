@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.status.StatusProperties.PermissionIconResource;
 import org.chromium.chrome.browser.omnibox.status.StatusProperties.StatusIconResource;
 import org.chromium.chrome.browser.omnibox.status.StatusView.IconTransitionType;
+import org.chromium.chrome.browser.page_info.ChromePageInfoHighlight;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.components.browser_ui.site_settings.ContentSettingsResources;
@@ -36,6 +37,7 @@ import org.chromium.components.browser_ui.site_settings.SiteSettingsUtil;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.page_info.PageInfoController;
 import org.chromium.components.page_info.PageInfoDiscoverabilityMetrics;
 import org.chromium.components.page_info.PageInfoDiscoverabilityMetrics.DiscoverabilityAction;
 import org.chromium.components.permissions.PermissionDialogController;
@@ -681,7 +683,9 @@ public class StatusMediator implements PermissionDialogController.Observer,
             return;
         }
         resetCustomIconsStatus();
-        StatusIconResource storeIconResource = new StatusIconResource(drawable);
+        // Use {@link PermissionIconResource} instead of {@link StatusIconResource} to encapsulate
+        // the icon with a circle background.
+        StatusIconResource storeIconResource = new PermissionIconResource(drawable, false);
         storeIconResource.setTransitionType(IconTransitionType.ROTATE);
         storeIconResource.setAnimationFinishedCallback(() -> {
             if (canShowIph) {
@@ -732,6 +736,20 @@ public class StatusMediator implements PermissionDialogController.Observer,
 
     boolean isStoreIconShowing() {
         return mIsStoreIconShowing;
+    }
+
+    /**
+     * @return {@link ChromePageInfoHighlight} which provides the PageInfo highlight row info when
+     *         user clicks the omnibox icon.
+     */
+    ChromePageInfoHighlight getPageInfoHighlight() {
+        if (mLastPermission != PageInfoController.NO_HIGHLIGHTED_PERMISSION) {
+            return ChromePageInfoHighlight.forPermission(mLastPermission);
+        } else if (mIsStoreIconShowing) {
+            return ChromePageInfoHighlight.forStoreInfo(true);
+        } else {
+            return ChromePageInfoHighlight.noHighlight();
+        }
     }
 
     @Override

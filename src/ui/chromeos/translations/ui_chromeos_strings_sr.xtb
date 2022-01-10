@@ -305,13 +305,13 @@
 <translation id="3620292326130836921">Направљене су резервне копије свих датотека!</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, управља администратор, детаљи</translation>
 <translation id="3645233063072417428">Премештених ставки: <ph name="NUMBER_OF_ITEMS" />.</translation>
-<translation id="3645531960514756307">Откачи директоријум</translation>
 <translation id="3685122418104378273">Синхронизација са Google диском је подразумевано онемогућена када се користи мобилна веза за пренос података.</translation>
 <translation id="3689865792480713551">Откажите <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3690128548376345212">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, није активирана, <ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />%, детаљи</translation>
 <translation id="3691184985318546178">синхала</translation>
 <translation id="3726463242007121105">Овај уређај не може да се отвори јер његов систем датотека није подржан.</translation>
 <translation id="3727148787322499904">Ако промените ово подешавање, то ће утицати на све дељене мреже</translation>
+<translation id="3737576078404241332">Уклони са бочне траке</translation>
 <translation id="3741243925913727067">Направите резервне копије слика и видео снимака са медијског уређаја на Google диску.</translation>
 <translation id="3749289110408117711">Назив датотеке</translation>
 <translation id="3780536599611287598">Немате дозволу да премештате датотеке у „<ph name="FOLDER_NAME" />“.</translation>
@@ -372,6 +372,7 @@
 <translation id="4326142238881453352">Ботаничар</translation>
 <translation id="4326192123064055915">Кафа</translation>
 <translation id="4336032328163998280">Операција копирања није успела. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4340491671558548972">Додај на бочну траку</translation>
 <translation id="4348495354623233847">сорани курдски са тастатуром заснованом на арапском</translation>
 <translation id="4363958938297989186">руски са фонетском тастатуром</translation>
 <translation id="4364327530094270451">Диња</translation>
@@ -927,7 +928,6 @@
 <translation id="9110990317705400362">Стално тражимо нове начине да учинимо прегледање безбеднијим. Раније је сваки веб-сајт могао да вам затражи да додате додатак у прегледач. У најновијим верзијама Google Chrome-а морате експлицитно да кажете Chrome-у да желите да инсталирате те додатке тако што ћете их додати преко странице Додаци. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">Откључај</translation>
 <translation id="912419004897138677">Кодек</translation>
-<translation id="9129931661813833980">Закачи директоријум</translation>
 <translation id="9130775360844693113">Чланови из „<ph name="DESTINATION_NAME" />“ ће добити приступ овим ставкама.</translation>
 <translation id="9131598836763251128">Избор једне или више датотека</translation>
 <translation id="9133055936679483811">Додавање у zip датотеку није успело. <ph name="ERROR_MESSAGE" /></translation>

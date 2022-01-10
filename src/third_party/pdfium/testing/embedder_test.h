@@ -101,12 +101,21 @@ class EmbedderTest : public ::testing::Test,
     form_fill_info_version_ = form_fill_info_version;
   }
 
-  FPDF_DOCUMENT document() const { return document_; }
-  FPDF_FORMHANDLE form_handle() const { return form_handle_; }
+  void SetDocumentFromAvail();
+  FPDF_DOCUMENT document() const { return document_.get(); }
+  FPDF_DOCUMENT saved_document() const { return saved_document_.get(); }
+  FPDF_FORMHANDLE form_handle() const { return form_handle_.get(); }
+  FPDF_FORMHANDLE saved_form_handle() const { return saved_form_handle_.get(); }
 
-  // Create an empty document, and its form fill environment. Returns true
-  // on success or false on failure.
-  bool CreateEmptyDocument();
+  // Wrapper for FPDFAvail_Create() to set `avail_`.
+  void CreateAvail(FX_FILEAVAIL* file_avail, FPDF_FILEACCESS* file);
+  FPDF_AVAIL avail() { return avail_.get(); }
+
+  // Create an empty document, and its form fill environment.
+  void CreateEmptyDocument();
+
+  // Create an empty document without a form fill environment.
+  void CreateEmptyDocumentWithoutFormFillEnvironment();
 
   // Open the document specified by |filename|, and create its form fill
   // environment, or return false on failure. The |filename| is relative to
@@ -210,9 +219,9 @@ class EmbedderTest : public ::testing::Test,
                           LinearizeOption linearize_option,
                           JavaScriptOption javascript_option,
                           FakeFileAccess* network_simulator,
-                          FPDF_DOCUMENT* document,
-                          FPDF_AVAIL* avail,
-                          FPDF_FORMHANDLE* form_handle);
+                          ScopedFPDFDocument* document,
+                          ScopedFPDFAvail* avail,
+                          ScopedFPDFFormHandle* form_handle);
 
   FPDF_FORMHANDLE SetupFormFillEnvironment(FPDF_DOCUMENT doc,
                                            JavaScriptOption javascript_option);
@@ -265,34 +274,6 @@ class EmbedderTest : public ::testing::Test,
   void ClosePDFFileForWrite();
 #endif
 
-  std::unique_ptr<Delegate> default_delegate_;
-  Delegate* delegate_;
-
-#ifdef PDF_ENABLE_XFA
-  int form_fill_info_version_ = 2;
-#else   // PDF_ENABLE_XFA
-  int form_fill_info_version_ = 1;
-#endif  // PDF_ENABLE_XFA
-
-  FPDF_DOCUMENT document_ = nullptr;
-  FPDF_FORMHANDLE form_handle_ = nullptr;
-  FPDF_AVAIL avail_ = nullptr;
-  FPDF_FILEACCESS file_access_;                       // must outlive |avail_|.
-  std::unique_ptr<FakeFileAccess> fake_file_access_;  // must outlive |avail_|.
-
-  std::unique_ptr<TestLoader> loader_;
-  size_t file_length_ = 0;
-  std::unique_ptr<char, pdfium::FreeDeleter> file_contents_;
-  PageNumberToHandleMap page_map_;
-
-  FPDF_DOCUMENT saved_document_ = nullptr;
-  FPDF_FORMHANDLE saved_form_handle_ = nullptr;
-  FPDF_AVAIL saved_avail_ = nullptr;
-  FPDF_FILEACCESS saved_file_access_;  // must outlive |saved_avail_|.
-  // must outlive |saved_avail_|.
-  std::unique_ptr<FakeFileAccess> saved_fake_file_access_;
-  PageNumberToHandleMap saved_page_map_;
-
  private:
   static void UnsupportedHandlerTrampoline(UNSUPPORT_INFO*, int type);
   static int AlertTrampoline(IPDF_JSPLATFORM* plaform,
@@ -336,6 +317,34 @@ class EmbedderTest : public ::testing::Test,
 
   void UnloadPageCommon(FPDF_PAGE page, bool do_events);
   FPDF_PAGE LoadPageCommon(int page_number, bool do_events);
+
+  std::unique_ptr<Delegate> default_delegate_;
+  Delegate* delegate_;
+
+#ifdef PDF_ENABLE_XFA
+  int form_fill_info_version_ = 2;
+#else   // PDF_ENABLE_XFA
+  int form_fill_info_version_ = 1;
+#endif  // PDF_ENABLE_XFA
+
+  size_t file_length_ = 0;
+  // must outlive `loader_`.
+  std::unique_ptr<char, pdfium::FreeDeleter> file_contents_;
+  std::unique_ptr<TestLoader> loader_;
+  FPDF_FILEACCESS file_access_;                       // must outlive `avail_`.
+  std::unique_ptr<FakeFileAccess> fake_file_access_;  // must outlive `avail_`.
+  ScopedFPDFAvail avail_;
+  ScopedFPDFDocument document_;
+  ScopedFPDFFormHandle form_handle_;
+  PageNumberToHandleMap page_map_;
+
+  FPDF_FILEACCESS saved_file_access_;  // must outlive `saved_avail_`.
+  // must outlive `saved_avail_`.
+  std::unique_ptr<FakeFileAccess> saved_fake_file_access_;
+  ScopedFPDFAvail saved_avail_;
+  ScopedFPDFDocument saved_document_;
+  ScopedFPDFFormHandle saved_form_handle_;
+  PageNumberToHandleMap saved_page_map_;
 
   std::string data_string_;
   std::string saved_document_file_data_;

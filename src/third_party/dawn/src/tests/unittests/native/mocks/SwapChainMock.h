@@ -25,10 +25,13 @@ namespace dawn_native {
     class SwapChainMock : public SwapChainBase {
       public:
         SwapChainMock(DeviceBase* device) : SwapChainBase(device) {
+            ON_CALL(*this, DestroyImpl).WillByDefault([this]() {
+                this->SwapChainBase::DestroyImpl();
+            });
         }
         ~SwapChainMock() override = default;
 
-        MOCK_METHOD(void, DestroyApiObjectImpl, (), (override));
+        MOCK_METHOD(void, DestroyImpl, (), (override));
 
         MOCK_METHOD(void,
                     APIConfigure,

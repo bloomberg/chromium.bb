@@ -56,8 +56,10 @@
 #import "ios/chrome/browser/ui/default_promo/default_promo_non_modal_presentation_delegate.h"
 #import "ios/chrome/browser/ui/default_promo/tailored_promo_coordinator.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
+#import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/download/mobileconfig_coordinator.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
+#import "ios/chrome/browser/ui/download/vcard_coordinator.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_coordinator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -77,6 +79,7 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
+#import "ios/chrome/browser/ui/text_fragments/text_fragments_coordinator.h"
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
@@ -89,6 +92,7 @@
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web/web_state_delegate_browser_agent.h"
+#import "ios/chrome/browser/web_state_list/view_source_browser_agent.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -161,6 +165,9 @@
 // Presents a SFSafariViewController in order to download .mobileconfig file.
 @property(nonatomic, strong) MobileConfigCoordinator* mobileConfigCoordinator;
 
+// Opens downloaded Vcard.
+@property(nonatomic, strong) VcardCoordinator* vcardCoordinator;
+
 // Weak reference for the next coordinator to be displayed over the toolbar.
 @property(nonatomic, weak) ChromeCoordinator* nextToolbarCoordinator;
 
@@ -232,6 +239,8 @@
 @property(nonatomic, strong)
     EnterpriseSignoutCoordinator* enterpriseSignoutCoordinator;
 
+// The coordinator used for the Text Fragments feature.
+@property(nonatomic, strong) TextFragmentsCoordinator* textFragmentsCoordinator;
 @end
 
 @implementation BrowserCoordinator {
@@ -335,8 +344,6 @@
 
   [self.pageInfoCoordinator stop];
 
-  [self.contextMenuProvider dismissLegacyContextMenu];
-
   [self.viewController clearPresentedStateWithCompletion:completion
                                           dismissOmnibox:dismissOmnibox];
 }
@@ -431,6 +438,13 @@
                          browser:self.browser];
   [self.mobileConfigCoordinator start];
 
+  if (base::FeatureList::IsEnabled(kDownloadVcard)) {
+    self.vcardCoordinator =
+        [[VcardCoordinator alloc] initWithBaseViewController:self.viewController
+                                                     browser:self.browser];
+    [self.vcardCoordinator start];
+  }
+
   self.passKitCoordinator =
       [[PassKitCoordinator alloc] initWithBaseViewController:self.viewController
                                                      browser:self.browser];
@@ -480,6 +494,11 @@
   [self.infobarModalOverlayContainerCoordinator start];
   self.viewController.infobarModalOverlayContainerViewController =
       self.infobarModalOverlayContainerCoordinator.viewController;
+
+  self.textFragmentsCoordinator = [[TextFragmentsCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
+  [self.textFragmentsCoordinator start];
 }
 
 // Stops child coordinators.
@@ -495,6 +514,9 @@
 
   [self.mobileConfigCoordinator stop];
   self.mobileConfigCoordinator = nil;
+
+  [self.vcardCoordinator stop];
+  self.vcardCoordinator = nil;
 
   [self.pageInfoCoordinator stop];
   self.pageInfoCoordinator = nil;
@@ -545,6 +567,9 @@
 
   [self.tailoredPromoCoordinator stop];
   self.tailoredPromoCoordinator = nil;
+
+  [self.textFragmentsCoordinator stop];
+  self.textFragmentsCoordinator = nil;
 }
 
 // Starts mediators owned by this coordinator.
@@ -678,6 +703,14 @@
 - (void)showAddCreditCard {
   [self.addCreditCardCoordinator start];
 }
+
+#if !defined(NDEBUG)
+- (void)viewSource {
+  ViewSourceBrowserAgent* viewSourceAgent =
+      ViewSourceBrowserAgent::FromBrowser(self.browser);
+  viewSourceAgent->ViewSourceForActiveWebState();
+}
+#endif  // !defined(NDEBUG)
 
 #pragma mark - DefaultPromoCommands
 

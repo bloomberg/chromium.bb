@@ -4,6 +4,7 @@ import {
   DepthStencilFormat,
   depthStencilFormatCopyableAspects,
 } from '../../../capability_info.js';
+import { align } from '../../../util/math.js';
 import { ImageCopyType } from '../../../util/texture/layout.js';
 import { ValidationTest } from '../validation_test.js';
 
@@ -85,21 +86,29 @@ export class ImageCopyTest extends ValidationTest {
     }
   }
 
-  // This is a helper function used for creating a texture when we don't have to be very
-  // precise about its size as long as it's big enough and properly aligned.
+  /**
+   * Creates a texture when all that is needed is an aligned texture given the format and desired
+   * dimensions/origin. The resultant texture guarantees that a copy with the same size and origin
+   * should be possible.
+   */
   createAlignedTexture(
     format: SizedTextureFormat,
-    copySize: Required<GPUExtent3DDict> = { width: 1, height: 1, depthOrArrayLayers: 1 },
+    size: Required<GPUExtent3DDict> = {
+      width: 1,
+      height: 1,
+      depthOrArrayLayers: 1,
+    },
     origin: Required<GPUOrigin3DDict> = { x: 0, y: 0, z: 0 },
     dimension: Required<GPUTextureDimension> = '2d'
   ): GPUTexture {
     const info = kTextureFormatInfo[format];
+    const alignedSize = {
+      width: align(Math.max(1, size.width + origin.x), info.blockWidth),
+      height: align(Math.max(1, size.height + origin.y), info.blockHeight),
+      depthOrArrayLayers: Math.max(1, size.depthOrArrayLayers + origin.z),
+    };
     return this.device.createTexture({
-      size: {
-        width: Math.max(1, copySize.width + origin.x) * info.blockWidth,
-        height: Math.max(1, copySize.height + origin.y) * info.blockHeight,
-        depthOrArrayLayers: Math.max(1, copySize.depthOrArrayLayers + origin.z),
-      },
+      size: alignedSize,
       dimension,
       format,
       usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST,

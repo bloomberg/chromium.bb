@@ -122,23 +122,6 @@ static av_cold void uninit(AVFilterContext *ctx)
     av_freep(&s->bands);
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVSampleFormat sample_fmts[] = {
-        AV_SAMPLE_FMT_DBLP,
-        AV_SAMPLE_FMT_NONE
-    };
-    int ret = ff_set_common_all_channel_counts(ctx);
-    if (ret < 0)
-        return ret;
-
-    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
-    if (ret < 0)
-        return ret;
-
-    return ff_set_common_all_samplerates(ctx);
-}
-
 static void count_items(char *item_str, int *nb_items, char delimiter)
 {
     char *p;
@@ -654,10 +637,10 @@ const AVFilter ff_af_mcompand = {
     .name           = "mcompand",
     .description    = NULL_IF_CONFIG_SMALL(
             "Multiband Compress or expand audio dynamic range."),
-    .query_formats  = query_formats,
     .priv_size      = sizeof(MCompandContext),
     .priv_class     = &mcompand_class,
     .uninit         = uninit,
     FILTER_INPUTS(mcompand_inputs),
     FILTER_OUTPUTS(mcompand_outputs),
+    FILTER_SINGLE_SAMPLEFMT(AV_SAMPLE_FMT_DBLP),
 };

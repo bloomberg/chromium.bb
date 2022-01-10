@@ -321,6 +321,10 @@ namespace dawn_native { namespace metal {
 
             // TODO(dawn:666): implement stencil8
             case wgpu::TextureFormat::Stencil8:
+            // TODO(dawn:690): implement depth24unorm-stencil8
+            case wgpu::TextureFormat::Depth24UnormStencil8:
+            // TODO(dawn:690): implement depth32float-stencil8
+            case wgpu::TextureFormat::Depth32FloatStencil8:
             case wgpu::TextureFormat::Undefined:
                 UNREACHABLE();
         }
@@ -427,8 +431,7 @@ namespace dawn_native { namespace metal {
         const ExternalImageDescriptor* descriptor,
         IOSurfaceRef ioSurface,
         uint32_t plane) {
-        const TextureDescriptor* textureDescriptor =
-            reinterpret_cast<const TextureDescriptor*>(descriptor->cTextureDescriptor);
+        const TextureDescriptor* textureDescriptor = FromAPI(descriptor->cTextureDescriptor);
 
         Ref<Texture> texture =
             AcquireRef(new Texture(device, textureDescriptor, TextureState::OwnedInternal));
@@ -493,10 +496,10 @@ namespace dawn_native { namespace metal {
     }
 
     Texture::~Texture() {
-        DestroyInternal();
     }
 
     void Texture::DestroyImpl() {
+        TextureBase::DestroyImpl();
         mMtlTexture = nullptr;
     }
 

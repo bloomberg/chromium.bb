@@ -38,10 +38,11 @@ g.test('format')
   .fn(async t => {
     const { textureFormat, viewFormat } = t.params;
     await t.selectDeviceForTextureFormatOrSkipTestCase([textureFormat, viewFormat]);
+    const { blockWidth, blockHeight } = kTextureFormatInfo[textureFormat];
 
     const texture = t.device.createTexture({
       format: textureFormat,
-      size: [4, 4],
+      size: [blockWidth, blockHeight],
       usage: GPUTextureUsage.TEXTURE_BINDING,
     });
 
@@ -103,7 +104,7 @@ g.test('aspect')
 
     const texture = t.device.createTexture({
       format,
-      size: [4, 4, 1],
+      size: [info.blockWidth, info.blockHeight, 1],
       usage: GPUTextureUsage.TEXTURE_BINDING,
     });
 

@@ -1128,7 +1128,7 @@ void P2PTransportChannel::OnUnknownAddress(PortInterface* port,
                        << remote_candidate.ToSensitiveString();
       return;
     } else {
-      RTC_NOTREACHED();
+      RTC_DCHECK_NOTREACHED();
       port->SendBindingErrorResponse(stun_msg, address, STUN_ERROR_SERVER_ERROR,
                                      STUN_ERROR_REASON_SERVER_ERROR);
       return;
@@ -1300,7 +1300,7 @@ void P2PTransportChannel::OnCandidateResolved(
       });
   if (p == resolvers_.end()) {
     RTC_LOG(LS_ERROR) << "Unexpected AsyncDnsResolver return";
-    RTC_NOTREACHED();
+    RTC_DCHECK_NOTREACHED();
     return;
   }
   Candidate candidate = p->candidate_;
@@ -1569,8 +1569,8 @@ int P2PTransportChannel::SetOption(rtc::Socket::Option opt, int value) {
     if (val < 0) {
       // Because this also occurs deferred, probably no point in reporting an
       // error
-      RTC_LOG(WARNING) << "SetOption(" << opt << ", " << value
-                       << ") failed: " << port->GetError();
+      RTC_LOG(LS_WARNING) << "SetOption(" << opt << ", " << value
+                          << ") failed: " << port->GetError();
     }
   }
   return 0;
@@ -1953,7 +1953,7 @@ void P2PTransportChannel::UpdateState() {
                    state == IceTransportState::STATE_COMPLETED);
         break;
       default:
-        RTC_NOTREACHED();
+        RTC_DCHECK_NOTREACHED();
         break;
     }
     state_ = state;

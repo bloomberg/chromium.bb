@@ -454,7 +454,8 @@ class QuicDispatcherTestBase : public QuicTestWithParam<ParsedQuicVersion> {
     ParsedClientHello parsed_chlo;
     parsed_chlo.alpns = {ExpectedAlpn()};
     parsed_chlo.sni = TestHostname();
-    if (address_token_.has_value()) {
+    if (address_token_.has_value() &&
+        !GetQuicReloadableFlag(quic_tls_use_token_in_session_cache)) {
       parsed_chlo.retry_token = *address_token_;
     }
     return parsed_chlo;
@@ -1215,7 +1216,6 @@ TEST_P(QuicDispatcherTestAllVersions, ProcessPacketWithZeroPort) {
 }
 
 TEST_P(QuicDispatcherTestAllVersions, ProcessPacketWithBlockedPort) {
-  SetQuicReloadableFlag(quic_blocked_ports, true);
   CreateTimeWaitListManager();
 
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 17);
@@ -1503,7 +1503,25 @@ TEST_P(QuicDispatcherTestOneVersion,
                              received_packet44);
 }
 
-static_assert(quic::SupportedVersions().size() == 6u,
+TEST_P(QuicDispatcherTestOneVersion,
+       RejectDeprecatedVersionT051WithVersionNegotiation) {
+  QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
+  CreateTimeWaitListManager();
+  uint8_t packet[kMinPacketSizeForVersionNegotiation] = {
+      0xFF, 'T', '0', '5', '1', /*destination connection ID length*/ 0x08};
+  QuicReceivedPacket received_packet(reinterpret_cast<char*>(packet),
+                                     kMinPacketSizeForVersionNegotiation,
+                                     QuicTime::Zero());
+  EXPECT_CALL(*dispatcher_, CreateQuicSession(_, _, _, _, _, _)).Times(0);
+  EXPECT_CALL(
+      *time_wait_list_manager_,
+      SendVersionNegotiationPacket(_, _, /*ietf_quic=*/true,
+                                   /*use_length_prefix=*/true, _, _, _, _))
+      .Times(1);
+  dispatcher_->ProcessPacket(server_address_, client_address, received_packet);
+}
+
+static_assert(quic::SupportedVersions().size() == 5u,
               "Please add new RejectDeprecatedVersion tests above this assert "
               "when deprecating versions");
 
@@ -2168,8 +2186,6 @@ class QuicDispatcherSupportMultipleConnectionIdPerConnectionTest
  public:
   QuicDispatcherSupportMultipleConnectionIdPerConnectionTest()
       : QuicDispatcherTestBase(crypto_test_utils::ProofSourceForTesting()) {
-    SetQuicRestartFlag(quic_dispatcher_support_multiple_cid_per_connection_v2,
-                       true);
     dispatcher_ = std::make_unique<NiceMock<TestDispatcher>>(
         &config_, &crypto_config_, &version_manager_,
         mock_helper_.GetRandomGenerator());

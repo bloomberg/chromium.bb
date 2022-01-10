@@ -25,10 +25,13 @@ namespace dawn_native {
     class BufferMock : public BufferBase {
       public:
         BufferMock(DeviceBase* device, BufferBase::BufferState state) : BufferBase(device, state) {
+            ON_CALL(*this, DestroyImpl).WillByDefault([this]() {
+                this->BufferBase::DestroyImpl();
+            });
         }
         ~BufferMock() override = default;
 
-        MOCK_METHOD(void, DestroyApiObjectImpl, (), (override));
+        MOCK_METHOD(void, DestroyImpl, (), (override));
 
         MOCK_METHOD(MaybeError, MapAtCreationImpl, (), (override));
         MOCK_METHOD(MaybeError,

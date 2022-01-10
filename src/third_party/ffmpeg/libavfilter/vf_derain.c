@@ -56,16 +56,6 @@ static const AVOption derain_options[] = {
 
 AVFILTER_DEFINE_CLASS(derain);
 
-static int query_formats(AVFilterContext *ctx)
-{
-    const enum AVPixelFormat pixel_fmts[] = {
-        AV_PIX_FMT_RGB24,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pixel_fmts);
-}
-
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
     DNNAsyncStatusType async_state = 0;
@@ -134,9 +124,9 @@ const AVFilter ff_vf_derain = {
     .priv_size     = sizeof(DRContext),
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(derain_inputs),
     FILTER_OUTPUTS(derain_outputs),
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_RGB24),
     .priv_class    = &derain_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

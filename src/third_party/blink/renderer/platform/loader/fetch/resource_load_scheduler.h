@@ -11,8 +11,8 @@
 #include "base/time/time.h"
 #include "base/types/strong_alias.h"
 #include "net/http/http_response_info.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -303,9 +303,6 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
 
   // Gets the highest priority pending request that is allowed to be run.
   bool GetNextPendingRequest(ClientId* id);
-
-  // Determines whether or not a low-priority request should be delayed.
-  bool ShouldDelay(PendingRequestMap::iterator found) const;
 
   // Returns whether we can throttle a request with the given option based
   // on life cycle state.

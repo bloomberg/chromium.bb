@@ -17,6 +17,35 @@
 
     "_doc": "See docs/codegen.md",
 
+    "_metadata": {
+        "api": "WebGPU",
+        "c_prefix": "WGPU",
+        "namespace": "wgpu",
+        "proc_table_prefix": "Dawn",
+        "copyright_year": "2019"
+    },
+
+    "create instance": {
+        "category": "function",
+        "returns": "instance",
+        "args": [
+            {"name": "descriptor", "type": "instance descriptor", "annotation": "const*", "optional": true}
+        ]
+    },
+    "proc": {
+        "category": "function pointer",
+        "returns": "void",
+        "args": []
+    },
+    "get proc address": {
+        "category": "function",
+        "returns": "proc",
+        "args": [
+            {"name": "device", "type": "device"},
+            {"name": "proc name", "type": "char", "annotation": "const*"}
+        ]
+    },
+
     "request adapter options": {
         "category": "structure",
         "extensible": "in",
@@ -39,7 +68,7 @@
         ]
     },
     "request adapter callback": {
-        "category": "callback",
+        "category": "function pointer",
         "tags": ["upstream"],
         "args": [
             {"name": "status", "type": "request adapter status"},
@@ -79,7 +108,7 @@
                 "name": "request device",
                 "args": [
                     {"name": "descriptor", "type": "device descriptor", "annotation": "const*"},
-                    {"name": "callback", "type": "request device callback"},
+                    {"name": "function pointer", "type": "request device callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             }
@@ -91,8 +120,8 @@
         "members": [
             {"name": "vendor ID", "type": "uint32_t"},
             {"name": "device ID", "type": "uint32_t"},
-            {"name": "name", "type": "char", "annotation": "const*"},
-            {"name": "driver description", "type": "char", "annotation": "const*"},
+            {"name": "name", "type": "char", "annotation": "const*", "length": "strlen"},
+            {"name": "driver description", "type": "char", "annotation": "const*", "length": "strlen"},
             {"name": "adapter type", "type": "adapter type"},
             {"name": "backend type", "type": "backend type"}
         ]
@@ -113,6 +142,7 @@
         "tags": ["upstream"],
         "_TODO": "Add requiredFeatures and requiredLimits support",
         "members": [
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "required features count", "type": "uint32_t"},
             {"name": "required features", "type": "feature name", "annotation": "const*", "length": "required features count"},
             {"name": "required limits", "type": "required limits", "annotation": "const*"}
@@ -141,7 +171,18 @@
         ]
     },
     "bind group": {
-        "category": "object"
+        "category": "object",
+        "methods": [
+            {
+                "name": "set label",
+                "returns": "void",
+                "tags": ["dawn"],
+                "_TODO": "needs an upstream equivalent",
+                "args": [
+                    {"name": "label", "type": "char", "annotation": "const*", "length": "strlen"}
+                ]
+            }
+        ]
     },
     "bind group entry": {
         "category": "structure",
@@ -166,7 +207,18 @@
         ]
     },
     "bind group layout": {
-        "category": "object"
+        "category": "object",
+        "methods": [
+            {
+                "name": "set label",
+                "returns": "void",
+                "tags": ["dawn"],
+                "_TODO": "needs an upstream equivalent",
+                "args": [
+                    {"name": "label", "type": "char", "annotation": "const*", "length": "strlen"}
+                ]
+            }
+        ]
     },
 
     "buffer binding type": {
@@ -329,7 +381,7 @@
                     {"name": "mode", "type": "map mode"},
                     {"name": "offset", "type": "size_t"},
                     {"name": "size", "type": "size_t"},
-                    {"name": "callback", "type": "buffer map callback"},
+                    {"name": "function pointer", "type": "buffer map callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
@@ -377,7 +429,7 @@
         ]
     },
     "buffer map callback": {
-        "category": "callback",
+        "category": "function pointer",
         "args": [
             {"name": "status", "type": "buffer map async status"},
             {"name": "userdata", "type": "void", "annotation": "*"}
@@ -443,7 +495,18 @@
         ]
     },
     "command buffer": {
-        "category": "object"
+        "category": "object",
+        "methods": [
+            {
+                "name": "set label",
+                "returns": "void",
+                "tags": ["dawn"],
+                "_TODO": "needs an upstream equivalent",
+                "args": [
+                    {"name": "label", "type": "char", "annotation": "const*", "length": "strlen"}
+                ]
+            }
+        ]
     },
     "command buffer descriptor": {
         "category": "structure",
@@ -520,6 +583,14 @@
                 ]
             },
             {
+                "name": "clear buffer",
+                "args": [
+                    {"name": "buffer", "type": "buffer"},
+                    {"name": "offset", "type": "uint64_t", "default": 0},
+                    {"name": "size", "type": "uint64_t", "default": "WGPU_WHOLE_SIZE"}
+                ]
+            },
+            {
                 "name": "inject validation error",
                 "tags": ["dawn"],
                 "args": [
@@ -568,6 +639,15 @@
                     {"name": "query set", "type": "query set"},
                     {"name": "query index", "type": "uint32_t"}
                 ]
+            },
+            {
+                "name": "set label",
+                "returns": "void",
+                "tags": ["dawn"],
+                "_TODO": "needs an upstream equivalent",
+                "args": [
+                    {"name": "label", "type": "char", "annotation": "const*", "length": "strlen"}
+                ]
             }
         ]
     },
@@ -594,16 +674,14 @@
     },
     "compilation info": {
         "category": "structure",
-        "extensible": false,
-        "_TODO": "should be extensible, but need to make that work in wire: https://github.com/webgpu-native/webgpu-headers/issues/82",
+        "extensible": "in",
         "members": [
             {"name": "message count", "type": "uint32_t"},
             {"name": "messages", "type": "compilation message", "annotation": "const*", "length": "message count"}
         ]
     },
     "compilation info callback": {
-        "category": "callback",
-        "tags": ["dawn"],
+        "category": "function pointer",
         "args": [
             {"name": "status", "type": "compilation info request status"},
             {"name": "compilation info", "type": "compilation info", "annotation": "const*"},
@@ -612,7 +690,6 @@
     },
     "compilation info request status": {
         "category": "enum",
-        "tags": ["dawn"],
         "values": [
             {"value": 0, "name": "success"},
             {"value": 1, "name": "error"},
@@ -622,8 +699,7 @@
     },
     "compilation message": {
         "category": "structure",
-        "extensible": false,
-        "_TODO": "should be extensible, but need to make that work in wire: https://github.com/webgpu-native/webgpu-headers/issues/82",
+        "extensible": "in",
         "members": [
             {"name": "message", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "type", "type": "compilation message type"},
@@ -646,7 +722,9 @@
         "category": "structure",
         "extensible": "in",
         "members": [
-            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true}
+            {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
+            {"name": "timestamp write count", "type": "uint32_t", "default": 0, "tags": ["upstream"]},
+            {"name": "timestamp writes", "type": "compute pass timestamp write", "annotation": "const*", "length": "timestamp write count", "tags": ["upstream"]}
         ]
     },
     "compute pass encoder": {
@@ -685,6 +763,7 @@
             },
             {
                 "name": "write timestamp",
+                "tags": ["emscripten", "dawn"],
                 "args": [
                     {"name": "query set", "type": "query set"},
                     {"name": "query index", "type": "uint32_t"}
@@ -719,7 +798,33 @@
             {
                 "name": "end pipeline statistics query",
                 "tags": ["upstream"]
+            },
+            {
+                "name": "set label",
+                "returns": "void",
+                "tags": ["dawn"],
+                "_TODO": "needs an upstream equivalent",
+                "args": [
+                    {"name": "label", "type": "char", "annotation": "const*", "length": "strlen"}
+                ]
             }
+        ]
+    },
+    "compute pass timestamp location": {
+        "category": "enum",
+        "tags": ["upstream"],
+        "values": [
+            {"value": 0, "name": "beginning"},
+            {"value": 1, "name": "end"}
+        ]
+    },
+    "compute pass timestamp write": {
+        "category": "structure",
+        "tags": ["upstream"],
+        "members": [
+            {"name": "query set", "type": "query set"},
+            {"name": "query index", "type": "uint32_t"},
+            {"name": "location", "type": "compute pass timestamp location"}
         ]
     },
     "compute pipeline": {
@@ -769,7 +874,7 @@
         ]
     },
     "create compute pipeline async callback": {
-        "category": "callback",
+        "category": "function pointer",
         "args": [
             {"name": "status", "type": "create pipeline async status"},
             {"name": "pipeline", "type": "compute pipeline"},
@@ -789,7 +894,7 @@
         ]
     },
     "create render pipeline async callback": {
-        "category": "callback",
+        "category": "function pointer",
         "args": [
             {"name": "status", "type": "create pipeline async status"},
             {"name": "pipeline", "type": "render pipeline"},
@@ -853,7 +958,7 @@
                 "returns": "void",
                 "args": [
                     {"name": "descriptor", "type": "compute pipeline descriptor", "annotation": "const*"},
-                    {"name": "callback", "type": "create compute pipeline async callback"},
+                    {"name": "function pointer", "type": "create compute pipeline async callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
@@ -884,7 +989,7 @@
                 "returns": "void",
                 "args": [
                     {"name": "descriptor", "type": "render pipeline descriptor", "annotation": "const*"},
-                    {"name": "callback", "type": "create render pipeline async callback"},
+                    {"name": "function pointer", "type": "create render pipeline async callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
@@ -932,9 +1037,7 @@
                 ]
             },
             {
-                "name": "destroy",
-                "_TODO": "crbug.com/dawn/628: Implement in Dawn",
-                "tags": ["upstream"]
+                "name": "destroy"
             },
             {
                 "name": "get limits",
@@ -966,7 +1069,7 @@
             {
                 "name": "set uncaptured error callback",
                 "args": [
-                    {"name": "callback", "type": "error callback"},
+                    {"name": "function pointer", "type": "error callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
@@ -974,14 +1077,14 @@
                 "name": "set logging callback",
                 "tags": ["dawn"],
                 "args": [
-                    {"name": "callback", "type": "logging callback"},
+                    {"name": "function pointer", "type": "logging callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
             {
                 "name": "set device lost callback",
                 "args": [
-                    {"name": "callback", "type": "device lost callback"},
+                    {"name": "function pointer", "type": "device lost callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
@@ -995,14 +1098,14 @@
                 "name": "pop error scope",
                 "returns": "bool",
                 "args": [
-                    {"name": "callback", "type": "error callback"},
+                    {"name": "function pointer", "type": "error callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             }
         ]
     },
     "device lost callback": {
-        "category": "callback",
+        "category": "function pointer",
         "args": [
             {"name": "reason", "type": "device lost reason"},
             {"name": "message", "type": "char", "annotation": "const*"},
@@ -1024,6 +1127,7 @@
         "members": [
             {"name": "device ID", "type": "uint32_t"},
             {"name": "vendor ID", "type": "uint32_t"},
+            {"name": "adapter type", "type": "adapter type"},
             {"name": "texture compression BC", "type": "bool", "default": "false"},
             {"name": "texture compression ETC2", "type": "bool", "default": "false"},
             {"name": "texture compression ASTC", "type": "bool", "default": "false"},
@@ -1032,6 +1136,8 @@
             {"name": "timestamp query", "type": "bool", "default": "false"},
             {"name": "multi planar formats", "type": "bool", "default": "false"},
             {"name": "depth clamping", "type": "bool", "default": "false"},
+            {"name": "depth24 unorm stencil8", "type": "bool", "default": "false"},
+            {"name": "depth32 float stencil8", "type": "bool", "default": "false"},
             {"name": "invalid feature", "type": "bool", "default": "false"},
             {"name": "dawn internal usages", "type": "bool", "default": "false"},
             {"name": "limits", "type": "supported limits"}
@@ -1041,7 +1147,7 @@
         "category": "native"
     },
     "error callback": {
-        "category": "callback",
+        "category": "function pointer",
         "args": [
             {"name": "type", "type": "error type"},
             {"name": "message", "type": "char", "annotation": "const*"},
@@ -1094,7 +1200,7 @@
         ]
     },
     "logging callback": {
-        "category": "callback",
+        "category": "function pointer",
         "tags": ["dawn"],
         "args": [
             {"name": "type", "type": "logging type"},
@@ -1105,9 +1211,8 @@
     "error filter": {
         "category": "enum",
         "values": [
-            {"value": 0, "name": "none"},
-            {"value": 1, "name": "validation"},
-            {"value": 2, "name": "out of memory"}
+            {"value": 0, "name": "validation"},
+            {"value": 1, "name": "out of memory"}
         ]
     },
     "error type": {
@@ -1144,6 +1249,15 @@
         "tags": ["dawn"],
         "methods": [
             {
+                "name": "set label",
+                "returns": "void",
+                "tags": ["dawn"],
+                "_TODO": "needs an upstream equivalent",
+                "args": [
+                    {"name": "label", "type": "char", "annotation": "const*", "length": "strlen"}
+                ]
+            },
+            {
                 "name": "destroy",
                 "returns": "void"
             }
@@ -1164,14 +1278,16 @@
         "tags": ["upstream"],
         "values": [
             {"value": 0, "name": "undefined", "jsrepr": "undefined"},
-            {"value": 1, "name": "depth clamping"},
+            {"value": 1, "name": "depth clip control", "tags": ["upstream"]},
             {"value": 2, "name": "depth24 unorm stencil8"},
             {"value": 3, "name": "depth32 float stencil8"},
             {"value": 4, "name": "timestamp query"},
             {"value": 5, "name": "pipeline statistics query"},
             {"value": 6, "name": "texture compression BC"},
             {"value": 7, "name": "texture compression ETC2"},
-            {"value": 8, "name": "texture compression ASTC"}
+            {"value": 8, "name": "texture compression ASTC"},
+            {"value": 9, "name": "indirect first instance"},
+            {"value": 1000, "name": "depth clamping", "tags": ["emscripten", "dawn"]}
         ]
     },
     "filter mode": {
@@ -1236,7 +1352,7 @@
                 "tags": ["upstream"],
                 "args": [
                     {"name": "options", "type": "request adapter options", "annotation": "const*"},
-                    {"name": "callback", "type": "request adapter callback"},
+                    {"name": "function pointer", "type": "request adapter callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             }
@@ -1305,7 +1421,18 @@
         ]
     },
     "pipeline layout": {
-        "category": "object"
+        "category": "object",
+        "methods": [
+            {
+                "name": "set label",
+                "returns": "void",
+                "tags": ["dawn"],
+                "_TODO": "needs an upstream equivalent",
+                "args": [
+                    {"name": "label", "type": "char", "annotation": "const*", "length": "strlen"}
+                ]
+            }
+        ]
     },
     "pipeline layout descriptor": {
         "category": "structure",
@@ -1330,8 +1457,9 @@
         "category": "enum",
         "tags": ["upstream"],
         "values": [
-            {"value": 0, "name": "low power"},
-            {"value": 1, "name": "high performance"}
+            {"value": 0, "name": "undefined"},
+            {"value": 1, "name": "low power"},
+            {"value": 2, "name": "high performance"}
         ]
     },
     "present mode": {
@@ -1366,6 +1494,15 @@
     "query set": {
         "category": "object",
         "methods": [
+            {
+                "name": "set label",
+                "returns": "void",
+                "tags": ["dawn"],
+                "_TODO": "needs an upstream equivalent",
+                "args": [
+                    {"name": "label", "type": "char", "annotation": "const*", "length": "strlen"}
+                ]
+            },
             {
                 "name": "destroy"
             }
@@ -1404,7 +1541,7 @@
                 "name": "on submitted work done",
                 "args": [
                     {"name": "signal value", "type": "uint64_t"},
-                    {"name": "callback", "type": "queue work done callback"},
+                    {"name": "function pointer", "type": "queue work done callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
@@ -1441,7 +1578,7 @@
         ]
     },
     "queue work done callback": {
-        "category": "callback",
+        "category": "function pointer",
         "args": [
             {"name": "status", "type": "queue work done status"},
             {"name": "userdata", "type": "void", "annotation": "*"}
@@ -1553,6 +1690,15 @@
                 "args": [
                     {"name": "descriptor", "type": "render bundle descriptor", "annotation": "const*", "optional": true}
                 ]
+            },
+            {
+                "name": "set label",
+                "returns": "void",
+                "tags": ["dawn"],
+                "_TODO": "needs an upstream equivalent",
+                "args": [
+                    {"name": "label", "type": "char", "annotation": "const*", "length": "strlen"}
+                ]
             }
         ]
     },
@@ -1613,7 +1759,9 @@
             {"name": "color attachment count", "type": "uint32_t"},
             {"name": "color attachments", "type": "render pass color attachment", "annotation": "const*", "length": "color attachment count"},
             {"name": "depth stencil attachment", "type": "render pass depth stencil attachment", "annotation": "const*", "optional": true},
-            {"name": "occlusion query set", "type": "query set", "optional": true}
+            {"name": "occlusion query set", "type": "query set", "optional": true},
+            {"name": "timestamp write count", "type": "uint32_t", "default": 0, "tags": ["upstream"]},
+            {"name": "timestamp writes", "type": "render pass timestamp write", "annotation": "const*", "length": "timestamp write count", "tags": ["upstream"]}
         ]
     },
     "render pass encoder": {
@@ -1759,6 +1907,7 @@
             },
             {
                 "name": "write timestamp",
+                "tags": ["emscripten", "dawn"],
                 "args": [
                     {"name": "query set", "type": "query set"},
                     {"name": "query index", "type": "uint32_t"}
@@ -1770,7 +1919,33 @@
             {
                 "name": "end pipeline statistics query",
                 "tags": ["upstream"]
+            },
+            {
+                "name": "set label",
+                "returns": "void",
+                "tags": ["dawn"],
+                "_TODO": "needs an upstream equivalent",
+                "args": [
+                    {"name": "label", "type": "char", "annotation": "const*", "length": "strlen"}
+                ]
             }
+        ]
+    },
+    "render pass timestamp location": {
+        "category": "enum",
+        "tags": ["upstream"],
+        "values": [
+            {"value": 0, "name": "beginning"},
+            {"value": 1, "name": "end"}
+        ]
+    },
+    "render pass timestamp write": {
+        "category": "structure",
+        "tags": ["upstream"],
+        "members": [
+            {"name": "query set", "type": "query set"},
+            {"name": "query index", "type": "uint32_t"},
+            {"name": "location", "type": "render pass timestamp location"}
         ]
     },
     "render pipeline": {
@@ -1795,7 +1970,7 @@
     },
 
     "request device callback": {
-        "category": "callback",
+        "category": "function pointer",
         "args": [
             {"name": "status", "type": "request device status"},
             {"name": "device", "type": "device"},
@@ -1841,8 +2016,18 @@
     "primitive depth clamping state": {
         "category": "structure",
         "chained": "in",
+        "tags": ["dawn", "emscripten"],
         "members": [
             {"name": "clamp depth", "type": "bool", "default": "false"}
+        ]
+    },
+
+    "primitive depth clip control": {
+        "category": "structure",
+        "chained": "in",
+        "tags": ["upstream"],
+        "members": [
+            {"name": "unclipped depth", "type": "bool", "default": "false"}
         ]
     },
 
@@ -1918,7 +2103,18 @@
     },
 
     "sampler": {
-        "category": "object"
+        "category": "object",
+        "methods": [
+            {
+                "name": "set label",
+                "returns": "void",
+                "tags": ["dawn"],
+                "_TODO": "needs an upstream equivalent",
+                "args": [
+                    {"name": "label", "type": "char", "annotation": "const*", "length": "strlen"}
+                ]
+            }
+        ]
     },
     "sampler descriptor": {
         "category": "structure",
@@ -1942,9 +2138,8 @@
         "methods": [
             {
                 "name": "get compilation info",
-                "tags": ["dawn"],
                 "args": [
-                    {"name": "callback", "type": "compilation info callback"},
+                    {"name": "function pointer", "type": "compilation info callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
@@ -1976,7 +2171,8 @@
         "category": "structure",
         "chained": "in",
         "members": [
-            {"name": "source", "type": "char", "annotation": "const*", "length": "strlen"}
+            {"name": "source", "type": "char", "annotation": "const*", "length": "strlen", "tags": ["dawn", "emscripten"]},
+            {"name": "code", "type": "char", "annotation": "const*", "length": "strlen", "tags": ["upstream"]}
         ]
     },
     "shader stage": {
@@ -2121,12 +2317,13 @@
             {"value": 4, "name": "surface descriptor from canvas HTML selector"},
             {"value": 5, "name": "shader module SPIRV descriptor"},
             {"value": 6, "name": "shader module WGSL descriptor"},
-            {"value": 7, "name": "primitive depth clamping state"},
+            {"value": 7, "name": "primitive depth clip control", "tags": ["upstream"]},
             {"value": 8, "name": "surface descriptor from windows core window", "tags": ["dawn"]},
             {"value": 9, "name": "external texture binding entry", "tags": ["dawn"]},
             {"value": 10, "name": "external texture binding layout", "tags": ["dawn"]},
             {"value": 11, "name": "surface descriptor from windows swap chain panel", "tags": ["dawn"]},
-            {"value": 1000, "name": "dawn texture internal usage descriptor", "tags": ["dawn"]}
+            {"value": 1000, "name": "dawn texture internal usage descriptor", "tags": ["dawn"]},
+            {"value": 1001, "name": "primitive depth clamping state", "tags": ["dawn", "emscripten"]}
         ]
     },
     "texture": {
@@ -2252,64 +2449,66 @@
             {"value": 38, "name": "depth16 unorm"},
             {"value": 39, "name": "depth24 plus"},
             {"value": 40, "name": "depth24 plus stencil8"},
-            {"value": 41, "name": "depth32 float"},
+            {"value": 41, "name": "depth24 unorm stencil8"},
+            {"value": 42, "name": "depth32 float"},
+            {"value": 43, "name": "depth32 float stencil8"},
 
-            {"value": 42, "name": "BC1 RGBA unorm",         "jsrepr": "'bc1-rgba-unorm'"},
-            {"value": 43, "name": "BC1 RGBA unorm srgb",    "jsrepr": "'bc1-rgba-unorm-srgb'"},
-            {"value": 44, "name": "BC2 RGBA unorm",         "jsrepr": "'bc2-rgba-unorm'"},
-            {"value": 45, "name": "BC2 RGBA unorm srgb",    "jsrepr": "'bc2-rgba-unorm-srgb'"},
-            {"value": 46, "name": "BC3 RGBA unorm",         "jsrepr": "'bc3-rgba-unorm'"},
-            {"value": 47, "name": "BC3 RGBA unorm srgb",    "jsrepr": "'bc3-rgba-unorm-srgb'"},
-            {"value": 48, "name": "BC4 R unorm",            "jsrepr": "'bc4-r-unorm'"},
-            {"value": 49, "name": "BC4 R snorm",            "jsrepr": "'bc4-r-snorm'"},
-            {"value": 50, "name": "BC5 RG unorm",           "jsrepr": "'bc5-rg-unorm'"},
-            {"value": 51, "name": "BC5 RG snorm",           "jsrepr": "'bc5-rg-snorm'"},
-            {"value": 52, "name": "BC6H RGB ufloat",        "jsrepr": "'bc6h-rgb-ufloat'"},
-            {"value": 53, "name": "BC6H RGB float",         "jsrepr": "'bc6h-rgb-float'"},
-            {"value": 54, "name": "BC7 RGBA unorm",         "jsrepr": "'bc7-rgba-unorm'"},
-            {"value": 55, "name": "BC7 RGBA unorm srgb",    "jsrepr": "'bc7-rgba-unorm-srgb'"},
+            {"value": 44, "name": "BC1 RGBA unorm",         "jsrepr": "'bc1-rgba-unorm'"},
+            {"value": 45, "name": "BC1 RGBA unorm srgb",    "jsrepr": "'bc1-rgba-unorm-srgb'"},
+            {"value": 46, "name": "BC2 RGBA unorm",         "jsrepr": "'bc2-rgba-unorm'"},
+            {"value": 47, "name": "BC2 RGBA unorm srgb",    "jsrepr": "'bc2-rgba-unorm-srgb'"},
+            {"value": 48, "name": "BC3 RGBA unorm",         "jsrepr": "'bc3-rgba-unorm'"},
+            {"value": 49, "name": "BC3 RGBA unorm srgb",    "jsrepr": "'bc3-rgba-unorm-srgb'"},
+            {"value": 50, "name": "BC4 R unorm",            "jsrepr": "'bc4-r-unorm'"},
+            {"value": 51, "name": "BC4 R snorm",            "jsrepr": "'bc4-r-snorm'"},
+            {"value": 52, "name": "BC5 RG unorm",           "jsrepr": "'bc5-rg-unorm'"},
+            {"value": 53, "name": "BC5 RG snorm",           "jsrepr": "'bc5-rg-snorm'"},
+            {"value": 54, "name": "BC6H RGB ufloat",        "jsrepr": "'bc6h-rgb-ufloat'"},
+            {"value": 55, "name": "BC6H RGB float",         "jsrepr": "'bc6h-rgb-float'"},
+            {"value": 56, "name": "BC7 RGBA unorm",         "jsrepr": "'bc7-rgba-unorm'"},
+            {"value": 57, "name": "BC7 RGBA unorm srgb",    "jsrepr": "'bc7-rgba-unorm-srgb'"},
 
-            {"value": 56, "name": "ETC2 RGB8 unorm",        "jsrepr": "'etc2-rgb8unorm'"},
-            {"value": 57, "name": "ETC2 RGB8 unorm srgb",   "jsrepr": "'etc2-rgb8unorm-srgb'"},
-            {"value": 58, "name": "ETC2 RGB8A1 unorm",      "jsrepr": "'etc2-rgb8a1unorm'"},
-            {"value": 59, "name": "ETC2 RGB8A1 unorm srgb", "jsrepr": "'etc2-rgb8a1unorm-srgb'"},
-            {"value": 60, "name": "ETC2 RGBA8 unorm",       "jsrepr": "'etc2-rgba8unorm'"},
-            {"value": 61, "name": "ETC2 RGBA8 unorm srgb",  "jsrepr": "'etc2-rgba8unorm-srgb'"},
-            {"value": 62, "name": "EAC R11 unorm",          "jsrepr": "'eac-r11unorm'"},
-            {"value": 63, "name": "EAC R11 snorm",          "jsrepr": "'eac-r11snorm'"},
-            {"value": 64, "name": "EAC RG11 unorm",         "jsrepr": "'eac-rg11unorm'"},
-            {"value": 65, "name": "EAC RG11 snorm",         "jsrepr": "'eac-rg11snorm'"},
+            {"value": 58, "name": "ETC2 RGB8 unorm",        "jsrepr": "'etc2-rgb8unorm'"},
+            {"value": 59, "name": "ETC2 RGB8 unorm srgb",   "jsrepr": "'etc2-rgb8unorm-srgb'"},
+            {"value": 60, "name": "ETC2 RGB8A1 unorm",      "jsrepr": "'etc2-rgb8a1unorm'"},
+            {"value": 61, "name": "ETC2 RGB8A1 unorm srgb", "jsrepr": "'etc2-rgb8a1unorm-srgb'"},
+            {"value": 62, "name": "ETC2 RGBA8 unorm",       "jsrepr": "'etc2-rgba8unorm'"},
+            {"value": 63, "name": "ETC2 RGBA8 unorm srgb",  "jsrepr": "'etc2-rgba8unorm-srgb'"},
+            {"value": 64, "name": "EAC R11 unorm",          "jsrepr": "'eac-r11unorm'"},
+            {"value": 65, "name": "EAC R11 snorm",          "jsrepr": "'eac-r11snorm'"},
+            {"value": 66, "name": "EAC RG11 unorm",         "jsrepr": "'eac-rg11unorm'"},
+            {"value": 67, "name": "EAC RG11 snorm",         "jsrepr": "'eac-rg11snorm'"},
 
-            {"value": 66, "name": "ASTC 4x4 unorm",         "jsrepr": "'astc-4x4-unorm'"},
-            {"value": 67, "name": "ASTC 4x4 unorm srgb",    "jsrepr": "'astc-4x4-unorm-srgb'"},
-            {"value": 68, "name": "ASTC 5x4 unorm",         "jsrepr": "'astc-5x4-unorm'"},
-            {"value": 69, "name": "ASTC 5x4 unorm srgb",    "jsrepr": "'astc-5x4-unorm-srgb'"},
-            {"value": 70, "name": "ASTC 5x5 unorm",         "jsrepr": "'astc-5x5-unorm'"},
-            {"value": 71, "name": "ASTC 5x5 unorm srgb",    "jsrepr": "'astc-5x5-unorm-srgb'"},
-            {"value": 72, "name": "ASTC 6x5 unorm",         "jsrepr": "'astc-6x5-unorm'"},
-            {"value": 73, "name": "ASTC 6x5 unorm srgb",    "jsrepr": "'astc-6x5-unorm-srgb'"},
-            {"value": 74, "name": "ASTC 6x6 unorm",         "jsrepr": "'astc-6x6-unorm'"},
-            {"value": 75, "name": "ASTC 6x6 unorm srgb",    "jsrepr": "'astc-6x6-unorm-srgb'"},
-            {"value": 76, "name": "ASTC 8x5 unorm",         "jsrepr": "'astc-8x5-unorm'"},
-            {"value": 77, "name": "ASTC 8x5 unorm srgb",    "jsrepr": "'astc-8x5-unorm-srgb'"},
-            {"value": 78, "name": "ASTC 8x6 unorm",         "jsrepr": "'astc-8x6-unorm'"},
-            {"value": 79, "name": "ASTC 8x6 unorm srgb",    "jsrepr": "'astc-8x6-unorm-srgb'"},
-            {"value": 80, "name": "ASTC 8x8 unorm",         "jsrepr": "'astc-8x8-unorm'"},
-            {"value": 81, "name": "ASTC 8x8 unorm srgb",    "jsrepr": "'astc-8x8-unorm-srgb'"},
-            {"value": 82, "name": "ASTC 10x5 unorm",        "jsrepr": "'astc-10x5-unorm'"},
-            {"value": 83, "name": "ASTC 10x5 unorm srgb",   "jsrepr": "'astc-10x5-unorm-srgb'"},
-            {"value": 84, "name": "ASTC 10x6 unorm",        "jsrepr": "'astc-10x6-unorm'"},
-            {"value": 85, "name": "ASTC 10x6 unorm srgb",   "jsrepr": "'astc-10x6-unorm-srgb'"},
-            {"value": 86, "name": "ASTC 10x8 unorm",        "jsrepr": "'astc-10x8-unorm'"},
-            {"value": 87, "name": "ASTC 10x8 unorm srgb",   "jsrepr": "'astc-10x8-unorm-srgb'"},
-            {"value": 88, "name": "ASTC 10x10 unorm",       "jsrepr": "'astc-10x10-unorm'"},
-            {"value": 89, "name": "ASTC 10x10 unorm srgb",  "jsrepr": "'astc-10x10-unorm-srgb'"},
-            {"value": 90, "name": "ASTC 12x10 unorm",       "jsrepr": "'astc-12x10-unorm'"},
-            {"value": 91, "name": "ASTC 12x10 unorm srgb",  "jsrepr": "'astc-12x10-unorm-srgb'"},
-            {"value": 92, "name": "ASTC 12x12 unorm",       "jsrepr": "'astc-12x12-unorm'"},
-            {"value": 93, "name": "ASTC 12x12 unorm srgb",  "jsrepr": "'astc-12x12-unorm-srgb'"},
+            {"value": 68, "name": "ASTC 4x4 unorm",         "jsrepr": "'astc-4x4-unorm'"},
+            {"value": 69, "name": "ASTC 4x4 unorm srgb",    "jsrepr": "'astc-4x4-unorm-srgb'"},
+            {"value": 70, "name": "ASTC 5x4 unorm",         "jsrepr": "'astc-5x4-unorm'"},
+            {"value": 71, "name": "ASTC 5x4 unorm srgb",    "jsrepr": "'astc-5x4-unorm-srgb'"},
+            {"value": 72, "name": "ASTC 5x5 unorm",         "jsrepr": "'astc-5x5-unorm'"},
+            {"value": 73, "name": "ASTC 5x5 unorm srgb",    "jsrepr": "'astc-5x5-unorm-srgb'"},
+            {"value": 74, "name": "ASTC 6x5 unorm",         "jsrepr": "'astc-6x5-unorm'"},
+            {"value": 75, "name": "ASTC 6x5 unorm srgb",    "jsrepr": "'astc-6x5-unorm-srgb'"},
+            {"value": 76, "name": "ASTC 6x6 unorm",         "jsrepr": "'astc-6x6-unorm'"},
+            {"value": 77, "name": "ASTC 6x6 unorm srgb",    "jsrepr": "'astc-6x6-unorm-srgb'"},
+            {"value": 78, "name": "ASTC 8x5 unorm",         "jsrepr": "'astc-8x5-unorm'"},
+            {"value": 79, "name": "ASTC 8x5 unorm srgb",    "jsrepr": "'astc-8x5-unorm-srgb'"},
+            {"value": 80, "name": "ASTC 8x6 unorm",         "jsrepr": "'astc-8x6-unorm'"},
+            {"value": 81, "name": "ASTC 8x6 unorm srgb",    "jsrepr": "'astc-8x6-unorm-srgb'"},
+            {"value": 82, "name": "ASTC 8x8 unorm",         "jsrepr": "'astc-8x8-unorm'"},
+            {"value": 83, "name": "ASTC 8x8 unorm srgb",    "jsrepr": "'astc-8x8-unorm-srgb'"},
+            {"value": 84, "name": "ASTC 10x5 unorm",        "jsrepr": "'astc-10x5-unorm'"},
+            {"value": 85, "name": "ASTC 10x5 unorm srgb",   "jsrepr": "'astc-10x5-unorm-srgb'"},
+            {"value": 86, "name": "ASTC 10x6 unorm",        "jsrepr": "'astc-10x6-unorm'"},
+            {"value": 87, "name": "ASTC 10x6 unorm srgb",   "jsrepr": "'astc-10x6-unorm-srgb'"},
+            {"value": 88, "name": "ASTC 10x8 unorm",        "jsrepr": "'astc-10x8-unorm'"},
+            {"value": 89, "name": "ASTC 10x8 unorm srgb",   "jsrepr": "'astc-10x8-unorm-srgb'"},
+            {"value": 90, "name": "ASTC 10x10 unorm",       "jsrepr": "'astc-10x10-unorm'"},
+            {"value": 91, "name": "ASTC 10x10 unorm srgb",  "jsrepr": "'astc-10x10-unorm-srgb'"},
+            {"value": 92, "name": "ASTC 12x10 unorm",       "jsrepr": "'astc-12x10-unorm'"},
+            {"value": 93, "name": "ASTC 12x10 unorm srgb",  "jsrepr": "'astc-12x10-unorm-srgb'"},
+            {"value": 94, "name": "ASTC 12x12 unorm",       "jsrepr": "'astc-12x12-unorm'"},
+            {"value": 95, "name": "ASTC 12x12 unorm srgb",  "jsrepr": "'astc-12x12-unorm-srgb'"},
 
-            {"value": 94, "name": "R8 BG8 Biplanar 420 unorm", "tags": ["dawn"]}
+            {"value": 96, "name": "R8 BG8 Biplanar 420 unorm", "tags": ["dawn"]}
         ]
     },
     "texture usage": {
@@ -2339,7 +2538,18 @@
         ]
     },
     "texture view": {
-        "category": "object"
+        "category": "object",
+        "methods": [
+            {
+                "name": "set label",
+                "returns": "void",
+                "tags": ["dawn"],
+                "_TODO": "needs an upstream equivalent",
+                "args": [
+                    {"name": "label", "type": "char", "annotation": "const*", "length": "strlen"}
+                ]
+            }
+        ]
     },
     "texture view dimension": {
         "category": "enum",
@@ -2388,6 +2598,48 @@
             {"value": 29, "name": "sint32x3"},
             {"value": 30, "name": "sint32x4"}
         ]
+    },
+    "whole size" : {
+        "category": "constant",
+        "type": "uint64_t",
+        "value":  "(0xffffffffffffffffULL)"
+    },
+    "whole map size" : {
+        "category": "constant",
+        "type": "size_t",
+        "value":  "SIZE_MAX"
+    },
+    "stride undefined" : {
+        "category": "constant",
+        "tags": ["deprecated"],
+        "_TODO": "crbug.com/dawn/520: Remove WGPU_STRIDE_UNDEFINED in favor of WGPU_COPY_STRIDE_UNDEFINED.",
+        "type": "uint32_t",
+        "value":  "(0xffffffffUL)"
+    },
+    "copy stride undefined" : {
+        "category": "constant",
+        "type": "uint32_t",
+        "value":  "(0xffffffffUL)"
+    },
+    "limit u32 undefined" : {
+        "category": "constant",
+        "type": "uint32_t",
+        "value":  "(0xffffffffUL)"
+    },
+    "limit u64 undefined" : {
+        "category": "constant",
+        "type": "uint64_t",
+        "value":  "(0xffffffffffffffffULL)"
+    },
+    "array layer count undefined" : {
+        "category": "constant",
+        "type": "uint32_t",
+        "value":  "(0xffffffffUL)"
+    },
+    "mip level count undefined" : {
+        "category": "constant",
+        "type": "uint32_t",
+        "value":  "(0xffffffffUL)"
     },
     "ObjectType": {
       "_comment": "Only used for the wire",

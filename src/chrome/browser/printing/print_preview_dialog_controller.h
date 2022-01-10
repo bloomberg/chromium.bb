@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/tab_contents/web_contents_collection.h"
 
@@ -42,8 +41,13 @@ class PrintPreviewDialogController
   // Call this instead of GetOrCreatePreviewDialog().
   static void PrintPreview(content::WebContents* initiator);
 
-  // Returns true if |url| is a print preview url.
+  // Returns true if `url` is a Print Preview dialog URL (has `chrome://print`
+  // origin).
   static bool IsPrintPreviewURL(const GURL& url);
+
+  // Returns true if `url` is a Print Preview content URL (has
+  // `chrome-untrusted://print` origin).
+  static bool IsPrintPreviewContentURL(const GURL& url);
 
   // Get/Create the print preview dialog for |initiator|.
   // Exposed for unit tests.

@@ -282,8 +282,8 @@ source_set("dawn_native_sources") {
     "PipelineLayout.h",
     "PooledResourceMemoryAllocator.cpp",
     "PooledResourceMemoryAllocator.h",
-    "ProgrammablePassEncoder.cpp",
-    "ProgrammablePassEncoder.h",
+    "ProgrammableEncoder.cpp",
+    "ProgrammableEncoder.h",
     "QueryHelper.cpp",
     "QueryHelper.h",
     "QuerySet.cpp",
@@ -331,6 +331,8 @@ source_set("dawn_native_sources") {
     "VertexFormat.cpp",
     "VertexFormat.h",
     "dawn_platform.h",
+    "utils/WGPUHelpers.cpp",
+    "utils/WGPUHelpers.h",
   ]
 
   if (dawn_use_x11) {
@@ -677,6 +679,7 @@ source_set("dawn_native_sources") {
     }
     if (enable_vulkan_loader) {
       data_deps += [ "${dawn_vulkan_loader_dir}:libvulkan" ]
+      defines += [ "DAWN_ENABLE_VULKAN_LOADER" ]
     }
     if (use_swiftshader) {
       data_deps += [
@@ -742,4 +745,33 @@ dawn_component("dawn_native") {
       }
     }
   }
+}
+
+dawn_json_generator("webgpu_dawn_native_proc_gen") {
+  target = "webgpu_dawn_native_proc"
+  outputs = [ "src/dawn_native/webgpu_dawn_native_proc.cpp" ]
+}
+
+dawn_component("webgpu_dawn") {
+  # For a single library - build `webgpu_dawn_shared` with GN args:
+  #   dawn_complete_static_libs = true - to package a single lib
+  #
+  #   is_debug = false
+  #    - setting this to true makes library over 50Mb
+  #
+  #   use_custom_libcxx = false
+  #    - Otherwise, libc++ symbols may conflict if the
+  #      library is used outside of Chromium.
+  #
+  #   dawn_use_swiftshader = false
+  #   angle_enable_swiftshader = false
+  #    - SwiftShader can't be built without use_custom_libcxx.
+  #      It should be built separately.
+  DEFINE_PREFIX = "WGPU"
+
+  sources = get_target_outputs(":webgpu_dawn_native_proc_gen")
+  deps = [
+    ":dawn_native_static",
+    ":webgpu_dawn_native_proc_gen",
+  ]
 }

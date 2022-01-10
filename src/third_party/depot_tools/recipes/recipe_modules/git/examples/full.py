@@ -53,7 +53,7 @@ def RunSteps(api):
   # count_objects shows number and size of objects in .git dir.
   api.git.count_objects(
       name='count-objects',
-      can_fail_build=api.properties.get('count_objects_can_fail_build'),
+      raise_on_failure=api.properties.get('count_objects_can_fail_build', False),
       git_config_options={'foo': 'bar'})
 
   # Get the remote URL.
@@ -70,11 +70,9 @@ def RunSteps(api):
   with api.context(cwd=api.path['checkout']):
     api.git('status')
 
-  api.git('status', name='git status can_fail_build',
-          can_fail_build=True)
+  api.git('status', name='git status can_fail_build', raise_on_failure=True)
 
-  api.git('status', name='git status cannot_fail_build',
-          can_fail_build=False)
+  api.git('status', name='git status cannot_fail_build', raise_on_failure=False)
 
   # You should run git new-branch before you upload something with git cl.
   api.git.new_branch('refactor')  # Upstream is origin/main by default.

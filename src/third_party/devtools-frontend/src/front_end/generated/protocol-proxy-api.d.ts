@@ -226,6 +226,20 @@ declare namespace ProtocolProxyApi {
         Promise<Protocol.Accessibility.GetFullAXTreeResponse>;
 
     /**
+     * Fetches the root node.
+     * Requires `enable()` to have been called previously.
+     */
+    invoke_getRootAXNode(params: Protocol.Accessibility.GetRootAXNodeRequest):
+        Promise<Protocol.Accessibility.GetRootAXNodeResponse>;
+
+    /**
+     * Fetches a node and all ancestors up to and including the root.
+     * Requires `enable()` to have been called previously.
+     */
+    invoke_getAXNodeAndAncestors(params: Protocol.Accessibility.GetAXNodeAndAncestorsRequest):
+        Promise<Protocol.Accessibility.GetAXNodeAndAncestorsResponse>;
+
+    /**
      * Fetches a particular accessibility node by AXNodeId.
      * Requires `enable()` to have been called previously.
      */
@@ -242,7 +256,18 @@ declare namespace ProtocolProxyApi {
     invoke_queryAXTree(params: Protocol.Accessibility.QueryAXTreeRequest):
         Promise<Protocol.Accessibility.QueryAXTreeResponse>;
   }
-  export interface AccessibilityDispatcher {}
+  export interface AccessibilityDispatcher {
+    /**
+     * The loadComplete event mirrors the load complete event sent by the browser to assistive
+     * technology when the web page has finished loading.
+     */
+    loadComplete(params: Protocol.Accessibility.LoadCompleteEvent): void;
+
+    /**
+     * The nodesUpdated event is sent every time a previously requested node has changed the in tree.
+     */
+    nodesUpdated(params: Protocol.Accessibility.NodesUpdatedEvent): void;
+  }
 
   export interface AnimationApi {
     /**
@@ -725,6 +750,12 @@ declare namespace ProtocolProxyApi {
      * sink via Presentation API, Remote Playback API, or Cast SDK.
      */
     invoke_setSinkToUse(params: Protocol.Cast.SetSinkToUseRequest): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Starts mirroring the desktop to the sink.
+     */
+    invoke_startDesktopMirroring(params: Protocol.Cast.StartDesktopMirroringRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Starts mirroring the tab to the sink.
@@ -2157,6 +2188,8 @@ declare namespace ProtocolProxyApi {
     reportingApiReportAdded(params: Protocol.Network.ReportingApiReportAddedEvent): void;
 
     reportingApiReportUpdated(params: Protocol.Network.ReportingApiReportUpdatedEvent): void;
+
+    reportingApiEndpointsChangedForOrigin(params: Protocol.Network.ReportingApiEndpointsChangedForOriginEvent): void;
   }
 
   export interface OverlayApi {
@@ -2638,6 +2671,13 @@ declare namespace ProtocolProxyApi {
     invoke_clearCompilationCache(): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
+     * Sets the Secure Payment Confirmation transaction mode.
+     * https://w3c.github.io/secure-payment-confirmation/#sctn-automation-set-spc-transaction-mode
+     */
+    invoke_setSPCTransactionMode(params: Protocol.Page.SetSPCTransactionModeRequest):
+        Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
      * Generates a report for testing.
      */
     invoke_generateTestReport(params: Protocol.Page.GenerateTestReportRequest):
@@ -2879,7 +2919,7 @@ declare namespace ProtocolProxyApi {
     visibleSecurityStateChanged(params: Protocol.Security.VisibleSecurityStateChangedEvent): void;
 
     /**
-     * The security state of the page changed.
+     * The security state of the page changed. No longer being sent.
      */
     securityStateChanged(params: Protocol.Security.SecurityStateChangedEvent): void;
   }

@@ -191,8 +191,8 @@ class PossibleDesktopBrowser(possible_browser.PossibleBrowser):
       except Exception: # pylint: disable=broad-except
         retry = x < _BROWSER_STARTUP_TRIES - 1
         retry_message = 'retrying' if retry else 'giving up'
-        logging.warn('Browser creation failed (attempt %d of %d), %s.',
-                     (x + 1), _BROWSER_STARTUP_TRIES, retry_message)
+        logging.warning('Browser creation failed (attempt %d of %d), %s.',
+                        (x + 1), _BROWSER_STARTUP_TRIES, retry_message)
         if retry:
           # Reset the environment to prevent leftovers in the profile
           # directory from influencing the next try.
@@ -460,7 +460,7 @@ def FindAllAvailableBrowsers(finder_options, device):
     if "--ozone-platform" in arg:
       has_ozone_platform = True
 
-  if len(browsers) and not has_x11_display and not has_ozone_platform:
+  if browsers and not has_x11_display and not has_ozone_platform:
     logging.warning(
         'Found (%s), but you do not have a DISPLAY environment set.', ','.join(
             [b.browser_type for b in browsers]))

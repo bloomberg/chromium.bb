@@ -93,6 +93,7 @@ set(VULKAN_SRC_FILES
     VkShaderModule.hpp
     VkStringify.cpp
     VkStringify.hpp
+    VkStructConversion.hpp
     VkTimelineSemaphore.cpp
     VkTimelineSemaphore.hpp
     VulkanPlatform.hpp
@@ -137,6 +138,12 @@ if(FUCHSIA)
     # are not part of the VkStructureType enum. Silence this warning, until
     # the constants are upstreamed to the official Vulkan headers.
     list(APPEND VULKAN_COMPILE_OPTIONS "-Wno-switch")
+endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    list(APPEND VULKAN_COMPILE_OPTIONS
+        # TODO(b/208256248): Avoid exit-time destructor.
+        #"-Wexit-time-destructors"  # declaration requires an exit-time destructor
+    )
 endif()
 
 set(VULKAN_LINKER_FLAGS "")

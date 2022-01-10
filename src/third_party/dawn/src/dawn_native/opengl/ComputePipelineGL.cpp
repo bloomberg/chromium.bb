@@ -25,7 +25,10 @@ namespace dawn_native { namespace opengl {
         return AcquireRef(new ComputePipeline(device, descriptor));
     }
 
-    ComputePipeline::~ComputePipeline() {
+    ComputePipeline::~ComputePipeline() = default;
+
+    void ComputePipeline::DestroyImpl() {
+        ComputePipelineBase::DestroyImpl();
         DeleteProgram(ToBackend(GetDevice())->gl);
     }
 

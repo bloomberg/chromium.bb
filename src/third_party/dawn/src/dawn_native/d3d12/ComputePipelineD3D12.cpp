@@ -34,6 +34,11 @@ namespace dawn_native { namespace d3d12 {
         Device* device = ToBackend(GetDevice());
         uint32_t compileFlags = 0;
 
+        if (!device->IsToggleEnabled(Toggle::UseDXC) &&
+            !device->IsToggleEnabled(Toggle::FxcOptimizations)) {
+            compileFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL0;
+        }
+
         if (device->IsToggleEnabled(Toggle::EmitHLSLDebugSymbols)) {
             compileFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
         }
@@ -48,9 +53,8 @@ namespace dawn_native { namespace d3d12 {
         d3dDesc.pRootSignature = ToBackend(GetLayout())->GetRootSignature();
 
         CompiledShader compiledShader;
-        DAWN_TRY_ASSIGN(compiledShader,
-                        module->Compile(computeStage.entryPoint.c_str(), SingleShaderStage::Compute,
-                                        ToBackend(GetLayout()), compileFlags));
+        DAWN_TRY_ASSIGN(compiledShader, module->Compile(computeStage, SingleShaderStage::Compute,
+                                                        ToBackend(GetLayout()), compileFlags));
         d3dDesc.CS = compiledShader.GetD3D12ShaderBytecode();
         auto* d3d12Device = device->GetD3D12Device();
         DAWN_TRY(CheckHRESULT(
@@ -62,7 +66,10 @@ namespace dawn_native { namespace d3d12 {
         return {};
     }
 
-    ComputePipeline::~ComputePipeline() {
+    ComputePipeline::~ComputePipeline() = default;
+
+    void ComputePipeline::DestroyImpl() {
+        ComputePipelineBase::DestroyImpl();
         ToBackend(GetDevice())->ReferenceUntilUnused(mPipelineState);
     }
 
@@ -86,6 +93,13 @@ namespace dawn_native { namespace d3d12 {
 
     bool ComputePipeline::UsesNumWorkgroups() const {
         return GetStage(SingleShaderStage::Compute).metadata->usesNumWorkgroups;
+    }
+
+    ComPtr<ID3D12CommandSignature> ComputePipeline::GetDispatchIndirectCommandSignature() {
+        if (UsesNumWorkgroups()) {
+            return ToBackend(GetLayout())->GetDispatchIndirectCommandSignatureWithNumWorkgroups();
+        }
+        return ToBackend(GetDevice())->GetDispatchIndirectSignature();
     }
 
 }}  // namespace dawn_native::d3d12

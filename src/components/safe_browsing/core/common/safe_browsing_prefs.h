@@ -115,6 +115,14 @@ extern const char kSafeBrowsingEventTimestamps[];
 // was updated.
 extern const char kAccountTailoredSecurityUpdateTimestamp[];
 
+// Whether the user was shown the notification that they may want to enable
+// Enhanced Safe Browsing due to their account tailored security state.
+extern const char kAccountTailoredSecurityShownNotification[];
+
+// A boolean indicating if Enhanced Protection was enabled in sync with
+// account tailored security.
+extern const char kEnhancedProtectionEnabledViaTailoredSecurity[];
+
 }  // namespace prefs
 
 namespace safe_browsing {
@@ -184,7 +192,11 @@ enum EnterpriseRealTimeUrlCheckMode {
 
 SafeBrowsingState GetSafeBrowsingState(const PrefService& prefs);
 
-void SetSafeBrowsingState(PrefService* prefs, SafeBrowsingState state);
+// Set the SafeBrowsing prefs. Also records if ESB was enabled in sync with
+// Account-ESB via Tailored Security.
+void SetSafeBrowsingState(PrefService* prefs,
+                          SafeBrowsingState state,
+                          bool is_esb_enabled_in_sync = false);
 
 // Returns whether Safe Browsing is enabled for the user.
 bool IsSafeBrowsingEnabled(const PrefService& prefs);

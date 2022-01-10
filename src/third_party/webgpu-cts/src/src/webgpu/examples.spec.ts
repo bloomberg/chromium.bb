@@ -11,7 +11,7 @@ import { GPUTest } from './gpu_test.js';
 // To run these tests in the standalone runner, run `npm start` then open:
 // - http://localhost:XXXX/standalone/?runnow=1&q=webgpu:examples:*
 // To run in WPT, copy/symlink the out-wpt/ directory as the webgpu/ directory in WPT, then open:
-// - (wpt server url)/webgpu/cts.html?q=webgpu:examples:
+// - (wpt server url)/webgpu/cts.https.html?q=webgpu:examples:
 //
 // Tests here can be run individually or in groups:
 // - ?q=webgpu:examples:basic,async:
@@ -249,19 +249,29 @@ Tests that a BC format passes validation iff the feature is enabled.`
     );
   });
 
-g.test('gpu,with_texture_compression,etc')
+g.test('gpu,with_texture_compression,etc2')
   .desc(
     `Example of a test using a device descriptor.
-
-TODO: Test that an ETC format passes validation iff the feature is enabled.`
+Tests that an ETC2 format passes validation iff the feature is enabled.`
   )
-  .params(u => u.combine('textureCompressionETC', [false, true]))
+  .params(u => u.combine('textureCompressionETC2', [false, true]))
   .fn(async t => {
-    const { textureCompressionETC } = t.params;
+    const { textureCompressionETC2 } = t.params;
 
-    if (textureCompressionETC) {
-      await t.selectDeviceOrSkipTestCase('texture-compression-etc' as GPUFeatureName);
+    if (textureCompressionETC2) {
+      await t.selectDeviceOrSkipTestCase('texture-compression-etc2' as GPUFeatureName);
     }
 
-    // TODO: Should actually test createTexture with an ETC format here.
+    const shouldError = !textureCompressionETC2;
+    t.expectGPUError(
+      'validation',
+      () => {
+        t.device.createTexture({
+          format: 'etc2-rgb8unorm',
+          size: [4, 4, 1],
+          usage: GPUTextureUsage.TEXTURE_BINDING,
+        });
+      },
+      shouldError
+    );
   });

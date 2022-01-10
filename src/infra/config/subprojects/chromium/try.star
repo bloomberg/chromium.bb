@@ -166,6 +166,14 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
+    builder = "chromeos-octopus-chrome",
+)
+
+chrome_internal_verifier(
+    builder = "chromeos-octopus-compile-chrome",
+)
+
+chrome_internal_verifier(
     builder = "ipad-device",
 )
 
@@ -204,6 +212,10 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
+    builder = "linux-nearby-chrome-fyi",
+)
+
+chrome_internal_verifier(
     builder = "linux-pgo",
     branch_selector = branches.STANDARD_MILESTONE,
 )
@@ -221,6 +233,10 @@ chrome_internal_verifier(
 chrome_internal_verifier(
     builder = "mac-pgo",
     branch_selector = branches.STANDARD_MILESTONE,
+)
+
+chrome_internal_verifier(
+    builder = "test-o-emulator",
 )
 
 chrome_internal_verifier(

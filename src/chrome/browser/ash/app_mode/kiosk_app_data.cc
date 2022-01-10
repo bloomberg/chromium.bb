@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
@@ -231,7 +230,7 @@ class KioskAppData::WebstoreDataParser
     }
 
     std::string required_platform_version;
-    if (manifest.HasPath(
+    if (manifest.FindPath(
             extensions::manifest_keys::kKioskRequiredPlatformVersion) &&
         (!manifest.GetString(
              extensions::manifest_keys::kKioskRequiredPlatformVersion,

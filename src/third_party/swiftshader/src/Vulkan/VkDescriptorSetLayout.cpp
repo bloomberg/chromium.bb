@@ -302,7 +302,6 @@ void DescriptorSetLayout::WriteDescriptorSet(Device *device, DescriptorSet *dstS
 			{
 				sampledImage[i].samplerId = vk::Cast(update->sampler)->id;
 			}
-			sampledImage[i].device = device;
 		}
 	}
 	else if(entry.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER)
@@ -326,7 +325,6 @@ void DescriptorSetLayout::WriteDescriptorSet(Device *device, DescriptorSet *dstS
 			sampledImage[i].texture.width = sw::float4(static_cast<float>(numElements));
 			sampledImage[i].texture.height = sw::float4(1);
 			sampledImage[i].texture.depth = sw::float4(1);
-			sampledImage[i].device = device;
 
 			sw::Mipmap &mipmap = sampledImage[i].texture.mipmap[0];
 			mipmap.buffer = bufferView->getPointer();
@@ -371,7 +369,6 @@ void DescriptorSetLayout::WriteDescriptorSet(Device *device, DescriptorSet *dstS
 			sampledImage[i].depth = imageView->getDepthOrLayerCount(0);
 			sampledImage[i].mipLevels = imageView->getSubresourceRange().levelCount;
 			sampledImage[i].sampleCount = imageView->getSampleCount();
-			sampledImage[i].device = device;
 			sampledImage[i].memoryOwner = imageView;
 
 			auto &subresourceRange = imageView->getSubresourceRange();
@@ -459,6 +456,7 @@ void DescriptorSetLayout::WriteDescriptorSet(Device *device, DescriptorSet *dstS
 			const auto &extent = imageView->getMipLevelExtent(0);
 			auto layerCount = imageView->getSubresourceRange().layerCount;
 
+			storageImage[i].imageViewId = imageView->id;
 			storageImage[i].ptr = imageView->getOffsetPointer({ 0, 0, 0 }, VK_IMAGE_ASPECT_COLOR_BIT, 0, 0);
 			storageImage[i].width = extent.width;
 			storageImage[i].height = extent.height;
@@ -490,6 +488,8 @@ void DescriptorSetLayout::WriteDescriptorSet(Device *device, DescriptorSet *dstS
 		{
 			auto update = reinterpret_cast<VkBufferView const *>(src + entry.offset + entry.stride * i);
 			auto bufferView = vk::Cast(*update);
+
+			storageImage[i].imageViewId = bufferView->id;
 			storageImage[i].ptr = bufferView->getPointer();
 			storageImage[i].width = bufferView->getElementCount();
 			storageImage[i].height = 1;

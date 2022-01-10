@@ -196,6 +196,12 @@ bool EGLWindow::initializeDisplay(OSWindow *osWindow,
         displayAttributes.push_back(reinterpret_cast<EGLAttrib>(params.platformMethods));
     }
 
+    if (params.displayPowerPreference != EGL_DONT_CARE)
+    {
+        displayAttributes.push_back(EGL_POWER_PREFERENCE_ANGLE);
+        displayAttributes.push_back(params.displayPowerPreference);
+    }
+
     std::vector<const char *> disabledFeatureOverrides;
     std::vector<const char *> enabledFeatureOverrides;
 
@@ -237,6 +243,15 @@ bool EGLWindow::initializeDisplay(OSWindow *osWindow,
     else if (params.supportsVulkanViewportFlip == EGL_FALSE)
     {
         disabledFeatureOverrides.push_back("supportsViewportFlip");
+    }
+
+    if (params.supportsVulkanMultiDrawIndirect == EGL_TRUE)
+    {
+        enabledFeatureOverrides.push_back("supportsMultiDrawIndirect");
+    }
+    else if (params.supportsVulkanMultiDrawIndirect == EGL_FALSE)
+    {
+        disabledFeatureOverrides.push_back("supportsMultiDrawIndirect");
     }
 
     switch (params.emulatedPrerotation)

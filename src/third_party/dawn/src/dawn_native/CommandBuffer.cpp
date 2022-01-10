@@ -25,18 +25,21 @@
 
 namespace dawn_native {
 
-    CommandBufferBase::CommandBufferBase(CommandEncoder* encoder, const CommandBufferDescriptor*)
-        : ApiObjectBase(encoder->GetDevice(), kLabelNotImplemented),
+    CommandBufferBase::CommandBufferBase(CommandEncoder* encoder,
+                                         const CommandBufferDescriptor* descriptor)
+        : ApiObjectBase(encoder->GetDevice(), descriptor->label),
           mCommands(encoder->AcquireCommands()),
           mResourceUsages(encoder->AcquireResourceUsages()) {
+        TrackInDevice();
+    }
+
+    CommandBufferBase::CommandBufferBase(DeviceBase* device)
+        : ApiObjectBase(device, kLabelNotImplemented) {
+        TrackInDevice();
     }
 
     CommandBufferBase::CommandBufferBase(DeviceBase* device, ObjectBase::ErrorTag tag)
         : ApiObjectBase(device, tag) {
-    }
-
-    CommandBufferBase::~CommandBufferBase() {
-        Destroy();
     }
 
     // static
@@ -51,14 +54,13 @@ namespace dawn_native {
     MaybeError CommandBufferBase::ValidateCanUseInSubmitNow() const {
         ASSERT(!IsError());
 
-        DAWN_INVALID_IF(mDestroyed, "%s cannot be submitted more than once.", this);
+        DAWN_INVALID_IF(!IsAlive(), "%s cannot be submitted more than once.", this);
         return {};
     }
 
-    void CommandBufferBase::Destroy() {
+    void CommandBufferBase::DestroyImpl() {
         FreeCommands(&mCommands);
         mResourceUsages = {};
-        mDestroyed = true;
     }
 
     const CommandBufferResourceUsage& CommandBufferBase::GetResourceUsages() const {

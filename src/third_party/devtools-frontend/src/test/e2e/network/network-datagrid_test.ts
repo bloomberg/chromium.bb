@@ -4,9 +4,9 @@
 
 import {assert} from 'chai';
 
-import {click, getBrowserAndPages, step, waitFor, waitForAria, waitForElementWithTextContent, waitForFunction} from '../../shared/helper.js';
+import {click, getBrowserAndPages, pressKey, step, waitFor, waitForAria, waitForElementWithTextContent, waitForFunction} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {navigateToNetworkTab, setCacheDisabled, setPersistLog, waitForSomeRequestsToAppear} from '../helpers/network-helpers.js';
+import {getAllRequestNames, navigateToNetworkTab, selectRequestByName, setCacheDisabled, setPersistLog, waitForSelectedRequestChange, waitForSomeRequestsToAppear} from '../helpers/network-helpers.js';
 
 describe('The Network Tab', async function() {
   if (this.timeout() !== 0.0) {
@@ -89,14 +89,13 @@ describe('The Network Tab', async function() {
     // Open the raw response HTML
     await click('[aria-label="Response"]');
     // Wait for the raw response editor to show up
-    await waitFor('.CodeMirror-code');
+    const codeMirrorEditor = await waitFor('[aria-label="Code editor"]');
 
-    const codeMirrorEditor = await waitFor('.CodeMirror-code');
     const htmlRawResponse = await codeMirrorEditor.evaluate(editor => editor.textContent);
 
     assert.strictEqual(
         htmlRawResponse,
-        '1<html><body>The following word is written using cyrillic letters and should look like "SUCCESS": SU\u0421\u0421\u0415SS.</body></html>');
+        '<html><body>The following word is written using cyrillic letters and should look like "SUCCESS": SU\u0421\u0421\u0415SS.</body></html>');
   });
 
   it('the correct MIME type when resources came from HTTP cache', async () => {
@@ -325,5 +324,33 @@ describe('The Network Tab', async function() {
       // Depending on timing of the reporting, the status infomation (404) might reach DevTools in time.
       return (status === '(unknown)' || status === '404') && time === '(unknown)';
     });
+  });
+
+  it('repeats xhr request on "r" shortcut when the request is focused', async () => {
+    const {target} = getBrowserAndPages();
+
+    await navigateToNetworkTab('xhr.html');
+    await target.reload({waitUntil: 'networkidle0'});
+    await waitForSomeRequestsToAppear(2);
+
+    await selectRequestByName('image.svg');
+    await waitForSelectedRequestChange(null);
+    await pressKey('r');
+    await waitForSomeRequestsToAppear(3);
+
+    const updatedRequestNames = await getAllRequestNames();
+    assert.deepStrictEqual(updatedRequestNames, ['xhr.html', 'image.svg', 'image.svg']);
+  });
+
+  it('shows the request panel when clicked during a websocket message (https://crbug.com/1222382)', async () => {
+    await navigateToNetworkTab('websocket.html?infiniteMessages=true');
+
+    await waitForSomeRequestsToAppear(2);
+
+    // WebSocket messages get sent every 100 milliseconds, so holding the mouse
+    // down for 300 milliseconds should suffice.
+    await selectRequestByName('localhost', {delay: 300});
+
+    await waitFor('.network-item-view');
   });
 });

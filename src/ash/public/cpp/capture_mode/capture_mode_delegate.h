@@ -76,11 +76,25 @@ class ASH_PUBLIC_EXPORT CaptureModeDelegate {
   // Leak Prevention applied to the currently visible content.
   virtual bool IsCaptureModeInitRestrictedByDlp() const = 0;
 
-  // Returns whether capture of the region defined by |window| and |bounds|
-  // is currently allowed by Data Leak Prevention feature.
+  // Called when capture mode is being started to check if there are any content
+  // currently on the screen that are restricted by DLP. `callback` will be
+  // triggered by the DLP manager with `proceed` set to true if capture mode
+  // initialization is allowed to continue, or set to false if it should be
+  // aborted.
+  virtual void CheckCaptureModeInitRestrictionByDlp(
+      OnCaptureModeDlpRestrictionChecked callback) = 0;
+
+  // Checks whether capture of the region defined by |window| and |bounds|
+  // is currently allowed by the Data Leak Prevention feature. `callback` will
+  // be triggered by the DLP manager with `proceed` set to true if capture of
+  // that region is allowed, or set to false otherwise.
+  virtual void CheckCaptureOperationRestrictionByDlp(
+      const aura::Window* window,
+      const gfx::Rect& bounds,
+      OnCaptureModeDlpRestrictionChecked callback) = 0;
+
   virtual bool IsCaptureAllowedByDlp(const aura::Window* window,
-                                     const gfx::Rect& bounds,
-                                     bool for_video) const = 0;
+                                     const gfx::Rect& bounds) const = 0;
 
   // Returns whether screen capture is allowed by an enterprise policy.
   virtual bool IsCaptureAllowedByPolicy() const = 0;
@@ -126,6 +140,9 @@ class ASH_PUBLIC_EXPORT CaptureModeDelegate {
   // implemented by ChromeShellDelegate in chrome and TestShellDelegate in
   // ash_unittests to reduce the duplication.
   virtual bool GetDriveFsMountPointPath(base::FilePath* path) const = 0;
+
+  // Returns the absolute path for the user's Android Play files.
+  virtual base::FilePath GetAndroidFilesPath() const = 0;
 
   // Creates and returns the view that will be used as the contents view of the
   // overlay widget, which is added as a child of the recorded surface to host

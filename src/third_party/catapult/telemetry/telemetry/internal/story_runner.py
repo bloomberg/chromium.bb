@@ -12,7 +12,10 @@ import os
 import re
 import sys
 import time
-import psutil # pylint: disable=import-error
+try:
+  import psutil
+except ImportError:
+  psutil = None
 
 import py_utils
 from py_utils import cloud_storage  # pylint: disable=import-error
@@ -251,6 +254,7 @@ def RunStorySet(test, story_set, finder_options, results,
       possible_browser.target_os == "android"):
     raise ValueError("Periodic screenshots are not compatible with Android!")
 
+  logging.info('Running in Python version: %s' % str(sys.version_info))
   platform_tags = possible_browser.GetTypExpectationsTags()
   logging.info('The following expectations condition tags were generated %s',
                str(platform_tags))
@@ -300,9 +304,10 @@ def RunStorySet(test, story_set, finder_options, results,
   if not stories:
     return
 
-  # Log available disk space before running the benchmark.
-  logging.info(
-      'Disk usage before running tests: %s.' % str(psutil.disk_usage('.')))
+  if psutil:
+    # Log available disk space before running the benchmark.
+    logging.info(
+        'Disk usage before running tests: %s.' % str(psutil.disk_usage('.')))
 
   # Effective max failures gives priority to command-line flag value.
   effective_max_failures = finder_options.max_failures
@@ -415,7 +420,6 @@ def RunBenchmark(benchmark, finder_options):
   Returns:
     An exit code from exit_codes module describing what happened.
   """
-  logging.info('Running in Python version: %s' % str(sys.version_info))
   benchmark_name = benchmark.Name()
   if not re.match(_RE_VALID_TEST_SUITE_NAME, benchmark_name):
     logging.fatal('Invalid benchmark name: %s', benchmark_name)

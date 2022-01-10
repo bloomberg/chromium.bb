@@ -188,10 +188,10 @@ namespace dawn_native { namespace opengl {
     }
 
     Texture::~Texture() {
-        DestroyInternal();
     }
 
     void Texture::DestroyImpl() {
+        TextureBase::DestroyImpl();
         if (GetTextureState() == TextureState::OwnedInternal) {
             ToBackend(GetDevice())->gl.DeleteTextures(1, &mHandle);
             mHandle = 0;
@@ -559,6 +559,10 @@ namespace dawn_native { namespace opengl {
     }
 
     TextureView::~TextureView() {
+    }
+
+    void TextureView::DestroyImpl() {
+        TextureViewBase::DestroyImpl();
         if (mOwnsHandle) {
             ToBackend(GetDevice())->gl.DeleteTextures(1, &mHandle);
         }

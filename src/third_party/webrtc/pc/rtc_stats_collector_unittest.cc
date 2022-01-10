@@ -1252,7 +1252,6 @@ TEST_F(RTCStatsCollectorTest, CollectRTCIceCandidateStats) {
   expected_a_local_host.protocol = "a_local_host's protocol";
   expected_a_local_host.candidate_type = "host";
   expected_a_local_host.priority = 0;
-  EXPECT_FALSE(*expected_a_local_host.is_remote);
 
   std::unique_ptr<cricket::Candidate> a_remote_srflx = CreateFakeCandidate(
       "6.7.8.9", 10, "remote_srflx's protocol", rtc::ADAPTER_TYPE_UNKNOWN,
@@ -1266,7 +1265,6 @@ TEST_F(RTCStatsCollectorTest, CollectRTCIceCandidateStats) {
   expected_a_remote_srflx.protocol = "remote_srflx's protocol";
   expected_a_remote_srflx.candidate_type = "srflx";
   expected_a_remote_srflx.priority = 1;
-  EXPECT_TRUE(*expected_a_remote_srflx.is_remote);
 
   std::unique_ptr<cricket::Candidate> a_local_prflx = CreateFakeCandidate(
       "11.12.13.14", 15, "a_local_prflx's protocol", rtc::ADAPTER_TYPE_CELLULAR,
@@ -1281,7 +1279,6 @@ TEST_F(RTCStatsCollectorTest, CollectRTCIceCandidateStats) {
   expected_a_local_prflx.protocol = "a_local_prflx's protocol";
   expected_a_local_prflx.candidate_type = "prflx";
   expected_a_local_prflx.priority = 2;
-  EXPECT_FALSE(*expected_a_local_prflx.is_remote);
 
   std::unique_ptr<cricket::Candidate> a_remote_relay = CreateFakeCandidate(
       "16.17.18.19", 20, "a_remote_relay's protocol", rtc::ADAPTER_TYPE_UNKNOWN,
@@ -1295,16 +1292,16 @@ TEST_F(RTCStatsCollectorTest, CollectRTCIceCandidateStats) {
   expected_a_remote_relay.protocol = "a_remote_relay's protocol";
   expected_a_remote_relay.candidate_type = "relay";
   expected_a_remote_relay.priority = 3;
-  EXPECT_TRUE(*expected_a_remote_relay.is_remote);
 
   std::unique_ptr<cricket::Candidate> a_local_relay = CreateFakeCandidate(
       "16.17.18.19", 21, "a_local_relay's protocol", rtc::ADAPTER_TYPE_UNKNOWN,
       cricket::RELAY_PORT_TYPE, 1);
   a_local_relay->set_relay_protocol("tcp");
 
-  RTCRemoteIceCandidateStats expected_a_local_relay(
+  RTCLocalIceCandidateStats expected_a_local_relay(
       "RTCIceCandidate_" + a_local_relay->id(), 0);
   expected_a_local_relay.transport_id = "RTCTransport_a_0";
+  expected_a_local_relay.network_type = "unknown";
   expected_a_local_relay.ip = "16.17.18.19";
   expected_a_local_relay.address = "16.17.18.19";
   expected_a_local_relay.port = 21;
@@ -1312,7 +1309,23 @@ TEST_F(RTCStatsCollectorTest, CollectRTCIceCandidateStats) {
   expected_a_local_relay.relay_protocol = "tcp";
   expected_a_local_relay.candidate_type = "relay";
   expected_a_local_relay.priority = 1;
-  EXPECT_TRUE(*expected_a_local_relay.is_remote);
+
+  std::unique_ptr<cricket::Candidate> a_local_relay_prflx = CreateFakeCandidate(
+      "11.12.13.20", 22, "a_local_relay_prflx's protocol",
+      rtc::ADAPTER_TYPE_UNKNOWN, cricket::PRFLX_PORT_TYPE, 1);
+  a_local_relay_prflx->set_relay_protocol("udp");
+
+  RTCLocalIceCandidateStats expected_a_local_relay_prflx(
+      "RTCIceCandidate_" + a_local_relay_prflx->id(), 0);
+  expected_a_local_relay_prflx.transport_id = "RTCTransport_a_0";
+  expected_a_local_relay_prflx.network_type = "unknown";
+  expected_a_local_relay_prflx.ip = "11.12.13.20";
+  expected_a_local_relay_prflx.address = "11.12.13.20";
+  expected_a_local_relay_prflx.port = 22;
+  expected_a_local_relay_prflx.protocol = "a_local_relay_prflx's protocol";
+  expected_a_local_relay_prflx.relay_protocol = "udp";
+  expected_a_local_relay_prflx.candidate_type = "prflx";
+  expected_a_local_relay_prflx.priority = 1;
 
   // Candidates in the second transport stats.
   std::unique_ptr<cricket::Candidate> b_local =
@@ -1328,7 +1341,6 @@ TEST_F(RTCStatsCollectorTest, CollectRTCIceCandidateStats) {
   expected_b_local.protocol = "b_local's protocol";
   expected_b_local.candidate_type = "host";
   expected_b_local.priority = 42;
-  EXPECT_FALSE(*expected_b_local.is_remote);
 
   std::unique_ptr<cricket::Candidate> b_remote = CreateFakeCandidate(
       "42.42.42.42", 42, "b_remote's protocol", rtc::ADAPTER_TYPE_UNKNOWN,
@@ -1342,7 +1354,6 @@ TEST_F(RTCStatsCollectorTest, CollectRTCIceCandidateStats) {
   expected_b_remote.protocol = "b_remote's protocol";
   expected_b_remote.candidate_type = "host";
   expected_b_remote.priority = 42;
-  EXPECT_TRUE(*expected_b_remote.is_remote);
 
   // Add candidate pairs to connection.
   cricket::TransportChannelStats a_transport_channel_stats;
@@ -1363,6 +1374,12 @@ TEST_F(RTCStatsCollectorTest, CollectRTCIceCandidateStats) {
   a_transport_channel_stats.ice_transport_stats.connection_infos[2]
       .local_candidate = *a_local_relay.get();
   a_transport_channel_stats.ice_transport_stats.connection_infos[2]
+      .remote_candidate = *a_remote_relay.get();
+  a_transport_channel_stats.ice_transport_stats.connection_infos.push_back(
+      cricket::ConnectionInfo());
+  a_transport_channel_stats.ice_transport_stats.connection_infos[3]
+      .local_candidate = *a_local_relay_prflx.get();
+  a_transport_channel_stats.ice_transport_stats.connection_infos[3]
       .remote_candidate = *a_remote_relay.get();
 
   pc_->AddVoiceChannel("audio", "a");
@@ -1395,6 +1412,13 @@ TEST_F(RTCStatsCollectorTest, CollectRTCIceCandidateStats) {
   EXPECT_EQ(expected_a_remote_relay,
             report->Get(expected_a_remote_relay.id())
                 ->cast_to<RTCRemoteIceCandidateStats>());
+  ASSERT_TRUE(report->Get(expected_a_local_relay.id()));
+  EXPECT_EQ(expected_a_local_relay, report->Get(expected_a_local_relay.id())
+                                        ->cast_to<RTCLocalIceCandidateStats>());
+  ASSERT_TRUE(report->Get(expected_a_local_relay_prflx.id()));
+  EXPECT_EQ(expected_a_local_relay_prflx,
+            report->Get(expected_a_local_relay_prflx.id())
+                ->cast_to<RTCLocalIceCandidateStats>());
   ASSERT_TRUE(report->Get(expected_b_local.id()));
   EXPECT_EQ(
       expected_b_local,
@@ -1551,7 +1575,6 @@ TEST_F(RTCStatsCollectorTest, CollectRTCIceCandidatePairStats) {
   expected_local_candidate.protocol = "protocol";
   expected_local_candidate.candidate_type = "host";
   expected_local_candidate.priority = 42;
-  EXPECT_FALSE(*expected_local_candidate.is_remote);
   ASSERT_TRUE(report->Get(expected_local_candidate.id()));
   EXPECT_EQ(expected_local_candidate,
             report->Get(expected_local_candidate.id())
@@ -1566,7 +1589,6 @@ TEST_F(RTCStatsCollectorTest, CollectRTCIceCandidatePairStats) {
   expected_remote_candidate.protocol = "protocol";
   expected_remote_candidate.candidate_type = "host";
   expected_remote_candidate.priority = 42;
-  EXPECT_TRUE(*expected_remote_candidate.is_remote);
   ASSERT_TRUE(report->Get(expected_remote_candidate.id()));
   EXPECT_EQ(expected_remote_candidate,
             report->Get(expected_remote_candidate.id())
@@ -2176,6 +2198,7 @@ TEST_F(RTCStatsCollectorTest, CollectRTCOutboundRTPStreamStats_Audio) {
   voice_media_info.senders[0].header_and_padding_bytes_sent = 12;
   voice_media_info.senders[0].retransmitted_bytes_sent = 30;
   voice_media_info.senders[0].nacks_rcvd = 31;
+  voice_media_info.senders[0].target_bitrate = 32000;
   voice_media_info.senders[0].codec_payload_type = 42;
 
   RtpCodecParameters codec_parameters;
@@ -2210,6 +2233,7 @@ TEST_F(RTCStatsCollectorTest, CollectRTCOutboundRTPStreamStats_Audio) {
   expected_audio.header_bytes_sent = 12;
   expected_audio.retransmitted_bytes_sent = 30;
   expected_audio.nack_count = 31;
+  expected_audio.target_bitrate = 32000;
 
   ASSERT_TRUE(report->Get(expected_audio.id()));
   EXPECT_EQ(
@@ -2667,11 +2691,11 @@ TEST_F(RTCStatsCollectorTest, RTCVideoSourceStatsCollectedForSenderWithTrack) {
   video_media_info.senders.push_back(cricket::VideoSenderInfo());
   video_media_info.senders[0].local_stats.push_back(cricket::SsrcSenderInfo());
   video_media_info.senders[0].local_stats[0].ssrc = kSsrc;
-  video_media_info.senders[0].framerate_input = 29;
+  video_media_info.senders[0].framerate_input = 29.0;
   video_media_info.aggregated_senders[0].local_stats.push_back(
       cricket::SsrcSenderInfo());
   video_media_info.aggregated_senders[0].local_stats[0].ssrc = kSsrc;
-  video_media_info.aggregated_senders[0].framerate_input = 29;
+  video_media_info.aggregated_senders[0].framerate_input = 29.0;
   video_media_info.aggregated_senders[0].frames = 10001;
   auto* video_media_channel = pc_->AddVideoChannel("VideoMid", "TransportName");
   video_media_channel->SetStats(video_media_info);
@@ -2692,7 +2716,7 @@ TEST_F(RTCStatsCollectorTest, RTCVideoSourceStatsCollectedForSenderWithTrack) {
   expected_video.kind = "video";
   expected_video.width = kVideoSourceWidth;
   expected_video.height = kVideoSourceHeight;
-  expected_video.frames_per_second = 29;
+  expected_video.frames_per_second = 29.0;
   expected_video.frames = 10001;
 
   ASSERT_TRUE(report->Get(expected_video.id()));
@@ -2716,7 +2740,7 @@ TEST_F(RTCStatsCollectorTest,
   cricket::VideoMediaInfo video_media_info;
   video_media_info.senders.push_back(cricket::VideoSenderInfo());
   video_media_info.senders[0].local_stats.push_back(cricket::SsrcSenderInfo());
-  video_media_info.senders[0].framerate_input = 29;
+  video_media_info.senders[0].framerate_input = 29.0;
   auto* video_media_channel = pc_->AddVideoChannel("VideoMid", "TransportName");
   video_media_channel->SetStats(video_media_info);
 
@@ -2747,7 +2771,7 @@ TEST_F(RTCStatsCollectorTest,
   video_media_info.senders.push_back(cricket::VideoSenderInfo());
   video_media_info.senders[0].local_stats.push_back(cricket::SsrcSenderInfo());
   video_media_info.senders[0].local_stats[0].ssrc = kSsrc;
-  video_media_info.senders[0].framerate_input = 29;
+  video_media_info.senders[0].framerate_input = 29.0;
   auto* video_media_channel = pc_->AddVideoChannel("VideoMid", "TransportName");
   video_media_channel->SetStats(video_media_info);
 
@@ -2803,7 +2827,7 @@ class RTCStatsCollectorTestWithParamKind
         return "Video";
       case cricket::MEDIA_TYPE_DATA:
       case cricket::MEDIA_TYPE_UNSUPPORTED:
-        RTC_NOTREACHED();
+        RTC_DCHECK_NOTREACHED();
         return "";
     }
   }
@@ -2862,7 +2886,7 @@ class RTCStatsCollectorTestWithParamKind
       }
       case cricket::MEDIA_TYPE_DATA:
       case cricket::MEDIA_TYPE_UNSUPPORTED:
-        RTC_NOTREACHED();
+        RTC_DCHECK_NOTREACHED();
     }
   }
 
@@ -3099,7 +3123,7 @@ TEST_F(RTCStatsCollectorTest,
   video_media_info.senders.push_back(cricket::VideoSenderInfo());
   video_media_info.senders[0].local_stats.push_back(cricket::SsrcSenderInfo());
   video_media_info.senders[0].local_stats[0].ssrc = kSsrc;
-  video_media_info.senders[0].framerate_input = 29;
+  video_media_info.senders[0].framerate_input = 29.0;
   auto* video_media_channel = pc_->AddVideoChannel("VideoMid", "TransportName");
   video_media_channel->SetStats(video_media_info);
 

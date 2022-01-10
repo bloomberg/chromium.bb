@@ -62,8 +62,7 @@ ForwardingTraceParser::ForwardingTraceParser(TraceProcessorContext* context)
 
 ForwardingTraceParser::~ForwardingTraceParser() {}
 
-util::Status ForwardingTraceParser::Parse(std::unique_ptr<uint8_t[]> data,
-                                          size_t size) {
+util::Status ForwardingTraceParser::Parse(TraceBlobView blob) {
   // If this is the first Parse() call, guess the trace type and create the
   // appropriate parser.
   if (!reader_) {
@@ -71,7 +70,7 @@ util::Status ForwardingTraceParser::Parse(std::unique_ptr<uint8_t[]> data,
     {
       auto scoped_trace = context_->storage->TraceExecutionTimeIntoStats(
           stats::guess_trace_type_duration_ns);
-      trace_type = GuessTraceType(data.get(), size);
+      trace_type = GuessTraceType(blob.data(), blob.size());
     }
     switch (trace_type) {
       case kJsonTraceType: {
@@ -148,7 +147,7 @@ util::Status ForwardingTraceParser::Parse(std::unique_ptr<uint8_t[]> data,
     }
   }
 
-  return reader_->Parse(std::move(data), size);
+  return reader_->Parse(std::move(blob));
 }
 
 void ForwardingTraceParser::NotifyEndOfFile() {
@@ -159,7 +158,7 @@ TraceType GuessTraceType(const uint8_t* data, size_t size) {
   if (size == 0)
     return kUnknownTraceType;
   std::string start(reinterpret_cast<const char*>(data),
-                    std::min<size_t>(size, 32));
+                    std::min<size_t>(size, kGuessTraceMaxLookahead));
   if (size >= 8) {
     uint64_t first_word;
     memcpy(&first_word, data, sizeof(first_word));
@@ -181,9 +180,15 @@ TraceType GuessTraceType(const uint8_t* data, size_t size) {
       base::StartsWith(start, "<html>"))
     return kSystraceTraceType;
 
-  // Ctrace is deflate'ed systrace.
-  if (base::Contains(start, "TRACE:"))
+  // Traces obtained from atrace -z (compress).
+  // They all have the string "TRACE:" followed by 78 9C which is a zlib header
+  // for "deflate, default compression, window size=32K" (see b/208691037)
+  if (base::Contains(start, "TRACE:\n\x78\x9c"))
     return kCtraceTraceType;
+
+  // Traces obtained from atrace without -z (no compression).
+  if (base::Contains(start, "TRACE:\n"))
+    return kSystraceTraceType;
 
   // Ninja's buils log (.ninja_log).
   if (base::StartsWith(start, "# ninja log"))

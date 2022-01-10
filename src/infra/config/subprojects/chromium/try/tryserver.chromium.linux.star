@@ -92,7 +92,7 @@ try_.builder(
         },
     },
     tryjob = try_.job(
-        experiment_percentage = 5,
+        experiment_percentage = 20,
     ),
 )
 
@@ -309,7 +309,7 @@ try_.orchestrator_pair_builders(
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    orchestrator_cores = "2|4",
+    orchestrator_cores = 2,
     orchestrator_tryjob = try_.job(),
     compilator_cores = 16,
     compilator_goma_jobs = goma.jobs.J150,
@@ -497,20 +497,6 @@ try_.builder(
 
 try_.builder(
     name = "linux_chromium_ubsan_rel_ng",
-)
-
-try_.builder(
-    name = "linux_layout_tests_composite_after_paint",
-    branch_selector = branches.STANDARD_MILESTONE,
-    main_list_view = "try",
-    tryjob = try_.job(
-        location_regexp = [
-            ".+/[+]/third_party/blink/renderer/core/paint/.+",
-            ".+/[+]/third_party/blink/renderer/core/svg/.+",
-            ".+/[+]/third_party/blink/renderer/platform/graphics/.+",
-            ".+/[+]/third_party/blink/web_tests/.+",
-        ],
-    ),
 )
 
 try_.builder(

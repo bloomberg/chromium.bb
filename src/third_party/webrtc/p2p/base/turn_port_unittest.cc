@@ -76,7 +76,7 @@ static const SocketAddress kTurnIPv6IntAddr(
 static const SocketAddress kTurnUdpIPv6IntAddr(
     "2400:4030:1:2c00:be30:abcd:efab:cdef",
     cricket::TURN_SERVER_PORT);
-static const SocketAddress kTurnInvalidAddr("www.google.invalid", 3478);
+static const SocketAddress kTurnInvalidAddr("www.google.invalid.", 3478);
 
 static const char kCandidateFoundation[] = "foundation";
 static const char kIceUfrag1[] = "TESTICEUFRAG0001";
@@ -172,7 +172,7 @@ class TurnPortTest : public ::testing::Test,
       : ss_(new TurnPortTestVirtualSocketServer()),
         main_(ss_.get()),
         socket_factory_(ss_.get()),
-        turn_server_(&main_, kTurnUdpIntAddr, kTurnUdpExtAddr),
+        turn_server_(&main_, ss_.get(), kTurnUdpIntAddr, kTurnUdpExtAddr),
         turn_ready_(false),
         turn_error_(false),
         turn_unknown_address_(false),
@@ -1625,8 +1625,7 @@ TEST_F(TurnPortTest, TestResolverShutdown) {
   int last_fd_count = GetFDCount();
   // Need to supply unresolved address to kick off resolver.
   CreateTurnPort(kLocalIPv6Addr, kTurnUsername, kTurnPassword,
-                 ProtocolAddress(rtc::SocketAddress("www.google.invalid", 3478),
-                                 PROTO_UDP));
+                 ProtocolAddress(kTurnInvalidAddr, PROTO_UDP));
   turn_port_->PrepareAddress();
   ASSERT_TRUE_WAIT(turn_error_, kResolverTimeout);
   EXPECT_TRUE(turn_port_->Candidates().empty());

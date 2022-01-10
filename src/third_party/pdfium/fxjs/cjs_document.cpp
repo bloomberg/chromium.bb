@@ -345,8 +345,8 @@ CJS_Result CJS_Document::mailDoc(
     cMsg = pRuntime->ToWideString(newParams[5]);
 
   pRuntime->BeginBlock();
-  m_pFormFillEnv->JS_docmailForm(nullptr, 0, bUI, cTo, cSubject, cCc, cBcc,
-                                 cMsg);
+  m_pFormFillEnv->JS_docmailForm(pdfium::span<uint8_t>(), bUI, cTo, cSubject,
+                                 cCc, cBcc, cMsg);
   pRuntime->EndBlock();
   return CJS_Result::Success();
 }
@@ -396,11 +396,11 @@ CJS_Result CJS_Document::mailForm(
   if (IsExpandedParamKnown(newParams[5]))
     cMsg = pRuntime->ToWideString(newParams[5]);
 
-  std::vector<char, FxAllocAllocator<char>> mutable_buf(sTextBuf.begin(),
-                                                        sTextBuf.end());
+  std::vector<uint8_t, FxAllocAllocator<uint8_t>> mutable_buf(sTextBuf.begin(),
+                                                              sTextBuf.end());
   pRuntime->BeginBlock();
-  m_pFormFillEnv->JS_docmailForm(mutable_buf.data(), mutable_buf.size(), bUI,
-                                 cTo, cSubject, cCc, cBcc, cMsg);
+  m_pFormFillEnv->JS_docmailForm(mutable_buf, bUI, cTo, cSubject, cCc, cBcc,
+                                 cMsg);
   pRuntime->EndBlock();
   return CJS_Result::Success();
 }
@@ -541,7 +541,8 @@ CJS_Result CJS_Document::resetForm(
   for (size_t i = 0; i < pRuntime->GetArrayLength(array); ++i) {
     WideString swVal =
         pRuntime->ToWideString(pRuntime->GetArrayElement(array, i));
-    for (int j = 0, jsz = pPDFForm->CountFields(swVal); j < jsz; ++j)
+    const size_t jsz = pPDFForm->CountFields(swVal);
+    for (size_t j = 0; j < jsz; ++j)
       aFields.push_back(pPDFForm->GetField(j, swVal));
   }
 
@@ -616,7 +617,8 @@ CJS_Result CJS_Document::submitForm(
   for (size_t i = 0; i < pRuntime->GetArrayLength(aFields); ++i) {
     WideString sName =
         pRuntime->ToWideString(pRuntime->GetArrayElement(aFields, i));
-    for (int j = 0, jsz = pPDFForm->CountFields(sName); j < jsz; ++j) {
+    const size_t jsz = pPDFForm->CountFields(sName);
+    for (size_t j = 0; j < jsz; ++j) {
       CPDF_FormField* pField = pPDFForm->GetField(j, sName);
       if (!bEmpty && pField->GetValue().IsEmpty())
         continue;

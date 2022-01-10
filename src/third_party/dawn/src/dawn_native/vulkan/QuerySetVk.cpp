@@ -16,6 +16,7 @@
 
 #include "dawn_native/vulkan/DeviceVk.h"
 #include "dawn_native/vulkan/FencedDeleter.h"
+#include "dawn_native/vulkan/UtilsVulkan.h"
 #include "dawn_native/vulkan/VulkanError.h"
 #include "dawn_platform/DawnPlatform.h"
 
@@ -85,9 +86,13 @@ namespace dawn_native { namespace vulkan {
         }
 
         Device* device = ToBackend(GetDevice());
-        return CheckVkOOMThenSuccess(
+        DAWN_TRY(CheckVkOOMThenSuccess(
             device->fn.CreateQueryPool(device->GetVkDevice(), &createInfo, nullptr, &*mHandle),
-            "vkCreateQueryPool");
+            "vkCreateQueryPool"));
+
+        SetLabelImpl();
+
+        return {};
     }
 
     VkQueryPool QuerySet::GetHandle() const {
@@ -96,11 +101,17 @@ namespace dawn_native { namespace vulkan {
 
     QuerySet::~QuerySet() = default;
 
-    void QuerySet::DestroyApiObjectImpl() {
+    void QuerySet::DestroyImpl() {
+        QuerySetBase::DestroyImpl();
         if (mHandle != VK_NULL_HANDLE) {
             ToBackend(GetDevice())->GetFencedDeleter()->DeleteWhenUnused(mHandle);
             mHandle = VK_NULL_HANDLE;
         }
+    }
+
+    void QuerySet::SetLabelImpl() {
+        SetDebugName(ToBackend(GetDevice()), VK_OBJECT_TYPE_QUERY_POOL,
+                     reinterpret_cast<uint64_t&>(mHandle), "Dawn_QuerySet", GetLabel());
     }
 
 }}  // namespace dawn_native::vulkan

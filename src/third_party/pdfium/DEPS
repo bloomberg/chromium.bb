@@ -21,11 +21,12 @@ vars = {
 
   'chromium_git': 'https://chromium.googlesource.com',
   'pdfium_git': 'https://pdfium.googlesource.com',
+  'skia_git': 'https://skia.googlesource.com',
 
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling abseil
   # and whatever else without interference from each other.
-  'abseil_revision': 'b00d460653ca594e602fa24e044e877518871f44',
+  'abseil_revision': '88b1c38f02277777cbfec4058bb519a138254787',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_ndk
   # and whatever else without interference from each other.
@@ -33,23 +34,23 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build
   # and whatever else without interference from each other.
-  'build_revision': '8c52d6ffe131fd0192fed9841865aa34ed9a098a',
+  'build_revision': 'b6006fa9fd952832a3df916696dad371347bba29',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling buildtools
   # and whatever else without interference from each other.
-  'buildtools_revision': 'a9bc3e283182a586998338a665c7eae17406ec54',
+  'buildtools_revision': '075dd7e22837a69189003e4fa84499acf63188cf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '95a9079d7bee0a1426f42f1cd302bae46a34d4b2',
+  'catapult_revision': '75423c310eb303d28978be892fcf7b9c2c824909',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang format
   # and whatever else without interference from each other.
-  'clang_format_revision': '99876cacf78329e5f99c244dbe42ccd1654517a0',
+  'clang_format_revision': 'e435ad79c17b1888b34df88d6a30a094936e3836',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang
   # and whatever else without interference from each other.
-  'clang_revision': '203feb789163278951e55ffeb624d70e016508e3',
+  'clang_revision': '401e727f2ae6663c4e13dfd3e1006cc9fa34bb10',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang_dsymutil
   # and whatever else without interference from each other.
@@ -57,31 +58,31 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling code_coverage
   # and whatever else without interference from each other.
-  'code_coverage_revision': 'dcc5002488c5b7541569ed08424d3d41d25d93e7',
+  'code_coverage_revision': '7b4a8bcadec9f7e1f02da7e7b0a7f1d06a16df86',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling depot_tools
   # and whatever else without interference from each other.
-  'depot_tools_revision': '7cdf1424b91417c4fae021caa9ef239980b4d180',
+  'depot_tools_revision': '0b037419f52b0c789249caa45f41b2e45cdbc7f8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '946df2216565925223a9e6af4d708906a6262a7d',
+  'freetype_revision': '3b45f564e94fde897c0e6e168c660a6e1ec5c679',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling GN CIPD package version
   # and whatever else without interference from each other.
-  'gn_version': 'git_revision:0153d369bbccc908f4da4993b1ba82728055926a',
+  'gn_version': 'git_revision:b79031308cc878488202beb99883ec1f2efd9a6d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling gtest
   # and whatever else without interference from each other.
-  'gtest_revision': '075810f7a20405ea09a93f68847d6e963212fa62',
+  'gtest_revision': 'e2f3978937c0244508135f126e2617a7734a68be',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling icu
   # and whatever else without interference from each other.
-  'icu_revision': 'eedbaf76e49d28465d9119b10c30b82906e606ff',
+  'icu_revision': 'edf883ad2db9c723b058a6a17a146d68d6343143',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling instrumented_lib
   # and whatever else without interference from each other.
-  'instrumented_lib_revision': '3c149f5611237dc59a7ec229e8ea009d8be8f51d',
+  'instrumented_lib_revision': 'e09c4b66b6e87116eb190651421f1a6e2f3b9c52',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling jinja2
   # and whatever else without interference from each other.
@@ -89,7 +90,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling jpeg_turbo
   # and whatever else without interference from each other.
-  'jpeg_turbo_revision': '49836d72bd22c7a78bc0250483f04162278cdc6a',
+  'jpeg_turbo_revision': '02959c3ee17abacfd1339ec22ea93301292ffd56',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libc++
   # and whatever else without interference from each other.
@@ -99,11 +100,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libc++abi
   # and whatever else without interference from each other.
-  'libcxxabi_revision': '9eb0245224c2d7f6b20f76d4d24eab1d60a2b281',
+  'libcxxabi_revision': '665b74f7d1b3bb295cd6ba7d8fcec1acd3d2ac84',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libunwind
   # and whatever else without interference from each other.
-  'libunwind_revision': '557b51a0ccab9b3dbce61bdd57aa5f7d5c7c6206',
+  'libunwind_revision': 'c936d73ff70ebf755c8fee3f3420dd16805e377a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling markupsafe
   # and whatever else without interference from each other.
@@ -111,7 +112,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nasm_source
   # and whatever else without interference from each other.
-  'nasm_source_revision': '335fe83e133e1a113e87994e000b062047c662fc',
+  'nasm_source_revision': '9215e8e1d0fe474ffd3e16c1a07a0f97089e6224',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling pdfium_tests
   # and whatever else without interference from each other.
@@ -119,7 +120,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling skia
   # and whatever else without interference from each other.
-  'skia_revision': '2f7c3f51e48e8c5384b4679e2024e9369addb44f',
+  'skia_revision': 'b755b0157e06472a9c5e9a8746f11419bb3368fe',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling test_fonts
   # and whatever else without interference from each other.
@@ -127,20 +128,29 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling tools_memory
   # and whatever else without interference from each other.
-  'tools_memory_revision': '4dc64cab424aec02f60d892e857cc9a0155ea4fc',
+  'tools_memory_revision': 'bfbdc93fb6b777a69e4fa0d6e4339cbddb311270',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling trace_event
   # and whatever else without interference from each other.
-  'trace_event_revision': '68d816952258c9d817bba656ee2664b35507f01b',
+  'trace_event_revision': '7f36dbc19d31e2aad895c60261ca8f726442bfbb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling v8
   # and whatever else without interference from each other.
-  'v8_revision': 'cfdefde638b6320bd2fdfe3191d6e9827228978b',
+  'v8_revision': 'c082becb248ccd3fafac2fd9f4cb50e8d0278682',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling zlib
   # and whatever else without interference from each other.
-  'zlib_revision': 'bffc82b236567dad6aba5ae14d09bcd1127f7d95',
+  'zlib_revision': '2231b7c84b443385f2bd65dd6c46b3c7b957eae1',
 }
+
+# Only these hosts are allowed for dependencies in this DEPS file.
+# If you need to add a new host, and the new host is not in Chromium's DEPS
+# file's allowed_hosts list, contact Chrome infrastructure team.
+allowed_hosts = [
+  'chromium.googlesource.com',
+  'pdfium.googlesource.com',
+  'skia.googlesource.com',
+]
 
 deps = {
   'base/trace_event/common':
@@ -155,8 +165,9 @@ deps = {
         Var('buildtools_revision'),
 
   'buildtools/clang_format/script':
-    Var('chromium_git') + '/external/github.com/llvm/llvm-project/clang/tools/clang-format.git@' +
-    Var('clang_format_revision'),
+    Var('chromium_git') +
+        '/external/github.com/llvm/llvm-project/clang/tools/clang-format.git@' +
+        Var('clang_format_revision'),
 
   'buildtools/linux64': {
     'packages': [
@@ -181,16 +192,19 @@ deps = {
   },
 
   'buildtools/third_party/libc++/trunk':
-    Var('chromium_git') + '/external/github.com/llvm/llvm-project/libcxx.git' + '@' +
-    Var('libcxx_revision'),
+    Var('chromium_git') +
+        '/external/github.com/llvm/llvm-project/libcxx.git@' +
+        Var('libcxx_revision'),
 
   'buildtools/third_party/libc++abi/trunk':
-    Var('chromium_git') + '/external/github.com/llvm/llvm-project/libcxxabi.git' + '@' +
-    Var('libcxxabi_revision'),
+    Var('chromium_git') +
+        '/external/github.com/llvm/llvm-project/libcxxabi.git@' +
+        Var('libcxxabi_revision'),
 
   'buildtools/third_party/libunwind/trunk':
-    Var('chromium_git') + '/external/github.com/llvm/llvm-project/libunwind.git' + '@' +
-    Var('libunwind_revision'),
+    Var('chromium_git') +
+        '/external/github.com/llvm/llvm-project/libunwind.git@' +
+        Var('libunwind_revision'),
 
   'buildtools/win': {
     'packages': [
@@ -258,7 +272,7 @@ deps = {
         Var('nasm_source_revision'),
 
   'third_party/skia':
-    Var('chromium_git') + '/skia.git@' +  Var('skia_revision'),
+    Var('skia_git') + '/skia.git@' + Var('skia_revision'),
 
   'third_party/test_fonts':
     Var('chromium_git') + '/chromium/src/third_party/test_fonts.git@' +
@@ -269,7 +283,7 @@ deps = {
         Var('zlib_revision'),
 
   'tools/clang':
-    Var('chromium_git') + '/chromium/src/tools/clang@' +  Var('clang_revision'),
+    Var('chromium_git') + '/chromium/src/tools/clang@' + Var('clang_revision'),
 
   'tools/clang/dsymutil': {
     'packages': [

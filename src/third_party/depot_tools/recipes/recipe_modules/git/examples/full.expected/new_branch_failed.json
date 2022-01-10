@@ -182,9 +182,9 @@
       "The recipe has crashed at point 'Uncaught exception'!",
       "",
       "Traceback (most recent call last):",
-      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/git/examples/full.py\", line 83, in RunSteps",
+      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/git/examples/full.py\", line 81, in RunSteps",
       "    api.git.new_branch('failed_new_branch', upstream='will_fail', upstream_current=True) #pylint: disable = line-too-long",
-      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/git/api.py\", line 420, in new_branch",
+      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/git/api.py\", line 413, in new_branch",
       "    raise ValueError('Can not define both upstream and upstream_current')",
       "ValueError('Can not define both upstream and upstream_current')"
     ]

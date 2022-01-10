@@ -21,7 +21,6 @@ found in the LICENSE.txt file.
     }
 
     if (window.layoutTestController) {
-      window.layoutTestController.overridePreference("WebKitWebGLEnabled", "1");
       window.layoutTestController.dumpAsText();
       window.layoutTestController.waitUntilDone();
     }
@@ -112,6 +111,11 @@ function reportSkippedTestResultsToHarness(success, msg) {
 }
 
 function notifyFinishedToHarness() {
+  if (window._didNotifyFinishedToHarness) {
+    testFailed("Duplicate notifyFinishedToHarness()");
+  }
+  window._didNotifyFinishedToHarness = true;
+
   if (window.parent.webglTestHarness) {
     window.parent.webglTestHarness.notifyFinished(window.location.pathname);
   }
@@ -747,9 +751,7 @@ function webglHarnessCollectGarbage() {
         return;
     }
 
-    // WebKit's MiniBrowser with the following environment variables set:
-    //   export JSC_useDollarVM=1
-    //   export __XPC_JSC_useDollarVM=1
+    // WebKit's MiniBrowser.
     if (window.$vm) {
         window.$vm.gc();
         return;
@@ -784,3 +786,16 @@ function finishTest() {
   document.body.appendChild(epilogue);
 }
 
+/// Prefer `call(() => { ... })` to `(() => { ... })()`\
+/// This way, it's clear up-front that we're calling not just defining.
+function call(fn) {
+    return fn();
+}
+
+/// `for (const i of range(3))` => 0, 1, 2
+/// Don't use `for...in range(n)`, it will not work.
+function* range(n) {
+  for (let i = 0; i < n; i++) {
+    yield i;
+  }
+}

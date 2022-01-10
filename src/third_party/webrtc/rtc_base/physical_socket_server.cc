@@ -601,7 +601,7 @@ int PhysicalSocket::TranslateOption(Option opt, int* slevel, int* sopt) {
     case OPT_RTP_SENDTIME_EXTN_ID:
       return -1;  // No logging is necessary as this not a OS socket option.
     default:
-      RTC_NOTREACHED();
+      RTC_DCHECK_NOTREACHED();
       return -1;
   }
   return 0;
@@ -737,7 +737,7 @@ bool SocketDispatcher::IsDescriptorClosed() {
         // This is dangerous: if we keep attempting to access a FD after close,
         // it could be reopened by something else making us think it's still
         // open. Note that this is only a DCHECK.
-        RTC_NOTREACHED();
+        RTC_DCHECK_NOTREACHED();
         return true;
       // Returned during ungraceful peer shutdown.
       case ECONNRESET:
@@ -939,7 +939,7 @@ class Signaler : public Dispatcher {
           std::array<int, 2> afd = {-1, -1};
 
           if (pipe(afd.data()) < 0) {
-            RTC_LOG(LERROR) << "pipe failed";
+            RTC_LOG(LS_ERROR) << "pipe failed";
           }
           return afd;
         }()),
@@ -1649,7 +1649,7 @@ bool PhysicalSocketServer::Wait(int cmsWait, bool process_io) {
       // Failed?
       // TODO(pthatcher): need a better strategy than this!
       WSAGetLastError();
-      RTC_NOTREACHED();
+      RTC_DCHECK_NOTREACHED();
       return false;
     } else if (dw == WSA_WAIT_TIMEOUT) {
       // Timeout?
@@ -1686,31 +1686,31 @@ bool PhysicalSocketServer::Wait(int cmsWait, bool process_io) {
             {
               if ((wsaEvents.lNetworkEvents & FD_READ) &&
                   wsaEvents.iErrorCode[FD_READ_BIT] != 0) {
-                RTC_LOG(WARNING)
+                RTC_LOG(LS_WARNING)
                     << "PhysicalSocketServer got FD_READ_BIT error "
                     << wsaEvents.iErrorCode[FD_READ_BIT];
               }
               if ((wsaEvents.lNetworkEvents & FD_WRITE) &&
                   wsaEvents.iErrorCode[FD_WRITE_BIT] != 0) {
-                RTC_LOG(WARNING)
+                RTC_LOG(LS_WARNING)
                     << "PhysicalSocketServer got FD_WRITE_BIT error "
                     << wsaEvents.iErrorCode[FD_WRITE_BIT];
               }
               if ((wsaEvents.lNetworkEvents & FD_CONNECT) &&
                   wsaEvents.iErrorCode[FD_CONNECT_BIT] != 0) {
-                RTC_LOG(WARNING)
+                RTC_LOG(LS_WARNING)
                     << "PhysicalSocketServer got FD_CONNECT_BIT error "
                     << wsaEvents.iErrorCode[FD_CONNECT_BIT];
               }
               if ((wsaEvents.lNetworkEvents & FD_ACCEPT) &&
                   wsaEvents.iErrorCode[FD_ACCEPT_BIT] != 0) {
-                RTC_LOG(WARNING)
+                RTC_LOG(LS_WARNING)
                     << "PhysicalSocketServer got FD_ACCEPT_BIT error "
                     << wsaEvents.iErrorCode[FD_ACCEPT_BIT];
               }
               if ((wsaEvents.lNetworkEvents & FD_CLOSE) &&
                   wsaEvents.iErrorCode[FD_CLOSE_BIT] != 0) {
-                RTC_LOG(WARNING)
+                RTC_LOG(LS_WARNING)
                     << "PhysicalSocketServer got FD_CLOSE_BIT error "
                     << wsaEvents.iErrorCode[FD_CLOSE_BIT];
               }

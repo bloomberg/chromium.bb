@@ -6170,7 +6170,7 @@ TEST_F(VkLayerTest, InvalidBarriers) {
     buf_barrier.offset = 0;
     buf_barrier.size = VK_WHOLE_SIZE;
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPipelineBarrier-srcStageMask-04098");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPipelineBarrier-srcStageMask-06461");
 
     VkCommandPoolObj command_pool(m_device, queue_family_index, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
     VkCommandBufferObj bad_command_buffer(m_device, &command_pool);
@@ -6185,7 +6185,7 @@ TEST_F(VkLayerTest, InvalidBarriers) {
 
     // Check for error for trying to wait on pipeline stage not supported by this queue. Specifically since our queue is not a
     // compute queue, vk::CmdWaitEvents cannot have it's source stage mask be VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdWaitEvents-srcStageMask-04098");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdWaitEvents-srcStageMask-06459");
     VkEvent event;
     VkEventCreateInfo event_create_info{};
     event_create_info.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
@@ -14788,4 +14788,207 @@ TEST_F(VkLayerTest, CopyMutableDescriptors) {
         vk::UpdateDescriptorSets(m_device->device(), 0, nullptr, 1, &copy_set);
         m_errorMonitor->VerifyFound();
     }
+}
+
+
+TEST_F(VkLayerTest, ValidateUpdatingMutableDescriptors) {
+    TEST_DESCRIPTION("Validate updating mutable descriptors.");
+
+    AddRequiredExtensions(VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_VALVE_MUTABLE_DESCRIPTOR_TYPE_EXTENSION_NAME);
+        return;
+    }
+    auto mutable_descriptor_type_features = LvlInitStruct<VkPhysicalDeviceMutableDescriptorTypeFeaturesVALVE>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&mutable_descriptor_type_features);
+    PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
+        (PFN_vkGetPhysicalDeviceFeatures2KHR)vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceFeatures2KHR");
+    vkGetPhysicalDeviceFeatures2KHR(gpu(), &features2);
+    if (mutable_descriptor_type_features.mutableDescriptorType == VK_FALSE) {
+        printf("%s mutableDescriptorType feature not supported. Skipped.\n", kSkipPrefix);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    VkDescriptorType descriptor_types[] = {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER};
+
+    VkMutableDescriptorTypeListVALVE mutable_descriptor_type_list = {};
+    mutable_descriptor_type_list.descriptorTypeCount = 1;
+    mutable_descriptor_type_list.pDescriptorTypes = descriptor_types;
+
+    VkMutableDescriptorTypeCreateInfoVALVE mdtci = LvlInitStruct<VkMutableDescriptorTypeCreateInfoVALVE>();
+    mdtci.mutableDescriptorTypeListCount = 1;
+    mdtci.pMutableDescriptorTypeLists = &mutable_descriptor_type_list;
+
+    VkDescriptorPoolSize pool_sizes[2] = {};
+    pool_sizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    pool_sizes[0].descriptorCount = 2;
+    pool_sizes[1].type = VK_DESCRIPTOR_TYPE_MUTABLE_VALVE;
+    pool_sizes[1].descriptorCount = 2;
+
+    VkDescriptorPoolCreateInfo ds_pool_ci = LvlInitStruct<VkDescriptorPoolCreateInfo>(&mdtci);
+    ds_pool_ci.maxSets = 2;
+    ds_pool_ci.poolSizeCount = 2;
+    ds_pool_ci.pPoolSizes = pool_sizes;
+
+    vk_testing::DescriptorPool pool;
+    pool.init(*m_device, ds_pool_ci);
+
+    VkDescriptorSetLayoutBinding bindings[2] = {};
+    bindings[0].binding = 0;
+    bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_MUTABLE_VALVE;
+    bindings[0].descriptorCount = 1;
+    bindings[0].stageFlags = VK_SHADER_STAGE_ALL;
+    bindings[0].pImmutableSamplers = nullptr;
+    bindings[1].binding = 1;
+    bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    bindings[1].descriptorCount = 1;
+    bindings[1].stageFlags = VK_SHADER_STAGE_ALL;
+    bindings[1].pImmutableSamplers = nullptr;
+
+    VkDescriptorSetLayoutCreateInfo create_info = LvlInitStruct<VkDescriptorSetLayoutCreateInfo>(&mdtci);
+    create_info.bindingCount = 2;
+    create_info.pBindings = bindings;
+
+    vk_testing::DescriptorSetLayout set_layout;
+    set_layout.init(*m_device, create_info);
+    VkDescriptorSetLayout set_layout_handle = set_layout.handle();
+
+    VkDescriptorSetLayout layouts[2] = {set_layout_handle, set_layout_handle};
+
+    VkDescriptorSetAllocateInfo allocate_info = LvlInitStruct<VkDescriptorSetAllocateInfo>();
+    allocate_info.descriptorPool = pool.handle();
+    allocate_info.descriptorSetCount = 2;
+    allocate_info.pSetLayouts = layouts;
+
+    VkDescriptorSet descriptor_sets[2];
+    vk::AllocateDescriptorSets(device(), &allocate_info, descriptor_sets);
+
+    VkImageObj image(m_device);
+    image.Init(32, 32, 1, VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
+    VkImageView view = image.targetView(VK_FORMAT_B8G8R8A8_UNORM);
+
+    VkSamplerCreateInfo sampler_ci = SafeSaneSamplerCreateInfo();
+    VkSampler sampler;
+    vk::CreateSampler(device(), &sampler_ci, nullptr, &sampler);
+
+    VkDescriptorImageInfo image_info = {};
+    image_info.imageView = view;
+    image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    image_info.sampler = sampler;
+
+    VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
+    descriptor_write.dstSet = descriptor_sets[1];
+    descriptor_write.dstBinding = 1;
+    descriptor_write.descriptorCount = 1;
+    descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    descriptor_write.pImageInfo = &image_info;
+
+    vk::UpdateDescriptorSets(m_device->device(), 1, &descriptor_write, 0, nullptr);
+
+    VkCopyDescriptorSet copy_set = LvlInitStruct<VkCopyDescriptorSet>();
+    copy_set.srcSet = descriptor_sets[1];
+    copy_set.srcBinding = 1;
+    copy_set.dstSet = descriptor_sets[0];
+    copy_set.dstBinding = 0;
+    copy_set.descriptorCount = 1;
+
+    vk::DestroySampler(device(), sampler, nullptr);
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkWriteDescriptorSet-descriptorType-00325");
+    vk::UpdateDescriptorSets(m_device->device(), 0, nullptr, 1, &copy_set);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, ImageViewMinLod) {
+    TEST_DESCRIPTION("Checks for image view minimum level of detail.");
+
+    AddRequiredExtensions(VK_EXT_IMAGE_VIEW_MIN_LOD_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_EXT_IMAGE_VIEW_MIN_LOD_EXTENSION_NAME);
+        return;
+    }
+    auto image_view_min_lod_features = LvlInitStruct<VkPhysicalDeviceImageViewMinLodFeaturesEXT>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2KHR>(&image_view_min_lod_features);
+    PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
+        (PFN_vkGetPhysicalDeviceFeatures2KHR)vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceFeatures2KHR");
+    vkGetPhysicalDeviceFeatures2KHR(gpu(), &features2);
+    if (image_view_min_lod_features.minLod == VK_FALSE) {
+        printf("%s image view min lod feature not supported. Skipped.\n", kSkipPrefix);
+        return;
+    }
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>();
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = VK_FORMAT_R8G8_UNORM;
+    image_create_info.extent.width = 64;
+    image_create_info.extent.height = 64;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 4;
+    image_create_info.arrayLayers = 1;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.usage = VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    image_create_info.flags = 0;
+
+    VkImageObj image2D(m_device);
+    image2D.init(&image_create_info);
+    ASSERT_TRUE(image2D.initialized());
+
+    VkImageViewCreateInfo ivci = LvlInitStruct<VkImageViewCreateInfo>();
+    ivci.image = image2D.handle();
+    ivci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    ivci.format = VK_FORMAT_R8G8_UNORM;
+    ivci.subresourceRange.layerCount = 1;
+    ivci.subresourceRange.baseMipLevel = 0;
+    ivci.subresourceRange.levelCount = 4;
+    ivci.subresourceRange.baseArrayLayer = 0;
+    ivci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+    auto ivml = LvlInitStruct<VkImageViewMinLodCreateInfoEXT>();
+    ivml.minLod = 4.0;
+    ivci.pNext = &ivml;
+
+    CreateImageViewTest(*this, &ivci, "VUID-VkImageViewMinLodCreateInfoEXT-minLod-06456");
+    VkImageView image_view = {};
+    ivml.minLod = 1.0;
+    VkResult res = vk::CreateImageView(m_device->device(), &ivci, nullptr, &image_view);
+    ASSERT_TRUE(res == VK_SUCCESS);
+
+    OneOffDescriptorSet descriptor_set(m_device,
+                                       {
+                                           {0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+                                       });
+    descriptor_set.WriteDescriptorImageInfo(0, image_view, VK_NULL_HANDLE, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkWriteDescriptorSet-descriptorType-06450");
+    descriptor_set.UpdateDescriptorSets();
+    m_errorMonitor->VerifyFound();
+
+    vk::DestroyImageView(m_device->device(), image_view, NULL);
+}
+
+TEST_F(VkLayerTest, ImageViewMinLodFeature) {
+    TEST_DESCRIPTION("Checks for image view minimum level of detail feature enabled.");
+    ASSERT_NO_FATAL_FAILURE(Init());
+    VkImageObj image(m_device);
+    // Initialize image with transfer source usage
+    image.Init(128, 128, 2, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
+    VkImageViewCreateInfo ivci = LvlInitStruct<VkImageViewCreateInfo>();
+    ivci.image = image.handle();
+    ivci.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    ivci.format = VK_FORMAT_R8G8B8A8_UNORM;
+    ivci.subresourceRange.layerCount = 1;
+    ivci.subresourceRange.baseMipLevel = 0;
+    ivci.subresourceRange.levelCount = 2;
+    ivci.subresourceRange.baseArrayLayer = 0;
+    ivci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+    auto ivml = LvlInitStruct<VkImageViewMinLodCreateInfoEXT>();
+    ivml.minLod = 1.0;
+    ivci.pNext = &ivml;
+
+    CreateImageViewTest(*this, &ivci, "VUID-VkImageViewMinLodCreateInfoEXT-minLod-06455");
 }

@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "core/fxcrt/bytestring.h"
 #include "core/fxcrt/fx_codepage_forward.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
-#include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/cfx_face.h"
@@ -58,6 +58,7 @@ class CFX_FontMapper {
   }
 
   void SetSystemFontInfo(std::unique_ptr<SystemFontInfoIface> pFontInfo);
+  std::unique_ptr<SystemFontInfoIface> TakeSystemFontInfo();
   void AddInstalledFont(const ByteString& name, FX_Charset charset);
   void LoadInstalledFonts();
 

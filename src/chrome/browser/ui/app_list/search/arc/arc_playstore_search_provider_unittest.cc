@@ -8,12 +8,12 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.h"
+#include "ash/components/arc/app/arc_playstore_search_request_state.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ash/arc/icon_decode_request.h"
+#include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/app/arc_playstore_search_request_state.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
 
