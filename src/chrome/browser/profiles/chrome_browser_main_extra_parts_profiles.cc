@@ -76,6 +76,7 @@
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/renderer_updater_factory.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
+#include "chrome/browser/safe_browsing/tailored_security/tailored_security_service_factory.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
@@ -155,6 +156,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/account_manager/account_apps_availability_factory.h"
 #include "chrome/browser/ash/browser_context_keyed_service_factories.h"
 #include "chrome/browser/ash/login/security_token_session_controller_factory.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
@@ -166,6 +168,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/policy/messaging_layer/util/heartbeat_event_factory.h"
 #endif
 
@@ -216,6 +219,11 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/lacros/account_manager/profile_account_manager_factory.h"
 #include "chrome/browser/lacros/cert_db_initializer_factory.h"
+#endif
+
+#if defined(OS_MAC)
+#include "chrome/browser/ui/cocoa/screentime/history_bridge_factory.h"
+#include "chrome/browser/ui/cocoa/screentime/screentime_features.h"
 #endif
 
 namespace chrome {
@@ -269,6 +277,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   AdaptiveQuietNotificationPermissionUiEnabler::Factory::GetInstance();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   app_list::AppListSyncableServiceFactory::GetInstance();
+  ash::AccountAppsAvailabilityFactory::GetInstance();
 #endif
 #if !defined(OS_ANDROID)
   apps::AppServiceProxyFactory::GetInstance();
@@ -415,6 +424,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   ProfileProtoDBFactory<
       merchant_signal_db::MerchantSignalContentProto>::GetInstance();
 #endif
+#if BUILDFLAG(IS_CHROMEOS)
+  policy::DlpRulesManagerFactory::GetInstance();
+#endif
   policy::UserCloudPolicyInvalidatorFactory::GetInstance();
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   policy::UserPolicySigninServiceFactory::GetInstance();
@@ -456,6 +468,10 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::AdvancedProtectionStatusManagerFactory::GetInstance();
 #endif
+#if defined(OS_MAC)
+  if (screentime::IsScreenTimeEnabled())
+    screentime::HistoryBridgeFactory::GetInstance();
+#endif
   SCTReportingServiceFactory::GetInstance();
 #if defined(OS_ANDROID)
   SearchPermissionsService::Factory::GetInstance();
@@ -491,6 +507,7 @@ void ChromeBrowserMainExtraPartsProfiles::
     SystemExtensionsProviderFactory::GetInstance();
 #endif
   TabRestoreServiceFactory::GetInstance();
+  safe_browsing::TailoredSecurityServiceFactory::GetInstance();
   TemplateURLFetcherFactory::GetInstance();
   TemplateURLServiceFactory::GetInstance();
 #if !defined(OS_ANDROID)

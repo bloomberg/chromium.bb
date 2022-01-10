@@ -26,15 +26,18 @@ using namespace rr;
 
 enum SamplerMethod : uint32_t
 {
-	Implicit,  // Compute gradients (pixel shader only).
-	Bias,      // Compute gradients and add provided bias.
-	Lod,       // Use provided LOD.
-	Grad,      // Use provided gradients.
-	Fetch,     // Use provided integer coordinates.
-	Base,      // Sample base level.
-	Query,     // Return implicit LOD.
-	Gather,    // Return one channel of each texel in footprint.
-	SAMPLER_METHOD_LAST = Gather,
+	Implicit,      // Compute gradients (pixel shader only).
+	Bias,          // Compute gradients and add provided bias.
+	Lod,           // Use provided LOD.
+	Grad,          // Use provided gradients.
+	Fetch,         // Use provided integer coordinates.
+	Base,          // Sample base level.
+	Query,         // Return implicit LOD.
+	Gather,        // Return one channel of each texel in footprint.
+	Read,          // Read a texel from an image without a sampler.
+	Write,         // Write a texel to an image without a sampler.
+	TexelPointer,  // Form a pointer to a texel of an image.
+	SAMPLER_METHOD_LAST = TexelPointer,
 };
 
 // TODO(b/129523279): Eliminate and use SpirvShader::ImageInstruction instead.
@@ -91,9 +94,6 @@ private:
 	void address(const Float4 &uvw, Int4 &xyz0, Int4 &xyz1, Float4 &f, Pointer<Byte> &mipmap, Int4 &offset, Int4 &filter, int whd, AddressingMode addressingMode, SamplerFunction function);
 	Int4 computeLayerIndex(const Float4 &a, Pointer<Byte> &mipmap, SamplerFunction function);
 	Int4 computeFilterOffset(Float &lod);
-
-	void convertSigned15(Float4 &cf, Short4 &ci);
-	void convertUnsigned16(Float4 &cf, Short4 &ci);
 	void sRGBtoLinearFF00(Short4 &c);
 
 	bool hasFloatTexture() const;
@@ -108,6 +108,8 @@ private:
 	bool isRGBComponent(int component) const;
 	bool borderModeActive() const;
 	VkComponentSwizzle gatherSwizzle() const;
+	sw::float4 getComponentScale() const;
+	int getGatherComponent() const;
 
 	Pointer<Byte> &constants;
 	const Sampler &state;

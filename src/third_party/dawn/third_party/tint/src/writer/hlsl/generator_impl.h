@@ -36,6 +36,7 @@
 #include "src/sem/binding_point.h"
 #include "src/transform/decompose_memory_access.h"
 #include "src/utils/hash.h"
+#include "src/writer/array_length_from_uniform_options.h"
 #include "src/writer/text_generator.h"
 
 namespace tint {
@@ -44,6 +45,8 @@ namespace tint {
 namespace sem {
 class Call;
 class Intrinsic;
+class TypeConstructor;
+class TypeConversion;
 }  // namespace sem
 
 namespace writer {
@@ -51,8 +54,18 @@ namespace hlsl {
 
 /// The result of sanitizing a program for generation.
 struct SanitizedResult {
+  /// Constructor
+  SanitizedResult();
+  /// Destructor
+  ~SanitizedResult();
+  /// Move constructor
+  SanitizedResult(SanitizedResult&&);
+
   /// The sanitized program.
   Program program;
+  /// Indices into the array_length_from_uniform binding that are statically
+  /// used.
+  std::unordered_set<uint32_t> used_array_length_from_uniform_indices;
 };
 
 /// Sanitize a program in preparation for generating HLSL.
@@ -60,9 +73,11 @@ struct SanitizedResult {
 /// that will be passed via root constants
 /// @param disable_workgroup_init `true` to disable workgroup memory zero
 /// @returns the sanitized program and any supplementary information
-SanitizedResult Sanitize(const Program* program,
-                         sem::BindingPoint root_constant_binding_point = {},
-                         bool disable_workgroup_init = false);
+SanitizedResult Sanitize(
+    const Program* program,
+    sem::BindingPoint root_constant_binding_point = {},
+    bool disable_workgroup_init = false,
+    const ArrayLengthFromUniformOptions& array_length_from_uniform = {});
 
 /// Implementation class for HLSL generator
 class GeneratorImpl : public TextGenerator {
@@ -75,12 +90,12 @@ class GeneratorImpl : public TextGenerator {
   /// @returns true on successful generation; false otherwise
   bool Generate();
 
-  /// Handles an array accessor expression
+  /// Handles an index accessor expression
   /// @param out the output of the expression stream
   /// @param expr the expression to emit
-  /// @returns true if the array accessor was emitted
-  bool EmitArrayAccessor(std::ostream& out,
-                         const ast::ArrayAccessorExpression* expr);
+  /// @returns true if the index accessor was emitted
+  bool EmitIndexAccessor(std::ostream& out,
+                         const ast::IndexAccessorExpression* expr);
   /// Handles an assignment statement
   /// @param stmt the statement to emit
   /// @returns true if the statement was emitted successfully
@@ -116,6 +131,38 @@ class GeneratorImpl : public TextGenerator {
   /// @param expr the call expression
   /// @returns true if the call expression is emitted
   bool EmitCall(std::ostream& out, const ast::CallExpression* expr);
+  /// Handles generating a function call expression
+  /// @param out the output of the expression stream
+  /// @param call the call expression
+  /// @param function the function being called
+  /// @returns true if the expression is emitted
+  bool EmitFunctionCall(std::ostream& out,
+                        const sem::Call* call,
+                        const sem::Function* function);
+  /// Handles generating an intrinsic call expression
+  /// @param out the output of the expression stream
+  /// @param call the call expression
+  /// @param intrinsic the intrinsic being called
+  /// @returns true if the expression is emitted
+  bool EmitIntrinsicCall(std::ostream& out,
+                         const sem::Call* call,
+                         const sem::Intrinsic* intrinsic);
+  /// Handles generating a type conversion expression
+  /// @param out the output of the expression stream
+  /// @param call the call expression
+  /// @param conv the type conversion
+  /// @returns true if the expression is emitted
+  bool EmitTypeConversion(std::ostream& out,
+                          const sem::Call* call,
+                          const sem::TypeConversion* conv);
+  /// Handles generating a type constructor expression
+  /// @param out the output of the expression stream
+  /// @param call the call expression
+  /// @param ctor the type constructor
+  /// @returns true if the expression is emitted
+  bool EmitTypeConstructor(std::ostream& out,
+                           const sem::Call* call,
+                           const sem::TypeConstructor* ctor);
   /// Handles generating a call expression to a
   /// transform::DecomposeMemoryAccess::Intrinsic for a uniform buffer
   /// @param out the output of the expression stream
@@ -161,11 +208,11 @@ class GeneratorImpl : public TextGenerator {
   /// Handles generating a call to a texture function (`textureSample`,
   /// `textureSampleGrad`, etc)
   /// @param out the output of the expression stream
-  /// @param expr the call expression
+  /// @param call the call expression
   /// @param intrinsic the semantic information for the texture intrinsic
   /// @returns true if the call expression is emitted
   bool EmitTextureCall(std::ostream& out,
-                       const ast::CallExpression* expr,
+                       const sem::Call* call,
                        const sem::Intrinsic* intrinsic);
   /// Handles generating a call to the `select()` intrinsic
   /// @param out the output of the expression stream
@@ -217,28 +264,10 @@ class GeneratorImpl : public TextGenerator {
   /// @param case_idx the index of the switch case in the switch statement
   /// @returns true if the statement was emitted successfully
   bool EmitCase(const ast::SwitchStatement* s, size_t case_idx);
-  /// Handles generating constructor expressions
-  /// @param out the output of the expression stream
-  /// @param expr the constructor expression
-  /// @returns true if the expression was emitted
-  bool EmitConstructor(std::ostream& out,
-                       const ast::ConstructorExpression* expr);
   /// Handles generating a discard statement
   /// @param stmt the discard statement
   /// @returns true if the statement was successfully emitted
   bool EmitDiscard(const ast::DiscardStatement* stmt);
-  /// Handles generating a scalar constructor
-  /// @param out the output of the expression stream
-  /// @param expr the scalar constructor expression
-  /// @returns true if the scalar constructor is emitted
-  bool EmitScalarConstructor(std::ostream& out,
-                             const ast::ScalarConstructorExpression* expr);
-  /// Handles emitting a type constructor
-  /// @param out the output of the expression stream
-  /// @param expr the type constructor expression
-  /// @returns true if the constructor is emitted
-  bool EmitTypeConstructor(std::ostream& out,
-                           const ast::TypeConstructorExpression* expr);
   /// Handles a continue statement
   /// @param stmt the statement to emit
   /// @returns true if the statement was emitted successfully
@@ -252,7 +281,11 @@ class GeneratorImpl : public TextGenerator {
   /// @param func the function to generate
   /// @returns true if the function was emitted
   bool EmitFunction(const ast::Function* func);
-
+  /// Handles emitting the function body if it discards to work around a FXC
+  /// compilation bug.
+  /// @param func the function with the body to emit
+  /// @returns true if the function was emitted
+  bool EmitFunctionBodyWithDiscard(const ast::Function* func);
   /// Handles emitting a global variable
   /// @param global the global variable
   /// @returns true on success
@@ -295,7 +328,7 @@ class GeneratorImpl : public TextGenerator {
   /// @param out the output stream
   /// @param lit the literal to emit
   /// @returns true if the literal was successfully emitted
-  bool EmitLiteral(std::ostream& out, const ast::Literal* lit);
+  bool EmitLiteral(std::ostream& out, const ast::LiteralExpression* lit);
   /// Handles a loop statement
   /// @param stmt the statement to emit
   /// @returns true if the statement was emitted
@@ -327,6 +360,10 @@ class GeneratorImpl : public TextGenerator {
   /// @param stmt the statement to emit
   /// @returns true if the statement was emitted
   bool EmitSwitch(const ast::SwitchStatement* stmt);
+  // Handles generating a switch statement with only a default case
+  /// @param stmt the statement to emit
+  /// @returns true if the statement was emitted
+  bool EmitDefaultOnlySwitch(const ast::SwitchStatement* stmt);
   /// Handles generating type
   /// @param out the output stream
   /// @param type the type to generate
@@ -386,6 +423,26 @@ class GeneratorImpl : public TextGenerator {
   /// @returns true on success
   bool EmitDynamicVectorAssignment(const ast::AssignmentStatement* stmt,
                                    const sem::Vector* vec);
+  /// Emits call to a helper matrix assignment function for the input assignment
+  /// statement and matrix type. This is used to work around FXC issues where
+  /// assignment of a vector to a matrix with a dynamic index causes compilation
+  /// failures.
+  /// @param stmt assignment statement that corresponds to a matrix assignment
+  /// via an accessor expression
+  /// @param mat the matrix type being assigned to
+  /// @returns true on success
+  bool EmitDynamicMatrixVectorAssignment(const ast::AssignmentStatement* stmt,
+                                         const sem::Matrix* mat);
+  /// Emits call to a helper matrix assignment function for the input assignment
+  /// statement and matrix type. This is used to work around FXC issues where
+  /// assignment of a scalar to a matrix with at least one dynamic index causes
+  /// compilation failures.
+  /// @param stmt assignment statement that corresponds to a matrix assignment
+  /// via an accessor expression
+  /// @param mat the matrix type being assigned to
+  /// @returns true on success
+  bool EmitDynamicMatrixScalarAssignment(const ast::AssignmentStatement* stmt,
+                                         const sem::Matrix* mat);
 
   /// Handles generating a builtin method name
   /// @param intrinsic the semantic info for the intrinsic
@@ -454,6 +511,10 @@ class GeneratorImpl : public TextGenerator {
   std::unordered_map<const sem::Intrinsic*, std::string> intrinsics_;
   std::unordered_map<const sem::Struct*, std::string> structure_builders_;
   std::unordered_map<const sem::Vector*, std::string> dynamic_vector_write_;
+  std::unordered_map<const sem::Matrix*, std::string>
+      dynamic_matrix_vector_write_;
+  std::unordered_map<const sem::Matrix*, std::string>
+      dynamic_matrix_scalar_write_;
 };
 
 }  // namespace hlsl

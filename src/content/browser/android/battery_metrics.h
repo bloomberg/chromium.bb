@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_ANDROID_BATTERY_METRICS_H_
 
 #include "base/android/radio_utils.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/sequence_checker.h"
@@ -39,7 +38,7 @@ class AndroidBatteryMetrics
   void OnPowerStateChange(bool on_battery_power) override;
 
   void UpdateMetricsEnabled();
-  void CaptureAndReportMetrics();
+  void CaptureAndReportMetrics(bool disabling);
   void UpdateAndReportRadio();
   void MonitorRadioState();
 

@@ -15,7 +15,7 @@
 #include "chromeos/tpm/install_attributes.h"
 #include "content/public/browser/notification_service.h"
 
-namespace ash {
+namespace chromeos {
 
 NetworkPrefStateObserver::NetworkPrefStateObserver() {
   // Initialize NetworkHandler with device prefs only.
@@ -37,7 +37,7 @@ void NetworkPrefStateObserver::OnUserProfileLoaded(
   // in. Other profiles are ignored because only the primary user's network
   // configuration is used on Chrome OS.
   if (ProfileHelper::IsPrimaryProfile(profile)) {
-    NetworkHandler::Get()->set_is_enterprise_managed(
+    NetworkHandler::Get()->SetIsEnterpriseManaged(
         InstallAttributes::Get()->IsEnterpriseManaged());
     InitializeNetworkPrefServices(profile);
     session_observation_.Reset();
@@ -59,4 +59,4 @@ void NetworkPrefStateObserver::InitializeNetworkPrefServices(Profile* profile) {
       g_browser_process->local_state());
 }
 
-}  // namespace ash
+}  // namespace chromeos

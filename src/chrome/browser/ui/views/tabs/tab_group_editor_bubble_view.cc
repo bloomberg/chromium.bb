@@ -13,6 +13,7 @@
 #include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/no_destructor.h"
@@ -118,7 +119,7 @@ class MenuItemFactory : public views::BubbleDialogModelHost::CustomViewFactory {
  private:
   const std::u16string name_;
   const views::Button::PressedCallback callback_;
-  const gfx::VectorIcon* const icon_;
+  const raw_ptr<const gfx::VectorIcon> icon_;
 };
 
 class TabGroupEditorBubbleDelegate : public ui::DialogModelDelegate {
@@ -195,7 +196,7 @@ class TabGroupEditorBubbleDelegate : public ui::DialogModelDelegate {
   }
 
  private:
-  const Browser* const browser_;
+  const raw_ptr<const Browser> browser_;
   const tab_groups::TabGroupId group_;
 };
 
@@ -265,17 +266,6 @@ views::Widget* TabGroupEditorBubbleView::Show(
 
     // TODO(pbos): Add enabling/disabling of
     // TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW item.
-
-    if (base::FeatureList::IsEnabled(features::kTabGroupsFeedback)) {
-      dialog_builder.AddCustomField(
-          std::make_unique<MenuItemFactory>(
-              l10n_util::GetStringUTF16(
-                  IDS_TAB_GROUP_HEADER_CXMENU_SEND_FEEDBACK),
-              base::BindRepeating(
-                  &TabGroupEditorBubbleDelegate::SendFeedbackPressed,
-                  base::Unretained(bubble_delegate))),
-          TAB_GROUP_HEADER_CXMENU_FEEDBACK);
-    }
 
     std::unique_ptr<ui::DialogModel> dialog_model = dialog_builder.Build();
 
@@ -411,6 +401,8 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
         std::make_unique<views::ToggleButton>(
             base::BindRepeating(&TabGroupEditorBubbleView::OnSaveTogglePressed,
                                 base::Unretained(this))));
+    save_group_toggle_->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_SAVE_GROUP));
 
     bool is_saved =
         tab_strip_model->group_model()->GetTabGroup(group_)->IsSaved();
@@ -449,14 +441,6 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   move_menu_item_->SetEnabled(
       tab_strip_model->count() !=
       tab_strip_model->group_model()->GetTabGroup(group_)->tab_count());
-
-  if (base::FeatureList::IsEnabled(features::kTabGroupsFeedback)) {
-    AddChildView(CreateMenuItem(
-        TAB_GROUP_HEADER_CXMENU_FEEDBACK,
-        l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_SEND_FEEDBACK),
-        base::BindRepeating(&TabGroupEditorBubbleView::SendFeedbackPressed,
-                            base::Unretained(this))));
-  }
 
   // Setting up the layout.
 

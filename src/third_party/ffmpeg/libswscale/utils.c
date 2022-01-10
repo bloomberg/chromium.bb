@@ -267,6 +267,7 @@ static const FormatEntry format_entries[] = {
     [AV_PIX_FMT_NV42]        = { 1, 1 },
     [AV_PIX_FMT_Y210LE]      = { 1, 0 },
     [AV_PIX_FMT_X2RGB10LE]   = { 1, 1 },
+    [AV_PIX_FMT_X2BGR10LE]   = { 1, 1 },
 };
 
 int sws_isSupportedInput(enum AVPixelFormat pix_fmt)
@@ -873,15 +874,16 @@ int sws_setColorspaceDetails(struct SwsContext *c, const int inv_table[4],
     int need_reinit = 0;
 
     if (c->nb_slice_ctx) {
+        int parent_ret = 0;
         for (int i = 0; i < c->nb_slice_ctx; i++) {
             int ret = sws_setColorspaceDetails(c->slice_ctx[i], inv_table,
                                                srcRange, table, dstRange,
                                                brightness, contrast, saturation);
             if (ret < 0)
-                return ret;
+                parent_ret = ret;
         }
 
-        return 0;
+        return parent_ret;
     }
 
     handle_formats(c);
@@ -993,7 +995,10 @@ int sws_setColorspaceDetails(struct SwsContext *c, const int inv_table[4],
                                      0, 1 << 16, 1 << 16);
             return 0;
         }
-        return -1;
+        //We do not support this combination currently, we need to cascade more contexts to compensate
+        if (c->cascaded_context[0] && memcmp(c->dstColorspaceTable, c->srcColorspaceTable, sizeof(int) * 4))
+            return -1; //AVERROR_PATCHWELCOME;
+        return 0;
     }
 
     if (!isYUV(c->dstFormat) && !isGray(c->dstFormat)) {
@@ -1112,6 +1117,8 @@ SwsContext *sws_alloc_context(void)
     if (c) {
         c->av_class = &ff_sws_context_class;
         av_opt_set_defaults(c);
+        atomic_init(&c->stride_unaligned_warned, 0);
+        atomic_init(&c->data_unaligned_warned,   0);
     }
 
     return c;
@@ -1204,8 +1211,8 @@ static int context_init_threaded(SwsContext *c,
 
     c->nb_threads = ret;
 
-    c->slice_ctx = av_mallocz_array(c->nb_threads, sizeof(*c->slice_ctx));
-    c->slice_err = av_mallocz_array(c->nb_threads, sizeof(*c->slice_err));
+    c->slice_ctx = av_calloc(c->nb_threads, sizeof(*c->slice_ctx));
+    c->slice_err = av_calloc(c->nb_threads, sizeof(*c->slice_err));
     if (!c->slice_ctx || !c->slice_err)
         return AVERROR(ENOMEM);
 
@@ -1213,6 +1220,8 @@ static int context_init_threaded(SwsContext *c,
         c->slice_ctx[i] = sws_alloc_context();
         if (!c->slice_ctx[i])
             return AVERROR(ENOMEM);
+
+        c->slice_ctx[i]->parent = c;
 
         ret = av_opt_copy((void*)c->slice_ctx[i], (void*)c);
         if (ret < 0)

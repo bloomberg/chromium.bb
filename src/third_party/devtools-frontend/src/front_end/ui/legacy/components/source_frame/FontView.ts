@@ -35,6 +35,8 @@ import * as Platform from '../../../../core/platform/platform.js';
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import * as UI from '../../legacy.js';
 
+import fontViewStyles from './fontView.css.legacy.js';
+
 const UIStrings = {
   /**
   *@description Text that appears on a button for the font resource type filter.
@@ -59,7 +61,8 @@ export class FontView extends UI.View.SimpleView {
   private inResize!: boolean|null;
   constructor(mimeType: string, contentProvider: TextUtils.ContentProvider.ContentProvider) {
     super(i18nString(UIStrings.font));
-    this.registerRequiredCSS('ui/legacy/components/source_frame/fontView.css');
+    // eslint-disable-next-line no-restricted-syntax -- Should import styles https://crbug.com/1106746
+    this.registerRequiredCSS(fontViewStyles);
     this.element.classList.add('font-view');
     this.url = contentProvider.contentURL();
     UI.ARIAUtils.setAccessibleName(this.element, i18nString(UIStrings.previewOfFontFromS, {PH1: this.url}));

@@ -8,9 +8,7 @@
 #include <list>
 #include <map>
 
-#include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "content/public/browser/notification_observer.h"
@@ -102,7 +100,8 @@ class UserScriptListener : public content::NotificationObserver,
 
   // Helper to collect the extension's user script URL patterns in a list and
   // return it.
-  void CollectURLPatterns(const Extension* extension,
+  void CollectURLPatterns(content::BrowserContext* context,
+                          const Extension* extension,
                           URLPatterns* patterns);
 
   // content::NotificationObserver

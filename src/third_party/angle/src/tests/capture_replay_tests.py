@@ -589,10 +589,15 @@ class TestBatch():
 
 class TestExpectation():
     # tests that must not be run as list
-    skipped_for_capture_tests = []
+    skipped_for_capture_tests = {}
+    skipped_for_capture_tests_re = {}
 
     # test expectations for tests that do not pass
     non_pass_results = {}
+
+    # tests that must run in a one-test batch
+    run_single = {}
+    run_single_re = {}
 
     flaky_tests = []
 
@@ -602,9 +607,10 @@ class TestExpectation():
     # we want each pair on one line
     result_map = { "FAIL" : GroupedResult.Failed,
                    "TIMEOUT" : GroupedResult.TimedOut,
-                   "CRASHED" : GroupedResult.Crashed,
-                   "COMPILE_FAILED" : GroupedResult.CompileFailed,
-                   "SKIPPED_BY_GTEST" : GroupedResult.Skipped,
+                   "CRASH" : GroupedResult.Crashed,
+                   "COMPILE_FAIL" : GroupedResult.CompileFailed,
+                   "NOT_RUN" : GroupedResult.Skipped,
+                   "SKIP_FOR_CAPTURE" : GroupedResult.Skipped,
                    "PASS" : GroupedResult.Passed}
     # yapf: enable
 
@@ -643,8 +649,12 @@ class TestExpectation():
 
         if self._CheckTagsWithConfig(tags, config_tags):
             test_name_regex = re.compile('^' + test_name.replace('*', '.*') + '$')
-            if result_stripped == 'SKIP_FOR_CAPTURE':
-                self.skipped_for_capture_tests.append(test_name_regex)
+            if result_stripped == 'CRASH' or result_stripped == 'COMPILE_FAIL':
+                self.run_single[test_name] = self.result_map[result_stripped]
+                self.run_single_re[test_name] = test_name_regex
+            if result_stripped == 'SKIP_FOR_CAPTURE' or result_stripped == 'TIMEOUT':
+                self.skipped_for_capture_tests[test_name] = self.result_map[result_stripped]
+                self.skipped_for_capture_tests_re[test_name] = test_name_regex
             elif result_stripped == 'FLAKY':
                 self.flaky_tests.append(test_name_regex)
             else:
@@ -652,10 +662,21 @@ class TestExpectation():
                 self.non_pass_re[test_name] = test_name_regex
 
     def TestIsSkippedForCapture(self, test_name):
-        for p in self.skipped_for_capture_tests:
+        for p in self.skipped_for_capture_tests_re.values():
             m = p.match(test_name)
             if m is not None:
                 return True
+        return False
+
+    def TestNeedsToRunSingle(self, test_name):
+        for p in self.run_single_re.values():
+            m = p.match(test_name)
+            if m is not None:
+                return True
+            for p in self.skipped_for_capture_tests_re.values():
+                m = p.match(test_name)
+                if m is not None:
+                    return True
         return False
 
     def Filter(self, test_list, run_all_tests):
@@ -664,10 +685,13 @@ class TestExpectation():
             for key in self.non_pass_results.keys():
                 if self.non_pass_re[key].match(t) is not None:
                     result[t] = self.non_pass_results[key]
+            for key in self.run_single.keys():
+                if self.run_single_re[key].match(t) is not None:
+                    result[t] = self.run_single[key]
             if run_all_tests:
-                for skip in self.skipped_for_capture_tests:
-                    if skip.match(t) is not None:
-                        result[t] = "'forced skip'"
+                for [key, r] in self.skipped_for_capture_tests.items():
+                    if self.skipped_for_capture_tests_re[key].match(t) is not None:
+                        result[t] = r
         return result
 
     def IsFlaky(self, test_name):
@@ -824,16 +848,35 @@ def main(args):
         # collections that are shared by multiple processes such as job queue or result list.
         manager = multiprocessing.Manager()
         job_queue = manager.Queue()
-        test_batch_num = int(math.ceil(len(test_names) / float(args.batch_count)))
+        test_batch_num = 0
 
-        # put the test batchs into the job queue
-        for batch_index in range(test_batch_num):
+        num_tests = len(test_names)
+        test_index = 0
+
+        # Put the tests into batches and these into the job queue; jobs that areexpected to crash,
+        # timeout, or fail compilation will be run in batches of size one, because a crash or
+        # failing to compile brings down the whole batch, so that we would give false negatives if
+        # such a batch contains jobs that would otherwise poss or fail differently.
+        while test_index < num_tests:
             batch = TestBatch(args, logger)
-            test_index = batch_index
-            while test_index < len(test_names):
-                batch.AddTest(Test(test_names[test_index]))
-                test_index += test_batch_num
-            job_queue.put(batch)
+
+            while test_index < num_tests and len(batch.tests) < args.batch_count:
+                test_name = test_names[test_index]
+                test_obj = Test(test_name)
+
+                if test_expectation.TestNeedsToRunSingle(test_name):
+                    single_batch = TestBatch(args, logger)
+                    single_batch.AddTest(test_obj)
+                    job_queue.put(single_batch)
+                    test_batch_num += 1
+                else:
+                    batch.AddTest(test_obj)
+
+                test_index += 1
+
+            if len(batch.tests) > 0:
+                job_queue.put(batch)
+                test_batch_num += 1
 
         passed_count = 0
         failed_count = 0
@@ -871,7 +914,12 @@ def main(args):
         while child_processes_manager.IsAnyWorkerAlive():
             logger.info('%d workers running, %d jobs left.' %
                         (child_processes_manager.GetRemainingWorkers(), (job_queue.qsize())))
-            time.sleep(STATUS_MESSAGE_PERIOD)
+            # If only a few tests are run it is likely that the workers are finished before
+            # the STATUS_MESSAGE_PERIOD has passed, and the tests script sits idle for the
+            # reminder of the wait time. Therefore, limit waiting by the number of
+            # unfinished jobs.
+            unfinished_jobs = job_queue.qsize() + child_processes_manager.GetRemainingWorkers()
+            time.sleep(min(STATUS_MESSAGE_PERIOD, unfinished_jobs))
 
         child_processes_manager.JoinWorkers()
         end_time = time.time()
@@ -889,9 +937,13 @@ def main(args):
 
         flaky_results = []
 
+        regression_error_log = []
+
         for test_batch in result_list:
             test_batch_result = test_batch.results
             logger.debug(str(test_batch_result))
+
+            batch_has_regression = False
 
             passed_count += len(test_batch_result[GroupedResult.Passed])
             failed_count += len(test_batch_result[GroupedResult.Failed])
@@ -909,15 +961,32 @@ def main(args):
                     # Passing tests are not in the list
                     if test not in test_expectation_for_list.keys():
                         if real_result != GroupedResult.Passed:
+                            batch_has_regression = True
                             unexpected_count[real_result] += 1
                             unexpected_test_results[real_result].append(
                                 '{} {} (expected Pass or is new test)'.format(test, real_result))
                     else:
                         expected_result = test_expectation_for_list[test]
                         if real_result != expected_result:
+                            if real_result != GroupedResult.Passed:
+                                batch_has_regression = True
                             unexpected_count[real_result] += 1
                             unexpected_test_results[real_result].append(
                                 '{} {} (expected {})'.format(test, real_result, expected_result))
+            if batch_has_regression:
+                regression_error_log.append(str(test_batch))
+
+        if len(regression_error_log) > 0:
+            logger.info('Logging output of test batches with regressions')
+            logger.info(
+                '==================================================================================================='
+            )
+            for log in regression_error_log:
+                logger.info(log)
+                logger.info(
+                    '---------------------------------------------------------------------------------------------------'
+                )
+                logger.info('')
 
         logger.info('')
         logger.info('Elapsed time: %.2lf seconds' % (end_time - start_time))

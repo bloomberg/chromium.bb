@@ -276,6 +276,15 @@ void UpdateClientBufferData2(GLuint bufferID, const void *source, GLsizei size)
     memcpy(gMappedBufferData[gBufferMap2[bufferID]], source, size);
 }
 
+void UpdateClientBufferData2WithOffset(GLuint bufferID,
+                                       const void *source,
+                                       GLsizei size,
+                                       GLsizei offset)
+{
+    uintptr_t dest = reinterpret_cast<uintptr_t>(gMappedBufferData[gBufferMap2[bufferID]]) + offset;
+    memcpy(reinterpret_cast<void *>(dest), source, size);
+}
+
 void UpdateBufferID(GLuint id, GLsizei readBufferOffset)
 {
     UpdateResourceMap(&gBufferMap, id, readBufferOffset);
@@ -404,6 +413,21 @@ void UpdateTransformFeedbackID2(GLuint id, GLsizei readBufferOffset)
 void UpdateVertexArrayID2(GLuint id, GLsizei readBufferOffset)
 {
     UpdateResourceMap2(gVertexArrayMap2, id, readBufferOffset);
+}
+
+void SetResourceID(GLuint *map, GLuint id)
+{
+    if (map[id] != 0)
+    {
+        fprintf(stderr, "%s: resource ID %d is already reserved\n", __func__, id);
+        exit(1);
+    }
+    map[id] = id;
+}
+
+void SetFramebufferID(GLuint id)
+{
+    SetResourceID(gFramebufferMap2, id);
 }
 
 void ValidateSerializedState(const char *serializedState, const char *fileName, uint32_t line)

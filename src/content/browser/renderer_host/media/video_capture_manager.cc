@@ -212,6 +212,21 @@ void VideoCaptureManager::Close(
   sessions_.erase(session_it);
 }
 
+void VideoCaptureManager::Crop(
+    const base::UnguessableToken& session_id,
+    const base::Token& crop_id,
+    base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  VideoCaptureController* const controller =
+      LookupControllerBySessionId(session_id);
+  if (!controller || !controller->IsDeviceAlive()) {
+    std::move(callback).Run(media::mojom::CropRequestResult::kErrorGeneric);
+    return;
+  }
+  controller->Crop(crop_id, std::move(callback));
+}
+
 void VideoCaptureManager::QueueStartDevice(
     const media::VideoCaptureSessionId& session_id,
     VideoCaptureController* controller,
@@ -957,7 +972,6 @@ void VideoCaptureManager::OnScreenUnlocked() {
   RecordDeviceSessionLockDuration();
 
   if (base::FeatureList::IsEnabled(features::kStopVideoCaptureOnScreenLock)) {
-    idle_close_timer_.Stop();
     ResumeDevices();
   }
 }
@@ -968,6 +982,10 @@ void VideoCaptureManager::RecordDeviceSessionLockDuration() {
       "Media.VideoCaptureManager.DeviceSessionLockDuration",
       base::TimeTicks::Now() - lock_time_);
   lock_time_ = base::TimeTicks();
+
+  if (base::FeatureList::IsEnabled(features::kStopVideoCaptureOnScreenLock)) {
+    idle_close_timer_.Stop();
+  }
 }
 
 void VideoCaptureManager::EmitLogMessage(const std::string& message,

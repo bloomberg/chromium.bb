@@ -33,6 +33,7 @@ typedef struct ReverseContext {
     unsigned int pts_size;
     int64_t *pts;
     int flush_idx;
+    int64_t nb_samples;
 } ReverseContext;
 
 static av_cold int init(AVFilterContext *ctx)
@@ -145,19 +146,6 @@ const AVFilter ff_vf_reverse = {
 
 #if CONFIG_AREVERSE_FILTER
 
-static int query_formats(AVFilterContext *ctx)
-{
-    int ret = ff_set_common_all_channel_counts(ctx);
-    if (ret < 0)
-        return ret;
-
-    ret = ff_set_common_formats(ctx, ff_all_formats(AVMEDIA_TYPE_AUDIO));
-    if (ret < 0)
-        return ret;
-
-    return ff_set_common_all_samplerates(ctx);
-}
-
 static void reverse_samples_planar(AVFrame *out)
 {
     for (int p = 0; p < out->channels; p++) {
@@ -178,6 +166,12 @@ static void reverse_samples_planar(AVFrame *out)
             int32_t *dst = (int32_t *)out->extended_data[p];
             for (int i = 0, j = out->nb_samples - 1; i < j; i++, j--)
                 FFSWAP(int32_t, dst[i], dst[j]);
+        }
+            break;
+        case AV_SAMPLE_FMT_S64P: {
+            int64_t *dst = (int64_t *)out->extended_data[p];
+            for (int i = 0, j = out->nb_samples - 1; i < j; i++, j--)
+                FFSWAP(int64_t, dst[i], dst[j]);
         }
             break;
         case AV_SAMPLE_FMT_FLTP: {
@@ -222,6 +216,13 @@ static void reverse_samples_packed(AVFrame *out)
                 FFSWAP(int32_t, dst[i * channels + p], dst[j * channels + p]);
     }
         break;
+    case AV_SAMPLE_FMT_S64: {
+        int64_t *dst = (int64_t *)out->extended_data[0];
+        for (int i = 0, j = out->nb_samples - 1; i < j; i++, j--)
+            for (int p = 0; p < channels; p++)
+                FFSWAP(int64_t, dst[i * channels + p], dst[j * channels + p]);
+    }
+        break;
     case AV_SAMPLE_FMT_FLT: {
         float *dst = (float *)out->extended_data[0];
         for (int i = 0, j = out->nb_samples - 1; i < j; i++, j--)
@@ -249,7 +250,8 @@ static int areverse_request_frame(AVFilterLink *outlink)
 
     if (ret == AVERROR_EOF && s->nb_frames > 0) {
         AVFrame *out = s->frames[s->nb_frames - 1];
-        out->pts     = s->pts[s->flush_idx++];
+        out->pts     = s->pts[s->flush_idx++] - s->nb_samples;
+        s->nb_samples += s->pts[s->flush_idx] - s->pts[s->flush_idx - 1] - out->nb_samples;
 
         if (av_sample_fmt_is_planar(out->format))
             reverse_samples_planar(out);
@@ -283,7 +285,6 @@ static const AVFilterPad areverse_outputs[] = {
 const AVFilter ff_af_areverse = {
     .name          = "areverse",
     .description   = NULL_IF_CONFIG_SMALL("Reverse an audio clip."),
-    .query_formats = query_formats,
     .priv_size     = sizeof(ReverseContext),
     .init          = init,
     .uninit        = uninit,

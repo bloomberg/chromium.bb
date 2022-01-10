@@ -108,7 +108,7 @@ namespace dawn_native { namespace metal {
     // static
     ResultOrError<Device*> Device::Create(AdapterBase* adapter,
                                           NSPRef<id<MTLDevice>> mtlDevice,
-                                          const DeviceDescriptor* descriptor) {
+                                          const DawnDeviceDescriptor* descriptor) {
         Ref<Device> device = AcquireRef(new Device(adapter, std::move(mtlDevice), descriptor));
         DAWN_TRY(device->Initialize());
         return device.Detach();
@@ -116,7 +116,7 @@ namespace dawn_native { namespace metal {
 
     Device::Device(AdapterBase* adapter,
                    NSPRef<id<MTLDevice>> mtlDevice,
-                   const DeviceDescriptor* descriptor)
+                   const DawnDeviceDescriptor* descriptor)
         : DeviceBase(adapter, descriptor), mMtlDevice(std::move(mtlDevice)), mCompletedSerial(0) {
     }
 
@@ -433,8 +433,7 @@ namespace dawn_native { namespace metal {
     Ref<Texture> Device::CreateTextureWrappingIOSurface(const ExternalImageDescriptor* descriptor,
                                                         IOSurfaceRef ioSurface,
                                                         uint32_t plane) {
-        const TextureDescriptor* textureDescriptor =
-            reinterpret_cast<const TextureDescriptor*>(descriptor->cTextureDescriptor);
+        const TextureDescriptor* textureDescriptor = FromAPI(descriptor->cTextureDescriptor);
 
         if (ConsumedError(ValidateTextureDescriptor(this, textureDescriptor))) {
             return nullptr;

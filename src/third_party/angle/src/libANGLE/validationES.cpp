@@ -156,6 +156,9 @@ bool ValidReadPixelsFormatEnum(const Context *context, GLenum format)
         case GL_BGRA_EXT:
             return context->getExtensions().readFormatBgraEXT;
 
+        case GL_RGBX8_ANGLE:
+            return context->getExtensions().rgbxInternalFormatANGLE;
+
         default:
             return false;
     }
@@ -208,6 +211,9 @@ bool ValidReadPixelsFormatType(const Context *context,
                     return context->getExtensions().readStencilNV && (type == GL_UNSIGNED_BYTE);
                 case GL_DEPTH_COMPONENT:
                     return ValidReadPixelsUnsignedNormalizedDepthType(context, info, type);
+                case GL_RGBX8_ANGLE:
+                    return context->getExtensions().rgbxInternalFormatANGLE &&
+                           (type == GL_UNSIGNED_BYTE);
                 default:
                     return false;
             }
@@ -7194,7 +7200,7 @@ bool ValidateReadPixelsBase(const Context *context,
             return false;
         }
 
-        *outExtent = std::max(clippedExtent.ValueOrDie(), 0);
+        *outExtent = std::max<int>(clippedExtent.ValueOrDie(), 0);
         return true;
     };
 

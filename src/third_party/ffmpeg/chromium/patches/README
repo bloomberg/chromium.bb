@@ -533,20 +533,6 @@ Affects:
     libavformat/oggdec.c
 
 ------------------------------------------------------------------
-commit 54813536efea1f447067a2af02fd89e25b65b920
-Author: Dale Curtis <dalecurtis@chromium.org>
-Date:   Tue Nov 21 15:15:20 2017 -0800
-
-    Update wrap_bits fix to work with wrap_bits == 63,64.
-
-    BUG=783459
-
-    Signed-off-by: Dale Curtis <dalecurtis@chromium.org>
-
-Affects:
-    libavformat/utils.c
-
-------------------------------------------------------------------
 commit e881e753b0d47f3dd82484695dc24a321a948002
 Author: Dan Sanders <sandersd@chromium.org>
 Date:   Tue Feb 13 14:35:49 2018 -0800
@@ -913,20 +899,6 @@ Affects:
     libavcodec/smacker.c
 
 ------------------------------------------------------------------
-commit 2e5e8668e9e636c5bebbb2bb68b751133830af7f
-Merge: a54c8b6b9e adf72718a4
-Author: Eugene Zemtsov <eugene@chromium.org>
-Date:   Fri Dec 11 14:28:26 2020 -0800
-
-    Merge remote-tracking branch 'upstream/master' into sushi-2020-12-11-14-24-46
-
-    Conflicts:
-       libavformat/mp3dec.c - change in the code that was commented out
-
-Affects:
-    libavformat/mp3dec.c
-
-------------------------------------------------------------------
 commit afa2b4327ab4beb4cd47f6cf4e59df620b5d6e4f
 Author: Matt Wolenetz <wolenetz@chromium.org>
 Date:   Wed Mar 10 16:57:29 2021 -0800
@@ -1088,4 +1060,20 @@ Date:   Wed Sep 15 15:44:40 2021 -0700
 
 Affects:
     libavutil/internal.h
+
+------------------------------------------------------------------
+commit 52ef7a785f90179d78453b889e82f0604131f962
+Merge: 731bf2abeb 45dc668aea
+Author: John Rummell <jrummell@chromium.org>
+Date:   Mon Nov 8 14:39:18 2021 -0800
+
+    Merge remote-tracking branch 'upstream/master' into sushi-2021-11-08-14-35-25
+
+    Conflicts:
+      libavformat/mp3dec.c
+      libavformat/utils.c
+
+Affects:
+    libavformat/mp3dec.c
+    libavformat/utils.c
 

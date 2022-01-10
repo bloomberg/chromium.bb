@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.chrome.browser.share.link_to_text.LinkToTextHelper;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetCoordinator;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetPropertyModelBuilder;
 import org.chromium.chrome.browser.sync.SyncService;
@@ -148,10 +149,23 @@ public class ShareDelegateImpl implements ShareDelegate {
                     webContents.getMainFrame().getCanonicalUrlForSharing(new Callback<GURL>() {
                         @Override
                         public void onResult(GURL result) {
-                            logCanonicalUrlResult(visibleUrl, result);
-
-                            triggerShareWithCanonicalUrlResolved(window, webContents, title,
-                                    visibleUrl, result, shareOrigin, shareDirectly, isIncognito);
+                            if (LinkToTextHelper.hasTextFragment(visibleUrl)) {
+                                LinkToTextHelper.getExistingSelectorsAllFrames(
+                                        currentTab, (selectors) -> {
+                                            GURL canonicalUrl =
+                                                    new GURL(LinkToTextHelper.getUrlToShare(
+                                                            result.getSpec(), selectors));
+                                            logCanonicalUrlResult(visibleUrl, canonicalUrl);
+                                            triggerShareWithCanonicalUrlResolved(window,
+                                                    webContents, title, visibleUrl, canonicalUrl,
+                                                    shareOrigin, shareDirectly, isIncognito);
+                                        });
+                            } else {
+                                logCanonicalUrlResult(visibleUrl, result);
+                                triggerShareWithCanonicalUrlResolved(window, webContents, title,
+                                        visibleUrl, result, shareOrigin, shareDirectly,
+                                        isIncognito);
+                            }
                         }
                     });
                 } else {

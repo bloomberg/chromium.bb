@@ -11,7 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/containers/linked_list.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -179,11 +179,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
     return isolation_info_.top_frame_origin().value();
   }
 
-  const absl::optional<net::CookiePartitionKey> CookiePartitionKey() const {
-    return net::CookiePartitionKey::FromNetworkIsolationKey(
-        isolation_info_.network_isolation_key());
-  }
-
   CookieAccesses* GetCookieAccessesForURLAndSite(
       const GURL& url,
       const net::SiteForCookies& site_for_cookies);
@@ -195,7 +190,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
       const net::CookieWithAccessResult& cookie_item);
 
   const mojom::RestrictedCookieManagerRole role_;
-  net::CookieStore* const cookie_store_;
+  const raw_ptr<net::CookieStore> cookie_store_;
   const CookieSettings& cookie_settings_;
 
   url::Origin origin_;
@@ -214,10 +209,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   // Cookie partition key that the instance of RestrictedCookieManager will have
   // access to.
   absl::optional<net::CookiePartitionKey> cookie_partition_key_;
-  // CookiePartitionKeychain that is either empty if `cookie_partition_key_` is
-  // nullopt. If `cookie_partition_key_` is not null, the keychain contains its
-  // value.
-  net::CookiePartitionKeychain cookie_partition_keychain_;
+  // CookiePartitionKeyCollection that is either empty if
+  // `cookie_partition_key_` is nullopt. If `cookie_partition_key_` is not null,
+  // the key collection contains its value.
+  net::CookiePartitionKeyCollection cookie_partition_key_collection_;
 
   // Contains a mapping of url/site -> recent cookie updates for duplicate
   // update filtering.

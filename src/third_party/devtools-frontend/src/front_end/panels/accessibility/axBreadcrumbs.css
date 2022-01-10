@@ -45,7 +45,7 @@
   -webkit-mask-size: 30px 10px;
   -webkit-mask-repeat: no-repeat;
   background-color: var(--color-syntax-7);
-  content: '';
+  content: "";
   text-shadow: none;
   margin-right: -2px;
   height: 12px;
@@ -97,6 +97,10 @@
 
 .ax-breadcrumbs .ax-node:not(.inspected):hover {
   background-color: var(--color-background-elevation-0);
+}
+
+.ax-breadcrumbs .ax-node:not(.inspected):focus {
+  background-color: var(--color-background-elevation-1);
 }
 
 .ax-breadcrumbs .ax-node.inspected:focus * {

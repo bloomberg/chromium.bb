@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/field_info_manager_factory.h"
 #include "chrome/browser/password_manager/password_reuse_manager_factory.h"
+#include "chrome/browser/password_manager/password_scripts_fetcher_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
@@ -248,7 +250,7 @@ class NavigationPasswordMetricsRecorder
     }
   }
 
-  content::WebContents* web_contents_;
+  raw_ptr<content::WebContents> web_contents_;
 };
 
 }  // namespace
@@ -326,7 +328,7 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
 
   if (update_password) {
     if (messages::IsUpdatePasswordMessagesUiEnabled()) {
-      save_password_message_delegate_.DisplaySavePasswordPrompt(
+      save_update_password_message_delegate_.DisplaySaveUpdatePasswordPrompt(
           web_contents(), std::move(form_to_save), /*update_password=*/true);
     } else {
       UpdatePasswordInfoBarDelegate::Create(web_contents(),
@@ -334,7 +336,7 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     }
   } else {
     if (messages::IsPasswordMessagesUiEnabled()) {
-      save_password_message_delegate_.DisplaySavePasswordPrompt(
+      save_update_password_message_delegate_.DisplaySaveUpdatePasswordPrompt(
           web_contents(), std::move(form_to_save), /*update_password=*/false);
     } else {
       SavePasswordInfoBarDelegate::Create(web_contents(),
@@ -601,13 +603,9 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
         ->GetForBrowserContext(web_contents()->GetBrowserContext())
         ->PrewarmCache();
   }
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordChange)) {
-    was_leak_dialog_shown_ = true;
-  }
 
   if (messages::IsPasswordMessagesUiEnabled()) {
-    save_password_message_delegate_.DismissSavePasswordPrompt();
+    save_update_password_message_delegate_.DismissSaveUpdatePasswordPrompt();
   } else {
     HideSavePasswordInfobar(web_contents());
   }
@@ -667,6 +665,16 @@ ChromePasswordManagerClient::GetPasswordReuseManager() const {
   return PasswordReuseManagerFactory::GetForProfile(profile_);
 }
 
+password_manager::PasswordScriptsFetcher*
+ChromePasswordManagerClient::GetPasswordScriptsFetcher() {
+  // PasswordScriptsFetcher exists only on Android.
+#if defined(OS_ANDROID)
+  return PasswordScriptsFetcherFactory::GetForBrowserContext(profile_);
+#else
+  return nullptr;
+#endif
+}
+
 password_manager::SyncState ChromePasswordManagerClient::GetPasswordSyncState()
     const {
   const syncer::SyncService* sync_service =
@@ -698,12 +706,6 @@ bool ChromePasswordManagerClient::WasLastNavigationHTTPError() const {
     return true;
   return false;
 }
-
-#if defined(OS_ANDROID)
-bool ChromePasswordManagerClient::WasCredentialLeakDialogShown() const {
-  return was_leak_dialog_shown_;
-}
-#endif  // defined(OS_ANDROID)
 
 net::CertStatus ChromePasswordManagerClient::GetMainFrameCertStatus() const {
   content::NavigationEntry* entry =
@@ -988,6 +990,10 @@ ChromePasswordManagerClient::GetWebAuthnCredentialsDelegate() {
   return &webauthn_credentials_delegate_;
 }
 
+version_info::Channel ChromePasswordManagerClient::GetChannel() const {
+  return chrome::GetChannel();
+}
+
 void ChromePasswordManagerClient::AutomaticGenerationAvailable(
     const autofill::password_generation::PasswordGenerationUIData& ui_data) {
   if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
@@ -1217,6 +1223,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
     content::WebContents* web_contents,
     autofill::AutofillClient* autofill_client)
     : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<ChromePasswordManagerClient>(*web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       password_manager_(this),
       password_feature_manager_(profile_->GetPrefs(),
@@ -1325,7 +1332,7 @@ void ChromePasswordManagerClient::WebContentsDestroyed() {
   }
 
 #if defined(OS_ANDROID)
-  save_password_message_delegate_.DismissSavePasswordPrompt();
+  save_update_password_message_delegate_.DismissSaveUpdatePasswordPrompt();
 #endif
 }
 

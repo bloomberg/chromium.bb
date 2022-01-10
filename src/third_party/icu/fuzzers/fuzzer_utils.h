@@ -8,6 +8,7 @@
 #include <random>
 
 #include "base/at_exit.h"
+#include "base/check.h"
 #include "base/i18n/icu_util.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
@@ -15,7 +16,7 @@
 
 struct IcuEnvironment {
   IcuEnvironment() {
-    base::i18n::InitializeICU();
+    CHECK(base::i18n::InitializeICU());
   }
 };
 

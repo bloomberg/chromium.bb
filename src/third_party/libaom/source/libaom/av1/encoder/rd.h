@@ -298,13 +298,12 @@ static INLINE void get_rd_opt_coeff_thresh(
   }
 }
 
-// Used to reset the state of tx/mb rd hash information
-static INLINE void reset_hash_records(TxfmSearchInfo *const txfm_info) {
-  if (!txfm_info->txb_rd_records) return;
+// Used to reset the state of mb rd hash information
+static INLINE void reset_mb_rd_record(MB_RD_RECORD *const mb_rd_record) {
+  if (!mb_rd_record) return;
 
   // Reset the state for use_mb_rd_hash
-  txfm_info->txb_rd_records->mb_rd_record.num =
-      txfm_info->txb_rd_records->mb_rd_record.index_start = 0;
+  mb_rd_record->num = mb_rd_record->index_start = 0;
 }
 
 void av1_setup_pred_block(const MACROBLOCKD *xd,

@@ -386,7 +386,7 @@ typedef struct MatroskaDemuxContext {
     /* byte position of the segment inside the stream */
     int64_t segment_start;
 
-    /* This packet coincides with AVFormatInternal.parse_pkt
+    /* This packet coincides with FFFormatContext.parse_pkt
      * and is not owned by us. */
     AVPacket *pkt;
 
@@ -807,20 +807,22 @@ static const char *const matroska_doctypes[] = { "matroska", "webm" };
 static int matroska_reset_status(MatroskaDemuxContext *matroska,
                                  uint32_t id, int64_t position)
 {
+    int64_t err = 0;
     if (position >= 0) {
-        int64_t err = avio_seek(matroska->ctx->pb, position, SEEK_SET);
-        if (err < 0)
-            return err;
-    }
+        err = avio_seek(matroska->ctx->pb, position, SEEK_SET);
+        if (err > 0)
+            err = 0;
+    } else
+        position = avio_tell(matroska->ctx->pb);
 
     matroska->current_id    = id;
     matroska->num_levels    = 1;
     matroska->unknown_count = 0;
-    matroska->resync_pos = avio_tell(matroska->ctx->pb);
+    matroska->resync_pos    = position;
     if (id)
         matroska->resync_pos -= (av_log2(id) + 7) / 8;
 
-    return 0;
+    return err;
 }
 
 static int matroska_resync(MatroskaDemuxContext *matroska, int64_t last_pos)
@@ -1876,6 +1878,7 @@ static int matroska_parse_seekhead_entry(MatroskaDemuxContext *matroska,
     uint32_t saved_id  = matroska->current_id;
     int64_t before_pos = avio_tell(matroska->ctx->pb);
     int ret = 0;
+    int ret2;
 
     /* seek */
     if (avio_seek(matroska->ctx->pb, pos, SEEK_SET) == pos) {
@@ -1900,7 +1903,9 @@ static int matroska_parse_seekhead_entry(MatroskaDemuxContext *matroska,
     }
     /* Seek back - notice that in all instances where this is used
      * it is safe to set the level to 1. */
-    matroska_reset_status(matroska, saved_id, before_pos);
+    ret2 = matroska_reset_status(matroska, saved_id, before_pos);
+    if (ret >= 0)
+        ret = ret2;
 
     return ret;
 }
@@ -2342,7 +2347,6 @@ static int matroska_parse_tracks(AVFormatContext *s)
 {
     MatroskaDemuxContext *matroska = s->priv_data;
     MatroskaTrack *tracks = matroska->tracks.elem;
-    AVStream *st;
     int i, j, ret;
     int k;
 
@@ -2356,6 +2360,8 @@ static int matroska_parse_tracks(AVFormatContext *s)
         int extradata_offset = 0;
         uint32_t fourcc = 0;
         FFIOContext b;
+        AVStream *st;
+        FFStream *sti;
         char* key_id_base64 = NULL;
         int bit_depth = -1;
 
@@ -2490,6 +2496,7 @@ static int matroska_parse_tracks(AVFormatContext *s)
             av_free(key_id_base64);
             return AVERROR(ENOMEM);
         }
+        sti = ffstream(st);
 
         if (key_id_base64) {
             /* export encryption key id as base64 metadata tag */
@@ -2807,10 +2814,10 @@ static int matroska_parse_tracks(AVFormatContext *s)
                           &st->sample_aspect_ratio.den,
                           st->codecpar->height * track->video.display_width  * display_width_mul,
                           st->codecpar->width  * track->video.display_height * display_height_mul,
-                          255);
+                          INT_MAX);
             }
             if (st->codecpar->codec_id != AV_CODEC_ID_HEVC)
-                st->internal->need_parsing = AVSTREAM_PARSE_HEADERS;
+                sti->need_parsing = AVSTREAM_PARSE_HEADERS;
 
             if (track->default_duration) {
                 int div = track->default_duration <= INT64_MAX ? 1 : 2;
@@ -2869,9 +2876,9 @@ static int matroska_parse_tracks(AVFormatContext *s)
             if (st->codecpar->codec_id == AV_CODEC_ID_MP3 ||
                 st->codecpar->codec_id == AV_CODEC_ID_MLP ||
                 st->codecpar->codec_id == AV_CODEC_ID_TRUEHD)
-                st->internal->need_parsing = AVSTREAM_PARSE_FULL;
+                sti->need_parsing = AVSTREAM_PARSE_FULL;
             else if (st->codecpar->codec_id != AV_CODEC_ID_AAC)
-                st->internal->need_parsing = AVSTREAM_PARSE_HEADERS;
+                sti->need_parsing = AVSTREAM_PARSE_HEADERS;
             if (track->codec_delay > 0) {
                 st->codecpar->initial_padding = av_rescale_q(track->codec_delay,
                                                              (AVRational){1, 1000000000},
@@ -2906,6 +2913,7 @@ static int matroska_parse_tracks(AVFormatContext *s)
 
 static int matroska_read_header(AVFormatContext *s)
 {
+    FFFormatContext *const si = ffformatcontext(s);
     MatroskaDemuxContext *matroska = s->priv_data;
     EbmlList *attachments_list = &matroska->attachments;
     EbmlList *chapters_list    = &matroska->chapters;
@@ -2952,7 +2960,7 @@ static int matroska_read_header(AVFormatContext *s)
     }
     ebml_free(ebml_syntax, &ebml);
 
-    matroska->pkt = s->internal->parse_pkt;
+    matroska->pkt = si->parse_pkt;
 
     /* The next thing is a segment. */
     pos = avio_tell(matroska->ctx->pb);
@@ -2969,7 +2977,7 @@ static int matroska_read_header(AVFormatContext *s)
     }
     /* Set data_offset as it might be needed later by seek_frame_generic. */
     if (matroska->current_id == MATROSKA_ID_CLUSTER)
-        s->internal->data_offset = avio_tell(matroska->ctx->pb) - 4;
+        si->data_offset = avio_tell(matroska->ctx->pb) - 4;
     matroska_execute_seekhead(matroska);
 
     if (!matroska->time_scale)
@@ -3664,7 +3672,7 @@ static int matroska_parse_block(MatroskaDemuxContext *matroska, AVBufferRef *buf
             return res;
         if (is_keyframe)
             matroska->skip_to_keyframe = 0;
-        else if (!st->internal->skip_to_keyframe) {
+        else if (!ffstream(st)->skip_to_keyframe) {
             av_log(matroska->ctx, AV_LOG_ERROR, "File is broken, keyframes not correctly marked!\n");
             matroska->skip_to_keyframe = 0;
         }
@@ -3827,6 +3835,7 @@ static int matroska_read_seek(AVFormatContext *s, int stream_index,
     MatroskaDemuxContext *matroska = s->priv_data;
     MatroskaTrack *tracks = NULL;
     AVStream *st = s->streams[stream_index];
+    FFStream *const sti = ffstream(st);
     int i, index;
 
     /* Parse the CUES now since we need the index data to seek. */
@@ -3835,13 +3844,15 @@ static int matroska_read_seek(AVFormatContext *s, int stream_index,
         matroska_parse_cues(matroska);
     }
 
-    if (!st->internal->nb_index_entries)
+    if (!sti->nb_index_entries)
         goto err;
-    timestamp = FFMAX(timestamp, st->internal->index_entries[0].timestamp);
+    timestamp = FFMAX(timestamp, sti->index_entries[0].timestamp);
 
-    if ((index = av_index_search_timestamp(st, timestamp, flags)) < 0 || index == st->internal->nb_index_entries - 1) {
-        matroska_reset_status(matroska, 0, st->internal->index_entries[st->internal->nb_index_entries - 1].pos);
-        while ((index = av_index_search_timestamp(st, timestamp, flags)) < 0 || index == st->internal->nb_index_entries - 1) {
+    if ((index = av_index_search_timestamp(st, timestamp, flags)) < 0 ||
+         index == sti->nb_index_entries - 1) {
+        matroska_reset_status(matroska, 0, sti->index_entries[sti->nb_index_entries - 1].pos);
+        while ((index = av_index_search_timestamp(st, timestamp, flags)) < 0 ||
+               index == sti->nb_index_entries - 1) {
             matroska_clear_queue(matroska);
             if (matroska_parse_cluster(matroska) < 0)
                 break;
@@ -3849,7 +3860,8 @@ static int matroska_read_seek(AVFormatContext *s, int stream_index,
     }
 
     matroska_clear_queue(matroska);
-    if (index < 0 || (matroska->cues_parsing_deferred < 0 && index == st->internal->nb_index_entries - 1))
+    if (index < 0 || (matroska->cues_parsing_deferred < 0 &&
+                      index == sti->nb_index_entries - 1))
         goto err;
 
     tracks = matroska->tracks.elem;
@@ -3861,17 +3873,17 @@ static int matroska_read_seek(AVFormatContext *s, int stream_index,
     }
 
     /* We seek to a level 1 element, so set the appropriate status. */
-    matroska_reset_status(matroska, 0, st->internal->index_entries[index].pos);
+    matroska_reset_status(matroska, 0, sti->index_entries[index].pos);
     if (flags & AVSEEK_FLAG_ANY) {
-        st->internal->skip_to_keyframe = 0;
+        sti->skip_to_keyframe = 0;
         matroska->skip_to_timecode = timestamp;
     } else {
-        st->internal->skip_to_keyframe = 1;
-        matroska->skip_to_timecode = st->internal->index_entries[index].timestamp;
+        sti->skip_to_keyframe = 1;
+        matroska->skip_to_timecode = sti->index_entries[index].timestamp;
     }
     matroska->skip_to_keyframe = 1;
     matroska->done             = 0;
-    avpriv_update_cur_dts(s, st, st->internal->index_entries[index].timestamp);
+    avpriv_update_cur_dts(s, st, sti->index_entries[index].timestamp);
     return 0;
 err:
     // slightly hackish but allows proper fallback to
@@ -3879,7 +3891,7 @@ err:
     matroska_reset_status(matroska, 0, -1);
     matroska->resync_pos = -1;
     matroska_clear_queue(matroska);
-    st->internal->skip_to_keyframe =
+    sti->skip_to_keyframe =
     matroska->skip_to_keyframe = 0;
     matroska->done = 0;
     return -1;
@@ -3915,10 +3927,12 @@ typedef struct {
  */
 static CueDesc get_cue_desc(AVFormatContext *s, int64_t ts, int64_t cues_start) {
     MatroskaDemuxContext *matroska = s->priv_data;
+    FFStream *const sti = ffstream(s->streams[0]);
+    AVIndexEntry *const index_entries = sti->index_entries;
+    int nb_index_entries = sti->nb_index_entries;
     CueDesc cue_desc;
     int i;
-    int nb_index_entries = s->streams[0]->internal->nb_index_entries;
-    AVIndexEntry *index_entries = s->streams[0]->internal->index_entries;
+
     if (ts >= matroska->duration * matroska->time_scale) return (CueDesc) {-1, -1, -1, -1};
     for (i = 1; i < nb_index_entries; i++) {
         if (index_entries[i - 1].timestamp * matroska->time_scale <= ts &&
@@ -3945,14 +3959,20 @@ static CueDesc get_cue_desc(AVFormatContext *s, int64_t ts, int64_t cues_start) 
 static int webm_clusters_start_with_keyframe(AVFormatContext *s)
 {
     MatroskaDemuxContext *matroska = s->priv_data;
+    AVStream *const st  = s->streams[0];
+    FFStream *const sti = ffstream(st);
     uint32_t id = matroska->current_id;
     int64_t cluster_pos, before_pos;
     int index, rv = 1;
-    if (s->streams[0]->internal->nb_index_entries <= 0) return 0;
+
+    if (sti->nb_index_entries <= 0)
+        return 0;
+
     // seek to the first cluster using cues.
-    index = av_index_search_timestamp(s->streams[0], 0, 0);
-    if (index < 0)  return 0;
-    cluster_pos = s->streams[0]->internal->index_entries[index].pos;
+    index = av_index_search_timestamp(st, 0, 0);
+    if (index < 0)
+        return 0;
+    cluster_pos = sti->index_entries[index].pos;
     before_pos = avio_tell(s->pb);
     while (1) {
         uint64_t cluster_id, cluster_length;
@@ -4073,12 +4093,12 @@ static int64_t webm_dash_manifest_compute_bandwidth(AVFormatContext *s, int64_t 
 {
     MatroskaDemuxContext *matroska = s->priv_data;
     AVStream *st = s->streams[0];
+    FFStream *const sti = ffstream(st);
     double bandwidth = 0.0;
-    int i;
 
-    for (i = 0; i < st->internal->nb_index_entries; i++) {
+    for (int i = 0; i < sti->nb_index_entries; i++) {
         int64_t prebuffer_ns = 1000000000;
-        int64_t time_ns = st->internal->index_entries[i].timestamp * matroska->time_scale;
+        int64_t time_ns = sti->index_entries[i].timestamp * matroska->time_scale;
         double nano_seconds_per_second = 1000000000.0;
         int64_t prebuffered_ns = time_ns + prebuffer_ns;
         double prebuffer_bytes = 0.0;
@@ -4162,6 +4182,7 @@ static int webm_dash_manifest_cues(AVFormatContext *s, int64_t init_range)
     EbmlList *seekhead_list = &matroska->seekhead;
     MatroskaSeekhead *seekhead = seekhead_list->elem;
     AVStream *const st = s->streams[0];
+    FFStream *const sti = ffstream(st);
     AVBPrint bprint;
     char *buf;
     int64_t cues_start = -1, cues_end = -1, before_pos, bandwidth;
@@ -4197,7 +4218,7 @@ static int webm_dash_manifest_cues(AVFormatContext *s, int64_t init_range)
     // parse the cues
     matroska_parse_cues(matroska);
 
-    if (!st->internal->nb_index_entries)
+    if (!sti->nb_index_entries)
         return AVERROR_INVALIDDATA;
 
     // cues start
@@ -4222,8 +4243,8 @@ static int webm_dash_manifest_cues(AVFormatContext *s, int64_t init_range)
     // Store cue point timestamps as a comma separated list
     // for checking subsegment alignment in the muxer.
     av_bprint_init(&bprint, 0, AV_BPRINT_SIZE_UNLIMITED);
-    for (int i = 0; i < st->internal->nb_index_entries; i++)
-        av_bprintf(&bprint, "%" PRId64",", st->internal->index_entries[i].timestamp);
+    for (int i = 0; i < sti->nb_index_entries; i++)
+        av_bprintf(&bprint, "%" PRId64",", sti->index_entries[i].timestamp);
     if (!av_bprint_is_complete(&bprint)) {
         av_bprint_finalize(&bprint, NULL);
         return AVERROR(ENOMEM);

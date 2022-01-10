@@ -58,8 +58,6 @@ constexpr int VideoReceiveStream2::kMaxWaitForKeyFrameMs;
 
 namespace {
 
-using ReturnReason = video_coding::FrameBuffer::ReturnReason;
-
 constexpr int kMinBaseMinimumDelayMs = 0;
 constexpr int kMaxBaseMinimumDelayMs = 10000;
 
@@ -695,14 +693,14 @@ absl::optional<Syncable::Info> VideoReceiveStream2::GetInfo() const {
 
 bool VideoReceiveStream2::GetPlayoutRtpTimestamp(uint32_t* rtp_timestamp,
                                                  int64_t* time_ms) const {
-  RTC_NOTREACHED();
+  RTC_DCHECK_NOTREACHED();
   return 0;
 }
 
 void VideoReceiveStream2::SetEstimatedPlayoutNtpTimestampMs(
     int64_t ntp_timestamp_ms,
     int64_t time_ms) {
-  RTC_NOTREACHED();
+  RTC_DCHECK_NOTREACHED();
 }
 
 bool VideoReceiveStream2::SetMinimumPlayoutDelay(int delay_ms) {
@@ -723,9 +721,7 @@ void VideoReceiveStream2::StartNextDecode() {
   frame_buffer_->NextFrame(
       GetMaxWaitMs(), keyframe_required_, &decode_queue_,
       /* encoded frame handler */
-      [this](std::unique_ptr<EncodedFrame> frame, ReturnReason res) {
-        RTC_DCHECK_EQ(frame == nullptr, res == ReturnReason::kTimeout);
-        RTC_DCHECK_EQ(frame != nullptr, res == ReturnReason::kFrameFound);
+      [this](std::unique_ptr<EncodedFrame> frame) {
         RTC_DCHECK_RUN_ON(&decode_queue_);
         if (decoder_stopped_)
           return;

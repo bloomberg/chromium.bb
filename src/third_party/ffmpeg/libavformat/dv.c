@@ -345,6 +345,9 @@ static int dv_init_demux(AVFormatContext *s, DVDemuxContext *c)
     c->vst->codecpar->bit_rate   = 25000000;
     c->vst->start_time        = 0;
 
+    /* Audio streams are added later as they are encountered. */
+    s->ctx_flags |= AVFMTCTX_NOHEADER;
+
     return 0;
 }
 
@@ -441,9 +444,10 @@ static int64_t dv_frame_offset(AVFormatContext *s, DVDemuxContext *c,
                                int64_t timestamp, int flags)
 {
     // FIXME: sys may be wrong if last dv_read_packet() failed (buffer is junk)
+    FFFormatContext *const si = ffformatcontext(s);
     const int frame_size = c->sys->frame_size;
     int64_t offset;
-    int64_t size       = avio_size(s->pb) - s->internal->data_offset;
+    int64_t size       = avio_size(s->pb) - si->data_offset;
     int64_t max_offset = ((size - 1) / frame_size) * frame_size;
 
     offset = frame_size * timestamp;
@@ -453,7 +457,7 @@ static int64_t dv_frame_offset(AVFormatContext *s, DVDemuxContext *c,
     else if (offset < 0)
         offset = 0;
 
-    return offset + s->internal->data_offset;
+    return offset + si->data_offset;
 }
 
 void ff_dv_offset_reset(DVDemuxContext *c, int64_t frame_offset)

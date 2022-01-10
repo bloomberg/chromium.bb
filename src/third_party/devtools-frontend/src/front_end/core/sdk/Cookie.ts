@@ -4,6 +4,8 @@
 
 import type * as Protocol from '../../generated/protocol.js';
 
+const OPAQUE_PARITION_KEY = '<opaque>';
+
 export class Cookie {
   readonly #nameInternal: string;
   readonly #valueInternal: string;
@@ -49,6 +51,12 @@ export class Cookie {
     if ('sourceScheme' in protocolCookie) {
       cookie.addAttribute('sourceScheme', protocolCookie.sourceScheme);
     }
+    if ('partitionKey' in protocolCookie) {
+      cookie.addAttribute('partitionKey', protocolCookie.partitionKey);
+    }
+    if ('partitionKeyOpaque' in protocolCookie) {
+      cookie.addAttribute('partitionKey', OPAQUE_PARITION_KEY);
+    }
     cookie.setSize(protocolCookie['size']);
     return cookie;
   }
@@ -85,6 +93,14 @@ export class Cookie {
 
   sameParty(): boolean {
     return 'sameparty' in this.#attributes;
+  }
+
+  partitionKey(): string {
+    return this.#attributes['partitionkey'] as string;
+  }
+
+  partitionKeyOpaque(): boolean {
+    return (this.#attributes['partitionkey'] === OPAQUE_PARITION_KEY);
   }
 
   priority(): Protocol.Network.CookiePriority {
@@ -245,29 +261,5 @@ export enum Attributes {
   SourceScheme = 'sourceScheme',
   SourcePort = 'sourcePort',
   Priority = 'priority',
-}
-
-/**
- * A `CookieReference` uniquely identifies a cookie by the triple (#name,domain,#path). Additionally, a context may be
- * included to make it clear which site under Application>Cookies should be opened when revealing a `CookieReference`.
- */
-export class CookieReference {
-  readonly #name: string;
-  readonly #domainInternal: string;
-  readonly #path: string;
-  readonly #contextUrlInternal: string|undefined;
-  constructor(name: string, domain: string, path: string, contextUrl: string|undefined) {
-    this.#name = name;
-    this.#domainInternal = domain;
-    this.#path = path;
-    this.#contextUrlInternal = contextUrl;
-  }
-
-  domain(): string {
-    return this.#domainInternal;
-  }
-
-  contextUrl(): string|undefined {
-    return this.#contextUrlInternal;
-  }
+  PartitionKey = 'partitionKey',
 }

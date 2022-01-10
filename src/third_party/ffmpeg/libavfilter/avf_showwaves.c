@@ -427,7 +427,7 @@ static int config_output(AVFilterLink *outlink)
         showwaves->n = FFMAX(1, av_rescale_q(inlink->sample_rate, av_make_q(1, showwaves->w), showwaves->rate));
 
     showwaves->buf_idx = 0;
-    if (!(showwaves->buf_idy = av_mallocz_array(nb_channels, sizeof(*showwaves->buf_idy)))) {
+    if (!FF_ALLOCZ_TYPED_ARRAY(showwaves->buf_idy, nb_channels)) {
         av_log(ctx, AV_LOG_ERROR, "Could not allocate showwaves buffer\n");
         return AVERROR(ENOMEM);
     }
@@ -778,11 +778,11 @@ const AVFilter ff_avf_showwaves = {
     .description   = NULL_IF_CONFIG_SMALL("Convert input audio to a video output."),
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
     .priv_size     = sizeof(ShowWavesContext),
     FILTER_INPUTS(showwaves_inputs),
     .activate      = activate,
     FILTER_OUTPUTS(showwaves_outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .priv_class    = &showwaves_class,
 };
 
@@ -820,7 +820,7 @@ static int showwavespic_config_input(AVFilterLink *inlink)
     ShowWavesContext *showwaves = ctx->priv;
 
     if (showwaves->single_pic) {
-        showwaves->sum = av_mallocz_array(inlink->channels, sizeof(*showwaves->sum));
+        showwaves->sum = av_calloc(inlink->channels, sizeof(*showwaves->sum));
         if (!showwaves->sum)
             return AVERROR(ENOMEM);
     }
@@ -891,10 +891,10 @@ const AVFilter ff_avf_showwavespic = {
     .description   = NULL_IF_CONFIG_SMALL("Convert input audio to a video output single picture."),
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
     .priv_size     = sizeof(ShowWavesContext),
     FILTER_INPUTS(showwavespic_inputs),
     FILTER_OUTPUTS(showwavespic_outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .priv_class    = &showwavespic_class,
 };
 

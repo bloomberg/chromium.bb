@@ -16,6 +16,7 @@
 #define SRC_SEM_EXPRESSION_H_
 
 #include "src/ast/expression.h"
+#include "src/sem/behavior.h"
 #include "src/sem/constant.h"
 #include "src/sem/node.h"
 
@@ -41,6 +42,9 @@ class Expression : public Castable<Expression, Node> {
   /// Destructor
   ~Expression() override;
 
+  /// @returns the AST node
+  const ast::Expression* Declaration() const { return declaration_; }
+
   /// @return the resolved type of the expression
   const sem::Type* Type() const { return type_; }
 
@@ -50,14 +54,21 @@ class Expression : public Castable<Expression, Node> {
   /// @return the constant value of this expression
   const Constant& ConstantValue() const { return constant_; }
 
-  /// @returns the AST node
-  const ast::Expression* Declaration() const { return declaration_; }
+  /// @return the behaviors of this statement
+  const sem::Behaviors& Behaviors() const { return behaviors_; }
+
+  /// @return the behaviors of this statement
+  sem::Behaviors& Behaviors() { return behaviors_; }
+
+ protected:
+  /// The AST expression node for this semantic expression
+  const ast::Expression* const declaration_;
 
  private:
-  const ast::Expression* const declaration_;
   const sem::Type* const type_;
   const Statement* const statement_;
   const Constant constant_;
+  sem::Behaviors behaviors_{sem::Behavior::kNext};
 };
 
 }  // namespace sem

@@ -26,7 +26,7 @@
 
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 
-#include "base/macros.h"
+#include "base/ignore_result.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -764,6 +764,18 @@ void InputMethodController::AddImeTextSpans(
             !SpellChecker::IsSpellCheckingEnabledAt(
                 ephemeral_line_range.StartPosition()))
           continue;
+
+        // Do not add the grammar marker if it overlaps with existing spellcheck
+        // markers.
+        if (suggestion_type == SuggestionMarker::SuggestionType::kGrammar &&
+            !GetDocument()
+                 .Markers()
+                 .MarkersIntersectingRange(
+                     ToEphemeralRangeInFlatTree(ephemeral_line_range),
+                     DocumentMarker::MarkerTypes::Spelling())
+                 .IsEmpty()) {
+          continue;
+        }
 
         GetDocument().Markers().AddSuggestionMarker(
             ephemeral_line_range,
@@ -1519,7 +1531,7 @@ void InputMethodController::GetLayoutBounds(gfx::Rect* control_bounds,
   // Selection bounds are currently populated only for EditContext.
   // For editable elements we use GetCompositionCharacterBounds to fetch the
   // selection bounds.
-  *control_bounds = ToGfxRect(element->BoundsInViewport());
+  *control_bounds = element->BoundsInViewport();
 }
 
 void InputMethodController::DidChangeVisibility(
@@ -1848,44 +1860,30 @@ WebVector<ui::ImeTextSpan> InputMethodController::GetImeTextSpans() const {
   const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
       node_marker_pairs = GetDocument().Markers().MarkersIntersectingRange(
           ToEphemeralRangeInFlatTree(range),
-          DocumentMarker::MarkerTypes::Suggestion().Add(
-              DocumentMarker::MarkerTypes::Spelling()));
+          DocumentMarker::MarkerTypes::Suggestion());
 
   for (const std::pair<Member<const Text>, Member<DocumentMarker>>&
            node_marker_pair : node_marker_pairs) {
-    DocumentMarker* marker = node_marker_pair.second.Get();
-    const Text* node = node_marker_pair.first;
-    const EphemeralRange& marker_ephemeral_range =
-        EphemeralRange(Position(node, marker->StartOffset()),
-                       Position(node, marker->EndOffset()));
-    const PlainTextRange& marker_plain_text_range =
-        cached_text_input_info_.GetPlainTextRange(marker_ephemeral_range);
+    SuggestionMarker* marker =
+        To<SuggestionMarker>(node_marker_pair.second.Get());
+    ImeTextSpan::Type type =
+        ConvertSuggestionMarkerType(marker->GetSuggestionType());
+    if (ShouldGetImeTextSpans(type)) {
+      const Text* node = node_marker_pair.first;
+      const EphemeralRange& marker_ephemeral_range =
+          EphemeralRange(Position(node, marker->StartOffset()),
+                         Position(node, marker->EndOffset()));
+      const PlainTextRange& marker_plain_text_range =
+          cached_text_input_info_.GetPlainTextRange(marker_ephemeral_range);
 
-    if (DocumentMarker::MarkerTypes::Spelling().Contains(
-            node_marker_pair.second.Get()->GetType())) {
       ime_text_spans.emplace_back(
-          ImeTextSpan(ImeTextSpan::Type::kMisspellingSuggestion,
-                      marker_plain_text_range.Start(),
+          ImeTextSpan(type, marker_plain_text_range.Start(),
                       marker_plain_text_range.End(), Color::kTransparent,
                       ImeTextSpanThickness::kNone,
                       ImeTextSpanUnderlineStyle::kNone, Color::kTransparent,
-                      Color::kTransparent)
+                      Color::kTransparent, Color::kTransparent, false, false,
+                      marker->Suggestions())
               .ToUiImeTextSpan());
-    } else {
-      SuggestionMarker* suggestion_marker =
-          To<SuggestionMarker>(node_marker_pair.second.Get());
-      ImeTextSpan::Type type =
-          ConvertSuggestionMarkerType(suggestion_marker->GetSuggestionType());
-      if (ShouldGetImeTextSpans(type)) {
-        ime_text_spans.emplace_back(
-            ImeTextSpan(type, marker_plain_text_range.Start(),
-                        marker_plain_text_range.End(), Color::kTransparent,
-                        ImeTextSpanThickness::kNone,
-                        ImeTextSpanUnderlineStyle::kNone, Color::kTransparent,
-                        Color::kTransparent, Color::kTransparent, false, false,
-                        suggestion_marker->Suggestions())
-                .ToUiImeTextSpan());
-      }
     }
   }
 

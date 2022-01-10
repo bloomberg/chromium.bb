@@ -2,6 +2,7 @@
 # Copyright (c) 2014-2021 The Khronos Group Inc.
 # Copyright (c) 2014-2021 Valve Corporation
 # Copyright (c) 2014-2021 LunarG, Inc.
+# Copyright (c) 2021 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -200,11 +201,13 @@ if(WIN32)
         add_custom_target(loader_asm_gen_files DEPENDS gen_defines.asm)
         set_target_properties(loader_asm_gen_files PROPERTIES FOLDER ${LOADER_HELPER_FOLDER})
         add_library(loader-unknown-chain OBJECT unknown_ext_chain_masm.asm)
+        target_link_libraries(loader-unknown-chain Vulkan::Headers)
         add_dependencies(loader-unknown-chain loader_asm_gen_files)
     else()
         message(WARNING "Could not find working MASM assebler\n${ASM_FAILURE_MSG}")
         add_custom_target(loader_asm_gen_files)
         add_library(loader-unknown-chain OBJECT unknown_ext_chain.c)
+        target_link_libraries(loader-unknown-chain Vulkan::Headers)
         set_target_properties(loader-unknown-chain PROPERTIES CMAKE_C_FLAGS_DEBUG "${MODIFIED_C_FLAGS_DEBUG}")
         target_compile_options(loader-unknown-chain PUBLIC ${MSVC_LOADER_COMPILE_OPTIONS})
     endif()
@@ -214,24 +217,43 @@ elseif(APPLE)
     set_source_files_properties(${OPT_LOADER_SRCS} PROPERTIES COMPILE_FLAGS -O)
     add_custom_target(loader_asm_gen_files) # This causes no assembly files to be generated.
 else(UNIX AND NOT APPLE) # i.e.: Linux
-    enable_language(ASM)
-    set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
+    option(USE_GAS "Use GAS" ON)
+    if(USE_GAS)
+        enable_language(ASM)
 
-    check_include_file("cet.h" HAVE_CET_H)
-    if(HAVE_CET_H)
-        set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS HAVE_CET_H)
+        set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
+        set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+
+        if (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+            try_compile(ASSEMBLER_WORKS ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/asm_test_aarch64.S)
+            if(ASSEMBLER_WORKS)
+                set(OPT_LOADER_SRCS ${OPT_LOADER_SRCS} unknown_ext_chain_gas_aarch64.S)
+            endif()
+        elseif(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64" OR ${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86")
+            check_include_file("cet.h" HAVE_CET_H)
+            if(HAVE_CET_H)
+                set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS HAVE_CET_H)
+            endif()
+
+            try_compile(ASSEMBLER_WORKS ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/asm_test_x86.S)
+            if(ASSEMBLER_WORKS)
+                set(OPT_LOADER_SRCS ${OPT_LOADER_SRCS} unknown_ext_chain_gas_x86.S)
+            endif()
+        endif()
     endif()
-    set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
-    try_compile(ASSEMBLER_WORKS ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/asm_test.S)
+
     if(ASSEMBLER_WORKS)
-        set(OPT_LOADER_SRCS ${OPT_LOADER_SRCS} unknown_ext_chain_gas.S)
         add_executable(asm_offset asm_offset.c)
         target_link_libraries(asm_offset Vulkan::Headers)
+        target_compile_definitions(asm_offset PRIVATE _GNU_SOURCE)
         add_custom_command(OUTPUT gen_defines.asm DEPENDS asm_offset COMMAND asm_offset GAS)
         add_custom_target(loader_asm_gen_files DEPENDS gen_defines.asm)
-        target_compile_definitions(asm_offset PRIVATE _XOPEN_SOURCE=500) # hush compiler warnings for readlink
     else()
-        message(WARNING "Could not find working x86 GAS assembler\n${ASM_FAILURE_MSG}")
+        if(USE_GAS)
+            message(WARNING "Could not find working ${CMAKE_HOST_SYSTEM_PROCESSOR} GAS assembler\n${ASM_FAILURE_MSG}")
+        else()
+            message(WARNING "Assembly sources have been disabled\n${ASM_FAILURE_MSG}")
+        endif()
         set(OPT_LOADER_SRCS ${OPT_LOADER_SRCS} unknown_ext_chain.c)
         add_custom_target(loader_asm_gen_files)
     endif()

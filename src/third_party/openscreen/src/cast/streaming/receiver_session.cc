@@ -420,7 +420,6 @@ void ReceiverSession::InitializeSession(const SessionProperties& properties) {
   if (properties.mode == CastMode::kMirroring) {
     client_->OnNegotiated(this, std::move(receivers));
   } else {
-    // TODO(jophba): cleanup sequence number usage.
     rpc_messenger_ = std::make_unique<RpcMessenger>([this](std::vector<uint8_t> message) {
       Error error = this->messenger_.SendMessage(
           ReceiverMessage{ReceiverMessage::Type::kRpc, -1, true /* valid */,
@@ -448,6 +447,9 @@ std::unique_ptr<Receiver> ReceiverSession::ConstructReceiver(
                           stream.rtp_timebase, stream.channels,
                           stream.target_delay, stream.aes_key,
                           stream.aes_iv_mask,  /* is_pli_enabled */ true};
+  if (!config.IsValid()) {
+    return nullptr;
+  }
   return std::make_unique<Receiver>(environment_, &packet_router_,
                                     std::move(config));
 }

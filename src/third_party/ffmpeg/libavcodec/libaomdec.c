@@ -224,9 +224,13 @@ static int aom_decode(AVCodecContext *avctx, void *data, int *got_frame,
 
         if ((img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) && img->bit_depth == 8)
             image_copy_16_to_8(picture, img);
-        else
-            av_image_copy(picture->data, picture->linesize, (const uint8_t **)img->planes,
-                          img->stride, avctx->pix_fmt, img->d_w, img->d_h);
+        else {
+            const uint8_t *planes[4] = { img->planes[0], img->planes[1], img->planes[2] };
+            const int      stride[4] = { img->stride[0], img->stride[1], img->stride[2] };
+
+            av_image_copy(picture->data, picture->linesize, planes,
+                          stride, avctx->pix_fmt, img->d_w, img->d_h);
+        }
         *got_frame = 1;
     }
     return avpkt->size;
@@ -241,7 +245,7 @@ static av_cold int aom_free(AVCodecContext *avctx)
 
 static av_cold int av1_init(AVCodecContext *avctx)
 {
-    return aom_init(avctx, &aom_codec_av1_dx_algo);
+    return aom_init(avctx, aom_codec_av1_dx());
 }
 
 const AVCodec ff_libaom_av1_decoder = {

@@ -319,6 +319,29 @@ typedef enum {
   INTERNAL_COST_UPD_SB,        /*!< Update every sb. */
 } INTERNAL_COST_UPDATE_TYPE;
 
+/*!\enum SIMPLE_MOTION_SEARCH_PRUNE_LEVEL
+ * \brief This enumeration defines a variety of simple motion search based
+ * partition prune levels
+ */
+typedef enum {
+  NO_PRUNING = -1,
+  SIMPLE_AGG_LVL0,     /*!< Simple prune aggressiveness level 0. */
+  SIMPLE_AGG_LVL1,     /*!< Simple prune aggressiveness level 1. */
+  SIMPLE_AGG_LVL2,     /*!< Simple prune aggressiveness level 2. */
+  SIMPLE_AGG_LVL3,     /*!< Simple prune aggressiveness level 3. */
+  QIDX_BASED_AGG_LVL1, /*!< Qindex based prune aggressiveness level, aggressive
+                          level maps to simple agg level 1 or 2 based on qindex.
+                        */
+  TOTAL_SIMPLE_AGG_LVLS = QIDX_BASED_AGG_LVL1, /*!< Total number of simple prune
+                                                  aggressiveness levels. */
+  TOTAL_QINDEX_BASED_AGG_LVLS =
+      QIDX_BASED_AGG_LVL1 -
+      SIMPLE_AGG_LVL3, /*!< Total number of qindex based simple prune
+                          aggressiveness levels. */
+  TOTAL_AGG_LVLS = TOTAL_SIMPLE_AGG_LVLS +
+                   TOTAL_QINDEX_BASED_AGG_LVLS, /*!< Total number of levels. */
+} SIMPLE_MOTION_SEARCH_PRUNE_LEVEL;
+
 /*!
  * \brief Sequence/frame level speed vs quality features
  */
@@ -454,6 +477,9 @@ typedef struct GLOBAL_MOTION_SPEED_FEATURES {
 
   // When the current GM type is set to ZEROMV, prune ZEROMV if its performance
   // is worse than NEWMV under SSE metric.
+  // 0 : no pruning
+  // 1 : conservative pruning
+  // 2 : aggressive pruning
   int prune_zero_mv_with_sse;
 
   // Disable global motion estimation based on stats of previous frames in the
@@ -504,9 +530,8 @@ typedef struct PARTITION_SPEED_FEATURES {
 
   // Sets level of adjustment of variance-based partitioning during
   // rd_use_partition 0 - no partition adjustment, 1 - try to merge partitions
-  // for small blocks and high QP, 2 - try to merge partitions, 3 - always try
-  // to merge leaf partitions for small blocks, 4 - try to merge and split leaf
-  // partitions and 0 - 4 decreasing aggressiveness in order.
+  // for small blocks and high QP, 2 - try to merge partitions, 3 - try to merge
+  // and split leaf partitions and 0 - 3 decreasing aggressiveness in order.
   int adjust_var_based_rd_partitioning;
 
   // Partition search early breakout thresholds.
@@ -516,8 +541,10 @@ typedef struct PARTITION_SPEED_FEATURES {
   // Thresholds for ML based partition search breakout.
   int ml_partition_search_breakout_thresh[PARTITION_BLOCK_SIZES];
 
-  // The aggressiveness of pruning with simple_motion_search.
-  // Currently 0 is the lowest, and 2 the highest.
+  // Aggressiveness levels for pruning split and rectangular partitions based on
+  // simple_motion_search. SIMPLE_AGG_LVL0 to SIMPLE_AGG_LVL3 correspond to
+  // simple motion search based pruning. QIDX_BASED_AGG_LVL1 corresponds to
+  // qindex based and simple motion search based pruning.
   int simple_motion_search_prune_agg;
 
   // Perform simple_motion_search on each possible subblock and use it to prune
@@ -753,6 +780,10 @@ typedef struct INTER_MODE_SPEED_FEATURES {
   // 2 implies prune horiz, vert and extended partition
   int prune_ref_frame_for_rect_partitions;
 
+  // Prune inter modes w.r.t past reference frames
+  // 0 no pruning
+  // 1 prune inter modes w.r.t ALTREF2 and ALTREF reference frames
+  // 2 prune inter modes w.r.t BWDREF, ALTREF2 and ALTREF reference frames
   int alt_ref_search_fp;
 
   // Skip the current ref_mv in NEW_MV mode based on mv, rate cost, etc.
@@ -916,6 +947,17 @@ typedef struct INTER_MODE_SPEED_FEATURES {
 
   // Prune warped motion search based on block size.
   int extra_prune_warped;
+
+  // Do not search compound modes for ARF.
+  // The intuition is that ARF is predicted by frames far away from it,
+  // whose temporal correlations with the ARF are likely low.
+  // It is therefore likely that compound modes do not work as well for ARF
+  // as other inter frames.
+  // Speed/quality impact:
+  // Speed 1: 12% faster, 0.1% psnr loss.
+  // Speed 2: 2%  faster, 0.05% psnr loss.
+  // No change for speed 3 and up, because |disable_onesided_comp| is true.
+  int skip_arf_compound;
 } INTER_MODE_SPEED_FEATURES;
 
 typedef struct INTERP_FILTER_SPEED_FEATURES {
@@ -1026,6 +1068,10 @@ typedef struct INTRA_MODE_SPEED_FEATURES {
   // intra mode decision. Here, add a speed feature to reduce this number for
   // higher speeds.
   int top_intra_model_count_allowed;
+
+  // Adapt top_intra_model_count_allowed locally to prune luma intra modes using
+  // neighbor block and quantizer information.
+  int adapt_top_model_rd_count_using_neighbors;
 
   // Terminate early in chroma palette_size search.
   // 0: No early termination
@@ -1142,6 +1188,11 @@ typedef struct WINNER_MODE_SPEED_FEATURES {
   // 0: speed feature OFF
   // 1 / 2 : Use the configured level for different modes
   int dc_blk_pred_level;
+
+  // If on, disables interpolation filter search in handle_inter_mode loop, and
+  // performs it during winner mode processing by \ref
+  // tx_search_best_inter_candidates.
+  int winner_mode_ifs;
 } WINNER_MODE_SPEED_FEATURES;
 
 typedef struct LOOP_FILTER_SPEED_FEATURES {
@@ -1287,10 +1338,6 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // logic in set_mv_search_params().
   int fullpel_search_step_param;
 
-  // Skip loopfilter (and cdef) in svc real-time mode for
-  // non_reference/droppable frames.
-  int skip_loopfilter_non_reference;
-
   // Bit mask to enable or disable intra modes for each prediction block size
   // separately, for nonrd pickmode.
   int intra_y_mode_bsize_mask_nrd[BLOCK_SIZES];
@@ -1317,6 +1364,26 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // Define gf length multiplier.
   // Level 0: use large multiplier, level 1: use medium multiplier.
   int gf_length_lvl;
+
+  // Prune inter modes with golden frame as reference for NEARMV and NEWMV modes
+  int prune_inter_modes_with_golden_ref;
+
+  // Prune inter modes w.r.t golden or alt-ref frame based on sad
+  int prune_inter_modes_wrt_gf_arf_based_on_sad;
+
+  // Prune inter mode search in rd path based on current block's temporal
+  // variance wrt LAST reference.
+  int prune_inter_modes_using_temp_var;
+
+  // Force half_pel at block level.
+  int force_half_pel_block;
+
+  // Prune intra mode evaluation in inter frames based on mv range.
+  BLOCK_SIZE prune_intra_mode_based_on_mv_range;
+  // The number of times to left shift the splitting thresholds in variance
+  // based partitioning. The minimum values should be 7 to avoid left shifting
+  // by a negative number.
+  int var_part_split_threshold_shift;
 } REAL_TIME_SPEED_FEATURES;
 
 /*!\endcond */

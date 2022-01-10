@@ -6,21 +6,17 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/arc/session/arc_service_manager.h"
 #include "base/bind.h"
 #include "chrome/browser/ash/net/network_diagnostics/arc_ping_routine.h"
 #include "chrome/browser/ash/net/network_diagnostics/network_diagnostics_util.h"
 #include "chromeos/services/network_config/in_process_instance.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
-#include "components/arc/session/arc_service_manager.h"
 
-namespace ash {
+namespace chromeos {
 namespace network_diagnostics {
 
 namespace {
-
-// TODO(https://crbug.com/1164001): remove after
-// chromeos/services/network_config/ is moved to ash/.
-namespace network_config = ::chromeos::network_config;
 
 using chromeos::network_config::mojom::CrosNetworkConfig;
 using chromeos::network_config::mojom::FilterType;
@@ -264,4 +260,4 @@ std::string ArcPingRoutine::GetTransportName(
 }
 
 }  // namespace network_diagnostics
-}  // namespace ash
+}  // namespace chromeos

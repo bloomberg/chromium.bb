@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/containers/contains.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -20,12 +19,14 @@ AsyncReadResultHelper::AsyncReadResultHelper(
     : lock_(impl_on_gpu->GetAsyncReadResultLock()),
       impl_on_gpu_(impl_on_gpu),
       result_(std::move(result)) {
-  impl_on_gpu_->AddAsyncReadResultHelper(this);
+  base::AutoLock auto_lock(lock());
+  impl_on_gpu_->AddAsyncReadResultHelperWithLock(this);
 }
 
 AsyncReadResultHelper::~AsyncReadResultHelper() {
+  base::AutoLock auto_lock(lock());
   if (impl_on_gpu_) {
-    impl_on_gpu_->RemoveAsyncReadResultHelper(this);
+    impl_on_gpu_->RemoveAsyncReadResultHelperWithLock(this);
   }
 }
 

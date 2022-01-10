@@ -110,48 +110,43 @@ static int box_slice(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs)
     w = (radius << 1) + 1;
     numPix = w * w;
     for (int i = slice_start;i < slice_end;i++) {
-      for (int j = 0;j < width;j++) {
-        float temp = 0.0;
-        for (int row = -radius;row <= radius;row++) {
-          for (int col = -radius;col <= radius;col++) {
-            int x = i + row;
-            int y = j + col;
-            x = (x < 0) ? 0 : (x >= height ? height - 1 : x);
-            y = (y < 0) ? 0 : (y >= width ? width - 1 : y);
-            temp += src[x * src_stride + y];
-          }
+        for (int j = 0;j < width;j++) {
+            float temp = 0.0;
+            for (int row = -radius;row <= radius;row++) {
+                for (int col = -radius;col <= radius;col++) {
+                    int x = i + row;
+                    int y = j + col;
+                    x = (x < 0) ? 0 : (x >= height ? height - 1 : x);
+                    y = (y < 0) ? 0 : (y >= width ? width - 1 : y);
+                    temp += src[x * src_stride + y];
+                }
+            }
+            dst[i * dst_stride + j] = temp / numPix;
         }
-        dst[i * dst_stride + j] = temp / numPix;
-      }
     }
     return 0;
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUVA444P, AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUV440P,
-        AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P,
-        AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUV420P,
-        AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ420P,
-        AV_PIX_FMT_YUVJ411P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_YUV410P,
-        AV_PIX_FMT_YUV420P9, AV_PIX_FMT_YUV422P9, AV_PIX_FMT_YUV444P9,
-        AV_PIX_FMT_YUV420P10, AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV444P10,
-        AV_PIX_FMT_YUV420P12, AV_PIX_FMT_YUV422P12, AV_PIX_FMT_YUV444P12, AV_PIX_FMT_YUV440P12,
-        AV_PIX_FMT_YUV420P14, AV_PIX_FMT_YUV422P14, AV_PIX_FMT_YUV444P14,
-        AV_PIX_FMT_YUV420P16, AV_PIX_FMT_YUV422P16, AV_PIX_FMT_YUV444P16,
-        AV_PIX_FMT_YUVA420P9, AV_PIX_FMT_YUVA422P9, AV_PIX_FMT_YUVA444P9,
-        AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA444P10,
-        AV_PIX_FMT_YUVA420P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA444P16,
-        AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRP9, AV_PIX_FMT_GBRP10,
-        AV_PIX_FMT_GBRP12, AV_PIX_FMT_GBRP14, AV_PIX_FMT_GBRP16,
-        AV_PIX_FMT_GBRAP, AV_PIX_FMT_GBRAP10, AV_PIX_FMT_GBRAP12, AV_PIX_FMT_GBRAP16,
-        AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY9, AV_PIX_FMT_GRAY10, AV_PIX_FMT_GRAY12, AV_PIX_FMT_GRAY14, AV_PIX_FMT_GRAY16,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_YUVA444P, AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUV440P,
+    AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P,
+    AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ420P,
+    AV_PIX_FMT_YUVJ411P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_YUV410P,
+    AV_PIX_FMT_YUV420P9, AV_PIX_FMT_YUV422P9, AV_PIX_FMT_YUV444P9,
+    AV_PIX_FMT_YUV420P10, AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV444P10,
+    AV_PIX_FMT_YUV420P12, AV_PIX_FMT_YUV422P12, AV_PIX_FMT_YUV444P12, AV_PIX_FMT_YUV440P12,
+    AV_PIX_FMT_YUV420P14, AV_PIX_FMT_YUV422P14, AV_PIX_FMT_YUV444P14,
+    AV_PIX_FMT_YUV420P16, AV_PIX_FMT_YUV422P16, AV_PIX_FMT_YUV444P16,
+    AV_PIX_FMT_YUVA420P9, AV_PIX_FMT_YUVA422P9, AV_PIX_FMT_YUVA444P9,
+    AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA444P10,
+    AV_PIX_FMT_YUVA420P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA444P16,
+    AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRP9, AV_PIX_FMT_GBRP10,
+    AV_PIX_FMT_GBRP12, AV_PIX_FMT_GBRP14, AV_PIX_FMT_GBRP16,
+    AV_PIX_FMT_GBRAP, AV_PIX_FMT_GBRAP10, AV_PIX_FMT_GBRAP12, AV_PIX_FMT_GBRAP16,
+    AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY9, AV_PIX_FMT_GRAY10, AV_PIX_FMT_GRAY12, AV_PIX_FMT_GRAY14, AV_PIX_FMT_GRAY16,
+    AV_PIX_FMT_NONE
+};
 
 static int config_input(AVFilterLink *inlink)
 {
@@ -161,8 +156,7 @@ static int config_input(AVFilterLink *inlink)
 
     if (s->mode == BASIC) {
         s->sub = 1;
-    }
-    else if (s->mode == FAST) {
+    } else if (s->mode == FAST) {
         if (s->radius >= s->sub)
             s->radius = s->radius / s->sub;
         else {
@@ -235,13 +229,13 @@ static int guided_##name(AVFilterContext *ctx, GuidedContext *s,                
         goto end;                                                                       \
     }                                                                                   \
     for (int i = 0;i < h;i++) {                                                         \
-      for (int j = 0;j < w;j++) {                                                       \
-        int x = i * w + j;                                                              \
-        I[x]  = src[(i * src_stride + j) * sub] / maxval;                               \
-        II[x] = I[x] * I[x];                                                            \
-        P[x]  = srcRef[(i * src_ref_stride + j) * sub] / maxval;                        \
-        IP[x] = I[x] * P[x];                                                            \
-      }                                                                                 \
+        for (int j = 0;j < w;j++) {                                                     \
+            int x = i * w + j;                                                          \
+            I[x]  = src[(i * src_stride + j) * sub] / maxval;                           \
+            II[x] = I[x] * I[x];                                                        \
+            P[x]  = srcRef[(i * src_ref_stride + j) * sub] / maxval;                    \
+            IP[x] = I[x] * P[x];                                                        \
+        }                                                                               \
     }                                                                                   \
                                                                                         \
     t.width  = w;                                                                       \
@@ -262,13 +256,13 @@ static int guided_##name(AVFilterContext *ctx, GuidedContext *s,                
     ff_filter_execute(ctx, s->box_slice, &t, NULL, FFMIN(h, nb_threads));               \
                                                                                         \
     for (int i = 0;i < h;i++) {                                                         \
-      for (int j = 0;j < w;j++) {                                                       \
-        int x = i * w + j;                                                              \
-        float varI = meanII[x] - (meanI[x] * meanI[x]);                                 \
-        float covIP = meanIP[x] - (meanI[x] * meanP[x]);                                \
-        A[x] = covIP / (varI + eps);                                                    \
-        B[x] = meanP[x] - A[x] * meanI[x];                                              \
-      }                                                                                 \
+        for (int j = 0;j < w;j++) {                                                     \
+            int x = i * w + j;                                                          \
+            float varI = meanII[x] - (meanI[x] * meanI[x]);                             \
+            float covIP = meanIP[x] - (meanI[x] * meanP[x]);                            \
+            A[x] = covIP / (varI + eps);                                                \
+            B[x] = meanP[x] - A[x] * meanI[x];                                          \
+        }                                                                               \
     }                                                                                   \
                                                                                         \
     t.src = A;                                                                          \
@@ -279,11 +273,11 @@ static int guided_##name(AVFilterContext *ctx, GuidedContext *s,                
     ff_filter_execute(ctx, s->box_slice, &t, NULL, FFMIN(h, nb_threads));               \
                                                                                         \
     for (int i = 0;i < height;i++) {                                                    \
-      for (int j = 0;j < width;j++) {                                                   \
-        int x = i / sub * w + j / sub;                                                  \
-        dst[i * dst_stride + j] = meanA[x] * src[i * src_stride + j] +                  \
-                                  meanB[x] * maxval;                                    \
-      }                                                                                 \
+        for (int j = 0;j < width;j++) {                                                 \
+            int x = i / sub * w + j / sub;                                              \
+            dst[i * dst_stride + j] = meanA[x] * src[i * src_stride + j] +              \
+                                      meanB[x] * maxval;                                \
+        }                                                                               \
     }                                                                                   \
 end:                                                                                    \
     av_freep(&I);                                                                       \
@@ -321,13 +315,13 @@ static int filter_frame(AVFilterContext *ctx, AVFrame **out, AVFrame *in, AVFram
             continue;
         }
         if (s->depth <= 8)
-           guided_byte(ctx, s, in->data[plane], ref->data[plane], (*out)->data[plane], s->radius, s->eps,
-                       s->planewidth[plane], s->planeheight[plane],
-                       in->linesize[plane], ref->linesize[plane], (*out)->linesize[plane], (1 << s->depth) - 1.f);
+            guided_byte(ctx, s, in->data[plane], ref->data[plane], (*out)->data[plane], s->radius, s->eps,
+                        s->planewidth[plane], s->planeheight[plane],
+                        in->linesize[plane], ref->linesize[plane], (*out)->linesize[plane], (1 << s->depth) - 1.f);
         else
-           guided_word(ctx, s, in->data[plane], ref->data[plane], (*out)->data[plane], s->radius, s->eps,
-                       s->planewidth[plane], s->planeheight[plane],
-                       in->linesize[plane] / 2, ref->linesize[plane] / 2, (*out)->linesize[plane] / 2, (1 << s->depth) - 1.f);
+            guided_word(ctx, s, in->data[plane], ref->data[plane], (*out)->data[plane], s->radius, s->eps,
+                        s->planewidth[plane], s->planeheight[plane],
+                        in->linesize[plane] / 2, ref->linesize[plane] / 2, (*out)->linesize[plane] / 2, (1 << s->depth) - 1.f);
     }
 
     return 0;
@@ -365,10 +359,6 @@ static int config_output(AVFilterLink *outlink)
         if (ctx->inputs[0]->w != ctx->inputs[1]->w ||
             ctx->inputs[0]->h != ctx->inputs[1]->h) {
             av_log(ctx, AV_LOG_ERROR, "Width and height of input videos must be same.\n");
-            return AVERROR(EINVAL);
-        }
-        if (ctx->inputs[0]->format != ctx->inputs[1]->format) {
-            av_log(ctx, AV_LOG_ERROR, "Inputs must be of same pixel format.\n");
             return AVERROR(EINVAL);
         }
     }
@@ -493,12 +483,12 @@ const AVFilter ff_vf_guided = {
     .description     = NULL_IF_CONFIG_SMALL("Apply Guided filter."),
     .init            = init,
     .uninit          = uninit,
-    .query_formats   = query_formats,
     .priv_size       = sizeof(GuidedContext),
     .priv_class      = &guided_class,
     .activate        = activate,
     .inputs          = NULL,
     FILTER_OUTPUTS(guided_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .flags           = AVFILTER_FLAG_DYNAMIC_INPUTS | AVFILTER_FLAG_SLICE_THREADS |
                        AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
     .process_command = process_command,

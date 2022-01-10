@@ -552,10 +552,14 @@ void AutofillAgent::FillOrPreviewForm(int32_t id,
       ReplaceElementIfNowInvalid(form);
 
     query_node_autofill_state_ = element_.GetAutofillState();
-    form_util::FillOrPreviewForm(form, element_, action);
+    bool filled_some_fields =
+        !form_util::FillOrPreviewForm(form, element_, action).empty();
 
-    if (!element_.Form().IsNull())
+    if (!element_.Form().IsNull()) {
       UpdateLastInteractedForm(element_.Form());
+    } else {
+      formless_elements_were_autofilled_ |= filled_some_fields;
+    }
 
     // TODO(crbug.com/1198811): Inform the BrowserAutofillManager about the
     // fields that were actually filled. It's possible that the form has changed
@@ -823,21 +827,15 @@ void AutofillAgent::SetFocusRequiresScroll(bool require) {
   focus_requires_scroll_ = require;
 }
 
-void AutofillAgent::GetElementFormAndFieldDataAtIndex(
-    const std::string& selector,
-    int index,
-    GetElementFormAndFieldDataAtIndexCallback callback) {
+void AutofillAgent::GetElementFormAndFieldDataForDevToolsNodeId(
+    const int backend_node_id,
+    GetElementFormAndFieldDataForDevToolsNodeIdCallback callback) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (!frame)
     return;
 
-  blink::WebElement target_element;
-  blink::WebVector<blink::WebElement> elements =
-      render_frame()->GetWebFrame()->GetDocument().QuerySelectorAll(
-          blink::WebString::FromUTF8(selector));
-  if (index >= 0 && static_cast<size_t>(index) < elements.size()) {
-    target_element = elements[index];
-  }
+  blink::WebElement target_element =
+      frame->GetDocument().GetElementByDevToolsNodeId(backend_node_id);
 
   FormData form;
   FormFieldData field;
@@ -1277,10 +1275,13 @@ absl::optional<FormData> AutofillAgent::GetSubmittedForm() const {
     } else if (provisionally_saved_form_.has_value()) {
       return absl::make_optional(provisionally_saved_form_.value());
     }
-  } else if (formless_elements_user_edited_.size() != 0 &&
-             !form_util::IsSomeControlElementVisible(
-                 render_frame()->GetWebFrame(),
-                 formless_elements_user_edited_)) {
+  } else if ((base::FeatureList::IsEnabled(
+                  features::kAutofillRecordMetricsOfUnownedForms) &&
+              formless_elements_were_autofilled_) ||
+             (formless_elements_user_edited_.size() != 0 &&
+              !form_util::IsSomeControlElementVisible(
+                  render_frame()->GetWebFrame(),
+                  formless_elements_user_edited_))) {
     // we check if all the elements the user has interacted with are gone,
     // to decide if submission has occurred, and use the
     // provisionally_saved_form_ saved in OnProvisionallySaveForm() if fail to
@@ -1303,6 +1304,7 @@ void AutofillAgent::ResetLastInteractedElements() {
   last_interacted_form_.Reset();
   last_clicked_form_control_element_for_testing_ = {};
   formless_elements_user_edited_.clear();
+  formless_elements_were_autofilled_ = false;
   provisionally_saved_form_.reset();
 }
 

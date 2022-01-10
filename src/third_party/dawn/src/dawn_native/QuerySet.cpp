@@ -31,7 +31,7 @@ namespace dawn_native {
             }
 
           private:
-            void DestroyApiObjectImpl() override {
+            void DestroyImpl() override {
                 UNREACHABLE();
             }
         };
@@ -101,7 +101,7 @@ namespace dawn_native {
     }
 
     QuerySetBase::QuerySetBase(DeviceBase* device, const QuerySetDescriptor* descriptor)
-        : ApiObjectBase(device, kLabelNotImplemented),
+        : ApiObjectBase(device, descriptor->label),
           mQueryType(descriptor->type),
           mQueryCount(descriptor->count),
           mState(QuerySetState::Available) {
@@ -126,9 +126,8 @@ namespace dawn_native {
         ASSERT(mState == QuerySetState::Unavailable || mState == QuerySetState::Destroyed);
     }
 
-    bool QuerySetBase::DestroyApiObject() {
+    void QuerySetBase::DestroyImpl() {
         mState = QuerySetState::Destroyed;
-        return ApiObjectBase::DestroyApiObject();
     }
 
     // static
@@ -170,7 +169,7 @@ namespace dawn_native {
         if (GetDevice()->ConsumedError(ValidateDestroy())) {
             return;
         }
-        DestroyApiObject();
+        Destroy();
     }
 
     MaybeError QuerySetBase::ValidateDestroy() const {

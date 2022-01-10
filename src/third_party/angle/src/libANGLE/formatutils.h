@@ -67,7 +67,7 @@ ANGLE_INLINE GLenum GetNonLinearFormat(const GLenum format)
             return GL_SRGB8_ALPHA8;
         case GL_RGB8:
         case GL_BGRX8_ANGLEX:
-        case GL_RGBX8_ANGLEX:
+        case GL_RGBX8_ANGLE:
             return GL_SRGB8;
         case GL_RGBA16F:
             return GL_RGBA16F;
@@ -469,6 +469,25 @@ ANGLE_INLINE bool IsPVRTC1Format(const GLenum format)
         case GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT:
         case GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT:
         case GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT:
+            return true;
+
+        default:
+            return false;
+    }
+}
+
+ANGLE_INLINE bool IsBGRAFormat(const GLenum internalFormat)
+{
+    switch (internalFormat)
+    {
+        case GL_BGRA8_EXT:
+        case GL_BGRA4_ANGLEX:
+        case GL_BGR5_A1_ANGLEX:
+        case GL_BGRA8_SRGB_ANGLEX:
+        case GL_BGRX8_ANGLEX:
+        case GL_RGBX8_ANGLE:
+        case GL_BGR565_ANGLEX:
+        case GL_BGR10_A2_ANGLEX:
             return true;
 
         default:

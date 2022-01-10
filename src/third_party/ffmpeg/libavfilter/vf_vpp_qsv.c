@@ -501,8 +501,8 @@ static int activate(AVFilterContext *ctx)
     VPPContext *s =ctx->priv;
     QSVVPPContext *qsv = s->qsv;
     AVFrame *in = NULL;
-    int ret, status;
-    int64_t pts;
+    int ret, status = 0;
+    int64_t pts = AV_NOPTS_VALUE;
 
     FF_FILTER_FORWARD_STATUS_BACK(outlink, inlink);
 
@@ -614,11 +614,11 @@ const AVFilter ff_vf_vpp_qsv = {
     .name          = "vpp_qsv",
     .description   = NULL_IF_CONFIG_SMALL("Quick Sync Video VPP."),
     .priv_size     = sizeof(VPPContext),
-    .query_formats = query_formats,
     .init          = vpp_init,
     .uninit        = vpp_uninit,
     FILTER_INPUTS(vpp_inputs),
     FILTER_OUTPUTS(vpp_outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .activate      = activate,
     .priv_class    = &vpp_class,
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,

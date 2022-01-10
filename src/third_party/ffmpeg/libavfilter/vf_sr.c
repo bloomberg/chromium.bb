@@ -66,14 +66,11 @@ static av_cold int init(AVFilterContext *context)
     return ff_dnn_init(&sr_context->dnnctx, DFT_PROCESS_FRAME, context);
 }
 
-static int query_formats(AVFilterContext *context)
-{
-    const enum AVPixelFormat pixel_formats[] = {AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV444P,
-                                                AV_PIX_FMT_YUV410P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_GRAY8,
-                                                AV_PIX_FMT_NONE};
-
-    return ff_set_common_formats_from_list(context, pixel_formats);
-}
+static const enum AVPixelFormat pixel_formats[] = {
+    AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_YUV410P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_GRAY8,
+    AV_PIX_FMT_NONE
+};
 
 static int config_output(AVFilterLink *outlink)
 {
@@ -198,8 +195,8 @@ const AVFilter ff_vf_sr = {
     .priv_size     = sizeof(SRContext),
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(sr_inputs),
     FILTER_OUTPUTS(sr_outputs),
+    FILTER_PIXFMTS_ARRAY(pixel_formats),
     .priv_class    = &sr_class,
 };

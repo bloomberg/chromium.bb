@@ -68,7 +68,8 @@ template <typename Traits>
 DecoderTemplate<Traits>::DecoderTemplate(ScriptState* script_state,
                                          const InitType* init,
                                          ExceptionState& exception_state)
-    : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
+    : ReclaimableCodec(ExecutionContext::From(script_state)),
+      ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
       script_state_(script_state),
       state_(V8CodecState::Enum::kUnconfigured),
       trace_counter_id_(g_sequence_num_for_counters.GetNext()) {
@@ -79,8 +80,10 @@ DecoderTemplate<Traits>::DecoderTemplate(ScriptState* script_state,
   ExecutionContext* context = GetExecutionContext();
   DCHECK(context);
 
-  logger_ = std::make_unique<CodecLogger>(
-      context, context->GetTaskRunner(TaskType::kInternalMedia));
+  main_thread_task_runner_ =
+      context->GetTaskRunner(TaskType::kInternalMediaRealTime);
+
+  logger_ = std::make_unique<CodecLogger>(context, main_thread_task_runner_);
 
   logger_->log()->SetProperty<media::MediaLogProperty::kFrameUrl>(
       context->Url().GetString().Ascii());
@@ -506,8 +509,10 @@ void DecoderTemplate<Traits>::Shutdown(DOMException* exception) {
   // Prevent any further logging from being reported.
   logger_->Neuter();
 
-  // Clear decoding and JS-visible queue state.
-  decoder_.reset();
+  // Clear decoding and JS-visible queue state. Use DeleteSoon() to avoid
+  // deleting decoder_ when its callback (e.g. OnDecodeDone()) may be below us
+  // in the stack.
+  main_thread_task_runner_->DeleteSoon(FROM_HERE, std::move(decoder_));
 
   if (pending_request_) {
     // This request was added as part of calling ResetAlgorithm above. However,
@@ -724,9 +729,8 @@ void DecoderTemplate<Traits>::TraceQueueSizes() const {
 
 template <typename Traits>
 void DecoderTemplate<Traits>::ContextDestroyed() {
-  state_ = V8CodecState(V8CodecState::Enum::kClosed);
-  logger_->Neuter();
-  decoder_.reset();
+  // Deallocate resources and supress late callbacks from media thread.
+  Shutdown();
 }
 
 template <typename Traits>

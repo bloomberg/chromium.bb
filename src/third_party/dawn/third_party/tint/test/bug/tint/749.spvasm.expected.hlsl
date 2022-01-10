@@ -1,3 +1,5 @@
+SKIP: FAILED
+
 struct QuicksortObject {
   int numbers[10];
 };
@@ -153,7 +155,7 @@ int performPartition_i1_i1_(inout int l, inout int h) {
   const QuicksortObject tint_symbol_11 = {tint_symbol_10};
   obj = tint_symbol_11;
   obj = x_960;
-  while (true) {
+  [loop] while (true) {
     const int x_961 = pivot;
     pivot = 0;
     pivot = x_961;
@@ -453,7 +455,7 @@ void quicksort_() {
   p = 0;
   p = x_1027;
   stack[x_100_save] = x_99;
-  while (true) {
+  [loop] while (true) {
     const float3 x_566 = float3(x_563.x, x_563.x, x_563.x);
     const int x_1028 = h_1;
     h_1 = 0;
@@ -1560,3 +1562,5 @@ tint_symbol_2 main(tint_symbol_1 tint_symbol) {
   wrapper_result.x_GLF_color_1 = inner_result.x_GLF_color_1;
   return wrapper_result;
 }
+C:\src\tint\test\Shader@0x000001EB41548320(156,10-21): error X3531: can't unroll loops marked with loop attribute
+

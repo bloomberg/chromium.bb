@@ -865,7 +865,7 @@ void TurboAssembler::Alsl_w(Register rd, Register rj, Register rk, uint8_t sa,
 
 void TurboAssembler::Alsl_d(Register rd, Register rj, Register rk, uint8_t sa,
                             Register scratch) {
-  DCHECK(sa >= 1 && sa <= 31);
+  DCHECK(sa >= 1 && sa <= 63);
   if (sa <= 4) {
     alsl_d(rd, rj, rk, sa);
   } else {
@@ -2653,7 +2653,7 @@ void TurboAssembler::Call(Register target, Condition cond, Register rj,
     jirl(ra, target, 0);
     bind(&skip);
   }
-  set_last_call_pc_(pc_);
+  set_pc_for_safepoint();
 }
 
 void MacroAssembler::JumpIfIsInRange(Register value, unsigned lower_limit,
@@ -2677,9 +2677,9 @@ void TurboAssembler::Call(Address target, RelocInfo::Mode rmode, Condition cond,
     BranchShort(&skip, NegateCondition(cond), rj, rk);
   }
   intptr_t offset_diff = target - pc_offset();
-  if (RelocInfo::IsNone(rmode) && is_int28(offset_diff)) {
+  if (RelocInfo::IsNoInfo(rmode) && is_int28(offset_diff)) {
     bl(offset_diff >> 2);
-  } else if (RelocInfo::IsNone(rmode) && is_int38(offset_diff)) {
+  } else if (RelocInfo::IsNoInfo(rmode) && is_int38(offset_diff)) {
     pcaddu18i(t7, static_cast<int32_t>(offset_diff) >> 18);
     jirl(ra, t7, (offset_diff & 0x3ffff) >> 2);
   } else {
@@ -2708,7 +2708,7 @@ void TurboAssembler::Call(Handle<Code> code, RelocInfo::Mode rmode,
     RecordCommentForOffHeapTrampoline(builtin);
     RecordRelocInfo(RelocInfo::RELATIVE_CODE_TARGET);
     bl(code_target_index);
-    set_last_call_pc_(pc_);
+    set_pc_for_safepoint();
     bind(&skip);
     RecordComment("]");
     return;
@@ -3348,7 +3348,7 @@ void MacroAssembler::JumpToExternalReference(const ExternalReference& builtin,
   Jump(code, RelocInfo::CODE_TARGET, al, zero_reg, Operand(zero_reg));
 }
 
-void MacroAssembler::JumpToInstructionStream(Address entry) {
+void MacroAssembler::JumpToOffHeapInstructionStream(Address entry) {
   li(kOffHeapTrampolineRegister, Operand(entry, RelocInfo::OFF_HEAP_TARGET));
   Jump(kOffHeapTrampolineRegister);
 }
@@ -3745,6 +3745,23 @@ void MacroAssembler::AssertFunction(Register object) {
   }
 }
 
+void MacroAssembler::AssertCallableFunction(Register object) {
+  if (FLAG_debug_code) {
+    BlockTrampolinePoolScope block_trampoline_pool(this);
+    STATIC_ASSERT(kSmiTag == 0);
+    SmiTst(object, t8);
+    Check(ne, AbortReason::kOperandIsASmiAndNotAFunction, t8,
+          Operand(zero_reg));
+    Push(object);
+    LoadMap(object, object);
+    GetInstanceTypeRange(object, object, FIRST_CALLABLE_JS_FUNCTION_TYPE, t8);
+    Check(ls, AbortReason::kOperandIsNotACallableFunction, t8,
+          Operand(LAST_CALLABLE_JS_FUNCTION_TYPE -
+                  FIRST_CALLABLE_JS_FUNCTION_TYPE));
+    Pop(object);
+  }
+}
+
 void MacroAssembler::AssertBoundFunction(Register object) {
   if (FLAG_debug_code) {
     BlockTrampolinePoolScope block_trampoline_pool(this);
@@ -4010,15 +4027,17 @@ void TurboAssembler::CallCFunctionHelper(Register function,
       li(scratch, ExternalReference::fast_c_call_caller_fp_address(isolate()));
       St_d(zero_reg, MemOperand(scratch, 0));
     }
-  }
 
-  int stack_passed_arguments =
-      CalculateStackPassedWords(num_reg_arguments, num_double_arguments);
+    int stack_passed_arguments =
+        CalculateStackPassedWords(num_reg_arguments, num_double_arguments);
 
-  if (base::OS::ActivationFrameAlignment() > kPointerSize) {
-    Ld_d(sp, MemOperand(sp, stack_passed_arguments * kPointerSize));
-  } else {
-    Add_d(sp, sp, Operand(stack_passed_arguments * kPointerSize));
+    if (base::OS::ActivationFrameAlignment() > kPointerSize) {
+      Ld_d(sp, MemOperand(sp, stack_passed_arguments * kPointerSize));
+    } else {
+      Add_d(sp, sp, Operand(stack_passed_arguments * kPointerSize));
+    }
+
+    set_pc_for_safepoint();
   }
 }
 

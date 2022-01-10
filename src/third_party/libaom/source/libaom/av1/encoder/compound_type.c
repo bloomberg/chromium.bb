@@ -1375,8 +1375,11 @@ int av1_compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
       int best_rate_mv = *rate_mv;
       int wedge_mask_size = get_wedge_types_lookup(bsize);
       int need_mask_search = args->wedge_index == -1;
+      int wedge_newmv_search =
+          have_newmv_in_inter_mode(this_mode) &&
+          !cpi->sf.inter_sf.disable_interinter_wedge_newmv_search;
 
-      if (need_mask_search && !have_newmv_in_inter_mode(this_mode)) {
+      if (need_mask_search && !wedge_newmv_search) {
         // short cut repeated single reference block build
         av1_build_inter_predictors_for_planes_single_buf(xd, bsize, 0, 0, 0,
                                                          preds0, strides);
@@ -1396,8 +1399,7 @@ int av1_compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
           mode_rd = RDCOST(x->rdmult, rs2 + rd_stats->rate, 0);
           if (mode_rd >= ref_best_rd / 2) continue;
 
-          if (have_newmv_in_inter_mode(this_mode) &&
-              !cpi->sf.inter_sf.disable_interinter_wedge_newmv_search) {
+          if (wedge_newmv_search) {
             tmp_rate_mv = av1_interinter_compound_motion_search(
                 cpi, x, cur_mv, bsize, this_mode);
             av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst,
@@ -1471,8 +1473,7 @@ int av1_compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
         rs2 = masked_type_cost[cur_type];
         rs2 += get_interinter_compound_mask_rate(&x->mode_costs, mbmi);
 
-        if (have_newmv_in_inter_mode(this_mode) &&
-            !cpi->sf.inter_sf.disable_interinter_wedge_newmv_search) {
+        if (wedge_newmv_search) {
           tmp_rate_mv = av1_interinter_compound_motion_search(cpi, x, cur_mv,
                                                               bsize, this_mode);
         }

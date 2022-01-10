@@ -43,11 +43,13 @@ namespace dawn_native { namespace d3d12 {
         bool CheckIsResidentForTesting() const;
 
         MaybeError EnsureDataInitialized(CommandRecordingContext* commandContext);
-        MaybeError EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
-                                                      uint64_t offset,
-                                                      uint64_t size);
+        ResultOrError<bool> EnsureDataInitializedAsDestination(
+            CommandRecordingContext* commandContext,
+            uint64_t offset,
+            uint64_t size);
         MaybeError EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
                                                       const CopyTextureToBufferCmd* copy);
+
         // Dawn API
         void SetLabelImpl() override;
 
@@ -58,7 +60,7 @@ namespace dawn_native { namespace d3d12 {
         MaybeError Initialize(bool mappedAtCreation);
         MaybeError MapAsyncImpl(wgpu::MapMode mode, size_t offset, size_t size) override;
         void UnmapImpl() override;
-        void DestroyApiObjectImpl() override;
+        void DestroyImpl() override;
         bool IsCPUWritableAtCreation() const override;
         virtual MaybeError MapAtCreationImpl() override;
         void* GetMappedPointerImpl() override;

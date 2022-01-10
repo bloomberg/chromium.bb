@@ -5,6 +5,7 @@
 #include "cc/trees/layer_tree_impl.h"
 
 #include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_raster_source.h"
@@ -113,9 +114,9 @@ class LayerTreeImplTest : public LayerTreeImplTestBase, public testing::Test {
   }
 
   // These layers are created by HitTestSimpleTree().
-  LayerImpl* top_ = nullptr;
-  LayerImpl* left_child_ = nullptr;
-  LayerImpl* right_child_ = nullptr;
+  raw_ptr<LayerImpl> top_ = nullptr;
+  raw_ptr<LayerImpl> left_child_ = nullptr;
+  raw_ptr<LayerImpl> right_child_ = nullptr;
 };
 
 TEST_F(LayerTreeImplTest, HitTestingForSingleLayer) {
@@ -2282,9 +2283,7 @@ class PersistentSwapPromise
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
     return DidNotSwapAction::KEEP_ACTIVE;
   }
-
-  void OnCommit() override {}
-  int64_t TraceId() const override { return 0; }
+  int64_t GetTraceId() const override { return 0; }
 };
 
 class NotPersistentSwapPromise
@@ -2301,9 +2300,7 @@ class NotPersistentSwapPromise
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
     return DidNotSwapAction::BREAK_PROMISE;
   }
-
-  void OnCommit() override {}
-  int64_t TraceId() const override { return 0; }
+  int64_t GetTraceId() const override { return 0; }
 };
 
 }  // namespace

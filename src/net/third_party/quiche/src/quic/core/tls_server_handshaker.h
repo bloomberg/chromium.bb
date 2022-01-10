@@ -58,7 +58,8 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   void OnConnectionClosed(QuicErrorCode error,
                           ConnectionCloseSource source) override;
   void OnHandshakeDoneReceived() override;
-  std::string GetAddressToken() const override;
+  std::string GetAddressToken(
+      const CachedNetworkParameters* cached_network_params) const override;
   bool ValidateAddressToken(absl::string_view token) const override;
   void OnNewTokenReceived(absl::string_view token) override;
   bool ShouldSendExpectCTHeader() const override;
@@ -324,7 +325,6 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   QuicTime now() const { return session()->GetClock()->Now(); }
 
   QuicConnectionContext* connection_context() {
-    QUICHE_DCHECK(restore_connection_context_in_callbacks_);
     return session()->connection()->context();
   }
 
@@ -372,10 +372,13 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
       crypto_negotiated_params_;
   TlsServerConnection tls_connection_;
   const QuicCryptoServerConfig* crypto_config_;  // Unowned.
-  const bool restore_connection_context_in_callbacks_ =
-      GetQuicReloadableFlag(quic_tls_restore_connection_context_in_callbacks);
+  // The last received CachedNetworkParameters from a validated address token.
+  mutable std::unique_ptr<CachedNetworkParameters>
+      last_received_cached_network_params_;
 
   bool cert_matched_sni_ = false;
+  const bool no_select_cert_if_disconnected_ =
+      GetQuicReloadableFlag(quic_tls_no_select_cert_if_disconnected);
 };
 
 }  // namespace quic

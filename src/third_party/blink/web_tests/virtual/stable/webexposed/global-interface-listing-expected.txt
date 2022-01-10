@@ -13,6 +13,7 @@ interface AbortSignal : EventTarget
     attribute @@toStringTag
     getter aborted
     getter onabort
+    getter reason
     method constructor
     setter onabort
 interface AbsoluteOrientationSensor : OrientationSensor
@@ -4802,6 +4803,7 @@ interface Navigator
     getter webdriver
     getter webkitPersistentStorage
     getter webkitTemporaryStorage
+    getter windowControlsOverlay
     getter xr
     method clearAppBadge
     method constructor
@@ -5522,6 +5524,7 @@ interface PromiseRejectionEvent : Event
 interface PublicKeyCredential : Credential
     static method isUserVerifyingPlatformAuthenticatorAvailable
     attribute @@toStringTag
+    getter authenticatorAttachment
     getter rawId
     getter response
     method constructor
@@ -9443,6 +9446,18 @@ interface Window : EventTarget
     attribute PERSISTENT
     attribute TEMPORARY
     method constructor
+interface WindowControlsOverlay : EventTarget
+    attribute @@toStringTag
+    getter ongeometrychange
+    getter visible
+    method constructor
+    method getTitlebarAreaRect
+    setter ongeometrychange
+interface WindowControlsOverlayGeometryChangeEvent : Event
+    attribute @@toStringTag
+    getter titlebarAreaRect
+    getter visible
+    method constructor
 interface Worker : EventTarget
     attribute @@toStringTag
     getter onerror
@@ -9465,6 +9480,7 @@ interface WritableStream
     method getWriter
 interface WritableStreamDefaultController
     attribute @@toStringTag
+    getter signal
     method constructor
     method error
 interface WritableStreamDefaultWriter
@@ -10246,6 +10262,7 @@ namespace CSS
     method showOpenFilePicker
     method showSaveFilePicker
     method stop
+    method structuredClone
     method webkitCancelAnimationFrame
     method webkitRequestAnimationFrame
     method webkitRequestFileSystem

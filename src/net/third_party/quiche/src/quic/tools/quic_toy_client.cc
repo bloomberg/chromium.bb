@@ -42,6 +42,7 @@
 
 #include "quic/tools/quic_toy_client.h"
 
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -51,6 +52,7 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "quic/core/crypto/quic_client_session_cache.h"
 #include "quic/core/quic_packets.h"
 #include "quic/core/quic_server_id.h"
 #include "quic/core/quic_utils.h"
@@ -59,7 +61,6 @@
 #include "quic/platform/api/quic_ip_address.h"
 #include "quic/platform/api/quic_socket_address.h"
 #include "quic/platform/api/quic_system_event_loop.h"
-#include "quic/test_tools/simple_session_cache.h"
 #include "quic/tools/fake_proof_verifier.h"
 #include "quic/tools/quic_url.h"
 #include "common/quiche_text_utils.h"
@@ -184,6 +185,16 @@ DEFINE_QUIC_COMMAND_LINE_FLAG(bool,
                               "If true, don't verify the server certificate.");
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(
+    std::string, default_client_cert, "",
+    "The path to the file containing PEM-encoded client default certificate to "
+    "be sent to the server, if server requested client certs.");
+
+DEFINE_QUIC_COMMAND_LINE_FLAG(
+    std::string, default_client_cert_key, "",
+    "The path to the file containing PEM-encoded private key of the client's "
+    "default certificate for signing, if server requested client certs.");
+
+DEFINE_QUIC_COMMAND_LINE_FLAG(
     bool,
     drop_response_body,
     false,
@@ -219,6 +230,42 @@ DEFINE_QUIC_COMMAND_LINE_FLAG(int32_t, max_inbound_header_list_size, 128 * 1024,
                               "Max inbound header list size. 0 means default.");
 
 namespace quic {
+namespace {
+
+// Creates a ClientProofSource which only contains a default client certificate.
+// Return nullptr for failure.
+std::unique_ptr<ClientProofSource> CreateTestClientProofSource(
+    absl::string_view default_client_cert_file,
+    absl::string_view default_client_cert_key_file) {
+  std::ifstream cert_stream(std::string{default_client_cert_file},
+                            std::ios::binary);
+  std::vector<std::string> certs =
+      CertificateView::LoadPemFromStream(&cert_stream);
+  if (certs.empty()) {
+    std::cerr << "Failed to load client certs." << std::endl;
+    return nullptr;
+  }
+
+  std::ifstream key_stream(std::string{default_client_cert_key_file},
+                           std::ios::binary);
+  std::unique_ptr<CertificatePrivateKey> private_key =
+      CertificatePrivateKey::LoadPemFromStream(&key_stream);
+  if (private_key == nullptr) {
+    std::cerr << "Failed to load client cert key." << std::endl;
+    return nullptr;
+  }
+
+  auto proof_source = std::make_unique<DefaultClientProofSource>();
+  proof_source->AddCertAndKey(
+      {"*"},
+      QuicReferenceCountedPointer<ClientProofSource::Chain>(
+          new ClientProofSource::Chain(certs)),
+      std::move(*private_key));
+
+  return proof_source;
+}
+
+}  // namespace
 
 QuicToyClient::QuicToyClient(ClientFactory* client_factory)
     : client_factory_(client_factory) {}
@@ -276,7 +323,7 @@ int QuicToyClient::SendRequestsAndPrintResponses(
   }
   std::unique_ptr<quic::SessionCache> session_cache;
   if (num_requests > 1 && GetQuicFlag(FLAGS_one_connection_per_request)) {
-    session_cache = std::make_unique<test::SimpleSessionCache>();
+    session_cache = std::make_unique<QuicClientSessionCache>();
   }
 
   QuicConfig config;
@@ -318,6 +365,18 @@ int QuicToyClient::SendRequestsAndPrintResponses(
   if (client == nullptr) {
     std::cerr << "Failed to create client." << std::endl;
     return 1;
+  }
+
+  if (!GetQuicFlag(FLAGS_default_client_cert).empty() &&
+      !GetQuicFlag(FLAGS_default_client_cert_key).empty()) {
+    std::unique_ptr<ClientProofSource> proof_source =
+        CreateTestClientProofSource(GetQuicFlag(FLAGS_default_client_cert),
+                                    GetQuicFlag(FLAGS_default_client_cert_key));
+    if (proof_source == nullptr) {
+      std::cerr << "Failed to create client proof source." << std::endl;
+      return 1;
+    }
+    client->crypto_config()->set_proof_source(std::move(proof_source));
   }
 
   int32_t initial_mtu = GetQuicFlag(FLAGS_initial_mtu);

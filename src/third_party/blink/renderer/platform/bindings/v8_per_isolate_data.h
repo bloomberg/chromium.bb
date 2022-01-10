@@ -110,7 +110,9 @@ class PLATFORM_EXPORT V8PerIsolateData final {
   };
 
   static v8::Isolate* Initialize(scoped_refptr<base::SingleThreadTaskRunner>,
-                                 V8ContextSnapshotMode);
+                                 V8ContextSnapshotMode,
+                                 v8::CreateHistogramCallback,
+                                 v8::AddHistogramSampleCallback);
 
   static V8PerIsolateData* From(v8::Isolate* isolate) {
     DCHECK(isolate);
@@ -217,7 +219,9 @@ class PLATFORM_EXPORT V8PerIsolateData final {
 
  private:
   V8PerIsolateData(scoped_refptr<base::SingleThreadTaskRunner>,
-                   V8ContextSnapshotMode);
+                   V8ContextSnapshotMode,
+                   v8::CreateHistogramCallback,
+                   v8::AddHistogramSampleCallback);
   explicit V8PerIsolateData(V8ContextSnapshotMode);
   ~V8PerIsolateData();
 
@@ -279,6 +283,17 @@ class PLATFORM_EXPORT V8PerIsolateData final {
   v8::Isolate::GCCallback epilogue_callback_;
   size_t gc_callback_depth_ = 0;
 };
+
+// Creates a histogram for V8. The returned value is a base::Histogram, but
+// typed to void* for v8.
+PLATFORM_EXPORT void* CreateHistogram(const char* name,
+                                      int min,
+                                      int max,
+                                      size_t buckets);
+
+// Adds an entry to the supplied histogram. `hist` was previously returned from
+// CreateHistogram().
+PLATFORM_EXPORT void AddHistogramSample(void* hist, int sample);
 
 }  // namespace blink
 

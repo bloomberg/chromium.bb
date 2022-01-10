@@ -11,7 +11,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -101,6 +101,7 @@ class CONTENT_EXPORT WebContentsViewAura
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropFiles);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest,
                            DragDropFilesOriginateFromRenderer);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropImageFromRenderer);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropVirtualFiles);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest,
                            DragDropVirtualFilesOriginateFromRenderer);
@@ -115,6 +116,10 @@ class CONTENT_EXPORT WebContentsViewAura
   class WindowObserver;
 
   ~WebContentsViewAura() override;
+
+  // Utility to fill a DropData object from ui::OSExchangeData.
+  void PrepareDropData(DropData* drop_data,
+                       const ui::OSExchangeData& data) const;
 
   void EndDrag(base::WeakPtr<RenderWidgetHostImpl> source_rwh_weak_ptr,
                ui::mojom::DragOperation op);
@@ -307,7 +312,7 @@ class CONTENT_EXPORT WebContentsViewAura
   std::unique_ptr<WindowObserver> window_observer_;
 
   // The WebContentsImpl whose contents we display.
-  WebContentsImpl* web_contents_;
+  raw_ptr<WebContentsImpl> web_contents_;
 
   std::unique_ptr<WebContentsViewDelegate> delegate_;
 
@@ -315,7 +320,7 @@ class CONTENT_EXPORT WebContentsViewAura
 
   std::unique_ptr<DropData> current_drop_data_;
 
-  WebDragDestDelegate* drag_dest_delegate_;
+  raw_ptr<WebDragDestDelegate> drag_dest_delegate_;
 
   // We keep track of the RenderWidgetHost we're dragging over. If it changes
   // during a drag, we need to re-send the DragEnter message.
@@ -337,8 +342,22 @@ class CONTENT_EXPORT WebContentsViewAura
   // the RenderViewHost may not be in the same process as the RenderProcessHost,
   // since the view corresponds to the page, while the process is specific to
   // the frame from which the drag started.
-  int drag_start_process_id_;
-  GlobalRoutingID drag_start_view_id_;
+  // We also track whether a dragged image is accessible from its frame, so we
+  // can disallow tainted-cross-origin same-page drag-drop.
+  struct DragStart {
+    DragStart(int process_id,
+              GlobalRoutingID view_id,
+              bool image_accessible_from_frame)
+        : process_id(process_id),
+          view_id(view_id),
+          image_accessible_from_frame(image_accessible_from_frame) {}
+    ~DragStart() = default;
+
+    int process_id;
+    GlobalRoutingID view_id;
+    bool image_accessible_from_frame;
+  };
+  absl::optional<DragStart> drag_start_;
 
   // Responsible for handling gesture-nav and pull-to-refresh UI.
   std::unique_ptr<GestureNavSimple> gesture_nav_simple_;

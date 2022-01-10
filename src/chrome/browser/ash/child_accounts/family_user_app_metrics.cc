@@ -63,6 +63,9 @@ constexpr char kStandaloneBrowserExtensionCountHistogramName[] =
 const char* GetAppsCountHistogramName(apps::mojom::AppType app_type) {
   switch (app_type) {
     case apps::mojom::AppType::kUnknown:
+    // Extensions are recorded separately, and AppService only has some
+    // extensions with file browser handlers.
+    case apps::mojom::AppType::kExtension:
       return kUnknownAppsCountHistogramName;
     case apps::mojom::AppType::kArc:
       return kArcAppsCountHistogramName;
@@ -70,7 +73,7 @@ const char* GetAppsCountHistogramName(apps::mojom::AppType app_type) {
       return kBuiltInAppsCountHistogramName;
     case apps::mojom::AppType::kCrostini:
       return kCrostiniAppsCountHistogramName;
-    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kChromeApp:
       return kExtensionAppsCountHistogramName;
     case apps::mojom::AppType::kWeb:
       return kWebAppsCountHistogramName;
@@ -86,7 +89,7 @@ const char* GetAppsCountHistogramName(apps::mojom::AppType app_type) {
       return kBorealisAppsCountHistogramName;
     case apps::mojom::AppType::kSystemWeb:
       return kSystemWebAppsCountHistogramName;
-    case apps::mojom::AppType::kStandaloneBrowserExtension:
+    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
       return kStandaloneBrowserExtensionCountHistogramName;
   }
 }
@@ -156,6 +159,11 @@ void FamilyUserAppMetrics::OnNewDay() {
 
 void FamilyUserAppMetrics::OnAppTypeInitialized(apps::mojom::AppType app_type) {
   DCHECK(!base::Contains(ready_app_types_, app_type));
+  // Skip the extension app type, because extensions are recorded separately,
+  // and AppService only has some extensions with file browser handlers.
+  if (app_type == apps::mojom::AppType::kExtension)
+    return;
+
   ready_app_types_.insert(app_type);
   if (should_record_metrics_on_new_day_)
     RecordRecentlyUsedAppsCount(app_type);

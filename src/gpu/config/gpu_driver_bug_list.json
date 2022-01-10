@@ -3819,19 +3819,19 @@
       ]
     },
     {
-      "id": 382,
-      "description": "Disable hardware MFT H.264 encoder on older Intel drivers",
-      "cr_bugs": [1251071],
+      "id": 386,
+      "cr_bugs": [1253962],
+      "description": "Older Adreno 4xx drivers drop draws sometimes with oop-c",
       "os": {
-        "type": "win"
+        "type" : "android"
       },
-      "vendor_id": "0x8086",
       "driver_version": {
-        "op": "<=",
-        "value": "6.15.7.7"
+        "op": "<",
+        "value": "145"
       },
+      "gl_renderer": ".*Adreno \\(TM\\) 4.*",
       "features": [
-        "disable_accelerated_h264_encode"
+        "disable_canvas_oop_rasterization"
       ]
     }
   ]

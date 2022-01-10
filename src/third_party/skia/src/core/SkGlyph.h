@@ -101,6 +101,14 @@ struct SkPackedGlyphID {
         return str;
     }
 
+    SkString shortDump() const {
+        SkString str;
+        str.appendf("0x%x|%1d|%1d", this->glyphID(),
+                                    this->subPixelField(kSubPixelX),
+                                    this->subPixelField(kSubPixelY));
+        return str;
+    }
+
 private:
     static constexpr uint32_t PackIDSubXSubY(SkGlyphID glyphID, uint32_t x, uint32_t y) {
         SkASSERT(x < (1u << kSubPixelPosLen));
@@ -164,8 +172,12 @@ private:
         return ((uint32_t)n >> kFixedPointSubPixelPosBits) & kSubPixelPosMask;
     }
 
+    constexpr uint32_t subPixelField(uint32_t subPixelPosBit) const {
+        return (fID >> subPixelPosBit) & kSubPixelPosMask;
+    }
+
     constexpr SkFixed subToFixed(uint32_t subPixelPosBit) const {
-        uint32_t subPixelPosition = (fID >> subPixelPosBit) & kSubPixelPosMask;
+        uint32_t subPixelPosition = this->subPixelField(subPixelPosBit);
         return subPixelPosition << kFixedPointSubPixelPosBits;
     }
 
@@ -291,7 +303,7 @@ public:
     // Returns true if this is the first time you called setPath()
     // and there actually is a path; call path() to get it.
     bool setPath(SkArenaAlloc* alloc, SkScalerContext* scalerContext);
-    bool setPath(SkArenaAlloc* alloc, const SkPath* path);
+    bool setPath(SkArenaAlloc* alloc, const SkPath* path, bool hairline);
 
     // Returns true if that path has been set.
     bool setPathHasBeenCalled() const { return fPathData != nullptr; }
@@ -299,6 +311,7 @@ public:
     // Return a pointer to the path if it exists, otherwise return nullptr. Only works if the
     // path was previously set.
     const SkPath* path() const;
+    bool pathIsHairline() const;
 
     // Format
     bool isColor() const { return fMaskFormat == SkMask::kARGB32_Format; }
@@ -371,12 +384,17 @@ private:
         Intercept* fIntercept{nullptr};
         SkPath     fPath;
         bool       fHasPath{false};
+        // A normal user-path will have patheffects applied to it and eventually become a dev-path.
+        // A dev-path is always a fill-path, except when it is hairline.
+        // The fPath is a dev-path, so sidecar the paths hairline status.
+        // This allows the user to avoid filling paths which should not be filled.
+        bool       fHairline{false};
     };
 
     size_t allocImage(SkArenaAlloc* alloc);
 
     // path == nullptr indicates that there is no path.
-    void installPath(SkArenaAlloc* alloc, const SkPath* path);
+    void installPath(SkArenaAlloc* alloc, const SkPath* path, bool hairline);
 
     // The width and height of the glyph mask.
     uint16_t  fWidth  = 0,
@@ -402,6 +420,10 @@ private:
 
     // Used by the DirectWrite scaler to track state.
     int8_t    fForceBW = 0;
+
+    // An SkGlyph can be created with just a packedID, but generally speaking some glyph factory
+    // needs to actually fill out the glyph before it can be used as part of that system.
+    SkDEBUGCODE(bool fAdvancesBoundsFormatAndInitialPathDone{false};)
 
     SkPackedGlyphID fID;
 };

@@ -23,9 +23,9 @@
 #include "base/notreached.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/aura/cursor/cursor_lookup.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/cursor/cursor_lookup.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/display/screen.h"
@@ -208,6 +208,7 @@ VideoRecordingWatcher::VideoRecordingWatcher(
   if (recording_source_ == CaptureModeSource::kRegion)
     partial_region_bounds_ = controller_->user_capture_region();
 
+  display::Screen::GetScreen()->AddObserver(this);
   window_being_recorded_->AddObserver(this);
   TabletModeController::Get()->AddObserver(this);
 
@@ -237,6 +238,8 @@ VideoRecordingWatcher::~VideoRecordingWatcher() {
 
 void VideoRecordingWatcher::ToggleRecordingOverlayEnabled() {
   DCHECK(is_in_projector_mode_);
+  DCHECK(!is_shutting_down_);
+  DCHECK(recording_overlay_controller_);
 
   recording_overlay_controller_->Toggle();
 }
@@ -244,6 +247,12 @@ void VideoRecordingWatcher::ToggleRecordingOverlayEnabled() {
 void VideoRecordingWatcher::ShutDown() {
   is_shutting_down_ = true;
   DCHECK(window_being_recorded_);
+
+  cursor_events_throttle_timer_.Stop();
+  cursor_capture_overlay_remote_.reset();
+  root_observer_.reset();
+  recording_overlay_controller_.reset();
+  dimmers_.clear();
 
   if (is_in_projector_mode_)
     ProjectorControllerImpl::Get()->OnRecordingEnded();
@@ -262,6 +271,7 @@ void VideoRecordingWatcher::ShutDown() {
   // |window_being_recorded_| is not capturable.
   auto to_be_removed_request = std::move(non_root_window_capture_request_);
   window_being_recorded_->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
 }
 
 void VideoRecordingWatcher::OnWindowParentChanged(aura::Window* window,
@@ -680,9 +690,9 @@ void VideoRecordingWatcher::UpdateCursorOverlayNow(
   DCHECK_NE(cursor.type(), ui::mojom::CursorType::kNull);
 
   const float cursor_image_scale_factor = cursor.image_scale_factor();
-  const SkBitmap cursor_image = ui::GetCursorBitmap(cursor);
+  const SkBitmap cursor_image = aura::GetCursorBitmap(cursor);
   const gfx::RectF cursor_overlay_bounds = GetCursorOverlayBounds(
-      window_being_recorded_, location, ui::GetCursorHotspot(cursor),
+      window_being_recorded_, location, aura::GetCursorHotspot(cursor),
       cursor_image_scale_factor, cursor_image);
 
   if (cursor != last_cursor_) {

@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_flattener.h"
 #include "base/metrics/histogram_functions.h"
@@ -92,7 +93,7 @@ class IndependentFlattener : public base::HistogramFlattener {
   }
 
  private:
-  MetricsLog* const log_;
+  const raw_ptr<MetricsLog> log_;
 };
 
 // Convenience function to return the given time at a resolution in seconds.
@@ -368,24 +369,34 @@ void MetricsLog::RecordHistogramDelta(const std::string& histogram_name,
 }
 
 void MetricsLog::RecordPreviousSessionData(
-    DelegatingProvider* delegating_provider) {
+    DelegatingProvider* delegating_provider,
+    PrefService* local_state) {
   delegating_provider->ProvidePreviousSessionData(uma_proto());
+  // Schedule a Local State write to flush updated prefs to disk. This is done
+  // because a side effect of providing data—namely stability data—is updating
+  // Local State prefs.
+  local_state->CommitPendingWrite();
 }
 
 void MetricsLog::RecordCurrentSessionData(
-    DelegatingProvider* delegating_provider,
     base::TimeDelta incremental_uptime,
-    base::TimeDelta uptime) {
+    base::TimeDelta uptime,
+    DelegatingProvider* delegating_provider,
+    PrefService* local_state) {
   DCHECK(!closed_);
   DCHECK(has_environment_);
 
-  // Record recent delta for critical stability metrics.  We can't wait for a
+  // Record recent delta for critical stability metrics. We can't wait for a
   // restart to gather these, as that delay biases our observation away from
   // users that run happily for a looooong time.  We send increments with each
-  // uma log upload, just as we send histogram data.
+  // UMA log upload, just as we send histogram data.
   WriteRealtimeStabilityAttributes(incremental_uptime, uptime);
 
   delegating_provider->ProvideCurrentSessionData(uma_proto());
+  // Schedule a Local State write to flush updated prefs to disk. This is done
+  // because a side effect of providing data—namely stability data—is updating
+  // Local State prefs.
+  local_state->CommitPendingWrite();
 }
 
 void MetricsLog::WriteMetricsEnableDefault(EnableMetricsDefault metrics_default,
@@ -460,18 +471,13 @@ const SystemProfileProto& MetricsLog::RecordEnvironment(
   return *system_profile;
 }
 
-bool MetricsLog::LoadSavedEnvironmentFromPrefs(PrefService* local_state,
-                                               std::string* app_version) {
+bool MetricsLog::LoadSavedEnvironmentFromPrefs(PrefService* local_state) {
   DCHECK(!has_environment_);
   has_environment_ = true;
-  app_version->clear();
 
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
   EnvironmentRecorder recorder(local_state);
-  bool success = recorder.LoadEnvironmentFromPrefs(system_profile);
-  if (success)
-    *app_version = system_profile->app_version();
-  return success;
+  return recorder.LoadEnvironmentFromPrefs(system_profile);
 }
 
 void MetricsLog::RecordLogWrittenByAppVersionIfNeeded() {

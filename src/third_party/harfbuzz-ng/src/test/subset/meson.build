@@ -18,9 +18,11 @@ tests = [
   'layout.gpos9',
   'layout.gsub3',
   'layout.gsub5',
+  'layout.gsub5_format2',
   'layout.gsub6',
   'layout.gsub8',
   'layout.gdef',
+  'layout.gdef.glyphset',
   'layout.khmer',
   'layout.context',
   'layout.gdef-varstore',
@@ -28,6 +30,7 @@ tests = [
   'layout.notonastaliqurdu',
   'layout.tinos',
   'layout.duplicate_features',
+  'layout.unsorted_featurelist',
   'cmap',
   'cmap14',
   'sbix',
@@ -35,7 +38,7 @@ tests = [
   'math',
 # TODO: re-enable once colrv1 subsetting is stabilized.
 # 'colrv1.notoemoji',
-# 'colrv1',
+  'colrv1',
   'colr_with_components',
   'cbdt',
   'variable',
@@ -47,6 +50,8 @@ repack_tests = [
   'prioritization',
   'table_duplication',
   'isolation',
+  'advanced_prioritization',
+  'space_splitting',
 ]
 
 

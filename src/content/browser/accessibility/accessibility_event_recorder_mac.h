@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EVENT_RECORDER_MAC_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EVENT_RECORDER_MAC_H_
 
-#include "content/browser/accessibility/accessibility_event_recorder.h"
-
 #include "base/mac/scoped_cftyperef.h"
+#include "content/browser/accessibility/accessibility_event_recorder.h"
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"
+#include "content/common/content_export.h"
 
 @class BrowserAccessibilityCocoa;
 
@@ -40,11 +40,6 @@ class CONTENT_EXPORT AccessibilityEventRecorderMac
   // Add one notification to the list of notifications monitored by our
   // observer.
   void AddNotification(NSString* notification);
-
-  // Convenience function to get the value of an AX attribute from
-  // an AXUIElementRef as a string.
-  std::string GetAXAttributeValue(AXUIElementRef element,
-                                  NSString* attribute_name);
 
   // The AXUIElement for the Chrome application.
   base::ScopedCFTypeRef<AXUIElementRef> application_;

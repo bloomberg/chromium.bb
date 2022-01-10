@@ -4,9 +4,11 @@
 
 import './shimless_rma_shared_css.js';
 import './base_page.js';
-import '//resources/cr_elements/cr_input/cr_input.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {QrCode, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
@@ -23,7 +25,18 @@ const QR_CODE_FILL_STYLE = '#000000';
  * 'onboarding-enter-rsu-wp-disable-code-page' asks the user for the RSU disable
  * code.
  */
-export class OnboardingEnterRsuWpDisableCodePageElement extends PolymerElement {
+
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ */
+const OnboardingEnterRsuWpDisableCodePageBase =
+    mixinBehaviors([I18nBehavior], PolymerElement);
+
+/** @polymer */
+export class OnboardingEnterRsuWpDisableCodePage extends
+    OnboardingEnterRsuWpDisableCodePageBase {
   static get is() {
     return 'onboarding-enter-rsu-wp-disable-code-page';
   }
@@ -40,10 +53,10 @@ export class OnboardingEnterRsuWpDisableCodePageElement extends PolymerElement {
         value: 0,
       },
 
-      /** @protected {!Array<!Array<string>>} */
+      /** @protected {string} */
       rsuChallenge_: {
-        type: Array,
-        value: () => [],
+        type: String,
+        value: '',
       },
 
       /** @protected */
@@ -58,6 +71,18 @@ export class OnboardingEnterRsuWpDisableCodePageElement extends PolymerElement {
         value: '',
       },
 
+      /** @protected */
+      rsuInstructionsText_: {
+        type: String,
+        value: '',
+      },
+
+      /** @protected */
+      rsuChallengeLinkText_: {
+        type: String,
+        value: '',
+        computed: 'computeRsuChallengeLinkText_(rsuHwid_, rsuChallenge_)',
+      },
     };
   }
 
@@ -71,22 +96,13 @@ export class OnboardingEnterRsuWpDisableCodePageElement extends PolymerElement {
   ready() {
     super.ready();
     this.getRsuChallengeAndHwid_();
+    this.setRsuInstructionsText_();
   }
 
   /** @private */
   getRsuChallengeAndHwid_() {
     this.shimlessRmaService_.getRsuDisableWriteProtectChallenge().then(
-        (result) => {
-          this.rsuChallenge_ = [];
-          // Split raw challenge code every 4 characters.
-          /** @type !Array<string> */
-          const challenge = result.challenge.match(/.{1,4}/g) || [];
-          // Split array of 4 character blocks into multiple arrays of 4 blocks
-          // each.
-          for (let i = 0; i < challenge.length; i += 4) {
-            this.rsuChallenge_.push(challenge.slice(i, i + 4));
-          }
-        });
+        (result) => this.rsuChallenge_ = result.challenge);
     this.shimlessRmaService_.getRsuDisableWriteProtectHwid().then(
         (result) => {
           this.rsuHwid_ = result.hwid;
@@ -160,8 +176,34 @@ export class OnboardingEnterRsuWpDisableCodePageElement extends PolymerElement {
       return Promise.reject(new Error('No RSU code set'));
     }
   }
+
+  /** @private */
+  setRsuInstructionsText_() {
+    this.rsuInstructionsText_ =
+        this.i18nAdvanced('rsuCodeInstructionsText', {attrs: ['id']});
+    const linkElement = this.shadowRoot.querySelector('#rsuCodeDialogLink');
+    linkElement.setAttribute('href', '#');
+    linkElement.addEventListener(
+        'click',
+        () => this.shadowRoot.querySelector('#rsuChallengeDialog').showModal());
+  }
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeRsuChallengeLinkText_() {
+    const unlockPageUrl =
+        'https://chromeos.google.com/partner/console/cr50reset?challenge=';
+    return unlockPageUrl + this.rsuChallenge_ + '&hwid=' + this.rsuHwid_;
+  }
+
+  /** @private */
+  closeDialog_() {
+    this.shadowRoot.querySelector('#rsuChallengeDialog').close();
+  }
 }
 
 customElements.define(
-    OnboardingEnterRsuWpDisableCodePageElement.is,
-    OnboardingEnterRsuWpDisableCodePageElement);
+    OnboardingEnterRsuWpDisableCodePage.is,
+    OnboardingEnterRsuWpDisableCodePage);

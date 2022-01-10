@@ -251,7 +251,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual display::ScreenInfos GetScreenInfos() const = 0;
 
   // This must always return the same device scale factor as GetScreenInfo.
-  virtual float GetDeviceScaleFactor() = 0;
+  virtual float GetDeviceScaleFactor() const = 0;
 
   // Set whether the widget has a external parent view/window outside of the
   // Chromium-controlled view/window hierarchy.

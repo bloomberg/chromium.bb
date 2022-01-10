@@ -12,11 +12,11 @@ import './monster_test_my_game.example2_generated.dart' as my_game_example2;
 class InParentNamespace {
   InParentNamespace._(this._bc, this._bcOffset);
   factory InParentNamespace(List<int> bytes) {
-    fb.BufferContext rootRef = new fb.BufferContext.fromBytes(bytes);
+    final rootRef = fb.BufferContext.fromBytes(bytes);
     return reader.read(rootRef, 0);
   }
 
-  static const fb.Reader<InParentNamespace> reader = const _InParentNamespaceReader();
+  static const fb.Reader<InParentNamespace> reader = _InParentNamespaceReader();
 
   final fb.BufferContext _bc;
   final int _bcOffset;
@@ -35,9 +35,10 @@ class InParentNamespace {
   }
 }
 
-class InParentNamespaceT {
+class InParentNamespaceT implements fb.Packable {
+  @override
   int pack(fb.Builder fbBuilder) {
-    fbBuilder.startTable();
+    fbBuilder.startTable(0);
     return fbBuilder.endTable();
   }
 
@@ -52,7 +53,7 @@ class _InParentNamespaceReader extends fb.TableReader<InParentNamespace> {
 
   @override
   InParentNamespace createObject(fb.BufferContext bc, int offset) => 
-    new InParentNamespace._(bc, offset);
+    InParentNamespace._(bc, offset);
 }
 
 class InParentNamespaceObjectBuilder extends fb.ObjectBuilder {
@@ -62,15 +63,15 @@ class InParentNamespaceObjectBuilder extends fb.ObjectBuilder {
   /// Finish building, and store into the [fbBuilder].
   @override
   int finish(fb.Builder fbBuilder) {
-    fbBuilder.startTable();
+    fbBuilder.startTable(0);
     return fbBuilder.endTable();
   }
 
   /// Convenience method to serialize to byte list.
   @override
   Uint8List toBytes([String? fileIdentifier]) {
-    fb.Builder fbBuilder = new fb.Builder();
-    int offset = finish(fbBuilder);
-    return fbBuilder.finish(offset, fileIdentifier);
+    final fbBuilder = fb.Builder(deduplicateTables: false);
+    fbBuilder.finish(finish(fbBuilder), fileIdentifier);
+    return fbBuilder.buffer;
   }
 }

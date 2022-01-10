@@ -79,6 +79,20 @@ describe('The Styles pane', async () => {
     await waitForPropertyToHighlight('html', '--title-color');
   });
 
+  it('can jump to an unexpanded CSS variable definition', async () => {
+    const {frontend} = getBrowserAndPages();
+    await goToResourceAndWaitForStyleSection('elements/css-variables-many.html');
+
+    // Select div that we will inspect the CSS variables for
+    await frontend.keyboard.press('ArrowRight');
+    await waitForContentOfSelectedElementsNode('<div id=\u200B"properties-to-inspect">\u200B</div>\u200B');
+
+    const testElementRule = await getStyleRule(PROPERTIES_TO_INSPECT_SELECTOR);
+    await click(FIRST_PROPERTY_VALUE_SELECTOR, {root: testElementRule});
+
+    await waitForPropertyToHighlight('html', '--color56');
+  });
+
   it('displays the correct value when editing CSS var() functions', async () => {
     const {frontend} = getBrowserAndPages();
     await goToResourceAndWaitForStyleSection('elements/css-variables.html');
@@ -272,8 +286,7 @@ describe('The Styles pane', async () => {
     assert.deepEqual(computedStyles, ['rgb(255, 0, 0)', 'rgb(255, 0, 0)'], 'Styles are not correct after the update');
   });
 
-  // Consistently timing out on Mac
-  it.skipOnPlatforms(['mac'], '[crbug.com/1218736] can display and edit container queries', async () => {
+  it('can display and edit container queries', async () => {
     const {frontend} = getBrowserAndPages();
     await goToResourceAndWaitForStyleSection('elements/css-container-queries.html');
 
@@ -303,8 +316,8 @@ describe('The Styles pane', async () => {
           'incorrectly displayed style after initialization');
     }
 
-    await editQueryRuleText(rule1PropertiesSection, '(min-width: 300px)');
-    await editQueryRuleText(rule2PropertiesSection, '(max-width: 300px)');
+    await editQueryRuleText(rule1PropertiesSection, 'size(min-width: 300px)');
+    await editQueryRuleText(rule2PropertiesSection, 'size(max-width: 300px)');
 
     // Verify that computed styles correspond to the changes made.
     const computedStyles = [

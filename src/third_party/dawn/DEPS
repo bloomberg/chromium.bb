@@ -100,7 +100,7 @@ deps = {
 
   # WGSL support
   'third_party/tint': {
-    'url': '{dawn_git}/tint@e0e45a4d473a256aadc8e8765ce71a536c22b634',
+    'url': '{dawn_git}/tint@0fe30b52a5c93473923419d0043840d61ca46746',
   },
 
   # GLFW for tests and samples
@@ -121,7 +121,7 @@ deps = {
   },
 
   'third_party/angle': {
-    'url': '{chromium_git}/angle/angle@a5e039b7c62ff343f12c0df2c3a09f4ec06e5a32',
+    'url': '{chromium_git}/angle/angle@663831aa676c59829cc3d822340812f016bf77f6',
     'condition': 'dawn_standalone',
   },
 

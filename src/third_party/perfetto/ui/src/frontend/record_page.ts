@@ -32,12 +32,14 @@ import {
   isLinuxTarget,
   LoadedConfig,
   MAX_TIME,
-  RecordConfig,
   RecordingTarget,
   RecordMode
 } from '../common/state';
 import {AdbOverWebUsb} from '../controller/adb';
-import {createEmptyRecordConfig} from '../controller/validate_config';
+import {
+  createEmptyRecordConfig,
+  RecordConfig
+} from '../controller/record_config_types';
 
 import {globals} from './globals';
 import {createPage, PageAttrs} from './pages';
@@ -66,7 +68,7 @@ const PERSIST_CONFIG_FLAG = featureFlags.register({
   id: 'persistConfigsUI',
   name: 'Config persistence UI',
   description: 'Show experimental config persistence UI on the record page.',
-  defaultValue: false,
+  defaultValue: true,
 });
 
 const POLL_INTERVAL_MS = [250, 500, 1000, 2500, 5000, 30000, 60000];
@@ -754,7 +756,7 @@ function AdvancedSettings(cssClass: string) {
         m(Toggle, {
           title: 'Resolve kernel symbols',
           cssClass: '.thin',
-          descr: `Enables lookup via /proc/kallsyms for workqueue, 
+          descr: `Enables lookup via /proc/kallsyms for workqueue,
               sched_blocked_reason and other events (userdebug/eng builds only).`,
           setEnabled: (cfg, val) => cfg.symbolizeKsyms = val,
           isEnabled: (cfg) => cfg.symbolizeKsyms
@@ -899,14 +901,15 @@ function loadConfigButton(
   return m(
       'button',
       {
-        class: 'config-button load',
+        class: 'config-button',
+        title: 'Apply configuration settings',
         disabled: loadedConfigEqual(configType, globals.state.lastLoadedConfig),
         onclick: () => {
           globals.dispatch(Actions.setRecordConfig({config, configType}));
           globals.rafScheduler.scheduleFullRedraw();
         }
       },
-      'load');
+      m('i.material-icons', 'file_upload'));
 }
 
 function displayRecordConfigs() {
@@ -924,7 +927,8 @@ function displayRecordConfigs() {
       loadConfigButton(item.config, {type: 'NAMED', name: item.title}),
       m('button',
         {
-          class: 'config-button save',
+          class: 'config-button',
+          title: 'Overwrite configuration with current settings',
           onclick: () => {
             if (confirm(`Overwrite config "${
                     item.title}" with current settings?`)) {
@@ -937,16 +941,17 @@ function displayRecordConfigs() {
             }
           }
         },
-        'save'),
+        m('i.material-icons', 'save')),
       m('button',
         {
-          class: 'config-button delete',
+          class: 'config-button',
+          title: 'Remove configuration',
           onclick: () => {
             recordConfigStore.delete(item.key);
             globals.rafScheduler.scheduleFullRedraw();
           }
         },
-        'delete'),
+        m('i.material-icons', 'delete')),
     ]));
 
     const errorItems = [];
@@ -999,9 +1004,10 @@ function Configurations(cssClass: string) {
           }),
           m('button',
             {
-              class: 'config-button save long',
+              class: 'config-button',
               disabled: !canSave,
-              title: canSave ? '' : 'Duplicate name, saving disabled',
+              title: canSave ? 'Save current config' :
+                               'Duplicate name, saving disabled',
               onclick: () => {
                 recordConfigStore.save(
                     globals.state.recordConfig, ConfigTitleState.getTitle());
@@ -1009,24 +1015,25 @@ function Configurations(cssClass: string) {
                 ConfigTitleState.clearTitle();
               }
             },
-            'Save current config')
-        ]),
-      m('.reset-wrapper',
-        m('button',
-          {
-            class: 'config-button reset',
-            onclick: () => {
-              if (confirm(
-                      'Current configuration will be cleared. Are you sure?')) {
-                globals.dispatch(Actions.setRecordConfig({
-                  config: createEmptyRecordConfig(),
-                  configType: {type: 'NONE'}
-                }));
-                globals.rafScheduler.scheduleFullRedraw();
+            m('i.material-icons', 'save')),
+          m('button',
+            {
+              class: 'config-button',
+              title: 'Clear current configuration',
+              onclick: () => {
+                if (confirm(
+                        'Current configuration will be cleared. ' +
+                        'Are you sure?')) {
+                  globals.dispatch(Actions.setRecordConfig({
+                    config: createEmptyRecordConfig(),
+                    configType: {type: 'NONE'}
+                  }));
+                  globals.rafScheduler.scheduleFullRedraw();
+                }
               }
-            }
-          },
-          'Clear current config')),
+            },
+            m('i.material-icons', 'delete_forever'))
+        ]),
       displayRecordConfigs());
 }
 
@@ -1429,7 +1436,7 @@ function recordMenu(routePage: string) {
                 }
               },
               m(`li${routePage === 'config' ? '.active' : ''}`,
-                m('i.material-icons', 'tune'),
+                m('i.material-icons', 'save'),
                 m('.title', 'Saved configs'),
                 m('.sub', 'Manage local configs'))) :
             null),

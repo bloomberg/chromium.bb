@@ -11,11 +11,9 @@ namespace adapter {
 
 namespace {
 
-using spdy::SpdyFrameIR;
 using spdy::SpdyGoAwayIR;
 using spdy::SpdyPingIR;
 using spdy::SpdyPriorityIR;
-using spdy::SpdySettingsIR;
 using spdy::SpdyWindowUpdateIR;
 
 }  // namespace
@@ -39,11 +37,7 @@ int64_t OgHttp2Adapter::ProcessBytes(absl::string_view bytes) {
 }
 
 void OgHttp2Adapter::SubmitSettings(absl::Span<const Http2Setting> settings) {
-  auto settings_ir = absl::make_unique<SpdySettingsIR>();
-  for (const Http2Setting& setting : settings) {
-    settings_ir->AddSetting(setting.id, setting.value);
-  }
-  session_->EnqueueFrame(std::move(settings_ir));
+  session_->SubmitSettings(settings);
 }
 
 void OgHttp2Adapter::SubmitPriorityForStream(Http2StreamId stream_id,
@@ -109,8 +103,16 @@ int OgHttp2Adapter::GetHpackEncoderDynamicTableSize() const {
   return session_->GetHpackEncoderDynamicTableSize();
 }
 
+int OgHttp2Adapter::GetHpackEncoderDynamicTableCapacity() const {
+  return session_->GetHpackEncoderDynamicTableCapacity();
+}
+
 int OgHttp2Adapter::GetHpackDecoderDynamicTableSize() const {
   return session_->GetHpackDecoderDynamicTableSize();
+}
+
+int OgHttp2Adapter::GetHpackDecoderSizeLimit() const {
+  return session_->GetHpackDecoderSizeLimit();
 }
 
 Http2StreamId OgHttp2Adapter::GetHighestReceivedStreamId() const {

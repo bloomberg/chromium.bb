@@ -42,6 +42,7 @@ constexpr FeatureParam<BackupRefPtrEnabledProcesses>::Option
         {BackupRefPtrEnabledProcesses::kBrowserOnly, "browser-only"},
         {BackupRefPtrEnabledProcesses::kBrowserAndRenderer,
          "browser-and-renderer"},
+        {BackupRefPtrEnabledProcesses::kNonRenderer, "non-renderer"},
         {BackupRefPtrEnabledProcesses::kAllProcesses, "all-processes"}};
 
 const base::FeatureParam<BackupRefPtrEnabledProcesses>
@@ -50,14 +51,18 @@ const base::FeatureParam<BackupRefPtrEnabledProcesses>
         BackupRefPtrEnabledProcesses::kBrowserOnly,
         &kBackupRefPtrEnabledProcessesOptions};
 
-const Feature kPartitionAllocSimulateBRPPartitionSplit{
-    "PartitionAllocSimulateBRPPartitionSplit", FEATURE_DISABLED_BY_DEFAULT};
+constexpr FeatureParam<BackupRefPtrMode>::Option kBackupRefPtrModeOptions[] = {
+    {BackupRefPtrMode::kDisabled, "disabled"},
+    {BackupRefPtrMode::kEnabled, "enabled"},
+    {BackupRefPtrMode::kDisabledButSplitPartitions2Way,
+     "disabled-but-2-way-split"},
+    {BackupRefPtrMode::kDisabledButSplitPartitions3Way,
+     "disabled-but-3-way-split"},
+};
 
-const base::FeatureParam<BackupRefPtrEnabledProcesses>
-    kSimulateBRPPartitionSplitProcessesParam{
-        &kPartitionAllocSimulateBRPPartitionSplit, "enabled-processes",
-        BackupRefPtrEnabledProcesses::kAllProcesses,
-        &kBackupRefPtrEnabledProcessesOptions};
+const base::FeatureParam<BackupRefPtrMode> kBackupRefPtrModeParam{
+    &kPartitionAllocBackupRefPtr, "brp-mode", BackupRefPtrMode::kEnabled,
+    &kBackupRefPtrModeOptions};
 
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 

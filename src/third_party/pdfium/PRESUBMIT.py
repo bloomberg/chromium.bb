@@ -59,12 +59,13 @@ _BANNED_CPP_FUNCTIONS = (
         [_THIRD_PARTY],
     ),
     (
-        'v8::Isolate::GetCurrent()',
+        r'/v8::Isolate::(?:|Try)GetCurrent()',
         (
-            'Avoid uses of v8::Isolate::GetCurrent(). Prefer holding a pointer to',
-            'the v8::Isolate that was entered.',
+            'v8::Isolate::GetCurrent() and v8::Isolate::TryGetCurrent() are banned. Hold',
+            'a pointer to the v8::Isolate that was entered. Use v8::Isolate::IsCurrent()',
+            'to check whether a given v8::Isolate is entered.',
         ),
-        False,
+        True,
         (),
     ),
 )
@@ -496,6 +497,9 @@ def CheckChangeOnUpload(input_api, output_api):
                 input_api,
                 output_api,
                 full_path,
-                files_to_check=[r'^PRESUBMIT_test\.py$']))
+                files_to_check=[r'^PRESUBMIT_test\.py$'],
+                run_on_python2=not USE_PYTHON3,
+                run_on_python3=USE_PYTHON3,
+                skip_shebang_check=True))
 
   return results

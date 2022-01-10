@@ -206,9 +206,10 @@ class ThreadPool(object):
     p = subprocess.Popen(cmd, **kwargs)
     with Timer(self.timeout, p.terminate) as timer:
       stdout, _ = sigint_handler.wait(p, stdin)
+      stdout = stdout.decode('utf-8', 'ignore')
       if timer.completed:
         stdout = 'Process timed out after %ss\n%s' % (self.timeout, stdout)
-      return p.returncode, stdout.decode('utf-8', 'ignore');
+      return p.returncode, stdout
 
   def CallCommand(self, test):
     """Runs an external program.
@@ -1493,9 +1494,9 @@ class PresubmitExecuter(object):
     m = re.search('^USE_PYTHON3 = (True|False)$', script_text,
                   flags=re.MULTILINE)
     if m:
-        use_python3 = m.group(1) == 'True'
+      use_python3 = m.group(1) == 'True'
     else:
-        use_python3 = self.use_python3
+      use_python3 = self.use_python3
     if (((sys.version_info.major == 2) and use_python3) or
         ((sys.version_info.major == 3) and not use_python3)):
       return []

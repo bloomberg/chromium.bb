@@ -263,8 +263,19 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
 
   void CountLeadingZerosU32(Register dst, Register src, RCBit r = LeaveRC);
   void CountLeadingZerosU64(Register dst, Register src, RCBit r = LeaveRC);
-  void CountTrailingZerosU32(Register dst, Register src, RCBit r = LeaveRC);
-  void CountTrailingZerosU64(Register dst, Register src, RCBit r = LeaveRC);
+  void CountTrailingZerosU32(Register dst, Register src, Register scratch1 = ip,
+                             Register scratch2 = r0, RCBit r = LeaveRC);
+  void CountTrailingZerosU64(Register dst, Register src, Register scratch1 = ip,
+                             Register scratch2 = r0, RCBit r = LeaveRC);
+
+  void ClearByteU64(Register dst, int byte_idx);
+  void ReverseBitsU64(Register dst, Register src, Register scratch1,
+                      Register scratch2);
+  void ReverseBitsU32(Register dst, Register src, Register scratch1,
+                      Register scratch2);
+  void ReverseBitsInSingleByteU64(Register dst, Register src,
+                                  Register scratch1, Register scratch2,
+                                  int byte_idx);
 
   void AddF64(DoubleRegister dst, DoubleRegister lhs, DoubleRegister rhs,
               RCBit r = LeaveRC);
@@ -601,8 +612,8 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
                    Simd128Register scratch);
   void SwapSimd128(MemOperand src, MemOperand dst, Simd128Register scratch);
 
-  void ByteReverseU16(Register dst, Register val);
-  void ByteReverseU32(Register dst, Register val);
+  void ByteReverseU16(Register dst, Register val, Register scratch);
+  void ByteReverseU32(Register dst, Register val, Register scratch);
   void ByteReverseU64(Register dst, Register val);
 
   // Before calling a C-function from generated code, align arguments on stack.
@@ -1250,7 +1261,7 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
                                bool builtin_exit_frame = false);
 
   // Generates a trampoline to jump to the off-heap instruction stream.
-  void JumpToInstructionStream(Address entry);
+  void JumpToOffHeapInstructionStream(Address entry);
 
   // ---------------------------------------------------------------------------
   // In-place weak references.

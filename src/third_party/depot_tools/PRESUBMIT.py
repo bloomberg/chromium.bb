@@ -108,22 +108,26 @@ def CheckUnitTestsOnCommit(input_api, output_api):
         r'.*ninjalog_uploader_test\.py$',
         r'.*recipes_test\.py$',
     ])
-  tests_to_skip_list.append(r'.*my_activity_test\.py')
+  py2_only_tests = [
+      'recipes_test.py',
+  ]
 
   tests = input_api.canned_checks.GetUnitTestsInDirectory(
       input_api,
       output_api,
       'tests',
       files_to_check=test_to_run_list,
-      files_to_skip=tests_to_skip_list,
-      run_on_python3=False)
+      files_to_skip=tests_to_skip_list + py2_only_tests,
+      run_on_python3=True)
 
+  # TODO: once py3 compatbile, remove those tests
   tests.extend(input_api.canned_checks.GetUnitTestsInDirectory(
       input_api,
       output_api,
       'tests',
-      files_to_check=[r'.*my_activity_test\.py'],
-      run_on_python3=True))
+      files_to_check=py2_only_tests,
+      files_to_skip=tests_to_skip_list,
+      run_on_python3=False))
 
   return input_api.RunTests(tests)
 

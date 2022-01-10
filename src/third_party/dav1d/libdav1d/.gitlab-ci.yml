@@ -4,49 +4,49 @@ stages:
     - test
 
 .debian-amd64-common:
-    image: registry.videolan.org/dav1d-debian-unstable:20210307102341
+    image: registry.videolan.org/dav1d-debian-unstable:20211102173310
     stage: build
     tags:
         - docker
         - amd64
 
 .debian-llvm-mingw-common:
-    image: registry.videolan.org/vlc-debian-llvm-mingw:20190218133533
+    image: registry.videolan.org/vlc-debian-llvm-mingw:20201201162707
     stage: build
     tags:
         - docker
         - amd64
 
 .debian-aarch64-common:
-    image: registry.videolan.org/dav1d-debian-buster-aarch64:20200218203017
+    image: registry.videolan.org/dav1d-debian-bullseye-aarch64:20211006142507
     stage: build
     tags:
         - docker
         - aarch64
 
 .debian-armv7-common:
-    image: registry.videolan.org/dav1d-debian-unstable-armv7:20190202101732
+    image: registry.videolan.org/dav1d-debian-bullseye-armv7:20211004204031
     stage: build
     tags:
         - docker
         - armv7
 
 .debian-ppc64le-common:
-    image: registry.videolan.org/dav1d-debian-unstable-ppc64le:20190606105121
+    image: registry.videolan.org/dav1d-debian-unstable-ppc64le:20211006193415
     stage: build
     tags:
         - docker
         - ppc64le
 
 .ubuntu-common:
-    image: registry.videolan.org/dav1d-ubuntu-bionic:20200121182340
+    image: registry.videolan.org/dav1d-ubuntu-bionic:20211005085855
     stage: build
     tags:
         - docker
         - amd64
 
 .android-common:
-    image: registry.videolan.org/vlc-debian-android:20200323093226
+    image: registry.videolan.org/vlc-debian-android:20200529135226
     stage: build
     tags:
         - docker
@@ -65,6 +65,7 @@ style-check:
                   exit 1;
               fi;
           done
+        - rg '[\u061c\u2000-\u200f\u2028-\u202f\u205f-\u206f]' ./ && echo "Invisible Unicode characters" && exit 1
         - git remote rm upstream 2> /dev/null || true
         - git remote add upstream https://code.videolan.org/videolan/dav1d.git
         - git fetch -q upstream master
@@ -184,6 +185,20 @@ build-debian-avx:
         - docker
         - avx2
         - amd64
+    variables:
+        CFLAGS: '-mavx'
+    script:
+        - meson build --buildtype debug
+                      --werror
+        - ninja -C build
+        - cd build
+        - time meson test -v --suite checkasm
+
+build-debian-avx512:
+    extends: .debian-amd64-common
+    tags:
+        - docker
+        - amd64-avx512
     variables:
         CFLAGS: '-mavx'
     script:
@@ -357,7 +372,7 @@ build-macos:
 build-debian-werror:
     extends: .debian-aarch64-common
     variables:
-        CC: clang-7
+        CC: clang
     script:
         - meson build --buildtype debug
                       --werror
@@ -420,6 +435,7 @@ build-debian-ppc64le:
         - test -d cache/dav1d-test-data.git && GIT_DIR=cache/dav1d-test-data.git git fetch --refmap=refs/heads/master:refs/heads/master origin master
         - test -d cache/dav1d-test-data.git || git clone --bare https://code.videolan.org/videolan/dav1d-test-data.git cache/dav1d-test-data.git
         - git clone cache/dav1d-test-data.git tests/dav1d-test-data
+        - git -C tests/dav1d-test-data describe --always --long
     dependencies: []
 
 .test-asm-common:
@@ -459,8 +475,9 @@ test-debian:
         - ninja coverage-xml
         - grep -Eo 'line-rate="[^"]+"' meson-logs/coverage.xml | head -n 1 |
           grep -Eo '[0-9.]+' | awk '{ print "coverage:", $1 * 100 } '
-        - time meson test -v --suite testdata_seek-stress --test-args "--tilethreads 2 --framethreads 1 --pfthreads=2"
-        - time meson test -v --suite testdata_seek-stress --test-args "--tilethreads 2 --framethreads 2 --pfthreads=2"
+        - time meson test -v --suite testdata_seek-stress --test-args "--threads 2 --framedelay 1"
+        - time meson test -v --suite testdata_seek-stress --test-args "--threads 2 --framedelay 2"
+        - time meson test -v --suite testdata-8 --suite testdata-10 --suite testdata-12 --test-args "--threads=1 --negstride"
     coverage: '/^coverage: (\d+.\d+)$/'
     artifacts:
         expose_as: 'Coverage HTML report'
@@ -480,6 +497,22 @@ test-debian32-asm:
         - .test-asm-common
     needs: ["build-debian32"]
     dependencies: ["build-debian32"]
+
+test-debian-avx512:
+    extends:
+        - .debian-amd64-common
+        - .test-common
+    tags:
+        - docker
+        - amd64-avx512
+    variables:
+        CFLAGS: '-mavx'
+    needs: ["build-debian-avx512"]
+    script:
+        - meson build --buildtype release
+                      -Dtestdata_tests=true
+        - ninja -C build
+        - cd build && time meson test --suite testdata-8 --suite testdata-10 --suite testdata-12 --test-args "--cpumask avx512icl"
 
 test-debian-unaligned-stack:
     extends:
@@ -570,14 +603,12 @@ test-debian-tsan:
         - ninja -C build
         - cd build
         - exit_code=0
-        - time meson test -v --setup=sanitizer --suite testdata-8 --suite testdata-10 --suite testdata-12 --test-args "--tilethreads 1 --framethreads 2 --pfthreads 1" || exit_code=$((exit_code + $?))
-        - time meson test -v --setup=sanitizer --suite testdata-8 --suite testdata-10 --suite testdata-12 --test-args "--tilethreads 2 --framethreads 1 --pfthreads 1" || exit_code=$((exit_code + $?))
-        - time meson test -v --setup=sanitizer --suite testdata-8 --suite testdata-10 --suite testdata-12 --test-args "--tilethreads 2 --framethreads 2 --pfthreads 1" || exit_code=$((exit_code + $?))
-        - time meson test -v --setup=sanitizer --suite testdata-8 --suite testdata-10 --suite testdata-12 --test-args "--tilethreads 2 --framethreads 1 --pfthreads 2" || exit_code=$((exit_code + $?))
-        - time meson test -v --setup=sanitizer --suite testdata-8 --suite testdata-10 --suite testdata-12 --test-args "--tilethreads 2 --framethreads 2 --pfthreads 2" || exit_code=$((exit_code + $?))
-        - time meson test -v --setup=sanitizer --suite testdata_seek-stress --test-args "--tilethreads 2 --framethreads 1 --pfthreads 2"                               || exit_code=$((exit_code + $?))
-        - time meson test -v --setup=sanitizer --suite testdata_seek-stress --test-args "--tilethreads 2 --framethreads 2 --pfthreads 2"                               || exit_code=$((exit_code + $?))
-        - time meson test -v --setup=sanitizer --suite oss-fuzz-asan --suite oss-fuzz-msan --suite oss-fuzz-ubsan                                                      || exit_code=$((exit_code + $?))
+        - time meson test -v --setup=sanitizer --suite testdata-8 --suite testdata-10 --suite testdata-12 --test-args "--threads 2 --framedelay 1"             || exit_code=$((exit_code + $?))
+        - time meson test -v --setup=sanitizer --suite testdata-8 --suite testdata-10 --suite testdata-12 --test-args "--threads 2 --framedelay 2"             || exit_code=$((exit_code + $?))
+        - time meson test -v --setup=sanitizer --suite testdata-8 --suite testdata-10 --suite testdata-12 --test-args "--threads 2 --framedelay 2 --negstride" || exit_code=$((exit_code + $?))
+        - time meson test -v --setup=sanitizer --suite testdata_seek-stress --test-args "--threads 2 --framedelay 1"                                           || exit_code=$((exit_code + $?))
+        - time meson test -v --setup=sanitizer --suite testdata_seek-stress --test-args "--threads 2 --framedelay 2"                                           || exit_code=$((exit_code + $?))
+        - time meson test -v --setup=sanitizer --suite oss-fuzz-asan --suite oss-fuzz-msan --suite oss-fuzz-ubsan                                              || exit_code=$((exit_code + $?))
         - if [ $exit_code -ne 0 ]; then exit $exit_code; fi
 
 test-win64:

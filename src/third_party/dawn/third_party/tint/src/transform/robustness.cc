@@ -41,7 +41,7 @@ struct Robustness::State {
 
   /// Applies the transformation state to `ctx`.
   void Transform() {
-    ctx.ReplaceAll([&](const ast::ArrayAccessorExpression* expr) {
+    ctx.ReplaceAll([&](const ast::IndexAccessorExpression* expr) {
       return Transform(expr);
     });
     ctx.ReplaceAll(
@@ -52,9 +52,9 @@ struct Robustness::State {
   /// @param expr the array, vector or matrix index expression
   /// @return the clamped replacement expression, or nullptr if `expr` should be
   /// cloned without changes.
-  const ast::ArrayAccessorExpression* Transform(
-      const ast::ArrayAccessorExpression* expr) {
-    auto* ret_type = ctx.src->Sem().Get(expr->array)->Type();
+  const ast::IndexAccessorExpression* Transform(
+      const ast::IndexAccessorExpression* expr) {
+    auto* ret_type = ctx.src->Sem().Get(expr->object)->Type();
 
     auto* ref = ret_type->As<sem::Reference>();
     if (ref && omitted_classes.count(ref->StorageClass()) != 0) {
@@ -83,7 +83,7 @@ struct Robustness::State {
     } else if (auto* arr = ret_unwrapped->As<sem::Array>()) {
       size.u32 = arr->Count();
     } else if (auto* mat = ret_unwrapped->As<sem::Matrix>()) {
-      // The row accessor would have been an embedded array accessor and already
+      // The row accessor would have been an embedded index accessor and already
       // handled, so we just need to do columns here.
       size.u32 = mat->columns();
     } else {
@@ -97,7 +97,7 @@ struct Robustness::State {
         return nullptr;
       }
       // Runtime sized array
-      auto* arr = ctx.Clone(expr->array);
+      auto* arr = ctx.Clone(expr->object);
       size.expr = b.Call("arrayLength", b.AddressOf(arr));
     }
 
@@ -189,13 +189,15 @@ struct Robustness::State {
 
     // Convert idx to an expression, so we can emit the new accessor.
     if (!idx.expr) {
-      idx.expr = idx.is_signed ? b.Expr(idx.i32) : b.Expr(idx.u32);
+      idx.expr = idx.is_signed
+                     ? static_cast<const ast::Expression*>(b.Expr(idx.i32))
+                     : static_cast<const ast::Expression*>(b.Expr(idx.u32));
     }
 
     // Clone arguments outside of create() call to have deterministic ordering
     auto src = ctx.Clone(expr->source);
-    auto* arr = ctx.Clone(expr->array);
-    return b.IndexAccessor(src, arr, idx.expr);
+    auto* obj = ctx.Clone(expr->object);
+    return b.IndexAccessor(src, obj, idx.expr);
   }
 
   /// @param type intrinsic type

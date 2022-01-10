@@ -13,6 +13,7 @@
 #include "libcef/common/frame_util.h"
 #include "libcef/common/net/url_util.h"
 
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"

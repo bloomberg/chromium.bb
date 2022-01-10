@@ -237,14 +237,13 @@ TEST(TPLModelTest, TxfmStatsRecordTest) {
  */
 int find_gop_q_iterative(double bit_budget, const double *qstep_ratio_list,
                          GF_GROUP gf_group, const int *stats_valid_list,
-                         TplTxfmStats *stats_list, int gf_frame_index,
-                         aom_bit_depth_t bit_depth) {
+                         TplTxfmStats *stats_list, aom_bit_depth_t bit_depth) {
   // Brute force iterative method to find the optimal q.
   // Use the result to test against the binary search result.
 
   // Initial estimate when q = 255
-  av1_q_mode_compute_gop_q_indices(gf_frame_index, 255, qstep_ratio_list,
-                                   bit_depth, &gf_group, gf_group.q_val);
+  av1_q_mode_compute_gop_q_indices(255, qstep_ratio_list, bit_depth, &gf_group,
+                                   gf_group.q_val);
   double curr_estimate = av1_estimate_gop_bitrate(
       gf_group.q_val, gf_group.size, stats_list, stats_valid_list, NULL);
   double best_estimate_budget_distance = fabs(curr_estimate - bit_budget);
@@ -252,8 +251,8 @@ int find_gop_q_iterative(double bit_budget, const double *qstep_ratio_list,
 
   // Start at q = 254 because we already have an estimate for q = 255.
   for (int q = 254; q >= 0; q--) {
-    av1_q_mode_compute_gop_q_indices(gf_frame_index, q, qstep_ratio_list,
-                                     bit_depth, &gf_group, gf_group.q_val);
+    av1_q_mode_compute_gop_q_indices(q, qstep_ratio_list, bit_depth, &gf_group,
+                                     gf_group.q_val);
     curr_estimate = av1_estimate_gop_bitrate(
         gf_group.q_val, gf_group.size, stats_list, stats_valid_list, NULL);
     double curr_estimate_budget_distance = fabs(curr_estimate - bit_budget);
@@ -273,7 +272,6 @@ TEST(TplModelTest, QModeEstimateBaseQTest) {
   const int gf_group_update_types[25] = { 0, 3, 6, 6, 6, 1, 5, 1, 5, 6, 1, 5, 1,
                                           5, 6, 6, 1, 5, 1, 5, 6, 1, 5, 1, 4 };
   int stats_valid_list[25] = { 0 };
-  const int gf_frame_index = 0;
   const aom_bit_depth_t bit_depth = AOM_BITS_8;
   const double scale_factor = 1.0;
 
@@ -300,11 +298,11 @@ TEST(TplModelTest, QModeEstimateBaseQTest) {
   for (double bit_budget : bit_budgets) {
     // Binary search method to find the optimal q.
     const int result = av1_q_mode_estimate_base_q(
-        &gf_group, stats_list, stats_valid_list, bit_budget, gf_frame_index,
-        bit_depth, scale_factor, qstep_ratio_list, q_index_list, NULL);
-    const int test_result = find_gop_q_iterative(
-        bit_budget, qstep_ratio_list, gf_group, stats_valid_list, stats_list,
-        gf_frame_index, bit_depth);
+        &gf_group, stats_list, stats_valid_list, bit_budget, bit_depth,
+        scale_factor, qstep_ratio_list, q_index_list, NULL);
+    const int test_result =
+        find_gop_q_iterative(bit_budget, qstep_ratio_list, gf_group,
+                             stats_valid_list, stats_list, bit_depth);
 
     if (bit_budget == 0) {
       EXPECT_EQ(result, 255);

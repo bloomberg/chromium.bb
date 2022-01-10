@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 
 #include "base/files/file_util.h"
+#include "base/ignore_result.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -107,9 +109,9 @@ class WebAppOpaqueBrowserFrameViewTest : public InProcessBrowserTest {
               theme_mode == ThemeMode::kDefault);
   }
 
-  BrowserView* browser_view_ = nullptr;
-  OpaqueBrowserFrameView* opaque_browser_frame_view_ = nullptr;
-  WebAppFrameToolbarView* web_app_frame_toolbar_ = nullptr;
+  raw_ptr<BrowserView> browser_view_ = nullptr;
+  raw_ptr<OpaqueBrowserFrameView> opaque_browser_frame_view_ = nullptr;
+  raw_ptr<WebAppFrameToolbarView> web_app_frame_toolbar_ = nullptr;
 
   // Disable animations.
   ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode_{
@@ -301,7 +303,7 @@ class WebAppOpaqueBrowserFrameViewWindowControlsOverlayTest
     InProcessBrowserTest::SetUp();
   }
 
-  void InstallAndLaunchWebAppWithWindowControlsOverlay() {
+  bool InstallAndLaunchWebAppWithWindowControlsOverlay() {
     GURL start_url = web_app_frame_toolbar_helper_
                          .LoadWindowControlsOverlayTestPageWithDataAndGetURL(
                              embedded_test_server(), &temp_dir_);
@@ -327,12 +329,22 @@ class WebAppOpaqueBrowserFrameViewWindowControlsOverlayTest
     views::NonClientFrameView* frame_view =
         browser_view_->GetWidget()->non_client_view()->frame_view();
 
+    // Not all platform configurations use OpaqueBrowserFrameView for their
+    // browser windows, see |CreateBrowserNonClientFrameView()|.
+    bool is_opaque_browser_frame_view =
+        views::IsViewClass<OpaqueBrowserFrameView>(frame_view);
+
+    if (!is_opaque_browser_frame_view)
+      return false;
+
     opaque_browser_frame_view_ =
         static_cast<OpaqueBrowserFrameView*>(frame_view);
     auto* web_app_frame_toolbar =
         opaque_browser_frame_view_->web_app_frame_toolbar_for_testing();
     DCHECK(web_app_frame_toolbar);
     DCHECK(web_app_frame_toolbar->GetVisible());
+
+    return true;
   }
 
   void ToggleWindowControlsOverlayEnabledAndWait() {
@@ -343,8 +355,8 @@ class WebAppOpaqueBrowserFrameViewWindowControlsOverlayTest
     ignore_result(title_watcher.WaitAndGetTitle());
   }
 
-  BrowserView* browser_view_ = nullptr;
-  OpaqueBrowserFrameView* opaque_browser_frame_view_ = nullptr;
+  raw_ptr<BrowserView> browser_view_ = nullptr;
+  raw_ptr<OpaqueBrowserFrameView> opaque_browser_frame_view_ = nullptr;
   WebAppFrameToolbarTestHelper web_app_frame_toolbar_helper_;
 
  private:
@@ -354,7 +366,8 @@ class WebAppOpaqueBrowserFrameViewWindowControlsOverlayTest
 
 IN_PROC_BROWSER_TEST_F(WebAppOpaqueBrowserFrameViewWindowControlsOverlayTest,
                        CaptionButtonsTooltip) {
-  InstallAndLaunchWebAppWithWindowControlsOverlay();
+  if (!InstallAndLaunchWebAppWithWindowControlsOverlay())
+    GTEST_SKIP() << "Skip test if it is not a OpaqueBrowserFrameView";
 
   auto* minimize_button = static_cast<const views::Button*>(
       opaque_browser_frame_view_->GetViewByID(VIEW_ID_MINIMIZE_BUTTON));
@@ -393,7 +406,8 @@ IN_PROC_BROWSER_TEST_F(WebAppOpaqueBrowserFrameViewWindowControlsOverlayTest,
 
 IN_PROC_BROWSER_TEST_F(WebAppOpaqueBrowserFrameViewWindowControlsOverlayTest,
                        CaptionButtonHitTest) {
-  InstallAndLaunchWebAppWithWindowControlsOverlay();
+  if (!InstallAndLaunchWebAppWithWindowControlsOverlay())
+    GTEST_SKIP() << "Skip test if it is not a OpaqueBrowserFrameView";
 
   opaque_browser_frame_view_->GetWidget()->LayoutRootViewIfNecessary();
 

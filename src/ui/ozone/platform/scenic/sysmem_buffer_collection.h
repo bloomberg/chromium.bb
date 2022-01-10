@@ -10,7 +10,6 @@
 #include <vulkan/vulkan_core.h>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -92,7 +91,6 @@ class SysmemBufferCollection
   ScenicOverlayView* scenic_overlay_view() {
     return scenic_overlay_view_ ? scenic_overlay_view_.get() : nullptr;
   }
-  ScenicSurfaceFactory* surface_factory() { return surface_factory_; }
 
  private:
   friend class base::RefCountedThreadSafe<SysmemBufferCollection>;
@@ -139,7 +137,6 @@ class SysmemBufferCollection
   // in buffer allocation negotiations, the associated images can be displayed
   // as overlays.
   std::unique_ptr<ScenicOverlayView> scenic_overlay_view_;
-  ScenicSurfaceFactory* surface_factory_ = nullptr;
 
   // Thread checker used to verify that CreateVkImage() is always called from
   // the same thread. It may be unsafe to use vk_buffer_collection_ on different

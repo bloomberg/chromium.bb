@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/speed_limit_uma_listener.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_set_description_observer.h"
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_track_platform.h"
@@ -99,12 +99,7 @@ namespace {
 
 // Used to back histogram value of "WebRTC.PeerConnection.RtcpMux",
 // so treat as append-only.
-enum RtcpMux {
-  RTCP_MUX_DISABLED,
-  RTCP_MUX_ENABLED,
-  RTCP_MUX_NO_MEDIA,
-  RTCP_MUX_MAX
-};
+enum class RtcpMux { kDisabled, kEnabled, kNoMedia, kMax };
 
 RTCSessionDescriptionPlatform* CreateWebKitSessionDescription(
     const std::string& sdp,
@@ -216,6 +211,8 @@ void CopyConstraintsIntoRtcConfiguration(
   configuration->combined_audio_video_bwe = ConstraintToOptional(
       constraints,
       &MediaTrackConstraintSetPlatform::goog_combined_audio_video_bwe);
+  configuration->enable_dtls_srtp = ConstraintToOptional(
+      constraints, &MediaTrackConstraintSetPlatform::enable_dtls_srtp);
 }
 
 // Class mapping responses from calls to libjingle CreateOffer/Answer and
@@ -725,7 +722,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
     if (tracker && handler_) {
       StringBuilder value;
       if (action_ ==
-          PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION_IMPLICIT) {
+          PeerConnectionTracker::kActionSetLocalDescriptionImplicit) {
         webrtc::SessionDescriptionInterface* created_session_description =
             nullptr;
         // Deduce which SDP was created based on signaling state.
@@ -843,7 +840,7 @@ class RTCPeerConnectionHandler::WebRtcSetDescriptionObserverImpl
     if (handler_) {
       handler_->OnModifyTransceivers(
           states.signaling_state, std::move(states.transceiver_states),
-          action_ == PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION);
+          action_ == PeerConnectionTracker::kActionSetRemoteDescription);
     }
   }
 
@@ -1262,8 +1259,7 @@ RTCPeerConnectionHandler::CreateOfferInternal(
   scoped_refptr<CreateSessionDescriptionRequest> description_request(
       new rtc::RefCountedObject<CreateSessionDescriptionRequest>(
           task_runner_, request, weak_factory_.GetWeakPtr(),
-          peer_connection_tracker_,
-          PeerConnectionTracker::ACTION_CREATE_OFFER));
+          peer_connection_tracker_, PeerConnectionTracker::kActionCreateOffer));
 
   blink::TransceiverStateSurfacer transceiver_state_surfacer(
       task_runner_, signaling_thread());
@@ -1309,7 +1305,7 @@ void RTCPeerConnectionHandler::CreateAnswer(
       new rtc::RefCountedObject<CreateSessionDescriptionRequest>(
           task_runner_, request, weak_factory_.GetWeakPtr(),
           peer_connection_tracker_,
-          PeerConnectionTracker::ACTION_CREATE_ANSWER));
+          PeerConnectionTracker::kActionCreateAnswer));
   webrtc::PeerConnectionInterface::RTCOfferAnswerOptions webrtc_options;
   ConvertConstraintsToWebrtcOfferOptions(options, &webrtc_options);
   // TODO(tommi): Do this asynchronously via e.g. PostTaskAndReply.
@@ -1329,7 +1325,7 @@ void RTCPeerConnectionHandler::CreateAnswer(
       new rtc::RefCountedObject<CreateSessionDescriptionRequest>(
           task_runner_, request, weak_factory_.GetWeakPtr(),
           peer_connection_tracker_,
-          PeerConnectionTracker::ACTION_CREATE_ANSWER));
+          PeerConnectionTracker::kActionCreateAnswer));
   // TODO(tommi): Do this asynchronously via e.g. PostTaskAndReply.
   webrtc::PeerConnectionInterface::RTCOfferAnswerOptions webrtc_options;
   ConvertAnswerOptionsToWebrtcAnswerOptions(options, &webrtc_options);
@@ -1357,7 +1353,7 @@ void RTCPeerConnectionHandler::SetLocalDescription(
       base::MakeRefCounted<WebRtcSetDescriptionObserverImpl>(
           weak_factory_.GetWeakPtr(), request, peer_connection_tracker_,
           task_runner_,
-          PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION_IMPLICIT,
+          PeerConnectionTracker::kActionSetLocalDescriptionImplicit,
           configuration_.sdp_semantics);
 
   // Surfacing transceivers is not applicable in Plan B.
@@ -1394,7 +1390,7 @@ void RTCPeerConnectionHandler::SetLocalDescription(
 
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackSetSessionDescription(
-        this, sdp, type, PeerConnectionTracker::SOURCE_LOCAL);
+        this, sdp, type, PeerConnectionTracker::kSourceLocal);
   }
 
   const webrtc::SessionDescriptionInterface* native_desc =
@@ -1409,8 +1405,8 @@ void RTCPeerConnectionHandler::SetLocalDescription(
     LOG(ERROR) << reason_str.ToString();
     if (peer_connection_tracker_) {
       peer_connection_tracker_->TrackSessionDescriptionCallback(
-          this, PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION,
-          "OnFailure", reason_str.ToString());
+          this, PeerConnectionTracker::kActionSetLocalDescription, "OnFailure",
+          reason_str.ToString());
     }
     // Warning: this line triggers the error callback to be executed, causing
     // arbitrary JavaScript to be executed synchronously. As a result, it is
@@ -1435,7 +1431,7 @@ void RTCPeerConnectionHandler::SetLocalDescription(
   scoped_refptr<WebRtcSetDescriptionObserverImpl> content_observer =
       base::MakeRefCounted<WebRtcSetDescriptionObserverImpl>(
           weak_factory_.GetWeakPtr(), request, peer_connection_tracker_,
-          task_runner_, PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION,
+          task_runner_, PeerConnectionTracker::kActionSetLocalDescription,
           configuration_.sdp_semantics);
 
   bool surface_receivers_only =
@@ -1472,7 +1468,7 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
 
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackSetSessionDescription(
-        this, sdp, type, PeerConnectionTracker::SOURCE_REMOTE);
+        this, sdp, type, PeerConnectionTracker::kSourceRemote);
   }
 
   webrtc::SdpParseError error(parsed_sdp.error());
@@ -1487,8 +1483,8 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
     LOG(ERROR) << reason_str.ToString();
     if (peer_connection_tracker_) {
       peer_connection_tracker_->TrackSessionDescriptionCallback(
-          this, PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION,
-          "OnFailure", reason_str.ToString());
+          this, PeerConnectionTracker::kActionSetRemoteDescription, "OnFailure",
+          reason_str.ToString());
     }
     // Warning: this line triggers the error callback to be executed, causing
     // arbitrary JavaScript to be executed synchronously. As a result, it is
@@ -1514,7 +1510,7 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
   scoped_refptr<WebRtcSetDescriptionObserverImpl> content_observer =
       base::MakeRefCounted<WebRtcSetDescriptionObserverImpl>(
           weak_factory_.GetWeakPtr(), request, peer_connection_tracker_,
-          task_runner_, PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION,
+          task_runner_, PeerConnectionTracker::kActionSetRemoteDescription,
           configuration_.sdp_semantics);
 
   bool surface_receivers_only =
@@ -1608,7 +1604,7 @@ void RTCPeerConnectionHandler::AddIceCandidate(
         if (handler_weak_ptr && tracker_ptr) {
           tracker_ptr->TrackAddIceCandidate(
               handler_weak_ptr.get(), candidate,
-              PeerConnectionTracker::SOURCE_REMOTE, result.ok());
+              PeerConnectionTracker::kSourceRemote, result.ok());
         }
         // Update session descriptions.
         if (handler_weak_ptr) {
@@ -2204,7 +2200,7 @@ scoped_refptr<DataChannelInterface> RTCPeerConnectionHandler::CreateDataChannel(
   }
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackCreateDataChannel(
-        this, webrtc_channel.get(), PeerConnectionTracker::SOURCE_LOCAL);
+        this, webrtc_channel.get(), PeerConnectionTracker::kSourceLocal);
   }
 
   ++num_data_channels_created_;
@@ -2591,7 +2587,7 @@ void RTCPeerConnectionHandler::OnDataChannel(
 
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackCreateDataChannel(
-        this, channel.get(), PeerConnectionTracker::SOURCE_REMOTE);
+        this, channel.get(), PeerConnectionTracker::kSourceRemote);
   }
 
   if (!is_closed_)
@@ -2609,7 +2605,7 @@ void RTCPeerConnectionHandler::OnIceCandidate(const String& sdp,
       sdp, sdp_mid, sdp_mline_index);
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackAddIceCandidate(
-        this, platform_candidate, PeerConnectionTracker::SOURCE_LOCAL, true);
+        this, platform_candidate, PeerConnectionTracker::kSourceLocal, true);
   }
 
   // Only the first m line's first component is tracked to avoid
@@ -2669,15 +2665,15 @@ RTCPeerConnectionHandler::FirstSessionDescription::FirstSessionDescription(
 void RTCPeerConnectionHandler::ReportFirstSessionDescriptions(
     const FirstSessionDescription& local,
     const FirstSessionDescription& remote) {
-  RtcpMux rtcp_mux = RTCP_MUX_ENABLED;
+  RtcpMux rtcp_mux = RtcpMux::kEnabled;
   if ((!local.audio && !local.video) || (!remote.audio && !remote.video)) {
-    rtcp_mux = RTCP_MUX_NO_MEDIA;
+    rtcp_mux = RtcpMux::kNoMedia;
   } else if (!local.rtcp_mux || !remote.rtcp_mux) {
-    rtcp_mux = RTCP_MUX_DISABLED;
+    rtcp_mux = RtcpMux::kDisabled;
   }
 
   UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.RtcpMux", rtcp_mux,
-                            RTCP_MUX_MAX);
+                            RtcpMux::kMax);
 
   // TODO(pthatcher): Reports stats about whether we have audio and
   // video or not.

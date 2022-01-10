@@ -1901,7 +1901,7 @@ static AOM_INLINE void resize_context_buffers(AV1_COMMON *cm, int width,
     // dimensions as well as the overall size.
     if (new_mi_cols > cm->mi_params.mi_cols ||
         new_mi_rows > cm->mi_params.mi_rows) {
-      if (av1_alloc_context_buffers(cm, width, height)) {
+      if (av1_alloc_context_buffers(cm, width, height, 0, BLOCK_4X4)) {
         // The cm->mi_* values have been cleared and any existing context
         // buffers have been freed. Clear cm->width and cm->height to be
         // consistent and to force a realloc next time.
@@ -1911,7 +1911,7 @@ static AOM_INLINE void resize_context_buffers(AV1_COMMON *cm, int width,
                            "Failed to allocate context buffers");
       }
     } else {
-      cm->mi_params.set_mb_mi(&cm->mi_params, width, height);
+      cm->mi_params.set_mb_mi(&cm->mi_params, width, height, 0, BLOCK_4X4);
     }
     av1_init_mi_buffers(&cm->mi_params);
     cm->width = width;

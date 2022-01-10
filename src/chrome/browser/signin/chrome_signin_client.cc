@@ -196,7 +196,7 @@ void ChromeSigninClient::PreSignOut(
       signout_source_metric == signin_metrics::SIGNOUT_PREF_CHANGED ||
       user_declines_sync_after_consenting_to_management;
   if (signin_util::IsForceSigninEnabled() && !profile_->IsSystemProfile() &&
-      !profile_->IsGuestSession() && !profile_->IsSupervised() &&
+      !profile_->IsGuestSession() && !profile_->IsChild() &&
       !keep_window_opened) {
     if (signout_source_metric ==
         signin_metrics::SIGNIN_PREF_CHANGED_DURING_SIGNIN) {
@@ -249,8 +249,9 @@ void ChromeSigninClient::DelayNetworkCall(base::OnceClosure callback) {
     std::move(callback).Run();
     return;
   }
-  ash::DelayNetworkCall(base::Milliseconds(ash::kDefaultNetworkRetryDelayMS),
-                        std::move(callback));
+  chromeos::DelayNetworkCall(
+      base::Milliseconds(chromeos::kDefaultNetworkRetryDelayMS),
+      std::move(callback));
   return;
 #else
   // Don't bother if we don't have any kind of network connection.

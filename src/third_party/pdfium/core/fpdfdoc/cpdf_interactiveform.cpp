@@ -30,8 +30,10 @@
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxge/cfx_substfont.h"
 #include "core/fxge/fx_font.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/check.h"
 #include "third_party/base/containers/contains.h"
+#include "third_party/base/numerics/safe_conversions.h"
 
 namespace {
 
@@ -182,12 +184,8 @@ bool FindFont(CPDF_Dictionary* pFormDict,
   CPDF_DictionaryLocker locker(pFonts);
   for (const auto& it : locker) {
     const ByteString& csKey = it.first;
-    if (!it.second)
-      continue;
-    CPDF_Dictionary* pElement = ToDictionary(it.second->GetDirect());
-    if (!pElement)
-      continue;
-    if (pElement->GetNameFor("Type") != "Font")
+    const CPDF_Dictionary* pElement = ToDictionary(it.second->GetDirect());
+    if (!ValidateDictType(pElement, "Font"))
       continue;
     if (pFont->GetFontDict() == pElement) {
       *csNameTag = csKey;
@@ -217,11 +215,8 @@ bool FindFontFromDoc(CPDF_Dictionary* pFormDict,
   CPDF_DictionaryLocker locker(pFonts);
   for (const auto& it : locker) {
     const ByteString& csKey = it.first;
-    if (!it.second)
-      continue;
-
     CPDF_Dictionary* pElement = ToDictionary(it.second->GetDirect());
-    if (!pElement || pElement->GetNameFor("Type") != "Font")
+    if (!ValidateDictType(pElement, "Font"))
       continue;
 
     pFont = CPDF_DocPageData::FromDocument(pDocument)->GetFont(pElement);
@@ -325,11 +320,8 @@ RetainPtr<CPDF_Font> GetNativeFont(CPDF_Dictionary* pFormDict,
   CPDF_DictionaryLocker locker(pFonts);
   for (const auto& it : locker) {
     const ByteString& csKey = it.first;
-    if (!it.second)
-      continue;
-
     CPDF_Dictionary* pElement = ToDictionary(it.second->GetDirect());
-    if (!pElement || pElement->GetNameFor("Type") != "Font")
+    if (!ValidateDictType(pElement, "Font"))
       continue;
 
     auto* pData = CPDF_DocPageData::FromDocument(pDocument);
@@ -619,7 +611,7 @@ size_t CPDF_InteractiveForm::CountFields(const WideString& csFieldName) const {
 }
 
 CPDF_FormField* CPDF_InteractiveForm::GetField(
-    uint32_t index,
+    size_t index,
     const WideString& csFieldName) const {
   if (csFieldName.IsEmpty())
     return m_pFieldTree->GetRoot()->GetFieldAtIndex(index);
@@ -698,19 +690,18 @@ CPDF_FormField* CPDF_InteractiveForm::GetFieldInCalculationOrder(int index) {
 
 int CPDF_InteractiveForm::FindFieldInCalculationOrder(
     const CPDF_FormField* pField) {
-  if (!m_pFormDict || !pField)
+  if (!m_pFormDict)
     return -1;
 
   CPDF_Array* pArray = m_pFormDict->GetArrayFor("CO");
   if (!pArray)
     return -1;
 
-  for (size_t i = 0; i < pArray->size(); i++) {
-    CPDF_Object* pElement = pArray->GetDirectObjectAt(i);
-    if (pElement == pField->GetDict())
-      return i;
-  }
-  return -1;
+  absl::optional<size_t> maybe_found = pArray->Find(pField->GetDict());
+  if (!maybe_found.has_value())
+    return -1;
+
+  return pdfium::base::checked_cast<int>(maybe_found.value());
 }
 
 RetainPtr<CPDF_Font> CPDF_InteractiveForm::GetFormFont(
@@ -728,7 +719,7 @@ RetainPtr<CPDF_Font> CPDF_InteractiveForm::GetFormFont(
     return nullptr;
 
   CPDF_Dictionary* pElement = pFonts->GetDictFor(csAlias);
-  if (!pElement || pElement->GetNameFor("Type") != "Font")
+  if (!ValidateDictType(pElement, "Font"))
     return nullptr;
 
   return CPDF_DocPageData::FromDocument(m_pDocument)->GetFont(pElement);
@@ -744,7 +735,7 @@ int CPDF_InteractiveForm::GetFormAlignment() const {
   return m_pFormDict ? m_pFormDict->GetIntegerFor("Q", 0) : 0;
 }
 
-void CPDF_InteractiveForm::ResetForm(const std::vector<CPDF_FormField*>& fields,
+void CPDF_InteractiveForm::ResetForm(pdfium::span<CPDF_FormField*> fields,
                                      bool bIncludeOrExclude) {
   CFieldTree::Node* pRoot = m_pFieldTree->GetRoot();
   const size_t nCount = pRoot->CountFields();

@@ -41,24 +41,27 @@
 #include "src/sem/statement.h"
 #include "src/sem/storage_texture_type.h"
 #include "src/sem/struct.h"
+#include "src/sem/type_constructor.h"
+#include "src/sem/type_conversion.h"
 #include "src/sem/variable.h"
 #include "src/transform/add_empty_entry_point.h"
+#include "src/transform/array_length_from_uniform.h"
 #include "src/transform/calculate_array_length.h"
 #include "src/transform/canonicalize_entry_point_io.h"
 #include "src/transform/decompose_memory_access.h"
 #include "src/transform/external_texture_transform.h"
 #include "src/transform/fold_trivial_single_use_lets.h"
-#include "src/transform/inline_pointer_lets.h"
 #include "src/transform/loop_to_for_loop.h"
 #include "src/transform/manager.h"
 #include "src/transform/num_workgroups_from_uniform.h"
 #include "src/transform/pad_array_elements.h"
 #include "src/transform/promote_initializers_to_const_var.h"
 #include "src/transform/remove_phonies.h"
-#include "src/transform/simplify.h"
+#include "src/transform/simplify_pointers.h"
+#include "src/transform/unshadow.h"
 #include "src/transform/zero_init_workgroup_memory.h"
 #include "src/utils/defer.h"
-#include "src/utils/get_or_create.h"
+#include "src/utils/map.h"
 #include "src/utils/scoped_assignment.h"
 #include "src/writer/append_vector.h"
 #include "src/writer/float_to_string.h"
@@ -113,13 +116,34 @@ std::ostream& operator<<(std::ostream& s, const RegisterAndSpace& rs) {
   return s;
 }
 
+const char* LoopAttribute() {
+  // Force loops not to be unrolled to work around FXC compilation issues when
+  // it attempts and fails to unroll loops when it contains gradient operations.
+  // https://docs.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-while
+  return "[loop] ";
+}
+
 }  // namespace
 
-SanitizedResult Sanitize(const Program* in,
-                         sem::BindingPoint root_constant_binding_point,
-                         bool disable_workgroup_init) {
+SanitizedResult::SanitizedResult() = default;
+SanitizedResult::~SanitizedResult() = default;
+SanitizedResult::SanitizedResult(SanitizedResult&&) = default;
+
+SanitizedResult Sanitize(
+    const Program* in,
+    sem::BindingPoint root_constant_binding_point,
+    bool disable_workgroup_init,
+    const ArrayLengthFromUniformOptions& array_length_from_uniform) {
   transform::Manager manager;
   transform::DataMap data;
+
+  // Build the config for the internal ArrayLengthFromUniform transform.
+  transform::ArrayLengthFromUniform::Config array_length_from_uniform_cfg(
+      array_length_from_uniform.ubo_binding);
+  array_length_from_uniform_cfg.bindpoint_to_size_index =
+      array_length_from_uniform.bindpoint_to_size_index;
+
+  manager.Add<transform::Unshadow>();
 
   // Attempt to convert `loop`s into for-loops. This is to try and massage the
   // output into something that will not cause FXC to choke or misbehave.
@@ -136,10 +160,13 @@ SanitizedResult Sanitize(const Program* in,
   // assumes that num_workgroups builtins only appear as struct members and are
   // only accessed directly via member accessors.
   manager.Add<transform::NumWorkgroupsFromUniform>();
-  manager.Add<transform::InlinePointerLets>();
-  // Simplify cleans up messy `*(&(expr))` expressions from InlinePointerLets.
-  manager.Add<transform::Simplify>();
+  manager.Add<transform::SimplifyPointers>();
   manager.Add<transform::RemovePhonies>();
+  // ArrayLengthFromUniform must come after InlinePointerLets and Simplify, as
+  // it assumes that the form of the array length argument is &var.array.
+  manager.Add<transform::ArrayLengthFromUniform>();
+  data.Add<transform::ArrayLengthFromUniform::Config>(
+      std::move(array_length_from_uniform_cfg));
   // DecomposeMemoryAccess must come after:
   // * InlinePointerLets, as we cannot take the address of calls to
   //   DecomposeMemoryAccess::Intrinsic.
@@ -162,8 +189,14 @@ SanitizedResult Sanitize(const Program* in,
   data.Add<transform::NumWorkgroupsFromUniform::Config>(
       root_constant_binding_point);
 
+  auto out = manager.Run(in, data);
+
   SanitizedResult result;
-  result.program = std::move(manager.Run(in, data).program);
+  result.program = std::move(out.program);
+  if (auto* res = out.data.Get<transform::ArrayLengthFromUniform::Result>()) {
+    result.used_array_length_from_uniform_indices =
+        std::move(res->used_size_indices);
+  }
   return result;
 }
 
@@ -291,11 +324,11 @@ bool GeneratorImpl::EmitDynamicVectorAssignment(
     return false;
   }
 
-  auto* ast_access_expr = stmt->lhs->As<ast::ArrayAccessorExpression>();
+  auto* ast_access_expr = stmt->lhs->As<ast::IndexAccessorExpression>();
 
   auto out = line();
   out << name << "(";
-  if (!EmitExpression(out, ast_access_expr->array)) {
+  if (!EmitExpression(out, ast_access_expr->object)) {
     return false;
   }
   out << ", ";
@@ -311,10 +344,185 @@ bool GeneratorImpl::EmitDynamicVectorAssignment(
   return true;
 }
 
-bool GeneratorImpl::EmitArrayAccessor(
+bool GeneratorImpl::EmitDynamicMatrixVectorAssignment(
+    const ast::AssignmentStatement* stmt,
+    const sem::Matrix* mat) {
+  auto name = utils::GetOrCreate(
+      dynamic_matrix_vector_write_, mat, [&]() -> std::string {
+        std::string fn;
+        {
+          std::ostringstream ss;
+          if (!EmitType(ss, mat, tint::ast::StorageClass::kInvalid,
+                        ast::Access::kUndefined, "")) {
+            return "";
+          }
+          fn = UniqueIdentifier("set_vector_" + ss.str());
+        }
+        {
+          auto out = line(&helpers_);
+          out << "void " << fn << "(inout ";
+          if (!EmitTypeAndName(out, mat, ast::StorageClass::kInvalid,
+                               ast::Access::kUndefined, "mat")) {
+            return "";
+          }
+          out << ", int col, ";
+          if (!EmitTypeAndName(out, mat->ColumnType(),
+                               ast::StorageClass::kInvalid,
+                               ast::Access::kUndefined, "val")) {
+            return "";
+          }
+          out << ") {";
+        }
+        {
+          ScopedIndent si(&helpers_);
+          line(&helpers_) << "switch (col) {";
+          {
+            ScopedIndent si2(&helpers_);
+            for (uint32_t i = 0; i < mat->columns(); ++i) {
+              line(&helpers_)
+                  << "case " << i << ": mat[" << i << "] = val; break;";
+            }
+          }
+          line(&helpers_) << "}";
+        }
+        line(&helpers_) << "}";
+        line(&helpers_);
+        return fn;
+      });
+
+  if (name.empty()) {
+    return false;
+  }
+
+  auto* ast_access_expr = stmt->lhs->As<ast::IndexAccessorExpression>();
+
+  auto out = line();
+  out << name << "(";
+  if (!EmitExpression(out, ast_access_expr->object)) {
+    return false;
+  }
+  out << ", ";
+  if (!EmitExpression(out, ast_access_expr->index)) {
+    return false;
+  }
+  out << ", ";
+  if (!EmitExpression(out, stmt->rhs)) {
+    return false;
+  }
+  out << ");";
+
+  return true;
+}
+
+bool GeneratorImpl::EmitDynamicMatrixScalarAssignment(
+    const ast::AssignmentStatement* stmt,
+    const sem::Matrix* mat) {
+  auto* lhs_col_access = stmt->lhs->As<ast::IndexAccessorExpression>();
+  auto* lhs_row_access =
+      lhs_col_access->object->As<ast::IndexAccessorExpression>();
+
+  auto name = utils::GetOrCreate(
+      dynamic_matrix_scalar_write_, mat, [&]() -> std::string {
+        std::string fn;
+        {
+          std::ostringstream ss;
+          if (!EmitType(ss, mat, tint::ast::StorageClass::kInvalid,
+                        ast::Access::kUndefined, "")) {
+            return "";
+          }
+          fn = UniqueIdentifier("set_scalar_" + ss.str());
+        }
+        {
+          auto out = line(&helpers_);
+          out << "void " << fn << "(inout ";
+          if (!EmitTypeAndName(out, mat, ast::StorageClass::kInvalid,
+                               ast::Access::kUndefined, "mat")) {
+            return "";
+          }
+          out << ", int col, int row, ";
+          if (!EmitTypeAndName(out, mat->type(), ast::StorageClass::kInvalid,
+                               ast::Access::kUndefined, "val")) {
+            return "";
+          }
+          out << ") {";
+        }
+        {
+          ScopedIndent si(&helpers_);
+          line(&helpers_) << "switch (col) {";
+          {
+            ScopedIndent si2(&helpers_);
+            auto* vec =
+                TypeOf(lhs_row_access->object)->UnwrapRef()->As<sem::Vector>();
+            for (uint32_t i = 0; i < mat->columns(); ++i) {
+              line(&helpers_) << "case " << i << ":";
+              {
+                auto vec_name = "mat[" + std::to_string(i) + "]";
+                ScopedIndent si3(&helpers_);
+                {
+                  auto out = line(&helpers_);
+                  switch (mat->rows()) {
+                    case 2:
+                      out << vec_name
+                          << " = (row.xx == int2(0, 1)) ? val.xx : " << vec_name
+                          << ";";
+                      break;
+                    case 3:
+                      out << vec_name
+                          << " = (row.xxx == int3(0, 1, 2)) ? val.xxx : "
+                          << vec_name << ";";
+                      break;
+                    case 4:
+                      out << vec_name
+                          << " = (row.xxxx == int4(0, 1, 2, 3)) ? val.xxxx : "
+                          << vec_name << ";";
+                      break;
+                    default:
+                      TINT_UNREACHABLE(Writer, builder_.Diagnostics())
+                          << "invalid vector size " << vec->Width();
+                      break;
+                  }
+                }
+                line(&helpers_) << "break;";
+              }
+            }
+          }
+          line(&helpers_) << "}";
+        }
+        line(&helpers_) << "}";
+        line(&helpers_);
+        return fn;
+      });
+
+  if (name.empty()) {
+    return false;
+  }
+
+  auto out = line();
+  out << name << "(";
+  if (!EmitExpression(out, lhs_row_access->object)) {
+    return false;
+  }
+  out << ", ";
+  if (!EmitExpression(out, lhs_col_access->index)) {
+    return false;
+  }
+  out << ", ";
+  if (!EmitExpression(out, lhs_row_access->index)) {
+    return false;
+  }
+  out << ", ";
+  if (!EmitExpression(out, stmt->rhs)) {
+    return false;
+  }
+  out << ");";
+
+  return true;
+}
+
+bool GeneratorImpl::EmitIndexAccessor(
     std::ostream& out,
-    const ast::ArrayAccessorExpression* expr) {
-  if (!EmitExpression(out, expr->array)) {
+    const ast::IndexAccessorExpression* expr) {
+  if (!EmitExpression(out, expr->object)) {
     return false;
   }
   out << "[";
@@ -354,9 +562,34 @@ bool GeneratorImpl::EmitBitcast(std::ostream& out,
 }
 
 bool GeneratorImpl::EmitAssign(const ast::AssignmentStatement* stmt) {
-  if (auto* idx = stmt->lhs->As<ast::ArrayAccessorExpression>()) {
-    if (auto* vec = TypeOf(idx->array)->UnwrapRef()->As<sem::Vector>()) {
-      auto* rhs_sem = builder_.Sem().Get(idx->index);
+  if (auto* lhs_access = stmt->lhs->As<ast::IndexAccessorExpression>()) {
+    // BUG(crbug.com/tint/1333): work around assignment of scalar to matrices
+    // with at least one dynamic index
+    if (auto* lhs_sub_access =
+            lhs_access->object->As<ast::IndexAccessorExpression>()) {
+      if (auto* mat =
+              TypeOf(lhs_sub_access->object)->UnwrapRef()->As<sem::Matrix>()) {
+        auto* rhs_col_idx_sem = builder_.Sem().Get(lhs_access->index);
+        auto* rhs_row_idx_sem = builder_.Sem().Get(lhs_sub_access->index);
+        if (!rhs_col_idx_sem->ConstantValue().IsValid() ||
+            !rhs_row_idx_sem->ConstantValue().IsValid()) {
+          return EmitDynamicMatrixScalarAssignment(stmt, mat);
+        }
+      }
+    }
+    // BUG(crbug.com/tint/1333): work around assignment of vector to matrices
+    // with dynamic indices
+    const auto* lhs_access_type = TypeOf(lhs_access->object)->UnwrapRef();
+    if (auto* mat = lhs_access_type->As<sem::Matrix>()) {
+      auto* lhs_index_sem = builder_.Sem().Get(lhs_access->index);
+      if (!lhs_index_sem->ConstantValue().IsValid()) {
+        return EmitDynamicMatrixVectorAssignment(stmt, mat);
+      }
+    }
+    // BUG(crbug.com/tint/534): work around assignment to vectors with dynamic
+    // indices
+    if (auto* vec = lhs_access_type->As<sem::Vector>()) {
+      auto* rhs_sem = builder_.Sem().Get(lhs_access->index);
       if (!rhs_sem->ConstantValue().IsValid()) {
         return EmitDynamicVectorAssignment(stmt, vec);
       }
@@ -499,7 +732,7 @@ bool GeneratorImpl::EmitBinary(std::ostream& out,
     case ast::BinaryOp::kDivide:
       out << "/";
 
-      if (auto val = program_->Sem().Get(expr->rhs)->ConstantValue()) {
+      if (auto val = builder_.Sem().Get(expr->rhs)->ConstantValue()) {
         // Integer divide by zero is a DXC compile error, and undefined behavior
         // in WGSL. Replace the 0 with 1.
         if (val.Type()->Is<sem::I32>() && val.Elements()[0].i32 == 0) {
@@ -559,117 +792,209 @@ bool GeneratorImpl::EmitBreak(const ast::BreakStatement*) {
 
 bool GeneratorImpl::EmitCall(std::ostream& out,
                              const ast::CallExpression* expr) {
-  const auto& args = expr->args;
-  auto* ident = expr->func;
   auto* call = builder_.Sem().Get(expr);
   auto* target = call->Target();
 
   if (auto* func = target->As<sem::Function>()) {
-    if (ast::HasDecoration<
-            transform::CalculateArrayLength::BufferSizeIntrinsic>(
-            func->Declaration()->decorations)) {
-      // Special function generated by the CalculateArrayLength transform for
-      // calling X.GetDimensions(Y)
-      if (!EmitExpression(out, args[0])) {
-        return false;
-      }
-      out << ".GetDimensions(";
-      if (!EmitExpression(out, args[1])) {
-        return false;
-      }
-      out << ")";
-      return true;
-    }
-
-    if (auto* intrinsic =
-            ast::GetDecoration<transform::DecomposeMemoryAccess::Intrinsic>(
-                func->Declaration()->decorations)) {
-      switch (intrinsic->storage_class) {
-        case ast::StorageClass::kUniform:
-          return EmitUniformBufferAccess(out, expr, intrinsic);
-        case ast::StorageClass::kStorage:
-          return EmitStorageBufferAccess(out, expr, intrinsic);
-        default:
-          TINT_UNREACHABLE(Writer, diagnostics_)
-              << "unsupported DecomposeMemoryAccess::Intrinsic storage class:"
-              << intrinsic->storage_class;
-          return false;
-      }
-    }
+    return EmitFunctionCall(out, call, func);
   }
+  if (auto* intrinsic = target->As<sem::Intrinsic>()) {
+    return EmitIntrinsicCall(out, call, intrinsic);
+  }
+  if (auto* conv = target->As<sem::TypeConversion>()) {
+    return EmitTypeConversion(out, call, conv);
+  }
+  if (auto* ctor = target->As<sem::TypeConstructor>()) {
+    return EmitTypeConstructor(out, call, ctor);
+  }
+  TINT_ICE(Writer, diagnostics_)
+      << "unhandled call target: " << target->TypeInfo().name;
+  return false;
+}
 
-  if (auto* intrinsic = call->Target()->As<sem::Intrinsic>()) {
-    if (intrinsic->IsTexture()) {
-      return EmitTextureCall(out, expr, intrinsic);
-    } else if (intrinsic->Type() == sem::IntrinsicType::kSelect) {
-      return EmitSelectCall(out, expr);
-    } else if (intrinsic->Type() == sem::IntrinsicType::kModf) {
-      return EmitModfCall(out, expr, intrinsic);
-    } else if (intrinsic->Type() == sem::IntrinsicType::kFrexp) {
-      return EmitFrexpCall(out, expr, intrinsic);
-    } else if (intrinsic->Type() == sem::IntrinsicType::kIsNormal) {
-      return EmitIsNormalCall(out, expr, intrinsic);
-    } else if (intrinsic->Type() == sem::IntrinsicType::kIgnore) {
-      return EmitExpression(out, expr->args[0]);  // [DEPRECATED]
-    } else if (intrinsic->IsDataPacking()) {
-      return EmitDataPackingCall(out, expr, intrinsic);
-    } else if (intrinsic->IsDataUnpacking()) {
-      return EmitDataUnpackingCall(out, expr, intrinsic);
-    } else if (intrinsic->IsBarrier()) {
-      return EmitBarrierCall(out, intrinsic);
-    } else if (intrinsic->IsAtomic()) {
-      return EmitWorkgroupAtomicCall(out, expr, intrinsic);
-    }
-    auto name = generate_builtin_name(intrinsic);
-    if (name.empty()) {
+bool GeneratorImpl::EmitFunctionCall(std::ostream& out,
+                                     const sem::Call* call,
+                                     const sem::Function* func) {
+  auto* expr = call->Declaration();
+
+  if (ast::HasDecoration<transform::CalculateArrayLength::BufferSizeIntrinsic>(
+          func->Declaration()->decorations)) {
+    // Special function generated by the CalculateArrayLength transform for
+    // calling X.GetDimensions(Y)
+    if (!EmitExpression(out, call->Arguments()[0]->Declaration())) {
       return false;
     }
-
-    out << name << "(";
-
-    bool first = true;
-    for (auto* arg : args) {
-      if (!first) {
-        out << ", ";
-      }
-      first = false;
-
-      if (!EmitExpression(out, arg)) {
-        return false;
-      }
+    out << ".GetDimensions(";
+    if (!EmitExpression(out, call->Arguments()[1]->Declaration())) {
+      return false;
     }
-
     out << ")";
     return true;
   }
 
-  auto name = builder_.Symbols().NameFor(ident->symbol);
-  auto caller_sym = ident->symbol;
+  if (auto* intrinsic =
+          ast::GetDecoration<transform::DecomposeMemoryAccess::Intrinsic>(
+              func->Declaration()->decorations)) {
+    switch (intrinsic->storage_class) {
+      case ast::StorageClass::kUniform:
+        return EmitUniformBufferAccess(out, expr, intrinsic);
+      case ast::StorageClass::kStorage:
+        return EmitStorageBufferAccess(out, expr, intrinsic);
+      default:
+        TINT_UNREACHABLE(Writer, diagnostics_)
+            << "unsupported DecomposeMemoryAccess::Intrinsic storage class:"
+            << intrinsic->storage_class;
+        return false;
+    }
+  }
 
-  auto* func = builder_.AST().Functions().Find(ident->symbol);
-  if (func == nullptr) {
-    diagnostics_.add_error(diag::System::Writer,
-                           "Unable to find function: " +
-                               builder_.Symbols().NameFor(ident->symbol));
+  out << builder_.Symbols().NameFor(func->Declaration()->symbol) << "(";
+
+  bool first = true;
+  for (auto* arg : call->Arguments()) {
+    if (!first) {
+      out << ", ";
+    }
+    first = false;
+
+    if (!EmitExpression(out, arg->Declaration())) {
+      return false;
+    }
+  }
+
+  out << ")";
+  return true;
+}
+
+bool GeneratorImpl::EmitIntrinsicCall(std::ostream& out,
+                                      const sem::Call* call,
+                                      const sem::Intrinsic* intrinsic) {
+  auto* expr = call->Declaration();
+  if (intrinsic->IsTexture()) {
+    return EmitTextureCall(out, call, intrinsic);
+  }
+  if (intrinsic->Type() == sem::IntrinsicType::kSelect) {
+    return EmitSelectCall(out, expr);
+  }
+  if (intrinsic->Type() == sem::IntrinsicType::kModf) {
+    return EmitModfCall(out, expr, intrinsic);
+  }
+  if (intrinsic->Type() == sem::IntrinsicType::kFrexp) {
+    return EmitFrexpCall(out, expr, intrinsic);
+  }
+  if (intrinsic->Type() == sem::IntrinsicType::kIsNormal) {
+    return EmitIsNormalCall(out, expr, intrinsic);
+  }
+  if (intrinsic->Type() == sem::IntrinsicType::kIgnore) {
+    return EmitExpression(out, expr->args[0]);  // [DEPRECATED]
+  }
+  if (intrinsic->IsDataPacking()) {
+    return EmitDataPackingCall(out, expr, intrinsic);
+  }
+  if (intrinsic->IsDataUnpacking()) {
+    return EmitDataUnpackingCall(out, expr, intrinsic);
+  }
+  if (intrinsic->IsBarrier()) {
+    return EmitBarrierCall(out, intrinsic);
+  }
+  if (intrinsic->IsAtomic()) {
+    return EmitWorkgroupAtomicCall(out, expr, intrinsic);
+  }
+
+  auto name = generate_builtin_name(intrinsic);
+  if (name.empty()) {
     return false;
   }
 
   out << name << "(";
 
   bool first = true;
-  for (auto* arg : args) {
+  for (auto* arg : call->Arguments()) {
     if (!first) {
       out << ", ";
     }
     first = false;
 
-    if (!EmitExpression(out, arg)) {
+    if (!EmitExpression(out, arg->Declaration())) {
       return false;
     }
   }
 
   out << ")";
+  return true;
+}
 
+bool GeneratorImpl::EmitTypeConversion(std::ostream& out,
+                                       const sem::Call* call,
+                                       const sem::TypeConversion* conv) {
+  if (!EmitType(out, conv->Target(), ast::StorageClass::kNone,
+                ast::Access::kReadWrite, "")) {
+    return false;
+  }
+  out << "(";
+
+  if (!EmitExpression(out, call->Arguments()[0]->Declaration())) {
+    return false;
+  }
+
+  out << ")";
+  return true;
+}
+
+bool GeneratorImpl::EmitTypeConstructor(std::ostream& out,
+                                        const sem::Call* call,
+                                        const sem::TypeConstructor* ctor) {
+  auto* type = call->Type();
+
+  // If the type constructor is empty then we need to construct with the zero
+  // value for all components.
+  if (call->Arguments().empty()) {
+    return EmitZeroValue(out, type);
+  }
+
+  bool brackets = type->IsAnyOf<sem::Array, sem::Struct>();
+
+  // For single-value vector initializers, swizzle the scalar to the right
+  // vector dimension using .x
+  const bool is_single_value_vector_init =
+      type->is_scalar_vector() && call->Arguments().size() == 1 &&
+      ctor->Parameters()[0]->Type()->is_scalar();
+
+  auto it = structure_builders_.find(As<sem::Struct>(type));
+  if (it != structure_builders_.end()) {
+    out << it->second << "(";
+    brackets = false;
+  } else if (brackets) {
+    out << "{";
+  } else {
+    if (!EmitType(out, type, ast::StorageClass::kNone, ast::Access::kReadWrite,
+                  "")) {
+      return false;
+    }
+    out << "(";
+  }
+
+  if (is_single_value_vector_init) {
+    out << "(";
+  }
+
+  bool first = true;
+  for (auto* e : call->Arguments()) {
+    if (!first) {
+      out << ", ";
+    }
+    first = false;
+
+    if (!EmitExpression(out, e->Declaration())) {
+      return false;
+    }
+  }
+
+  if (is_single_value_vector_init) {
+    out << ")." << std::string(type->As<sem::Vector>()->Width(), 'x');
+  }
+
+  out << (brackets ? "}" : ")");
   return true;
 }
 
@@ -1624,11 +1949,12 @@ bool GeneratorImpl::EmitBarrierCall(std::ostream& out,
 }
 
 bool GeneratorImpl::EmitTextureCall(std::ostream& out,
-                                    const ast::CallExpression* expr,
+                                    const sem::Call* call,
                                     const sem::Intrinsic* intrinsic) {
   using Usage = sem::ParameterUsage;
 
   auto& signature = intrinsic->Signature();
+  auto* expr = call->Declaration();
   auto arguments = expr->args;
 
   // Returns the argument with the given usage
@@ -1862,6 +2188,30 @@ bool GeneratorImpl::EmitTextureCall(std::ostream& out,
         pack_level_in_coords = true;
       }
       break;
+    case sem::IntrinsicType::kTextureGather:
+      out << ".Gather";
+      if (intrinsic->Parameters()[0]->Usage() ==
+          sem::ParameterUsage::kComponent) {
+        switch (call->Arguments()[0]->ConstantValue().Elements()[0].i32) {
+          case 0:
+            out << "Red";
+            break;
+          case 1:
+            out << "Green";
+            break;
+          case 2:
+            out << "Blue";
+            break;
+          case 3:
+            out << "Alpha";
+            break;
+        }
+      }
+      out << "(";
+      break;
+    case sem::IntrinsicType::kTextureGatherCompare:
+      out << ".GatherCmp(";
+      break;
     case sem::IntrinsicType::kTextureStore:
       out << "[";
       break;
@@ -1892,13 +2242,13 @@ bool GeneratorImpl::EmitTextureCall(std::ostream& out,
     builder_.Sem().Add(zero, builder_.create<sem::Expression>(zero, i32, stmt,
                                                               sem::Constant{}));
     auto* packed = AppendVector(&builder_, vector, zero);
-    return EmitExpression(out, packed);
+    return EmitExpression(out, packed->Declaration());
   };
 
   auto emit_vector_appended_with_level = [&](const ast::Expression* vector) {
     if (auto* level = arg(Usage::kLevel)) {
       auto* packed = AppendVector(&builder_, vector, level);
-      return EmitExpression(out, packed);
+      return EmitExpression(out, packed->Declaration());
     }
     return emit_vector_appended_with_i32_zero(vector);
   };
@@ -1908,11 +2258,11 @@ bool GeneratorImpl::EmitTextureCall(std::ostream& out,
     auto* packed = AppendVector(&builder_, param_coords, array_index);
     if (pack_level_in_coords) {
       // Then mip level needs to be appended to the coordinates.
-      if (!emit_vector_appended_with_level(packed)) {
+      if (!emit_vector_appended_with_level(packed->Declaration())) {
         return false;
       }
     } else {
-      if (!EmitExpression(out, packed)) {
+      if (!EmitExpression(out, packed->Declaration())) {
         return false;
       }
     }
@@ -2112,77 +2462,6 @@ bool GeneratorImpl::EmitCase(const ast::SwitchStatement* s, size_t case_idx) {
   return true;
 }
 
-bool GeneratorImpl::EmitConstructor(std::ostream& out,
-                                    const ast::ConstructorExpression* expr) {
-  if (auto* scalar = expr->As<ast::ScalarConstructorExpression>()) {
-    return EmitScalarConstructor(out, scalar);
-  }
-  return EmitTypeConstructor(out, expr->As<ast::TypeConstructorExpression>());
-}
-
-bool GeneratorImpl::EmitScalarConstructor(
-    std::ostream& out,
-    const ast::ScalarConstructorExpression* expr) {
-  return EmitLiteral(out, expr->literal);
-}
-
-bool GeneratorImpl::EmitTypeConstructor(
-    std::ostream& out,
-    const ast::TypeConstructorExpression* expr) {
-  auto* type = TypeOf(expr)->UnwrapRef();
-
-  // If the type constructor is empty then we need to construct with the zero
-  // value for all components.
-  if (expr->values.empty()) {
-    return EmitZeroValue(out, type);
-  }
-
-  bool brackets = type->IsAnyOf<sem::Array, sem::Struct>();
-
-  // For single-value vector initializers, swizzle the scalar to the right
-  // vector dimension using .x
-  const bool is_single_value_vector_init =
-      type->is_scalar_vector() && expr->values.size() == 1 &&
-      TypeOf(expr->values[0])->UnwrapRef()->is_scalar();
-
-  auto it = structure_builders_.find(As<sem::Struct>(type));
-  if (it != structure_builders_.end()) {
-    out << it->second << "(";
-    brackets = false;
-  } else if (brackets) {
-    out << "{";
-  } else {
-    if (!EmitType(out, type, ast::StorageClass::kNone, ast::Access::kReadWrite,
-                  "")) {
-      return false;
-    }
-    out << "(";
-  }
-
-  if (is_single_value_vector_init) {
-    out << "(";
-  }
-
-  bool first = true;
-  for (auto* e : expr->values) {
-    if (!first) {
-      out << ", ";
-    }
-    first = false;
-
-    if (!EmitExpression(out, e)) {
-      return false;
-    }
-  }
-
-  if (is_single_value_vector_init) {
-    out << ")." << std::string(type->As<sem::Vector>()->Width(), 'x');
-  }
-
-  out << (brackets ? "}" : ")");
-  return true;
-}
-
 bool GeneratorImpl::EmitContinue(const ast::ContinueStatement*) {
   if (!emit_continuing_()) {
     return false;
@@ -2200,8 +2479,8 @@ bool GeneratorImpl::EmitDiscard(const ast::DiscardStatement*) {
 
 bool GeneratorImpl::EmitExpression(std::ostream& out,
                                    const ast::Expression* expr) {
-  if (auto* a = expr->As<ast::ArrayAccessorExpression>()) {
-    return EmitArrayAccessor(out, a);
+  if (auto* a = expr->As<ast::IndexAccessorExpression>()) {
+    return EmitIndexAccessor(out, a);
   }
   if (auto* b = expr->As<ast::BinaryExpression>()) {
     return EmitBinary(out, b);
@@ -2212,11 +2491,11 @@ bool GeneratorImpl::EmitExpression(std::ostream& out,
   if (auto* c = expr->As<ast::CallExpression>()) {
     return EmitCall(out, c);
   }
-  if (auto* c = expr->As<ast::ConstructorExpression>()) {
-    return EmitConstructor(out, c);
-  }
   if (auto* i = expr->As<ast::IdentifierExpression>()) {
     return EmitIdentifier(out, i);
+  }
+  if (auto* l = expr->As<ast::LiteralExpression>()) {
+    return EmitLiteral(out, l);
   }
   if (auto* m = expr->As<ast::MemberAccessorExpression>()) {
     return EmitMemberAccessor(out, m);
@@ -2350,11 +2629,52 @@ bool GeneratorImpl::EmitFunction(const ast::Function* func) {
     out << ") {";
   }
 
+  if (sem->HasDiscard() && !sem->ReturnType()->Is<sem::Void>()) {
+    // BUG(crbug.com/tint/1081): work around non-void functions with discard
+    // failing compilation sometimes
+    if (!EmitFunctionBodyWithDiscard(func)) {
+      return false;
+    }
+  } else {
+    if (!EmitStatementsWithIndent(func->body->statements)) {
+      return false;
+    }
+  }
+
+  line() << "}";
+
+  return true;
+}
+
+bool GeneratorImpl::EmitFunctionBodyWithDiscard(const ast::Function* func) {
+  // FXC sometimes fails to compile functions that discard with 'Not all control
+  // paths return a value'. We work around this by wrapping the function body
+  // within an "if (true) { <body> } return <default return type obj>;" so that
+  // there is always an (unused) return statement.
+
+  auto* sem = builder_.Sem().Get(func);
+  TINT_ASSERT(Writer, sem->HasDiscard() && !sem->ReturnType()->Is<sem::Void>());
+
+  ScopedIndent si(this);
+  line() << "if (true) {";
+
   if (!EmitStatementsWithIndent(func->body->statements)) {
     return false;
   }
 
   line() << "}";
+
+  // Return an unused result that matches the type of the return value
+  auto name = builder_.Symbols().NameFor(builder_.Symbols().New("unused"));
+  {
+    auto out = line();
+    if (!EmitTypeAndName(out, sem->ReturnType(), ast::StorageClass::kNone,
+                         ast::Access::kReadWrite, name)) {
+      return false;
+    }
+    out << ";";
+  }
+  line() << "return " << name << ";";
 
   return true;
 }
@@ -2580,7 +2900,7 @@ bool GeneratorImpl::EmitEntryPointFunction(const ast::Function* func) {
     auto out = line();
     if (func->PipelineStage() == ast::PipelineStage::kCompute) {
       // Emit the workgroup_size attribute.
-      auto wgsize = func_sem->workgroup_size();
+      auto wgsize = func_sem->WorkgroupSize();
       out << "[numthreads(";
       for (int i = 0; i < 3; i++) {
         if (i > 0) {
@@ -2590,7 +2910,7 @@ bool GeneratorImpl::EmitEntryPointFunction(const ast::Function* func) {
         if (wgsize[i].overridable_const) {
           auto* global = builder_.Sem().Get<sem::GlobalVariable>(
               wgsize[i].overridable_const);
-          if (!global->IsPipelineConstant()) {
+          if (!global->IsOverridable()) {
             TINT_ICE(Writer, builder_.Diagnostics())
                 << "expected a pipeline-overridable constant";
           }
@@ -2653,10 +2973,11 @@ bool GeneratorImpl::EmitEntryPointFunction(const ast::Function* func) {
   return true;
 }
 
-bool GeneratorImpl::EmitLiteral(std::ostream& out, const ast::Literal* lit) {
-  if (auto* l = lit->As<ast::BoolLiteral>()) {
+bool GeneratorImpl::EmitLiteral(std::ostream& out,
+                                const ast::LiteralExpression* lit) {
+  if (auto* l = lit->As<ast::BoolLiteralExpression>()) {
     out << (l->value ? "true" : "false");
-  } else if (auto* fl = lit->As<ast::FloatLiteral>()) {
+  } else if (auto* fl = lit->As<ast::FloatLiteralExpression>()) {
     if (std::isinf(fl->value)) {
       out << (fl->value >= 0 ? "asfloat(0x7f800000u)" : "asfloat(0xff800000u)");
     } else if (std::isnan(fl->value)) {
@@ -2664,9 +2985,9 @@ bool GeneratorImpl::EmitLiteral(std::ostream& out, const ast::Literal* lit) {
     } else {
       out << FloatToString(fl->value) << "f";
     }
-  } else if (auto* sl = lit->As<ast::SintLiteral>()) {
+  } else if (auto* sl = lit->As<ast::SintLiteralExpression>()) {
     out << sl->value;
-  } else if (auto* ul = lit->As<ast::UintLiteral>()) {
+  } else if (auto* ul = lit->As<ast::UintLiteralExpression>()) {
     out << ul->value << "u";
   } else {
     diagnostics_.add_error(diag::System::Writer, "unknown literal type");
@@ -2739,7 +3060,7 @@ bool GeneratorImpl::EmitLoop(const ast::LoopStatement* stmt) {
   };
 
   TINT_SCOPED_ASSIGNMENT(emit_continuing_, emit_continuing);
-  line() << "while (true) {";
+  line() << LoopAttribute() << "while (true) {";
   {
     ScopedIndent si(this);
     if (!EmitStatements(stmt->body->statements)) {
@@ -2809,7 +3130,7 @@ bool GeneratorImpl::EmitForLoop(const ast::ForLoopStatement* stmt) {
     };
 
     TINT_SCOPED_ASSIGNMENT(emit_continuing_, emit_continuing);
-    line() << "while (true) {";
+    line() << LoopAttribute() << "while (true) {";
     increment_indent();
     TINT_DEFER({
       decrement_indent();
@@ -2832,7 +3153,7 @@ bool GeneratorImpl::EmitForLoop(const ast::ForLoopStatement* stmt) {
     // For-loop can be generated.
     {
       auto out = line();
-      out << "for";
+      out << LoopAttribute() << "for";
       {
         ScopedParen sp(out);
 
@@ -2948,7 +3269,44 @@ bool GeneratorImpl::EmitStatement(const ast::Statement* stmt) {
   return false;
 }
 
+bool GeneratorImpl::EmitDefaultOnlySwitch(const ast::SwitchStatement* stmt) {
+  TINT_ASSERT(Writer, stmt->body.size() == 1 && stmt->body[0]->IsDefault());
+
+  // FXC fails to compile a switch with just a default case, ignoring the
+  // default case body. We work around this here by emitting the default case
+  // without the switch.
+
+  // Emit the switch condition as-is in case it has side-effects (e.g.
+  // function call). Note that's it's fine not to assign the result of the
+  // expression.
+  {
+    auto out = line();
+    if (!EmitExpression(out, stmt->condition)) {
+      return false;
+    }
+    out << ";";
+  }
+
+  // Emit "do { <default case body> } while(false);". We use a 'do' loop so
+  // that break statements work as expected, and make it 'while (false)' in
+  // case there isn't a break statement.
+  line() << "do {";
+  {
+    ScopedIndent si(this);
+    if (!EmitStatements(stmt->body[0]->body->statements)) {
+      return false;
+    }
+  }
+  line() << "} while (false);";
+  return true;
+}
+
 bool GeneratorImpl::EmitSwitch(const ast::SwitchStatement* stmt) {
+  // BUG(crbug.com/tint/1188): work around default-only switches
+  if (stmt->body.size() == 1 && stmt->body[0]->IsDefault()) {
+    return EmitDefaultOnlySwitch(stmt);
+  }
+
   {  // switch(expr) {
     auto out = line();
     out << "switch(";
@@ -3339,7 +3697,7 @@ bool GeneratorImpl::EmitProgramConstVariable(const ast::Variable* var) {
   auto* type = sem->Type();
 
   auto* global = sem->As<sem::GlobalVariable>();
-  if (global && global->IsPipelineConstant()) {
+  if (global && global->IsOverridable()) {
     auto const_id = global->ConstantId();
 
     line() << "#ifndef " << kSpecConstantPrefix << const_id;

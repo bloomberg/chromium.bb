@@ -363,10 +363,6 @@ static av_cold int dnxhd_encode_init(AVCodecContext *avctx)
     case AV_PIX_FMT_GBRP10:
         ctx->bit_depth = 10;
         break;
-    default:
-        av_log(avctx, AV_LOG_ERROR,
-               "pixel format is incompatible with DNxHD\n");
-        return AVERROR(EINVAL);
     }
 
     if ((ctx->profile == FF_PROFILE_DNXHR_444 && (avctx->pix_fmt != AV_PIX_FMT_YUV444P10 &&
@@ -1308,7 +1304,6 @@ encode_coding_unit:
 
     ff_side_data_set_encoder_stats(pkt, ctx->qscale * FF_QP2LAMBDA, NULL, 0, AV_PICTURE_TYPE_I);
 
-    pkt->flags |= AV_PKT_FLAG_KEY;
     *got_packet = 1;
     return 0;
 }

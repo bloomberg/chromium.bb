@@ -10,8 +10,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/templates/desks_templates_metrics_util.h"
 #include "base/callback_list.h"
-#include "base/macros.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
 
@@ -44,8 +44,9 @@ class ASH_EXPORT DesksBarView : public views::View,
 
   static constexpr int kZeroStateBarHeight = 40;
 
-  // Returns the height of the desks bar that exists on |root|.
-  static int GetBarHeightForWidth(aura::Window* root);
+  // Returns the height of the expanded desks bar that exists on `root`. The
+  // height of zero state desks bar is `kZeroStateBarHeight`.
+  static int GetExpandedBarHeight(aura::Window* root);
 
   // Creates and returns the widget that contains the DeskBarView in overview
   // mode. The returned widget has no content view yet, and hasn't been shown
@@ -54,7 +55,9 @@ class ASH_EXPORT DesksBarView : public views::View,
       aura::Window* root,
       const gfx::Rect& bounds);
 
-  views::View* background_view() const { return background_view_; }
+  void set_is_bounds_animation_on_going(bool value) {
+    is_bounds_animation_on_going_ = value;
+  }
 
   ZeroStateDefaultDeskButton* zero_state_default_desk_button() const {
     return zero_state_default_desk_button_;
@@ -149,6 +152,10 @@ class ASH_EXPORT DesksBarView : public views::View,
   void FinalizeDragDesk();
   // If a desk is in a drag & drop cycle.
   bool IsDraggingDesk() const;
+
+  // Called when the desks templates grid is hidden. Transitions the desks bar
+  // view to zero state if necessary.
+  void OnDesksTemplatesGridHidden();
 
   // views::View:
   const char* GetClassName() const override;
@@ -246,13 +253,12 @@ class ASH_EXPORT DesksBarView : public views::View,
 
   void OnDesksTemplatesButtonPressed();
 
+  // Animates the bar from expanded state to zero state. Clears `mini_views_`.
+  void SwitchToZeroState();
+
   // Scrollview callbacks.
   void OnContentsScrolled();
   void OnContentsScrollEnded();
-
-  // A view that shows a dark gary transparent background that can be animated
-  // when the very first mini_views are created.
-  views::View* background_view_;
 
   // The views representing desks mini_views. They're owned by views hierarchy.
   std::vector<DeskMiniView*> mini_views_;
@@ -284,6 +290,13 @@ class ASH_EXPORT DesksBarView : public views::View,
   // mini view's name view will be focused and |should_name_nudge_| will be
   // reset.
   bool should_name_nudge_ = false;
+
+  // True if the `DesksBarBoundsAnimation` is started and hasn't finished yet.
+  // It will be used to hold `Layout` until the bounds animation is completed.
+  // `Layout` is expensive and will be called on bounds changes, which means it
+  // will be called lots of times during the bounds changes animation. This is
+  // done to eliminate the unnecessary `Layout` calls during the animation.
+  bool is_bounds_animation_on_going_ = false;
 
   ZeroStateDefaultDeskButton* zero_state_default_desk_button_ = nullptr;
   ZeroStateIconButton* zero_state_new_desk_button_ = nullptr;

@@ -7,7 +7,6 @@
 
 #include <cstdint>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/exo/data_offer_observer.h"
 #include "components/exo/seat_observer.h"
@@ -74,7 +73,9 @@ class DataDevice : public WMHelper::DragDropObserver,
   void OnClipboardDataChanged() override;
 
   // Overridden from SeatObserver:
-  void OnSurfaceFocused(Surface* surface) override;
+  void OnSurfaceFocused(Surface* surface,
+                        Surface* lost_focus,
+                        bool has_focused_client) override;
 
   // Overridden from DataOfferObserver:
   void OnDataOfferDestroying(DataOffer* data_offer) override;

@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
@@ -116,10 +115,9 @@ class AutofillAgent : public content::RenderFrameObserver,
   void SetSecureContextRequired(bool required) override;
   void SetFocusRequiresScroll(bool require) override;
   void SetQueryPasswordSuggestion(bool required) override;
-  void GetElementFormAndFieldDataAtIndex(
-      const std::string& selector,
-      int index,
-      GetElementFormAndFieldDataAtIndexCallback callback) override;
+  void GetElementFormAndFieldDataForDevToolsNodeId(
+      int backend_node_id,
+      GetElementFormAndFieldDataForDevToolsNodeIdCallback callback) override;
   void SetAssistantKeyboardSuppressState(bool suppress) override;
   void EnableHeavyFormDataScraping() override;
   void SetFieldsEligibleForManualFilling(
@@ -332,7 +330,10 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // When dealing with an unowned form, we keep track of the unowned fields
   // the user has modified so we can determine when submission occurs.
+  // An additional sufficient condition for the form submission detection is
+  // that the form has been autofilled.
   std::set<FieldRendererId> formless_elements_user_edited_;
+  bool formless_elements_were_autofilled_ = false;
 
   // The form user interacted, it is used if last_interacted_form_ or formless
   // form can't be converted to FormData at the time of form submission.

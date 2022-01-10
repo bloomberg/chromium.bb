@@ -168,11 +168,7 @@ void Bbr2Sender::ApplyConnectionOptions(
   if (ContainsQuicTag(connection_options, kBBQ9)) {
     params_.bw_lo_mode_ = Bbr2Params::QuicBandwidthLoMode::CWND_REDUCTION;
   }
-  if (GetQuicReloadableFlag(
-          quic_bbr2_check_cwnd_limited_before_aggregation_epoch) &&
-      ContainsQuicTag(connection_options, kB201)) {
-    QUIC_RELOADABLE_FLAG_COUNT(
-        quic_bbr2_check_cwnd_limited_before_aggregation_epoch);
+  if (ContainsQuicTag(connection_options, kB201)) {
     params_.probe_bw_check_cwnd_limited_before_aggregation_epoch = true;
   }
   if (GetQuicReloadableFlag(quic_bbr2_no_probe_up_exit_if_no_queue) &&
@@ -199,9 +195,7 @@ void Bbr2Sender::ApplyConnectionOptions(
     params_.exit_startup_on_persistent_queue = true;
   }
 
-  if (GetQuicReloadableFlag(
-          quic_bbr_start_new_aggregation_epoch_after_a_full_round) &&
-      ContainsQuicTag(connection_options, kBBRA)) {
+  if (ContainsQuicTag(connection_options, kBBRA)) {
     model_.SetStartNewAggregationEpochAfterFullRound(true);
   }
   if (GetQuicReloadableFlag(quic_bbr_use_send_rate_in_max_ack_height_tracker) &&

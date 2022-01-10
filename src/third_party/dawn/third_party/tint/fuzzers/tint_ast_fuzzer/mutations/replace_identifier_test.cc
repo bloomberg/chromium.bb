@@ -487,8 +487,8 @@ fn f() {
                                       .Functions()[0]
                                       ->body->statements[2]
                                       ->As<ast::AssignmentStatement>()
-                                      ->lhs->As<ast::ArrayAccessorExpression>()
-                                      ->array->As<ast::UnaryOpExpression>()
+                                      ->lhs->As<ast::IndexAccessorExpression>()
+                                      ->object->As<ast::UnaryOpExpression>()
                                       ->expr->As<ast::UnaryOpExpression>()
                                       ->expr);
   ASSERT_NE(use_id, 0);
@@ -537,8 +537,8 @@ fn f(b: ptr<function, vec2<u32>>) {
                                       .Functions()[0]
                                       ->body->statements[2]
                                       ->As<ast::AssignmentStatement>()
-                                      ->lhs->As<ast::ArrayAccessorExpression>()
-                                      ->array->As<ast::UnaryOpExpression>()
+                                      ->lhs->As<ast::IndexAccessorExpression>()
+                                      ->object->As<ast::UnaryOpExpression>()
                                       ->expr);
   ASSERT_NE(use_id, 0);
 
@@ -584,8 +584,8 @@ fn f() {
                                       .Functions()[0]
                                       ->body->statements[1]
                                       ->As<ast::AssignmentStatement>()
-                                      ->lhs->As<ast::ArrayAccessorExpression>()
-                                      ->array->As<ast::UnaryOpExpression>()
+                                      ->lhs->As<ast::IndexAccessorExpression>()
+                                      ->object->As<ast::UnaryOpExpression>()
                                       ->expr->As<ast::UnaryOpExpression>()
                                       ->expr);
   ASSERT_NE(use_id, 0);
@@ -618,8 +618,8 @@ fn f() {
           .Functions()[0]
           ->body->statements[1]
           ->As<ast::VariableDeclStatement>()
-          ->variable->constructor->As<ast::ArrayAccessorExpression>()
-          ->array->As<ast::UnaryOpExpression>()
+          ->variable->constructor->As<ast::IndexAccessorExpression>()
+          ->object->As<ast::UnaryOpExpression>()
           ->expr->As<ast::UnaryOpExpression>()
           ->expr);
   ASSERT_NE(use_id, 0);
@@ -654,8 +654,8 @@ fn f() {
           .Functions()[0]
           ->body->statements[3]
           ->As<ast::VariableDeclStatement>()
-          ->variable->constructor->As<ast::ArrayAccessorExpression>()
-          ->array->As<ast::UnaryOpExpression>()
+          ->variable->constructor->As<ast::IndexAccessorExpression>()
+          ->object->As<ast::UnaryOpExpression>()
           ->expr);
   ASSERT_NE(use_id, 0);
 

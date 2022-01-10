@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"  // for FALLTHROUGH;
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -289,14 +290,14 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
   }
 
   // Expected to outlive |restricted_cookie_manager_| which outlives this.
-  const net::CookieStore* cookie_store_;
+  raw_ptr<const net::CookieStore> cookie_store_;
 
   // The CookieChangeDispatcher subscription used by this listener.
   std::unique_ptr<net::CookieChangeSubscription> cookie_store_subscription_;
 
   // Raw pointer usage is safe because RestrictedCookieManager owns this
   // instance and is guaranteed to outlive it.
-  const RestrictedCookieManager* const restricted_cookie_manager_;
+  const raw_ptr<const RestrictedCookieManager> restricted_cookie_manager_;
 
   // The URL whose cookies this listener is interested in.
   const GURL url_;
@@ -348,10 +349,11 @@ RestrictedCookieManager::~RestrictedCookieManager() {
 }
 
 void RestrictedCookieManager::ComputeCookiePartitionKey() {
-  cookie_partition_key_ = net::CookiePartitionKey::FromNetworkIsolationKey(
+  cookie_partition_key_ = net::CookieAccessDelegate::CreateCookiePartitionKey(
+      cookie_store_->cookie_access_delegate(),
       isolation_info_.network_isolation_key());
-  cookie_partition_keychain_ =
-      net::CookiePartitionKeychain::FromOptional(cookie_partition_key_);
+  cookie_partition_key_collection_ =
+      net::CookiePartitionKeyCollection::FromOptional(cookie_partition_key_);
 }
 
 void RestrictedCookieManager::GetAllForUrl(
@@ -377,7 +379,7 @@ void RestrictedCookieManager::GetAllForUrl(
   net_options.set_return_excluded_cookies();
 
   cookie_store_->GetCookieListWithOptionsAsync(
-      url, net_options, cookie_partition_keychain_,
+      url, net_options, cookie_partition_key_collection_,
       base::BindOnce(&RestrictedCookieManager::CookieListToGetAllForUrlCallback,
                      weak_ptr_factory_.GetWeakPtr(), url, site_for_cookies,
                      top_frame_origin, net_options, std::move(options),

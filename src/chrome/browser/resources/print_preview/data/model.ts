@@ -7,7 +7,10 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {BackgroundGraphicsModeRestriction, ColorModeRestriction, DuplexModeRestriction, PinModeRestriction, Policies} from '../native_layer.js';
+import {BackgroundGraphicsModeRestriction, ColorModeRestriction, DuplexModeRestriction, Policies} from '../native_layer.js';
+// <if expr="chromeos or lacros">
+import {PinModeRestriction} from '../native_layer.js';
+// </if>
 import {CapabilityWithReset, Cdd, CddCapabilities, ColorOption, DpiOption, DuplexOption, MediaSizeOption, VendorCapability} from './cdd.js';
 import {Destination, DestinationOrigin, DestinationType, GooglePromotedDestinationId, RecentDestination} from './destination.js';
 import {getPrinterTypeForDestination, PrinterType} from './destination_match.js';
@@ -55,8 +58,10 @@ export type Settings = {
   otherOptions: Setting,
   ranges: Setting,
   pagesPerSheet: Setting,
-  pin?: Setting,
-  pinValue?: Setting,
+  // <if expr="chromeos or lacros">
+  pin: Setting,
+  pinValue: Setting,
+  // </if>
 };
 
 export type SerializedSettings = {
@@ -68,6 +73,7 @@ export type SerializedSettings = {
   customMargins?: MarginsSetting,
   isColorEnabled?: boolean,
   isDuplexEnabled?: boolean,
+  isDuplexShortEdge?: boolean,
   isHeaderFooterEnabled?: boolean,
   isLandscapeEnabled?: boolean,
   isCollateEnabled?: boolean,
@@ -75,15 +81,23 @@ export type SerializedSettings = {
   scaling?: string,
   scalingType?: ScalingType,
   scalingTypePdf?: ScalingType,
-  vendor_options?: object,
+  vendorOptions?: object,
+  // <if expr="chromeos or lacros">
   isPinEnabled?: boolean,
   pinValue?: string,
+  // </if>
 };
 
 export type PolicyEntry = {
   value: any,
   managed: boolean,
   applyOnDestinationUpdate: boolean,
+};
+
+export type PolicyObjectEntry = {
+  defaultMode?: any,
+  allowedMode?: any,
+  value?: number,
 };
 
 export type PolicySettings = {
@@ -147,7 +161,7 @@ export type Ticket = {
   ticket?: string,
 };
 
-type PrintTicket = Ticket&{
+export type PrintTicket = Ticket&{
   dpiDefault: boolean,
   pageCount: number,
   pageHeight: number,
@@ -1182,8 +1196,7 @@ export class PrintPreviewModelElement extends PolymerElement {
     if (policies === undefined) {
       return;
     }
-    const policiesObject = policies as
-        {[key: string]: {defaultMode?: any, allowedMode?: any, value?: number}};
+    const policiesObject = policies as {[key: string]: PolicyObjectEntry};
     ['headerFooter', 'cssBackground', 'mediaSize'].forEach(settingName => {
       if (!policiesObject[settingName]) {
         return;
@@ -1684,6 +1697,12 @@ export class PrintPreviewModelElement extends PolymerElement {
       }
     }
     return JSON.stringify(cjt);
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'print-preview-model': PrintPreviewModelElement;
   }
 }
 

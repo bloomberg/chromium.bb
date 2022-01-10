@@ -24,7 +24,6 @@ import {PluginController} from './controller.js';
 import {ViewerErrorDialogElement} from './elements/viewer-error-dialog.js';
 import {ViewerPdfSidenavElement} from './elements/viewer-pdf-sidenav.js';
 import {ViewerToolbarElement} from './elements/viewer-toolbar.js';
-import {Gesture} from './gesture_detector.js';
 // <if expr="enable_ink">
 import {InkController, InkControllerEventType} from './ink_controller.js';
 //</if>
@@ -303,16 +302,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     // </if>
   }
 
-  /** @override */
-  getContent() {
-    return /** @type {!HTMLDivElement} */ (this.$$('#content'));
-  }
-
-  /** @override */
-  getSizer() {
-    return /** @type {!HTMLDivElement} */ (this.$$('#sizer'));
-  }
-
   /**
    * @return {!ViewerToolbarElement}
    * @private
@@ -328,14 +317,16 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
   /** @param {!BrowserApi} browserApi */
   init(browserApi) {
-    super.init(browserApi);
+    super.init(
+        browserApi, /** @type {!HTMLElement} */ (this.$$('#scroller')),
+        /** @type {!HTMLDivElement} */ (this.$$('#sizer')),
+        /** @type {!HTMLDivElement} */ (this.$$('#content')));
 
     this.pluginController_ = PluginController.getInstance();
 
     // <if expr="enable_ink">
     this.inkController_ = InkController.getInstance();
-    this.inkController_.init(
-        this.viewport, /** @type {!HTMLDivElement} */ (this.getContent()));
+    this.inkController_.init(this.viewport);
     this.tracker.add(
         this.inkController_.getEventTarget(),
         InkControllerEventType.HAS_UNSAVED_CHANGES,
@@ -839,13 +830,11 @@ export class PDFViewerElement extends PDFViewerBaseElement {
         this.documentHasFocus_ =
             /** @type {{ hasFocus: boolean }} */ (data).hasFocus;
         return;
-      case 'gesture':
-        this.viewport.dispatchGesture(
-            /** @type {{ gesture: !Gesture }} */ (data).gesture);
-        return;
       case 'sendKeyEvent':
-        this.handleKeyEvent(/** @type {!KeyboardEvent} */ (DeserializeKeyEvent(
-            /** @type {{ keyEvent: Object }} */ (data).keyEvent)));
+        const keyEvent = DeserializeKeyEvent(
+            /** @type {{ keyEvent: Object }} */ (data).keyEvent);
+        keyEvent.fromPlugin = true;
+        this.handleKeyEvent(keyEvent);
         return;
     }
     assertNotReached('Unknown message type received: ' + data.type);
@@ -1120,7 +1109,8 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     if (!fileName.toLowerCase().endsWith('.pdf')) {
       fileName = fileName + '.pdf';
     }
-
+    // Create blob before callback to avoid race condition.
+    const blob = new Blob([result.dataToSave], {type: 'application/pdf'});
     chrome.fileSystem.chooseEntry(
         {
           type: 'saveFile',
@@ -1137,8 +1127,7 @@ export class PDFViewerElement extends PDFViewerBaseElement {
             return;
           }
           entry.createWriter(writer => {
-            writer.write(
-                new Blob([result.dataToSave], {type: 'application/pdf'}));
+            writer.write(blob);
             // Unblock closing the window now that the user has saved
             // successfully.
             chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog(false);

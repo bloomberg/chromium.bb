@@ -21,6 +21,9 @@ namespace tint {
 namespace ast {
 class ForLoopStatement;
 }  // namespace ast
+namespace sem {
+class Expression;
+}  // namespace sem
 }  // namespace tint
 
 namespace tint {
@@ -32,11 +35,26 @@ class ForLoopStatement : public Castable<ForLoopStatement, CompoundStatement> {
   /// Constructor
   /// @param declaration the AST node for this for-loop statement
   /// @param parent the owning statement
+  /// @param function the owning function
   ForLoopStatement(const ast::ForLoopStatement* declaration,
-                   CompoundStatement* parent);
+                   const CompoundStatement* parent,
+                   const sem::Function* function);
 
   /// Destructor
   ~ForLoopStatement() override;
+
+  /// @returns the AST node
+  const ast::ForLoopStatement* Declaration() const;
+
+  /// @returns the for-loop condition expression
+  const Expression* Condition() const { return condition_; }
+
+  /// Sets the for-loop condition expression
+  /// @param condition the for-loop condition expression
+  void SetCondition(const Expression* condition) { condition_ = condition; }
+
+ private:
+  const Expression* condition_ = nullptr;
 };
 
 }  // namespace sem

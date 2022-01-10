@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
-#include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/src/gpu/vk/GrVkSecondaryCBDrawContext.h"
@@ -101,9 +100,18 @@ sk_sp<GrVkSecondaryCBDrawContext> CreateDrawContext(
       .fFormat = params->format,
       .fDrawBounds = &draw_bounds,
   };
-  SkSurfaceProps props = skia::LegacyDisplayGlobals::GetSkSurfaceProps();
-  return GrVkSecondaryCBDrawContext::Make(gr_context, info, drawable_info,
-                                          &props);
+  SkSurfaceProps props{0, kUnknown_SkPixelGeometry};
+  sk_sp<GrVkSecondaryCBDrawContext> context =
+      GrVkSecondaryCBDrawContext::Make(gr_context, info, drawable_info, &props);
+  LOG_IF(FATAL, !context)
+      << "Failed GrVkSecondaryCBDrawContext::Make"
+      << " fSecondaryCommandBuffer:" << params->secondary_command_buffer
+      << " fColorAttachmentIndex:" << params->color_attachment_index
+      << " fCompatibleRenderPass:" << params->compatible_render_pass
+      << " fFormat:" << params->format << " width:" << params->width
+      << " height:" << params->height
+      << " is_srgb:" << (color_space == SkColorSpace::MakeSRGB());
+  return context;
 }
 
 OverlaysParams::Mode GetOverlaysMode(AwDrawFnOverlaysMode mode) {

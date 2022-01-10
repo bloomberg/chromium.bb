@@ -55,6 +55,7 @@
 
 /** largest possible size of flac header */
 #define MAX_FRAME_HEADER_SIZE 16
+#define MAX_FRAME_VERIFY_SIZE (MAX_FRAME_HEADER_SIZE + 1)
 
 typedef struct FLACHeaderMarker {
     int offset;       /**< byte offset from start of FLACParseContext->buffer */
@@ -96,8 +97,34 @@ static int frame_header_is_valid(AVCodecContext *avctx, const uint8_t *buf,
                                  FLACFrameInfo *fi)
 {
     GetBitContext gb;
-    init_get_bits(&gb, buf, MAX_FRAME_HEADER_SIZE * 8);
-    return !ff_flac_decode_frame_header(avctx, &gb, fi, 127);
+    uint8_t subframe_type;
+
+    // header plus one byte from first subframe
+    init_get_bits(&gb, buf, MAX_FRAME_VERIFY_SIZE * 8);
+    if (ff_flac_decode_frame_header(avctx, &gb, fi, 127)) {
+        return 0;
+    }
+    // subframe zero bit
+    if (get_bits1(&gb) != 0) {
+        return 0;
+    }
+    // subframe type
+    // 000000 : SUBFRAME_CONSTANT
+    // 000001 : SUBFRAME_VERBATIM
+    // 00001x : reserved
+    // 0001xx : reserved
+    // 001xxx : if(xxx <= 4) SUBFRAME_FIXED, xxx=order ; else reserved
+    // 01xxxx : reserved
+    // 1xxxxx : SUBFRAME_LPC, xxxxx=order-1
+    subframe_type = get_bits(&gb, 6);
+    if (!(subframe_type == 0 ||
+          subframe_type == 1 ||
+          ((subframe_type >= 8) && (subframe_type <= 12)) ||
+          (subframe_type >= 32))) {
+        return 0;
+    }
+
+    return 1;
 }
 
 /**
@@ -170,7 +197,7 @@ static int find_headers_search_validate(FLACParseContext *fpc, int offset)
     uint8_t *header_buf;
     int size = 0;
     header_buf = flac_fifo_read_wrap(fpc, offset,
-                                     MAX_FRAME_HEADER_SIZE,
+                                     MAX_FRAME_VERIFY_SIZE + AV_INPUT_BUFFER_PADDING_SIZE,
                                      &fpc->wrap_buf,
                                      &fpc->wrap_buf_allocated_size);
     if (frame_header_is_valid(fpc->avctx, header_buf, &fi)) {

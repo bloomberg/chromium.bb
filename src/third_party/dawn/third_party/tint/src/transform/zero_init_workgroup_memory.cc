@@ -25,7 +25,7 @@
 #include "src/sem/atomic_type.h"
 #include "src/sem/function.h"
 #include "src/sem/variable.h"
-#include "src/utils/get_or_create.h"
+#include "src/utils/map.h"
 #include "src/utils/unique_vector.h"
 
 TINT_INSTANTIATE_TYPEINFO(tint::transform::ZeroInitWorkgroupMemory);
@@ -74,7 +74,7 @@ struct ZeroInitWorkgroupMemory::State {
   };
 
   /// A list of unique ArrayIndex
-  using ArrayIndices = UniqueVector<ArrayIndex, ArrayIndex::Hasher>;
+  using ArrayIndices = utils::UniqueVector<ArrayIndex, ArrayIndex::Hasher>;
 
   /// Expression holds information about an expression that is being built for a
   /// statement will zero workgroup values.
@@ -121,7 +121,7 @@ struct ZeroInitWorkgroupMemory::State {
     // Generate a list of statements to zero initialize each of the
     // workgroup storage variables used by `fn`. This will populate #statements.
     auto* func = sem.Get(fn);
-    for (auto* var : func->ReferencedModuleVariables()) {
+    for (auto* var : func->TransitivelyReferencedGlobals()) {
       if (var->StorageClass() == ast::StorageClass::kWorkgroup) {
         BuildZeroingStatements(
             var->Type()->UnwrapRef(), [&](uint32_t num_values) {

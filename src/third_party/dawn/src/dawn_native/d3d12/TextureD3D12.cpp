@@ -252,6 +252,10 @@ namespace dawn_native { namespace d3d12 {
                 case wgpu::TextureFormat::R8BG8Biplanar420Unorm:
                 // TODO(dawn:666): implement stencil8
                 case wgpu::TextureFormat::Stencil8:
+                // TODO(dawn:690): implement depth24unorm-stencil8
+                case wgpu::TextureFormat::Depth24UnormStencil8:
+                // TODO(dawn:690): implement depth32float-stencil8
+                case wgpu::TextureFormat::Depth32FloatStencil8:
                 case wgpu::TextureFormat::Undefined:
                     UNREACHABLE();
             }
@@ -421,6 +425,10 @@ namespace dawn_native { namespace d3d12 {
 
             // TODO(dawn:666): implement stencil8
             case wgpu::TextureFormat::Stencil8:
+            // TODO(dawn:690): implement depth24unorm-stencil8
+            case wgpu::TextureFormat::Depth24UnormStencil8:
+            // TODO(dawn:690): implement depth32float-stencil8
+            case wgpu::TextureFormat::Depth32FloatStencil8:
             case wgpu::TextureFormat::Undefined:
                 UNREACHABLE();
         }
@@ -647,10 +655,11 @@ namespace dawn_native { namespace d3d12 {
     }
 
     Texture::~Texture() {
-        DestroyInternal();
     }
 
     void Texture::DestroyImpl() {
+        TextureBase::DestroyImpl();
+
         Device* device = ToBackend(GetDevice());
 
         // In PIX's D3D12-only mode, there is no way to determine frame boundaries

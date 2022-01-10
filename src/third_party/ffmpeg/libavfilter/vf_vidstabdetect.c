@@ -82,20 +82,6 @@ static av_cold void uninit(AVFilterContext *ctx)
     vsMotionDetectionCleanup(md);
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    // If you add something here also add it in vidstabutils.c
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUV444P,  AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV420P,
-        AV_PIX_FMT_YUV411P,  AV_PIX_FMT_YUV410P, AV_PIX_FMT_YUVA420P,
-        AV_PIX_FMT_YUV440P,  AV_PIX_FMT_GRAY8,
-        AV_PIX_FMT_RGB24, AV_PIX_FMT_BGR24, AV_PIX_FMT_RGBA,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
-
 static int config_input(AVFilterLink *inlink)
 {
     AVFilterContext *ctx = inlink->dst;
@@ -210,8 +196,8 @@ const AVFilter ff_vf_vidstabdetect = {
     .priv_size     = sizeof(StabData),
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(avfilter_vf_vidstabdetect_inputs),
     FILTER_OUTPUTS(avfilter_vf_vidstabdetect_outputs),
+    FILTER_PIXFMTS_ARRAY(ff_vidstab_pix_fmts),
     .priv_class    = &vidstabdetect_class,
 };

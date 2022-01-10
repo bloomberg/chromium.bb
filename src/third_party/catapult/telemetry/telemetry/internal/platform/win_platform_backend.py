@@ -167,9 +167,9 @@ class WinPlatformBackend(desktop_platform_backend.DesktopPlatformBackend):
       key.Close()
     if value == 10:
       return os_version_module.WIN10
-    elif os_version.startswith('6.2.'):
+    if os_version.startswith('6.2.'):
       return os_version_module.WIN8
-    elif os_version.startswith('6.3.'):
+    if os_version.startswith('6.3.'):
       return os_version_module.WIN81
     raise NotImplementedError(
         'Unknown win version: %s, CurrentMajorVersionNumber: %s' %
@@ -183,8 +183,7 @@ class WinPlatformBackend(desktop_platform_backend.DesktopPlatformBackend):
     return True
 
   def TakeScreenshot(self, file_path):
-    width = win32api.GetSystemMetrics(win32con.SM_CXSCREEN)
-    height = win32api.GetSystemMetrics(win32con.SM_CYSCREEN)
+    width, height = self.GetScreenResolution()
     screen_win = win32gui.GetDesktopWindow()
     win_dc = None
     screen_dc = None
@@ -214,6 +213,21 @@ class WinPlatformBackend(desktop_platform_backend.DesktopPlatformBackend):
       if win_dc:
         win32gui.ReleaseDC(screen_win, win_dc)
     return True
+
+  def GetScreenResolution(self):
+    # SM_CXSCREEN - width of the screen of the primary display monitor
+    # SM_CYSCREEN - height of the screen of the primary display monitor
+    # resolution returned by GetSystemMetrics is scaled
+    width = ctypes.windll.user32.GetSystemMetrics(win32con.SM_CXSCREEN)
+    height = ctypes.windll.user32.GetSystemMetrics(win32con.SM_CYSCREEN)
+
+    if self.GetOSVersionName() < os_version_module.WIN81:
+      # shcore.dll first introduced in Windows 8.1
+      return width, height
+
+    # 0 - DEVICE_PRIMARY (primary display monitor)
+    scale = ctypes.windll.shcore.GetScaleFactorForDevice(0)
+    return width * scale // 100, height * scale // 100
 
   def CanFlushIndividualFilesFromSystemCache(self):
     return True
@@ -293,11 +307,13 @@ class WinPlatformBackend(desktop_platform_backend.DesktopPlatformBackend):
       if proc_info['hInstApp'] <= 32:
         raise Exception('Unable to launch %s' % application)
       return proc_info['hProcess']
-    else:
-      handle, _, _, _ = win32process.CreateProcess(
-          None, application + ' ' + parameters, None, None, False,
-          win32process.CREATE_NO_WINDOW, None, None, win32process.STARTUPINFO())
-      return handle
+    handle, _, _, _ = win32process.CreateProcess(None,
+                                                 application + ' ' + parameters,
+                                                 None, None, False,
+                                                 win32process.CREATE_NO_WINDOW,
+                                                 None, None,
+                                                 win32process.STARTUPINFO())
+    return handle
 
   def IsCooperativeShutdownSupported(self):
     return True
@@ -341,8 +357,7 @@ class WinPlatformBackend(desktop_platform_backend.DesktopPlatformBackend):
       for hwnd in hwnds:
         win32gui.SendMessage(hwnd, win32con.WM_CLOSE, 0, 0)
       return True
-    else:
-      logging.info('Did not find any windows owned by target process')
+    logging.info('Did not find any windows owned by target process')
     return False
 
   def GetIntelPowerGadgetPath(self):

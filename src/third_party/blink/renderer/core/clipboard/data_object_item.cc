@@ -38,7 +38,7 @@
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -96,8 +96,9 @@ DataObjectItem* DataObjectItem::CreateFromHTML(const String& html,
 }
 
 // static
-DataObjectItem* DataObjectItem::CreateFromSharedBuffer(
+DataObjectItem* DataObjectItem::CreateFromFileSharedBuffer(
     scoped_refptr<SharedBuffer> buffer,
+    bool is_image_accessible,
     const KURL& source_url,
     const String& filename_extension,
     const AtomicString& content_disposition) {
@@ -105,6 +106,7 @@ DataObjectItem* DataObjectItem::CreateFromSharedBuffer(
       kFileKind,
       MIMETypeRegistry::GetWellKnownMIMETypeForExtension(filename_extension));
   item->shared_buffer_ = std::move(buffer);
+  item->is_image_accessible_ = is_image_accessible;
   item->filename_extension_ = filename_extension;
   // TODO(dcheng): Rename these fields to be more generically named.
   item->title_ = content_disposition;
@@ -155,6 +157,9 @@ File* DataObjectItem::GetAsFile() const {
 
     // If this file is not backed by |file_| then it must be a |shared_buffer_|.
     DCHECK(shared_buffer_);
+    // If dragged image is cross-origin, do not allow access to it.
+    if (!is_image_accessible_)
+      return nullptr;
     auto data = std::make_unique<BlobData>();
     data->SetContentType(type_);
     for (const auto& span : *shared_buffer_)

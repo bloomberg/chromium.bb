@@ -102,8 +102,6 @@ struct VideoStream {
 };
 
 struct Offer {
-  // TODO(jophba): remove deprecated declaration in a separate patch.
-  static ErrorOr<Offer> Parse(const Json::Value& root);
   static Error TryParse(const Json::Value& root, Offer* out);
   Json::Value ToJson() const;
   bool IsValid() const;

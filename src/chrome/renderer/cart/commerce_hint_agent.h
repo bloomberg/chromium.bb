@@ -27,8 +27,10 @@ class CommerceHintAgent
   CommerceHintAgent& operator=(const CommerceHintAgent&) = delete;
 
   // Whether the string, either from path of URL or XHR form contents, matches
-  // the add-to-cart heuristics.
-  static bool IsAddToCart(base::StringPiece str);
+  // the add-to-cart heuristics. |skip_length_limit| to decide whether to
+  // crop the string to under length limit when matching.
+  static bool IsAddToCart(base::StringPiece str,
+                          bool skip_length_limit = false);
   // Whether the main frame URL is a shopping cart.
   static bool IsVisitCart(const GURL& main_frame_url);
   // Whether the main frame URL is a checkout page.
@@ -74,7 +76,6 @@ class CommerceHintAgent
     void WillExecute() override;
     void Completed(
         const blink::WebVector<v8::Local<v8::Value>>& result) override;
-    void HandlePromiseResults(const v8::FunctionCallbackInfo<v8::Value>& info);
 
    private:
     ~JavaScriptRequest() override;

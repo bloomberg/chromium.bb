@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_ASH_NET_NETWORK_PORTAL_WEB_DIALOG_H_
 #define CHROME_BROWSER_ASH_NET_NETWORK_PORTAL_WEB_DIALOG_H_
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/ash/network/network_portal_notification_controller.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -14,7 +13,7 @@ namespace views {
 class Widget;
 }
 
-namespace ash {
+namespace chromeos {
 
 // This is the modal Web dialog to display captive portal login page.
 // It is automatically closed when successful authorization is detected.
@@ -50,11 +49,6 @@ class NetworkPortalWebDialog : public ui::WebDialogDelegate {
   views::Widget* widget_;
 };
 
-}  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace chromeos {
-using ::ash::NetworkPortalWebDialog;
-}
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_NET_NETWORK_PORTAL_WEB_DIALOG_H_

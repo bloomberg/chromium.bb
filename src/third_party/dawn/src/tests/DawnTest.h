@@ -27,6 +27,7 @@
 #include "utils/ScopedAutoreleasePool.h"
 
 #include <dawn_platform/DawnPlatform.h>
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <memory>
@@ -94,10 +95,8 @@
 
 #define EXPECT_TEXTURE_EQ(...) AddTextureExpectation(__FILE__, __LINE__, __VA_ARGS__)
 
-// Should only be used to test validation of function that can't be tested by regular validation
-// tests;
-#define ASSERT_DEVICE_ERROR(statement)                          \
-    StartExpectDeviceError();                                   \
+#define ASSERT_DEVICE_ERROR_MSG(statement, matcher)             \
+    StartExpectDeviceError(matcher);                            \
     statement;                                                  \
     FlushWire();                                                \
     if (!EndExpectDeviceError()) {                              \
@@ -105,6 +104,8 @@
     }                                                           \
     do {                                                        \
     } while (0)
+
+#define ASSERT_DEVICE_ERROR(statement) ASSERT_DEVICE_ERROR_MSG(statement, testing::_)
 
 struct RGBA8 {
     constexpr RGBA8() : RGBA8(0, 0, 0, 0) {
@@ -305,8 +306,10 @@ class DawnTestBase {
 
     bool HasToggleEnabled(const char* workaround) const;
 
-    void StartExpectDeviceError();
+    void StartExpectDeviceError(testing::Matcher<std::string> errorMatcher = testing::_);
     bool EndExpectDeviceError();
+
+    void ExpectDeviceDestruction();
 
     bool HasVendorIdFilter() const;
     uint32_t GetVendorIdFilter() const;
@@ -505,6 +508,8 @@ class DawnTestBase {
     static void OnDeviceLost(WGPUDeviceLostReason reason, const char* message, void* userdata);
     bool mExpectError = false;
     bool mError = false;
+    testing::Matcher<std::string> mErrorMatcher;
+    bool mExpectDestruction = false;
 
     std::ostringstream& AddTextureExpectationImpl(const char* file,
                                                   int line,
@@ -642,8 +647,8 @@ using DawnTest = DawnTestWithParams<>;
 // Instantiate the test once for each backend provided in the first param list.
 // The test will be parameterized over the following param lists.
 // Use it like this:
-//     DAWN_INSTANTIATE_TEST_P(MyTestFixture, {MetalBackend, OpenGLBackend}, {A, B, C}, {1, 2, 3})
-// MyTestFixture must extend DawnTestWithParam<Param> where Param is a struct that extends
+//     DAWN_INSTANTIATE_TEST_P(MyTestFixture, {MetalBackend(), OpenGLBackend()}, {A, B, C}, {1, 2, 3})
+// MyTestFixture must extend DawnTestWithParams<Param> where Param is a struct that extends
 // AdapterTestParam, and whose constructor looks like:
 //     Param(AdapterTestParam, ABorC, 12or3, ..., otherParams... )
 //     You must also teach GTest how to print this struct.
@@ -669,7 +674,7 @@ using DawnTest = DawnTestWithParams<>;
 // It is recommended to use alias declarations so that stringified types are more readable.
 // Example:
 //   using MyParam = unsigned int;
-//   DAWN_TEST_PARAM_STRUCT(FooParams, MyParam)
+//   DAWN_TEST_PARAM_STRUCT(FooParams, MyParam);
 #define DAWN_TEST_PARAM_STRUCT(StructName, ...)                                                    \
     struct DAWN_PP_CONCATENATE(_Dawn_, StructName) {                                               \
         DAWN_PP_EXPAND(DAWN_PP_EXPAND(DAWN_PP_FOR_EACH)(DAWN_TEST_PARAM_STRUCT_DECL_STRUCT_FIELD,  \
@@ -692,7 +697,8 @@ using DawnTest = DawnTestWithParams<>;
         o << static_cast<const AdapterTestParam&>(param);                                          \
         o << "; " << static_cast<const DAWN_PP_CONCATENATE(_Dawn_, StructName)&>(param);           \
         return o;                                                                                  \
-    }
+    }                                                                                              \
+    static_assert(true, "require semicolon")
 
 namespace detail {
     // Helper functions used for DAWN_INSTANTIATE_TEST

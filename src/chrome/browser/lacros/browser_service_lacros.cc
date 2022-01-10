@@ -253,6 +253,7 @@ void BrowserServiceLacros::OpenUrl(const GURL& url, OpenUrlCallback callback) {
   if (url.SchemeIs(content::kChromeUIScheme) &&
       (url.host() == chrome::kChromeUIFlagsHost ||
        url.host() == chrome::kChromeUIVersionHost ||
+       url.host() == chrome::kChromeUIAboutHost ||
        url.host() == chrome::kChromeUIComponentsHost)) {
     if (ActivateTabMatchingURLWithoutRef(profile, url)) {
       std::move(callback).Run();
@@ -260,13 +261,15 @@ void BrowserServiceLacros::OpenUrl(const GURL& url, OpenUrlCallback callback) {
     }
   }
 
-  Browser* browser = chrome::FindBrowserWithProfile(profile);
-  DCHECK(browser) << "No browser is found.";
   NavigateParams navigate_params(
-      browser, url,
+      profile, url,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                 ui::PAGE_TRANSITION_FROM_API));
   navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  // Ensure the browser window is showing when the URL is opened. This avoids
+  // the user being unaware a new tab with `url` has been opened (if the window
+  // was minimized for example).
+  navigate_params.window_action = NavigateParams::SHOW_WINDOW;
   Navigate(&navigate_params);
   std::move(callback).Run();
 }

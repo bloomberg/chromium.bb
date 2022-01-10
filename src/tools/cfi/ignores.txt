@@ -133,6 +133,7 @@ type:sandbox::TargetServices
 ######### Cross-DSO icalls using dynamically resolved symbols crbug.com/771365
 
 # ANGLE
+src:*third_party/angle/src/common/vulkan/vulkan_icd.cpp
 src:*third_party/angle/src/libANGLE/*
 src:*third_party/angle/src/libEGL/*
 src:*third_party/angle/src/third_party/libXNVCtrl/NVCtrl.c
@@ -175,6 +176,7 @@ src:*third_party/vulkan_memory_allocator/include/vk_mem_alloc.h
 src:*third_party/angle/third_party/vulkan-loader/src/loader*
 src:*third_party/vulkan-deps/vulkan-loader/src/loader*
 src:*third_party/vulkan-deps/vulkan-validation-layers/src/layers/*
+src:*third_party/angle/src/common/vulkan/vulkan_icd.cpp
 
 src:*components/os_crypt/*
 
@@ -185,6 +187,7 @@ src:*ui/accessibility/platform/ax_platform_node_auralinux_unittest.cc
 
 src:*chrome/browser/ui/zoom/chrome_zoom_level_prefs.cc
 src:*third_party/webrtc/modules/desktop_capture/linux/x_server_pixel_buffer.cc
+src:*third_party/webrtc/modules/desktop_capture/linux/x11/x_server_pixel_buffer.cc
 src:*media/cdm/*
 src:*third_party/swiftshader/*
 src:*base/native_library_unittest.cc

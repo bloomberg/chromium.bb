@@ -279,11 +279,6 @@ static const enum AVPixelFormat pix_fmts[] = {
     AV_PIX_FMT_NONE
 };
 
-static int query_formats(AVFilterContext *ctx)
-{
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
-
 static inline float lerpf(float v0, float v1, float f)
 {
     return v0 + (v1 - v0) * f;
@@ -922,9 +917,9 @@ const AVFilter ff_vf_pseudocolor = {
     .priv_size     = sizeof(PseudoColorContext),
     .priv_class    = &pseudocolor_class,
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(inputs),
     FILTER_OUTPUTS(outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,
 };

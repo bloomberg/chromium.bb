@@ -151,17 +151,19 @@ class PossibleCrOSBrowser(possible_browser.PossibleBrowser):
     os_browser_backend.Start(startup_args)
 
     if self._app_type == 'lacros-chrome':
-      lacros_chrome_browser_backend = lacros_browser_backend.LacrosBrowserBackend(
-          self._platform_backend, self._browser_options,
-          self.browser_directory, self.profile_directory,
-          self._DEFAULT_CHROME_ENV,
-          os_browser_backend,
-          build_dir=self._build_dir)
+      lacros_chrome_browser_backend = (
+          lacros_browser_backend.LacrosBrowserBackend(
+              self._platform_backend,
+              self._browser_options,
+              self.browser_directory,
+              self.profile_directory,
+              self._DEFAULT_CHROME_ENV,
+              os_browser_backend,
+              build_dir=self._build_dir))
       return browser.Browser(
           lacros_chrome_browser_backend, self._platform_backend, startup_args)
-    else:
-      return browser.Browser(
-          os_browser_backend, self._platform_backend, startup_args)
+    return browser.Browser(os_browser_backend, self._platform_backend,
+                           startup_args)
 
   def GetBrowserStartupArgs(self, browser_options):
     startup_args = chrome_startup_args.GetFromBrowserOptions(browser_options)
@@ -268,22 +270,22 @@ def FindAllAvailableBrowsers(finder_options, device):
     plat = platform_module.GetPlatformForDevice(device, finder_options)
   except cros_interface.LoginException as ex:
     if isinstance(ex, cros_interface.KeylessLoginRequiredException):
-      logging.warn('Could not ssh into %s. Your device must be configured',
-                   finder_options.cros_remote)
-      logging.warn('to allow passwordless login as root.')
-      logging.warn('For a test-build device, pass this to your script:')
-      logging.warn('   --identity $(CHROMITE)/ssh_keys/testing_rsa')
-      logging.warn('')
-      logging.warn('For a developer-mode device, the steps are:')
-      logging.warn(' - Ensure you have an id_rsa.pub (etc) on this computer')
-      logging.warn(' - On the chromebook:')
-      logging.warn('   -  Control-Alt-T; shell; sudo -s')
-      logging.warn('   -  openssh-server start')
-      logging.warn('   -  scp <this machine>:.ssh/id_rsa.pub /tmp/')
-      logging.warn('   -  mkdir /root/.ssh')
-      logging.warn('   -  chown go-rx /root/.ssh')
-      logging.warn('   -  cat /tmp/id_rsa.pub >> /root/.ssh/authorized_keys')
-      logging.warn('   -  chown 0600 /root/.ssh/authorized_keys')
+      logging.warning('Could not ssh into %s. Your device must be configured',
+                      finder_options.cros_remote)
+      logging.warning('to allow passwordless login as root.')
+      logging.warning('For a test-build device, pass this to your script:')
+      logging.warning('   --identity $(CHROMITE)/ssh_keys/testing_rsa')
+      logging.warning('')
+      logging.warning('For a developer-mode device, the steps are:')
+      logging.warning(' - Ensure you have an id_rsa.pub (etc) on this computer')
+      logging.warning(' - On the chromebook:')
+      logging.warning('   -  Control-Alt-T; shell; sudo -s')
+      logging.warning('   -  openssh-server start')
+      logging.warning('   -  scp <this machine>:.ssh/id_rsa.pub /tmp/')
+      logging.warning('   -  mkdir /root/.ssh')
+      logging.warning('   -  chown go-rx /root/.ssh')
+      logging.warning('   -  cat /tmp/id_rsa.pub >> /root/.ssh/authorized_keys')
+      logging.warning('   -  chown 0600 /root/.ssh/authorized_keys')
     raise browser_finder_exceptions.BrowserFinderException(str(ex))
 
   browsers.extend([

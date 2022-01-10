@@ -1,4 +1,8 @@
 {
+  "$build/chromium_orchestrator": {
+    "compilator": "chromeos-amd64-generic-rel-compilator",
+    "compilator_watcher_git_revision": "5fd7f4ae276865742fe632642ec4633dd9f81649"
+  },
   "$build/goma": {
     "enable_ats": true,
     "rpc_extra_params": "?prod",
@@ -12,5 +16,6 @@
       "v.test_suite"
     ]
   },
-  "recipe": "chromium_trybot"
+  "builder_group": "tryserver.chromium.chromiumos",
+  "recipe": "chromium/orchestrator"
 }

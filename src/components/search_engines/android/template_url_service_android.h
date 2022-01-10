@@ -6,7 +6,7 @@
 #define COMPONENTS_SEARCH_ENGINES_ANDROID_TEMPLATE_URL_SERVICE_ANDROID_H_
 
 #include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 
@@ -35,6 +35,9 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
   jboolean IsSearchByImageAvailable(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean DoesDefaultSearchEngineHaveLogo(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
   jboolean IsDefaultSearchEngineGoogle(
@@ -123,7 +126,7 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
   // Pointer to the TemplateUrlService for the main profile.
-  TemplateURLService* template_url_service_;
+  raw_ptr<TemplateURLService> template_url_service_;
 
   base::CallbackListSubscription template_url_subscription_;
 };

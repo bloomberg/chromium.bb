@@ -450,6 +450,7 @@ int32_t CWelsDecoder::ResetDecoder (PWelsDecoderContext& pCtx) {
       WelsLog (&m_pWelsTrace->m_sLogCtx, WELS_LOG_ERROR, "ResetDecoder() failed as decoder context null");
     }
     ResetReorderingPictureBuffers (&m_sReoderingStatus, m_sPictInfoList, false);
+    if (pCtx->pDstInfo) pCtx->pDstInfo->iBufferStatus = 0;
   }
   return ERR_INFO_UNINIT;
 }
@@ -461,6 +462,7 @@ int32_t CWelsDecoder::ThreadResetDecoder (PWelsDecoderContext& pCtx) {
     WelsLog (&m_pWelsTrace->m_sLogCtx, WELS_LOG_INFO, "ResetDecoder(), context error code is %d", pCtx->iErrorCode);
     memcpy (&sPrevParam, pCtx->pParam, sizeof (SDecodingParam));
     ResetReorderingPictureBuffers (&m_sReoderingStatus, m_sPictInfoList, true);
+    if (pCtx->pDstInfo) pCtx->pDstInfo->iBufferStatus = 0;
     CloseDecoderThreads();
     UninitDecoder();
     InitDecoder (&sPrevParam);
@@ -811,13 +813,6 @@ DECODING_STATE CWelsDecoder::DecodeFrame2WithCtx (PWelsDecoderContext pDecContex
       }
       return dsErrorFree;
     }
-    if ((pDecContext->iErrorCode & (dsBitstreamError | dsDataErrorConcealed)) && pDecContext->eSliceType == B_SLICE) {
-      if (ResetDecoder (pDecContext)) {
-        pDstInfo->iBufferStatus = 0;
-        return (DECODING_STATE)pDecContext->iErrorCode;
-      }
-      return dsErrorFree;
-    }
     //for AVC bitstream (excluding AVC with temporal scalability, including TP), as long as error occur, SHOULD notify upper layer key frame loss.
     if ((IS_PARAM_SETS_NALS (eNalType) || NAL_UNIT_CODED_SLICE_IDR == eNalType) ||
         (VIDEO_BITSTREAM_AVC == pDecContext->eVideoType)) {
@@ -912,6 +907,7 @@ DECODING_STATE CWelsDecoder::DecodeFrame2 (const unsigned char* kpSrc,
     unsigned char** ppDst,
     SBufferInfo* pDstInfo) {
   PWelsDecoderContext pDecContext = m_pDecThrCtx[0].pCtx;
+  pDecContext->pDstInfo = pDstInfo;
   return DecodeFrame2WithCtx (pDecContext, kpSrc, kiSrcLen, ppDst, pDstInfo);
 }
 
@@ -1392,6 +1388,9 @@ DECODING_STATE CWelsDecoder::ParseAccessUnit (SWelsDecoderThreadCTX& sThreadCtx)
     m_pPicBuff = sThreadCtx.pCtx->pPicBuff;
   } else if (bPicBuffChanged) {
     InitialDqLayersContext (sThreadCtx.pCtx, sThreadCtx.pCtx->pSps->iMbWidth << 4, sThreadCtx.pCtx->pSps->iMbHeight << 4);
+  }
+  if (!sThreadCtx.pCtx->bNewSeqBegin && m_pLastDecThrCtx != NULL) {
+    sThreadCtx.pCtx->sFrameCrop = m_pLastDecThrCtx->pCtx->pSps->sFrameCrop;
   }
   m_bParamSetsLostFlag = sThreadCtx.pCtx->bNewSeqBegin ? false : sThreadCtx.pCtx->bParamSetsLostFlag;
   m_bFreezeOutput = sThreadCtx.pCtx->bNewSeqBegin ? false : sThreadCtx.pCtx->bFreezeOutput;

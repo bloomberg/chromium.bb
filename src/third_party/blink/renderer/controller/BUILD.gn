@@ -31,7 +31,6 @@ component("controller") {
   }
 
   configs += [
-    "//build/config/compiler:noshadowing",
     "//build/config/compiler:wexit_time_destructors",
     "//cef/libcef/features:config",
     "//third_party/blink/renderer:config",

@@ -149,6 +149,10 @@ using BufferHandleMap = std::unordered_map<GLuint, void *>;
 extern BufferHandleMap gMappedBufferData;
 void UpdateClientBufferData(GLuint bufferID, const void *source, GLsizei size);
 void UpdateClientBufferData2(GLuint bufferID, const void *source, GLsizei size);
+void UpdateClientBufferData2WithOffset(GLuint bufferID,
+                                       const void *source,
+                                       GLsizei size,
+                                       GLsizei offset);
 void UpdateBufferID(GLuint id, GLsizei readBufferOffset);
 void UpdateFenceNVID(GLuint id, GLsizei readBufferOffset);
 void UpdateFramebufferID(GLuint id, GLsizei readBufferOffset);
@@ -175,6 +179,8 @@ void UpdateShaderProgramID2(GLuint id, GLsizei readBufferOffset);
 void UpdateTextureID2(GLuint id, GLsizei readBufferOffset);
 void UpdateTransformFeedbackID2(GLuint id, GLsizei readBufferOffset);
 void UpdateVertexArrayID2(GLuint id, GLsizei readBufferOffset);
+
+void SetFramebufferID(GLuint id);
 
 void ValidateSerializedState(const char *serializedState, const char *fileName, uint32_t line);
 #define VALIDATE_CHECKPOINT(STATE) ValidateSerializedState(STATE, __FILE__, __LINE__)

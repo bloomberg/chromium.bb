@@ -18,14 +18,17 @@
 #include "mocks/BindGroupLayoutMock.h"
 #include "mocks/BindGroupMock.h"
 #include "mocks/BufferMock.h"
+#include "mocks/CommandBufferMock.h"
 #include "mocks/ComputePipelineMock.h"
 #include "mocks/DeviceMock.h"
+#include "mocks/ExternalTextureMock.h"
 #include "mocks/PipelineLayoutMock.h"
 #include "mocks/QuerySetMock.h"
 #include "mocks/RenderPipelineMock.h"
 #include "mocks/SamplerMock.h"
 #include "mocks/ShaderModuleMock.h"
 #include "mocks/SwapChainMock.h"
+#include "mocks/TextureMock.h"
 #include "tests/DawnNativeTest.h"
 #include "utils/ComboRenderPipelineDescriptor.h"
 
@@ -44,12 +47,22 @@ namespace dawn_native { namespace {
             mDevice.SetToggle(Toggle::SkipValidation, true);
         }
 
+        Ref<TextureMock> GetTexture() {
+            if (mTexture != nullptr) {
+                return mTexture;
+            }
+            mTexture =
+                AcquireRef(new TextureMock(&mDevice, TextureBase::TextureState::OwnedInternal));
+            EXPECT_CALL(*mTexture.Get(), DestroyImpl).Times(1);
+            return mTexture;
+        }
+
         Ref<PipelineLayoutMock> GetPipelineLayout() {
             if (mPipelineLayout != nullptr) {
                 return mPipelineLayout;
             }
             mPipelineLayout = AcquireRef(new PipelineLayoutMock(&mDevice));
-            EXPECT_CALL(*mPipelineLayout.Get(), DestroyApiObjectImpl).Times(1);
+            EXPECT_CALL(*mPipelineLayout.Get(), DestroyImpl).Times(1);
             return mPipelineLayout;
         }
 
@@ -63,7 +76,7 @@ namespace dawn_native { namespace {
                 return vec4<f32>(0.0, 0.0, 0.0, 1.0);
             })"),
                 { ASSERT(false); }, mVsModule);
-            EXPECT_CALL(*mVsModule.Get(), DestroyApiObjectImpl).Times(1);
+            EXPECT_CALL(*mVsModule.Get(), DestroyImpl).Times(1);
             return mVsModule;
         }
 
@@ -76,7 +89,7 @@ namespace dawn_native { namespace {
             [[stage(compute), workgroup_size(1)]] fn main() {
             })"),
                 { ASSERT(false); }, mCsModule);
-            EXPECT_CALL(*mCsModule.Get(), DestroyApiObjectImpl).Times(1);
+            EXPECT_CALL(*mCsModule.Get(), DestroyImpl).Times(1);
             return mCsModule;
         }
 
@@ -85,6 +98,7 @@ namespace dawn_native { namespace {
 
         // The following lazy-initialized objects are used to facilitate creation of dependent
         // objects under test.
+        Ref<TextureMock> mTexture;
         Ref<PipelineLayoutMock> mPipelineLayout;
         Ref<ShaderModuleMock> mVsModule;
         Ref<ShaderModuleMock> mCsModule;
@@ -92,10 +106,10 @@ namespace dawn_native { namespace {
 
     TEST_F(DestroyObjectTests, BindGroupExplicit) {
         BindGroupMock bindGroupMock(&mDevice);
-        EXPECT_CALL(bindGroupMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(bindGroupMock, DestroyImpl).Times(1);
 
         EXPECT_TRUE(bindGroupMock.IsAlive());
-        bindGroupMock.DestroyApiObject();
+        bindGroupMock.Destroy();
         EXPECT_FALSE(bindGroupMock.IsAlive());
     }
 
@@ -103,7 +117,7 @@ namespace dawn_native { namespace {
     // will also complain if there is a memory leak.
     TEST_F(DestroyObjectTests, BindGroupImplicit) {
         BindGroupMock* bindGroupMock = new BindGroupMock(&mDevice);
-        EXPECT_CALL(*bindGroupMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(*bindGroupMock, DestroyImpl).Times(1);
         {
             BindGroupDescriptor desc = {};
             Ref<BindGroupBase> bindGroup;
@@ -117,10 +131,10 @@ namespace dawn_native { namespace {
 
     TEST_F(DestroyObjectTests, BindGroupLayoutExplicit) {
         BindGroupLayoutMock bindGroupLayoutMock(&mDevice);
-        EXPECT_CALL(bindGroupLayoutMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(bindGroupLayoutMock, DestroyImpl).Times(1);
 
         EXPECT_TRUE(bindGroupLayoutMock.IsAlive());
-        bindGroupLayoutMock.DestroyApiObject();
+        bindGroupLayoutMock.Destroy();
         EXPECT_FALSE(bindGroupLayoutMock.IsAlive());
     }
 
@@ -128,7 +142,7 @@ namespace dawn_native { namespace {
     // will also complain if there is a memory leak.
     TEST_F(DestroyObjectTests, BindGroupLayoutImplicit) {
         BindGroupLayoutMock* bindGroupLayoutMock = new BindGroupLayoutMock(&mDevice);
-        EXPECT_CALL(*bindGroupLayoutMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(*bindGroupLayoutMock, DestroyImpl).Times(1);
         {
             BindGroupLayoutDescriptor desc = {};
             Ref<BindGroupLayoutBase> bindGroupLayout;
@@ -144,22 +158,22 @@ namespace dawn_native { namespace {
     TEST_F(DestroyObjectTests, BufferExplicit) {
         {
             BufferMock bufferMock(&mDevice, BufferBase::BufferState::Unmapped);
-            EXPECT_CALL(bufferMock, DestroyApiObjectImpl).Times(1);
+            EXPECT_CALL(bufferMock, DestroyImpl).Times(1);
 
             EXPECT_TRUE(bufferMock.IsAlive());
-            bufferMock.DestroyApiObject();
+            bufferMock.Destroy();
             EXPECT_FALSE(bufferMock.IsAlive());
         }
         {
             BufferMock bufferMock(&mDevice, BufferBase::BufferState::Mapped);
             {
                 InSequence seq;
+                EXPECT_CALL(bufferMock, DestroyImpl).Times(1);
                 EXPECT_CALL(bufferMock, UnmapImpl).Times(1);
-                EXPECT_CALL(bufferMock, DestroyApiObjectImpl).Times(1);
             }
 
             EXPECT_TRUE(bufferMock.IsAlive());
-            bufferMock.DestroyApiObject();
+            bufferMock.Destroy();
             EXPECT_FALSE(bufferMock.IsAlive());
         }
     }
@@ -169,7 +183,7 @@ namespace dawn_native { namespace {
     TEST_F(DestroyObjectTests, BufferImplicit) {
         {
             BufferMock* bufferMock = new BufferMock(&mDevice, BufferBase::BufferState::Unmapped);
-            EXPECT_CALL(*bufferMock, DestroyApiObjectImpl).Times(1);
+            EXPECT_CALL(*bufferMock, DestroyImpl).Times(1);
             {
                 BufferDescriptor desc = {};
                 Ref<BufferBase> buffer;
@@ -184,8 +198,8 @@ namespace dawn_native { namespace {
             BufferMock* bufferMock = new BufferMock(&mDevice, BufferBase::BufferState::Mapped);
             {
                 InSequence seq;
+                EXPECT_CALL(*bufferMock, DestroyImpl).Times(1);
                 EXPECT_CALL(*bufferMock, UnmapImpl).Times(1);
-                EXPECT_CALL(*bufferMock, DestroyApiObjectImpl).Times(1);
             }
             {
                 BufferDescriptor desc = {};
@@ -199,12 +213,37 @@ namespace dawn_native { namespace {
         }
     }
 
+    TEST_F(DestroyObjectTests, CommandBufferExplicit) {
+        CommandBufferMock commandBufferMock(&mDevice);
+        EXPECT_CALL(commandBufferMock, DestroyImpl).Times(1);
+
+        EXPECT_TRUE(commandBufferMock.IsAlive());
+        commandBufferMock.Destroy();
+        EXPECT_FALSE(commandBufferMock.IsAlive());
+    }
+
+    // If the reference count on API objects reach 0, they should delete themselves. Note that GTest
+    // will also complain if there is a memory leak.
+    TEST_F(DestroyObjectTests, CommandBufferImplicit) {
+        CommandBufferMock* commandBufferMock = new CommandBufferMock(&mDevice);
+        EXPECT_CALL(*commandBufferMock, DestroyImpl).Times(1);
+        {
+            CommandBufferDescriptor desc = {};
+            Ref<CommandBufferBase> commandBuffer;
+            EXPECT_CALL(mDevice, CreateCommandBuffer)
+                .WillOnce(Return(ByMove(AcquireRef(commandBufferMock))));
+            DAWN_ASSERT_AND_ASSIGN(commandBuffer, mDevice.CreateCommandBuffer(nullptr, &desc));
+
+            EXPECT_TRUE(commandBuffer->IsAlive());
+        }
+    }
+
     TEST_F(DestroyObjectTests, ComputePipelineExplicit) {
         ComputePipelineMock computePipelineMock(&mDevice);
-        EXPECT_CALL(computePipelineMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(computePipelineMock, DestroyImpl).Times(1);
 
         EXPECT_TRUE(computePipelineMock.IsAlive());
-        computePipelineMock.DestroyApiObject();
+        computePipelineMock.Destroy();
         EXPECT_FALSE(computePipelineMock.IsAlive());
     }
 
@@ -220,7 +259,7 @@ namespace dawn_native { namespace {
 
         // Compute pipelines are initialized during their creation via the device.
         EXPECT_CALL(*computePipelineMock, Initialize).Times(1);
-        EXPECT_CALL(*computePipelineMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(*computePipelineMock, DestroyImpl).Times(1);
 
         {
             ComputePipelineDescriptor desc = {};
@@ -237,12 +276,30 @@ namespace dawn_native { namespace {
         }
     }
 
+    TEST_F(DestroyObjectTests, ExternalTextureExplicit) {
+        ExternalTextureMock externalTextureMock(&mDevice);
+        EXPECT_CALL(externalTextureMock, DestroyImpl).Times(1);
+
+        EXPECT_TRUE(externalTextureMock.IsAlive());
+        externalTextureMock.Destroy();
+        EXPECT_FALSE(externalTextureMock.IsAlive());
+    }
+
+    // We can use an actual ExternalTexture object to test the implicit case.
+    TEST_F(DestroyObjectTests, ExternalTextureImplicit) {
+        ExternalTextureDescriptor desc = {};
+        Ref<ExternalTextureBase> externalTexture;
+        DAWN_ASSERT_AND_ASSIGN(externalTexture, mDevice.CreateExternalTexture(&desc));
+
+        EXPECT_TRUE(externalTexture->IsAlive());
+    }
+
     TEST_F(DestroyObjectTests, PipelineLayoutExplicit) {
         PipelineLayoutMock pipelineLayoutMock(&mDevice);
-        EXPECT_CALL(pipelineLayoutMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(pipelineLayoutMock, DestroyImpl).Times(1);
 
         EXPECT_TRUE(pipelineLayoutMock.IsAlive());
-        pipelineLayoutMock.DestroyApiObject();
+        pipelineLayoutMock.Destroy();
         EXPECT_FALSE(pipelineLayoutMock.IsAlive());
     }
 
@@ -250,7 +307,7 @@ namespace dawn_native { namespace {
     // will also complain if there is a memory leak.
     TEST_F(DestroyObjectTests, PipelineLayoutImplicit) {
         PipelineLayoutMock* pipelineLayoutMock = new PipelineLayoutMock(&mDevice);
-        EXPECT_CALL(*pipelineLayoutMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(*pipelineLayoutMock, DestroyImpl).Times(1);
         {
             PipelineLayoutDescriptor desc = {};
             Ref<PipelineLayoutBase> pipelineLayout;
@@ -265,10 +322,10 @@ namespace dawn_native { namespace {
 
     TEST_F(DestroyObjectTests, QuerySetExplicit) {
         QuerySetMock querySetMock(&mDevice);
-        EXPECT_CALL(querySetMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(querySetMock, DestroyImpl).Times(1);
 
         EXPECT_TRUE(querySetMock.IsAlive());
-        querySetMock.DestroyApiObject();
+        querySetMock.Destroy();
         EXPECT_FALSE(querySetMock.IsAlive());
     }
 
@@ -276,7 +333,7 @@ namespace dawn_native { namespace {
     // will also complain if there is a memory leak.
     TEST_F(DestroyObjectTests, QuerySetImplicit) {
         QuerySetMock* querySetMock = new QuerySetMock(&mDevice);
-        EXPECT_CALL(*querySetMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(*querySetMock, DestroyImpl).Times(1);
         {
             QuerySetDescriptor desc = {};
             Ref<QuerySetBase> querySet;
@@ -290,10 +347,10 @@ namespace dawn_native { namespace {
 
     TEST_F(DestroyObjectTests, RenderPipelineExplicit) {
         RenderPipelineMock renderPipelineMock(&mDevice);
-        EXPECT_CALL(renderPipelineMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(renderPipelineMock, DestroyImpl).Times(1);
 
         EXPECT_TRUE(renderPipelineMock.IsAlive());
-        renderPipelineMock.DestroyApiObject();
+        renderPipelineMock.Destroy();
         EXPECT_FALSE(renderPipelineMock.IsAlive());
     }
 
@@ -309,7 +366,7 @@ namespace dawn_native { namespace {
 
         // Render pipelines are initialized during their creation via the device.
         EXPECT_CALL(*renderPipelineMock, Initialize).Times(1);
-        EXPECT_CALL(*renderPipelineMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(*renderPipelineMock, DestroyImpl).Times(1);
 
         {
             RenderPipelineDescriptor desc = {};
@@ -328,10 +385,10 @@ namespace dawn_native { namespace {
 
     TEST_F(DestroyObjectTests, SamplerExplicit) {
         SamplerMock samplerMock(&mDevice);
-        EXPECT_CALL(samplerMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(samplerMock, DestroyImpl).Times(1);
 
         EXPECT_TRUE(samplerMock.IsAlive());
-        samplerMock.DestroyApiObject();
+        samplerMock.Destroy();
         EXPECT_FALSE(samplerMock.IsAlive());
     }
 
@@ -339,7 +396,7 @@ namespace dawn_native { namespace {
     // will also complain if there is a memory leak.
     TEST_F(DestroyObjectTests, SamplerImplicit) {
         SamplerMock* samplerMock = new SamplerMock(&mDevice);
-        EXPECT_CALL(*samplerMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(*samplerMock, DestroyImpl).Times(1);
         {
             SamplerDescriptor desc = {};
             Ref<SamplerBase> sampler;
@@ -354,10 +411,10 @@ namespace dawn_native { namespace {
 
     TEST_F(DestroyObjectTests, ShaderModuleExplicit) {
         ShaderModuleMock shaderModuleMock(&mDevice);
-        EXPECT_CALL(shaderModuleMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(shaderModuleMock, DestroyImpl).Times(1);
 
         EXPECT_TRUE(shaderModuleMock.IsAlive());
-        shaderModuleMock.DestroyApiObject();
+        shaderModuleMock.Destroy();
         EXPECT_FALSE(shaderModuleMock.IsAlive());
     }
 
@@ -365,7 +422,7 @@ namespace dawn_native { namespace {
     // will also complain if there is a memory leak.
     TEST_F(DestroyObjectTests, ShaderModuleImplicit) {
         ShaderModuleMock* shaderModuleMock = new ShaderModuleMock(&mDevice);
-        EXPECT_CALL(*shaderModuleMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(*shaderModuleMock, DestroyImpl).Times(1);
         {
             ShaderModuleWGSLDescriptor wgslDesc;
             wgslDesc.source = R"(
@@ -386,10 +443,10 @@ namespace dawn_native { namespace {
 
     TEST_F(DestroyObjectTests, SwapChainExplicit) {
         SwapChainMock swapChainMock(&mDevice);
-        EXPECT_CALL(swapChainMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(swapChainMock, DestroyImpl).Times(1);
 
         EXPECT_TRUE(swapChainMock.IsAlive());
-        swapChainMock.DestroyApiObject();
+        swapChainMock.Destroy();
         EXPECT_FALSE(swapChainMock.IsAlive());
     }
 
@@ -397,7 +454,7 @@ namespace dawn_native { namespace {
     // will also complain if there is a memory leak.
     TEST_F(DestroyObjectTests, SwapChainImplicit) {
         SwapChainMock* swapChainMock = new SwapChainMock(&mDevice);
-        EXPECT_CALL(*swapChainMock, DestroyApiObjectImpl).Times(1);
+        EXPECT_CALL(*swapChainMock, DestroyImpl).Times(1);
         {
             SwapChainDescriptor desc = {};
             Ref<SwapChainBase> swapChain;
@@ -409,12 +466,91 @@ namespace dawn_native { namespace {
         }
     }
 
+    TEST_F(DestroyObjectTests, TextureExplicit) {
+        {
+            TextureMock textureMock(&mDevice, TextureBase::TextureState::OwnedInternal);
+            EXPECT_CALL(textureMock, DestroyImpl).Times(1);
+
+            EXPECT_TRUE(textureMock.IsAlive());
+            textureMock.Destroy();
+            EXPECT_FALSE(textureMock.IsAlive());
+        }
+        {
+            TextureMock textureMock(&mDevice, TextureBase::TextureState::OwnedExternal);
+            EXPECT_CALL(textureMock, DestroyImpl).Times(1);
+
+            EXPECT_TRUE(textureMock.IsAlive());
+            textureMock.Destroy();
+            EXPECT_FALSE(textureMock.IsAlive());
+        }
+    }
+
+    // If the reference count on API objects reach 0, they should delete themselves. Note that GTest
+    // will also complain if there is a memory leak.
+    TEST_F(DestroyObjectTests, TextureImplicit) {
+        {
+            TextureMock* textureMock =
+                new TextureMock(&mDevice, TextureBase::TextureState::OwnedInternal);
+            EXPECT_CALL(*textureMock, DestroyImpl).Times(1);
+            {
+                TextureDescriptor desc = {};
+                Ref<TextureBase> texture;
+                EXPECT_CALL(mDevice, CreateTextureImpl)
+                    .WillOnce(Return(ByMove(AcquireRef(textureMock))));
+                DAWN_ASSERT_AND_ASSIGN(texture, mDevice.CreateTexture(&desc));
+
+                EXPECT_TRUE(texture->IsAlive());
+            }
+        }
+        {
+            TextureMock* textureMock =
+                new TextureMock(&mDevice, TextureBase::TextureState::OwnedExternal);
+            EXPECT_CALL(*textureMock, DestroyImpl).Times(1);
+            {
+                TextureDescriptor desc = {};
+                Ref<TextureBase> texture;
+                EXPECT_CALL(mDevice, CreateTextureImpl)
+                    .WillOnce(Return(ByMove(AcquireRef(textureMock))));
+                DAWN_ASSERT_AND_ASSIGN(texture, mDevice.CreateTexture(&desc));
+
+                EXPECT_TRUE(texture->IsAlive());
+            }
+        }
+    }
+
+    TEST_F(DestroyObjectTests, TextureViewExplicit) {
+        TextureViewMock textureViewMock(GetTexture().Get());
+        EXPECT_CALL(textureViewMock, DestroyImpl).Times(1);
+
+        EXPECT_TRUE(textureViewMock.IsAlive());
+        textureViewMock.Destroy();
+        EXPECT_FALSE(textureViewMock.IsAlive());
+    }
+
+    // If the reference count on API objects reach 0, they should delete themselves. Note that GTest
+    // will also complain if there is a memory leak.
+    TEST_F(DestroyObjectTests, TextureViewImplicit) {
+        TextureViewMock* textureViewMock = new TextureViewMock(GetTexture().Get());
+        EXPECT_CALL(*textureViewMock, DestroyImpl).Times(1);
+        {
+            TextureViewDescriptor desc = {};
+            Ref<TextureViewBase> textureView;
+            EXPECT_CALL(mDevice, CreateTextureViewImpl)
+                .WillOnce(Return(ByMove(AcquireRef(textureViewMock))));
+            DAWN_ASSERT_AND_ASSIGN(textureView,
+                                   mDevice.CreateTextureView(GetTexture().Get(), &desc));
+
+            EXPECT_TRUE(textureView->IsAlive());
+        }
+    }
+
     // Destroying the objects on the mDevice should result in all created objects being destroyed in
     // order.
     TEST_F(DestroyObjectTests, DestroyObjects) {
         BindGroupMock* bindGroupMock = new BindGroupMock(&mDevice);
         BindGroupLayoutMock* bindGroupLayoutMock = new BindGroupLayoutMock(&mDevice);
         BufferMock* bufferMock = new BufferMock(&mDevice, BufferBase::BufferState::Unmapped);
+        CommandBufferMock* commandBufferMock = new CommandBufferMock(&mDevice);
         ComputePipelineMock* computePipelineMock = new ComputePipelineMock(&mDevice);
         PipelineLayoutMock* pipelineLayoutMock = new PipelineLayoutMock(&mDevice);
         QuerySetMock* querySetMock = new QuerySetMock(&mDevice);
@@ -422,18 +558,24 @@ namespace dawn_native { namespace {
         SamplerMock* samplerMock = new SamplerMock(&mDevice);
         ShaderModuleMock* shaderModuleMock = new ShaderModuleMock(&mDevice);
         SwapChainMock* swapChainMock = new SwapChainMock(&mDevice);
+        TextureMock* textureMock =
+            new TextureMock(&mDevice, TextureBase::TextureState::OwnedInternal);
+        TextureViewMock* textureViewMock = new TextureViewMock(GetTexture().Get());
         {
             InSequence seq;
-            EXPECT_CALL(*renderPipelineMock, DestroyApiObjectImpl).Times(1);
-            EXPECT_CALL(*computePipelineMock, DestroyApiObjectImpl).Times(1);
-            EXPECT_CALL(*pipelineLayoutMock, DestroyApiObjectImpl).Times(1);
-            EXPECT_CALL(*swapChainMock, DestroyApiObjectImpl).Times(1);
-            EXPECT_CALL(*bindGroupMock, DestroyApiObjectImpl).Times(1);
-            EXPECT_CALL(*bindGroupLayoutMock, DestroyApiObjectImpl).Times(1);
-            EXPECT_CALL(*shaderModuleMock, DestroyApiObjectImpl).Times(1);
-            EXPECT_CALL(*querySetMock, DestroyApiObjectImpl).Times(1);
-            EXPECT_CALL(*samplerMock, DestroyApiObjectImpl).Times(1);
-            EXPECT_CALL(*bufferMock, DestroyApiObjectImpl).Times(1);
+            EXPECT_CALL(*commandBufferMock, DestroyImpl).Times(1);
+            EXPECT_CALL(*renderPipelineMock, DestroyImpl).Times(1);
+            EXPECT_CALL(*computePipelineMock, DestroyImpl).Times(1);
+            EXPECT_CALL(*pipelineLayoutMock, DestroyImpl).Times(1);
+            EXPECT_CALL(*swapChainMock, DestroyImpl).Times(1);
+            EXPECT_CALL(*bindGroupMock, DestroyImpl).Times(1);
+            EXPECT_CALL(*bindGroupLayoutMock, DestroyImpl).Times(1);
+            EXPECT_CALL(*shaderModuleMock, DestroyImpl).Times(1);
+            EXPECT_CALL(*textureViewMock, DestroyImpl).Times(1);
+            EXPECT_CALL(*textureMock, DestroyImpl).Times(1);
+            EXPECT_CALL(*querySetMock, DestroyImpl).Times(1);
+            EXPECT_CALL(*samplerMock, DestroyImpl).Times(1);
+            EXPECT_CALL(*bufferMock, DestroyImpl).Times(1);
         }
 
         Ref<BindGroupBase> bindGroup;
@@ -463,6 +605,15 @@ namespace dawn_native { namespace {
             EXPECT_TRUE(buffer->IsAlive());
         }
 
+        Ref<CommandBufferBase> commandBuffer;
+        {
+            CommandBufferDescriptor desc = {};
+            EXPECT_CALL(mDevice, CreateCommandBuffer)
+                .WillOnce(Return(ByMove(AcquireRef(commandBufferMock))));
+            DAWN_ASSERT_AND_ASSIGN(commandBuffer, mDevice.CreateCommandBuffer(nullptr, &desc));
+            EXPECT_TRUE(commandBuffer->IsAlive());
+        }
+
         Ref<ComputePipelineBase> computePipeline;
         {
             // Compute pipelines usually set their hash values at construction, but the mock does
@@ -482,6 +633,13 @@ namespace dawn_native { namespace {
             DAWN_ASSERT_AND_ASSIGN(computePipeline, mDevice.CreateComputePipeline(&desc));
             EXPECT_TRUE(computePipeline->IsAlive());
             EXPECT_TRUE(computePipeline->IsCachedReference());
+        }
+
+        Ref<ExternalTextureBase> externalTexture;
+        {
+            ExternalTextureDescriptor desc = {};
+            DAWN_ASSERT_AND_ASSIGN(externalTexture, mDevice.CreateExternalTexture(&desc));
+            EXPECT_TRUE(externalTexture->IsAlive());
         }
 
         Ref<PipelineLayoutBase> pipelineLayout;
@@ -560,17 +718,40 @@ namespace dawn_native { namespace {
             EXPECT_TRUE(swapChain->IsAlive());
         }
 
+        Ref<TextureBase> texture;
+        {
+            TextureDescriptor desc = {};
+            EXPECT_CALL(mDevice, CreateTextureImpl)
+                .WillOnce(Return(ByMove(AcquireRef(textureMock))));
+            DAWN_ASSERT_AND_ASSIGN(texture, mDevice.CreateTexture(&desc));
+            EXPECT_TRUE(texture->IsAlive());
+        }
+
+        Ref<TextureViewBase> textureView;
+        {
+            TextureViewDescriptor desc = {};
+            EXPECT_CALL(mDevice, CreateTextureViewImpl)
+                .WillOnce(Return(ByMove(AcquireRef(textureViewMock))));
+            DAWN_ASSERT_AND_ASSIGN(textureView,
+                                   mDevice.CreateTextureView(GetTexture().Get(), &desc));
+            EXPECT_TRUE(textureView->IsAlive());
+        }
+
         mDevice.DestroyObjects();
         EXPECT_FALSE(bindGroup->IsAlive());
         EXPECT_FALSE(bindGroupLayout->IsAlive());
         EXPECT_FALSE(buffer->IsAlive());
+        EXPECT_FALSE(commandBuffer->IsAlive());
         EXPECT_FALSE(computePipeline->IsAlive());
+        EXPECT_FALSE(externalTexture->IsAlive());
         EXPECT_FALSE(pipelineLayout->IsAlive());
         EXPECT_FALSE(querySet->IsAlive());
         EXPECT_FALSE(renderPipeline->IsAlive());
         EXPECT_FALSE(sampler->IsAlive());
         EXPECT_FALSE(shaderModule->IsAlive());
         EXPECT_FALSE(swapChain->IsAlive());
+        EXPECT_FALSE(texture->IsAlive());
+        EXPECT_FALSE(textureView->IsAlive());
     }
 
 }}  // namespace dawn_native::

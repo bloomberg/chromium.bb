@@ -6,7 +6,6 @@ import * as Common from '../../core/common/common.js';
 import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
-// eslint-disable-next-line rulesdir/es_modules_import
 import type * as Emulation from './emulation.js';
 
 import * as i18n from '../../core/i18n/i18n.js';
@@ -47,11 +46,11 @@ const UIStrings = {
   /**
   *@description Command that shows measuring rulers next to the emulated device.
   */
-  showRulers: 'Show rulers',
+  showRulers: 'Show rulers in the Device Mode toolbar',
   /**
   *@description Command that hides measuring rulers next to the emulated device.
   */
-  hideRulers: 'Hide rulers',
+  hideRulers: 'Hide rulers in the Device Mode toolbar',
   /**
   *@description Command that shows a frame (like a picture frame) around the emulated device.
   */
@@ -69,8 +68,6 @@ let loadedEmulationModule: (typeof Emulation|undefined);
 
 async function loadEmulationModule(): Promise<typeof Emulation> {
   if (!loadedEmulationModule) {
-    // Side-effect import resources in module.json
-    await Root.Runtime.Runtime.instance().loadModulePromise('panels/emulation');
     loadedEmulationModule = await import('./emulation.js');
   }
   return loadedEmulationModule;

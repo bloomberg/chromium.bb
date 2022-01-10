@@ -7,6 +7,14 @@ on:
   push:
     branches: [main]
 
+  schedule:
+    # The GH mirroring from Google GoB does not trigger push actions.
+    # Fire it every other day to provide some coverage.  This will run ~8 AM PT.
+    - cron: '39 3 */2 * *'
+
+  # Allow for manual triggers from the web.
+  workflow_dispatch:
+
 jobs:
   autotools:
     strategy:

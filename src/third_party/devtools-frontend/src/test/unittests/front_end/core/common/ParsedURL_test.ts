@@ -88,13 +88,13 @@ describe('Parsed URL', () => {
   });
 
   it('converts path that starts with "file://" to a platform path', () => {
-    const pathTest = 'file://usr/lib' as Platform.DevToolsPath.RawPathString;
+    const pathTest = 'file://usr/lib' as Platform.DevToolsPath.UrlString;
     const convertedPath = ParsedURL.capFilePrefix(pathTest);
     assert.strictEqual(convertedPath, 'usr/lib', 'URL was not converted successfully');
   });
 
   it('converts path that starts with "file:///" to a platform path on Windows', () => {
-    const pathTest = 'file:///usr/lib' as Platform.DevToolsPath.RawPathString;
+    const pathTest = 'file:///usr/lib' as Platform.DevToolsPath.UrlString;
     const convertedPath = ParsedURL.capFilePrefix(pathTest, true);
     assert.strictEqual(convertedPath, 'usr\\lib', 'URL was not converted successfully');
   });

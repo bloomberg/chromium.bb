@@ -39,6 +39,9 @@ struct QUICHE_EXPORT_PRIVATE Http2Setting {
   uint32_t value;
 };
 
+QUICHE_EXPORT_PRIVATE bool operator==(const Http2Setting& a,
+                                      const Http2Setting& b);
+
 // The maximum possible stream ID.
 const Http2StreamId kMaxStreamId = 0x7FFFFFFF;
 
@@ -87,7 +90,7 @@ enum class FrameType : uint8_t {
 
 // HTTP/2 error codes as specified in RFC 7540 Section 7.
 enum class Http2ErrorCode {
-  NO_ERROR = 0x0,
+  HTTP2_NO_ERROR = 0x0,
   PROTOCOL_ERROR = 0x1,
   INTERNAL_ERROR = 0x2,
   FLOW_CONTROL_ERROR = 0x3,

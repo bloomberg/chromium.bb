@@ -75,7 +75,7 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
     private final Context mContext;
     private final Profile mProfile;
     private final Supplier<StoreInfoActionHandler> mStoreInfoActionHandlerSupplier;
-    private final boolean mPageInfoOpenedFromStoreIcon;
+    private final ChromePageInfoHighlight mPageInfoHighlight;
     private String mOfflinePageCreationDate;
     private OfflinePageLoadUrlDelegate mOfflinePageLoadUrlDelegate;
 
@@ -83,7 +83,7 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
             Supplier<ModalDialogManager> modalDialogManagerSupplier,
             OfflinePageLoadUrlDelegate offlinePageLoadUrlDelegate,
             @Nullable Supplier<StoreInfoActionHandler> storeInfoActionHandlerSupplier,
-            boolean pageInfoOpenedFromStoreIcon) {
+            ChromePageInfoHighlight pageInfoHighlight) {
         super(new ChromeAutocompleteSchemeClassifier(Profile.fromWebContents(webContents)),
                 VrModuleProvider.getDelegate(),
                 /** isSiteSettingsAvailable= */
@@ -95,7 +95,7 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
         mModalDialogManagerSupplier = modalDialogManagerSupplier;
         mProfile = Profile.fromWebContents(mWebContents);
         mStoreInfoActionHandlerSupplier = storeInfoActionHandlerSupplier;
-        mPageInfoOpenedFromStoreIcon = pageInfoOpenedFromStoreIcon;
+        mPageInfoHighlight = pageInfoHighlight;
 
         initOfflinePageParams();
         mOfflinePageLoadUrlDelegate = offlinePageLoadUrlDelegate;
@@ -242,20 +242,20 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
                     mainController, historyRow, this, () -> { return tab; }));
         }
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE)) {
-            Tab tab = TabUtils.fromWebContents(mWebContents);
             final PageInfoRowView aboutThisSiteRow =
                     new PageInfoRowView(rowWrapper.getContext(), null);
             aboutThisSiteRow.setId(PageInfoAboutThisSiteController.ROW_ID);
             rowWrapper.addView(aboutThisSiteRow);
             controllers.add(new PageInfoAboutThisSiteController(
-                    mainController, aboutThisSiteRow, this, tab));
+                    mainController, aboutThisSiteRow, this, mWebContents));
         }
         if (PageInfoFeatures.PAGE_INFO_STORE_INFO.isEnabled() && !isIncognito()) {
             final PageInfoRowView storeInfoRow = new PageInfoRowView(rowWrapper.getContext(), null);
             storeInfoRow.setId(PageInfoStoreInfoController.STORE_INFO_ROW_ID);
             rowWrapper.addView(storeInfoRow);
             controllers.add(new PageInfoStoreInfoController(mainController, storeInfoRow,
-                    mStoreInfoActionHandlerSupplier, mPageInfoOpenedFromStoreIcon));
+                    mStoreInfoActionHandlerSupplier,
+                    mPageInfoHighlight.shouldHighlightStoreInfo()));
         }
         return controllers;
     }

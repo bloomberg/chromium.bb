@@ -283,11 +283,7 @@ static int process_frame(FFFrameSync *fs)
         (ret = ff_framesync_get_frame(&s->fs, 2, &ypic, 0)) < 0)
         return ret;
 
-    if (ctx->is_disabled) {
-        out = av_frame_clone(in);
-        if (!out)
-            return AVERROR(ENOMEM);
-    } else {
+    {
         ThreadData td;
 
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
@@ -402,10 +398,10 @@ const AVFilter ff_vf_remap = {
     .description   = NULL_IF_CONFIG_SMALL("Remap pixels."),
     .priv_size     = sizeof(RemapContext),
     .uninit        = uninit,
-    .query_formats = query_formats,
     .activate      = activate,
     FILTER_INPUTS(remap_inputs),
     FILTER_OUTPUTS(remap_outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .priv_class    = &remap_class,
-    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
+    .flags         = AVFILTER_FLAG_SLICE_THREADS,
 };

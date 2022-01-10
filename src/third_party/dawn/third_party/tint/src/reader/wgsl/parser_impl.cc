@@ -322,18 +322,6 @@ Token ParserImpl::last_token() const {
   return last_token_;
 }
 
-void ParserImpl::register_type(const std::string& name,
-                               const ast::TypeDecl* type_decl) {
-  registered_types_[name] = type_decl;
-}
-
-const ast::TypeDecl* ParserImpl::get_type(const std::string& name) {
-  if (registered_types_.find(name) == registered_types_.end()) {
-    return nullptr;
-  }
-  return registered_types_[name];
-}
-
 bool ParserImpl::Parse() {
   translation_unit();
   return !has_error();
@@ -419,7 +407,6 @@ Expect<bool> ParserImpl::expect_global_decl() {
       if (!expect("struct declaration", Token::Type::kSemicolon))
         return Failure::kErrored;
 
-      register_type(builder_.Symbols().NameFor(str.value->name), str.value);
       builder_.AST().AddTypeDecl(str.value);
       return true;
     }
@@ -467,6 +454,12 @@ Expect<bool> ParserImpl::expect_global_decl() {
     // No match, no error - the parser might not have progressed.
     // Ensure we always make _some_ forward progress.
     next();
+  }
+
+  // The token might itself be an error.
+  if (t.IsError()) {
+    next();  // Consume it.
+    return add_error(t.source(), t.to_str());
   }
 
   // Exhausted all attempts to make sense of where we're at.
@@ -521,11 +514,12 @@ Maybe<const ast::Variable*> ParserImpl::global_constant_decl(
   if (decl.errored)
     return Failure::kErrored;
 
-  ast::ConstructorExpression* initializer = nullptr;
+  const ast::Expression* initializer = nullptr;
   if (match(Token::Type::kEqual)) {
     auto init = expect_const_expr();
-    if (init.errored)
+    if (init.errored) {
       return Failure::kErrored;
+    }
     initializer = std::move(init.value);
   }
 
@@ -999,10 +993,8 @@ Maybe<const ast::Alias*> ParserImpl::type_alias() {
   if (!type.matched)
     return add_error(peek(), "invalid type alias");
 
-  auto* alias = builder_.ty.alias(make_source_range_from(t.source()),
-                                  name.value, type.value);
-  register_type(name.value, alias);
-  return alias;
+  return builder_.ty.alias(make_source_range_from(t.source()), name.value,
+                           type.value);
 }
 
 // type_decl
@@ -1052,11 +1044,6 @@ Maybe<const ast::Type*> ParserImpl::type_decl(ast::DecorationList& decos) {
   auto t = peek();
   Source source;
   if (match(Token::Type::kIdentifier, &source)) {
-    // TODO(crbug.com/tint/697): Remove
-    auto* ty = get_type(t.to_str());
-    if (ty == nullptr)
-      return add_error(t, "unknown type '" + t.to_str() + "'");
-
     return builder_.create<ast::TypeName>(
         source, builder_.Symbols().Register(t.to_str()));
   }
@@ -1946,12 +1933,12 @@ Expect<ast::CaseSelectorList> ParserImpl::expect_case_selectors() {
       return Failure::kErrored;
     } else if (!cond.matched) {
       break;
-    } else if (!cond->Is<ast::IntLiteral>()) {
+    } else if (!cond->Is<ast::IntLiteralExpression>()) {
       return add_error(cond.value->source,
                        "invalid case selector must be an integer value");
     }
 
-    selectors.push_back(cond.value->As<ast::IntLiteral>());
+    selectors.push_back(cond.value->As<ast::IntLiteralExpression>());
 
     if (!match(Token::Type::kComma)) {
       break;
@@ -2175,15 +2162,18 @@ Maybe<const ast::Expression*> ParserImpl::primary_expression() {
   auto source = t.source();
 
   auto lit = const_literal();
-  if (lit.errored)
+  if (lit.errored) {
     return Failure::kErrored;
-  if (lit.matched)
-    return create<ast::ScalarConstructorExpression>(source, lit.value);
+  }
+  if (lit.matched) {
+    return lit.value;
+  }
 
   if (t.Is(Token::Type::kParenLeft)) {
     auto paren = expect_paren_rhs_stmt();
-    if (paren.errored)
+    if (paren.errored) {
       return Failure::kErrored;
+    }
 
     return paren.value;
   }
@@ -2202,7 +2192,7 @@ Maybe<const ast::Expression*> ParserImpl::primary_expression() {
     return create<ast::BitcastExpression>(source, type.value, params.value);
   }
 
-  if (t.IsIdentifier() && !get_type(t.to_str())) {
+  if (t.IsIdentifier()) {
     next();
 
     auto* ident = create<ast::IdentifierExpression>(
@@ -2228,8 +2218,7 @@ Maybe<const ast::Expression*> ParserImpl::primary_expression() {
     if (params.errored)
       return Failure::kErrored;
 
-    return create<ast::TypeConstructorExpression>(source, type.value,
-                                                  std::move(params.value));
+    return builder_.Construct(source, type.value, std::move(params.value));
   }
 
   return Failure::kNoMatch;
@@ -2262,11 +2251,11 @@ Maybe<const ast::Expression*> ParserImpl::postfix_expression(
               return add_error(peek(), "unable to parse expression inside []");
             }
 
-            if (!expect("array accessor", Token::Type::kBracketRight)) {
+            if (!expect("index accessor", Token::Type::kBracketRight)) {
               return Failure::kErrored;
             }
 
-            return create<ast::ArrayAccessorExpression>(source, prefix,
+            return create<ast::IndexAccessorExpression>(source, prefix,
                                                         param.value);
           });
 
@@ -2837,31 +2826,25 @@ Maybe<const ast::AssignmentStatement*> ParserImpl::assignment_stmt() {
 //   | FLOAT_LITERAL
 //   | TRUE
 //   | FALSE
-Maybe<const ast::Literal*> ParserImpl::const_literal() {
+Maybe<const ast::LiteralExpression*> ParserImpl::const_literal() {
   auto t = peek();
   if (t.IsError()) {
     return add_error(t.source(), t.to_str());
   }
   if (match(Token::Type::kTrue)) {
-    return create<ast::BoolLiteral>(t.source(), true);
+    return create<ast::BoolLiteralExpression>(t.source(), true);
   }
   if (match(Token::Type::kFalse)) {
-    return create<ast::BoolLiteral>(t.source(), false);
+    return create<ast::BoolLiteralExpression>(t.source(), false);
   }
   if (match(Token::Type::kSintLiteral)) {
-    return create<ast::SintLiteral>(t.source(), t.to_i32());
+    return create<ast::SintLiteralExpression>(t.source(), t.to_i32());
   }
   if (match(Token::Type::kUintLiteral)) {
-    return create<ast::UintLiteral>(t.source(), t.to_u32());
+    return create<ast::UintLiteralExpression>(t.source(), t.to_u32());
   }
   if (match(Token::Type::kFloatLiteral)) {
-    auto p = peek();
-    if (p.IsIdentifier() && p.to_str() == "f") {
-      next();  // Consume 'f'
-      return add_error(p.source(),
-                       "float literals must not be suffixed with 'f'");
-    }
-    return create<ast::FloatLiteral>(t.source(), t.to_f32());
+    return create<ast::FloatLiteralExpression>(t.source(), t.to_f32());
   }
   return Failure::kNoMatch;
 }
@@ -2869,51 +2852,52 @@ Maybe<const ast::Literal*> ParserImpl::const_literal() {
 // const_expr
 //   : type_decl PAREN_LEFT ((const_expr COMMA)? const_expr COMMA?)? PAREN_RIGHT
 //   | const_literal
-Expect<ast::ConstructorExpression*> ParserImpl::expect_const_expr() {
+Expect<const ast::Expression*> ParserImpl::expect_const_expr() {
   auto t = peek();
   auto source = t.source();
   if (t.IsLiteral()) {
     auto lit = const_literal();
-    if (lit.errored)
+    if (lit.errored) {
       return Failure::kErrored;
-    if (!lit.matched)
-      return add_error(peek(), "unable to parse constant literal");
-
-    return create<ast::ScalarConstructorExpression>(source, lit.value);
-  } else if (!t.IsIdentifier() || get_type(t.to_str())) {
-    if (peek_is(Token::Type::kParenLeft, 1) ||
-        peek_is(Token::Type::kLessThan, 1)) {
-      auto type = expect_type("const_expr");
-      if (type.errored)
-        return Failure::kErrored;
-
-      auto params = expect_paren_block(
-          "type constructor", [&]() -> Expect<ast::ExpressionList> {
-            ast::ExpressionList list;
-            while (continue_parsing()) {
-              if (peek_is(Token::Type::kParenRight)) {
-                break;
-              }
-
-              auto arg = expect_const_expr();
-              if (arg.errored) {
-                return Failure::kErrored;
-              }
-              list.emplace_back(arg.value);
-
-              if (!match(Token::Type::kComma)) {
-                break;
-              }
-            }
-            return list;
-          });
-
-      if (params.errored)
-        return Failure::kErrored;
-
-      return create<ast::TypeConstructorExpression>(source, type.value,
-                                                    params.value);
     }
+    if (!lit.matched) {
+      return add_error(peek(), "unable to parse constant literal");
+    }
+    return lit.value;
+  }
+
+  if (peek_is(Token::Type::kParenLeft, 1) ||
+      peek_is(Token::Type::kLessThan, 1)) {
+    auto type = expect_type("const_expr");
+    if (type.errored) {
+      return Failure::kErrored;
+    }
+
+    auto params = expect_paren_block(
+        "type constructor", [&]() -> Expect<ast::ExpressionList> {
+          ast::ExpressionList list;
+          while (continue_parsing()) {
+            if (peek_is(Token::Type::kParenRight)) {
+              break;
+            }
+
+            auto arg = expect_const_expr();
+            if (arg.errored) {
+              return Failure::kErrored;
+            }
+            list.emplace_back(arg.value);
+
+            if (!match(Token::Type::kComma)) {
+              break;
+            }
+          }
+          return list;
+        });
+
+    if (params.errored)
+      return Failure::kErrored;
+
+    return builder_.Construct(source, type.value, params.value);
   }
   return add_error(peek(), "unable to parse const_expr");
 }

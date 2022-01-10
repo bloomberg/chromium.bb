@@ -581,7 +581,7 @@ ProfileNetworkContextService::CreateClientCertStore() {
   // dependency is explicit. See https://crbug.com/1018972.
   profile_->GetResourceContext();
 
-  return std::make_unique<ash::ClientCertStoreAsh>(
+  return std::make_unique<chromeos::ClientCertStoreAsh>(
       std::move(certificate_provider), use_system_key_slot, username_hash,
       base::BindRepeating(&CreateCryptoModuleBlockingPasswordDelegate,
                           kCryptoModulePasswordClientAuth));
@@ -731,7 +731,7 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
         path.Append(chrome::kNetworkDataDirname);
     network_context_params->file_paths->unsandboxed_data_path = path;
     network_context_params->file_paths->trigger_migration =
-        features::ShouldTriggerNetworkDataMigration();
+        base::FeatureList::IsEnabled(features::kTriggerNetworkDataMigration);
     // Currently this just contains HttpServerProperties, but that will likely
     // change.
     network_context_params->file_paths->http_server_properties_file_name =
@@ -895,12 +895,6 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
         true;
   }
 #endif
-
-  // Should be initialized with existing per-profile CORS access lists.
-  network_context_params->cors_origin_access_list =
-      profile_->GetSharedCorsOriginAccessList()
-          ->GetOriginAccessList()
-          .CreateCorsOriginAccessPatternsList();
 
   network_context_params->reset_http_cache_backend =
       GetHttpCacheBackendResetParam(g_browser_process->local_state());

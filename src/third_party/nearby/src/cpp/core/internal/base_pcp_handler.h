@@ -199,19 +199,19 @@ class BasePcpHandler : public PcpHandler,
   };
 
   struct WifiLanEndpoint : public DiscoveredEndpoint {
-    WifiLanEndpoint(DiscoveredEndpoint endpoint, WifiLanService service)
-        : DiscoveredEndpoint(std::move(endpoint)),
-          wifi_lan_service(std::move(service)) {}
+    WifiLanEndpoint(DiscoveredEndpoint endpoint,
+                    const NsdServiceInfo& service_info)
+        : DiscoveredEndpoint(std::move(endpoint)), service_info(service_info) {}
 
-    WifiLanService wifi_lan_service;
+    NsdServiceInfo service_info;
   };
 
   struct WebRtcEndpoint : public DiscoveredEndpoint {
-    WebRtcEndpoint(DiscoveredEndpoint endpoint, mediums::PeerId peer_id)
+    WebRtcEndpoint(DiscoveredEndpoint endpoint, mediums::WebrtcPeerId peer_id)
         : DiscoveredEndpoint(std::move(endpoint)),
           peer_id(std::move(peer_id)) {}
 
-    mediums::PeerId peer_id;
+    mediums::WebrtcPeerId peer_id;
   };
 
   struct ConnectImplResult {
@@ -288,9 +288,9 @@ class BasePcpHandler : public PcpHandler,
   std::vector<BasePcpHandler::DiscoveredEndpoint*> GetDiscoveredEndpoints(
       const proto::connections::Medium medium);
 
-  mediums::PeerId CreatePeerIdFromAdvertisement(const string& service_id,
-                                                const string& endpoint_id,
-                                                const ByteArray& endpoint_info);
+  mediums::WebrtcPeerId CreatePeerIdFromAdvertisement(
+      const string& service_id, const string& endpoint_id,
+      const ByteArray& endpoint_info);
 
   SingleThreadExecutor* GetPcpHandlerThread()
       ABSL_LOCK_RETURNED(serial_executor_) {

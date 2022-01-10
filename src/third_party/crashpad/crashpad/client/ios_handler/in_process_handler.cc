@@ -54,7 +54,10 @@ namespace internal {
 InProcessHandler::InProcessHandler() = default;
 
 InProcessHandler::~InProcessHandler() {
-  upload_thread_->Stop();
+  if (upload_thread_started_ && upload_thread_) {
+    upload_thread_->Stop();
+  }
+  prune_thread_->Stop();
 }
 
 bool InProcessHandler::Initialize(
@@ -114,7 +117,7 @@ void InProcessHandler::DumpExceptionFromSignal(
     ucontext_t* context) {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   {
-    ScopedReport report(writer_.get(), system_data);
+    ScopedReport report(writer_.get(), system_data, annotations_);
     InProcessIntermediateDumpHandler::WriteExceptionFromSignal(
         writer_.get(), system_data, siginfo, context);
   }
@@ -133,7 +136,7 @@ void InProcessHandler::DumpExceptionFromMachException(
     mach_msg_type_number_t old_state_count) {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
   {
-    ScopedReport report(writer_.get(), system_data);
+    ScopedReport report(writer_.get(), system_data, annotations_);
     InProcessIntermediateDumpHandler::WriteExceptionFromMachException(
         writer_.get(),
         behavior,
@@ -153,7 +156,8 @@ void InProcessHandler::DumpExceptionFromNSExceptionFrames(
     const uint64_t* frames,
     const size_t num_frames) {
   {
-    ScopedReport report(writer_.get(), system_data, frames, num_frames);
+    ScopedReport report(
+        writer_.get(), system_data, annotations_, frames, num_frames);
     InProcessIntermediateDumpHandler::WriteExceptionFromNSException(
         writer_.get());
   }
@@ -161,41 +165,28 @@ void InProcessHandler::DumpExceptionFromNSExceptionFrames(
 }
 
 void InProcessHandler::ProcessIntermediateDumps(
-    const std::map<std::string, std::string>& extra_annotations) {
+    const std::map<std::string, std::string>& annotations) {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
 
-  std::map<std::string, std::string> annotations(annotations_);
-  annotations.insert(extra_annotations.begin(), extra_annotations.end());
-
   for (auto& file : PendingFiles())
-    ProcessIntermediateDumpWithCompleteAnnotations(file, annotations);
+    ProcessIntermediateDump(file, annotations);
 }
 
 void InProcessHandler::ProcessIntermediateDump(
     const base::FilePath& file,
-    const std::map<std::string, std::string>& extra_annotations) {
+    const std::map<std::string, std::string>& annotations) {
   INITIALIZATION_STATE_DCHECK_VALID(initialized_);
 
-  std::map<std::string, std::string> annotations(annotations_);
-  annotations.insert(extra_annotations.begin(), extra_annotations.end());
-  ProcessIntermediateDumpWithCompleteAnnotations(file, annotations);
+  ProcessSnapshotIOSIntermediateDump process_snapshot;
+  if (process_snapshot.InitializeWithFilePath(file, annotations)) {
+    SaveSnapshot(process_snapshot);
+  }
 }
 
 void InProcessHandler::StartProcessingPendingReports() {
   if (!upload_thread_started_ && upload_thread_) {
     upload_thread_->Start();
     upload_thread_started_ = true;
-  }
-}
-
-void InProcessHandler::ProcessIntermediateDumpWithCompleteAnnotations(
-    const base::FilePath& file,
-    const std::map<std::string, std::string>& annotations) {
-  INITIALIZATION_STATE_DCHECK_VALID(initialized_);
-
-  ProcessSnapshotIOSIntermediateDump process_snapshot;
-  if (process_snapshot.Initialize(file, annotations)) {
-    SaveSnapshot(process_snapshot);
   }
 }
 
@@ -209,6 +200,12 @@ void InProcessHandler::SaveSnapshot(
         Metrics::CaptureResult::kPrepareNewCrashReportFailed);
   }
   process_snapshot.SetReportID(new_report->ReportID());
+
+  UUID client_id;
+  Settings* const settings = database_->GetSettings();
+  if (settings && settings->GetClientID(&client_id)) {
+    process_snapshot.SetClientID(client_id);
+  }
 
   MinidumpFileWriter minidump;
   minidump.InitializeFromSnapshot(&process_snapshot);
@@ -237,13 +234,23 @@ std::vector<base::FilePath> InProcessHandler::PendingFiles() {
   }
   base::FilePath file;
   DirectoryReader::Result result;
+
+  // Because the intermediate dump directory is expected to be shared,
+  // mitigate any spamming by limiting this to |kMaxPendingFiles|.
+  constexpr size_t kMaxPendingFiles = 20;
+
+  // Track other application bundles separately, so they don't spam our
+  // intermediate dumps into never getting processed.
+  std::vector<base::FilePath> other_files;
+
   while ((result = reader.NextFile(&file)) ==
          DirectoryReader::Result::kSuccess) {
     // Don't try to process files marked as 'locked' from a different bundle id.
-    if (file.value().compare(0,
+    bool bundle_match =
+        file.value().compare(0,
                              bundle_identifier_and_seperator_.size(),
-                             bundle_identifier_and_seperator_) != 0 &&
-        file.FinalExtension() == kLockedExtension) {
+                             bundle_identifier_and_seperator_) == 0;
+    if (!bundle_match && file.FinalExtension() == kLockedExtension) {
       continue;
     }
 
@@ -254,8 +261,19 @@ std::vector<base::FilePath> InProcessHandler::PendingFiles() {
 
     // Otherwise, include any other unlocked, or locked files matching
     // |bundle_identifier_and_seperator_|.
-    files.push_back(file);
+    if (bundle_match) {
+      files.push_back(file);
+      if (files.size() >= kMaxPendingFiles)
+        return files;
+    } else {
+      other_files.push_back(file);
+    }
   }
+
+  auto end_iterator =
+      other_files.begin() +
+      std::min(kMaxPendingFiles - files.size(), other_files.size());
+  files.insert(files.end(), other_files.begin(), end_iterator);
   return files;
 }
 
@@ -293,14 +311,24 @@ InProcessHandler::ScopedAlternateWriter::~ScopedAlternateWriter() {
 InProcessHandler::ScopedReport::ScopedReport(
     IOSIntermediateDumpWriter* writer,
     const IOSSystemDataCollector& system_data,
+    const std::map<std::string, std::string>& annotations,
     const uint64_t* frames,
     const size_t num_frames)
-    : rootMap_(writer) {
+    : writer_(writer),
+      frames_(frames),
+      num_frames_(num_frames),
+      rootMap_(writer) {
   InProcessIntermediateDumpHandler::WriteHeader(writer);
-  InProcessIntermediateDumpHandler::WriteProcessInfo(writer);
+  InProcessIntermediateDumpHandler::WriteProcessInfo(writer, annotations);
   InProcessIntermediateDumpHandler::WriteSystemInfo(writer, system_data);
-  InProcessIntermediateDumpHandler::WriteThreadInfo(writer, frames, num_frames);
-  InProcessIntermediateDumpHandler::WriteModuleInfo(writer);
+}
+
+InProcessHandler::ScopedReport::~ScopedReport() {
+  // Write threads and modules last (after the exception itself is written by
+  // DumpExceptionFrom*.)
+  InProcessIntermediateDumpHandler::WriteThreadInfo(
+      writer_, frames_, num_frames_);
+  InProcessIntermediateDumpHandler::WriteModuleInfo(writer_);
 }
 
 bool InProcessHandler::OpenNewFile() {

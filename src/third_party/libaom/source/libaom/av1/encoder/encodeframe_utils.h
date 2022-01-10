@@ -405,8 +405,8 @@ void av1_set_cost_upd_freq(AV1_COMP *cpi, ThreadData *td,
 
 static AOM_INLINE void av1_dealloc_mb_data(struct AV1Common *cm,
                                            struct macroblock *mb) {
-  aom_free(mb->txfm_search_info.txb_rd_records);
-  mb->txfm_search_info.txb_rd_records = NULL;
+  aom_free(mb->txfm_search_info.mb_rd_record);
+  mb->txfm_search_info.mb_rd_record = NULL;
 
   aom_free(mb->inter_modes_info);
   mb->inter_modes_info = NULL;
@@ -426,10 +426,14 @@ static AOM_INLINE void av1_dealloc_mb_data(struct AV1Common *cm,
 
 static AOM_INLINE void av1_alloc_mb_data(struct AV1Common *cm,
                                          struct macroblock *mb,
-                                         int use_nonrd_pick_mode) {
+                                         int use_nonrd_pick_mode,
+                                         int use_mb_rd_hash) {
   if (!use_nonrd_pick_mode) {
-    mb->txfm_search_info.txb_rd_records =
-        (TxbRdRecords *)aom_malloc(sizeof(TxbRdRecords));
+    // Memory for mb_rd_record is allocated only when use_mb_rd_hash sf is
+    // enabled.
+    if (use_mb_rd_hash)
+      mb->txfm_search_info.mb_rd_record =
+          (MB_RD_RECORD *)aom_malloc(sizeof(MB_RD_RECORD));
     if (!frame_is_intra_only(cm))
       CHECK_MEM_ERROR(
           cm, mb->inter_modes_info,

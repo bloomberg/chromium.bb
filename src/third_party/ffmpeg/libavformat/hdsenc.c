@@ -326,7 +326,7 @@ static int hds_write_header(AVFormatContext *s)
         return AVERROR_MUXER_NOT_FOUND;
     }
 
-    c->streams = av_mallocz_array(s->nb_streams, sizeof(*c->streams));
+    c->streams = av_calloc(s->nb_streams, sizeof(*c->streams));
     if (!c->streams) {
         return AVERROR(ENOMEM);
     }
@@ -500,15 +500,16 @@ static int hds_write_packet(AVFormatContext *s, AVPacket *pkt)
 {
     HDSContext *c = s->priv_data;
     AVStream *st = s->streams[pkt->stream_index];
+    FFStream *const sti = ffstream(st);
     OutputStream *os = &c->streams[s->streams[pkt->stream_index]->id];
     int64_t end_dts = os->fragment_index * (int64_t)c->min_frag_duration;
     int ret;
 
-    if (st->internal->first_dts == AV_NOPTS_VALUE)
-        st->internal->first_dts = pkt->dts;
+    if (sti->first_dts == AV_NOPTS_VALUE)
+        sti->first_dts = pkt->dts;
 
     if ((!os->has_video || st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) &&
-        av_compare_ts(pkt->dts - st->internal->first_dts, st->time_base,
+        av_compare_ts(pkt->dts - sti->first_dts, st->time_base,
                       end_dts, AV_TIME_BASE_Q) >= 0 &&
         pkt->flags & AV_PKT_FLAG_KEY && os->packets_written) {
 

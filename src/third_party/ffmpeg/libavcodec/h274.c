@@ -145,8 +145,8 @@ static void deblock_8x8_c(int8_t *out, const int out_stride)
     for (int y = 0; y < 8; y++) {
         const int8_t l1 = out[-2], l0 = out[-1];
         const int8_t r0 = out[0], r1 = out[1];
-        out[0]  = (l0 + (r0 << 1) + r1) >> 2;
-        out[-1] = (r0 + (l0 << 1) + l1) >> 2;
+        out[0]  = (l0 + r0 * 2 + r1) >> 2;
+        out[-1] = (r0 + l0 * 2 + l1) >> 2;
         out += out_stride;
     }
 }
@@ -250,8 +250,8 @@ int ff_h274_apply_film_grain(AVFrame *out_frame, const AVFrame *in_frame,
             // Adaptation for 4:2:0 chroma subsampling
             for (int i = 0; i < h274.num_intensity_intervals[c]; i++) {
                 h274.comp_model_value[c][i][0] >>= 1;
-                h274.comp_model_value[c][i][1] <<= 1;
-                h274.comp_model_value[c][i][2] <<= 1;
+                h274.comp_model_value[c][i][1] *= 2;
+                h274.comp_model_value[c][i][2] *= 2;
             }
         }
 

@@ -59,17 +59,6 @@ static const AVOption find_rect_options[] = {
 
 AVFILTER_DEFINE_CLASS(find_rect);
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUV420P,
-        AV_PIX_FMT_YUVJ420P,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
-
 static AVFrame *downscale(AVFrame *in)
 {
     int x, y;
@@ -305,8 +294,8 @@ const AVFilter ff_vf_find_rect = {
     .priv_size       = sizeof(FOCContext),
     .init            = init,
     .uninit          = uninit,
-    .query_formats   = query_formats,
     FILTER_INPUTS(foc_inputs),
     FILTER_OUTPUTS(foc_outputs),
+    FILTER_PIXFMTS(AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUVJ420P),
     .priv_class      = &find_rect_class,
 };

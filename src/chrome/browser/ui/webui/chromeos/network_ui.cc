@@ -10,13 +10,10 @@
 
 #include "ash/public/cpp/esim_manager.h"
 #include "ash/public/cpp/network_config_service.h"
-#include "ash/services/network_health/public/mojom/network_diagnostics.mojom.h"
-#include "ash/services/network_health/public/mojom/network_health.mojom.h"
 #include "ash/webui/network_ui/network_diagnostics_resource_provider.h"
 #include "ash/webui/network_ui/network_health_resource_provider.h"
 #include "ash/webui/network_ui/traffic_counters_resource_provider.h"
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/ash/net/network_health/network_health_service.h"
@@ -40,9 +37,11 @@
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/onc/network_onc_utils.h"
 #include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
+#include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/browser_context.h"
@@ -127,6 +126,8 @@ class NetworkDiagnosticsMessageHandler : public content::WebUIMessageHandler {
 };
 
 }  // namespace
+
+namespace network_ui {
 
 class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
  public:
@@ -384,6 +385,8 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   base::WeakPtrFactory<NetworkConfigMessageHandler> weak_ptr_factory_{this};
 };
 
+}  // namespace network_ui
+
 // static
 void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString("titleText",
@@ -542,7 +545,8 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
 
 NetworkUI::NetworkUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true) {
-  web_ui->AddMessageHandler(std::make_unique<NetworkConfigMessageHandler>());
+  web_ui->AddMessageHandler(
+      std::make_unique<network_ui::NetworkConfigMessageHandler>());
   web_ui->AddMessageHandler(std::make_unique<OncImportMessageHandler>());
   web_ui->AddMessageHandler(std::make_unique<NetworkLogsMessageHandler>());
   web_ui->AddMessageHandler(
@@ -585,17 +589,17 @@ void NetworkUI::BindInterface(
 }
 
 void NetworkUI::BindInterface(
-    mojo::PendingReceiver<ash::network_health::mojom::NetworkHealthService>
+    mojo::PendingReceiver<network_health::mojom::NetworkHealthService>
         receiver) {
-  ash::network_health::NetworkHealthService::GetInstance()->BindHealthReceiver(
+  network_health::NetworkHealthService::GetInstance()->BindHealthReceiver(
       std::move(receiver));
 }
 
 void NetworkUI::BindInterface(
     mojo::PendingReceiver<
-        ash::network_diagnostics::mojom::NetworkDiagnosticsRoutines> receiver) {
-  ash::network_health::NetworkHealthService::GetInstance()
-      ->BindDiagnosticsReceiver(std::move(receiver));
+        network_diagnostics::mojom::NetworkDiagnosticsRoutines> receiver) {
+  network_health::NetworkHealthService::GetInstance()->BindDiagnosticsReceiver(
+      std::move(receiver));
 }
 
 void NetworkUI::BindInterface(

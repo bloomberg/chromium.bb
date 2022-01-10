@@ -2,10 +2,15 @@
 #define QUICHE_HTTP2_ADAPTER_OGHTTP2_SESSION_H_
 
 #include <cstdint>
+#include <limits>
 #include <list>
+#include <memory>
+#include <vector>
 
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "http2/adapter/data_source.h"
+#include "http2/adapter/event_forwarder.h"
 #include "http2/adapter/header_validator.h"
 #include "http2/adapter/http2_protocol.h"
 #include "http2/adapter/http2_session.h"
@@ -17,6 +22,7 @@
 #include "common/platform/api/quiche_bug_tracker.h"
 #include "common/platform/api/quiche_export.h"
 #include "spdy/core/http2_frame_decoder_adapter.h"
+#include "spdy/core/no_op_headers_handler.h"
 #include "spdy/core/spdy_framer.h"
 #include "spdy/core/spdy_header_block.h"
 #include "spdy/core/spdy_protocol.h"
@@ -32,8 +38,17 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
  public:
   struct QUICHE_EXPORT_PRIVATE Options {
     Perspective perspective = Perspective::kClient;
+    // The maximum HPACK table size to use.
+    absl::optional<size_t> max_hpack_encoding_table_capacity = absl::nullopt;
     // Whether to automatically send PING acks when receiving a PING.
     bool auto_ping_ack = true;
+    // Whether (as server) to send a RST_STREAM NO_ERROR when sending a fin on
+    // an incomplete stream.
+    bool rst_stream_no_error_when_incomplete = false;
+    // Whether (as server) to queue trailers until after a stream's data source
+    // has indicated the end of data. If false, the server will assume that
+    // submitting trailers indicates the end of data.
+    bool trailers_require_end_data = false;
   };
 
   OgHttp2Session(Http2VisitorInterface& visitor, Options options);
@@ -58,6 +73,7 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   int SubmitTrailer(Http2StreamId stream_id, absl::Span<const Header> trailers);
   void SubmitMetadata(Http2StreamId stream_id,
                       std::unique_ptr<MetadataSource> source);
+  void SubmitSettings(absl::Span<const Http2Setting> settings);
 
   bool IsServerSession() const {
     return options_.perspective == Perspective::kServer;
@@ -89,9 +105,15 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   // per-entry overhead from the specification.
   int GetHpackEncoderDynamicTableSize() const;
 
+  // Returns the maximum capacity of the HPACK encoder's dynamic table.
+  int GetHpackEncoderDynamicTableCapacity() const;
+
   // Returns the size of the HPACK decoder's dynamic table, including the
   // per-entry overhead from the specification.
   int GetHpackDecoderDynamicTableSize() const;
+
+  // Returns the size of the HPACK decoder's most recently applied size limit.
+  int GetHpackDecoderSizeLimit() const;
 
   // From Http2Session.
   int64_t ProcessBytes(absl::string_view bytes) override;
@@ -100,7 +122,7 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
     return !received_goaway_ && !decoder_.HasError();
   }
   bool want_write() const override {
-    return !frames_.empty() || !serialized_prefix_.empty() ||
+    return !frames_.empty() || !buffered_data_.empty() ||
            write_scheduler_.HasReadyStreams() || !connection_metadata_.empty();
   }
   int GetRemoteWindowSize() const override { return connection_send_window_; }
@@ -213,6 +235,7 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
       result_ = Http2VisitorInterface::HEADER_OK;
     }
 
+    void set_frame_contains_fin() { frame_contains_fin_ = true; }
     void set_header_type(HeaderType type) { type_ = type; }
     HeaderType header_type() const { return type_; }
 
@@ -235,25 +258,45 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
     // Validates header blocks according to the HTTP/2 specification.
     HeaderValidator validator_;
     HeaderType type_ = HeaderType::RESPONSE;
+    bool frame_contains_fin_ = false;
   };
 
   // Queues the connection preface, if not already done.
   void MaybeSetupPreface();
 
-  // Fills the initial SETTINGS frame sent as part of the connection preface.
-  void FillInitialSettingsFrame(spdy::SpdySettingsIR& settings);
+  // Gets the settings to be sent in the initial SETTINGS frame sent as part of
+  // the connection preface.
+  std::vector<Http2Setting> GetInitialSettings() const;
+
+  // Prepares and returns a SETTINGS frame with the given `settings`.
+  std::unique_ptr<spdy::SpdySettingsIR> PrepareSettingsFrame(
+      absl::Span<const Http2Setting> settings);
 
   void SendWindowUpdate(Http2StreamId stream_id, size_t update_delta);
 
-  // Sends queued frames, returning true if all frames were flushed
-  // successfully.
-  bool SendQueuedFrames();
+  enum class SendResult {
+    // All data was flushed.
+    SEND_OK,
+    // Not all data was flushed (due to flow control or TCP back pressure).
+    SEND_BLOCKED,
+    // An error occurred while sending data.
+    SEND_ERROR,
+  };
 
-  // Returns false if the connection is write-blocked (due to flow control or
-  // some other reason).
-  bool WriteForStream(Http2StreamId stream_id);
+  // Sends the buffered connection preface or serialized frame data, if any.
+  SendResult MaybeSendBufferedData();
 
-  bool SendMetadata(Http2StreamId stream_id, MetadataSequence& sequence);
+  // Serializes and sends queued frames.
+  SendResult SendQueuedFrames();
+
+  void AfterFrameSent(uint8_t frame_type, uint32_t stream_id,
+                      size_t payload_length, uint8_t flags,
+                      uint32_t error_code);
+
+  // Writes DATA frames for stream `stream_id`.
+  SendResult WriteForStream(Http2StreamId stream_id);
+
+  SendResult SendMetadata(Http2StreamId stream_id, MetadataSequence& sequence);
 
   void SendHeaders(Http2StreamId stream_id, spdy::SpdyHeaderBlock headers,
                    bool end_stream);
@@ -261,8 +304,8 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   void SendTrailers(Http2StreamId stream_id, spdy::SpdyHeaderBlock trailers);
 
   // Encapsulates the RST_STREAM NO_ERROR behavior described in RFC 7540
-  // Section 8.1. Returns true if the stream is closed.
-  bool MaybeCloseWithRstStream(Http2StreamId stream_id, StreamState& state);
+  // Section 8.1.
+  void MaybeFinWithRstStream(StreamStateMap::iterator iter);
 
   // Performs flow control accounting for data sent by the peer.
   void MarkDataBuffered(Http2StreamId stream_id, size_t bytes);
@@ -291,8 +334,13 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   void LatchErrorAndNotify(Http2ErrorCode error_code,
                            Http2VisitorInterface::ConnectionError error);
 
+  void CloseStreamIfReady(uint8_t frame_type, uint32_t stream_id);
+
   // Receives events when inbound frames are parsed.
   Http2VisitorInterface& visitor_;
+
+  // Forwards received events to the session if it can accept them.
+  EventForwarder event_forwarder_;
 
   // Logs received frames when enabled.
   Http2TraceLogger receive_logger_;
@@ -313,17 +361,26 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   // `max_outbound_concurrent_streams_`.
   std::list<PendingStreamState> pending_streams_;
 
-  // Maintains the queue of outbound frames, and any serialized bytes that have
-  // not yet been consumed.
+  // The queue of outbound frames.
   std::list<std::unique_ptr<spdy::SpdyFrameIR>> frames_;
-  std::string serialized_prefix_;
+  // Buffered data (connection preface, serialized frames) that has not yet been
+  // sent.
+  std::string buffered_data_;
 
   // Maintains the set of streams ready to write data to the peer.
   using WriteScheduler = PriorityWriteScheduler<Http2StreamId>;
   WriteScheduler write_scheduler_;
 
+  // Stores the queue of callbacks to invoke upon receiving SETTINGS acks. At
+  // most one callback is invoked for each SETTINGS ack.
+  using SettingsAckCallback = std::function<void()>;
+  std::list<SettingsAckCallback> settings_ack_callbacks_;
+
   // Delivers header name-value pairs to the visitor.
   PassthroughHeadersHandler headers_handler_;
+
+  // Ignores header data, e.g., for an unknown or rejected stream.
+  spdy::NoOpHeadersHandler noop_headers_handler_;
 
   // Tracks the remaining client connection preface, in the case of a server
   // session.
@@ -332,6 +389,7 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   WindowManager connection_window_manager_;
 
   absl::flat_hash_set<Http2StreamId> streams_reset_;
+  absl::flat_hash_map<Http2StreamId, int> queued_frames_;
 
   MetadataSequence connection_metadata_;
 
@@ -347,9 +405,24 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   // The initial flow control receive window size for any newly created streams.
   int32_t stream_receive_window_limit_ = kInitialFlowControlWindowSize;
   uint32_t max_frame_payload_ = 16384u;
-  // The spec encourages a value of at least 100 concurrent streams.
+  // The maximum number of concurrent streams that this connection can open to
+  // its peer and allow from its peer, respectively. Although the initial value
+  // is unlimited, the spec encourages a value of at least 100. We limit
+  // ourselves to opening 100 until told otherwise by the peer and allow an
+  // unlimited number from the peer until updated from SETTINGS we send.
   uint32_t max_outbound_concurrent_streams_ = 100u;
+  uint32_t pending_max_inbound_concurrent_streams_ =
+      std::numeric_limits<uint32_t>::max();
+  uint32_t max_inbound_concurrent_streams_ =
+      std::numeric_limits<uint32_t>::max();
   Options options_;
+
+  // The HPACK encoder header table capacity that will be applied when
+  // acking SETTINGS from the peer. Only contains a value if the peer advertises
+  // a larger table capacity than currently used; a smaller value can safely be
+  // applied immediately upon receipt.
+  absl::optional<uint32_t> encoder_header_table_capacity_when_acking_;
+
   bool received_goaway_ = false;
   bool queued_preface_ = false;
   bool peer_supports_metadata_ = false;

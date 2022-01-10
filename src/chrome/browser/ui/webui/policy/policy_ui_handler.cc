@@ -17,7 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_writer.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
@@ -229,7 +229,7 @@ class CloudPolicyCoreStatusProvider
  protected:
   // Policy status is read from the CloudPolicyClient, CloudPolicyStore and
   // CloudPolicyRefreshScheduler hosted by this |core_|.
-  policy::CloudPolicyCore* core_;
+  raw_ptr<policy::CloudPolicyCore> core_;
 };
 
 // A cloud policy status provider for user policy.
@@ -248,7 +248,7 @@ class UserCloudPolicyStatusProvider : public CloudPolicyCoreStatusProvider {
   void GetStatus(base::DictionaryValue* dict) override;
 
  private:
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 };
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -884,6 +884,18 @@ base::Value PolicyUIHandler::GetPolicyNames() {
   chrome_values.SetKey("policyNames", std::move(chrome_policy_names));
   names.SetKey("chrome", std::move(chrome_values));
 
+#if !defined(OS_CHROMEOS)
+  // Add precedence policy names.
+  base::Value precedence_policy_names(base::Value::Type::LIST);
+  for (auto* policy : policy::metapolicy::kPrecedence) {
+    precedence_policy_names.Append(base::Value(policy));
+  }
+  base::Value precedence_values(base::Value::Type::DICTIONARY);
+  precedence_values.SetStringKey("name", "Policy Precedence");
+  precedence_values.SetKey("policyNames", std::move(precedence_policy_names));
+  names.SetKey("precedence", std::move(precedence_values));
+#endif  // !defined(OS_CHROMEOS)
+
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (updater_policies_) {
     base::Value updater_policies(base::Value::Type::DICTIONARY);
@@ -955,7 +967,7 @@ void PolicyUIHandler::AddExtensionPolicyNames(
   for (const scoped_refptr<const extensions::Extension>& extension :
        *extension_set) {
     // Skip this extension if it's not an enterprise extension.
-    if (!extension->manifest()->HasPath(
+    if (!extension->manifest()->FindPath(
             extensions::manifest_keys::kStorageManagedSchema)) {
       continue;
     }

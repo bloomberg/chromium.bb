@@ -29,10 +29,6 @@ void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
   av1_copy_array(dst_ctx->tx_type_map, src_ctx->tx_type_map,
                  src_ctx->num_4x4_blk);
 
-  dst_ctx->hybrid_pred_diff = src_ctx->hybrid_pred_diff;
-  dst_ctx->comp_pred_diff = src_ctx->comp_pred_diff;
-  dst_ctx->single_pred_diff = src_ctx->single_pred_diff;
-
   dst_ctx->rd_stats = src_ctx->rd_stats;
   dst_ctx->rd_mode_is_ready = src_ctx->rd_mode_is_ready;
 }

@@ -15,25 +15,15 @@
 
 #include "build/build_config.h"
 #include "core/fxcrt/fx_codepage_forward.h"
-#include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/retain_ptr.h"
+#include "core/fxcrt/widestring.h"
 #include "core/fxge/cfx_face.h"
 #include "core/fxge/fx_freetype.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CFGAS_GEFont;
 class IFX_SeekableReadStream;
 
 #if defined(OS_WIN)
-struct FX_FONTMATCHPARAMS {
-  const wchar_t* pwsFamily;
-  uint32_t dwFontStyles;
-  uint32_t dwUSB;
-  bool matchParagraphStyle;
-  wchar_t wUnicode;
-  FX_CodePage wCodePage;
-};
-
 struct FX_FONTSIGNATURE {
   uint32_t fsUsb[4];
   uint32_t fsCsb[2];
@@ -146,7 +136,7 @@ class CFGAS_FontMgr {
   std::deque<FX_FONTDESCRIPTOR> m_FontFaces;
 #else
   std::vector<std::unique_ptr<CFGAS_FontDescriptor>> m_InstalledFonts;
-  std::map<uint32_t, absl::optional<std::vector<CFGAS_FontDescriptorInfo>>>
+  std::map<uint32_t, std::vector<CFGAS_FontDescriptorInfo>>
       m_Hash2CandidateList;
 #endif  // defined(OS_WIN)
 };

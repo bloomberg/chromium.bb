@@ -11,9 +11,9 @@ import {changeAllocationSampleViewViaDropdown, changeViewViaDropdown, findSearch
 describe('The Memory Panel', async function() {
   // These tests render large chunks of data into DevTools and filter/search
   // through it. On bots with less CPU power, these can fail because the
-  // rendering takes a long time, so we allow a larger timeout.
+  // rendering takes a long time, so we allow a much larger timeout.
   if (this.timeout() !== 0) {
-    this.timeout(35000);
+    this.timeout(100000);
   }
 
   it('Loads content', async () => {
@@ -161,8 +161,7 @@ describe('The Memory Panel', async function() {
             ({propertyName, retainerClassName}) => propertyName === 'aUniqueName' && retainerClassName === 'Window'));
   });
 
-  // Fails on mac after Chromium roll
-  it.skipOnPlatforms(['mac'], '[crbug.com/1256710] Correctly shows multiple retainer paths for an object', async () => {
+  it('Correctly shows multiple retainer paths for an object', async () => {
     await goToResource('memory/multiple-retainers.html');
     await navigateToMemoryTab();
     await takeHeapSnapshot();

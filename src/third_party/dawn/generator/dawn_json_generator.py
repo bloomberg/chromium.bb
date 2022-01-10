@@ -23,6 +23,15 @@ from generator_lib import Generator, run_generator, FileRender
 ############################################################
 
 
+class Metadata:
+    def __init__(self, metadata):
+        self.api = metadata['api']
+        self.namespace = metadata['namespace']
+        self.c_prefix = metadata.get('c_prefix', self.namespace.upper())
+        self.proc_table_prefix = metadata['proc_table_prefix']
+        self.copyright_year = metadata.get('copyright_year', None)
+
+
 class Name:
     def __init__(self, name, native=False):
         self.native = native
@@ -76,6 +85,7 @@ class Type:
         self.dict_name = name
         self.name = Name(name, native=native)
         self.category = json_data['category']
+        self.is_wire_transparent = False
 
 
 EnumValue = namedtuple('EnumValue', ['name', 'value', 'valid', 'json_data'])
@@ -105,6 +115,7 @@ class EnumType(Type):
                 raise Exception("Duplicate value {} in enum {}".format(
                     value.value, name))
             all_values.add(value.value)
+        self.is_wire_transparent = True
 
 
 BitmaskValue = namedtuple('BitmaskValue', ['name', 'value', 'json_data'])
@@ -120,11 +131,13 @@ class BitmaskType(Type):
         self.full_mask = 0
         for value in self.values:
             self.full_mask = self.full_mask | value.value
+        self.is_wire_transparent = True
 
 
-class CallbackType(Type):
+class FunctionPointerType(Type):
     def __init__(self, is_enabled, name, json_data):
         Type.__init__(self, name, json_data)
+        self.return_type = None
         self.arguments = []
 
 
@@ -137,6 +150,7 @@ class TypedefType(Type):
 class NativeType(Type):
     def __init__(self, is_enabled, name, json_data):
         Type.__init__(self, name, json_data, native=True)
+        self.is_wire_transparent = True
 
 
 # Methods and structures are both "records", so record members correspond to
@@ -231,6 +245,22 @@ class StructureType(Record, Type):
         return self.chained == "out" or self.extensible == "out"
 
 
+class ConstantDefinition():
+    def __init__(self, is_enabled, name, json_data):
+        self.type = None
+        self.value = json_data['value']
+        self.json_data = json_data
+        self.name = Name(name)
+
+
+class FunctionDeclaration():
+    def __init__(self, is_enabled, name, json_data):
+        self.return_type = None
+        self.arguments = []
+        self.json_data = json_data
+        self.name = Name(name)
+
+
 class Command(Record):
     def __init__(self, name, members=None):
         Record.__init__(self, name)
@@ -293,13 +323,23 @@ def link_structure(struct, types):
     struct.members = linked_record_members(struct.json_data['members'], types)
 
 
-def link_callback(callback, types):
-    callback.arguments = linked_record_members(callback.json_data['args'],
-                                               types)
+def link_function_pointer(function_pointer, types):
+    link_function(function_pointer, types)
 
 
 def link_typedef(typedef, types):
     typedef.type = types[typedef.json_data['type']]
+
+
+def link_constant(constant, types):
+    constant.type = types[constant.json_data['type']]
+    assert constant.type.name.native
+
+
+def link_function(function, types):
+    function.return_type = types[function.json_data.get('returns', 'void')]
+    function.arguments = linked_record_members(function.json_data['args'],
+                                               types)
 
 
 # Sort structures so that if struct A has struct B as a member, then B is
@@ -350,10 +390,12 @@ def parse_json(json, enabled_tags):
         'bitmask': BitmaskType,
         'enum': EnumType,
         'native': NativeType,
-        'callback': CallbackType,
+        'function pointer': FunctionPointerType,
         'object': ObjectType,
         'structure': StructureType,
         'typedef': TypedefType,
+        'constant': ConstantDefinition,
+        'function': FunctionDeclaration
     }
 
     types = {}
@@ -376,11 +418,17 @@ def parse_json(json, enabled_tags):
     for struct in by_category['structure']:
         link_structure(struct, types)
 
-    for callback in by_category['callback']:
-        link_callback(callback, types)
+    for function_pointer in by_category['function pointer']:
+        link_function_pointer(function_pointer, types)
 
     for typedef in by_category['typedef']:
         link_typedef(typedef, types)
+
+    for constant in by_category['constant']:
+        link_constant(constant, types)
+
+    for function in by_category['function']:
+        link_function(function, types)
 
     for category in by_category.keys():
         by_category[category] = sorted(
@@ -397,6 +445,7 @@ def parse_json(json, enabled_tags):
         'enabled_tags': enabled_tags,
     }
     return {
+        'metadata': Metadata(json['_metadata']),
         'types': types,
         'by_category': by_category,
         'enabled_tags': enabled_tags,
@@ -494,24 +543,11 @@ def as_varName(*names):
         [name.CamelCase() for name in names[1:]])
 
 
-def as_cType(name):
+def as_cType(c_prefix, name):
     if name.native:
         return name.concatcase()
     else:
-        return 'WGPU' + name.CamelCase()
-
-
-def as_cTypeDawn(name):
-    if name.native:
-        return name.concatcase()
-    else:
-        return 'Dawn' + name.CamelCase()
-
-
-def as_cTypeEnumSpecialCase(typ):
-    if typ.category == 'bitmask':
-        return as_cType(typ.name) + 'Flags'
-    return as_cType(typ.name)
+        return c_prefix + name.CamelCase()
 
 
 def as_cppType(name):
@@ -558,8 +594,6 @@ def decorate(name, typ, arg):
         return typ + ' * ' + name
     elif arg.annotation == 'const*':
         return typ + ' const * ' + name
-    elif arg.annotation == 'const*const*':
-        return 'const ' + typ + '* const * ' + name
     else:
         assert False
 
@@ -575,17 +609,6 @@ def item_is_enabled(enabled_tags, json_data):
     return any(tag in enabled_tags for tag in tags)
 
 
-def as_cEnum(type_name, value_name):
-    assert not type_name.native and not value_name.native
-    return 'WGPU' + type_name.CamelCase() + '_' + value_name.CamelCase()
-
-
-def as_cEnumDawn(type_name, value_name):
-    assert not type_name.native and not value_name.native
-    return ('DAWN' + '_' + type_name.SNAKE_CASE() + '_' +
-            value_name.SNAKE_CASE())
-
-
 def as_cppEnum(value_name):
     assert not value_name.native
     if value_name.concatcase()[0].isdigit():
@@ -593,47 +616,27 @@ def as_cppEnum(value_name):
     return value_name.CamelCase()
 
 
-def as_cMethod(type_name, method_name):
-    assert not type_name.native and not method_name.native
-    return 'wgpu' + type_name.CamelCase() + method_name.CamelCase()
-
-
-def as_cMethodDawn(type_name, method_name):
-    assert not type_name.native and not method_name.native
-    return 'dawn' + type_name.CamelCase() + method_name.CamelCase()
-
-
 def as_MethodSuffix(type_name, method_name):
     assert not type_name.native and not method_name.native
     return type_name.CamelCase() + method_name.CamelCase()
 
 
-def as_cProc(type_name, method_name):
-    assert not type_name.native and not method_name.native
-    return 'WGPU' + 'Proc' + type_name.CamelCase() + method_name.CamelCase()
-
-
-def as_cProcDawn(type_name, method_name):
-    assert not type_name.native and not method_name.native
-    return 'Dawn' + 'Proc' + type_name.CamelCase() + method_name.CamelCase()
-
-
-def as_frontendType(typ):
+def as_frontendType(metadata, typ):
     if typ.category == 'object':
         return typ.name.CamelCase() + 'Base*'
     elif typ.category in ['bitmask', 'enum']:
-        return 'wgpu::' + typ.name.CamelCase()
+        return metadata.namespace + '::' + typ.name.CamelCase()
     elif typ.category == 'structure':
         return as_cppType(typ.name)
     else:
-        return as_cType(typ.name)
+        return as_cType(metadata.c_prefix, typ.name)
 
 
-def as_wireType(typ):
+def as_wireType(metadata, typ):
     if typ.category == 'object':
         return typ.name.CamelCase() + '*'
     elif typ.category in ['bitmask', 'enum', 'structure']:
-        return 'WGPU' + typ.name.CamelCase()
+        return metadata.c_prefix + typ.name.CamelCase()
     else:
         return as_cppType(typ.name)
 
@@ -657,7 +660,57 @@ def get_c_methods_sorted_by_name(api_params):
 
 
 def has_callback_arguments(method):
-    return any(arg.type.category == 'callback' for arg in method.arguments)
+    return any(arg.type.category == 'function pointer' for arg in method.arguments)
+
+
+def make_base_render_params(metadata):
+    c_prefix = metadata.c_prefix
+
+    def as_cTypeEnumSpecialCase(typ):
+        if typ.category == 'bitmask':
+            return as_cType(c_prefix, typ.name) + 'Flags'
+        return as_cType(c_prefix, typ.name)
+
+    def as_cEnum(type_name, value_name):
+        assert not type_name.native and not value_name.native
+        return c_prefix + type_name.CamelCase() + '_' + value_name.CamelCase()
+
+    def as_cMethod(type_name, method_name):
+        c_method = c_prefix.lower()
+        if type_name != None:
+            assert not type_name.native
+            c_method += type_name.CamelCase()
+        assert not method_name.native
+        c_method += method_name.CamelCase()
+        return c_method
+
+    def as_cProc(type_name, method_name):
+        c_proc = c_prefix + 'Proc'
+        if type_name != None:
+            assert not type_name.native
+            c_proc += type_name.CamelCase()
+        assert not method_name.native
+        c_proc += method_name.CamelCase()
+        return c_proc
+
+    return {
+            'Name': lambda name: Name(name),
+            'as_annotated_cType': \
+                lambda arg: annotated(as_cTypeEnumSpecialCase(arg.type), arg),
+            'as_annotated_cppType': \
+                lambda arg: annotated(as_cppType(arg.type.name), arg),
+            'as_cEnum': as_cEnum,
+            'as_cppEnum': as_cppEnum,
+            'as_cMethod': as_cMethod,
+            'as_MethodSuffix': as_MethodSuffix,
+            'as_cProc': as_cProc,
+            'as_cType': lambda name: as_cType(c_prefix, name),
+            'as_cppType': as_cppType,
+            'as_jsEnumValue': as_jsEnumValue,
+            'convert_cType_to_cppType': convert_cType_to_cppType,
+            'as_varName': as_varName,
+            'decorate': decorate
+        }
 
 
 class MultiGeneratorFromDawnJSON(Generator):
@@ -698,49 +751,30 @@ class MultiGeneratorFromDawnJSON(Generator):
 
         renders = []
 
-        RENDER_PARAMS_BASE = {
-            'Name': lambda name: Name(name),
-            'as_annotated_cType': \
-                lambda arg: annotated(as_cTypeEnumSpecialCase(arg.type), arg),
-            'as_annotated_cppType': \
-                lambda arg: annotated(as_cppType(arg.type.name), arg),
-            'as_cEnum': as_cEnum,
-            'as_cEnumDawn': as_cEnumDawn,
-            'as_cppEnum': as_cppEnum,
-            'as_cMethod': as_cMethod,
-            'as_cMethodDawn': as_cMethodDawn,
-            'as_MethodSuffix': as_MethodSuffix,
-            'as_cProc': as_cProc,
-            'as_cProcDawn': as_cProcDawn,
-            'as_cType': as_cType,
-            'as_cTypeDawn': as_cTypeDawn,
-            'as_cppType': as_cppType,
-            'as_jsEnumValue': as_jsEnumValue,
-            'convert_cType_to_cppType': convert_cType_to_cppType,
-            'as_varName': as_varName,
-            'decorate': decorate,
-        }
-
         params_dawn = parse_json(loaded_json,
                                  enabled_tags=['dawn', 'native', 'deprecated'])
+        metadata = params_dawn['metadata']
+        RENDER_PARAMS_BASE = make_base_render_params(metadata)
 
+        api = metadata.api.lower()
         if 'dawn_headers' in targets:
+            prefix = metadata.proc_table_prefix.lower()
             renders.append(
-                FileRender('webgpu.h', 'src/include/dawn/webgpu.h',
+                FileRender('api.h', 'src/include/dawn/' + api + '.h',
                            [RENDER_PARAMS_BASE, params_dawn]))
             renders.append(
                 FileRender('dawn_proc_table.h',
-                           'src/include/dawn/dawn_proc_table.h',
+                           'src/include/dawn/' + prefix + '_proc_table.h',
                            [RENDER_PARAMS_BASE, params_dawn]))
 
         if 'dawncpp_headers' in targets:
             renders.append(
-                FileRender('webgpu_cpp.h', 'src/include/dawn/webgpu_cpp.h',
+                FileRender('api_cpp.h', 'src/include/dawn/' + api + '_cpp.h',
                            [RENDER_PARAMS_BASE, params_dawn]))
 
             renders.append(
-                FileRender('webgpu_cpp_print.h',
-                           'src/include/dawn/webgpu_cpp_print.h',
+                FileRender('api_cpp_print.h',
+                           'src/include/dawn/' + api + '_cpp_print.h',
                            [RENDER_PARAMS_BASE, params_dawn]))
 
         if 'dawn_proc' in targets:
@@ -752,6 +786,12 @@ class MultiGeneratorFromDawnJSON(Generator):
                            'src/dawn/dawn_thread_dispatch_proc.cpp',
                            [RENDER_PARAMS_BASE, params_dawn]))
 
+        if 'webgpu_dawn_native_proc' in targets:
+            renders.append(
+                FileRender('dawn_native/api_dawn_native_proc.cpp',
+                           'src/dawn_native/webgpu_dawn_native_proc.cpp',
+                           [RENDER_PARAMS_BASE, params_dawn]))
+
         if 'dawncpp' in targets:
             renders.append(
                 FileRender('webgpu_cpp.cpp', 'src/dawn/webgpu_cpp.cpp',
@@ -761,17 +801,17 @@ class MultiGeneratorFromDawnJSON(Generator):
             params_upstream = parse_json(loaded_json,
                                          enabled_tags=['upstream', 'native'])
             renders.append(
-                FileRender('webgpu.h', 'webgpu-headers/webgpu.h',
+                FileRender('api.h', 'webgpu-headers/' + api + '.h',
                            [RENDER_PARAMS_BASE, params_upstream]))
 
         if 'emscripten_bits' in targets:
             params_emscripten = parse_json(
                 loaded_json, enabled_tags=['upstream', 'emscripten'])
             renders.append(
-                FileRender('webgpu.h', 'emscripten-bits/webgpu.h',
+                FileRender('api.h', 'emscripten-bits/' + api + '.h',
                            [RENDER_PARAMS_BASE, params_emscripten]))
             renders.append(
-                FileRender('webgpu_cpp.h', 'emscripten-bits/webgpu_cpp.h',
+                FileRender('api_cpp.h', 'emscripten-bits/' + api + '_cpp.h',
                            [RENDER_PARAMS_BASE, params_emscripten]))
             renders.append(
                 FileRender('webgpu_cpp.cpp', 'emscripten-bits/webgpu_cpp.cpp',
@@ -804,9 +844,9 @@ class MultiGeneratorFromDawnJSON(Generator):
                 params_dawn,
                 {
                     # TODO: as_frontendType and co. take a Type, not a Name :(
-                    'as_frontendType': lambda typ: as_frontendType(typ),
+                    'as_frontendType': lambda typ: as_frontendType(metadata, typ),
                     'as_annotated_frontendType': \
-                        lambda arg: annotated(as_frontendType(arg.type), arg),
+                        lambda arg: annotated(as_frontendType(metadata, arg.type), arg),
                 }
             ]
 
@@ -863,9 +903,9 @@ class MultiGeneratorFromDawnJSON(Generator):
 
             wire_params = [
                 RENDER_PARAMS_BASE, params_dawn, {
-                    'as_wireType': as_wireType,
+                    'as_wireType': lambda type : as_wireType(metadata, type),
                     'as_annotated_wireType': \
-                        lambda arg: annotated(as_wireType(arg.type), arg),
+                        lambda arg: annotated(as_wireType(metadata, arg.type), arg),
                 }, additional_params
             ]
             renders.append(

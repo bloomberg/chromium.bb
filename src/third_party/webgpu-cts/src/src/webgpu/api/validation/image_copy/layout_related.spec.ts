@@ -1,6 +1,7 @@
 export const description = '';
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
+import { assert } from '../../../../common/util/util.js';
 import { kTextureFormatInfo, kSizedTextureFormats } from '../../../capability_info.js';
 import { align } from '../../../util/math.js';
 import {
@@ -149,7 +150,6 @@ g.test('required_bytes_in_copy')
     // to make this happen we align the bytesInACompleteRow value and multiply
     // bytesPerRowPadding by 256.
     const bytesPerRowAlignment = method === 'WriteTexture' ? 1 : 256;
-
     const copyWidth = copyWidthInBlocks * info.blockWidth;
     const copyHeight = copyHeightInBlocks * info.blockHeight;
     const offset = offsetInBlocks * info.bytesPerBlock;
@@ -250,58 +250,95 @@ g.test('offset_alignment')
   });
 
 g.test('bound_on_bytes_per_row')
+  .desc(`For all formats, verify image copy validations w.r.t bytesPerRow.`)
   .params(u =>
     u
       .combine('method', kImageCopyTypes)
       .combine('format', kSizedTextureFormats)
       .filter(formatCopyableWithMethod)
       .beginSubcases()
-      .combineWithParams([
-        { blocksPerRow: 2, additionalPaddingPerRow: 0, copyWidthInBlocks: 2 }, // success
-        { blocksPerRow: 2, additionalPaddingPerRow: 5, copyWidthInBlocks: 3 }, // success if bytesPerBlock <= 5
-        { blocksPerRow: 1, additionalPaddingPerRow: 0, copyWidthInBlocks: 2 }, // failure, bytesPerRow > 0
-        { blocksPerRow: 0, additionalPaddingPerRow: 0, copyWidthInBlocks: 1 }, // failure, bytesPerRow = 0
-      ])
-      .combineWithParams([
-        { copyHeightInBlocks: 0, copyDepth: 1 }, // we don't have to check the bound
-        { copyHeightInBlocks: 1, copyDepth: 0 }, // we don't have to check the bound
-        { copyHeightInBlocks: 2, copyDepth: 1 }, // we have to check the bound
-        { copyHeightInBlocks: 0, copyDepth: 2 }, // we have to check the bound
-      ])
+      .combine('copyHeightInBlocks', [1, 2])
+      .combine('copyDepth', [1, 2])
+      .expandWithParams(p => {
+        const info = kTextureFormatInfo[p.format];
+        // We currently have a built-in assumption that for all formats, 128 % bytesPerBlock === 0.
+        // This assumption ensures that all division below results in integers.
+        assert(128 % info.bytesPerBlock === 0);
+        return [
+          // Copying exact fit with aligned bytesPerRow should work.
+          {
+            bytesPerRow: 256,
+            widthInBlocks: 256 / info.bytesPerBlock,
+            copyWidthInBlocks: 256 / info.bytesPerBlock,
+            _success: true,
+          },
+          // Copying into smaller texture when padding in bytesPerRow is enough should work unless
+          // it is a depth/stencil typed format.
+          {
+            bytesPerRow: 256,
+            widthInBlocks: 256 / info.bytesPerBlock,
+            copyWidthInBlocks: 256 / info.bytesPerBlock - 1,
+            _success: !(info.stencil || info.depth),
+          },
+          // Unaligned bytesPerRow should not work unless the method is 'WriteTexture'.
+          {
+            bytesPerRow: 128,
+            widthInBlocks: 128 / info.bytesPerBlock,
+            copyWidthInBlocks: 128 / info.bytesPerBlock,
+            _success: p.method === 'WriteTexture',
+          },
+          {
+            bytesPerRow: 384,
+            widthInBlocks: 384 / info.bytesPerBlock,
+            copyWidthInBlocks: 384 / info.bytesPerBlock,
+            _success: p.method === 'WriteTexture',
+          },
+          // When bytesPerRow is smaller than bytesInLastRow copying should fail.
+          {
+            bytesPerRow: 256,
+            widthInBlocks: (2 * 256) / info.bytesPerBlock,
+            copyWidthInBlocks: (2 * 256) / info.bytesPerBlock,
+            _success: false,
+          },
+          // When copyHeightInBlocks > 1, bytesPerRow must be specified.
+          {
+            bytesPerRow: undefined,
+            widthInBlocks: 256 / info.bytesPerBlock,
+            copyWidthInBlocks: 256 / info.bytesPerBlock,
+            _success: !(p.copyHeightInBlocks > 1 || p.copyDepth > 1),
+          },
+        ];
+      })
   )
   .fn(async t => {
     const {
-      blocksPerRow,
-      additionalPaddingPerRow,
+      method,
+      format,
+      bytesPerRow,
+      widthInBlocks,
       copyWidthInBlocks,
       copyHeightInBlocks,
       copyDepth,
-      format,
-      method,
+      _success,
     } = t.params;
     const info = kTextureFormatInfo[format];
     await t.selectDeviceOrSkipTestCase(info.feature);
 
-    // In the CopyB2T and CopyT2B cases we need to have bytesPerRow 256-aligned.
-    const bytesPerRowAlignment = method === 'WriteTexture' ? 1 : 256;
-
-    const copyWidth = align(copyWidthInBlocks * info.blockWidth, bytesPerRowAlignment);
-    const copyHeight = copyHeightInBlocks * info.blockHeight;
-    const bytesPerRow = align(
-      blocksPerRow * info.bytesPerBlock + additionalPaddingPerRow,
-      bytesPerRowAlignment
-    );
-    const copySize = { width: copyWidth, height: copyHeight, depthOrArrayLayers: copyDepth };
-
+    // We create an aligned texture using the widthInBlocks which may be different from the
+    // copyWidthInBlocks. This allows us to test scenarios where the two may be different.
     const texture = t.createAlignedTexture(format, {
-      width: copyWidth,
-      // size 0 is not valid; round up if needed
-      height: copyHeight || info.blockHeight,
-      depthOrArrayLayers: copyDepth || 1,
+      width: widthInBlocks * info.blockWidth,
+      height: copyHeightInBlocks * info.blockHeight,
+      depthOrArrayLayers: copyDepth,
     });
 
-    const layout = { bytesPerRow, rowsPerImage: copyHeight };
-    const { minDataSizeOrOverestimate, copyValid } = dataBytesForCopyOrOverestimate({
+    const layout = { bytesPerRow, rowsPerImage: copyHeightInBlocks };
+    const copySize = {
+      width: copyWidthInBlocks * info.blockWidth,
+      height: copyHeightInBlocks * info.blockHeight,
+      depthOrArrayLayers: copyDepth,
+    };
+    const { minDataSizeOrOverestimate } = dataBytesForCopyOrOverestimate({
       layout,
       format,
       copySize,
@@ -311,7 +348,7 @@ g.test('bound_on_bytes_per_row')
     t.testRun({ texture }, layout, copySize, {
       dataSize: minDataSizeOrOverestimate,
       method,
-      success: copyValid,
+      success: _success,
     });
   });
 

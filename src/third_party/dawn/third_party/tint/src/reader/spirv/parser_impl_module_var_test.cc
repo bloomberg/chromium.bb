@@ -4698,50 +4698,6 @@ fn main([[location(9)]] x_1_param : f32, [[location(11)]] x_1_param_1 : vec4<f32
   EXPECT_EQ(got, expected) << got;
 }
 
-TEST_F(SpvModuleScopeVarParserTest, FlattenStruct_LocOnStruct) {
-  const std::string assembly = R"(
-    OpCapability Shader
-    OpMemoryModel Logical Simple
-    OpEntryPoint Vertex %main "main" %1 %2 %3
-
-    OpName %strct "Communicators"
-    OpMemberName %strct 0 "alice"
-    OpMemberName %strct 1 "bob"
-
-    OpDecorate %strct Location 9
-    OpDecorate %strct Block
-    OpDecorate %2 BuiltIn Position
-
-    %void = OpTypeVoid
-    %voidfn = OpTypeFunction %void
-    %float = OpTypeFloat 32
-    %v4float = OpTypeVector %float 4
-    %strct = OpTypeStruct %float %v4float
-
-    %11 = OpTypePointer Input %strct
-    %13 = OpTypePointer Output %strct
-
-    %1 = OpVariable %11 Input
-    %3 = OpVariable %13 Output
-
-    %12 = OpTypePointer Output %v4float
-    %2 = OpVariable %12 Output
-
-    %main = OpFunction %void None %voidfn
-    %entry = OpLabel
-    OpReturn
-    OpFunctionEnd
-)";
-  auto p = parser(test::Assemble(assembly));
-
-  // The validator rejects this because Location decorations
-  // can only go on OpVariable or members of a structure type.
-  ASSERT_FALSE(p->Parse()) << p->error() << assembly;
-  EXPECT_THAT(p->error(),
-              HasSubstr("Location decoration can only be applied to a variable "
-                        "or member of a structure type"));
-}
-
 TEST_F(SpvModuleScopeVarParserTest,
        EntryPointWrapping_Interpolation_Flat_Vertex_In) {
   // Flat decorations are dropped for integral
@@ -4813,7 +4769,7 @@ struct main_out {
 };
 
 [[stage(vertex)]]
-fn main([[location(1)]] x_1_param : u32, [[location(2)]] x_2_param : vec2<u32>, [[location(3)]] x_3_param : i32, [[location(4)]] x_4_param : vec2<i32>, [[location(5), interpolate(flat)]] x_5_param : f32, [[location(6), interpolate(flat)]] x_6_param : vec2<f32>) -> main_out {
+fn main([[location(1), interpolate(flat)]] x_1_param : u32, [[location(2), interpolate(flat)]] x_2_param : vec2<u32>, [[location(3), interpolate(flat)]] x_3_param : i32, [[location(4), interpolate(flat)]] x_4_param : vec2<i32>, [[location(5), interpolate(flat)]] x_5_param : f32, [[location(6), interpolate(flat)]] x_6_param : vec2<f32>) -> main_out {
   x_1 = x_1_param;
   x_2 = x_2_param;
   x_3 = x_3_param;
@@ -4893,13 +4849,13 @@ fn main_1() {
 }
 
 struct main_out {
-  [[location(1)]]
+  [[location(1), interpolate(flat)]]
   x_1_1 : u32;
-  [[location(2)]]
+  [[location(2), interpolate(flat)]]
   x_2_1 : vec2<u32>;
-  [[location(3)]]
+  [[location(3), interpolate(flat)]]
   x_3_1 : i32;
-  [[location(4)]]
+  [[location(4), interpolate(flat)]]
   x_4_1 : vec2<i32>;
   [[location(5), interpolate(flat)]]
   x_5_1 : f32;

@@ -168,7 +168,11 @@ class StatsObserver : public rtc::RefCountInterface {
   ~StatsObserver() override = default;
 };
 
-enum class SdpSemantics { kPlanB, kUnifiedPlan };
+enum class SdpSemantics {
+  kPlanB_DEPRECATED,
+  kPlanB [[deprecated]] = kPlanB_DEPRECATED,
+  kUnifiedPlan
+};
 
 class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
  public:
@@ -295,6 +299,13 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
 
   enum ContinualGatheringPolicy { GATHER_ONCE, GATHER_CONTINUALLY };
 
+  struct PortAllocatorConfig {
+    // For min_port and max_port, 0 means not specified.
+    int min_port = 0;
+    int max_port = 0;
+    uint32_t flags = 0;  // Same as kDefaultPortAllocatorFlags.
+  };
+
   enum class RTCConfigurationType {
     // A configuration that is safer to use, despite not having the best
     // performance. Currently this is the default configuration.
@@ -372,6 +383,18 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
           video_rtcp_report_interval_ms;
     }
 
+    // Settings for the port allcoator. Applied only if the port allocator is
+    // created by PeerConnectionFactory, not if it is injected with
+    // PeerConnectionDependencies
+    int min_port() const { return port_allocator_config.min_port; }
+    void set_min_port(int port) { port_allocator_config.min_port = port; }
+    int max_port() const { return port_allocator_config.max_port; }
+    void set_max_port(int port) { port_allocator_config.max_port = port; }
+    uint32_t port_allocator_flags() { return port_allocator_config.flags; }
+    void set_port_allocator_flags(uint32_t flags) {
+      port_allocator_config.flags = flags;
+    }
+
     static const int kUndefined = -1;
     // Default maximum number of packets in the audio jitter buffer.
     static const int kAudioJitterBufferMaxPackets = 200;
@@ -431,6 +454,12 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
 
     // Use new combined audio/video bandwidth estimation?
     absl::optional<bool> combined_audio_video_bwe;
+
+    // TODO(bugs.webrtc.org/9891) - Move to crypto_options
+    // Can be used to disable DTLS-SRTP. This should never be done, but can be
+    // useful for testing purposes, for example in setting up a loopback call
+    // with a single PeerConnection.
+    absl::optional<bool> enable_dtls_srtp;
 
     /////////////////////////////////////////////////
     // The below fields are not part of the standard.
@@ -597,24 +626,23 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
     // WebRTC 1.0 specification requires kUnifiedPlan semantics. The
     // RtpTransceiver API is only available with kUnifiedPlan semantics.
     //
-    // kPlanB will cause PeerConnection to create offers and answers with at
-    // most one audio and one video m= section with multiple RtpSenders and
-    // RtpReceivers specified as multiple a=ssrc lines within the section. This
-    // will also cause PeerConnection to ignore all but the first m= section of
-    // the same media type.
-    //
     // kUnifiedPlan will cause PeerConnection to create offers and answers with
     // multiple m= sections where each m= section maps to one RtpSender and one
     // RtpReceiver (an RtpTransceiver), either both audio or both video. This
     // will also cause PeerConnection to ignore all but the first a=ssrc lines
     // that form a Plan B stream.
     //
-    // For users who wish to send multiple audio/video streams and need to stay
-    // interoperable with legacy WebRTC implementations or use legacy APIs,
-    // specify kPlanB.
+    // kPlanB will cause PeerConnection to create offers and answers with at
+    // most one audio and one video m= section with multiple RtpSenders and
+    // RtpReceivers specified as multiple a=ssrc lines within the section. This
+    // will also cause PeerConnection to ignore all but the first m= section of
+    // the same media type.
+    //
+    // For users who have to interwork with legacy WebRTC implementations,
+    // it is possible to specify kPlanB until the code is finally removed.
     //
     // For all other users, specify kUnifiedPlan.
-    SdpSemantics sdp_semantics = SdpSemantics::kPlanB;
+    SdpSemantics sdp_semantics = SdpSemantics::kPlanB_DEPRECATED;
 
     // TODO(bugs.webrtc.org/9891) - Move to crypto_options or remove.
     // Actively reset the SRTP parameters whenever the DTLS transports
@@ -663,6 +691,8 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
     // List of address/length subnets that should be treated like
     // VPN (in case webrtc fails to auto detect them).
     std::vector<rtc::NetworkMask> vpn_list;
+
+    PortAllocatorConfig port_allocator_config;
 
     //
     // Don't forget to update operator== if adding something.

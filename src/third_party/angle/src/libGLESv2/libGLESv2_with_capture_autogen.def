@@ -605,6 +605,10 @@ EXPORTS
     ; GL_ANGLE_translated_shader_source
     glGetTranslatedShaderSourceANGLE
 
+    ; GL_ANGLE_vulkan_image
+    glAcquireTexturesANGLE
+    glReleaseTexturesANGLE
+
     ; GL_APPLE_clip_distance
 
     ; GL_ARB_sync
@@ -737,6 +741,10 @@ EXPORTS
 
     ; GL_EXT_memory_object_fd
     glImportMemoryFdEXT
+
+    ; GL_EXT_multi_draw_indirect
+    glMultiDrawArraysIndirectEXT
+    glMultiDrawElementsIndirectEXT
 
     ; GL_EXT_multisampled_render_to_texture
     glFramebufferTexture2DMultisampleEXT
@@ -1226,6 +1234,9 @@ EXPORTS
     ; EGL_ANGLE_sync_control_rate
     EGL_GetMscRateANGLE
 
+    ; EGL_ANGLE_vulkan_image
+    EGL_ExportVkImageANGLE
+
     ; EGL_CHROMIUM_sync_control
     EGL_GetSyncValuesCHROMIUM
 
@@ -1253,6 +1264,11 @@ EXPORTS
     ; EGL_KHR_image
     EGL_CreateImageKHR
     EGL_DestroyImageKHR
+
+    ; EGL_KHR_lock_surface3
+    EGL_LockSurfaceKHR
+    EGL_QuerySurface64KHR
+    EGL_UnlockSurfaceKHR
 
     ; EGL_KHR_reusable_sync
     EGL_SignalSyncKHR

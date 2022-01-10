@@ -876,8 +876,8 @@ bool ParserImpl::RegisterEntryPoints() {
     TINT_ASSERT(Reader, !inner_implementation_name.empty());
     TINT_ASSERT(Reader, ep_name != inner_implementation_name);
 
-    tint::UniqueVector<uint32_t> inputs;
-    tint::UniqueVector<uint32_t> outputs;
+    utils::UniqueVector<uint32_t> inputs;
+    utils::UniqueVector<uint32_t> outputs;
     for (unsigned iarg = 3; iarg < entry_point.NumInOperands(); iarg++) {
       const uint32_t var_id = entry_point.GetSingleWordInOperand(iarg);
       if (const auto* var_inst = def_use_mgr_->GetDef(var_id)) {
@@ -1353,34 +1353,30 @@ bool ParserImpl::EmitScalarSpecConstants() {
   for (auto& inst : module_->types_values()) {
     // These will be populated for a valid scalar spec constant.
     const Type* ast_type = nullptr;
-    ast::ScalarConstructorExpression* ast_expr = nullptr;
+    ast::LiteralExpression* ast_expr = nullptr;
 
     switch (inst.opcode()) {
       case SpvOpSpecConstantTrue:
       case SpvOpSpecConstantFalse: {
         ast_type = ConvertType(inst.type_id());
-        ast_expr = create<ast::ScalarConstructorExpression>(
-            Source{}, create<ast::BoolLiteral>(
-                          Source{}, inst.opcode() == SpvOpSpecConstantTrue));
+        ast_expr = create<ast::BoolLiteralExpression>(
+            Source{}, inst.opcode() == SpvOpSpecConstantTrue);
         break;
       }
       case SpvOpSpecConstant: {
         ast_type = ConvertType(inst.type_id());
         const uint32_t literal_value = inst.GetSingleWordInOperand(0);
         if (ast_type->Is<I32>()) {
-          ast_expr = create<ast::ScalarConstructorExpression>(
-              Source{}, create<ast::SintLiteral>(
-                            Source{}, static_cast<int32_t>(literal_value)));
+          ast_expr = create<ast::SintLiteralExpression>(
+              Source{}, static_cast<int32_t>(literal_value));
         } else if (ast_type->Is<U32>()) {
-          ast_expr = create<ast::ScalarConstructorExpression>(
-              Source{}, create<ast::UintLiteral>(
-                            Source{}, static_cast<uint32_t>(literal_value)));
+          ast_expr = create<ast::UintLiteralExpression>(
+              Source{}, static_cast<uint32_t>(literal_value));
         } else if (ast_type->Is<F32>()) {
           float float_value;
           // Copy the bits so we can read them as a float.
           std::memcpy(&float_value, &literal_value, sizeof(float_value));
-          ast_expr = create<ast::ScalarConstructorExpression>(
-              Source{}, create<ast::FloatLiteral>(Source{}, float_value));
+          ast_expr = create<ast::FloatLiteralExpression>(Source{}, float_value);
         } else {
           return Fail() << " invalid result type for OpSpecConstant "
                         << inst.PrettyPrint();
@@ -1781,9 +1777,9 @@ const ast::Decoration* ParserImpl::SetLocation(
 bool ParserImpl::ConvertPipelineDecorations(const Type* store_type,
                                             const DecorationList& decorations,
                                             ast::DecorationList* ast_decos) {
-  bool has_interpolate_no_perspective = false;
-  bool has_interpolate_sampling_centroid = false;
-  bool has_interpolate_sampling_sample = false;
+  // Vulkan defaults to perspective-correct interpolation.
+  ast::InterpolationType type = ast::InterpolationType::kPerspective;
+  ast::InterpolationSampling sampling = ast::InterpolationSampling::kNone;
 
   for (const auto& deco : decorations) {
     TINT_ASSERT(Reader, deco.size() > 0);
@@ -1797,22 +1793,14 @@ bool ParserImpl::ConvertPipelineDecorations(const Type* store_type,
                     create<ast::LocationDecoration>(Source{}, deco[1]));
         break;
       case SpvDecorationFlat:
-        // In WGSL, integral types are always flat, and so the decoration
-        // is never specified.
-        if (!store_type->IsIntegerScalarOrVector()) {
-          ast_decos->emplace_back(create<ast::InterpolateDecoration>(
-              Source{}, ast::InterpolationType::kFlat,
-              ast::InterpolationSampling::kNone));
-          // Only one interpolate attribute is allowed.
-          return true;
-        }
+        type = ast::InterpolationType::kFlat;
         break;
       case SpvDecorationNoPerspective:
         if (store_type->IsIntegerScalarOrVector()) {
           // This doesn't capture the array or struct case.
           return Fail() << "NoPerspective is invalid on integral IO";
         }
-        has_interpolate_no_perspective = true;
+        type = ast::InterpolationType::kLinear;
         break;
       case SpvDecorationCentroid:
         if (store_type->IsIntegerScalarOrVector()) {
@@ -1820,7 +1808,7 @@ bool ParserImpl::ConvertPipelineDecorations(const Type* store_type,
           return Fail()
                  << "Centroid interpolation sampling is invalid on integral IO";
         }
-        has_interpolate_sampling_centroid = true;
+        sampling = ast::InterpolationSampling::kCentroid;
         break;
       case SpvDecorationSample:
         if (store_type->IsIntegerScalarOrVector()) {
@@ -1828,33 +1816,19 @@ bool ParserImpl::ConvertPipelineDecorations(const Type* store_type,
           return Fail()
                  << "Sample interpolation sampling is invalid on integral IO";
         }
-        has_interpolate_sampling_sample = true;
+        sampling = ast::InterpolationSampling::kSample;
         break;
       default:
         break;
     }
   }
 
-  // Apply non-integral interpolation.
-  if (has_interpolate_no_perspective || has_interpolate_sampling_centroid ||
-      has_interpolate_sampling_sample) {
-    const ast::InterpolationType type =
-        has_interpolate_no_perspective ? ast::InterpolationType::kLinear
-                                       : ast::InterpolationType::kPerspective;
-    const ast::InterpolationSampling sampling =
-        has_interpolate_sampling_centroid
-            ? ast::InterpolationSampling::kCentroid
-            : (has_interpolate_sampling_sample
-                   ? ast::InterpolationSampling::kSample
-                   : ast::InterpolationSampling::
-                         kNone /* Center is the default */);
-    if (type == ast::InterpolationType::kPerspective &&
-        sampling == ast::InterpolationSampling::kNone) {
-      // This is the default. Don't add a decoration.
-    } else {
-      ast_decos->emplace_back(
-          create<ast::InterpolateDecoration>(type, sampling));
-    }
+  // Apply interpolation.
+  if (type == ast::InterpolationType::kPerspective &&
+      sampling == ast::InterpolationSampling::kNone) {
+    // This is the default. Don't add a decoration.
+  } else {
+    ast_decos->emplace_back(create<ast::InterpolateDecoration>(type, sampling));
   }
 
   return success();
@@ -1888,9 +1862,9 @@ TypedExpression ParserImpl::MakeConstantExpression(uint32_t id) {
     auto y = MakeConstantExpression(workgroup_size_builtin_.y_id);
     auto z = MakeConstantExpression(workgroup_size_builtin_.z_id);
     auto* ast_type = ty_.Vector(x.type, 3);
-    return {ast_type, create<ast::TypeConstructorExpression>(
-                          Source{}, ast_type->Build(builder_),
-                          ast::ExpressionList{x.expr, y.expr, z.expr})};
+    return {ast_type,
+            builder_.Construct(Source{}, ast_type->Build(builder_),
+                               ast::ExpressionList{x.expr, y.expr, z.expr})};
   } else if (id == workgroup_size_builtin_.x_id) {
     return MakeConstantExpressionForScalarSpirvConstant(
         Source{}, ConvertType(workgroup_size_builtin_.component_type_id),
@@ -1959,9 +1933,9 @@ TypedExpression ParserImpl::MakeConstantExpression(uint32_t id) {
         // We've already emitted a diagnostic.
         return {};
       }
-      return {original_ast_type, create<ast::TypeConstructorExpression>(
-                                     source, original_ast_type->Build(builder_),
-                                     std::move(ast_components))};
+      return {original_ast_type,
+              builder_.Construct(source, original_ast_type->Build(builder_),
+                                 std::move(ast_components))};
     }
     default:
       break;
@@ -1981,26 +1955,22 @@ TypedExpression ParserImpl::MakeConstantExpressionForScalarSpirvConstant(
   // Currently "null<type>" is missing from the WGSL parser.
   // See https://bugs.chromium.org/p/tint/issues/detail?id=34
   if (ast_type->Is<U32>()) {
-    return {ty_.U32(), create<ast::ScalarConstructorExpression>(
-                           Source{}, create<ast::UintLiteral>(
-                                         source, spirv_const->GetU32()))};
+    return {ty_.U32(),
+            create<ast::UintLiteralExpression>(source, spirv_const->GetU32())};
   }
   if (ast_type->Is<I32>()) {
-    return {ty_.I32(), create<ast::ScalarConstructorExpression>(
-                           Source{}, create<ast::SintLiteral>(
-                                         source, spirv_const->GetS32()))};
+    return {ty_.I32(),
+            create<ast::SintLiteralExpression>(source, spirv_const->GetS32())};
   }
   if (ast_type->Is<F32>()) {
-    return {ty_.F32(), create<ast::ScalarConstructorExpression>(
-                           Source{}, create<ast::FloatLiteral>(
-                                         source, spirv_const->GetFloat()))};
+    return {ty_.F32(), create<ast::FloatLiteralExpression>(
+                           source, spirv_const->GetFloat())};
   }
   if (ast_type->Is<Bool>()) {
     const bool value = spirv_const->AsNullConstant()
                            ? false
                            : spirv_const->AsBoolConstant()->value();
-    return {ty_.Bool(), create<ast::ScalarConstructorExpression>(
-                            Source{}, create<ast::BoolLiteral>(source, value))};
+    return {ty_.Bool(), create<ast::BoolLiteralExpression>(source, value)};
   }
   Fail() << "expected scalar constant";
   return {};
@@ -2021,34 +1991,30 @@ const ast::Expression* ParserImpl::MakeNullValue(const Type* type) {
   type = type->UnwrapAlias();
 
   if (type->Is<Bool>()) {
-    return create<ast::ScalarConstructorExpression>(
-        Source{}, create<ast::BoolLiteral>(Source{}, false));
+    return create<ast::BoolLiteralExpression>(Source{}, false);
   }
   if (type->Is<U32>()) {
-    return create<ast::ScalarConstructorExpression>(
-        Source{}, create<ast::UintLiteral>(Source{}, 0u));
+    return create<ast::UintLiteralExpression>(Source{}, 0u);
   }
   if (type->Is<I32>()) {
-    return create<ast::ScalarConstructorExpression>(
-        Source{}, create<ast::SintLiteral>(Source{}, 0));
+    return create<ast::SintLiteralExpression>(Source{}, 0);
   }
   if (type->Is<F32>()) {
-    return create<ast::ScalarConstructorExpression>(
-        Source{}, create<ast::FloatLiteral>(Source{}, 0.0f));
+    return create<ast::FloatLiteralExpression>(Source{}, 0.0f);
   }
   if (type->Is<Alias>()) {
     // TODO(amaiorano): No type constructor for TypeName (yet?)
     ast::ExpressionList ast_components;
-    return create<ast::TypeConstructorExpression>(
-        Source{}, original_type->Build(builder_), std::move(ast_components));
+    return builder_.Construct(Source{}, original_type->Build(builder_),
+                              std::move(ast_components));
   }
   if (auto* vec_ty = type->As<Vector>()) {
     ast::ExpressionList ast_components;
     for (size_t i = 0; i < vec_ty->size; ++i) {
       ast_components.emplace_back(MakeNullValue(vec_ty->type));
     }
-    return create<ast::TypeConstructorExpression>(
-        Source{}, type->Build(builder_), std::move(ast_components));
+    return builder_.Construct(Source{}, type->Build(builder_),
+                              std::move(ast_components));
   }
   if (auto* mat_ty = type->As<Matrix>()) {
     // Matrix components are columns
@@ -2057,24 +2023,24 @@ const ast::Expression* ParserImpl::MakeNullValue(const Type* type) {
     for (size_t i = 0; i < mat_ty->columns; ++i) {
       ast_components.emplace_back(MakeNullValue(column_ty));
     }
-    return create<ast::TypeConstructorExpression>(
-        Source{}, type->Build(builder_), std::move(ast_components));
+    return builder_.Construct(Source{}, type->Build(builder_),
+                              std::move(ast_components));
   }
   if (auto* arr_ty = type->As<Array>()) {
     ast::ExpressionList ast_components;
     for (size_t i = 0; i < arr_ty->size; ++i) {
       ast_components.emplace_back(MakeNullValue(arr_ty->type));
     }
-    return create<ast::TypeConstructorExpression>(
-        Source{}, original_type->Build(builder_), std::move(ast_components));
+    return builder_.Construct(Source{}, original_type->Build(builder_),
+                              std::move(ast_components));
   }
   if (auto* struct_ty = type->As<Struct>()) {
     ast::ExpressionList ast_components;
     for (auto* member : struct_ty->members) {
       ast_components.emplace_back(MakeNullValue(member));
     }
-    return create<ast::TypeConstructorExpression>(
-        Source{}, original_type->Build(builder_), std::move(ast_components));
+    return builder_.Construct(Source{}, original_type->Build(builder_),
+                              std::move(ast_components));
   }
   Fail() << "can't make null value for type: " << type->TypeInfo().name;
   return nullptr;

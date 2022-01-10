@@ -57,9 +57,13 @@ constexpr char kSkippedTestString[] = "[  SKIPPED ] ";
 
 constexpr char kArtifactsFakeTestName[] = "TestArtifactsFakeTest";
 
+constexpr char kTSanOptionsEnvVar[]  = "TSAN_OPTIONS";
+constexpr char kUBSanOptionsEnvVar[] = "UBSAN_OPTIONS";
+
 // Note: we use a fairly high test timeout to allow for the first test in a batch to be slow.
 // Ideally we could use a separate timeout for the slow first test.
-#if defined(NDEBUG)
+// Allow sanitized tests to run more slowly.
+#if defined(NDEBUG) && !defined(ANGLE_WITH_SANITIZER)
 constexpr int kDefaultTestTimeout = 60;
 #else
 constexpr int kDefaultTestTimeout  = 120;
@@ -429,7 +433,7 @@ void UpdateCurrentTestResult(const testing::TestResult &resultIn, TestResults *r
         resultOut.type = TestResultType::Pass;
     }
 
-    resultOut.elapsedTimeSeconds = resultsOut->currentTestTimer.getElapsedTime();
+    resultOut.elapsedTimeSeconds = resultsOut->currentTestTimer.getElapsedWallClockTime();
 }
 
 TestIdentifier GetTestIdentifier(const testing::TestInfo &testInfo)
@@ -1038,7 +1042,8 @@ TestSuite::TestSuite(int *argc, char **argv)
       mBatchId(-1),
       mFlakyRetries(0),
       mMaxFailures(kDefaultMaxFailures),
-      mFailureCount(0)
+      mFailureCount(0),
+      mModifiedPreferredDevice(false)
 {
     ASSERT(mInstance == nullptr);
     mInstance = this;
@@ -1127,6 +1132,49 @@ TestSuite::TestSuite(int *argc, char **argv)
             std::stringstream shardCountStream(envTotalShards);
             shardCountStream >> mShardCount;
         }
+    }
+
+    // The test harness reads the active GPU from SystemInfo and uses that for test expectations.
+    // However, some ANGLE backends don't have a concept of an "active" GPU, and instead use power
+    // preference to select GPU. We can use the environment variable ANGLE_PREFERRED_DEVICE to
+    // ensure ANGLE's selected GPU matches the GPU expected for this test suite.
+    const GPUTestConfig testConfig      = GPUTestConfig();
+    const char kPreferredDeviceEnvVar[] = "ANGLE_PREFERRED_DEVICE";
+    if (GetEnvironmentVar(kPreferredDeviceEnvVar).empty())
+    {
+        mModifiedPreferredDevice                        = true;
+        const GPUTestConfig::ConditionArray &conditions = testConfig.getConditions();
+        if (conditions[GPUTestConfig::kConditionAMD])
+        {
+            SetEnvironmentVar(kPreferredDeviceEnvVar, "amd");
+        }
+        else if (conditions[GPUTestConfig::kConditionNVIDIA])
+        {
+            SetEnvironmentVar(kPreferredDeviceEnvVar, "nvidia");
+        }
+        else if (conditions[GPUTestConfig::kConditionIntel])
+        {
+            SetEnvironmentVar(kPreferredDeviceEnvVar, "intel");
+        }
+        else if (conditions[GPUTestConfig::kConditionApple])
+        {
+            SetEnvironmentVar(kPreferredDeviceEnvVar, "apple");
+        }
+    }
+
+    // Special handling for TSAN and UBSAN to force crashes when run in automated testing.
+    if (IsTSan())
+    {
+        std::string tsanOptions = GetEnvironmentVar(kTSanOptionsEnvVar);
+        tsanOptions += " halt_on_error=1";
+        SetEnvironmentVar(kTSanOptionsEnvVar, tsanOptions.c_str());
+    }
+
+    if (IsUBSan())
+    {
+        std::string ubsanOptions = GetEnvironmentVar(kUBSanOptionsEnvVar);
+        ubsanOptions += " halt_on_error=1";
+        SetEnvironmentVar(kUBSanOptionsEnvVar, ubsanOptions.c_str());
     }
 
     if ((mShardIndex == -1) != (mShardCount == -1))
@@ -1283,6 +1331,12 @@ TestSuite::TestSuite(int *argc, char **argv)
 
 TestSuite::~TestSuite()
 {
+    const char kPreferredDeviceEnvVar[] = "ANGLE_PREFERRED_DEVICE";
+    if (mModifiedPreferredDevice && !angle::GetEnvironmentVar(kPreferredDeviceEnvVar).empty())
+    {
+        angle::UnsetEnvironmentVar(kPreferredDeviceEnvVar);
+    }
+
     if (mWatchdogThread.joinable())
     {
         mWatchdogThread.detach();
@@ -1328,7 +1382,7 @@ void TestSuite::onCrashOrTimeout(TestResultType crashOrTimeout)
     {
         TestResult &result        = mTestResults.results[mTestResults.currentTest];
         result.type               = crashOrTimeout;
-        result.elapsedTimeSeconds = mTestResults.currentTestTimer.getElapsedTime();
+        result.elapsedTimeSeconds = mTestResults.currentTestTimer.getElapsedWallClockTime();
     }
 
     if (mResultsFile.empty())
@@ -1726,6 +1780,19 @@ int TestSuite::run()
                 {
                     return 1;
                 }
+
+                const std::string &batchStdout = processInfo.process->getStdout();
+                std::vector<std::string> lines =
+                    SplitString(batchStdout, "\r\n", WhitespaceHandling::TRIM_WHITESPACE,
+                                SplitResult::SPLIT_WANT_NONEMPTY);
+                constexpr size_t kKeepLines = 10;
+                printf("Last %d lines of batch stdout:\n", static_cast<int>(kKeepLines));
+                for (size_t lineNo = lines.size() - std::min(lines.size(), kKeepLines);
+                     lineNo < lines.size(); ++lineNo)
+                {
+                    printf("%s\n", lines[lineNo].c_str());
+                }
+
                 for (const TestIdentifier &testIdentifier : processInfo.testsInBatch)
                 {
                     // Because the whole batch failed we can't know how long each test took.
@@ -1747,7 +1814,7 @@ int TestSuite::run()
         {
             messageTimer.start();
         }
-        else if (messageTimer.getElapsedTime() > kIdleMessageTimeout)
+        else if (messageTimer.getElapsedWallClockTime() > kIdleMessageTimeout)
         {
             const ProcessInfo &processInfo = mCurrentProcesses[0];
             double processTime             = processInfo.process->getElapsedTimeSeconds();
@@ -1783,7 +1850,7 @@ int TestSuite::run()
     }
 
     totalRunTime.stop();
-    printf("Tests completed in %lf seconds\n", totalRunTime.getElapsedTime());
+    printf("Tests completed in %lf seconds\n", totalRunTime.getElapsedWallClockTime());
 
     return printFailuresAndReturnCount() == 0 ? 0 : 1;
 }
@@ -1836,7 +1903,7 @@ void TestSuite::startWatchdog()
         {
             {
                 std::lock_guard<std::mutex> guard(mTestResults.currentTestMutex);
-                if (mTestResults.currentTestTimer.getElapsedTime() >
+                if (mTestResults.currentTestTimer.getElapsedWallClockTime() >
                     mTestResults.currentTestTimeout)
                 {
                     break;

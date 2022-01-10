@@ -378,8 +378,12 @@ void RendererVk::ensureCapsInitialized() const
     // Enable EXT_texture_type_2_10_10_10_REV
     mNativeExtensions.textureType2101010REVEXT = true;
 
+    // Enable EXT_multi_draw_indirect
+    mNativeExtensions.multiDrawIndirectEXT = true;
+
     // Enable ANGLE_base_vertex_base_instance
-    mNativeExtensions.baseVertexBaseInstanceANGLE = true;
+    mNativeExtensions.baseVertexBaseInstanceANGLE              = true;
+    mNativeExtensions.baseVertexBaseInstanceShaderBuiltinANGLE = true;
 
     // Enable OES/EXT_draw_elements_base_vertex
     mNativeExtensions.drawElementsBaseVertexOES = true;
@@ -559,6 +563,9 @@ void RendererVk::ensureCapsInitialized() const
     // meant to match.  This is rectified in the GL spec.
     // https://gitlab.khronos.org/opengl/API/-/issues/149
     mNativeExtensions.shaderMultisampleInterpolationOES = mNativeExtensions.sampleVariablesOES;
+
+    // Always enable ANGLE_rgbx_internal_format to expose GL_RGBX8_ANGLE.
+    mNativeExtensions.rgbxInternalFormatANGLE = true;
 
     // https://vulkan.lunarg.com/doc/view/1.0.30.0/linux/vkspec.chunked/ch31s02.html
     mNativeCaps.maxElementIndex  = std::numeric_limits<GLuint>::max() - 1;
@@ -1099,6 +1106,9 @@ void RendererVk::ensureCapsInitialized() const
 
     // GL_EXT_protected_textures
     mNativeExtensions.protectedTexturesEXT = mFeatures.supportsProtectedMemory.enabled;
+
+    // GL_ANGLE_vulkan_image
+    mNativeExtensions.vulkanImageANGLE = true;
 }
 
 namespace vk
@@ -1196,6 +1206,10 @@ egl::Config GenerateDefaultConfig(DisplayVk *display,
     config.sampleBuffers      = (sampleCount > 0) ? 1 : 0;
     config.samples            = sampleCount;
     config.surfaceType        = EGL_WINDOW_BIT | EGL_PBUFFER_BIT;
+    if (display->getExtensions().mutableRenderBufferKHR)
+    {
+        config.surfaceType |= EGL_MUTABLE_RENDER_BUFFER_BIT_KHR;
+    }
     // Vulkan surfaces use a different origin than OpenGL, always prefer to be flipped vertically if
     // possible.
     config.optimalOrientation    = EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE;

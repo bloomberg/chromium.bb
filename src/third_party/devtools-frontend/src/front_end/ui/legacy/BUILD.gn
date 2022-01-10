@@ -14,6 +14,57 @@ generate_css("css_files") {
   ]
 }
 
+generate_css("legacy_css_files") {
+  sources = [
+    "checkboxTextLabel.css",
+    "closeButton.css",
+    "confirmDialog.css",
+    "dialog.css",
+    "dropTarget.css",
+    "emptyWidget.css",
+    "filter.css",
+    "glassPane.css",
+    "infobar.css",
+    "inlineButton.css",
+    "inspectorCommon.css",
+    "inspectorSyntaxHighlight.css",
+    "inspectorSyntaxHighlightDark.css",
+    "inspectorViewTabbedPane.css",
+    "listWidget.css",
+    "popover.css",
+    "progressIndicator.css",
+    "radioButton.css",
+    "remoteDebuggingTerminatedScreen.css",
+    "reportView.css",
+    "rootView.css",
+    "searchableView.css",
+    "slider.css",
+    "smallBubble.css",
+    "softContextMenu.css",
+    "softDropDown.css",
+    "softDropDownButton.css",
+    "splitWidget.css",
+    "suggestBox.css",
+    "tabbedPane.css",
+    "targetCrashedScreen.css",
+    "textButton.css",
+    "textPrompt.css",
+    "themeColors.css",
+    "toolbar.css",
+    "treeoutline.css",
+    "viewContainers.css",
+  ]
+
+  legacy = true
+}
+
+copy_to_gen("copy_stylesheets_for_server") {
+  sources = [
+    "inspectorCommon.css",
+    "themeColors.css",
+  ]
+}
+
 devtools_module("ui") {
   sources = [
     "ARIAUtils.ts",
@@ -57,7 +108,6 @@ devtools_module("ui") {
     "SuggestBox.ts",
     "TabbedPane.ts",
     "TargetCrashedScreen.ts",
-    "TextEditor.ts",
     "TextPrompt.ts",
     "ThrottledWidget.ts",
     "Toolbar.ts",
@@ -92,58 +142,20 @@ devtools_module("ui") {
   ]
 }
 
-copy_to_gen("legacy_css") {
-  sources = [
-    "checkboxTextLabel.css",
-    "closeButton.css",
-    "confirmDialog.css",
-    "dialog.css",
-    "dropTarget.css",
-    "emptyWidget.css",
-    "filter.css",
-    "glassPane.css",
-    "infobar.css",
-    "inlineButton.css",
-    "inspectorCommon.css",
-    "inspectorSyntaxHighlight.css",
-    "inspectorSyntaxHighlightDark.css",
-    "inspectorViewTabbedPane.css",
-    "listWidget.css",
-    "popover.css",
-    "progressIndicator.css",
-    "radioButton.css",
-    "remoteDebuggingTerminatedScreen.css",
-    "reportView.css",
-    "rootView.css",
-    "searchableView.css",
-    "slider.css",
-    "smallBubble.css",
-    "softContextMenu.css",
-    "softDropDown.css",
-    "softDropDownButton.css",
-    "splitWidget.css",
-    "suggestBox.css",
-    "tabbedPane.css",
-    "targetCrashedScreen.css",
-    "textButton.css",
-    "textPrompt.css",
-    "themeColors.css",
-    "toolbar.css",
-    "treeoutline.css",
-    "viewContainers.css",
-  ]
-}
-
 devtools_entrypoint("bundle") {
   entrypoint = "legacy.ts"
 
-  deps = [ ":ui" ]
+  deps = [
+    ":legacy_css_files",
+    ":ui",
+  ]
 
   visibility = [
     "../../../test/unittests/front_end/*",
     "../../entrypoints/*",
     "../../legacy_test_runner/*",
     "../../panels/*",
+    "../../services/window_bounds/*",
     "./*",
 
     # TODO(crbug.com/1202788): Remove invalid dependents
@@ -153,6 +165,9 @@ devtools_entrypoint("bundle") {
     "../components/data_grid:*",
     "../components/linear_memory_inspector:*",
     "../components/markdown_view:*",
+
+    # Required for x-link
+    "../components/panel_feedback/*",
     "../components/text_editor/*",
   ]
 
@@ -166,6 +181,6 @@ devtools_entrypoint("legacy") {
 
   visibility = [
     "../..:legacy_entrypoints",
-    "../../entrypoints/shell/*",
+    "../../legacy_test_runner/*",
   ]
 }

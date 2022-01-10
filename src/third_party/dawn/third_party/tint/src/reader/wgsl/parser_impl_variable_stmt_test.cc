@@ -55,17 +55,7 @@ TEST_F(ParserImplTest, VariableStmt_VariableDecl_WithInit) {
   ASSERT_EQ(e->source.range.end.column, 6u);
 
   ASSERT_NE(e->variable->constructor, nullptr);
-  EXPECT_TRUE(e->variable->constructor->Is<ast::ConstructorExpression>());
-}
-
-TEST_F(ParserImplTest, VariableStmt_VariableDecl_Invalid) {
-  auto p = parser("var a : invalid;");
-  auto e = p->variable_stmt();
-  EXPECT_FALSE(e.matched);
-  EXPECT_TRUE(e.errored);
-  EXPECT_EQ(e.value, nullptr);
-  EXPECT_TRUE(p->has_error());
-  EXPECT_EQ(p->error(), "1:9: unknown type 'invalid'");
+  EXPECT_TRUE(e->variable->constructor->Is<ast::LiteralExpression>());
 }
 
 TEST_F(ParserImplTest, VariableStmt_VariableDecl_ConstructorInvalid) {
@@ -90,7 +80,10 @@ TEST_F(ParserImplTest, VariableStmt_VariableDecl_ArrayInit) {
   EXPECT_EQ(e->variable->symbol, p->builder().Symbols().Get("a"));
 
   ASSERT_NE(e->variable->constructor, nullptr);
-  EXPECT_TRUE(e->variable->constructor->Is<ast::ConstructorExpression>());
+  auto* call = e->variable->constructor->As<ast::CallExpression>();
+  ASSERT_NE(call, nullptr);
+  EXPECT_EQ(call->target.name, nullptr);
+  EXPECT_NE(call->target.type, nullptr);
 }
 
 TEST_F(ParserImplTest, VariableStmt_VariableDecl_ArrayInit_NoSpace) {
@@ -105,7 +98,10 @@ TEST_F(ParserImplTest, VariableStmt_VariableDecl_ArrayInit_NoSpace) {
   EXPECT_EQ(e->variable->symbol, p->builder().Symbols().Get("a"));
 
   ASSERT_NE(e->variable->constructor, nullptr);
-  EXPECT_TRUE(e->variable->constructor->Is<ast::ConstructorExpression>());
+  auto* call = e->variable->constructor->As<ast::CallExpression>();
+  ASSERT_NE(call, nullptr);
+  EXPECT_EQ(call->target.name, nullptr);
+  EXPECT_NE(call->target.type, nullptr);
 }
 
 TEST_F(ParserImplTest, VariableStmt_VariableDecl_VecInit) {
@@ -120,7 +116,10 @@ TEST_F(ParserImplTest, VariableStmt_VariableDecl_VecInit) {
   EXPECT_EQ(e->variable->symbol, p->builder().Symbols().Get("a"));
 
   ASSERT_NE(e->variable->constructor, nullptr);
-  EXPECT_TRUE(e->variable->constructor->Is<ast::ConstructorExpression>());
+  auto* call = e->variable->constructor->As<ast::CallExpression>();
+  ASSERT_NE(call, nullptr);
+  EXPECT_EQ(call->target.name, nullptr);
+  EXPECT_NE(call->target.type, nullptr);
 }
 
 TEST_F(ParserImplTest, VariableStmt_VariableDecl_VecInit_NoSpace) {
@@ -135,7 +134,10 @@ TEST_F(ParserImplTest, VariableStmt_VariableDecl_VecInit_NoSpace) {
   EXPECT_EQ(e->variable->symbol, p->builder().Symbols().Get("a"));
 
   ASSERT_NE(e->variable->constructor, nullptr);
-  EXPECT_TRUE(e->variable->constructor->Is<ast::ConstructorExpression>());
+  auto* call = e->variable->constructor->As<ast::CallExpression>();
+  ASSERT_NE(call, nullptr);
+  EXPECT_EQ(call->target.name, nullptr);
+  EXPECT_NE(call->target.type, nullptr);
 }
 
 TEST_F(ParserImplTest, VariableStmt_Let) {
@@ -151,16 +153,6 @@ TEST_F(ParserImplTest, VariableStmt_Let) {
   ASSERT_EQ(e->source.range.begin.column, 5u);
   ASSERT_EQ(e->source.range.end.line, 1u);
   ASSERT_EQ(e->source.range.end.column, 6u);
-}
-
-TEST_F(ParserImplTest, VariableStmt_Let_InvalidVarIdent) {
-  auto p = parser("let a : invalid = 1");
-  auto e = p->variable_stmt();
-  EXPECT_FALSE(e.matched);
-  EXPECT_TRUE(e.errored);
-  EXPECT_EQ(e.value, nullptr);
-  EXPECT_TRUE(p->has_error());
-  EXPECT_EQ(p->error(), "1:9: unknown type 'invalid'");
 }
 
 TEST_F(ParserImplTest, VariableStmt_Let_MissingEqual) {

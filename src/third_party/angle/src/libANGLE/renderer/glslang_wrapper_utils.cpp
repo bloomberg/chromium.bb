@@ -3393,6 +3393,9 @@ TransformationState SpirvTransformer::transformDecorate(const uint32_t *instruct
             newDecorationValue = info->descriptorSet;
             break;
         case spv::DecorationFlat:
+        case spv::DecorationNoPerspective:
+        case spv::DecorationCentroid:
+        case spv::DecorationSample:
             if (info->useRelaxedPrecision)
             {
                 // Change the id to replacement variable
@@ -4681,8 +4684,6 @@ UniformBindingInfo::UniformBindingInfo(uint32_t bindingIndex,
 UniformBindingInfo::UniformBindingInfo() {}
 
 // ShaderInterfaceVariableInfo implementation.
-const uint32_t ShaderInterfaceVariableInfo::kInvalid;
-
 ShaderInterfaceVariableInfo::ShaderInterfaceVariableInfo() {}
 
 // ShaderInterfaceVariableInfoMap implementation.

@@ -218,13 +218,6 @@ typedef struct TplParams {
    */
   int border_in_pixels;
 
-#if CONFIG_BITRATE_ACCURACY
-  /*
-   * Estimated and actual GOP bitrate.
-   */
-  double estimated_gop_bitrate;
-  double actual_gop_bitrate;
-#endif
 } TplParams;
 
 #if CONFIG_BITRATE_ACCURACY
@@ -360,13 +353,11 @@ void av1_setup_tpl_buffers(struct AV1_PRIMARY *const ppi,
  * \param[in]    cpi           Top - level encoder instance structure
  * \param[in]    gop_eval      Flag if it is in the GOP length decision stage
  * \param[in]    frame_params  Per frame encoding parameters
- * \param[in]    frame_input   Input frame buffers
  *
  * \return Indicates whether or not we should use a longer GOP length.
  */
 int av1_tpl_setup_stats(struct AV1_COMP *cpi, int gop_eval,
-                        const struct EncodeFrameParams *const frame_params,
-                        const struct EncodeFrameInput *const frame_input);
+                        const struct EncodeFrameParams *const frame_params);
 
 /*!\cond */
 
@@ -553,7 +544,6 @@ int av1_get_overlap_area(int row_a, int col_a, int row_b, int col_b, int width,
  * \param[in]       stats_valid_list  List indicates whether transform stats
  *                                    exists
  * \param[in]       bit_budget        The specified bit budget to achieve
- * \param[in]       gf_frame_index    current frame in the GOP
  * \param[in]       bit_depth         bit depth
  * \param[in]       scale_factor      Scale factor to improve budget estimation
  * \param[in]       qstep_ratio_list  Stores the qstep_ratio for each frame
@@ -565,8 +555,7 @@ int av1_get_overlap_area(int row_a, int col_a, int row_b, int col_b, int width,
 int av1_q_mode_estimate_base_q(const struct GF_GROUP *gf_group,
                                const TplTxfmStats *txfm_stats_list,
                                const int *stats_valid_list, double bit_budget,
-                               int gf_frame_index, aom_bit_depth_t bit_depth,
-                               double scale_factor,
+                               aom_bit_depth_t bit_depth, double scale_factor,
                                const double *qstep_ratio_list,
                                int *q_index_list,
                                double *estimated_bitrate_byframe);
@@ -582,6 +571,16 @@ int av1_q_mode_estimate_base_q(const struct GF_GROUP *gf_group,
  */
 int av1_tpl_get_q_index(const TplParams *tpl_data, int gf_frame_index,
                         int leaf_qindex, aom_bit_depth_t bit_depth);
+
+/*!\brief Compute the frame importance from TPL stats
+ *
+ * \param[in]       tpl_data          TPL struct
+ * \param[in]       gf_frame_index    current frame index in the GOP
+ *
+ * \return frame_importance
+ */
+double av1_tpl_get_frame_importance(const TplParams *tpl_data,
+                                    int gf_frame_index);
 
 /*!\brief Compute the ratio between arf q step and the leaf q step based on TPL
  * stats
@@ -614,27 +613,23 @@ int av1_get_q_index_from_qstep_ratio(int leaf_qindex, double qstep_ratio,
  *                                 experiment
  * \param[in]       tpl_data       TPL struct
  * \param[in]       gf_group       GOP struct
- * \param[in]       gf_frame_index current frame index in the GOP
  * \param[in]       bit_depth      bit depth
  */
 void av1_vbr_rc_update_q_index_list(VBR_RATECTRL_INFO *vbr_rc_info,
                                     const TplParams *tpl_data,
                                     const struct GF_GROUP *gf_group,
-                                    int gf_frame_index,
                                     aom_bit_depth_t bit_depth);
 
 /*!\brief For a GOP, calculate the bits used by motion vectors.
  *
  * \param[in]       tpl_data          TPL struct
- * \param[in]       gf_group          Pointer to the GOP
- * \param[in]       gf_frame_index    Current frame index
- * \param[in]       gf_update_type    Frame update type
+ * \param[in]       gf_group          GOP struct
  * \param[in]       vbr_rc_info       Rate control info struct
  *
  * \return Bits used by the motion vectors for the GOP.
  */
-double av1_tpl_compute_mv_bits(const TplParams *tpl_data, int gf_group_size,
-                               int gf_frame_index, int gf_update_type,
+double av1_tpl_compute_mv_bits(const TplParams *tpl_data,
+                               const GF_GROUP *gf_group,
                                VBR_RATECTRL_INFO *vbr_rc_info);
 #endif  // CONFIG_BITRATE_ACCURACY
 

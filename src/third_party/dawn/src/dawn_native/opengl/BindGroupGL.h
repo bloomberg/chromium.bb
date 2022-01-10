@@ -32,6 +32,8 @@ namespace dawn_native { namespace opengl {
 
       private:
         ~BindGroup() override;
+
+        void DestroyImpl() override;
     };
 
 }}  // namespace dawn_native::opengl

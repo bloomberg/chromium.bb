@@ -8,19 +8,19 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/arc/mojom/net.mojom.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/net/network_diagnostics/network_diagnostics_routine.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-#include "components/arc/mojom/net.mojom.h"
-#include "components/arc/session/arc_bridge_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace ash {
+namespace chromeos {
 namespace network_diagnostics {
 
 namespace {
 
-using ::chromeos::network_config::mojom::ManagedPropertiesPtr;
+using chromeos::network_config::mojom::ManagedPropertiesPtr;
 
 }  // namespace
 
@@ -105,6 +105,6 @@ class ArcPingRoutine : public NetworkDiagnosticsRoutine {
 };
 
 }  // namespace network_diagnostics
-}  // namespace ash
+}  // namespace chromeos
 
 #endif  //  CHROME_BROWSER_ASH_NET_NETWORK_DIAGNOSTICS_ARC_PING_ROUTINE_H_

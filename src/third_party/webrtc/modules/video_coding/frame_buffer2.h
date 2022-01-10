@@ -45,8 +45,6 @@ namespace video_coding {
 
 class FrameBuffer {
  public:
-  enum ReturnReason { kFrameFound, kTimeout, kStopped };
-
   FrameBuffer(Clock* clock,
               VCMTiming* timing,
               VCMReceiveStatisticsCallback* stats_callback);
@@ -61,13 +59,13 @@ class FrameBuffer {
   // of the last continuous frame or -1 if there is no continuous frame.
   int64_t InsertFrame(std::unique_ptr<EncodedFrame> frame);
 
-  // Get the next frame for decoding. Will return at latest after
-  // `max_wait_time_ms`.
-  void NextFrame(
-      int64_t max_wait_time_ms,
-      bool keyframe_required,
-      rtc::TaskQueue* callback_queue,
-      std::function<void(std::unique_ptr<EncodedFrame>, ReturnReason)> handler);
+  using NextFrameCallback = std::function<void(std::unique_ptr<EncodedFrame>)>;
+  // Get the next frame for decoding. `handler` is invoked with the next frame
+  // or with nullptr if no frame is ready for decoding after `max_wait_time_ms`.
+  void NextFrame(int64_t max_wait_time_ms,
+                 bool keyframe_required,
+                 rtc::TaskQueue* callback_queue,
+                 NextFrameCallback handler);
 
   // Tells the FrameBuffer which protection mode that is in use. Affects
   // the frame timing.
@@ -121,7 +119,8 @@ class FrameBuffer {
   bool ValidReferences(const EncodedFrame& frame) const;
 
   int64_t FindNextFrame(int64_t now_ms) RTC_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
-  EncodedFrame* GetNextFrame() RTC_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
+  std::unique_ptr<EncodedFrame> GetNextFrame()
+      RTC_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
   void StartWaitForNextFrameOnQueue() RTC_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
   void CancelCallback() RTC_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
@@ -155,8 +154,8 @@ class FrameBuffer {
   // vector of frames, but until the decoding pipeline can support decoding
   // multiple frames at the same time we combine all frames to one frame and
   // return it. See bugs.webrtc.org/10064
-  EncodedFrame* CombineAndDeleteFrames(
-      const std::vector<EncodedFrame*>& frames) const;
+  std::unique_ptr<EncodedFrame> CombineAndDeleteFrames(
+      std::vector<std::unique_ptr<EncodedFrame>> frames) const;
 
   RTC_NO_UNIQUE_ADDRESS SequenceChecker construction_checker_;
   RTC_NO_UNIQUE_ADDRESS SequenceChecker callback_checker_;
@@ -170,8 +169,7 @@ class FrameBuffer {
 
   rtc::TaskQueue* callback_queue_ RTC_GUARDED_BY(mutex_);
   RepeatingTaskHandle callback_task_ RTC_GUARDED_BY(mutex_);
-  std::function<void(std::unique_ptr<EncodedFrame>, ReturnReason)>
-      frame_handler_ RTC_GUARDED_BY(mutex_);
+  NextFrameCallback frame_handler_ RTC_GUARDED_BY(mutex_);
   int64_t latest_return_time_ms_ RTC_GUARDED_BY(mutex_);
   bool keyframe_required_ RTC_GUARDED_BY(mutex_);
 

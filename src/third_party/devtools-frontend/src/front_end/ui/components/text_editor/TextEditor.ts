@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 import * as Common from '../../../core/common/common.js';
+import * as WindowBoundsService from '../../../services/window_bounds/window_bounds.js';
 import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.next.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as CodeHighlighter from '../code_highlighter/code_highlighter.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 
-import {baseConfiguration, dynamicSetting} from './config.js';
+import {baseConfiguration, dynamicSetting, DynamicSetting} from './config.js';
+import {toLineColumn, toOffset} from './position.js';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -19,117 +21,190 @@ declare global {
 export class TextEditor extends HTMLElement {
   static readonly litTagName = LitHtml.literal`devtools-text-editor`;
 
-  private readonly shadow = this.attachShadow({mode: 'open'});
-  private activeEditor: CodeMirror.EditorView|undefined = undefined;
-  private activeSettingListeners: [Common.Settings.Setting<unknown>, (event: {data: unknown}) => void][] = [];
-  private pendingState: CodeMirror.EditorState|undefined;
+  readonly #shadow = this.attachShadow({mode: 'open'});
+  #activeEditor: CodeMirror.EditorView|undefined = undefined;
+  #dynamicSettings: readonly DynamicSetting<unknown>[] = DynamicSetting.none;
+  #activeSettingListeners: [Common.Settings.Setting<unknown>, (event: {data: unknown}) => void][] = [];
+  #pendingState: CodeMirror.EditorState|undefined;
+  #lastScrollPos = {left: 0, top: 0};
+  #resizeTimeout = -1;
+  #resizeListener = (): void => {
+    if (this.#resizeTimeout < 0) {
+      this.#resizeTimeout = window.setTimeout(() => {
+        this.#resizeTimeout = -1;
+        if (this.#activeEditor) {
+          CodeMirror.repositionTooltips(this.#activeEditor);
+        }
+      }, 50);
+    }
+  };
+  #devtoolsResizeObserver = new ResizeObserver(this.#resizeListener);
 
   constructor(pendingState?: CodeMirror.EditorState) {
     super();
-    this.pendingState = pendingState;
-    this.shadow.adoptedStyleSheets = [CodeHighlighter.Style.default];
+    this.#pendingState = pendingState;
+    this.#shadow.adoptedStyleSheets = [CodeHighlighter.Style.default];
   }
 
   private createEditor(): CodeMirror.EditorView {
-    this.activeEditor = new CodeMirror.EditorView({
-      state: this.updateDynamicSettings(this.state),
-      parent: this.shadow,
-      root: this.shadow,
+    this.#activeEditor = new CodeMirror.EditorView({
+      state: this.state,
+      parent: this.#shadow,
+      root: this.#shadow,
+      dispatch: (tr: CodeMirror.Transaction): void => {
+        this.editor.update([tr]);
+        if (tr.reconfigured) {
+          this.ensureSettingListeners();
+        }
+      },
     });
-    return this.activeEditor;
+    this.#activeEditor.scrollDOM.scrollTop = this.#lastScrollPos.top;
+    this.#activeEditor.scrollDOM.scrollLeft = this.#lastScrollPos.left;
+    this.#activeEditor.scrollDOM.addEventListener('scroll', (event): void => {
+      this.#lastScrollPos.left = (event.target as HTMLElement).scrollLeft;
+      this.#lastScrollPos.top = (event.target as HTMLElement).scrollTop;
+    });
+    this.ensureSettingListeners();
+    this.startObservingResize();
+    return this.#activeEditor;
   }
 
   get editor(): CodeMirror.EditorView {
-    return this.activeEditor || this.createEditor();
+    return this.#activeEditor || this.createEditor();
+  }
+
+  dispatch(spec: CodeMirror.TransactionSpec): void {
+    return this.editor.dispatch(spec);
   }
 
   get state(): CodeMirror.EditorState {
-    if (this.activeEditor) {
-      return this.activeEditor.state;
+    if (this.#activeEditor) {
+      return this.#activeEditor.state;
     }
-    if (!this.pendingState) {
-      this.pendingState = CodeMirror.EditorState.create({extensions: baseConfiguration('')});
+    if (!this.#pendingState) {
+      this.#pendingState = CodeMirror.EditorState.create({extensions: baseConfiguration('')});
     }
-    return this.pendingState;
+    return this.#pendingState;
   }
 
   set state(state: CodeMirror.EditorState) {
-    if (this.activeEditor) {
-      this.activeEditor.setState(state);
+    if (this.#activeEditor) {
+      this.#activeEditor.setState(state);
     } else {
-      this.pendingState = state;
+      this.#pendingState = state;
     }
   }
 
   connectedCallback(): void {
-    if (!this.activeEditor) {
+    if (!this.#activeEditor) {
       this.createEditor();
     }
-    this.registerSettingHandlers();
   }
 
   disconnectedCallback(): void {
-    if (this.activeEditor) {
-      this.pendingState = this.activeEditor.state;
-      this.activeEditor.destroy();
-      this.activeEditor = undefined;
+    if (this.#activeEditor) {
+      this.#pendingState = this.#activeEditor.state;
+      this.#devtoolsResizeObserver.disconnect();
+      window.removeEventListener('resize', this.#resizeListener);
+      this.#activeEditor.destroy();
+      this.#activeEditor = undefined;
+      this.ensureSettingListeners();
     }
-    for (const [setting, listener] of this.activeSettingListeners) {
+  }
+
+  focus(): void {
+    if (this.#activeEditor) {
+      this.#activeEditor.focus();
+    }
+  }
+
+  private ensureSettingListeners(): void {
+    const dynamicSettings = this.#activeEditor ? this.#activeEditor.state.facet(dynamicSetting) : DynamicSetting.none;
+    if (dynamicSettings === this.#dynamicSettings) {
+      return;
+    }
+    this.#dynamicSettings = dynamicSettings;
+
+    for (const [setting, listener] of this.#activeSettingListeners) {
       setting.removeChangeListener(listener);
     }
-    this.activeSettingListeners = [];
-  }
+    this.#activeSettingListeners = [];
 
-  private updateDynamicSettings(state: CodeMirror.EditorState): CodeMirror.EditorState {
     const settings = Common.Settings.Settings.instance();
-    const changes = [];
-    for (const opt of state.facet(dynamicSetting)) {
-      const mustUpdate = opt.sync(state, settings.moduleSetting(opt.settingName).get());
-      if (mustUpdate) {
-        changes.push(mustUpdate);
-      }
-    }
-    return changes.length ? state.update({effects: changes}).state : state;
-  }
-
-  private registerSettingHandlers(): void {
-    const settings = Common.Settings.Settings.instance();
-    for (const opt of this.state.facet(dynamicSetting)) {
+    for (const dynamicSetting of dynamicSettings) {
       const handler = ({data}: {data: unknown}): void => {
-        const change = opt.sync(this.state, data);
-        if (change && this.activeEditor) {
-          this.activeEditor.dispatch({effects: change});
+        const change = dynamicSetting.sync(this.state, data);
+        if (change && this.#activeEditor) {
+          this.#activeEditor.dispatch({effects: change});
         }
       };
-      const setting = settings.moduleSetting(opt.settingName);
+      const setting = settings.moduleSetting(dynamicSetting.settingName);
       setting.addChangeListener(handler);
-      this.activeSettingListeners.push([setting, handler]);
+      this.#activeSettingListeners.push([setting, handler]);
     }
   }
 
-  revealPosition(position: number): void {
-    const view = this.activeEditor;
+  private startObservingResize(): void {
+    const devtoolsElement =
+        WindowBoundsService.WindowBoundsService.WindowBoundsServiceImpl.instance().getDevToolsBoundingElement();
+    if (devtoolsElement) {
+      this.#devtoolsResizeObserver.observe(devtoolsElement);
+    }
+    window.addEventListener('resize', this.#resizeListener);
+  }
+
+  revealPosition(selection: CodeMirror.EditorSelection, highlight: boolean = true): void {
+    const view = this.#activeEditor;
     if (!view) {
       return;
     }
 
-    const line = view.state.doc.lineAt(position);
+    const line = view.state.doc.lineAt(selection.main.head);
+    const effects: CodeMirror.StateEffect<unknown>[] = [];
+    if (highlight) {
+      effects.push(
+          view.state.field(highlightState, false) ?
+              setHighlightLine.of(line.from) :
+              CodeMirror.StateEffect.appendConfig.of(highlightState.init(() => highlightDeco(line.from))));
+    }
+    const editorRect = view.scrollDOM.getBoundingClientRect();
+    const targetPos = view.coordsAtPos(selection.main.head);
+    if (!targetPos || targetPos.top < editorRect.top || targetPos.bottom > editorRect.bottom) {
+      effects.push(CodeMirror.EditorView.centerOn.of(selection.main));
+    }
+
     view.dispatch({
-      selection: CodeMirror.EditorSelection.cursor(position),
-      scrollIntoView: true,
-      effects:
-          [view.state.field(highlightState, false) ?
-               setHighlightLine.of(line.from) :
-               CodeMirror.StateEffect.appendConfig.of(highlightState.init(() => highlightDeco(line.from)))],
+      selection,
+      effects,
+      userEvent: 'select.reveal',
     });
-    const {id} = view.state.field(highlightState);
-    // Reset the highlight state if, after 2 seconds (the animation
-    // duration) it is still showing this highlight.
-    setTimeout(() => {
-      if (view.state.field(highlightState).id === id) {
-        view.dispatch({effects: setHighlightLine.of(null)});
-      }
-    }, 2000);
+    if (highlight) {
+      const {id} = view.state.field(highlightState);
+      // Reset the highlight state if, after 2 seconds (the animation
+      // duration) it is still showing this highlight.
+      setTimeout(() => {
+        if (view.state.field(highlightState).id === id) {
+          view.dispatch({effects: setHighlightLine.of(null)});
+        }
+      }, 2000);
+    }
+  }
+
+  createSelection(head: {lineNumber: number, columnNumber: number}, anchor?: {
+    lineNumber: number,
+    columnNumber: number,
+  }): CodeMirror.EditorSelection {
+    const {doc} = this.state;
+    const headPos = toOffset(doc, head);
+    return CodeMirror.EditorSelection.single(anchor ? toOffset(doc, anchor) : headPos, headPos);
+  }
+
+  toLineColumn(pos: number): {lineNumber: number, columnNumber: number} {
+    return toLineColumn(this.state.doc, pos);
+  }
+
+  toOffset(pos: {lineNumber: number, columnNumber: number}): number {
+    return toOffset(this.state.doc, pos);
   }
 }
 

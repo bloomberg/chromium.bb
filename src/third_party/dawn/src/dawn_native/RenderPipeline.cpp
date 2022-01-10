@@ -248,14 +248,9 @@ namespace dawn_native {
             DAWN_TRY(ValidateFrontFace(descriptor->frontFace));
             DAWN_TRY(ValidateCullMode(descriptor->cullMode));
 
-            // Pipeline descriptors must have stripIndexFormat != undefined IFF they are using strip
-            // topologies.
-            if (IsStripPrimitiveTopology(descriptor->topology)) {
-                DAWN_INVALID_IF(
-                    descriptor->stripIndexFormat == wgpu::IndexFormat::Undefined,
-                    "StripIndexFormat is undefined when using a strip primitive topology (%s).",
-                    descriptor->topology);
-            } else {
+            // Pipeline descriptors must have stripIndexFormat == undefined if they are using
+            // non-strip topologies.
+            if (!IsStripPrimitiveTopology(descriptor->topology)) {
                 DAWN_INVALID_IF(
                     descriptor->stripIndexFormat != wgpu::IndexFormat::Undefined,
                     "StripIndexFormat (%s) is not undefined when using a non-strip primitive "
@@ -683,13 +678,15 @@ namespace dawn_native {
 
     RenderPipelineBase::~RenderPipelineBase() = default;
 
-    bool RenderPipelineBase::DestroyApiObject() {
-        bool wasDestroyed = ApiObjectBase::DestroyApiObject();
-        if (wasDestroyed && IsCachedReference()) {
-            // Do not uncache the actual cached object if we are a blueprint or already destroyed.
+    void RenderPipelineBase::DestroyImpl() {
+        if (IsCachedReference()) {
+            // Do not uncache the actual cached object if we are a blueprint.
             GetDevice()->UncacheRenderPipeline(this);
         }
-        return wasDestroyed;
+
+        // Remove reference to the attachment state so that we don't have lingering references to
+        // it preventing it from being uncached in the device.
+        mAttachmentState = nullptr;
     }
 
     // static

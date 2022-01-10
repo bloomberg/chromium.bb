@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <ostream>
 #include <utility>
 
 #include "base/check_op.h"
@@ -81,9 +82,9 @@ std::unique_ptr<TimingFunction> ImpulseCurveWithInitialSlope(double slope) {
   return CubicBezierTimingFunction::Create(x1, y1, x2, y2);
 }
 
-bool IsNewTargetInOppositeDirection(const gfx::Vector2dF& current_position,
-                                    const gfx::Vector2dF& old_target,
-                                    const gfx::Vector2dF& new_target) {
+bool IsNewTargetInOppositeDirection(const gfx::PointF& current_position,
+                                    const gfx::PointF& old_target,
+                                    const gfx::PointF& new_target) {
   gfx::Vector2dF old_delta = old_target - current_position;
   gfx::Vector2dF new_delta = new_target - current_position;
 
@@ -132,7 +133,7 @@ absl::optional<double>
     ScrollOffsetAnimationCurve::animation_duration_for_testing_;
 
 ScrollOffsetAnimationCurve::ScrollOffsetAnimationCurve(
-    const gfx::Vector2dF& target_value,
+    const gfx::PointF& target_value,
     AnimationType animation_type,
     absl::optional<DurationBehavior> duration_behavior)
     : target_value_(target_value),
@@ -157,7 +158,7 @@ ScrollOffsetAnimationCurve::ScrollOffsetAnimationCurve(
 }
 
 ScrollOffsetAnimationCurve::ScrollOffsetAnimationCurve(
-    const gfx::Vector2dF& target_value,
+    const gfx::PointF& target_value,
     std::unique_ptr<TimingFunction> timing_function,
     AnimationType animation_type,
     absl::optional<DurationBehavior> duration_behavior)
@@ -276,7 +277,7 @@ base::TimeDelta ScrollOffsetAnimationCurve::ImpulseSegmentDuration(
 }
 
 void ScrollOffsetAnimationCurve::SetInitialValue(
-    const gfx::Vector2dF& initial_value,
+    const gfx::PointF& initial_value,
     base::TimeDelta delayed_by,
     float velocity) {
   initial_value_ = initial_value;
@@ -296,7 +297,7 @@ void ScrollOffsetAnimationCurve::ApplyAdjustment(
   target_value_ = target_value_ + adjustment;
 }
 
-gfx::Vector2dF ScrollOffsetAnimationCurve::GetValue(base::TimeDelta t) const {
+gfx::PointF ScrollOffsetAnimationCurve::GetValue(base::TimeDelta t) const {
   const base::TimeDelta duration = total_animation_duration_ - last_retarget_;
   t -= last_retarget_;
 
@@ -306,10 +307,10 @@ gfx::Vector2dF ScrollOffsetAnimationCurve::GetValue(base::TimeDelta t) const {
     return initial_value_;
 
   const double progress = timing_function_->GetValue(t / duration);
-  return gfx::Vector2dF(gfx::Tween::FloatValueBetween(
-                            progress, initial_value_.x(), target_value_.x()),
-                        gfx::Tween::FloatValueBetween(
-                            progress, initial_value_.y(), target_value_.y()));
+  return gfx::PointF(gfx::Tween::FloatValueBetween(progress, initial_value_.x(),
+                                                   target_value_.x()),
+                     gfx::Tween::FloatValueBetween(progress, initial_value_.y(),
+                                                   target_value_.y()));
 }
 
 base::TimeDelta ScrollOffsetAnimationCurve::Duration() const {
@@ -368,9 +369,8 @@ double ScrollOffsetAnimationCurve::CalculateVelocity(base::TimeDelta t) {
   return slope * (MaximumDimension(delta) / duration.InSecondsF());
 }
 
-void ScrollOffsetAnimationCurve::UpdateTarget(
-    base::TimeDelta t,
-    const gfx::Vector2dF& new_target) {
+void ScrollOffsetAnimationCurve::UpdateTarget(base::TimeDelta t,
+                                              const gfx::PointF& new_target) {
   DCHECK_NE(animation_type_, AnimationType::kLinear)
       << "UpdateTarget is not supported on linear scroll animations.";
 
@@ -398,7 +398,7 @@ void ScrollOffsetAnimationCurve::UpdateTarget(
     return;
   }
 
-  gfx::Vector2dF current_position = GetValue(t);
+  gfx::PointF current_position = GetValue(t);
   gfx::Vector2dF new_delta = new_target - current_position;
 
   // We are already at or very close to the new target. Stop animating.

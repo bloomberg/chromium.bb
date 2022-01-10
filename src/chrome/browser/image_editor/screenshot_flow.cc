@@ -7,11 +7,13 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
@@ -84,7 +86,7 @@ void ScreenshotFlow::CreateAndAddUIOverlay() {
   ui::Layer* content_layer = native_window->layer();
   const gfx::Rect bounds = native_window->bounds();
   // Capture mouse down and drag events on our window.
-  native_window->AddPreTargetHandler(this);
+  event_capture_.Observe(native_window);
 #endif
   content_layer->Add(screen_capture_layer_.get());
   content_layer->StackAtTop(screen_capture_layer_.get());
@@ -98,6 +100,8 @@ void ScreenshotFlow::CreateAndAddUIOverlay() {
 }
 
 void ScreenshotFlow::RemoveUIOverlay() {
+  if (capture_mode_ == CaptureMode::NOT_CAPTURING)
+    return;
   capture_mode_ = CaptureMode::NOT_CAPTURING;
   if (!web_contents_ || !screen_capture_layer_)
     return;
@@ -105,11 +109,13 @@ void ScreenshotFlow::RemoveUIOverlay() {
 #if defined(OS_MAC)
   views::Widget* widget = views::Widget::GetWidgetForNativeView(
       web_contents_->GetContentNativeView());
+  if (!widget)
+    return;
   ui::Layer* content_layer = widget->GetLayer();
   event_capture_mac_.reset();
 #else
   const gfx::NativeWindow& native_window = web_contents_->GetNativeView();
-  native_window->RemovePreTargetHandler(this);
+  event_capture_.Reset();
   ui::Layer* content_layer = native_window->layer();
 #endif
 
@@ -255,6 +261,9 @@ void ScreenshotFlow::RunScreenshotCompleteCallback(
     ScreenshotCaptureResultCode result_code,
     gfx::Rect bounds,
     gfx::Image image) {
+  if (flow_callback_.is_null())
+    return;
+
   ScreenshotCaptureResult result;
   result.result_code = result_code;
   result.image = image;
@@ -272,6 +281,8 @@ void ScreenshotFlow::OnPaintLayer(const ui::PaintContext& context) {
   gfx::Canvas* canvas = recorder.canvas();
 
   auto selection_rect = gfx::BoundingRect(drag_start_, drag_end_);
+  // Draw border exclusively outside selected region.
+  selection_rect.Inset(-1, -1, 0, 0);
   PaintSelectionLayer(canvas, selection_rect, gfx::Rect());
   paint_invalidation_ = gfx::Rect();
 }
@@ -371,7 +382,7 @@ class ScreenshotFlow::UnderlyingWebContentsObserver
   }
 
  private:
-  ScreenshotFlow* screenshot_flow_;
+  raw_ptr<ScreenshotFlow> screenshot_flow_;
 };
 
 }  // namespace image_editor

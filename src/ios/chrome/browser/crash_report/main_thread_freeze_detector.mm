@@ -86,9 +86,6 @@ enum class IOSMainThreadFreezeDetectionNotRunningAfterReportBlock {
   // The directory containing UTE crash reports eligible for crashpad
   // processing.
   NSString* _UTEPendingCrashpadDirectory;
-  // The block to call (on main thread) once the UTE report is restored in the
-  // breakpad directory.
-  ProceduralBlock _restorationCompletion;
 }
 
 + (instancetype)sharedInstance {
@@ -152,6 +149,9 @@ enum class IOSMainThreadFreezeDetectionNotRunningAfterReportBlock {
 - (void)setEnabled:(BOOL)enabled {
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
+    dispatch_async(_freezeDetectionQueue, ^{
+      [self handleLastSessionReport];
+    });
     if (_lastSessionEndedFrozen) {
       LogRecoveryTime(base::Seconds(0));
     }
@@ -209,16 +209,12 @@ enum class IOSMainThreadFreezeDetectionNotRunningAfterReportBlock {
 }
 
 - (void)cleanAndRunInFreezeDetectionQueue {
-  if (_canUploadBreakpadCrashReports) {
-    // If the prevous session is not processed yet, do not delete the directory.
-    // It will be cleared on completion of processing the previous session.
-    NSFileManager* fileManager = [[NSFileManager alloc] init];
-    [fileManager removeItemAtPath:_UTEDirectory error:nil];
-    [fileManager createDirectoryAtPath:_UTEDirectory
-           withIntermediateDirectories:NO
-                            attributes:nil
-                                 error:nil];
-  }
+  NSFileManager* fileManager = [[NSFileManager alloc] init];
+  [fileManager removeItemAtPath:_UTEDirectory error:nil];
+  [fileManager createDirectoryAtPath:_UTEDirectory
+         withIntermediateDirectories:NO
+                          attributes:nil
+                               error:nil];
   [self runInFreezeDetectionQueue];
 }
 
@@ -231,7 +227,9 @@ enum class IOSMainThreadFreezeDetectionNotRunningAfterReportBlock {
     if (crash_reporter::IsCrashpadRunning()) {
       static crash_reporter::CrashKeyString<4> key("hang-report");
       crash_reporter::ScopedCrashKeyString auto_clear(&key, "yes");
-      base::FilePath path(base::SysNSStringToUTF8(_UTEDirectory));
+      NSString* intermediate_dump = [_UTEDirectory
+          stringByAppendingPathComponent:[[NSUUID UUID] UUIDString]];
+      base::FilePath path(base::SysNSStringToUTF8(intermediate_dump));
       crash_reporter::DumpWithoutCrashAndDeferProcessingAtPath(path);
       if (!self.running) {
         UMA_HISTOGRAM_ENUMERATION(
@@ -345,17 +343,6 @@ enum class IOSMainThreadFreezeDetectionNotRunningAfterReportBlock {
   [fileManager removeItemAtPath:_UTEPendingCrashpadDirectory error:nil];
 }
 
-- (void)prepareCrashReportsForUpload:(ProceduralBlock)completion {
-  DCHECK(completion);
-  _restorationCompletion = completion;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    dispatch_async(_freezeDetectionQueue, ^{
-      [self handleLastSessionReport];
-    });
-  });
-}
-
 - (void)restoreLastSessionReportIfNeeded {
   if (!_lastSessionFreezeInfo) {
     return;
@@ -438,23 +425,13 @@ enum class IOSMainThreadFreezeDetectionNotRunningAfterReportBlock {
   NSFileManager* fileManager = [[NSFileManager alloc] init];
   // It is possible that this call will delete a report on the current session.
   // But this is unlikely because |handleLastSessionReport| run on the
-  // |_freezeDetectionQueue| and is called directly from the main thread
-  // |prepareToUpload| which mean that main thread was responding recently.
+  // |_freezeDetectionQueue| and is called directly from setEnabled which means
+  // that main thread was responding recently.
   [fileManager removeItemAtPath:_UTEDirectory error:nil];
   [fileManager createDirectoryAtPath:_UTEDirectory
          withIntermediateDirectories:NO
                           attributes:nil
                                error:nil];
-
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [self handleSessionRestorationCompletion];
-  });
-}
-
-- (void)handleSessionRestorationCompletion {
-  _canUploadBreakpadCrashReports = YES;
-  DCHECK(_restorationCompletion);
-  _restorationCompletion();
 }
 
 @end

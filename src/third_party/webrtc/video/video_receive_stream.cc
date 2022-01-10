@@ -59,8 +59,6 @@ constexpr int VideoReceiveStream::kMaxWaitForKeyFrameMs;
 
 namespace {
 
-using ReturnReason = video_coding::FrameBuffer::ReturnReason;
-
 constexpr int kMinBaseMinimumDelayMs = 0;
 constexpr int kMaxBaseMinimumDelayMs = 10000;
 
@@ -459,7 +457,7 @@ void VideoReceiveStream::RemoveSecondarySink(
 void VideoReceiveStream::SetRtpExtensions(
     std::vector<RtpExtension> extensions) {
   // VideoReceiveStream is deprecated and this function not supported.
-  RTC_NOTREACHED();
+  RTC_DCHECK_NOTREACHED();
 }
 
 bool VideoReceiveStream::SetBaseMinimumPlayoutDelayMs(int delay_ms) {
@@ -584,14 +582,14 @@ absl::optional<Syncable::Info> VideoReceiveStream::GetInfo() const {
 
 bool VideoReceiveStream::GetPlayoutRtpTimestamp(uint32_t* rtp_timestamp,
                                                 int64_t* time_ms) const {
-  RTC_NOTREACHED();
+  RTC_DCHECK_NOTREACHED();
   return 0;
 }
 
 void VideoReceiveStream::SetEstimatedPlayoutNtpTimestampMs(
     int64_t ntp_timestamp_ms,
     int64_t time_ms) {
-  RTC_NOTREACHED();
+  RTC_DCHECK_NOTREACHED();
 }
 
 bool VideoReceiveStream::SetMinimumPlayoutDelay(int delay_ms) {
@@ -609,22 +607,19 @@ int64_t VideoReceiveStream::GetWaitMs() const {
 
 void VideoReceiveStream::StartNextDecode() {
   TRACE_EVENT0("webrtc", "VideoReceiveStream::StartNextDecode");
-  frame_buffer_->NextFrame(
-      GetWaitMs(), keyframe_required_, &decode_queue_,
-      /* encoded frame handler */
-      [this](std::unique_ptr<EncodedFrame> frame, ReturnReason res) {
-        RTC_DCHECK_EQ(frame == nullptr, res == ReturnReason::kTimeout);
-        RTC_DCHECK_EQ(frame != nullptr, res == ReturnReason::kFrameFound);
-        RTC_DCHECK_RUN_ON(&decode_queue_);
-        if (decoder_stopped_)
-          return;
-        if (frame) {
-          HandleEncodedFrame(std::move(frame));
-        } else {
-          HandleFrameBufferTimeout();
-        }
-        StartNextDecode();
-      });
+  frame_buffer_->NextFrame(GetWaitMs(), keyframe_required_, &decode_queue_,
+                           /* encoded frame handler */
+                           [this](std::unique_ptr<EncodedFrame> frame) {
+                             RTC_DCHECK_RUN_ON(&decode_queue_);
+                             if (decoder_stopped_)
+                               return;
+                             if (frame) {
+                               HandleEncodedFrame(std::move(frame));
+                             } else {
+                               HandleFrameBufferTimeout();
+                             }
+                             StartNextDecode();
+                           });
 }
 
 void VideoReceiveStream::HandleEncodedFrame(

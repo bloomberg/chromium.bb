@@ -157,6 +157,16 @@ VK_LAYER_EXPORT VkLayerDeviceCreateInfo *get_chain_info(const VkDeviceCreateInfo
 
 static inline bool IsPowerOfTwo(unsigned x) { return x && !(x & (x - 1)); }
 
+static inline uint32_t MostSignificantBit(uint32_t mask) {
+    uint32_t highest_view_bit = 0;
+    for (uint32_t k = 0; k < 32; ++k) {
+        if (((mask >> k) & 1) != 0) {
+            highest_view_bit = k;
+        }
+    }
+    return highest_view_bit;
+}
+
 static inline uint32_t SampleCountSize(VkSampleCountFlagBits sample_count) {
     uint32_t size = 0;
     switch (sample_count) {
@@ -210,6 +220,25 @@ static inline VkDeviceSize GetIndexAlignment(VkIndexType indexType) {
             // Not a real index type. Express no alignment requirement here; we expect upper layer
             // to have already picked up on the enum being nonsense.
             return 1;
+    }
+}
+
+static inline uint32_t GetPlaneIndex(VkImageAspectFlags aspect) {
+    // Returns an out of bounds index on error
+    switch (aspect) {
+        case VK_IMAGE_ASPECT_PLANE_0_BIT:
+            return 0;
+            break;
+        case VK_IMAGE_ASPECT_PLANE_1_BIT:
+            return 1;
+            break;
+        case VK_IMAGE_ASPECT_PLANE_2_BIT:
+            return 2;
+            break;
+        default:
+            // If more than one plane bit is set, return error condition
+            return FORMAT_MAX_PLANES;
+            break;
     }
 }
 

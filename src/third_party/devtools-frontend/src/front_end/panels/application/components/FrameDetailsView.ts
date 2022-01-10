@@ -47,9 +47,10 @@ const UIStrings = {
   */
   document: 'Document',
   /**
-  *@description Text for web URLs
+  *@description A web URL (for a lot of languages this does not need to be translated, please translate only where necessary)
   */
   url: 'URL',
+  /**
   /**
   *@description Title for a link to the Sources panel
   */
@@ -67,9 +68,11 @@ const UIStrings = {
   */
   clickToRevealInNetworkPanelMight: 'Click to reveal in Network panel (might require page reload)',
   /**
-  *@description Text for the origin of something
+  *@description The origin of a URL (https://web.dev/same-site-same-origin/#origin)
+  *(for a lot of languages this does not need to be translated, please translate only where necessary)
   */
   origin: 'Origin',
+  /**
   /**
   *@description Related node label in Timeline UIUtils of the Performance panel
   */
@@ -115,13 +118,15 @@ const UIStrings = {
   */
   no: 'No',
   /**
-  *@description Row title for in the Frame Details view
+  *@description Label for whether a frame is cross-origin isolated
+  *(https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/)
+  *(for a lot of languages this does not need to be translated, please translate only where necessary)
   */
   crossoriginIsolated: 'Cross-Origin Isolated',
   /**
   *@description Explanatory text in the Frame Details view
   */
-  localhostIsAlwaysASecureContext: 'Localhost is always a secure context',
+  localhostIsAlwaysASecureContext: '`Localhost` is always a secure context',
   /**
   *@description Explanatory text in the Frame Details view
   */
@@ -130,14 +135,6 @@ const UIStrings = {
   *@description Explanatory text in the Frame Details view
   */
   theFramesSchemeIsInsecure: 'The frame\'s scheme is insecure',
-  /**
-  *@description Row title in the Frame Details view
-  */
-  crossoriginEmbedderPolicy: 'Cross-Origin Embedder Policy',
-  /**
-  *@description Row title in the Frame Details view
-  */
-  crossoriginOpenerPolicy: 'Cross-Origin Opener Policy',
   /**
   *@description This label specifies the server endpoints to which the server is reporting errors
   *and warnings through the Report-to API. Following this label will be the URL of the server.
@@ -148,7 +145,9 @@ const UIStrings = {
   */
   apiAvailability: 'API availability',
   /**
-  *@description Explanatory text in the Frame Details view for the API availability section
+  *@description Explanation of why cross-origin isolation is important
+  *(https://web.dev/why-coop-coep/)
+  *(for a lot of languages 'cross-origin isolation' does not need to be translated, please translate only where necessary)
   */
   availabilityOfCertainApisDepends: 'Availability of certain APIs depends on the document being cross-origin isolated.',
   /**
@@ -167,18 +166,22 @@ const UIStrings = {
   *@description Tooltip for the SharedArrayBuffer availability status
   */
   sharedarraybufferConstructorIs:
-      'SharedArrayBuffer constructor is available and SABs can be transferred via postMessage',
+      '`SharedArrayBuffer` constructor is available and `SABs` can be transferred via `postMessage`',
   /**
   *@description Tooltip for the SharedArrayBuffer availability status
   */
   sharedarraybufferConstructorIsAvailable:
-      'SharedArrayBuffer constructor is available but SABs cannot be transferred via postMessage',
+      '`SharedArrayBuffer` constructor is available but `SABs` cannot be transferred via `postMessage`',
   /**
-  *@description Explanation for the SharedArrayBuffer availability status
+  *@description Explanation why SharedArrayBuffer will not be available in the future
+  *(https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/)
+  *(for a lot of languages 'cross-origin isolation' does not need to be translated, please translate only where necessary)
   */
   willRequireCrossoriginIsolated: '⚠️ will require cross-origin isolated context in the future',
   /**
-  *@description Explanation for the SharedArrayBuffer availability status
+  *@description Explanation why SharedArrayBuffer is not available
+  *(https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/)
+  *(for a lot of languages 'cross-origin isolation' does not need to be translated, please translate only where necessary).
   */
   requiresCrossoriginIsolated: 'requires cross-origin isolated context',
   /**
@@ -194,11 +197,12 @@ const UIStrings = {
   /**
   *@description Tooltip for the Measure Memory availability status
   */
-  thePerformanceAPI: 'The performance.measureUserAgentSpecificMemory() API is available',
+  thePerformanceAPI: 'The `performance.measureUserAgentSpecificMemory()` API is available',
   /**
   *@description Tooltip for the Measure Memory availability status
   */
-  thePerformancemeasureuseragentspecificmemory: 'The performance.measureUserAgentSpecificMemory() API is not available',
+  thePerformancemeasureuseragentspecificmemory:
+      'The `performance.measureUserAgentSpecificMemory()` API is not available',
   /**
   *@description Entry in the API availability section of the frame details view
   */
@@ -211,12 +215,13 @@ const UIStrings = {
   *@description Label for a stack trace. If a frame is created programmatically (i.e. via JavaScript), there is a
   * stack trace for the line of code which caused the creation of the iframe. This is the stack trace we are showing here.
   */
-  creationStackTrace: 'Frame Creation Stack Trace',
+  creationStackTrace: 'Frame Creation `Stack Trace`',
   /**
   *@description Tooltip for 'Frame Creation Stack Trace' explaining that the stack
   *trace shows where in the code the frame has been created programmatically
   */
-  creationStackTraceExplanation: 'This frame was created programmatically. The stack trace shows where this happened.',
+  creationStackTraceExplanation:
+      'This frame was created programmatically. The `stack trace` shows where this happened.',
   /**
   *@description Text descripting why a frame has been indentified as an advertisement.
   */
@@ -230,11 +235,7 @@ const UIStrings = {
   *@description Text descripting why a frame has been indentified as an advertisement.
   */
   createdByAdScriptExplanation:
-      'There was an ad script in the (async) stack when this frame was created. Examining the creation stack trace of this frame might provide more insight.',
-  /**
-   *@description Label for a list of origin trials that associated with at least one token.
-   */
-  originTrials: 'Origin Trials',
+      'There was an ad script in the `(async) stack` when this frame was created. Examining the creation `stack trace` of this frame might provide more insight.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/components/FrameDetailsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -330,8 +331,8 @@ export class FrameDetailsReportView extends HTMLElement {
 
     return LitHtml.html`
     <${ReportView.ReportView.ReportSectionHeader.litTagName}>
-      ${i18nString(UIStrings.originTrials)}
-      <${IconButton.IconButton.IconButton.litTagName} class="inline-button" .data="${{
+      ${i18n.i18n.lockedString('Origin Trials')}
+      <${IconButton.IconButton.IconButton.litTagName} class="inline-button" .data=${{
       clickHandler: refreshOriginTrials,
       groups: [
         {
@@ -339,7 +340,7 @@ export class FrameDetailsReportView extends HTMLElement {
           text: 'Refresh',
         } as IconButton.IconButton.IconWithTextData,
       ],
-    } as IconButton.IconButton.IconButtonData}">
+    } as IconButton.IconButton.IconButtonData}>
       </${IconButton.IconButton.IconButton.litTagName}>
     </${ReportView.ReportView.ReportSectionHeader.litTagName}>
     ${this.originTrialTreeView}
@@ -554,7 +555,7 @@ export class FrameDetailsReportView extends HTMLElement {
       return LitHtml.nothing;
     }
     const typeStrings = this.getAdFrameTypeStrings(adFrameType);
-    const rows = [LitHtml.html`<div title="${typeStrings.description}">${typeStrings.value}</div>`];
+    const rows = [LitHtml.html`<div title=${typeStrings.description}>${typeStrings.value}</div>`];
     for (const explanation of this.frame.adFrameStatus()?.explanations || []) {
       rows.push(LitHtml.html`<div>${this.getAdFrameExplanationString(explanation)}</div>`);
     }
@@ -622,11 +623,11 @@ export class FrameDetailsReportView extends HTMLElement {
         return LitHtml.html`
           ${
             this.maybeRenderCrossOriginStatus(
-                info.coep, i18nString(UIStrings.crossoriginEmbedderPolicy),
+                info.coep, i18n.i18n.lockedString('Cross-Origin Embedder Policy (COEP)'),
                 Protocol.Network.CrossOriginEmbedderPolicyValue.None)}
           ${
             this.maybeRenderCrossOriginStatus(
-                info.coop, i18nString(UIStrings.crossoriginOpenerPolicy),
+                info.coop, i18n.i18n.lockedString('Cross-Origin Opener Policy (COOP)'),
                 Protocol.Network.CrossOriginOpenerPolicyValue.UnsafeNone)}
         `;
       }

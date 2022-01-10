@@ -181,11 +181,11 @@ int attribute_align_arg avcodec_open2(AVCodecContext *avctx, const AVCodec *code
     avci->buffer_frame = av_frame_alloc();
     avci->buffer_pkt = av_packet_alloc();
     avci->es.in_frame = av_frame_alloc();
-    avci->ds.in_pkt = av_packet_alloc();
+    avci->in_pkt = av_packet_alloc();
     avci->last_pkt_props = av_packet_alloc();
     avci->pkt_props = av_fifo_alloc(sizeof(*avci->last_pkt_props));
     if (!avci->buffer_frame || !avci->buffer_pkt          ||
-        !avci->es.in_frame  || !avci->ds.in_pkt           ||
+        !avci->es.in_frame  || !avci->in_pkt     ||
         !avci->last_pkt_props || !avci->pkt_props) {
         ret = AVERROR(ENOMEM);
         goto free_and_end;
@@ -364,9 +364,8 @@ int attribute_align_arg avcodec_open2(AVCodecContext *avctx, const AVCodec *code
             avctx->time_base = av_inv_q(av_mul_q(avctx->framerate, (AVRational){avctx->ticks_per_frame, 1}));
 #endif
     }
-    if (codec->priv_data_size > 0 && avctx->priv_data && codec->priv_class) {
+    if (codec->priv_class)
         av_assert0(*(const AVClass **)avctx->priv_data == codec->priv_class);
-    }
 
 end:
     unlock_avcodec(codec);
@@ -391,9 +390,6 @@ void avcodec_flush_buffers(AVCodecContext *avctx)
                    "that doesn't support it\n");
             return;
         }
-
-        // We haven't implemented flushing for frame-threaded encoders.
-        av_assert0(!(caps & AV_CODEC_CAP_FRAME_THREADS));
     }
 
     avci->draining      = 0;
@@ -412,7 +408,7 @@ void avcodec_flush_buffers(AVCodecContext *avctx)
     av_fifo_reset(avci->pkt_props);
 
     av_frame_unref(avci->es.in_frame);
-    av_packet_unref(avci->ds.in_pkt);
+    av_packet_unref(avci->in_pkt);
 
     if (HAVE_THREADS && avctx->active_thread_type & FF_THREAD_FRAME)
         ff_thread_flush(avctx);
@@ -422,7 +418,7 @@ void avcodec_flush_buffers(AVCodecContext *avctx)
     avctx->pts_correction_last_pts =
     avctx->pts_correction_last_dts = INT64_MIN;
 
-    if (av_codec_is_decoder(avctx->codec))
+    if (avci->bsf)
         av_bsf_flush(avci->bsf);
 }
 
@@ -477,7 +473,7 @@ av_cold int avcodec_close(AVCodecContext *avctx)
         }
         av_packet_free(&avci->last_pkt_props);
 
-        av_packet_free(&avci->ds.in_pkt);
+        av_packet_free(&avci->in_pkt);
         av_frame_free(&avci->es.in_frame);
 
         av_buffer_unref(&avci->pool);

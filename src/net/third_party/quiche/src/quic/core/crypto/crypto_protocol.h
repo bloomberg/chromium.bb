@@ -381,6 +381,9 @@ const QuicTag kMIUS = TAG('M', 'I', 'U', 'S');   // Max incoming unidi streams
 const QuicTag kADE  = TAG('A', 'D', 'E', 0);     // Ack Delay Exponent (IETF
                                                  // QUIC ACK Frame Only).
 const QuicTag kIRTT = TAG('I', 'R', 'T', 'T');   // Estimated initial RTT in us.
+const QuicTag kTRTT = TAG('T', 'R', 'T', 'T');   // If server receives an rtt
+                                                 // from an address token, set
+                                                 // it as the initial rtt.
 const QuicTag kSNI  = TAG('S', 'N', 'I', '\0');  // Server name
                                                  // indication
 const QuicTag kPUBS = TAG('P', 'U', 'B', 'S');   // Public key values
@@ -400,6 +403,9 @@ const QuicTag kUAID = TAG('U', 'A', 'I', 'D');   // Client's User Agent ID.
 const QuicTag kXLCT = TAG('X', 'L', 'C', 'T');   // Expected leaf certificate.
 const QuicTag kQLVE = TAG('Q', 'L', 'V', 'E');   // Legacy Version
                                                  // Encapsulation.
+
+const QuicTag kPDP1 = TAG('P', 'D', 'P', '1');   // Path degrading triggered
+                                                 // at 1PTO.
 
 const QuicTag kPDP2 = TAG('P', 'D', 'P', '2');   // Path degrading triggered
                                                  // at 2PTO.
@@ -427,6 +433,7 @@ const QuicTag kSRWP = TAG('S', 'R', 'W', 'P');   // Enable retransmittable on
 
 // Client Hints triggers.
 const QuicTag kGWCH = TAG('G', 'W', 'C', 'H');
+const QuicTag kYTCH = TAG('Y', 'T', 'C', 'H');
 
 // Rejection tags
 const QuicTag kRREJ = TAG('R', 'R', 'E', 'J');   // Reasons for server sending

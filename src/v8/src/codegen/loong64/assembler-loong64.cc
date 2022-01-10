@@ -672,7 +672,7 @@ int Assembler::BranchOffset(Instr instr) {
 // instruction space. There is no guarantee that the relocated location can be
 // similarly encoded.
 bool Assembler::MustUseReg(RelocInfo::Mode rmode) {
-  return !RelocInfo::IsNone(rmode);
+  return !RelocInfo::IsNoInfo(rmode);
 }
 
 void Assembler::GenB(Opcode opcode, Register rj, int32_t si21) {
@@ -2137,7 +2137,7 @@ void Assembler::GrowBuffer() {
   buffer_ = std::move(new_buffer);
   buffer_start_ = new_start;
   pc_ += pc_delta;
-  last_call_pc_ += pc_delta;
+  pc_for_safepoint_ += pc_delta;
   reloc_info_writer.Reposition(reloc_info_writer.pos() + rc_delta,
                                reloc_info_writer.last_pc() + pc_delta);
 
@@ -2168,7 +2168,7 @@ void Assembler::dd(uint32_t data, RelocInfo::Mode rmode) {
   if (!is_buffer_growth_blocked()) {
     CheckBuffer();
   }
-  if (!RelocInfo::IsNone(rmode)) {
+  if (!RelocInfo::IsNoInfo(rmode)) {
     DCHECK(RelocInfo::IsDataEmbeddedObject(rmode) ||
            RelocInfo::IsLiteralConstant(rmode));
     RecordRelocInfo(rmode);
@@ -2181,7 +2181,7 @@ void Assembler::dq(uint64_t data, RelocInfo::Mode rmode) {
   if (!is_buffer_growth_blocked()) {
     CheckBuffer();
   }
-  if (!RelocInfo::IsNone(rmode)) {
+  if (!RelocInfo::IsNoInfo(rmode)) {
     DCHECK(RelocInfo::IsDataEmbeddedObject(rmode) ||
            RelocInfo::IsLiteralConstant(rmode));
     RecordRelocInfo(rmode);

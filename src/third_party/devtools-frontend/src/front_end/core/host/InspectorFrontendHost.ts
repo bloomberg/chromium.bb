@@ -55,7 +55,6 @@ const MAX_RECORDED_HISTOGRAMS_SIZE = 100;
 export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   readonly #urlsBeingSaved: Map<string, string[]>;
   events!: Common.EventTarget.EventTarget<EventTypes>;
-  #windowVisible?: boolean;
 
   recordedEnumeratedHistograms: {actionName: EnumeratedHistogram, actionCode: number}[] = [];
   recordedPerformanceHistograms: {histogramName: string, duration: number}[] = [];
@@ -89,11 +88,9 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   }
 
   bringToFront(): void {
-    this.#windowVisible = true;
   }
 
   closeWindow(): void {
-    this.#windowVisible = false;
   }
 
   setIsDocked(isDocked: boolean, callback: () => void): void {
@@ -364,13 +361,7 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
 export let InspectorFrontendHostInstance: InspectorFrontendHostStub = window.InspectorFrontendHost;
 
 class InspectorFrontendAPIImpl {
-  readonly #debugFrontend: boolean;
-
   constructor() {
-    this.#debugFrontend = (Boolean(Root.Runtime.Runtime.queryParam('debugFrontend'))) ||
-        // @ts-ignore Compatibility hacks
-        (window['InspectorTest'] && window['InspectorTest']['debugTest']);
-
     for (const descriptor of EventDescriptors) {
       // @ts-ignore Dispatcher magic
       this[descriptor[1]] = this.dispatch.bind(this, descriptor[0], descriptor[2], descriptor[3]);
@@ -378,35 +369,27 @@ class InspectorFrontendAPIImpl {
   }
 
   private dispatch(name: symbol, signature: string[], runOnceLoaded: boolean, ...params: string[]): void {
-    if (this.#debugFrontend) {
-      setTimeout(() => innerDispatch(), 0);
-    } else {
-      innerDispatch();
-    }
-
-    function innerDispatch(): void {
-      // Single argument methods get dispatched with the param.
-      if (signature.length < 2) {
-        try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          InspectorFrontendHostInstance.events.dispatchEventToListeners<any>(name, params[0]);
-        } catch (error) {
-          console.error(error + ' ' + error.stack);
-        }
-        return;
-      }
-      const data: {
-        [x: string]: string,
-      } = {};
-      for (let i = 0; i < signature.length; ++i) {
-        data[signature[i]] = params[i];
-      }
+    // Single argument methods get dispatched with the param.
+    if (signature.length < 2) {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        InspectorFrontendHostInstance.events.dispatchEventToListeners<any>(name, data);
+        InspectorFrontendHostInstance.events.dispatchEventToListeners<any>(name, params[0]);
       } catch (error) {
         console.error(error + ' ' + error.stack);
       }
+      return;
+    }
+    const data: {
+      [x: string]: string,
+    } = {};
+    for (let i = 0; i < signature.length; ++i) {
+      data[signature[i]] = params[i];
+    }
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      InspectorFrontendHostInstance.events.dispatchEventToListeners<any>(name, data);
+    } catch (error) {
+      console.error(error + ' ' + error.stack);
     }
   }
 

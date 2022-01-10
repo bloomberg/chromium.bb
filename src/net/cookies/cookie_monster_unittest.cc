@@ -9,12 +9,14 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/queue.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
@@ -137,12 +139,12 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
       CookieMonster* cm,
       const GURL& url,
       const CookieOptions& options,
-      const CookiePartitionKeychain& cookie_partition_keychain =
-          CookiePartitionKeychain()) {
+      const CookiePartitionKeyCollection& cookie_partition_key_collection =
+          CookiePartitionKeyCollection()) {
     DCHECK(cm);
     GetCookieListCallback callback;
-    cm->GetCookieListWithOptionsAsync(url, options, cookie_partition_keychain,
-                                      callback.MakeCallback());
+    cm->GetCookieListWithOptionsAsync(
+        url, options, cookie_partition_key_collection, callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.cookies();
   }
@@ -151,12 +153,12 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
       CookieMonster* cm,
       const GURL& url,
       const CookieOptions& options,
-      const CookiePartitionKeychain& cookie_partition_keychain =
-          CookiePartitionKeychain()) {
+      const CookiePartitionKeyCollection& cookie_partition_key_collection =
+          CookiePartitionKeyCollection()) {
     DCHECK(cm);
     GetCookieListCallback callback;
-    cm->GetCookieListWithOptionsAsync(url, options, cookie_partition_keychain,
-                                      callback.MakeCallback());
+    cm->GetCookieListWithOptionsAsync(
+        url, options, cookie_partition_key_collection, callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.excluded_cookies();
   }
@@ -916,7 +918,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                             cookie_partition_key));
       std::string cookies =
           this->GetCookies(cm.get(), https_www_foo_.url(),
-                           CookiePartitionKeychain(cookie_partition_key));
+                           CookiePartitionKeyCollection(cookie_partition_key));
       EXPECT_NE(cookies.find(cookie), std::string::npos);
       EXPECT_LE(CountInString(cookies, '='), max_cookies);
     }
@@ -1057,7 +1059,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetCookieList) {
   GetCookieListCallback call1;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-      CookiePartitionKeychain(), call1.MakeCallback());
+      CookiePartitionKeyCollection(), call1.MakeCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(call1.was_run());
 
@@ -1070,7 +1072,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetCookieList) {
   GetCookieListCallback call2;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-      CookiePartitionKeychain(), call2.MakeCallback());
+      CookiePartitionKeyCollection(), call2.MakeCallback());
   // Already ready, no need for second load.
   EXPECT_THAT(call2.cookies(), MatchesCookieLine("X=1"));
   EXPECT_EQ("", TakeCommandSummary());
@@ -1169,7 +1171,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
   GetCookieListCallback call1;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-      CookiePartitionKeychain(), call1.MakeCallback());
+      CookiePartitionKeyCollection(), call1.MakeCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(call1.was_run());
 
@@ -1181,7 +1183,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlCookies) {
   GetCookieListCallback call2;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-      CookiePartitionKeychain(), call2.MakeCallback());
+      CookiePartitionKeyCollection(), call2.MakeCallback());
   EXPECT_TRUE(call2.was_run());
   EXPECT_THAT(call2.cookies(), MatchesCookieLine("X=1"));
   EXPECT_EQ("", TakeCommandSummary());
@@ -1195,7 +1197,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlWithOptionsCookies) {
   GetCookieListCallback call1;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-      CookiePartitionKeychain(), call1.MakeCallback());
+      CookiePartitionKeyCollection(), call1.MakeCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(call1.was_run());
 
@@ -1207,7 +1209,7 @@ TEST_F(DeferredCookieTaskTest, DeferredGetAllForUrlWithOptionsCookies) {
   GetCookieListCallback call2;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-      CookiePartitionKeychain(), call2.MakeCallback());
+      CookiePartitionKeyCollection(), call2.MakeCallback());
   EXPECT_TRUE(call2.was_run());
   EXPECT_THAT(call2.cookies(), MatchesCookieLine("X=1"));
   EXPECT_EQ("", TakeCommandSummary());
@@ -1361,7 +1363,7 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
   base::RunLoop run_loop;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-      CookiePartitionKeychain(),
+      CookiePartitionKeyCollection(),
       base::BindLambdaForTesting(
           [&](const CookieAccessResultList& cookies,
               const CookieAccessResultList& excluded_list) {
@@ -1378,7 +1380,7 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
             // before it.
             cookie_monster_->GetCookieListWithOptionsAsync(
                 http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-                CookiePartitionKeychain(),
+                CookiePartitionKeyCollection(),
                 get_cookie_list_callback_deferred.MakeCallback());
 
             run_loop.Quit();
@@ -1447,9 +1449,9 @@ TEST_F(CookieMonsterTest, TestCookieDeleteAll) {
       "__Host-" + std::string(kValidCookieLine) + "; partitioned; secure",
       cookie_partition_key));
   EXPECT_EQ(1u, DeleteAll(cm.get()));
-  EXPECT_EQ(
-      "", GetCookiesWithOptions(cm.get(), http_www_foo_.url(), options,
-                                CookiePartitionKeychain(cookie_partition_key)));
+  EXPECT_EQ("", GetCookiesWithOptions(
+                    cm.get(), http_www_foo_.url(), options,
+                    CookiePartitionKeyCollection(cookie_partition_key)));
   EXPECT_EQ(2u, store->commands().size());
 }
 
@@ -1899,19 +1901,19 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
   // Test reading partitioned cookies for a single partition.
   EXPECT_THAT(
       GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
-                          CookiePartitionKeychain(cookie_partition_key1)),
+                          CookiePartitionKeyCollection(cookie_partition_key1)),
       ElementsAre(MatchesCookieNameDomain("G", https_www_bar_.Format(".%D")),
                   MatchesCookieNameDomain("__Host-K", https_www_bar_.host())));
   EXPECT_THAT(
       GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
-                          CookiePartitionKeychain(cookie_partition_key2)),
+                          CookiePartitionKeyCollection(cookie_partition_key2)),
       ElementsAre(MatchesCookieNameDomain("G", https_www_bar_.Format(".%D")),
                   MatchesCookieNameDomain("__Host-M", https_www_bar_.host())));
 
   // Test reading partitioned cookies from multiple partitions.
   EXPECT_THAT(
       GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
-                          CookiePartitionKeychain(
+                          CookiePartitionKeyCollection(
                               {cookie_partition_key1, cookie_partition_key2})),
       ElementsAre(MatchesCookieNameDomain("G", https_www_bar_.Format(".%D")),
                   MatchesCookieNameDomain("__Host-K", https_www_bar_.host()),
@@ -1920,7 +1922,7 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
   // Test reading partitioned cookies from every partition.
   EXPECT_THAT(
       GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
-                          CookiePartitionKeychain::ContainsAll()),
+                          CookiePartitionKeyCollection::ContainsAll()),
       ElementsAre(MatchesCookieNameDomain("G", https_www_bar_.Format(".%D")),
                   MatchesCookieNameDomain("__Host-K", https_www_bar_.host()),
                   MatchesCookieNameDomain("__Host-M", https_www_bar_.host()),
@@ -1929,7 +1931,7 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
   // Test excluding partitioned cookies.
   EXPECT_THAT(
       GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
-                          CookiePartitionKeychain()),
+                          CookiePartitionKeyCollection()),
       ElementsAre(MatchesCookieNameDomain("G", https_www_bar_.Format(".%D"))));
 
   EXPECT_THAT(
@@ -1973,7 +1975,8 @@ TEST_F(CookieMonsterTest, GetExcludedCookiesForURL) {
 
   // Checking that excluded cookies get sent with their statuses with http
   // request.
-  excluded_cookies = GetExcludedCookiesForURL(cm.get(), http_www_foo_.url());
+  excluded_cookies = GetExcludedCookiesForURL(cm.get(), http_www_foo_.url(),
+                                              CookiePartitionKeyCollection());
   iter = excluded_cookies.begin();
 
   ASSERT_TRUE(iter != excluded_cookies.end());
@@ -2011,7 +2014,8 @@ TEST_F(CookieMonsterTest, GetExcludedCookiesForURL) {
   ASSERT_TRUE(++iter == excluded_cookies.end());
 
   // Check that no excluded cookies are sent with secure request
-  excluded_cookies = GetExcludedCookiesForURL(cm.get(), https_www_foo_.url());
+  excluded_cookies = GetExcludedCookiesForURL(cm.get(), https_www_foo_.url(),
+                                              CookiePartitionKeyCollection());
   iter = excluded_cookies.begin();
 
   EXPECT_TRUE(excluded_cookies.empty());
@@ -2068,8 +2072,8 @@ TEST_F(CookieMonsterTest, GetExcludedCookiesForURLPathMatching) {
   EXPECT_TRUE(
       CreateAndSetCookie(cm.get(), http_www_foo_.url(), "E=F;", options));
 
-  CookieAccessResultList excluded_cookies =
-      GetExcludedCookiesForURL(cm.get(), www_foo_foo_.url());
+  CookieAccessResultList excluded_cookies = GetExcludedCookiesForURL(
+      cm.get(), www_foo_foo_.url(), CookiePartitionKeyCollection());
   auto it = excluded_cookies.begin();
 
   ASSERT_TRUE(it != excluded_cookies.end());
@@ -2080,7 +2084,8 @@ TEST_F(CookieMonsterTest, GetExcludedCookiesForURLPathMatching) {
 
   ASSERT_TRUE(++it == excluded_cookies.end());
 
-  excluded_cookies = GetExcludedCookiesForURL(cm.get(), www_foo_bar_.url());
+  excluded_cookies = GetExcludedCookiesForURL(cm.get(), www_foo_bar_.url(),
+                                              CookiePartitionKeyCollection());
   it = excluded_cookies.begin();
 
   ASSERT_TRUE(it != excluded_cookies.end());
@@ -2178,8 +2183,9 @@ TEST_F(CookieMonsterTest, DeleteExpiredCookiesOnGet) {
                         "__Host-C=D; secure; path=/; partitioned",
                         cookie_partition_key));
 
-  cookies = GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
-                                CookiePartitionKeychain(cookie_partition_key));
+  cookies =
+      GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
+                          CookiePartitionKeyCollection(cookie_partition_key));
   EXPECT_EQ(2u, cookies.size());
 
   EXPECT_TRUE(SetCookie(cm.get(), https_www_bar_.url(),
@@ -2187,8 +2193,9 @@ TEST_F(CookieMonsterTest, DeleteExpiredCookiesOnGet) {
                         "01-Jan-1970 00:00:00 GMT",
                         cookie_partition_key));
 
-  cookies = GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
-                                CookiePartitionKeychain(cookie_partition_key));
+  cookies =
+      GetAllCookiesForURL(cm.get(), https_www_bar_.url(),
+                          CookiePartitionKeyCollection(cookie_partition_key));
   EXPECT_EQ(1u, cookies.size());
 }
 
@@ -2301,7 +2308,7 @@ TEST_F(CookieMonsterTest, DontImportDuplicateCookies_PartitionedCookies) {
 
   EXPECT_EQ("__Host-Z=a",
             GetCookies(cm.get(), GURL("https://www.bar.com/"),
-                       CookiePartitionKeychain(cookie_partition_key)));
+                       CookiePartitionKeyCollection(cookie_partition_key)));
 
   // Verify that the PersistentCookieStore was told to kill the 2
   // duplicates.
@@ -2437,11 +2444,11 @@ TEST_F(CookieMonsterTest, PredicateSeesAllCookies) {
   EXPECT_EQ("dom_path_2=B; host_path_2=B; dom_2=B; host_2=B; sec_host=B",
             GetCookies(cm.get(), GURL(kTopLevelDomainPlus2Secure +
                                       std::string("/dir1/dir2/xxx"))));
-  EXPECT_EQ(
-      "dom_2=B; host_2=B; sec_host=B; __Host-pc_2=B",
-      GetCookies(cm.get(), GURL(kTopLevelDomainPlus2Secure),
-                 CookiePartitionKeychain(CookiePartitionKey::FromURLForTesting(
-                     GURL(kTopLevelDomainPlus1)))));
+  EXPECT_EQ("dom_2=B; host_2=B; sec_host=B; __Host-pc_2=B",
+            GetCookies(cm.get(), GURL(kTopLevelDomainPlus2Secure),
+                       CookiePartitionKeyCollection(
+                           CookiePartitionKey::FromURLForTesting(
+                               GURL(kTopLevelDomainPlus1)))));
 }
 
 // Mainly a test of GetEffectiveDomain, or more specifically, of the
@@ -2776,7 +2783,7 @@ TEST_F(CookieMonsterTest, WhileLoadingDeleteAllGetForURL) {
 
   GetCookieListCallback get_cookie_list_callback;
   cm->GetCookieListWithOptionsAsync(kUrl, CookieOptions::MakeAllInclusive(),
-                                    CookiePartitionKeychain(),
+                                    CookiePartitionKeyCollection(),
                                     get_cookie_list_callback.MakeCallback());
 
   // Only the main load should have been queued.
@@ -3233,9 +3240,9 @@ TEST_F(CookieMonsterTest, ControlCharacterPurge) {
   std::unique_ptr<CookieMonster> cm(
       new CookieMonster(store.get(), net::NetLog::Get()));
 
-  EXPECT_EQ(
-      "foo=bar; hello=world",
-      GetCookies(cm.get(), url, CookiePartitionKeychain(cookie_partition_key)));
+  EXPECT_EQ("foo=bar; hello=world",
+            GetCookies(cm.get(), url,
+                       CookiePartitionKeyCollection(cookie_partition_key)));
 }
 
 // Test that cookie source schemes are histogrammed correctly.
@@ -3446,7 +3453,7 @@ TEST_F(CookieMonsterTest, SecureCookieLocalhost) {
     GetCookieListCallback callback;
     cm->GetCookieListWithOptionsAsync(
         insecure_localhost, CookieOptions::MakeAllInclusive(),
-        CookiePartitionKeychain(), callback.MakeCallback());
+        CookiePartitionKeyCollection(), callback.MakeCallback());
     callback.WaitUntilDone();
     EXPECT_EQ(2u, callback.cookies_with_access_results().size());
     for (const auto& cookie_item : callback.cookies_with_access_results()) {
@@ -3464,7 +3471,7 @@ TEST_F(CookieMonsterTest, SecureCookieLocalhost) {
     GetCookieListCallback callback;
     cm->GetCookieListWithOptionsAsync(
         secure_localhost, CookieOptions::MakeAllInclusive(),
-        CookiePartitionKeychain(), callback.MakeCallback());
+        CookiePartitionKeyCollection(), callback.MakeCallback());
     callback.WaitUntilDone();
     EXPECT_EQ(2u, callback.cookies_with_access_results().size());
     for (const auto& cookie_item : callback.cookies_with_access_results()) {
@@ -3617,9 +3624,9 @@ TEST_F(CookieMonsterTest,
   EXPECT_TRUE(access_result.status.HasExactlyExclusionReasonsForTesting(
       {CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY}));
   EXPECT_THAT(
-      GetCookiesWithOptions(cm.get(), https_www_foo_.url(),
-                            CookieOptions::MakeAllInclusive(),
-                            CookiePartitionKeychain(cookie_partition_key1)),
+      GetCookiesWithOptions(
+          cm.get(), https_www_foo_.url(), CookieOptions::MakeAllInclusive(),
+          CookiePartitionKeyCollection(cookie_partition_key1)),
       ::testing::HasSubstr("A=B"));
 }
 
@@ -4357,7 +4364,7 @@ TEST_F(CookieMonsterTest, SetCanonicalCookieDoesNotBlockForLoadAll) {
   GetCookieListCallback callback_get;
   cm.GetCookieListWithOptionsAsync(
       GURL("http://b.com/"), CookieOptions::MakeAllInclusive(),
-      CookiePartitionKeychain(), callback_get.MakeCallback());
+      CookiePartitionKeyCollection(), callback_get.MakeCallback());
 
   // Now go through the store commands, and execute individual loads.
   const auto& commands = persistent_store->commands();
@@ -4741,7 +4748,7 @@ class CookieMonsterLegacyCookieAccessTest : public CookieMonsterTest {
   const GURL kHttpsUrl = GURL("https://example.test");
   const GURL kHttpUrl = GURL("http://example.test");
   std::unique_ptr<CookieMonster> cm_;
-  TestCookieAccessDelegate* access_delegate_;
+  raw_ptr<TestCookieAccessDelegate> access_delegate_;
 };
 
 TEST_F(CookieMonsterLegacyCookieAccessTest, SetLegacyNoSameSiteCookie) {
@@ -5223,7 +5230,7 @@ class FirstPartySetEnabledCookieMonsterTest : public CookieMonsterTest {
   // use.
   base::test::ScopedFeatureList feature_list_;
   CookieMonster cm_;
-  TestCookieAccessDelegate* access_delegate_;
+  raw_ptr<TestCookieAccessDelegate> access_delegate_;
 };
 
 TEST_F(FirstPartySetEnabledCookieMonsterTest, RecordsPeriodicFPSSizes) {
@@ -5264,6 +5271,44 @@ TEST_F(FirstPartySetEnabledCookieMonsterTest, RecordsPeriodicFPSSizes) {
   EXPECT_THAT(histogram_tester.GetAllSamples("Cookie.PerFirstPartySetCount"),
               testing::ElementsAre(base::Bucket(2 /* min */, 1 /* samples */),
                                    base::Bucket(3 /* min */, 1 /* samples */)));
+}
+
+TEST_F(CookieMonsterTest, GetAllCookiesForURLNonce) {
+  auto store = base::MakeRefCounted<MockPersistentCookieStore>();
+  auto cm = std::make_unique<CookieMonster>(store.get(), net::NetLog::Get());
+  CookieOptions options = CookieOptions::MakeAllInclusive();
+
+  auto anonymous_iframe_key = CookiePartitionKey::FromURLForTesting(
+      GURL("https://anonymous-iframe.test"), base::UnguessableToken::Create());
+
+  // Define cookies from outside an anonymous iframe:
+  EXPECT_TRUE(CreateAndSetCookie(cm.get(), https_www_foo_.url(),
+                                 "A=0; Secure; HttpOnly; Path=/;", options));
+  EXPECT_TRUE(CreateAndSetCookie(cm.get(), https_www_foo_.url(),
+                                 "__Host-B=0; Secure; HttpOnly; Path=/;",
+                                 options));
+
+  // Define cookies from inside an anonymous iframe:
+  EXPECT_TRUE(CreateAndSetCookie(
+      cm.get(), https_www_foo_.url(),
+      "__Host-B=1; Secure; HttpOnly; Path=/; Partitioned", options,
+      absl::nullopt, absl::nullopt, anonymous_iframe_key));
+  EXPECT_TRUE(CreateAndSetCookie(
+      cm.get(), https_www_foo_.url(),
+      "__Host-C=0; Secure; HttpOnly; Path=/; Partitioned", options,
+      absl::nullopt, absl::nullopt, anonymous_iframe_key));
+
+  // Check cookies from outside the anonymous iframe:
+  EXPECT_THAT(GetAllCookiesForURL(cm.get(), https_www_foo_.url()),
+              ElementsAre(MatchesCookieNameValue("A", "0"),
+                          MatchesCookieNameValue("__Host-B", "0")));
+
+  // Check cookies from inside the anonymous iframe:
+  EXPECT_THAT(
+      GetAllCookiesForURL(cm.get(), https_www_foo_.url(),
+                          CookiePartitionKeyCollection(anonymous_iframe_key)),
+      ElementsAre(MatchesCookieNameValue("__Host-B", "1"),
+                  MatchesCookieNameValue("__Host-C", "0")));
 }
 
 }  // namespace net

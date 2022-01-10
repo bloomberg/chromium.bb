@@ -52,6 +52,7 @@ import {ViewManager} from './ViewManager.js';
 import type {Widget} from './Widget.js';
 import {VBox, WidgetFocusRestorer} from './Widget.js';
 import * as ARIAUtils from './ARIAUtils.js';
+import inspectorViewTabbedPaneStyles from './inspectorViewTabbedPane.css.legacy.js';
 
 const UIStrings = {
   /**
@@ -106,6 +107,14 @@ const UIStrings = {
   *@description The aria label for the drawer.
   */
   drawer: 'Tool drawer',
+  /**
+  *@description The aria label for the drawer shown.
+  */
+  drawerShown: 'Drawer shown',
+  /**
+  *@description The aria label for the drawer hidden.
+  */
+  drawerHidden: 'Drawer hidden',
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/InspectorView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -167,7 +176,7 @@ export class InspectorView extends VBox implements ViewLocationResolver {
 
     this.tabbedPane = this.tabbedLocation.tabbedPane();
     this.tabbedPane.element.classList.add('main-tabbed-pane');
-    this.tabbedPane.registerRequiredCSS('ui/legacy/inspectorViewTabbedPane.css');
+    this.tabbedPane.registerRequiredCSS(inspectorViewTabbedPaneStyles);
     this.tabbedPane.addEventListener(TabbedPaneEvents.TabSelected, this.tabSelected, this);
     this.tabbedPane.setAccessibleName(i18nString(UIStrings.panels));
     this.tabbedPane.setTabDelegate(this.tabDelegate);
@@ -207,6 +216,10 @@ export class InspectorView extends VBox implements ViewLocationResolver {
       inspectorViewInstance = new InspectorView();
     }
 
+    return inspectorViewInstance;
+  }
+
+  static maybeGetInspectorViewInstance(): InspectorView|undefined {
     return inspectorViewInstance;
   }
 
@@ -307,6 +320,7 @@ export class InspectorView extends VBox implements ViewLocationResolver {
       this.focusRestorer = null;
     }
     this.emitDrawerChangeEvent(true);
+    ARIAUtils.alert(i18nString(UIStrings.drawerShown));
   }
 
   drawerVisible(): boolean {
@@ -323,6 +337,7 @@ export class InspectorView extends VBox implements ViewLocationResolver {
     this.drawerSplitWidget.hideSidebar(true);
 
     this.emitDrawerChangeEvent(false);
+    ARIAUtils.alert(i18nString(UIStrings.drawerHidden));
   }
 
   setDrawerMinimized(minimized: boolean): void {
@@ -466,7 +481,7 @@ function createLocaleInfobar(): Infobar {
   // @ts-ignore TODO(crbug.com/1163928) Wait for Intl support.
   const locale = new Intl.Locale(closestSupportedLocale);
   const closestSupportedLanguageInCurrentLocale =
-      new Intl.DisplayNames([devtoolsLocale.locale], {type: 'language'}).of(locale.language);
+      new Intl.DisplayNames([devtoolsLocale.locale], {type: 'language'}).of(locale.language || 'en');
 
   const languageSetting = Common.Settings.Settings.instance().moduleSetting<string>('language');
   return new Infobar(

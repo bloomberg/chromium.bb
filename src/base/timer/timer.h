@@ -65,7 +65,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/task/delayed_task_handle.h"
 #include "base/task/sequenced_task_runner.h"
@@ -114,11 +114,11 @@ class BASE_EXPORT TimerBase {
 
   // Sets the task runner on which the delayed task should be scheduled when
   // this Timer is running. This method can only be called while this Timer
-  // isn't running. This is an alternative (old) approach to mock time in tests.
-  // The modern and preferred approach is to use
-  // TaskEnvironment::TimeSource::MOCK_TIME. To avoid racy usage of Timer,
-  // |task_runner| must run tasks on the same sequence which this Timer is bound
-  // to (started from). TODO(gab): Migrate all callers to
+  // isn't running. If this is used to mock time in tests, the modern and
+  // preferred approach is to use TaskEnvironment::TimeSource::MOCK_TIME. To
+  // avoid racy usage of Timer, |task_runner| must run tasks on the same
+  // sequence which this Timer is bound to (started from). TODO(gab): Migrate
+  // callers using this as a test seam to
   // TaskEnvironment::TimeSource::MOCK_TIME.
   virtual void SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner);
 
@@ -188,7 +188,7 @@ class BASE_EXPORT TimerBase {
 
   // Detects when the scheduled task is deleted before being executed. Null when
   // there is no scheduled task.
-  TaskDestructionDetector* task_destruction_detector_
+  raw_ptr<TaskDestructionDetector> task_destruction_detector_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Location in user code.
@@ -210,7 +210,8 @@ class BASE_EXPORT TimerBase {
   TimeTicks desired_run_time_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // The tick clock used to calculate the run time for scheduled tasks.
-  const TickClock* const tick_clock_ GUARDED_BY_CONTEXT(sequence_checker_);
+  const raw_ptr<const TickClock> tick_clock_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   // If true, |user_task_| is scheduled to run sometime in the future.
   bool is_running_ GUARDED_BY_CONTEXT(sequence_checker_);

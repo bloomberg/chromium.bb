@@ -72,6 +72,10 @@ class CefBrowserContentsDelegate : public content::WebContentsDelegate,
   explicit CefBrowserContentsDelegate(
       scoped_refptr<CefBrowserInfo> browser_info);
 
+  CefBrowserContentsDelegate(const CefBrowserContentsDelegate&) = delete;
+  CefBrowserContentsDelegate& operator=(const CefBrowserContentsDelegate&) =
+      delete;
+
   void ObserveWebContents(content::WebContents* new_contents);
 
   // Manage observer objects. The observer must either outlive this object or
@@ -84,7 +88,7 @@ class CefBrowserContentsDelegate : public content::WebContentsDelegate,
       content::WebContents* source,
       const content::OpenURLParams& params) override;
   void LoadingStateChanged(content::WebContents* source,
-                           bool to_different_document) override;
+                           bool should_show_loading_ui) override;
   void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
   bool DidAddMessageToConsole(content::WebContents* source,
                               blink::mojom::ConsoleMessageLevel log_level,
@@ -195,8 +199,6 @@ class CefBrowserContentsDelegate : public content::WebContentsDelegate,
 
   // True if the focus is currently on an editable field on the page.
   bool focus_on_editable_field_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(CefBrowserContentsDelegate);
 };
 
 #endif  // CEF_LIBCEF_BROWSER_BROWSER_CONTENTS_DELEGATE_H_

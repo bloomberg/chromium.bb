@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -34,11 +35,11 @@
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
-#include "gpu/config/gpu_finch_features.h"
 #include "skia/ext/legacy_display_globals.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "url/gurl.h"
 
@@ -59,7 +60,8 @@ static void RasterizeSourceOOP(
     const gfx::Rect& playback_rect,
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
-    viz::RasterContextProvider* context_provider) {
+    viz::RasterContextProvider* context_provider,
+    bool is_using_raw_draw) {
   gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
   bool mailbox_needs_clear = false;
   if (mailbox->IsZero()) {
@@ -70,7 +72,7 @@ static void RasterizeSourceOOP(
                      gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION;
     if (texture_is_overlay_candidate) {
       flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
-    } else if (features::IsUsingRawDraw()) {
+    } else if (is_using_raw_draw) {
       flags |= gpu::SHARED_IMAGE_USAGE_RAW_DRAW;
     }
     *mailbox = sii->CreateSharedImage(
@@ -87,10 +89,15 @@ static void RasterizeSourceOOP(
                                         ? gpu::raster::kMSAA
                                         : gpu::raster::kNoMSAA;
 
-  ri->BeginRasterCHROMIUM(
-      raster_source->background_color(), mailbox_needs_clear,
-      playback_settings.msaa_sample_count, msaa_mode,
-      playback_settings.use_lcd_text, color_space, mailbox->name);
+  // With Raw Draw, the framebuffer will be the rasterization target. It cannot
+  // support LCD text, so disable LCD text for Raw Draw backings.
+  // TODO(penghuang): remove it when GrSlug can be serialized.
+  bool is_raw_draw_backing = is_using_raw_draw && !texture_is_overlay_candidate;
+  bool use_lcd_text = playback_settings.use_lcd_text && !is_raw_draw_backing;
+  ri->BeginRasterCHROMIUM(raster_source->background_color(),
+                          mailbox_needs_clear,
+                          playback_settings.msaa_sample_count, msaa_mode,
+                          use_lcd_text, color_space, mailbox->name);
   gfx::Vector2dF recording_to_raster_scale = transform.scale();
   recording_to_raster_scale.Scale(1 / raster_source->recording_scale_factor());
   gfx::Size content_size = raster_source->GetContentSize(transform.scale());
@@ -212,7 +219,7 @@ class GpuRasterBufferProvider::GpuRasterBacking
   }
 
   // The ContextProvider used to clean up the mailbox
-  viz::RasterContextProvider* worker_context_provider = nullptr;
+  raw_ptr<viz::RasterContextProvider> worker_context_provider = nullptr;
 };
 
 GpuRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
@@ -309,7 +316,8 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
       enable_oop_rasterization_(enable_oop_rasterization),
       pending_raster_queries_(pending_raster_queries),
       random_generator_(static_cast<uint32_t>(base::RandUint64())),
-      bernoulli_distribution_(raster_metric_probability) {
+      bernoulli_distribution_(raster_metric_probability),
+      is_using_raw_draw_(features::IsUsingRawDraw()) {
   DCHECK(pending_raster_queries);
   DCHECK(compositor_context_provider);
   DCHECK(worker_context_provider);
@@ -513,11 +521,12 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
     if (measure_raster_metric)
       timer.emplace();
     if (enable_oop_rasterization_) {
-      RasterizeSourceOOP(
-          raster_source, resource_has_previous_content, mailbox, sync_token,
-          texture_target, texture_is_overlay_candidate, resource_size,
-          resource_format, color_space, raster_full_rect, playback_rect,
-          transform, playback_settings, worker_context_provider_);
+      RasterizeSourceOOP(raster_source, resource_has_previous_content, mailbox,
+                         sync_token, texture_target,
+                         texture_is_overlay_candidate, resource_size,
+                         resource_format, color_space, raster_full_rect,
+                         playback_rect, transform, playback_settings,
+                         worker_context_provider_, is_using_raw_draw_);
     } else {
       RasterizeSource(raster_source, resource_has_previous_content, mailbox,
                       sync_token, texture_target, texture_is_overlay_candidate,

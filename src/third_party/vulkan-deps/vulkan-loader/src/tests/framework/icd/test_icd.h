@@ -75,9 +75,21 @@ struct TestICD {
 
     DispatchableHandle<VkInstance> instance_handle;
     std::vector<DispatchableHandle<VkDevice>> device_handles;
+    std::vector<uint64_t> surface_handles;
+    std::vector<uint64_t> messenger_handles;
+    std::vector<uint64_t> swapchain_handles;
 
-    uint64_t created_surface_count = 0;
-    uint64_t created_swapchain_count = 0;
+    // Unknown instance and physical device functions. Add a `VulkanFunction` to this list which will be searched in
+    // vkGetInstanceProcAddr for custom_instance_functions and vk_icdGetPhysicalDeviceProcAddr for custom_physical_device_functions.
+    // To add unknown device functions, add it to the PhysicalDevice directly (in the known_device_functions member)
+    std::vector<VulkanFunction> custom_instance_functions;
+    std::vector<VulkanFunction> custom_physical_device_functions;
+
+    // Must explicitely state support for the tooling info extension, that way we can control if vkGetInstanceProcAddr returns a
+    // function pointer for vkGetPhysicalDeviceToolPropertiesEXT
+    bool supports_tooling_info_ext = false;
+    // List of tooling properties that this driver 'supports'
+    std::vector<VkPhysicalDeviceToolPropertiesEXT> tooling_properties;
 
     TestICD() {}
     ~TestICD() {}

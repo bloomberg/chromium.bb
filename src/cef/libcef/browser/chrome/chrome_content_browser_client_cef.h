@@ -10,7 +10,6 @@
 
 #include "libcef/browser/request_context_impl.h"
 
-#include "base/macros.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 
 class ChromeBrowserMainExtraPartsCef;
@@ -19,11 +18,16 @@ class ChromeBrowserMainExtraPartsCef;
 class ChromeContentBrowserClientCef : public ChromeContentBrowserClient {
  public:
   ChromeContentBrowserClientCef();
+
+  ChromeContentBrowserClientCef(const ChromeContentBrowserClientCef&) = delete;
+  ChromeContentBrowserClientCef& operator=(
+      const ChromeContentBrowserClientCef&) = delete;
+
   ~ChromeContentBrowserClientCef() override;
 
   // ChromeContentBrowserClient overrides.
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
-      const content::MainFunctionParams& parameters) override;
+      content::MainFunctionParams parameters) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
   void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
@@ -114,8 +118,6 @@ class ChromeContentBrowserClientCef : public ChromeContentBrowserClient {
 
  private:
   ChromeBrowserMainExtraPartsCef* browser_main_parts_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClientCef);
 };
 
 #endif  // CEF_LIBCEF_BROWSER_CHROME_CHROME_CONTENT_BROWSER_CLIENT_CEF_

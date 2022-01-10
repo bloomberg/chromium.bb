@@ -18,13 +18,13 @@
 #include <vector>
 
 #include "src/ast/block_statement.h"
-#include "src/ast/int_literal.h"
+#include "src/ast/int_literal_expression.h"
 
 namespace tint {
 namespace ast {
 
 /// A list of case literals
-using CaseSelectorList = std::vector<const IntLiteral*>;
+using CaseSelectorList = std::vector<const IntLiteralExpression*>;
 
 /// A case statement
 class CaseStatement : public Castable<CaseStatement, Statement> {

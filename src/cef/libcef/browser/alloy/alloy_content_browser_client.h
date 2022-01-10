@@ -12,7 +12,6 @@
 #include "include/cef_request_context_handler.h"
 #include "libcef/browser/request_context_impl.h"
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
@@ -36,7 +35,7 @@ class AlloyContentBrowserClient : public content::ContentBrowserClient {
 
   // ContentBrowserClient implementation.
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
-      const content::MainFunctionParams& parameters) override;
+      content::MainFunctionParams parameters) override;
   void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
   bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
                                const GURL& site_url) override;

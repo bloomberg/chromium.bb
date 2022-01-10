@@ -95,16 +95,6 @@ const UIStrings = {
   */
   highlightsFramesRedDetectedToBe: 'Highlights frames (red) detected to be ads.',
   /**
-  * @description The name of a checkbox setting in the Rendering tool. This setting shows borders
-  * around hit-test regions. 'hit-test regions' are areas on the page where the browser is listening
-  * for mouse clicks.
-  */
-  hittestBorders: 'Hit-test borders',
-  /**
-  * @description Explanation text for the 'Hit-test borders' setting in the Rendering tool.
-  */
-  showsBordersAroundHittestRegions: 'Shows borders around hit-test regions.',
-  /**
   * @description The name of a checkbox setting in the Rendering tool. This setting shows an overlay
   * with Core Web Vitals. Core Web Vitals: https://support.google.com/webmasters/answer/9205520?hl=en
   */
@@ -187,6 +177,10 @@ const UIStrings = {
   * page from loading images with the WebP format.
   */
   disableWebpImageFormat: 'Disable `WebP` image format',
+  /**
+   * @description Explanation text for the 'Forces CSS forced-colors' setting in the Rendering tool.
+   */
+  forcesCssForcedColors: 'Forces CSS forced-colors media feature',
 };
 const str_ = i18n.i18n.registerUIStrings('entrypoints/inspector_main/RenderingOptions.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -243,9 +237,6 @@ export class RenderingOptionsView extends UI.Widget.VBox {
         i18nString(UIStrings.highlightAdFrames), i18nString(UIStrings.highlightsFramesRedDetectedToBe),
         Common.Settings.Settings.instance().moduleSetting('showAdHighlights'));
     this.appendCheckbox(
-        i18nString(UIStrings.hittestBorders), i18nString(UIStrings.showsBordersAroundHittestRegions),
-        Common.Settings.Settings.instance().moduleSetting('showHitTestBorders'));
-    this.appendCheckbox(
         i18nString(UIStrings.coreWebVitals), i18nString(UIStrings.showsAnOverlayWithCoreWebVitals),
         Common.Settings.Settings.instance().moduleSetting('showWebVitals'));
     this.appendCheckbox(
@@ -263,13 +254,16 @@ export class RenderingOptionsView extends UI.Widget.VBox {
         i18nString(UIStrings.forcesCssPreferscolorschemeMedia),
         Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersColorScheme'));
     this.appendSelect(
-        i18nString(UIStrings.forcesCssPrefersreducedmotion),
-        Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersReducedMotion'));
+        i18nString(UIStrings.forcesCssForcedColors),
+        Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeatureForcedColors'));
     if (supportsPrefersContrast()) {
       this.appendSelect(
           i18nString(UIStrings.forcesCssPreferscontrastMedia),
           Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersContrast'));
     }
+    this.appendSelect(
+        i18nString(UIStrings.forcesCssPrefersreducedmotion),
+        Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersReducedMotion'));
     if (supportsPrefersReducedData()) {
       this.appendSelect(
           i18nString(UIStrings.forcesCssPrefersreduceddataMedia),

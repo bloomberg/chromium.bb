@@ -1698,6 +1698,7 @@ static int rest_tiles_in_plane(const AV1_COMMON *cm, int plane) {
 void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &cpi->td.mb;
+  const SequenceHeader *const seq_params = cm->seq_params;
   const int num_planes = av1_num_planes(cm);
   assert(!cm->features.all_lossless);
 
@@ -1718,6 +1719,17 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
   // Valgrind's warnings we initialise the array below.
   memset(rusi, 0, sizeof(*rusi) * ntiles[0]);
   x->rdmult = cpi->rd.RDMULT;
+
+  // Allocate the frame buffer trial_frame_rst, which is used to temporarily
+  // store the loop restored frame.
+  if (aom_realloc_frame_buffer(
+          &cpi->trial_frame_rst, cm->superres_upscaled_width,
+          cm->superres_upscaled_height, seq_params->subsampling_x,
+          seq_params->subsampling_y, seq_params->use_highbitdepth,
+          AOM_RESTORATION_FRAME_BORDER, cm->features.byte_alignment, NULL, NULL,
+          NULL, 0))
+    aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
+                       "Failed to allocate trial restored frame buffer");
 
   RestSearchCtxt rsc;
   const int plane_start = AOM_PLANE_Y;

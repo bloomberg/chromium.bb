@@ -144,6 +144,58 @@ void a_func() {
   EXPECT_EQ(expect, got);
 }
 
+TEST_F(HlslSanitizerTest, Call_ArrayLength_ArrayLengthFromUniform) {
+  auto* s = Structure("my_struct", {Member(0, "a", ty.array<f32>(4))},
+                      {create<ast::StructBlockDecoration>()});
+  Global("b", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(1),
+             create<ast::GroupDecoration>(2),
+         });
+  Global("c", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
+         ast::DecorationList{
+             create<ast::BindingDecoration>(2),
+             create<ast::GroupDecoration>(2),
+         });
+
+  Func("a_func", ast::VariableList{}, ty.void_(),
+       ast::StatementList{
+           Decl(Var(
+               "len", ty.u32(), ast::StorageClass::kNone,
+               Add(Call("arrayLength", AddressOf(MemberAccessor("b", "a"))),
+                   Call("arrayLength", AddressOf(MemberAccessor("c", "a")))))),
+       },
+       ast::DecorationList{
+           Stage(ast::PipelineStage::kFragment),
+       });
+
+  Options options;
+  options.array_length_from_uniform.ubo_binding = {3, 4};
+  options.array_length_from_uniform.bindpoint_to_size_index.emplace(
+      sem::BindingPoint{2, 2}, 7u);
+  GeneratorImpl& gen = SanitizeAndBuild(options);
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+
+  auto got = gen.result();
+  auto* expect = R"(cbuffer cbuffer_tint_symbol_1 : register(b4, space3) {
+  uint4 tint_symbol_1[2];
+};
+
+ByteAddressBuffer b : register(t1, space2);
+ByteAddressBuffer c : register(t2, space2);
+
+void a_func() {
+  uint tint_symbol_4 = 0u;
+  b.GetDimensions(tint_symbol_4);
+  const uint tint_symbol_5 = ((tint_symbol_4 - 0u) / 4u);
+  uint len = (tint_symbol_5 + ((tint_symbol_1[1].w - 0u) / 4u));
+  return;
+}
+)";
+  EXPECT_EQ(expect, got);
+}
+
 TEST_F(HlslSanitizerTest, PromoteArrayInitializerToConstVar) {
   auto* array_init = array<i32, 4>(1, 2, 3, 4);
   auto* array_index = IndexAccessor(array_init, 3);
@@ -244,29 +296,31 @@ TEST_F(HlslSanitizerTest, InlinePtrLetsBasic) {
 }
 
 TEST_F(HlslSanitizerTest, InlinePtrLetsComplexChain) {
-  // var m : mat4x4<f32>;
-  // let mp : ptr<function, mat4x4<f32>> = &m;
+  // var a : array<mat4x4<f32>, 4>;
+  // let ap : ptr<function, array<mat4x4<f32>, 4>> = &a;
+  // let mp : ptr<function, mat4x4<f32>> = &(*ap)[3];
   // let vp : ptr<function, vec4<f32>> = &(*mp)[2];
-  // let fp : ptr<function, f32> = &(*vp)[1];
-  // let f : f32 = *fp;
-  auto* m = Var("m", ty.mat4x4<f32>());
+  // let v : vec4<f32> = *vp;
+  auto* a = Var("a", ty.array(ty.mat4x4<f32>(), 4));
+  auto* ap = Const(
+      "ap",
+      ty.pointer(ty.array(ty.mat4x4<f32>(), 4), ast::StorageClass::kFunction),
+      AddressOf(a));
   auto* mp =
       Const("mp", ty.pointer(ty.mat4x4<f32>(), ast::StorageClass::kFunction),
-            AddressOf(m));
+            AddressOf(IndexAccessor(Deref(ap), 3)));
   auto* vp =
       Const("vp", ty.pointer(ty.vec4<f32>(), ast::StorageClass::kFunction),
             AddressOf(IndexAccessor(Deref(mp), 2)));
-  auto* fp = Const("fp", ty.pointer<f32>(ast::StorageClass::kFunction),
-                   AddressOf(IndexAccessor(Deref(vp), 1)));
-  auto* f = Var("f", ty.f32(), ast::StorageClass::kNone, Deref(fp));
+  auto* v = Var("v", ty.vec4<f32>(), ast::StorageClass::kNone, Deref(vp));
 
   Func("main", ast::VariableList{}, ty.void_(),
        {
-           Decl(m),
+           Decl(a),
+           Decl(ap),
            Decl(mp),
            Decl(vp),
-           Decl(fp),
-           Decl(f),
+           Decl(v),
        },
        {
            Stage(ast::PipelineStage::kFragment),
@@ -278,8 +332,8 @@ TEST_F(HlslSanitizerTest, InlinePtrLetsComplexChain) {
 
   auto got = gen.result();
   auto* expect = R"(void main() {
-  float4x4 m = float4x4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-  float f = m[2][1];
+  float4x4 a[4] = (float4x4[4])0;
+  float4 v = a[3][2];
   return;
 }
 )";

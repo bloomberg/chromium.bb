@@ -12,7 +12,6 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_codec_direction.h"
@@ -115,6 +114,8 @@ class MEDIA_EXPORT MediaCodecBridgeImpl : public MediaCodecBridge {
   MediaCodecStatus GetOutputSamplingRate(int* sampling_rate) override;
   MediaCodecStatus GetOutputChannelCount(int* channel_count) override;
   MediaCodecStatus GetOutputColorSpace(gfx::ColorSpace* color_space) override;
+  MediaCodecStatus GetInputFormatStride(int* stride) override;
+  MediaCodecStatus GetInputFormatYPlaneHeight(int* height) override;
   MediaCodecStatus QueueInputBuffer(int index,
                                     const uint8_t* data,
                                     size_t data_size,

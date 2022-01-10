@@ -13,7 +13,6 @@
 #include "base/containers/adapters.h"
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
-#include "base/macros.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -284,30 +283,11 @@ void Widget::GetAllOwnedWidgets(gfx::NativeView native_view, Widgets* owned) {
 void Widget::ReparentNativeView(gfx::NativeView native_view,
                                 gfx::NativeView new_parent) {
   internal::NativeWidgetPrivate::ReparentNativeView(native_view, new_parent);
-
   Widget* child_widget = GetWidgetForNativeView(native_view);
   Widget* parent_widget =
       new_parent ? GetWidgetForNativeView(new_parent) : nullptr;
-  if (child_widget) {
-    child_widget->parent_ = parent_widget;
-
-    // Release the paint-as-active lock on the old parent.
-    bool has_lock_on_parent = !!child_widget->parent_paint_as_active_lock_;
-    child_widget->parent_paint_as_active_lock_.reset();
-    child_widget->parent_paint_as_active_subscription_ =
-        base::CallbackListSubscription();
-
-    // Lock and subscribe to parent's paint-as-active.
-    if (parent_widget) {
-      if (has_lock_on_parent)
-        child_widget->parent_paint_as_active_lock_ =
-            parent_widget->LockPaintAsActive();
-      child_widget->parent_paint_as_active_subscription_ =
-          parent_widget->RegisterPaintAsActiveChangedCallback(
-              base::BindRepeating(&Widget::OnParentShouldPaintAsActiveChanged,
-                                  base::Unretained(child_widget)));
-    }
-  }
+  if (child_widget)
+    child_widget->SetParent(parent_widget);
 }
 
 // static
@@ -1226,7 +1206,6 @@ bool Widget::ShouldPaintAsActive() const {
 }
 
 void Widget::OnParentShouldPaintAsActiveChanged() {
-  DCHECK(parent());
   // |native_widget_| has already been deleted and |this| is being deleted so
   // that we don't have to handle the event and also it's unsafe to reference
   // |native_widget_| in this case.
@@ -1335,11 +1314,7 @@ bool Widget::IsNativeWidgetInitialized() const {
 }
 
 bool Widget::OnNativeWidgetActivationChanged(bool active) {
-  if (g_disable_activation_change_handling_ ==
-          DisableActivationChangeHandlingType::kIgnore ||
-      (g_disable_activation_change_handling_ ==
-           DisableActivationChangeHandlingType::kIgnoreDeactivationOnly &&
-       !active))
+  if (!ShouldHandleNativeWidgetActivationChanged(active))
     return false;
 
   // On windows we may end up here before we've completed initialization (from
@@ -1368,6 +1343,14 @@ bool Widget::OnNativeWidgetActivationChanged(bool active) {
     paint_as_active_callbacks_.Notify();
 
   return true;
+}
+
+bool Widget::ShouldHandleNativeWidgetActivationChanged(bool active) {
+  return (g_disable_activation_change_handling_ !=
+          DisableActivationChangeHandlingType::kIgnore) &&
+         (g_disable_activation_change_handling_ !=
+              DisableActivationChangeHandlingType::kIgnoreDeactivationOnly ||
+          active);
 }
 
 void Widget::OnNativeFocus() {
@@ -1420,6 +1403,11 @@ void Widget::OnNativeWidgetDestroyed() {
   // checking. This currently breaks on reentrant calls to CloseNow() that I'm
   // too scared to fix right now.
   native_widget_destroyed_ = true;
+}
+
+void Widget::OnNativeWidgetParentChanged(gfx::NativeView parent) {
+  Widget* parent_widget = parent ? GetWidgetForNativeView(parent) : nullptr;
+  SetParent(parent_widget);
 }
 
 gfx::Size Widget::GetMinimumSize() const {
@@ -1880,6 +1868,28 @@ void Widget::SetInitialBoundsForFramelessWindow(const gfx::Rect& bounds) {
   } else {
     // Use the supplied initial bounds.
     SetBounds(bounds);
+  }
+}
+
+void Widget::SetParent(Widget* parent) {
+  if (parent == parent_)
+    return;
+
+  parent_ = parent;
+
+  // Release the paint-as-active lock on the old parent.
+  bool has_lock_on_parent = !!parent_paint_as_active_lock_;
+  parent_paint_as_active_lock_.reset();
+  parent_paint_as_active_subscription_ = base::CallbackListSubscription();
+
+  // Lock and subscribe to parent's paint-as-active.
+  if (parent) {
+    if (has_lock_on_parent || native_widget_active_)
+      parent_paint_as_active_lock_ = parent->LockPaintAsActive();
+    parent_paint_as_active_subscription_ =
+        parent->RegisterPaintAsActiveChangedCallback(
+            base::BindRepeating(&Widget::OnParentShouldPaintAsActiveChanged,
+                                base::Unretained(this)));
   }
 }
 

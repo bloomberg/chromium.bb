@@ -15,16 +15,23 @@ describe('ConsoleMessage', () => {
   const scriptId1 = '1' as Protocol.Runtime.ScriptId;
   const scriptId2 = '2' as Protocol.Runtime.ScriptId;
 
-  function newMessage(options: {
+  function newMessage({
+    source = SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI,
+    message = 'Message',
+    url,
+    scriptId,
+    executionContextId,
+    stackTrace,
+  }: {
     source?: SDKModule.ConsoleModel.MessageSource,
     message?: string,
     url?: string,
     scriptId?: Protocol.Runtime.ScriptId,
     executionContextId?: number,
+    stackTrace?: Protocol.Runtime.StackTrace,
   }) {
     return new SDK.ConsoleModel.ConsoleMessage(
-        null, options.source || SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI, null, options.message || 'Message',
-        {url: options.url, executionContextId: options.executionContextId, scriptId: options.scriptId});
+        null, source, null, message, {url, executionContextId, scriptId, stackTrace});
   }
 
   it('compares using message', () => {
@@ -70,19 +77,15 @@ describe('ConsoleMessage', () => {
     assert.isFalse(c.isEqual(e));
   });
 
-  it('compares ignoring script id for the same watch expressions', () => {
-    const a = newMessage({executionContextId: 5, scriptId: scriptId1});
-    a.url = 'watch-expression-1.devtools';
-    const b = newMessage({executionContextId: 5, scriptId: scriptId2});
-    b.url = 'watch-expression-1.devtools';
-    assert.isTrue(a.isEqual(b));
-  });
-
-  it('compares using script id for different watch expressions', () => {
-    const a = newMessage({executionContextId: 5, scriptId: scriptId1});
-    a.url = 'watch-expression-1.devtools';
-    const b = newMessage({executionContextId: 5, scriptId: scriptId2});
-    b.url = 'watch-expression-2.devtools';
+  it('compares using script ids in stack traces', () => {
+    const functionName = 'foo';
+    const url = 'http://localhost/foo.js';
+    const lineNumber = 1;
+    const columnNumber = 1;
+    const a =
+        newMessage({stackTrace: {callFrames: [{functionName, scriptId: scriptId1, url, lineNumber, columnNumber}]}});
+    const b =
+        newMessage({stackTrace: {callFrames: [{functionName, scriptId: scriptId2, url, lineNumber, columnNumber}]}});
     assert.isFalse(a.isEqual(b));
   });
 });

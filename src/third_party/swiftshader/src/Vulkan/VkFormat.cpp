@@ -46,7 +46,10 @@ bool Format::isUnsignedNormalized() const
 	case VK_FORMAT_R16G16B16A16_UNORM:
 		return true;
 	default:
-		return false;
+		// sRGB encoded formats are also unsigned normalized.
+		// Note that floating-pont formats have no need for nonlinear encoding,
+		// and the sRGB transfer function is only defined for [0.0, 1.0].
+		return isSRGBformat();
 	}
 }
 
@@ -254,6 +257,22 @@ Format Format::getAspectFormat(VkImageAspectFlags aspect) const
 	}
 
 	return format;
+}
+
+VkFormat Format::getClearFormat() const
+{
+	// Set the proper format for the clear value, as described here:
+	// https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/vkspec.html#clears-values
+	if(isSignedUnnormalizedInteger())
+	{
+		return VK_FORMAT_R32G32B32A32_SINT;
+	}
+	else if(isUnsignedUnnormalizedInteger())
+	{
+		return VK_FORMAT_R32G32B32A32_UINT;
+	}
+
+	return VK_FORMAT_R32G32B32A32_SFLOAT;
 }
 
 bool Format::isStencil() const
@@ -1311,6 +1330,12 @@ int Format::componentCount() const
 	return 1;
 }
 
+bool Format::isUnsigned() const
+{
+	// TODO(b/203068380): create a proper check for signedness
+	return isUnsignedComponent(0);
+}
+
 bool Format::isUnsignedComponent(int component) const
 {
 	switch(format)
@@ -1504,7 +1529,7 @@ bool Format::isUnsignedComponent(int component) const
 	return false;
 }
 
-int Format::bytes() const
+size_t Format::bytes() const
 {
 	switch(format)
 	{
@@ -1717,7 +1742,7 @@ int Format::bytes() const
 	return 0;
 }
 
-int Format::pitchB(int width, int border) const
+size_t Format::pitchB(int width, int border) const
 {
 	// Render targets require 2x2 quads
 	width = sw::align<2>(width + 2 * border);
@@ -1793,7 +1818,7 @@ int Format::pitchB(int width, int border) const
 	}
 }
 
-int Format::sliceBUnpadded(int width, int height, int border) const
+size_t Format::sliceBUnpadded(int width, int height, int border) const
 {
 	// Render targets require 2x2 quads
 	height = sw::align<2>(height + 2 * border);
@@ -1865,7 +1890,7 @@ int Format::sliceBUnpadded(int width, int height, int border) const
 	}
 }
 
-int Format::sliceB(int width, int height, int border) const
+size_t Format::sliceB(int width, int height, int border) const
 {
 	return sw::align<16>(sliceBUnpadded(width, height, border) + 15);
 }
@@ -1996,6 +2021,140 @@ sw::float4 Format::getScale() const
 	}
 
 	return sw::float4(1.0f, 1.0f, 1.0f, 1.0f);
+}
+
+sw::int4 Format::bitsPerComponent() const
+{
+	switch(format)
+	{
+	case VK_FORMAT_R4G4_UNORM_PACK8:
+		return sw::int4(4, 4, 0, 0);
+	case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
+	case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
+	case VK_FORMAT_A4R4G4B4_UNORM_PACK16_EXT:
+	case VK_FORMAT_A4B4G4R4_UNORM_PACK16_EXT:
+		return sw::int4(4, 4, 4, 4);
+	case VK_FORMAT_R8_UNORM:
+	case VK_FORMAT_R8_SNORM:
+	case VK_FORMAT_R8_SRGB:
+	case VK_FORMAT_R8_SINT:
+	case VK_FORMAT_R8_UINT:
+	case VK_FORMAT_R8_USCALED:
+	case VK_FORMAT_R8_SSCALED:
+	case VK_FORMAT_S8_UINT:
+		return sw::int4(8, 0, 0, 0);
+	case VK_FORMAT_R8G8_SRGB:
+	case VK_FORMAT_R8G8_UNORM:
+	case VK_FORMAT_R8G8_SNORM:
+	case VK_FORMAT_R8G8_SINT:
+	case VK_FORMAT_R8G8_UINT:
+	case VK_FORMAT_R8G8_USCALED:
+	case VK_FORMAT_R8G8_SSCALED:
+		return sw::int4(8, 8, 0, 0);
+	case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
+	case VK_FORMAT_R8G8B8A8_UNORM:
+	case VK_FORMAT_B8G8R8A8_UNORM:
+	case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
+	case VK_FORMAT_R8G8B8A8_SRGB:
+	case VK_FORMAT_B8G8R8A8_SRGB:
+	case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
+	case VK_FORMAT_R8G8B8A8_SNORM:
+	case VK_FORMAT_B8G8R8A8_SNORM:
+	case VK_FORMAT_R8G8B8A8_SINT:
+	case VK_FORMAT_R8G8B8A8_UINT:
+	case VK_FORMAT_A8B8G8R8_SINT_PACK32:
+	case VK_FORMAT_A8B8G8R8_UINT_PACK32:
+	case VK_FORMAT_B8G8R8A8_SINT:
+	case VK_FORMAT_B8G8R8A8_UINT:
+	case VK_FORMAT_R8G8B8A8_USCALED:
+	case VK_FORMAT_B8G8R8A8_USCALED:
+	case VK_FORMAT_A8B8G8R8_USCALED_PACK32:
+	case VK_FORMAT_R8G8B8A8_SSCALED:
+	case VK_FORMAT_B8G8R8A8_SSCALED:
+	case VK_FORMAT_A8B8G8R8_SSCALED_PACK32:
+		return sw::int4(8, 8, 8, 8);
+	case VK_FORMAT_R16_UNORM:
+	case VK_FORMAT_R16_SNORM:
+	case VK_FORMAT_R16_SINT:
+	case VK_FORMAT_R16_UINT:
+	case VK_FORMAT_R16_SSCALED:
+	case VK_FORMAT_R16_USCALED:
+	case VK_FORMAT_R16_SFLOAT:
+	case VK_FORMAT_D16_UNORM:
+		return sw::int4(16, 0, 0, 0);
+	case VK_FORMAT_R16G16_UNORM:
+	case VK_FORMAT_R16G16_SNORM:
+	case VK_FORMAT_R16G16_SINT:
+	case VK_FORMAT_R16G16_UINT:
+	case VK_FORMAT_R16G16_SSCALED:
+	case VK_FORMAT_R16G16_USCALED:
+	case VK_FORMAT_R16G16_SFLOAT:
+		return sw::int4(16, 16, 0, 0);
+	case VK_FORMAT_R16G16B16_UNORM:
+	case VK_FORMAT_R16G16B16_SNORM:
+	case VK_FORMAT_R16G16B16_SSCALED:
+	case VK_FORMAT_R16G16B16_USCALED:
+	case VK_FORMAT_R16G16B16_SFLOAT:
+		return sw::int4(16, 16, 16, 0);
+	case VK_FORMAT_R16G16B16A16_UNORM:
+	case VK_FORMAT_R16G16B16A16_SNORM:
+	case VK_FORMAT_R16G16B16A16_SINT:
+	case VK_FORMAT_R16G16B16A16_UINT:
+	case VK_FORMAT_R16G16B16A16_SSCALED:
+	case VK_FORMAT_R16G16B16A16_USCALED:
+	case VK_FORMAT_R16G16B16A16_SFLOAT:
+		return sw::int4(16, 16, 16, 16);
+	case VK_FORMAT_D24_UNORM_S8_UINT:
+	case VK_FORMAT_X8_D24_UNORM_PACK32:
+		return sw::int4(24, 0, 0, 0);
+	case VK_FORMAT_R32_SINT:
+	case VK_FORMAT_R32_UINT:
+	case VK_FORMAT_R32_SFLOAT:
+	case VK_FORMAT_D32_SFLOAT:
+	case VK_FORMAT_D32_SFLOAT_S8_UINT:
+		return sw::int4(32, 0, 0, 0);
+	case VK_FORMAT_R32G32_SINT:
+	case VK_FORMAT_R32G32_UINT:
+	case VK_FORMAT_R32G32_SFLOAT:
+		return sw::int4(32, 32, 0, 0);
+	case VK_FORMAT_R32G32B32_SINT:
+	case VK_FORMAT_R32G32B32_UINT:
+	case VK_FORMAT_R32G32B32_SFLOAT:
+		return sw::int4(32, 32, 32, 0);
+	case VK_FORMAT_R32G32B32A32_SINT:
+	case VK_FORMAT_R32G32B32A32_UINT:
+	case VK_FORMAT_R32G32B32A32_SFLOAT:
+		return sw::int4(32, 32, 32, 32);
+	case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
+		return sw::int4(11, 11, 10, 0);
+	case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
+		return sw::int4(9, 9, 9, 0);
+	case VK_FORMAT_R5G5B5A1_UNORM_PACK16:
+	case VK_FORMAT_B5G5R5A1_UNORM_PACK16:
+	case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
+		return sw::int4(5, 5, 5, 1);
+	case VK_FORMAT_R5G6B5_UNORM_PACK16:
+	case VK_FORMAT_B5G6R5_UNORM_PACK16:
+		return sw::int4(5, 6, 5, 0);
+	case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
+	case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+	case VK_FORMAT_A2R10G10B10_SNORM_PACK32:
+	case VK_FORMAT_A2B10G10R10_SNORM_PACK32:
+	case VK_FORMAT_A2R10G10B10_USCALED_PACK32:
+	case VK_FORMAT_A2R10G10B10_SSCALED_PACK32:
+	case VK_FORMAT_A2R10G10B10_UINT_PACK32:
+	case VK_FORMAT_A2R10G10B10_SINT_PACK32:
+	case VK_FORMAT_A2B10G10R10_USCALED_PACK32:
+	case VK_FORMAT_A2B10G10R10_SSCALED_PACK32:
+	case VK_FORMAT_A2B10G10R10_UINT_PACK32:
+	case VK_FORMAT_A2B10G10R10_SINT_PACK32:
+		return sw::int4(10, 10, 10, 2);
+	default:
+		UNSUPPORTED("format %d", int(format));
+		break;
+	}
+
+	return sw::int4(0, 0, 0, 0);
 }
 
 bool Format::supportsColorAttachmentBlend() const

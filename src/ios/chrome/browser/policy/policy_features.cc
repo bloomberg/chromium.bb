@@ -13,7 +13,7 @@
 #include "ios/web/common/features.h"
 
 const base::Feature kURLBlocklistIOS{"URLBlocklistIOS",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 namespace {
 
@@ -49,8 +49,4 @@ bool ShouldInstallURLBlocklistPolicyHandlers() {
 bool IsURLBlocklistEnabled() {
   return ShouldInstallURLBlocklistPolicyHandlers() &&
          base::FeatureList::IsEnabled(kURLBlocklistIOS);
-}
-
-bool IsForcedBrowserSigninEnabled() {
-  return HasSwitch(switches::kEnableForcedSignInPolicy);
 }

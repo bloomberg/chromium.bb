@@ -30,7 +30,7 @@
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures.
  */
-#define AOM_EXT_PART_ABI_VERSION 5
+#define AOM_EXT_PART_ABI_VERSION 8
 
 #ifdef __cplusplus
 extern "C" {
@@ -252,6 +252,38 @@ typedef struct aom_partition_features {
   int qindex;         ///< Quantization index, range: [0, 255]
   int rdmult;         ///< Rate-distortion multiplier
   int pyramid_level;  ///< The level of this frame in the hierarchical structure
+  int has_above_block;     ///< Has above neighbor block
+  int above_block_width;   ///< Width of the above block, -1 if not exist
+  int above_block_height;  ///< Height of the above block, -1 if not exist
+  int has_left_block;      ///< Has left neighbor block
+  int left_block_width;    ///< Width of the left block, -1 if not exist
+  int left_block_height;   ///< Height of the left block, -1 if not exist
+  /*!
+   * The following parameters are collected from applying simple motion search.
+   * Sum of squared error (SSE) and variance of motion compensated residual
+   * are good indicators of block partitioning.
+   * If a block is a square, we also apply motion search for its 4 sub blocks.
+   * If not a square, their values are -1.
+   * If a block is able to split horizontally, we apply motion search and get
+   * stats for horizontal blocks. If not, their values are -1.
+   * If a block is able to split vertically, we apply motion search and get
+   * stats for vertical blocks. If not, their values are -1.
+   */
+  unsigned int block_sse;          ///< SSE of motion compensated residual
+  unsigned int block_var;          ///< Variance of motion compensated residual
+  unsigned int sub_block_sse[4];   ///< SSE of sub blocks.
+  unsigned int sub_block_var[4];   ///< Variance of sub blocks.
+  unsigned int horz_block_sse[2];  ///< SSE of horz sub blocks
+  unsigned int horz_block_var[2];  ///< Variance of horz sub blocks
+  unsigned int vert_block_sse[2];  ///< SSE of vert sub blocks
+  unsigned int vert_block_var[2];  ///< Variance of vert sub blocks
+  /*!
+   * The following parameters are calculated from tpl model.
+   * If tpl model is not available, their values are -1.
+   */
+  int64_t tpl_intra_cost;   ///< Intra cost, ref to "TplDepStats" in tpl_model.h
+  int64_t tpl_inter_cost;   ///< Inter cost in tpl model
+  int64_t tpl_mc_dep_cost;  ///< Motion compensated dependency cost in tpl model
 } aom_partition_features_t;
 
 /*!\brief Partition decisions received from the external model.

@@ -316,7 +316,7 @@ int main(int argc, char *argv[]) {
   }
   infile = fopen(args.input, "rb");
   if (!infile) {
-    die("Failed to open input file:", args.input);
+    die("Failed to open input file: %s", args.input);
   }
   fprintf(stderr, "Bit depth: %d  stride:%d\n", args.bit_depth, raw.stride[0]);
 

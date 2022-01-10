@@ -6,11 +6,11 @@ void unused_entry_point() {
 int f() {
   int i = 0;
   int j = 0;
-  while (true) {
+  [loop] while (true) {
     if ((i > 4)) {
       return 1;
     }
-    while (true) {
+    [loop] while (true) {
       if ((j > 4)) {
         return 2;
       }
@@ -22,5 +22,4 @@ int f() {
       i = (i + 1);
     }
   }
-  return 0;
 }

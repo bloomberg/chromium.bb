@@ -56,7 +56,7 @@ namespace dawn_native {
 
     class DeviceBase : public RefCounted {
       public:
-        DeviceBase(AdapterBase* adapter, const DeviceDescriptor* descriptor);
+        DeviceBase(AdapterBase* adapter, const DawnDeviceDescriptor* descriptor);
         virtual ~DeviceBase();
 
         void HandleError(InternalErrorType type, const char* message);
@@ -297,11 +297,13 @@ namespace dawn_native {
         //     Disconnected)
         //   - Disconnected: there is no longer work happening on the GPU timeline and the CPU data
         //     structures can be safely destroyed without additional synchronization.
+        //   - Destroyed: the device is disconnected and resources have been reclaimed.
         enum class State {
             BeingCreated,
             Alive,
             BeingDisconnected,
             Disconnected,
+            Destroyed,
         };
         State GetState() const;
         bool IsLost() const;
@@ -336,10 +338,15 @@ namespace dawn_native {
 
         MaybeError Tick();
 
+        // TODO(crbug.com/dawn/839): Organize the below backend-specific parameters into the struct
+        // BackendMetadata that we can query from the device.
         virtual uint32_t GetOptimalBytesPerRowAlignment() const = 0;
         virtual uint64_t GetOptimalBufferToTextureCopyOffsetAlignment() const = 0;
 
         virtual float GetTimestampPeriodInNS() const = 0;
+
+        virtual bool ShouldDuplicateNumWorkgroupsForDispatchIndirect(
+            ComputePipelineBase* computePipeline) const;
 
         const CombinedLimits& GetLimits() const;
 
@@ -360,6 +367,7 @@ namespace dawn_native {
 
         const std::string& GetLabel() const;
         void APISetLabel(const char* label);
+        void APIDestroy();
 
       protected:
         // Constructor used only for mocking and testing.
@@ -432,8 +440,8 @@ namespace dawn_native {
             WGPUCreateRenderPipelineAsyncCallback callback,
             void* userdata);
 
-        void ApplyToggleOverrides(const DeviceDescriptor* deviceDescriptor);
-        void ApplyFeatures(const DeviceDescriptor* deviceDescriptor);
+        void ApplyToggleOverrides(const DawnDeviceDescriptor* deviceDescriptor);
+        void ApplyFeatures(const DawnDeviceDescriptor* deviceDescriptor);
 
         void SetDefaultToggles();
 

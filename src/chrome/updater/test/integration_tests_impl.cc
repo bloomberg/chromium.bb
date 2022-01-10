@@ -66,8 +66,10 @@ constexpr char kDoNothingCRXName[] = "updater_qualification_app_exe.crx";
 constexpr char kDoNothingCRXRun[] = "qualification_app.exe";
 constexpr char kDoNothingCRXHash[] =
     "0705f7eedb0427810db76dfc072c8cbc302fbeb9b2c56fa0de3752ed8d6f9164";
-#else
-static_assert(false, "Unsupported platform for IntegrationTest.*");
+#elif defined(OS_LINUX)
+constexpr char kDoNothingCRXName[] = "updater_qualification_app.crx";
+constexpr char kDoNothingCRXRun[] = "qualification_app";
+constexpr char kDoNothingCRXHash[] = "";
 #endif
 
 std::string GetUpdateResponse(const std::string& app_id,
@@ -199,7 +201,8 @@ void Update(UpdaterScope scope, const std::string& app_id) {
   scoped_refptr<UpdateService> update_service = CreateUpdateServiceProxy(scope);
   base::RunLoop loop;
   update_service->Update(
-      app_id, UpdateService::Priority::kForeground, base::DoNothing(),
+      app_id, UpdateService::Priority::kForeground,
+      UpdateService::PolicySameVersionUpdate::kNotAllowed, base::DoNothing(),
       base::BindOnce(base::BindLambdaForTesting(
           [&loop](UpdateService::Result result_unused) { loop.Quit(); })));
   loop.Run();
@@ -472,6 +475,29 @@ void StressUpdateService(UpdaterScope scope) {
   };
 
   stress_runner();
+  loop.Run();
+}
+
+void CallServiceUpdate(UpdaterScope updater_scope,
+                       const std::string& app_id,
+                       bool same_version_update_allowed) {
+  UpdateService::PolicySameVersionUpdate policy_same_version_update =
+      same_version_update_allowed
+          ? UpdateService::PolicySameVersionUpdate::kAllowed
+          : UpdateService::PolicySameVersionUpdate::kNotAllowed;
+
+  scoped_refptr<UpdateService> service_proxy =
+      CreateUpdateServiceProxy(updater_scope);
+
+  base::RunLoop loop;
+  service_proxy->Update(
+      app_id, UpdateService::Priority::kForeground, policy_same_version_update,
+      base::BindLambdaForTesting([](const UpdateService::UpdateState&) {}),
+      base::BindLambdaForTesting([&](UpdateService::Result result) {
+        EXPECT_EQ(result, UpdateService::Result::kSuccess);
+        loop.Quit();
+      }));
+
   loop.Run();
 }
 

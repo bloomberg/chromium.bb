@@ -68,9 +68,6 @@ static av_cold int encode_init(AVCodecContext *avctx)
         if (avctx->bits_per_raw_sample)
             s->bits_per_component = avctx->bits_per_raw_sample;
         break;
-    default:
-        av_log(avctx, AV_LOG_INFO, "unsupported pixel format\n");
-        return -1;
     }
 
     return 0;
@@ -271,7 +268,6 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
     write32(buf + 16, size); /* file size */
 
-    pkt->flags |= AV_PKT_FLAG_KEY;
     *got_packet = 1;
 
     return 0;

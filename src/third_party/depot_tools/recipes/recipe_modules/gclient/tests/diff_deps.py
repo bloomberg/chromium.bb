@@ -73,7 +73,7 @@ def GenTests(api):
       api.properties(diff_deps_files=test_files),
       api.override_step_data(
           'gclient recursively git diff all DEPS',
-          api.raw_io.stream_output('fatal: bad object abcdef1234567890'),
+          api.raw_io.stream_output_text('fatal: bad object abcdef1234567890'),
       ),
       api.expect_exception('DepsDiffException')
   )

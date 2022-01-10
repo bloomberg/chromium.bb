@@ -305,13 +305,13 @@
 <translation id="3620292326130836921">Të gjitha u rezervuan!</translation>
 <translation id="3634507049637220048">Rrjeti <ph name="NETWORK_INDEX" /> nga <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, menaxhuar nga administratori yt, detaje</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> artikuj janë zhvendosur.</translation>
-<translation id="3645531960514756307">Zhgozhdo dosjen</translation>
 <translation id="3685122418104378273">Sinkronizimi i "Diskut të Google" është çaktivizuar si parazgjedhje kur përdor të dhënat celulare.</translation>
 <translation id="3689865792480713551">Anuloje <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3690128548376345212">Rrjeti <ph name="NETWORK_INDEX" /> nga <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, i paaktivizuar, <ph name="CONNECTION_STATUS" />, fuqia e sinjalit <ph name="SIGNAL_STRENGTH" />%, detajet</translation>
 <translation id="3691184985318546178">Sinhala</translation>
 <translation id="3726463242007121105">Kjo pajisje nuk mund të hapet sepse sistemi i saj i skedarëve nuk mbështetet.</translation>
 <translation id="3727148787322499904">Ndryshimi i këtij cilësimi do të ndikojë në të gjitha rrjetet e ndara</translation>
+<translation id="3737576078404241332">Hiq nga shiriti anësor</translation>
 <translation id="3741243925913727067">Rezervo fotografitë dhe videot e pajisjes media te "Disku i Google".</translation>
 <translation id="3749289110408117711">Emri i skedarit</translation>
 <translation id="3780536599611287598">Nuk ke autorizim për t'i lëvizur skedarët në "<ph name="FOLDER_NAME" />".</translation>
@@ -372,6 +372,7 @@
 <translation id="4326142238881453352">Botanist</translation>
 <translation id="4326192123064055915">Kafeja</translation>
 <translation id="4336032328163998280">Veprimi i kopjimit dështoi. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4340491671558548972">Shto në shiritin anësor</translation>
 <translation id="4348495354623233847">Kurdishte sorani me tastierë arabe</translation>
 <translation id="4363958938297989186">Rusisht me tastierë fonetike</translation>
 <translation id="4364327530094270451">Pjepër</translation>
@@ -926,7 +927,6 @@
 <translation id="9110990317705400362">Ne kërkojmë vazhdimisht mënyra për ta bërë shfletimin tënd më të sigurt. Më parë, çdo uebsajt mund të të kërkonte të shtoje një shtesë në shfletues. Në versioniet e fundit të Google Chrome, duhet t'i tregosh ti vetë posaçërisht Chrome se dëshiron t'i instalosh këto shtesa duke i shtuar ato përmes faqes "Shtesat". <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">Shkyç</translation>
 <translation id="912419004897138677">Kodeku</translation>
-<translation id="9129931661813833980">Gozhdo dosjen</translation>
 <translation id="9130775360844693113">Anëtarët e "<ph name="DESTINATION_NAME" />" do të fitojnë qasje te këta artikuj.</translation>
 <translation id="9131598836763251128">Zgjidh një ose më shumë skedarë</translation>
 <translation id="9133055936679483811">Ngjeshja dështoi. <ph name="ERROR_MESSAGE" /></translation>

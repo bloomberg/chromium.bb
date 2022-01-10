@@ -70,9 +70,14 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
   void OpenScreenshotInImageEditor(const base::FilePath& file_path) override;
   bool Uses24HourFormat() const override;
   bool IsCaptureModeInitRestrictedByDlp() const override;
+  void CheckCaptureModeInitRestrictionByDlp(
+      OnCaptureModeDlpRestrictionChecked callback) override;
+  void CheckCaptureOperationRestrictionByDlp(
+      const aura::Window* window,
+      const gfx::Rect& bounds,
+      OnCaptureModeDlpRestrictionChecked callback) override;
   bool IsCaptureAllowedByDlp(const aura::Window* window,
-                             const gfx::Rect& bounds,
-                             bool for_video) const override;
+                             const gfx::Rect& bounds) const override;
   bool IsCaptureAllowedByPolicy() const override;
   void StartObservingRestrictedContent(
       const aura::Window* window,
@@ -88,6 +93,7 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
   void OnSessionStateChanged(bool started) override;
   void OnServiceRemoteReset() override;
   bool GetDriveFsMountPointPath(base::FilePath* result) const override;
+  base::FilePath GetAndroidFilesPath() const override;
   std::unique_ptr<RecordingOverlayView> CreateRecordingOverlayView()
       const override;
 
@@ -100,6 +106,7 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
   bool is_allowed_by_policy_ = true;
   bool should_save_after_dlp_check_ = true;
   base::ScopedTempDir fake_drive_fs_mount_path_;
+  base::ScopedTempDir fake_android_files_path_;
 };
 
 }  // namespace ash

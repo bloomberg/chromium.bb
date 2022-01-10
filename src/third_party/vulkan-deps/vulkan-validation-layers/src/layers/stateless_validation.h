@@ -57,6 +57,8 @@ extern const VkImageUsageFlags AllVkImageUsageFlagBits;
 extern const VkSampleCountFlags AllVkSampleCountFlagBits;
 extern const VkBuildAccelerationStructureFlagsNV AllVkBuildAccelerationStructureFlagBitsNV;
 extern const VkGeometryFlagsKHR AllVkGeometryFlagBitsKHR;
+extern const VkPipelineColorBlendStateCreateFlags AllVkPipelineColorBlendStateCreateFlagBits;
+extern const VkPipelineDepthStencilStateCreateFlags AllVkPipelineDepthStencilStateCreateFlagBits;
 
 extern const std::vector<VkGeometryTypeKHR> AllVkGeometryTypeKHREnums;
 extern const std::vector<VkCompareOp> AllVkCompareOpEnums;
@@ -111,6 +113,7 @@ class StatelessValidation : public ValidationObject {
         VkPhysicalDeviceTransformFeedbackPropertiesEXT transform_feedback_props;
         VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT vertex_attribute_divisor_props;
         VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT blend_operation_advanced_props;
+        VkPhysicalDeviceMaintenance4PropertiesKHR maintenance4_props;
     };
     DeviceExtensionProperties phys_dev_ext_props = {};
 

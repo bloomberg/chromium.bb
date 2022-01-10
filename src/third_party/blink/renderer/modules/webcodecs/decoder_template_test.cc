@@ -185,6 +185,13 @@ TYPED_TEST(DecoderTemplateTest, MAYBE_CodecReclamation) {
   ASSERT_TRUE(decoder);
   ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
 
+  // Simulate backgrounding to enable reclamation.
+  if (!decoder->is_backgrounded_for_testing()) {
+    decoder->SimulateLifecycleStateForTesting(
+        scheduler::SchedulingLifecycleState::kHidden);
+    DCHECK(decoder->is_backgrounded_for_testing());
+  }
+
   // Configure the decoder.
   decoder->configure(this->CreateConfig(), v8_scope.GetExceptionState());
   ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
@@ -214,9 +221,6 @@ TYPED_TEST(DecoderTemplateTest, MAYBE_CodecReclamation) {
 
   testing::Mock::VerifyAndClearExpectations(error_callback);
 }
-
-// Note: AudioDecoder and VideoDecoder specific tests should be put in
-// audio_decoder_test.cc and video_decoder_test.cc respectively.
 
 }  // namespace
 

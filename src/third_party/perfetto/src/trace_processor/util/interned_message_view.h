@@ -17,9 +17,8 @@
 #ifndef SRC_TRACE_PROCESSOR_UTIL_INTERNED_MESSAGE_VIEW_H_
 #define SRC_TRACE_PROCESSOR_UTIL_INTERNED_MESSAGE_VIEW_H_
 
-#include "src/trace_processor/util/trace_blob_view.h"
-
-#include <unordered_map>
+#include "perfetto/ext/base/flat_hash_map.h"
+#include "perfetto/trace_processor/trace_blob_view.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -35,7 +34,7 @@ namespace trace_processor {
 // Entry in an interning index, refers to the interned message.
 class InternedMessageView {
  public:
-  InternedMessageView(TraceBlobView msg) : message_(std::move(msg)) {}
+  explicit InternedMessageView(TraceBlobView msg) : message_(std::move(msg)) {}
 
   InternedMessageView(InternedMessageView&&) = default;
   InternedMessageView& operator=(InternedMessageView&&) = default;
@@ -43,12 +42,13 @@ class InternedMessageView {
   // Allow copy by cloning the TraceBlobView. This is required for
   // UpdateTracePacketDefaults().
   InternedMessageView(const InternedMessageView& view)
-      : message_(view.message_.slice(0, view.message_.length())) {}
+      : message_(view.message_.copy()) {}
+
   InternedMessageView& operator=(const InternedMessageView& view) {
-    this->message_ = view.message_.slice(0, view.message_.length());
+    this->message_ = view.message_.copy();
     this->decoder_ = nullptr;
     this->decoder_type_ = nullptr;
-    this->submessages_.clear();
+    this->submessages_.Clear();
     return *this;
   }
 
@@ -86,20 +86,18 @@ class InternedMessageView {
   // TODO(eseckler): Support repeated fields.
   template <typename MessageType, uint32_t FieldId>
   InternedMessageView* GetOrCreateSubmessageView() {
-    auto it = submessages_.find(FieldId);
-    if (it != submessages_.end())
-      return it->second.get();
+    auto it_and_ins = submessages_.Insert(FieldId, nullptr);
+    if (!it_and_ins.second)
+      return it_and_ins.first->get();
     auto* decoder = GetOrCreateDecoder<MessageType>();
     // Calls the at() template method on the decoder.
     auto field = decoder->template at<FieldId>().as_bytes();
     if (!field.data)
       return nullptr;
-    const size_t offset = message_.offset_of(field.data);
-    TraceBlobView submessage = message_.slice(offset, field.size);
+    TraceBlobView submessage = message_.slice(field.data, field.size);
     InternedMessageView* submessage_view =
         new InternedMessageView(std::move(submessage));
-    submessages_.emplace_hint(
-        it, FieldId, std::unique_ptr<InternedMessageView>(submessage_view));
+    it_and_ins.first->reset(submessage_view);
     return submessage_view;
   }
 
@@ -107,8 +105,8 @@ class InternedMessageView {
 
  private:
   using SubMessageViewMap =
-      std::unordered_map<uint32_t /*field_id*/,
-                         std::unique_ptr<InternedMessageView>>;
+      base::FlatHashMap<uint32_t /*field_id*/,
+                        std::unique_ptr<InternedMessageView>>;
 
   TraceBlobView message_;
 

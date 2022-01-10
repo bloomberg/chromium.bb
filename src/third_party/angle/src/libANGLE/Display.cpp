@@ -99,7 +99,30 @@ static WindowSurfaceMap *GetWindowSurfaces()
     return windowSurfaces.get();
 }
 
-typedef std::map<EGLNativeDisplayType, Display *> ANGLEPlatformDisplayMap;
+struct ANGLEPlatformDisplay
+{
+    ANGLEPlatformDisplay() = default;
+
+    ANGLEPlatformDisplay(EGLNativeDisplayType nativeDisplayType)
+        : nativeDisplayType(nativeDisplayType), powerPreference(EGL_LOW_POWER_ANGLE)
+    {}
+
+    ANGLEPlatformDisplay(EGLNativeDisplayType nativeDisplayType, EGLAttrib powerPreference)
+        : nativeDisplayType(nativeDisplayType), powerPreference(powerPreference)
+    {}
+
+    auto tie() const { return std::tie(nativeDisplayType, powerPreference); }
+
+    EGLNativeDisplayType nativeDisplayType;
+    EGLAttrib powerPreference;
+};
+
+inline bool operator<(const ANGLEPlatformDisplay &a, const ANGLEPlatformDisplay &b)
+{
+    return a.tie() < b.tie();
+}
+
+typedef std::map<ANGLEPlatformDisplay, Display *> ANGLEPlatformDisplayMap;
 static ANGLEPlatformDisplayMap *GetANGLEPlatformDisplayMap()
 {
     static angle::base::NoDestructor<ANGLEPlatformDisplayMap> displays;
@@ -618,8 +641,9 @@ Display *Display::GetDisplayFromNativeDisplay(EGLNativeDisplayType nativeDisplay
 {
     Display *display = nullptr;
 
+    EGLAttrib powerPreference = attribMap.get(EGL_POWER_PREFERENCE_ANGLE, EGL_LOW_POWER_ANGLE);
     ANGLEPlatformDisplayMap *displays = GetANGLEPlatformDisplayMap();
-    const auto &iter                  = displays->find(nativeDisplay);
+    const auto &iter = displays->find(ANGLEPlatformDisplay(nativeDisplay, powerPreference));
     if (iter != displays->end())
     {
         display = iter->second;
@@ -634,9 +658,9 @@ Display *Display::GetDisplayFromNativeDisplay(EGLNativeDisplayType nativeDisplay
         }
 
         display = new Display(EGL_PLATFORM_ANGLE_ANGLE, nativeDisplay, nullptr);
-        displays->insert(std::make_pair(nativeDisplay, display));
+        displays->insert(
+            std::make_pair(ANGLEPlatformDisplay(nativeDisplay, powerPreference), display));
     }
-
     // Apply new attributes if the display is not initialized yet.
     if (!display->isInitialized())
     {
@@ -729,6 +753,27 @@ Display *Display::GetDisplayFromDevice(Device *device, const AttributeMap &attri
     return display;
 }
 
+// static
+Display::EglDisplaySet Display::GetEglDisplaySet()
+{
+    Display::EglDisplaySet displays;
+
+    ANGLEPlatformDisplayMap *anglePlatformDisplays   = GetANGLEPlatformDisplayMap();
+    DevicePlatformDisplayMap *devicePlatformDisplays = GetDevicePlatformDisplayMap();
+
+    for (auto anglePlatformDisplayMapEntry : *anglePlatformDisplays)
+    {
+        displays.insert(anglePlatformDisplayMapEntry.second);
+    }
+
+    for (auto devicePlatformDisplayMapEntry : *devicePlatformDisplays)
+    {
+        displays.insert(devicePlatformDisplayMapEntry.second);
+    }
+
+    return displays;
+}
+
 Display::Display(EGLenum platform, EGLNativeDisplayType displayId, Device *eglDevice)
     : mState(displayId),
       mImplementation(nullptr),
@@ -761,7 +806,8 @@ Display::~Display()
     if (mPlatform == EGL_PLATFORM_ANGLE_ANGLE)
     {
         ANGLEPlatformDisplayMap *displays      = GetANGLEPlatformDisplayMap();
-        ANGLEPlatformDisplayMap::iterator iter = displays->find(mState.displayId);
+        ANGLEPlatformDisplayMap::iterator iter = displays->find(ANGLEPlatformDisplay(
+            mState.displayId, mAttributeMap.get(EGL_POWER_PREFERENCE_ANGLE, EGL_LOW_POWER_ANGLE)));
         if (iter != displays->end())
         {
             displays->erase(iter);
@@ -959,7 +1005,7 @@ Error Display::initialize()
     return NoError();
 }
 
-Error Display::terminate(Thread *thread)
+Error Display::terminate(Thread *thread, TerminateReason terminateReason)
 {
     mIsTerminated = true;
 
@@ -974,11 +1020,19 @@ Error Display::terminate(Thread *thread)
     // thread, then they are not actually destroyed while they remain current. If other resources
     // created with respect to dpy are in use by any current context or surface, then they are also
     // not destroyed until the corresponding context or surface is no longer current.
-    for (const gl::Context *context : mContextSet)
+    for (gl::Context *context : mContextSet)
     {
         if (context->getRefCount() > 0)
         {
-            return NoError();
+            if (terminateReason == TerminateReason::ProcessExit)
+            {
+                context->release();
+                (void)context->unMakeCurrent(this);
+            }
+            else
+            {
+                return NoError();
+            }
         }
     }
 
@@ -1570,7 +1624,7 @@ Error Display::destroyContext(Thread *thread, gl::Context *context)
             }
         }
 
-        return terminate(thread);
+        return terminate(thread, TerminateReason::InternalCleanup);
     }
 
     return NoError();
@@ -1772,6 +1826,10 @@ static ClientExtensions GenerateClientExtensions()
 
 #if defined(ANGLE_PLATFORM_MACOS) || defined(ANGLE_PLATFORM_MACCATALYST)
     extensions.platformANGLEDeviceContextVolatileCgl = true;
+#endif
+
+#if defined(ANGLE_ENABLE_METAL)
+    extensions.displayPowerPreferenceANGLE = true;
 #endif
 
     extensions.clientGetAllProcAddresses = true;

@@ -56,15 +56,6 @@ static const AVOption grayworld_options[] = {
 
 AVFILTER_DEFINE_CLASS(grayworld);
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_GBRPF32, AV_PIX_FMT_GBRAPF32,
-        AV_PIX_FMT_NONE,
-    };
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
-
 static void apply_matrix(const float matrix[3][3], const float input[3], float output[3])
 {
     output[0] = matrix[0][0] * input[0] + matrix[0][1] * input[1] + matrix[0][2] * input[2];
@@ -329,9 +320,9 @@ const AVFilter ff_vf_grayworld = {
     .description   = NULL_IF_CONFIG_SMALL("Adjust white balance using LAB gray world algorithm"),
     .priv_size     = sizeof(GrayWorldContext),
     .priv_class    = &grayworld_class,
-    .query_formats = query_formats,
     FILTER_INPUTS(grayworld_inputs),
     FILTER_OUTPUTS(grayworld_outputs),
+    FILTER_PIXFMTS(AV_PIX_FMT_GBRPF32, AV_PIX_FMT_GBRAPF32),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .uninit        = uninit,
 };

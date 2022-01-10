@@ -68,6 +68,21 @@ base::RepeatingCallback<bool(Args...)> WithSwitch(
   });
 }
 
+// Overload for bool switches, represented by literals "false" and "true".
+template <typename... Args>
+base::RepeatingCallback<bool(Args...)> WithSwitch(
+    const std::string& flag,
+    base::RepeatingCallback<bool(bool, Args...)> callback) {
+  return WithSwitch(
+      flag,
+      base::BindLambdaForTesting([=](const std::string& flag, Args... args) {
+        if (flag == "false" || flag == "true") {
+          return callback.Run(flag == "true", std::move(args)...);
+        }
+        return false;
+      }));
+}
+
 // Overload for int switches.
 template <typename... Args>
 base::RepeatingCallback<bool(Args...)> WithSwitch(
@@ -196,10 +211,14 @@ void AppTestHelper::FirstTaskRun() {
     {"expect_interfaces_registered",
      WithSystemScope(Wrap(&ExpectInterfacesRegistered))},
     {"expect_legacy_update3web_succeeds",
-     WithSwitch("app_id",
-                WithSystemScope(Wrap(&ExpectLegacyUpdate3WebSucceeds)))},
+     WithSwitch("expected_error_code",
+                WithSwitch("expected_final_state",
+                           WithSwitch("app_id",
+                                      WithSystemScope(Wrap(
+                                          &ExpectLegacyUpdate3WebSucceeds)))))},
     {"expect_legacy_process_launcher_succeeds",
      WithSystemScope(Wrap(&ExpectLegacyProcessLauncherSucceeds))},
+    {"run_uninstall_cmd_line", WithSystemScope(Wrap(&RunUninstallCmdLine))},
 #endif  // OS_WIN
     {"expect_version_active",
      WithSwitch("version", WithSystemScope(Wrap(&ExpectVersionActive)))},
@@ -223,6 +242,10 @@ void AppTestHelper::FirstTaskRun() {
      WithSwitch("value", WithSystemScope(Wrap(&SetServerStarts)))},
     {"stress_update_service", WithSystemScope(Wrap(&StressUpdateService))},
     {"uninstall", WithSystemScope(Wrap(&Uninstall))},
+    {"call_service_update",
+     WithSwitch(
+         "same_version_update_allowed",
+         WithSwitch("app_id", WithSystemScope(Wrap(&CallServiceUpdate))))},
   };
 
   const base::CommandLine* command_line =

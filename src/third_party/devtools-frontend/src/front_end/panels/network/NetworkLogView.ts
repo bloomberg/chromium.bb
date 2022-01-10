@@ -958,9 +958,22 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
           (initiatorLink as HTMLElement).focus();
         }
       }
+
       if (isEnterOrSpaceKey(event)) {
         this.dispatchEventToListeners(Events.RequestActivated, {showPanel: true, takeFocus: true});
         event.consume(true);
+      }
+    });
+    this.dataGrid.element.addEventListener('keyup', event => {
+      if ((event.key === 'r' || event.key === 'R') && this.dataGrid.selectedNode) {
+        const request = (this.dataGrid.selectedNode as NetworkNode).request();
+        if (!request) {
+          return;
+        }
+
+        if (SDK.NetworkManager.NetworkManager.canReplayRequest(request)) {
+          SDK.NetworkManager.NetworkManager.replayRequest(request);
+        }
       }
     });
     this.dataGrid.element.addEventListener('focus', this.onDataGridFocus.bind(this), true);
@@ -1536,6 +1549,8 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
         footerSection.appendItem(i18nString(UIStrings.copyAllAsCurlBash), this.copyAllCurlCommand.bind(this, 'unix'));
       } else {
         footerSection.appendItem(
+            i18nString(UIStrings.copyAsPowershell), this.copyPowerShellCommand.bind(this, request), disableIfBlob);
+        footerSection.appendItem(
             i18nString(UIStrings.copyAsFetch), this.copyFetchCall.bind(this, request, FetchStyle.Browser),
             disableIfBlob);
         footerSection.appendItem(
@@ -1543,6 +1558,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
             disableIfBlob);
         footerSection.appendItem(
             i18nString(UIStrings.copyAsCurl), this.copyCurlCommand.bind(this, request, 'unix'), disableIfBlob);
+        footerSection.appendItem(i18nString(UIStrings.copyAllAsPowershell), this.copyAllPowerShellCommand.bind(this));
         footerSection.appendItem(
             i18nString(UIStrings.copyAllAsFetch), this.copyAllFetchCall.bind(this, FetchStyle.Browser));
         footerSection.appendItem(

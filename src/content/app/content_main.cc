@@ -216,7 +216,15 @@ void InitializeMojo(mojo::core::Configuration* config) {
 
 }  // namespace
 
-int ContentMainInitialize(ContentMainParams& params,
+ContentMainParams::ContentMainParams(ContentMainDelegate* delegate)
+    : delegate(delegate) {}
+
+ContentMainParams::~ContentMainParams() = default;
+
+ContentMainParams::ContentMainParams(ContentMainParams&&) = default;
+ContentMainParams& ContentMainParams::operator=(ContentMainParams&&) = default;
+
+int ContentMainInitialize(ContentMainParams params,
                           ContentMainRunner* content_main_runner) {
   int exit_code = -1;
   base::debug::GlobalActivityTracker* tracker = nullptr;
@@ -228,7 +236,9 @@ int ContentMainInitialize(ContentMainParams& params,
 #if !defined(OS_ANDROID)
   DCHECK(!is_initialized);
 #endif
-  if (!is_initialized) {
+  if (is_initialized) {
+    content_main_runner->ReInitializeParams(std::move(params));
+  } else {
     is_initialized = true;
 #if defined(OS_MAC) && BUILDFLAG(USE_ALLOCATOR_SHIM)
     base::allocator::InitializeAllocatorShim();
@@ -314,7 +324,7 @@ int ContentMainInitialize(ContentMainParams& params,
 
     ui::RegisterPathProvider();
     tracker = base::debug::GlobalActivityTracker::Get();
-    exit_code = content_main_runner->Initialize(params);
+    exit_code = content_main_runner->Initialize(std::move(params));
 
     if (exit_code >= 0) {
       if (tracker) {
@@ -380,9 +390,8 @@ int ContentMainInitialize(ContentMainParams& params,
 // This function must be marked with NO_STACK_PROTECTOR or it may crash on
 // return, see the --change-stack-guard-on-fork command line flag.
 int NO_STACK_PROTECTOR
-ContentMainRun(ContentMainParams& params,
-               ContentMainRunner* content_main_runner) {
-  int exit_code = content_main_runner->Run(params.minimal_browser_mode);
+ContentMainRun(ContentMainRunner* content_main_runner) {
+  int exit_code = content_main_runner->Run();
 
   base::debug::GlobalActivityTracker* tracker =
       base::debug::GlobalActivityTracker::Get();
@@ -400,10 +409,7 @@ ContentMainRun(ContentMainParams& params,
   return exit_code;
 }
 
-// This function must be marked with NO_STACK_PROTECTOR or it may crash on
-// return, see the --change-stack-guard-on-fork command line flag.
-void ContentMainShutdown(ContentMainParams& params,
-                         ContentMainRunner* content_main_runner) {
+void ContentMainShutdown(ContentMainRunner* content_main_runner) {
 #if !defined(OS_ANDROID)
   content_main_runner->Shutdown();
 #endif
@@ -412,7 +418,7 @@ void ContentMainShutdown(ContentMainParams& params,
 // This function must be marked with NO_STACK_PROTECTOR or it may crash on
 // return, see the --change-stack-guard-on-fork command line flag.
 int NO_STACK_PROTECTOR
-RunContentProcess(ContentMainParams& params,
+RunContentProcess(ContentMainParams params,
                   ContentMainRunner* content_main_runner) {
 #if defined(OS_MAC)
   // We need this pool for all the objects created before we get to the event
@@ -424,26 +430,25 @@ RunContentProcess(ContentMainParams& params,
   params.autorelease_pool = autorelease_pool.get();
 #endif
 
-  int exit_code = ContentMainInitialize(params, content_main_runner);
+  int exit_code = ContentMainInitialize(std::move(params), content_main_runner);
   if (exit_code >= 0)
     return exit_code;
-  exit_code = ContentMainRun(params, content_main_runner);
+  exit_code = ContentMainRun(content_main_runner);
 
 #if defined(OS_MAC)
   params.autorelease_pool = nullptr;
   autorelease_pool.reset();
 #endif
 
-  ContentMainShutdown(params, content_main_runner);
-
+  ContentMainShutdown(content_main_runner);
   return exit_code;
 }
 
 // This function must be marked with NO_STACK_PROTECTOR or it may crash on
 // return, see the --change-stack-guard-on-fork command line flag.
-int NO_STACK_PROTECTOR ContentMain(ContentMainParams& params) {
+int NO_STACK_PROTECTOR ContentMain(ContentMainParams params) {
   auto runner = ContentMainRunner::Create();
-  return RunContentProcess(params, runner.get());
+  return RunContentProcess(std::move(params), runner.get());
 }
 
 }  // namespace content

@@ -998,8 +998,6 @@ angle::Result GetUnresolveFrag(
 }
 }  // namespace
 
-const uint32_t UtilsVk::kGenerateMipmapMaxLevels;
-
 UtilsVk::ConvertVertexShaderParams::ConvertVertexShaderParams() = default;
 
 UtilsVk::ImageCopyShaderParams::ImageCopyShaderParams() = default;
@@ -2109,7 +2107,8 @@ angle::Result UtilsVk::clearFramebuffer(ContextVk *contextVk,
     // render pass.
     if (isTransformFeedbackActiveUnpaused)
     {
-        ANGLE_TRY(contextVk->flushCommandsAndEndRenderPass());
+        ANGLE_TRY(contextVk->flushCommandsAndEndRenderPass(
+            RenderPassClosureReason::XfbResumeAfterDrawBasedClear));
     }
 
     return angle::Result::Continue;
@@ -2207,7 +2206,8 @@ angle::Result UtilsVk::clearImage(ContextVk *contextVk,
     contextVk->addGarbage(&destViewObject);
 
     // Close the render pass for this temporary framebuffer.
-    return contextVk->flushCommandsAndEndRenderPass();
+    return contextVk->flushCommandsAndEndRenderPass(
+        RenderPassClosureReason::TemporaryForImageClear);
 }
 
 angle::Result UtilsVk::colorBlitResolve(ContextVk *contextVk,
@@ -2216,6 +2216,15 @@ angle::Result UtilsVk::colorBlitResolve(ContextVk *contextVk,
                                         const vk::ImageView *srcView,
                                         const BlitResolveParameters &params)
 {
+    // The views passed to this function are already retained, so a render pass cannot be already
+    // open.  Otherwise, this function closes the render pass, which may incur a vkQueueSubmit and
+    // then the views are used in a new command buffer without having been retained for it.
+    // http://crbug.com/1272266#c22
+    //
+    // Note that depth/stencil views for blit are not derived from a ResourceVk object and are
+    // retained differently.
+    ASSERT(!contextVk->hasStartedRenderPass());
+
     return blitResolveImpl(contextVk, framebuffer, src, srcView, nullptr, nullptr, params);
 }
 
@@ -2301,7 +2310,7 @@ angle::Result UtilsVk::blitResolveImpl(ContextVk *contextVk,
     shaderParams.flipY    = params.flipY;
     shaderParams.rotateXY = 0;
 
-    // Potentially make adjustments for pre-rotatation.  Depending on the angle some of the
+    // Potentially make adjustments for pre-rotation.  Depending on the angle some of the
     // shaderParams need to be adjusted.
     switch (params.rotation)
     {
@@ -2707,6 +2716,12 @@ angle::Result UtilsVk::copyImage(ContextVk *contextVk,
                                  const vk::ImageView *srcView,
                                  const CopyImageParameters &params)
 {
+    // The views passed to this function are already retained, so a render pass cannot be already
+    // open.  Otherwise, this function closes the render pass, which may incur a vkQueueSubmit and
+    // then the views are used in a new command buffer without having been retained for it.
+    // http://crbug.com/1272266#c22
+    ASSERT(!contextVk->hasStartedRenderPass());
+
     ANGLE_TRY(ensureImageCopyResourcesInitialized(contextVk));
 
     const angle::Format &srcIntendedFormat = src->getIntendedFormat();
@@ -2877,7 +2892,7 @@ angle::Result UtilsVk::copyImage(ContextVk *contextVk,
     descriptorPoolBinding.reset();
 
     // Close the render pass for this temporary framebuffer.
-    return contextVk->flushCommandsAndEndRenderPass();
+    return contextVk->flushCommandsAndEndRenderPass(RenderPassClosureReason::TemporaryForImageCopy);
 }
 
 angle::Result UtilsVk::copyImageBits(ContextVk *contextVk,

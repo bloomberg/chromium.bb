@@ -508,8 +508,6 @@ TEST_F(Bbr2DefaultTopologyTest, SimpleTransferB2RC) {
 }
 
 TEST_F(Bbr2DefaultTopologyTest, SimpleTransferB201) {
-  SetQuicReloadableFlag(quic_bbr2_check_cwnd_limited_before_aggregation_epoch,
-                        true);
   SetConnectionOption(kB201);
   DefaultTopologyParams params;
   CreateNetwork(params);
@@ -681,8 +679,6 @@ TEST_F(Bbr2DefaultTopologyTest, SimpleTransfer2RTTAggregationBytes) {
 }
 
 TEST_F(Bbr2DefaultTopologyTest, SimpleTransfer2RTTAggregationBytesB201) {
-  SetQuicReloadableFlag(quic_bbr2_check_cwnd_limited_before_aggregation_epoch,
-                        true);
   SetConnectionOption(kB201);
   DefaultTopologyParams params;
   CreateNetwork(params);
@@ -1970,12 +1966,10 @@ class Bbr2MultiSenderTest : public Bbr2SimulatorTest {
         kDefaultInitialCwndPackets,
         GetQuicFlag(FLAGS_quic_max_congestion_window), &random_,
         QuicConnectionPeer::GetStats(endpoint->connection()), nullptr);
-    if (GetQuicReloadableFlag(
-            quic_bbr_start_new_aggregation_epoch_after_a_full_round)) {
-      // TODO(ianswett): Add dedicated tests for this option until it becomes
-      // the default behavior.
-      SetConnectionOption(sender, kBBRA);
-    }
+    // TODO(ianswett): Add dedicated tests for this option until it becomes
+    // the default behavior.
+    SetConnectionOption(sender, kBBRA);
+
     QuicConnectionPeer::SetSendAlgorithm(endpoint->connection(), sender);
     endpoint->RecordTrace();
     return sender;

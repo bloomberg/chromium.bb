@@ -211,9 +211,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     private int mThemeColor;
     private boolean mUsedCriticalPersistedTabData;
 
-    /** Whether or not the user manually changed the user agent. */
-    private boolean mUserForcedUserAgent;
-
     /**
      * Creates an instance of a {@link TabImpl}.
      *
@@ -329,6 +326,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
                 observer.onActivityAttachmentChanged(this, window);
             }
         }
+
+        updateInteractableState();
     }
 
     /**
@@ -348,7 +347,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     public View getView() {
         if (mCustomView != null) return mCustomView;
 
-        if (mNativePage != null) return mNativePage.getView();
+        if (mNativePage != null && !mNativePage.isFrozen()) return mNativePage.getView();
 
         return mContentView;
     }
@@ -903,7 +902,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
             initWebContents(webContents);
 
-            if (!creatingWebContents && webContents.isLoadingToDifferentDocument()) {
+            if (!creatingWebContents && webContents.shouldShowLoadingUI()) {
                 didStartPageLoad(webContents.getVisibleUrl());
             }
 
@@ -965,6 +964,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         CriticalPersistedTabData.from(this).setLaunchTypeAtCreation(state.tabLaunchTypeAtCreation);
         CriticalPersistedTabData.from(this).setRootId(
                 state.rootId == Tab.INVALID_TAB_ID ? mId : state.rootId);
+        CriticalPersistedTabData.from(this).setUserAgent(state.userAgent);
     }
 
     /**
@@ -1467,7 +1467,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      */
     private void updateInteractableState() {
         boolean currentState = !mIsHidden && !isFrozen()
-                && (mIsViewAttachedToWindow || VrModuleProvider.getDelegate().isInVr());
+                && (mIsViewAttachedToWindow || VrModuleProvider.getDelegate().isInVr())
+                && !isDetached(this);
 
         if (currentState == mInteractableState) return;
 
@@ -1633,21 +1634,40 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     }
 
     private @UserAgentOverrideOption int calculateUserAgentOverrideOption() {
-        boolean currentRequestDesktopSite = getWebContents() == null
+        WebContents webContents = getWebContents();
+        boolean currentRequestDesktopSite = webContents == null
                 ? false
-                : getWebContents().getNavigationController().getUseDesktopUserAgent();
+                : webContents.getNavigationController().getUseDesktopUserAgent();
 
+        @TabUserAgent
+        int tabUserAgent = CriticalPersistedTabData.from(this).getUserAgent();
+        // TabUserAgent.UNSET means this is a pre-existing tab from an earlier build. In this case
+        // we set the TabUserAgent bit based on last committed entry's user agent. If webContents is
+        // null, this method is triggered too early, and we cannot read the last committed entry's
+        // user agent yet. We will skip for now and let the following call set the TabUserAgent bit.
+        if (webContents != null && tabUserAgent == TabUserAgent.UNSET) {
+            if (currentRequestDesktopSite) {
+                tabUserAgent = TabUserAgent.DESKTOP;
+            } else {
+                tabUserAgent = TabUserAgent.DEFAULT;
+            }
+            CriticalPersistedTabData.from(this).setUserAgent(tabUserAgent);
+        }
         // We only calculate the user agent when users did not manually choose one.
-        // TODO(crbug.com/1251794): Desktop site setting in app menu does not persist after restart.
-        if (!mUserForcedUserAgent
+        if (tabUserAgent == TabUserAgent.DEFAULT
                 && ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_GLOBAL)) {
             // We only do the following logic to choose the desktop/mobile user agent if:
             // 1. User never manually made a choice in the app menu for requesting desktop site.
             // 2. User-enabled request desktop site in site settings.
             Profile profile =
                     IncognitoUtils.getProfileFromWindowAndroid(mWindowAndroid, isIncognito());
-            boolean shouldRequestDesktopSite = getWebContents() != null
-                    && TabUtils.isDesktopSiteEnabled(profile, getWebContents().getVisibleUrl());
+            boolean shouldRequestDesktopSite;
+            if (ContentFeatureList.isEnabled(ContentFeatureList.REQUEST_DESKTOP_SITE_EXCEPTIONS)) {
+                shouldRequestDesktopSite = getWebContents() != null
+                        && TabUtils.isDesktopSiteEnabled(profile, getWebContents().getVisibleUrl());
+            } else {
+                shouldRequestDesktopSite = TabUtils.isDesktopSiteGlobalEnabled(profile);
+            }
 
             if (shouldRequestDesktopSite != currentRequestDesktopSite) {
                 // TODO(crbug.com/1243758): Confirm if a new histogram should be used.
@@ -1667,10 +1687,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
         // INHERIT means use the same that was used last time.
         return UserAgentOverrideOption.INHERIT;
-    }
-
-    void setUserForcedUserAgent() {
-        mUserForcedUserAgent = true;
     }
 
     private void switchUserAgentIfNeeded() {

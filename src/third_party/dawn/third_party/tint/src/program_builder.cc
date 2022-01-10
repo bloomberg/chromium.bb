@@ -114,15 +114,8 @@ const ast::TypeName* ProgramBuilder::TypesBuilder::Of(
 
 ProgramBuilder::TypesBuilder::TypesBuilder(ProgramBuilder* pb) : builder(pb) {}
 
-const ast::Statement* ProgramBuilder::WrapInStatement(const ast::Literal* lit) {
-  return WrapInStatement(create<ast::ScalarConstructorExpression>(lit));
-}
-
 const ast::Statement* ProgramBuilder::WrapInStatement(
     const ast::Expression* expr) {
-  if (auto* ce = expr->As<ast::CallExpression>()) {
-    return CallStmt(ce);
-  }
   // Create a temporary variable of inferred type from expr.
   return Decl(Const(symbols_.New(), nullptr, expr));
 }

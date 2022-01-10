@@ -195,7 +195,7 @@ void GetFontFamily(uint32_t nStyle, ByteString* fontName) {
   }
 }
 
-ByteString ParseStyle(const char* pStyle, int iLen, int iIndex) {
+ByteString ParseStyle(const char* pStyle, size_t iLen, size_t iIndex) {
   std::ostringstream buf;
   if (!iLen || iLen <= iIndex)
     return ByteString(buf);
@@ -290,6 +290,10 @@ void CFX_FontMapper::SetSystemFontInfo(
     return;
 
   m_pFontInfo = std::move(pFontInfo);
+}
+
+std::unique_ptr<SystemFontInfoIface> CFX_FontMapper::TakeSystemFontInfo() {
+  return std::move(m_pFontInfo);
 }
 
 uint32_t CFX_FontMapper::GetChecksumFromTT(void* hFont) {
@@ -472,7 +476,7 @@ RetainPtr<CFX_Face> CFX_FontMapper::FindSubstFont(const ByteString& name,
       }
     }
     if (!bHasHyphen) {
-      int nLen = family.GetLength();
+      size_t nLen = family.GetLength();
       bool hasStyleType;
       uint32_t styleType;
       size_t len;
@@ -490,9 +494,9 @@ RetainPtr<CFX_Face> CFX_FontMapper::FindSubstFont(const ByteString& name,
     weight = FXFONT_FW_BOLD;
 
   if (!style.IsEmpty()) {
-    int nLen = style.GetLength();
+    size_t nLen = style.GetLength();
     const char* pStyle = style.c_str();
-    int i = 0;
+    size_t i = 0;
     bool bFirstItem = true;
     ByteString buf;
     while (i < nLen) {

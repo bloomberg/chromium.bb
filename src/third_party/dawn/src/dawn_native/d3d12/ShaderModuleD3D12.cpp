@@ -17,6 +17,8 @@
 #include "common/Assert.h"
 #include "common/BitSetIterator.h"
 #include "common/Log.h"
+#include "common/WindowsUtils.h"
+#include "dawn_native/Pipeline.h"
 #include "dawn_native/TintUtils.h"
 #include "dawn_native/d3d12/BindGroupLayoutD3D12.h"
 #include "dawn_native/d3d12/D3D12Error.h"
@@ -75,6 +77,12 @@ namespace dawn_native { namespace d3d12 {
             output << ")";
         }
 
+        template <typename T,
+                  typename = typename std::enable_if<std::is_fundamental<T>::value>::type>
+        void Serialize(std::stringstream& output, const T& val) {
+            output << val;
+        }
+
         template <typename T>
         void Serialize(std::stringstream& output,
                        const std::unordered_map<tint::transform::BindingPoint, T>& map) {
@@ -91,6 +99,83 @@ namespace dawn_native { namespace d3d12 {
             output << ")";
         }
 
+        void Serialize(std::stringstream& output,
+                       const tint::writer::ArrayLengthFromUniformOptions& arrayLengthFromUniform) {
+            output << "(ArrayLengthFromUniformOptions";
+            output << " ubo_binding=";
+            Serialize(output, arrayLengthFromUniform.ubo_binding);
+            output << " bindpoint_to_size_index=";
+            Serialize(output, arrayLengthFromUniform.bindpoint_to_size_index);
+            output << ")";
+        }
+
+        // 32 bit float has 7 decimal digits of precision so setting n to 8 should be enough
+        std::string FloatToStringWithPrecision(float v, std::streamsize n = 8) {
+            std::ostringstream out;
+            out.precision(n);
+            out << std::fixed << v;
+            return out.str();
+        }
+
+        std::string GetHLSLValueString(EntryPointMetadata::OverridableConstant::Type dawnType,
+                                       const OverridableConstantScalar* entry,
+                                       double value = 0) {
+            switch (dawnType) {
+                case EntryPointMetadata::OverridableConstant::Type::Boolean:
+                    return std::to_string(entry ? entry->b : static_cast<int32_t>(value));
+                case EntryPointMetadata::OverridableConstant::Type::Float32:
+                    return FloatToStringWithPrecision(entry ? entry->f32
+                                                            : static_cast<float>(value));
+                case EntryPointMetadata::OverridableConstant::Type::Int32:
+                    return std::to_string(entry ? entry->i32 : static_cast<int32_t>(value));
+                case EntryPointMetadata::OverridableConstant::Type::Uint32:
+                    return std::to_string(entry ? entry->u32 : static_cast<uint32_t>(value));
+                default:
+                    UNREACHABLE();
+            }
+        }
+
+        constexpr char kSpecConstantPrefix[] = "WGSL_SPEC_CONSTANT_";
+
+        void GetOverridableConstantsDefines(
+            std::vector<std::pair<std::string, std::string>>* defineStrings,
+            const PipelineConstantEntries* pipelineConstantEntries,
+            const EntryPointMetadata::OverridableConstantsMap* shaderEntryPointConstants) {
+            std::unordered_set<std::string> overriddenConstants;
+
+            // Set pipeline overridden values
+            for (const auto& pipelineConstant : *pipelineConstantEntries) {
+                const std::string& name = pipelineConstant.first;
+                double value = pipelineConstant.second;
+
+                overriddenConstants.insert(name);
+
+                // This is already validated so `name` must exist
+                const auto& moduleConstant = shaderEntryPointConstants->at(name);
+
+                defineStrings->emplace_back(
+                    kSpecConstantPrefix + std::to_string(static_cast<int32_t>(moduleConstant.id)),
+                    GetHLSLValueString(moduleConstant.type, nullptr, value));
+            }
+
+            // Set shader initialized default values
+            for (const auto& iter : *shaderEntryPointConstants) {
+                const std::string& name = iter.first;
+                if (overriddenConstants.count(name) != 0) {
+                    // This constant already has overridden value
+                    continue;
+                }
+
+                const auto& moduleConstant = shaderEntryPointConstants->at(name);
+
+                // Uninitialized default values are okay since they ar only defined to pass
+                // compilation but not used
+                defineStrings->emplace_back(
+                    kSpecConstantPrefix + std::to_string(static_cast<int32_t>(moduleConstant.id)),
+                    GetHLSLValueString(moduleConstant.type, &moduleConstant.defaultValue));
+            }
+        }
+
         // The inputs to a shader compilation. These have been intentionally isolated from the
         // device to help ensure that the pipeline cache key contains all inputs for compilation.
         struct ShaderCompilationRequest {
@@ -103,12 +188,14 @@ namespace dawn_native { namespace d3d12 {
             SingleShaderStage stage;
             uint32_t compileFlags;
             bool disableSymbolRenaming;
-            tint::transform::BindingRemapper::BindingPoints bindingPoints;
-            tint::transform::BindingRemapper::AccessControls accessControls;
+            tint::transform::BindingRemapper::BindingPoints remappedBindingPoints;
+            tint::transform::BindingRemapper::AccessControls remappedAccessControls;
             bool isRobustnessEnabled;
             bool usesNumWorkgroups;
             uint32_t numWorkgroupsRegisterSpace;
             uint32_t numWorkgroupsShaderRegister;
+            tint::writer::ArrayLengthFromUniformOptions arrayLengthFromUniform;
+            std::vector<std::pair<std::string, std::string>> defineStrings;
 
             // FXC/DXC common inputs
             bool disableWorkgroupInit;
@@ -128,7 +215,8 @@ namespace dawn_native { namespace d3d12 {
                 uint32_t compileFlags,
                 const Device* device,
                 const tint::Program* program,
-                const EntryPointMetadata& entryPoint) {
+                const EntryPointMetadata& entryPoint,
+                const ProgrammableStage& programmableStage) {
                 Compiler compiler;
                 uint64_t dxcVersion = 0;
                 if (device->IsToggleEnabled(Toggle::UseDXC)) {
@@ -141,17 +229,23 @@ namespace dawn_native { namespace d3d12 {
                 using tint::transform::BindingPoint;
                 using tint::transform::BindingRemapper;
 
-                BindingRemapper::BindingPoints bindingPoints;
-                BindingRemapper::AccessControls accessControls;
+                BindingRemapper::BindingPoints remappedBindingPoints;
+                BindingRemapper::AccessControls remappedAccessControls;
 
-                // d3d12::BindGroupLayout packs the bindings per HLSL register-space. We modify the
-                // Tint AST to make the "bindings" decoration match the offset chosen by
-                // d3d12::BindGroupLayout so that Tint produces HLSL with the correct registers
-                // assigned to each interface variable.
+                tint::writer::ArrayLengthFromUniformOptions arrayLengthFromUniform;
+                arrayLengthFromUniform.ubo_binding = {
+                    layout->GetDynamicStorageBufferLengthsRegisterSpace(),
+                    layout->GetDynamicStorageBufferLengthsShaderRegister()};
+
                 const BindingInfoArray& moduleBindingInfo = entryPoint.bindings;
                 for (BindGroupIndex group : IterateBitSet(layout->GetBindGroupLayoutsMask())) {
                     const BindGroupLayout* bgl = ToBackend(layout->GetBindGroupLayout(group));
                     const auto& groupBindingInfo = moduleBindingInfo[group];
+
+                    // d3d12::BindGroupLayout packs the bindings per HLSL register-space. We modify
+                    // the Tint AST to make the "bindings" decoration match the offset chosen by
+                    // d3d12::BindGroupLayout so that Tint produces HLSL with the correct registers
+                    // assigned to each interface variable.
                     for (const auto& it : groupBindingInfo) {
                         BindingNumber binding = it.first;
                         auto const& bindingInfo = it.second;
@@ -161,7 +255,7 @@ namespace dawn_native { namespace d3d12 {
                         BindingPoint dstBindingPoint{static_cast<uint32_t>(group),
                                                      bgl->GetShaderRegister(bindingIndex)};
                         if (srcBindingPoint != dstBindingPoint) {
-                            bindingPoints.emplace(srcBindingPoint, dstBindingPoint);
+                            remappedBindingPoints.emplace(srcBindingPoint, dstBindingPoint);
                         }
 
                         // Declaring a read-only storage buffer in HLSL but specifying a storage
@@ -175,7 +269,29 @@ namespace dawn_native { namespace d3d12 {
                               bgl->GetBindingInfo(bindingIndex).buffer.type ==
                                   kInternalStorageBufferBinding));
                         if (forceStorageBufferAsUAV) {
-                            accessControls.emplace(srcBindingPoint, tint::ast::Access::kReadWrite);
+                            remappedAccessControls.emplace(srcBindingPoint,
+                                                           tint::ast::Access::kReadWrite);
+                        }
+                    }
+
+                    // Add arrayLengthFromUniform options
+                    {
+                        for (const auto& bindingAndRegisterOffset :
+                             layout->GetDynamicStorageBufferLengthInfo()[group]
+                                 .bindingAndRegisterOffsets) {
+                            BindingNumber binding = bindingAndRegisterOffset.binding;
+                            uint32_t registerOffset = bindingAndRegisterOffset.registerOffset;
+
+                            BindingPoint bindingPoint{static_cast<uint32_t>(group),
+                                                      static_cast<uint32_t>(binding)};
+                            // Get the renamed binding point if it was remapped.
+                            auto it = remappedBindingPoints.find(bindingPoint);
+                            if (it != remappedBindingPoints.end()) {
+                                bindingPoint = it->second;
+                            }
+
+                            arrayLengthFromUniform.bindpoint_to_size_index.emplace(bindingPoint,
+                                                                                   registerOffset);
                         }
                     }
                 }
@@ -188,18 +304,25 @@ namespace dawn_native { namespace d3d12 {
                 request.compileFlags = compileFlags;
                 request.disableSymbolRenaming =
                     device->IsToggleEnabled(Toggle::DisableSymbolRenaming);
-                request.bindingPoints = std::move(bindingPoints);
-                request.accessControls = std::move(accessControls);
+                request.remappedBindingPoints = std::move(remappedBindingPoints);
+                request.remappedAccessControls = std::move(remappedAccessControls);
                 request.isRobustnessEnabled = device->IsRobustnessEnabled();
                 request.disableWorkgroupInit =
                     device->IsToggleEnabled(Toggle::DisableWorkgroupInit);
                 request.usesNumWorkgroups = entryPoint.usesNumWorkgroups;
                 request.numWorkgroupsShaderRegister = layout->GetNumWorkgroupsShaderRegister();
                 request.numWorkgroupsRegisterSpace = layout->GetNumWorkgroupsRegisterSpace();
+                request.arrayLengthFromUniform = std::move(arrayLengthFromUniform);
                 request.fxcVersion = compiler == Compiler::FXC ? GetD3DCompilerVersion() : 0;
                 request.dxcVersion = compiler == Compiler::DXC ? dxcVersion : 0;
                 request.deviceInfo = &device->GetDeviceInfo();
                 request.hasShaderFloat16Feature = device->IsFeatureEnabled(Feature::ShaderFloat16);
+
+                GetOverridableConstantsDefines(
+                    &request.defineStrings, &programmableStage.constants,
+                    &programmableStage.module->GetEntryPoint(programmableStage.entryPoint)
+                         .overridableConstants);
+
                 return std::move(request);
             }
 
@@ -235,15 +358,18 @@ namespace dawn_native { namespace d3d12 {
                 stream << " compileFlags=" << compileFlags;
                 stream << " disableSymbolRenaming=" << disableSymbolRenaming;
 
-                stream << " bindingPoints=";
-                Serialize(stream, bindingPoints);
+                stream << " remappedBindingPoints=";
+                Serialize(stream, remappedBindingPoints);
 
-                stream << " accessControls=";
-                Serialize(stream, accessControls);
+                stream << " remappedAccessControls=";
+                Serialize(stream, remappedAccessControls);
 
                 stream << " useNumWorkgroups=" << usesNumWorkgroups;
                 stream << " numWorkgroupsRegisterSpace=" << numWorkgroupsRegisterSpace;
                 stream << " numWorkgroupsShaderRegister=" << numWorkgroupsShaderRegister;
+
+                stream << " arrayLengthFromUniform=";
+                Serialize(stream, arrayLengthFromUniform);
 
                 stream << " shaderModel=" << deviceInfo->shaderModel;
                 stream << " disableWorkgroupInit=" << disableWorkgroupInit;
@@ -251,6 +377,13 @@ namespace dawn_native { namespace d3d12 {
                 stream << " fxcVersion=" << fxcVersion;
                 stream << " dxcVersion=" << dxcVersion;
                 stream << " hasShaderFloat16Feature=" << hasShaderFloat16Feature;
+
+                stream << " defines={";
+                for (const auto& it : defineStrings) {
+                    stream << " <" << it.first << "," << it.second << ">";
+                }
+                stream << " }";
+
                 stream << ")";
                 stream << "\n";
 
@@ -267,7 +400,8 @@ namespace dawn_native { namespace d3d12 {
             if (compileFlags & D3DCOMPILE_IEEE_STRICTNESS) {
                 arguments.push_back(L"/Gis");
             }
-            if (compileFlags & D3DCOMPILE_OPTIMIZATION_LEVEL2) {
+            constexpr uint32_t d3dCompileFlagsBits = D3DCOMPILE_OPTIMIZATION_LEVEL2;
+            if (compileFlags & d3dCompileFlagsBits) {
                 switch (compileFlags & D3DCOMPILE_OPTIMIZATION_LEVEL2) {
                     case D3DCOMPILE_OPTIMIZATION_LEVEL0:
                         arguments.push_back(L"/O0");
@@ -326,12 +460,26 @@ namespace dawn_native { namespace d3d12 {
             std::vector<const wchar_t*> arguments =
                 GetDXCArguments(request.compileFlags, request.hasShaderFloat16Feature);
 
+            // Build defines for overridable constants
+            std::vector<std::pair<std::wstring, std::wstring>> defineStrings;
+            defineStrings.reserve(request.defineStrings.size());
+            for (const auto& it : request.defineStrings) {
+                defineStrings.emplace_back(UTF8ToWStr(it.first.c_str()),
+                                           UTF8ToWStr(it.second.c_str()));
+            }
+
+            std::vector<DxcDefine> dxcDefines;
+            dxcDefines.reserve(defineStrings.size());
+            for (const auto& d : defineStrings) {
+                dxcDefines.push_back({d.first.c_str(), d.second.c_str()});
+            }
+
             ComPtr<IDxcOperationResult> result;
             DAWN_TRY(CheckHRESULT(
                 dxcCompiler->Compile(sourceBlob.Get(), nullptr, entryPointW.c_str(),
                                      request.deviceInfo->shaderProfiles[request.stage].c_str(),
-                                     arguments.data(), arguments.size(), nullptr, 0, nullptr,
-                                     &result),
+                                     arguments.data(), arguments.size(), dxcDefines.data(),
+                                     dxcDefines.size(), nullptr, &result),
                 "DXC compile"));
 
             HRESULT hr;
@@ -348,6 +496,68 @@ namespace dawn_native { namespace d3d12 {
             ComPtr<IDxcBlob> compiledShader;
             DAWN_TRY(CheckHRESULT(result->GetResult(&compiledShader), "DXC get result"));
             return std::move(compiledShader);
+        }
+
+        std::string CompileFlagsToStringFXC(uint32_t compileFlags) {
+            struct Flag {
+                uint32_t value;
+                const char* name;
+            };
+            constexpr Flag flags[] = {
+            // Populated from d3dcompiler.h
+#define F(f) Flag{f, #f}
+                F(D3DCOMPILE_DEBUG),
+                F(D3DCOMPILE_SKIP_VALIDATION),
+                F(D3DCOMPILE_SKIP_OPTIMIZATION),
+                F(D3DCOMPILE_PACK_MATRIX_ROW_MAJOR),
+                F(D3DCOMPILE_PACK_MATRIX_COLUMN_MAJOR),
+                F(D3DCOMPILE_PARTIAL_PRECISION),
+                F(D3DCOMPILE_FORCE_VS_SOFTWARE_NO_OPT),
+                F(D3DCOMPILE_FORCE_PS_SOFTWARE_NO_OPT),
+                F(D3DCOMPILE_NO_PRESHADER),
+                F(D3DCOMPILE_AVOID_FLOW_CONTROL),
+                F(D3DCOMPILE_PREFER_FLOW_CONTROL),
+                F(D3DCOMPILE_ENABLE_STRICTNESS),
+                F(D3DCOMPILE_ENABLE_BACKWARDS_COMPATIBILITY),
+                F(D3DCOMPILE_IEEE_STRICTNESS),
+                F(D3DCOMPILE_RESERVED16),
+                F(D3DCOMPILE_RESERVED17),
+                F(D3DCOMPILE_WARNINGS_ARE_ERRORS),
+                F(D3DCOMPILE_RESOURCES_MAY_ALIAS),
+                F(D3DCOMPILE_ENABLE_UNBOUNDED_DESCRIPTOR_TABLES),
+                F(D3DCOMPILE_ALL_RESOURCES_BOUND),
+                F(D3DCOMPILE_DEBUG_NAME_FOR_SOURCE),
+                F(D3DCOMPILE_DEBUG_NAME_FOR_BINARY),
+#undef F
+            };
+
+            std::string result;
+            for (const Flag& f : flags) {
+                if ((compileFlags & f.value) != 0) {
+                    result += f.name + std::string("\n");
+                }
+            }
+
+            // Optimization level must be handled separately as two bits are used, and the values
+            // don't map neatly to 0-3.
+            constexpr uint32_t d3dCompileFlagsBits = D3DCOMPILE_OPTIMIZATION_LEVEL2;
+            switch (compileFlags & d3dCompileFlagsBits) {
+                case D3DCOMPILE_OPTIMIZATION_LEVEL0:
+                    result += "D3DCOMPILE_OPTIMIZATION_LEVEL0";
+                    break;
+                case D3DCOMPILE_OPTIMIZATION_LEVEL1:
+                    result += "D3DCOMPILE_OPTIMIZATION_LEVEL1";
+                    break;
+                case D3DCOMPILE_OPTIMIZATION_LEVEL2:
+                    result += "D3DCOMPILE_OPTIMIZATION_LEVEL2";
+                    break;
+                case D3DCOMPILE_OPTIMIZATION_LEVEL3:
+                    result += "D3DCOMPILE_OPTIMIZATION_LEVEL3";
+                    break;
+            }
+            result += std::string("\n");
+
+            return result;
         }
 
         ResultOrError<ComPtr<ID3DBlob>> CompileShaderFXC(const PlatformFunctions* functions,
@@ -369,8 +579,21 @@ namespace dawn_native { namespace d3d12 {
             ComPtr<ID3DBlob> compiledShader;
             ComPtr<ID3DBlob> errors;
 
+            // Build defines for overridable constants
+            const D3D_SHADER_MACRO* pDefines = nullptr;
+            std::vector<D3D_SHADER_MACRO> fxcDefines;
+            if (request.defineStrings.size() > 0) {
+                fxcDefines.reserve(request.defineStrings.size() + 1);
+                for (const auto& d : request.defineStrings) {
+                    fxcDefines.push_back({d.first.c_str(), d.second.c_str()});
+                }
+                // d3dCompile D3D_SHADER_MACRO* pDefines is a nullptr terminated array
+                fxcDefines.push_back({nullptr, nullptr});
+                pDefines = fxcDefines.data();
+            }
+
             DAWN_INVALID_IF(FAILED(functions->d3dCompile(
-                                hlslSource.c_str(), hlslSource.length(), nullptr, nullptr, nullptr,
+                                hlslSource.c_str(), hlslSource.length(), nullptr, pDefines, nullptr,
                                 request.entryPointName, targetProfile, request.compileFlags, 0,
                                 &compiledShader, &errors)),
                             "D3D compile failed with: %s",
@@ -390,7 +613,11 @@ namespace dawn_native { namespace d3d12 {
             if (request.isRobustnessEnabled) {
                 transformManager.Add<tint::transform::Robustness>();
             }
+
             transformManager.Add<tint::transform::BindingRemapper>();
+
+            transformManager.Add<tint::transform::SingleEntryPoint>();
+            transformInputs.Add<tint::transform::SingleEntryPoint::Config>(request.entryPointName);
 
             transformManager.Add<tint::transform::Renamer>();
 
@@ -405,7 +632,8 @@ namespace dawn_native { namespace d3d12 {
             // different types.
             const bool mayCollide = true;
             transformInputs.Add<tint::transform::BindingRemapper::Remappings>(
-                std::move(request.bindingPoints), std::move(request.accessControls), mayCollide);
+                std::move(request.remappedBindingPoints), std::move(request.remappedAccessControls),
+                mayCollide);
 
             tint::Program transformedProgram;
             tint::transform::DataMap transformOutputs;
@@ -433,6 +661,12 @@ namespace dawn_native { namespace d3d12 {
                 options.root_constant_binding_point.group = request.numWorkgroupsRegisterSpace;
                 options.root_constant_binding_point.binding = request.numWorkgroupsShaderRegister;
             }
+            // TODO(dawn:549): HLSL generation outputs the indices into the
+            // array_length_from_uniform buffer that were actually used. When the blob cache can
+            // store more than compiled shaders, we should reflect these used indices and store
+            // them as well. This would allow us to only upload root constants that are actually
+            // read by the shader.
+            options.array_length_from_uniform = request.arrayLengthFromUniform;
             auto result = tint::writer::hlsl::Generate(&transformedProgram, options);
             DAWN_INVALID_IF(!result.success, "An error occured while generating HLSL: %s",
                             result.error);
@@ -471,6 +705,9 @@ namespace dawn_native { namespace d3d12 {
 
             if (dumpShaders && request.compiler == ShaderCompilationRequest::Compiler::FXC) {
                 std::ostringstream dumpedMsg;
+                dumpedMsg << "/* FXC compile flags */ " << std::endl
+                          << CompileFlagsToStringFXC(request.compileFlags) << std::endl;
+
                 dumpedMsg << "/* Dumped disassembled DXBC */" << std::endl;
 
                 ComPtr<ID3DBlob> disassembly;
@@ -508,7 +745,7 @@ namespace dawn_native { namespace d3d12 {
         return InitializeBase(parseResult);
     }
 
-    ResultOrError<CompiledShader> ShaderModule::Compile(const char* entryPointName,
+    ResultOrError<CompiledShader> ShaderModule::Compile(const ProgrammableStage& programmableStage,
                                                         SingleShaderStage stage,
                                                         PipelineLayout* layout,
                                                         uint32_t compileFlags) {
@@ -555,9 +792,10 @@ namespace dawn_native { namespace d3d12 {
         }
 
         ShaderCompilationRequest request;
-        DAWN_TRY_ASSIGN(request, ShaderCompilationRequest::Create(entryPointName, stage, layout,
-                                                                  compileFlags, device, program,
-                                                                  GetEntryPoint(entryPointName)));
+        DAWN_TRY_ASSIGN(
+            request, ShaderCompilationRequest::Create(
+                         programmableStage.entryPoint.c_str(), stage, layout, compileFlags, device,
+                         program, GetEntryPoint(programmableStage.entryPoint), programmableStage));
 
         PersistentCacheKey shaderCacheKey;
         DAWN_TRY_ASSIGN(shaderCacheKey, request.CreateCacheKey());

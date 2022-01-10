@@ -553,7 +553,7 @@ static inline void SetLogicalWidthForTextRun(
     hyphen_width = LayoutUnit(layout_text.HyphenWidth(font, run->Direction()));
 
   float measured_width = 0;
-  FloatRect glyph_bounds;
+  gfx::RectF glyph_bounds;
 
   bool kerning_is_enabled =
       font.GetFontDescription().GetTypesettingFeatures() & kKerning;
@@ -594,7 +594,7 @@ static inline void SetLogicalWidthForTextRun(
             layout_text.CharacterAt(word_measurement.start_offset) == ' ')
           measured_width += layout_text.StyleRef().WordSpacing();
       } else {
-        FloatRect word_glyph_bounds = word_measurement.glyph_bounds;
+        gfx::RectF word_glyph_bounds = word_measurement.glyph_bounds;
         word_glyph_bounds.Offset(measured_width, 0);
         glyph_bounds.Union(word_glyph_bounds);
         measured_width += word_measurement.width;
@@ -2503,33 +2503,8 @@ void LayoutBlockFlow::AddLayoutOverflowFromInlineChildren() {
   if (HasNonVisibleOverflow() && !end_padding && GetNode() &&
       IsRootEditableElement(*GetNode()) &&
       StyleRef().IsLeftToRightDirection()) {
-    if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
-      if (const NGFragmentItems* items = fragment->Items()) {
-        for (NGInlineCursor cursor(*fragment, *items); cursor;
-             cursor.MoveToNextSkippingChildren()) {
-          if (!cursor.Current().IsLineBox())
-            continue;
-          const NGFragmentItem& child = *cursor.CurrentItem();
-          LogicalRect logical_rect =
-              fragment->ConvertChildToLogical(child.RectInContainerFragment());
-          logical_rect.size.inline_size += 1;
-          AddLayoutOverflow(
-              fragment->ConvertChildToPhysical(logical_rect).ToLayoutRect());
-        }
-        return;
-      }
-      // Note: Paint fragment for this block isn't set yet.
-      for (const NGLink& child : fragment->Children()) {
-        if (!child->IsLineBox())
-          continue;
-        LogicalRect logical_rect = fragment->ConvertChildToLogical(
-            PhysicalRect(child.Offset(), child->Size()));
-        logical_rect.size.inline_size += 1;
-        AddLayoutOverflow(
-            fragment->ConvertChildToPhysical(logical_rect).ToLayoutRect());
-      }
-      return;
-    }
+    DCHECK(!IsLayoutNGObject());
+    // TODO(layout-dev): Explain why we add a pixel.
     end_padding = LayoutUnit(1);
   }
 

@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/update_client/protocol_definition.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -68,7 +67,8 @@ protocol_request::App MakeProtocolApp(
 protocol_request::UpdateCheck MakeProtocolUpdateCheck(
     bool is_update_disabled,
     const std::string& target_version_prefix,
-    bool rollback_allowed);
+    bool rollback_allowed,
+    bool same_version_update_allowed);
 
 protocol_request::Ping MakeProtocolPing(const std::string& app_id,
                                         const PersistedData* metadata,

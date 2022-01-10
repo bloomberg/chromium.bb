@@ -273,6 +273,25 @@ TEST_F(TestStaticCRMMap, TestSingleElementMap) {
   ASSERT_EQ(*entry_test, entry);
 }
 
+TEST_F(TestStaticCRMMap, TestRetrieveRangeEntries) {
+  CRMMap crm_map;
+
+  crm_map.StoreRange(2, 5, 0);
+  crm_map.StoreRange(2, 6, 1);
+  crm_map.StoreRange(2, 7, 2);
+
+  unsigned int size;
+  scoped_array<char> serialized_data;
+  serialized_data.reset(serializer_.Serialize(&crm_map, &size));
+  scoped_ptr<TestMap> test_map(new TestMap(serialized_data.get()));
+
+  std::vector<const int*> entry_tests;
+  ASSERT_TRUE(test_map->RetrieveRanges(3, entry_tests));
+  ASSERT_EQ(*entry_tests[0], 0);
+  ASSERT_EQ(*entry_tests[1], 1);
+  ASSERT_EQ(*entry_tests[2], 2);
+}
+
 TEST_F(TestStaticCRMMap, RunTestData) {
   unsigned int test_high = sizeof(test_data) / sizeof(test_data[0]);
 

@@ -16,6 +16,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/pref_names.h"
 #include "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/commerce/price_alert_util.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -56,6 +57,8 @@ namespace {
 
 NSString* const kBetterSearchAndBrowsingItemAccessibilityID =
     @"betterSearchAndBrowsingItem_switch";
+NSString* const kTrackPricesOnTabsItemAccessibilityID =
+    @"trackPricesOnTabsItem_switch";
 
 // List of sections.
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -78,6 +81,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   BetterSearchAndBrowsingItemType,
   BetterSearchAndBrowsingManagedItemType,
   PasswordLeakCheckSwitchItemType,
+  TrackPricesOnTabsItemType,
 };
 
 // TODO(crbug.com/1244632): Use the Authentication Service sign-in status API
@@ -150,7 +154,7 @@ bool GetStatusForSigninPolicy() {
 // The observable boolean that binds to the password leak check settings
 // state.
 @property(nonatomic, strong, readonly)
-    PrefBackedBoolean* passwordLeakCheckEnabled;
+    PrefBackedBoolean* passwordLeakCheckPreference;
 // The item related to the switch for the automatic password leak detection
 // setting.
 @property(nonatomic, strong, null_resettable)
@@ -169,6 +173,11 @@ bool GetStatusForSigninPolicy() {
 
 // Account manager service to retrieve Chrome identities.
 @property(nonatomic, assign) ChromeAccountManagerService* accountManagerService;
+
+// Preference value for displaying price drop annotations on Tabs for shopping
+// URLs in the Tab Switching UI as price drops are identified.
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* trackPricesOnTabsPreference;
 
 @end
 
@@ -202,16 +211,20 @@ bool GetStatusForSigninPolicy() {
         initWithPrefService:localPrefService
                    prefName:metrics::prefs::kMetricsReportingEnabled];
     _sendDataUsagePreference.observer = self;
-    _passwordLeakCheckEnabled = [[PrefBackedBoolean alloc]
+    _passwordLeakCheckPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:password_manager::prefs::
                                 kPasswordLeakDetectionEnabled];
-    _passwordLeakCheckEnabled.observer = self;
+    _passwordLeakCheckPreference.observer = self;
     _anonymizedDataCollectionPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:unified_consent::prefs::
                                 kUrlKeyedAnonymizedDataCollectionEnabled];
     _anonymizedDataCollectionPreference.observer = self;
+    _trackPricesOnTabsPreference = [[PrefBackedBoolean alloc]
+        initWithPrefService:userPrefService
+                   prefName:prefs::kTrackPricesOnTabsEnabled];
+    _trackPricesOnTabsPreference.observer = self;
     _accountManagerService = accountManagerService;
   }
   return self;
@@ -311,6 +324,10 @@ bool GetStatusForSigninPolicy() {
         break;
       case PasswordLeakCheckSwitchItemType:
         [self updateLeakCheckItem];
+        break;
+      case TrackPricesOnTabsItemType:
+        base::mac::ObjCCast<SyncSwitchItem>(item).on =
+            self.trackPricesOnTabsPreference.value;
         break;
     }
   }
@@ -429,6 +446,29 @@ bool GetStatusForSigninPolicy() {
           kBetterSearchAndBrowsingItemAccessibilityID;
       [items addObject:betterSearchAndBrowsingItem];
     }
+    if (IsPriceAlertsWithOptOutEnabled()) {
+      if (self.userPrefService->IsManagedPreference(
+              prefs::kTrackPricesOnTabsEnabled)) {
+        TableViewInfoButtonItem* trackPricesOnTabsItem = [self
+            TableViewInfoButtonItemType:TrackPricesOnTabsItemType
+                           textStringID:IDS_IOS_TRACK_PRICES_ON_TABS
+                         detailStringID:IDS_IOS_TRACK_PRICES_ON_TABS_DESCRIPTION
+                                 status:self.trackPricesOnTabsPreference
+                           controllable:self.trackPricesOnTabsPreference];
+        trackPricesOnTabsItem.accessibilityIdentifier =
+            kTrackPricesOnTabsItemAccessibilityID;
+        [items addObject:trackPricesOnTabsItem];
+      } else {
+        SyncSwitchItem* trackPricesOnTabsItem = [self
+            switchItemWithItemType:TrackPricesOnTabsItemType
+                      textStringID:IDS_IOS_TRACK_PRICES_ON_TABS
+                    detailStringID:IDS_IOS_TRACK_PRICES_ON_TABS_DESCRIPTION
+                          dataType:0];
+        trackPricesOnTabsItem.accessibilityIdentifier =
+            kTrackPricesOnTabsItemAccessibilityID;
+        [items addObject:trackPricesOnTabsItem];
+      }
+    }
 
     _nonPersonalizedItems = items;
   }
@@ -444,7 +484,7 @@ bool GetStatusForSigninPolicy() {
     passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
     passwordLeakCheckItem.accessibilityIdentifier =
         kPasswordLeakCheckItemAccessibilityIdentifier;
-    passwordLeakCheckItem.enabled = self.hasPrimaryIdentity;
+    passwordLeakCheckItem.enabled = [self isPasswordLeakCheckEnabled];
     _passwordLeakCheckItem = passwordLeakCheckItem;
   }
   return _passwordLeakCheckItem;
@@ -494,21 +534,30 @@ bool GetStatusForSigninPolicy() {
   return managedItem;
 }
 
+// Returns a boolean indicating whether leak detection feature is enabled.
+- (BOOL)isPasswordLeakCheckEnabled {
+  return self.hasPrimaryIdentity ||
+         base::FeatureList::IsEnabled(
+             password_manager::features::kLeakDetectionUnauthenticated);
+}
+
 // Returns a boolean indicating if the switch should appear as "On" or "Off"
 // based on the sync preference and the sign in status.
 - (BOOL)passwordLeakCheckItemOnState {
   return self.safeBrowsingPreference.value &&
-         self.passwordLeakCheckEnabled.value && self.hasPrimaryIdentity;
+         self.passwordLeakCheckPreference.value &&
+         [self isPasswordLeakCheckEnabled];
 }
 
 // Updates the detail text and on state of the leak check item based on the
 // state.
 - (void)updateLeakCheckItem {
   self.passwordLeakCheckItem.enabled =
-      self.hasPrimaryIdentity && self.safeBrowsingPreference.value;
+      self.safeBrowsingPreference.value && [self isPasswordLeakCheckEnabled];
   self.passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
 
-  if (!self.hasPrimaryIdentity && self.passwordLeakCheckEnabled.value) {
+  if (self.passwordLeakCheckPreference.value &&
+      ![self isPasswordLeakCheckEnabled]) {
     // If the user is signed out and the sync preference is enabled, this
     // informs that it will be turned on on sign in.
     self.passwordLeakCheckItem.detailText =
@@ -586,9 +635,12 @@ bool GetStatusForSigninPolicy() {
       break;
     case PasswordLeakCheckSwitchItemType:
       // Update the pref.
-      self.passwordLeakCheckEnabled.value = value;
+      self.passwordLeakCheckPreference.value = value;
       // Update the item.
       [self updateLeakCheckItem];
+      break;
+    case TrackPricesOnTabsItemType:
+      self.trackPricesOnTabsPreference.value = value;
       break;
     case AutocompleteSearchesAndURLsManagedItemType:
     case SafeBrowsingManagedItemType:

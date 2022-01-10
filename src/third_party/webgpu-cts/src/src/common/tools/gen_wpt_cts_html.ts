@@ -8,8 +8,8 @@ function printUsageAndExit(rc: number): void {
   console.error(`\
 Usage:
   tools/gen_wpt_cts_html OUTPUT_FILE TEMPLATE_FILE [ARGUMENTS_PREFIXES_FILE EXPECTATIONS_FILE EXPECTATIONS_PREFIX [SUITE]]
-  tools/gen_wpt_cts_html out-wpt/cts.html templates/cts.html
-  tools/gen_wpt_cts_html my/path/to/cts.html templates/cts.html arguments.txt myexpectations.txt 'path/to/cts.html' cts
+  tools/gen_wpt_cts_html out-wpt/cts.https.html templates/cts.https.html
+  tools/gen_wpt_cts_html my/path/to/cts.https.html templates/cts.https.html arguments.txt myexpectations.txt 'path/to/cts.https.html' cts
 
 where arguments.txt is a file containing a list of arguments prefixes to both generate and expect
 in the expectations. The entire variant list generation runs *once per prefix*, so this
@@ -20,10 +20,10 @@ multiplies the size of the variant list.
 
 and myexpectations.txt is a file containing a list of WPT paths to suppress, e.g.:
 
-  path/to/cts.html?worker=0&q=webgpu:a/foo:bar={"x":1}
-  path/to/cts.html?worker=1&q=webgpu:a/foo:bar={"x":1}
+  path/to/cts.https.html?worker=0&q=webgpu:a/foo:bar={"x":1}
+  path/to/cts.https.html?worker=1&q=webgpu:a/foo:bar={"x":1}
 
-  path/to/cts.html?worker=1&q=webgpu:a/foo:bar={"x":3}
+  path/to/cts.https.html?worker=1&q=webgpu:a/foo:bar={"x":3}
 `);
   process.exit(rc);
 }

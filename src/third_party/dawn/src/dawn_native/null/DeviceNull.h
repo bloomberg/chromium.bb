@@ -86,7 +86,8 @@ namespace dawn_native { namespace null {
 
     class Device final : public DeviceBase {
       public:
-        static ResultOrError<Device*> Create(Adapter* adapter, const DeviceDescriptor* descriptor);
+        static ResultOrError<Device*> Create(Adapter* adapter,
+                                             const DawnDeviceDescriptor* descriptor);
         ~Device() override;
 
         MaybeError Initialize();
@@ -181,7 +182,8 @@ namespace dawn_native { namespace null {
         MaybeError InitializeSupportedFeaturesImpl() override;
         MaybeError InitializeSupportedLimitsImpl(CombinedLimits* limits) override;
 
-        ResultOrError<DeviceBase*> CreateDeviceImpl(const DeviceDescriptor* descriptor) override;
+        ResultOrError<DeviceBase*> CreateDeviceImpl(
+            const DawnDeviceDescriptor* descriptor) override;
     };
 
     // Helper class so |BindGroup| can allocate memory for its binding data,
@@ -228,7 +230,7 @@ namespace dawn_native { namespace null {
       private:
         MaybeError MapAsyncImpl(wgpu::MapMode mode, size_t offset, size_t size) override;
         void UnmapImpl() override;
-        void DestroyApiObjectImpl() override;
+        void DestroyImpl() override;
         bool IsCPUWritableAtCreation() const override;
         MaybeError MapAtCreationImpl() override;
         void* GetMappedPointerImpl() override;
@@ -244,9 +246,6 @@ namespace dawn_native { namespace null {
     class QuerySet final : public QuerySetBase {
       public:
         QuerySet(Device* device, const QuerySetDescriptor* descriptor);
-
-      private:
-        void DestroyApiObjectImpl() override;
     };
 
     class Queue final : public QueueBase {

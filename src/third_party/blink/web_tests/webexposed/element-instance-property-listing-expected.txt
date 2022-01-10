@@ -185,7 +185,9 @@ namespace http://www.w3.org/1999/xhtml
     property onchange
     property onclick
     property onclose
+    property oncontextlost
     property oncontextmenu
+    property oncontextrestored
     property oncopy
     property oncuechange
     property oncut
@@ -560,8 +562,6 @@ html element embed
     property src
     property type
     property width
-html element fencedframe
-    property src
 html element fieldset
     property checkValidity
     property disabled
@@ -973,11 +973,18 @@ html element select
     property value
     property willValidate
 html element selectmenu
+    property checkValidity
     property form
     property name
     property open
+    property reportValidity
+    property required
+    property setCustomValidity
     property type
+    property validationMessage
+    property validity
     property value
+    property willValidate
 html element slot
     property assign
     property assignedElements
@@ -1394,7 +1401,9 @@ namespace http://www.w3.org/2000/svg
     property onchange
     property onclick
     property onclose
+    property oncontextlost
     property oncontextmenu
+    property oncontextrestored
     property oncopy
     property oncuechange
     property oncut

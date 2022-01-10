@@ -87,24 +87,19 @@ static const AVRational standard_tbs[] = {
     {1001, 30000},
 };
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUV410P, AV_PIX_FMT_YUV411P,
-        AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P,
-        AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV444P,
-        AV_PIX_FMT_YUV420P10LE, AV_PIX_FMT_YUV422P10LE,
-        AV_PIX_FMT_YUV440P10LE, AV_PIX_FMT_YUV444P10LE,
-        AV_PIX_FMT_YUV420P12LE, AV_PIX_FMT_YUV422P12LE,
-        AV_PIX_FMT_YUV440P12LE, AV_PIX_FMT_YUV444P12LE,
-        AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUVA444P,
-        AV_PIX_FMT_YUVA420P10LE, AV_PIX_FMT_YUVA422P10LE, AV_PIX_FMT_YUVA444P10LE,
-        AV_PIX_FMT_GRAY8, FULL_SCALE_YUVJ_FORMATS,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_YUV410P, AV_PIX_FMT_YUV411P,
+    AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P,
+    AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_YUV420P10LE, AV_PIX_FMT_YUV422P10LE,
+    AV_PIX_FMT_YUV440P10LE, AV_PIX_FMT_YUV444P10LE,
+    AV_PIX_FMT_YUV420P12LE, AV_PIX_FMT_YUV422P12LE,
+    AV_PIX_FMT_YUV440P12LE, AV_PIX_FMT_YUV444P12LE,
+    AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUVA444P,
+    AV_PIX_FMT_YUVA420P10LE, AV_PIX_FMT_YUVA422P10LE, AV_PIX_FMT_YUVA444P10LE,
+    AV_PIX_FMT_GRAY8, FULL_SCALE_YUVJ_FORMATS,
+    AV_PIX_FMT_NONE
+};
 
 static void lowpass_line_c(uint8_t *dstp, ptrdiff_t width, const uint8_t *srcp,
                            ptrdiff_t mref, ptrdiff_t pref, int clip_max)
@@ -555,9 +550,9 @@ const AVFilter ff_vf_tinterlace = {
     .description   = NULL_IF_CONFIG_SMALL("Perform temporal field interlacing."),
     .priv_size     = sizeof(TInterlaceContext),
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(tinterlace_inputs),
     FILTER_OUTPUTS(tinterlace_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .priv_class    = &tinterlace_class,
 };
 
@@ -568,8 +563,8 @@ const AVFilter ff_vf_interlace = {
     .priv_size     = sizeof(TInterlaceContext),
     .init          = init_interlace,
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(tinterlace_inputs),
     FILTER_OUTPUTS(tinterlace_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .priv_class    = &interlace_class,
 };

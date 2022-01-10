@@ -14,9 +14,10 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "content/browser/accessibility/accessibility_tools_utils_mac.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "ui/accessibility/platform/ax_private_webkit_constants_mac.h"
+#include "ui/accessibility/platform/inspect/ax_inspect_utils_mac.h"
 
 namespace content {
 
@@ -43,7 +44,7 @@ AccessibilityEventRecorderMac::AccessibilityEventRecorderMac(
       LOG(FATAL) << "Failed to get AXUIElement for pid " << pid;
     }
   } else {
-    std::tie(node, pid) = a11y::FindAXUIElement(selector);
+    std::tie(node, pid) = ui::FindAXUIElement(selector);
     if (!node) {
       LOG(FATAL) << "Failed to get AXUIElement for selector";
     }
@@ -103,47 +104,24 @@ void AccessibilityEventRecorderMac::AddNotification(NSString* notification) {
                             base::mac::NSToCFCast(notification), this);
 }
 
-std::string AccessibilityEventRecorderMac::GetAXAttributeValue(
-    AXUIElementRef element,
-    NSString* attribute_name) {
-  base::ScopedCFTypeRef<CFTypeRef> value;
-  AXError err = AXUIElementCopyAttributeValue(
-      element, base::mac::NSToCFCast(attribute_name), value.InitializeInto());
-  if (err != kAXErrorSuccess)
-    return std::string();
-
-  CFStringRef value_string = base::mac::CFCast<CFStringRef>(value.get());
-  if (value_string)
-    return base::SysCFStringRefToUTF8(value_string);
-
-  // TODO(dmazzoni): And if it's not a string, can we return something better?
-  return {};
-}
-
 void AccessibilityEventRecorderMac::EventReceived(AXUIElementRef element,
                                                   CFStringRef notification,
                                                   CFDictionaryRef user_info) {
   std::string notification_str = base::SysCFStringRefToUTF8(notification);
-  std::string role = GetAXAttributeValue(element, NSAccessibilityRoleAttribute);
-  if (role.empty())
-    return;
-  std::string log =
-      base::StringPrintf("%s on %s", notification_str.c_str(), role.c_str());
 
-  std::string title =
-      GetAXAttributeValue(element, NSAccessibilityTitleAttribute);
-  if (!title.empty())
-    log += base::StringPrintf(" AXTitle=\"%s\"", title.c_str());
+  auto formatter = AccessibilityTreeFormatterMac();
+  formatter.SetPropertyFilters({}, ui::AXTreeFormatter::kFiltersDefaultSet);
 
-  std::string description =
-      GetAXAttributeValue(element, NSAccessibilityDescriptionAttribute);
-  if (!description.empty())
-    log += base::StringPrintf(" AXDescription=\"%s\"", description.c_str());
+  std::string element_str =
+      formatter.FormatTree(formatter.BuildNode(static_cast<id>(element)));
 
-  std::string value =
-      GetAXAttributeValue(element, NSAccessibilityValueAttribute);
-  if (!value.empty())
-    log += base::StringPrintf(" AXValue=\"%s\"", value.c_str());
+  // Element dumps contain a new line character at the end, remove it.
+  if (!element_str.empty() && element_str.back() == '\n') {
+    element_str.pop_back();
+  }
+
+  std::string log = base::StringPrintf("%s on %s", notification_str.c_str(),
+                                       element_str.c_str());
 
   if (notification_str ==
       base::SysNSStringToUTF8(NSAccessibilitySelectedTextChangedNotification))
@@ -155,6 +133,9 @@ void AccessibilityEventRecorderMac::EventReceived(AXUIElementRef element,
 std::string
 AccessibilityEventRecorderMac::SerializeTextSelectionChangedProperties(
     CFDictionaryRef user_info) {
+  if (user_info == nil)
+    return {};
+
   std::vector<std::string> serialized_info;
   CFDictionaryApplyFunction(
       user_info,

@@ -1,16 +1,19 @@
 #include "http2/adapter/http2_util.h"
 
+#include "spdy/core/spdy_protocol.h"
+
 namespace http2 {
 namespace adapter {
 namespace {
 
 using ConnectionError = Http2VisitorInterface::ConnectionError;
+using InvalidFrameError = Http2VisitorInterface::InvalidFrameError;
 
 }  // anonymous namespace
 
 spdy::SpdyErrorCode TranslateErrorCode(Http2ErrorCode code) {
   switch (code) {
-    case Http2ErrorCode::NO_ERROR:
+    case Http2ErrorCode::HTTP2_NO_ERROR:
       return spdy::ERROR_CODE_NO_ERROR;
     case Http2ErrorCode::PROTOCOL_ERROR:
       return spdy::ERROR_CODE_PROTOCOL_ERROR;
@@ -39,12 +42,13 @@ spdy::SpdyErrorCode TranslateErrorCode(Http2ErrorCode code) {
     case Http2ErrorCode::HTTP_1_1_REQUIRED:
       return spdy::ERROR_CODE_HTTP_1_1_REQUIRED;
   }
+  return spdy::ERROR_CODE_INTERNAL_ERROR;
 }
 
 Http2ErrorCode TranslateErrorCode(spdy::SpdyErrorCode code) {
   switch (code) {
     case spdy::ERROR_CODE_NO_ERROR:
-      return Http2ErrorCode::NO_ERROR;
+      return Http2ErrorCode::HTTP2_NO_ERROR;
     case spdy::ERROR_CODE_PROTOCOL_ERROR:
       return Http2ErrorCode::PROTOCOL_ERROR;
     case spdy::ERROR_CODE_INTERNAL_ERROR:
@@ -72,6 +76,7 @@ Http2ErrorCode TranslateErrorCode(spdy::SpdyErrorCode code) {
     case spdy::ERROR_CODE_HTTP_1_1_REQUIRED:
       return Http2ErrorCode::HTTP_1_1_REQUIRED;
   }
+  return Http2ErrorCode::INTERNAL_ERROR;
 }
 
 absl::string_view ConnectionErrorToString(ConnectionError error) {
@@ -90,7 +95,29 @@ absl::string_view ConnectionErrorToString(ConnectionError error) {
       return "kWrongFrameSequence";
     case ConnectionError::kInvalidPushPromise:
       return "InvalidPushPromise";
+    case ConnectionError::kExceededMaxConcurrentStreams:
+      return "ExceededMaxConcurrentStreams";
   }
+  return "UnknownConnectionError";
+}
+
+absl::string_view InvalidFrameErrorToString(
+    Http2VisitorInterface::InvalidFrameError error) {
+  switch (error) {
+    case InvalidFrameError::kProtocol:
+      return "Protocol";
+    case InvalidFrameError::kRefusedStream:
+      return "RefusedStream";
+    case InvalidFrameError::kHttpHeader:
+      return "HttpHeader";
+    case InvalidFrameError::kHttpMessaging:
+      return "HttpMessaging";
+    case InvalidFrameError::kFlowControl:
+      return "FlowControl";
+    case InvalidFrameError::kStreamClosed:
+      return "StreamClosed";
+  }
+  return "UnknownInvalidFrameError";
 }
 
 }  // namespace adapter

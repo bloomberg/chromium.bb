@@ -16,16 +16,16 @@ class FuchsiaInterfaceTests(unittest.TestCase):
     def side_effect(path_to_file):
       if path_to_file == test_build_id_file:
         return False
-      else:
-        return True
+      return True
+
     with mock.patch('os.path.isfile') as isfile_mock:
       with mock.patch('subprocess.Popen',
                       return_value='Not None') as popen_mock:
         isfile_mock.side_effect = side_effect
-        self.assertEquals(
+        self.assertEqual(
             fuchsia_interface.StartSymbolizerForProcessIfPossible(
                 None, None, test_build_id_file), None)
-        self.assertEquals(popen_mock.call_count, 0)
+        self.assertEqual(popen_mock.call_count, 0)
 
   @decorators.Disabled('win')
   def testStartSymbolizerSucceedsIfFilesFound(self):
@@ -36,7 +36,7 @@ class FuchsiaInterfaceTests(unittest.TestCase):
       with mock.patch('subprocess.Popen',
                       return_value='Not None') as popen_mock:
         isfile_mock.side_effect = side_effect
-        self.assertEquals(
+        self.assertEqual(
             fuchsia_interface.StartSymbolizerForProcessIfPossible(
                 None, None, test_build_id_file), 'Not None')
-        self.assertEquals(popen_mock.call_count, 1)
+        self.assertEqual(popen_mock.call_count, 1)

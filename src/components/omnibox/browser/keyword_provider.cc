@@ -10,6 +10,7 @@
 
 #include "base/containers/cxx20_erase.h"
 #include "base/i18n/case_conversion.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -61,7 +62,7 @@ class ScopedEndExtensionKeywordMode {
   void StayInKeywordMode();
 
  private:
-  KeywordExtensionsDelegate* delegate_;
+  raw_ptr<KeywordExtensionsDelegate> delegate_;
 };
 
 ScopedEndExtensionKeywordMode::ScopedEndExtensionKeywordMode(
@@ -210,9 +211,10 @@ std::u16string KeywordProvider::GetKeywordForText(
   }
 
   // Don't provide a keyword for inactive search engines (if the active search
-  // engine flag is enabled). Prepopulated engines should always work regardless
-  // of is_active.
+  // engine flag is enabled). Prepopulated engines and extensions controlled
+  // engines should always work regardless of is_active.
   if (OmniboxFieldTrial::IsActiveSearchEnginesEnabled() &&
+      template_url->type() != TemplateURL::OMNIBOX_API_EXTENSION &&
       template_url->prepopulate_id() == 0 &&
       template_url->is_active() != TemplateURLData::ActiveStatus::kTrue) {
     return std::u16string();

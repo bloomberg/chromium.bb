@@ -1703,6 +1703,22 @@ static AOM_INLINE void write_modes_sb(
   update_ext_partition_context(xd, mi_row, mi_col, subsize, bsize, partition);
 }
 
+// Populate token pointers appropriately based on token_info.
+static AOM_INLINE void get_token_pointers(const TokenInfo *token_info,
+                                          const int tile_row, int tile_col,
+                                          const int sb_row_in_tile,
+                                          const TokenExtra **tok,
+                                          const TokenExtra **tok_end) {
+  if (!is_token_info_allocated(token_info)) {
+    *tok = NULL;
+    *tok_end = NULL;
+    return;
+  }
+  *tok = token_info->tplist[tile_row][tile_col][sb_row_in_tile].start;
+  *tok_end =
+      *tok + token_info->tplist[tile_row][tile_col][sb_row_in_tile].count;
+}
+
 static AOM_INLINE void write_modes(AV1_COMP *const cpi, ThreadData *const td,
                                    const TileInfo *const tile,
                                    aom_writer *const w, int tile_row,
@@ -1729,10 +1745,11 @@ static AOM_INLINE void write_modes(AV1_COMP *const cpi, ThreadData *const td,
        mi_row += cm->seq_params->mib_size) {
     const int sb_row_in_tile =
         (mi_row - tile->mi_row_start) >> cm->seq_params->mib_size_log2;
-    const TokenExtra *tok =
-        cpi->token_info.tplist[tile_row][tile_col][sb_row_in_tile].start;
-    const TokenExtra *tok_end =
-        tok + cpi->token_info.tplist[tile_row][tile_col][sb_row_in_tile].count;
+    const TokenInfo *token_info = &cpi->token_info;
+    const TokenExtra *tok;
+    const TokenExtra *tok_end;
+    get_token_pointers(token_info, tile_row, tile_col, sb_row_in_tile, &tok,
+                       &tok_end);
 
     av1_zero_left_context(xd);
 

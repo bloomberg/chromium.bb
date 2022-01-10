@@ -14,6 +14,7 @@ h1 {
   display: flex;
   flex-direction: column;
   background-color: var(--color-background);
+  overflow: auto;
 }
 
 .summary-header {
@@ -84,7 +85,7 @@ h1 {
   font-size: 13px;
   line-height: 20px;
   letter-spacing: 0.01em;
-  margin: 9px 0 14px 0;
+  margin: 9px 0 14px;
 }
 
 .preview-icon {
@@ -93,6 +94,12 @@ h1 {
 
 .feedback-prompt {
   margin-bottom: 24px;
+}
+
+.feedback-prompt .devtools-link {
+  color: -webkit-link;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 .resources {
@@ -114,18 +121,11 @@ h1 {
   margin-bottom: 2px;
 }
 
-.feedback-standalone {
-  width: fit-content;
-  padding: 0.5em;
+devtools-feedback-button {
   align-self: flex-end;
-  color: var(--color-primary);
-  border: 1px solid var(--color-details-hairline);
-  border-radius: 2px;
-  text-decoration: none;
-  font-weight: bold;
 }
 
-.resources a {
+.resources .devtools-link {
   font-size: 14px;
   line-height: 22px;
   letter-spacing: 0.04em;

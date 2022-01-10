@@ -418,13 +418,14 @@ export class DebuggerModel extends SDKModel<EventTypes> {
     return this.agent.invoke_pauseOnAsyncCall({parentStackTraceId: parentStackTraceId});
   }
 
-  async setBreakpointByURL(
-      url: Platform.DevToolsPath.RawPathString, lineNumber: number, columnNumber?: number,
-      condition?: string): Promise<SetBreakpointResult> {
+  async setBreakpointByURL(url: string, lineNumber: number, columnNumber?: number, condition?: string):
+      Promise<SetBreakpointResult> {
     // Convert file url to node-js path.
     let urlRegex;
     if (this.target().type() === Type.Node && url.startsWith('file://')) {
-      const platformPath = Common.ParsedURL.ParsedURL.capFilePrefix(url, Host.Platform.isWin());
+      // TODO(crbug.com/1253323): Cast to UrlString will be removed when migration to branded types is complete.
+      const platformPath =
+          Common.ParsedURL.ParsedURL.capFilePrefix(url as Platform.DevToolsPath.UrlString, Host.Platform.isWin());
       urlRegex =
           `${Platform.StringUtilities.escapeForRegExp(platformPath)}|${Platform.StringUtilities.escapeForRegExp(url)}`;
     }
@@ -815,20 +816,10 @@ export class DebuggerModel extends SDKModel<EventTypes> {
   }
 
   createRawLocationsByStackTrace(stackTrace: Protocol.Runtime.StackTrace): Location[] {
-    const frames = [];
-    let current: (Protocol.Runtime.StackTrace|undefined)|Protocol.Runtime.StackTrace = stackTrace;
-    while (current) {
-      for (const frame of current.callFrames) {
-        frames.push(frame);
-      }
-      current = current.parent;
-    }
-
-    const rawLocations = [];
-    for (const frame of frames) {
-      const rawLocation = this.createRawLocationByScriptId(frame.scriptId, frame.lineNumber, frame.columnNumber);
-      if (rawLocation) {
-        rawLocations.push(rawLocation);
+    const rawLocations: Location[] = [];
+    for (let current: Protocol.Runtime.StackTrace|undefined = stackTrace; current; current = current.parent) {
+      for (const {scriptId, lineNumber, columnNumber} of current.callFrames) {
+        rawLocations.push(this.createRawLocationByScriptId(scriptId, lineNumber, columnNumber));
       }
     }
     return rawLocations;

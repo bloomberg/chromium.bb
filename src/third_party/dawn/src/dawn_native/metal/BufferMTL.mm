@@ -171,51 +171,53 @@ namespace dawn_native { namespace metal {
         // Nothing to do, Metal StorageModeShared buffers are always mapped.
     }
 
-    void Buffer::DestroyApiObjectImpl() {
+    void Buffer::DestroyImpl() {
+        BufferBase::DestroyImpl();
         mMtlBuffer = nullptr;
     }
 
-    void Buffer::EnsureDataInitialized(CommandRecordingContext* commandContext) {
-        if (IsDataInitialized() ||
-            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
-            return;
+    bool Buffer::EnsureDataInitialized(CommandRecordingContext* commandContext) {
+        if (!NeedsInitialization()) {
+            return false;
         }
 
         InitializeToZero(commandContext);
+        return true;
     }
 
-    void Buffer::EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
+    bool Buffer::EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
                                                     uint64_t offset,
                                                     uint64_t size) {
-        if (IsDataInitialized() ||
-            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
-            return;
+        if (!NeedsInitialization()) {
+            return false;
         }
 
         if (IsFullBufferRange(offset, size)) {
             SetIsDataInitialized();
-        } else {
-            InitializeToZero(commandContext);
+            return false;
         }
+
+        InitializeToZero(commandContext);
+        return true;
     }
 
-    void Buffer::EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
+    bool Buffer::EnsureDataInitializedAsDestination(CommandRecordingContext* commandContext,
                                                     const CopyTextureToBufferCmd* copy) {
-        if (IsDataInitialized() ||
-            !GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
-            return;
+        if (!NeedsInitialization()) {
+            return false;
         }
 
         if (IsFullBufferOverwrittenInTextureToBufferCopy(copy)) {
             SetIsDataInitialized();
-        } else {
-            InitializeToZero(commandContext);
+            return false;
         }
+
+        InitializeToZero(commandContext);
+        return true;
     }
 
     void Buffer::InitializeToZero(CommandRecordingContext* commandContext) {
-        ASSERT(GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse));
-        ASSERT(!IsDataInitialized());
+        ASSERT(NeedsInitialization());
 
         ClearBuffer(commandContext, uint8_t(0u));
 

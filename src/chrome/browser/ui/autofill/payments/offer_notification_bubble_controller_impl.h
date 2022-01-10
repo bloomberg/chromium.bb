@@ -5,14 +5,15 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_OFFER_NOTIFICATION_BUBBLE_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_OFFER_NOTIFICATION_BUBBLE_CONTROLLER_IMPL_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
+#include "base/scoped_observation.h"
+#include "chrome/browser/commerce/coupons/coupon_service.h"
+#include "chrome/browser/commerce/coupons/coupon_service_observer.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_controller_base.h"
 #include "chrome/browser/ui/autofill/payments/offer_notification_bubble_controller.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-
-class CouponService;
 
 namespace autofill {
 
@@ -24,7 +25,8 @@ class OfferNotificationBubbleControllerImpl
     : public AutofillBubbleControllerBase,
       public OfferNotificationBubbleController,
       public content::WebContentsUserData<
-          OfferNotificationBubbleControllerImpl> {
+          OfferNotificationBubbleControllerImpl>,
+      public CouponServiceObserver {
  public:
   // An observer class used by browsertests that gets notified whenever
   // particular actions occur.
@@ -60,6 +62,10 @@ class OfferNotificationBubbleControllerImpl
   // Called when user clicks on omnibox icon.
   void ReshowBubble();
 
+  // CouponService::CouponServiceObserver:
+  void OnCouponInvalidated(
+      const autofill::AutofillOfferData& offer_data) override;
+
  protected:
   explicit OfferNotificationBubbleControllerImpl(
       content::WebContents* web_contents);
@@ -83,9 +89,17 @@ class OfferNotificationBubbleControllerImpl
     observer_for_testing_ = observer;
   }
 
+  // Reset offer-related variables and hide all offer-related UIs.
+  void ClearCurrentOffer();
+
+  // The timestamp that the bubble has been shown. Used to check if the bubble
+  // has been shown for longer than
+  // kAutofillBubbleSurviveNavigationTime (5 seconds).
+  base::Time bubble_shown_timestamp_;
+
   // The Autofill offer being displayed as a bubble. Set when the bubble is
   // requested to be shown via ShowOfferNotificationIfApplicable(~).
-  const AutofillOfferData* offer_;
+  raw_ptr<const AutofillOfferData> offer_;
 
   // Denotes whether the bubble is shown due to user gesture. If this is true,
   // it means the bubble is a reshown bubble.
@@ -101,13 +115,17 @@ class OfferNotificationBubbleControllerImpl
 
   // The bubble and icon are sticky over a given set of origins. This is
   // populated when ShowOfferNotificationIfApplicable() is called and is cleared
-  // when navigating to a origins outside of this set.
+  // when navigating to a origins outside of this set, or when the corresponding
+  // offer is no longer valid.
   std::vector<GURL> origins_to_display_bubble_;
 
   // Used to update coupon last display timestamp.
-  CouponService* coupon_service_;
+  raw_ptr<CouponService> coupon_service_;
 
-  ObserverForTest* observer_for_testing_ = nullptr;
+  raw_ptr<ObserverForTest> observer_for_testing_ = nullptr;
+
+  base::ScopedObservation<CouponService, CouponServiceObserver>
+      coupon_service_observation_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

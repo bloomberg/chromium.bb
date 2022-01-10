@@ -33,20 +33,6 @@ typedef struct VolDetectContext {
     uint64_t histogram[0x10001];
 } VolDetectContext;
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVSampleFormat sample_fmts[] = {
-        AV_SAMPLE_FMT_S16,
-        AV_SAMPLE_FMT_S16P,
-        AV_SAMPLE_FMT_NONE
-    };
-    int ret = ff_set_common_all_channel_counts(ctx);
-    if (ret < 0)
-        return ret;
-
-    return ff_set_common_formats_from_list(ctx, sample_fmts);
-}
-
 static int filter_frame(AVFilterLink *inlink, AVFrame *samples)
 {
     AVFilterContext *ctx = inlink->dst;
@@ -147,8 +133,8 @@ const AVFilter ff_af_volumedetect = {
     .name          = "volumedetect",
     .description   = NULL_IF_CONFIG_SMALL("Detect audio volume."),
     .priv_size     = sizeof(VolDetectContext),
-    .query_formats = query_formats,
     .uninit        = uninit,
     FILTER_INPUTS(volumedetect_inputs),
     FILTER_OUTPUTS(volumedetect_outputs),
+    FILTER_SAMPLEFMTS(AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_S16P),
 };

@@ -89,12 +89,14 @@ namespace dawn_native {
                 switch (src.texture->GetFormat().format) {
                     case wgpu::TextureFormat::Depth24Plus:
                     case wgpu::TextureFormat::Depth24PlusStencil8:
+                    case wgpu::TextureFormat::Depth24UnormStencil8:
                         return DAWN_FORMAT_VALIDATION_ERROR(
                             "The depth aspect of %s format %s cannot be selected in a texture to "
                             "buffer copy.",
                             src.texture, src.texture->GetFormat().format);
                     case wgpu::TextureFormat::Depth32Float:
                     case wgpu::TextureFormat::Depth16Unorm:
+                    case wgpu::TextureFormat::Depth32FloatStencil8:
                         break;
 
                     default:
@@ -466,12 +468,17 @@ namespace dawn_native {
 
     }  // namespace
 
-    CommandEncoder::CommandEncoder(DeviceBase* device, const CommandEncoderDescriptor*)
-        : ApiObjectBase(device, kLabelNotImplemented), mEncodingContext(device, this) {
+    CommandEncoder::CommandEncoder(DeviceBase* device, const CommandEncoderDescriptor* descriptor)
+        : ApiObjectBase(device, descriptor->label), mEncodingContext(device, this) {
+        TrackInDevice();
     }
 
     ObjectType CommandEncoder::GetType() const {
         return ObjectType::CommandEncoder;
+    }
+
+    void CommandEncoder::DestroyImpl() {
+        mEncodingContext.Destroy();
     }
 
     CommandBufferResourceUsage CommandEncoder::AcquireResourceUsages() {
@@ -517,8 +524,13 @@ namespace dawn_native {
             "encoding %s.BeginComputePass(%s).", this, descriptor);
 
         if (success) {
+            const ComputePassDescriptor defaultDescriptor = {};
+            if (descriptor == nullptr) {
+                descriptor = &defaultDescriptor;
+            }
+
             ComputePassEncoder* passEncoder =
-                new ComputePassEncoder(device, this, &mEncodingContext);
+                new ComputePassEncoder(device, descriptor, this, &mEncodingContext);
             mEncodingContext.EnterPass(passEncoder);
             return passEncoder;
         }
@@ -622,10 +634,10 @@ namespace dawn_native {
             "encoding %s.BeginRenderPass(%s).", this, descriptor);
 
         if (success) {
-            RenderPassEncoder* passEncoder =
-                new RenderPassEncoder(device, this, &mEncodingContext, std::move(usageTracker),
-                                      std::move(attachmentState), descriptor->occlusionQuerySet,
-                                      width, height, depthReadOnly, stencilReadOnly);
+            RenderPassEncoder* passEncoder = new RenderPassEncoder(
+                device, descriptor, this, &mEncodingContext, std::move(usageTracker),
+                std::move(attachmentState), descriptor->occlusionQuerySet, width, height,
+                depthReadOnly, stencilReadOnly);
             mEncodingContext.EnterPass(passEncoder);
             return passEncoder;
         }
@@ -867,6 +879,57 @@ namespace dawn_native {
             destination->texture, copySize);
     }
 
+    void CommandEncoder::APIClearBuffer(BufferBase* buffer, uint64_t offset, uint64_t size) {
+        mEncodingContext.TryEncode(
+            this,
+            [&](CommandAllocator* allocator) -> MaybeError {
+                if (GetDevice()->IsValidationEnabled()) {
+                    DAWN_TRY(GetDevice()->ValidateObject(buffer));
+
+                    uint64_t bufferSize = buffer->GetSize();
+                    DAWN_INVALID_IF(offset > bufferSize,
+                                    "Buffer offset (%u) is larger than the size (%u) of %s.",
+                                    offset, bufferSize, buffer);
+
+                    uint64_t remainingSize = bufferSize - offset;
+                    if (size == wgpu::kWholeSize) {
+                        size = remainingSize;
+                    } else {
+                        DAWN_INVALID_IF(size > remainingSize,
+                                        "Buffer range (offset: %u, size: %u) doesn't fit in "
+                                        "the size (%u) of %s.",
+                                        offset, size, bufferSize, buffer);
+                    }
+
+                    DAWN_TRY_CONTEXT(ValidateCanUseAs(buffer, wgpu::BufferUsage::CopyDst),
+                                     "validating buffer %s usage.", buffer);
+
+                    // Size must be a multiple of 4 bytes on macOS.
+                    DAWN_INVALID_IF(size % 4 != 0, "Fill size (%u) is not a multiple of 4 bytes.",
+                                    size);
+
+                    // Offset must be multiples of 4 bytes on macOS.
+                    DAWN_INVALID_IF(offset % 4 != 0, "Offset (%u) is not a multiple of 4 bytes,",
+                                    offset);
+
+                    mTopLevelBuffers.insert(buffer);
+                } else {
+                    if (size == wgpu::kWholeSize) {
+                        DAWN_ASSERT(buffer->GetSize() >= offset);
+                        size = buffer->GetSize() - offset;
+                    }
+                }
+
+                ClearBufferCmd* cmd = allocator->Allocate<ClearBufferCmd>(Command::ClearBuffer);
+                cmd->buffer = buffer;
+                cmd->offset = offset;
+                cmd->size = size;
+
+                return {};
+            },
+            "encoding %s.ClearBuffer(%s, %u, %u).", this, buffer, offset, size);
+    }
+
     void CommandEncoder::APIInjectValidationError(const char* message) {
         if (mEncodingContext.CheckCurrentEncoder(this)) {
             mEncodingContext.HandleError(DAWN_VALIDATION_ERROR(message));
@@ -1036,6 +1099,12 @@ namespace dawn_native {
         if (device->IsValidationEnabled()) {
             DAWN_TRY(ValidateFinish());
         }
+
+        const CommandBufferDescriptor defaultDescriptor = {};
+        if (descriptor == nullptr) {
+            descriptor = &defaultDescriptor;
+        }
+
         return device->CreateCommandBuffer(this, descriptor);
     }
 

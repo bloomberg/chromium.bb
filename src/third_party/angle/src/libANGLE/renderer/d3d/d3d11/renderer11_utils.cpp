@@ -1643,14 +1643,16 @@ void GenerateCaps(ID3D11Device *device,
          extensions->textureStorageMultisample2dArrayOES);
     extensions->copyTexture3dANGLE      = true;
     extensions->textureBorderClampOES   = true;
+    extensions->multiDrawIndirectEXT    = true;
     extensions->textureMultisampleANGLE = true;
     extensions->provokingVertexANGLE    = true;
     extensions->blendFuncExtendedEXT    = true;
     // http://anglebug.com/4926
-    extensions->texture3DOES                = false;
-    extensions->baseVertexBaseInstanceANGLE = true;
-    extensions->drawElementsBaseVertexOES   = true;
-    extensions->drawElementsBaseVertexEXT   = true;
+    extensions->texture3DOES                             = false;
+    extensions->baseVertexBaseInstanceANGLE              = true;
+    extensions->baseVertexBaseInstanceShaderBuiltinANGLE = true;
+    extensions->drawElementsBaseVertexOES                = true;
+    extensions->drawElementsBaseVertexEXT                = true;
     if (!strstr(description, "Adreno"))
     {
         extensions->multisampledRenderToTextureEXT = true;

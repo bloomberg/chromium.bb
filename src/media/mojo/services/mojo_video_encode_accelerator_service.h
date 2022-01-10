@@ -12,15 +12,15 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/video/video_encode_accelerator.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace gpu {
@@ -63,7 +63,7 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
   // mojom::VideoEncodeAccelerator impl.
   void Initialize(
       const media::VideoEncodeAccelerator::Config& config,
-      mojo::PendingRemote<mojom::VideoEncodeAcceleratorClient> client,
+      mojo::PendingAssociatedRemote<mojom::VideoEncodeAcceleratorClient> client,
       InitializeCallback callback) override;
   void Encode(const scoped_refptr<VideoFrame>& frame,
               bool force_keyframe,
@@ -99,7 +99,7 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorService
 
   // Owned pointer to the underlying VideoEncodeAccelerator.
   std::unique_ptr<::media::VideoEncodeAccelerator> encoder_;
-  mojo::Remote<mojom::VideoEncodeAcceleratorClient> vea_client_;
+  mojo::AssociatedRemote<mojom::VideoEncodeAcceleratorClient> vea_client_;
 
   // Cache of parameters for sanity verification.
   size_t output_buffer_size_;

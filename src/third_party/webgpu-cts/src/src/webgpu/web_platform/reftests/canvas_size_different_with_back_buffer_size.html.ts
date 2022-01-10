@@ -27,7 +27,7 @@ export function run() {
 
     function updateWebGPUBackBuffer(
       canvas: HTMLCanvasElement,
-      ctx: GPUPresentationContext,
+      ctx: GPUCanvasContext,
       configureSize: [number, number] | undefined,
       pixels: Array<Array<Uint8Array>>
     ) {

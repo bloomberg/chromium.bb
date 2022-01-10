@@ -97,6 +97,7 @@ extern const CGFloat kGridCellSelectionRingTintWidth;
 // PriceCardView constants
 extern const CGFloat kGridCellPriceDropTopSpacing;
 extern const CGFloat kGridCellPriceDropLeadingSpacing;
+extern const CGFloat kGridCellPriceDropTrailingSpacing;
 
 // Horizontal distance from the center of the plus sign image to the trailing of
 // the tab grid.
@@ -108,5 +109,8 @@ extern const CGFloat kScrollThresholdForPlusSignButtonHide;
 extern const CGFloat kPlusSignImageYCenterConstant;
 // With of the plus sign button.
 extern const CGFloat kPlusSignButtonWidth;
+// Expected collection view top content inset. If mismatch, the extra space
+// is communicated to the plus sign button to align + sign correctly.
+extern const CGFloat kGridExpectedTopContentInset;
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_GRID_GRID_GRID_CONSTANTS_H_

@@ -5,6 +5,7 @@
 #include "components/optimization_guide/core/optimization_guide_features.h"
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -19,6 +20,7 @@
 #include "components/variations/hashing.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace optimization_guide {
 namespace features {
@@ -88,6 +90,11 @@ const base::Feature kPageTextExtraction{
 // Enables the validation of optimization guide metadata.
 const base::Feature kOptimizationGuideMetadataValidation{
     "OptimizationGuideMetadataValidation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPageTopicsBatchAnnotations{
+    "PageTopicsBatchAnnotations", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kPageVisibilityBatchAnnotations{
+    "PageVisibilityBatchAnnotations", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The default value here is a bit of a guess.
 // TODO(crbug/1163244): This should be tuned once metrics are available.
@@ -221,6 +228,15 @@ base::TimeDelta GetActiveTabsStalenessTolerance() {
   return base::Days(GetFieldTrialParamByFeatureAsInt(
       kRemoteOptimizationGuideFetching,
       "active_tabs_staleness_tolerance_in_days", 90));
+}
+
+size_t MaxConcurrentBatchUpdateFetches() {
+  // If overridden, this needs to be large enough where we do not thrash the
+  // inflight batch update fetches since if we approach the limit here, we will
+  // abort the oldest batch update fetch that is in flight.
+  return GetFieldTrialParamByFeatureAsInt(kRemoteOptimizationGuideFetching,
+                                          "max_concurrent_batch_update_fetches",
+                                          20);
 }
 
 size_t MaxConcurrentPageNavigationFetches() {
@@ -381,31 +397,79 @@ bool ShouldExtractRelatedSearches() {
 }
 
 std::vector<optimization_guide::proto::OptimizationTarget>
-GetPageContentModelsToExecute() {
+GetPageContentModelsToExecute(const std::string& locale) {
   if (!IsPageContentAnnotationEnabled())
     return {};
 
+  // Use an updated parameter name that supports locale filtering. That way,
+  // older clients that don't know how to interpret locale filtering ignore the
+  // new parameter name and keep looking for the old one.
   std::string value = base::GetFieldTrialParamValueByFeature(
-      kPageContentAnnotations, "models_to_execute");
+      kPageContentAnnotations, "models_to_execute_v2");
   if (value.empty()) {
-    // If param not explicitly set, run the page topics model by default.
+    // If the updated parameter is empty, try getting the older parameter name
+    // that doesn't support locale-specific models. That way, older parameter
+    // configurations still work. We don't do a union because that's confusing.
+    value = base::GetFieldTrialParamValueByFeature(kPageContentAnnotations,
+                                                   "models_to_execute");
+  }
+  if (value.empty()) {
+    // If neither the newer or older parameter is set, run the page topics model
+    // by default.
     return {optimization_guide::proto::OPTIMIZATION_TARGET_PAGE_TOPICS};
   }
+
+  // The parameter value delimits models by commas, and per-model locale
+  // restrictions by colon. For example:
+  //   FOO_MODEL:en:es-ES,BAR_MODEL,BAZ_MODEL:zh-TW
+  //  - FOO_MODEL is restricted to English language users from any locale, and
+  //    Spanish language users from the Spain es-ES locale.
+  //  - BAR_MODEL is unrestricted by locale, and any user may load it.
+  //  - BAZ_MODEL is restricted to zh-TW only, so zh-CN users won't load it.
+  //
+  // First split by comma to handle one model at a time.
+  std::vector<std::string> model_target_strings = base::SplitString(
+      value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  std::string locale_language = l10n_util::GetLanguage(locale);
 
   optimization_guide::InsertionOrderedSet<
       optimization_guide::proto::OptimizationTarget>
       model_targets;
-  std::vector<std::string> model_target_strings = base::SplitString(
-      value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   for (const auto& model_target_string : model_target_strings) {
+    // Split by colon to extract the model name and allowlist, early continuing
+    // for invalid values.
+    std::vector<std::string> model_name_and_allowed_locales =
+        base::SplitString(model_target_string, ":", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+    if (model_name_and_allowed_locales.empty())
+      continue;
+    std::string model_name = model_name_and_allowed_locales[0];
+    std::vector<std::string> allowlist;
+    for (size_t i = 1; i < model_name_and_allowed_locales.size(); ++i) {
+      allowlist.push_back(model_name_and_allowed_locales[i]);
+    }
+
     optimization_guide::proto::OptimizationTarget model_target;
-    if (optimization_guide::proto::OptimizationTarget_Parse(model_target_string,
-                                                            &model_target)) {
+    if (!optimization_guide::proto::OptimizationTarget_Parse(model_name,
+                                                             &model_target)) {
+      continue;
+    }
+
+    // An empty allowlist admits any locale. Otherwise, the locale or the
+    // primary language subtag must match an element of the allowlist.
+    if (allowlist.empty() || base::Contains(allowlist, locale) ||
+        base::Contains(allowlist, locale_language)) {
       model_targets.insert(model_target);
     }
   }
 
   return model_targets.vector();
+}
+
+bool RemotePageEntitiesEnabled() {
+  return GetFieldTrialParamByFeatureAsBool(kPageContentAnnotations,
+                                           "fetch_remote_page_entities", false);
 }
 
 base::TimeDelta GetOnloadDelayForHintsFetching() {
@@ -443,6 +507,14 @@ bool ShouldDeferStartupActiveTabsHintsFetch() {
       false
 #endif
   );
+}
+
+bool PageTopicsBatchAnnotationsEnabled() {
+  return base::FeatureList::IsEnabled(kPageTopicsBatchAnnotations);
+}
+
+bool PageVisibilityBatchAnnotationsEnabled() {
+  return base::FeatureList::IsEnabled(kPageVisibilityBatchAnnotations);
 }
 
 }  // namespace features

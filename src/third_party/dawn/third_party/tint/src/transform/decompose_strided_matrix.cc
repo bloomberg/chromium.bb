@@ -21,10 +21,9 @@
 #include "src/program_builder.h"
 #include "src/sem/expression.h"
 #include "src/sem/member_accessor_expression.h"
-#include "src/transform/inline_pointer_lets.h"
-#include "src/transform/simplify.h"
-#include "src/utils/get_or_create.h"
+#include "src/transform/simplify_pointers.h"
 #include "src/utils/hash.h"
+#include "src/utils/map.h"
 
 TINT_INSTANTIATE_TYPEINFO(tint::transform::DecomposeStridedMatrix);
 
@@ -119,7 +118,7 @@ bool DecomposeStridedMatrix::ShouldRun(const Program* program) {
 }
 
 void DecomposeStridedMatrix::Run(CloneContext& ctx, const DataMap&, DataMap&) {
-  if (!Requires<InlinePointerLets, Simplify>(ctx)) {
+  if (!Requires<SimplifyPointers>(ctx)) {
     return;
   }
 
@@ -144,13 +143,13 @@ void DecomposeStridedMatrix::Run(CloneContext& ctx, const DataMap&, DataMap&) {
   // preserve these without calling conversion functions.
   // Example:
   //   ssbo.mat[2] -> ssbo.mat[2]
-  ctx.ReplaceAll([&](const ast::ArrayAccessorExpression* expr)
-                     -> const ast::ArrayAccessorExpression* {
+  ctx.ReplaceAll([&](const ast::IndexAccessorExpression* expr)
+                     -> const ast::IndexAccessorExpression* {
     if (auto* access =
-            ctx.src->Sem().Get<sem::StructMemberAccess>(expr->array)) {
+            ctx.src->Sem().Get<sem::StructMemberAccess>(expr->object)) {
       auto it = decomposed.find(access->Member()->Declaration());
       if (it != decomposed.end()) {
-        auto* obj = ctx.CloneWithoutTransform(expr->array);
+        auto* obj = ctx.CloneWithoutTransform(expr->object);
         auto* idx = ctx.Clone(expr->index);
         return ctx.dst->IndexAccessor(obj, idx);
       }

@@ -597,10 +597,12 @@ angle::Result ContextMtl::drawElementsImpl(const gl::Context *context,
                                            &convertedOffset, &convertedType));
 
     ASSERT(idxBuffer);
-    ASSERT((convertedOffset % mtl::kIndexBufferOffsetAlignment) == 0);
+    ASSERT((convertedType == gl::DrawElementsType::UnsignedShort && (convertedOffset % 2) == 0) ||
+           (convertedType == gl::DrawElementsType::UnsignedInt && (convertedOffset % 4) == 0));
+
     uint32_t convertedCounti32 = (uint32_t)count;
 
-    if (requiresIndexRewrite(context->getState()))
+    if (requiresIndexRewrite(context->getState(), mode))
     {
         size_t outIndexCount      = 0;
         gl::PrimitiveMode newMode = gl::PrimitiveMode::InvalidEnum;
@@ -778,6 +780,15 @@ angle::Result ContextMtl::multiDrawArraysInstanced(const gl::Context *context,
                                                drawcount);
 }
 
+angle::Result ContextMtl::multiDrawArraysIndirect(const gl::Context *context,
+                                                  gl::PrimitiveMode mode,
+                                                  const void *indirect,
+                                                  GLsizei drawcount,
+                                                  GLsizei stride)
+{
+    return rx::MultiDrawArraysIndirectGeneral(this, context, mode, indirect, drawcount, stride);
+}
+
 angle::Result ContextMtl::multiDrawElements(const gl::Context *context,
                                             gl::PrimitiveMode mode,
                                             const GLsizei *counts,
@@ -798,6 +809,17 @@ angle::Result ContextMtl::multiDrawElementsInstanced(const gl::Context *context,
 {
     return rx::MultiDrawElementsInstancedGeneral(this, context, mode, counts, type, indices,
                                                  instanceCounts, drawcount);
+}
+
+angle::Result ContextMtl::multiDrawElementsIndirect(const gl::Context *context,
+                                                    gl::PrimitiveMode mode,
+                                                    gl::DrawElementsType type,
+                                                    const void *indirect,
+                                                    GLsizei drawcount,
+                                                    GLsizei stride)
+{
+    return rx::MultiDrawElementsIndirectGeneral(this, context, mode, type, indirect, drawcount,
+                                                stride);
 }
 
 angle::Result ContextMtl::multiDrawArraysInstancedBaseInstance(const gl::Context *context,
@@ -1633,6 +1655,11 @@ mtl::ComputeCommandEncoder *ContextMtl::getComputeCommandEncoder()
     return &mComputeEncoder.restart();
 }
 
+mtl::ComputeCommandEncoder *ContextMtl::getIndexPreprocessingCommandEncoder()
+{
+    return mProvokingVertexHelper.getComputeCommandEncoder();
+}
+
 void ContextMtl::ensureCommandBufferReady()
 {
     mProvokingVertexHelper.ensureCommandBufferReady();
@@ -1777,9 +1804,10 @@ void ContextMtl::updateDepthBias(const gl::State &glState)
 // Index rewrite is required if:
 // Provkoing vertex mode is 'last'
 // Program has at least one 'flat' attribute
-bool ContextMtl::requiresIndexRewrite(const gl::State &state)
+// PrimitiveMode is not POINTS.
+bool ContextMtl::requiresIndexRewrite(const gl::State &state, gl::PrimitiveMode mode)
 {
-    return mProgram->hasFlatAttribute() &&
+    return mode != gl::PrimitiveMode::Points && mProgram->hasFlatAttribute() &&
            (state.getProvokingVertex() == gl::ProvokingVertexConvention::LastVertexConvention);
 }
 

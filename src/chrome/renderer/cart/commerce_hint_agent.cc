@@ -58,7 +58,8 @@ constexpr base::FeatureParam<std::string> kSkipPattern{
 constexpr base::FeatureParam<std::string> kAddToCartPattern{
     &ntp_features::kNtpChromeCartModule, "add-to-cart-pattern",
     "(\\b|[^a-z])"
-    "((add(ed)?(-|_|(%20))?(item)?(-|_|(%20))?to(-|_|(%20))?(cart|basket|bag)"
+    "((add(ed)?(-|_|(%20)|\\s)?(item)?(-|_|(%20)|\\s)?to(-|_|(%20)|\\s)?(cart|"
+    "basket|bag)"
     ")|(cart\\/add)|(checkout\\/basket)|(cart_type)|(isquickaddtocartbutton))"
     "(\\b|[^a-z])"};
 
@@ -75,7 +76,7 @@ constexpr base::FeatureParam<std::string> kCartPattern{
     "(^https?://cart\\.)"
     "|"
     "(/("
-      "(((my|co|shopping)[-_]?)?(cart|bag)(view|display)?)"
+      "(((my|co|shopping|view)[-_]?)?(cart|bag)(view|display)?)"
       "|"
       "(checkout/([^/]+/)?(basket|bag))"
       "|"
@@ -494,6 +495,9 @@ bool DetectAddToCart(content::RenderFrame* render_frame,
         GetProductIdFromRequest(url.spec().substr(0, kLengthLimit), nullptr);
   } else if (navigation_url.host() == kGStoreHost) {
     is_add_to_cart = url.spec().find("O2JPA") != std::string::npos;
+  } else if (url.DomainIs("zappos.com")) {
+    is_add_to_cart = url.spec().find("mobileapi/v1/cart?displayRewards=true") !=
+                     std::string::npos;
   } else {
     is_add_to_cart = CommerceHintAgent::IsAddToCart(url.path_piece());
   }
@@ -554,7 +558,10 @@ bool DetectAddToCart(content::RenderFrame* render_frame,
     if (navigation_url.DomainIs("groupon.com") && buf.size() > 10000)
       return false;
 
-    if (CommerceHintAgent::IsAddToCart(str)) {
+    // Per-site skipping length limit when checking request text.
+    bool skip_length_limit = navigation_url.DomainIs("otterbox.com");
+
+    if (CommerceHintAgent::IsAddToCart(str, skip_length_limit)) {
       std::string product_id;
       if (commerce_renderer_feature::IsPartnerMerchant(url)) {
         GetProductIdFromRequest(str.substr(0, kLengthLimit), &product_id);
@@ -627,8 +634,10 @@ CommerceHintAgent::CommerceHintAgent(content::RenderFrame* render_frame)
 
 CommerceHintAgent::~CommerceHintAgent() = default;
 
-bool CommerceHintAgent::IsAddToCart(base::StringPiece str) {
-  return PartialMatch(str.substr(0, kLengthLimit), GetAddToCartPattern());
+bool CommerceHintAgent::IsAddToCart(base::StringPiece str,
+                                    bool skip_length_limit) {
+  return PartialMatch(skip_length_limit ? str : str.substr(0, kLengthLimit),
+                      GetAddToCartPattern());
 }
 
 bool CommerceHintAgent::IsVisitCart(const GURL& url) {
@@ -764,7 +773,8 @@ void CommerceHintAgent::ExtractProducts() {
   main_frame->RequestExecuteScript(
       ISOLATED_WORLD_ID_CHROME_INTERNAL, base::make_span(&source, 1), false,
       blink::WebLocalFrame::kAsynchronous, javascript_request_,
-      blink::BackForwardCacheAware::kAllow);
+      blink::BackForwardCacheAware::kAllow,
+      blink::WebLocalFrame::PromiseBehavior::kAwait);
 }
 
 CommerceHintAgent::JavaScriptRequest::JavaScriptRequest(
@@ -779,39 +789,6 @@ void CommerceHintAgent::JavaScriptRequest::WillExecute() {
 
 void CommerceHintAgent::JavaScriptRequest::Completed(
     const blink::WebVector<v8::Local<v8::Value>>& result) {
-  if (!agent_)
-    return;
-  blink::WebLocalFrame* main_frame = agent_->render_frame()->GetWebFrame();
-  if (result.empty() || result.begin()->IsEmpty())
-    return;
-  if (!result[0]->IsPromise()) {
-    DLOG(ERROR) << "JavaScriptRequest::Completed() got non-Promise";
-    return;
-  }
-  v8::Local<v8::Promise> promise = result[0].As<v8::Promise>();
-  v8::Local<v8::Context> context = main_frame->MainWorldScriptContext();
-  auto callback = [](const v8::FunctionCallbackInfo<v8::Value>& info) {
-    // The JavaScriptRequest object is never deleted, so we know the
-    // pointer we curried into the v8::Function is still valid. We forward
-    // the request to the instance, so that it can check the validity of the
-    // CommerceHintAgent, and process the results as appropriate.
-    DCHECK(info.Data()->IsExternal());
-    auto* javascript_request = static_cast<JavaScriptRequest*>(
-        info.Data().As<v8::External>()->Value());
-    javascript_request->HandlePromiseResults(info);
-  };
-  // Curry in the JavaScriptRequest instance into the callback.
-  v8::Local<v8::External> external =
-      v8::External::New(context->GetIsolate(), this);
-  v8::Local<v8::Function> function =
-      v8::Function::New(context, callback, external).ToLocalChecked();
-
-  v8::MaybeLocal<v8::Promise> result_maybe;
-  result_maybe = promise->Then(context, function);
-}
-
-void CommerceHintAgent::JavaScriptRequest::HandlePromiseResults(
-    const v8::FunctionCallbackInfo<v8::Value>& info) {
   // Only record when the start time is correctly captured.
   DCHECK(!start_time_.is_null());
   if (!start_time_.is_null()) {
@@ -820,11 +797,13 @@ void CommerceHintAgent::JavaScriptRequest::HandlePromiseResults(
   }
   if (!agent_)
     return;
+  if (result.empty() || result[0].IsEmpty())
+    return;
   blink::WebLocalFrame* main_frame = agent_->render_frame()->GetWebFrame();
   v8::Local<v8::Context> context = main_frame->MainWorldScriptContext();
 
   agent_->OnProductsExtracted(
-      content::V8ValueConverter::Create()->FromV8Value(info[0], context));
+      content::V8ValueConverter::Create()->FromV8Value(result[0], context));
 }
 
 void CommerceHintAgent::OnProductsExtracted(

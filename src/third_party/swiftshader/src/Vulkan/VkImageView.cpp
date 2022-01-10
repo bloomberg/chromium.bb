@@ -15,6 +15,7 @@
 #include "VkImageView.hpp"
 
 #include "VkImage.hpp"
+#include "VkStructConversion.hpp"
 #include "System/Math.hpp"
 
 #include <climits>
@@ -226,7 +227,9 @@ void ImageView::resolve(ImageView *resolveAttachment, int layer)
 		UNIMPLEMENTED("b/148242443: levelCount != 1");  // FIXME(b/148242443)
 	}
 
-	VkImageResolve region;
+	VkImageResolve2KHR region;
+	region.sType = VK_STRUCTURE_TYPE_IMAGE_RESOLVE_2_KHR;
+	region.pNext = nullptr;
 	region.srcSubresource = {
 		subresourceRange.aspectMask,
 		subresourceRange.baseMipLevel,
@@ -254,7 +257,9 @@ void ImageView::resolve(ImageView *resolveAttachment)
 		UNIMPLEMENTED("b/148242443: levelCount != 1");  // FIXME(b/148242443)
 	}
 
-	VkImageResolve region;
+	VkImageResolve2KHR region;
+	region.sType = VK_STRUCTURE_TYPE_IMAGE_RESOLVE_2_KHR;
+	region.pNext = nullptr;
 	region.srcSubresource = {
 		subresourceRange.aspectMask,
 		subresourceRange.baseMipLevel,
@@ -338,17 +343,13 @@ int ImageView::layerPitchBytes(VkImageAspectFlagBits aspect, Usage usage) const
 
 VkExtent2D ImageView::getMipLevelExtent(uint32_t mipLevel) const
 {
-	VkExtent3D extent = image->getMipLevelExtent(static_cast<VkImageAspectFlagBits>(subresourceRange.aspectMask),
-	                                             subresourceRange.baseMipLevel + mipLevel);
-
-	return { extent.width, extent.height };
+	return Extent2D(image->getMipLevelExtent(static_cast<VkImageAspectFlagBits>(subresourceRange.aspectMask),
+	                                         subresourceRange.baseMipLevel + mipLevel));
 }
 
 VkExtent2D ImageView::getMipLevelExtent(uint32_t mipLevel, VkImageAspectFlagBits aspect) const
 {
-	VkExtent3D extent = image->getMipLevelExtent(aspect, subresourceRange.baseMipLevel + mipLevel);
-
-	return { extent.width, extent.height };
+	return Extent2D(image->getMipLevelExtent(aspect, subresourceRange.baseMipLevel + mipLevel));
 }
 
 int ImageView::getDepthOrLayerCount(uint32_t mipLevel) const

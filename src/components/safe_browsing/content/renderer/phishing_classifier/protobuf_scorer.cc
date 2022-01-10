@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -148,12 +149,14 @@ void ProtobufModelScorer::GetMatchingVisualTargets(
       std::move(callback));
 }
 
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB) && !defined(OS_CHROMEOS) && \
+    !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 void ProtobufModelScorer::ApplyVisualTfLiteModel(
     const SkBitmap& bitmap,
     base::OnceCallback<void(std::vector<double>)> callback) const {
   DCHECK(content::RenderThread::IsMainThread());
   if (visual_tflite_model_.IsValid()) {
+    base::Time start_post_task_time = base::Time::Now();
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE,
         {base::TaskPriority::BEST_EFFORT, base::WithBaseSyncPrimitives()},
@@ -164,6 +167,9 @@ void ProtobufModelScorer::ApplyVisualTfLiteModel(
                                        visual_tflite_model_.data()),
                                    visual_tflite_model_.length())),
         std::move(callback));
+    base::UmaHistogramTimes(
+        "SBClientPhishing.TfLiteModelLoadTime.ProtobufScorer",
+        base::Time::Now() - start_post_task_time);
   } else {
     std::move(callback).Run(std::vector<double>());
   }

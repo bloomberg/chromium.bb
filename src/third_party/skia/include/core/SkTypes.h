@@ -23,7 +23,7 @@
     !defined(SK_BUILD_FOR_UNIX) && !defined(SK_BUILD_FOR_MAC)
 
     #ifdef __APPLE__
-        #include "TargetConditionals.h"
+        #include <TargetConditionals.h>
     #endif
 
     #if defined(_WIN32) || defined(__SYMBIAN32__)
@@ -398,10 +398,6 @@
 
 #ifndef GR_TEST_UTILS
 #  define GR_TEST_UTILS 0
-#endif
-
-#ifndef SK_GPU_V2
-#  define SK_GPU_V2 0
 #endif
 
 #ifndef SK_GPU_V1

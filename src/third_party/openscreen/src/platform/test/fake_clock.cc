@@ -30,7 +30,7 @@ FakeClock::~FakeClock() {
   now_.store(kInvalid, std::memory_order_release);
 }
 
-Clock::time_point FakeClock::now() noexcept {
+Clock::time_point FakeClock::now() {
   const Clock::time_point value = now_.load(std::memory_order_acquire);
   OSP_CHECK_NE(value, kInvalid) << "No FakeClock instance!";
   return value;

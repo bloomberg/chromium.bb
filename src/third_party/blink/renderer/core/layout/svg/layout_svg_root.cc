@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/svg/layout_ng_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
@@ -70,6 +71,7 @@ LayoutSVGRoot::~LayoutSVGRoot() = default;
 
 void LayoutSVGRoot::Trace(Visitor* visitor) const {
   visitor->Trace(content_);
+  visitor->Trace(text_set_);
   LayoutReplaced::Trace(visitor);
 }
 
@@ -84,7 +86,7 @@ void LayoutSVGRoot::UnscaledIntrinsicSizingInfo(
   absl::optional<float> intrinsic_width = svg->IntrinsicWidth();
   absl::optional<float> intrinsic_height = svg->IntrinsicHeight();
   intrinsic_sizing_info.size =
-      FloatSize(intrinsic_width.value_or(0), intrinsic_height.value_or(0));
+      gfx::SizeF(intrinsic_width.value_or(0), intrinsic_height.value_or(0));
   intrinsic_sizing_info.has_width = intrinsic_width.has_value();
   intrinsic_sizing_info.has_height = intrinsic_height.has_value();
 
@@ -94,16 +96,14 @@ void LayoutSVGRoot::UnscaledIntrinsicSizingInfo(
     gfx::SizeF view_box_size = svg->viewBox()->CurrentValue()->Rect().size();
     if (!view_box_size.IsEmpty()) {
       // The viewBox can only yield an intrinsic ratio, not an intrinsic size.
-      intrinsic_sizing_info.aspect_ratio = FloatSize(view_box_size);
+      intrinsic_sizing_info.aspect_ratio = view_box_size;
     }
   }
   EAspectRatioType ar_type = StyleRef().AspectRatio().GetType();
   if (ar_type == EAspectRatioType::kRatio ||
       (ar_type == EAspectRatioType::kAutoAndRatio &&
        intrinsic_sizing_info.aspect_ratio.IsEmpty())) {
-    FloatSize aspect_ratio = StyleRef().AspectRatio().GetRatio();
-    intrinsic_sizing_info.aspect_ratio.set_width(aspect_ratio.width());
-    intrinsic_sizing_info.aspect_ratio.set_height(aspect_ratio.height());
+    intrinsic_sizing_info.aspect_ratio = StyleRef().AspectRatio().GetRatio();
   }
 
   if (!IsHorizontalWritingMode())
@@ -376,6 +376,15 @@ void LayoutSVGRoot::StyleDidChange(StyleDifference diff,
 
   SVGResources::UpdateClipPathFilterMask(To<SVGSVGElement>(*GetNode()),
                                          old_style, StyleRef());
+
+  if (diff.TransformChanged()) {
+    for (auto& svg_text : text_set_) {
+      svg_text->SetNeedsLayout(layout_invalidation_reason::kStyleChange,
+                               kMarkContainerChain);
+      svg_text->SetNeedsTextMetricsUpdate();
+    }
+  }
+
   if (!Parent())
     return;
   if (diff.HasDifference())
@@ -586,6 +595,18 @@ void LayoutSVGRoot::NotifyDescendantCompositingReasonsChanged() {
     return;
   has_descendant_with_compositing_reason_dirty_ = true;
   SetNeedsLayout(layout_invalidation_reason::kSvgChanged);
+}
+
+void LayoutSVGRoot::AddSvgTextDescendant(LayoutNGSVGText& svg_text) {
+  NOT_DESTROYED();
+  DCHECK(!text_set_.Contains(&svg_text));
+  text_set_.insert(&svg_text);
+}
+
+void LayoutSVGRoot::RemoveSvgTextDescendant(LayoutNGSVGText& svg_text) {
+  NOT_DESTROYED();
+  DCHECK(text_set_.Contains(&svg_text));
+  text_set_.erase(&svg_text);
 }
 
 PaintLayerType LayoutSVGRoot::LayerTypeRequired() const {

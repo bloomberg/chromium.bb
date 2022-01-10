@@ -25,10 +25,13 @@ namespace dawn_native {
     class PipelineLayoutMock : public PipelineLayoutBase {
       public:
         PipelineLayoutMock(DeviceBase* device) : PipelineLayoutBase(device) {
+            ON_CALL(*this, DestroyImpl).WillByDefault([this]() {
+                this->PipelineLayoutBase::DestroyImpl();
+            });
         }
         ~PipelineLayoutMock() override = default;
 
-        MOCK_METHOD(void, DestroyApiObjectImpl, (), (override));
+        MOCK_METHOD(void, DestroyImpl, (), (override));
     };
 
 }  // namespace dawn_native

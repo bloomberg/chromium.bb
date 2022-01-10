@@ -1222,20 +1222,11 @@ void EmitCharClass(RegExpMacroAssembler* macro_assembler,
   ZoneList<CharacterRange>* ranges = cc->ranges(zone);
   CharacterRange::Canonicalize(ranges);
 
-  const base::uc32 max_char = MaxCodeUnit(one_byte);
+  // Now that all processing (like case-insensitivity) is done, clamp the
+  // ranges to the set of ranges that may actually occur in the subject string.
+  if (one_byte) CharacterRange::ClampToOneByte(ranges);
 
-  // Determine the 'interesting' set of ranges; may be a subset of the given
-  // range set if it contains ranges not representable by the current string
-  // representation.
-  int ranges_length = ranges->length();
-  while (ranges_length > 0) {
-    CharacterRange& range = ranges->at(ranges_length - 1);
-    if (range.from() <= max_char) break;
-    ranges_length--;
-  }
-
-  ranges->Rewind(ranges_length);  // Drop all uninteresting ranges.
-
+  const int ranges_length = ranges->length();
   if (ranges_length == 0) {
     if (!cc->is_negated()) {
       macro_assembler->GoTo(on_failure);
@@ -1246,6 +1237,7 @@ void EmitCharClass(RegExpMacroAssembler* macro_assembler,
     return;
   }
 
+  const base::uc32 max_char = MaxCodeUnit(one_byte);
   if (ranges_length == 1 && ranges->at(0).IsEverything(max_char)) {
     if (cc->is_negated()) {
       macro_assembler->GoTo(on_failure);
@@ -1703,7 +1695,7 @@ void TextNode::GetQuickCheckDetails(QuickCheckDetails* details,
         uint32_t common_bits = ~SmearBitsRight(differing_bits);
         uint32_t bits = (first_from & common_bits);
         for (int i = first_range + 1; i < ranges->length(); i++) {
-          CharacterRange range = ranges->at(i);
+          range = ranges->at(i);
           const base::uc32 from = range.from();
           if (from > char_mask) continue;
           const base::uc32 to =
@@ -1718,8 +1710,8 @@ void TextNode::GetQuickCheckDetails(QuickCheckDetails* details,
           new_common_bits = ~SmearBitsRight(new_common_bits);
           common_bits &= new_common_bits;
           bits &= new_common_bits;
-          uint32_t differing_bits = (from & common_bits) ^ bits;
-          common_bits ^= differing_bits;
+          uint32_t new_differing_bits = (from & common_bits) ^ bits;
+          common_bits ^= new_differing_bits;
           bits &= common_bits;
         }
         pos->mask = common_bits;
@@ -3856,8 +3848,8 @@ void TextNode::FillInBMInfo(Isolate* isolate, int initial_offset, int budget,
           int length = GetCaseIndependentLetters(
               isolate, character, bm->max_char() == String::kMaxOneByteCharCode,
               chars, 4);
-          for (int j = 0; j < length; j++) {
-            bm->Set(offset, chars[j]);
+          for (int k = 0; k < length; k++) {
+            bm->Set(offset, chars[k]);
           }
         } else {
           if (character <= max_char) bm->Set(offset, character);

@@ -4390,12 +4390,16 @@ struct loader_instance *loader_get_instance(const VkInstance instance) {
     // there is no guarantee the instance is still a loader_instance* after any
     // layers which wrap the instance object.
     const VkLayerInstanceDispatchTable *disp;
-    struct loader_instance *ptr_instance = NULL;
-    disp = loader_get_instance_layer_dispatch(instance);
-    for (struct loader_instance *inst = loader.instances; inst; inst = inst->next) {
-        if (&inst->disp->layer_inst_disp == disp) {
-            ptr_instance = inst;
-            break;
+    struct loader_instance *ptr_instance = (struct loader_instance *)instance;
+    if (VK_NULL_HANDLE == instance || LOADER_MAGIC_NUMBER != ptr_instance->magic) {
+        return NULL;
+    } else {
+        disp = loader_get_instance_layer_dispatch(instance);
+        for (struct loader_instance *inst = loader.instances; inst; inst = inst->next) {
+            if (&inst->disp->layer_inst_disp == disp) {
+                ptr_instance = inst;
+                break;
+            }
         }
     }
     return ptr_instance;
@@ -4575,7 +4579,7 @@ VKAPI_ATTR VkResult VKAPI_CALL loader_layer_create_device(VkInstance instance, V
     struct loader_device *dev = NULL;
     struct loader_instance *inst = NULL;
 
-    if (instance != NULL) {
+    if (instance != VK_NULL_HANDLE) {
         inst = loader_get_instance(instance);
         internal_device = physicalDevice;
     } else {
@@ -4930,7 +4934,7 @@ VkResult loader_create_instance_chain(const VkInstanceCreateInfo *pCreateInfo, c
                     loader_log(inst, VULKAN_LOADER_LAYER_BIT, 0, "               Disable Env Var:  %s",
                                activated_layers[index].disable_env);
                 }
-                loader_log(inst, VULKAN_LOADER_LAYER_BIT, 0, "           Manifset: %s", activated_layers[index].manifest);
+                loader_log(inst, VULKAN_LOADER_LAYER_BIT, 0, "           Manifest: %s", activated_layers[index].manifest);
                 loader_log(inst, VULKAN_LOADER_LAYER_BIT, 0, "           Library:  %s", activated_layers[index].library);
                 loader_log(inst, VULKAN_LOADER_LAYER_BIT, 0, "     ||");
             }
@@ -5139,7 +5143,7 @@ VkResult loader_create_device_chain(const VkPhysicalDevice pd, const VkDeviceCre
                     loader_log(inst, VULKAN_LOADER_LAYER_BIT, 0, "               Disable Env Var:  %s",
                                activated_layers[index].disable_env);
                 }
-                loader_log(inst, VULKAN_LOADER_LAYER_BIT, 0, "           Manifset: %s", activated_layers[index].manifest);
+                loader_log(inst, VULKAN_LOADER_LAYER_BIT, 0, "           Manifest: %s", activated_layers[index].manifest);
                 loader_log(inst, VULKAN_LOADER_LAYER_BIT, 0, "           Library:  %s", activated_layers[index].library);
                 loader_log(inst, VULKAN_LOADER_LAYER_BIT, 0, "     ||");
             }
@@ -5170,11 +5174,17 @@ VkResult loader_validate_layers(const struct loader_instance *inst, const uint32
                                 const char *const *ppEnabledLayerNames, const struct loader_layer_list *list) {
     struct loader_layer_properties *prop;
 
+    if (layer_count > 0 && ppEnabledLayerNames == NULL) {
+        loader_log(inst, VULKAN_LOADER_ERROR_BIT, 0,
+                   "loader_validate_instance_layers: ppEnabledLayerNames is NULL but enabledLayerCount is greater than zero");
+        return VK_ERROR_LAYER_NOT_PRESENT;
+    }
+
     for (uint32_t i = 0; i < layer_count; i++) {
         VkStringErrorFlags result = vk_string_validate(MaxLoaderStringLength, ppEnabledLayerNames[i]);
         if (result != VK_STRING_ERROR_NONE) {
             loader_log(inst, VULKAN_LOADER_ERROR_BIT, 0,
-                       "loader_validate_layers: Device ppEnabledLayerNames contains string that is too long or is badly formed");
+                       "loader_validate_layers: ppEnabledLayerNames contains string that is too long or is badly formed");
             return VK_ERROR_LAYER_NOT_PRESENT;
         }
 
@@ -5200,6 +5210,13 @@ VkResult loader_validate_instance_extensions(struct loader_instance *inst, const
     struct loader_layer_list expanded_layers;
     memset(&active_layers, 0, sizeof(active_layers));
     memset(&expanded_layers, 0, sizeof(expanded_layers));
+
+    if (pCreateInfo->enabledExtensionCount > 0 && pCreateInfo->ppEnabledExtensionNames == NULL) {
+        loader_log(inst, VULKAN_LOADER_ERROR_BIT, 0,
+                   "loader_validate_instance_extensions: Instance ppEnabledExtensionNames is NULL but enabledExtensionCount is "
+                   "greater than zero");
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    }
     if (!loader_init_layer_list(inst, &active_layers)) {
         res = VK_ERROR_OUT_OF_HOST_MEMORY;
         goto out;
@@ -5825,21 +5842,14 @@ out:
     return res;
 }
 
-VkResult setup_loader_tramp_phys_devs(VkInstance instance) {
+VkResult setup_loader_tramp_phys_devs(struct loader_instance *inst) {
     VkResult res = VK_SUCCESS;
     VkPhysicalDevice *local_phys_devs = NULL;
-    struct loader_instance *inst;
     uint32_t total_count = 0;
     struct loader_physical_device_tramp **new_phys_devs = NULL;
 
-    inst = loader_get_instance(instance);
-    if (NULL == inst) {
-        res = VK_ERROR_INITIALIZATION_FAILED;
-        goto out;
-    }
-
     // Query how many GPUs there
-    res = inst->disp->layer_inst_disp.EnumeratePhysicalDevices(instance, &total_count, NULL);
+    res = inst->disp->layer_inst_disp.EnumeratePhysicalDevices(inst->instance, &total_count, NULL);
     if (res != VK_SUCCESS) {
         loader_log(
             inst, VULKAN_LOADER_ERROR_BIT, 0,
@@ -5875,7 +5885,7 @@ VkResult setup_loader_tramp_phys_devs(VkInstance instance) {
     }
     memset(local_phys_devs, 0, sizeof(VkPhysicalDevice) * total_count);
 
-    res = inst->disp->layer_inst_disp.EnumeratePhysicalDevices(instance, &total_count, local_phys_devs);
+    res = inst->disp->layer_inst_disp.EnumeratePhysicalDevices(inst->instance, &total_count, local_phys_devs);
     if (VK_SUCCESS != res) {
         loader_log(
             inst, VULKAN_LOADER_ERROR_BIT, 0,
@@ -5910,6 +5920,7 @@ VkResult setup_loader_tramp_phys_devs(VkInstance instance) {
             loader_set_dispatch((void *)new_phys_devs[new_idx], inst->disp);
             new_phys_devs[new_idx]->this_instance = inst;
             new_phys_devs[new_idx]->phys_dev = local_phys_devs[new_idx];
+            new_phys_devs[new_idx]->magic = PHYS_TRAMP_MAGIC_NUMBER;
         }
     }
 

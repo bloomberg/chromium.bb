@@ -8,12 +8,12 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/arc/mojom/net.mojom.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/net/network_diagnostics/network_diagnostics_routine.h"
-#include "components/arc/mojom/net.mojom.h"
-#include "components/arc/session/arc_bridge_service.h"
 
-namespace ash {
+namespace chromeos {
 namespace network_diagnostics {
 
 // Performs DNS queries from within ARC to resolve a hardcoded set of hostnames
@@ -59,6 +59,6 @@ class ArcDnsResolutionRoutine : public NetworkDiagnosticsRoutine {
 };
 
 }  // namespace network_diagnostics
-}  // namespace ash
+}  // namespace chromeos
 
 #endif  //  CHROME_BROWSER_ASH_NET_NETWORK_DIAGNOSTICS_ARC_DNS_RESOLUTION_ROUTINE_H_

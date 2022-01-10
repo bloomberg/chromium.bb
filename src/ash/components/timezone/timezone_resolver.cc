@@ -16,7 +16,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/rand_util.h"
@@ -200,7 +199,7 @@ void TZRequest::StartRequestOnNetworkAvailable() {
 }
 
 void TZRequest::Start() {
-  // Call to `ash::DelayNetworkCall`.
+  // call to chromeos::DelayNetworkCall
   resolver_->delay_network_call().Run(
       base::BindOnce(&TZRequest::StartRequestOnNetworkAvailable, AsWeakPtr()));
 }

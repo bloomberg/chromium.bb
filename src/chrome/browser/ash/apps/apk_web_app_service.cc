@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ash/apps/apk_web_app_service.h"
 
+#include <map>
 #include <utility>
 
+#include "ash/components/arc/mojom/app.mojom.h"
+#include "ash/components/arc/session/connection_holder.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
@@ -21,8 +24,6 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
-#include "components/arc/mojom/app.mojom.h"
-#include "components/arc/session/connection_holder.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -382,6 +383,7 @@ void ApkWebAppService::OnPackageListInitialRefreshed() {
   if (!instance)
     return;
 
+  std::map<std::string, std::string> app_ids_and_packages_to_remove;
   for (const auto it : web_apps_to_apks->DictItems()) {
     const base::Value* v =
         it.second.FindKeyOfType(kShouldRemoveKey, base::Value::Type::BOOLEAN);
@@ -390,21 +392,25 @@ void ApkWebAppService::OnPackageListInitialRefreshed() {
     if (!v || !v->GetBool())
       continue;
 
-    // Without a package name, the dictionary isn't useful. Remove it.
+    // Without a package name, the dictionary isn't useful, so set it for
+    // removal.
     const std::string& web_app_id = it.first;
+    std::string package_name;
     v = it.second.FindKeyOfType(kPackageNameKey, base::Value::Type::STRING);
-    if (!v) {
-      web_apps_to_apks->RemoveKey(web_app_id);
-      continue;
+    if (v) {
+      package_name = v->GetString();
     }
 
-    // Remove the web app id from prefs, otherwise the corresponding call to
-    // OnPackageRemoved will start an uninstallation cycle. Take a copy of the
-    // string otherwise deleting |v| will erase the object underling
-    // a reference.
-    std::string package_name = v->GetString();
-    web_apps_to_apks->RemoveKey(web_app_id);
-    instance->UninstallPackage(package_name);
+    app_ids_and_packages_to_remove.insert({web_app_id, package_name});
+  }
+
+  // Remove the web app id from prefs before uninstalling, otherwise the
+  // corresponding call to OnPackageRemoved will start an uninstallation cycle.
+  for (const auto& app_id_and_package_name : app_ids_and_packages_to_remove) {
+    web_apps_to_apks->RemoveKey(app_id_and_package_name.first);
+    const std::string& package_name = app_id_and_package_name.second;
+    if (!package_name.empty())
+      instance->UninstallPackage(package_name);
   }
 }
 

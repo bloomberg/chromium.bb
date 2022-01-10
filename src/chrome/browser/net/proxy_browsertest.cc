@@ -6,7 +6,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -197,12 +196,12 @@ class WPADHttpProxyScriptBrowserTest : public HttpProxyScriptBrowserTest {
   void SetUp() override {
     ASSERT_TRUE(http_server_.Start());
     pac_url_ = http_server_.GetURL("/" + GetPacFilename());
-    ash::DhcpWpadUrlClient::SetPacUrlForTesting(pac_url_);
+    chromeos::DhcpWpadUrlClient::SetPacUrlForTesting(pac_url_);
     InProcessBrowserTest::SetUp();
   }
 
   void TearDown() override {
-    ash::DhcpWpadUrlClient::ClearPacUrlForTesting();
+    chromeos::DhcpWpadUrlClient::ClearPacUrlForTesting();
     InProcessBrowserTest::TearDown();
   }
 

@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.price_tracking;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
@@ -100,9 +102,9 @@ public class PriceDropNotifierUnitTest {
         private final ImageFetcher mMockImageFetcher;
 
         TestPriceDropNotifier(Context context, ImageFetcher imageFetcher,
-                NotificationWrapperBuilder notificationBuilder,
+                NotificationBuilderFactory notificationBuilderFactory,
                 NotificationManagerProxy notificationManager) {
-            super(context, notificationBuilder, notificationManager);
+            super(context, notificationBuilderFactory, notificationManager);
             mMockImageFetcher = imageFetcher;
         }
 
@@ -117,6 +119,8 @@ public class PriceDropNotifierUnitTest {
 
     @Mock
     private ImageFetcher mImageFetcher;
+    @Mock
+    private PriceDropNotifier.NotificationBuilderFactory mNotificationBuilderFactory;
     @Mock
     private NotificationWrapperBuilder mNotificationBuilder;
     @Mock
@@ -138,8 +142,10 @@ public class PriceDropNotifierUnitTest {
     public void setUp() {
         ShadowLog.stream = System.out;
         mPriceDropNotifier = new TestPriceDropNotifier(ContextUtils.getApplicationContext(),
-                mImageFetcher, mNotificationBuilder, mNotificationManagerProxy);
+                mImageFetcher, mNotificationBuilderFactory, mNotificationManagerProxy);
         ChromeBrowserInitializer.setForTesting(mChromeInitializer);
+        when(mNotificationBuilderFactory.createNotificationBuilder())
+                .thenReturn(mNotificationBuilder);
         when(mNotificationBuilder.buildNotificationWrapper()).thenReturn(mNotificationWrapper);
     }
 
@@ -179,11 +185,20 @@ public class PriceDropNotifierUnitTest {
                 .create();
     }
 
+    private void verifySetNotificationProperties() {
+        verify(mNotificationBuilder, times(1)).setContentTitle(eq(TITLE));
+        verify(mNotificationBuilder, times(1)).setContentText(eq(TEXT));
+        verify(mNotificationBuilder, times(1)).setContentIntent(any(PendingIntentProvider.class));
+        verify(mNotificationBuilder, times(1)).setSmallIcon(anyInt());
+        verify(mNotificationBuilder, times(1)).setTimeoutAfter(anyLong());
+    }
+
     @Test
     public void testShowNotificationImageFetcherFailure() {
         showNotification(/*actionDataList=*/null);
         invokeImageFetcherCallback(null);
         verify(mNotificationBuilder, times(0)).setLargeIcon(any());
+        verifySetNotificationProperties();
         verify(mNotificationManagerProxy).notify(any());
     }
 
@@ -194,6 +209,7 @@ public class PriceDropNotifierUnitTest {
         mPriceDropNotifier.showNotification(data);
         verify(mNotificationBuilder, times(0)).setLargeIcon(any());
         verify(mNotificationBuilder, times(0)).setBigPictureStyle(any(), any());
+        verifySetNotificationProperties();
         verify(mNotificationManagerProxy).notify(any());
     }
 
@@ -203,6 +219,7 @@ public class PriceDropNotifierUnitTest {
         invokeImageFetcherCallback(Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888));
         verify(mNotificationBuilder).setLargeIcon(any());
         verify(mNotificationBuilder).setBigPictureStyle(any(), eq(TEXT));
+        verifySetNotificationProperties();
         verify(mNotificationManagerProxy).notify(any());
     }
 

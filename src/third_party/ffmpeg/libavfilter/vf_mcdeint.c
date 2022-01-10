@@ -162,14 +162,6 @@ static av_cold void uninit(AVFilterContext *ctx)
     avcodec_free_context(&mcdeint->enc_ctx);
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE
-    };
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
-
 static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
 {
     MCDeintContext *mcdeint = inlink->dst->priv;
@@ -304,8 +296,8 @@ const AVFilter ff_vf_mcdeint = {
     .description   = NULL_IF_CONFIG_SMALL("Apply motion compensating deinterlacing."),
     .priv_size     = sizeof(MCDeintContext),
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(mcdeint_inputs),
     FILTER_OUTPUTS(mcdeint_outputs),
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_YUV420P),
     .priv_class    = &mcdeint_class,
 };

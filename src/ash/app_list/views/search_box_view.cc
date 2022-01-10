@@ -28,6 +28,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/search_box/search_box_constants.h"
 #include "ash/search_box/search_box_view_delegate.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -43,7 +44,6 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/image_button.h"
@@ -74,12 +74,6 @@ constexpr gfx::Insets kBorderInsetsForAppListBubble(4, 4, 4, 0);
 
 // Margins for the search box text field in bubble launcher.
 constexpr gfx::Insets kTextFieldMarginsForAppListBubble(8, 0, 0, 0);
-
-float GetAssistantButtonOpacityForState(AppListState state) {
-  if (state == AppListState::kStateSearchResults)
-    return .0f;
-  return 1.f;
-}
 
 bool IsTrimmedQueryEmpty(const std::u16string& query) {
   std::u16string trimmed_query;
@@ -145,6 +139,14 @@ void SearchBoxView::ResetForShow() {
   if (contents_view_) {
     SetSearchBoxBackgroundCornerRadius(GetSearchBoxBorderCornerRadiusForState(
         contents_view_->GetActiveState()));
+  }
+}
+
+void SearchBoxView::UpdateSearchTextfieldAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  if (a11y_active_descendant_) {
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kActivedescendantId,
+                               *a11y_active_descendant_);
   }
 }
 
@@ -383,6 +385,30 @@ void SearchBoxView::OnSearchBoxActiveChanged(bool active) {
   }
 }
 
+void SearchBoxView::OnKeyEvent(ui::KeyEvent* evt) {
+  // Handle keyboard navigation keys when close button is focused - move the
+  // focus to the search box text field, and ensure result selection gets
+  // updated according to the navigation key. The latter is the reason
+  // navigation is handled here instead of the focus manager - intended result
+  // selection depends on the key event that triggered the focus change.
+  if (close_button()->HasFocus() && evt->type() == ui::ET_KEY_PRESSED &&
+      (IsUnhandledArrowKeyEvent(*evt) || evt->key_code() == ui::VKEY_TAB)) {
+    search_box()->RequestFocus();
+
+    if (delegate()->CanSelectSearchResults() &&
+        result_selection_controller_->MoveSelection(*evt) ==
+            ResultSelectionController::MoveResult::kResultChanged) {
+      UpdateSearchBoxTextForSelectedResult(
+          result_selection_controller_->selected_result()->result());
+    }
+
+    evt->SetHandled();
+    return;
+  }
+
+  SearchBoxViewBase::OnKeyEvent(evt);
+}
+
 bool SearchBoxView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   if (contents_view_)
     return contents_view_->OnMouseWheel(event);
@@ -415,10 +441,6 @@ void SearchBoxView::UpdateLayout(AppListState target_state,
   box_layout()->set_inside_border_insets(
       gfx::Insets(0, horizontal_spacing, 0, horizontal_right_padding));
   box_layout()->set_between_child_spacing(horizontal_spacing);
-  if (show_assistant_button()) {
-    assistant_button()->layer()->SetOpacity(
-        GetAssistantButtonOpacityForState(target_state));
-  }
   InvalidateLayout();
   current_app_list_state_ = target_state;
 }
@@ -578,10 +600,8 @@ void SearchBoxView::ClearAutocompleteText() {
 }
 
 void SearchBoxView::OnBeforeUserAction(views::Textfield* sender) {
-  if (a11y_selection_on_search_result_) {
-    a11y_selection_on_search_result_ = false;
-    search_box()->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
-  }
+  if (a11y_active_descendant_)
+    SetA11yActiveDescendant(absl::nullopt);
 }
 
 void SearchBoxView::ContentsChanged(views::Textfield* sender,
@@ -654,9 +674,16 @@ void SearchBoxView::ClearSearchAndDeactivateSearchBox() {
   if (!is_search_box_active())
     return;
 
-  a11y_selection_on_search_result_ = false;
+  SetA11yActiveDescendant(absl::nullopt);
   ClearSearch();
   SetSearchBoxActive(false, ui::ET_UNKNOWN);
+}
+
+void SearchBoxView::SetA11yActiveDescendant(
+    const absl::optional<int32_t>& active_descendant) {
+  a11y_active_descendant_ = active_descendant;
+  search_box()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kActiveDescendantChanged, true);
 }
 
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
@@ -780,9 +807,7 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
 
       DCHECK(close_button()->GetVisible());
       close_button()->RequestFocus();
-      close_button()->NotifyAccessibilityEvent(ax::mojom::Event::kSelection,
-                                               true);
-      a11y_selection_on_search_result_ = false;
+      SetA11yActiveDescendant(absl::nullopt);
       break;
     case ResultSelectionController::MoveResult::kResultChanged:
       UpdateSearchBoxTextForSelectedResult(
@@ -833,13 +858,10 @@ void SearchBoxView::UpdateSearchBoxTextForSelectedResult(
   }
 
   if (selected_result->result_type() == AppListSearchResultType::kOmnibox &&
-      (!selected_result->is_omnibox_search() ||
-       selected_result->omnibox_type() ==
-           SearchResultOmniboxDisplayType::kCalculatorAnswer) &&
+      !selected_result->is_omnibox_search() &&
       !selected_result->details().empty()) {
     // For url (non-search) results, use details to ensure that the url is
-    // displayed. For calculator results, use details to ensure that the
-    // calculation answer is displayed.
+    // displayed.
     search_box()->SetText(selected_result->details());
   } else {
     search_box()->SetText(selected_result->title());
@@ -849,7 +871,7 @@ void SearchBoxView::UpdateSearchBoxTextForSelectedResult(
 void SearchBoxView::Update() {
   search_box()->SetText(
       AppListModelProvider::Get()->search_model()->search_box()->text());
-  UpdateButtonsVisisbility();
+  UpdateButtonsVisibility();
   NotifyQueryChanged();
 }
 

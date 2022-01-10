@@ -35,6 +35,16 @@ chromium-metrics-reviews@google.com.
       summary="Renderer process was alive for up to one minute."/>
 </variants>
 
+<histogram name="Renderer.BrowserLaunchToRunLoopStart" units="ms"
+    expires_after="M104">
+  <owner>sky@chromium.org</owner>
+  <owner>jam@chromium.org</owner>
+  <summary>
+    Time (in milliseconds) between when browser launches renderer and renderer
+    message loop starts.
+  </summary>
+</histogram>
+
 <histogram name="Renderer.CompositedScrolling" enum="CompositedScrolling"
     expires_after="M85">
   <obsolete>
@@ -273,7 +283,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.Font.PrimaryFont.FCP" units="ms"
-    expires_after="2022-04-03">
+    expires_after="2022-06-05">
   <owner>kojii@chromium.org</owner>
   <owner>tkent@chromium.org</owner>
   <owner>yosin@chromium.org</owner>
@@ -286,7 +296,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.Font.PrimaryFont.FCP.Style" units="ms"
-    expires_after="2022-04-03">
+    expires_after="2022-06-05">
   <owner>kojii@chromium.org</owner>
   <owner>tkent@chromium.org</owner>
   <owner>yosin@chromium.org</owner>
@@ -324,7 +334,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.Font.SystemFallback.DomContentLoaded" units="ms"
-    expires_after="2022-01-31">
+    expires_after="2022-05-15">
   <owner>kojii@chromium.org</owner>
   <owner>tkent@chromium.org</owner>
   <owner>yosin@chromium.org</owner>
@@ -402,7 +412,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.PaintPreview.Capture.MainFrameSuccess"
-    enum="BooleanSuccess" expires_after="2022-01-02">
+    enum="BooleanSuccess" expires_after="2022-03-31">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -412,7 +422,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.PaintPreview.Capture.SubframeBlinkCaptureDuration"
-    units="ms" expires_after="2022-03-06">
+    units="ms" expires_after="2022-05-08">
   <owner>ckitagawa@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
@@ -456,6 +466,16 @@ chromium-metrics-reviews@google.com.
     browser identifies the process as having gone away.
   </summary>
   <token key="Resolution" variants="ProcessLifetimeResolution"/>
+</histogram>
+
+<histogram name="Renderer.RenderThreadImpl.Init" units="ms"
+    expires_after="2022-05-28">
+  <owner>jam@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
+    The time it takes RenderThreadImpl::Init() to run, recorded for each
+    renderer process.
+  </summary>
 </histogram>
 
 <histogram name="Renderer.TotalCPUUse2{Lifetime}" units="ms"

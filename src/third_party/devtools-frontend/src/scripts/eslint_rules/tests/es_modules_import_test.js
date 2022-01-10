@@ -106,6 +106,14 @@ ruleTester.run('es_modules_import', rule, {
       code: 'import * as ConsoleCounters from \'../console_counters/console_counters.js\';',
       filename: 'front_end/panels/console/ConsoleView.ts',
     },
+    {
+      code: 'import * as Elements from \'./elements.js\';',
+      filename: 'front_end/panels/elements/elements-meta.ts',
+    },
+    {
+      code: 'import * as Elements from \'./elements.js\';',
+      filename: 'front_end/panels/elements/elements-entrypoint.ts',
+    },
     // Tests are allowed to import from front_end
     {
       code: 'import * as UI from \'../../../front_end/ui/ui.js\';',
@@ -155,7 +163,8 @@ ruleTester.run('es_modules_import', rule, {
       code: 'import { Exporting } from \'./Exporting.js\';',
       filename: 'front_end/common/common.js',
       errors: [{
-        message: 'Incorrect same-namespace import: "Exporting.js". Use "import * as File from \'./File.js\';" instead.'
+        message:
+            'Incorrect same-namespace import: "./Exporting.js". Use "import * as File from \'./File.js\';" instead.'
       }],
     },
     {
@@ -220,7 +229,7 @@ ruleTester.run('es_modules_import', rule, {
       filename: 'front_end/some_folder/nested_entrypoint/nested_entrypoint.js',
       errors: [{
         message:
-            'Incorrect same-namespace import: "append-style.js". Use "import * as File from \'./File.js\';" instead.'
+            'Incorrect same-namespace import: "./append-style.js". Use "import * as File from \'./File.js\';" instead.'
       }]
     },
     {
@@ -239,21 +248,5 @@ ruleTester.run('es_modules_import', rule, {
             'Incorrect cross-namespace import: "../third_party/marked/package/lib/marked.esm.js". Use "import * as Namespace from \'../namespace/namespace.js\';" instead. If the third_party dependency does not expose a single entrypoint, update es_modules_import.js to make it exempt.'
       }],
     },
-    {
-      code: 'import * as Marked from \'../../front_end/third_party/marked/package/lib/marked.esm.js\';',
-      filename: 'front_end/marked/marked.js',
-      errors: [{
-        message:
-            'Invalid relative import: an import should not include the "front_end" directory. If you are in a unit test, you should import from the module entrypoint.'
-      }],
-    },
-    {
-      code: 'import * as SDK from \'../../front_end/sdk/sdk.js\';',
-      filename: 'front_end/marked/marked.js',
-      errors: [{
-        message:
-            'Invalid relative import: an import should not include the "front_end" directory. If you are in a unit test, you should import from the module entrypoint.'
-      }],
-    }
   ]
 });

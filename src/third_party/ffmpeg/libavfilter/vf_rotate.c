@@ -132,33 +132,28 @@ static av_cold void uninit(AVFilterContext *ctx)
     rot->angle_expr = NULL;
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_GBRP,   AV_PIX_FMT_GBRAP,
-        AV_PIX_FMT_ARGB,   AV_PIX_FMT_RGBA,
-        AV_PIX_FMT_ABGR,   AV_PIX_FMT_BGRA,
-        AV_PIX_FMT_0RGB,   AV_PIX_FMT_RGB0,
-        AV_PIX_FMT_0BGR,   AV_PIX_FMT_BGR0,
-        AV_PIX_FMT_RGB24,  AV_PIX_FMT_BGR24,
-        AV_PIX_FMT_GRAY8,
-        AV_PIX_FMT_YUV410P,
-        AV_PIX_FMT_YUV444P,  AV_PIX_FMT_YUVJ444P,
-        AV_PIX_FMT_YUV420P,  AV_PIX_FMT_YUVJ420P,
-        AV_PIX_FMT_YUVA444P, AV_PIX_FMT_YUVA420P,
-        AV_PIX_FMT_YUV420P10LE, AV_PIX_FMT_YUVA420P10LE,
-        AV_PIX_FMT_YUV444P10LE, AV_PIX_FMT_YUVA444P10LE,
-        AV_PIX_FMT_YUV420P12LE,
-        AV_PIX_FMT_YUV444P12LE,
-        AV_PIX_FMT_YUV444P16LE, AV_PIX_FMT_YUVA444P16LE,
-        AV_PIX_FMT_YUV420P16LE, AV_PIX_FMT_YUVA420P16LE,
-        AV_PIX_FMT_YUV444P9LE, AV_PIX_FMT_YUVA444P9LE,
-        AV_PIX_FMT_YUV420P9LE, AV_PIX_FMT_YUVA420P9LE,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_GBRP,   AV_PIX_FMT_GBRAP,
+    AV_PIX_FMT_ARGB,   AV_PIX_FMT_RGBA,
+    AV_PIX_FMT_ABGR,   AV_PIX_FMT_BGRA,
+    AV_PIX_FMT_0RGB,   AV_PIX_FMT_RGB0,
+    AV_PIX_FMT_0BGR,   AV_PIX_FMT_BGR0,
+    AV_PIX_FMT_RGB24,  AV_PIX_FMT_BGR24,
+    AV_PIX_FMT_GRAY8,
+    AV_PIX_FMT_YUV410P,
+    AV_PIX_FMT_YUV444P,  AV_PIX_FMT_YUVJ444P,
+    AV_PIX_FMT_YUV420P,  AV_PIX_FMT_YUVJ420P,
+    AV_PIX_FMT_YUVA444P, AV_PIX_FMT_YUVA420P,
+    AV_PIX_FMT_YUV420P10LE, AV_PIX_FMT_YUVA420P10LE,
+    AV_PIX_FMT_YUV444P10LE, AV_PIX_FMT_YUVA444P10LE,
+    AV_PIX_FMT_YUV420P12LE,
+    AV_PIX_FMT_YUV444P12LE,
+    AV_PIX_FMT_YUV444P16LE, AV_PIX_FMT_YUVA444P16LE,
+    AV_PIX_FMT_YUV420P16LE, AV_PIX_FMT_YUVA420P16LE,
+    AV_PIX_FMT_YUV444P9LE, AV_PIX_FMT_YUVA444P9LE,
+    AV_PIX_FMT_YUV420P9LE, AV_PIX_FMT_YUVA420P9LE,
+    AV_PIX_FMT_NONE
+};
 
 static double get_rotated_w(void *opaque, double angle)
 {
@@ -601,10 +596,10 @@ const AVFilter ff_vf_rotate = {
     .priv_size     = sizeof(RotContext),
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
     .process_command = process_command,
     FILTER_INPUTS(rotate_inputs),
     FILTER_OUTPUTS(rotate_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .priv_class    = &rotate_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
 };

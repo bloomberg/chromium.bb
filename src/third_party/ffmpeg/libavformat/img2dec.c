@@ -209,7 +209,7 @@ int ff_img_read_header(AVFormatContext *s1)
         s->is_pipe = 0;
     else {
         s->is_pipe       = 1;
-        st->internal->need_parsing = AVSTREAM_PARSE_FULL;
+        ffstream(st)->need_parsing = AVSTREAM_PARSE_FULL;
     }
 
     if (s->ts_from_file == 2) {
@@ -482,7 +482,7 @@ int ff_img_read_packet(AVFormatContext *s1, AVPacket *pkt)
             return AVERROR_EOF;
         if (s->frame_size > 0) {
             size[0] = s->frame_size;
-        } else if (!s1->streams[0]->internal->parser) {
+        } else if (!ffstream(s1->streams[0])->parser) {
             size[0] = avio_size(s1->pb);
         } else {
             size[0] = 4096;
@@ -590,7 +590,7 @@ static int img_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
         int index = av_index_search_timestamp(st, timestamp, flags);
         if(index < 0)
             return -1;
-        s1->img_number = st->internal->index_entries[index].pos;
+        s1->img_number = ffstream(st)->index_entries[index].pos;
         return 0;
     }
 
@@ -1105,6 +1105,27 @@ static int photocd_probe(const AVProbeData *p)
     return AVPROBE_SCORE_MAX - 1;
 }
 
+static int gem_probe(const AVProbeData *p)
+{
+    const uint8_t *b = p->buf;
+    int ret = 0;
+    if ( AV_RB16(b     ) >= 1 && AV_RB16(b    ) <= 3  &&
+         AV_RB16(b +  2) >= 8 && AV_RB16(b + 2) <= 779 &&
+        (AV_RB16(b +  4) > 0  || AV_RB16(b + 4) <= 8) &&
+        (AV_RB16(b +  6) > 0  || AV_RB16(b + 6) <= 8) &&
+         AV_RB16(b +  8) &&
+         AV_RB16(b + 10) &&
+         AV_RB16(b + 12) &&
+         AV_RB16(b + 14)) {
+        ret = AVPROBE_SCORE_EXTENSION / 4;
+        if (AV_RN32(b + 16) == AV_RN32("STTT") ||
+            AV_RN32(b + 16) == AV_RN32("TIMG") ||
+            AV_RN32(b + 16) == AV_RN32("XIMG"))
+            ret += 1;
+    }
+    return ret;
+}
+
 #define IMAGEAUTO_DEMUXER(imgname, codecid)\
 const AVInputFormat ff_image_ ## imgname ## _pipe_demuxer = {\
     .name           = AV_STRINGIFY(imgname) "_pipe",\
@@ -1123,6 +1144,7 @@ IMAGEAUTO_DEMUXER(cri,     AV_CODEC_ID_CRI)
 IMAGEAUTO_DEMUXER(dds,     AV_CODEC_ID_DDS)
 IMAGEAUTO_DEMUXER(dpx,     AV_CODEC_ID_DPX)
 IMAGEAUTO_DEMUXER(exr,     AV_CODEC_ID_EXR)
+IMAGEAUTO_DEMUXER(gem,     AV_CODEC_ID_GEM)
 IMAGEAUTO_DEMUXER(gif,     AV_CODEC_ID_GIF)
 IMAGEAUTO_DEMUXER(j2k,     AV_CODEC_ID_JPEG2000)
 IMAGEAUTO_DEMUXER(jpeg,    AV_CODEC_ID_MJPEG)

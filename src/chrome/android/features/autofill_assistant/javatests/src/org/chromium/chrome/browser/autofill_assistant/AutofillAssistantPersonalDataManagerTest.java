@@ -65,6 +65,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
@@ -536,10 +537,8 @@ public class AutofillAssistantPersonalDataManagerTest {
      */
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
-            message = "Failing on Lollipop Phone Tester (https://crbug.com/1247243)")
-    public void
-    testCreateAndEnterCard() throws Exception {
+    @DisabledTest(message = "https://crbug.com/1247243, https://crbug.com/1249164#c2")
+    public void testCreateAndEnterCard() throws Exception {
         // Add a profile for easier address selection.
         mHelper.addDummyProfile("Adam West", "adamwest@google.com");
 
@@ -873,7 +872,10 @@ public class AutofillAssistantPersonalDataManagerTest {
      */
     @Test
     @MediumTest
-    public void testCreateShippingAddressAndCreditCard() {
+    @DisableIf.Build(supported_abis_includes = "x86", sdk_is_greater_than = Build.VERSION_CODES.O,
+            message = "Times out on Android P+ emulators: https://crbug.com/1219046")
+    public void
+    testCreateShippingAddressAndCreditCard() {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add(ActionProto.newBuilder()
                          .setCollectUserData(CollectUserDataProto.newBuilder()
@@ -907,7 +909,6 @@ public class AutofillAssistantPersonalDataManagerTest {
         onView(withContentDescription("City*")).perform(scrollTo(), typeText("Mountain View"));
         onView(withContentDescription("State*")).perform(scrollTo(), typeText("California"));
         onView(withContentDescription("ZIP code*")).perform(scrollTo(), typeText("1234"));
-        onView(withContentDescription("Phone*")).perform(scrollTo(), typeText("8008080808"));
         onView(withText("Done")).perform(scrollTo(), click());
         waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
         // Wait for the address to appear in the UI. From this point on it should be available in
@@ -934,6 +935,7 @@ public class AutofillAssistantPersonalDataManagerTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1272997")
     public void testCreateAndEnterShippingAddress() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add(ActionProto.newBuilder()
@@ -976,7 +978,6 @@ public class AutofillAssistantPersonalDataManagerTest {
         onView(withContentDescription("City*")).perform(scrollTo(), typeText("Mountain View"));
         onView(withContentDescription("State*")).perform(scrollTo(), typeText("Invalid"));
         onView(withContentDescription("ZIP code*")).perform(scrollTo(), typeText("1234"));
-        onView(withContentDescription("Phone*")).perform(scrollTo(), typeText("8008080808"));
         Espresso.closeSoftKeyboard();
         onView(withId(org.chromium.chrome.R.id.editor_dialog_done_button))
                 .perform(scrollTo(), click());
@@ -1023,6 +1024,7 @@ public class AutofillAssistantPersonalDataManagerTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1272997")
     public void testCreateContactAndCreditCard() {
         // The Current year is the default selection for expiration year of the credit card.
         int year = Calendar.getInstance().get(Calendar.YEAR);
@@ -1095,7 +1097,6 @@ public class AutofillAssistantPersonalDataManagerTest {
         onView(withContentDescription("City*")).perform(scrollTo(), typeText("Mountain View"));
         onView(withContentDescription("State*")).perform(scrollTo(), typeText("CA"));
         onView(withContentDescription("ZIP code*")).perform(scrollTo(), typeText("94043"));
-        onView(withContentDescription("Phone*")).perform(scrollTo(), typeText("8008080808"));
         Espresso.closeSoftKeyboard();
         onView(withText("Done")).perform(scrollTo(), click());
         waitUntilViewMatchesCondition(withText("Billing address*"), isDisplayed());

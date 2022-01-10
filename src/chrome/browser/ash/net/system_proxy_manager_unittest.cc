@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/net/system_proxy_manager.h"
 
+#include "ash/components/arc/arc_prefs.h"
 #include "ash/constants/ash_features.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -19,7 +20,6 @@
 #include "chromeos/dbus/system_proxy/system_proxy_service.pb.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_test_helper.h"
-#include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/proxy_config/proxy_prefs.h"
@@ -39,11 +39,14 @@
 #include "services/network/network_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/scheme_host_port.h"
 
-namespace ash {
+using testing::_;
+using testing::Invoke;
+using testing::WithArg;
 
 namespace {
-
 constexpr char kBrowserUsername[] = "browser_username";
 constexpr char16_t kBrowserUsername16[] = u"browser_username";
 constexpr char kBrowserPassword[] = "browser_password";
@@ -100,6 +103,7 @@ net::AuthChallengeInfo GetAuthInfo() {
 
 }  // namespace
 
+namespace chromeos {
 // TODO(acostinas, https://crbug.com/1102351) Replace RunUntilIdle() in tests
 // with RunLoop::Run() with explicit RunLoop::QuitClosure().
 class SystemProxyManagerTest : public testing::Test {
@@ -244,7 +248,8 @@ TEST_F(SystemProxyManagerTest, UserCredentialsRequestedFromNetworkService) {
       ->http_transaction_factory()
       ->GetSession()
       ->http_auth_cache()
-      ->Add(GURL(kProxyAuthEmptyPath), net::HttpAuth::AUTH_PROXY, kRealm,
+      ->Add(url::SchemeHostPort(GURL(kProxyAuthEmptyPath)),
+            net::HttpAuth::AUTH_PROXY, kRealm,
             net::HttpAuth::AUTH_SCHEME_DIGEST, net::NetworkIsolationKey(),
             kProxyAuthChallenge,
             net::AuthCredentials(kBrowserUsername16, kBrowserPassword16),
@@ -447,7 +452,7 @@ TEST_F(SystemProxyManagerTest, SystemServicesProxyPacStringDefault) {
   task_environment_.RunUntilIdle();
 
   EXPECT_EQ(system_proxy_manager_->SystemServicesProxyPacString(
-                chromeos::SystemProxyOverride::kDefault),
+                SystemProxyOverride::kDefault),
             "PROXY http://example.com:3128");
 }
 
@@ -461,14 +466,13 @@ TEST_F(SystemProxyManagerTest, SystemServicesProxyPacStringOptOut) {
   client_test_interface()->SendWorkerActiveSignal(details);
   task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(
-      system_proxy_manager_
-          ->SystemServicesProxyPacString(chromeos::SystemProxyOverride::kOptOut)
-          .empty());
+  EXPECT_TRUE(system_proxy_manager_
+                  ->SystemServicesProxyPacString(SystemProxyOverride::kOptOut)
+                  .empty());
 }
 
 // Tests the behaviour of SystemProxyManager when enabled via the feature flag
-// `features::kSystemProxyForSystemServices`.
+// `ash::features::kSystemProxyForSystemServices`.
 class FeatureEnabledSystemProxyTest : public SystemProxyManagerTest {
  public:
   FeatureEnabledSystemProxyTest() : SystemProxyManagerTest() {}
@@ -477,7 +481,7 @@ class FeatureEnabledSystemProxyTest : public SystemProxyManagerTest {
   // testing::Test
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        features::kSystemProxyForSystemServices);
+        ash::features::kSystemProxyForSystemServices);
     SystemProxyManagerTest::SetUp();
   }
 
@@ -495,8 +499,7 @@ TEST_F(FeatureEnabledSystemProxyTest, SystemServicesDefault) {
   task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(system_proxy_manager_
-                  ->SystemServicesProxyPacString(
-                      chromeos::SystemProxyOverride::kDefault)
+                  ->SystemServicesProxyPacString(SystemProxyOverride::kDefault)
                   .empty());
 }
 
@@ -508,7 +511,7 @@ TEST_F(FeatureEnabledSystemProxyTest, SystemServicesOptIn) {
   task_environment_.RunUntilIdle();
 
   EXPECT_EQ(system_proxy_manager_->SystemServicesProxyPacString(
-                chromeos::SystemProxyOverride::kOptIn),
+                SystemProxyOverride::kOptIn),
             "PROXY local-proxy.com:3128");
 }
 
@@ -544,4 +547,4 @@ TEST_F(FeatureEnabledSystemProxyTest, ArcPolicyEnabled) {
                 ::prefs::kSystemProxyUserTrafficHostAndPort));
 }
 
-}  // namespace ash
+}  // namespace chromeos

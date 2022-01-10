@@ -49,9 +49,9 @@ T StringTo(ByteStringView strc,
   if (strc.IsEmpty())
     return 0;
 
-  int cc = 0;
   bool bNegative = false;
-  int len = strc.GetLength();
+  size_t cc = 0;
+  size_t len = strc.GetLength();
   if (strc[0] == '+') {
     cc++;
   } else if (strc[0] == '-') {
@@ -160,3 +160,12 @@ double StringToDouble(WideStringView wsStr) {
 size_t DoubleToString(double d, char* buf) {
   return ToString<double>(d, FXSYS_round, buf);
 }
+
+namespace fxcrt {
+
+template std::vector<ByteString> Split<ByteString>(const ByteString& that,
+                                                   ByteString::CharType ch);
+template std::vector<WideString> Split<WideString>(const WideString& that,
+                                                   WideString::CharType ch);
+
+}  // namespace fxcrt

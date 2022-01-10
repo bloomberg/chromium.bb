@@ -326,6 +326,11 @@ namespace dawn_native { namespace d3d12 {
         Device* device = ToBackend(GetDevice());
         uint32_t compileFlags = 0;
 
+        if (!device->IsToggleEnabled(Toggle::UseDXC) &&
+            !device->IsToggleEnabled(Toggle::FxcOptimizations)) {
+            compileFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL0;
+        }
+
         if (device->IsToggleEnabled(Toggle::EmitHLSLDebugSymbols)) {
             compileFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
         }
@@ -348,10 +353,10 @@ namespace dawn_native { namespace d3d12 {
         PerStage<CompiledShader> compiledShader;
 
         for (auto stage : IterateStages(GetStageMask())) {
-            DAWN_TRY_ASSIGN(compiledShader[stage],
-                            ToBackend(pipelineStages[stage].module)
-                                ->Compile(pipelineStages[stage].entryPoint.c_str(), stage,
-                                          ToBackend(GetLayout()), compileFlags));
+            DAWN_TRY_ASSIGN(
+                compiledShader[stage],
+                ToBackend(pipelineStages[stage].module)
+                    ->Compile(pipelineStages[stage], stage, ToBackend(GetLayout()), compileFlags));
             *shaders[stage] = compiledShader[stage].GetD3D12ShaderBytecode();
         }
 
@@ -417,7 +422,10 @@ namespace dawn_native { namespace d3d12 {
         return {};
     }
 
-    RenderPipeline::~RenderPipeline() {
+    RenderPipeline::~RenderPipeline() = default;
+
+    void RenderPipeline::DestroyImpl() {
+        RenderPipelineBase::DestroyImpl();
         ToBackend(GetDevice())->ReferenceUntilUnused(mPipelineState);
     }
 

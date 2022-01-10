@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
@@ -17,7 +16,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
-namespace ash {
+namespace chromeos {
 
 NetworkThrottlingObserver::NetworkThrottlingObserver(PrefService* local_state)
     : local_state_(local_state) {
@@ -50,7 +49,7 @@ void NetworkThrottlingObserver::OnPreferenceChanged(
     int upload_rate_read = 0;
     int download_rate_read = 0;
 
-    throttling_policy->GetBoolean("enabled", &enabled);
+    enabled = throttling_policy->FindBoolKey("enabled").value_or(false);
 
     if (throttling_policy->GetInteger("upload_rate_kbits", &upload_rate_read) &&
         upload_rate_read > 0) {
@@ -67,4 +66,4 @@ void NetworkThrottlingObserver::OnPreferenceChanged(
       enabled, upload_rate, download_rate);
 }
 
-}  // namespace ash
+}  // namespace chromeos

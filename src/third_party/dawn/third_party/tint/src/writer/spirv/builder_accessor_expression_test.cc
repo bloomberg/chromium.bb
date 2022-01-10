@@ -22,7 +22,7 @@ namespace {
 
 using BuilderTest = TestHelper;
 
-TEST_F(BuilderTest, ArrayAccessor_VectorRef_Literal) {
+TEST_F(BuilderTest, IndexAccessor_VectorRef_Literal) {
   // var ary : vec3<f32>;
   // ary[1]  -> ref<f32>
 
@@ -57,7 +57,7 @@ TEST_F(BuilderTest, ArrayAccessor_VectorRef_Literal) {
 )");
 }
 
-TEST_F(BuilderTest, ArrayAccessor_VectorRef_Dynamic) {
+TEST_F(BuilderTest, IndexAccessor_VectorRef_Dynamic) {
   // var ary : vec3<f32>;
   // var idx : i32;
   // ary[idx]  -> ref<f32>
@@ -98,7 +98,7 @@ TEST_F(BuilderTest, ArrayAccessor_VectorRef_Dynamic) {
 )");
 }
 
-TEST_F(BuilderTest, ArrayAccessor_VectorRef_Dynamic2) {
+TEST_F(BuilderTest, IndexAccessor_VectorRef_Dynamic2) {
   // var ary : vec3<f32>;
   // ary[1 + 2]  -> ref<f32>
 
@@ -134,7 +134,7 @@ TEST_F(BuilderTest, ArrayAccessor_VectorRef_Dynamic2) {
 )");
 }
 
-TEST_F(BuilderTest, ArrayAccessor_ArrayRef_MultiLevel) {
+TEST_F(BuilderTest, IndexAccessor_ArrayRef_MultiLevel) {
   auto* ary4 = ty.array(ty.vec3<f32>(), 4);
 
   // var ary : array<vec3<f32>, 4>
@@ -172,7 +172,7 @@ TEST_F(BuilderTest, ArrayAccessor_ArrayRef_MultiLevel) {
 )");
 }
 
-TEST_F(BuilderTest, ArrayAccessor_ArrayRef_ArrayWithSwizzle) {
+TEST_F(BuilderTest, IndexAccessor_ArrayRef_ArrayWithSwizzle) {
   auto* ary4 = ty.array(ty.vec3<f32>(), 4);
 
   // var a : array<vec3<f32>, 4>;
@@ -682,7 +682,7 @@ TEST_F(BuilderTest, MemberAccessor_Array_of_Swizzle) {
 )");
 }
 
-TEST_F(BuilderTest, ArrayAccessor_Mixed_ArrayAndMember) {
+TEST_F(BuilderTest, IndexAccessor_Mixed_ArrayAndMember) {
   // type C = struct {
   //   baz : vec3<f32>
   // }
@@ -749,7 +749,7 @@ TEST_F(BuilderTest, ArrayAccessor_Mixed_ArrayAndMember) {
 )");
 }
 
-TEST_F(BuilderTest, ArrayAccessor_Of_Vec) {
+TEST_F(BuilderTest, IndexAccessor_Of_Vec) {
   // let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
   //   vec2<f32>(0.0, 0.5),
   //   vec2<f32>(-0.5, -0.5),
@@ -787,12 +787,13 @@ TEST_F(BuilderTest, ArrayAccessor_Of_Vec) {
   EXPECT_EQ(DumpInstructions(b.functions()[0].variables()), R"()");
   EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()),
             R"(%18 = OpCompositeExtract %6 %16 1
+OpReturn
 )");
 
   Validate(b);
 }
 
-TEST_F(BuilderTest, ArrayAccessor_Of_Array_Of_f32) {
+TEST_F(BuilderTest, IndexAccessor_Of_Array_Of_f32) {
   // let pos : array<array<f32, 2>, 3> = array<vec2<f32, 2>, 3>(
   //   array<f32, 2>(0.0, 0.5),
   //   array<f32, 2>(-0.5, -0.5),
@@ -832,12 +833,13 @@ TEST_F(BuilderTest, ArrayAccessor_Of_Array_Of_f32) {
   EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()),
             R"(%18 = OpCompositeExtract %6 %16 2
 %20 = OpCompositeExtract %7 %18 1
+OpReturn
 )");
 
   Validate(b);
 }
 
-TEST_F(BuilderTest, ArrayAccessor_Vec_Literal) {
+TEST_F(BuilderTest, IndexAccessor_Vec_Literal) {
   // let pos : vec2<f32> = vec2<f32>(0.0, 0.5);
   // pos[1]
 
@@ -866,7 +868,7 @@ TEST_F(BuilderTest, ArrayAccessor_Vec_Literal) {
 )");
 }
 
-TEST_F(BuilderTest, ArrayAccessor_Vec_Dynamic) {
+TEST_F(BuilderTest, IndexAccessor_Vec_Dynamic) {
   // let pos : vec2<f32> = vec2<f32>(0.0, 0.5);
   // idx : i32
   // pos[idx]
@@ -902,7 +904,7 @@ TEST_F(BuilderTest, ArrayAccessor_Vec_Dynamic) {
 )");
 }
 
-TEST_F(BuilderTest, ArrayAccessor_Array_Literal) {
+TEST_F(BuilderTest, IndexAccessor_Array_Literal) {
   // let a : array<f32, 3>;
   // a[2]
 
@@ -931,12 +933,13 @@ TEST_F(BuilderTest, ArrayAccessor_Array_Literal) {
   EXPECT_EQ(DumpInstructions(b.functions()[0].variables()), "");
   EXPECT_EQ(DumpInstructions(b.functions()[0].instructions()),
             R"(%15 = OpCompositeExtract %6 %12 2
+OpReturn
 )");
 
   Validate(b);
 }
 
-TEST_F(BuilderTest, ArrayAccessor_Array_Dynamic) {
+TEST_F(BuilderTest, IndexAccessor_Array_Dynamic) {
   // var a : array<f32, 3>;
   // idx : i32
   // a[idx]
@@ -979,12 +982,13 @@ TEST_F(BuilderTest, ArrayAccessor_Array_Dynamic) {
 %20 = OpLoad %18 %16
 %22 = OpAccessChain %21 %13 %20
 %23 = OpLoad %6 %22
+OpReturn
 )");
 
   Validate(b);
 }
 
-TEST_F(BuilderTest, ArrayAccessor_Matrix_Dynamic) {
+TEST_F(BuilderTest, IndexAccessor_Matrix_Dynamic) {
   // var a : mat2x2<f32>(vec2<f32>(1., 2.), vec2<f32>(3., 4.));
   // idx : i32
   // a[idx]
@@ -1031,6 +1035,7 @@ TEST_F(BuilderTest, ArrayAccessor_Matrix_Dynamic) {
 %22 = OpLoad %20 %18
 %24 = OpAccessChain %23 %15 %22
 %25 = OpLoad %6 %24
+OpReturn
 )");
 
   Validate(b);

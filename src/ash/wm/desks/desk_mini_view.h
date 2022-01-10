@@ -10,7 +10,6 @@
 #include "ash/ash_export.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/overview/overview_highlightable_view.h"
-#include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -18,7 +17,7 @@
 
 namespace ash {
 
-class CloseDeskButton;
+class CloseButton;
 class DeskNameView;
 class DeskPreviewView;
 class DesksBarView;
@@ -55,13 +54,16 @@ class ASH_EXPORT DeskMiniView : public views::View,
 
   DeskNameView* desk_name_view() { return desk_name_view_; }
 
-  const CloseDeskButton* close_desk_button() const {
-    return close_desk_button_;
-  }
+  const CloseButton* close_desk_button() const { return close_desk_button_; }
 
   DesksBarView* owner_bar() { return owner_bar_; }
   const DeskPreviewView* desk_preview() const { return desk_preview_; }
   DeskPreviewView* desk_preview() { return desk_preview_; }
+
+  bool is_animating_to_remove() const { return is_animating_to_remove_; }
+  void set_is_animating_to_remove(bool value) {
+    is_animating_to_remove_ = value;
+  }
 
   gfx::Rect GetPreviewBoundsInScreen() const;
 
@@ -151,7 +153,10 @@ class ASH_EXPORT DeskMiniView : public views::View,
   DeskNameView* desk_name_view_;
 
   // The close button that shows on hover.
-  CloseDeskButton* close_desk_button_;
+  CloseButton* close_desk_button_;
+
+  // True when this mini view is being animated to be removed from the bar.
+  bool is_animating_to_remove_ = false;
 
   // We force showing the close button when the mini_view is long pressed or
   // tapped using touch gestures.
@@ -163,6 +168,12 @@ class ASH_EXPORT DeskMiniView : public views::View,
   bool defer_select_all_ = false;
 
   bool is_desk_name_being_modified_ = false;
+
+  // This is initialized to true and tells the OnViewBlurred function if the
+  // user wants to set a new desk name. We set this to false if the
+  // HandleKeyEvent function detects that the escape key was pressed so that
+  // OnViewBlurred does not change the name of `desk_`.
+  bool should_commit_name_changes_ = true;
 };
 
 }  // namespace ash

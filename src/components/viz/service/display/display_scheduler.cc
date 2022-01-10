@@ -5,10 +5,14 @@
 #include "components/viz/service/display/display_scheduler.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/auto_reset.h"
+#include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
+#include "components/viz/service/performance_hint/hint_session.h"
 
 namespace viz {
 
@@ -37,19 +41,33 @@ class DisplayScheduler::BeginFrameObserver : public BeginFrameObserverBase {
   }
 
  private:
-  DisplayScheduler* const scheduler_;
+  const raw_ptr<DisplayScheduler> scheduler_;
+};
+
+class DisplayScheduler::BeginFrameRequestObserverImpl
+    : public BeginFrameSourceObserver {
+ public:
+  explicit BeginFrameRequestObserverImpl(DisplayScheduler* scheduler)
+      : scheduler_(scheduler) {}
+
+  void BeginFrameRequestedChanged(bool requested) override {
+    scheduler_->BeginFrameRequestedChanged(requested);
+  }
+
+ private:
+  const raw_ptr<DisplayScheduler> scheduler_;
 };
 
 DisplayScheduler::DisplayScheduler(BeginFrameSource* begin_frame_source,
                                    base::SingleThreadTaskRunner* task_runner,
-                                   int max_pending_swaps,
-                                   absl::optional<int> max_pending_swaps_120hz,
-                                   bool wait_for_all_surfaces_before_draw,
-                                   gfx::RenderingPipeline* gpu_pipeline)
+                                   PendingSwapParams pending_swap_params,
+                                   HintSessionFactory* hint_session_factory,
+                                   bool wait_for_all_surfaces_before_draw)
     : begin_frame_observer_(std::make_unique<BeginFrameObserver>(this)),
+      begin_frame_state_observer_(
+          std::make_unique<BeginFrameRequestObserverImpl>(this)),
       begin_frame_source_(begin_frame_source),
       task_runner_(task_runner),
-      gpu_pipeline_(gpu_pipeline),
       inside_surface_damaged_(false),
       visible_(false),
       output_surface_lost_(false),
@@ -58,16 +76,17 @@ DisplayScheduler::DisplayScheduler(BeginFrameSource* begin_frame_source,
       has_pending_surfaces_(false),
       next_swap_id_(1),
       pending_swaps_(0),
-      max_pending_swaps_(max_pending_swaps),
-      max_pending_swaps_120hz_(max_pending_swaps_120hz),
+      pending_swap_params_(std::move(pending_swap_params)),
       wait_for_all_surfaces_before_draw_(wait_for_all_surfaces_before_draw),
       observing_begin_frame_source_(false),
+      hint_session_factory_(hint_session_factory),
       dynamic_cc_deadlines_percentile_(
           features::IsDynamicSchedulerEnabledForClients()),
       dynamic_scheduler_deadlines_percentile_(
           features::IsDynamicSchedulerEnabledForDraw()) {
   if (dynamic_cc_deadlines_percentile_.has_value())
     begin_frame_source_->SetDynamicBeginFrameDeadlineOffsetSource(this);
+  begin_frame_source_->AddStateObserver(begin_frame_state_observer_.get());
   begin_frame_deadline_closure_ = base::BindRepeating(
       &DisplayScheduler::OnBeginFrameDeadline, weak_ptr_factory_.GetWeakPtr());
 }
@@ -76,6 +95,7 @@ DisplayScheduler::~DisplayScheduler() {
   // It is possible for DisplayScheduler to be destroyed while there's an
   // in-flight swap. So always mark the gpu as not busy during destruction.
   begin_frame_source_->SetIsGpuBusy(false);
+  begin_frame_source_->RemoveStateObserver(begin_frame_state_observer_.get());
   StopObservingBeginFrames();
 }
 
@@ -148,18 +168,44 @@ void DisplayScheduler::OutputSurfaceLost() {
   ScheduleBeginFrameDeadline();
 }
 
-void DisplayScheduler::SetGpuLatency(base::TimeDelta gpu_latency) {
-  if (gpu_pipeline_)
-    gpu_pipeline_->SetGpuLatency(gpu_latency);
+void DisplayScheduler::MaybeCreateHintSession(
+    base::flat_set<base::PlatformThreadId> thread_ids) {
+  if (!hint_session_factory_)
+    return;
+
+  if (!hint_session_ || current_thread_ids_ != thread_ids) {
+    hint_session_.reset();
+    int target_ms = features::kAdpfTargetDurationMs.Get();
+    if (target_ms <= 0 || target_ms > 1000)
+      target_ms = 12;
+    current_thread_ids_ = std::move(thread_ids);
+    hint_session_ = hint_session_factory_->CreateSession(
+        current_thread_ids_, base::Milliseconds(target_ms));
+  }
+}
+
+void DisplayScheduler::ReportFrameTime(
+    base::TimeDelta frame_time,
+    base::flat_set<base::PlatformThreadId> thread_ids) {
+  MaybeCreateHintSession(std::move(thread_ids));
+  if (hint_session_) {
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES("Compositing.Display.AdpfHintUs",
+                                            frame_time, base::Microseconds(1),
+                                            base::Milliseconds(50), 50);
+    hint_session_->ReportCpuCompletionTime(frame_time);
+  }
 }
 
 bool DisplayScheduler::DrawAndSwap() {
   TRACE_EVENT0("viz", "DisplayScheduler::DrawAndSwap");
   DCHECK_LT(pending_swaps_,
-            std::max(max_pending_swaps_, max_pending_swaps_120hz_.value_or(0)));
+            std::max(pending_swap_params_.max_pending_swaps,
+                     pending_swap_params_.max_pending_swaps_120hz.value_or(0)));
   DCHECK(!output_surface_lost_);
 
-  bool success = client_ && client_->DrawAndSwap(current_frame_display_time());
+  bool success =
+      client_ && client_->DrawAndSwap(current_begin_frame_args_.frame_time,
+                                      current_frame_display_time());
   if (!success)
     return false;
 
@@ -216,8 +262,6 @@ bool DisplayScheduler::OnBeginFrame(const BeginFrameArgs& args) {
   current_begin_frame_args_.deadline -= delta;
 
   inside_begin_frame_deadline_interval_ = true;
-  if (gpu_pipeline_)
-    gpu_pipeline_->SetTargetDuration(save_args.interval);
 
   UpdateHasPendingSurfaces();
   ScheduleBeginFrameDeadline();
@@ -226,13 +270,17 @@ bool DisplayScheduler::OnBeginFrame(const BeginFrameArgs& args) {
 }
 
 int DisplayScheduler::MaxPendingSwaps() const {
-  // Interval for 120hz with some delta for margin of error.
+  // Interval for 90hz and 120hz with some delta for margin of error.
+  constexpr base::TimeDelta k90HzInterval = base::Microseconds(11500);
   constexpr base::TimeDelta k120HzInterval = base::Microseconds(8500);
-  if (current_begin_frame_args_.interval > k120HzInterval ||
-      !max_pending_swaps_120hz_) {
-    return max_pending_swaps_;
+  if (current_begin_frame_args_.interval < k120HzInterval &&
+      pending_swap_params_.max_pending_swaps_120hz) {
+    return pending_swap_params_.max_pending_swaps_120hz.value();
+  } else if (current_begin_frame_args_.interval < k90HzInterval &&
+             pending_swap_params_.max_pending_swaps_90hz) {
+    return pending_swap_params_.max_pending_swaps_90hz.value();
   } else {
-    return max_pending_swaps_120hz_.value();
+    return pending_swap_params_.max_pending_swaps;
   }
 }
 
@@ -253,12 +301,6 @@ void DisplayScheduler::StartObservingBeginFrames() {
   if (!observing_begin_frame_source_) {
     begin_frame_source_->AddObserver(begin_frame_observer_.get());
     observing_begin_frame_source_ = true;
-    if (client_) {
-      client_->OnObservingBeginFrameSourceChanged(
-          observing_begin_frame_source_);
-    }
-    if (gpu_pipeline_)
-      gpu_pipeline_active_.emplace(gpu_pipeline_);
   }
 }
 
@@ -266,15 +308,16 @@ void DisplayScheduler::StopObservingBeginFrames() {
   if (observing_begin_frame_source_) {
     begin_frame_source_->RemoveObserver(begin_frame_observer_.get());
     observing_begin_frame_source_ = false;
-    if (client_) {
-      client_->OnObservingBeginFrameSourceChanged(
-          observing_begin_frame_source_);
-    }
-    gpu_pipeline_active_.reset();
 
     // A missed BeginFrame may be queued, so drop that too if we're going to
     // stop listening.
     missed_begin_frame_task_.Cancel();
+  }
+}
+
+void DisplayScheduler::BeginFrameRequestedChanged(bool requested) {
+  if (client_) {
+    client_->OnObservingBeginFrameSourceChanged(requested);
   }
 }
 
@@ -435,8 +478,6 @@ void DisplayScheduler::OnBeginFrameDeadline() {
 
   bool did_draw = AttemptDrawAndSwap();
   DidFinishFrame(did_draw);
-  if (gpu_pipeline_)
-    gpu_pipeline_->NotifyFrameFinished();
 }
 
 void DisplayScheduler::DidFinishFrame(bool did_draw) {

@@ -133,6 +133,7 @@ typedef struct CelEvaluation {
 
 typedef struct RoqEncContext {
     RoqContext common;
+    struct ELBGContext *elbg;
     AVLFG randctx;
     uint64_t lambda;
 
@@ -824,12 +825,8 @@ static int generate_codebook(RoqEncContext *enc,
     int *codebook = enc->tmp_codebook_buf;
     int *closest_cb = enc->closest_cb;
 
-    ret = avpriv_init_elbg(points, 6 * c_size, inputCount, codebook,
-                       cbsize, 1, closest_cb, &enc->randctx);
-    if (ret < 0)
-        return ret;
-    ret = avpriv_do_elbg(points, 6 * c_size, inputCount, codebook,
-                     cbsize, 1, closest_cb, &enc->randctx);
+    ret = avpriv_elbg_do(&enc->elbg, points, 6 * c_size, inputCount, codebook,
+                         cbsize, 1, closest_cb, &enc->randctx, 0);
     if (ret < 0)
         return ret;
 
@@ -965,6 +962,8 @@ static av_cold int roq_encode_end(AVCodecContext *avctx)
     av_freep(&enc->this_motion8);
     av_freep(&enc->last_motion8);
 
+    avpriv_elbg_free(&enc->elbg);
+
     return 0;
 }
 
@@ -1003,13 +1002,13 @@ static av_cold int roq_encode_init(AVCodecContext *avctx)
         return AVERROR(ENOMEM);
 
     enc->this_motion4 =
-        av_mallocz_array(roq->width * roq->height / 16, sizeof(motion_vect));
+        av_calloc(roq->width * roq->height / 16, sizeof(*enc->this_motion4));
 
     enc->last_motion4 =
         av_malloc_array (roq->width * roq->height / 16, sizeof(motion_vect));
 
     enc->this_motion8 =
-        av_mallocz_array(roq->width * roq->height / 64, sizeof(motion_vect));
+        av_calloc(roq->width * roq->height / 64, sizeof(*enc->this_motion8));
 
     enc->last_motion8 =
         av_malloc_array (roq->width * roq->height / 64, sizeof(motion_vect));

@@ -264,6 +264,7 @@
   {"name": "Housekeeper-PerCommit-IsolateSkImage"},
   {"name": "Housekeeper-PerCommit-PushAppsFromSkiaDockerImage"},
   {"name": "Housekeeper-PerCommit-PushAppsFromWASMDockerImage"},
+  {"name": "Housekeeper-PerCommit-PushBazelAppsFromWASMDockerImage"},
   {
     "name": "Housekeeper-PerCommit-RunGnToBp",
     "cq_config": {}
@@ -282,8 +283,6 @@
   {"name": "Perf-Android-Clang-GalaxyS20-GPU-MaliG77-arm64-Release-All-Android_Vulkan_Skpbench"},
   {"name": "Perf-Android-Clang-GalaxyS20-GPU-MaliG77-arm64-Release-All-Android_AllPathsVolatile_Skpbench"},
   {"name": "Perf-Android-Clang-GalaxyS20-GPU-MaliG77-arm64-Release-All-Android_Vulkan_AllPathsVolatile_Skpbench"},
-  {"name": "Perf-Android-Clang-Nexus5-CPU-Snapdragon800-arm-Release-All-Android"},
-  {"name": "Perf-Android-Clang-Nexus5-GPU-Adreno330-arm-Release-All-Android"},
   {"name": "Perf-Android-Clang-Nexus7-GPU-Tegra3-arm-Release-All-Android"},
   {"name": "Perf-Android-Clang-P30-GPU-MaliG76-arm64-Release-All-Android"},
   {"name": "Perf-Android-Clang-P30-GPU-MaliG76-arm64-Release-All-Android_Vulkan"},
@@ -432,10 +431,6 @@
     "cq_config": {}
   },
   {"name": "Test-Android-Clang-GalaxyS20-GPU-MaliG77-arm64-Release-All-Android_NativeFonts"},
-  {"name": "Test-Android-Clang-Nexus5-CPU-Snapdragon800-arm-Debug-All-Android"},
-  {"name": "Test-Android-Clang-Nexus5-CPU-Snapdragon800-arm-Release-All-Android"},
-  {"name": "Test-Android-Clang-Nexus5-GPU-Adreno330-arm-Debug-All-Android"},
-  {"name": "Test-Android-Clang-Nexus5-GPU-Adreno330-arm-Release-All-Android"},
   {"name": "Test-Android-Clang-Nexus7-GPU-Tegra3-arm-Debug-All-Android"},
   {"name": "Test-Android-Clang-Nexus7-GPU-Tegra3-arm-Release-All-Android"},
   {"name": "Test-Android-Clang-P30-GPU-MaliG76-arm64-Debug-All-Android"},
@@ -703,10 +698,7 @@
   {"name": "Test-Win10-Clang-ShuttleA-GPU-RadeonHD7770-x86_64-Debug-All-Vulkan"},
   {"name": "Test-Win10-Clang-ShuttleA-GPU-RadeonHD7770-x86_64-Release-All"},
   {"name": "Test-Win10-Clang-ShuttleA-GPU-RadeonHD7770-x86_64-Release-All-ANGLE"},
-  {
-    "name": "Test-Win10-Clang-ShuttleA-GPU-RadeonHD7770-x86_64-Release-All-Direct3D",
-    "cq_config": {}
-  },
+  {"name": "Test-Win10-Clang-ShuttleA-GPU-RadeonHD7770-x86_64-Release-All-Direct3D"},
   {"name": "Test-Win10-Clang-ShuttleA-GPU-RadeonHD7770-x86_64-Release-All-Vulkan"},
   {"name": "Test-Win10-Clang-ShuttleC-GPU-GTX960-x86_64-Debug-All"},
   {"name": "Test-Win10-Clang-ShuttleC-GPU-GTX960-x86_64-Debug-All-ANGLE"},
@@ -718,7 +710,10 @@
   {"name": "Test-Win10-MSVC-Golo-GPU-QuadroP400-x86_64-Debug-All-Direct3D"},
   {"name": "Test-Win10-MSVC-Golo-GPU-QuadroP400-x86_64-Debug-All-Vulkan"},
   {"name": "Test-Win10-MSVC-Golo-GPU-QuadroP400-x86_64-Release-All"},
-  {"name": "Test-Win10-MSVC-Golo-GPU-QuadroP400-x86_64-Release-All-Direct3D"},
+  {
+    "name": "Test-Win10-MSVC-Golo-GPU-QuadroP400-x86_64-Release-All-Direct3D",
+    "cq_config": {}
+  },
   {"name": "Test-Win10-MSVC-Golo-GPU-QuadroP400-x86_64-Release-All-Vulkan"},
   {"name": "Test-Win2019-Clang-GCE-CPU-AVX2-x86-Debug-All"},
   {"name": "Test-Win2019-Clang-GCE-CPU-AVX2-x86-Release-All"},

@@ -68,7 +68,7 @@ WebEngineAudioDeviceFactory::CreateAudioRendererSink(
       // using FuchsiaAudioOutputDevice for WebRTC.
       return nullptr;
 
-    // kNone is used in WebAudioDeviceFactory::GetOutputDeviceInfo() to get
+    // kNone is used in AudioDeviceFactory::GetOutputDeviceInfo() to get
     // default output device params.
     case blink::WebAudioDeviceSourceType::kNone:
       break;
@@ -91,8 +91,8 @@ WebEngineAudioDeviceFactory::CreateAudioRendererSink(
       media_resource_provider.BindNewPipeAndPassReceiver());
 
   // AudioConsumer can be used only to output to the default device.
-  CHECK(!params.session_id);
-  CHECK(params.device_id.empty());
+  if (!params.device_id.empty())
+    return nullptr;
 
   // Connect AudioConsumer.
   fidl::InterfaceHandle<fuchsia::media::AudioConsumer> audio_consumer;

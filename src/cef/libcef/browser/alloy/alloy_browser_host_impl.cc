@@ -99,6 +99,9 @@ class CefWidgetHostInterceptor
     render_widget_host_->AddObserver(this);
   }
 
+  CefWidgetHostInterceptor(const CefWidgetHostInterceptor&) = delete;
+  CefWidgetHostInterceptor& operator=(const CefWidgetHostInterceptor&) = delete;
+
   blink::mojom::WidgetHost* GetForwardingInterface() override { return impl_; }
 
   // WidgetHostInterceptorForTesting method:
@@ -122,8 +125,6 @@ class CefWidgetHostInterceptor
   AlloyBrowserHostImpl* const browser_;
   content::RenderWidgetHostImpl* const render_widget_host_;
   blink::mojom::WidgetHost* const impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(CefWidgetHostInterceptor);
 };
 
 static constexpr base::TimeDelta kRecentlyAudibleTimeout = base::Seconds(2);
@@ -1122,8 +1123,8 @@ void AlloyBrowserHostImpl::AddNewContents(
 }
 
 void AlloyBrowserHostImpl::LoadingStateChanged(content::WebContents* source,
-                                               bool to_different_document) {
-  contents_delegate_->LoadingStateChanged(source, to_different_document);
+                                               bool should_show_loading_ui) {
+  contents_delegate_->LoadingStateChanged(source, should_show_loading_ui);
 }
 
 void AlloyBrowserHostImpl::CloseContents(content::WebContents* source) {

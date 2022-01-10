@@ -248,7 +248,7 @@ Connection* UDPPort::CreateConnection(const Candidate& address,
   // it would lead to a crash when accessing the local candidate of the
   // connection that would be created below.
   if (Candidates().empty()) {
-    RTC_NOTREACHED();
+    RTC_DCHECK_NOTREACHED();
     return nullptr;
   }
   // When the socket is shared, the srflx candidate is gathered by the UDPPort.
@@ -577,7 +577,7 @@ void UDPPort::OnSendPacket(const void* data, size_t size, StunRequest* req) {
   options.info_signaled_after_sent.packet_type = rtc::PacketType::kStunMessage;
   CopyPortInformationToPacketInfo(&options.info_signaled_after_sent);
   if (socket_->SendTo(data, size, sreq->server_addr(), options) < 0) {
-    RTC_LOG_ERR_EX(LERROR, socket_->GetError())
+    RTC_LOG_ERR_EX(LS_ERROR, socket_->GetError())
         << "UDP send of " << size << " bytes to host "
         << sreq->server_addr().ToSensitiveString() << " ("
         << sreq->server_addr().ToResolvedSensitiveString()

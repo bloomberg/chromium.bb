@@ -42,6 +42,7 @@ namespace dawn_native { namespace vulkan {
 
       private:
         ~ComputePipeline() override;
+        void DestroyImpl() override;
         using ComputePipelineBase::ComputePipelineBase;
 
         VkPipeline mHandle = VK_NULL_HANDLE;

@@ -469,12 +469,22 @@ namespace dawn_native {
         if (internalUsageDesc != nullptr) {
             mInternalUsage |= internalUsageDesc->internalUsage;
         }
+        TrackInDevice();
     }
 
     static Format kUnusedFormat;
 
+    TextureBase::TextureBase(DeviceBase* device, TextureState state)
+        : ApiObjectBase(device, kLabelNotImplemented), mFormat(kUnusedFormat), mState(state) {
+        TrackInDevice();
+    }
+
     TextureBase::TextureBase(DeviceBase* device, ObjectBase::ErrorTag tag)
         : ApiObjectBase(device, tag), mFormat(kUnusedFormat) {
+    }
+
+    void TextureBase::DestroyImpl() {
+        mState = TextureState::Destroyed;
     }
 
     // static
@@ -670,15 +680,7 @@ namespace dawn_native {
             return;
         }
         ASSERT(!IsError());
-        DestroyInternal();
-    }
-
-    void TextureBase::DestroyImpl() {
-    }
-
-    void TextureBase::DestroyInternal() {
-        DestroyImpl();
-        mState = TextureState::Destroyed;
+        Destroy();
     }
 
     MaybeError TextureBase::ValidateDestroy() const {
@@ -689,17 +691,28 @@ namespace dawn_native {
     // TextureViewBase
 
     TextureViewBase::TextureViewBase(TextureBase* texture, const TextureViewDescriptor* descriptor)
-        : ApiObjectBase(texture->GetDevice(), kLabelNotImplemented),
+        : ApiObjectBase(texture->GetDevice(), descriptor->label),
           mTexture(texture),
           mFormat(GetDevice()->GetValidInternalFormat(descriptor->format)),
           mDimension(descriptor->dimension),
           mRange({ConvertViewAspect(mFormat, descriptor->aspect),
                   {descriptor->baseArrayLayer, descriptor->arrayLayerCount},
                   {descriptor->baseMipLevel, descriptor->mipLevelCount}}) {
+        TrackInDevice();
+    }
+
+    TextureViewBase::TextureViewBase(TextureBase* texture)
+        : ApiObjectBase(texture->GetDevice(), kLabelNotImplemented),
+          mTexture(texture),
+          mFormat(kUnusedFormat) {
+        TrackInDevice();
     }
 
     TextureViewBase::TextureViewBase(DeviceBase* device, ObjectBase::ErrorTag tag)
         : ApiObjectBase(device, tag), mFormat(kUnusedFormat) {
+    }
+
+    void TextureViewBase::DestroyImpl() {
     }
 
     // static

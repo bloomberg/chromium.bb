@@ -6,7 +6,6 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "http2/adapter/http2_protocol.h"
-#include "third_party/nghttp2/src/lib/includes/nghttp2/nghttp2.h"
 #include "common/platform/api/quiche_logging.h"
 #include "common/quiche_endian.h"
 
@@ -14,6 +13,8 @@ namespace http2 {
 namespace adapter {
 
 namespace {
+
+using InvalidFrameError = Http2VisitorInterface::InvalidFrameError;
 
 void DeleteCallbacks(nghttp2_session_callbacks* callbacks) {
   if (callbacks) {
@@ -122,6 +123,42 @@ Http2ErrorCode ToHttp2ErrorCode(uint32_t wire_error_code) {
   return static_cast<Http2ErrorCode>(wire_error_code);
 }
 
+int ToNgHttp2ErrorCode(InvalidFrameError error) {
+  switch (error) {
+    case InvalidFrameError::kProtocol:
+      return NGHTTP2_ERR_PROTO;
+    case InvalidFrameError::kRefusedStream:
+      return NGHTTP2_ERR_REFUSED_STREAM;
+    case InvalidFrameError::kHttpHeader:
+      return NGHTTP2_ERR_HTTP_HEADER;
+    case InvalidFrameError::kHttpMessaging:
+      return NGHTTP2_ERR_HTTP_MESSAGING;
+    case InvalidFrameError::kFlowControl:
+      return NGHTTP2_ERR_FLOW_CONTROL;
+    case InvalidFrameError::kStreamClosed:
+      return NGHTTP2_ERR_STREAM_CLOSED;
+  }
+  return NGHTTP2_ERR_PROTO;
+}
+
+InvalidFrameError ToInvalidFrameError(int error) {
+  switch (error) {
+    case NGHTTP2_ERR_PROTO:
+      return InvalidFrameError::kProtocol;
+    case NGHTTP2_ERR_REFUSED_STREAM:
+      return InvalidFrameError::kRefusedStream;
+    case NGHTTP2_ERR_HTTP_HEADER:
+      return InvalidFrameError::kHttpHeader;
+    case NGHTTP2_ERR_HTTP_MESSAGING:
+      return InvalidFrameError::kHttpMessaging;
+    case NGHTTP2_ERR_FLOW_CONTROL:
+      return InvalidFrameError::kFlowControl;
+    case NGHTTP2_ERR_STREAM_CLOSED:
+      return InvalidFrameError::kStreamClosed;
+  }
+  return InvalidFrameError::kProtocol;
+}
+
 class Nghttp2DataFrameSource : public DataFrameSource {
  public:
   Nghttp2DataFrameSource(nghttp2_data_provider provider,
@@ -145,10 +182,10 @@ class Nghttp2DataFrameSource : public DataFrameSource {
       QUICHE_LOG(ERROR) << "Source did not use the zero-copy API!";
       return {kError, false};
     } else {
-      if (data_flags & NGHTTP2_DATA_FLAG_NO_END_STREAM) {
-        send_fin_ = false;
-      }
       const bool eof = data_flags & NGHTTP2_DATA_FLAG_EOF;
+      if (eof && (data_flags & NGHTTP2_DATA_FLAG_NO_END_STREAM) == 0) {
+        send_fin_ = true;
+      }
       return {result, eof};
     }
   }
@@ -174,7 +211,7 @@ class Nghttp2DataFrameSource : public DataFrameSource {
   nghttp2_data_provider provider_;
   nghttp2_send_data_callback send_data_;
   void* user_data_;
-  bool send_fin_ = true;
+  bool send_fin_ = false;
 };
 
 std::unique_ptr<DataFrameSource> MakeZeroCopyDataFrameSource(

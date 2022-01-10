@@ -408,6 +408,108 @@ TEST_F(TestFastSourceLineResolver, TestLoadAndResolve) {
   ASSERT_EQ(frame.function_name, "Public2_2");
 }
 
+// Test adapted from basic_source_line_resolver_unittest.
+TEST_F(TestFastSourceLineResolver, TestLoadAndResolveOldInlines) {
+  TestCodeModule module("linux_inline");
+  ASSERT_TRUE(basic_resolver.LoadModule(
+      &module, testdata_dir +
+                   "/symbols/linux_inline/BBA6FA10B8AAB33D00000000000000000/"
+                   "linux_inline.old.sym"));
+  ASSERT_TRUE(basic_resolver.HasModule(&module));
+  // Convert module1 to fast_module:
+  ASSERT_TRUE(serializer.ConvertOneModule(module.code_file(), &basic_resolver,
+                                          &fast_resolver));
+  ASSERT_TRUE(fast_resolver.HasModule(&module));
+
+  StackFrame frame;
+  std::deque<std::unique_ptr<StackFrame>> inlined_frames;
+  frame.instruction = 0x161b6;
+  frame.module = &module;
+  fast_resolver.FillSourceLineInfo(&frame, &inlined_frames);
+
+  // main frame.
+  ASSERT_EQ(frame.function_name, "main");
+  ASSERT_EQ(frame.function_base, 0x15b30U);
+  ASSERT_EQ(frame.source_file_name, "linux_inline.cpp");
+  ASSERT_EQ(frame.source_line, 42);
+  ASSERT_EQ(frame.source_line_base, 0x161b6U);
+
+  ASSERT_EQ(inlined_frames.size(), 3UL);
+
+  // Inlined frames inside main frame.
+  ASSERT_EQ(inlined_frames[2]->function_name, "foo()");
+  ASSERT_EQ(inlined_frames[2]->function_base, 0x15b45U);
+  ASSERT_EQ(inlined_frames[2]->source_file_name, "linux_inline.cpp");
+  ASSERT_EQ(inlined_frames[2]->source_line, 39);
+  ASSERT_EQ(inlined_frames[2]->source_line_base, 0x161b6U);
+  ASSERT_EQ(inlined_frames[2]->trust, StackFrame::FRAME_TRUST_INLINE);
+
+  ASSERT_EQ(inlined_frames[1]->function_name, "bar()");
+  ASSERT_EQ(inlined_frames[1]->function_base, 0x15b72U);
+  ASSERT_EQ(inlined_frames[1]->source_file_name, "linux_inline.cpp");
+  ASSERT_EQ(inlined_frames[1]->source_line, 32);
+  ASSERT_EQ(inlined_frames[1]->source_line_base, 0x161b6U);
+  ASSERT_EQ(inlined_frames[1]->trust, StackFrame::FRAME_TRUST_INLINE);
+
+  ASSERT_EQ(inlined_frames[0]->function_name, "func()");
+  ASSERT_EQ(inlined_frames[0]->function_base, 0x15b83U);
+  ASSERT_EQ(inlined_frames[0]->source_file_name, "linux_inline.cpp");
+  ASSERT_EQ(inlined_frames[0]->source_line, 27);
+  ASSERT_EQ(inlined_frames[0]->source_line_base, 0x161b6U);
+  ASSERT_EQ(inlined_frames[0]->trust, StackFrame::FRAME_TRUST_INLINE);
+}
+
+// Test adapted from basic_source_line_resolver_unittest.
+TEST_F(TestFastSourceLineResolver, TestLoadAndResolveNewInlines) {
+  TestCodeModule module("linux_inline");
+  ASSERT_TRUE(basic_resolver.LoadModule(
+      &module, testdata_dir +
+                   "/symbols/linux_inline/BBA6FA10B8AAB33D00000000000000000/"
+                   "linux_inline.new.sym"));
+  ASSERT_TRUE(basic_resolver.HasModule(&module));
+  // Convert module1 to fast_module:
+  ASSERT_TRUE(serializer.ConvertOneModule(module.code_file(), &basic_resolver,
+                                          &fast_resolver));
+  ASSERT_TRUE(fast_resolver.HasModule(&module));
+
+  StackFrame frame;
+  std::deque<std::unique_ptr<StackFrame>> inlined_frames;
+  frame.instruction = 0x161b6;
+  frame.module = &module;
+  fast_resolver.FillSourceLineInfo(&frame, &inlined_frames);
+
+  // main frame.
+  ASSERT_EQ(frame.function_name, "main");
+  ASSERT_EQ(frame.function_base, 0x15b30U);
+  ASSERT_EQ(frame.source_file_name, "a.cpp");
+  ASSERT_EQ(frame.source_line, 42);
+  ASSERT_EQ(frame.source_line_base, 0x161b6U);
+
+  ASSERT_EQ(inlined_frames.size(), 3UL);
+
+  // Inlined frames inside main frame.
+  ASSERT_EQ(inlined_frames[2]->function_name, "foo()");
+  ASSERT_EQ(inlined_frames[2]->function_base, 0x15b45U);
+  ASSERT_EQ(inlined_frames[2]->source_file_name, "b.cpp");
+  ASSERT_EQ(inlined_frames[2]->source_line, 39);
+  ASSERT_EQ(inlined_frames[2]->source_line_base, 0x161b6U);
+  ASSERT_EQ(inlined_frames[2]->trust, StackFrame::FRAME_TRUST_INLINE);
+
+  ASSERT_EQ(inlined_frames[1]->function_name, "bar()");
+  ASSERT_EQ(inlined_frames[1]->function_base, 0x15b72U);
+  ASSERT_EQ(inlined_frames[1]->source_file_name, "c.cpp");
+  ASSERT_EQ(inlined_frames[1]->source_line, 32);
+  ASSERT_EQ(inlined_frames[1]->source_line_base, 0x161b6U);
+  ASSERT_EQ(inlined_frames[1]->trust, StackFrame::FRAME_TRUST_INLINE);
+
+  ASSERT_EQ(inlined_frames[0]->function_name, "func()");
+  ASSERT_EQ(inlined_frames[0]->function_base, 0x15b83U);
+  ASSERT_EQ(inlined_frames[0]->source_file_name, "linux_inline.cpp");
+  ASSERT_EQ(inlined_frames[0]->source_line, 27);
+  ASSERT_EQ(inlined_frames[0]->source_line_base, 0x161b6U);
+  ASSERT_EQ(inlined_frames[0]->trust, StackFrame::FRAME_TRUST_INLINE);
+}
+
 TEST_F(TestFastSourceLineResolver, TestInvalidLoads) {
   TestCodeModule module3("module3");
   ASSERT_TRUE(basic_resolver.LoadModule(&module3,

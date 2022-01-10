@@ -44,27 +44,22 @@ typedef struct CropDetectContext {
     int max_outliers;
 } CropDetectContext;
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUVJ420P,
-        AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUVJ422P,
-        AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUVJ444P,
-        AV_PIX_FMT_YUV411P, AV_PIX_FMT_GRAY8,
-        AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV410P,
-        AV_PIX_FMT_YUV420P9 , AV_PIX_FMT_YUV422P9 , AV_PIX_FMT_YUV444P9,
-        AV_PIX_FMT_YUV420P10, AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV444P10,
-        AV_PIX_FMT_YUV420P12, AV_PIX_FMT_YUV422P12, AV_PIX_FMT_YUV444P12,
-        AV_PIX_FMT_YUV420P14, AV_PIX_FMT_YUV422P14, AV_PIX_FMT_YUV444P14,
-        AV_PIX_FMT_YUV420P16, AV_PIX_FMT_YUV422P16, AV_PIX_FMT_YUV444P16,
-        AV_PIX_FMT_NV12,    AV_PIX_FMT_NV21,
-        AV_PIX_FMT_RGB24,   AV_PIX_FMT_BGR24,
-        AV_PIX_FMT_RGBA,    AV_PIX_FMT_BGRA,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUVJ420P,
+    AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUVJ422P,
+    AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUVJ444P,
+    AV_PIX_FMT_YUV411P, AV_PIX_FMT_GRAY8,
+    AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV410P,
+    AV_PIX_FMT_YUV420P9 , AV_PIX_FMT_YUV422P9 , AV_PIX_FMT_YUV444P9,
+    AV_PIX_FMT_YUV420P10, AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV444P10,
+    AV_PIX_FMT_YUV420P12, AV_PIX_FMT_YUV422P12, AV_PIX_FMT_YUV444P12,
+    AV_PIX_FMT_YUV420P14, AV_PIX_FMT_YUV422P14, AV_PIX_FMT_YUV444P14,
+    AV_PIX_FMT_YUV420P16, AV_PIX_FMT_YUV422P16, AV_PIX_FMT_YUV444P16,
+    AV_PIX_FMT_NV12,    AV_PIX_FMT_NV21,
+    AV_PIX_FMT_RGB24,   AV_PIX_FMT_BGR24,
+    AV_PIX_FMT_RGBA,    AV_PIX_FMT_BGRA,
+    AV_PIX_FMT_NONE
+};
 
 static int checkline(void *ctx, const unsigned char *src, int stride, int len, int bpp)
 {
@@ -275,8 +270,8 @@ const AVFilter ff_vf_cropdetect = {
     .priv_size     = sizeof(CropDetectContext),
     .priv_class    = &cropdetect_class,
     .init          = init,
-    .query_formats = query_formats,
     FILTER_INPUTS(avfilter_vf_cropdetect_inputs),
     FILTER_OUTPUTS(avfilter_vf_cropdetect_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

@@ -291,8 +291,16 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
   }
 
   private showDOMTree(): void {
-    // TODO(meredithl): Scroll to inspected DOM node.
     this.splitWidget.setMainWidget(this.searchableViewInternal);
+    const selectedNode = this.selectedDOMNode();
+    if (!selectedNode) {
+      return;
+    }
+    const treeElement = this.treeElementForNode(selectedNode);
+    if (!treeElement) {
+      return;
+    }
+    treeElement.select();
   }
 
   static instance(opts: {
@@ -328,11 +336,6 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
   modelAdded(domModel: SDK.DOMModel.DOMModel): void {
     const parentModel = domModel.parentModel();
 
-    // Different frames will have different DOMModels, we only want to add the accessibility model
-    // for the top level frame, as the accessibility tree does not yet support exploring IFrames.
-    if (this.accessibilityTreeView) {
-      this.accessibilityTreeView.wireToDOMModel(domModel);
-    }
     let treeOutline: ElementsTreeOutline|null = parentModel ? ElementsTreeOutline.forDOMModel(parentModel) : null;
     if (!treeOutline) {
       treeOutline = new ElementsTreeOutline(true, true);
@@ -507,6 +510,10 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
         crumbs,
         selectedNode: ElementsComponents.Helper.legacyNodeToElementsComponentsNode(selectedNode),
       };
+
+      if (this.accessibilityTreeView) {
+        this.accessibilityTreeView.selectedNodeChanged(selectedNode);
+      }
     } else {
       this.breadcrumbs.data = {crumbs: [], selectedNode: null};
     }
@@ -837,7 +844,7 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
     if (!treeOutline) {
       return null;
     }
-    return /** @type {?ElementsTreeElement} */ treeOutline.findTreeElement(node) as ElementsTreeElement | null;
+    return treeOutline.findTreeElement(node);
   }
 
   private leaveUserAgentShadowDOM(node: SDK.DOMModel.DOMNode): SDK.DOMModel.DOMNode {
@@ -859,7 +866,7 @@ export class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.S
     }
 
     if (this.accessibilityTreeView) {
-      this.accessibilityTreeView.selectedNodeChanged(node);
+      this.accessibilityTreeView.revealAndSelectNode(node);
     }
 
     await UI.ViewManager.ViewManager.instance().showView('elements', false, !focus);

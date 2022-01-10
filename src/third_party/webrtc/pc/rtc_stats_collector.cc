@@ -170,7 +170,7 @@ const char* CandidateTypeToRTCIceCandidateType(const std::string& type) {
     return RTCIceCandidateType::kPrflx;
   if (type == cricket::RELAY_PORT_TYPE)
     return RTCIceCandidateType::kRelay;
-  RTC_NOTREACHED();
+  RTC_DCHECK_NOTREACHED();
   return nullptr;
 }
 
@@ -186,7 +186,7 @@ const char* DataStateToRTCDataChannelState(
     case DataChannelInterface::kClosed:
       return RTCDataChannelState::kClosed;
     default:
-      RTC_NOTREACHED();
+      RTC_DCHECK_NOTREACHED();
       return nullptr;
   }
 }
@@ -203,7 +203,7 @@ const char* IceCandidatePairStateToRTCStatsIceCandidatePairState(
     case cricket::IceCandidatePairState::FAILED:
       return RTCStatsIceCandidatePairState::kFailed;
     default:
-      RTC_NOTREACHED();
+      RTC_DCHECK_NOTREACHED();
       return nullptr;
   }
 }
@@ -246,7 +246,7 @@ const char* NetworkAdapterTypeToStatsType(rtc::AdapterType type) {
     case rtc::ADAPTER_TYPE_ANY:
       return RTCNetworkType::kUnknown;
   }
-  RTC_NOTREACHED();
+  RTC_DCHECK_NOTREACHED();
   return nullptr;
 }
 
@@ -536,6 +536,9 @@ void SetOutboundRTPStreamStatsFromVoiceSenderInfo(
                                                outbound_audio);
   outbound_audio->media_type = "audio";
   outbound_audio->kind = "audio";
+  if (voice_sender_info.target_bitrate > 0) {
+    outbound_audio->target_bitrate = voice_sender_info.target_bitrate;
+  }
   if (voice_sender_info.codec_payload_type) {
     outbound_audio->codec_id = RTCCodecStatsIDFromMidDirectionAndPayload(
         mid, /*inbound=*/false, *voice_sender_info.codec_payload_type);
@@ -725,8 +728,11 @@ const std::string& ProduceIceCandidateStats(int64_t timestamp_us,
     if (is_local) {
       candidate_stats->network_type =
           NetworkAdapterTypeToStatsType(candidate.network_type());
-      if (candidate.type() == cricket::RELAY_PORT_TYPE) {
-        std::string relay_protocol = candidate.relay_protocol();
+      const std::string& candidate_type = candidate.type();
+      const std::string& relay_protocol = candidate.relay_protocol();
+      if (candidate_type == cricket::RELAY_PORT_TYPE ||
+          (candidate_type == cricket::PRFLX_PORT_TYPE &&
+           !relay_protocol.empty())) {
         RTC_DCHECK(relay_protocol.compare("udp") == 0 ||
                    relay_protocol.compare("tcp") == 0 ||
                    relay_protocol.compare("tls") == 0);
@@ -1002,7 +1008,7 @@ void ProduceSenderMediaTrackStats(
               timestamp_us, *track, *video_sender_info, sender->AttachmentId());
       report->AddStats(std::move(video_track_stats));
     } else {
-      RTC_NOTREACHED();
+      RTC_DCHECK_NOTREACHED();
     }
   }
 }
@@ -1041,7 +1047,7 @@ void ProduceReceiverMediaTrackStats(
               receiver->AttachmentId());
       report->AddStats(std::move(video_track_stats));
     } else {
-      RTC_NOTREACHED();
+      RTC_DCHECK_NOTREACHED();
     }
   }
 }
@@ -1793,7 +1799,7 @@ void RTCStatsCollector::ProduceRTPStreamStats_n(
     } else if (stats.media_type == cricket::MEDIA_TYPE_VIDEO) {
       ProduceVideoRTPStreamStats_n(timestamp_us, stats, report);
     } else {
-      RTC_NOTREACHED();
+      RTC_DCHECK_NOTREACHED();
     }
   }
 }
@@ -2157,7 +2163,7 @@ void RTCStatsCollector::PrepareTransceiverStatsInfosAndCallStats_s_w_n() {
         video_stats[video_channel->media_channel()] =
             std::make_unique<cricket::VideoMediaInfo>();
       } else {
-        RTC_NOTREACHED();
+        RTC_DCHECK_NOTREACHED();
       }
     }
   });

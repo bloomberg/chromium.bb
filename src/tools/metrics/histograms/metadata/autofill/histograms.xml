@@ -80,6 +80,7 @@ chromium-metrics-reviews@google.com.
 
 <variants name="Autofill.PaymentsRpcCardType">
   <variant name="ServerCard" summary="The card is a server card."/>
+  <variant name="UnknownCard" summary="The card type was unknown."/>
   <variant name="VirtualCard" summary="The card is a virtual card."/>
 </variants>
 
@@ -146,6 +147,23 @@ chromium-metrics-reviews@google.com.
 <variants name="AutofillLocalCardMigrationBubbleShow">
   <variant name=".FirstShow" summary="First time bubble is shown"/>
   <variant name=".Reshows" summary="Bubble was reopened after being closed"/>
+</variants>
+
+<variants name="AutofillMeasurementTime">
+  <variant name="">
+    <obsolete>
+      Base histogram. Use suffixes of this histogram instead.
+    </obsolete>
+  </variant>
+  <variant name=".AtFillTimeAfterSecurityPolicy"
+      summary="Recorded at filling time after applying restrictions due to
+               the cross-frame security policy."/>
+  <variant name=".AtFillTimeBeforeSecurityPolicy"
+      summary="Recorded at filling time before applying restrictions due to
+               the cross-frame security policy."/>
+  <variant name=".AtSubmissionTime"
+      summary="Recorded at submission time. May be missed due to submission
+               detection problems."/>
 </variants>
 
 <variants name="AutofillRealPanResultGroups">
@@ -402,6 +420,16 @@ chromium-metrics-reviews@google.com.
     expires_after="M85">
   <owner>michaelbai@chromium.org</owner>
   <summary>Whether there is any suggestions for an autocomplete query.</summary>
+</histogram>
+
+<histogram name="Autofill.AutofilledFieldAtSubmission.ByStateSelectionField"
+    enum="AutofillSourceForStateSelectionField" expires_after="M102">
+  <owner>vidhanj@google.com</owner>
+  <owner>koerber@google.com</owner>
+  <summary>
+    Records the source of filling for the state selection field, emitted when
+    the form is submitted.
+  </summary>
 </histogram>
 
 <histogram
@@ -798,6 +826,52 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Autofill.CreditCard.NumberFills{AutofillMeasurementTime}"
+    units="Filled" expires_after="2022-10-31">
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Records for each credit card form submission whether a credit card number
+    has been autofilled. {AutofillMeasurementTime}
+
+    That is, emits 1 if a form contains an autofilled credit card number.
+  </summary>
+  <token key="AutofillMeasurementTime" variants="AutofillMeasurementTime"/>
+</histogram>
+
+<histogram name="Autofill.CreditCard.SeamlessFills{AutofillMeasurementTime}"
+    enum="CreditCardSeamlessFill" expires_after="2022-10-31">
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Records for each credit card form the quality of the fill.
+    {AutofillMeasurementTime}
+
+    The fields in question are: cardholder name (full, or first and last),
+    credit card number, expiration date (MM/YY, MM/YYYY, MM and YY, or MM and
+    YYYY), and CVC.
+
+    Each bucket represents a minimal set of fields that must be autofilled.
+    Lower numbers are better:
+
+    Bucket 0 = name &amp; number &amp; exp. date &amp; CVC = Full fill :-D
+
+    Bucket 1 = number &amp; exp. date &amp; CVC = Optional name missing :-)
+
+    Bucket 2 = name &amp; number &amp; exp. date = Optional CVC missing :-)
+
+    Bucket 3 = number &amp; exp. date = Optional name and CVC missing :-)
+
+    Bucket 4 = name &amp; number &amp; CVC = Full fill but exp. date missing :-|
+
+    Bucket 5 = all other scenarios = Partial fill :-(
+
+    Any form that contains at least one credit card field counts as credit card
+    form.
+  </summary>
+  <token key="AutofillMeasurementTime" variants="AutofillMeasurementTime"/>
+</histogram>
+
 <histogram name="Autofill.CreditCardFillingInfoBar"
     enum="AutofillCreditCardInfoBar" expires_after="2022-12-12">
   <owner>battre@chromium.org</owner>
@@ -881,7 +955,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.CreditCardUploadFeedback"
-    enum="AutofillCreditCardUploadFeedback" expires_after="2022-03-01">
+    enum="AutofillCreditCardUploadFeedback" expires_after="2022-06-05">
   <owner>siyua@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <summary>
@@ -968,7 +1042,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ErrorDialogShown" enum="AutofillErrorDialogType"
-    expires_after="2022-02-01">
+    expires_after="2022-05-15">
   <owner>siashah@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <summary>
@@ -1215,7 +1289,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.FormEvents.CreditCard.WithOffer"
-    enum="AutofillFormEvent" expires_after="2021-12-19">
+    enum="AutofillFormEvent" expires_after="2022-10-01">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -1537,6 +1611,65 @@ chromium-metrics-reviews@google.com.
     Logs when a hidden or presentational field is autofilled. The hidden or
     presentational fields are only autofilled for 'select' fields to support
     synthetic fields.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.Iframes.NumberOfFramesWithAutofilledCreditCardFields"
+    units="frames" expires_after="2022-10-31">
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Counts per form submission the number of frames across which the form's
+    autofilled credit card fields are distributed.
+
+    A field is an &quot;autofilled credit card field&quot; if it is autofilled
+    at submission time and its field type belongs to the credit card group.
+
+    For example, emits 1 if all fields are in the same frame, and emits 2 if the
+    fields live in two different frames. Never emits 0.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.Iframes.NumberOfFramesWithDetectedCreditCardFields"
+    units="frames" expires_after="2022-10-31">
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Counts per form submission the number of frames across which the form's
+    detected credit card fields are distributed.
+
+    A field is a &quot;detected credit card field&quot; if its field type
+    belongs to the credit card group.
+
+    For example, emits 1 if all fields are in the same frame, and emits 2 if the
+    fields live in two different frames. Never emits 0.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.Iframes.NumberOfFramesWithDetectedFields"
+    units="frames" expires_after="2022-10-31">
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Counts per form submission the number of frames across which the form's
+    detected fields are distributed.
+
+    A field is &quot;detected&quot; if its field type is neither EMPTY_TYPE or
+    UNKNOWN_TYPE.
+
+    For example, emits 1 if all fields are in the same frame, and emits 2 if the
+    fields live in two different frames. Never emits 0.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.ImageFetcher.RequestLatency" units="ms"
+    expires_after="2022-07-01">
+  <owner>vishwasuppoor@chromium.org</owner>
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs the roundtrip latency for fetching an image in AutofillImageFetcher. It
+    is logged when the fetch request for image is completed.
   </summary>
 </histogram>
 
@@ -1976,7 +2109,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Offer.SelectedCardHasOffer"
-    enum="AutofillCreditCardOfferSelection" expires_after="2021-12-19">
+    enum="AutofillCreditCardOfferSelection" expires_after="2022-10-01">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -1988,7 +2121,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Offer.StoredOfferCount" units="offers"
-    expires_after="2022-04-10">
+    expires_after="2022-10-01">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -1998,7 +2131,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Offer.StoredOfferRelatedCardCount" units="cards"
-    expires_after="2022-04-10">
+    expires_after="2022-10-01">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2008,7 +2141,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Offer.StoredOfferRelatedMerchantCount"
-    units="merchants" expires_after="2022-04-10">
+    units="merchants" expires_after="2022-10-01">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2018,7 +2151,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Offer.SubmittedCardHasOffer"
-    enum="AutofillCreditCardOfferSubmission" expires_after="2021-12-19">
+    enum="AutofillCreditCardOfferSubmission" expires_after="2022-10-01">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2030,7 +2163,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Offer.SuggestedCardsHaveOffer"
-    enum="AutofillCreditCardOfferSuggestion" expires_after="2022-04-24">
+    enum="AutofillCreditCardOfferSuggestion" expires_after="2022-10-01">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2041,7 +2174,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Offer.SyncedOfferDataBeingValid" units="offers"
-    expires_after="2022-04-10">
+    expires_after="2022-10-01">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2267,6 +2400,17 @@ chromium-metrics-reviews@google.com.
     <variant name="CreditCards"
         summary="Forms contains credit card information."/>
   </token>
+</histogram>
+
+<histogram name="Autofill.PopupHidingReason" enum="AutofillPopupHidingReason"
+    expires_after="2022-08-01">
+  <owner>mamir@google.com</owner>
+  <owner>koerber@google.com</owner>
+  <summary>
+    This tracks the reasons for which the Autofill popup disappers or cannot be
+    displayed. Recorded everytime an Autofill popup disappears or cannot be
+    displayed.
+  </summary>
 </histogram>
 
 <histogram name="Autofill.ProfileActionOnFormSubmitted"
@@ -2597,7 +2741,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.SaveCardCardholderNamePrefilled" enum="Boolean"
-    expires_after="2022-03-31">
+    expires_after="2022-06-05">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2608,7 +2752,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.SaveCardCardholderNameWasEdited" enum="Boolean"
-    expires_after="2022-03-31">
+    expires_after="2022-06-05">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2645,7 +2789,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.SaveCreditCardPromptOffer{AutofillSaveCreditCardPromptDestination}"
-    enum="AutofillSaveCreditCardPromptOfferEnum" expires_after="2022-01-09">
+    enum="AutofillSaveCreditCardPromptOfferEnum" expires_after="2023-01-01">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <summary>
@@ -2661,7 +2805,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.SaveCreditCardPromptResult{AutofillSaveCreditCardPromptDestination}"
-    enum="AutofillSaveCreditCardPromptResultEnum" expires_after="2022-01-09">
+    enum="AutofillSaveCreditCardPromptResultEnum" expires_after="2023-01-01">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <summary>
@@ -2813,7 +2957,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.StoredCreditCardCount.Server.WithVirtualCardMetadata"
-    units="units" expires_after="2022-04-01">
+    units="units" expires_after="2022-06-05">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2867,7 +3011,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.StrikeDatabase.CreditCardSaveNotOfferedDueToMaxStrikes"
-    enum="AutofillSaveType" expires_after="2021-12-20">
+    enum="AutofillSaveType" expires_after="2022-10-31">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2879,7 +3023,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.StrikeDatabase.LocalCardMigrationNotOfferedDueToMaxStrikes"
-    enum="AutofillSaveType" expires_after="2021-12-20">
+    enum="AutofillSaveType" expires_after="2022-10-31">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2890,7 +3034,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.StrikeDatabase.NthStrikeAdded{AutofillStrikeDatabaseProjectType}"
-    units="strikes" expires_after="2021-12-20">
+    units="strikes" expires_after="2022-10-31">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2904,7 +3048,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.StrikeDatabase.StrikeDatabaseInitFailed"
-    units="attempts" expires_after="2021-12-20">
+    units="attempts" expires_after="2022-10-31">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2915,7 +3059,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.StrikeDatabase.StrikesPresentWhenLocalCardMigrationAccepted"
-    units="strikes" expires_after="2021-12-20">
+    units="strikes" expires_after="2022-10-31">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2925,7 +3069,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.StrikeDatabase.StrikesPresentWhenLocalCardSaved"
-    units="strikes" expires_after="2022-04-24">
+    units="strikes" expires_after="2022-10-31">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2935,7 +3079,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.StrikeDatabase.StrikesPresentWhenServerCardSaved"
-    units="strikes" expires_after="2022-05-01">
+    units="strikes" expires_after="2022-10-31">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2946,7 +3090,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.StrikeDatabase.StrikesPresentWhenStrikeExpired{AutofillStrikeDatabaseProjectType}"
-    units="strikes" expires_after="2021-12-20">
+    units="strikes" expires_after="2022-10-31">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -3373,7 +3517,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.VirtualCard.MetadataSynced" enum="BooleanExists"
-    expires_after="2022-04-01">
+    expires_after="2022-06-05">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>

@@ -74,6 +74,29 @@ int av1_calc_arf_boost(const TWO_PASS *twopass,
                        int project_gfu_boost);
 /*!\endcond */
 
+/*!\brief Check whether a frame in the GOP is a forward key frame
+ *
+ *\ingroup rate_control
+ *
+ * \param[in]   gf_group       GF/ARF group data structure
+ * \param[in]   gf_frame_index GOP index
+ *
+ * \return Return 1 if it is a forward key frame, otherwise return 0
+ */
+int av1_gop_check_forward_keyframe(const GF_GROUP *gf_group,
+                                   int gf_frame_index);
+
+/*!\brief Check whether a frame in the GOP is the second arf
+ *
+ *\ingroup rate_control
+ *
+ * \param[in]   gf_group       GF/ARF group data structure
+ * \param[in]   gf_frame_index GOP index
+ *
+ * \return Return 1 if it is the second arf
+ */
+int av1_gop_is_second_arf(const GF_GROUP *gf_group, int gf_frame_index);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

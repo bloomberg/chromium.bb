@@ -14,9 +14,6 @@ lucicfg.check_version(
     message = "Update depot_tools",
 )
 
-# Enable LUCI Realms support.
-lucicfg.enable_experiment("crbug.com/1085650")
-
 # Tell lucicfg what files it is allowed to touch
 lucicfg.config(
     config_dir = "generated",
@@ -167,8 +164,6 @@ luci.realm(
 )
 
 luci.builder.defaults.experiments.set({
-    # TODO(crbug.com/1135718): Promote out of experiment for all builders.
-    "chromium.chromium_tests.use_rdb_results": 100,
     # Launch Swarming tasks in "realms-aware mode", crbug.com/1136313.
     "luci.use_realms": 100,
 })
@@ -183,6 +178,7 @@ exec("//notifiers.star")
 exec("//subprojects/chromium/subproject.star")
 branches.exec("//subprojects/codesearch/subproject.star")
 branches.exec("//subprojects/findit/subproject.star")
+branches.exec("//subprojects/flakiness/subproject.star")
 branches.exec("//subprojects/goma/subproject.star")
 branches.exec("//subprojects/reclient/subproject.star")
 branches.exec("//subprojects/webrtc/subproject.star")

@@ -13,8 +13,11 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/native_frame_view.h"
 
-#if defined(OS_LINUX) && defined(USE_X11)
+#if defined(OS_LINUX)
+#include "ui/ozone/buildflags.h"
+#if BUILDFLAG(OZONE_PLATFORM_X11)
 #include "ui/base/x/x11_util.h"
+#endif
 #endif
 
 #if defined(OS_WIN)
@@ -39,6 +42,9 @@ class ClientViewEx : public views::ClientView {
     DCHECK(window_delegate_);
   }
 
+  ClientViewEx(const ClientViewEx&) = delete;
+  ClientViewEx& operator=(const ClientViewEx&) = delete;
+
   views::CloseRequestResult OnWindowCloseRequested() override {
     return window_delegate_->CanWidgetClose()
                ? views::CloseRequestResult::kCanClose
@@ -47,8 +53,6 @@ class ClientViewEx : public views::ClientView {
 
  private:
   CefWindowView::Delegate* window_delegate_;  // Not owned by this object.
-
-  DISALLOW_COPY_AND_ASSIGN(ClientViewEx);
 };
 
 // Extend NativeFrameView with draggable region handling.
@@ -56,6 +60,9 @@ class NativeFrameViewEx : public views::NativeFrameView {
  public:
   NativeFrameViewEx(views::Widget* widget, CefWindowView* view)
       : views::NativeFrameView(widget), widget_(widget), view_(view) {}
+
+  NativeFrameViewEx(const NativeFrameViewEx&) = delete;
+  NativeFrameViewEx& operator=(const NativeFrameViewEx&) = delete;
 
   gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override {
@@ -93,8 +100,6 @@ class NativeFrameViewEx : public views::NativeFrameView {
   // Not owned by this object.
   views::Widget* widget_;
   CefWindowView* view_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeFrameViewEx);
 };
 
 // The area inside the frame border that can be clicked and dragged for resizing
@@ -111,6 +116,9 @@ class CaptionlessFrameView : public views::NonClientFrameView {
  public:
   CaptionlessFrameView(views::Widget* widget, CefWindowView* view)
       : widget_(widget), view_(view) {}
+
+  CaptionlessFrameView(const CaptionlessFrameView&) = delete;
+  CaptionlessFrameView& operator=(const CaptionlessFrameView&) = delete;
 
   gfx::Rect GetBoundsForClientView() const override {
     return client_view_bounds_;
@@ -222,8 +230,6 @@ class CaptionlessFrameView : public views::NonClientFrameView {
 
   // The bounds of the client view, in this view's coordinates.
   gfx::Rect client_view_bounds_;
-
-  DISALLOW_COPY_AND_ASSIGN(CaptionlessFrameView);
 };
 
 bool IsWindowBorderHit(int code) {
@@ -340,13 +346,15 @@ void CefWindowView::CreateWidget() {
     DCHECK(widget->widget_delegate()->CanActivate());
   }
 
-#if defined(OS_LINUX) && defined(USE_X11)
+#if defined(OS_LINUX)
+#if BUILDFLAG(OZONE_PLATFORM_X11)
   if (is_frameless_) {
     auto window = view_util::GetWindowHandle(widget);
     DCHECK(window);
     ui::SetUseOSWindowFrame(static_cast<x11::Window>(window), false);
   }
-#endif  // defined(OS_LINUX) && defined(USE_X11)
+#endif
+#endif
 }
 
 CefRefPtr<CefWindow> CefWindowView::GetCefWindow() const {

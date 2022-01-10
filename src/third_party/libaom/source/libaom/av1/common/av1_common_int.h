@@ -548,8 +548,8 @@ struct CommonModeInfoParams {
   /*!
    * The minimum block size that each element in 'mi_alloc' can correspond to.
    * For decoder, this is always BLOCK_4X4.
-   * For encoder, this is currently set to BLOCK_4X4 for resolution < 4k,
-   * and BLOCK_8X8 for resolution >= 4k.
+   * For encoder, this is BLOCK_8X8 for resolution >= 4k case or REALTIME mode
+   * case. Otherwise, this is BLOCK_4X4.
    */
   BLOCK_SIZE mi_alloc_bsize;
 
@@ -594,12 +594,16 @@ struct CommonModeInfoParams {
   void (*setup_mi)(struct CommonModeInfoParams *mi_params);
   /*!
    * Allocate required memory for arrays in 'mi_params'.
-   * \param[in,out]   mi_params   object containing common mode info parameters
-   * \param           width       frame width
-   * \param           height      frame height
+   * \param[in,out]   mi_params           object containing common mode info
+   *                                      parameters
+   * \param           width               frame width
+   * \param           height              frame height
+   * \param           mode                encoding mode
+   * \param           min_partition_size  minimum partition size allowed while
+   *                                      encoding
    */
   void (*set_mb_mi)(struct CommonModeInfoParams *mi_params, int width,
-                    int height);
+                    int height, int mode, BLOCK_SIZE min_partition_size);
   /**@}*/
 };
 

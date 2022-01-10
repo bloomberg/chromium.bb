@@ -219,7 +219,7 @@ class DynamicShadowBuffer : public angle::NonCopyable
     }
 
     // Map the CPU only buffer and return the pointer. We map the entire buffer for now.
-    ANGLE_INLINE void map(size_t offset, void **mapPtr)
+    ANGLE_INLINE void map(size_t offset, uint8_t **mapPtr)
     {
         ASSERT(mapPtr);
         ASSERT(!mBuffer.empty());
@@ -545,6 +545,10 @@ class QueryHelper final : public Resource
                         CommandBuffer *resetCommandBuffer,
                         CommandBuffer *commandBuffer);
     void endQueryImpl(ContextVk *contextVk, CommandBuffer *commandBuffer);
+    template <typename CommandBufferT>
+    void resetQueryPoolImpl(ContextVk *contextVk,
+                            const QueryPool &queryPool,
+                            CommandBufferT *commandBuffer);
     VkResult getResultImpl(ContextVk *contextVk,
                            const VkQueryResultFlags flags,
                            QueryResult *resultOut);
@@ -796,8 +800,8 @@ class PipelineBarrier : angle::NonCopyable
 
     void mergeMemoryBarrier(VkPipelineStageFlags srcStageMask,
                             VkPipelineStageFlags dstStageMask,
-                            VkFlags srcAccess,
-                            VkFlags dstAccess)
+                            VkAccessFlags srcAccess,
+                            VkAccessFlags dstAccess)
     {
         mSrcStageMask |= srcStageMask;
         mDstStageMask |= dstStageMask;
@@ -829,8 +833,8 @@ class PipelineBarrier : angle::NonCopyable
   private:
     VkPipelineStageFlags mSrcStageMask;
     VkPipelineStageFlags mDstStageMask;
-    VkFlags mMemoryBarrierSrcAccess;
-    VkFlags mMemoryBarrierDstAccess;
+    VkAccessFlags mMemoryBarrierSrcAccess;
+    VkAccessFlags mMemoryBarrierDstAccess;
     std::vector<VkImageMemoryBarrier> mImageMemoryBarriers;
 };
 using PipelineBarrierArray = angle::PackedEnumMap<PipelineStage, PipelineBarrier>;
@@ -998,8 +1002,8 @@ class PackedImageAttachmentArray final
 
 // The following are used to help track the state of an invalidated attachment.
 
-// This value indicates an "infinite" CmdSize that is not valid for comparing
-constexpr uint32_t kInfiniteCmdSize = 0xFFFFFFFF;
+// This value indicates an "infinite" CmdCount that is not valid for comparing
+constexpr uint32_t kInfiniteCmdCount = 0xFFFFFFFF;
 
 // CommandBufferHelper (CBH) class wraps ANGLE's custom command buffer
 //  class, SecondaryCommandBuffer. This provides a way to temporarily
@@ -1125,15 +1129,17 @@ class CommandBufferHelper : angle::NonCopyable
     bool hasWriteAfterInvalidate(uint32_t cmdCountInvalidated, uint32_t cmdCountDisabled)
     {
         ASSERT(mIsRenderPassCommandBuffer);
-        return (cmdCountInvalidated != kInfiniteCmdSize &&
-                std::min(cmdCountDisabled, mCommandBuffer.getCommandSize()) != cmdCountInvalidated);
+        return (cmdCountInvalidated != kInfiniteCmdCount &&
+                std::min(cmdCountDisabled, mCommandBuffer.getRenderPassWriteCommandCount()) !=
+                    cmdCountInvalidated);
     }
 
     bool isInvalidated(uint32_t cmdCountInvalidated, uint32_t cmdCountDisabled)
     {
         ASSERT(mIsRenderPassCommandBuffer);
-        return cmdCountInvalidated != kInfiniteCmdSize &&
-               std::min(cmdCountDisabled, mCommandBuffer.getCommandSize()) == cmdCountInvalidated;
+        return cmdCountInvalidated != kInfiniteCmdCount &&
+               std::min(cmdCountDisabled, mCommandBuffer.getRenderPassWriteCommandCount()) ==
+                   cmdCountInvalidated;
     }
 
     void updateRenderPassColorClear(PackedAttachmentIndex colorIndex,
@@ -1291,10 +1297,10 @@ class CommandBufferHelper : angle::NonCopyable
     ResourceAccess mStencilAccess;
 
     // State tracking for whether to optimize the storeOp to DONT_CARE
-    uint32_t mDepthCmdSizeInvalidated;
-    uint32_t mDepthCmdSizeDisabled;
-    uint32_t mStencilCmdSizeInvalidated;
-    uint32_t mStencilCmdSizeDisabled;
+    uint32_t mDepthCmdCountInvalidated;
+    uint32_t mDepthCmdCountDisabled;
+    uint32_t mStencilCmdCountInvalidated;
+    uint32_t mStencilCmdCountDisabled;
     gl::Rectangle mDepthInvalidateArea;
     gl::Rectangle mStencilInvalidateArea;
 
@@ -1400,6 +1406,7 @@ enum class ImageLayout
     DepthStencilAttachment,
     DepthStencilResolveAttachment,
     Present,
+    SharedPresent,
     // The rest of the layouts.
     ExternalPreInitialized,
     ExternalShadersReadOnly,
@@ -1423,6 +1430,10 @@ enum class ImageLayout
 };
 
 VkImageCreateFlags GetImageCreateFlags(gl::TextureType textureType);
+
+ImageLayout GetImageLayoutFromGLImageLayout(GLenum layout);
+
+GLenum ConvertImageLayoutToGLImageLayout(ImageLayout imageLayout);
 
 VkImageLayout ConvertImageLayoutToVkImageLayout(ImageLayout imageLayout);
 
@@ -1503,7 +1514,6 @@ class ImageHelper final : public Resource, public angle::Subject
                                uint32_t mipLevels,
                                uint32_t layerCount,
                                bool isRobustResourceInitEnabled,
-                               bool *imageFormatListEnabledOut,
                                bool hasProtectedContent);
     angle::Result initMemory(Context *context,
                              bool hasProtectedContent,
@@ -1593,6 +1603,21 @@ class ImageHelper final : public Resource, public angle::Subject
                                                           GLint samples,
                                                           const ImageHelper &resolveImage,
                                                           bool isRobustResourceInitEnabled);
+
+    // Helper for initExternal and users to automatically derive the appropriate VkImageCreateInfo
+    // pNext chain based on the given parameters, and adjust create flags.  In some cases, these
+    // shouldn't be automatically derived, for example when importing images through
+    // EXT_external_objects and ANGLE_external_objects_flags.
+    static constexpr uint32_t kImageListFormatCount = 2;
+    using ImageListFormats                          = std::array<VkFormat, kImageListFormatCount>;
+    static const void *DeriveCreateInfoPNext(
+        Context *context,
+        angle::FormatID actualFormatID,
+        const void *pNext,
+        VkImageFormatListCreateInfoKHR *imageFormatListInfoStorage,
+        ImageListFormats *imageListFormatsStorage,
+        VkImageCreateFlags *createFlagsOut);
+
     // Release the underlining VkImage object for garbage collection.
     void releaseImage(RendererVk *renderer);
     // Similar to releaseImage, but also notify all contexts in the same share group to stop
@@ -1612,7 +1637,8 @@ class ImageHelper final : public Resource, public angle::Subject
                              VkImage handle,
                              const gl::Extents &glExtents,
                              bool rotatedAspectRatio,
-                             const Format &format,
+                             angle::FormatID intendedFormatID,
+                             angle::FormatID actualFormatID,
                              GLint samples,
                              bool isRobustResourceInitEnabled);
     void resetImageWeakReference();
@@ -1620,6 +1646,7 @@ class ImageHelper final : public Resource, public angle::Subject
     const Image &getImage() const { return mImage; }
     const DeviceMemory &getDeviceMemory() const { return mDeviceMemory; }
 
+    const VkImageCreateInfo &getVkImageCreateInfo() const { return mVkImageCreateInfo; }
     void setTilingMode(VkImageTiling tilingMode) { mTilingMode = tilingMode; }
     VkImageTiling getTilingMode() const { return mTilingMode; }
     VkImageCreateFlags getCreateFlags() const { return mCreateFlags; }
@@ -1672,7 +1699,15 @@ class ImageHelper final : public Resource, public angle::Subject
         return mImageSerial;
     }
 
-    void setCurrentImageLayout(ImageLayout newLayout) { mCurrentLayout = newLayout; }
+    void setCurrentImageLayout(ImageLayout newLayout)
+    {
+        // Once you transition to ImageLayout::SharedPresent, you never transition out of it.
+        if (mCurrentLayout == ImageLayout::SharedPresent)
+        {
+            return;
+        }
+        mCurrentLayout = newLayout;
+    }
     ImageLayout getCurrentImageLayout() const { return mCurrentLayout; }
     VkImageLayout getCurrentLayout() const;
 
@@ -1849,6 +1884,13 @@ class ImageHelper final : public Resource, public angle::Subject
         barrierImpl(context, aspectMask, newLayout, mCurrentQueueFamilyIndex, commandBuffer);
     }
 
+    void recordWriteBarrierOneOff(Context *context,
+                                  ImageLayout newLayout,
+                                  PrimaryCommandBuffer *commandBuffer)
+    {
+        barrierImpl(context, getAspectFlags(), newLayout, mCurrentQueueFamilyIndex, commandBuffer);
+    }
+
     // This function can be used to prevent issuing redundant layout transition commands.
     bool isReadBarrierNecessary(ImageLayout newLayout) const;
 
@@ -1964,8 +2006,13 @@ class ImageHelper final : public Resource, public angle::Subject
                  uint32_t layerStart,
                  uint32_t layerCount,
                  VkImageAspectFlags aspectFlags);
-    bool hasImmutableSampler() const;
-    uint64_t getExternalFormat() const { return mExternalFormat; }
+    bool hasImmutableSampler() const { return mYcbcrConversionDesc.valid(); }
+    uint64_t getExternalFormat() const
+    {
+        return mYcbcrConversionDesc.mIsExternalFormat ? mYcbcrConversionDesc.mExternalOrVkFormat
+                                                      : 0;
+    }
+    const YcbcrConversionDesc *getYcbcrConversionDesc() const { return &mYcbcrConversionDesc; }
 
     // Used by framebuffer and render pass functions to decide loadOps and invalidate/un-invalidate
     // render target contents.
@@ -2076,6 +2123,8 @@ class ImageHelper final : public Resource, public angle::Subject
         } data;
         RefCounted<ImageHelper> *image;
     };
+
+    void deriveExternalImageTiling(const void *createInfoChain);
 
     // Called from flushStagedUpdates, removes updates that are later superseded by another.  This
     // cannot be done at the time the updates were staged, as the image is not created (and thus the
@@ -2196,6 +2245,7 @@ class ImageHelper final : public Resource, public angle::Subject
     DeviceMemory mDeviceMemory;
 
     // Image properties.
+    VkImageCreateInfo mVkImageCreateInfo;
     VkImageType mImageType;
     VkImageTiling mTilingMode;
     VkImageCreateFlags mCreateFlags;
@@ -2222,8 +2272,8 @@ class ImageHelper final : public Resource, public angle::Subject
     RenderPassUsageFlags mRenderPassUsageFlags;
 
     // For imported images
+    YcbcrConversionDesc mYcbcrConversionDesc;
     BindingPointer<SamplerYcbcrConversion> mYuvConversionSampler;
-    uint64_t mExternalFormat;
 
     // The first level that has been allocated. For mutable textures, this should be same as
     // mBaseLevel since we always reallocate VkImage based on mBaseLevel change. But for immutable

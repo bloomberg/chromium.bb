@@ -97,10 +97,10 @@ type texture_storage_2d_array<F: texel_format, A: access>
 type texture_storage_3d<F: texel_format, A: access>
 type texture_external
 
-type _modf_result
-[[display("_modf_result_vec{N}")]] type _modf_result_vec<N: num>
-type _frexp_result
-[[display("_frexp_result_vec{N}")]] type _frexp_result_vec<N: num>
+type __modf_result
+[[display("__modf_result_vec{N}")]] type __modf_result_vec<N: num>
+type __frexp_result
+[[display("__frexp_result_vec{N}")]] type __frexp_result_vec<N: num>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Type matchers                                                              //
@@ -292,7 +292,7 @@ fn cross(vec3<f32>, vec3<f32>) -> vec3<f32>
 fn determinant<N: num>(mat<N, N, f32>) -> f32
 fn distance(f32, f32) -> f32
 fn distance<N: num>(vec<N, f32>, vec<N, f32>) -> f32
-fn dot<N: num>(vec<N, f32>, vec<N, f32>) -> f32
+fn dot<N: num, T: fiu32>(vec<N, T>, vec<N, T>) -> T
 [[stage("fragment")]] fn dpdx(f32) -> f32
 [[stage("fragment")]] fn dpdx<N: num>(vec<N, f32>) -> vec<N, f32>
 [[stage("fragment")]] fn dpdxCoarse(f32) -> f32
@@ -316,8 +316,8 @@ fn fma(f32, f32, f32) -> f32
 fn fma<N: num>(vec<N, f32>, vec<N, f32>, vec<N, f32>) -> vec<N, f32>
 fn fract(f32) -> f32
 fn fract<N: num>(vec<N, f32>) -> vec<N, f32>
-fn frexp(f32) -> _frexp_result
-fn frexp<N: num>(vec<N, f32>) -> _frexp_result_vec<N>
+fn frexp(f32) -> __frexp_result
+fn frexp<N: num>(vec<N, f32>) -> __frexp_result_vec<N>
 [[stage("fragment")]] fn fwidth(f32) -> f32
 [[stage("fragment")]] fn fwidth<N: num>(vec<N, f32>) -> vec<N, f32>
 [[stage("fragment")]] fn fwidthCoarse(f32) -> f32
@@ -327,14 +327,14 @@ fn frexp<N: num>(vec<N, f32>) -> _frexp_result_vec<N>
 [[deprecated]] fn ignore<T>(T)
 fn inverseSqrt(f32) -> f32
 fn inverseSqrt<N: num>(vec<N, f32>) -> vec<N, f32>
-fn isFinite(f32) -> bool
-fn isFinite<N: num>(vec<N, f32>) -> vec<N, bool>
-fn isInf(f32) -> bool
-fn isInf<N: num>(vec<N, f32>) -> vec<N, bool>
-fn isNan(f32) -> bool
-fn isNan<N: num>(vec<N, f32>) -> vec<N, bool>
-fn isNormal(f32) -> bool
-fn isNormal<N: num>(vec<N, f32>) -> vec<N, bool>
+[[deprecated]] fn isFinite(f32) -> bool
+[[deprecated]] fn isFinite<N: num>(vec<N, f32>) -> vec<N, bool>
+[[deprecated]] fn isInf(f32) -> bool
+[[deprecated]] fn isInf<N: num>(vec<N, f32>) -> vec<N, bool>
+[[deprecated]] fn isNan(f32) -> bool
+[[deprecated]] fn isNan<N: num>(vec<N, f32>) -> vec<N, bool>
+[[deprecated]] fn isNormal(f32) -> bool
+[[deprecated]] fn isNormal<N: num>(vec<N, f32>) -> vec<N, bool>
 fn ldexp(f32, i32) -> f32
 fn ldexp<N: num>(vec<N, f32>, vec<N, i32>) -> vec<N, f32>
 fn length(f32) -> f32
@@ -350,8 +350,8 @@ fn min<N: num, T: fiu32>(vec<N, T>, vec<N, T>) -> vec<N, T>
 fn mix(f32, f32, f32) -> f32
 fn mix<N: num>(vec<N, f32>, vec<N, f32>, vec<N, f32>) -> vec<N, f32>
 fn mix<N: num>(vec<N, f32>, vec<N, f32>, f32) -> vec<N, f32>
-fn modf(f32) -> _modf_result
-fn modf<N: num>(vec<N, f32>) -> _modf_result_vec<N>
+fn modf(f32) -> __modf_result
+fn modf<N: num>(vec<N, f32>) -> __modf_result_vec<N>
 fn normalize<N: num>(vec<N, f32>) -> vec<N, f32>
 fn pack2x16float(vec2<f32>) -> u32
 fn pack2x16snorm(vec2<f32>) -> u32
@@ -423,6 +423,24 @@ fn textureDimensions<F: texel_format, A: write_only>(texture: texture_storage_2d
 fn textureDimensions<F: texel_format, A: write_only>(texture: texture_storage_2d_array<F, A>) -> vec2<i32>
 fn textureDimensions<F: texel_format, A: write_only>(texture: texture_storage_3d<F, A>) -> vec3<i32>
 fn textureDimensions(texture: texture_external) -> vec2<i32>
+fn textureGather<T: fiu32>(component: i32, texture: texture_2d<T>, sampler: sampler, coords: vec2<f32>) -> vec4<T>
+fn textureGather<T: fiu32>(component: i32, texture: texture_2d<T>, sampler: sampler, coords: vec2<f32>, offset: vec2<i32>) -> vec4<T>
+fn textureGather<T: fiu32>(component: i32, texture: texture_2d_array<T>, sampler: sampler, coords: vec2<f32>, array_index: i32) -> vec4<T>
+fn textureGather<T: fiu32>(component: i32, texture: texture_2d_array<T>, sampler: sampler, coords: vec2<f32>, array_index: i32, offset: vec2<i32>) -> vec4<T>
+fn textureGather<T: fiu32>(component: i32, texture: texture_cube<T>, sampler: sampler, coords: vec3<f32>) -> vec4<T>
+fn textureGather<T: fiu32>(component: i32, texture: texture_cube_array<T>, sampler: sampler, coords: vec3<f32>, array_index: i32) -> vec4<T>
+fn textureGather(texture: texture_depth_2d, sampler: sampler, coords: vec2<f32>) -> vec4<f32>
+fn textureGather(texture: texture_depth_2d, sampler: sampler, coords: vec2<f32>, offset: vec2<i32>) -> vec4<f32>
+fn textureGather(texture: texture_depth_2d_array, sampler: sampler, coords: vec2<f32>, array_index: i32) -> vec4<f32>
+fn textureGather(texture: texture_depth_2d_array, sampler: sampler, coords: vec2<f32>, array_index: i32, offset: vec2<i32>) -> vec4<f32>
+fn textureGather(texture: texture_depth_cube, sampler: sampler, coords: vec3<f32>) -> vec4<f32>
+fn textureGather(texture: texture_depth_cube_array, sampler: sampler, coords: vec3<f32>, array_index: i32) -> vec4<f32>
+fn textureGatherCompare(texture: texture_depth_2d, sampler: sampler_comparison, coords: vec2<f32>, depth_ref: f32) -> vec4<f32>
+fn textureGatherCompare(texture: texture_depth_2d, sampler: sampler_comparison, coords: vec2<f32>, depth_ref: f32, offset: vec2<i32>) -> vec4<f32>
+fn textureGatherCompare(texture: texture_depth_2d_array, sampler: sampler_comparison, coords: vec2<f32>, array_index: i32, depth_ref: f32) -> vec4<f32>
+fn textureGatherCompare(texture: texture_depth_2d_array, sampler: sampler_comparison, coords: vec2<f32>, array_index: i32, depth_ref: f32, offset: vec2<i32>) -> vec4<f32>
+fn textureGatherCompare(texture: texture_depth_cube, sampler: sampler_comparison, coords: vec3<f32>, depth_ref: f32) -> vec4<f32>
+fn textureGatherCompare(texture: texture_depth_cube_array, sampler: sampler_comparison, coords: vec3<f32>, array_index: i32, depth_ref: f32) -> vec4<f32>
 fn textureNumLayers<T: fiu32>(texture: texture_2d_array<T>) -> i32
 fn textureNumLayers<T: fiu32>(texture: texture_cube_array<T>) -> i32
 fn textureNumLayers(texture: texture_depth_2d_array) -> i32

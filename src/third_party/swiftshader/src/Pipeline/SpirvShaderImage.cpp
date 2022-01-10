@@ -23,10 +23,11 @@
 
 namespace {
 
-VkFormat SpirvFormatToVulkanFormat(spv::ImageFormat format)
+vk::Format SpirvFormatToVulkanFormat(spv::ImageFormat format)
 {
 	switch(format)
 	{
+	case spv::ImageFormatUnknown: return VK_FORMAT_UNDEFINED;
 	case spv::ImageFormatRgba32f: return VK_FORMAT_R32G32B32A32_SFLOAT;
 	case spv::ImageFormatRgba16f: return VK_FORMAT_R16G16B16A16_SFLOAT;
 	case spv::ImageFormatR32f: return VK_FORMAT_R32_SFLOAT;
@@ -87,48 +88,228 @@ sw::SIMD::Float sRGBtoLinear(sw::SIMD::Float c)
 
 namespace sw {
 
-SpirvShader::EmitResult SpirvShader::EmitImageSampleImplicitLod(Variant variant, InsnIterator insn, EmitState *state) const
+SpirvShader::ImageInstruction::ImageInstruction(InsnIterator insn, const SpirvShader &spirv)
+    : ImageInstructionSignature(parseVariantAndMethod(insn))
+    , position(insn.distanceFrom(spirv.begin()))
 {
-	return EmitImageSample({ variant, Implicit }, insn, state);
-}
-
-SpirvShader::EmitResult SpirvShader::EmitImageGather(Variant variant, InsnIterator insn, EmitState *state) const
-{
-	ImageInstruction instruction = { variant, Gather };
-	instruction.gatherComponent = !instruction.isDref() ? getObject(insn.word(5)).constantValue[0] : 0;
-
-	return EmitImageSample(instruction, insn, state);
-}
-
-SpirvShader::EmitResult SpirvShader::EmitImageSampleExplicitLod(Variant variant, InsnIterator insn, EmitState *state) const
-{
-	auto isDref = (variant == Dref) || (variant == ProjDref);
-	uint32_t imageOperands = static_cast<spv::ImageOperandsMask>(insn.word(isDref ? 6 : 5));
-	imageOperands &= ~spv::ImageOperandsConstOffsetMask;  // Dealt with later.
-
-	if((imageOperands & spv::ImageOperandsLodMask) == imageOperands)
+	if(samplerMethod == Write)
 	{
-		return EmitImageSample({ variant, Lod }, insn, state);
-	}
-	else if((imageOperands & spv::ImageOperandsGradMask) == imageOperands)
-	{
-		return EmitImageSample({ variant, Grad }, insn, state);
+		imageId = insn.word(1);
+		coordinateId = insn.word(2);
+		texelId = insn.word(3);
 	}
 	else
+	{
+		resultTypeId = insn.resultTypeId();  // word(1)
+		resultId = insn.resultId();          // word(2)
+
+		if(samplerMethod == Fetch || samplerMethod == Read || samplerMethod == TexelPointer)  // Samplerless
+		{
+			imageId = insn.word(3);
+		}
+		else
+		{
+			Object::ID sampledImageId = insn.word(3);
+			const Object &sampledImage = spirv.getObject(sampledImageId);
+
+			if(sampledImage.opcode() == spv::OpSampledImage)
+			{
+				imageId = sampledImage.definition.word(3);
+				samplerId = sampledImage.definition.word(4);
+			}
+			else  // Combined image/sampler
+			{
+				imageId = sampledImageId;
+				samplerId = sampledImageId;
+			}
+		}
+
+		coordinateId = insn.word(4);
+	}
+
+	// `imageId` can represent either a Sampled Image, a samplerless Image, or a pointer to an Image.
+	// To get to the OpTypeImage operands, traverse the OpTypeSampledImage or OpTypePointer.
+	const Type &imageObjectType = spirv.getObjectType(imageId);
+	const Type &imageReferenceType = (imageObjectType.opcode() == spv::OpTypeSampledImage)
+	                                     ? spirv.getType(imageObjectType.definition.word(2))
+	                                     : imageObjectType;
+	const Type &imageType = ((imageReferenceType.opcode() == spv::OpTypePointer)
+	                             ? spirv.getType(imageReferenceType.element)
+	                             : imageReferenceType);
+
+	ASSERT(imageType.opcode() == spv::OpTypeImage);
+	dim = imageType.definition.word(3);
+	arrayed = imageType.definition.word(5);
+	imageFormat = imageType.definition.word(8);
+
+	const Object &coordinateObject = spirv.getObject(coordinateId);
+	const Type &coordinateType = spirv.getType(coordinateObject);
+	coordinates = coordinateType.componentCount - (isProj() ? 1 : 0);
+
+	if(samplerMethod == TexelPointer)
+	{
+		sampleId = insn.word(5);
+		sample = !spirv.getObject(sampleId).isConstantZero();
+	}
+
+	if(isDref())
+	{
+		drefId = insn.word(5);
+	}
+
+	if(samplerMethod == Gather)
+	{
+		gatherComponent = !isDref() ? spirv.getObject(insn.word(5)).constantValue[0] : 0;
+	}
+
+	uint32_t operandsIndex = getImageOperandsIndex(insn);
+	uint32_t imageOperands = (operandsIndex != 0) ? insn.word(operandsIndex) : 0;  // The mask which indicates which operands are provided.
+
+	operandsIndex += 1;  // Advance to the first actual operand <id> location.
+
+	if(imageOperands & spv::ImageOperandsBiasMask)
+	{
+		ASSERT(samplerMethod == Bias);
+		lodOrBiasId = insn.word(operandsIndex);
+		operandsIndex += 1;
+		imageOperands &= ~spv::ImageOperandsBiasMask;
+	}
+
+	if(imageOperands & spv::ImageOperandsLodMask)
+	{
+		ASSERT(samplerMethod == Lod || samplerMethod == Fetch);
+		lodOrBiasId = insn.word(operandsIndex);
+		operandsIndex += 1;
+		imageOperands &= ~spv::ImageOperandsLodMask;
+	}
+
+	if(imageOperands & spv::ImageOperandsGradMask)
+	{
+		ASSERT(samplerMethod == Grad);
+		gradDxId = insn.word(operandsIndex + 0);
+		gradDyId = insn.word(operandsIndex + 1);
+		operandsIndex += 2;
+		imageOperands &= ~spv::ImageOperandsGradMask;
+
+		grad = spirv.getObjectType(gradDxId).componentCount;
+	}
+
+	if(imageOperands & spv::ImageOperandsConstOffsetMask)
+	{
+		offsetId = insn.word(operandsIndex);
+		operandsIndex += 1;
+		imageOperands &= ~spv::ImageOperandsConstOffsetMask;
+
+		offset = spirv.getObjectType(offsetId).componentCount;
+	}
+
+	if(imageOperands & spv::ImageOperandsSampleMask)
+	{
+		ASSERT(samplerMethod == Fetch || samplerMethod == Read || samplerMethod == Write);
+		sampleId = insn.word(operandsIndex);
+		operandsIndex += 1;
+		imageOperands &= ~spv::ImageOperandsSampleMask;
+
+		sample = !spirv.getObject(sampleId).isConstantZero();
+	}
+
+	// TODO(b/174475384)
+	if(imageOperands & spv::ImageOperandsZeroExtendMask)
+	{
+		ASSERT(samplerMethod == Read || samplerMethod == Write);
+		imageOperands &= ~spv::ImageOperandsZeroExtendMask;
+	}
+	else if(imageOperands & spv::ImageOperandsSignExtendMask)
+	{
+		ASSERT(samplerMethod == Read || samplerMethod == Write);
+		imageOperands &= ~spv::ImageOperandsSignExtendMask;
+	}
+
+	if(imageOperands != 0)
+	{
 		UNSUPPORTED("Image operands 0x%08X", imageOperands);
-
-	return EmitResult::Continue;
+	}
 }
 
-SpirvShader::EmitResult SpirvShader::EmitImageFetch(InsnIterator insn, EmitState *state) const
+SpirvShader::ImageInstructionSignature SpirvShader::ImageInstruction::parseVariantAndMethod(InsnIterator insn)
 {
-	return EmitImageSample({ None, Fetch }, insn, state);
+	uint32_t imageOperands = getImageOperandsMask(insn);
+	bool bias = imageOperands & spv::ImageOperandsBiasMask;
+	bool grad = imageOperands & spv::ImageOperandsGradMask;
+
+	switch(insn.opcode())
+	{
+	case spv::OpImageSampleImplicitLod: return { None, bias ? Bias : Implicit };
+	case spv::OpImageSampleExplicitLod: return { None, grad ? Grad : Lod };
+	case spv::OpImageSampleDrefImplicitLod: return { Dref, bias ? Bias : Implicit };
+	case spv::OpImageSampleDrefExplicitLod: return { Dref, grad ? Grad : Lod };
+	case spv::OpImageSampleProjImplicitLod: return { Proj, bias ? Bias : Implicit };
+	case spv::OpImageSampleProjExplicitLod: return { Proj, grad ? Grad : Lod };
+	case spv::OpImageSampleProjDrefImplicitLod: return { ProjDref, bias ? Bias : Implicit };
+	case spv::OpImageSampleProjDrefExplicitLod: return { ProjDref, grad ? Grad : Lod };
+	case spv::OpImageGather: return { None, Gather };
+	case spv::OpImageDrefGather: return { Dref, Gather };
+	case spv::OpImageFetch: return { None, Fetch };
+	case spv::OpImageQueryLod: return { None, Query };
+	case spv::OpImageRead: return { None, Read };
+	case spv::OpImageWrite: return { None, Write };
+	case spv::OpImageTexelPointer: return { None, TexelPointer };
+
+	default:
+		ASSERT(false);
+		return { None, Implicit };
+	}
 }
 
-SpirvShader::EmitResult SpirvShader::EmitImageSample(ImageInstruction instruction, InsnIterator insn, EmitState *state) const
+// Returns the instruction word index at which the Image Operands mask is located, or 0 if not present.
+uint32_t SpirvShader::ImageInstruction::getImageOperandsIndex(InsnIterator insn)
 {
-	auto &resultType = getType(insn.resultTypeId());
-	auto &result = state->createIntermediate(insn.resultId(), resultType.componentCount);
+	switch(insn.opcode())
+	{
+	case spv::OpImageSampleImplicitLod:
+	case spv::OpImageSampleProjImplicitLod:
+		return insn.wordCount() > 5 ? 5 : 0;  // Optional
+	case spv::OpImageSampleExplicitLod:
+	case spv::OpImageSampleProjExplicitLod:
+		return 5;  // "Either Lod or Grad image operands must be present."
+	case spv::OpImageSampleDrefImplicitLod:
+	case spv::OpImageSampleProjDrefImplicitLod:
+		return insn.wordCount() > 6 ? 6 : 0;  // Optional
+	case spv::OpImageSampleDrefExplicitLod:
+	case spv::OpImageSampleProjDrefExplicitLod:
+		return 6;  // "Either Lod or Grad image operands must be present."
+	case spv::OpImageGather:
+	case spv::OpImageDrefGather:
+		return insn.wordCount() > 6 ? 6 : 0;  // Optional
+	case spv::OpImageFetch:
+		return insn.wordCount() > 5 ? 5 : 0;  // Optional
+	case spv::OpImageQueryLod:
+		ASSERT(insn.wordCount() == 5);
+		return 0;  // No image operands.
+	case spv::OpImageRead:
+		return insn.wordCount() > 5 ? 5 : 0;  // Optional
+	case spv::OpImageWrite:
+		return insn.wordCount() > 4 ? 4 : 0;  // Optional
+	case spv::OpImageTexelPointer:
+		ASSERT(insn.wordCount() == 6);
+		return 0;  // No image operands.
+
+	default:
+		ASSERT(false);
+		return 0;
+	}
+}
+
+uint32_t SpirvShader::ImageInstruction::getImageOperandsMask(InsnIterator insn)
+{
+	uint32_t operandsIndex = getImageOperandsIndex(insn);
+	return (operandsIndex != 0) ? insn.word(operandsIndex) : 0;
+}
+
+SpirvShader::EmitResult SpirvShader::EmitImageSample(const ImageInstruction &instruction, EmitState *state) const
+{
+	auto &resultType = getType(instruction.resultTypeId);
+	auto &result = state->createIntermediate(instruction.resultId, resultType.componentCount);
 	Array<SIMD::Float> out(4);
 
 	// TODO(b/153380916): When we're in a code path that is always executed,
@@ -136,7 +317,7 @@ SpirvShader::EmitResult SpirvShader::EmitImageSample(ImageInstruction instructio
 	// check whether any lanes are active, and can elide the jump.
 	If(AnyTrue(state->activeLaneMask()))
 	{
-		EmitImageSampleUnconditional(out, instruction, insn, state);
+		EmitImageSampleUnconditional(out, instruction, state);
 	}
 
 	for(auto i = 0u; i < resultType.componentCount; i++) { result.move(i, out[i]); }
@@ -144,111 +325,52 @@ SpirvShader::EmitResult SpirvShader::EmitImageSample(ImageInstruction instructio
 	return EmitResult::Continue;
 }
 
-void SpirvShader::EmitImageSampleUnconditional(Array<SIMD::Float> &out, ImageInstruction instruction, InsnIterator insn, EmitState *state) const
+void SpirvShader::EmitImageSampleUnconditional(Array<SIMD::Float> &out, const ImageInstruction &instruction, EmitState *state) const
 {
-	Object::ID sampledImageId = insn.word(3);  // For OpImageFetch this is just an Image, not a SampledImage.
-	Object::ID coordinateId = insn.word(4);
+	Pointer<Byte> imageDescriptor = state->getPointer(instruction.imageId).base;  // vk::SampledImageDescriptor*
 
-	auto imageDescriptor = state->getPointer(sampledImageId).base;  // vk::SampledImageDescriptor*
+	Pointer<Byte> samplerFunction = lookupSamplerFunction(imageDescriptor, instruction, state);
 
-	// If using a separate sampler, look through the OpSampledImage instruction to find the sampler descriptor
-	auto &sampledImage = getObject(sampledImageId);
-	auto samplerDescriptor = (sampledImage.opcode() == spv::OpSampledImage) ? state->getPointer(sampledImage.definition.word(4)).base : imageDescriptor;
+	callSamplerFunction(samplerFunction, out, imageDescriptor, instruction, state);
+}
 
-	auto coordinate = Operand(this, state, coordinateId);
+Pointer<Byte> SpirvShader::lookupSamplerFunction(Pointer<Byte> imageDescriptor, const ImageInstruction &instruction, EmitState *state) const
+{
+	Int samplerId = 0;
 
-	rr::Int samplerId = *Pointer<rr::Int>(samplerDescriptor + OFFSET(vk::SampledImageDescriptor, samplerId));  // vk::Sampler::id
-	Pointer<Byte> texture = imageDescriptor + OFFSET(vk::SampledImageDescriptor, texture);                     // sw::Texture*
-
-	// Above we assumed that if the SampledImage operand is not the result of an OpSampledImage,
-	// it must be a combined image sampler loaded straight from the descriptor set. For OpImageFetch
-	// it's just an Image operand, so there's no sampler descriptor data.
-	if(getType(sampledImage).opcode() != spv::OpTypeSampledImage)
+	if(instruction.samplerId != 0)
 	{
-		samplerId = Int(0);
+		Pointer<Byte> samplerDescriptor = state->getPointer(instruction.samplerId).base;  // vk::SampledImageDescriptor*
+
+		samplerId = *Pointer<rr::Int>(samplerDescriptor + OFFSET(vk::SampledImageDescriptor, samplerId));  // vk::Sampler::id
 	}
 
-	uint32_t imageOperands = spv::ImageOperandsMaskNone;
-	bool lodOrBias = false;
-	Object::ID lodOrBiasId = 0;
-	bool grad = false;
-	Object::ID gradDxId = 0;
-	Object::ID gradDyId = 0;
-	bool constOffset = false;
-	Object::ID offsetId = 0;
-	bool sample = false;
-	Object::ID sampleId = 0;
+	auto &cache = state->routine->samplerCache.at(instruction.position);
+	Bool cacheHit = (cache.imageDescriptor == imageDescriptor) && (cache.samplerId == samplerId);  // TODO(b/205566405): Skip sampler ID check for samplerless instructions.
 
-	uint32_t operand = (instruction.isDref() || instruction.samplerMethod == Gather) ? 6 : 5;
-
-	if(insn.wordCount() > operand)
+	If(!cacheHit)
 	{
-		imageOperands = static_cast<spv::ImageOperandsMask>(insn.word(operand++));
-
-		if(imageOperands & spv::ImageOperandsBiasMask)
-		{
-			lodOrBias = true;
-			lodOrBiasId = insn.word(operand);
-			operand++;
-			imageOperands &= ~spv::ImageOperandsBiasMask;
-
-			ASSERT(instruction.samplerMethod == Implicit);
-			instruction.samplerMethod = Bias;
-		}
-
-		if(imageOperands & spv::ImageOperandsLodMask)
-		{
-			lodOrBias = true;
-			lodOrBiasId = insn.word(operand);
-			operand++;
-			imageOperands &= ~spv::ImageOperandsLodMask;
-		}
-
-		if(imageOperands & spv::ImageOperandsGradMask)
-		{
-			ASSERT(!lodOrBias);  // SPIR-V 1.3: "It is invalid to set both the Lod and Grad bits." Bias is for ImplicitLod, Grad for ExplicitLod.
-			grad = true;
-			gradDxId = insn.word(operand + 0);
-			gradDyId = insn.word(operand + 1);
-			operand += 2;
-			imageOperands &= ~spv::ImageOperandsGradMask;
-		}
-
-		if(imageOperands & spv::ImageOperandsConstOffsetMask)
-		{
-			constOffset = true;
-			offsetId = insn.word(operand);
-			operand++;
-			imageOperands &= ~spv::ImageOperandsConstOffsetMask;
-		}
-
-		if(imageOperands & spv::ImageOperandsSampleMask)
-		{
-			sample = true;
-			sampleId = insn.word(operand);
-			imageOperands &= ~spv::ImageOperandsSampleMask;
-
-			ASSERT(instruction.samplerMethod == Fetch);
-			instruction.sample = true;
-		}
-
-		if(imageOperands != 0)
-		{
-			UNSUPPORTED("Image operands 0x%08X", imageOperands);
-		}
+		rr::Int imageViewId = *Pointer<rr::Int>(imageDescriptor + OFFSET(vk::ImageDescriptor, imageViewId));
+		cache.function = Call(getImageSampler, state->routine->device, instruction.signature, samplerId, imageViewId);
+		cache.imageDescriptor = imageDescriptor;
+		cache.samplerId = samplerId;
 	}
 
+	return cache.function;
+}
+
+void SpirvShader::callSamplerFunction(Pointer<Byte> samplerFunction, Array<SIMD::Float> &out, Pointer<Byte> imageDescriptor, const ImageInstruction &instruction, EmitState *state) const
+{
 	Array<SIMD::Float> in(16);  // Maximum 16 input parameter components.
 
-	uint32_t coordinates = coordinate.componentCount - instruction.isProj();
-	instruction.coordinates = coordinates;
+	auto coordinate = Operand(this, state, instruction.coordinateId);
 
 	uint32_t i = 0;
-	for(; i < coordinates; i++)
+	for(; i < instruction.coordinates; i++)
 	{
 		if(instruction.isProj())
 		{
-			in[i] = coordinate.Float(i) / coordinate.Float(coordinates);  // TODO(b/129523279): Optimize using reciprocal.
+			in[i] = coordinate.Float(i) / coordinate.Float(instruction.coordinates);  // TODO(b/129523279): Optimize using reciprocal.
 		}
 		else
 		{
@@ -258,11 +380,11 @@ void SpirvShader::EmitImageSampleUnconditional(Array<SIMD::Float> &out, ImageIns
 
 	if(instruction.isDref())
 	{
-		auto drefValue = Operand(this, state, insn.word(5));
+		auto drefValue = Operand(this, state, instruction.drefId);
 
 		if(instruction.isProj())
 		{
-			in[i] = drefValue.Float(0) / coordinate.Float(coordinates);  // TODO(b/129523279): Optimize using reciprocal.
+			in[i] = drefValue.Float(0) / coordinate.Float(instruction.coordinates);  // TODO(b/129523279): Optimize using reciprocal.
 		}
 		else
 		{
@@ -272,19 +394,17 @@ void SpirvShader::EmitImageSampleUnconditional(Array<SIMD::Float> &out, ImageIns
 		i++;
 	}
 
-	if(lodOrBias)
+	if(instruction.lodOrBiasId != 0)
 	{
-		auto lodValue = Operand(this, state, lodOrBiasId);
+		auto lodValue = Operand(this, state, instruction.lodOrBiasId);
 		in[i] = lodValue.Float(0);
 		i++;
 	}
-	else if(grad)
+	else if(instruction.gradDxId != 0)
 	{
-		auto dxValue = Operand(this, state, gradDxId);
-		auto dyValue = Operand(this, state, gradDyId);
+		auto dxValue = Operand(this, state, instruction.gradDxId);
+		auto dyValue = Operand(this, state, instruction.gradDyId);
 		ASSERT(dxValue.componentCount == dxValue.componentCount);
-
-		instruction.grad = dxValue.componentCount;
 
 		for(uint32_t j = 0; j < dxValue.componentCount; j++, i++)
 		{
@@ -305,10 +425,9 @@ void SpirvShader::EmitImageSampleUnconditional(Array<SIMD::Float> &out, ImageIns
 		i++;
 	}
 
-	if(constOffset)
+	if(instruction.offsetId != 0)
 	{
-		auto offsetValue = Operand(this, state, offsetId);
-		instruction.offset = offsetValue.componentCount;
+		auto offsetValue = Operand(this, state, instruction.offsetId);
 
 		for(uint32_t j = 0; j < offsetValue.componentCount; j++, i++)
 		{
@@ -316,32 +435,20 @@ void SpirvShader::EmitImageSampleUnconditional(Array<SIMD::Float> &out, ImageIns
 		}
 	}
 
-	if(sample)
+	if(instruction.sample)
 	{
-		auto sampleValue = Operand(this, state, sampleId);
+		auto sampleValue = Operand(this, state, instruction.sampleId);
 		in[i] = As<SIMD::Float>(sampleValue.Int(0));
 	}
 
-	auto cacheIt = state->routine->samplerCache.find(insn.resultId());
-	ASSERT(cacheIt != state->routine->samplerCache.end());
-	auto &cache = cacheIt->second;
-	auto cacheHit = cache.imageDescriptor == imageDescriptor && cache.samplerId == samplerId;
+	Pointer<Byte> texture = imageDescriptor + OFFSET(vk::SampledImageDescriptor, texture);  // sw::Texture*
 
-	If(!cacheHit)
-	{
-		rr::Int imageViewId = *Pointer<rr::Int>(imageDescriptor + OFFSET(vk::SampledImageDescriptor, imageViewId));
-		Pointer<Byte> device = *Pointer<Pointer<Byte>>(imageDescriptor + OFFSET(vk::SampledImageDescriptor, device));
-		cache.function = Call(getImageSampler, device, instruction.parameters, samplerId, imageViewId);
-		cache.imageDescriptor = imageDescriptor;
-		cache.samplerId = samplerId;
-	}
-
-	Call<ImageSampler>(cache.function, texture, &in[0], &out[0], state->routine->constants);
+	Call<ImageSampler>(samplerFunction, texture, &in, &out, state->routine->constants);
 }
 
 SpirvShader::EmitResult SpirvShader::EmitImageQuerySizeLod(InsnIterator insn, EmitState *state) const
 {
-	auto &resultTy = getType(Type::ID(insn.resultTypeId()));
+	auto &resultTy = getType(insn.resultTypeId());
 	auto imageId = Object::ID(insn.word(3));
 	auto lodId = Object::ID(insn.word(4));
 
@@ -353,7 +460,7 @@ SpirvShader::EmitResult SpirvShader::EmitImageQuerySizeLod(InsnIterator insn, Em
 
 SpirvShader::EmitResult SpirvShader::EmitImageQuerySize(InsnIterator insn, EmitState *state) const
 {
-	auto &resultTy = getType(Type::ID(insn.resultTypeId()));
+	auto &resultTy = getType(insn.resultTypeId());
 	auto imageId = Object::ID(insn.word(3));
 	auto lodId = Object::ID(0);
 
@@ -361,11 +468,6 @@ SpirvShader::EmitResult SpirvShader::EmitImageQuerySize(InsnIterator insn, EmitS
 	GetImageDimensions(state, resultTy, imageId, lodId, dst);
 
 	return EmitResult::Continue;
-}
-
-SpirvShader::EmitResult SpirvShader::EmitImageQueryLod(InsnIterator insn, EmitState *state) const
-{
-	return EmitImageSample({ None, Query }, insn, state);
 }
 
 void SpirvShader::GetImageDimensions(EmitState const *state, Type const &resultTy, Object::ID imageId, Object::ID lodId, Intermediate &dst) const
@@ -433,7 +535,7 @@ void SpirvShader::GetImageDimensions(EmitState const *state, Type const &resultT
 
 SpirvShader::EmitResult SpirvShader::EmitImageQueryLevels(InsnIterator insn, EmitState *state) const
 {
-	auto &resultTy = getType(Type::ID(insn.resultTypeId()));
+	auto &resultTy = getType(insn.resultTypeId());
 	ASSERT(resultTy.componentCount == 1);
 	auto imageId = Object::ID(insn.word(3));
 
@@ -461,10 +563,10 @@ SpirvShader::EmitResult SpirvShader::EmitImageQueryLevels(InsnIterator insn, Emi
 
 SpirvShader::EmitResult SpirvShader::EmitImageQuerySamples(InsnIterator insn, EmitState *state) const
 {
-	auto &resultTy = getType(Type::ID(insn.resultTypeId()));
+	auto &resultTy = getType(insn.resultTypeId());
 	ASSERT(resultTy.componentCount == 1);
 	auto imageId = Object::ID(insn.word(3));
-	auto imageTy = getType(getObject(imageId));
+	auto imageTy = getObjectType(imageId);
 	ASSERT(imageTy.definition.opcode() == spv::OpTypeImage);
 	ASSERT(imageTy.definition.word(3) == spv::Dim2D);
 	ASSERT(imageTy.definition.word(6 /* MS */) == 1);
@@ -494,27 +596,28 @@ SpirvShader::EmitResult SpirvShader::EmitImageQuerySamples(InsnIterator insn, Em
 	return EmitResult::Continue;
 }
 
-SIMD::Pointer SpirvShader::GetTexelAddress(EmitState const *state, Pointer<Byte> imageBase, Int imageSizeInBytes, Operand const &coordinate, Type const &imageType, Pointer<Byte> descriptor, int texelSize, Object::ID sampleId, bool useStencilAspect, OutOfBoundsBehavior outOfBoundsBehavior) const
+SIMD::Pointer SpirvShader::GetTexelAddress(ImageInstructionSignature instruction, Pointer<Byte> descriptor, SIMD::Int coordinate[], SIMD::Int sample, vk::Format imageFormat, OutOfBoundsBehavior outOfBoundsBehavior, const EmitState *state)
 {
-	auto routine = state->routine;
-	bool isArrayed = imageType.definition.word(5) != 0;
-	auto dim = static_cast<spv::Dim>(imageType.definition.word(3));
-	int dims = coordinate.componentCount - (isArrayed ? 1 : 0);
+	bool isArrayed = instruction.arrayed;
+	spv::Dim dim = static_cast<spv::Dim>(instruction.dim);
+	int dims = instruction.coordinates - (isArrayed ? 1 : 0);
 
-	SIMD::Int u = coordinate.Int(0);
+	SIMD::Int u = coordinate[0];
 	SIMD::Int v = SIMD::Int(0);
 
-	if(coordinate.componentCount > 1)
+	if(dims > 1)
 	{
-		v = coordinate.Int(1);
+		v = coordinate[1];
 	}
 
 	if(dim == spv::DimSubpassData)
 	{
-		u += routine->windowSpacePosition[0];
-		v += routine->windowSpacePosition[1];
+		u += state->routine->windowSpacePosition[0];
+		v += state->routine->windowSpacePosition[1];
 	}
 
+	const int texelSize = imageFormat.bytes();
+	const bool useStencilAspect = (imageFormat == VK_FORMAT_S8_UINT);
 	auto rowPitch = SIMD::Int(*Pointer<Int>(descriptor + (useStencilAspect
 	                                                          ? OFFSET(vk::StorageImageDescriptor, stencilRowPitchBytes)
 	                                                          : OFFSET(vk::StorageImageDescriptor, rowPitchBytes))));
@@ -539,12 +642,12 @@ SIMD::Pointer SpirvShader::GetTexelAddress(EmitState const *state, Pointer<Byte>
 	{
 		if(dims > 2)
 		{
-			w += coordinate.Int(2);
+			w += coordinate[2];
 		}
 
 		if(isArrayed)
 		{
-			w += coordinate.Int(dims);
+			w += coordinate[dims];
 		}
 
 		ptrOffset += w * slicePitch;
@@ -553,18 +656,12 @@ SIMD::Pointer SpirvShader::GetTexelAddress(EmitState const *state, Pointer<Byte>
 	if(dim == spv::DimSubpassData)
 	{
 		// Multiview input attachment access is to the layer corresponding to the current view
-		ptrOffset += SIMD::Int(routine->viewID) * slicePitch;
+		ptrOffset += SIMD::Int(state->routine->viewID) * slicePitch;
 	}
 
-	SIMD::Int n = 0;
-	if(sampleId.value())
+	if(instruction.sample)
 	{
-		Operand sample(this, state, sampleId);
-		if(!sample.isConstantZero())
-		{
-			n = sample.Int(0);
-			ptrOffset += n * samplePitch;
-		}
+		ptrOffset += sample * samplePitch;
 	}
 
 	// If the out-of-bounds behavior is set to nullify, then each coordinate must be tested individually.
@@ -587,14 +684,10 @@ SIMD::Pointer SpirvShader::GetTexelAddress(EmitState const *state, Pointer<Byte>
 			oobMask |= As<SIMD::Int>(CmpNLT(As<SIMD::UInt>(w), SIMD::UInt(depth)));
 		}
 
-		if(sampleId.value())
+		if(instruction.sample)
 		{
-			Operand sample(this, state, sampleId);
-			if(!sample.isConstantZero())
-			{
-				SIMD::UInt sampleCount = *Pointer<UInt>(descriptor + OFFSET(vk::StorageImageDescriptor, sampleCount));
-				oobMask |= As<SIMD::Int>(CmpNLT(As<SIMD::UInt>(n), sampleCount));
-			}
+			SIMD::UInt sampleCount = *Pointer<UInt>(descriptor + OFFSET(vk::StorageImageDescriptor, sampleCount));
+			oobMask |= As<SIMD::Int>(CmpNLT(As<SIMD::UInt>(sample), sampleCount));
 		}
 
 		constexpr int32_t OOB_OFFSET = 0x7FFFFFFF - 16;  // SIMD pointer offsets are signed 32-bit, so this is the largest offset (for 16-byte texels).
@@ -603,82 +696,66 @@ SIMD::Pointer SpirvShader::GetTexelAddress(EmitState const *state, Pointer<Byte>
 		ptrOffset = (ptrOffset & ~oobMask) | (oobMask & SIMD::Int(OOB_OFFSET));  // oob ? OOB_OFFSET : ptrOffset  // TODO: IfThenElse()
 	}
 
+	Pointer<Byte> imageBase = *Pointer<Pointer<Byte>>(descriptor + (useStencilAspect
+	                                                                    ? OFFSET(vk::StorageImageDescriptor, stencilPtr)
+	                                                                    : OFFSET(vk::StorageImageDescriptor, ptr)));
+
+	Int imageSizeInBytes = *Pointer<Int>(descriptor + OFFSET(vk::StorageImageDescriptor, sizeInBytes));
+
 	return SIMD::Pointer(imageBase, imageSizeInBytes, ptrOffset);
 }
 
-SpirvShader::EmitResult SpirvShader::EmitImageRead(InsnIterator insn, EmitState *state) const
+SpirvShader::EmitResult SpirvShader::EmitImageRead(const ImageInstruction &instruction, EmitState *state) const
 {
-	auto &resultType = getType(Type::ID(insn.word(1)));
-	auto imageId = Object::ID(insn.word(3));
-	auto &image = getObject(imageId);
+	auto &resultType = getObjectType(instruction.resultId);
+	auto &image = getObject(instruction.imageId);
 	auto &imageType = getType(image);
 
-	Object::ID sampleId = 0;
-
-	if(insn.wordCount() > 5)
-	{
-		int operand = 6;
-		uint32_t imageOperands = insn.word(5);
-		if(imageOperands & spv::ImageOperandsSampleMask)
-		{
-			sampleId = insn.word(operand++);
-			imageOperands &= ~spv::ImageOperandsSampleMask;
-		}
-		// TODO(b/174475384)
-		if(imageOperands & spv::ImageOperandsZeroExtendMask)
-		{
-			imageOperands &= ~spv::ImageOperandsZeroExtendMask;
-		}
-		else if(imageOperands & spv::ImageOperandsSignExtendMask)
-		{
-			imageOperands &= ~spv::ImageOperandsSignExtendMask;
-		}
-
-		// Should be no remaining image operands.
-		if(imageOperands != 0)
-		{
-			UNSUPPORTED("Image operands 0x%08X", imageOperands);
-		}
-	}
-
 	ASSERT(imageType.definition.opcode() == spv::OpTypeImage);
-	auto dim = static_cast<spv::Dim>(imageType.definition.word(3));
+	auto dim = static_cast<spv::Dim>(instruction.dim);
 
-	auto coordinate = Operand(this, state, insn.word(4));
-	const DescriptorDecorations &d = descriptorDecorations.at(imageId);
+	auto coordinate = Operand(this, state, instruction.coordinateId);
+	const DescriptorDecorations &d = descriptorDecorations.at(instruction.imageId);
 
 	// For subpass data, format in the instruction is spv::ImageFormatUnknown. Get it from
 	// the renderpass data instead. In all other cases, we can use the format in the instruction.
-	auto vkFormat = (dim == spv::DimSubpassData)
-	                    ? inputAttachmentFormats[d.InputAttachmentIndex]
-	                    : SpirvFormatToVulkanFormat(static_cast<spv::ImageFormat>(imageType.definition.word(8)));
+	vk::Format imageFormat = (dim == spv::DimSubpassData)
+	                             ? inputAttachmentFormats[d.InputAttachmentIndex]
+	                             : SpirvFormatToVulkanFormat(static_cast<spv::ImageFormat>(instruction.imageFormat));
 
 	// Depth+Stencil image attachments select aspect based on the Sampled Type of the
 	// OpTypeImage. If float, then we want the depth aspect. If int, we want the stencil aspect.
-	auto useStencilAspect = (vkFormat == VK_FORMAT_D32_SFLOAT_S8_UINT &&
+	bool useStencilAspect = (imageFormat == VK_FORMAT_D32_SFLOAT_S8_UINT &&
 	                         getType(imageType.definition.word(2)).opcode() == spv::OpTypeInt);
 
 	if(useStencilAspect)
 	{
-		vkFormat = VK_FORMAT_S8_UINT;
+		imageFormat = VK_FORMAT_S8_UINT;
 	}
 
-	auto pointer = state->getPointer(imageId);
-	Pointer<Byte> binding = pointer.base;
-	Pointer<Byte> imageBase = *Pointer<Pointer<Byte>>(binding + (useStencilAspect
-	                                                                 ? OFFSET(vk::StorageImageDescriptor, stencilPtr)
-	                                                                 : OFFSET(vk::StorageImageDescriptor, ptr)));
-
-	auto imageSizeInBytes = *Pointer<Int>(binding + OFFSET(vk::StorageImageDescriptor, sizeInBytes));
-
-	auto &dst = state->createIntermediate(insn.resultId(), resultType.componentCount);
+	Pointer<Byte> descriptor = state->getPointer(instruction.imageId).base;  // vk::StorageImageDescriptor*
+	auto &dst = state->createIntermediate(instruction.resultId, resultType.componentCount);
 
 	// VK_EXT_image_robustness requires replacing out-of-bounds access with zero.
 	// TODO(b/162327166): Only perform bounds checks when VK_EXT_image_robustness is enabled.
 	auto robustness = OutOfBoundsBehavior::Nullify;
 
-	auto texelSize = vk::Format(vkFormat).bytes();
-	auto texelPtr = GetTexelAddress(state, imageBase, imageSizeInBytes, coordinate, imageType, binding, texelSize, sampleId, useStencilAspect, robustness);
+	SIMD::Int uvwa[4];
+	SIMD::Int sample;
+
+	for(uint32_t i = 0; i < instruction.coordinates; i++)
+	{
+		uvwa[i] = coordinate.Int(i);
+	}
+
+	if(instruction.sample)
+	{
+		sample = Operand(this, state, instruction.sampleId).Int(0);
+	}
+
+	auto texelPtr = GetTexelAddress(instruction, descriptor, uvwa, sample, imageFormat, robustness, state);
+
+	const int texelSize = imageFormat.bytes();
 
 	// Gather packed texel data. Texels larger than 4 bytes occupy multiple SIMD::Int elements.
 	// TODO(b/160531165): Provide gather abstractions for various element sizes.
@@ -723,7 +800,7 @@ SpirvShader::EmitResult SpirvShader::EmitImageRead(InsnIterator insn, EmitState 
 	// Format support requirements here come from two sources:
 	// - Minimum required set of formats for loads from storage images
 	// - Any format supported as a color or depth/stencil attachment, for input attachments
-	switch(vkFormat)
+	switch(imageFormat)
 	{
 	case VK_FORMAT_R32G32B32A32_SFLOAT:
 	case VK_FORMAT_R32G32B32A32_SINT:
@@ -1040,226 +1117,222 @@ SpirvShader::EmitResult SpirvShader::EmitImageRead(InsnIterator insn, EmitState 
 		dst.move(3, SIMD::Float(1.0f));
 		break;
 	default:
-		UNSUPPORTED("VkFormat %d", int(vkFormat));
+		UNSUPPORTED("VkFormat %d", int(imageFormat));
 		break;
 	}
 
 	return EmitResult::Continue;
 }
 
-SpirvShader::EmitResult SpirvShader::EmitImageWrite(InsnIterator insn, EmitState *state) const
+SpirvShader::EmitResult SpirvShader::EmitImageWrite(const ImageInstruction &instruction, EmitState *state) const
 {
 	imageWriteEmitted = true;
 
-	auto imageId = Object::ID(insn.word(1));
-	auto &image = getObject(imageId);
+	auto &image = getObject(instruction.imageId);
 	auto &imageType = getType(image);
 
 	ASSERT(imageType.definition.opcode() == spv::OpTypeImage);
+	ASSERT(static_cast<spv::Dim>(instruction.dim) != spv::DimSubpassData);  // "Its Dim operand must not be SubpassData."
 
-	Object::ID sampleId = 0;
+	auto coordinate = Operand(this, state, instruction.coordinateId);
+	auto texel = Operand(this, state, instruction.texelId);
 
-	if(insn.wordCount() > 4)
+	Array<SIMD::Int> coord(5);  // uvwa & sample
+
+	uint32_t i = 0;
+	for(; i < instruction.coordinates; i++)
 	{
-		int operand = 5;
-		uint32_t imageOperands = insn.word(4);
-		if(imageOperands & spv::ImageOperandsSampleMask)
-		{
-			sampleId = insn.word(operand++);
-			imageOperands &= ~spv::ImageOperandsSampleMask;
-		}
-		// TODO(b/174475384)
-		if(imageOperands & spv::ImageOperandsZeroExtendMask)
-		{
-			imageOperands &= ~spv::ImageOperandsZeroExtendMask;
-		}
-		else if(imageOperands & spv::ImageOperandsSignExtendMask)
-		{
-			imageOperands &= ~spv::ImageOperandsSignExtendMask;
-		}
-
-		// Should be no remaining image operands.
-		if(imageOperands != 0)
-		{
-			UNSUPPORTED("Image operands 0x%08X", (int)imageOperands);
-		}
+		coord[i] = coordinate.Int(i);
 	}
 
-	auto coordinate = Operand(this, state, insn.word(2));
-	auto texel = Operand(this, state, insn.word(3));
+	if(instruction.sample)
+	{
+		coord[i] = Operand(this, state, instruction.sampleId).Int(0);
+	}
 
-	Pointer<Byte> binding = state->getPointer(imageId).base;
-	Pointer<Byte> imageBase = *Pointer<Pointer<Byte>>(binding + OFFSET(vk::StorageImageDescriptor, ptr));
-	auto imageSizeInBytes = *Pointer<Int>(binding + OFFSET(vk::StorageImageDescriptor, sizeInBytes));
+	Array<SIMD::Int> texelAndMask(5);
+	texelAndMask[0] = texel.Int(0);
+	texelAndMask[1] = texel.Int(1);
+	texelAndMask[2] = texel.Int(2);
+	texelAndMask[3] = texel.Int(3);
+	texelAndMask[4] = state->activeStoresAndAtomicsMask();
+
+	Pointer<Byte> descriptor = state->getPointer(instruction.imageId).base;  // vk::StorageImageDescriptor*
+
+	vk::Format imageFormat = SpirvFormatToVulkanFormat(static_cast<spv::ImageFormat>(instruction.imageFormat));
+
+	if(imageFormat == VK_FORMAT_UNDEFINED)  // spv::ImageFormatUnknown
+	{
+		Pointer<Byte> samplerFunction = lookupSamplerFunction(descriptor, instruction, state);
+
+		Call<ImageSampler>(samplerFunction, descriptor, &coord, &texelAndMask, state->routine->constants);
+	}
+	else
+	{
+		WriteImage(instruction, descriptor, &coord, &texelAndMask, imageFormat);
+	}
+
+	return EmitResult::Continue;
+}
+
+void SpirvShader::WriteImage(ImageInstructionSignature instruction, Pointer<Byte> descriptor, const Pointer<SIMD::Int> &coord, const Pointer<SIMD::Int> &texelAndMask, vk::Format imageFormat)
+{
+	SIMD::Int texel[4];
+	texel[0] = texelAndMask[0];
+	texel[1] = texelAndMask[1];
+	texel[2] = texelAndMask[2];
+	texel[3] = texelAndMask[3];
+	SIMD::Int mask = texelAndMask[4];
 
 	SIMD::Int packed[4];
-	int texelSize = 0;
-	auto format = static_cast<spv::ImageFormat>(imageType.definition.word(8));
-	switch(format)
+	switch(imageFormat)
 	{
-	case spv::ImageFormatRgba32f:
-	case spv::ImageFormatRgba32i:
-	case spv::ImageFormatRgba32ui:
-		texelSize = 16;
-		packed[0] = texel.Int(0);
-		packed[1] = texel.Int(1);
-		packed[2] = texel.Int(2);
-		packed[3] = texel.Int(3);
+	case VK_FORMAT_R32G32B32A32_SFLOAT:
+	case VK_FORMAT_R32G32B32A32_SINT:
+	case VK_FORMAT_R32G32B32A32_UINT:
+		packed[0] = texel[0];
+		packed[1] = texel[1];
+		packed[2] = texel[2];
+		packed[3] = texel[3];
 		break;
-	case spv::ImageFormatR32f:
-	case spv::ImageFormatR32i:
-	case spv::ImageFormatR32ui:
-		texelSize = 4;
-		packed[0] = texel.Int(0);
+	case VK_FORMAT_R32_SFLOAT:
+	case VK_FORMAT_R32_SINT:
+	case VK_FORMAT_R32_UINT:
+		packed[0] = texel[0];
 		break;
-	case spv::ImageFormatRgba8:
-		texelSize = 4;
-		packed[0] = (SIMD::UInt(Round(Min(Max(texel.Float(0), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) |
-		            ((SIMD::UInt(Round(Min(Max(texel.Float(1), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) << 8) |
-		            ((SIMD::UInt(Round(Min(Max(texel.Float(2), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) << 16) |
-		            ((SIMD::UInt(Round(Min(Max(texel.Float(3), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) << 24);
+	case VK_FORMAT_R8G8B8A8_UNORM:
+	case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
+		packed[0] = (SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[0]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) |
+		            ((SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[1]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) << 8) |
+		            ((SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[2]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) << 16) |
+		            ((SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[3]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) << 24);
 		break;
-	case spv::ImageFormatRgba8Snorm:
-		texelSize = 4;
-		packed[0] = (SIMD::Int(Round(Min(Max(texel.Float(0), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(127.0f))) &
+	case VK_FORMAT_B8G8R8A8_UNORM:
+		packed[0] = (SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[2]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) |
+		            ((SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[1]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) << 8) |
+		            ((SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[0]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) << 16) |
+		            ((SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[3]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(255.0f)))) << 24);
+		break;
+	case VK_FORMAT_R8G8B8A8_SNORM:
+	case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
+		packed[0] = (SIMD::Int(Round(Min(Max(As<SIMD::Float>(texel[0]), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(127.0f))) &
 		             SIMD::Int(0xFF)) |
-		            ((SIMD::Int(Round(Min(Max(texel.Float(1), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(127.0f))) &
+		            ((SIMD::Int(Round(Min(Max(As<SIMD::Float>(texel[1]), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(127.0f))) &
 		              SIMD::Int(0xFF))
 		             << 8) |
-		            ((SIMD::Int(Round(Min(Max(texel.Float(2), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(127.0f))) &
+		            ((SIMD::Int(Round(Min(Max(As<SIMD::Float>(texel[2]), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(127.0f))) &
 		              SIMD::Int(0xFF))
 		             << 16) |
-		            ((SIMD::Int(Round(Min(Max(texel.Float(3), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(127.0f))) &
+		            ((SIMD::Int(Round(Min(Max(As<SIMD::Float>(texel[3]), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(127.0f))) &
 		              SIMD::Int(0xFF))
 		             << 24);
 		break;
-	case spv::ImageFormatRgba8i:
-	case spv::ImageFormatRgba8ui:
-		texelSize = 4;
-		packed[0] = (SIMD::UInt(texel.UInt(0) & SIMD::UInt(0xff))) |
-		            (SIMD::UInt(texel.UInt(1) & SIMD::UInt(0xff)) << 8) |
-		            (SIMD::UInt(texel.UInt(2) & SIMD::UInt(0xff)) << 16) |
-		            (SIMD::UInt(texel.UInt(3) & SIMD::UInt(0xff)) << 24);
+	case VK_FORMAT_R8G8B8A8_SINT:
+	case VK_FORMAT_R8G8B8A8_UINT:
+	case VK_FORMAT_A8B8G8R8_SINT_PACK32:
+	case VK_FORMAT_A8B8G8R8_UINT_PACK32:
+		packed[0] = (SIMD::UInt(As<SIMD::UInt>(texel[0]) & SIMD::UInt(0xff))) |
+		            (SIMD::UInt(As<SIMD::UInt>(texel[1]) & SIMD::UInt(0xff)) << 8) |
+		            (SIMD::UInt(As<SIMD::UInt>(texel[2]) & SIMD::UInt(0xff)) << 16) |
+		            (SIMD::UInt(As<SIMD::UInt>(texel[3]) & SIMD::UInt(0xff)) << 24);
 		break;
-	case spv::ImageFormatRgba16f:
-		texelSize = 8;
-		packed[0] = floatToHalfBits(texel.UInt(0), false) | floatToHalfBits(texel.UInt(1), true);
-		packed[1] = floatToHalfBits(texel.UInt(2), false) | floatToHalfBits(texel.UInt(3), true);
+	case VK_FORMAT_R16G16B16A16_SFLOAT:
+		packed[0] = floatToHalfBits(As<SIMD::UInt>(texel[0]), false) | floatToHalfBits(As<SIMD::UInt>(texel[1]), true);
+		packed[1] = floatToHalfBits(As<SIMD::UInt>(texel[2]), false) | floatToHalfBits(As<SIMD::UInt>(texel[3]), true);
 		break;
-	case spv::ImageFormatRgba16i:
-	case spv::ImageFormatRgba16ui:
-		texelSize = 8;
-		packed[0] = SIMD::UInt(texel.UInt(0) & SIMD::UInt(0xFFFF)) | (SIMD::UInt(texel.UInt(1) & SIMD::UInt(0xFFFF)) << 16);
-		packed[1] = SIMD::UInt(texel.UInt(2) & SIMD::UInt(0xFFFF)) | (SIMD::UInt(texel.UInt(3) & SIMD::UInt(0xFFFF)) << 16);
+	case VK_FORMAT_R16G16B16A16_SINT:
+	case VK_FORMAT_R16G16B16A16_UINT:
+		packed[0] = SIMD::UInt(As<SIMD::UInt>(texel[0]) & SIMD::UInt(0xFFFF)) | (SIMD::UInt(As<SIMD::UInt>(texel[1]) & SIMD::UInt(0xFFFF)) << 16);
+		packed[1] = SIMD::UInt(As<SIMD::UInt>(texel[2]) & SIMD::UInt(0xFFFF)) | (SIMD::UInt(As<SIMD::UInt>(texel[3]) & SIMD::UInt(0xFFFF)) << 16);
 		break;
-	case spv::ImageFormatRg32f:
-	case spv::ImageFormatRg32i:
-	case spv::ImageFormatRg32ui:
-		texelSize = 8;
-		packed[0] = texel.Int(0);
-		packed[1] = texel.Int(1);
+	case VK_FORMAT_R32G32_SFLOAT:
+	case VK_FORMAT_R32G32_SINT:
+	case VK_FORMAT_R32G32_UINT:
+		packed[0] = texel[0];
+		packed[1] = texel[1];
 		break;
-	case spv::ImageFormatRg16f:
-		texelSize = 4;
-		packed[0] = floatToHalfBits(texel.UInt(0), false) | floatToHalfBits(texel.UInt(1), true);
+	case VK_FORMAT_R16G16_SFLOAT:
+		packed[0] = floatToHalfBits(As<SIMD::UInt>(texel[0]), false) | floatToHalfBits(As<SIMD::UInt>(texel[1]), true);
 		break;
-	case spv::ImageFormatRg16i:
-	case spv::ImageFormatRg16ui:
-		texelSize = 4;
-		packed[0] = SIMD::UInt(texel.UInt(0) & SIMD::UInt(0xFFFF)) | (SIMD::UInt(texel.UInt(1) & SIMD::UInt(0xFFFF)) << 16);
+	case VK_FORMAT_R16G16_SINT:
+	case VK_FORMAT_R16G16_UINT:
+		packed[0] = SIMD::UInt(As<SIMD::UInt>(texel[0]) & SIMD::UInt(0xFFFF)) | (SIMD::UInt(As<SIMD::UInt>(texel[1]) & SIMD::UInt(0xFFFF)) << 16);
 		break;
-	case spv::ImageFormatR11fG11fB10f:
-		texelSize = 4;
+	case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
 		// Truncates instead of rounding. See b/147900455
-		packed[0] = ((floatToHalfBits(As<SIMD::UInt>(Max(texel.Float(0), SIMD::Float(0.0f))), false) & SIMD::UInt(0x7FF0)) >> 4) |
-		            ((floatToHalfBits(As<SIMD::UInt>(Max(texel.Float(1), SIMD::Float(0.0f))), false) & SIMD::UInt(0x7FF0)) << 7) |
-		            ((floatToHalfBits(As<SIMD::UInt>(Max(texel.Float(2), SIMD::Float(0.0f))), false) & SIMD::UInt(0x7FE0)) << 17);
+		packed[0] = ((floatToHalfBits(As<SIMD::UInt>(Max(As<SIMD::Float>(texel[0]), SIMD::Float(0.0f))), false) & SIMD::UInt(0x7FF0)) >> 4) |
+		            ((floatToHalfBits(As<SIMD::UInt>(Max(As<SIMD::Float>(texel[1]), SIMD::Float(0.0f))), false) & SIMD::UInt(0x7FF0)) << 7) |
+		            ((floatToHalfBits(As<SIMD::UInt>(Max(As<SIMD::Float>(texel[2]), SIMD::Float(0.0f))), false) & SIMD::UInt(0x7FE0)) << 17);
 		break;
-	case spv::ImageFormatR16f:
-		texelSize = 2;
-		packed[0] = floatToHalfBits(texel.UInt(0), false);
+	case VK_FORMAT_R16_SFLOAT:
+		packed[0] = floatToHalfBits(As<SIMD::UInt>(texel[0]), false);
 		break;
-	case spv::ImageFormatRgba16:
-		texelSize = 8;
-		packed[0] = SIMD::UInt(Round(Min(Max(texel.Float(0), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFFFF))) |
-		            (SIMD::UInt(Round(Min(Max(texel.Float(1), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFFFF))) << 16);
-		packed[1] = SIMD::UInt(Round(Min(Max(texel.Float(2), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFFFF))) |
-		            (SIMD::UInt(Round(Min(Max(texel.Float(3), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFFFF))) << 16);
+	case VK_FORMAT_R16G16B16A16_UNORM:
+		packed[0] = SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[0]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFFFF))) |
+		            (SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[1]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFFFF))) << 16);
+		packed[1] = SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[2]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFFFF))) |
+		            (SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[3]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFFFF))) << 16);
 		break;
-	case spv::ImageFormatRgb10A2:
-		texelSize = 4;
-		packed[0] = (SIMD::UInt(Round(Min(Max(texel.Float(0), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x3FF)))) |
-		            ((SIMD::UInt(Round(Min(Max(texel.Float(1), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x3FF)))) << 10) |
-		            ((SIMD::UInt(Round(Min(Max(texel.Float(2), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x3FF)))) << 20) |
-		            ((SIMD::UInt(Round(Min(Max(texel.Float(3), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x3)))) << 30);
+	case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+		packed[0] = (SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[0]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x3FF)))) |
+		            ((SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[1]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x3FF)))) << 10) |
+		            ((SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[2]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x3FF)))) << 20) |
+		            ((SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[3]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x3)))) << 30);
 		break;
-	case spv::ImageFormatRg16:
-		texelSize = 4;
-		packed[0] = SIMD::UInt(Round(Min(Max(texel.Float(0), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFFFF))) |
-		            (SIMD::UInt(Round(Min(Max(texel.Float(1), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFFFF))) << 16);
+	case VK_FORMAT_R16G16_UNORM:
+		packed[0] = SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[0]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFFFF))) |
+		            (SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[1]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFFFF))) << 16);
 		break;
-	case spv::ImageFormatRg8:
-		texelSize = 2;
-		packed[0] = SIMD::UInt(Round(Min(Max(texel.Float(0), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFF))) |
-		            (SIMD::UInt(Round(Min(Max(texel.Float(1), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFF))) << 8);
+	case VK_FORMAT_R8G8_UNORM:
+		packed[0] = SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[0]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFF))) |
+		            (SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[1]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFF))) << 8);
 		break;
-	case spv::ImageFormatR16:
-		texelSize = 2;
-		packed[0] = SIMD::UInt(Round(Min(Max(texel.Float(0), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFFFF)));
+	case VK_FORMAT_R16_UNORM:
+		packed[0] = SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[0]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFFFF)));
 		break;
-	case spv::ImageFormatR8:
-		texelSize = 1;
-		packed[0] = SIMD::UInt(Round(Min(Max(texel.Float(0), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFF)));
+	case VK_FORMAT_R8_UNORM:
+		packed[0] = SIMD::UInt(Round(Min(Max(As<SIMD::Float>(texel[0]), SIMD::Float(0.0f)), SIMD::Float(1.0f)) * SIMD::Float(0xFF)));
 		break;
-	case spv::ImageFormatRgba16Snorm:
-		texelSize = 8;
-		packed[0] = (SIMD::Int(Round(Min(Max(texel.Float(0), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7FFF))) & SIMD::Int(0xFFFF)) |
-		            (SIMD::Int(Round(Min(Max(texel.Float(1), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7FFF))) << 16);
-		packed[1] = (SIMD::Int(Round(Min(Max(texel.Float(2), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7FFF))) & SIMD::Int(0xFFFF)) |
-		            (SIMD::Int(Round(Min(Max(texel.Float(3), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7FFF))) << 16);
+	case VK_FORMAT_R16G16B16A16_SNORM:
+		packed[0] = (SIMD::Int(Round(Min(Max(As<SIMD::Float>(texel[0]), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7FFF))) & SIMD::Int(0xFFFF)) |
+		            (SIMD::Int(Round(Min(Max(As<SIMD::Float>(texel[1]), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7FFF))) << 16);
+		packed[1] = (SIMD::Int(Round(Min(Max(As<SIMD::Float>(texel[2]), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7FFF))) & SIMD::Int(0xFFFF)) |
+		            (SIMD::Int(Round(Min(Max(As<SIMD::Float>(texel[3]), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7FFF))) << 16);
 		break;
-	case spv::ImageFormatRg16Snorm:
-		texelSize = 4;
-		packed[0] = (SIMD::Int(Round(Min(Max(texel.Float(0), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7FFF))) & SIMD::Int(0xFFFF)) |
-		            (SIMD::Int(Round(Min(Max(texel.Float(1), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7FFF))) << 16);
+	case VK_FORMAT_R16G16_SNORM:
+		packed[0] = (SIMD::Int(Round(Min(Max(As<SIMD::Float>(texel[0]), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7FFF))) & SIMD::Int(0xFFFF)) |
+		            (SIMD::Int(Round(Min(Max(As<SIMD::Float>(texel[1]), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7FFF))) << 16);
 		break;
-	case spv::ImageFormatRg8Snorm:
-		texelSize = 2;
-		packed[0] = (SIMD::Int(Round(Min(Max(texel.Float(0), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7F))) & SIMD::Int(0xFF)) |
-		            (SIMD::Int(Round(Min(Max(texel.Float(1), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7F))) << 8);
+	case VK_FORMAT_R8G8_SNORM:
+		packed[0] = (SIMD::Int(Round(Min(Max(As<SIMD::Float>(texel[0]), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7F))) & SIMD::Int(0xFF)) |
+		            (SIMD::Int(Round(Min(Max(As<SIMD::Float>(texel[1]), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7F))) << 8);
 		break;
-	case spv::ImageFormatR16Snorm:
-		texelSize = 2;
-		packed[0] = SIMD::Int(Round(Min(Max(texel.Float(0), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7FFF)));
+	case VK_FORMAT_R16_SNORM:
+		packed[0] = SIMD::Int(Round(Min(Max(As<SIMD::Float>(texel[0]), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7FFF)));
 		break;
-	case spv::ImageFormatR8Snorm:
-		texelSize = 1;
-		packed[0] = SIMD::Int(Round(Min(Max(texel.Float(0), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7F)));
+	case VK_FORMAT_R8_SNORM:
+		packed[0] = SIMD::Int(Round(Min(Max(As<SIMD::Float>(texel[0]), SIMD::Float(-1.0f)), SIMD::Float(1.0f)) * SIMD::Float(0x7F)));
 		break;
-	case spv::ImageFormatRg8i:
-	case spv::ImageFormatRg8ui:
-		texelSize = 2;
-		packed[0] = SIMD::UInt(texel.UInt(0) & SIMD::UInt(0xFF)) | (SIMD::UInt(texel.UInt(1) & SIMD::UInt(0xFF)) << 8);
+	case VK_FORMAT_R8G8_SINT:
+	case VK_FORMAT_R8G8_UINT:
+		packed[0] = SIMD::UInt(As<SIMD::UInt>(texel[0]) & SIMD::UInt(0xFF)) | (SIMD::UInt(As<SIMD::UInt>(texel[1]) & SIMD::UInt(0xFF)) << 8);
 		break;
-	case spv::ImageFormatR16i:
-	case spv::ImageFormatR16ui:
-		texelSize = 2;
-		packed[0] = SIMD::UInt(texel.UInt(0) & SIMD::UInt(0xFFFF));
+	case VK_FORMAT_R16_SINT:
+	case VK_FORMAT_R16_UINT:
+		packed[0] = SIMD::UInt(As<SIMD::UInt>(texel[0]) & SIMD::UInt(0xFFFF));
 		break;
-	case spv::ImageFormatR8i:
-	case spv::ImageFormatR8ui:
-		texelSize = 1;
-		packed[0] = SIMD::UInt(texel.UInt(0) & SIMD::UInt(0xFF));
+	case VK_FORMAT_R8_SINT:
+	case VK_FORMAT_R8_UINT:
+		packed[0] = SIMD::UInt(As<SIMD::UInt>(texel[0]) & SIMD::UInt(0xFF));
 		break;
-	case spv::ImageFormatRgb10a2ui:
-		texelSize = 4;
-		packed[0] = (SIMD::UInt(texel.UInt(0) & SIMD::UInt(0x3FF))) |
-		            (SIMD::UInt(texel.UInt(1) & SIMD::UInt(0x3FF)) << 10) |
-		            (SIMD::UInt(texel.UInt(2) & SIMD::UInt(0x3FF)) << 20) |
-		            (SIMD::UInt(texel.UInt(3) & SIMD::UInt(0x3)) << 30);
+	case VK_FORMAT_A2B10G10R10_UINT_PACK32:
+		packed[0] = (SIMD::UInt(As<SIMD::UInt>(texel[0]) & SIMD::UInt(0x3FF))) |
+		            (SIMD::UInt(As<SIMD::UInt>(texel[1]) & SIMD::UInt(0x3FF)) << 10) |
+		            (SIMD::UInt(As<SIMD::UInt>(texel[2]) & SIMD::UInt(0x3FF)) << 20) |
+		            (SIMD::UInt(As<SIMD::UInt>(texel[3]) & SIMD::UInt(0x3)) << 30);
 		break;
 	default:
-		UNSUPPORTED("spv::ImageFormat %d", int(format));
+		UNSUPPORTED("VkFormat %d", int(imageFormat));
 		break;
 	}
 
@@ -1267,8 +1340,26 @@ SpirvShader::EmitResult SpirvShader::EmitImageWrite(InsnIterator insn, EmitState
 	//  validation. If the texel fails integer texel coordinate validation, then the write has no effect."
 	// - https://www.khronos.org/registry/vulkan/specs/1.2/html/chap16.html#textures-output-coordinate-validation
 	auto robustness = OutOfBoundsBehavior::Nullify;
+	// GetTexelAddress() only needs the EmitState* for SubpassData accesses (i.e. input attachments).
+	const EmitState *state = nullptr;
 
-	auto texelPtr = GetTexelAddress(state, imageBase, imageSizeInBytes, coordinate, imageType, binding, texelSize, sampleId, false, robustness);
+	SIMD::Int uvwa[4];
+	SIMD::Int sample;
+
+	uint32_t i = 0;
+	for(; i < instruction.coordinates; i++)
+	{
+		uvwa[i] = As<SIMD::Int>(coord[i]);
+	}
+
+	if(instruction.sample)
+	{
+		sample = As<SIMD::Int>(coord[i]);
+	}
+
+	auto texelPtr = GetTexelAddress(instruction, descriptor, uvwa, sample, imageFormat, robustness, state);
+
+	const int texelSize = imageFormat.bytes();
 
 	// Scatter packed texel data.
 	// TODO(b/160531165): Provide scatter abstractions for various element sizes.
@@ -1276,14 +1367,14 @@ SpirvShader::EmitResult SpirvShader::EmitImageWrite(InsnIterator insn, EmitState
 	{
 		for(auto i = 0; i < texelSize / 4; i++)
 		{
-			texelPtr.Store(packed[i], robustness, state->activeStoresAndAtomicsMask());
+			texelPtr.Store(packed[i], robustness, mask);
 			texelPtr += sizeof(float);
 		}
 	}
 	else if(texelSize == 2)
 	{
 		SIMD::Int offsets = texelPtr.offsets();
-		SIMD::Int mask = state->activeStoresAndAtomicsMask() & texelPtr.isInBounds(2, robustness);
+		mask = mask & texelPtr.isInBounds(2, robustness);
 
 		for(int i = 0; i < SIMD::Width; i++)
 		{
@@ -1296,7 +1387,7 @@ SpirvShader::EmitResult SpirvShader::EmitImageWrite(InsnIterator insn, EmitState
 	else if(texelSize == 1)
 	{
 		SIMD::Int offsets = texelPtr.offsets();
-		SIMD::Int mask = state->activeStoresAndAtomicsMask() & texelPtr.isInBounds(1, robustness);
+		mask = mask & texelPtr.isInBounds(1, robustness);
 
 		for(int i = 0; i < SIMD::Width; i++)
 		{
@@ -1308,38 +1399,31 @@ SpirvShader::EmitResult SpirvShader::EmitImageWrite(InsnIterator insn, EmitState
 	}
 	else
 		UNREACHABLE("texelSize: %d", int(texelSize));
-
-	return EmitResult::Continue;
 }
 
-SpirvShader::EmitResult SpirvShader::EmitImageTexelPointer(InsnIterator insn, EmitState *state) const
+SpirvShader::EmitResult SpirvShader::EmitImageTexelPointer(const ImageInstruction &instruction, EmitState *state) const
 {
-	auto &resultType = getType(Type::ID(insn.word(1)));
-	auto imageId = Object::ID(insn.word(3));
-	auto &image = getObject(imageId);
-	// Note: OpImageTexelPointer is unusual in that the image is passed by pointer.
-	// Look through to get the actual image type.
-	auto &imageType = getType(getType(image).element);
-	Object::ID resultId = insn.word(2);
+	auto coordinate = Operand(this, state, instruction.coordinateId);
 
-	ASSERT(imageType.opcode() == spv::OpTypeImage);
-	ASSERT(resultType.storageClass == spv::StorageClassImage);
-	ASSERT(getType(resultType.element).opcode() == spv::OpTypeInt);
-
-	auto coordinate = Operand(this, state, insn.word(4));
-	Object::ID sampleId = insn.word(5);
-
-	Pointer<Byte> binding = state->getPointer(imageId).base;
-	Pointer<Byte> imageBase = *Pointer<Pointer<Byte>>(binding + OFFSET(vk::StorageImageDescriptor, ptr));
-	auto imageSizeInBytes = *Pointer<Int>(binding + OFFSET(vk::StorageImageDescriptor, sizeInBytes));
+	Pointer<Byte> descriptor = state->getPointer(instruction.imageId).base;  // vk::StorageImageDescriptor*
 
 	// VK_EXT_image_robustness requires checking for out-of-bounds accesses.
 	// TODO(b/162327166): Only perform bounds checks when VK_EXT_image_robustness is enabled.
 	auto robustness = OutOfBoundsBehavior::Nullify;
+	vk::Format imageFormat = SpirvFormatToVulkanFormat(static_cast<spv::ImageFormat>(instruction.imageFormat));
 
-	auto ptr = GetTexelAddress(state, imageBase, imageSizeInBytes, coordinate, imageType, binding, sizeof(uint32_t), sampleId, false, robustness);
+	SIMD::Int uvwa[4];
 
-	state->createPointer(resultId, ptr);
+	for(uint32_t i = 0; i < instruction.coordinates; i++)
+	{
+		uvwa[i] = coordinate.Int(i);
+	}
+
+	SIMD::Int sample = Operand(this, state, instruction.sampleId).Int(0);
+
+	auto ptr = GetTexelAddress(instruction, descriptor, uvwa, sample, imageFormat, robustness, state);
+
+	state->createPointer(instruction.resultId, ptr);
 
 	return EmitResult::Continue;
 }

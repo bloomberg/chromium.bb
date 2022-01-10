@@ -7,9 +7,15 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/feature_list.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/ash/external_metrics.h"
+// TODO(https://crbug.com/1164001): remove and use forward declaration.
+#include "chrome/browser/ash/net/bluetooth_pref_state_observer.h"
+// TODO(https://crbug.com/1164001): remove and use forward declaration.
+#include "chrome/browser/ash/net/network_pref_state_observer.h"
+// TODO(https://crbug.com/1164001): remove and use forward declaration.
+#include "chrome/browser/ash/net/network_throttling_observer.h"
 // TODO(https://crbug.com/1164001): remove and use forward declaration.
 #include "chrome/browser/ash/network_change_manager_client.h"
 #include "chrome/browser/ash/pcie_peripheral/ash_usb_detector.h"
@@ -18,8 +24,6 @@
 #include "chrome/browser/ash/wilco_dtc_supportd/wilco_dtc_supportd_manager.h"
 #include "chrome/browser/chrome_browser_main_linux.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
-// TODO(https://crbug.com/1164001): remove and use forward declaration.
-#include "chromeos/login/session/session_termination_manager.h"
 // TODO(https://crbug.com/1164001): remove and use forward declaration.
 #include "chromeos/network/fast_transition_observer.h"
 
@@ -63,7 +67,6 @@ class LockToSingleUserManager;
 namespace ash {
 class AccessibilityEventRewriterDelegateImpl;
 class ArcKioskAppManager;
-class BluetoothPrefStateObserver;
 class BulkPrintersCalculatorFactory;
 class CrosUsbDetector;
 class DebugdNotificationHandler;
@@ -75,10 +78,11 @@ class IdleActionWarningObserver;
 class LoginScreenExtensionsLifetimeManager;
 class LoginScreenExtensionsStorageCleaner;
 class LowDiskNotification;
-class NetworkPrefStateObserver;
-class NetworkThrottlingObserver;
 class PowerMetricsReporter;
+class PSIMemoryMetrics;
+class QuickAnswersController;
 class RendererFreezer;
+class SessionTerminationManager;
 class ShortcutMappingPrefService;
 class ShutdownPolicyForwarder;
 class WebKioskAppManager;
@@ -120,7 +124,7 @@ class DarkResumeController;
 // src/ash or chrome/browser/ui/ash.
 class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
  public:
-  ChromeBrowserMainPartsAsh(const content::MainFunctionParams& parameters,
+  ChromeBrowserMainPartsAsh(content::MainFunctionParams parameters,
                             StartupData* startup_data);
 
   ChromeBrowserMainPartsAsh(const ChromeBrowserMainPartsAsh&) = delete;
@@ -159,6 +163,7 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<NetworkThrottlingObserver> network_throttling_observer_;
   std::unique_ptr<NetworkChangeManagerClient> network_change_manager_client_;
   std::unique_ptr<DebugdNotificationHandler> debugd_notification_handler_;
+  std::unique_ptr<ash::QuickAnswersController> quick_answers_controller_;
 
   std::unique_ptr<internal::DBusServices> dbus_services_;
 
@@ -174,6 +179,8 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
       accessibility_event_rewriter_delegate_;
 
   scoped_refptr<ExternalMetrics> external_metrics_;
+
+  scoped_refptr<PSIMemoryMetrics> memory_pressure_detail_;
 
   std::unique_ptr<arc::ArcServiceLauncher> arc_service_launcher_;
 
@@ -249,6 +256,11 @@ class ChromeBrowserMainPartsAsh : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<quick_pair::QuickPairBrowserDelegateImpl>
       quick_pair_delegate_;
+
+  // Only temporarily owned, will be null after PostCreateMainMessageLoop().
+  // The Accessor is constructed before initialization of FeatureList and should
+  // only be used by ChromeFeaturesServiceProvider.
+  std::unique_ptr<base::FeatureList::Accessor> feature_list_accessor_;
 };
 
 }  // namespace ash

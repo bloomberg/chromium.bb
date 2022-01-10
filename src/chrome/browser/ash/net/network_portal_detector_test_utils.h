@@ -8,13 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
-
 namespace base {
 class HistogramSamples;
 }
 
-namespace ash {
+namespace chromeos {
 
 // Checks enum values in a histogram.
 class EnumHistogramChecker {
@@ -46,6 +44,6 @@ class EnumHistogramChecker {
   base::HistogramSamples* base_;
 };
 
-}  // namespace ash
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_NET_NETWORK_PORTAL_DETECTOR_TEST_UTILS_H_

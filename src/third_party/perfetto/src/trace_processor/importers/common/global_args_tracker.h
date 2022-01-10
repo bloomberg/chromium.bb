@@ -17,6 +17,9 @@
 #ifndef SRC_TRACE_PROCESSOR_IMPORTERS_COMMON_GLOBAL_ARGS_TRACKER_H_
 #define SRC_TRACE_PROCESSOR_IMPORTERS_COMMON_GLOBAL_ARGS_TRACKER_H_
 
+#include "perfetto/ext/base/flat_hash_map.h"
+#include "perfetto/ext/base/hash.h"
+#include "perfetto/ext/base/small_vector.h"
 #include "src/trace_processor/storage/trace_storage.h"
 #include "src/trace_processor/types/trace_processor_context.h"
 #include "src/trace_processor/types/variadic.h"
@@ -81,14 +84,11 @@ class GlobalArgsTracker {
     }
   };
 
-  GlobalArgsTracker(TraceProcessorContext* context);
+  explicit GlobalArgsTracker(TraceProcessorContext* context);
 
   // Assumes that the interval [begin, end) of |args| is sorted by keys.
-  ArgSetId AddArgSet(const std::vector<Arg>& args,
-                     uint32_t begin,
-                     uint32_t end) {
-    std::vector<uint32_t> valid_indexes;
-    valid_indexes.reserve(end - begin);
+  ArgSetId AddArgSet(const Arg* args, uint32_t begin, uint32_t end) {
+    base::SmallVector<uint32_t, 64> valid_indexes;
 
     // TODO(eseckler): Also detect "invalid" key combinations in args sets (e.g.
     // "foo" and "foo.bar" in the same arg set)?
@@ -106,7 +106,7 @@ class GlobalArgsTracker {
         }
       }
 
-      valid_indexes.push_back(i);
+      valid_indexes.emplace_back(i);
     }
 
     base::Hash hash;
@@ -117,13 +117,16 @@ class GlobalArgsTracker {
     auto* arg_table = context_->storage->mutable_arg_table();
 
     ArgSetHash digest = hash.digest();
-    auto it = arg_row_for_hash_.find(digest);
-    if (it != arg_row_for_hash_.end())
-      return arg_table->arg_set_id()[it->second];
+    auto it_and_inserted =
+        arg_row_for_hash_.Insert(digest, arg_table->row_count());
+    if (!it_and_inserted.second) {
+      // Already inserted.
+      return arg_table->arg_set_id()[*it_and_inserted.first];
+    }
 
-    // The +1 ensures that nothing has an id == kInvalidArgSetId == 0.
-    ArgSetId id = static_cast<uint32_t>(arg_row_for_hash_.size()) + 1;
-    arg_row_for_hash_.emplace(digest, arg_table->row_count());
+    // Taking size() after the Insert() ensures that nothing has an id == 0
+    // (0 == kInvalidArgSetId).
+    ArgSetId id = static_cast<uint32_t>(arg_row_for_hash_.size());
     for (uint32_t i : valid_indexes) {
       const auto& arg = args[i];
 
@@ -162,10 +165,18 @@ class GlobalArgsTracker {
     return id;
   }
 
+  // Exposed for making tests easier to write.
+  ArgSetId AddArgSet(const std::vector<Arg>& args,
+                     uint32_t begin,
+                     uint32_t end) {
+    return AddArgSet(args.data(), begin, end);
+  }
+
  private:
   using ArgSetHash = uint64_t;
 
-  std::unordered_map<ArgSetHash, uint32_t> arg_row_for_hash_;
+  base::FlatHashMap<ArgSetHash, uint32_t, base::AlreadyHashed<ArgSetHash>>
+      arg_row_for_hash_;
 
   TraceProcessorContext* context_;
 };

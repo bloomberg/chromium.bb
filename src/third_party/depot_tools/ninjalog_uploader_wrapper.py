@@ -43,7 +43,7 @@ def SaveConfig(config):
 
 def ShowMessage(countdown):
   whitelisted = '\n'.join(
-      ['  * %s' % config for config in ninjalog_uploader.WHITELISTED_CONFIGS])
+      ['  * %s' % config for config in ninjalog_uploader.ALLOWLISTED_CONFIGS])
   print("""
 Your ninjalog will be uploaded to build stats server. The uploaded log will be
 used to analyze user side build performance.

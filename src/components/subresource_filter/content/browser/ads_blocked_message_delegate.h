@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "components/messages/android/message_enums.h"
 #include "components/messages/android/message_wrapper.h"
 #include "components/subresource_filter/android/ads_blocked_dialog.h"
@@ -83,7 +82,7 @@ class AdsBlockedMessageDelegate
   // explicitly in the code or automatically.
   void HandleDialogDismissed();
 
-  void ShowDialog();
+  void ShowDialog(bool should_post_dialog);
 
   std::unique_ptr<messages::MessageWrapper> message_;
 

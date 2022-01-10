@@ -184,7 +184,9 @@ class Resource : angle::NonCopyable
     angle::Result finishRunningCommands(ContextVk *contextVk);
 
     // Complete all recorded and in-flight commands involving this resource
-    angle::Result waitForIdle(ContextVk *contextVk, const char *debugMessage);
+    angle::Result waitForIdle(ContextVk *contextVk,
+                              const char *debugMessage,
+                              RenderPassClosureReason reason);
 
     // Adds the resource to a resource use list.
     void retain(ResourceUseList *resourceUseList) const;
@@ -192,6 +194,7 @@ class Resource : angle::NonCopyable
   protected:
     Resource();
     Resource(Resource &&other);
+    Resource &operator=(Resource &&rhs);
 
     // Current resource lifetime.
     SharedResourceUse mUse;
@@ -236,7 +239,9 @@ class ReadWriteResource : public angle::NonCopyable
     angle::Result finishGPUWriteCommands(ContextVk *contextVk);
 
     // Complete all recorded and in-flight commands involving this resource
-    angle::Result waitForIdle(ContextVk *contextVk, const char *debugMessage);
+    angle::Result waitForIdle(ContextVk *contextVk,
+                              const char *debugMessage,
+                              RenderPassClosureReason reason);
 
     // Adds the resource to a resource use list.
     void retainReadOnly(ResourceUseList *resourceUseList) const;

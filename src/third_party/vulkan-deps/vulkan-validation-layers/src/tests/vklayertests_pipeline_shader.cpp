@@ -292,7 +292,7 @@ TEST_F(VkLayerTest, BlendingOnFormatWithoutBlendingSupport) {
     features.independentBlend = VK_FALSE;
     ASSERT_NO_FATAL_FAILURE(Init(&features));
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-blendEnable-04717");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06041");
 
     VkFormat non_blending_format = VK_FORMAT_UNDEFINED;
     for (uint32_t i = 1; i <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK; i++) {
@@ -367,7 +367,7 @@ TEST_F(VkLayerTest, PipelineRenderpassCompatibility) {
         helper.gp_ci_.pColorBlendState = nullptr;
     };
     CreatePipelineHelper::OneshotTest(*this, set_info, kErrorBit,
-                                      "VUID-VkGraphicsPipelineCreateInfo-rasterizerDiscardEnable-00753");
+                                      "VUID-VkGraphicsPipelineCreateInfo-renderPass-06044");
 }
 
 TEST_F(VkLayerTest, PointSizeFailure) {
@@ -2186,6 +2186,18 @@ TEST_F(VkLayerTest, InvalidPipelineSampleRateFeatureEnable) {
     range_test(1.0F, /* positive_test= */ true);
 }
 
+TEST_F(VkLayerTest, InvalidPipelineDepthClipControlFeatureDisable) {
+    // Enable negativeOneToOne (VK_EXT_depth_clip_control) in pipeline when the feature is disabled.
+    ASSERT_NO_FATAL_FAILURE(Init());
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    VkPipelineViewportDepthClipControlCreateInfoEXT clip_control = LvlInitStruct<VkPipelineViewportDepthClipControlCreateInfoEXT>();
+    clip_control.negativeOneToOne = VK_TRUE;
+    auto set_shading_enable = [clip_control](CreatePipelineHelper &helper) { helper.vp_state_ci_.pNext = &clip_control; };
+    CreatePipelineHelper::OneshotTest(*this, set_shading_enable, kErrorBit,
+                                      "VUID-VkPipelineViewportDepthClipControlCreateInfoEXT-negativeOneToOne-06470");
+}
+
 TEST_F(VkLayerTest, InvalidPipelineSamplePNext) {
     // Enable sample shading in pipeline when the feature is disabled.
     // Check for VK_KHR_get_physical_device_properties2
@@ -3594,7 +3606,7 @@ TEST_F(VkLayerTest, NumBlendAttachMismatch) {
         helper.pipe_ms_state_ci_ = pipe_ms_state_ci;
         helper.cb_ci_.attachmentCount = 0;
     };
-    CreatePipelineHelper::OneshotTest(*this, set_MSAA, kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-attachmentCount-00746");
+    CreatePipelineHelper::OneshotTest(*this, set_MSAA, kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06042");
 }
 
 TEST_F(VkLayerTest, CmdClearAttachmentTests) {
@@ -9330,8 +9342,8 @@ TEST_F(VkLayerTest, PipelineStageConditionalRenderingWithWrongQueue) {
     imb.subresourceRange.baseArrayLayer = 0;
     imb.subresourceRange.layerCount = 1;
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPipelineBarrier-srcStageMask-04098");
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPipelineBarrier-srcStageMask-04098");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPipelineBarrier-srcStageMask-06461");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdPipelineBarrier-dstStageMask-06462");
     vk::CmdPipelineBarrier(commandBuffer.handle(), VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
                            VK_PIPELINE_STAGE_CONDITIONAL_RENDERING_BIT_EXT, 0, 0, nullptr, 0, nullptr, 1, &imb);
     m_errorMonitor->VerifyFound();
@@ -13911,7 +13923,7 @@ TEST_F(VkLayerTest, TestRuntimeSpirvTransformFeedback) {
     }
 
     if (transform_feedback_props.transformFeedbackStreamsLinesTriangles == VK_FALSE) {
-        const char* gsSource = R"asm(
+        const char *gsSource = R"asm(
                OpCapability Geometry
                OpCapability TransformFeedback
                OpCapability GeometryStreams
@@ -13962,14 +13974,201 @@ TEST_F(VkLayerTest, TestRuntimeSpirvTransformFeedback) {
                OpFunctionEnd
         )asm";
 
-        auto gs =
-            VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_GEOMETRY_BIT, gsSource, "main", nullptr);
+        auto gs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_GEOMETRY_BIT, gsSource, "main", nullptr);
 
         const auto set_info = [&](CreatePipelineHelper &helper) {
             helper.shader_stages_ = {helper.vs_->GetStageCreateInfo(), gs->GetStageCreateInfo(), helper.fs_->GetStageCreateInfo()};
         };
         CreatePipelineHelper::OneshotTest(*this, set_info, kErrorBit,
                                           "VUID-RuntimeSpirv-transformFeedbackStreamsLinesTriangles-06311");
+    }
+
+    {
+        std::stringstream gsSource;
+        gsSource << R"asm(
+               OpCapability Geometry
+               OpCapability TransformFeedback
+               OpCapability GeometryStreams
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Geometry %main "main" %a
+               OpExecutionMode %main Xfb
+               OpExecutionMode %main Triangles
+               OpExecutionMode %main Invocations 1
+               OpExecutionMode %main OutputLineStrip
+               OpExecutionMode %main OutputVertices 6
+
+               ; Debug Information
+               OpSource GLSL 450
+               OpName %main "main"  ; id %4
+               OpName %a "a"  ; id %10
+
+               ; Annotations
+               OpDecorate %a Location 0
+               OpDecorate %a Stream 0
+               OpDecorate %a XfbBuffer 0
+               OpDecorate %a XfbStride 20
+               OpDecorate %a Offset  )asm";
+        gsSource << transform_feedback_props.maxTransformFeedbackBufferDataSize;
+        gsSource << R"asm(
+
+               ; Types, variables and constants
+       %void = OpTypeVoid
+          %3 = OpTypeFunction %void
+        %int = OpTypeInt 32 1
+      %int_0 = OpConstant %int 0
+      %float = OpTypeFloat 32
+%_ptr_Output_float = OpTypePointer Output %float
+          %a = OpVariable %_ptr_Output_float Output
+
+               ; Function main
+       %main = OpFunction %void None %3
+          %5 = OpLabel
+               OpEmitStreamVertex %int_0
+               OpReturn
+               OpFunctionEnd
+        )asm";
+
+        auto gs =
+            VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_GEOMETRY_BIT, gsSource.str().c_str(), "main", nullptr);
+
+        const auto set_info = [&](CreatePipelineHelper &helper) {
+            helper.shader_stages_ = {helper.vs_->GetStageCreateInfo(), gs->GetStageCreateInfo(), helper.fs_->GetStageCreateInfo()};
+        };
+        std::vector<std::string> vuids = {"VUID-RuntimeSpirv-Offset-06308"};
+        if (transform_feedback_props.maxTransformFeedbackBufferDataSize + 4 >=
+            transform_feedback_props.maxTransformFeedbackStreamDataSize) {
+            vuids.push_back("VUID-RuntimeSpirv-XfbBuffer-06309");
+        }
+        CreatePipelineHelper::OneshotTest(*this, set_info, kErrorBit, vuids);
+    }
+
+    {
+        std::stringstream gsSource;
+        gsSource << R"asm(
+               OpCapability Geometry
+               OpCapability TransformFeedback
+               OpCapability GeometryStreams
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Geometry %main "main" %a
+               OpExecutionMode %main Xfb
+               OpExecutionMode %main Triangles
+               OpExecutionMode %main Invocations 1
+               OpExecutionMode %main OutputLineStrip
+               OpExecutionMode %main OutputVertices 6
+
+               ; Debug Information
+               OpSource GLSL 450
+               OpName %main "main"  ; id %4
+               OpName %a "a"  ; id %10
+
+               ; Annotations
+               OpDecorate %a Location 0
+               OpDecorate %a Stream  )asm";
+        gsSource << transform_feedback_props.maxTransformFeedbackStreams;
+        gsSource << R"asm(
+               OpDecorate %a XfbBuffer 0
+               OpDecorate %a XfbStride 4
+               OpDecorate %a Offset 0
+
+               ; Types, variables and constants
+       %void = OpTypeVoid
+          %3 = OpTypeFunction %void
+        %int = OpTypeInt 32 1
+      %int_0 = OpConstant %int 0
+      %float = OpTypeFloat 32
+%_ptr_Output_float = OpTypePointer Output %float
+          %a = OpVariable %_ptr_Output_float Output
+
+               ; Function main
+       %main = OpFunction %void None %3
+          %5 = OpLabel
+               OpEmitStreamVertex %int_0
+               OpReturn
+               OpFunctionEnd
+        )asm";
+
+        auto gs = VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_GEOMETRY_BIT, gsSource.str().c_str(), "main", nullptr);
+
+        const auto set_info = [&](CreatePipelineHelper &helper) {
+            helper.shader_stages_ = {helper.vs_->GetStageCreateInfo(), gs->GetStageCreateInfo(), helper.fs_->GetStageCreateInfo()};
+        };
+        CreatePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-RuntimeSpirv-Stream-06312");
+    }
+
+    {
+        uint32_t offset = transform_feedback_props.maxTransformFeedbackBufferDataSize / 2;
+        uint32_t count = transform_feedback_props.maxTransformFeedbackStreamDataSize / offset + 1;
+        // Limit to 25, because we are dynamically adding variables using letters as names
+        if (count < 25) {
+            std::stringstream gsSource;
+            gsSource << R"asm(
+               OpCapability Geometry
+               OpCapability TransformFeedback
+               OpCapability GeometryStreams
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Geometry %main "main"
+               OpExecutionMode %main Xfb
+               OpExecutionMode %main Triangles
+               OpExecutionMode %main Invocations 1
+               OpExecutionMode %main OutputLineStrip
+               OpExecutionMode %main OutputVertices 6
+
+               ; Debug Information
+               OpSource GLSL 450
+               OpName %main "main"  ; id %4)asm";
+
+            for (uint32_t i = 0; i < count; ++i) {
+                char v = 'a' + i;
+                gsSource << "\nOpName %var" << v << " \"" << v << "\"";
+            }
+            gsSource << "\n; Annotations\n";
+
+            for (uint32_t i = 0; i < count; ++i) {
+                char v = 'a' + i;
+                gsSource << "OpDecorate %var" << v << " Location " << i << "\n";
+                gsSource << "OpDecorate %var" << v << " Stream 0\n";
+                gsSource << "OpDecorate %var" << v << " XfbBuffer " << i << "\n";
+                gsSource << "OpDecorate %var" << v << " XfbStride 20\n";
+                gsSource << "OpDecorate %var" << v << " Offset " << offset << "\n";
+            }
+            gsSource << R"asm(
+
+               ; Types, variables and constants
+       %void = OpTypeVoid
+          %3 = OpTypeFunction %void
+        %int = OpTypeInt 32 1
+      %int_0 = OpConstant %int 0
+      %float = OpTypeFloat 32
+%_ptr_Output_float = OpTypePointer Output %float)asm";
+
+            gsSource << "\n";
+            for (uint32_t i = 0; i < count; ++i) {
+                char v = 'a' + i;
+                gsSource << "%var" << v << " = OpVariable %_ptr_Output_float Output\n";
+            }
+
+            gsSource << R"asm(
+
+               ; Function main
+       %main = OpFunction %void None %3
+          %5 = OpLabel
+               OpEmitStreamVertex %int_0
+               OpReturn
+               OpFunctionEnd
+        )asm";
+
+            auto gs =
+                VkShaderObj::CreateFromASM(*m_device, *this, VK_SHADER_STAGE_GEOMETRY_BIT, gsSource.str().c_str(), "main", nullptr);
+
+            const auto set_info = [&](CreatePipelineHelper &helper) {
+                helper.shader_stages_ = {helper.vs_->GetStageCreateInfo(), gs->GetStageCreateInfo(),
+                                         helper.fs_->GetStageCreateInfo()};
+            };
+            CreatePipelineHelper::OneshotTest(*this, set_info, kErrorBit, "VUID-RuntimeSpirv-XfbBuffer-06309");
+        }
     }
 }
 
@@ -14470,7 +14669,7 @@ TEST_F(VkLayerTest, TestUsingDisabledMultiviewFeatures) {
         pipe.shader_stages_.emplace_back(tes.GetStageCreateInfo());
         pipe.InitState();
 
-        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-00760");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06047");
         pipe.CreateGraphicsPipeline();
         m_errorMonitor->VerifyFound();
     }
@@ -14497,7 +14696,7 @@ TEST_F(VkLayerTest, TestUsingDisabledMultiviewFeatures) {
         pipe.shader_stages_ = {vs.GetStageCreateInfo(), gs.GetStageCreateInfo(), pipe.fs_->GetStageCreateInfo()};
         pipe.InitState();
 
-        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-00761");
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-renderPass-06048");
         pipe.CreateGraphicsPipeline();
         m_errorMonitor->VerifyFound();
     }
@@ -14629,3 +14828,41 @@ TEST_F(VkLayerTest, ComputeImageLayout_1_1) {
     m_commandBuffer->QueueCommandBuffer(false);
     m_errorMonitor->VerifyFound();
 }
+
+TEST_F(VkLayerTest, CreateGraphicsPipelineNullRenderPass) {
+    TEST_DESCRIPTION("Test for a creating a pipeline with a null renderpass but VK_KHR_dynamic_rendering is not enabled");
+    m_errorMonitor->ExpectSuccess();
+
+    ASSERT_NO_FATAL_FAILURE(Init());
+
+    char const *fsSource = R"glsl(
+        #version 450
+        layout(input_attachment_index=0, set=0, binding=0) uniform subpassInput x;
+        layout(location=0) out vec4 color;
+        void main() {
+           color = subpassLoad(x);
+        }
+    )glsl";
+
+    VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
+    VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
+
+    VkPipelineObj pipe(m_device);
+    pipe.AddShader(&vs);
+    pipe.AddShader(&fs);
+    pipe.AddDefaultColorAttachment();
+
+    VkDescriptorSetLayoutBinding dslb = {0, VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
+    const VkDescriptorSetLayoutObj dsl(m_device, {dslb});
+    const VkPipelineLayoutObj pl(m_device, {&dsl});
+
+    auto create_info = LvlInitStruct<VkGraphicsPipelineCreateInfo>();
+    pipe.InitGraphicsPipelineCreateInfo(&create_info);
+
+    m_errorMonitor->VerifyNotFound();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkGraphicsPipelineCreateInfo-dynamicRendering-06052");
+    pipe.CreateVKPipeline(pl.handle(), VK_NULL_HANDLE, &create_info);
+    m_errorMonitor->VerifyFound();
+}
+

@@ -55,13 +55,8 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
   }
 
   /** @override */
-  getContent() {
-    return /** @type {!HTMLDivElement} */ (this.$$('#content'));
-  }
-
-  /** @override */
-  getSizer() {
-    return /** @type {!HTMLDivElement} */ (this.$$('#sizer'));
+  isNewUiEnabled() {
+    return false;
   }
 
   /** @override */
@@ -79,7 +74,10 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
 
   /** @param {!BrowserApi} browserApi */
   init(browserApi) {
-    super.init(browserApi);
+    super.init(
+        browserApi, document.documentElement,
+        /** @type {!HTMLDivElement} */ (this.$$('#sizer')),
+        /** @type {!HTMLDivElement} */ (this.$$('#content')));
 
     /** @private {?PluginController} */
     this.pluginController_ = PluginController.getInstance();
@@ -242,8 +240,10 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
         this.pluginController_.resetPrintPreviewMode(messageData);
         return true;
       case 'sendKeyEvent':
-        this.handleKeyEvent(/** @type {!KeyboardEvent} */ (DeserializeKeyEvent(
-            /** @type {{ keyEvent: Object }} */ (message.data).keyEvent)));
+        const keyEvent = DeserializeKeyEvent(
+            /** @type {{ keyEvent: Object }} */ (message.data).keyEvent);
+        keyEvent.fromScriptingAPI = true;
+        this.handleKeyEvent(keyEvent);
         return true;
       case 'hideToolbar':
         this.toolbarManager_.resetKeyboardNavigationAndHideToolbar();
@@ -304,6 +304,12 @@ class PDFViewerPPElement extends PDFViewerBaseElement {
         return;
       case 'documentFocusChanged':
         // TODO(crbug.com/1069370): Draw a focus rect around plugin.
+        return;
+      case 'sendKeyEvent':
+        const keyEvent = DeserializeKeyEvent(
+            /** @type {{ keyEvent: Object }} */ (data).keyEvent);
+        keyEvent.fromPlugin = true;
+        this.handleKeyEvent(keyEvent);
         return;
       case 'beep':
       case 'formFocusChange':

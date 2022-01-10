@@ -140,7 +140,10 @@ class TFL_AnyTypeOf<list<Type> allowedRuntimeTypes, string description = "",
 
 class TFL_TensorOf<list<Type> allowedRuntimeTypes,
                    list<Type> allowedOpTypes = [AnyType]> :
-  TensorOf<allowedOpTypes>, TFL_RuntimeType<TensorOf<allowedRuntimeTypes>>;
+  TensorOf<allowedOpTypes>, TFL_RuntimeType<TensorOf<allowedRuntimeTypes>> {
+  // Set the summary equal to that representing the runtime types.
+  let summary = TensorOf<allowedRuntimeTypes>.summary;
+}
 
 class TFL_TensorOfOrNone<list<Type> allowedRuntimeTypes, string description = "",
                          list<Type> allowedOpTypes = [AnyType]> :
@@ -929,7 +932,7 @@ def TFL_ExternalConstOp : Op<TFL_Dialect, "external_const",
 def TFL_Conv2DOp : TFL_ConvOp<"conv_2d", "Convolution", 0,
       [DeclareOpInterfaceMethods<InferTypeOpInterface>,
        DeclareOpInterfaceMethods<TFL_ArithmeticCount>,
-       DynamicRangeQuantizableOp]> {
+       DynamicRangeQuantizedOpInterface]> {
   let hasCanonicalizer = 1;
 
   let extraClassDeclaration = [{
@@ -943,6 +946,10 @@ def TFL_Conv2DOp : TFL_ConvOp<"conv_2d", "Convolution", 0,
 
     // Returns whether the return types are compatible.
     static bool isCompatibleReturnTypes(TypeRange l, TypeRange r);
+
+    // DynamicRangeQuantizedOpInterface:
+    bool GetDynamicRangeQuantKernelSupport() { return true; }
+    std::vector<int> GetQuantizableOperandIndices() { return {1}; }
   }];
 }
 
@@ -991,7 +998,7 @@ def TFL_CumsumOp: TFL_Op<"cumsum", [
 def TFL_DepthwiseConv2DOp :
     TFL_ConvOp<"depthwise_conv_2d", "Depthwise-separable convolution", 3,
                 [DeclareOpInterfaceMethods<TFL_ArithmeticCount>,
-                DynamicRangeQuantizableOp]> {
+                DynamicRangeQuantizedOpInterface]> {
   let arguments = (
     ins TFL_TensorOf<[F32, QI8, QUI8, QI16]>:$input,
     TFL_TensorOf<[F32, QI8, QUI8]>:$filter,
@@ -1015,6 +1022,9 @@ def TFL_DepthwiseConv2DOp :
     std::vector<int> GetSparseOperands() { return {1}; }
     std::vector<std::vector<int>> GetFloatBlockSize() { return {}; }
     std::vector<std::vector<int>> GetQuantizedBlockSize() { return {}; }
+    // DynamicRangeQuantizedOpInterface:
+    bool GetDynamicRangeQuantKernelSupport() { return true; }
+    std::vector<int> GetQuantizableOperandIndices() { return {1}; }
   }];
 }
 
@@ -1034,7 +1044,7 @@ def TFL_FullyConnectedOp : TFL_Op<"fully_connected", [
     AffineOpCoefficient<-1, 1>,
     TFL_SparseOp,
     DeclareOpInterfaceMethods<TFL_ArithmeticCount>,
-    DynamicRangeQuantizableOp]> {
+    DynamicRangeQuantizedOpInterface]> {
   let summary = "Fully connected op";
 
   let arguments = (ins
@@ -1044,7 +1054,10 @@ def TFL_FullyConnectedOp : TFL_Op<"fully_connected", [
 
     TFL_AFAttr:$fused_activation_function,
     TFL_FullyConnectedOptionsWeightFormatAttr:$weights_format,
-    BoolAttr:$keep_num_dims
+    BoolAttr:$keep_num_dims,
+    // Used in post-training dynamic range quantization. If the value is true,
+    // input activations are asymmetrically quantized.
+    OptionalAttr<BoolAttr>:$asymmetric_quantize_inputs
   );
 
   // Depending on the weights format, this op can have one or two outputs.
@@ -1068,6 +1081,10 @@ def TFL_FullyConnectedOp : TFL_Op<"fully_connected", [
     std::vector<int> GetSparseOperands() { return {1}; }
     std::vector<std::vector<int>> GetFloatBlockSize() { return {{1, 4}}; }
     std::vector<std::vector<int>> GetQuantizedBlockSize() { return {{1, 16}}; }
+    // DynamicRangeQuantizedOpInterface:
+    bool RequireAsymmetricQuantizeInputsAttr() { return true; }
+    bool GetDynamicRangeQuantKernelSupport() { return true; }
+    std::vector<int> GetQuantizableOperandIndices() { return {1}; }
   }];
 }
 
@@ -1080,7 +1097,7 @@ def TFL_BatchMatMulOp : TFL_Op<"batch_matmul", [
            And<[CPred<"getElementTypeOrSelf($_op.getOperand(0)).isInteger(8)">,
                 CPred<"getElementTypeOrSelf($_op.getOperand(1)).isInteger(8)">,
                 CPred<"getElementTypeOrSelf($_op.getResult(0)).isInteger(32)">]>]>>,
-   DynamicRangeQuantizableOp]> {
+   DynamicRangeQuantizedOpInterface]> {
 
   let summary = "Batch Matrix Multiply Operator";
 
@@ -1100,7 +1117,10 @@ in the batch dimensions and broadcasting.
     TFL_TensorOf<[F32, QI8, QI16, I8]>:$x,
     TFL_TensorOf<[F32, QI8, QI16, I8]>:$y,
     DefaultValuedAttr<BoolAttr, "false">:$adj_x,
-    DefaultValuedAttr<BoolAttr, "false">:$adj_y
+    DefaultValuedAttr<BoolAttr, "false">:$adj_y,
+    // Used in post-training dynamic range quantization. If the value is true,
+    // input activations are asymmetrically quantized.
+    OptionalAttr<BoolAttr>:$asymmetric_quantize_inputs
   );
 
    let results = (outs
@@ -1108,6 +1128,13 @@ in the batch dimensions and broadcasting.
   );
 
   let hasOptions = 1;
+
+  let extraClassDeclaration = [{
+    // DynamicRangeQuantizedOpInterface:
+    bool RequireAsymmetricQuantizeInputsAttr() { return true; }
+    bool GetDynamicRangeQuantKernelSupport() { return true; }
+    std::vector<int> GetQuantizableOperandIndices() { return {1}; }
+  }];
 }
 
 def TFL_GatherOp : TFL_Op<"gather", [
@@ -3620,10 +3647,10 @@ def TFL_CastOp : TFL_Op<"cast", [
   }];
 
   let arguments = (ins
-    TFL_TensorOf<[F32, I1, I16, I32, UI32, I64, TFL_Quint8, UI8, Complex<F<32>>]>:$input
+    TFL_TensorOf<[F32, I1, I16, I32, UI32, I64, TFL_Quint8, UI8, I8, Complex<F<32>>]>:$input
   );
 
-  let results = (outs TFL_TensorOf<[F32, I1, I16, I32, UI32, I64, TFL_Quint8, UI8, Complex<F<32>>]>:$output);
+  let results = (outs TFL_TensorOf<[F32, I1, I16, I32, UI32, I64, TFL_Quint8, UI8, I8, Complex<F<32>>]>:$output);
 
   // TFLite's cast op does not utilize CastOptions, instead derives types
   // from the TfLiteTensors.
@@ -3965,7 +3992,8 @@ def TFL_LSTMOp :
            TFL_OperandHasRank<15, 1>,          // output_gate_bias
            TFL_OperandIsNoneOrHasRank<16, 2>,  // projection_weights
            TFL_OperandIsNoneOrHasRank<17, 1>,  // projection_bias
-           TFL_StatefulOp]> {
+           TFL_StatefulOp,
+           DynamicRangeQuantizedOpInterface]> {
   let summary = "The full lstm operator";
 
   let description = [{
@@ -4038,10 +4066,13 @@ Ba et al. 'Layer Normalization'
     Confined<
       DefaultValuedStrAttr<TFL_LSTMKernelTypeAttr, "FULL">,
       [TFL_LSTM_KT_FULL]>:$kernel_type,
+    // Used in post-training dynamic range quantization. If the value is true,
+    // input activations are asymmetrically quantized.
+    OptionalAttr<BoolAttr>:$asymmetric_quantize_inputs,
 
     // Types of the optional intermediate tensors, which exist for fully
     // quantized LSTM op and hold the ranges of the intermediate tensors.
-    // The type for intermediate tenssors are be quant.calibrated when imported
+    // The type for intermediate tensors are be quant.calibrated when imported
     // to only store calibrated min, max values. The proper quantization spec is
     // determined while going through quantization passes.
     OptionalAttr<TypeAttr>:$input_to_input_intermediate,
@@ -4066,6 +4097,12 @@ Ba et al. 'Layer Normalization'
   let extraClassDeclaration = [{
     // StatefulOpInterface:
     std::vector<int> GetStatefulOperands() { return {18, 19}; }
+    // DynamicRangeQuantizedOpInterface:
+    bool RequireAsymmetricQuantizeInputsAttr() { return true; }
+    bool GetDynamicRangeQuantKernelSupport() { return true; }
+    std::vector<int> GetQuantizableOperandIndices() {
+      return {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16};
+    }
   }];
 }
 
@@ -4098,7 +4135,8 @@ def TFL_UnidirectionalSequenceLSTMOp :
            TFL_OperandIsNoneOrHasRank<16, 2>,  // projection_weights
            TFL_OperandIsNoneOrHasRank<17, 1>,  // projection_bias
            TFL_StatefulOp,
-           DeclareOpInterfaceMethods<InferTypeOpInterface>
+           DeclareOpInterfaceMethods<InferTypeOpInterface>,
+           DynamicRangeQuantizedOpInterface
           ]> {
   let summary = "Unidirectional sequence lstm operator";
 
@@ -4161,10 +4199,13 @@ def TFL_UnidirectionalSequenceLSTMOp :
     Confined<DefaultValuedAttr<F32Attr, "0.0f">, [TFL_FloatNonNegative]>:$cell_clip,
     Confined<DefaultValuedAttr<F32Attr, "0.0f">, [TFL_FloatNonNegative]>:$proj_clip,
     BoolAttr:$time_major,
+    // Used in post-training dynamic range quantization. If the value is true,
+    // input activations are asymmetrically quantized.
+    OptionalAttr<BoolAttr>:$asymmetric_quantize_inputs,
 
     // Types of the optional intermediate tensors, which exist for fully
     // quantized op and hold the ranges of the intermediate tensors.
-    // The type for intermediate tenssors are be quant.calibrated when imported
+    // The type for intermediate tensors are be quant.calibrated when imported
     // to only store calibrated min, max values. The proper quantization spec is
     // determined while going through quantization passes.
     OptionalAttr<TypeAttr>:$input_to_input_intermediate,
@@ -4186,6 +4227,13 @@ def TFL_UnidirectionalSequenceLSTMOp :
 
     // Compatiable return types check
     static bool isCompatibleReturnTypes(TypeRange l, TypeRange r);
+
+    // DynamicRangeQuantizedOpInterface:
+    bool RequireAsymmetricQuantizeInputsAttr() { return true; }
+    bool GetDynamicRangeQuantKernelSupport() { return true; }
+    std::vector<int> GetQuantizableOperandIndices() {
+      return {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16};
+    }
   }];
 }
 
@@ -4261,7 +4309,8 @@ def TFL_BidirectionalSequenceLSTMOp :
            TFL_OperandHasRank<32, 1>,  // bw_output_gate_bias
            TFL_OperandHasRank<33, 2>,  // bw_projection_weights
            TFL_OperandHasRank<34, 1>,  // bw_projection_bias
-           TFL_StatefulOp]> {
+           TFL_StatefulOp,
+           DynamicRangeQuantizedOpInterface]> {
   let summary = "Bidirectional sequence lstm operator";
 
   let description = [{
@@ -4357,7 +4406,10 @@ def TFL_BidirectionalSequenceLSTMOp :
     Confined<DefaultValuedAttr<F32Attr, "0.0f">, [TFL_FloatNonNegative]>:$cell_clip,
     Confined<DefaultValuedAttr<F32Attr, "0.0f">, [TFL_FloatNonNegative]>:$proj_clip,
     BoolAttr:$merge_outputs,
-    BoolAttr:$time_major
+    BoolAttr:$time_major,
+    // Used in post-training dynamic range quantization. If the value is true,
+    // input activations are asymmetrically quantized.
+    OptionalAttr<BoolAttr>:$asymmetric_quantize_inputs
   );
 
   let results = (outs
@@ -4372,6 +4424,14 @@ def TFL_BidirectionalSequenceLSTMOp :
   let extraClassDeclaration = [{
     // StatefulOpInterface:
     std::vector<int> GetStatefulOperands() { return {35, 36, 37, 38}; }
+
+    // DynamicRangeQuantizedOpInterface:
+    bool RequireAsymmetricQuantizeInputsAttr() { return true; }
+    bool GetDynamicRangeQuantKernelSupport() { return true; }
+    std::vector<int> GetQuantizableOperandIndices() {
+      return {1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 16, 18, 19, 20, 21,
+              22, 23, 24, 25, 26, 27, 28, 33, 40, 41, 42, 43, 44, 45, 46, 47};
+    }
   }];
 }
 
@@ -4382,7 +4442,8 @@ def TFL_UnidirectionalSequenceRNNOp : TFL_Op<"unidirectional_sequence_rnn", [
       TFL_TCresVTEtIsSameAsOp<0, 0>>,
     PredOpTrait<"input and constant value operands must have same element type",
       TFL_TCopVTEtAreSameAt<1, 2>>,
-    TFL_StatefulOp]> {
+    TFL_StatefulOp,
+    DynamicRangeQuantizedOpInterface]> {
   let summary = "Unidirectional sequence rnn operator";
 
   let description = [{
@@ -4415,7 +4476,10 @@ def TFL_UnidirectionalSequenceRNNOp : TFL_Op<"unidirectional_sequence_rnn", [
 
     // Attributes
     BoolAttr:$time_major,
-    TFL_AFAttr:$fused_activation_function
+    TFL_AFAttr:$fused_activation_function,
+    // Used in post-training dynamic range quantization. If the value is true,
+    // input activations are asymmetrically quantized.
+    OptionalAttr<BoolAttr>:$asymmetric_quantize_inputs
   );
 
   let results = (outs TFL_FpTensor:$output);
@@ -4429,6 +4493,13 @@ def TFL_UnidirectionalSequenceRNNOp : TFL_Op<"unidirectional_sequence_rnn", [
   let extraClassDeclaration = [{
     // StatefulOpInterface:
     std::vector<int> GetStatefulOperands() { return {4}; }
+
+    // DynamicRangeQuantizedOpInterface:
+    bool RequireAsymmetricQuantizeInputsAttr() { return true; }
+    bool GetDynamicRangeQuantKernelSupport() { return true; }
+    std::vector<int> GetQuantizableOperandIndices() {
+      return {1, 2};
+    }
   }];
 }
 
@@ -4486,7 +4557,8 @@ def TFL_SVDFOp :
     PredOpTrait<"the input and result tensor elemental types must be same",
       TFL_TCresVTEtIsSameAsOp<0, 0>>,
     TFL_StatefulOp,
-    AccumulatorUniformScale<3, 2, 4>]> {
+    AccumulatorUniformScale<3, 2, 4>,
+    DynamicRangeQuantizedOpInterface]> {
 
   let summary = "Single value decomposition filter operator";
 
@@ -4514,7 +4586,10 @@ def TFL_SVDFOp :
 
     // Attributes
     Confined<I32Attr, [IntPositive]>:$rank,
-    TFL_AFAttr:$fused_activation_function
+    TFL_AFAttr:$fused_activation_function,
+    // Used in post-training dynamic range quantization. If the value is true,
+    // input activations are asymmetrically quantized.
+    OptionalAttr<BoolAttr>:$asymmetric_quantize_inputs
   );
 
   let results = (outs TFL_TensorOf<[F32, QI8]>:$output);
@@ -4526,6 +4601,13 @@ def TFL_SVDFOp :
   let extraClassDeclaration = [{
     // StatefulOpInterface:
     std::vector<int> GetStatefulOperands() { return {4}; }
+
+    // DynamicRangeQuantizedOpInterface:
+    bool RequireAsymmetricQuantizeInputsAttr() { return true; }
+    bool GetDynamicRangeQuantKernelSupport() { return true; }
+    std::vector<int> GetQuantizableOperandIndices() {
+      return {1, 2};
+    }
   }];
 }
 
@@ -4686,7 +4768,6 @@ initializer in tf saved model dialect.
 }
 
 def TFL_CustomOp : Op<TFL_Dialect, "custom", [
-  NoSideEffect,
   NoQuantizableResult,
   DeclareOpInterfaceMethods<TFL_RuntimeVerification>]> {
   let summary = "Custom op";
@@ -4791,6 +4872,8 @@ subsequent operation and then be optimized away, however.)
   let results = (outs
     TFL_TensorOf<[F32, I32, I1, I8, QI8, UI8, QUI8, I16, QI16, I64, Complex<F<32>>]>:$output
   );
+
+  let hasCanonicalizer = 1;
 }
 
 def TFL_RFFT2dOp : TFL_Op<"rfft2d", [NoSideEffect, NoQuantizableResult]> {
@@ -5152,6 +5235,69 @@ then the output will be `output = [[0, 3][3, 2][1, 3]]`.
 
   let hasOptions = 1;
 }
+
+def TFL_RandomUniformOp : TFL_Op<"random_uniform", [NoQuantizableResult]> {
+  let summary = "Outputs random values from a uniform distribution.";
+
+  let description = [{
+The generated values follow a uniform distribution in the range `[0, 1)`. The
+lower bound 0 is included in the range, while the upper bound 1 is excluded.
+  }];
+
+  let arguments = (ins
+    TFL_I32Tensor:$shape,
+    DefaultValuedAttr<I64Attr, "0">:$seed,
+    DefaultValuedAttr<I64Attr, "0">:$seed2
+  );
+
+   let results = (outs
+    TFL_TensorOf<[F32]>:$out);
+  let hasOptions = 1;
+  let customOption = "RandomOptions";
+}
+
+def TFL_RandomStandardNormalOp : TFL_Op<"random_standard_normal", [
+  NoQuantizableResult]> {
+  let summary = "Outputs random values from a normal distribution.";
+
+  let description = [{
+The generated values will have mean 0 and standard deviation 1.
+  }];
+
+  let arguments = (ins
+    TFL_I32Tensor:$shape,
+    DefaultValuedAttr<I64Attr, "0">:$seed,
+    DefaultValuedAttr<I64Attr, "0">:$seed2
+  );
+
+  let results = (outs
+    TFL_TensorOf<[F32]>:$out);
+  let hasOptions = 1;
+  let customOption = "RandomOptions";
+}
+
+def TFL_MultinomialOp : TFL_Op<"multinomial", [NoQuantizableResult]> {
+  let summary = "Draws samples from a categorical distribution.";
+
+  let description = [{
+The generated values will have a categorical distribution based on the `logits`
+or unnormalized log-probabilities provided for all classes.
+  }];
+
+  let arguments = (ins
+    TFL_FpTensor:$logits,
+    TFL_I32Tensor:$num_samples,
+    DefaultValuedAttr<I64Attr, "0">:$seed,
+    DefaultValuedAttr<I64Attr, "0">:$seed2
+  );
+
+  let results = (outs
+    TFL_TensorOf<[I64]>:$out);
+
+  let hasOptions = 1;
+  let customOption = "RandomOptions";
+}
+
 
 #endif // TFL_OPS
 

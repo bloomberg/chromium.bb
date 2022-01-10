@@ -52,22 +52,6 @@ static av_cold int init(AVFilterContext *ctx)
     return 0;
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVSampleFormat sample_fmts[] = {
-        AV_SAMPLE_FMT_S32P, AV_SAMPLE_FMT_NONE
-    };
-    int ret = ff_set_common_all_channel_counts(ctx);
-    if (ret < 0)
-        return ret;
-
-    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
-    if (ret < 0)
-        return ret;
-
-    return ff_set_common_all_samplerates(ctx);
-}
-
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
     AVFilterContext *ctx = inlink->dst;
@@ -148,11 +132,11 @@ static const AVFilterPad dcshift_outputs[] = {
 const AVFilter ff_af_dcshift = {
     .name           = "dcshift",
     .description    = NULL_IF_CONFIG_SMALL("Apply a DC shift to the audio."),
-    .query_formats  = query_formats,
     .priv_size      = sizeof(DCShiftContext),
     .priv_class     = &dcshift_class,
     .init           = init,
     FILTER_INPUTS(dcshift_inputs),
     FILTER_OUTPUTS(dcshift_outputs),
+    FILTER_SINGLE_SAMPLEFMT(AV_SAMPLE_FMT_S32P),
     .flags          = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

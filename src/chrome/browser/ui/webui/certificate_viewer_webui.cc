@@ -11,7 +11,6 @@
 #include "base/callback_helpers.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_writer.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -203,11 +202,6 @@ std::string CertificateViewerDialog::GetDialogArgs() const {
   // correspond to the IDs in the Html page.
   base::DictionaryValue cert_info;
   CERTCertificate* cert_hnd = nss_certs_.front().get();
-
-  // Certificate usage.
-  std::vector<std::string> usages;
-  x509_certificate_model::GetUsageStrings(cert_hnd, &usages);
-  cert_info.SetString("general.usages", base::JoinString(usages, "\n"));
 
   // Standard certificate details.
   const std::string alternative_text =

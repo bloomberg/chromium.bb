@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "cc/base/rolling_time_delta_history.h"
 #include "cc/cc_export.h"
 #include "cc/metrics/event_metrics.h"
@@ -96,6 +97,8 @@ class CC_EXPORT CompositorTimingHistory {
 
   void ClearHistory();
 
+  size_t CommitDurationSampleCountForTesting() const;
+
  protected:
   void DidBeginMainFrame(base::TimeTicks begin_main_frame_end_time);
 
@@ -126,6 +129,21 @@ class CC_EXPORT CompositorTimingHistory {
   RollingTimeDeltaHistory activate_duration_history_;
   RollingTimeDeltaHistory draw_duration_history_;
 
+  // Used for duration estimates when enabled. Without this feature, compositor
+  // timing history collects timing history of each stage and use sum of
+  // percentile for duration estimates. With this feature, we use percentile of
+  // sum instead.
+  bool duration_estimates_enabled_;
+  RollingTimeDeltaHistory bmf_start_to_ready_to_commit_critical_history_;
+  double bmf_start_to_ready_to_commit_critical_percentile_;
+  RollingTimeDeltaHistory bmf_start_to_ready_to_commit_not_critical_history_;
+  double bmf_start_to_ready_to_commit_not_critical_percentile_;
+  RollingTimeDeltaHistory bmf_queue_to_activate_critical_history_;
+  double bmf_queue_to_activate_critical_percentile_;
+
+  base::TimeDelta begin_main_frame_queue_duration_;
+  base::TimeDelta bmf_start_to_activate_duration_;
+
   bool begin_main_frame_on_critical_path_;
   base::TimeTicks begin_main_frame_sent_time_;
   base::TimeTicks begin_main_frame_start_time_;
@@ -141,7 +159,7 @@ class CC_EXPORT CompositorTimingHistory {
   std::unique_ptr<UMAReporter> uma_reporter_;
 
   // Owned by LayerTreeHost and is destroyed when LayerTreeHost is destroyed.
-  RenderingStatsInstrumentation* rendering_stats_instrumentation_;
+  raw_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation_;
 
   // Used only for reporting animation targeted UMA.
   bool previous_frame_had_custom_property_animations_ = false;

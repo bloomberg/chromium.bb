@@ -33,6 +33,12 @@ namespace dawn_native { namespace vulkan {
     DAWN_NATIVE_EXPORT WGPUTextureFormat
     GetNativeSwapChainPreferredFormat(const DawnSwapChainImplementation* swapChain);
 
+    struct DAWN_NATIVE_EXPORT AdapterDiscoveryOptions : public AdapterDiscoveryOptionsBase {
+        AdapterDiscoveryOptions();
+
+        bool forceSwiftShader = false;
+    };
+
     struct DAWN_NATIVE_EXPORT ExternalImageDescriptorVk : ExternalImageDescriptor {
       public:
         // The following members may be ignored if |ExternalImageDescriptor::isInitialized| is false
@@ -118,14 +124,14 @@ namespace dawn_native { namespace vulkan {
         // semaphore extensions to import the image and wait on the provided synchronizaton
         // primitives before the texture can be used.
         // On failure, returns a nullptr.
-        DAWN_NATIVE_EXPORT WGPUTexture WrapVulkanImage(WGPUDevice cDevice,
+        DAWN_NATIVE_EXPORT WGPUTexture WrapVulkanImage(WGPUDevice device,
                                                        const ExternalImageDescriptorVk* descriptor);
 
         // Exports external memory from a Vulkan image. This must be called on wrapped textures
         // before they are destroyed. It writes the semaphore to wait on and the old/new image
         // layouts to |info|. Pass VK_IMAGE_LAYOUT_UNDEFINED as |desiredLayout| if you don't want to
         // perform a layout transition.
-        DAWN_NATIVE_EXPORT bool ExportVulkanImage(WGPUTexture cTexture,
+        DAWN_NATIVE_EXPORT bool ExportVulkanImage(WGPUTexture texture,
                                                   VkImageLayout desiredLayout,
                                                   ExternalImageExportInfoVk* info);
 

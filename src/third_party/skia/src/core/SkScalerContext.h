@@ -141,7 +141,7 @@ public:
                    fFrameWidth, fMiterLimit, fMaskFormat, fStrokeJoin, fStrokeCap, fFlags);
         msg.appendf("      lum bits %x, device gamma %d, paint gamma %d contrast %d\n", fLumBits,
                     fDeviceGamma, fPaintGamma, fContrast);
-        msg.appendf("      foreground color %x", fForegroundColor);
+        msg.appendf("      foreground color %x\n", fForegroundColor);
         return msg;
     }
 
@@ -292,9 +292,9 @@ public:
     // DEPRECATED
     bool isVertical() const { return false; }
 
-    SkGlyph     makeGlyph(SkPackedGlyphID);
+    SkGlyph     makeGlyph(SkPackedGlyphID, SkArenaAlloc*);
     void        getImage(const SkGlyph&);
-    bool SK_WARN_UNUSED_RESULT getPath(SkPackedGlyphID, SkPath*);
+    void        getPath(SkGlyph&, SkArenaAlloc*);
     void        getFontMetrics(SkFontMetrics*);
 
     /** Return the size in bytes of the associated gamma lookup table
@@ -375,16 +375,14 @@ protected:
 
     /** Generates the contents of glyph.fWidth, fHeight, fTop, fLeft,
      *  as well as fAdvanceX and fAdvanceY if not already set.
-     *
-     *  TODO: fMaskFormat is set by internalMakeGlyph later; cannot be set here.
+     *  The fMaskFormat will already be set to a requested format but may be changed.
      */
-    virtual void generateMetrics(SkGlyph* glyph) = 0;
+    virtual void generateMetrics(SkGlyph* glyph, SkArenaAlloc*) = 0;
 
     /** Generates the contents of glyph.fImage.
      *  When called, glyph.fImage will be pointing to a pre-allocated,
      *  uninitialized region of memory of size glyph.imageSize().
-     *  This method may change glyph.fMaskFormat if the new image size is
-     *  less than or equal to the old image size.
+     *  This method may not change glyph.fMaskFormat.
      *
      *  Because glyph.imageSize() will determine the size of fImage,
      *  generateMetrics will be called before generateImage.
@@ -393,9 +391,10 @@ protected:
 
     /** Sets the passed path to the glyph outline.
      *  If this cannot be done the path is set to empty;
+     *  Does not apply subpixel positioning to the path.
      *  @return false if this glyph does not have any path.
      */
-    virtual bool SK_WARN_UNUSED_RESULT generatePath(SkGlyphID glyphId, SkPath* path) = 0;
+    virtual bool SK_WARN_UNUSED_RESULT generatePath(const SkGlyph&, SkPath*) = 0;
 
     /** Retrieves font metrics. */
     virtual void generateFontMetrics(SkFontMetrics*) = 0;
@@ -404,11 +403,13 @@ protected:
     void forceOffGenerateImageFromPath() { fGenerateImageFromPath = false; }
 
 private:
+    friend class PathText;  // For debug purposes
+    friend class PathTextBench;  // For debug purposes
     friend class RandomScalerContext;  // For debug purposes
 
-    static SkScalerContextRec PreprocessRec(const SkTypeface& typeface,
-                                            const SkScalerContextEffects& effects,
-                                            const SkDescriptor& desc);
+    static SkScalerContextRec PreprocessRec(const SkTypeface&,
+                                            const SkScalerContextEffects&,
+                                            const SkDescriptor&);
 
     // never null
     sk_sp<SkTypeface> fTypeface;
@@ -422,8 +423,8 @@ private:
     bool fGenerateImageFromPath;
 
     /** Returns false if the glyph has no path at all. */
-    bool internalGetPath(SkPackedGlyphID id, SkPath* devPath, bool* hairline);
-    SkGlyph internalMakeGlyph(SkPackedGlyphID packedID, SkMask::Format format);
+    void internalGetPath(SkGlyph&, SkArenaAlloc*);
+    SkGlyph internalMakeGlyph(SkPackedGlyphID, SkMask::Format, SkArenaAlloc*);
 
     // SkMaskGamma::PreBlend converts linear masks to gamma correcting masks.
 protected:

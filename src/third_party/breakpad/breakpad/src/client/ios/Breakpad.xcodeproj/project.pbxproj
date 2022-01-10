@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		06D561E62700974500F9F2E8 /* encoding_util.h in Headers */ = {isa = PBXBuildFile; fileRef = 06D561E42700974500F9F2E8 /* encoding_util.h */; };
+		06D561E72700974500F9F2E8 /* encoding_util.m in Sources */ = {isa = PBXBuildFile; fileRef = 06D561E52700974500F9F2E8 /* encoding_util.m */; };
 		14569321182CE29F0029C465 /* ucontext_compat.h in Headers */ = {isa = PBXBuildFile; fileRef = 14569320182CE29F0029C465 /* ucontext_compat.h */; };
 		14569323182CE2C10029C465 /* mach_vm_compat.h in Headers */ = {isa = PBXBuildFile; fileRef = 14569322182CE2C10029C465 /* mach_vm_compat.h */; };
 		16BFA67014E195E9009704F8 /* ios_exception_minidump_generator.h in Headers */ = {isa = PBXBuildFile; fileRef = 16BFA66E14E195E9009704F8 /* ios_exception_minidump_generator.h */; };
@@ -64,6 +66,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		06D561E42700974500F9F2E8 /* encoding_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = encoding_util.h; sourceTree = "<group>"; };
+		06D561E52700974500F9F2E8 /* encoding_util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = encoding_util.m; sourceTree = "<group>"; };
 		14569320182CE29F0029C465 /* ucontext_compat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ucontext_compat.h; sourceTree = "<group>"; };
 		14569322182CE2C10029C465 /* mach_vm_compat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mach_vm_compat.h; sourceTree = "<group>"; };
 		16BFA66E14E195E9009704F8 /* ios_exception_minidump_generator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ios_exception_minidump_generator.h; sourceTree = "<group>"; };
@@ -291,6 +295,8 @@
 		16C7CC82147D4A4300776EAD /* mac */ = {
 			isa = PBXGroup;
 			children = (
+				06D561E42700974500F9F2E8 /* encoding_util.h */,
+				06D561E52700974500F9F2E8 /* encoding_util.m */,
 				16C7CC88147D4A4300776EAD /* GTMLogger.h */,
 				16C7CC89147D4A4300776EAD /* GTMLogger.m */,
 				E69213D6265202570071B04F /* HTTPRequest.h */,
@@ -339,6 +345,7 @@
 				16C7CE08147D4A4300776EAD /* uploader.h in Headers */,
 				16C7CE18147D4A4300776EAD /* minidump_file_writer-inl.h in Headers */,
 				16C7CE1A147D4A4300776EAD /* minidump_file_writer.h in Headers */,
+				06D561E62700974500F9F2E8 /* encoding_util.h in Headers */,
 				16C7CE41147D4A4300776EAD /* convert_UTF.h in Headers */,
 				16C7CE78147D4A4300776EAD /* GTMLogger.h in Headers */,
 				E69213D8265202570071B04F /* HTTPRequest.h in Headers */,
@@ -435,6 +442,7 @@
 				16C7CE19147D4A4300776EAD /* minidump_file_writer.cc in Sources */,
 				16C7CE40147D4A4300776EAD /* convert_UTF.cc in Sources */,
 				16C7CE79147D4A4300776EAD /* GTMLogger.m in Sources */,
+				06D561E72700974500F9F2E8 /* encoding_util.m in Sources */,
 				16C7CE7B147D4A4300776EAD /* HTTPMultipartUpload.m in Sources */,
 				16C7CE83147D4A4300776EAD /* file_id.cc in Sources */,
 				16C7CE85147D4A4300776EAD /* macho_id.cc in Sources */,

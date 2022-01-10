@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/feature_list.h"
+#include "base/observer_list_types.h"
 #include "base/supports_user_data.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -20,10 +20,7 @@
 class PrefRegistrySimple;
 
 namespace segmentation_platform {
-namespace features {
-extern const base::Feature kSegmentationPlatformFeature;
-}  // namespace features
-
+class ServiceProxy;
 struct SegmentSelectionResult;
 
 // The core class of segmentation platform that integrates all the required
@@ -60,6 +57,9 @@ class SegmentationPlatformService : public KeyedService,
   // Called to enable or disable metrics collection. Must be explicitly called
   // on startup.
   virtual void EnableMetrics(bool signal_collection_allowed) = 0;
+
+  // Called to get the proxy that is used for debugging purpose.
+  virtual ServiceProxy* GetServiceProxy();
 };
 
 }  // namespace segmentation_platform

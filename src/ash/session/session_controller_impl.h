@@ -16,7 +16,6 @@
 #include "ash/public/cpp/session/session_types.h"
 #include "ash/session/session_activation_observer_holder.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -130,6 +129,9 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   // Returns true if the current user has the profile newly created on the
   // device (i.e. first time login on the device).
   bool IsUserFirstLogin() const;
+
+  // Returns true if the device is enterprise managed.
+  bool IsEnterpriseManaged() const;
 
   // Returns true if should display managed icon for current session,
   // and false otherwise.

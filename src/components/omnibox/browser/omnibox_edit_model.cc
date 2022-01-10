@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -94,6 +93,10 @@ const char kFocusToEditTimeHistogram[] = "Omnibox.FocusToEditTime";
 // between focusing and opening an omnibox match.
 const char kFocusToOpenTimeHistogram[] =
     "Omnibox.FocusToOpenTimeAnyPopupState3";
+
+// Histogram name which counts the number of times the user completes a search
+// in keyword mode, enumerated by how they enter keyword mode.
+const char kAcceptedKeywordSuggestion[] = "Omnibox.AcceptedKeywordSuggestion";
 
 void EmitKeywordHistogram(
     OmniboxEventProto::KeywordModeEntryMethod entry_method) {
@@ -896,6 +899,9 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       }
 
       base::RecordAction(base::UserMetricsAction("AcceptedKeyword"));
+      UMA_HISTOGRAM_ENUMERATION(
+          kAcceptedKeywordSuggestion, keyword_mode_entry_method_,
+          static_cast<int>(OmniboxEventProto::KeywordModeEntryMethod_MAX + 1));
       client_->GetTemplateURLService()->IncrementUsageCount(template_url);
     } else {
       DCHECK(ui::PageTransitionTypeIncludingQualifiersIs(

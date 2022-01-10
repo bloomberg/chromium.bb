@@ -28,8 +28,8 @@
 #include "src/sem/pipeline_stage_set.h"
 #include "src/sem/sampled_texture_type.h"
 #include "src/sem/storage_texture_type.h"
-#include "src/utils/get_or_create.h"
 #include "src/utils/hash.h"
+#include "src/utils/map.h"
 #include "src/utils/math.h"
 #include "src/utils/scoped_assignment.h"
 
@@ -717,25 +717,25 @@ const sem::Struct* build_struct(
 
 const sem::Struct* build_modf_result(MatchState& state) {
   auto* f32 = state.builder.create<sem::F32>();
-  return build_struct(state, "_modf_result", {{"fract", f32}, {"whole", f32}});
+  return build_struct(state, "__modf_result", {{"fract", f32}, {"whole", f32}});
 }
 const sem::Struct* build_modf_result_vec(MatchState& state, Number& n) {
   auto* vec_f32 = state.builder.create<sem::Vector>(
       state.builder.create<sem::F32>(), n.Value());
-  return build_struct(state, "_modf_result_vec" + std::to_string(n.Value()),
+  return build_struct(state, "__modf_result_vec" + std::to_string(n.Value()),
                       {{"fract", vec_f32}, {"whole", vec_f32}});
 }
 const sem::Struct* build_frexp_result(MatchState& state) {
   auto* f32 = state.builder.create<sem::F32>();
   auto* i32 = state.builder.create<sem::I32>();
-  return build_struct(state, "_frexp_result", {{"sig", f32}, {"exp", i32}});
+  return build_struct(state, "__frexp_result", {{"sig", f32}, {"exp", i32}});
 }
 const sem::Struct* build_frexp_result_vec(MatchState& state, Number& n) {
   auto* vec_f32 = state.builder.create<sem::Vector>(
       state.builder.create<sem::F32>(), n.Value());
   auto* vec_i32 = state.builder.create<sem::Vector>(
       state.builder.create<sem::I32>(), n.Value());
-  return build_struct(state, "_frexp_result_vec" + std::to_string(n.Value()),
+  return build_struct(state, "__frexp_result_vec" + std::to_string(n.Value()),
                       {{"sig", vec_f32}, {"exp", vec_i32}});
 }
 
@@ -1070,8 +1070,8 @@ const sem::Intrinsic* Impl::Match(sem::IntrinsicType intrinsic_type,
           ast::StorageClass::kNone, ast::Access::kUndefined, p.usage));
     }
     return builder.create<sem::Intrinsic>(
-        intrinsic.type, intrinsic.return_type,
-        std::move(params), intrinsic.supported_stages, intrinsic.is_deprecated);
+        intrinsic.type, intrinsic.return_type, std::move(params),
+        intrinsic.supported_stages, intrinsic.is_deprecated);
   });
 }
 

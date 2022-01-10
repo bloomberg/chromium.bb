@@ -176,8 +176,12 @@ namespace dawn_native { namespace vulkan {
 
       private:
         ~TextureView() override;
+        void DestroyImpl() override;
         using TextureViewBase::TextureViewBase;
         MaybeError Initialize(const TextureViewDescriptor* descriptor);
+
+        // Dawn API
+        void SetLabelImpl() override;
 
         VkImageView mHandle = VK_NULL_HANDLE;
     };

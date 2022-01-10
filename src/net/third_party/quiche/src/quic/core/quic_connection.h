@@ -235,11 +235,11 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called by the server to validate |token| in received INITIAL packets.
   // Consider the client address gets validated (and therefore remove
   // amplification factor) once the |token| gets successfully validated.
-  virtual bool ValidateToken(absl::string_view token) const = 0;
+  virtual bool ValidateToken(absl::string_view token) = 0;
 
   // Called by the server to send another token.
   // Return false if the crypto stream fail to generate one.
-  virtual void MaybeSendAddressToken() = 0;
+  virtual bool MaybeSendAddressToken() = 0;
 
   // Whether the server address is known to the connection.
   virtual bool IsKnownServerAddress(const QuicSocketAddress& address) const = 0;
@@ -1237,10 +1237,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   bool validate_client_address() const { return validate_client_addresses_; }
 
-  bool support_multiple_connection_ids() const {
-    return support_multiple_connection_ids_;
-  }
-
   bool connection_migration_use_new_cid() const {
     return connection_migration_use_new_cid_;
   }
@@ -1257,6 +1253,18 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   void set_tracer(std::unique_ptr<QuicConnectionTracer> tracer) {
     context_.tracer.swap(tracer);
+  }
+
+  void set_bug_listener(std::unique_ptr<QuicBugListener> bug_listener) {
+    context_.bug_listener.swap(bug_listener);
+  }
+
+  absl::optional<QuicWallTime> quic_bug_10511_43_timestamp() const {
+    return quic_bug_10511_43_timestamp_;
+  }
+
+  const std::string& quic_bug_10511_43_error_detail() const {
+    return quic_bug_10511_43_error_detail_;
   }
 
  protected:
@@ -1479,6 +1487,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
    private:
     QuicConnection* connection_;
     QuicSocketAddress original_direct_peer_address_;
+    // TODO(b/205023946) Debug-only fields, to be deprecated after the bug is
+    // fixed.
+    QuicSocketAddress peer_address_default_path_;
+    QuicSocketAddress peer_address_alternative_path_;
+    AddressChangeType active_effective_peer_migration_type_;
   };
 
   // A class which sets and clears in_on_retransmission_time_out_ when entering
@@ -2265,8 +2278,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // If true, upon seeing a new client address, validate the client address.
   bool validate_client_addresses_ = false;
 
-  bool support_multiple_connection_ids_ = false;
-
   // Indicates whether we should proactively validate peer address on a
   // PATH_CHALLENGE received.
   bool should_proactively_validate_peer_address_on_path_challenge_ = false;
@@ -2277,6 +2288,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   const bool reset_per_packet_state_for_undecryptable_packets_ =
       GetQuicReloadableFlag(
           quic_reset_per_packet_state_for_undecryptable_packets);
+
+  // TODO(b/205023946) Debug-only fields, to be deprecated after the bug is
+  // fixed.
+  absl::optional<QuicWallTime> quic_bug_10511_43_timestamp_;
+  std::string quic_bug_10511_43_error_detail_;
 };
 
 }  // namespace quic

@@ -1,6 +1,7 @@
 PYTHON_VERSION_COMPATIBILITY = 'PY2+3'
 
 DEPS = [
+  'depot_tools',
   'recipe_engine/buildbucket',
   'recipe_engine/context',
   'recipe_engine/runtime',

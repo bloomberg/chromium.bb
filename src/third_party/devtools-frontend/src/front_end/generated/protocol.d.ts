@@ -253,6 +253,10 @@ declare namespace Protocol {
        */
       properties?: AXProperty[];
       /**
+       * ID for this node's parent.
+       */
+      parentId?: AXNodeId;
+      /**
        * IDs for each of this node's child nodes.
        */
       childIds?: AXNodeId[];
@@ -260,6 +264,10 @@ declare namespace Protocol {
        * The backend ID for the associated DOM node, if any.
        */
       backendDOMNodeId?: DOM.BackendNodeId;
+      /**
+       * The frame ID for the frame associated with this nodes document.
+       */
+      frameId?: Page.FrameId;
     }
 
     export interface GetPartialAXTreeRequest {
@@ -310,6 +318,37 @@ declare namespace Protocol {
       nodes: AXNode[];
     }
 
+    export interface GetRootAXNodeRequest {
+      /**
+       * The frame in whose document the node resides.
+       * If omitted, the root frame is used.
+       */
+      frameId?: Page.FrameId;
+    }
+
+    export interface GetRootAXNodeResponse extends ProtocolResponseWithError {
+      node: AXNode;
+    }
+
+    export interface GetAXNodeAndAncestorsRequest {
+      /**
+       * Identifier of the node to get.
+       */
+      nodeId?: DOM.NodeId;
+      /**
+       * Identifier of the backend node to get.
+       */
+      backendNodeId?: DOM.BackendNodeId;
+      /**
+       * JavaScript object id of the node wrapper to get.
+       */
+      objectId?: Runtime.RemoteObjectId;
+    }
+
+    export interface GetAXNodeAndAncestorsResponse extends ProtocolResponseWithError {
+      nodes: AXNode[];
+    }
+
     export interface GetChildAXNodesRequest {
       id: AXNodeId;
       /**
@@ -350,6 +389,27 @@ declare namespace Protocol {
       /**
        * A list of `Accessibility.AXNode` matching the specified attributes,
        * including nodes that are ignored for accessibility.
+       */
+      nodes: AXNode[];
+    }
+
+    /**
+     * The loadComplete event mirrors the load complete event sent by the browser to assistive
+     * technology when the web page has finished loading.
+     */
+    export interface LoadCompleteEvent {
+      /**
+       * New document root node.
+       */
+      root: AXNode;
+    }
+
+    /**
+     * The nodesUpdated event is sent every time a previously requested node has changed the in tree.
+     */
+    export interface NodesUpdatedEvent {
+      /**
+       * Updated node data.
        */
       nodes: AXNode[];
     }
@@ -907,6 +967,11 @@ declare namespace Protocol {
       AttributionUntrustworthyOrigin = 'AttributionUntrustworthyOrigin',
       AttributionTriggerDataTooLarge = 'AttributionTriggerDataTooLarge',
       AttributionEventSourceTriggerDataTooLarge = 'AttributionEventSourceTriggerDataTooLarge',
+      InvalidAttributionSourceExpiry = 'InvalidAttributionSourceExpiry',
+      InvalidAttributionSourcePriority = 'InvalidAttributionSourcePriority',
+      InvalidEventSourceTriggerData = 'InvalidEventSourceTriggerData',
+      InvalidTriggerPriority = 'InvalidTriggerPriority',
+      InvalidTriggerDedupKey = 'InvalidTriggerDedupKey',
     }
 
     /**
@@ -2710,6 +2775,10 @@ declare namespace Protocol {
     }
 
     export interface SetSinkToUseRequest {
+      sinkName: string;
+    }
+
+    export interface StartDesktopMirroringRequest {
       sinkName: string;
     }
 
@@ -4878,6 +4947,7 @@ declare namespace Protocol {
      */
     export interface UserAgentMetadata {
       brands?: UserAgentBrandVersion[];
+      fullVersionList?: UserAgentBrandVersion[];
       fullVersion?: string;
       platform: string;
       platformVersion: string;
@@ -6987,9 +7057,10 @@ declare namespace Protocol {
        */
       logId: string;
       /**
-       * Issuance date.
+       * Issuance date. Unlike TimeSinceEpoch, this contains the number of
+       * milliseconds since January 1, 1970, UTC, not the number of seconds.
        */
-      timestamp: TimeSinceEpoch;
+      timestamp: number;
       /**
        * Hash algorithm.
        */
@@ -7112,6 +7183,8 @@ declare namespace Protocol {
       PreflightInvalidAllowCredentials = 'PreflightInvalidAllowCredentials',
       PreflightMissingAllowExternal = 'PreflightMissingAllowExternal',
       PreflightInvalidAllowExternal = 'PreflightInvalidAllowExternal',
+      PreflightMissingAllowPrivateNetwork = 'PreflightMissingAllowPrivateNetwork',
+      PreflightInvalidAllowPrivateNetwork = 'PreflightInvalidAllowPrivateNetwork',
       InvalidAllowMethodsPreflightResponse = 'InvalidAllowMethodsPreflightResponse',
       InvalidAllowHeadersPreflightResponse = 'InvalidAllowHeadersPreflightResponse',
       MethodDisallowedByPreflightResponse = 'MethodDisallowedByPreflightResponse',
@@ -7451,6 +7524,15 @@ declare namespace Protocol {
        * This is a temporary ability and it will be removed in the future.
        */
       sourcePort: integer;
+      /**
+       * Cookie partition key. The site of the top-level URL the browser was visiting at the start
+       * of the request to the endpoint that set the cookie.
+       */
+      partitionKey?: string;
+      /**
+       * True if cookie partition key is opaque.
+       */
+      partitionKeyOpaque?: boolean;
     }
 
     /**
@@ -7591,6 +7673,12 @@ declare namespace Protocol {
        * This is a temporary ability and it will be removed in the future.
        */
       sourcePort?: integer;
+      /**
+       * Cookie partition key. The site of the top-level URL the browser was visiting at the start
+       * of the request to the endpoint that set the cookie.
+       * If not set, the cookie will be set as not partitioned.
+       */
+      partitionKey?: string;
     }
 
     export const enum AuthChallengeSource {
@@ -7912,6 +8000,17 @@ declare namespace Protocol {
       completedAttempts: integer;
       body: any;
       status: ReportStatus;
+    }
+
+    export interface ReportingApiEndpoint {
+      /**
+       * The URL of the endpoint to which reports may be delivered.
+       */
+      url: string;
+      /**
+       * Name of the endpoint group.
+       */
+      groupName: string;
     }
 
     /**
@@ -8270,6 +8369,12 @@ declare namespace Protocol {
        * This is a temporary ability and it will be removed in the future.
        */
       sourcePort?: integer;
+      /**
+       * Cookie partition key. The site of the top-level URL the browser was visiting at the start
+       * of the request to the endpoint that set the cookie.
+       * If not set, the cookie will be set as not partitioned.
+       */
+      partitionKey?: string;
     }
 
     export interface SetCookieResponse extends ProtocolResponseWithError {
@@ -9035,6 +9140,14 @@ declare namespace Protocol {
 
     export interface ReportingApiReportUpdatedEvent {
       report: ReportingApiReport;
+    }
+
+    export interface ReportingApiEndpointsChangedForOriginEvent {
+      /**
+       * Origin of the document(s) which configured the endpoints.
+       */
+      origin: string;
+      endpoints: ReportingApiEndpoint[];
     }
   }
 
@@ -9844,6 +9957,7 @@ declare namespace Protocol {
       ChUaModel = 'ch-ua-model',
       ChUaMobile = 'ch-ua-mobile',
       ChUaFullVersion = 'ch-ua-full-version',
+      ChUaFullVersionList = 'ch-ua-full-version-list',
       ChUaPlatformVersion = 'ch-ua-platform-version',
       ChUaReduced = 'ch-ua-reduced',
       ChViewportHeight = 'ch-viewport-height',
@@ -9867,6 +9981,7 @@ declare namespace Protocol {
       Hid = 'hid',
       IdleDetection = 'idle-detection',
       InterestCohort = 'interest-cohort',
+      JoinAdInterestGroup = 'join-ad-interest-group',
       KeyboardMap = 'keyboard-map',
       Magnetometer = 'magnetometer',
       Microphone = 'microphone',
@@ -9875,6 +9990,7 @@ declare namespace Protocol {
       Payment = 'payment',
       PictureInPicture = 'picture-in-picture',
       PublickeyCredentialsGet = 'publickey-credentials-get',
+      RunAdAuction = 'run-ad-auction',
       ScreenWakeLock = 'screen-wake-lock',
       Serial = 'serial',
       SharedAutofill = 'shared-autofill',
@@ -10548,6 +10664,7 @@ declare namespace Protocol {
       ContentWebUSB = 'ContentWebUSB',
       ContentMediaSession = 'ContentMediaSession',
       ContentMediaSessionService = 'ContentMediaSessionService',
+      ContentScreenReader = 'ContentScreenReader',
       EmbedderPopupBlockerTabHelper = 'EmbedderPopupBlockerTabHelper',
       EmbedderSafeBrowsingTriggeredPopupBlocker = 'EmbedderSafeBrowsingTriggeredPopupBlocker',
       EmbedderSafeBrowsingThreatDetails = 'EmbedderSafeBrowsingThreatDetails',
@@ -11259,6 +11376,16 @@ declare namespace Protocol {
        * Base64-encoded data
        */
       data: binary;
+    }
+
+    export const enum SetSPCTransactionModeRequestMode {
+      None = 'none',
+      Autoaccept = 'autoaccept',
+      Autoreject = 'autoreject',
+    }
+
+    export interface SetSPCTransactionModeRequest {
+      mode: SetSPCTransactionModeRequestMode;
     }
 
     export interface GenerateTestReportRequest {
@@ -12084,7 +12211,7 @@ declare namespace Protocol {
     }
 
     /**
-     * The security state of the page changed.
+     * The security state of the page changed. No longer being sent.
      */
     export interface SecurityStateChangedEvent {
       /**
@@ -12096,8 +12223,8 @@ declare namespace Protocol {
        */
       schemeIsCryptographic: boolean;
       /**
-       * List of explanations for the security state. If the overall security state is `insecure` or
-       * `warning`, at least one corresponding explanation should be included.
+       * Previously a list of explanations for the security state. Now always
+       * empty.
        */
       explanations: SecurityStateExplanation[];
       /**
@@ -12105,7 +12232,7 @@ declare namespace Protocol {
        */
       insecureContentStatus: InsecureContentStatus;
       /**
-       * Overrides user-visible description of the state.
+       * Overrides user-visible description of the state. Always omitted.
        */
       summary?: string;
     }
@@ -12781,6 +12908,11 @@ declare namespace Protocol {
        * Proxy bypass list, similar to the one passed to --proxy-bypass-list
        */
       proxyBypassList?: string;
+      /**
+       * An optional list of origins to grant unlimited cross-origin access to.
+       * Parts of the URL other than those constituting origin are ignored.
+       */
+      originsWithUniversalNetworkAccess?: string[];
     }
 
     export interface CreateBrowserContextResponse extends ProtocolResponseWithError {

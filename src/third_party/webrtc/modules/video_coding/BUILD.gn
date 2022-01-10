@@ -148,6 +148,26 @@ rtc_library("h264_packet_buffer") {
   absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
 }
 
+rtc_library("frame_buffer") {
+  sources = [
+    "frame_buffer3.cc",
+    "frame_buffer3.h",
+  ]
+  deps = [
+    ":video_coding_utility",
+    "../../api/units:timestamp",
+    "../../api/video:encoded_frame",
+    "../../rtc_base:logging",
+    "../../rtc_base:rtc_numerics",
+    "../../system_wrappers:field_trial",
+  ]
+  absl_deps = [
+    "//third_party/abseil-cpp/absl/algorithm:container",
+    "//third_party/abseil-cpp/absl/container:inlined_vector",
+    "//third_party/abseil-cpp/absl/types:optional",
+  ]
+}
+
 rtc_library("video_coding") {
   visibility = [ "*" ]
   sources = [
@@ -206,6 +226,7 @@ rtc_library("video_coding") {
   deps = [
     ":codec_globals_headers",
     ":encoded_frame",
+    ":frame_buffer",
     ":packet_buffer",
     ":video_codec_interface",
     ":video_coding_utility",
@@ -264,7 +285,6 @@ rtc_library("video_coding") {
   absl_deps = [
     "//third_party/abseil-cpp/absl/base:core_headers",
     "//third_party/abseil-cpp/absl/container:inlined_vector",
-    "//third_party/abseil-cpp/absl/memory",
     "//third_party/abseil-cpp/absl/types:optional",
     "//third_party/abseil-cpp/absl/types:variant",
   ]
@@ -916,6 +936,7 @@ if (rtc_include_tests) {
       "codecs/h264/test/h264_impl_unittest.cc",
       "codecs/multiplex/test/multiplex_adapter_unittest.cc",
       "codecs/test/video_encoder_decoder_instantiation_tests.cc",
+      "codecs/test/videocodec_test_av1.cc",
       "codecs/test/videocodec_test_libvpx.cc",
       "codecs/vp8/test/vp8_impl_unittest.cc",
     ]
@@ -924,10 +945,6 @@ if (rtc_include_tests) {
       sources += [ "codecs/vp9/test/vp9_impl_unittest.cc" ]
     }
 
-    # TODO(jianj): Fix crash on iOS and re-enable
-    if (enable_libaom && !is_ios) {
-      sources += [ "codecs/test/videocodec_test_libaom.cc" ]
-    }
     if (rtc_use_h264) {
       sources += [ "codecs/test/videocodec_test_openh264.cc" ]
     }
@@ -971,6 +988,8 @@ if (rtc_include_tests) {
       "../../test:test_support",
       "../../test:video_test_common",
       "../rtp_rtcp:rtp_rtcp_format",
+      "codecs/av1:dav1d_decoder",
+      "codecs/av1:libaom_av1_decoder",
       "//third_party/libyuv",
     ]
     absl_deps = [ "//third_party/abseil-cpp/absl/types:optional" ]
@@ -1013,6 +1032,7 @@ if (rtc_include_tests) {
       "decoding_state_unittest.cc",
       "fec_controller_unittest.cc",
       "frame_buffer2_unittest.cc",
+      "frame_buffer3_unittest.cc",
       "frame_dependencies_calculator_unittest.cc",
       "generic_decoder_unittest.cc",
       "h264_packet_buffer_unittest.cc",
@@ -1059,6 +1079,7 @@ if (rtc_include_tests) {
       ":chain_diff_calculator",
       ":codec_globals_headers",
       ":encoded_frame",
+      ":frame_buffer",
       ":frame_dependencies_calculator",
       ":h264_packet_buffer",
       ":nack_requester",

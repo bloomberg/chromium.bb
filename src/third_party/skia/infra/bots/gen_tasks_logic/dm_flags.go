@@ -823,6 +823,9 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 	if b.model("iPhone6") {
 		skip("_", "gm", "_", "verylargebitmap")
 		skip("_", "gm", "_", "verylarge_picture_image")
+		skip("_", "svg", "_", "A_large_blank_world_map_with_oceans_marked_in_blue.svg")
+		skip("_", "tests", "_", "ImageFilterBlurLargeImage_Gpu")
+		skip("_", "gm", "_", "wacky_yuv")
 	}
 	if b.matchOs("Mac") && b.cpu() {
 		// skia:6992
@@ -954,6 +957,8 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		skip("_", "tests", "_", "SkSLSwitchDefaultOnly_GPU")
 		skip("_", "tests", "_", "SkSLSwitchWithFallthrough_GPU")
 		skip("_", "tests", "_", "SkSLSwitchWithLoops_GPU")
+		skip("_", "tests", "_", "SkSLLoopFloat_GPU")
+		skip("_", "tests", "_", "SkSLLoopInt_GPU")
 	}
 
 	if !b.extraConfig("Vulkan") &&

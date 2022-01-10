@@ -42,10 +42,12 @@ TlsClientHandshaker::TlsClientHandshaker(
       has_application_state_(has_application_state),
       crypto_config_(crypto_config),
       tls_connection_(crypto_config->ssl_ctx(), this, session->GetSSLConfig()) {
-  std::string token =
-      crypto_config->LookupOrCreate(server_id)->source_address_token();
-  if (!token.empty()) {
-    session->SetSourceAddressTokenToSend(token);
+  if (!GetQuicReloadableFlag(quic_tls_use_token_in_session_cache)) {
+    std::string token =
+        crypto_config->LookupOrCreate(server_id)->source_address_token();
+    if (!token.empty()) {
+      session->SetSourceAddressTokenToSend(token);
+    }
   }
   if (crypto_config->tls_signature_algorithms().has_value()) {
     SSL_set1_sigalgs_list(ssl(),
@@ -120,10 +122,15 @@ bool TlsClientHandshaker::CryptoConnect() {
 
   // Set a session to resume, if there is one.
   if (session_cache_) {
-    cached_state_ = session_cache_->Lookup(server_id_, SSL_get_SSL_CTX(ssl()));
+    cached_state_ = session_cache_->Lookup(
+        server_id_, session()->GetClock()->WallNow(), SSL_get_SSL_CTX(ssl()));
   }
   if (cached_state_) {
     SSL_set_session(ssl(), cached_state_->tls_session.get());
+    if (GetQuicReloadableFlag(quic_tls_use_token_in_session_cache) &&
+        !cached_state_->token.empty()) {
+      session()->SetSourceAddressTokenToSend(cached_state_->token);
+    }
   }
 
   // Start the handshake.
@@ -221,8 +228,14 @@ bool TlsClientHandshaker::SetAlpn() {
 bool TlsClientHandshaker::SetTransportParameters() {
   TransportParameters params;
   params.perspective = Perspective::IS_CLIENT;
-  params.version =
+  params.legacy_version_information =
+      TransportParameters::LegacyVersionInformation();
+  params.legacy_version_information.value().version =
       CreateQuicVersionLabel(session()->supported_versions().front());
+  params.version_information = TransportParameters::VersionInformation();
+  const QuicVersionLabel version = CreateQuicVersionLabel(session()->version());
+  params.version_information.value().chosen_version = version;
+  params.version_information.value().other_versions.push_back(version);
 
   if (!handshaker_delegate()->FillTransportParameters(&params)) {
     return false;
@@ -266,27 +279,41 @@ bool TlsClientHandshaker::ProcessTransportParameters(
   session()->connection()->OnTransportParametersReceived(
       *received_transport_params_);
 
-  // When interoperating with non-Google implementations that do not send
-  // the version extension, set it to what we expect.
-  if (received_transport_params_->version == 0) {
-    received_transport_params_->version =
-        CreateQuicVersionLabel(session()->connection()->version());
+  if (received_transport_params_->legacy_version_information.has_value()) {
+    if (received_transport_params_->legacy_version_information.value()
+            .version !=
+        CreateQuicVersionLabel(session()->connection()->version())) {
+      *error_details = "Version mismatch detected";
+      return false;
+    }
+    if (CryptoUtils::ValidateServerHelloVersions(
+            received_transport_params_->legacy_version_information.value()
+                .supported_versions,
+            session()->connection()->server_supported_versions(),
+            error_details) != QUIC_NO_ERROR) {
+      QUICHE_DCHECK(!error_details->empty());
+      return false;
+    }
   }
-  if (received_transport_params_->supported_versions.empty()) {
-    received_transport_params_->supported_versions.push_back(
-        received_transport_params_->version);
+  if (received_transport_params_->version_information.has_value()) {
+    if (!CryptoUtils::ValidateChosenVersion(
+            received_transport_params_->version_information.value()
+                .chosen_version,
+            session()->version(), error_details)) {
+      QUICHE_DCHECK(!error_details->empty());
+      return false;
+    }
+    if (!CryptoUtils::CryptoUtils::ValidateServerVersions(
+            received_transport_params_->version_information.value()
+                .other_versions,
+            session()->version(),
+            session()->client_original_supported_versions(), error_details)) {
+      QUICHE_DCHECK(!error_details->empty());
+      return false;
+    }
   }
 
-  if (received_transport_params_->version !=
-      CreateQuicVersionLabel(session()->connection()->version())) {
-    *error_details = "Version mismatch detected";
-    return false;
-  }
-  if (CryptoUtils::ValidateServerHelloVersions(
-          received_transport_params_->supported_versions,
-          session()->connection()->server_supported_versions(),
-          error_details) != QUIC_NO_ERROR ||
-      handshaker_delegate()->ProcessTransportParameters(
+  if (handshaker_delegate()->ProcessTransportParameters(
           *received_transport_params_, /* is_resumption = */ false,
           error_details) != QUIC_NO_ERROR) {
     QUICHE_DCHECK(!error_details->empty());
@@ -413,9 +440,15 @@ void TlsClientHandshaker::OnNewTokenReceived(absl::string_view token) {
   if (token.empty()) {
     return;
   }
-  QuicCryptoClientConfig::CachedState* cached =
-      crypto_config_->LookupOrCreate(server_id_);
-  cached->set_source_address_token(token);
+  if (GetQuicReloadableFlag(quic_tls_use_token_in_session_cache)) {
+    if (session_cache_ != nullptr) {
+      session_cache_->OnNewTokenReceived(server_id_, token);
+    }
+  } else {
+    QuicCryptoClientConfig::CachedState* cached =
+        crypto_config_->LookupOrCreate(server_id_);
+    cached->set_source_address_token(token);
+  }
 }
 
 void TlsClientHandshaker::SetWriteSecret(

@@ -132,6 +132,14 @@ void av1_collect_motion_search_features_sb(AV1_COMP *const cpi, ThreadData *td,
                                            const int mi_row, const int mi_col,
                                            const BLOCK_SIZE bsize,
                                            aom_partition_features_t *features);
+void av1_prepare_motion_search_features_block(
+    AV1_COMP *const cpi, ThreadData *td, TileDataEnc *tile_data,
+    const int mi_row, const int mi_col, const BLOCK_SIZE bsize,
+    const int valid_partition_types, unsigned int *block_sse,
+    unsigned int *block_var, unsigned int sub_block_sse[4],
+    unsigned int sub_block_var[4], unsigned int horz_block_sse[2],
+    unsigned int horz_block_var[2], unsigned int vert_block_sse[2],
+    unsigned int vert_block_var[2]);
 #endif  // !CONFIG_REALTIME_ONLY
 
 // A simplified version of set_offsets meant to be used for

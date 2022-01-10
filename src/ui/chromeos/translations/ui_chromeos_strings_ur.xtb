@@ -305,13 +305,13 @@
 <translation id="3620292326130836921">سبھی کا بیک اپ بنا لیا گیا!</translation>
 <translation id="3634507049637220048"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" />، آپ کے منتظم کے زیر انتظام ہے، تفصیلات</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> آئٹمز منتقل کیے گئے۔</translation>
-<translation id="3645531960514756307">فولڈر کا پن ہٹائیں</translation>
 <translation id="3685122418104378273">‏موبائل ڈیٹا استعمال کرتے وقت، Google Drive کی مطابقت پذیری بطور ڈیفالٹ غیر فعال کر دی جاتی ہے۔</translation>
 <translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> منسوخ کریں۔</translation>
 <translation id="3690128548376345212"><ph name="NETWORK_COUNT" /> <ph name="NETWORK_NAME" /> کا نیٹ ورک <ph name="NETWORK_INDEX" /> غیر فعال ہے، <ph name="CONNECTION_STATUS" />، <ph name="SIGNAL_STRENGTH" />% سگنل کی مضبوطی کی تفصیلات</translation>
 <translation id="3691184985318546178">سنہالا</translation>
 <translation id="3726463242007121105">اس آلے کو نہیں کھولا جا سکتا کیونکہ اس کا فائل سسٹم تعاون یافتہ نہیں ہے۔</translation>
 <translation id="3727148787322499904">اس ترتیب کو تبدیل کرنے سے سبھی اشتراک کردہ نیٹ ورکس پر اثر پڑے گا</translation>
+<translation id="3737576078404241332">سائیڈ بار سے ہٹائیں</translation>
 <translation id="3741243925913727067">‏اپنے میڈیا آلہ کی تصاویر اور ویڈیوز کا Google Drive پر بیک اپ لیں۔</translation>
 <translation id="3749289110408117711">فائل کا نام</translation>
 <translation id="3780536599611287598">آپ کو فائلوں کو '<ph name="FOLDER_NAME" />' میں منتقل کرنے کی اجازت نہیں ہے۔</translation>
@@ -372,6 +372,7 @@
 <translation id="4326142238881453352">ماہرِ نباتیات</translation>
 <translation id="4326192123064055915">کافی</translation>
 <translation id="4336032328163998280">کاپی آپریشن ناکام ہو گیا۔ <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4340491671558548972">سائیڈ بار میں شامل کریں</translation>
 <translation id="4348495354623233847">عربی پر مبنی کی بورڈ کے ساتھ سورانی کردش</translation>
 <translation id="4363958938297989186">فونیٹک کی بورڈ کے ساتھ روسی</translation>
 <translation id="4364327530094270451">خربوزہ</translation>
@@ -926,7 +927,6 @@
 <translation id="9110990317705400362">‏ہم آپ کی براؤزنگ کو محفوظ تر بنانے کے طریقے مستقل تلاش کر رہے ہیں۔ ازیں قبل، کوئی بھی ویب سائٹ آپ کو اپنے براؤزر میں ایک ایکسٹینشن شامل کرنے کا اشارہ دے سکتی تھی۔ Google Chrome کے تازہ ترین ورژن میں، ایکسٹینشنز صفحہ کے ذریعہ ایکسٹینشنز کو شامل کر کے آپ کو واضح طور پر Chrome کو بتا دینا چاہیے کہ آپ انہیں شامل کرنا چاہتے ہیں۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">غیر مقفل کریں</translation>
 <translation id="912419004897138677">کوڈیک</translation>
-<translation id="9129931661813833980">فولڈر کو پن کریں</translation>
 <translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' کے اراکین کو ان آئٹمز تک رسائي حاصل ہوگي۔</translation>
 <translation id="9131598836763251128">ایک یا مزید فائلیں منتخب کریں</translation>
 <translation id="9133055936679483811">زپ کرنا ناکام ہوگیا۔ <ph name="ERROR_MESSAGE" /></translation>

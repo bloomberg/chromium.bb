@@ -16,6 +16,10 @@
 class ChromeProfileAlloy : public Profile {
  public:
   ChromeProfileAlloy();
+
+  ChromeProfileAlloy(const ChromeProfileAlloy&) = delete;
+  ChromeProfileAlloy& operator=(const ChromeProfileAlloy&) = delete;
+
   ~ChromeProfileAlloy() override;
 
  protected:
@@ -35,7 +39,6 @@ class ChromeProfileAlloy : public Profile {
   bool HasAnyOffTheRecordProfile() override;
   Profile* GetOriginalProfile() override;
   const Profile* GetOriginalProfile() const override;
-  bool IsSupervised() const override;
   bool IsChild() const override;
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
   bool IsSameOrParent(Profile* profile) override;
@@ -51,8 +54,6 @@ class ChromeProfileAlloy : public Profile {
 
  private:
   std::unique_ptr<variations::VariationsClient> variations_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeProfileAlloy);
 };
 
 #endif  // CEF_LIBCEF_BROWSER_ALLOY_CHROME_PROFILE_ALLOY_H_

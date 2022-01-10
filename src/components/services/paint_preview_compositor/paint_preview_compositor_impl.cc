@@ -142,6 +142,7 @@ absl::optional<SkBitmap> CreateBitmap(
           SkImageInfo::MakeN32Premul(clip_rect.width(), clip_rect.height()))) {
     return absl::nullopt;
   }
+
   SkCanvas canvas(bitmap, skia::LegacyDisplayGlobals::GetSkSurfaceProps());
   SkMatrix matrix;
   matrix.setScaleTranslate(scale_factor, scale_factor, -clip_rect.x(),
@@ -247,7 +248,7 @@ void PaintPreviewCompositorImpl::BitmapForSeparatedFrame(
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::TaskPriority::USER_VISIBLE, base::WithBaseSyncPrimitives(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CreateBitmap, discardable_shared_memory_manager_,
                      frame_it->second.skp, clip_rect, scale_factor),
       base::BindOnce(
@@ -347,7 +348,7 @@ void PaintPreviewCompositorImpl::BitmapForMainFrame(
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::TaskPriority::USER_VISIBLE, base::WithBaseSyncPrimitives(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CreateBitmap, discardable_shared_memory_manager_,
                      root_frame_, clip_rect, scale_factor),
       base::BindOnce(

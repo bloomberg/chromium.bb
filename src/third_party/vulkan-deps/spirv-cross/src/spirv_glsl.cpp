@@ -2171,8 +2171,9 @@ void CompilerGLSL::emit_buffer_block_legacy(const SPIRVariable &var)
 	statement("");
 }
 
-void CompilerGLSL::emit_buffer_reference_block(SPIRType &type, bool forward_declaration)
+void CompilerGLSL::emit_buffer_reference_block(uint32_t type_id, bool forward_declaration)
 {
+	auto &type = get<SPIRType>(type_id);
 	string buffer_name;
 
 	if (forward_declaration)
@@ -2215,8 +2216,19 @@ void CompilerGLSL::emit_buffer_reference_block(SPIRType &type, bool forward_decl
 
 	if (!forward_declaration)
 	{
+		auto itr = physical_storage_type_to_alignment.find(type_id);
+		uint32_t alignment = 0;
+		if (itr != physical_storage_type_to_alignment.end())
+			alignment = itr->second.alignment;
+
 		if (type.basetype == SPIRType::Struct)
 		{
+			SmallVector<std::string> attributes;
+			attributes.push_back("buffer_reference");
+			if (alignment)
+				attributes.push_back(join("buffer_reference_align = ", alignment));
+			attributes.push_back(buffer_to_packing_standard(type, true));
+
 			auto flags = ir.get_buffer_block_type_flags(type);
 			string decorations;
 			if (flags.get(DecorationRestrict))
@@ -2227,9 +2239,11 @@ void CompilerGLSL::emit_buffer_reference_block(SPIRType &type, bool forward_decl
 				decorations += " writeonly";
 			if (flags.get(DecorationNonWritable))
 				decorations += " readonly";
-			statement("layout(buffer_reference, ", buffer_to_packing_standard(type, true),
-			          ")", decorations, " buffer ", buffer_name);
+
+			statement("layout(", merge(attributes), ")", decorations, " buffer ", buffer_name);
 		}
+		else if (alignment)
+			statement("layout(buffer_reference, buffer_reference_align = ", alignment, ") buffer ", buffer_name);
 		else
 			statement("layout(buffer_reference) buffer ", buffer_name);
 
@@ -3447,28 +3461,28 @@ void CompilerGLSL::emit_resources()
 	{
 		for (auto type : physical_storage_non_block_pointer_types)
 		{
-			emit_buffer_reference_block(get<SPIRType>(type), false);
+			emit_buffer_reference_block(type, false);
 		}
 
 		// Output buffer reference blocks.
 		// Do this in two stages, one with forward declaration,
 		// and one without. Buffer reference blocks can reference themselves
 		// to support things like linked lists.
-		ir.for_each_typed_id<SPIRType>([&](uint32_t, SPIRType &type) {
-			bool has_block_flags = has_decoration(type.self, DecorationBlock);
-			if (has_block_flags && type.pointer && type.pointer_depth == 1 && !type_is_array_of_pointers(type) &&
+		ir.for_each_typed_id<SPIRType>([&](uint32_t self, SPIRType &type) {
+			if (type.basetype == SPIRType::Struct && type.pointer &&
+			    type.pointer_depth == 1 && !type_is_array_of_pointers(type) &&
 			    type.storage == StorageClassPhysicalStorageBufferEXT)
 			{
-				emit_buffer_reference_block(type, true);
+				emit_buffer_reference_block(self, true);
 			}
 		});
 
-		ir.for_each_typed_id<SPIRType>([&](uint32_t, SPIRType &type) {
-			bool has_block_flags = has_decoration(type.self, DecorationBlock);
-			if (has_block_flags && type.pointer && type.pointer_depth == 1 && !type_is_array_of_pointers(type) &&
+		ir.for_each_typed_id<SPIRType>([&](uint32_t self, SPIRType &type) {
+			if (type.basetype == SPIRType::Struct &&
+			    type.pointer && type.pointer_depth == 1 && !type_is_array_of_pointers(type) &&
 			    type.storage == StorageClassPhysicalStorageBufferEXT)
 			{
-				emit_buffer_reference_block(type, false);
+				emit_buffer_reference_block(self, false);
 			}
 		});
 	}
@@ -3551,6 +3565,11 @@ void CompilerGLSL::emit_resources()
 		    (var.storage == StorageClassInput || var.storage == StorageClassOutput) &&
 		    interface_variable_exists_in_entry_point(var.self) && !is_hidden)
 		{
+			if (options.es && get_execution_model() == ExecutionModelVertex && var.storage == StorageClassInput &&
+			    type.array.size() == 1)
+			{
+				SPIRV_CROSS_THROW("OpenGL ES doesn't support array input variables in vertex shader.");
+			}
 			emit_interface_block(var);
 			emitted = true;
 		}
@@ -6201,7 +6220,7 @@ string CompilerGLSL::legacy_tex_op(const std::string &op, const SPIRType &imgtyp
 	// GLES has very limited support for shadow samplers.
 	// Basically shadow2D and shadow2DProj work through EXT_shadow_samplers,
 	// everything else can just throw
-	bool is_comparison = image_is_comparison(imgtype, tex);
+	bool is_comparison = is_depth_image(imgtype, tex);
 	if (is_comparison && is_legacy_es())
 	{
 		if (op == "texture" || op == "textureProj")
@@ -6828,7 +6847,7 @@ std::string CompilerGLSL::to_texture_op(const Instruction &i, bool sparse, bool 
 	expr += ")";
 
 	// texture(samplerXShadow) returns float. shadowX() returns vec4. Swizzle here.
-	if (is_legacy() && image_is_comparison(imgtype, img))
+	if (is_legacy() && is_depth_image(imgtype, img))
 		expr += ".r";
 
 	// Sampling from a texture which was deduced to be a depth image, might actually return 1 component here.
@@ -6839,16 +6858,16 @@ std::string CompilerGLSL::to_texture_op(const Instruction &i, bool sparse, bool 
 		const auto *combined = maybe_get<SPIRCombinedImageSampler>(img);
 		VariableID image_id = combined ? combined->image : img;
 
-		if (combined && image_is_comparison(imgtype, combined->image))
+		if (combined && is_depth_image(imgtype, combined->image))
 			image_is_depth = true;
-		else if (image_is_comparison(imgtype, img))
+		else if (is_depth_image(imgtype, img))
 			image_is_depth = true;
 
 		// We must also check the backing variable for the image.
 		// We might have loaded an OpImage, and used that handle for two different purposes.
 		// Once with comparison, once without.
 		auto *image_variable = maybe_get_backing_variable(image_id);
-		if (image_variable && image_is_comparison(get<SPIRType>(image_variable->basetype), image_variable->self))
+		if (image_variable && is_depth_image(get<SPIRType>(image_variable->basetype), image_variable->self))
 			image_is_depth = true;
 
 		if (image_is_depth)
@@ -6916,7 +6935,7 @@ string CompilerGLSL::to_function_name(const TextureFunctionNameArguments &args)
 	// This happens for HLSL SampleCmpLevelZero on Texture2DArray and TextureCube.
 	bool workaround_lod_array_shadow_as_grad = false;
 	if (((imgtype.image.arrayed && imgtype.image.dim == Dim2D) || imgtype.image.dim == DimCube) &&
-	    image_is_comparison(imgtype, tex) && args.lod)
+	    is_depth_image(imgtype, tex) && args.lod)
 	{
 		if (!expression_is_constant_null(args.lod))
 		{
@@ -7060,7 +7079,7 @@ string CompilerGLSL::to_function_args(const TextureFunctionArguments &args, bool
 	// This happens for HLSL SampleCmpLevelZero on Texture2DArray and TextureCube.
 	bool workaround_lod_array_shadow_as_grad =
 	    ((imgtype.image.arrayed && imgtype.image.dim == Dim2D) || imgtype.image.dim == DimCube) &&
-	    image_is_comparison(imgtype, img) && args.lod != 0;
+	    is_depth_image(imgtype, img) && args.lod != 0;
 
 	if (args.dref)
 	{
@@ -13378,7 +13397,7 @@ string CompilerGLSL::image_type_glsl(const SPIRType &type, uint32_t id)
 
 	// "Shadow" state in GLSL only exists for samplers and combined image samplers.
 	if (((type.basetype == SPIRType::SampledImage) || (type.basetype == SPIRType::Sampler)) &&
-	    image_is_comparison(type, id))
+	    is_depth_image(type, id))
 	{
 		res += "Shadow";
 	}
@@ -14754,13 +14773,13 @@ void CompilerGLSL::emit_block_chain(SPIRBlock &block)
 	case SPIRBlock::MultiSelect:
 	{
 		auto &type = expression_type(block.condition);
-		bool unsigned_case =
-		    type.basetype == SPIRType::UInt || type.basetype == SPIRType::UShort || type.basetype == SPIRType::UByte;
+		bool unsigned_case = type.basetype == SPIRType::UInt || type.basetype == SPIRType::UShort ||
+		                     type.basetype == SPIRType::UByte || type.basetype == SPIRType::UInt64;
 
 		if (block.merge == SPIRBlock::MergeNone)
 			SPIRV_CROSS_THROW("Switch statement is not structured");
 
-		if (type.basetype == SPIRType::UInt64 || type.basetype == SPIRType::Int64)
+		if (!backend.support_64bit_switch && (type.basetype == SPIRType::UInt64 || type.basetype == SPIRType::Int64))
 		{
 			// SPIR-V spec suggests this is allowed, but we cannot support it in higher level languages.
 			SPIRV_CROSS_THROW("Cannot use 64-bit switch selectors.");
@@ -14769,6 +14788,10 @@ void CompilerGLSL::emit_block_chain(SPIRBlock &block)
 		const char *label_suffix = "";
 		if (type.basetype == SPIRType::UInt && backend.uint32_t_literal_suffix)
 			label_suffix = "u";
+		else if (type.basetype == SPIRType::Int64 && backend.support_64bit_switch)
+			label_suffix = "l";
+		else if (type.basetype == SPIRType::UInt64 && backend.support_64bit_switch)
+			label_suffix = "ul";
 		else if (type.basetype == SPIRType::UShort)
 			label_suffix = backend.uint16_t_literal_suffix;
 		else if (type.basetype == SPIRType::Short)
@@ -14781,15 +14804,16 @@ void CompilerGLSL::emit_block_chain(SPIRBlock &block)
 			statement("bool _", block.self, "_ladder_break = false;");
 
 		// Find all unique case constructs.
-		unordered_map<uint32_t, SmallVector<uint32_t>> case_constructs;
+		unordered_map<uint32_t, SmallVector<uint64_t>> case_constructs;
 		SmallVector<uint32_t> block_declaration_order;
-		SmallVector<uint32_t> literals_to_merge;
+		SmallVector<uint64_t> literals_to_merge;
 
 		// If a switch case branches to the default block for some reason, we can just remove that literal from consideration
 		// and let the default: block handle it.
 		// 2.11 in SPIR-V spec states that for fall-through cases, there is a very strict declaration order which we can take advantage of here.
 		// We only need to consider possible fallthrough if order[i] branches to order[i + 1].
-		for (auto &c : block.cases)
+		auto &cases = get_case_list(block);
+		for (auto &c : cases)
 		{
 			if (c.block != block.next_block && c.block != block.default_block)
 			{
@@ -14846,11 +14870,22 @@ void CompilerGLSL::emit_block_chain(SPIRBlock &block)
 
 		size_t num_blocks = block_declaration_order.size();
 
-		const auto to_case_label = [](uint32_t literal, bool is_unsigned_case) -> string {
-			return is_unsigned_case ? convert_to_string(literal) : convert_to_string(int32_t(literal));
+		const auto to_case_label = [](uint64_t literal, uint32_t width, bool is_unsigned_case) -> string
+		{
+			if (is_unsigned_case)
+				return convert_to_string(literal);
+
+			// For smaller cases, the literals are compiled as 32 bit wide
+			// literals so we don't need to care for all sizes specifically.
+			if (width <= 32)
+			{
+				return convert_to_string(int64_t(int32_t(literal)));
+			}
+
+			return convert_to_string(int64_t(literal));
 		};
 
-		const auto to_legacy_case_label = [&](uint32_t condition, const SmallVector<uint32_t> &labels,
+		const auto to_legacy_case_label = [&](uint32_t condition, const SmallVector<uint64_t> &labels,
 		                                      const char *suffix) -> string {
 			string ret;
 			size_t count = labels.size();
@@ -14892,7 +14927,7 @@ void CompilerGLSL::emit_block_chain(SPIRBlock &block)
 						auto &negative_literals = case_constructs[block_declaration_order[j]];
 						for (auto &case_label : negative_literals)
 							conditions.push_back(join(to_enclosed_expression(block.condition),
-							                          " != ", to_case_label(case_label, unsigned_case)));
+							                          " != ", to_case_label(case_label, type.width, unsigned_case)));
 					}
 
 					statement("if (", merge(conditions, " && "), ")");
@@ -14906,7 +14941,7 @@ void CompilerGLSL::emit_block_chain(SPIRBlock &block)
 					conditions.reserve(literals.size());
 					for (auto &case_label : literals)
 						conditions.push_back(join(to_enclosed_expression(block.condition),
-						                          " == ", to_case_label(case_label, unsigned_case)));
+						                          " == ", to_case_label(case_label, type.width, unsigned_case)));
 					statement("if (", merge(conditions, " || "), ")");
 					begin_scope();
 					flush_phi(block.self, target_block);
@@ -14921,7 +14956,7 @@ void CompilerGLSL::emit_block_chain(SPIRBlock &block)
 		// If there is only one default block, and no cases, this is a case where SPIRV-opt decided to emulate
 		// non-structured exits with the help of a switch block.
 		// This is buggy on FXC, so just emit the logical equivalent of a do { } while(false), which is more idiomatic.
-		bool degenerate_switch = block.default_block != block.merge_block && block.cases.empty();
+		bool degenerate_switch = block.default_block != block.merge_block && cases.empty();
 
 		if (degenerate_switch || is_legacy_es())
 		{
@@ -14970,7 +15005,7 @@ void CompilerGLSL::emit_block_chain(SPIRBlock &block)
 					for (auto &case_literal : literals)
 					{
 						// The case label value must be sign-extended properly in SPIR-V, so we can assume 32-bit values here.
-						statement("case ", to_case_label(case_literal, unsigned_case), label_suffix, ":");
+						statement("case ", to_case_label(case_literal, type.width, unsigned_case), label_suffix, ":");
 					}
 				}
 			}
@@ -15008,7 +15043,7 @@ void CompilerGLSL::emit_block_chain(SPIRBlock &block)
 		if ((header_merge_requires_phi && need_fallthrough_block) || !literals_to_merge.empty())
 		{
 			for (auto &case_literal : literals_to_merge)
-				statement("case ", to_case_label(case_literal, unsigned_case), label_suffix, ":");
+				statement("case ", to_case_label(case_literal, type.width, unsigned_case), label_suffix, ":");
 
 			if (block.default_block == block.next_block)
 			{
@@ -15817,7 +15852,7 @@ void CompilerGLSL::emit_inout_fragment_outputs_copy_to_subpass_inputs()
 
 bool CompilerGLSL::variable_is_depth_or_compare(VariableID id) const
 {
-	return image_is_comparison(get<SPIRType>(get<SPIRVariable>(id).basetype), id);
+	return is_depth_image(get<SPIRType>(get<SPIRVariable>(id).basetype), id);
 }
 
 const char *CompilerGLSL::ShaderSubgroupSupportHelper::get_extension_name(Candidate c)

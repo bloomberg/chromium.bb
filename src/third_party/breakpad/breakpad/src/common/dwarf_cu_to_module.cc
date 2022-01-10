@@ -652,6 +652,11 @@ void DwarfCUToModule::InlineHandler::Finish() {
     }
   }
 
+  // Ignore DW_TAG_inlined_subroutine with empty range.
+  if (ranges.empty()) {
+    return;
+  }
+
   // Every DW_TAG_inlined_subroutine should have a DW_AT_abstract_origin.
   assert(specification_offset_ != 0);
 

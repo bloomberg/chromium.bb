@@ -26,7 +26,9 @@ function runShaderTest(
   t: GPUTest,
   stage: GPUShaderStageFlags,
   testSource: string,
-  testBindings: GPUBindGroupEntry[]
+  layout: GPUPipelineLayout,
+  testBindings: GPUBindGroupEntry[],
+  dynamicOffsets?: number[]
 ): void {
   assert(stage === GPUShaderStage.COMPUTE, 'Only know how to deal with compute for now');
 
@@ -60,6 +62,7 @@ function runShaderTest(
   t.debug(source);
   const module = t.device.createShaderModule({ code: source });
   const pipeline = t.device.createComputePipeline({
+    layout,
     compute: { module, entryPoint: 'main' },
   });
 
@@ -79,7 +82,7 @@ function runShaderTest(
   const encoder = t.device.createCommandEncoder();
   const pass = encoder.beginComputePass();
   pass.setPipeline(pipeline);
-  pass.setBindGroup(0, testGroup);
+  pass.setBindGroup(0, testGroup, dynamicOffsets);
   pass.setBindGroup(1, group);
   pass.dispatch(1);
   pass.endPass();
@@ -123,11 +126,31 @@ g.test('linear_memory')
   .params(u =>
     u
       .combineWithParams([
-        { storageClass: 'storage', storageMode: 'read', access: 'read' },
-        { storageClass: 'storage', storageMode: 'write', access: 'write' },
-        { storageClass: 'storage', storageMode: 'read_write', access: 'read' },
-        { storageClass: 'storage', storageMode: 'read_write', access: 'write' },
-        { storageClass: 'uniform', access: 'read' },
+        { storageClass: 'storage', storageMode: 'read', access: 'read', dynamicOffset: false },
+        { storageClass: 'storage', storageMode: 'write', access: 'write', dynamicOffset: false },
+        {
+          storageClass: 'storage',
+          storageMode: 'read_write',
+          access: 'read',
+          dynamicOffset: false,
+        },
+        {
+          storageClass: 'storage',
+          storageMode: 'read_write',
+          access: 'write',
+          dynamicOffset: false,
+        },
+        { storageClass: 'storage', storageMode: 'read', access: 'read', dynamicOffset: true },
+        { storageClass: 'storage', storageMode: 'write', access: 'write', dynamicOffset: true },
+        { storageClass: 'storage', storageMode: 'read_write', access: 'read', dynamicOffset: true },
+        {
+          storageClass: 'storage',
+          storageMode: 'read_write',
+          access: 'write',
+          dynamicOffset: true,
+        },
+        { storageClass: 'uniform', access: 'read', dynamicOffset: false },
+        { storageClass: 'uniform', access: 'read', dynamicOffset: true },
         { storageClass: 'private', access: 'read' },
         { storageClass: 'private', access: 'write' },
         { storageClass: 'function', access: 'read' },
@@ -150,6 +173,7 @@ g.test('linear_memory')
       storageClass,
       storageMode,
       access,
+      dynamicOffset,
       isAtomic,
       containerType,
       baseType,
@@ -177,6 +201,7 @@ g.test('linear_memory')
         endCanary: array<u32, 10>;
       };`;
 
+    const testGroupBGLEntires: GPUBindGroupLayoutEntry[] = [];
     switch (storageClass) {
       case 'uniform':
       case 'storage':
@@ -190,6 +215,20 @@ g.test('linear_memory')
             data: ${type};
           };
           [[group(0), binding(0)]] var<${qualifiers}> s: TestData;`;
+
+          testGroupBGLEntires.push({
+            binding: 0,
+            visibility: GPUShaderStage.COMPUTE,
+            buffer: {
+              type:
+                storageClass === 'uniform'
+                  ? 'uniform'
+                  : storageMode === 'read'
+                  ? 'read-only-storage'
+                  : 'storage',
+              hasDynamicOffset: dynamicOffset,
+            },
+          });
         }
         break;
 
@@ -318,6 +357,32 @@ g.test('linear_memory')
         return 0u;
       }`;
 
+    const layout = t.device.createPipelineLayout({
+      bindGroupLayouts: [
+        t.device.createBindGroupLayout({
+          entries: testGroupBGLEntires,
+        }),
+        t.device.createBindGroupLayout({
+          entries: [
+            {
+              binding: 0,
+              visibility: GPUShaderStage.COMPUTE,
+              buffer: {
+                type: 'uniform',
+              },
+            },
+            {
+              binding: 1,
+              visibility: GPUShaderStage.COMPUTE,
+              buffer: {
+                type: 'storage',
+              },
+            },
+          ],
+        }),
+      ],
+    });
+
     // Run it.
     if (bufferBindingSize !== undefined && baseType !== 'bool') {
       const expectedData = new ArrayBuffer(testBufferSize);
@@ -337,12 +402,23 @@ g.test('linear_memory')
       );
 
       // Run the shader, accessing the buffer.
-      runShaderTest(t, GPUShaderStage.COMPUTE, testSource, [
-        {
-          binding: 0,
-          resource: { buffer: testBuffer, offset: bufferBindingOffset, size: bufferBindingSize },
-        },
-      ]);
+      runShaderTest(
+        t,
+        GPUShaderStage.COMPUTE,
+        testSource,
+        layout,
+        [
+          {
+            binding: 0,
+            resource: {
+              buffer: testBuffer,
+              offset: dynamicOffset ? 0 : bufferBindingOffset,
+              size: bufferBindingSize,
+            },
+          },
+        ],
+        dynamicOffset ? [bufferBindingOffset] : undefined
+      );
 
       // Check that content of the buffer outside of the allowed area didn't change.
       const expectedBytes = new Uint8Array(expectedData);
@@ -353,6 +429,6 @@ g.test('linear_memory')
         bufferBindingEnd
       );
     } else {
-      runShaderTest(t, GPUShaderStage.COMPUTE, testSource, []);
+      runShaderTest(t, GPUShaderStage.COMPUTE, testSource, layout, []);
     }
   });

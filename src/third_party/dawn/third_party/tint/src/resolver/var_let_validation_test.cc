@@ -120,7 +120,7 @@ TEST_F(ResolverVarLetValidationTest, LetConstructorWrongTypeViaAlias) {
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(
       r()->error(),
-      R"(3:3 error: cannot initialize let of type 'I32' with value of type 'u32')");
+      R"(3:3 error: cannot initialize let of type 'i32' with value of type 'u32')");
 }
 
 TEST_F(ResolverVarLetValidationTest, VarConstructorWrongTypeViaAlias) {
@@ -131,7 +131,7 @@ TEST_F(ResolverVarLetValidationTest, VarConstructorWrongTypeViaAlias) {
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(
       r()->error(),
-      R"(3:3 error: cannot initialize var of type 'I32' with value of type 'u32')");
+      R"(3:3 error: cannot initialize var of type 'i32' with value of type 'u32')");
 }
 
 TEST_F(ResolverVarLetValidationTest, LetOfPtrConstructedWithRef) {
@@ -147,20 +147,7 @@ TEST_F(ResolverVarLetValidationTest, LetOfPtrConstructedWithRef) {
 
   EXPECT_EQ(
       r()->error(),
-      R"(12:34 error: cannot initialize let of type 'ptr<function, f32>' with value of type 'f32')");
-}
-
-TEST_F(ResolverVarLetValidationTest, LocalVarRedeclared) {
-  // var v : f32;
-  // var v : i32;
-  auto* v1 = Var("v", ty.f32(), ast::StorageClass::kNone);
-  auto* v2 = Var(Source{{12, 34}}, "v", ty.i32(), ast::StorageClass::kNone);
-  WrapInFunction(v1, v2);
-
-  EXPECT_FALSE(r()->Resolve());
-  EXPECT_EQ(
-      r()->error(),
-      "12:34 error: redefinition of 'v'\nnote: previous definition is here");
+      R"(12:34 error: cannot initialize let of type 'ptr<function, f32, read_write>' with value of type 'f32')");
 }
 
 TEST_F(ResolverVarLetValidationTest, LocalLetRedeclared) {
@@ -173,31 +160,7 @@ TEST_F(ResolverVarLetValidationTest, LocalLetRedeclared) {
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(
       r()->error(),
-      "12:34 error: redefinition of 'l'\nnote: previous definition is here");
-}
-
-TEST_F(ResolverVarLetValidationTest, GlobalVarRedeclared) {
-  // var v : f32;
-  // var v : i32;
-  Global("v", ty.f32(), ast::StorageClass::kPrivate);
-  Global(Source{{12, 34}}, "v", ty.i32(), ast::StorageClass::kPrivate);
-
-  EXPECT_FALSE(r()->Resolve());
-  EXPECT_EQ(
-      r()->error(),
-      "12:34 error: redefinition of 'v'\nnote: previous definition is here");
-}
-
-TEST_F(ResolverVarLetValidationTest, GlobalLetRedeclared) {
-  // let l : f32 = 0.1;
-  // let l : i32 = 0;
-  GlobalConst("l", ty.f32(), Expr(0.1f));
-  GlobalConst(Source{{12, 34}}, "l", ty.i32(), Expr(0));
-
-  EXPECT_FALSE(r()->Resolve());
-  EXPECT_EQ(
-      r()->error(),
-      "12:34 error: redefinition of 'l'\nnote: previous definition is here");
+      "12:34 error: redeclaration of 'l'\nnote: 'l' previously declared here");
 }
 
 TEST_F(ResolverVarLetValidationTest, GlobalVarRedeclaredAsLocal) {
@@ -212,10 +175,7 @@ TEST_F(ResolverVarLetValidationTest, GlobalVarRedeclaredAsLocal) {
   WrapInFunction(Var(Source{{12, 34}}, "v", ty.f32(), ast::StorageClass::kNone,
                      Expr(2.0f)));
 
-  EXPECT_FALSE(r()->Resolve()) << r()->error();
-  EXPECT_EQ(
-      r()->error(),
-      "12:34 error: redefinition of 'v'\nnote: previous definition is here");
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
 }
 
 TEST_F(ResolverVarLetValidationTest, VarRedeclaredInInnerBlock) {
@@ -231,10 +191,7 @@ TEST_F(ResolverVarLetValidationTest, VarRedeclaredInInnerBlock) {
 
   WrapInFunction(outer_body);
 
-  EXPECT_FALSE(r()->Resolve());
-  EXPECT_EQ(
-      r()->error(),
-      "12:34 error: redefinition of 'v'\nnote: previous definition is here");
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
 }
 
 TEST_F(ResolverVarLetValidationTest, VarRedeclaredInIfBlock) {
@@ -256,10 +213,7 @@ TEST_F(ResolverVarLetValidationTest, VarRedeclaredInIfBlock) {
 
   WrapInFunction(outer_body);
 
-  EXPECT_FALSE(r()->Resolve());
-  EXPECT_EQ(
-      r()->error(),
-      "12:34 error: redefinition of 'v'\nnote: previous definition is here");
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
 }
 
 TEST_F(ResolverVarLetValidationTest, InferredPtrStorageAccessMismatch) {

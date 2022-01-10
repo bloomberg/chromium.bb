@@ -25,12 +25,12 @@ for use with the corresponding arguments to `builder`. Can also be accessed
 through `builders.cpu`, `builders.os` and `builders.goma` respectively.
 """
 
-load("@stdlib//internal/graph.star", "graph")
 load("//project.star", "settings")
 load("./args.star", "args")
 load("./branches.star", "branches")
+load("./bootstrap.star", "register_bootstrap")
 load("./builder_config.star", "builder_config", "register_builder_config")
-load("./listify.star", "listify")
+load("./recipe_experiments.star", "register_recipe_experiments_ref")
 
 ################################################################################
 # Constants for use with the builder function                                  #
@@ -96,8 +96,7 @@ os = struct(
     MAC_10_14 = os_enum("Mac-10.14", os_category.MAC),
     MAC_10_15 = os_enum("Mac-10.15", os_category.MAC),
     MAC_11 = os_enum("Mac-11", os_category.MAC),
-    # TODO(crbug.com/1254953) Remove 10.15 once builders have been migrated to Mac11
-    MAC_DEFAULT = os_enum("Mac-10.15|Mac-11", os_category.MAC),
+    MAC_DEFAULT = os_enum("Mac-11", os_category.MAC),
     MAC_ANY = os_enum("Mac", os_category.MAC),
     WINDOWS_7 = os_enum("Windows-7", os_category.WINDOWS),
     WINDOWS_8_1 = os_enum("Windows-8.1", os_category.WINDOWS),
@@ -192,9 +191,9 @@ xcode = struct(
     x13wk = xcode_enum("13a1030dwk"),
 )
 
-# Git revision of the compilator_watcher luciexe sub_build binary for chromium
-# orchestrators to use
-compilator_watcher_git_revision = "d5bee0e7798a40c3c6261c3dbc14becf1fbb693f"
+# infra/infra git revision to use for the compilator_watcher luciexe sub_build
+# Used by chromium orchestrators
+compilator_watcher_git_revision = "5fd7f4ae276865742fe632642ec4633dd9f81649"
 
 def builder_url(bucket, builder, project = None):
     """A simple utility for constructing the milo URL for a builder."""
@@ -254,8 +253,7 @@ def _code_coverage_property(
         use_java_coverage,
         use_javascript_coverage,
         coverage_exclude_sources,
-        coverage_test_types,
-        coverage_reference_commit):
+        coverage_test_types):
     code_coverage = {}
 
     use_clang_coverage = defaults.get_value(
@@ -286,13 +284,6 @@ def _code_coverage_property(
     )
     if coverage_test_types:
         code_coverage["coverage_test_types"] = coverage_test_types
-
-    coverage_reference_commit = defaults.get_value(
-        "coverage_reference_commit",
-        coverage_reference_commit,
-    )
-    if coverage_reference_commit:
-        code_coverage["coverage_reference_commit"] = coverage_reference_commit
 
     return code_coverage or None
 
@@ -359,7 +350,6 @@ defaults = args.defaults(
     use_javascript_coverage = False,
     coverage_exclude_sources = None,
     coverage_test_types = None,
-    coverage_reference_commit = None,
     resultdb_bigquery_exports = [],
     resultdb_index_by_timestamp = False,
     reclient_instance = None,
@@ -375,6 +365,7 @@ defaults = args.defaults(
     # unnecessarily make wrapper functions
     bucket = args.COMPUTE,
     executable = args.COMPUTE,
+    notifies = None,
     triggered_by = args.COMPUTE,
 )
 
@@ -384,6 +375,7 @@ def builder(
         branch_selector = branches.MAIN,
         bucket = args.DEFAULT,
         executable = args.DEFAULT,
+        notifies = None,
         triggered_by = args.DEFAULT,
         os = args.DEFAULT,
         builderless = args.DEFAULT,
@@ -391,7 +383,7 @@ def builder(
         fully_qualified_builder_dimension = args.DEFAULT,
         cores = args.DEFAULT,
         cpu = args.DEFAULT,
-        bootstrap = False,
+        bootstrap = True,
         builder_group = args.DEFAULT,
         builder_spec = None,
         mirrors = None,
@@ -411,7 +403,6 @@ def builder(
         use_javascript_coverage = args.DEFAULT,
         coverage_exclude_sources = args.DEFAULT,
         coverage_test_types = args.DEFAULT,
-        coverage_reference_commit = args.DEFAULT,
         resultdb_bigquery_exports = args.DEFAULT,
         resultdb_index_by_timestamp = args.DEFAULT,
         reclient_instance = args.DEFAULT,
@@ -446,6 +437,9 @@ def builder(
             (may be specified by module-level default).
         executable: an executable to run, e.g. a luci.recipe(...). Required (may
             be specified by module-level default).
+        notifies: A string or list of strings with notifiers that will be
+            triggered for builds of the builder. Supports a module-level default
+            that will be merged with the provided values.
         triggered_by: an optional poller or builder that triggers the builder or
             a list of pollers and/or builders that trigger the builder. Supports
             a module-level default.
@@ -550,10 +544,6 @@ def builder(
         coverage_test_types: a list of string as test types to process data for
             in code_coverage recipe module. Will be copied to
             '$build/code_coverage' property. By default, considered None.
-        coverage_reference_commit: a string representing the hash of a past
-            commit used to generate additional coverge reports i.e.
-            referenced_reports. Will be copied to '$build/code_coverage'
-            property. By default, considered None.
         resultdb_bigquery_exports: a list of resultdb.export_test_results(...)
             specifying parameters for exporting test results to BigQuery. By
             default, do not export.
@@ -605,8 +595,7 @@ def builder(
     if "$build/code_coverage" in properties:
         fail('Setting "$build/code_coverage" property is not supported: ' +
              "use use_clang_coverage, use_java_coverage, use_javascript_coverage " +
-             " coverage_exclude_sources, coverage_test_types" +
-             " and/or coverage_reference_commit instead")
+             " coverage_exclude_sources, coverage_test_types instead")
     if "$build/reclient" in properties:
         fail('Setting "$build/reclient" property is not supported: ' +
              "use reclient_instance and reclient_rewrapper_env instead")
@@ -657,7 +646,7 @@ def builder(
     if pool:
         dimensions["pool"] = pool
 
-    sheriff_rotations = listify(defaults.sheriff_rotations.get(), sheriff_rotations)
+    sheriff_rotations = defaults.get_value("sheriff_rotations", sheriff_rotations, merge = args.MERGE_LIST)
     if sheriff_rotations:
         properties["sheriff_rotations"] = sheriff_rotations
 
@@ -699,7 +688,6 @@ def builder(
         use_javascript_coverage = use_javascript_coverage,
         coverage_exclude_sources = coverage_exclude_sources,
         coverage_test_types = coverage_test_types,
-        coverage_reference_commit = coverage_reference_commit,
     )
     if code_coverage != None:
         properties["$build/code_coverage"] = code_coverage
@@ -746,6 +734,8 @@ def builder(
             fail("triggered testers cannot specify triggered_by")
         triggered_by = [builder_spec.parent]
 
+    kwargs["notifies"] = defaults.get_value("notifies", notifies, merge = args.MERGE_LIST)
+
     triggered_by = defaults.get_value("triggered_by", triggered_by)
     if triggered_by != args.COMPUTE:
         kwargs["triggered_by"] = triggered_by
@@ -771,12 +761,11 @@ def builder(
     if builder == None:
         return None
 
+    register_recipe_experiments_ref(bucket, name, executable)
+
     register_builder_config(bucket, name, builder_group, builder_spec, mirrors)
 
-    # Add a bootstrap node for the builder so the _bootstrap_properties
-    # generator can determine which builders are being bootstrapped
-    if executable in _BOOTSTRAPPABLE_RECIPES:
-        graph.add_node(_bootstrap_key(bucket, name), props = {"bootstrap": bootstrap})
+    register_bootstrap(bucket, name, bootstrap, executable)
 
     builder_name = "{}/{}".format(bucket, name)
 
@@ -828,102 +817,6 @@ def builder(
             )
 
     return builder
-
-# A recipe can (but doesn't have to) be marked as bootstrappable if the
-# following conditions are true:
-# * chromium_bootstrap.update_gclient_config is called to update the gclient
-#   config that is used for bot_update.
-# * If the recipe does analysis to reduce compilation/testing, it skips analysis
-#   and performs a full build if chromium_bootstrap.skip_analysis_reasons is
-#   non-empty.
-_BOOTSTRAPPABLE_RECIPES = [
-    "recipe:chromium",
-    "recipe:chromium/orchestrator",
-    "recipe:chromium_trybot",
-]
-
-_NON_BOOTSTRAPPED_PROPERTIES = [
-    # Sheriff-o-Matic queries for builder_group in the input properties to find
-    # builds for the main sheriff rotation. Bootstrapped properties don't appear
-    # in the build's input properties, so don't bootstrap this property.
-    # TODO(gbeaty) When finalized input properties are exported to BQ, remove
-    # this.
-    "builder_group",
-    "sheriff_rotations",
-]
-
-def _bootstrap_key(bucket_name, builder_name):
-    return graph.key("@chromium", "", "bootstrap", "{}/{}".format(bucket_name, builder_name))
-
-def _bootstrap_properties(ctx):
-    """Update builder properties for bootstrapping.
-
-    For builders whose recipe supports bootstrapping, their properties will be
-    written out to a separate file. This is done even if the builder is not
-    being bootstrapped so that the properties file will exist already when it is
-    flipped to being bootstrapped.
-
-    For builders that have opted in to bootstrapping, this file will be read at
-    build-time and update the build's properties with the contents of the file.
-    The builder's properties within the buildbucket configuration will be
-    modified with the properties that control the bootstrapper itself.
-
-    The builders that have opted in to bootstrapping is determined by examining
-    the lucicfg graph to find a bootstrap node for a given builder. These nodes
-    will be added by the builder function. This is done rather than writing out
-    the properties file in the builder function so that the bootstrapped
-    properties have any final modifications that luci.builder would perform
-    (merging module-level defaults, setting global defaults, etc.).
-    """
-    cfg = None
-    for f in ctx.output:
-        if f.startswith("luci/cr-buildbucket"):
-            cfg = ctx.output[f]
-            break
-    if cfg == None:
-        fail("There is no buildbucket configuration file to reformat properties")
-
-    for bucket in cfg.buckets:
-        bucket_name = bucket.name
-        for builder in bucket.swarming.builders:
-            builder_name = builder.name
-            bootstrap_node = graph.node(_bootstrap_key(bucket_name, builder_name))
-            if not bootstrap_node:
-                continue
-
-            bootstrap = bootstrap_node.props.bootstrap
-
-            properties_file = "builders/{}/{}/properties.textpb".format(bucket_name, builder_name)
-            non_bootstrapped_properties = {
-                "$bootstrap/properties": {
-                    "top_level_project": {
-                        "repo": {
-                            "host": "chromium.googlesource.com",
-                            "project": "chromium/src",
-                        },
-                        "ref": settings.ref,
-                    },
-                    "properties_file": "infra/config/generated/{}".format(properties_file),
-                },
-                "$bootstrap/exe": {
-                    "exe": builder.exe,
-                },
-                "led_builder_is_bootstrapped": True,
-            }
-            builder_properties = json.decode(builder.properties)
-            for p in _NON_BOOTSTRAPPED_PROPERTIES:
-                if p in builder_properties:
-                    non_bootstrapped_properties[p] = builder_properties.pop(p)
-            ctx.output[properties_file] = json.indent(json.encode(builder_properties), indent = "  ")
-
-            if bootstrap:
-                builder.properties = json.encode(non_bootstrapped_properties)
-
-                builder.exe.cipd_package = "infra/chromium/bootstrapper/${platform}"
-                builder.exe.cipd_version = "latest"
-                builder.exe.cmd = ["bootstrapper"]
-
-lucicfg.generator(_bootstrap_properties)
 
 builders = struct(
     builder = builder,

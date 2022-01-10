@@ -106,14 +106,6 @@ int av1_find_interp_filter_match(
   return match_found_idx;
 }
 
-static INLINE void swap_dst_buf(MACROBLOCKD *xd, const BUFFER_SET *dst_bufs[2],
-                                int num_planes) {
-  const BUFFER_SET *buf0 = dst_bufs[0];
-  dst_bufs[0] = dst_bufs[1];
-  dst_bufs[1] = buf0;
-  restore_dst_buf(xd, *dst_bufs[0], num_planes);
-}
-
 static INLINE int get_switchable_rate(MACROBLOCK *const x,
                                       const int_interpfilters filters,
                                       const int ctx[2], int dual_filter) {
@@ -453,10 +445,25 @@ static INLINE void find_best_non_dual_interp_filter(
         get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
     const int ctx0 = av1_get_pred_context_switchable_interp(xd, 0);
     const int ctx1 = av1_get_pred_context_switchable_interp(xd, 1);
-    const int *switchable_interp_p0 =
-        cpi->ppi->frame_probs.switchable_interp_probs[update_type][ctx0];
-    const int *switchable_interp_p1 =
-        cpi->ppi->frame_probs.switchable_interp_probs[update_type][ctx1];
+    int use_actual_frame_probs = 1;
+    const int *switchable_interp_p0;
+    const int *switchable_interp_p1;
+#if CONFIG_FRAME_PARALLEL_ENCODE && CONFIG_FPMT_TEST
+    use_actual_frame_probs =
+        (cpi->ppi->fpmt_unit_test_cfg == PARALLEL_SIMULATION_ENCODE) ? 0 : 1;
+    if (!use_actual_frame_probs) {
+      switchable_interp_p0 = (int *)cpi->ppi->temp_frame_probs
+                                 .switchable_interp_probs[update_type][ctx0];
+      switchable_interp_p1 = (int *)cpi->ppi->temp_frame_probs
+                                 .switchable_interp_probs[update_type][ctx1];
+    }
+#endif
+    if (use_actual_frame_probs) {
+      switchable_interp_p0 =
+          cpi->ppi->frame_probs.switchable_interp_probs[update_type][ctx0];
+      switchable_interp_p1 =
+          cpi->ppi->frame_probs.switchable_interp_probs[update_type][ctx1];
+    }
     static const int thr[7] = { 0, 8, 8, 8, 8, 0, 8 };
     const int thresh = thr[update_type];
     for (i = 0; i < SWITCHABLE_FILTERS; i++) {

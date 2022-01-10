@@ -46,10 +46,10 @@ AVFILTER_DEFINE_CLASS(hflip);
 static int query_formats(AVFilterContext *ctx)
 {
     AVFilterFormats *pix_fmts = NULL;
+    const AVPixFmtDescriptor *desc;
     int fmt, ret;
 
-    for (fmt = 0; av_pix_fmt_desc_get(fmt); fmt++) {
-        const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(fmt);
+    for (fmt = 0; desc = av_pix_fmt_desc_get(fmt); fmt++) {
         if (!(desc->flags & AV_PIX_FMT_FLAG_HWACCEL ||
               desc->flags & AV_PIX_FMT_FLAG_BITSTREAM ||
               (desc->log2_chroma_w != desc->log2_chroma_h &&
@@ -249,8 +249,8 @@ const AVFilter ff_vf_hflip = {
     .description   = NULL_IF_CONFIG_SMALL("Horizontally flip the input video."),
     .priv_size     = sizeof(FlipContext),
     .priv_class    = &hflip_class,
-    .query_formats = query_formats,
     FILTER_INPUTS(avfilter_vf_hflip_inputs),
     FILTER_OUTPUTS(avfilter_vf_hflip_outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .flags         = AVFILTER_FLAG_SLICE_THREADS | AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

@@ -6,6 +6,7 @@
 
 #include "base/bits.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/ignore_result.h"
 #include "build/build_config.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
@@ -154,7 +155,6 @@ bool SysmemBufferCollection::Initialize(
     overlay_view_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     scenic_overlay_view_ = std::make_unique<ScenicOverlayView>(
         scenic_surface_factory->CreateScenicSession(), scenic_surface_factory);
-    surface_factory_ = scenic_surface_factory;
   }
 
   fuchsia::sysmem::BufferCollectionTokenSyncPtr collection_token;

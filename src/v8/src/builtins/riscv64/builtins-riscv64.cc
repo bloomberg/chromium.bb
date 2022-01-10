@@ -194,8 +194,11 @@ void Builtins::Generate_JSConstructStubGeneric(MacroAssembler* masm) {
     __ Lwu(func_info,
            FieldMemOperand(func_info, SharedFunctionInfo::kFlagsOffset));
     __ DecodeField<SharedFunctionInfo::FunctionKindBits>(func_info);
-    __ JumpIfIsInRange(func_info, kDefaultDerivedConstructor,
-                       kDerivedConstructor, &not_create_implicit_receiver);
+    __ JumpIfIsInRange(
+        func_info,
+        static_cast<uint32_t>(FunctionKind::kDefaultDerivedConstructor),
+        static_cast<uint32_t>(FunctionKind::kDerivedConstructor),
+        &not_create_implicit_receiver);
     Register scratch = func_info;
     Register scratch2 = temps.Acquire();
     // If not derived class constructor: Allocate the new receiver object.
@@ -921,8 +924,8 @@ static void TailCallRuntimeIfMarkerEquals(MacroAssembler* masm,
                                           Runtime::FunctionId function_id) {
   ASM_CODE_COMMENT(masm);
   Label no_match;
-  __ Branch(&no_match, ne, actual_marker, Operand(expected_marker),
-            Label::Distance::kNear);
+  __ Branch(&no_match, ne, actual_marker,
+            Operand(static_cast<int>(expected_marker)), Label::Distance::kNear);
   GenerateTailCallToReturnedCode(masm, function_id);
   __ bind(&no_match);
 }
@@ -2431,10 +2434,16 @@ void Builtins::Generate_CallFunction(MacroAssembler* masm,
   //  -- a0 : the number of arguments
   //  -- a1 : the function to call (checked to be a JSFunction)
   // -----------------------------------
-  __ AssertCallableFunction(a1);
+  __ AssertFunction(a1);
 
+  Label class_constructor;
   __ LoadTaggedPointerField(
       a2, FieldMemOperand(a1, JSFunction::kSharedFunctionInfoOffset));
+  __ Lwu(a3, FieldMemOperand(a2, SharedFunctionInfo::kFlagsOffset));
+  __ And(kScratchReg, a3,
+         Operand(SharedFunctionInfo::IsClassConstructorBit::kMask));
+  __ Branch(&class_constructor, ne, kScratchReg, Operand(zero_reg));
+
   // Enter the context of the function; ToObject has to run in the function
   // context, and we also need to take the global proxy from the function
   // context in case of conversion.
@@ -2512,6 +2521,14 @@ void Builtins::Generate_CallFunction(MacroAssembler* masm,
   __ Lhu(a2,
          FieldMemOperand(a2, SharedFunctionInfo::kFormalParameterCountOffset));
   __ InvokeFunctionCode(a1, no_reg, a2, a0, InvokeType::kJump);
+
+  // The function is a "classConstructor", need to raise an exception.
+  __ bind(&class_constructor);
+  {
+    FrameScope frame(masm, StackFrame::INTERNAL);
+    __ Push(a1);
+    __ CallRuntime(Runtime::kThrowConstructorNonCallableError);
+  }
 }
 
 namespace {

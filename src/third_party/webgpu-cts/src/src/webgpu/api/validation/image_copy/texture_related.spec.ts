@@ -231,7 +231,7 @@ g.test('format')
     const info = kTextureFormatInfo[format];
     await t.selectDeviceOrSkipTestCase(info.feature);
 
-    const size = { width: 32, height: 32, depthOrArrayLayers };
+    const size = { width: 32 * info.blockWidth, height: 32 * info.blockHeight, depthOrArrayLayers };
     const texture = t.device.createTexture({
       size,
       dimension,
@@ -302,8 +302,8 @@ g.test('origin_alignment')
     const info = kTextureFormatInfo[format];
     await t.selectDeviceOrSkipTestCase(info.feature);
 
-    const origin = { x: 0, y: 0, z: 0 };
     const size = { width: 0, height: 0, depthOrArrayLayers };
+    const origin = { x: 0, y: 0, z: 0 };
     let success = true;
 
     origin[coordinateToTest] = valueToCoordinate;
@@ -379,12 +379,12 @@ g.test('size_alignment')
       .expand('valueToCoordinate', texelBlockAlignmentTestExpanderForValueToCoordinate)
   )
   .fn(async t => {
-    const { valueToCoordinate, coordinateToTest, format, method } = t.params;
+    const { valueToCoordinate, coordinateToTest, dimension, format, method } = t.params;
     const info = kTextureFormatInfo[format];
     await t.selectDeviceOrSkipTestCase(info.feature);
 
-    const origin = { x: 0, y: 0, z: 0 };
     const size = { width: 0, height: 0, depthOrArrayLayers: 0 };
+    const origin = { x: 0, y: 0, z: 0 };
     let success = true;
 
     size[coordinateToTest] = valueToCoordinate;
@@ -399,13 +399,13 @@ g.test('size_alignment')
       }
     }
 
-    const texture = t.createAlignedTexture(format, size, origin);
+    const texture = t.createAlignedTexture(format, size, origin, dimension);
 
     const bytesPerRow = align(
-      (align(size.width, info.blockWidth) / info.blockWidth) * info.bytesPerBlock,
+      Math.max(1, Math.ceil(size.width / info.blockWidth)) * info.bytesPerBlock,
       256
     );
-    const rowsPerImage = align(size.height, info.blockHeight) / info.blockHeight;
+    const rowsPerImage = Math.ceil(size.height / info.blockHeight);
     t.testRun({ texture, origin }, { bytesPerRow, rowsPerImage }, size, {
       dataSize: 1,
       method,

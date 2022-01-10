@@ -152,7 +152,7 @@ bool ComputeExtensionID(const base::DictionaryValue& manifest,
     std::string public_key_bytes;
     if (!manifest.GetString(keys::kPublicKey, &public_key) ||
         !Extension::ParsePEMKeyBytes(public_key, &public_key_bytes)) {
-      *error = base::ASCIIToUTF16(errors::kInvalidKey);
+      *error = errors::kInvalidKey;
       return false;
     }
     *extension_id = crx_file::id_util::GenerateId(public_key_bytes);
@@ -160,7 +160,7 @@ bool ComputeExtensionID(const base::DictionaryValue& manifest,
   }
 
   if (creation_flags & Extension::REQUIRE_KEY) {
-    *error = base::ASCIIToUTF16(errors::kInvalidKey);
+    *error = errors::kInvalidKey;
     return false;
   }
 
@@ -250,6 +250,12 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
     extension_id = explicit_id;
   } else if (!ComputeExtensionID(value, path, flags, &error, &extension_id)) {
     *utf8_error = base::UTF16ToUTF8(error);
+    return nullptr;
+  }
+
+  if ((flags & FROM_BOOKMARK) != 0) {
+    // Extension-based bookmark apps are no longer supported.
+    // They have been replaced by web apps.
     return nullptr;
   }
 
@@ -403,6 +409,15 @@ bool Extension::FormatPEMForFileOutput(const std::string& input,
 GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
   return GURL(base::StrCat({extensions::kExtensionScheme,
                             url::kStandardSchemeSeparator, extension_id}));
+}
+
+// static
+url::Origin Extension::CreateOriginFromExtensionId(
+    const ExtensionId& extension_id) {
+  // TODO(lukasza): Avoid url::Origin::Create calls in general.  Sadly the call
+  // below cannot be replaced with CreateFromNormalizedTuple, because it DCHECKs
+  // that the `extension_id` is not a properly canonicalized hostname.
+  return url::Origin::Create(GetBaseURLFromExtensionId(extension_id));
 }
 
 bool Extension::OverlapsWithOrigin(const GURL& origin) const {
@@ -585,7 +600,7 @@ bool Extension::InitFromValue(int flags, std::u16string* error) {
   // Check for |converted_from_user_script| first, since it affects the type
   // returned by GetType(). This is needed to determine if the manifest version
   // is valid.
-  if (manifest_->HasKey(keys::kConvertedFromUserScript)) {
+  if (manifest_->FindKey(keys::kConvertedFromUserScript)) {
     manifest_->GetBoolean(keys::kConvertedFromUserScript,
                           &converted_from_user_script_);
   }
@@ -601,6 +616,7 @@ bool Extension::InitFromValue(int flags, std::u16string* error) {
   // We don't need to validate because InitExtensionID already did that.
   manifest_->GetString(keys::kPublicKey, &public_key_);
 
+  extension_origin_ = Extension::CreateOriginFromExtensionId(id());
   extension_url_ = Extension::GetBaseURLFromExtensionId(id());
 
   // Load App settings. LoadExtent at least has to be done before
@@ -638,7 +654,7 @@ bool Extension::LoadRequiredFeatures(std::u16string* error) {
 bool Extension::LoadName(std::u16string* error) {
   std::u16string localized_name;
   if (!manifest_->GetString(keys::kName, &localized_name)) {
-    *error = base::ASCIIToUTF16(errors::kInvalidName);
+    *error = errors::kInvalidName16;
     return false;
   }
 
@@ -653,17 +669,17 @@ bool Extension::LoadName(std::u16string* error) {
 bool Extension::LoadVersion(std::u16string* error) {
   std::string version_str;
   if (!manifest_->GetString(keys::kVersion, &version_str)) {
-    *error = base::ASCIIToUTF16(errors::kInvalidVersion);
+    *error = errors::kInvalidVersion;
     return false;
   }
   version_ = base::Version(version_str);
   if (!version_.IsValid() || version_.components().size() > 4) {
-    *error = base::ASCIIToUTF16(errors::kInvalidVersion);
+    *error = errors::kInvalidVersion;
     return false;
   }
-  if (manifest_->HasKey(keys::kVersionName)) {
+  if (manifest_->FindKey(keys::kVersionName)) {
     if (!manifest_->GetString(keys::kVersionName, &version_name_)) {
-      *error = base::ASCIIToUTF16(errors::kInvalidVersionName);
+      *error = errors::kInvalidVersionName;
       return false;
     }
   }
@@ -675,15 +691,15 @@ bool Extension::LoadAppFeatures(std::u16string* error) {
                   errors::kInvalidWebURLs, errors::kInvalidWebURL, error)) {
     return false;
   }
-  if (manifest_->HasKey(keys::kDisplayInLauncher) &&
+  if (manifest_->FindKey(keys::kDisplayInLauncher) &&
       !manifest_->GetBoolean(keys::kDisplayInLauncher, &display_in_launcher_)) {
-    *error = base::ASCIIToUTF16(errors::kInvalidDisplayInLauncher);
+    *error = errors::kInvalidDisplayInLauncher;
     return false;
   }
-  if (manifest_->HasKey(keys::kDisplayInNewTabPage)) {
+  if (manifest_->FindKey(keys::kDisplayInNewTabPage)) {
     if (!manifest_->GetBoolean(keys::kDisplayInNewTabPage,
                                &display_in_new_tab_page_)) {
-      *error = base::ASCIIToUTF16(errors::kInvalidDisplayInNewTabPage);
+      *error = errors::kInvalidDisplayInNewTabPage;
       return false;
     }
   } else {
@@ -698,19 +714,20 @@ bool Extension::LoadExtent(const char* key,
                            const char* list_error,
                            const char* value_error,
                            std::u16string* error) {
-  const base::Value* temp_pattern_value = nullptr;
-  if (!manifest_->Get(key, &temp_pattern_value))
+  const base::Value* temp_pattern_value = manifest_->FindPath(key);
+  if (temp_pattern_value == nullptr)
     return true;
 
-  const base::ListValue* pattern_list = nullptr;
-  if (!temp_pattern_value->GetAsList(&pattern_list)) {
+  if (!temp_pattern_value->is_list()) {
     *error = base::ASCIIToUTF16(list_error);
     return false;
   }
-
-  for (size_t i = 0; i < pattern_list->GetList().size(); ++i) {
+  base::Value::ConstListView pattern_list = temp_pattern_value->GetList();
+  for (size_t i = 0; i < pattern_list.size(); ++i) {
     std::string pattern_string;
-    if (!pattern_list->GetString(i, &pattern_string)) {
+    if (pattern_list[i].is_string()) {
+      pattern_string = pattern_list[i].GetString();
+    } else {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           value_error, base::NumberToString(i), errors::kExpectString);
       return false;
@@ -771,9 +788,9 @@ bool Extension::LoadSharedFeatures(std::u16string* error) {
 }
 
 bool Extension::LoadDescription(std::u16string* error) {
-  if (manifest_->HasKey(keys::kDescription) &&
+  if (manifest_->FindKey(keys::kDescription) &&
       !manifest_->GetString(keys::kDescription, &description_)) {
-    *error = base::ASCIIToUTF16(errors::kInvalidDescription);
+    *error = errors::kInvalidDescription;
     return false;
   }
   return true;
@@ -814,11 +831,11 @@ bool Extension::LoadManifestVersion(std::u16string* error) {
 }
 
 bool Extension::LoadShortName(std::u16string* error) {
-  if (manifest_->HasKey(keys::kShortName)) {
+  if (manifest_->FindKey(keys::kShortName)) {
     std::u16string localized_short_name;
     if (!manifest_->GetString(keys::kShortName, &localized_short_name) ||
         localized_short_name.empty()) {
-      *error = base::ASCIIToUTF16(errors::kInvalidShortName);
+      *error = errors::kInvalidShortName;
       return false;
     }
 

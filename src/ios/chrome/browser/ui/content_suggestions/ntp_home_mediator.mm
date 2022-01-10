@@ -176,6 +176,9 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
 - (void)shutdown {
   _searchEngineObserver.reset();
   if (_webState && _webStateObserver) {
+    if (!IsSingleNtpEnabled()) {
+      [self saveContentOffsetForWebState:_webState];
+    }
     _webState->RemoveObserver(_webStateObserver.get());
     _webStateObserver.reset();
   }
@@ -200,12 +203,17 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
 
 - (void)setWebState:(web::WebState*)webState {
   if (_webState && _webStateObserver) {
-    [self saveContentOffsetForWebState:_webState];
+    if (IsSingleNtpEnabled()) {
+      [self saveContentOffsetForWebState:_webState];
+    }
     _webState->RemoveObserver(_webStateObserver.get());
   }
   _webState = webState;
+  self.NTPMetrics.webState = webState;
   if (_webState && _webStateObserver) {
-    [self setContentOffsetForWebState:webState];
+    if (IsSingleNtpEnabled()) {
+      [self setContentOffsetForWebState:webState];
+    }
     _webState->AddObserver(_webStateObserver.get());
   }
 }
@@ -430,8 +438,8 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
   return self.alertCoordinator.isVisible;
 }
 
-- (BOOL)isScrolledToTop {
-  return self.primaryViewController.scrolledToTop;
+- (BOOL)isScrolledToMinimumHeight {
+  return [self.ntpViewController isScrolledToMinimumHeight];
 }
 
 - (void)registerImageUpdater:(id<UserAccountImageUpdateDelegate>)imageUpdater {
@@ -552,6 +560,20 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
 // Save the NTP scroll offset into the last committed navigation item for the
 // before we navigate away.
 - (void)saveContentOffsetForWebState:(web::WebState*)webState {
+  if (!IsSingleNtpEnabled() &&
+      webState->GetLastCommittedURL().DeprecatedGetOriginAsURL() !=
+          kChromeUINewTabURL) {
+    return;
+  }
+  if (IsSingleNtpEnabled() &&
+      (webState->GetLastCommittedURL().DeprecatedGetOriginAsURL() !=
+           kChromeUINewTabURL &&
+       webState->GetVisibleURL().DeprecatedGetOriginAsURL() !=
+           kChromeUINewTabURL)) {
+    // Do nothing if the current page is not the NTP.
+    return;
+  }
+
   web::NavigationManager* manager = webState->GetNavigationManager();
   web::NavigationItem* item =
       webState->GetLastCommittedURL() == kChromeUINewTabURL
@@ -596,15 +618,9 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
   web::NavigationItem* item = navigationManager->GetVisibleItem();
   CGFloat offset =
       item ? item->GetPageDisplayState().scroll_state().content_offset().y : 0;
-  CGFloat minimumOffset =
-      -self.ntpViewController.contentSuggestionsContentHeight;
-  // TODO(crbug.com/1114792): Create a protocol to stop having references to
-  // both of these ViewControllers directly.
+  CGFloat minimumOffset = -[self.ntpViewController heightAboveFeed];
   if (offset > minimumOffset) {
     [self.ntpViewController setSavedContentOffset:offset];
-    if (IsSingleNtpEnabled()) {
-      return;
-    }
   } else if (IsSingleNtpEnabled()) {
     // Remove this if NTPs are ever scoped back to the WebState.
     [self.ntpViewController setContentOffsetToTop];

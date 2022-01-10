@@ -49,6 +49,7 @@ namespace dawn_native {
     // BeginRenderPassCmd. If we had RenderPassEncoder responsible for recording the
     // command, then this wouldn't be necessary.
     RenderPassEncoder::RenderPassEncoder(DeviceBase* device,
+                                         const RenderPassDescriptor* descriptor,
                                          CommandEncoder* commandEncoder,
                                          EncodingContext* encodingContext,
                                          RenderPassResourceUsageTracker usageTracker,
@@ -59,6 +60,7 @@ namespace dawn_native {
                                          bool depthReadOnly,
                                          bool stencilReadOnly)
         : RenderEncoderBase(device,
+                            descriptor->label,
                             encodingContext,
                             std::move(attachmentState),
                             depthReadOnly,
@@ -68,6 +70,7 @@ namespace dawn_native {
           mRenderTargetHeight(renderTargetHeight),
           mOcclusionQuerySet(occlusionQuerySet) {
         mUsageTracker = std::move(usageTracker);
+        TrackInDevice();
     }
 
     RenderPassEncoder::RenderPassEncoder(DeviceBase* device,
@@ -81,6 +84,13 @@ namespace dawn_native {
                                                     CommandEncoder* commandEncoder,
                                                     EncodingContext* encodingContext) {
         return new RenderPassEncoder(device, commandEncoder, encodingContext, ObjectBase::kError);
+    }
+
+    void RenderPassEncoder::DestroyImpl() {
+        RenderEncoderBase::DestroyImpl();
+        // Ensure that the pass has exited. This is done for passes only since validation requires
+        // they exit before destruction while bundles do not.
+        mEncodingContext->EnsurePassExited(this);
     }
 
     ObjectType RenderPassEncoder::GetType() const {
@@ -248,13 +258,13 @@ namespace dawn_native {
 
                         bool depthReadOnlyInBundle = renderBundles[i]->IsDepthReadOnly();
                         DAWN_INVALID_IF(
-                            depthReadOnlyInPass != depthReadOnlyInBundle,
+                            depthReadOnlyInPass && !depthReadOnlyInBundle,
                             "DepthReadOnly (%u) of renderBundle[%i] (%s) is not compatible "
                             "with DepthReadOnly (%u) of %s.",
                             depthReadOnlyInBundle, i, renderBundles[i], depthReadOnlyInPass, this);
 
                         bool stencilReadOnlyInBundle = renderBundles[i]->IsStencilReadOnly();
-                        DAWN_INVALID_IF(stencilReadOnlyInPass != stencilReadOnlyInBundle,
+                        DAWN_INVALID_IF(stencilReadOnlyInPass && !stencilReadOnlyInBundle,
                                         "StencilReadOnly (%u) of renderBundle[%i] (%s) is not "
                                         "compatible with StencilReadOnly (%u) of %s.",
                                         stencilReadOnlyInBundle, i, renderBundles[i],

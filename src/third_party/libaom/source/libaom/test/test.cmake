@@ -84,6 +84,7 @@ list(APPEND AOM_UNIT_TEST_ENCODER_SOURCES
             "${AOM_ROOT}/test/end_to_end_psnr_test.cc"
             "${AOM_ROOT}/test/gf_pyr_height_test.cc"
             "${AOM_ROOT}/test/rt_end_to_end_test.cc"
+            "${AOM_ROOT}/test/loopfilter_control_test.cc"
             "${AOM_ROOT}/test/frame_size_tests.cc"
             "${AOM_ROOT}/test/horz_superres_test.cc"
             "${AOM_ROOT}/test/i420_video_source.h"
@@ -163,7 +164,7 @@ if(NOT BUILD_SHARED_LIBS)
                 "${AOM_ROOT}/test/error_resilience_test.cc"
                 "${AOM_ROOT}/test/ethread_test.cc"
                 "${AOM_ROOT}/test/film_grain_table_test.cc"
-                "${AOM_ROOT}/test/fwd_kf_test.cc"
+                "${AOM_ROOT}/test/frame_parallel_enc_test.cc"
                 "${AOM_ROOT}/test/kf_test.cc"
                 "${AOM_ROOT}/test/lossless_test.cc"
                 "${AOM_ROOT}/test/quant_test.cc"
@@ -185,7 +186,6 @@ if(NOT BUILD_SHARED_LIBS)
                        "${AOM_ROOT}/test/cnn_test.cc"
                        "${AOM_ROOT}/test/decode_multithreaded_test.cc"
                        "${AOM_ROOT}/test/error_resilience_test.cc"
-                       "${AOM_ROOT}/test/fwd_kf_test.cc"
                        "${AOM_ROOT}/test/kf_test.cc"
                        "${AOM_ROOT}/test/lossless_test.cc"
                        "${AOM_ROOT}/test/sb_multipass_test.cc"
@@ -258,7 +258,6 @@ if(NOT BUILD_SHARED_LIBS)
               "${AOM_ROOT}/test/comp_avg_pred_test.cc"
               "${AOM_ROOT}/test/comp_avg_pred_test.h"
               "${AOM_ROOT}/test/comp_mask_variance_test.cc"
-              "${AOM_ROOT}/test/edge_detect_test.cc"
               "${AOM_ROOT}/test/encodemb_test.cc"
               "${AOM_ROOT}/test/encodetxb_test.cc"
               "${AOM_ROOT}/test/end_to_end_ssim_test.cc"
@@ -277,7 +276,6 @@ if(NOT BUILD_SHARED_LIBS)
               "${AOM_ROOT}/test/obmc_variance_test.cc"
               "${AOM_ROOT}/test/pickrst_test.cc"
               "${AOM_ROOT}/test/quantize_func_test.cc"
-              "${AOM_ROOT}/test/quantize_lp_func_test.cc"
               "${AOM_ROOT}/test/sad_test.cc"
               "${AOM_ROOT}/test/subtract_test.cc"
               "${AOM_ROOT}/test/reconinter_test.cc"
@@ -324,8 +322,7 @@ if(NOT BUILD_SHARED_LIBS)
 
   if(NOT (HAVE_SSE2 OR HAVE_NEON))
     list(REMOVE_ITEM AOM_UNIT_TEST_ENCODER_SOURCES
-                     "${AOM_ROOT}/test/quantize_func_test.cc"
-                     "${AOM_ROOT}/test/quantize_lp_func_test.cc")
+                     "${AOM_ROOT}/test/quantize_func_test.cc")
   endif()
 
   if(HAVE_SSE4_1)

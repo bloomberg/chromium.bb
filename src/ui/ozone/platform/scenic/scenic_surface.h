@@ -16,7 +16,6 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
@@ -82,15 +81,6 @@ class ScenicSurface : public PlatformWindowSurface {
   bool PresentOverlayView(
       gfx::SysmemBufferCollectionId id,
       fuchsia::ui::views::ViewHolderToken view_holder_token);
-
-  // Updates positioning of ViewHolder specified by |id|. Note that it requires
-  // |id| to be added by PresentOverlayView() before.
-  bool UpdateOverlayViewPosition(gfx::SysmemBufferCollectionId id,
-                                 int plane_z_order,
-                                 const gfx::Rect& display_bounds,
-                                 const gfx::RectF& crop_rect,
-                                 gfx::OverlayTransform plane_transform,
-                                 std::vector<zx::event> acquire_fences);
 
   // Remove ViewHolder specified by |id|.
   bool RemoveOverlayView(gfx::SysmemBufferCollectionId id);
@@ -197,15 +187,20 @@ class ScenicSurface : public PlatformWindowSurface {
 
     scenic::ViewHolder view_holder;
     scenic::EntityNode entity_node;
+
+    bool visible = false;
     int plane_z_order = 0;
     gfx::Rect display_bounds;
     gfx::RectF crop_rect;
     gfx::OverlayTransform plane_transform;
+
+    // Used only in `Present()` in order to update `visible`.
+    bool should_be_visible = false;
   };
   std::unordered_map<gfx::SysmemBufferCollectionId,
                      OverlayViewInfo,
                      base::UnguessableTokenHash>
-      overlays_;
+      overlay_views_;
 
   THREAD_CHECKER(thread_checker_);
 

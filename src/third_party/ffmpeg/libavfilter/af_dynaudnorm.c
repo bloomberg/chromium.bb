@@ -127,23 +127,6 @@ static av_cold int init(AVFilterContext *ctx)
     return 0;
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVSampleFormat sample_fmts[] = {
-        AV_SAMPLE_FMT_DBLP,
-        AV_SAMPLE_FMT_NONE
-    };
-    int ret = ff_set_common_all_channel_counts(ctx);
-    if (ret < 0)
-        return ret;
-
-    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
-    if (ret < 0)
-        return ret;
-
-    return ff_set_common_all_samplerates(ctx);
-}
-
 static inline int frame_size(int sample_rate, int frame_len_msec)
 {
     const int frame_size = lrint((double)sample_rate * (frame_len_msec / 1000.0));
@@ -471,7 +454,7 @@ static void update_gain_history(DynamicAudioNormalizerContext *s, int channel,
 {
     if (cqueue_empty(s->gain_history_original[channel])) {
         const int pre_fill_size = s->filter_size / 2;
-        const double initial_value = s->alt_boundary_mode ? gain.max_gain : s->peak_value;
+        const double initial_value = s->alt_boundary_mode ? gain.max_gain : FFMIN(1.0, gain.max_gain);
 
         s->prev_amplification_factor[channel] = initial_value;
 
@@ -668,11 +651,13 @@ static void analyze_frame(DynamicAudioNormalizerContext *s, AVFrame *frame)
     }
 }
 
-static void amplify_frame(DynamicAudioNormalizerContext *s, AVFrame *frame, int enabled)
+static void amplify_frame(DynamicAudioNormalizerContext *s, AVFrame *in,
+                          AVFrame *frame, int enabled)
 {
     int c, i;
 
     for (c = 0; c < s->channels; c++) {
+        const double *src_ptr = (const double *)in->extended_data[c];
         double *dst_ptr = (double *)frame->extended_data[c];
         double current_amplification_factor;
 
@@ -683,7 +668,7 @@ static void amplify_frame(DynamicAudioNormalizerContext *s, AVFrame *frame, int 
                                                      current_amplification_factor, i,
                                                      frame->nb_samples);
 
-            dst_ptr[i] *= amplification_factor;
+            dst_ptr[i] = src_ptr[i] * amplification_factor;
         }
 
         s->prev_amplification_factor[c] = current_amplification_factor;
@@ -700,18 +685,31 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     while (((s->queue.available >= s->filter_size) ||
             (s->eof && s->queue.available)) &&
            !cqueue_empty(s->gain_history_smoothed[0])) {
-        AVFrame *out = ff_bufqueue_get(&s->queue);
+        AVFrame *in = ff_bufqueue_get(&s->queue);
+        AVFrame *out;
         double is_enabled;
 
         cqueue_dequeue(s->is_enabled, &is_enabled);
 
-        amplify_frame(s, out, is_enabled > 0.);
+        if (av_frame_is_writable(in)) {
+            out = in;
+        } else {
+            out = ff_get_audio_buffer(outlink, in->nb_samples);
+            if (!out) {
+                av_frame_free(&in);
+                return AVERROR(ENOMEM);
+            }
+            av_frame_copy_props(out, in);
+        }
+
+        amplify_frame(s, in, out, is_enabled > 0.);
         s->pts = out->pts + av_rescale_q(out->nb_samples, av_make_q(1, outlink->sample_rate),
                                          outlink->time_base);
+        if (out != in)
+            av_frame_free(&in);
         ret = ff_filter_frame(outlink, out);
     }
 
-    av_frame_make_writable(in);
     analyze_frame(s, in);
     if (!s->eof) {
         ff_bufqueue_add(ctx, &s->queue, in);
@@ -859,13 +857,13 @@ static const AVFilterPad avfilter_af_dynaudnorm_outputs[] = {
 const AVFilter ff_af_dynaudnorm = {
     .name          = "dynaudnorm",
     .description   = NULL_IF_CONFIG_SMALL("Dynamic Audio Normalizer."),
-    .query_formats = query_formats,
     .priv_size     = sizeof(DynamicAudioNormalizerContext),
     .init          = init,
     .uninit        = uninit,
     .activate      = activate,
     FILTER_INPUTS(avfilter_af_dynaudnorm_inputs),
     FILTER_OUTPUTS(avfilter_af_dynaudnorm_outputs),
+    FILTER_SINGLE_SAMPLEFMT(AV_SAMPLE_FMT_DBLP),
     .priv_class    = &dynaudnorm_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
     .process_command = process_command,

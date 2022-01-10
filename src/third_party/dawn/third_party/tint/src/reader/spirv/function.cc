@@ -1350,8 +1350,8 @@ bool FunctionEmitter::EmitEntryPointAsWrapper() {
 
       // Add the return-value statement.
       stmts.push_back(create<ast::ReturnStatement>(
-          source, create<ast::TypeConstructorExpression>(
-                      source, return_type, std::move(return_exprs))));
+          source,
+          builder_.Construct(source, return_type, std::move(return_exprs))));
     }
   }
 
@@ -2541,10 +2541,14 @@ TypedExpression FunctionEmitter::MakeExpression(uint32_t id) {
       Fail() << "internal error: unhandled use of opaque object with ID: "
              << id;
       return {};
+    case SkipReason::kSinkPointerIntoUse: {
+      // Replace the pointer with its source reference expression.
+      auto source_expr = GetDefInfo(id)->sink_pointer_source_expr;
+      TINT_ASSERT(Reader, source_expr.type->Is<Reference>());
+      return source_expr;
+    }
     case SkipReason::kPointSizeBuiltinValue: {
-      return {ty_.F32(),
-              create<ast::ScalarConstructorExpression>(
-                  Source{}, create<ast::FloatLiteral>(Source{}, 1.0f))};
+      return {ty_.F32(), create<ast::FloatLiteralExpression>(Source{}, 1.0f)};
     }
     case SkipReason::kPointSizeBuiltinPointer:
       Fail() << "unhandled use of a pointer to the PointSize builtin, with ID: "
@@ -3059,9 +3063,11 @@ bool FunctionEmitter::EmitSwitchStart(const BlockInfo& block_info) {
         // The Tint AST handles 32-bit values.
         const uint32_t value32 = uint32_t(value & 0xFFFFFFFF);
         if (selector.type->IsUnsignedScalarOrVector()) {
-          selectors.emplace_back(create<ast::UintLiteral>(Source{}, value32));
+          selectors.emplace_back(
+              create<ast::UintLiteralExpression>(Source{}, value32));
         } else {
-          selectors.emplace_back(create<ast::SintLiteral>(Source{}, value32));
+          selectors.emplace_back(
+              create<ast::SintLiteralExpression>(Source{}, value32));
         }
       }
     }
@@ -3470,6 +3476,12 @@ bool FunctionEmitter::EmitConstDefinition(
   if (!expr) {
     return false;
   }
+
+  // Do not generate pointers that we want to sink.
+  if (GetDefInfo(inst.result_id())->skip == SkipReason::kSinkPointerIntoUse) {
+    return true;
+  }
+
   expr = AddressOfIfNeeded(expr, &inst);
   auto* ast_const = parser_impl_.MakeVariable(
       inst.result_id(), ast::StorageClass::kNone, expr.type, true, expr.expr,
@@ -3612,7 +3624,7 @@ bool FunctionEmitter::EmitStatement(const spvtools::opt::Instruction& inst) {
           // The private variable is an array whose element type is already of
           // the same type as the value being stored into it.  Form the
           // reference into the first element.
-          lhs.expr = create<ast::ArrayAccessorExpression>(
+          lhs.expr = create<ast::IndexAccessorExpression>(
               Source{}, lhs.expr, parser_impl_.MakeNullValue(ty_.I32()));
           if (auto* ref = lhs.type->As<Reference>()) {
             lhs.type = ref->type;
@@ -3662,7 +3674,7 @@ bool FunctionEmitter::EmitStatement(const spvtools::opt::Instruction& inst) {
               Source{}, builder_.Symbols().Register(name));
           // SampleMask is an array in Vulkan SPIR-V. Always access the first
           // element.
-          id_expr = create<ast::ArrayAccessorExpression>(
+          id_expr = create<ast::IndexAccessorExpression>(
               Source{}, id_expr, parser_impl_.MakeNullValue(ty_.I32()));
 
           auto* loaded_type = parser_impl_.ConvertType(inst.type_id());
@@ -3735,6 +3747,8 @@ bool FunctionEmitter::EmitStatement(const spvtools::opt::Instruction& inst) {
       const auto skip = GetSkipReason(value_id);
       if (skip != SkipReason::kDontSkip) {
         GetDefInfo(inst.result_id())->skip = skip;
+        GetDefInfo(inst.result_id())->sink_pointer_source_expr =
+            GetDefInfo(value_id)->sink_pointer_source_expr;
         return true;
       }
       auto expr = AddressOfIfNeeded(MakeExpression(value_id), &inst);
@@ -3946,9 +3960,8 @@ TypedExpression FunctionEmitter::MaybeEmitCombinatorialValue(
     for (uint32_t iarg = 0; iarg < inst.NumInOperands(); ++iarg) {
       operands.emplace_back(MakeOperand(inst, iarg).expr);
     }
-    return {ast_type,
-            create<ast::TypeConstructorExpression>(
-                Source{}, ast_type->Build(builder_), std::move(operands))};
+    return {ast_type, builder_.Construct(Source{}, ast_type->Build(builder_),
+                                         std::move(operands))};
   }
 
   if (opcode == SpvOpCompositeExtract) {
@@ -3960,7 +3973,7 @@ TypedExpression FunctionEmitter::MaybeEmitCombinatorialValue(
   }
 
   if (opcode == SpvOpVectorExtractDynamic) {
-    return {ast_type, create<ast::ArrayAccessorExpression>(
+    return {ast_type, create<ast::IndexAccessorExpression>(
                           Source{}, MakeOperand(inst, 0).expr,
                           MakeOperand(inst, 1).expr)};
   }
@@ -4214,6 +4227,8 @@ TypedExpression FunctionEmitter::MakeAccessChain(
   if (base_skip != SkipReason::kDontSkip) {
     // This can occur for AccessChain with no indices.
     GetDefInfo(inst.result_id())->skip = base_skip;
+    GetDefInfo(inst.result_id())->sink_pointer_source_expr =
+        GetDefInfo(base_id)->sink_pointer_source_expr;
     return {};
   }
 
@@ -4221,6 +4236,7 @@ TypedExpression FunctionEmitter::MakeAccessChain(
   uint32_t first_index = 1;
   const auto num_in_operands = inst.NumInOperands();
 
+  bool sink_pointer = false;
   TypedExpression current_expr;
 
   // If the variable was originally gl_PerVertex, then in the AST we
@@ -4347,26 +4363,28 @@ TypedExpression FunctionEmitter::MakeAccessChain(
               Source{}, current_expr.expr, Swizzle(uint32_t(index_const_val)));
         } else {
           // Non-constant index. Use array syntax
-          next_expr = create<ast::ArrayAccessorExpression>(
+          next_expr = create<ast::IndexAccessorExpression>(
               Source{}, current_expr.expr, MakeOperand(inst, index).expr);
         }
         // All vector components are the same type.
         pointee_type_id = pointee_type_inst->GetSingleWordInOperand(0);
+        // Sink pointers to vector components.
+        sink_pointer = true;
         break;
       case SpvOpTypeMatrix:
         // Use array syntax.
-        next_expr = create<ast::ArrayAccessorExpression>(
+        next_expr = create<ast::IndexAccessorExpression>(
             Source{}, current_expr.expr, MakeOperand(inst, index).expr);
         // All matrix components are the same type.
         pointee_type_id = pointee_type_inst->GetSingleWordInOperand(0);
         break;
       case SpvOpTypeArray:
-        next_expr = create<ast::ArrayAccessorExpression>(
+        next_expr = create<ast::IndexAccessorExpression>(
             Source{}, current_expr.expr, MakeOperand(inst, index).expr);
         pointee_type_id = pointee_type_inst->GetSingleWordInOperand(0);
         break;
       case SpvOpTypeRuntimeArray:
-        next_expr = create<ast::ArrayAccessorExpression>(
+        next_expr = create<ast::IndexAccessorExpression>(
             Source{}, current_expr.expr, MakeOperand(inst, index).expr);
         pointee_type_id = pointee_type_inst->GetSingleWordInOperand(0);
         break;
@@ -4407,6 +4425,13 @@ TypedExpression FunctionEmitter::MakeAccessChain(
     TINT_ASSERT(Reader, type && type->Is<Reference>());
     current_expr = TypedExpression{type, next_expr};
   }
+
+  if (sink_pointer) {
+    // Capture the reference so that we can sink it into the point of use.
+    GetDefInfo(inst.result_id())->skip = SkipReason::kSinkPointerIntoUse;
+    GetDefInfo(inst.result_id())->sink_pointer_source_expr = current_expr;
+  }
+
   return current_expr;
 }
 
@@ -4451,8 +4476,7 @@ TypedExpression FunctionEmitter::MakeCompositeValueDecomposition(
   auto current_type_id = composite_type_id;
 
   auto make_index = [this](uint32_t literal) {
-    return create<ast::ScalarConstructorExpression>(
-        Source{}, create<ast::UintLiteral>(Source{}, literal));
+    return create<ast::UintLiteralExpression>(Source{}, literal);
   };
 
   // Build up a nested expression for the decomposition by walking down the type
@@ -4520,7 +4544,7 @@ TypedExpression FunctionEmitter::MakeCompositeValueDecomposition(
                  << " is too big. Max handled index is " << kMaxVectorLen - 1;
         }
         // Use array syntax.
-        next_expr = create<ast::ArrayAccessorExpression>(
+        next_expr = create<ast::IndexAccessorExpression>(
             Source{}, current_expr.expr, make_index(index_val));
         // All matrix components are the same type.
         current_type_id = current_type_inst->GetSingleWordInOperand(0);
@@ -4530,7 +4554,7 @@ TypedExpression FunctionEmitter::MakeCompositeValueDecomposition(
         // The array size could be a spec constant, and so it's not always
         // statically checkable.  Instead, rely on a runtime index clamp
         // or runtime check to keep this safe.
-        next_expr = create<ast::ArrayAccessorExpression>(
+        next_expr = create<ast::IndexAccessorExpression>(
             Source{}, current_expr.expr, make_index(index_val));
         current_type_id = current_type_inst->GetSingleWordInOperand(0);
         break;
@@ -4568,13 +4592,11 @@ TypedExpression FunctionEmitter::MakeCompositeValueDecomposition(
 }
 
 const ast::Expression* FunctionEmitter::MakeTrue(const Source& source) const {
-  return create<ast::ScalarConstructorExpression>(
-      source, create<ast::BoolLiteral>(source, true));
+  return create<ast::BoolLiteralExpression>(source, true);
 }
 
 const ast::Expression* FunctionEmitter::MakeFalse(const Source& source) const {
-  return create<ast::ScalarConstructorExpression>(
-      source, create<ast::BoolLiteral>(source, false));
+  return create<ast::BoolLiteralExpression>(source, false);
 }
 
 TypedExpression FunctionEmitter::MakeVectorShuffle(
@@ -4623,8 +4645,8 @@ TypedExpression FunctionEmitter::MakeVectorShuffle(
       return {};
     }
   }
-  return {result_type, create<ast::TypeConstructorExpression>(
-                           source, result_type->Build(builder_), values)};
+  return {result_type,
+          builder_.Construct(source, result_type->Build(builder_), values)};
 }
 
 bool FunctionEmitter::RegisterSpecialBuiltInVariables() {
@@ -4995,10 +5017,10 @@ TypedExpression FunctionEmitter::MakeNumericConversion(
 
   ast::ExpressionList params;
   params.push_back(arg_expr.expr);
-  TypedExpression result{expr_type,
-                         create<ast::TypeConstructorExpression>(
-                             GetSourceForInst(inst), expr_type->Build(builder_),
-                             std::move(params))};
+  TypedExpression result{
+      expr_type,
+      builder_.Construct(GetSourceForInst(inst), expr_type->Build(builder_),
+                         std::move(params))};
 
   if (requested_type == expr_type) {
     return result;
@@ -5445,7 +5467,7 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
     // first component.
     if (texture_type->IsAnyOf<DepthTexture, DepthMultisampledTexture>()) {
       if (is_non_dref_sample || (opcode == SpvOpImageFetch)) {
-        value = create<ast::TypeConstructorExpression>(
+        value = builder_.Construct(
             Source{},
             result_type->Build(builder_),  // a vec4
             ast::ExpressionList{
@@ -5532,8 +5554,8 @@ bool FunctionEmitter::EmitImageQuery(const spvtools::opt::Instruction& inst) {
       }
       auto* result_type = parser_impl_.ConvertType(inst.type_id());
       TypedExpression expr = {
-          result_type, create<ast::TypeConstructorExpression>(
-                           Source{}, result_type->Build(builder_), exprs)};
+          result_type,
+          builder_.Construct(Source{}, result_type->Build(builder_), exprs)};
       return EmitConstDefOrWriteToHoistedVar(inst, expr);
     }
     case SpvOpImageQueryLod:
@@ -5554,9 +5576,8 @@ bool FunctionEmitter::EmitImageQuery(const spvtools::opt::Instruction& inst) {
       // The SPIR-V result type must be integer scalar. The WGSL bulitin
       // returns i32. If they aren't the same then convert the result.
       if (!result_type->Is<I32>()) {
-        ast_expr = create<ast::TypeConstructorExpression>(
-            Source{}, result_type->Build(builder_),
-            ast::ExpressionList{ast_expr});
+        ast_expr = builder_.Construct(Source{}, result_type->Build(builder_),
+                                      ast::ExpressionList{ast_expr});
       }
       TypedExpression expr{result_type, ast_expr};
       return EmitConstDefOrWriteToHoistedVar(inst, expr);
@@ -5676,9 +5697,16 @@ ast::ExpressionList FunctionEmitter::MakeCoordinateOperandsForImageAccess(
     result.push_back(prefix_swizzle_expr());
 
     // Now get the array index.
-    const ast::Expression* array_index = create<ast::MemberAccessorExpression>(
-        Source{}, raw_coords.expr, Swizzle(num_axes));
-    // Convert it to a signed integer type, if needed
+    const ast::Expression* array_index =
+        builder_.MemberAccessor(raw_coords.expr, Swizzle(num_axes));
+    if (component_type->IsFloatScalar()) {
+      // When converting from a float array layer to integer, Vulkan requires
+      // round-to-nearest, with preference for round-to-nearest-even.
+      // But i32(f32) in WGSL has unspecified rounding mode, so we have to
+      // explicitly specify the rounding.
+      array_index = builder_.Call("round", array_index);
+    }
+    // Convert it to a signed integer type, if needed.
     result.push_back(ToI32({component_type, array_index}).expr);
   } else {
     if (num_coords_supplied == num_coords_required && !is_proj) {
@@ -5761,8 +5789,8 @@ const ast::Expression* FunctionEmitter::ConvertTexelForStorage(
     for (auto i = src_count; i < dest_count; i++) {
       exprs.push_back(parser_impl_.MakeNullExpression(component_type).expr);
     }
-    texel.expr = create<ast::TypeConstructorExpression>(
-        Source{}, texel.type->Build(builder_), std::move(exprs));
+    texel.expr = builder_.Construct(Source{}, texel.type->Build(builder_),
+                                    std::move(exprs));
   }
 
   return texel.expr;
@@ -5772,9 +5800,8 @@ TypedExpression FunctionEmitter::ToI32(TypedExpression value) {
   if (!value || value.type->Is<I32>()) {
     return value;
   }
-  return {ty_.I32(),
-          create<ast::TypeConstructorExpression>(
-              Source{}, builder_.ty.i32(), ast::ExpressionList{value.expr})};
+  return {ty_.I32(), builder_.Construct(Source{}, builder_.ty.i32(),
+                                        ast::ExpressionList{value.expr})};
 }
 
 TypedExpression FunctionEmitter::ToSignedIfUnsigned(TypedExpression value) {
@@ -5867,11 +5894,11 @@ TypedExpression FunctionEmitter::MakeOuterProduct(
           Source{}, ast::BinaryOp::kMultiply, row_factor, column_factor);
       result_row.push_back(elem);
     }
-    result_columns.push_back(create<ast::TypeConstructorExpression>(
-        Source{}, col_ty->Build(builder_), result_row));
+    result_columns.push_back(
+        builder_.Construct(Source{}, col_ty->Build(builder_), result_row));
   }
-  return {result_ty, create<ast::TypeConstructorExpression>(
-                         Source{}, result_ty->Build(builder_), result_columns)};
+  return {result_ty, builder_.Construct(Source{}, result_ty->Build(builder_),
+                                        result_columns)};
 }
 
 bool FunctionEmitter::MakeVectorInsertDynamic(
@@ -5925,7 +5952,7 @@ bool FunctionEmitter::MakeVectorInsertDynamic(
     AddStatement(builder_.Decl({}, temp_var));
   }
 
-  auto* lhs = create<ast::ArrayAccessorExpression>(
+  auto* lhs = create<ast::IndexAccessorExpression>(
       Source{}, builder_.Expr(var_name), index.expr);
   if (!lhs) {
     return false;

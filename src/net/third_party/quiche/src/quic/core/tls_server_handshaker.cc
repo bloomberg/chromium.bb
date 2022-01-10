@@ -150,16 +150,13 @@ void TlsServerHandshaker::DecryptCallback::Run(std::vector<uint8_t> plaintext) {
       (handshaker->expected_ssl_error() == SSL_ERROR_PENDING_TICKET);
 
   absl::optional<QuicConnectionContextSwitcher> context_switcher;
-  if (handshaker->restore_connection_context_in_callbacks_) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(
-        quic_tls_restore_connection_context_in_callbacks, 1, 3);
-    if (is_async) {
-      context_switcher.emplace(handshaker->connection_context());
-    }
-    QUIC_TRACESTRING(
-        absl::StrCat("TLS ticket decryption done. len(decrypted_ticket):",
-                     handshaker->decrypted_session_ticket_.size()));
+
+  if (is_async) {
+    context_switcher.emplace(handshaker->connection_context());
   }
+  QUIC_TRACESTRING(
+      absl::StrCat("TLS ticket decryption done. len(decrypted_ticket):",
+                   handshaker->decrypted_session_ticket_.size()));
 
   // DecryptCallback::Run could be called synchronously. When that happens, we
   // are currently in the middle of a call to AdvanceHandshake.
@@ -212,6 +209,10 @@ TlsServerHandshaker::TlsServerHandshaker(
 
   if (session->connection()->context()->tracer) {
     tls_connection_.EnableInfoCallback();
+  }
+
+  if (no_select_cert_if_disconnected_) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_tls_no_select_cert_if_disconnected, 1, 2);
   }
 }
 
@@ -296,11 +297,14 @@ int TlsServerHandshaker::NumServerConfigUpdateMessagesSent() const {
 
 const CachedNetworkParameters*
 TlsServerHandshaker::PreviousCachedNetworkParams() const {
-  return nullptr;
+  return last_received_cached_network_params_.get();
 }
 
 void TlsServerHandshaker::SetPreviousCachedNetworkParams(
-    CachedNetworkParameters /*cached_network_params*/) {}
+    CachedNetworkParameters cached_network_params) {
+  last_received_cached_network_params_ =
+      std::make_unique<CachedNetworkParameters>(cached_network_params);
+}
 
 void TlsServerHandshaker::OnPacketDecrypted(EncryptionLevel level) {
   if (level == ENCRYPTION_HANDSHAKE && state_ < HANDSHAKE_PROCESSED) {
@@ -318,33 +322,42 @@ void TlsServerHandshaker::OnNewTokenReceived(absl::string_view /*token*/) {
   QUICHE_DCHECK(false);
 }
 
-std::string TlsServerHandshaker::GetAddressToken() const {
+std::string TlsServerHandshaker::GetAddressToken(
+    const CachedNetworkParameters* cached_network_params) const {
   SourceAddressTokens empty_previous_tokens;
   const QuicConnection* connection = session()->connection();
   return crypto_config_->NewSourceAddressToken(
       crypto_config_->source_address_token_boxer(), empty_previous_tokens,
       connection->effective_peer_address().host(),
       connection->random_generator(), connection->clock()->WallNow(),
-      /*cached_network_params=*/nullptr);
+      session()->add_cached_network_parameters_to_address_token()
+          ? cached_network_params
+          : nullptr);
 }
 
 bool TlsServerHandshaker::ValidateAddressToken(absl::string_view token) const {
   SourceAddressTokens tokens;
   HandshakeFailureReason reason = crypto_config_->ParseSourceAddressToken(
-      crypto_config_->source_address_token_boxer(), token, &tokens);
+      crypto_config_->source_address_token_boxer(), token, tokens);
   if (reason != HANDSHAKE_OK) {
     QUIC_DLOG(WARNING) << "Failed to parse source address token: "
                        << CryptoUtils::HandshakeFailureReasonToString(reason);
     return false;
   }
+  auto cached_network_params = std::make_unique<CachedNetworkParameters>();
   reason = crypto_config_->ValidateSourceAddressTokens(
       tokens, session()->connection()->effective_peer_address().host(),
       session()->connection()->clock()->WallNow(),
-      /*cached_network_params=*/nullptr);
+      session()->add_cached_network_parameters_to_address_token()
+          ? cached_network_params.get()
+          : nullptr);
   if (reason != HANDSHAKE_OK) {
     QUIC_DLOG(WARNING) << "Failed to validate source address token: "
                        << CryptoUtils::HandshakeFailureReasonToString(reason);
     return false;
+  }
+  if (session()->add_cached_network_parameters_to_address_token()) {
+    last_received_cached_network_params_ = std::move(cached_network_params);
   }
   return true;
 }
@@ -488,21 +501,28 @@ bool TlsServerHandshaker::ProcessTransportParameters(
     }
   }
 
-  // When interoperating with non-Google implementations that do not send
-  // the version extension, set it to what we expect.
-  if (client_params.version == 0) {
-    client_params.version =
-        CreateQuicVersionLabel(session()->connection()->version());
-  }
-
-  if (CryptoUtils::ValidateClientHelloVersion(
-          client_params.version, session()->connection()->version(),
-          session()->supported_versions(), error_details) != QUIC_NO_ERROR ||
-      handshaker_delegate()->ProcessTransportParameters(
-          client_params, /* is_resumption = */ false, error_details) !=
-          QUIC_NO_ERROR) {
+  if (client_params.legacy_version_information.has_value() &&
+      CryptoUtils::ValidateClientHelloVersion(
+          client_params.legacy_version_information.value().version,
+          session()->connection()->version(), session()->supported_versions(),
+          error_details) != QUIC_NO_ERROR) {
     return false;
   }
+
+  if (client_params.version_information.has_value() &&
+      !CryptoUtils::ValidateChosenVersion(
+          client_params.version_information.value().chosen_version,
+          session()->version(), error_details)) {
+    QUICHE_DCHECK(!error_details->empty());
+    return false;
+  }
+
+  if (handshaker_delegate()->ProcessTransportParameters(
+          client_params, /* is_resumption = */ false, error_details) !=
+      QUIC_NO_ERROR) {
+    return false;
+  }
+
   ProcessAdditionalTransportParameters(client_params);
   if (!session()->user_agent_id().has_value() &&
       client_params.user_agent_id.has_value()) {
@@ -519,10 +539,21 @@ TlsServerHandshaker::SetTransportParameters() {
 
   TransportParameters server_params;
   server_params.perspective = Perspective::IS_SERVER;
-  server_params.supported_versions =
+  server_params.legacy_version_information =
+      TransportParameters::LegacyVersionInformation();
+  server_params.legacy_version_information.value().supported_versions =
       CreateQuicVersionLabelVector(session()->supported_versions());
-  server_params.version =
+  server_params.legacy_version_information.value().version =
       CreateQuicVersionLabel(session()->connection()->version());
+  if (GetQuicReloadableFlag(quic_version_information)) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_version_information, 1, 2);
+    server_params.version_information =
+        TransportParameters::VersionInformation();
+    server_params.version_information.value().chosen_version =
+        CreateQuicVersionLabel(session()->version());
+    server_params.version_information.value().other_versions =
+        CreateQuicVersionLabelVector(session()->supported_versions());
+  }
 
   if (!handshaker_delegate()->FillTransportParameters(&server_params)) {
     return result;
@@ -703,17 +734,13 @@ void TlsServerHandshaker::OnComputeSignatureDone(
                 << ", is_sync:" << is_sync
                 << ", len(signature):" << signature.size();
   absl::optional<QuicConnectionContextSwitcher> context_switcher;
-  if (restore_connection_context_in_callbacks_) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(
-        quic_tls_restore_connection_context_in_callbacks, 2, 3);
 
-    if (!is_sync) {
-      context_switcher.emplace(connection_context());
-    }
-
-    QUIC_TRACESTRING(absl::StrCat("TLS compute signature done. ok:", ok,
-                                  ", len(signature):", signature.size()));
+  if (!is_sync) {
+    context_switcher.emplace(connection_context());
   }
+
+  QUIC_TRACESTRING(absl::StrCat("TLS compute signature done. ok:", ok,
+                                ", len(signature):", signature.size()));
 
   if (ok) {
     cert_verify_sig_ = std::move(signature);
@@ -942,6 +969,13 @@ ssl_select_cert_result_t TlsServerHandshaker::EarlySelectCertCallback(
           ? std::string(alps_result.alps_buffer.get(), alps_result.alps_length)
           : std::string();
 
+  if (no_select_cert_if_disconnected_ &&
+      !session()->connection()->connected()) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_tls_no_select_cert_if_disconnected, 2, 2);
+    select_cert_status_ = QUIC_FAILURE;
+    return ssl_select_cert_error;
+  }
+
   const QuicAsyncStatus status = proof_source_handle_->SelectCertificate(
       session()->connection()->self_address().Normalized(),
       session()->connection()->peer_address().Normalized(),
@@ -983,19 +1017,15 @@ void TlsServerHandshaker::OnSelectCertificateDone(
                 << ", len(ticket_encryption_key):"
                 << ticket_encryption_key.size();
   absl::optional<QuicConnectionContextSwitcher> context_switcher;
-  if (restore_connection_context_in_callbacks_) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(
-        quic_tls_restore_connection_context_in_callbacks, 3, 3);
-
-    if (!is_sync) {
-      context_switcher.emplace(connection_context());
-    }
-
-    QUIC_TRACESTRING(absl::StrCat(
-        "TLS select certificate done: ok:", ok,
-        ", len(handshake_hints):", handshake_hints.size(),
-        ", len(ticket_encryption_key):", ticket_encryption_key.size()));
+  if (!is_sync) {
+    context_switcher.emplace(connection_context());
   }
+
+  QUIC_TRACESTRING(absl::StrCat(
+      "TLS select certificate done: ok:", ok,
+      ", len(handshake_hints):", handshake_hints.size(),
+      ", len(ticket_encryption_key):", ticket_encryption_key.size()));
+
   ticket_encryption_key_ = std::string(ticket_encryption_key);
   select_cert_status_ = QUIC_FAILURE;
   cert_matched_sni_ = cert_matched_sni;

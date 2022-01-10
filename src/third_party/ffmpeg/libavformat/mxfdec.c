@@ -203,8 +203,8 @@ typedef struct MXFDescriptor {
     unsigned int color_range;
     unsigned int horiz_subsampling;
     unsigned int vert_subsampling;
-    UID *sub_descriptors_refs;
-    int sub_descriptors_count;
+    UID *file_descriptors_refs;
+    int file_descriptors_count;
     int linked_track_id;
     uint8_t *extradata;
     int extradata_size;
@@ -342,7 +342,7 @@ static void mxf_free_metadataset(MXFMetadataSet **ctx, int freectx)
         av_freep(&((MXFDescriptor *)*ctx)->extradata);
         av_freep(&((MXFDescriptor *)*ctx)->mastering);
         av_freep(&((MXFDescriptor *)*ctx)->coll);
-        av_freep(&((MXFDescriptor *)*ctx)->sub_descriptors_refs);
+        av_freep(&((MXFDescriptor *)*ctx)->file_descriptors_refs);
         break;
     case Sequence:
         av_freep(&((MXFSequence *)*ctx)->structural_components_refs);
@@ -1201,8 +1201,8 @@ static int mxf_read_generic_descriptor(void *arg, AVIOContext *pb, int tag, int 
 
     switch(tag) {
     case 0x3F01:
-        return mxf_read_strong_ref_array(pb, &descriptor->sub_descriptors_refs,
-                                             &descriptor->sub_descriptors_count);
+        return mxf_read_strong_ref_array(pb, &descriptor->file_descriptors_refs,
+                                             &descriptor->file_descriptors_count);
     case 0x3002: /* ContainerDuration */
         descriptor->duration = avio_rb64(pb);
         break;
@@ -1793,7 +1793,7 @@ static int mxf_compute_ptses_fake_index(MXFContext *mxf, MXFIndexTable *index_ta
      * 6:  5   5
      *
      * We do this by bucket sorting x by x+TemporalOffset[x] into mxf->ptses,
-     * then settings mxf->internal->first_dts = -max(TemporalOffset[x]).
+     * then settings ffstream(mxf)->first_dts = -max(TemporalOffset[x]).
      * The latter makes DTS <= PTS.
      */
     for (i = x = 0; i < index_table->nb_segments; i++) {
@@ -1872,8 +1872,8 @@ static int mxf_compute_index_tables(MXFContext *mxf)
         }
     }
 
-    mxf->index_tables = av_mallocz_array(mxf->nb_index_tables,
-                                         sizeof(*mxf->index_tables));
+    mxf->index_tables = av_calloc(mxf->nb_index_tables,
+                                  sizeof(*mxf->index_tables));
     if (!mxf->index_tables) {
         av_log(mxf->fc, AV_LOG_ERROR, "failed to allocate index tables\n");
         ret = AVERROR(ENOMEM);
@@ -1894,9 +1894,7 @@ static int mxf_compute_index_tables(MXFContext *mxf)
         MXFIndexTable *t = &mxf->index_tables[j];
         MXFTrack *mxf_track = NULL;
 
-        t->segments = av_mallocz_array(t->nb_segments,
-                                       sizeof(*t->segments));
-
+        t->segments = av_calloc(t->nb_segments, sizeof(*t->segments));
         if (!t->segments) {
             av_log(mxf->fc, AV_LOG_ERROR, "failed to allocate IndexTableSegment"
                    " pointer array\n");
@@ -2073,22 +2071,22 @@ static MXFPackage* mxf_resolve_source_package(MXFContext *mxf, UID package_ul, U
 
 static MXFDescriptor* mxf_resolve_multidescriptor(MXFContext *mxf, MXFDescriptor *descriptor, int track_id)
 {
-    MXFDescriptor *sub_descriptor = NULL;
+    MXFDescriptor *file_descriptor = NULL;
     int i;
 
     if (!descriptor)
         return NULL;
 
     if (descriptor->meta.type == MultipleDescriptor) {
-        for (i = 0; i < descriptor->sub_descriptors_count; i++) {
-            sub_descriptor = mxf_resolve_strong_ref(mxf, &descriptor->sub_descriptors_refs[i], Descriptor);
+        for (i = 0; i < descriptor->file_descriptors_count; i++) {
+            file_descriptor = mxf_resolve_strong_ref(mxf, &descriptor->file_descriptors_refs[i], Descriptor);
 
-            if (!sub_descriptor) {
-                av_log(mxf->fc, AV_LOG_ERROR, "could not resolve sub descriptor strong ref\n");
+            if (!file_descriptor) {
+                av_log(mxf->fc, AV_LOG_ERROR, "could not resolve file descriptor strong ref\n");
                 continue;
             }
-            if (sub_descriptor->linked_track_id == track_id) {
-                return sub_descriptor;
+            if (file_descriptor->linked_track_id == track_id) {
+                return file_descriptor;
             }
         }
     } else if (descriptor->meta.type == Descriptor)
@@ -2328,6 +2326,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
         const MXFCodecUL *container_ul = NULL;
         const MXFCodecUL *pix_fmt_ul = NULL;
         AVStream *st;
+        FFStream *sti;
         AVTimecode tc;
         int flags;
 
@@ -2435,6 +2434,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
             ret = AVERROR(ENOMEM);
             goto fail_and_free;
         }
+        sti = ffstream(st);
         st->id = material_track->track_id;
         st->priv_data = source_track;
 
@@ -2620,7 +2620,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
                     }
                 }
             }
-            st->internal->need_parsing = AVSTREAM_PARSE_HEADERS;
+            sti->need_parsing = AVSTREAM_PARSE_HEADERS;
             if (material_track->sequence->origin) {
                 av_dict_set_int(&st->metadata, "material_track_origin", material_track->sequence->origin, 0);
             }
@@ -2628,7 +2628,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
                 av_dict_set_int(&st->metadata, "source_track_origin", source_track->sequence->origin, 0);
             }
             if (descriptor->aspect_ratio.num && descriptor->aspect_ratio.den)
-                st->internal->display_aspect_ratio = descriptor->aspect_ratio;
+                sti->display_aspect_ratio = descriptor->aspect_ratio;
             st->codecpar->color_range     = mxf_get_color_range(mxf, descriptor);
             st->codecpar->color_primaries = mxf_get_codec_ul(ff_mxf_color_primaries_uls, &descriptor->color_primaries_ul)->id;
             st->codecpar->color_trc       = mxf_get_codec_ul(ff_mxf_color_trc_uls, &descriptor->color_trc_ul)->id;
@@ -2685,7 +2685,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
                 else if (descriptor->bits_per_sample == 32)
                     st->codecpar->codec_id = AV_CODEC_ID_PCM_S32BE;
             } else if (st->codecpar->codec_id == AV_CODEC_ID_MP2) {
-                st->internal->need_parsing = AVSTREAM_PARSE_FULL;
+                sti->need_parsing = AVSTREAM_PARSE_FULL;
             }
             st->codecpar->bits_per_coded_sample = av_get_bits_per_sample(st->codecpar->codec_id);
         } else if (st->codecpar->codec_type == AVMEDIA_TYPE_DATA) {
@@ -2719,7 +2719,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
         }
         if (st->codecpar->codec_type != AVMEDIA_TYPE_DATA && source_track->wrapping != FrameWrapped) {
             /* TODO: decode timestamps */
-            st->internal->need_parsing = AVSTREAM_PARSE_TIMESTAMPS;
+            sti->need_parsing = AVSTREAM_PARSE_TIMESTAMPS;
         }
     }
 
@@ -3680,7 +3680,7 @@ static int mxf_read_packet(AVFormatContext *s, AVPacket *pkt)
                 if (next_ofs <= 0) {
                     // If we have no way to packetize the data, then return it in chunks...
                     if (klv.next_klv - klv.length == pos && max_data_size > MXF_MAX_CHUNK_SIZE) {
-                        st->internal->need_parsing = AVSTREAM_PARSE_FULL;
+                        ffstream(st)->need_parsing = AVSTREAM_PARSE_FULL;
                         avpriv_request_sample(s, "Huge KLV without proper index in non-frame wrapped essence");
                     }
                     size = FFMIN(max_data_size, MXF_MAX_CHUNK_SIZE);

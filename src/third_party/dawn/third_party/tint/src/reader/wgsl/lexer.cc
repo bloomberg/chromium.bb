@@ -61,14 +61,12 @@ Lexer::Lexer(const std::string& file_path, const Source::FileContent* content)
 Lexer::~Lexer() = default;
 
 Token Lexer::next() {
-  skip_whitespace();
-  skip_comments();
-
-  if (is_eof()) {
-    return {Token::Type::kEOF, begin_source()};
+  auto t = skip_whitespace_and_comments();
+  if (!t.IsUninitialized()) {
+    return t;
   }
 
-  auto t = try_hex_float();
+  t = try_hex_float();
   if (!t.IsUninitialized()) {
     return t;
   }
@@ -88,12 +86,12 @@ Token Lexer::next() {
     return t;
   }
 
-  t = try_punctuation();
+  t = try_ident();
   if (!t.IsUninitialized()) {
     return t;
   }
 
-  t = try_ident();
+  t = try_punctuation();
   if (!t.IsUninitialized()) {
     return t;
   }
@@ -140,7 +138,7 @@ bool Lexer::matches(size_t pos, const std::string& substr) {
   return content_->data.substr(pos, substr.size()) == substr;
 }
 
-void Lexer::skip_whitespace() {
+Token Lexer::skip_whitespace_and_comments() {
   for (;;) {
     auto pos = pos_;
     while (!is_eof() && is_whitespace(content_->data[pos_])) {
@@ -155,27 +153,41 @@ void Lexer::skip_whitespace() {
       location_.column++;
     }
 
-    skip_comments();
+    auto t = skip_comment();
+    if (!t.IsUninitialized()) {
+      return t;
+    }
 
     // If the cursor didn't advance we didn't remove any whitespace
     // so we're done.
     if (pos == pos_)
       break;
   }
+  if (is_eof()) {
+    return {Token::Type::kEOF, begin_source()};
+  }
+
+  return {};
 }
 
-void Lexer::skip_comments() {
+Token Lexer::skip_comment() {
   if (matches(pos_, "//")) {
-    // Line comment: ignore everything until the end of line.
+    // Line comment: ignore everything until the end of line
+    // or end of input.
     while (!is_eof() && !matches(pos_, "\n")) {
       pos_++;
       location_.column++;
     }
-    return;
+    return {};
   }
 
   if (matches(pos_, "/*")) {
     // Block comment: ignore everything until the closing '*/' token.
+
+    // Record source location of the initial '/*'
+    auto source = begin_source();
+    source.range.end.column += 1;
+
     pos_ += 2;
     location_.column += 2;
 
@@ -202,7 +214,11 @@ void Lexer::skip_comments() {
         location_.column++;
       }
     }
+    if (depth > 0) {
+      return {Token::Type::kError, source, "unterminated block comment"};
+    }
   }
+  return {};
 }
 
 Token Lexer::try_float() {
@@ -256,11 +272,18 @@ Token Lexer::try_float() {
     }
   }
 
-  if (!has_point && !has_exponent) {
+  bool has_f_suffix = false;
+  if (end < len_ && matches(end, "f")) {
+    end++;
+    has_f_suffix = true;
+  }
+
+  if (!has_point && !has_exponent && !has_f_suffix) {
     // If it only has digits then it's an integer.
     return {};
   }
 
+  // Save the error string, for use by diagnostics.
   const auto str = content_->data.substr(start, end - start);
 
   pos_ = end;
@@ -488,6 +511,14 @@ Token Lexer::try_hex_float() {
       }
       end++;
     }
+
+    // Parse optional 'f' suffix.  For a hex float, it can only exist
+    // when the exponent is present. Otherwise it will look like
+    // one of the mantissa digits.
+    if (end < len_ && matches(end, "f")) {
+      end++;
+    }
+
     if (!has_exponent_digits) {
       return {Token::Type::kError, source,
               "expected an exponent value for hex float"};
@@ -693,8 +724,8 @@ Token Lexer::try_integer() {
 }
 
 Token Lexer::try_ident() {
-  // Must begin with an a-zA-Z
-  if (!is_alpha(content_->data[pos_])) {
+  // Must begin with an a-zA-Z_
+  if (!(is_alpha(content_->data[pos_]) || content_->data[pos_] == '_')) {
     return {};
   }
 
@@ -704,6 +735,16 @@ Token Lexer::try_ident() {
   while (!is_eof() && is_alphanum_underscore(content_->data[pos_])) {
     pos_++;
     location_.column++;
+  }
+
+  if (content_->data[s] == '_') {
+    // Check for an underscore on its own (special token), or a
+    // double-underscore (not allowed).
+    if ((pos_ == s + 1) || (content_->data[s + 1] == '_')) {
+      location_.column -= (pos_ - s);
+      pos_ = s;
+      return {};
+    }
   }
 
   auto str = content_->data.substr(s, pos_ - s);

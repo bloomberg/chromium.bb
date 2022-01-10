@@ -34,6 +34,8 @@ namespace syncer {
 
 namespace {
 
+const int kCurrentLocalTrustedVaultVersion = 1;
+
 sync_pb::LocalTrustedVault ReadEncryptedFile(const base::FilePath& file_path) {
   sync_pb::LocalTrustedVault proto;
   std::string ciphertext;
@@ -97,6 +99,32 @@ base::flat_set<std::string> GetGaiaIDs(
   return result;
 }
 
+// Version 0 may contain corrupted data: missing constant key if the client
+// was affected by crbug.com/1267391, this function injects constant key if it's
+// not stored and there is exactly one non-constant key. |local_trusted_vault|
+// must not be null and must have |version| set to 0.
+void UpgradeToVersion1(sync_pb::LocalTrustedVault* local_trusted_vault) {
+  DCHECK(local_trusted_vault);
+  DCHECK_EQ(local_trusted_vault->data_version(), 0);
+
+  std::string constant_key_as_proto_string;
+  AssignBytesToProtoString(GetConstantTrustedVaultKey(),
+                           &constant_key_as_proto_string);
+
+  for (sync_pb::LocalTrustedVaultPerUser& per_user_vault :
+       *local_trusted_vault->mutable_user()) {
+    if (per_user_vault.vault_key_size() == 1 &&
+        per_user_vault.vault_key(0).key_material() !=
+            constant_key_as_proto_string) {
+      // Add constant key in the beginning.
+      *per_user_vault.add_vault_key() = per_user_vault.vault_key(0);
+      per_user_vault.mutable_vault_key(0)->set_key_material(
+          constant_key_as_proto_string);
+    }
+  }
+  local_trusted_vault->set_data_version(1);
+}
+
 }  // namespace
 
 StandaloneTrustedVaultBackend::PendingTrustedRecoveryMethod::
@@ -125,6 +153,17 @@ StandaloneTrustedVaultBackend::~StandaloneTrustedVaultBackend() = default;
 
 void StandaloneTrustedVaultBackend::ReadDataFromDisk() {
   data_ = ReadEncryptedFile(file_path_);
+  if (data_.user_size() == 0) {
+    // No data, set the current version and omit writing the file.
+    data_.set_data_version(kCurrentLocalTrustedVaultVersion);
+  }
+
+  if (data_.data_version() == 0) {
+    UpgradeToVersion1(&data_);
+    WriteToDisk(data_, file_path_);
+  }
+
+  DCHECK_EQ(data_.data_version(), kCurrentLocalTrustedVaultVersion);
 }
 
 void StandaloneTrustedVaultBackend::FetchKeys(
@@ -397,6 +436,25 @@ void StandaloneTrustedVaultBackend::AddTrustedRecoveryMethod(
               base::Unretained(this), std::move(cb)));
 }
 
+void StandaloneTrustedVaultBackend::ClearDataForAccount(
+    const CoreAccountInfo& account_info) {
+  sync_pb::LocalTrustedVaultPerUser* per_user_vault =
+      FindUserVault(account_info.gaia);
+  if (!per_user_vault) {
+    return;
+  }
+
+  *per_user_vault = sync_pb::LocalTrustedVaultPerUser();
+  per_user_vault->set_gaia_id(account_info.gaia);
+  WriteToDisk(data_, file_path_);
+
+  // This codepath invoked as part of sync reset. While sync reset can cause
+  // resetting primary account, this is not the case for Chrome OS and Butter
+  // mode. Trigger device registration attempt immediately as it can succeed in
+  // these cases.
+  MaybeRegisterDevice(/*has_persistent_auth_error_for_uma=*/false);
+}
+
 absl::optional<CoreAccountInfo>
 StandaloneTrustedVaultBackend::GetPrimaryAccountForTesting() const {
   return primary_account_;
@@ -606,7 +664,7 @@ void StandaloneTrustedVaultBackend::OnDeviceRegisteredWithoutKeys(
 
 void StandaloneTrustedVaultBackend::OnKeysDownloaded(
     TrustedVaultDownloadKeysStatus status,
-    const std::vector<std::vector<uint8_t>>& vault_keys,
+    const std::vector<std::vector<uint8_t>>& new_vault_keys,
     int last_vault_key_version) {
   DCHECK(primary_account_.has_value());
   DCHECK(!ongoing_fetch_keys_callback_.is_null());
@@ -618,17 +676,24 @@ void StandaloneTrustedVaultBackend::OnKeysDownloaded(
   DCHECK(ongoing_connection_request_);
   ongoing_connection_request_ = nullptr;
 
+  sync_pb::LocalTrustedVaultPerUser* per_user_vault =
+      FindUserVault(primary_account_->gaia);
+  DCHECK(per_user_vault);
   switch (status) {
-    case TrustedVaultDownloadKeysStatus::kSuccess:
-      // TODO(crbug.com/1102340): consider keeping old keys as well.
+    case TrustedVaultDownloadKeysStatus::kSuccess: {
+      // Store all vault keys (including already known) as they required for
+      // adding recovery method and might still be useful for decryption (e.g.
+      // key rotation wasn't complete).
+      std::vector<std::vector<uint8_t>> vault_keys =
+          GetAllVaultKeys(*per_user_vault);
+      std::copy(new_vault_keys.begin(), new_vault_keys.end(),
+                std::back_inserter(vault_keys));
       StoreKeys(primary_account_->gaia, vault_keys, last_vault_key_version);
       break;
+    }
     case TrustedVaultDownloadKeysStatus::kMemberNotFoundOrCorrupted:
     case TrustedVaultDownloadKeysStatus::kNoNewKeys:
     case TrustedVaultDownloadKeysStatus::kKeyProofsVerificationFailed: {
-      sync_pb::LocalTrustedVaultPerUser* per_user_vault =
-          FindUserVault(primary_account_->gaia);
-      DCHECK(per_user_vault);
       // Unable to download new keys due to known protocol errors. The only way
       // to go out of these states is to receive new vault keys through external
       // StoreKeys() call. It's safe to mark device as not registered regardless

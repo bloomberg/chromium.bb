@@ -11,13 +11,12 @@
 
 #include "base/auto_reset.h"
 #include "base/containers/contains.h"
-#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cef/libcef/features/features.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/browser.h"
@@ -35,8 +34,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/url_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
@@ -74,8 +73,7 @@ void CloseArcPrintSession(WebContents* initiator) {
 #endif
 
 // A ui::WebDialogDelegate that specifies the print preview dialog appearance.
-class PrintPreviewDialogDelegate : public ui::WebDialogDelegate,
-                                   public content::WebContentsObserver {
+class PrintPreviewDialogDelegate : public ui::WebDialogDelegate {
  public:
   explicit PrintPreviewDialogDelegate(WebContents* initiator);
 
@@ -99,13 +97,14 @@ class PrintPreviewDialogDelegate : public ui::WebDialogDelegate,
   bool ShouldShowDialogTitle() const override;
 
  private:
-  WebContents* initiator() const { return web_contents(); }
+  WebContents* initiator() const { return web_contents_.get(); }
 
+  base::WeakPtr<content::WebContents> web_contents_;
   bool on_dialog_closed_called_ = false;
 };
 
 PrintPreviewDialogDelegate::PrintPreviewDialogDelegate(WebContents* initiator)
-    : content::WebContentsObserver(initiator) {}
+    : web_contents_(initiator->GetWeakPtr()) {}
 
 PrintPreviewDialogDelegate::~PrintPreviewDialogDelegate() = default;
 
@@ -275,6 +274,12 @@ bool PrintPreviewDialogController::IsPrintPreviewURL(const GURL& url) {
          url.host_piece() == chrome::kChromeUIPrintHost;
 }
 
+// static
+bool PrintPreviewDialogController::IsPrintPreviewContentURL(const GURL& url) {
+  return url.SchemeIs(content::kChromeUIUntrustedScheme) &&
+         url.host_piece() == chrome::kChromeUIPrintHost;
+}
+
 void PrintPreviewDialogController::EraseInitiatorInfo(
     WebContents* preview_dialog) {
   auto it = preview_dialog_map_.find(preview_dialog);
@@ -347,7 +352,7 @@ void PrintPreviewDialogController::NavigationEntryCommitted(
 void PrintPreviewDialogController::OnInitiatorNavigated(
     WebContents* initiator,
     const content::LoadCommittedDetails& details) {
-  if (details.type == content::NAVIGATION_TYPE_EXISTING_ENTRY) {
+  if (details.type == content::NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY) {
     static const ui::PageTransition kTransitions[] = {
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                   ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
@@ -370,7 +375,7 @@ void PrintPreviewDialogController::OnPreviewDialogNavigated(
   // New |preview_dialog| is created. Don't update/erase map entry.
   if (waiting_for_new_preview_page_ &&
       ui::PageTransitionCoreTypeIs(type, ui::PAGE_TRANSITION_AUTO_TOPLEVEL) &&
-      details.type == content::NAVIGATION_TYPE_NEW_ENTRY) {
+      details.type == content::NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY) {
     waiting_for_new_preview_page_ = false;
     SaveInitiatorTitle(preview_dialog);
     return;
@@ -379,7 +384,7 @@ void PrintPreviewDialogController::OnPreviewDialogNavigated(
   // Cloud print sign-in causes a reload.
   if (!waiting_for_new_preview_page_ &&
       ui::PageTransitionCoreTypeIs(type, ui::PAGE_TRANSITION_RELOAD) &&
-      details.type == content::NAVIGATION_TYPE_EXISTING_ENTRY &&
+      details.type == content::NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY &&
       IsPrintPreviewURL(details.previous_main_frame_url)) {
     return;
   }
@@ -405,11 +410,6 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
   content::HostZoomMap::Get(preview_dialog->GetSiteInstance())
       ->SetZoomLevelForHostAndScheme(print_url.scheme(), print_url.host(), 0);
   PrintViewManager::CreateForWebContents(preview_dialog);
-
-#if !BUILDFLAG(ENABLE_CEF)
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      preview_dialog);
-#endif
 
   // Add an entry to the map.
   preview_dialog_map_[preview_dialog] = initiator;

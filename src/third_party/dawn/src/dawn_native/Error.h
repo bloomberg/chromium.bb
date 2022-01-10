@@ -96,6 +96,9 @@ namespace dawn_native {
 // gracefully shut down.
 #define DAWN_INTERNAL_ERROR(MESSAGE) DAWN_MAKE_ERROR(InternalErrorType::Internal, MESSAGE)
 
+#define DAWN_FORMAT_INTERNAL_ERROR(...) \
+    DAWN_MAKE_ERROR(InternalErrorType::Internal, absl::StrFormat(__VA_ARGS__))
+
 #define DAWN_UNIMPLEMENTED_ERROR(MESSAGE) \
     DAWN_MAKE_ERROR(InternalErrorType::Internal, std::string("Unimplemented: ") + MESSAGE)
 
@@ -113,12 +116,8 @@ namespace dawn_native {
     // the current function.
 #define DAWN_TRY(EXPR) DAWN_TRY_WITH_CLEANUP(EXPR, {})
 
-#define DAWN_TRY_CONTEXT(EXPR, ...)                              \
-    DAWN_TRY_WITH_CLEANUP(EXPR, {                                \
-        if (error->GetType() == InternalErrorType::Validation) { \
-            error->AppendContext(absl::StrFormat(__VA_ARGS__));  \
-        }                                                        \
-    })
+#define DAWN_TRY_CONTEXT(EXPR, ...) \
+    DAWN_TRY_WITH_CLEANUP(EXPR, { error->AppendContext(absl::StrFormat(__VA_ARGS__)); })
 
 #define DAWN_TRY_WITH_CLEANUP(EXPR, BODY)                                                    \
     {                                                                                        \

@@ -9,15 +9,11 @@
 #include "libcef/browser/request_context_impl.h"
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_main_parts.h"
-
-namespace content {
-struct MainFunctionParams;
-}
+#include "content/public/common/main_function_params.h"
 
 namespace extensions {
 class ExtensionsBrowserClient;
@@ -46,7 +42,11 @@ class CefDevToolsDelegate;
 
 class AlloyBrowserMainParts : public content::BrowserMainParts {
  public:
-  explicit AlloyBrowserMainParts(const content::MainFunctionParams& parameters);
+  explicit AlloyBrowserMainParts(content::MainFunctionParams parameters);
+
+  AlloyBrowserMainParts(const AlloyBrowserMainParts&) = delete;
+  AlloyBrowserMainParts& operator=(const AlloyBrowserMainParts&) = delete;
+
   ~AlloyBrowserMainParts() override;
 
   int PreEarlyInitialization() override;
@@ -79,8 +79,10 @@ class AlloyBrowserMainParts : public content::BrowserMainParts {
   void PlatformInitialize();
 #endif  // defined(OS_WIN)
 
+  content::MainFunctionParams parameters_;
+
   CefRefPtr<CefRequestContextImpl> global_request_context_;
-  CefDevToolsDelegate* devtools_delegate_;  // Deletes itself.
+  CefDevToolsDelegate* devtools_delegate_ = nullptr;  // Deletes itself.
 
   std::unique_ptr<extensions::ExtensionsClient> extensions_client_;
   std::unique_ptr<extensions::ExtensionsBrowserClient>
@@ -105,8 +107,6 @@ class AlloyBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<views::LayoutProvider> layout_provider_;
 #endif
 #endif  // defined(TOOLKIT_VIEWS)
-
-  DISALLOW_COPY_AND_ASSIGN(AlloyBrowserMainParts);
 };
 
 #endif  // CEF_LIBCEF_BROWSER_ALLOY_ALLOY_BROWSER_MAIN_H_

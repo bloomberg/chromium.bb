@@ -479,6 +479,12 @@ std::u16string AppBannerManagerAndroid::GetAppName() const {
   return native_app_title_;
 }
 
+bool AppBannerManagerAndroid::MaybeShowPwaBottomSheetController(
+    bool expand_sheet,
+    WebappInstallSource install_source) {
+  return false;
+}
+
 void AppBannerManagerAndroid::Install(
     const AddToHomescreenParams& a2hs_params,
     base::RepeatingCallback<void(AddToHomescreenInstaller::Event,
@@ -557,8 +563,9 @@ void AppBannerManagerAndroid::ShowAmbientBadge() {
   if (base::FeatureList::IsEnabled(features::kInstallableAmbientBadgeMessage) &&
       base::FeatureList::IsEnabled(
           messages::kMessagesForAndroidInfrastructure)) {
-    message_controller_.EnqueueMessage(web_contents(), GetAppName(),
-                                       primary_icon_, manifest().start_url);
+    message_controller_.EnqueueMessage(
+        web_contents(), GetAppName(), primary_icon_, has_maskable_primary_icon_,
+        manifest().start_url);
   } else {
     InstallableAmbientBadgeInfoBarDelegate::Create(
         web_contents(), weak_factory_.GetWeakPtr(), GetAppName(), primary_icon_,

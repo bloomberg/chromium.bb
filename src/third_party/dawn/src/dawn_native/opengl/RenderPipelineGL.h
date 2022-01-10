@@ -43,6 +43,7 @@ namespace dawn_native { namespace opengl {
       private:
         RenderPipeline(Device* device, const RenderPipelineDescriptor* descriptor);
         ~RenderPipeline() override;
+        void DestroyImpl() override;
 
         void CreateVAOForVertexState();
 

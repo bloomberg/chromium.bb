@@ -54,6 +54,12 @@ def main():
   if project_head != 'refs/heads/main':
     raise RuntimeError("The repository is not migrated yet.")
 
+  # User may have set to fetch only old default branch. Ensure fetch is tracking
+  # main too.
+  git_common.run('config', '--unset-all',
+                 'remote.origin.fetch', 'refs/heads/*')
+  git_common.run('config', '--add',
+                 'remote.origin.fetch', '+refs/heads/*:refs/remotes/origin/*')
   logging.info("Running fetch...")
   git_common.run('fetch', remote)
   logging.info("Updating remote HEAD...")

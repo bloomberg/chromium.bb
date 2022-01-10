@@ -9,6 +9,8 @@
 #include <string>
 #include <utility>
 
+#include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "ui/base/models/combobox_model.h"
@@ -102,6 +104,13 @@ class VIEWS_EXPORT Combobox : public View,
   void SetSizeToLargestLabel(bool size_to_largest_label);
   bool GetSizeToLargestLabel() const { return size_to_largest_label_; }
 
+  // Use the time when combobox was closed in order for parent view to not
+  // treat a user event already treated by the combobox.
+  base::TimeTicks GetClosedTime() { return closed_time_; }
+
+  // Returns whether or not the menu is currently running.
+  bool IsMenuRunning() const;
+
   // Overridden from View:
   gfx::Size CalculatePreferredSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
@@ -169,7 +178,7 @@ class VIEWS_EXPORT Combobox : public View,
   std::unique_ptr<ui::ComboboxModel> owned_model_;
 
   // Reference to our model, which may be owned or not.
-  ui::ComboboxModel* model_ = nullptr;
+  raw_ptr<ui::ComboboxModel> model_ = nullptr;
 
   // Typography context for the text written in the combobox and the options
   // shown in the drop-down menu.
@@ -211,7 +220,7 @@ class VIEWS_EXPORT Combobox : public View,
   // A transparent button that handles events and holds button state. Placed on
   // top of the combobox as a child view. Doesn't paint itself, but serves as a
   // host for inkdrops.
-  Button* arrow_button_;
+  raw_ptr<Button> arrow_button_;
 
   // Set while the dropdown is showing. Ensures the menu is closed if |this| is
   // destroyed.

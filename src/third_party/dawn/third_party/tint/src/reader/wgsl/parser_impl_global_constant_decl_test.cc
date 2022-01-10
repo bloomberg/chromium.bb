@@ -42,7 +42,7 @@ TEST_F(ParserImplTest, GlobalConstantDecl) {
   EXPECT_EQ(e->source.range.end.column, 6u);
 
   ASSERT_NE(e->constructor, nullptr);
-  EXPECT_TRUE(e->constructor->Is<ast::ConstructorExpression>());
+  EXPECT_TRUE(e->constructor->Is<ast::LiteralExpression>());
 
   EXPECT_FALSE(
       ast::HasDecoration<ast::OverrideDecoration>(e.value->decorations));
@@ -69,23 +69,10 @@ TEST_F(ParserImplTest, GlobalConstantDecl_Inferred) {
   EXPECT_EQ(e->source.range.end.column, 6u);
 
   ASSERT_NE(e->constructor, nullptr);
-  EXPECT_TRUE(e->constructor->Is<ast::ConstructorExpression>());
+  EXPECT_TRUE(e->constructor->Is<ast::LiteralExpression>());
 
   EXPECT_FALSE(
       ast::HasDecoration<ast::OverrideDecoration>(e.value->decorations));
-}
-
-TEST_F(ParserImplTest, GlobalConstantDecl_InvalidVariable) {
-  auto p = parser("let a : invalid = 1.");
-  auto decos = p->decoration_list();
-  EXPECT_FALSE(decos.errored);
-  EXPECT_FALSE(decos.matched);
-  auto e = p->global_constant_decl(decos.value);
-  EXPECT_TRUE(p->has_error());
-  EXPECT_TRUE(e.errored);
-  EXPECT_FALSE(e.matched);
-  EXPECT_EQ(e.value, nullptr);
-  EXPECT_EQ(p->error(), "1:9: unknown type 'invalid'");
 }
 
 TEST_F(ParserImplTest, GlobalConstantDecl_InvalidExpression) {
@@ -137,7 +124,7 @@ TEST_F(ParserImplTest, GlobalConstantDec_Override_WithId) {
   EXPECT_EQ(e->source.range.end.column, 22u);
 
   ASSERT_NE(e->constructor, nullptr);
-  EXPECT_TRUE(e->constructor->Is<ast::ConstructorExpression>());
+  EXPECT_TRUE(e->constructor->Is<ast::LiteralExpression>());
 
   auto* override_deco =
       ast::GetDecoration<ast::OverrideDecoration>(e.value->decorations);
@@ -169,7 +156,7 @@ TEST_F(ParserImplTest, GlobalConstantDec_Override_WithoutId) {
   EXPECT_EQ(e->source.range.end.column, 19u);
 
   ASSERT_NE(e->constructor, nullptr);
-  EXPECT_TRUE(e->constructor->Is<ast::ConstructorExpression>());
+  EXPECT_TRUE(e->constructor->Is<ast::LiteralExpression>());
 
   auto* override_deco =
       ast::GetDecoration<ast::OverrideDecoration>(e.value->decorations);

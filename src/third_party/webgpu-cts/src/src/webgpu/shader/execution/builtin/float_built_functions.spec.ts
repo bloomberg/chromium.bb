@@ -35,21 +35,6 @@ https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
   .params(u => u.combine('placeHolder1', ['placeHolder2', 'placeHolder3']))
   .unimplemented();
 
-g.test('float_builtin_functions,atan')
-  .uniqueId('b13828d6243d13dd')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#float-builtin-functions')
-  .desc(
-    `
-atan:
-T is f32 or vecN<f32> atan(e: T ) -> T Returns the arc tangent of e. Component-wise when T is a vector. (GLSLstd450Atan)
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
-  )
-  .params(u => u.combine('placeHolder1', ['placeHolder2', 'placeHolder3']))
-  .unimplemented();
-
 g.test('float_builtin_functions,atan2')
   .uniqueId('cc85953f226ac95c')
   .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#float-builtin-functions')
@@ -72,21 +57,6 @@ g.test('float_builtin_functions,clamp')
     `
 clamp:
 T is f32 or vecN<f32> clamp(e1: T ,e2: T ,e3: T) -> T Returns min(max(e1,e2),e3). Component-wise when T is a vector. (GLSLstd450NClamp)
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
-  )
-  .params(u => u.combine('placeHolder1', ['placeHolder2', 'placeHolder3']))
-  .unimplemented();
-
-g.test('float_builtin_functions,cos')
-  .uniqueId('650973d690dcd841')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#float-builtin-functions')
-  .desc(
-    `
-cos:
-T is f32 or vecN<f32> cos(e: T ) -> T Returns the cosine of e. Component-wise when T is a vector. (GLSLstd450Cos)
 
 Please read the following guidelines before contributing:
 https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
@@ -177,21 +147,6 @@ g.test('float_builtin_functions,faceForward')
     `
 faceForward:
 T is vecN<f32> faceForward(e1: T ,e2: T ,e3: T ) -> T Returns e1 if dot(e2,e3) is negative, and -e1 otherwise. (GLSLstd450FaceForward)
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
-  )
-  .params(u => u.combine('placeHolder1', ['placeHolder2', 'placeHolder3']))
-  .unimplemented();
-
-g.test('float_builtin_functions,floor')
-  .uniqueId('2edb4534aa0e48a6')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#float-builtin-functions')
-  .desc(
-    `
-floor:
-T is f32 or vecN<f32> floor(e: T ) -> T Returns the floor of e. Component-wise when T is a vector. (GLSLstd450Floor)
 
 Please read the following guidelines before contributing:
 https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md

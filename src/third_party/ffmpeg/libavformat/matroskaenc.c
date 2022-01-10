@@ -453,8 +453,6 @@ static void mkv_deinit(AVFormatContext *s)
 {
     MatroskaMuxContext *mkv = s->priv_data;
 
-    av_packet_free(&mkv->cur_audio_pkt);
-
     ffio_free_dyn_buf(&mkv->cluster_bc);
     ffio_free_dyn_buf(&mkv->info.bc);
     ffio_free_dyn_buf(&mkv->track.bc);
@@ -785,11 +783,9 @@ static int mkv_write_codecprivate(AVFormatContext *s, AVIOContext *pb,
             if (   ff_codec_get_id(ff_codec_movvideo_tags, par->codec_tag) == par->codec_id
                 && (!par->extradata_size || ff_codec_get_id(ff_codec_movvideo_tags, AV_RL32(par->extradata + 4)) != par->codec_id)
             ) {
-                int i;
                 avio_wb32(dyn_cp, 0x5a + par->extradata_size);
                 avio_wl32(dyn_cp, par->codec_tag);
-                for(i = 0; i < 0x5a - 8; i++)
-                    avio_w8(dyn_cp, 0);
+                ffio_fill(dyn_cp, 0, 0x5a - 8);
             }
             avio_write(dyn_cp, par->extradata, par->extradata_size);
         } else {
@@ -1253,7 +1249,7 @@ static int mkv_write_track(AVFormatContext *s, MatroskaMuxContext *mkv,
             // if there is no mkv-specific codec ID, use VFW mode
             put_ebml_string(pb, MATROSKA_ID_CODECID, "V_MS/VFW/FOURCC");
             track->write_dts = 1;
-            s->internal->avoid_negative_ts_use_pts = 0;
+            ffformatcontext(s)->avoid_negative_ts_use_pts = 0;
         }
 
         subinfo = start_ebml_master(pb, MATROSKA_ID_TRACKVIDEO, 0);
@@ -2653,6 +2649,7 @@ static uint64_t mkv_get_uid(const mkv_track *tracks, int i, AVLFG *c)
 
 static int mkv_init(struct AVFormatContext *s)
 {
+    FFFormatContext *const si = ffformatcontext(s);
     MatroskaMuxContext *mkv = s->priv_data;
     AVLFG c;
     unsigned nb_tracks = 0;
@@ -2674,7 +2671,7 @@ static int mkv_init(struct AVFormatContext *s)
 
     if (s->avoid_negative_ts < 0) {
         s->avoid_negative_ts = 1;
-        s->internal->avoid_negative_ts_use_pts = 1;
+        si->avoid_negative_ts_use_pts = 1;
     }
 
     if (!strcmp(s->oformat->name, "webm")) {
@@ -2683,10 +2680,9 @@ static int mkv_init(struct AVFormatContext *s)
     } else
         mkv->mode = MODE_MATROSKAv2;
 
-    mkv->cur_audio_pkt = av_packet_alloc();
-    if (!mkv->cur_audio_pkt)
-        return AVERROR(ENOMEM);
-    mkv->tracks = av_mallocz_array(s->nb_streams, sizeof(*mkv->tracks));
+    mkv->cur_audio_pkt = ffformatcontext(s)->pkt;
+
+    mkv->tracks = av_calloc(s->nb_streams, sizeof(*mkv->tracks));
     if (!mkv->tracks)
         return AVERROR(ENOMEM);
 

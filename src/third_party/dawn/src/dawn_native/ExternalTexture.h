@@ -46,6 +46,11 @@ namespace dawn_native {
 
         void APIDestroy();
 
+      protected:
+        // Constructor used only for mocking and testing.
+        ExternalTextureBase(DeviceBase* device);
+        void DestroyImpl() override;
+
       private:
         enum class ExternalTextureState { Alive, Destroyed };
         ExternalTextureBase(DeviceBase* device, const ExternalTextureDescriptor* descriptor);

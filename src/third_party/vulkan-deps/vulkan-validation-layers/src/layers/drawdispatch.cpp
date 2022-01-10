@@ -62,7 +62,7 @@ struct DispatchVuidsCmdDraw : DrawDispatchVuid {
         corner_sampled_address_mode        = "VUID-vkCmdDraw-flags-02696";
         subpass_input                      = "VUID-vkCmdDraw-None-02686";
         imageview_atomic                   = "VUID-vkCmdDraw-None-02691";
-        push_constants_set                 = "VUID-vkCmdDraw-None-02698";
+        push_constants_set                 = "VUID-vkCmdDraw-maintenance4-06425";
         image_subresources                 = "VUID-vkCmdDraw-None-04584";
         descriptor_valid                   = "VUID-vkCmdDraw-None-02699";
         sampler_imageview_type             = "VUID-vkCmdDraw-None-02702";
@@ -86,6 +86,17 @@ struct DispatchVuidsCmdDraw : DrawDispatchVuid {
         vertex_input_binding_stride        = "VUID-vkCmdDraw-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDraw_VertexInput;
         blend_enable                       = "VUID-vkCmdDraw-blendEnable-04727";
+        dynamic_rendering_view_mask        = "VUID-vkCmdDraw-viewMask-06178";
+        dynamic_rendering_color_count      = "VUID-vkCmdDraw-colorAttachmentCount-06179";
+        dynamic_rendering_color_formats    = "VUID-vkCmdDraw-colorAttachmentCount-06180";
+        dynamic_rendering_depth_format     = "VUID-vkCmdDraw-pDepthAttachment-06181";
+        dynamic_rendering_stencil_format   = "VUID-vkCmdDraw-pStencilAttachment-06182";
+        dynamic_rendering_fsr              = "VUID-vkCmdDraw-imageView-06183";
+        dynamic_rendering_fdm              = "VUID-vkCmdDraw-imageView-06184";
+        dynamic_rendering_color_sample     = "VUID-vkCmdDraw-colorAttachmentCount-06185";
+        dynamic_rendering_depth_sample     = "VUID-vkCmdDraw-pDepthAttachment-06186";
+        dynamic_rendering_stencil_sample   = "VUID-vkCmdDraw-pStencilAttachment-06187";
+        dynamic_rendering_multi_sample     = "VUID-vkCmdDraw-colorAttachmentCount-06188";
     }
 };
 
@@ -108,7 +119,7 @@ struct DispatchVuidsCmdDrawMultiEXT : DrawDispatchVuid {
         corner_sampled_address_mode        = "VUID-vkCmdDrawMultiEXT-flags-02696";
         subpass_input                      = "VUID-vkCmdDrawMultiEXT-None-02686";
         imageview_atomic                   = "VUID-vkCmdDrawMultiEXT-None-02691";
-        push_constants_set                 = "VUID-vkCmdDrawMultiEXT-None-02698";
+        push_constants_set                 = "VUID-vkCmdDrawMultiEXT-maintenance4-06425";
         image_subresources                 = "VUID-vkCmdDrawMultiEXT-None-04584";
         descriptor_valid                   = "VUID-vkCmdDrawMultiEXT-None-02699";
         sampler_imageview_type             = "VUID-vkCmdDrawMultiEXT-None-02702";
@@ -132,6 +143,17 @@ struct DispatchVuidsCmdDrawMultiEXT : DrawDispatchVuid {
         vertex_input_binding_stride        = "VUID-vkCmdDrawMultiEXT-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawMultiEXT_VertexInput;
         blend_enable                       = "VUID-vkCmdDrawMultiEXT-blendEnable-04727";
+        dynamic_rendering_view_mask        = "VUID-vkCmdDrawMultiEXT-viewMask-06178";
+        dynamic_rendering_color_count      = "VUID-vkCmdDrawMultiEXT-colorAttachmentCount-06179";
+        dynamic_rendering_color_formats    = "VUID-vkCmdDrawMultiEXT-colorAttachmentCount-06180";
+        dynamic_rendering_depth_format     = "VUID-vkCmdDrawMultiEXT-pDepthAttachment-06181";
+        dynamic_rendering_stencil_format   = "VUID-vkCmdDrawMultiEXT-pStencilAttachment-06182";
+        dynamic_rendering_fsr              = "VUID-vkCmdDrawMultiEXT-imageView-06183";
+        dynamic_rendering_fdm              = "VUID-vkCmdDrawMultiEXT-imageView-06184";
+        dynamic_rendering_color_sample     = "VUID-vkCmdDrawMultiEXT-colorAttachmentCount-06185";
+        dynamic_rendering_depth_sample     = "VUID-vkCmdDrawMultiEXT-pDepthAttachment-06186";
+        dynamic_rendering_stencil_sample   = "VUID-vkCmdDrawMultiEXT-pStencilAttachment-06187";
+        dynamic_rendering_multi_sample     = "VUID-vkCmdDrawMultiEXT-colorAttachmentCount-06188";
     }
 };
 
@@ -154,7 +176,7 @@ struct DispatchVuidsCmdDrawIndexed : DrawDispatchVuid {
         corner_sampled_address_mode        = "VUID-vkCmdDrawIndexed-flags-02696";
         subpass_input                      = "VUID-vkCmdDrawIndexed-None-02686";
         imageview_atomic                   = "VUID-vkCmdDrawIndexed-None-02691";
-        push_constants_set                 = "VUID-vkCmdDrawIndexed-None-02698";
+        push_constants_set                 = "VUID-vkCmdDrawIndexed-maintenance4-06425";
         image_subresources                 = "VUID-vkCmdDrawIndexed-None-04584";
         descriptor_valid                   = "VUID-vkCmdDrawIndexed-None-02699";
         sampler_imageview_type             = "VUID-vkCmdDrawIndexed-None-02702";
@@ -178,6 +200,17 @@ struct DispatchVuidsCmdDrawIndexed : DrawDispatchVuid {
         vertex_input_binding_stride        = "VUID-vkCmdDrawIndexed-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawIndexed_VertexInput;
         blend_enable                       = "VUID-vkCmdDrawIndexed-blendEnable-04727";
+        dynamic_rendering_view_mask        = "VUID-vkCmdDrawIndexed-viewMask-06178";
+        dynamic_rendering_color_count      = "VUID-vkCmdDrawIndexed-colorAttachmentCount-06179";
+        dynamic_rendering_color_formats    = "VUID-vkCmdDrawIndexed-colorAttachmentCount-06180";
+        dynamic_rendering_depth_format     = "VUID-vkCmdDrawIndexed-pDepthAttachment-06181";
+        dynamic_rendering_stencil_format   = "VUID-vkCmdDrawIndexed-pStencilAttachment-06182";
+        dynamic_rendering_fsr              = "VUID-vkCmdDrawIndexed-imageView-06183";
+        dynamic_rendering_fdm              = "VUID-vkCmdDrawIndexed-imageView-06184";
+        dynamic_rendering_color_sample     = "VUID-vkCmdDrawIndexed-colorAttachmentCount-06185";
+        dynamic_rendering_depth_sample     = "VUID-vkCmdDrawIndexed-pDepthAttachment-06186";
+        dynamic_rendering_stencil_sample   = "VUID-vkCmdDrawIndexed-pStencilAttachment-06187";
+        dynamic_rendering_multi_sample     = "VUID-vkCmdDrawIndexed-colorAttachmentCount-06188";
     }
 };
 
@@ -200,7 +233,7 @@ struct DispatchVuidsCmdDrawMultiIndexedEXT : DrawDispatchVuid {
         corner_sampled_address_mode = "VUID-vkCmdDrawMultiIndexedEXT-flags-02696";
         subpass_input = "VUID-vkCmdDrawMultiIndexedEXT-None-02686";
         imageview_atomic = "VUID-vkCmdDrawMultiIndexedEXT-None-02691";
-        push_constants_set = "VUID-vkCmdDrawMultiIndexedEXT-None-02698";
+        push_constants_set = "VUID-vkCmdDrawMultiIndexedEXT-maintenance4-06425";
         image_subresources = "VUID-vkCmdDrawMultiIndexedEXT-None-04584";
         descriptor_valid = "VUID-vkCmdDrawMultiIndexedEXT-None-02699";
         sampler_imageview_type = "VUID-vkCmdDrawMultiIndexedEXT-None-02702";
@@ -224,6 +257,17 @@ struct DispatchVuidsCmdDrawMultiIndexedEXT : DrawDispatchVuid {
         vertex_input_binding_stride = "VUID-vkCmdDrawMultiIndexedEXT-pStrides-04884";
         vertex_input = kVUID_Core_CmdDrawMultiIndexedEXT_VertexInput;
         blend_enable = "VUID-vkCmdDrawMultiIndexedEXT-blendEnable-04727";
+        dynamic_rendering_view_mask = "VUID-vkCmdDrawMultiIndexedEXT-viewMask-06178";
+        dynamic_rendering_color_count = "VUID-vkCmdDrawMultiIndexedEXT-colorAttachmentCount-06179";
+        dynamic_rendering_color_formats = "VUID-vkCmdDrawMultiIndexedEXT-colorAttachmentCount-06180";
+        dynamic_rendering_depth_format = "VUID-vkCmdDrawMultiIndexedEXT-pDepthAttachment-06181";
+        dynamic_rendering_stencil_format = "VUID-vkCmdDrawMultiIndexedEXT-pStencilAttachment-06182";
+        dynamic_rendering_fsr = "VUID-vkCmdDrawMultiIndexedEXT-imageView-06183";
+        dynamic_rendering_fdm = "VUID-vkCmdDrawMultiIndexedEXT-imageView-06184";
+        dynamic_rendering_color_sample = "VUID-vkCmdDrawMultiIndexedEXT-colorAttachmentCount-06185";
+        dynamic_rendering_depth_sample = "VUID-vkCmdDrawMultiIndexedEXT-pDepthAttachment-06186";
+        dynamic_rendering_stencil_sample = "VUID-vkCmdDrawIndexedIndirect-pStencilAttachment-06187";
+        dynamic_rendering_multi_sample = "VUID-vkCmdDrawIndexedIndirect-colorAttachmentCount-06188";
     }
 };
 
@@ -249,7 +293,7 @@ struct DispatchVuidsCmdDrawIndirect : DrawDispatchVuid {
         corner_sampled_address_mode        = "VUID-vkCmdDrawIndirect-flags-02696";
         subpass_input                      = "VUID-vkCmdDrawIndirect-None-02686";
         imageview_atomic                   = "VUID-vkCmdDrawIndirect-None-02691";
-        push_constants_set                 = "VUID-vkCmdDrawIndirect-None-02698";
+        push_constants_set                 = "VUID-vkCmdDrawIndirect-maintenance4-06425";
         image_subresources                 = "VUID-vkCmdDrawIndirect-None-04584";
         descriptor_valid                   = "VUID-vkCmdDrawIndirect-None-02699";
         sampler_imageview_type             = "VUID-vkCmdDrawIndirect-None-02702";
@@ -272,6 +316,17 @@ struct DispatchVuidsCmdDrawIndirect : DrawDispatchVuid {
         vertex_input_binding_stride        = "VUID-vkCmdDrawIndirect-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawIndirect_VertexInput;
         blend_enable                       = "VUID-vkCmdDrawIndirect-blendEnable-04727";
+        dynamic_rendering_view_mask        = "VUID-vkCmdDrawIndirect-viewMask-06178";
+        dynamic_rendering_color_count      = "VUID-vkCmdDrawIndirect-colorAttachmentCount-06179";
+        dynamic_rendering_color_formats    = "VUID-vkCmdDrawIndirect-colorAttachmentCount-06180";
+        dynamic_rendering_depth_format     = "VUID-vkCmdDrawIndirect-pDepthAttachment-06181";
+        dynamic_rendering_stencil_format   = "VUID-vkCmdDrawIndirect-pStencilAttachment-06182";
+        dynamic_rendering_fsr              = "VUID-vkCmdDrawIndirect-imageView-06183";
+        dynamic_rendering_fdm              = "VUID-vkCmdDrawIndirect-imageView-06184";
+        dynamic_rendering_color_sample     = "VUID-vkCmdDrawIndirect-colorAttachmentCount-06185";
+        dynamic_rendering_depth_sample     = "VUID-vkCmdDrawIndirect-pDepthAttachment-06186";
+        dynamic_rendering_stencil_sample   = "VUID-vkCmdDrawIndirect-pStencilAttachment-06187";
+        dynamic_rendering_multi_sample     = "VUID-vkCmdDrawIndirect-colorAttachmentCount-06188";
     }
 };
 
@@ -297,7 +352,7 @@ struct DispatchVuidsCmdDrawIndexedIndirect : DrawDispatchVuid {
         corner_sampled_address_mode        = "VUID-vkCmdDrawIndexedIndirect-flags-02696";
         subpass_input                      = "VUID-vkCmdDrawIndexedIndirect-None-02686";
         imageview_atomic                   = "VUID-vkCmdDrawIndexedIndirect-None-02691";
-        push_constants_set                 = "VUID-vkCmdDrawIndexedIndirect-None-02698";
+        push_constants_set                 = "VUID-vkCmdDrawIndexedIndirect-maintenance4-06425";
         image_subresources                 = "VUID-vkCmdDrawIndexedIndirect-None-04584";
         descriptor_valid                   = "VUID-vkCmdDrawIndexedIndirect-None-02699";
         sampler_imageview_type             = "VUID-vkCmdDrawIndexedIndirect-None-02702";
@@ -320,6 +375,17 @@ struct DispatchVuidsCmdDrawIndexedIndirect : DrawDispatchVuid {
         vertex_input_binding_stride        = "VUID-vkCmdDrawIndexedIndirect-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawIndexedIndirect_VertexInput;
         blend_enable                       = "VUID-vkCmdDrawIndexedIndirect-blendEnable-04727";
+        dynamic_rendering_view_mask        = "VUID-vkCmdDrawIndexedIndirect-viewMask-06178";
+        dynamic_rendering_color_count      = "VUID-vkCmdDrawIndexedIndirect-colorAttachmentCount-06179";
+        dynamic_rendering_color_formats    = "VUID-vkCmdDrawIndexedIndirect-colorAttachmentCount-06180";
+        dynamic_rendering_depth_format     = "VUID-vkCmdDrawIndexedIndirect-pDepthAttachment-06181";
+        dynamic_rendering_stencil_format   = "VUID-vkCmdDrawIndexedIndirect-pStencilAttachment-06182";
+        dynamic_rendering_fsr              = "VUID-vkCmdDrawIndexedIndirect-imageView-06183";
+        dynamic_rendering_fdm              = "VUID-vkCmdDrawIndexedIndirect-imageView-06184";
+        dynamic_rendering_color_sample     = "VUID-vkCmdDrawIndexedIndirect-colorAttachmentCount-06185";
+        dynamic_rendering_depth_sample     = "VUID-vkCmdDrawIndexedIndirect-pDepthAttachment-06186";
+        dynamic_rendering_stencil_sample   = "VUID-vkCmdDrawIndexedIndirect-pStencilAttachment-06187";
+        dynamic_rendering_multi_sample     = "VUID-vkCmdDrawIndexedIndirect-colorAttachmentCount-06188";
     }
 };
 
@@ -332,7 +398,7 @@ struct DispatchVuidsCmdDispatch : DrawDispatchVuid {
         cubic_sampler                      = "VUID-vkCmdDispatch-None-02692";
         corner_sampled_address_mode        = "VUID-vkCmdDispatch-flags-02696";
         imageview_atomic                   = "VUID-vkCmdDispatch-None-02691";
-        push_constants_set                 = "VUID-vkCmdDispatch-None-02698";
+        push_constants_set                 = "VUID-vkCmdDispatch-maintenance4-06425";
         descriptor_valid                   = "VUID-vkCmdDispatch-None-02699";
         sampler_imageview_type             = "VUID-vkCmdDispatch-None-02702";
         sampler_implicitLod_dref_proj      = "VUID-vkCmdDispatch-None-02703";
@@ -358,7 +424,7 @@ struct DispatchVuidsCmdDispatchIndirect : DrawDispatchVuid {
         indirect_buffer_bit                = "VUID-vkCmdDispatchIndirect-buffer-02709";
         corner_sampled_address_mode        = "VUID-vkCmdDispatchIndirect-flags-02696";
         imageview_atomic                   = "VUID-vkCmdDispatchIndirect-None-02691";
-        push_constants_set                 = "VUID-vkCmdDispatchIndirect-None-02698";
+        push_constants_set                 = "VUID-vkCmdDispatchIndirect-maintenance4-06425";
         descriptor_valid                   = "VUID-vkCmdDispatchIndirect-None-02699";
         sampler_imageview_type             = "VUID-vkCmdDispatchIndirect-None-02702";
         sampler_implicitLod_dref_proj      = "VUID-vkCmdDispatchIndirect-None-02703";
@@ -393,7 +459,7 @@ struct DispatchVuidsCmdDrawIndirectCount : DrawDispatchVuid {
         corner_sampled_address_mode        = "VUID-vkCmdDrawIndirectCount-flags-02696";
         subpass_input                      = "VUID-vkCmdDrawIndirectCount-None-02686";
         imageview_atomic                   = "VUID-vkCmdDrawIndirectCount-None-02691";
-        push_constants_set                 = "VUID-vkCmdDrawIndirectCount-None-02698";
+        push_constants_set                 = "VUID-vkCmdDrawIndirectCount-maintenance4-06425";
         image_subresources                 = "VUID-vkCmdDrawIndirectCount-None-04584";
         descriptor_valid                   = "VUID-vkCmdDrawIndirectCount-None-02699";
         sampler_imageview_type             = "VUID-vkCmdDrawIndirectCount-None-02702";
@@ -441,7 +507,7 @@ struct DispatchVuidsCmdDrawIndexedIndirectCount : DrawDispatchVuid {
         corner_sampled_address_mode        = "VUID-vkCmdDrawIndexedIndirectCount-flags-02696";
         subpass_input                      = "VUID-vkCmdDrawIndexedIndirectCount-None-02686";
         imageview_atomic                   = "VUID-vkCmdDrawIndexedIndirectCount-None-02691";
-        push_constants_set                 = "VUID-vkCmdDrawIndexedIndirectCount-None-02698";
+        push_constants_set                 = "VUID-vkCmdDrawIndexedIndirectCount-maintenance4-06425";
         image_subresources                 = "VUID-vkCmdDrawIndexedIndirectCount-None-04584";
         descriptor_valid                   = "VUID-vkCmdDrawIndexedIndirectCount-None-02699";
         sampler_imageview_type             = "VUID-vkCmdDrawIndexedIndirectCount-None-02702";
@@ -476,7 +542,7 @@ struct DispatchVuidsCmdTraceRaysNV: DrawDispatchVuid {
         cubic_sampler                      = "VUID-vkCmdTraceRaysNV-None-02692";
         corner_sampled_address_mode        = "VUID-vkCmdTraceRaysNV-flags-02696";
         imageview_atomic                   = "VUID-vkCmdTraceRaysNV-None-02691";
-        push_constants_set                 = "VUID-vkCmdTraceRaysNV-None-02698";
+        push_constants_set                 = "VUID-vkCmdTraceRaysNV-maintenance4-06425";
         descriptor_valid                   = "VUID-vkCmdTraceRaysNV-None-02699";
         sampler_imageview_type             = "VUID-vkCmdTraceRaysNV-None-02702";
         sampler_implicitLod_dref_proj      = "VUID-vkCmdTraceRaysNV-None-02703";
@@ -499,7 +565,7 @@ struct DispatchVuidsCmdTraceRaysKHR: DrawDispatchVuid {
         cubic_sampler                      = "VUID-vkCmdTraceRaysKHR-None-02692";
         corner_sampled_address_mode        = "VUID-vkCmdTraceRaysKHR-flags-02696";
         imageview_atomic                   = "VUID-vkCmdTraceRaysKHR-None-02691";
-        push_constants_set                 = "VUID-vkCmdTraceRaysKHR-None-02698";
+        push_constants_set                 = "VUID-vkCmdTraceRaysKHR-maintenance4-06425";
         descriptor_valid                   = "VUID-vkCmdTraceRaysKHR-None-02699";
         sampler_imageview_type             = "VUID-vkCmdTraceRaysKHR-None-02702";
         sampler_implicitLod_dref_proj      = "VUID-vkCmdTraceRaysKHR-None-02703";
@@ -524,7 +590,7 @@ struct DispatchVuidsCmdTraceRaysIndirectKHR: DrawDispatchVuid {
         indirect_buffer_bit                = "VUID-vkCmdTraceRaysIndirectKHR-indirectDeviceAddress-03633";
         corner_sampled_address_mode        = "VUID-vkCmdTraceRaysIndirectKHR-flags-02696";
         imageview_atomic                   = "VUID-vkCmdTraceRaysIndirectKHR-None-02691";
-        push_constants_set                 = "VUID-vkCmdTraceRaysIndirectKHR-None-02698";
+        push_constants_set                 = "VUID-vkCmdTraceRaysIndirectKHR-maintenance4-06425";
         descriptor_valid                   = "VUID-vkCmdTraceRaysIndirectKHR-None-02699";
         sampler_imageview_type             = "VUID-vkCmdTraceRaysIndirectKHR-None-02702";
         sampler_implicitLod_dref_proj      = "VUID-vkCmdTraceRaysIndirectKHR-None-02703";
@@ -551,11 +617,10 @@ struct DispatchVuidsCmdDrawMeshTasksNV: DrawDispatchVuid {
         viewport_count                     = "VUID-vkCmdDrawMeshTasksNV-viewportCount-03417";
         scissor_count                      = "VUID-vkCmdDrawMeshTasksNV-scissorCount-03418";
         viewport_scissor_count             = "VUID-vkCmdDrawMeshTasksNV-viewportCount-03419";
-        primitive_topology                 = "VUID-vkCmdDrawMeshTasksNV-primitiveTopology-03420";
         corner_sampled_address_mode        = "VUID-vkCmdDrawMeshTasksNV-flags-02696";
         subpass_input                      = "VUID-vkCmdDrawMeshTasksNV-None-02686";
         imageview_atomic                   = "VUID-vkCmdDrawMeshTasksNV-None-02691";
-        push_constants_set                 = "VUID-vkCmdDrawMeshTasksNV-None-02698";
+        push_constants_set                 = "VUID-vkCmdDrawMeshTasksNV-maintenance4-06425";
         image_subresources                 = "VUID-vkCmdDrawMeshTasksNV-None-04584";
         descriptor_valid                   = "VUID-vkCmdDrawMeshTasksNV-None-02699";
         sampler_imageview_type             = "VUID-vkCmdDrawMeshTasksNV-None-02702";
@@ -569,12 +634,9 @@ struct DispatchVuidsCmdDrawMeshTasksNV: DrawDispatchVuid {
         filter_cubic                       = "VUID-vkCmdDrawMeshTasksNV-filterCubic-02694";
         filter_cubic_min_max               = "VUID-vkCmdDrawMeshTasksNV-filterCubicMinmax-02695";
         viewport_count_primitive_shading_rate = "VUID-vkCmdDrawMeshTasksNV-primitiveFragmentShadingRateWithMultipleViewports-04552";
-        patch_control_points               = "VUID-vkCmdDrawMeshTasksNV-None-04875";
         rasterizer_discard_enable          = "VUID-vkCmdDrawMeshTasksNV-None-04876";
         depth_bias_enable                  = "VUID-vkCmdDrawMeshTasksNV-None-04877";
         logic_op                           = "VUID-vkCmdDrawMeshTasksNV-logicOp-04878";
-        primitive_restart_enable           = "VUID-vkCmdDrawMeshTasksNV-None-04879";
-        vertex_input_binding_stride        = "VUID-vkCmdDrawMeshTasksNV-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawMeshTasksNV_VertexInput;
         blend_enable                       = "VUID-vkCmdDrawMeshTasksNV-blendEnable-04727";
     }
@@ -596,11 +658,10 @@ struct DispatchVuidsCmdDrawMeshTasksIndirectNV: DrawDispatchVuid {
         viewport_count                     = "VUID-vkCmdDrawMeshTasksIndirectNV-viewportCount-03417";
         scissor_count                      = "VUID-vkCmdDrawMeshTasksIndirectNV-scissorCount-03418";
         viewport_scissor_count             = "VUID-vkCmdDrawMeshTasksIndirectNV-viewportCount-03419";
-        primitive_topology                 = "VUID-vkCmdDrawMeshTasksIndirectNV-primitiveTopology-03420";
         corner_sampled_address_mode        = "VUID-vkCmdDrawMeshTasksIndirectNV-flags-02696";
         subpass_input                      = "VUID-vkCmdDrawMeshTasksIndirectNV-None-02686";
         imageview_atomic                   = "VUID-vkCmdDrawMeshTasksIndirectNV-None-02691";
-        push_constants_set                 = "VUID-vkCmdDrawMeshTasksIndirectNV-None-02698";
+        push_constants_set                 = "VUID-vkCmdDrawMeshTasksIndirectNV-maintenance4-06425";
         image_subresources                 = "VUID-vkCmdDrawMeshTasksIndirectNV-None-04584";
         descriptor_valid                   = "VUID-vkCmdDrawMeshTasksIndirectNV-None-02699";
         sampler_imageview_type             = "VUID-vkCmdDrawMeshTasksIndirectNV-None-02702";
@@ -614,12 +675,9 @@ struct DispatchVuidsCmdDrawMeshTasksIndirectNV: DrawDispatchVuid {
         filter_cubic                       = "VUID-vkCmdDrawMeshTasksIndirectNV-filterCubic-02694";
         filter_cubic_min_max               = "VUID-vkCmdDrawMeshTasksIndirectNV-filterCubicMinmax-02695";
         viewport_count_primitive_shading_rate = "VUID-vkCmdDrawMeshTasksIndirectNV-primitiveFragmentShadingRateWithMultipleViewports-04552";
-        patch_control_points               = "VUID-vkCmdDrawMeshTasksIndirectNV-None-04875";
         rasterizer_discard_enable          = "VUID-vkCmdDrawMeshTasksIndirectNV-None-04876";
         depth_bias_enable                  = "VUID-vkCmdDrawMeshTasksIndirectNV-None-04877";
         logic_op                           = "VUID-vkCmdDrawMeshTasksIndirectNV-logicOp-04878";
-        primitive_restart_enable           = "VUID-vkCmdDrawMeshTasksIndirectNV-None-04879";
-        vertex_input_binding_stride        = "VUID-vkCmdDrawMeshTasksIndirectNV-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawMeshTasksIndirectNV_VertexInput;
         blend_enable                       = "VUID-vkCmdDrawMeshTasksIndirectNV-blendEnable-04727";
     }
@@ -641,11 +699,10 @@ struct DispatchVuidsCmdDrawMeshTasksIndirectCountNV : DrawDispatchVuid {
         viewport_count                     = "VUID-vkCmdDrawMeshTasksIndirectCountNV-viewportCount-03417";
         scissor_count                      = "VUID-vkCmdDrawMeshTasksIndirectCountNV-scissorCount-03418";
         viewport_scissor_count             = "VUID-vkCmdDrawMeshTasksIndirectCountNV-viewportCount-03419";
-        primitive_topology                 = "VUID-vkCmdDrawMeshTasksIndirectCountNV-primitiveTopology-03420";
         corner_sampled_address_mode        = "VUID-vkCmdDrawMeshTasksIndirectCountNV-flags-02696";
         subpass_input                      = "VUID-vkCmdDrawMeshTasksIndirectCountNV-None-02686";
         imageview_atomic                   = "VUID-vkCmdDrawMeshTasksIndirectCountNV-None-02691";
-        push_constants_set                 = "VUID-vkCmdDrawMeshTasksIndirectCountNV-None-02698";
+        push_constants_set                 = "VUID-vkCmdDrawMeshTasksIndirectCountNV-maintenance4-06425";
         image_subresources                 = "VUID-vkCmdDrawMeshTasksIndirectCountNV-None-04584";
         descriptor_valid                   = "VUID-vkCmdDrawMeshTasksIndirectCountNV-None-02699";
         sampler_imageview_type             = "VUID-vkCmdDrawMeshTasksIndirectCountNV-None-02702";
@@ -659,12 +716,9 @@ struct DispatchVuidsCmdDrawMeshTasksIndirectCountNV : DrawDispatchVuid {
         filter_cubic                       = "VUID-vkCmdDrawMeshTasksIndirectCountNV-filterCubic-02694";
         filter_cubic_min_max               = "VUID-vkCmdDrawMeshTasksIndirectCountNV-filterCubicMinmax-02695";
         viewport_count_primitive_shading_rate = "VUID-vkCmdDrawMeshTasksIndirectCountNV-primitiveFragmentShadingRateWithMultipleViewports-04552";
-        patch_control_points               = "VUID-vkCmdDrawMeshTasksIndirectCountNV-None-04875";
         rasterizer_discard_enable          = "VUID-vkCmdDrawMeshTasksIndirectCountNV-None-04876";
         depth_bias_enable                  = "VUID-vkCmdDrawMeshTasksIndirectCountNV-None-04877";
         logic_op                           = "VUID-vkCmdDrawMeshTasksIndirectCountNV-logicOp-04878";
-        primitive_restart_enable           = "VUID-vkCmdDrawMeshTasksIndirectCountNV-None-04879";
-        vertex_input_binding_stride        = "VUID-vkCmdDrawMeshTasksIndirectCountNV-pStrides-04884";
         vertex_input                       = kVUID_Core_CmdDrawMeshTasksIndirectCountNV_VertexInput;
         blend_enable                       = "VUID-vkCmdDrawMeshTasksIndirectCountNV-blendEnable-04727";
     }
@@ -692,7 +746,7 @@ struct DispatchVuidsCmdDrawIndirectByteCountEXT: DrawDispatchVuid {
         corner_sampled_address_mode        = "VUID-vkCmdDrawIndirectByteCountEXT-flags-02696";
         subpass_input                      = "VUID-vkCmdDrawIndirectByteCountEXT-None-02686";
         imageview_atomic                   = "VUID-vkCmdDrawIndirectByteCountEXT-None-02691";
-        push_constants_set                 = "VUID-vkCmdDrawIndirectByteCountEXT-None-02698";
+        push_constants_set                 = "VUID-vkCmdDrawIndirectByteCountEXT-maintenance4-06425";
         image_subresources                 = "VUID-vkCmdDrawIndirectByteCountEXT-None-04584";
         descriptor_valid                   = "VUID-vkCmdDrawIndirectByteCountEXT-None-02699";
         sampler_imageview_type             = "VUID-vkCmdDrawIndirectByteCountEXT-None-02702";
@@ -727,7 +781,7 @@ struct DispatchVuidsCmdDispatchBase: DrawDispatchVuid {
         cubic_sampler                      = "VUID-vkCmdDispatchBase-None-02692";
         corner_sampled_address_mode        = "VUID-vkCmdDispatchBase-flags-02696";
         imageview_atomic                   = "VUID-vkCmdDispatchBase-None-02691";
-        push_constants_set                 = "VUID-vkCmdDispatchBase-None-02698";
+        push_constants_set                 = "VUID-vkCmdDispatchBase-maintenance4-06425";
         descriptor_valid                   = "VUID-vkCmdDispatchBase-None-02699";
         sampler_imageview_type             = "VUID-vkCmdDispatchBase-None-02702";
         sampler_implicitLod_dref_proj      = "VUID-vkCmdDispatchBase-None-02703";
@@ -779,35 +833,30 @@ const DrawDispatchVuid &CoreChecks::GetDrawDispatchVuid(CMD_TYPE cmd_type) const
 }
 
 // Generic function to handle validation for all CmdDraw* type functions
-bool CoreChecks::ValidateCmdDrawType(VkCommandBuffer cmd_buffer, bool indexed, VkPipelineBindPoint bind_point,
+bool CoreChecks::ValidateCmdDrawType(const CMD_BUFFER_STATE &cb_state, bool indexed, VkPipelineBindPoint bind_point,
                                      CMD_TYPE cmd_type) const {
     bool skip = false;
-    const CMD_BUFFER_STATE *cb_state = GetCBState(cmd_buffer);
-    if (cb_state) {
-        skip |= ValidateCmd(cb_state, cmd_type);
-        skip |= ValidateCmdBufDrawState(cb_state, cmd_type, indexed, bind_point);
-        skip |= ValidateCmdRayQueryState(cb_state, cmd_type, bind_point);
-    }
+    skip |= ValidateCmd(&cb_state, cmd_type);
+    skip |= ValidateCmdBufDrawState(&cb_state, cmd_type, indexed, bind_point);
+    skip |= ValidateCmdRayQueryState(&cb_state, cmd_type, bind_point);
     return skip;
 }
 
-bool CoreChecks::ValidateCmdDrawInstance(VkCommandBuffer commandBuffer, uint32_t instanceCount, uint32_t firstInstance,
+bool CoreChecks::ValidateCmdDrawInstance(const CMD_BUFFER_STATE &cb_node, uint32_t instanceCount, uint32_t firstInstance,
                                          CMD_TYPE cmd_type) const {
     bool skip = false;
     const DrawDispatchVuid vuid = GetDrawDispatchVuid(cmd_type);
     const char *caller = CommandTypeString(cmd_type);
-    const auto *cb_node = Get<CMD_BUFFER_STATE>(commandBuffer);
-    if (!cb_node) return skip;
 
     // Verify maxMultiviewInstanceIndex
-    if (cb_node->activeRenderPass && cb_node->activeRenderPass->renderPass() && enabled_features.multiview_features.multiview &&
+    if (cb_node.activeRenderPass && cb_node.activeRenderPass->renderPass() && enabled_features.multiview_features.multiview &&
         ((instanceCount + firstInstance) > phys_dev_ext_props.multiview_props.maxMultiviewInstanceIndex)) {
-        LogObjectList objlist(commandBuffer);
-        objlist.add(cb_node->activeRenderPass->renderPass());
+        LogObjectList objlist(cb_node.Handle());
+        objlist.add(cb_node.activeRenderPass->Handle());
         skip |= LogError(objlist, vuid.max_multiview_instance_index,
-                         "%s: renderpass %s multiview is enabled, and maxMultiviewInstanceIndex: %" PRIu32 ", but instanceCount: %" PRIu32
-                         "and firstInstance: %" PRIu32 ".",
-                         caller, report_data->FormatHandle(cb_node->activeRenderPass->renderPass()).c_str(),
+                         "%s: renderpass %s multiview is enabled, and maxMultiviewInstanceIndex: %" PRIu32
+                         ", but instanceCount: %" PRIu32 "and firstInstance: %" PRIu32 ".",
+                         caller, report_data->FormatHandle(cb_node.activeRenderPass->Handle()).c_str(),
                          phys_dev_ext_props.multiview_props.maxMultiviewInstanceIndex, instanceCount, firstInstance);
     }
     return skip;
@@ -816,8 +865,9 @@ bool CoreChecks::ValidateCmdDrawInstance(VkCommandBuffer commandBuffer, uint32_t
 bool CoreChecks::PreCallValidateCmdDraw(VkCommandBuffer commandBuffer, uint32_t vertexCount, uint32_t instanceCount,
                                         uint32_t firstVertex, uint32_t firstInstance) const {
     bool skip = false;
-    skip |= ValidateCmdDrawInstance(commandBuffer, instanceCount, firstInstance, CMD_DRAW);
-    skip |= ValidateCmdDrawType(commandBuffer, false, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAW);
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    skip |= ValidateCmdDrawInstance(*cb_state, instanceCount, firstInstance, CMD_DRAW);
+    skip |= ValidateCmdDrawType(*cb_state, false, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAW);
     return skip;
 }
 
@@ -836,19 +886,18 @@ bool CoreChecks::PreCallValidateCmdDrawMultiEXT(VkCommandBuffer commandBuffer, u
                          ") must be less than VkPhysicalDeviceMultiDrawPropertiesEXT::maxMultiDrawCount (%" PRIu32 ").",
                          drawCount, phys_dev_ext_props.multi_draw_props.maxMultiDrawCount);
     }
-
-    skip |= ValidateCmdDrawInstance(commandBuffer, instanceCount, firstInstance, CMD_DRAWMULTIEXT);
-    skip |= ValidateCmdDrawType(commandBuffer, false, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWMULTIEXT);
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    skip |= ValidateCmdDrawInstance(*cb_state, instanceCount, firstInstance, CMD_DRAWMULTIEXT);
+    skip |= ValidateCmdDrawType(*cb_state, false, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWMULTIEXT);
     return skip;
 }
 
-bool CoreChecks::ValidateCmdDrawIndexedBufferSize(VkCommandBuffer commandBuffer, uint32_t indexCount,
-    uint32_t firstIndex, const char *caller, const char *first_index_vuid) const {
+bool CoreChecks::ValidateCmdDrawIndexedBufferSize(const CMD_BUFFER_STATE &cb_state, uint32_t indexCount, uint32_t firstIndex,
+                                                  const char *caller, const char *first_index_vuid) const {
     bool skip = false;
-    const CMD_BUFFER_STATE *cb_state = GetCBState(commandBuffer);
-    if (cb_state->status & CBSTATUS_INDEX_BUFFER_BOUND) {
+    if (cb_state.status & CBSTATUS_INDEX_BUFFER_BOUND) {
         unsigned int index_size = 0;
-        const auto &index_buffer_binding = cb_state->index_buffer_binding;
+        const auto &index_buffer_binding = cb_state.index_buffer_binding;
         if (index_buffer_binding.index_type == VK_INDEX_TYPE_UINT16) {
             index_size = 2;
         }
@@ -874,9 +923,10 @@ bool CoreChecks::ValidateCmdDrawIndexedBufferSize(VkCommandBuffer commandBuffer,
 bool CoreChecks::PreCallValidateCmdDrawIndexed(VkCommandBuffer commandBuffer, uint32_t indexCount, uint32_t instanceCount,
                                                uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) const {
     bool skip = false;
-    skip |= ValidateCmdDrawInstance(commandBuffer, instanceCount, firstInstance, CMD_DRAWINDEXED);
-    skip |= ValidateCmdDrawType(commandBuffer, true, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWINDEXED);
-    skip |= ValidateCmdDrawIndexedBufferSize(commandBuffer, indexCount, firstIndex, "vkCmdDrawIndexed()",
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    skip |= ValidateCmdDrawInstance(*cb_state, instanceCount, firstInstance, CMD_DRAWINDEXED);
+    skip |= ValidateCmdDrawType(*cb_state, true, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWINDEXED);
+    skip |= ValidateCmdDrawIndexedBufferSize(*cb_state, indexCount, firstIndex, "vkCmdDrawIndexed()",
                                              "VUID-vkCmdDrawIndexed-firstIndex-04932");
     return skip;
 }
@@ -897,12 +947,13 @@ bool CoreChecks::PreCallValidateCmdDrawMultiIndexedEXT(VkCommandBuffer commandBu
                          ") must be less than VkPhysicalDeviceMultiDrawPropertiesEXT::maxMultiDrawCount (0x%" PRIu32 ").",
                          drawCount, phys_dev_ext_props.multi_draw_props.maxMultiDrawCount);
     }
-    skip |= ValidateCmdDrawInstance(commandBuffer, instanceCount, firstInstance, CMD_DRAWMULTIINDEXEDEXT);
-    skip |= ValidateCmdDrawType(commandBuffer, true, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWMULTIINDEXEDEXT);
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    skip |= ValidateCmdDrawInstance(*cb_state, instanceCount, firstInstance, CMD_DRAWMULTIINDEXEDEXT);
+    skip |= ValidateCmdDrawType(*cb_state, true, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWMULTIINDEXEDEXT);
     const auto info_bytes = reinterpret_cast<const char *>(pIndexInfo);
     for (uint32_t i = 0; i < drawCount; i++) {
         const auto info_ptr = reinterpret_cast<const VkMultiDrawIndexedInfoEXT *>(info_bytes + i * stride);
-        skip |= ValidateCmdDrawIndexedBufferSize(commandBuffer, info_ptr->indexCount, info_ptr->firstIndex,
+        skip |= ValidateCmdDrawIndexedBufferSize(*cb_state, info_ptr->indexCount, info_ptr->firstIndex,
                                                  "vkCmdDrawMultiIndexedEXT()", "VUID-vkCmdDrawMultiIndexedEXT-firstIndex-04938");
     }
     return skip;
@@ -910,9 +961,10 @@ bool CoreChecks::PreCallValidateCmdDrawMultiIndexedEXT(VkCommandBuffer commandBu
 
 bool CoreChecks::PreCallValidateCmdDrawIndirect(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
                                                 uint32_t drawCount, uint32_t stride) const {
-    bool skip = ValidateCmdDrawType(commandBuffer, false, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWINDIRECT);
-    const BUFFER_STATE *buffer_state = GetBufferState(buffer);
-    skip |= ValidateIndirectCmd(commandBuffer, buffer, CMD_DRAWINDIRECT);
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    bool skip = ValidateCmdDrawType(*cb_state, false, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWINDIRECT);
+    const auto buffer_state = Get<BUFFER_STATE>(buffer);
+    skip |= ValidateIndirectCmd(*cb_state, *buffer_state, CMD_DRAWINDIRECT);
     if (drawCount > 1) {
         skip |= ValidateCmdDrawStrideWithStruct(commandBuffer, "VUID-vkCmdDrawIndirect-drawCount-00476", stride,
                                                 "VkDrawIndirectCommand", sizeof(VkDrawIndirectCommand));
@@ -932,9 +984,10 @@ bool CoreChecks::PreCallValidateCmdDrawIndirect(VkCommandBuffer commandBuffer, V
 
 bool CoreChecks::PreCallValidateCmdDrawIndexedIndirect(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
                                                        uint32_t drawCount, uint32_t stride) const {
-    bool skip = ValidateCmdDrawType(commandBuffer, true, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWINDEXEDINDIRECT);
-    const BUFFER_STATE *buffer_state = GetBufferState(buffer);
-    skip |= ValidateIndirectCmd(commandBuffer, buffer, CMD_DRAWINDEXEDINDIRECT);
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    bool skip = ValidateCmdDrawType(*cb_state, true, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWINDEXEDINDIRECT);
+    const auto buffer_state = Get<BUFFER_STATE>(buffer);
+    skip |= ValidateIndirectCmd(*cb_state, *buffer_state, CMD_DRAWINDEXEDINDIRECT);
     if (drawCount > 1) {
         skip |= ValidateCmdDrawStrideWithStruct(commandBuffer, "VUID-vkCmdDrawIndexedIndirect-drawCount-00528", stride,
                                                 "VkDrawIndexedIndirectCommand", sizeof(VkDrawIndexedIndirectCommand));
@@ -956,19 +1009,19 @@ bool CoreChecks::PreCallValidateCmdDrawIndexedIndirect(VkCommandBuffer commandBu
 
 bool CoreChecks::PreCallValidateCmdDispatch(VkCommandBuffer commandBuffer, uint32_t x, uint32_t y, uint32_t z) const {
     bool skip = false;
-    skip |= ValidateCmdDrawType(commandBuffer, false, VK_PIPELINE_BIND_POINT_COMPUTE, CMD_DISPATCH);
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    skip |= ValidateCmdDrawType(*cb_state, false, VK_PIPELINE_BIND_POINT_COMPUTE, CMD_DISPATCH);
     return skip;
 }
 
-bool CoreChecks::ValidateBaseGroups(VkCommandBuffer commandBuffer, uint32_t baseGroupX, uint32_t baseGroupY, uint32_t baseGroupZ,
+bool CoreChecks::ValidateBaseGroups(const CMD_BUFFER_STATE &cb_state, uint32_t baseGroupX, uint32_t baseGroupY, uint32_t baseGroupZ,
                                     const char *apiName) const {
     bool skip = false;
     if (baseGroupX || baseGroupY || baseGroupZ) {
-        const CMD_BUFFER_STATE *cb_state = GetCBState(commandBuffer);
         const auto lv_bind_point = ConvertToLvlBindPoint(VK_PIPELINE_BIND_POINT_COMPUTE);
-        const PIPELINE_STATE *pipeline_state = cb_state->lastBound[lv_bind_point].pipeline_state;
+        const auto *pipeline_state = cb_state.lastBound[lv_bind_point].pipeline_state;
         if (pipeline_state && !(pipeline_state->GetPipelineCreateFlags() & VK_PIPELINE_CREATE_DISPATCH_BASE)) {
-            skip |= LogError(commandBuffer, "VUID-vkCmdDispatchBase-baseGroupX-00427",
+            skip |= LogError(cb_state.Handle(), "VUID-vkCmdDispatchBase-baseGroupX-00427",
                              "%s(): If any of baseGroupX, baseGroupY, or baseGroupZ are not zero, then the bound compute pipeline "
                              "must have been created with the VK_PIPELINE_CREATE_DISPATCH_BASE flag",
                              apiName);
@@ -981,8 +1034,9 @@ bool CoreChecks::PreCallValidateCmdDispatchBase(VkCommandBuffer commandBuffer, u
                                                 uint32_t baseGroupZ, uint32_t groupCountX, uint32_t groupCountY,
                                                 uint32_t groupCountZ) const {
     bool skip = false;
-    skip |= ValidateCmdDrawType(commandBuffer, false, VK_PIPELINE_BIND_POINT_COMPUTE, CMD_DISPATCHBASE);
-    skip |= ValidateBaseGroups(commandBuffer, baseGroupX, baseGroupY, baseGroupZ, "vkCmdDispatchBase()");
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    skip |= ValidateCmdDrawType(*cb_state, false, VK_PIPELINE_BIND_POINT_COMPUTE, CMD_DISPATCHBASE);
+    skip |= ValidateBaseGroups(*cb_state, baseGroupX, baseGroupY, baseGroupZ, "vkCmdDispatchBase()");
     return skip;
 }
 
@@ -990,15 +1044,17 @@ bool CoreChecks::PreCallValidateCmdDispatchBaseKHR(VkCommandBuffer commandBuffer
                                                    uint32_t baseGroupZ, uint32_t groupCountX, uint32_t groupCountY,
                                                    uint32_t groupCountZ) const {
     bool skip = false;
-    skip |= ValidateCmdDrawType(commandBuffer, false, VK_PIPELINE_BIND_POINT_COMPUTE, CMD_DISPATCHBASEKHR);
-    skip |= ValidateBaseGroups(commandBuffer, baseGroupX, baseGroupY, baseGroupZ, "vkCmdDispatchBaseKHR()");
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    skip |= ValidateCmdDrawType(*cb_state, false, VK_PIPELINE_BIND_POINT_COMPUTE, CMD_DISPATCHBASEKHR);
+    skip |= ValidateBaseGroups(*cb_state, baseGroupX, baseGroupY, baseGroupZ, "vkCmdDispatchBaseKHR()");
     return skip;
 }
 
 bool CoreChecks::PreCallValidateCmdDispatchIndirect(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset) const {
-    bool skip = ValidateCmdDrawType(commandBuffer, false, VK_PIPELINE_BIND_POINT_COMPUTE, CMD_DISPATCHINDIRECT);
-    skip |= ValidateIndirectCmd(commandBuffer, buffer, CMD_DISPATCHINDIRECT);
-    const BUFFER_STATE *buffer_state = GetBufferState(buffer);
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    bool skip = ValidateCmdDrawType(*cb_state, false, VK_PIPELINE_BIND_POINT_COMPUTE, CMD_DISPATCHINDIRECT);
+    const auto buffer_state = Get<BUFFER_STATE>(buffer);
+    skip |= ValidateIndirectCmd(*cb_state, *buffer_state, CMD_DISPATCHINDIRECT);
     if ((offset + sizeof(VkDispatchIndirectCommand)) > buffer_state->createInfo.size) {
         skip |= LogError(commandBuffer, "VUID-vkCmdDispatchIndirect-offset-00407",
                          "vkCmdDispatchIndirect(): The sum of offset and the size of VkDispatchIndirectCommand is greater than the "
@@ -1021,15 +1077,17 @@ bool CoreChecks::ValidateCmdDrawIndirectCount(VkCommandBuffer commandBuffer, VkB
     skip |= ValidateCmdDrawStrideWithStruct(commandBuffer, "VUID-vkCmdDrawIndirectCount-stride-03110", stride,
                                             "VkDrawIndirectCommand", sizeof(VkDrawIndirectCommand));
     if (maxDrawCount > 1) {
-        const BUFFER_STATE *buffer_state = GetBufferState(buffer);
+        const auto buffer_state = Get<BUFFER_STATE>(buffer);
         skip |= ValidateCmdDrawStrideWithBuffer(commandBuffer, "VUID-vkCmdDrawIndirectCount-maxDrawCount-03111", stride,
                                                 "VkDrawIndirectCommand", sizeof(VkDrawIndirectCommand), maxDrawCount, offset,
                                                 buffer_state);
     }
 
-    skip |= ValidateCmdDrawType(commandBuffer, false, VK_PIPELINE_BIND_POINT_GRAPHICS, cmd_type);
-    const BUFFER_STATE *count_buffer_state = GetBufferState(countBuffer);
-    skip |= ValidateIndirectCmd(commandBuffer, buffer, cmd_type);
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    skip |= ValidateCmdDrawType(*cb_state, false, VK_PIPELINE_BIND_POINT_GRAPHICS, cmd_type);
+    const auto buffer_state = Get<BUFFER_STATE>(buffer);
+    skip |= ValidateIndirectCmd(*cb_state, *buffer_state, cmd_type);
+    const auto count_buffer_state = Get<BUFFER_STATE>(countBuffer);
     skip |= ValidateMemoryIsBoundToBuffer(count_buffer_state, apiName, "VUID-vkCmdDrawIndirectCount-countBuffer-02714");
     skip |=
         ValidateBufferUsageFlags(count_buffer_state, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, true,
@@ -1065,16 +1123,16 @@ bool CoreChecks::ValidateCmdDrawIndexedIndirectCount(VkCommandBuffer commandBuff
     }
     skip |= ValidateCmdDrawStrideWithStruct(commandBuffer, "VUID-vkCmdDrawIndexedIndirectCount-stride-03142", stride,
                                             "VkDrawIndexedIndirectCommand", sizeof(VkDrawIndexedIndirectCommand));
+    const auto buffer_state = Get<BUFFER_STATE>(buffer);
     if (maxDrawCount > 1) {
-        const BUFFER_STATE *buffer_state = GetBufferState(buffer);
         skip |= ValidateCmdDrawStrideWithBuffer(commandBuffer, "VUID-vkCmdDrawIndexedIndirectCount-maxDrawCount-03143", stride,
                                                 "VkDrawIndexedIndirectCommand", sizeof(VkDrawIndexedIndirectCommand), maxDrawCount,
                                                 offset, buffer_state);
     }
-
-    skip |= ValidateCmdDrawType(commandBuffer, true, VK_PIPELINE_BIND_POINT_GRAPHICS, cmd_type);
-    const BUFFER_STATE *count_buffer_state = GetBufferState(countBuffer);
-    skip |= ValidateIndirectCmd(commandBuffer, buffer, cmd_type);
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    skip |= ValidateCmdDrawType(*cb_state, true, VK_PIPELINE_BIND_POINT_GRAPHICS, cmd_type);
+    skip |= ValidateIndirectCmd(*cb_state, *buffer_state, cmd_type);
+    const auto count_buffer_state = Get<BUFFER_STATE>(countBuffer);
     skip |= ValidateMemoryIsBoundToBuffer(count_buffer_state, apiName, "VUID-vkCmdDrawIndexedIndirectCount-countBuffer-02714");
     skip |= ValidateBufferUsageFlags(count_buffer_state, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, true,
                                      "VUID-vkCmdDrawIndexedIndirectCount-countBuffer-02715", apiName,
@@ -1111,9 +1169,11 @@ bool CoreChecks::PreCallValidateCmdDrawIndirectByteCountEXT(VkCommandBuffer comm
                          "%s: VkPhysicalDeviceTransformFeedbackPropertiesEXT::transformFeedbackDraw is not supported",
                          "vkCmdDrawIndirectByteCountEXT()");
     }
-    skip |= ValidateCmdDrawInstance(commandBuffer, instanceCount, firstInstance, CMD_DRAWINDIRECTBYTECOUNTEXT);
-    skip |= ValidateCmdDrawType(commandBuffer, false, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWINDIRECTBYTECOUNTEXT);
-    skip |= ValidateIndirectCmd(commandBuffer, counterBuffer, CMD_DRAWINDIRECTBYTECOUNTEXT);
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    skip |= ValidateCmdDrawInstance(*cb_state, instanceCount, firstInstance, CMD_DRAWINDIRECTBYTECOUNTEXT);
+    skip |= ValidateCmdDrawType(*cb_state, false, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWINDIRECTBYTECOUNTEXT);
+    const auto counter_buffer_state = Get<BUFFER_STATE>(counterBuffer);
+    skip |= ValidateIndirectCmd(*cb_state, *counter_buffer_state, CMD_DRAWINDIRECTBYTECOUNTEXT);
     return skip;
 }
 
@@ -1124,30 +1184,30 @@ bool CoreChecks::PreCallValidateCmdTraceRaysNV(VkCommandBuffer commandBuffer, Vk
                                                VkDeviceSize hitShaderBindingStride, VkBuffer callableShaderBindingTableBuffer,
                                                VkDeviceSize callableShaderBindingOffset, VkDeviceSize callableShaderBindingStride,
                                                uint32_t width, uint32_t height, uint32_t depth) const {
-    bool skip = ValidateCmdDrawType(commandBuffer, true, VK_PIPELINE_BIND_POINT_RAY_TRACING_NV, CMD_TRACERAYSNV);
-    const CMD_BUFFER_STATE *cb_state = GetCBState(commandBuffer);
-    auto callable_shader_buffer_state = const_cast<BUFFER_STATE *>(GetBufferState(callableShaderBindingTableBuffer));
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    bool skip = ValidateCmdDrawType(*cb_state, true, VK_PIPELINE_BIND_POINT_RAY_TRACING_NV, CMD_TRACERAYSNV);
+    auto callable_shader_buffer_state = Get<BUFFER_STATE>(callableShaderBindingTableBuffer);
     if (callable_shader_buffer_state && callableShaderBindingOffset >= callable_shader_buffer_state->createInfo.size) {
         skip |= LogError(commandBuffer, "VUID-vkCmdTraceRaysNV-callableShaderBindingOffset-02461",
                          "vkCmdTraceRaysNV: callableShaderBindingOffset %" PRIu64
                          " must be less than the size of callableShaderBindingTableBuffer %" PRIu64 " .",
                          callableShaderBindingOffset, callable_shader_buffer_state->createInfo.size);
     }
-    auto hit_shader_buffer_state = const_cast<BUFFER_STATE *>(GetBufferState(hitShaderBindingTableBuffer));
+    auto hit_shader_buffer_state = Get<BUFFER_STATE>(hitShaderBindingTableBuffer);
     if (hit_shader_buffer_state && hitShaderBindingOffset >= hit_shader_buffer_state->createInfo.size) {
         skip |= LogError(commandBuffer, "VUID-vkCmdTraceRaysNV-hitShaderBindingOffset-02459",
                          "vkCmdTraceRaysNV: hitShaderBindingOffset %" PRIu64
                          " must be less than the size of hitShaderBindingTableBuffer %" PRIu64 " .",
                          hitShaderBindingOffset, hit_shader_buffer_state->createInfo.size);
     }
-    auto miss_shader_buffer_state = const_cast<BUFFER_STATE *>(GetBufferState(missShaderBindingTableBuffer));
+    auto miss_shader_buffer_state = Get<BUFFER_STATE>(missShaderBindingTableBuffer);
     if (miss_shader_buffer_state && missShaderBindingOffset >= miss_shader_buffer_state->createInfo.size) {
         skip |= LogError(commandBuffer, "VUID-vkCmdTraceRaysNV-missShaderBindingOffset-02457",
                          "vkCmdTraceRaysNV: missShaderBindingOffset %" PRIu64
                          " must be less than the size of missShaderBindingTableBuffer %" PRIu64 " .",
                          missShaderBindingOffset, miss_shader_buffer_state->createInfo.size);
     }
-    auto raygen_shader_buffer_state = const_cast<BUFFER_STATE *>(GetBufferState(raygenShaderBindingTableBuffer));
+    auto raygen_shader_buffer_state = Get<BUFFER_STATE>(raygenShaderBindingTableBuffer);
     if (raygenShaderBindingOffset >= raygen_shader_buffer_state->createInfo.size) {
         skip |= LogError(commandBuffer, "VUID-vkCmdTraceRaysNV-raygenShaderBindingOffset-02455",
                          "vkCmdTraceRaysNV: raygenShaderBindingOffset %" PRIu64
@@ -1170,8 +1230,8 @@ bool CoreChecks::PreCallValidateCmdTraceRaysKHR(VkCommandBuffer commandBuffer,
                                                 const VkStridedDeviceAddressRegionKHR *pHitShaderBindingTable,
                                                 const VkStridedDeviceAddressRegionKHR *pCallableShaderBindingTable, uint32_t width,
                                                 uint32_t height, uint32_t depth) const {
-    bool skip = ValidateCmdDrawType(commandBuffer, true, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, CMD_TRACERAYSKHR);
-    const CMD_BUFFER_STATE *cb_state = GetCBState(commandBuffer);
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    bool skip = ValidateCmdDrawType(*cb_state, true, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, CMD_TRACERAYSKHR);
     const auto lv_bind_point = ConvertToLvlBindPoint(VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR);
     const PIPELINE_STATE *pipeline_state = cb_state->lastBound[lv_bind_point].pipeline_state;
     if (!pipeline_state || (pipeline_state && !pipeline_state->pipeline())) {
@@ -1227,10 +1287,10 @@ bool CoreChecks::PreCallValidateCmdTraceRaysIndirectKHR(VkCommandBuffer commandB
                                                         const VkStridedDeviceAddressRegionKHR *pHitShaderBindingTable,
                                                         const VkStridedDeviceAddressRegionKHR *pCallableShaderBindingTable,
                                                         VkDeviceAddress indirectDeviceAddress) const {
-    bool skip = ValidateCmdDrawType(commandBuffer, true, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, CMD_TRACERAYSINDIRECTKHR);
-    const CMD_BUFFER_STATE *cb_state = GetCBState(commandBuffer);
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    bool skip = ValidateCmdDrawType(*cb_state, true, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, CMD_TRACERAYSINDIRECTKHR);
     const auto lv_bind_point = ConvertToLvlBindPoint(VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR);
-    const PIPELINE_STATE *pipeline_state = cb_state->lastBound[lv_bind_point].pipeline_state;
+    const auto *pipeline_state = cb_state->lastBound[lv_bind_point].pipeline_state;
     if (!pipeline_state || (pipeline_state && !pipeline_state->pipeline())) {
         skip |=
             LogError(device, "VUID-vkCmdTraceRaysIndirectKHR-None-02700",
@@ -1280,15 +1340,17 @@ bool CoreChecks::PreCallValidateCmdTraceRaysIndirectKHR(VkCommandBuffer commandB
 }
 
 bool CoreChecks::PreCallValidateCmdDrawMeshTasksNV(VkCommandBuffer commandBuffer, uint32_t taskCount, uint32_t firstTask) const {
-    bool skip = ValidateCmdDrawType(commandBuffer, false, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWMESHTASKSNV);
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    bool skip = ValidateCmdDrawType(*cb_state, false, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWMESHTASKSNV);
     return skip;
 }
 
 bool CoreChecks::PreCallValidateCmdDrawMeshTasksIndirectNV(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
                                                            uint32_t drawCount, uint32_t stride) const {
-    bool skip = ValidateCmdDrawType(commandBuffer, false, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWMESHTASKSINDIRECTNV);
-    const BUFFER_STATE *buffer_state = GetBufferState(buffer);
-    skip |= ValidateIndirectCmd(commandBuffer, buffer, CMD_DRAWMESHTASKSINDIRECTNV);
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    bool skip = ValidateCmdDrawType(*cb_state, false, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWMESHTASKSINDIRECTNV);
+    const auto buffer_state = Get<BUFFER_STATE>(buffer);
+    skip |= ValidateIndirectCmd(*cb_state, *buffer_state, CMD_DRAWMESHTASKSINDIRECTNV);
     if (drawCount > 1) {
         skip |= ValidateCmdDrawStrideWithBuffer(commandBuffer, "VUID-vkCmdDrawMeshTasksIndirectNV-drawCount-02157", stride,
                                                 "VkDrawMeshTasksIndirectCommandNV", sizeof(VkDrawMeshTasksIndirectCommandNV),
@@ -1300,10 +1362,11 @@ bool CoreChecks::PreCallValidateCmdDrawMeshTasksIndirectNV(VkCommandBuffer comma
 bool CoreChecks::PreCallValidateCmdDrawMeshTasksIndirectCountNV(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
                                                                 VkBuffer countBuffer, VkDeviceSize countBufferOffset,
                                                                 uint32_t maxDrawCount, uint32_t stride) const {
-    bool skip = ValidateCmdDrawType(commandBuffer, false, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWMESHTASKSINDIRECTCOUNTNV);
-    const BUFFER_STATE *buffer_state = GetBufferState(buffer);
-    const BUFFER_STATE *count_buffer_state = GetBufferState(countBuffer);
-    skip |= ValidateIndirectCmd(commandBuffer, buffer, CMD_DRAWMESHTASKSINDIRECTCOUNTNV);
+    const auto cb_state = Get<CMD_BUFFER_STATE>(commandBuffer);
+    bool skip = ValidateCmdDrawType(*cb_state, false, VK_PIPELINE_BIND_POINT_GRAPHICS, CMD_DRAWMESHTASKSINDIRECTCOUNTNV);
+    const auto buffer_state = Get<BUFFER_STATE>(buffer);
+    const auto count_buffer_state = Get<BUFFER_STATE>(countBuffer);
+    skip |= ValidateIndirectCmd(*cb_state, *buffer_state, CMD_DRAWMESHTASKSINDIRECTCOUNTNV);
     skip |= ValidateMemoryIsBoundToBuffer(count_buffer_state, "vkCmdDrawMeshTasksIndirectCountNV()",
                                           "VUID-vkCmdDrawMeshTasksIndirectCountNV-countBuffer-02714");
     skip |= ValidateBufferUsageFlags(count_buffer_state, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, true,

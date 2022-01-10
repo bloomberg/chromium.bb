@@ -41,6 +41,10 @@ class ChromeBrowserDelegate : public cef::BrowserDelegate {
  public:
   ChromeBrowserDelegate(Browser* browser,
                         const CefBrowserCreateParams& create_params);
+
+  ChromeBrowserDelegate(const ChromeBrowserDelegate&) = delete;
+  ChromeBrowserDelegate& operator=(const ChromeBrowserDelegate&) = delete;
+
   ~ChromeBrowserDelegate() override;
 
   // cef::BrowserDelegate methods:
@@ -66,7 +70,7 @@ class ChromeBrowserDelegate : public cef::BrowserDelegate {
       content::WebContents* source,
       const content::OpenURLParams& params) override;
   void LoadingStateChanged(content::WebContents* source,
-                           bool to_different_document) override;
+                           bool should_show_loading_ui) override;
   void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
   bool DidAddMessageToConsole(content::WebContents* source,
                               blink::mojom::ConsoleMessageLevel log_level,
@@ -105,8 +109,6 @@ class ChromeBrowserDelegate : public cef::BrowserDelegate {
 
   // Used when creating a new browser host.
   const CefBrowserCreateParams create_params_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserDelegate);
 };
 
 #endif  // CEF_LIBCEF_BROWSER_CHROME_CHROME_BROWSER_DELEGATE_H_

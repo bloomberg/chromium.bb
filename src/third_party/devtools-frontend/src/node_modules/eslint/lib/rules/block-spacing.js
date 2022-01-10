@@ -17,7 +17,6 @@ module.exports = {
 
         docs: {
             description: "disallow or enforce spaces inside of blocks after opening block and before closing block",
-            category: "Stylistic Issues",
             recommended: false,
             url: "https://eslint.org/docs/rules/block-spacing"
         },
@@ -41,7 +40,7 @@ module.exports = {
 
         /**
          * Gets the open brace token from a given node.
-         * @param {ASTNode} node A BlockStatement/SwitchStatement node to get.
+         * @param {ASTNode} node A BlockStatement/StaticBlock/SwitchStatement node to get.
          * @returns {Token} The token of the open brace.
          */
         function getOpenBrace(node) {
@@ -51,6 +50,12 @@ module.exports = {
                 }
                 return sourceCode.getLastToken(node, 1);
             }
+
+            if (node.type === "StaticBlock") {
+                return sourceCode.getFirstToken(node, { skip: 1 }); // skip the `static` token
+            }
+
+            // "BlockStatement"
             return sourceCode.getFirstToken(node);
         }
 
@@ -73,8 +78,8 @@ module.exports = {
         }
 
         /**
-         * Reports invalid spacing style inside braces.
-         * @param {ASTNode} node A BlockStatement/SwitchStatement node to get.
+         * Checks and reports invalid spacing style inside braces.
+         * @param {ASTNode} node A BlockStatement/StaticBlock/SwitchStatement node to check.
          * @returns {void}
          */
         function checkSpacingInsideBraces(node) {
@@ -158,6 +163,7 @@ module.exports = {
 
         return {
             BlockStatement: checkSpacingInsideBraces,
+            StaticBlock: checkSpacingInsideBraces,
             SwitchStatement: checkSpacingInsideBraces
         };
     }

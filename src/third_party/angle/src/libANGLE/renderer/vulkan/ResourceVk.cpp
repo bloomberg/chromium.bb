@@ -23,12 +23,15 @@ angle::Result FinishRunningCommands(ContextVk *contextVk, Serial serial)
 }
 
 template <typename T>
-angle::Result WaitForIdle(ContextVk *contextVk, const char *debugMessage, T *resource)
+angle::Result WaitForIdle(ContextVk *contextVk,
+                          T *resource,
+                          const char *debugMessage,
+                          RenderPassClosureReason reason)
 {
     // If there are pending commands for the resource, flush them.
     if (resource->usedInRecordedCommands())
     {
-        ANGLE_TRY(contextVk->flushImpl(nullptr));
+        ANGLE_TRY(contextVk->flushImpl(nullptr, reason));
     }
 
     // Make sure the driver is done with the resource.
@@ -36,7 +39,7 @@ angle::Result WaitForIdle(ContextVk *contextVk, const char *debugMessage, T *res
     {
         if (debugMessage)
         {
-            ANGLE_PERF_WARNING(contextVk->getDebug(), GL_DEBUG_SEVERITY_HIGH, debugMessage);
+            ANGLE_VK_PERF_WARNING(contextVk, GL_DEBUG_SEVERITY_HIGH, "%s", debugMessage);
         }
         ANGLE_TRY(resource->finishRunningCommands(contextVk));
     }
@@ -58,6 +61,12 @@ Resource::Resource(Resource &&other) : Resource()
     mUse = std::move(other.mUse);
 }
 
+Resource &Resource::operator=(Resource &&rhs)
+{
+    std::swap(mUse, rhs.mUse);
+    return *this;
+}
+
 Resource::~Resource()
 {
     mUse.release();
@@ -68,9 +77,11 @@ angle::Result Resource::finishRunningCommands(ContextVk *contextVk)
     return FinishRunningCommands(contextVk, mUse.getSerial());
 }
 
-angle::Result Resource::waitForIdle(ContextVk *contextVk, const char *debugMessage)
+angle::Result Resource::waitForIdle(ContextVk *contextVk,
+                                    const char *debugMessage,
+                                    RenderPassClosureReason reason)
 {
-    return WaitForIdle(contextVk, debugMessage, this);
+    return WaitForIdle(contextVk, this, debugMessage, reason);
 }
 
 // Resource implementation.
@@ -104,9 +115,11 @@ angle::Result ReadWriteResource::finishGPUWriteCommands(ContextVk *contextVk)
     return FinishRunningCommands(contextVk, mReadWriteUse.getSerial());
 }
 
-angle::Result ReadWriteResource::waitForIdle(ContextVk *contextVk, const char *debugMessage)
+angle::Result ReadWriteResource::waitForIdle(ContextVk *contextVk,
+                                             const char *debugMessage,
+                                             RenderPassClosureReason reason)
 {
-    return WaitForIdle(contextVk, debugMessage, this);
+    return WaitForIdle(contextVk, this, debugMessage, reason);
 }
 
 // SharedGarbage implementation.
@@ -133,7 +146,9 @@ SharedGarbage &SharedGarbage::operator=(SharedGarbage &&rhs)
 bool SharedGarbage::destroyIfComplete(RendererVk *renderer, Serial completedSerial)
 {
     if (mLifetime.isCurrentlyInUse(completedSerial))
+    {
         return false;
+    }
 
     for (GarbageObject &object : mGarbage)
     {

@@ -23,6 +23,14 @@ At this time it is used to generate:
 
 Internally `dawn.json` is a dictionary from the "canonical name" of things to their definition. The "canonical name" is a space-separated (mostly) lower-case version of the name that's parsed into a `Name` Python object. Then that name can be turned into various casings with `.CamelCase()` `.SNAKE_CASE()`, etc. When `dawn.json` things reference each other, it is always via these "canonical names".
 
+The `"_metadata"` key in the JSON file is used by flexible templates for generating various Web Standard API that contains following metadata:
+
+ - `"api"` a string, the name of the Web API
+ - `"namespace"` a string, the namespace of C++ wrapper
+ - `"c_prefix"` (optional) a string, the prefix of C function and data type, it will default to upper-case of `"namespace"` if it's not provided.
+  - `"proc_table_prefix"` a string, the prefix of proc table.
+ - `"copyright_year"` (optional) a string, templates will use the the year of copyright.
+
 The basic schema is that every entry is a thing with a `"category"` key what determines the sub-schema to apply to that thing. Categories and their sub-shema are defined below. Several parts of the schema use the concept of "record" which is a list of "record members" which are a combination of a type, a name and other metadata. For example the list of arguments of a function is a record. The list of structure members is a record. This combined concept is useful for the dawn_wire generator to generate code for structure and function calls in a very similar way.
 
 Most items and sub-items can include a list of `"tags"`, which, if specified, conditionally includes the item if any of its tags appears in the `enabled_tags` configuration passed to `parse_json`. This is used to include and exclude various items for Dawn, Emscripten, or upstream header variants. Tags are applied in the "parse_json" step ([rather than later](https://docs.google.com/document/d/1fBniVOxx3-hQbxHMugEPcQsaXaKBZYVO8yG9iXJp-fU/edit?usp=sharing)): this has the benefit of automatically catching when, for a particular tag configuration, an included item references an excluded item.
@@ -30,7 +38,7 @@ Most items and sub-items can include a list of `"tags"`, which, if specified, co
 A **record** is a list of **record members**, each of which is a dictionary with the following schema:
  - `"name"` a string
  - `"type"` a string, the name of the base type for this member
- - `"annotation"` a string, default to "value". Define the C annotation to apply to the base type. Allowed annotations are `"value"` (the default), `"*"`, `"const*"`, `"const*const*"`
+ - `"annotation"` a string, default to "value". Define the C annotation to apply to the base type. Allowed annotations are `"value"` (the default), `"*"`, `"const*"`
  - `"length"` (default to 1 if not set), a string. Defines length of the array pointed to for pointer arguments. If not set the length is implicitly 1 (so not an array), but otherwise it can be set to the name of another member in the same record that will contain the length of the array (this is heavily used in the `fooCount` `foos` pattern in the API). As a special case `"strlen"` can be used for `const char*` record members to denote that the length should be determined with `strlen`.
  - `"optional"` (default to false) a boolean that says whether this member is optional. Member records can be optional if they are pointers (otherwise dawn_wire will always try to dereference them), objects (otherwise dawn_wire will always try to encode their ID and crash), or if they have a `"default"` key. Optional pointers and objects will always default to `nullptr`.
  - `"default"` (optional) a number or string. If set the record member will use that value as default value. Depending on the member's category it can be a number, a string containing a number, or the name of an enum/bitmask value.
@@ -50,7 +58,8 @@ A **record** is a list of **record members**, each of which is a dictionary with
 
 **`"bitmask"`** an `uint32_t`-based bitmask. It is similar to **`"enum"`** but can be output differently.
 
-**`"callback"`** defines a function pointer type that can be used by other things (usually callbacks passed to method calls)
+**`"function pointer"`** defines a function pointer type that can be used by other things.
+ - `"returns"` a string that's the name of the return type
  - `"args"` a **record**, so an array of **record members**
 
 **`"structure"`**
@@ -63,6 +72,14 @@ A **record** is a list of **record members**, each of which is a dictionary with
    - `"name"` a string
    - `"return_type"` (default to no return type) a string that's the name of the return type.
    - `"arguments"` a **record**, so an array of **record members**
+
+**`"constant"`**
+ - `"type"`: a string, the name of the base data type
+ - `"value"`: a string, the value is defined with preprocessor macro
+
+**`"function"`** declares a function that not belongs to any class.
+ - `"returns"` a string that's the name of the return type
+ - `"args"` a **record**, so an array of **record members**
 
 ## Dawn "wire" generators
 

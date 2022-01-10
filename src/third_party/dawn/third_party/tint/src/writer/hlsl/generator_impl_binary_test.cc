@@ -328,26 +328,14 @@ TEST_F(HlslGeneratorImplTest_Binary, If_WithLogical) {
   Global("b", ty.bool_(), ast::StorageClass::kPrivate);
   Global("c", ty.bool_(), ast::StorageClass::kPrivate);
 
-  auto* body = Block(Return(3));
-  auto* else_stmt = create<ast::ElseStatement>(nullptr, body);
-
-  body = Block(Return(2));
-  auto* else_if_stmt = create<ast::ElseStatement>(
-      create<ast::BinaryExpression>(ast::BinaryOp::kLogicalOr, Expr("b"),
-                                    Expr("c")),
-      body);
-
-  body = Block(Return(1));
-
-  auto* expr = create<ast::IfStatement>(
-      create<ast::BinaryExpression>(ast::BinaryOp::kLogicalAnd, Expr("a"),
-                                    Expr("b")),
-      body,
-      ast::ElseStatementList{
-          else_if_stmt,
-          else_stmt,
-      });
-  Func("func", {}, ty.i32(), {WrapInStatement(expr), Return(0)});
+  auto* expr = If(create<ast::BinaryExpression>(ast::BinaryOp::kLogicalAnd,
+                                                Expr("a"), Expr("b")),
+                  Block(Return(1)),
+                  Else(create<ast::BinaryExpression>(ast::BinaryOp::kLogicalOr,
+                                                     Expr("b"), Expr("c")),
+                       Block(Return(2))),
+                  Else(Block(Return(3))));
+  Func("func", {}, ty.i32(), {WrapInStatement(expr)});
 
   GeneratorImpl& gen = Build();
 
@@ -462,36 +450,6 @@ if (!tint_tmp) {
 }
 bool a = (tint_tmp);
 )");
-}
-
-TEST_F(HlslGeneratorImplTest_Binary, Bitcast_WithLogical) {
-  // as<i32>(a && (b || c))
-
-  Global("a", ty.bool_(), ast::StorageClass::kPrivate);
-  Global("b", ty.bool_(), ast::StorageClass::kPrivate);
-  Global("c", ty.bool_(), ast::StorageClass::kPrivate);
-
-  auto* expr = create<ast::BitcastExpression>(
-      ty.i32(), create<ast::BinaryExpression>(
-                    ast::BinaryOp::kLogicalAnd, Expr("a"),
-                    create<ast::BinaryExpression>(ast::BinaryOp::kLogicalOr,
-                                                  Expr("b"), Expr("c"))));
-  WrapInFunction(expr);
-
-  GeneratorImpl& gen = Build();
-
-  std::stringstream out;
-  ASSERT_TRUE(gen.EmitExpression(out, expr)) << gen.error();
-  EXPECT_EQ(gen.result(), R"(bool tint_tmp = a;
-if (tint_tmp) {
-  bool tint_tmp_1 = b;
-  if (!tint_tmp_1) {
-    tint_tmp_1 = c;
-  }
-  tint_tmp = (tint_tmp_1);
-}
-)");
-  EXPECT_EQ(out.str(), R"(asint((tint_tmp)))");
 }
 
 TEST_F(HlslGeneratorImplTest_Binary, Call_WithLogical) {

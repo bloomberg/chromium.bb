@@ -156,7 +156,9 @@ namespace dawn_native { namespace metal {
 
         bool IsMetalSupported() {
             // Metal was first introduced in macOS 10.11
-            return IsMacOSVersionAtLeast(10, 11);
+            // WebGPU is targeted at macOS 10.12+
+            // TODO(dawn:1181): Dawn native should allow non-conformant WebGPU on macOS 10.11
+            return IsMacOSVersionAtLeast(10, 12);
         }
 #elif defined(DAWN_PLATFORM_IOS)
         MaybeError GetDevicePCIInfo(id<MTLDevice> device, PCIIDs* ids) {
@@ -172,7 +174,7 @@ namespace dawn_native { namespace metal {
 #    error "Unsupported Apple platform."
 #endif
 
-        bool IsCounterSamplingBoundarySupport(id<MTLDevice> device)
+        DAWN_NOINLINE bool IsCounterSamplingBoundarySupport(id<MTLDevice> device)
             API_AVAILABLE(macos(11.0), ios(14.0)) {
             bool isBlitBoundarySupported =
                 [device supportsCounterSampling:MTLCounterSamplingPointAtBlitBoundary];
@@ -185,9 +187,9 @@ namespace dawn_native { namespace metal {
                    isDrawBoundarySupported;
         }
 
-        bool IsGPUCounterSupported(id<MTLDevice> device,
-                                   MTLCommonCounterSet counterSetName,
-                                   std::vector<MTLCommonCounter> counters)
+        DAWN_NOINLINE bool IsGPUCounterSupported(id<MTLDevice> device,
+                                                 MTLCommonCounterSet counterSetName,
+                                                 std::vector<MTLCommonCounter> counterNames)
             API_AVAILABLE(macos(10.15), ios(14.0)) {
             // MTLDevice’s counterSets property declares which counter sets it supports. Check
             // whether it's available on the device before requesting a counter set.
@@ -207,13 +209,15 @@ namespace dawn_native { namespace metal {
             // A GPU might support a counter set, but only support a subset of the counters in that
             // set, check if the counter set supports all specific counters we need. Return false
             // if there is a counter unsupported.
-            std::vector<NSString*> supportedCounters;
-            for (id<MTLCounter> counter in counterSet.counters) {
-                supportedCounters.push_back(counter.name);
-            }
-            for (const auto& counterName : counters) {
-                if (std::find(supportedCounters.begin(), supportedCounters.end(), counterName) ==
-                    supportedCounters.end()) {
+            for (MTLCommonCounter counterName : counterNames) {
+                bool found = false;
+                for (id<MTLCounter> counter in counterSet.counters) {
+                    if ([counter.name caseInsensitiveCompare:counterName] == NSOrderedSame) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
                     return false;
                 }
             }
@@ -273,7 +277,8 @@ namespace dawn_native { namespace metal {
         }
 
       private:
-        ResultOrError<DeviceBase*> CreateDeviceImpl(const DeviceDescriptor* descriptor) override {
+        ResultOrError<DeviceBase*> CreateDeviceImpl(
+            const DawnDeviceDescriptor* descriptor) override {
             return Device::Create(this, mDevice, descriptor);
         }
 
@@ -543,6 +548,19 @@ namespace dawn_native { namespace metal {
     }
 
     std::vector<std::unique_ptr<AdapterBase>> Backend::DiscoverDefaultAdapters() {
+        AdapterDiscoveryOptions options;
+        auto result = DiscoverAdapters(&options);
+        if (result.IsError()) {
+            GetInstance()->ConsumedError(result.AcquireError());
+            return {};
+        }
+        return result.AcquireSuccess();
+    }
+
+    ResultOrError<std::vector<std::unique_ptr<AdapterBase>>> Backend::DiscoverAdapters(
+        const AdapterDiscoveryOptionsBase* optionsBase) {
+        ASSERT(optionsBase->backendType == WGPUBackendType_Metal);
+
         std::vector<std::unique_ptr<AdapterBase>> adapters;
         BOOL supportedVersion = NO;
 #if defined(DAWN_PLATFORM_MACOS)

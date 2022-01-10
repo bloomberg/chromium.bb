@@ -13,8 +13,8 @@
 #include <utility>
 
 #include "base/containers/adapters.h"
+#include "base/containers/contains.h"
 #include "base/i18n/case_conversion.h"
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -158,7 +158,8 @@ void MenuItemView::ChildPreferredSizeChanged(View* child) {
 void MenuItemView::OnThemeChanged() {
   View::OnThemeChanged();
   // Force updating as the colors may have changed.
-  UpdateSelectionBasedState(ShouldPaintAsSelected(PaintMode::kNormal));
+  if (!IsScheduledForDeletion())
+    UpdateSelectionBasedState(ShouldPaintAsSelected(PaintMode::kNormal));
 }
 
 void MenuItemView::ViewHierarchyChanged(
@@ -554,7 +555,7 @@ void MenuItemView::SetIcon(const ui::ImageModel& icon) {
 
 void MenuItemView::SetIconView(std::unique_ptr<ImageView> icon_view) {
   if (icon_view_) {
-    RemoveChildViewT(icon_view_);
+    RemoveChildViewT(icon_view_.get());
     icon_view_ = nullptr;
   }
 
@@ -1481,8 +1482,10 @@ bool MenuItemView::HasChecksOrRadioButtons() const {
 }
 
 void MenuItemView::UpdateSelectionBasedStateIfChanged(PaintMode mode) {
-  // Selection state depends upon NativeTheme.
-  if (!GetWidget())
+  // Selection state depends upon NativeTheme. Selection based state could also
+  // depend on the menu model so avoid the update if the item is scheduled to be
+  // deleted.
+  if (!GetWidget() || IsScheduledForDeletion())
     return;
 
   const bool paint_as_selected = ShouldPaintAsSelected(mode);
@@ -1523,6 +1526,12 @@ bool MenuItemView::ShouldPaintAsSelected(PaintMode mode) const {
   return (parent_menu_item_ && mode == PaintMode::kNormal && IsSelected() &&
           parent_menu_item_->GetSubmenu()->GetShowSelection(this) &&
           (NonIconChildViewsCount() == 0));
+}
+
+bool MenuItemView::IsScheduledForDeletion() const {
+  const MenuItemView* parent = GetParentMenuItem();
+  return parent && (base::Contains(parent->removed_items_, this) ||
+                    parent->IsScheduledForDeletion());
 }
 
 BEGIN_METADATA(MenuItemView, View)

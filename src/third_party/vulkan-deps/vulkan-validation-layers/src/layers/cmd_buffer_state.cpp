@@ -253,14 +253,16 @@ const IMAGE_VIEW_STATE *CMD_BUFFER_STATE::GetActiveAttachmentImageViewState(uint
 }
 
 void CMD_BUFFER_STATE::AddChild(BASE_NODE *child_node) {
+    assert(child_node);
     if (child_node->AddParent(this)) {
-        object_bindings.insert(child_node->Handle());
+        object_bindings.insert(child_node);
     }
 }
 
 void CMD_BUFFER_STATE::RemoveChild(BASE_NODE *child_node) {
+    assert(child_node);
     child_node->RemoveParent(this);
-    object_bindings.erase(child_node->Handle());
+    object_bindings.erase(child_node);
 }
 
 // Reset the command buffer state
@@ -328,9 +330,7 @@ void CMD_BUFFER_STATE::Reset() {
 
     // Remove object bindings
     for (const auto &obj : object_bindings) {
-        if (obj.node) {
-            obj.node->RemoveParent(this);
-        }
+        obj->RemoveParent(this);
     }
     object_bindings.clear();
 
@@ -358,9 +358,8 @@ void CMD_BUFFER_STATE::Reset() {
     transform_feedback_active = false;
 
     // Remove object bindings
-    for (const auto &obj : object_bindings) {
-        BASE_NODE *base_obj = obj.node;
-        if (base_obj) RemoveChild(base_obj);
+    for (auto *base_obj : object_bindings) {
+        RemoveChild(base_obj);
     }
     object_bindings.clear();
 
@@ -380,7 +379,7 @@ void CMD_BUFFER_STATE::IncrementResources() {
     //  all the corresponding cases are verified to cause CB_INVALID state and the CB_INVALID state
     //  should then be flagged prior to calling this function
     for (auto event : writeEventsBeforeWait) {
-        auto event_state = dev_data->GetEventState(event);
+        auto event_state = dev_data->Get<EVENT_STATE>(event);
         if (event_state) event_state->write_in_use++;
     }
 }
@@ -451,29 +450,42 @@ void CMD_BUFFER_STATE::Destroy() {
     BASE_NODE::Destroy();
 }
 
-void CMD_BUFFER_STATE::NotifyInvalidate(const LogObjectList &invalid_handles, bool unlink) {
+void CMD_BUFFER_STATE::NotifyInvalidate(const BASE_NODE::NodeList &invalid_nodes, bool unlink) {
     if (state == CB_RECORDING) {
         state = CB_INVALID_INCOMPLETE;
     } else if (state == CB_RECORDED) {
         state = CB_INVALID_COMPLETE;
     }
-    assert(!invalid_handles.object_list.empty());
-    broken_bindings.emplace(invalid_handles.object_list[0], invalid_handles);
+    assert(!invalid_nodes.empty());
+    LogObjectList log_list;
+    for (auto *obj : invalid_nodes) {
+        log_list.object_list.emplace_back(obj->Handle());
+    }
+    broken_bindings.emplace(invalid_nodes[0]->Handle(), log_list);
 
     if (unlink) {
-        for (auto &obj : invalid_handles.object_list) {
+        for (auto *obj : invalid_nodes) {
             object_bindings.erase(obj);
-            if (obj.type == kVulkanObjectTypeCommandBuffer) {
-                linkedCommandBuffers.erase(static_cast<CMD_BUFFER_STATE *>(obj.node));
+            switch (obj->Type()) {
+                case kVulkanObjectTypeCommandBuffer:
+                    linkedCommandBuffers.erase(static_cast<CMD_BUFFER_STATE *>(obj));
+                    break;
+                case kVulkanObjectTypeImage:
+                    image_layout_map.erase(static_cast<IMAGE_STATE *>(obj));
+                    break;
+                default:
+                    break;
             }
         }
     }
-    BASE_NODE::NotifyInvalidate(invalid_handles, unlink);
+    BASE_NODE::NotifyInvalidate(invalid_nodes, unlink);
 }
 
+const CommandBufferImageLayoutMap& CMD_BUFFER_STATE::GetImageSubresourceLayoutMap() const { return image_layout_map; }
+
 // The const variant only need the image as it is the key for the map
-const ImageSubresourceLayoutMap *CMD_BUFFER_STATE::GetImageSubresourceLayoutMap(VkImage image) const {
-    auto it = image_layout_map.find(image);
+const ImageSubresourceLayoutMap *CMD_BUFFER_STATE::GetImageSubresourceLayoutMap(const IMAGE_STATE &image_state) const {
+    auto it = image_layout_map.find(&image_state);
     if (it == image_layout_map.cend()) {
         return nullptr;
     }
@@ -482,7 +494,7 @@ const ImageSubresourceLayoutMap *CMD_BUFFER_STATE::GetImageSubresourceLayoutMap(
 
 // The non-const variant only needs the image state, as the factory requires it to construct a new entry
 ImageSubresourceLayoutMap *CMD_BUFFER_STATE::GetImageSubresourceLayoutMap(const IMAGE_STATE &image_state) {
-    auto &layout_map = image_layout_map[image_state.image()];
+    auto &layout_map = image_layout_map[&image_state];
     if (!layout_map) {
         // Was an empty slot... fill it in.
         layout_map.emplace(image_state);
@@ -530,7 +542,7 @@ void CMD_BUFFER_STATE::EndQueries(VkQueryPool queryPool, uint32_t firstQuery, ui
     queryUpdates.emplace_back([queryPool, firstQuery, queryCount](const ValidationStateTracker *device_data, bool do_validate,
                                                                   VkQueryPool &firstPerfQueryPool, uint32_t perfQueryPass,
                                                                   QueryMap *localQueryToStateMap) {
-        return SetQueryStateMulti(queryPool, firstQuery, queryCount, perfQueryPass, QUERYSTATE_RESET, localQueryToStateMap);
+        return SetQueryStateMulti(queryPool, firstQuery, queryCount, perfQueryPass, QUERYSTATE_ENDED, localQueryToStateMap);
     });
 }
 
@@ -669,6 +681,74 @@ void CMD_BUFFER_STATE::EndRenderPass(CMD_TYPE cmd_type) {
     activeFramebuffer = VK_NULL_HANDLE;
 }
 
+void CMD_BUFFER_STATE::BeginRendering(CMD_TYPE cmd_type, const VkRenderingInfoKHR *pRenderingInfo) {
+    RecordCmd(cmd_type);
+    activeRenderPass = std::make_shared<RENDER_PASS_STATE>(pRenderingInfo);
+
+    auto chained_device_group_struct = LvlFindInChain<VkDeviceGroupRenderPassBeginInfo>(pRenderingInfo->pNext);
+    if (chained_device_group_struct) {
+        active_render_pass_device_mask = chained_device_group_struct->deviceMask;
+    } else {
+        active_render_pass_device_mask = initial_device_mask;
+    }
+
+    activeSubpassContents = ((pRenderingInfo->flags & VK_RENDERING_CONTENTS_SECONDARY_COMMAND_BUFFERS_BIT_KHR) ? VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS : VK_SUBPASS_CONTENTS_INLINE);
+
+    active_attachments = nullptr;
+    uint32_t attachment_count = (pRenderingInfo->colorAttachmentCount + 2) * 2;
+
+    // Set cb_state->active_attachments & cb_state->attachments_view_states
+    active_attachments = std::make_shared<std::vector<IMAGE_VIEW_STATE *>>(attachment_count);
+    auto &attachments = *(active_attachments.get());
+
+    for (uint32_t i = 0; i < pRenderingInfo->colorAttachmentCount; ++i) {
+        auto& colorAttachment = attachments[GetDynamicColorAttachmentImageIndex(i)];
+        auto& colorResolveAttachment = attachments[GetDynamicColorResolveAttachmentImageIndex(i)];
+        colorAttachment = nullptr;
+        colorResolveAttachment = nullptr;
+
+        if (pRenderingInfo->pColorAttachments[i].imageView != VK_NULL_HANDLE) {
+            auto res = attachments_view_states.insert(
+                dev_data->GetShared<IMAGE_VIEW_STATE>(pRenderingInfo->pColorAttachments[i].imageView));
+            colorAttachment = res.first->get();
+            if (pRenderingInfo->pColorAttachments[i].resolveMode != VK_RESOLVE_MODE_NONE &&
+                pRenderingInfo->pColorAttachments[i].resolveImageView != VK_NULL_HANDLE) {
+                colorResolveAttachment = res.first->get();
+            }
+        }
+    }
+
+    if (pRenderingInfo->pDepthAttachment && pRenderingInfo->pDepthAttachment->imageView != VK_NULL_HANDLE) {
+        auto& depthAttachment = attachments[GetDynamicDepthAttachmentImageIndex()];
+        auto& depthResolveAttachment = attachments[GetDynamicDepthResolveAttachmentImageIndex()];
+        depthAttachment = nullptr;
+        depthResolveAttachment = nullptr;
+
+        auto res =
+            attachments_view_states.insert(dev_data->GetShared<IMAGE_VIEW_STATE>(pRenderingInfo->pDepthAttachment->imageView));
+        depthAttachment = res.first->get();
+        if (pRenderingInfo->pDepthAttachment->resolveMode != VK_RESOLVE_MODE_NONE &&
+            pRenderingInfo->pDepthAttachment->resolveImageView != VK_NULL_HANDLE) {
+            depthResolveAttachment = res.first->get();
+        }
+    } 
+
+    if (pRenderingInfo->pStencilAttachment && pRenderingInfo->pStencilAttachment->imageView != VK_NULL_HANDLE) {
+        auto& stencilAttachment = attachments[GetDynamicStencilAttachmentImageIndex()];
+        auto& stencilResolveAttachment = attachments[GetDynamicStencilResolveAttachmentImageIndex()];
+        stencilAttachment = nullptr;
+        stencilResolveAttachment = nullptr;
+
+        auto res =
+            attachments_view_states.insert(dev_data->GetShared<IMAGE_VIEW_STATE>(pRenderingInfo->pStencilAttachment->imageView));
+        stencilAttachment = res.first->get();
+        if (pRenderingInfo->pStencilAttachment->resolveMode != VK_RESOLVE_MODE_NONE &&
+            pRenderingInfo->pStencilAttachment->resolveImageView != VK_NULL_HANDLE) {
+            stencilResolveAttachment = res.first->get();
+        }
+    }
+}
+
 void CMD_BUFFER_STATE::Begin(const VkCommandBufferBeginInfo *pBeginInfo) {
     if (CB_RECORDED == state || CB_INVALID_COMPLETE == state) {
         Reset();
@@ -682,31 +762,40 @@ void CMD_BUFFER_STATE::Begin(const VkCommandBufferBeginInfo *pBeginInfo) {
         // If we are a secondary command-buffer and inheriting.  Update the items we should inherit.
         if ((createInfo.level != VK_COMMAND_BUFFER_LEVEL_PRIMARY) &&
             (beginInfo.flags & VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT)) {
-            activeRenderPass = dev_data->GetShared<RENDER_PASS_STATE>(beginInfo.pInheritanceInfo->renderPass);
-            activeSubpass = beginInfo.pInheritanceInfo->subpass;
+            if (beginInfo.pInheritanceInfo->renderPass) {
+                activeRenderPass = dev_data->GetShared<RENDER_PASS_STATE>(beginInfo.pInheritanceInfo->renderPass);
+                activeSubpass = beginInfo.pInheritanceInfo->subpass;
 
-            if (beginInfo.pInheritanceInfo->framebuffer) {
-                activeFramebuffer = dev_data->GetShared<FRAMEBUFFER_STATE>(beginInfo.pInheritanceInfo->framebuffer);
-                active_subpasses = nullptr;
-                active_attachments = nullptr;
+                if (beginInfo.pInheritanceInfo->framebuffer) {
+                    activeFramebuffer = dev_data->GetShared<FRAMEBUFFER_STATE>(beginInfo.pInheritanceInfo->framebuffer);
+                    active_subpasses = nullptr;
+                    active_attachments = nullptr;
 
-                if (activeFramebuffer) {
-                    framebuffers.insert(activeFramebuffer);
+                    if (activeFramebuffer) {
+                        framebuffers.insert(activeFramebuffer);
 
-                    // Set active_subpasses
-                    active_subpasses = std::make_shared<std::vector<SUBPASS_INFO>>(activeFramebuffer->createInfo.attachmentCount);
-                    const auto &subpass = activeRenderPass->createInfo.pSubpasses[activeSubpass];
-                    UpdateSubpassAttachments(subpass, *active_subpasses);
+                        // Set active_subpasses
+                        active_subpasses = std::make_shared<std::vector<SUBPASS_INFO>>(activeFramebuffer->createInfo.attachmentCount);
+                        const auto& subpass = activeRenderPass->createInfo.pSubpasses[activeSubpass];
+                        UpdateSubpassAttachments(subpass, *active_subpasses);
 
-                    // Set active_attachments & attachments_view_states
-                    active_attachments =
-                        std::make_shared<std::vector<IMAGE_VIEW_STATE *>>(activeFramebuffer->createInfo.attachmentCount);
-                    UpdateAttachmentsView(nullptr);
+                        // Set active_attachments & attachments_view_states
+                        active_attachments =
+                            std::make_shared<std::vector<IMAGE_VIEW_STATE*>>(activeFramebuffer->createInfo.attachmentCount);
+                        UpdateAttachmentsView(nullptr);
 
-                    // Connect this framebuffer and its children to this cmdBuffer
-                    if (!dev_data->disabled[command_buffer_state]) {
-                        AddChild(activeFramebuffer.get());
+                        // Connect this framebuffer and its children to this cmdBuffer
+                        if (!dev_data->disabled[command_buffer_state]) {
+                            AddChild(activeFramebuffer.get());
+                        }
                     }
+                }
+            }
+            else
+            {
+                auto inheritance_rendering_info = lvl_find_in_chain<VkCommandBufferInheritanceRenderingInfoKHR>(beginInfo.pInheritanceInfo->pNext);
+                if (inheritance_rendering_info) {
+                    activeRenderPass = std::make_shared<RENDER_PASS_STATE>(inheritance_rendering_info);
                 }
             }
 
@@ -741,9 +830,8 @@ void CMD_BUFFER_STATE::End(VkResult result) {
 
 void CMD_BUFFER_STATE::ExecuteCommands(uint32_t commandBuffersCount, const VkCommandBuffer *pCommandBuffers) {
     RecordCmd(CMD_EXECUTECOMMANDS);
-    CMD_BUFFER_STATE *sub_cb_state = NULL;
     for (uint32_t i = 0; i < commandBuffersCount; i++) {
-        sub_cb_state = dev_data->Get<CMD_BUFFER_STATE>(pCommandBuffers[i]);
+        auto sub_cb_state = dev_data->Get<CMD_BUFFER_STATE>(pCommandBuffers[i]);
         assert(sub_cb_state);
         if (!(sub_cb_state->beginInfo.flags & VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT)) {
             if (beginInfo.flags & VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT) {
@@ -758,9 +846,7 @@ void CMD_BUFFER_STATE::ExecuteCommands(uint32_t commandBuffersCount, const VkCom
         // ValidationStateTracker these maps will be empty, so leaving the propagation in the the state tracker should be a no-op
         // for those other classes.
         for (const auto &sub_layout_map_entry : sub_cb_state->image_layout_map) {
-            const auto image = sub_layout_map_entry.first;
-            const IMAGE_STATE *image_state = dev_data->GetImageState(image);
-            if (!image_state) continue;                // Can't set layouts of a dead image
+            const auto *image_state = sub_layout_map_entry.first;
 
             auto *cb_subres_map = GetImageSubresourceLayoutMap(*image_state);
             const auto *sub_cb_subres_map = &sub_layout_map_entry.second;
@@ -970,8 +1056,7 @@ void CMD_BUFFER_STATE::UpdateLastBoundDescriptorSets(VkPipelineBindPoint pipelin
     const uint32_t *input_dynamic_offsets = p_dynamic_offsets;  // "read" pointer for dynamic offset data
     for (uint32_t input_idx = 0; input_idx < set_count; input_idx++) {
         auto set_idx = input_idx + first_set;  // set_idx is index within layout, input_idx is index within input descriptor sets
-        cvdescriptorset::DescriptorSet *descriptor_set =
-            push_descriptor_set ? push_descriptor_set : dev_data->GetSetNode(pDescriptorSets[input_idx]);
+        auto descriptor_set = push_descriptor_set ? push_descriptor_set : dev_data->Get<cvdescriptorset::DescriptorSet>(pDescriptorSets[input_idx]);
 
         // Record binding (or push)
         if (descriptor_set != last_bound.push_descriptor_set.get()) {
@@ -1047,7 +1132,7 @@ void CMD_BUFFER_STATE::SetImageInitialLayout(const IMAGE_STATE &image_state, con
 }
 
 void CMD_BUFFER_STATE::SetImageInitialLayout(VkImage image, const VkImageSubresourceRange &range, VkImageLayout layout) {
-    const IMAGE_STATE *image_state = dev_data->GetImageState(image);
+    const auto image_state = dev_data->Get<IMAGE_STATE>(image);
     if (!image_state) return;
     SetImageInitialLayout(*image_state, range, layout);
 }
@@ -1099,7 +1184,7 @@ static bool SetEventStageMask(VkEvent event, VkPipelineStageFlags2KHR stageMask,
 void CMD_BUFFER_STATE::RecordSetEvent(CMD_TYPE cmd_type, VkEvent event, VkPipelineStageFlags2KHR stageMask) {
     RecordCmd(cmd_type);
     if (!dev_data->disabled[command_buffer_state]) {
-        auto event_state = dev_data->GetEventState(event);
+        auto event_state = dev_data->Get<EVENT_STATE>(event);
         if (event_state) {
             AddChild(event_state);
         }
@@ -1117,7 +1202,7 @@ void CMD_BUFFER_STATE::RecordSetEvent(CMD_TYPE cmd_type, VkEvent event, VkPipeli
 void CMD_BUFFER_STATE::RecordResetEvent(CMD_TYPE cmd_type, VkEvent event, VkPipelineStageFlags2KHR stageMask) {
     RecordCmd(cmd_type);
     if (!dev_data->disabled[command_buffer_state]) {
-        auto event_state = dev_data->GetEventState(event);
+        auto event_state = dev_data->Get<EVENT_STATE>(event);
         if (event_state) {
             AddChild(event_state);
         }
@@ -1136,7 +1221,7 @@ void CMD_BUFFER_STATE::RecordWaitEvents(CMD_TYPE cmd_type, uint32_t eventCount, 
     RecordCmd(cmd_type);
     for (uint32_t i = 0; i < eventCount; ++i) {
         if (!dev_data->disabled[command_buffer_state]) {
-            auto event_state = dev_data->GetEventState(pEvents[i]);
+            auto event_state = dev_data->Get<EVENT_STATE>(pEvents[i]);
             if (event_state) {
                 AddChild(event_state);
             }
@@ -1152,13 +1237,13 @@ void CMD_BUFFER_STATE::RecordBarriers(uint32_t memoryBarrierCount, const VkMemor
     if (dev_data->disabled[command_buffer_state]) return;
 
     for (uint32_t i = 0; i < bufferMemoryBarrierCount; i++) {
-        auto buffer_state = dev_data->GetBufferState(pBufferMemoryBarriers[i].buffer);
+        auto buffer_state = dev_data->Get<BUFFER_STATE>(pBufferMemoryBarriers[i].buffer);
         if (buffer_state) {
             AddChild(buffer_state);
         }
     }
     for (uint32_t i = 0; i < imageMemoryBarrierCount; i++) {
-        auto image_state = dev_data->GetImageState(pImageMemoryBarriers[i].image);
+        auto image_state = dev_data->Get<IMAGE_STATE>(pImageMemoryBarriers[i].image);
         if (image_state) {
             AddChild(image_state);
         }
@@ -1169,13 +1254,13 @@ void CMD_BUFFER_STATE::RecordBarriers(const VkDependencyInfoKHR &dep_info) {
     if (dev_data->disabled[command_buffer_state]) return;
 
     for (uint32_t i = 0; i < dep_info.bufferMemoryBarrierCount; i++) {
-        auto buffer_state = dev_data->GetBufferState(dep_info.pBufferMemoryBarriers[i].buffer);
+        auto buffer_state = dev_data->Get<BUFFER_STATE>(dep_info.pBufferMemoryBarriers[i].buffer);
         if (buffer_state) {
             AddChild(buffer_state);
         }
     }
     for (uint32_t i = 0; i < dep_info.imageMemoryBarrierCount; i++) {
-        auto image_state = dev_data->GetImageState(dep_info.pImageMemoryBarriers[i].image);
+        auto image_state = dev_data->Get<IMAGE_STATE>(dep_info.pImageMemoryBarriers[i].image);
         if (image_state) {
             AddChild(image_state);
         }
@@ -1188,7 +1273,7 @@ void CMD_BUFFER_STATE::RecordWriteTimestamp(CMD_TYPE cmd_type, VkPipelineStageFl
     if (dev_data->disabled[query_validation]) return;
 
     if (!dev_data->disabled[command_buffer_state]) {
-        auto pool_state = dev_data->GetQueryPoolState(queryPool);
+        auto pool_state = dev_data->Get<QUERY_POOL_STATE>(queryPool);
         AddChild(pool_state);
     }
     QueryObject query = {queryPool, slot};
@@ -1204,7 +1289,8 @@ void CMD_BUFFER_STATE::Submit(uint32_t perf_submit_pass) {
     }
 
     for (const auto &query_state_pair : local_query_to_state_map) {
-        dev_data->queryToStateMap[query_state_pair.first] = query_state_pair.second;
+        auto query_pool_state = dev_data->Get<QUERY_POOL_STATE>(query_state_pair.first.pool);
+        query_pool_state->SetQueryState(query_state_pair.first.query, query_state_pair.first.perf_pass, query_state_pair.second);
     }
 
     for (const auto &function : eventUpdates) {
@@ -1232,7 +1318,8 @@ void CMD_BUFFER_STATE::Retire(uint32_t perf_submit_pass) {
 
     for (const auto &query_state_pair : local_query_to_state_map) {
         if (query_state_pair.second == QUERYSTATE_ENDED) {
-            dev_data->queryToStateMap[query_state_pair.first] = QUERYSTATE_AVAILABLE;
+            auto query_pool_state = dev_data->Get<QUERY_POOL_STATE>(query_state_pair.first.pool);
+            query_pool_state->SetQueryState(query_state_pair.first.query, query_state_pair.first.perf_pass, QUERYSTATE_AVAILABLE);
         }
     }
 }

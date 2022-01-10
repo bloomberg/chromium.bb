@@ -1242,10 +1242,9 @@ static void mc_flow_synthesizer(TplParams *tpl_data, int frame_idx, int mi_rows,
 
 static AOM_INLINE void init_gop_frames_for_tpl(
     AV1_COMP *cpi, const EncodeFrameParams *const init_frame_params,
-    GF_GROUP *gf_group, int gop_eval, int *tpl_group_frames,
-    const EncodeFrameInput *const frame_input, int *pframe_qindex) {
+    GF_GROUP *gf_group, int *tpl_group_frames, int *pframe_qindex) {
   AV1_COMMON *cm = &cpi->common;
-  int cur_frame_idx = cpi->gf_frame_index;
+  assert(cpi->gf_frame_index == 0);
   *pframe_qindex = 0;
 
 #if CONFIG_FRAME_PARALLEL_ENCODE
@@ -1276,23 +1275,17 @@ static AOM_INLINE void init_gop_frames_for_tpl(
     ref_picture_map[i] = -i - 1;
   }
 
-  *tpl_group_frames = cur_frame_idx;
+  *tpl_group_frames = 0;
 
   int gf_index;
-  int anc_frame_offset = gop_eval ? 0 : gf_group->cur_frame_idx[cur_frame_idx];
   int process_frame_count = 0;
   const int gop_length = get_gop_length(gf_group);
 
-  for (gf_index = cur_frame_idx; gf_index < gop_length; ++gf_index) {
+  for (gf_index = 0; gf_index < gop_length; ++gf_index) {
     TplDepFrame *tpl_frame = &tpl_data->tpl_frame[gf_index];
     FRAME_UPDATE_TYPE frame_update_type = gf_group->update_type[gf_index];
-    int frame_display_index = gf_index == gf_group->size
-                                  ? cpi->ppi->p_rc.baseline_gf_interval
-                                  : gf_group->cur_frame_idx[gf_index] +
-                                        gf_group->arf_src_offset[gf_index];
-
-    int lookahead_index = frame_display_index - anc_frame_offset;
-
+    int lookahead_index =
+        gf_group->cur_frame_idx[gf_index] + gf_group->arf_src_offset[gf_index];
     frame_params.show_frame = frame_update_type != ARF_UPDATE &&
                               frame_update_type != INTNL_ARF_UPDATE;
     frame_params.show_existing_frame =
@@ -1303,33 +1296,29 @@ static AOM_INLINE void init_gop_frames_for_tpl(
     if (frame_update_type == LF_UPDATE)
       *pframe_qindex = gf_group->q_val[gf_index];
 
-    struct lookahead_entry *buf;
-    if (gf_index == cur_frame_idx) {
-      buf = av1_lookahead_peek(cpi->ppi->lookahead, lookahead_index,
-                               cpi->compressor_stage);
-      tpl_frame->gf_picture = gop_eval ? &buf->img : frame_input->source;
-    } else {
-      buf = av1_lookahead_peek(cpi->ppi->lookahead, lookahead_index,
-                               cpi->compressor_stage);
-      if (buf == NULL) break;
-      tpl_frame->gf_picture = &buf->img;
+    const struct lookahead_entry *buf = av1_lookahead_peek(
+        cpi->ppi->lookahead, lookahead_index, cpi->compressor_stage);
+    if (buf == NULL) break;
+    tpl_frame->gf_picture = &buf->img;
+
+    // Use filtered frame buffer if available. This will make tpl stats more
+    // precise.
+    FRAME_DIFF frame_diff;
+    const YV12_BUFFER_CONFIG *tf_buf =
+        av1_tf_info_get_filtered_buf(&cpi->ppi->tf_info, gf_index, &frame_diff);
+    if (tf_buf != NULL) {
+      tpl_frame->gf_picture = tf_buf;
     }
-    if (gop_eval && cpi->rc.frames_since_key > 0 &&
-        gf_group->arf_index == gf_index)
-      tpl_frame->gf_picture = &cpi->ppi->alt_ref_buffer;
 
     // 'cm->current_frame.frame_number' is the display number
     // of the current frame.
-    // 'anc_frame_offset' is the number of frames displayed so
-    // far within the gf group. 'cm->current_frame.frame_number -
-    // anc_frame_offset' is the offset of the first frame in the gf group.
-    // 'frame display index' is frame offset within the gf group.
-    // 'frame_display_index + cm->current_frame.frame_number - anc_frame_offset'
+    // 'lookahead_index' is frame offset within the gf group.
+    // 'lookahead_index + cm->current_frame.frame_number'
     // is the display index of the frame.
     tpl_frame->frame_display_index =
-        frame_display_index + cm->current_frame.frame_number - anc_frame_offset;
-    assert(buf->display_idx == cpi->frame_index_set.show_frame_count -
-                                   anc_frame_offset + frame_display_index);
+        lookahead_index + cm->current_frame.frame_number;
+    assert(buf->display_idx ==
+           cpi->frame_index_set.show_frame_count + lookahead_index);
 
     if (frame_update_type != OVERLAY_UPDATE &&
         frame_update_type != INTNL_OVERLAY_UPDATE) {
@@ -1389,8 +1378,6 @@ static AOM_INLINE void init_gop_frames_for_tpl(
     ++*tpl_group_frames;
   }
 
-  if (cpi->rc.frames_since_key == 0) return;
-
   const int tpl_extend = cpi->oxcf.gf_cfg.lag_in_frames - MAX_GF_INTERVAL;
   int extend_frame_count = 0;
   int extend_frame_length = AOMMIN(
@@ -1410,7 +1397,7 @@ static AOM_INLINE void init_gop_frames_for_tpl(
         frame_update_type == INTNL_OVERLAY_UPDATE;
     frame_params.frame_type = INTER_FRAME;
 
-    int lookahead_index = frame_display_index - anc_frame_offset;
+    int lookahead_index = frame_display_index;
     struct lookahead_entry *buf = av1_lookahead_peek(
         cpi->ppi->lookahead, lookahead_index, cpi->compressor_stage);
 
@@ -1421,14 +1408,11 @@ static AOM_INLINE void init_gop_frames_for_tpl(
     tpl_frame->tpl_stats_ptr = tpl_data->tpl_stats_pool[process_frame_count];
     // 'cm->current_frame.frame_number' is the display number
     // of the current frame.
-    // 'anc_frame_offset' is the number of frames displayed so
-    // far within the gf group. 'cm->current_frame.frame_number -
-    // anc_frame_offset' is the offset of the first frame in the gf group.
-    // 'frame display index' is frame offset within the gf group.
-    // 'frame_display_index + cm->current_frame.frame_number - anc_frame_offset'
+    // 'frame_display_index' is frame offset within the gf group.
+    // 'frame_display_index + cm->current_frame.frame_number'
     // is the display index of the frame.
     tpl_frame->frame_display_index =
-        frame_display_index + cm->current_frame.frame_number - anc_frame_offset;
+        frame_display_index + cm->current_frame.frame_number;
 
     ++process_frame_count;
 
@@ -1499,10 +1483,6 @@ void av1_init_tpl_stats(TplParams *const tpl_data) {
                sizeof(*tpl_frame->tpl_stats_ptr));
     tpl_frame->is_valid = 0;
   }
-#if CONFIG_BITRATE_ACCURACY
-  tpl_data->estimated_gop_bitrate = 0;
-  tpl_data->actual_gop_bitrate = 0;
-#endif
 }
 
 int av1_tpl_stats_ready(const TplParams *tpl_data, int gf_frame_index) {
@@ -1555,11 +1535,11 @@ void av1_tpl_preload_rc_estimate(AV1_COMP *cpi,
 }
 
 int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
-                        const EncodeFrameParams *const frame_params,
-                        const EncodeFrameInput *const frame_input) {
+                        const EncodeFrameParams *const frame_params) {
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, av1_tpl_setup_stats_time);
 #endif
+  assert(cpi->gf_frame_index == 0);
   AV1_COMMON *cm = &cpi->common;
   MultiThreadInfo *const mt_info = &cpi->mt_info;
   AV1TplRowMultiThreadInfo *const tpl_row_mt = &mt_info->tpl_row_mt;
@@ -1595,8 +1575,8 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
 
   int pframe_qindex;
   int tpl_gf_group_frames;
-  init_gop_frames_for_tpl(cpi, frame_params, gf_group, gop_eval,
-                          &tpl_gf_group_frames, frame_input, &pframe_qindex);
+  init_gop_frames_for_tpl(cpi, frame_params, gf_group, &tpl_gf_group_frames,
+                          &pframe_qindex);
 
   cpi->ppi->p_rc.base_layer_qp = pframe_qindex;
 
@@ -1678,42 +1658,11 @@ int av1_tpl_setup_stats(AV1_COMP *cpi, int gop_eval,
   assert(gf_group->arf_index >= 0);
 
   double beta[2] = { 0.0 };
-  for (int frame_idx = gf_group->arf_index;
-       frame_idx <= AOMMIN(tpl_gf_group_frames - 1, gf_group->arf_index + 1);
-       ++frame_idx) {
-    TplDepFrame *tpl_frame = &tpl_data->tpl_frame[frame_idx];
-    TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
-    int tpl_stride = tpl_frame->stride;
-    int64_t intra_cost_base = 0;
-    int64_t mc_dep_cost_base = 0;
-    const int step = 1 << tpl_data->tpl_stats_block_mis_log2;
-    const int row_step = step;
-    const int col_step_sr =
-        coded_to_superres_mi(step, cm->superres_scale_denominator);
-    const int mi_cols_sr = av1_pixels_to_mi(cm->superres_upscaled_width);
-
-    for (int row = 0; row < cm->mi_params.mi_rows; row += row_step) {
-      for (int col = 0; col < mi_cols_sr; col += col_step_sr) {
-        TplDepStats *this_stats = &tpl_stats[av1_tpl_ptr_pos(
-            row, col, tpl_stride, tpl_data->tpl_stats_block_mis_log2)];
-        int64_t mc_dep_delta =
-            RDCOST(tpl_frame->base_rdmult, this_stats->mc_dep_rate,
-                   this_stats->mc_dep_dist);
-        intra_cost_base += (this_stats->recrf_dist << RDDIV_BITS);
-        mc_dep_cost_base +=
-            (this_stats->recrf_dist << RDDIV_BITS) + mc_dep_delta;
-      }
-    }
-    if (intra_cost_base == 0) {
-      // This should happen very rarely and if it happens, assign a dummy value
-      // to it since it probably wouldn't influence things much
-      beta[frame_idx - gf_group->arf_index] = 0;
-    } else {
-      beta[frame_idx - gf_group->arf_index] =
-          (double)mc_dep_cost_base / intra_cost_base;
-    }
-  }
-
+  const int frame_idx_0 = gf_group->arf_index;
+  const int frame_idx_1 =
+      AOMMIN(tpl_gf_group_frames - 1, gf_group->arf_index + 1);
+  beta[0] = av1_tpl_get_frame_importance(tpl_data, frame_idx_0);
+  beta[1] = av1_tpl_get_frame_importance(tpl_data, frame_idx_1);
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, av1_tpl_setup_stats_time);
 #endif
@@ -1964,8 +1913,7 @@ void get_tpl_stats_valid_list(const TplParams *tpl_data, int gop_size,
 int av1_q_mode_estimate_base_q(const GF_GROUP *gf_group,
                                const TplTxfmStats *txfm_stats_list,
                                const int *stats_valid_list, double bit_budget,
-                               int gf_frame_index, aom_bit_depth_t bit_depth,
-                               double scale_factor,
+                               aom_bit_depth_t bit_depth, double scale_factor,
                                const double *qstep_ratio_list,
                                int *q_index_list,
                                double *estimated_bitrate_byframe) {
@@ -1973,18 +1921,18 @@ int av1_q_mode_estimate_base_q(const GF_GROUP *gf_group,
   int q_min = 0;    // Minimum q value.
   int q = (q_max + q_min) / 2;
 
-  av1_q_mode_compute_gop_q_indices(gf_frame_index, q_max, qstep_ratio_list,
-                                   bit_depth, gf_group, q_index_list);
+  av1_q_mode_compute_gop_q_indices(q_max, qstep_ratio_list, bit_depth, gf_group,
+                                   q_index_list);
   double q_max_estimate = av1_estimate_gop_bitrate(
       q_index_list, gf_group->size, txfm_stats_list, stats_valid_list, NULL);
-  av1_q_mode_compute_gop_q_indices(gf_frame_index, q_min, qstep_ratio_list,
-                                   bit_depth, gf_group, q_index_list);
+  av1_q_mode_compute_gop_q_indices(q_min, qstep_ratio_list, bit_depth, gf_group,
+                                   q_index_list);
   double q_min_estimate = av1_estimate_gop_bitrate(
       q_index_list, gf_group->size, txfm_stats_list, stats_valid_list, NULL);
 
   while (true) {
-    av1_q_mode_compute_gop_q_indices(gf_frame_index, q, qstep_ratio_list,
-                                     bit_depth, gf_group, q_index_list);
+    av1_q_mode_compute_gop_q_indices(q, qstep_ratio_list, bit_depth, gf_group,
+                                     q_index_list);
 
     double estimate = av1_estimate_gop_bitrate(
         q_index_list, gf_group->size, txfm_stats_list, stats_valid_list, NULL);
@@ -2014,18 +1962,15 @@ int av1_q_mode_estimate_base_q(const GF_GROUP *gf_group,
   }
 
   // Update q_index_list and vbr_rc_info.
-  av1_q_mode_compute_gop_q_indices(gf_frame_index, q, qstep_ratio_list,
-                                   bit_depth, gf_group, q_index_list);
+  av1_q_mode_compute_gop_q_indices(q, qstep_ratio_list, bit_depth, gf_group,
+                                   q_index_list);
   av1_estimate_gop_bitrate(q_index_list, gf_group->size, txfm_stats_list,
                            stats_valid_list, estimated_bitrate_byframe);
   return q;
 }
 
-double av1_tpl_get_qstep_ratio(const TplParams *tpl_data, int gf_frame_index) {
-  if (!av1_tpl_stats_ready(tpl_data, gf_frame_index)) {
-    return 1;
-  }
-
+double av1_tpl_get_frame_importance(const TplParams *tpl_data,
+                                    int gf_frame_index) {
   const TplDepFrame *tpl_frame = &tpl_data->tpl_frame[gf_frame_index];
   const TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
 
@@ -2045,8 +1990,16 @@ double av1_tpl_get_qstep_ratio(const TplParams *tpl_data, int gf_frame_index) {
       mc_dep_cost_base += (this_stats->recrf_dist << RDDIV_BITS) + mc_dep_delta;
     }
   }
-  const double r0 = (double)intra_cost_base / mc_dep_cost_base;
-  return sqrt(r0);
+  return mc_dep_cost_base * 1.0 / intra_cost_base;
+}
+
+double av1_tpl_get_qstep_ratio(const TplParams *tpl_data, int gf_frame_index) {
+  if (!av1_tpl_stats_ready(tpl_data, gf_frame_index)) {
+    return 1;
+  }
+  const double frame_importance =
+      av1_tpl_get_frame_importance(tpl_data, gf_frame_index);
+  return sqrt(1 / frame_importance);
 }
 
 int av1_get_q_index_from_qstep_ratio(int leaf_qindex, double qstep_ratio,
@@ -2071,68 +2024,59 @@ int av1_tpl_get_q_index(const TplParams *tpl_data, int gf_frame_index,
 void av1_vbr_rc_update_q_index_list(VBR_RATECTRL_INFO *vbr_rc_info,
                                     const TplParams *tpl_data,
                                     const GF_GROUP *gf_group,
-                                    int gf_frame_index,
                                     aom_bit_depth_t bit_depth) {
-  // We always update q_index_list when gf_frame_index is zero.
-  // This will make the q indices for the entire gop more consistent
-  if (gf_frame_index == 0) {
-    vbr_rc_info->q_index_list_ready = 1;
-    double gop_bit_budget = vbr_rc_info->gop_bit_budget;
+  vbr_rc_info->q_index_list_ready = 1;
+  double gop_bit_budget = vbr_rc_info->gop_bit_budget;
 
-    for (int i = gf_frame_index; i < gf_group->size; i++) {
-      vbr_rc_info->qstep_ratio_list[i] = av1_tpl_get_qstep_ratio(tpl_data, i);
-    }
-
-    // We update the q indices in vbr_rc_info in vbr_rc_info->q_index_list
-    // rather than gf_group->q_val to avoid conflicts with the existing code.
-    int stats_valid_list[MAX_LENGTH_TPL_FRAME_STATS] = { 0 };
-    get_tpl_stats_valid_list(tpl_data, gf_group->size, stats_valid_list);
-
-    double mv_bits = av1_tpl_compute_mv_bits(
-        tpl_data, gf_group->size, gf_frame_index,
-        gf_group->update_type[gf_frame_index], vbr_rc_info);
-
-    mv_bits = AOMMIN(mv_bits, 0.6 * gop_bit_budget);
-    gop_bit_budget -= mv_bits;
-
-    double scale_factor =
-        vbr_rc_info->scale_factors[gf_group->update_type[gf_frame_index]];
-
-    vbr_rc_info->base_q_index = av1_q_mode_estimate_base_q(
-        gf_group, tpl_data->txfm_stats_list, stats_valid_list, gop_bit_budget,
-        gf_frame_index, bit_depth, scale_factor, vbr_rc_info->qstep_ratio_list,
-        vbr_rc_info->q_index_list, vbr_rc_info->estimated_bitrate_byframe);
-  } else if (gf_frame_index == 1) {
-    for (int i = gf_frame_index; i < gf_group->size; i++) {
-      vbr_rc_info->qstep_ratio_list[i] = av1_tpl_get_qstep_ratio(tpl_data, i);
-    }
-    av1_q_mode_compute_gop_q_indices(gf_frame_index, vbr_rc_info->base_q_index,
-                                     vbr_rc_info->qstep_ratio_list, bit_depth,
-                                     gf_group, vbr_rc_info->q_index_list);
+  for (int i = 0; i < gf_group->size; i++) {
+    vbr_rc_info->qstep_ratio_list[i] = av1_tpl_get_qstep_ratio(tpl_data, i);
   }
+
+  // We update the q indices in vbr_rc_info in vbr_rc_info->q_index_list
+  // rather than gf_group->q_val to avoid conflicts with the existing code.
+  int stats_valid_list[MAX_LENGTH_TPL_FRAME_STATS] = { 0 };
+  get_tpl_stats_valid_list(tpl_data, gf_group->size, stats_valid_list);
+
+  double mv_bits = av1_tpl_compute_mv_bits(tpl_data, gf_group, vbr_rc_info);
+
+  mv_bits = AOMMIN(mv_bits, 0.6 * gop_bit_budget);
+  gop_bit_budget -= mv_bits;
+
+  int gf_frame_index = 0;
+  // TODO(angiebird): This part seems like a bug. We only use scale_factor
+  // for gf_frame_index == 0. Fix this part in a follow-up CL
+  double scale_factor =
+      vbr_rc_info->scale_factors[gf_group->update_type[gf_frame_index]];
+
+  vbr_rc_info->base_q_index = av1_q_mode_estimate_base_q(
+      gf_group, tpl_data->txfm_stats_list, stats_valid_list, gop_bit_budget,
+      bit_depth, scale_factor, vbr_rc_info->qstep_ratio_list,
+      vbr_rc_info->q_index_list, vbr_rc_info->estimated_bitrate_byframe);
 }
 
 /* For a GOP, calculate the bits used by motion vectors. */
-double av1_tpl_compute_mv_bits(const TplParams *tpl_data, int gf_group_size,
-                               int gf_frame_index, int gf_update_type,
+double av1_tpl_compute_mv_bits(const TplParams *tpl_data,
+                               const GF_GROUP *gf_group,
                                VBR_RATECTRL_INFO *vbr_rc_info) {
   double total_mv_bits = 0;
 
   // Loop through each frame.
-  for (int i = gf_frame_index; i < gf_group_size; i++) {
+  for (int i = 0; i < gf_group->size; i++) {
     if (av1_tpl_stats_ready(tpl_data, i)) {
       TplDepFrame *tpl_frame = &tpl_data->tpl_frame[i];
       double frame_mv_bits = av1_tpl_compute_frame_mv_entropy(
           tpl_frame, tpl_data->tpl_stats_block_mis_log2);
-      total_mv_bits += frame_mv_bits;
       vbr_rc_info->estimated_mv_bitrate_byframe[i] = frame_mv_bits;
+      FRAME_UPDATE_TYPE updae_type = gf_group->update_type[i];
+      total_mv_bits +=
+          frame_mv_bits * vbr_rc_info->mv_scale_factors[updae_type];
     } else {
       vbr_rc_info->estimated_mv_bitrate_byframe[i] = 0;
     }
   }
 
   // Scale the final result by the scale factor.
-  return total_mv_bits * vbr_rc_info->mv_scale_factors[gf_update_type];
+  return total_mv_bits;
 }
 #endif  // CONFIG_BITRATE_ACCURACY
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/cart/cart_service.h"
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/cart/cart_db_content.pb.h"
 #include "chrome/browser/cart/cart_service_factory.h"
 #include "chrome/browser/cart/fetch_discount_worker.h"
@@ -320,7 +321,7 @@ class CartServiceTest : public testing::Test {
   // Required to run tests from UI thread.
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
-  CartService* service_;
+  raw_ptr<CartService> service_;
 };
 
 // Verifies the hide status is flipped by hiding and restoring.
@@ -1905,4 +1906,15 @@ TEST_F(CartServiceCouponTest, TestCartFeatureStatusUpdate) {
   EXPECT_CALL(coupon_service_, MaybeFeatureStatusChanged(true)).Times(1);
   ListPrefUpdate(profile_->GetPrefs(), prefs::kNtpDisabledModules)
       ->EraseListValue(base::Value("chrome_cart"));
+}
+
+TEST_F(CartServiceCouponTest, TestModuleFeatureStatusUpdate) {
+  // prefs::kNtpModulesVisible is true by default.
+  profile_->GetPrefs()->SetBoolean(prefs::kCartDiscountEnabled, true);
+
+  EXPECT_CALL(coupon_service_, MaybeFeatureStatusChanged(false)).Times(1);
+  profile_->GetPrefs()->SetBoolean(prefs::kNtpModulesVisible, false);
+
+  EXPECT_CALL(coupon_service_, MaybeFeatureStatusChanged(true)).Times(1);
+  profile_->GetPrefs()->SetBoolean(prefs::kNtpModulesVisible, true);
 }

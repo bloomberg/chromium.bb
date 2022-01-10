@@ -84,10 +84,12 @@ bool ContainedRangeMap<AddressType, EntryType>::StoreRange(
     // range's, it violates the containment rules, and an attempt to store
     // it must fail.  iterator_base->first contains the key, which was the
     // containing child's high address.
-    if (iterator_base->second->base_ == base && iterator_base->first == high) {
+    if (!allow_equal_range_ && iterator_base->second->base_ == base &&
+        iterator_base->first == high) {
       // TODO(nealsid): See the TODO above on why this is commented out.
-//       BPLOG(INFO) << "StoreRange failed, identical range is already "
-//                      "present: " << HexString(base) << "+" << HexString(size);
+      //       BPLOG(INFO) << "StoreRange failed, identical range is already "
+      //                      "present: " << HexString(base) << "+" <<
+      //                      HexString(size);
       return false;
     }
 
@@ -141,8 +143,10 @@ bool ContainedRangeMap<AddressType, EntryType>::StoreRange(
   // the new child range contains were formerly children of this range but
   // are now this range's grandchildren.  Ownership of these is transferred
   // to the new child range.
-  map_->insert(MapValue(high,
-                        new ContainedRangeMap(base, entry, child_map)));
+  ContainedRangeMap* new_child =
+      new ContainedRangeMap(base, entry, child_map, allow_equal_range_);
+
+  map_->insert(MapValue(high, new_child));
   return true;
 }
 
@@ -177,6 +181,20 @@ bool ContainedRangeMap<AddressType, EntryType>::RetrieveRange(
   return true;
 }
 
+template <typename AddressType, typename EntryType>
+bool ContainedRangeMap<AddressType, EntryType>::RetrieveRanges(
+    const AddressType& address,
+    std::vector<const EntryType*>& entries) const {
+  // If nothing was ever stored, then there's nothing to retrieve.
+  if (!map_)
+    return false;
+  MapIterator iterator = map_->lower_bound(address);
+  if (iterator == map_->end() || address < iterator->second->base_)
+    return false;
+  iterator->second->RetrieveRanges(address, entries);
+  entries.push_back(&iterator->second->entry_);
+  return true;
+}
 
 template<typename AddressType, typename EntryType>
 void ContainedRangeMap<AddressType, EntryType>::Clear() {

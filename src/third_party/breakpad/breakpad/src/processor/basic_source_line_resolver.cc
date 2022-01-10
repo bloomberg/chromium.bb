@@ -128,6 +128,7 @@ bool BasicSourceLineResolver::Module::LoadMapFromMemory(
   linked_ptr<Function> cur_func;
   int line_number = 0;
   int num_errors = 0;
+  int inline_num_errors = 0;
   char* save_ptr;
 
   // If the length is 0, we can still pretend we have a symbol file. This is
@@ -208,12 +209,13 @@ bool BasicSourceLineResolver::Module::LoadMapFromMemory(
     } else if (strncmp(buffer, "INLINE ", 7) == 0) {
       linked_ptr<Inline> in = ParseInline(buffer);
       if (!in.get())
-        LogParseError("ParseInline failed", line_number, &num_errors);
+        LogParseError("ParseInline failed", line_number, &inline_num_errors);
       else
         cur_func->AppendInline(in);
     } else if (strncmp(buffer, "INLINE_ORIGIN ", 14) == 0) {
       if (!ParseInlineOrigin(buffer)) {
-        LogParseError("ParseInlineOrigin failed", line_number, &num_errors);
+        LogParseError("ParseInlineOrigin failed", line_number,
+                      &inline_num_errors);
       }
     } else {
       if (!cur_func.get()) {
@@ -241,39 +243,59 @@ bool BasicSourceLineResolver::Module::LoadMapFromMemory(
 void BasicSourceLineResolver::Module::ConstructInlineFrames(
     StackFrame* frame,
     MemAddr address,
-    const RangeMap<uint64_t, linked_ptr<Inline>>& inlines,
+    const ContainedRangeMap<uint64_t, linked_ptr<Inline>>& inline_map,
     deque<unique_ptr<StackFrame>>* inlined_frames) const {
-  linked_ptr<Inline> in;
-  MemAddr inline_base;
-  if (!inlines.RetrieveRange(address, &in, &inline_base, nullptr, nullptr))
+  vector<const linked_ptr<Inline>*> inlines;
+  if (!inline_map.RetrieveRanges(address, inlines)) {
     return;
-  auto origin = inline_origins_.find(in->origin_id);
-  if (origin == inline_origins_.end())
-    return;
+  }
 
-  // Update parent frame's source line (and source file if it's the new format).
-  frame->source_line = in->call_site_line;
-  if (in->has_call_site_file_id) {
-    auto file = files_.find(in->call_site_file_id);
-    if (file != files_.end()) {
-      frame->source_file_name = file->second;
+  for (const linked_ptr<Inline>* const in : inlines) {
+    unique_ptr<StackFrame> new_frame =
+        unique_ptr<StackFrame>(new StackFrame(*frame));
+    auto origin = inline_origins_.find(in->get()->origin_id);
+    if (origin != inline_origins_.end()) {
+      new_frame->function_name = origin->second->name;
+    } else {
+      new_frame->function_name = "<name omitted>";
+    }
+    
+    // Store call site file and line in current frame, which will be updated
+    // later.
+    new_frame->source_line = in->get()->call_site_line;
+    if (in->get()->has_call_site_file_id) {
+      auto file = files_.find(in->get()->call_site_file_id);
+      if (file != files_.end()) {
+        new_frame->source_file_name = file->second;
+      }
+    }
+
+    // Use the starting address of the inlined range as inlined function base.
+    new_frame->function_base = new_frame->module->base_address();
+    for (const auto& range : in->get()->inline_ranges) {
+      if (address >= range.first && address < range.first + range.second) {
+        new_frame->function_base += range.first;
+        break;
+      }
+    }
+    new_frame->trust = StackFrame::FRAME_TRUST_INLINE;
+
+    // The inlines vector has an order from innermost entry to outermost entry.
+    // By push_back, we will have inlined_frames with the same order.
+    inlined_frames->push_back(std::move(new_frame));
+  }
+
+  // Update the source file and source line for each inlined frame.
+  if (!inlined_frames->empty()) {
+    string parent_frame_source_file_name = frame->source_file_name;
+    int parent_frame_source_line = frame->source_line;
+    frame->source_file_name = inlined_frames->back()->source_file_name;
+    frame->source_line = inlined_frames->back()->source_line;
+    for (unique_ptr<StackFrame>& inlined_frame : *inlined_frames) {
+      std::swap(inlined_frame->source_file_name, parent_frame_source_file_name);
+      std::swap(inlined_frame->source_line, parent_frame_source_line);
     }
   }
-
-  StackFrame new_frame = StackFrame(*frame);
-  new_frame.function_name = origin->second->name;
-  if (origin->second->has_file_id) {
-    auto file = files_.find(origin->second->source_file_id);
-    if (file != files_.end())
-      new_frame.source_file_name = file->second;
-  }
-  // Use the starting adress of the inlined range as inlined function base.
-  new_frame.function_base = new_frame.module->base_address() + inline_base;
-  new_frame.trust = StackFrame::FRAME_TRUST_INLINE;
-  ConstructInlineFrames(&new_frame, address, in->child_inlines, inlined_frames);
-  // Add child_frame after ConstructInlineFrames so that the innermost frame is
-  // the first frame inside inlined_frames.
-  inlined_frames->push_back(unique_ptr<StackFrame>(new StackFrame(new_frame)));
 }
 
 void BasicSourceLineResolver::Module::LookupAddress(
@@ -312,14 +334,7 @@ void BasicSourceLineResolver::Module::LookupAddress(
 
     // Check if this is inlined function call.
     if (inlined_frames) {
-      int source_line = frame->source_line;
-      string source_file_name = frame->source_file_name;
       ConstructInlineFrames(frame, address, func->inlines, inlined_frames);
-      if (!inlined_frames->empty()) {
-        // Update the inner most frame's source line and source file name.
-        inlined_frames->front()->source_line = source_line;
-        inlined_frames->front()->source_file_name = source_file_name;
-      }
     }
   } else if (public_symbols_.Retrieve(address,
                                       &public_symbol, &public_address) &&
@@ -606,19 +621,12 @@ bool BasicSourceLineResolver::Function::AppendInline(linked_ptr<Inline> in) {
   // This happends if in's parent wasn't added due to a malformed INLINE record.
   if (in->inline_nest_level > last_added_inline_nest_level + 1)
     return false;
-  RangeMap<MemAddr, linked_ptr<Inline>>* current_inlines = &this->inlines;
-  auto iter = recent_inlines.find(in->inline_nest_level - 1);
-  if (iter != recent_inlines.end())
-    current_inlines = &iter->second->child_inlines;
-  else
-    assert(in->inline_nest_level == 0);
 
   last_added_inline_nest_level = in->inline_nest_level;
-  recent_inlines[last_added_inline_nest_level] = in;
 
   // Store all ranges into current level of inlines.
   for (auto range : in->inline_ranges)
-    current_inlines->StoreRange(range.first, range.second, in);
+    inlines.StoreRange(range.first, range.second, in);
   return true;
 }
 
@@ -730,7 +738,8 @@ bool SymbolParseHelper::ParseInline(
   inline_line += 7; // skip prefix
 
   vector<char*> tokens;
-  Tokenize(inline_line, kWhitespace, std::numeric_limits<int>::max(), &tokens);
+  // Increase max_tokens if necessary.
+  Tokenize(inline_line, kWhitespace, 512, &tokens);
 
   // Determine the version of INLINE record by parity of the vector length.
   *has_call_site_file_id = tokens.size() % 2 == 0;

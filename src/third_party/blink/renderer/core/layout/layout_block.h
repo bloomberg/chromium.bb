@@ -152,11 +152,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   const char* GetName() const override;
 
-  virtual const NGPhysicalBoxFragment* CurrentFragment() const {
-    NOT_DESTROYED();
-    return nullptr;
-  }
-
  protected:
   // Insert a child correctly into the tree when |beforeDescendant| isn't a
   // direct child of |this|. This happens e.g. when there's an anonymous block
@@ -211,6 +206,9 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
                : !PercentHeightDescendantsInternal());
     return has_percent_height_descendants_;
   }
+
+  void AddSvgTextDescendant(LayoutBox& svg_text);
+  void RemoveSvgTextDescendant(LayoutBox& svg_text);
 
   void NotifyScrollbarThicknessChanged() {
     NOT_DESTROYED();
@@ -633,6 +631,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   unsigned has_positioned_objects_ : 1;
   unsigned has_percent_height_descendants_ : 1;
+  unsigned has_svg_text_descendants_ : 1;
 
   // When an object ceases to establish a fragmentation context (e.g. the
   // LayoutView when we're no longer printing), we need a deep layout

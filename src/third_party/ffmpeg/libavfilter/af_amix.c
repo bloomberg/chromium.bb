@@ -257,7 +257,7 @@ static int config_output(AVFilterLink *outlink)
     if (!s->frame_list)
         return AVERROR(ENOMEM);
 
-    s->fifos = av_mallocz_array(s->nb_inputs, sizeof(*s->fifos));
+    s->fifos = av_calloc(s->nb_inputs, sizeof(*s->fifos));
     if (!s->fifos)
         return AVERROR(ENOMEM);
 
@@ -274,8 +274,8 @@ static int config_output(AVFilterLink *outlink)
     memset(s->input_state, INPUT_ON, s->nb_inputs);
     s->active_inputs = s->nb_inputs;
 
-    s->input_scale = av_mallocz_array(s->nb_inputs, sizeof(*s->input_scale));
-    s->scale_norm  = av_mallocz_array(s->nb_inputs, sizeof(*s->scale_norm));
+    s->input_scale = av_calloc(s->nb_inputs, sizeof(*s->input_scale));
+    s->scale_norm  = av_calloc(s->nb_inputs, sizeof(*s->scale_norm));
     if (!s->input_scale || !s->scale_norm)
         return AVERROR(ENOMEM);
     for (i = 0; i < s->nb_inputs; i++)
@@ -561,7 +561,7 @@ static av_cold int init(AVFilterContext *ctx)
     if (!s->fdsp)
         return AVERROR(ENOMEM);
 
-    s->weights = av_mallocz_array(s->nb_inputs, sizeof(*s->weights));
+    s->weights = av_calloc(s->nb_inputs, sizeof(*s->weights));
     if (!s->weights)
         return AVERROR(ENOMEM);
 
@@ -587,22 +587,6 @@ static av_cold void uninit(AVFilterContext *ctx)
     av_freep(&s->scale_norm);
     av_freep(&s->weights);
     av_freep(&s->fdsp);
-}
-
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVSampleFormat sample_fmts[] = {
-        AV_SAMPLE_FMT_FLT, AV_SAMPLE_FMT_FLTP,
-        AV_SAMPLE_FMT_DBL, AV_SAMPLE_FMT_DBLP,
-        AV_SAMPLE_FMT_NONE
-    };
-    int ret;
-
-    if ((ret = ff_set_common_formats_from_list(ctx, sample_fmts)) < 0 ||
-        (ret = ff_set_common_all_samplerates(ctx)) < 0)
-        return ret;
-
-    return ff_set_common_all_channel_counts(ctx);
 }
 
 static int process_command(AVFilterContext *ctx, const char *cmd, const char *args,
@@ -639,9 +623,10 @@ const AVFilter ff_af_amix = {
     .init           = init,
     .uninit         = uninit,
     .activate       = activate,
-    .query_formats  = query_formats,
     .inputs         = NULL,
     FILTER_OUTPUTS(avfilter_af_amix_outputs),
+    FILTER_SAMPLEFMTS(AV_SAMPLE_FMT_FLT, AV_SAMPLE_FMT_FLTP,
+                      AV_SAMPLE_FMT_DBL, AV_SAMPLE_FMT_DBLP),
     .process_command = process_command,
     .flags          = AVFILTER_FLAG_DYNAMIC_INPUTS,
 };

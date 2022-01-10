@@ -375,6 +375,14 @@ void main()
 
     void testTextureSize(int testCaseIndex);
 
+    struct UploadThenUseStageParam
+    {
+        GLenum useStage;
+        bool closeRenderPassAfterUse;
+    };
+
+    void testUploadThenUseInDifferentStages(const std::vector<UploadThenUseStageParam> &uses);
+
     GLuint mTexture2D;
     GLint mTexture2DUniformLocation;
 };
@@ -5192,6 +5200,43 @@ TEST_P(Texture2DTestES3, TextureCompletenessChangesWithMaxLevel)
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::black);
 }
 
+// Test that compressed textures ignore the pixel unpack state.
+// (https://crbug.org/1267496)
+TEST_P(Texture3DTestES3, PixelUnpackStateTexImage)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_s3tc") &&
+                       !IsGLExtensionEnabled("GL_ANGLE_texture_compression_dxt3"));
+
+    glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 5);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, mTexture3D);
+
+    uint8_t data[64] = {0};
+    glCompressedTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, 4, 4, 4, 0, 64,
+                           data);
+    EXPECT_GL_NO_ERROR();
+}
+
+// Test that compressed textures ignore the pixel unpack state.
+// (https://crbug.org/1267496)
+TEST_P(Texture3DTestES3, PixelUnpackStateTexSubImage)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_s3tc") &&
+                       !IsGLExtensionEnabled("GL_ANGLE_texture_compression_dxt3"));
+
+    glBindTexture(GL_TEXTURE_2D_ARRAY, mTexture3D);
+
+    uint8_t data[64] = {0};
+    glCompressedTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, 4, 4, 4, 0, 64,
+                           data);
+    EXPECT_GL_NO_ERROR();
+
+    glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 5);
+
+    glCompressedTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, 4, 4, 4,
+                              GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, 64, data);
+    EXPECT_GL_NO_ERROR();
+}
+
 // Test that 3D texture completeness is updated if texture max level changes.
 // GLES 3.0.4 section 3.8.13 Texture completeness
 TEST_P(Texture3DTestES3, Texture3DCompletenessChangesWithMaxLevel)
@@ -5602,6 +5647,24 @@ TEST_P(Texture2DTestES3, TextureRGBImplicitAlpha1)
 
 // When sampling a texture without an alpha channel, "1" is returned as the alpha value.
 // ES 3.0.4 table 3.24
+TEST_P(Texture2DTestES3, TextureRGBXImplicitAlpha1)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_ANGLE_rgbx_internal_format"));
+
+    GLuint texture2D;
+    glGenTextures(1, &texture2D);
+    glBindTexture(GL_TEXTURE_2D, texture2D);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBX8_ANGLE, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glActiveTexture(GL_TEXTURE0);
+    EXPECT_GL_NO_ERROR();
+
+    drawQuad(mProgram, "position", 0.5f);
+
+    EXPECT_PIXEL_ALPHA_EQ(0, 0, 255);
+}
+
+// When sampling a texture without an alpha channel, "1" is returned as the alpha value.
+// ES 3.0.4 table 3.24
 TEST_P(Texture2DTest, TextureLuminanceImplicitAlpha1)
 {
     setUpProgram();
@@ -5877,6 +5940,41 @@ TEST_P(Texture2DTestES3, TextureCOMPRESSEDSRGB8ETC2ImplicitAlpha1)
     drawQuad(mProgram, "position", 0.5f);
 
     EXPECT_PIXEL_ALPHA_EQ(0, 0, 255);
+}
+
+// Test that compressed textures ignore the pixel unpack state.
+// (https://crbug.org/1267496)
+TEST_P(Texture2DTestES3, PixelUnpackStateTexImage)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_s3tc") &&
+                       !IsGLExtensionEnabled("GL_ANGLE_texture_compression_dxt3"));
+
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 9);
+    glBindTexture(GL_TEXTURE_2D, mTexture2D);
+
+    uint8_t data[64] = {0};
+    glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, 8, 8, 0, 64, data);
+    EXPECT_GL_NO_ERROR();
+}
+
+// Test that compressed textures ignore the pixel unpack state.
+// (https://crbug.org/1267496)
+TEST_P(Texture2DTestES3, PixelUnpackStateTexSubImage)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_s3tc") &&
+                       !IsGLExtensionEnabled("GL_ANGLE_texture_compression_dxt3"));
+
+    glBindTexture(GL_TEXTURE_2D, mTexture2D);
+
+    uint8_t data[64] = {0};
+    glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, 8, 8, 0, 64, data);
+    EXPECT_GL_NO_ERROR();
+
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 9);
+
+    glCompressedTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 8, 8, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, 64,
+                              data);
+    EXPECT_GL_NO_ERROR();
 }
 
 // Copied from Texture2DTest::TexStorage
@@ -8945,6 +9043,233 @@ TEST_P(Texture2DTestES3, MinificationWithSamplerNoMipmapping)
     EXPECT_PIXEL_COLOR_EQ(getWindowWidth() / 2, getWindowHeight() / 2, angle::GLColor::white);
 }
 
+void Texture2DTest::testUploadThenUseInDifferentStages(
+    const std::vector<UploadThenUseStageParam> &uses)
+{
+    constexpr char kVSSampleVS[] = R"(attribute vec4 a_position;
+uniform sampler2D u_tex2D;
+varying vec4 v_color;
+
+void main()
+{
+    gl_Position = vec4(a_position.xy, 0.0, 1.0);
+    v_color = texture2D(u_tex2D, a_position.xy * 0.5 + vec2(0.5));
+})";
+
+    constexpr char kVSSampleFS[] = R"(precision mediump float;
+varying vec4 v_color;
+
+void main()
+{
+    gl_FragColor = v_color;
+})";
+
+    ANGLE_GL_PROGRAM(sampleInVS, kVSSampleVS, kVSSampleFS);
+    ANGLE_GL_PROGRAM(sampleInFS, essl1_shaders::vs::Texture2D(), essl1_shaders::fs::Texture2D());
+
+    GLFramebuffer fbo[2];
+    GLTexture color[2];
+    for (uint32_t i = 0; i < 2; ++i)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo[i]);
+        glBindTexture(GL_TEXTURE_2D, color[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color[i], 0);
+    }
+
+    const GLColor kImageColor(63, 31, 0, 255);
+
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &kImageColor);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glActiveTexture(GL_TEXTURE0);
+    ASSERT_GL_NO_ERROR();
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    glClearColor(0, 0, 0, 1);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo[1]);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo[0]);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    uint32_t curFboIndex     = 0;
+    uint32_t fboDrawCount[2] = {};
+
+    for (const UploadThenUseStageParam &use : uses)
+    {
+        const GLProgram &program = use.useStage == GL_VERTEX_SHADER ? sampleInVS : sampleInFS;
+        drawQuad(program, essl1_shaders::PositionAttrib(), 0.5);
+        ASSERT_GL_NO_ERROR();
+
+        ++fboDrawCount[curFboIndex];
+
+        if (use.closeRenderPassAfterUse)
+        {
+            // Close the render pass without accidentally incurring additional barriers.
+            curFboIndex = 1 - curFboIndex;
+            glBindFramebuffer(GL_FRAMEBUFFER, fbo[curFboIndex]);
+        }
+    }
+
+    // Make sure the transfer operations below aren't reordered with the rendering above and thus
+    // introduce additional synchronization.
+    glFinish();
+
+    for (uint32_t i = 0; i < 2; ++i)
+    {
+        const GLColor kExpectedColor(63 * std::min(4u, fboDrawCount[i]),
+                                     31 * std::min(8u, fboDrawCount[i]), 0, 255);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo[i]);
+        EXPECT_PIXEL_COLOR_EQ(0, 0, kExpectedColor);
+    }
+}
+
+// Test synchronization when a texture is used in different shader stages after data upload.
+//
+// - Use in VS
+// - Use in FS
+TEST_P(Texture2DTest, UploadThenVSThenFS)
+{
+    testUploadThenUseInDifferentStages({
+        {GL_VERTEX_SHADER, false},
+        {GL_FRAGMENT_SHADER, false},
+    });
+}
+
+// Test synchronization when a texture is used in different shader stages after data upload.
+//
+// - Use in VS
+// - Break render pass
+// - Use in FS
+TEST_P(Texture2DTest, UploadThenVSThenNewRPThenFS)
+{
+    testUploadThenUseInDifferentStages({
+        {GL_VERTEX_SHADER, true},
+        {GL_FRAGMENT_SHADER, false},
+    });
+}
+
+// Test synchronization when a texture is used in different shader stages after data upload.
+//
+// - Use in FS
+// - Use in VS
+TEST_P(Texture2DTest, UploadThenFSThenVS)
+{
+    testUploadThenUseInDifferentStages({
+        {GL_FRAGMENT_SHADER, false},
+        {GL_VERTEX_SHADER, false},
+    });
+}
+
+// Test synchronization when a texture is used in different shader stages after data upload.
+//
+// - Use in FS
+// - Break render pass
+// - Use in VS
+TEST_P(Texture2DTest, UploadThenFSThenNewRPThenVS)
+{
+    testUploadThenUseInDifferentStages({
+        {GL_FRAGMENT_SHADER, true},
+        {GL_VERTEX_SHADER, false},
+    });
+}
+
+// Test synchronization when a texture is used in different shader stages after data upload.
+//
+// - Use in VS
+// - Use in FS
+// - Use in VS
+TEST_P(Texture2DTest, UploadThenVSThenFSThenVS)
+{
+    testUploadThenUseInDifferentStages({
+        {GL_VERTEX_SHADER, false},
+        {GL_FRAGMENT_SHADER, false},
+        {GL_VERTEX_SHADER, false},
+    });
+}
+
+// Test synchronization when a texture is used in different shader stages after data upload.
+//
+// - Use in VS
+// - Break render pass
+// - Use in FS
+// - Use in VS
+TEST_P(Texture2DTest, UploadThenVSThenNewRPThenFSThenVS)
+{
+    testUploadThenUseInDifferentStages({
+        {GL_VERTEX_SHADER, true},
+        {GL_FRAGMENT_SHADER, false},
+        {GL_VERTEX_SHADER, false},
+    });
+}
+
+// Test synchronization when a texture is used in different shader stages after data upload.
+//
+// - Use in VS
+// - Break render pass
+// - Use in FS
+// - Break render pass
+// - Use in VS
+TEST_P(Texture2DTest, UploadThenVSThenNewRPThenFSThenNewRPThenVS)
+{
+    testUploadThenUseInDifferentStages({
+        {GL_VERTEX_SHADER, true},
+        {GL_FRAGMENT_SHADER, true},
+        {GL_VERTEX_SHADER, false},
+    });
+}
+
+// Test synchronization when a texture is used in different shader stages after data upload.
+//
+// - Use in FS
+// - Use in VS
+// - Break render pass
+// - Use in FS
+TEST_P(Texture2DTest, UploadThenFSThenVSThenNewRPThenFS)
+{
+    testUploadThenUseInDifferentStages({
+        {GL_FRAGMENT_SHADER, false},
+        {GL_VERTEX_SHADER, true},
+        {GL_FRAGMENT_SHADER, false},
+    });
+}
+
+// Test synchronization when a texture is used in different shader stages after data upload.
+//
+// - Use in FS
+// - Break render pass
+// - Use in VS
+// - Use in FS
+TEST_P(Texture2DTest, UploadThenFSThenNewRPThenVSThenFS)
+{
+    testUploadThenUseInDifferentStages({
+        {GL_FRAGMENT_SHADER, true},
+        {GL_VERTEX_SHADER, false},
+        {GL_FRAGMENT_SHADER, false},
+    });
+}
+
+// Test synchronization when a texture is used in different shader stages after data upload.
+//
+// - Use in FS
+// - Break render pass
+// - Use in FS
+// - Use in VS
+TEST_P(Texture2DTest, UploadThenFSThenNewRPThenFSThenVS)
+{
+    testUploadThenUseInDifferentStages({
+        {GL_FRAGMENT_SHADER, true},
+        {GL_FRAGMENT_SHADER, false},
+        {GL_VERTEX_SHADER, false},
+    });
+}
+
 // Test that clears due to emulated formats are to the correct level given non-zero base level.
 TEST_P(Texture2DTestES3, NonZeroBaseEmulatedClear)
 {
@@ -9811,6 +10136,118 @@ void main()
     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 }
 
+class TextureChangeStorageUploadTest : public ANGLETest
+{
+  protected:
+    TextureChangeStorageUploadTest()
+    {
+        setWindowWidth(256);
+        setWindowHeight(256);
+        setConfigRedBits(8);
+        setConfigGreenBits(8);
+        setConfigBlueBits(8);
+        setConfigAlphaBits(8);
+    }
+
+    void testSetUp() override
+    {
+        mProgram = CompileProgram(essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+        if (mProgram == 0)
+        {
+            FAIL() << "shader compilation failed.";
+        }
+
+        glUseProgram(mProgram);
+
+        glClearColor(0, 0, 0, 0);
+        glClearDepthf(0.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glEnable(GL_BLEND);
+        glDisable(GL_DEPTH_TEST);
+
+        glGenTextures(1, &mTexture);
+        ASSERT_GL_NO_ERROR();
+    }
+
+    void testTearDown() override
+    {
+        glDeleteTextures(1, &mTexture);
+        glDeleteProgram(mProgram);
+    }
+
+    GLuint mProgram;
+    GLint mColorLocation;
+    GLuint mTexture;
+};
+
+// Verify that respecifying storage and re-uploading doesn't crash.
+TEST_P(TextureChangeStorageUploadTest, Basic)
+{
+    constexpr int kImageSize        = 8;  // 4 doesn't trip ASAN
+    constexpr int kSmallerImageSize = kImageSize / 2;
+    EXPECT_GT(kImageSize, kSmallerImageSize);
+    EXPECT_GT(kSmallerImageSize / 2, 0);
+
+    std::array<GLColor, kImageSize * kImageSize> kColor;
+
+    glBindTexture(GL_TEXTURE_2D, mTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, kImageSize, kImageSize, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 kColor.data());
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, kSmallerImageSize, kSmallerImageSize);
+    // need partial update to sidestep optimizations that remove the full upload
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, kSmallerImageSize / 2, kSmallerImageSize / 2, GL_RGBA,
+                    GL_UNSIGNED_BYTE, kColor.data());
+    EXPECT_GL_NO_ERROR();
+}
+
+class ExtraSamplerCubeShadowUseTest : public ANGLETest
+{
+  protected:
+    ExtraSamplerCubeShadowUseTest() : ANGLETest() {}
+
+    const char *getVertexShaderSource() { return "#version 300 es\nvoid main() {}"; }
+
+    const char *getFragmentShaderSource()
+    {
+        return R"(#version 300 es
+precision mediump float;
+
+uniform mediump samplerCube var_0002; // this has to be there
+uniform highp samplerCubeShadow var_0004; // this has to be a cube shadow sampler
+out vec4 color;
+void main() {
+
+    vec4 var_0031 = texture(var_0002, vec3(1,1,1));
+    ivec2 size = textureSize(var_0004, 0) ;
+    var_0031.x += float(size.y);
+
+    color = var_0031;
+})";
+    }
+
+    void testSetUp() override
+    {
+        mProgram = CompileProgram(getVertexShaderSource(), getFragmentShaderSource());
+        if (mProgram == 0)
+        {
+            FAIL() << "shader compilation failed.";
+        }
+        glUseProgram(mProgram);
+        ASSERT_GL_NO_ERROR();
+    }
+
+    void testTearDown() override { glDeleteProgram(mProgram); }
+
+    GLuint mProgram;
+};
+
+TEST_P(ExtraSamplerCubeShadowUseTest, Basic)
+{
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 3);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+}
+
 // Use this to select which configurations (e.g. which renderer, which GLES major version) these
 // tests should be run against.
 #define ES2_EMULATE_COPY_TEX_IMAGE()                          \
@@ -9918,5 +10355,9 @@ ANGLE_INSTANTIATE_TEST_ES31(TextureBufferTestES31);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CopyImageTestES31);
 ANGLE_INSTANTIATE_TEST_ES31(CopyImageTestES31);
+
+ANGLE_INSTANTIATE_TEST_ES3(TextureChangeStorageUploadTest);
+
+ANGLE_INSTANTIATE_TEST_ES3(ExtraSamplerCubeShadowUseTest);
 
 }  // anonymous namespace

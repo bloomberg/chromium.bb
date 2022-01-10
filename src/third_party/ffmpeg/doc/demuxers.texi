@@ -150,6 +150,12 @@ directive) will be reduced based on their specified Out point.
 Metadata of the packets of the file. The specified metadata will be set for
 each file packet. You can specify this directive multiple times to add multiple
 metadata entries.
+This directive is deprecated, use @code{file_packet_meta} instead.
+
+@item @code{file_packet_meta @var{key} @var{value}}
+Metadata of the packets of the file. The specified metadata will be set for
+each file packet. You can specify this directive multiple times to add multiple
+metadata entries.
 
 @item @code{option @var{key} @var{value}}
 Option to access, open and probe the file.
@@ -170,6 +176,20 @@ If this directive is given, the string with the corresponding id in the
 subfiles will be used.
 This is especially useful for MPEG-PS (VOB) files, where the order of the
 streams is not reliable.
+
+@item @code{stream_meta @var{key} @var{value}}
+Metadata for the stream.
+Can be present multiple times.
+
+@item @code{stream_codec @var{value}}
+Codec for the stream.
+
+@item @code{stream_extradata @var{hex_string}}
+Extradata for the string, encoded in hexadecimal.
+
+@item @code{chapter @var{id} @var{start} @var{end}}
+Add a chapter. @var{id} is an unique identifier, possibly small and
+consecutive.
 
 @end table
 
@@ -671,7 +691,7 @@ Don't use mfra box to set timestamps
 
 @item use_tfdt
 For fragmented input, set fragment's starting timestamp to @code{baseMediaDecodeTime} from the @code{tfdt} box.
-Default is disabled, which will preferentially use the @code{earliest_presentation_time} from the @code{sidx} box.
+Default is enabled, which will prefer to use the @code{tfdt} box to set DTS. Disable to use the @code{earliest_presentation_time} from the @code{sidx} box.
 In either case, the timestamp from the @code{mfra} box will be used if it's available and @code{use_mfra_for} is
 set to pts or dts.
 

@@ -1,16 +1,16 @@
 Name: icu
 URL: https://github.com/unicode-org/icu
-Version: 69-1
-CPEPrefix: cpe:/a:icu-project:international_components_for_unicode:69.1
+Version: 70-1
+CPEPrefix: cpe:/a:icu-project:international_components_for_unicode:70.1
 License: MIT
 Security Critical: yes
 
 Description:
-This directory contains the source code of ICU 69.1 for C/C++.
+This directory contains the source code of ICU 70.1 for C/C++.
 
 A. How to update ICU
 
-1. Run "scripts/update.sh <version>" (e.g. 69-1).
+1. Run "scripts/update.sh <version>" (e.g. 70-1).
    This will download ICU from the upstream git repository.
    It does preserve Chrome-specific build files and
    converter files. (see section C)
@@ -139,6 +139,8 @@ them when updating ICU.
 2. source/data/brkitr
   - dictionaries/khmerdict.txt: Abridged Khmer dictionary. See
     https://unicode-org.atlassian.net/browse/ICU-9451
+  - dictionaries/laodict.txt: Abridged Lao dictionary. We keep using the smaller
+    old version from ICU69-1.
   - rules/word_ja.txt (used only on Android)
     Added for Japanese-specific word-breaking without the C+J dictionary.
   - rules/{root,zh,zh_Hant}.txt
@@ -247,38 +249,18 @@ D. Local Modifications
     patches/fuchsia.patch
   - context bug: https://bugs.chromium.org/p/chromium/issues/detail?id=1184527
 
-10. Patch locale to fix assign and assing move operators:
-    patches/locid_operators.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-21587
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/1698
+10. Rename the following file due to path conflict.
+    mv source/common/BUILD source/common/BUILD.unused
+    mv source/data/unidata/norm2/BUILD source/data/unidata/norm2/BUILD.unused
+    mv source/i18n/BUILD source/i18n/BUILD.unused
+    mv source/stubdata/BUILD source/stubdata/BUILD.unused
+    mv source/tools/gennorm2/BUILD source/tools/gennorm2/BUILD.unused
+    mv source/tools/toolutil/BUILD source/tools/toolutil/BUILD.unused
 
-11. Patch source/common/uresbund.cpp  for missing "emoji" and "eor"
-    patches/Collator_getKeywordValues.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-21641
+11. Remove deprecated ctgmath header
+    patches/lstmbe-header.patch
   - upstream PR:
-    https://github.com/unicode-org/icu/pull/1743
-
-12. Patch source/common/serv.cpp to fix memory leak
-    patches/ICUService_getKey.patch
+    https://github.com/unicode-org/icu/pull/1948
   - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-21644
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/1751
-
-13. Patch icu4c/source/common/uloc_tag.cpp to fix buffer issue.
-    patches/ultag_parse_Null.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-21676
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/1767
-
-14. Patch loclikely.cpp and uloc.cpp for long locale bug.
-    patches/loclikely_uloc.patch
-  - upstream bug:
-    https://unicode-org.atlassian.net/browse/ICU-21639
-  - upstream PR:
-    https://github.com/unicode-org/icu/pull/1762
+    https://unicode-org.atlassian.net/browse/ICU-21865
 

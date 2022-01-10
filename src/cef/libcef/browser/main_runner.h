@@ -12,7 +12,6 @@
 #include "libcef/common/main_runner_handler.h"
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "content/public/browser/browser_main_runner.h"
 
 namespace base {
@@ -21,7 +20,6 @@ class WaitableEvent;
 
 namespace content {
 class ContentMainRunner;
-struct ContentMainParams;
 }  // namespace content
 
 class CefUIThread;
@@ -30,6 +28,10 @@ class CefUIThread;
 class CefMainRunner : public CefMainRunnerHandler {
  public:
   CefMainRunner(bool multi_threaded_message_loop, bool external_message_pump);
+
+  CefMainRunner(const CefMainRunner&) = delete;
+  CefMainRunner& operator=(const CefMainRunner&) = delete;
+
   ~CefMainRunner();
 
   // Called from CefContext::Initialize.
@@ -61,8 +63,7 @@ class CefMainRunner : public CefMainRunnerHandler {
 
   // CefMainRunnerHandler methods:
   void PreBrowserMain() override;
-  int RunMainProcess(
-      const content::MainFunctionParams& main_function_params) override;
+  int RunMainProcess(content::MainFunctionParams main_function_params) override;
 
   // Create the UI thread when running with multi-threaded message loop mode.
   bool CreateUIThread(base::OnceClosure setup_callback);
@@ -83,15 +84,12 @@ class CefMainRunner : public CefMainRunnerHandler {
 
   std::unique_ptr<CefMainRunnerDelegate> main_delegate_;
   std::unique_ptr<content::ContentMainRunner> main_runner_;
-  std::unique_ptr<content::ContentMainParams> main_params_;
 
   std::unique_ptr<content::BrowserMainRunner> browser_runner_;
   std::unique_ptr<CefUIThread> ui_thread_;
 
   // Used to quit the current base::RunLoop.
   base::OnceClosure quit_when_idle_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(CefMainRunner);
 };
 
 #endif  // CEF_LIBCEF_BROWSER_MAIN_RUNNER_H_

@@ -9,7 +9,6 @@
 #include "http2/adapter/http2_visitor_interface.h"
 #include "http2/adapter/nghttp2_data_provider.h"
 #include "http2/adapter/nghttp2_util.h"
-#include "third_party/nghttp2/src/lib/includes/nghttp2/nghttp2.h"
 #include "common/platform/api/quiche_bug_tracker.h"
 #include "common/platform/api/quiche_logging.h"
 #include "common/quiche_endian.h"
@@ -177,11 +176,11 @@ int OnHeader(nghttp2_session* /* session */, const nghttp2_frame* frame,
     case Http2VisitorInterface::HEADER_CONNECTION_ERROR:
       return NGHTTP2_ERR_CALLBACK_FAILURE;
     case Http2VisitorInterface::HEADER_RST_STREAM:
-      return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
-    default:
-      // Unexpected value.
+    case Http2VisitorInterface::HEADER_HTTP_MESSAGING:
       return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
   }
+  // Unexpected value.
+  return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
 }
 
 int OnBeforeFrameSent(nghttp2_session* /* session */,
@@ -212,8 +211,8 @@ int OnInvalidFrameReceived(nghttp2_session* /* session */,
                            void* user_data) {
   QUICHE_CHECK_NE(user_data, nullptr);
   auto* visitor = static_cast<Http2VisitorInterface*>(user_data);
-  const bool result =
-      visitor->OnInvalidFrame(frame->hd.stream_id, lib_error_code);
+  const bool result = visitor->OnInvalidFrame(
+      frame->hd.stream_id, ToInvalidFrameError(lib_error_code));
   return result ? 0 : NGHTTP2_ERR_CALLBACK_FAILURE;
 }
 

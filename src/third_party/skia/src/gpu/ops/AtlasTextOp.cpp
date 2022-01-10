@@ -107,7 +107,7 @@ auto AtlasTextOp::Geometry::MakeForBlob(const GrAtlasSubRun& subRun,
                                         const SkMatrix& drawMatrix,
                                         SkPoint drawOrigin,
                                         SkIRect clipRect,
-                                        sk_sp<GrTextBlob> blob,
+                                        sk_sp<SkRefCnt> supportData,
                                         const SkPMColor4f& color,
                                         SkArenaAlloc* alloc) -> Geometry* {
     // Bypass the automatic dtor behavior in SkArenaAlloc. I'm leaving this up to the Op to run
@@ -117,16 +117,14 @@ auto AtlasTextOp::Geometry::MakeForBlob(const GrAtlasSubRun& subRun,
                              drawMatrix,
                              drawOrigin,
                              clipRect,
-                             std::move(blob),
+                             std::move(supportData),
                              nullptr,
                              color};
 }
 
 void AtlasTextOp::Geometry::fillVertexData(void *dst, int offset, int count) const {
-    SkMatrix positionMatrix = fDrawMatrix;
-    positionMatrix.preTranslate(fDrawOrigin.x(), fDrawOrigin.y());
     fSubRun.fillVertexData(
-            dst, offset, count, fColor.toBytes_RGBA(), positionMatrix, fClipRect);
+            dst, offset, count, fColor.toBytes_RGBA(), fDrawMatrix, fDrawOrigin, fClipRect);
 }
 
 void AtlasTextOp::visitProxies(const GrVisitProxyFunc& func) const {
@@ -517,7 +515,7 @@ GrOp::Owner AtlasTextOp::CreateOpTestingOnly(SurfaceDrawContext* sdc,
     SkASSERT(subRun);
     GrOp::Owner op;
     std::tie(std::ignore, op) = subRun->makeAtlasTextOp(
-            nullptr, mtxProvider, glyphRunList, skPaint, sdc, nullptr);
+            nullptr, mtxProvider, glyphRunList.origin(), skPaint, sdc, nullptr);
     return op;
 }
 
@@ -528,7 +526,7 @@ GrOp::Owner AtlasTextOp::CreateOpTestingOnly(SurfaceDrawContext* sdc,
 #if GR_TEST_UTILS
 
 GR_DRAW_OP_TEST_DEFINE(AtlasTextOp) {
-    SkSimpleMatrixProvider matrixProvider(GrTest::TestMatrixInvertible(random));
+    SkMatrixProvider matrixProvider(GrTest::TestMatrixInvertible(random));
 
     SkPaint skPaint;
     skPaint.setColor(random->nextU());

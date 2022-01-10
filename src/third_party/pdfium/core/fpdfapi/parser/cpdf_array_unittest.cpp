@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "core/fpdfapi/parser/cpdf_boolean.h"
+#include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_number.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -74,39 +75,35 @@ TEST(cpdf_array, Clear) {
   EXPECT_EQ(0U, arr->size());
 }
 
+TEST(cpdf_array, SetAtBeyond) {
+  auto arr = pdfium::MakeRetain<CPDF_Array>();
+  EXPECT_EQ(nullptr, arr->SetNewAt<CPDF_Number>(0, 0));
+  EXPECT_NE(nullptr, arr->InsertNewAt<CPDF_Number>(0, 0));
+  EXPECT_EQ(nullptr, arr->SetNewAt<CPDF_Number>(1, 0));
+}
+
 TEST(cpdf_array, InsertAt) {
-  {
-    const int elems[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    auto arr = pdfium::MakeRetain<CPDF_Array>();
-    for (size_t i = 0; i < pdfium::size(elems); ++i)
-      arr->InsertNewAt<CPDF_Number>(i, elems[i]);
-    ASSERT_EQ(pdfium::size(elems), arr->size());
-    for (size_t i = 0; i < pdfium::size(elems); ++i)
-      EXPECT_EQ(elems[i], arr->GetIntegerAt(i));
-    arr->InsertNewAt<CPDF_Number>(3, 33);
-    arr->InsertNewAt<CPDF_Number>(6, 55);
-    arr->InsertNewAt<CPDF_Number>(12, 12);
-    const int expected[] = {1, 2, 3, 33, 4, 5, 55, 6, 7, 8, 9, 10, 12};
-    ASSERT_EQ(pdfium::size(expected), arr->size());
-    for (size_t i = 0; i < pdfium::size(expected); ++i)
-      EXPECT_EQ(expected[i], arr->GetIntegerAt(i));
-  }
-  {
-    // When the position to insert is beyond the upper bound,
-    // an element is inserted at that position while other unfilled
-    // positions have nullptr.
-    const int elems[] = {1, 2};
-    auto arr = pdfium::MakeRetain<CPDF_Array>();
-    for (size_t i = 0; i < pdfium::size(elems); ++i)
-      arr->InsertNewAt<CPDF_Number>(i, elems[i]);
-    arr->InsertNewAt<CPDF_Number>(10, 10);
-    ASSERT_EQ(11u, arr->size());
-    for (size_t i = 0; i < pdfium::size(elems); ++i)
-      EXPECT_EQ(elems[i], arr->GetIntegerAt(i));
-    for (size_t i = pdfium::size(elems); i < 10; ++i)
-      EXPECT_EQ(nullptr, arr->GetObjectAt(i));
-    EXPECT_EQ(10, arr->GetIntegerAt(10));
-  }
+  const int elems[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+  auto arr = pdfium::MakeRetain<CPDF_Array>();
+  for (size_t i = 0; i < pdfium::size(elems); ++i)
+    arr->InsertNewAt<CPDF_Number>(i, elems[i]);
+  ASSERT_EQ(pdfium::size(elems), arr->size());
+  for (size_t i = 0; i < pdfium::size(elems); ++i)
+    EXPECT_EQ(elems[i], arr->GetIntegerAt(i));
+  arr->InsertNewAt<CPDF_Number>(3, 33);
+  arr->InsertNewAt<CPDF_Number>(6, 55);
+  arr->InsertNewAt<CPDF_Number>(12, 12);
+  const int expected[] = {1, 2, 3, 33, 4, 5, 55, 6, 7, 8, 9, 10, 12};
+  ASSERT_EQ(pdfium::size(expected), arr->size());
+  for (size_t i = 0; i < pdfium::size(expected); ++i)
+    EXPECT_EQ(expected[i], arr->GetIntegerAt(i));
+}
+
+TEST(cpdf_array, InsertAtBeyond) {
+  auto arr = pdfium::MakeRetain<CPDF_Array>();
+  EXPECT_EQ(nullptr, arr->InsertNewAt<CPDF_Number>(1, 0));
+  EXPECT_NE(nullptr, arr->InsertNewAt<CPDF_Number>(0, 0));
+  EXPECT_EQ(nullptr, arr->InsertNewAt<CPDF_Number>(2, 0));
 }
 
 TEST(cpdf_array, Clone) {
@@ -190,6 +187,41 @@ TEST(cpdf_array, Clone) {
       }
     }
   }
+}
+
+TEST(cpdf_array, Find) {
+  auto arr = pdfium::MakeRetain<CPDF_Array>();
+  auto dict0 = pdfium::MakeRetain<CPDF_Dictionary>();
+  auto dict1 = pdfium::MakeRetain<CPDF_Dictionary>();
+  auto dict2 = pdfium::MakeRetain<CPDF_Dictionary>();
+  arr->Append(dict0);
+  arr->Append(dict1);
+
+  absl::optional<size_t> maybe_found = arr->Find(nullptr);
+  EXPECT_FALSE(maybe_found.has_value());
+
+  maybe_found = arr->Find(dict0.Get());
+  ASSERT_TRUE(maybe_found.has_value());
+  EXPECT_EQ(0u, maybe_found.value());
+
+  maybe_found = arr->Find(dict1.Get());
+  ASSERT_TRUE(maybe_found.has_value());
+  EXPECT_EQ(1u, maybe_found.value());
+
+  maybe_found = arr->Find(dict2.Get());
+  EXPECT_FALSE(maybe_found.has_value());
+}
+
+TEST(cpdf_array, Contains) {
+  auto arr = pdfium::MakeRetain<CPDF_Array>();
+  auto dict0 = pdfium::MakeRetain<CPDF_Dictionary>();
+  auto dict1 = pdfium::MakeRetain<CPDF_Dictionary>();
+  auto dict2 = pdfium::MakeRetain<CPDF_Dictionary>();
+  arr->Append(dict0);
+  arr->Append(dict1);
+  EXPECT_TRUE(arr->Contains(dict0.Get()));
+  EXPECT_TRUE(arr->Contains(dict1.Get()));
+  EXPECT_FALSE(arr->Contains(dict2.Get()));
 }
 
 TEST(cpdf_array, Iterator) {

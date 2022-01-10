@@ -122,12 +122,9 @@ static const AVOption rtp_options[] = {
 static AVDictionary *map_to_opts(RTSPState *rt)
 {
     AVDictionary *opts = NULL;
-    char buf[256];
 
-    snprintf(buf, sizeof(buf), "%d", rt->buffer_size);
-    av_dict_set(&opts, "buffer_size", buf, 0);
-    snprintf(buf, sizeof(buf), "%d", rt->pkt_size);
-    av_dict_set(&opts, "pkt_size", buf, 0);
+    av_dict_set_int(&opts, "buffer_size", rt->buffer_size, 0);
+    av_dict_set_int(&opts, "pkt_size",    rt->pkt_size,    0);
 
     return opts;
 }
@@ -218,7 +215,7 @@ static void init_rtp_handler(const RTPDynamicProtocolHandler *handler,
         par->codec_id          = handler->codec_id;
     rtsp_st->dynamic_handler = handler;
     if (st)
-        st->internal->need_parsing = handler->need_parsing;
+        ffstream(st)->need_parsing = handler->need_parsing;
     if (handler->priv_data_size) {
         rtsp_st->dynamic_protocol_context = av_mallocz(handler->priv_data_size);
         if (!rtsp_st->dynamic_protocol_context)

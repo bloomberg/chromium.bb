@@ -73,13 +73,16 @@ public:
 		const bool optimize;
 	};
 
+	// contains() queries whether the cache contains a shader with the given key.
+	inline bool contains(const PipelineCache::SpirvBinaryKey &key);
+
 	// getOrOptimizeSpirv() queries the cache for a shader with the given key.
 	// If one is found, it is returned, otherwise create() is called, the
 	// returned SPIR-V binary is added to the cache, and it is returned.
-	// Function must be a function of the signature:
+	// CreateOnCacheMiss must be a function of the signature:
 	//     sw::ShaderBinary()
-	template<typename Function>
-	inline sw::SpirvBinary getOrOptimizeSpirv(const PipelineCache::SpirvBinaryKey &key, Function &&create);
+	template<typename CreateOnCacheMiss, typename CacheHit>
+	inline sw::SpirvBinary getOrOptimizeSpirv(const PipelineCache::SpirvBinaryKey &key, CreateOnCacheMiss &&create, CacheHit &&cacheHit);
 
 	struct ComputeProgramKey
 	{
@@ -143,21 +146,28 @@ std::shared_ptr<sw::ComputeProgram> PipelineCache::getOrCreateComputeProgram(con
 	return created;
 }
 
-template<typename Function>
-sw::SpirvBinary PipelineCache::getOrOptimizeSpirv(const PipelineCache::SpirvBinaryKey &key, Function &&create)
+inline bool PipelineCache::contains(const PipelineCache::SpirvBinaryKey &key)
+{
+	marl::lock lock(spirvShadersMutex);
+
+	return spirvShaders.find(key) != spirvShaders.end();
+}
+
+template<typename CreateOnCacheMiss, typename CacheHit>
+sw::SpirvBinary PipelineCache::getOrOptimizeSpirv(const PipelineCache::SpirvBinaryKey &key, CreateOnCacheMiss &&create, CacheHit &&cacheHit)
 {
 	marl::lock lock(spirvShadersMutex);
 
 	auto it = spirvShaders.find(key);
 	if(it != spirvShaders.end())
 	{
+		cacheHit();
 		return it->second;
 	}
 
-	auto created = create();
-	spirvShaders.emplace(key, created);
-
-	return created;
+	sw::SpirvBinary outShader = create();
+	spirvShaders.emplace(key, outShader);
+	return outShader;
 }
 
 }  // namespace vk

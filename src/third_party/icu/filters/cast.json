@@ -1811,7 +1811,11 @@
         "+/calendar/default",
         "+/calendar/gregorian",
         "+/calendar/generic",
-        "+/calendar/buddhist"
+        "+/calendar/buddhist",
+        "-/calendar/default/DateTimeSkeletons",
+        "-/calendar/gregorian/DateTimeSkeletons",
+        "-/calendar/generic/DateTimeSkeletons",
+        "-/calendar/buddhist/DateTimeSkeletons"
       ]
     },
     {
@@ -1828,7 +1832,11 @@
         "+/calendar/default",
         "+/calendar/gregorian",
         "+/calendar/generic",
-        "+/calendar/chinese"
+        "+/calendar/chinese",
+        "-/calendar/default/DateTimeSkeletons",
+        "-/calendar/gregorian/DateTimeSkeletons",
+        "-/calendar/generic/DateTimeSkeletons",
+        "-/calendar/chinese/DateTimeSkeletons"
       ]
     },
     {
@@ -1845,7 +1853,11 @@
         "+/calendar/default",
         "+/calendar/gregorian",
         "+/calendar/generic",
-        "+/calendar/dangi"
+        "+/calendar/dangi",
+        "-/calendar/default/DateTimeSkeletons",
+        "-/calendar/gregorian/DateTimeSkeletons",
+        "-/calendar/generic/DateTimeSkeletons",
+        "-/calendar/dangi/DateTimeSkeletons"
       ]
     },
     {
@@ -1863,7 +1875,12 @@
         "+/calendar/gregorian",
         "+/calendar/generic",
         "+/calendar/ethiopic",
-        "+/calendar/ethiopic-amete-alem"
+        "+/calendar/ethiopic-amete-alem",
+        "-/calendar/default/DateTimeSkeletons",
+        "-/calendar/gregorian/DateTimeSkeletons",
+        "-/calendar/generic/DateTimeSkeletons",
+        "-/calendar/ethiopic/DateTimeSkeletons",
+        "-/calendar/ethiopic-amete-alem/DateTimeSkeletons"
       ]
     },
     {
@@ -1880,7 +1897,11 @@
         "+/calendar/default",
         "+/calendar/gregorian",
         "+/calendar/generic",
-        "+/calendar/hebrew"
+        "+/calendar/hebrew",
+        "-/calendar/default/DateTimeSkeletons",
+        "-/calendar/gregorian/DateTimeSkeletons",
+        "-/calendar/generic/DateTimeSkeletons",
+        "-/calendar/hebrew/DateTimeSkeletons"
       ]
     },
     {
@@ -1900,7 +1921,11 @@
 //       # Other Islamic calendar formats are not in locales other than root.
 //       # ar-SA's default is islamic-umalqura, but its format entries are
 //       # specified in root via aliases.
-        "+/calendar/islamic"
+        "+/calendar/islamic",
+        "-/calendar/default/DateTimeSkeletons",
+        "-/calendar/gregorian/DateTimeSkeletons",
+        "-/calendar/generic/DateTimeSkeletons",
+        "-/calendar/islamic/DateTimeSkeletons"
       ]
     },
     {
@@ -1918,7 +1943,12 @@
         "+/calendar/gregorian",
         "+/calendar/generic",
         "+/calendar/persian",
-        "+/calendar/islamic"
+        "+/calendar/islamic",
+        "-/calendar/default/DateTimeSkeletons",
+        "-/calendar/gregorian/DateTimeSkeletons",
+        "-/calendar/generic/DateTimeSkeletons",
+        "-/calendar/persian/DateTimeSkeletons",
+        "-/calendar/islamic/DateTimeSkeletons"
       ]
     },
     {
@@ -1935,7 +1965,11 @@
         "+/calendar/default",
         "+/calendar/gregorian",
         "+/calendar/generic",
-        "+/calendar/japanese"
+        "+/calendar/japanese",
+        "-/calendar/default/DateTimeSkeletons",
+        "-/calendar/gregorian/DateTimeSkeletons",
+        "-/calendar/generic/DateTimeSkeletons",
+        "-/calendar/japanese/DateTimeSkeletons"
       ]
     },
     {
@@ -1954,7 +1988,11 @@
         "+/calendar/default",
         "+/calendar/gregorian",
         "+/calendar/generic",
-        "+/calendar/indian"
+        "+/calendar/indian",
+        "-/calendar/default/DateTimeSkeletons",
+        "-/calendar/gregorian/DateTimeSkeletons",
+        "-/calendar/generic/DateTimeSkeletons",
+        "-/calendar/indian/DateTimeSkeletons"
       ]
     },
     {
@@ -1971,7 +2009,11 @@
         "+/calendar/default",
         "+/calendar/gregorian",
         "+/calendar/generic",
-        "+/calendar/roc"
+        "+/calendar/roc",
+        "-/calendar/default/DateTimeSkeletons",
+        "-/calendar/gregorian/DateTimeSkeletons",
+        "-/calendar/generic/DateTimeSkeletons",
+        "-/calendar/roc/DateTimeSkeletons"
       ]
     },
     {
@@ -2008,7 +2050,25 @@
 // # The same is true of eras and monthNames for Islamic calendar.
         "-/calendar/japanese/eras",
         "-/calendar/islamic/eras",
-        "-/calendar/islamic/monthNames"
+        "-/calendar/islamic/monthNames",
+        "-/calendar/default/DateTimeSkeletons",
+        "-/calendar/gregorian/DateTimeSkeletons",
+        "-/calendar/generic/DateTimeSkeletons",
+        "-/calendar/buddhist/DateTimeSkeletons",
+        "-/calendar/chinese/DateTimeSkeletons",
+        "-/calendar/roc/DateTimeSkeletons",
+        "-/calendar/dangi/DateTimeSkeletons",
+        "-/calendar/ethiopic/DateTimeSkeletons",
+        "-/calendar/ethiopic-amete-alem/DateTimeSkeletons",
+        "-/calendar/japanese/DateTimeSkeletons",
+        "-/calendar/hebrew/DateTimeSkeletons",
+        "-/calendar/islamic/DateTimeSkeletons",
+        "-/calendar/islamic-umalqura/DateTimeSkeletons",
+        "-/calendar/islamic-civil/DateTimeSkeletons",
+        "-/calendar/islamic-tbla/DateTimeSkeletons",
+        "-/calendar/islamic-rgsa/DateTimeSkeletons",
+        "-/calendar/persian/DateTimeSkeletons",
+        "-/calendar/indian/DateTimeSkeletons"
       ]
     },
     {
@@ -2035,7 +2095,10 @@
         "-/calendar/*",
         "+/calendar/default",
         "+/calendar/gregorian",
-        "+/calendar/generic"
+        "+/calendar/generic",
+        "-/calendar/default/DateTimeSkeletons",
+        "-/calendar/gregorian/DateTimeSkeletons",
+        "-/calendar/generic/DateTimeSkeletons"
       ]
     },
 // Based on abridge_locale_data_for_non_ui_languages

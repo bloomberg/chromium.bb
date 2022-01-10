@@ -82,6 +82,7 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
 
   // Returns set of stream labels, that were met during test call.
   std::set<StatsKey> GetKnownVideoStreams() const;
+  VideoStreamsInfo GetKnownStreams() const;
   const FrameCounters& GetGlobalCounters() const;
   // Returns frame counter per stream label. Valid stream labels can be obtained
   // by calling GetKnownVideoStreams()
@@ -91,6 +92,10 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
   std::map<StatsKey, StreamStats> GetStats() const;
   AnalyzerStats GetAnalyzerStats() const;
   double GetCpuUsagePercent();
+
+  // Returns mapping from the stream label to the history of frames that were
+  // met in this stream in the order as they were captured.
+  std::map<std::string, std::vector<uint16_t>> GetStreamFrames() const;
 
  private:
   // Represents a current state of video stream.
@@ -318,7 +323,7 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
       RTC_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
   // Returns string representation of stats key for metrics naming. Used for
   // backward compatibility by metrics naming for 2 peers cases.
-  std::string StatsKeyToMetricName(const StatsKey& key) const
+  std::string ToMetricName(const InternalStatsKey& key) const
       RTC_EXCLUSIVE_LOCKS_REQUIRED(mutex_);
 
   const DefaultVideoQualityAnalyzerOptions options_;
@@ -362,6 +367,9 @@ class DefaultVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
   // after 1st frame from simulcast streams was already rendered and last is
   // still encoding.
   std::map<size_t, std::set<uint16_t>> stream_to_frame_id_history_
+      RTC_GUARDED_BY(mutex_);
+  // Map from stream index to the list of frames as they were met in the stream.
+  std::map<size_t, std::vector<uint16_t>> stream_to_frame_id_full_history_
       RTC_GUARDED_BY(mutex_);
   AnalyzerStats analyzer_stats_ RTC_GUARDED_BY(mutex_);
 

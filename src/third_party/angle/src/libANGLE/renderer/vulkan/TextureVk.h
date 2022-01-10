@@ -145,7 +145,8 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
                                            gl::MemoryObject *memoryObject,
                                            GLuint64 offset,
                                            GLbitfield createFlags,
-                                           GLbitfield usageFlags) override;
+                                           GLbitfield usageFlags,
+                                           const void *imageCreateInfoPNext) override;
 
     angle::Result setEGLImageTarget(const gl::Context *context,
                                     gl::TextureType type,
@@ -351,6 +352,7 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
                                                   gl::LevelIndex sourceLevelGL,
                                                   uint32_t layerCount,
                                                   const gl::Box &sourceArea,
+                                                  RenderPassClosureReason reason,
                                                   uint8_t **outDataPtr);
 
     angle::Result copyBufferDataToImage(ContextVk *contextVk,
@@ -467,9 +469,7 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
     angle::Result respecifyImageStorage(ContextVk *contextVk);
 
     // Update base and max levels, and re-create image if needed.
-    angle::Result updateBaseMaxLevels(ContextVk *contextVk,
-                                      bool baseLevelChanged,
-                                      bool maxLevelChanged);
+    angle::Result maybeUpdateBaseMaxLevels(ContextVk *contextVk, bool *didRespecifyOut);
 
     bool isFastUnpackPossible(const vk::Format &vkFormat, size_t offset) const;
 
@@ -578,6 +578,10 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
     gl::TexLevelMask mRedefinedLevels;
 
     angle::ObserverBinding mImageObserverBinding;
+
+    // Saved between updates.
+    gl::LevelIndex mCurrentBaseLevel;
+    gl::LevelIndex mCurrentMaxLevel;
 };
 
 }  // namespace rx

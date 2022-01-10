@@ -22,14 +22,14 @@
 #include "src/transform/decompose_memory_access.h"
 #include "src/transform/external_texture_transform.h"
 #include "src/transform/fold_trivial_single_use_lets.h"
-#include "src/transform/inline_pointer_lets.h"
 #include "src/transform/loop_to_for_loop.h"
 #include "src/transform/manager.h"
 #include "src/transform/pad_array_elements.h"
 #include "src/transform/promote_initializers_to_const_var.h"
 #include "src/transform/remove_phonies.h"
-#include "src/transform/simplify.h"
+#include "src/transform/simplify_pointers.h"
 #include "src/transform/single_entry_point.h"
+#include "src/transform/unshadow.h"
 #include "src/transform/zero_init_workgroup_memory.h"
 
 TINT_INSTANTIATE_TYPEINFO(tint::transform::Glsl);
@@ -47,6 +47,8 @@ Output Glsl::Run(const Program* in, const DataMap& inputs) {
 
   auto* cfg = inputs.Get<Config>();
 
+  manager.Add<Unshadow>();
+
   // Attempt to convert `loop`s into for-loops. This is to try and massage the
   // output into something that will not cause FXC to choke or misbehave.
   manager.Add<FoldTrivialSingleUseLets>();
@@ -58,10 +60,17 @@ Output Glsl::Run(const Program* in, const DataMap& inputs) {
     manager.Add<ZeroInitWorkgroupMemory>();
   }
   manager.Add<CanonicalizeEntryPointIO>();
-  manager.Add<InlinePointerLets>();
+  manager.Add<SimplifyPointers>();
+
+  // Running SingleEntryPoint before RemovePhonies prevents variables
+  // referenced only by phonies from being optimized out. Strictly
+  // speaking, that optimization isn't incorrect, but it prevents some
+  // tests (e.g., types/texture/*) from producing useful results.
+  if (cfg) {
+    manager.Add<SingleEntryPoint>();
+    data.Add<SingleEntryPoint::Config>(cfg->entry_point);
+  }
   manager.Add<RemovePhonies>();
-  // Simplify cleans up messy `*(&(expr))` expressions from InlinePointerLets.
-  manager.Add<Simplify>();
   manager.Add<CalculateArrayLength>();
   manager.Add<ExternalTextureTransform>();
   manager.Add<PromoteInitializersToConstVar>();
@@ -72,10 +81,6 @@ Output Glsl::Run(const Program* in, const DataMap& inputs) {
   // variables directly.
   data.Add<CanonicalizeEntryPointIO::Config>(
       CanonicalizeEntryPointIO::ShaderStyle::kHlsl);
-  if (cfg) {
-    manager.Add<SingleEntryPoint>();
-    data.Add<SingleEntryPoint::Config>(cfg->entry_point);
-  }
   auto out = manager.Run(in, data);
   if (!out.program.IsValid()) {
     return out;

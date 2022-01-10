@@ -71,16 +71,6 @@ static const AVOption sierpinski_options[] = {
 
 AVFILTER_DEFINE_CLASS(sierpinski);
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_0BGR32,
-        AV_PIX_FMT_NONE
-    };
-
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
-
 static int fill_sierpinski(SierpinskiContext *s, int x, int y)
 {
     int pos_x = x + s->pos_x;
@@ -225,8 +215,8 @@ const AVFilter ff_vsrc_sierpinski = {
     .description   = NULL_IF_CONFIG_SMALL("Render a Sierpinski fractal."),
     .priv_size     = sizeof(SierpinskiContext),
     .priv_class    = &sierpinski_class,
-    .query_formats = query_formats,
     .inputs        = NULL,
     FILTER_OUTPUTS(sierpinski_outputs),
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_0BGR32),
     .flags         = AVFILTER_FLAG_SLICE_THREADS,
 };

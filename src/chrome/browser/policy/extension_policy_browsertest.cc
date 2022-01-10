@@ -7,6 +7,8 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/raw_ptr.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -50,6 +52,7 @@
 #include "components/version_info/channel.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/download_test_observer.h"
@@ -184,6 +187,22 @@ void RegisterURLReplacingHandler(net::EmbeddedTestServer* test_server,
         return response;
       },
       base::Unretained(test_server), match_path, template_file));
+}
+
+// Sends a mouse click at the given coordinates to the current renderer.
+void PerformClick(content::WebContents* contents, int x, int y) {
+  blink::WebMouseEvent click_event(
+      blink::WebInputEvent::Type::kMouseDown,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  click_event.button = blink::WebMouseEvent::Button::kLeft;
+  click_event.click_count = 1;
+  click_event.SetPositionInWidget(x, y);
+  contents->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+      click_event);
+  click_event.SetType(blink::WebInputEvent::Type::kMouseUp);
+  contents->GetMainFrame()->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+      click_event);
 }
 
 class ExtensionPolicyTest : public PolicyTest {
@@ -680,8 +699,53 @@ class MockedInstallationCollectorObserver
  private:
   extensions::InstallStageTracker::Stage stage_ =
       extensions::InstallStageTracker::Stage::CREATED;
-  const content::BrowserContext* context_;
+  raw_ptr<const content::BrowserContext> context_;
 };
+
+std::string GetUpdateManifestBody(const std::string& id,
+                                  const std::string& crx_name,
+                                  const std::string& version) {
+  // "example.com" is a  placeholder that gets substituted with the test
+  // server address at runtime.
+  std::string crx_path = "http://example.com/" + crx_name;
+  return "<?xml version='1.0' encoding='UTF-8'?>"
+         "<gupdate xmlns='http://www.google.com/update2/response' "
+         "protocol='2.0'>"
+         " <app appid='" +
+         id +
+         "'>"
+         "  <updatecheck status='ok' codebase='" +
+         crx_path + "' version='" + version +
+         "' />"
+         " </app>"
+         "</gupdate>";
+}
+
+std::string GetUpdateManifestHeader() {
+  return "HTTP/1.1 200 OK\nContent-Type: application/json; "
+         "charset=utf-8\n";
+}
+
+bool WriteManifestResponse(content::URLLoaderInterceptor::RequestParams* params,
+                           const std::string& id,
+                           const std::string& update_manifest_name,
+                           const std::string& crx_name,
+                           const std::string& version,
+                           const base::FilePath& install_crx_path) {
+  if (params->url_request.url.path() == update_manifest_name) {
+    content::URLLoaderInterceptor::WriteResponse(
+        GetUpdateManifestHeader(), GetUpdateManifestBody(id, crx_name, version),
+        params->client.get());
+    return true;
+  }
+
+  if (params->url_request.url.path() == "/" + crx_name) {
+    content::URLLoaderInterceptor::WriteResponse(install_crx_path,
+                                                 params->client.get());
+    return true;
+  }
+  return false;
+}
 
 }  // namespace
 
@@ -927,6 +991,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallForcelist) {
   extensions::InstallStageTracker* install_stage_tracker =
       extensions::InstallStageTracker::Get(browser()->profile());
   install_stage_tracker->AddObserver(&collector_observer);
+
   UpdateProviderPolicy(policies);
   registry_observer.WaitForExtensionWillBeInstalled();
   install_stage_tracker->RemoveObserver(&collector_observer);
@@ -1008,7 +1073,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallForcelist) {
   // Test policy-installed extensions are reloaded when killed.
   {
     BackgroundContentsService::
-        SetRestartDelayForForceInstalledAppsAndExtensionsForTesting(0);
+        SetRestartDelayForForceInstalledAppsAndExtensionsForTesting(1);
     extensions::ExtensionHostTestHelper extension_crashed_observer(
         browser()->profile(), kGoodCrxId);
     extensions::TestExtensionRegistryObserver extension_loaded_observer(
@@ -1175,30 +1240,6 @@ class ExtensionPinningTest : public extensions::ExtensionBrowserTest {
     BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }
 
-  std::string GetUpdateManifestBody(const std::string& id,
-                                    const std::string& crx_name,
-                                    const std::string& version) {
-    // "example.com" is a  placeholder that gets substituted with the test
-    // server address at runtime.
-    std::string crx_path = "http://example.com/" + crx_name;
-    return "<?xml version='1.0' encoding='UTF-8'?>"
-           "<gupdate xmlns='http://www.google.com/update2/response' "
-           "protocol='2.0'>"
-           " <app appid='" +
-           id +
-           "'>"
-           "  <updatecheck status='ok' codebase='" +
-           crx_path + "' version='" + version +
-           "' />"
-           " </app>"
-           "</gupdate>";
-  }
-
-  std::string GetUpdateManifestHeader() {
-    return "HTTP/1.1 200 OK\nContent-Type: application/json; "
-           "charset=utf-8\n";
-  }
-
   base::FilePath PackLocalExtension(const std::string& relative_dir_path,
                                     const std::string& relative_pem_path,
                                     const base::FilePath& crx_path) {
@@ -1235,24 +1276,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionPinningTest,
   // unexpected request.
   ExtensionRequestInterceptor interceptor;
   ASSERT_TRUE(embedded_test_server()->Start());
-  // TODO(b/172205862): Find a way to move these requests out of the test.
   interceptor.set_interceptor_hook(base::BindLambdaForTesting(
       [&](content::URLLoaderInterceptor::RequestParams* params) {
-        if (params->url_request.url.path() == "/update_manifest_v1.xml") {
-          content::URLLoaderInterceptor::WriteResponse(
-              GetUpdateManifestHeader(),
-              GetUpdateManifestBody(kPinnedExtensionCrxId, "v1.crx",
-                                    /*version=*/"1"),
-              params->client.get());
-          return true;
-        }
-
-        if (params->url_request.url.path() == "/v1.crx") {
-          content::URLLoaderInterceptor::WriteResponse(install_crx_path,
-                                                       params->client.get());
-          return true;
-        }
-        return false;
+        return WriteManifestResponse(params, kPinnedExtensionCrxId,
+                                     "/update_manifest_v1.xml", "v1.crx",
+                                     /*version=*/"1", install_crx_path);
       }));
 
   extensions::TestExtensionRegistryObserver observer(extension_registry(),
@@ -1273,21 +1301,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionPinningTest,
   // extension.
   interceptor.set_interceptor_hook(base::BindLambdaForTesting(
       [&](content::URLLoaderInterceptor::RequestParams* params) {
-        if (params->url_request.url.path() == "/update_manifest_v2.xml") {
-          content::URLLoaderInterceptor::WriteResponse(
-              GetUpdateManifestHeader(),
-              GetUpdateManifestBody(kPinnedExtensionCrxId, "v2.crx",
-                                    /*version=*/"2"),
-              params->client.get());
-          return true;
-        }
-
-        if (params->url_request.url.path() == "/v2.crx") {
-          content::URLLoaderInterceptor::WriteResponse(updated_crx_path,
-                                                       params->client.get());
-          return true;
-        }
-        return false;
+        return WriteManifestResponse(params, kPinnedExtensionCrxId,
+                                     "/update_manifest_v2.xml", "v2.crx",
+                                     /*version=*/"2", updated_crx_path);
       }));
   // Change |update_url| to point to version 2 of the extension.
   SetExtensionSettingsPolicy("/update_manifest_v2.xml", kPinnedExtensionCrxId);
@@ -1316,24 +1332,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionPinningTest, UpdateExtensionWithUrlInManifest) {
   // unexpected request.
   ExtensionRequestInterceptor interceptor;
   ASSERT_TRUE(embedded_test_server()->Start());
-  // TODO(b/172205862): Find a way to move these requests out of the test.
   interceptor.set_interceptor_hook(base::BindLambdaForTesting(
       [&](content::URLLoaderInterceptor::RequestParams* params) {
-        if (params->url_request.url.path() == "/update_manifest_v1.xml") {
-          content::URLLoaderInterceptor::WriteResponse(
-              GetUpdateManifestHeader(),
-              GetUpdateManifestBody(kPinnedExtensionCrxId, "v1.crx",
-                                    /*version=*/"1"),
-              params->client.get());
-          return true;
-        }
-
-        if (params->url_request.url.path() == "/v1.crx") {
-          content::URLLoaderInterceptor::WriteResponse(install_crx_path,
-                                                       params->client.get());
-          return true;
-        }
-        return false;
+        return WriteManifestResponse(params, kPinnedExtensionCrxId,
+                                     "/update_manifest_v1.xml", "v1.crx",
+                                     /*version=*/"1", install_crx_path);
       }));
 
   extensions::TestExtensionRegistryObserver observer(extension_registry(),
@@ -1353,21 +1356,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionPinningTest, UpdateExtensionWithUrlInManifest) {
   // extension.
   interceptor.set_interceptor_hook(base::BindLambdaForTesting(
       [&](content::URLLoaderInterceptor::RequestParams* params) {
-        if (params->url_request.url.path() == "/update_manifest_v2.xml") {
-          content::URLLoaderInterceptor::WriteResponse(
-              GetUpdateManifestHeader(),
-              GetUpdateManifestBody(kPinnedExtensionCrxId, "v2.crx",
-                                    /*version=*/"2"),
-              params->client.get());
-          return true;
-        }
-
-        if (params->url_request.url.path() == "/v2.crx") {
-          content::URLLoaderInterceptor::WriteResponse(updated_crx_path,
-                                                       params->client.get());
-          return true;
-        }
-        return false;
+        return WriteManifestResponse(params, kPinnedExtensionCrxId,
+                                     "/update_manifest_v2.xml", "v2.crx",
+                                     /*version=*/"2", updated_crx_path);
       }));
   // Change |update_url| to point to version 2 of the extension.
   SetExtensionSettingsPolicy("/update_manifest_v2.xml", kPinnedExtensionCrxId);
@@ -1395,24 +1386,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionPinningTest, IgnoreUpdateUrlInManifest) {
   // unexpected request.
   ExtensionRequestInterceptor interceptor;
   ASSERT_TRUE(embedded_test_server()->Start());
-  // TODO(b/172205862): Find a way to move these requests out of the test.
   interceptor.set_interceptor_hook(base::BindLambdaForTesting(
       [&](content::URLLoaderInterceptor::RequestParams* params) {
-        if (params->url_request.url.path() == "/update_manifest_v1.xml") {
-          content::URLLoaderInterceptor::WriteResponse(
-              GetUpdateManifestHeader(),
-              GetUpdateManifestBody(kPinnedExtensionCrxId, "v1.crx",
-                                    /*version=*/"1"),
-              params->client.get());
-          return true;
-        }
-
-        if (params->url_request.url.path() == "/v1.crx") {
-          content::URLLoaderInterceptor::WriteResponse(install_crx_path,
-                                                       params->client.get());
-          return true;
-        }
-        return false;
+        return WriteManifestResponse(params, kPinnedExtensionCrxId,
+                                     "/update_manifest_v1.xml", "v1.crx",
+                                     /*version=*/"1", install_crx_path);
       }));
 
   extensions::TestExtensionRegistryObserver observer(extension_registry(),
@@ -1448,26 +1426,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionPinningTest,
   // unexpected request.
   ExtensionRequestInterceptor interceptor;
   ASSERT_TRUE(embedded_test_server()->Start());
-  // TODO(b/172205862): Find a way to move these requests out of the test.
+
   interceptor.set_interceptor_hook(base::BindLambdaForTesting(
       [&](content::URLLoaderInterceptor::RequestParams* params) {
-        if (params->url_request.url.path() == "/update_manifest.xml") {
-          content::URLLoaderInterceptor::WriteResponse(
-              GetUpdateManifestHeader(),
-              GetUpdateManifestBody(kGoogleCalendarCrxId, "calendar.crx",
-                                    "3.1.0"),
-              params->client.get());
-          return true;
-        }
-
-        if (params->url_request.url.path() == "/calendar.crx") {
-          content::URLLoaderInterceptor::WriteResponse(
-              "chrome/test/data/extensions/pinning/calendar/"
-              "gmbgaklkmjakoegficnlkhebmhkjfich-google-calendar-3.1.0.crx",
-              params->client.get());
-          return true;
-        }
-        return false;
+        base::FilePath path;
+        base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &path);
+        path = path.AppendASCII(
+            "chrome/test/data/extensions/pinning/calendar/"
+            "gmbgaklkmjakoegficnlkhebmhkjfich-google-calendar-3.1.0.crx");
+        return WriteManifestResponse(params, kGoogleCalendarCrxId,
+                                     "/update_manifest.xml", "calendar.crx",
+                                     "3.1.0", path);
       }));
 
   extensions::TestExtensionRegistryObserver observer(extension_registry(),
@@ -1986,7 +1955,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, MAYBE_ExtensionInstallSources) {
   content::DownloadTestObserverTerminal download_observer(
       browser()->profile()->GetDownloadManager(), 1,
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_DENY);
-  PerformClick(0, 0);
+  PerformClick(browser()->tab_strip_model()->GetActiveWebContents(), 0, 0);
   download_observer.WaitForFinished();
 
   // Install the policy and trigger another download.
@@ -2000,7 +1969,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, MAYBE_ExtensionInstallSources) {
   UpdateProviderPolicy(policies);
 
   extensions::TestExtensionRegistryObserver observer(extension_registry());
-  PerformClick(1, 0);
+  PerformClick(browser()->tab_strip_model()->GetActiveWebContents(), 1, 0);
   observer.WaitForExtensionWillBeInstalled();
   // Note: Cannot check that the notification details match the expected
   // exception, since the details object has already been freed prior to
@@ -2587,14 +2556,14 @@ class ExtensionPolicyTest2Contexts : public PolicyTest {
   std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache1_;
   std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache2_;
   extensions::ScopedIgnoreContentVerifierForTest ignore_content_verifier_;
-  Profile* profile1_;
-  Profile* profile2_;
+  raw_ptr<Profile> profile1_;
+  raw_ptr<Profile> profile2_;
   MockConfigurationPolicyProvider profile1_policy_;
   MockConfigurationPolicyProvider profile2_policy_;
-  extensions::ExtensionRegistry* registry1_;
-  extensions::ExtensionRegistry* registry2_;
-  extensions::ExtensionService* service1_;
-  extensions::ExtensionService* service2_;
+  raw_ptr<extensions::ExtensionRegistry> registry1_;
+  raw_ptr<extensions::ExtensionRegistry> registry2_;
+  raw_ptr<extensions::ExtensionService> service1_;
+  raw_ptr<extensions::ExtensionService> service2_;
 };
 
 // Verifies that default policy host block/allow settings are applied as

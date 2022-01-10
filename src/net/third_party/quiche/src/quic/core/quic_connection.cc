@@ -317,11 +317,6 @@ QuicConnection::QuicConnection(
   QUICHE_DCHECK(perspective_ == Perspective::IS_CLIENT ||
                 default_path_.self_address.IsInitialized());
 
-  support_multiple_connection_ids_ =
-      version().HasIetfQuicFrames() &&
-      GetQuicRestartFlag(
-          quic_dispatcher_support_multiple_cid_per_connection_v2);
-
   QUIC_DLOG(INFO) << ENDPOINT << "Created connection with server connection ID "
                   << server_connection_id
                   << " and version: " << ParsedQuicVersionToString(version());
@@ -522,7 +517,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
     }
   }
 
-  if (support_multiple_connection_ids_ &&
+  if (version().HasIetfQuicFrames() &&
       config.HasReceivedPreferredAddressConnectionIdAndToken()) {
     QuicNewConnectionIdFrame frame;
     std::tie(frame.connection_id, frame.stateless_reset_token) =
@@ -645,7 +640,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   //    and server in unit tests with random flag combinations.
   // 2) Client side's rollout can be protected by the same connection option.
   connection_migration_use_new_cid_ =
-      support_multiple_connection_ids_ && validate_client_addresses_ &&
+      validate_client_addresses_ &&
       GetQuicReloadableFlag(quic_drop_unsent_path_response) &&
       GetQuicReloadableFlag(quic_connection_migration_use_new_cid_v2);
   if (config.HasReceivedMaxPacketSize()) {
@@ -1826,7 +1821,10 @@ bool QuicConnection::OnConnectionCloseFrame(
                       << connection_id() << ", with error: "
                       << QuicErrorCodeToString(frame.quic_error_code) << " ("
                       << frame.error_details << ")"
-                      << ", transport error code: " << frame.wire_error_code
+                      << ", transport error code: "
+                      << QuicIetfTransportErrorCodeString(
+                             static_cast<QuicIetfTransportErrorCodes>(
+                                 frame.wire_error_code))
                       << ", error frame type: "
                       << frame.transport_close_frame_type;
       break;
@@ -1986,7 +1984,6 @@ bool QuicConnection::ShouldSetRetransmissionAlarmOnPacketSent(
 
 bool QuicConnection::OnNewConnectionIdFrameInner(
     const QuicNewConnectionIdFrame& frame) {
-  QUICHE_DCHECK(support_multiple_connection_ids_);
   if (peer_issued_cid_manager_ == nullptr) {
     CloseConnection(
         IETF_QUIC_PROTOCOL_VIOLATION,
@@ -2011,6 +2008,7 @@ bool QuicConnection::OnNewConnectionIdFrameInner(
 
 bool QuicConnection::OnNewConnectionIdFrame(
     const QuicNewConnectionIdFrame& frame) {
+  QUICHE_DCHECK(version().HasIetfQuicFrames());
   QUIC_BUG_IF(quic_bug_10511_13, !connected_)
       << "Processing NEW_CONNECTION_ID frame when "
          "connection is closed. Last frame: "
@@ -2022,14 +2020,12 @@ bool QuicConnection::OnNewConnectionIdFrame(
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnNewConnectionIdFrame(frame);
   }
-  if (!support_multiple_connection_ids_) {
-    return true;
-  }
   return OnNewConnectionIdFrameInner(frame);
 }
 
 bool QuicConnection::OnRetireConnectionIdFrame(
     const QuicRetireConnectionIdFrame& frame) {
+  QUICHE_DCHECK(version().HasIetfQuicFrames());
   QUIC_BUG_IF(quic_bug_10511_14, !connected_)
       << "Processing RETIRE_CONNECTION_ID frame when "
          "connection is closed. Last frame: "
@@ -2043,9 +2039,6 @@ bool QuicConnection::OnRetireConnectionIdFrame(
   }
   if (!connection_migration_use_new_cid_) {
     // Do not respond to RetireConnectionId frame.
-    return true;
-  }
-  if (!support_multiple_connection_ids_) {
     return true;
   }
   if (self_issued_cid_manager_ == nullptr) {
@@ -2938,7 +2931,7 @@ void QuicConnection::MaybeClearQueuedPacketsOnPathChange() {
 void QuicConnection::ReplaceInitialServerConnectionId(
     const QuicConnectionId& new_server_connection_id) {
   QUICHE_DCHECK(perspective_ == Perspective::IS_CLIENT);
-  if (support_multiple_connection_ids_) {
+  if (version().HasIetfQuicFrames()) {
     if (new_server_connection_id.IsEmpty()) {
       peer_issued_cid_manager_ = nullptr;
     } else {
@@ -3212,8 +3205,9 @@ bool QuicConnection::ShouldGeneratePacket(
                 QuicVersionUsesCryptoFrames(transport_version()))
       << ENDPOINT
       << "Handshake in STREAM frames should not check ShouldGeneratePacket";
-  if (support_multiple_connection_ids_ && peer_issued_cid_manager_ != nullptr &&
+  if (peer_issued_cid_manager_ != nullptr &&
       packet_creator_.GetDestinationConnectionId().IsEmpty()) {
+    QUICHE_DCHECK(version().HasIetfQuicFrames());
     QUIC_CODE_COUNT(quic_generate_packet_blocked_by_no_connection_id);
     QUIC_BUG_IF(quic_bug_90265_1, perspective_ == Perspective::IS_CLIENT);
     QUIC_DLOG(INFO) << ENDPOINT
@@ -3300,7 +3294,12 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
     return packet_creator_.HasSoftMaxPacketLength();
   }
 
-  if (LimitedByAmplificationFactor()) {
+  const bool donot_check_amplification_limit_with_pending_timer_credit =
+      GetQuicReloadableFlag(
+          quic_donot_check_amplification_limit_with_pending_timer_credit);
+
+  if (!donot_check_amplification_limit_with_pending_timer_credit &&
+      LimitedByAmplificationFactor()) {
     // Server is constrained by the amplification restriction.
     QUIC_CODE_COUNT(quic_throttled_by_amplification_limit);
     QUIC_DVLOG(1) << ENDPOINT
@@ -3314,8 +3313,29 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
   }
 
   if (sent_packet_manager_.pending_timer_transmission_count() > 0) {
-    // Force sending the retransmissions for HANDSHAKE, TLP, RTO, PROBING cases.
+    // Allow sending if there are pending tokens, which occurs when:
+    // 1) firing PTO,
+    // 2) bundling CRYPTO data with ACKs,
+    // 3) coalescing CRYPTO data of higher space.
     return true;
+  }
+
+  if (donot_check_amplification_limit_with_pending_timer_credit) {
+    QUIC_RELOADABLE_FLAG_COUNT(
+        quic_donot_check_amplification_limit_with_pending_timer_credit);
+    if (LimitedByAmplificationFactor()) {
+      // Server is constrained by the amplification restriction.
+      QUIC_CODE_COUNT(quic_throttled_by_amplification_limit);
+      QUIC_DVLOG(1)
+          << ENDPOINT
+          << "Constrained by amplification restriction to peer address "
+          << default_path_.peer_address << " bytes received "
+          << default_path_.bytes_received_before_address_validation
+          << ", bytes sent"
+          << default_path_.bytes_sent_before_address_validation;
+      ++stats_.num_amplification_throttling;
+      return false;
+    }
   }
 
   if (HandleWriteBlocked()) {
@@ -3668,7 +3688,8 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
       packet, packet_send_time, packet->transmission_type,
       IsRetransmittable(*packet), /*measure_rtt=*/send_on_current_path);
   QUIC_BUG_IF(quic_bug_12714_25,
-              default_enable_5rto_blackhole_detection_ &&
+              perspective_ == Perspective::IS_SERVER &&
+                  default_enable_5rto_blackhole_detection_ &&
                   blackhole_detector_.IsDetectionInProgress() &&
                   !sent_packet_manager_.HasInFlightPackets())
       << ENDPOINT
@@ -6125,7 +6146,8 @@ void QuicConnection::OnForwardProgressMade() {
     blackhole_detector_.StopDetection(/*permanent=*/false);
   }
   QUIC_BUG_IF(quic_bug_12714_35,
-              default_enable_5rto_blackhole_detection_ &&
+              perspective_ == Perspective::IS_SERVER &&
+                  default_enable_5rto_blackhole_detection_ &&
                   blackhole_detector_.IsDetectionInProgress() &&
                   !sent_packet_manager_.HasInFlightPackets())
       << ENDPOINT
@@ -6233,7 +6255,7 @@ void QuicConnection::set_client_connection_id(
   default_path_.client_connection_id = client_connection_id;
 
   client_connection_id_is_set_ = true;
-  if (support_multiple_connection_ids_ && !client_connection_id.IsEmpty()) {
+  if (version().HasIetfQuicFrames() && !client_connection_id.IsEmpty()) {
     if (perspective_ == Perspective::IS_SERVER) {
       QUICHE_DCHECK(peer_issued_cid_manager_ == nullptr);
       peer_issued_cid_manager_ =
@@ -6822,15 +6844,15 @@ QuicConnectionId QuicConnection::GetOneActiveServerConnectionId() const {
 
 std::vector<QuicConnectionId> QuicConnection::GetActiveServerConnectionIds()
     const {
-  if (!support_multiple_connection_ids_ ||
-      self_issued_cid_manager_ == nullptr) {
+  if (self_issued_cid_manager_ == nullptr) {
     return {default_path_.server_connection_id};
   }
+  QUICHE_DCHECK(version().HasIetfQuicFrames());
   return self_issued_cid_manager_->GetUnretiredConnectionIds();
 }
 
 void QuicConnection::CreateConnectionIdManager() {
-  if (!support_multiple_connection_ids_) {
+  if (!version().HasIetfQuicFrames()) {
     return;
   }
 
@@ -6987,7 +7009,12 @@ QuicConnection::ReversePathValidationResultDelegate::
         const QuicSocketAddress& direct_peer_address)
     : QuicPathValidator::ResultDelegate(),
       connection_(connection),
-      original_direct_peer_address_(direct_peer_address) {}
+      original_direct_peer_address_(direct_peer_address),
+      peer_address_default_path_(connection->direct_peer_address_),
+      peer_address_alternative_path_(
+          connection_->alternative_path_.peer_address),
+      active_effective_peer_migration_type_(
+          connection_->active_effective_peer_migration_type_) {}
 
 void QuicConnection::ReversePathValidationResultDelegate::
     OnPathValidationSuccess(
@@ -6996,6 +7023,30 @@ void QuicConnection::ReversePathValidationResultDelegate::
   if (connection_->IsDefaultPath(context->self_address(),
                                  context->peer_address())) {
     QUIC_CODE_COUNT_N(quic_kick_off_client_address_validation, 3, 6);
+    if (connection_->active_effective_peer_migration_type_ == NO_CHANGE) {
+      connection_->quic_bug_10511_43_timestamp_ =
+          connection_->clock_->WallNow();
+      connection_->quic_bug_10511_43_error_detail_ = absl::StrCat(
+          "Reverse path validation on default path from ",
+          context->self_address().ToString(), " to ",
+          context->peer_address().ToString(),
+          " completed without active peer address change: current "
+          "peer address on default path ",
+          connection_->direct_peer_address_.ToString(),
+          ", peer address on default path when the reverse path "
+          "validation was kicked off ",
+          peer_address_default_path_.ToString(),
+          ", peer address on alternative path when the reverse "
+          "path validation was kicked off ",
+          peer_address_alternative_path_.ToString(),
+          ", with active_effective_peer_migration_type_ = ",
+          AddressChangeTypeToString(active_effective_peer_migration_type_),
+          ". The last received packet number ",
+          connection_->last_header_.packet_number.ToString(),
+          " Connection is connected: ", connection_->connected_);
+      QUIC_BUG(quic_bug_10511_43)
+          << connection_->quic_bug_10511_43_error_detail_;
+    }
     connection_->OnEffectivePeerMigrationValidated();
   } else {
     QUICHE_DCHECK(connection_->IsAlternativePath(

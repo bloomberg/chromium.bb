@@ -8,6 +8,7 @@ import android.content.Context;
 import android.view.View;
 
 import androidx.annotation.MainThread;
+import androidx.annotation.StringRes;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.firstrun.MobileFreProgress;
@@ -32,6 +33,17 @@ public class SigninFirstRunCoordinator {
          * @param state FRE state to record.
          */
         void recordFreProgressHistogram(@MobileFreProgress int state);
+
+        /**
+         * Show an informational web page. The page doesn't show navigation control.
+         * @param url Resource id for the URL of the web page.
+         */
+        void showInfoPage(@StringRes int url);
+
+        /**
+         * Opens a dialog to get consent for recording UMA data.
+         */
+        void openUmaDialog();
     }
 
     private final SigninFirstRunMediator mMediator;

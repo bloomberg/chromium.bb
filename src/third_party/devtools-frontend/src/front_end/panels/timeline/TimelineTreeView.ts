@@ -284,7 +284,8 @@ export class TimelineTreeView extends UI.Widget.VBox implements UI.SearchableVie
         new UI.Toolbar.ToolbarInput(i18nString(UIStrings.filter), this.getToolbarInputAccessiblePlaceHolder());
     textFilterUI.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, () => {
       const searchQuery = textFilterUI.value();
-      this.textFilterInternal.setRegExp(searchQuery ? createPlainTextSearchRegex(searchQuery, 'i') : null);
+      this.textFilterInternal.setRegExp(
+          searchQuery ? Platform.StringUtilities.createPlainTextSearchRegex(searchQuery, 'i') : null);
       this.refreshTree();
     }, this);
     this.textFilterUI = textFilterUI;
@@ -651,6 +652,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode<Gri
     }
     const cell = this.createTD(columnId);
     cell.className = 'numeric-column';
+    cell.setAttribute('title', i18nString(UIStrings.fms, {PH1: value.toFixed(4)}));
     const textDiv = cell.createChild('div');
     textDiv.createChild('span').textContent = i18nString(UIStrings.fms, {PH1: value.toFixed(1)});
 

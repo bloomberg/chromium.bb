@@ -415,18 +415,6 @@ static int overlay_cuda_activate(AVFilterContext *avctx)
 }
 
 /**
- * Query formats
- */
-static int overlay_cuda_query_formats(AVFilterContext *avctx)
-{
-    static const enum AVPixelFormat pixel_formats[] = {
-        AV_PIX_FMT_CUDA, AV_PIX_FMT_NONE,
-    };
-
-    return ff_set_common_formats_from_list(avctx, pixel_formats);
-}
-
-/**
  * Configure output
  */
 static int overlay_cuda_config_output(AVFilterLink *outlink)
@@ -583,9 +571,9 @@ const AVFilter ff_vf_overlay_cuda = {
     .init            = &overlay_cuda_init,
     .uninit          = &overlay_cuda_uninit,
     .activate        = &overlay_cuda_activate,
-    .query_formats   = &overlay_cuda_query_formats,
     FILTER_INPUTS(overlay_cuda_inputs),
     FILTER_OUTPUTS(overlay_cuda_outputs),
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_CUDA),
     .preinit         = overlay_cuda_framesync_preinit,
     .flags_internal  = FF_FILTER_FLAG_HWFRAME_AWARE,
 };

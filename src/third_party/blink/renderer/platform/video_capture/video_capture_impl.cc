@@ -641,16 +641,6 @@ void VideoCaptureImpl::SuspendCapture(bool suspend) {
     GetVideoCaptureHost()->Resume(device_id_, session_id_, params_);
 }
 
-void VideoCaptureImpl::Crop(
-    const base::Token& crop_id,
-    base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
-  GetVideoCaptureHost()->Crop(
-      device_id_, crop_id,
-      base::BindOnce(&VideoCaptureImpl::OnCropResult,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
-}
-
 void VideoCaptureImpl::StartCapture(
     int client_id,
     const media::VideoCaptureParams& params,
@@ -696,6 +686,11 @@ void VideoCaptureImpl::StartCapture(
     case VIDEO_CAPTURE_STATE_ERROR:
       OnLog("VideoCaptureImpl is in error state.");
       state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_ERROR);
+      return;
+    case VIDEO_CAPTURE_STATE_ERROR_SYSTEM_PERMISSIONS_DENIED:
+      OnLog("VideoCaptureImpl is in system permissions error state.");
+      state_update_cb.Run(
+          blink::VIDEO_CAPTURE_STATE_ERROR_SYSTEM_PERMISSIONS_DENIED);
       return;
     case VIDEO_CAPTURE_STATE_PAUSED:
     case VIDEO_CAPTURE_STATE_RESUMED:
@@ -760,13 +755,36 @@ void VideoCaptureImpl::SetGpuMemoryBufferSupportForTesting(
   gpu_memory_buffer_support_ = std::move(gpu_memory_buffer_support);
 }
 
-void VideoCaptureImpl::OnStateChanged(media::mojom::VideoCaptureState state) {
-  DVLOG(1) << __func__ << " state: " << state;
+void VideoCaptureImpl::OnStateChanged(
+    media::mojom::blink::VideoCaptureResultPtr result) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
 
   // Stop the startup deadline timer as something has happened.
   startup_timeout_.Stop();
 
+  if (result->which() ==
+      media::mojom::blink::VideoCaptureResult::Tag::ERROR_CODE) {
+    DVLOG(1) << __func__ << " Failed with an error.";
+    if (result->get_error_code() ==
+        media::VideoCaptureError::kWinMediaFoundationSystemPermissionDenied) {
+      state_ = VIDEO_CAPTURE_STATE_ERROR_SYSTEM_PERMISSIONS_DENIED;
+      OnLog(
+          "VideoCaptureImpl changing state to "
+          "VIDEO_CAPTURE_STATE_ERROR_SYSTEM_PERMISSIONS_DENIED");
+    } else {
+      state_ = VIDEO_CAPTURE_STATE_ERROR;
+      OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_ERROR");
+    }
+    for (const auto& client : clients_)
+      client.second.state_update_cb.Run(state_);
+    clients_.clear();
+    RecordStartOutcomeUMA(start_timedout_ ? VideoCaptureStartOutcome::kTimedout
+                                          : VideoCaptureStartOutcome::kFailed);
+    return;
+  }
+
+  media::mojom::VideoCaptureState state = result->get_state();
+  DVLOG(1) << __func__ << " state: " << state;
   switch (state) {
     case media::mojom::VideoCaptureState::STARTED:
       OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_STARTED");
@@ -796,17 +814,6 @@ void VideoCaptureImpl::OnStateChanged(media::mojom::VideoCaptureState state) {
     case media::mojom::VideoCaptureState::RESUMED:
       for (const auto& client : clients_)
         client.second.state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_RESUMED);
-      break;
-    case media::mojom::VideoCaptureState::FAILED:
-      OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_ERROR");
-      for (const auto& client : clients_)
-        client.second.state_update_cb.Run(blink::VIDEO_CAPTURE_STATE_ERROR);
-      clients_.clear();
-      state_ = VIDEO_CAPTURE_STATE_ERROR;
-
-      RecordStartOutcomeUMA(start_timedout_
-                                ? VideoCaptureStartOutcome::kTimedout
-                                : VideoCaptureStartOutcome::kFailed);
       break;
     case media::mojom::VideoCaptureState::ENDED:
       OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_ENDED");
@@ -1107,7 +1114,8 @@ void VideoCaptureImpl::OnStartTimedout() {
 
   start_timedout_ = true;
 
-  OnStateChanged(media::mojom::VideoCaptureState::FAILED);
+  OnStateChanged(media::mojom::blink::VideoCaptureResult::NewErrorCode(
+      media::VideoCaptureError::kVideoCaptureImplTimedOutOnStart));
 }
 
 void VideoCaptureImpl::OnDeviceSupportedFormats(
@@ -1122,13 +1130,6 @@ void VideoCaptureImpl::OnDeviceFormatsInUse(
     const Vector<media::VideoCaptureFormat>& formats_in_use) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   std::move(callback).Run(formats_in_use);
-}
-
-void VideoCaptureImpl::OnCropResult(
-    base::OnceCallback<void(media::mojom::CropRequestResult)> callback,
-    media::mojom::CropRequestResult result) {
-  DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
-  std::move(callback).Run(result);
 }
 
 bool VideoCaptureImpl::RemoveClient(int client_id, ClientInfoMap* clients) {

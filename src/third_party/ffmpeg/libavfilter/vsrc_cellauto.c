@@ -123,7 +123,7 @@ static int init_pattern_from_string(AVFilterContext *ctx)
         s->h = (double)s->w * M_PHI;
     }
 
-    s->buf = av_mallocz_array(sizeof(uint8_t) * s->w, s->h);
+    s->buf = av_calloc(s->w, s->h * sizeof(*s->buf));
     if (!s->buf)
         return AVERROR(ENOMEM);
 
@@ -183,7 +183,7 @@ static av_cold int init(AVFilterContext *ctx)
         /* fill the first row randomly */
         int i;
 
-        s->buf = av_mallocz_array(sizeof(uint8_t) * s->w, s->h);
+        s->buf = av_calloc(s->w, s->h * sizeof(*s->buf));
         if (!s->buf)
             return AVERROR(ENOMEM);
         if (s->random_seed == -1)
@@ -308,12 +308,6 @@ static int request_frame(AVFilterLink *outlink)
     return ff_filter_frame(outlink, picref);
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = { AV_PIX_FMT_MONOBLACK, AV_PIX_FMT_NONE };
-    return ff_set_common_formats_from_list(ctx, pix_fmts);
-}
-
 static const AVFilterPad cellauto_outputs[] = {
     {
         .name          = "default",
@@ -330,7 +324,7 @@ const AVFilter ff_vsrc_cellauto = {
     .priv_class    = &cellauto_class,
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
     .inputs        = NULL,
     FILTER_OUTPUTS(cellauto_outputs),
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_MONOBLACK),
 };

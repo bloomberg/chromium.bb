@@ -133,6 +133,15 @@ void NotificationGroupingController::PopulateGroupParent(
       GetActiveNotificationViewController()->GetMessageViewForNotificationId(
           notification_id);
 
+  // TODO(crbug/1277765) Need this check to fix crbug/1275765. However, this
+  // should not be necessary if the message center bubble is initialized
+  // properly. Need to monitor for empty group notifications if this check is
+  // hit and fix the root cause.
+  if (!parent_view) {
+    LOG(WARNING) << "MessageView does not exist for notification: "
+                 << notification_id;
+    return;
+  }
   std::vector<const Notification*> notifications;
   for (const auto* notification : MessageCenter::Get()->GetNotifications()) {
     if (notification->notifier_id() == parent_view->notifier_id() &&
@@ -164,8 +173,12 @@ void NotificationGroupingController::SetupParentNotification(
                                                      new_parent_id);
 
   Notification* new_parent_notification = notification_copy.get();
-  MessageCenter::Get()->AddNotification(std::move(notification_copy));
-
+  {
+    // Prevent double processing `parent_notification`'s copy, used as a group
+    // parent.
+    base::AutoReset<bool> reset(&adding_parent_grouped_notification_, true);
+    MessageCenter::Get()->AddNotification(std::move(notification_copy));
+  }
   GetActiveNotificationViewController()
       ->ConvertNotificationViewToGroupedNotificationView(
           /*ungrouped_notification_id=*/old_parent_id,
@@ -290,6 +303,10 @@ NotificationGroupingController::GetActiveNotificationViewController() {
 
 void NotificationGroupingController::OnNotificationAdded(
     const std::string& notification_id) {
+  // Do not double process a notification that was re-added as a grouped parent.
+  if (adding_parent_grouped_notification_)
+    return;
+
   auto* message_center = MessageCenter::Get();
   Notification* notification =
       message_center->FindNotificationById(notification_id);

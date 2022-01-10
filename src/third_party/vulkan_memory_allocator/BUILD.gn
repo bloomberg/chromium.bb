@@ -12,6 +12,7 @@ config("vulkan_memory_allocator_config") {
   include_dirs = [ "include" ]
   if (is_clang) {
     cflags_cc = [
+      "-Wno-c++98-compat-extra-semi",
       "-Wno-deprecated-copy",
       "-Wno-implicit-fallthrough",
       "-Wno-nullability-completeness",

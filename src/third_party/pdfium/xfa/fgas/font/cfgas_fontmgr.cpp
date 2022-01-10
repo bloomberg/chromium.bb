@@ -47,11 +47,38 @@ bool VerifyUnicode(const RetainPtr<CFGAS_GEFont>& pFont, wchar_t wcUnicode) {
   return true;
 }
 
+uint32_t ShortFormHash(FX_CodePage wCodePage,
+                       uint32_t dwFontStyles,
+                       WideStringView wsFontFamily) {
+  ByteString bsHash = ByteString::Format("%d, %d", wCodePage, dwFontStyles);
+  bsHash += FX_UTF8Encode(wsFontFamily);
+  return FX_HashCode_GetA(bsHash.AsStringView());
+}
+
+uint32_t LongFormHash(FX_CodePage wCodePage,
+                      uint16_t wBitField,
+                      uint32_t dwFontStyles,
+                      WideStringView wsFontFamily) {
+  ByteString bsHash =
+      ByteString::Format("%d, %d, %d", wCodePage, wBitField, dwFontStyles);
+  bsHash += FX_UTF8Encode(wsFontFamily);
+  return FX_HashCode_GetA(bsHash.AsStringView());
+}
+
 }  // namespace
 
 #if defined(OS_WIN)
 
 namespace {
+
+struct FX_FONTMATCHPARAMS {
+  const wchar_t* pwsFamily;
+  uint32_t dwFontStyles;
+  uint32_t dwUSB;
+  bool matchParagraphStyle;
+  wchar_t wUnicode;
+  FX_CodePage wCodePage;
+};
 
 int32_t GetSimilarityScore(FX_FONTDESCRIPTOR const* pFont,
                            uint32_t dwFontStyles) {
@@ -331,7 +358,7 @@ uint16_t FX_GetCodePageBit(FX_CodePage wCodePage) {
 
 uint16_t FX_GetUnicodeBit(wchar_t wcUnicode) {
   const FGAS_FONTUSB* x = FGAS_GetUnicodeBitField(wcUnicode);
-  return x ? x->wBitField : 999;
+  return x ? x->wBitField : FGAS_FONTUSB::kNoBitField;
 }
 
 uint16_t ReadUInt16FromSpanAtOffset(pdfium::span<const uint8_t> data,
@@ -587,9 +614,9 @@ int32_t CalcPenalty(CFGAS_FontDescriptor* pInstalled,
     else
       nPenalty -= 60000;
   }
-  wBit = (wcUnicode == 0 || wcUnicode == 0xFFFE) ? static_cast<uint16_t>(999)
+  wBit = (wcUnicode == 0 || wcUnicode == 0xFFFE) ? FGAS_FONTUSB::kNoBitField
                                                  : FX_GetUnicodeBit(wcUnicode);
-  if (wBit != static_cast<uint16_t>(999)) {
+  if (wBit != FGAS_FONTUSB::kNoBitField) {
     DCHECK(wBit < 128);
     if ((pInstalled->m_dwUsb[wBit / 32] & (1 << (wBit % 32))) == 0)
       nPenalty += 0xFFFF;
@@ -639,11 +666,11 @@ RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::GetFontByUnicodeImpl(
     uint32_t dwHash,
     FX_CodePage wCodePage,
     uint16_t /* wBitField*/) {
-  if (!m_Hash2CandidateList[dwHash].has_value()) {
+  if (!pdfium::Contains(m_Hash2CandidateList, dwHash)) {
     m_Hash2CandidateList[dwHash] =
         MatchFonts(wCodePage, dwFontStyles, pszFontFamily, wUnicode);
   }
-  for (const auto& info : m_Hash2CandidateList[dwHash].value()) {
+  for (const auto& info : m_Hash2CandidateList[dwHash]) {
     CFGAS_FontDescriptor* pDesc = info.pFont;
     if (!VerifyUnicodeForFontDescriptor(pDesc, wUnicode))
       continue;
@@ -751,9 +778,7 @@ RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::GetFontByCodePage(
     FX_CodePage wCodePage,
     uint32_t dwFontStyles,
     const wchar_t* pszFontFamily) {
-  ByteString bsHash = ByteString::Format("%d, %d", wCodePage, dwFontStyles);
-  bsHash += FX_UTF8Encode(WideStringView(pszFontFamily));
-  uint32_t dwHash = FX_HashCode_GetA(bsHash.AsStringView());
+  uint32_t dwHash = ShortFormHash(wCodePage, dwFontStyles, pszFontFamily);
   auto* pFontVector = &m_Hash2Fonts[dwHash];
   if (!pFontVector->empty()) {
     for (auto iter = pFontVector->begin(); iter != pFontVector->end(); ++iter) {
@@ -765,27 +790,30 @@ RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::GetFontByCodePage(
 
 #if defined(OS_WIN)
   const FX_FONTDESCRIPTOR* pFD =
-      FindFont(pszFontFamily, dwFontStyles, true, wCodePage, 999, 0);
-  if (!pFD)
-    pFD = FindFont(nullptr, dwFontStyles, true, wCodePage, 999, 0);
-  if (!pFD)
-    pFD = FindFont(nullptr, dwFontStyles, false, wCodePage, 999, 0);
+      FindFont(pszFontFamily, dwFontStyles, true, wCodePage,
+               FGAS_FONTUSB::kNoBitField, 0);
+  if (!pFD) {
+    pFD = FindFont(nullptr, dwFontStyles, true, wCodePage,
+                   FGAS_FONTUSB::kNoBitField, 0);
+  }
+  if (!pFD) {
+    pFD = FindFont(nullptr, dwFontStyles, false, wCodePage,
+                   FGAS_FONTUSB::kNoBitField, 0);
+  }
   if (!pFD)
     return nullptr;
 
   RetainPtr<CFGAS_GEFont> pFont =
       CFGAS_GEFont::LoadFont(pFD->wsFontFace, dwFontStyles, wCodePage);
 #else   // defined(OS_WIN)
-  if (!m_Hash2CandidateList[dwHash].has_value()) {
+  if (!pdfium::Contains(m_Hash2CandidateList, dwHash)) {
     m_Hash2CandidateList[dwHash] =
         MatchFonts(wCodePage, dwFontStyles, WideString(pszFontFamily), 0);
   }
-  std::vector<CFGAS_FontDescriptorInfo>* sortedFontInfos =
-      &m_Hash2CandidateList[dwHash].value();
-  if (sortedFontInfos->empty())
+  if (m_Hash2CandidateList[dwHash].empty())
     return nullptr;
 
-  CFGAS_FontDescriptor* pDesc = (*sortedFontInfos)[0].pFont;
+  CFGAS_FontDescriptor* pDesc = m_Hash2CandidateList[dwHash].front().pFont;
   RetainPtr<CFGAS_GEFont> pFont =
       LoadFontInternal(pDesc->m_wsFaceName, pDesc->m_nFaceIndex);
 #endif  // defined(OS_WIN)
@@ -807,22 +835,15 @@ RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::GetFontByUnicode(
 
   const FGAS_FONTUSB* x = FGAS_GetUnicodeBitField(wUnicode);
   FX_CodePage wCodePage = x ? x->wCodePage : FX_CodePage::kFailure;
-  uint16_t wBitField = x ? x->wBitField : 0x03E7;
-  ByteString bsHash;
-  if (wCodePage == FX_CodePage::kFailure) {
-    bsHash =
-        ByteString::Format("%d, %d, %d", wCodePage, wBitField, dwFontStyles);
-  } else {
-    bsHash = ByteString::Format("%d, %d", wCodePage, dwFontStyles);
-  }
-  bsHash += FX_UTF8Encode(WideStringView(pszFontFamily));
-  uint32_t dwHash = FX_HashCode_GetA(bsHash.AsStringView());
-  std::vector<RetainPtr<CFGAS_GEFont>>& fonts = m_Hash2Fonts[dwHash];
-  for (auto& pFont : fonts) {
+  uint16_t wBitField = x ? x->wBitField : FGAS_FONTUSB::kNoBitField;
+  uint32_t dwHash =
+      wCodePage == FX_CodePage::kFailure
+          ? LongFormHash(wCodePage, wBitField, dwFontStyles, pszFontFamily)
+          : ShortFormHash(wCodePage, dwFontStyles, pszFontFamily);
+  for (auto& pFont : m_Hash2Fonts[dwHash]) {
     if (VerifyUnicode(pFont, wUnicode))
       return pFont;
   }
-
   return GetFontByUnicodeImpl(wUnicode, dwFontStyles, pszFontFamily, dwHash,
                               wCodePage, wBitField);
 }
@@ -831,17 +852,18 @@ RetainPtr<CFGAS_GEFont> CFGAS_FontMgr::LoadFont(const wchar_t* pszFontFamily,
                                                 uint32_t dwFontStyles,
                                                 FX_CodePage wCodePage) {
 #if defined(OS_WIN)
-  ByteString bsHash = ByteString::Format("%d, %d", wCodePage, dwFontStyles);
-  bsHash += FX_UTF8Encode(WideStringView(pszFontFamily));
-  uint32_t dwHash = FX_HashCode_GetA(bsHash.AsStringView());
+  uint32_t dwHash = ShortFormHash(wCodePage, dwFontStyles, pszFontFamily);
   std::vector<RetainPtr<CFGAS_GEFont>>* pFontArray = &m_Hash2Fonts[dwHash];
   if (!pFontArray->empty())
-    return (*pFontArray)[0];
+    return pFontArray->front();
 
   const FX_FONTDESCRIPTOR* pFD =
-      FindFont(pszFontFamily, dwFontStyles, true, wCodePage, 999, 0);
-  if (!pFD)
-    pFD = FindFont(pszFontFamily, dwFontStyles, false, wCodePage, 999, 0);
+      FindFont(pszFontFamily, dwFontStyles, true, wCodePage,
+               FGAS_FONTUSB::kNoBitField, 0);
+  if (!pFD) {
+    pFD = FindFont(pszFontFamily, dwFontStyles, false, wCodePage,
+                   FGAS_FONTUSB::kNoBitField, 0);
+  }
   if (!pFD)
     return nullptr;
 

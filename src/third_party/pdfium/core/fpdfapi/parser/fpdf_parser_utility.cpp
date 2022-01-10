@@ -162,20 +162,20 @@ std::vector<float> ReadArrayElementsToVector(const CPDF_Array* pArray,
   return ret;
 }
 
-bool ValidateDictType(const CPDF_Dictionary* dict, const ByteString& type) {
+bool ValidateDictType(const CPDF_Dictionary* dict, ByteStringView type) {
   DCHECK(!type.IsEmpty());
-  return dict->GetNameFor("Type") == type;
+  return dict && dict->GetNameFor("Type") == type;
 }
 
 bool ValidateDictAllResourcesOfType(const CPDF_Dictionary* dict,
-                                    const ByteString& type) {
+                                    ByteStringView type) {
   if (!dict)
     return false;
 
   CPDF_DictionaryLocker locker(dict);
   for (const auto& it : locker) {
-    const CPDF_Dictionary* entry = ToDictionary(it.second.Get()->GetDirect());
-    if (!entry || !ValidateDictType(entry, type))
+    const CPDF_Dictionary* entry = ToDictionary(it.second->GetDirect());
+    if (!ValidateDictType(entry, type))
       return false;
   }
   return true;
@@ -215,7 +215,7 @@ std::ostream& operator<<(std::ostream& buf, const CPDF_Object* pObj) {
       buf << "[";
       for (size_t i = 0; i < p->size(); i++) {
         const CPDF_Object* pElement = p->GetObjectAt(i);
-        if (pElement && !pElement->IsInline()) {
+        if (!pElement->IsInline()) {
           buf << " " << pElement->GetObjNum() << " 0 R";
         } else {
           buf << pElement;
@@ -229,9 +229,9 @@ std::ostream& operator<<(std::ostream& buf, const CPDF_Object* pObj) {
       buf << "<<";
       for (const auto& it : locker) {
         const ByteString& key = it.first;
-        CPDF_Object* pValue = it.second.Get();
+        const CPDF_Object* pValue = it.second.Get();
         buf << "/" << PDF_NameEncode(key);
-        if (pValue && !pValue->IsInline()) {
+        if (!pValue->IsInline()) {
           buf << " " << pValue->GetObjNum() << " 0 R ";
         } else {
           buf << pValue;

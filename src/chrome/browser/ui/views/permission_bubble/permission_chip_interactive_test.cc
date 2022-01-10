@@ -114,7 +114,7 @@ class PermissionChipInteractiveTest : public InProcessBrowserTest {
 
     EXPECT_FALSE(chip->should_expand_for_testing());
     EXPECT_FALSE(chip->get_chip_button_for_testing()->is_animating());
-    EXPECT_EQ(OmniboxChipButton::Theme::kGray,
+    EXPECT_EQ(OmniboxChipButton::Theme::kLowVisibility,
               chip->get_chip_button_for_testing()->get_theme_for_testing());
   }
 
@@ -128,7 +128,7 @@ class PermissionChipInteractiveTest : public InProcessBrowserTest {
 
     EXPECT_TRUE(chip->should_expand_for_testing());
     EXPECT_TRUE(chip->get_chip_button_for_testing()->is_animating());
-    EXPECT_EQ(OmniboxChipButton::Theme::kGray,
+    EXPECT_EQ(OmniboxChipButton::Theme::kLowVisibility,
               chip->get_chip_button_for_testing()->get_theme_for_testing());
   }
 
@@ -142,7 +142,7 @@ class PermissionChipInteractiveTest : public InProcessBrowserTest {
     EXPECT_TRUE(chip->get_chip_button_for_testing()->is_animating());
     // TODO(crbug.com/1232460): Verify that OmniboxChipButton::is_animating is
     // true. Right now the value is flaky.
-    EXPECT_EQ(OmniboxChipButton::Theme::kBlue,
+    EXPECT_EQ(OmniboxChipButton::Theme::kNormalVisibility,
               chip->get_chip_button_for_testing()->get_theme_for_testing());
   }
 
@@ -917,8 +917,7 @@ IN_PROC_BROWSER_TEST_F(QuietChipPermissionPromptBubbleViewInteractiveTest,
 
 // Test that the quiet prompt disposition differs when permission is considered
 // abusive (currently only applicable for Notifications) vs. when permission is
-// not considered abusive. For `QuietUiReason::kTriggeredDueToAbusiveContent`
-// reputation we show a static UI icon.
+// not considered abusive.
 IN_PROC_BROWSER_TEST_F(QuietChipPermissionPromptBubbleViewInteractiveTest,
                        DispositionAbusiveContentTest) {
   SetCannedUiDecision(QuietUiReason::kTriggeredDueToAbusiveContent,
@@ -962,8 +961,6 @@ IN_PROC_BROWSER_TEST_F(QuietChipPermissionPromptBubbleViewInteractiveTest,
           LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP);
 }
 
-// For `QuietUiReason::kEnabledInPrefs` reputation we show an animated quiet UI
-// icon.
 IN_PROC_BROWSER_TEST_F(QuietChipPermissionPromptBubbleViewInteractiveTest,
                        DispositionEnabledInPrefsTest) {
   SetCannedUiDecision(QuietUiReason::kEnabledInPrefs, absl::nullopt);
@@ -984,8 +981,6 @@ IN_PROC_BROWSER_TEST_F(QuietChipPermissionPromptBubbleViewInteractiveTest,
       permissions::PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_CHIP);
 }
 
-// For `QuietUiReason::kPredictedVeryUnlikelyGrant` reputation we show an
-// animated quiet UI icon.
 IN_PROC_BROWSER_TEST_F(QuietChipPermissionPromptBubbleViewInteractiveTest,
                        DispositionPredictedVeryUnlikelyGrantTest) {
   SetCannedUiDecision(QuietUiReason::kPredictedVeryUnlikelyGrant,
@@ -1007,8 +1002,6 @@ IN_PROC_BROWSER_TEST_F(QuietChipPermissionPromptBubbleViewInteractiveTest,
       permissions::PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_CHIP);
 }
 
-// For `QuietUiReason::kTriggeredDueToAbusiveRequests` reputation we show a
-// static quiet UI icon.
 IN_PROC_BROWSER_TEST_F(QuietChipPermissionPromptBubbleViewInteractiveTest,
                        DispositionAbusiveRequestsTest) {
   SetCannedUiDecision(QuietUiReason::kTriggeredDueToAbusiveRequests,

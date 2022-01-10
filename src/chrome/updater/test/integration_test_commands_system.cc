@@ -23,6 +23,7 @@
 #include "chrome/updater/test/integration_test_commands.h"
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test_scope.h"
+#include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -154,13 +155,23 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("expect_interfaces_registered");
   }
 
-  void ExpectLegacyUpdate3WebSucceeds(
-      const std::string& app_id) const override {
-    RunCommand("expect_legacy_update3web_succeeds", {Param("app_id", app_id)});
+  void ExpectLegacyUpdate3WebSucceeds(const std::string& app_id,
+                                      int expected_final_state,
+                                      int expected_error_code) const override {
+    RunCommand("expect_legacy_update3web_succeeds",
+               {Param("app_id", app_id),
+                Param("expected_final_state",
+                      base::NumberToString(expected_final_state)),
+                Param("expected_error_code",
+                      base::NumberToString(expected_error_code))});
   }
 
   void ExpectLegacyProcessLauncherSucceeds() const override {
     RunCommand("expect_legacy_process_launcher_succeeds");
+  }
+
+  void RunUninstallCmdLine() const override {
+    RunCommand("run_uninstall_cmd_line");
   }
 
   void SetUpTestService() const override {
@@ -184,6 +195,18 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
 
   void StressUpdateService() const override {
     RunCommand("stress_update_service");
+  }
+
+  void CallServiceUpdate(const std::string& app_id,
+                         UpdateService::PolicySameVersionUpdate
+                             policy_same_version_update) const override {
+    RunCommand("call_service_update",
+               {Param("app_id", app_id),
+                Param("same_version_update_allowed",
+                      policy_same_version_update ==
+                              UpdateService::PolicySameVersionUpdate::kAllowed
+                          ? "true"
+                          : "false")});
   }
 
  private:

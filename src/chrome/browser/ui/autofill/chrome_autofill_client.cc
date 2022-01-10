@@ -544,30 +544,11 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
                                                /*local_save_card_callback=*/{});
     return;
   }
-  bool sync_disabled_wallet_transport_enabled =
-      GetPersonalDataManager()->GetSyncSigninState() ==
-      autofill::AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled;
 
-  AccountInfo account_info;
-  // AccountInfo data should be passed down only if the following conditions are
-  // satisfied:
-  // 1) Sync is off or the
-  //   kAutofillEnableInfoBarAccountIndicationFooterForSyncUsers flag is on.
-  // 2) User has multiple accounts or the
-  //   kAutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers is on.
-  if ((sync_disabled_wallet_transport_enabled ||
-       base::FeatureList::IsEnabled(
-           features::
-               kAutofillEnableInfoBarAccountIndicationFooterForSyncUsers)) &&
-      (IsMultipleAccountUser() ||
-       base::FeatureList::IsEnabled(
-           features::
-               kAutofillEnableInfoBarAccountIndicationFooterForSingleAccountUsers))) {
-    signin::IdentityManager* identity_manager =
-        IdentityManagerFactory::GetForProfile(GetProfile());
-    account_info = identity_manager->FindExtendedAccountInfo(
-        identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin));
-  }
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(GetProfile());
+  AccountInfo account_info = identity_manager->FindExtendedAccountInfo(
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin));
   infobars::ContentInfoBarManager::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
@@ -650,6 +631,11 @@ void ChromeAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
 void ChromeAutofillClient::ShowAutofillPopup(
     const autofill::AutofillClient::PopupOpenArgs& open_args,
     base::WeakPtr<AutofillPopupDelegate> delegate) {
+  // Autofill popups should only be shown in focused windows because on Windows
+  // the popup may overlap the focused window (see crbug.com/1239760).
+  if (!has_focus_)
+    return;
+
   // Don't show any popups while Autofill Assistant's UI is shown.
   if (IsAutofillAssistantShowing()) {
     return;
@@ -924,8 +910,15 @@ void ChromeAutofillClient::WebContentsDestroyed() {
   HideAutofillPopup(PopupHidingReason::kTabGone);
 }
 
+void ChromeAutofillClient::OnWebContentsLostFocus(
+    content::RenderWidgetHost* render_widget_host) {
+  has_focus_ = false;
+  HideAutofillPopup(PopupHidingReason::kFocusChanged);
+}
+
 void ChromeAutofillClient::OnWebContentsFocused(
     content::RenderWidgetHost* render_widget_host) {
+  has_focus_ = true;
 #if defined(OS_ANDROID)
   save_card_message_controller_android_.OnWebContentsFocused();
 #endif
@@ -939,7 +932,8 @@ void ChromeAutofillClient::OnZoomChanged(
 #endif  // !defined(OS_ANDROID)
 
 ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
+    : content::WebContentsUserData<ChromeAutofillClient>(*web_contents),
+      content::WebContentsObserver(web_contents),
       payments_client_(std::make_unique<payments::PaymentsClient>(
           Profile::FromBrowserContext(web_contents->GetBrowserContext())
               ->GetURLLoaderFactory(),

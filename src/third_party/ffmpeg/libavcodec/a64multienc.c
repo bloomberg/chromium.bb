@@ -43,6 +43,7 @@
 
 typedef struct A64Context {
     /* variables for multicolor modes */
+    struct ELBGContext *elbg;
     AVLFG randctx;
     int mc_lifetime;
     int mc_use_5col;
@@ -195,6 +196,9 @@ static void render_charset(AVCodecContext *avctx, uint8_t *charset,
 static av_cold int a64multi_close_encoder(AVCodecContext *avctx)
 {
     A64Context *c = avctx->priv_data;
+
+    avpriv_elbg_free(&c->elbg);
+
     av_freep(&c->mc_meta_charset);
     av_freep(&c->mc_best_cb);
     av_freep(&c->mc_charmap);
@@ -227,9 +231,9 @@ static av_cold int a64multi_encode_init(AVCodecContext *avctx)
                            a64_palette[mc_colors[a]][2] * 0.11;
     }
 
-    if (!(c->mc_meta_charset = av_mallocz_array(c->mc_lifetime, 32000 * sizeof(int))) ||
+    if (!(c->mc_meta_charset = av_calloc(c->mc_lifetime, 32000 * sizeof(int))) ||
        !(c->mc_best_cb       = av_malloc(CHARSET_CHARS * 32 * sizeof(int)))     ||
-       !(c->mc_charmap       = av_mallocz_array(c->mc_lifetime, 1000 * sizeof(int))) ||
+       !(c->mc_charmap       = av_calloc(c->mc_lifetime, 1000 * sizeof(int))) ||
        !(c->mc_colram        = av_mallocz(CHARSET_CHARS * sizeof(uint8_t)))) {
         av_log(avctx, AV_LOG_ERROR, "Failed to allocate buffer memory.\n");
         return AVERROR(ENOMEM);
@@ -333,12 +337,8 @@ static int a64multi_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
             buf = pkt->data;
 
             /* calc optimal new charset + charmaps */
-            ret = avpriv_init_elbg(meta, 32, 1000 * c->mc_lifetime, best_cb,
-                               CHARSET_CHARS, 50, charmap, &c->randctx);
-            if (ret < 0)
-                return ret;
-            ret = avpriv_do_elbg(meta, 32, 1000 * c->mc_lifetime, best_cb,
-                             CHARSET_CHARS, 50, charmap, &c->randctx);
+            ret = avpriv_elbg_do(&c->elbg, meta, 32, 1000 * c->mc_lifetime,
+                                 best_cb, CHARSET_CHARS, 50, charmap, &c->randctx, 0);
             if (ret < 0)
                 return ret;
 
@@ -385,7 +385,6 @@ static int a64multi_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         c->next_pts         = AV_NOPTS_VALUE;
 
         av_assert0(pkt->size == req_size);
-        pkt->flags |= AV_PKT_FLAG_KEY;
         *got_packet = !!req_size;
     }
     return 0;

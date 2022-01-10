@@ -60,16 +60,19 @@ namespace dawn_native { namespace vulkan {
                                                         const BindGroupDescriptor* descriptor);
         void DeallocateBindGroup(BindGroup* bindGroup,
                                  DescriptorSetAllocation* descriptorSetAllocation);
-        void FinishDeallocation(ExecutionSerial completedSerial);
 
       private:
         ~BindGroupLayout() override;
         MaybeError Initialize();
+        void DestroyImpl() override;
+
+        // Dawn API
+        void SetLabelImpl() override;
 
         VkDescriptorSetLayout mHandle = VK_NULL_HANDLE;
 
         SlabAllocator<BindGroup> mBindGroupAllocator;
-        std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
+        Ref<DescriptorSetAllocator> mDescriptorSetAllocator;
     };
 
 }}  // namespace dawn_native::vulkan

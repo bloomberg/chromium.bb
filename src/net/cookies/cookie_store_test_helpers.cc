@@ -4,6 +4,8 @@
 
 #include "net/cookies/cookie_store_test_helpers.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/strings/string_util.h"
@@ -110,11 +112,11 @@ void DelayedCookieMonster::SetCanonicalCookieAsync(
 void DelayedCookieMonster::GetCookieListWithOptionsAsync(
     const GURL& url,
     const CookieOptions& options,
-    const CookiePartitionKeychain& cookie_partition_keychain,
+    const CookiePartitionKeyCollection& cookie_partition_key_collection,
     CookieMonster::GetCookieListCallback callback) {
   did_run_ = false;
   cookie_monster_->GetCookieListWithOptionsAsync(
-      url, options, cookie_partition_keychain,
+      url, options, cookie_partition_key_collection,
       base::BindOnce(
           &DelayedCookieMonster::GetCookieListWithOptionsInternalCallback,
           base::Unretained(this)));

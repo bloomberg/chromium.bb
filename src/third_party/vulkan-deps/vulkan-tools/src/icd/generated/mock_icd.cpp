@@ -2690,6 +2690,15 @@ static VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceProperties2KHR(
         write_props->supportedDepthResolveModes = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT_KHR;
         write_props->supportedStencilResolveModes = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT_KHR;
     }
+
+    const auto *fragment_density_map2_props = lvl_find_in_chain<VkPhysicalDeviceFragmentDensityMap2PropertiesEXT>(pProperties->pNext);
+    if (fragment_density_map2_props) {
+        VkPhysicalDeviceFragmentDensityMap2PropertiesEXT* write_props = (VkPhysicalDeviceFragmentDensityMap2PropertiesEXT*)fragment_density_map2_props;
+        write_props->subsampledLoads = VK_FALSE;
+        write_props->subsampledCoarseReconstructionEarlyAccess = VK_FALSE;
+        write_props->maxSubsampledArrayLayers = 2;
+        write_props->maxDescriptorSetSubsampledSamplers = 1;
+    }
 }
 
 static VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceFormatProperties2KHR(
@@ -5044,6 +5053,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetFragmentShadingRateEnumNV(
 
 
 
+
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 
 static VKAPI_ATTR VkResult VKAPI_CALL AcquireWinrtDisplayNV(
@@ -5098,6 +5108,7 @@ static VKAPI_ATTR void VKAPI_CALL CmdSetVertexInputEXT(
 {
 //Not a CREATE or DESTROY function
 }
+
 
 
 
@@ -5294,6 +5305,7 @@ static VKAPI_ATTR void                                    VKAPI_CALL CmdSetColor
 {
 //Not a CREATE or DESTROY function
 }
+
 
 
 

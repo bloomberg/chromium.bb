@@ -50,6 +50,9 @@ class RequestCallbackWrapper : public CefCallback {
       : callback_(std::move(callback)),
         work_thread_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
+  RequestCallbackWrapper(const RequestCallbackWrapper&) = delete;
+  RequestCallbackWrapper& operator=(const RequestCallbackWrapper&) = delete;
+
   ~RequestCallbackWrapper() override {
     if (!callback_.is_null()) {
       // Make sure it executes on the correct thread.
@@ -80,7 +83,6 @@ class RequestCallbackWrapper : public CefCallback {
   scoped_refptr<base::SequencedTaskRunner> work_thread_task_runner_;
 
   IMPLEMENT_REFCOUNTING(RequestCallbackWrapper);
-  DISALLOW_COPY_AND_ASSIGN(RequestCallbackWrapper);
 };
 
 class InterceptedRequestHandlerWrapper : public InterceptedRequestHandler {
@@ -157,6 +159,9 @@ class InterceptedRequestHandlerWrapper : public InterceptedRequestHandler {
       }
     }
 
+    DestructionObserver(const DestructionObserver&) = delete;
+    DestructionObserver& operator=(const DestructionObserver&) = delete;
+
     virtual ~DestructionObserver() {
       CEF_REQUIRE_UIT();
       if (!registered_)
@@ -210,7 +215,6 @@ class InterceptedRequestHandlerWrapper : public InterceptedRequestHandler {
     bool registered_ = true;
 
     base::WeakPtr<InterceptedRequestHandlerWrapper> wrapper_;
-    DISALLOW_COPY_AND_ASSIGN(DestructionObserver);
   };
 
   // Holds state information for InterceptedRequestHandlerWrapper. State is
@@ -323,6 +327,9 @@ class InterceptedRequestHandlerWrapper : public InterceptedRequestHandler {
     explicit InitHelper(InterceptedRequestHandlerWrapper* wrapper)
         : wrapper_(wrapper) {}
 
+    InitHelper(const InitHelper&) = delete;
+    InitHelper& operator=(const InitHelper&) = delete;
+
     void MaybeSetInitialized(std::unique_ptr<InitState> init_state) {
       CEF_POST_TASK(CEF_IOT, base::BindOnce(&InitHelper::SetInitialized, this,
                                             std::move(init_state)));
@@ -351,6 +358,11 @@ class InterceptedRequestHandlerWrapper : public InterceptedRequestHandler {
   InterceptedRequestHandlerWrapper()
       : init_helper_(base::MakeRefCounted<InitHelper>(this)),
         weak_ptr_factory_(this) {}
+
+  InterceptedRequestHandlerWrapper(const InterceptedRequestHandlerWrapper&) =
+      delete;
+  InterceptedRequestHandlerWrapper& operator=(
+      const InterceptedRequestHandlerWrapper&) = delete;
 
   ~InterceptedRequestHandlerWrapper() override {
     CEF_REQUIRE_IOT();
@@ -1257,8 +1269,6 @@ class InterceptedRequestHandlerWrapper : public InterceptedRequestHandler {
   PendingRequests pending_requests_;
 
   base::WeakPtrFactory<InterceptedRequestHandlerWrapper> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(InterceptedRequestHandlerWrapper);
 };
 
 }  // namespace

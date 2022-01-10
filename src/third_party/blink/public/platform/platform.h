@@ -32,11 +32,13 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_PLATFORM_H_
 
 #include <memory>
+#include <string>
 #include <tuple>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -78,7 +80,6 @@ class TaskGraphRunner;
 
 namespace gfx {
 class ColorSpace;
-class RenderingPipeline;
 }
 
 namespace gpu {
@@ -203,10 +204,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Returns a theme engine. Should be non-null.
   virtual WebThemeEngine* ThemeEngine();
-
-  // AppCache  ----------------------------------------------------------
-
-  virtual bool IsURLSupportedForAppCache(const WebURL& url) { return false; }
 
   // Audio --------------------------------------------------------------
 
@@ -477,6 +474,10 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
+  virtual base::PlatformThreadId GetIOThreadId() const {
+    return base::kInvalidThreadId;
+  }
+
   // Returns an interface to run nested message loop. Used for debugging.
   class NestedMessageLoopRunner {
    public:
@@ -631,14 +632,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // The TaskGraphRunner. This must be non-null if compositing any widgets.
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() { return nullptr; }
-
-  // The RenderingPipeline for the main thread. May be null.
-  virtual gfx::RenderingPipeline* GetMainThreadPipeline() { return nullptr; }
-
-  // The RenderingPipeline for the compositor thread. May be null.
-  virtual gfx::RenderingPipeline* GetCompositorThreadPipeline() {
-    return nullptr;
-  }
 
   // Media stream ----------------------------------------------------
   virtual scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
@@ -828,6 +821,14 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Renderer Memory Metrics ----------------------------------------------
 
   virtual void RecordMetricsForBackgroundedRendererPurge() {}
+
+  // V8 Metrics -----------------------------------------------------------
+
+  // Called when adding a histogram entry. Allows customizing the name the
+  // histogram is logged as.
+  virtual std::string GetNameForHistogram(const char* name) {
+    return std::string{name};
+  }
 
   // V8 Context Snapshot --------------------------------------------------
 

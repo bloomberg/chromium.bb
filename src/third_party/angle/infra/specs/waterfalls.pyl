@@ -64,7 +64,7 @@
       'linux-nvidia': {
         'os_type': 'linux',
         'mixins': [
-          'linux_nvidia_quadro_p400_stable',
+          'angle_linux_nvidia_gtx_1660_stable',
         ],
         'test_suites': {
           'gtest_tests': 'linux_nvidia_gtests',
@@ -74,7 +74,7 @@
       'linux-nvidia-perf': {
         'os_type': 'linux',
         'mixins': [
-          'linux_nvidia_quadro_p400_stable',
+          'angle_linux_nvidia_gtx_1660_stable',
         ],
         'test_suites': {
           'isolated_scripts': 'angle_perf_isolated_scripts',
@@ -91,6 +91,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'swangle_gtests',
+          'isolated_scripts': 'swangle_restricted_trace_gold_isolated_scripts',
         },
       },
       'linux-swiftshader-asan': {
@@ -103,6 +104,33 @@
           'x86-64',
         ],
         'test_suites': {
+          'gtest_tests': 'swangle_gtests',
+        },
+      },
+      'linux-swiftshader-tsan': {
+        'os_type': 'linux',
+        'mixins': [
+          'gpu-swarming-pool',
+          'no_gpu',
+          'linux-bionic',
+          'timeout_15m',
+          'x86-64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'swangle_slow_gtests',
+        },
+      },
+      'linux-swiftshader-ubsan': {
+        'os_type': 'linux',
+        'mixins': [
+          'gpu-swarming-pool',
+          'no_gpu',
+          'linux-bionic',
+          'timeout_15m',
+          'x86-64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'swangle_gtests',
         },
       },
       'mac-amd': {
@@ -154,7 +182,7 @@
       'win10-x64-nvidia': {
         'os_type': 'win',
         'mixins': [
-          'win10_nvidia_quadro_p400_stable',
+          'angle_win10_nvidia_gtx_1660_stable',
         ],
         'test_suites': {
           'gtest_tests': 'win10_nvidia_gtests',
@@ -164,7 +192,7 @@
       'win10-x64-nvidia-perf': {
         'os_type': 'win',
         'mixins': [
-          'win10_nvidia_quadro_p400_stable',
+          'angle_win10_nvidia_gtx_1660_stable',
         ],
         'test_suites': {
           'isolated_scripts': 'angle_perf_isolated_scripts',
@@ -178,6 +206,18 @@
         ],
         'test_suites': {
           'gtest_tests': 'swangle_gtests',
+          'isolated_scripts': 'swangle_restricted_trace_gold_isolated_scripts',
+        },
+      },
+      'win10-x64-swiftshader-asan': {
+        'os_type': 'win',
+        'mixins': [
+          'win10_gce_gpu_pool',
+          'timeout_15m',
+        ],
+        'test_suites': {
+          # Clang-Win/ASAN has issues with dEQP's exceptions. http://crbug.com/1268912
+          'gtest_tests': 'swangle_non_deqp_gtests',
         },
       },
       'win10-x86-swiftshader': {
@@ -188,15 +228,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'swangle_gtests',
-        },
-      },
-      'win10-x86-swiftshader-asan': {
-        'os_type': 'win',
-        'mixins': [
-          'win10_gce_gpu_pool',
-          'timeout_15m',
-        ],
-        'test_suites': {
         },
       },
       'win7-x64-nvidia': {

@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "url/gurl.h"
 
@@ -33,7 +32,8 @@ class COMPONENT_EXPORT(ASH_TIMEZONE) TimeZoneResolver {
   using ApplyTimeZoneCallback =
       base::RepeatingCallback<void(const TimeZoneResponseData*)>;
 
-  // `ash::DelayNetworkCall` cannot be used directly due to link restrictions.
+  // chromeos::DelayNetworkCall cannot be used directly due to link
+  // restrictions.
   using DelayNetworkCallClosure =
       base::RepeatingCallback<void(base::OnceClosure)>;
 

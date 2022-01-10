@@ -21,6 +21,7 @@
 #include "dawn_native/Commands.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/vulkan/CommandRecordingContext.h"
+#include "dawn_native/vulkan/DescriptorSetAllocator.h"
 #include "dawn_native/vulkan/Forward.h"
 #include "dawn_native/vulkan/VulkanFunctions.h"
 #include "dawn_native/vulkan/VulkanInfo.h"
@@ -42,7 +43,8 @@ namespace dawn_native { namespace vulkan {
 
     class Device final : public DeviceBase {
       public:
-        static ResultOrError<Device*> Create(Adapter* adapter, const DeviceDescriptor* descriptor);
+        static ResultOrError<Device*> Create(Adapter* adapter,
+                                             const DawnDeviceDescriptor* descriptor);
         ~Device() override;
 
         MaybeError Initialize();
@@ -64,7 +66,7 @@ namespace dawn_native { namespace vulkan {
         CommandRecordingContext* GetPendingRecordingContext();
         MaybeError SubmitPendingCommands();
 
-        void EnqueueDeferredDeallocation(BindGroupLayout* bindGroupLayout);
+        void EnqueueDeferredDeallocation(DescriptorSetAllocator* allocator);
 
         // Dawn Native API
 
@@ -104,7 +106,7 @@ namespace dawn_native { namespace vulkan {
         float GetTimestampPeriodInNS() const override;
 
       private:
-        Device(Adapter* adapter, const DeviceDescriptor* descriptor);
+        Device(Adapter* adapter, const DawnDeviceDescriptor* descriptor);
 
         ResultOrError<Ref<BindGroupBase>> CreateBindGroupImpl(
             const BindGroupDescriptor* descriptor) override;
@@ -164,7 +166,8 @@ namespace dawn_native { namespace vulkan {
         VkQueue mQueue = VK_NULL_HANDLE;
         uint32_t mComputeSubgroupSize = 0;
 
-        SerialQueue<ExecutionSerial, Ref<BindGroupLayout>> mBindGroupLayoutsPendingDeallocation;
+        SerialQueue<ExecutionSerial, Ref<DescriptorSetAllocator>>
+            mDescriptorAllocatorsPendingDeallocation;
         std::unique_ptr<FencedDeleter> mDeleter;
         std::unique_ptr<ResourceMemoryAllocator> mResourceMemoryAllocator;
         std::unique_ptr<RenderPassCache> mRenderPassCache;

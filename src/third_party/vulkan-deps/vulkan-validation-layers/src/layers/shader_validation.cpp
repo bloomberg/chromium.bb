@@ -107,8 +107,8 @@ static unsigned GetLocationsConsumedByFormat(VkFormat format) {
 }
 
 static unsigned GetFormatType(VkFormat fmt) {
-    if (FormatIsSInt(fmt)) return FORMAT_TYPE_SINT;
-    if (FormatIsUInt(fmt)) return FORMAT_TYPE_UINT;
+    if (FormatIsSINT(fmt)) return FORMAT_TYPE_SINT;
+    if (FormatIsUINT(fmt)) return FORMAT_TYPE_UINT;
     // Formats such as VK_FORMAT_D16_UNORM_S8_UINT are both
     if (FormatIsDepthAndStencil(fmt)) return FORMAT_TYPE_FLOAT | FORMAT_TYPE_UINT;
     if (fmt == VK_FORMAT_UNDEFINED) return 0;
@@ -196,11 +196,64 @@ bool CoreChecks::ValidateViAgainstVsInputs(VkPipelineVertexInputStateCreateInfo 
     return skip;
 }
 
+bool CoreChecks::ValidateFsOutputsAgainstDynamicRenderingRenderPass(SHADER_MODULE_STATE const* fs, spirv_inst_iter entrypoint,
+                                                                    PIPELINE_STATE const* pipeline) const {
+    bool skip = false;
+
+    struct Attachment {
+        const interface_var* output = nullptr;
+    };
+    std::map<uint32_t, Attachment> location_map;
+
+    // TODO: dual source blend index (spv::DecIndex, zero if not provided)
+    const auto outputs = fs->CollectInterfaceByLocation(entrypoint, spv::StorageClassOutput, false);
+    for (const auto& output_it : outputs) {
+        auto const location = output_it.first.first;
+        location_map[location].output = &output_it.second;
+    }
+
+    const bool alpha_to_coverage_enabled = pipeline->create_info.graphics.pMultisampleState != NULL &&
+        pipeline->create_info.graphics.pMultisampleState->alphaToCoverageEnable == VK_TRUE;
+
+    for (uint32_t location = 0; location < pipeline->rp_state->dynamic_rendering_pipeline_create_info.colorAttachmentCount; ++location) {
+         const auto output = location_map[location].output;
+
+        if (!output && pipeline->attachments[location].colorWriteMask != 0) {
+            skip |= LogWarning(fs->vk_shader_module(), kVUID_Core_Shader_InputNotProduced,
+                "Attachment %" PRIu32
+                " not written by fragment shader; undefined values will be written to attachment",
+                location);
+        } else if (output) {
+            auto format = pipeline->rp_state->dynamic_rendering_pipeline_create_info.pColorAttachmentFormats[location];
+            const auto attachment_type = GetFormatType(format);
+            const auto output_type = fs->GetFundamentalType(output->type_id);
+
+            // Type checking
+            if (!(output_type & attachment_type)) {
+                skip |=
+                    LogWarning(fs->vk_shader_module(), kVUID_Core_Shader_InterfaceTypeMismatch,
+                        "Attachment %" PRIu32
+                        " of type `%s` does not match fragment shader output type of `%s`; resulting values are undefined",
+                        location, string_VkFormat(format), fs->DescribeType(output->type_id).c_str());
+            }
+        }
+    }
+
+    const auto output_zero = location_map.count(0) ? location_map[0].output : nullptr;
+    bool location_zero_has_alpha = output_zero && fs->get_def(output_zero->type_id) != fs->end() &&
+        fs->GetComponentsConsumedByType(output_zero->type_id, false) == 4;
+    if (alpha_to_coverage_enabled && !location_zero_has_alpha) {
+        skip |= LogError(fs->vk_shader_module(), kVUID_Core_Shader_NoAlphaAtLocation0WithAlphaToCoverage,
+            "fragment shader doesn't declare alpha output at location 0 even though alpha to coverage is enabled.");
+    }
+
+    return skip;
+
+}
+
 bool CoreChecks::ValidateFsOutputsAgainstRenderPass(SHADER_MODULE_STATE const *fs, spirv_inst_iter entrypoint,
                                                     PIPELINE_STATE const *pipeline, uint32_t subpass_index) const {
     bool skip = false;
-
-    const auto rpci = pipeline->rp_state->createInfo.ptr();
 
     struct Attachment {
         const VkAttachmentReference2 *reference = nullptr;
@@ -209,13 +262,16 @@ bool CoreChecks::ValidateFsOutputsAgainstRenderPass(SHADER_MODULE_STATE const *f
     };
     std::map<uint32_t, Attachment> location_map;
 
-    const auto subpass = rpci->pSubpasses[subpass_index];
-    for (uint32_t i = 0; i < subpass.colorAttachmentCount; ++i) {
-        auto const &reference = subpass.pColorAttachments[i];
-        location_map[i].reference = &reference;
-        if (reference.attachment != VK_ATTACHMENT_UNUSED &&
-            rpci->pAttachments[reference.attachment].format != VK_FORMAT_UNDEFINED) {
-            location_map[i].attachment = &rpci->pAttachments[reference.attachment];
+    if (pipeline->rp_state && !pipeline->rp_state->use_dynamic_rendering) {
+        const auto rpci = pipeline->rp_state->createInfo.ptr();
+        const auto subpass = rpci->pSubpasses[subpass_index];
+        for (uint32_t i = 0; i < subpass.colorAttachmentCount; ++i) {
+            auto const &reference = subpass.pColorAttachments[i];
+            location_map[i].reference = &reference;
+            if (reference.attachment != VK_ATTACHMENT_UNUSED &&
+                rpci->pAttachments[reference.attachment].format != VK_FORMAT_UNDEFINED) {
+                location_map[i].attachment = &rpci->pAttachments[reference.attachment];
+            }
         }
     }
 
@@ -672,7 +728,7 @@ bool CoreChecks::ValidateShaderStageGroupNonUniform(SHADER_MODULE_STATE const *m
 bool CoreChecks::ValidateMemoryScope(SHADER_MODULE_STATE const *src, const spirv_inst_iter &insn) const {
     bool skip = false;
 
-    const auto &entry = MemoryScopeParam(insn.opcode());
+    const auto &entry = MemoryScopeParamPosition(insn.opcode());
     if (entry > 0) {
         const uint32_t scope_id = insn.word(entry);
         if (enabled_features.core12.vulkanMemoryModel && !enabled_features.core12.vulkanMemoryModelDeviceScope) {
@@ -1054,7 +1110,6 @@ bool CoreChecks::ValidateShaderStorageImageFormats(SHADER_MODULE_STATE const *sr
                 }
                 break;
             }
-
         }
     }
 
@@ -1109,8 +1164,13 @@ bool CoreChecks::ValidateShaderStageMaxResources(VkShaderStageFlagBits stage, co
     }
 
     if (stage == VK_SHADER_STAGE_FRAGMENT_BIT) {
-        // "For the fragment shader stage the framebuffer color attachments also count against this limit"
-        total_resources += pipeline->rp_state->createInfo.pSubpasses[pipeline->create_info.graphics.subpass].colorAttachmentCount;
+        if (pipeline->rp_state->use_dynamic_rendering) {
+            total_resources += pipeline->rp_state->dynamic_rendering_pipeline_create_info.colorAttachmentCount;
+        } else {
+            // "For the fragment shader stage the framebuffer color attachments also count against this limit"
+            total_resources +=
+                pipeline->rp_state->createInfo.pSubpasses[pipeline->create_info.graphics.subpass].colorAttachmentCount;
+        }
     }
 
     // TODO: This reuses a lot of GetDescriptorCountMaxPerStage but currently would need to make it agnostic in a way to handle
@@ -1972,6 +2032,14 @@ bool CoreChecks::ValidateExecutionModes(SHADER_MODULE_STATE const *src, spirv_in
                     invocations = insn.word(3);
                     break;
                 }
+
+                case spv::ExecutionModeLocalSizeId: {
+                    if (!enabled_features.maintenance4_features.maintenance4) {
+                        skip |= LogError(device, "VUID-RuntimeSpirv-LocalSizeId-06434",
+                                         "LocalSizeId execution mode used but maintenance4 feature not enabled");
+                    }
+                    break;
+                }
             }
         }
     }
@@ -2110,6 +2178,10 @@ bool CoreChecks::ValidatePrimitiveRateShaderState(const PIPELINE_STATE *pipeline
 bool CoreChecks::ValidateDecorations(SHADER_MODULE_STATE const* module) const {
     bool skip = false;
 
+    std::vector<spirv_inst_iter> xfb_streams;
+    std::vector<spirv_inst_iter> xfb_buffers;
+    std::vector<spirv_inst_iter> xfb_offsets;
+
     for (const auto &op_decorate : module->GetDecorationInstructions()) {
         uint32_t decoration = op_decorate.word(2);
         if (decoration == spv::DecorationXfbStride) {
@@ -2122,6 +2194,85 @@ bool CoreChecks::ValidateDecorations(SHADER_MODULE_STATE const* module) const {
                     ").",
                     stride, phys_dev_ext_props.transform_feedback_props.maxTransformFeedbackBufferDataStride);
             }
+        }
+        if (decoration == spv::DecorationStream) {
+            xfb_streams.push_back(op_decorate);
+            uint32_t stream = op_decorate.word(3);
+            if (stream >= phys_dev_ext_props.transform_feedback_props.maxTransformFeedbackStreams) {
+                skip |= LogError(
+                    device, "VUID-RuntimeSpirv-Stream-06312",
+                    "vkCreateGraphicsPipelines(): shader uses transform feedback with stream (%" PRIu32
+                    ") not less than VkPhysicalDeviceTransformFeedbackPropertiesEXT::maxTransformFeedbackStreams (%" PRIu32 ").",
+                    stream, phys_dev_ext_props.transform_feedback_props.maxTransformFeedbackStreams);
+            }
+        }
+        if (decoration == spv::DecorationXfbBuffer) {
+            xfb_buffers.push_back(op_decorate);
+        }
+        if (decoration == spv::DecorationOffset) {
+            xfb_offsets.push_back(op_decorate);
+        }
+    }
+
+    // XfbBuffer, buffer data size
+    std::vector<std::pair<uint32_t, uint32_t>> buffer_data_sizes;
+    for (const auto &op_decorate : xfb_offsets) {
+        for (const auto xfb_buffer : xfb_buffers) {
+            if (xfb_buffer.word(1) == op_decorate.word(1)) {
+                const auto offset = op_decorate.word(3);
+                const auto def = module->get_def(xfb_buffer.word(1));
+                const auto size = module->GetTypeBytesSize(def);
+                const uint32_t buffer_data_size = offset + size;
+                if (buffer_data_size > phys_dev_ext_props.transform_feedback_props.maxTransformFeedbackBufferDataSize) {
+                    skip |= LogError(
+                        device, "VUID-RuntimeSpirv-Offset-06308",
+                        "vkCreateGraphicsPipelines(): shader uses transform feedback with xfb_offset (%" PRIu32
+                        ") + size of variable (%" PRIu32 ") greater than VkPhysicalDeviceTransformFeedbackPropertiesEXT::maxTransformFeedbackBufferDataSize "
+                        "(%" PRIu32 ").",
+                        offset, size, phys_dev_ext_props.transform_feedback_props.maxTransformFeedbackBufferDataSize);
+                }
+
+                bool found = false;
+                for (auto &bds : buffer_data_sizes) {
+                    if (bds.first == xfb_buffer.word(1)) {
+                        bds.second = std::max(bds.second, buffer_data_size);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    buffer_data_sizes.emplace_back(xfb_buffer.word(1), buffer_data_size);
+                }
+
+                break;
+            }
+        }
+    }
+
+    std::unordered_map<uint32_t, uint32_t> stream_data_size;
+    for (const auto &xfb_stream : xfb_streams) {
+        for (const auto& bds : buffer_data_sizes) {
+            if (xfb_stream.word(1) == bds.first) {
+                uint32_t stream = xfb_stream.word(3);
+                const auto itr = stream_data_size.find(stream);
+                if (itr != stream_data_size.end()) {
+                    itr->second += bds.second;
+                } else {
+                    stream_data_size.insert({stream, bds.second});
+                }
+            }
+        }
+    }
+
+    for (const auto& stream : stream_data_size) {
+        if (stream.second > phys_dev_ext_props.transform_feedback_props.maxTransformFeedbackStreamDataSize) {
+            skip |= LogError(device, "VUID-RuntimeSpirv-XfbBuffer-06309",
+                             "vkCreateGraphicsPipelines(): shader uses transform feedback with stream (%" PRIu32
+                             ") having the sum of buffer data sizes (%" PRIu32
+                             ") not less than VkPhysicalDeviceTransformFeedbackPropertiesEXT::maxTransformFeedbackBufferDataSize "
+                             "(%" PRIu32 ").",
+                             stream.first, stream.second,
+                             phys_dev_ext_props.transform_feedback_props.maxTransformFeedbackBufferDataSize);
         }
     }
 
@@ -2178,7 +2329,7 @@ bool CoreChecks::ValidateTexelOffsetLimits(SHADER_MODULE_STATE const *src, spirv
 
     const uint32_t opcode = insn.opcode();
     if (ImageGatherOperation(opcode) || ImageSampleOperation(opcode) || ImageFetchOperation(opcode)) {
-        uint32_t image_operand_position = ImageOperandsParam(opcode);
+        uint32_t image_operand_position = ImageOperandsParamPosition(opcode);
         // Image operands can be optional
         if (image_operand_position != 0 && insn.len() > image_operand_position) {
             auto image_operand = insn.word(image_operand_position);
@@ -2249,7 +2400,7 @@ bool CoreChecks::ValidateTexelOffsetLimits(SHADER_MODULE_STATE const *src, spirv
                                 }
                             }
                         }
-                        index += src->ImageOperandsCount(i);
+                        index += ImageOperandsParamCount(i);
                     }
                 }
             }
@@ -2508,23 +2659,25 @@ bool CoreChecks::ValidatePipelineShaderStage(const PIPELINE_STATE *pipeline, con
     if (pStage->stage == VK_SHADER_STAGE_FRAGMENT_BIT) {
         auto input_attachment_uses = module->CollectInterfaceByInputAttachmentIndex(accessible_ids);
 
-        auto rpci = pipeline->rp_state->createInfo.ptr();
-        auto subpass = pipeline->create_info.graphics.subpass;
+        if (!pipeline->rp_state->use_dynamic_rendering) {
+            auto rpci = pipeline->rp_state->createInfo.ptr();
+            auto subpass = pipeline->create_info.graphics.subpass;
+            for (auto use : input_attachment_uses) {
+                auto input_attachments = rpci->pSubpasses[subpass].pInputAttachments;
+                auto index = (input_attachments && use.first < rpci->pSubpasses[subpass].inputAttachmentCount)
+                    ? input_attachments[use.first].attachment
+                    : VK_ATTACHMENT_UNUSED;
 
-        for (auto use : input_attachment_uses) {
-            auto input_attachments = rpci->pSubpasses[subpass].pInputAttachments;
-            auto index = (input_attachments && use.first < rpci->pSubpasses[subpass].inputAttachmentCount)
-                             ? input_attachments[use.first].attachment
-                             : VK_ATTACHMENT_UNUSED;
-
-            if (index == VK_ATTACHMENT_UNUSED) {
-                skip |= LogError(device, kVUID_Core_Shader_MissingInputAttachment,
-                                 "Shader consumes input attachment index %d but not provided in subpass", use.first);
-            } else if (!(GetFormatType(rpci->pAttachments[index].format) & module->GetFundamentalType(use.second.type_id))) {
-                skip |=
-                    LogError(device, kVUID_Core_Shader_InputAttachmentTypeMismatch,
-                             "Subpass input attachment %u format of %s does not match type used in shader `%s`", use.first,
-                             string_VkFormat(rpci->pAttachments[index].format), module->DescribeType(use.second.type_id).c_str());
+                if (index == VK_ATTACHMENT_UNUSED) {
+                    skip |= LogError(device, kVUID_Core_Shader_MissingInputAttachment,
+                        "Shader consumes input attachment index %d but not provided in subpass", use.first);
+                }
+                else if (!(GetFormatType(rpci->pAttachments[index].format) & module->GetFundamentalType(use.second.type_id))) {
+                    skip |=
+                        LogError(device, kVUID_Core_Shader_InputAttachmentTypeMismatch,
+                            "Subpass input attachment %u format of %s does not match type used in shader `%s`", use.first,
+                            string_VkFormat(rpci->pAttachments[index].format), module->DescribeType(use.second.type_id).c_str());
+                }
             }
         }
     }
@@ -2728,13 +2881,16 @@ bool CoreChecks::ValidateGraphicsPipelineShaderState(const PIPELINE_STATE *pipel
                     ValidateInterfaceBetweenStages(producer.module.get(), producer.entrypoint, &shader_stage_attribs[producer_id],
                                                    consumer.module.get(), consumer.entrypoint, &shader_stage_attribs[consumer_id]);
             }
-
         }
     }
 
     if (fragment_stage && fragment_stage->module->has_valid_spirv) {
-        skip |= ValidateFsOutputsAgainstRenderPass(fragment_stage->module.get(), fragment_stage->entrypoint, pipeline,
-                                                   create_info->subpass);
+        if (pipeline->rp_state->use_dynamic_rendering) {
+            skip |= ValidateFsOutputsAgainstDynamicRenderingRenderPass(fragment_stage->module.get(), fragment_stage->entrypoint, pipeline);
+        } else {
+            skip |= ValidateFsOutputsAgainstRenderPass(fragment_stage->module.get(), fragment_stage->entrypoint, pipeline,
+                                                       create_info->subpass);
+        }
     }
 
     return skip;
@@ -2808,7 +2964,7 @@ uint32_t CoreChecks::CalcShaderStageCount(const PIPELINE_STATE *pipeline, VkShad
 
     if (create_info.pLibraryInfo) {
         for (uint32_t i = 0; i < create_info.pLibraryInfo->libraryCount; ++i) {
-            const PIPELINE_STATE *library_pipeline = GetPipelineState(create_info.pLibraryInfo->pLibraries[i]);
+            const auto library_pipeline = Get<PIPELINE_STATE>(create_info.pLibraryInfo->pLibraries[i]);
             total += CalcShaderStageCount(library_pipeline, stageBit);
         }
     }
@@ -2832,7 +2988,7 @@ bool CoreChecks::GroupHasValidIndex(const PIPELINE_STATE *pipeline, uint32_t gro
     // Search libraries
     if (create_info.pLibraryInfo) {
         for (uint32_t i = 0; i < create_info.pLibraryInfo->libraryCount; ++i) {
-            const PIPELINE_STATE *library_pipeline = GetPipelineState(create_info.pLibraryInfo->pLibraries[i]);
+            const auto library_pipeline = Get<PIPELINE_STATE>(create_info.pLibraryInfo->pLibraries[i]);
             const uint32_t stage_count = library_pipeline->create_info.raytracing.ptr()->stageCount;
             if (group < stage_count) {
                 return (library_pipeline->create_info.raytracing.ptr()->pStages[group].stage & stage) != 0;
@@ -2859,7 +3015,7 @@ bool CoreChecks::ValidateRayTracingPipeline(PIPELINE_STATE *pipeline, VkPipeline
         }
         if (create_info.pLibraryInfo) {
             for (uint32_t i = 0; i < create_info.pLibraryInfo->libraryCount; ++i) {
-                const PIPELINE_STATE *library_pipelinestate = GetPipelineState(create_info.pLibraryInfo->pLibraries[i]);
+                const auto library_pipelinestate = Get<PIPELINE_STATE>(create_info.pLibraryInfo->pLibraries[i]);
                 const auto &library_create_info = library_pipelinestate->create_info.raytracing;
                 if (library_create_info.maxPipelineRayRecursionDepth != create_info.maxPipelineRayRecursionDepth) {
                     skip |= LogError(

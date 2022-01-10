@@ -9,7 +9,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/lens/lens_side_panel_view.h"
-#include "chrome/browser/ui/views/side_panel.h"
+#include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/lens/lens_entrypoints.h"
 #include "content/public/browser/navigation_handle.h"
@@ -66,12 +66,13 @@ LensSidePanelController::~LensSidePanelController() = default;
 void LensSidePanelController::OpenWithURL(
     const content::OpenURLParams& params) {
   // Hide Chrome side panel (Reading List/Bookmarks) if enabled and showing.
-  if (browser_view_->toolbar()->read_later_button() &&
+  if (browser_view_->toolbar()->side_panel_button() &&
       browser_view_->right_aligned_side_panel()->GetVisible()) {
     base::RecordAction(
         base::UserMetricsAction("LensSidePanel.HideChromeSidePanel"));
-    browser_view_->toolbar()->read_later_button()->HideSidePanel();
+    browser_view_->toolbar()->side_panel_button()->HideSidePanel();
   }
+
   side_panel_view_->GetWebContents()->GetController().LoadURLWithParams(
       content::NavigationController::LoadURLParams(params));
   if (side_panel_->GetVisible()) {
@@ -139,17 +140,23 @@ void LensSidePanelController::DidOpenRequestedURL(
     ui::PageTransition transition,
     bool started_from_context_menu,
     bool renderer_initiated) {
-  browser_view_->browser()
-      ->tab_strip_model()
-      ->GetActiveWebContents()
-      ->GetController()
-      .LoadURLWithParams(content::NavigationController::LoadURLParams(url));
+  content::OpenURLParams params(url, content::Referrer(), disposition,
+                                transition, renderer_initiated);
+  browser_view_->browser()->OpenURL(params);
   base::RecordAction(base::UserMetricsAction("LensSidePanel.ResultLinkClick"));
 }
 
 void LensSidePanelController::CloseButtonClicked() {
   base::RecordAction(base::UserMetricsAction("LensSidePanel.CloseButtonClick"));
   Close();
+}
+
+void LensSidePanelController::LoadProgressChanged(double progress) {
+  if(progress == 1.0) {
+    side_panel_view_->SetContentVisible(true);
+  } else {
+    side_panel_view_->SetContentVisible(false);
+  }
 }
 
 }  // namespace lens

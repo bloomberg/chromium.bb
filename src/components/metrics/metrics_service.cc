@@ -442,6 +442,9 @@ void MetricsService::LogNeedForCleanShutdown() {
 
 void MetricsService::ClearSavedStabilityMetrics() {
   delegating_provider_.ClearSavedStabilityMetrics();
+  // Stability metrics are stored in Local State prefs, so schedule a Local
+  // State write to flush the updated prefs.
+  local_state_->CommitPendingWrite();
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -493,20 +496,24 @@ void MetricsService::UnsetUserLogStore() {
   }
 }
 
-void MetricsService::UpdateCurrentUserMetricsConsent(
-    bool user_metrics_consent) {
-  client_->UpdateCurrentUserMetricsConsent(user_metrics_consent);
+bool MetricsService::HasUserLogStore() {
+  return log_store()->has_alternate_ongoing_log_store();
 }
 
 void MetricsService::InitPerUserMetrics() {
   client_->InitPerUserMetrics();
 }
 
+void MetricsService::UpdateCurrentUserMetricsConsent(
+    bool user_metrics_consent) {
+  client_->UpdateCurrentUserMetricsConsent(user_metrics_consent);
+}
+
 void MetricsService::ResetClientId() {
   // Pref must be cleared in order for ForceClientIdCreation to generate a new
   // client ID.
   //
-  // TODO(jongahn): Add histogram to monitor how frequently this is called
+  // TODO(crbug/1264625): Add histogram to monitor how frequently this is called
   // before launching per-user collection.
   local_state_->ClearPref(prefs::kMetricsClientID);
   state_manager_->ForceClientIdCreation();
@@ -551,7 +558,8 @@ void MetricsService::InitializeMetricsState() {
   session_id_ = local_state_->GetInteger(prefs::kMetricsSessionID);
 
   StabilityMetricsProvider provider(local_state_);
-  if (!state_manager_->clean_exit_beacon()->exited_cleanly()) {
+  const bool was_last_shutdown_clean = WasLastShutdownClean();
+  if (!was_last_shutdown_clean) {
     provider.LogCrash(
         state_manager_->clean_exit_beacon()->browser_last_live_timestamp());
 #if defined(OS_ANDROID)
@@ -577,8 +585,7 @@ void MetricsService::InitializeMetricsState() {
 
   // HasPreviousSessionData is called first to ensure it is never bypassed.
   const bool is_initial_stability_log_required =
-      delegating_provider_.HasPreviousSessionData() ||
-      !state_manager_->clean_exit_beacon()->exited_cleanly();
+      delegating_provider_.HasPreviousSessionData() || !was_last_shutdown_clean;
   bool has_initial_stability_log = false;
   if (is_initial_stability_log_required) {
     // If the previous session didn't exit cleanly, or if any provider
@@ -614,7 +621,6 @@ void MetricsService::InitializeMetricsState() {
 
   // Notify stability metrics providers about the launch.
   provider.LogLaunch();
-  provider.CheckLastSessionEndCompleted();
 
   // Call GetUptimes() for the first time, thus allowing all later calls
   // to record incremental uptimes accurately.
@@ -719,8 +725,8 @@ void MetricsService::CloseCurrentLog() {
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
   GetUptimes(local_state_, &incremental_uptime, &uptime);
-  current_log->RecordCurrentSessionData(&delegating_provider_,
-                                        incremental_uptime, uptime);
+  current_log->RecordCurrentSessionData(incremental_uptime, uptime,
+                                        &delegating_provider_, local_state_);
   RecordCurrentHistograms();
   current_log->TruncateEvents();
   DVLOG(1) << "Generated an ongoing log.";
@@ -813,20 +819,18 @@ bool MetricsService::PrepareInitialStabilityLog(
   std::unique_ptr<MetricsLog> initial_stability_log(
       CreateLog(MetricsLog::INITIAL_STABILITY_LOG));
 
-  // Do not call OnDidCreateMetricsLog here because the stability
-  // log describes stats from the _previous_ session.
-  std::string system_profile_app_version;
-  if (!initial_stability_log->LoadSavedEnvironmentFromPrefs(
-          local_state_, &system_profile_app_version)) {
+  // Do not call OnDidCreateMetricsLog here because the stability log describes
+  // stats from the _previous_ session.
+  if (!initial_stability_log->LoadSavedEnvironmentFromPrefs(local_state_))
     return false;
-  }
 
   log_manager_.PauseCurrentLog();
   log_manager_.BeginLoggingWithLog(std::move(initial_stability_log));
 
   // Note: Some stability providers may record stability stats via histograms,
   //       so this call has to be after BeginLoggingWithLog().
-  log_manager_.current_log()->RecordPreviousSessionData(&delegating_provider_);
+  log_manager_.current_log()->RecordPreviousSessionData(&delegating_provider_,
+                                                        local_state_);
   RecordCurrentStabilityHistograms();
 
   DVLOG(1) << "Generated a stability log.";
@@ -856,7 +860,8 @@ void MetricsService::PrepareInitialMetricsLog() {
   // Note: Some stability providers may record stability stats via histograms,
   //       so this call has to be after BeginLoggingWithLog().
   log_manager_.current_log()->RecordCurrentSessionData(
-      &delegating_provider_, base::TimeDelta(), base::TimeDelta());
+      base::TimeDelta(), base::TimeDelta(), &delegating_provider_,
+      local_state_);
   RecordCurrentHistograms();
 
   DVLOG(1) << "Generated an initial log.";
@@ -1022,7 +1027,6 @@ void MetricsService::PrepareProviderMetricsTask() {
 void MetricsService::LogCleanShutdown(bool end_completed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_manager_->LogHasSessionShutdownCleanly(true);
-  StabilityMetricsProvider(local_state_).MarkSessionEndCompleted(end_completed);
 }
 
 void MetricsService::UpdateLastLiveTimestampTask() {

@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
 #import "ios/chrome/browser/download/mobileconfig_tab_helper.h"
+#import "ios/chrome/browser/download/vcard_tab_helper.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
@@ -64,6 +65,7 @@
 #import "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
+#import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
@@ -77,8 +79,8 @@
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
+#import "ios/chrome/browser/web/web_performance_metrics/web_performance_metrics_tab_helper.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
-#import "ios/components/security_interstitials/legacy_tls/legacy_tls_tab_allow_list.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_helper.h"
@@ -126,6 +128,8 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   InfobarOverlayTabHelper::CreateForWebState(web_state);
   TranslateOverlayTabHelper::CreateForWebState(web_state);
 
+  MobileConfigTabHelper::CreateForWebState(web_state);
+
   if (ios::provider::IsTextZoomEnabled()) {
     FontSizeTabHelper::CreateForWebState(web_state);
   }
@@ -134,7 +138,10 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     BreadcrumbManagerTabHelper::CreateForWebState(web_state);
   }
 
-  MobileConfigTabHelper::CreateForWebState(web_state);
+  if (base::FeatureList::IsEnabled(kDownloadVcard)) {
+    VcardTabHelper::CreateForWebState(web_state);
+  }
+
   SafeBrowsingQueryManager::CreateForWebState(web_state);
   SafeBrowsingTabHelper::CreateForWebState(web_state);
   SafeBrowsingUrlAllowList::CreateForWebState(web_state);
@@ -186,10 +193,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   LookalikeUrlTabAllowList::CreateForWebState(web_state);
   LookalikeUrlContainer::CreateForWebState(web_state);
 
-  if (base::FeatureList::IsEnabled(web::features::kIOSLegacyTLSInterstitial)) {
-    LegacyTLSTabAllowList::CreateForWebState(web_state);
-  }
-
   // TODO(crbug.com/794115): pre-rendered WebState have lots of unnecessary
   // tab helpers for historical reasons. For the moment, AttachTabHelpers
   // allows to inhibit the creation of some of them. Once PreloadController
@@ -208,4 +211,5 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   }
 
   WebSessionStateTabHelper::CreateForWebState(web_state);
+  WebPerformanceMetricsTabHelper::CreateForWebState(web_state);
 }

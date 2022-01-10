@@ -186,7 +186,7 @@ static int ogg_reset(AVFormatContext *s)
         os->segp       = 0;
         os->incomplete = 0;
         os->got_data = 0;
-        if (start_pos <= s->internal->data_offset) {
+        if (start_pos <= ffformatcontext(s)->data_offset) {
             os->lastpts = 0;
         }
         os->start_trimming = 0;
@@ -515,6 +515,7 @@ static int ogg_read_page(AVFormatContext *s, int *sid, int probing)
 static int ogg_packet(AVFormatContext *s, int *sid, int *dstart, int *dsize,
                       int64_t *fpos)
 {
+    FFFormatContext *const si = ffformatcontext(s);
     struct ogg *ogg = s->priv_data;
     int idx, i, ret;
     struct ogg_stream *os;
@@ -600,8 +601,8 @@ static int ogg_packet(AVFormatContext *s, int *sid, int *dstart, int *dsize,
 
             // Update the header state for all streams and
             // compute the data_offset.
-            if (!s->internal->data_offset)
-                s->internal->data_offset = os->sync_pos;
+            if (!si->data_offset)
+                si->data_offset = os->sync_pos;
 
             for (i = 0; i < ogg->nstreams; i++) {
                 struct ogg_stream *cur_os = ogg->streams + i;
@@ -609,7 +610,7 @@ static int ogg_packet(AVFormatContext *s, int *sid, int *dstart, int *dsize,
                 // if we have a partial non-header packet, its start is
                 // obviously at or after the data start
                 if (cur_os->incomplete)
-                    s->internal->data_offset = FFMIN(s->internal->data_offset, cur_os->sync_pos);
+                    si->data_offset = FFMIN(si->data_offset, cur_os->sync_pos);
             }
         } else {
             os->nb_header++;
@@ -702,7 +703,7 @@ static int ogg_get_length(AVFormatContext *s)
     if (ret < 0)
         return ret;
 
-    avio_seek (s->pb, s->internal->data_offset, SEEK_SET);
+    avio_seek (s->pb, ffformatcontext(s)->data_offset, SEEK_SET);
     ogg_reset(s);
     while (streams_left > 0 && !ogg_packet(s, &i, NULL, NULL, NULL)) {
         int64_t pts;

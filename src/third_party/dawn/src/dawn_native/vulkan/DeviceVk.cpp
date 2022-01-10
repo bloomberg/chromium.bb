@@ -45,13 +45,14 @@
 namespace dawn_native { namespace vulkan {
 
     // static
-    ResultOrError<Device*> Device::Create(Adapter* adapter, const DeviceDescriptor* descriptor) {
+    ResultOrError<Device*> Device::Create(Adapter* adapter,
+                                          const DawnDeviceDescriptor* descriptor) {
         Ref<Device> device = AcquireRef(new Device(adapter, descriptor));
         DAWN_TRY(device->Initialize());
         return device.Detach();
     }
 
-    Device::Device(Adapter* adapter, const DeviceDescriptor* descriptor)
+    Device::Device(Adapter* adapter, const DawnDeviceDescriptor* descriptor)
         : DeviceBase(adapter, descriptor) {
         InitTogglesFromDriver();
     }
@@ -62,7 +63,7 @@ namespace dawn_native { namespace vulkan {
 
         // Initialize the "instance" procs of our local function table.
         VulkanFunctions* functions = GetMutableFunctions();
-        *functions = ToBackend(GetAdapter())->GetBackend()->GetFunctions();
+        *functions = ToBackend(GetAdapter())->GetVulkanInstance()->GetFunctions();
 
         // Two things are crucial if device initialization fails: the function pointers to destroy
         // objects, and the fence deleter that calls these functions. Do not do anything before
@@ -178,14 +179,14 @@ namespace dawn_native { namespace vulkan {
 
         ExecutionSerial completedSerial = GetCompletedCommandSerial();
 
-        for (Ref<BindGroupLayout>& bgl :
-             mBindGroupLayoutsPendingDeallocation.IterateUpTo(completedSerial)) {
-            bgl->FinishDeallocation(completedSerial);
+        for (Ref<DescriptorSetAllocator>& allocator :
+             mDescriptorAllocatorsPendingDeallocation.IterateUpTo(completedSerial)) {
+            allocator->FinishDeallocation(completedSerial);
         }
-        mBindGroupLayoutsPendingDeallocation.ClearUpTo(completedSerial);
 
         mResourceMemoryAllocator->Tick(completedSerial);
         mDeleter->Tick(completedSerial);
+        mDescriptorAllocatorsPendingDeallocation.ClearUpTo(completedSerial);
 
         if (mRecordingContext.used) {
             DAWN_TRY(SubmitPendingCommands());
@@ -195,14 +196,14 @@ namespace dawn_native { namespace vulkan {
     }
 
     VkInstance Device::GetVkInstance() const {
-        return ToBackend(GetAdapter())->GetBackend()->GetVkInstance();
+        return ToBackend(GetAdapter())->GetVulkanInstance()->GetVkInstance();
     }
     const VulkanDeviceInfo& Device::GetDeviceInfo() const {
         return mDeviceInfo;
     }
 
     const VulkanGlobalInfo& Device::GetGlobalInfo() const {
-        return ToBackend(GetAdapter())->GetBackend()->GetGlobalInfo();
+        return ToBackend(GetAdapter())->GetVulkanInstance()->GetGlobalInfo();
     }
 
     VkDevice Device::GetVkDevice() const {
@@ -229,8 +230,8 @@ namespace dawn_native { namespace vulkan {
         return mResourceMemoryAllocator.get();
     }
 
-    void Device::EnqueueDeferredDeallocation(BindGroupLayout* bindGroupLayout) {
-        mBindGroupLayoutsPendingDeallocation.Enqueue(bindGroupLayout, GetPendingCommandSerial());
+    void Device::EnqueueDeferredDeallocation(DescriptorSetAllocator* allocator) {
+        mDescriptorAllocatorsPendingDeallocation.Enqueue(allocator, GetPendingCommandSerial());
     }
 
     CommandRecordingContext* Device::GetPendingRecordingContext() {
@@ -496,25 +497,10 @@ namespace dawn_native { namespace vulkan {
     }
 
     void Device::ApplyDepth24PlusS8Toggle() {
-        VkPhysicalDevice physicalDevice = ToBackend(GetAdapter())->GetPhysicalDevice();
-
-        bool supportsD32s8 = false;
-        {
-            VkFormatProperties properties;
-            fn.GetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D32_SFLOAT_S8_UINT,
-                                                 &properties);
-            supportsD32s8 =
-                properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        }
-
-        bool supportsD24s8 = false;
-        {
-            VkFormatProperties properties;
-            fn.GetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_D24_UNORM_S8_UINT,
-                                                 &properties);
-            supportsD24s8 =
-                properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        }
+        bool supportsD32s8 =
+            ToBackend(GetAdapter())->IsDepthStencilFormatSupported(VK_FORMAT_D32_SFLOAT_S8_UINT);
+        bool supportsD24s8 =
+            ToBackend(GetAdapter())->IsDepthStencilFormatSupported(VK_FORMAT_D24_UNORM_S8_UINT);
 
         ASSERT(supportsD32s8 || supportsD24s8);
 
@@ -733,8 +719,7 @@ namespace dawn_native { namespace vulkan {
                                            VkSemaphore* outSignalSemaphore,
                                            VkDeviceMemory* outAllocation,
                                            std::vector<VkSemaphore>* outWaitSemaphores) {
-        const TextureDescriptor* textureDescriptor =
-            reinterpret_cast<const TextureDescriptor*>(descriptor->cTextureDescriptor);
+        const TextureDescriptor* textureDescriptor = FromAPI(descriptor->cTextureDescriptor);
 
         const DawnTextureInternalUsageDescriptor* internalUsageDesc = nullptr;
         FindInChain(textureDescriptor->nextInChain, &internalUsageDesc);
@@ -808,8 +793,7 @@ namespace dawn_native { namespace vulkan {
         const ExternalImageDescriptorVk* descriptor,
         ExternalMemoryHandle memoryHandle,
         const std::vector<ExternalSemaphoreHandle>& waitHandles) {
-        const TextureDescriptor* textureDescriptor =
-            reinterpret_cast<const TextureDescriptor*>(descriptor->cTextureDescriptor);
+        const TextureDescriptor* textureDescriptor = FromAPI(descriptor->cTextureDescriptor);
 
         // Initial validation
         if (ConsumedError(ValidateTextureDescriptor(this, textureDescriptor))) {
@@ -985,16 +969,16 @@ namespace dawn_native { namespace vulkan {
         mUnusedFences.clear();
 
         ExecutionSerial completedSerial = GetCompletedCommandSerial();
-        for (Ref<BindGroupLayout>& bgl :
-             mBindGroupLayoutsPendingDeallocation.IterateUpTo(completedSerial)) {
-            bgl->FinishDeallocation(completedSerial);
+        for (Ref<DescriptorSetAllocator>& allocator :
+             mDescriptorAllocatorsPendingDeallocation.IterateUpTo(completedSerial)) {
+            allocator->FinishDeallocation(completedSerial);
         }
-        mBindGroupLayoutsPendingDeallocation.ClearUpTo(completedSerial);
 
         // Releasing the uploader enqueues buffers to be released.
         // Call Tick() again to clear them before releasing the deleter.
         mResourceMemoryAllocator->Tick(completedSerial);
         mDeleter->Tick(completedSerial);
+        mDescriptorAllocatorsPendingDeallocation.ClearUpTo(completedSerial);
 
         // Allow recycled memory to be deleted.
         mResourceMemoryAllocator->DestroyPool();

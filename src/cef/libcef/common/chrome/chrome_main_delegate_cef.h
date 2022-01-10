@@ -14,7 +14,6 @@
 #include "libcef/common/main_runner_handler.h"
 #include "libcef/common/task_runner_manager.h"
 
-#include "base/macros.h"
 #include "chrome/app/chrome_main_delegate.h"
 
 class ChromeContentBrowserClientCef;
@@ -30,15 +29,19 @@ class ChromeMainDelegateCef : public ChromeMainDelegate,
   ChromeMainDelegateCef(CefMainRunnerHandler* runner,
                         CefSettings* settings,
                         CefRefPtr<CefApp> application);
+
+  ChromeMainDelegateCef(const ChromeMainDelegateCef&) = delete;
+  ChromeMainDelegateCef& operator=(const ChromeMainDelegateCef&) = delete;
+
   ~ChromeMainDelegateCef() override;
 
   // ChromeMainDelegate overrides.
   bool BasicStartupComplete(int* exit_code) override;
   void PreSandboxStartup() override;
   void PreBrowserMain() override;
-  int RunProcess(
+  absl::variant<int, content::MainFunctionParams> RunProcess(
       const std::string& process_type,
-      const content::MainFunctionParams& main_function_params) override;
+      content::MainFunctionParams main_function_params) override;
 #if defined(OS_LINUX)
   void ZygoteForked() override;
 #endif
@@ -77,8 +80,6 @@ class ChromeMainDelegateCef : public ChromeMainDelegate,
 
   // We use this instead of ChromeMainDelegate::chrome_content_client_.
   ChromeContentClientCef chrome_content_client_cef_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeMainDelegateCef);
 };
 
 #endif  // CEF_LIBCEF_COMMON_CHROME_CHROME_MAIN_DELEGATE_CEF_

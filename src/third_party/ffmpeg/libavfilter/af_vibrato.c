@@ -111,23 +111,6 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     return ff_filter_frame(outlink, out);
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVSampleFormat sample_fmts[] = {
-        AV_SAMPLE_FMT_DBLP,
-        AV_SAMPLE_FMT_NONE
-    };
-    int ret = ff_set_common_all_channel_counts(ctx);
-    if (ret < 0)
-        return ret;
-
-    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
-    if (ret < 0)
-        return ret;
-
-    return ff_set_common_all_samplerates(ctx);
-}
-
 static av_cold void uninit(AVFilterContext *ctx)
 {
     VibratoContext *s = ctx->priv;
@@ -144,11 +127,11 @@ static int config_input(AVFilterLink *inlink)
     int c;
     AVFilterContext *ctx = inlink->dst;
     VibratoContext *s = ctx->priv;
-    s->channels = inlink->channels;
 
     s->buf = av_calloc(inlink->channels, sizeof(*s->buf));
     if (!s->buf)
         return AVERROR(ENOMEM);
+    s->channels = inlink->channels;
     s->buf_size = lrint(inlink->sample_rate * 0.005 + 0.5);
     for (c = 0; c < s->channels; c++) {
         s->buf[c] = av_malloc_array(s->buf_size, sizeof(*s->buf[c]));
@@ -189,7 +172,7 @@ const AVFilter ff_af_vibrato = {
     .priv_size     = sizeof(VibratoContext),
     .priv_class    = &vibrato_class,
     .uninit        = uninit,
-    .query_formats = query_formats,
     FILTER_INPUTS(avfilter_af_vibrato_inputs),
     FILTER_OUTPUTS(avfilter_af_vibrato_outputs),
+    FILTER_SINGLE_SAMPLEFMT(AV_SAMPLE_FMT_DBLP),
 };

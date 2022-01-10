@@ -50,7 +50,7 @@ class CopyTests {
             const uint32_t byteOffsetPerSlice = layout.bytesPerImage * layer;
             for (uint32_t y = 0; y < layout.mipSize.height; ++y) {
                 for (uint32_t x = 0; x < layout.mipSize.width * bytesPerTexelBlock; ++x) {
-                    uint32_t i = x + y * layout.texelBlocksPerRow;
+                    uint32_t i = x + y * layout.bytesPerRow;
                     textureData[byteOffsetPerSlice + i] =
                         static_cast<uint8_t>((x + 1 + (layer + 1) * y) % 256);
                 }
@@ -326,7 +326,7 @@ namespace {
     // The CopyTests Texture to Texture in this class will validate both CopyTextureToTexture and
     // CopyTextureToTextureInternal.
     using UsageCopySrc = bool;
-    DAWN_TEST_PARAM_STRUCT(CopyTestsParams, UsageCopySrc)
+    DAWN_TEST_PARAM_STRUCT(CopyTestsParams, UsageCopySrc);
 }  // namespace
 
 class CopyTests_T2T : public CopyTests, public DawnTestWithParams<CopyTestsParams> {
@@ -544,6 +544,40 @@ class CopyTests_B2B : public DawnTest {
         uint64_t copyEnd = destinationOffset + copySize;
         EXPECT_BUFFER_U32_RANGE_EQ(zeroes.data(), destination, copyEnd,
                                    (destinationSize - copyEnd) / sizeof(uint32_t));
+    }
+};
+
+class ClearBufferTests : public DawnTest {
+  protected:
+    // This is the same signature as ClearBuffer except that the buffers are replaced by
+    // only their size.
+    void DoTest(uint64_t bufferSize, uint64_t clearOffset, uint64_t clearSize) {
+        ASSERT(bufferSize % 4 == 0);
+        ASSERT(clearSize % 4 == 0);
+
+        // Create our test buffer, filled with non-zeroes
+        std::vector<uint32_t> bufferData(static_cast<size_t>(bufferSize / sizeof(uint32_t)));
+        for (size_t i = 0; i < bufferData.size(); i++) {
+            bufferData[i] = i + 1;
+        }
+        wgpu::Buffer buffer = utils::CreateBufferFromData(
+            device, bufferData.data(), bufferData.size() * sizeof(uint32_t),
+            wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::CopySrc);
+
+        std::vector<uint8_t> fillData(static_cast<size_t>(clearSize), 0u);
+
+        // Submit the fill
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        encoder.ClearBuffer(buffer, clearOffset, clearSize);
+        wgpu::CommandBuffer commands = encoder.Finish();
+        queue.Submit(1, &commands);
+
+        // Check destination is exactly the expected content.
+        EXPECT_BUFFER_U32_RANGE_EQ(bufferData.data(), buffer, 0, clearOffset / sizeof(uint32_t));
+        EXPECT_BUFFER_U8_RANGE_EQ(fillData.data(), buffer, clearOffset, clearSize);
+        uint64_t clearEnd = clearOffset + clearSize;
+        EXPECT_BUFFER_U32_RANGE_EQ(bufferData.data() + clearEnd / sizeof(uint32_t), buffer,
+                                   clearEnd, (bufferSize - clearEnd) / sizeof(uint32_t));
     }
 };
 
@@ -2214,6 +2248,8 @@ TEST_P(CopyTests_T2T, Texture3DTo2DArrayFull) {
 // for src and/or dst texture, non-zero offset (copy origin), non-zero mip level.
 TEST_P(CopyTests_T2T, Texture3DAnd2DArraySubRegion) {
     DAWN_TEST_UNSUPPORTED_IF(IsANGLE());  // TODO(crbug.com/angleproject/5967)
+    // TODO(crbug.com/dawn/1216): Remove this suppression.
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsNvidia());
 
     constexpr uint32_t kWidth = 8;
     constexpr uint32_t kHeight = 4;
@@ -2271,6 +2307,8 @@ TEST_P(CopyTests_T2T, Texture3DAnd2DArraySubRegion) {
 
 // Test that copying whole 2D array to a 3D texture in one texture-to-texture-copy works.
 TEST_P(CopyTests_T2T, Texture2DArrayTo3DFull) {
+    // TODO(crbug.com/dawn/1216): Remove this suppression.
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsNvidia());
     constexpr uint32_t kWidth = 256;
     constexpr uint32_t kHeight = 128;
     constexpr uint32_t kDepth = 6u;
@@ -2313,6 +2351,8 @@ TEST_P(CopyTests_T2T, Texture3DTo2DArraySubRegion) {
 // works.
 TEST_P(CopyTests_T2T, Texture2DArrayTo3DSubRegion) {
     DAWN_TEST_UNSUPPORTED_IF(IsANGLE());  // TODO(crbug.com/angleproject/5967)
+    // TODO(crbug.com/dawn/1216): Remove this suppression.
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsNvidia());
     constexpr uint32_t kWidth = 256;
     constexpr uint32_t kHeight = 128;
     constexpr uint32_t kDepth = 6u;
@@ -2396,6 +2436,34 @@ TEST_P(CopyTests_B2B, ZeroSizedCopy) {
 }
 
 DAWN_INSTANTIATE_TEST(CopyTests_B2B,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      OpenGLESBackend(),
+                      VulkanBackend());
+
+// Test clearing full buffers
+TEST_P(ClearBufferTests, FullClear) {
+    DoTest(kSmallBufferSize, 0, kSmallBufferSize);
+    DoTest(kLargeBufferSize, 0, kLargeBufferSize);
+}
+
+// Test clearing small pieces of a buffer at different corner case offsets
+TEST_P(ClearBufferTests, SmallClearInBigBuffer) {
+    constexpr uint64_t kEndOffset = kLargeBufferSize - kSmallBufferSize;
+    DoTest(kLargeBufferSize, 0, kSmallBufferSize);
+    DoTest(kLargeBufferSize, kSmallBufferSize, kSmallBufferSize);
+    DoTest(kLargeBufferSize, kEndOffset, kSmallBufferSize);
+}
+
+// Test zero-size clears
+TEST_P(ClearBufferTests, ZeroSizedClear) {
+    DoTest(kLargeBufferSize, 0, 0);
+    DoTest(kLargeBufferSize, kSmallBufferSize, 0);
+    DoTest(kLargeBufferSize, kLargeBufferSize, 0);
+}
+
+DAWN_INSTANTIATE_TEST(ClearBufferTests,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),

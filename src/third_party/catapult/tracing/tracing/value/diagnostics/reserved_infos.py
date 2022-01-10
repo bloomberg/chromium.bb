@@ -81,8 +81,6 @@ WEBRTC_INTERNAL_ARCTURUS_REVISIONS = _Info(
     'webrtcInternalArcturusRevisions', 'GenericSet', str)
 WEBRTC_INTERNAL_RIGEL_REVISIONS = _Info(
     'webrtcInternalRigelRevisions', 'GenericSet', str)
-WEBRTC_INTERNAL_CAPELLA_REVISIONS = _Info(
-    'webrtcInternalCapellaRevisions', 'GenericSet', str)
 
 
 def _CreateCachedInfoTypes():
@@ -98,6 +96,7 @@ def GetTypeForName(name):
   info = _CACHED_INFO_TYPES.get(name)
   if info:
     return info.type
+  return None
 
 def AllInfos():
   for info in _CACHED_INFO_TYPES.values():

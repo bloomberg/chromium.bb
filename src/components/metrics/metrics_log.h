@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file defines a set of user experience metrics data recorded by
-// the MetricsService.  This is the unit of data that is sent to the server.
+// This file defines a set of user experience metrics data recorded by the
+// MetricsService. This is the unit of data that is sent to the server.
 
 #ifndef COMPONENTS_METRICS_METRICS_LOG_H_
 #define COMPONENTS_METRICS_METRICS_LOG_H_
@@ -14,7 +14,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_base.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
@@ -181,23 +181,30 @@ class MetricsLog {
       DelegatingProvider* delegating_provider);
 
   // Loads the environment proto that was saved by the last RecordEnvironment()
-  // call from prefs. On success, returns true and |app_version| contains the
-  // recovered version. Otherwise (if there was no saved environment in prefs
-  // or it could not be decoded), returns false and |app_version| is empty.
-  bool LoadSavedEnvironmentFromPrefs(PrefService* local_state,
-                                     std::string* app_version);
+  // call from prefs. On success, returns true. Otherwise, (if there was no
+  // saved environment in prefs or it could not be decoded), returns false.
+  bool LoadSavedEnvironmentFromPrefs(PrefService* local_state);
 
   // Records the log_written_by_app_version system_profile field if the client's
   // version is different from the system_profile's app_version.
   void RecordLogWrittenByAppVersionIfNeeded();
 
-  // Record data from providers about the previous session into the log.
-  void RecordPreviousSessionData(DelegatingProvider* delegating_provider);
+  // Populates the log with data about the previous session.
+  // |delegating_provider| forwards the call to provide data to registered
+  // MetricsProviders. |local_state| is used to schedule a write because a side
+  // effect of providing some data is updating Local State prefs.
+  void RecordPreviousSessionData(DelegatingProvider* delegating_provider,
+                                 PrefService* local_state);
 
-  // Record data from providers about the current session into the log.
-  void RecordCurrentSessionData(DelegatingProvider* delegating_provider,
-                                base::TimeDelta incremental_uptime,
-                                base::TimeDelta uptime);
+  // Populates the log with data about the current session. The uptimes are used
+  // to populate the log with info about how long Chrome has been running.
+  // |delegating_provider| forwards the call to provide data to registered
+  // MetricsProviders. |local_state| is used to schedule a write because a side
+  // effect of providing some data is updating Local State prefs.
+  void RecordCurrentSessionData(base::TimeDelta incremental_uptime,
+                                base::TimeDelta uptime,
+                                DelegatingProvider* delegating_provider,
+                                PrefService* local_state);
 
   // Stop writing to this record and generate the encoded representation.
   // None of the Record* methods can be called after this is called.
@@ -251,7 +258,7 @@ class MetricsLog {
 
   // Used to interact with the embedder. Weak pointer; must outlive |this|
   // instance.
-  MetricsServiceClient* const client_;
+  const raw_ptr<MetricsServiceClient> client_;
 
   // The time when the current log was created.
   const base::TimeTicks creation_time_;
@@ -265,11 +272,11 @@ class MetricsLog {
 
   // The clock used to vend Time::Now().  Note that this is not used for the
   // static function MetricsLog::GetCurrentTime(). Can be overridden for tests.
-  base::Clock* clock_;
+  raw_ptr<base::Clock> clock_;
 
   // The NetworkTimeTracker used to provide higher-quality wall clock times than
   // |clock_| (when available). Can be overridden for tests.
-  const network_time::NetworkTimeTracker* network_clock_;
+  raw_ptr<const network_time::NetworkTimeTracker> network_clock_;
 };
 
 }  // namespace metrics

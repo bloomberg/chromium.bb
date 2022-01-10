@@ -71,6 +71,7 @@ class SourceLineResolverBase::AutoFileCloser {
 };
 
 struct SourceLineResolverBase::InlineOrigin {
+  InlineOrigin() {}
   InlineOrigin(bool has_file_id, int32_t source_file_id, const string& name)
       : has_file_id(has_file_id),
         source_file_id(source_file_id),
@@ -84,6 +85,7 @@ struct SourceLineResolverBase::InlineOrigin {
 struct SourceLineResolverBase::Inline {
   // A vector of (address, size) pair for a INLINE record.
   using InlineRanges = std::vector<std::pair<MemAddr, MemAddr>>;
+  Inline() {}
   Inline(bool has_call_site_file_id,
          int32_t inline_nest_level,
          int32_t call_site_line,
@@ -103,7 +105,6 @@ struct SourceLineResolverBase::Inline {
   int32_t call_site_file_id;
   int32_t origin_id;
   InlineRanges inline_ranges;
-  RangeMap<MemAddr, linked_ptr<Inline>> child_inlines;
 };
 
 struct SourceLineResolverBase::Line {

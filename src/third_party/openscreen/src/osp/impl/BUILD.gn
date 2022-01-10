@@ -58,8 +58,14 @@ if (use_chromium_quic) {
       "../../platform",
       "../../third_party/abseil",
       "../../third_party/chromium_quic",
+      "../../third_party/chromium_quic:core",
+      "../../third_party/chromium_quic:platform",
+      "../../third_party/chromium_quic:quartc",
+      "../../third_party/chromium_quic/build/base",
+      "../../third_party/chromium_quic/src/net",
       "../../util",
       "../msgs",
+      "../public",
       "quic",
     ]
   }
