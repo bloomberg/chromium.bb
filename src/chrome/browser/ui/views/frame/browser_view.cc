@@ -3777,7 +3777,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   // Undo our anti-jankiness hacks and force a re-layout.
   in_process_fullscreen_ = false;
   ToolbarSizeChanged(false);
-  frame_->GetFrameView()->OnFullscreenStateChanged();
+  if (frame_->GetFrameView())
+    frame_->GetFrameView()->OnFullscreenStateChanged();
 }
 
 bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
@@ -4068,6 +4069,8 @@ Profile* BrowserView::GetProfile() {
 }
 
 void BrowserView::UpdateUIForTabFullscreen() {
+  if (!frame()->GetFrameView())
+    return;
   frame()->GetFrameView()->UpdateFullscreenTopUI();
 }
 
@@ -4090,6 +4093,8 @@ void BrowserView::HideDownloadShelf() {
 }
 
 bool BrowserView::CanUserExitFullscreen() const {
+  if (!frame_->GetFrameView())
+    return true;
   return frame_->GetFrameView()->CanUserExitFullscreen();
 }
 
