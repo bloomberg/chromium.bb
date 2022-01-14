@@ -443,6 +443,7 @@ static void appendCommonCommandLineSwitches(std::vector<std::string> *switches)
 {
     switches->push_back("enable-blink-features=CompositingOptimizations");
     switches->push_back("disable-in-process-stack-traces");
+    switches->push_back("no-sandbox");
 
 
 
@@ -695,6 +696,23 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
     setDefaultLocaleIfWindowsLocaleIsNotSupported();
 
     initializeMetrics(Statics::toolkitDelegate);
+
+    if (isHost && Statics::isOriginalThreadMode()) {
+        // Content shell normally creates this singleton instance of
+        // NativeThemeWin when the first request to create a webview comes in.
+        // Since `content` creates the renderer process **after** the webview
+        // creation request comes in, the call to
+        // ThemeHelper::SendSystemColorInfo happens to be after the system
+        // colors are initialized.
+        //
+        // For blpwtk2, the externally-managed renderers are created and linked
+        // to the browser process before the webview creation request comes in.
+        // This causes ThemeHelper::SendSystemColorInfo to be called much
+        // earlier. To ensure the system colors are initialized before this
+        // call, we create the singleton instance right here, which is before
+        // any renderer process is linked with the browser process.
+        ui::NativeTheme::GetInstanceForNativeUi();
+    }
 }
 
 ToolkitImpl::~ToolkitImpl()

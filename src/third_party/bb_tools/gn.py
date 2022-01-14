@@ -137,6 +137,12 @@ def get_config(is_component_mode, is_debug_mode, cpu, defines):
     'proprietary_codecs': True,
     'ffmpeg_branding': 'Chrome',
 
+    # Disable field-trial testing feature.
+    'fieldtrial_testing_like_official_build': True,
+
+    # Disable multicast DNS support.
+    'enable_mdns': False,
+
     # Apply the content shell version.
     'content_shell_version': chromium_version,
     'content_shell_major_version': chromium_version.split('.')[0],

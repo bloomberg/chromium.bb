@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//base/allocator/allocator.gni")
+import("//blpwtk2/blpwtk2.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/buildflags_paint_preview.gni")
 import("//build/config/chrome_build.gni")
@@ -1863,6 +1864,10 @@ static_library("browser") {
     "//build/config:precompiled_headers",
   ]
   defines = [ "ZLIB_CONST" ]
+
+  if (is_blpwtk2) {
+    defines += [ "BLPWTK2_IMPLEMENTATION" ]
+  }
 
   if (is_chrome_branded || use_official_enterprise_connectors_api_keys) {
     defines += [ "USE_OFFICIAL_ENTERPRISE_CONNECTORS_API_KEYS=1" ]

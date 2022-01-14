@@ -280,6 +280,7 @@ shared_library("blpwtk2") {
   public_configs = [
     ":blpwtk2_public",
     ":blpwtk2_shared",
+    "//third_party/abseil-cpp:absl_include_config",
     "//third_party/angle:angle_commit_id_config",
   ]
 
@@ -410,10 +411,15 @@ group("blpwtk2_all") {
     ":blpwtk2_subprocess",
     "//content/shell:content_shell",
     "//v8:d8",
-    #"//base:base_unittests",  # This unittest fails to build against dynamic CRT
-    "//:blink_tests",
-    "//content/test:content_unittests",
-    "//cc:cc_unittests",
-    "//skia:skia_unittests",
   ]
+
+  if (!is_official_build) {
+    deps += [
+      #"//base:base_unittests",  # This unittest fails to build against dynamic CRT
+      "//:blink_tests",
+      "//content/test:content_unittests",
+      "//cc:cc_unittests",
+      "//skia:skia_unittests",
+    ]
+  }
 }
