@@ -243,7 +243,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'dbd1def27aae86c874f5007fb8a7b7e0b433cb55',
+  'v8_revision': '36b3d58d83863bde772034e93e3a7841c1c7c3b3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -255,7 +255,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '7555375264d234a42305f85d37999d1f8b656099',
+  'pdfium_revision': '27cabf3dae38d0634a53316da0ad069bf0413495',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -1700,7 +1700,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@52221642dd441adec636b9c72311dc76a2218c87',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@03691143f09408bc9e81b241a8d7699f50f429c6',
     'condition': 'checkout_src_internal',
   },
 

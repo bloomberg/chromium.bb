@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.subscriptions;
 
+import android.os.Build;
+
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
+import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManager;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.lang.annotation.Retention;
@@ -137,6 +140,16 @@ public class SubscriptionsManagerImpl implements SubscriptionsManager {
             return;
         }
 
+        // Make sure the notification channel is initialized if there is a user-managed PRICE_TRACK
+        // subscription. For chrome-managed subscriptions, channel will be initialized via message
+        // card in tab switcher.
+        if (CommerceSubscription.CommerceSubscriptionType.PRICE_TRACK.equals(type)
+                && CommerceSubscription.SubscriptionManagementType.USER_MANAGED.equals(
+                        subscriptions.get(0).getManagementType())
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            (new PriceDropNotificationManager()).createNotificationChannel();
+        }
+
         if (!mCanHandleRequests) {
             mDeferredTasks.add(new DeferredSubscriptionOperation(
                     Operation.SUBSCRIBE, subscriptions, wrappedCallback));
@@ -191,6 +204,34 @@ public class SubscriptionsManagerImpl implements SubscriptionsManager {
             mStorage.loadWithPrefix(String.valueOf(type),
                     localSubscriptions -> callback.onResult(localSubscriptions));
         }
+    }
+
+    /**
+     * Checks if the given subscription matches any subscriptions in local storage.
+     *
+     * @param subscription The subscription to check.
+     * @param callback The callback to receive the result.
+     */
+    @Override
+    public void isSubscribed(CommerceSubscription subscription, Callback<Boolean> callback) {
+        if (subscription == null) {
+            callback.onResult(false);
+            return;
+        }
+
+        // Searching by prefix instead of loading by key to handle cases of duplicates.
+        String targetKey = CommerceSubscriptionsStorage.getKey(subscription);
+        mStorage.loadWithPrefix(targetKey, localSubscriptions -> {
+            // TODO: (crbug/1279519) CommerceSubscriptionsStorage should support full key matching
+            // and we shouldn't need to perform this additional check.
+            for (CommerceSubscription current : localSubscriptions) {
+                if (targetKey.equals(CommerceSubscriptionsStorage.getKey(current))) {
+                    callback.onResult(true);
+                    return;
+                }
+            }
+            callback.onResult(false);
+        });
     }
 
     private void unsubscribe(List<CommerceSubscription> subscriptions, Callback<Integer> callback) {

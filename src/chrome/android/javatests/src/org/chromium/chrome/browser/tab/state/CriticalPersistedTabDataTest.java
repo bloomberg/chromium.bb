@@ -319,29 +319,35 @@ public class CriticalPersistedTabDataTest {
         // Saving serialized CriticalPersistedTabData ensures we get a direct ByteBuffer
         // which is assumed in the rest of Clank. See crbug.com/1220839 for more details.
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            CriticalPersistedTabData criticalPersistedTabData =
-                    new CriticalPersistedTabData(tab, "", "", PARENT_ID, ROOT_ID, TIMESTAMP,
-                            TabStateExtractor.getWebContentsState(tab), CONTENT_STATE_VERSION,
-                            OPENER_APP_ID, THEME_COLOR, LAUNCH_TYPE_AT_CREATION, USER_AGENT_A);
-            PersistedTabDataConfiguration config = PersistedTabDataConfiguration.get(
-                    CriticalPersistedTabData.class, tab.isIncognito());
-            FilePersistedTabDataStorage persistedTabDataStorage = new FilePersistedTabDataStorage();
-            persistedTabDataStorage.save(tab.getId(), config.getId(), () -> {
-                return criticalPersistedTabData.getSerializeSupplier().get();
-            }, semaphore::release);
+            try (StrictModeContext ignored = StrictModeContext.allowAllThreadPolicies()) {
+                CriticalPersistedTabData criticalPersistedTabData =
+                        new CriticalPersistedTabData(tab, "", "", PARENT_ID, ROOT_ID, TIMESTAMP,
+                                TabStateExtractor.getWebContentsState(tab), CONTENT_STATE_VERSION,
+                                OPENER_APP_ID, THEME_COLOR, LAUNCH_TYPE_AT_CREATION, USER_AGENT_A);
+                PersistedTabDataConfiguration config = PersistedTabDataConfiguration.get(
+                        CriticalPersistedTabData.class, tab.isIncognito());
+                FilePersistedTabDataStorage persistedTabDataStorage =
+                        new FilePersistedTabDataStorage();
+                persistedTabDataStorage.save(tab.getId(), config.getId(), () -> {
+                    return criticalPersistedTabData.getSerializeSupplier().get();
+                }, semaphore::release);
+            }
         });
         semaphore.acquire();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            PersistedTabDataConfiguration config = PersistedTabDataConfiguration.get(
-                    CriticalPersistedTabData.class, tab.isIncognito());
+            try (StrictModeContext ignored = StrictModeContext.allowAllThreadPolicies()) {
+                PersistedTabDataConfiguration config = PersistedTabDataConfiguration.get(
+                        CriticalPersistedTabData.class, tab.isIncognito());
 
-            ByteBuffer serialized =
-                    CriticalPersistedTabData.restore(tab.getId(), tab.isIncognito());
-            CriticalPersistedTabData deserialized = new CriticalPersistedTabData(
-                    tab, serialized, config.getStorage(), config.getId());
-            Assert.assertEquals(
-                    EXPECTED_TITLE, deserialized.getWebContentsState().getDisplayTitleFromState());
-            Assert.assertEquals(url, deserialized.getWebContentsState().getVirtualUrlFromState());
+                ByteBuffer serialized =
+                        CriticalPersistedTabData.restore(tab.getId(), tab.isIncognito());
+                CriticalPersistedTabData deserialized = new CriticalPersistedTabData(
+                        tab, serialized, config.getStorage(), config.getId());
+                Assert.assertEquals(EXPECTED_TITLE,
+                        deserialized.getWebContentsState().getDisplayTitleFromState());
+                Assert.assertEquals(
+                        url, deserialized.getWebContentsState().getVirtualUrlFromState());
+            }
         });
     }
 
