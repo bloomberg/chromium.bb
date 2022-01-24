@@ -7647,6 +7647,9 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
     // frames).
     SetFocusedFrameTree(node->frame_tree());
   }
+
+  observers_.NotifyObservers(&WebContentsObserver::OnFrameFocused,
+                             node->current_frame_host());
 }
 
 void WebContentsImpl::DidCallFocus() {
@@ -7698,8 +7701,6 @@ void WebContentsImpl::OnAdvanceFocus(RenderFrameHostImpl* source_rfh) {
       GetFocusedWebContents() == GetOuterWebContents()) {
     SetAsFocusedWebContentsIfNecessary();
   }
-
-  observers_.NotifyObservers(&WebContentsObserver::OnFrameFocused, source_rfh);
 }
 
 void WebContentsImpl::OnFocusedElementChangedInFrame(
