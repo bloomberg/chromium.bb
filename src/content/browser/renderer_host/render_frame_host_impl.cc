@@ -3440,15 +3440,11 @@ void RenderFrameHostImpl::DidNavigate(
 
   // If the navigation was a cross-document navigation and it's not the
   // synchronous about:blank commit, then it committed a document that is not
-  // the initial empty document. Note that the
-  // DidCommitNonInitialEmptyDocument() call only actually changes the state of
-  // the FrameTreeNode the first time it was called (it changes the state from
-  // "is on the initial empty document" to "not on the initial empty document",
-  // and we never go back to the former state).
+  // the initial empty document.
   if (!navigation_request->IsSameDocument() &&
       (!navigation_request->is_synchronous_renderer_commit() ||
        !navigation_request->GetURL().IsAboutBlank())) {
-    navigation_request->frame_tree_node()->DidCommitNonInitialEmptyDocument();
+    navigation_request->frame_tree_node()->SetNotOnInitialEmptyDocument();
   }
 
   // For uuid-in-package: and urn: resources served from WebBundles, use the
@@ -4229,8 +4225,16 @@ NavigationRequest* RenderFrameHostImpl::GetSameDocumentNavigationRequest(
 }
 
 void RenderFrameHostImpl::ResetNavigationRequests() {
-  navigation_requests_.clear();
-  same_document_navigation_requests_.clear();
+  // Move the NavigationRequests to new maps first before deleting them. This
+  // avoids issues if a re-entrant call is made when a NavigationRequest is
+  // being deleted (e.g., if the process goes away as the tab is closing).
+  std::map<NavigationRequest*, std::unique_ptr<NavigationRequest>>
+      navigation_requests;
+  navigation_requests_.swap(navigation_requests);
+
+  base::flat_map<base::UnguessableToken, std::unique_ptr<NavigationRequest>>
+      same_document_navigation_requests;
+  same_document_navigation_requests_.swap(same_document_navigation_requests);
 }
 
 void RenderFrameHostImpl::SetNavigationRequest(
@@ -11520,12 +11524,13 @@ bool CalculateShouldReplaceCurrentEntry(
   // should_replace_current_entry will be true) but the renderer doesn't know
   // about it so DidCommitParams' should_replace_current_entry might differ,
   // which is why we depend on the DidCommitParams for that case (for now).
+  NavigationEntryImpl* last_entry = request->frame_tree_node()
+                                        ->navigator()
+                                        .controller()
+                                        .GetLastCommittedEntry();
   return (request->IsSameDocument() ||
-          (request->IsInMainFrame() && request->frame_tree_node()
-                                           ->navigator()
-                                           .controller()
-                                           .GetLastCommittedEntry()
-                                           ->IsInitialEntry()))
+          (request->IsInMainFrame() && last_entry &&
+           last_entry->IsInitialEntry()))
              ? params.should_replace_current_entry
              : request->common_params().should_replace_current_entry;
 }

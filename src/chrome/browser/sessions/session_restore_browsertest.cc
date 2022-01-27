@@ -103,6 +103,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_features.h"
@@ -778,7 +779,13 @@ void VerifyNavigationEntries(content::NavigationController& controller,
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
+// Flaky on Lacros and Wayland. https://crbug.com/1283339
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_LINUX)
+#define MAYBE_RestoreForeignTab DISABLED_RestoreForeignTab
+#else
+#define MAYBE_RestoreForeignTab RestoreForeignTab
+#endif
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MAYBE_RestoreForeignTab) {
   GURL url1("http://google.com");
   GURL url2("http://google2.com");
 
@@ -2469,20 +2476,29 @@ IN_PROC_BROWSER_TEST_F(MultiOriginSessionRestoreTest, BackToAboutBlank1) {
   url::Origin initial_origin = url::Origin::Create(initial_url);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
   content::WebContents* old_popup = nullptr;
+  content::WebContents* tab1 = GetTab(browser(), 0);
   {
-    content::WebContents* tab1 = GetTab(browser(), 0);
+    // Open a same-origin popup.
     content::WebContentsAddedObserver popup_observer;
-    ASSERT_TRUE(ExecJs(tab1, "window.open('about:blank')"));
+    ASSERT_TRUE(ExecJs(tab1, "var w = window.open('/title2.html');"));
     old_popup = popup_observer.GetWebContents();
+    EXPECT_EQ(initial_origin,
+              old_popup->GetMainFrame()->GetLastCommittedOrigin());
+    EXPECT_TRUE(WaitForLoadStop(old_popup));
+  }
+
+  {
+    // Navigate the popup to about:blank, inheriting the opener origin. Note
+    // that we didn't immediately open the popup to about:blank to avoid making
+    // it use the initial NavigationEntry, which can't be navigated back to.
+    content::TestNavigationObserver nav_observer(old_popup);
+    ASSERT_TRUE(ExecJs(tab1, "w.location.href = 'about:blank';"));
+    nav_observer.Wait();
     EXPECT_EQ(GURL(url::kAboutBlankURL),
               old_popup->GetMainFrame()->GetLastCommittedURL());
     EXPECT_EQ(initial_origin,
               old_popup->GetMainFrame()->GetLastCommittedOrigin());
   }
-
-  // Do a document.open() so that the initial empty document's history entry
-  // won't get replaced.
-  EXPECT_TRUE(ExecJs(old_popup, "document.open();"));
 
   // Navigate the popup to another site.
   GURL other_url = embedded_test_server()->GetURL("bar.com", "/title1.html");
@@ -2725,6 +2741,11 @@ IN_PROC_BROWSER_TEST_F(MultiOriginSessionRestoreTest,
 
 // Tests that an initial NavigationEntry does not get restored.
 IN_PROC_BROWSER_TEST_F(MultiOriginSessionRestoreTest, RestoreInitialEntry) {
+  if (!blink::features::IsInitialNavigationEntryEnabled()) {
+    // This test specifically tests initial NavigationEntries, which can't be
+    // created when the InitialNavigationEntry flag is turned off.
+    return;
+  }
   GURL main_url = embedded_test_server()->GetURL("foo.com", "/title1.html");
   url::Origin main_origin = url::Origin::Create(main_url);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
