@@ -146,7 +146,7 @@ def CheckoutLLVM(commit, dir):
     print('Removing %s.' % dir)
     RmTree(dir)
 
-  clone_cmd = ['git', 'clone', 'https://github.com/llvm/llvm-project/', dir]
+  clone_cmd = ['git', 'clone', 'https://bbgithub.dev.bloomberg.com/uiinf/llvm-project.git', dir]
 
   if RunCommand(clone_cmd, fail_hard=False):
     os.chdir(dir)
