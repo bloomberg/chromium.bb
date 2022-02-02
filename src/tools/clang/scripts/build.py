@@ -508,6 +508,8 @@ def main():
                       help='do not build anything')
   parser.add_argument('--skip-checkout', action='store_true',
                       help='do not create or update any checkouts')
+  parser.add_argument('--just-checkout', action='store_true',
+                      help='just checkout llvm and do nothing else')
   parser.add_argument('--build-dir',
                       help='Override build directory')
   parser.add_argument('--extra-tools', nargs='*', default=[],
@@ -535,6 +537,10 @@ def main():
   args = parser.parse_args()
 
   global CLANG_REVISION, PACKAGE_VERSION, LLVM_BUILD_DIR
+
+  if args.just_checkout:
+    CheckoutLLVM(CLANG_REVISION, LLVM_DIR)
+    return 0
 
   if (args.pgo or args.thinlto) and not args.bootstrap:
     print('--pgo/--thinlto requires --bootstrap')
