@@ -256,7 +256,7 @@ void DnsConfigService::OnConfigChangedDelayed(bool succeeded) {
   if (succeeded) {
     ReadConfigNow();
   } else {
-    LOG(ERROR) << "DNS config watch failed.";
+    LOG(WARNING) << "DNS config watch failed.";
     watch_failed_ = true;
   }
 }
