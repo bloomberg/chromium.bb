@@ -2,12 +2,12 @@ export const description = `
 Test uninitialized textures are initialized to zero when read.
 
 TODO:
-- 1d
-- test by sampling depth/stencil
-- test by copying out of stencil
+- 1d [1]
+- test by sampling depth/stencil [2]
+- test by copying out of stencil [3]
 `;
 
-// TODO: This is a test file, it probably shouldn't export anything.
+// MAINTENANCE_TODO: This is a test file, it probably shouldn't export anything.
 // Everything that's exported should be moved to another file.
 
 import { TestCaseRecorder, TestParams } from '../../../../common/framework/fixture.js';
@@ -331,7 +331,7 @@ export class TextureZeroInitTest extends GPUTest {
     state: InitializedState,
     subresourceRange: SubresourceRange
   ): void {
-    // TODO: 1D texture
+    // [1]: 1D texture
     assert(this.p.dimension !== '1d');
 
     assert(this.p.format in kTextureFormatInfo);
@@ -433,7 +433,7 @@ export class TextureZeroInitTest extends GPUTest {
 }
 
 const kTestParams = kUnitCaseParamsBuilder
-  // TODO: 1d textures
+  // [1]: 1d textures
   .combine('dimension', ['2d', '3d'] as GPUTextureDimension[])
   .combine('readMethod', [
     ReadMethod.CopyToBuffer,
@@ -451,13 +451,13 @@ const kTestParams = kUnitCaseParamsBuilder
       (readMethod === ReadMethod.DepthTest && (!info.depth || aspect === 'stencil-only')) ||
       (readMethod === ReadMethod.StencilTest && (!info.stencil || aspect === 'depth-only')) ||
       (readMethod === ReadMethod.ColorBlending && !info.color) ||
-      // TODO: Test with depth/stencil sampling
+      // [2]: Test with depth/stencil sampling
       (readMethod === ReadMethod.Sample && (info.depth || info.stencil)) ||
       (aspect === 'depth-only' && !info.depth) ||
       (aspect === 'stencil-only' && !info.stencil) ||
       (aspect === 'all' && info.depth && info.stencil) ||
       // Cannot copy from a packed depth format.
-      // TODO: Test copying out of the stencil aspect.
+      // [3]: Test copying out of the stencil aspect.
       ((readMethod === ReadMethod.CopyToBuffer || readMethod === ReadMethod.CopyToTexture) &&
         (format === 'depth24plus' || format === 'depth24plus-stencil8'))
     );

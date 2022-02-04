@@ -21,6 +21,7 @@
 namespace app_list {
 namespace reorder {
 class AppListReorderDelegate;
+struct ReorderParam;
 }  // namespace reorder
 }  // namespace app_list
 
@@ -55,6 +56,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater,
   void PublishSearchResults(
       const std::vector<ChromeSearchResult*>& results,
       const std::vector<ash::AppListSearchResultCategory>& categories) override;
+  void ClearSearchResults() override;
   std::vector<ChromeSearchResult*> GetPublishedSearchResultsForTest() override;
 
   // Methods only used by ChromeAppListItem that talk to ash directly.
@@ -173,15 +175,21 @@ class ChromeAppListModelUpdater : public AppListModelUpdater,
   // Ends temporary sort status and performs the specified action.
   void EndTemporarySortAndTakeAction(EndAction action);
 
-  // Reverts item positions under the temporary sort.
-  void RevertTemporaryPositions();
-
   // Commits item positions under the temporary sort.
   void CommitTemporaryPositions();
+
+  // Calculates the reorder params for reverting the temporary order.
+  std::vector<app_list::reorder::ReorderParam>
+  CalculateReorderParamsForRevertOrder() const;
 
   // If folder with the provided ID has a single child, it reparents the child
   // to the root app list.
   void ClearFolderIfItHasSingleChild(const std::string& folder_id);
+
+  // Updates the item positions in the ash side. `reorder_params` specifies
+  // target positions.
+  void UpdateItemPositionWithReorderParam(
+      const std::vector<app_list::reorder::ReorderParam>& reorder_params);
 
   // Indicates the profile that the model updater is associated with.
   Profile* const profile_ = nullptr;

@@ -59,10 +59,10 @@ template<typename Lhs, typename Rhs> struct product_type
     Rows    = traits<_Lhs>::RowsAtCompileTime,
     MaxCols = traits<_Rhs>::MaxColsAtCompileTime,
     Cols    = traits<_Rhs>::ColsAtCompileTime,
-    MaxDepth = EIGEN_SIZE_MIN_PREFER_FIXED(traits<_Lhs>::MaxColsAtCompileTime,
-                                           traits<_Rhs>::MaxRowsAtCompileTime),
-    Depth = EIGEN_SIZE_MIN_PREFER_FIXED(traits<_Lhs>::ColsAtCompileTime,
-                                        traits<_Rhs>::RowsAtCompileTime)
+    MaxDepth = min_size_prefer_fixed(traits<_Lhs>::MaxColsAtCompileTime,
+                                     traits<_Rhs>::MaxRowsAtCompileTime),
+    Depth = min_size_prefer_fixed(traits<_Lhs>::ColsAtCompileTime,
+                                  traits<_Rhs>::RowsAtCompileTime)
   };
 
   // the splitting into different lines of code here, introducing the _select enums and the typedef below,
@@ -182,12 +182,13 @@ struct gemv_static_vector_if<Scalar,Size,MaxSize,true>
     PacketSize      = internal::packet_traits<Scalar>::size
   };
   #if EIGEN_MAX_STATIC_ALIGN_BYTES!=0
-  internal::plain_array<Scalar,EIGEN_SIZE_MIN_PREFER_FIXED(Size,MaxSize),0,EIGEN_PLAIN_ENUM_MIN(AlignedMax,PacketSize)> m_data;
+  internal::plain_array<Scalar, internal::min_size_prefer_fixed(Size, MaxSize), 0,
+                        internal::plain_enum_min(AlignedMax, PacketSize)> m_data;
   EIGEN_STRONG_INLINE Scalar* data() { return m_data.array; }
   #else
   // Some architectures cannot align on the stack,
   // => let's manually enforce alignment by allocating more data and return the address of the first aligned element.
-  internal::plain_array<Scalar,EIGEN_SIZE_MIN_PREFER_FIXED(Size,MaxSize)+(ForceAlignment?EIGEN_MAX_ALIGN_BYTES:0),0> m_data;
+  internal::plain_array<Scalar, internal::min_size_prefer_fixed(Size, MaxSize)+(ForceAlignment?EIGEN_MAX_ALIGN_BYTES:0),0> m_data;
   EIGEN_STRONG_INLINE Scalar* data() {
     return ForceAlignment
             ? reinterpret_cast<Scalar*>((internal::UIntPtr(m_data.array) & ~(std::size_t(EIGEN_MAX_ALIGN_BYTES-1))) + EIGEN_MAX_ALIGN_BYTES)
@@ -225,7 +226,7 @@ template<> struct gemv_dense_selector<OnTheRight,ColMajor,true>
     typedef internal::blas_traits<Rhs> RhsBlasTraits;
     typedef typename RhsBlasTraits::DirectLinearAccessType ActualRhsType;
   
-    typedef Map<Matrix<ResScalar,Dynamic,1>, EIGEN_PLAIN_ENUM_MIN(AlignedMax,internal::packet_traits<ResScalar>::size)> MappedDest;
+    typedef Map<Matrix<ResScalar,Dynamic,1>, plain_enum_min(AlignedMax, internal::packet_traits<ResScalar>::size)> MappedDest;
 
     ActualLhsType actualLhs = LhsBlasTraits::extract(lhs);
     ActualRhsType actualRhs = RhsBlasTraits::extract(rhs);

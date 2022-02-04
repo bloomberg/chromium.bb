@@ -81,7 +81,7 @@ class DerivativesTest extends GPUTest {
       fragment: {
         module: this.device.createShaderModule({
           code: `
-            [[block]] struct Uniforms {
+            struct Uniforms {
               numIterations : i32;
             };
             [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
@@ -89,18 +89,18 @@ class DerivativesTest extends GPUTest {
             [[stage(fragment)]] fn main(
               [[builtin(position)]] FragCoord : vec4<f32>,
               [[location(0)]] fragUV: vec2<f32>) -> [[location(0)]] vec4<f32> {
-                
+
                 // Loop to exercise uniform control flow of gradient operations, to trip FXC's
                 // warning X3570: gradient instruction used in a loop with varying iteration, attempting to unroll the loop
                 var summed_dx : f32 = 0.0;
                 var summed_dy : f32 = 0.0;
                 for (var i = 0; i < uniforms.numIterations; i = i + 1) {
-                  
+
                   // Bogus condition to make this a "loop with varying iteration".
                   if (fragUV.x > 500.0) {
                     break;
                   }
-                  
+
                   // Do the gradient operations within the loop
                   let dx = dpdxCoarse(fragUV.x);
                   let dy = dpdyCoarse(fragUV.y);

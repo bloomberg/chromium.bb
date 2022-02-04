@@ -1019,7 +1019,7 @@ export class NetworkRequestNode extends NetworkNode {
         const previewImage = document.createElement('img');
         previewImage.classList.add('image-network-icon-preview');
         previewImage.alt = this.requestInternal.resourceType().title();
-        this.requestInternal.populateImageSource((previewImage as HTMLImageElement));
+        void this.requestInternal.populateImageSource((previewImage as HTMLImageElement));
 
         iconElement = document.createElement('div');
         iconElement.classList.add('image');
@@ -1060,10 +1060,8 @@ export class NetworkRequestNode extends NetworkNode {
       const networkManager = SDK.NetworkManager.NetworkManager.forRequest(this.requestInternal);
       UI.UIUtils.createTextChild(cell, networkManager ? networkManager.target().decorateLabel(name) : name);
       this.appendSubtitle(cell, this.requestInternal.path());
-      UI.Tooltip.Tooltip.install(cell, this.requestInternal.url());
     } else if (text) {
       UI.UIUtils.createTextChild(cell, text);
-      UI.Tooltip.Tooltip.install(cell, text);
     }
   }
 

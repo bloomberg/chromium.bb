@@ -20,6 +20,7 @@ limitations under the License.
 
 #include <string>
 
+#include "absl/hash/hash.h"
 #include "absl/types/span.h"
 #include "tensorflow/compiler/xla/layout.h"
 #include "tensorflow/compiler/xla/shape.h"
@@ -27,7 +28,6 @@ limitations under the License.
 #include "tensorflow/compiler/xla/types.h"
 #include "tensorflow/compiler/xla/xla_data.pb.h"
 #include "tensorflow/core/platform/macros.h"
-#include "tensorflow/core/platform/types.h"
 
 namespace xla {
 
@@ -160,7 +160,7 @@ class LayoutUtil {
   static std::vector<int64_t> MakeLogicalToPhysical(const Layout& layout);
 
   // Returns a human-readable string that represents the given layout.
-  static string HumanString(const Layout& layout);
+  static std::string HumanString(const Layout& layout);
 
   // Copies the layout from 'src' to 'dst'. Recursively copies layouts of
   // tuples.  'src' and 'dst' need not be compatible but the two shapes must
@@ -186,7 +186,8 @@ class LayoutUtil {
   static Layout MoveDimToMajor(const Layout& layout, int64_t dim);
 
   // Compute a hash for `layout`.
-  static size_t Hash(const Layout& layout);
+  // TODO(majnemer): remove the need for this helper.
+  static size_t Hash(const Layout& layout) { return HashOf(layout); }
 
   // Returns the linearized index of the cell at the given indices. The unit
   // of the offset is in elements of the shape.
@@ -197,7 +198,8 @@ class LayoutUtil {
                              absl::Span<const int64_t> indices);
 
  private:
-  TF_DISALLOW_COPY_AND_ASSIGN(LayoutUtil);
+  LayoutUtil(const LayoutUtil&) = delete;
+  LayoutUtil& operator=(const LayoutUtil&) = delete;
 };
 
 }  // namespace xla

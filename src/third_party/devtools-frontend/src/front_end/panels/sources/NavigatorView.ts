@@ -232,7 +232,7 @@ export class NavigatorView extends UI.Widget.VBox implements SDK.TargetManager.O
     }
     contextMenu.viewSection().appendItem(searchLabel, () => {
       if (path) {
-        SearchSourcesView.openSearch(`file:${path.trim()}`);
+        void SearchSourcesView.openSearch(`file:${path.trim()}`);
       }
     });
   }
@@ -559,7 +559,7 @@ export class NavigatorView extends UI.Widget.VBox implements SDK.TargetManager.O
       if (target) {
         return this.domainNode(uiSourceCode, project, target, frame, projectOrigin);
       }
-      return /** @type {!NavigatorTreeNode} */ this.rootNode.child(project.id()) as NavigatorTreeNode;
+      return this.rootNode.child(project.id()) as NavigatorTreeNode;
     }
 
     const parentNode =
@@ -691,7 +691,7 @@ export class NavigatorView extends UI.Widget.VBox implements SDK.TargetManager.O
 
   sourceSelected(uiSourceCode: Workspace.UISourceCode.UISourceCode, focusSource: boolean): void {
     this.lastSelectedUISourceCode = uiSourceCode;
-    Common.Revealer.reveal(uiSourceCode, !focusSource);
+    void Common.Revealer.reveal(uiSourceCode, !focusSource);
   }
 
   private removeUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode): void {
@@ -775,7 +775,7 @@ export class NavigatorView extends UI.Widget.VBox implements SDK.TargetManager.O
       relativePath.pop();
       path = relativePath.join('/');
     }
-    this.create(project, path, uiSourceCode);
+    void this.create(project, path, uiSourceCode);
   }
 
   private handleContextMenuRename(node: NavigatorUISourceCodeTreeNode): void {
@@ -813,7 +813,7 @@ export class NavigatorView extends UI.Widget.VBox implements SDK.TargetManager.O
           i18nString(UIStrings.delete), this.handleContextMenuDelete.bind(this, uiSourceCode));
     }
 
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   private async handleDeleteOverrides(node: NavigatorTreeNode): Promise<void> {
@@ -884,7 +884,7 @@ export class NavigatorView extends UI.Widget.VBox implements SDK.TargetManager.O
       }
     }
 
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   rename(node: NavigatorUISourceCodeTreeNode, creatingNewUISourceCode: boolean): void {
@@ -982,15 +982,11 @@ const boostOrderForNode = new WeakSet<UI.TreeOutline.TreeElement>();
 export class NavigatorFolderTreeElement extends UI.TreeOutline.TreeElement {
   private readonly nodeType: string;
   private readonly navigatorView: NavigatorView;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private hoverCallback: ((arg0: boolean) => any)|undefined;
+  private hoverCallback: ((arg0: boolean) => void)|undefined;
   node!: NavigatorTreeNode;
   private hovered?: boolean;
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(navigatorView: NavigatorView, type: string, title: string, hoverCallback?: ((arg0: boolean) => any)) {
+  constructor(navigatorView: NavigatorView, type: string, title: string, hoverCallback?: ((arg0: boolean) => void)) {
     super('', true);
     this.listItemElement.classList.add('navigator-' + type + '-tree-item', 'navigator-folder-tree-item');
     UI.ARIAUtils.setAccessibleName(this.listItemElement, `${title}, ${type}`);
@@ -1141,7 +1137,7 @@ export class NavigatorSourceTreeElement extends UI.TreeOutline.TreeElement {
       super.selectOnMouseDown(event);
       return;
     }
-    setTimeout(rename.bind(this), 300);
+    window.setTimeout(rename.bind(this), 300);
 
     function rename(this: NavigatorSourceTreeElement): void {
       if (this.shouldRenameOnMouseDown()) {
@@ -1392,9 +1388,7 @@ export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
     }
   }
 
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rename(callback?: ((arg0: boolean) => any)): void {
+  rename(callback?: ((arg0: boolean) => void)): void {
     if (!this.treeElement) {
       return;
     }
@@ -1415,7 +1409,7 @@ export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
         if (this.treeElement) {
           this.treeElement.title = newTitle;
         }
-        this.uiSourceCodeInternal.rename(newTitle).then(renameCallback.bind(this));
+        void this.uiSourceCodeInternal.rename(newTitle).then(renameCallback.bind(this));
         return;
       }
       afterEditing.call(this, true);

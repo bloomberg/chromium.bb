@@ -20,6 +20,8 @@
 
 extern "C" {
 
+// GL_ANDROID_extension_pack_es31a
+
 // GL_ANGLE_base_vertex_base_instance
 ANGLE_EXPORT void GL_APIENTRY GL_DrawArraysInstancedBaseInstanceANGLE(GLenum mode,
                                                                       GLint first,
@@ -1156,6 +1158,8 @@ ANGLE_EXPORT void GL_APIENTRY GL_UseProgramStagesEXT(GLuint pipeline,
                                                      GLuint program);
 ANGLE_EXPORT void GL_APIENTRY GL_ValidateProgramPipelineEXT(GLuint pipeline);
 
+// GL_EXT_shader_framebuffer_fetch
+
 // GL_EXT_shader_framebuffer_fetch_non_coherent
 ANGLE_EXPORT void GL_APIENTRY GL_FramebufferFetchBarrierEXT();
 
@@ -1316,6 +1320,14 @@ ANGLE_EXPORT void GL_APIENTRY GL_MaxShaderCompilerThreadsKHR(GLuint count);
 // GL_KHR_texture_compression_astc_ldr
 
 // GL_KHR_texture_compression_astc_sliced_3d
+
+// GL_MESA_framebuffer_flip_y
+ANGLE_EXPORT void GL_APIENTRY GL_FramebufferParameteriMESA(GLenum target,
+                                                           GLenum pname,
+                                                           GLint param);
+ANGLE_EXPORT void GL_APIENTRY GL_GetFramebufferParameterivMESA(GLenum target,
+                                                               GLenum pname,
+                                                               GLint *params);
 
 // GL_NV_fence
 ANGLE_EXPORT void GL_APIENTRY GL_DeleteFencesNV(GLsizei n, const GLuint *fences);

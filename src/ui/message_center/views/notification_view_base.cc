@@ -284,8 +284,7 @@ void NotificationViewBase::CreateOrUpdateViews(
   CreateOrUpdateTitleView(notification);
   CreateOrUpdateMessageView(notification);
   CreateOrUpdateCompactTitleMessageView(notification);
-  CreateOrUpdateProgressBarView(notification);
-  CreateOrUpdateProgressStatusView(notification);
+  CreateOrUpdateProgressViews(notification);
   CreateOrUpdateListItemViews(notification);
   CreateOrUpdateIconView(notification);
   CreateOrUpdateSmallIconView(notification);
@@ -299,6 +298,12 @@ void NotificationViewBase::CreateOrUpdateViews(
 
 NotificationViewBase::NotificationViewBase(const Notification& notification)
     : MessageView(notification) {
+  for_ash_notification_ = false;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (ash::features::IsNotificationsRefreshEnabled())
+    for_ash_notification_ = true;
+#endif
+
   SetNotifyEnterExitOnChild(true);
 
   click_activator_ = std::make_unique<ClickActivator>(this);
@@ -444,16 +449,10 @@ NotificationViewBase::CreateControlButtonsBuilder() {
 views::Builder<NotificationHeaderView>
 NotificationViewBase::CreateHeaderRowBuilder() {
   DCHECK(!header_row_);
-  header_view_in_ash_notification_ = false;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (ash::features::IsNotificationsRefreshEnabled())
-    header_view_in_ash_notification_ = true;
-#endif
-
   auto header_row_builder = views::Builder<NotificationHeaderView>()
                                 .SetID(kHeaderRow)
                                 .CopyAddressTo(&header_row_);
-  if (!header_view_in_ash_notification_) {
+  if (!for_ash_notification_) {
     header_row_builder.SetCallback(base::BindRepeating(
         &NotificationViewBase::HeaderRowPressed, base::Unretained(this)));
   }
@@ -567,34 +566,6 @@ void NotificationViewBase::CreateOrUpdateHeaderView(
   header_row_->SetAppName(app_name);
 }
 
-void NotificationViewBase::CreateOrUpdateMessageView(
-    const Notification& notification) {
-  if (notification.type() == NOTIFICATION_TYPE_PROGRESS ||
-      notification.message().empty()) {
-    // Deletion will also remove |message_view_| from its parent.
-    delete message_view_;
-    message_view_ = nullptr;
-    return;
-  }
-
-  const std::u16string& text = gfx::TruncateString(
-      notification.message(), kMessageCharacterLimit, gfx::WORD_BREAK);
-
-  if (!message_view_) {
-    auto message_view = std::make_unique<views::Label>(
-        text, views::style::CONTEXT_DIALOG_BODY_TEXT,
-        views::style::STYLE_SECONDARY);
-    message_view->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
-    message_view->SetAllowCharacterBreak(true);
-    message_view_ = AddViewToLeftContent(std::move(message_view));
-  } else {
-    message_view_->SetText(text);
-    ReorderViewInLeftContent(message_view_);
-  }
-
-  message_view_->SetVisible(notification.items().empty());
-}
-
 void NotificationViewBase::CreateOrUpdateCompactTitleMessageView(
     const Notification& notification) {
   if (notification.type() != NOTIFICATION_TYPE_PROGRESS) {
@@ -672,6 +643,42 @@ void NotificationViewBase::CreateOrUpdateProgressStatusView(
   }
 
   status_view_->SetText(notification.progress_status());
+}
+
+void NotificationViewBase::CreateOrUpdateMessageView(
+    const Notification& notification) {
+  if (notification.type() == NOTIFICATION_TYPE_PROGRESS ||
+      notification.message().empty()) {
+    // Deletion will also remove |message_view_| from its parent.
+    delete message_view_;
+    message_view_ = nullptr;
+    return;
+  }
+
+  const std::u16string& text = gfx::TruncateString(
+      notification.message(), kMessageCharacterLimit, gfx::WORD_BREAK);
+
+  if (!message_view_) {
+    auto message_view = std::make_unique<views::Label>(
+        text, views::style::CONTEXT_DIALOG_BODY_TEXT,
+        views::style::STYLE_SECONDARY);
+    message_view->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
+    message_view->SetAllowCharacterBreak(true);
+    message_view_ = AddViewToLeftContent(std::move(message_view));
+  } else {
+    message_view_->SetText(text);
+    ReorderViewInLeftContent(message_view_);
+  }
+
+  message_view_->SetVisible(notification.items().empty());
+}
+
+void NotificationViewBase::CreateOrUpdateProgressViews(
+    const Notification& notification) {
+  // Ordering should be Progress Bar, then the Progress Status for chrome. Ash
+  // reverses the ordering.
+  CreateOrUpdateProgressBarView(notification);
+  CreateOrUpdateProgressStatusView(notification);
 }
 
 void NotificationViewBase::CreateOrUpdateListItemViews(
@@ -783,8 +790,11 @@ void NotificationViewBase::CreateOrUpdateActionButtonViews(
       action_button_to_placeholder_map_[action_buttons_[i]] =
           button_info.placeholder;
     }
-    // Change action button color to the accent color.
-    action_buttons_[i]->SetEnabledTextColors(notification.accent_color());
+
+    if (!for_ash_notification_) {
+      // Change action button color to the accent color.
+      action_buttons_[i]->SetEnabledTextColors(notification.accent_color());
+    }
   }
 
   // Inherit mouse hover state when action button views reset.
@@ -852,7 +862,7 @@ bool NotificationViewBase::HasInlineReply(
 }
 
 void NotificationViewBase::SetExpandButtonEnabled(bool enabled) {
-  if (!header_view_in_ash_notification_)
+  if (!for_ash_notification_)
     header_row_->SetExpandButtonEnabled(enabled);
 }
 
@@ -861,7 +871,7 @@ void NotificationViewBase::ToggleExpanded() {
 }
 
 void NotificationViewBase::UpdateViewForExpandedState(bool expanded) {
-  if (!header_view_in_ash_notification_)
+  if (!for_ash_notification_)
     header_row_->SetExpanded(expanded);
 
   if (!image_container_view_->children().empty())
@@ -881,7 +891,7 @@ void NotificationViewBase::UpdateViewForExpandedState(bool expanded) {
     status_view_->SetVisible(expanded);
 
   int max_items = expanded ? item_views_.size() : kMaxLinesForMessageView;
-  if (!header_view_in_ash_notification_ && list_items_count_ > max_items)
+  if (!for_ash_notification_ && list_items_count_ > max_items)
     header_row_->SetOverflowIndicator(list_items_count_ - max_items);
   else if (!item_views_.empty())
     header_row_->SetSummaryText(std::u16string());
@@ -908,8 +918,6 @@ void NotificationViewBase::ToggleInlineSettings(const ui::Event& event) {
     if (!weak_ptr)
       return;
   }
-
-  PreferredSizeChanged();
 }
 
 NotificationControlButtonsView* NotificationViewBase::GetControlButtonsView()

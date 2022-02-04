@@ -195,6 +195,13 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
 
   virtual void CreateOrUpdateHeaderView(const Notification& notification);
 
+  virtual void CreateOrUpdateCompactTitleMessageView(
+      const Notification& notification);
+
+  void CreateOrUpdateProgressBarView(const Notification& notification);
+
+  void CreateOrUpdateProgressStatusView(const Notification& notification);
+
   virtual void CreateOrUpdateTitleView(const Notification& notification) = 0;
 
   virtual void CreateOrUpdateSmallIconView(
@@ -239,6 +246,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   views::Label* message_view() { return message_view_; }
   const views::Label* message_view() const { return message_view_; }
 
+  ProportionalImageView* icon_view() const { return icon_view_; }
+
   views::View* inline_settings_row() { return settings_row_; }
   const views::View* inline_settings_row() const { return settings_row_; }
 
@@ -252,6 +261,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   views::View* action_buttons_row() { return action_buttons_row_; }
   const views::View* action_buttons_row() const { return action_buttons_row_; }
 
+  std::vector<views::LabelButton*> action_buttons() { return action_buttons_; }
+
   NotificationInputContainer* inline_reply() { return inline_reply_; }
 
   const views::Label* status_view() const { return status_view_; }
@@ -261,6 +272,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   void set_inline_settings_enabled(bool inline_settings_enabled) {
     inline_settings_enabled_ = inline_settings_enabled;
   }
+
+  bool hide_icon_on_expanded() const { return hide_icon_on_expanded_; }
 
   virtual bool IsExpandable() const = 0;
 
@@ -314,9 +327,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   friend class NotificationViewBaseTest;
 
   void CreateOrUpdateMessageView(const Notification& notification);
-  void CreateOrUpdateCompactTitleMessageView(const Notification& notification);
-  void CreateOrUpdateProgressBarView(const Notification& notification);
-  void CreateOrUpdateProgressStatusView(const Notification& notification);
+  virtual void CreateOrUpdateProgressViews(const Notification& notification);
   void CreateOrUpdateListItemViews(const Notification& notification);
   void CreateOrUpdateIconView(const Notification& notification);
   void CreateOrUpdateImageView(const Notification& notification);
@@ -345,9 +356,10 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   // Describes whether the view should display a hand pointer or not.
   bool clickable_;
 
-  // Describes whether the header view is used in an ash notification (ash
-  // notification uses a customized header view).
-  bool header_view_in_ash_notification_ = true;
+  // Describes whether this view is for an ash/ChromeOS notification (ash
+  // notification UI uses AshNotificationView, which has customized layout,
+  // header view, etc.).
+  bool for_ash_notification_ = true;
 
   // Describes whether the view can display inline settings or not.
   bool inline_settings_enabled_ = false;

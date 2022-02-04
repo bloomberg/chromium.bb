@@ -16,7 +16,6 @@
 #include "src/debug/debug.h"
 #include "src/execution/vm-state-inl.h"
 #include "src/objects/js-generator-inl.h"
-#include "src/objects/stack-frame-info-inl.h"
 #include "src/profiler/heap-profiler.h"
 #include "src/strings/string-builder-inl.h"
 
@@ -112,17 +111,15 @@ void CollectPrivateMethodsAndAccessorsFromContext(
     i::IsStaticFlag is_static_flag, std::vector<Local<Value>>* names_out,
     std::vector<Local<Value>>* values_out) {
   i::Handle<i::ScopeInfo> scope_info(context->scope_info(), isolate);
-  int local_count = scope_info->ContextLocalCount();
-  for (int j = 0; j < local_count; ++j) {
-    i::VariableMode mode = scope_info->ContextLocalMode(j);
-    i::IsStaticFlag flag = scope_info->ContextLocalIsStaticFlag(j);
+  for (auto it : i::ScopeInfo::IterateLocalNames(scope_info)) {
+    i::Handle<i::String> name(it->name(), isolate);
+    i::VariableMode mode = scope_info->ContextLocalMode(it->index());
+    i::IsStaticFlag flag = scope_info->ContextLocalIsStaticFlag(it->index());
     if (!i::IsPrivateMethodOrAccessorVariableMode(mode) ||
         flag != is_static_flag) {
       continue;
     }
-
-    i::Handle<i::String> name(scope_info->ContextLocalName(j), isolate);
-    int context_index = scope_info->ContextHeaderLength() + j;
+    int context_index = scope_info->ContextHeaderLength() + it->index();
     i::Handle<i::Object> slot_value(context->get(context_index), isolate);
     DCHECK_IMPLIES(mode == i::VariableMode::kPrivateMethod,
                    slot_value->IsJSFunction());
@@ -506,6 +503,10 @@ Location Script::GetSourceLocation(int offset) const {
   i::Handle<i::Script> script = Utils::OpenHandle(this);
   i::Script::PositionInfo info;
   i::Script::GetPositionInfo(script, offset, &info, i::Script::WITH_OFFSET);
+  if (script->HasSourceURLComment()) {
+    info.line -= script->line_offset();
+    if (info.line == 0) info.column -= script->column_offset();
+  }
   return Location(info.line, info.column);
 }
 
@@ -875,16 +876,14 @@ ConsoleCallArguments::ConsoleCallArguments(
           args.length() > 1 ? args.address_of_first_argument() : nullptr,
           args.length() - 1) {}
 
-v8::Local<v8::StackTrace> GetDetailedStackTrace(
-    Isolate* v8_isolate, v8::Local<v8::Object> v8_error) {
+v8::Local<v8::Message> CreateMessageFromException(
+    Isolate* v8_isolate, v8::Local<v8::Value> v8_error) {
+  i::Handle<i::Object> obj = Utils::OpenHandle(*v8_error);
   i::Isolate* isolate = reinterpret_cast<i::Isolate*>(v8_isolate);
-  i::Handle<i::JSReceiver> error = Utils::OpenHandle(*v8_error);
-  if (!error->IsJSObject()) {
-    return v8::Local<v8::StackTrace>();
-  }
-  i::Handle<i::FixedArray> stack_trace =
-      isolate->GetDetailedStackTrace(i::Handle<i::JSObject>::cast(error));
-  return Utils::StackTraceToLocal(stack_trace);
+  ENTER_V8_NO_SCRIPT_NO_EXCEPTION(isolate);
+  i::HandleScope scope(isolate);
+  return Utils::MessageToLocal(
+      scope.CloseAndEscape(isolate->CreateMessageFromException(obj)));
 }
 
 MaybeLocal<Script> GeneratorObject::Script() {
@@ -1000,11 +999,9 @@ void GlobalLexicalScopeNames(v8::Local<v8::Context> v8_context,
         i::ScriptContextTable::GetContext(isolate, table, i);
     DCHECK(script_context->IsScriptContext());
     i::Handle<i::ScopeInfo> scope_info(script_context->scope_info(), isolate);
-    int local_count = scope_info->ContextLocalCount();
-    for (int j = 0; j < local_count; ++j) {
-      i::String name = scope_info->ContextLocalName(j);
-      if (i::ScopeInfo::VariableIsSynthetic(name)) continue;
-      names->Append(Utils::ToLocal(handle(name, isolate)));
+    for (auto it : i::ScopeInfo::IterateLocalNames(scope_info)) {
+      if (i::ScopeInfo::VariableIsSynthetic(it->name())) continue;
+      names->Append(Utils::ToLocal(handle(it->name(), isolate)));
     }
   }
 }

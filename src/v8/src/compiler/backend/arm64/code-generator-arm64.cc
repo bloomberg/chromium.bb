@@ -878,7 +878,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
         // We don't actually want to generate a pile of code for this, so just
         // claim there is a stack frame, without generating one.
         FrameScope scope(tasm(), StackFrame::NO_FRAME_TYPE);
-        __ Call(isolate()->builtins()->code_handle(Builtin::kAbortCSADcheck),
+        __ Call(BUILTIN_CODE(isolate(), AbortCSADcheck),
                 RelocInfo::CODE_TARGET);
       }
       __ Debug("kArchAbortCSADcheck", 0, BREAK);
@@ -1894,8 +1894,8 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       __ AtomicDecompressAnyTagged(i.OutputRegister(), i.InputRegister(0),
                                    i.InputRegister(1), i.TempRegister(0));
       break;
-    case kArm64LdrDecodeCagedPointer:
-      __ LoadCagedPointerField(i.OutputRegister(), i.MemoryOperand());
+    case kArm64LdrDecodeSandboxedPointer:
+      __ LoadSandboxedPointerField(i.OutputRegister(), i.MemoryOperand());
       break;
     case kArm64Str:
       EmitOOLTrapIfNeeded(zone(), this, opcode, instr, __ pc_offset());
@@ -1910,8 +1910,9 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       __ AtomicStoreTaggedField(i.InputRegister(2), i.InputRegister(0),
                                 i.InputRegister(1), i.TempRegister(0));
       break;
-    case kArm64StrEncodeCagedPointer:
-      __ StoreCagedPointerField(i.InputOrZeroRegister64(0), i.MemoryOperand(1));
+    case kArm64StrEncodeSandboxedPointer:
+      __ StoreSandboxedPointerField(i.InputOrZeroRegister64(0),
+                                    i.MemoryOperand(1));
       break;
     case kArm64LdrS:
       EmitOOLTrapIfNeeded(zone(), this, opcode, instr, __ pc_offset());
@@ -2905,8 +2906,9 @@ void CodeGenerator::AssembleArchDeoptBranch(Instruction* instr,
   AssembleArchBranch(instr, branch);
 }
 
-void CodeGenerator::AssembleArchJump(RpoNumber target) {
-  if (!IsNextInAssemblyOrder(target)) __ B(GetLabel(target));
+void CodeGenerator::AssembleArchJumpRegardlessOfAssemblyOrder(
+    RpoNumber target) {
+  __ B(GetLabel(target));
 }
 
 #if V8_ENABLE_WEBASSEMBLY
@@ -3265,9 +3267,6 @@ void CodeGenerator::AssembleReturn(InstructionOperand* additional_pop_count) {
     // number of arguments is given by max(1 + argc_reg, parameter_slots).
     Label argc_reg_has_final_count;
     DCHECK_EQ(0u, call_descriptor->CalleeSavedRegisters() & argc_reg.bit());
-    if (!kJSArgcIncludesReceiver) {
-      __ Add(argc_reg, argc_reg, 1);  // Consider the receiver.
-    }
     if (parameter_slots > 1) {
       __ Cmp(argc_reg, Operand(parameter_slots));
       __ B(&argc_reg_has_final_count, ge);

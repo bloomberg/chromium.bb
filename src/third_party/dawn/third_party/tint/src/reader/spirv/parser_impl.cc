@@ -24,7 +24,6 @@
 #include "src/ast/disable_validation_decoration.h"
 #include "src/ast/interpolate_decoration.h"
 #include "src/ast/override_decoration.h"
-#include "src/ast/struct_block_decoration.h"
 #include "src/ast/type_name.h"
 #include "src/ast/unary_op_expression.h"
 #include "src/reader/spirv/function.h"
@@ -389,16 +388,20 @@ const Type* ParserImpl::ConvertType(uint32_t type_id, PtrAs ptr_as) {
 DecorationList ParserImpl::GetDecorationsFor(uint32_t id) const {
   DecorationList result;
   const auto& decorations = deco_mgr_->GetDecorationsFor(id, true);
+  std::unordered_set<uint32_t> visited;
   for (const auto* inst : decorations) {
     if (inst->opcode() != SpvOpDecorate) {
       continue;
     }
     // Example: OpDecorate %struct_id Block
     // Example: OpDecorate %array_ty ArrayStride 16
-    std::vector<uint32_t> inst_as_words;
-    inst->ToBinaryWithoutAttachedDebugInsts(&inst_as_words);
-    Decoration d(inst_as_words.begin() + 2, inst_as_words.end());
-    result.push_back(d);
+    auto decoration_kind = inst->GetSingleWordInOperand(1);
+    if (visited.emplace(decoration_kind).second) {
+      std::vector<uint32_t> inst_as_words;
+      inst->ToBinaryWithoutAttachedDebugInsts(&inst_as_words);
+      Decoration d(inst_as_words.begin() + 2, inst_as_words.end());
+      result.push_back(d);
+    }
   }
   return result;
 }
@@ -408,16 +411,20 @@ DecorationList ParserImpl::GetDecorationsForMember(
     uint32_t member_index) const {
   DecorationList result;
   const auto& decorations = deco_mgr_->GetDecorationsFor(id, true);
+  std::unordered_set<uint32_t> visited;
   for (const auto* inst : decorations) {
+    // Example: OpMemberDecorate %struct_id 1 Offset 16
     if ((inst->opcode() != SpvOpMemberDecorate) ||
         (inst->GetSingleWordInOperand(1) != member_index)) {
       continue;
     }
-    // Example: OpMemberDecorate %struct_id 2 Offset 24
-    std::vector<uint32_t> inst_as_words;
-    inst->ToBinaryWithoutAttachedDebugInsts(&inst_as_words);
-    Decoration d(inst_as_words.begin() + 3, inst_as_words.end());
-    result.push_back(d);
+    auto decoration_kind = inst->GetSingleWordInOperand(2);
+    if (visited.emplace(decoration_kind).second) {
+      std::vector<uint32_t> inst_as_words;
+      inst->ToBinaryWithoutAttachedDebugInsts(&inst_as_words);
+      Decoration d(inst_as_words.begin() + 3, inst_as_words.end());
+      result.push_back(d);
+    }
   }
   return result;
 }
@@ -603,7 +610,7 @@ Source ParserImpl::GetSourceForInst(
   if (where == inst_source_.end()) {
     return {};
   }
-  return Source{where->second};
+  return Source{where->second };
 }
 
 bool ParserImpl::ParseInternalModuleExceptFunctions() {
@@ -751,7 +758,14 @@ bool ParserImpl::IsValidIdentifier(const std::string& str) {
     return false;
   }
   std::locale c_locale("C");
-  if (!std::isalpha(str[0], c_locale)) {
+  if (str[0] == '_') {
+    if (str.length() == 1u || str[1] == '_') {
+      // https://www.w3.org/TR/WGSL/#identifiers
+      // must not be '_' (a single underscore)
+      // must not start with two underscores
+      return false;
+    }
+  } else if (!std::isalpha(str[0], c_locale)) {
     return false;
   }
   for (const char& ch : str) {
@@ -1040,7 +1054,6 @@ const Type* ParserImpl::ConvertType(
 bool ParserImpl::ParseArrayDecorations(
     const spvtools::opt::analysis::Type* spv_type,
     uint32_t* array_stride) {
-  bool has_array_stride = false;
   *array_stride = 0;  // Implicit stride case.
   const auto type_id = type_mgr_->GetId(spv_type);
   for (auto& decoration : this->GetDecorationsFor(type_id)) {
@@ -1050,11 +1063,6 @@ bool ParserImpl::ParseArrayDecorations(
         return Fail() << "invalid array type ID " << type_id
                       << ": ArrayStride can't be 0";
       }
-      if (has_array_stride) {
-        return Fail() << "invalid array type ID " << type_id
-                      << ": multiple ArrayStride decorations";
-      }
-      has_array_stride = true;
       *array_stride = stride;
     } else {
       return Fail() << "invalid array type ID " << type_id
@@ -1072,15 +1080,11 @@ const Type* ParserImpl::ConvertType(
     const spvtools::opt::analysis::Struct* struct_ty) {
   // Compute the struct decoration.
   auto struct_decorations = this->GetDecorationsFor(type_id);
-  bool is_block_decorated = false;
   if (struct_decorations.size() == 1) {
     const auto decoration = struct_decorations[0][0];
-    if (decoration == SpvDecorationBlock) {
-      is_block_decorated = true;
-    } else if (decoration == SpvDecorationBufferBlock) {
-      is_block_decorated = true;
+    if (decoration == SpvDecorationBufferBlock) {
       remap_buffer_block_type_.insert(type_id);
-    } else {
+    } else if (decoration != SpvDecorationBlock) {
       Fail() << "struct with ID " << type_id
              << " has unrecognized decoration: " << int(decoration);
     }
@@ -1193,13 +1197,8 @@ const Type* ParserImpl::ConvertType(
 
   // Now make the struct.
   auto sym = builder_.Symbols().Register(name);
-  ast::DecorationList ast_struct_decorations;
-  if (is_block_decorated && struct_types_for_buffers_.count(type_id)) {
-    ast_struct_decorations.emplace_back(
-        create<ast::StructBlockDecoration>(Source{}));
-  }
   auto* ast_struct = create<ast::Struct>(Source{}, sym, std::move(ast_members),
-                                         std::move(ast_struct_decorations));
+                                         ast::DecorationList());
   if (num_non_writable_members == members.size()) {
     read_only_struct_types_.insert(ast_struct->name);
   }
@@ -2002,37 +2001,8 @@ const ast::Expression* ParserImpl::MakeNullValue(const Type* type) {
   if (type->Is<F32>()) {
     return create<ast::FloatLiteralExpression>(Source{}, 0.0f);
   }
-  if (type->Is<Alias>()) {
-    // TODO(amaiorano): No type constructor for TypeName (yet?)
-    ast::ExpressionList ast_components;
-    return builder_.Construct(Source{}, original_type->Build(builder_),
-                              std::move(ast_components));
-  }
-  if (auto* vec_ty = type->As<Vector>()) {
-    ast::ExpressionList ast_components;
-    for (size_t i = 0; i < vec_ty->size; ++i) {
-      ast_components.emplace_back(MakeNullValue(vec_ty->type));
-    }
-    return builder_.Construct(Source{}, type->Build(builder_),
-                              std::move(ast_components));
-  }
-  if (auto* mat_ty = type->As<Matrix>()) {
-    // Matrix components are columns
-    auto* column_ty = ty_.Vector(mat_ty->type, mat_ty->rows);
-    ast::ExpressionList ast_components;
-    for (size_t i = 0; i < mat_ty->columns; ++i) {
-      ast_components.emplace_back(MakeNullValue(column_ty));
-    }
-    return builder_.Construct(Source{}, type->Build(builder_),
-                              std::move(ast_components));
-  }
-  if (auto* arr_ty = type->As<Array>()) {
-    ast::ExpressionList ast_components;
-    for (size_t i = 0; i < arr_ty->size; ++i) {
-      ast_components.emplace_back(MakeNullValue(arr_ty->type));
-    }
-    return builder_.Construct(Source{}, original_type->Build(builder_),
-                              std::move(ast_components));
+  if (type->IsAnyOf<Vector, Matrix, Array>()) {
+    return builder_.Construct(Source{}, type->Build(builder_));
   }
   if (auto* struct_ty = type->As<Struct>()) {
     ast::ExpressionList ast_components;
@@ -2535,8 +2505,8 @@ const Pointer* ParserImpl::GetTypeForHandleVar(
       }
     } else {
       const auto access = ast::Access::kWrite;
-      const auto format = enum_converter_.ToImageFormat(image_type->format());
-      if (format == ast::ImageFormat::kNone) {
+      const auto format = enum_converter_.ToTexelFormat(image_type->format());
+      if (format == ast::TexelFormat::kNone) {
         return nullptr;
       }
       ast_store_type = ty_.StorageTexture(dim, format, access);
@@ -2556,47 +2526,28 @@ const Pointer* ParserImpl::GetTypeForHandleVar(
   return result;
 }
 
-const Type* ParserImpl::GetComponentTypeForFormat(ast::ImageFormat format) {
+const Type* ParserImpl::GetComponentTypeForFormat(ast::TexelFormat format) {
   switch (format) {
-    case ast::ImageFormat::kR8Uint:
-    case ast::ImageFormat::kR16Uint:
-    case ast::ImageFormat::kRg8Uint:
-    case ast::ImageFormat::kR32Uint:
-    case ast::ImageFormat::kRg16Uint:
-    case ast::ImageFormat::kRgba8Uint:
-    case ast::ImageFormat::kRg32Uint:
-    case ast::ImageFormat::kRgba16Uint:
-    case ast::ImageFormat::kRgba32Uint:
+    case ast::TexelFormat::kR32Uint:
+    case ast::TexelFormat::kRgba8Uint:
+    case ast::TexelFormat::kRg32Uint:
+    case ast::TexelFormat::kRgba16Uint:
+    case ast::TexelFormat::kRgba32Uint:
       return ty_.U32();
 
-    case ast::ImageFormat::kR8Sint:
-    case ast::ImageFormat::kR16Sint:
-    case ast::ImageFormat::kRg8Sint:
-    case ast::ImageFormat::kR32Sint:
-    case ast::ImageFormat::kRg16Sint:
-    case ast::ImageFormat::kRgba8Sint:
-    case ast::ImageFormat::kRg32Sint:
-    case ast::ImageFormat::kRgba16Sint:
-    case ast::ImageFormat::kRgba32Sint:
+    case ast::TexelFormat::kR32Sint:
+    case ast::TexelFormat::kRgba8Sint:
+    case ast::TexelFormat::kRg32Sint:
+    case ast::TexelFormat::kRgba16Sint:
+    case ast::TexelFormat::kRgba32Sint:
       return ty_.I32();
 
-    case ast::ImageFormat::kR8Unorm:
-    case ast::ImageFormat::kRg8Unorm:
-    case ast::ImageFormat::kRgba8Unorm:
-    case ast::ImageFormat::kRgba8UnormSrgb:
-    case ast::ImageFormat::kBgra8Unorm:
-    case ast::ImageFormat::kBgra8UnormSrgb:
-    case ast::ImageFormat::kRgb10A2Unorm:
-    case ast::ImageFormat::kR8Snorm:
-    case ast::ImageFormat::kRg8Snorm:
-    case ast::ImageFormat::kRgba8Snorm:
-    case ast::ImageFormat::kR16Float:
-    case ast::ImageFormat::kR32Float:
-    case ast::ImageFormat::kRg16Float:
-    case ast::ImageFormat::kRg11B10Float:
-    case ast::ImageFormat::kRg32Float:
-    case ast::ImageFormat::kRgba16Float:
-    case ast::ImageFormat::kRgba32Float:
+    case ast::TexelFormat::kRgba8Unorm:
+    case ast::TexelFormat::kRgba8Snorm:
+    case ast::TexelFormat::kR32Float:
+    case ast::TexelFormat::kRg32Float:
+    case ast::TexelFormat::kRgba16Float:
+    case ast::TexelFormat::kRgba32Float:
       return ty_.F32();
     default:
       break;
@@ -2605,49 +2556,30 @@ const Type* ParserImpl::GetComponentTypeForFormat(ast::ImageFormat format) {
   return nullptr;
 }
 
-unsigned ParserImpl::GetChannelCountForFormat(ast::ImageFormat format) {
+unsigned ParserImpl::GetChannelCountForFormat(ast::TexelFormat format) {
   switch (format) {
-    case ast::ImageFormat::kR16Float:
-    case ast::ImageFormat::kR16Sint:
-    case ast::ImageFormat::kR16Uint:
-    case ast::ImageFormat::kR32Float:
-    case ast::ImageFormat::kR32Sint:
-    case ast::ImageFormat::kR32Uint:
-    case ast::ImageFormat::kR8Sint:
-    case ast::ImageFormat::kR8Snorm:
-    case ast::ImageFormat::kR8Uint:
-    case ast::ImageFormat::kR8Unorm:
+    case ast::TexelFormat::kR32Float:
+    case ast::TexelFormat::kR32Sint:
+    case ast::TexelFormat::kR32Uint:
       // One channel
       return 1;
 
-    case ast::ImageFormat::kRg11B10Float:
-    case ast::ImageFormat::kRg16Float:
-    case ast::ImageFormat::kRg16Sint:
-    case ast::ImageFormat::kRg16Uint:
-    case ast::ImageFormat::kRg32Float:
-    case ast::ImageFormat::kRg32Sint:
-    case ast::ImageFormat::kRg32Uint:
-    case ast::ImageFormat::kRg8Sint:
-    case ast::ImageFormat::kRg8Snorm:
-    case ast::ImageFormat::kRg8Uint:
-    case ast::ImageFormat::kRg8Unorm:
+    case ast::TexelFormat::kRg32Float:
+    case ast::TexelFormat::kRg32Sint:
+    case ast::TexelFormat::kRg32Uint:
       // Two channels
       return 2;
 
-    case ast::ImageFormat::kBgra8Unorm:
-    case ast::ImageFormat::kBgra8UnormSrgb:
-    case ast::ImageFormat::kRgb10A2Unorm:
-    case ast::ImageFormat::kRgba16Float:
-    case ast::ImageFormat::kRgba16Sint:
-    case ast::ImageFormat::kRgba16Uint:
-    case ast::ImageFormat::kRgba32Float:
-    case ast::ImageFormat::kRgba32Sint:
-    case ast::ImageFormat::kRgba32Uint:
-    case ast::ImageFormat::kRgba8Sint:
-    case ast::ImageFormat::kRgba8Snorm:
-    case ast::ImageFormat::kRgba8Uint:
-    case ast::ImageFormat::kRgba8Unorm:
-    case ast::ImageFormat::kRgba8UnormSrgb:
+    case ast::TexelFormat::kRgba16Float:
+    case ast::TexelFormat::kRgba16Sint:
+    case ast::TexelFormat::kRgba16Uint:
+    case ast::TexelFormat::kRgba32Float:
+    case ast::TexelFormat::kRgba32Sint:
+    case ast::TexelFormat::kRgba32Uint:
+    case ast::TexelFormat::kRgba8Sint:
+    case ast::TexelFormat::kRgba8Snorm:
+    case ast::TexelFormat::kRgba8Uint:
+    case ast::TexelFormat::kRgba8Unorm:
       // Four channels
       return 4;
 
@@ -2658,7 +2590,7 @@ unsigned ParserImpl::GetChannelCountForFormat(ast::ImageFormat format) {
   return 0;
 }
 
-const Type* ParserImpl::GetTexelTypeForFormat(ast::ImageFormat format) {
+const Type* ParserImpl::GetTexelTypeForFormat(ast::TexelFormat format) {
   const auto* component_type = GetComponentTypeForFormat(format);
   if (!component_type) {
     return nullptr;

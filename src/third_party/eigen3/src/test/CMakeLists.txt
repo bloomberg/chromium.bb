@@ -303,7 +303,7 @@ else()
   endif()
 endif()
 
-ei_add_test(fastmath " ${EIGEN_FASTMATH_FLAGS} ")
+ei_add_test(fastmath "${EIGEN_FASTMATH_FLAGS}")
 
 # # ei_add_test(denseLM)
 

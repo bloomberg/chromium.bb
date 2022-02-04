@@ -23,7 +23,7 @@
 #include <IOSurface/IOSurfaceRef.h>
 #import <Metal/Metal.h>
 
-namespace dawn_native { namespace metal {
+namespace dawn::native::metal {
 
     class CommandRecordingContext;
     class Device;
@@ -48,6 +48,7 @@ namespace dawn_native { namespace metal {
                                            NSPRef<id<MTLTexture>> wrapped);
 
         id<MTLTexture> GetMTLTexture();
+        NSPRef<id<MTLTexture>> CreateFormatView(wgpu::TextureFormat format);
 
         void EnsureSubresourceContentInitialized(CommandRecordingContext* commandContext,
                                                  const SubresourceRange& range);
@@ -90,6 +91,6 @@ namespace dawn_native { namespace metal {
         NSPRef<id<MTLTexture>> mMtlTextureView;
     };
 
-}}  // namespace dawn_native::metal
+}  // namespace dawn::native::metal
 
 #endif  // DAWNNATIVE_METAL_TEXTUREMTL_H_

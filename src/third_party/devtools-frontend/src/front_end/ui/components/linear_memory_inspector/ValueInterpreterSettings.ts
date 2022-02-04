@@ -5,6 +5,7 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
+import * as Input from '../input/input.js';
 
 import {ValueType, valueTypeToLocalizedString} from './ValueInterpreterDisplayUtils.js';
 import valueInterpreterSettingsStyles from './valueInterpreterSettings.css.js';
@@ -65,15 +66,15 @@ export class ValueInterpreterSettings extends HTMLElement {
   #valueTypes: Set<ValueType> = new Set();
 
   connectedCallback(): void {
-    this.#shadow.adoptedStyleSheets = [valueInterpreterSettingsStyles];
+    this.#shadow.adoptedStyleSheets = [Input.checkboxStyles, valueInterpreterSettingsStyles];
   }
 
   set data(data: ValueInterpreterSettingsData) {
     this.#valueTypes = data.valueTypes;
-    this.render();
+    this.#render();
   }
 
-  private render(): void {
+  #render(): void {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(html`
@@ -82,14 +83,14 @@ export class ValueInterpreterSettings extends HTMLElement {
         return html`
           <div class="value-types-selection">
             <span class="group">${valueTypeGroupToLocalizedString(group)}</span>
-            ${this.plotTypeSelections(group)}
+            ${this.#plotTypeSelections(group)}
           </div>
         `;})}
       </div>
       `, this.#shadow, {host: this});
   }
 
-  private plotTypeSelections(group: ValueTypeGroup): LitHtml.TemplateResult {
+  #plotTypeSelections(group: ValueTypeGroup): LitHtml.TemplateResult {
     const types = GROUP_TO_TYPES.get(group);
     if (!types) {
       throw new Error(`Unknown group ${group}`);
@@ -98,13 +99,13 @@ export class ValueInterpreterSettings extends HTMLElement {
       ${types.map(type => {
         return html`
           <label class="type-label" title=${valueTypeToLocalizedString(type)}>
-            <input data-input="true" type="checkbox" .checked=${this.#valueTypes.has(type)} @change=${(e: Event): void => this.onTypeToggle(type, e)}>
+            <input data-input="true" type="checkbox" .checked=${this.#valueTypes.has(type)} @change=${(e: Event): void => this.#onTypeToggle(type, e)}>
             <span data-title="true">${valueTypeToLocalizedString(type)}</span>
           </label>
      `;})}`;
   }
 
-  private onTypeToggle(type: ValueType, event: Event): void {
+  #onTypeToggle(type: ValueType, event: Event): void {
     const checkbox = event.target as HTMLInputElement;
     this.dispatchEvent(new TypeToggleEvent(type, checkbox.checked));
   }

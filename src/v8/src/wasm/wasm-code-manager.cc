@@ -1653,6 +1653,11 @@ class NativeModuleWireBytesStorage final : public WireBytesStorage {
         .SubVector(ref.offset(), ref.end_offset());
   }
 
+  base::Optional<ModuleWireBytes> GetModuleBytes() const final {
+    return base::Optional<ModuleWireBytes>(
+        std::atomic_load(&wire_bytes_)->as_vector());
+  }
+
  private:
   const std::shared_ptr<base::OwnedVector<const uint8_t>> wire_bytes_;
 };
@@ -2065,15 +2070,9 @@ size_t WasmCodeManager::EstimateNativeModuleCodeSize(int num_functions,
   const size_t overhead_per_code_byte =
       kTurbofanCodeSizeMultiplier +
       (include_liftoff ? kLiftoffCodeSizeMultiplier : 0);
-  const size_t jump_table_size = RoundUp<kCodeAlignment>(
-      JumpTableAssembler::SizeForNumberOfSlots(num_functions));
-  const size_t far_jump_table_size =
-      RoundUp<kCodeAlignment>(JumpTableAssembler::SizeForNumberOfFarJumpSlots(
-          WasmCode::kRuntimeStubCount,
-          NumWasmFunctionsInFarJumpTable(num_functions)));
-  return jump_table_size                                 // jump table
-         + far_jump_table_size                           // far jump table
-         + overhead_per_function * num_functions         // per function
+  // Note that the size for jump tables is added later, in {ReservationSize} /
+  // {OverheadPerCodeSpace}.
+  return overhead_per_function * num_functions           // per function
          + overhead_per_code_byte * code_section_length  // per code byte
          + kImportSize * num_imported_functions;         // per import
 }
@@ -2087,11 +2086,19 @@ size_t WasmCodeManager::EstimateNativeModuleMetaDataSize(
 
   // TODO(wasm): Include wire bytes size.
   size_t native_module_estimate =
-      sizeof(NativeModule) +                     /* NativeModule struct */
-      (sizeof(WasmCode*) * num_wasm_functions) + /* code table size */
-      (sizeof(WasmCode) * num_wasm_functions);   /* code object size */
+      sizeof(NativeModule) +                      // NativeModule struct
+      (sizeof(WasmCode*) * num_wasm_functions) +  // code table size
+      (sizeof(WasmCode) * num_wasm_functions);    // code object size
 
-  return wasm_module_estimate + native_module_estimate;
+  size_t jump_table_size = RoundUp<kCodeAlignment>(
+      JumpTableAssembler::SizeForNumberOfSlots(num_wasm_functions));
+  size_t far_jump_table_size =
+      RoundUp<kCodeAlignment>(JumpTableAssembler::SizeForNumberOfFarJumpSlots(
+          WasmCode::kRuntimeStubCount,
+          NumWasmFunctionsInFarJumpTable(num_wasm_functions)));
+
+  return wasm_module_estimate + native_module_estimate + jump_table_size +
+         far_jump_table_size;
 }
 
 void WasmCodeManager::SetThreadWritable(bool writable) {
@@ -2121,12 +2128,6 @@ bool WasmCodeManager::MemoryProtectionKeysEnabled() const {
 bool WasmCodeManager::MemoryProtectionKeyWritable() const {
   return GetMemoryProtectionKeyPermission(memory_protection_key_) ==
          MemoryProtectionKeyPermission::kNoRestrictions;
-}
-
-void WasmCodeManager::InitializeMemoryProtectionKeyForTesting() {
-  if (memory_protection_key_ == kNoMemoryProtectionKey) {
-    memory_protection_key_ = AllocateMemoryProtectionKey();
-  }
 }
 
 void WasmCodeManager::InitializeMemoryProtectionKeyPermissionsIfSupported()

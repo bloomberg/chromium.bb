@@ -26,7 +26,7 @@ proto_library(
         "//buildenv/target:non_prod",
     ],
     visibility = [
-        "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
+        "//platform/impl/ios:__subpackages__",
     ],
 )
 
@@ -55,9 +55,7 @@ portable_proto_library(
         ":offline_wire_formats_proto",
     ],
     visibility = [
-        "//location/nearby/connections:__subpackages__",
-        "//nearby_connections:__subpackages__",
-        "//third_party/nearby_connections:__subpackages__",
+        "//third_party/nearby:__subpackages__",
     ],
 )
 

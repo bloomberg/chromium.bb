@@ -24,7 +24,7 @@
 #include "dawn_native/vulkan/TextureVk.h"
 #include "dawn_native/vulkan/VulkanError.h"
 
-namespace dawn_native { namespace vulkan {
+namespace dawn::native::vulkan {
 
     VkCompareOp ToVulkanCompareOp(wgpu::CompareFunction op) {
         switch (op) {
@@ -71,7 +71,12 @@ namespace dawn_native { namespace vulkan {
                     break;
 
                 case Aspect::Plane0:
+                    flags |= VK_IMAGE_ASPECT_PLANE_0_BIT;
+                    break;
                 case Aspect::Plane1:
+                    flags |= VK_IMAGE_ASPECT_PLANE_1_BIT;
+                    break;
+
                 case Aspect::None:
                     UNREACHABLE();
             }
@@ -256,4 +261,4 @@ namespace dawn_native { namespace vulkan {
         return specializationInfo;
     }
 
-}}  // namespace dawn_native::vulkan
+}  // namespace dawn::native::vulkan

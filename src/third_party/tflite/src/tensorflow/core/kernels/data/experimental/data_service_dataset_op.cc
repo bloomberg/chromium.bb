@@ -55,6 +55,7 @@ limitations under the License.
 #include "tensorflow/core/platform/env_time.h"
 #include "tensorflow/core/platform/errors.h"
 #include "tensorflow/core/platform/mutex.h"
+#include "tensorflow/core/platform/refcount.h"
 #include "tensorflow/core/platform/status.h"
 #include "tensorflow/core/platform/statusor.h"
 #include "tensorflow/core/platform/thread_annotations.h"
@@ -132,6 +133,7 @@ StatusOr<DataServiceMetadata> GetDataServiceMetadata(const int64_t dataset_id,
         " not found. It must be registered with `register_dataset` before "
         "calling `from_dataset_id`.");
   }
+  TF_RETURN_IF_ERROR(status);
   return metadata;
 }
 
@@ -145,6 +147,21 @@ StatusOr<DataServiceMetadata::Compression> GetValidatedCompression(
         dataset_id));
   }
   return metadata.compression();
+}
+
+StatusOr<DataServiceConfig> GetDataServiceConfig(const tstring& address,
+                                                 const tstring& protocol) {
+  DataServiceDispatcherClient client(address, protocol);
+  DataServiceConfig config;
+  absl::Time deadline =
+      absl::FromUnixMicros(EnvTime::NowMicros()) + kGetMetadataRetryTimeout;
+
+  TF_RETURN_IF_ERROR(grpc_util::Retry(
+      [&]() { return client.GetDataServiceConfig(config); },
+      absl::Substitute("Get data service config with dispatcher at $0.",
+                       std::string(address)),
+      absl::ToUnixMicros(deadline)));
+  return config;
 }
 }  // namespace
 
@@ -553,15 +570,6 @@ class DataServiceDatasetOp::Dataset : public DatasetBase {
         return errors::InvalidArgument(
             "Coordinated reads require non-local workers, but `target_workers` "
             "is \"LOCAL\".");
-      }
-      if (IsStaticShard(dataset()->processing_mode_) &&
-          dataset()->target_workers_ != TARGET_WORKERS_LOCAL) {
-        return errors::InvalidArgument(
-            "Static sharding policy <",
-            ProcessingModeDef::ShardingPolicy_Name(
-                dataset()->processing_mode_.sharding_policy()),
-            "> requires reading from local workers, but `target_workers` is ",
-            TargetWorkersToString(dataset()->target_workers_), ".");
       }
       return Status::OK();
     }
@@ -1445,15 +1453,6 @@ void DataServiceDatasetOp::MakeDataset(OpKernelContext* ctx,
                     "Failed to parse ProcessingModeDef from string: $0",
                     std::string(processing_mode_str))));
   }
-  if (IsStaticShard(processing_mode) &&
-      target_workers_ == TARGET_WORKERS_AUTO) {
-    VLOG(1) << "Using LOCAL target workers for static sharding mode: "
-            << processing_mode.ShortDebugString();
-    target_workers_ = TARGET_WORKERS_LOCAL;
-  }
-  if (target_workers_ == TARGET_WORKERS_LOCAL) {
-    data_transfer_protocol_ = kLocalTransferProtocol;
-  }
 
   tstring address;
   OP_REQUIRES_OK(ctx, ParseScalarArgument(ctx, kAddress, &address));
@@ -1467,6 +1466,20 @@ void DataServiceDatasetOp::MakeDataset(OpKernelContext* ctx,
 
   tstring job_name;
   OP_REQUIRES_OK(ctx, ParseScalarArgument(ctx, kJobName, &job_name));
+
+  StatusOr<DataServiceConfig> config = GetDataServiceConfig(address, protocol);
+  OP_REQUIRES_OK(ctx, config.status());
+
+  if (IsStaticShard(processing_mode) &&
+      config->deployment_mode() == DEPLOYMENT_MODE_COLOCATED &&
+      target_workers_ == TARGET_WORKERS_AUTO) {
+    VLOG(1) << "Using LOCAL target workers for static sharding mode: "
+            << processing_mode.ShortDebugString();
+    target_workers_ = TARGET_WORKERS_LOCAL;
+  }
+  if (target_workers_ == TARGET_WORKERS_LOCAL) {
+    data_transfer_protocol_ = kLocalTransferProtocol;
+  }
 
   absl::optional<int64_t> consumer_index;
   absl::optional<int64_t> num_consumers;
@@ -1535,7 +1548,8 @@ void DataServiceDatasetOp::MakeDataset(OpKernelContext* ctx,
         GetValidatedCompression(dataset_id, *metadata);
     OP_REQUIRES_OK(ctx, compression.status());
     should_uncompress =
-        should_uncompress && (*compression == DataServiceMetadata::SNAPPY);
+        should_uncompress &&
+        (*compression == DataServiceMetadata::COMPRESSION_SNAPPY);
   }
   DataTypeVector data_service_output_types = output_types_;
   std::vector<PartialTensorShape> data_service_output_shapes = output_shapes_;
@@ -1561,11 +1575,16 @@ void DataServiceDatasetOp::MakeDataset(OpKernelContext* ctx,
   if (should_uncompress) {
     VLOG(2) << "Inserting a ParallelMap dataset to uncompress tf.data service "
             << "dataset " << dataset_id << ".";
+    dataset->Initialize(/*metadata=*/{});
     captured_uncompress_func.reset();
     OP_REQUIRES_OK(
         ctx, CapturedFunction::Create(ctx, uncompress_fn_,
                                       /*captured_inputs=*/std::vector<Tensor>{},
                                       &captured_uncompress_func));
+
+    // Release the ownership of `dataset` and transfer it to the ParallelMap
+    // dataset for uncompression.
+    core::ScopedUnref unref(dataset);
     dataset = MakeDataServiceUncompressDataset(
                   /*input=*/dataset, std::move(captured_uncompress_func),
                   output_types_, output_shapes_)

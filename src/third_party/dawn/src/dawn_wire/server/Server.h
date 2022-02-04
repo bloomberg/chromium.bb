@@ -18,7 +18,7 @@
 #include "dawn_wire/ChunkedCommandSerializer.h"
 #include "dawn_wire/server/ServerBase_autogen.h"
 
-namespace dawn_wire { namespace server {
+namespace dawn::wire::server {
 
     class Server;
     class MemoryTransferService;
@@ -42,13 +42,11 @@ namespace dawn_wire { namespace server {
     // auto userdata = MakeUserdata<MyUserdata>();
     // userdata->foo = 2;
     //
-    // // TODO(enga): Make the template inference for ForwardToServer cleaner with C++17
     // callMyCallbackHandler(
-    //      ForwardToServer<decltype(&Server::MyCallbackHandler)>::Func<
-    //                      &Server::MyCallbackHandler>(),
+    //      ForwardToServer<&Server::MyCallbackHandler>,
     //      userdata.release());
     //
-    // void Server::MyCallbackHandler(MyUserdata* userdata) { }
+    // void Server::MyCallbackHandler(MyUserdata* userdata, Other args) { }
     struct CallbackUserdata {
         Server* const server;
         std::weak_ptr<bool> const serverIsAlive;
@@ -59,52 +57,34 @@ namespace dawn_wire { namespace server {
         }
     };
 
-    template <typename F>
-    class ForwardToServer;
+    template <auto F>
+    struct ForwardToServerHelper {
+        template <typename _>
+        struct ExtractedTypes;
 
-    template <typename R, typename... Args>
-    class ForwardToServer<R (Server::*)(Args...)> {
-      private:
-        // Get the type T of the last argument. It has CallbackUserdata as its base.
-        using UserdataT = typename std::remove_pointer<typename std::decay<decltype(
-            std::get<sizeof...(Args) - 1>(std::declval<std::tuple<Args...>>()))>::type>::type;
-
-        static_assert(std::is_base_of<CallbackUserdata, UserdataT>::value,
-                      "Last argument of callback handler should derive from CallbackUserdata.");
-
-        template <class T, class... Ts>
-        struct UntypedCallbackImpl;
-
-        template <std::size_t... I, class... Ts>
-        struct UntypedCallbackImpl<std::index_sequence<I...>, Ts...> {
-            template <R (Server::*Func)(Args...)>
-            static auto ForwardToServer(
-                // Unpack and forward the types of the parameter pack.
-                // Append void* as the last argument.
-                typename std::tuple_element<I, std::tuple<Ts...>>::type... args,
-                void* userdata) {
+        // An internal structure used to unpack the various types that compose the type of F
+        template <typename Return, typename Class, typename Userdata, typename... Args>
+        struct ExtractedTypes<Return (Class::*)(Userdata*, Args...)> {
+            using UntypedCallback = Return (*)(Args..., void*);
+            static Return Callback(Args... args, void* userdata) {
                 // Acquire the userdata, and cast it to UserdataT.
-                std::unique_ptr<UserdataT> data(static_cast<UserdataT*>(userdata));
+                std::unique_ptr<Userdata> data(static_cast<Userdata*>(userdata));
                 if (data->serverIsAlive.expired()) {
                     // Do nothing if the server has already been destroyed.
                     return;
                 }
                 // Forward the arguments and the typed userdata to the Server:: member function.
-                (data->server->*Func)(std::forward<decltype(args)>(args)..., data.get());
+                (data->server->*F)(data.get(), std::forward<decltype(args)>(args)...);
             }
         };
 
-        // Generate a free function which has all of the same arguments, except the last
-        // userdata argument is void* instead of UserdataT*. Dawn's userdata args are void*.
-        using UntypedCallback =
-            UntypedCallbackImpl<std::make_index_sequence<sizeof...(Args) - 1>, Args...>;
-
-      public:
-        template <R (Server::*F)(Args...)>
-        static auto Func() {
-            return UntypedCallback::template ForwardToServer<F>;
+        static constexpr typename ExtractedTypes<decltype(F)>::UntypedCallback Create() {
+            return ExtractedTypes<decltype(F)>::Callback;
         }
     };
+
+    template <auto F>
+    constexpr auto ForwardToServer = ForwardToServerHelper<F>::Create();
 
     struct MapUserdata : CallbackUserdata {
         using CallbackUserdata::CallbackUserdata;
@@ -146,6 +126,22 @@ namespace dawn_wire { namespace server {
         ObjectId pipelineObjectID;
     };
 
+    struct RequestAdapterUserdata : CallbackUserdata {
+        using CallbackUserdata::CallbackUserdata;
+
+        ObjectHandle instance;
+        uint64_t requestSerial;
+        ObjectId adapterObjectId;
+    };
+
+    struct RequestDeviceUserdata : CallbackUserdata {
+        using CallbackUserdata::CallbackUserdata;
+
+        ObjectHandle adapter;
+        uint64_t requestSerial;
+        ObjectId deviceObjectId;
+    };
+
     class Server : public ServerBase {
       public:
         Server(const DawnProcTable& procs,
@@ -171,6 +167,8 @@ namespace dawn_wire { namespace server {
 
         bool InjectDevice(WGPUDevice device, uint32_t id, uint32_t generation);
 
+        bool InjectInstance(WGPUInstance instance, uint32_t id, uint32_t generation);
+
         WGPUDevice GetDevice(uint32_t id, uint32_t generation);
 
         template <typename T,
@@ -192,28 +190,37 @@ namespace dawn_wire { namespace server {
             mSerializer.SerializeCommand(cmd, extraSize, SerializeExtraSize);
         }
 
+        void SetForwardingDeviceCallbacks(ObjectData<WGPUDevice>* deviceObject);
         void ClearDeviceCallbacks(WGPUDevice device);
 
         // Error callbacks
         void OnUncapturedError(ObjectHandle device, WGPUErrorType type, const char* message);
         void OnDeviceLost(ObjectHandle device, WGPUDeviceLostReason reason, const char* message);
         void OnLogging(ObjectHandle device, WGPULoggingType type, const char* message);
-        void OnDevicePopErrorScope(WGPUErrorType type,
-                                   const char* message,
-                                   ErrorScopeUserdata* userdata);
-        void OnBufferMapAsyncCallback(WGPUBufferMapAsyncStatus status, MapUserdata* userdata);
-        void OnQueueWorkDone(WGPUQueueWorkDoneStatus status, QueueWorkDoneUserdata* userdata);
-        void OnCreateComputePipelineAsyncCallback(WGPUCreatePipelineAsyncStatus status,
+        void OnDevicePopErrorScope(ErrorScopeUserdata* userdata,
+                                   WGPUErrorType type,
+                                   const char* message);
+        void OnBufferMapAsyncCallback(MapUserdata* userdata, WGPUBufferMapAsyncStatus status);
+        void OnQueueWorkDone(QueueWorkDoneUserdata* userdata, WGPUQueueWorkDoneStatus status);
+        void OnCreateComputePipelineAsyncCallback(CreatePipelineAsyncUserData* userdata,
+                                                  WGPUCreatePipelineAsyncStatus status,
                                                   WGPUComputePipeline pipeline,
-                                                  const char* message,
-                                                  CreatePipelineAsyncUserData* userdata);
-        void OnCreateRenderPipelineAsyncCallback(WGPUCreatePipelineAsyncStatus status,
+                                                  const char* message);
+        void OnCreateRenderPipelineAsyncCallback(CreatePipelineAsyncUserData* userdata,
+                                                 WGPUCreatePipelineAsyncStatus status,
                                                  WGPURenderPipeline pipeline,
-                                                 const char* message,
-                                                 CreatePipelineAsyncUserData* userdata);
-        void OnShaderModuleGetCompilationInfo(WGPUCompilationInfoRequestStatus status,
-                                              const WGPUCompilationInfo* info,
-                                              ShaderModuleGetCompilationInfoUserdata* userdata);
+                                                 const char* message);
+        void OnShaderModuleGetCompilationInfo(ShaderModuleGetCompilationInfoUserdata* userdata,
+                                              WGPUCompilationInfoRequestStatus status,
+                                              const WGPUCompilationInfo* info);
+        void OnRequestAdapterCallback(RequestAdapterUserdata* userdata,
+                                      WGPURequestAdapterStatus status,
+                                      WGPUAdapter adapter,
+                                      const char* message);
+        void OnRequestDeviceCallback(RequestDeviceUserdata* userdata,
+                                     WGPURequestDeviceStatus status,
+                                     WGPUDevice device,
+                                     const char* message);
 
 #include "dawn_wire/server/ServerPrototypes_autogen.inc"
 
@@ -231,6 +238,6 @@ namespace dawn_wire { namespace server {
 
     std::unique_ptr<MemoryTransferService> CreateInlineMemoryTransferService();
 
-}}  // namespace dawn_wire::server
+}  // namespace dawn::wire::server
 
 #endif  // DAWNWIRE_SERVER_SERVER_H_

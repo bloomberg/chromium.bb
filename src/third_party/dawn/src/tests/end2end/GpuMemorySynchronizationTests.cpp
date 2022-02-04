@@ -36,7 +36,7 @@ class GpuMemorySyncTests : public DawnTest {
     std::tuple<wgpu::ComputePipeline, wgpu::BindGroup> CreatePipelineAndBindGroupForCompute(
         const wgpu::Buffer& buffer) {
         wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
-            [[block]] struct Data {
+            struct Data {
                 a : i32;
             };
             [[group(0), binding(0)]] var<storage, read_write> data : Data;
@@ -63,7 +63,7 @@ class GpuMemorySyncTests : public DawnTest {
             })");
 
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-            [[block]] struct Data {
+            struct Data {
                 i : i32;
             };
             [[group(0), binding(0)]] var<storage, read_write> data : Data;
@@ -94,9 +94,7 @@ class GpuMemorySyncTests : public DawnTest {
 TEST_P(GpuMemorySyncTests, ComputePass) {
     // Create pipeline, bind group, and buffer for compute pass.
     wgpu::Buffer buffer = CreateBuffer();
-    wgpu::ComputePipeline compute;
-    wgpu::BindGroup bindGroup;
-    std::tie(compute, bindGroup) = CreatePipelineAndBindGroupForCompute(buffer);
+    auto [compute, bindGroup] = CreatePipelineAndBindGroupForCompute(buffer);
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
     // Iterate the read-add-write operations in compute pass a few times.
@@ -126,10 +124,7 @@ TEST_P(GpuMemorySyncTests, RenderPass) {
     // Create pipeline, bind group, and buffer for render pass.
     wgpu::Buffer buffer = CreateBuffer();
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
-    wgpu::RenderPipeline render;
-    wgpu::BindGroup bindGroup;
-    std::tie(render, bindGroup) =
-        CreatePipelineAndBindGroupForRender(buffer, renderPass.colorFormat);
+    auto [render, bindGroup] = CreatePipelineAndBindGroupForRender(buffer, renderPass.colorFormat);
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
     // Iterate the read-add-write operations in render pass a few times.
@@ -155,14 +150,9 @@ TEST_P(GpuMemorySyncTests, RenderPassToComputePass) {
     // Create pipeline, bind group, and buffer for render pass and compute pass.
     wgpu::Buffer buffer = CreateBuffer();
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
-    wgpu::RenderPipeline render;
-    wgpu::BindGroup bindGroup0;
-    std::tie(render, bindGroup0) =
-        CreatePipelineAndBindGroupForRender(buffer, renderPass.colorFormat);
 
-    wgpu::ComputePipeline compute;
-    wgpu::BindGroup bindGroup1;
-    std::tie(compute, bindGroup1) = CreatePipelineAndBindGroupForCompute(buffer);
+    auto [render, bindGroup0] = CreatePipelineAndBindGroupForRender(buffer, renderPass.colorFormat);
+    auto [compute, bindGroup1] = CreatePipelineAndBindGroupForCompute(buffer);
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
@@ -192,15 +182,10 @@ TEST_P(GpuMemorySyncTests, RenderPassToComputePass) {
 TEST_P(GpuMemorySyncTests, ComputePassToRenderPass) {
     // Create pipeline, bind group, and buffer for compute pass and render pass.
     wgpu::Buffer buffer = CreateBuffer();
-    wgpu::ComputePipeline compute;
-    wgpu::BindGroup bindGroup1;
-    std::tie(compute, bindGroup1) = CreatePipelineAndBindGroupForCompute(buffer);
+    auto [compute, bindGroup1] = CreatePipelineAndBindGroupForCompute(buffer);
 
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
-    wgpu::RenderPipeline render;
-    wgpu::BindGroup bindGroup0;
-    std::tie(render, bindGroup0) =
-        CreatePipelineAndBindGroupForRender(buffer, renderPass.colorFormat);
+    auto [render, bindGroup0] = CreatePipelineAndBindGroupForRender(buffer, renderPass.colorFormat);
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
 
@@ -243,7 +228,7 @@ class StorageToUniformSyncTests : public DawnTest {
 
     std::tuple<wgpu::ComputePipeline, wgpu::BindGroup> CreatePipelineAndBindGroupForCompute() {
         wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
-            [[block]] struct Data {
+            struct Data {
                 a : f32;
             };
             [[group(0), binding(0)]] var<storage, read_write> data : Data;
@@ -269,7 +254,7 @@ class StorageToUniformSyncTests : public DawnTest {
             })");
 
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-            [[block]] struct Contents {
+            struct Contents {
                 color : f32;
             };
             [[group(0), binding(0)]] var<uniform> contents : Contents;
@@ -300,12 +285,8 @@ TEST_P(StorageToUniformSyncTests, ReadAfterWriteWithSameCommandBuffer) {
     // Create pipeline, bind group, and buffer for compute pass and render pass.
     CreateBuffer();
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
-    wgpu::ComputePipeline compute;
-    wgpu::BindGroup computeBindGroup;
-    std::tie(compute, computeBindGroup) = CreatePipelineAndBindGroupForCompute();
-    wgpu::RenderPipeline render;
-    wgpu::BindGroup renderBindGroup;
-    std::tie(render, renderBindGroup) = CreatePipelineAndBindGroupForRender(renderPass.colorFormat);
+    auto [compute, computeBindGroup] = CreatePipelineAndBindGroupForCompute();
+    auto [render, renderBindGroup] = CreatePipelineAndBindGroupForRender(renderPass.colorFormat);
 
     // Write data into a storage buffer in compute pass.
     wgpu::CommandEncoder encoder0 = device.CreateCommandEncoder();
@@ -336,12 +317,8 @@ TEST_P(StorageToUniformSyncTests, ReadAfterWriteWithDifferentCommandBuffers) {
     // Create pipeline, bind group, and buffer for compute pass and render pass.
     CreateBuffer();
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
-    wgpu::ComputePipeline compute;
-    wgpu::BindGroup computeBindGroup;
-    std::tie(compute, computeBindGroup) = CreatePipelineAndBindGroupForCompute();
-    wgpu::RenderPipeline render;
-    wgpu::BindGroup renderBindGroup;
-    std::tie(render, renderBindGroup) = CreatePipelineAndBindGroupForRender(renderPass.colorFormat);
+    auto [compute, computeBindGroup] = CreatePipelineAndBindGroupForCompute();
+    auto [render, renderBindGroup] = CreatePipelineAndBindGroupForRender(renderPass.colorFormat);
 
     // Write data into a storage buffer in compute pass.
     wgpu::CommandBuffer cb[2];
@@ -375,12 +352,8 @@ TEST_P(StorageToUniformSyncTests, ReadAfterWriteWithDifferentQueueSubmits) {
     // Create pipeline, bind group, and buffer for compute pass and render pass.
     CreateBuffer();
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
-    wgpu::ComputePipeline compute;
-    wgpu::BindGroup computeBindGroup;
-    std::tie(compute, computeBindGroup) = CreatePipelineAndBindGroupForCompute();
-    wgpu::RenderPipeline render;
-    wgpu::BindGroup renderBindGroup;
-    std::tie(render, renderBindGroup) = CreatePipelineAndBindGroupForRender(renderPass.colorFormat);
+    auto [compute, computeBindGroup] = CreatePipelineAndBindGroupForCompute();
+    auto [render, renderBindGroup] = CreatePipelineAndBindGroupForRender(renderPass.colorFormat);
 
     // Write data into a storage buffer in compute pass.
     wgpu::CommandBuffer cb[2];
@@ -440,17 +413,17 @@ class MultipleWriteThenMultipleReadTests : public DawnTest {
 TEST_P(MultipleWriteThenMultipleReadTests, SeparateBuffers) {
     // Create pipeline, bind group, and different buffers for compute pass.
     wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
-        [[block]] struct VBContents {
+        struct VBContents {
             pos : array<vec4<f32>, 4>;
         };
         [[group(0), binding(0)]] var<storage, read_write> vbContents : VBContents;
 
-        [[block]] struct IBContents {
+        struct IBContents {
             indices : array<vec4<i32>, 2>;
         };
         [[group(0), binding(1)]] var<storage, read_write> ibContents : IBContents;
 
-        [[block]] struct ColorContents {
+        struct ColorContents {
             color : f32;
         };
         [[group(0), binding(2)]] var<storage, read_write> uniformContents : ColorContents;
@@ -503,7 +476,7 @@ TEST_P(MultipleWriteThenMultipleReadTests, SeparateBuffers) {
         })");
 
     wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-        [[block]] struct Buf {
+        struct Buf {
             color : f32;
         };
 
@@ -562,7 +535,7 @@ TEST_P(MultipleWriteThenMultipleReadTests, OneBuffer) {
 
     // Create pipeline, bind group, and a complex buffer for compute pass.
     wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
-        [[block]] struct Contents {
+        struct Contents {
             [[align(256)]] pos : array<vec4<f32>, 4>;
             [[align(256)]] indices : array<vec4<i32>, 2>;
             [[align(256)]] color0 : f32;
@@ -620,7 +593,7 @@ TEST_P(MultipleWriteThenMultipleReadTests, OneBuffer) {
         })");
 
     wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-        [[block]] struct Buf {
+        struct Buf {
             color : f32;
         };
         [[group(0), binding(0)]] var<uniform> uniformBuffer : Buf;

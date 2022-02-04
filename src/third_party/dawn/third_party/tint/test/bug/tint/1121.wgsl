@@ -12,20 +12,20 @@ struct LightData {
     color : vec3<f32>;
     radius : f32;
 };
-[[block]] struct LightsBuffer {
+ struct LightsBuffer {
     lights: array<LightData>;
 };
-[[group(0), binding(0)]] var<storage, read_write> lightsBuffer: LightsBuffer;
+@group(0) @binding(0) var<storage, read_write> lightsBuffer: LightsBuffer;
 struct TileLightIdData {
     count: atomic<u32>;
     lightId: array<u32, 64>;
 };
-[[block]] struct Tiles {
+ struct Tiles {
     data: array<TileLightIdData, 4>;
 };
-[[group(1), binding(0)]] var<storage, read_write> tileLightId: Tiles;
-  
-[[block]] struct Config {
+@group(1) @binding(0) var<storage, read_write> tileLightId: Tiles;
+
+ struct Config {
     numLights : u32;
     numTiles : u32;
     tileCountX : u32;
@@ -33,8 +33,8 @@ struct TileLightIdData {
     numTileLightSlot : u32;
     tileSize : u32;
 };
-[[group(2), binding(0)]] var<uniform> config: Config;
-[[block]] struct Uniforms {
+@group(2) @binding(0) var<uniform> config: Config;
+ struct Uniforms {
     min : vec4<f32>;
     max : vec4<f32>;
     // camera
@@ -43,16 +43,16 @@ struct TileLightIdData {
     // Tile info
     fullScreenSize : vec4<f32>;    // width, height
 };
-[[group(3), binding(0)]] var<uniform> uniforms: Uniforms;
-[[stage(compute), workgroup_size(64, 1, 1)]]
-fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
+@group(3) @binding(0) var<uniform> uniforms: Uniforms;
+@stage(compute) @workgroup_size(64, 1, 1)
+fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
     var index = GlobalInvocationID.x;
     if (index >= config.numLights) {
         return;
     }
     // Light position updating
     lightsBuffer.lights[index].position.y = lightsBuffer.lights[index].position.y - 0.1 + 0.001 * (f32(index) - 64.0 * floor(f32(index) / 64.0));
-  
+
     if (lightsBuffer.lights[index].position.y < uniforms.min.y) {
         lightsBuffer.lights[index].position.y = uniforms.max.y;
     }

@@ -23,17 +23,17 @@
     - schedules
 
 ######## x86-64 ################################################################
-# GCC-4.8 (the oldest compiler we support)
-build:x86-64:linux:gcc-4.8:cxx11-on:
-  extends: .build:linux:base
-  variables:
-    EIGEN_CI_CXX_COMPILER: "g++-4.8"
-    EIGEN_CI_CC_COMPILER: "gcc-4.8"
-    EIGEN_TEST_CXX11: "on"
-  tags:
-    - eigen-runner
-    - linux
-    - x86-64
+# # GCC-4.8 (the oldest compiler we support)
+# build:x86-64:linux:gcc-4.8:cxx11-on:
+#   extends: .build:linux:base
+#   variables:
+#     EIGEN_CI_CXX_COMPILER: "g++-4.8"
+#     EIGEN_CI_CC_COMPILER: "gcc-4.8"
+#     EIGEN_TEST_CXX11: "on"
+#   tags:
+#     - eigen-runner
+#     - linux
+#     - x86-64
 
 # GCC-9
 build:x86-64:linux:gcc-9:cxx11-on:

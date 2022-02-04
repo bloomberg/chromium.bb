@@ -36,6 +36,7 @@ interface ButtonState {
   spinner?: boolean;
   type: ButtonType;
   value?: string;
+  title?: string;
 }
 
 export type ButtonData = {
@@ -47,6 +48,7 @@ export type ButtonData = {
   spinner?: boolean,
   type?: ButtonType,
   value?: string,
+  title?: string,
 }|{
   variant: Variant.PRIMARY | Variant.SECONDARY,
   iconUrl?: string,
@@ -56,6 +58,7 @@ export type ButtonData = {
   spinner?: boolean,
   type?: ButtonType,
   value?: string,
+  title?: string,
 };
 
 interface ButtonElementInternals extends ElementInternals {
@@ -71,8 +74,8 @@ export class Button extends HTMLElement {
   static formAssociated = true;
   static readonly litTagName = LitHtml.literal`devtools-button`;
   readonly #shadow = this.attachShadow({mode: 'open', delegatesFocus: true});
-  readonly #boundRender = this.render.bind(this);
-  readonly #boundOnClick = this.onClick.bind(this);
+  readonly #boundRender = this.#render.bind(this);
+  readonly #boundOnClick = this.#onClick.bind(this);
   readonly #props: ButtonState = {
     size: Size.MEDIUM,
     disabled: false,
@@ -100,46 +103,52 @@ export class Button extends HTMLElement {
     this.#props.active = Boolean(data.active);
     this.#props.spinner = Boolean(data.spinner);
     this.#props.type = data.type || 'button';
-    this.setDisabledProperty(data.disabled || false);
-    ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    this.#setDisabledProperty(data.disabled || false);
+    this.#props.title = data.title;
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
   }
 
   set iconUrl(iconUrl: string|undefined) {
     this.#props.iconUrl = iconUrl;
-    ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
   }
 
   set variant(variant: Variant) {
     this.#props.variant = variant;
-    ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
   }
 
   set size(size: Size) {
     this.#props.size = size;
-    ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
   }
 
   set type(type: ButtonType) {
     this.#props.type = type;
-    ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+  }
+
+  set title(title: string) {
+    this.#props.title = title;
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
   }
 
   set disabled(disabled: boolean) {
-    this.setDisabledProperty(disabled);
-    ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    this.#setDisabledProperty(disabled);
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
   }
 
   set active(active: boolean) {
     this.#props.active = active;
-    ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
   }
 
   set spinner(spinner: boolean) {
     this.#props.spinner = spinner;
-    ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
   }
 
-  private setDisabledProperty(disabled: boolean): void {
+  #setDisabledProperty(disabled: boolean): void {
     this.#props.disabled = disabled;
     this.toggleAttribute('disabled', disabled);
   }
@@ -150,10 +159,10 @@ export class Button extends HTMLElement {
 
   connectedCallback(): void {
     this.#shadow.adoptedStyleSheets = [buttonStyles];
-    ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
   }
 
-  private onClick(event: Event): void {
+  #onClick(event: Event): void {
     if (this.#props.disabled) {
       event.stopPropagation();
       event.preventDefault();
@@ -171,14 +180,14 @@ export class Button extends HTMLElement {
     }
   }
 
-  private onSlotChange(event: Event): void {
+  #onSlotChange(event: Event): void {
     const slot = event.target as HTMLSlotElement | undefined;
     const nodes = slot?.assignedNodes();
     this.#isEmpty = !nodes || !Boolean(nodes.length);
-    ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
   }
 
-  private render(): void {
+  #render(): void {
     if (!this.#props.variant) {
       throw new Error('Button requires a variant to be defined');
     }
@@ -208,7 +217,7 @@ export class Button extends HTMLElement {
     // clang-format off
     LitHtml.render(
       LitHtml.html`
-        <button .disabled=${this.#props.disabled} class=${LitHtml.Directives.classMap(classes)}>
+        <button title=${LitHtml.Directives.ifDefined(this.#props.title)} .disabled=${this.#props.disabled} class=${LitHtml.Directives.classMap(classes)}>
           ${this.#props.iconUrl ? LitHtml.html`<${IconButton.Icon.Icon.litTagName}
             .data=${{
               iconPath: this.#props.iconUrl,
@@ -217,7 +226,7 @@ export class Button extends HTMLElement {
           >
           </${IconButton.Icon.Icon.litTagName}>` : ''}
           ${this.#props.spinner ? LitHtml.html`<span class=${LitHtml.Directives.classMap(spinnerClasses)}></span>` : ''}
-          <slot @slotchange=${this.onSlotChange}></slot>
+          <slot @slotchange=${this.#onSlotChange}></slot>
         </button>
       `, this.#shadow, {host: this});
     // clang-format on

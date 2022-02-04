@@ -887,7 +887,7 @@ StatsCollector::SessionStats StatsCollector::ExtractSessionInfo_n(
     cricket::ChannelInterface* channel = transceiver->internal()->channel();
     if (channel) {
       stats.transport_names_by_mid[channel->content_name()] =
-          channel->transport_name();
+          std::string(channel->transport_name());
     }
   }
 
@@ -1367,7 +1367,8 @@ void StatsCollector::UpdateTrackReports() {
   }
 }
 
-void StatsCollector::ClearUpdateStatsCacheForTest() {
+void StatsCollector::InvalidateCache() {
+  RTC_DCHECK_RUN_ON(pc_->signaling_thread());
   cache_timestamp_ms_ = 0;
 }
 

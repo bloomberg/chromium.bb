@@ -35,7 +35,7 @@
 #include "src/dawn_node/binding/GPUTexture.h"
 #include "src/dawn_node/utils/Debug.h"
 
-namespace wgpu { namespace binding {
+namespace wgpu::binding {
 
     namespace {
 
@@ -413,9 +413,7 @@ namespace wgpu { namespace binding {
 
         wgpu::QuerySetDescriptor desc{};
         if (!conv(desc.label, descriptor.label) || !conv(desc.type, descriptor.type) ||
-            !conv(desc.count, descriptor.count) ||
-            !conv(desc.pipelineStatistics, desc.pipelineStatisticsCount,
-                  descriptor.pipelineStatistics)) {
+            !conv(desc.count, descriptor.count)) {
             return {};
         }
 
@@ -431,7 +429,7 @@ namespace wgpu { namespace binding {
     }
 
     void GPUDevice::pushErrorScope(Napi::Env env, interop::GPUErrorFilter filter) {
-        wgpu::ErrorFilter f = wgpu::ErrorFilter::None;
+        wgpu::ErrorFilter f;
         switch (filter) {
             case interop::GPUErrorFilter::kOutOfMemory:
                 f = wgpu::ErrorFilter::OutOfMemory;
@@ -527,4 +525,4 @@ namespace wgpu { namespace binding {
         UNIMPLEMENTED();
     }
 
-}}  // namespace wgpu::binding
+}  // namespace wgpu::binding

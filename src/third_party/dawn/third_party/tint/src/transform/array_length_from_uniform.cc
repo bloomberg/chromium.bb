@@ -18,7 +18,6 @@
 #include <string>
 #include <utility>
 
-#include "src/ast/struct_block_decoration.h"
 #include "src/program_builder.h"
 #include "src/sem/call.h"
 #include "src/sem/variable.h"
@@ -60,30 +59,26 @@ static void IterateArrayLengthOnStorageVar(CloneContext& ctx, F&& functor) {
     }
 
     // Get the storage buffer that contains the runtime array.
-    // We assume that the argument to `arrayLength` has the form
-    // `&resource.array`, which requires that `SimplifyPointers` have been run
-    // before this transform.
+    // Since we require SimplifyPointers, we can assume that the arrayLength()
+    // call has one of two forms:
+    //   arrayLength(&struct_var.array_member)
+    //   arrayLength(&array_var)
     auto* param = call_expr->args[0]->As<ast::UnaryOpExpression>();
     if (!param || param->op != ast::UnaryOp::kAddressOf) {
       TINT_ICE(Transform, ctx.dst->Diagnostics())
-          << "expected form of arrayLength argument to be "
-             "&resource.array";
+          << "expected form of arrayLength argument to be &array_var or "
+             "&struct_var.array_member";
       break;
     }
-    auto* accessor = param->expr->As<ast::MemberAccessorExpression>();
-    if (!accessor) {
-      TINT_ICE(Transform, ctx.dst->Diagnostics())
-          << "expected form of arrayLength argument to be "
-             "&resource.array";
-      break;
+    auto* storage_buffer_expr = param->expr;
+    if (auto* accessor = param->expr->As<ast::MemberAccessorExpression>()) {
+      storage_buffer_expr = accessor->structure;
     }
-    auto* storage_buffer_expr = accessor->structure;
-    auto* storage_buffer_sem =
-        sem.Get(storage_buffer_expr)->As<sem::VariableUser>();
+    auto* storage_buffer_sem = sem.Get<sem::VariableUser>(storage_buffer_expr);
     if (!storage_buffer_sem) {
       TINT_ICE(Transform, ctx.dst->Diagnostics())
-          << "expected form of arrayLength argument to be "
-             "&resource.array";
+          << "expected form of arrayLength argument to be &array_var or "
+             "&struct_var.array_member";
       break;
     }
 
@@ -144,9 +139,7 @@ void ArrayLengthFromUniform::Run(CloneContext& ctx,
           {ctx.dst->Member(
               kBufferSizeMemberName,
               ctx.dst->ty.array(ctx.dst->ty.vec4(ctx.dst->ty.u32()),
-                                (max_buffer_size_index / 4) + 1))},
-
-          ast::DecorationList{ctx.dst->create<ast::StructBlockDecoration>()});
+                                (max_buffer_size_index / 4) + 1))});
       buffer_size_ubo = ctx.dst->Global(
           ctx.dst->Sym(), ctx.dst->ty.Of(buffer_size_struct),
           ast::StorageClass::kUniform,
@@ -186,14 +179,25 @@ void ArrayLengthFromUniform::Run(CloneContext& ctx,
         //                total_storage_buffer_size - array_offset
         // array_length = ----------------------------------------
         //                             array_stride
-        auto* storage_buffer_type =
-            storage_buffer_sem->Type()->UnwrapRef()->As<sem::Struct>();
-        auto* array_member_sem = storage_buffer_type->Members().back();
-        uint32_t array_offset = array_member_sem->Offset();
-        uint32_t array_stride = array_member_sem->Size();
-        auto* array_length =
-            ctx.dst->Div(ctx.dst->Sub(total_storage_buffer_size, array_offset),
-                         array_stride);
+        const ast::Expression* total_size = total_storage_buffer_size;
+        auto* storage_buffer_type = storage_buffer_sem->Type()->UnwrapRef();
+        const sem::Array* array_type = nullptr;
+        if (auto* str = storage_buffer_type->As<sem::Struct>()) {
+          // The variable is a struct, so subtract the byte offset of the array
+          // member.
+          auto* array_member_sem = str->Members().back();
+          array_type = array_member_sem->Type()->As<sem::Array>();
+          total_size = ctx.dst->Sub(total_storage_buffer_size,
+                                    array_member_sem->Offset());
+        } else if (auto* arr = storage_buffer_type->As<sem::Array>()) {
+          array_type = arr;
+        } else {
+          TINT_ICE(Transform, ctx.dst->Diagnostics())
+              << "expected form of arrayLength argument to be &array_var or "
+                 "&struct_var.array_member";
+          return;
+        }
+        auto* array_length = ctx.dst->Div(total_size, array_type->Stride());
 
         ctx.Replace(call_expr, array_length);
       });

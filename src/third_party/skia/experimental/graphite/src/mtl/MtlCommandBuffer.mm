@@ -7,6 +7,7 @@
 
 #include "experimental/graphite/src/mtl/MtlCommandBuffer.h"
 
+#include "experimental/graphite/src/Log.h"
 #include "experimental/graphite/src/TextureProxy.h"
 #include "experimental/graphite/src/mtl/MtlBlitCommandEncoder.h"
 #include "experimental/graphite/src/mtl/MtlBuffer.h"
@@ -53,24 +54,35 @@ CommandBuffer::~CommandBuffer() {}
 bool CommandBuffer::commit() {
     SkASSERT(!fActiveRenderCommandEncoder);
     this->endBlitCommandEncoder();
+#ifdef SK_BUILD_FOR_IOS
+    if (IsAppInBackground()) {
+        NSLog(@"CommandBuffer: Tried to commit command buffer while in background.\n");
+        return false;
+    }
+#endif
     [(*fCommandBuffer) commit];
 
-    // TODO: better error reporting
     if ((*fCommandBuffer).status == MTLCommandBufferStatusError) {
         NSString* description = (*fCommandBuffer).error.localizedDescription;
         const char* errorString = [description UTF8String];
-        SkDebugf("Error submitting command buffer: %s\n", errorString);
+        SKGPU_LOG_E("Failure submitting command buffer: %s", errorString);
     }
 
     return ((*fCommandBuffer).status != MTLCommandBufferStatusError);
 }
 
-void CommandBuffer::onBeginRenderPass(const RenderPassDesc& renderPassDesc,
+bool CommandBuffer::onBeginRenderPass(const RenderPassDesc& renderPassDesc,
                                       const skgpu::Texture* colorTexture,
                                       const skgpu::Texture* resolveTexture,
                                       const skgpu::Texture* depthStencilTexture) {
     SkASSERT(!fActiveRenderCommandEncoder);
     this->endBlitCommandEncoder();
+#ifdef SK_BUILD_FOR_IOS
+    if (IsAppInBackground()) {
+        NSLog(@"CommandBuffer: tried to create MTLRenderCommandEncoder while in background.\n");
+        return false;
+    }
+#endif
 
     const static MTLLoadAction mtlLoadAction[] {
         MTLLoadActionLoad,
@@ -151,10 +163,13 @@ void CommandBuffer::onBeginRenderPass(const RenderPassDesc& renderPassDesc,
         SkASSERT(!depthStencilInfo.fTextureInfo.isValid());
     }
 
-    fActiveRenderCommandEncoder = RenderCommandEncoder::Make(fCommandBuffer.get(),
+    fActiveRenderCommandEncoder = RenderCommandEncoder::Make(fGpu,
+                                                             fCommandBuffer.get(),
                                                              descriptor.get());
 
     this->trackResource(fActiveRenderCommandEncoder);
+
+    return true;
 }
 
 void CommandBuffer::endRenderPass() {
@@ -167,8 +182,14 @@ BlitCommandEncoder* CommandBuffer::getBlitCommandEncoder() {
     if (fActiveBlitCommandEncoder) {
         return fActiveBlitCommandEncoder.get();
     }
+#ifdef SK_BUILD_FOR_IOS
+    if (IsAppInBackground()) {
+        NSLog(@"CommandBuffer: tried to create MTLBlitCommandEncoder while in background.\n");
+        return nullptr;
+    }
+#endif
 
-    fActiveBlitCommandEncoder = BlitCommandEncoder::Make(fCommandBuffer.get());
+    fActiveBlitCommandEncoder = BlitCommandEncoder::Make(fGpu, fCommandBuffer.get());
 
     if (!fActiveBlitCommandEncoder) {
         return nullptr;
@@ -232,13 +253,15 @@ void CommandBuffer::onBindVertexBuffers(const skgpu::Buffer* vertexBuffer,
 
     if (vertexBuffer) {
         id<MTLBuffer> mtlBuffer = static_cast<const Buffer*>(vertexBuffer)->mtlBuffer();
-        SkASSERT((vertexOffset & 0xF) == 0);
+        // Metal requires buffer offsets to be aligned to the data type, which is at most 4 bytes
+        // since we use [[attribute]] to automatically unpack float components into SIMD arrays.
+        SkASSERT((vertexOffset & 0b11) == 0);
         fActiveRenderCommandEncoder->setVertexBuffer(mtlBuffer, vertexOffset,
                                                      GraphicsPipeline::kVertexBufferIndex);
     }
     if (instanceBuffer) {
         id<MTLBuffer> mtlBuffer = static_cast<const Buffer*>(instanceBuffer)->mtlBuffer();
-        SkASSERT((instanceOffset & 0xF) == 0);
+        SkASSERT((instanceOffset & 0b11) == 0);
         fActiveRenderCommandEncoder->setVertexBuffer(mtlBuffer, instanceOffset,
                                                      GraphicsPipeline::kInstanceBufferIndex);
     }
@@ -319,8 +342,8 @@ void CommandBuffer::onDrawIndexed(PrimitiveType type, unsigned int baseIndex,
                                                            indexOffset, 1, baseVertex, 0);
 
     } else {
-        // TODO: Do nothing, fatal failure, or just the regular graphite error reporting overhaul?
-        SkDebugf("[graphite] WARNING - Skipping unsupported draw call.\n");
+        // TODO: Do nothing, fatal failure, or just the regular graphite error reporting?
+        SKGPU_LOG_E("Skipping unsupported draw call.");
     }
 }
 
@@ -349,12 +372,12 @@ void CommandBuffer::onDrawIndexedInstanced(PrimitiveType type, unsigned int base
                                                            indexOffset, instanceCount,
                                                            baseVertex, baseInstance);
     } else {
-        // TODO: Do nothing, fatal failure, or just the regular graphite error reporting overhaul?
-        SkDebugf("[graphite] WARNING - Skipping unsupported draw call.\n");
+        // TODO: Do nothing, fatal failure, or just the regular graphite error reporting?
+        SKGPU_LOG_W("Skipping unsupported draw call.");
     }
 }
 
-void CommandBuffer::onCopyTextureToBuffer(const skgpu::Texture* texture,
+bool CommandBuffer::onCopyTextureToBuffer(const skgpu::Texture* texture,
                                           SkIRect srcRect,
                                           const skgpu::Buffer* buffer,
                                           size_t bufferOffset,
@@ -365,6 +388,9 @@ void CommandBuffer::onCopyTextureToBuffer(const skgpu::Texture* texture,
     id<MTLBuffer> mtlBuffer = static_cast<const Buffer*>(buffer)->mtlBuffer();
 
     BlitCommandEncoder* blitCmdEncoder = this->getBlitCommandEncoder();
+    if (!blitCmdEncoder) {
+        return false;
+    }
 
 #ifdef SK_ENABLE_MTL_DEBUG_INFO
     blitCmdEncoder->pushDebugGroup(@"readOrTransferPixels");
@@ -380,6 +406,7 @@ void CommandBuffer::onCopyTextureToBuffer(const skgpu::Texture* texture,
 #ifdef SK_ENABLE_MTL_DEBUG_INFO
     blitCmdEncoder->popDebugGroup();
 #endif
+    return true;
 }
 
 

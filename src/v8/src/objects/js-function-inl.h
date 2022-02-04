@@ -133,41 +133,24 @@ AbstractCode JSFunction::abstract_code(IsolateT* isolate) {
   if (ActiveTierIsIgnition()) {
     return AbstractCode::cast(shared().GetBytecodeArray(isolate));
   } else {
-    return AbstractCode::cast(code(kAcquireLoad));
+    return AbstractCode::cast(FromCodeT(code(kAcquireLoad)));
   }
 }
 
 int JSFunction::length() { return shared().length(); }
 
-ACCESSORS_RELAXED(JSFunction, raw_code, CodeT, kCodeOffset)
-RELEASE_ACQUIRE_ACCESSORS(JSFunction, raw_code, CodeT, kCodeOffset)
-
-DEF_GETTER(JSFunction, code, Code) { return FromCodeT(raw_code(cage_base)); }
-
-void JSFunction::set_code(Code code, WriteBarrierMode mode) {
-  set_raw_code(ToCodeT(code), mode);
-}
-
-DEF_ACQUIRE_GETTER(JSFunction, code, Code) {
-  return FromCodeT(raw_code(cage_base, kAcquireLoad));
-}
-
-void JSFunction::set_code(Code code, ReleaseStoreTag, WriteBarrierMode mode) {
-  set_raw_code(ToCodeT(code), kReleaseStore, mode);
-}
+ACCESSORS_RELAXED(JSFunction, code, CodeT, kCodeOffset)
+RELEASE_ACQUIRE_ACCESSORS(JSFunction, code, CodeT, kCodeOffset)
 
 #ifdef V8_EXTERNAL_CODE_SPACE
-void JSFunction::set_code(CodeT code, WriteBarrierMode mode) {
-  set_raw_code(code, mode);
-}
-void JSFunction::set_code(CodeT code, ReleaseStoreTag, WriteBarrierMode mode) {
-  set_raw_code(code, kReleaseStore, mode);
+void JSFunction::set_code(Code code, ReleaseStoreTag, WriteBarrierMode mode) {
+  set_code(ToCodeT(code), kReleaseStore, mode);
 }
 #endif
 
 Address JSFunction::code_entry_point() const {
   if (V8_EXTERNAL_CODE_SPACE_BOOL) {
-    return CodeDataContainer::cast(raw_code()).code_entry_point();
+    return CodeDataContainer::cast(code()).code_entry_point();
   } else {
     return code().InstructionStart();
   }
@@ -326,7 +309,7 @@ bool JSFunction::NeedsResetDueToFlushedBytecode() {
 
   Object maybe_code = ACQUIRE_READ_FIELD(*this, kCodeOffset);
   if (!maybe_code.IsCodeT()) return false;
-  Code code = FromCodeT(CodeT::cast(maybe_code), kRelaxedLoad);
+  CodeT code = CodeT::cast(maybe_code);
 
   SharedFunctionInfo shared = SharedFunctionInfo::cast(maybe_shared);
   return !shared.is_compiled() && code.builtin_id() != Builtin::kCompileLazy;

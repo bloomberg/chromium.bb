@@ -31,10 +31,12 @@ from other platform. In addition, just as with
 [enterprise changes](https://www.chromium.org/developers/enterprise-changes),
 some APIs may be more prevalant on that platform than others.
 
-Removals of JavaScript APIs might be high-risk, because code that calls the API
-will start throwing an exception. Similarly, big architectural changes risk
-changing unspecified timing of callbacks which apps might inadvertently depend
-on. On the other hand, changing behavior of(or removing) a CSS property that
-may result in only cosmetic changes has lower risk for sites that depend on
-it.
+A change to Android WebView is *potentially high risk* if one of the following hold:
+* Theh change removes an API or  changes its behavior such that app code that calls the API may start throwing an exception or otherwise hard-crash
+* The change has significant impact on the architecture of the Android WebView platform as it differs from other platforms
+
+A change to Android WebView is likely not *potentially high risk* if one of the following hold:
+* The change is to ship a new API
+* The possible app impact of the change is cosmetic or non-fatal (e.g. a CSS property changing behavior)
+* Data analysis shows that affected apps are very rare
 

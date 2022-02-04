@@ -24,6 +24,7 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** Implementation of {@link Tensor}. */
 // TODO(b/153882978): Add scalar getters similar to TF's Java API.
@@ -240,7 +241,7 @@ final class TensorImpl implements Tensor {
 
   /** Returns the provided buffer's shape if specified and different from this Tensor's shape. */
   // TODO(b/80431971): Remove this method after deprecating multi-dimensional array inputs.
-  int[] getInputShapeIfDifferent(Object input) {
+  int @Nullable [] getInputShapeIfDifferent(Object input) {
     if (input == null) {
       return null;
     }
@@ -393,7 +394,7 @@ final class TensorImpl implements Tensor {
 
     if (oType != dtype) {
       // INT8 and UINT8 have the same string name, "byte"
-      if (oType.toStringName().equals(dtype.toStringName())) {
+      if (DataTypeUtils.toStringName(oType).equals(DataTypeUtils.toStringName(dtype))) {
         return;
       }
 
@@ -476,7 +477,7 @@ final class TensorImpl implements Tensor {
 
   private TensorImpl(long nativeHandle) {
     this.nativeHandle = nativeHandle;
-    this.dtype = DataType.fromC(dtype(nativeHandle));
+    this.dtype = DataTypeUtils.fromC(dtype(nativeHandle));
     this.shapeCopy = shape(nativeHandle);
     this.shapeSignatureCopy = shapeSignature(nativeHandle);
     this.quantizationParamsCopy =

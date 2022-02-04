@@ -881,10 +881,10 @@ def ParseIssueNumberArgument(arg):
 
   if arg.isdigit():
     return _ParsedIssueNumberArgument(issue=int(arg))
-  if not arg.startswith('http'):
-    return fail_result
 
   url = gclient_utils.UpgradeToHttps(arg)
+  if not url.startswith('http'):
+    return fail_result
   for gerrit_url, short_url in _KNOWN_GERRIT_TO_SHORT_URLS.items():
     if url.startswith(short_url):
       url = gerrit_url + url[len(short_url):]
@@ -893,6 +893,11 @@ def ParseIssueNumberArgument(arg):
   try:
     parsed_url = urllib.parse.urlparse(url)
   except ValueError:
+    return fail_result
+
+  # If "https://" was automatically added, fail if `arg` looks unlikely to be a
+  # URL.
+  if not arg.startswith('http') and '.' not in parsed_url.netloc:
     return fail_result
 
   # Gerrit's new UI is https://domain/c/project/+/<issue_number>[/[patchset]]

@@ -189,7 +189,7 @@ export class StubConnection implements ProtocolClient.InspectorBackend.Connectio
   }
 
   sendRawMessage(message: string): void {
-    setTimeout(this.respondWithError.bind(this, message), 0);
+    window.setTimeout(this.respondWithError.bind(this, message), 0);
   }
 
   private respondWithError(message: string): void {
@@ -270,10 +270,10 @@ export async function initMainConnection(
         if (target) {
           const router = target.router();
           if (router) {
-            router.connection().disconnect();
+            void router.connection().disconnect();
           }
         }
-        createMainTarget();
+        void createMainTarget();
       });
 }
 

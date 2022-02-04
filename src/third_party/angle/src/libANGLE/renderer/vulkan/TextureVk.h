@@ -244,11 +244,6 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
         const gl::SamplerState &samplerState) const;
     vk::ImageOrBufferViewSubresourceSerial getBufferViewSerial() const;
 
-    void overrideStagingBufferSizeForTesting(size_t initialSizeForTesting)
-    {
-        mStagingBufferInitialSize = initialSizeForTesting;
-    }
-
     GLenum getColorReadFormat(const gl::Context *context) override;
     GLenum getColorReadType(const gl::Context *context) override;
 
@@ -308,7 +303,7 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
                         uint32_t imageLevelOffset,
                         uint32_t imageLayerOffset,
                         bool selfOwned);
-    void updateImageHelper(ContextVk *contextVk, size_t imageCopyBufferAlignment);
+
     vk::ImageViewHelper &getImageViews()
     {
         return mMultisampledImageViews[gl::RenderToTextureImageIndex::Default];
@@ -353,6 +348,7 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
                                                   uint32_t layerCount,
                                                   const gl::Box &sourceArea,
                                                   RenderPassClosureReason reason,
+                                                  vk::BufferHelper *copyBuffer,
                                                   uint8_t **outDataPtr);
 
     angle::Result copyBufferDataToImage(ContextVk *contextVk,
@@ -431,7 +427,7 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
                             angle::FormatID actualImageFormatID,
                             ImageMipLevels mipLevels);
     void releaseImage(ContextVk *contextVk);
-    void releaseStagingBuffer(ContextVk *contextVk);
+    void releaseStagedUpdates(ContextVk *contextVk);
     uint32_t getMipLevelCount(ImageMipLevels mipLevels) const;
     uint32_t getMaxLevelCount() const;
     angle::Result copyAndStageImageData(ContextVk *contextVk,
@@ -553,9 +549,6 @@ class TextureVk : public TextureImpl, public angle::ObserverInterface
     // |mSampler| contains the relevant Vulkan sampler states representing the OpenGL Texture
     // sampling states for the Texture.
     vk::SamplerBinding mSampler;
-
-    // Overridden in some tests.
-    size_t mStagingBufferInitialSize;
 
     // The created vkImage usage flag.
     VkImageUsageFlags mImageUsageFlags;

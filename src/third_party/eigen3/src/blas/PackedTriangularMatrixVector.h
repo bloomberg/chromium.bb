@@ -35,7 +35,7 @@ struct packed_triangular_matrix_vector_product<Index,Mode,LhsScalar,ConjLhs,RhsS
     {
       Index s = IsLower&&(HasUnitDiag||HasZeroDiag) ? 1 : 0;
       Index r = IsLower ? size-i: i+1;
-      if (EIGEN_IMPLIES(HasUnitDiag||HasZeroDiag, (--r)>0))
+      if (internal::check_implication(HasUnitDiag||HasZeroDiag, (--r)>0))
 	ResMap(res+(IsLower ? s+i : 0),r) += alpha * cj(rhs[i]) * ConjLhsType(LhsMap(lhs+s,r));
       if (HasUnitDiag)
 	res[i] += alpha * cj(rhs[i]);
@@ -65,7 +65,7 @@ struct packed_triangular_matrix_vector_product<Index,Mode,LhsScalar,ConjLhs,RhsS
     {
       Index s = !IsLower&&(HasUnitDiag||HasZeroDiag) ? 1 : 0;
       Index r = IsLower ? i+1 : size-i;
-      if (EIGEN_IMPLIES(HasUnitDiag||HasZeroDiag, (--r)>0))
+      if (internal::check_implication(HasUnitDiag||HasZeroDiag, (--r)>0))
 	res[i] += alpha * (ConjLhsType(LhsMap(lhs+s,r)).cwiseProduct(ConjRhsType(RhsMap(rhs+(IsLower ? 0 : s+i),r)))).sum();
       if (HasUnitDiag)
 	res[i] += alpha * cj(rhs[i]);

@@ -53,7 +53,6 @@ const int RandomAccessPattern       = 0x8 | OuterRandomAccessPattern | InnerRand
 
 template<typename Scalar_, int _Flags = 0, typename StorageIndex_ = int>  class SparseMatrix;
 template<typename Scalar_, int _Flags = 0, typename StorageIndex_ = int>  class SparseVector;
-template<typename Scalar_, int _Flags = 0, typename StorageIndex_ = int>  class MappedSparseMatrix;
 
 template<typename MatrixType, unsigned int UpLo>  class SparseSelfAdjointView;
 template<typename Lhs, typename Rhs>              class SparseDiagonalProduct;
@@ -66,10 +65,10 @@ template<typename Lhs, typename Rhs, bool Transpose> class SparseDenseOuterProdu
 
 template<typename Lhs, typename Rhs> struct SparseSparseProductReturnType;
 template<typename Lhs, typename Rhs,
-         int InnerSize = EIGEN_SIZE_MIN_PREFER_FIXED(internal::traits<Lhs>::ColsAtCompileTime,internal::traits<Rhs>::RowsAtCompileTime)> struct DenseSparseProductReturnType;
+         int InnerSize = internal::min_size_prefer_fixed(internal::traits<Lhs>::ColsAtCompileTime, internal::traits<Rhs>::RowsAtCompileTime)> struct DenseSparseProductReturnType;
          
 template<typename Lhs, typename Rhs,
-         int InnerSize = EIGEN_SIZE_MIN_PREFER_FIXED(internal::traits<Lhs>::ColsAtCompileTime,internal::traits<Rhs>::RowsAtCompileTime)> struct SparseDenseProductReturnType;
+         int InnerSize = internal::min_size_prefer_fixed(internal::traits<Lhs>::ColsAtCompileTime, internal::traits<Rhs>::RowsAtCompileTime)> struct SparseDenseProductReturnType;
 template<typename MatrixType,int UpLo> class SparseSymmetricPermutationProduct;
 
 namespace internal {

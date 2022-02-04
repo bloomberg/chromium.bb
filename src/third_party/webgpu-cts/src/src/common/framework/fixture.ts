@@ -101,7 +101,8 @@ export class Fixture {
   /**
    * Tracks an object to be cleaned up after the test finishes.
    *
-   * TODO: Use this in more places. (Will be easier once .destroy() is allowed on invalid objects.)
+   * MAINTENANCE_TODO: Use this in more places. (Will be easier once .destroy() is allowed on
+   * invalid objects.)
    */
   trackForCleanup<T extends DestroyableObject>(o: T): T {
     this.objectsToCleanUp.push(o);

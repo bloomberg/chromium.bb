@@ -1,6 +1,6 @@
 struct S {
   i : i32;
-};
+}
 
 fn main_1() {
   var i : i32;
@@ -10,7 +10,7 @@ fn main_1() {
   return;
 }
 
-[[stage(compute), workgroup_size(1, 1, 1)]]
+@stage(compute) @workgroup_size(1, 1, 1)
 fn main() {
   main_1();
 }

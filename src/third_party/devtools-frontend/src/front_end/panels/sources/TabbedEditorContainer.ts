@@ -60,9 +60,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/TabbedEditorContainer.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-/**
- * @interface
- */
 export interface TabbedEditorContainerDelegate {
   viewForFile(uiSourceCode: Workspace.UISourceCode.UISourceCode): UI.Widget.Widget;
 
@@ -162,7 +159,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper<Ev
   }
 
   fileViews(): UI.Widget.Widget[] {
-    return /** @type {!Array.<!UI.Widget.Widget>} */ this.tabbedPane.tabViews() as UI.Widget.Widget[];
+    return this.tabbedPane.tabViews();
   }
 
   leftToolbar(): UI.Toolbar.Toolbar {
@@ -480,7 +477,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper<Ev
     if (uiSourceCode.loadError()) {
       this.addLoadErrorIcon(tabId);
     } else if (!uiSourceCode.contentLoaded()) {
-      uiSourceCode.requestContent().then(_content => {
+      void uiSourceCode.requestContent().then(_content => {
         if (uiSourceCode.loadError()) {
           this.addLoadErrorIcon(tabId);
         }

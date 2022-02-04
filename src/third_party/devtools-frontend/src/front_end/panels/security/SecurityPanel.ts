@@ -797,11 +797,11 @@ export class SecurityPanelSidebarTree extends UI.TreeOutline.TreeOutlineInShadow
   }
 
   private originGroupTitle(originGroup: OriginGroup): string {
-    return /** @type {string} */ this.originGroupTitles.get(originGroup) as string;
+    return this.originGroupTitles.get(originGroup) as string;
   }
 
   private originGroupElement(originGroup: OriginGroup): UI.TreeOutline.TreeElement {
-    return /** @type {!UI.TreeOutline.TreeElement} */ this.originGroups.get(originGroup) as UI.TreeOutline.TreeElement;
+    return this.originGroups.get(originGroup) as UI.TreeOutline.TreeElement;
   }
 
   private createOriginGroupElement(originGroupTitle: string): UI.TreeOutline.TreeElement {
@@ -1382,7 +1382,7 @@ export class SecurityMainView extends UI.Widget.VBox {
 
   showNetworkFilter(filterKey: string, e: Event): void {
     e.consume();
-    Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters(
+    void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters(
         [{filterType: NetworkForward.UIFilter.FilterType.MixedContent, filterValue: filterKey}]));
   }
   wasShown(): void {
@@ -1416,7 +1416,7 @@ export class SecurityOriginView extends UI.Widget.VBox {
     const originNetworkButton = UI.UIUtils.createTextButton(i18nString(UIStrings.viewRequestsInNetworkPanel), event => {
       event.consume();
       const parsedURL = new Common.ParsedURL.ParsedURL(origin);
-      Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
+      void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
         {filterType: NetworkForward.UIFilter.FilterType.Domain, filterValue: parsedURL.host},
         {filterType: NetworkForward.UIFilter.FilterType.Scheme, filterValue: parsedURL.scheme},
       ]));

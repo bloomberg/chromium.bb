@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <sstream>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -156,13 +155,13 @@ constexpr AltFontFamily kAltFontFamilies[] = {
     {"ForteMT", "Forte"},
 };
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ASMJS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || defined(OS_ASMJS)
 const char kNarrowFamily[] = "LiberationSansNarrow";
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
 const char kNarrowFamily[] = "RobotoCondensed";
 #else
 const char kNarrowFamily[] = "ArialNarrow";
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ASMJS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || defined(OS_ASMJS)
 
 ByteString TT_NormalizeName(ByteString norm) {
   norm.Remove(' ');
@@ -195,17 +194,10 @@ void GetFontFamily(uint32_t nStyle, ByteString* fontName) {
   }
 }
 
-ByteString ParseStyle(const char* pStyle, size_t iLen, size_t iIndex) {
-  std::ostringstream buf;
-  if (!iLen || iLen <= iIndex)
-    return ByteString(buf);
-  while (iIndex < iLen) {
-    if (pStyle[iIndex] == ',')
-      break;
-    buf << pStyle[iIndex];
-    ++iIndex;
-  }
-  return ByteString(buf);
+ByteString ParseStyle(const ByteString& bsStyle, size_t iStart) {
+  ByteStringView bsRegion = bsStyle.AsStringView().Substr(iStart);
+  size_t iIndex = bsRegion.Find(',').value_or(bsRegion.GetLength());
+  return ByteString(bsRegion.First(iIndex));
 }
 
 struct FX_FontStyle {
@@ -494,14 +486,10 @@ RetainPtr<CFX_Face> CFX_FontMapper::FindSubstFont(const ByteString& name,
     weight = FXFONT_FW_BOLD;
 
   if (!style.IsEmpty()) {
-    size_t nLen = style.GetLength();
-    const char* pStyle = style.c_str();
     size_t i = 0;
     bool bFirstItem = true;
-    ByteString buf;
-    while (i < nLen) {
-      buf = ParseStyle(pStyle, nLen, i);
-
+    while (i < style.GetLength()) {
+      ByteString buf = ParseStyle(style, i);
       bool hasStyleType;
       uint32_t styleType;
       size_t len;
@@ -616,7 +604,7 @@ RetainPtr<CFX_Face> CFX_FontMapper::FindSubstFont(const ByteString& name,
       }
     } else {
       if (Charset == FX_Charset::kSymbol) {
-#if defined(OS_APPLE) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_ANDROID)
         if (SubstName == "Symbol") {
           pSubstFont->m_Family = "Chrome Symbol";
           pSubstFont->m_Charset = FX_Charset::kSymbol;
@@ -706,7 +694,7 @@ bool CFX_FontMapper::HasLocalizedFont(ByteStringView name) const {
   return false;
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 absl::optional<ByteString> CFX_FontMapper::InstalledFontNameStartingWith(
     const ByteString& name) const {
   for (const auto& thisname : m_InstalledTTFonts) {
@@ -724,7 +712,7 @@ absl::optional<ByteString> CFX_FontMapper::LocalizedFontNameStartingWith(
   }
   return absl::nullopt;
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 #ifdef PDF_ENABLE_XFA
 std::unique_ptr<uint8_t, FxFreeDeleter> CFX_FontMapper::RawBytesForIndex(

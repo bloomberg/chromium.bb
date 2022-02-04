@@ -401,6 +401,21 @@
   "core/sdk/DebuggerModel.ts | withBlock": {
     "message": "With-sektion"
   },
+  "core/sdk/EventBreakpointsModel.ts | auctionWorklet": {
+    "message": "Worklet til annonceauktion"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletBiddingStart": {
+    "message": "Start på fase med budgivning fra budgivere"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletReportingStart": {
+    "message": "Start på fase med budgiverrapportering"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletReportingStart": {
+    "message": "Start på fase med sælgerrapportering"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletScoringStart": {
+    "message": "Start på fase med sælgerbedømmelse"
+  },
   "core/sdk/NetworkManager.ts | crossoriginReadBlockingCorb": {
     "message": "CORB (Cross-Origin Read Blocking) blokerede svaret med krydsoprindelse {PH1} med MIME-typen {PH2}. Se https://www.chromestatus.com/feature/5629709824032768 for at få flere oplysninger."
   },
@@ -644,9 +659,6 @@
   "core/sdk/sdk-meta.ts | disableWebpFormat": {
     "message": "Deaktiver formatet WebP"
   },
-  "core/sdk/sdk-meta.ts | disabledDarkMode": {
-    "message": "Deaktiver"
-  },
   "core/sdk/sdk-meta.ts | doNotCaptureAsyncStackTraces": {
     "message": "Registrer ikke asynkrone staksporinger"
   },
@@ -679,6 +691,9 @@
   },
   "core/sdk/sdk-meta.ts | doNotShowGridTrackSizes": {
     "message": "Vis ikke gitterets sporingsstørrelser"
+  },
+  "core/sdk/sdk-meta.ts | doNotShowRulersOnHover": {
+    "message": "Vis ikke linealer, når markøren holdes over"
   },
   "core/sdk/sdk-meta.ts | emulateAFocusedPage": {
     "message": "Emuler en fokuseret side"
@@ -743,9 +758,6 @@
   "core/sdk/sdk-meta.ts | enableWebpFormat": {
     "message": "Aktivér formatet WebP"
   },
-  "core/sdk/sdk-meta.ts | enabledDarkMode": {
-    "message": "Aktivér"
-  },
   "core/sdk/sdk-meta.ts | extendGridLines": {
     "message": "Forlæng gitterlinjer"
   },
@@ -754,9 +766,6 @@
   },
   "core/sdk/sdk-meta.ts | hideFramesPerSecondFpsMeter": {
     "message": "Skjul FPS-måler (frames per second, billeder pr. sekund)"
-  },
-  "core/sdk/sdk-meta.ts | hideHittestBorders": {
-    "message": "Skjul hit-testkanter"
   },
   "core/sdk/sdk-meta.ts | hideLayerBorders": {
     "message": "Skjul lagkanter"
@@ -812,9 +821,6 @@
   "core/sdk/sdk-meta.ts | showGridTrackSizes": {
     "message": "Vis gitterets sporingsstørrelser"
   },
-  "core/sdk/sdk-meta.ts | showHittestBorders": {
-    "message": "Vis hit-testkanter"
-  },
   "core/sdk/sdk-meta.ts | showLayerBorders": {
     "message": "Vis lagkanter"
   },
@@ -833,8 +839,8 @@
   "core/sdk/sdk-meta.ts | showPaintFlashingRectangles": {
     "message": "Vis synlige blinkende rektangler"
   },
-  "core/sdk/sdk-meta.ts | showRulers": {
-    "message": "Vis linealer"
+  "core/sdk/sdk-meta.ts | showRulersOnHover": {
+    "message": "Vis linealer, når markøren holdes over"
   },
   "core/sdk/sdk-meta.ts | showScrollPerformanceBottlenecks": {
     "message": "Vis flaskehalse for rulleeffektiviteten"
@@ -875,14 +881,20 @@
   "entrypoints/inspector_main/RenderingOptions.ts | emulateAFocusedPage": {
     "message": "Emuler en fokuseret side"
   },
+  "entrypoints/inspector_main/RenderingOptions.ts | emulateAutoDarkMode": {
+    "message": "Enable automatic dark mode"
+  },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAFocusedPage": {
     "message": "Emulerer en fokuseret side."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAutoDarkMode": {
-    "message": "Aktiverer automatisk mørk tilstand for de inspicerede sider."
+    "message": "Enables automatic dark mode and sets prefers-color-scheme to dark."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssColorgamutMediaFeature": {
     "message": "Gennemtvinger CSS color-gamut-mediefunktionen"
+  },
+  "entrypoints/inspector_main/RenderingOptions.ts | forcesCssForcedColors": {
+    "message": "Gennemtvinger CSS-funktionen for gennemtvungne farver på medier"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssPreferscolorschemeMedia": {
     "message": "Gennemtvinger CSS prefers-color-scheme-mediefunktionen"
@@ -920,9 +932,6 @@
   "entrypoints/inspector_main/RenderingOptions.ts | highlightsFramesRedDetectedToBe": {
     "message": "Fremhæver rammer (røde), der er registreret som annoncer."
   },
-  "entrypoints/inspector_main/RenderingOptions.ts | hittestBorders": {
-    "message": "Hit-testkanter"
-  },
   "entrypoints/inspector_main/RenderingOptions.ts | layerBorders": {
     "message": "Lagkanter"
   },
@@ -943,9 +952,6 @@
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsAnOverlayWithCoreWebVitals": {
     "message": "Viser en overlejring med Vigtige netstatistikker."
-  },
-  "entrypoints/inspector_main/RenderingOptions.ts | showsBordersAroundHittestRegions": {
-    "message": "Viser kanter rundt om hit-testområder."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsLayerBordersOrangeoliveAnd": {
     "message": "Viser lagkanter (orange/oliven) og felter (cyanblå)."
@@ -1001,7 +1007,7 @@
   "entrypoints/inspector_main/inspector_main-meta.ts | visionDeficiency": {
     "message": "visningsmangler"
   },
-  "entrypoints/js_app/JsMain.ts | main": {
+  "entrypoints/js_app/js_app.ts | main": {
     "message": "Primært"
   },
   "entrypoints/main/MainImpl.ts | customizeAndControlDevtools": {
@@ -1036,9 +1042,6 @@
   },
   "entrypoints/main/MainImpl.ts | showConsoleDrawer": {
     "message": "Vis konsolskuffe"
-  },
-  "entrypoints/main/MainImpl.ts | theSystempreferredColorSchemeHas": {
-    "message": "Farvesammensætningen, der foretrækkes af systemet, er ændret. Genindlæs for at anvende denne ændring på Udviklerværktøjer."
   },
   "entrypoints/main/MainImpl.ts | undockIntoSeparateWindow": {
     "message": "Frigør til et separat vindue"
@@ -1190,41 +1193,41 @@
   "entrypoints/main/main-meta.ts | zoomOut": {
     "message": "Zoom ud"
   },
-  "entrypoints/node_app/node_app-meta.ts | node": {
-    "message": "Node"
-  },
-  "entrypoints/node_app/node_app-meta.ts | showNode": {
-    "message": "Node"
-  },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | addConnection": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | addConnection": {
     "message": "Tilføj forbindelse"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
     "message": "Netværksadresse (f.eks. localhost:9229)"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | noConnectionsSpecified": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | noConnectionsSpecified": {
     "message": "Ingen forbindelser er specificeret"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
     "message": "Vejledning til Node.js-fejlretning"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
     "message": "Angiv netværkets slutpunkt, hvorefter Udviklerværktøjer automatisk opretter forbindelse til det. Læs {PH1} for at få flere oplysninger."
   },
-  "entrypoints/node_main/NodeMain.ts | main": {
+  "entrypoints/node_app/NodeMain.ts | main": {
     "message": "Primær"
   },
-  "entrypoints/node_main/NodeMain.ts | nodejsS": {
+  "entrypoints/node_app/NodeMain.ts | nodejsS": {
     "message": "Node.js: {PH1}"
   },
-  "entrypoints/node_main/node_main-meta.ts | connection": {
+  "entrypoints/node_app/node_app.ts | connection": {
     "message": "Forbindelse"
   },
-  "entrypoints/node_main/node_main-meta.ts | node": {
+  "entrypoints/node_app/node_app.ts | networkTitle": {
+    "message": "Node"
+  },
+  "entrypoints/node_app/node_app.ts | node": {
     "message": "node"
   },
-  "entrypoints/node_main/node_main-meta.ts | showConnection": {
+  "entrypoints/node_app/node_app.ts | showConnection": {
     "message": "Vis Forbindelse"
+  },
+  "entrypoints/node_app/node_app.ts | showNode": {
+    "message": "Node"
   },
   "entrypoints/worker_app/WorkerMain.ts | main": {
     "message": "Primært"
@@ -1304,6 +1307,9 @@
   "models/har/Writer.ts | writingFile": {
     "message": "Skriver fil…"
   },
+  "models/issues_manager/ClientHintIssue.ts | clientHintsInfrastructure": {
+    "message": "Client Hints Infrastructure"
+  },
   "models/issues_manager/ContentSecurityPolicyIssue.ts | contentSecurityPolicyEval": {
     "message": "Content Security Policy – Eval"
   },
@@ -1322,8 +1328,8 @@
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "Ressourcedeling på tværs af oprindelse (CORS)"
   },
-  "models/issues_manager/CorsIssue.ts | corsForPrivateNetworksRfc": {
-    "message": "CORS til privat netværk (RFC1918)"
+  "models/issues_manager/CorsIssue.ts | corsPrivateNetworkAccess": {
+    "message": "Private Network Access"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | coopAndCoep": {
     "message": "COOP og COEP"
@@ -1559,8 +1565,17 @@
   "panels/accessibility/AXBreadcrumbsPane.ts | accessibilityTree": {
     "message": "Tilgængelighedstræ"
   },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentDescription": {
+    "message": "Tilgængelighedstræet blev flyttet til øverste højre hjørne af DOM-træet."
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentName": {
+    "message": "Aktivér tilgængelighedstræet i fuldsidevisning"
+  },
   "panels/accessibility/AXBreadcrumbsPane.ts | ignored": {
     "message": "Ignoreret"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | reloadRequired": {
+    "message": "Du skal genindlæse Udviklerværktøjer, før ændringen træder i kraft."
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | scrollIntoView": {
     "message": "Rul indtil visning"
@@ -2051,6 +2066,12 @@
   "panels/application/AppManifestView.ts | couldNotDownloadARequiredIcon": {
     "message": "Et påkrævet ikon blev ikke downloadet fra manifestet"
   },
+  "panels/application/AppManifestView.ts | darkBackgroundColor": {
+    "message": "Dark background color"
+  },
+  "panels/application/AppManifestView.ts | darkThemeColor": {
+    "message": "Dark theme color"
+  },
   "panels/application/AppManifestView.ts | description": {
     "message": "Beskrivelse"
   },
@@ -2314,384 +2335,6 @@
   },
   "panels/application/ApplicationPanelSidebar.ts | worker": {
     "message": "medarbejder"
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
-    "message": "Det er kun sider, der indlæses via en GET-anmodning, som er kvalificeret til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
-    "message": "Det er kun sider med en 2XX-statuskode, som kan cachelagres."
-  },
-  "panels/application/BackForwardCacheStrings.ts | JavaScriptExecution": {
-    "message": "Chrome registrerede et forsøg på at køre JavaScript, mens siden var i cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | appBanner": {
-    "message": "Sider, der har anmodet om et AppBanner, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
-    "message": "Back/forward-cachen er deaktiveret under chrome://flags. Gå til chrome://flags/#back-forward-cache for at aktivere den lokalt på denne enhed."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
-    "message": "Back/forward-cachen er deaktiveret af kommandolinjen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
-    "message": "Back/forward-cachen er deaktiveret på grund af manglende hukommelse."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
-    "message": "Back/forward-cachen understøttes ikke af delegeret."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
-    "message": "Back/forward-cachen er deaktiveret for forhåndsgengivelsen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | broadcastChannel": {
-    "message": "Siden kan ikke cachelagres, da den har en BroadcastChannel-forekomst med registrerede hændelsesfunktioner."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheControlNoStore": {
-    "message": "Sider med headeren cache-control:no-store kan ikke føjes til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheFlushed": {
-    "message": "Cachen blev ryddet bevidst."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheLimit": {
-    "message": "Siden blev fjernet fra cachen, så en anden side kunne cachelagres."
-  },
-  "panels/application/BackForwardCacheStrings.ts | containsPlugins": {
-    "message": "Sider, der indeholder plugins, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileChooser": {
-    "message": "Sider, der anvender FileChooser API, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileSystemAccess": {
-    "message": "Sider, der anvender File System Access API, er ikke kvalificeret til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
-    "message": "Sider, der anvender Media Device Dispatcher, er ikke kvalificeret til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaPlay": {
-    "message": "En medieafspiller afspillede indhold, da der blev navigeret væk."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSession": {
-    "message": "Sider, der anvender MediaSession API og angiver en afspilningstilstand, er ikke kvalificeret til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSessionService": {
-    "message": "Sider, der anvender MediaSession API og angiver handlingshandlere, er ikke kvalificeret til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSecurityHandler": {
-    "message": "Sider, der anvender SecurityHandler, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSerial": {
-    "message": "Sider, der anvender Serial API, er ikke kvalificeret til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
-    "message": "Sider, der anvender WebAuthentication API, er ikke kvalificeret til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebBluetooth": {
-    "message": "Sider, der anvender WebBluetooth API, er ikke kvalificeret til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebUSB": {
-    "message": "Sider, der anvender WebUSB API, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
-    "message": "Sider, der anvender en dedikeret scripttjeneste eller worklet, ikke er kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | documentLoaded": {
-    "message": "Der blev navigeret væk, før dokumentet blev indlæst."
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderAppBannerManager": {
-    "message": "EmbedderAppBannerManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
-    "message": "EmbedderChromePasswordManagerClientBindCredentialManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
-    "message": "EmbedderDomDistillerSelfDeletingRequestDelegate"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
-    "message": "EmbedderDomDistillerViewerSource"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
-    "message": "EmbedderExtensionMessaging"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
-    "message": "EmbedderExtensionMessagingForOpenPort"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
-    "message": "EmbedderExtensionSentMessageToCachedFrame"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensions": {
-    "message": "EmbedderExtensions"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderModalDialog": {
-    "message": "EmbedderModalDialog"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOfflinePage": {
-    "message": "EmbedderOfflinePage"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
-    "message": "EmbedderOomInterventionTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
-    "message": "EmbedderPermissionRequestManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
-    "message": "EmbedderPopupBlockerTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
-    "message": "EmbedderSafeBrowsingThreatDetails"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
-    "message": "EmbedderSafeBrowsingTriggeredPopupBlocker"
-  },
-  "panels/application/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
-    "message": "En scripttjeneste blev aktiveret, mens siden var i back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | foregroundCacheLimit": {
-    "message": "Siden blev fjernet fra cachen, så en anden side kunne cachelagres."
-  },
-  "panels/application/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
-    "message": "Sider, der har givet adgang til streaming af medier, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | haveInnerContents": {
-    "message": "Sider, der anvender portaler, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | idleManager": {
-    "message": "Sider, der anvender IdleManager, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | indexedDBConnection": {
-    "message": "Sider, der har en åben IndexedDB-forbindelse, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | ineligibleAPI": {
-    "message": "Der blev brugt ikke-kvalificerede API'er."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedJavascript": {
-    "message": "Sider, som udvidelser indsætter JavaScript på, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedStyleSheet": {
-    "message": "Sider, som udvidelser indsætter StyleSheet på, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | internalError": {
-    "message": "Intern fejl."
-  },
-  "panels/application/BackForwardCacheStrings.ts | keyboardLock": {
-    "message": "Sider, der anvender tastaturlås, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | loading": {
-    "message": "Der blev navigeret væk fra siden, før den blev indlæst."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
-    "message": "Sider, hvis primære ressource har cache-control:no-cache, kan ikke føjes til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
-    "message": "Sider, hvis primære ressource har cache-control:no-store, kan ikke føjes til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
-    "message": "Navigationen blev annulleret, før siden kunne gendannes fra back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
-    "message": "Siden blev fjernet fra cachen, fordi en aktiv netværksforbindelse modtog for mange data. Chrome begrænser den mængde af data, som en side kan modtage under cachelagring."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
-    "message": "Sider med fetch() eller XHR, der behandles, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestRedirected": {
-    "message": "Siden blev fjernet fra back/forward-cachen, fordi en aktiv netværksanmodning vedrørte en omdirigering."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestTimeout": {
-    "message": "Siden blev fjernet fra cachen, fordi en netværksforbindelse var åben i for lang tid. Chrome begrænser, hvor længe en side kan modtage data under cachelagring."
-  },
-  "panels/application/BackForwardCacheStrings.ts | noResponseHead": {
-    "message": "Sider, der ikke har en gyldig svarheader, kan ikke føjes til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | notMainFrame": {
-    "message": "Navigationen foregik i en anden ramme end den primære ramme."
-  },
-  "panels/application/BackForwardCacheStrings.ts | optInUnloadHeaderNotPresent": {
-    "message": "Siden har en frigivelsehandler uden headeren til tilvalg for back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
-    "message": "Sider med løbende IndexedDB-transaktioner er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
-    "message": "Sider med en netværksanmodning, der behandles, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
-    "message": "Sider med en fetch()-netværksanmodning, som behandles, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
-    "message": "Sider med en netværksanmodning, der behandles, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
-    "message": "Sider med en XHR-netværksanmodning, som behandles, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | paymentManager": {
-    "message": "Sider, der anvender PaymentManager, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | pictureInPicture": {
-    "message": "Sider, der anvender integreret billede, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | portal": {
-    "message": "Sider, der anvender portaler, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | printing": {
-    "message": "Sider, der viser udskrivningsbrugerfladen, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
-    "message": "Siden blev åbnet via window.open(), og en anden fane havde en henvisning til den, eller også åbnede siden et vindue."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessCrashed": {
-    "message": "Gengivelsesprocessen for siden i back/forward-cachen mislykkedes."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessKilled": {
-    "message": "Gengivelsesprocessen for siden i back/forward-cachen blev afbrudt."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
-    "message": "Sider, der har anmodet om adgangstilladelse til lydoptagelser, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
-    "message": "Sider, der har anmodet om sensortilladelser, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
-    "message": "Sider, der har anmodet om synkronisering i baggrunden eller fetch()-tilladelser, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedMIDIPermission": {
-    "message": "Sider, der har anmodet om MIDI-tilladelser, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
-    "message": "Sider, der har anmodet om notifikationstilladelser, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
-    "message": "Sider, der har anmodet om adgang til lagerpladsen, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
-    "message": "Sider, der har anmodet om tilladelser til optagelse af video, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
-    "message": "Du kan kun cachelagre sider, hvis webadresseskema er HTTP/HTTPS."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerClaim": {
-    "message": "En scripttjeneste anmodede om siden, da den var i back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
-    "message": "En scripttjeneste forsøgte at sende en MessageEvent til siden i back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
-    "message": "Scripttjenesten var ikke registreret, da siden var i back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
-    "message": "Siden blev fjernet fra back/forward-cachen, fordi en scripttjeneste blev aktiveret."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sessionRestored": {
-    "message": "Chrome genstartede og ryddede posterne i back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sharedWorker": {
-    "message": "Sider, der anvender SharedWorker, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechRecognizer": {
-    "message": "Sider, der anvender SpeechRecognizer, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechSynthesis": {
-    "message": "Sider, der anvender SpeechSynthesis, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subframeIsNavigating": {
-    "message": "En iframe på siden startede en navigation, der ikke blev gennemført."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
-    "message": "Sider, hvis underressource har cache-control:no-cache, kan ikke føjes til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
-    "message": "Sider, hvis underressource har cache-control:no-store, kan ikke føjes til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeout": {
-    "message": "Siden var i back/forward-cachen i længere tid end den maksimalt tilladte varighed og fik timeout."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
-    "message": "Siden oplevede timeout under tilføjelse til back/forward-cachen (sandsynligvis på grund af handlers til skjulning af sider, som havde kørt i lang tid)"
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
-    "message": "Siden har en frigivelseshandler i hovedrammen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
-    "message": "Siden har en frigivelseshandler i en underramme."
-  },
-  "panels/application/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
-    "message": "Browseren har ændret brugeragentens tilsidesættelsesheader."
-  },
-  "panels/application/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
-    "message": "Sider, der har givet adgangtilladelse til optagelse af video eller lyd, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webDatabase": {
-    "message": "Sider, der anvender WebDatabase, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webHID": {
-    "message": "Sider, der anvender WebHID, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webLocks": {
-    "message": "Sider, der anvender WebLocks, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webNfc": {
-    "message": "Sider, der anvender WebNfc, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webOTPService": {
-    "message": "Sider, der anvender WebOTPService, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webRTC": {
-    "message": "Sider med WebRTC kan ikke føjes til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webShare": {
-    "message": "Sider, der anvender WebShare, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webSocket": {
-    "message": "Sider med WebSocket kan ikke føjes til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webTransport": {
-    "message": "Sider med WebTransport kan ikke føjes til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webXR": {
-    "message": "Sider, der anvender WebXR, er ikke kvalificeret til back/forward-cachen i øjeblikket."
-  },
-  "panels/application/BackForwardCacheView.ts | backForwardCacheTitle": {
-    "message": "Back/forward-cache"
-  },
-  "panels/application/BackForwardCacheView.ts | bfcacheStatus": {
-    "message": "Status for back/forward-cache"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantial": {
-    "message": "Ikke handlingsrettet"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantialExplanation": {
-    "message": "Du kan ikke foretage handlinger i forhold til disse årsager. Det vil sige, at cachelagring blev forhindret af noget, som siden ikke havde direkte kontrol over."
-  },
-  "panels/application/BackForwardCacheView.ts | mainFrame": {
-    "message": "Hovedramme"
-  },
-  "panels/application/BackForwardCacheView.ts | normalNavigation": {
-    "message": "Normal navigation (ikke gendannet fra back/forward-cache)"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeeded": {
-    "message": "Handlingsrettet"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeededExplanation": {
-    "message": "Der kan foretages handlinger i forhold til disse årsager. Det vil sige, at problemerne kan løses, så siden bliver kvalificeret til back/forward-cachen."
-  },
-  "panels/application/BackForwardCacheView.ts | restoredFromBFCache": {
-    "message": "Gendannet fra back/forward-cache"
-  },
-  "panels/application/BackForwardCacheView.ts | runTest": {
-    "message": "Kør test"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPending": {
-    "message": "Afventende understøttelse"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPendingExplanation": {
-    "message": "Chrome-understøttelse i forhold til disse årsager er i venteposition. Det vil sige, at disse årsager ikke vil forhindre, at siden er kvalificeret til back/forward-cachen i en fremtidig version af Chrome."
-  },
-  "panels/application/BackForwardCacheView.ts | unavailable": {
-    "message": "ikke tilgængelig"
-  },
-  "panels/application/BackForwardCacheView.ts | unknown": {
-    "message": "ukendt"
-  },
-  "panels/application/BackForwardCacheView.ts | url": {
-    "message": "Webadresse"
   },
   "panels/application/BackgroundServiceView.ts | backgroundFetch": {
     "message": "Hentning i baggrunden"
@@ -3251,6 +2894,387 @@
   "panels/application/application-meta.ts | stopRecordingEvents": {
     "message": "Stop med at registrere hændelser"
   },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
+    "message": "Det er kun sider, der indlæses via en GET-anmodning, som er kvalificeret til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
+    "message": "Det er kun sider med en 2XX-statuskode, som kan cachelagres."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | JavaScriptExecution": {
+    "message": "Chrome registrerede et forsøg på at køre JavaScript, mens siden var i cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | appBanner": {
+    "message": "Sider, der har anmodet om et AppBanner, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
+    "message": "Back/forward-cachen er deaktiveret under chrome://flags. Gå til chrome://flags/#back-forward-cache for at aktivere den lokalt på denne enhed."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
+    "message": "Back/forward-cachen er deaktiveret af kommandolinjen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
+    "message": "Back/forward-cachen er deaktiveret på grund af manglende hukommelse."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
+    "message": "Back/forward-cachen understøttes ikke af delegeret."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
+    "message": "Back/forward-cachen er deaktiveret for forhåndsgengivelsen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | broadcastChannel": {
+    "message": "Siden kan ikke cachelagres, da den har en BroadcastChannel-forekomst med registrerede hændelsesfunktioner."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheControlNoStore": {
+    "message": "Sider med headeren cache-control:no-store kan ikke føjes til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheFlushed": {
+    "message": "Cachen blev ryddet bevidst."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheLimit": {
+    "message": "Siden blev fjernet fra cachen, så en anden side kunne cachelagres."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | containsPlugins": {
+    "message": "Sider, der indeholder plugins, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileChooser": {
+    "message": "Sider, der anvender FileChooser API, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileSystemAccess": {
+    "message": "Sider, der anvender File System Access API, er ikke kvalificeret til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
+    "message": "Sider, der anvender Media Device Dispatcher, er ikke kvalificeret til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaPlay": {
+    "message": "En medieafspiller afspillede indhold, da der blev navigeret væk."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSession": {
+    "message": "Sider, der anvender MediaSession API og angiver en afspilningstilstand, er ikke kvalificeret til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSessionService": {
+    "message": "Sider, der anvender MediaSession API og angiver handlingshandlere, er ikke kvalificeret til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentScreenReader": {
+    "message": "Back/forward cache is disabled due to screen reader."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSecurityHandler": {
+    "message": "Sider, der anvender SecurityHandler, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSerial": {
+    "message": "Sider, der anvender Serial API, er ikke kvalificeret til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
+    "message": "Sider, der anvender WebAuthentication API, er ikke kvalificeret til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebBluetooth": {
+    "message": "Sider, der anvender WebBluetooth API, er ikke kvalificeret til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebUSB": {
+    "message": "Sider, der anvender WebUSB API, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
+    "message": "Sider, der anvender en dedikeret scripttjeneste eller worklet, ikke er kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | documentLoaded": {
+    "message": "Der blev navigeret væk, før dokumentet blev indlæst."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderAppBannerManager": {
+    "message": "App Banner was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
+    "message": "Chrome Password Manager was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
+    "message": "DOM distillation was in progress upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
+    "message": "DOM Distiller Viewer was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
+    "message": "Back/forward cache is disabled due to extensions using messaging API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
+    "message": "Extensions with long-lived connection should close the connection before entering back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
+    "message": "Extensions with long-lived connection attempted to send messages to frames in back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensions": {
+    "message": "Back/forward cache is disabled due to extensions."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderModalDialog": {
+    "message": "Modal dialog such as form resubmission or http password dialog was shown for the page upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOfflinePage": {
+    "message": "The offline page was shown upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
+    "message": "Out-Of-Memory Intervention bar was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
+    "message": "There were permission requests upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
+    "message": "Popup blocker was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
+    "message": "Safe Browsing details were shown upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
+    "message": "Safe Browsing considered this page to be abusive and blocked popup."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
+    "message": "En scripttjeneste blev aktiveret, mens siden var i back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | foregroundCacheLimit": {
+    "message": "Siden blev fjernet fra cachen, så en anden side kunne cachelagres."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
+    "message": "Sider, der har givet adgang til streaming af medier, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | haveInnerContents": {
+    "message": "Sider, der anvender portaler, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | idleManager": {
+    "message": "Sider, der anvender IdleManager, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | indexedDBConnection": {
+    "message": "Sider, der har en åben IndexedDB-forbindelse, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | ineligibleAPI": {
+    "message": "Der blev brugt ikke-kvalificerede API'er."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedJavascript": {
+    "message": "Sider, som udvidelser indsætter JavaScript på, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedStyleSheet": {
+    "message": "Sider, som udvidelser indsætter StyleSheet på, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | internalError": {
+    "message": "Intern fejl."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | keyboardLock": {
+    "message": "Sider, der anvender tastaturlås, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | loading": {
+    "message": "Der blev navigeret væk fra siden, før den blev indlæst."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
+    "message": "Sider, hvis primære ressource har cache-control:no-cache, kan ikke føjes til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
+    "message": "Sider, hvis primære ressource har cache-control:no-store, kan ikke føjes til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
+    "message": "Navigationen blev annulleret, før siden kunne gendannes fra back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
+    "message": "Siden blev fjernet fra cachen, fordi en aktiv netværksforbindelse modtog for mange data. Chrome begrænser den mængde af data, som en side kan modtage under cachelagring."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
+    "message": "Sider med fetch() eller XHR, der behandles, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestRedirected": {
+    "message": "Siden blev fjernet fra back/forward-cachen, fordi en aktiv netværksanmodning vedrørte en omdirigering."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestTimeout": {
+    "message": "Siden blev fjernet fra cachen, fordi en netværksforbindelse var åben i for lang tid. Chrome begrænser, hvor længe en side kan modtage data under cachelagring."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | noResponseHead": {
+    "message": "Sider, der ikke har en gyldig svarheader, kan ikke føjes til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | notMainFrame": {
+    "message": "Navigationen foregik i en anden ramme end den primære ramme."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
+    "message": "Sider med løbende IndexedDB-transaktioner er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
+    "message": "Sider med en netværksanmodning, der behandles, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
+    "message": "Sider med en fetch()-netværksanmodning, som behandles, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
+    "message": "Sider med en netværksanmodning, der behandles, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
+    "message": "Sider med en XHR-netværksanmodning, som behandles, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | paymentManager": {
+    "message": "Sider, der anvender PaymentManager, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | pictureInPicture": {
+    "message": "Sider, der anvender integreret billede, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | portal": {
+    "message": "Sider, der anvender portaler, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | printing": {
+    "message": "Sider, der viser udskrivningsbrugerfladen, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
+    "message": "Siden blev åbnet via window.open(), og en anden fane havde en henvisning til den, eller også åbnede siden et vindue."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessCrashed": {
+    "message": "Gengivelsesprocessen for siden i back/forward-cachen mislykkedes."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessKilled": {
+    "message": "Gengivelsesprocessen for siden i back/forward-cachen blev afbrudt."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
+    "message": "Sider, der har anmodet om adgangstilladelse til lydoptagelser, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
+    "message": "Sider, der har anmodet om sensortilladelser, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
+    "message": "Sider, der har anmodet om synkronisering i baggrunden eller fetch()-tilladelser, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedMIDIPermission": {
+    "message": "Sider, der har anmodet om MIDI-tilladelser, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
+    "message": "Sider, der har anmodet om notifikationstilladelser, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
+    "message": "Sider, der har anmodet om adgang til lagerpladsen, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
+    "message": "Sider, der har anmodet om tilladelser til optagelse af video, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
+    "message": "Du kan kun cachelagre sider, hvis webadresseskema er HTTP/HTTPS."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerClaim": {
+    "message": "En scripttjeneste anmodede om siden, da den var i back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
+    "message": "En scripttjeneste forsøgte at sende en MessageEvent til siden i back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
+    "message": "Scripttjenesten var ikke registreret, da siden var i back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
+    "message": "Siden blev fjernet fra back/forward-cachen, fordi en scripttjeneste blev aktiveret."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sessionRestored": {
+    "message": "Chrome genstartede og ryddede posterne i back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sharedWorker": {
+    "message": "Sider, der anvender SharedWorker, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechRecognizer": {
+    "message": "Sider, der anvender SpeechRecognizer, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechSynthesis": {
+    "message": "Sider, der anvender SpeechSynthesis, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subframeIsNavigating": {
+    "message": "En iframe på siden startede en navigation, der ikke blev gennemført."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
+    "message": "Sider, hvis underressource har cache-control:no-cache, kan ikke føjes til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
+    "message": "Sider, hvis underressource har cache-control:no-store, kan ikke føjes til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeout": {
+    "message": "Siden var i back/forward-cachen i længere tid end den maksimalt tilladte varighed og fik timeout."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
+    "message": "Siden oplevede timeout under tilføjelse til back/forward-cachen (sandsynligvis på grund af handlers til skjulning af sider, som havde kørt i lang tid)"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
+    "message": "Siden har en frigivelseshandler i hovedrammen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
+    "message": "Siden har en frigivelseshandler i en underramme."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
+    "message": "Browseren har ændret brugeragentens tilsidesættelsesheader."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
+    "message": "Sider, der har givet adgangtilladelse til optagelse af video eller lyd, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webDatabase": {
+    "message": "Sider, der anvender WebDatabase, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webHID": {
+    "message": "Sider, der anvender WebHID, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webLocks": {
+    "message": "Sider, der anvender WebLocks, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webNfc": {
+    "message": "Sider, der anvender WebNfc, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webOTPService": {
+    "message": "Sider, der anvender WebOTPService, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webRTC": {
+    "message": "Sider med WebRTC kan ikke føjes til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webShare": {
+    "message": "Sider, der anvender WebShare, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webSocket": {
+    "message": "Sider med WebSocket kan ikke føjes til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webTransport": {
+    "message": "Sider med WebTransport kan ikke føjes til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webXR": {
+    "message": "Sider, der anvender WebXR, er ikke kvalificeret til back/forward-cachen i øjeblikket."
+  },
+  "panels/application/components/BackForwardCacheView.ts | backForwardCacheTitle": {
+    "message": "Back/forward-cache"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantial": {
+    "message": "Ikke handlingsrettet"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantialExplanation": {
+    "message": "Du kan ikke foretage handlinger i forhold til disse årsager. Det vil sige, at cachelagring blev forhindret af noget, som siden ikke havde direkte kontrol over."
+  },
+  "panels/application/components/BackForwardCacheView.ts | learnMore": {
+    "message": "Få flere oplysninger: Berettigelse til back/forward-cachen"
+  },
+  "panels/application/components/BackForwardCacheView.ts | mainFrame": {
+    "message": "Hovedramme"
+  },
+  "panels/application/components/BackForwardCacheView.ts | normalNavigation": {
+    "message": "Siden blev ikke gendannet via back/forward-cachen: Du kan aktivere back/forward-cachen ved at bruge knapperne med frem-/tilbagepilene eller bruge testknappen nedenfor til automatisk at navigere til en anden side og derefter tilbage."
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeeded": {
+    "message": "Handlingsrettet"
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeededExplanation": {
+    "message": "Der kan foretages handlinger i forhold til disse årsager. Det vil sige, at problemerne kan løses, så siden bliver kvalificeret til back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheView.ts | restoredFromBFCache": {
+    "message": "Siden blev gendannet via back/forward-cachen."
+  },
+  "panels/application/components/BackForwardCacheView.ts | runTest": {
+    "message": "Test back/forward-cachen"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runningTest": {
+    "message": "Testen kører"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPending": {
+    "message": "Afventende understøttelse"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPendingExplanation": {
+    "message": "Chrome-understøttelse i forhold til disse årsager er i venteposition. Det vil sige, at disse årsager ikke vil forhindre, at siden er kvalificeret til back/forward-cachen i en fremtidig version af Chrome."
+  },
+  "panels/application/components/BackForwardCacheView.ts | unavailable": {
+    "message": "ikke tilgængelig"
+  },
+  "panels/application/components/BackForwardCacheView.ts | unknown": {
+    "message": "Ukendt status"
+  },
+  "panels/application/components/BackForwardCacheView.ts | url": {
+    "message": "Webadresse:"
+  },
   "panels/application/components/EndpointsGrid.ts | noEndpointsToDisplay": {
     "message": "Der er ingen slutpunkter at vise"
   },
@@ -3297,22 +3321,16 @@
     "message": "Klik for at vise i panelet Kilder"
   },
   "panels/application/components/FrameDetailsView.ts | createdByAdScriptExplanation": {
-    "message": "Der var et annoncescript i den (ikke-synkroniserede) stak, da denne ramme blev oprettet. Du kan muligvis få mere indsigt ved at undersøge staksporingen for oprettelsen af denne ramme."
+    "message": "Der var et annoncescript i (async) stack, da denne ramme blev oprettet. Du kan muligvis få mere indsigt ved at undersøge stack trace for oprettelsen af denne ramme."
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTrace": {
-    "message": "Staksporing for rammeoprettelse"
+    "message": "Stack Trace for oprettelse af ramme"
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTraceExplanation": {
-    "message": "Denne ramme blev oprettet programmatisk. Staksporingen viser, hvor det skete."
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginEmbedderPolicy": {
-    "message": "Politik for indlejring med krydsoprindelse"
+    "message": "Denne ramme blev oprettet programmatisk. stack trace viser, hvor dette skete."
   },
   "panels/application/components/FrameDetailsView.ts | crossoriginIsolated": {
     "message": "Krydsoprindelse er isoleret"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginOpenerPolicy": {
-    "message": "Politik for åbnerens krydsoprindelse"
   },
   "panels/application/components/FrameDetailsView.ts | document": {
     "message": "Dokument"
@@ -3337,9 +3355,6 @@
   },
   "panels/application/components/FrameDetailsView.ts | origin": {
     "message": "Oprindelse"
-  },
-  "panels/application/components/FrameDetailsView.ts | originTrials": {
-    "message": "Funktionstests"
   },
   "panels/application/components/FrameDetailsView.ts | ownerElement": {
     "message": "Ejerelement"
@@ -3366,19 +3381,19 @@
     "message": "Sikkerhed og isolation"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIs": {
-    "message": "SharedArrayBuffer-konstruktør er tilgængelig, og SharedArrayBuffers kan overføres via postMessage"
+    "message": "SharedArrayBuffer-konstruktør er tilgængelig, og SABs kan overføres via postMessage"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIsAvailable": {
-    "message": "SharedArrayBuffer-konstruktør er tilgængelig, men SharedArrayBuffers kan ikke overføres via postMessage"
+    "message": "SharedArrayBuffer-konstruktør er tilgængelig, men SABs kan ikke overføres via postMessage"
   },
   "panels/application/components/FrameDetailsView.ts | theFramesSchemeIsInsecure": {
     "message": "Rammens skema er usikkert"
   },
   "panels/application/components/FrameDetailsView.ts | thePerformanceAPI": {
-    "message": "API'en performance.measureUserAgentSpecificMemory() er tilgængelig"
+    "message": "performance.measureUserAgentSpecificMemory() API er tilgængelig"
   },
   "panels/application/components/FrameDetailsView.ts | thePerformancemeasureuseragentspecificmemory": {
-    "message": "API'en performance.measureUserAgentSpecificMemory() er ikke tilgængelig"
+    "message": "performance.measureUserAgentSpecificMemory() API er ikke tilgængelig"
   },
   "panels/application/components/FrameDetailsView.ts | thisAdditionalDebugging": {
     "message": "Disse ekstra oplysninger (fejlretningsoplysninger) vises, fordi eksperimentet \"Protocol Monitor\" er aktiveret."
@@ -4229,20 +4244,11 @@
   "panels/css_overview/CSSOverviewUnusedDeclarations.ts | widthAppliedToAnInlineElement": {
     "message": "Width anvendt på et indlejret element"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | activelyWorkingAndLookingForS": {
-    "message": "Vores team arbejder på at forbedre denne funktion, og vi ser frem til at læse din {PH1}!"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | captureOverview": {
     "message": "Oversigt over klip"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | capturePageCSSOverview": {
     "message": "Få en oversigt over din sides CSS"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackInline": {
-    "message": "feedback"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackStandalone": {
-    "message": "Feedback"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | identifyCSSImprovements": {
     "message": "Identificer potentielle CSS-forbedringer"
@@ -4253,14 +4259,8 @@
   "panels/css_overview/components/CSSOverviewStartView.ts | locateAffectedElements": {
     "message": "Find de berørte elementer i panelet Elementer"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | previewFeature": {
-    "message": "Preview-funktion"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | quickStartWithCSSOverview": {
     "message": "Hurtig start: Kom godt i gang med det nye CSS-oversigtspanel"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | videoAndDocumentation": {
-    "message": "Video og dokumentation"
   },
   "panels/css_overview/css_overview-meta.ts | cssOverview": {
     "message": "CSS-oversigt"
@@ -4591,6 +4591,21 @@
   },
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
     "message": "Gengivne skrifttyper"
+  },
+  "panels/elements/PropertiesWidget.ts | filter": {
+    "message": "Filter"
+  },
+  "panels/elements/PropertiesWidget.ts | filterProperties": {
+    "message": "Filterejendomme"
+  },
+  "panels/elements/PropertiesWidget.ts | noMatchingProperty": {
+    "message": "Der er ingen matchende ejendomme"
+  },
+  "panels/elements/PropertiesWidget.ts | showAll": {
+    "message": "Vis alle"
+  },
+  "panels/elements/PropertiesWidget.ts | showAllTooltip": {
+    "message": "Når dette felt ikke er markeret, er det kun egenskaber, der hverken har værdien nul eller udefineret, som vises"
   },
   "panels/elements/StylePropertyTreeElement.ts | copyAllCssDeclarationsAsJs": {
     "message": "Kopiér alle erklæringer som JavaScript"
@@ -4980,7 +4995,7 @@
     "message": "Skjul medieforespørgsler"
   },
   "panels/emulation/emulation-meta.ts | hideRulers": {
-    "message": "Skjul linealer"
+    "message": "Skjul linealer i værktøjslinjen for Enhedstilstand"
   },
   "panels/emulation/emulation-meta.ts | showDeviceFrame": {
     "message": "Vis enhedsramme"
@@ -4989,7 +5004,7 @@
     "message": "Vis medieforespørgsler"
   },
   "panels/emulation/emulation-meta.ts | showRulers": {
-    "message": "Vis linealer"
+    "message": "Vis linealer i værktøjslinjen for Enhedstilstand"
   },
   "panels/emulation/emulation-meta.ts | toggleDeviceToolbar": {
     "message": "Slå enhedens værktøjslinje til/fra"
@@ -5014,36 +5029,6 @@
   },
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "Skift mellem, om hændelsesfunktioner er passive eller blokerede"
-  },
-  "panels/help/ReleaseNoteView.ts | close": {
-    "message": "Luk"
-  },
-  "panels/help/ReleaseNoteView.ts | learnMore": {
-    "message": "Få flere oplysninger"
-  },
-  "panels/help/help-meta.ts | bug": {
-    "message": "fejl"
-  },
-  "panels/help/help-meta.ts | doNotShowWhatsNewAfterEachUpdate": {
-    "message": "Vis ikke Nyheder efter hver opdatering"
-  },
-  "panels/help/help-meta.ts | releaseNotes": {
-    "message": "Produktbemærkninger"
-  },
-  "panels/help/help-meta.ts | reportADevtoolsIssue": {
-    "message": "Rapportér et problem med Udviklerværktøjer"
-  },
-  "panels/help/help-meta.ts | reportTranslationIssue": {
-    "message": "Rapportér et oversættelsesproblem"
-  },
-  "panels/help/help-meta.ts | showWhatsNew": {
-    "message": "Vis nyheder"
-  },
-  "panels/help/help-meta.ts | showWhatsNewAfterEachUpdate": {
-    "message": "Vis nyheder efter hver opdatering"
-  },
-  "panels/help/help-meta.ts | whatsNew": {
-    "message": "Nyheder"
   },
   "panels/input/InputTimeline.ts | clearAll": {
     "message": "Ryd alle"
@@ -5261,8 +5246,20 @@
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceEventId": {
     "message": "Ugyldig attributionsourceeventid"
   },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceExpiry": {
+    "message": "Ugyldig attributionexpiry"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourcePriority": {
+    "message": "Ugyldig attributionsourcepriority"
+  },
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerData": {
     "message": "Ugyldig trigger-data"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerDedupKey": {
+    "message": "Ugyldig dedup-key"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerPriority": {
+    "message": "Ugyldig priority"
   },
   "panels/issues/AttributionReportingIssueDetailsView.ts | nViolations": {
     "message": "{n,plural, =1{# overtrædelse}one{# overtrædelse}other{# overtrædelser}}"
@@ -5290,6 +5287,9 @@
   },
   "panels/issues/CorsIssueDetailsView.ts | disallowedRequestMethod": {
     "message": "Ikke-tilladt anmodningsmetode"
+  },
+  "panels/issues/CorsIssueDetailsView.ts | failedRequest": {
+    "message": "Anmodningen blev ikke gennemført"
   },
   "panels/issues/CorsIssueDetailsView.ts | header": {
     "message": "Header"
@@ -5366,8 +5366,14 @@
   "panels/issues/HiddenIssuesRow.ts | unhideAll": {
     "message": "Vis alle igen"
   },
-  "panels/issues/IssueKindView.ts | hideAllCurrent": {
-    "message": "Skjul alle aktuelle {PH1}"
+  "panels/issues/IssueKindView.ts | hideAllCurrentBreakingChanges": {
+    "message": "Skjul alle aktuelle fejlskabende ændringer"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentImprovements": {
+    "message": "Skjul alle aktuelle forbedringer"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentPageErrors": {
+    "message": "Skjul alle aktuelle sidefejl"
   },
   "panels/issues/IssueView.ts | affectedResources": {
     "message": "Berørte ressourcer"
@@ -6307,6 +6313,9 @@
   },
   "panels/network/NetworkConfigView.ts | caching": {
     "message": "Gemmer i cache"
+  },
+  "panels/network/NetworkConfigView.ts | clientHintsStatusText": {
+    "message": "Brugeragenten er opdateret."
   },
   "panels/network/NetworkConfigView.ts | custom": {
     "message": "Tilpasset…"
@@ -9153,7 +9162,7 @@
     "message": "Dækning: Ikke tilgængelig"
   },
   "panels/sources/CoveragePlugin.ts | coverageS": {
-    "message": "Dækning: {PH1} %"
+    "message": "Dækning: {PH1}"
   },
   "panels/sources/CoveragePlugin.ts | showDetails": {
     "message": "Se info"
@@ -9412,6 +9421,15 @@
   },
   "panels/sources/OutlineQuickOpen.ts | openAJavascriptOrCssFileToSee": {
     "message": "Åbn en JavaScript- eller CSS-fil for at se symboler"
+  },
+  "panels/sources/ProfilePlugin.ts | kb": {
+    "message": "kB"
+  },
+  "panels/sources/ProfilePlugin.ts | mb": {
+    "message": "MB"
+  },
+  "panels/sources/ProfilePlugin.ts | ms": {
+    "message": "ms"
   },
   "panels/sources/ScopeChainSidebarPane.ts | closure": {
     "message": "Lukning"
@@ -11429,6 +11447,24 @@
   "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
     "message": "Vis Memory Inspector"
   },
+  "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
+    "message": "Feedback"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewFeature": {
+    "message": "Preview-funktion"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewText": {
+    "message": "Vores team arbejder på at forbedre denne funktion, og vi vil gerne høre, hvad du synes."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewTextFeedbackLink": {
+    "message": "Send os din feedback."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | videoAndDocumentation": {
+    "message": "Video og dokumentation"
+  },
+  "ui/components/panel_feedback/PreviewToggle.ts | previewTextFeedbackLink": {
+    "message": "Send os din feedback."
+  },
   "ui/components/request_link_icon/RequestLinkIcon.ts | clickToShowRequestInTheNetwork": {
     "message": "Klik for at åbne netværkspanelet og vise anmodningen om webadressen: {url}"
   },
@@ -11501,6 +11537,12 @@
   "ui/legacy/InspectorView.ts | drawer": {
     "message": "Værktøjsskuffe"
   },
+  "ui/legacy/InspectorView.ts | drawerHidden": {
+    "message": "Skuffen er skjult"
+  },
+  "ui/legacy/InspectorView.ts | drawerShown": {
+    "message": "Skuffen vises"
+  },
   "ui/legacy/InspectorView.ts | mainToolbar": {
     "message": "Primær værktøjslinje"
   },
@@ -11539,6 +11581,9 @@
   },
   "ui/legacy/ListWidget.ts | saveString": {
     "message": "Gem"
+  },
+  "ui/legacy/RemoteDebuggingTerminatedScreen.ts | debuggingConnectionWasClosed": {
+    "message": "Debugging connection was closed. Reason: "
   },
   "ui/legacy/RemoteDebuggingTerminatedScreen.ts | reconnectDevtools": {
     "message": "Genopret forbindelse til DevTools"
@@ -11774,6 +11819,9 @@
   "ui/legacy/components/cookie_table/CookiesTable.ts | name": {
     "message": "Navn"
   },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | opaquePartitionKey": {
+    "message": "(uigennemsigtig)"
+  },
   "ui/legacy/components/cookie_table/CookiesTable.ts | session": {
     "message": "Session"
   },
@@ -11942,15 +11990,6 @@
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "Vis som JavaScript-objekt"
   },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keys": {
-    "message": "Nøgler"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keywords": {
-    "message": "søgeord"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | lexicalScopeVariables": {
-    "message": "Variabler for leksikalsk omfang"
-  },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | collapseChildren": {
     "message": "Skjul underordnede"
   },
@@ -12038,15 +12077,6 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | sSelected": {
     "message": "{PH1} er valgt"
   },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | kb": {
-    "message": "kB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | mb": {
-    "message": "MB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | ms": {
-    "message": "ms"
-  },
   "ui/legacy/components/perf_ui/NetworkPriorities.ts | high": {
     "message": "Høj"
   },
@@ -12119,8 +12149,8 @@
   "ui/legacy/components/quick_open/QuickInput.ts | pressEnterToConfirmOrEscapeTo": {
     "message": "{PH1} (Tryk på \"Enter\" for at bekræfte eller \"Escape\" for at annullere)."
   },
-  "ui/legacy/components/quick_open/QuickOpen.ts | useTabToSwitchCommandsTypeToSeeAvailableCommands": {
-    "message": "Brug Tab-tasten til at skifte kommando. Angiv \"?\" for at se tilgængelige kommandoer"
+  "ui/legacy/components/quick_open/QuickOpen.ts | typeToSeeAvailableCommands": {
+    "message": "Angiv \"?\" for at se tilgængelige kommandoer"
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | openFile": {
     "message": "Åbn fil"
@@ -12223,9 +12253,6 @@
   },
   "ui/legacy/components/source_frame/source_frame-meta.ts | tabCharacter": {
     "message": "Tegn til tab-tast"
-  },
-  "ui/legacy/components/text_editor/CodeMirrorTextEditor.ts | codeEditor": {
-    "message": "Kodeeditor"
   },
   "ui/legacy/components/utils/ImagePreview.ts | currentSource": {
     "message": "Aktuel kilde:"

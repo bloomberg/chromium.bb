@@ -1698,11 +1698,7 @@ void MacroAssembler::InvokePrologue(Register expected_parameter_count,
     lay(dest, MemOperand(dest, kSystemPointerSize));
     SubS64(num, num, Operand(1));
     bind(&check);
-    if (kJSArgcIncludesReceiver) {
-      b(gt, &copy);
-    } else {
-      b(ge, &copy);
-    }
+    b(gt, &copy);
   }
 
   // Fill remaining expected arguments with undefined values.
@@ -5227,6 +5223,38 @@ void TurboAssembler::I8x16ReplaceLane(Simd128Register dst, Simd128Register src1,
   }
   vlvg(dst, src2, MemOperand(r0, 15 - imm_lane_idx), Condition(0));
 }
+
+#define SIMD_UNOP_LIST_VRR_A(V)    \
+  V(F64x2Abs, vfpso, 2, 0, 3)      \
+  V(F64x2Neg, vfpso, 0, 0, 3)      \
+  V(F64x2Sqrt, vfsq, 0, 0, 3)      \
+  V(F64x2Ceil, vfi, 6, 0, 3)       \
+  V(F64x2Floor, vfi, 7, 0, 3)      \
+  V(F64x2Trunc, vfi, 5, 0, 3)      \
+  V(F64x2NearestInt, vfi, 4, 0, 3) \
+  V(F32x4Abs, vfpso, 2, 0, 2)      \
+  V(F32x4Neg, vfpso, 0, 0, 2)      \
+  V(F32x4Sqrt, vfsq, 0, 0, 2)      \
+  V(F32x4Ceil, vfi, 6, 0, 2)       \
+  V(F32x4Floor, vfi, 7, 0, 2)      \
+  V(F32x4Trunc, vfi, 5, 0, 2)      \
+  V(F32x4NearestInt, vfi, 4, 0, 2) \
+  V(I64x2Abs, vlp, 0, 0, 3)        \
+  V(I32x4Abs, vlp, 0, 0, 2)        \
+  V(I16x8Abs, vlp, 0, 0, 1)        \
+  V(I8x16Abs, vlp, 0, 0, 0)        \
+  V(I64x2Neg, vlc, 0, 0, 3)        \
+  V(I32x4Neg, vlc, 0, 0, 2)        \
+  V(I16x8Neg, vlc, 0, 0, 1)        \
+  V(I8x16Neg, vlc, 0, 0, 0)
+
+#define EMIT_SIMD_UNOP_VRR_A(name, op, c1, c2, c3)                      \
+  void TurboAssembler::name(Simd128Register dst, Simd128Register src) { \
+    op(dst, src, Condition(c1), Condition(c2), Condition(c3));          \
+  }
+SIMD_UNOP_LIST_VRR_A(EMIT_SIMD_UNOP_VRR_A)
+#undef EMIT_SIMD_UNOP_VRR_A
+#undef SIMD_UNOP_LIST_VRR_A
 
 #define SIMD_BINOP_LIST_VRR_B(V) \
   V(I64x2Eq, vceq, 0, 3)         \

@@ -20,7 +20,7 @@
 #include "napi.h"
 #include "src/dawn_node/interop/WebGPU.h"
 
-namespace wgpu { namespace binding {
+namespace wgpu::binding {
 
     // GPUCommandBuffer is an implementation of interop::GPUCommandBuffer that wraps a
     // wgpu::CommandBuffer.
@@ -34,7 +34,6 @@ namespace wgpu { namespace binding {
         }
 
         // interop::GPUCommandBuffer interface compliance
-        interop::Promise<double> getExecutionTime(Napi::Env) override;
         std::optional<std::string> getLabel(Napi::Env) override;
         void setLabel(Napi::Env, std::optional<std::string> value) override;
 
@@ -42,6 +41,6 @@ namespace wgpu { namespace binding {
         wgpu::CommandBuffer cmd_buf_;
     };
 
-}}  // namespace wgpu::binding
+}  // namespace wgpu::binding
 
 #endif  // DAWN_NODE_BINDING_GPUCOMMANDBUFFER_H_

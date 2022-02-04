@@ -69,6 +69,7 @@ using CompileVulkanToSpirvDeadCodeElimTest = GlslangTest<::testing::TestWithPara
 using CompileVulkanToDebugSpirvTest = GlslangTest<::testing::TestWithParam<std::string>>;
 using CompileVulkan1_1ToSpirvTest = GlslangTest<::testing::TestWithParam<std::string>>;
 using CompileToSpirv14Test = GlslangTest<::testing::TestWithParam<std::string>>;
+//using CompileToSpirv16Test = GlslangTest<::testing::TestWithParam<std::string>>;
 using CompileOpenGLToSpirvTest = GlslangTest<::testing::TestWithParam<std::string>>;
 using VulkanSemantics = GlslangTest<::testing::TestWithParam<std::string>>;
 using OpenGLSemantics = GlslangTest<::testing::TestWithParam<std::string>>;
@@ -121,6 +122,15 @@ TEST_P(CompileToSpirv14Test, FromFile)
                             Source::GLSL, Semantics::Vulkan, glslang::EShTargetVulkan_1_1, glslang::EShTargetSpv_1_4,
                             Target::Spv);
 }
+
+// TODO(greg-lunarg): Re-enable tests when Vulkan1.3 ClientTarget is available
+
+//TEST_P(CompileToSpirv16Test, FromFile)
+//{
+//    loadFileCompileAndCheck(GlobalTestSettings.testRoot, GetParam(),
+//                            Source::GLSL, Semantics::Vulkan, glslang::EShTargetUniversal, glslang::EShTargetSpv_1_6,
+//                            Target::Spv);
+//}
 
 // Compiling GLSL to SPIR-V under OpenGL semantics. Expected to successfully
 // generate SPIR-V.
@@ -620,6 +630,18 @@ INSTANTIATE_TEST_SUITE_P(
     })),
     FileNameAsCustomTestSuffix
 );
+
+// clang-format off
+//INSTANTIATE_TEST_SUITE_P(
+//    Glsl, CompileToSpirv16Test,
+//    ::testing::ValuesIn(std::vector<std::string>({
+//        "spv.1.6.conditionalDiscard.frag",
+//        "spv.1.6.helperInvocation.frag",
+//        "spv.1.6.specConstant.comp",
+//    })),
+//    FileNameAsCustomTestSuffix
+//);
+
 
 // clang-format off
 INSTANTIATE_TEST_SUITE_P(

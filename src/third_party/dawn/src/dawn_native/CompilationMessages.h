@@ -22,12 +22,12 @@
 #include <string>
 #include <vector>
 
-namespace tint { namespace diag {
+namespace tint::diag {
     class Diagnostic;
     class List;
-}}  // namespace tint::diag
+}  // namespace tint::diag
 
-namespace dawn_native {
+namespace dawn::native {
 
     class OwnedCompilationMessages : public NonCopyable {
       public:
@@ -57,6 +57,6 @@ namespace dawn_native {
         std::vector<std::string> mFormattedTintMessages;
     };
 
-}  // namespace dawn_native
+}  // namespace dawn::native
 
 #endif  // DAWNNATIVE_COMPILATIONMESSAGES_H_

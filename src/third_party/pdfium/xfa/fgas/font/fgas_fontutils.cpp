@@ -190,7 +190,7 @@ const FGAS_FONTUSB kFXGdiFontUSBTable[] = {
     {0xFFA0, 0xFFEF, 68, FX_CodePage::kFailure},
 };
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 const FGAS_FontInfo kXFAFontsMap[] = {
     {0x01d5d33e, "SimSun", "Arial", 0, FX_CodePage::kChineseSimplified},
     {0x01e4f102, "YouYuan", "Arial", 1, FX_CodePage::kChineseSimplified},
@@ -540,7 +540,7 @@ const FGAS_FontInfo kXFAFontsMap[] = {
     {0xfef135f8, "AdobeHeitiStd-Regular", "Batang,Century,Dotum", 0,
      FX_CodePage::kChineseSimplified},
 };
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
 const FGAS_FontInfo kXFAFontsMap[] = {
     {0x01d5d33e, "SimSun", "STHeiti,Heiti TC,STFangsong", 0,
      FX_CodePage::kChineseSimplified},
@@ -1103,7 +1103,7 @@ const FGAS_FontInfo kXFAFontsMap[] = {
     {0xfef135f8, "AdobeHeitiStd-Regular", "Heiti TC,STHeiti", 0,
      FX_CodePage::kChineseSimplified},
 };
-#elif defined(OS_ANDROID)
+#elif BUILDFLAG(IS_ANDROID)
 const FGAS_FontInfo kXFAFontsMap[] = {
     {0x01d5d33e, "SimSun", "Droid Sans Fallback", 0,
      FX_CodePage::kChineseSimplified},
@@ -1747,7 +1747,7 @@ const FGAS_FontInfo kXFAFontsMap[] = {
     {0xfef135f8, "AdobeHeitiStd-Regular", "Droid Sans Fallback", 0,
      FX_CodePage::kChineseSimplified},
 };
-#elif defined(OS_POSIX)
+#elif BUILDFLAG(IS_POSIX)
 const FGAS_FontInfo kXFAFontsMap[] = {
     {0x01d5d33e, "SimSun",
      "WenQuanYi Zen Hei Mono,AR PL UMing CN,AR PL UMing HK,AR PL UMing TW,AR "

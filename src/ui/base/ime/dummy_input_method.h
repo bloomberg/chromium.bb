@@ -27,7 +27,7 @@ class DummyInputMethod : public InputMethod {
   void OnTouch(ui::EventPointerType pointerType) override;
   void OnBlur() override;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   bool OnUntranslatedIMEMessage(const CHROME_MSG event,
                                 NativeEventResult* result) override;
   void OnInputLocaleChanged() override;
@@ -43,7 +43,6 @@ class DummyInputMethod : public InputMethod {
   void CancelComposition(const TextInputClient* client) override;
   TextInputType GetTextInputType() const override;
   bool IsCandidatePopupOpen() const override;
-  void ShowVirtualKeyboardIfEnabled() override;
   void SetVirtualKeyboardVisibilityIfEnabled(bool should_show) override;
 
   void AddObserver(InputMethodObserver* observer) override;

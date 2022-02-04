@@ -1,6 +1,5 @@
 // v-0032: variable 'u' has an initializer, however its storage class is 'storage'.
 
-[[block]]
 struct PositionBuffer {
   pos: vec2<f32>;
 };

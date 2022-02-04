@@ -55,29 +55,17 @@ By default, %Eigen strive to automatically detect and enable language features a
 the information provided by the compiler.
 
  - \b EIGEN_MAX_CPP_VER - disables usage of C++ features requiring a version greater than EIGEN_MAX_CPP_VER.
-   Possible values are: 03, 11, 14, 17, etc. If not defined (the default), %Eigen enables all features supported
+   Possible values are: 14, 17, etc. If not defined (the default), %Eigen enables all features supported
    by the compiler.
 
 Individual features can be explicitly enabled or disabled by defining the following token to 0 or 1 respectively.
-For instance, one might limit the C++ version to C++03 by defining EIGEN_MAX_CPP_VER=03, but still enable C99 math
+For instance, one might limit the C++ version to C++14 by defining EIGEN_MAX_CPP_VER=14, but still enable C99 math
 functions by defining EIGEN_HAS_C99_MATH=1.
 
  - \b EIGEN_HAS_C99_MATH - controls the usage of C99 math functions such as erf, erfc, lgamma, etc.
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<11.
  - \b EIGEN_HAS_CXX11_MATH - controls the implementation of some functions such as round, logp1, isinf, isnan, etc.
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<11.
- - \b EIGEN_HAS_RVALUE_REFERENCES - defines whether rvalue references are supported
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<11.
  - \b EIGEN_HAS_STD_RESULT_OF - defines whether std::result_of is supported
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<11.
- - \b EIGEN_HAS_VARIADIC_TEMPLATES - defines whether variadic templates are supported
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<11.
  - \b EIGEN_HAS_CONSTEXPR - defines whether relaxed const expression are supported
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<14.
- - \b EIGEN_HAS_CXX11_CONTAINERS - defines whether STL's containers follows C++11 specifications
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<11.
- - \b EIGEN_HAS_CXX11_NOEXCEPT - defines whether noexcept is supported
-   Automatic detection disabled if EIGEN_MAX_CPP_VER<11.
  - \b EIGEN_NO_IO - Disables any usage and support for `<iostreams>`.
 
 \section TopicPreprocessorDirectivesAssertions Assertions

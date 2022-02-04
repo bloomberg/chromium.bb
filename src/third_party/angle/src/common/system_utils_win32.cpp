@@ -48,21 +48,33 @@ std::string GetEnvironmentVar(const char *variableName)
 class Win32Library : public Library
 {
   public:
-    Win32Library(const char *libraryName, SearchType searchType)
+    Win32Library(const char *libraryName, SearchType searchType, std::string *errorOut)
     {
         switch (searchType)
         {
             case SearchType::ModuleDir:
             {
                 std::string moduleRelativePath = ConcatenatePath(GetModuleDirectory(), libraryName);
-                mModule                        = LoadLibraryA(moduleRelativePath.c_str());
+                if (errorOut)
+                {
+                    *errorOut = moduleRelativePath;
+                }
+                mModule = LoadLibraryA(moduleRelativePath.c_str());
                 break;
             }
 
             case SearchType::SystemDir:
+                if (errorOut)
+                {
+                    *errorOut = libraryName;
+                }
                 mModule = LoadLibraryExA(libraryName, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
                 break;
             case SearchType::AlreadyLoaded:
+                if (errorOut)
+                {
+                    *errorOut = libraryName;
+                }
                 mModule = GetModuleHandleA(libraryName);
                 break;
         }
@@ -111,11 +123,23 @@ class Win32Library : public Library
 
 Library *OpenSharedLibrary(const char *libraryName, SearchType searchType)
 {
+    return OpenSharedLibraryAndGetError(libraryName, searchType, nullptr);
+}
+
+Library *OpenSharedLibraryWithExtension(const char *libraryName, SearchType searchType)
+{
+    return OpenSharedLibraryWithExtensionAndGetError(libraryName, searchType, nullptr);
+}
+
+Library *OpenSharedLibraryAndGetError(const char *libraryName,
+                                      SearchType searchType,
+                                      std::string *errorOut)
+{
     char buffer[MAX_PATH];
     int ret = snprintf(buffer, MAX_PATH, "%s.%s", libraryName, GetSharedLibraryExtension());
     if (ret > 0 && ret < MAX_PATH)
     {
-        return new Win32Library(buffer, searchType);
+        return new Win32Library(buffer, searchType, errorOut);
     }
     else
     {
@@ -124,8 +148,132 @@ Library *OpenSharedLibrary(const char *libraryName, SearchType searchType)
     }
 }
 
-Library *OpenSharedLibraryWithExtension(const char *libraryName, SearchType searchType)
+Library *OpenSharedLibraryWithExtensionAndGetError(const char *libraryName,
+                                                   SearchType searchType,
+                                                   std::string *errorOut)
 {
-    return new Win32Library(libraryName, searchType);
+    return new Win32Library(libraryName, searchType, errorOut);
+}
+
+namespace
+{
+class Win32PageFaultHandler : public PageFaultHandler
+{
+  public:
+    Win32PageFaultHandler(PageFaultCallback callback) : PageFaultHandler(callback) {}
+    ~Win32PageFaultHandler() override {}
+
+    bool enable() override;
+    bool disable() override;
+
+    LONG handle(PEXCEPTION_POINTERS pExceptionInfo);
+
+  private:
+    void *mVectoredExceptionHandler = nullptr;
+};
+
+Win32PageFaultHandler *gWin32PageFaultHandler = nullptr;
+static LONG CALLBACK VectoredExceptionHandler(PEXCEPTION_POINTERS info)
+{
+    return gWin32PageFaultHandler->handle(info);
+}
+
+bool SetMemoryProtection(uintptr_t start, size_t size, DWORD protections)
+{
+    DWORD oldProtect;
+    BOOL res = VirtualProtect(reinterpret_cast<LPVOID>(start), size, protections, &oldProtect);
+    if (!res)
+    {
+        DWORD lastError = GetLastError();
+        fprintf(stderr, "VirtualProtect failed: 0x%lx\n", lastError);
+        return false;
+    }
+
+    return true;
+}
+
+LONG Win32PageFaultHandler::handle(PEXCEPTION_POINTERS info)
+{
+    bool found = false;
+
+    if (info->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION &&
+        info->ExceptionRecord->NumberParameters >= 2 &&
+        info->ExceptionRecord->ExceptionInformation[0] == 1)
+    {
+        found = mCallback(static_cast<uintptr_t>(info->ExceptionRecord->ExceptionInformation[1])) ==
+                PageFaultHandlerRangeType::InRange;
+    }
+
+    if (found)
+    {
+        return EXCEPTION_CONTINUE_EXECUTION;
+    }
+    else
+    {
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+}
+
+bool Win32PageFaultHandler::disable()
+{
+    if (mVectoredExceptionHandler)
+    {
+        ULONG res                 = RemoveVectoredExceptionHandler(mVectoredExceptionHandler);
+        mVectoredExceptionHandler = nullptr;
+        if (res == 0)
+        {
+            DWORD lastError = GetLastError();
+            fprintf(stderr, "RemoveVectoredExceptionHandler failed: 0x%lx\n", lastError);
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Win32PageFaultHandler::enable()
+{
+    if (mVectoredExceptionHandler)
+    {
+        return true;
+    }
+
+    PVECTORED_EXCEPTION_HANDLER handler =
+        reinterpret_cast<PVECTORED_EXCEPTION_HANDLER>(&VectoredExceptionHandler);
+
+    mVectoredExceptionHandler = AddVectoredExceptionHandler(1, handler);
+
+    if (!mVectoredExceptionHandler)
+    {
+        DWORD lastError = GetLastError();
+        fprintf(stderr, "AddVectoredExceptionHandler failed: 0x%lx\n", lastError);
+        return false;
+    }
+    return true;
+}
+}  // namespace
+
+// Set write protection
+bool ProtectMemory(uintptr_t start, size_t size)
+{
+    return SetMemoryProtection(start, size, PAGE_READONLY);
+}
+
+// Allow reading and writing
+bool UnprotectMemory(uintptr_t start, size_t size)
+{
+    return SetMemoryProtection(start, size, PAGE_READWRITE);
+}
+
+size_t GetPageSize()
+{
+    SYSTEM_INFO info;
+    GetSystemInfo(&info);
+    return static_cast<size_t>(info.dwPageSize);
+}
+
+PageFaultHandler *CreatePageFaultHandler(PageFaultCallback callback)
+{
+    gWin32PageFaultHandler = new Win32PageFaultHandler(callback);
+    return gWin32PageFaultHandler;
 }
 }  // namespace angle

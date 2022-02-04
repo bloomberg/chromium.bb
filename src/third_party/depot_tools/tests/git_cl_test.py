@@ -476,6 +476,11 @@ class TestParseIssueURL(unittest.TestCase):
     self._test('https://crrev.com/c/2151934', 2151934, None,
                'chromium-review.googlesource.com')
 
+  def test_missing_scheme(self):
+    self._test('codereview.source.com/123', 123, None, 'codereview.source.com')
+    self._test('crrev.com/c/2151934', 2151934, None,
+               'chromium-review.googlesource.com')
+
 
 class GitCookiesCheckerTest(unittest.TestCase):
   def setUp(self):

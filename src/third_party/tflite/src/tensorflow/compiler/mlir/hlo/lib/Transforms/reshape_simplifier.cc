@@ -19,7 +19,7 @@ limitations under the License.
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
 #include "mlir-hlo/Transforms/PassDetail.h"
 #include "mlir-hlo/Transforms/passes.h"
-#include "mlir/Dialect/Linalg/IR/LinalgOps.h"
+#include "mlir/Dialect/Linalg/IR/Linalg.h"
 #include "mlir/Dialect/Shape/IR/Shape.h"
 #include "mlir/IR/AffineExpr.h"
 #include "mlir/IR/PatternMatch.h"
@@ -56,7 +56,7 @@ bool isExpandShape(ShapeComponentAnalysis &shapeComponentAnalysis,
 }
 
 // Rewrite dynamic reshapes that only insert one dimensions into
-// linalg.tensor_expand_shape.
+// tensor.expand_shape.
 struct ReshapeToExpandShape final
     : public OpRewritePattern<mhlo::DynamicReshapeOp> {
   ReshapeToExpandShape(MLIRContext *ctx) : OpRewritePattern(ctx) {}
@@ -66,7 +66,7 @@ struct ReshapeToExpandShape final
     if (!isExpandShape(shapeComponentAnalysis, op)) return failure();
     auto output_shape = shapeComponentAnalysis.GetValueInfo(op.output_shape());
     SmallVector<ReassociationExprs> reassociations(output_shape->size());
-    auto it = reassociations.begin();
+    auto *it = reassociations.begin();
     int64_t runningIndex = 0;
     for (const auto &dim : *output_shape) {
       it->push_back(rewriter.getAffineDimExpr(runningIndex++));
@@ -76,7 +76,7 @@ struct ReshapeToExpandShape final
     if (output_shape->back().isConstant(1)) std::prev(it)->append(*it);
     reassociations.erase(it, reassociations.end());
 
-    rewriter.replaceOpWithNewOp<linalg::TensorExpandShapeOp>(
+    rewriter.replaceOpWithNewOp<tensor::ExpandShapeOp>(
         op, op.getResult().getType(), op.operand(), reassociations);
     return success();
   }
@@ -193,7 +193,7 @@ struct RemoveRedundantCstrReshapable final
     //     factor, i.e. if the symbolic factors based on the dynamic shape are
     //     not a subset of the factors based on the number of elements.
     int64_t concreteProductDynShape = 1;
-    for (auto dim : *dynShapeDims) {
+    for (const auto &dim : *dynShapeDims) {
       SmallVector<Symbol> partialSymbolicFactorsDynShape;
       if (!IsSimpleProduct(
               dim,
@@ -204,7 +204,7 @@ struct RemoveRedundantCstrReshapable final
         return failure();
       }
       for (const Symbol &symDynShape : partialSymbolicFactorsDynShape) {
-        auto it = llvm::find(remainingSymbolicFactorsNumElems, symDynShape);
+        auto *it = llvm::find(remainingSymbolicFactorsNumElems, symDynShape);
         if (it == remainingSymbolicFactorsNumElems.end()) return failure();
         remainingSymbolicFactorsNumElems.erase(it);
       }
@@ -285,7 +285,7 @@ struct TurnDynamicReshapeIntoCollapseShape final
         // Eliminate the common symbolic factors. Fail if we cannot consume a
         // symbolic factor of the operand shape.
         for (const Symbol &symArgShapeDim : symbolicFactorsArgShapeDim) {
-          auto it =
+          auto *it =
               llvm::find(remainingSymbolicFactorsShapeDim, symArgShapeDim);
           if (it == remainingSymbolicFactorsShapeDim.end()) return failure();
           remainingSymbolicFactorsShapeDim.erase(it);
@@ -305,8 +305,8 @@ struct TurnDynamicReshapeIntoCollapseShape final
     if (i < argShapeInfo->size()) return failure();
 
     // Replace reshape op with its equivalent collapse shape op.
-    rewriter.replaceOpWithNewOp<linalg::TensorCollapseShapeOp>(
-        op, op.operand(), reassociation_map);
+    rewriter.replaceOpWithNewOp<tensor::CollapseShapeOp>(op, op.operand(),
+                                                         reassociation_map);
     return success();
   }
 };

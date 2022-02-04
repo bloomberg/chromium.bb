@@ -48,7 +48,7 @@ namespace {
     }
 }  // namespace
 
-namespace wgpu { namespace binding {
+namespace wgpu::binding {
 
     namespace {
 
@@ -59,22 +59,31 @@ namespace wgpu { namespace binding {
         class Features : public interop::GPUSupportedFeatures {
           public:
             Features(WGPUDeviceProperties properties) {
-                if (properties.depthClamping) {
-                    enabled_.emplace(interop::GPUFeatureName::kDepthClamping);
+                if (properties.depth24UnormStencil8) {
+                    enabled_.emplace(interop::GPUFeatureName::kDepth24UnormStencil8);
                 }
-                if (properties.pipelineStatisticsQuery) {
-                    enabled_.emplace(interop::GPUFeatureName::kPipelineStatisticsQuery);
+                if (properties.depth32FloatStencil8) {
+                    enabled_.emplace(interop::GPUFeatureName::kDepth32FloatStencil8);
+                }
+                if (properties.timestampQuery) {
+                    enabled_.emplace(interop::GPUFeatureName::kTimestampQuery);
                 }
                 if (properties.textureCompressionBC) {
                     enabled_.emplace(interop::GPUFeatureName::kTextureCompressionBc);
+                }
+                if (properties.textureCompressionETC2) {
+                    enabled_.emplace(interop::GPUFeatureName::kTextureCompressionEtc2);
+                }
+                if (properties.textureCompressionASTC) {
+                    enabled_.emplace(interop::GPUFeatureName::kTextureCompressionAstc);
                 }
                 if (properties.timestampQuery) {
                     enabled_.emplace(interop::GPUFeatureName::kTimestampQuery);
                 }
 
-                // TODO(crbug.com/dawn/1130)
-                // interop::GPUFeatureName::kDepth24UnormStencil8:
-                // interop::GPUFeatureName::kDepth32FloatStencil8:
+                // TODO(dawn:1123) add support for these extensions when possible.
+                // wgpu::interop::GPUFeatureName::kIndirectFirstInstance
+                // wgpu::interop::GPUFeatureName::kDepthClipControl
             }
 
             bool has(interop::GPUFeatureName feature) {
@@ -108,7 +117,7 @@ namespace wgpu { namespace binding {
     // wgpu::bindings::GPUAdapter
     // TODO(crbug.com/dawn/1133): This is a stub implementation. Properly implement.
     ////////////////////////////////////////////////////////////////////////////////
-    GPUAdapter::GPUAdapter(dawn_native::Adapter a, const Flags& flags)
+    GPUAdapter::GPUAdapter(dawn::native::Adapter a, const Flags& flags)
         : adapter_(a), flags_(flags) {
     }
 
@@ -168,49 +177,69 @@ namespace wgpu { namespace binding {
     interop::Promise<interop::Interface<interop::GPUDevice>> GPUAdapter::requestDevice(
         Napi::Env env,
         interop::GPUDeviceDescriptor descriptor) {
-        dawn_native::DawnDeviceDescriptor desc{};  // TODO(crbug.com/dawn/1133): Fill in.
+        wgpu::DeviceDescriptor desc{};  // TODO(crbug.com/dawn/1133): Fill in.
         interop::Promise<interop::Interface<interop::GPUDevice>> promise(env, PROMISE_INFO);
 
+        std::vector<wgpu::FeatureName> requiredFeatures;
         // See src/dawn_native/Features.cpp for enum <-> string mappings.
         for (auto required : descriptor.requiredFeatures) {
             switch (required) {
-                case interop::GPUFeatureName::kDepthClamping:
-                    desc.requiredFeatures.emplace_back("depth-clamping");
-                    continue;
-                case interop::GPUFeatureName::kPipelineStatisticsQuery:
-                    desc.requiredFeatures.emplace_back("pipeline-statistics-query");
-                    continue;
                 case interop::GPUFeatureName::kTextureCompressionBc:
-                    desc.requiredFeatures.emplace_back("texture-compression-bc");
+                    requiredFeatures.emplace_back(wgpu::FeatureName::TextureCompressionBC);
+                    continue;
+                case interop::GPUFeatureName::kTextureCompressionEtc2:
+                    requiredFeatures.emplace_back(wgpu::FeatureName::TextureCompressionETC2);
+                    continue;
+                case interop::GPUFeatureName::kTextureCompressionAstc:
+                    requiredFeatures.emplace_back(wgpu::FeatureName::TextureCompressionASTC);
                     continue;
                 case interop::GPUFeatureName::kTimestampQuery:
-                    desc.requiredFeatures.emplace_back("timestamp-query");
+                    requiredFeatures.emplace_back(wgpu::FeatureName::TimestampQuery);
                     continue;
                 case interop::GPUFeatureName::kDepth24UnormStencil8:
+                    requiredFeatures.emplace_back(wgpu::FeatureName::Depth24UnormStencil8);
+                    continue;
                 case interop::GPUFeatureName::kDepth32FloatStencil8:
-                    continue;  // TODO(crbug.com/dawn/1130)
+                    requiredFeatures.emplace_back(wgpu::FeatureName::Depth32FloatStencil8);
+                    continue;
+                case interop::GPUFeatureName::kDepthClipControl:
+                case interop::GPUFeatureName::kIndirectFirstInstance:
+                    // TODO(dawn:1123) Add support for these extensions when possible.
+                    continue;
             }
             UNIMPLEMENTED("required: ", required);
         }
 
         // Propogate enabled/disabled dawn features
-        // Note: DawnDeviceDescriptor::forceEnabledToggles and forceDisabledToggles are vectors of
-        // 'const char*', so we make sure the parsed strings survive the CreateDevice() call by
-        // storing them on the stack.
+        // Note: DawnDeviceTogglesDescriptor::forceEnabledToggles and forceDisabledToggles are
+        // vectors of 'const char*', so we make sure the parsed strings survive the CreateDevice()
+        // call by storing them on the stack.
         std::vector<std::string> enabledToggles;
         std::vector<std::string> disabledToggles;
+        std::vector<const char*> forceEnabledToggles;
+        std::vector<const char*> forceDisabledToggles;
         if (auto values = flags_.Get("enable-dawn-features")) {
             enabledToggles = Split(*values, ',');
             for (auto& t : enabledToggles) {
-                desc.forceEnabledToggles.emplace_back(t.c_str());
+                forceEnabledToggles.emplace_back(t.c_str());
             }
         }
         if (auto values = flags_.Get("disable-dawn-features")) {
             disabledToggles = Split(*values, ',');
             for (auto& t : disabledToggles) {
-                desc.forceDisabledToggles.emplace_back(t.c_str());
+                forceDisabledToggles.emplace_back(t.c_str());
             }
         }
+
+        desc.requiredFeaturesCount = requiredFeatures.size();
+        desc.requiredFeatures = requiredFeatures.data();
+
+        DawnTogglesDeviceDescriptor togglesDesc = {};
+        desc.nextInChain = &togglesDesc;
+        togglesDesc.forceEnabledTogglesCount = forceEnabledToggles.size();
+        togglesDesc.forceEnabledToggles = forceEnabledToggles.data();
+        togglesDesc.forceDisabledTogglesCount = forceDisabledToggles.size();
+        togglesDesc.forceDisabledToggles = forceDisabledToggles.data();
 
         auto wgpu_device = adapter_.CreateDevice(&desc);
         if (wgpu_device) {
@@ -220,4 +249,4 @@ namespace wgpu { namespace binding {
         }
         return promise;
     }
-}}  // namespace wgpu::binding
+}  // namespace wgpu::binding

@@ -125,15 +125,22 @@ angle::Result InitImageHelper(DisplayVk *displayVk,
                               vk::ImageHelper *imageHelper)
 {
     const angle::Format &textureFormat = vkFormat.getActualRenderableImageFormat();
-    bool isDepthOrStencilFormat   = textureFormat.depthBits > 0 || textureFormat.stencilBits > 0;
-    const VkImageUsageFlags usage = isDepthOrStencilFormat ? kSurfaceVkDepthStencilImageUsageFlags
-                                                           : kSurfaceVkColorImageUsageFlags;
+    bool isDepthOrStencilFormat = textureFormat.depthBits > 0 || textureFormat.stencilBits > 0;
+    VkImageUsageFlags usage     = isDepthOrStencilFormat ? kSurfaceVkDepthStencilImageUsageFlags
+                                                     : kSurfaceVkColorImageUsageFlags;
+
+    RendererVk *rendererVk = displayVk->getRenderer();
+    // If shaders may be fetching from this, we need this image to be an input
+    if (rendererVk->getFeatures().supportsShaderFramebufferFetch.enabled ||
+        rendererVk->getFeatures().supportsShaderFramebufferFetchNonCoherent.enabled)
+    {
+        usage |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    }
 
     VkExtent3D extents = {std::max(static_cast<uint32_t>(width), 1u),
                           std::max(static_cast<uint32_t>(height), 1u), 1u};
 
     angle::FormatID renderableFormatId = vkFormat.getActualRenderableImageFormatID();
-    RendererVk *rendererVk             = displayVk->getRenderer();
     // For devices that don't support creating swapchain images with RGB8, emulate with RGBA8.
     if (rendererVk->getFeatures().overrideSurfaceFormatRGB8toRGBA8.enabled &&
         renderableFormatId == angle::FormatID::R8G8B8_UNORM)
@@ -324,7 +331,7 @@ void OffscreenSurfaceVk::AttachmentImage::destroy(const egl::Display *display)
     RendererVk *renderer = displayVk->getRenderer();
     // Front end must ensure all usage has been submitted.
     image.releaseImage(renderer);
-    image.releaseStagingBuffer(renderer);
+    image.releaseStagedUpdates(renderer);
     imageViews.release(renderer);
 }
 
@@ -1105,6 +1112,13 @@ angle::Result WindowSurfaceVk::createSwapChain(vk::Context *context,
     // We need transfer src for reading back from the backbuffer.
     VkImageUsageFlags imageUsageFlags = kSurfaceVkColorImageUsageFlags;
 
+    // If shaders may be fetching from this, we need this image to be an input
+    if (renderer->getFeatures().supportsShaderFramebufferFetch.enabled ||
+        renderer->getFeatures().supportsShaderFramebufferFetchNonCoherent.enabled)
+    {
+        imageUsageFlags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    }
+
     // We need storage image for compute writes (debug overlay output).
     if (kEnableOverlay)
     {
@@ -1315,14 +1329,14 @@ void WindowSurfaceVk::releaseSwapchainImages(ContextVk *contextVk)
     if (mDepthStencilImage.valid())
     {
         mDepthStencilImage.releaseImageFromShareContexts(renderer, contextVk);
-        mDepthStencilImage.releaseStagingBuffer(renderer);
+        mDepthStencilImage.releaseStagedUpdates(renderer);
         mDepthStencilImageViews.release(renderer);
     }
 
     if (mColorImageMS.valid())
     {
         mColorImageMS.releaseImageFromShareContexts(renderer, contextVk);
-        mColorImageMS.releaseStagingBuffer(renderer);
+        mColorImageMS.releaseStagedUpdates(renderer);
         mColorImageMSViews.release(renderer);
         contextVk->addGarbage(&mFramebufferMS);
     }
@@ -1389,6 +1403,28 @@ FramebufferImpl *WindowSurfaceVk::createDefaultFramebuffer(const gl::Context *co
 {
     RendererVk *renderer = vk::GetImpl(context)->getRenderer();
     return FramebufferVk::CreateDefaultFBO(renderer, state, this);
+}
+
+egl::Error WindowSurfaceVk::prepareSwap(const gl::Context *context)
+{
+    DisplayVk *displayVk = vk::GetImpl(context->getDisplay());
+    angle::Result result = prepareSwapImpl(context);
+    return angle::ToEGL(result, displayVk, EGL_BAD_SURFACE);
+}
+
+angle::Result WindowSurfaceVk::prepareSwapImpl(const gl::Context *context)
+{
+    ANGLE_TRACE_EVENT0("gpu.angle", "WindowSurfaceVk::prepareSwap");
+    ContextVk *contextVk = vk::GetImpl(context);
+    if (mNeedToAcquireNextSwapchainImage)
+    {
+        // Acquire the next image (previously deferred). The image may not have been already
+        // acquired if there was no rendering done at all to the default framebuffer in this frame,
+        // for example if all rendering was done to FBOs.
+        ANGLE_VK_TRACE_EVENT_AND_MARKER(contextVk, "Acquire Swap Image Before Swap");
+        ANGLE_TRY(doDeferredAcquireNextImage(context, false));
+    }
+    return angle::Result::Continue;
 }
 
 egl::Error WindowSurfaceVk::swapWithDamage(const gl::Context *context,
@@ -1477,7 +1513,7 @@ angle::Result WindowSurfaceVk::present(ContextVk *contextVk,
     // ImageLayout::Present bellow.
     contextVk->finalizeImageLayout(&image.image);
 
-    vk::CommandBuffer *commandBuffer;
+    vk::OutsideRenderPassCommandBuffer *commandBuffer;
     ANGLE_TRY(contextVk->getOutsideRenderPassCommandBuffer({}, &commandBuffer));
 
     if (mColorImageMS.valid())
@@ -1601,15 +1637,6 @@ angle::Result WindowSurfaceVk::swapImpl(const gl::Context *context,
 
     ContextVk *contextVk = vk::GetImpl(context);
 
-    if (mNeedToAcquireNextSwapchainImage)
-    {
-        // Acquire the next image (previously deferred).  The image may not have been already
-        // acquired if there was no rendering done at all to the default framebuffer in this frame,
-        // for example if all rendering was done to FBOs.
-        ANGLE_VK_TRACE_EVENT_AND_MARKER(contextVk, "Acquire Swap Image Before Swap");
-        ANGLE_TRY(doDeferredAcquireNextImage(context, false));
-    }
-
     bool presentOutOfDate = false;
     ANGLE_TRY(present(contextVk, rects, n_rects, pNextChain, &presentOutOfDate));
 
@@ -1625,6 +1652,10 @@ angle::Result WindowSurfaceVk::swapImpl(const gl::Context *context,
         ANGLE_VK_TRACE_EVENT_AND_MARKER(contextVk, "Out-of-Date Swapbuffer");
         ANGLE_TRY(doDeferredAcquireNextImage(context, presentOutOfDate));
     }
+
+    RendererVk *renderer = contextVk->getRenderer();
+    DisplayVk *displayVk = vk::GetImpl(context->getDisplay());
+    ANGLE_TRY(renderer->syncPipelineCacheVk(displayVk, context));
 
     return angle::Result::Continue;
 }
@@ -1647,10 +1678,9 @@ angle::Result WindowSurfaceVk::doDeferredAcquireNextImage(const gl::Context *con
                                                           bool presentOutOfDate)
 {
     ContextVk *contextVk = vk::GetImpl(context);
-    DisplayVk *displayVk = vk::GetImpl(context->getDisplay());
 
     // TODO(jmadill): Expose in CommandQueueInterface, or manage in CommandQueue. b/172704839
-    if (contextVk->getFeatures().asyncCommandQueue.enabled)
+    if (contextVk->getRenderer()->isAsyncCommandQueueEnabled())
     {
         VkResult result = contextVk->getRenderer()->getLastPresentResult(mSwapchain);
 
@@ -1681,8 +1711,16 @@ angle::Result WindowSurfaceVk::doDeferredAcquireNextImage(const gl::Context *con
         ANGLE_VK_TRY(contextVk, result);
     }
 
-    RendererVk *renderer = contextVk->getRenderer();
-    ANGLE_TRY(renderer->syncPipelineCacheVk(displayVk, context));
+    // Invalidate the color image if the swap behavior is EGL_BUFFER_DESTROYED.
+    // Also invalidate the multi-sample color image and depth/stencil content.
+    if (mState.swapBehavior == EGL_BUFFER_DESTROYED)
+    {
+        mSwapchainImages[mCurrentSwapchainImageIndex].image.invalidateSubresourceContent(
+            contextVk, gl::LevelIndex(0), 0, 1);
+    }
+    mColorImageMS.invalidateSubresourceContent(contextVk, gl::LevelIndex(0), 0, 1);
+    mDepthStencilImage.invalidateSubresourceContent(contextVk, gl::LevelIndex(0), 0, 1);
+    mDepthStencilImage.invalidateSubresourceStencilContent(contextVk, gl::LevelIndex(0), 0, 1);
 
     return angle::Result::Continue;
 }
@@ -2100,6 +2138,13 @@ angle::Result WindowSurfaceVk::drawOverlay(ContextVk *contextVk, SwapchainImage 
 
 egl::Error WindowSurfaceVk::getBufferAge(const gl::Context *context, EGLint *age)
 {
+    // Set age to 0 if swap behavior is EGL_BUFFER_DESTROYED.
+    if (age != nullptr && mState.swapBehavior == EGL_BUFFER_DESTROYED)
+    {
+        *age = 0;
+        return egl::NoError();
+    }
+
     if (mNeedToAcquireNextSwapchainImage)
     {
         // Acquire the current image if needed.

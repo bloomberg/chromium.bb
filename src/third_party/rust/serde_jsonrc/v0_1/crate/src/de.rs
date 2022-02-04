@@ -26,6 +26,7 @@ pub struct Deserializer<R> {
     #[cfg(feature = "unbounded_depth")]
     disable_recursion_limit: bool,
     ignore_trailing_commas: bool,
+    allow_comments: bool,
 }
 
 impl<'de, R> Deserializer<R>
@@ -48,6 +49,7 @@ where
                 scratch: Vec::new(),
                 remaining_depth: 128,
                 ignore_trailing_commas: true,
+                allow_comments: true,
             }
         }
 
@@ -59,6 +61,7 @@ where
                 remaining_depth: 128,
                 disable_recursion_limit: false,
                 ignore_trailing_commas: true,
+                allow_comments: true,
             }
         }
     }
@@ -82,13 +85,13 @@ where
 impl<'a> Deserializer<read::SliceRead<'a>> {
     /// Creates a JSON deserializer from a `&[u8]`.
     pub fn from_slice(bytes: &'a [u8]) -> Self {
-        Deserializer::new(read::SliceRead::new(bytes, false))
+        Deserializer::new(read::SliceRead::new(bytes, false, false, false, false))
     }
 
     /// Creates a JSON deserializer from a `&[u8]`,
-    /// replacing invalid characters.
-    pub fn from_slice_replacing_invalid_characters(bytes: &'a [u8]) -> Self {
-        Deserializer::new(read::SliceRead::new(bytes, true))
+    /// providing some flexibility for some non-standard JSON options.
+    pub fn from_slice_with_options(bytes: &'a [u8], replace_invalid_characters: bool, allow_control_characters_in_string: bool, allow_v_escapes: bool, allow_x_escapes: bool) -> Self {
+        Deserializer::new(read::SliceRead::new(bytes, replace_invalid_characters, allow_control_characters_in_string, allow_v_escapes, allow_x_escapes))
     }
 }
 
@@ -235,6 +238,11 @@ impl<'de, R: Read<'de>> Deserializer<R> {
         self.ignore_trailing_commas = ignore;
     }
 
+    /// Whether to allow comments.
+    pub fn set_allow_comments(&mut self, allow: bool) {
+        self.allow_comments = allow;
+    }
+
     fn peek(&mut self) -> Result<Option<u8>> {
         self.read.peek()
     }
@@ -278,7 +286,7 @@ impl<'de, R: Read<'de>> Deserializer<R> {
                 Some(b' ') | Some(b'\n') | Some(b'\t') | Some(b'\r') => {
                     self.eat_char();
                 }
-                Some(b'/') => {
+                Some(b'/') if self.allow_comments => {
                     self.eat_char();
                     match tri!(self.peek()) {
                         Some(b'/') => {
@@ -2475,7 +2483,7 @@ pub fn from_slice<'a, T>(v: &'a [u8]) -> Result<T>
 where
     T: de::Deserialize<'a>,
 {
-    from_trait(read::SliceRead::new(v, false))
+    from_trait(read::SliceRead::new(v, false, false, false, false))
 }
 
 /// Deserialize an instance of type `T` from a string of JSON text.

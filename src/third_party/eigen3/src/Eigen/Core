@@ -36,7 +36,7 @@
 
 // Disable the ipa-cp-clone optimization flag with MinGW 6.x or newer (enabled by default with -O3)
 // See http://eigen.tuxfamily.org/bz/show_bug.cgi?id=556 for details.
-#if EIGEN_COMP_MINGW && EIGEN_GNUC_AT_LEAST(4,6) && EIGEN_GNUC_AT_MOST(5,5)
+#if EIGEN_COMP_MINGW && EIGEN_GNUC_AT_MOST(5,5)
   #pragma GCC optimize ("-fno-ipa-cp-clone")
 #endif
 
@@ -67,6 +67,7 @@
 #endif
 
 #ifdef EIGEN_HAS_OPENMP
+#include <atomic>
 #include <omp.h>
 #endif
 
@@ -94,14 +95,10 @@
 // for min/max:
 #include <algorithm>
 
-#if EIGEN_HAS_CXX11
 #include <array>
-#endif
 
 // for std::is_nothrow_move_assignable
-#ifdef EIGEN_INCLUDE_TYPE_TRAITS
 #include <type_traits>
-#endif
 
 // for outputting debug info
 #ifdef EIGEN_DEBUG_ASSIGN
@@ -261,6 +258,11 @@ using std::ptrdiff_t;
 // Specialized functors for GPU.
 #ifdef EIGEN_GPUCC
 #include "src/Core/arch/GPU/Complex.h"
+#endif
+
+// Specializations of vectorized activation functions for NEON.
+#ifdef EIGEN_VECTORIZE_NEON
+#include "src/Core/arch/NEON/UnaryFunctors.h"
 #endif
 
 #include "src/Core/util/IndexedViewHelper.h"

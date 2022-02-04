@@ -22,6 +22,7 @@ namespace skgpu {
 class Buffer;
 class Gpu;
 class GraphicsPipeline;
+class Resource;
 class Texture;
 class TextureProxy;
 
@@ -57,19 +58,15 @@ struct RenderPassDesc {
 
 class CommandBuffer : public SkRefCnt, private DrawDispatcher {
 public:
-    ~CommandBuffer() override {
-        this->releaseResources();
-    }
+    ~CommandBuffer() override;
 
 #ifdef SK_DEBUG
     bool hasWork() { return fHasWork; }
 #endif
 
-    void trackResource(sk_sp<SkRefCnt> resource) {
-        fTrackedResources.push_back(std::move(resource));
-    }
+    void trackResource(sk_sp<Resource> resource);
 
-    void beginRenderPass(const RenderPassDesc&,
+    bool beginRenderPass(const RenderPassDesc&,
                          sk_sp<Texture> colorTexture,
                          sk_sp<Texture> resolveTexture,
                          sk_sp<Texture> depthStencilTexture);
@@ -129,7 +126,7 @@ public:
     //---------------------------------------------------------------
     // Can only be used outside renderpasses
     //---------------------------------------------------------------
-    void copyTextureToBuffer(sk_sp<Texture>,
+    bool copyTextureToBuffer(sk_sp<Texture>,
                              SkIRect srcRect,
                              sk_sp<Buffer>,
                              size_t bufferOffset,
@@ -148,7 +145,7 @@ private:
                            sk_sp<Buffer> instanceBuffer, size_t instanceOffset);
     void bindIndexBuffer(sk_sp<Buffer> indexBuffer, size_t bufferOffset);
 
-    virtual void onBeginRenderPass(const RenderPassDesc&,
+    virtual bool onBeginRenderPass(const RenderPassDesc&,
                                    const Texture* colorTexture,
                                    const Texture* resolveTexture,
                                    const Texture* depthStencilTexture) = 0;
@@ -175,7 +172,7 @@ private:
                                         unsigned int indexCount, unsigned int baseVertex,
                                         unsigned int baseInstance, unsigned int instanceCount) = 0;
 
-    virtual void onCopyTextureToBuffer(const Texture*,
+    virtual bool onCopyTextureToBuffer(const Texture*,
                                        SkIRect srcRect,
                                        const Buffer*,
                                        size_t bufferOffset,
@@ -186,7 +183,7 @@ private:
 #endif
 
     inline static constexpr int kInitialTrackedResourcesCount = 32;
-    SkSTArray<kInitialTrackedResourcesCount, sk_sp<SkRefCnt>> fTrackedResources;
+    SkSTArray<kInitialTrackedResourcesCount, sk_sp<Resource>> fTrackedResources;
 };
 
 } // namespace skgpu

@@ -217,7 +217,11 @@ void Compiler::LogFunctionCompilation(Isolate* isolate,
                                       Handle<AbstractCode> abstract_code,
                                       CodeKind kind, double time_taken_ms) {
   DCHECK(!abstract_code.is_null());
-  DCHECK(!abstract_code.is_identical_to(BUILTIN_CODE(isolate, CompileLazy)));
+  if (V8_EXTERNAL_CODE_SPACE_BOOL) {
+    DCHECK_NE(*abstract_code, FromCodeT(*BUILTIN_CODE(isolate, CompileLazy)));
+  } else {
+    DCHECK(!abstract_code.is_identical_to(BUILTIN_CODE(isolate, CompileLazy)));
+  }
 
   // Log the code generation. If source information is available include
   // script name and line number. Check explicitly whether logging is
@@ -359,7 +363,7 @@ void RecordUnoptimizedFunctionCompilation(
 #if V8_ENABLE_WEBASSEMBLY
     DCHECK(shared->HasAsmWasmData());
     abstract_code =
-        Handle<AbstractCode>::cast(BUILTIN_CODE(isolate, InstantiateAsmJs));
+        ToAbstractCode(BUILTIN_CODE(isolate, InstantiateAsmJs), isolate);
 #else
     UNREACHABLE();
 #endif  // V8_ENABLE_WEBASSEMBLY
@@ -831,14 +835,14 @@ bool FinalizeDeferredUnoptimizedCompilationJobs(
   return true;
 }
 
-V8_WARN_UNUSED_RESULT MaybeHandle<Code> GetCodeFromOptimizedCodeCache(
+V8_WARN_UNUSED_RESULT MaybeHandle<CodeT> GetCodeFromOptimizedCodeCache(
     Handle<JSFunction> function, BytecodeOffset osr_offset,
     CodeKind code_kind) {
   Isolate* isolate = function->GetIsolate();
   RCS_SCOPE(isolate, RuntimeCallCounterId::kCompileGetFromOptimizedCodeMap);
   Handle<SharedFunctionInfo> shared(function->shared(), isolate);
   DisallowGarbageCollection no_gc;
-  Code code;
+  CodeT code;
   if (osr_offset.IsNone() && function->has_feedback_vector()) {
     FeedbackVector feedback_vector = function->feedback_vector();
     feedback_vector.EvictOptimizedCodeMarkedForDeoptimization(
@@ -858,9 +862,9 @@ V8_WARN_UNUSED_RESULT MaybeHandle<Code> GetCodeFromOptimizedCodeCache(
     DCHECK(function->shared().is_compiled());
     DCHECK(CodeKindIsStoredInOptimizedCodeCache(code.kind()));
     DCHECK_IMPLIES(!osr_offset.IsNone(), CodeKindCanOSR(code.kind()));
-    return Handle<Code>(code, isolate);
+    return Handle<CodeT>(code, isolate);
   }
-  return MaybeHandle<Code>();
+  return MaybeHandle<CodeT>();
 }
 
 void ClearOptimizedCodeCache(OptimizedCompilationInfo* compilation_info) {
@@ -885,14 +889,15 @@ void InsertCodeIntoOptimizedCodeCache(
   }
 
   // Cache optimized code.
-  Handle<Code> code = compilation_info->code();
   Handle<JSFunction> function = compilation_info->closure();
-  Handle<SharedFunctionInfo> shared(function->shared(), function->GetIsolate());
+  Isolate* isolate = function->GetIsolate();
+  Handle<CodeT> code = ToCodeT(compilation_info->code(), isolate);
+  Handle<SharedFunctionInfo> shared(function->shared(), isolate);
   Handle<NativeContext> native_context(function->context().native_context(),
-                                       function->GetIsolate());
+                                       isolate);
   if (compilation_info->osr_offset().IsNone()) {
     Handle<FeedbackVector> vector =
-        handle(function->feedback_vector(), function->GetIsolate());
+        handle(function->feedback_vector(), isolate);
     FeedbackVector::SetOptimizedCode(vector, code,
                                      function->raw_feedback_cell());
   } else {
@@ -1004,7 +1009,7 @@ bool GetOptimizedCodeLater(std::unique_ptr<OptimizedCompilationJob> job,
 
 // Returns the code object at which execution continues after a concurrent
 // optimization job has been started (but not finished).
-Handle<Code> ContinuationForConcurrentOptimization(
+Handle<CodeT> ContinuationForConcurrentOptimization(
     Isolate* isolate, Handle<JSFunction> function) {
   Handle<Code> cached_code;
   if (FLAG_turboprop && function->HasAvailableOptimizedCode()) {
@@ -1026,7 +1031,7 @@ Handle<Code> ContinuationForConcurrentOptimization(
   } else if (function->shared().HasBaselineCode()) {
     CodeT baseline_code = function->shared().baseline_code(kAcquireLoad);
     function->set_code(baseline_code);
-    return handle(FromCodeT(baseline_code), isolate);
+    return handle(baseline_code, isolate);
   }
   DCHECK(function->ActiveTierIsIgnition());
   return BUILTIN_CODE(isolate, InterpreterEntryTrampoline);
@@ -1039,7 +1044,7 @@ enum class GetOptimizedCodeResultHandling {
   kDiscardForTesting,
 };
 
-MaybeHandle<Code> GetOptimizedCode(
+MaybeHandle<CodeT> GetOptimizedCode(
     Isolate* isolate, Handle<JSFunction> function, ConcurrencyMode mode,
     CodeKind code_kind, BytecodeOffset osr_offset = BytecodeOffset::None(),
     JavaScriptFrame* osr_frame = nullptr,
@@ -1076,7 +1081,7 @@ MaybeHandle<Code> GetOptimizedCode(
 
   // Check the optimized code cache (stored on the SharedFunctionInfo).
   if (CodeKindIsStoredInOptimizedCodeCache(code_kind)) {
-    Handle<Code> cached_code;
+    Handle<CodeT> cached_code;
     if (GetCodeFromOptimizedCodeCache(function, osr_offset, code_kind)
             .ToHandle(&cached_code)) {
       CompilerTracer::TraceOptimizedCodeCacheHit(isolate, function, osr_offset,
@@ -1118,7 +1123,7 @@ MaybeHandle<Code> GetOptimizedCode(
   } else {
     DCHECK_EQ(mode, ConcurrencyMode::kNotConcurrent);
     if (GetOptimizedCodeNow(job.get(), isolate, compilation_info)) {
-      return compilation_info->code();
+      return ToCodeT(compilation_info->code(), isolate);
     }
   }
 
@@ -1340,15 +1345,14 @@ MaybeHandle<SharedFunctionInfo> CompileToplevel(
 }
 
 #ifdef V8_RUNTIME_CALL_STATS
-RuntimeCallCounterId RuntimeCallCounterIdForCompileBackground(
-    ParseInfo* parse_info) {
+RuntimeCallCounterId RuntimeCallCounterIdForCompile(ParseInfo* parse_info) {
   if (parse_info->flags().is_toplevel()) {
     if (parse_info->flags().is_eval()) {
-      return RuntimeCallCounterId::kCompileBackgroundEval;
+      return RuntimeCallCounterId::kCompileEval;
     }
-    return RuntimeCallCounterId::kCompileBackgroundScript;
+    return RuntimeCallCounterId::kCompileScript;
   }
-  return RuntimeCallCounterId::kCompileBackgroundFunction;
+  return RuntimeCallCounterId::kCompileFunction;
 }
 #endif  // V8_RUNTIME_CALL_STATS
 
@@ -1460,11 +1464,8 @@ void SetScriptFieldsFromDetails(Isolate* isolate, Script script,
 }  // namespace
 
 void BackgroundCompileTask::Run() {
-  WorkerThreadRuntimeCallStatsScope worker_thread_scope(
-      worker_thread_runtime_call_stats_);
-
-  LocalIsolate isolate(isolate_for_local_isolate_, ThreadKind::kBackground,
-                       worker_thread_scope.Get());
+  DCHECK_NE(ThreadId::Current(), isolate_for_local_isolate_->thread_id());
+  LocalIsolate isolate(isolate_for_local_isolate_, ThreadKind::kBackground);
   UnparkedScope unparked_scope(&isolate);
   LocalHandleScope handle_scope(&isolate);
 
@@ -1473,13 +1474,20 @@ void BackgroundCompileTask::Run() {
   Run(&isolate, &reusable_state);
 }
 
+void BackgroundCompileTask::RunOnMainThread(Isolate* isolate) {
+  LocalHandleScope handle_scope(isolate->main_thread_local_isolate());
+  ReusableUnoptimizedCompileState reusable_state(isolate);
+  Run(isolate->main_thread_local_isolate(), &reusable_state);
+}
+
 void BackgroundCompileTask::Run(
     LocalIsolate* isolate, ReusableUnoptimizedCompileState* reusable_state) {
   TimedHistogramScope timer(timer_);
 
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("v8.compile"),
                "BackgroundCompileTask::Run");
-  RCS_SCOPE(isolate, RuntimeCallCounterId::kCompileBackgroundCompileTask);
+  RCS_SCOPE(isolate, RuntimeCallCounterId::kCompileCompileTask,
+            RuntimeCallStats::CounterMode::kThreadSpecific);
 
   bool toplevel_script_compilation = flags_.is_toplevel();
 
@@ -1554,8 +1562,8 @@ void BackgroundCompileTask::Run(
 
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("v8.compile"),
                "V8.CompileCodeBackground");
-  RCS_SCOPE(info.runtime_call_stats(),
-            RuntimeCallCounterIdForCompileBackground(&info));
+  RCS_SCOPE(isolate, RuntimeCallCounterIdForCompile(&info),
+            RuntimeCallStats::CounterMode::kThreadSpecific);
 
   MaybeHandle<SharedFunctionInfo> maybe_result;
   if (info.literal() != nullptr) {
@@ -1942,7 +1950,7 @@ bool Compiler::Compile(Isolate* isolate, Handle<JSFunction> function,
   }
 
   DCHECK(is_compiled_scope->is_compiled());
-  Handle<Code> code = handle(FromCodeT(shared_info->GetCode()), isolate);
+  Handle<CodeT> code = handle(shared_info->GetCode(), isolate);
 
   // Initialize the feedback cell for this JSFunction and reset the interrupt
   // budget for feedback vector allocation even if there is a closure feedback
@@ -1972,7 +1980,7 @@ bool Compiler::Compile(Isolate* isolate, Handle<JSFunction> function,
                                                   concurrency_mode, code_kind);
     }
 
-    Handle<Code> maybe_code;
+    Handle<CodeT> maybe_code;
     if (GetOptimizedCode(isolate, function, concurrency_mode, code_kind)
             .ToHandle(&maybe_code)) {
       code = maybe_code;
@@ -2106,7 +2114,7 @@ bool Compiler::CompileOptimized(Isolate* isolate, Handle<JSFunction> function,
                                                 code_kind);
   }
 
-  Handle<Code> code;
+  Handle<CodeT> code;
   if (!GetOptimizedCode(isolate, function, mode, code_kind).ToHandle(&code)) {
     // Optimization failed, get the existing code. We could have optimized code
     // from a lower tier here. Unoptimized code must exist already if we are
@@ -2850,7 +2858,8 @@ MaybeHandle<SharedFunctionInfo> GetSharedFunctionInfoForScriptImpl(
       }
     }
     if (magic_matches) {
-      return Compiler::GetSharedFunctionInfoForWebSnapshot(isolate, source);
+      return Compiler::GetSharedFunctionInfoForWebSnapshot(
+          isolate, source, script_details.name_obj);
     }
   }
 
@@ -3145,7 +3154,8 @@ Compiler::GetSharedFunctionInfoForStreamedScript(
 
 // static
 Handle<SharedFunctionInfo> Compiler::GetSharedFunctionInfoForWebSnapshot(
-    Isolate* isolate, Handle<String> source) {
+    Isolate* isolate, Handle<String> source,
+    MaybeHandle<Object> maybe_script_name) {
   // This script won't hold the functions created from the web snapshot;
   // reserving space only for the top-level SharedFunctionInfo is enough.
   Handle<WeakFixedArray> shared_function_infos =
@@ -3153,6 +3163,12 @@ Handle<SharedFunctionInfo> Compiler::GetSharedFunctionInfoForWebSnapshot(
   Handle<Script> script = isolate->factory()->NewScript(source);
   script->set_type(Script::TYPE_WEB_SNAPSHOT);
   script->set_shared_function_infos(*shared_function_infos);
+  Handle<Object> script_name;
+  if (maybe_script_name.ToHandle(&script_name) && script_name->IsString()) {
+    script->set_name(String::cast(*script_name));
+  } else {
+    script->set_name(*isolate->factory()->empty_string());
+  }
 
   Handle<SharedFunctionInfo> shared =
       isolate->factory()->NewSharedFunctionInfoForWebSnapshot();
@@ -3212,10 +3228,9 @@ template Handle<SharedFunctionInfo> Compiler::GetSharedFunctionInfo(
     FunctionLiteral* literal, Handle<Script> script, LocalIsolate* isolate);
 
 // static
-MaybeHandle<Code> Compiler::GetOptimizedCodeForOSR(Isolate* isolate,
-                                                   Handle<JSFunction> function,
-                                                   BytecodeOffset osr_offset,
-                                                   JavaScriptFrame* osr_frame) {
+MaybeHandle<CodeT> Compiler::GetOptimizedCodeForOSR(
+    Isolate* isolate, Handle<JSFunction> function, BytecodeOffset osr_offset,
+    JavaScriptFrame* osr_frame) {
   DCHECK(!osr_offset.IsNone());
   DCHECK_NOT_NULL(osr_frame);
   return GetOptimizedCode(isolate, function, ConcurrencyMode::kNotConcurrent,
@@ -3301,7 +3316,7 @@ void Compiler::PostInstantiation(Handle<JSFunction> function) {
       function->feedback_vector().EvictOptimizedCodeMarkedForDeoptimization(
           function->raw_feedback_cell(), *shared,
           "new function from shared function info");
-      Code code = function->feedback_vector().optimized_code();
+      CodeT code = function->feedback_vector().optimized_code();
       if (!code.is_null()) {
         // Caching of optimized code enabled and optimized code found.
         DCHECK(!code.marked_for_deoptimization());

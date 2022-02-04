@@ -474,7 +474,7 @@ void /*EIGEN_DONT_INLINE*/ apply_rotation_in_the_plane(DenseBase<VectorX>& xpr_x
   apply_rotation_in_the_plane_selector<
     Scalar,OtherScalar,
     VectorX::SizeAtCompileTime,
-    EIGEN_PLAIN_ENUM_MIN(evaluator<VectorX>::Alignment, evaluator<VectorY>::Alignment),
+    plain_enum_min(evaluator<VectorX>::Alignment, evaluator<VectorY>::Alignment),
     Vectorizable>::run(x,incrx,y,incry,size,c,s);
 }
 

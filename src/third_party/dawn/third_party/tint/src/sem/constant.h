@@ -97,6 +97,9 @@ class Constant {
   /// @returns the constant's scalar elements
   const Scalars& Elements() const { return elems_; }
 
+  /// @returns true if any scalar element is zero
+  bool AnyZero() const;
+
   /// Calls `func(s)` with s being the current scalar value at `index`.
   /// `func` is typically a lambda of the form '[](auto&& s)'.
   /// @param index the index of the scalar value
@@ -121,6 +124,13 @@ class Constant {
     TINT_UNREACHABLE(Semantic, diags)
         << "invalid scalar type " << type_->type_name();
     return func(~0);
+  }
+
+  /// @param index the index of the scalar value
+  /// @return the value of the scalar `static_cast` to type T.
+  template <typename T>
+  T ElementAs(size_t index) const {
+    return WithScalarAt(index, [](auto val) { return static_cast<T>(val); });
   }
 
  private:

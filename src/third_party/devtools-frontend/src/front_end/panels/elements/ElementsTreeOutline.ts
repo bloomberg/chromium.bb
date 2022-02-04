@@ -275,7 +275,7 @@ export class ElementsTreeOutline extends
       return;
     }
 
-    node.copyNode();
+    void node.copyNode();
     this.setClipboardData({node: node, isCut: isCut});
   }
 
@@ -470,7 +470,7 @@ export class ElementsTreeOutline extends
       treeElement = this.lookUpTreeElement(node.parentNode);
     }
 
-    return /** @type {?ElementsTreeElement} */ treeElement as ElementsTreeElement | null;
+    return treeElement as ElementsTreeElement | null;
   }
 
   private lookUpTreeElement(node: SDK.DOMModel.DOMNode|null): UI.TreeOutline.TreeElement|null {
@@ -502,7 +502,7 @@ export class ElementsTreeOutline extends
       const child = ancestors[i - 1] || node;
       const treeElement = this.treeElementByNode.get(ancestors[i]);
       if (treeElement) {
-        treeElement.onpopulate();  // fill the cache with the children of treeElement
+        void treeElement.onpopulate();  // fill the cache with the children of treeElement
         if (child.index && child.index >= treeElement.expandedChildrenLimit()) {
           this.setExpandedChildrenLimit(treeElement, child.index + 1);
         }
@@ -553,7 +553,7 @@ export class ElementsTreeOutline extends
     // items extend at least to the right edge of the outer <ol> container.
     // In the no-word-wrap mode the outer <ol> may be wider than the tree container
     // (and partially hidden), in which case we are left to use only its right boundary.
-    const x = scrollContainer.totalOffsetLeft() + scrollContainer.offsetWidth - 36;
+    const x = scrollContainer.totalOffsetLeft() + scrollContainer.offsetWidth - 18;
 
     const y = event.pageY;
 
@@ -801,7 +801,7 @@ export class ElementsTreeOutline extends
     });
 
     contextMenu.appendApplicableItems(treeElement.node());
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   private async saveNodeToTempVariable(node: SDK.DOMModel.DOMNode): Promise<void> {
@@ -1197,7 +1197,7 @@ export class ElementsTreeOutline extends
     if (index >= treeElement.expandedChildrenLimit()) {
       this.setExpandedChildrenLimit(treeElement, index + 1);
     }
-    return /** @type {!ElementsTreeElement} */ treeElement.childAt(index) as ElementsTreeElement;
+    return treeElement.childAt(index) as ElementsTreeElement;
   }
 
   private visibleChildren(node: SDK.DOMModel.DOMNode): SDK.DOMModel.DOMNode[] {

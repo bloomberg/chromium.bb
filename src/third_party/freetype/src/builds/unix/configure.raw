@@ -2,7 +2,7 @@
 #
 # Process this file with autoconf to produce a configure script.
 #
-# Copyright (C) 2001-2021 by
+# Copyright (C) 2001-2022 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -316,6 +316,12 @@ fi
 if test x"$with_zlib" = xyes -a "$have_zlib" = no; then
   AC_MSG_ERROR([external zlib support requested but library not found])
 fi
+
+SYSTEM_ZLIB=
+if test "$have_zlib" != no; then
+  SYSTEM_ZLIB=yes
+fi
+AC_SUBST([SYSTEM_ZLIB])
 
 
 # check for system libbz2

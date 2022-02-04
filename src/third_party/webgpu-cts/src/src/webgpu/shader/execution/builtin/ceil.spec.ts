@@ -6,7 +6,7 @@ import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../gpu_test.js';
 import { f32, f32Bits, TypeF32 } from '../../../util/conversion.js';
 
-import { anyOf, kBit, kValue, run } from './builtin.js';
+import { anyOf, Config, correctlyRoundedThreshold, kBit, kValue, run } from './builtin.js';
 
 export const g = makeTestGroup(GPUTest);
 
@@ -28,7 +28,10 @@ https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
       .combine('vectorize', [undefined, 2, 3, 4] as const)
   )
   .fn(async t => {
-    run(t, 'ceil', [TypeF32], TypeF32, t.params, [
+    const cfg: Config = t.params;
+    cfg.cmpFloats = correctlyRoundedThreshold();
+
+    run(t, 'ceil', [TypeF32], TypeF32, cfg, [
       // Small positive numbers
       { input: f32(0.1), expected: f32(1.0) },
       { input: f32(0.9), expected: f32(1.0) },

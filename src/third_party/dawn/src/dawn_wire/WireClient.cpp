@@ -15,7 +15,7 @@
 #include "dawn_wire/WireClient.h"
 #include "dawn_wire/client/Client.h"
 
-namespace dawn_wire {
+namespace dawn::wire {
 
     WireClient::WireClient(const WireClientDescriptor& descriptor)
         : mImpl(new client::Client(descriptor.serializer, descriptor.memoryTransferService)) {
@@ -41,6 +41,10 @@ namespace dawn_wire {
         return mImpl->ReserveDevice();
     }
 
+    ReservedInstance WireClient::ReserveInstance() {
+        return mImpl->ReserveInstance();
+    }
+
     void WireClient::ReclaimTextureReservation(const ReservedTexture& reservation) {
         mImpl->ReclaimTextureReservation(reservation);
     }
@@ -51,6 +55,10 @@ namespace dawn_wire {
 
     void WireClient::ReclaimDeviceReservation(const ReservedDevice& reservation) {
         mImpl->ReclaimDeviceReservation(reservation);
+    }
+
+    void WireClient::ReclaimInstanceReservation(const ReservedInstance& reservation) {
+        mImpl->ReclaimInstanceReservation(reservation);
     }
 
     void WireClient::Disconnect() {
@@ -71,4 +79,4 @@ namespace dawn_wire {
         MemoryTransferService::WriteHandle::~WriteHandle() = default;
     }  // namespace client
 
-}  // namespace dawn_wire
+}  // namespace dawn::wire

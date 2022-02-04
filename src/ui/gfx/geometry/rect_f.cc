@@ -12,10 +12,11 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/insets_f.h"
+#include "ui/gfx/geometry/outsets_f.h"
 
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 #include <CoreGraphics/CoreGraphics.h>
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
@@ -32,7 +33,7 @@ static void AdjustAlongAxis(float dst_origin,
     *origin = std::min(dst_origin + dst_size, *origin + *size) - *size;
 }
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 RectF::RectF(const CGRect& r)
     : origin_(r.origin.x, r.origin.y), size_(r.size.width, r.size.height) {
 }
@@ -50,6 +51,10 @@ void RectF::Inset(float left, float top, float right, float bottom) {
   origin_ += Vector2dF(left, top);
   set_width(std::max(width() - left - right, 0.0f));
   set_height(std::max(height() - top - bottom, 0.0f));
+}
+
+void RectF::Outset(const OutsetsF& outsets) {
+  Outset(outsets.left(), outsets.top(), outsets.right(), outsets.bottom());
 }
 
 void RectF::Offset(float horizontal, float vertical) {

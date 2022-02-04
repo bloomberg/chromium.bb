@@ -118,7 +118,13 @@ struct ValueFormat : HBUINT16
     if (!format) return ret;
 
     hb_font_t *font = c->font;
-    bool horizontal = HB_DIRECTION_IS_HORIZONTAL (c->direction);
+    bool horizontal =
+#ifndef HB_NO_VERTICAL
+      HB_DIRECTION_IS_HORIZONTAL (c->direction)
+#else
+      true
+#endif
+      ;
 
     if (format & xPlacement) glyph_pos.x_offset  += font->em_scale_x (get_short (values++, &ret));
     if (format & yPlacement) glyph_pos.y_offset  += font->em_scale_y (get_short (values++, &ret));
@@ -2945,7 +2951,7 @@ GPOS::position_finish_advances (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer H
 }
 
 void
-GPOS::position_finish_offsets (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
+GPOS::position_finish_offsets (hb_font_t *font, hb_buffer_t *buffer)
 {
   _hb_buffer_assert_gsubgpos_vars (buffer);
 
@@ -2955,8 +2961,15 @@ GPOS::position_finish_offsets (hb_font_t *font HB_UNUSED, hb_buffer_t *buffer)
 
   /* Handle attachments */
   if (buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT)
-    for (unsigned int i = 0; i < len; i++)
+    for (unsigned i = 0; i < len; i++)
       propagate_attachment_offsets (pos, len, i, direction);
+
+  if (unlikely (font->slant))
+  {
+    for (unsigned i = 0; i < len; i++)
+      if (unlikely (pos[i].y_offset))
+        pos[i].x_offset += _hb_roundf (font->slant_xy * pos[i].y_offset);
+  }
 }
 
 

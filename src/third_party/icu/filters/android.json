@@ -475,7 +475,12 @@
 // Based on the ICU63 version of
 // https://cs.chromium.org/chromium/src/third_party/icu/source/data/sprep/spreplocal.mk?rcl=797b7c
     "stringprep": { "filterType": "exclude" },
-    "translit": { "filterType": "exclude" },
+    "translit": {
+      "filterType": "language",
+      "includelist": [
+         "root"
+      ]
+    },
 // Based on the ICU63 version of
 // https://cs.chromium.org/chromium/src/third_party/icu/source/data/unit/reslocal.mk?rcl=797b7c
 // Includes the items from UNIT_ALIAS_SOURCE and UNIT_SOURCE
@@ -1890,51 +1895,122 @@
         "+/Version"
       ]
     },
-// Based on
-// https://cs.chromium.org/chromium/src/third_party/icu/android/patch_locale.sh?rcl=797b7c
-// # On Android Java API is used to get lang data, except for the language and
-// # script names for zh_Hans and zh_Hant which are not supported by Java API.
-// # Here remove all lang data except those names.
-// # See the comments in GetDisplayNameForLocale() (in Chromium's
-// # src/ui/base/l10n/l10n_util.cc) about why we need the scripts.
+// Based on filter_display_language_names
     {
       "categories": [
         "lang_tree"
       ],
       "rules": [
-        "-/Keys",
         "-/Languages",
         "-/Languages%long",
-        "-/Languages%short",
         "-/Languages%menu",
         "-/Languages%variant",
-        "-/Scripts",
-        "-/Scripts%long",
-        "-/Scripts%short",
-        "-/Scripts%variant",
-        "-/Scripts%stand-alone",
+        "+/*/af",
+        "+/*/am",
+        "+/*/ar",
+        "+/*/az",
+        "+/*/bg",
+        "+/*/bn",
+        "+/*/ca",
+        "+/*/cs",
+        "+/*/da",
+        "+/*/de",
+        "+/*/el",
+        "+/*/en",
+        "+/*/es",
+        "+/*/et",
+        "+/*/eu",
+        "+/*/fa",
+        "+/*/fi",
+        "+/*/fil",
+        "+/*/fr",
+        "+/*/gl",
+        "+/*/gu",
+        "+/*/he",
+        "+/*/hi",
+        "+/*/hr",
+        "+/*/hu",
+        "+/*/hy",
+        "+/*/id",
+        "+/*/in",
+        "+/*/is",
+        "+/*/it",
+        "+/*/iw",
+        "+/*/ja",
+        "+/*/ka",
+        "+/*/kk",
+        "+/*/km",
+        "+/*/kn",
+        "+/*/ko",
+        "+/*/ky",
+        "+/*/lo",
+        "+/*/lt",
+        "+/*/lv",
+        "+/*/mk",
+        "+/*/ml",
+        "+/*/mn",
+        "+/*/mo",
+        "+/*/mr",
+        "+/*/ms",
+        "+/*/my",
+        "+/*/nb",
+        "+/*/ne",
+        "+/*/nl",
+        "+/*/no",
+        "+/*/pa",
+        "+/*/pl",
+        "+/*/pt",
+        "+/*/ro",
+        "+/*/ru",
+        "+/*/sh",
+        "+/*/si",
+        "+/*/sk",
+        "+/*/sl",
+        "+/*/sq",
+        "+/*/sr",
+        "+/*/sr_Latn",
+        "+/*/sv",
+        "+/*/sw",
+        "+/*/ta",
+        "+/*/te",
+        "+/*/th",
+        "+/*/tl",
+        "+/*/tr",
+        "+/*/uk",
+        "+/*/ur",
+        "+/*/uz",
+        "+/*/vi",
+        "+/*/zh",
+        "+/*/zu",
+        "+/*/ar_001",
+        "+/*/az_Arab",
+        "+/*/de_AT",
+        "+/*/de_CH",
+        "+/*/en_AU",
+        "+/*/en_CA",
+        "+/*/en_GB",
+        "+/*/en_US",
+        "+/*/es_419",
+        "+/*/es_ES",
+        "+/*/es_MX",
+        "+/*/fa_AF",
+        "+/*/fr_CA",
+        "+/*/fr_CH",
+        "+/*/nl_BE",
+        "+/*/pt_BR",
+        "+/*/pt_PT",
+        "+/*/ro_MD",
+        "+/*/sr_ME",
+        "+/*/sw_CD",
+        "+/*/zh_Hans",
+        "+/*/zh_Hant",
+        "-/Keys",
         "-/Types",
         "-/Types%short",
-        "-/Variants",
-        "-/calendar",
+        "+/Types/calendar",
         "-/characterLabelPattern",
-        "-/codePatterns",
-        "-/localeDisplayPattern",
-        "+/Languages/zh",
-        "+/Languages%long/zh",
-        "+/Languages%short/zh",
-        "+/Languages%variant/zh",
-        "+/Scripts/Hans",
-        "+/Scripts%long/Hans",
-        "+/Scripts%short/Hans",
-        "+/Scripts%variant/Hans",
-        "+/Scripts%stand-alone/Hans",
-        "+/Scripts/Hant",
-        "+/Scripts%long/Hant",
-        "+/Scripts%short/Hant",
-        "+/Scripts%variant/Hant",
-        "+/Scripts%stand-alone/Hant",
-        "+/Types/calendar"
+        "-/Variants",
+        "+/Variants/OXENDICT"
       ]
     },
     {
@@ -1972,6 +2048,15 @@
         "+/timeData",
         "+/weekData",
         "+/weekData%variant"
+      ]
+    },
+    {
+      "categories": [
+        "translit"
+      ],
+      "rules": [
+        "-/*",
+        "+/RuleBasedTransliteratorIDs/Latin-ASCII"
       ]
     },
 // Remove all the Version

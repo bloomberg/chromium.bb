@@ -212,10 +212,6 @@ LocalFrameUkmAggregator::GetBeginMainFrameMetrics() {
   metrics_data->prepaint = base::Microseconds(
       absolute_metric_records_[static_cast<unsigned>(MetricId::kPrePaint)]
           .main_frame_count);
-  metrics_data->compositing_assignments = base::Microseconds(
-      absolute_metric_records_[static_cast<unsigned>(
-                                   MetricId::kCompositingAssignments)]
-          .main_frame_count);
   metrics_data->compositing_inputs = base::Microseconds(
       absolute_metric_records_[static_cast<unsigned>(
                                    MetricId::kCompositingInputs)]
@@ -522,7 +518,6 @@ void LocalFrameUkmAggregator::ReportPreFCPEvent() {
       ToSample(primary_metric_.pre_fcp_aggregate));
   builder.SetMainFrame(ToSample(primary_metric_.pre_fcp_aggregate));
 
-  RECORD_METRIC(CompositingAssignments);
   RECORD_METRIC(CompositingCommit);
   RECORD_METRIC(CompositingInputs);
   RECORD_METRIC(ImplCompositorCommit);
@@ -550,6 +545,7 @@ void LocalFrameUkmAggregator::ReportPreFCPEvent() {
   RECORD_METRIC(ScrollDocumentUpdate);
   RECORD_METRIC(HitTestDocumentUpdate);
   RECORD_METRIC(JavascriptDocumentUpdate);
+  RECORD_METRIC(ParseStyleSheet);
 
   builder.Record(recorder_);
 #undef RECORD_METRIC
@@ -575,7 +571,6 @@ void LocalFrameUkmAggregator::ReportUpdateTimeEvent() {
   builder.SetMainFrame(current_sample_.primary_metric_count);
   builder.SetMainFrameIsBeforeFCP(fcp_state_ != kHavePassedFCP);
   builder.SetMainFrameReasons(current_sample_.trackers);
-  RECORD_METRIC(CompositingAssignments);
   RECORD_METRIC(CompositingCommit);
   RECORD_METRIC(CompositingInputs);
   RECORD_METRIC(ImplCompositorCommit);
@@ -603,6 +598,7 @@ void LocalFrameUkmAggregator::ReportUpdateTimeEvent() {
   RECORD_METRIC(ScrollDocumentUpdate);
   RECORD_METRIC(HitTestDocumentUpdate);
   RECORD_METRIC(JavascriptDocumentUpdate);
+  RECORD_METRIC(ParseStyleSheet);
 
   builder.Record(recorder_);
 #undef RECORD_METRIC

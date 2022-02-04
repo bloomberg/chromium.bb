@@ -55,14 +55,14 @@ export const checkContentsBySampling: CheckContents = (
         entryPoint: 'main',
         module: t.device.createShaderModule({
           code: `
-            [[block]] struct Constants {
+            struct Constants {
               level : i32;
             };
 
             [[group(0), binding(0)]] var<uniform> constants : Constants;
             [[group(0), binding(1)]] var myTexture : texture${_multisampled}${_xd}<${shaderType}>;
 
-            [[block]] struct Result {
+            struct Result {
               values : [[stride(4)]] array<${shaderType}>;
             };
             [[group(0), binding(3)]] var<storage, read_write> result : Result;

@@ -19,7 +19,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_palette.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #include "skia/ext/skia_utils_win.h"
 #endif
@@ -157,8 +157,7 @@ SkColor PickGoogleColor(const SkColor (&colors)[kNumGoogleColors],
   // then when this ratio is closest to 1, we have the contrast ratio closest to
   // our target.
   const auto ratio_of_ratios = [&](float contrast) {
-    float min, max;
-    std::tie(min, max) = std::minmax(contrast, target_contrast);
+    auto [min, max] = std::minmax(contrast, target_contrast);
     return max / min;
   };
   absl::optional<size_t> best_index;
@@ -512,7 +511,7 @@ SkColor InvertColor(SkColor color) {
 }
 
 SkColor GetSysSkColor(int which) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   return skia::COLORREFToSkColor(GetSysColor(which));
 #else
   NOTIMPLEMENTED();

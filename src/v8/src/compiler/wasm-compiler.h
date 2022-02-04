@@ -55,6 +55,7 @@ class WasmCode;
 class WasmFeatures;
 class WireBytesStorage;
 enum class LoadTransformationKind : uint8_t;
+enum Suspend : bool { kSuspend = false, kNoSuspend = true };
 }  // namespace wasm
 
 namespace compiler {
@@ -107,19 +108,24 @@ enum class WasmImportCallKind : uint8_t {
 constexpr WasmImportCallKind kDefaultImportCallKind =
     WasmImportCallKind::kJSFunctionArityMatch;
 
+struct WasmImportData {
+  WasmImportCallKind kind;
+  Handle<JSReceiver> callable;
+  Handle<HeapObject> suspender;
+};
 // Resolves which import call wrapper is required for the given JS callable.
-// Returns the kind of wrapper need and the ultimate target callable. Note that
-// some callables (e.g. a {WasmExportedFunction} or {WasmJSFunction}) just wrap
-// another target, which is why the ultimate target is returned as well.
-V8_EXPORT_PRIVATE std::pair<WasmImportCallKind, Handle<JSReceiver>>
-ResolveWasmImportCall(Handle<JSReceiver> callable, const wasm::FunctionSig* sig,
-                      const wasm::WasmModule* module,
-                      const wasm::WasmFeatures& enabled_features);
+// Returns the kind of wrapper needed, the ultimate target callable, and the
+// suspender object if applicable. Note that some callables (e.g. a
+// {WasmExportedFunction} or {WasmJSFunction}) just wrap another target, which
+// is why the ultimate target is returned as well.
+V8_EXPORT_PRIVATE WasmImportData ResolveWasmImportCall(
+    Handle<JSReceiver> callable, const wasm::FunctionSig* sig,
+    const wasm::WasmModule* module, const wasm::WasmFeatures& enabled_features);
 
 // Compiles an import call wrapper, which allows Wasm to call imports.
 V8_EXPORT_PRIVATE wasm::WasmCompilationResult CompileWasmImportCallWrapper(
     wasm::CompilationEnv* env, WasmImportCallKind, const wasm::FunctionSig*,
-    bool source_positions, int expected_arity);
+    bool source_positions, int expected_arity, wasm::Suspend);
 
 // Compiles a host call wrapper, which allows Wasm to call host functions.
 wasm::WasmCode* CompileWasmCapiCallWrapper(wasm::NativeModule*,
@@ -134,7 +140,8 @@ std::unique_ptr<OptimizedCompilationJob> NewJSToWasmCompilationJob(
 MaybeHandle<Code> CompileWasmToJSWrapper(Isolate* isolate,
                                          const wasm::FunctionSig* sig,
                                          WasmImportCallKind kind,
-                                         int expected_arity);
+                                         int expected_arity,
+                                         wasm::Suspend suspend);
 
 // Compiles a stub with JS linkage that serves as an adapter for function
 // objects constructed via {WebAssembly.Function}. It performs a round-trip
@@ -183,12 +190,14 @@ struct WasmInstanceCacheNodes {
 struct WasmLoopInfo {
   Node* header;
   uint32_t nesting_depth;
-  bool is_innermost;
+  // This loop has, to our best knowledge, no other loops nested within it. A
+  // loop can obtain inner loops despite this after inlining.
+  bool can_be_innermost;
 
-  WasmLoopInfo(Node* header, uint32_t nesting_depth, bool is_innermost)
+  WasmLoopInfo(Node* header, uint32_t nesting_depth, bool can_be_innermost)
       : header(header),
         nesting_depth(nesting_depth),
-        is_innermost(is_innermost) {}
+        can_be_innermost(can_be_innermost) {}
 };
 
 // Abstracts details of building TurboFan graph nodes for wasm to separate
@@ -410,14 +419,6 @@ class WasmGraphBuilder {
     return effect_and_control;
   }
 
-  Node* GetImportedMutableGlobals();
-
-  void GetGlobalBaseAndOffset(MachineType mem_type, const wasm::WasmGlobal&,
-                              Node** base_node, Node** offset_node);
-
-  void GetBaseAndOffsetForImportedMutableExternRefGlobal(
-      const wasm::WasmGlobal& global, Node** base, Node** offset);
-
   // Utilities to manipulate sets of instance cache nodes.
   void InitInstanceCache(WasmInstanceCacheNodes* instance_cache);
   void PrepareInstanceCacheForLoop(WasmInstanceCacheNodes* instance_cache,
@@ -523,6 +524,12 @@ class WasmGraphBuilder {
   void BrOnFunc(Node* object, Node* rtt, ObjectReferenceKnowledge config,
                 Node** match_control, Node** match_effect,
                 Node** no_match_control, Node** no_match_effect);
+  Node* RefIsArray(Node* object, bool object_can_be_null);
+  Node* RefAsArray(Node* object, bool object_can_be_null,
+                   wasm::WasmCodePosition position);
+  void BrOnArray(Node* object, Node* rtt, ObjectReferenceKnowledge config,
+                 Node** match_control, Node** match_effect,
+                 Node** no_match_control, Node** no_match_effect);
   Node* RefIsI31(Node* object);
   Node* RefAsI31(Node* object, wasm::WasmCodePosition position);
   void BrOnI31(Node* object, Node* rtt, ObjectReferenceKnowledge config,
@@ -693,6 +700,9 @@ class WasmGraphBuilder {
 
   Node* IsNull(Node* object);
 
+  void GetGlobalBaseAndOffset(const wasm::WasmGlobal&, Node** base_node,
+                              Node** offset_node);
+
   using BranchBuilder = std::function<void(Node*, BranchHint)>;
   struct Callbacks {
     BranchBuilder succeed_if;
@@ -717,7 +727,9 @@ class WasmGraphBuilder {
   void TypeCheck(Node* object, Node* rtt, ObjectReferenceKnowledge config,
                  bool null_succeeds, Callbacks callbacks);
   void DataCheck(Node* object, bool object_can_be_null, Callbacks callbacks);
-  void FuncCheck(Node* object, bool object_can_be_null, Callbacks callbacks);
+  void ManagedObjectInstanceCheck(Node* object, bool object_can_be_null,
+                                  InstanceType instance_type,
+                                  Callbacks callbacks);
 
   void BrOnCastAbs(Node** match_control, Node** match_effect,
                    Node** no_match_control, Node** no_match_effect,

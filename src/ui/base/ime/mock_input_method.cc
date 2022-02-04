@@ -11,7 +11,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #endif
 
@@ -69,7 +69,7 @@ void MockInputMethod::OnBlur() {
     observer.OnBlur();
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 bool MockInputMethod::OnUntranslatedIMEMessage(const CHROME_MSG event,
                                                NativeEventResult* result) {
   if (result)
@@ -103,10 +103,6 @@ TextInputType MockInputMethod::GetTextInputType() const {
 
 bool MockInputMethod::IsCandidatePopupOpen() const {
   return false;
-}
-
-void MockInputMethod::ShowVirtualKeyboardIfEnabled() {
-  SetVirtualKeyboardVisibilityIfEnabled(true);
 }
 
 void MockInputMethod::SetVirtualKeyboardVisibilityIfEnabled(bool should_show) {

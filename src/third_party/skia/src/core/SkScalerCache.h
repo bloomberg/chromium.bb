@@ -21,33 +21,6 @@
 
 class SkScalerContext;
 
-// The value stored in fDigestForPackedGlyphID.
-// index() is the index into fGlyphForIndex.
-class SkGlyphDigest {
-public:
-    // Default ctor is only needed for the hash table.
-    SkGlyphDigest() = default;
-    SkGlyphDigest(size_t i, const SkGlyph& glyph)
-        : fIndex{SkTo<uint32_t>(i)}
-        , fIsEmpty(glyph.isEmpty())
-        , fIsColor(glyph.isColor())
-        , fCanDrawAsMask{SkStrikeForGPU::CanDrawAsMask(glyph)}
-        , fCanDrawAsSDFT{SkStrikeForGPU::CanDrawAsSDFT(glyph)} {}
-    int index()          const {return fIndex;        }
-    bool isEmpty()       const {return fIsEmpty;      }
-    bool isColor()       const {return fIsColor;      }
-    bool canDrawAsMask() const {return fCanDrawAsMask;}
-    bool canDrawAsSDFT() const {return fCanDrawAsSDFT;}
-
-private:
-    static_assert(SkPackedGlyphID::kEndData == 20);
-    uint32_t fIndex : SkPackedGlyphID::kEndData;
-    uint32_t fIsEmpty       : 1;
-    uint32_t fIsColor       : 1;
-    uint32_t fCanDrawAsMask : 1;
-    uint32_t fCanDrawAsSDFT : 1;
-};
-
 // This class represents a strike: a specific combination of typeface, size, matrix, etc., and
 // holds the glyphs for that strike.
 class SkScalerCache {
@@ -148,7 +121,7 @@ private:
     // SkGlyphDigest's fIndex field stores the index. This pointer provides an unchanging
     // reference to the SkGlyph as long as the strike is alive, and fGlyphForIndex
     // provides a dense index for glyphs.
-    SkTHashMap<SkPackedGlyphID, SkGlyphDigest> fDigestForPackedGlyphID SK_GUARDED_BY(fMu);
+    SkTHashTable<SkGlyphDigest, uint32_t, SkGlyphDigest> fDigestForPackedGlyphID SK_GUARDED_BY(fMu);
     std::vector<SkGlyph*> fGlyphForIndex SK_GUARDED_BY(fMu);
 
     // so we don't grow our arrays a lot

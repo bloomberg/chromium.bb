@@ -17,20 +17,20 @@
 
 #include "dawn_native/BackendConnection.h"
 
-namespace dawn_native { namespace opengl {
+namespace dawn::native::opengl {
 
     class Backend : public BackendConnection {
       public:
         Backend(InstanceBase* instance, wgpu::BackendType backendType);
 
-        std::vector<std::unique_ptr<AdapterBase>> DiscoverDefaultAdapters() override;
-        ResultOrError<std::vector<std::unique_ptr<AdapterBase>>> DiscoverAdapters(
+        std::vector<Ref<AdapterBase>> DiscoverDefaultAdapters() override;
+        ResultOrError<std::vector<Ref<AdapterBase>>> DiscoverAdapters(
             const AdapterDiscoveryOptionsBase* options) override;
 
       private:
         bool mCreatedAdapter = false;
     };
 
-}}  // namespace dawn_native::opengl
+}  // namespace dawn::native::opengl
 
 #endif  // DAWNNATIVE_OPENGL_BACKENDGL_H_

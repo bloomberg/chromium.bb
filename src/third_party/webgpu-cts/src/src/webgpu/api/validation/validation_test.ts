@@ -1,89 +1,10 @@
-import { attemptGarbageCollection } from '../../../common/util/collect_garbage.js';
-import { assert } from '../../../common/util/util.js';
 import { ValidBindableResource, BindableResource, kMaxQueryCount } from '../../capability_info.js';
-import { GPUTest, ResourceState, initUncanonicalizedDeviceDescriptor } from '../../gpu_test.js';
-import {
-  DevicePool,
-  DeviceProvider,
-  TestOOMedShouldAttemptGC,
-  UncanonicalizedDeviceDescriptor,
-} from '../../util/device_pool.js';
-
-// TODO: When DevicePool becomes able to provide multiple devices at once, use the usual one instead of a new one.
-const mismatchedDevicePool = new DevicePool();
+import { GPUTest, ResourceState } from '../../gpu_test.js';
 
 /**
  * Base fixture for WebGPU validation tests.
  */
 export class ValidationTest extends GPUTest {
-  // Device mismatched validation tests require another GPUDevice different from the default
-  // GPUDevice of GPUTest. It is only used to create device mismatched objects.
-  private mismatchedProvider: DeviceProvider | undefined;
-  private mismatchedAcquiredDevice: GPUDevice | undefined;
-
-  /** GPUDevice for creating mismatched objects required by device mismatched validation tests. */
-  get mismatchedDevice(): GPUDevice {
-    assert(
-      this.mismatchedProvider !== undefined,
-      'No provider available right now; did you "await" selectMismatchedDeviceOrSkipTestCase?'
-    );
-    if (!this.mismatchedAcquiredDevice) {
-      this.mismatchedAcquiredDevice = this.mismatchedProvider.acquire();
-    }
-    return this.mismatchedAcquiredDevice;
-  }
-
-  /**
-   * Create other device different with current test device, which could be got by `.mismatchedDevice`.
-   * A `descriptor` may be undefined, which returns a `default` mismatched device.
-   * If the request descriptor or feature name can't be supported, throws an exception to skip the entire test case.
-   */
-  async selectMismatchedDeviceOrSkipTestCase(
-    descriptor:
-      | UncanonicalizedDeviceDescriptor
-      | GPUFeatureName
-      | undefined
-      | Array<GPUFeatureName | undefined>
-  ): Promise<void> {
-    assert(
-      this.mismatchedProvider === undefined,
-      "Can't selectMismatchedDeviceOrSkipTestCase() multiple times"
-    );
-
-    this.mismatchedProvider =
-      descriptor === undefined
-        ? await mismatchedDevicePool.reserve()
-        : await mismatchedDevicePool.reserve(initUncanonicalizedDeviceDescriptor(descriptor));
-
-    this.mismatchedAcquiredDevice = this.mismatchedProvider.acquire();
-  }
-
-  protected async finalize(): Promise<void> {
-    await super.finalize();
-
-    if (this.mismatchedProvider) {
-      // TODO(kainino0x): Deduplicate this with code in GPUTest.finalize
-      let threw: undefined | Error;
-      {
-        const provider = this.mismatchedProvider;
-        this.mismatchedProvider = undefined;
-        try {
-          await mismatchedDevicePool.release(provider);
-        } catch (ex) {
-          threw = ex;
-        }
-      }
-
-      if (threw) {
-        if (threw instanceof TestOOMedShouldAttemptGC) {
-          // Try to clean up, in case there are stray GPU resources in need of collection.
-          await attemptGarbageCollection();
-        }
-        throw threw;
-      }
-    }
-  }
-
   /**
    * Create a GPUTexture in the specified state.
    * A `descriptor` may optionally be passed, which is used when `state` is not `'invalid'`.

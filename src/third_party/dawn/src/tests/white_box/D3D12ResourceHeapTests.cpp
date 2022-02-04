@@ -17,7 +17,7 @@
 #include "dawn_native/d3d12/BufferD3D12.h"
 #include "dawn_native/d3d12/TextureD3D12.h"
 
-using namespace dawn_native::d3d12;
+using namespace dawn::native::d3d12;
 
 class D3D12ResourceHeapTests : public DawnTest {
   protected:
@@ -26,13 +26,13 @@ class D3D12ResourceHeapTests : public DawnTest {
         DAWN_TEST_UNSUPPORTED_IF(UsesWire());
     }
 
-    std::vector<const char*> GetRequiredFeatures() override {
-        mIsBCFormatSupported = SupportsFeatures({"texture-compression-bc"});
+    std::vector<wgpu::FeatureName> GetRequiredFeatures() override {
+        mIsBCFormatSupported = SupportsFeatures({wgpu::FeatureName::TextureCompressionBC});
         if (!mIsBCFormatSupported) {
             return {};
         }
 
-        return {"texture-compression-bc"};
+        return {wgpu::FeatureName::TextureCompressionBC};
     }
 
     bool IsBCFormatSupported() const {

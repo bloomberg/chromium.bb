@@ -9,8 +9,6 @@
 #ifndef V8_CODEGEN_ARM64_MACRO_ASSEMBLER_ARM64_H_
 #define V8_CODEGEN_ARM64_MACRO_ASSEMBLER_ARM64_H_
 
-#include <vector>
-
 #include "src/base/bits.h"
 #include "src/codegen/arm64/assembler-arm64.h"
 #include "src/codegen/bailout-reason.h"
@@ -952,12 +950,12 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
 
   void Jump(Register target, Condition cond = al);
   void Jump(Address target, RelocInfo::Mode rmode, Condition cond = al);
-  void Jump(Handle<Code> code, RelocInfo::Mode rmode, Condition cond = al);
+  void Jump(Handle<CodeT> code, RelocInfo::Mode rmode, Condition cond = al);
   void Jump(const ExternalReference& reference);
 
   void Call(Register target);
   void Call(Address target, RelocInfo::Mode rmode);
-  void Call(Handle<Code> code, RelocInfo::Mode rmode = RelocInfo::CODE_TARGET);
+  void Call(Handle<CodeT> code, RelocInfo::Mode rmode = RelocInfo::CODE_TARGET);
   void Call(ExternalReference target);
 
   // Generate an indirect call (for when a direct call's range is not adequate).
@@ -992,6 +990,7 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
 
   // Helper functions that dispatch either to Call/JumpCodeObject or to
   // Call/JumpCodeDataContainerObject.
+  // TODO(v8:11880): remove since CodeT targets are now default.
   void LoadCodeTEntry(Register destination, Register code);
   void CallCodeTObject(Register code);
   void JumpCodeTObject(Register code, JumpMode jump_mode = JumpMode::kJump);
@@ -1439,23 +1438,23 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   void I64x2AllTrue(Register dst, VRegister src);
 
   // ---------------------------------------------------------------------------
-  // V8 Heap sandbox support
+  // V8 Sandbox support
 
-  // Transform a CagedPointer from/to its encoded form, which is used when the
-  // pointer is stored on the heap and ensures that the pointer will always
-  // point into the virtual memory cage.
-  void EncodeCagedPointer(const Register& value);
-  void DecodeCagedPointer(const Register& value);
+  // Transform a SandboxedPointer from/to its encoded form, which is used when
+  // the pointer is stored on the heap and ensures that the pointer will always
+  // point into the sandbox.
+  void EncodeSandboxedPointer(const Register& value);
+  void DecodeSandboxedPointer(const Register& value);
 
-  // Load and decode a CagedPointer from the heap.
-  void LoadCagedPointerField(const Register& destination,
-                             const MemOperand& field_operand);
-  // Encode and store a CagedPointer to the heap.
-  void StoreCagedPointerField(const Register& value,
-                              const MemOperand& dst_field_operand);
+  // Load and decode a SandboxedPointer from the heap.
+  void LoadSandboxedPointerField(const Register& destination,
+                                 const MemOperand& field_operand);
+  // Encode and store a SandboxedPointer to the heap.
+  void StoreSandboxedPointerField(const Register& value,
+                                  const MemOperand& dst_field_operand);
 
   // Loads a field containing off-heap pointer and does necessary decoding
-  // if V8 heap sandbox is enabled.
+  // if sandboxed external pointers are enabled.
   void LoadExternalPointerField(Register destination, MemOperand field_operand,
                                 ExternalPointerTag tag,
                                 Register isolate_root = Register::no_reg());

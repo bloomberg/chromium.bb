@@ -128,6 +128,11 @@ bool ValidateBindRenderbufferBase(const Context *context,
                                   angle::EntryPoint entryPoint,
                                   GLenum target,
                                   RenderbufferID renderbuffer);
+bool ValidateFramebufferParameteriBase(const Context *context,
+                                       angle::EntryPoint entryPoint,
+                                       GLenum target,
+                                       GLenum pname,
+                                       GLint param);
 bool ValidateFramebufferRenderbufferBase(const Context *context,
                                          angle::EntryPoint entryPoint,
                                          GLenum target,
@@ -497,6 +502,12 @@ bool ValidateGetUniformBase(const Context *context,
                             angle::EntryPoint entryPoint,
                             ShaderProgramID program,
                             UniformLocation location);
+bool ValidateSizedGetUniform(const Context *context,
+                             angle::EntryPoint entryPoint,
+                             ShaderProgramID program,
+                             UniformLocation location,
+                             GLsizei bufSize,
+                             GLsizei *length);
 bool ValidateGetnUniformfvEXT(const Context *context,
                               angle::EntryPoint entryPoint,
                               ShaderProgramID program,
@@ -633,6 +644,12 @@ bool ValidateGetFramebufferAttachmentParameterivBase(const Context *context,
                                                      GLenum attachment,
                                                      GLenum pname,
                                                      GLsizei *numParams);
+
+bool ValidateGetFramebufferParameterivBase(const Context *context,
+                                           angle::EntryPoint entryPoint,
+                                           GLenum target,
+                                           GLenum pname,
+                                           const GLint *params);
 
 bool ValidateGetBufferParameterBase(const Context *context,
                                     angle::EntryPoint entryPoint,
@@ -1003,6 +1020,17 @@ ANGLE_INLINE bool ValidateDrawArraysCommon(const Context *context,
             return false;
         }
 
+        // Early exit.
+        return ValidateDrawBase(context, entryPoint, mode);
+    }
+
+    if (primcount <= 0)
+    {
+        if (primcount < 0)
+        {
+            context->validationError(entryPoint, GL_INVALID_VALUE, err::kNegativeCount);
+            return false;
+        }
         // Early exit.
         return ValidateDrawBase(context, entryPoint, mode);
     }

@@ -105,6 +105,11 @@ struct AMDInfo {
 };
 
 struct AdrenoInfo {
+  struct OpenClCompilerVersion {
+    int major = 0;
+    int minor = 0;
+    int patch = 0;
+  };
   AdrenoInfo() = default;
   explicit AdrenoInfo(const std::string& device_version);
 
@@ -139,6 +144,8 @@ struct AdrenoInfo {
   bool support_one_layer_texture_array = true;
 
   bool compiler_bugs_in_a6xx = false;
+
+  OpenClCompilerVersion cl_compiler_version;
 };
 
 enum class AppleGpu {
@@ -255,6 +262,8 @@ struct OpenGlInfo {
   int max_compute_work_group_size_x;
   int max_compute_work_group_size_y;
   int max_compute_work_group_size_z;
+
+  bool SupportsExplicitFp16() const;
 };
 
 struct VulkanInfo {
@@ -266,8 +275,14 @@ struct VulkanInfo {
 
   int max_per_stage_descriptor_sampled_images = 0;
   uint32_t max_compute_work_group_invocations;
+  uint32_t max_image_dimension_1d;
   uint32_t max_image_dimension_2d;
+  uint32_t max_image_dimension_3d;
   uint32_t max_image_array_layers;
+  uint64_t max_texel_buffer_elements;
+  uint64_t max_uniform_buffer_range;
+  uint64_t max_storage_buffer_range;
+  uint64_t max_push_constants_size;
 
   uint32_t subgroup_size = 0;
   bool supports_subgroup_arithmetic = false;
@@ -276,6 +291,8 @@ struct VulkanInfo {
   int max_compute_work_group_size_x;
   int max_compute_work_group_size_y;
   int max_compute_work_group_size_z;
+
+  bool SupportsExplicitFp16() const;
 };
 
 enum class OpenClVersion {
@@ -295,6 +312,7 @@ struct OpenClInfo {
   std::string vendor_name;
   std::string opencl_c_version;
   std::string platform_version;
+  std::string driver_version;
 
   OpenClVersion cl_version;
 
@@ -381,6 +399,7 @@ struct GpuInfo {
   bool IsIntel() const;
 
   bool IsGlsl() const;
+  bool IsGlslSupportsExplicitFp16() const;
 
   // floating point rounding mode
   bool IsRoundToNearestSupported() const;

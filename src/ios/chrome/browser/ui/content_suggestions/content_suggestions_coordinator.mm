@@ -38,7 +38,6 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizer.h"
@@ -47,7 +46,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_menu_provider.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
-#import "ios/chrome/browser/ui/content_suggestions/discover_feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
@@ -55,6 +53,7 @@
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
+#import "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_commands.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
@@ -221,13 +220,8 @@
 
   self.suggestionsViewController = [[ContentSuggestionsViewController alloc]
       initWithStyle:CollectionViewControllerStyleDefault];
-  [self.suggestionsViewController
-      setDataSource:self.contentSuggestionsMediator];
   self.suggestionsViewController.suggestionCommandHandler = self.ntpMediator;
   self.suggestionsViewController.audience = self;
-  id<SnackbarCommands> dispatcher =
-      static_cast<id<SnackbarCommands>>(self.browser->GetCommandDispatcher());
-  self.suggestionsViewController.dispatcher = dispatcher;
   self.suggestionsViewController.contentSuggestionsEnabled =
       self.contentSuggestionsEnabled;
 
@@ -242,7 +236,7 @@
   self.ntpMediator.suggestionsViewController = self.suggestionsViewController;
   self.ntpMediator.suggestionsMediator = self.contentSuggestionsMediator;
   [self.ntpMediator setUp];
-  self.ntpMediator.discoverFeedMetrics = self.discoverFeedMetricsRecorder;
+  self.ntpMediator.feedMetricsRecorder = self.feedMetricsRecorder;
 
   [self.suggestionsViewController addChildViewController:self.headerController];
   [self.headerController
@@ -251,6 +245,11 @@
   // TODO(crbug.com/1114792): Remove header provider and use refactored header
   // synchronizer instead.
   self.suggestionsViewController.headerProvider = self.headerController;
+
+  // Set consumer after configuring the header to ensure that view controller
+  // has access to it when configuring its elements.
+  DCHECK(self.suggestionsViewController.headerProvider);
+  self.contentSuggestionsMediator.consumer = self.suggestionsViewController;
 
   self.suggestionsViewController.collectionView.accessibilityIdentifier =
       kContentSuggestionsCollectionIdentifier;
@@ -299,6 +298,12 @@
   if (ShouldShowReturnToMostRecentTabForStartSurface()) {
     [self.contentSuggestionsMediator hideRecentTabTile];
   }
+}
+
+- (UIEdgeInsets)safeAreaInsetsForDiscoverFeed {
+  return [SceneStateBrowserAgent::FromBrowser(self.browser)
+              ->GetSceneState()
+              .window.rootViewController.view safeAreaInsets];
 }
 
 #pragma mark - URLDropDelegate
@@ -355,7 +360,7 @@
 }
 
 - (void)reload {
-  [self.contentSuggestionsMediator.dataSink reloadAllData];
+  [self.contentSuggestionsMediator reloadAllData];
 }
 
 - (void)locationBarDidBecomeFirstResponder {
@@ -392,23 +397,29 @@
         NSMutableArray<UIMenuElement*>* menuElements =
             [[NSMutableArray alloc] init];
 
-        NSIndexPath* indexPath =
-            [self.suggestionsViewController.collectionViewModel
-                indexPathForItem:item];
+        NSInteger index =
+            IsSingleCellContentSuggestionsEnabled()
+                ? item.index
+                : [self.suggestionsViewController.collectionViewModel
+                      indexPathForItem:item]
+                      .item;
+        CGPoint centerPoint = [view.superview convertPoint:view.center
+                                                    toView:nil];
 
         [menuElements addObject:[actionFactory actionToOpenInNewTabWithBlock:^{
                         [weakSelf.ntpMediator
                             openNewTabWithMostVisitedItem:item
                                                 incognito:NO
-                                                  atIndex:indexPath.item];
+                                                  atIndex:index
+                                                fromPoint:centerPoint];
                       }]];
 
         UIAction* incognitoAction =
             [actionFactory actionToOpenInNewIncognitoTabWithBlock:^{
-              [weakSelf.ntpMediator
-                  openNewTabWithMostVisitedItem:item
-                                      incognito:YES
-                                        atIndex:indexPath.item];
+              [weakSelf.ntpMediator openNewTabWithMostVisitedItem:item
+                                                        incognito:YES
+                                                          atIndex:index
+                                                        fromPoint:centerPoint];
             }];
 
         if (IsIncognitoModeDisabled(

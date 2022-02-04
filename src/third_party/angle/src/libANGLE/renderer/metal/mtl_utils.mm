@@ -778,7 +778,7 @@ static MTLLanguageVersion GetUserSetOrHighestMSLVersion(const MTLLanguageVersion
 }
 
 AutoObjCPtr<id<MTLLibrary>> CreateShaderLibrary(
-    id<MTLDevice> metalDevice,
+    const mtl::ContextDevice &metalDevice,
     const std::string &source,
     NSDictionary<NSString *, NSObject *> *substitutionMacros,
     bool enableFastMath,
@@ -788,7 +788,7 @@ AutoObjCPtr<id<MTLLibrary>> CreateShaderLibrary(
                                enableFastMath, error);
 }
 
-AutoObjCPtr<id<MTLLibrary>> CreateShaderLibrary(id<MTLDevice> metalDevice,
+AutoObjCPtr<id<MTLLibrary>> CreateShaderLibrary(const mtl::ContextDevice &metalDevice,
                                                 const std::string &source,
                                                 AutoObjCPtr<NSError *> *error)
 {
@@ -796,7 +796,7 @@ AutoObjCPtr<id<MTLLibrary>> CreateShaderLibrary(id<MTLDevice> metalDevice,
 }
 
 AutoObjCPtr<id<MTLLibrary>> CreateShaderLibrary(
-    id<MTLDevice> metalDevice,
+    const mtl::ContextDevice &metalDevice,
     const char *source,
     size_t sourceLen,
     NSDictionary<NSString *, NSObject *> *substitutionMacros,
@@ -823,7 +823,7 @@ AutoObjCPtr<id<MTLLibrary>> CreateShaderLibrary(
         options.fastMathEnabled &= enableFastMath;
         options.languageVersion    = GetUserSetOrHighestMSLVersion(options.languageVersion);
         options.preprocessorMacros = substitutionMacros;
-        auto library = [metalDevice newLibraryWithSource:nsSource options:options error:&nsError];
+        auto library               = metalDevice.newLibraryWithSource(nsSource, options, &nsError);
         if (angle::GetEnvironmentVar(kANGLEPrintMSLEnv)[0] == '1')
         {
             NSLog(@"%@\n", nsSource);
@@ -831,7 +831,7 @@ AutoObjCPtr<id<MTLLibrary>> CreateShaderLibrary(
         [nsSource ANGLE_MTL_AUTORELEASE];
         *errorOut = std::move(nsError);
 
-        return [library ANGLE_MTL_AUTORELEASE];
+        return library;
     }
 }
 
@@ -1181,6 +1181,36 @@ bool IsFormatEmulated(const mtl::Format &mtlFormat)
     return isFormatEmulated;
 }
 
+size_t EstimateTextureSizeInBytes(const mtl::Format &mtlFormat,
+                                  size_t width,
+                                  size_t height,
+                                  size_t depth,
+                                  size_t sampleCount,
+                                  size_t numMips)
+{
+    size_t textureSizeInBytes;
+    if (mtlFormat.getCaps().compressed)
+    {
+        GLuint textureSize;
+        gl::Extents size((int)width, (int)height, (int)depth);
+        if (!mtlFormat.intendedInternalFormat().computeCompressedImageSize(size, &textureSize))
+        {
+            return 0;
+        }
+        textureSizeInBytes = textureSize;
+    }
+    else
+    {
+        textureSizeInBytes = mtlFormat.getCaps().pixelBytes * width * height * depth * sampleCount;
+    }
+    if (numMips > 1)
+    {
+        // Estimate mipmap size.
+        textureSizeInBytes = textureSizeInBytes * 4 / 3;
+    }
+    return textureSizeInBytes;
+}
+
 MTLClearColor EmulatedAlphaClearColor(MTLClearColor color, MTLColorWriteMask colorMask)
 {
     MTLClearColor re = color;
@@ -1193,13 +1223,13 @@ MTLClearColor EmulatedAlphaClearColor(MTLClearColor color, MTLColorWriteMask col
     return re;
 }
 
-NSUInteger GetMaxRenderTargetSizeForDeviceInBytes(id<MTLDevice> device)
+NSUInteger GetMaxRenderTargetSizeForDeviceInBytes(const mtl::ContextDevice &device)
 {
-    if (supportsAppleGPUFamily(device, 4))
+    if (SupportsAppleGPUFamily(device, 4))
     {
         return 64;
     }
-    else if (supportsAppleGPUFamily(device, 2))
+    else if (SupportsAppleGPUFamily(device, 2))
     {
         return 32;
     }
@@ -1209,9 +1239,9 @@ NSUInteger GetMaxRenderTargetSizeForDeviceInBytes(id<MTLDevice> device)
     }
 }
 
-NSUInteger GetMaxNumberOfRenderTargetsForDevice(id<MTLDevice> device)
+NSUInteger GetMaxNumberOfRenderTargetsForDevice(const mtl::ContextDevice &device)
 {
-    if (supportsAppleGPUFamily(device, 2) || SupportsMacGPUFamily(device, 1))
+    if (SupportsAppleGPUFamily(device, 2) || SupportsMacGPUFamily(device, 1))
     {
         return 8;
     }
@@ -1223,17 +1253,15 @@ NSUInteger GetMaxNumberOfRenderTargetsForDevice(id<MTLDevice> device)
 
 bool DeviceHasMaximumRenderTargetSize(id<MTLDevice> device)
 {
-    return supportsAppleGPUFamily(device, 1);
+    return SupportsAppleGPUFamily(device, 1);
 }
 
-bool supportsAppleGPUFamily(id<MTLDevice> device, uint8_t appleFamily)
+bool SupportsAppleGPUFamily(id<MTLDevice> device, uint8_t appleFamily)
 {
-#if (!TARGET_OS_IOS && !TARGET_OS_TV) || TARGET_OS_MACCATALYST
-    return false;
-#else
-#    if (__IPHONE_OS_VERSION_MAX_ALLOWED >= 130000) || (__TV_OS_VERSION_MAX_ALLOWED >= 130000)
+#if (__MAC_OS_X_VERSION_MAX_ALLOWED >= 101500 || __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000) || \
+    (__TV_OS_VERSION_MAX_ALLOWED >= 130000)
     // If device supports [MTLDevice supportsFamily:], then use it.
-    if (ANGLE_APPLE_AVAILABLE_I(13.0))
+    if (ANGLE_APPLE_AVAILABLE_XC(10.15, 13.0))
     {
         MTLGPUFamily family;
         switch (appleFamily)
@@ -1253,18 +1281,21 @@ bool supportsAppleGPUFamily(id<MTLDevice> device, uint8_t appleFamily)
             case 5:
                 family = MTLGPUFamilyApple5;
                 break;
-#        if TARGET_OS_IOS
+#    if TARGET_OS_IOS || (TARGET_OS_OSX && __MAC_OS_X_VERSION_MAX_ALLOWED >= 110000)
             case 6:
                 family = MTLGPUFamilyApple6;
                 break;
-#        endif
+#    endif
             default:
                 return false;
         }
         return [device supportsFamily:family];
-    }  // Metal 2.2
-#    endif  // __IPHONE_OS_VERSION_MAX_ALLOWED
+    }   // Metal 2.2
+#endif  // __IPHONE_OS_VERSION_MAX_ALLOWED
 
+#if (!TARGET_OS_IOS && !TARGET_OS_TV) || TARGET_OS_MACCATALYST
+    return false;
+#else
     // If device doesn't support [MTLDevice supportsFamily:], then use
     // [MTLDevice supportsFeatureSet:].
     MTLFeatureSet featureSet;
@@ -1382,7 +1413,7 @@ static NSUInteger getNextLocationForFormat(const FormatCaps &caps,
 
 NSUInteger ComputeTotalSizeUsedForMTLRenderPassDescriptor(const MTLRenderPassDescriptor *descriptor,
                                                           const Context *context,
-                                                          id<MTLDevice> device)
+                                                          const mtl::ContextDevice &device)
 {
     NSUInteger currentRenderTargetSize = 0;
 
@@ -1433,7 +1464,7 @@ NSUInteger ComputeTotalSizeUsedForMTLRenderPassDescriptor(const MTLRenderPassDes
 NSUInteger ComputeTotalSizeUsedForMTLRenderPipelineDescriptor(
     const MTLRenderPipelineDescriptor *descriptor,
     const Context *context,
-    id<MTLDevice> device)
+    const mtl::ContextDevice &device)
 {
     NSUInteger currentRenderTargetSize = 0;
     bool isMsaa                        = descriptor.sampleCount > 1;

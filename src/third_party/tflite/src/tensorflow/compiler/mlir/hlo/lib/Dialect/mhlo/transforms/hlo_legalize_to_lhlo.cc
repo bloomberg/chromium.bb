@@ -19,9 +19,9 @@ limitations under the License.
 #include <utility>
 
 #include "mlir-hlo/Dialect/lhlo/IR/lhlo_ops.h"
+#include "mlir-hlo/Dialect/lhlo/transforms/map_hlo_to_lhlo_op.h"
 #include "mlir-hlo/Dialect/mhlo/IR/hlo_ops.h"
 #include "mlir-hlo/Dialect/mhlo/transforms/PassDetail.h"
-#include "mlir-hlo/Dialect/mhlo/transforms/map_hlo_to_lhlo_op.h"
 #include "mlir-hlo/Dialect/mhlo/transforms/passes.h"
 #include "mlir-hlo/Dialect/mhlo/transforms/rewriters.h"
 #include "mlir/Dialect/Arithmetic/IR/Arithmetic.h"
@@ -65,7 +65,7 @@ Value InsertDynamicAlloc(Location loc, Value result, Value shape_operand,
 
   // Extract the required element out of the vector.
   SmallVector<Value, 4> dynamic_operands;
-  for (auto shape_element : llvm::enumerate(result_type.getShape())) {
+  for (const auto& shape_element : llvm::enumerate(result_type.getShape())) {
     if (shape_element.value() != ShapedType::kDynamicSize) continue;
     Value index =
         rewriter->create<arith::ConstantIndexOp>(loc, shape_element.index());
@@ -102,7 +102,7 @@ LogicalResult ConvertResults(Operation* op, SmallVectorImpl<Value>& results,
                              ConversionPatternRewriter& rewriter) {
   size_t num_operands = results.size();
   SmallVector<Value, 2> tensor_operands;
-  for (auto result : llvm::enumerate(op->getResults())) {
+  for (const auto& result : llvm::enumerate(op->getResults())) {
     RankedTensorType resultType =
         result.value().getType().dyn_cast<RankedTensorType>();
     if (!resultType) return failure();
@@ -286,7 +286,7 @@ struct HloToLhloReduceOpConverter : public BaseOpConversion<mhlo::ReduceOp> {
     auto return_op = cast<mhlo::ReturnOp>(entry_block.getTerminator());
     if (auto tuple_ty =
             return_op.results().front().getType().dyn_cast<TupleType>()) {
-      auto tuple_op = return_op.getODSOperands(0).front().getDefiningOp();
+      auto* tuple_op = return_op.getODSOperands(0).front().getDefiningOp();
       return_op.getOperation()->dropAllReferences();
       rewriter.eraseOp(tuple_op);
       return_op.getOperation()->setOperands(tuple_op->getOperands());
@@ -337,22 +337,6 @@ struct HloToLhloReturnOpConverter : public BaseOpConversion<mhlo::ReturnOp> {
       ++dest_arg_idx;
     }
     rewriter.replaceOpWithNewOp<lmhlo::TerminatorOp>(op);
-    return success();
-  }
-};
-
-// TODO(b/175789537) Remove this pattern.
-class HloToLhloTensorStoreOpLegacyConverter
-    : public BaseOpConversion<mlir::memref::TensorStoreOp> {
- public:
-  using BaseOpConversion<mlir::memref::TensorStoreOp>::BaseOpConversion;
-
-  LogicalResult matchAndRewrite(
-      mlir::memref::TensorStoreOp op, OpAdaptor adaptor,
-      ConversionPatternRewriter& rewriter) const final {
-    rewriter.replaceOpWithNewOp<lmhlo::CopyOp>(op, llvm::None,
-                                               adaptor.getOperands().front(),
-                                               adaptor.getOperands().back());
     return success();
   }
 };
@@ -441,10 +425,6 @@ struct HloLegalizeToLhlo : public HloLegalizeToLhloPassBase<HloLegalizeToLhlo> {
         lmhlo::LmhloDialect, memref::MemRefDialect, shape::ShapeDialect,
         StandardOpsDialect, tensor::TensorDialect>();
     target.addIllegalDialect<mhlo::MhloDialect>();
-    // Declare tensor_store illegal. bufferization.to_tensor may be used to
-    // reify output shape computation during dialect conversion and will be
-    // handled later.
-    target.addIllegalOp<mlir::memref::TensorStoreOp>();
     // bufferization.to_memref is illegal if it has uses.
     // TODO(b/175670649) Make bufferization.to_memref illegal.
     target.addDynamicallyLegalOp<mlir::bufferization::ToMemrefOp>(
@@ -468,7 +448,7 @@ struct HloLegalizeToLhlo : public HloLegalizeToLhloPassBase<HloLegalizeToLhlo> {
     });
 
     populateHLOToLHLOConversionPattern(&context, &converter, &patterns);
-    populateFuncOpTypeConversionPattern(patterns, converter);
+    populateFunctionLikeTypeConversionPattern<FuncOp>(patterns, converter);
     populateCallOpTypeConversionPattern(patterns, converter);
     populateBranchOpInterfaceTypeConversionPattern(patterns, converter);
     populateReturnOpTypeConversionPattern(patterns, converter);
@@ -476,9 +456,6 @@ struct HloLegalizeToLhlo : public HloLegalizeToLhloPassBase<HloLegalizeToLhlo> {
 
     populateShapeStructuralTypeConversionsAndLegality(converter, patterns,
                                                       target);
-
-    // TODO(b/175789537) Remove this pattern.
-    patterns.insert<HloToLhloTensorStoreOpLegacyConverter>(&context);
 
     if (failed(applyPartialConversion(getOperation(), target,
                                       std::move(patterns))))

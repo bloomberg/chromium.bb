@@ -12,7 +12,6 @@
 #include <vector>
 #include "include/core/SkBitmap.h"
 #include "include/gpu/GrDirectContext.h"
-#include "include/private/GrResourceKey.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrGeometryProcessor.h"
@@ -22,6 +21,8 @@
 #include "src/gpu/GrOpsRenderPass.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrResourceProvider.h"
+#include "src/gpu/KeyBuilder.h"
+#include "src/gpu/ResourceKey.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
@@ -33,7 +34,7 @@
 #define WRITE_PNG_CONTEXT_TYPE kANGLE_D3D11_ES3_ContextType
 #endif
 
-GR_DECLARE_STATIC_UNIQUE_KEY(gIndexBufferKey);
+SKGPU_DECLARE_STATIC_UNIQUE_KEY(gIndexBufferKey);
 
 static constexpr int kBoxSize = 2;
 static constexpr int kBoxCountY = 8;
@@ -450,7 +451,7 @@ public:
 
     const char* name() const override { return "GrMeshTestProcessor"; }
 
-    void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const final {
+    void addToKey(const GrShaderCaps&, skgpu::KeyBuilder* b) const final {
         b->add32(fInstanceLocation.isInitialized());
         b->add32(fVertexPosition.isInitialized());
     }
@@ -469,15 +470,15 @@ private:
         if (instanced) {
             fInstanceLocation = {"location", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
             fInstanceColor = {"color", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
-            this->setInstanceAttributes(&fInstanceLocation, 2);
+            this->setInstanceAttributesWithImplicitOffsets(&fInstanceLocation, 2);
             if (hasVertexBuffer) {
                 fVertexPosition = {"vertex", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
-                this->setVertexAttributes(&fVertexPosition, 1);
+                this->setVertexAttributesWithImplicitOffsets(&fVertexPosition, 1);
             }
         } else {
             fVertexPosition = {"vertex", kFloat2_GrVertexAttribType, kHalf2_GrSLType};
             fVertexColor = {"color", kUByte4_norm_GrVertexAttribType, kHalf4_GrSLType};
-            this->setVertexAttributes(&fVertexPosition, 2);
+            this->setVertexAttributesWithImplicitOffsets(&fVertexPosition, 2);
         }
     }
 
@@ -544,7 +545,7 @@ sk_sp<const GrBuffer> DrawMeshHelper::makeVertexBuffer(const T* data, int count)
 }
 
 sk_sp<const GrBuffer> DrawMeshHelper::getIndexBuffer() {
-    GR_DEFINE_STATIC_UNIQUE_KEY(gIndexBufferKey);
+    SKGPU_DEFINE_STATIC_UNIQUE_KEY(gIndexBufferKey);
     return fState->resourceProvider()->findOrCreatePatternedIndexBuffer(
             kIndexPattern, 6, kIndexPatternRepeatCount, 4, gIndexBufferKey);
 }

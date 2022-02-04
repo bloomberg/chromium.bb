@@ -131,7 +131,12 @@ class F extends ValidationTest {
 export const g = makeTestGroup(F);
 
 g.test('setViewport,x_y_width_height_nonnegative')
-  .desc('Test that the parameters of setViewport to define the box must be non-negative.')
+  .desc(
+    `Test that the parameters of setViewport to define the box must be non-negative.
+
+TODO Test -0 (it should be valid) but can't be tested because the harness complains about duplicate parameters.
+TODO Test the first value smaller than -0`
+  )
   .paramsSubcasesOnly([
     // Control case: everything to 0 is ok, covers the empty viewport case.
     { x: 0, y: 0, w: 0, h: 0 },
@@ -141,9 +146,6 @@ g.test('setViewport,x_y_width_height_nonnegative')
     { x: 0, y: -1, w: 0, h: 0 },
     { x: 0, y: 0, w: -1, h: 0 },
     { x: 0, y: 0, w: 0, h: -1 },
-
-    // TODO Test -0 (it should be valid) but can't be tested because the harness complains about duplicate parameters.
-    // TODO Test the first value smaller than -0
   ])
   .fn(t => {
     const { x, y, w, h } = t.params;
@@ -220,7 +222,10 @@ g.test('setViewport,depth_rangeAndOrder')
 
 g.test('setScissorRect,x_y_width_height_nonnegative')
   .desc(
-    'Test that the parameters of setScissorRect to define the box must be non-negative or a TypeError is thrown.'
+    `Test that the parameters of setScissorRect to define the box must be non-negative or a TypeError is thrown.
+
+TODO Test -0 (it should be valid) but can't be tested because the harness complains about duplicate parameters.
+TODO Test the first value smaller than -0`
   )
   .paramsSubcasesOnly([
     // Control case: everything to 0 is ok, covers the empty scissor case.
@@ -231,9 +236,6 @@ g.test('setScissorRect,x_y_width_height_nonnegative')
     { x: 0, y: -1, w: 0, h: 0 },
     { x: 0, y: 0, w: -1, h: 0 },
     { x: 0, y: 0, w: 0, h: -1 },
-
-    // TODO Test -0 (it should be valid) but can't be tested because the harness complains about duplicate parameters.
-    // TODO Test the first value smaller than -0
   ])
   .fn(t => {
     const { x, y, w, h } = t.params;

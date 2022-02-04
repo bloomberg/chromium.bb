@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/chrome_extension_browser_constants.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
+#include "chrome/browser/extensions/site_permissions_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -150,6 +152,19 @@ ExtensionContextMenuModel::ContextMenuAction CommandIdToContextMenuAction(
   return ContextMenuAction::kNoAction;
 }
 
+SitePermissionsHelper::SiteAccess CommandIdToSiteAccess(int command_id) {
+  switch (command_id) {
+    case ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_CLICK:
+      return SitePermissionsHelper::SiteAccess::kOnClick;
+    case ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_SITE:
+      return SitePermissionsHelper::SiteAccess::kOnSite;
+    case ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_ALL_SITES:
+      return SitePermissionsHelper::SiteAccess::kOnAllSites;
+  }
+  NOTREACHED();
+  return SitePermissionsHelper::SiteAccess::kOnClick;
+}
+
 // A stub for the uninstall dialog.
 // TODO(devlin): Ideally, we would just have the uninstall dialog take a
 // base::OnceCallback, but that's a bunch of churn.
@@ -194,7 +209,8 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
     Browser* browser,
     ButtonVisibility button_visibility,
     PopupDelegate* delegate,
-    bool can_show_icon_in_toolbar)
+    bool can_show_icon_in_toolbar,
+    ContextMenuSource source)
     : SimpleMenuModel(this),
       extension_id_(extension->id()),
       is_component_(Manifest::IsComponentLocation(extension->location())),
@@ -202,7 +218,8 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
       profile_(browser->profile()),
       delegate_(delegate),
       button_visibility_(button_visibility),
-      can_show_icon_in_toolbar_(can_show_icon_in_toolbar) {
+      can_show_icon_in_toolbar_(can_show_icon_in_toolbar),
+      source_(source) {
   InitMenu(extension, button_visibility);
 }
 
@@ -218,8 +235,13 @@ bool ExtensionContextMenuModel::IsCommandIdChecked(int command_id) const {
       command_id == PAGE_ACCESS_RUN_ON_SITE ||
       command_id == PAGE_ACCESS_RUN_ON_ALL_SITES) {
     content::WebContents* web_contents = GetActiveWebContents();
-    return web_contents &&
-           GetCurrentPageAccess(extension, web_contents) == command_id;
+    if (!web_contents)
+      return false;
+
+    SitePermissionsHelper permissions(profile_);
+    SitePermissionsHelper::SiteAccess current_access =
+        permissions.GetCurrentSiteAccess(*extension, web_contents);
+    return current_access == CommandIdToSiteAccess(command_id);
   }
 
   return false;
@@ -235,8 +257,10 @@ bool ExtensionContextMenuModel::IsCommandIdVisible(int command_id) const {
 
   // The command is hidden in app windows because they don't
   // support showing extensions in the app window frame.
-  if (command_id == TOGGLE_VISIBILITY)
-    return can_show_icon_in_toolbar_;
+  if (command_id == TOGGLE_VISIBILITY) {
+    return (source_ == ContextMenuSource::kToolbarAction) &&
+           can_show_icon_in_toolbar_;
+  }
 
   // Standard menu items are visible.
   return true;
@@ -459,22 +483,6 @@ void ExtensionContextMenuModel::AppendExtensionItems() {
                                          true);  // is_action_menu
 }
 
-ExtensionContextMenuModel::MenuEntries
-ExtensionContextMenuModel::GetCurrentPageAccess(
-    const Extension* extension,
-    content::WebContents* web_contents) const {
-  DCHECK(web_contents);
-  ScriptingPermissionsModifier modifier(profile_, extension);
-  DCHECK(modifier.CanAffectExtension());
-  ScriptingPermissionsModifier::SiteAccess site_access =
-      modifier.GetSiteAccess(web_contents->GetLastCommittedURL());
-  if (site_access.has_all_sites_access)
-    return PAGE_ACCESS_RUN_ON_ALL_SITES;
-  if (site_access.has_site_access)
-    return PAGE_ACCESS_RUN_ON_SITE;
-  return PAGE_ACCESS_RUN_ON_CLICK;
-}
-
 bool ExtensionContextMenuModel::IsPageAccessCommandEnabled(
     const Extension& extension,
     const GURL& url,
@@ -590,29 +598,9 @@ void ExtensionContextMenuModel::HandlePageAccessCommand(
     return;
   }
 
-  MenuEntries current_access = GetCurrentPageAccess(extension, web_contents);
-  if (command_id == current_access)
-    return;
-
-  auto convert_page_access = [](int command_id) {
-    switch (command_id) {
-      case PAGE_ACCESS_RUN_ON_CLICK:
-        return ExtensionActionRunner::PageAccess::RUN_ON_CLICK;
-      case PAGE_ACCESS_RUN_ON_SITE:
-        return ExtensionActionRunner::PageAccess::RUN_ON_SITE;
-      case PAGE_ACCESS_RUN_ON_ALL_SITES:
-        return ExtensionActionRunner::PageAccess::RUN_ON_ALL_SITES;
-    }
-    NOTREACHED();
-    return ExtensionActionRunner::PageAccess::RUN_ON_CLICK;
-  };
-
-  ExtensionActionRunner* runner =
-      ExtensionActionRunner::GetForWebContents(web_contents);
-  if (runner)
-    runner->HandlePageAccessModified(extension,
-                                     convert_page_access(current_access),
-                                     convert_page_access(command_id));
+  SitePermissionsHelper permissions(profile_);
+  permissions.UpdateSiteAccess(*extension, web_contents,
+                               CommandIdToSiteAccess(command_id));
 }
 
 void ExtensionContextMenuModel::LogPageAccessAction(int command_id) const {

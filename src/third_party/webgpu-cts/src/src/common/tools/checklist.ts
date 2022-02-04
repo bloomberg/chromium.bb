@@ -19,50 +19,71 @@ function usage(rc: number): void {
 if (process.argv.length === 2) usage(0);
 if (process.argv.length !== 3) usage(1);
 
-type QueriesBySuite = Map<string, TestQuery[]>;
+type QueryInSuite = { readonly query: TestQuery; readonly done: boolean };
+type QueriesInSuite = QueryInSuite[];
+type QueriesBySuite = Map<string, QueriesInSuite>;
 async function loadQueryListFromTextFile(filename: string): Promise<QueriesBySuite> {
   const lines = (await fs.promises.readFile(filename, 'utf8')).split(/\r?\n/);
-  const allQueries = lines.filter(l => l).map(l => parseQuery(l.trim()));
+  const allQueries = lines
+    .filter(l => l)
+    .map(l => {
+      const [doneStr, q] = l.split(/\s+/);
+      assert(doneStr === 'DONE' || doneStr === 'TODO', 'first column must be DONE or TODO');
+      return { query: parseQuery(q), done: doneStr === 'DONE' } as const;
+    });
 
   const queriesBySuite: QueriesBySuite = new Map();
-  for (const query of allQueries) {
-    let suiteQueries = queriesBySuite.get(query.suite);
+  for (const q of allQueries) {
+    let suiteQueries = queriesBySuite.get(q.query.suite);
     if (suiteQueries === undefined) {
       suiteQueries = [];
-      queriesBySuite.set(query.suite, suiteQueries);
+      queriesBySuite.set(q.query.suite, suiteQueries);
     }
 
-    suiteQueries.push(query);
+    suiteQueries.push(q);
   }
 
   return queriesBySuite;
 }
 
-function checkForOverlappingQueries(queries: TestQuery[]): void {
-  for (const q1 of queries) {
-    for (const q2 of queries) {
-      if (q1 !== q2 && compareQueries(q1, q2) !== Ordering.Unordered) {
-        throw new StacklessError(`The following checklist items overlap:\n    ${q1}\n    ${q2}`);
+function checkForOverlappingQueries(queries: QueriesInSuite): void {
+  for (let i1 = 0; i1 < queries.length; ++i1) {
+    for (let i2 = i1 + 1; i2 < queries.length; ++i2) {
+      const q1 = queries[i1].query;
+      const q2 = queries[i2].query;
+      if (compareQueries(q1, q2) !== Ordering.Unordered) {
+        console.log(`    FYI, the following checklist items overlap:\n      ${q1}\n      ${q2}`);
       }
     }
   }
 }
 
-function checkForUnmatchedSubtrees(tree: TestTree, matchQueries: TestQuery[]): number {
+function checkForUnmatchedSubtreesAndDoneness(
+  tree: TestTree,
+  matchQueries: QueriesInSuite
+): number {
   let subtreeCount = 0;
   const unmatchedSubtrees: TestQuery[] = [];
   const overbroadMatches: [TestQuery, TestQuery][] = [];
+  const donenessMismatches: QueryInSuite[] = [];
   const alwaysExpandThroughLevel = 1; // expand to, at minimum, every file.
-  for (const collapsedSubtree of tree.iterateCollapsedQueries(true, alwaysExpandThroughLevel)) {
+  for (const subtree of tree.iterateCollapsedNodes({
+    includeIntermediateNodes: true,
+    includeEmptySubtrees: true,
+    alwaysExpandThroughLevel,
+  })) {
     subtreeCount++;
+    const subtreeDone = !subtree.subtreeHasTODOs;
+
     let subtreeMatched = false;
     for (const q of matchQueries) {
-      const comparison = compareQueries(q, collapsedSubtree);
-      assert(comparison !== Ordering.StrictSubset); // shouldn't happen, due to subqueriesToExpand
-      if (comparison === Ordering.StrictSuperset) overbroadMatches.push([q, collapsedSubtree]);
+      const comparison = compareQueries(q.query, subtree.query);
       if (comparison !== Ordering.Unordered) subtreeMatched = true;
+      if (comparison === Ordering.StrictSubset) continue;
+      if (comparison === Ordering.StrictSuperset) overbroadMatches.push([q.query, subtree.query]);
+      if (comparison === Ordering.Equal && q.done !== subtreeDone) donenessMismatches.push(q);
     }
-    if (!subtreeMatched) unmatchedSubtrees.push(collapsedSubtree);
+    if (!subtreeMatched) unmatchedSubtrees.push(subtree.query);
   }
 
   if (overbroadMatches.length) {
@@ -74,8 +95,18 @@ function checkForUnmatchedSubtrees(tree: TestTree, matchQueries: TestQuery[]): n
   }
 
   if (unmatchedSubtrees.length) {
-    throw new StacklessError(`Found unmatched tests:\n    ${unmatchedSubtrees.join('\n    ')}`);
+    throw new StacklessError(`Found unmatched tests:\n  ${unmatchedSubtrees.join('\n  ')}`);
   }
+
+  if (donenessMismatches.length) {
+    throw new StacklessError(
+      'Found done/todo mismatches:\n  ' +
+        donenessMismatches
+          .map(q => `marked ${q.done ? 'DONE, but is TODO' : 'TODO, but is DONE'}: ${q.query}`)
+          .join('\n  ')
+    );
+  }
+
   return subtreeCount;
 }
 
@@ -91,10 +122,14 @@ function checkForUnmatchedSubtrees(tree: TestTree, matchQueries: TestQuery[]): n
     checkForOverlappingQueries(queriesInSuite);
     const suiteQuery = new TestQueryMultiFile(suite, []);
     console.log(`  Loading tree ${suiteQuery}...`);
-    const tree = await loadTreeForQuery(loader, suiteQuery, queriesInSuite);
+    const tree = await loadTreeForQuery(
+      loader,
+      suiteQuery,
+      queriesInSuite.map(q => q.query)
+    );
     console.log('  Found no invalid queries in the checklist. Checking for unmatched tests...');
-    const subtreeCount = checkForUnmatchedSubtrees(tree, queriesInSuite);
-    console.log(`  No unmatched tests among ${subtreeCount} subtrees!`);
+    const subtreeCount = checkForUnmatchedSubtreesAndDoneness(tree, queriesInSuite);
+    console.log(`  No unmatched tests or done/todo mismatches among ${subtreeCount} subtrees!`);
   }
   console.log(`Checklist looks good!`);
 })().catch(ex => {

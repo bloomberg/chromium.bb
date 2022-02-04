@@ -1304,16 +1304,17 @@ void ARGBToRGB24Row_NEON(const uint8_t* src_argb,
                          int width) {
   asm volatile(
       "1:                                        \n"
-      "vld4.8      {d1, d2, d3, d4}, [%0]!       \n"  // load 8 pixels of ARGB.
-      "subs        %2, %2, #8                    \n"  // 8 processed per loop.
-      "vst3.8      {d1, d2, d3}, [%1]!           \n"  // store 8 pixels of
-                                                      // RGB24.
+      "vld4.8      {d0, d2, d4, d6}, [%0]!       \n"  // load 16 pixels of ARGB.
+      "vld4.8      {d1, d3, d5, d7}, [%0]!       \n"
+      "subs        %2, %2, #16                   \n"  // 16 processed per loop.
+      "vst3.8      {d0, d2, d4}, [%1]!           \n"  // store 16 RGB24 pixels.
+      "vst3.8      {d1, d3, d5}, [%1]!           \n"
       "bgt         1b                            \n"
       : "+r"(src_argb),   // %0
         "+r"(dst_rgb24),  // %1
         "+r"(width)       // %2
       :
-      : "cc", "memory", "d1", "d2", "d3", "d4"  // Clobber List
+      : "cc", "memory", "q0", "q1", "q2", "q3"  // Clobber List
   );
 }
 
@@ -1829,6 +1830,98 @@ void ARGBToUVJRow_NEON(const uint8_t* src_argb,
   );
 }
 
+// TODO(fbarchard): Subsample match C code.
+void RGB24ToUVJRow_NEON(const uint8_t* src_rgb24,
+                        int src_stride_rgb24,
+                        uint8_t* dst_u,
+                        uint8_t* dst_v,
+                        int width) {
+  asm volatile (
+      "add         %1, %0, %1                    \n"  // src_stride + src_rgb24
+      "vmov.s16    q10, #127 / 2                 \n"  // UB / VR 0.500 coefficient
+      "vmov.s16    q11, #84 / 2                  \n"  // UG -0.33126 coefficient
+      "vmov.s16    q12, #43 / 2                  \n"  // UR -0.16874 coefficient
+      "vmov.s16    q13, #20 / 2                  \n"  // VB -0.08131 coefficient
+      "vmov.s16    q14, #107 / 2                 \n"  // VG -0.41869 coefficient
+      "vmov.u16    q15, #0x8080                  \n"  // 128.5
+      "1:                                        \n"
+      "vld3.8      {d0, d2, d4}, [%0]!           \n"  // load 8 RGB24 pixels.
+      "vld3.8      {d1, d3, d5}, [%0]!           \n"  // load next 8 RGB24 pixels.
+      "vpaddl.u8   q0, q0                        \n"  // B 16 bytes -> 8 shorts.
+      "vpaddl.u8   q1, q1                        \n"  // G 16 bytes -> 8 shorts.
+      "vpaddl.u8   q2, q2                        \n"  // R 16 bytes -> 8 shorts.
+      "vld3.8      {d8, d10, d12}, [%1]!         \n"  // load 8 more RGB24 pixels.
+      "vld3.8      {d9, d11, d13}, [%1]!         \n"  // load last 8 RGB24 pixels.
+      "vpadal.u8   q0, q4                        \n"  // B 16 bytes -> 8 shorts.
+      "vpadal.u8   q1, q5                        \n"  // G 16 bytes -> 8 shorts.
+      "vpadal.u8   q2, q6                        \n"  // R 16 bytes -> 8 shorts.
+
+      "vrshr.u16   q0, q0, #1                    \n"  // 2x average
+      "vrshr.u16   q1, q1, #1                    \n"
+      "vrshr.u16   q2, q2, #1                    \n"
+
+      "subs        %4, %4, #16                   \n"  // 16 processed per loop.
+    RGBTOUV(q0, q1, q2)
+      "vst1.8      {d0}, [%2]!                   \n"  // store 8 pixels U.
+      "vst1.8      {d1}, [%3]!                   \n"  // store 8 pixels V.
+      "bgt         1b                            \n"
+  : "+r"(src_rgb24),  // %0
+    "+r"(src_stride_rgb24),  // %1
+    "+r"(dst_u),     // %2
+    "+r"(dst_v),     // %3
+    "+r"(width)        // %4
+  :
+  : "cc", "memory", "q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7",
+    "q8", "q9", "q10", "q11", "q12", "q13", "q14", "q15"
+  );
+}
+
+// TODO(fbarchard): Subsample match C code.
+void RAWToUVJRow_NEON(const uint8_t* src_raw,
+                      int src_stride_raw,
+                      uint8_t* dst_u,
+                      uint8_t* dst_v,
+                      int width) {
+  asm volatile (
+      "add         %1, %0, %1                    \n"  // src_stride + src_raw
+      "vmov.s16    q10, #127 / 2                 \n"  // UB / VR 0.500 coefficient
+      "vmov.s16    q11, #84 / 2                  \n"  // UG -0.33126 coefficient
+      "vmov.s16    q12, #43 / 2                  \n"  // UR -0.16874 coefficient
+      "vmov.s16    q13, #20 / 2                  \n"  // VB -0.08131 coefficient
+      "vmov.s16    q14, #107 / 2                 \n"  // VG -0.41869 coefficient
+      "vmov.u16    q15, #0x8080                  \n"  // 128.5
+      "1:                                        \n"
+      "vld3.8      {d0, d2, d4}, [%0]!           \n"  // load 8 RAW pixels.
+      "vld3.8      {d1, d3, d5}, [%0]!           \n"  // load next 8 RAW pixels.
+      "vpaddl.u8   q0, q0                        \n"  // B 16 bytes -> 8 shorts.
+      "vpaddl.u8   q1, q1                        \n"  // G 16 bytes -> 8 shorts.
+      "vpaddl.u8   q2, q2                        \n"  // R 16 bytes -> 8 shorts.
+      "vld3.8      {d8, d10, d12}, [%1]!         \n"  // load 8 more RAW pixels.
+      "vld3.8      {d9, d11, d13}, [%1]!         \n"  // load last 8 RAW pixels.
+      "vpadal.u8   q0, q4                        \n"  // B 16 bytes -> 8 shorts.
+      "vpadal.u8   q1, q5                        \n"  // G 16 bytes -> 8 shorts.
+      "vpadal.u8   q2, q6                        \n"  // R 16 bytes -> 8 shorts.
+
+      "vrshr.u16   q0, q0, #1                    \n"  // 2x average
+      "vrshr.u16   q1, q1, #1                    \n"
+      "vrshr.u16   q2, q2, #1                    \n"
+
+      "subs        %4, %4, #16                   \n"  // 16 processed per loop.
+    RGBTOUV(q2, q1, q0)
+      "vst1.8      {d0}, [%2]!                   \n"  // store 8 pixels U.
+      "vst1.8      {d1}, [%3]!                   \n"  // store 8 pixels V.
+      "bgt         1b                            \n"
+  : "+r"(src_raw),  // %0
+    "+r"(src_stride_raw),  // %1
+    "+r"(dst_u),     // %2
+    "+r"(dst_v),     // %3
+    "+r"(width)        // %4
+  :
+  : "cc", "memory", "q0", "q1", "q2", "q3", "q4", "q5", "q6", "q7",
+    "q8", "q9", "q10", "q11", "q12", "q13", "q14", "q15"
+  );
+}
+
 void BGRAToUVRow_NEON(const uint8_t* src_bgra,
                       int src_stride_bgra,
                       uint8_t* dst_u,
@@ -2319,9 +2412,6 @@ void ARGB4444ToYRow_NEON(const uint8_t* src_argb4444,
       : "cc", "memory", "q0", "q1", "q2", "q3", "q12", "q13");
 }
 
-static const uvec8 kShuffleARGBToABGR = {2,  1, 0, 3,  6,  5,  4,  7,
-                                         10, 9, 8, 11, 14, 13, 12, 15};
-
 void ARGBToAR64Row_NEON(const uint8_t* src_argb,
                         uint16_t* dst_ar64,
                         int width) {
@@ -2342,11 +2432,15 @@ void ARGBToAR64Row_NEON(const uint8_t* src_argb,
       : "cc", "memory", "q0", "q1", "q2", "q3");
 }
 
+static const uvec8 kShuffleARGBToABGR = {2,  1, 0, 3,  6,  5,  4,  7,
+                                         10, 9, 8, 11, 14, 13, 12, 15};
+
 void ARGBToAB64Row_NEON(const uint8_t* src_argb,
                         uint16_t* dst_ab64,
                         int width) {
   asm volatile(
-      "vld1.8      q4, %3                        \n"  // shuffler
+      "vld1.8      {q4}, [%3]                    \n"  // shuffler
+
       "1:                                        \n"
       "vld1.8      {q0}, [%0]!                   \n"
       "vld1.8      {q2}, [%0]!                   \n"
@@ -2360,10 +2454,10 @@ void ARGBToAB64Row_NEON(const uint8_t* src_argb,
       "vst2.8      {q0, q1}, [%1]!               \n"  // store 4 pixels
       "vst2.8      {q2, q3}, [%1]!               \n"  // store 4 pixels
       "bgt         1b                            \n"
-      : "+r"(src_argb),          // %0
-        "+r"(dst_ab64),          // %1
-        "+r"(width)              // %2
-      : "m"(kShuffleARGBToABGR)  // %3
+      : "+r"(src_argb),           // %0
+        "+r"(dst_ab64),           // %1
+        "+r"(width)               // %2
+      : "r"(&kShuffleARGBToABGR)  // %3
       : "cc", "memory", "q0", "q1", "q2", "q3", "q4");
 }
 
@@ -2397,7 +2491,8 @@ void AB64ToARGBRow_NEON(const uint16_t* src_ab64,
                         uint8_t* dst_argb,
                         int width) {
   asm volatile(
-      "vld1.8      d8, %3                        \n"  // shuffler
+      "vld1.8      {d8}, [%3]                    \n"  // shuffler
+
       "1:                                        \n"
       "vld1.16     {q0}, [%0]!                   \n"
       "vld1.16     {q1}, [%0]!                   \n"
@@ -2411,10 +2506,10 @@ void AB64ToARGBRow_NEON(const uint16_t* src_ab64,
       "vst1.8      {q0}, [%1]!                   \n"  // store 4 pixels
       "vst1.8      {q2}, [%1]!                   \n"  // store 4 pixels
       "bgt         1b                            \n"
-      : "+r"(src_ab64),          // %0
-        "+r"(dst_argb),          // %1
-        "+r"(width)              // %2
-      : "m"(kShuffleAB64ToARGB)  // %3
+      : "+r"(src_ab64),           // %0
+        "+r"(dst_argb),           // %1
+        "+r"(width)               // %2
+      : "r"(&kShuffleAB64ToARGB)  // %3
       : "cc", "memory", "q0", "q1", "q2", "q3", "q4");
 }
 

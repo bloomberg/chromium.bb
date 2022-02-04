@@ -44,6 +44,7 @@ try_.builder(
     name = "mac-official",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     cores = None,
+    execution_timeout = 30 * time.hour,
     os = os.MAC_ANY,
 )
 

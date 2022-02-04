@@ -150,12 +150,18 @@ angle::Result IOSurfaceSurfaceMtl::ensureColorTextureCreated(const gl::Context *
 
         texDesc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
 
-        id<MTLTexture> texture =
-            [contextMtl->getMetalDevice() newTextureWithDescriptor:texDesc
-                                                         iosurface:mIOSurface
-                                                             plane:mIOSurfacePlane];
+        mColorTexture =
+            mtl::Texture::MakeFromMetal(contextMtl->getMetalDevice().newTextureWithDescriptor(
+                texDesc, mIOSurface, mIOSurfacePlane));
 
-        mColorTexture = mtl::Texture::MakeFromMetal([texture ANGLE_MTL_AUTORELEASE]);
+        if (mColorTexture)
+        {
+            size_t resourceSize = EstimateTextureSizeInBytes(
+                mColorFormat, mColorTexture->widthAt0(), mColorTexture->heightAt0(),
+                mColorTexture->depthAt0(), mColorTexture->samples(), mColorTexture->mipmapLevels());
+
+            mColorTexture->setEstimatedByteSize(resourceSize);
+        }
     }
 
     mColorRenderTarget.set(mColorTexture, mtl::kZeroNativeMipLevel, 0, mColorFormat);

@@ -10,18 +10,23 @@
 #include "libANGLE/renderer/vulkan/DisplayVk.h"
 
 #include "common/debug.h"
+#include "common/system_utils.h"
 #include "libANGLE/Context.h"
 #include "libANGLE/Display.h"
+#include "libANGLE/renderer/vulkan/BufferVk.h"
 #include "libANGLE/renderer/vulkan/ContextVk.h"
 #include "libANGLE/renderer/vulkan/DeviceVk.h"
 #include "libANGLE/renderer/vulkan/ImageVk.h"
 #include "libANGLE/renderer/vulkan/RendererVk.h"
 #include "libANGLE/renderer/vulkan/SurfaceVk.h"
 #include "libANGLE/renderer/vulkan/SyncVk.h"
+#include "libANGLE/renderer/vulkan/VkImageImageSiblingVk.h"
 #include "libANGLE/trace.h"
 
 namespace rx
 {
+// Time interval in seconds that we should try to prune default buffer pools.
+constexpr double kTimeElapsedForPruneDefaultBufferPool = 1;
 
 DisplayVk::DisplayVk(const egl::DisplayState &state)
     : DisplayImpl(state),
@@ -202,6 +207,54 @@ gl::Version DisplayVk::getMaxConformantESVersion() const
     return mRenderer->getMaxConformantESVersion();
 }
 
+egl::Error DisplayVk::validateImageClientBuffer(const gl::Context *context,
+                                                EGLenum target,
+                                                EGLClientBuffer clientBuffer,
+                                                const egl::AttributeMap &attribs) const
+{
+    switch (target)
+    {
+        case EGL_VULKAN_IMAGE_ANGLE:
+        {
+            VkImage *vkImage = reinterpret_cast<VkImage *>(clientBuffer);
+            if (!vkImage || *vkImage == VK_NULL_HANDLE)
+            {
+                return egl::EglBadParameter() << "clientBuffer is invalid.";
+            }
+
+            uint64_t hi = static_cast<uint64_t>(attribs.get(EGL_VULKAN_IMAGE_CREATE_INFO_HI_ANGLE));
+            uint64_t lo = static_cast<uint64_t>(attribs.get(EGL_VULKAN_IMAGE_CREATE_INFO_LO_ANGLE));
+            uint64_t info = ((hi & 0xffffffff) << 32) | (lo & 0xffffffff);
+            if (reinterpret_cast<const VkImageCreateInfo *>(info)->sType !=
+                VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO)
+            {
+                return egl::EglBadParameter()
+                       << "EGL_VULKAN_IMAGE_CREATE_INFO_HI_ANGLE and "
+                          "EGL_VULKAN_IMAGE_CREATE_INFO_LO_ANGLE are not pointing to a "
+                          "valid VkImageCreateInfo structure.";
+            }
+
+            return egl::NoError();
+        }
+        default:
+            return DisplayImpl::validateImageClientBuffer(context, target, clientBuffer, attribs);
+    }
+}
+
+ExternalImageSiblingImpl *DisplayVk::createExternalImageSibling(const gl::Context *context,
+                                                                EGLenum target,
+                                                                EGLClientBuffer buffer,
+                                                                const egl::AttributeMap &attribs)
+{
+    switch (target)
+    {
+        case EGL_VULKAN_IMAGE_ANGLE:
+            return new VkImageImageSiblingVk(buffer, attribs);
+        default:
+            return DisplayImpl::createExternalImageSibling(context, target, buffer, attribs);
+    }
+}
+
 void DisplayVk::generateExtensions(egl::DisplayExtensions *outExtensions) const
 {
     outExtensions->createContextRobustness    = getRenderer()->getNativeExtensions().robustnessEXT;
@@ -332,15 +385,64 @@ void DisplayVk::populateFeatureList(angle::FeatureList *features)
     mRenderer->getFeatures().populateFeatureList(features);
 }
 
-ShareGroupVk::ShareGroupVk() {}
+ShareGroupVk::ShareGroupVk()
+{
+    mLastPruneTime = angle::GetCurrentSystemTime();
+}
 
 void ShareGroupVk::onDestroy(const egl::Display *display)
 {
-    DisplayVk *displayVk = vk::GetImpl(display);
+    RendererVk *renderer = vk::GetImpl(display)->getRenderer();
 
-    mPipelineLayoutCache.destroy(displayVk->getRenderer());
-    mDescriptorSetLayoutCache.destroy(displayVk->getRenderer());
+    for (std::unique_ptr<vk::BufferPool> &pool : mDefaultBufferPools)
+    {
+        if (pool)
+        {
+            pool->destroy(renderer);
+        }
+    }
+
+    mPipelineLayoutCache.destroy(renderer);
+    mDescriptorSetLayoutCache.destroy(renderer);
 
     ASSERT(mResourceUseLists.empty());
+}
+
+vk::BufferPool *ShareGroupVk::getDefaultBufferPool(RendererVk *renderer, uint32_t memoryTypeIndex)
+{
+    if (!mDefaultBufferPools[memoryTypeIndex])
+    {
+        const vk::Allocator &allocator = renderer->getAllocator();
+        VkBufferUsageFlags usageFlags  = GetDefaultBufferUsageFlags(renderer);
+
+        VkMemoryPropertyFlags memoryPropertyFlags;
+        allocator.getMemoryTypeProperties(memoryTypeIndex, &memoryPropertyFlags);
+
+        std::unique_ptr<vk::BufferPool> pool = std::make_unique<vk::BufferPool>();
+        pool->initWithFlags(renderer, vma::VirtualBlockCreateFlagBits::GENERAL, usageFlags, 0,
+                            memoryTypeIndex, memoryPropertyFlags);
+        mDefaultBufferPools[memoryTypeIndex] = std::move(pool);
+    }
+
+    return mDefaultBufferPools[memoryTypeIndex].get();
+}
+
+void ShareGroupVk::pruneDefaultBufferPools(RendererVk *renderer)
+{
+    mLastPruneTime = angle::GetCurrentSystemTime();
+
+    for (std::unique_ptr<vk::BufferPool> &pool : mDefaultBufferPools)
+    {
+        if (pool)
+        {
+            pool->pruneEmptyBuffers(renderer);
+        }
+    }
+}
+
+bool ShareGroupVk::isDueForBufferPoolPrune()
+{
+    double timeElapsed = angle::GetCurrentSystemTime() - mLastPruneTime;
+    return timeElapsed > kTimeElapsedForPruneDefaultBufferPool;
 }
 }  // namespace rx

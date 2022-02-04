@@ -3,7 +3,7 @@
     align-items: center;
     display: flex;
     justify-content: space-between;
-    padding: var(--cr-section-padding);
+    padding: 0 20px;
   }
 
   h2 {
@@ -12,22 +12,32 @@
     padding-top: 0;
   }
 
+  #title {
+    font-weight: 400;
+  }
+
   #bodyText {
-    padding-block-end: var(--cr-section-vertical-padding);
+    padding-block-end: 16px;
+  }
+
+  #startButton {
+    margin-inline-end: 16px;
   }
 </style>
 <div id="wrapper">
   <div id="controlsColumn">
-    <h2 id="title" aria-hidden="true">
-      $i18n{privacyReviewPromoTitle}
-    </h2>
+    <h2 id="title" aria-hidden="true">$i18n{privacyReviewPromoHeader}</h2>
     <div id="bodyText" class="cr-secondary-text" aria-hidden="true">
       $i18n{privacyReviewPromoBody}
     </div>
     <cr-button class="action-button" id="startButton" role="button"
         aria-labelledby="title" aria-describedby="bodyText"
-        no-search on-click="onPrivacyReviewClick_">
+        on-click="onPrivacyReviewStartClick_">
       $i18n{privacyReviewPromoStartButton}
+    </cr-button>
+    <cr-button id="noThanksButton" role="button"
+        on-click="onNoThanksButtonClick_">
+      $i18n{noThanks}
     </cr-button>
   </div>
   <picture>

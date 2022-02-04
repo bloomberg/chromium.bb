@@ -616,9 +616,9 @@ struct kernel_retval<FullPivLU<MatrixType_> >
 {
   EIGEN_MAKE_KERNEL_HELPERS(FullPivLU<MatrixType_>)
 
-  enum { MaxSmallDimAtCompileTime = EIGEN_SIZE_MIN_PREFER_FIXED(
-            MatrixType::MaxColsAtCompileTime,
-            MatrixType::MaxRowsAtCompileTime)
+  enum { MaxSmallDimAtCompileTime = min_size_prefer_fixed(
+              MatrixType::MaxColsAtCompileTime,
+              MatrixType::MaxRowsAtCompileTime)
   };
 
   template<typename Dest> void evalTo(Dest& dst) const
@@ -702,9 +702,9 @@ struct image_retval<FullPivLU<MatrixType_> >
 {
   EIGEN_MAKE_IMAGE_HELPERS(FullPivLU<MatrixType_>)
 
-  enum { MaxSmallDimAtCompileTime = EIGEN_SIZE_MIN_PREFER_FIXED(
-            MatrixType::MaxColsAtCompileTime,
-            MatrixType::MaxRowsAtCompileTime)
+  enum { MaxSmallDimAtCompileTime = min_size_prefer_fixed(
+              MatrixType::MaxColsAtCompileTime,
+              MatrixType::MaxRowsAtCompileTime)
   };
 
   template<typename Dest> void evalTo(Dest& dst) const

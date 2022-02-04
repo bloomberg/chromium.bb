@@ -6,8 +6,6 @@
 # in the file PATENTS.  All contributing project authors may
 # be found in the AUTHORS file in the root of the source tree.
 
-import("//build/config/crypto.gni")
-import("//build/config/ui.gni")
 import("//third_party/google_benchmark/buildconfig.gni")
 import("../webrtc.gni")
 
@@ -501,6 +499,7 @@ rtc_source_set("rtc_operations_chain") {
     ":checks",
     ":macromagic",
     ":refcount",
+    "../api:refcountedbase",
     "../api:scoped_refptr",
     "../api:sequence_checker",
     "system:no_unique_address",
@@ -791,7 +790,10 @@ rtc_library("threading") {
     "thread.h",
     "thread_message.h",
   ]
-  absl_deps = [ "//third_party/abseil-cpp/absl/algorithm:container" ]
+  absl_deps = [
+    "//third_party/abseil-cpp/absl/algorithm:container",
+    "//third_party/abseil-cpp/absl/base:core_headers",
+  ]
   deps = [
     ":async_resolver_interface",
     ":atomicops",

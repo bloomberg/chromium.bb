@@ -21,20 +21,19 @@
 
 #include <grpc/support/port_platform.h>
 
+#include <openssl/x509.h>
+
 #include "absl/strings/string_view.h"
 
 #include <grpc/grpc_security_constants.h>
 
 #include "src/core/tsi/transport_security_interface.h"
 
-extern "C" {
-#include <openssl/x509.h>
-}
-
 /* Value for the TSI_CERTIFICATE_TYPE_PEER_PROPERTY property for X509 certs. */
 #define TSI_X509_CERTIFICATE_TYPE "X509"
 
 /* This property is of type TSI_PEER_PROPERTY_STRING.  */
+#define TSI_X509_SUBJECT_PEER_PROPERTY "x509_subject"
 #define TSI_X509_SUBJECT_COMMON_NAME_PEER_PROPERTY "x509_subject_common_name"
 #define TSI_X509_SUBJECT_ALTERNATIVE_NAME_PEER_PROPERTY \
   "x509_subject_alternative_name"
@@ -158,6 +157,12 @@ struct tsi_ssl_client_handshaker_options {
   tsi_tls_version min_tls_version;
   tsi_tls_version max_tls_version;
 
+  /* The directory where all hashed CRL files enforced by the handshaker are
+     located. If the directory is invalid, CRL checking will fail open and just
+     log. An empty directory will not enable crl checking. Only OpenSSL version
+     > 1.1 is supported for CRL checking*/
+  const char* crl_directory;
+
   tsi_ssl_client_handshaker_options()
       : pem_key_cert_pair(nullptr),
         pem_root_certs(nullptr),
@@ -168,7 +173,8 @@ struct tsi_ssl_client_handshaker_options {
         session_cache(nullptr),
         skip_server_certificate_verification(false),
         min_tls_version(tsi_tls_version::TSI_TLS1_2),
-        max_tls_version(tsi_tls_version::TSI_TLS1_3) {}
+        max_tls_version(tsi_tls_version::TSI_TLS1_3),
+        crl_directory(nullptr) {}
 };
 
 /* Creates a client handshaker factory.
@@ -288,6 +294,12 @@ struct tsi_ssl_server_handshaker_options {
   tsi_tls_version min_tls_version;
   tsi_tls_version max_tls_version;
 
+  /* The directory where all hashed CRL files are cached in the x.509 store and
+   * enforced by the handshaker are located. If the directory is invalid, CRL
+   * checking will fail open and just log. An empty directory will not enable
+   * crl checking. Only OpenSSL version > 1.1 is supported for CRL checking */
+  const char* crl_directory;
+
   tsi_ssl_server_handshaker_options()
       : pem_key_cert_pairs(nullptr),
         num_key_cert_pairs(0),
@@ -299,7 +311,8 @@ struct tsi_ssl_server_handshaker_options {
         session_ticket_key(nullptr),
         session_ticket_key_size(0),
         min_tls_version(tsi_tls_version::TSI_TLS1_2),
-        max_tls_version(tsi_tls_version::TSI_TLS1_3) {}
+        max_tls_version(tsi_tls_version::TSI_TLS1_3),
+        crl_directory(nullptr) {}
 };
 
 /* Creates a server handshaker factory.

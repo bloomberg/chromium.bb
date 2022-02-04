@@ -163,7 +163,8 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper<Event
 
   static async withTimeout<T>(promise: Promise<T>, timeout: number): Promise<T> {
     const timeoutPromise = new Promise<T>(
-        (_, reject) => setTimeout(reject, timeout, new Error(i18nString(UIStrings.loadCanceledDueToLoadTimeout))));
+        (_, reject) =>
+            window.setTimeout(reject, timeout, new Error(i18nString(UIStrings.loadCanceledDueToLoadTimeout))));
     return Promise.race([promise, timeoutPromise]);
   }
 
@@ -219,7 +220,8 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper<Event
       return this.#loadOverride(url);
     }
     const parsedURL = new Common.ParsedURL.ParsedURL(url);
-    const eligibleForLoadFromTarget = getLoadThroughTargetSetting().get() && parsedURL && parsedURL.isHttpOrHttps();
+    const eligibleForLoadFromTarget = getLoadThroughTargetSetting().get() && parsedURL && parsedURL.scheme !== 'file' &&
+        parsedURL.scheme !== 'data' && parsedURL.scheme !== 'devtools';
     Host.userMetrics.developerResourceScheme(this.getDeveloperResourceScheme(parsedURL));
     if (eligibleForLoadFromTarget) {
       try {
@@ -315,7 +317,7 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper<Event
       };
     } finally {
       if (resource.stream) {
-        ioModel.close(resource.stream);
+        void ioModel.close(resource.stream);
       }
     }
   }

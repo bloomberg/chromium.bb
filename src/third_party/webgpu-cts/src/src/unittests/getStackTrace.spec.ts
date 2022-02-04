@@ -21,7 +21,7 @@ g.test('stacks')
    at processTicksAndRejections (internal/process/task_queues.js:86:5)`,
     },
     {
-      // TODO: make sure this test case actually matches what happens on windows
+      // MAINTENANCE_TODO: make sure this test case actually matches what happens on windows
       case: 'node_fail_backslash',
       _expectedLines: 3,
       _stack: `Error:

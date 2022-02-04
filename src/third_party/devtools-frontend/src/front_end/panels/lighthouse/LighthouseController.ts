@@ -285,11 +285,10 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
     for (const runtimeSetting of RuntimeSettings) {
       runtimeSetting.setFlags(flags, runtimeSetting.setting.get());
     }
-    return /** @type {{internalDisableDeviceScreenEmulation: boolean, emulatedFormFactor: (string|undefined)}} */ flags as
-        {
-          internalDisableDeviceScreenEmulation: boolean,
-          emulatedFormFactor: (string | undefined),
-        };
+    return flags as {
+      internalDisableDeviceScreenEmulation: boolean,
+      emulatedFormFactor: (string | undefined),
+    };
   }
 
   getCategoryIDs(): string[] {
@@ -325,7 +324,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
 
     this.dispatchEventToListeners(Events.PageAuditabilityChanged, {helpText});
 
-    this.hasImportantResourcesNotCleared().then(warning => {
+    void this.hasImportantResourcesNotCleared().then(warning => {
       this.dispatchEventToListeners(Events.PageWarningsChanged, {warning});
     });
   }

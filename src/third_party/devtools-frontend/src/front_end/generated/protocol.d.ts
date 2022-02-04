@@ -1047,6 +1047,21 @@ declare namespace Protocol {
        * https://www.chromestatus.com/feature/5684870116278272 for more details."
        */
       message?: string;
+      deprecationType: string;
+    }
+
+    export const enum ClientHintIssueReason {
+      MetaTagAllowListInvalidOrigin = 'MetaTagAllowListInvalidOrigin',
+      MetaTagModifiedHTML = 'MetaTagModifiedHTML',
+    }
+
+    /**
+     * This issue tracks client hints related issues. It's used to deprecate old
+     * features, encourage the use of new ones, and provide general guidance.
+     */
+    export interface ClientHintIssueDetails {
+      sourceCodeLocation: SourceCodeLocation;
+      clientHintIssueReason: ClientHintIssueReason;
     }
 
     /**
@@ -1070,6 +1085,7 @@ declare namespace Protocol {
       WasmCrossOriginModuleSharingIssue = 'WasmCrossOriginModuleSharingIssue',
       GenericIssue = 'GenericIssue',
       DeprecationIssue = 'DeprecationIssue',
+      ClientHintIssue = 'ClientHintIssue',
     }
 
     /**
@@ -1093,6 +1109,7 @@ declare namespace Protocol {
       wasmCrossOriginModuleSharingIssue?: WasmCrossOriginModuleSharingIssueDetails;
       genericIssueDetails?: GenericIssueDetails;
       deprecationIssueDetails?: DeprecationIssueDetails;
+      clientHintIssueDetails?: ClientHintIssueDetails;
     }
 
     /**
@@ -2868,6 +2885,10 @@ declare namespace Protocol {
       ScrollbarCorner = 'scrollbar-corner',
       Resizer = 'resizer',
       InputListButton = 'input-list-button',
+      Transition = 'transition',
+      TransitionContainer = 'transition-container',
+      TransitionOldContent = 'transition-old-content',
+      TransitionNewContent = 'transition-new-content',
     }
 
     /**
@@ -10010,6 +10031,7 @@ declare namespace Protocol {
     export const enum PermissionsPolicyBlockReason {
       Header = 'Header',
       IframeAttribute = 'IframeAttribute',
+      InFencedFrameTree = 'InFencedFrameTree',
     }
 
     export interface PermissionsPolicyBlockLocator {
@@ -10460,6 +10482,20 @@ declare namespace Protocol {
     }
 
     /**
+     * Font families collection for a script.
+     */
+    export interface ScriptFontFamilies {
+      /**
+       * Name of the script which these font families are defined for.
+       */
+      script: string;
+      /**
+       * Generic font families collection for the script.
+       */
+      fontFamilies: FontFamilies;
+    }
+
+    /**
      * Default font sizes.
      */
     export interface FontSizes {
@@ -10701,6 +10737,21 @@ declare namespace Protocol {
        * Not restored reason
        */
       reason: BackForwardCacheNotRestoredReason;
+    }
+
+    export interface BackForwardCacheNotRestoredExplanationTree {
+      /**
+       * URL of each frame
+       */
+      url: string;
+      /**
+       * Not restored reasons of each frame
+       */
+      explanations: BackForwardCacheNotRestoredExplanation[];
+      /**
+       * Array of children frame
+       */
+      children: BackForwardCacheNotRestoredExplanationTree[];
     }
 
     export interface AddScriptToEvaluateOnLoadRequest {
@@ -11250,6 +11301,10 @@ declare namespace Protocol {
        * Specifies font families to set. If a font family is not specified, it won't be changed.
        */
       fontFamilies: FontFamilies;
+      /**
+       * Specifies font families to set for individual scripts.
+       */
+      forScripts?: ScriptFontFamilies[];
     }
 
     export interface SetFontSizesRequest {
@@ -11692,6 +11747,10 @@ declare namespace Protocol {
        * Array of reasons why the page could not be cached. This must not be empty.
        */
       notRestoredExplanations: BackForwardCacheNotRestoredExplanation[];
+      /**
+       * Tree structure of reasons why the page could not be cached for each frame.
+       */
+      notRestoredExplanationsTree?: BackForwardCacheNotRestoredExplanationTree;
     }
 
     export interface LoadEventFiredEvent {
@@ -12376,6 +12435,7 @@ declare namespace Protocol {
       Websql = 'websql',
       Service_workers = 'service_workers',
       Cache_storage = 'cache_storage',
+      Interest_groups = 'interest_groups',
       All = 'all',
       Other = 'other',
     }
@@ -12401,6 +12461,43 @@ declare namespace Protocol {
     export interface TrustTokens {
       issuerOrigin: string;
       count: number;
+    }
+
+    /**
+     * Enum of interest group access types.
+     */
+    export const enum InterestGroupAccessType {
+      Join = 'join',
+      Leave = 'leave',
+      Update = 'update',
+      Bid = 'bid',
+      Win = 'win',
+    }
+
+    /**
+     * Ad advertising element inside an interest group.
+     */
+    export interface InterestGroupAd {
+      renderUrl: string;
+      metadata?: string;
+    }
+
+    /**
+     * The full details of an interest group.
+     */
+    export interface InterestGroupDetails {
+      ownerOrigin: string;
+      name: string;
+      expirationTime: number;
+      joiningOrigin: string;
+      biddingUrl?: string;
+      biddingWasmHelperUrl?: string;
+      updateUrl?: string;
+      trustedBiddingSignalsUrl?: string;
+      trustedBiddingSignalsKeys: string[];
+      userBiddingSignals?: string;
+      ads: InterestGroupAd[];
+      adComponents: InterestGroupAd[];
     }
 
     export interface ClearDataForOriginRequest {
@@ -12532,6 +12629,19 @@ declare namespace Protocol {
       didDeleteTokens: boolean;
     }
 
+    export interface GetInterestGroupDetailsRequest {
+      ownerOrigin: string;
+      name: string;
+    }
+
+    export interface GetInterestGroupDetailsResponse extends ProtocolResponseWithError {
+      details: InterestGroupDetails;
+    }
+
+    export interface SetInterestGroupTrackingRequest {
+      enable: boolean;
+    }
+
     /**
      * A cache's contents have been modified.
      */
@@ -12582,6 +12692,15 @@ declare namespace Protocol {
        * Origin to update.
        */
       origin: string;
+    }
+
+    /**
+     * One of the interest groups was accessed by the associated page.
+     */
+    export interface InterestGroupAccessedEvent {
+      type: InterestGroupAccessType;
+      ownerOrigin: string;
+      name: string;
     }
   }
 
@@ -14034,6 +14153,12 @@ declare namespace Protocol {
        */
       hasCredBlob?: boolean;
       /**
+       * If set to true, the authenticator will support the minPinLength extension.
+       * https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#sctn-minpinlength-extension
+       * Defaults to false.
+       */
+      hasMinPinLength?: boolean;
+      /**
        * If set to true, tests of user presence will succeed immediately.
        * Otherwise, they will not be resolved. Defaults to true.
        */
@@ -14321,6 +14446,8 @@ declare namespace Protocol {
       location: Location;
       /**
        * JavaScript script name or url.
+       * Deprecated in favor of using the `location.scriptId` to resolve the URL via a previously
+       * sent `Debugger.scriptParsed` event.
        */
       url: string;
       /**

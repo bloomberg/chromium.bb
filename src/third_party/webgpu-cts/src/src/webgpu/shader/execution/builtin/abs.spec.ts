@@ -14,7 +14,7 @@ import {
   u32Bits,
 } from '../../../util/conversion.js';
 
-import { anyOf, kBit, kValue, run } from './builtin.js';
+import { anyOf, Config, correctlyRoundedThreshold, kBit, kValue, run } from './builtin.js';
 
 export const g = makeTestGroup(GPUTest);
 
@@ -95,7 +95,10 @@ If e evaluates to the largest negative value, then the result is e.
       .combine('vectorize', [undefined, 2, 3, 4] as const)
   )
   .fn(async t => {
-    run(t, 'abs', [TypeI32], TypeI32, t.params, [
+    const cfg: Config = t.params;
+    cfg.cmpFloats = correctlyRoundedThreshold();
+
+    run(t, 'abs', [TypeI32], TypeI32, cfg, [
       // Min and max i32
       // If e evaluates to the largest negative value, then the result is e.
       { input: i32Bits(kBit.i32.negative.min), expected: i32Bits(kBit.i32.negative.min) },
@@ -148,6 +151,8 @@ abs(e: T ) -> T
 T is f32 or vecN<f32>
 Returns the absolute value of e (e.g. e with a positive sign bit).
 Component-wise when T is a vector. (GLSLstd450Fabs)
+
+TODO(sarahM0): Check if this is needed (or if it has to fail). If yes add other values. [1]
 `
   )
   .params(u =>
@@ -156,7 +161,10 @@ Component-wise when T is a vector. (GLSLstd450Fabs)
       .combine('vectorize', [undefined, 2, 3, 4] as const)
   )
   .fn(async t => {
-    run(t, 'abs', [TypeF32], TypeF32, t.params, [
+    const cfg: Config = t.params;
+    cfg.cmpFloats = correctlyRoundedThreshold();
+
+    run(t, 'abs', [TypeF32], TypeF32, cfg, [
       // Min and Max f32
       { input: f32Bits(kBit.f32.negative.max), expected: f32Bits(0x0080_0000) },
       { input: f32Bits(kBit.f32.negative.min), expected: f32Bits(0x7f7f_ffff) },
@@ -164,7 +172,7 @@ Component-wise when T is a vector. (GLSLstd450Fabs)
       { input: f32Bits(kBit.f32.positive.max), expected: f32Bits(kBit.f32.positive.max) },
 
       // Subnormal f32
-      // TODO(sarahM0): Check if this is needed (or if it has to fail). If yes add other values.
+      // [1] If needed add other values.
       {
         input: f32Bits(kBit.f32.subnormal.positive.max),
         expected: anyOf(f32Bits(kBit.f32.subnormal.positive.max), f32(0)),

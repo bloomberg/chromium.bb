@@ -15,7 +15,7 @@
 #include "dawn_wire/server/Server.h"
 #include "dawn_wire/WireServer.h"
 
-namespace dawn_wire { namespace server {
+namespace dawn::wire::server {
 
     Server::Server(const DawnProcTable& procs,
                    CommandSerializer* serializer,
@@ -122,33 +122,24 @@ namespace dawn_wire { namespace server {
         mProcs.deviceReference(device);
 
         // Set callbacks to forward errors to the client.
-        // Note: these callbacks are manually inlined here since they do not acquire and
-        // free their userdata. Also unlike other callbacks, these are cleared and unset when
-        // the server is destroyed, so we don't need to check if the server is still alive
-        // inside them.
-        mProcs.deviceSetUncapturedErrorCallback(
-            device,
-            [](WGPUErrorType type, const char* message, void* userdata) {
-                DeviceInfo* info = static_cast<DeviceInfo*>(userdata);
-                info->server->OnUncapturedError(info->self, type, message);
-            },
-            data->info.get());
-        // Set callback to post warning and other infomation to client.
-        // Almost the same with UncapturedError.
-        mProcs.deviceSetLoggingCallback(
-            device,
-            [](WGPULoggingType type, const char* message, void* userdata) {
-                DeviceInfo* info = static_cast<DeviceInfo*>(userdata);
-                info->server->OnLogging(info->self, type, message);
-            },
-            data->info.get());
-        mProcs.deviceSetDeviceLostCallback(
-            device,
-            [](WGPUDeviceLostReason reason, const char* message, void* userdata) {
-                DeviceInfo* info = static_cast<DeviceInfo*>(userdata);
-                info->server->OnDeviceLost(info->self, reason, message);
-            },
-            data->info.get());
+        SetForwardingDeviceCallbacks(data);
+        return true;
+    }
+
+    bool Server::InjectInstance(WGPUInstance instance, uint32_t id, uint32_t generation) {
+        ASSERT(instance != nullptr);
+        ObjectData<WGPUInstance>* data = InstanceObjects().Allocate(id);
+        if (data == nullptr) {
+            return false;
+        }
+
+        data->handle = instance;
+        data->generation = generation;
+        data->state = AllocationState::Allocated;
+
+        // The instance is externally owned so it shouldn't be destroyed when we receive a destroy
+        // message from the client. Add a reference to counterbalance the eventual release.
+        mProcs.instanceReference(instance);
 
         return true;
     }
@@ -161,6 +152,36 @@ namespace dawn_wire { namespace server {
         return data->handle;
     }
 
+    void Server::SetForwardingDeviceCallbacks(ObjectData<WGPUDevice>* deviceObject) {
+        // Note: these callbacks are manually inlined here since they do not acquire and
+        // free their userdata. Also unlike other callbacks, these are cleared and unset when
+        // the server is destroyed, so we don't need to check if the server is still alive
+        // inside them.
+        mProcs.deviceSetUncapturedErrorCallback(
+            deviceObject->handle,
+            [](WGPUErrorType type, const char* message, void* userdata) {
+                DeviceInfo* info = static_cast<DeviceInfo*>(userdata);
+                info->server->OnUncapturedError(info->self, type, message);
+            },
+            deviceObject->info.get());
+        // Set callback to post warning and other infomation to client.
+        // Almost the same with UncapturedError.
+        mProcs.deviceSetLoggingCallback(
+            deviceObject->handle,
+            [](WGPULoggingType type, const char* message, void* userdata) {
+                DeviceInfo* info = static_cast<DeviceInfo*>(userdata);
+                info->server->OnLogging(info->self, type, message);
+            },
+            deviceObject->info.get());
+        mProcs.deviceSetDeviceLostCallback(
+            deviceObject->handle,
+            [](WGPUDeviceLostReason reason, const char* message, void* userdata) {
+                DeviceInfo* info = static_cast<DeviceInfo*>(userdata);
+                info->server->OnDeviceLost(info->self, reason, message);
+            },
+            deviceObject->info.get());
+    }
+
     void Server::ClearDeviceCallbacks(WGPUDevice device) {
         // Un-set the error and lost callbacks since we cannot forward them
         // after the server has been destroyed.
@@ -170,8 +191,8 @@ namespace dawn_wire { namespace server {
     }
 
     bool TrackDeviceChild(DeviceInfo* info, ObjectType type, ObjectId id) {
-        auto it = info->childObjectTypesAndIds.insert(PackObjectTypeAndId(type, id));
-        if (!it.second) {
+        auto [_, inserted] = info->childObjectTypesAndIds.insert(PackObjectTypeAndId(type, id));
+        if (!inserted) {
             // An object of this type and id already exists.
             return false;
         }
@@ -189,4 +210,4 @@ namespace dawn_wire { namespace server {
         return true;
     }
 
-}}  // namespace dawn_wire::server
+}  // namespace dawn::wire::server

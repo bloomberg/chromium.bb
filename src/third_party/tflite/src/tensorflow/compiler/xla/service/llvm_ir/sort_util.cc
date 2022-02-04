@@ -39,7 +39,6 @@ limitations under the License.
 #include "tensorflow/compiler/xla/shape_util.h"
 #include "tensorflow/compiler/xla/util.h"
 #include "tensorflow/core/lib/core/status.h"
-#include "tensorflow/core/platform/types.h"
 
 namespace xla {
 namespace llvm_ir {
@@ -250,7 +249,7 @@ Status EmitTiledCompareLoop(
               b->CreateMul(tiled_keys_index[dimension_to_sort],
                            tiled_keys_index.GetConstantWithIndexType(2)),
               tiled_keys_index.GetConstantWithIndexType(
-                  RoundDownToNearest(dimension_to_sort_bound, tile_size))),
+                  RoundDownTo(dimension_to_sort_bound, tile_size))),
           [&]() {
             return EmitCompareLoopBody(
                 dimension_to_sort_bound % tile_size, params.size(),

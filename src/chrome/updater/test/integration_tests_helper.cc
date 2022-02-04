@@ -32,7 +32,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #endif
 
@@ -207,7 +207,7 @@ void AppTestHelper::FirstTaskRun() {
      WithSystemScope(Wrap(&ExpectCandidateUninstalled))},
     {"expect_clean", WithSystemScope(Wrap(&ExpectClean))},
     {"expect_installed", WithSystemScope(Wrap(&ExpectInstalled))},
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     {"expect_interfaces_registered",
      WithSystemScope(Wrap(&ExpectInterfacesRegistered))},
     {"expect_legacy_update3web_succeeds",
@@ -219,7 +219,7 @@ void AppTestHelper::FirstTaskRun() {
     {"expect_legacy_process_launcher_succeeds",
      WithSystemScope(Wrap(&ExpectLegacyProcessLauncherSucceeds))},
     {"run_uninstall_cmd_line", WithSystemScope(Wrap(&RunUninstallCmdLine))},
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
     {"expect_version_active",
      WithSwitch("version", WithSystemScope(Wrap(&ExpectVersionActive)))},
     {"expect_version_not_active",
@@ -227,6 +227,8 @@ void AppTestHelper::FirstTaskRun() {
     {"install", WithSystemScope(Wrap(&Install))},
     {"print_log", WithSystemScope(Wrap(&PrintLog))},
     {"run_wake", WithSwitch("exit_code", WithSystemScope(Wrap(&RunWake)))},
+    {"run_wake_active",
+     WithSwitch("exit_code", WithSystemScope(Wrap(&RunWakeActive)))},
     {"update", WithSwitch("app_id", WithSystemScope(Wrap(&Update)))},
     {"update_all", WithSystemScope(Wrap(&UpdateAll))},
     {"register_app", WithSwitch("app_id", WithSystemScope(Wrap(&RegisterApp)))},
@@ -238,6 +240,8 @@ void AppTestHelper::FirstTaskRun() {
      WithSystemScope(Wrap(&SetupFakeUpdaterHigherVersion))},
     {"setup_fake_updater_lower_version",
      WithSystemScope(Wrap(&SetupFakeUpdaterLowerVersion))},
+    {"setup_real_updater_lower_version",
+     WithSystemScope(Wrap(&SetupRealUpdaterLowerVersion))},
     {"set_first_registration_counter",
      WithSwitch("value", WithSystemScope(Wrap(&SetServerStarts)))},
     {"stress_update_service", WithSystemScope(Wrap(&StressUpdateService))},
@@ -313,7 +317,7 @@ int IntegrationTestsHelperMain(int argc, char** argv) {
                        /*enable_thread_id=*/true,
                        /*enable_timestamp=*/true,
                        /*enable_tickcount=*/false);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   auto scoped_com_initializer =
       std::make_unique<base::win::ScopedCOMInitializer>(
           base::win::ScopedCOMInitializer::kMTA);

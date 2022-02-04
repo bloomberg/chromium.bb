@@ -43,12 +43,14 @@ using ::location::nearby::proto::connections::CONNECTION_CLOSED;
 using ::location::nearby::proto::connections::ConnectionAttemptDirection;
 using ::location::nearby::proto::connections::ConnectionAttemptResult;
 using ::location::nearby::proto::connections::ConnectionAttemptType;
+using ::location::nearby::proto::connections::ConnectionBand;
 using ::location::nearby::proto::connections::ConnectionRequestResponse;
 using ::location::nearby::proto::connections::ConnectionsStrategy;
+using ::location::nearby::proto::connections::ConnectionTechnology;
 using ::location::nearby::proto::connections::DisconnectionReason;
 using ::location::nearby::proto::connections::DISCOVERER;
-using ::location::nearby::proto::connections::EventType;
 using ::location::nearby::proto::connections::ERROR_CODE;
+using ::location::nearby::proto::connections::EventType;
 using ::location::nearby::proto::connections::FILE;
 using ::location::nearby::proto::connections::IGNORED;
 using ::location::nearby::proto::connections::INCOMING;
@@ -99,8 +101,10 @@ AnalyticsRecorder::~AnalyticsRecorder() {
   serial_executor_.Shutdown();
 }
 
-void AnalyticsRecorder::OnStartAdvertising(connections::Strategy strategy,
-                                           const std::vector<Medium> &mediums) {
+void AnalyticsRecorder::OnStartAdvertising(
+    connections::Strategy strategy, const std::vector<Medium> &mediums,
+    bool is_extended_advertisement_supported, int connected_ap_frequency,
+    bool is_nfc_available) {
   MutexLock lock(&mutex_);
   if (!CanRecordAnalyticsLocked("OnStartAdvertising")) {
     return;
@@ -119,6 +123,13 @@ void AnalyticsRecorder::OnStartAdvertising(connections::Strategy strategy,
       absl::make_unique<ConnectionsLog::AdvertisingPhase>();
   absl::c_copy(mediums, RepeatedFieldBackInserter(
                             current_advertising_phase_->mutable_medium()));
+  // Set a AdvertisingMetadata.
+  auto *advertising_metadata =
+      current_advertising_phase_->mutable_advertising_metadata();
+  advertising_metadata->set_supports_extended_ble_advertisements(
+      is_extended_advertisement_supported);
+  advertising_metadata->set_connected_ap_frequency(connected_ap_frequency);
+  advertising_metadata->set_supports_nfc_technology(is_nfc_available);
 }
 
 void AnalyticsRecorder::OnStopAdvertising() {
@@ -129,8 +140,10 @@ void AnalyticsRecorder::OnStopAdvertising() {
   RecordAdvertisingPhaseDurationLocked();
 }
 
-void AnalyticsRecorder::OnStartDiscovery(connections::Strategy strategy,
-                                         const std::vector<Medium> &mediums) {
+void AnalyticsRecorder::OnStartDiscovery(
+    connections::Strategy strategy, const std::vector<Medium> &mediums,
+    bool is_extended_advertisement_supported, int connected_ap_frequency,
+    bool is_nfc_available) {
   MutexLock lock(&mutex_);
   if (!CanRecordAnalyticsLocked("OnStartDiscovery")) {
     return;
@@ -150,6 +163,13 @@ void AnalyticsRecorder::OnStartDiscovery(connections::Strategy strategy,
       absl::make_unique<ConnectionsLog::DiscoveryPhase>();
   absl::c_copy(mediums, RepeatedFieldBackInserter(
                             current_discovery_phase_->mutable_medium()));
+  // Set a DiscoveryMetadata.
+  auto *discovery_metadata =
+      current_discovery_phase_->mutable_discovery_metadata();
+  discovery_metadata->set_supports_extended_ble_advertisements(
+      is_extended_advertisement_supported);
+  discovery_metadata->set_connected_ap_frequency(connected_ap_frequency);
+  discovery_metadata->set_supports_nfc_technology(is_nfc_available);
 }
 
 void AnalyticsRecorder::OnStopDiscovery() {
@@ -247,7 +267,8 @@ void AnalyticsRecorder::OnLocalEndpointRejected(
 
 void AnalyticsRecorder::OnIncomingConnectionAttempt(
     ConnectionAttemptType type, Medium medium, ConnectionAttemptResult result,
-    absl::Duration duration, const std::string &connection_token) {
+    absl::Duration duration, const std::string &connection_token,
+    ConnectionAttemptMetadataParams *connection_attempt_metadata_params) {
   MutexLock lock(&mutex_);
   if (!CanRecordAnalyticsLocked("OnIncomingConnectionAttempt")) {
     return;
@@ -265,12 +286,44 @@ void AnalyticsRecorder::OnIncomingConnectionAttempt(
   connection_attempt->set_medium(medium);
   connection_attempt->set_attempt_result(result);
   connection_attempt->set_connection_token(connection_token);
+
+  ConnectionAttemptMetadataParams default_params = {};
+  if (connection_attempt_metadata_params == nullptr) {
+    connection_attempt_metadata_params = &default_params;
+  }
+  auto *connection_attempt_metadata =
+      connection_attempt->mutable_connection_attempt_metadata();
+  connection_attempt_metadata->set_technology(
+      connection_attempt_metadata_params->technology);
+  connection_attempt_metadata->set_band(
+      connection_attempt_metadata_params->band);
+  connection_attempt_metadata->set_frequency(
+      connection_attempt_metadata_params->frequency);
+  connection_attempt_metadata->set_network_operator(
+      connection_attempt_metadata_params->network_operator);
+  connection_attempt_metadata->set_country_code(
+      connection_attempt_metadata_params->country_code);
+  connection_attempt_metadata->set_frequency(
+      connection_attempt_metadata_params->frequency);
+  connection_attempt_metadata->set_is_tdls_used(
+      connection_attempt_metadata_params->is_tdls_used);
+  connection_attempt_metadata->set_wifi_hotspot_status(
+      connection_attempt_metadata_params->wifi_hotspot_enabled);
+  connection_attempt_metadata->set_try_counts(
+      connection_attempt_metadata_params->try_count);
+  connection_attempt_metadata->set_max_tx_speed(
+      connection_attempt_metadata_params->max_wifi_tx_speed);
+  connection_attempt_metadata->set_max_rx_speed(
+      connection_attempt_metadata_params->max_wifi_rx_speed);
+  connection_attempt_metadata->set_wifi_channel_width(
+      connection_attempt_metadata_params->channel_width);
 }
 
 void AnalyticsRecorder::OnOutgoingConnectionAttempt(
     const std::string &remote_endpoint_id, ConnectionAttemptType type,
     Medium medium, ConnectionAttemptResult result, absl::Duration duration,
-    const std::string &connection_token) {
+    const std::string &connection_token,
+    ConnectionAttemptMetadataParams *connection_attempt_metadata_params) {
   MutexLock lock(&mutex_);
   if (!CanRecordAnalyticsLocked("OnOutgoingConnectionAttempt")) {
     return;
@@ -288,6 +341,38 @@ void AnalyticsRecorder::OnOutgoingConnectionAttempt(
   connection_attempt->set_medium(medium);
   connection_attempt->set_attempt_result(result);
   connection_attempt->set_connection_token(connection_token);
+
+  ConnectionAttemptMetadataParams default_params = {};
+  if (connection_attempt_metadata_params == nullptr) {
+    connection_attempt_metadata_params = &default_params;
+  }
+  auto *connection_attempt_metadata =
+      connection_attempt->mutable_connection_attempt_metadata();
+  connection_attempt_metadata->set_technology(
+      connection_attempt_metadata_params->technology);
+  connection_attempt_metadata->set_band(
+      connection_attempt_metadata_params->band);
+  connection_attempt_metadata->set_frequency(
+      connection_attempt_metadata_params->frequency);
+  connection_attempt_metadata->set_network_operator(
+      connection_attempt_metadata_params->network_operator);
+  connection_attempt_metadata->set_country_code(
+      connection_attempt_metadata_params->country_code);
+  connection_attempt_metadata->set_frequency(
+      connection_attempt_metadata_params->frequency);
+  connection_attempt_metadata->set_is_tdls_used(
+      connection_attempt_metadata_params->is_tdls_used);
+  connection_attempt_metadata->set_wifi_hotspot_status(
+      connection_attempt_metadata_params->wifi_hotspot_enabled);
+  connection_attempt_metadata->set_try_counts(
+      connection_attempt_metadata_params->try_count);
+  connection_attempt_metadata->set_max_tx_speed(
+      connection_attempt_metadata_params->max_wifi_tx_speed);
+  connection_attempt_metadata->set_max_rx_speed(
+      connection_attempt_metadata_params->max_wifi_rx_speed);
+  connection_attempt_metadata->set_wifi_channel_width(
+      connection_attempt_metadata_params->channel_width);
+
   if (type == INITIAL && result != RESULT_SUCCESS) {
     auto it = outgoing_connection_requests_.find(remote_endpoint_id);
     if (it != outgoing_connection_requests_.end()) {
@@ -480,7 +565,7 @@ void AnalyticsRecorder::OnBandwidthUpgradeSuccess(
                              UPGRADE_SUCCESS);
 }
 
-void AnalyticsRecorder::OnErrorCode(const ErrorCodeParams& params) {
+void AnalyticsRecorder::OnErrorCode(const ErrorCodeParams &params) {
   MutexLock lock(&mutex_);
   if (!CanRecordAnalyticsLocked("OnErrorCode")) {
     return;
@@ -554,6 +639,28 @@ void AnalyticsRecorder::LogSession() {
   LogClientSession();
   LogEvent(STOP_CLIENT_SESSION);
   session_was_logged_ = true;
+}
+
+std::unique_ptr<ConnectionAttemptMetadataParams>
+AnalyticsRecorder::BuildConnectionAttemptMetadataParams(
+    ConnectionTechnology technology, ConnectionBand band, int frequency,
+    int try_count, const std::string &network_operator,
+    const std::string &country_code, bool is_tdls_used,
+    bool wifi_hotspot_enabled, int max_wifi_tx_speed, int max_wifi_rx_speed,
+    int channel_width) {
+  auto params = absl::make_unique<ConnectionAttemptMetadataParams>();
+  params->technology = technology;
+  params->band = band;
+  params->frequency = frequency;
+  params->try_count = try_count;
+  params->network_operator = network_operator;
+  params->country_code = country_code;
+  params->is_tdls_used = is_tdls_used;
+  params->wifi_hotspot_enabled = wifi_hotspot_enabled;
+  params->max_wifi_tx_speed = max_wifi_tx_speed;
+  params->max_wifi_rx_speed = max_wifi_rx_speed;
+  params->channel_width = channel_width;
+  return params;
 }
 
 bool AnalyticsRecorder::CanRecordAnalyticsLocked(

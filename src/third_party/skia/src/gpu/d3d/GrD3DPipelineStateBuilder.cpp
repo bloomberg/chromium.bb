@@ -17,7 +17,6 @@
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrPersistentCacheUtils.h"
 #include "src/gpu/GrShaderCaps.h"
-#include "src/gpu/GrShaderUtils.h"
 #include "src/gpu/GrStencilSettings.h"
 #include "src/gpu/d3d/GrD3DGpu.h"
 #include "src/gpu/d3d/GrD3DPipeline.h"
@@ -25,6 +24,7 @@
 #include "src/gpu/d3d/GrD3DRootSignature.h"
 #include "src/gpu/d3d/GrD3DUtil.h"
 #include "src/sksl/SkSLCompiler.h"
+#include "src/utils/SkShaderUtils.h"
 
 #include <d3dcompiler.h>
 
@@ -140,7 +140,7 @@ gr_cp<ID3DBlob> GrD3DPipelineStateBuilder::compileD3DProgram(
         SkSL::Program::Inputs* outInputs,
         SkSL::String* outHLSL) {
 #ifdef SK_DEBUG
-    SkSL::String src = GrShaderUtils::PrettyPrint(sksl);
+    SkSL::String src = SkShaderUtils::PrettyPrint(sksl);
 #else
     const SkSL::String& src = sksl;
 #endif
@@ -156,14 +156,14 @@ gr_cp<ID3DBlob> GrD3DPipelineStateBuilder::compileD3DProgram(
     *outInputs = program->fInputs;
 
     if (gPrintSKSL || gPrintHLSL) {
-        GrShaderUtils::PrintShaderBanner(kind);
+        SkShaderUtils::PrintShaderBanner(kind);
         if (gPrintSKSL) {
             SkDebugf("SKSL:\n");
-            GrShaderUtils::PrintLineByLine(GrShaderUtils::PrettyPrint(sksl));
+            SkShaderUtils::PrintLineByLine(SkShaderUtils::PrettyPrint(sksl));
         }
         if (gPrintHLSL) {
             SkDebugf("HLSL:\n");
-            GrShaderUtils::PrintLineByLine(GrShaderUtils::PrettyPrint(*outHLSL));
+            SkShaderUtils::PrintLineByLine(SkShaderUtils::PrettyPrint(*outHLSL));
         }
     }
 
@@ -245,32 +245,26 @@ static void setup_vertex_input_layout(const GrGeometryProcessor& geomProc,
     }
 
     unsigned int currentAttrib = 0;
-    unsigned int vertexAttributeOffset = 0;
 
-    for (const auto& attrib : geomProc.vertexAttributes()) {
+    for (auto attrib : geomProc.vertexAttributes()) {
         // When using SPIRV-Cross it converts the location modifier in SPIRV to be
         // TEXCOORD<N> where N is the location value for eveery vertext attribute
         inputElements[currentAttrib] = { "TEXCOORD", currentAttrib,
                                         attrib_type_to_format(attrib.cpuType()),
-                                        vertexSlot, vertexAttributeOffset,
+                                        vertexSlot, SkToU32(*attrib.offset()),
                                         D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-        vertexAttributeOffset += attrib.sizeAlign4();
         currentAttrib++;
     }
-    SkASSERT(vertexAttributeOffset == geomProc.vertexStride());
 
-    unsigned int instanceAttributeOffset = 0;
-    for (const auto& attrib : geomProc.instanceAttributes()) {
+    for (auto attrib : geomProc.instanceAttributes()) {
         // When using SPIRV-Cross it converts the location modifier in SPIRV to be
         // TEXCOORD<N> where N is the location value for eveery vertext attribute
         inputElements[currentAttrib] = { "TEXCOORD", currentAttrib,
                                         attrib_type_to_format(attrib.cpuType()),
-                                        instanceSlot, instanceAttributeOffset,
+                                        instanceSlot, SkToU32(*attrib.offset()),
                                         D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA, 1 };
-        instanceAttributeOffset += attrib.sizeAlign4();
         currentAttrib++;
     }
-    SkASSERT(instanceAttributeOffset == geomProc.instanceStride());
 }
 
 static D3D12_BLEND blend_coeff_to_d3d_blend(GrBlendCoeff coeff) {
@@ -627,7 +621,7 @@ std::unique_ptr<GrD3DPipelineState> GrD3DPipelineStateBuilder::finalize() {
                 // Replace the HLSL with formatted SkSL to be cached. This looks odd, but this is
                 // the last time we're going to use these strings, so it's safe.
                 for (int i = 0; i < kGrShaderTypeCount; ++i) {
-                    hlsl[i] = GrShaderUtils::PrettyPrint(*sksl[i]);
+                    hlsl[i] = SkShaderUtils::PrettyPrint(*sksl[i]);
                 }
             }
             sk_sp<SkData> key =

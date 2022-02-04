@@ -57,8 +57,32 @@ g.test('type_and_sampling')
   });
 
 g.test('require_location')
-  .desc(`Test that [[interpolate]] is only accepted with user-defined IO.`)
-  .unimplemented();
+  .desc(`Test that the interpolate attribute is only accepted with user-defined IO.`)
+  .params(u =>
+    u
+      .combine('stage', ['vertex', 'fragment'] as const)
+      .combine('attribute', ['[[location(0)]]', '[[builtin(position)]]'] as const)
+      .combine('use_struct', [true, false] as const)
+      .beginSubcases()
+  )
+  .fn(t => {
+    if (
+      t.params.stage === 'vertex' &&
+      t.params.use_struct === false &&
+      !t.params.attribute.includes('position')
+    ) {
+      t.skip('vertex output must include a position builtin, so must use a struct');
+    }
+
+    const code = generateShader({
+      attribute: t.params.attribute + `[[interpolate(flat)]]`,
+      type: 'vec4<f32>',
+      stage: t.params.stage,
+      io: t.params.stage === 'fragment' ? 'in' : 'out',
+      use_struct: t.params.use_struct,
+    });
+    t.expectCompileResult(t.params.attribute === '[[location(0)]]', code);
+  });
 
 g.test('integral_types')
   .desc(`Test that the implementation requires [[interpolate(flat)]] for integral user-defined IO.`)

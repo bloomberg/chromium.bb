@@ -389,6 +389,14 @@ WideString::WideString(const std::initializer_list<WideStringView>& list) {
 
 WideString::~WideString() = default;
 
+void WideString::clear() {
+  if (m_pData && m_pData->CanOperateInPlace(0)) {
+    m_pData->m_nDataLength = 0;
+    return;
+  }
+  m_pData.Reset();
+}
+
 WideString& WideString::operator=(const wchar_t* str) {
   if (!str || !str[0])
     clear();
@@ -809,7 +817,7 @@ absl::optional<size_t> WideString::ReverseFind(wchar_t ch) const {
 }
 
 void WideString::MakeLower() {
-  if (!m_pData)
+  if (IsEmpty())
     return;
 
   ReallocBeforeWrite(m_pData->m_nDataLength);
@@ -817,7 +825,7 @@ void WideString::MakeLower() {
 }
 
 void WideString::MakeUpper() {
-  if (!m_pData)
+  if (IsEmpty())
     return;
 
   ReallocBeforeWrite(m_pData->m_nDataLength);
@@ -825,7 +833,7 @@ void WideString::MakeUpper() {
 }
 
 size_t WideString::Remove(wchar_t chRemove) {
-  if (!m_pData || m_pData->m_nDataLength == 0)
+  if (IsEmpty())
     return 0;
 
   wchar_t* pstrSource = m_pData->m_String;

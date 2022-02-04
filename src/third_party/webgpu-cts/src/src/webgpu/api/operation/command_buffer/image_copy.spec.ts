@@ -24,14 +24,16 @@ export const description = `writeTexture + copyBufferToTexture + copyTextureToBu
  slice we can set rowsPerImage to 0. Also test setting offset, rowsPerImage, mipLevel, origin, origin.{x,y,z} to undefined.
 
 * TODO:
-  - add another initMethod which renders the texture
+  - add another initMethod which renders the texture [3]
   - test copyT2B with buffer size not divisible by 4 (not done because expectContents 4-byte alignment)
   - add tests for 1d / 3d textures
   - Convert the float32 values in initialData into the ones compatible to the depth aspect of
     depthFormats when depth16unorm and depth24unorm-stencil8 are supported by the browsers in
     DoCopyTextureToBufferWithDepthAspectTest().
 
-TODO: Fix this test for the various skipped formats:
+TODO: Expand tests of GPUExtent3D [1]
+
+TODO: Fix this test for the various skipped formats [2]:
 - snorm tests failing due to rounding
 - float tests failing because float values are not byte-preserved
 - compressed formats
@@ -84,7 +86,7 @@ type CheckMethod = 'PartialCopyT2B' | 'FullCopyT2B';
  * undefined, then default values are passed as undefined instead of default values. If arrays, then
  * `GPUOrigin3D` and `GPUExtent3D` are passed as `[number, number, number]`. *
  *
- * TODO: Try to expand this with something like:
+ * [1]: Try to expand this with something like:
  * ```ts
  * function encodeExtent3D(
  *   mode: 'partial-array' | 'full-array' | 'extra-array' | 'partial-dict' | 'full-dict',
@@ -96,8 +98,6 @@ type ChangeBeforePass = 'none' | 'undefined' | 'arrays';
 
 /** Each combination of methods assume that the ones before it were tested and work correctly. */
 const kMethodsToTest = [
-  // We make sure that CopyT2B works when copying the whole texture for renderable formats:
-  // TODO
   // Then we make sure that WriteTexture works for all formats:
   { initMethod: 'WriteTexture', checkMethod: 'FullCopyT2B' },
   // Then we make sure that CopyB2T works for all formats:
@@ -106,7 +106,7 @@ const kMethodsToTest = [
   { initMethod: 'WriteTexture', checkMethod: 'PartialCopyT2B' },
 ] as const;
 
-// TODO: Fix things so this list can be reduced to zero (see file description)
+// [2]: Fix things so this list can be reduced to zero (see file description)
 const kExcludedFormats: Set<SizedTextureFormat> = new Set([
   'r8snorm',
   'rg8snorm',
@@ -351,10 +351,7 @@ class ImageCopyTest extends GPUTest {
         break;
       }
       case 'CopyB2T': {
-        const buffer = this.makeBufferWithContents(partialData, GPUBufferUsage.COPY_SRC, {
-          padToMultipleOf4: true,
-        });
-
+        const buffer = this.makeBufferWithContents(partialData, GPUBufferUsage.COPY_SRC);
         const encoder = this.device.createCommandEncoder();
         encoder.copyBufferToTexture(
           { buffer, ...appliedDataLayout },
@@ -764,7 +761,7 @@ class ImageCopyTest extends GPUTest {
     this.expectGPUBufferValuesEqual(outputBuffer, expectedData);
   }
 
-  // TODO(crbug.com/dawn/868): Revisit this when consolidating texture helpers.
+  // MAINTENANCE_TODO(crbug.com/dawn/868): Revisit this when consolidating texture helpers.
   async checkStencilTextureContent(
     stencilTexture: GPUTexture,
     stencilTextureSize: readonly [number, number, number],
@@ -827,7 +824,7 @@ class ImageCopyTest extends GPUTest {
       fragment: {
         module: this.device.createShaderModule({
           code: `
-            [[block]] struct Params {
+            struct Params {
               stencilBitIndex: u32;
             };
             [[group(0), binding(0)]] var<uniform> param: Params;
@@ -979,7 +976,7 @@ class ImageCopyTest extends GPUTest {
     }
   }
 
-  // TODO(crbug.com/dawn/868): Revisit this when consolidating texture helpers.
+  // MAINTENANCE_TODO(crbug.com/dawn/868): Revisit this when consolidating texture helpers.
   initializeDepthAspectWithRendering(
     depthTexture: GPUTexture,
     depthFormat: GPUTextureFormat,
@@ -1095,7 +1092,7 @@ class ImageCopyTest extends GPUTest {
     dataPaddingInBytes: number,
     mipLevel: number
   ): void {
-    // TODO(crbug.com/dawn/868): convert the float32 values in initialData into the ones compatible
+    // [2]: need to convert the float32 values in initialData into the ones compatible
     // to the depth aspect of depthFormats when depth16unorm and depth24unorm-stencil8 are supported
     // by the browsers.
     assert(format !== 'depth16unorm' && format !== 'depth24unorm-stencil8');
@@ -1177,7 +1174,7 @@ class ImageCopyTest extends GPUTest {
 /**
  * This is a helper function used for filtering test parameters
  *
- * TODO: Modify this after introducing tests with rendering.
+ * [3]: Modify this after introducing tests with rendering.
  */
 function formatCanBeTested({ format }: { format: SizedTextureFormat }): boolean {
   return kTextureFormatInfo[format].copyDst && kTextureFormatInfo[format].copySrc;

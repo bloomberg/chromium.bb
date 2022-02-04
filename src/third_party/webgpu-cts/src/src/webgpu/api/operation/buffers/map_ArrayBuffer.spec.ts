@@ -18,7 +18,7 @@ g.test('postMessage')
     `Using postMessage to send a getMappedRange-returned ArrayBuffer should throw an exception iff
     the ArrayBuffer is in the transfer list (x= map read, map write).
 
-  TODO: Determine what the exception.name is expected to be.`
+  TODO: Determine what the exception.name is expected to be. [1]`
   )
   .params(u =>
     u //
@@ -41,7 +41,7 @@ g.test('postMessage')
     const ab2Promise = new Promise<ArrayBuffer>(resolve => {
       mc.port2.onmessage = ev => resolve(ev.data);
     });
-    // TODO: Pass an exception name here instead of `true`, once we figure out what the exception
+    // [1]: Pass an exception name here instead of `true`, once we figure out what the exception
     // is supposed to be.
     t.shouldThrow(
       transfer ? true : false,

@@ -44,14 +44,14 @@ struct traits<Diagonal<MatrixType,DiagIndex> >
   typedef typename MatrixType::StorageKind StorageKind;
   enum {
     RowsAtCompileTime = (int(DiagIndex) == DynamicIndex || int(MatrixType::SizeAtCompileTime) == Dynamic) ? Dynamic
-                      : (EIGEN_PLAIN_ENUM_MIN(MatrixType::RowsAtCompileTime - EIGEN_PLAIN_ENUM_MAX(-DiagIndex, 0),
-                                              MatrixType::ColsAtCompileTime - EIGEN_PLAIN_ENUM_MAX( DiagIndex, 0))),
+                      : (plain_enum_min(MatrixType::RowsAtCompileTime - plain_enum_max(-DiagIndex, 0),
+                                        MatrixType::ColsAtCompileTime - plain_enum_max( DiagIndex, 0))),
     ColsAtCompileTime = 1,
     MaxRowsAtCompileTime = int(MatrixType::MaxSizeAtCompileTime) == Dynamic ? Dynamic
-                         : DiagIndex == DynamicIndex ? EIGEN_SIZE_MIN_PREFER_FIXED(MatrixType::MaxRowsAtCompileTime,
-                                                                              MatrixType::MaxColsAtCompileTime)
-                         : (EIGEN_PLAIN_ENUM_MIN(MatrixType::MaxRowsAtCompileTime - EIGEN_PLAIN_ENUM_MAX(-DiagIndex, 0),
-                                                 MatrixType::MaxColsAtCompileTime - EIGEN_PLAIN_ENUM_MAX( DiagIndex, 0))),
+                         : DiagIndex == DynamicIndex ? min_size_prefer_fixed(MatrixType::MaxRowsAtCompileTime,
+                                                                             MatrixType::MaxColsAtCompileTime)
+                         : (plain_enum_min(MatrixType::MaxRowsAtCompileTime - plain_enum_max(-DiagIndex, 0),
+                                           MatrixType::MaxColsAtCompileTime - plain_enum_max( DiagIndex, 0))),
     MaxColsAtCompileTime = 1,
     MaskLvalueBit = is_lvalue<MatrixType>::value ? LvalueBit : 0,
     Flags = (unsigned int)_MatrixTypeNested::Flags & (RowMajorBit | MaskLvalueBit | DirectAccessBit) & ~RowMajorBit, // FIXME DirectAccessBit should not be handled by expressions

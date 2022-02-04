@@ -24,7 +24,7 @@
 
 #include <utility>
 
-namespace dawn_native {
+namespace dawn::native {
 
     void SyncScopeUsageTracker::BufferUsedAs(BufferBase* buffer, wgpu::BufferUsage usage) {
         // std::map's operator[] will create the key and return 0 if the key didn't exist
@@ -154,14 +154,14 @@ namespace dawn_native {
         result.textures.reserve(mTextureUsages.size());
         result.textureUsages.reserve(mTextureUsages.size());
 
-        for (auto& it : mBufferUsages) {
-            result.buffers.push_back(it.first);
-            result.bufferUsages.push_back(it.second);
+        for (auto& [buffer, usage] : mBufferUsages) {
+            result.buffers.push_back(buffer);
+            result.bufferUsages.push_back(usage);
         }
 
-        for (auto& it : mTextureUsages) {
-            result.textures.push_back(it.first);
-            result.textureUsages.push_back(std::move(it.second));
+        for (auto& [texture, usage] : mTextureUsages) {
+            result.textures.push_back(texture);
+            result.textureUsages.push_back(std::move(usage));
         }
 
         for (auto& it : mExternalTextureUsages) {
@@ -259,4 +259,4 @@ namespace dawn_native {
         return mQueryAvailabilities;
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

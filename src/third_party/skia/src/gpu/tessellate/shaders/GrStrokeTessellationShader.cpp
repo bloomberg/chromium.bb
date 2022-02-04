@@ -7,6 +7,7 @@
 
 #include "src/gpu/tessellate/shaders/GrStrokeTessellationShader.h"
 
+#include "src/gpu/KeyBuilder.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
@@ -91,15 +92,15 @@ GrStrokeTessellationShader::GrStrokeTessellationShader(const GrShaderCaps& shade
         fAttribs.emplace_back("curveTypeAttr", kFloat_GrVertexAttribType, kFloat_GrSLType);
     }
     if (fMode == Mode::kHardwareTessellation) {
-        this->setVertexAttributes(fAttribs.data(), fAttribs.count());
+        this->setVertexAttributesWithImplicitOffsets(fAttribs.data(), fAttribs.count());
         SkASSERT(this->vertexStride() == sizeof(SkPoint) * 5 + PatchAttribsStride(fPatchAttribs));
     } else {
-        this->setInstanceAttributes(fAttribs.data(), fAttribs.count());
+        this->setInstanceAttributesWithImplicitOffsets(fAttribs.data(), fAttribs.count());
         SkASSERT(this->instanceStride() == sizeof(SkPoint) * 5 + PatchAttribsStride(fPatchAttribs));
         if (!shaderCaps.vertexIDSupport()) {
             constexpr static Attribute kVertexAttrib("edgeID", kFloat_GrVertexAttribType,
                                                      kFloat_GrSLType);
-            this->setVertexAttributes(&kVertexAttrib, 1);
+            this->setVertexAttributesWithImplicitOffsets(&kVertexAttrib, 1);
         }
     }
     SkASSERT(fAttribs.count() <= kMaxAttribCount);
@@ -398,7 +399,7 @@ void GrStrokeTessellationShader::Impl::setData(const GrGLSLProgramDataManager& p
     }
 }
 
-void GrStrokeTessellationShader::addToKey(const GrShaderCaps&, GrProcessorKeyBuilder* b) const {
+void GrStrokeTessellationShader::addToKey(const GrShaderCaps&, skgpu::KeyBuilder* b) const {
     bool keyNeedsJoin = (fMode != Mode::kHardwareTessellation) &&
                         !(fPatchAttribs & PatchAttribs::kStrokeParams);
     SkASSERT((int)fMode >> 2 == 0);

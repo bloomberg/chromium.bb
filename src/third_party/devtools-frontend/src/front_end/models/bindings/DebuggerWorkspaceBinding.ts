@@ -120,6 +120,12 @@ export class DebuggerWorkspaceBinding implements SDK.TargetManager.SDKModelObser
     if (!compilerMapping) {
       return [];
     }
+    if (mode === SDK.DebuggerModel.StepMode.StepOut) {
+      // We should actually return the source range for the entire function
+      // to skip over. Since we don't have that, we return an empty range
+      // instead, to signal that we should perform a regular step-out.
+      return [];
+    }
     ranges = compilerMapping.getLocationRangesForSameSourceLocation(rawLocation);
     ranges = ranges.filter(range => contained(rawLocation, range));
     return ranges;
@@ -148,7 +154,7 @@ export class DebuggerWorkspaceBinding implements SDK.TargetManager.SDKModelObser
   }
 
   private recordLiveLocationChange(promise: Promise<void|Location|StackTraceTopFrameLocation|null>): void {
-    promise.then(() => {
+    void promise.then(() => {
       this.#liveLocationPromises.delete(promise);
     });
     this.#liveLocationPromises.add(promise);
@@ -421,7 +427,7 @@ class ModelData {
     uiLocation = uiLocation || this.resourceMapping.rawLocationToUILocation(rawLocation);
     uiLocation = uiLocation || ResourceMapping.instance().jsLocationToUILocation(rawLocation);
     uiLocation = uiLocation || this.#defaultMapping.rawLocationToUILocation(rawLocation);
-    return /** @type {!Workspace.UISourceCode.UILocation} */ uiLocation as Workspace.UISourceCode.UILocation;
+    return uiLocation;
   }
 
   uiLocationToRawLocations(
@@ -535,7 +541,7 @@ class StackTraceTopFrameLocation extends LiveLocationWithPool {
     }
     this.#updateScheduled = true;
     queueMicrotask(() => {
-      this.updateLocation();
+      void this.updateLocation();
     });
   }
 
@@ -552,7 +558,7 @@ class StackTraceTopFrameLocation extends LiveLocationWithPool {
         break;
       }
     }
-    this.update();
+    void this.update();
   }
 }
 
@@ -561,9 +567,6 @@ export interface RawLocationRange {
   end: SDK.DebuggerModel.Location;
 }
 
-/**
- * @interface
- */
 export interface DebuggerSourceMapping {
   rawLocationToUILocation(rawLocation: SDK.DebuggerModel.Location): Workspace.UISourceCode.UILocation|null;
 

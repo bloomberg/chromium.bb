@@ -192,8 +192,8 @@ export class DebuggerPlugin extends Plugin {
   private initializedMuted: boolean;
   private ignoreListInfobar: UI.Infobar.Infobar|null;
   private prettyPrintInfobar!: UI.Infobar.Infobar|null;
-  private scheduledBreakpointDecorationUpdates?: Set<BreakpointDecoration>|null;
   private refreshBreakpointsTimeout: undefined|number = undefined;
+  private activeBreakpointDialog: BreakpointEditDialog|null = null;
 
   constructor(
       uiSourceCode: Workspace.UISourceCode.UISourceCode,
@@ -244,7 +244,7 @@ export class DebuggerPlugin extends Plugin {
 
     if (!Root.Runtime.experiments.isEnabled('sourcesPrettyPrint')) {
       this.prettyPrintInfobar = null;
-      this.detectMinified();
+      void this.detectMinified();
     }
   }
 
@@ -333,9 +333,9 @@ export class DebuggerPlugin extends Plugin {
       }
     }, console.error);
     if (!this.muted) {
-      this.refreshBreakpoints();
+      void this.refreshBreakpoints();
     }
-    this.callFrameChanged();
+    void this.callFrameChanged();
   }
 
   static accepts(uiSourceCode: Workspace.UISourceCode.UISourceCode): boolean {
@@ -603,7 +603,7 @@ export class DebuggerPlugin extends Plugin {
     } else if (/^text\/(javascript|typescript|jsx)/.test(this.uiSourceCode.mimeType())) {
       let node: CodeMirror.SyntaxNode|null = CodeMirror.syntaxTree(editor.state).resolveInner(textPosition, 1);
       // Only do something if the cursor is over a leaf node.
-      if (node.firstChild) {
+      if (node?.firstChild) {
         return null;
       }
       while (
@@ -738,7 +738,7 @@ export class DebuggerPlugin extends Plugin {
     if (this.executionLocation && this.controlDown &&
         UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event)) {
       if (!this.continueToLocations) {
-        this.showContinueToLocations();
+        void this.showContinueToLocations();
       }
     }
   }
@@ -779,7 +779,7 @@ export class DebuggerPlugin extends Plugin {
       if (state && this.executionLocation) {
         this.controlTimeout = window.setTimeout(() => {
           if (this.executionLocation && this.controlDown) {
-            this.showContinueToLocations();
+            void this.showContinueToLocations();
           }
         }, 150);
       } else {
@@ -799,6 +799,7 @@ export class DebuggerPlugin extends Plugin {
     const decorationElement = document.createElement('div');
     const compartment = new CodeMirror.Compartment();
     const dialog = new BreakpointEditDialog(line.number - 1, oldCondition, Boolean(preferLogpoint), async result => {
+      this.activeBreakpointDialog = null;
       dialog.detach();
       editor.dispatch({effects: compartment.reconfigure([])});
       if (!result.committed) {
@@ -828,6 +829,7 @@ export class DebuggerPlugin extends Plugin {
     dialog.markAsExternallyManaged();
     dialog.show(decorationElement);
     dialog.focusEditor();
+    this.activeBreakpointDialog = dialog;
   }
 
   // Create decorations to indicate the current debugging position
@@ -1224,7 +1226,7 @@ export class DebuggerPlugin extends Plugin {
       const editorLocation = editor.toLineColumn(position);
       const uiLocation =
           this.transformer.editorLocationToUILocation(editorLocation.lineNumber, editorLocation.columnNumber);
-      this.setBreakpoint(uiLocation.lineNumber, uiLocation.columnNumber, condition, enabled);
+      void this.setBreakpoint(uiLocation.lineNumber, uiLocation.columnNumber, condition, enabled);
     }
   }
 
@@ -1234,7 +1236,7 @@ export class DebuggerPlugin extends Plugin {
       const forBreakpoints = this.breakpoints;
       const decorations = await this.computeBreakpointDecoration(this.editor.state, forBreakpoints);
       if (this.breakpoints === forBreakpoints &&
-          (decorations.gutter.size || this.editor.state.field(breakpointMarkers).gutter.size)) {
+          (decorations.gutter.size || this.editor.state.field(breakpointMarkers, false)?.gutter.size)) {
         this.editor.dispatch({effects: setBreakpointDeco.of(decorations)});
       }
     }
@@ -1268,7 +1270,7 @@ export class DebuggerPlugin extends Plugin {
       const editorLocation = this.editor.editor.posAtDOM(event.target as unknown as HTMLElement);
       const line = this.editor.state.doc.lineAt(editorLocation);
       const uiLocation = this.transformer.editorLocationToUILocation(line.number - 1, editorLocation - line.from);
-      this.setBreakpoint(uiLocation.lineNumber, uiLocation.columnNumber, '', true);
+      void this.setBreakpoint(uiLocation.lineNumber, uiLocation.columnNumber, '', true);
     }
   }
 
@@ -1303,7 +1305,7 @@ export class DebuggerPlugin extends Plugin {
           i18nString(UIStrings.neverPauseHere),
           this.setBreakpoint.bind(this, uiLocation.lineNumber, uiLocation.columnNumber, 'false', true));
     }
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   private updateScriptFiles(): void {
@@ -1415,7 +1417,7 @@ export class DebuggerPlugin extends Plugin {
     if (this.muted || event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey) {
       return false;
     }
-    this.toggleBreakpoint(line, event.shiftKey);
+    void this.toggleBreakpoint(line, event.shiftKey);
     return true;
   }
 
@@ -1423,6 +1425,10 @@ export class DebuggerPlugin extends Plugin {
     if (this.muted) {
       return;
     }
+    if (this.activeBreakpointDialog) {
+      this.activeBreakpointDialog.finishEditing(false, '');
+    }
+
     const breakpoints = this.lineBreakpoints(line);
     if (!breakpoints.length) {
       await this.createNewBreakpoint(line, '', true);
@@ -1488,9 +1494,9 @@ export class DebuggerPlugin extends Plugin {
       const decorations =
           this.computeExecutionDecorations(this.editor.state, editorLocation.lineNumber, editorLocation.columnNumber);
       this.editor.dispatch({effects: executionLine.update.of(decorations)});
-      this.updateValueDecorations();
+      void this.updateValueDecorations();
       if (this.controlDown) {
-        this.showContinueToLocations();
+        void this.showContinueToLocations();
       }
     } else {
       this.editor.dispatch({

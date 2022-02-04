@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -46,7 +45,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
   void OnTouch(ui::EventPointerType pointerType) override;
   void OnBlur() override;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   bool OnUntranslatedIMEMessage(const CHROME_MSG event,
                                 NativeEventResult* result) override;
   void OnInputLocaleChanged() override;
@@ -62,7 +61,6 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
   // implementation.
   void OnTextInputTypeChanged(const TextInputClient* client) override;
   TextInputType GetTextInputType() const override;
-  void ShowVirtualKeyboardIfEnabled() override;
   void SetVirtualKeyboardVisibilityIfEnabled(bool should_show) override;
 
   void AddObserver(InputMethodObserver* observer) override;
@@ -97,8 +95,8 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
   // input type is not TEXT_INPUT_TYPE_NONE.
   void OnInputMethodChanged() const;
 
-  virtual ui::EventDispatchDetails DispatchKeyEventPostIME(
-      ui::KeyEvent* event) const WARN_UNUSED_RESULT;
+  [[nodiscard]] virtual ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* event) const;
 
   // Convenience method to notify all observers of TextInputClient changes.
   void NotifyTextInputStateChanged(const TextInputClient* client);

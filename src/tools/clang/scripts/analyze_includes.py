@@ -30,15 +30,15 @@ build_size 270237664463
 import argparse
 import json
 import os
-import re
 import pathlib
+import re
 import sys
 import unittest
 from collections import defaultdict
 from datetime import datetime
 
 
-def parse_build(build_log):
+def parse_build(build_log, root_filter=None):
   """Parse the build_log (generated as in the Usage note above) to capture the
   include graph. Returns a (roots, includes) pair, where roots is a list of root
   nodes in the graph (the source files) and includes is a dict from filename to
@@ -56,7 +56,7 @@ def parse_build(build_log):
   normalized = {}
 
   def norm(fn):
-    if not fn in normalized:
+    if fn not in normalized:
       x = fn.replace('\\\\', '\\')
       # Use Path.resolve() rather than path.realpath() to get the canonical
       # upper/lower-case version of the path on Windows.
@@ -76,9 +76,13 @@ def parse_build(build_log):
   # . c.h
   INCLUDE_RE = re.compile(r'(\.+) (.*)$')
 
+  skipping_root = False
+
   for line in build_log:
     m = INCLUDE_RE.match(line)
     if m:
+      if skipping_root:
+        continue
       prev_depth = len(file_stack) - 1
       depth = len(m.group(1))
       filename = norm(m.group(2))
@@ -90,7 +94,7 @@ def parse_build(build_log):
           assert depth == prev_depth + 1
         elif depth > prev_depth + 1:
           # Until the bug is fixed, skip these includes.
-          print('missing include under ', file_stack[0])
+          print('missing include under', file_stack[0])
           continue
       else:
         for _ in range(prev_depth - depth + 1):
@@ -102,7 +106,11 @@ def parse_build(build_log):
 
     m = COMPILE_RE.match(line)
     if m:
+      skipping_root = False
       filename = norm(m.group(1))
+      if root_filter and not root_filter.match(filename):
+        skipping_root = True
+        continue
       roots.add(filename)
       file_stack = [filename]
       includes.setdefault(filename, set())
@@ -125,12 +133,12 @@ class TestParseBuild(unittest.TestCase):
         'clang -c gen/c.c -o a.o',
     ]
     (roots, includes) = parse_build(x)
-    self.assertEquals(roots, set(['a.cc', 'out/foo/gen/c.c']))
-    self.assertEquals(set(includes.keys()),
-                      set(['a.cc', 'a.h', 'out/foo/gen/c.c']))
-    self.assertEquals(includes['a.cc'], set(['a.h']))
-    self.assertEquals(includes['a.h'], set())
-    self.assertEquals(includes['out/foo/gen/c.c'], set())
+    self.assertEqual(roots, set(['a.cc', 'out/foo/gen/c.c']))
+    self.assertEqual(set(includes.keys()),
+                     set(['a.cc', 'a.h', 'out/foo/gen/c.c']))
+    self.assertEqual(includes['a.cc'], set(['a.h']))
+    self.assertEqual(includes['a.h'], set())
+    self.assertEqual(includes['out/foo/gen/c.c'], set())
 
   def test_more(self):
     x = [
@@ -143,12 +151,12 @@ class TestParseBuild(unittest.TestCase):
         '. ../../e.h',
     ]
     (roots, includes) = parse_build(x)
-    self.assertEquals(roots, set(['a.cc']))
-    self.assertEquals(includes['a.cc'], set(['a.h', 'b.h', 'e.h']))
-    self.assertEquals(includes['b.h'], set(['c.h']))
-    self.assertEquals(includes['c.h'], set(['d.h']))
-    self.assertEquals(includes['d.h'], set())
-    self.assertEquals(includes['e.h'], set())
+    self.assertEqual(roots, set(['a.cc']))
+    self.assertEqual(includes['a.cc'], set(['a.h', 'b.h', 'e.h']))
+    self.assertEqual(includes['b.h'], set(['c.h']))
+    self.assertEqual(includes['c.h'], set(['d.h']))
+    self.assertEqual(includes['d.h'], set())
+    self.assertEqual(includes['e.h'], set())
 
   def test_multiple(self):
     x = [
@@ -159,9 +167,22 @@ class TestParseBuild(unittest.TestCase):
         '. ../../b.h',
     ]
     (roots, includes) = parse_build(x)
-    self.assertEquals(roots, set(['a.cc', 'b.cc']))
-    self.assertEquals(includes['a.cc'], set(['a.h']))
-    self.assertEquals(includes['b.cc'], set(['b.h']))
+    self.assertEqual(roots, set(['a.cc', 'b.cc']))
+    self.assertEqual(includes['a.cc'], set(['a.h']))
+    self.assertEqual(includes['b.cc'], set(['b.h']))
+
+  def test_root_filter(self):
+    x = [
+        'ninja: Entering directory `out/foo\'',
+        'clang -c ../../a.cc -o a.o',
+        '. ../../a.h',
+        'clang -c ../../b.cc -o b.o',
+        '. ../../b.h',
+    ]
+    (roots, includes) = parse_build(x, re.compile(r'^a.cc$'))
+    self.assertEqual(roots, set(['a.cc']))
+    self.assertEqual(set(includes.keys()), set(['a.cc', 'a.h']))
+    self.assertEqual(includes['a.cc'], set(['a.h']))
 
 
 def post_order_nodes(root, child_nodes):
@@ -206,7 +227,7 @@ def compute_doms(root, includes):
     label[v] = v
 
     for w in includes[v]:
-      if not w in semi:
+      if w not in semi:
         parent[w] = v
         dfs(w)
       pred[w].append(v)
@@ -218,7 +239,7 @@ def compute_doms(root, includes):
         label[v] = label[ancestor[v]]
       ancestor[v] = ancestor[ancestor[v]]
 
-  def eval(v):
+  def evaluate(v):
     if v not in ancestor:
       return v
     compress(v)
@@ -233,7 +254,7 @@ def compute_doms(root, includes):
   for w in reversed(vertex[1:]):
     # Step 2: Compute semidominators.
     for v in pred[w]:
-      u = eval(v)
+      u = evaluate(v)
       if semi[u] < semi[w]:
         semi[w] = semi[u]
 
@@ -242,7 +263,7 @@ def compute_doms(root, includes):
 
     # Step 3: Implicitly define the immediate dominator for each node.
     for v in bucket[parent[w]]:
-      u = eval(v)
+      u = evaluate(v)
       dom[v] = u if semi[u] < semi[v] else parent[w]
     bucket[parent[w]] = []
 
@@ -332,9 +353,9 @@ def log(*args, **kwargs):
   print(*args, file=sys.stderr, **kwargs)
 
 
-def analyze(target, revision, build_log_file, json_file):
+def analyze(target, revision, build_log_file, json_file, root_filter):
   log('Parsing build log...')
-  (roots, includes) = parse_build(build_log_file)
+  (roots, includes) = parse_build(build_log_file, root_filter)
 
   log('Getting file sizes...')
   sizes = {name: os.path.getsize(name) for name in includes}
@@ -363,7 +384,6 @@ def analyze(target, revision, build_log_file, json_file):
     for i in includes[k]:
       included_by[i].add(k)
 
-
   log('Computing added sizes...')
 
   # Split each src -> dst edge in includes into src -> (src,dst) -> dst, so that
@@ -380,12 +400,11 @@ def analyze(target, revision, build_log_file, json_file):
   for r in roots:
     doms = compute_doms(r, augmented_includes)
     for node in doms:
-      if not node in sizes:
+      if node not in sizes:
         # Skip the (src,dst) pseudo nodes.
         continue
       for dom in doms[node]:
         added_sizes[dom] += sizes[node]
-
 
   # Assign a number to each filename for tighter JSON representation.
   names = []
@@ -440,13 +459,21 @@ def main():
       '--json-out',
       type=argparse.FileType('w'),
       help='Write full analysis data to a JSON file (- for stdout).')
+  parser.add_argument('--root-filter',
+                      help='Regex to filter which root files are analyzed.')
   args = parser.parse_args()
 
   if args.json_out and not (args.target and args.revision):
-    print('error: --jsoun-out requires both --target and --revision to be set')
+    print('error: --json-out requires both --target and --revision to be set')
     return 1
 
-  analyze(args.target, args.revision, args.build_log, args.json_out)
+  try:
+    root_filter = re.compile(args.root_filter) if args.root_filter else None
+  except Exception:
+    print('error: --root-filter is not a valid regex')
+    return 1
+
+  analyze(args.target, args.revision, args.build_log, args.json_out, root_filter)
 
 
 if __name__ == '__main__':

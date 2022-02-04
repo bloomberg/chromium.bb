@@ -401,6 +401,21 @@
   "core/sdk/DebuggerModel.ts | withBlock": {
     "message": "Withን አግድ"
   },
+  "core/sdk/EventBreakpointsModel.ts | auctionWorklet": {
+    "message": "የማስታወቂያ ጨረታ የስራ-ክፍል"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletBiddingStart": {
+    "message": "እሰጣለሁ የሚል ሰው እሰጣለሁ የሚልበት ደረጃ ጅምር"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletReportingStart": {
+    "message": "እሰጣለሁ የሚል ሰው ሪፖርት የማድረግ ደረጃ ጅምር"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletReportingStart": {
+    "message": "የሻጭ ሪፖርት ማድረጊያ ደረጃ ጅምር"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletScoringStart": {
+    "message": "የሻጭ ነጥብ የማስቆጠር ደረጃ ጅምር"
+  },
   "core/sdk/NetworkManager.ts | crossoriginReadBlockingCorb": {
     "message": "የመነሻ-ተሻጋሪ ንባብ ማገጃ (CORB) {PH1}MIME ዓይነት ያላቸውን{PH2} የመነሻ-ተሻጋሪ ምላሽ አግዷል። ተጨማሪ ዝርዝር ለማግኘት https://www.chromestatus.com/feature/5629709824032768 ን ይመልከቱ።"
   },
@@ -644,9 +659,6 @@
   "core/sdk/sdk-meta.ts | disableWebpFormat": {
     "message": "የWebP ቅርጸትን አሰናክል"
   },
-  "core/sdk/sdk-meta.ts | disabledDarkMode": {
-    "message": "አሰናክል"
-  },
   "core/sdk/sdk-meta.ts | doNotCaptureAsyncStackTraces": {
     "message": "በተለያየ ጊዜ የሚሰሩትን የመከታተያ ቁልሎችን አይቅረጹ"
   },
@@ -679,6 +691,9 @@
   },
   "core/sdk/sdk-meta.ts | doNotShowGridTrackSizes": {
     "message": "የፍርግርግ ትራክ መጠኖችን አታሳይ"
+  },
+  "core/sdk/sdk-meta.ts | doNotShowRulersOnHover": {
+    "message": "ሲያንዣብቡ ማስመሪያዎችን አታሳይ"
   },
   "core/sdk/sdk-meta.ts | emulateAFocusedPage": {
     "message": "የትኩረት ገጽን አስመስል"
@@ -743,9 +758,6 @@
   "core/sdk/sdk-meta.ts | enableWebpFormat": {
     "message": "የWebP ቅርጸትን ያንቁ"
   },
-  "core/sdk/sdk-meta.ts | enabledDarkMode": {
-    "message": "አንቃ"
-  },
   "core/sdk/sdk-meta.ts | extendGridLines": {
     "message": "የፍርግርግ መስመሮችን ያራዝሙ"
   },
@@ -754,9 +766,6 @@
   },
   "core/sdk/sdk-meta.ts | hideFramesPerSecondFpsMeter": {
     "message": "ክፈፎችን በሰከንድ (ክ/ሴ) መለኪያን ደብቅ"
-  },
-  "core/sdk/sdk-meta.ts | hideHittestBorders": {
-    "message": "የማግኘት-ሙከራ ክፈፎችን ደብቅ"
   },
   "core/sdk/sdk-meta.ts | hideLayerBorders": {
     "message": "የንብርብር ክፈፎችን ደብቅ"
@@ -812,9 +821,6 @@
   "core/sdk/sdk-meta.ts | showGridTrackSizes": {
     "message": "የፍርግርግ ትራክ መጠኖችን አሳይ"
   },
-  "core/sdk/sdk-meta.ts | showHittestBorders": {
-    "message": "የማግኘት-ሙከራ ክፈፎችን አሳይ"
-  },
   "core/sdk/sdk-meta.ts | showLayerBorders": {
     "message": "የንብርብር ክፈፎችን አሳይ"
   },
@@ -833,8 +839,8 @@
   "core/sdk/sdk-meta.ts | showPaintFlashingRectangles": {
     "message": "የሚያብረቀርቁ አራት ማዕዘኖች ቀለምን አሳይ"
   },
-  "core/sdk/sdk-meta.ts | showRulers": {
-    "message": "ማስመሪያዎችን አሳይ"
+  "core/sdk/sdk-meta.ts | showRulersOnHover": {
+    "message": "ሲያንዣብቡ ማስመሪያዎችን አሳይ"
   },
   "core/sdk/sdk-meta.ts | showScrollPerformanceBottlenecks": {
     "message": "የሸብልል አፈፃፀም ማነቆዎችን አሳይ"
@@ -875,14 +881,20 @@
   "entrypoints/inspector_main/RenderingOptions.ts | emulateAFocusedPage": {
     "message": "የትኩረት ገጽን አስመስል"
   },
+  "entrypoints/inspector_main/RenderingOptions.ts | emulateAutoDarkMode": {
+    "message": "Enable automatic dark mode"
+  },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAFocusedPage": {
     "message": "የትኩረት ገጽን ያስመስላል"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAutoDarkMode": {
-    "message": "ለተመረመረ ገጽ ራስ-ሰር የጨለማ ሁነታን ያነቃል።"
+    "message": "Enables automatic dark mode and sets prefers-color-scheme to dark."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssColorgamutMediaFeature": {
     "message": "የሲኤስኤስ color-gamut ሚዲያ ባህሪን ያስገድዳል"
+  },
+  "entrypoints/inspector_main/RenderingOptions.ts | forcesCssForcedColors": {
+    "message": "በሲኤስኤስ የተገደዱ-ቀለማት የሚዲያ ባህሪን ያስገድዳል"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssPreferscolorschemeMedia": {
     "message": "የሲኤስኤስ prefers-color-scheme ሚዲያ ባህሪን ያስገድዳል"
@@ -920,9 +932,6 @@
   "entrypoints/inspector_main/RenderingOptions.ts | highlightsFramesRedDetectedToBe": {
     "message": "የማስታወቂያዎች ሆነው የተገኙ ክፈፎችን (ቀይ) ያደምቃል።"
   },
-  "entrypoints/inspector_main/RenderingOptions.ts | hittestBorders": {
-    "message": "የማግኘት-ሙከራ ክፈፎች"
-  },
   "entrypoints/inspector_main/RenderingOptions.ts | layerBorders": {
     "message": "የንብርብር ክፈፎች"
   },
@@ -943,9 +952,6 @@
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsAnOverlayWithCoreWebVitals": {
     "message": "ተደራራቢን ከኮር ድር ዋና ክፍሎች ጋር ያሳያል።"
-  },
-  "entrypoints/inspector_main/RenderingOptions.ts | showsBordersAroundHittestRegions": {
-    "message": "በማግኘት-ሙከራ ክልሎች ዙሪያ ክፈፎችን ያሳያል።"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsLayerBordersOrangeoliveAnd": {
     "message": "የንብርብር ድንበሮችን (ብርቱካናማ/ወይራ) እና ሰቆች (ሳይያን) ያሳያል።"
@@ -1001,7 +1007,7 @@
   "entrypoints/inspector_main/inspector_main-meta.ts | visionDeficiency": {
     "message": "የእይታ ጉድለት"
   },
-  "entrypoints/js_app/JsMain.ts | main": {
+  "entrypoints/js_app/js_app.ts | main": {
     "message": "ዋና"
   },
   "entrypoints/main/MainImpl.ts | customizeAndControlDevtools": {
@@ -1036,9 +1042,6 @@
   },
   "entrypoints/main/MainImpl.ts | showConsoleDrawer": {
     "message": "የመሥሪያ መሳቢያን አሳይ"
-  },
-  "entrypoints/main/MainImpl.ts | theSystempreferredColorSchemeHas": {
-    "message": "በስርዓት-ተመራጭ የቀለም ዘዴ ተለውጧል። ይህን ለውጥ በDevTools ላይ ለመተግበር እንደገና ይጫኑ።"
   },
   "entrypoints/main/MainImpl.ts | undockIntoSeparateWindow": {
     "message": "ወደ የተለየ መስኮት ይንቀሉ"
@@ -1190,41 +1193,41 @@
   "entrypoints/main/main-meta.ts | zoomOut": {
     "message": "አሳንስ"
   },
-  "entrypoints/node_app/node_app-meta.ts | node": {
-    "message": "አንጓ"
-  },
-  "entrypoints/node_app/node_app-meta.ts | showNode": {
-    "message": "አንጓ"
-  },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | addConnection": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | addConnection": {
     "message": "ግንኙነት ያክሉ"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
     "message": "የአውታረ መረብ አድራሻ (ለምሳሌ፦ localhost:9229)"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | noConnectionsSpecified": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | noConnectionsSpecified": {
     "message": "ምንም ግንኙነቶች አልተገለጹም"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
     "message": "የNode.js ማረሚያ መመሪያ"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
     "message": "የአውታረ መረብ መጨረሻ ነጥብን ይግለጹ እና DevTools በራስ-ሰር ከእሱ ጋር ይገናኛል። ተጨማሪ ለማወቅ {PH1}ን ያንብቡ።"
   },
-  "entrypoints/node_main/NodeMain.ts | main": {
+  "entrypoints/node_app/NodeMain.ts | main": {
     "message": "ዋና"
   },
-  "entrypoints/node_main/NodeMain.ts | nodejsS": {
+  "entrypoints/node_app/NodeMain.ts | nodejsS": {
     "message": "Node.js፦ {PH1}"
   },
-  "entrypoints/node_main/node_main-meta.ts | connection": {
+  "entrypoints/node_app/node_app.ts | connection": {
     "message": "ግንኙነት"
   },
-  "entrypoints/node_main/node_main-meta.ts | node": {
+  "entrypoints/node_app/node_app.ts | networkTitle": {
     "message": "አንጓ"
   },
-  "entrypoints/node_main/node_main-meta.ts | showConnection": {
+  "entrypoints/node_app/node_app.ts | node": {
+    "message": "አንጓ"
+  },
+  "entrypoints/node_app/node_app.ts | showConnection": {
     "message": "ግንኙነትን አሳይ"
+  },
+  "entrypoints/node_app/node_app.ts | showNode": {
+    "message": "አንጓ"
   },
   "entrypoints/worker_app/WorkerMain.ts | main": {
     "message": "ዋና"
@@ -1304,6 +1307,9 @@
   "models/har/Writer.ts | writingFile": {
     "message": "ፋይልን በመጻፍ ላይ…"
   },
+  "models/issues_manager/ClientHintIssue.ts | clientHintsInfrastructure": {
+    "message": "Client Hints Infrastructure"
+  },
   "models/issues_manager/ContentSecurityPolicyIssue.ts | contentSecurityPolicyEval": {
     "message": "የይዘት የደህንነት መመሪያ - Eval"
   },
@@ -1322,8 +1328,8 @@
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "ምንጭ ተሻጋሪ ንብረት ማጋራት (CORS)"
   },
-  "models/issues_manager/CorsIssue.ts | corsForPrivateNetworksRfc": {
-    "message": "CORS ለግል አውታረ መረቦች (RFC1918)"
+  "models/issues_manager/CorsIssue.ts | corsPrivateNetworkAccess": {
+    "message": "የግል አውታረ መረብ መዳረሻ"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | coopAndCoep": {
     "message": "COOP እና COEP"
@@ -1559,8 +1565,17 @@
   "panels/accessibility/AXBreadcrumbsPane.ts | accessibilityTree": {
     "message": "የተደራሽነት ዛፍ"
   },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentDescription": {
+    "message": "የተደራሽነት ዛፉ ወደ DOM ዛፉ የላይኛው ቀኝ ጥግ ተወስዷል።"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentName": {
+    "message": "ባለ ሙሉ ገጽ የተደራሽነት ዛፍን አንቃ"
+  },
   "panels/accessibility/AXBreadcrumbsPane.ts | ignored": {
     "message": "የተተወ"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | reloadRequired": {
+    "message": "ለውጡ ተግባራዊ ከመሆኑ በፊት እንደገና መጫን ያስፈልጋል።"
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | scrollIntoView": {
     "message": "ወደ እይታ ሸብልል"
@@ -2051,6 +2066,12 @@
   "panels/application/AppManifestView.ts | couldNotDownloadARequiredIcon": {
     "message": "አንድ የሚያስፈልግ አዶ ከዝርዝር ሰነዱ ማውረድ አልተቻለም"
   },
+  "panels/application/AppManifestView.ts | darkBackgroundColor": {
+    "message": "Dark background color"
+  },
+  "panels/application/AppManifestView.ts | darkThemeColor": {
+    "message": "Dark theme color"
+  },
   "panels/application/AppManifestView.ts | description": {
     "message": "መግለጫ"
   },
@@ -2232,7 +2253,7 @@
     "message": "የገጽታ ቀለም"
   },
   "panels/application/ApplicationPanelCacheSection.ts | backForwardCache": {
-    "message": "የጀርባ-ፊት መሸጎጫ"
+    "message": "የጀርባ/ፊት መሸጎጫ"
   },
   "panels/application/ApplicationPanelCacheSection.ts | cacheStorage": {
     "message": "የመሸጎጫ ማከማቻ"
@@ -2314,384 +2335,6 @@
   },
   "panels/application/ApplicationPanelSidebar.ts | worker": {
     "message": "ሠራተኛ"
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
-    "message": "በGET ጥያቄ በኩል የተጫኑ ገጾች ብቻ ናቸው ለጀርባ/ፊት መሸጎጫ ብቁ የሆኑት።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
-    "message": "የ2XX ሁኔታ ኮድ ያላቸው ገጾች ብቻ ናቸው ሊሸጎጡ የሚችሉት።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | JavaScriptExecution": {
-    "message": "Chrome በመሸጎጫ ላይ ሳለ ጃቫስክሪፕትን የማስፈጸም ሙከራ አግኝቷል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | appBanner": {
-    "message": "AppBanner የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
-    "message": "የጀርባ/ፊት መሸጎጫው በጥቆማዎች ተሰናክሏል። በዚህ መሣሪያ ላይ ለማንቃት chrome://flags/#back-forward-cache ይጎብኙ።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
-    "message": "የጀርባ/ፊት መሸጎጫው በትዕዛዝ መስመሩ ተሰናክሏል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
-    "message": "በቂ ባልሆነ ማህደረ ትውስታ ምክንያት የጀርባ/ፊት መሸጎጫ ተሰናክሏል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
-    "message": "የጀርባ/ፊት መሸጎጫ በወኪሉ አይደገፍም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
-    "message": "የጀርባ/ፊት መሸጎጫው ለቅድመ-ምስል ሰሪው ተሰናክሏል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | broadcastChannel": {
-    "message": "ገጹ በተመዘገቡ አዳማጮች ላይ የBroadcastChannel አብነት ስላለው ሊሸጎጥ አይችልም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheControlNoStore": {
-    "message": "የcache-control:no-store ራስጌ ያላቸው ገጾች ወደ የጀርባ/ፊት መሸጎጫ መግባት አይችሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheFlushed": {
-    "message": "መሸጎጫው ሆን ተብሎ ተጸድቷል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheLimit": {
-    "message": "ሌላ ገጽ መሸጎጫ እንዲቀመጥለት ለማስቻል ገጹ ከመሸጎጫው ወጥቷል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | containsPlugins": {
-    "message": "ተሰኪዎችን የያዙ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileChooser": {
-    "message": "የFileChooser ኤፒአይን የሚጠቀሙ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileSystemAccess": {
-    "message": "የፋይል ስርዓት መዳረሻ ኤፒአይን የሚጠቀሙ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
-    "message": "የሚዲያ መሣሪያ ማሰማሪያን የሚጠቀሙ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaPlay": {
-    "message": "ወደ ሌላ ሲዳሰስ የሚዲያማጫወቻ በመጫወት ላይ ነበር።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSession": {
-    "message": "የMediaSession ኤፒአይን የሚጠቀሙ እና የመልሶ ማጫወት ሁኔታን ያቀናበሩ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSessionService": {
-    "message": "የMediaSession ኤፒአይን የሚጠቀሙ እና የመልሶ ማጫወት ሁኔታን ያቀናበሩ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSecurityHandler": {
-    "message": "SecurityHandlerን የሚጠቀሙ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSerial": {
-    "message": "ተከታታይ ኤፒአይን የሚጠቀሙ ገጾች ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
-    "message": "የWebAuthetication ኤፒአይን የሚጠቀሙ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebBluetooth": {
-    "message": "የWebBluetooth ኤፒአይን የሚጠቀሙ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebUSB": {
-    "message": "የWebUSB ኤፒአይን የሚጠቀሙ ገጾች ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
-    "message": "ቋሚ ሰራተኛ ወይም የስራ-ክፍል የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | documentLoaded": {
-    "message": "ሰነዱ ወደ ሌላ ከመዳሰሱ በፊት ጭኖ አልጨረሰልም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderAppBannerManager": {
-    "message": "EmbedderAppBannerManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
-    "message": "EmbedderChromePasswordManagerClientBindCredentialManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
-    "message": "EmbedderDomDistillerSelfDeletingRequestDelegate"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
-    "message": "EmbedderDomDistillerViewerSource"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
-    "message": "EmbedderExtensionMessaging"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
-    "message": "EmbedderExtensionMessagingForOpenPort"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
-    "message": "EmbedderExtensionSentMessageToCachedFrame"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensions": {
-    "message": "EmbedderExtensions"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderModalDialog": {
-    "message": "EmbedderModalDialog"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOfflinePage": {
-    "message": "EmbedderOfflinePage"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
-    "message": "EmbedderOomInterventionTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
-    "message": "EmbedderPermissionRequestManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
-    "message": "EmbedderPopupBlockerTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
-    "message": "EmbedderSafeBrowsingThreatDetails"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
-    "message": "EmbedderSafeBrowsingTriggeredPopupBlocker"
-  },
-  "panels/application/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
-    "message": "ገጹ በጀርባ/ፊት መሸጎጫ ላይ ሳለ የአገልግሎት ሰራተኛ ገቢር ተደርጓል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | foregroundCacheLimit": {
-    "message": "ሌላ ገጽ መሸጎጫ እንዲቀመጥለት ለማስቻል ገጹ ከመሸጎጫው ወጥቷል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
-    "message": "የሚዲያ ዥረት መዳረሻን የሰጡ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | haveInnerContents": {
-    "message": "መግቢያዎችን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | idleManager": {
-    "message": "IdleManagerን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | indexedDBConnection": {
-    "message": "ክፍት የIndexedDB ግንኙነት ያላቸው ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | ineligibleAPI": {
-    "message": "ብቁ ያልሆኑ ኤፒአዮች ስራ ላይ ውለዋል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedJavascript": {
-    "message": "በቅጥያዎች ጃቫስክሪፕት የገባባቸው IPages በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedStyleSheet": {
-    "message": "በቅጥያዎች StyleSheet የገባባቸው ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | internalError": {
-    "message": "ውስጣዊ ስህተት።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | keyboardLock": {
-    "message": "የቁልፍ ሰሌዳ ቁልፍን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | loading": {
-    "message": "ገጹ ወደ ሌላ ከመዳሰሱ በፊት ጭኖ አልጨረሰልም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
-    "message": "ዋና ግብዓታቸው cache-control:no-cache የሆኑ ገጾች ወደ የጀርባ/ፊት መሸጎጫ መግባት አይችሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
-    "message": "ዋና ግብዓታቸው cache-control:no-store የሆኑ ገጾች ወደ የጀርባ/ፊት መሸጎጫ መግባት አይችሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
-    "message": "ገጹ ከጀርባ/ፊት መሸጎጫው ወደነበረበት መመለስ ከመቻሉ በፊት ዳሰሳ ተሰርዟል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
-    "message": "አንድ ገቢር የአውታረ መረብ ግንኙነት በጣም ብዙ ውሂብ ስለተቀበለ ገጹ ከመሸጎጫው ወጥቷል። Chrome አንድ ገጽ ተሸጉጦ ሳለ ሊቀበለው የሚችለው የውሂብ መጠንን ይገድባል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
-    "message": "inflight fetch() ወይም XHR ያላቸው ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestRedirected": {
-    "message": "አንድ ገቢር የአውታረ መረብ ጥያቄ ማዞርን የሚያካትት ስለነበር ገጹ ከጀርባ/ፊት መሸጎጫ ተወግዷል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestTimeout": {
-    "message": "አንድ የአውታረ መረብ ግንኙነት ለበጣም ረጅም ጊዜ ክፍት ስለነበር ገጹ ከመሸጎጫው ወጥቷል። Chrome አንድ ገጽ ተሸጉጦ ሳለ ውሂብ ሊቀበል የሚችበትን የጊዜ መጠን ይገድባል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | noResponseHead": {
-    "message": "የሚሰራ የአጸፋ ራስ የሌላቸው ገጾች ወደ የጀርባ/ፊት መሸጎጫ መግባት አይችሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | notMainFrame": {
-    "message": "ዳሰሳ ከዋናው ክፈፍ ውጭ በሆነ ክፈፍ ውስጥ ነው የተከሰተው።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | optInUnloadHeaderNotPresent": {
-    "message": "ጣገጹ ያለጀርባ/ፊት መሸጎጫ መርጦ-መግቢያ ራስጌው የማራገፊያ ተቆጣጣሪ አለው"
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
-    "message": "በመካሄድ ላይ ያለ የመረጃ ጠቋሚ የተሰናዳላቸው የውሂብ ጎታ ግብይቶች ያለው ገጽ በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
-    "message": "የውስጠ-በረራ አውታረ መረብ ጥያቄ ያላቸው ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
-    "message": "የውስጠ-በረራ ማምጫ አውታረ መረብ ጥያቄ ያላቸው ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
-    "message": "የውስጠ-በረራ አውታረ መረብ ጥያቄ ያላቸው ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
-    "message": "የውስጠ-በረራ XHR አውታረ መረብ ጥያቄ ያላቸው ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | paymentManager": {
-    "message": "PaymentManagerን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | pictureInPicture": {
-    "message": "ስዕል-ላይ-ስዕል የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | portal": {
-    "message": "መግቢያዎችን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | printing": {
-    "message": "የህትመት ዩአይን የሚያሳዩ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
-    "message": "ገጹ የተከፈተው window.open()ን በመጠቀም ነው፣ እና ሌላ ትር የእሱ ዋቢ አለው ወይም ገጹ አንድ መስኮት ከፍቷል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessCrashed": {
-    "message": "የጀርባ/ፊት መሸጎጫው ምስል ሰሪ ሂደት ተበላሽቷል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessKilled": {
-    "message": "የጀርባ/ፊት መሸጎጫው ምስል ሰሪ ሂደት ቆሟል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
-    "message": "የኦዲዮ መቅዳት ፈቃዶችን የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
-    "message": "የዳሳሽ ፈቃዶችን የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
-    "message": "የበስተጀርባ ስምረትን ወይም የማምጣት ፈቃዶችን የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedMIDIPermission": {
-    "message": "የMIDI ፈቃዶችን የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
-    "message": "የማሳወቂያዎች ፈቃዶችን የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
-    "message": "የማከማቻ መዳረሻን የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
-    "message": "የቪዲዮ መቅረጽ ፈቃዶችን የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
-    "message": "የዩአርኤል ዕቅዳቸው ኤችቲቲፒ / ኤችቲቲፒኤስ የሆኑ ገጾች ብቻ ናቸው ሊሸጎጡ የሚችሉት።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerClaim": {
-    "message": "ገጹ በጀርባ/ፊት መሸጎጫ ላይ ሳለ በአንድ የአገልግሎት ሰራተኛ የይገባኛል ጥያቄ ተነስቶበታል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
-    "message": "አንድ የአገልግሎት ሰራተኛ በጀርባ/ፊት መሸጎጫው ውስጥ ላለው ገጽ MessageEvent ለመላክ ሞክሯል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
-    "message": "ገጹ በጀርባ/ፊት መሸጎጫ ላይ ሳለ ServiceWorker ከምዝገባ ወጥቷል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
-    "message": "በአገልግሎት ሰራተኛ ማግበር ምክንያት ገጹ ከጀርባ/ፊት መሸጎጫ ተወግዷል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | sessionRestored": {
-    "message": "Chrome ዳግም ተነስትውል እና የጀርባ/ፊት መሸጎጫ ግቤቶችን አጽድቷል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | sharedWorker": {
-    "message": "SharedWorkerን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechRecognizer": {
-    "message": "SpeechRecognizerን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechSynthesis": {
-    "message": "SpeechSynthesisን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | subframeIsNavigating": {
-    "message": "በገጹ ላይ ያለ iframe ያልተጠናቀቀ ዳሰሳ ጀምሯል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
-    "message": "ንዑስ ግብዓታቸው cache-control:no-cache ያለው ገጾች ወደ የጀርባ/ፊት መሸጎጫ መግባት አይችሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
-    "message": "ንዑስ ግብዓታቸው cache-control:no-store ያለው ገጾች ወደ የጀርባ/ፊት መሸጎጫ መግባት አይችሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeout": {
-    "message": "ገጹ በጀርባ/ፊት መሸጎጫው ውስጥ ካለው ከፍተኛው ጊዜ በልጧል እና የአገልግሎት ጊዜው አብቅቷል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
-    "message": "ገጹ የጀርባ/ፊት መሸጎጫን እያስገባ ሳለ የእረፍት ጊዜው አብቅቷል (ለረጅም ጊዜ እያሄዱ ባሉ የpagehide ተቆጣጣሪዎች ምክንያት ሳይሆን አይቀርም)።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
-    "message": "ገጹ በዋናው ክፈፍ ላይ የማራገፊያ ተቆጣጣሪ አለው።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
-    "message": "ገጹ በንዑስ ክፈፍ ላይ የማራገፊያ ተቆጣጣሪ አለው።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
-    "message": "አሳሽ የተጠቃሚ ወኪል መሻሪያ ራስጌውን ቀይሯል።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
-    "message": "ቪዲዮን የመቅረጽ ወይም ኦዲዮን የመቅዳት መዳረሻ የሰጡ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webDatabase": {
-    "message": "WebDatabaseን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webHID": {
-    "message": "WebHIDን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webLocks": {
-    "message": "WebLocksን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webNfc": {
-    "message": "WebNfcን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webOTPService": {
-    "message": "WebOTPServiceን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለbfcache ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webRTC": {
-    "message": "WebRTC ያላቸው ገጾች ወደ የጀርባ-ፊት መሸጎጫ መግባት አይችሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webShare": {
-    "message": "WebShareን የምጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webSocket": {
-    "message": "WebSocket ያላቸው ገጾች ወደ የጀርባ-ፊት መሸጎጫ መግባት አይችሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webTransport": {
-    "message": "WebTransport ያላቸው ገጾች ወደ የጀርባ-ፊት መሸጎጫ መግባት አይችሉም።"
-  },
-  "panels/application/BackForwardCacheStrings.ts | webXR": {
-    "message": "WebXRን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
-  },
-  "panels/application/BackForwardCacheView.ts | backForwardCacheTitle": {
-    "message": "የጀርባ-ፊት መሸጎጫ"
-  },
-  "panels/application/BackForwardCacheView.ts | bfcacheStatus": {
-    "message": "የጀርባ-ፊት መሸጎጫ ሁኔታ"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantial": {
-    "message": "ተፈጻሚ ሊሆን የሚችል አይደለም"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantialExplanation": {
-    "message": "እነዚህ እርምጃዎች እርምጃ ሊወሰድባቸው የሚችሉ አይደሉም፣ ማለትም መሸጎጥ ከገጹ ቀጥተኛ ቁጥጥር ውጭ በሆነ ነገር ተከልክሏል።"
-  },
-  "panels/application/BackForwardCacheView.ts | mainFrame": {
-    "message": "ዋና ክፍለ ገጸ ድር"
-  },
-  "panels/application/BackForwardCacheView.ts | normalNavigation": {
-    "message": "መደበኛ አሰሳ (ከጀርባ-ፊት መሸጎጫ ወደነበረበት አልተመለሰም)"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeeded": {
-    "message": "ተፈጻሚ ሊሆን የሚችል"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeededExplanation": {
-    "message": "እነዚህ ምክንያቶች እርምጃ ሊወሰድባቸው የሚችሉ ናቸው፣ ማለትም ገጹ ለጀርባ-ፊት መሸጎጫ ብቁ ለማድረግ መጽዳት ይችላሉ።"
-  },
-  "panels/application/BackForwardCacheView.ts | restoredFromBFCache": {
-    "message": "ከጀርባ-ፊት መሸጎጫ ወደነበረበት ተመልሷል"
-  },
-  "panels/application/BackForwardCacheView.ts | runTest": {
-    "message": "ሙከራን አሂድ"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPending": {
-    "message": "በመጠባበቅ ላይ ያለ ድጋፍ"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPendingExplanation": {
-    "message": "የChrome የእነዚህ ምክንያቶች ድጋፍ በመጠባበቅ ላይ ነው፣ ማለትም ገጹ በወደፊት የChrome ስሪት ላይ ለጀርባ-ፊት መሸጎጫ ብቁ እንዳይሆኑ አይከለክሉትም።"
-  },
-  "panels/application/BackForwardCacheView.ts | unavailable": {
-    "message": "አይገኝም"
-  },
-  "panels/application/BackForwardCacheView.ts | unknown": {
-    "message": "ያልታወቀ"
-  },
-  "panels/application/BackForwardCacheView.ts | url": {
-    "message": "ዩአርኤል"
   },
   "panels/application/BackgroundServiceView.ts | backgroundFetch": {
     "message": "የዳራ አወጣ"
@@ -2922,7 +2565,7 @@
     "message": "ተዘግቷል"
   },
   "panels/application/OpenedWindowDetailsView.ts | crossoriginEmbedderPolicy": {
-    "message": "በመነሻ መካከል አሳታፊ መመሪያ"
+    "message": "የምንጭ ተሻጋሪ አካታች መመሪያ"
   },
   "panels/application/OpenedWindowDetailsView.ts | document": {
     "message": "ሰነድ"
@@ -3251,6 +2894,387 @@
   "panels/application/application-meta.ts | stopRecordingEvents": {
     "message": "ክስተቶችን መቅረጽ አቁም"
   },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
+    "message": "በGET ጥያቄ በኩል የተጫኑ ገጾች ብቻ ናቸው ለጀርባ/ፊት መሸጎጫ ብቁ የሆኑት።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
+    "message": "የ2XX ሁኔታ ኮድ ያላቸው ገጾች ብቻ ናቸው ሊሸጎጡ የሚችሉት።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | JavaScriptExecution": {
+    "message": "Chrome በመሸጎጫ ላይ ሳለ ጃቫስክሪፕትን የማስፈጸም ሙከራ አግኝቷል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | appBanner": {
+    "message": "AppBanner የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
+    "message": "የጀርባ/ፊት መሸጎጫው በጥቆማዎች ተሰናክሏል። በዚህ መሣሪያ ላይ ለማንቃት chrome://flags/#back-forward-cache ይጎብኙ።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
+    "message": "የጀርባ/ፊት መሸጎጫው በትዕዛዝ መስመሩ ተሰናክሏል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
+    "message": "በቂ ባልሆነ ማህደረ ትውስታ ምክንያት የጀርባ/ፊት መሸጎጫ ተሰናክሏል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
+    "message": "የጀርባ/ፊት መሸጎጫ በወኪሉ አይደገፍም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
+    "message": "የጀርባ/ፊት መሸጎጫው ለቅድመ-ምስል ሰሪው ተሰናክሏል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | broadcastChannel": {
+    "message": "ገጹ በተመዘገቡ አዳማጮች ላይ የBroadcastChannel አብነት ስላለው ሊሸጎጥ አይችልም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheControlNoStore": {
+    "message": "የcache-control:no-store ራስጌ ያላቸው ገጾች ወደ የጀርባ/ፊት መሸጎጫ መግባት አይችሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheFlushed": {
+    "message": "መሸጎጫው ሆን ተብሎ ተጸድቷል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheLimit": {
+    "message": "ሌላ ገጽ መሸጎጫ እንዲቀመጥለት ለማስቻል ገጹ ከመሸጎጫው ወጥቷል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | containsPlugins": {
+    "message": "ተሰኪዎችን የያዙ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileChooser": {
+    "message": "የFileChooser ኤፒአይን የሚጠቀሙ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileSystemAccess": {
+    "message": "የፋይል ስርዓት መዳረሻ ኤፒአይን የሚጠቀሙ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
+    "message": "የሚዲያ መሣሪያ ማሰማሪያን የሚጠቀሙ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaPlay": {
+    "message": "ወደ ሌላ ሲዳሰስ የሚዲያማጫወቻ በመጫወት ላይ ነበር።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSession": {
+    "message": "የMediaSession ኤፒአይን የሚጠቀሙ እና የመልሶ ማጫወት ሁኔታን ያቀናበሩ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSessionService": {
+    "message": "የMediaSession ኤፒአይን የሚጠቀሙ እና የመልሶ ማጫወት ሁኔታን ያቀናበሩ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentScreenReader": {
+    "message": "Back/forward cache is disabled due to screen reader."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSecurityHandler": {
+    "message": "SecurityHandlerን የሚጠቀሙ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSerial": {
+    "message": "ተከታታይ ኤፒአይን የሚጠቀሙ ገጾች ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
+    "message": "የWebAuthetication ኤፒአይን የሚጠቀሙ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebBluetooth": {
+    "message": "የWebBluetooth ኤፒአይን የሚጠቀሙ ገጾች ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebUSB": {
+    "message": "የWebUSB ኤፒአይን የሚጠቀሙ ገጾች ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
+    "message": "ቋሚ ሰራተኛ ወይም የስራ-ክፍል የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | documentLoaded": {
+    "message": "ሰነዱ ወደ ሌላ ከመዳሰሱ በፊት ጭኖ አልጨረሰልም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderAppBannerManager": {
+    "message": "App Banner was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
+    "message": "Chrome Password Manager was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
+    "message": "DOM distillation was in progress upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
+    "message": "DOM Distiller Viewer was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
+    "message": "Back/forward cache is disabled due to extensions using messaging API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
+    "message": "Extensions with long-lived connection should close the connection before entering back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
+    "message": "Extensions with long-lived connection attempted to send messages to frames in back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensions": {
+    "message": "Back/forward cache is disabled due to extensions."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderModalDialog": {
+    "message": "Modal dialog such as form resubmission or http password dialog was shown for the page upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOfflinePage": {
+    "message": "The offline page was shown upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
+    "message": "Out-Of-Memory Intervention bar was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
+    "message": "There were permission requests upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
+    "message": "Popup blocker was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
+    "message": "Safe Browsing details were shown upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
+    "message": "Safe Browsing considered this page to be abusive and blocked popup."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
+    "message": "ገጹ በጀርባ/ፊት መሸጎጫ ላይ ሳለ የአገልግሎት ሰራተኛ ገቢር ተደርጓል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | foregroundCacheLimit": {
+    "message": "ሌላ ገጽ መሸጎጫ እንዲቀመጥለት ለማስቻል ገጹ ከመሸጎጫው ወጥቷል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
+    "message": "የሚዲያ ዥረት መዳረሻን የሰጡ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | haveInnerContents": {
+    "message": "መግቢያዎችን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | idleManager": {
+    "message": "IdleManagerን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | indexedDBConnection": {
+    "message": "ክፍት የIndexedDB ግንኙነት ያላቸው ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | ineligibleAPI": {
+    "message": "ብቁ ያልሆኑ ኤፒአዮች ስራ ላይ ውለዋል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedJavascript": {
+    "message": "በቅጥያዎች ጃቫስክሪፕት የገባባቸው IPages በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedStyleSheet": {
+    "message": "በቅጥያዎች StyleSheet የገባባቸው ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | internalError": {
+    "message": "ውስጣዊ ስህተት።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | keyboardLock": {
+    "message": "የቁልፍ ሰሌዳ ቁልፍን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | loading": {
+    "message": "ገጹ ወደ ሌላ ከመዳሰሱ በፊት ጭኖ አልጨረሰልም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
+    "message": "ዋና ግብዓታቸው cache-control:no-cache የሆኑ ገጾች ወደ የጀርባ/ፊት መሸጎጫ መግባት አይችሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
+    "message": "ዋና ግብዓታቸው cache-control:no-store የሆኑ ገጾች ወደ የጀርባ/ፊት መሸጎጫ መግባት አይችሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
+    "message": "ገጹ ከጀርባ/ፊት መሸጎጫው ወደነበረበት መመለስ ከመቻሉ በፊት ዳሰሳ ተሰርዟል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
+    "message": "አንድ ገቢር የአውታረ መረብ ግንኙነት በጣም ብዙ ውሂብ ስለተቀበለ ገጹ ከመሸጎጫው ወጥቷል። Chrome አንድ ገጽ ተሸጉጦ ሳለ ሊቀበለው የሚችለው የውሂብ መጠንን ይገድባል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
+    "message": "inflight fetch() ወይም XHR ያላቸው ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestRedirected": {
+    "message": "አንድ ገቢር የአውታረ መረብ ጥያቄ ማዞርን የሚያካትት ስለነበር ገጹ ከጀርባ/ፊት መሸጎጫ ተወግዷል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestTimeout": {
+    "message": "አንድ የአውታረ መረብ ግንኙነት ለበጣም ረጅም ጊዜ ክፍት ስለነበር ገጹ ከመሸጎጫው ወጥቷል። Chrome አንድ ገጽ ተሸጉጦ ሳለ ውሂብ ሊቀበል የሚችበትን የጊዜ መጠን ይገድባል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | noResponseHead": {
+    "message": "የሚሰራ የአጸፋ ራስ የሌላቸው ገጾች ወደ የጀርባ/ፊት መሸጎጫ መግባት አይችሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | notMainFrame": {
+    "message": "ዳሰሳ ከዋናው ክፈፍ ውጭ በሆነ ክፈፍ ውስጥ ነው የተከሰተው።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
+    "message": "በመካሄድ ላይ ያለ የመረጃ ጠቋሚ የተሰናዳላቸው የውሂብ ጎታ ግብይቶች ያለው ገጽ በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
+    "message": "የውስጠ-በረራ አውታረ መረብ ጥያቄ ያላቸው ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
+    "message": "የውስጠ-በረራ ማምጫ አውታረ መረብ ጥያቄ ያላቸው ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
+    "message": "የውስጠ-በረራ አውታረ መረብ ጥያቄ ያላቸው ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
+    "message": "የውስጠ-በረራ XHR አውታረ መረብ ጥያቄ ያላቸው ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | paymentManager": {
+    "message": "PaymentManagerን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | pictureInPicture": {
+    "message": "ስዕል-ላይ-ስዕል የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | portal": {
+    "message": "መግቢያዎችን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | printing": {
+    "message": "የህትመት ዩአይን የሚያሳዩ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
+    "message": "ገጹ የተከፈተው «window.open()»ን በመጠቀም ነው፣ እና ሌላ ትር የእሱ ዋቢ አለው ወይም ገጹ አንድ መስኮት ከፍቷል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessCrashed": {
+    "message": "የጀርባ/ፊት መሸጎጫው ምስል ሰሪ ሂደት ተበላሽቷል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessKilled": {
+    "message": "የጀርባ/ፊት መሸጎጫው ምስል ሰሪ ሂደት ቆሟል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
+    "message": "የኦዲዮ መቅዳት ፈቃዶችን የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
+    "message": "የዳሳሽ ፈቃዶችን የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
+    "message": "የበስተጀርባ ስምረትን ወይም የማምጣት ፈቃዶችን የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedMIDIPermission": {
+    "message": "የMIDI ፈቃዶችን የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
+    "message": "የማሳወቂያዎች ፈቃዶችን የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
+    "message": "የማከማቻ መዳረሻን የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
+    "message": "የቪዲዮ መቅረጽ ፈቃዶችን የጠየቁ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
+    "message": "የዩአርኤል ዕቅዳቸው ኤችቲቲፒ / ኤችቲቲፒኤስ የሆኑ ገጾች ብቻ ናቸው ሊሸጎጡ የሚችሉት።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerClaim": {
+    "message": "ገጹ በጀርባ/ፊት መሸጎጫ ላይ ሳለ በአንድ የአገልግሎት ሰራተኛ የይገባኛል ጥያቄ ተነስቶበታል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
+    "message": "አንድ የአገልግሎት ሰራተኛ በጀርባ/ፊት መሸጎጫው ውስጥ ላለው ገጽ MessageEvent ለመላክ ሞክሯል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
+    "message": "ገጹ በጀርባ/ፊት መሸጎጫ ላይ ሳለ ServiceWorker ከምዝገባ ወጥቷል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
+    "message": "በአገልግሎት ሰራተኛ ማግበር ምክንያት ገጹ ከጀርባ/ፊት መሸጎጫ ተወግዷል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sessionRestored": {
+    "message": "Chrome ዳግም ተነስትውል እና የጀርባ/ፊት መሸጎጫ ግቤቶችን አጽድቷል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sharedWorker": {
+    "message": "SharedWorkerን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechRecognizer": {
+    "message": "SpeechRecognizerን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechSynthesis": {
+    "message": "SpeechSynthesisን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subframeIsNavigating": {
+    "message": "በገጹ ላይ ያለ iframe ያልተጠናቀቀ ዳሰሳ ጀምሯል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
+    "message": "ንዑስ ግብዓታቸው cache-control:no-cache ያለው ገጾች ወደ የጀርባ/ፊት መሸጎጫ መግባት አይችሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
+    "message": "ንዑስ ግብዓታቸው cache-control:no-store ያለው ገጾች ወደ የጀርባ/ፊት መሸጎጫ መግባት አይችሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeout": {
+    "message": "ገጹ በጀርባ/ፊት መሸጎጫው ውስጥ ካለው ከፍተኛው ጊዜ በልጧል እና የአገልግሎት ጊዜው አብቅቷል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
+    "message": "ገጹ የጀርባ/ፊት መሸጎጫን እያስገባ ሳለ የእረፍት ጊዜው አብቅቷል (ለረጅም ጊዜ እያሄዱ ባሉ የpagehide ተቆጣጣሪዎች ምክንያት ሳይሆን አይቀርም)።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
+    "message": "ገጹ በዋናው ክፈፍ ላይ የማራገፊያ ተቆጣጣሪ አለው።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
+    "message": "ገጹ በንዑስ ክፈፍ ላይ የማራገፊያ ተቆጣጣሪ አለው።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
+    "message": "አሳሽ የተጠቃሚ ወኪል መሻሪያ ራስጌውን ቀይሯል።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
+    "message": "ቪዲዮን የመቅረጽ ወይም ኦዲዮን የመቅዳት መዳረሻ የሰጡ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webDatabase": {
+    "message": "WebDatabaseን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webHID": {
+    "message": "WebHIDን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webLocks": {
+    "message": "WebLocksን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webNfc": {
+    "message": "WebNfcን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webOTPService": {
+    "message": "WebOTPServiceን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለbfcache ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webRTC": {
+    "message": "WebRTC ያላቸው ገጾች ወደ የጀርባ-ፊት መሸጎጫ መግባት አይችሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webShare": {
+    "message": "WebShareን የምጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ/ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webSocket": {
+    "message": "WebSocket ያላቸው ገጾች ወደ የጀርባ-ፊት መሸጎጫ መግባት አይችሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webTransport": {
+    "message": "WebTransport ያላቸው ገጾች ወደ የጀርባ-ፊት መሸጎጫ መግባት አይችሉም።"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webXR": {
+    "message": "WebXRን የሚጠቀሙ ገጾች በአሁኑ ጊዜ ለጀርባ-ፊት መሸጎጫ ብቁ አይደሉም።"
+  },
+  "panels/application/components/BackForwardCacheView.ts | backForwardCacheTitle": {
+    "message": "የጀርባ/ፊት መሸጎጫ"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantial": {
+    "message": "ተፈጻሚ ሊሆን የሚችል አይደለም"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantialExplanation": {
+    "message": "እነዚህ እርምጃዎች እርምጃ ሊወሰድባቸው የሚችሉ አይደሉም፣ ማለትም መሸጎጥ ከገጹ ቀጥተኛ ቁጥጥር ውጭ በሆነ ነገር ተከልክሏል።"
+  },
+  "panels/application/components/BackForwardCacheView.ts | learnMore": {
+    "message": "የበለጠ ለመረዳት፦ የጀርባ/ፊት መሸጎጫ ብቁነት"
+  },
+  "panels/application/components/BackForwardCacheView.ts | mainFrame": {
+    "message": "ዋና ክፍለ ገጸ ድር"
+  },
+  "panels/application/components/BackForwardCacheView.ts | normalNavigation": {
+    "message": "ከጀርባ/ፊት መሸጎጫ ያልቀረበ፦ ከጀርባ/ፊት መሸጎጫን ለመቀስቀስ፣ የChrome ጀርባ/ፊት አዝራሮችን ይጠቀሙ፣ ወይም በራስ ሰር ወደ ውጪ አስሰው ለመመለስ ከዚህ በታች ያለውን የሙከራ ቁልፍ ይጠቀሙ።"
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeeded": {
+    "message": "ተፈጻሚ ሊሆን የሚችል"
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeededExplanation": {
+    "message": "እነዚህ ምክንያቶች እርምጃ ሊወሰድባቸው የሚችሉ ናቸው፣ ማለትም ገጹ ለጀርባ/ፊት መሸጎጫ ብቁ ለማድረግ መጽዳት ይችላሉ።"
+  },
+  "panels/application/components/BackForwardCacheView.ts | restoredFromBFCache": {
+    "message": "ከጀርባ/ፊት መሸጎጫ በተሳካ ሁኔታ ቀርቧል።"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runTest": {
+    "message": "የጀርባ/ፊት መሸጎጫን ሞክር"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runningTest": {
+    "message": "ሙከራን በማሄድ ላይ"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPending": {
+    "message": "በመጠባበቅ ላይ ያለ ድጋፍ"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPendingExplanation": {
+    "message": "የChrome የእነዚህ ምክንያቶች ድጋፍ በመጠባበቅ ላይ ነው፣ ማለትም ገጹ በወደፊት የChrome ስሪት ላይ ለጀርባ/ፊት መሸጎጫ ብቁ እንዳይሆኑ አይከለክሉትም።"
+  },
+  "panels/application/components/BackForwardCacheView.ts | unavailable": {
+    "message": "አይገኝም"
+  },
+  "panels/application/components/BackForwardCacheView.ts | unknown": {
+    "message": "ያልታወቀ ሁኔታ"
+  },
+  "panels/application/components/BackForwardCacheView.ts | url": {
+    "message": "ዩአርኤል፦"
+  },
   "panels/application/components/EndpointsGrid.ts | noEndpointsToDisplay": {
     "message": "የሚታዩ የመጨረሻ ነጥቦች የሉም"
   },
@@ -3297,22 +3321,16 @@
     "message": "በምንጮች ፓነል ውስጥ ለመግለጥ ጠቅ ያድርጉ"
   },
   "panels/application/components/FrameDetailsView.ts | createdByAdScriptExplanation": {
-    "message": "ይህ ክፍለ ሲፈጠር በ(async) ቁልል ውስጥ የማስታወቂያ ስክሪፕት ነበር። የዚህን ክፈፍ የመከታተያ ቁልል ፈጠራ መመርመር የበለጠ ግንዛቤ ሊሰጥ ይችላል።"
+    "message": "ይህ ክፍለ ሲፈጠር በ(async) stack ውስጥ የማስታወቂያ ስክሪፕት ነበር። የዚህን ክፈፍ የstack trace ፈጠራ መመርመር የበለጠ ግንዛቤ ሊሰጥ ይችላል።"
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTrace": {
-    "message": "የክፍለ ገጸ ድር ፈጠራ መከታተያ ቁልል"
+    "message": "የክፈፍ ፈጠራ Stack Trace"
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTraceExplanation": {
-    "message": "ይህ ክፍለ ገጸ ድር የተፈጠረው በፕሮግራማዊ መንገድ ነው። የቁልል መከታተያው ይህ የት እንደተከሰተ ያሳያል።"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginEmbedderPolicy": {
-    "message": "በመነሻ መካከል አሳታፊ መመሪያ"
+    "message": "ይህ ክፍለ ገጸ ድር የተፈጠረው በፕሮግራማዊ መንገድ ነው። stack trace ይህ የት እንደተከሰተ ያሳያል።"
   },
   "panels/application/components/FrameDetailsView.ts | crossoriginIsolated": {
     "message": "ተሻጋሪ-ምንጭ ተገልሏል"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginOpenerPolicy": {
-    "message": "ምንጭ-ተሻጋሪ መክፈቻ መመሪያ"
   },
   "panels/application/components/FrameDetailsView.ts | document": {
     "message": "ሰነድ"
@@ -3337,9 +3355,6 @@
   },
   "panels/application/components/FrameDetailsView.ts | origin": {
     "message": "ምንጭ"
-  },
-  "panels/application/components/FrameDetailsView.ts | originTrials": {
-    "message": "መነሻ ሙከራዎች"
   },
   "panels/application/components/FrameDetailsView.ts | ownerElement": {
     "message": "የባለቤት አባለ ነገር"
@@ -3366,10 +3381,10 @@
     "message": "ደህንነት እና ማግለል"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIs": {
-    "message": "የSharedArrayBuffer ገንቢ ይገኛል፣ እና SABs በpostMessage በኩል ሊተላለፉ ይችላሉ"
+    "message": "የSharedArrayBuffer ገንቢ ይገኛል፣ እንዲሁም SABs በpostMessage በኩል ሊተላለፉ ይችላሉ"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIsAvailable": {
-    "message": "የSharedArrayBuffer ገንቢ ይገኛል፣ ነገር ግን SABs ወደ postMessage ሊተላለፉ አይችሉም"
+    "message": "የSharedArrayBuffer ገንቢ ይገኛል፣ ነገር ግን በSABs በኩል postMessage ሊተላለፉ አይችሉም"
   },
   "panels/application/components/FrameDetailsView.ts | theFramesSchemeIsInsecure": {
     "message": "የክፈፉ እቅድ አስተማማኝ አይደለም"
@@ -4229,20 +4244,11 @@
   "panels/css_overview/CSSOverviewUnusedDeclarations.ts | widthAppliedToAnInlineElement": {
     "message": "Width በውስጠ-መስመር አባለ ነገር ላይ ተተግብሯል"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | activelyWorkingAndLookingForS": {
-    "message": "የእኛ ቡድን በዚህ ባህሪ ላይ በንቃት እየሰራ ሲሆን እኛ የእርስዎን {PH1} እየፈለግን ነው!"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | captureOverview": {
     "message": "የአጠቃላይ ዕይታ ፎቶ አንሳ"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | capturePageCSSOverview": {
     "message": "የገጽዎን ሲኤስኤስ አጠቃላይ እይታ ምስል ያንሱ"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackInline": {
-    "message": "ግብረመልስ"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackStandalone": {
-    "message": "ግብረመልስ"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | identifyCSSImprovements": {
     "message": "ሊሆኑ የሚችሉ የሲኤስኤስ ማሻሻያዎች"
@@ -4253,14 +4259,8 @@
   "panels/css_overview/components/CSSOverviewStartView.ts | locateAffectedElements": {
     "message": "በአባለ ነገሮች ፓነሉ ላይ ተጽዕኖ ያረፈባቸው የአባለ ነገሮችን ያግኙ"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | previewFeature": {
-    "message": "የቅድመ-ዕይታ ባህሪ"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | quickStartWithCSSOverview": {
     "message": "ፈጣን ጅምር፦ በአዲሱ የሲኤስኤስ አጠቃላይ እይታ ፓነል ለመጀመር"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | videoAndDocumentation": {
-    "message": "ቪዲዮ እና ሰነዳ"
   },
   "panels/css_overview/css_overview-meta.ts | cssOverview": {
     "message": "የሲኤስኤስ አጠቃላይ እይታ"
@@ -4591,6 +4591,21 @@
   },
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
     "message": "ምስል የተሰራላቸው ቅርጸ-ቁምፊዎች"
+  },
+  "panels/elements/PropertiesWidget.ts | filter": {
+    "message": "ማጣሪያ"
+  },
+  "panels/elements/PropertiesWidget.ts | filterProperties": {
+    "message": "የማጣሪያ ባህሪያት"
+  },
+  "panels/elements/PropertiesWidget.ts | noMatchingProperty": {
+    "message": "ምንም ተዛማጅ ንብረት የለም"
+  },
+  "panels/elements/PropertiesWidget.ts | showAll": {
+    "message": "ሁሉንም አሳይ"
+  },
+  "panels/elements/PropertiesWidget.ts | showAllTooltip": {
+    "message": "ምልክት በማይደረግበት ጊዜ መጠናቸው ባዶ ወይም ያልተገለጹ ንብረቶች ብቻ ይታያሉ"
   },
   "panels/elements/StylePropertyTreeElement.ts | copyAllCssDeclarationsAsJs": {
     "message": "ሁሉንም መግለጫዎች እንደ JS ይቅዱ"
@@ -4926,7 +4941,7 @@
     "message": "የሚዲያ መጠይቆችን አሳይ"
   },
   "panels/emulation/DeviceModeToolbar.ts | showRulers": {
-    "message": "ማስመሪያዎችን አሳይ"
+    "message": "ችን አሳይ"
   },
   "panels/emulation/DeviceModeToolbar.ts | toggleDualscreenMode": {
     "message": "ባለሁለት ማያ ገጽ ሁነታን ይቀያይሩ"
@@ -4980,7 +4995,7 @@
     "message": "የሚዲያ መጠይቆችን ደብቅ"
   },
   "panels/emulation/emulation-meta.ts | hideRulers": {
-    "message": "መለኪያዎችን ደብቅ"
+    "message": "በመሳሪያ ሁነታ የመሳሪያ አሞሌ ውስጥ ማስመሪያዎችን ደብቅ"
   },
   "panels/emulation/emulation-meta.ts | showDeviceFrame": {
     "message": "የመሣሪያ ክፈፍን አሳይ"
@@ -4989,7 +5004,7 @@
     "message": "የሚዲያ ጥያቄዎችን አሳይ"
   },
   "panels/emulation/emulation-meta.ts | showRulers": {
-    "message": "ማስመሪያዎችን አሳይ"
+    "message": "በመሳሪያ ሁነታ የመሳሪያ አሞሌ ውስጥ ማስመሪያዎችን አሳይ"
   },
   "panels/emulation/emulation-meta.ts | toggleDeviceToolbar": {
     "message": "የመሣሪያ አሞሌን ይቀያይሩ"
@@ -5014,36 +5029,6 @@
   },
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "የክስተት አዳማጩ ለዘብተኛ ወይም እያገደ እንደሆነ ይቀያይሩ"
-  },
-  "panels/help/ReleaseNoteView.ts | close": {
-    "message": "ዝጋ"
-  },
-  "panels/help/ReleaseNoteView.ts | learnMore": {
-    "message": "የበለጠ ለመረዳት"
-  },
-  "panels/help/help-meta.ts | bug": {
-    "message": "ሳንካ"
-  },
-  "panels/help/help-meta.ts | doNotShowWhatsNewAfterEachUpdate": {
-    "message": "ከእያንዳንዱ ዝመኔ በኋላ ምን አዲስ ነገር አታሳይ"
-  },
-  "panels/help/help-meta.ts | releaseNotes": {
-    "message": "የልቀት ማስታወሻዎች"
-  },
-  "panels/help/help-meta.ts | reportADevtoolsIssue": {
-    "message": "የDevTools ችግር ሪፖርት አድርግ"
-  },
-  "panels/help/help-meta.ts | reportTranslationIssue": {
-    "message": "የትርጉም ችግርን ሪፖርት ያድርጉ"
-  },
-  "panels/help/help-meta.ts | showWhatsNew": {
-    "message": "አዲስ የሆነውን አሳይ"
-  },
-  "panels/help/help-meta.ts | showWhatsNewAfterEachUpdate": {
-    "message": "ከእያንዳንዱ ዝማኔ በኋላ ምን አዲስ ነገርን አሳይ"
-  },
-  "panels/help/help-meta.ts | whatsNew": {
-    "message": "ምን አዲስ ነገር አለ"
   },
   "panels/input/InputTimeline.ts | clearAll": {
     "message": "ሁሉንም አጽዳ"
@@ -5261,8 +5246,20 @@
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceEventId": {
     "message": "ልክ ያልሆነ attributionsourceeventid"
   },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceExpiry": {
+    "message": "ልክ ያልሆነ attributionexpiry"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourcePriority": {
+    "message": "ልክ ያልሆነ attributionsourcepriority"
+  },
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerData": {
     "message": "ልክ ያልሆነ trigger-data"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerDedupKey": {
+    "message": "ልክ ያልሆነ dedup-key"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerPriority": {
+    "message": "ልክ ያልሆነ priority"
   },
   "panels/issues/AttributionReportingIssueDetailsView.ts | nViolations": {
     "message": "{n,plural, =1{# ጥሰት}one{# ጥሰቶች}other{# ጥሰቶች}}"
@@ -5290,6 +5287,9 @@
   },
   "panels/issues/CorsIssueDetailsView.ts | disallowedRequestMethod": {
     "message": "ያልተፈቀደ የጥያቄ ዘዴ"
+  },
+  "panels/issues/CorsIssueDetailsView.ts | failedRequest": {
+    "message": "ያልተሳካ ጥያቄ"
   },
   "panels/issues/CorsIssueDetailsView.ts | header": {
     "message": "ራስጌ"
@@ -5366,8 +5366,14 @@
   "panels/issues/HiddenIssuesRow.ts | unhideAll": {
     "message": "ሁሉንም አትደብቅ"
   },
-  "panels/issues/IssueKindView.ts | hideAllCurrent": {
-    "message": "ሁሉንም የአሁኑ {PH1} ደብቅ"
+  "panels/issues/IssueKindView.ts | hideAllCurrentBreakingChanges": {
+    "message": "ሁሉንም የአሁን ሰበር ለውጦችን ደብቅ"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentImprovements": {
+    "message": "ሁሉንም የአሁን ማሻሻያዎችን ደብቅ"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentPageErrors": {
+    "message": "ሁሉንም የአሁን የገጽ ስህተቶችን ደብቅ"
   },
   "panels/issues/IssueView.ts | affectedResources": {
     "message": "ተጽዕኖ ያረፈባቸው ግብዓቶች"
@@ -6307,6 +6313,9 @@
   },
   "panels/network/NetworkConfigView.ts | caching": {
     "message": "በመሸጎጥ ላይ"
+  },
+  "panels/network/NetworkConfigView.ts | clientHintsStatusText": {
+    "message": "የተጠቃሚ ወኪል ተዘምኗል።"
   },
   "panels/network/NetworkConfigView.ts | custom": {
     "message": "ብጁ..."
@@ -9153,7 +9162,7 @@
     "message": "ሽፋን፦ የለም"
   },
   "panels/sources/CoveragePlugin.ts | coverageS": {
-    "message": "ሽፋን፦ {PH1} %"
+    "message": "ሽፋን፦ {PH1}"
   },
   "panels/sources/CoveragePlugin.ts | showDetails": {
     "message": "ዝርዝሮቹን አሳይ"
@@ -9412,6 +9421,15 @@
   },
   "panels/sources/OutlineQuickOpen.ts | openAJavascriptOrCssFileToSee": {
     "message": "ምልክቶችን ለማየት ጃቫስክሪፕትን ወይም የሲኤስኤስ ፋይልን ይክፈቱ"
+  },
+  "panels/sources/ProfilePlugin.ts | kb": {
+    "message": "ኪባ"
+  },
+  "panels/sources/ProfilePlugin.ts | mb": {
+    "message": "ሜባ"
+  },
+  "panels/sources/ProfilePlugin.ts | ms": {
+    "message": "ሚሴ"
   },
   "panels/sources/ScopeChainSidebarPane.ts | closure": {
     "message": "መዝጊያ"
@@ -11429,6 +11447,24 @@
   "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
     "message": "የማህደረ ትውስታ መርማሪን አሳይ"
   },
+  "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
+    "message": "ግብረመልስ"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewFeature": {
+    "message": "የቅድመ-ዕይታ ባህሪ"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewText": {
+    "message": "ቡድናችን በዚህ ባህሪ ላይ በንቃት እየሰራ ነው እንዲሁም እርስዎ ምን እንደሚያስቡ ለማወቅ እንፈልጋለን።"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewTextFeedbackLink": {
+    "message": "ግብረመልስዎን ይላኩልን።"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | videoAndDocumentation": {
+    "message": "ቪዲዮ እና ሰነዳ"
+  },
+  "ui/components/panel_feedback/PreviewToggle.ts | previewTextFeedbackLink": {
+    "message": "ግብረመልስዎን ይላኩልን።"
+  },
   "ui/components/request_link_icon/RequestLinkIcon.ts | clickToShowRequestInTheNetwork": {
     "message": "የአውታረ መረብ ፓነሉን ለመክፈት እና የዩአርኤልን ጥያቄ ለማሳየት ጠቅ ያድርጉ፦ {url}"
   },
@@ -11501,6 +11537,12 @@
   "ui/legacy/InspectorView.ts | drawer": {
     "message": "የመሣሪያ መሣቢያ"
   },
+  "ui/legacy/InspectorView.ts | drawerHidden": {
+    "message": "መሳቢያ ተደብቋል"
+  },
+  "ui/legacy/InspectorView.ts | drawerShown": {
+    "message": "መሳቢያ ታይቷል"
+  },
   "ui/legacy/InspectorView.ts | mainToolbar": {
     "message": "ዋናው የመሣሪያ አሞሌ"
   },
@@ -11539,6 +11581,9 @@
   },
   "ui/legacy/ListWidget.ts | saveString": {
     "message": "አስቀምጥ"
+  },
+  "ui/legacy/RemoteDebuggingTerminatedScreen.ts | debuggingConnectionWasClosed": {
+    "message": "Debugging connection was closed. Reason: "
   },
   "ui/legacy/RemoteDebuggingTerminatedScreen.ts | reconnectDevtools": {
     "message": "DevToolsን ዳግም አገናኝ"
@@ -11774,6 +11819,9 @@
   "ui/legacy/components/cookie_table/CookiesTable.ts | name": {
     "message": "ስም"
   },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | opaquePartitionKey": {
+    "message": "(ብርሃን-ከል)"
+  },
   "ui/legacy/components/cookie_table/CookiesTable.ts | session": {
     "message": "ክፍለ-ጊዜ"
   },
@@ -11942,15 +11990,6 @@
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "እንደ ጃቫስክሪፕት ነገር አሳይ"
   },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keys": {
-    "message": "ቁልፎች"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keywords": {
-    "message": "ቁልፍ ቃላት"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | lexicalScopeVariables": {
-    "message": "የቃላት ወሰን ተለዋዋጮች"
-  },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | collapseChildren": {
     "message": "ልጆችን ሰብስብ"
   },
@@ -12038,15 +12077,6 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | sSelected": {
     "message": "{PH1} ተመርጧል"
   },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | kb": {
-    "message": "ኪባ"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | mb": {
-    "message": "ሜባ"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | ms": {
-    "message": "ሚሴ"
-  },
   "ui/legacy/components/perf_ui/NetworkPriorities.ts | high": {
     "message": "ከፍተኛ"
   },
@@ -12119,8 +12149,8 @@
   "ui/legacy/components/quick_open/QuickInput.ts | pressEnterToConfirmOrEscapeTo": {
     "message": "{PH1} (ለማረጋገጥ «አስገባ»ን ወይም ለመሰረዝ «ዝለል»ን ይጫኑ።)"
   },
-  "ui/legacy/components/quick_open/QuickOpen.ts | useTabToSwitchCommandsTypeToSeeAvailableCommands": {
-    "message": "ትዕዛዞችን ለመቀየር Tabን ይጠቀሙ። የሚገኙ ትዕዛዞችን ለማየት «?»ን ይተይቡ"
+  "ui/legacy/components/quick_open/QuickOpen.ts | typeToSeeAvailableCommands": {
+    "message": "የሚገኙ ትዕዛዞችን ለማየት «?»ን ይተይቡ"
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | openFile": {
     "message": "ፋይልን ክፈት"
@@ -12223,9 +12253,6 @@
   },
   "ui/legacy/components/source_frame/source_frame-meta.ts | tabCharacter": {
     "message": "የትር ቁምፊ"
-  },
-  "ui/legacy/components/text_editor/CodeMirrorTextEditor.ts | codeEditor": {
-    "message": "ኮድ አርታዒ"
   },
   "ui/legacy/components/utils/ImagePreview.ts | currentSource": {
     "message": "የአሁኑ ምንጭ፦"

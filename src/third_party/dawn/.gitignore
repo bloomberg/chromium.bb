@@ -9,9 +9,9 @@
 /testing
 /third_party/abseil-cpp/
 /third_party/angle
+/third_party/catapult
 /third_party/clang-format
 /third_party/glfw
-/third_party/glm
 /third_party/googletest
 /third_party/gpuweb
 /third_party/jinja2

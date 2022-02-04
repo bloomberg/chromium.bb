@@ -24,7 +24,7 @@
 
 #include <sstream>
 
-namespace dawn_native { namespace d3d12 {
+namespace dawn::native::d3d12 {
 
     Adapter::Adapter(Backend* backend, ComPtr<IDXGIAdapter3> hardwareAdapter)
         : AdapterBase(backend->GetInstance(), wgpu::BackendType::D3D12),
@@ -37,7 +37,7 @@ namespace dawn_native { namespace d3d12 {
     }
 
     bool Adapter::SupportsExternalImages() const {
-        // Via dawn_native::d3d12::ExternalImageDXGI::Create
+        // Via dawn::native::d3d12::ExternalImageDXGI::Create
         return true;
     }
 
@@ -76,9 +76,9 @@ namespace dawn_native { namespace d3d12 {
         DXGI_ADAPTER_DESC1 adapterDesc;
         mHardwareAdapter->GetDesc1(&adapterDesc);
 
-        mPCIInfo.deviceId = adapterDesc.DeviceId;
-        mPCIInfo.vendorId = adapterDesc.VendorId;
-        mPCIInfo.name = WCharToUTF8(adapterDesc.Description);
+        mDeviceId = adapterDesc.DeviceId;
+        mVendorId = adapterDesc.VendorId;
+        mName = WCharToUTF8(adapterDesc.Description);
 
         DAWN_TRY_ASSIGN(mDeviceInfo, GatherDeviceInfo(*this));
 
@@ -135,6 +135,9 @@ namespace dawn_native { namespace d3d12 {
         mSupportedFeatures.EnableFeature(Feature::TextureCompressionBC);
         mSupportedFeatures.EnableFeature(Feature::PipelineStatisticsQuery);
         mSupportedFeatures.EnableFeature(Feature::MultiPlanarFormats);
+        mSupportedFeatures.EnableFeature(Feature::Depth24UnormStencil8);
+        mSupportedFeatures.EnableFeature(Feature::Depth32FloatStencil8);
+
         return {};
     }
 
@@ -394,7 +397,7 @@ namespace dawn_native { namespace d3d12 {
         infoQueue->PopStorageFilter();
     }
 
-    ResultOrError<DeviceBase*> Adapter::CreateDeviceImpl(const DawnDeviceDescriptor* descriptor) {
+    ResultOrError<Ref<DeviceBase>> Adapter::CreateDeviceImpl(const DeviceDescriptor* descriptor) {
         return Device::Create(this, descriptor);
     }
 
@@ -409,4 +412,4 @@ namespace dawn_native { namespace d3d12 {
         return {};
     }
 
-}}  // namespace dawn_native::d3d12
+}  // namespace dawn::native::d3d12

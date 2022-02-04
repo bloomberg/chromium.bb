@@ -212,6 +212,17 @@ bool DSLParser::expectIdentifier(Token* result) {
     return true;
 }
 
+bool DSLParser::checkIdentifier(Token* result) {
+    if (!this->checkNext(Token::Kind::TK_IDENTIFIER, result)) {
+        return false;
+    }
+    if (IsBuiltinType(this->text(*result))) {
+        this->pushback(std::move(*result));
+        return false;
+    }
+    return true;
+}
+
 skstd::string_view DSLParser::text(Token token) {
     return skstd::string_view(fText->data() + token.fOffset, token.fLength);
 }
@@ -294,7 +305,8 @@ void DSLParser::directive() {
         return;
     }
     skstd::string_view text = this->text(start);
-    if (text == "#extension") {
+    const bool allowExtensions = !ProgramConfig::IsRuntimeEffect(fKind);
+    if (text == "#extension" && allowExtensions) {
         Token name;
         if (!this->expectIdentifier(&name)) {
             return;
@@ -376,7 +388,8 @@ bool DSLParser::functionDeclarationEnd(const DSLModifiers& modifiers,
         this->nextToken();
     } else {
         for (;;) {
-            skstd::optional<DSLWrapper<DSLParameter>> parameter = this->parameter();
+            size_t paramIndex = parameters.size();
+            skstd::optional<DSLWrapper<DSLParameter>> parameter = this->parameter(paramIndex);
             if (!parameter) {
                 return false;
             }
@@ -605,6 +618,7 @@ skstd::optional<DSLType> DSLParser::structDeclaration() {
         return skstd::nullopt;
     }
     SkTArray<DSLField> fields;
+    std::unordered_set<String> field_names;
     while (!this->checkNext(Token::Kind::TK_RBRACE)) {
         DSLModifiers modifiers = this->modifiers();
         skstd::optional<DSLType> type = this->type(&modifiers);
@@ -625,8 +639,21 @@ skstd::optional<DSLType> DSLParser::structDeclaration() {
                     return skstd::nullopt;
                 }
             }
-            fields.push_back(DSLField(modifiers, std::move(actualType), this->text(memberName),
-                    this->position(memberName)));
+
+            String key(this->text(memberName));
+            auto found = field_names.find(key);
+            if (found == field_names.end()) {
+                fields.push_back(DSLField(modifiers,
+                                    std::move(actualType),
+                                    this->text(memberName),
+                                    this->position(memberName)));
+                field_names.emplace(key);
+            } else {
+                this->error(name,
+                            "field '" + key +
+                            "' was already defined in the same struct ('" + this->text(name) +
+                            "')");
+            }
         } while (this->checkNext(Token::Kind::TK_COMMA));
         if (!this->expect(Token::Kind::TK_SEMICOLON, "';'")) {
             return skstd::nullopt;
@@ -645,9 +672,9 @@ SkTArray<dsl::DSLGlobalVar> DSLParser::structVarDeclaration(const DSLModifiers& 
         return {};
     }
     Token name;
-    if (this->checkNext(Token::Kind::TK_IDENTIFIER, &name)) {
+    if (this->checkIdentifier(&name)) {
         this->globalVarDeclarationEnd(this->position(name), modifiers, std::move(*type),
-                this->text(name));
+                                      this->text(name));
     } else {
         this->expect(Token::Kind::TK_SEMICOLON, "';'");
     }
@@ -655,20 +682,27 @@ SkTArray<dsl::DSLGlobalVar> DSLParser::structVarDeclaration(const DSLModifiers& 
 }
 
 /* modifiers type IDENTIFIER (LBRACKET INT_LITERAL RBRACKET)? */
-skstd::optional<DSLWrapper<DSLParameter>> DSLParser::parameter() {
+skstd::optional<DSLWrapper<DSLParameter>> DSLParser::parameter(size_t paramIndex) {
     DSLModifiers modifiers = this->modifiers();
     skstd::optional<DSLType> type = this->type(&modifiers);
     if (!type) {
         return skstd::nullopt;
     }
     Token name;
-    if (!this->expectIdentifier(&name)) {
-        return skstd::nullopt;
+    skstd::string_view paramText;
+    PositionInfo paramPos;
+    if (this->checkIdentifier(&name)) {
+        paramPos = this->position(name);
+        paramText = this->text(name);
+    } else {
+        String anonymousName = String::printf("_skAnonymousParam%zu", paramIndex);
+        paramPos = this->position(this->peek());
+        paramText = *CurrentSymbolTable()->takeOwnershipOfString(std::move(anonymousName));
     }
     if (!this->parseArrayDimensions(name.fLine, &type.value())) {
         return skstd::nullopt;
     }
-    return {{DSLParameter(modifiers, *type, this->text(name), this->position(name))}};
+    return {{DSLParameter(modifiers, *type, paramText, paramPos)}};
 }
 
 /** EQ INT_LITERAL */
@@ -868,6 +902,7 @@ bool DSLParser::interfaceBlock(const dsl::DSLModifiers& modifiers) {
     }
     this->nextToken();
     SkTArray<dsl::Field> fields;
+    std::unordered_set<String> field_names;
     while (!this->checkNext(Token::Kind::TK_RBRACE)) {
         DSLModifiers fieldModifiers = this->modifiers();
         skstd::optional<dsl::DSLType> type = this->type(&fieldModifiers);
@@ -876,7 +911,7 @@ bool DSLParser::interfaceBlock(const dsl::DSLModifiers& modifiers) {
         }
         do {
             Token fieldName;
-            if (!this->expect(Token::Kind::TK_IDENTIFIER, "an identifier", &fieldName)) {
+            if (!this->expectIdentifier(&fieldName)) {
                 return false;
             }
             DSLType actualType = *type;
@@ -893,15 +928,27 @@ bool DSLParser::interfaceBlock(const dsl::DSLModifiers& modifiers) {
             if (!this->expect(Token::Kind::TK_SEMICOLON, "';'")) {
                 return false;
             }
-            fields.push_back(dsl::Field(fieldModifiers, std::move(actualType),
-                    this->text(fieldName), this->position(fieldName)));
+
+            String key(this->text(fieldName));
+            if (field_names.find(key) == field_names.end()) {
+                fields.push_back(dsl::Field(fieldModifiers,
+                                            std::move(actualType),
+                                            this->text(fieldName),
+                                            this->position(fieldName)));
+                field_names.emplace(key);
+            } else {
+                this->error(typeName,
+                            "field '" + key +
+                            "' was already defined in the same interface block ('" +
+                            this->text(typeName) +  "')");
+            }
         }
         while (this->checkNext(Token::Kind::TK_COMMA));
     }
     skstd::string_view instanceName;
     Token instanceNameToken;
     SKSL_INT arraySize = 0;
-    if (this->checkNext(Token::Kind::TK_IDENTIFIER, &instanceNameToken)) {
+    if (this->checkIdentifier(&instanceNameToken)) {
         instanceName = this->text(instanceNameToken);
         if (this->checkNext(Token::Kind::TK_LBRACKET)) {
             arraySize = this->arraySize();

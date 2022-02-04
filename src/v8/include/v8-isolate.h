@@ -10,7 +10,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "cppgc/common.h"
 #include "v8-array-buffer.h"       // NOLINT(build/include_directory)
@@ -225,6 +224,7 @@ class V8_EXPORT Isolate {
 
     /**
      * Explicitly specify a startup snapshot blob. The embedder owns the blob.
+     * The embedder *must* ensure that the snapshot is from a trusted source.
      */
     StartupData* snapshot_blob = nullptr;
 

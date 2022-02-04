@@ -440,6 +440,7 @@ EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
 EIGEN_UNUSED
 Packet pexp_float(const Packet _x)
 {
+  const Packet cst_zero   = pset1<Packet>(0.0f);
   const Packet cst_1      = pset1<Packet>(1.0f);
   const Packet cst_half   = pset1<Packet>(0.5f);
   const Packet cst_exp_hi = pset1<Packet>( 88.723f);
@@ -454,7 +455,8 @@ Packet pexp_float(const Packet _x)
   const Packet cst_cephes_exp_p5 = pset1<Packet>(5.0000001201E-1f);
 
   // Clamp x.
-  Packet x = pmax(pmin(_x, cst_exp_hi), cst_exp_lo);
+  Packet zero_mask = pcmp_lt(_x, cst_exp_lo);
+  Packet x = pmin(_x, cst_exp_hi);
 
   // Express exp(x) as exp(m*ln(2) + r), start by extracting
   // m = floor(x/ln(2) + 0.5).
@@ -483,7 +485,7 @@ Packet pexp_float(const Packet _x)
 
   // Return 2^m * exp(r).
   // TODO: replace pldexp with faster implementation since y in [-1, 1).
-  return pmax(pldexp(y,m), _x);
+  return pselect(zero_mask, cst_zero, pmax(pldexp(y,m), _x));
 }
 
 template <typename Packet>
@@ -492,7 +494,7 @@ EIGEN_UNUSED
 Packet pexp_double(const Packet _x)
 {
   Packet x = _x;
-
+  const Packet cst_zero = pset1<Packet>(0.0f);
   const Packet cst_1 = pset1<Packet>(1.0);
   const Packet cst_2 = pset1<Packet>(2.0);
   const Packet cst_half = pset1<Packet>(0.5);
@@ -514,7 +516,8 @@ Packet pexp_double(const Packet _x)
   Packet tmp, fx;
 
   // clamp x
-  x = pmax(pmin(x, cst_exp_hi), cst_exp_lo);
+  Packet zero_mask = pcmp_lt(_x, cst_exp_lo);
+  x = pmin(x, cst_exp_hi);
   // Express exp(x) as exp(g + n*log(2)).
   fx = pmadd(cst_cephes_LOG2EF, x, cst_half);
 
@@ -552,7 +555,7 @@ Packet pexp_double(const Packet _x)
   // Construct the result 2^n * exp(g) = e * x. The max is used to catch
   // non-finite values in the input.
   // TODO: replace pldexp with faster implementation since x in [-1, 1).
-  return pmax(pldexp(x,fx), _x);
+  return pselect(zero_mask, cst_zero, pmax(pldexp(x,fx), _x));
 }
 
 // The following code is inspired by the following stack-overflow answer:
@@ -621,7 +624,7 @@ inline float trig_reduce_huge (float xf, int *quadrant)
 template<bool ComputeSine,typename Packet>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
 EIGEN_UNUSED
-#if EIGEN_GNUC_AT_LEAST(4,4) && EIGEN_COMP_GNUC_STRICT
+#if EIGEN_COMP_GNUC_STRICT
 __attribute__((optimize("-fno-unsafe-math-optimizations")))
 #endif
 Packet psincos_float(const Packet& _x)

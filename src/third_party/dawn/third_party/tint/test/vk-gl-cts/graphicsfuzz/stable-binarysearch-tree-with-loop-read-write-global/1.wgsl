@@ -8,7 +8,6 @@ struct QuicksortObject {
   numbers : array<i32, 10>;
 };
 
-[[block]]
 struct buf0 {
   injectionSwitch : vec2<f32>;
 };
@@ -17,7 +16,7 @@ var<private> obj : QuicksortObject;
 
 var<private> tree : array<BST, 10>;
 
-[[group(0), binding(0)]] var<uniform> x_50 : buf0;
+@group(0) @binding(0) var<uniform> x_50 : buf0;
 
 var<private> x_GLF_color : vec4<f32>;
 
@@ -308,11 +307,11 @@ fn main_1() {
 }
 
 struct main_out {
-  [[location(0)]]
+  @location(0)
   x_GLF_color_1 : vec4<f32>;
 };
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() -> main_out {
   main_1();
   return main_out(x_GLF_color);

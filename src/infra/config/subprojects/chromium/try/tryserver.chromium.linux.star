@@ -64,22 +64,6 @@ try_.builder(
 )
 
 try_.builder(
-    name = "cast-binary-size",
-    builderless = True,
-    executable = "recipe:binary_size_cast_trybot",
-    properties = {
-        "$build/binary_size": {
-            "analyze_targets": [
-                "//chromecast:cast_shell",
-            ],
-            "compile_targets": [
-                "cast_shell",
-            ],
-        },
-    },
-)
-
-try_.builder(
     name = "fuchsia-binary-size",
     branch_selector = branches.STANDARD_MILESTONE,
     builderless = True,
@@ -322,17 +306,20 @@ try_.compilator_builder(
     main_list_view = "try",
 )
 
-try_.builder(
-    name = "linux-rel-reclient",
-    branch_selector = branches.STANDARD_MILESTONE,
+# crbug.com/1270571: Experimental bot to test pre-warming
+try_.orchestrator_builder(
+    name = "linux-rel-warmed",
+    compilator = "linux-rel-warmed-compilator",
     main_list_view = "try",
-    reclient_jobs = 150,
-    goma_backend = None,
-    reclient_instance = "rbe-chromium-gvisor-shadow",
-    tryjob = try_.job(
-        experiment_percentage = 10,
-    ),
     use_clang_coverage = True,
+    coverage_test_types = ["unit", "overall"],
+)
+
+# crbug.com/1270571: Experimental bot to test pre-warming
+try_.compilator_builder(
+    name = "linux-rel-warmed-compilator",
+    main_list_view = "try",
+    builder_cache_name = "linux_rel_warmed_compilator_warmed_cache",
 )
 
 try_.builder(

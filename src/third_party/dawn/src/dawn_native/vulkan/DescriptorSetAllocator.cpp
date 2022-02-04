@@ -19,7 +19,7 @@
 #include "dawn_native/vulkan/FencedDeleter.h"
 #include "dawn_native/vulkan/VulkanError.h"
 
-namespace dawn_native { namespace vulkan {
+namespace dawn::native::vulkan {
 
     // TODO(enga): Figure out this value.
     static constexpr uint32_t kMaxDescriptorsPerPool = 512;
@@ -40,10 +40,10 @@ namespace dawn_native { namespace vulkan {
         // Compute the total number of descriptors for this layout.
         uint32_t totalDescriptorCount = 0;
         mPoolSizes.reserve(descriptorCountPerType.size());
-        for (const auto& it : descriptorCountPerType) {
-            ASSERT(it.second > 0);
-            totalDescriptorCount += it.second;
-            mPoolSizes.push_back(VkDescriptorPoolSize{it.first, it.second});
+        for (const auto& [type, count] : descriptorCountPerType) {
+            ASSERT(count > 0);
+            totalDescriptorCount += count;
+            mPoolSizes.push_back(VkDescriptorPoolSize{type, count});
         }
 
         if (totalDescriptorCount == 0) {
@@ -185,4 +185,4 @@ namespace dawn_native { namespace vulkan {
         return {};
     }
 
-}}  // namespace dawn_native::vulkan
+}  // namespace dawn::native::vulkan

@@ -214,6 +214,9 @@ struct Extensions
     // GL_OES_element_index_uint
     bool elementIndexUintOES = false;
 
+    // GL_ANDROID_extension_pack_es31a
+    bool extensionPackEs31aANDROID = false;
+
     // GL_EXT_external_buffer
     bool externalBufferEXT = false;
 
@@ -234,6 +237,9 @@ struct Extensions
 
     // GL_NV_framebuffer_blit
     bool framebufferBlitNV = false;
+
+    // GL_MESA_framebuffer_flip_y
+    bool framebufferFlipYMESA = false;
 
     // GL_EXT_geometry_shader
     bool geometryShaderEXT = false;
@@ -348,6 +354,9 @@ struct Extensions
 
     // GL_EXT_separate_shader_objects
     bool separateShaderObjectsEXT = false;
+
+    // GL_EXT_shader_framebuffer_fetch
+    bool shaderFramebufferFetchEXT = false;
 
     // GL_EXT_shader_framebuffer_fetch_non_coherent
     bool shaderFramebufferFetchNonCoherentEXT = false;

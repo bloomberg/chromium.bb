@@ -1,1 +1,1 @@
-Tests for external textures from video/canvas.
+Tests for external textures.

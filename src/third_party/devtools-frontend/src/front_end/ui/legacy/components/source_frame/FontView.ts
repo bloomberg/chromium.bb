@@ -61,7 +61,6 @@ export class FontView extends UI.View.SimpleView {
   private inResize!: boolean|null;
   constructor(mimeType: string, contentProvider: TextUtils.ContentProvider.ContentProvider) {
     super(i18nString(UIStrings.font));
-    // eslint-disable-next-line no-restricted-syntax -- Should import styles https://crbug.com/1106746
     this.registerRequiredCSS(fontViewStyles);
     this.element.classList.add('font-view');
     this.url = contentProvider.contentURL();
@@ -94,7 +93,7 @@ export class FontView extends UI.View.SimpleView {
 
     const uniqueFontName = 'WebInspectorFontPreview' + (++_fontId);
     this.fontStyleElement = document.createElement('style');
-    this.contentProvider.requestContent().then(deferredContent => {
+    void this.contentProvider.requestContent().then(deferredContent => {
       this.onFontContentLoaded(uniqueFontName, deferredContent);
     });
     this.element.appendChild(this.fontStyleElement);

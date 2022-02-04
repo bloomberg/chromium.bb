@@ -97,7 +97,7 @@ protected:
             SkASSERT(arguments.size() >= 1);
 
             const Expression* maybeCoords = arguments[0].get();
-            if (maybeCoords->type() == *fContext.fTypes.fFloat2) {
+            if (maybeCoords->type().matches(*fContext.fTypes.fFloat2)) {
                 // If the coords are a direct reference to the program's sample-coords, and those
                 // coords are never modified, we can conservatively turn this into PassThrough
                 // sampling. In all other cases, we consider it Explicit.
@@ -336,6 +336,16 @@ bool Analysis::CallsSampleOutsideMain(const Program& program) {
     return visitor.visit(program);
 }
 
+bool Analysis::CallsColorTransformIntrinsics(const Program& program) {
+    for (auto [fn, count] : program.usage()->fCallCounts) {
+        if (count != 0 && (fn->intrinsicKind() == k_toLinearSrgb_IntrinsicKind ||
+                           fn->intrinsicKind() == k_fromLinearSrgb_IntrinsicKind)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool Analysis::DetectVarDeclarationWithoutScope(const Statement& stmt, ErrorReporter* errors) {
     // A variable declaration can create either a lone VarDeclaration or an unscoped Block
     // containing multiple VarDeclaration statements. We need to detect either case.
@@ -416,7 +426,7 @@ bool Analysis::IsTrivialExpression(const Expression& expr) {
 }
 
 bool Analysis::IsSameExpressionTree(const Expression& left, const Expression& right) {
-    if (left.kind() != right.kind() || left.type() != right.type()) {
+    if (left.kind() != right.kind() || !left.type().matches(right.type())) {
         return false;
     }
 
@@ -583,7 +593,7 @@ void Analysis::VerifyStaticTestsAndExpressions(const Program& program) {
                     fContext.fErrors->error(expr.fLine, "invalid expression");
                     break;
                 default:
-                    if (expr.type() == *fContext.fTypes.fInvalid) {
+                    if (expr.type().matches(*fContext.fTypes.fInvalid)) {
                         fContext.fErrors->error(expr.fLine, "invalid expression");
                     }
                     break;
@@ -721,9 +731,6 @@ template <typename T> bool TProgramVisitor<T>::visitStatement(typename T::Statem
 
         case Statement::Kind::kSwitchCase: {
             auto& sc = s.template as<SwitchCase>();
-            if (sc.value() && this->visitExpressionPtr(sc.value())) {
-                return true;
-            }
             return this->visitStatementPtr(sc.statement());
         }
         case Statement::Kind::kDo: {

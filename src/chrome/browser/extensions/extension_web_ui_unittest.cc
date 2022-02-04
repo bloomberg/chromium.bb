@@ -185,7 +185,7 @@ TEST_F(ExtensionWebUITest, TestRemovingDuplicateEntriesForHosts) {
   {
     // Add multiple entries for the same extension.
     DictionaryPrefUpdate update(prefs, ExtensionWebUI::kExtensionURLOverrides);
-    base::DictionaryValue* all_overrides = update.Get();
+    base::Value* all_overrides = update.Get();
     base::Value newtab_list(base::Value::Type::LIST);
     {
       base::Value newtab(base::Value::Type::DICTIONARY);
@@ -212,7 +212,7 @@ TEST_F(ExtensionWebUITest, TestRemovingDuplicateEntriesForHosts) {
 
   // Duplicates should be removed (in response to ExtensionSystem::ready()).
   // Only a single entry should remain.
-  const base::DictionaryValue* overrides =
+  const base::Value* overrides =
       prefs->GetDictionary(ExtensionWebUI::kExtensionURLOverrides);
   ASSERT_TRUE(overrides);
   const base::Value* newtab_overrides =

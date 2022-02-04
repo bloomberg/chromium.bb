@@ -23,52 +23,31 @@
 namespace tint {
 namespace ast {
 
-class Manager;
-
-/// The image format in the storage texture
-enum class ImageFormat {
+/// The texel format in the storage texture
+enum class TexelFormat {
   kNone = -1,
-  kR8Unorm,
-  kR8Snorm,
-  kR8Uint,
-  kR8Sint,
-  kR16Uint,
-  kR16Sint,
-  kR16Float,
-  kRg8Unorm,
-  kRg8Snorm,
-  kRg8Uint,
-  kRg8Sint,
-  kR32Uint,
-  kR32Sint,
-  kR32Float,
-  kRg16Uint,
-  kRg16Sint,
-  kRg16Float,
   kRgba8Unorm,
-  kRgba8UnormSrgb,
   kRgba8Snorm,
   kRgba8Uint,
   kRgba8Sint,
-  kBgra8Unorm,
-  kBgra8UnormSrgb,
-  kRgb10A2Unorm,
-  kRg11B10Float,
-  kRg32Uint,
-  kRg32Sint,
-  kRg32Float,
   kRgba16Uint,
   kRgba16Sint,
   kRgba16Float,
+  kR32Uint,
+  kR32Sint,
+  kR32Float,
+  kRg32Uint,
+  kRg32Sint,
+  kRg32Float,
   kRgba32Uint,
   kRgba32Sint,
   kRgba32Float,
 };
 
 /// @param out the std::ostream to write to
-/// @param format the ImageFormat
+/// @param format the TexelFormat
 /// @return the std::ostream so calls can be chained
-std::ostream& operator<<(std::ostream& out, ImageFormat format);
+std::ostream& operator<<(std::ostream& out, TexelFormat format);
 
 /// A storage texture type.
 class StorageTexture : public Castable<StorageTexture, Texture> {
@@ -83,7 +62,7 @@ class StorageTexture : public Castable<StorageTexture, Texture> {
   StorageTexture(ProgramID pid,
                  const Source& src,
                  TextureDimension dim,
-                 ImageFormat format,
+                 TexelFormat format,
                  const Type* subtype,
                  Access access_control);
 
@@ -103,11 +82,11 @@ class StorageTexture : public Castable<StorageTexture, Texture> {
 
   /// @param format the storage texture image format
   /// @param builder the ProgramBuilder used to build the returned type
-  /// @returns the storage texture subtype for the given ImageFormat
-  static Type* SubtypeFor(ImageFormat format, ProgramBuilder& builder);
+  /// @returns the storage texture subtype for the given TexelFormat
+  static Type* SubtypeFor(TexelFormat format, ProgramBuilder& builder);
 
   /// The image format
-  const ImageFormat format;
+  const TexelFormat format;
 
   /// The storage subtype
   const Type* const type;

@@ -15,17 +15,25 @@
 #include "dawn_native/Instance.h"
 
 #include "common/Assert.h"
+#include "common/GPUInfo.h"
 #include "common/Log.h"
 #include "dawn_native/ErrorData.h"
 #include "dawn_native/Surface.h"
 #include "dawn_native/ValidationUtils_autogen.h"
 #include "dawn_platform/DawnPlatform.h"
 
+// For SwiftShader fallback
+#if defined(DAWN_ENABLE_BACKEND_VULKAN)
+#    include "dawn_native/VulkanBackend.h"
+#endif  // defined(DAWN_ENABLE_BACKEND_VULKAN)
+
 #if defined(DAWN_USE_X11)
 #    include "dawn_native/XlibXcbFunctions.h"
 #endif  // defined(DAWN_USE_X11)
 
-namespace dawn_native {
+#include <optional>
+
+namespace dawn::native {
 
     // Forward definitions of each backend's "Connect" function that creates new BackendConnection.
     // Conditionally compiled declarations are used to avoid using static constructors instead.
@@ -99,6 +107,105 @@ namespace dawn_native {
         return true;
     }
 
+    void InstanceBase::APIRequestAdapter(const RequestAdapterOptions* options,
+                                         WGPURequestAdapterCallback callback,
+                                         void* userdata) {
+        static constexpr RequestAdapterOptions kDefaultOptions = {};
+        if (options == nullptr) {
+            options = &kDefaultOptions;
+        }
+        auto result = RequestAdapterInternal(options);
+        if (result.IsError()) {
+            auto err = result.AcquireError();
+            std::string msg = err->GetFormattedMessage();
+            // TODO(crbug.com/dawn/1122): Call callbacks only on wgpuInstanceProcessEvents
+            callback(WGPURequestAdapterStatus_Error, nullptr, msg.c_str(), userdata);
+        } else {
+            Ref<AdapterBase> adapter = result.AcquireSuccess();
+            // TODO(crbug.com/dawn/1122): Call callbacks only on wgpuInstanceProcessEvents
+            callback(WGPURequestAdapterStatus_Success, ToAPI(adapter.Detach()), nullptr, userdata);
+        }
+    }
+
+    ResultOrError<Ref<AdapterBase>> InstanceBase::RequestAdapterInternal(
+        const RequestAdapterOptions* options) {
+        ASSERT(options != nullptr);
+        if (options->forceFallbackAdapter) {
+#if defined(DAWN_ENABLE_BACKEND_VULKAN)
+            if (GetEnabledBackends()[wgpu::BackendType::Vulkan]) {
+                dawn_native::vulkan::AdapterDiscoveryOptions vulkanOptions;
+                vulkanOptions.forceSwiftShader = true;
+                DAWN_TRY(DiscoverAdaptersInternal(&vulkanOptions));
+            }
+#else
+            return Ref<AdapterBase>(nullptr);
+#endif  // defined(DAWN_ENABLE_BACKEND_VULKAN)
+        } else {
+            DiscoverDefaultAdapters();
+        }
+
+        wgpu::AdapterType preferredType;
+        switch (options->powerPreference) {
+            case wgpu::PowerPreference::LowPower:
+                preferredType = wgpu::AdapterType::IntegratedGPU;
+                break;
+            case wgpu::PowerPreference::Undefined:
+            case wgpu::PowerPreference::HighPerformance:
+                preferredType = wgpu::AdapterType::DiscreteGPU;
+                break;
+        }
+
+        std::optional<size_t> discreteGPUAdapterIndex;
+        std::optional<size_t> integratedGPUAdapterIndex;
+        std::optional<size_t> cpuAdapterIndex;
+        std::optional<size_t> unknownAdapterIndex;
+
+        for (size_t i = 0; i < mAdapters.size(); ++i) {
+            AdapterProperties properties;
+            mAdapters[i]->APIGetProperties(&properties);
+
+            if (options->forceFallbackAdapter) {
+                if (!gpu_info::IsSwiftshader(properties.vendorID, properties.deviceID)) {
+                    continue;
+                }
+                return mAdapters[i];
+            }
+            if (properties.adapterType == preferredType) {
+                return mAdapters[i];
+            }
+            switch (properties.adapterType) {
+                case wgpu::AdapterType::DiscreteGPU:
+                    discreteGPUAdapterIndex = i;
+                    break;
+                case wgpu::AdapterType::IntegratedGPU:
+                    integratedGPUAdapterIndex = i;
+                    break;
+                case wgpu::AdapterType::CPU:
+                    cpuAdapterIndex = i;
+                    break;
+                case wgpu::AdapterType::Unknown:
+                    unknownAdapterIndex = i;
+                    break;
+            }
+        }
+
+        // For now, we always prefer the discrete GPU
+        if (discreteGPUAdapterIndex) {
+            return mAdapters[*discreteGPUAdapterIndex];
+        }
+        if (integratedGPUAdapterIndex) {
+            return mAdapters[*integratedGPUAdapterIndex];
+        }
+        if (cpuAdapterIndex) {
+            return mAdapters[*cpuAdapterIndex];
+        }
+        if (unknownAdapterIndex) {
+            return mAdapters[*unknownAdapterIndex];
+        }
+
+        return Ref<AdapterBase>(nullptr);
+    }
+
     void InstanceBase::DiscoverDefaultAdapters() {
         for (wgpu::BackendType b : IterateBitSet(GetEnabledBackends())) {
             EnsureBackendConnection(b);
@@ -110,10 +217,9 @@ namespace dawn_native {
 
         // Query and merge all default adapters for all backends
         for (std::unique_ptr<BackendConnection>& backend : mBackends) {
-            std::vector<std::unique_ptr<AdapterBase>> backendAdapters =
-                backend->DiscoverDefaultAdapters();
+            std::vector<Ref<AdapterBase>> backendAdapters = backend->DiscoverDefaultAdapters();
 
-            for (std::unique_ptr<AdapterBase>& adapter : backendAdapters) {
+            for (Ref<AdapterBase>& adapter : backendAdapters) {
                 ASSERT(adapter->GetBackendType() == backend->GetType());
                 ASSERT(adapter->GetInstance() == this);
                 mAdapters.push_back(std::move(adapter));
@@ -136,20 +242,11 @@ namespace dawn_native {
         return mTogglesInfo.ToggleNameToEnum(toggleName);
     }
 
-    const FeatureInfo* InstanceBase::GetFeatureInfo(const char* featureName) {
-        return mFeaturesInfo.GetFeatureInfo(featureName);
+    const FeatureInfo* InstanceBase::GetFeatureInfo(wgpu::FeatureName feature) {
+        return mFeaturesInfo.GetFeatureInfo(feature);
     }
 
-    Feature InstanceBase::FeatureNameToEnum(const char* featureName) {
-        return mFeaturesInfo.FeatureNameToEnum(featureName);
-    }
-
-    FeaturesSet InstanceBase::FeatureNamesToFeaturesSet(
-        const std::vector<const char*>& requiredFeatures) {
-        return mFeaturesInfo.FeatureNamesToFeaturesSet(requiredFeatures);
-    }
-
-    const std::vector<std::unique_ptr<AdapterBase>>& InstanceBase::GetAdapters() const {
+    const std::vector<Ref<AdapterBase>>& InstanceBase::GetAdapters() const {
         return mAdapters;
     }
 
@@ -229,10 +326,10 @@ namespace dawn_native {
             }
             foundBackend = true;
 
-            std::vector<std::unique_ptr<AdapterBase>> newAdapters;
+            std::vector<Ref<AdapterBase>> newAdapters;
             DAWN_TRY_ASSIGN(newAdapters, backend->DiscoverAdapters(options));
 
-            for (std::unique_ptr<AdapterBase>& adapter : newAdapters) {
+            for (Ref<AdapterBase>& adapter : newAdapters) {
                 ASSERT(adapter->GetBackendType() == backend->GetType());
                 ASSERT(adapter->GetInstance() == this);
                 mAdapters.push_back(std::move(adapter));
@@ -248,8 +345,7 @@ namespace dawn_native {
             std::unique_ptr<ErrorData> error = maybeError.AcquireError();
 
             ASSERT(error != nullptr);
-            dawn::InfoLog() << error->GetFormattedMessage();
-
+            dawn::ErrorLog() << error->GetFormattedMessage();
             return true;
         }
         return false;
@@ -275,17 +371,17 @@ namespace dawn_native {
         return mBeginCaptureOnStartup;
     }
 
-    void InstanceBase::SetPlatform(dawn_platform::Platform* platform) {
+    void InstanceBase::SetPlatform(dawn::platform::Platform* platform) {
         mPlatform = platform;
     }
 
-    dawn_platform::Platform* InstanceBase::GetPlatform() {
+    dawn::platform::Platform* InstanceBase::GetPlatform() {
         if (mPlatform != nullptr) {
             return mPlatform;
         }
 
         if (mDefaultPlatform == nullptr) {
-            mDefaultPlatform = std::make_unique<dawn_platform::Platform>();
+            mDefaultPlatform = std::make_unique<dawn::platform::Platform>();
         }
         return mDefaultPlatform.get();
     }
@@ -309,4 +405,4 @@ namespace dawn_native {
         return new Surface(this, descriptor);
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

@@ -33,7 +33,8 @@ bitfield struct TurbofanTypeLowBits extends uint32 {
   other_undetectable: bool: 1 bit;
   callable_proxy: bool: 1 bit;
   other_proxy: bool: 1 bit;
-  function: bool: 1 bit;
+  callable_function: bool: 1 bit;
+  class_constructor: bool: 1 bit;
   bound_function: bool: 1 bit;
   hole: bool: 1 bit;
   other_internal: bool: 1 bit;
@@ -43,12 +44,12 @@ bitfield struct TurbofanTypeLowBits extends uint32 {
   other_unsigned_big_int_64: bool: 1 bit;
   negative_big_int_63: bool: 1 bit;
   other_big_int: bool: 1 bit;
-  sandboxed_external_pointer: bool: 1 bit;
-  caged_pointer: bool: 1 bit;
+  wasm_object: bool: 1 bit;
 }
 
 bitfield struct TurbofanTypeHighBits extends uint32 {
-  wasm_object: bool: 1 bit;
+  sandboxed_external_pointer: bool: 1 bit;
+  sandboxed_pointer: bool: 1 bit;
 }
 
 @export
@@ -80,7 +81,7 @@ class TurbofanOtherNumberConstantType extends TurbofanType {
 }
 
 macro IsMinusZero(x: float64): bool {
-  return x == 0 && 1 / x < 0;
+  return x == 0 && 1.0 / x < 0;
 }
 
 macro TestTurbofanBitsetType(
@@ -94,17 +95,17 @@ macro TestTurbofanBitsetType(
       if (IsInteger(value)) {
         if (IsMinusZero(valueF)) {
           return bitsetLow.minus_zero;
-        } else if (valueF < Convert<float64>(-0x80000000)) {
+        } else if (valueF < 0 - Convert<float64>(0x80000000)) {
           return bitsetLow.other_number;
-        } else if (valueF < -0x40000000) {
+        } else if (valueF < 0 - Convert<float64>(0x40000000)) {
           return bitsetLow.other_signed32;
         } else if (valueF < 0) {
           return bitsetLow.negative31;
         } else if (valueF < Convert<float64>(0x40000000)) {
           return bitsetLow.unsigned30;
-        } else if (valueF < 0x80000000) {
+        } else if (valueF < Convert<float64>(0x80000000)) {
           return bitsetLow.other_unsigned31;
-        } else if (valueF <= 0xffffffff) {
+        } else if (valueF <= Convert<float64>(0xffffffff)) {
           return bitsetLow.other_unsigned32;
         } else {
           return bitsetLow.other_number;
@@ -138,8 +139,12 @@ macro TestTurbofanBitsetType(
       return Is<Callable>(proxy) ? bitsetLow.callable_proxy :
                                    bitsetLow.other_proxy;
     }
-    case (JSFunction): {
-      return bitsetLow.function;
+    case (fun: JSFunction): {
+      if (fun.shared_function_info.flags.is_class_constructor) {
+        return bitsetLow.class_constructor;
+      } else {
+        return bitsetLow.callable_function;
+      }
     }
     case (JSBoundFunction): {
       return bitsetLow.bound_function;
@@ -167,7 +172,7 @@ macro TestTurbofanBitsetType(
     }
     @if(V8_ENABLE_WEBASSEMBLY)
     case (WasmObject): {
-      return bitsetHigh.wasm_object;
+      return bitsetLow.wasm_object;
     }
     case (Object): {
       return false;

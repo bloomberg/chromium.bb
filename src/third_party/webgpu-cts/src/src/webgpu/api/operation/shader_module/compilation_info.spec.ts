@@ -35,8 +35,8 @@ const kInvalidShaderSources = [
     _errorLine: 4,
     _code: `
       [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
-        // Expected Error: vec4 should be vec4<f32>
-        return vec4(0.0, 0.0, 0.0, 1.0);
+        // Expected Error: unknown function 'unknown'
+        return unknown(0.0, 0.0, 0.0, 1.0);
       }`,
   },
   {
@@ -46,8 +46,8 @@ const kInvalidShaderSources = [
     _code: `
       // 頂点シェーダー 👩‍💻
       [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
-        // Expected Error: vec4 should be vec4<f32>
-        return vec4(0.0, 0.0, 0.0, 1.0);
+        // Expected Error: unknown function 'unknown'
+        return unknown(0.0, 0.0, 0.0, 1.0);
       }`,
   },
 ];

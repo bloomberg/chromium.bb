@@ -750,7 +750,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
     }
     const file = items[0].getAsFile();
     if (file) {
-      this.onLoadFromFile(file);
+      void this.onLoadFromFile(file);
     }
   }
 
@@ -1585,13 +1585,13 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
         patterns.push({enabled: true, url: url});
         manager.setBlockedPatterns(patterns);
         manager.setBlockingEnabled(true);
-        UI.ViewManager.ViewManager.instance().showView('network.blocked-urls');
+        void UI.ViewManager.ViewManager.instance().showView('network.blocked-urls');
       }
 
       function removeBlockedURL(url: string): void {
         patterns = patterns.filter(pattern => pattern.url !== url);
         manager.setBlockedPatterns(patterns);
-        UI.ViewManager.ViewManager.instance().showView('network.blocked-urls');
+        void UI.ViewManager.ViewManager.instance().showView('network.blocked-urls');
       }
 
       const urlWithoutScheme = request.parsedURL.urlWithoutScheme();
@@ -1684,7 +1684,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
     this.progressBarContainer.appendChild(progressIndicator.element);
     await HAR.Writer.Writer.write(stream, this.harRequests(), progressIndicator);
     progressIndicator.done();
-    stream.close();
+    void stream.close();
   }
 
   private clearBrowserCache(): void {
@@ -2265,15 +2265,11 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin<EventTypes, 
   }
 
   static getDCLEventColor(): string {
-    if (ThemeSupport.ThemeSupport.instance().themeName() === 'dark') {
-      return '#03A9F4';
-    }
-    return '#0867CB';
+    return ThemeSupport.ThemeSupport.instance().getComputedValue('--color-syntax-3');
   }
 
   static getLoadEventColor(): string {
-    return ThemeSupport.ThemeSupport.instance().patchColorText(
-        '#B31412', ThemeSupport.ThemeSupport.ColorUsage.Foreground);
+    return ThemeSupport.ThemeSupport.instance().getComputedValue('--color-syntax-1');
   }
 }
 

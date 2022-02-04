@@ -16,6 +16,7 @@
 #include "libANGLE/angletypes.h"
 #include "libANGLE/renderer/metal/RenderTargetMtl.h"
 #include "libANGLE/renderer/metal/mtl_command_buffer.h"
+#include "libANGLE/renderer/metal/mtl_context_device.h"
 #include "libANGLE/renderer/metal/mtl_state_cache.h"
 #include "libANGLE/renderer/metal/shaders/constants.h"
 
@@ -571,17 +572,6 @@ class VertexFormatConversionUtils final : angle::NonCopyable
 
     AutoObjCPtr<id<MTLComputePipelineState>> mComponentsExpandCompPipeline;
     RenderPipelineCache mComponentsExpandRenderPipelineCache;
-};
-
-// Util class for handling transform feedback
-class TransformFeedbackUtils
-{
-  public:
-    void onDestroy();
-    AutoObjCPtr<id<MTLRenderPipelineState>> getTransformFeedbackRenderPipeline(
-        ContextMtl *contextMtl,
-        RenderCommandEncoder *cmdEncoder,
-        mtl::RenderPipelineDesc &pipelineDesc);
 };
 
 // RenderUtils: container class of various util classes above

@@ -1,5 +1,5 @@
 {
-  "branch": "m98/nongit",
+  "branch": "m99/nongit",
   "files": {
     "src": {
       ".landmines": "28fa43394fa6fb056af1f35aad48e1bbc45aef73"
@@ -14,8 +14,8 @@
       }
     },
     "src/build/util": {
-      "LASTCHANGE": "cc3773b377a0e270aec57456248d79476d045d4c",
-      "LASTCHANGE.committime": "7bc721356bb79e529d9b010449ef1b86e196bfdb"
+      "LASTCHANGE": "a91684a3579c37eabc1a78045a06f6a3d6e5e7d5",
+      "LASTCHANGE.committime": "bfb88ec51214df43575ced9ac33aa407f0bd5575"
     },
     "src/buildtools/win": {
       "clang-format.exe": {
@@ -25,24 +25,24 @@
       },
       "gn.exe": {
         "mode": 365,
-        "sha": "886c6d038231c978e0eb0fa1e3083b3e29749199",
+        "sha": "37f364838fbed7e430ce0f2b9ec61461d48f042a",
         "type": "7z"
       }
     },
     "src/buildtools/win/.versions": {
       "gn.exe.cipd_version": {
         "mode": 292,
-        "sha": "c353841ee6e359002f5977f742894107fdf947b4"
+        "sha": "d8f18f979d9640587f734ed2205e37179a3c71d5"
       }
     },
     "src/gpu/config": {
-      "gpu_lists_version.h": "0958beb4d279b5978d69d6e7d4348c9305a89d8a"
+      "gpu_lists_version.h": "2e779ed074369cea2ae9608b5e4e5fa0897e76b1"
     },
     "src/skia/ext": {
-      "skia_commit_hash.h": "ed1d7fc727048b0989a149b9ec4ecfb023f33896"
+      "skia_commit_hash.h": "3f195bd2afe77ebc2e0f13d600ec07bb3b5a15b4"
     },
     "src/testing": {
-      "location_tags.json": "5b1abf316e96a24bcf865992df823afbb8fbbb95"
+      "location_tags.json": "97daa2d0dafb210e0bb97f99bcc53beed76f8c60"
     },
     "src/third_party/apache-win32/bin": {
       "ApacheMonitor.exe": {
@@ -133,34 +133,34 @@
       "php7apache2_4.dll": "dd2a2f476801fcd70587f54171120a10f8d148fc"
     },
     "src/third_party/llvm-build/Release+Asserts": {
-      "cr_build_revision": "35dc0cd01be09a3d7d15bace6ae76a60071cf1f4"
+      "cr_build_revision": "554fd920353187951d3b5facf9dce0483193eeb2"
     },
     "src/third_party/llvm-build/Release+Asserts/bin": {
       "clang-cl.exe": {
         "mode": 511,
-        "sha": "602877cffd61d6ef4720999af735e98cddce5bc7",
+        "sha": "65084601442bd515fd9c9d341a6dd282a0fe8fa4",
         "type": "7z"
       },
       "clang_remote_toolchain_inputs": "815575151d997a7fee8aa163d38773182d63dbd2",
       "lld-link.exe": {
         "mode": 511,
-        "sha": "44188f053155c0b18ea89afc78bb689c393087e1",
+        "sha": "a4950a3a6c9420c455e8a78d9cb3d44b46f82bcc",
         "type": "7z"
       },
       "lld_remote_toolchain_inputs": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
       "llvm-pdbutil.exe": {
         "mode": 511,
-        "sha": "46001ccb4abecab418d026f9efd2ca097e8f1d3e",
+        "sha": "a2c62f9fcc3f65368f09c2e3a7d977a8159050bd",
         "type": "7z"
       },
       "llvm-symbolizer.exe": {
         "mode": 511,
-        "sha": "476eefa866a53593430c05a2e3e7ae3bb2e8c89b",
+        "sha": "8bc6c6c59928d40b1e12f0ee54d014258df13977",
         "type": "7z"
       },
       "llvm-undname.exe": {
         "mode": 511,
-        "sha": "bc3599360dcaa017ab21aaa2660ac67aa82112fe"
+        "sha": "f424bd53cc3f41157e4267995d4605d9352c12a7"
       }
     },
     "src/third_party/llvm-build/Release+Asserts/lib/clang/14.0.0/include": {
@@ -199,6 +199,7 @@
         "sha": "6d87d36fc89d83a2b22f8b3ac7f8fe771a6887a9",
         "type": "7z"
       },
+      "arm_neon_sve_bridge.h": "17699d8d11dd88eb9b3b64e2cab669d2b5be8aee",
       "arm_sve.h": {
         "sha": "b8781804cf2df5b81025007a9faa335767710a38",
         "type": "7z"
@@ -280,7 +281,7 @@
       "mwaitxintrin.h": "ed485380af795bfdd1e2dc41f9441d7a8447ad73",
       "nmmintrin.h": "59fc7ec99e6145edeadb98ad43ca8b77e5e17e78",
       "opencl-c-base.h": "9c81ddb5e2a73373ee1106a6a1862dcb3974a582",
-      "opencl-c.h": "32af848a94c4f882d7f28696c005d0e42f4ed3dc",
+      "opencl-c.h": "77a7a8b9bb3a18c6a7fa3e77288274db482cc3a2",
       "pconfigintrin.h": "d2014b026f3686618304538d29718920c5f8695f",
       "pkuintrin.h": "c62080becb0f2e0b82fa19fc9413f41bb365f983",
       "pmmintrin.h": "eda83567cd0580cd8c18affee0f68bba56096996",
@@ -306,7 +307,7 @@
       "tmmintrin.h": "bcffa8187801c7e65e3131e5ac4b1a8594b015f3",
       "tsxldtrkintrin.h": "491823e93fc02779422902a244cba6e1ce155493",
       "uintrintrin.h": "e3839dcebe1ec5cffce3ea7a2c551860cabd86c6",
-      "unwind.h": "029524b7bc84cea287545e7ca3cd7a32a092bf3d",
+      "unwind.h": "6e069798f02d637318a21f7e70cdfc117f2cc0a0",
       "vadefs.h": "b6175684469cd1b39c395659be07557d3040ea32",
       "vaesintrin.h": "f3c0807bb94ab9977a27431ad31a8ef2429d22db",
       "varargs.h": "d241b7de3cb2a8590d7f7b4c3d935496d9b8fc44",
@@ -353,7 +354,7 @@
       "xmmintrin.h": "956603d364082d065a2abeef447c143e90de2953"
     },
     "src/third_party/llvm-build/Release+Asserts/lib/clang/14.0.0/include/profile": {
-      "InstrProfData.inc": "008b8dde5820a8e2ad32c956703106b94b09e700"
+      "InstrProfData.inc": "44719126b5965b3ea036dbca45e5cf6cf41ed502"
     },
     "src/third_party/llvm-build/Release+Asserts/lib/clang/14.0.0/include/sanitizer": {
       "allocator_interface.h": "6226135ef84b3c961212361dbc34e84d4010a106",
@@ -373,28 +374,28 @@
     },
     "src/third_party/llvm-build/Release+Asserts/lib/clang/14.0.0/lib/windows": {
       "clang_rt.asan-x86_64.lib": {
-        "sha": "b36b6701056af8c2d573c865f10ced232fd99c15",
+        "sha": "1abf0c3ebd3d0e28a9045e5e9a9d2f2c77446e8e",
         "type": "7z"
       },
-      "clang_rt.asan_cxx-x86_64.lib": "bc43eac4c5b310bcc1150403195c3ab28c2cfd35",
-      "clang_rt.asan_dll_thunk-x86_64.lib": "590a57aa1d8892bb514a19bbde8b9964e58c98e7",
-      "clang_rt.asan_dynamic-x86_64.dll": "d48c64d3fd96c985ccefac791214fdc553d3d7c9",
+      "clang_rt.asan_cxx-x86_64.lib": "6000189b4bab1ee8d8d9b93f935901ebd93e61e5",
+      "clang_rt.asan_dll_thunk-x86_64.lib": "0f1d5f180120acc34e62891a79fca25bb5ef0467",
+      "clang_rt.asan_dynamic-x86_64.dll": "cf64927012822d12c74a4af94f37aa32fa14868d",
       "clang_rt.asan_dynamic-x86_64.lib": "1b3a6c0364c6e4a4b0f8b5b81f25fa5673e107cd",
-      "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib": "afa9c7ac3c3821a1171e5fcbc0ee3bbe964858ca",
-      "clang_rt.profile-i386.lib": "67f0edd87442004ffee86ec4108e2920781f4bad",
-      "clang_rt.profile-x86_64.lib": "14354706bda9b454f7b51afa916135fe68490a2d",
+      "clang_rt.asan_dynamic_runtime_thunk-x86_64.lib": "d6837851614ab9597312e637dada176768bc35ed",
+      "clang_rt.profile-i386.lib": "b2b537ddbdab4384be7979e267c9edec192220ec",
+      "clang_rt.profile-x86_64.lib": "99993cb399c66cc2a9f15b90a05d4d6f1719afc8",
       "clang_rt.ubsan_standalone-x86_64.lib": {
-        "sha": "75a495cc61e3782d5d328db36de485e7ddf35840",
+        "sha": "49646337cda2187d0233d75b36da4d4cd3a59cf8",
         "type": "7z"
       },
-      "clang_rt.ubsan_standalone_cxx-x86_64.lib": "98adbb091186d8b7eb2108085a322e34323fc1cb"
+      "clang_rt.ubsan_standalone_cxx-x86_64.lib": "67dd342271a9fe75622895ac7292d73817f78869"
     },
     "src/third_party/llvm-build/Release+Asserts/lib/clang/14.0.0/share": {
       "asan_ignorelist.txt": "5ce59926ce2f3679909f3c48511cd593f24eb01f",
       "cfi_ignorelist.txt": "4a0f03949ca8cfdc3244439248788d5dfa96026d"
     },
     "src/third_party/node/node_modules": {
-      ".package-lock.json": "fa996af8b25f621fa37fc7320916b0587d44a7b0"
+      ".package-lock.json": "875ce7b0c64b6f5e47ea6f75b6667ab2fc0fa552"
     },
     "src/third_party/node/node_modules/@babel/code-frame": {
       "LICENSE": "f31575ec773bb199aeb7c0d0f1612cfe1c7038f1",
@@ -712,6 +713,21 @@
       "lowerFirst.js": "012f252a7f6d28c081d074a2a2048131eeb4123a",
       "stringifyValidator.js": "4b8d29c12c3049c3832a19b24fa04de05834395c",
       "toFunctionName.js": "2b645780ec623fe19f7d18e83c2a0f10b399ce9d"
+    },
+    "src/third_party/node/node_modules/@es-joy/jsdoccomment": {
+      "LICENSE-MIT.txt": "bdc5f00c160c72f4e9153ae30cb4fab802b9b023",
+      "package.json": "97d09c95e0a2f605c7f4655da1e2562e6db9ba23"
+    },
+    "src/third_party/node/node_modules/@es-joy/jsdoccomment/dist": {
+      "index.cjs.cjs": "4bf83549f01031728b8c2ba83eb78410133ec87c"
+    },
+    "src/third_party/node/node_modules/@es-joy/jsdoccomment/src": {
+      "commentHandler.js": "1d174c99b7c1b77c5e534b1f9f1bbabdb53e842b",
+      "commentParserToESTree.js": "41823dd2f2364975aa34fb2fe6311d1bf528e378",
+      "index.js": "6fc1bed9d58c9bb25f691ec0bf9677d7ace08a07",
+      "jsdoccomment.js": "a5beea2469ee760a302732ac069d7c3552a38d3b",
+      "parseComment.js": "868931d74cd6b8584340dd58e5faef982a898f73",
+      "toCamelCase.js": "7790620c3f145dd175515ef52221fd3042b6e598"
     },
     "src/third_party/node/node_modules/@eslint/eslintrc": {
       "LICENSE": "f9556ee619d8205b123bf109d4a07afbfefd1450",
@@ -2192,6 +2208,88 @@
       "LICENSE": "10f997ab104594695189c3fca8fa6c65ae9ccdd6",
       "index.js": "ec1d61d58723c2078578628808e4e3300e613509",
       "package.json": "0023c5cdf5f2fd4254a11282c52fc1fd18f012ca"
+    },
+    "src/third_party/node/node_modules/comment-parser": {
+      "LICENSE": "c91d3e722ea663c792df01656f4e65e4038fe975",
+      "jest.config.cjs": "a90258738198a47b312e5deabf7c4c8969257b13",
+      "package.json": "3ed6fbf63f46fb65dae374c3561654c751f3ddc6",
+      "tsconfig.json": "877743281b272040341ae9b33eecd827ea5c48ff",
+      "tsconfig.node.json": "9a05436b7a8fa18e5c650b9a027123b7b220b210"
+    },
+    "src/third_party/node/node_modules/comment-parser/browser": {
+      "index.js": "a42c00baa33d4c12084acae103fd92331919c5f4"
+    },
+    "src/third_party/node/node_modules/comment-parser/es6": {
+      "index.js": "6b6c4751396e20b956a26664853bf0c4622893ec",
+      "primitives.js": "4a503527cd871e6c6c0010ae3502317969e35fa9",
+      "util.js": "4476e26f2711fc94c12e66c059ecf733afcf58a9"
+    },
+    "src/third_party/node/node_modules/comment-parser/es6/parser": {
+      "block-parser.js": "9c4a62bc845d13b07157d680bd92c69f2f445663",
+      "index.js": "01e17686692f47fd422c03425372d51b64a6cbc2",
+      "source-parser.js": "de1c95d5e8cbcf47aaf03cb92f961cdd1a96d1f2",
+      "spec-parser.js": "934e009052c5fc5b1e13cf0843e6a84ba78196f4"
+    },
+    "src/third_party/node/node_modules/comment-parser/es6/parser/tokenizers": {
+      "description.js": "a74bc90bfaf5be64dc1fee4e0657f5b42a2b1659",
+      "index.js": "cb0ff5c3b541f646105198ee23ac0fc3d805023e",
+      "name.js": "ec1b44717bccb6c324b442f051fe89528428bbe1",
+      "tag.js": "4696b00dab08a0aee3f87addc8136e2a76338c35",
+      "type.js": "b084603d76314c946bf0ef73285bcedad11786b4"
+    },
+    "src/third_party/node/node_modules/comment-parser/es6/stringifier": {
+      "index.js": "60b46ca4f59575a2384a68b295e4200f49628fd0",
+      "inspect.js": "4569f3ccfe12733c24ff3c195c313a2e6209df8a"
+    },
+    "src/third_party/node/node_modules/comment-parser/es6/transforms": {
+      "align.js": "0c1d6616c5e6c03083749d4cd21c5464a55af344",
+      "crlf.js": "f876f949cb19bf1103192ba3bb03d93133e6aab7",
+      "indent.js": "ca24b854026b6ab3c23c52f4dd1d25b941d7ab2e",
+      "index.js": "af165719fb822be7ed85911d6b1ac49f4368df96"
+    },
+    "src/third_party/node/node_modules/comment-parser/lib": {
+      "index.cjs": "f7970b41e547e8d025dcfddab3c1545c3ee8ba73",
+      "primitives.cjs": "a60ed1473dbd7110cf6843d68f1bfa0b9d17d41b",
+      "util.cjs": "5d94c0a5d82d2167aa2c3477d4b0e095ceb38140"
+    },
+    "src/third_party/node/node_modules/comment-parser/lib/parser": {
+      "block-parser.cjs": "b81ecd79c4fe598ce5136219112b2a79eb59f06c",
+      "index.cjs": "dde50d4013e45393d9e2309c7a3650cf6fee75fb",
+      "source-parser.cjs": "f2ccc8fb79a14177e2c9af433a1426cab0cd4352",
+      "spec-parser.cjs": "6857828236e40290a33349205516f8cd473dbf32"
+    },
+    "src/third_party/node/node_modules/comment-parser/lib/parser/tokenizers": {
+      "description.cjs": "7baa72edc00edb6e45abdbd32cf8a8f33a1b1845",
+      "index.cjs": "203880fed84ce273c2c158f98ef1307fc08d29f0",
+      "name.cjs": "613740b9428a97bd57982d9f2f9601eafbcec8ef",
+      "tag.cjs": "55aec566c6f644104a11de35aa95862c19bc4111",
+      "type.cjs": "0018ec59c4ecc712306072a74a0bf845489cfe3b"
+    },
+    "src/third_party/node/node_modules/comment-parser/lib/stringifier": {
+      "index.cjs": "26214cb1d0d0b4f8b27da0ea3897b45db4c51ac3",
+      "inspect.cjs": "ee3473a036f225f78407f1006a7fdefa57b0d11c"
+    },
+    "src/third_party/node/node_modules/comment-parser/lib/transforms": {
+      "align.cjs": "4ff401dea929ba07dbab6bc76136d7d8bf023973",
+      "crlf.cjs": "c653c48bef6a650008416a9fd79fc022837cec5c",
+      "indent.cjs": "3ce279b800d7a93de353f58e5605799c684e892c",
+      "index.cjs": "767083ae35d7be816361b9b18ca34a40e018a688"
+    },
+    "src/third_party/node/node_modules/comment-parser/tests/e2e": {
+      "examples.js": "539074a4792896fcf287d1495b2506c6259f31fa",
+      "examples.spec.js": "30d1d2b2a5cb588db360970a4938c47119ae2203",
+      "issue-109.spec.js": "d10eb64458a98cd052f50d46c387f89bf65eae83",
+      "issue-112.spec.js": "361c3faf222d2d5d05b4906ad514d23f1d27fa9e",
+      "issue-113.spec.js": "c561ce72102877bc3995375e4271a2b9a93af836",
+      "issue-119.spec.js": "b988ada8cbe707ce2c4472c59b74c8d095beea65",
+      "issue-120.spec.js": "3312da4602ff20e784888d124d05eae35986fb88",
+      "issue-121.spec.js": "3cc6933a9cd99ab87cc14563263e203faaa445bf",
+      "issue-129.spec.js": "b2243a8013136f55dbc800f9b7d0d7549bdc3eeb",
+      "issue-41.spec.js": "49c1e6feebd5d837eb992cd0e37b39754bc03495",
+      "issue-61.spec.js": "db9b56c969ee14a6549fb95027dc8909f6a60253",
+      "parse.spec.js": "d617db89f4d09b12ed0afda9e02de9de350e88b1",
+      "stringify.spec.js": "86e366082febb87a4aa1d35486840b2ea74328b3",
+      "transforms.spec.js": "45e40f6a812fdd68d20f25ebbb7153445a24fabe"
     },
     "src/third_party/node/node_modules/concat-map": {
       "LICENSE": "ee27ba4b4412b0e4a05af5e3d8a005bc6681fdf3",
@@ -4257,12 +4355,12 @@
       "index.js": "f3f0d6da456cdbfa9451f3bc6f624598a56c19a3"
     },
     "src/third_party/node/node_modules/debug": {
-      "LICENSE": "658c933d28255e8c716899789e8c0f846e5dc125",
-      "package.json": "b7d70acb9bee8288bc4efc4bf54e817392d20198"
+      "LICENSE": "1a9820e262b26b60fe71a4dcd9bc9cfd0a01f26e",
+      "package.json": "cb7efa8eec32da15d8d620b504b40cc1615b2de4"
     },
     "src/third_party/node/node_modules/debug/src": {
       "browser.js": "cd0fc35d1ee11e0d6e15421021a54c18958e04d9",
-      "common.js": "50ce2925101d735fb4a9b5224eb8fc05752d4912",
+      "common.js": "6d571d2844dd950db81c8e07cabbfc9048c59658",
       "index.js": "bf4c57f259df2e16761b45e2636db307c89ba419",
       "node.js": "79bc085cb0230c69aaeb76bbc1374f43ab6414f4"
     },
@@ -5609,6 +5707,79 @@
       "LICENSE": "7fe552a86615053f376bbc3f0aa87d5fd172edc4",
       "package.json": "e6930f5964c266ead1ff98a21f7b44477fbe8aca"
     },
+    "src/third_party/node/node_modules/eslint-plugin-jsdoc": {
+      "LICENSE": "6c41d45cd765c2a283b14ffef970f21bfadbb4c9",
+      "package.json": "1b04bede223fd2f60df6b6ff20f1511c7d559a27"
+    },
+    "src/third_party/node/node_modules/eslint-plugin-jsdoc/dist": {
+      "WarnSettings.js": "09d32413186ec626a954a4a9f1547a539bf360a1",
+      "alignTransform.js": "aa51820eade6f71a0941f8ea6cc4d86e50d0e233",
+      "exportParser.js": "b34bd952eef57dd89a66b7a3c34f2d885084f1fa",
+      "generateRule.js": "59adf2d2544da4fa4e34838a710fbacc94f43051",
+      "getDefaultTagStructureForMode.js": "d6855c29d20e8e26ada9d64b8d04dd694c75ca84",
+      "index.js": "918c473aeb28b32d64cc0a3db06268306b3b710c",
+      "iterateJsdoc.js": "ed30025436c6854b28e7e39b545712b63fdaf077",
+      "jsdocUtils.js": "ea209715e5600a6b7f88b427e7f76153e66a62c2",
+      "tagNames.js": "a02e0b73d1003a8f5cd7aed3cff02763454888bb"
+    },
+    "src/third_party/node/node_modules/eslint-plugin-jsdoc/dist/bin": {
+      "generateRule.js": "59adf2d2544da4fa4e34838a710fbacc94f43051"
+    },
+    "src/third_party/node/node_modules/eslint-plugin-jsdoc/dist/rules": {
+      "checkAccess.js": "95e8fa524be7f4c42a5d34998c919dde33e1b099",
+      "checkAlignment.js": "fd798e23ae66a874595af2fcfedd72cefe46de6c",
+      "checkExamples.js": "49bbbbac65177a76999bc5aa1cc3153e84677eb4",
+      "checkIndentation.js": "f283b46a7669104b77f11e35f71464efd8966acf",
+      "checkLineAlignment.js": "8441f1b1af36eb97c58fd48b94eb61b08ff9842d",
+      "checkParamNames.js": "f40be3398b91b08f003bce7f368a3f04d39fc5f9",
+      "checkPropertyNames.js": "a58dd49429710e8554a5c3bca3b624950d0b37d0",
+      "checkSyntax.js": "4f17414789c96348363c2fee4ecf91d3749a82b3",
+      "checkTagNames.js": "bd30ac20172f7aaa150e885a633301366485a46d",
+      "checkTypes.js": "6789c95d1c75404176bb5ddf38e394b67af0766a",
+      "checkValues.js": "4b1f5a0da90ef7e675122bd07ece2416d9938a25",
+      "emptyTags.js": "de493676a69900f880d704ec3dac77c42735b91f",
+      "implementsOnClasses.js": "600d403b58810738b5bb6eaff7a59c7bedfe6413",
+      "matchDescription.js": "386faca43478d51fd4e70dedf1b81bf9f0aa20a4",
+      "matchName.js": "f0259737901cf23589fe60106fe037c7bf9bdb6a",
+      "multilineBlocks.js": "f12aeff8ab0a61a382e80cf0d5febb6140141a30",
+      "newlineAfterDescription.js": "b5029a7f9e3a9bb7d7774550a202d71bf39c94ce",
+      "noBadBlocks.js": "387515941414538c5a1c4580a1f4394be6c2b4e9",
+      "noDefaults.js": "e8f52ce3b06427c0806cac0e22820550cf2017e1",
+      "noMissingSyntax.js": "e4f23ff3a0e2532f0cb7a095128353cfc8640f06",
+      "noMultiAsterisks.js": "1a7e41297d3c588b244309de800faaa28eb2484d",
+      "noRestrictedSyntax.js": "05b604f9d5d23fb49f81e3b3484c1c08f45ebad2",
+      "noTypes.js": "c56878ab48d6b3a5ee3b5f35d40427452dd8c983",
+      "noUndefinedTypes.js": "b0077adeccb0d2953a37414ad4a9933735f313a2",
+      "requireAsteriskPrefix.js": "21d728def8200e8b856adf44f59f0e42c541b0fb",
+      "requireDescription.js": "28de8f74230c1a12d9d9f675adc10ad91347ec0d",
+      "requireDescriptionCompleteSentence.js": "5f72084c9b84ecb83b74408bc49a00efd7b93c59",
+      "requireExample.js": "29ad49b2b87d3c79e821cb4be49917332754d9be",
+      "requireFileOverview.js": "5ccd11fcd63b7f5103b92a67bd2993e06768e1ce",
+      "requireHyphenBeforeParamDescription.js": "bd6a881c21aafbd9aec718178c572a597010b5bc",
+      "requireJsdoc.js": "b8eafd9965015c1d4a35db0d710a743d250716bb",
+      "requireParam.js": "cacb29ec303228c46450cc2772fe1faffd44cc19",
+      "requireParamDescription.js": "3156db55327bf20c491c6c38cc3cb2dc2d02077c",
+      "requireParamName.js": "aeb695cae6b3a92fefaf35118182d5e98b255711",
+      "requireParamType.js": "a63b0222a63700b155e646fbe7b489f9ae3c3b96",
+      "requireProperty.js": "48e4fd4cf6bf37e0203005a6cc85927768bd8908",
+      "requirePropertyDescription.js": "07d7a0238717c4245ce0ad1f0e29a486292bdfe1",
+      "requirePropertyName.js": "5ba4beb8faf1c4cb12cb93b814c43eba0cbd2a50",
+      "requirePropertyType.js": "bc26d7200108b44d228462e646db243fd7f14d58",
+      "requireReturns.js": "3bf1ad8b05de300c778bfa1a74ec55cad4192dc1",
+      "requireReturnsCheck.js": "47fe76fbd700f735c63cf713a69058b8e083cd7e",
+      "requireReturnsDescription.js": "2a29da09af458cdefbaca53fd72dc449ab3c1950",
+      "requireReturnsType.js": "561391d44ebda9e55bba5b2e5f51959775467107",
+      "requireThrows.js": "95934e2447f62213a0f36f715af5b324b30f36f2",
+      "requireYields.js": "8b6fc0b70cea9366cdff010a1396e9f3c54fae0c",
+      "requireYieldsCheck.js": "2f0f89345bd6598d729dfd624b09a3ba6a616996",
+      "tagLines.js": "6e14686946f75bee5ada5ce3148a171a5bfd9569",
+      "validTypes.js": "3f81f94734873d4e6f04a6dbfb8d07254517e552"
+    },
+    "src/third_party/node/node_modules/eslint-plugin-jsdoc/node_modules/escape-string-regexp": {
+      "index.js": "387c5615a776b4a3441e7d1fd526f460d61e595e",
+      "license": "fa7ceba3eb4a9657a9db7f3ffca4e4e97a9019de",
+      "package.json": "c6eb4a91bc914b2cb46f1e09117af3a4774f4d44"
+    },
     "src/third_party/node/node_modules/eslint-scope": {
       "LICENSE": "4419797c9c852401f57e1cb27aec4fb0715f6ced",
       "package.json": "d93217a193fa29067a9a08b37043d479c7782732"
@@ -6631,6 +6802,13 @@
       "function.js": "8fab8c43089ff2b567d7e4c47c86bf7f0c7e1373",
       "regexp.js": "43fa47017619ec27d9e0558618276bc0307652ab",
       "undefined.js": "95b5569fdfa51015de80173996d541428e7dc296"
+    },
+    "src/third_party/node/node_modules/jsdoc-type-pratt-parser": {
+      "LICENSE": "7b06c58dc6bde8f60a98270271d68553e1dbed73",
+      "package.json": "03ed16b1a52d7c7d6ee216787a59773dde510360"
+    },
+    "src/third_party/node/node_modules/jsdoc-type-pratt-parser/dist": {
+      "index.js": "9a5e026563998df9cd33857c21c6316a0f804b6c"
     },
     "src/third_party/node/node_modules/jsesc": {
       "LICENSE-MIT.txt": "a41e0a7ef970ecdd83d82cd99bda97b22077bc62",
@@ -8858,6 +9036,36 @@
       "index.mjs": "bc1f59c4efc76ab689f28e66ac88f96bfad44288",
       "package.json": "92dadd8934cdd6c713c821ebb667fee16c97ce60"
     },
+    "src/third_party/node/node_modules/regextras": {
+      "LICENSE-MIT.txt": "2f25801bc69b25c87176404b1d7e200155ece648",
+      "package.json": "ecb604f2053bd1fa147ada6c207adbad0bcbfb47",
+      "pnpm-lock.yaml": "3bce11018624ea9baaa11c371cddf91f541c26fc"
+    },
+    "src/third_party/node/node_modules/regextras/dist": {
+      "index-es.js": "22f4c75b2f03a6146f378cc2aa6835e3e2e356b0",
+      "index-es.min.js": "e73391fdaa8340ba8804b7ffd587eb8df90689e2",
+      "index-generators-es.js": "4e37e4cd5e1b33ea72f946e819d164c2176da102",
+      "index-generators-umd.js": "f5a36786f4413a4fdf8e9b034e556d2d8f3df9f7",
+      "index-umd.js": "5fc89f63b1a01257df9cd3ca9f7d2178ca6e40ce",
+      "index-umd.min.js": "d663d9eddb2c47996384570f6a7f79df0ed98a3e",
+      "main-es.js": "1e6dd80182898e76d92e55b83d44e70e64dc4742",
+      "main-umd.js": "a744ec100a78241c6994467ea653f462ec0d421a",
+      "prototype-es.js": "b6630dee374ff4015a7dcdfd9934dcb42824a831",
+      "prototype-umd.js": "552f1d52dc288512acac18e41c84e0f844e070bc",
+      "regexp-prototype-es.js": "9d7fad59ad9d2b79f417ff59ffa362de249cbfe4",
+      "regexp-prototype-umd.js": "01bd099b09517b8031b5e1acc2c99a6157741715",
+      "string-prototype-es.js": "dcb05f926e10c7719f5c478e18f2dc36571e5745",
+      "string-prototype-umd.js": "ee23111e3f8d340db97f1d57b0a34792a58aa22e"
+    },
+    "src/third_party/node/node_modules/regextras/src": {
+      "index-generators.js": "3dbf16414dacac6766c81fc8f5270ce909ef6193",
+      "index.js": "d5fd29475a466e57e961bfdce917b73e899a734e",
+      "main.js": "59a638e8f399df421683e449c8e0a48640f9da3d",
+      "mixinRegex.js": "9618b0d8da2d447d0e2b1b7ebe24b73c493fe95d",
+      "prototype.js": "617d995ca507d98cec712d3fee83fea194781b04",
+      "regexp-prototype.js": "764bb67151874549d8959c054cbce2b2cfccd6b3",
+      "string-prototype.js": "ce26abf3c162d2a6f62b9f0b3488e891d84f086f"
+    },
     "src/third_party/node/node_modules/repeating": {
       "index.js": "ccae0d7c328b09bb8bde77c0097cf1975798270e",
       "license": "654d0bfe943437d43242325b1fbcff5f400d84ee",
@@ -9095,6 +9303,23 @@
       "source-map-generator.js": "aff1e7fb268acc98f852ce40f90118ccf4bfa145",
       "source-node.js": "d196a53f8c0eda12892613a2ed65b812db89c95d",
       "util.js": "44e0e45205233ef28d7dbe96fbfe8b5ffc48af84"
+    },
+    "src/third_party/node/node_modules/spdx-exceptions": {
+      "index.json": "f88f088ab2fa16a5cffeb5792e578d21d504f257",
+      "package.json": "2bafc6a38b2431febaacb3d38ea4694cb623eadf"
+    },
+    "src/third_party/node/node_modules/spdx-expression-parse": {
+      "AUTHORS": "257a76b9484c12a3277f68e5e3efd69f65186c60",
+      "LICENSE": "831618eaba6c89dff91b5acc6e7327c3fcf33af5",
+      "index.js": "52fab560aea707a5d7b07bdbe9e8022c379aba0f",
+      "package.json": "c9edc9f939cdf62b807ab4247367361f0a4590e9",
+      "parse.js": "5a00b45c5799c4958b5db4092df1016e81bd1af1",
+      "scan.js": "b74fce2e2c66326498e84d2f2dcd2ef46ebc57b5"
+    },
+    "src/third_party/node/node_modules/spdx-license-ids": {
+      "deprecated.json": "c7de09858ff350b255457345159ae2f74cfcb193",
+      "index.json": "a2f18e40160aa71f956581884910c104d11add5c",
+      "package.json": "61b10edc24cebfa66907e39dd32591d8ca7a0488"
     },
     "src/third_party/node/node_modules/sprintf-js": {
       "LICENSE": "663ac52e4d8cd9eaf2a25080f3d0545f798b877c",

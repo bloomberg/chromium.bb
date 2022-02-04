@@ -15,7 +15,7 @@
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/text/GrSDFTControl.h"
-#include "src/gpu/text/GrTextBlobCache.h"
+#include "src/gpu/text/GrTextBlobRedrawCoordinator.h"
 #include "src/gpu/v1/SurfaceDrawContext_v1.h"
 #endif // SK_SUPPORT_GPU
 
@@ -250,62 +250,68 @@ void SkGlyphRunListPainter::processGlyphRun(const SkGlyphRun& glyphRun,
     fRejects.setSource(glyphRun.source());
     const SkFont& runFont = glyphRun.font();
 
-    GrSDFTControl::DrawingType drawingType = control.drawingType(runFont, runPaint, drawMatrix);
+    // Only consider using direct or SDFT drawing if not drawing hairlines and not perspective.
+    if ((runPaint.getStyle() != SkPaint::kStroke_Style || runPaint.getStrokeWidth() != 0)
+             && !drawMatrix.hasPerspective()) {
+        SkScalar approximateDeviceTextSize =
+                SkFontPriv::ApproximateTransformedTextSize(runFont, drawMatrix);
 
-    if (drawingType == GrSDFTControl::kSDFT) {
-        // Process SDFT - This should be the .009% case.
-        const auto& [strikeSpec, strikeToSourceScale, minScale, maxScale] =
-                SkStrikeSpec::MakeSDFT(runFont, runPaint, fDeviceProps, drawMatrix, control);
+        if (control.isSDFT(approximateDeviceTextSize, runPaint)) {
+            // Process SDFT - This should be the .009% case.
+            const auto& [strikeSpec, strikeToSourceScale, minScale, maxScale] =
+                    SkStrikeSpec::MakeSDFT(runFont, runPaint, fDeviceProps, drawMatrix, control);
 
-        #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
-            msg.appendf("  SDFT case:\n%s", strikeSpec.dump().c_str());
-        #endif
+            #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
+                msg.appendf("  SDFT case:\n%s", strikeSpec.dump().c_str());
+            #endif
 
-        if (!SkScalarNearlyZero(strikeToSourceScale)) {
+            if (!SkScalarNearlyZero(strikeToSourceScale)) {
+                SkScopedStrikeForGPU strike = strikeSpec.findOrCreateScopedStrike(fStrikeCache);
+
+                fDrawable.startSource(fRejects.source());
+                #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
+                    msg.appendf("    glyphs:(x,y):\n      %s\n", fDrawable.dumpInput().c_str());
+                #endif
+                strike->prepareForSDFTDrawing(&fDrawable, &fRejects);
+                fRejects.flipRejectsToSource();
+
+                if (process && !fDrawable.drawableIsEmpty()) {
+                    // processSourceSDFT must be called even if there are no glyphs to make sure
+                    // runs are set correctly.
+                    process->processSourceSDFT(fDrawable.drawable(),
+                                               strike->getUnderlyingStrike(),
+                                               strikeToSourceScale,
+                                               runFont,
+                                               minScale, maxScale);
+                }
+            }
+        }
+
+        if (!fRejects.source().empty()) {
+            // Process masks including ARGB - this should be the 99.99% case.
+            // This will handle medium size emoji that are sharing the run with SDFT drawn text.
+            // If things are too big they will be passed along to the drawing of last resort below.
+            SkStrikeSpec strikeSpec = SkStrikeSpec::MakeMask(
+                    runFont, runPaint, fDeviceProps, fScalerContextFlags, drawMatrix);
+
+            #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
+                msg.appendf("  Mask case:\n%s", strikeSpec.dump().c_str());
+            #endif
+
             SkScopedStrikeForGPU strike = strikeSpec.findOrCreateScopedStrike(fStrikeCache);
 
-            fDrawable.startSource(fRejects.source());
+            fDrawable.startGPUDevice(fRejects.source(), drawMatrix, strike->roundingSpec());
             #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
                 msg.appendf("    glyphs:(x,y):\n      %s\n", fDrawable.dumpInput().c_str());
             #endif
-            strike->prepareForSDFTDrawing(&fDrawable, &fRejects);
+            strike->prepareForMaskDrawing(&fDrawable, &fRejects);
             fRejects.flipRejectsToSource();
 
             if (process && !fDrawable.drawableIsEmpty()) {
-                // processSourceSDFT must be called even if there are no glyphs to make sure
-                // runs are set correctly.
-                process->processSourceSDFT(fDrawable.drawable(),
-                                           strike->getUnderlyingStrike(),
-                                           strikeToSourceScale,
-                                           runFont,
-                                           minScale, maxScale);
+                // processDeviceMasks must be called even if there are no glyphs to make sure runs
+                // are set correctly.
+                process->processDeviceMasks(fDrawable.drawable(), strike->getUnderlyingStrike());
             }
-        }
-    }
-
-    if (drawingType != GrSDFTControl::kPath && !fRejects.source().empty()) {
-        // Process masks including ARGB - this should be the 99.99% case.
-
-        SkStrikeSpec strikeSpec = SkStrikeSpec::MakeMask(
-                runFont, runPaint, fDeviceProps, fScalerContextFlags, drawMatrix);
-
-        #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
-            msg.appendf("  Mask case:\n%s", strikeSpec.dump().c_str());
-        #endif
-
-        SkScopedStrikeForGPU strike = strikeSpec.findOrCreateScopedStrike(fStrikeCache);
-
-        fDrawable.startGPUDevice(fRejects.source(), drawMatrix, strike->roundingSpec());
-        #if defined(SK_TRACE_GLYPH_RUN_PROCESS)
-            msg.appendf("    glyphs:(x,y):\n      %s\n", fDrawable.dumpInput().c_str());
-        #endif
-        strike->prepareForMaskDrawing(&fDrawable, &fRejects);
-        fRejects.flipRejectsToSource();
-
-        if (process && !fDrawable.drawableIsEmpty()) {
-            // processDeviceMasks must be called even if there are no glyphs to make sure runs
-            // are set correctly.
-            process->processDeviceMasks(fDrawable.drawable(), strike->getUnderlyingStrike());
         }
     }
 
@@ -332,7 +338,8 @@ void SkGlyphRunListPainter::processGlyphRun(const SkGlyphRun& glyphRun,
             #endif
             strike->prepareForPathDrawing(&fDrawable, &fRejects);
             fRejects.flipRejectsToSource();
-            maxDimensionInSourceSpace = fRejects.rejectedMaxDimension() * strikeToSourceScale;
+            auto [minHint, maxHint] = fRejects.maxDimensionHint();
+            maxDimensionInSourceSpace = SkScalarCeilToScalar(maxHint * strikeToSourceScale);
 
             if (process && !fDrawable.drawableIsEmpty()) {
                 // processSourcePaths must be called even if there are no glyphs to make sure

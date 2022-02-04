@@ -25,8 +25,8 @@
 #ifndef SRC_SEM_INTRINSIC_TYPE_H_
 #define SRC_SEM_INTRINSIC_TYPE_H_
 
-#include <string>
 #include <sstream>
+#include <string>
 
 namespace tint {
 namespace sem {
@@ -48,6 +48,7 @@ enum class IntrinsicType {
   kCosh,
   kCountOneBits,
   kCross,
+  kDegrees,
   kDeterminant,
   kDistance,
   kDot,
@@ -88,6 +89,7 @@ enum class IntrinsicType {
   kPack4x8snorm,
   kPack4x8unorm,
   kPow,
+  kRadians,
   kReflect,
   kRefract,
   kReverseBits,

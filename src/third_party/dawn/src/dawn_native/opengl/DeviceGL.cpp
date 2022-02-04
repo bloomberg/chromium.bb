@@ -32,19 +32,19 @@
 #include "dawn_native/opengl/SwapChainGL.h"
 #include "dawn_native/opengl/TextureGL.h"
 
-namespace dawn_native { namespace opengl {
+namespace dawn::native::opengl {
 
     // static
-    ResultOrError<Device*> Device::Create(AdapterBase* adapter,
-                                          const DawnDeviceDescriptor* descriptor,
-                                          const OpenGLFunctions& functions) {
+    ResultOrError<Ref<Device>> Device::Create(AdapterBase* adapter,
+                                              const DeviceDescriptor* descriptor,
+                                              const OpenGLFunctions& functions) {
         Ref<Device> device = AcquireRef(new Device(adapter, descriptor, functions));
         DAWN_TRY(device->Initialize());
-        return device.Detach();
+        return device;
     }
 
     Device::Device(AdapterBase* adapter,
-                   const DawnDeviceDescriptor* descriptor,
+                   const DeviceDescriptor* descriptor,
                    const OpenGLFunctions& functions)
         : DeviceBase(adapter, descriptor), gl(functions) {
     }
@@ -244,8 +244,7 @@ namespace dawn_native { namespace opengl {
     ResultOrError<ExecutionSerial> Device::CheckAndUpdateCompletedSerials() {
         ExecutionSerial fenceSerial{0};
         while (!mFencesInFlight.empty()) {
-            GLsync sync = mFencesInFlight.front().first;
-            ExecutionSerial tentativeSerial = mFencesInFlight.front().second;
+            auto [sync, tentativeSerial] = mFencesInFlight.front();
 
             // Fence are added in order, so we can stop searching as soon
             // as we see one that's not ready.
@@ -313,4 +312,4 @@ namespace dawn_native { namespace opengl {
         return 1.0f;
     }
 
-}}  // namespace dawn_native::opengl
+}  // namespace dawn::native::opengl

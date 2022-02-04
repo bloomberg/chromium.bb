@@ -86,7 +86,7 @@
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/test/icc_profiles.h"
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 #include "third_party/blink/public/platform/web_font_render_style.h"
 #endif
 
@@ -414,6 +414,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void ZoomPageOut();
   void SetPageZoomFactor(double factor);
   std::string TooltipText();
+  void DisableEndDocumentTransition();
 
   int WebHistoryItemCount();
   int WindowCount();
@@ -843,7 +844,11 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       // webHistoryItemCount is used by tests in web_tests\http\tests\history
       .SetProperty("webHistoryItemCount",
                    &TestRunnerBindings::WebHistoryItemCount)
-      .SetMethod("windowCount", &TestRunnerBindings::WindowCount);
+      .SetMethod("windowCount", &TestRunnerBindings::WindowCount)
+
+      // document-transition functionality to avoid ending the animation.
+      .SetMethod("disableEndDocumentTransition",
+                 &TestRunnerBindings::DisableEndDocumentTransition);
 }
 
 BoundV8Callback TestRunnerBindings::WrapV8Callback(
@@ -980,6 +985,12 @@ int TestRunnerBindings::WindowCount() {
   if (invalid_)
     return 0;
   return runner_->InProcessWindowCount();
+}
+
+void TestRunnerBindings::DisableEndDocumentTransition() {
+  if (invalid_)
+    return;
+  frame_->GetLocalRootFrameWidgetTestHelper()->DisableEndDocumentTransition();
 }
 
 void TestRunnerBindings::SetTabKeyCyclesThroughElements(
@@ -2365,7 +2376,7 @@ void TestRunner::Reset() {
   blink::WebTestingSupport::ResetRuntimeFeatures();
   blink::WebCache::Clear();
   blink::WebSecurityPolicy::ClearOriginAccessList();
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
   blink::WebFontRenderStyle::SetSubpixelPositioning(false);
 #endif
   blink::ResetDomainRelaxationForTest();
@@ -2968,7 +2979,7 @@ void TestRunner::AddOriginAccessAllowListEntry(
 }
 
 void TestRunner::SetTextSubpixelPositioning(bool value) {
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
   // Since FontConfig doesn't provide a variable to control subpixel
   // positioning, we'll fall back to setting it globally for all fonts.
   blink::WebFontRenderStyle::SetSubpixelPositioning(value);

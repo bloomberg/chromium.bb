@@ -1,14 +1,13 @@
-type ArrayType = [[stride(16)]] array<i32, 4>;
+type ArrayType = array<vec4<i32>, 4>;
 
-[[block]]
 struct S {
   arr : ArrayType;
 };
 
 var<private> src_private : ArrayType;
 var<workgroup> src_workgroup : ArrayType;
-[[group(0), binding(0)]] var<uniform> src_uniform : S;
-[[group(0), binding(1)]] var<storage, read_write> src_storage : S;
+@group(0) @binding(0) var<uniform> src_uniform : S;
+@group(0) @binding(1) var<storage, read_write> src_storage : S;
 
 fn ret_arr() -> ArrayType {
   return ArrayType();
@@ -24,7 +23,7 @@ fn foo(src_param : ArrayType) {
   var dst : ArrayType;
 
   // Assign from type constructor.
-  dst = ArrayType(1, 2, 3, 3);
+  dst = ArrayType(vec4(1), vec4(2), vec4(3), vec4(3));
 
   // Assign from parameter.
   dst = src_param;

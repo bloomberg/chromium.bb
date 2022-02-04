@@ -401,6 +401,21 @@
   "core/sdk/DebuggerModel.ts | withBlock": {
     "message": "Bloc With"
   },
+  "core/sdk/EventBreakpointsModel.ts | auctionWorklet": {
+    "message": "Gweithlen Arwerthiant Hysbysebion"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletBiddingStart": {
+    "message": "Dechrau Cyfnod Cynnig y Cynigydd"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletReportingStart": {
+    "message": "Dechrau Cyfnod Adrodd y Cynigydd"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletReportingStart": {
+    "message": "Dechrau Cyfnod Adrodd y Gwerthwr"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletScoringStart": {
+    "message": "Dechrau Cyfnod Sgorio'r Gwerthwr"
+  },
   "core/sdk/NetworkManager.ts | crossoriginReadBlockingCorb": {
     "message": "Mae'r swyddogaeth Rhwystro Darllen Traws-darddiad (CORB) wedi rhwystro ymateb traws-darddiad {PH1} gyda'r math MIME {PH2}. Gweler https://www.chromestatus.com/feature/5629709824032768 am ragor o fanylion."
   },
@@ -644,9 +659,6 @@
   "core/sdk/sdk-meta.ts | disableWebpFormat": {
     "message": "Analluogi'r fformat WebP"
   },
-  "core/sdk/sdk-meta.ts | disabledDarkMode": {
-    "message": "Analluogi"
-  },
   "core/sdk/sdk-meta.ts | doNotCaptureAsyncStackTraces": {
     "message": "Peidio â chofnodi olion pentwr anghymesurol"
   },
@@ -679,6 +691,9 @@
   },
   "core/sdk/sdk-meta.ts | doNotShowGridTrackSizes": {
     "message": "Peidio â dangos meintiau olrhain grid"
+  },
+  "core/sdk/sdk-meta.ts | doNotShowRulersOnHover": {
+    "message": "Peidio â dangos ffyn mesur wrth hofran"
   },
   "core/sdk/sdk-meta.ts | emulateAFocusedPage": {
     "message": "Efelychu tudalen y ffocysir arni"
@@ -743,9 +758,6 @@
   "core/sdk/sdk-meta.ts | enableWebpFormat": {
     "message": "Galluogi'r fformat WebP"
   },
-  "core/sdk/sdk-meta.ts | enabledDarkMode": {
-    "message": "Galluogi"
-  },
   "core/sdk/sdk-meta.ts | extendGridLines": {
     "message": "Ymestyn llinellau grid"
   },
@@ -754,9 +766,6 @@
   },
   "core/sdk/sdk-meta.ts | hideFramesPerSecondFpsMeter": {
     "message": "Cuddio'r mesurydd fframiau fesul eiliad (FPS)"
-  },
-  "core/sdk/sdk-meta.ts | hideHittestBorders": {
-    "message": "Cuddio borderi prawf trawiadau"
   },
   "core/sdk/sdk-meta.ts | hideLayerBorders": {
     "message": "Cuddio borderi haenau"
@@ -812,9 +821,6 @@
   "core/sdk/sdk-meta.ts | showGridTrackSizes": {
     "message": "Dangos meintiau olrhain grid"
   },
-  "core/sdk/sdk-meta.ts | showHittestBorders": {
-    "message": "Dangos borderi prawf trawiadau"
-  },
   "core/sdk/sdk-meta.ts | showLayerBorders": {
     "message": "Dangos borderi'r haenau"
   },
@@ -833,8 +839,8 @@
   "core/sdk/sdk-meta.ts | showPaintFlashingRectangles": {
     "message": "Dangos petryalau gyda phaent yn fflachio"
   },
-  "core/sdk/sdk-meta.ts | showRulers": {
-    "message": "Dangos ffyn mesur"
+  "core/sdk/sdk-meta.ts | showRulersOnHover": {
+    "message": "Dangos ffyn mesur wrth hofran"
   },
   "core/sdk/sdk-meta.ts | showScrollPerformanceBottlenecks": {
     "message": "Dangos sgrolio tagfeydd perfformiad"
@@ -875,14 +881,20 @@
   "entrypoints/inspector_main/RenderingOptions.ts | emulateAFocusedPage": {
     "message": "Efelychu tudalen y ffocysir arni"
   },
+  "entrypoints/inspector_main/RenderingOptions.ts | emulateAutoDarkMode": {
+    "message": "Enable automatic dark mode"
+  },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAFocusedPage": {
     "message": "Yn efelychu tudalen y ffocysir arni."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAutoDarkMode": {
-    "message": "Yn galluogi'r modd tywyll awtomatig ar gyfer y dudalen a archwiliwyd."
+    "message": "Enables automatic dark mode and sets prefers-color-scheme to dark."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssColorgamutMediaFeature": {
     "message": "Mae'n gorfodi'r nodwedd cyfryngau color-gamut CSS"
+  },
+  "entrypoints/inspector_main/RenderingOptions.ts | forcesCssForcedColors": {
+    "message": "Yn gorfodi nodwedd cyfryngau lliwiau gorfodol CSS"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssPreferscolorschemeMedia": {
     "message": "Mae'n gorfodi'r nodwedd cyfryngau prefers-color-scheme CSS"
@@ -920,9 +932,6 @@
   "entrypoints/inspector_main/RenderingOptions.ts | highlightsFramesRedDetectedToBe": {
     "message": "Mae'n amlygu fframiau (coch) sydd wedi'u nodi'n hysbysebion."
   },
-  "entrypoints/inspector_main/RenderingOptions.ts | hittestBorders": {
-    "message": "Ffiniau prawf trawiadau"
-  },
   "entrypoints/inspector_main/RenderingOptions.ts | layerBorders": {
     "message": "Borderi haenau"
   },
@@ -943,9 +952,6 @@
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsAnOverlayWithCoreWebVitals": {
     "message": "Mae'n dangos troslun gyda Hanfodion Gwe Craidd."
-  },
-  "entrypoints/inspector_main/RenderingOptions.ts | showsBordersAroundHittestRegions": {
-    "message": "Dangos borderi o amgylch rhanbarthau prawf trawiadau."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsLayerBordersOrangeoliveAnd": {
     "message": "Dangos borderi (oren/gwyrdd olewydd) a theils (gwyrddlas) haenau."
@@ -1001,7 +1007,7 @@
   "entrypoints/inspector_main/inspector_main-meta.ts | visionDeficiency": {
     "message": "diffyg golwg"
   },
-  "entrypoints/js_app/JsMain.ts | main": {
+  "entrypoints/js_app/js_app.ts | main": {
     "message": "Prif"
   },
   "entrypoints/main/MainImpl.ts | customizeAndControlDevtools": {
@@ -1036,9 +1042,6 @@
   },
   "entrypoints/main/MainImpl.ts | showConsoleDrawer": {
     "message": "Dangos drôr y panel"
-  },
-  "entrypoints/main/MainImpl.ts | theSystempreferredColorSchemeHas": {
-    "message": "Mae'r cynllun lliwiau a ffefrir gan y system wedi newid. Ail-lwythwch i weithredu'r newid hwn yn DevTools."
   },
   "entrypoints/main/MainImpl.ts | undockIntoSeparateWindow": {
     "message": "Datgloi i ffenestr ar wahân"
@@ -1190,41 +1193,41 @@
   "entrypoints/main/main-meta.ts | zoomOut": {
     "message": "Pellhau"
   },
-  "entrypoints/node_app/node_app-meta.ts | node": {
-    "message": "Nod"
-  },
-  "entrypoints/node_app/node_app-meta.ts | showNode": {
-    "message": "Cwgn"
-  },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | addConnection": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | addConnection": {
     "message": "Ychwanegu cysylltiad"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
     "message": "Cyfeiriad rhwydwaith (e.e. localhost:9229)"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | noConnectionsSpecified": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | noConnectionsSpecified": {
     "message": "Ni nodwyd unrhyw gysylltiadau"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
     "message": "Canllaw dadfygio Node.js"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
     "message": "Nodwch ddiweddbwynt y rhwydwaith a bydd DevTools yn cysylltu ag ef yn awtomatig. Darllenwch {PH1} i ddysgu rhagor."
   },
-  "entrypoints/node_main/NodeMain.ts | main": {
+  "entrypoints/node_app/NodeMain.ts | main": {
     "message": "Prif"
   },
-  "entrypoints/node_main/NodeMain.ts | nodejsS": {
+  "entrypoints/node_app/NodeMain.ts | nodejsS": {
     "message": "Node.js: {PH1}"
   },
-  "entrypoints/node_main/node_main-meta.ts | connection": {
+  "entrypoints/node_app/node_app.ts | connection": {
     "message": "Cysylltiad"
   },
-  "entrypoints/node_main/node_main-meta.ts | node": {
+  "entrypoints/node_app/node_app.ts | networkTitle": {
+    "message": "Nod"
+  },
+  "entrypoints/node_app/node_app.ts | node": {
     "message": "cwgn"
   },
-  "entrypoints/node_main/node_main-meta.ts | showConnection": {
+  "entrypoints/node_app/node_app.ts | showConnection": {
     "message": "Dangos Cysylltiad"
+  },
+  "entrypoints/node_app/node_app.ts | showNode": {
+    "message": "Cwgn"
   },
   "entrypoints/worker_app/WorkerMain.ts | main": {
     "message": "Prif"
@@ -1293,7 +1296,7 @@
     "message": "Gliniadur â sgrîn HiDPI"
   },
   "models/emulation/EmulatedDevices.ts | laptopWithMDPIScreen": {
-    "message": "Gliniadur â sgrin MDPI"
+    "message": "Gliniadur â sgrîn MDPI"
   },
   "models/emulation/EmulatedDevices.ts | laptopWithTouch": {
     "message": "Gliniadur â dyfais gyffwrdd"
@@ -1303,6 +1306,9 @@
   },
   "models/har/Writer.ts | writingFile": {
     "message": "Wrthi'n ysgrifennu ffeil…"
+  },
+  "models/issues_manager/ClientHintIssue.ts | clientHintsInfrastructure": {
+    "message": "Client Hints Infrastructure"
   },
   "models/issues_manager/ContentSecurityPolicyIssue.ts | contentSecurityPolicyEval": {
     "message": "Polisi Diogelwch Cynnwys - Eval"
@@ -1322,8 +1328,8 @@
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "Rhannu Adnoddau Traws-darddiad (CORS)"
   },
-  "models/issues_manager/CorsIssue.ts | corsForPrivateNetworksRfc": {
-    "message": "CORS ar gyfer rhwydweithiau preifat (RFC1918)"
+  "models/issues_manager/CorsIssue.ts | corsPrivateNetworkAccess": {
+    "message": "Mynediad Rhwydwaith Preifat"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | coopAndCoep": {
     "message": "COOP a COEP"
@@ -1559,8 +1565,17 @@
   "panels/accessibility/AXBreadcrumbsPane.ts | accessibilityTree": {
     "message": "Coeden Hygyrchedd"
   },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentDescription": {
+    "message": "Symudodd y goeden hygyrchedd i gornel dde uchaf y goeden DOM."
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentName": {
+    "message": "Galluogi coeden hygyrchedd tudalen lawn"
+  },
   "panels/accessibility/AXBreadcrumbsPane.ts | ignored": {
     "message": "Wedi anwybyddu"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | reloadRequired": {
+    "message": "Mae angen ail-lwytho cyn i'r newid ddod i rym."
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | scrollIntoView": {
     "message": "Sgrolio i'r golwg"
@@ -2051,6 +2066,12 @@
   "panels/application/AppManifestView.ts | couldNotDownloadARequiredIcon": {
     "message": "Methu â lawrlwytho eicon gofynnol o'r maniffest"
   },
+  "panels/application/AppManifestView.ts | darkBackgroundColor": {
+    "message": "Dark background color"
+  },
+  "panels/application/AppManifestView.ts | darkThemeColor": {
+    "message": "Dark theme color"
+  },
   "panels/application/AppManifestView.ts | description": {
     "message": "Disgrifiad"
   },
@@ -2232,7 +2253,7 @@
     "message": "Lliw thema"
   },
   "panels/application/ApplicationPanelCacheSection.ts | backForwardCache": {
-    "message": "Storfa Yn ôl/Ymlaen"
+    "message": "Storfa yn ôl/ymlaen"
   },
   "panels/application/ApplicationPanelCacheSection.ts | cacheStorage": {
     "message": "Storfa Dros Dro"
@@ -2314,384 +2335,6 @@
   },
   "panels/application/ApplicationPanelSidebar.ts | worker": {
     "message": "Gweithiwr"
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
-    "message": "Dim ond tudalennau sydd wedi'u llwytho drwy gais GET sy'n gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
-    "message": "Dim ond tudalennau sydd â chod statws o 2XX y gellir eu storio dros dro."
-  },
-  "panels/application/BackForwardCacheStrings.ts | JavaScriptExecution": {
-    "message": "Canfu Chrome ymgais i weithredu JavaScript tra yn y storfa."
-  },
-  "panels/application/BackForwardCacheStrings.ts | appBanner": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am AppBanner yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
-    "message": "Mae storfa yn ôl/ymlaen wedi'i hanalluogi gan fflagiau. Ewch i chrome://flags/#back-forward-cache i'w galluogi'n lleol ar y ddyfais hon."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
-    "message": "Mae'r storfa yn ôl/ymlaen wedi'i analluogi gan y llinell orchymyn."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
-    "message": "Mae'r storfa yn ôl/ymlaen wedi'i analluogi oherwydd cof annigonol."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
-    "message": "Ni chefnogir storfa yn ôl/ymlaen gan y cynrychiolydd."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
-    "message": "Mae storfa yn ôl/ymlaen wedi'i hanalluogi ar gyfer cyn-rendrwr."
-  },
-  "panels/application/BackForwardCacheStrings.ts | broadcastChannel": {
-    "message": "Ni ellir storio'r dudalen oherwydd bod ganddi achos BroadcastChannel gyda gwrandawyr cofrestredig."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheControlNoStore": {
-    "message": "Ni all tudalennau sydd â phennyn cache-control:no-store gael mynediad at storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheFlushed": {
-    "message": "Cliriwyd y storfa yn fwriadol."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheLimit": {
-    "message": "Cafodd y dudalen ei throi allan o'r storfa er mwyn caniatáu storio tudalen arall."
-  },
-  "panels/application/BackForwardCacheStrings.ts | containsPlugins": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n cynnwys ategion yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileChooser": {
-    "message": "Nid yw tudalennau sy'n defnyddio API FileChooser yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileSystemAccess": {
-    "message": "Nid yw tudalennau sy'n defnyddio API Mynediad System Ffeiliau yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
-    "message": "Nid yw tudalennau sy'n defnyddio Media Device Dispatcher yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaPlay": {
-    "message": "Roedd chwaraewr cyfryngau yn chwarae wrth lywio i ffwrdd."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSession": {
-    "message": "Nid yw tudalennau sy'n defnyddio API MediaSession ac sy'n gosod cyflwr chwarae yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSessionService": {
-    "message": "Nid yw tudalennau sy'n defnyddio API MediaSession ac sy'n gosod trinyddion gweithredu yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSecurityHandler": {
-    "message": "Nid yw tudalennau sy'n defnyddio SecurityHandler yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSerial": {
-    "message": "Nid yw tudalennau sy'n defnyddio API Cyfresol yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
-    "message": "Nid yw tudalennau sy'n defnyddio API WebAuthetication yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebBluetooth": {
-    "message": "Nid yw tudalennau sy'n defnyddio API WebBluetooth yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebUSB": {
-    "message": "Nid yw tudalennau sy'n defnyddio API WebUSB yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio gweithiwr neu weithlen bwrpasol yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | documentLoaded": {
-    "message": "Ni wnaeth y ddogfen orffen llwytho cyn llywio i ffwrdd."
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderAppBannerManager": {
-    "message": "EmbedderAppBannerManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
-    "message": "EmbedderChromePasswordManagerClientBindCredentialManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
-    "message": "EmbedderDomDistillerSelfDeletingRequestDelegate"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
-    "message": "EmbedderDomDistillerViewerSource"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
-    "message": "EmbedderExtensionMessaging"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
-    "message": "EmbedderExtensionMessagingForOpenPort"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
-    "message": "EmbedderExtensionSentMessageToCachedFrame"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensions": {
-    "message": "EmbedderExtensions"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderModalDialog": {
-    "message": "EmbedderModalDialog"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOfflinePage": {
-    "message": "EmbedderOfflinePage"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
-    "message": "EmbedderOomInterventionTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
-    "message": "EmbedderPermissionRequestManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
-    "message": "EmbedderPopupBlockerTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
-    "message": "EmbedderSafeBrowsingThreatDetails"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
-    "message": "EmbedderSafeBrowsingTriggeredPopupBlocker"
-  },
-  "panels/application/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
-    "message": "Cafodd gweithiwr gwasanaeth ei weithredu tra roedd y dudalen mewn storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | foregroundCacheLimit": {
-    "message": "Cafodd y dudalen ei throi allan o'r storfa er mwyn caniatáu storio tudalen arall."
-  },
-  "panels/application/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi caniatáu mynediad at y llif cyfryngau yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | haveInnerContents": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio pyrth yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | idleManager": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio IdleManager yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | indexedDBConnection": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd â chysylltiad IndexedDB agored yn gymwys ar gyfer yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | ineligibleAPI": {
-    "message": "Defnyddiwyd API anghymwys."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedJavascript": {
-    "message": "Ar hyn o bryd nid yw tudalennau y mae estyniadau yn chwistrellu JavaScript iddynt yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedStyleSheet": {
-    "message": "Ar hyn o bryd nid yw tudalennau y mae estyniadau yn chwistrellu StyleSheet iddynt yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | internalError": {
-    "message": "Gwall mewnol."
-  },
-  "panels/application/BackForwardCacheStrings.ts | keyboardLock": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio Clo Bysellfwrdd yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | loading": {
-    "message": "Ni wnaeth y dudalen orffen llwytho cyn llywio i ffwrdd."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
-    "message": "Ni all tudalennau y mae gan eu prif adnodd cache-control:no-cache gael mynediad at storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
-    "message": "Ni all tudalennau y mae gan eu prif adnodd cache-control:no-store gael mynediad at storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
-    "message": "Canslwyd llywio cyn y gellid adfer y dudalen o'r storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
-    "message": "Cafodd y dudalen ei throi allan o'r storfa oherwydd bod cysylltiad rhwydwaith gweithredol wedi derbyn gormod o ddata. Mae Chrome yn cyfyngu ar faint o ddata y gall tudalen eu derbyn pan fydd wedi'i storio dros dro."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd â nôl neu XHR ar y gweill yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestRedirected": {
-    "message": "Cafodd y dudalen ei throi allan o'r storfa yn ôl/ymlaen oherwydd bod cais rhwydwaith gweithredol yn cynnwys ailgyfeirio."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestTimeout": {
-    "message": "Cafodd y dudalen ei throi allan o'r storfa oherwydd bod cysylltiad rhwydwaith ar agor yn rhy hir. Mae Chrome yn cyfyngu ar faint o amser y gall tudalen dderbyn data pan fydd wedi'i storio dros dro."
-  },
-  "panels/application/BackForwardCacheStrings.ts | noResponseHead": {
-    "message": "Ni all tudalennau nad oes ganddynt bennyn ymateb dilys gael mynediad at storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | notMainFrame": {
-    "message": "Bu llywio mewn ffrâm heblaw am y brif ffrâm."
-  },
-  "panels/application/BackForwardCacheStrings.ts | optInUnloadHeaderNotPresent": {
-    "message": "Mae gan y dudalen drinydd dadlwytho heb y pennyn optio i mewn i storfa ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
-    "message": "Ar hyn o bryd nid yw tudalen sydd â thrafodion DB mynegrifedig parhaus yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd â chais rhwydwaith ar y gweill yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd â chais nôl â rhwydwaith ar y gweill yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd â chais rhwydwaith ar y gweill yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd â chais rhwydwaith XHR ar y gweill yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | paymentManager": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio PaymentManager yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | pictureInPicture": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio Llun mewn Llun yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | portal": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio pyrth yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | printing": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n dangos UI Argraffu yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
-    "message": "Agorwyd y dudalen gan ddefnyddio window.open() ac mae gan dab arall gyfeiriad ati, neu agorodd y dudalen ffenestr."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessCrashed": {
-    "message": "Gwnaeth y broses rendro ar gyfer y dudalen mewn storfa yn ôl/ymlaen dorri."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessKilled": {
-    "message": "Lladdwyd y broses rendro ar gyfer y dudalen mewn storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am ganiatadau recordio sain yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am ganiatadau synhwyrydd yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am ganiatadau cysoni cefndir neu nôl yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedMIDIPermission": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am ganiatadau MIDI yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am ganiatadau hysbysiadau yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am fynediad storio yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am ganiatadau recordio fideo yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
-    "message": "Dim ond tudalennau y mae eu cynllun URL yn HTTP/HTTPS y gellir eu storio dros dro."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerClaim": {
-    "message": "Hawliwyd y dudalen gan weithiwr gwasanaeth tra ei bod mewn storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
-    "message": "Gwnaeth gweithiwr gwasanaeth geisio anfon MessageEvent i'r dudalen mewn storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
-    "message": "Roedd ServiceWorker heb ei gofrestru tra roedd tudalen mewn storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
-    "message": "Cafodd y dudalen ei throi allan o'r storfa un ôl/ymlaen oherwydd gweithredu gweithiwr gwasanaeth."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sessionRestored": {
-    "message": "Gwnaeth Chrome ailgychwyn a chilio'r cofnodion storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sharedWorker": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio SharedWorker yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechRecognizer": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio SpeechRecognizer yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechSynthesis": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio SpeechSynthesis yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subframeIsNavigating": {
-    "message": "Gwnaeth iframe ddechrau llywio ar y dudalen ond heb orffen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
-    "message": "Ni all tudalennau y mae gan eu his-ffynhonnell cache-control:no-cache gael mynediad at storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
-    "message": "Ni all tudalennau y mae gan eu his-ffynhonnell cache-control:no-store gael mynediad at storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeout": {
-    "message": "Aeth y dudalen y tu hwnt i'r terfyn amser a ganiateir mewn storfa yn ôl/ymlaen a gwnaeth hi ddarfod."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
-    "message": "Gwnaeth y dudalen ddarfod wrth gael mynediad at storfa yn ôl/ymlaen (yn debygol oherwydd trinyddion cuddio tudalen hir)."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
-    "message": "Mae gan y dudalen drinydd dadlwytho yn y brif ffrâm."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
-    "message": "Mae gan y dudalen drinydd dadlwytho mewn is-ffrâm."
-  },
-  "panels/application/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
-    "message": "Mae'r porwr wedi newid pennyn diystyru'r asiant defnyddiwr."
-  },
-  "panels/application/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
-    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi caniatáu mynediad at recordio fideo neu sain yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webDatabase": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio WebDatabase yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webHID": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio WebHID yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webLocks": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio WebLocks yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webNfc": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio WebNfc yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webOTPService": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio WebOTPService yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webRTC": {
-    "message": "Ni all tudalennau sydd â WebRTC gael mynediad at storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webShare": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio WebShare yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webSocket": {
-    "message": "Ni all tudalennau sydd â WebSocket gael mynediad at storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webTransport": {
-    "message": "Ni all tudalennau sydd â WebTransport gael mynediad at storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webXR": {
-    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio WebXR yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheView.ts | backForwardCacheTitle": {
-    "message": "Storfa Yn ôl/Ymlaen"
-  },
-  "panels/application/BackForwardCacheView.ts | bfcacheStatus": {
-    "message": "Satws Storfa Yn ôl/Ymlaen"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantial": {
-    "message": "Ddim yn Weithredadwy"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantialExplanation": {
-    "message": "Nid oes modd gweithredu'r rhesymau hyn, h.y. atal storio dros dro gan rywbeth y tu hwnt i reolaeth uniongyrchol y dudalen."
-  },
-  "panels/application/BackForwardCacheView.ts | mainFrame": {
-    "message": "Prif Ffrâm"
-  },
-  "panels/application/BackForwardCacheView.ts | normalNavigation": {
-    "message": "Llywio arferol (Nid yw wedi'i adfer o storfa yn ôl/ymlaen)"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeeded": {
-    "message": "Gweithredadwy"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeededExplanation": {
-    "message": "Gellir gweithredu'r rhesymau hyn h.y. gellir eu glanhau i wneud y dudalen yn gymwys ar gyfer storfa yn ôl/ymlaen."
-  },
-  "panels/application/BackForwardCacheView.ts | restoredFromBFCache": {
-    "message": "Wedi'i adfer o'r storfa yn ôl/ymlaen"
-  },
-  "panels/application/BackForwardCacheView.ts | runTest": {
-    "message": "Rhedeg Prawf"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPending": {
-    "message": "Yn Aros am Gefnogaeth"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPendingExplanation": {
-    "message": "Mae cefnogaeth Chrome ar y gweill am y rhesymau hyn h.y. ni fyddant yn atal y dudalen rhag bod yn gymwys ar gyfer storfa yn ôl/ymlaen mewn fersiwn o Chrome yn y dyfodol."
-  },
-  "panels/application/BackForwardCacheView.ts | unavailable": {
-    "message": "nid yw ar gael"
-  },
-  "panels/application/BackForwardCacheView.ts | unknown": {
-    "message": "anhysbys"
-  },
-  "panels/application/BackForwardCacheView.ts | url": {
-    "message": "URL"
   },
   "panels/application/BackgroundServiceView.ts | backgroundFetch": {
     "message": "Nôl yn y Cefndir"
@@ -3251,6 +2894,387 @@
   "panels/application/application-meta.ts | stopRecordingEvents": {
     "message": "Stopio recordio digwyddiadau"
   },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
+    "message": "Dim ond tudalennau sydd wedi'u llwytho drwy gais GET sy'n gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
+    "message": "Dim ond tudalennau sydd â chod statws o 2XX y gellir eu storio dros dro."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | JavaScriptExecution": {
+    "message": "Canfu Chrome ymgais i weithredu JavaScript tra yn y storfa."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | appBanner": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am AppBanner yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
+    "message": "Mae storfa yn ôl/ymlaen wedi'i hanalluogi gan fflagiau. Ewch i chrome://flags/#back-forward-cache i'w galluogi'n lleol ar y ddyfais hon."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
+    "message": "Mae'r storfa yn ôl/ymlaen wedi'i analluogi gan y llinell orchymyn."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
+    "message": "Mae'r storfa yn ôl/ymlaen wedi'i analluogi oherwydd cof annigonol."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
+    "message": "Ni chefnogir storfa yn ôl/ymlaen gan y cynrychiolydd."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
+    "message": "Mae storfa yn ôl/ymlaen wedi'i hanalluogi ar gyfer cyn-rendrwr."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | broadcastChannel": {
+    "message": "Ni ellir storio'r dudalen oherwydd bod ganddi achos BroadcastChannel gyda gwrandawyr cofrestredig."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheControlNoStore": {
+    "message": "Ni all tudalennau sydd â phennyn cache-control:no-store gael mynediad at storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheFlushed": {
+    "message": "Cliriwyd y storfa yn fwriadol."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheLimit": {
+    "message": "Cafodd y dudalen ei throi allan o'r storfa er mwyn caniatáu storio tudalen arall."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | containsPlugins": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n cynnwys ategion yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileChooser": {
+    "message": "Nid yw tudalennau sy'n defnyddio API FileChooser yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileSystemAccess": {
+    "message": "Nid yw tudalennau sy'n defnyddio API Mynediad System Ffeiliau yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
+    "message": "Nid yw tudalennau sy'n defnyddio Media Device Dispatcher yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaPlay": {
+    "message": "Roedd chwaraewr cyfryngau yn chwarae wrth lywio i ffwrdd."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSession": {
+    "message": "Nid yw tudalennau sy'n defnyddio API MediaSession ac sy'n gosod cyflwr chwarae yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSessionService": {
+    "message": "Nid yw tudalennau sy'n defnyddio API MediaSession ac sy'n gosod trinyddion gweithredu yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentScreenReader": {
+    "message": "Back/forward cache is disabled due to screen reader."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSecurityHandler": {
+    "message": "Nid yw tudalennau sy'n defnyddio SecurityHandler yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSerial": {
+    "message": "Nid yw tudalennau sy'n defnyddio API Cyfresol yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
+    "message": "Nid yw tudalennau sy'n defnyddio API WebAuthetication yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebBluetooth": {
+    "message": "Nid yw tudalennau sy'n defnyddio API WebBluetooth yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebUSB": {
+    "message": "Nid yw tudalennau sy'n defnyddio API WebUSB yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio gweithiwr neu weithlen bwrpasol yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | documentLoaded": {
+    "message": "Ni wnaeth y ddogfen orffen llwytho cyn llywio i ffwrdd."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderAppBannerManager": {
+    "message": "App Banner was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
+    "message": "Chrome Password Manager was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
+    "message": "DOM distillation was in progress upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
+    "message": "DOM Distiller Viewer was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
+    "message": "Back/forward cache is disabled due to extensions using messaging API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
+    "message": "Extensions with long-lived connection should close the connection before entering back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
+    "message": "Extensions with long-lived connection attempted to send messages to frames in back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensions": {
+    "message": "Back/forward cache is disabled due to extensions."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderModalDialog": {
+    "message": "Modal dialog such as form resubmission or http password dialog was shown for the page upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOfflinePage": {
+    "message": "The offline page was shown upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
+    "message": "Out-Of-Memory Intervention bar was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
+    "message": "There were permission requests upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
+    "message": "Popup blocker was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
+    "message": "Safe Browsing details were shown upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
+    "message": "Safe Browsing considered this page to be abusive and blocked popup."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
+    "message": "Cafodd gweithiwr gwasanaeth ei weithredu tra roedd y dudalen mewn storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | foregroundCacheLimit": {
+    "message": "Cafodd y dudalen ei throi allan o'r storfa er mwyn caniatáu storio tudalen arall."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi caniatáu mynediad at y llif cyfryngau yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | haveInnerContents": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio pyrth yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | idleManager": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio IdleManager yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | indexedDBConnection": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd â chysylltiad IndexedDB agored yn gymwys ar gyfer yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | ineligibleAPI": {
+    "message": "Defnyddiwyd API anghymwys."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedJavascript": {
+    "message": "Ar hyn o bryd nid yw tudalennau y mae estyniadau yn chwistrellu JavaScript iddynt yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedStyleSheet": {
+    "message": "Ar hyn o bryd nid yw tudalennau y mae estyniadau yn chwistrellu StyleSheet iddynt yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | internalError": {
+    "message": "Gwall mewnol."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | keyboardLock": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio Clo Bysellfwrdd yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | loading": {
+    "message": "Ni wnaeth y dudalen orffen llwytho cyn llywio i ffwrdd."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
+    "message": "Ni all tudalennau y mae gan eu prif adnodd cache-control:no-cache gael mynediad at storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
+    "message": "Ni all tudalennau y mae gan eu prif adnodd cache-control:no-store gael mynediad at storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
+    "message": "Canslwyd llywio cyn y gellid adfer y dudalen o'r storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
+    "message": "Cafodd y dudalen ei throi allan o'r storfa oherwydd bod cysylltiad rhwydwaith gweithredol wedi derbyn gormod o ddata. Mae Chrome yn cyfyngu ar faint o ddata y gall tudalen eu derbyn pan fydd wedi'i storio dros dro."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd â nôl neu XHR ar y gweill yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestRedirected": {
+    "message": "Cafodd y dudalen ei throi allan o'r storfa yn ôl/ymlaen oherwydd bod cais rhwydwaith gweithredol yn cynnwys ailgyfeirio."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestTimeout": {
+    "message": "Cafodd y dudalen ei throi allan o'r storfa oherwydd bod cysylltiad rhwydwaith ar agor yn rhy hir. Mae Chrome yn cyfyngu ar faint o amser y gall tudalen dderbyn data pan fydd wedi'i storio dros dro."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | noResponseHead": {
+    "message": "Ni all tudalennau nad oes ganddynt bennyn ymateb dilys gael mynediad at storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | notMainFrame": {
+    "message": "Bu llywio mewn ffrâm heblaw am y brif ffrâm."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
+    "message": "Ar hyn o bryd nid yw tudalen sydd â thrafodion DB mynegrifedig parhaus yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd â chais rhwydwaith ar y gweill yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd â chais nôl â rhwydwaith ar y gweill yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd â chais rhwydwaith ar y gweill yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd â chais rhwydwaith XHR ar y gweill yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | paymentManager": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio PaymentManager yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | pictureInPicture": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio Llun mewn Llun yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | portal": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio pyrth yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | printing": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n dangos UI Argraffu yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
+    "message": "Agorwyd y dudalen gan ddefnyddio 'window.open()' ac mae gan dab arall gyfeiriad ati, neu agorodd y dudalen ffenestr."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessCrashed": {
+    "message": "Gwnaeth y broses rendro ar gyfer y dudalen mewn storfa yn ôl/ymlaen dorri."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessKilled": {
+    "message": "Lladdwyd y broses rendro ar gyfer y dudalen mewn storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am ganiatadau recordio sain yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am ganiatadau synhwyrydd yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am ganiatadau cysoni cefndir neu nôl yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedMIDIPermission": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am ganiatadau MIDI yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am ganiatadau hysbysiadau yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am fynediad storio yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi gofyn am ganiatadau recordio fideo yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
+    "message": "Dim ond tudalennau y mae eu cynllun URL yn HTTP/HTTPS y gellir eu storio dros dro."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerClaim": {
+    "message": "Hawliwyd y dudalen gan weithiwr gwasanaeth tra ei bod mewn storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
+    "message": "Gwnaeth gweithiwr gwasanaeth geisio anfon MessageEvent i'r dudalen mewn storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
+    "message": "Roedd ServiceWorker heb ei gofrestru tra roedd tudalen mewn storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
+    "message": "Cafodd y dudalen ei throi allan o'r storfa un ôl/ymlaen oherwydd gweithredu gweithiwr gwasanaeth."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sessionRestored": {
+    "message": "Gwnaeth Chrome ailgychwyn a chilio'r cofnodion storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sharedWorker": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio SharedWorker yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechRecognizer": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio SpeechRecognizer yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechSynthesis": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio SpeechSynthesis yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subframeIsNavigating": {
+    "message": "Gwnaeth iframe ddechrau llywio ar y dudalen ond heb orffen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
+    "message": "Ni all tudalennau y mae gan eu his-ffynhonnell cache-control:no-cache gael mynediad at storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
+    "message": "Ni all tudalennau y mae gan eu his-ffynhonnell cache-control:no-store gael mynediad at storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeout": {
+    "message": "Aeth y dudalen y tu hwnt i'r terfyn amser a ganiateir mewn storfa yn ôl/ymlaen a gwnaeth hi ddarfod."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
+    "message": "Gwnaeth y dudalen ddarfod wrth gael mynediad at storfa yn ôl/ymlaen (yn debygol oherwydd trinyddion cuddio tudalen hir)."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
+    "message": "Mae gan y dudalen drinydd dadlwytho yn y brif ffrâm."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
+    "message": "Mae gan y dudalen drinydd dadlwytho mewn is-ffrâm."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
+    "message": "Mae'r porwr wedi newid pennyn diystyru'r asiant defnyddiwr."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
+    "message": "Ar hyn o bryd nid yw tudalennau sydd wedi caniatáu mynediad at recordio fideo neu sain yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webDatabase": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio WebDatabase yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webHID": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio WebHID yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webLocks": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio WebLocks yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webNfc": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio WebNfc yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webOTPService": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio WebOTPService yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webRTC": {
+    "message": "Ni all tudalennau sydd â WebRTC gael mynediad at storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webShare": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio WebShare yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webSocket": {
+    "message": "Ni all tudalennau sydd â WebSocket gael mynediad at storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webTransport": {
+    "message": "Ni all tudalennau sydd â WebTransport gael mynediad at storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webXR": {
+    "message": "Ar hyn o bryd nid yw tudalennau sy'n defnyddio WebXR yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheView.ts | backForwardCacheTitle": {
+    "message": "Storfa yn ôl/ymlaen"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantial": {
+    "message": "Ddim yn Weithredadwy"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantialExplanation": {
+    "message": "Nid oes modd gweithredu'r rhesymau hyn, h.y. atal storio dros dro gan rywbeth y tu hwnt i reolaeth uniongyrchol y dudalen."
+  },
+  "panels/application/components/BackForwardCacheView.ts | learnMore": {
+    "message": "Dysgu rhagor: cymhwysedd storfa yn ôl/ymlaen"
+  },
+  "panels/application/components/BackForwardCacheView.ts | mainFrame": {
+    "message": "Prif Ffrâm"
+  },
+  "panels/application/components/BackForwardCacheView.ts | normalNavigation": {
+    "message": "Ni wasanaethir o storfa yn ôl/ymlaen: i sbarduno'r storfa yn ôl/ymlaen, defnyddiwch fotymau yn ôl/ymlaen Chrome, neu defnyddiwch y botwm profi isod i lywio i ffwrdd ac yn ôl yn awtomatig."
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeeded": {
+    "message": "Gweithredadwy"
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeededExplanation": {
+    "message": "Gellir gweithredu'r rhesymau hyn h.y. gellir eu glanhau i wneud y dudalen yn gymwys ar gyfer storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheView.ts | restoredFromBFCache": {
+    "message": "Gwasanaethir yn llwyddiannus o storfa yn ôl/ymlaen."
+  },
+  "panels/application/components/BackForwardCacheView.ts | runTest": {
+    "message": "Profi storfa yn ôl/ymlaen"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runningTest": {
+    "message": "Wrthi'n rhedeg y prawf"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPending": {
+    "message": "Yn Aros am Gefnogaeth"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPendingExplanation": {
+    "message": "Mae cefnogaeth Chrome ar y gweill am y rhesymau hyn h.y. ni fyddant yn atal y dudalen rhag bod yn gymwys ar gyfer storfa yn ôl/ymlaen mewn fersiwn o Chrome yn y dyfodol."
+  },
+  "panels/application/components/BackForwardCacheView.ts | unavailable": {
+    "message": "nid yw ar gael"
+  },
+  "panels/application/components/BackForwardCacheView.ts | unknown": {
+    "message": "Statws Anhysbys"
+  },
+  "panels/application/components/BackForwardCacheView.ts | url": {
+    "message": "URL:"
+  },
   "panels/application/components/EndpointsGrid.ts | noEndpointsToDisplay": {
     "message": "Nid oes unrhyw ddiweddbwyntiau i'w harddangos"
   },
@@ -3297,22 +3321,16 @@
     "message": "Cliciwch i ddatgelu yn y panel Ffynonellau"
   },
   "panels/application/components/FrameDetailsView.ts | createdByAdScriptExplanation": {
-    "message": "Roedd sgript hysbyseb yn y pentwr (anghydamserol) pan grewyd y ffrâm hon. Mae'n bosib y bydd archwilio ôl pentwr creu'r ffrâm hon yn rhoi mewnwelediadau pellach."
+    "message": "Roedd sgript hysbyseb yn y (async) stack pan grëwyd y ffrâm hon. Mae'n bosib y bydd archwilio stack trace creu'r ffrâm hon yn rhoi mewnwelediadau pellach."
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTrace": {
-    "message": "Ôl Pentwr Creu Ffrâm"
+    "message": "Creu Ffrâm Stack Trace"
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTraceExplanation": {
-    "message": "Crëwyd y ffrâm hon yn rhaglennol. Mae ôl pentwr yn dangos lle digwyddodd hyn."
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginEmbedderPolicy": {
-    "message": "Polisi Planydd Traws-Darddiad"
+    "message": "Crëwyd y ffrâm hon yn rhaglennol. Mae stack trace yn dangos lle digwyddodd hyn."
   },
   "panels/application/components/FrameDetailsView.ts | crossoriginIsolated": {
     "message": "Traws-Darddiad Ynysig"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginOpenerPolicy": {
-    "message": "Polisi Agorwr Traws-darddiad"
   },
   "panels/application/components/FrameDetailsView.ts | document": {
     "message": "Dogfen"
@@ -3324,7 +3342,7 @@
     "message": "Dysgu rhagor"
   },
   "panels/application/components/FrameDetailsView.ts | localhostIsAlwaysASecureContext": {
-    "message": "Mae'r gwesteiwr lleol bob amser mewn cyd-destun diogel"
+    "message": "Mae Localhost bob amser mewn cyd-destun diogel"
   },
   "panels/application/components/FrameDetailsView.ts | matchedBlockingRuleExplanation": {
     "message": "Mae'r ffrâm hon yn cael ei hystyried yn ffrâm hysbyseb oherwydd bod ei brif ddogfen bresennol (neu flaenorol) yn adnodd hysbyseb."
@@ -3337,9 +3355,6 @@
   },
   "panels/application/components/FrameDetailsView.ts | origin": {
     "message": "Tarddiad"
-  },
-  "panels/application/components/FrameDetailsView.ts | originTrials": {
-    "message": "Profion Tarddiad"
   },
   "panels/application/components/FrameDetailsView.ts | ownerElement": {
     "message": "Elfen Perchennog"
@@ -3366,10 +3381,10 @@
     "message": "Diogelwch ac Arwahanrwydd"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIs": {
-    "message": "Mae lluniwr SharedArrayBuffer ar gael a gellir trosglwyddo SAB drwy postMessage"
+    "message": "Mae lluniwr SharedArrayBuffer ar gael a gellir trosglwyddo SABs drwy postMessage"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIsAvailable": {
-    "message": "Mae lluniwr SharedArrayBuffer ar gael ond ni ellir trosglwyddo SAB drwy postMessage"
+    "message": "Mae lluniwr SharedArrayBuffer ar gael ond ni ellir trosglwyddo SABs drwy postMessage"
   },
   "panels/application/components/FrameDetailsView.ts | theFramesSchemeIsInsecure": {
     "message": "Mae cynllun y ffrâm yn anniogel"
@@ -3378,7 +3393,7 @@
     "message": "Mae'r API performance.measureUserAgentSpecificMemory() ar gael"
   },
   "panels/application/components/FrameDetailsView.ts | thePerformancemeasureuseragentspecificmemory": {
-    "message": "Nid yw'r API performance.measureUserAgentSpecificMemory() ar gael"
+    "message": "Nid yw API performance.measureUserAgentSpecificMemory() ar gael"
   },
   "panels/application/components/FrameDetailsView.ts | thisAdditionalDebugging": {
     "message": "Dangosir y wybodaeth (dadfygio) ychwanegol hon oherwydd bod yr arbrawf 'Monitor Protocol' wedi'i alluogi."
@@ -4229,20 +4244,11 @@
   "panels/css_overview/CSSOverviewUnusedDeclarations.ts | widthAppliedToAnInlineElement": {
     "message": "Mae Width wedi'i weithredu i elfen alinio"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | activelyWorkingAndLookingForS": {
-    "message": "Mae ein tîm wrthi'n gweithio ar y nodwedd hon ac rydym am gael eich {PH1}!"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | captureOverview": {
     "message": "Tynnu'r trosolwg"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | capturePageCSSOverview": {
     "message": "Cael trosolwg o CSS eich tudalen"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackInline": {
-    "message": "adborth"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackStandalone": {
-    "message": "Adborth"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | identifyCSSImprovements": {
     "message": "Nodi gwelliannau CSS posib"
@@ -4253,14 +4259,8 @@
   "panels/css_overview/components/CSSOverviewStartView.ts | locateAffectedElements": {
     "message": "Lleolwch yr elfennau yr effeithir arnynt yn y panel Elfennau"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | previewFeature": {
-    "message": "Rhagolwg o nodwedd"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | quickStartWithCSSOverview": {
     "message": "Cychwyn cyflym: cychwyn arni gyda'r panel Trosolwg CSS newydd"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | videoAndDocumentation": {
-    "message": "Fideo a dogfennaeth"
   },
   "panels/css_overview/css_overview-meta.ts | cssOverview": {
     "message": "Trosolwg CSS"
@@ -4359,7 +4359,7 @@
     "message": "Llywio i arddull"
   },
   "panels/elements/ComputedStyleWidget.ts | noMatchingProperty": {
-    "message": "Dim eiddo'n cyfateb"
+    "message": "Nid oes unrhyw briodweddau sy'n cyfateb"
   },
   "panels/elements/ComputedStyleWidget.ts | showAll": {
     "message": "Dangos pob un"
@@ -4591,6 +4591,21 @@
   },
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
     "message": "Ffontiau a Rendrwyd"
+  },
+  "panels/elements/PropertiesWidget.ts | filter": {
+    "message": "Hidlo"
+  },
+  "panels/elements/PropertiesWidget.ts | filterProperties": {
+    "message": "Hidlo Priodweddau"
+  },
+  "panels/elements/PropertiesWidget.ts | noMatchingProperty": {
+    "message": "Nid oes unrhyw briodweddau sy'n cyfateb"
+  },
+  "panels/elements/PropertiesWidget.ts | showAll": {
+    "message": "Dangos pob un"
+  },
+  "panels/elements/PropertiesWidget.ts | showAllTooltip": {
+    "message": "Pan na chaiff ei wirio, dim ond priodweddau nad yw eu gwerthoedd yn nwl na heb eu diffinio a ddangosir"
   },
   "panels/elements/StylePropertyTreeElement.ts | copyAllCssDeclarationsAsJs": {
     "message": "Copïo pob datganiad fel JS"
@@ -4926,7 +4941,7 @@
     "message": "Dangos ymholiadau cyfryngau"
   },
   "panels/emulation/DeviceModeToolbar.ts | showRulers": {
-    "message": "Dangos prennau mesur"
+    "message": "Dangos ffyn mesur"
   },
   "panels/emulation/DeviceModeToolbar.ts | toggleDualscreenMode": {
     "message": "Toglo'r modd sgrîn ddeuol"
@@ -4980,7 +4995,7 @@
     "message": "Cuddio ymholiadau cyfryngau"
   },
   "panels/emulation/emulation-meta.ts | hideRulers": {
-    "message": "Cuddio'r ffyn mesur"
+    "message": "Cuddio ffyn mesur ym mar offer Modd y Ddyfais"
   },
   "panels/emulation/emulation-meta.ts | showDeviceFrame": {
     "message": "Dangos ffrâm y ddyfais"
@@ -4989,7 +5004,7 @@
     "message": "Dangos ymholiadau cyfryngau"
   },
   "panels/emulation/emulation-meta.ts | showRulers": {
-    "message": "Dangos ffyn mesur"
+    "message": "Dangos ffyn mesur ym mar offer Modd y Ddyfais"
   },
   "panels/emulation/emulation-meta.ts | toggleDeviceToolbar": {
     "message": "Toglo bar offer y ddyfais"
@@ -5014,36 +5029,6 @@
   },
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "Toglo a yw gwrandäwr y digwyddiad yn oddefol neu'n rhwystro"
-  },
-  "panels/help/ReleaseNoteView.ts | close": {
-    "message": "Cau"
-  },
-  "panels/help/ReleaseNoteView.ts | learnMore": {
-    "message": "Dysgu rhagor"
-  },
-  "panels/help/help-meta.ts | bug": {
-    "message": "byg"
-  },
-  "panels/help/help-meta.ts | doNotShowWhatsNewAfterEachUpdate": {
-    "message": "Peidio â dangos Beth sy'n Newydd ar ôl pob diweddariad"
-  },
-  "panels/help/help-meta.ts | releaseNotes": {
-    "message": "Nodiadau cyhoeddi"
-  },
-  "panels/help/help-meta.ts | reportADevtoolsIssue": {
-    "message": "Adrodd am broblem DevTools"
-  },
-  "panels/help/help-meta.ts | reportTranslationIssue": {
-    "message": "Adrodd am broblem cyfieithu"
-  },
-  "panels/help/help-meta.ts | showWhatsNew": {
-    "message": "Dangos Beth sy'n Newydd"
-  },
-  "panels/help/help-meta.ts | showWhatsNewAfterEachUpdate": {
-    "message": "Dangos Beth sy'n Newydd ar ôl pob diweddariad"
-  },
-  "panels/help/help-meta.ts | whatsNew": {
-    "message": "Beth sy'n newydd"
   },
   "panels/input/InputTimeline.ts | clearAll": {
     "message": "Clirio popeth"
@@ -5261,8 +5246,20 @@
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceEventId": {
     "message": "attributionsourceeventid annilys"
   },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceExpiry": {
+    "message": "attributionexpiry annilys"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourcePriority": {
+    "message": "attributionsourcepriority annilys"
+  },
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerData": {
     "message": "trigger-data annilys"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerDedupKey": {
+    "message": "dedup-key annilys"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerPriority": {
+    "message": "priority annilys"
   },
   "panels/issues/AttributionReportingIssueDetailsView.ts | nViolations": {
     "message": "{n,plural, =1{# tor-rheol}zero{# tor-rheol}two{# dor-rheol}few{# thor-rheol}many{# thor-rheol}other{# tor-rheol}}"
@@ -5290,6 +5287,9 @@
   },
   "panels/issues/CorsIssueDetailsView.ts | disallowedRequestMethod": {
     "message": "Dull Cais na Chaniateir"
+  },
+  "panels/issues/CorsIssueDetailsView.ts | failedRequest": {
+    "message": "Cais sydd wedi Methu"
   },
   "panels/issues/CorsIssueDetailsView.ts | header": {
     "message": "Pennyn"
@@ -5366,8 +5366,14 @@
   "panels/issues/HiddenIssuesRow.ts | unhideAll": {
     "message": "Datguddio pob un"
   },
-  "panels/issues/IssueKindView.ts | hideAllCurrent": {
-    "message": "Cuddio pob {PH1} presennol"
+  "panels/issues/IssueKindView.ts | hideAllCurrentBreakingChanges": {
+    "message": "Cuddio pob Newid sy'n Achosi i Gydrannau Eraill Fethu"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentImprovements": {
+    "message": "Cuddio'r holl welliannau presennol"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentPageErrors": {
+    "message": "Cuddio pob Gwall Tudalen Bresennol"
   },
   "panels/issues/IssueView.ts | affectedResources": {
     "message": "Adnoddau yr effeithir arnynt"
@@ -6307,6 +6313,9 @@
   },
   "panels/network/NetworkConfigView.ts | caching": {
     "message": "Storio"
+  },
+  "panels/network/NetworkConfigView.ts | clientHintsStatusText": {
+    "message": "Wedi diweddaru asiant defnyddiwr."
   },
   "panels/network/NetworkConfigView.ts | custom": {
     "message": "Personol..."
@@ -9153,7 +9162,7 @@
     "message": "Cwmpas: amherthnasol"
   },
   "panels/sources/CoveragePlugin.ts | coverageS": {
-    "message": "Cwmpas: {PH1} %"
+    "message": "Cwmpas: {PH1}"
   },
   "panels/sources/CoveragePlugin.ts | showDetails": {
     "message": "Dangos manylion"
@@ -9412,6 +9421,15 @@
   },
   "panels/sources/OutlineQuickOpen.ts | openAJavascriptOrCssFileToSee": {
     "message": "Agorwch ffeil JavaScript neu CSS i weld symbolau"
+  },
+  "panels/sources/ProfilePlugin.ts | kb": {
+    "message": "kB"
+  },
+  "panels/sources/ProfilePlugin.ts | mb": {
+    "message": "MB"
+  },
+  "panels/sources/ProfilePlugin.ts | ms": {
+    "message": "me"
   },
   "panels/sources/ScopeChainSidebarPane.ts | closure": {
     "message": "Cau"
@@ -11429,6 +11447,24 @@
   "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
     "message": "Dangos Arolygydd Cof"
   },
+  "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
+    "message": "Adborth"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewFeature": {
+    "message": "Rhagolwg o nodwedd"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewText": {
+    "message": "Mae ein tîm wrthi'n gweithio ar y nodwedd hon a byddem wrth ein bodd yn cael gwybod beth yw eich barn."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewTextFeedbackLink": {
+    "message": "Anfonwch eich adborth atom."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | videoAndDocumentation": {
+    "message": "Fideo a dogfennaeth"
+  },
+  "ui/components/panel_feedback/PreviewToggle.ts | previewTextFeedbackLink": {
+    "message": "Anfonwch eich adborth atom."
+  },
   "ui/components/request_link_icon/RequestLinkIcon.ts | clickToShowRequestInTheNetwork": {
     "message": "Cliciwch i agor y panel rhwydwaith ac i ddangos cais ar gyfer yr URL: {url}"
   },
@@ -11501,6 +11537,12 @@
   "ui/legacy/InspectorView.ts | drawer": {
     "message": "Drôr offer"
   },
+  "ui/legacy/InspectorView.ts | drawerHidden": {
+    "message": "Drôr wedi'i guddio"
+  },
+  "ui/legacy/InspectorView.ts | drawerShown": {
+    "message": "Drôr wedi'i ddangos"
+  },
   "ui/legacy/InspectorView.ts | mainToolbar": {
     "message": "Prif far offer"
   },
@@ -11539,6 +11581,9 @@
   },
   "ui/legacy/ListWidget.ts | saveString": {
     "message": "Cadw"
+  },
+  "ui/legacy/RemoteDebuggingTerminatedScreen.ts | debuggingConnectionWasClosed": {
+    "message": "Debugging connection was closed. Reason: "
   },
   "ui/legacy/RemoteDebuggingTerminatedScreen.ts | reconnectDevtools": {
     "message": "Ailgysylltu DevTools"
@@ -11774,6 +11819,9 @@
   "ui/legacy/components/cookie_table/CookiesTable.ts | name": {
     "message": "Enw"
   },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | opaquePartitionKey": {
+    "message": "(afloyw)"
+  },
   "ui/legacy/components/cookie_table/CookiesTable.ts | session": {
     "message": "Sesiwn"
   },
@@ -11942,15 +11990,6 @@
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "Dangos fel gwrthrych JavaScript"
   },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keys": {
-    "message": "Bysellau"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keywords": {
-    "message": "allweddeiriau"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | lexicalScopeVariables": {
-    "message": "Newidynnau cwmpas geirfaol"
-  },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | collapseChildren": {
     "message": "Crebachu plant"
   },
@@ -12038,15 +12077,6 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | sSelected": {
     "message": "{PH1} wedi'i ddewis"
   },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | kb": {
-    "message": "kB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | mb": {
-    "message": "MB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | ms": {
-    "message": "me"
-  },
   "ui/legacy/components/perf_ui/NetworkPriorities.ts | high": {
     "message": "Uchel"
   },
@@ -12119,8 +12149,8 @@
   "ui/legacy/components/quick_open/QuickInput.ts | pressEnterToConfirmOrEscapeTo": {
     "message": "{PH1} (Pwyswch 'Enter' i gadarnhau neu 'Escape' i ganslo.)"
   },
-  "ui/legacy/components/quick_open/QuickOpen.ts | useTabToSwitchCommandsTypeToSeeAvailableCommands": {
-    "message": "Defnyddiwch Tab i newid gorchmynion. Teipiwch '?' i weld y gorchmynion sydd ar gael"
+  "ui/legacy/components/quick_open/QuickOpen.ts | typeToSeeAvailableCommands": {
+    "message": "Teipiwch '?' i weld y gorchmynion sydd ar gael"
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | openFile": {
     "message": "Agor ffeil"
@@ -12223,9 +12253,6 @@
   },
   "ui/legacy/components/source_frame/source_frame-meta.ts | tabCharacter": {
     "message": "Nod Tab"
-  },
-  "ui/legacy/components/text_editor/CodeMirrorTextEditor.ts | codeEditor": {
-    "message": "Golygydd cod"
   },
   "ui/legacy/components/utils/ImagePreview.ts | currentSource": {
     "message": "Ffynhonnell bresennol:"

@@ -100,6 +100,12 @@ pub trait Read<'de>: private::Sealed {
 
     /// Whether we should replace invalid unicode characters with \u{fffd}.
     fn replace_invalid_unicode(&self) -> bool;
+
+    /// Allow \v escapes
+    fn allow_v_escapes(&self) -> bool;
+
+    /// Allow \x escapes
+    fn allow_x_escapes(&self) -> bool;
 }
 
 pub struct Position {
@@ -296,6 +302,9 @@ pub struct SliceRead<'a> {
     /// Index of the *next* byte that will be returned by next() or peek().
     index: usize,
     replace_invalid_characters: bool,
+    allow_control_characters_in_string: bool,
+    allow_x_escapes: bool,
+    allow_v_escapes: bool,
     #[cfg(feature = "raw_value")]
     raw_buffering_start_index: usize,
 }
@@ -389,6 +398,14 @@ where
     R: io::Read,
 {
     fn replace_invalid_unicode(&self) -> bool {
+        false
+    }
+
+    fn allow_x_escapes(&self) -> bool {
+        false
+    }
+
+    fn allow_v_escapes(&self) -> bool {
         false
     }
 
@@ -538,13 +555,16 @@ where
 
 impl<'a> SliceRead<'a> {
     /// Create a JSON input source to read from a slice of bytes.
-    pub fn new(slice: &'a [u8], replace_invalid_characters: bool) -> Self {
+    pub fn new(slice: &'a [u8], replace_invalid_characters: bool, allow_control_characters_in_string: bool, allow_v_escapes: bool, allow_x_escapes: bool) -> Self {
         #[cfg(not(feature = "raw_value"))]
         {
             SliceRead {
                 slice: slice,
                 index: 0,
                 replace_invalid_characters,
+                allow_control_characters_in_string,
+                allow_v_escapes,
+                allow_x_escapes,
             }
         }
         #[cfg(feature = "raw_value")]
@@ -553,9 +573,16 @@ impl<'a> SliceRead<'a> {
                 slice: slice,
                 index: 0,
                 replace_invalid_characters,
+                allow_control_characters_in_string,
+                allow_v_escapes,
+                allow_x_escapes,
                 raw_buffering_start_index: 0,
             }
         }
+    }
+
+    fn escapes(&self) -> [bool;256] {
+        get_escapes(self.allow_control_characters_in_string)
     }
 
     fn position_of_index(&self, i: usize) -> Position {
@@ -591,7 +618,7 @@ impl<'a> SliceRead<'a> {
         let mut start = self.index;
 
         loop {
-            while self.index < self.slice.len() && !ESCAPE[self.slice[self.index] as usize] {
+            while self.index < self.slice.len() && !self.escapes()[self.slice[self.index] as usize] {
                 self.index += 1;
             }
             if self.index == self.slice.len() {
@@ -635,6 +662,14 @@ impl<'a> private::Sealed for SliceRead<'a> {}
 impl<'a> Read<'a> for SliceRead<'a> {
     fn replace_invalid_unicode(&self) -> bool {
         self.replace_invalid_characters
+    }
+
+    fn allow_x_escapes(&self) -> bool {
+        self.allow_x_escapes
+    }
+
+    fn allow_v_escapes(&self) -> bool {
+        self.allow_v_escapes
     }
 
     #[inline]
@@ -697,7 +732,7 @@ impl<'a> Read<'a> for SliceRead<'a> {
 
     fn ignore_str(&mut self) -> Result<()> {
         loop {
-            while self.index < self.slice.len() && !ESCAPE[self.slice[self.index] as usize] {
+            while self.index < self.slice.len() && !self.escapes()[self.slice[self.index] as usize] {
                 self.index += 1;
             }
             if self.index == self.slice.len() {
@@ -765,7 +800,7 @@ impl<'a> StrRead<'a> {
         #[cfg(not(feature = "raw_value"))]
         {
             StrRead {
-                delegate: SliceRead::new(s.as_bytes(), false),
+                delegate: SliceRead::new(s.as_bytes(), false, false, false, false),
             }
         }
         #[cfg(feature = "raw_value")]
@@ -782,6 +817,14 @@ impl<'a> private::Sealed for StrRead<'a> {}
 
 impl<'a> Read<'a> for StrRead<'a> {
     fn replace_invalid_unicode(&self) -> bool {
+        false
+    }
+
+    fn allow_x_escapes(&self) -> bool {
+        false
+    }
+
+    fn allow_v_escapes(&self) -> bool {
         false
     }
 
@@ -851,12 +894,13 @@ impl<'a> Read<'a> for StrRead<'a> {
 
 //////////////////////////////////////////////////////////////////////////////
 
-const ALLOW_CONTROL_CHARACTERS_IN_STRING: bool = false;
+const ESCAPE: [bool; 256] = get_escapes(false);
 
 // Lookup table of bytes that must be escaped. A value of true at index i means
 // that byte i requires an escape sequence in the input.
-static ESCAPE: [bool; 256] = {
-    const CT: bool = ALLOW_CONTROL_CHARACTERS_IN_STRING; // control character \x00..=\x1F
+const fn get_escapes(allow_control_characters_in_string: bool) -> [bool; 256] {
+    #[allow(non_snake_case)]
+    let CT: bool = !allow_control_characters_in_string; // control character \x00..=\x1F
     const QU: bool = true; // quote \x22
     const BS: bool = true; // backslash \x5C
     const __: bool = false; // allow unescaped
@@ -879,7 +923,7 @@ static ESCAPE: [bool; 256] = {
         __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, // E
         __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, // F
     ]
-};
+}
 
 fn next_or_eof<'de, R: ?Sized + Read<'de>>(read: &mut R) -> Result<u8> {
     match tri!(read.next()) {
@@ -937,8 +981,8 @@ fn parse_escape_or_fail<'de, R: Read<'de>>(read: &mut R, scratch: &mut Vec<u8>) 
         b'n' => scratch.push(b'\n'),
         b'r' => scratch.push(b'\r'),
         b't' => scratch.push(b'\t'),
-        b'v' => scratch.push(b'\x0b'),
-        b'x' => {
+        b'v' if read.allow_v_escapes() => scratch.push(b'\x0b'),
+        b'x' if read.allow_x_escapes() => {
             let c: u32 = tri!(read.decode_hex_escape(2)).into();
             let c = match char::from_u32(c) {
                 Some(c) => c,

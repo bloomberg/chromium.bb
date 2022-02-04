@@ -1,4 +1,4 @@
-// Copyright (c) 2021 The Chromium Authors. All rights reserved.
+// Copyright (c) 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,7 @@ QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_count_bytes_on_alternative_path_sepera
 // If true, do not re-arm PTO while sending application data during handshake.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_donot_rearm_pto_on_application_data_during_handshake, true)
 // If true, do not use the gQUIC common certificate set for certificate compression.
-QUIC_FLAG(FLAGS_quic_restart_flag_quic_no_common_cert_set, true)
+QUIC_FLAG(FLAGS_quic_restart_flag_quic_no_common_cert_set, false)
 // If true, drop unsent PATH_RESPONSEs and rely on peer\'s retry.
 QUIC_FLAG(FLAGS_quic_reloadable_flag_quic_drop_unsent_path_response, true)
 // If true, enable server retransmittable on wire PING.

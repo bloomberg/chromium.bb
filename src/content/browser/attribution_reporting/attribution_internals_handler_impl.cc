@@ -15,7 +15,7 @@
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
-#include "content/browser/attribution_reporting/sent_report.h"
+#include "content/browser/attribution_reporting/send_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -25,6 +25,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace content {
 
@@ -36,15 +37,6 @@ using DeactivatedSource = ::content::AttributionStorage::DeactivatedSource;
 
 using Attributability =
     ::content::mojom::WebUIAttributionSource::Attributability;
-
-mojom::SourceType SourceTypeToMojoType(StorableSource::SourceType input) {
-  switch (input) {
-    case StorableSource::SourceType::kNavigation:
-      return mojom::SourceType::kNavigation;
-    case StorableSource::SourceType::kEvent:
-      return mojom::SourceType::kEvent;
-  }
-}
 
 mojom::WebUIAttributionSourcePtr WebUIAttributionSource(
     const StorableSource& source,
@@ -67,8 +59,8 @@ mojom::WebUIAttributionSourcePtr WebUIAttributionSource(
       source.source_event_id(), source.impression_origin(),
       source.ConversionDestination().Serialize(), source.reporting_origin(),
       source.impression_time().ToJsTime(), source.expiry_time().ToJsTime(),
-      SourceTypeToMojoType(source.source_type()), source.priority(),
-      source.dedup_keys(), attributability);
+      source.source_type(), source.priority(), source.dedup_keys(),
+      attributability);
 }
 
 void ForwardSourcesToWebUI(
@@ -90,12 +82,16 @@ mojom::WebUIAttributionReportPtr WebUIAttributionReport(
     const AttributionReport& report,
     int http_response_code,
     mojom::WebUIAttributionReport::Status status) {
+  const auto* data =
+      absl::get_if<AttributionReport::EventLevelData>(&report.data());
+  DCHECK(data);
   return mojom::WebUIAttributionReport::New(
-      report.impression.ConversionDestination().Serialize(), report.ReportURL(),
-      /*trigger_time=*/report.conversion_time.ToJsTime(),
-      /*report_time=*/report.report_time.ToJsTime(), report.priority,
+      data->id, report.source().ConversionDestination().Serialize(),
+      report.ReportURL(),
+      /*trigger_time=*/report.trigger_time().ToJsTime(),
+      /*report_time=*/report.report_time().ToJsTime(), data->priority,
       report.ReportBody(/*pretty_print=*/true),
-      /*attributed_truthfully=*/report.impression.attribution_logic() ==
+      /*attributed_truthfully=*/report.source().attribution_logic() ==
           StorableSource::AttributionLogic::kTruthfully,
       status, http_response_code);
 }
@@ -163,11 +159,12 @@ void AttributionInternalsHandlerImpl::GetReports(
   }
 }
 
-void AttributionInternalsHandlerImpl::SendPendingReports(
-    mojom::AttributionInternalsHandler::SendPendingReportsCallback callback) {
+void AttributionInternalsHandlerImpl::SendReports(
+    const std::vector<AttributionReport::EventLevelData::Id>& ids,
+    mojom::AttributionInternalsHandler::SendReportsCallback callback) {
   if (AttributionManager* manager =
           manager_provider_->GetManager(web_ui_->GetWebContents())) {
-    manager->SendReportsForWebUI(std::move(callback));
+    manager->SendReportsForWebUI(ids, std::move(callback));
   } else {
     std::move(callback).Run();
   }
@@ -220,31 +217,31 @@ void AttributionInternalsHandlerImpl::OnSourceDeactivated(
   }
 }
 
-void AttributionInternalsHandlerImpl::OnReportSent(const SentReport& info) {
+void AttributionInternalsHandlerImpl::OnReportSent(
+    const AttributionReport& report,
+    const SendResult& info) {
   mojom::WebUIAttributionReport::Status status;
   switch (info.status) {
-    case SentReport::Status::kSent:
+    case SendResult::Status::kSent:
       status = mojom::WebUIAttributionReport::Status::kSent;
       break;
-    case SentReport::Status::kDropped:
+    case SendResult::Status::kDropped:
       status =
           mojom::WebUIAttributionReport::Status::kProhibitedByBrowserPolicy;
       break;
-    case SentReport::Status::kFailure:
+    case SendResult::Status::kFailure:
       status = mojom::WebUIAttributionReport::Status::kNetworkError;
       break;
-    case SentReport::Status::kTransientFailure:
-    case SentReport::Status::kOffline:
-    case SentReport::Status::kRemovedFromQueue:
+    case SendResult::Status::kTransientFailure:
       NOTREACHED();
       return;
   }
 
-  auto report =
-      WebUIAttributionReport(info.report, info.http_response_code, status);
+  auto web_report =
+      WebUIAttributionReport(report, info.http_response_code, status);
 
   for (auto& observer : observers_) {
-    observer->OnReportSent(report.Clone());
+    observer->OnReportSent(web_report.Clone());
   }
 }
 
@@ -258,6 +255,9 @@ void AttributionInternalsHandlerImpl::OnReportDropped(
       break;
     case CreateReportStatus::kDroppedForNoise:
       status = mojom::WebUIAttributionReport::Status::kDroppedForNoise;
+      break;
+    case CreateReportStatus::kRateLimited:
+      status = mojom::WebUIAttributionReport::Status::kDroppedDueToRateLimiting;
       break;
     default:
       NOTREACHED();

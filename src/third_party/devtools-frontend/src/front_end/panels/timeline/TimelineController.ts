@@ -146,14 +146,14 @@ export class TimelineController implements SDK.TargetManager.SDKModelObserver<SD
     const extensionCompletionPromises = this.extensionSessions.map(session => session.stop());
     if (extensionCompletionPromises.length) {
       tracingStoppedPromises.push(
-          Promise.race([Promise.all(extensionCompletionPromises), new Promise(r => setTimeout(r, 5000))]));
+          Promise.race([Promise.all(extensionCompletionPromises), new Promise(r => window.setTimeout(r, 5000))]));
     }
     await Promise.all(tracingStoppedPromises);
   }
 
   modelAdded(cpuProfilerModel: SDK.CPUProfilerModel.CPUProfilerModel): void {
     if (this.profiling) {
-      cpuProfilerModel.startRecording();
+      void cpuProfilerModel.startRecording();
     }
   }
 
@@ -222,7 +222,7 @@ export class TimelineController implements SDK.TargetManager.SDKModelObserver<SD
 
   private allSourcesFinished(): void {
     this.client.processingStarted();
-    setTimeout(() => this.finalizeTrace(), 0);
+    window.setTimeout(() => this.finalizeTrace(), 0);
   }
 
   private async finalizeTrace(): Promise<void> {

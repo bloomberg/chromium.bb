@@ -1,19 +1,21 @@
 
 
 
+Issue: #<!-- Fill in the issue number here. See docs/intro/life_of.md -->
 
 <hr>
 
-**Author checklist for test code/plans:**
+**Requirements for PR author:**
 
-- [ ] All outstanding work is tracked with "TODO" in a test/file description or `.unimplemented()` on a test.
-- [ ] New helpers, if any, are documented using `/** doc comments */` and can be found via `helper_index.txt`.
-- [ ] (Optional, sometimes not possible.) Tests pass (or partially pass without unexpected issues) in an implementation. (Add any extra details above.)
+- [ ] All missing test coverage is tracked with "TODO" or `.unimplemented()`.
+- [ ] New helpers are `/** documented */` and new helper files are found in `helper_index.txt`.
+- [ ] Test behaves as expected in a WebGPU implementation. (If not passing, explain above.)
 
-**[Reviewer sign-off](https://github.com/gpuweb/cts/blob/main/docs/reviews.md) for test code/plans:** (Note: feel free to pull in other reviewers at any time for any reason.)
+**Requirements for [reviewer sign-off](https://github.com/gpuweb/cts/blob/main/docs/reviews.md):**
 
-- [ ] The test path is reasonable, the [description](https://github.com/gpuweb/cts/blob/main/docs/intro/plans.md) "describes the test, succinctly, but in enough detail that a reader can read only the test plans in a file or directory and evaluate the completeness of the test coverage."
-- [ ] Tests appear to cover this area completely, except for outstanding TODOs. Validation tests use control cases.
-    (This is critical for coverage. Assume anything without a TODO will be forgotten about forever.)
-- [ ] Existing (or new) test helpers are used where they would reduce complexity.
-- [ ] TypeScript code is readable and understandable (is unobtrusive, has reasonable type-safety/verbosity/dynamicity).
+- [ ] Tests are properly located in the test tree.
+- [ ] [Test descriptions](https://github.com/gpuweb/cts/blob/main/docs/intro/plans.md) allow a reader to "read only the test plans and evaluate coverage completeness", and accurately reflect the test code.
+- [ ] Tests provide complete coverage (including validation control cases). **Missing coverage MUST be covered by TODOs.**
+- [ ] Helpers and types promote readability and maintainability.
+
+When landing this PR, be sure to make any necessary issue status updates.

@@ -1,3 +1,13 @@
+//* This template itself is part of the Dawn source and follows Dawn's license,
+//* which is Apache 2.0.
+//*
+//* The WebGPU native API is a joint project used by Google, Mozilla, and Apple.
+//* It was agreed to use a BSD 3-Clause license so that it is GPLv2-compatible.
+//*
+//* As a result, the template comments using //* at the top of the file are
+//* removed during generation such that the resulting file starts with the
+//* BSD 3-Clause comment, which is inside BSD_LICENSE as included below.
+//*
 //* Copyright 2020 The Dawn Authors
 //*
 //* Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,41 +23,7 @@
 //* limitations under the License.
 //*
 //*
-//* This template itself is part of the Dawn source and follows Dawn's license
-//* but the generated file is used for "Web API native". The template comments
-//* using //* at the top of the file are removed during generation such that
-//* the resulting file starts with the BSD 3-Clause comment.
-//*
-//*
-// BSD 3-Clause License
-//
-// Copyright (c) {{metadata.copyright_year}}, "{{metadata.api}} native" developers
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice, this
-//    list of conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright notice,
-//    this list of conditions and the following disclaimer in the documentation
-//    and/or other materials provided with the distribution.
-//
-// 3. Neither the name of the copyright holder nor the names of its
-//    contributors may be used to endorse or promote products derived from
-//    this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-// DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+{% include 'BSD_LICENSE' %}
 #ifndef {{metadata.api.upper()}}_H_
 #define {{metadata.api.upper()}}_H_
 

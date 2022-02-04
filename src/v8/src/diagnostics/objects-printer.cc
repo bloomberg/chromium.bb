@@ -138,6 +138,9 @@ void HeapObject::HeapObjectPrint(std::ostream& os) {
     case HASH_TABLE_TYPE:
       ObjectHashTable::cast(*this).ObjectHashTablePrint(os);
       break;
+    case NAME_TO_INDEX_HASH_TABLE_TYPE:
+      NameToIndexHashTable::cast(*this).NameToIndexHashTablePrint(os);
+      break;
     case ORDERED_HASH_MAP_TYPE:
       OrderedHashMap::cast(*this).OrderedHashMapPrint(os);
       break;
@@ -600,7 +603,7 @@ static void JSObjectPrintBody(std::ostream& os, JSObject obj,
   }
   int embedder_fields = obj.GetEmbedderFieldCount();
   if (embedder_fields > 0) {
-    Isolate* isolate = GetIsolateForHeapSandbox(obj);
+    Isolate* isolate = GetIsolateForSandbox(obj);
     os << " - embedder fields = {";
     for (int i = 0; i < embedder_fields; i++) {
       os << "\n    ";
@@ -788,7 +791,7 @@ void ObjectBoilerplateDescription::ObjectBoilerplateDescriptionPrint(
 }
 
 void EmbedderDataArray::EmbedderDataArrayPrint(std::ostream& os) {
-  Isolate* isolate = GetIsolateForHeapSandbox(*this);
+  Isolate* isolate = GetIsolateForSandbox(*this);
   PrintHeader(os, "EmbedderDataArray");
   os << "\n - length: " << length();
   EmbedderDataSlot start(*this, 0);
@@ -958,6 +961,11 @@ void PrintHashTableHeader(std::ostream& os, T table, const char* type) {
 
 void ObjectHashTable::ObjectHashTablePrint(std::ostream& os) {
   PrintHashTableHeader(os, *this, "ObjectHashTable");
+  PrintHashMapContentsFull(os, *this);
+}
+
+void NameToIndexHashTable::NameToIndexHashTablePrint(std::ostream& os) {
+  PrintHashTableHeader(os, *this, "NameToIndexHashTable");
   PrintHashMapContentsFull(os, *this);
 }
 
@@ -1516,7 +1524,7 @@ void JSFunction::JSFunctionPrint(std::ostream& os) {
      << shared().internal_formal_parameter_count_without_receiver();
   os << "\n - kind: " << shared().kind();
   os << "\n - context: " << Brief(context());
-  os << "\n - code: " << Brief(raw_code());
+  os << "\n - code: " << Brief(code());
   if (code().kind() == CodeKind::FOR_TESTING) {
     os << "\n - FOR_TESTING";
   } else if (ActiveTierIsIgnition()) {
@@ -1797,9 +1805,16 @@ void WasmStruct::WasmStructPrint(std::ostream& os) {
       case wasm::kRef:
       case wasm::kOptRef:
       case wasm::kRtt:
-      case wasm::kRttWithDepth:
-        os << Brief(base::ReadUnalignedValue<Object>(field_address));
+      case wasm::kRttWithDepth: {
+        Tagged_t raw = base::ReadUnalignedValue<Tagged_t>(field_address);
+#if V8_COMPRESS_POINTERS
+        Address obj = DecompressTaggedPointer(address(), raw);
+#else
+        Address obj = raw;
+#endif
+        os << Brief(Object(obj));
         break;
+      }
       case wasm::kS128:
         os << "UNIMPLEMENTED";  // TODO(7748): Implement.
         break;
@@ -1836,17 +1851,24 @@ void WasmArray::WasmArrayPrint(std::ostream& os) {
                               true);
       break;
     case wasm::kI8:
+      PrintTypedArrayElements(os, reinterpret_cast<int8_t*>(data_ptr), len,
+                              true);
+      break;
     case wasm::kI16:
+      PrintTypedArrayElements(os, reinterpret_cast<int16_t*>(data_ptr), len,
+                              true);
+      break;
     case wasm::kS128:
     case wasm::kRef:
     case wasm::kOptRef:
     case wasm::kRtt:
     case wasm::kRttWithDepth:
-    case wasm::kBottom:
-    case wasm::kVoid:
       os << "\n   Printing elements of this type is unimplemented, sorry";
       // TODO(7748): Implement.
       break;
+    case wasm::kBottom:
+    case wasm::kVoid:
+      UNREACHABLE();
   }
   os << "\n";
 }
@@ -1929,6 +1951,7 @@ void WasmExportedFunctionData::WasmExportedFunctionDataPrint(std::ostream& os) {
   os << "\n - function_index: " << function_index();
   os << "\n - signature: " << Brief(signature());
   os << "\n - wrapper_budget: " << wrapper_budget();
+  os << "\n - suspender: " << suspender();
   os << "\n";
 }
 
@@ -1946,6 +1969,7 @@ void WasmApiFunctionRef::WasmApiFunctionRefPrint(std::ostream& os) {
   os << "\n - isolate_root: " << reinterpret_cast<void*>(isolate_root());
   os << "\n - native_context: " << Brief(native_context());
   os << "\n - callable: " << Brief(callable());
+  os << "\n - suspender: " << Brief(suspender());
   os << "\n";
 }
 
@@ -2348,7 +2372,7 @@ void ScopeInfo::ScopeInfoPrint(std::ostream& os) {
     os << "\n - receiver: " << ReceiverVariableBits::decode(flags);
   }
   if (HasClassBrand()) os << "\n - has class brand";
-  if (HasSavedClassVariableIndex()) os << "\n - has saved class variable index";
+  if (HasSavedClassVariable()) os << "\n - has saved class variable";
   if (HasNewTarget()) os << "\n - needs new target";
   if (HasFunctionName()) {
     os << "\n - function name(" << FunctionVariableBits::decode(flags) << "): ";

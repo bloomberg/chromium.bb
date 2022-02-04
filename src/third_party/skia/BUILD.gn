@@ -648,25 +648,29 @@ if (skia_compile_sksl_tests) {
       "src/core/SkUtils.cpp",
       "src/core/SkVM.cpp",
       "src/gpu/GrMemoryPool.cpp",
-      "src/gpu/GrShaderUtils.cpp",
       "src/ports/SkMemory_malloc.cpp",
       "src/ports/SkOSFile_stdio.cpp",
       "src/sksl/SkSLMain.cpp",
       "src/utils/SkJSON.cpp",
       "src/utils/SkJSONWriter.cpp",
       "src/utils/SkParse.cpp",
+      "src/utils/SkShaderUtils.cpp",
       "src/utils/SkUTF.cpp",
+      "src/utils/SkVMVisualizer.cpp",
     ]
+    libs = []
     if (is_win) {
       sources += [ "src/ports/SkOSFile_win.cpp" ]
     } else {
       sources += [ "src/ports/SkOSFile_posix.cpp" ]
+      libs += [ "dl" ]
     }
     sources += skia_sksl_sources
     sources += skia_sksl_gpu_sources
     include_dirs = [ "." ]
     deps = [
       ":run_sksllex",
+      ":skvm_jit",
       "//third_party/externals/spirv-tools:spvtools",
       "//third_party/externals/spirv-tools:spvtools_val",
       "//third_party/spirv-cross:spirv_cross",
@@ -1079,6 +1083,9 @@ optional("graphite") {
     }
     frameworks += [ "Metal.framework" ]
     frameworks += [ "Foundation.framework" ]
+    if (is_ios) {
+      frameworks += [ "UIKit.framework" ]
+    }
   }
 }
 
@@ -2113,11 +2120,6 @@ if (skia_enable_tools) {
     }
   }
 
-  test_app("make_skqp_model") {
-    sources = [ "tools/skqp/make_skqp_model.cpp" ]
-    deps = [ ":skia" ]
-  }
-
   import("gn/samples.gni")
   test_lib("samples") {
     sources = samples_sources
@@ -2479,12 +2481,9 @@ if (skia_enable_tools) {
       check_includes = false
       testonly = true
       public_configs = [ ":skia_private" ]
-      defines =
-          [ "SK_SKQP_GLOBAL_ERROR_TOLERANCE=$skia_skqp_global_error_tolerance" ]
       sources = [
         "dm/DMGpuTestProcs.cpp",
         "tools/skqp/src/skqp.cpp",
-        "tools/skqp/src/skqp_model.cpp",
       ]
       deps = [
         ":gm",
@@ -2498,14 +2497,6 @@ if (skia_enable_tools) {
       include_dirs = [ "//" ]
       lib_dirs = []
       deps = [ ":skqp_lib" ]
-    }
-    test_app("jitter_gms") {
-      sources = [ "tools/skqp/jitter_gms.cpp" ]
-      deps = [
-        ":gm",
-        ":skia",
-        ":skqp_lib",
-      ]
     }
   }
   if (is_fuchsia) {
@@ -2810,6 +2801,8 @@ if (skia_enable_tools) {
         "tools/viewer/SampleSlide.h",
         "tools/viewer/SkRiveSlide.cpp",
         "tools/viewer/SkRiveSlide.h",
+        "tools/viewer/SkSLDebuggerSlide.cpp",
+        "tools/viewer/SkSLDebuggerSlide.h",
         "tools/viewer/SkSLSlide.cpp",
         "tools/viewer/SkSLSlide.h",
         "tools/viewer/SkottieSlide.cpp",

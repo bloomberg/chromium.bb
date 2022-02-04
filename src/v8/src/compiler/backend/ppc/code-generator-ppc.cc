@@ -551,38 +551,48 @@ Condition FlagsConditionToCondition(FlagsCondition condition, ArchOpcode op) {
 #define CleanUInt32(x)
 #endif
 
-#define ASSEMBLE_ATOMIC_EXCHANGE_INTEGER(load_instr, store_instr)       \
-  do {                                                                  \
-    Label exchange;                                                     \
-    __ lwsync();                                                        \
-    __ bind(&exchange);                                                 \
-    __ load_instr(i.OutputRegister(0),                                  \
-                  MemOperand(i.InputRegister(0), i.InputRegister(1)));  \
-    __ store_instr(i.InputRegister(2),                                  \
-                   MemOperand(i.InputRegister(0), i.InputRegister(1))); \
-    __ bne(&exchange, cr0);                                             \
-    __ sync();                                                          \
-  } while (0)
+static inline bool is_wasm_on_be(bool IsWasm) {
+#if V8_TARGET_BIG_ENDIAN
+  return IsWasm;
+#else
+  return false;
+#endif
+}
 
-#define ASSEMBLE_ATOMIC_BINOP(bin_inst, _type)                               \
+#define MAYBE_REVERSE_IF_WASM(dst, src, op, reset) \
+  if (is_wasm_on_be(info()->IsWasm())) {           \
+    __ op(dst, src, kScratchReg);                  \
+    if (reset) src = dst;                          \
+  }
+
+#define ASSEMBLE_ATOMIC_EXCHANGE(_type, reverse_op)                    \
+  do {                                                                 \
+    Register val = i.InputRegister(2);                                 \
+    Register dst = i.OutputRegister();                                 \
+    MAYBE_REVERSE_IF_WASM(ip, val, reverse_op, true);                  \
+    __ AtomicExchange<_type>(                                          \
+        MemOperand(i.InputRegister(0), i.InputRegister(1)), val, dst); \
+    MAYBE_REVERSE_IF_WASM(dst, dst, reverse_op, false);                \
+  } while (false)
+
+#define ASSEMBLE_ATOMIC_COMPARE_EXCHANGE(_type, reverse_op)               \
+  do {                                                                    \
+    Register expected_val = i.InputRegister(2);                           \
+    Register new_val = i.InputRegister(3);                                \
+    Register dst = i.OutputRegister();                                    \
+    MAYBE_REVERSE_IF_WASM(ip, expected_val, reverse_op, true);            \
+    MAYBE_REVERSE_IF_WASM(r0, new_val, reverse_op, true);                 \
+    __ AtomicCompareExchange<_type>(                                      \
+        MemOperand(i.InputRegister(0), i.InputRegister(1)), expected_val, \
+        new_val, dst, kScratchReg);                                       \
+    MAYBE_REVERSE_IF_WASM(dst, dst, reverse_op, false);                   \
+  } while (false)
+
+#define ASSEMBLE_ATOMIC_BINOP_BYTE(bin_inst, _type)                          \
   do {                                                                       \
     auto bin_op = [&](Register dst, Register lhs, Register rhs) {            \
       if (std::is_signed<_type>::value) {                                    \
-        switch (sizeof(_type)) {                                             \
-          case 1:                                                            \
-            __ extsb(dst, lhs);                                              \
-            break;                                                           \
-          case 2:                                                            \
-            __ extsh(dst, lhs);                                              \
-            break;                                                           \
-          case 4:                                                            \
-            __ extsw(dst, lhs);                                              \
-            break;                                                           \
-          case 8:                                                            \
-            break;                                                           \
-          default:                                                           \
-            UNREACHABLE();                                                   \
-        }                                                                    \
+        __ extsb(dst, lhs);                                                  \
         __ bin_inst(dst, dst, rhs);                                          \
       } else {                                                               \
         __ bin_inst(dst, lhs, rhs);                                          \
@@ -592,6 +602,46 @@ Condition FlagsConditionToCondition(FlagsCondition condition, ArchOpcode op) {
         MemOperand(i.InputRegister(0), i.InputRegister(1));                  \
     __ AtomicOps<_type>(dst_operand, i.InputRegister(2), i.OutputRegister(), \
                         kScratchReg, bin_op);                                \
+    break;                                                                   \
+  } while (false)
+
+#define ASSEMBLE_ATOMIC_BINOP(bin_inst, _type, reverse_op, scratch)          \
+  do {                                                                       \
+    auto bin_op = [&](Register dst, Register lhs, Register rhs) {            \
+      Register _lhs = lhs;                                                   \
+      if (is_wasm_on_be(info()->IsWasm())) {                                 \
+        __ reverse_op(dst, lhs, scratch);                                    \
+        _lhs = dst;                                                          \
+      }                                                                      \
+      if (std::is_signed<_type>::value) {                                    \
+        switch (sizeof(_type)) {                                             \
+          case 1:                                                            \
+            UNREACHABLE();                                                   \
+            break;                                                           \
+          case 2:                                                            \
+            __ extsh(dst, _lhs);                                             \
+            break;                                                           \
+          case 4:                                                            \
+            __ extsw(dst, _lhs);                                             \
+            break;                                                           \
+          case 8:                                                            \
+            break;                                                           \
+          default:                                                           \
+            UNREACHABLE();                                                   \
+        }                                                                    \
+      }                                                                      \
+      __ bin_inst(dst, _lhs, rhs);                                           \
+      if (is_wasm_on_be(info()->IsWasm())) {                                 \
+        __ reverse_op(dst, dst, scratch);                                    \
+      }                                                                      \
+    };                                                                       \
+    MemOperand dst_operand =                                                 \
+        MemOperand(i.InputRegister(0), i.InputRegister(1));                  \
+    __ AtomicOps<_type>(dst_operand, i.InputRegister(2), i.OutputRegister(), \
+                        kScratchReg, bin_op);                                \
+    if (is_wasm_on_be(info()->IsWasm())) {                                   \
+      __ reverse_op(i.OutputRegister(), i.OutputRegister(), scratch);        \
+    }                                                                        \
     break;                                                                   \
   } while (false)
 
@@ -1982,26 +2032,23 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
           MemOperand(i.InputRegister(0), i.InputRegister(1)),
           i.InputRegister(2), i.OutputRegister());
       break;
-    case kAtomicExchangeInt16:
-      __ AtomicExchange<int16_t>(
-          MemOperand(i.InputRegister(0), i.InputRegister(1)),
-          i.InputRegister(2), i.OutputRegister());
+    case kAtomicExchangeInt16: {
+      ASSEMBLE_ATOMIC_EXCHANGE(int16_t, ByteReverseU16);
+      __ extsh(i.OutputRegister(), i.OutputRegister());
       break;
-    case kPPC_AtomicExchangeUint16:
-      __ AtomicExchange<uint16_t>(
-          MemOperand(i.InputRegister(0), i.InputRegister(1)),
-          i.InputRegister(2), i.OutputRegister());
+    }
+    case kPPC_AtomicExchangeUint16: {
+      ASSEMBLE_ATOMIC_EXCHANGE(uint16_t, ByteReverseU16);
       break;
-    case kPPC_AtomicExchangeWord32:
-      __ AtomicExchange<uint32_t>(
-          MemOperand(i.InputRegister(0), i.InputRegister(1)),
-          i.InputRegister(2), i.OutputRegister());
+    }
+    case kPPC_AtomicExchangeWord32: {
+      ASSEMBLE_ATOMIC_EXCHANGE(uint32_t, ByteReverseU32);
       break;
-    case kPPC_AtomicExchangeWord64:
-      __ AtomicExchange<uint64_t>(
-          MemOperand(i.InputRegister(0), i.InputRegister(1)),
-          i.InputRegister(2), i.OutputRegister());
+    }
+    case kPPC_AtomicExchangeWord64: {
+      ASSEMBLE_ATOMIC_EXCHANGE(uint64_t, ByteReverseU64);
       break;
+    }
     case kAtomicCompareExchangeInt8:
       __ AtomicCompareExchange<int8_t>(
           MemOperand(i.InputRegister(0), i.InputRegister(1)),
@@ -2014,53 +2061,48 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
           i.InputRegister(2), i.InputRegister(3), i.OutputRegister(),
           kScratchReg);
       break;
-    case kAtomicCompareExchangeInt16:
-      __ AtomicCompareExchange<int16_t>(
-          MemOperand(i.InputRegister(0), i.InputRegister(1)),
-          i.InputRegister(2), i.InputRegister(3), i.OutputRegister(),
-          kScratchReg);
+    case kAtomicCompareExchangeInt16: {
+      ASSEMBLE_ATOMIC_COMPARE_EXCHANGE(int16_t, ByteReverseU16);
+      __ extsh(i.OutputRegister(), i.OutputRegister());
       break;
-    case kPPC_AtomicCompareExchangeUint16:
-      __ AtomicCompareExchange<uint16_t>(
-          MemOperand(i.InputRegister(0), i.InputRegister(1)),
-          i.InputRegister(2), i.InputRegister(3), i.OutputRegister(),
-          kScratchReg);
+    }
+    case kPPC_AtomicCompareExchangeUint16: {
+      ASSEMBLE_ATOMIC_COMPARE_EXCHANGE(uint16_t, ByteReverseU16);
       break;
-    case kPPC_AtomicCompareExchangeWord32:
-      __ AtomicCompareExchange<uint32_t>(
-          MemOperand(i.InputRegister(0), i.InputRegister(1)),
-          i.InputRegister(2), i.InputRegister(3), i.OutputRegister(),
-          kScratchReg);
+    }
+    case kPPC_AtomicCompareExchangeWord32: {
+      ASSEMBLE_ATOMIC_COMPARE_EXCHANGE(uint32_t, ByteReverseU32);
       break;
-    case kPPC_AtomicCompareExchangeWord64:
-      __ AtomicCompareExchange<uint64_t>(
-          MemOperand(i.InputRegister(0), i.InputRegister(1)),
-          i.InputRegister(2), i.InputRegister(3), i.OutputRegister(),
-          kScratchReg);
-      break;
+    }
+    case kPPC_AtomicCompareExchangeWord64: {
+      ASSEMBLE_ATOMIC_COMPARE_EXCHANGE(uint64_t, ByteReverseU64);
+    } break;
 
-#define ATOMIC_BINOP_CASE(op, inst)        \
-  case kPPC_Atomic##op##Int8:              \
-    ASSEMBLE_ATOMIC_BINOP(inst, int8_t);   \
-    break;                                 \
-  case kPPC_Atomic##op##Uint8:             \
-    ASSEMBLE_ATOMIC_BINOP(inst, uint8_t);  \
-    break;                                 \
-  case kPPC_Atomic##op##Int16:             \
-    ASSEMBLE_ATOMIC_BINOP(inst, int16_t);  \
-    break;                                 \
-  case kPPC_Atomic##op##Uint16:            \
-    ASSEMBLE_ATOMIC_BINOP(inst, uint16_t); \
-    break;                                 \
-  case kPPC_Atomic##op##Int32:             \
-    ASSEMBLE_ATOMIC_BINOP(inst, int32_t);  \
-    break;                                 \
-  case kPPC_Atomic##op##Uint32:            \
-    ASSEMBLE_ATOMIC_BINOP(inst, uint32_t); \
-    break;                                 \
-  case kPPC_Atomic##op##Int64:             \
-  case kPPC_Atomic##op##Uint64:            \
-    ASSEMBLE_ATOMIC_BINOP(inst, uint64_t); \
+#define ATOMIC_BINOP_CASE(op, inst)                            \
+  case kPPC_Atomic##op##Int8:                                  \
+    ASSEMBLE_ATOMIC_BINOP_BYTE(inst, int8_t);                  \
+    __ extsb(i.OutputRegister(), i.OutputRegister());          \
+    break;                                                     \
+  case kPPC_Atomic##op##Uint8:                                 \
+    ASSEMBLE_ATOMIC_BINOP_BYTE(inst, uint8_t);                 \
+    break;                                                     \
+  case kPPC_Atomic##op##Int16:                                 \
+    ASSEMBLE_ATOMIC_BINOP(inst, int16_t, ByteReverseU16, r0);  \
+    __ extsh(i.OutputRegister(), i.OutputRegister());          \
+    break;                                                     \
+  case kPPC_Atomic##op##Uint16:                                \
+    ASSEMBLE_ATOMIC_BINOP(inst, uint16_t, ByteReverseU16, r0); \
+    break;                                                     \
+  case kPPC_Atomic##op##Int32:                                 \
+    ASSEMBLE_ATOMIC_BINOP(inst, int32_t, ByteReverseU32, r0);  \
+    __ extsw(i.OutputRegister(), i.OutputRegister());          \
+    break;                                                     \
+  case kPPC_Atomic##op##Uint32:                                \
+    ASSEMBLE_ATOMIC_BINOP(inst, uint32_t, ByteReverseU32, r0); \
+    break;                                                     \
+  case kPPC_Atomic##op##Int64:                                 \
+  case kPPC_Atomic##op##Uint64:                                \
+    ASSEMBLE_ATOMIC_BINOP(inst, uint64_t, ByteReverseU64, r0); \
     break;
       ATOMIC_BINOP_CASE(Add, add)
       ATOMIC_BINOP_CASE(Sub, sub)
@@ -3316,6 +3358,11 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
   MemOperand operand = i.MemoryOperand(&mode);       \
   DCHECK_EQ(mode, kMode_MRR);                        \
   __ load_instr(scratch, operand);
+#if V8_TARGET_BIG_ENDIAN
+#define MAYBE_REVERSE_BYTES(reg, instr) __ instr(reg, reg);
+#else
+#define MAYBE_REVERSE_BYTES(reg, instr)
+#endif
     case kPPC_S128Load8Splat: {
       Simd128Register dst = i.OutputSimd128Register();
       ASSEMBLE_LOAD_TRANSFORM(kScratchSimd128Reg, lxsibzx)
@@ -3325,12 +3372,14 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
     case kPPC_S128Load16Splat: {
       Simd128Register dst = i.OutputSimd128Register();
       ASSEMBLE_LOAD_TRANSFORM(kScratchSimd128Reg, lxsihzx)
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrh)
       __ vsplth(dst, kScratchSimd128Reg, Operand(3));
       break;
     }
     case kPPC_S128Load32Splat: {
       Simd128Register dst = i.OutputSimd128Register();
       ASSEMBLE_LOAD_TRANSFORM(kScratchSimd128Reg, lxsiwzx)
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrw)
       __ vspltw(dst, kScratchSimd128Reg, Operand(1));
       break;
     }
@@ -3338,18 +3387,21 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       constexpr int lane_width_in_bytes = 8;
       Simd128Register dst = i.OutputSimd128Register();
       ASSEMBLE_LOAD_TRANSFORM(dst, lxsdx)
+      MAYBE_REVERSE_BYTES(dst, xxbrd)
       __ vinsertd(dst, dst, Operand(1 * lane_width_in_bytes));
       break;
     }
     case kPPC_S128Load8x8S: {
       Simd128Register dst = i.OutputSimd128Register();
       ASSEMBLE_LOAD_TRANSFORM(kScratchSimd128Reg, lxsdx)
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrd)
       __ vupkhsb(dst, kScratchSimd128Reg);
       break;
     }
     case kPPC_S128Load8x8U: {
       Simd128Register dst = i.OutputSimd128Register();
       ASSEMBLE_LOAD_TRANSFORM(kScratchSimd128Reg, lxsdx)
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrd)
       __ vupkhsb(dst, kScratchSimd128Reg);
       // Zero extend.
       __ li(ip, Operand(0xFF));
@@ -3361,12 +3413,14 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
     case kPPC_S128Load16x4S: {
       Simd128Register dst = i.OutputSimd128Register();
       ASSEMBLE_LOAD_TRANSFORM(kScratchSimd128Reg, lxsdx)
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrd)
       __ vupkhsh(dst, kScratchSimd128Reg);
       break;
     }
     case kPPC_S128Load16x4U: {
       Simd128Register dst = i.OutputSimd128Register();
       ASSEMBLE_LOAD_TRANSFORM(kScratchSimd128Reg, lxsdx)
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrd)
       __ vupkhsh(dst, kScratchSimd128Reg);
       // Zero extend.
       __ mov(ip, Operand(0xFFFF));
@@ -3379,6 +3433,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
     case kPPC_S128Load32x2S: {
       Simd128Register dst = i.OutputSimd128Register();
       ASSEMBLE_LOAD_TRANSFORM(kScratchSimd128Reg, lxsdx)
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrd)
       __ vupkhsw(dst, kScratchSimd128Reg);
       break;
     }
@@ -3386,6 +3441,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       constexpr int lane_width_in_bytes = 8;
       Simd128Register dst = i.OutputSimd128Register();
       ASSEMBLE_LOAD_TRANSFORM(kScratchSimd128Reg, lxsdx)
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrd)
       __ vupkhsw(dst, kScratchSimd128Reg);
       // Zero extend.
       __ mov(ip, Operand(0xFFFFFFFF));
@@ -3399,6 +3455,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       constexpr int lane_width_in_bytes = 4;
       Simd128Register dst = i.OutputSimd128Register();
       ASSEMBLE_LOAD_TRANSFORM(kScratchSimd128Reg, lxsiwzx)
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrw)
       __ vxor(dst, dst, dst);
       __ vinsertw(dst, kScratchSimd128Reg, Operand(3 * lane_width_in_bytes));
       break;
@@ -3407,6 +3464,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       constexpr int lane_width_in_bytes = 8;
       Simd128Register dst = i.OutputSimd128Register();
       ASSEMBLE_LOAD_TRANSFORM(kScratchSimd128Reg, lxsdx)
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrd)
       __ vxor(dst, dst, dst);
       __ vinsertd(dst, kScratchSimd128Reg, Operand(1 * lane_width_in_bytes));
       break;
@@ -3432,6 +3490,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       MemOperand operand = i.MemoryOperand(&mode, &index);
       DCHECK_EQ(mode, kMode_MRR);
       __ lxsihzx(kScratchSimd128Reg, operand);
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrh)
       __ vinserth(dst, kScratchSimd128Reg,
                   Operand((7 - i.InputUint8(3)) * lane_width_in_bytes));
       break;
@@ -3445,6 +3504,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       MemOperand operand = i.MemoryOperand(&mode, &index);
       DCHECK_EQ(mode, kMode_MRR);
       __ lxsiwzx(kScratchSimd128Reg, operand);
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrw)
       __ vinsertw(dst, kScratchSimd128Reg,
                   Operand((3 - i.InputUint8(3)) * lane_width_in_bytes));
       break;
@@ -3458,6 +3518,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       MemOperand operand = i.MemoryOperand(&mode, &index);
       DCHECK_EQ(mode, kMode_MRR);
       __ lxsdx(kScratchSimd128Reg, operand);
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrd)
       __ vinsertd(dst, kScratchSimd128Reg,
                   Operand((1 - i.InputUint8(3)) * lane_width_in_bytes));
       break;
@@ -3480,6 +3541,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       DCHECK_EQ(mode, kMode_MRR);
       __ vextractuh(kScratchSimd128Reg, i.InputSimd128Register(0),
                     Operand((7 - i.InputUint8(3)) * lane_width_in_bytes));
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrh)
       __ stxsihx(kScratchSimd128Reg, operand);
       break;
     }
@@ -3491,6 +3553,7 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       DCHECK_EQ(mode, kMode_MRR);
       __ vextractuw(kScratchSimd128Reg, i.InputSimd128Register(0),
                     Operand((3 - i.InputUint8(3)) * lane_width_in_bytes));
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrw)
       __ stxsiwx(kScratchSimd128Reg, operand);
       break;
     }
@@ -3502,9 +3565,11 @@ CodeGenerator::CodeGenResult CodeGenerator::AssembleArchInstruction(
       DCHECK_EQ(mode, kMode_MRR);
       __ vextractd(kScratchSimd128Reg, i.InputSimd128Register(0),
                    Operand((1 - i.InputUint8(3)) * lane_width_in_bytes));
+      MAYBE_REVERSE_BYTES(kScratchSimd128Reg, xxbrd)
       __ stxsdx(kScratchSimd128Reg, operand);
       break;
     }
+#undef MAYBE_REVERSE_BYTES
 #define EXT_ADD_PAIRWISE(mul_even, mul_odd, add)           \
   __ mul_even(tempFPReg1, src, kScratchSimd128Reg);        \
   __ mul_odd(kScratchSimd128Reg, src, kScratchSimd128Reg); \
@@ -3750,8 +3815,9 @@ void CodeGenerator::AssembleArchDeoptBranch(Instruction* instr,
   AssembleArchBranch(instr, branch);
 }
 
-void CodeGenerator::AssembleArchJump(RpoNumber target) {
-  if (!IsNextInAssemblyOrder(target)) __ b(GetLabel(target));
+void CodeGenerator::AssembleArchJumpRegardlessOfAssemblyOrder(
+    RpoNumber target) {
+  __ b(GetLabel(target));
 }
 
 #if V8_ENABLE_WEBASSEMBLY
@@ -4149,25 +4215,14 @@ void CodeGenerator::AssembleReturn(InstructionOperand* additional_pop_count) {
     // max(argc_reg, parameter_slots-1), and the receiver is added in
     // DropArguments().
     if (parameter_slots > 1) {
-      if (kJSArgcIncludesReceiver) {
-        Label skip;
-        __ CmpS64(argc_reg, Operand(parameter_slots), r0);
-        __ bgt(&skip);
-        __ mov(argc_reg, Operand(parameter_slots));
-        __ bind(&skip);
-      } else {
-        const int parameter_slots_without_receiver = parameter_slots - 1;
-        Label skip;
-        __ CmpS64(argc_reg, Operand(parameter_slots_without_receiver), r0);
-        __ bgt(&skip);
-        __ mov(argc_reg, Operand(parameter_slots_without_receiver));
-        __ bind(&skip);
-      }
+      Label skip;
+      __ CmpS64(argc_reg, Operand(parameter_slots), r0);
+      __ bgt(&skip);
+      __ mov(argc_reg, Operand(parameter_slots));
+      __ bind(&skip);
     }
     __ DropArguments(argc_reg, TurboAssembler::kCountIsInteger,
-                     kJSArgcIncludesReceiver
-                         ? TurboAssembler::kCountIncludesReceiver
-                         : TurboAssembler::kCountExcludesReceiver);
+                     TurboAssembler::kCountIncludesReceiver);
   } else if (additional_pop_count->IsImmediate()) {
     int additional_count = g.ToConstant(additional_pop_count).ToInt32();
     __ Drop(parameter_slots + additional_count);

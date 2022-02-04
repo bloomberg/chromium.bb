@@ -23,7 +23,7 @@
 #include "dawn_native/vulkan/VulkanFunctions.h"
 #include "dawn_native/vulkan/VulkanInfo.h"
 
-namespace dawn_native { namespace vulkan {
+namespace dawn::native::vulkan {
 
     enum class ICD {
         None,
@@ -73,14 +73,14 @@ namespace dawn_native { namespace vulkan {
 
         MaybeError Initialize();
 
-        std::vector<std::unique_ptr<AdapterBase>> DiscoverDefaultAdapters() override;
-        ResultOrError<std::vector<std::unique_ptr<AdapterBase>>> DiscoverAdapters(
+        std::vector<Ref<AdapterBase>> DiscoverDefaultAdapters() override;
+        ResultOrError<std::vector<Ref<AdapterBase>>> DiscoverAdapters(
             const AdapterDiscoveryOptionsBase* optionsBase) override;
 
       private:
         ityp::array<ICD, Ref<VulkanInstance>, 2> mVulkanInstances = {};
     };
 
-}}  // namespace dawn_native::vulkan
+}  // namespace dawn::native::vulkan
 
 #endif  // DAWNNATIVE_VULKAN_BACKENDVK_H_

@@ -19,7 +19,7 @@
 
 #include "common/Assert.h"
 
-namespace dawn_native { namespace metal {
+namespace dawn::native::metal {
 
     MTLCompareFunction ToMetalCompareFunction(wgpu::CompareFunction compareFunction) {
         switch (compareFunction) {
@@ -244,10 +244,7 @@ namespace dawn_native { namespace metal {
                 }
             };
 
-            for (const auto& pipelineConstant : programmableStage.constants) {
-                const std::string& name = pipelineConstant.first;
-                double value = pipelineConstant.second;
-
+            for (const auto& [name, value] : programmableStage.constants) {
                 overriddenConstants.insert(name);
 
                 // This is already validated so `name` must exist
@@ -290,4 +287,4 @@ namespace dawn_native { namespace metal {
         return {};
     }
 
-}}  // namespace dawn_native::metal
+}  // namespace dawn::native::metal

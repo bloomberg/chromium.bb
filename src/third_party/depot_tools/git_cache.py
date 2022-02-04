@@ -348,6 +348,7 @@ class Mirror(object):
       self.RunGit(['cat-file', '-e', needle])
       return True
     except subprocess.CalledProcessError:
+      self.print('Commit with hash "%s" not found' % revision, file=sys.stderr)
       return False
 
   def exists(self):

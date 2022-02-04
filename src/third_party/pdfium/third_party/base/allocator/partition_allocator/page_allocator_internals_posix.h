@@ -10,13 +10,13 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 #include <mach/mach.h>
 #endif
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include <sys/prctl.h>
 #endif
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include <sys/resource.h>
 
 #include <algorithm>
@@ -33,7 +33,7 @@
 namespace pdfium {
 namespace base {
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 namespace {
 const char* PageTagToName(PageTag tag) {
   // Important: All the names should be string literals. As per prctl.h in
@@ -57,7 +57,7 @@ const char* PageTagToName(PageTag tag) {
   }
 }
 }  // namespace
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // |mmap| uses a nearby address if the hint address is blocked.
 constexpr bool kHintIsAdvisory = true;
@@ -86,7 +86,7 @@ void* SystemAllocPagesInternal(void* hint,
                                PageAccessibilityConfiguration accessibility,
                                PageTag page_tag,
                                bool commit) {
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // Use a custom tag to make it easier to distinguish Partition Alloc regions
   // in vmmap(1). Tags between 240-255 are supported.
   DCHECK(PageTag::kFirst <= page_tag);
@@ -101,7 +101,7 @@ void* SystemAllocPagesInternal(void* hint,
 
   // TODO(https://crbug.com/927411): Remove once Fuchsia uses a native page
   // allocator, rather than relying on POSIX compatibility.
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
   if (page_tag == PageTag::kV8) {
     map_flags |= MAP_JIT;
   }
@@ -113,7 +113,7 @@ void* SystemAllocPagesInternal(void* hint,
     ret = nullptr;
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // On Android, anonymous mappings can have a name attached to them. This is
   // useful for debugging, and double-checking memory attribution.
   if (ret) {
@@ -181,7 +181,7 @@ void DecommitSystemPagesInternal(void* address, size_t length) {
 bool RecommitSystemPagesInternal(void* address,
                                  size_t length,
                                  PageAccessibilityConfiguration accessibility) {
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // On macOS, to update accounting, we need to make another syscall. For more
   // details, see https://crbug.com/823915.
   madvise(address, length, MADV_FREE_REUSE);
@@ -194,7 +194,7 @@ bool RecommitSystemPagesInternal(void* address,
 }
 
 void DiscardSystemPagesInternal(void* address, size_t length) {
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   int ret = madvise(address, length, MADV_FREE_REUSABLE);
   if (ret) {
     // MADV_FREE_REUSABLE sometimes fails, so fall back to MADV_DONTNEED.

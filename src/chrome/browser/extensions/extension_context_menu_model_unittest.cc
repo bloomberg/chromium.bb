@@ -69,6 +69,7 @@
 namespace extensions {
 
 using display::test::ScopedScreenOverride;
+using ContextMenuSource = ExtensionContextMenuModel::ContextMenuSource;
 using mojom::ManifestLocation;
 
 namespace {
@@ -99,23 +100,10 @@ MenuItem::Context MenuItemContextForActionType(ActionInfo::Type type) {
 
 scoped_refptr<const Extension> BuildExtensionWithActionType(
     ActionInfo::Type type) {
-  ExtensionBuilder builder("extension");
-  switch (type) {
-    case ActionInfo::TYPE_BROWSER:
-      builder.SetAction(ExtensionBuilder::ActionType::BROWSER_ACTION);
-      break;
-    case ActionInfo::TYPE_PAGE:
-      builder.SetAction(ExtensionBuilder::ActionType::PAGE_ACTION);
-      break;
-    case ActionInfo::TYPE_ACTION:
-      builder.SetAction(ExtensionBuilder::ActionType::ACTION);
-      break;
-  }
-
-  builder.SetManifestKey("manifest_version",
-                         GetManifestVersionForActionType(type));
-
-  return builder.Build();
+  return ExtensionBuilder("extension")
+      .SetAction(type)
+      .SetManifestVersion(GetManifestVersionForActionType(type))
+      .Build();
 }
 
 // Label for test extension menu item.
@@ -143,7 +131,7 @@ class MenuBuilder {
   std::unique_ptr<ExtensionContextMenuModel> BuildMenu() {
     return std::make_unique<ExtensionContextMenuModel>(
         extension_.get(), browser_, ExtensionContextMenuModel::PINNED, nullptr,
-        true /* can_show_icon_in_toolbar */);
+        /* can_show_icon_in_toolbar=*/true, ContextMenuSource::kToolbarAction);
   }
 
   void AddContextItem(MenuItem::Context context) {
@@ -441,7 +429,7 @@ TEST_F(ExtensionContextMenuModelTest, RequiredInstallationsDisablesItems) {
 
   ExtensionContextMenuModel menu(extension, GetBrowser(),
                                  ExtensionContextMenuModel::PINNED, nullptr,
-                                 true);
+                                 true, ContextMenuSource::kToolbarAction);
 
   ExtensionSystem* system = ExtensionSystem::Get(profile());
   system->management_policy()->UnregisterAllProviders();
@@ -493,7 +481,7 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
 
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
-                                   true);
+                                   true, ContextMenuSource::kToolbarAction);
 
     // A component extension's context menu should not include options for
     // managing extensions or removing it, and should only include an option for
@@ -523,7 +511,7 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
             .Build();
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
-                                   true);
+                                   true, ContextMenuSource::kToolbarAction);
     service()->AddExtension(extension.get());
     EXPECT_TRUE(extensions::OptionsPageInfo::HasOptionsPage(extension.get()));
     EXPECT_NE(-1, menu.GetIndexOfCommandId(ExtensionContextMenuModel::OPTIONS));
@@ -532,16 +520,16 @@ TEST_F(ExtensionContextMenuModelTest, ComponentExtensionContextMenu) {
 }
 
 // Tests that the standard menu items (e.g. uninstall, manage) are always
-// visible.
+// visible with toolbar action source.
 TEST_F(ExtensionContextMenuModelTest,
-       ExtensionContextMenuStandardItemsAlwaysVisible) {
+       ExtensionContextMenuStandardItemsAlwaysVisibleWithToolbarActionSource) {
   InitializeEmptyExtensionService();
   const Extension* extension = AddExtension(
       "extension", manifest_keys::kPageAction, ManifestLocation::kInternal);
 
   ExtensionContextMenuModel menu(extension, GetBrowser(),
                                  ExtensionContextMenuModel::PINNED, nullptr,
-                                 true);
+                                 true, ContextMenuSource::kToolbarAction);
   EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::HOME_PAGE));
   EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::OPTIONS));
   EXPECT_TRUE(
@@ -559,8 +547,37 @@ TEST_F(ExtensionContextMenuModelTest,
       ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_ALL_SITES));
 }
 
+// Tests that the standard menu items (e.g. uninstall, manage) are always
+// visible with menu item source. The difference between the menu item and
+// toolbar item is that the "pin" option is not shown for the menu item.
+TEST_F(ExtensionContextMenuModelTest,
+       ExtensionContextMenuStandardItemsAlwaysVisibleWithMenuItemSource) {
+  InitializeEmptyExtensionService();
+  const Extension* extension = AddExtension(
+      "extension", manifest_keys::kPageAction, ManifestLocation::kInternal);
+
+  ExtensionContextMenuModel menu(extension, GetBrowser(),
+                                 ExtensionContextMenuModel::PINNED, nullptr,
+                                 true, ContextMenuSource::kMenuItem);
+  EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::HOME_PAGE));
+  EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::OPTIONS));
+  EXPECT_FALSE(
+      menu.IsCommandIdVisible(ExtensionContextMenuModel::TOGGLE_VISIBILITY));
+  EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::UNINSTALL));
+  EXPECT_TRUE(
+      menu.IsCommandIdVisible(ExtensionContextMenuModel::MANAGE_EXTENSIONS));
+  EXPECT_TRUE(
+      menu.IsCommandIdVisible(ExtensionContextMenuModel::INSPECT_POPUP));
+  EXPECT_TRUE(menu.IsCommandIdVisible(
+      ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_CLICK));
+  EXPECT_TRUE(menu.IsCommandIdVisible(
+      ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_SITE));
+  EXPECT_TRUE(menu.IsCommandIdVisible(
+      ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_ALL_SITES));
+}
+
 // Test that the "pin" and "unpin" menu items appear correctly in the extension
-// context menu.
+// context menu with toolbar action source.
 TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   InitializeEmptyExtensionService();
   Browser* browser = GetBrowser();
@@ -582,8 +599,9 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
 
   {
     // Even page actions should have a visibility option.
-    ExtensionContextMenuModel menu(
-        page_action, browser, ExtensionContextMenuModel::PINNED, nullptr, true);
+    ExtensionContextMenuModel menu(page_action, browser,
+                                   ExtensionContextMenuModel::PINNED, nullptr,
+                                   true, ContextMenuSource::kToolbarAction);
     int index = menu.GetIndexOfCommandId(visibility_command);
     EXPECT_NE(-1, index);
     EXPECT_EQ(unpin_string, menu.GetLabelAt(index));
@@ -592,7 +610,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
   {
     ExtensionContextMenuModel menu(browser_action, browser,
                                    ExtensionContextMenuModel::PINNED, nullptr,
-                                   true);
+                                   true, ContextMenuSource::kToolbarAction);
     int index = menu.GetIndexOfCommandId(visibility_command);
     EXPECT_NE(-1, index);
     EXPECT_EQ(unpin_string, menu.GetLabelAt(index));
@@ -607,7 +625,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
     // If the action is unpinned, it should have the "Pin" string.
     ExtensionContextMenuModel menu(browser_action, browser,
                                    ExtensionContextMenuModel::UNPINNED, nullptr,
-                                   true);
+                                   true, ContextMenuSource::kToolbarAction);
     int index = menu.GetIndexOfCommandId(visibility_command);
     EXPECT_NE(-1, index);
     EXPECT_EQ(pin_string, menu.GetLabelAt(index));
@@ -618,7 +636,8 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
     // popup, we should use the same "Pin" string.
     ExtensionContextMenuModel menu(
         browser_action, browser,
-        ExtensionContextMenuModel::TRANSITIVELY_VISIBLE, nullptr, true);
+        ExtensionContextMenuModel::TRANSITIVELY_VISIBLE, nullptr, true,
+        ContextMenuSource::kToolbarAction);
     int index = menu.GetIndexOfCommandId(visibility_command);
     EXPECT_NE(-1, index);
     EXPECT_EQ(pin_string, menu.GetLabelAt(index));
@@ -661,8 +680,9 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuForcePinned) {
 
   {
     // Not force-pinned.
-    ExtensionContextMenuModel menu(
-        extension, browser, ExtensionContextMenuModel::PINNED, nullptr, true);
+    ExtensionContextMenuModel menu(extension, browser,
+                                   ExtensionContextMenuModel::PINNED, nullptr,
+                                   true, ContextMenuSource::kToolbarAction);
     int index = menu.GetIndexOfCommandId(visibility_command);
     EXPECT_NE(-1, index);
     EXPECT_TRUE(menu.IsEnabledAt(index));
@@ -673,7 +693,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuForcePinned) {
     // Force-pinned.
     ExtensionContextMenuModel menu(force_pinned_extension, browser,
                                    ExtensionContextMenuModel::PINNED, nullptr,
-                                   true);
+                                   true, ContextMenuSource::kToolbarAction);
     int index = menu.GetIndexOfCommandId(visibility_command);
     EXPECT_NE(-1, index);
     EXPECT_FALSE(menu.IsEnabledAt(index));
@@ -697,7 +717,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextUninstall) {
     // dialog shows up).
     ExtensionContextMenuModel menu(extension, GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
-                                   true);
+                                   true, ContextMenuSource::kToolbarAction);
     menu.ExecuteCommand(ExtensionContextMenuModel::UNINSTALL, 0);
   }
   uninstalled_observer.WaitForExtensionUninstalled();
@@ -742,7 +762,7 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
 
   ExtensionContextMenuModel menu(extension, GetBrowser(),
                                  ExtensionContextMenuModel::PINNED, nullptr,
-                                 true);
+                                 true, ContextMenuSource::kToolbarAction);
 
   EXPECT_NE(-1, menu.GetIndexOfCommandId(
                     ExtensionContextMenuModel::PAGE_ACCESS_SUBMENU));
@@ -872,7 +892,7 @@ TEST_F(ExtensionContextMenuModelTest, TestPageAccessSubmenu) {
       ManifestLocation::kInternal, "http://www.example.com/*");
   ExtensionContextMenuModel single_host_menu(
       single_host_extension, GetBrowser(), ExtensionContextMenuModel::PINNED,
-      nullptr, true);
+      nullptr, true, ContextMenuSource::kToolbarAction);
   EXPECT_NE(-1, single_host_menu.GetIndexOfCommandId(
                     ExtensionContextMenuModel::PAGE_ACCESS_SUBMENU));
 }
@@ -885,7 +905,7 @@ TEST_F(ExtensionContextMenuModelTest, TestInspectPopupPresence) {
     ASSERT_TRUE(page_action);
     ExtensionContextMenuModel menu(page_action, GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
-                                   true);
+                                   true, ContextMenuSource::kToolbarAction);
     int inspect_popup_index =
         menu.GetIndexOfCommandId(ExtensionContextMenuModel::INSPECT_POPUP);
     EXPECT_GE(0, inspect_popup_index);
@@ -896,7 +916,7 @@ TEST_F(ExtensionContextMenuModelTest, TestInspectPopupPresence) {
                      ManifestLocation::kInternal);
     ExtensionContextMenuModel menu(browser_action, GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
-                                   true);
+                                   true, ContextMenuSource::kToolbarAction);
     int inspect_popup_index =
         menu.GetIndexOfCommandId(ExtensionContextMenuModel::INSPECT_POPUP);
     EXPECT_GE(0, inspect_popup_index);
@@ -908,7 +928,7 @@ TEST_F(ExtensionContextMenuModelTest, TestInspectPopupPresence) {
         AddExtension("no_action", nullptr, ManifestLocation::kInternal);
     ExtensionContextMenuModel menu(no_action, GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
-                                   true);
+                                   true, ContextMenuSource::kToolbarAction);
     int inspect_popup_index =
         menu.GetIndexOfCommandId(ExtensionContextMenuModel::INSPECT_POPUP);
     EXPECT_EQ(-1, inspect_popup_index);
@@ -1107,7 +1127,7 @@ TEST_F(ExtensionContextMenuModelTest, PageAccessMenuOptions) {
 
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
-                                   true);
+                                   true, ContextMenuSource::kToolbarAction);
 
     EXPECT_EQ(test_case.selected_entry.has_value(),
               !test_case.expected_entries.empty())
@@ -1206,7 +1226,7 @@ TEST_F(ExtensionContextMenuModelTest, PageAccessSubmenu_OnSiteWithAllURLs) {
   AddTab(kActiveUrl);
   ExtensionContextMenuModel menu(extension, GetBrowser(),
                                  ExtensionContextMenuModel::PINNED, nullptr,
-                                 true);
+                                 true, ContextMenuSource::kToolbarAction);
   EXPECT_TRUE(HasPageAccessSubmenu(menu));
   EXPECT_FALSE(menu.IsCommandIdChecked(kOnClick));
   EXPECT_FALSE(menu.IsCommandIdChecked(kOnSite));
@@ -1273,7 +1293,7 @@ TEST_F(ExtensionContextMenuModelTest,
   AddTab(kActiveUrl);
   ExtensionContextMenuModel menu(extension, GetBrowser(),
                                  ExtensionContextMenuModel::PINNED, nullptr,
-                                 true);
+                                 true, ContextMenuSource::kToolbarAction);
   EXPECT_TRUE(HasPageAccessSubmenu(menu));
   EXPECT_FALSE(menu.IsCommandIdChecked(kOnClick));
   EXPECT_FALSE(menu.IsCommandIdChecked(kOnSite));
@@ -1320,7 +1340,7 @@ TEST_F(ExtensionContextMenuModelTest, PageAccessWithActiveTab) {
 
   ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                  ExtensionContextMenuModel::PINNED, nullptr,
-                                 true);
+                                 true, ContextMenuSource::kToolbarAction);
   EXPECT_EQ(CommandState::kEnabled, GetPageAccessCommandState(menu, kOnClick));
   EXPECT_EQ(CommandState::kDisabled, GetPageAccessCommandState(menu, kOnSite));
   EXPECT_EQ(CommandState::kDisabled,
@@ -1363,7 +1383,7 @@ TEST_F(ExtensionContextMenuModelTest,
   {
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
-                                   true);
+                                   true, ContextMenuSource::kToolbarAction);
 
     // Without withholding host permissions, the menu should be visible on
     // a.com...
@@ -1392,7 +1412,7 @@ TEST_F(ExtensionContextMenuModelTest,
     // ... but not on b.com, where it doesn't want to run.
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
-                                   true);
+                                   true, ContextMenuSource::kToolbarAction);
     EXPECT_FALSE(HasPageAccessSubmenu(menu));
     EXPECT_TRUE(HasCantAccessPageEntry(menu));
   }
@@ -1407,7 +1427,7 @@ TEST_F(ExtensionContextMenuModelTest,
   {
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
-                                   true);
+                                   true, ContextMenuSource::kToolbarAction);
     EXPECT_TRUE(HasPageAccessSubmenu(menu));
     EXPECT_FALSE(HasCantAccessPageEntry(menu));
     EXPECT_EQ(CommandState::kEnabled,
@@ -1434,7 +1454,7 @@ TEST_F(ExtensionContextMenuModelTest,
 
   ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                  ExtensionContextMenuModel::PINNED, nullptr,
-                                 true);
+                                 true, ContextMenuSource::kToolbarAction);
   // Somewhat strangely, this also removes the access controls, because we don't
   // show it for sites the extension doesn't want to run on.
   EXPECT_FALSE(HasPageAccessSubmenu(menu));
@@ -1466,7 +1486,7 @@ TEST_F(ExtensionContextMenuModelTest,
 
   ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                  ExtensionContextMenuModel::PINNED, nullptr,
-                                 true);
+                                 true, ContextMenuSource::kToolbarAction);
 
   EXPECT_EQ(CommandState::kEnabled, GetPageAccessCommandState(menu, kOnClick));
   EXPECT_EQ(CommandState::kEnabled, GetPageAccessCommandState(menu, kOnSite));
@@ -1511,7 +1531,7 @@ TEST_F(ExtensionContextMenuModelTest, TestClickingPageAccessLearnMore) {
   Browser* browser = GetBrowser();
   ExtensionContextMenuModel menu(extension.get(), browser,
                                  ExtensionContextMenuModel::PINNED, nullptr,
-                                 true);
+                                 true, ContextMenuSource::kToolbarAction);
   EXPECT_EQ(0, user_action_tester.GetActionCount(kLearnMoreAction));
 
   const ExtensionContextMenuModel::MenuEntries kLearnMore =
@@ -1545,7 +1565,7 @@ TEST_F(ExtensionContextMenuModelTest, HistogramTest_Basic) {
       // The menu is constructed, but never shown.
       ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                      ExtensionContextMenuModel::PINNED, nullptr,
-                                     true);
+                                     true, ContextMenuSource::kToolbarAction);
     }
     tester.ExpectTotalCount(kHistogramName, 0);
   }
@@ -1556,7 +1576,7 @@ TEST_F(ExtensionContextMenuModelTest, HistogramTest_Basic) {
       // The menu is constructed and shown, but no action is taken.
       ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                      ExtensionContextMenuModel::PINNED, nullptr,
-                                     true);
+                                     true, ContextMenuSource::kToolbarAction);
       menu.OnMenuWillShow(&menu);
       menu.MenuClosed(&menu);
     }
@@ -1571,7 +1591,7 @@ TEST_F(ExtensionContextMenuModelTest, HistogramTest_Basic) {
       // The menu is constructed, shown, and an action taken.
       ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                      ExtensionContextMenuModel::PINNED, nullptr,
-                                     true);
+                                     true, ContextMenuSource::kToolbarAction);
       menu.OnMenuWillShow(&menu);
       menu.ExecuteCommand(ExtensionContextMenuModel::MANAGE_EXTENSIONS, 0);
       menu.MenuClosed(&menu);
@@ -1589,9 +1609,7 @@ TEST_F(ExtensionContextMenuModelTest, HistogramTest_CustomCommand) {
 
   InitializeEmptyExtensionService();
   scoped_refptr<const Extension> extension =
-      ExtensionBuilder("extension")
-          .SetAction(ExtensionBuilder::ActionType::BROWSER_ACTION)
-          .Build();
+      ExtensionBuilder("extension").SetAction(ActionInfo::TYPE_BROWSER).Build();
   InitializeAndAddExtension(*extension);
 
   MenuManager* const manager = CreateMenuManager();
@@ -1614,7 +1632,8 @@ TEST_F(ExtensionContextMenuModelTest, HistogramTest_CustomCommand) {
       1 /* expected_count */);
 }
 
-TEST_F(ExtensionContextMenuModelTest, HideToggleVisibility) {
+TEST_F(ExtensionContextMenuModelTest,
+       HideToggleVisibilityWithToolbarActionSource) {
   InitializeEmptyExtensionService();
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("extension").Build();
@@ -1622,14 +1641,16 @@ TEST_F(ExtensionContextMenuModelTest, HideToggleVisibility) {
   {
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
-                                   true /* can_show_icon_in_toolbar */);
+                                   true /* can_show_icon_in_toolbar */,
+                                   ContextMenuSource::kToolbarAction);
     EXPECT_TRUE(
         menu.IsCommandIdVisible(ExtensionContextMenuModel::TOGGLE_VISIBILITY));
   }
   {
     ExtensionContextMenuModel menu(extension.get(), GetBrowser(),
                                    ExtensionContextMenuModel::PINNED, nullptr,
-                                   false /* can_show_icon_in_toolbar */);
+                                   false /* can_show_icon_in_toolbar */,
+                                   ContextMenuSource::kToolbarAction);
     EXPECT_FALSE(
         menu.IsCommandIdVisible(ExtensionContextMenuModel::TOGGLE_VISIBILITY));
   }

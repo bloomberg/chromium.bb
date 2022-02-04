@@ -5,8 +5,8 @@
 
 """Rolls DEPS controlled dependency.
 
-Works only with git checkout and git dependencies.  Currently this
-script will always roll to the tip of to origin/main or origin/master.
+Works only with git checkout and git dependencies. Currently this script will
+always roll to the tip of to origin/main.
 """
 
 from __future__ import print_function
@@ -72,22 +72,13 @@ def return_code(*args, **kwargs):
 
 def is_pristine(root):
   """Returns True if a git checkout is pristine."""
-  # Check both origin/master and origin/main since many projects are
-  # transitioning to origin/main.
-  for branch in ('origin/main', 'origin/master'):
-    # `git rev-parse --verify` has a non-zero return code if the revision
-    # doesn't exist.
-    rev_cmd = ['git', 'rev-parse', '--verify', '--quiet',
-               'refs/remotes/' + branch]
-    if return_code(rev_cmd, cwd=root) != 0:
-      continue
-
-    diff_cmd = ['git', 'diff', '--ignore-submodules', branch]
-    return (not check_output(diff_cmd, cwd=root).strip() and
-            not check_output(diff_cmd + ['--cached'], cwd=root).strip())
+  # `git rev-parse --verify` has a non-zero return code if the revision
+  # doesn't exist.
+  diff_cmd = ['git', 'diff', '--ignore-submodules', 'origin/main']
+  return (not check_output(diff_cmd, cwd=root).strip() and
+          not check_output(diff_cmd + ['--cached'], cwd=root).strip())
 
 
-  raise Error('Couldn\'t find any of origin/main or origin/master')
 
 def get_log_url(upstream_url, head, tot):
   """Returns an URL to read logs via a Web UI if applicable."""

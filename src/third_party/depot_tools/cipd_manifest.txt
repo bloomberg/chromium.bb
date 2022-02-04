@@ -35,7 +35,7 @@ $VerifiedPlatform linux-386 linux-ppc64 linux-ppc64le linux-s390x
 $VerifiedPlatform linux-armv6l linux-mips64 linux-mips64le linux-mipsle
 
 # vpython.
-infra/tools/luci/vpython/${platform} git_revision:a058ec28ee4f76d255fdc3e1676a8eb2e39479b6
+infra/tools/luci/vpython/${platform} git_revision:fa83de432d2cad5b196b51ad8fd9a0592e9bdd52
 
 # LUCI editor
 infra/tools/luci/led/${platform} git_revision:11b63b9b226613e76ca20c48942c327a5b2b45f3
@@ -62,11 +62,11 @@ infra/tools/rdb/${platform} git_revision:2be056d01d3f8bab07915a1c2eca04f1937ad83
 chromiumos/infra/crosjobs/${platform=linux-amd64} git_revision:ed616d595eb7241d39d34907050d2949121d6ae8
 
 # goma client
-infra/goma/client/${os=linux,windows}-${arch=amd64} git_revision:1e4bf9cd3f0b630198a10688c8f5fee91b94b15e
-infra/goma/client/${os=mac}-${arch} git_revision:1e4bf9cd3f0b630198a10688c8f5fee91b94b15e
+infra/goma/client/${os=linux,windows}-${arch=amd64} git_revision:e2192aba9149457a0422b1f551d8542421956e97
+infra/goma/client/${os=mac}-${arch} git_revision:e2192aba9149457a0422b1f551d8542421956e97
 
 # dirmd, a tool to work with DIR_METADATA files
 infra/tools/dirmd/${platform} git_revision:01089e44c7beb1c1f47c79b17b87972ab01be311
 
 # Pinpoint CLI
-infra/chromeperf/pinpoint/${platform} git_revision:a424d157d4b2c0d0115d10a374148d5ea4149117
+infra/chromeperf/pinpoint/${platform} git_revision:8ff712069d22c33e10c26c35dbd89c55d4a623e5

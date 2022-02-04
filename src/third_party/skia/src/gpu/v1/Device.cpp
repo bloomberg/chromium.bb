@@ -21,6 +21,7 @@
 #include "include/private/chromium/GrSlug.h"
 #include "src/core/SkCanvasPriv.h"
 #include "src/core/SkClipStack.h"
+#include "src/core/SkCustomMeshPriv.h"
 #include "src/core/SkDraw.h"
 #include "src/core/SkImageFilterCache.h"
 #include "src/core/SkImageFilter_Base.h"
@@ -47,9 +48,6 @@
 #include "src/image/SkReadPixelsRec.h"
 #include "src/image/SkSurface_Gpu.h"
 #include "src/utils/SkUTF.h"
-
-// Define this for testing text blob draw using a slug.
-// #define SK_EXPERIMENTAL_SIMULATE_DRAWGLYPHRUNLIST_WITH_SLUG
 
 #define ASSERT_SINGLE_OWNER GR_ASSERT_SINGLE_OWNER(fContext->priv().singleOwner())
 
@@ -845,6 +843,29 @@ void Device::drawVertices(const SkVertices* vertices,
                                       this->asMatrixProvider(),
                                       sk_ref_sp(const_cast<SkVertices*>(vertices)),
                                       nullptr);
+}
+
+void Device::drawCustomMesh(SkCustomMesh customMesh,
+                            sk_sp<SkBlender> blender,
+                            const SkPaint& paint) {
+    ASSERT_SINGLE_OWNER
+    GR_CREATE_TRACE_MARKER_CONTEXT("skgpu::v1::Device", "drawCustomMesh", fContext.get());
+    SkASSERT(customMesh.vb);
+
+    GrPaint grPaint;
+    if (!init_vertices_paint(fContext.get(),
+                             fSurfaceDrawContext->colorInfo(),
+                             paint,
+                             this->asMatrixProvider(),
+                             std::move(blender),
+                             SkCustomMeshSpecificationPriv::HasColors(*customMesh.spec),
+                             &grPaint)) {
+        return;
+    }
+    fSurfaceDrawContext->drawCustomMesh(this->clip(),
+                                        std::move(grPaint),
+                                        this->asMatrixProvider(),
+                                        std::move(customMesh));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -41,7 +41,7 @@ void VarDeclaration::ErrorCheck(const Context& context,
                                 const Modifiers& modifiers,
                                 const Type* baseType,
                                 Variable::Storage storage) {
-    if (*baseType == *context.fTypes.fInvalid) {
+    if (baseType->matches(*context.fTypes.fInvalid)) {
         context.fErrors->error(line, "invalid type");
         return;
     }
@@ -71,6 +71,11 @@ void VarDeclaration::ErrorCheck(const Context& context,
     if (baseType->isEffectChild() && !(modifiers.fFlags & Modifiers::kUniform_Flag)) {
         context.fErrors->error(line,
                 "variables of type '" + baseType->displayName() + "' must be uniform");
+    }
+    if (modifiers.fFlags & SkSL::Modifiers::kUniform_Flag &&
+        (context.fConfig->fKind == ProgramKind::kCustomMeshVertex ||
+         context.fConfig->fKind == ProgramKind::kCustomMeshFragment)) {
+        context.fErrors->error(line, "uniforms are not permitted in custom mesh shaders");
     }
     if (modifiers.fLayout.fFlags & Layout::kColor_Flag) {
         if (!ProgramConfig::IsRuntimeEffect(context.fConfig->fKind)) {
@@ -208,7 +213,7 @@ std::unique_ptr<Statement> VarDeclaration::Convert(const Context& context,
             context.fErrors->error(var->fLine, "duplicate definition of 'sk_RTAdjust'");
             return nullptr;
         }
-        if (var->type() != *context.fTypes.fFloat4) {
+        if (!var->type().matches(*context.fTypes.fFloat4)) {
             context.fErrors->error(var->fLine, "sk_RTAdjust must have type 'float4'");
             return nullptr;
         }

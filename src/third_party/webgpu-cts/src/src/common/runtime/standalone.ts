@@ -370,7 +370,7 @@ let lastQueryLevelToExpand: TestQueryLevel = 2;
 (async () => {
   const loader = new DefaultTestFileLoader();
 
-  // TODO: start populating page before waiting for everything to load?
+  // MAINTENANCE_TODO: start populating page before waiting for everything to load?
   const qs = new URLSearchParams(window.location.search).getAll('q');
   if (qs.length === 0) {
     qs.push('webgpu:*');

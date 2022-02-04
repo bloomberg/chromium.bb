@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -118,7 +118,7 @@ static PIPELINE_LAYOUT_STATE::SetLayoutVector GetSetLayouts(ValidationStateTrack
     PIPELINE_LAYOUT_STATE::SetLayoutVector set_layouts(pCreateInfo->setLayoutCount);
 
     for (uint32_t i = 0; i < pCreateInfo->setLayoutCount; ++i) {
-        set_layouts[i] = dev_data->GetShared<cvdescriptorset::DescriptorSetLayout>(pCreateInfo->pSetLayouts[i]);
+        set_layouts[i] = dev_data->Get<cvdescriptorset::DescriptorSetLayout>(pCreateInfo->pSetLayouts[i]);
     }
     return set_layouts;
 }
@@ -248,6 +248,24 @@ static bool HasAtomicDescriptor(const std::vector<PipelineStageState::Descriptor
                        [](const PipelineStageState::DescriptorUse &use) { return use.second.is_writable; });
 }
 
+static bool WrotePrimitiveShadingRate(VkShaderStageFlagBits stage_flag, spirv_inst_iter entrypoint,
+                                      const SHADER_MODULE_STATE *module) {
+    bool primitiverate_written = false;
+    if (stage_flag == VK_SHADER_STAGE_VERTEX_BIT || stage_flag == VK_SHADER_STAGE_GEOMETRY_BIT ||
+        stage_flag == VK_SHADER_STAGE_MESH_BIT_NV) {
+        for (const auto &set : module->GetBuiltinDecorationList()) {
+            auto insn = module->at(set.offset);
+            if (set.builtin == spv::BuiltInPrimitiveShadingRateKHR) {
+                primitiverate_written = module->IsBuiltInWritten(insn, entrypoint);
+            }
+            if (primitiverate_written) {
+                break;
+            }
+        }
+    }
+    return primitiverate_written;
+}
+
 PipelineStageState::PipelineStageState(const VkPipelineShaderStageCreateInfo *stage,
                                        std::shared_ptr<const SHADER_MODULE_STATE> &module_)
     : module(module_),
@@ -257,7 +275,8 @@ PipelineStageState::PipelineStageState(const VkPipelineShaderStageCreateInfo *st
       accessible_ids(module->MarkAccessibleIds(entrypoint)),
       descriptor_uses(module->CollectInterfaceByDescriptorSlot(accessible_ids)),
       has_writable_descriptor(HasWriteableDescriptor(descriptor_uses)),
-      has_atomic_descriptor(HasAtomicDescriptor(descriptor_uses)) {}
+      has_atomic_descriptor(HasAtomicDescriptor(descriptor_uses)),
+      wrote_primitive_shading_rate(WrotePrimitiveShadingRate(stage_flag, entrypoint, module.get())) {}
 
 static PIPELINE_STATE::StageStateVec GetStageStates(const ValidationStateTracker *state_data,
                                                     const safe_VkPipelineShaderStageCreateInfo *stages, uint32_t stage_count) {
@@ -267,7 +286,7 @@ static PIPELINE_STATE::StageStateVec GetStageStates(const ValidationStateTracker
     for (uint32_t stage_idx = 0; stage_idx < 32; ++stage_idx) {
         for (uint32_t i = 0; i < stage_count; i++) {
             if (stages[i].stage == (1 << stage_idx)) {
-                auto module = state_data->GetShared<SHADER_MODULE_STATE>(stages[i].module);
+                auto module = state_data->Get<SHADER_MODULE_STATE>(stages[i].module);
                 stage_states.emplace_back(stages[i].ptr(), module);
             }
         }
@@ -292,6 +311,9 @@ static PIPELINE_STATE::ActiveSlotMap GetActiveSlots(const PIPELINE_STATE::StageS
             if (use.second.is_atomic_operation) reqs |= DESCRIPTOR_REQ_VIEW_ATOMIC_OPERATION;
             if (use.second.is_sampler_implicitLod_dref_proj) reqs |= DESCRIPTOR_REQ_SAMPLER_IMPLICITLOD_DREF_PROJ;
             if (use.second.is_sampler_bias_offset) reqs |= DESCRIPTOR_REQ_SAMPLER_BIAS_OFFSET;
+            if (use.second.is_read_without_format) reqs |= DESCRIPTOR_REQ_IMAGE_READ_WITHOUT_FORMAT;
+            if (use.second.is_write_without_format) reqs |= DESCRIPTOR_REQ_IMAGE_WRITE_WITHOUT_FORMAT;
+            if (use.second.is_dref_operation) reqs |= DESCRIPTOR_REQ_IMAGE_DREF;
 
             if (use.second.samplers_used_by_image.size()) {
                 if (use.second.samplers_used_by_image.size() > entry.samplers_used_by_image.size()) {
@@ -300,7 +322,7 @@ static PIPELINE_STATE::ActiveSlotMap GetActiveSlots(const PIPELINE_STATE::StageS
                 uint32_t image_index = 0;
                 for (const auto &samplers : use.second.samplers_used_by_image) {
                     for (const auto &sampler : samplers) {
-                        entry.samplers_used_by_image[image_index].emplace(sampler, nullptr);
+                        entry.samplers_used_by_image[image_index].emplace(sampler);
                     }
                     ++image_index;
                 }
@@ -412,44 +434,26 @@ template PIPELINE_STATE::PIPELINE_STATE(const ValidationStateTracker *, const Vk
 template PIPELINE_STATE::PIPELINE_STATE(const ValidationStateTracker *, const VkRayTracingPipelineCreateInfoKHR *,
                                         std::shared_ptr<const PIPELINE_LAYOUT_STATE> &&);
 
-void LAST_BOUND_STATE::UpdateSamplerDescriptorsUsedByImage() {
-    if (!pipeline_state) return;
-    if (per_set.empty()) return;
-
-    for (auto &slot : pipeline_state->active_slots) {
-        for (auto &req : slot.second) {
-            for (auto &samplers : req.second.samplers_used_by_image) {
-                for (auto &sampler : samplers) {
-                    if (sampler.first.sampler_slot.set < per_set.size() &&
-                        per_set[sampler.first.sampler_slot.set].bound_descriptor_set) {
-                        sampler.second = per_set[sampler.first.sampler_slot.set].bound_descriptor_set->GetDescriptorFromBinding(
-                            sampler.first.sampler_slot.binding, sampler.first.sampler_index);
-                    }
-                }
-            }
-        }
-    }
-}
-
-void LAST_BOUND_STATE::UnbindAndResetPushDescriptorSet(CMD_BUFFER_STATE *cb_state, cvdescriptorset::DescriptorSet *ds) {
+void LAST_BOUND_STATE::UnbindAndResetPushDescriptorSet(CMD_BUFFER_STATE *cb_state,
+                                                       std::shared_ptr<cvdescriptorset::DescriptorSet> &&ds) {
     if (push_descriptor_set) {
         for (auto &ps : per_set) {
-            if (ps.bound_descriptor_set == push_descriptor_set.get()) {
+            if (ps.bound_descriptor_set == push_descriptor_set) {
                 cb_state->RemoveChild(ps.bound_descriptor_set);
-                ps.bound_descriptor_set = nullptr;
+                ps.bound_descriptor_set.reset();
             }
         }
     }
     cb_state->AddChild(ds);
-    push_descriptor_set.reset(ds);
+    push_descriptor_set = std::move(ds);
 }
 
 void LAST_BOUND_STATE::Reset() {
     pipeline_state = nullptr;
     pipeline_layout = VK_NULL_HANDLE;
     if (push_descriptor_set) {
-        push_descriptor_set->Reset();
+        push_descriptor_set->Destroy();
     }
-    push_descriptor_set = nullptr;
+    push_descriptor_set.reset();
     per_set.clear();
 }

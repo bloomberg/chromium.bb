@@ -22,7 +22,7 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "ui/base/cocoa/bubble_closer.h"
 #endif
 
@@ -200,11 +200,16 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
   //////////////////////////////////////////////////////////////////////////////
   // Layout & colors:
   //
-  // In general you shouldn't need to call any of these. If the default bubble
+  // In general you shouldn't need to call any setters. If the default bubble
   // look and feel does not work for your use case, BubbleDialogDelegate may not
   // be a good fit for the UI you are building.
 
-  // The bubble's background color:
+  // Ensures the bubble's background color is up-to-date, then returns it.
+  SkColor GetBackgroundColor();
+
+  // Direct access to the background color. Only use the getter when you know
+  // you don't need to worry about the color being out-of-date due to a recent
+  // theme update.
   SkColor color() const { return color_; }
   void set_color(SkColor color) {
     color_ = color;
@@ -382,7 +387,7 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
   // TODO(tluk): Flip this to true for all bubbles.
   bool paint_client_to_layer_ = false;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Special handler for close_on_deactivate() on Mac. Window (de)activation is
   // suppressed by the WindowServer when clicking rapidly, so the bubble must
   // monitor clicks as well for the desired behavior.

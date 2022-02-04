@@ -55,6 +55,7 @@ export namespace PrivateAPI {
     ResourceContentCommitted = 'resource-content-committed',
     ViewShown = 'view-shown-',
     ViewHidden = 'view-hidden,',
+    ThemeChange = 'host-theme-change',
   }
 
   export const enum Commands {
@@ -75,6 +76,7 @@ export namespace PrivateAPI {
     Reload = 'Reload',
     Subscribe = 'subscribe',
     SetOpenResourceHandler = 'setOpenResourceHandler',
+    SetThemeChangeHandler = 'setThemeChangeHandler',
     SetResourceContent = 'setResourceContent',
     SetSidebarContent = 'setSidebarContent',
     SetSidebarHeight = 'setSidebarHeight',
@@ -151,6 +153,7 @@ export namespace PrivateAPI {
   type SetSidebarPageRequest = {command: Commands.SetSidebarPage, id: string, page: string};
   type OpenResourceRequest = {command: Commands.OpenResource, url: string, lineNumber: number, columnNumber: number};
   type SetOpenResourceHandlerRequest = {command: Commands.SetOpenResourceHandler, handlerPresent: boolean};
+  type SetThemeChangeHandlerRequest = {command: Commands.SetThemeChangeHandler, handlerPresent: boolean};
   type ReloadRequest = {
     command: Commands.Reload,
     options: null|{
@@ -180,9 +183,10 @@ export namespace PrivateAPI {
   export type ServerRequests = RegisterLanguageExtensionPluginRequest|SubscribeRequest|UnsubscribeRequest|
       AddRequestHeadersRequest|ApplyStyleSheetRequest|CreatePanelRequest|ShowPanelRequest|CreateToolbarButtonRequest|
       UpdateButtonRequest|CompleteTraceSessionRequest|CreateSidebarPaneRequest|SetSidebarHeightRequest|
-      SetSidebarContentRequest|SetSidebarPageRequest|OpenResourceRequest|SetOpenResourceHandlerRequest|ReloadRequest|
-      EvaluateOnInspectedPageRequest|GetRequestContentRequest|GetResourceContentRequest|SetResourceContentRequest|
-      AddTraceProviderRequest|ForwardKeyboardEventRequest|GetHARRequest|GetPageResourcesRequest;
+      SetSidebarContentRequest|SetSidebarPageRequest|OpenResourceRequest|SetOpenResourceHandlerRequest|
+      SetThemeChangeHandlerRequest|ReloadRequest|EvaluateOnInspectedPageRequest|GetRequestContentRequest|
+      GetResourceContentRequest|SetResourceContentRequest|AddTraceProviderRequest|ForwardKeyboardEventRequest|
+      GetHARRequest|GetPageResourcesRequest;
   export type ExtensionServerRequestMessage = PrivateAPI.ServerRequests&{requestId?: number};
 
   type AddRawModuleRequest = {
@@ -304,8 +308,9 @@ namespace APIImpl {
   // We cannot use the stronger `unknown` type in place of `any` in the following type definition. The type is used as
   // the right-hand side of `extends` in a few places, which doesn't narrow `unknown`. Without narrowing, overload
   // resolution and meaningful type inference of arguments break, for example.
+  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  export type Callable = (...args: any) => any;
+  export type Callable = (...args: any) => void;
 
   export interface EventSink<ListenerT extends Callable> extends PublicAPI.Chrome.DevTools.EventSink<ListenerT> {
     _type: string;
@@ -329,6 +334,7 @@ namespace APIImpl {
     applyStyleSheet(styleSheet: string): void;
     setOpenResourceHandler(callback?: (resource: PublicAPI.Chrome.DevTools.Resource, lineNumber: number) => unknown):
         void;
+    setThemeChangeHandler(callback?: (themeName: string) => unknown): void;
   }
 
   export interface ExtensionView extends PublicAPI.Chrome.DevTools.ExtensionView {
@@ -538,7 +544,8 @@ self.injectedExtensionAPI = function(
     };
   }
 
-  (Panels.prototype as Pick<APIImpl.Panels, 'create'|'setOpenResourceHandler'|'openResource'|'SearchAction'>) = {
+  (Panels.prototype as
+   Pick<APIImpl.Panels, 'create'|'setOpenResourceHandler'|'openResource'|'SearchAction'|'setThemeChangeHandler'>) = {
     create: function(
         title: string, icon: string, page: string,
         callback: (panel: PublicAPI.Chrome.DevTools.ExtensionPanel) => unknown): void {
@@ -573,6 +580,28 @@ self.injectedExtensionAPI = function(
       if (hadHandler === !callback) {
         extensionServer.sendRequest(
             {command: PrivateAPI.Commands.SetOpenResourceHandler, 'handlerPresent': Boolean(callback)});
+      }
+    },
+
+    setThemeChangeHandler: function(callback: (themeName: string) => unknown): void {
+      const hadHandler = extensionServer.hasHandler(PrivateAPI.Events.ThemeChange);
+
+      function callbackWrapper(message: unknown): void {
+        const {themeName} = message as {themeName: string};
+        chrome.devtools.panels.themeName = themeName;
+        callback.call(null, themeName);
+      }
+
+      if (!callback) {
+        extensionServer.unregisterHandler(PrivateAPI.Events.ThemeChange);
+      } else {
+        extensionServer.registerHandler(PrivateAPI.Events.ThemeChange, callbackWrapper);
+      }
+
+      // Only send command if we either removed an existing handler or added handler and had none before.
+      if (hadHandler === !callback) {
+        extensionServer.sendRequest(
+            {command: PrivateAPI.Commands.SetThemeChangeHandler, 'handlerPresent': Boolean(callback)});
       }
     },
 
@@ -640,7 +669,6 @@ self.injectedExtensionAPI = function(
   };
 
   function LanguageServicesAPIImpl(this: APIImpl.LanguageExtensions): void {
-    /** @type {!Map<*, !MessagePort>} */
     this._plugins = new Map();
   }
 
@@ -1084,7 +1112,7 @@ self.injectedExtensionAPI = function(
     };
     keyboardEventRequestQueue.push(requestPayload);
     if (!forwardTimer) {
-      forwardTimer = setTimeout(forwardEventQueue, 0);
+      forwardTimer = window.setTimeout(forwardEventQueue, 0);
     }
   }
 

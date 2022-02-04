@@ -22,7 +22,7 @@
 #include "src/dawn_node/binding/GPURenderPipeline.h"
 #include "src/dawn_node/utils/Debug.h"
 
-namespace wgpu { namespace binding {
+namespace wgpu::binding {
 
     ////////////////////////////////////////////////////////////////////////////////
     // wgpu::bindings::GPURenderPassEncoder
@@ -69,30 +69,6 @@ namespace wgpu { namespace binding {
 
     void GPURenderPassEncoder::endOcclusionQuery(Napi::Env) {
         enc_.EndOcclusionQuery();
-    }
-
-    void GPURenderPassEncoder::beginPipelineStatisticsQuery(
-        Napi::Env,
-        interop::Interface<interop::GPUQuerySet> querySet,
-        interop::GPUSize32 queryIndex) {
-        UNIMPLEMENTED();
-    }
-
-    void GPURenderPassEncoder::endPipelineStatisticsQuery(Napi::Env) {
-        UNIMPLEMENTED();
-    }
-
-    void GPURenderPassEncoder::writeTimestamp(Napi::Env env,
-                                              interop::Interface<interop::GPUQuerySet> querySet,
-                                              interop::GPUSize32 queryIndex) {
-        Converter conv(env);
-
-        wgpu::QuerySet q{};
-        if (!conv(q, querySet)) {
-            return;
-        }
-
-        enc_.WriteTimestamp(q, queryIndex);
     }
 
     void GPURenderPassEncoder::executeBundles(
@@ -259,4 +235,4 @@ namespace wgpu { namespace binding {
         UNIMPLEMENTED();
     }
 
-}}  // namespace wgpu::binding
+}  // namespace wgpu::binding

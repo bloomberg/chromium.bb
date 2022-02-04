@@ -26,7 +26,7 @@
 #include "dawn_wire/WireDeserializeAllocator.h"
 #include "dawn_wire/client/ClientBase_autogen.h"
 
-namespace dawn_wire { namespace client {
+namespace dawn::wire::client {
 
     class Device;
     class MemoryTransferService;
@@ -47,10 +47,12 @@ namespace dawn_wire { namespace client {
         ReservedTexture ReserveTexture(WGPUDevice device);
         ReservedSwapChain ReserveSwapChain(WGPUDevice device);
         ReservedDevice ReserveDevice();
+        ReservedInstance ReserveInstance();
 
         void ReclaimTextureReservation(const ReservedTexture& reservation);
         void ReclaimSwapChainReservation(const ReservedSwapChain& reservation);
         void ReclaimDeviceReservation(const ReservedDevice& reservation);
+        void ReclaimInstanceReservation(const ReservedInstance& reservation);
 
         template <typename Cmd>
         void SerializeCommand(const Cmd& cmd) {
@@ -88,6 +90,6 @@ namespace dawn_wire { namespace client {
 
     std::unique_ptr<MemoryTransferService> CreateInlineMemoryTransferService();
 
-}}  // namespace dawn_wire::client
+}  // namespace dawn::wire::client
 
 #endif  // DAWNWIRE_CLIENT_CLIENT_H_

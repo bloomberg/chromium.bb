@@ -267,7 +267,7 @@ ANGLE_NO_DISCARD bool ReplaceGLDepthRangeWithDriverUniform(TCompiler *compiler,
         symbolTable->findBuiltIn(ImmutableString("gl_DepthRange"), 0));
 
     // ANGLEUniforms.depthRange
-    TIntermBinary *angleEmulatedDepthRangeRef = driverUniforms->getDepthRangeRef();
+    TIntermTyped *angleEmulatedDepthRangeRef = driverUniforms->getDepthRangeRef();
 
     // Use this variable instead of gl_DepthRange everywhere.
     return ReplaceVariableWithTyped(compiler, root, depthRangeVar, angleEmulatedDepthRangeRef);
@@ -338,7 +338,7 @@ ANGLE_NO_DISCARD bool AddBresenhamEmulationVS(TCompiler *compiler,
     // Do perspective divide (get normalized device coords)
     // "vec2 ndc = gl_Position.xy / gl_Position.w"
     const TType *vec2Type        = StaticType::GetTemporary<EbtFloat, EbpHigh, 2>();
-    TIntermBinary *viewportRef   = driverUniforms->getViewportRef();
+    TIntermTyped *viewportRef    = driverUniforms->getViewportRef();
     TIntermSymbol *glPos         = new TIntermSymbol(BuiltInVariable::gl_Position());
     TIntermSwizzle *glPosXY      = CreateSwizzle(glPos, 0, 1);
     TIntermSwizzle *glPosW       = CreateSwizzle(glPos->deepCopy(), 3);
@@ -428,10 +428,10 @@ ANGLE_NO_DISCARD bool AddXfbEmulationSupport(TCompiler *compiler,
 
     // Create references to gl_VertexIndex, gl_InstanceIndex, ANGLEUniforms.xfbVerticesPerInstance
     // and ANGLEUniforms.xfbBufferOffsets.
-    TIntermSymbol *vertexIndex            = new TIntermSymbol(BuiltInVariable::gl_VertexIndex());
-    TIntermSymbol *instanceIndex          = new TIntermSymbol(BuiltInVariable::gl_InstanceIndex());
-    TIntermBinary *xfbVerticesPerInstance = driverUniforms->getXfbVerticesPerInstance();
-    TIntermBinary *xfbBufferOffsets       = driverUniforms->getXfbBufferOffsets();
+    TIntermSymbol *vertexIndex           = new TIntermSymbol(BuiltInVariable::gl_VertexIndex());
+    TIntermSymbol *instanceIndex         = new TIntermSymbol(BuiltInVariable::gl_InstanceIndex());
+    TIntermTyped *xfbVerticesPerInstance = driverUniforms->getXfbVerticesPerInstance();
+    TIntermTyped *xfbBufferOffsets       = driverUniforms->getXfbBufferOffsets();
 
     // gl_InstanceIndex * ANGLEUniforms.xfbVerticesPerInstance
     TIntermBinary *xfbInstanceIndex =
@@ -487,18 +487,8 @@ ANGLE_NO_DISCARD bool AddXfbEmulationSupport(TCompiler *compiler,
 
     // Create the following logic and add it at the end of main():
     //
-    //     if (ANGLEUniforms.xfbActiveUnpaused)
-    //     {
-    //         ANGLECaptureXfb();
-    //     }
+    //     ANGLECaptureXfb();
     //
-
-    // Create a reference ANGLEUniforms.xfbActiveUnpaused
-    TIntermBinary *xfbActiveUnpaused = driverUniforms->getXfbActiveUnpaused();
-
-    // ANGLEUniforms.xfbActiveUnpaused != 0
-    TIntermBinary *isXfbActiveUnpaused =
-        new TIntermBinary(EOpNotEqual, xfbActiveUnpaused, CreateUIntNode(0));
 
     // Create the function call
     TIntermAggregate *captureXfbCall =
@@ -515,11 +505,8 @@ ANGLE_NO_DISCARD bool AddXfbEmulationSupport(TCompiler *compiler,
         TIntermAggregate::CreateFunctionCall(*getOffsetsFunction, &ivec4Zero);
     captureXfbBlock->appendStatement(getOffsetsCall);
 
-    // Create the if
-    TIntermIfElse *captureXfb = new TIntermIfElse(isXfbActiveUnpaused, captureXfbBlock, nullptr);
-
     // Run it at the end of the shader.
-    if (!RunAtTheEndOfShader(compiler, root, captureXfb, symbolTable))
+    if (!RunAtTheEndOfShader(compiler, root, captureXfbBlock, symbolTable))
     {
         return false;
     }
@@ -626,7 +613,7 @@ ANGLE_NO_DISCARD bool InsertFragCoordCorrection(TCompiler *compiler,
         flipXY = driverUniforms->getFlipXYRef();
     }
 
-    TIntermBinary *pivot = specConst->getHalfRenderArea();
+    TIntermTyped *pivot = specConst->getHalfRenderArea();
     if (!pivot)
     {
         pivot = driverUniforms->getHalfRenderAreaRef();
@@ -691,7 +678,7 @@ ANGLE_NO_DISCARD bool AddBresenhamEmulationFS(TCompiler *compiler,
     TVariable *anglePosition = AddANGLEPositionVaryingDeclaration(root, symbolTable, EvqVaryingIn);
     const TType *vec2Type    = StaticType::GetTemporary<EbtFloat, EbpHigh, 2>();
 
-    TIntermBinary *viewportRef = driverUniforms->getViewportRef();
+    TIntermTyped *viewportRef = driverUniforms->getViewportRef();
 
     // vec2 p = ((ANGLEPosition * 0.5) + 0.5) * viewport.zw + viewport.xy
     TIntermSwizzle *viewportXY    = CreateSwizzle(viewportRef->deepCopy(), 0, 1);
@@ -1189,7 +1176,7 @@ bool TranslatorVulkan::translateImpl(TInfoSinkBase &sink,
 
             if (hasGLSampleMask)
             {
-                TIntermBinary *numSamples = driverUniforms->getNumSamplesRef();
+                TIntermTyped *numSamples = driverUniforms->getNumSamplesRef();
                 if (!RewriteSampleMask(this, root, &getSymbolTable(), numSamples))
                 {
                     return false;
@@ -1200,7 +1187,7 @@ bool TranslatorVulkan::translateImpl(TInfoSinkBase &sink,
                 const TVariable *numSamplesVar =
                     static_cast<const TVariable *>(getSymbolTable().findBuiltIn(
                         ImmutableString("gl_NumSamples"), getShaderVersion()));
-                TIntermBinary *numSamples = driverUniforms->getNumSamplesRef();
+                TIntermTyped *numSamples = driverUniforms->getNumSamplesRef();
                 if (!ReplaceVariableWithTyped(this, root, numSamplesVar, numSamples))
                 {
                     return false;

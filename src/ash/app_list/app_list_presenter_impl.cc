@@ -335,6 +335,20 @@ ShelfAction AppListPresenterImpl::ToggleAppList(
   return SHELF_ACTION_APP_LIST_SHOWN;
 }
 
+void AppListPresenterImpl::UpdateForNewSortingOrder(
+    const absl::optional<AppListSortOrder>& new_order,
+    bool animate,
+    base::OnceClosure update_position_closure) {
+  if (!view_)
+    return;
+
+  view_->app_list_main_view()
+      ->contents_view()
+      ->apps_container_view()
+      ->UpdateForNewSortingOrder(new_order, animate,
+                                 std::move(update_position_closure));
+}
+
 bool AppListPresenterImpl::IsVisibleDeprecated() const {
   return controller_->IsVisible(GetDisplayId());
 }

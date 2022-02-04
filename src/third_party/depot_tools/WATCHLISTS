@@ -19,7 +19,7 @@
   'WATCHLISTS': {
     'this_file': [],
     'depot_tools': [
-      'chops-source-team+depot_tools@google.com',
+      'chops-source-team-auto+depot_tools@google.com',
     ],
   },
 

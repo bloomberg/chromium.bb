@@ -27,7 +27,7 @@
 #include "dawn_native/Sampler.h"
 #include "dawn_native/Texture.h"
 
-namespace dawn_native {
+namespace dawn::native {
 
     namespace {
 
@@ -217,7 +217,7 @@ namespace dawn_native {
                         "Filtering sampler %s is incompatible with non-filtering sampler "
                         "binding.",
                         entry.sampler);
-                    DAWN_FALLTHROUGH;
+                    [[fallthrough]];
                 case wgpu::SamplerBindingType::Filtering:
                     DAWN_INVALID_IF(
                         entry.sampler->IsComparison(),
@@ -483,4 +483,4 @@ namespace dawn_native {
         return static_cast<ExternalTextureBase*>(mBindingData.bindings[bindingIndex].Get());
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

@@ -18,7 +18,7 @@
 #include "common/BitSetIterator.h"
 #include "dawn_native/Toggles.h"
 
-namespace dawn_native {
+namespace dawn::native {
     namespace {
 
         struct ToggleEnumAndInfo {
@@ -96,7 +96,7 @@ namespace dawn_native {
             {Toggle::VulkanUseD32S8,
              {"vulkan_use_d32s8",
               "Vulkan mandates support of either D32_FLOAT_S8 or D24_UNORM_S8. When available the "
-              "backend will use D32S8 (toggle to on) but setting the toggle to off will make it"
+              "backend will use D32S8 (toggle to on) but setting the toggle to off will make it "
               "use the D24S8 format when possible.",
               "https://crbug.com/dawn/286"}},
             {Toggle::MetalDisableSamplerCompare,
@@ -314,4 +314,4 @@ namespace dawn_native {
         mToggleNameToEnumMapInitialized = true;
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

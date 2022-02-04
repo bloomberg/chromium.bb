@@ -51,7 +51,7 @@ add_library(layer_utils STATIC
         ${SRC_DIR}/layers/vk_layer_config.cpp
         ${SRC_DIR}/layers/vk_layer_extension_utils.cpp
         ${SRC_DIR}/layers/vk_layer_utils.cpp
-        ${SRC_DIR}/layers/vk_format_utils.cpp)
+        ${SRC_DIR}/layers/generated/vk_format_utils.cpp)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_clone}")
 
 # assume shaderc already built externally
@@ -63,6 +63,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_ANDROID_KHR \
                      -fvisibility=hidden")
 add_library(VkLayer_khronos_validation SHARED
         ${SRC_DIR}/layers/state_tracker.cpp
+        ${SRC_DIR}/layers/base_node.cpp
         ${SRC_DIR}/layers/buffer_state.cpp
         ${SRC_DIR}/layers/cmd_buffer_state.cpp
         ${SRC_DIR}/layers/device_memory_state.cpp

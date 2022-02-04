@@ -53,7 +53,7 @@ AslrMask(uintptr_t bits) {
       return AslrAddress(0x7e8000000000ULL);
     }
 
-  #elif defined(OS_WIN)
+  #elif BUILDFLAG(IS_WIN)
 
     // Windows 8.10 and newer support the full 48 bit address range. Older
     // versions of Windows only support 44 bits. Since ASLROffset() is non-zero
@@ -70,7 +70,7 @@ AslrMask(uintptr_t bits) {
       return 0x80000000ULL;
     }
 
-  #elif defined(OS_APPLE)
+  #elif BUILDFLAG(IS_APPLE)
 
     // macOS as of 10.12.5 does not clean up entries in page map levels 3/4
     // [PDP/PML4] created from mmap or mach_vm_allocate, even after the region
@@ -94,7 +94,7 @@ AslrMask(uintptr_t bits) {
       return AslrAddress(0x1000000000ULL);
     }
 
-  #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  #elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 
     #if defined(ARCH_CPU_X86_64)
 
@@ -109,7 +109,7 @@ AslrMask(uintptr_t bits) {
 
     #elif defined(ARCH_CPU_ARM64)
 
-      #if defined(OS_ANDROID)
+      #if BUILDFLAG(IS_ANDROID)
 
       // Restrict the address range on Android to avoid a large performance
       // regression in single-process WebViews. See https://crbug.com/837640.
@@ -238,7 +238,7 @@ AslrMask(uintptr_t bits) {
     #endif  // !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_PPC64) &&
             // !defined(ARCH_CPU_S390X) && !defined(ARCH_CPU_S390)
 
-  #endif  // defined(OS_POSIX)
+  #endif  // BUILDFLAG(IS_POSIX)
 
 #elif defined(ARCH_CPU_32_BITS)
 

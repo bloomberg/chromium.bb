@@ -115,8 +115,8 @@ namespace {
 
 class EGLImageTestBase : public DawnTest {
   protected:
-    std::vector<const char*> GetRequiredFeatures() override {
-        return {"dawn-internal-usages"};
+    std::vector<wgpu::FeatureName> GetRequiredFeatures() override {
+        return {wgpu::FeatureName::DawnInternalUsages};
     }
 
   public:
@@ -127,15 +127,15 @@ class EGLImageTestBase : public DawnTest {
                                   GLenum type,
                                   void* data,
                                   size_t size) {
-        dawn_native::opengl::Device* openglDevice =
-            dawn_native::opengl::ToBackend(dawn_native::FromAPI(device.Get()));
-        const dawn_native::opengl::OpenGLFunctions& gl = openglDevice->gl;
+        dawn::native::opengl::Device* openglDevice =
+            dawn::native::opengl::ToBackend(dawn::native::FromAPI(device.Get()));
+        const dawn::native::opengl::OpenGLFunctions& gl = openglDevice->gl;
         GLuint tex;
         gl.GenTextures(1, &tex);
         gl.BindTexture(GL_TEXTURE_2D, tex);
         gl.TexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, data);
         EGLAttrib attribs[1] = {EGL_NONE};
-        EGLClientBuffer buffer = reinterpret_cast<EGLClientBuffer>(tex);
+        EGLClientBuffer buffer = reinterpret_cast<EGLClientBuffer>(static_cast<intptr_t>(tex));
         EGLDisplay dpy = egl.GetCurrentDisplay();
         EGLContext ctx = egl.GetCurrentContext();
         EGLImage eglImage = egl.CreateImage(dpy, ctx, EGL_GL_TEXTURE_2D, buffer, attribs);
@@ -144,10 +144,10 @@ class EGLImageTestBase : public DawnTest {
         return ScopedEGLImage(egl.DestroyImage, gl.DeleteTextures, dpy, eglImage, tex);
     }
     wgpu::Texture WrapEGLImage(const wgpu::TextureDescriptor* descriptor, EGLImage eglImage) {
-        dawn_native::opengl::ExternalImageDescriptorEGLImage externDesc;
+        dawn::native::opengl::ExternalImageDescriptorEGLImage externDesc;
         externDesc.cTextureDescriptor = reinterpret_cast<const WGPUTextureDescriptor*>(descriptor);
         externDesc.image = eglImage;
-        WGPUTexture texture = dawn_native::opengl::WrapExternalEGLImage(device.Get(), &externDesc);
+        WGPUTexture texture = dawn::native::opengl::WrapExternalEGLImage(device.Get(), &externDesc);
         return wgpu::Texture::Acquire(texture);
     }
     EGLFunctions egl;
@@ -299,9 +299,9 @@ class EGLImageUsageTests : public EGLImageTestBase {
                      GLenum glType,
                      void* data,
                      size_t dataSize) {
-        dawn_native::opengl::Device* openglDevice =
-            dawn_native::opengl::ToBackend(dawn_native::FromAPI(device.Get()));
-        const dawn_native::opengl::OpenGLFunctions& gl = openglDevice->gl;
+        dawn::native::opengl::Device* openglDevice =
+            dawn::native::opengl::ToBackend(dawn::native::FromAPI(device.Get()));
+        const dawn::native::opengl::OpenGLFunctions& gl = openglDevice->gl;
 
         // Get a texture view for the eglImage
         wgpu::TextureDescriptor textureDescriptor;

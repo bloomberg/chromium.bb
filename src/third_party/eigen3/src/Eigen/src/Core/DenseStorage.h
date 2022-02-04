@@ -62,7 +62,7 @@ struct plain_array
 
 #if defined(EIGEN_DISABLE_UNALIGNED_ARRAY_ASSERT)
   #define EIGEN_MAKE_UNALIGNED_ARRAY_ASSERT(sizemask)
-#elif EIGEN_GNUC_AT_LEAST(4,7)
+#elif EIGEN_COMP_GNUC
   // GCC 4.7 is too aggressive in its optimizations and remove the alignment test based on the fact the array is declared to be aligned.
   // See this bug report: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=53900
   // Hiding the origin of the array pointer behind a function argument seems to do the trick even if the function is inlined:
@@ -216,7 +216,7 @@ template<typename T, int Size, int Rows_, int Cols_, int Options_> class DenseSt
     EIGEN_DEVICE_FUNC
     explicit DenseStorage(internal::constructor_without_unaligned_array_assert)
       : m_data(internal::constructor_without_unaligned_array_assert()) {}
-#if !EIGEN_HAS_CXX11 || defined(EIGEN_DENSE_STORAGE_CTOR_PLUGIN)
+#if defined(EIGEN_DENSE_STORAGE_CTOR_PLUGIN)
     EIGEN_DEVICE_FUNC
     DenseStorage(const DenseStorage& other) : m_data(other.m_data) {
       EIGEN_INTERNAL_DENSE_STORAGE_CTOR_PLUGIN(Index size = Size)
@@ -224,33 +224,9 @@ template<typename T, int Size, int Rows_, int Cols_, int Options_> class DenseSt
 #else
     EIGEN_DEVICE_FUNC DenseStorage(const DenseStorage&) = default;
 #endif
-#if !EIGEN_HAS_CXX11
-    EIGEN_DEVICE_FUNC
-    DenseStorage& operator=(const DenseStorage& other)
-    {
-      if (this != &other) m_data = other.m_data;
-      return *this;
-    }
-#else
     EIGEN_DEVICE_FUNC DenseStorage& operator=(const DenseStorage&) = default;
-#endif
-#if EIGEN_HAS_RVALUE_REFERENCES
-#if !EIGEN_HAS_CXX11
-    EIGEN_DEVICE_FUNC DenseStorage(DenseStorage&& other) EIGEN_NOEXCEPT
-      : m_data(std::move(other.m_data))
-    {
-    }
-    EIGEN_DEVICE_FUNC DenseStorage& operator=(DenseStorage&& other) EIGEN_NOEXCEPT
-    {
-      if (this != &other)
-        m_data = std::move(other.m_data);
-      return *this;
-    }
-#else
     EIGEN_DEVICE_FUNC DenseStorage(DenseStorage&&) = default;
     EIGEN_DEVICE_FUNC DenseStorage& operator=(DenseStorage&&) = default;
-#endif
-#endif
     EIGEN_DEVICE_FUNC DenseStorage(Index size, Index rows, Index cols) {
       EIGEN_INTERNAL_DENSE_STORAGE_CTOR_PLUGIN({})
       eigen_internal_assert(size==rows*cols && rows==Rows_ && cols==Cols_);
@@ -444,7 +420,6 @@ template<typename T, int Options_> class DenseStorage<T, Dynamic, Dynamic, Dynam
       }
       return *this;
     }
-#if EIGEN_HAS_RVALUE_REFERENCES
     EIGEN_DEVICE_FUNC
     DenseStorage(DenseStorage&& other) EIGEN_NOEXCEPT
       : m_data(std::move(other.m_data))
@@ -463,7 +438,6 @@ template<typename T, int Options_> class DenseStorage<T, Dynamic, Dynamic, Dynam
       numext::swap(m_cols, other.m_cols);
       return *this;
     }
-#endif
     EIGEN_DEVICE_FUNC ~DenseStorage() { internal::conditional_aligned_delete_auto<T,(Options_&DontAlign)==0>(m_data, m_rows*m_cols); }
     EIGEN_DEVICE_FUNC void swap(DenseStorage& other)
     {
@@ -527,7 +501,6 @@ template<typename T, int Rows_, int Options_> class DenseStorage<T, Dynamic, Row
       }
       return *this;
     }
-#if EIGEN_HAS_RVALUE_REFERENCES
     EIGEN_DEVICE_FUNC
     DenseStorage(DenseStorage&& other) EIGEN_NOEXCEPT
       : m_data(std::move(other.m_data))
@@ -543,7 +516,6 @@ template<typename T, int Rows_, int Options_> class DenseStorage<T, Dynamic, Row
       numext::swap(m_cols, other.m_cols);
       return *this;
     }
-#endif
     EIGEN_DEVICE_FUNC ~DenseStorage() { internal::conditional_aligned_delete_auto<T,(Options_&DontAlign)==0>(m_data, Rows_*m_cols); }
     EIGEN_DEVICE_FUNC void swap(DenseStorage& other) {
       numext::swap(m_data,other.m_data);
@@ -603,7 +575,6 @@ template<typename T, int Cols_, int Options_> class DenseStorage<T, Dynamic, Dyn
       }
       return *this;
     }
-#if EIGEN_HAS_RVALUE_REFERENCES
     EIGEN_DEVICE_FUNC
     DenseStorage(DenseStorage&& other) EIGEN_NOEXCEPT
       : m_data(std::move(other.m_data))
@@ -619,7 +590,6 @@ template<typename T, int Cols_, int Options_> class DenseStorage<T, Dynamic, Dyn
       numext::swap(m_rows, other.m_rows);
       return *this;
     }
-#endif
     EIGEN_DEVICE_FUNC ~DenseStorage() { internal::conditional_aligned_delete_auto<T,(Options_&DontAlign)==0>(m_data, Cols_*m_rows); }
     EIGEN_DEVICE_FUNC void swap(DenseStorage& other) {
       numext::swap(m_data,other.m_data);

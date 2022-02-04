@@ -31,7 +31,7 @@
 
 #include <sstream>
 
-namespace dawn_native {
+namespace dawn::native {
 
     namespace {
 
@@ -156,82 +156,47 @@ namespace dawn_native {
         }
 
         wgpu::TextureFormat TintImageFormatToTextureFormat(
-            tint::inspector::ResourceBinding::ImageFormat format) {
+            tint::inspector::ResourceBinding::TexelFormat format) {
             switch (format) {
-                case tint::inspector::ResourceBinding::ImageFormat::kR8Unorm:
-                    return wgpu::TextureFormat::R8Unorm;
-                case tint::inspector::ResourceBinding::ImageFormat::kR8Snorm:
-                    return wgpu::TextureFormat::R8Snorm;
-                case tint::inspector::ResourceBinding::ImageFormat::kR8Uint:
-                    return wgpu::TextureFormat::R8Uint;
-                case tint::inspector::ResourceBinding::ImageFormat::kR8Sint:
-                    return wgpu::TextureFormat::R8Sint;
-                case tint::inspector::ResourceBinding::ImageFormat::kR16Uint:
-                    return wgpu::TextureFormat::R16Uint;
-                case tint::inspector::ResourceBinding::ImageFormat::kR16Sint:
-                    return wgpu::TextureFormat::R16Sint;
-                case tint::inspector::ResourceBinding::ImageFormat::kR16Float:
-                    return wgpu::TextureFormat::R16Float;
-                case tint::inspector::ResourceBinding::ImageFormat::kRg8Unorm:
-                    return wgpu::TextureFormat::RG8Unorm;
-                case tint::inspector::ResourceBinding::ImageFormat::kRg8Snorm:
-                    return wgpu::TextureFormat::RG8Snorm;
-                case tint::inspector::ResourceBinding::ImageFormat::kRg8Uint:
-                    return wgpu::TextureFormat::RG8Uint;
-                case tint::inspector::ResourceBinding::ImageFormat::kRg8Sint:
-                    return wgpu::TextureFormat::RG8Sint;
-                case tint::inspector::ResourceBinding::ImageFormat::kR32Uint:
+                case tint::inspector::ResourceBinding::TexelFormat::kR32Uint:
                     return wgpu::TextureFormat::R32Uint;
-                case tint::inspector::ResourceBinding::ImageFormat::kR32Sint:
+                case tint::inspector::ResourceBinding::TexelFormat::kR32Sint:
                     return wgpu::TextureFormat::R32Sint;
-                case tint::inspector::ResourceBinding::ImageFormat::kR32Float:
+                case tint::inspector::ResourceBinding::TexelFormat::kR32Float:
                     return wgpu::TextureFormat::R32Float;
-                case tint::inspector::ResourceBinding::ImageFormat::kRg16Uint:
-                    return wgpu::TextureFormat::RG16Uint;
-                case tint::inspector::ResourceBinding::ImageFormat::kRg16Sint:
-                    return wgpu::TextureFormat::RG16Sint;
-                case tint::inspector::ResourceBinding::ImageFormat::kRg16Float:
-                    return wgpu::TextureFormat::RG16Float;
-                case tint::inspector::ResourceBinding::ImageFormat::kRgba8Unorm:
+                case tint::inspector::ResourceBinding::TexelFormat::kRgba8Unorm:
                     return wgpu::TextureFormat::RGBA8Unorm;
-                case tint::inspector::ResourceBinding::ImageFormat::kRgba8UnormSrgb:
-                    return wgpu::TextureFormat::RGBA8UnormSrgb;
-                case tint::inspector::ResourceBinding::ImageFormat::kRgba8Snorm:
+                case tint::inspector::ResourceBinding::TexelFormat::kRgba8Snorm:
                     return wgpu::TextureFormat::RGBA8Snorm;
-                case tint::inspector::ResourceBinding::ImageFormat::kRgba8Uint:
+                case tint::inspector::ResourceBinding::TexelFormat::kRgba8Uint:
                     return wgpu::TextureFormat::RGBA8Uint;
-                case tint::inspector::ResourceBinding::ImageFormat::kRgba8Sint:
+                case tint::inspector::ResourceBinding::TexelFormat::kRgba8Sint:
                     return wgpu::TextureFormat::RGBA8Sint;
-                case tint::inspector::ResourceBinding::ImageFormat::kBgra8Unorm:
-                    return wgpu::TextureFormat::BGRA8Unorm;
-                case tint::inspector::ResourceBinding::ImageFormat::kBgra8UnormSrgb:
-                    return wgpu::TextureFormat::BGRA8UnormSrgb;
-                case tint::inspector::ResourceBinding::ImageFormat::kRgb10A2Unorm:
-                    return wgpu::TextureFormat::RGB10A2Unorm;
-                case tint::inspector::ResourceBinding::ImageFormat::kRg11B10Float:
-                    return wgpu::TextureFormat::RG11B10Ufloat;
-                case tint::inspector::ResourceBinding::ImageFormat::kRg32Uint:
+                case tint::inspector::ResourceBinding::TexelFormat::kRg32Uint:
                     return wgpu::TextureFormat::RG32Uint;
-                case tint::inspector::ResourceBinding::ImageFormat::kRg32Sint:
+                case tint::inspector::ResourceBinding::TexelFormat::kRg32Sint:
                     return wgpu::TextureFormat::RG32Sint;
-                case tint::inspector::ResourceBinding::ImageFormat::kRg32Float:
+                case tint::inspector::ResourceBinding::TexelFormat::kRg32Float:
                     return wgpu::TextureFormat::RG32Float;
-                case tint::inspector::ResourceBinding::ImageFormat::kRgba16Uint:
+                case tint::inspector::ResourceBinding::TexelFormat::kRgba16Uint:
                     return wgpu::TextureFormat::RGBA16Uint;
-                case tint::inspector::ResourceBinding::ImageFormat::kRgba16Sint:
+                case tint::inspector::ResourceBinding::TexelFormat::kRgba16Sint:
                     return wgpu::TextureFormat::RGBA16Sint;
-                case tint::inspector::ResourceBinding::ImageFormat::kRgba16Float:
+                case tint::inspector::ResourceBinding::TexelFormat::kRgba16Float:
                     return wgpu::TextureFormat::RGBA16Float;
-                case tint::inspector::ResourceBinding::ImageFormat::kRgba32Uint:
+                case tint::inspector::ResourceBinding::TexelFormat::kRgba32Uint:
                     return wgpu::TextureFormat::RGBA32Uint;
-                case tint::inspector::ResourceBinding::ImageFormat::kRgba32Sint:
+                case tint::inspector::ResourceBinding::TexelFormat::kRgba32Sint:
                     return wgpu::TextureFormat::RGBA32Sint;
-                case tint::inspector::ResourceBinding::ImageFormat::kRgba32Float:
+                case tint::inspector::ResourceBinding::TexelFormat::kRgba32Float:
                     return wgpu::TextureFormat::RGBA32Float;
-                case tint::inspector::ResourceBinding::ImageFormat::kNone:
+                case tint::inspector::ResourceBinding::TexelFormat::kNone:
+                    return wgpu::TextureFormat::Undefined;
+
+                default:
+                    UNREACHABLE();
                     return wgpu::TextureFormat::Undefined;
             }
-            UNREACHABLE();
         }
 
         wgpu::TextureViewDimension TintTextureDimensionToTextureViewDimension(
@@ -596,12 +561,12 @@ namespace dawn_native {
                                                             const BindGroupLayoutBase* layout) {
             // Iterate over all bindings used by this group in the shader, and find the
             // corresponding binding in the BindGroupLayout, if it exists.
-            for (const auto& it : entryPoint.bindings[group]) {
+            for (const auto& [bindingId, bindingInfo] : entryPoint.bindings[group]) {
                 DAWN_TRY_CONTEXT(ValidateCompatibilityOfSingleBindingWithLayout(
-                                     device, layout, entryPoint.stage, it.first, it.second),
+                                     device, layout, entryPoint.stage, bindingId, bindingInfo),
                                  "validating that the entry-point's declaration for [[group(%u), "
                                  "binding(%u)]] matches %s",
-                                 static_cast<uint32_t>(group), static_cast<uint32_t>(it.first),
+                                 static_cast<uint32_t>(group), static_cast<uint32_t>(bindingId),
                                  layout);
             }
 
@@ -665,15 +630,16 @@ namespace dawn_native {
                         metadata->overridableConstants[identifier] = constant;
 
                         if (!c.is_initialized) {
-                            auto it = metadata->uninitializedOverridableConstants.emplace(
-                                std::move(identifier));
+                            auto [_, inserted] =
+                                metadata->uninitializedOverridableConstants.emplace(
+                                    std::move(identifier));
                             // The insertion should have taken place
-                            ASSERT(it.second);
+                            ASSERT(inserted);
                         } else {
-                            auto it = metadata->initializedOverridableConstants.emplace(
+                            auto [_, inserted] = metadata->initializedOverridableConstants.emplace(
                                 std::move(identifier));
                             // The insertion should have taken place
-                            ASSERT(it.second);
+                            ASSERT(inserted);
                         }
                     }
                 }
@@ -866,14 +832,14 @@ namespace dawn_native {
                     BindingNumber bindingNumber(resource.binding);
                     BindGroupIndex bindGroupIndex(resource.bind_group);
 
-                    const auto& it = metadata->bindings[bindGroupIndex].emplace(
+                    const auto& [binding, inserted] = metadata->bindings[bindGroupIndex].emplace(
                         bindingNumber, ShaderBindingInfo{});
                     DAWN_INVALID_IF(
-                        !it.second,
+                        !inserted,
                         "Entry-point has a duplicate binding for (group:%u, binding:%u).",
                         resource.binding, resource.bind_group);
 
-                    ShaderBindingInfo* info = &it.first->second;
+                    ShaderBindingInfo* info = &binding->second;
                     info->bindingType = TintResourceTypeToBindingInfoType(resource.resource_type);
 
                     switch (info->bindingType) {
@@ -1309,4 +1275,4 @@ namespace dawn_native {
         return hash;
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

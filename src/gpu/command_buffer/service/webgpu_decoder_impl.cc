@@ -33,7 +33,7 @@
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_surface_egl.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <dawn_native/D3D12Backend.h>
 #include "ui/gl/gl_angle_util_win.h"
 #endif
@@ -52,7 +52,7 @@ constexpr size_t kDawnReturnCmdsOffset =
 
 static_assert(kDawnReturnCmdsOffset < kMaxWireBufferSize, "");
 
-class WireServerCommandSerializer : public dawn_wire::CommandSerializer {
+class WireServerCommandSerializer : public dawn::wire::CommandSerializer {
  public:
   explicit WireServerCommandSerializer(DecoderClient* client);
   ~WireServerCommandSerializer() override = default;
@@ -124,39 +124,20 @@ bool WireServerCommandSerializer::Flush() {
   return true;
 }
 
-dawn_native::DeviceType PowerPreferenceToDawnDeviceType(
+WGPUAdapterType PowerPreferenceToDawnAdapterType(
     PowerPreference power_preference) {
   switch (power_preference) {
     case PowerPreference::kLowPower:
-      return dawn_native::DeviceType::IntegratedGPU;
+      return WGPUAdapterType_IntegratedGPU;
     case PowerPreference::kHighPerformance:
     // Currently for simplicity we always choose discrete GPU as the device
     // related to default power preference.
     case PowerPreference::kDefault:
-      return dawn_native::DeviceType::DiscreteGPU;
+      return WGPUAdapterType_DiscreteGPU;
     default:
       NOTREACHED();
-      return dawn_native::DeviceType::CPU;
+      return WGPUAdapterType_CPU;
   }
-}
-
-WGPUBackendType ToWGPUBackendType(dawn_native::BackendType type) {
-  switch (type) {
-    case dawn_native::BackendType::D3D12:
-      return WGPUBackendType_D3D12;
-    case dawn_native::BackendType::Metal:
-      return WGPUBackendType_Metal;
-    case dawn_native::BackendType::Null:
-      return WGPUBackendType_Null;
-    case dawn_native::BackendType::OpenGL:
-      return WGPUBackendType_OpenGL;
-    case dawn_native::BackendType::OpenGLES:
-      return WGPUBackendType_OpenGLES;
-    case dawn_native::BackendType::Vulkan:
-      return WGPUBackendType_Vulkan;
-  }
-  DCHECK(false);
-  return WGPUBackendType_Null;
 }
 
 }  // namespace
@@ -263,7 +244,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                          WGPUDevice device = wire_server_->GetDevice(
                              id_generation.first, id_generation.second);
                          if (device != nullptr) {
-                           if (dawn_native::DeviceTick(device)) {
+                           if (dawn::native::DeviceTick(device)) {
                              has_polling_work_ = true;
                            }
                            return false;
@@ -438,7 +419,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
   void SendAdapterProperties(DawnRequestAdapterSerial request_adapter_serial,
                              int32_t adapter_service_id,
-                             const dawn_native::Adapter& adapter,
+                             const dawn::native::Adapter& adapter,
                              const char* error_message = nullptr);
 
   const GrContextType gr_context_type_;
@@ -446,17 +427,17 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   std::unique_ptr<SharedImageRepresentationFactory>
       shared_image_representation_factory_;
 
-  std::unique_ptr<dawn_platform::Platform> dawn_platform_;
+  std::unique_ptr<dawn::platform::Platform> dawn_platform_;
   std::unique_ptr<DawnServiceMemoryTransferService> memory_transfer_service_;
-  std::unique_ptr<dawn_native::Instance> dawn_instance_;
-  std::vector<dawn_native::Adapter> dawn_adapters_;
+  std::unique_ptr<dawn::native::Instance> dawn_instance_;
+  std::vector<dawn::native::Adapter> dawn_adapters_;
 
-  bool allow_spirv_ = false;
+  bool enable_unsafe_webgpu_ = false;
   bool force_webgpu_compat_ = false;
   std::vector<std::string> force_enabled_toggles_;
   std::vector<std::string> force_disabled_toggles_;
 
-  std::unique_ptr<dawn_wire::WireServer> wire_server_;
+  std::unique_ptr<dawn::wire::WireServer> wire_server_;
   std::unique_ptr<WireServerCommandSerializer> wire_serializer_;
 
   // Helper struct which holds a representation and its ScopedAccess, ensuring
@@ -477,7 +458,8 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   // in PerformPollingWork. Dawn will never reuse a previously allocated
   // <ID, generation> pair.
   std::vector<std::pair<uint32_t, uint32_t>> known_devices_;
-  std::unordered_map<uint32_t, WGPUBackendType> device_backend_types_;
+  std::unordered_map<uint32_t, WGPUAdapterProperties>
+      device_adapter_properties_;
 
   bool has_polling_work_ = false;
   bool destroyed_ = false;
@@ -527,7 +509,7 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
               memory_tracker)),
       dawn_platform_(new DawnPlatform()),
       memory_transfer_service_(new DawnServiceMemoryTransferService(this)),
-      dawn_instance_(new dawn_native::Instance()),
+      dawn_instance_(new dawn::native::Instance()),
       wire_serializer_(new WireServerCommandSerializer(client)) {
   dawn_instance_->SetPlatform(dawn_platform_.get());
   switch (gpu_preferences.enable_dawn_backend_validation) {
@@ -535,24 +517,24 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
       break;
     case DawnBackendValidationLevel::kPartial:
       dawn_instance_->SetBackendValidationLevel(
-          dawn_native::BackendValidationLevel::Partial);
+          dawn::native::BackendValidationLevel::Partial);
       break;
     case DawnBackendValidationLevel::kFull:
       dawn_instance_->SetBackendValidationLevel(
-          dawn_native::BackendValidationLevel::Full);
+          dawn::native::BackendValidationLevel::Full);
       break;
   }
 
-  allow_spirv_ = gpu_preferences.enable_webgpu_spirv;
+  enable_unsafe_webgpu_ = gpu_preferences.enable_unsafe_webgpu;
   force_webgpu_compat_ = gpu_preferences.force_webgpu_compat;
   force_enabled_toggles_ = gpu_preferences.enabled_dawn_features_list;
   force_disabled_toggles_ = gpu_preferences.disabled_dawn_features_list;
 
-  dawn_wire::WireServerDescriptor descriptor = {};
-  descriptor.procs = &dawn_native::GetProcs();
+  dawn::wire::WireServerDescriptor descriptor = {};
+  descriptor.procs = &dawn::native::GetProcs();
   descriptor.serializer = wire_serializer_.get();
   descriptor.memoryTransferService = memory_transfer_service_.get();
-  wire_server_ = std::make_unique<dawn_wire::WireServer>(descriptor);
+  wire_server_ = std::make_unique<dawn::wire::WireServer>(descriptor);
 }
 
 WebGPUDecoderImpl::~WebGPUDecoderImpl() {
@@ -562,7 +544,7 @@ WebGPUDecoderImpl::~WebGPUDecoderImpl() {
 void WebGPUDecoderImpl::Destroy(bool have_context) {
   associated_shared_image_map_.clear();
   known_devices_.clear();
-  device_backend_types_.clear();
+  device_adapter_properties_.clear();
   wire_server_ = nullptr;
 
   destroyed_ = true;
@@ -593,7 +575,7 @@ void WebGPUDecoderImpl::DoRequestDevice(
   DCHECK_LT(static_cast<size_t>(requested_adapter_index),
             dawn_adapters_.size());
 
-  dawn_native::DawnDeviceDescriptor device_descriptor;
+  dawn::native::DawnDeviceDescriptor device_descriptor;
   if (request_device_properties.textureCompressionBC) {
     device_descriptor.requiredFeatures.push_back("texture-compression-bc");
   }
@@ -628,7 +610,7 @@ void WebGPUDecoderImpl::DoRequestDevice(
 
   // Disallows usage of SPIR-V by default for security (we only ensure that WGSL
   // is secure), unless --enable-unsafe-webgpu is used.
-  if (!allow_spirv_) {
+  if (!enable_unsafe_webgpu_) {
     device_descriptor.forceEnabledToggles.push_back("disallow_spirv");
   }
 
@@ -684,27 +666,28 @@ void WebGPUDecoderImpl::OnRequestDeviceCallback(
   if (wgpu_device) {
     if (!wire_server_->InjectDevice(wgpu_device, device_id,
                                     device_generation)) {
-      dawn_native::GetProcs().deviceRelease(wgpu_device);
+      dawn::native::GetProcs().deviceRelease(wgpu_device);
       return;
     }
 
     // Collect supported limits
-    dawn_native::GetProcs().deviceGetLimits(wgpu_device, &limits);
+    dawn::native::GetProcs().deviceGetLimits(wgpu_device, &limits);
 
     serialized_limits_size =
-        dawn_wire::SerializedWGPUSupportedLimitsSize(&limits);
+        dawn::wire::SerializedWGPUSupportedLimitsSize(&limits);
 
     // Device injection takes a ref. The wire now owns the device so release it.
-    dawn_native::GetProcs().deviceRelease(wgpu_device);
+    dawn::native::GetProcs().deviceRelease(wgpu_device);
 
     // Save the id and generation of the device. Now, we can query the server
     // for this pair to discover if this device has been destroyed. The list
     // will be checked in PerformPollingWork to tick all the live devices and
     // remove all the dead ones.
     known_devices_.emplace_back(device_id, device_generation);
-    dawn_native::BackendType type =
-        dawn_adapters_[requested_adapter_index].GetBackendType();
-    device_backend_types_[device_id] = ToWGPUBackendType(type);
+
+    WGPUAdapterProperties adapterProperties = {};
+    dawn_adapters_[requested_adapter_index].GetProperties(&adapterProperties);
+    device_adapter_properties_[device_id] = adapterProperties;
   }
 
   size_t error_message_size =
@@ -728,7 +711,7 @@ void WebGPUDecoderImpl::OnRequestDeviceCallback(
       static_cast<uint32_t>(serialized_limits_size);
 
   if (wgpu_device) {
-    dawn_wire::SerializeWGPUSupportedLimits(
+    dawn::wire::SerializeWGPUSupportedLimits(
         &limits, return_request_device_info->deserialized_buffer);
   }
 
@@ -756,12 +739,12 @@ void WebGPUDecoderImpl::DiscoverAdapters() {
     auto getProc = [](const char* pname) {
       return reinterpret_cast<void*>(eglGetProcAddress(pname));
     };
-    dawn_native::opengl::AdapterDiscoveryOptionsES optionsES;
+    dawn::native::opengl::AdapterDiscoveryOptionsES optionsES;
     optionsES.getProc = getProc;
     dawn_instance_->DiscoverAdapters(&optionsES);
   }
 #endif
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       gl::QueryD3D11DeviceObjectFromANGLE();
   if (!d3d11_device) {
@@ -773,24 +756,27 @@ void WebGPUDecoderImpl::DiscoverAdapters() {
   d3d11_device.As(&dxgi_device);
   Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
   dxgi_device->GetAdapter(&dxgi_adapter);
-  dawn_native::d3d12::AdapterDiscoveryOptions options(std::move(dxgi_adapter));
+  dawn::native::d3d12::AdapterDiscoveryOptions options(std::move(dxgi_adapter));
   dawn_instance_->DiscoverAdapters(&options);
 #else
   dawn_instance_->DiscoverDefaultAdapters();
 #endif
 
-  std::vector<dawn_native::Adapter> adapters = dawn_instance_->GetAdapters();
-  for (dawn_native::Adapter& adapter : adapters) {
+  std::vector<dawn::native::Adapter> adapters = dawn_instance_->GetAdapters();
+  for (dawn::native::Adapter& adapter : adapters) {
     adapter.SetUseTieredLimits(true);
     if (!adapter.SupportsExternalImages()) {
       continue;
     }
+
+    WGPUAdapterProperties adapterProperties = {};
+    adapter.GetProperties(&adapterProperties);
     if (force_webgpu_compat_) {
-      if (adapter.GetBackendType() == dawn_native::BackendType::OpenGLES) {
+      if (adapterProperties.backendType == WGPUBackendType_OpenGLES) {
         dawn_adapters_.push_back(adapter);
       }
-    } else if (adapter.GetBackendType() != dawn_native::BackendType::Null &&
-               adapter.GetBackendType() != dawn_native::BackendType::OpenGL) {
+    } else if (adapterProperties.backendType != WGPUBackendType_Null &&
+               adapterProperties.backendType != WGPUBackendType_OpenGL) {
       dawn_adapters_.push_back(adapter);
     }
   }
@@ -798,8 +784,8 @@ void WebGPUDecoderImpl::DiscoverAdapters() {
 
 int32_t WebGPUDecoderImpl::GetPreferredAdapterIndex(
     PowerPreference power_preference) const {
-  dawn_native::DeviceType preferred_device_type =
-      PowerPreferenceToDawnDeviceType(power_preference);
+  WGPUAdapterType preferred_adapter_type =
+      PowerPreferenceToDawnAdapterType(power_preference);
 
   int32_t discrete_gpu_adapter_index = -1;
   int32_t integrated_gpu_adapter_index = -1;
@@ -807,21 +793,24 @@ int32_t WebGPUDecoderImpl::GetPreferredAdapterIndex(
   int32_t unknown_adapter_index = -1;
 
   for (int32_t i = 0; i < static_cast<int32_t>(dawn_adapters_.size()); ++i) {
-    const dawn_native::Adapter& adapter = dawn_adapters_[i];
-    if (adapter.GetDeviceType() == preferred_device_type) {
+    const dawn::native::Adapter& adapter = dawn_adapters_[i];
+    WGPUAdapterProperties adapterProperties = {};
+    adapter.GetProperties(&adapterProperties);
+
+    if (adapterProperties.adapterType == preferred_adapter_type) {
       return i;
     }
-    switch (adapter.GetDeviceType()) {
-      case dawn_native::DeviceType::DiscreteGPU:
+    switch (adapterProperties.adapterType) {
+      case WGPUAdapterType_DiscreteGPU:
         discrete_gpu_adapter_index = i;
         break;
-      case dawn_native::DeviceType::IntegratedGPU:
+      case WGPUAdapterType_IntegratedGPU:
         integrated_gpu_adapter_index = i;
         break;
-      case dawn_native::DeviceType::CPU:
+      case WGPUAdapterType_CPU:
         cpu_adapter_index = i;
         break;
-      case dawn_native::DeviceType::Unknown:
+      case WGPUAdapterType_Unknown:
         unknown_adapter_index = i;
         break;
       default:
@@ -928,7 +917,7 @@ error::Error WebGPUDecoderImpl::DoCommands(unsigned int num_commands,
 void WebGPUDecoderImpl::SendAdapterProperties(
     DawnRequestAdapterSerial request_adapter_serial,
     int32_t adapter_service_id,
-    const dawn_native::Adapter& adapter,
+    const dawn::native::Adapter& adapter,
     const char* error_message) {
   WGPUDeviceProperties adapter_properties;
   size_t serialized_adapter_properties_size = 0;
@@ -950,7 +939,7 @@ void WebGPUDecoderImpl::SendAdapterProperties(
     adapter_properties.pipelineStatisticsQuery &= allow_unsafe_apis;
 
     serialized_adapter_properties_size =
-        dawn_wire::SerializedWGPUDevicePropertiesSize(&adapter_properties);
+        dawn::wire::SerializedWGPUDevicePropertiesSize(&adapter_properties);
   } else {
     // If there's no adapter, the adapter_service_id should be -1
     DCHECK_EQ(adapter_service_id, -1);
@@ -983,7 +972,7 @@ void WebGPUDecoderImpl::SendAdapterProperties(
 
   if (adapter) {
     // Set serialized adapter properties
-    dawn_wire::SerializeWGPUDeviceProperties(
+    dawn::wire::SerializeWGPUDeviceProperties(
         &adapter_properties, return_adapter_info->deserialized_buffer);
   }
 
@@ -1021,12 +1010,12 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
   }
 
   if (gr_context_type_ != GrContextType::kVulkan) {
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
     SendAdapterProperties(request_adapter_serial, -1, nullptr,
                           "WebGPU on Linux requires command-line flag "
                           "--enable-features=Vulkan,UseSkiaRenderer");
     return error::kNoError;
-#endif  // defined(OS_LINUX)
+#endif  // BUILDFLAG(IS_LINUX)
   }
 
   int32_t requested_adapter_index = GetPreferredAdapterIndex(power_preference);
@@ -1041,7 +1030,8 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
   // the adapter in the server side.
   DCHECK_LT(static_cast<size_t>(requested_adapter_index),
             dawn_adapters_.size());
-  const dawn_native::Adapter& adapter = dawn_adapters_[requested_adapter_index];
+  const dawn::native::Adapter& adapter =
+      dawn_adapters_[requested_adapter_index];
   SendAdapterProperties(request_adapter_serial, requested_adapter_index,
                         adapter);
 
@@ -1076,7 +1066,7 @@ error::Error WebGPUDecoderImpl::HandleRequestDevice(
       return error::kOutOfBounds;
     }
 
-    if (!dawn_wire::DeserializeWGPUDeviceProperties(
+    if (!dawn::wire::DeserializeWGPUDeviceProperties(
             &device_properties, shm_device_properties,
             request_device_properties_size)) {
       return error::kOutOfBounds;
@@ -1168,7 +1158,7 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   // Create a WGPUTexture from the mailbox.
   std::unique_ptr<SharedImageRepresentationDawn> shared_image =
       shared_image_representation_factory_->ProduceDawn(
-          mailbox, device, device_backend_types_[device_id]);
+          mailbox, device, device_adapter_properties_[device_id].backendType);
   if (!shared_image) {
     DLOG(ERROR) << "AssociateMailbox: Couldn't produce shared image";
     return error::kInvalidArguments;
@@ -1187,8 +1177,8 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
     return error::kInvalidArguments;
   }
 
-  // Inject the texture in the dawn_wire::Server and remember which shared image
-  // it is associated with.
+  // Inject the texture in the dawn::wire::Server and remember which shared
+  // image it is associated with.
   if (!wire_server_->InjectTexture(shared_image_access->texture(), id,
                                    generation, device_id, device_generation)) {
     DLOG(ERROR) << "AssociateMailbox: Invalid texture ID";
@@ -1257,11 +1247,11 @@ error::Error WebGPUDecoderImpl::HandleDissociateMailboxForPresent(
 
   WGPUTexture texture = it->second->access->texture();
   DCHECK(texture);
-  if (!dawn_native::IsTextureSubresourceInitialized(texture, 0, 1, 0, 1)) {
+  if (!dawn::native::IsTextureSubresourceInitialized(texture, 0, 1, 0, 1)) {
     // The compositor renders uninitialized textures as red. If the texture is
     // not initialized, we need to explicitly clear its contents to black.
     // TODO(crbug.com/1242712): Use the C++ WebGPU API.
-    const auto& procs = dawn_native::GetProcs();
+    const auto& procs = dawn::native::GetProcs();
     WGPUTextureView view = procs.textureCreateView(texture, nullptr);
 
     WGPURenderPassColorAttachment color_attachment = {};
@@ -1289,7 +1279,7 @@ error::Error WebGPUDecoderImpl::HandleDissociateMailboxForPresent(
     procs.commandEncoderRelease(encoder);
     procs.textureViewRelease(view);
 
-    DCHECK(dawn_native::IsTextureSubresourceInitialized(texture, 0, 1, 0, 1));
+    DCHECK(dawn::native::IsTextureSubresourceInitialized(texture, 0, 1, 0, 1));
   }
 
   associated_shared_image_map_.erase(it);

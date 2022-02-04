@@ -7,7 +7,6 @@
 #include <map>
 #include <string>
 
-#include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,18 +22,10 @@ const base::Feature kAppLanguagePrompt{"AppLanguagePrompt",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kForceAppLanguagePrompt{"ForceAppLanguagePrompt",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kUseFluentLanguageModel {
-  "UseFluentLanguageModel",
-#if defined(OS_IOS)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
 const base::Feature kNotifySyncOnLanguageDetermined{
     "NotifySyncOnLanguageDetermined", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kDetailedLanguageSettings{
-    "DetailedLanguageSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDetailedLanguageSettings{"DetailedLanguageSettings",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kDesktopRestructuredLanguageSettings{
     "DesktopRestructuredLanguageSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kDesktopDetailedLanguageSettings{
@@ -63,18 +54,13 @@ OverrideLanguageModel GetOverrideLanguageModel() {
   bool should_override_model = base::GetFieldTrialParamsByFeature(
       kOverrideTranslateTriggerInIndia, &params);
 
-  // The model overrides ordering is important as it allows us to
-  // have concurrent overrides in experiment without having to partition them
-  // explicitly. For example, we may have a FLUENT experiment globally and a
-  // GEO experiment in India only.
+  // Note: when there are multiple possible override models, the overrides
+  // ordering is important as it allows us to have concurrent overrides in
+  // experiment without having to partition them explicitly.
 
   if (should_override_model &&
       params[kOverrideModelKey] == kOverrideModelGeoValue) {
     return OverrideLanguageModel::GEO;
-  }
-
-  if (base::FeatureList::IsEnabled(kUseFluentLanguageModel)) {
-    return OverrideLanguageModel::FLUENT;
   }
 
   return OverrideLanguageModel::DEFAULT;

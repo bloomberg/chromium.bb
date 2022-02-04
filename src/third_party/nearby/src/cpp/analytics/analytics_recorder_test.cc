@@ -20,6 +20,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/time/time.h"
+#include "analytics/connection_attempt_metadata_params.h"
 #include "platform/base/error_code_params.h"
 #include "platform/base/error_code_recorder.h"
 #include "platform/public/count_down_latch.h"
@@ -142,8 +143,23 @@ TEST(AnalyticsRecorderTest, SetFieldsCorrectlyForNestedAdvertisingCalls) {
                 strategy_session <
                   strategy: P2P_STAR
                   role: ADVERTISER
-                  advertising_phase < medium: BLE medium: BLUETOOTH >
-                  advertising_phase < medium: BLUETOOTH >
+                  advertising_phase <
+                    medium: BLE
+                    medium: BLUETOOTH
+                    advertising_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
+                  >
+                  advertising_phase <
+                    medium: BLUETOOTH
+                    advertising_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
+                  >
                 >)pb")));
 }
 
@@ -155,11 +171,11 @@ TEST(AnalyticsRecorderTest, SetFieldsCorrectlyForNestedDiscoveryCalls) {
   FakeEventLogger event_logger(client_session_done_latch);
   AnalyticsRecorder analytics_recorder(&event_logger);
 
-  analytics_recorder.OnStartDiscovery(strategy, mediums);
+  analytics_recorder.OnStartDiscovery(strategy, mediums, true, 1, false);
   analytics_recorder.OnStopDiscovery();
   analytics_recorder.OnEndpointFound(BLUETOOTH);
   analytics_recorder.OnEndpointFound(BLE);
-  analytics_recorder.OnStartDiscovery(strategy, {BLUETOOTH});
+  analytics_recorder.OnStartDiscovery(strategy, {BLUETOOTH}, true, 1, false);
 
   analytics_recorder.LogSession();
   ASSERT_TRUE(client_session_done_latch.Await(kDefaultTimeout).result());
@@ -173,8 +189,20 @@ TEST(AnalyticsRecorderTest, SetFieldsCorrectlyForNestedDiscoveryCalls) {
                     medium: BLUETOOTH
                     discovered_endpoint < medium: BLUETOOTH >
                     discovered_endpoint < medium: BLE >
+                    discovery_metadata <
+                      supports_extended_ble_advertisements: true
+                      connected_ap_frequency: 1
+                      supports_nfc_technology: false
+                    >
                   >
-                  discovery_phase < medium: BLUETOOTH >
+                  discovery_phase <
+                    medium: BLUETOOTH
+                    discovery_metadata <
+                      supports_extended_ble_advertisements: true
+                      connected_ap_frequency: 1
+                      supports_nfc_technology: false
+                    >
+                  >
                 >)pb")));
 }
 
@@ -212,12 +240,60 @@ TEST(AnalyticsRecorderTest,
                   strategy: P2P_STAR
                   role: ADVERTISER
                   role: DISCOVERER
-                  discovery_phase < medium: BLE medium: BLUETOOTH >
-                  discovery_phase < medium: BLE medium: BLUETOOTH >
-                  discovery_phase < medium: BLE medium: BLUETOOTH >
-                  advertising_phase < medium: BLE medium: BLUETOOTH >
-                  advertising_phase < medium: BLE medium: BLUETOOTH >
-                  advertising_phase < medium: BLE medium: BLUETOOTH >
+                  discovery_phase <
+                    medium: BLE
+                    medium: BLUETOOTH
+                    discovery_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
+                  >
+                  discovery_phase <
+                    medium: BLE
+                    medium: BLUETOOTH
+                    discovery_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
+                  >
+                  discovery_phase <
+                    medium: BLE
+                    medium: BLUETOOTH
+                    discovery_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
+                  >
+                  advertising_phase <
+                    medium: BLE
+                    medium: BLUETOOTH
+                    advertising_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
+                  >
+                  advertising_phase <
+                    medium: BLE
+                    medium: BLUETOOTH
+                    advertising_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
+                  >
+                  advertising_phase <
+                    medium: BLE
+                    medium: BLUETOOTH
+                    advertising_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
+                  >
                 >)pb")));
 }
 
@@ -260,6 +336,11 @@ TEST(AnalyticsRecorderTest, AdvertiserConnectionRequestsWorks) {
                   advertising_phase <
                     medium: BLE
                     medium: BLUETOOTH
+                    advertising_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
                     received_connection_request <
                       local_response: ACCEPTED
                       remote_response: ACCEPTED
@@ -320,6 +401,11 @@ TEST(AnalyticsRecorderTest, DiscoveryConnectionRequestsWorks) {
                   discovery_phase <
                     medium: BLE
                     medium: BLUETOOTH
+                    discovery_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
                     sent_connection_request <
                       local_response: ACCEPTED
                       remote_response: ACCEPTED
@@ -374,6 +460,11 @@ TEST(AnalyticsRecorderTest,
                   advertising_phase <
                     medium: BLE
                     medium: BLUETOOTH
+                    advertising_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
                     received_connection_request <
                       local_response: IGNORED
                       remote_response: ACCEPTED
@@ -425,6 +516,11 @@ TEST(AnalyticsRecorderTest,
                   discovery_phase <
                     medium: BLE
                     medium: BLUETOOTH
+                    discovery_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
                     sent_connection_request <
                       local_response: IGNORED
                       remote_response: ACCEPTED
@@ -453,7 +549,8 @@ TEST(AnalyticsRecorderTest, SuccessfulIncomingConnectionAttempt) {
 
   analytics_recorder.OnStartAdvertising(strategy, mediums);
   analytics_recorder.OnIncomingConnectionAttempt(
-      INITIAL, BLUETOOTH, RESULT_SUCCESS, absl::Duration{}, connection_token);
+      INITIAL, BLUETOOTH, RESULT_SUCCESS, absl::Duration{}, connection_token,
+      nullptr);
   analytics_recorder.OnStopAdvertising();
 
   analytics_recorder.LogSession();
@@ -463,13 +560,34 @@ TEST(AnalyticsRecorderTest, SuccessfulIncomingConnectionAttempt) {
                 strategy_session <
                   strategy: P2P_STAR
                   role: ADVERTISER
-                  advertising_phase < medium: BLE medium: BLUETOOTH >
+                  advertising_phase <
+                    medium: BLE
+                    medium: BLUETOOTH
+                    advertising_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
+                  >
                   connection_attempt <
                     type: INITIAL
                     direction: INCOMING
                     medium: BLUETOOTH
                     attempt_result: RESULT_SUCCESS
                     connection_token: ""
+                    connection_attempt_metadata <
+                      technology: CONNECTION_TECHNOLOGY_UNKNOWN_TECHNOLOGY
+                      band: CONNECTION_BAND_UNKNOWN_BAND
+                      frequency: -1
+                      network_operator: ""
+                      country_code: ""
+                      is_tdls_used: false
+                      try_counts: 0
+                      wifi_hotspot_status: false
+                      max_tx_speed: 0
+                      max_rx_speed: 0
+                      wifi_channel_width: -1
+                    >
                   >
                 >)pb")));
 }
@@ -485,11 +603,21 @@ TEST(AnalyticsRecorderTest,
   FakeEventLogger event_logger(client_session_done_latch);
   AnalyticsRecorder analytics_recorder(&event_logger);
 
+  auto connections_attempt_metadata_params =
+      analytics_recorder.BuildConnectionAttemptMetadataParams(
+          ::location::nearby::proto::connections::
+              CONNECTION_TECHNOLOGY_HOTSPOT_LOCALONLY,
+          ::location::nearby::proto::connections::
+              CONNECTION_BAND_WIFI_BAND_6GHZ,
+          /*frequency*/ 2400, /*try_count*/ 0, /*network_operator*/ {},
+          /*country_code*/ {}, /*is_tdls_used*/ false,
+          /*wifi_hotspot_enabled*/ false, /*max_wifi_tx_speed*/ 0,
+          /*max_wifi_rx_speed*/ 0, /*channel_width*/ 0);
   analytics_recorder.OnStartDiscovery(strategy, mediums);
   analytics_recorder.OnConnectionRequestSent(endpoint_id);
   analytics_recorder.OnOutgoingConnectionAttempt(
       endpoint_id, INITIAL, BLUETOOTH, RESULT_ERROR, absl::Duration{},
-      connection_token);
+      connection_token, connections_attempt_metadata_params.get());
 
   analytics_recorder.LogSession();
   ASSERT_TRUE(client_session_done_latch.Await(kDefaultTimeout).result());
@@ -501,6 +629,11 @@ TEST(AnalyticsRecorderTest,
                   discovery_phase <
                     medium: BLE
                     medium: BLUETOOTH
+                    discovery_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
                     sent_connection_request <
                       local_response: NOT_SENT
                       remote_response: NOT_SENT
@@ -512,6 +645,19 @@ TEST(AnalyticsRecorderTest,
                     medium: BLUETOOTH
                     attempt_result: RESULT_ERROR
                     connection_token: ""
+                    connection_attempt_metadata <
+                      technology: CONNECTION_TECHNOLOGY_HOTSPOT_LOCALONLY
+                      band: CONNECTION_BAND_WIFI_BAND_6GHZ
+                      frequency: 2400
+                      network_operator: ""
+                      country_code: ""
+                      is_tdls_used: false
+                      try_counts: 0
+                      wifi_hotspot_status: false
+                      max_tx_speed: 0
+                      max_rx_speed: 0
+                      wifi_channel_width: 0
+                    >
                   >
                 >)pb")));
 }
@@ -540,7 +686,15 @@ TEST(AnalyticsRecorderTest, UnfinishedEstablishedConnectionsAddedAsUnfinished) {
                 strategy_session <
                   strategy: P2P_STAR
                   role: ADVERTISER
-                  advertising_phase < medium: BLE medium: BLUETOOTH >
+                  advertising_phase <
+                    medium: BLE
+                    medium: BLUETOOTH
+                    advertising_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
+                  >
                   established_connection <
                     medium: BLUETOOTH
                     disconnection_reason: UPGRADED
@@ -589,7 +743,15 @@ TEST(AnalyticsRecorderTest, OutgoingPayloadUpgraded) {
                 strategy_session <
                   strategy: P2P_STAR
                   role: ADVERTISER
-                  advertising_phase < medium: BLE medium: BLUETOOTH >
+                  advertising_phase <
+                    medium: BLE
+                    medium: BLUETOOTH
+                    advertising_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
+                  >
                   established_connection <
                     medium: BLUETOOTH
                     sent_payload <
@@ -652,7 +814,15 @@ TEST(AnalyticsRecorderTest, UpgradeAttemptWorks) {
                 strategy_session <
                   strategy: P2P_STAR
                   role: ADVERTISER
-                  advertising_phase < medium: BLE medium: BLUETOOTH >
+                  advertising_phase <
+                    medium: BLE
+                    medium: BLUETOOTH
+                    advertising_metadata <
+                      supports_extended_ble_advertisements: false
+                      connected_ap_frequency: 0
+                      supports_nfc_technology: false
+                    >
+                  >
                   upgrade_attempt <
                     direction: INCOMING
                     from_medium: BLE

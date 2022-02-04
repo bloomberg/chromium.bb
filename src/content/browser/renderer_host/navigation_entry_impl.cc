@@ -38,7 +38,7 @@
 #include "third_party/blink/public/mojom/navigation/prefetched_signed_exchange_info.mojom.h"
 #include "ui/gfx/text_elider.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/content_uri_utils.h"
 #endif
 
@@ -100,7 +100,9 @@ void RecursivelyGenerateFrameEntries(
         nullptr /* subresource_web_bundle_navigation_info */,
         // TODO(https://crbug.com/1140393): We should restore the policy
         // container.
-        nullptr /* policy_container_policies */);
+        nullptr /* policy_container_policies */,
+        // TODO(japhet): We should restore protect_url_in_app_history.
+        false /* protect_url_in_app_history */);
     context->AddFrameNavigationEntry(entry.get());
   }
   node->frame_entry = std::move(entry);
@@ -399,7 +401,8 @@ NavigationEntryImpl::NavigationEntryImpl(
               std::move(blob_url_loader_factory),
               nullptr /* web_bundle_navigation_info */,
               nullptr /* subresource_web_bundle_navigation_info */,
-              nullptr /* policy_container_policies */))),
+              nullptr /* policy_container_policies */,
+              false /* protect_url_in_app_history */))),
       unique_id_(CreateUniqueEntryID()),
       page_type_(PAGE_TYPE_NORMAL),
       update_virtual_url_with_url_(false),
@@ -449,7 +452,7 @@ const GURL& NavigationEntryImpl::GetBaseURLForDataURL() {
   return base_url_for_data_url_;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void NavigationEntryImpl::SetDataURLAsString(
     scoped_refptr<base::RefCountedString> data_url) {
   if (data_url) {
@@ -589,7 +592,7 @@ const std::u16string& NavigationEntryImpl::GetTitleForDisplay() {
     base::i18n::WrapStringWithLTRFormatting(&title);
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (GetURL().SchemeIs(url::kContentScheme)) {
     std::u16string file_display_name;
     if (base::MaybeGetFileDisplayName(base::FilePath(GetURL().spec()),
@@ -798,7 +801,7 @@ NavigationEntryImpl::CloneAndReplaceInternal(
   // ResetForCommit: post_data_
   copy->extra_headers_ = extra_headers_;
   copy->base_url_for_data_url_ = base_url_for_data_url_;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   copy->data_url_as_string_ = data_url_as_string_;
 #endif
   // ResetForCommit: is_renderer_initiated_
@@ -823,7 +826,6 @@ NavigationEntryImpl::ConstructCommonNavigationParams(
     const GURL& dest_url,
     blink::mojom::ReferrerPtr dest_referrer,
     blink::mojom::NavigationType navigation_type,
-    blink::PreviewsState previews_state,
     base::TimeTicks navigation_start,
     base::TimeTicks input_start) {
   blink::NavigationDownloadPolicy download_policy;
@@ -841,11 +843,10 @@ NavigationEntryImpl::ConstructCommonNavigationParams(
       // navigation that may use replacement create their CommonNavigationParams
       // via NavigationRequest, for example, instead of via NavigationEntry.
       false /* should_replace_entry */,
-      is_for_main_frame ? GetBaseURLForDataURL() : GURL(), previews_state,
-      navigation_start, frame_entry.method(),
-      post_body ? post_body : post_data_, network::mojom::SourceLocation::New(),
-      has_started_from_context_menu(), has_user_gesture(),
-      false /* has_text_fragment_token */,
+      is_for_main_frame ? GetBaseURLForDataURL() : GURL(), navigation_start,
+      frame_entry.method(), post_body ? post_body : post_data_,
+      network::mojom::SourceLocation::New(), has_started_from_context_menu(),
+      has_user_gesture(), false /* has_text_fragment_token */,
       network::mojom::CSPDisposition::CHECK, std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, input_start,
       network::mojom::RequestDestination::kEmpty);
@@ -905,7 +906,7 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           blink::mojom::WasActivatedOption::kUnknown,
           base::UnguessableToken::Create(),
           std::vector<blink::mojom::PrefetchedSignedExchangeInfoPtr>(),
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
           std::string(),
 #endif
           false /* is_browser_initiated */,
@@ -926,8 +927,8 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           std::vector<GURL>() /* early_hints_preloaded_resources */,
           absl::nullopt /* ad_auction_components */,
           // This timestamp will be populated when the commit IPC is sent.
-          base::TimeTicks() /* commit_sent */);
-#if defined(OS_ANDROID)
+          base::TimeTicks() /* commit_sent */, false /* anonymous */);
+#if BUILDFLAG(IS_ANDROID)
   // `data_url_as_string` is saved in NavigationEntry but should only be used by
   // main frames, because loadData* navigations can only happen on the main
   // frame.
@@ -1008,6 +1009,10 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
     std::unique_ptr<SubresourceWebBundleNavigationInfo>
         subresource_web_bundle_navigation_info,
     std::unique_ptr<PolicyContainerPolicies> policy_container_policies) {
+  bool protect_url_in_app_history =
+      policy_container_policies &&
+      NavigationControllerImpl::ShouldProtectUrlInAppHistory(
+          policy_container_policies->referrer_policy);
   // If this is called for the main frame, the FrameNavigationEntry is
   // guaranteed to exist, so just update it directly and return.
   if (frame_tree_node->IsMainFrame()) {
@@ -1035,7 +1040,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
         std::move(blob_url_loader_factory),
         std::move(web_bundle_navigation_info),
         std::move(subresource_web_bundle_navigation_info),
-        std::move(policy_container_policies));
+        std::move(policy_container_policies), protect_url_in_app_history);
     return;
   }
 
@@ -1071,7 +1076,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
           method, post_id, std::move(blob_url_loader_factory),
           std::move(web_bundle_navigation_info),
           std::move(subresource_web_bundle_navigation_info),
-          std::move(policy_container_policies));
+          std::move(policy_container_policies), protect_url_in_app_history);
       return;
     }
   }
@@ -1086,7 +1091,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
       post_id, std::move(blob_url_loader_factory),
       std::move(web_bundle_navigation_info),
       std::move(subresource_web_bundle_navigation_info),
-      std::move(policy_container_policies));
+      std::move(policy_container_policies), protect_url_in_app_history);
   parent_node->children.push_back(
       std::make_unique<NavigationEntryImpl::TreeNode>(parent_node,
                                                       std::move(frame_entry)));

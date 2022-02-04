@@ -17,17 +17,17 @@
 
 #include "dawn_native/BackendConnection.h"
 
-namespace dawn_native { namespace metal {
+namespace dawn::native::metal {
 
     class Backend : public BackendConnection {
       public:
         Backend(InstanceBase* instance);
 
-        std::vector<std::unique_ptr<AdapterBase>> DiscoverDefaultAdapters() override;
-        ResultOrError<std::vector<std::unique_ptr<AdapterBase>>> DiscoverAdapters(
+        std::vector<Ref<AdapterBase>> DiscoverDefaultAdapters() override;
+        ResultOrError<std::vector<Ref<AdapterBase>>> DiscoverAdapters(
             const AdapterDiscoveryOptionsBase* optionsBase) override;
     };
 
-}}  // namespace dawn_native::metal
+}  // namespace dawn::native::metal
 
 #endif  // DAWNNATIVE_METAL_BACKENDMTL_H_

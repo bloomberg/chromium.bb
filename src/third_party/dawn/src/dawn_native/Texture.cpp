@@ -27,7 +27,7 @@
 #include "dawn_native/PassResourceUsage.h"
 #include "dawn_native/ValidationUtils_autogen.h"
 
-namespace dawn_native {
+namespace dawn::native {
     namespace {
         // WebGPU currently does not have texture format reinterpretation. If it does, the
         // code to check for it might go here.
@@ -181,6 +181,9 @@ namespace dawn_native {
             const CombinedLimits& limits = device->GetLimits();
             Extent3D maxExtent;
             switch (descriptor->dimension) {
+                case wgpu::TextureDimension::e1D:
+                    maxExtent = {limits.v1.maxTextureDimension1D, 1, 1};
+                    break;
                 case wgpu::TextureDimension::e2D:
                     maxExtent = {limits.v1.maxTextureDimension2D, limits.v1.maxTextureDimension2D,
                                  limits.v1.maxTextureArrayLayers};
@@ -189,9 +192,6 @@ namespace dawn_native {
                     maxExtent = {limits.v1.maxTextureDimension3D, limits.v1.maxTextureDimension3D,
                                  limits.v1.maxTextureDimension3D};
                     break;
-                case wgpu::TextureDimension::e1D:
-                default:
-                    UNREACHABLE();
             }
             DAWN_INVALID_IF(descriptor->size.width > maxExtent.width ||
                                 descriptor->size.height > maxExtent.height ||
@@ -199,18 +199,33 @@ namespace dawn_native {
                             "Texture size (%s) exceeded maximum texture size (%s).",
                             &descriptor->size, &maxExtent);
 
-            uint32_t maxMippedDimension = descriptor->size.width;
-            if (descriptor->dimension != wgpu::TextureDimension::e1D) {
-                maxMippedDimension = std::max(maxMippedDimension, descriptor->size.height);
+            switch (descriptor->dimension) {
+                case wgpu::TextureDimension::e1D:
+                    DAWN_INVALID_IF(
+                        descriptor->mipLevelCount != 1,
+                        "Texture mip level count (%u) is more than 1 when its dimension is %s.",
+                        descriptor->mipLevelCount, wgpu::TextureDimension::e1D);
+                    break;
+                case wgpu::TextureDimension::e2D: {
+                    uint32_t maxMippedDimension =
+                        std::max(descriptor->size.width, descriptor->size.height);
+                    DAWN_INVALID_IF(
+                        Log2(maxMippedDimension) + 1 < descriptor->mipLevelCount,
+                        "Texture mip level count (%u) exceeds the maximum (%u) for its size (%s).",
+                        descriptor->mipLevelCount, Log2(maxMippedDimension) + 1, &descriptor->size);
+                    break;
+                }
+                case wgpu::TextureDimension::e3D: {
+                    uint32_t maxMippedDimension = std::max(
+                        descriptor->size.width,
+                        std::max(descriptor->size.height, descriptor->size.depthOrArrayLayers));
+                    DAWN_INVALID_IF(
+                        Log2(maxMippedDimension) + 1 < descriptor->mipLevelCount,
+                        "Texture mip level count (%u) exceeds the maximum (%u) for its size (%s).",
+                        descriptor->mipLevelCount, Log2(maxMippedDimension) + 1, &descriptor->size);
+                    break;
+                }
             }
-            if (descriptor->dimension == wgpu::TextureDimension::e3D) {
-                maxMippedDimension =
-                    std::max(maxMippedDimension, descriptor->size.depthOrArrayLayers);
-            }
-            DAWN_INVALID_IF(
-                Log2(maxMippedDimension) + 1 < descriptor->mipLevelCount,
-                "Texture mip level count (%u) exceeds the maximum (%u) for its size (%s).",
-                descriptor->mipLevelCount, Log2(maxMippedDimension) + 1, &descriptor->size);
 
             if (format->isCompressed) {
                 const TexelBlockInfo& blockInfo =
@@ -229,7 +244,7 @@ namespace dawn_native {
         MaybeError ValidateTextureUsage(const TextureDescriptor* descriptor,
                                         wgpu::TextureUsage usage,
                                         const Format* format) {
-            DAWN_TRY(dawn_native::ValidateTextureUsage(usage));
+            DAWN_TRY(dawn::native::ValidateTextureUsage(usage));
 
             constexpr wgpu::TextureUsage kValidCompressedUsages =
                 wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopySrc |
@@ -250,8 +265,9 @@ namespace dawn_native {
                 "The texture usage (%s) includes %s, which is incompatible with the format (%s).",
                 usage, wgpu::TextureUsage::StorageBinding, format->format);
 
+            // Only allows simple readonly texture usages.
             constexpr wgpu::TextureUsage kValidMultiPlanarUsages =
-                wgpu::TextureUsage::TextureBinding;
+                wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopySrc;
             DAWN_INVALID_IF(
                 format->IsMultiPlanar() && !IsSubset(usage, kValidMultiPlanarUsages),
                 "The texture usage (%s) is incompatible with the multi-planar format (%s).", usage,
@@ -270,12 +286,17 @@ namespace dawn_native {
         const DawnTextureInternalUsageDescriptor* internalUsageDesc = nullptr;
         FindInChain(descriptor->nextInChain, &internalUsageDesc);
 
-        DAWN_INVALID_IF(descriptor->dimension == wgpu::TextureDimension::e1D,
-                        "1D textures aren't supported (yet).");
-
         DAWN_INVALID_IF(
             internalUsageDesc != nullptr && !device->IsFeatureEnabled(Feature::DawnInternalUsages),
             "The dawn-internal-usages feature is not enabled");
+
+        // Support for 1D textures is not complete so they are currently unsafe to use.
+        DAWN_INVALID_IF(
+            device->IsToggleEnabled(Toggle::DisallowUnsafeAPIs) &&
+                descriptor->dimension == wgpu::TextureDimension::e1D,
+            "Texture with dimension %s are disallowed because they are partially implemented. See "
+            "https://crbug.com/dawn/814",
+            wgpu::TextureDimension::e1D);
 
         const Format* format;
         DAWN_TRY_ASSIGN(format, device->GetInternalFormat(descriptor->format));
@@ -525,8 +546,6 @@ namespace dawn_native {
     }
     uint32_t TextureBase::GetArrayLayers() const {
         ASSERT(!IsError());
-        // TODO(crbug.com/dawn/814): Update for 1D textures when they are supported.
-        ASSERT(mDimension != wgpu::TextureDimension::e1D);
         if (mDimension == wgpu::TextureDimension::e3D) {
             return 1;
         }
@@ -774,4 +793,4 @@ namespace dawn_native {
         return mRange;
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

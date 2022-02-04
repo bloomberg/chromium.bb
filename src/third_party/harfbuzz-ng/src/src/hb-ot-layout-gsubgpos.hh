@@ -81,12 +81,15 @@ struct hb_closure_context_t :
     nesting_level_left++;
   }
 
+  void reset_lookup_visit_count ()
+  { lookup_count = 0; }
+
   bool lookup_limit_exceeded ()
-  { return lookup_count > HB_MAX_LOOKUP_INDICES; }
+  { return lookup_count > HB_MAX_LOOKUP_VISIT_COUNT; }
 
   bool should_visit_lookup (unsigned int lookup_index)
   {
-    if (lookup_count++ > HB_MAX_LOOKUP_INDICES)
+    if (lookup_count++ > HB_MAX_LOOKUP_VISIT_COUNT)
       return false;
 
     if (is_lookup_done (lookup_index))
@@ -163,7 +166,7 @@ struct hb_closure_context_t :
 			hb_set_t *glyphs_,
 			hb_set_t *cur_intersected_glyphs_,
 			hb_map_t *done_lookups_glyph_count_,
-			hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> *done_lookups_glyph_set_,
+			hb_hashmap_t<unsigned, hb_set_t *> *done_lookups_glyph_set_,
 			unsigned int nesting_level_left_ = HB_MAX_NESTING_LEVEL) :
 			  face (face_),
 			  glyphs (glyphs_),
@@ -192,7 +195,7 @@ struct hb_closure_context_t :
 
   private:
   hb_map_t *done_lookups_glyph_count;
-  hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> *done_lookups_glyph_set;
+  hb_hashmap_t<unsigned, hb_set_t *> *done_lookups_glyph_set;
   unsigned int lookup_count;
 };
 
@@ -211,7 +214,11 @@ struct hb_closure_lookups_context_t :
       return;
 
     /* Return if new lookup was recursed to before. */
-    if (is_lookup_visited (lookup_index))
+    if (lookup_limit_exceeded ()
+        || visited_lookups->in_error ()
+        || visited_lookups->has (lookup_index))
+      // Don't increment lookup count here, that will be done in the call to closure_lookups()
+      // made by recurse_func.
       return;
 
     nesting_level_left--;
@@ -226,12 +233,20 @@ struct hb_closure_lookups_context_t :
   { inactive_lookups->add (lookup_index); }
 
   bool lookup_limit_exceeded ()
-  { return lookup_count > HB_MAX_LOOKUP_INDICES; }
+  {
+    bool ret = lookup_count > HB_MAX_LOOKUP_VISIT_COUNT;
+    if (ret)
+      DEBUG_MSG (SUBSET, nullptr, "lookup visit count limit exceeded in lookup closure!");
+    return ret; }
 
   bool is_lookup_visited (unsigned lookup_index)
   {
-    if (unlikely (lookup_count++ > HB_MAX_LOOKUP_INDICES))
+    if (unlikely (lookup_count++ > HB_MAX_LOOKUP_VISIT_COUNT))
+    {
+      DEBUG_MSG (SUBSET, nullptr, "total visited lookup count %u exceeds max limit, lookup %u is dropped.",
+                 lookup_count, lookup_index);
       return true;
+    }
 
     if (unlikely (visited_lookups->in_error ()))
       return true;
@@ -1303,8 +1318,7 @@ static void context_closure_recurse_lookups (hb_closure_context_t *c,
     }
 
     hb_set_add (covered_seq_indicies, seqIndex);
-    if (pos_glyphs)
-      c->push_cur_active_glyphs (pos_glyphs);
+    c->push_cur_active_glyphs (pos_glyphs ? pos_glyphs : c->glyphs);
 
     unsigned endIndex = inputCount;
     if (context_format == ContextFormat::CoverageBasedContext)
@@ -1312,10 +1326,9 @@ static void context_closure_recurse_lookups (hb_closure_context_t *c,
 
     c->recurse (lookupRecord[i].lookupListIndex, covered_seq_indicies, seqIndex, endIndex);
 
-    if (pos_glyphs) {
-      c->pop_cur_done_glyphs ();
+    c->pop_cur_done_glyphs ();
+    if (pos_glyphs)
       hb_set_destroy (pos_glyphs);
-    }
   }
 
   hb_set_destroy (covered_seq_indicies);
@@ -1642,9 +1655,8 @@ struct Rule
 	       const hb_map_t *klass_map = nullptr) const
   {
     TRACE_SUBSET (this);
-
-    const hb_array_t<const HBUINT16> input = inputZ.as_array ((inputCount ? inputCount - 1 : 0));
-    if (!input.length) return_trace (false);
+    if (unlikely (!inputCount)) return_trace (false);
+    const hb_array_t<const HBUINT16> input = inputZ.as_array (inputCount - 1);
 
     const hb_map_t *mapping = klass_map == nullptr ? c->plan->glyph_map : klass_map;
     if (!hb_all (input, mapping)) return_trace (false);
@@ -3631,7 +3643,7 @@ struct GSUBGPOS
   }
 
   void prune_langsys (const hb_map_t *duplicate_feature_map,
-                      hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> *script_langsys_map,
+                      hb_hashmap_t<unsigned, hb_set_t *> *script_langsys_map,
                       hb_set_t       *new_feature_indexes /* OUT */) const
   {
     hb_prune_langsys_context_t c (this, script_langsys_map, duplicate_feature_map, new_feature_indexes);
@@ -3689,7 +3701,7 @@ struct GSUBGPOS
                                 hb_map_t *duplicate_feature_map /* OUT */) const
   {
     if (feature_indices->is_empty ()) return;
-    hb_hashmap_t<hb_tag_t, hb_set_t *, (unsigned)-1, nullptr> unique_features;
+    hb_hashmap_t<hb_tag_t, hb_set_t *> unique_features;
     //find out duplicate features after subset
     for (unsigned i : feature_indices->iter ())
     {
@@ -3784,8 +3796,12 @@ struct GSUBGPOS
 	// http://lists.freedesktop.org/archives/harfbuzz/2012-November/002660.html
         continue;
 
-      if (f.featureParams.is_null ()
-	  && !f.intersects_lookup_indexes (lookup_indices)
+
+      if (!f.featureParams.is_null () &&
+          tag == HB_TAG ('s', 'i', 'z', 'e'))
+        continue;
+
+      if (!f.intersects_lookup_indexes (lookup_indices)
 #ifndef HB_NO_VAR
           && !alternate_feature_indices.has (i)
 #endif

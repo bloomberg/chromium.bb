@@ -26,205 +26,6 @@ export const escapeCharacters = (inputString: string, charsToEscape: string): st
   return result;
 };
 
-export const enum FormatterType {
-  STRING = 'string',
-  SPECIFIER = 'specifier',
-}
-
-export interface FormatterToken {
-  type: FormatterType;
-  value?: string|{description: string};
-  specifier?: string;
-  precision?: number;
-  substitutionIndex?: number;
-}
-
-export const tokenizeFormatString = function(
-    formatString: string, formatters: Record<string, Function>): FormatterToken[] {
-  const tokens: FormatterToken[] = [];
-
-  function addStringToken(str: string): void {
-    if (!str) {
-      return;
-    }
-    if (tokens.length && tokens[tokens.length - 1].type === FormatterType.STRING) {
-      tokens[tokens.length - 1].value += str;
-    } else {
-      tokens.push({
-        type: FormatterType.STRING,
-        value: str,
-      });
-    }
-  }
-
-  function addSpecifierToken(specifier: string, precision: number, substitutionIndex: number): void {
-    tokens.push({type: FormatterType.SPECIFIER, specifier, precision, substitutionIndex, value: undefined});
-  }
-
-  function addAnsiColor(code: number): void {
-    type ColorType = 'color'|'colorLight'|'bgColor'|'bgColorLight';
-
-    const types: Record<number, ColorType> = {3: 'color', 9: 'colorLight', 4: 'bgColor', 10: 'bgColorLight'};
-    const colorCodes = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'lightGray', '', 'default'];
-    const colorCodesLight =
-        ['darkGray', 'lightRed', 'lightGreen', 'lightYellow', 'lightBlue', 'lightMagenta', 'lightCyan', 'white', ''];
-    const colors: Record<ColorType, string[]> =
-        {color: colorCodes, colorLight: colorCodesLight, bgColor: colorCodes, bgColorLight: colorCodesLight};
-    const type = types[Math.floor(code / 10)] as ColorType;
-    if (!type) {
-      return;
-    }
-    const color = colors[type][code % 10];
-    if (!color) {
-      return;
-    }
-    tokens.push({
-      type: FormatterType.SPECIFIER,
-      specifier: 'c',
-      value: {description: (type.startsWith('bg') ? 'background : ' : 'color: ') + color},
-      precision: undefined,
-      substitutionIndex: undefined,
-    });
-  }
-
-  let textStart = 0;
-  let substitutionIndex = 0;
-  const re =
-      new RegExp(`%%|%(?:(\\d+)\\$)?(?:\\.(\\d*))?([${Object.keys(formatters).join('')}])|\\u001b\\[(\\d+)m`, 'g');
-  for (let match = re.exec(formatString); match !== null; match = re.exec(formatString)) {
-    const matchStart = match.index;
-    if (matchStart > textStart) {
-      addStringToken(formatString.substring(textStart, matchStart));
-    }
-
-    if (match[0] === '%%') {
-      addStringToken('%');
-    } else if (match[0].startsWith('%')) {
-      const [, substitionString, precisionString, specifierString] = match;
-      if (substitionString && Number(substitionString) > 0) {
-        substitutionIndex = Number(substitionString) - 1;
-      }
-      const precision = precisionString ? Number(precisionString) : -1;
-      addSpecifierToken(specifierString, precision, substitutionIndex);
-      ++substitutionIndex;
-    } else {
-      const code = Number(match[4]);
-      addAnsiColor(code);
-    }
-    textStart = matchStart + match[0].length;
-  }
-  addStringToken(formatString.substring(textStart));
-  return tokens;
-};
-
-export type FormatterFunction<T> = (input: string|{description: string}|undefined|T, token: FormatterToken) => unknown;
-
-export const format = function<T, U>(
-    formatString: string, substitutions: ArrayLike<U>|null, formatters: Record<string, FormatterFunction<U>>,
-    initialValue: T, append: (initialValue: T, newString: string) => T, tokenizedFormat?: FormatterToken[]): {
-  formattedResult: T,
-  unusedSubstitutions: ArrayLike<U>|null,
-} {
-  if (!formatString || ((!substitutions || !substitutions.length) && formatString.search(/\u001b\[(\d+)m/) === -1)) {
-    return {formattedResult: append(initialValue, formatString), unusedSubstitutions: substitutions};
-  }
-
-  function prettyFunctionName(): string {
-    return 'String.format("' + formatString + '", "' + Array.prototype.join.call(substitutions, '", "') + '")';
-  }
-
-  function warn(msg: string): void {
-    console.warn(prettyFunctionName() + ': ' + msg);
-  }
-
-  function error(msg: string): void {
-    console.error(prettyFunctionName() + ': ' + msg);
-  }
-
-  let result = initialValue;
-  const tokens = tokenizedFormat || tokenizeFormatString(formatString, formatters);
-  const usedSubstitutionIndexes: Record<number, boolean> = {};
-  const actualSubstitutions: ArrayLike<U> = substitutions || [];
-
-  for (const token of tokens) {
-    if (token.type === FormatterType.STRING) {
-      result = append(result, token.value as string);
-      continue;
-    }
-
-    if (token.type !== FormatterType.SPECIFIER) {
-      error('Unknown token type "' + token.type + '" found.');
-      continue;
-    }
-
-    if (!token.value && token.substitutionIndex !== undefined &&
-        token.substitutionIndex >= actualSubstitutions.length) {
-      // If there are not enough substitutions for the current substitutionIndex
-      // just output the format specifier literally and move on.
-      error(
-          'not enough substitution arguments. Had ' + actualSubstitutions.length + ' but needed ' +
-          (token.substitutionIndex + 1) + ', so substitution was skipped.');
-      result = append(
-          result,
-          '%' + ((token.precision !== undefined && token.precision > -1) ? token.precision : '') + token.specifier);
-      continue;
-    }
-
-    if (!token.value && token.substitutionIndex !== undefined) {
-      usedSubstitutionIndexes[token.substitutionIndex] = true;
-    }
-
-    if (token.specifier === undefined || !(token.specifier in formatters)) {
-      // Encountered an unsupported format character, treat as a string.
-      warn('unsupported format character \u201C' + token.specifier + '\u201D. Treating as a string.');
-      const stringToAppend = (token.value || token.substitutionIndex === undefined) ?
-          '' :
-          String(actualSubstitutions[token.substitutionIndex]);
-      result = append(result, stringToAppend);
-      continue;
-    }
-
-    const formatter = formatters[token.specifier];
-    const valueToFormat = token.value ||
-        (token.substitutionIndex !== undefined ? actualSubstitutions[token.substitutionIndex] : undefined);
-    const stringToAppend = formatter(valueToFormat, token);
-
-    result = append(
-        result,
-        stringToAppend as string,
-    );
-  }
-
-  const unusedSubstitutions = [];
-  for (let i = 0; i < actualSubstitutions.length; ++i) {
-    if (i in usedSubstitutionIndexes) {
-      continue;
-    }
-    unusedSubstitutions.push(actualSubstitutions[i]);
-  }
-
-  return {formattedResult: result, unusedSubstitutions: unusedSubstitutions};
-};
-
-export const standardFormatters = {
-  d: function(substitution: unknown): number {
-    return (!isNaN(substitution as number) ? substitution as number : 0);
-  },
-
-  f: function(substitution: unknown, token: FormatterToken): string {
-    if (substitution && typeof substitution === 'number' && token.precision !== undefined && token.precision > -1) {
-      substitution = substitution.toFixed(token.precision);
-    }
-    const precision =
-        (token.precision !== undefined && token.precision > -1) ? Number(0).toFixed(token.precision) : '0';
-    return !isNaN(substitution as number) ? substitution as string : precision;
-  },
-
-  s: function(substitution: unknown): string {
-    return substitution as string;
-  },
-};
-
 const toHexadecimal = (charCode: number, padToLength: number): string => {
   return charCode.toString(16).toUpperCase().padStart(padToLength, '0');
 };
@@ -285,12 +86,51 @@ export const formatAsJSLiteral = (content: string): string => {
   return `${quote}${escapedContent}${quote}`;
 };
 
-export const vsprintf = function(formatString: string, substitutions: unknown[]): string {
-  return format(formatString, substitutions, standardFormatters, '', (a, b) => a + b).formattedResult;
-};
-
-export const sprintf = function(format: string, ...varArg: unknown[]): string {
-  return vsprintf(format, varArg);
+/**
+ * This implements a subset of the sprintf() function described in the Single UNIX
+ * Specification. It supports the %s, %f, %d, and %% formatting specifiers, and
+ * understands the %m$d notation to select the m-th parameter for this substitution,
+ * as well as the optional precision for %s, %f, and %d.
+ *
+ * @param fmt format string.
+ * @param args parameters to the format string.
+ * @returns the formatted output string.
+ */
+export const sprintf = (fmt: string, ...args: unknown[]): string => {
+  let argIndex = 0;
+  const RE = /%(?:(\d+)\$)?(?:\.(\d*))?([%dfs])/g;
+  return fmt.replaceAll(RE, (_: string, index?: string, precision?: string, specifier?: string): string => {
+    if (specifier === '%') {
+      return '%';
+    }
+    if (index !== undefined) {
+      argIndex = parseInt(index, 10) - 1;
+      if (argIndex < 0) {
+        throw new RangeError(`Invalid parameter index ${argIndex + 1}`);
+      }
+    }
+    if (argIndex >= args.length) {
+      throw new RangeError(`Expected at least ${argIndex + 1} format parameters, but only ${args.length} where given.`);
+    }
+    if (specifier === 's') {
+      const argValue = String(args[argIndex++]);
+      if (precision !== undefined) {
+        return argValue.substring(0, Number(precision));
+      }
+      return argValue;
+    }
+    let argValue = Number(args[argIndex++]);
+    if (isNaN(argValue)) {
+      argValue = 0;
+    }
+    if (specifier === 'd') {
+      return String(Math.floor(argValue)).padStart(Number(precision), '0');
+    }
+    if (precision !== undefined) {
+      return argValue.toFixed(Number(precision));
+    }
+    return String(argValue);
+  });
 };
 
 export const toBase64 = (inputString: string): string => {

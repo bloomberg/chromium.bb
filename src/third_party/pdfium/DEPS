@@ -26,7 +26,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling abseil
   # and whatever else without interference from each other.
-  'abseil_revision': '88b1c38f02277777cbfec4058bb519a138254787',
+  'abseil_revision': 'fd787098b1f24c0150cdd72b888f04ef9f3e89cf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_ndk
   # and whatever else without interference from each other.
@@ -34,15 +34,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build
   # and whatever else without interference from each other.
-  'build_revision': 'b6006fa9fd952832a3df916696dad371347bba29',
+  'build_revision': '79e39b38cca14e621b25e1fd82bb29e7cfab697d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling buildtools
   # and whatever else without interference from each other.
-  'buildtools_revision': '075dd7e22837a69189003e4fa84499acf63188cf',
+  'buildtools_revision': 'f78b4b9f33bd8ef9944d5ce643daff1c31880189',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '75423c310eb303d28978be892fcf7b9c2c824909',
+  'catapult_revision': '1a34b98c2ce22f4eb491a1052d39e8cfb99a8698',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang format
   # and whatever else without interference from each other.
@@ -50,7 +50,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang
   # and whatever else without interference from each other.
-  'clang_revision': '401e727f2ae6663c4e13dfd3e1006cc9fa34bb10',
+  'clang_revision': '3da260b0f2ad81546ed772ee30873fc7d9e0e862',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang_dsymutil
   # and whatever else without interference from each other.
@@ -58,27 +58,27 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling code_coverage
   # and whatever else without interference from each other.
-  'code_coverage_revision': '7b4a8bcadec9f7e1f02da7e7b0a7f1d06a16df86',
+  'code_coverage_revision': '07b20e758cb868ed42ba68f3362d89c00daa9948',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling depot_tools
   # and whatever else without interference from each other.
-  'depot_tools_revision': '0b037419f52b0c789249caa45f41b2e45cdbc7f8',
+  'depot_tools_revision': 'fd7427ccf691cd784330a825ce2433e58da7f318',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '3b45f564e94fde897c0e6e168c660a6e1ec5c679',
+  'freetype_revision': 'edd4fedc5427cf1cf1f4b045e53ff91eb282e9d4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling GN CIPD package version
   # and whatever else without interference from each other.
-  'gn_version': 'git_revision:b79031308cc878488202beb99883ec1f2efd9a6d',
+  'gn_version': 'git_revision:80a40b07305373617eba2d5878d353532af77da3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling gtest
   # and whatever else without interference from each other.
-  'gtest_revision': 'e2f3978937c0244508135f126e2617a7734a68be',
+  'gtest_revision': 'c9643a2e45ed0cb18b8409c62994be7c6e66dc1b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling icu
   # and whatever else without interference from each other.
-  'icu_revision': 'edf883ad2db9c723b058a6a17a146d68d6343143',
+  'icu_revision': 'b9f6d0a5c5375dc4643f35360d257dba37c1d3e1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling instrumented_lib
   # and whatever else without interference from each other.
@@ -100,11 +100,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libc++abi
   # and whatever else without interference from each other.
-  'libcxxabi_revision': '665b74f7d1b3bb295cd6ba7d8fcec1acd3d2ac84',
+  'libcxxabi_revision': '94855f7b7cdadf1aa5c58ac3ccf522e204e27087',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libunwind
   # and whatever else without interference from each other.
-  'libunwind_revision': 'c936d73ff70ebf755c8fee3f3420dd16805e377a',
+  'libunwind_revision': '57e4aff4a11ba10432307816505385d9344b3706',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling markupsafe
   # and whatever else without interference from each other.
@@ -116,11 +116,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling pdfium_tests
   # and whatever else without interference from each other.
-  'pdfium_tests_revision': '3c4d506fe010630ddd74d9a5e288a406dd6886e5',
+  'pdfium_tests_revision': 'ad661eea10c72d8689374cc0381e12a6d91291c7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling skia
   # and whatever else without interference from each other.
-  'skia_revision': 'b755b0157e06472a9c5e9a8746f11419bb3368fe',
+  'skia_revision': '7502b75098f73366c43c61c6c0aec19c902e53c6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling test_fonts
   # and whatever else without interference from each other.
@@ -128,7 +128,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling tools_memory
   # and whatever else without interference from each other.
-  'tools_memory_revision': 'bfbdc93fb6b777a69e4fa0d6e4339cbddb311270',
+  'tools_memory_revision': '8e8704fdfac5e10c5777f3093627a482f9dd2d47',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling trace_event
   # and whatever else without interference from each other.
@@ -136,11 +136,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling v8
   # and whatever else without interference from each other.
-  'v8_revision': 'c082becb248ccd3fafac2fd9f4cb50e8d0278682',
+  'v8_revision': 'bf2a97810e447c19a31c55c5b1b8fb66e46bcc1e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling zlib
   # and whatever else without interference from each other.
-  'zlib_revision': '2231b7c84b443385f2bd65dd6c46b3c7b957eae1',
+  'zlib_revision': 'fc5cfd78a357d5bb7735a58f383634faaafe706a',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -316,10 +316,34 @@ deps = {
     'condition': 'checkout_linux',
   },
 
+  # TODO(crbug.com/pdfium/1650, crbug.com/1280002): Remove this entry once there
+  # is an autoroller has been updated to roll the mac_amd64 version.
   'tools/skia_goldctl/mac': {
     'packages': [
       {
         'package': 'skia/tools/goldctl/mac-amd64',
+        'version': 'git_revision:11b8d9e1b976c7ef4dd60521c87d00a8970f889b',
+      }
+    ],
+    'dep_type': 'cipd',
+    'condition': 'checkout_mac',
+  },
+
+  'tools/skia_goldctl/mac_amd64': {
+    'packages': [
+      {
+        'package': 'skia/tools/goldctl/mac-amd64',
+        'version': 'git_revision:11b8d9e1b976c7ef4dd60521c87d00a8970f889b',
+      }
+    ],
+    'dep_type': 'cipd',
+    'condition': 'checkout_mac',
+  },
+
+  'tools/skia_goldctl/mac_arm64': {
+    'packages': [
+      {
+        'package': 'skia/tools/goldctl/mac-arm64',
         'version': 'git_revision:11b8d9e1b976c7ef4dd60521c87d00a8970f889b',
       }
     ],

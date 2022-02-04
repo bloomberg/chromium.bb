@@ -39,7 +39,7 @@ public:
                                        GrPrimitiveType::kPatches, 5, viewMatrix, color, attribs) {
         constexpr static Attribute kInputPointAttrib{"inputPoint", kFloat2_GrVertexAttribType,
                                                      kFloat2_GrSLType};
-        this->setVertexAttributes(&kInputPointAttrib, 1);
+        this->setVertexAttributesWithImplicitOffsets(&kInputPointAttrib, 1);
         SkASSERT(this->vertexStride() * 5 ==
                  sizeof(SkPoint) * 4 + skgpu::PatchAttribsStride(fAttribs));
     }
@@ -50,7 +50,7 @@ public:
 
 private:
     const char* name() const final { return "tessellate_HardwareWedgeShader"; }
-    void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const final {}
+    void addToKey(const GrShaderCaps&, skgpu::KeyBuilder*) const final {}
     std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const final;
 };
 
@@ -180,7 +180,7 @@ public:
                                        attribs) {
         constexpr static Attribute kInputPointAttrib{"inputPoint", kFloat2_GrVertexAttribType,
                                                      kFloat2_GrSLType};
-        this->setVertexAttributes(&kInputPointAttrib, 1);
+        this->setVertexAttributesWithImplicitOffsets(&kInputPointAttrib, 1);
         SkASSERT(this->vertexStride() * 4 ==
                  sizeof(SkPoint) * 4 + skgpu::PatchAttribsStride(fAttribs));
     }
@@ -194,7 +194,7 @@ public:
 
 private:
     const char* name() const final { return "tessellate_HardwareCurveShader"; }
-    void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const final {}
+    void addToKey(const GrShaderCaps&, skgpu::KeyBuilder*) const final {}
     std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const final;
 };
 

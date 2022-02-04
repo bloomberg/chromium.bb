@@ -15,17 +15,18 @@ limitations under the License.
 
 #include "tensorflow/core/distributed_runtime/coordination/coordination_service_agent.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
+#include "absl/strings/substitute.h"
 #include "absl/synchronization/notification.h"
-#include "tensorflow/core/common_runtime/device_mgr.h"
+#include "absl/time/time.h"
 #include "tensorflow/core/distributed_runtime/coordination/coordination_client.h"
-#include "tensorflow/core/distributed_runtime/worker_env.h"
-#include "tensorflow/core/framework/device_attributes.pb.h"
 #include "tensorflow/core/platform/env.h"
 #include "tensorflow/core/platform/errors.h"
 #include "tensorflow/core/platform/mutex.h"
+#include "tensorflow/core/platform/random.h"
 #include "tensorflow/core/platform/strcat.h"
 #include "tensorflow/core/platform/thread_annotations.h"
 #include "tensorflow/core/protobuf/config.pb.h"
@@ -44,24 +45,27 @@ class CoordinationServiceAgentImpl : public CoordinationServiceAgent {
  public:
   CoordinationServiceAgentImpl() = default;
   ~CoordinationServiceAgentImpl() override { Stop(); }
-  Status Initialize(const WorkerEnv* worker_env, const ServerDef& server_def,
+  Status Initialize(Env* env, const ServerDef& server_def,
                     std::unique_ptr<CoordinationClientCache> client_cache,
                     StatusCallback error_fn) override;
-  Status Initialize(const WorkerEnv* worker_env, const std::string& job_name,
-                    int task_id, const CoordinationServiceConfig& configs,
+  Status Initialize(Env* env, const std::string& job_name, int task_id,
+                    const CoordinationServiceConfig& configs,
                     std::unique_ptr<CoordinationClient> leader_client,
                     StatusCallback error_fn) override;
   bool IsInitialized() override;
 
   Status Connect() override;
-  Status WaitForAllTasks() override;
-  const std::vector<DeviceAttributes>& GetClusterDeviceAttributes() override;
+  Status WaitForAllTasks(
+      const CoordinationServiceDeviceInfo& local_devices) override;
+  const CoordinationServiceDeviceInfo& GetClusterDeviceInfo() override;
   StatusOr<TaskState> GetTaskStatus(const std::string& job_name,
                                     const int task_id) override;
   Status ReportError(const Status& error) override;
   Status Reset() override;
 
   StatusOr<std::string> GetKeyValue(const std::string& key) override;
+  StatusOr<std::string> GetKeyValue(const std::string& key,
+                                    absl::Duration timeout) override;
   void GetKeyValueAsync(const std::string& key,
                         StatusOrValueCallback done) override;
   Status InsertKeyValue(const std::string& key,
@@ -81,7 +85,7 @@ class CoordinationServiceAgentImpl : public CoordinationServiceAgent {
   void Stop();
 
  private:
-  const WorkerEnv* env_;
+  Env* env_;                     // Not owned.
   const int64_t incarnation_id_ = random::New64();
   std::string job_name_;
   int task_id_;
@@ -100,7 +104,7 @@ class CoordinationServiceAgentImpl : public CoordinationServiceAgent {
   Status status_ TF_GUARDED_BY(state_mu_) = Status::OK();
 
   uint64 leader_incarnation_;
-  std::vector<DeviceAttributes> cluster_devices_;
+  CoordinationServiceDeviceInfo cluster_devices_;
 
   mutex heartbeat_thread_shutdown_mu_;
   condition_variable heartbeat_thread_cv_;
@@ -111,7 +115,7 @@ class CoordinationServiceAgentImpl : public CoordinationServiceAgent {
 };
 
 Status CoordinationServiceAgentImpl::Initialize(
-    const WorkerEnv* env, const ServerDef& server_def,
+    Env* env, const ServerDef& server_def,
     std::unique_ptr<CoordinationClientCache> client_cache,
     StatusCallback error_fn) {
   CoordinationServiceConfig configs =
@@ -138,7 +142,7 @@ Status CoordinationServiceAgentImpl::Initialize(
 }
 
 Status CoordinationServiceAgentImpl::Initialize(
-    const WorkerEnv* worker_env, const std::string& job_name, int task_id,
+    Env* env, const std::string& job_name, int task_id,
     const CoordinationServiceConfig& configs,
     std::unique_ptr<CoordinationClient> leader_client,
     StatusCallback error_fn) {
@@ -148,7 +152,7 @@ Status CoordinationServiceAgentImpl::Initialize(
         "Coordination service agent has already been initialized.");
   }
 
-  env_ = worker_env;
+  env_ = env;
   job_name_ = job_name;
   task_id_ = task_id;
   configs_ = configs;
@@ -227,8 +231,8 @@ Status CoordinationServiceAgentImpl::Connect() {
     }
   }
 
-  heartbeat_thread_.reset(env_->env->StartThread(
-      ThreadOptions(), kHeartbeatThread, [this]() -> void {
+  heartbeat_thread_.reset(
+      env_->StartThread(ThreadOptions(), kHeartbeatThread, [this]() -> void {
         HeartbeatRequest request;
         request.set_job(job_name_);
         request.set_task(task_id_);
@@ -269,7 +273,8 @@ Status CoordinationServiceAgentImpl::Connect() {
   return Status::OK();
 }
 
-Status CoordinationServiceAgentImpl::WaitForAllTasks() {
+Status CoordinationServiceAgentImpl::WaitForAllTasks(
+    const CoordinationServiceDeviceInfo& local_devices) {
   {
     mutex_lock l(state_mu_);
     if (state_ != State::RUNNING) {
@@ -281,11 +286,7 @@ Status CoordinationServiceAgentImpl::WaitForAllTasks() {
   WaitForAllTasksRequest request;
   request.set_job(job_name_);
   request.set_task(task_id_);
-  std::vector<DeviceAttributes> devices;
-  env_->device_mgr->ListDeviceAttributes(&devices);
-  for (auto& d : devices) {
-    request.add_local_device_attributes()->Swap(&d);
-  }
+  *request.mutable_local_device_info() = local_devices;
   WaitForAllTasksResponse response;
   Status status;
   absl::Notification n;
@@ -298,14 +299,12 @@ Status CoordinationServiceAgentImpl::WaitForAllTasks() {
     SetError(status);
     return status;
   }
-  for (const auto& da : response.cluster_device_attributes()) {
-    cluster_devices_.emplace_back(da);
-  }
+  cluster_devices_.MergeFrom(response.cluster_device_info());
   return Status::OK();
 }
 
-const std::vector<DeviceAttributes>&
-CoordinationServiceAgentImpl::GetClusterDeviceAttributes() {
+const CoordinationServiceDeviceInfo&
+CoordinationServiceAgentImpl::GetClusterDeviceInfo() {
   return cluster_devices_;
 }
 
@@ -357,14 +356,26 @@ Status CoordinationServiceAgentImpl::Reset() {
 
 StatusOr<std::string> CoordinationServiceAgentImpl::GetKeyValue(
     const std::string& key) {
-  absl::Notification n;
-  StatusOr<std::string> result;
-  GetKeyValueAsync(key, [&](const StatusOr<std::string>& status_or_value) {
-    result = status_or_value;
-    n.Notify();
-  });
-  n.WaitForNotification();
-  return result;
+  return GetKeyValue(key, /*timeout=*/absl::InfiniteDuration());
+}
+
+StatusOr<std::string> CoordinationServiceAgentImpl::GetKeyValue(
+    const std::string& key, absl::Duration timeout) {
+  auto n = std::make_shared<absl::Notification>();
+  auto result = std::make_shared<StatusOr<std::string>>();
+  GetKeyValueAsync(key,
+                   [n, result](const StatusOr<std::string>& status_or_value) {
+                     *result = status_or_value;
+                     n->Notify();
+                   });
+  bool call_completed_before_timeout =
+      n->WaitForNotificationWithTimeout(timeout);
+  if (!call_completed_before_timeout) {
+    return errors::DeadlineExceeded(absl::Substitute(
+        "GetKeyValue() timed out with key: $0 and duration: $1", key,
+        absl::FormatDuration(timeout)));
+  }
+  return *result;
 }
 
 Status CoordinationServiceAgentImpl::InsertKeyValue(const std::string& key,

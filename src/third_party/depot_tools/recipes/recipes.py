@@ -197,10 +197,7 @@ def checkout_engine(engine_path, repo_root, recipes_cfg_path):
                         stdout=NUL,
                         stderr=NUL)
       except subprocess.CalledProcessError:
-        _git_check_call(['fetch', url, branch],
-                        cwd=engine_path,
-                        stdout=NUL,
-                        stderr=NUL)
+        _git_check_call(['fetch', url, branch], cwd=engine_path, stdout=NUL)
 
     try:
       _git_check_call(['diff', '--quiet', revision], cwd=engine_path)

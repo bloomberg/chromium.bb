@@ -49,7 +49,6 @@
 #include "src/compiler/js-create-lowering.h"
 #include "src/compiler/js-generic-lowering.h"
 #include "src/compiler/js-heap-broker.h"
-#include "src/compiler/js-heap-copy-reducer.h"
 #include "src/compiler/js-inlining-heuristic.h"
 #include "src/compiler/js-intrinsic-lowering.h"
 #include "src/compiler/js-native-context-specialization.h"
@@ -99,6 +98,7 @@
 #include "src/compiler/wasm-compiler.h"
 #include "src/compiler/wasm-escape-analysis.h"
 #include "src/compiler/wasm-inlining.h"
+#include "src/compiler/wasm-loop-peeling.h"
 #include "src/wasm/function-body-decoder.h"
 #include "src/wasm/function-compiler.h"
 #include "src/wasm/wasm-engine.h"
@@ -156,9 +156,9 @@ class PipelineData {
         instruction_zone_(instruction_zone_scope_.zone()),
         codegen_zone_scope_(zone_stats_, kCodegenZoneName),
         codegen_zone_(codegen_zone_scope_.zone()),
-        broker_(new JSHeapBroker(
-            isolate_, info_->zone(), info_->trace_heap_broker(),
-            info_->concurrent_inlining(), info->code_kind())),
+        broker_(new JSHeapBroker(isolate_, info_->zone(),
+                                 info_->trace_heap_broker(),
+                                 info->code_kind())),
         register_allocation_zone_scope_(zone_stats_,
                                         kRegisterAllocationZoneName),
         register_allocation_zone_(register_allocation_zone_scope_.zone()),
@@ -1199,17 +1199,8 @@ PipelineCompilationJob::Status PipelineCompilationJob::PrepareJobImpl(
 
   pipeline_.InitializeHeapBroker();
 
-  if (!data_.broker()->is_concurrent_inlining()) {
-    if (!pipeline_.CreateGraph()) {
-      CHECK(!isolate->has_pending_exception());
-      return AbortOptimization(BailoutReason::kGraphBuildingFailed);
-    }
-  }
-
-  if (compilation_info()->concurrent_inlining()) {
-    // Serialization may have allocated.
-    isolate->heap()->PublishPendingAllocations();
-  }
+  // Serialization may have allocated.
+  isolate->heap()->PublishPendingAllocations();
 
   return SUCCEEDED;
 }
@@ -1222,10 +1213,8 @@ PipelineCompilationJob::Status PipelineCompilationJob::ExecuteJobImpl(
   LocalIsolateScope local_isolate_scope(data_.broker(), data_.info(),
                                         local_isolate);
 
-  if (data_.broker()->is_concurrent_inlining()) {
-    if (!pipeline_.CreateGraph()) {
-      return AbortOptimization(BailoutReason::kGraphBuildingFailed);
-    }
+  if (!pipeline_.CreateGraph()) {
+    return AbortOptimization(BailoutReason::kGraphBuildingFailed);
   }
 
   // We selectively Unpark inside OptimizeGraph*.
@@ -1262,7 +1251,9 @@ PipelineCompilationJob::Status PipelineCompilationJob::FinalizeJobImpl(
 
   compilation_info()->SetCode(code);
   Handle<NativeContext> context(compilation_info()->native_context(), isolate);
-  if (CodeKindCanDeoptimize(code->kind())) context->AddOptimizedCode(*code);
+  if (CodeKindCanDeoptimize(code->kind())) {
+    context->AddOptimizedCode(ToCodeT(*code));
+  }
   RegisterWeakObjectsInOptimizedCode(isolate, context, code);
   return SUCCEEDED;
 }
@@ -1511,24 +1502,6 @@ struct HeapBrokerInitializationPhase {
   }
 };
 
-struct CopyMetadataForConcurrentCompilePhase {
-  DECL_MAIN_THREAD_PIPELINE_PHASE_CONSTANTS(SerializeMetadata)
-
-  void Run(PipelineData* data, Zone* temp_zone) {
-    GraphReducer graph_reducer(
-        temp_zone, data->graph(), &data->info()->tick_counter(), data->broker(),
-        data->jsgraph()->Dead(), data->observe_node_manager());
-    JSHeapCopyReducer heap_copy_reducer(data->broker());
-    AddReducer(data, &graph_reducer, &heap_copy_reducer);
-    graph_reducer.ReduceGraph();
-
-    // Some nodes that are no longer in the graph might still be in the cache.
-    NodeVector cached_nodes(temp_zone);
-    data->jsgraph()->GetCachedNodes(&cached_nodes);
-    for (Node* const node : cached_nodes) graph_reducer.ReduceNode(node);
-  }
-};
-
 struct TypedLoweringPhase {
   DECL_PIPELINE_PHASE_CONSTANTS(TypedLowering)
 
@@ -1655,38 +1628,89 @@ struct LoopPeelingPhase {
 };
 
 #if V8_ENABLE_WEBASSEMBLY
+struct WasmInliningPhase {
+  DECL_PIPELINE_PHASE_CONSTANTS(WasmInlining)
+
+  void Run(PipelineData* data, Zone* temp_zone, wasm::CompilationEnv* env,
+           uint32_t function_index, const wasm::WireBytesStorage* wire_bytes,
+           std::vector<compiler::WasmLoopInfo>* loop_info) {
+    if (WasmInliner::any_inlining_impossible(data->graph()->NodeCount())) {
+      return;
+    }
+    GraphReducer graph_reducer(
+        temp_zone, data->graph(), &data->info()->tick_counter(), data->broker(),
+        data->jsgraph()->Dead(), data->observe_node_manager());
+    DeadCodeElimination dead(&graph_reducer, data->graph(), data->common(),
+                             temp_zone);
+    WasmInliner inliner(&graph_reducer, env, function_index,
+                        data->source_positions(), data->node_origins(),
+                        data->mcgraph(), wire_bytes, loop_info);
+    AddReducer(data, &graph_reducer, &dead);
+    AddReducer(data, &graph_reducer, &inliner);
+    graph_reducer.ReduceGraph();
+  }
+};
+
+namespace {
+void EliminateLoopExits(std::vector<compiler::WasmLoopInfo>* loop_infos) {
+  for (WasmLoopInfo& loop_info : *loop_infos) {
+    std::unordered_set<Node*> loop_exits;
+    // We collect exits into a set first because we are not allowed to mutate
+    // them while iterating uses().
+    for (Node* use : loop_info.header->uses()) {
+      if (use->opcode() == IrOpcode::kLoopExit) {
+        loop_exits.insert(use);
+      }
+    }
+    for (Node* use : loop_exits) {
+      LoopPeeler::EliminateLoopExit(use);
+    }
+  }
+}
+}  // namespace
+
 struct WasmLoopUnrollingPhase {
   DECL_PIPELINE_PHASE_CONSTANTS(WasmLoopUnrolling)
 
   void Run(PipelineData* data, Zone* temp_zone,
            std::vector<compiler::WasmLoopInfo>* loop_infos) {
     for (WasmLoopInfo& loop_info : *loop_infos) {
-      if (loop_info.is_innermost) {
+      if (loop_info.can_be_innermost) {
         ZoneUnorderedSet<Node*>* loop =
-            LoopFinder::FindSmallUnnestedLoopFromHeader(
+            LoopFinder::FindSmallInnermostLoopFromHeader(
                 loop_info.header, temp_zone,
                 // Only discover the loop until its size is the maximum unrolled
                 // size for its depth.
-                maximum_unrollable_size(loop_info.nesting_depth));
+                maximum_unrollable_size(loop_info.nesting_depth), true);
+        if (loop == nullptr) continue;
         UnrollLoop(loop_info.header, loop, loop_info.nesting_depth,
                    data->graph(), data->common(), temp_zone,
                    data->source_positions(), data->node_origins());
       }
     }
 
+    EliminateLoopExits(loop_infos);
+  }
+};
+
+struct WasmLoopPeelingPhase {
+  DECL_PIPELINE_PHASE_CONSTANTS(WasmLoopPeeling)
+
+  void Run(PipelineData* data, Zone* temp_zone,
+           std::vector<compiler::WasmLoopInfo>* loop_infos) {
     for (WasmLoopInfo& loop_info : *loop_infos) {
-      std::unordered_set<Node*> loop_exits;
-      // We collect exits into a set first because we are not allowed to mutate
-      // them while iterating uses().
-      for (Node* use : loop_info.header->uses()) {
-        if (use->opcode() == IrOpcode::kLoopExit) {
-          loop_exits.insert(use);
-        }
-      }
-      for (Node* use : loop_exits) {
-        LoopPeeler::EliminateLoopExit(use);
+      if (loop_info.can_be_innermost) {
+        ZoneUnorderedSet<Node*>* loop =
+            LoopFinder::FindSmallInnermostLoopFromHeader(
+                loop_info.header, temp_zone, std::numeric_limits<size_t>::max(),
+                false);
+        if (loop == nullptr) continue;
+        PeelWasmLoop(loop_info.header, loop, data->graph(), data->common(),
+                     temp_zone, data->source_positions(), data->node_origins());
       }
     }
+    // If we are going to unroll later, keep loop exits.
+    if (!FLAG_wasm_loop_unrolling) EliminateLoopExits(loop_infos);
   }
 };
 #endif  // V8_ENABLE_WEBASSEMBLY
@@ -1992,9 +2016,7 @@ struct ScheduledEffectControlLinearizationPhase {
 struct WasmOptimizationPhase {
   DECL_PIPELINE_PHASE_CONSTANTS(WasmOptimization)
 
-  void Run(PipelineData* data, Zone* temp_zone, bool allow_signalling_nan,
-           wasm::CompilationEnv* env, uint32_t function_index,
-           const wasm::WireBytesStorage* wire_bytes) {
+  void Run(PipelineData* data, Zone* temp_zone, bool allow_signalling_nan) {
     // Run optimizations in two rounds: First one around load elimination and
     // then one around branch elimination. This is because those two
     // optimizations sometimes display quadratic complexity when run together.
@@ -2014,9 +2036,6 @@ struct WasmOptimizationPhase {
       ValueNumberingReducer value_numbering(temp_zone, data->graph()->zone());
       CsaLoadElimination load_elimination(&graph_reducer, data->jsgraph(),
                                           temp_zone);
-      WasmInliner inliner(&graph_reducer, env, function_index,
-                          data->source_positions(), data->node_origins(),
-                          data->mcgraph(), wire_bytes);
       WasmEscapeAnalysis escape(&graph_reducer, data->mcgraph());
       AddReducer(data, &graph_reducer, &machine_reducer);
       AddReducer(data, &graph_reducer, &dead_code_elimination);
@@ -2025,10 +2044,6 @@ struct WasmOptimizationPhase {
       if (FLAG_experimental_wasm_gc) {
         AddReducer(data, &graph_reducer, &load_elimination);
         AddReducer(data, &graph_reducer, &escape);
-      }
-      if (FLAG_wasm_inlining &&
-          !WasmInliner::any_inlining_impossible(data->graph()->NodeCount())) {
-        AddReducer(data, &graph_reducer, &inliner);
       }
       graph_reducer.ReduceGraph();
     }
@@ -2648,10 +2663,8 @@ void PipelineImpl::InitializeHeapBroker() {
   }
 
   data->broker()->SetTargetNativeContextRef(data->native_context());
-  if (data->broker()->is_concurrent_inlining()) {
-    Run<HeapBrokerInitializationPhase>();
-    data->broker()->StopSerializing();
-  }
+  Run<HeapBrokerInitializationPhase>();
+  data->broker()->StopSerializing();
   data->EndPhaseKind();
 }
 
@@ -2680,15 +2693,6 @@ bool PipelineImpl::CreateGraph() {
     if (IsClassConstructor(shared_info.kind())) {
       // Class constructors cannot be [[Call]]ed.
       data->AddTyperFlag(Typer::kNewTargetIsReceiver);
-    }
-  }
-
-  // Run the type-sensitive lowerings and optimizations on the graph.
-  {
-    if (!data->broker()->is_concurrent_inlining()) {
-      Run<HeapBrokerInitializationPhase>();
-      Run<CopyMetadataForConcurrentCompilePhase>();
-      data->broker()->StopSerializing();
     }
   }
 
@@ -3227,6 +3231,15 @@ void Pipeline::GenerateCodeForWasmFunction(
   pipeline.RunPrintAndVerify("V8.WasmMachineCode", true);
 
   data.BeginPhaseKind("V8.WasmOptimization");
+  if (FLAG_wasm_inlining) {
+    pipeline.Run<WasmInliningPhase>(env, function_index, wire_bytes_storage,
+                                    loop_info);
+    pipeline.RunPrintAndVerify(WasmInliningPhase::phase_name(), true);
+  }
+  if (FLAG_wasm_loop_peeling) {
+    pipeline.Run<WasmLoopPeelingPhase>(loop_info);
+    pipeline.RunPrintAndVerify(WasmLoopPeelingPhase::phase_name(), true);
+  }
   if (FLAG_wasm_loop_unrolling) {
     pipeline.Run<WasmLoopUnrollingPhase>(loop_info);
     pipeline.RunPrintAndVerify(WasmLoopUnrollingPhase::phase_name(), true);
@@ -3234,8 +3247,7 @@ void Pipeline::GenerateCodeForWasmFunction(
   const bool is_asm_js = is_asmjs_module(module);
 
   if (FLAG_wasm_opt || is_asm_js) {
-    pipeline.Run<WasmOptimizationPhase>(is_asm_js, env, function_index,
-                                        wire_bytes_storage);
+    pipeline.Run<WasmOptimizationPhase>(is_asm_js);
     pipeline.RunPrintAndVerify(WasmOptimizationPhase::phase_name(), true);
   } else {
     pipeline.Run<WasmBaseOptimizationPhase>();
@@ -3338,20 +3350,12 @@ MaybeHandle<Code> Pipeline::GenerateCodeForTesting(
     CanonicalHandleScope canonical(isolate, info);
     info->ReopenHandlesInNewHandleScope(isolate);
     pipeline.InitializeHeapBroker();
-    // Emulating the proper pipeline, we call CreateGraph on different places
-    // (i.e before or after creating a LocalIsolateScope) depending on
-    // is_concurrent_inlining.
-    if (!data.broker()->is_concurrent_inlining()) {
-      if (!pipeline.CreateGraph()) return MaybeHandle<Code>();
-    }
   }
 
   {
     LocalIsolateScope local_isolate_scope(data.broker(), info,
                                           isolate->main_thread_local_isolate());
-    if (data.broker()->is_concurrent_inlining()) {
-      if (!pipeline.CreateGraph()) return MaybeHandle<Code>();
-    }
+    if (!pipeline.CreateGraph()) return MaybeHandle<Code>();
     // We selectively Unpark inside OptimizeGraph.
     if (!pipeline.OptimizeGraph(&linkage)) return MaybeHandle<Code>();
 

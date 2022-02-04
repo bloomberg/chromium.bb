@@ -1848,7 +1848,7 @@ int AXPlatformNodeWin::GetAnnotationTypeImpl() const {
       if (DescendantHasComment(this))
         return AnnotationType_Comment;
 
-      FALLTHROUGH;
+      [[fallthrough]];
     }
     default:
       return AnnotationType_Unknown;
@@ -3606,12 +3606,6 @@ HRESULT AXPlatformNodeWin::IAccessibleTextGetTextForOffsetType(
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes |
                                        AXMode::kInlineTextBoxes);
 
-  // https://accessibility.linuxfoundation.org/a11yspecs/ia2/docs/html/_accessible_text_8idl.html
-  // IA2_TEXT_BOUNDARY_SENTENCE is optional and we can let the screenreader
-  // handle it, the rest of the boundary types must be supported.
-  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE)
-    return S_FALSE;
-
   HandleSpecialTextOffset(&offset);
   if (offset < 0)
     return E_INVALIDARG;
@@ -3634,7 +3628,6 @@ HRESULT AXPlatformNodeWin::IAccessibleTextGetTextForOffsetType(
   }
 
   LONG start, end;
-
   switch (text_offset_type) {
     case TextOffsetType::kAtOffset: {
       end = FindBoundary(boundary_type, offset,
@@ -5879,7 +5872,7 @@ int32_t AXPlatformNodeWin::ComputeIA2State() {
       if (!HasState(ax::mojom::State::kFocusable) ||
           GetBoolAttribute(ax::mojom::BoolAttribute::kNonAtomicTextFieldRoot))
         break;  // Not used with activedescendant, so preserve editable state.
-      FALLTHROUGH;  // Will clear editable state.
+      [[fallthrough]];  // Will clear editable state.
     case ax::mojom::Role::kMenuListPopup:
     case ax::mojom::Role::kMenuListOption:
       ia2_state &= ~(IA2_STATE_EDITABLE);

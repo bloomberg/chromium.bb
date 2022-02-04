@@ -390,7 +390,7 @@ void FeedbackVector::SaturatingIncrementProfilerTicks() {
 
 // static
 void FeedbackVector::SetOptimizedCode(Handle<FeedbackVector> vector,
-                                      Handle<Code> code,
+                                      Handle<CodeT> code,
                                       FeedbackCell feedback_cell) {
   DCHECK(CodeKindIsOptimizedJSFunction(code->kind()));
   // We should set optimized code only when there is no valid optimized code or
@@ -405,7 +405,7 @@ void FeedbackVector::SetOptimizedCode(Handle<FeedbackVector> vector,
   // re-mark the function for non-concurrent optimization after an OSR. We
   // should avoid these cases and also check that marker isn't
   // kCompileOptimized or kCompileOptimizedConcurrent.
-  vector->set_maybe_optimized_code(HeapObjectReference::Weak(ToCodeT(*code)),
+  vector->set_maybe_optimized_code(HeapObjectReference::Weak(*code),
                                    kReleaseStore);
   int32_t state = vector->flags();
   state = OptimizationTierBits::update(state, GetTierForCodeKind(code->kind()));
@@ -1009,8 +1009,9 @@ void FeedbackNexus::SetSpeculationMode(SpeculationMode mode) {
   uint32_t count = static_cast<uint32_t>(Smi::ToInt(call_count));
   count = SpeculationModeField::update(count, mode);
   MaybeObject feedback = GetFeedback();
-  // We can skip the write barrier for {feedback} because it's not changing.
-  SetFeedback(feedback, SKIP_WRITE_BARRIER, Smi::FromInt(count),
+  // We could've skipped WB here (since we set the slot to the same value again)
+  // but we don't to make WB verification happy.
+  SetFeedback(feedback, UPDATE_WRITE_BARRIER, Smi::FromInt(count),
               SKIP_WRITE_BARRIER);
 }
 

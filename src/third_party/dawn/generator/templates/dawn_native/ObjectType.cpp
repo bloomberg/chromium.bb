@@ -12,9 +12,13 @@
 //* See the License for the specific language governing permissions and
 //* limitations under the License.
 
-#include "dawn_native/ObjectType_autogen.h"
+{% set impl_dir = metadata.impl_dir + "/" if metadata.impl_dir else "" %}
+{% set namespace_name = Name(metadata.native_namespace) %}
+{% set native_namespace = namespace_name.namespace_case() %}
+{% set native_dir = impl_dir + namespace_name.snake_case() %}
+#include "{{native_dir}}/ObjectType_autogen.h"
 
-namespace dawn_native {
+namespace {{native_namespace}} {
 
     const char* ObjectTypeAsString(ObjectType type) {
         switch (type) {
@@ -27,4 +31,4 @@ namespace dawn_native {
         }
     }
 
-} // namespace dawn_native
+} // namespace {{native_namespace}}

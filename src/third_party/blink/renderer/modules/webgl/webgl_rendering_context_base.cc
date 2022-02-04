@@ -62,7 +62,6 @@
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
@@ -1736,7 +1735,7 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
 
   gfx::Rect src_rect(image->Size());
   gfx::Rect dest_rect(resource_provider->Size());
-  PaintFlags flags;
+  cc::PaintFlags flags;
   flags.setBlendMode(SkBlendMode::kSrc);
   // We use this draw helper as we need to take into account the
   // ImageOrientation of the UnacceleratedStaticBitmapImage.
@@ -2007,7 +2006,7 @@ void WebGLRenderingContextBase::bindTexture(GLenum target,
 
   // We use TEXTURE_EXTERNAL_OES to implement video texture on Android platform
   if (target == GL_TEXTURE_VIDEO_IMAGE_WEBGL) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // TODO(crbug.com/776222): Support extension on Android
     NOTIMPLEMENTED();
     return;
@@ -2024,7 +2023,7 @@ void WebGLRenderingContextBase::bindTexture(GLenum target,
       ContextGL()->TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
                                  GL_CLAMP_TO_EDGE);
     }
-#endif  // defined OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
   } else {
     ContextGL()->BindTexture(target, ObjectOrZero(texture));
   }
@@ -2120,7 +2119,7 @@ void WebGLRenderingContextBase::bufferData(GLenum target,
 }
 
 void WebGLRenderingContextBase::bufferData(GLenum target,
-                                           DOMArrayBuffer* data,
+                                           DOMArrayBufferBase* data,
                                            GLenum usage) {
   if (isContextLost())
     return;
@@ -2128,7 +2127,7 @@ void WebGLRenderingContextBase::bufferData(GLenum target,
     SynthesizeGLError(GL_INVALID_VALUE, "bufferData", "no data");
     return;
   }
-  BufferDataImpl(target, data->ByteLength(), data->Data(), usage);
+  BufferDataImpl(target, data->ByteLength(), data->DataMaybeShared(), usage);
 }
 
 void WebGLRenderingContextBase::bufferData(GLenum target,
@@ -2162,11 +2161,12 @@ void WebGLRenderingContextBase::BufferSubDataImpl(GLenum target,
 
 void WebGLRenderingContextBase::bufferSubData(GLenum target,
                                               int64_t offset,
-                                              DOMArrayBuffer* data) {
+                                              DOMArrayBufferBase* data) {
   if (isContextLost())
     return;
   DCHECK(data);
-  BufferSubDataImpl(target, offset, data->ByteLength(), data->Data());
+  BufferSubDataImpl(target, offset, data->ByteLength(),
+                    data->DataMaybeShared());
 }
 
 void WebGLRenderingContextBase::bufferSubData(
@@ -3761,7 +3761,7 @@ ScriptValue WebGLRenderingContextBase::getProgramParameter(
                           "invalid parameter name");
         return ScriptValue::CreateNull(script_state->GetIsolate());
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     case GL_ATTACHED_SHADERS:
     case GL_ACTIVE_ATTRIBUTES:
     case GL_ACTIVE_UNIFORMS:
@@ -3814,7 +3814,7 @@ ScriptValue WebGLRenderingContextBase::getRenderbufferParameter(
                           "invalid parameter name");
         return ScriptValue::CreateNull(script_state->GetIsolate());
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     case GL_RENDERBUFFER_WIDTH:
     case GL_RENDERBUFFER_HEIGHT:
     case GL_RENDERBUFFER_RED_SIZE:
@@ -4330,7 +4330,7 @@ ScriptValue WebGLRenderingContextBase::getVertexAttrib(
         ContextGL()->GetVertexAttribiv(index, pname, &value);
         return WebGLAny(script_state, static_cast<bool>(value));
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "getVertexAttrib",
                         "invalid parameter name");
@@ -5167,7 +5167,7 @@ scoped_refptr<Image> WebGLRenderingContextBase::DrawImageIntoBuffer(
 
   gfx::Rect src_rect(image->Size());
   gfx::Rect dest_rect(size);
-  PaintFlags flags;
+  cc::PaintFlags flags;
   // TODO(ccameron): WebGL should produce sRGB images.
   // https://crbug.com/672299
   ImageDrawOptions draw_options;
@@ -5378,15 +5378,15 @@ void WebGLRenderingContextBase::TexImageHelperImageData(
   GLenum image_type;
   WebGLImageConversion::DataFormat data_format;
   switch (pixels->GetImageDataStorageFormat()) {
-    case kUint8ClampedArrayStorageFormat:
+    case ImageDataStorageFormat::kUint8:
       image_type = GL_UNSIGNED_BYTE;
       data_format = WebGLImageConversion::DataFormat::kDataFormatRGBA8;
       break;
-    case kUint16ArrayStorageFormat:
+    case ImageDataStorageFormat::kUint16:
       image_type = GL_UNSIGNED_SHORT;
       data_format = WebGLImageConversion::DataFormat::kDataFormatRGBA16;
       break;
-    case kFloat32ArrayStorageFormat:
+    case ImageDataStorageFormat::kFloat32:
       image_type = GL_FLOAT;
       data_format = WebGLImageConversion::DataFormat::kDataFormatRGBA32F;
       break;
@@ -5529,7 +5529,7 @@ void WebGLRenderingContextBase::texImage2D(ExecutionContext* execution_context,
 
 bool WebGLRenderingContextBase::CanUseTexImageViaGPU(GLenum format,
                                                      GLenum type) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // RGB5_A1 is not color-renderable on NVIDIA Mac, see crbug.com/676209.
   // Though, glCopyTextureCHROMIUM can handle RGB5_A1 internalformat by doing a
   // fallback path, but it doesn't know the type info. So, we still cannot do
@@ -5544,7 +5544,7 @@ bool WebGLRenderingContextBase::CanUseTexImageViaGPU(GLenum format,
   if (format == GL_RED_INTEGER)
     return false;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // TODO(kbr): bugs were seen on Android devices with NVIDIA GPUs
   // when copying hardware-accelerated video textures to
   // floating-point textures. Investigate the root cause of this and
@@ -5997,7 +5997,7 @@ void WebGLRenderingContextBase::TexImageHelperMediaVideoFrame(
       CanUseTexImageViaGPU(format, type) &&
       transform == media::kNoTransformation;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // TODO(crbug.com/1227921): When OOP GPU rasterization is disabled, uploading
   // via the GPU becomes extremely slow.
   const bool gpu_teximage_is_slow = !caps.supports_oop_raster;
@@ -6094,7 +6094,7 @@ void WebGLRenderingContextBase::TexImageHelperMediaVideoFrame(
   // unmultiply has been requested or we need to never premultiply for Image
   // creation from a VideoFrame.
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // TODO(crbug.com/1180726): Sampling from macOS IOSurfaces requires
   // GL_ARB_texture_rectangle which is not available in the WebGL context.
   constexpr bool kAllowZeroCopyImages = false;
@@ -6102,7 +6102,7 @@ void WebGLRenderingContextBase::TexImageHelperMediaVideoFrame(
   constexpr bool kAllowZeroCopyImages = true;
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
   // TODO(crbug.com/1175907): Only TexImage2D seems to work with the GPU path on
   // Android M -- appears to work fine on R, but to avoid regressions in <video>
   // limit to TexImage2D only for now. Fails conformance test on Nexus 5X:
@@ -6413,7 +6413,7 @@ void WebGLRenderingContextBase::TexParameter(GLenum target,
                           "invalid parameter name");
         return;
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     case GL_TEXTURE_WRAP_S:
     case GL_TEXTURE_WRAP_T:
       if ((is_float && paramf != GL_CLAMP_TO_EDGE &&
@@ -7938,7 +7938,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncDimensions(
         }
         break;
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     case GL_TEXTURE_2D_ARRAY:
       if (IsWebGL2()) {
         if (width > (max_texture_size_ >> level) ||
@@ -7950,7 +7950,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncDimensions(
         }
         break;
       }
-      FALLTHROUGH;
+      [[fallthrough]];
     default:
       SynthesizeGLError(GL_INVALID_ENUM, function_name, "invalid target");
       return false;

@@ -231,7 +231,7 @@ RUNTIME_FUNCTION(Runtime_WasmCompileLazy) {
 
 namespace {
 void ReplaceWrapper(Isolate* isolate, Handle<WasmInstanceObject> instance,
-                    int function_index, Handle<Code> wrapper_code) {
+                    int function_index, Handle<CodeT> wrapper_code) {
   Handle<WasmInternalFunction> internal =
       WasmInstanceObject::GetWasmInternalFunction(isolate, instance,
                                                   function_index)
@@ -269,9 +269,10 @@ RUNTIME_FUNCTION(Runtime_WasmCompileWrapper) {
     return ReadOnlyRoots(isolate).undefined_value();
   }
 
-  Handle<Code> wrapper_code =
+  Handle<CodeT> wrapper_code = ToCodeT(
       wasm::JSToWasmWrapperCompilationUnit::CompileSpecificJSToWasmWrapper(
-          isolate, sig, module);
+          isolate, sig, module),
+      isolate);
 
   // Replace the wrapper for the function that triggered the tier-up.
   // This is to verify that the wrapper is replaced, even if the function
@@ -713,19 +714,35 @@ void SyncStackLimit(Isolate* isolate) {
 }  // namespace
 
 // Allocate a new continuation, and prepare for stack switching by updating the
-// active continuation and setting the stack limit.
+// active continuation, active suspender and stack limit.
 RUNTIME_FUNCTION(Runtime_WasmAllocateContinuation) {
   CHECK(FLAG_experimental_wasm_stack_switching);
   HandleScope scope(isolate);
+  CONVERT_ARG_HANDLE_CHECKED(WasmSuspenderObject, suspender, 0);
+
+  // Update the continuation state.
   auto parent =
       handle(WasmContinuationObject::cast(
                  *isolate->roots_table().slot(RootIndex::kActiveContinuation)),
              isolate);
-  auto target = WasmContinuationObject::New(isolate, *parent);
+  Handle<WasmContinuationObject> target =
+      WasmContinuationObject::New(isolate, *parent);
   auto target_stack =
       Managed<wasm::StackMemory>::cast(target->stack()).get().get();
   isolate->wasm_stacks()->Add(target_stack);
   isolate->roots_table().slot(RootIndex::kActiveContinuation).store(*target);
+
+  // Update the suspender state.
+  FullObjectSlot active_suspender_slot =
+      isolate->roots_table().slot(RootIndex::kActiveSuspender);
+  suspender->set_parent(HeapObject::cast(*active_suspender_slot));
+  if (!(*active_suspender_slot).IsUndefined()) {
+    WasmSuspenderObject::cast(*active_suspender_slot)
+        .set_state(WasmSuspenderObject::Inactive);
+  }
+  suspender->set_state(WasmSuspenderObject::State::Active);
+  active_suspender_slot.store(*suspender);
+
   SyncStackLimit(isolate);
   return *target;
 }

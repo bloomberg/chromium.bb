@@ -56,7 +56,7 @@ TEST_F(WgslGeneratorImplTest, EmitType_Array_Decoration) {
 
   std::stringstream out;
   ASSERT_TRUE(gen.EmitType(out, a)) << gen.error();
-  EXPECT_EQ(out.str(), "[[stride(16)]] array<bool, 4>");
+  EXPECT_EQ(out.str(), "@stride(16) array<bool, 4>");
 }
 
 TEST_F(WgslGeneratorImplTest, EmitType_RuntimeArray) {
@@ -162,13 +162,13 @@ TEST_F(WgslGeneratorImplTest, EmitType_StructOffsetDecl) {
 
   ASSERT_TRUE(gen.EmitStructType(s)) << gen.error();
   EXPECT_EQ(gen.result(), R"(struct S {
-  [[size(8)]]
+  @size(8)
   padding : u32;
   a : i32;
-  [[size(4)]]
+  @size(4)
   padding_1 : u32;
   b : f32;
-};
+}
 )");
 }
 
@@ -183,13 +183,13 @@ TEST_F(WgslGeneratorImplTest, EmitType_StructOffsetDecl_WithSymbolCollisions) {
 
   ASSERT_TRUE(gen.EmitStructType(s)) << gen.error();
   EXPECT_EQ(gen.result(), R"(struct S {
-  [[size(8)]]
+  @size(8)
   padding : u32;
   tint_0_padding : i32;
-  [[size(4)]]
+  @size(4)
   padding_1 : u32;
   tint_2_padding : f32;
-};
+}
 )");
 }
 
@@ -203,11 +203,11 @@ TEST_F(WgslGeneratorImplTest, EmitType_StructAlignDecl) {
 
   ASSERT_TRUE(gen.EmitStructType(s)) << gen.error();
   EXPECT_EQ(gen.result(), R"(struct S {
-  [[align(8)]]
+  @align(8)
   a : i32;
-  [[align(16)]]
+  @align(16)
   b : f32;
-};
+}
 )");
 }
 
@@ -221,11 +221,11 @@ TEST_F(WgslGeneratorImplTest, EmitType_StructSizeDecl) {
 
   ASSERT_TRUE(gen.EmitStructType(s)) << gen.error();
   EXPECT_EQ(gen.result(), R"(struct S {
-  [[size(16)]]
+  @size(16)
   a : i32;
-  [[size(32)]]
+  @size(32)
   b : f32;
-};
+}
 )");
 }
 
@@ -240,12 +240,12 @@ TEST_F(WgslGeneratorImplTest, EmitType_Struct_WithDecoration) {
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.EmitStructType(s)) << gen.error();
-  EXPECT_EQ(gen.result(), R"([[block]]
+  EXPECT_EQ(gen.result(), R"(@block
 struct S {
   a : i32;
-  [[align(8)]]
+  @align(8)
   b : f32;
-};
+}
 )");
 }
 
@@ -263,13 +263,13 @@ TEST_F(WgslGeneratorImplTest, EmitType_Struct_WithEntryPointDecorations) {
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.EmitStructType(s)) << gen.error();
-  EXPECT_EQ(gen.result(), R"([[block]]
+  EXPECT_EQ(gen.result(), R"(@block
 struct S {
-  [[builtin(vertex_index)]]
+  @builtin(vertex_index)
   a : u32;
-  [[location(2)]]
+  @location(2)
   b : f32;
-};
+}
 )");
 }
 
@@ -423,7 +423,7 @@ INSTANTIATE_TEST_SUITE_P(WgslGeneratorImplTest,
                              "texture_multisampled_2d"}));
 
 struct StorageTextureData {
-  ast::ImageFormat fmt;
+  ast::TexelFormat fmt;
   ast::TextureDimension dim;
   ast::Access access;
   const char* name;
@@ -453,21 +453,21 @@ INSTANTIATE_TEST_SUITE_P(
     WgslGeneratorImplTest,
     WgslGenerator_StorageTextureTest,
     testing::Values(
-        StorageTextureData{ast::ImageFormat::kRgba8Sint,
+        StorageTextureData{ast::TexelFormat::kRgba8Sint,
                            ast::TextureDimension::k1d, ast::Access::kWrite,
                            "texture_storage_1d<rgba8sint, write>"},
-        StorageTextureData{ast::ImageFormat::kRgba8Sint,
+        StorageTextureData{ast::TexelFormat::kRgba8Sint,
                            ast::TextureDimension::k2d, ast::Access::kWrite,
                            "texture_storage_2d<rgba8sint, write>"},
-        StorageTextureData{ast::ImageFormat::kRgba8Sint,
+        StorageTextureData{ast::TexelFormat::kRgba8Sint,
                            ast::TextureDimension::k2dArray, ast::Access::kWrite,
                            "texture_storage_2d_array<rgba8sint, write>"},
-        StorageTextureData{ast::ImageFormat::kRgba8Sint,
+        StorageTextureData{ast::TexelFormat::kRgba8Sint,
                            ast::TextureDimension::k3d, ast::Access::kWrite,
                            "texture_storage_3d<rgba8sint, write>"}));
 
 struct ImageFormatData {
-  ast::ImageFormat fmt;
+  ast::TexelFormat fmt;
   const char* name;
 };
 inline std::ostream& operator<<(std::ostream& out, ImageFormatData data) {
@@ -489,41 +489,22 @@ INSTANTIATE_TEST_SUITE_P(
     WgslGeneratorImplTest,
     WgslGenerator_ImageFormatTest,
     testing::Values(
-        ImageFormatData{ast::ImageFormat::kR8Unorm, "r8unorm"},
-        ImageFormatData{ast::ImageFormat::kR8Snorm, "r8snorm"},
-        ImageFormatData{ast::ImageFormat::kR8Uint, "r8uint"},
-        ImageFormatData{ast::ImageFormat::kR8Sint, "r8sint"},
-        ImageFormatData{ast::ImageFormat::kR16Uint, "r16uint"},
-        ImageFormatData{ast::ImageFormat::kR16Sint, "r16sint"},
-        ImageFormatData{ast::ImageFormat::kR16Float, "r16float"},
-        ImageFormatData{ast::ImageFormat::kRg8Unorm, "rg8unorm"},
-        ImageFormatData{ast::ImageFormat::kRg8Snorm, "rg8snorm"},
-        ImageFormatData{ast::ImageFormat::kRg8Uint, "rg8uint"},
-        ImageFormatData{ast::ImageFormat::kRg8Sint, "rg8sint"},
-        ImageFormatData{ast::ImageFormat::kR32Uint, "r32uint"},
-        ImageFormatData{ast::ImageFormat::kR32Sint, "r32sint"},
-        ImageFormatData{ast::ImageFormat::kR32Float, "r32float"},
-        ImageFormatData{ast::ImageFormat::kRg16Uint, "rg16uint"},
-        ImageFormatData{ast::ImageFormat::kRg16Sint, "rg16sint"},
-        ImageFormatData{ast::ImageFormat::kRg16Float, "rg16float"},
-        ImageFormatData{ast::ImageFormat::kRgba8Unorm, "rgba8unorm"},
-        ImageFormatData{ast::ImageFormat::kRgba8UnormSrgb, "rgba8unorm_srgb"},
-        ImageFormatData{ast::ImageFormat::kRgba8Snorm, "rgba8snorm"},
-        ImageFormatData{ast::ImageFormat::kRgba8Uint, "rgba8uint"},
-        ImageFormatData{ast::ImageFormat::kRgba8Sint, "rgba8sint"},
-        ImageFormatData{ast::ImageFormat::kBgra8Unorm, "bgra8unorm"},
-        ImageFormatData{ast::ImageFormat::kBgra8UnormSrgb, "bgra8unorm_srgb"},
-        ImageFormatData{ast::ImageFormat::kRgb10A2Unorm, "rgb10a2unorm"},
-        ImageFormatData{ast::ImageFormat::kRg11B10Float, "rg11b10float"},
-        ImageFormatData{ast::ImageFormat::kRg32Uint, "rg32uint"},
-        ImageFormatData{ast::ImageFormat::kRg32Sint, "rg32sint"},
-        ImageFormatData{ast::ImageFormat::kRg32Float, "rg32float"},
-        ImageFormatData{ast::ImageFormat::kRgba16Uint, "rgba16uint"},
-        ImageFormatData{ast::ImageFormat::kRgba16Sint, "rgba16sint"},
-        ImageFormatData{ast::ImageFormat::kRgba16Float, "rgba16float"},
-        ImageFormatData{ast::ImageFormat::kRgba32Uint, "rgba32uint"},
-        ImageFormatData{ast::ImageFormat::kRgba32Sint, "rgba32sint"},
-        ImageFormatData{ast::ImageFormat::kRgba32Float, "rgba32float"}));
+        ImageFormatData{ast::TexelFormat::kR32Uint, "r32uint"},
+        ImageFormatData{ast::TexelFormat::kR32Sint, "r32sint"},
+        ImageFormatData{ast::TexelFormat::kR32Float, "r32float"},
+        ImageFormatData{ast::TexelFormat::kRgba8Unorm, "rgba8unorm"},
+        ImageFormatData{ast::TexelFormat::kRgba8Snorm, "rgba8snorm"},
+        ImageFormatData{ast::TexelFormat::kRgba8Uint, "rgba8uint"},
+        ImageFormatData{ast::TexelFormat::kRgba8Sint, "rgba8sint"},
+        ImageFormatData{ast::TexelFormat::kRg32Uint, "rg32uint"},
+        ImageFormatData{ast::TexelFormat::kRg32Sint, "rg32sint"},
+        ImageFormatData{ast::TexelFormat::kRg32Float, "rg32float"},
+        ImageFormatData{ast::TexelFormat::kRgba16Uint, "rgba16uint"},
+        ImageFormatData{ast::TexelFormat::kRgba16Sint, "rgba16sint"},
+        ImageFormatData{ast::TexelFormat::kRgba16Float, "rgba16float"},
+        ImageFormatData{ast::TexelFormat::kRgba32Uint, "rgba32uint"},
+        ImageFormatData{ast::TexelFormat::kRgba32Sint, "rgba32sint"},
+        ImageFormatData{ast::TexelFormat::kRgba32Float, "rgba32float"}));
 
 TEST_F(WgslGeneratorImplTest, EmitType_Sampler) {
   auto* sampler = ty.sampler(ast::SamplerKind::kSampler);

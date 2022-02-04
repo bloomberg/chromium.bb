@@ -13,6 +13,7 @@
 #include "src/gpu/GrTexture.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/GrThreadSafeCache.h"
+#include "src/gpu/KeyBuilder.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrTextureEffect.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
@@ -85,10 +86,10 @@ GrMatrixConvolutionEffect::KernelWrapper::Make(GrRecordingContext* rContext,
     // TODO: Pick cache or dont-cache based on observed perf.
     static constexpr bool kCacheKernelTexture = true;
 
-    GrUniqueKey key;
+    skgpu::UniqueKey key;
     if (kCacheKernelTexture) {
-        static const GrUniqueKey::Domain kDomain = GrUniqueKey::GenerateDomain();
-        GrUniqueKey::Builder builder(&key, kDomain, length, "Matrix Convolution Kernel");
+        static const skgpu::UniqueKey::Domain kDomain = skgpu::UniqueKey::GenerateDomain();
+        skgpu::UniqueKey::Builder builder(&key, kDomain, length, "Matrix Convolution Kernel");
         // Texture cache key is the exact content of the kernel.
         static_assert(sizeof(float) == 4);
         for (int i = 0; i < length; i++) {
@@ -301,7 +302,7 @@ std::unique_ptr<GrFragmentProcessor> GrMatrixConvolutionEffect::clone() const {
 }
 
 void GrMatrixConvolutionEffect::onAddToKey(const GrShaderCaps& caps,
-                                           GrProcessorKeyBuilder* b) const {
+                                           skgpu::KeyBuilder* b) const {
     SkASSERT(this->fKernel.size().width() <= 0x7FFF && this->fKernel.size().height() <= 0xFFFF);
     uint32_t key = this->fKernel.size().width() << 16 | this->fKernel.size().height();
     key |= fConvolveAlpha ? 1U << 31 : 0;

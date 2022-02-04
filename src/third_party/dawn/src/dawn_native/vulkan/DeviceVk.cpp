@@ -42,17 +42,17 @@
 #include "dawn_native/vulkan/UtilsVulkan.h"
 #include "dawn_native/vulkan/VulkanError.h"
 
-namespace dawn_native { namespace vulkan {
+namespace dawn::native::vulkan {
 
     // static
-    ResultOrError<Device*> Device::Create(Adapter* adapter,
-                                          const DawnDeviceDescriptor* descriptor) {
+    ResultOrError<Ref<Device>> Device::Create(Adapter* adapter,
+                                              const DeviceDescriptor* descriptor) {
         Ref<Device> device = AcquireRef(new Device(adapter, descriptor));
         DAWN_TRY(device->Initialize());
-        return device.Detach();
+        return device;
     }
 
-    Device::Device(Adapter* adapter, const DawnDeviceDescriptor* descriptor)
+    Device::Device(Adapter* adapter, const DeviceDescriptor* descriptor)
         : DeviceBase(adapter, descriptor) {
         InitTogglesFromDriver();
     }
@@ -320,6 +320,7 @@ namespace dawn_native { namespace vulkan {
         // if HasExt(DeviceExt::GetPhysicalDeviceProperties2) is true.
         VkPhysicalDeviceFeatures2 features2 = {};
         features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        features2.pNext = nullptr;
         PNextChainBuilder featuresChain(&features2);
 
         // Required for core WebGPU features.
@@ -1014,4 +1015,4 @@ namespace dawn_native { namespace vulkan {
         return mDeviceInfo.properties.limits.timestampPeriod;
     }
 
-}}  // namespace dawn_native::vulkan
+}  // namespace dawn::native::vulkan

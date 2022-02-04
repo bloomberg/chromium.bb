@@ -36,6 +36,10 @@ import { PerTexelComponent, kTexelRepresentationInfo } from './util/texture/texe
 
 const devicePool = new DevicePool();
 
+// MAINTENANCE_TODO: When DevicePool becomes able to provide multiple devices at once, use the
+// usual one instead of a new one.
+const mismatchedDevicePool = new DevicePool();
+
 const kResourceStateValues = ['valid', 'invalid', 'destroyed'] as const;
 export type ResourceState = typeof kResourceStateValues[number];
 export const kResourceStates: readonly ResourceState[] = kResourceStateValues;
@@ -62,6 +66,12 @@ export class GPUTest extends Fixture {
   /** Must not be replaced once acquired. */
   private acquiredDevice: GPUDevice | undefined;
 
+  // Some tests(e.g. Device mismatched validation) require another GPUDevice
+  // different from the default GPUDevice of GPUTest. It is only used to
+  //create device mismatched objects.
+  private mismatchedProvider: DeviceProvider | undefined;
+  private mismatchedAcquiredDevice: GPUDevice | undefined;
+
   /** GPUDevice for the test to use. */
   get device(): GPUDevice {
     assert(
@@ -72,6 +82,46 @@ export class GPUTest extends Fixture {
       this.acquiredDevice = this.provider.acquire();
     }
     return this.acquiredDevice;
+  }
+
+  /** GPUDevice for tests requires another device from default one.
+   *  e.g. creating objects required creating mismatched objects required
+   * by device mismatched validation tests.
+   */
+  get mismatchedDevice(): GPUDevice {
+    assert(
+      this.mismatchedProvider !== undefined,
+      'No provider available right now; did you "await" selectMismatchedDeviceOrSkipTestCase?'
+    );
+    if (!this.mismatchedAcquiredDevice) {
+      this.mismatchedAcquiredDevice = this.mismatchedProvider.acquire();
+    }
+    return this.mismatchedAcquiredDevice;
+  }
+
+  /**
+   * Create other device different with current test device, which could be got by `.mismatchedDevice`.
+   * A `descriptor` may be undefined, which returns a `default` mismatched device.
+   * If the request descriptor or feature name can't be supported, throws an exception to skip the entire test case.
+   */
+  async selectMismatchedDeviceOrSkipTestCase(
+    descriptor:
+      | UncanonicalizedDeviceDescriptor
+      | GPUFeatureName
+      | undefined
+      | Array<GPUFeatureName | undefined>
+  ): Promise<void> {
+    assert(
+      this.mismatchedProvider === undefined,
+      "Can't selectMismatchedDeviceOrSkipTestCase() multiple times"
+    );
+
+    this.mismatchedProvider =
+      descriptor === undefined
+        ? await mismatchedDevicePool.reserve()
+        : await mismatchedDevicePool.reserve(initUncanonicalizedDeviceDescriptor(descriptor));
+
+    this.mismatchedAcquiredDevice = this.mismatchedProvider.acquire();
   }
 
   /** GPUQueue for the test to use. (Same as `t.device.queue`.) */
@@ -100,6 +150,28 @@ export class GPUTest extends Fixture {
         }
       }
       // The GPUDevice and GPUQueue should now have no outstanding references.
+
+      if (threw) {
+        if (threw instanceof TestOOMedShouldAttemptGC) {
+          // Try to clean up, in case there are stray GPU resources in need of collection.
+          await attemptGarbageCollection();
+        }
+        throw threw;
+      }
+    }
+
+    if (this.mismatchedProvider) {
+      // MAINTENANCE_TODO(kainino0x): Deduplicate this with code in GPUTest.finalize
+      let threw: undefined | Error;
+      {
+        const provider = this.mismatchedProvider;
+        this.mismatchedProvider = undefined;
+        try {
+          await mismatchedDevicePool.release(provider);
+        } catch (ex) {
+          threw = ex;
+        }
+      }
 
       if (threw) {
         if (threw instanceof TestOOMedShouldAttemptGC) {
@@ -410,7 +482,7 @@ export class GPUTest extends Fixture {
 
     const readsPerRow = Math.ceil(minBytesPerRow / expectedDataSize);
     const reducer = `
-    [[block]] struct Buffer { data: array<u32>; };
+    struct Buffer { data: array<u32>; };
     [[group(0), binding(0)]] var<storage, read> expected: Buffer;
     [[group(0), binding(1)]] var<storage, read> in: Buffer;
     [[group(0), binding(2)]] var<storage, read_write> out: Buffer;
@@ -460,7 +532,7 @@ export class GPUTest extends Fixture {
     this.expectGPUBufferValuesEqual(resultBuffer, new Uint32Array(expectedResults));
   }
 
-  // TODO: add an expectContents for textures, which logs data: uris on failure
+  // MAINTENANCE_TODO: add an expectContents for textures, which logs data: uris on failure
 
   /**
    * Expect a whole GPUTexture to have the single provided color.
@@ -546,8 +618,8 @@ export class GPUTest extends Fixture {
   /**
    * Expect a single pixel of a 2D texture to have a particular byte representation.
    *
-   * TODO: Add check for values of depth/stencil, probably through sampling of shader
-   * TODO: Can refactor this and expectSingleColor to use a similar base expect
+   * MAINENANCE_TODO: Add check for values of depth/stencil, probably through sampling of shader
+   * MAINENANCE_TODO: Can refactor this and expectSingleColor to use a similar base expect
    */
   expectSinglePixelIn2DTexture(
     src: GPUTexture,
@@ -731,14 +803,10 @@ export class GPUTest extends Fixture {
   /**
    * Create a GPUBuffer with the specified contents and usage.
    *
-   * TODO: Several call sites would be simplified if this took ArrayBuffer as well.
+   * MAINTENANCE_TODO: Several call sites would be simplified if this took ArrayBuffer as well.
    */
-  makeBufferWithContents(
-    dataArray: TypedArrayBufferView,
-    usage: GPUBufferUsageFlags,
-    opts: { padToMultipleOf4?: boolean } = {}
-  ): GPUBuffer {
-    return this.trackForCleanup(makeBufferWithContents(this.device, dataArray, usage, opts));
+  makeBufferWithContents(dataArray: TypedArrayBufferView, usage: GPUBufferUsageFlags): GPUBuffer {
+    return this.trackForCleanup(makeBufferWithContents(this.device, dataArray, usage));
   }
 
   /**

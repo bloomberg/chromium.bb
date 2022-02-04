@@ -125,7 +125,7 @@ title: Sync diagnostics
 
 *   Data type-specific tabs
     *   Model associators / change processors have access to the
-                ProfileSyncService, so shouldn't be too hard to emit events or
+                SyncService, so shouldn't be too hard to emit events or
                 reply to calls
     *   Probably easier for things that live on the UI thread
 *   Some way to capture VLOG() events

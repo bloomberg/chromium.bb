@@ -1153,6 +1153,11 @@ inline std::ostream& operator<<(std::ostream& os, CreateArgumentsType type) {
   UNREACHABLE();
 }
 
+// TODO(victorgomes, v8:12315): Local names are currently always inlined, so we
+// choose the maximum int value as threshold.
+constexpr int kScopeInfoMaxInlinedLocalNamesSize =
+    std::numeric_limits<int>::max();
+
 enum ScopeType : uint8_t {
   CLASS_SCOPE,     // The scope introduced by a class.
   EVAL_SCOPE,      // The top-level scope for an eval source.
@@ -1729,18 +1734,19 @@ enum class BlockingBehavior { kBlock, kDontBlock };
 
 enum class ConcurrencyMode { kNotConcurrent, kConcurrent };
 
-#define FOR_EACH_ISOLATE_ADDRESS_NAME(C)                       \
-  C(Handler, handler)                                          \
-  C(CEntryFP, c_entry_fp)                                      \
-  C(CFunction, c_function)                                     \
-  C(Context, context)                                          \
-  C(PendingException, pending_exception)                       \
-  C(PendingHandlerContext, pending_handler_context)            \
-  C(PendingHandlerEntrypoint, pending_handler_entrypoint)      \
-  C(PendingHandlerConstantPool, pending_handler_constant_pool) \
-  C(PendingHandlerFP, pending_handler_fp)                      \
-  C(PendingHandlerSP, pending_handler_sp)                      \
-  C(ExternalCaughtException, external_caught_exception)        \
+#define FOR_EACH_ISOLATE_ADDRESS_NAME(C)                            \
+  C(Handler, handler)                                               \
+  C(CEntryFP, c_entry_fp)                                           \
+  C(CFunction, c_function)                                          \
+  C(Context, context)                                               \
+  C(PendingException, pending_exception)                            \
+  C(PendingHandlerContext, pending_handler_context)                 \
+  C(PendingHandlerEntrypoint, pending_handler_entrypoint)           \
+  C(PendingHandlerConstantPool, pending_handler_constant_pool)      \
+  C(PendingHandlerFP, pending_handler_fp)                           \
+  C(PendingHandlerSP, pending_handler_sp)                           \
+  C(NumFramesAbovePendingHandler, num_frames_above_pending_handler) \
+  C(ExternalCaughtException, external_caught_exception)             \
   C(JSEntrySP, js_entry_sp)
 
 enum IsolateAddressId {
@@ -1820,15 +1826,8 @@ constexpr int kSwissNameDictionaryInitialCapacity = 4;
 constexpr int kSmallOrderedHashSetMinCapacity = 4;
 constexpr int kSmallOrderedHashMapMinCapacity = 4;
 
-#ifdef V8_INCLUDE_RECEIVER_IN_ARGC
-constexpr bool kJSArgcIncludesReceiver = true;
 constexpr int kJSArgcReceiverSlots = 1;
 constexpr uint16_t kDontAdaptArgumentsSentinel = 0;
-#else
-constexpr bool kJSArgcIncludesReceiver = false;
-constexpr int kJSArgcReceiverSlots = 0;
-constexpr uint16_t kDontAdaptArgumentsSentinel = static_cast<uint16_t>(-1);
-#endif
 
 // Helper to get the parameter count for functions with JS linkage.
 inline constexpr int JSParameterCount(int param_count_without_receiver) {

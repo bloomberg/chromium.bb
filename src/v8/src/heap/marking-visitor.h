@@ -127,9 +127,8 @@ template <typename ConcreteVisitor, typename MarkingState>
 class MarkingVisitorBase : public HeapVisitor<int, ConcreteVisitor> {
  public:
   MarkingVisitorBase(MarkingWorklists::Local* local_marking_worklists,
-                     WeakObjects::Local* local_weak_objects,
-                     //  WeakObjects* weak_objects,
-                     Heap* heap, unsigned mark_compact_epoch,
+                     WeakObjects::Local* local_weak_objects, Heap* heap,
+                     unsigned mark_compact_epoch,
                      base::EnumSet<CodeFlushMode> code_flush_mode,
                      bool is_embedder_tracing_enabled,
                      bool should_keep_ages_unchanged)
@@ -219,6 +218,11 @@ class MarkingVisitorBase : public HeapVisitor<int, ConcreteVisitor> {
 
   template <typename T>
   int VisitEmbedderTracingSubclass(Map map, T object);
+  template <typename T>
+  int VisitEmbedderTracingSubClassWithEmbedderTracing(Map map, T object);
+  template <typename T>
+  int VisitEmbedderTracingSubClassNoEmbedderTracing(Map map, T object);
+
   V8_INLINE int VisitFixedArrayWithProgressBar(Map map, FixedArray object,
                                                ProgressBar& progress_bar);
   // Marks the descriptor array black without pushing it on the marking work

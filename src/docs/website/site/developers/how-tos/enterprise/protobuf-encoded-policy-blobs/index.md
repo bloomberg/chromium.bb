@@ -44,38 +44,13 @@ protobufs. The layers are as follows:
             <https://chromium.googlesource.com/chromium/src/+/HEAD/components/policy/resources/policy_templates.json>
 4.  Chromium OS device policy is handled by ChromeDeviceSettingsProto
             defined in
-            <https://chromium.googlesource.com/chromium/src/chrome/browser/chromeos/policy/proto/+/HEAD/chrome_device_policy.proto>
+            <https://chromium.googlesource.com/chromium/src/+/HEAD/components/policy/proto/chrome_device_policy.proto>
             and is applicable if the policy type is google/chromeos/device.
 
-## Manipulating binary blobs
+## Location of binary blobs
 
 Binary policy blobs are stored on Chromium OS in these locations:
 
-*   /var/lib/whitelist/policy - device policy blob
+*   /var/lib/devicesettings/policy - device policy blob
 *   /home/root/&lt;user-hash&gt;/session_manager/policy/policy - user
             policy blob
-
-To manipulate these files, the protoc compiler (part of the protobuf
-distribution) comes in handy, as it is capable of decoding and encoding binary
-protobuf messages to and from human-readable text format. We have some tools
-that can help with this:
-
-*   A pair of scripts, decode_policy_blob.sh and encode_policy_blob.sh,
-            which breaks up the policy blob and decode the individual layers.
-            Copies of the scripts are attached, you might have to adjust the
-            PROTO_DIR variable depending on the environment you use the scripts
-            in. It needs to point at a directory containing the proto definition
-            files, which are typically installed in /usr/include/proto a
-            Chromium OS build chroot. When run, the scripts operate on text
-            files in the current directory containing the textual protobuf
-            representations for the individual layers:
-    *   policy_response.txt for PolicyFetchResponse
-    *   policy_data.txt for PolicyData
-    *   chrome_device_policy.txt for ChromeDeviceSettingsProto (note
-                that user policy is currently not supported, but that should be
-                straightforward to add)
-    Note that re-encoding the policy uses a key for the signature that is
-    hard-coded in the encoding script, so you might have to swap in the
-    appropriate owner key.
-*   A tool called policy_reader, which is installed on production images
-            and dumps the current device policy blob in textual representation.

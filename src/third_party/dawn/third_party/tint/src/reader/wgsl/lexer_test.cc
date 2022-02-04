@@ -128,6 +128,64 @@ abcd)");
   EXPECT_EQ(t.source().range.end.column, 4u);
 }
 
+TEST_F(LexerTest, Null_InWhitespace_IsError) {
+  Source::FileContent content(std::string{' ', 0, ' '});
+  Lexer l("test.wgsl", &content);
+
+  auto t = l.next();
+  EXPECT_TRUE(t.IsError());
+  EXPECT_EQ(t.source().range.begin.line, 1u);
+  EXPECT_EQ(t.source().range.begin.column, 2u);
+  EXPECT_EQ(t.source().range.end.line, 1u);
+  EXPECT_EQ(t.source().range.end.column, 2u);
+  EXPECT_EQ(t.to_str(), "null character found");
+}
+
+TEST_F(LexerTest, Null_InLineComment_IsError) {
+  Source::FileContent content(std::string{'/', '/', ' ', 0, ' '});
+  Lexer l("test.wgsl", &content);
+
+  auto t = l.next();
+  EXPECT_TRUE(t.IsError());
+  EXPECT_EQ(t.source().range.begin.line, 1u);
+  EXPECT_EQ(t.source().range.begin.column, 4u);
+  EXPECT_EQ(t.source().range.end.line, 1u);
+  EXPECT_EQ(t.source().range.end.column, 4u);
+  EXPECT_EQ(t.to_str(), "null character found");
+}
+
+TEST_F(LexerTest, Null_InBlockComment_IsError) {
+  Source::FileContent content(std::string{'/', '*', ' ', 0, '*', '/'});
+  Lexer l("test.wgsl", &content);
+
+  auto t = l.next();
+  EXPECT_TRUE(t.IsError());
+  EXPECT_EQ(t.source().range.begin.line, 1u);
+  EXPECT_EQ(t.source().range.begin.column, 4u);
+  EXPECT_EQ(t.source().range.end.line, 1u);
+  EXPECT_EQ(t.source().range.end.column, 4u);
+  EXPECT_EQ(t.to_str(), "null character found");
+}
+
+TEST_F(LexerTest, Null_InIdentifier_IsError) {
+  // Try inserting a null in an identifier. Other valid token
+  // kinds will behave similarly, so use the identifier case
+  // as a representative.
+  Source::FileContent content(std::string{'a', 0, 'c'});
+  Lexer l("test.wgsl", &content);
+
+  auto t = l.next();
+  EXPECT_TRUE(t.IsIdentifier());
+  EXPECT_EQ(t.to_str(), "a");
+  t = l.next();
+  EXPECT_TRUE(t.IsError());
+  EXPECT_EQ(t.source().range.begin.line, 1u);
+  EXPECT_EQ(t.source().range.begin.column, 2u);
+  EXPECT_EQ(t.source().range.end.line, 1u);
+  EXPECT_EQ(t.source().range.end.column, 2u);
+  EXPECT_EQ(t.to_str(), "null character found");
+}
+
 struct FloatData {
   const char* input;
   float result;
@@ -336,11 +394,61 @@ INSTANTIATE_TEST_SUITE_P(
     IntegerTest_HexSigned,
     testing::Values(
         HexSignedIntData{"0x0", 0},
+        HexSignedIntData{"0X0", 0},
         HexSignedIntData{"0x42", 66},
+        HexSignedIntData{"0X42", 66},
         HexSignedIntData{"-0x42", -66},
+        HexSignedIntData{"-0X42", -66},
         HexSignedIntData{"0xeF1Abc9", 250719177},
+        HexSignedIntData{"0XeF1Abc9", 250719177},
         HexSignedIntData{"-0x80000000", std::numeric_limits<int32_t>::min()},
-        HexSignedIntData{"0x7FFFFFFF", std::numeric_limits<int32_t>::max()}));
+        HexSignedIntData{"-0X80000000", std::numeric_limits<int32_t>::min()},
+        HexSignedIntData{"0x7FFFFFFF", std::numeric_limits<int32_t>::max()},
+        HexSignedIntData{"0X7FFFFFFF", std::numeric_limits<int32_t>::max()}));
+
+TEST_F(LexerTest, HexPrefixOnly_IsError) {
+  // Could be the start of a hex integer or hex float, but is neither.
+  Source::FileContent content("0x");
+  Lexer l("test.wgsl", &content);
+
+  auto t = l.next();
+  ASSERT_TRUE(t.Is(Token::Type::kError));
+  EXPECT_EQ(t.to_str(),
+            "integer or float hex literal has no significant digits");
+}
+
+TEST_F(LexerTest, HexPrefixUpperCaseOnly_IsError) {
+  // Could be the start of a hex integer or hex float, but is neither.
+  Source::FileContent content("0X");
+  Lexer l("test.wgsl", &content);
+
+  auto t = l.next();
+  ASSERT_TRUE(t.Is(Token::Type::kError));
+  EXPECT_EQ(t.to_str(),
+            "integer or float hex literal has no significant digits");
+}
+
+TEST_F(LexerTest, NegativeHexPrefixOnly_IsError) {
+  // Could be the start of a hex integer or hex float, but is neither.
+  Source::FileContent content("-0x");
+  Lexer l("test.wgsl", &content);
+
+  auto t = l.next();
+  ASSERT_TRUE(t.Is(Token::Type::kError));
+  EXPECT_EQ(t.to_str(),
+            "integer or float hex literal has no significant digits");
+}
+
+TEST_F(LexerTest, NegativeHexPrefixUpperCaseOnly_IsError) {
+  // Could be the start of a hex integer or hex float, but is neither.
+  Source::FileContent content("-0X");
+  Lexer l("test.wgsl", &content);
+
+  auto t = l.next();
+  ASSERT_TRUE(t.Is(Token::Type::kError));
+  EXPECT_EQ(t.to_str(),
+            "integer or float hex literal has no significant digits");
+}
 
 TEST_F(LexerTest, IntegerTest_HexSignedTooLarge) {
   Source::FileContent content("0x80000000");
@@ -554,6 +662,7 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(TokenData{"&", Token::Type::kAnd},
                     TokenData{"&&", Token::Type::kAndAnd},
                     TokenData{"->", Token::Type::kArrow},
+                    TokenData{"@", Token::Type::kAttr},
                     TokenData{"[[", Token::Type::kAttrLeft},
                     TokenData{"]]", Token::Type::kAttrRight},
                     TokenData{"/", Token::Type::kForwardSlash},
@@ -626,41 +735,6 @@ INSTANTIATE_TEST_SUITE_P(
         TokenData{"false", Token::Type::kFalse},
         TokenData{"fn", Token::Type::kFn},
         TokenData{"for", Token::Type::kFor},
-        TokenData{"bgra8unorm", Token::Type::kFormatBgra8Unorm},
-        TokenData{"bgra8unorm_srgb", Token::Type::kFormatBgra8UnormSrgb},
-        TokenData{"r16float", Token::Type::kFormatR16Float},
-        TokenData{"r16sint", Token::Type::kFormatR16Sint},
-        TokenData{"r16uint", Token::Type::kFormatR16Uint},
-        TokenData{"r32float", Token::Type::kFormatR32Float},
-        TokenData{"r32sint", Token::Type::kFormatR32Sint},
-        TokenData{"r32uint", Token::Type::kFormatR32Uint},
-        TokenData{"r8sint", Token::Type::kFormatR8Sint},
-        TokenData{"r8snorm", Token::Type::kFormatR8Snorm},
-        TokenData{"r8uint", Token::Type::kFormatR8Uint},
-        TokenData{"r8unorm", Token::Type::kFormatR8Unorm},
-        TokenData{"rg11b10float", Token::Type::kFormatRg11B10Float},
-        TokenData{"rg16float", Token::Type::kFormatRg16Float},
-        TokenData{"rg16sint", Token::Type::kFormatRg16Sint},
-        TokenData{"rg16uint", Token::Type::kFormatRg16Uint},
-        TokenData{"rg32float", Token::Type::kFormatRg32Float},
-        TokenData{"rg32sint", Token::Type::kFormatRg32Sint},
-        TokenData{"rg32uint", Token::Type::kFormatRg32Uint},
-        TokenData{"rg8sint", Token::Type::kFormatRg8Sint},
-        TokenData{"rg8snorm", Token::Type::kFormatRg8Snorm},
-        TokenData{"rg8uint", Token::Type::kFormatRg8Uint},
-        TokenData{"rg8unorm", Token::Type::kFormatRg8Unorm},
-        TokenData{"rgb10a2unorm", Token::Type::kFormatRgb10A2Unorm},
-        TokenData{"rgba16float", Token::Type::kFormatRgba16Float},
-        TokenData{"rgba16sint", Token::Type::kFormatRgba16Sint},
-        TokenData{"rgba16uint", Token::Type::kFormatRgba16Uint},
-        TokenData{"rgba32float", Token::Type::kFormatRgba32Float},
-        TokenData{"rgba32sint", Token::Type::kFormatRgba32Sint},
-        TokenData{"rgba32uint", Token::Type::kFormatRgba32Uint},
-        TokenData{"rgba8sint", Token::Type::kFormatRgba8Sint},
-        TokenData{"rgba8snorm", Token::Type::kFormatRgba8Snorm},
-        TokenData{"rgba8uint", Token::Type::kFormatRgba8Uint},
-        TokenData{"rgba8unorm", Token::Type::kFormatRgba8Unorm},
-        TokenData{"rgba8unorm_srgb", Token::Type::kFormatRgba8UnormSrgb},
         TokenData{"function", Token::Type::kFunction},
         TokenData{"i32", Token::Type::kI32},
         TokenData{"if", Token::Type::kIf},

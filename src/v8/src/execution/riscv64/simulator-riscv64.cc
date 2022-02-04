@@ -51,6 +51,7 @@
 #include <stdlib.h>
 
 #include "src/base/bits.h"
+#include "src/base/overflowing-math.h"
 #include "src/base/vector.h"
 #include "src/codegen/assembler-inl.h"
 #include "src/codegen/macro-assembler.h"
@@ -2413,14 +2414,14 @@ T Simulator::ReadMem(int64_t addr, Instruction* instr) {
            addr, reinterpret_cast<intptr_t>(instr));
     DieOrDebug();
   }
-#ifndef V8_COMPRESS_POINTERS  // TODO(RISCV): v8:11812
-  // // check for natural alignment
-  // if (!FLAG_riscv_c_extension && ((addr & (sizeof(T) - 1)) != 0)) {
-  //   PrintF("Unaligned read at 0x%08" PRIx64 " , pc=0x%08" V8PRIxPTR "\n",
-  //   addr,
-  //          reinterpret_cast<intptr_t>(instr));
-  //   DieOrDebug();
-  // }
+#if !defined(V8_COMPRESS_POINTERS) && defined(RISCV_HAS_NO_UNALIGNED)
+  // check for natural alignment
+  if (!FLAG_riscv_c_extension && ((addr & (sizeof(T) - 1)) != 0)) {
+    PrintF("Unaligned read at 0x%08" PRIx64 " , pc=0x%08" V8PRIxPTR "\n",
+    addr,
+           reinterpret_cast<intptr_t>(instr));
+    DieOrDebug();
+  }
 #endif
   T* ptr = reinterpret_cast<T*>(addr);
   T value = *ptr;
@@ -2436,7 +2437,7 @@ void Simulator::WriteMem(int64_t addr, T value, Instruction* instr) {
            addr, reinterpret_cast<intptr_t>(instr));
     DieOrDebug();
   }
-#ifndef V8_COMPRESS_POINTERS  // TODO(RISCV): v8:11812
+#if !defined(V8_COMPRESS_POINTERS) && defined(RISCV_HAS_NO_UNALIGNED)
   // check for natural alignment
   if (!FLAG_riscv_c_extension && ((addr & (sizeof(T) - 1)) != 0)) {
     PrintF("Unaligned write at 0x%08" PRIx64 " , pc=0x%08" V8PRIxPTR "\n", addr,
@@ -5216,6 +5217,34 @@ void Simulator::DecodeRvvIVI() {
       RVV_VI_LOOP_END
       rvv_trace_vd();
     } break;
+    case RO_V_VSLIDEUP_VI: {
+      RVV_VI_CHECK_SLIDE(true);
+
+      const uint8_t offset = instr_.RvvUimm5();
+      RVV_VI_GENERAL_LOOP_BASE
+      if (rvv_vstart() < offset && i < offset) continue;
+
+      switch (rvv_vsew()) {
+        case E8: {
+          VI_XI_SLIDEUP_PARAMS(8, offset);
+          vd = vs2;
+        } break;
+        case E16: {
+          VI_XI_SLIDEUP_PARAMS(16, offset);
+          vd = vs2;
+        } break;
+        case E32: {
+          VI_XI_SLIDEUP_PARAMS(32, offset);
+          vd = vs2;
+        } break;
+        default: {
+          VI_XI_SLIDEUP_PARAMS(64, offset);
+          vd = vs2;
+        } break;
+      }
+      RVV_VI_LOOP_END
+      rvv_trace_vd();
+    } break;
     case RO_V_VSRL_VI:
       RVV_VI_VI_ULOOP({ vd = vs2 >> uimm5; })
       break;
@@ -5540,7 +5569,32 @@ void Simulator::DecodeRvvMVV() {
             UNREACHABLE();
         }
         set_rvv_vstart(0);
-        SNPrintF(trace_buf_, "%lx", get_register(rd_reg()));
+        rvv_trace_vd();
+      } else if (rvv_vs1_reg() == 0b10000) {
+        uint64_t cnt = 0;
+        RVV_VI_GENERAL_LOOP_BASE
+        RVV_VI_LOOP_MASK_SKIP()
+        const uint8_t idx = i / 64;
+        const uint8_t pos = i % 64;
+        bool mask = (Rvvelt<uint64_t>(rvv_vs2_reg(), idx) >> pos) & 0x1;
+        if (mask) cnt++;
+        RVV_VI_LOOP_END
+        set_register(rd_reg(), cnt);
+        rvv_trace_vd();
+      } else if (rvv_vs1_reg() == 0b10001) {
+        int64_t index = -1;
+        RVV_VI_GENERAL_LOOP_BASE
+        RVV_VI_LOOP_MASK_SKIP()
+        const uint8_t idx = i / 64;
+        const uint8_t pos = i % 64;
+        bool mask = (Rvvelt<uint64_t>(rvv_vs2_reg(), idx) >> pos) & 0x1;
+        if (mask) {
+          index = i;
+          break;
+        }
+        RVV_VI_LOOP_END
+        set_register(rd_reg(), index);
+        rvv_trace_vd();
       } else {
         v8::base::EmbeddedVector<char, 256> buffer;
         disasm::NameConverter converter;
@@ -6003,6 +6057,30 @@ void Simulator::DecodeRvvFVV() {
                                vd = std::sqrt(vs2);
                                USE(fs1);
                              })
+          break;
+        case VFRSQRT7_V:
+          RVV_VI_VFP_VF_LOOP(
+              {},
+              {
+                vd = base::RecipSqrt(vs2);
+                USE(fs1);
+              },
+              {
+                vd = base::RecipSqrt(vs2);
+                USE(fs1);
+              })
+          break;
+        case VFREC7_V:
+          RVV_VI_VFP_VF_LOOP(
+              {},
+              {
+                vd = base::Recip(vs2);
+                USE(fs1);
+              },
+              {
+                vd = base::Recip(vs2);
+                USE(fs1);
+              })
           break;
         default:
           break;

@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 
 #include "common/debug.h"
+#include "common/string_utils.h"
 #include "gpu_info_util/SystemInfo.h"
 #include "test_utils/ANGLETest.h"
 #include "util/OSWindow.h"
@@ -41,6 +42,7 @@ class EGLDisplayPowerPreferenceTest : public ANGLETest
                 return i;
             }
         }
+        // Can't find GPU
         ASSERT(false);
         return 0;
     }
@@ -52,18 +54,26 @@ class EGLDisplayPowerPreferenceTest : public ANGLETest
         std::string rendererString(renderer);
         for (int i = 0; i < static_cast<int>(mSystemInfo.gpus.size()); ++i)
         {
-            if (rendererString.find(VendorName(mSystemInfo.gpus[i].vendorId)) != std::string::npos)
+            std::vector<std::string> vendorTokens;
+            angle::SplitStringAlongWhitespace(VendorName(mSystemInfo.gpus[i].vendorId),
+                                              &vendorTokens);
+            for (std::string &token : vendorTokens)
             {
-                return i;
+                if (rendererString.find(token) != std::string::npos)
+                {
+                    return i;
+                }
             }
         }
+        // Can't find active GPU
+        ASSERT(false);
         return 0;
     }
 
     SystemInfo mSystemInfo;
 };
 
-class EGLDisplayPowerPreferenceTestMultiDisplay : public EGLDisplayPowerPreferenceTest
+class EGLDisplayPowerPreferenceTestNoFixture : public EGLDisplayPowerPreferenceTest
 {
   protected:
     void terminateWindow()
@@ -76,8 +86,8 @@ class EGLDisplayPowerPreferenceTestMultiDisplay : public EGLDisplayPowerPreferen
 
     void terminateDisplay(EGLDisplay display)
     {
-        // EXPECT_EGL_TRUE(eglTerminate(display));
-        // EXPECT_EGL_SUCCESS();
+        EXPECT_EGL_TRUE(eglTerminate(display));
+        EXPECT_EGL_SUCCESS();
     }
 
     void terminateContext(EGLDisplay display, EGLContext context)
@@ -95,36 +105,6 @@ class EGLDisplayPowerPreferenceTestMultiDisplay : public EGLDisplayPowerPreferen
         mOSWindow->initialize("EGLDisplayPowerPreferenceTestMultiDisplay", kWindowWidth,
                               kWindowHeight);
         setWindowVisible(mOSWindow, true);
-    }
-
-    void initializeDisplayWithPowerPreference(EGLDisplay *display, EGLAttrib powerPreference)
-    {
-        GLenum platformType = GetParam().getRenderer();
-        GLenum deviceType   = GetParam().getDeviceType();
-
-        std::vector<EGLint> displayAttributes;
-        displayAttributes.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
-        displayAttributes.push_back(platformType);
-        displayAttributes.push_back(EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE);
-        displayAttributes.push_back(EGL_DONT_CARE);
-        displayAttributes.push_back(EGL_PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE);
-        displayAttributes.push_back(EGL_DONT_CARE);
-        displayAttributes.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
-        displayAttributes.push_back(deviceType);
-        displayAttributes.push_back(EGL_POWER_PREFERENCE_ANGLE);
-        displayAttributes.push_back(powerPreference);
-        displayAttributes.push_back(EGL_NONE);
-
-        *display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE,
-                                            reinterpret_cast<void *>(mOSWindow->getNativeDisplay()),
-                                            displayAttributes.data());
-        ASSERT_TRUE(*display != EGL_NO_DISPLAY);
-
-        EGLint majorVersion, minorVersion;
-        ASSERT_TRUE(eglInitialize(*display, &majorVersion, &minorVersion) == EGL_TRUE);
-
-        eglBindAPI(EGL_OPENGL_ES_API);
-        ASSERT_EGL_SUCCESS();
     }
 
     void initializeContextForDisplay(EGLDisplay display, EGLContext *context)
@@ -154,6 +134,46 @@ class EGLDisplayPowerPreferenceTestMultiDisplay : public EGLDisplayPowerPreferen
 
         *context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttributes);
         ASSERT_TRUE(*context != EGL_NO_CONTEXT);
+    }
+
+    static constexpr int kWindowWidth  = 16;
+    static constexpr int kWindowHeight = 8;
+
+    OSWindow *mOSWindow = nullptr;
+};
+
+class EGLDisplayPowerPreferenceTestMultiDisplay : public EGLDisplayPowerPreferenceTestNoFixture
+{
+
+  protected:
+    void initializeDisplayWithPowerPreference(EGLDisplay *display, EGLAttrib powerPreference)
+    {
+        GLenum platformType = GetParam().getRenderer();
+        GLenum deviceType   = GetParam().getDeviceType();
+
+        std::vector<EGLint> displayAttributes;
+        displayAttributes.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
+        displayAttributes.push_back(platformType);
+        displayAttributes.push_back(EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE);
+        displayAttributes.push_back(EGL_DONT_CARE);
+        displayAttributes.push_back(EGL_PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE);
+        displayAttributes.push_back(EGL_DONT_CARE);
+        displayAttributes.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
+        displayAttributes.push_back(deviceType);
+        displayAttributes.push_back(EGL_POWER_PREFERENCE_ANGLE);
+        displayAttributes.push_back(powerPreference);
+        displayAttributes.push_back(EGL_NONE);
+
+        *display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE,
+                                            reinterpret_cast<void *>(mOSWindow->getNativeDisplay()),
+                                            displayAttributes.data());
+        ASSERT_TRUE(*display != EGL_NO_DISPLAY);
+
+        EGLint majorVersion, minorVersion;
+        ASSERT_TRUE(eglInitialize(*display, &majorVersion, &minorVersion) == EGL_TRUE);
+
+        eglBindAPI(EGL_OPENGL_ES_API);
+        ASSERT_EGL_SUCCESS();
     }
 
     void runReinitializeDisplay(EGLAttrib powerPreference)
@@ -238,11 +258,6 @@ class EGLDisplayPowerPreferenceTestMultiDisplay : public EGLDisplayPowerPreferen
 
         terminateWindow();
     }
-
-    static constexpr int kWindowWidth  = 16;
-    static constexpr int kWindowHeight = 8;
-
-    OSWindow *mOSWindow = nullptr;
 };
 
 TEST_P(EGLDisplayPowerPreferenceTest, SelectGPU)
@@ -275,6 +290,72 @@ TEST_P(EGLDisplayPowerPreferenceTestMultiDisplay, MultiDisplayTest)
     runMultiDisplay();
 }
 
+class EGLDisplayPowerPreferenceTestDeviceId : public EGLDisplayPowerPreferenceTestNoFixture
+{
+
+  protected:
+    void initializeDisplayWithDeviceId(EGLDisplay *display, uint64_t deviceId)
+    {
+        GLenum platformType = GetParam().getRenderer();
+        GLenum deviceType   = GetParam().getDeviceType();
+
+        EGLAttrib high = ((deviceId >> 32) & 0xFFFFFFFF);
+        EGLAttrib low  = (deviceId & 0xFFFFFFFF);
+
+        std::vector<EGLint> displayAttributes;
+        displayAttributes.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
+        displayAttributes.push_back(platformType);
+        displayAttributes.push_back(EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE);
+        displayAttributes.push_back(EGL_DONT_CARE);
+        displayAttributes.push_back(EGL_PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE);
+        displayAttributes.push_back(EGL_DONT_CARE);
+        displayAttributes.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
+        displayAttributes.push_back(deviceType);
+        displayAttributes.push_back(EGL_PLATFORM_ANGLE_DEVICE_ID_HIGH_ANGLE);
+        displayAttributes.push_back(high);
+        displayAttributes.push_back(EGL_PLATFORM_ANGLE_DEVICE_ID_LOW_ANGLE);
+        displayAttributes.push_back(low);
+        displayAttributes.push_back(EGL_NONE);
+
+        *display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE,
+                                            reinterpret_cast<void *>(mOSWindow->getNativeDisplay()),
+                                            displayAttributes.data());
+        ASSERT_TRUE(*display != EGL_NO_DISPLAY);
+
+        EGLint majorVersion, minorVersion;
+        ASSERT_TRUE(eglInitialize(*display, &majorVersion, &minorVersion) == EGL_TRUE);
+
+        eglBindAPI(EGL_OPENGL_ES_API);
+        ASSERT_EGL_SUCCESS();
+    }
+};
+
+TEST_P(EGLDisplayPowerPreferenceTestDeviceId, DeviceId)
+{
+    ANGLE_SKIP_TEST_IF(!IsEGLClientExtensionEnabled("EGL_ANGLE_platform_angle_device_id"));
+
+    initializeWindow();
+
+    for (size_t i = 0; i < mSystemInfo.gpus.size(); i++)
+    {
+        // Initialize the display with device id for each GPU
+        EGLDisplay display;
+        EGLContext context;
+        initializeDisplayWithDeviceId(&display, mSystemInfo.gpus[i].systemDeviceId);
+        initializeContextForDisplay(display, &context);
+        eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, context);
+
+        ASSERT_EQ(static_cast<int>(i), findActiveGPU());
+
+        // Terminate the displays
+        terminateContext(display, context);
+        eglMakeCurrent(display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        terminateDisplay(display);
+    }
+
+    terminateWindow();
+}
+
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(EGLDisplayPowerPreferenceTest);
 ANGLE_INSTANTIATE_TEST(EGLDisplayPowerPreferenceTest,
                        WithLowPowerGPU(ES2_METAL()),
@@ -284,5 +365,12 @@ ANGLE_INSTANTIATE_TEST(EGLDisplayPowerPreferenceTest,
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(EGLDisplayPowerPreferenceTestMultiDisplay);
 ANGLE_INSTANTIATE_TEST(EGLDisplayPowerPreferenceTestMultiDisplay,
+                       WithNoFixture(ES2_METAL()),
+                       WithNoFixture(ES3_METAL()));
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(EGLDisplayPowerPreferenceTestDeviceId);
+ANGLE_INSTANTIATE_TEST(EGLDisplayPowerPreferenceTestDeviceId,
+                       WithNoFixture(ES2_D3D11()),
+                       WithNoFixture(ES3_D3D11()),
                        WithNoFixture(ES2_METAL()),
                        WithNoFixture(ES3_METAL()));

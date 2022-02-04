@@ -32,7 +32,7 @@
 #include <memory>
 #include <queue>
 
-namespace dawn_native { namespace vulkan {
+namespace dawn::native::vulkan {
 
     class Adapter;
     class BindGroupLayout;
@@ -43,8 +43,8 @@ namespace dawn_native { namespace vulkan {
 
     class Device final : public DeviceBase {
       public:
-        static ResultOrError<Device*> Create(Adapter* adapter,
-                                             const DawnDeviceDescriptor* descriptor);
+        static ResultOrError<Ref<Device>> Create(Adapter* adapter,
+                                                 const DeviceDescriptor* descriptor);
         ~Device() override;
 
         MaybeError Initialize();
@@ -106,7 +106,7 @@ namespace dawn_native { namespace vulkan {
         float GetTimestampPeriodInNS() const override;
 
       private:
-        Device(Adapter* adapter, const DawnDeviceDescriptor* descriptor);
+        Device(Adapter* adapter, const DeviceDescriptor* descriptor);
 
         ResultOrError<Ref<BindGroupBase>> CreateBindGroupImpl(
             const BindGroupDescriptor* descriptor) override;
@@ -208,6 +208,6 @@ namespace dawn_native { namespace vulkan {
                                        std::vector<VkSemaphore>* outWaitSemaphores);
     };
 
-}}  // namespace dawn_native::vulkan
+}  // namespace dawn::native::vulkan
 
 #endif  // DAWNNATIVE_VULKAN_DEVICEVK_H_

@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -72,6 +72,9 @@ enum DescriptorReqBits {
     DESCRIPTOR_REQ_VIEW_ATOMIC_OPERATION = DESCRIPTOR_REQ_COMPONENT_TYPE_UINT << 1,
     DESCRIPTOR_REQ_SAMPLER_IMPLICITLOD_DREF_PROJ = DESCRIPTOR_REQ_VIEW_ATOMIC_OPERATION << 1,
     DESCRIPTOR_REQ_SAMPLER_BIAS_OFFSET = DESCRIPTOR_REQ_SAMPLER_IMPLICITLOD_DREF_PROJ << 1,
+    DESCRIPTOR_REQ_IMAGE_READ_WITHOUT_FORMAT = DESCRIPTOR_REQ_SAMPLER_BIAS_OFFSET << 1,
+    DESCRIPTOR_REQ_IMAGE_WRITE_WITHOUT_FORMAT = DESCRIPTOR_REQ_IMAGE_READ_WITHOUT_FORMAT << 1,
+    DESCRIPTOR_REQ_IMAGE_DREF = DESCRIPTOR_REQ_IMAGE_WRITE_WITHOUT_FORMAT << 1,
 
 };
 typedef uint32_t DescriptorReqFlags;
@@ -81,10 +84,8 @@ extern DescriptorReqFlags DescriptorRequirementsBitsFromFormat(VkFormat fmt);
 struct DescriptorRequirement {
     DescriptorReqFlags reqs;
     bool is_writable;
-    std::vector<std::map<SamplerUsedByImage, const cvdescriptorset::Descriptor *>>
-        samplers_used_by_image;  // Copy from StageState.interface_var. It combines from plural shader stages.
-                                 // The index of array is index of image.
-
+    // Copy from StageState.interface_var. It combines from plural shader stages. The index of array is index of image.
+    std::vector<layer_data::unordered_set<SamplerUsedByImage>> samplers_used_by_image;
     DescriptorRequirement() : reqs(0), is_writable(false) {}
 };
 
@@ -157,6 +158,7 @@ struct PipelineStageState {
     std::vector<DescriptorUse> descriptor_uses;
     bool has_writable_descriptor;
     bool has_atomic_descriptor;
+    bool wrote_primitive_shading_rate;
 
     PipelineStageState(const VkPipelineShaderStageCreateInfo *stage, std::shared_ptr<const SHADER_MODULE_STATE> &module);
 };
@@ -219,7 +221,7 @@ class PIPELINE_STATE : public BASE_NODE {
     // NOTE: this map is 'almost' const and used in performance critical code paths.
     // The values of existing entries in the DescriptorRequirement::samplers_used_by_image map
     // are updated at various times. Locking requirements are TBD.
-    ActiveSlotMap active_slots;
+    const ActiveSlotMap active_slots;
     const uint32_t max_active_slot = 0;  // the highest set number in active_slots for pipeline layout compatibility checks
 
     const layer_data::unordered_set<uint32_t> fragmentShader_writable_output_location_list;
@@ -244,9 +246,6 @@ class PIPELINE_STATE : public BASE_NODE {
     // Flag of which shader stages are active for this pipeline
     const uint32_t active_shaders = 0;
     const VkPrimitiveTopology topology_at_rasterizer;
-
-    layer_data::unordered_set<VkShaderStageFlagBits, hash_util::HashCombiner::WrappedHash<VkShaderStageFlagBits>>
-        wrote_primitive_shading_rate;
 
     PIPELINE_STATE(const ValidationStateTracker *state_data, const VkGraphicsPipelineCreateInfo *pCreateInfo,
                    std::shared_ptr<const RENDER_PASS_STATE> &&rpstate, std::shared_ptr<const PIPELINE_LAYOUT_STATE> &&layout);
@@ -299,27 +298,19 @@ struct LAST_BOUND_STATE {
     LAST_BOUND_STATE() { Reset(); }  // must define default constructor for portability reasons
     PIPELINE_STATE *pipeline_state;
     VkPipelineLayout pipeline_layout;
-    std::unique_ptr<cvdescriptorset::DescriptorSet> push_descriptor_set;
+    std::shared_ptr<cvdescriptorset::DescriptorSet> push_descriptor_set;
 
     // Ordered bound set tracking where index is set# that given set is bound to
     struct PER_SET {
-        PER_SET()
-            : bound_descriptor_set(nullptr),
-              compat_id_for_set(0),
-              validated_set(nullptr),
-              validated_set_change_count(~0ULL),
-              validated_set_image_layout_change_count(~0ULL),
-              validated_set_binding_req_map() {}
-
-        cvdescriptorset::DescriptorSet *bound_descriptor_set;
+        std::shared_ptr<cvdescriptorset::DescriptorSet> bound_descriptor_set;
         // one dynamic offset per dynamic descriptor bound to this CB
         std::vector<uint32_t> dynamicOffsets;
-        PipelineLayoutCompatId compat_id_for_set;
+        PipelineLayoutCompatId compat_id_for_set{0};
 
         // Cache most recently validated descriptor state for ValidateCmdBufDrawState/UpdateDrawState
-        const cvdescriptorset::DescriptorSet *validated_set;
-        uint64_t validated_set_change_count;
-        uint64_t validated_set_image_layout_change_count;
+        const cvdescriptorset::DescriptorSet *validated_set{nullptr};
+        uint64_t validated_set_change_count{~0ULL};
+        uint64_t validated_set_image_layout_change_count{~0ULL};
         BindingReqMap validated_set_binding_req_map;
     };
 
@@ -327,8 +318,7 @@ struct LAST_BOUND_STATE {
 
     void Reset();
 
-    void UnbindAndResetPushDescriptorSet(CMD_BUFFER_STATE *cb_state, cvdescriptorset::DescriptorSet *ds);
-    void UpdateSamplerDescriptorsUsedByImage();
+    void UnbindAndResetPushDescriptorSet(CMD_BUFFER_STATE *cb_state, std::shared_ptr<cvdescriptorset::DescriptorSet> &&ds);
 
     inline bool IsUsing() const { return pipeline_state ? true : false; }
 };

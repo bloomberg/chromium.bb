@@ -1158,18 +1158,9 @@ EIGEN_STRONG_INLINE Packet8f half2float(const Packet8h& a) {
 #ifdef EIGEN_HAS_FP16_C
   return _mm256_cvtph_ps(a);
 #else
-  EIGEN_ALIGN32 Eigen::half aux[8];
-  pstore(aux, a);
-  float f0(aux[0]);
-  float f1(aux[1]);
-  float f2(aux[2]);
-  float f3(aux[3]);
-  float f4(aux[4]);
-  float f5(aux[5]);
-  float f6(aux[6]);
-  float f7(aux[7]);
-
-  return _mm256_set_ps(f7, f6, f5, f4, f3, f2, f1, f0);
+  Eigen::internal::Packet8f pp = _mm256_castsi256_ps(_mm256_insertf128_si256(
+      _mm256_castsi128_si256(half2floatsse(a)), half2floatsse(_mm_srli_si128(a, 8)), 1));
+  return pp;
 #endif
 }
 
@@ -1177,17 +1168,9 @@ EIGEN_STRONG_INLINE Packet8h float2half(const Packet8f& a) {
 #ifdef EIGEN_HAS_FP16_C
   return _mm256_cvtps_ph(a, _MM_FROUND_TO_NEAREST_INT|_MM_FROUND_NO_EXC);
 #else
-  EIGEN_ALIGN32 float aux[8];
-  pstore(aux, a);
-  const numext::uint16_t s0 = numext::bit_cast<numext::uint16_t>(Eigen::half(aux[0]));
-  const numext::uint16_t s1 = numext::bit_cast<numext::uint16_t>(Eigen::half(aux[1]));
-  const numext::uint16_t s2 = numext::bit_cast<numext::uint16_t>(Eigen::half(aux[2]));
-  const numext::uint16_t s3 = numext::bit_cast<numext::uint16_t>(Eigen::half(aux[3]));
-  const numext::uint16_t s4 = numext::bit_cast<numext::uint16_t>(Eigen::half(aux[4]));
-  const numext::uint16_t s5 = numext::bit_cast<numext::uint16_t>(Eigen::half(aux[5]));
-  const numext::uint16_t s6 = numext::bit_cast<numext::uint16_t>(Eigen::half(aux[6]));
-  const numext::uint16_t s7 = numext::bit_cast<numext::uint16_t>(Eigen::half(aux[7]));
-  return _mm_set_epi16(s7, s6, s5, s4, s3, s2, s1, s0);
+  __m128i lo = float2half(_mm256_extractf128_ps(a, 0));
+  __m128i hi = float2half(_mm256_extractf128_ps(a, 1));
+  return   _mm_packus_epi32(lo, hi);
 #endif
 }
 

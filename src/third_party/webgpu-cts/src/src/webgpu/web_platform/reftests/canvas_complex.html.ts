@@ -24,8 +24,9 @@ export function run(
         break;
       case 'bgra8unorm-srgb':
       case 'rgba8unorm-srgb':
-        // TODO: srgb output format is untested
-        // reverse gammaCompress to get same value shader output as non-srgb formats
+        // NOTE: "-srgb" cases haven't been tested (there aren't any .html files that use them).
+
+        // Reverse gammaCompress to get same value shader output as non-srgb formats:
         shaderValue = gammaDecompress(shaderValue);
         isOutputSrgb = true;
         break;
@@ -172,7 +173,7 @@ fn main([[builtin(vertex_index)]] VertexIndex : u32) -> VertexOutput {
         },
         fragment: {
           module: t.device.createShaderModule({
-            // TODO: srgb output format is untested
+            // NOTE: "-srgb" cases haven't been tested (there aren't any .html files that use them).
             code: `
 [[group(0), binding(0)]] var mySampler: sampler;
 [[group(0), binding(1)]] var myTexture: texture_2d<f32>;

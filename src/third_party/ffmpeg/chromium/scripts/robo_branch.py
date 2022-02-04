@@ -28,7 +28,7 @@ def RequiresCleanWorkingDirectory(fn):
   def wrapper(*args, **kwargs):
     if not IsWorkingDirectoryClean():
       raise Exception("Working directory is not clean.")
-    fn(*args, **kwargs)
+    return fn(*args, **kwargs)
   return wrapper
 
 @RequiresCleanWorkingDirectory
@@ -317,24 +317,99 @@ def UploadForReview(robo_configuration):
   os.system("git cl upload")
 
 @RequiresCleanWorkingDirectory
+def IsSushiMergedBackToOriginMasterAndPushed(robo_configuration):
+  """Return true if and only if the most recent common ancestor of the sushi
+  branch and origin/master is the remote sushi branch itself.  Note that this
+  sneakily also checks that it's been pushed back to origin, since we do the
+  merge on the local sushi branch, then push to origin/master, then push to
+  origin/sushi."""
+  robo_configuration.chdir_to_ffmpeg_home();
+
+  if robo_configuration.Call(["git", "fetch", "origin"]):
+    raise Exception("Could not fetch from origin")
+
+  # Get the most recent common ancestor of origin/master and local sushi.  If
+  # we did not successfully push it back to origin/master, even if we merged
+  # locally, then this will report that the merge is not complete, which is
+  # probably the right thing to do.
+  local_sushi = robo_configuration.sushi_branch_name()
+  mca_sha1 = shell.output_or_error(["git", "merge-base", local_sushi,
+               "origin/master"])
+  if mca_sha1 == "":
+    raise Exception("Cannot get sha1 of most recent common ancestor")
+
+  # See if it's the same as remote/sushi.
+  sushi_sha1 = shell.output_or_error(["git", "log", "-1", "--format=%H",
+                                     local_sushi])
+  return mca_sha1 == sushi_sha1
+
+@RequiresCleanWorkingDirectory
 def MergeBackToOriginMaster(robo_configuration):
   """Once the sushi branch has landed in origin after review, merge it back
      to origin/master locally and push it."""
+  shell.log("Considering merge back of sushi to origin/master")
   robo_configuration.chdir_to_ffmpeg_home();
+
+  # Make sure that the CL has landed on the remote sushi branch, so that we can
+  # print a more detailed error.  Note that the check for merge-back next would
+  # fail if this were not the case, but this way we can say something a little
+  # more helpful about what should be done next.
+  shell.log("Checking if CL is landed yet...")
   if not IsUploadedForReviewAndLanded(robo_configuration):
     raise Exception("The CL must be reviewed and landed before proceeding.")
-  # TODO: check if the merge has already been done, and fail.  Also, add a
-  # skip_fn to the step in robosushi, so we skip this step cleanly.
 
-  # TODO: actually do stuff.
-  raise Exception("Robosushi can't automativally merge back to master yet. " \
-                  "Please see go/robosushi for what to do next.")
-  # create local_merge_branch tracking origin/master
-  # check out local_merge_branch  # does this make us forget our sushi branch?
-  # git merge sushsi_branch
-  # git push origin local_branch_name
-  # git checkout origin/master (or sushi?)
-  # git branch -R local_merge_branch
+  # See if the merge is already complete, and do nothing (successfully) if so.
+  shell.log("Checking if sushi branch is already merged back locally")
+  if IsSushiMergedBackToOriginMasterAndPushed(robo_configuration):
+    shell.log("Sushi branch has already been merged and pushed, skipping")
+    return
+
+  # Merge from origin/master into the local sushi branch.  Remember that merges
+  # are more or less symmetric.  The instructions describe this in the other
+  # direction, but there's no real reason why it has to be that way.
+  shell.log("Performing local merge of origin/master into local sushi branch")
+  if robo_configuration.Call(["git", "merge", "origin/master"]):
+    raise Exception("Could not merge from origin/master")
+
+  # Push the result of the merge (local sushi branch) back to origin/master.
+  shell.log("Pushing local merge back to origin/master")
+  refspec = "%s:master" % robo_configuration.sushi_branch_name();
+  if robo_configuration.Call(["git", "push", "origin", refspec]):
+    raise Exception("Could not push to 'origin %s'" % refspec)
+
+  # TODO: should we move the local master branch to origin/master too?
+
+@RequiresCleanWorkingDirectory
+def TryRealDepsRoll(robo_configuration):
+  """Once the roll is merged back to origin/master, we can start a deps roll"""
+  shell.log("Trying to start DEPS roll")
+  # TODO: check if there's already a DEPS roll in progress, somehow.
+
+  if not IsSushiMergedBackToOriginMasterAndPushed(robo_configuration):
+    raise Exception("Must merge sushi branch back to origin/master")
+
+  robo_configuration.chdir_to_ffmpeg_home();
+  sha1 = shell.output_or_error(["git", "log", "-1", "--format=%H"])
+  if not sha1:
+    raise Exception("Cannot get sha1 of HEAD for DEPS roll")
+
+  robo_configuration.chdir_to_chrome_src()
+  # TODO: do we need to check if there's already a 'git cl issue'?
+  # TODO: --bug would be nice.
+  shell.output_or_error(["roll_dep.py", "--roll-to", sha1, "--log-limit", "10", "src/third_party/ffmpeg"])
+  shell.output_or_error(["git", "cl", "upload"])
+  shell.output_or_error(["git", "cl", "try"])
+  shell.log("Started DEPS roll!")
+  shell.log("Please add all the *san bots manually!")
+
+def PrintHappyMessage(robo_configuration):
+  # Success!
+  shell.log("==================")
+  shell.log("If you have not already done so, add *san bots to the DEPS roll.")
+  shell.log("Wait until the DEPS roll completes, land it, and then you will")
+  shell.log("have completed your quest to roll the most recent FFmpeg into")
+  shell.log("chromium.  Congratulations, Adventurer!")
+  shell.log("==================")
 
 @RequiresCleanWorkingDirectory
 def TryFakeDepsRoll(robo_configuration):
@@ -348,7 +423,7 @@ def TryFakeDepsRoll(robo_configuration):
     raise Exception("Cannot start a fake deps roll until gerrit review lands!")
 
   robo_configuration.chdir_to_ffmpeg_home();
-  sha1 = shell.output_or_error("git", "show", "-1", "--format=%P")
+  sha1 = shell.output_or_error("git", "log", "-1", "--format=%H")
   if not sha1:
     raise Exception("Cannot get sha1 of HEAD for fakes dep roll")
 
@@ -356,6 +431,6 @@ def TryFakeDepsRoll(robo_configuration):
   # TODO: make sure that there's not a deps roll in progress, else we'll keep
   # doing this every time we're run.
   # TODO: get mad otherwise.
-  shell.output_or_error(["roll-deps.py", "third_party/ffmpeg", sha1])
+  shell.output_or_error(["roll_dep.py", "third_party/ffmpeg", sha1])
   # TODO: -1 it.
 

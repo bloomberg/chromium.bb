@@ -15,6 +15,7 @@
 """Mid level API for TPU Embeddings."""
 
 import functools
+import math
 from typing import Any, Callable, Dict, Iterable, List, Optional, Text, Tuple, Union
 
 from absl import logging
@@ -37,7 +38,6 @@ from tensorflow.python.framework.tensor_shape import TensorShape
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import embedding_ops
 from tensorflow.python.ops import math_ops
-from tensorflow.python.ops import numpy_ops
 from tensorflow.python.ops import sparse_ops
 from tensorflow.python.ops import variable_scope
 from tensorflow.python.ops import variables as tf_variables
@@ -447,7 +447,7 @@ class TPUEmbedding(tracking.AutoTrackable):
     per_replica_output_shapes = None
     if per_replica_batch_size and per_replica_input_shapes is None:
       logging.warning(
-          "per_replica_batch_size argument will be deprecated, please specify"
+          "per_replica_batch_size argument will be deprecated, please specify "
           "all the input shapes using per_replica_input_shapes argument.")
       per_replica_output_shapes = self._get_output_shapes_from_batch_size(
           per_replica_batch_size)
@@ -498,11 +498,14 @@ class TPUEmbedding(tracking.AutoTrackable):
     """Get output shapes from the flattened input shapes list."""
     output_shapes = []
     for input_shape in input_shapes:
-      if input_shape.rank is None or input_shape.rank < 2:
+      if input_shape.rank is None or input_shape.rank < 1:
         raise ValueError(
-            "Received input tensor of shape {}. Rank must be 2 and above"
+            "Received input tensor of shape {}. Rank must be 1 and above"
             .format(input_shape))
-      output_shapes.append(input_shape[:-1])
+      if input_shape.rank == 1:
+        output_shapes.append(input_shape)
+      else:
+        output_shapes.append(input_shape[:-1])
     return output_shapes
 
   @property
@@ -567,8 +570,8 @@ class TPUEmbedding(tracking.AutoTrackable):
     #    optimization configurations we have, the worse the performance will be.
     num_features = {table: 0 for table in self._table_config}
     for i, feature in enumerate(nest.flatten(self._feature_config)):
-      num_features[feature.table] += math_ops.reduce_prod(
-          self._output_shapes[i]) / tensor_core_batch_size
+      num_features[feature.table] += self._get_reduce_prod(
+          self._output_shapes[i]) // tensor_core_batch_size
 
     # Map each callable dynamic learning rate to its in index in the list.
     learning_rate_index = {r: i for i, r in enumerate(
@@ -1147,8 +1150,9 @@ class TPUEmbedding(tracking.AutoTrackable):
     function, the output shapes should match automatically.
 
     The auto detected the output shapes:
-      1. For dense tensor, make sure the tensor has last dimension as 1. The
-         output shape will be the input shape excluding the last dimension.
+      1. For dense tensor, if rank 2 or above, make sure the tensor has last
+         dimension as 1. The output shape will be the input shape excluding
+         the last dimension.
       2. For sparse tensor, make sure the tensor has rank 2 and above.
            a. If feature config has max_sequence_length equals 0 or output shape
               set (the max_sequence_length setting will be ignored), the
@@ -1396,8 +1400,11 @@ class TPUEmbedding(tracking.AutoTrackable):
       raise ValueError("Only rank 1 and above dense tensor is supported,"
                        " find rank {} sparse tensor for input {}".format(
                            len(shape), path))
-    if shape[-1] != 1:
-      return TensorShape(shape + [1])
+    if len(shape) > 1 and shape[-1] != 1:
+      raise ValueError(
+          "Rank 2 or above dense tensor should have last dimension as 1 "
+          "as the last dimension will always be reduced. "
+          "Instead got dense tensor as shape {}".format(shape))
     return TensorShape(shape)
 
   def _get_input_shape_for_sparse_tensor(self, tensor, feature,
@@ -1439,11 +1446,18 @@ class TPUEmbedding(tracking.AutoTrackable):
 
   def _get_tensor_core_batch_size(self, output_shapes):
     """Get the tensor core batch size based on the output shapes."""
-    tensor_core_batch_size = math_ops.reduce_prod(output_shapes[0])
+    tensor_core_batch_size = self._get_reduce_prod(output_shapes[0])
     for output_shape in output_shapes[1:]:
-      tensor_core_batch_size = numpy_ops.gcd(tensor_core_batch_size,
-                                             math_ops.reduce_prod(output_shape))
+      tensor_core_batch_size = math.gcd(tensor_core_batch_size,
+                                        self._get_reduce_prod(output_shape))
     return tensor_core_batch_size
+
+  def _get_reduce_prod(self, shape: TensorShape) -> int:
+    """Get the reduce prod of a tensorshape."""
+    result = 1
+    for dim in shape.as_list():
+      result *= dim
+    return result
 
   def _update_output_shapes(self, incoming_output_shapes: List[TensorShape]):
     """Update the existing output shapes based on the new output shapes.
@@ -1496,9 +1510,9 @@ class TPUEmbedding(tracking.AutoTrackable):
         self._output_shapes):
       if not output_shape.is_fully_defined():
         raise ValueError(
-            f"Input Feature {path} has output shape set as"
+            f"Input Feature {path} has output shape set as "
             f"{output_shape} which is not fully defined. "
-            "Please specify the fully defined shape in either FeatureConfig"
+            "Please specify the fully defined shape in either FeatureConfig "
             "or for the build method.")
 
   def _is_tensor_shape_match(self, shape_a: TensorShape,
@@ -1654,10 +1668,12 @@ def _ragged_embedding_lookup_with_reduce(
   ragged_result = embedding_ops.embedding_lookup_ragged(table, ragged)
   ragged_result = math_ops.reduce_sum(ragged_result * weights, axis=1)
   if combiner == "mean":
-    ragged_result = ragged_result / math_ops.reduce_sum(weights, axis=1)
+    ragged_result = math_ops.div_no_nan(ragged_result,
+                                        math_ops.reduce_sum(weights, axis=1))
   elif combiner == "sqrtn":
-    ragged_result = ragged_result, math_ops.sqrt(math_ops.reduce_sum(
-        weights*weights, axis=1))
+    ragged_result = math_ops.div_no_nan(
+        ragged_result,
+        math_ops.sqrt(math_ops.reduce_sum(weights * weights, axis=1)))
   return ragged_result
 
 
@@ -1760,7 +1776,7 @@ def cpu_embedding_lookup(inputs, weights, tables, feature_config):
       outputs.append(embedding_ops.embedding_lookup_v2(table, inp))
 
     elif isinstance(inp, sparse_tensor.SparseTensor):
-      if feature.max_sequence_length > 0:
+      if not feature.output_shape and feature.max_sequence_length > 0:
         batch_size = math_ops.cast(array_ops.shape(inp)[0], dtype=dtypes.int64)
         sparse_shape = array_ops.stack(
             [batch_size, feature.max_sequence_length], axis=0)
@@ -1797,18 +1813,51 @@ def cpu_embedding_lookup(inputs, weights, tables, feature_config):
                   combiner=feature.table.combiner))
 
     elif isinstance(inp, ragged_tensor.RaggedTensor):
-      if feature.max_sequence_length > 0:
-        batch_size = inp.shape[0]
-        dense_output_shape = [
-            batch_size, feature.max_sequence_length, feature.table.dim]
-        ragged_lookup = embedding_ops.embedding_lookup_v2(table, inp)
-        # Unlike scatter_nd, RaggedTensor.to_tensor truncates to the given
-        # shape.
-        outputs.append(ragged_lookup.to_tensor(shape=dense_output_shape))
+      if inp.shape.rank != 2:
+        raise ValueError(
+            "Only rank 2 ragged tensor is supported, but got rank {}".format(
+                inp.shape.rank))
+      batch_size = inp.shape[0]
+      if feature.output_shape:
+        output_batch_size = math_ops.reduce_prod(feature.output_shape)
+        # If the output batch size matches the data batch size, treat it as
+        # normal ragged input.
+        if output_batch_size == batch_size:
+          ragged_output = _ragged_embedding_lookup_with_reduce(
+              table, inp, weight, feature.table.combiner)
+          ragged_output = array_ops.reshape(
+              ragged_output, shape=feature.output_shape + [feature.table.dim])
+        # If the data batch size is a factor of the output batch size, the
+        # divide result will be the sequence length. Ignore the weights and
+        # combiner.
+        elif output_batch_size > batch_size and output_batch_size % batch_size == 0:
+          ragged_output = embedding_ops.embedding_lookup_v2(table, inp)
+          # Pad or truncate in the sequence dimension
+          ragged_output = ragged_output.to_tensor(shape=[
+              batch_size, output_batch_size // batch_size, feature.table.dim
+          ])
+          # Reshape to desire output shape.
+          ragged_output = array_ops.reshape(
+              ragged_output, feature.output_shape + [feature.table.dim])
+        else:
+          raise ValueError(
+              "Output shape set in the FeatureConfig should be the factor of "
+              "the input data batch size. But instead got output shape {}, "
+              "input data batch size {}".format(feature.output_shape,
+                                                batch_size))
       else:
-        outputs.append(_ragged_embedding_lookup_with_reduce(
-            table, inp, weight, feature.table.combiner))
-
+        if feature.max_sequence_length > 0:
+          output_shape = [
+              batch_size, feature.max_sequence_length, feature.table.dim
+          ]
+          ragged_lookup = embedding_ops.embedding_lookup_v2(table, inp)
+          # Unlike scatter_nd, RaggedTensor.to_tensor truncates to the given
+          # shape.
+          ragged_output = ragged_lookup.to_tensor(shape=output_shape)
+        else:
+          ragged_output = _ragged_embedding_lookup_with_reduce(
+              table, inp, weight, feature.table.combiner)
+      outputs.append(ragged_output)
     else:
       raise ValueError("Input {} is type {}. Tensor, SparseTensor or "
                        "RaggedTensor expected.".format(path, type(inp)))

@@ -33,7 +33,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import type * as Common from '../../core/common/common.js';
 import * as DOMExtension from '../../core/dom_extension/dom_extension.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -46,7 +45,6 @@ import {Size} from './Geometry.js';
 import {GlassPane, PointerEventsBehavior, SizeBehavior} from './GlassPane.js';
 import {Icon} from './Icon.js';
 import {KeyboardShortcut} from './KeyboardShortcut.js';
-import * as ThemeSupport from './theme_support/theme_support.js';
 import * as Utils from './utils/utils.js';
 
 import type {ToolbarButton} from './Toolbar.js';
@@ -141,9 +139,9 @@ export function installDragHandle(
   }
 
   let startTimer: number|null;
-  element.addEventListener('mousedown', onMouseDown, false);
+  element.addEventListener('pointerdown', onMouseDown, false);
   if (startDelay) {
-    element.addEventListener('mouseup', onMouseUp, false);
+    element.addEventListener('pointerup', onMouseUp, false);
   }
   if (hoverCursor !== null) {
     (element as HTMLElement).style.cursor = hoverCursor || cursor || '';
@@ -233,12 +231,12 @@ class DragHandler {
       this.dragEventsTargetDocumentTop = this.dragEventsTargetDocument;
     }
 
-    targetDocument.addEventListener('mousemove', this.elementDragMove, true);
-    targetDocument.addEventListener('mouseup', this.elementDragEnd, true);
+    targetDocument.addEventListener('pointermove', this.elementDragMove, true);
+    targetDocument.addEventListener('pointerup', this.elementDragEnd, true);
     DragHandler.rootForMouseOut &&
-        DragHandler.rootForMouseOut.addEventListener('mouseout', this.mouseOutWhileDragging, {capture: true});
+        DragHandler.rootForMouseOut.addEventListener('pointerout', this.mouseOutWhileDragging, {capture: true});
     if (this.dragEventsTargetDocumentTop && targetDocument !== this.dragEventsTargetDocumentTop) {
-      this.dragEventsTargetDocumentTop.addEventListener('mouseup', this.elementDragEnd, true);
+      this.dragEventsTargetDocumentTop.addEventListener('pointerup', this.elementDragEnd, true);
     }
 
     const targetHtmlElement = (targetElement as HTMLElement);
@@ -264,17 +262,17 @@ class DragHandler {
     if (!DragHandler.rootForMouseOut) {
       return;
     }
-    DragHandler.rootForMouseOut.removeEventListener('mouseout', this.mouseOutWhileDragging, {capture: true});
+    DragHandler.rootForMouseOut.removeEventListener('pointerout', this.mouseOutWhileDragging, {capture: true});
   }
 
   private unregisterDragEvents(): void {
     if (!this.dragEventsTargetDocument) {
       return;
     }
-    this.dragEventsTargetDocument.removeEventListener('mousemove', this.elementDragMove, true);
-    this.dragEventsTargetDocument.removeEventListener('mouseup', this.elementDragEnd, true);
+    this.dragEventsTargetDocument.removeEventListener('pointermove', this.elementDragMove, true);
+    this.dragEventsTargetDocument.removeEventListener('pointerup', this.elementDragEnd, true);
     if (this.dragEventsTargetDocumentTop && this.dragEventsTargetDocument !== this.dragEventsTargetDocumentTop) {
-      this.dragEventsTargetDocumentTop.removeEventListener('mouseup', this.elementDragEnd, true);
+      this.dragEventsTargetDocumentTop.removeEventListener('pointerup', this.elementDragEnd, true);
     }
     delete this.dragEventsTargetDocument;
     delete this.dragEventsTargetDocumentTop;
@@ -581,18 +579,6 @@ export function handleElementValueModifications(
     return true;
   }
   return false;
-}
-
-export function formatLocalized<U>(format: string, substitutions: ArrayLike<U>|null): Element {
-  const formatters = {
-    s: (substitution: unknown): unknown => substitution,
-  };
-  function append(a: Element, b: string|Element): Element {
-    a.appendChild(typeof b === 'string' ? document.createTextNode(b) : b as Element);
-    return a;
-  }
-  return Platform.StringUtilities.format(format, substitutions, formatters, document.createElement('span'), append)
-      .formattedResult;
 }
 
 export function openLinkExternallyLabel(): string {
@@ -1005,9 +991,9 @@ export class LongClickController {
 
     this.element.addEventListener('keydown', boundKeyDown, false);
     this.element.addEventListener('keyup', boundKeyUp, false);
-    this.element.addEventListener('mousedown', boundMouseDown, false);
-    this.element.addEventListener('mouseout', boundReset, false);
-    this.element.addEventListener('mouseup', boundMouseUp, false);
+    this.element.addEventListener('pointerdown', boundMouseDown, false);
+    this.element.addEventListener('pointerout', boundReset, false);
+    this.element.addEventListener('pointerup', boundMouseUp, false);
     this.element.addEventListener('click', boundReset, true);
 
     this.longClickData = {mouseUp: boundMouseUp, mouseDown: boundMouseDown, reset: boundReset};
@@ -1045,9 +1031,9 @@ export class LongClickController {
     if (!this.longClickData) {
       return;
     }
-    this.element.removeEventListener('mousedown', this.longClickData.mouseDown, false);
-    this.element.removeEventListener('mouseout', this.longClickData.reset, false);
-    this.element.removeEventListener('mouseup', this.longClickData.mouseUp, false);
+    this.element.removeEventListener('poinerdown', this.longClickData.mouseDown, false);
+    this.element.removeEventListener('pointerout', this.longClickData.reset, false);
+    this.element.removeEventListener('pointerup', this.longClickData.mouseUp, false);
     this.element.addEventListener('click', this.longClickData.reset, true);
     delete this.longClickData;
   }
@@ -1055,18 +1041,13 @@ export class LongClickController {
   static readonly TIME_MS = 200;
 }
 
-export function initializeUIUtils(document: Document, themeSetting: Common.Settings.Setting<string>): void {
+export function initializeUIUtils(document: Document): void {
   document.body.classList.toggle('inactive', !document.hasFocus());
   if (document.defaultView) {
     document.defaultView.addEventListener('focus', windowFocused.bind(undefined, document), false);
     document.defaultView.addEventListener('blur', windowBlurred.bind(undefined, document), false);
   }
   document.addEventListener('focus', Utils.focusChanged.bind(undefined), true);
-
-  if (!ThemeSupport.ThemeSupport.hasInstance()) {
-    ThemeSupport.ThemeSupport.instance({forceNew: true, setting: themeSetting});
-  }
-  ThemeSupport.ThemeSupport.instance().applyTheme(document);
 
   const body = (document.body as Element);
   GlassPane.setContainer(body);
@@ -1117,7 +1098,7 @@ export function createInput(className?: string, type?: string): HTMLInputElement
   if (type) {
     element.type = type;
   }
-  return /** @type {!HTMLInputElement} */ element as HTMLInputElement;
+  return element;
 }
 
 export function createSelect(name: string, options: string[]|Map<string, string[]>[]|Set<string>): HTMLSelectElement {

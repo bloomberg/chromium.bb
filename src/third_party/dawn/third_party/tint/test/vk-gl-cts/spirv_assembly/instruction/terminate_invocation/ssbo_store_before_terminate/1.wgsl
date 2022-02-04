@@ -1,6 +1,5 @@
-type RTArr = [[stride(4)]] array<i32>;
+type RTArr = @stride(4) array<i32>;
 
-[[block]]
 struct S {
   field0 : RTArr;
 };
@@ -11,7 +10,7 @@ var<private> x_3 : i32;
 
 var<private> x_4 : i32;
 
-[[group(0), binding(0)]] var<storage, read_write> x_5 : S;
+@group(0) @binding(0) var<storage, read_write> x_5 : S;
 
 fn main_1() {
   x_4 = 1;
@@ -26,12 +25,12 @@ fn main_1() {
 }
 
 struct main_out {
-  [[location(0)]]
+  @location(0)
   x_4_1 : i32;
 };
 
-[[stage(fragment)]]
-fn main([[builtin(position)]] x_2_param : vec4<f32>, [[location(0)]] x_3_param : i32) -> main_out {
+@stage(fragment)
+fn main(@builtin(position) x_2_param : vec4<f32>, @location(0) x_3_param : i32) -> main_out {
   x_2 = x_2_param;
   x_3 = x_3_param;
   main_1();

@@ -79,7 +79,7 @@ TEST_F(ResolverVarLetValidationTest, VarTypeNotStorable) {
 }
 
 TEST_F(ResolverVarLetValidationTest, LetTypeNotConstructible) {
-  // [[group(0), binding(0)]] var t1 : texture_2d<f32>;
+  // @group(0) @binding(0) var t1 : texture_2d<f32>;
   // let t2 : t1;
   auto* t1 =
       Global("t1", ty.sampled_texture(ast::TextureDimension::k2d, ty.f32()),
@@ -223,7 +223,7 @@ TEST_F(ResolverVarLetValidationTest, InferredPtrStorageAccessMismatch) {
   // [[block]] struct S {
   //    inner: Inner;
   // }
-  // [[group(0), binding(0)]] var<storage> s : S;
+  // @group(0) @binding(0) var<storage> s : S;
   // fn f() {
   //   let p : pointer<storage, i32, read_write> = &s.inner.arr[2];
   // }
@@ -262,13 +262,17 @@ TEST_F(ResolverVarLetValidationTest, NonConstructibleType_Atomic) {
 }
 
 TEST_F(ResolverVarLetValidationTest, NonConstructibleType_RuntimeArray) {
-  auto* s = Structure("S", {Member("m", ty.array(ty.i32()))}, {StructBlock()});
-  auto* v = Var("v", ty.Of(s));
+  auto* s = Structure("S", {Member(Source{{56, 78}}, "m", ty.array(ty.i32()))},
+                      {StructBlock()});
+  auto* v = Var(Source{{12, 34}}, "v", ty.Of(s));
   WrapInFunction(v);
 
   EXPECT_FALSE(r()->Resolve());
-  EXPECT_EQ(r()->error(),
-            "error: function variable must have a constructible type");
+  EXPECT_EQ(
+      r()->error(),
+      R"(12:34 error: runtime-sized arrays can only be used in the <storage> storage class
+56:78 note: while analysing structure member S.m
+12:34 note: while instantiating variable v)");
 }
 
 TEST_F(ResolverVarLetValidationTest, NonConstructibleType_Struct_WithAtomic) {
@@ -282,7 +286,7 @@ TEST_F(ResolverVarLetValidationTest, NonConstructibleType_Struct_WithAtomic) {
 }
 
 TEST_F(ResolverVarLetValidationTest, NonConstructibleType_InferredType) {
-  // [[group(0), binding(0)]] var s : sampler;
+  // @group(0) @binding(0) var s : sampler;
   // fn foo() {
   //   var v = s;
   // }
@@ -305,6 +309,42 @@ TEST_F(ResolverVarLetValidationTest, InvalidStorageClassForInitializer) {
             "12:34 error: var of storage class 'workgroup' cannot have "
             "an initializer. var initializers are only supported for the "
             "storage classes 'private' and 'function'");
+}
+
+TEST_F(ResolverVarLetValidationTest, VectorLetNoType) {
+  // let a : mat3x3 = mat3x3<f32>();
+  WrapInFunction(Const("a", create<ast::Vector>(Source{{12, 34}}, nullptr, 3),
+                       vec3<f32>()));
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "12:34 error: missing vector element type");
+}
+
+TEST_F(ResolverVarLetValidationTest, VectorVarNoType) {
+  // var a : mat3x3;
+  WrapInFunction(Var("a", create<ast::Vector>(Source{{12, 34}}, nullptr, 3)));
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "12:34 error: missing vector element type");
+}
+
+TEST_F(ResolverVarLetValidationTest, MatrixLetNoType) {
+  // let a : mat3x3 = mat3x3<f32>();
+  WrapInFunction(Const("a",
+                       create<ast::Matrix>(Source{{12, 34}}, nullptr, 3, 3),
+                       mat3x3<f32>()));
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "12:34 error: missing matrix element type");
+}
+
+TEST_F(ResolverVarLetValidationTest, MatrixVarNoType) {
+  // var a : mat3x3;
+  WrapInFunction(
+      Var("a", create<ast::Matrix>(Source{{12, 34}}, nullptr, 3, 3)));
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(), "12:34 error: missing matrix element type");
 }
 
 }  // namespace

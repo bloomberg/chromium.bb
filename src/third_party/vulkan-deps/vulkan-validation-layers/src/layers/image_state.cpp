@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -198,7 +198,7 @@ static bool SparseMetaDataRequired(const IMAGE_STATE::SparseReqs &sparse_reqs) {
 }
 
 IMAGE_STATE::IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, const VkImageCreateInfo *pCreateInfo,
-                         VkFormatFeatureFlags ff)
+                         VkFormatFeatureFlags2KHR ff)
     : BINDABLE(img, kVulkanObjectTypeImage, (pCreateInfo->flags & VK_IMAGE_CREATE_SPARSE_BINDING_BIT) != 0,
                (pCreateInfo->flags & VK_IMAGE_CREATE_PROTECTED_BIT) == 0, GetExternalHandleType(pCreateInfo)),
       safe_create_info(pCreateInfo),
@@ -221,8 +221,8 @@ IMAGE_STATE::IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, co
       fragment_encoder(nullptr),
       store_device_as_workaround(dev_data->device) {}  // TODO REMOVE WHEN encoder can be const
 
-IMAGE_STATE::IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, const VkImageCreateInfo *pCreateInfo, VkSwapchainKHR swapchain,
-                         uint32_t swapchain_index, VkFormatFeatureFlags ff)
+IMAGE_STATE::IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, const VkImageCreateInfo *pCreateInfo,
+                         VkSwapchainKHR swapchain, uint32_t swapchain_index, VkFormatFeatureFlags2KHR ff)
     : BINDABLE(img, kVulkanObjectTypeImage, (pCreateInfo->flags & VK_IMAGE_CREATE_SPARSE_BINDING_BIT) != 0,
                (pCreateInfo->flags & VK_IMAGE_CREATE_PROTECTED_BIT) == 0, GetExternalHandleType(pCreateInfo)),
       safe_create_info(pCreateInfo),
@@ -254,14 +254,14 @@ void IMAGE_STATE::Unlink() {
         alias_state->aliasing_images.erase(this);
     }
     aliasing_images.clear();
-    if (bind_swapchain) {
-        bind_swapchain->RemoveParent(this);
-        bind_swapchain = nullptr;
-    }
 }
 
 void IMAGE_STATE::Destroy() {
     Unlink();
+    if (bind_swapchain) {
+        bind_swapchain->RemoveParent(this);
+        bind_swapchain = nullptr;
+    }
     BINDABLE::Destroy();
 }
 
@@ -269,6 +269,7 @@ void IMAGE_STATE::NotifyInvalidate(const BASE_NODE::NodeList &invalid_nodes, boo
     BINDABLE::NotifyInvalidate(invalid_nodes, unlink);
     if (unlink) {
         Unlink();
+        bind_swapchain = nullptr;
     }
 }
 
@@ -330,10 +331,13 @@ void IMAGE_STATE::AddAliasingImage(IMAGE_STATE *bound_image) {
 
 void IMAGE_STATE::SetMemBinding(std::shared_ptr<DEVICE_MEMORY_STATE> &mem, VkDeviceSize memory_offset) {
     if ((createInfo.flags & VK_IMAGE_CREATE_ALIAS_BIT) != 0) {
-        for (auto *base_node : mem->ObjectBindings()) {
-            if (base_node->Type() == kVulkanObjectTypeImage) {
-                auto other_image = static_cast<IMAGE_STATE *>(base_node);
-                AddAliasingImage(other_image);
+        for (auto &entry : mem->ObjectBindings()) {
+            if (entry.first.type == kVulkanObjectTypeImage) {
+                auto base_node = entry.second.lock();
+                if (base_node) {
+                    auto other_image = static_cast<IMAGE_STATE *>(base_node.get());
+                    AddAliasingImage(other_image);
+                }
             }
         }
     }
@@ -345,11 +349,14 @@ void IMAGE_STATE::SetSwapchain(std::shared_ptr<SWAPCHAIN_NODE> &swapchain, uint3
     bind_swapchain = swapchain;
     swapchain_image_index = swapchain_index;
     bind_swapchain->AddParent(this);
-    for (auto *base_node : swapchain->ObjectBindings()) {
-        if (base_node->Type() == kVulkanObjectTypeImage) {
-            auto other_image = static_cast<IMAGE_STATE *>(base_node);
-            if (swapchain_image_index == other_image->swapchain_image_index) {
-                AddAliasingImage(other_image);
+    for (auto &entry : swapchain->ObjectBindings()) {
+        if (entry.first.type == kVulkanObjectTypeImage) {
+            auto base_node = entry.second.lock();
+            if (base_node) {
+                auto other_image = static_cast<IMAGE_STATE *>(base_node.get());
+                if (swapchain_image_index == other_image->swapchain_image_index) {
+                    AddAliasingImage(other_image);
+                }
             }
         }
     }
@@ -418,7 +425,7 @@ static float GetImageViewMinLod(const VkImageViewCreateInfo* ci) {
 }
 
 IMAGE_VIEW_STATE::IMAGE_VIEW_STATE(const std::shared_ptr<IMAGE_STATE> &im, VkImageView iv, const VkImageViewCreateInfo *ci,
-                                   VkFormatFeatureFlags ff, const VkFilterCubicImageViewImageFormatPropertiesEXT &cubic_props)
+                                   VkFormatFeatureFlags2KHR ff, const VkFilterCubicImageViewImageFormatPropertiesEXT &cubic_props)
     : BASE_NODE(iv, kVulkanObjectTypeImageView),
       create_info(*ci),
       normalized_subresource_range(::NormalizeSubresourceRange(im->createInfo, *ci)),
@@ -434,9 +441,7 @@ IMAGE_VIEW_STATE::IMAGE_VIEW_STATE(const std::shared_ptr<IMAGE_STATE> &im, VkIma
       min_lod(GetImageViewMinLod(ci)),
       format_features(ff),
       inherited_usage(GetInheritedUsage(ci, *im)),
-      image_state(im) {
-    image_state->AddParent(this);
-}
+      image_state(im) {}
 
 void IMAGE_VIEW_STATE::Destroy() {
     if (image_state) {
@@ -579,12 +584,14 @@ void SURFACE_STATE::RemoveParent(BASE_NODE *parent_node) {
 }
 
 void SURFACE_STATE::SetQueueSupport(VkPhysicalDevice phys_dev, uint32_t qfi, bool supported) {
+    auto guard = Lock();
     assert(phys_dev);
     GpuQueue key{phys_dev, qfi};
     gpu_queue_support_[key] = supported;
 }
 
 bool SURFACE_STATE::GetQueueSupport(VkPhysicalDevice phys_dev, uint32_t qfi) const {
+    auto guard = Lock();
     assert(phys_dev);
     GpuQueue key{phys_dev, qfi};
     auto iter = gpu_queue_support_.find(key);
@@ -598,11 +605,13 @@ bool SURFACE_STATE::GetQueueSupport(VkPhysicalDevice phys_dev, uint32_t qfi) con
 }
 
 void SURFACE_STATE::SetPresentModes(VkPhysicalDevice phys_dev, std::vector<VkPresentModeKHR> &&modes) {
+    auto guard = Lock();
     assert(phys_dev);
     present_modes_[phys_dev] = std::move(modes);
 }
 
 std::vector<VkPresentModeKHR> SURFACE_STATE::GetPresentModes(VkPhysicalDevice phys_dev) const {
+    auto guard = Lock();
     assert(phys_dev);
     auto iter = present_modes_.find(phys_dev);
     if (iter != present_modes_.end()) {
@@ -617,11 +626,13 @@ std::vector<VkPresentModeKHR> SURFACE_STATE::GetPresentModes(VkPhysicalDevice ph
 }
 
 void SURFACE_STATE::SetFormats(VkPhysicalDevice phys_dev, std::vector<VkSurfaceFormatKHR> &&fmts) {
+    auto guard = Lock();
     assert(phys_dev);
     formats_[phys_dev] = std::move(fmts);
 }
 
 std::vector<VkSurfaceFormatKHR> SURFACE_STATE::GetFormats(VkPhysicalDevice phys_dev) const {
+    auto guard = Lock();
     assert(phys_dev);
     auto iter = formats_.find(phys_dev);
     if (iter != formats_.end()) {
@@ -637,11 +648,13 @@ std::vector<VkSurfaceFormatKHR> SURFACE_STATE::GetFormats(VkPhysicalDevice phys_
 }
 
 void SURFACE_STATE::SetCapabilities(VkPhysicalDevice phys_dev, const VkSurfaceCapabilitiesKHR &caps) {
+    auto guard = Lock();
     assert(phys_dev);
     capabilities_[phys_dev] = caps;
 }
 
 VkSurfaceCapabilitiesKHR SURFACE_STATE::GetCapabilities(VkPhysicalDevice phys_dev) const {
+    auto guard = Lock();
     assert(phys_dev);
     auto iter = capabilities_.find(phys_dev);
     if (iter != capabilities_.end()) {

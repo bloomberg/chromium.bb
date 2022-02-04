@@ -1,3 +1,28 @@
+Overview of changes leading to 3.2.0
+Friday, November 26, 2021
+====================================
+
+“harfbuzz” library improvements:
+- Fixed shaping of Apple Color Emoji flags in right-to-left context. (Behdad Esfahbod)
+- Fixed positioning of CFF fonts in HB_TINY profile. (Behdad Esfahbod)
+- OpenType 1.9 language tags update. (David Corbett)
+- Add HB_NO_VERTICAL config option.
+- Add HB_CONFIG_OVERRIDE_H for easier configuration. (Behdad Esfahbod)
+
+“harfbuzz-subset” library improvements:
+- Improved packing of cmap, loca, and Ligature tables. (Garret Rieger)
+- Significantly improved overflow-resolution strategy in the repacker. (Garret Rieger)
+
+
+Overview of changes leading to 3.1.2
+Friday, November 26, 2021
+====================================
+- hb-shape / hb-view: revert treating text on the commandline as single
+  paragraph (was introduced in 3.0.0); add new --single-par to do that.
+  (Behdad Esfahbod)
+- Subsetter bug fixes. (Garret Rieger, Qunxin Liu, Behdad Esfahbod)
+
+
 Overview of changes leading to 3.1.1
 Wednesday, November 8, 2021
 ====================================

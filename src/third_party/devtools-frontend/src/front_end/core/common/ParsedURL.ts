@@ -29,7 +29,40 @@
  */
 
 import * as Platform from '../platform/platform.js';
-import * as Root from '../root/root.js';
+
+/**
+ * http://tools.ietf.org/html/rfc3986#section-5.2.4
+ */
+export function normalizePath(path: string): string {
+  if (path.indexOf('..') === -1 && path.indexOf('.') === -1) {
+    return path;
+  }
+
+  const normalizedSegments = [];
+  const segments = path.split('/');
+  for (const segment of segments) {
+    if (segment === '.') {
+      continue;
+    } else if (segment === '..') {
+      normalizedSegments.pop();
+    } else if (segment) {
+      normalizedSegments.push(segment);
+    }
+  }
+  let normalizedPath = normalizedSegments.join('/');
+  if (normalizedPath[normalizedPath.length - 1] === '/') {
+    return normalizedPath;
+  }
+  if (path[0] === '/' && normalizedPath) {
+    normalizedPath = '/' + normalizedPath;
+  }
+  if ((path[path.length - 1] === '/') || (segments[segments.length - 1] === '.') ||
+      (segments[segments.length - 1] === '..')) {
+    normalizedPath = normalizedPath + '/';
+  }
+
+  return normalizedPath;
+}
 
 export class ParsedURL {
   isValid: boolean;
@@ -110,6 +143,30 @@ export class ParsedURL {
     return null;
   }
 
+  private static preEncodeSpecialCharactersInPath(path: string): string {
+    // Based on net::FilePathToFileURL. Ideally we would handle
+    // '\\' as well on non-Windows file systems.
+    for (const specialChar of ['%', ';', '#', '?']) {
+      (path as string) = path.replaceAll(specialChar, encodeURIComponent(specialChar));
+    }
+    return path;
+  }
+
+  static rawPathToEncodedPathString(path: Platform.DevToolsPath.RawPathString):
+      Platform.DevToolsPath.EncodedPathString {
+    const partiallyEncoded = ParsedURL.preEncodeSpecialCharactersInPath(path);
+    if (path.startsWith('/')) {
+      return new URL(partiallyEncoded, 'file:///').pathname as Platform.DevToolsPath.EncodedPathString;
+    }
+    // URL prepends a '/'
+    return new URL('/' + partiallyEncoded, 'file:///').pathname.substr(1) as Platform.DevToolsPath.EncodedPathString;
+  }
+
+  static encodedPathToRawPathString(encPath: Platform.DevToolsPath.EncodedPathString):
+      Platform.DevToolsPath.RawPathString {
+    return decodeURIComponent(encPath) as Platform.DevToolsPath.RawPathString;
+  }
+
   static rawPathToUrlString(fileSystemPath: Platform.DevToolsPath.RawPathString): Platform.DevToolsPath.UrlString {
     let rawPath: string = fileSystemPath;
     rawPath = rawPath.replace(/\\/g, '/');
@@ -121,6 +178,13 @@ export class ParsedURL {
       }
     }
     return rawPath as Platform.DevToolsPath.UrlString;
+  }
+
+  static relativePathToUrlString(relativePath: string, baseURL: Platform.DevToolsPath.UrlString):
+      Platform.DevToolsPath.UrlString {
+    const preEncodedPath: string = ParsedURL.preEncodeSpecialCharactersInPath(
+        relativePath.replace(/\\/g, '/') as Platform.DevToolsPath.RawPathString);
+    return new URL(preEncodedPath, baseURL).toString() as Platform.DevToolsPath.UrlString;
   }
 
   static capFilePrefix(fileURL: Platform.DevToolsPath.UrlString, isWindows?: boolean):
@@ -214,10 +278,13 @@ export class ParsedURL {
       return href;
     }
 
-    // Return absolute URLs as-is.
+    // Return absolute URLs with normalized path and other components as-is.
     const parsedHref = this.fromString(trimmedHref);
     if (parsedHref && parsedHref.scheme) {
-      return trimmedHref;
+      const securityOrigin = parsedHref.securityOrigin();
+      const pathText = parsedHref.path;
+      const hrefSuffix = trimmedHref.substring(securityOrigin.length + pathText.length);
+      return securityOrigin + normalizePath(pathText) + hrefSuffix;
     }
 
     const parsedURL = this.fromString(baseURL);
@@ -260,7 +327,7 @@ export class ParsedURL {
     if (hrefPath.charAt(0) !== '/') {
       hrefPath = parsedURL.folderPathComponents + '/' + hrefPath;
     }
-    return securityOrigin + Root.Runtime.Runtime.normalizePath(hrefPath) + hrefSuffix;
+    return securityOrigin + normalizePath(hrefPath) + hrefSuffix;
   }
 
   static splitLineAndColumn(string: string): {

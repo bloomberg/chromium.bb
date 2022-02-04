@@ -36,6 +36,7 @@ TQ_OBJECT_CONSTRUCTORS_IMPL(BytecodeArray)
 OBJECT_CONSTRUCTORS_IMPL(AbstractCode, HeapObject)
 OBJECT_CONSTRUCTORS_IMPL(DependentCode, WeakArrayList)
 OBJECT_CONSTRUCTORS_IMPL(CodeDataContainer, HeapObject)
+NEVER_READ_ONLY_SPACE_IMPL(CodeDataContainer)
 
 NEVER_READ_ONLY_SPACE_IMPL(AbstractCode)
 
@@ -265,6 +266,14 @@ inline CodeT ToCodeT(Code code) {
 #endif
 }
 
+inline Handle<CodeT> ToCodeT(Handle<Code> code, Isolate* isolate) {
+#ifdef V8_EXTERNAL_CODE_SPACE
+  return handle(ToCodeT(*code), isolate);
+#else
+  return code;
+#endif
+}
+
 inline Code FromCodeT(CodeT code) {
 #ifdef V8_EXTERNAL_CODE_SPACE
   return code.code();
@@ -279,6 +288,19 @@ inline Code FromCodeT(CodeT code, RelaxedLoadTag) {
 #else
   return code;
 #endif
+}
+
+inline Handle<Code> FromCodeT(Handle<CodeT> code, Isolate* isolate) {
+#ifdef V8_EXTERNAL_CODE_SPACE
+  return handle(FromCodeT(*code), isolate);
+#else
+  return code;
+#endif
+}
+
+inline Handle<AbstractCode> ToAbstractCode(Handle<CodeT> code,
+                                           Isolate* isolate) {
+  return Handle<AbstractCode>::cast(FromCodeT(code, isolate));
 }
 
 inline CodeDataContainer CodeDataContainerFromCodeT(CodeT code) {
@@ -540,25 +562,30 @@ void Code::initialize_flags(CodeKind kind, bool is_turbofanned, int stack_slots,
 }
 
 inline bool Code::is_interpreter_trampoline_builtin() const {
-  // Check for kNoBuiltinId first to abort early when the current Code object
-  // is not a builtin.
-  return builtin_id() != Builtin::kNoBuiltinId &&
-         (builtin_id() == Builtin::kInterpreterEntryTrampoline ||
-          builtin_id() == Builtin::kInterpreterEnterAtBytecode ||
-          builtin_id() == Builtin::kInterpreterEnterAtNextBytecode);
+  return IsInterpreterTrampolineBuiltin(builtin_id());
 }
 
 inline bool Code::is_baseline_trampoline_builtin() const {
-  return builtin_id() != Builtin::kNoBuiltinId &&
-         (builtin_id() == Builtin::kBaselineOutOfLinePrologue ||
-          builtin_id() == Builtin::kBaselineOrInterpreterEnterAtBytecode ||
-          builtin_id() == Builtin::kBaselineOrInterpreterEnterAtNextBytecode);
+  return IsBaselineTrampolineBuiltin(builtin_id());
 }
 
 inline bool Code::is_baseline_leave_frame_builtin() const {
   return builtin_id() == Builtin::kBaselineLeaveFrame;
 }
 
+#ifdef V8_EXTERNAL_CODE_SPACE
+// Note, must be in sync with Code::checks_optimization_marker().
+inline bool CodeDataContainer::checks_optimization_marker() const {
+  CHECK(V8_EXTERNAL_CODE_SPACE_BOOL);
+  bool checks_marker = (builtin_id() == Builtin::kCompileLazy ||
+                        builtin_id() == Builtin::kInterpreterEntryTrampoline ||
+                        CodeKindCanTierUp(kind()));
+  return checks_marker ||
+         (CodeKindCanDeoptimize(kind()) && marked_for_deoptimization());
+}
+#endif  // V8_EXTERNAL_CODE_SPACE
+
+// Note, must be in sync with CodeDataContainer::checks_optimization_marker().
 inline bool Code::checks_optimization_marker() const {
   bool checks_marker = (builtin_id() == Builtin::kCompileLazy ||
                         builtin_id() == Builtin::kInterpreterEntryTrampoline ||
@@ -669,20 +696,35 @@ int Code::stack_slots() const {
   return StackSlotsField::decode(flags);
 }
 
+bool CodeDataContainer::marked_for_deoptimization() const {
+#ifdef V8_EXTERNAL_CODE_SPACE
+  // kind field is not available on CodeDataContainer when external code space
+  // is not enabled.
+  DCHECK(CodeKindCanDeoptimize(kind()));
+#endif  // V8_EXTERNAL_CODE_SPACE
+  int32_t flags = kind_specific_flags(kRelaxedLoad);
+  return Code::MarkedForDeoptimizationField::decode(flags);
+}
+
 bool Code::marked_for_deoptimization() const {
   DCHECK(CodeKindCanDeoptimize(kind()));
-  int32_t flags =
-      code_data_container(kAcquireLoad).kind_specific_flags(kRelaxedLoad);
-  return MarkedForDeoptimizationField::decode(flags);
+  return code_data_container(kAcquireLoad).marked_for_deoptimization();
+}
+
+void CodeDataContainer::set_marked_for_deoptimization(bool flag) {
+#ifdef V8_EXTERNAL_CODE_SPACE
+  // kind field is not available on CodeDataContainer when external code space
+  // is not enabled.
+  DCHECK(CodeKindCanDeoptimize(kind()));
+#endif  // V8_EXTERNAL_CODE_SPACE
+  DCHECK_IMPLIES(flag, AllowDeoptimization::IsAllowed(GetIsolate()));
+  int32_t previous = kind_specific_flags(kRelaxedLoad);
+  int32_t updated = Code::MarkedForDeoptimizationField::update(previous, flag);
+  set_kind_specific_flags(updated, kRelaxedStore);
 }
 
 void Code::set_marked_for_deoptimization(bool flag) {
-  DCHECK(CodeKindCanDeoptimize(kind()));
-  DCHECK_IMPLIES(flag, AllowDeoptimization::IsAllowed(GetIsolate()));
-  CodeDataContainer container = code_data_container(kAcquireLoad);
-  int32_t previous = container.kind_specific_flags(kRelaxedLoad);
-  int32_t updated = MarkedForDeoptimizationField::update(previous, flag);
-  container.set_kind_specific_flags(updated, kRelaxedStore);
+  code_data_container(kAcquireLoad).set_marked_for_deoptimization(flag);
 }
 
 int Code::deoptimization_count() const {
@@ -892,7 +934,7 @@ ACCESSORS(CodeDataContainer, next_code_link, Object, kNextCodeLinkOffset)
 
 PtrComprCageBase CodeDataContainer::code_cage_base() const {
 #ifdef V8_EXTERNAL_CODE_SPACE
-  CHECK(!V8_HEAP_SANDBOX_BOOL);
+  CHECK(!V8_SANDBOXED_EXTERNAL_POINTERS_BOOL);
   Address code_cage_base_hi =
       ReadField<Tagged_t>(kCodeCageBaseUpper32BitsOffset);
   return PtrComprCageBase(code_cage_base_hi << 32);
@@ -903,7 +945,7 @@ PtrComprCageBase CodeDataContainer::code_cage_base() const {
 
 void CodeDataContainer::set_code_cage_base(Address code_cage_base) {
 #ifdef V8_EXTERNAL_CODE_SPACE
-  CHECK(!V8_HEAP_SANDBOX_BOOL);
+  CHECK(!V8_SANDBOXED_EXTERNAL_POINTERS_BOOL);
   Tagged_t code_cage_base_hi = static_cast<Tagged_t>(code_cage_base >> 32);
   WriteField<Tagged_t>(kCodeCageBaseUpper32BitsOffset, code_cage_base_hi);
 #else
@@ -938,7 +980,7 @@ Code CodeDataContainer::code(PtrComprCageBase cage_base,
 
 DEF_GETTER(CodeDataContainer, code_entry_point, Address) {
   CHECK(V8_EXTERNAL_CODE_SPACE_BOOL);
-  Isolate* isolate = GetIsolateForHeapSandbox(*this);
+  Isolate* isolate = GetIsolateForSandbox(*this);
   return ReadExternalPointerField(kCodeEntryPointOffset, isolate,
                                   kCodeEntryPointTag);
 }
@@ -967,12 +1009,60 @@ Address CodeDataContainer::InstructionStart() const {
   return code_entry_point();
 }
 
+Address CodeDataContainer::raw_instruction_start() {
+  return code_entry_point();
+}
+
+Address CodeDataContainer::entry() const { return code_entry_point(); }
+
 void CodeDataContainer::clear_padding() {
   memset(reinterpret_cast<void*>(address() + kUnalignedSize), 0,
          kSize - kUnalignedSize);
 }
 
+INT_ACCESSORS(CodeDataContainer, flags, kFlagsOffset)
+
+// Ensure builtin_id field fits into int16_t, so that we can rely on sign
+// extension to convert int16_t{-1} to kNoBuiltinId.
+// If the asserts fail, update the code that use kBuiltinIdOffset below.
+STATIC_ASSERT(static_cast<int>(Builtin::kNoBuiltinId) == -1);
+STATIC_ASSERT(Builtins::kBuiltinCount < std::numeric_limits<int16_t>::max());
+
+void CodeDataContainer::initialize_flags(CodeKind kind, Builtin builtin_id) {
+  CHECK(V8_EXTERNAL_CODE_SPACE_BOOL);
+  int value = KindField::encode(kind);
+  set_flags(value);
+
+  WriteField<int16_t>(kBuiltinIdOffset, static_cast<int16_t>(builtin_id));
+}
+
 #ifdef V8_EXTERNAL_CODE_SPACE
+
+CodeKind CodeDataContainer::kind() const { return KindField::decode(flags()); }
+
+Builtin CodeDataContainer::builtin_id() const {
+  CHECK(V8_EXTERNAL_CODE_SPACE_BOOL);
+  // Rely on sign-extension when converting int16_t to int to preserve
+  // kNoBuiltinId value.
+  STATIC_ASSERT(static_cast<int>(static_cast<int16_t>(Builtin::kNoBuiltinId)) ==
+                static_cast<int>(Builtin::kNoBuiltinId));
+  int value = ReadField<int16_t>(kBuiltinIdOffset);
+  return static_cast<Builtin>(value);
+}
+
+bool CodeDataContainer::is_builtin() const {
+  CHECK(V8_EXTERNAL_CODE_SPACE_BOOL);
+  return builtin_id() != Builtin::kNoBuiltinId;
+}
+
+bool CodeDataContainer::is_optimized_code() const {
+  return CodeKindIsOptimizedJSFunction(kind());
+}
+
+inline bool CodeDataContainer::is_interpreter_trampoline_builtin() const {
+  return IsInterpreterTrampolineBuiltin(builtin_id());
+}
+
 //
 // A collection of getters and predicates that forward queries to associated
 // Code object.
@@ -986,10 +1076,8 @@ void CodeDataContainer::clear_padding() {
     return FromCodeT(*this).name(cage_base);  \
   }
 
-DEF_PRIMITIVE_FORWARDING_CDC_GETTER(kind, CodeKind)
-DEF_PRIMITIVE_FORWARDING_CDC_GETTER(builtin_id, Builtin)
-DEF_PRIMITIVE_FORWARDING_CDC_GETTER(is_builtin, bool)
-DEF_PRIMITIVE_FORWARDING_CDC_GETTER(is_interpreter_trampoline_builtin, bool)
+DEF_PRIMITIVE_FORWARDING_CDC_GETTER(is_turbofanned, bool)
+DEF_PRIMITIVE_FORWARDING_CDC_GETTER(is_off_heap_trampoline, bool)
 
 DEF_FORWARDING_CDC_GETTER(deoptimization_data, FixedArray)
 DEF_FORWARDING_CDC_GETTER(bytecode_or_interpreter_data, HeapObject)

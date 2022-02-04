@@ -41,6 +41,22 @@ IPEndpoint Environment::GetBoundLocalEndpoint() const {
   return IPEndpoint{};
 }
 
+void Environment::SetSocketStateForTesting(SocketState state) {
+  state_ = state;
+  if (socket_subscriber_) {
+    switch (state_) {
+      case SocketState::kReady:
+        socket_subscriber_->OnSocketReady();
+        break;
+      case SocketState::kInvalid:
+        socket_subscriber_->OnSocketInvalid(Error::Code::kSocketFailure);
+        break;
+      default:
+        break;
+    }
+  }
+}
+
 void Environment::SetSocketSubscriber(SocketSubscriber* subscriber) {
   socket_subscriber_ = subscriber;
 }

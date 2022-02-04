@@ -21,7 +21,7 @@
 #include "dawn_native/d3d12/D3D12Info.h"
 #include "dawn_native/d3d12/d3d12_platform.h"
 
-namespace dawn_native { namespace d3d12 {
+namespace dawn::native::d3d12 {
 
     class Backend;
 
@@ -40,8 +40,8 @@ namespace dawn_native { namespace d3d12 {
         const gpu_info::D3DDriverVersion& GetDriverVersion() const;
 
       private:
-        ResultOrError<DeviceBase*> CreateDeviceImpl(
-            const DawnDeviceDescriptor* descriptor) override;
+        ResultOrError<Ref<DeviceBase>> CreateDeviceImpl(
+            const DeviceDescriptor* descriptor) override;
         MaybeError ResetInternalDeviceForTestingImpl() override;
 
         bool AreTimestampQueriesSupported() const;
@@ -61,6 +61,6 @@ namespace dawn_native { namespace d3d12 {
         D3D12DeviceInfo mDeviceInfo = {};
     };
 
-}}  // namespace dawn_native::d3d12
+}  // namespace dawn::native::d3d12
 
 #endif  // DAWNNATIVE_D3D12_ADAPTERD3D12_H_
