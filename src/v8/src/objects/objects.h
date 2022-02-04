@@ -175,7 +175,7 @@
 //       - BreakPoint
 //       - BreakPointInfo
 //       - CachedTemplateObject
-//       - StackFrameInfo
+//       - CallSiteInfo
 //       - CodeCache
 //       - PropertyDescriptorObject
 //       - PrototypeInfo
@@ -190,6 +190,7 @@
 //         - SourceTextModule
 //         - SyntheticModule
 //       - SourceTextModuleInfoEntry
+//       - StackFrameInfo
 //     - FeedbackCell
 //     - FeedbackVector
 //     - PreparseData
@@ -709,14 +710,15 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
   }
 
   //
-  // CagedPointer_t field accessors.
+  // SandboxedPointer_t field accessors.
   //
-  inline Address ReadCagedPointerField(size_t offset,
-                                       PtrComprCageBase cage_base) const;
-  inline void WriteCagedPointerField(size_t offset, PtrComprCageBase cage_base,
-                                     Address value);
-  inline void WriteCagedPointerField(size_t offset, Isolate* isolate,
-                                     Address value);
+  inline Address ReadSandboxedPointerField(size_t offset,
+                                           PtrComprCageBase cage_base) const;
+  inline void WriteSandboxedPointerField(size_t offset,
+                                         PtrComprCageBase cage_base,
+                                         Address value);
+  inline void WriteSandboxedPointerField(size_t offset, Isolate* isolate,
+                                         Address value);
 
   //
   // ExternalPointer_t field accessors.
@@ -728,6 +730,13 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
                                           ExternalPointerTag tag) const;
   inline void WriteExternalPointerField(size_t offset, Isolate* isolate,
                                         Address value, ExternalPointerTag tag);
+
+  // If the receiver is the JSGlobalObject, the store was contextual. In case
+  // the property did not exist yet on the global object itself, we have to
+  // throw a reference error in strict mode.  In sloppy mode, we continue.
+  // Returns false if the exception was thrown, otherwise true.
+  static bool CheckContextualStoreToJSGlobalObject(
+      LookupIterator* it, Maybe<ShouldThrow> should_throw);
 
  protected:
   inline Address field_address(size_t offset) const {

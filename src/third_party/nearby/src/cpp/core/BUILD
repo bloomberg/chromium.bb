@@ -24,8 +24,8 @@ cc_library(
     compatible_with = ["//buildenv/target:non_prod"],
     copts = ["-DCORE_ADAPTER_DLL"],
     visibility = [
-        "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
-        "//third_party/nearby_connections/windows:__subpackages__",
+        "//platform/impl/ios:__subpackages__",
+        "//third_party/nearby/windows:__subpackages__",
     ],
     deps = [
         ":core_types",
@@ -49,6 +49,7 @@ cc_library(
     ],
     hdrs = [
         "listeners.h",
+        "medium_selector.h",
         "options.h",
         "params.h",
         "payload.h",
@@ -58,9 +59,9 @@ cc_library(
     compatible_with = ["//buildenv/target:non_prod"],
     copts = ["-DCORE_ADAPTER_DLL"],
     visibility = [
-        "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
         "//analytics:__subpackages__",
         "//core:__subpackages__",
+        "//platform/impl/ios:__subpackages__",
     ],
     deps = [
         "//absl/strings",

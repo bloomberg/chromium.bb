@@ -1711,10 +1711,10 @@ void MetalCodeGenerator::writeLiteral(const Literal& l) {
         return;
     }
     if (type.isInteger()) {
-        if (type == *fContext.fTypes.fUInt) {
+        if (type.matches(*fContext.fTypes.fUInt)) {
             this->write(to_string(l.intValue() & 0xffffffff));
             this->write("u");
-        } else if (type == *fContext.fTypes.fUShort) {
+        } else if (type.matches(*fContext.fTypes.fUShort)) {
             this->write(to_string(l.intValue() & 0xffff));
             this->write("u");
         } else {
@@ -2088,8 +2088,7 @@ void MetalCodeGenerator::writeStatement(const Statement& s) {
             this->writeBlock(s.as<Block>());
             break;
         case Statement::Kind::kExpression:
-            this->writeExpression(*s.as<ExpressionStatement>().expression(), Precedence::kTopLevel);
-            this->write(";");
+            this->writeExpressionStatement(s.as<ExpressionStatement>());
             break;
         case Statement::Kind::kReturn:
             this->writeReturnStatement(s.as<ReturnStatement>());
@@ -2194,6 +2193,13 @@ void MetalCodeGenerator::writeDoStatement(const DoStatement& d) {
     this->write(");");
 }
 
+void MetalCodeGenerator::writeExpressionStatement(const ExpressionStatement& s) {
+    if (s.expression()->hasSideEffects()) {
+        this->writeExpression(*s.expression(), Precedence::kTopLevel);
+        this->write(";");
+    }
+}
+
 void MetalCodeGenerator::writeSwitchStatement(const SwitchStatement& s) {
     this->write("switch (");
     this->writeExpression(*s.value(), Precedence::kTopLevel);
@@ -2201,12 +2207,12 @@ void MetalCodeGenerator::writeSwitchStatement(const SwitchStatement& s) {
     fIndentation++;
     for (const std::unique_ptr<Statement>& stmt : s.cases()) {
         const SwitchCase& c = stmt->as<SwitchCase>();
-        if (c.value()) {
-            this->write("case ");
-            this->writeExpression(*c.value(), Precedence::kTopLevel);
-            this->writeLine(":");
-        } else {
+        if (c.isDefault()) {
             this->writeLine("default:");
+        } else {
+            this->write("case ");
+            this->write(to_string(c.value()));
+            this->writeLine(":");
         }
         if (!c.statement()->isEmpty()) {
             fIndentation++;
@@ -2234,7 +2240,7 @@ void MetalCodeGenerator::writeReturnStatementFromMain() {
 void MetalCodeGenerator::writeReturnStatement(const ReturnStatement& r) {
     if (fCurrentFunction && fCurrentFunction->isMain()) {
         if (r.expression()) {
-            if (r.expression()->type() == *fContext.fTypes.fHalf4) {
+            if (r.expression()->type().matches(*fContext.fTypes.fHalf4)) {
                 this->write("_out.sk_FragColor = ");
                 this->writeExpression(*r.expression(), Precedence::kTopLevel);
                 this->writeLine(";");

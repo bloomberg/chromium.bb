@@ -1262,7 +1262,13 @@ Type Typer::Visitor::TypeJSCreateGeneratorObject(Node* node) {
 }
 
 Type Typer::Visitor::TypeJSCreateClosure(Node* node) {
-  return Type::Function();
+  SharedFunctionInfoRef shared =
+      JSCreateClosureNode{node}.Parameters().shared_info(typer_->broker());
+  if (IsClassConstructor(shared.kind())) {
+    return Type::ClassConstructor();
+  } else {
+    return Type::CallableFunction();
+  }
 }
 
 Type Typer::Visitor::TypeJSCreateIterResultObject(Node* node) {
@@ -1323,7 +1329,18 @@ Type Typer::Visitor::TypeJSGetTemplateObject(Node* node) {
 
 Type Typer::Visitor::TypeJSLoadProperty(Node* node) { return Type::Any(); }
 
-Type Typer::Visitor::TypeJSLoadNamed(Node* node) { return Type::NonInternal(); }
+Type Typer::Visitor::TypeJSLoadNamed(Node* node) {
+#ifdef DEBUG
+  // Loading of private methods is compiled to a named load of a BlockContext
+  // via a private brand, which is an internal object. However, native context
+  // specialization should always apply for those cases, so assert that the name
+  // is not a private brand here. Otherwise Type::NonInternal() is wrong.
+  JSLoadNamedNode n(node);
+  NamedAccess const& p = n.Parameters();
+  DCHECK(!p.name(typer_->broker()).object()->IsPrivateBrand());
+#endif
+  return Type::NonInternal();
+}
 
 Type Typer::Visitor::TypeJSLoadNamedFromSuper(Node* node) {
   return Type::NonInternal();
@@ -2131,7 +2148,17 @@ Type Typer::Visitor::TypeCheckNotTaggedHole(Node* node) {
   return type;
 }
 
-Type Typer::Visitor::TypeCheckClosure(Node* node) { return Type::Function(); }
+Type Typer::Visitor::TypeCheckClosure(Node* node) {
+  FeedbackCellRef cell = MakeRef(typer_->broker(), FeedbackCellOf(node->op()));
+  base::Optional<SharedFunctionInfoRef> shared = cell.shared_function_info();
+  if (!shared.has_value()) return Type::Function();
+
+  if (IsClassConstructor(shared->kind())) {
+    return Type::ClassConstructor();
+  } else {
+    return Type::CallableFunction();
+  }
+}
 
 Type Typer::Visitor::TypeConvertReceiver(Node* node) {
   Type arg = Operand(node, 0);
@@ -2174,6 +2201,7 @@ Type Typer::Visitor::TypeLoadStackArgument(Node* node) {
 }
 
 Type Typer::Visitor::TypeLoadFromObject(Node* node) { UNREACHABLE(); }
+Type Typer::Visitor::TypeLoadImmutableFromObject(Node* node) { UNREACHABLE(); }
 
 Type Typer::Visitor::TypeLoadTypedElement(Node* node) {
   switch (ExternalArrayTypeOf(node->op())) {
@@ -2204,6 +2232,9 @@ Type Typer::Visitor::TypeStoreMessage(Node* node) { UNREACHABLE(); }
 Type Typer::Visitor::TypeStoreElement(Node* node) { UNREACHABLE(); }
 
 Type Typer::Visitor::TypeStoreToObject(Node* node) { UNREACHABLE(); }
+Type Typer::Visitor::TypeInitializeImmutableInObject(Node* node) {
+  UNREACHABLE();
+}
 
 Type Typer::Visitor::TypeTransitionAndStoreElement(Node* node) {
   UNREACHABLE();

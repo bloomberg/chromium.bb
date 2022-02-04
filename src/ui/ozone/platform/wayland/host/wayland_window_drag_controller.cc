@@ -54,6 +54,10 @@ constexpr char kMimeTypeChromiumWindow[] = "chromium/x-window";
 constexpr uint32_t kDndActionWindowDrag =
     WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE;
 
+// Value intentionally high to exit the horizontal rail threshold in
+// SnapScrollController, in case of an upwards tab dragging detach with touch.
+constexpr int kHorizontalRailExitThreshold = -1000;
+
 }  // namespace
 
 class WaylandWindowDragController::ExtendedDragSource {
@@ -292,8 +296,28 @@ void WaylandWindowDragController::OnDragLeave() {
   // ideally be reworked in the future, at higher level layers such that they
   // properly handle platforms that do not support global screen coordinates,
   // like Wayland.
-  if (state_ == State::kAttached)
+  //
+  // TODO(https://crbug.com/1282186): Find a better solution for upwards tab
+  // detaching.
+  if (state_ != State::kAttached)
+    return;
+
+  if (*drag_source_ == DragSource::kMouse) {
     pointer_delegate_->OnPointerMotionEvent({pointer_location_.x(), -1});
+  } else {
+    base::TimeTicks timestamp = base::TimeTicks::Now();
+    auto touch_pointer_ids = touch_delegate_->GetActiveTouchPointIds();
+    DCHECK_EQ(touch_pointer_ids.size(), 1u);
+
+    // If an user starts dragging a tab horizontally with touch, Chrome enters
+    // in "horizontal snapping" mode (see ScrollSnapController for details).
+    // Hence, in case of touch driven dragging, use a higher negative dy
+    // to work around the threshold in ScrollSnapController otherwise,
+    // the drag event is discarded.
+    touch_delegate_->OnTouchMotionEvent(
+        {pointer_location_.x(), kHorizontalRailExitThreshold}, timestamp,
+        touch_pointer_ids[0]);
+  }
 }
 
 void WaylandWindowDragController::OnDragDrop() {
@@ -433,8 +457,16 @@ void WaylandWindowDragController::HandleMotionEvent(LocatedEvent* event) {
 // about to finish.
 void WaylandWindowDragController::HandleDropAndResetState() {
   DCHECK_EQ(state_, State::kDropped);
-  DCHECK(drag_source_);
   DVLOG(1) << "Notifying drop. window=" << pointer_grab_owner_;
+
+  // StopDragging() may get called in response to bogus input events, eg:
+  // wl_pointer.button release, which would imply in multiple calls to this
+  // function for a single drop event. That results in ILL_ILLOPN crashes in
+  // below code, because |drag_source_| is null after the first call to this
+  // function. So, early out here in that case.
+  // TODO(crbug.com/1280981): Revert this once Exo-side issue gets solved.
+  if (!drag_source_.has_value())
+    return;
 
   if (*drag_source_ == DragSource::kMouse) {
     if (pointer_grab_owner_) {

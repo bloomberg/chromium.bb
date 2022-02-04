@@ -1,5 +1,3 @@
-SKIP: FAILED
-
 cbuffer cbuffer_constants : register(b0, space1) {
   uint4 constants[1];
 };
@@ -14,8 +12,10 @@ static S s = (S)0;
 
 [numthreads(1, 1, 1)]
 void main() {
-  s.data[constants[0].x] = 0u;
+  {
+    uint tint_symbol_1[3] = s.data;
+    tint_symbol_1[constants[0].x] = 0u;
+    s.data = tint_symbol_1;
+  }
   return;
 }
-C:\src\tint\test\Shader@0x00000150124FBBE0(15,3-24): error X3500: array reference cannot be used as an l-value; not natively addressable
-

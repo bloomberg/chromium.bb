@@ -71,6 +71,7 @@
 #include "src/objects/js-array-inl.h"
 #include "src/objects/js-promise-inl.h"
 #include "src/objects/lookup.h"
+#include "src/objects/map-updater.h"
 #include "src/objects/module-inl.h"
 #include "src/objects/objects-inl.h"
 #include "src/objects/string-inl.h"
@@ -166,22 +167,6 @@ static void IncrementingSignatureCallback(
 
 static void Returns42(const v8::FunctionCallbackInfo<v8::Value>& info) {
   info.GetReturnValue().Set(42);
-}
-
-// Tests that call v8::V8::Dispose() cannot be threaded.
-UNINITIALIZED_TEST(InitializeAndDisposeOnce) {
-  CHECK(v8::V8::Initialize());
-  CHECK(v8::V8::Dispose());
-}
-
-
-// Tests that call v8::V8::Dispose() cannot be threaded.
-UNINITIALIZED_TEST(InitializeAndDisposeMultiple) {
-  for (int i = 0; i < 3; ++i) CHECK(v8::V8::Dispose());
-  for (int i = 0; i < 3; ++i) CHECK(v8::V8::Initialize());
-  for (int i = 0; i < 3; ++i) CHECK(v8::V8::Dispose());
-  for (int i = 0; i < 3; ++i) CHECK(v8::V8::Initialize());
-  for (int i = 0; i < 3; ++i) CHECK(v8::V8::Dispose());
 }
 
 THREADED_TEST(Handles) {
@@ -2981,9 +2966,9 @@ TEST(InternalFieldsSubclassing) {
         CHECK_LE(i_value->map().GetInObjectProperties(), kMaxNofProperties);
       }
 
-      // Make Sure we get the precise property count.
-      i_value->map().FindRootMap(i_isolate).CompleteInobjectSlackTracking(
-          i_isolate);
+      // Make sure we get the precise property count.
+      i::MapUpdater::CompleteInobjectSlackTracking(
+          i_isolate, i_value->map().FindRootMap(i_isolate));
       // TODO(cbruni): fix accounting to make this condition true.
       // CHECK_EQ(0, i_value->map()->UnusedPropertyFields());
       if (in_object_only) {
@@ -3065,7 +3050,7 @@ THREADED_TEST(InternalFieldsAlignedPointers) {
   CheckAlignedPointerInInternalField(obj, stack_allocated);
 
   // The aligned pointer must have the top bits be zero on 64-bit machines (at
-  // least if the heap sandbox is enabled).
+  // least if the sandboxed external pointers are enabled).
   void* huge = reinterpret_cast<void*>(0x0000fffffffffffe);
   CheckAlignedPointerInInternalField(obj, huge);
 
@@ -3143,7 +3128,7 @@ THREADED_TEST(EmbedderDataAlignedPointers) {
   CHECK_EQ(3, (*env)->GetNumberOfEmbedderDataFields());
 
   // The aligned pointer must have the top bits be zero on 64-bit machines (at
-  // least if the heap sandbox is enabled).
+  // least if the sandboxed external pointers are enabled).
   void* huge = reinterpret_cast<void*>(0x0000fffffffffffe);
   CheckAlignedPointerInEmbedderData(&env, 3, huge);
   CHECK_EQ(4, (*env)->GetNumberOfEmbedderDataFields());
@@ -7840,6 +7825,12 @@ void CheckInternalFields(
 }
 
 void InternalFieldCallback(bool global_gc) {
+  // Manual GC scope as --stress-incremental-marking starts marking early and
+  // setting internal pointer fields mark the object for a heap layout change,
+  // which prevents it from being reclaimed and the callbacks from being
+  // executed.
+  ManualGCScope manual_gc_scope;
+
   LocalContext env;
   v8::Isolate* isolate = env->GetIsolate();
   v8::HandleScope scope(isolate);
@@ -23800,9 +23791,9 @@ void RunStreamingTest(const char** chunks, v8::ScriptType type,
   v8::ScriptCompiler::ScriptStreamingTask* task =
       v8::ScriptCompiler::StartStreaming(isolate, &source, type);
 
-  // TestSourceStream::GetMoreData won't block, so it's OK to just run the
-  // task here in the main thread.
-  task->Run();
+  // TestSourceStream::GetMoreData won't block, so it's OK to just join the
+  // background task.
+  StreamerThread::StartThreadForTaskAndJoin(task);
   delete task;
 
   // Possible errors are only produced while compiling.
@@ -24125,7 +24116,9 @@ TEST(StreamingWithDebuggingEnabledLate) {
   v8::ScriptCompiler::ScriptStreamingTask* task =
       v8::ScriptCompiler::StartStreaming(isolate, &source);
 
-  task->Run();
+  // TestSourceStream::GetMoreData won't block, so it's OK to just join the
+  // background task.
+  StreamerThread::StartThreadForTaskAndJoin(task);
   delete task;
 
   CHECK(!try_catch.HasCaught());
@@ -24235,7 +24228,10 @@ TEST(StreamingWithHarmonyScopes) {
       v8::ScriptCompiler::StreamedSource::ONE_BYTE);
   v8::ScriptCompiler::ScriptStreamingTask* task =
       v8::ScriptCompiler::StartStreaming(isolate, &source);
-  task->Run();
+
+  // TestSourceStream::GetMoreData won't block, so it's OK to just join the
+  // background task.
+  StreamerThread::StartThreadForTaskAndJoin(task);
   delete task;
 
   // Parsing should succeed (the script will be parsed and compiled in a context

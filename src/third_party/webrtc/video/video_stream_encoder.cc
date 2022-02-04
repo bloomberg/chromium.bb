@@ -51,6 +51,7 @@
 #include "system_wrappers/include/metrics.h"
 #include "video/adaptation/video_stream_encoder_resource_manager.h"
 #include "video/alignment_adjuster.h"
+#include "video/frame_cadence_adapter.h"
 
 namespace webrtc {
 
@@ -823,8 +824,20 @@ void VideoStreamEncoder::ConfigureEncoder(VideoEncoderConfig config,
         RTC_DCHECK(sink_);
         RTC_LOG(LS_INFO) << "ConfigureEncoder requested.";
 
-        frame_cadence_adapter_->SetZeroHertzModeEnabled(
-            config.content_type == VideoEncoderConfig::ContentType::kScreen);
+        // Set up the frame cadence adapter according to if we're going to do
+        // screencast. The final number of spatial layers is based on info
+        // in `send_codec_`, which is computed based on incoming frame
+        // dimensions which can only be determined later.
+        //
+        // Note: zero-hertz mode isn't enabled by this alone. Constraints also
+        // have to be set up with min_fps = 0 and max_fps > 0.
+        if (config.content_type == VideoEncoderConfig::ContentType::kScreen) {
+          frame_cadence_adapter_->SetZeroHertzModeEnabled(
+              FrameCadenceAdapterInterface::ZeroHertzModeParams{});
+        } else {
+          frame_cadence_adapter_->SetZeroHertzModeEnabled(absl::nullopt);
+        }
+
         pending_encoder_creation_ =
             (!encoder_ || encoder_config_.video_format != config.video_format ||
              max_data_payload_length_ != max_data_payload_length);
@@ -1252,6 +1265,11 @@ void VideoStreamEncoder::OnEncoderSettingsChanged() {
   bool is_screenshare = encoder_settings.encoder_config().content_type ==
                         VideoEncoderConfig::ContentType::kScreen;
   degradation_preference_manager_->SetIsScreenshare(is_screenshare);
+  if (is_screenshare) {
+    frame_cadence_adapter_->SetZeroHertzModeEnabled(
+        FrameCadenceAdapterInterface::ZeroHertzModeParams{
+            send_codec_.numberOfSimulcastStreams});
+  }
 }
 
 void VideoStreamEncoder::OnFrame(Timestamp post_time,
@@ -1449,8 +1467,16 @@ void VideoStreamEncoder::SetEncoderRates(
     last_encoder_rate_settings_ = rate_settings;
   }
 
-  if (!encoder_) {
+  if (!encoder_)
     return;
+
+  // Make the cadence adapter know if streams were disabled.
+  for (int spatial_index = 0;
+       spatial_index != send_codec_.numberOfSimulcastStreams; ++spatial_index) {
+    frame_cadence_adapter_->UpdateLayerStatus(
+        spatial_index,
+        /*enabled=*/rate_settings.rate_control.target_bitrate
+                .GetSpatialLayerSum(spatial_index) > 0);
   }
 
   // `bitrate_allocation` is 0 it means that the network is down or the send
@@ -1459,9 +1485,8 @@ void VideoStreamEncoder::SetEncoderRates(
   // bitrate.
   // TODO(perkj): Make sure all known encoder implementations handle zero
   // target bitrate and remove this check.
-  if (rate_settings.rate_control.bitrate.get_sum_bps() == 0) {
+  if (rate_settings.rate_control.bitrate.get_sum_bps() == 0)
     return;
-  }
 
   if (rate_control_changed) {
     encoder_->SetRates(rate_settings.rate_control);
@@ -1792,6 +1817,13 @@ void VideoStreamEncoder::EncodeVideoFrame(const VideoFrame& video_frame,
   }
 }
 
+void VideoStreamEncoder::RequestRefreshFrame() {
+  worker_queue_->PostTask(ToQueuedTask(task_safety_, [this] {
+    RTC_DCHECK_RUN_ON(worker_queue_);
+    video_source_sink_controller_.RequestRefreshFrame();
+  }));
+}
+
 void VideoStreamEncoder::SendKeyFrame() {
   if (!encoder_queue_.IsCurrent()) {
     encoder_queue_.PostTask([this] { SendKeyFrame(); });
@@ -1801,8 +1833,13 @@ void VideoStreamEncoder::SendKeyFrame() {
   TRACE_EVENT0("webrtc", "OnKeyFrameRequest");
   RTC_DCHECK(!next_frame_types_.empty());
 
-  if (!encoder_)
-    return;  // Shutting down.
+  if (frame_cadence_adapter_)
+    frame_cadence_adapter_->ProcessKeyFrameRequest();
+
+  if (!encoder_) {
+    RTC_DLOG(LS_INFO) << __func__ << " no encoder.";
+    return;  // Shutting down, or not configured yet.
+  }
 
   // TODO(webrtc:10615): Map keyframe request to spatial layer.
   std::fill(next_frame_types_.begin(), next_frame_types_.end(),
@@ -1867,14 +1904,24 @@ EncodedImageCallback::Result VideoStreamEncoder::OnEncodedImage(
   RTC_CHECK(videocontenttypehelpers::SetSimulcastId(
       &image_copy.content_type_, static_cast<uint8_t>(spatial_idx + 1)));
 
-  // Currently internal quality scaler is used for VP9 instead of webrtc qp
-  // scaler (in no-svc case or if only a single spatial layer is encoded).
-  // It has to be explicitly detected and reported to adaptation metrics.
-  // Post a task because `send_codec_` requires `encoder_queue_` lock.
+  // Post a task because `send_codec_` requires `encoder_queue_` lock and we
+  // need to update on quality convergence.
   unsigned int image_width = image_copy._encodedWidth;
   unsigned int image_height = image_copy._encodedHeight;
-  encoder_queue_.PostTask([this, codec_type, image_width, image_height] {
+  encoder_queue_.PostTask([this, codec_type, image_width, image_height,
+                           spatial_idx,
+                           at_target_quality = image_copy.IsAtTargetQuality()] {
     RTC_DCHECK_RUN_ON(&encoder_queue_);
+
+    // Let the frame cadence adapter know about quality convergence.
+    if (frame_cadence_adapter_)
+      frame_cadence_adapter_->UpdateLayerQualityConvergence(spatial_idx,
+                                                            at_target_quality);
+
+    // Currently, the internal quality scaler is used for VP9 instead of the
+    // webrtc qp scaler (in the no-svc case or if only a single spatial layer is
+    // encoded). It has to be explicitly detected and reported to adaptation
+    // metrics.
     if (codec_type == VideoCodecType::kVideoCodecVP9 &&
         send_codec_.VP9()->automaticResizeOn) {
       unsigned int expected_width = send_codec_.width;

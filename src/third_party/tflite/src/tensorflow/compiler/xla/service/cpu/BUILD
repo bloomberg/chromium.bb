@@ -1,7 +1,7 @@
 # Description:
 #    LLVM-based CPU backend for XLA.
 
-load("//tensorflow/core/platform:rules_cc.bzl", "cc_library")
+load("//tensorflow:tensorflow.bzl", "get_compatible_with_cloud")
 load("//tensorflow/compiler/xla:xla.bzl", "ORC_JIT_MEMORY_MAPPER_TARGETS")
 load(
     "//third_party/mkl:build_defs.bzl",
@@ -174,6 +174,7 @@ cc_library(
         ":ir_emitter",
         ":parallel_task_assignment",
         ":simple_orc_jit",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
         ":target_machine_features",
@@ -393,9 +394,9 @@ cc_library(
         "//tensorflow/core/platform:mutex",
         "//tensorflow/core/platform:platform_port",
         "//tensorflow/core/platform:stream_executor_no_cuda",
-        "//tensorflow/core/platform:types",
         "//tensorflow/stream_executor:device_memory_allocator",
         "//tensorflow/stream_executor/host:host_stream",
+        "@com_google_absl//absl/cleanup",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/types:span",
@@ -451,7 +452,6 @@ cc_library(
         "//tensorflow/core/lib/math:math_util",
         "//tensorflow/core/platform:logging",
         "//tensorflow/core/platform:macros",
-        "//tensorflow/core/platform:types",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/strings",
@@ -866,6 +866,7 @@ cc_library(
     name = "runtime_single_threaded_matmul",
     srcs = ["runtime_single_threaded_matmul.cc"],
     hdrs = ["runtime_single_threaded_matmul.h"],
+    compatible_with = get_compatible_with_cloud(),
     copts = runtime_copts(),
     visibility = ["//visibility:public"],
     deps = [
@@ -1148,6 +1149,7 @@ cc_library(
         "//tensorflow/compiler/xla/service:hlo_cost_analysis",
         "//tensorflow/compiler/xla/service:hlo_pass",
         "//tensorflow/compiler/xla/service/llvm_ir:dynamic_update_slice_util",
+        "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
     ],
@@ -1183,6 +1185,7 @@ cc_library(
     name = "cpu_options",
     srcs = ["cpu_options.cc"],
     hdrs = ["cpu_options.h"],
+    compatible_with = get_compatible_with_cloud(),
     deps = [
         "//tensorflow/compiler/xla/service:hlo_module_config",
         "//tensorflow/core:lib",
@@ -1235,6 +1238,7 @@ tf_cc_test(
     name = "vectorized_reduce_with_no_vector_registers_test",
     size = "small",
     srcs = ["vectorized_reduce_with_no_vector_registers_test.cc"],
+    tags = ["no_aarch64"],
     deps = [
         ":cpu_compiler",
         ":cpu_transfer_manager",

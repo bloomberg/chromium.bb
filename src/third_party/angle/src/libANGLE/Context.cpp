@@ -8,7 +8,10 @@
 // rendering operations. It is the GLES2 specific implementation of EGLContext.
 #include "libANGLE/Context.inl.h"
 
+#include <stdarg.h>
+#include <stdio.h>
 #include <string.h>
+
 #include <iterator>
 #include <sstream>
 #include <vector>
@@ -373,7 +376,7 @@ Context::Context(egl::Display *display,
              memoryProgramCache != nullptr,
              GetContextPriority(attribs),
              GetProtectedContent(attribs)),
-      mShared(shareContext != nullptr),
+      mShared(shareContext != nullptr || shareTextures != nullptr || shareSemaphores != nullptr),
       mSkipValidation(GetNoError(attribs)),
       mDisplayTextureShareGroup(shareTextures != nullptr),
       mDisplaySemaphoreShareGroup(shareSemaphores != nullptr),
@@ -401,7 +404,8 @@ Context::Context(egl::Display *display,
       mDrawFramebufferObserverBinding(this, kDrawFramebufferSubjectIndex),
       mReadFramebufferObserverBinding(this, kReadFramebufferSubjectIndex),
       mProgramPipelineObserverBinding(this, kProgramPipelineSubjectIndex),
-      mThreadPool(nullptr),
+      mSingleThreadPool(nullptr),
+      mMultiThreadPool(nullptr),
       mFrameCapture(new angle::FrameCapture),
       mRefCount(0),
       mOverlay(mImplementation.get()),
@@ -737,7 +741,8 @@ egl::Error Context::onDestroy(const egl::Display *display)
     mState.mMemoryObjectManager->release(this);
     mState.mSemaphoreManager->release(this);
 
-    mThreadPool.reset();
+    mSingleThreadPool.reset();
+    mMultiThreadPool.reset();
 
     mImplementation->onDestroy(this);
 
@@ -916,14 +921,7 @@ GLuint Context::createShaderProgramv(ShaderType type, GLsizei count, const GLcha
                     return 0u;
                 }
 
-                // If frame capture is enabled, don't detach the shader since we need the following
-                // to recreate the Shader and Program during MEC setup:
-                // 1.) Shader ID
-                // 2.) Shader source
-                if (!getShareGroup()->getFrameCaptureShared()->enabled())
-                {
-                    programObject->detachShader(this, shaderObject);
-                }
+                programObject->detachShader(this, shaderObject);
             }
 
             InfoLog &programInfoLog = programObject->getExecutable().getInfoLog();
@@ -2776,6 +2774,28 @@ void Context::validationError(angle::EntryPoint entryPoint,
     const_cast<Context *>(this)->mErrors.validationError(entryPoint, errorCode, message);
 }
 
+void Context::validationErrorF(angle::EntryPoint entryPoint,
+                               GLenum errorCode,
+                               const char *format,
+                               ...) const
+{
+    va_list vargs;
+    va_start(vargs, format);
+    constexpr size_t kMessageSize = 256;
+    char message[kMessageSize];
+    int r = vsnprintf(message, kMessageSize, format, vargs);
+    va_end(vargs);
+
+    if (r > 0)
+    {
+        validationError(entryPoint, errorCode, message);
+    }
+    else
+    {
+        validationError(entryPoint, errorCode, format);
+    }
+}
+
 // Get one of the recorded errors and clear its flag, if any.
 // [OpenGL ES 2.0.24] section 2.5 page 13.
 GLenum Context::getError()
@@ -3440,9 +3460,6 @@ Extensions Context::generateSupportedExtensions() const
 {
     Extensions supportedExtensions = mImplementation->getNativeExtensions();
 
-    // Explicitly enable GL_KHR_parallel_shader_compile
-    supportedExtensions.parallelShaderCompileKHR = true;
-
     if (getClientVersion() < ES_2_0)
     {
         // Default extensions for GLES1
@@ -3504,9 +3521,10 @@ Extensions Context::generateSupportedExtensions() const
     if (getClientVersion() < ES_3_1)
     {
         // Disable ES3.1+ extensions
-        supportedExtensions.geometryShaderEXT     = false;
-        supportedExtensions.geometryShaderOES     = false;
-        supportedExtensions.tessellationShaderEXT = false;
+        supportedExtensions.geometryShaderEXT         = false;
+        supportedExtensions.geometryShaderOES         = false;
+        supportedExtensions.tessellationShaderEXT     = false;
+        supportedExtensions.extensionPackEs31aANDROID = false;
 
         // TODO(http://anglebug.com/2775): Multisample arrays could be supported on ES 3.0 as well
         // once 2D multisample texture extension is exposed there.
@@ -3913,6 +3931,20 @@ void Context::initCaps()
         INFO() << "Disabling GL_OES_depth32 during capture, which is not widely supported on "
                   "mobile";
         mState.mExtensions.depth32OES = false;
+
+        // Pixel 4 (Qualcomm) only supports 6 atomic counter buffer bindings.
+        constexpr GLint maxAtomicCounterBufferBindings = 6;
+        INFO() << "Limiting max atomic counter buffer bindings to "
+               << maxAtomicCounterBufferBindings;
+        ANGLE_LIMIT_CAP(mState.mCaps.maxAtomicCounterBufferBindings,
+                        maxAtomicCounterBufferBindings);
+
+        // SwiftShader only supports 12 shader storage buffer bindings.
+        constexpr GLint maxShaderStorageBufferBindings = 12;
+        INFO() << "Limiting max shader storage buffer bindings to "
+               << maxShaderStorageBufferBindings;
+        ANGLE_LIMIT_CAP(mState.mCaps.maxShaderStorageBufferBindings,
+                        maxShaderStorageBufferBindings);
     }
 
     // Disable support for OES_get_program_binary
@@ -4060,7 +4092,11 @@ void Context::updateCaps()
         mValidBufferBindings.set(BufferBinding::Texture);
     }
 
-    mThreadPool = angle::WorkerThreadPool::Create(
+    if (!mState.mExtensions.parallelShaderCompileKHR)
+    {
+        mSingleThreadPool = angle::WorkerThreadPool::Create(false);
+    }
+    mMultiThreadPool = angle::WorkerThreadPool::Create(
         mState.mExtensions.parallelShaderCompileKHR ||
         getFrontendFeatures().enableCompressingPipelineCacheInThreadPool.enabled);
 
@@ -4269,7 +4305,9 @@ void Context::clear(GLbitfield mask)
 
     // If all stencil bits are masked, don't attempt to clear stencil.
     if (mState.getDrawFramebuffer()->getStencilAttachment() == nullptr ||
-        mState.getDepthStencilState().stencilWritemask == 0)
+        (angle::BitMask<uint32_t>(
+             mState.getDrawFramebuffer()->getStencilAttachment()->getStencilSize()) &
+         mState.getDepthStencilState().stencilWritemask) == 0)
     {
         mask &= ~GL_STENCIL_BUFFER_BIT;
     }
@@ -6460,16 +6498,14 @@ void Context::multiDrawArraysInstanced(PrimitiveMode mode,
                                                                 instanceCounts, drawcount));
 }
 
-void Context::multiDrawArraysIndirect(GLenum mode,
+void Context::multiDrawArraysIndirect(PrimitiveMode mode,
                                       const void *indirect,
                                       GLsizei drawcount,
                                       GLsizei stride)
 {
-    PrimitiveMode primitiveMode = FromGLenum<PrimitiveMode>(mode);
-
-    ANGLE_CONTEXT_TRY(prepareForDraw(primitiveMode));
+    ANGLE_CONTEXT_TRY(prepareForDraw(mode));
     ANGLE_CONTEXT_TRY(
-        mImplementation->multiDrawArraysIndirect(this, primitiveMode, indirect, drawcount, stride));
+        mImplementation->multiDrawArraysIndirect(this, mode, indirect, drawcount, stride));
     MarkShaderStorageUsage(this);
 }
 
@@ -6496,18 +6532,15 @@ void Context::multiDrawElementsInstanced(PrimitiveMode mode,
                                                                   instanceCounts, drawcount));
 }
 
-void Context::multiDrawElementsIndirect(GLenum mode,
-                                        GLenum type,
+void Context::multiDrawElementsIndirect(PrimitiveMode mode,
+                                        DrawElementsType type,
                                         const void *indirect,
                                         GLsizei drawcount,
                                         GLsizei stride)
 {
-    PrimitiveMode primitiveMode       = FromGLenum<PrimitiveMode>(mode);
-    DrawElementsType drawElementsType = FromGLenum<DrawElementsType>(type);
-
-    ANGLE_CONTEXT_TRY(prepareForDraw(primitiveMode));
-    ANGLE_CONTEXT_TRY(mImplementation->multiDrawElementsIndirect(
-        this, primitiveMode, drawElementsType, indirect, drawcount, stride));
+    ANGLE_CONTEXT_TRY(prepareForDraw(mode));
+    ANGLE_CONTEXT_TRY(
+        mImplementation->multiDrawElementsIndirect(this, mode, type, indirect, drawcount, stride));
     MarkShaderStorageUsage(this);
 }
 
@@ -8361,6 +8394,17 @@ void Context::getnUniformiv(ShaderProgramID program,
     programObject->getUniformiv(this, location, params);
 }
 
+void Context::getnUniformuiv(ShaderProgramID program,
+                             UniformLocation location,
+                             GLsizei bufSize,
+                             GLuint *params)
+{
+    Program *programObject = getProgramResolveLink(program);
+    ASSERT(programObject);
+
+    programObject->getUniformuiv(this, location, params);
+}
+
 void Context::getnUniformivRobust(ShaderProgramID program,
                                   UniformLocation location,
                                   GLsizei bufSize,
@@ -8942,10 +8986,20 @@ void Context::maxShaderCompilerThreads(GLuint count)
     // A count of zero specifies a request for no parallel compiling or linking.
     if ((oldCount == 0 || count == 0) && (oldCount != 0 || count != 0))
     {
-        mThreadPool = angle::WorkerThreadPool::Create(count > 0);
+        mMultiThreadPool = angle::WorkerThreadPool::Create(count > 0);
     }
-    mThreadPool->setMaxThreads(count);
+    mMultiThreadPool->setMaxThreads(count);
     mImplementation->setMaxShaderCompilerThreads(count);
+}
+
+void Context::framebufferParameteriMESA(GLenum target, GLenum pname, GLint param)
+{
+    framebufferParameteri(target, pname, param);
+}
+
+void Context::getFramebufferParameterivMESA(GLenum target, GLenum pname, GLint *params)
+{
+    getFramebufferParameteriv(target, pname, params);
 }
 
 bool Context::isGLES1() const

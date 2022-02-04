@@ -17,8 +17,10 @@
 
 #include "dawn_wire/client/ObjectBase.h"
 
+#include "dawn_wire/client/Adapter.h"
 #include "dawn_wire/client/Buffer.h"
 #include "dawn_wire/client/Device.h"
+#include "dawn_wire/client/Instance.h"
 #include "dawn_wire/client/Queue.h"
 #include "dawn_wire/client/ShaderModule.h"
 

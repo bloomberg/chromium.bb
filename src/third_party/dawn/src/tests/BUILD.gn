@@ -119,7 +119,7 @@ if (build_with_chromium) {
 ###############################################################################
 
 dawn_json_generator("mock_webgpu_gen") {
-  target = "mock_webgpu"
+  target = "mock_api"
   outputs = [
     "src/dawn/mock_webgpu.h",
     "src/dawn/mock_webgpu.cpp",
@@ -227,6 +227,7 @@ test("dawn_unittests") {
     "unittests/TypedIntegerTests.cpp",
     "unittests/native/CommandBufferEncodingTests.cpp",
     "unittests/native/DestroyObjectTests.cpp",
+    "unittests/native/DeviceCreationTests.cpp",
     "unittests/validation/BindGroupValidationTests.cpp",
     "unittests/validation/BufferValidationTests.cpp",
     "unittests/validation/CommandBufferValidationTests.cpp",
@@ -272,6 +273,7 @@ test("dawn_unittests") {
     "unittests/validation/VertexStateValidationTests.cpp",
     "unittests/validation/VideoViewsValidationTests.cpp",
     "unittests/validation/WriteBufferTests.cpp",
+    "unittests/wire/WireAdapterTests.cpp",
     "unittests/wire/WireArgumentTests.cpp",
     "unittests/wire/WireBasicTests.cpp",
     "unittests/wire/WireBufferMappingTests.cpp",
@@ -281,8 +283,10 @@ test("dawn_unittests") {
     "unittests/wire/WireErrorCallbackTests.cpp",
     "unittests/wire/WireExtensionTests.cpp",
     "unittests/wire/WireInjectDeviceTests.cpp",
+    "unittests/wire/WireInjectInstanceTests.cpp",
     "unittests/wire/WireInjectSwapChainTests.cpp",
     "unittests/wire/WireInjectTextureTests.cpp",
+    "unittests/wire/WireInstanceTests.cpp",
     "unittests/wire/WireMemoryTransferServiceTests.cpp",
     "unittests/wire/WireOptionalTests.cpp",
     "unittests/wire/WireQueueTests.cpp",
@@ -423,7 +427,7 @@ source_set("dawn_end2end_tests_sources") {
     sources += [
       "end2end/D3D12CachingTests.cpp",
       "end2end/D3D12ResourceWrappingTests.cpp",
-      "end2end/D3D12VideoViewsTests.cpp",
+      "end2end/VideoViewsTests_win.cpp",
     ]
     libs += [
       "d3d11.lib",
@@ -447,6 +451,17 @@ source_set("dawn_end2end_tests_sources") {
       "end2end/WindowSurfaceTests.cpp",
     ]
     deps += [ "${dawn_root}/src/utils:dawn_glfw" ]
+  }
+
+  if (dawn_enable_d3d12 || (dawn_enable_vulkan && is_chromeos)) {
+    sources += [
+      "end2end/VideoViewsTests.cpp",
+      "end2end/VideoViewsTests.h",
+    ]
+  }
+
+  if (dawn_enable_vulkan && is_chromeos) {
+    sources += [ "end2end/VideoViewsTests_gbm.cpp" ]
   }
 }
 
@@ -479,7 +494,11 @@ source_set("dawn_white_box_tests_sources") {
     if (is_chromeos) {
       sources += [ "white_box/VulkanImageWrappingTestsDmaBuf.cpp" ]
     } else if (is_linux) {
-      sources += [ "white_box/VulkanImageWrappingTestsOpaqueFD.cpp" ]
+      sources += [
+        "white_box/VulkanImageWrappingTests.cpp",
+        "white_box/VulkanImageWrappingTests.h",
+        "white_box/VulkanImageWrappingTests_OpaqueFD.cpp",
+      ]
     }
 
     if (dawn_enable_error_injection) {

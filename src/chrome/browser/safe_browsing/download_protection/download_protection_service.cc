@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
+#include "chrome/browser/safe_browsing/chrome_user_population_helper.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service_factory.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
@@ -222,7 +223,8 @@ void DownloadProtectionService::CheckClientDownload(
       item, std::move(callback), this, database_manager_,
       binary_feature_extractor_);
   CheckClientDownloadRequest* request_copy = request.get();
-  download_requests_[request_copy] = std::move(request);
+  context_download_requests_[content::DownloadItemUtils::GetBrowserContext(
+      item)][request_copy] = std::move(request);
   request_copy->Start();
 }
 
@@ -234,14 +236,20 @@ bool DownloadProtectionService::MaybeCheckClientDownload(
   bool safe_browsing_enabled =
       profile && IsSafeBrowsingEnabled(*profile->GetPrefs());
   auto settings = DeepScanningRequest::ShouldUploadBinary(item);
+  bool report_only_scan =
+      base::FeatureList::IsEnabled(kConnectorsScanningReportOnlyUI) &&
+      settings.has_value() &&
+      settings.value().block_until_verdict ==
+          enterprise_connectors::BlockUntilVerdict::NO_BLOCK;
 
   if (base::FeatureList::IsEnabled(kSafeBrowsingEnterpriseCsd) &&
       base::FeatureList::IsEnabled(
           kSafeBrowsingDisableConsumerCsdForEnterprise) &&
-      settings.has_value()) {
+      settings.has_value() && !report_only_scan) {
     // Since this branch implies that the CSD check is done through the deep
     // scanning request and not with a consumer check, the pre-deep scanning
-    // DownloadCheckResult is considered UNKNOWN.
+    // DownloadCheckResult is considered UNKNOWN. This shouldn't trigger on
+    // report-only scans to avoid skipping the consumer check.
     UploadForDeepScanning(item, std::move(callback),
                           DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
                           DownloadCheckResult::UNKNOWN,
@@ -254,9 +262,9 @@ bool DownloadProtectionService::MaybeCheckClientDownload(
     return true;
   }
 
-  // TODO(https://crbug.com/1165815): Remove this check once the enterpise CSD
-  // check has fully launched.
   if (settings.has_value()) {
+    DCHECK(report_only_scan);
+    DCHECK(!safe_browsing_enabled);
     // Since this branch implies that Safe Browsing is disabled, the pre-deep
     // scanning DownloadCheckResult is considered UNKNOWN.
     UploadForDeepScanning(item, std::move(callback),
@@ -346,11 +354,13 @@ void DownloadProtectionService::CheckPPAPIDownloadRequest(
 void DownloadProtectionService::CheckFileSystemAccessWrite(
     std::unique_ptr<content::FileSystemAccessWriteItem> item,
     CheckDownloadCallback callback) {
+  content::BrowserContext* browser_context = item->browser_context;
   auto request = std::make_unique<CheckFileSystemAccessWriteRequest>(
       std::move(item), std::move(callback), this, database_manager_,
       binary_feature_extractor_);
   CheckClientDownloadRequestBase* request_copy = request.get();
-  download_requests_[request_copy] = std::move(request);
+  context_download_requests_[browser_context][request_copy] =
+      std::move(request);
   request_copy->Start();
 }
 
@@ -378,7 +388,7 @@ DownloadProtectionService::RegisterPPAPIDownloadRequestCallback(
 void DownloadProtectionService::CancelPendingRequests() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // It is sufficient to delete the list of CheckClientDownloadRequests.
-  download_requests_.clear();
+  context_download_requests_.clear();
 
   // It is sufficient to delete the list of PPAPI download requests.
   ppapi_download_requests_.clear();
@@ -390,9 +400,9 @@ void DownloadProtectionService::RequestFinished(
     DownloadCheckResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   MaybeLogSecuritySensitiveDownloadEvent(browser_context, result);
-  auto it = download_requests_.find(request);
-  DCHECK(it != download_requests_.end());
-  download_requests_.erase(it);
+  DCHECK(context_download_requests_.contains(browser_context));
+  DCHECK(context_download_requests_[browser_context].contains(request));
+  context_download_requests_[browser_context].erase(request);
 }
 
 void DownloadProtectionService::PPAPIDownloadCheckRequestFinished(
@@ -485,6 +495,8 @@ void DownloadProtectionService::MaybeSendDangerousDownloadOpenedReport(
     report->set_did_proceed(true);
     report->set_download_verdict(
         DownloadDangerTypeToDownloadResponseVerdict(item->GetDangerType()));
+    *report->mutable_population() =
+        safe_browsing::GetUserPopulationForProfile(profile);
     std::string serialized_report;
     if (report->SerializeToString(&serialized_report)) {
       sb_service_->SendSerializedDownloadReport(profile, serialized_report);
@@ -762,6 +774,11 @@ DownloadProtectionService::GetURLLoaderFactory(
     content::BrowserContext* browser_context) {
   return sb_service_->GetURLLoaderFactory(
       Profile::FromBrowserContext(browser_context));
+}
+
+void DownloadProtectionService::RemovePendingDownloadRequests(
+    content::BrowserContext* browser_context) {
+  context_download_requests_.erase(browser_context);
 }
 
 void DownloadProtectionService::RequestFinished(DeepScanningRequest* request) {

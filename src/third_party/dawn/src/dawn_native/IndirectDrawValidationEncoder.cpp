@@ -29,7 +29,7 @@
 #include <cstdlib>
 #include <limits>
 
-namespace dawn_native {
+namespace dawn::native {
 
     namespace {
         // NOTE: This must match the workgroup_size attribute on the compute entry point below.
@@ -53,7 +53,7 @@ namespace dawn_native {
             let kBaseVertexEntry = 3u;
             let kFirstInstanceEntry = 4u;
 
-            [[block]] struct BatchInfo {
+            struct BatchInfo {
                 numIndexBufferElementsLow: u32;
                 numIndexBufferElementsHigh: u32;
                 numDraws: u32;
@@ -61,7 +61,7 @@ namespace dawn_native {
                 indirectOffsets: array<u32>;
             };
 
-            [[block]] struct IndirectParams {
+            struct IndirectParams {
                 data: array<u32>;
             };
 
@@ -230,11 +230,10 @@ namespace dawn_native {
         const uint32_t minStorageBufferOffsetAlignment =
             device->GetLimits().v1.minStorageBufferOffsetAlignment;
 
-        for (auto& entry : bufferInfoMap) {
-            const IndirectDrawMetadata::IndexedIndirectConfig& config = entry.first;
+        for (auto& [config, validationInfo] : bufferInfoMap) {
             BufferBase* clientIndirectBuffer = config.first;
             for (const IndirectDrawMetadata::IndexedIndirectValidationBatch& batch :
-                 entry.second.GetBatches()) {
+                 validationInfo.GetBatches()) {
                 const uint64_t minOffsetFromAlignedBoundary =
                     batch.minOffset % minStorageBufferOffsetAlignment;
                 const uint64_t minOffsetAlignedDown =
@@ -383,4 +382,4 @@ namespace dawn_native {
         return {};
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

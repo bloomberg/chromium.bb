@@ -23,8 +23,8 @@ struct traits<IndexedView<XprType, RowIndices, ColIndices> >
   enum {
     RowsAtCompileTime = int(array_size<RowIndices>::value),
     ColsAtCompileTime = int(array_size<ColIndices>::value),
-    MaxRowsAtCompileTime = RowsAtCompileTime != Dynamic ? int(RowsAtCompileTime) : Dynamic,
-    MaxColsAtCompileTime = ColsAtCompileTime != Dynamic ? int(ColsAtCompileTime) : Dynamic,
+    MaxRowsAtCompileTime = RowsAtCompileTime,
+    MaxColsAtCompileTime = ColsAtCompileTime,
 
     XprTypeIsRowMajor = (int(traits<XprType>::Flags)&RowMajorBit) != 0,
     IsRowMajor = (MaxRowsAtCompileTime==1&&MaxColsAtCompileTime!=1) ? 1
@@ -44,8 +44,8 @@ struct traits<IndexedView<XprType, RowIndices, ColIndices> >
     IsBlockAlike = InnerIncr==1 && OuterIncr==1,
     IsInnerPannel = HasSameStorageOrderAsXprType && is_same<AllRange<InnerSize>,typename conditional<XprTypeIsRowMajor,ColIndices,RowIndices>::type>::value,
 
-    InnerStrideAtCompileTime = InnerIncr<0 || InnerIncr==DynamicIndex || XprInnerStride==Dynamic ? Dynamic : XprInnerStride * InnerIncr,
-    OuterStrideAtCompileTime = OuterIncr<0 || OuterIncr==DynamicIndex || XprOuterstride==Dynamic ? Dynamic : XprOuterstride * OuterIncr,
+    InnerStrideAtCompileTime = InnerIncr<0 || InnerIncr==DynamicIndex || XprInnerStride==Dynamic || InnerIncr==UndefinedIncr ? Dynamic : XprInnerStride * InnerIncr,
+    OuterStrideAtCompileTime = OuterIncr<0 || OuterIncr==DynamicIndex || XprOuterstride==Dynamic || OuterIncr==UndefinedIncr ? Dynamic : XprOuterstride * OuterIncr,
 
     ReturnAsScalar = is_same<RowIndices,SingleRange>::value && is_same<ColIndices,SingleRange>::value,
     ReturnAsBlock = (!ReturnAsScalar) && IsBlockAlike,

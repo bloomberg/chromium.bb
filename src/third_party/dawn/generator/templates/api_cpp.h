@@ -140,7 +140,7 @@ namespace {{metadata.namespace}} {
     };
 
 {% macro render_cpp_default_value(member, is_struct=True) -%}
-    {%- if member.annotation in ["*", "const*"] and member.optional -%}
+    {%- if member.annotation in ["*", "const*"] and member.optional or member.default_value == "nullptr" -%}
         {{" "}}= nullptr
     {%- elif member.type.category == "object" and member.optional and is_struct -%}
         {{" "}}= nullptr
@@ -189,11 +189,10 @@ namespace {{metadata.namespace}} {
     {% endfor %}
 
     {% for function in by_category["function"] %}
-       {{as_cppType(function.return_type.name)}} {{as_cppType(function.name)}}(
+        {{as_cppType(function.return_type.name)}} {{as_cppType(function.name)}}(
             {%- for arg in function.arguments -%}
-                {% if not loop.first %}, {% endif %}
-                {{as_annotated_cppType(arg)}}
-                {{render_cpp_default_value(arg, False)}}
+                {%- if not loop.first %}, {% endif -%}
+                {{as_annotated_cppType(arg)}}{{render_cpp_default_value(arg, False)}}
             {%- endfor -%}
         );
     {% endfor %}

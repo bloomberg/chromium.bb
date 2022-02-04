@@ -55,7 +55,7 @@ void CastMediaSinkService::Start(
       FROM_HERE, base::BindOnce(&CastMediaSinkServiceImpl::Start,
                                 base::Unretained(impl_.get())));
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
   StartMdnsDiscovery();
 #endif
 }
@@ -170,6 +170,10 @@ void CastMediaSinkService::BindLogger(LoggerImpl* logger_impl) {
       FROM_HERE,
       base::BindOnce(&CastMediaSinkServiceImpl::BindLogger,
                      base::Unretained(impl_.get()), std::move(pending_remote)));
+}
+
+void CastMediaSinkService::RemoveLogger() {
+  logger_impl_ = nullptr;
 }
 
 }  // namespace media_router

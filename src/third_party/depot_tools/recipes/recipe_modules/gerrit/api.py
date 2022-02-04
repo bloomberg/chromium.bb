@@ -394,6 +394,21 @@ class GerritApi(recipe_api.RecipeApi):
         change,
     ])
 
+    # Make sure the new patchset is propagated to Gerrit backend.
+    with self.m.step.nest('verify the patchset exists on CL %d' % change):
+      retries = 0
+      max_retries = 2
+      while retries <= max_retries:
+        try:
+          if self.get_revision_info(host, change, 2):
+            break
+        except self.m.step.InfraFailure:
+          if retries == max_retries:  # pragma: no cover
+            raise
+          retries += 1
+          with self.m.step.nest('waiting before retry'):
+            self.m.time.sleep((2**retries) * 10)
+
     if submit or submit_later:
       self('set Bot-Commit+1 for change %d' % change, [
           'setbotcommit',

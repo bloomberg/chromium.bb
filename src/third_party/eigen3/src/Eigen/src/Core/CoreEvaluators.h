@@ -657,9 +657,9 @@ struct ternary_evaluator<CwiseTernaryOp<TernaryOp, Arg1, Arg2, Arg3>, IndexBased
         )
      ),
     Flags = (Flags0 & ~RowMajorBit) | (Arg1Flags & RowMajorBit),
-    Alignment = EIGEN_PLAIN_ENUM_MIN(
-        EIGEN_PLAIN_ENUM_MIN(evaluator<Arg1>::Alignment, evaluator<Arg2>::Alignment),
-        evaluator<Arg3>::Alignment)
+    Alignment = plain_enum_min(
+            plain_enum_min(evaluator<Arg1>::Alignment, evaluator<Arg2>::Alignment),
+            evaluator<Arg3>::Alignment)
   };
 
   EIGEN_DEVICE_FUNC explicit ternary_evaluator(const XprType& xpr) : m_d(xpr)
@@ -753,7 +753,7 @@ struct binary_evaluator<CwiseBinaryOp<BinaryOp, Lhs, Rhs>, IndexBased, IndexBase
         )
      ),
     Flags = (Flags0 & ~RowMajorBit) | (LhsFlags & RowMajorBit),
-    Alignment = EIGEN_PLAIN_ENUM_MIN(evaluator<Lhs>::Alignment,evaluator<Rhs>::Alignment)
+    Alignment = plain_enum_min(evaluator<Lhs>::Alignment, evaluator<Rhs>::Alignment)
   };
 
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
@@ -902,7 +902,7 @@ struct mapbase_evaluator : evaluator_base<Derived>
       m_innerStride(map.innerStride()),
       m_outerStride(map.outerStride())
   {
-    EIGEN_STATIC_ASSERT(EIGEN_IMPLIES(evaluator<Derived>::Flags&PacketAccessBit, internal::inner_stride_at_compile_time<Derived>::ret==1),
+    EIGEN_STATIC_ASSERT(check_implication(evaluator<Derived>::Flags&PacketAccessBit, internal::inner_stride_at_compile_time<Derived>::ret==1),
                         PACKET_ACCESS_REQUIRES_TO_HAVE_INNER_STRIDE_FIXED_TO_1);
     EIGEN_INTERNAL_CHECK_COST_VALUE(CoeffReadCost);
   }
@@ -1074,7 +1074,7 @@ struct evaluator<Block<ArgType, BlockRows, BlockCols, InnerPanel> >
     Alignment0 = (InnerPanel && (OuterStrideAtCompileTime!=Dynamic)
                              && (OuterStrideAtCompileTime!=0)
                              && (((OuterStrideAtCompileTime * int(sizeof(Scalar))) % int(PacketAlignment)) == 0)) ? int(PacketAlignment) : 0,
-    Alignment = EIGEN_PLAIN_ENUM_MIN(evaluator<ArgType>::Alignment, Alignment0)
+    Alignment = plain_enum_min(evaluator<ArgType>::Alignment, Alignment0)
   };
   typedef block_evaluator<ArgType, BlockRows, BlockCols, InnerPanel> block_evaluator_type;
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
@@ -1225,7 +1225,7 @@ struct block_evaluator<ArgType, BlockRows, BlockCols, InnerPanel, /* HasDirectAc
     : mapbase_evaluator<XprType, typename XprType::PlainObject>(block)
   {
     // TODO: for the 3.3 release, this should be turned to an internal assertion, but let's keep it as is for the beta lifetime
-    eigen_assert(((internal::UIntPtr(block.data()) % EIGEN_PLAIN_ENUM_MAX(1,evaluator<XprType>::Alignment)) == 0) && "data is not aligned");
+    eigen_assert(((internal::UIntPtr(block.data()) % plain_enum_max(1,evaluator<XprType>::Alignment)) == 0) && "data is not aligned");
   }
 };
 
@@ -1241,12 +1241,12 @@ struct evaluator<Select<ConditionMatrixType, ThenMatrixType, ElseMatrixType> >
   typedef Select<ConditionMatrixType, ThenMatrixType, ElseMatrixType> XprType;
   enum {
     CoeffReadCost = evaluator<ConditionMatrixType>::CoeffReadCost
-                  + EIGEN_PLAIN_ENUM_MAX(evaluator<ThenMatrixType>::CoeffReadCost,
-                                         evaluator<ElseMatrixType>::CoeffReadCost),
+                  + plain_enum_max(evaluator<ThenMatrixType>::CoeffReadCost,
+                                             evaluator<ElseMatrixType>::CoeffReadCost),
 
     Flags = (unsigned int)evaluator<ThenMatrixType>::Flags & evaluator<ElseMatrixType>::Flags & HereditaryBits,
 
-    Alignment = EIGEN_PLAIN_ENUM_MIN(evaluator<ThenMatrixType>::Alignment, evaluator<ElseMatrixType>::Alignment)
+    Alignment = plain_enum_min(evaluator<ThenMatrixType>::Alignment, evaluator<ElseMatrixType>::Alignment)
   };
 
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE

@@ -3327,7 +3327,11 @@ dnn::DataType GetConvAccumulatorType(dnn::DataType data_type) {
 
 #if CUDNN_VERSION >= 8100 && TF_ENABLE_CUDNN_FRONTEND
 cudnnBackendHeurMode_t GetCudnnFrontendHeurMode() {
+#if CUDNN_VERSION >= 8300
+  return CUDNN_HEUR_MODE_B;
+#else
   return CUDNN_HEUR_MODE_INSTANT;
+#endif  // CUDNN_VERSION >= 8300
 }
 #endif  // CUDNN_VERSION >= 8100 && TF_ENABLE_CUDNN_FRONTEND
 
@@ -3997,11 +4001,11 @@ class CudnnLegacyConvRunner : public dnn::ConvRunner {
  public:
   // Queries the workspace size and constructs a 'CudnnLegacyConvRunner'.
   static port::StatusOr<CudnnLegacyConvRunner> Create(
-      GpuExecutor* parent, CudnnAccess* cudnn, const dnn::AlgorithmDesc& algo,
-      dnn::DataType input_type, dnn::DataType output_type,
-      dnn::ConvolutionKind kind, CudnnTensorDescriptor input_nd,
-      CudnnTensorDescriptor output_nd, CudnnFilterDescriptor filter,
-      CudnnConvolutionDescriptor conv) {
+      GpuExecutor* parent, Stream* stream, CudnnAccess* cudnn,
+      const dnn::AlgorithmDesc& algo, dnn::DataType input_type,
+      dnn::DataType output_type, dnn::ConvolutionKind kind,
+      CudnnTensorDescriptor input_nd, CudnnTensorDescriptor output_nd,
+      CudnnFilterDescriptor filter, CudnnConvolutionDescriptor conv) {
     size_t workspace_size;
     if (algo.workspace_size()) {
       workspace_size = *algo.workspace_size();
@@ -4009,7 +4013,7 @@ class CudnnLegacyConvRunner : public dnn::ConvRunner {
       // For old AlgorithmProtos loaded from serialized autotune maps and for
       // AlgorithmDescs constructed by manually specifying an algorithm ID, we
       // need to compute the workspace size here.
-      auto handle = cudnn->GetHandle(parent, nullptr);
+      auto handle = cudnn->GetHandle(parent, stream);
 
       switch (kind) {
         case dnn::ConvolutionKind::FORWARD:
@@ -4267,10 +4271,10 @@ port::Status CudnnSupport::DoConvolve(
 
   SE_ASSIGN_OR_RETURN(
       auto runner,
-      CudnnLegacyConvRunner::Create(parent_, cudnn_.get(), algorithm_desc,
-                                    element_type, output_type, kind,
-                                    std::move(input_nd), std::move(output_nd),
-                                    std::move(filter_nd), std::move(conv)));
+      CudnnLegacyConvRunner::Create(
+          parent_, stream, cudnn_.get(), algorithm_desc, element_type,
+          output_type, kind, std::move(input_nd), std::move(output_nd),
+          std::move(filter_nd), std::move(conv)));
   return runner(stream, input_data, filter_data, output_data, scratch_memory,
                 output_profile_result);
 }
@@ -4619,7 +4623,7 @@ port::Status CudnnSupport::GetConvolveRunners(
 
     for (const auto& algo : algorithms) {
       auto runner_or = ConvolveRunnerFromDesc(
-          algo, kind, input_type, output_type, input_descriptor,
+          stream, algo, kind, input_type, output_type, input_descriptor,
           filter_descriptor, output_descriptor, convolution_descriptor);
       if (!runner_or.ok()) {
         // Failures here can result from trying to query the workspace size for
@@ -4750,9 +4754,9 @@ port::Status CudnnSupport::GetConvolveRunners(
 
 port::StatusOr<std::unique_ptr<const dnn::ConvRunner>>
 CudnnSupport::ConvolveRunnerFromDesc(
-    const dnn::AlgorithmDesc& algorithm_desc, dnn::ConvolutionKind kind,
-    dnn::DataType input_type, dnn::DataType output_type,
-    const dnn::BatchDescriptor& input_descriptor,
+    Stream* stream, const dnn::AlgorithmDesc& algorithm_desc,
+    dnn::ConvolutionKind kind, dnn::DataType input_type,
+    dnn::DataType output_type, const dnn::BatchDescriptor& input_descriptor,
     const dnn::FilterDescriptor& filter_descriptor,
     const dnn::BatchDescriptor& output_descriptor,
     const dnn::ConvolutionDescriptor& convolution_descriptor) {
@@ -4765,8 +4769,8 @@ CudnnSupport::ConvolveRunnerFromDesc(
     SE_ASSIGN_OR_RETURN(
         auto runner,
         CudnnLegacyConvRunner::Create(
-            parent_, cudnn_.get(), algorithm_desc, input_type, output_type,
-            kind,
+            parent_, stream, cudnn_.get(), algorithm_desc, input_type,
+            output_type, kind,
             /* input_nd = */
             CudnnTensorDescriptor(
                 input_descriptor,
@@ -4785,7 +4789,7 @@ CudnnSupport::ConvolveRunnerFromDesc(
   }
 
 #if CUDNN_VERSION >= 8100 && TF_ENABLE_CUDNN_FRONTEND
-  auto cudnn = cudnn_->GetHandle(parent_, nullptr);
+  auto cudnn = cudnn_->GetHandle(parent_, stream);
 
   SE_ASSIGN_OR_RETURN(
       auto op_graph,
@@ -4900,8 +4904,9 @@ class CudnnLegacyFusedConvRunner : public dnn::FusedConvRunner {
  public:
   // Queries the workspace size and constructs a 'CudnnLegacyFusedConvRunner'.
   static port::StatusOr<CudnnLegacyFusedConvRunner> Create(
-      GpuExecutor* parent, CudnnAccess* cudnn, const dnn::AlgorithmDesc& algo,
-      dnn::DataType input_type, double conv_scale, double side_input_scale,
+      GpuExecutor* parent, Stream* stream, CudnnAccess* cudnn,
+      const dnn::AlgorithmDesc& algo, dnn::DataType input_type,
+      double conv_scale, double side_input_scale,
       CudnnTensorDescriptor input_nd, CudnnTensorDescriptor output_nd,
       CudnnFilterDescriptor filter, CudnnTensorDescriptor bias_nd,
       CudnnConvolutionDescriptor conv,
@@ -4910,7 +4915,7 @@ class CudnnLegacyFusedConvRunner : public dnn::FusedConvRunner {
     if (algo.workspace_size()) {
       workspace_size = *algo.workspace_size();
     } else {
-      auto handle = cudnn->GetHandle(parent, nullptr);
+      auto handle = cudnn->GetHandle(parent, stream);
 
       RETURN_IF_CUDNN_ERROR(cudnnGetConvolutionForwardWorkspaceSize(
           handle.handle(),
@@ -5082,10 +5087,10 @@ class CudnnLegacyFusedConvRunner : public dnn::FusedConvRunner {
 
 port::StatusOr<std::unique_ptr<const dnn::FusedConvRunner>>
 CudnnSupport::FusedConvolveRunnerFromDesc(
-    const dnn::AlgorithmDesc& algorithm_desc, dnn::ConvolutionKind kind,
-    dnn::DataType input_type, dnn::DataType bias_type,
-    dnn::DataType output_type, double conv_scale, double side_input_scale,
-    const dnn::BatchDescriptor& input_descriptor,
+    Stream* stream, const dnn::AlgorithmDesc& algorithm_desc,
+    dnn::ConvolutionKind kind, dnn::DataType input_type,
+    dnn::DataType bias_type, dnn::DataType output_type, double conv_scale,
+    double side_input_scale, const dnn::BatchDescriptor& input_descriptor,
     const dnn::FilterDescriptor& filter_descriptor,
     const dnn::BatchDescriptor& bias_descriptor,
     const dnn::BatchDescriptor& output_descriptor,
@@ -5121,15 +5126,15 @@ CudnnSupport::FusedConvolveRunnerFromDesc(
     SE_ASSIGN_OR_RETURN(
         auto runner,
         CudnnLegacyFusedConvRunner::Create(
-            parent_, cudnn_.get(), algorithm_desc, input_type, conv_scale,
-            side_input_scale, std::move(conv_input_nd), std::move(output_nd),
-            std::move(filter), std::move(bias_nd), std::move(conv),
-            std::move(activation_desc)));
+            parent_, stream, cudnn_.get(), algorithm_desc, input_type,
+            conv_scale, side_input_scale, std::move(conv_input_nd),
+            std::move(output_nd), std::move(filter), std::move(bias_nd),
+            std::move(conv), std::move(activation_desc)));
     return {std::make_unique<CudnnLegacyFusedConvRunner>(std::move(runner))};
   }
 
 #if CUDNN_VERSION >= 8100 && TF_ENABLE_CUDNN_FRONTEND
-  auto cudnn = cudnn_->GetHandle(parent_, nullptr);
+  auto cudnn = cudnn_->GetHandle(parent_, stream);
 
   SE_ASSIGN_OR_RETURN(auto op_graph,
                       GetCudnnFusedOperationGraph(
@@ -5244,7 +5249,7 @@ port::Status CudnnSupport::GetFusedConvolveRunners(
         continue;
       }
       auto runner_or = FusedConvolveRunnerFromDesc(
-          algo, kind, input_type, bias_type, output_type, conv_scale,
+          stream, algo, kind, input_type, bias_type, output_type, conv_scale,
           side_input_scale, input_descriptor, filter_descriptor,
           bias_descriptor, output_descriptor, convolution_descriptor,
           activation_mode);
@@ -5945,10 +5950,10 @@ port::Status CudnnSupport::DoFusedConvolve(
   SE_ASSIGN_OR_RETURN(
       auto runner,
       CudnnLegacyFusedConvRunner::Create(
-          parent_, cudnn_.get(), std::move(algo_desc), input_type, conv_scale,
-          side_input_scale, std::move(conv_input_nd), std::move(output_nd),
-          std::move(filter), std::move(bias_nd), std::move(conv),
-          std::move(activation_desc)));
+          parent_, stream, cudnn_.get(), std::move(algo_desc), input_type,
+          conv_scale, side_input_scale, std::move(conv_input_nd),
+          std::move(output_nd), std::move(filter), std::move(bias_nd),
+          std::move(conv), std::move(activation_desc)));
 
   return runner(stream, conv_input_data, filter_data, side_input_data, biases,
                 output_data, scratch, output_profile_result);

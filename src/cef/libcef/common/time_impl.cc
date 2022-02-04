@@ -4,9 +4,9 @@
 
 #include "libcef/common/time_util.h"
 
-#include "base/ignore_result.h"
+#include <tuple>
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <limits>
 
 namespace {
@@ -21,7 +21,7 @@ bool CanConvertToFileTime(int64_t us) {
 }
 
 }  // namespace
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 void cef_time_to_basetime(const cef_time_t& cef_time, base::Time& time) {
   base::Time::Exploded exploded;
@@ -33,11 +33,11 @@ void cef_time_to_basetime(const cef_time_t& cef_time, base::Time& time) {
   exploded.minute = cef_time.minute;
   exploded.second = cef_time.second;
   exploded.millisecond = cef_time.millisecond;
-  ignore_result(base::Time::FromUTCExploded(exploded, &time));
+  std::ignore = base::Time::FromUTCExploded(exploded, &time);
 }
 
 void cef_time_from_basetime(const base::Time& time, cef_time_t& cef_time) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   int64_t t = time.ToDeltaSinceWindowsEpoch().InMicroseconds();
   if (!CanConvertToFileTime(t))
     return;

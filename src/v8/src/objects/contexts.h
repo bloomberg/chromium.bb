@@ -207,6 +207,8 @@ enum ContextLookupFlags {
     temporal_time_zone_function)                                               \
   V(JS_TEMPORAL_ZONED_DATE_TIME_FUNCTION_INDEX, JSFunction,                    \
     temporal_zoned_date_time_function)                                         \
+  V(TEMPORAL_INSTANT_FIXED_ARRAY_FROM_ITERABLE_FUNCTION_INDEX, JSFunction,     \
+    temporal_instant_fixed_array_from_iterable)                                \
   /* Context maps */                                                           \
   V(NATIVE_CONTEXT_MAP_INDEX, Map, native_context_map)                         \
   V(FUNCTION_CONTEXT_MAP_INDEX, Map, function_context_map)                     \
@@ -325,6 +327,8 @@ enum ContextLookupFlags {
   V(EVAL_ERROR_FUNCTION_INDEX, JSFunction, eval_error_function)                \
   V(AGGREGATE_ERROR_FUNCTION_INDEX, JSFunction, aggregate_error_function)      \
   V(GLOBAL_EVAL_FUN_INDEX, JSFunction, global_eval_fun)                        \
+  V(GLOBAL_PARSE_FLOAT_FUN_INDEX, JSFunction, global_parse_float_fun)          \
+  V(GLOBAL_PARSE_INT_FUN_INDEX, JSFunction, global_parse_int_fun)              \
   V(GLOBAL_PROXY_FUNCTION_INDEX, JSFunction, global_proxy_function)            \
   V(MAP_DELETE_INDEX, JSFunction, map_delete)                                  \
   V(MAP_GET_INDEX, JSFunction, map_get)                                        \
@@ -752,7 +756,7 @@ class NativeContext : public Context {
 
   // The native context stores a list of all optimized code and a list of all
   // deoptimized code, which are needed by the deoptimizer.
-  V8_EXPORT_PRIVATE void AddOptimizedCode(Code code);
+  V8_EXPORT_PRIVATE void AddOptimizedCode(CodeT code);
   inline void SetOptimizedCodeListHead(Object head);
   inline Object OptimizedCodeListHead();
   inline void SetDeoptimizedCodeListHead(Object head);

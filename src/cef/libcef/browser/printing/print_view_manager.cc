@@ -40,7 +40,7 @@
 #include "printing/metafile_skia.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #include "libcef/browser/printing/print_dialog_linux.h"
 #endif
 
@@ -206,7 +206,7 @@ bool CefPrintViewManager::PrintToPDF(content::RenderFrameHost* rfh,
     return false;
 
   // Don't print crashed tabs.
-  if (!web_contents() || web_contents()->IsCrashed()) {
+  if (!web_contents() || web_contents()->IsCrashed() || !rfh->IsRenderFrameLive()) {
     return false;
   }
 
@@ -231,7 +231,7 @@ bool CefPrintViewManager::PrintToPDF(content::RenderFrameHost* rfh,
 
 void CefPrintViewManager::GetDefaultPrintSettings(
     GetDefaultPrintSettingsCallback callback) {
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
   // Send notification to the client.
   auto browser = CefBrowserHostBase::GetBrowserForContents(web_contents());
   if (browser) {

@@ -15,8 +15,6 @@
 #include "src/resolver/resolver.h"
 
 #include <algorithm>
-#include <cmath>
-#include <iomanip>
 #include <limits>
 #include <utility>
 
@@ -43,7 +41,6 @@
 #include "src/ast/sampled_texture.h"
 #include "src/ast/sampler.h"
 #include "src/ast/storage_texture.h"
-#include "src/ast/struct_block_decoration.h"
 #include "src/ast/switch_statement.h"
 #include "src/ast/traverse_expressions.h"
 #include "src/ast/type_name.h"
@@ -96,24 +93,24 @@ bool IsValidStorageTextureDimension(ast::TextureDimension dim) {
   }
 }
 
-bool IsValidStorageTextureImageFormat(ast::ImageFormat format) {
+bool IsValidStorageTextureTexelFormat(ast::TexelFormat format) {
   switch (format) {
-    case ast::ImageFormat::kR32Uint:
-    case ast::ImageFormat::kR32Sint:
-    case ast::ImageFormat::kR32Float:
-    case ast::ImageFormat::kRg32Uint:
-    case ast::ImageFormat::kRg32Sint:
-    case ast::ImageFormat::kRg32Float:
-    case ast::ImageFormat::kRgba8Unorm:
-    case ast::ImageFormat::kRgba8Snorm:
-    case ast::ImageFormat::kRgba8Uint:
-    case ast::ImageFormat::kRgba8Sint:
-    case ast::ImageFormat::kRgba16Uint:
-    case ast::ImageFormat::kRgba16Sint:
-    case ast::ImageFormat::kRgba16Float:
-    case ast::ImageFormat::kRgba32Uint:
-    case ast::ImageFormat::kRgba32Sint:
-    case ast::ImageFormat::kRgba32Float:
+    case ast::TexelFormat::kR32Uint:
+    case ast::TexelFormat::kR32Sint:
+    case ast::TexelFormat::kR32Float:
+    case ast::TexelFormat::kRg32Uint:
+    case ast::TexelFormat::kRg32Sint:
+    case ast::TexelFormat::kRg32Float:
+    case ast::TexelFormat::kRgba8Unorm:
+    case ast::TexelFormat::kRgba8Snorm:
+    case ast::TexelFormat::kRgba8Uint:
+    case ast::TexelFormat::kRgba8Sint:
+    case ast::TexelFormat::kRgba16Uint:
+    case ast::TexelFormat::kRgba16Sint:
+    case ast::TexelFormat::kRgba16Float:
+    case ast::TexelFormat::kRgba32Uint:
+    case ast::TexelFormat::kRgba32Sint:
+    case ast::TexelFormat::kRgba32Float:
       return true;
     default:
       return false;
@@ -183,7 +180,7 @@ bool Resolver::ValidateStorageTexture(const ast::StorageTexture* t) {
     return false;
   }
 
-  if (!IsValidStorageTextureImageFormat(t->format)) {
+  if (!IsValidStorageTextureTexelFormat(t->format)) {
     AddError(
         "image format must be one of the texel formats specified for storage "
         "textues in https://gpuweb.github.io/gpuweb/wgsl/#texel-formats",
@@ -232,8 +229,9 @@ bool Resolver::ValidateVariableConstructorOrCast(
   return true;
 }
 
-bool Resolver::ValidateStorageClassLayout(const sem::Struct* str,
-                                          ast::StorageClass sc) {
+bool Resolver::ValidateStorageClassLayout(const sem::Type* store_ty,
+                                          ast::StorageClass sc,
+                                          Source source) {
   // https://gpuweb.github.io/gpuweb/wgsl/#storage-class-layout-constraints
 
   auto is_uniform_struct_or_array = [sc](const sem::Type* ty) {
@@ -258,175 +256,125 @@ bool Resolver::ValidateStorageClassLayout(const sem::Struct* str,
     return builder_->Symbols().NameFor(sm->Declaration()->symbol);
   };
 
-  auto type_name_of = [this](const sem::StructMember* sm) {
-    return TypeNameOf(sm->Type());
-  };
-
-  // TODO(amaiorano): Output struct and member decorations so that this output
-  // can be copied verbatim back into source
-  auto get_struct_layout_string = [&](const sem::Struct* st) -> std::string {
-    std::stringstream ss;
-
-    if (st->Members().empty()) {
-      TINT_ICE(Resolver, diagnostics_) << "Validation should have ensured that "
-                                          "structs have at least one member";
-      return {};
-    }
-    const auto* const last_member = st->Members().back();
-    const uint32_t last_member_struct_padding_offset =
-        last_member->Offset() + last_member->Size();
-
-    // Compute max widths to align output
-    const auto offset_w =
-        static_cast<int>(::log10(last_member_struct_padding_offset)) + 1;
-    const auto size_w = static_cast<int>(::log10(st->Size())) + 1;
-    const auto align_w = static_cast<int>(::log10(st->Align())) + 1;
-
-    auto print_struct_begin_line = [&](size_t align, size_t size,
-                                       std::string struct_name) {
-      ss << "/*          " << std::setw(offset_w) << " "
-         << "align(" << std::setw(align_w) << align << ") size("
-         << std::setw(size_w) << size << ") */ struct " << struct_name
-         << " {\n";
-    };
-
-    auto print_struct_end_line = [&]() {
-      ss << "/*                         "
-         << std::setw(offset_w + size_w + align_w) << " "
-         << "*/ };";
-    };
-
-    auto print_member_line = [&](size_t offset, size_t align, size_t size,
-                                 std::string s) {
-      ss << "/* offset(" << std::setw(offset_w) << offset << ") align("
-         << std::setw(align_w) << align << ") size(" << std::setw(size_w)
-         << size << ") */   " << s << ";\n";
-    };
-
-    print_struct_begin_line(st->Align(), st->Size(), TypeNameOf(st));
-
-    for (size_t i = 0; i < st->Members().size(); ++i) {
-      auto* const m = st->Members()[i];
-
-      // Output field alignment padding, if any
-      auto* const prev_member = (i == 0) ? nullptr : str->Members()[i - 1];
-      if (prev_member) {
-        uint32_t padding =
-            m->Offset() - (prev_member->Offset() + prev_member->Size());
-        if (padding > 0) {
-          size_t padding_offset = m->Offset() - padding;
-          print_member_line(padding_offset, 1, padding,
-                            "// -- implicit field alignment padding --");
-        }
-      }
-
-      // Output member
-      std::string member_name = member_name_of(m);
-      print_member_line(m->Offset(), m->Align(), m->Size(),
-                        member_name_of(m) + " : " + type_name_of(m));
-    }
-
-    // Output struct size padding, if any
-    uint32_t struct_padding = st->Size() - last_member_struct_padding_offset;
-    if (struct_padding > 0) {
-      print_member_line(last_member_struct_padding_offset, 1, struct_padding,
-                        "// -- implicit struct size padding --");
-    }
-
-    print_struct_end_line();
-
-    return ss.str();
-  };
+  // Cache result of type + storage class pair.
+  if (!valid_type_storage_layouts_.emplace(store_ty, sc).second) {
+    return true;
+  }
 
   if (!ast::IsHostShareable(sc)) {
     return true;
   }
 
-  for (size_t i = 0; i < str->Members().size(); ++i) {
-    auto* const m = str->Members()[i];
-    uint32_t required_align = required_alignment_of(m->Type());
+  if (auto* str = store_ty->As<sem::Struct>()) {
+    for (size_t i = 0; i < str->Members().size(); ++i) {
+      auto* const m = str->Members()[i];
+      uint32_t required_align = required_alignment_of(m->Type());
 
-    // Validate that member is at a valid byte offset
-    if (m->Offset() % required_align != 0) {
-      AddError("the offset of a struct member of type '" + type_name_of(m) +
-                   "' in storage class '" + ast::ToString(sc) +
-                   "' must be a multiple of " + std::to_string(required_align) +
-                   " bytes, but '" + member_name_of(m) +
-                   "' is currently at offset " + std::to_string(m->Offset()) +
-                   ". Consider setting [[align(" +
-                   std::to_string(required_align) + ")]] on this member",
-               m->Declaration()->source);
-
-      AddNote("see layout of struct:\n" + get_struct_layout_string(str),
-              str->Declaration()->source);
-
-      if (auto* member_str = m->Type()->As<sem::Struct>()) {
-        AddNote("and layout of struct member:\n" +
-                    get_struct_layout_string(member_str),
-                member_str->Declaration()->source);
+      // Recurse into the member type.
+      if (!ValidateStorageClassLayout(m->Type(), sc,
+                                      m->Declaration()->type->source)) {
+        AddNote("see layout of struct:\n" + str->Layout(builder_->Symbols()),
+                str->Declaration()->source);
+        return false;
       }
 
+      // Validate that member is at a valid byte offset
+      if (m->Offset() % required_align != 0) {
+        AddError("the offset of a struct member of type '" +
+                     m->Type()->UnwrapRef()->FriendlyName(builder_->Symbols()) +
+                     "' in storage class '" + ast::ToString(sc) +
+                     "' must be a multiple of " +
+                     std::to_string(required_align) + " bytes, but '" +
+                     member_name_of(m) + "' is currently at offset " +
+                     std::to_string(m->Offset()) +
+                     ". Consider setting @align(" +
+                     std::to_string(required_align) + ") on this member",
+                 m->Declaration()->source);
+
+        AddNote("see layout of struct:\n" + str->Layout(builder_->Symbols()),
+                str->Declaration()->source);
+
+        if (auto* member_str = m->Type()->As<sem::Struct>()) {
+          AddNote("and layout of struct member:\n" +
+                      member_str->Layout(builder_->Symbols()),
+                  member_str->Declaration()->source);
+        }
+
+        return false;
+      }
+
+      // For uniform buffers, validate that the number of bytes between the
+      // previous member of type struct and the current is a multiple of 16
+      // bytes.
+      auto* const prev_member = (i == 0) ? nullptr : str->Members()[i - 1];
+      if (prev_member && is_uniform_struct(prev_member->Type())) {
+        const uint32_t prev_to_curr_offset =
+            m->Offset() - prev_member->Offset();
+        if (prev_to_curr_offset % 16 != 0) {
+          AddError(
+              "uniform storage requires that the number of bytes between the "
+              "start of the previous member of type struct and the current "
+              "member be a multiple of 16 bytes, but there are currently " +
+                  std::to_string(prev_to_curr_offset) + " bytes between '" +
+                  member_name_of(prev_member) + "' and '" + member_name_of(m) +
+                  "'. Consider setting @align(16) on this member",
+              m->Declaration()->source);
+
+          AddNote("see layout of struct:\n" + str->Layout(builder_->Symbols()),
+                  str->Declaration()->source);
+
+          auto* prev_member_str = prev_member->Type()->As<sem::Struct>();
+          AddNote("and layout of previous member struct:\n" +
+                      prev_member_str->Layout(builder_->Symbols()),
+                  prev_member_str->Declaration()->source);
+          return false;
+        }
+      }
+    }
+  }
+
+  // For uniform buffer array members, validate that array elements are
+  // aligned to 16 bytes
+  if (auto* arr = store_ty->As<sem::Array>()) {
+    // Recurse into the element type.
+    // TODO(crbug.com/tint/1388): Ideally we'd pass the source for nested
+    // element type here, but we can't easily get that from the semantic node.
+    // We should consider recursing through the AST type nodes instead.
+    if (!ValidateStorageClassLayout(arr->ElemType(), sc, source)) {
       return false;
     }
 
-    // For uniform buffers, validate that the number of bytes between the
-    // previous member of type struct and the current is a multiple of 16 bytes.
-    auto* const prev_member = (i == 0) ? nullptr : str->Members()[i - 1];
-    if (prev_member && is_uniform_struct(prev_member->Type())) {
-      const uint32_t prev_to_curr_offset = m->Offset() - prev_member->Offset();
-      if (prev_to_curr_offset % 16 != 0) {
+    if (sc == ast::StorageClass::kUniform) {
+      // We already validated that this array member is itself aligned to 16
+      // bytes above, so we only need to validate that stride is a multiple
+      // of 16 bytes.
+      if (arr->Stride() % 16 != 0) {
+        // Since WGSL has no stride attribute, try to provide a useful hint
+        // for how the shader author can resolve the issue.
+        std::string hint;
+        if (arr->ElemType()->is_scalar()) {
+          hint =
+              "Consider using a vector or struct as the element type "
+              "instead.";
+        } else if (auto* vec = arr->ElemType()->As<sem::Vector>();
+                   vec && vec->type()->Size() == 4) {
+          hint = "Consider using a vec4 instead.";
+        } else if (arr->ElemType()->Is<sem::Struct>()) {
+          hint =
+              "Consider using the @size attribute on the last struct "
+              "member.";
+        } else {
+          hint =
+              "Consider wrapping the element type in a struct and using "
+              "the "
+              "@size attribute.";
+        }
         AddError(
-            "uniform storage requires that the number of bytes between the "
-            "start of the previous member of type struct and the current "
-            "member be a multiple of 16 bytes, but there are currently " +
-                std::to_string(prev_to_curr_offset) + " bytes between '" +
-                member_name_of(prev_member) + "' and '" + member_name_of(m) +
-                "'. Consider setting [[align(16)]] on this member",
-            m->Declaration()->source);
-
-        AddNote("see layout of struct:\n" + get_struct_layout_string(str),
-                str->Declaration()->source);
-
-        auto* prev_member_str = prev_member->Type()->As<sem::Struct>();
-        AddNote("and layout of previous member struct:\n" +
-                    get_struct_layout_string(prev_member_str),
-                prev_member_str->Declaration()->source);
+            "uniform storage requires that array elements be aligned to 16 "
+            "bytes, but array element alignment is currently " +
+                std::to_string(arr->Stride()) + ". " + hint,
+            source);
         return false;
-      }
-    }
-
-    // For uniform buffer array members, validate that array elements are
-    // aligned to 16 bytes
-    if (auto* arr = m->Type()->As<sem::Array>()) {
-      if (sc == ast::StorageClass::kUniform) {
-        // We already validated that this array member is itself aligned to 16
-        // bytes above, so we only need to validate that stride is a multiple of
-        // 16 bytes.
-        if (arr->Stride() % 16 != 0) {
-          AddError(
-              "uniform storage requires that array elements be aligned to 16 "
-              "bytes, but array stride of '" +
-                  member_name_of(m) + "' is currently " +
-                  std::to_string(arr->Stride()) +
-                  ". Consider setting [[stride(" +
-                  std::to_string(
-                      utils::RoundUp(required_align, arr->Stride())) +
-                  ")]] on the array type",
-              m->Declaration()->type->source);
-          AddNote("see layout of struct:\n" + get_struct_layout_string(str),
-                  str->Declaration()->source);
-          return false;
-        }
-      }
-    }
-
-    // If member is struct, recurse
-    if (auto* str_member = m->Type()->As<sem::Struct>()) {
-      // Cache result of struct + storage class pair
-      if (valid_struct_storage_layouts_.emplace(str_member, sc).second) {
-        if (!ValidateStorageClassLayout(str_member, sc)) {
-          return false;
-        }
       }
     }
   }
@@ -436,8 +384,18 @@ bool Resolver::ValidateStorageClassLayout(const sem::Struct* str,
 
 bool Resolver::ValidateStorageClassLayout(const sem::Variable* var) {
   if (auto* str = var->Type()->UnwrapRef()->As<sem::Struct>()) {
-    if (!ValidateStorageClassLayout(str, var->StorageClass())) {
+    if (!ValidateStorageClassLayout(str, var->StorageClass(),
+                                    str->Declaration()->source)) {
       AddNote("see declaration of variable", var->Declaration()->source);
+      return false;
+    }
+  } else {
+    Source source = var->Declaration()->source;
+    if (var->Declaration()->type) {
+      source = var->Declaration()->type->source;
+    }
+    if (!ValidateStorageClassLayout(var->Type()->UnwrapRef(),
+                                    var->StorageClass(), source)) {
       return false;
     }
   }
@@ -493,6 +451,14 @@ bool Resolver::ValidateGlobalVariable(const sem::Variable* var) {
     }
   }
 
+  if (var->StorageClass() == ast::StorageClass::kFunction) {
+    AddError(
+        "variables declared at module scope must not be in the function "
+        "storage class",
+        decl->source);
+    return false;
+  }
+
   auto binding_point = decl->BindingPoint();
   switch (var->StorageClass()) {
     case ast::StorageClass::kUniform:
@@ -503,7 +469,7 @@ bool Resolver::ValidateGlobalVariable(const sem::Variable* var) {
       // attributes.
       if (!binding_point) {
         AddError(
-            "resource variables require [[group]] and [[binding]] "
+            "resource variables require @group and @binding "
             "decorations",
             decl->source);
         return false;
@@ -515,7 +481,7 @@ bool Resolver::ValidateGlobalVariable(const sem::Variable* var) {
         // https://gpuweb.github.io/gpuweb/wgsl/#attribute-binding
         // Must only be applied to a resource variable
         AddError(
-            "non-resource variables must not have [[group]] or [[binding]] "
+            "non-resource variables must not have @group or @binding "
             "decorations",
             decl->source);
         return false;
@@ -531,79 +497,6 @@ bool Resolver::ValidateGlobalVariable(const sem::Variable* var) {
         "only variables in <storage> storage class may declare an access mode",
         decl->source);
     return false;
-  }
-
-  switch (var->StorageClass()) {
-    case ast::StorageClass::kStorage: {
-      // https://gpuweb.github.io/gpuweb/wgsl/#module-scope-variables
-      // A variable in the storage storage class is a storage buffer variable.
-      // Its store type must be a host-shareable structure type with block
-      // attribute, satisfying the storage class constraints.
-
-      auto* str = var->Type()->UnwrapRef()->As<sem::Struct>();
-
-      if (!str) {
-        AddError(
-            "variables declared in the <storage> storage class must be of a "
-            "structure type",
-            decl->source);
-        return false;
-      }
-
-      if (!str->IsBlockDecorated()) {
-        AddError(
-            "structure used as a storage buffer must be declared with the "
-            "[[block]] decoration",
-            str->Declaration()->source);
-        if (decl->source.range.begin.line) {
-          AddNote("structure used as storage buffer here", decl->source);
-        }
-        return false;
-      }
-      break;
-    }
-    case ast::StorageClass::kUniform: {
-      // https://gpuweb.github.io/gpuweb/wgsl/#module-scope-variables
-      // A variable in the uniform storage class is a uniform buffer variable.
-      // Its store type must be a host-shareable structure type with block
-      // attribute, satisfying the storage class constraints.
-      auto* str = var->Type()->UnwrapRef()->As<sem::Struct>();
-      if (!str) {
-        AddError(
-            "variables declared in the <uniform> storage class must be of a "
-            "structure type",
-            decl->source);
-        return false;
-      }
-
-      if (!str->IsBlockDecorated()) {
-        AddError(
-            "structure used as a uniform buffer must be declared with the "
-            "[[block]] decoration",
-            str->Declaration()->source);
-        if (decl->source.range.begin.line) {
-          AddNote("structure used as uniform buffer here", decl->source);
-        }
-        return false;
-      }
-
-      for (auto* member : str->Members()) {
-        if (auto* arr = member->Type()->As<sem::Array>()) {
-          if (arr->IsRuntimeSized()) {
-            AddError(
-                "structure containing a runtime sized array "
-                "cannot be used as a uniform buffer",
-                decl->source);
-            AddNote("structure is declared here", str->Declaration()->source);
-            return false;
-          }
-        }
-      }
-
-      break;
-    }
-    default:
-      break;
   }
 
   if (!decl->is_const) {
@@ -689,14 +582,6 @@ bool Resolver::ValidateVariable(const sem::Variable* var) {
     AddError(TypeNameOf(storage_ty) + " cannot be used as the type of a let",
              decl->source);
     return false;
-  }
-
-  if (auto* r = storage_ty->As<sem::Array>()) {
-    if (r->IsRuntimeSized()) {
-      AddError("runtime arrays may only appear as the last member of a struct",
-               decl->source);
-      return false;
-    }
   }
 
   if (auto* r = storage_ty->As<sem::MultisampledTexture>()) {
@@ -1192,7 +1077,7 @@ bool Resolver::ValidateEntryPoint(const sem::Function* func) {
       if (interpolate_attribute) {
         if (!pipeline_io_attribute ||
             !pipeline_io_attribute->Is<ast::LocationDecoration>()) {
-          AddError("interpolate attribute must only be used with [[location]]",
+          AddError("interpolate attribute must only be used with @location",
                    interpolate_attribute->source);
           return false;
         }
@@ -1322,9 +1207,9 @@ bool Resolver::ValidateEntryPoint(const sem::Function* func) {
       auto func_name = builder_->Symbols().NameFor(decl->symbol);
       AddError("entry point '" + func_name +
                    "' references multiple variables that use the "
-                   "same resource binding [[group(" +
-                   std::to_string(bp.group) + "), binding(" +
-                   std::to_string(bp.binding) + ")]]",
+                   "same resource binding @group(" +
+                   std::to_string(bp.group) + "), @binding(" +
+                   std::to_string(bp.binding) + ")",
                var_decl->source);
       AddNote("first resource binding usage declared here",
               res.first->second->source);
@@ -1455,7 +1340,19 @@ bool Resolver::ValidateElseStatement(const sem::ElseStatement* stmt) {
   return true;
 }
 
+bool Resolver::ValidateLoopStatement(const sem::LoopStatement* stmt) {
+  if (stmt->Behaviors().Empty()) {
+    AddError("loop does not exit", stmt->Declaration()->source.Begin());
+    return false;
+  }
+  return true;
+}
+
 bool Resolver::ValidateForLoopStatement(const sem::ForLoopStatement* stmt) {
+  if (stmt->Behaviors().Empty()) {
+    AddError("for-loop does not exit", stmt->Declaration()->source.Begin());
+    return false;
+  }
   if (auto* cond = stmt->Condition()) {
     auto* cond_ty = cond->Type()->UnwrapRef();
     if (!cond_ty->Is<sem::Bool>()) {
@@ -1853,6 +1750,12 @@ bool Resolver::ValidateMatrixConstructorOrCast(const ast::CallExpression* ctor,
     return false;
   }
 
+  std::vector<const sem::Type*> arg_tys;
+  arg_tys.reserve(values.size());
+  for (auto* value : values) {
+    arg_tys.emplace_back(TypeOf(value)->UnwrapRef());
+  }
+
   auto* elem_type = matrix_ty->type();
   auto num_elements = matrix_ty->columns() * matrix_ty->rows();
 
@@ -1864,7 +1767,14 @@ bool Resolver::ValidateMatrixConstructorOrCast(const ast::CallExpression* ctor,
     auto type_name = TypeNameOf(matrix_ty);
     auto elem_type_name = TypeNameOf(elem_type);
     std::stringstream ss;
-    ss << "invalid constructor for " + type_name << std::endl << std::endl;
+    ss << "no matching constructor " + type_name << "(";
+    for (size_t i = 0; i < values.size(); i++) {
+      if (i > 0) {
+        ss << ", ";
+      }
+      ss << arg_tys[i]->FriendlyName(builder_->Symbols());
+    }
+    ss << ")" << std::endl << std::endl;
     ss << "3 candidates available:" << std::endl;
     ss << "  " << type_name << "()" << std::endl;
     ss << "  " << type_name << "(" << elem_type_name << ",...,"
@@ -1893,8 +1803,8 @@ bool Resolver::ValidateMatrixConstructorOrCast(const ast::CallExpression* ctor,
     return false;
   }
 
-  for (auto* value : values) {
-    if (TypeOf(value)->UnwrapRef() != expected_arg_type) {
+  for (auto* arg_ty : arg_tys) {
+    if (arg_ty != expected_arg_type) {
       print_error();
       return false;
     }
@@ -2037,18 +1947,10 @@ bool Resolver::ValidatePipelineStages() {
 bool Resolver::ValidateArray(const sem::Array* arr, const Source& source) {
   auto* el_ty = arr->ElemType();
 
-  if (auto* el_str = el_ty->As<sem::Struct>()) {
-    if (el_str->IsBlockDecorated()) {
-      // https://gpuweb.github.io/gpuweb/wgsl/#attributes
-      // A structure type with the block attribute must not be:
-      // * the element type of an array type
-      // * the member type in another structure
-      AddError(
-          "A structure type with a [[block]] decoration cannot be used as an "
-          "element of an array",
-          source);
-      return false;
-    }
+  if (!IsFixedFootprint(el_ty)) {
+    AddError("an array element type cannot contain a runtime-sized array",
+             source);
+    return false;
   }
   return true;
 }
@@ -2110,15 +2012,13 @@ bool Resolver::ValidateStructure(const sem::Struct* str) {
               member->Declaration()->source);
           return false;
         }
-        if (!str->IsBlockDecorated()) {
-          AddError(
-              "a struct containing a runtime-sized array "
-              "requires the [[block]] attribute: '" +
-                  builder_->Symbols().NameFor(str->Declaration()->name) + "'",
-              member->Declaration()->source);
-          return false;
-        }
       }
+    } else if (!IsFixedFootprint(member->Type())) {
+      AddError(
+          "a struct that contains a runtime array cannot be nested inside "
+          "another struct",
+          member->Declaration()->source);
+      return false;
     }
 
     auto has_location = false;
@@ -2175,26 +2075,15 @@ bool Resolver::ValidateStructure(const sem::Struct* str) {
     }
 
     if (interpolate_attribute && !has_location) {
-      AddError("interpolate attribute must only be used with [[location]]",
+      AddError("interpolate attribute must only be used with @location",
                interpolate_attribute->source);
       return false;
-    }
-
-    if (auto* member_struct_type = member->Type()->As<sem::Struct>()) {
-      if (auto* member_struct_type_block_decoration =
-              ast::GetDecoration<ast::StructBlockDecoration>(
-                  member_struct_type->Declaration()->decorations)) {
-        AddError("structs must not contain [[block]] decorated struct members",
-                 member->Declaration()->source);
-        AddNote("see member's struct decoration here",
-                member_struct_type_block_decoration->source);
-        return false;
-      }
     }
   }
 
   for (auto* deco : str->Declaration()->decorations) {
-    if (!(deco->Is<ast::StructBlockDecoration>())) {
+    if (!(deco->IsAnyOf<ast::StructBlockDecoration,
+                        ast::InternalDecoration>())) {
       AddError("decoration is not valid for struct declarations", deco->source);
       return false;
     }

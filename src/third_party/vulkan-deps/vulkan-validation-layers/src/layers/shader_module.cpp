@@ -1,4 +1,4 @@
-/* Copyright (c) 2021 The Khronos Group Inc.
+/* Copyright (c) 2021-2022 The Khronos Group Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -365,6 +365,11 @@ SHADER_MODULE_STATE::SpirvStaticData::SpirvStaticData(const SHADER_MODULE_STATE 
             case spv::OpInBoundsAccessChain:
             case spv::OpFunctionParameter:
             case spv::OpImageTexelPointer:
+                def_index[insn.word(2)] = insn.offset();
+                break;
+
+                // Will need to extract loads for SAMPLED_IMAGE and SAMPLER
+            case spv::OpSampledImage:
                 def_index[insn.word(2)] = insn.offset();
                 break;
 
@@ -1196,12 +1201,14 @@ bool SHADER_MODULE_STATE::IsBuiltInWritten(spirv_inst_iter builtin_instr, spirv_
 // Used by the collection functions to help aid in state tracking
 struct shader_module_used_operators {
     bool updated;
+    std::vector<unsigned> imagread_members;
     std::vector<unsigned> imagwrite_members;
     std::vector<unsigned> atomic_members;
     std::vector<unsigned> store_members;
     std::vector<unsigned> atomic_store_members;
     std::vector<unsigned> sampler_implicitLod_dref_proj_members;      // sampler Load id
     std::vector<unsigned> sampler_bias_offset_members;                // sampler Load id
+    std::vector<unsigned> image_dref_members;
     std::vector<std::pair<unsigned, unsigned>> sampledImage_members;  // <image,sampler> Load id
     layer_data::unordered_map<unsigned, unsigned> load_members;
     layer_data::unordered_map<unsigned, std::pair<unsigned, unsigned>> accesschain_members;
@@ -1228,11 +1235,22 @@ struct shader_module_used_operators {
                 case spv::OpImageSparseSampleImplicitLod:
                 case spv::OpImageSparseSampleProjImplicitLod:
                 case spv::OpImageSparseSampleProjExplicitLod: {
-                    sampler_implicitLod_dref_proj_members.emplace_back(insn.word(3));  // Load id
+                    // combined image samples are just OpLoad, but also can be separate image and sampler
+                    auto id = module->get_def(insn.word(3));  // <id> Sampled Image
+                    auto load_id = (id.opcode() == spv::OpSampledImage) ? id.word(4) : insn.word(3);
+                    sampler_implicitLod_dref_proj_members.emplace_back(load_id);
                     // ImageOperands in index: 5
                     if (insn.len() > 5 && CheckImageOperandsBiasOffset(insn.word(5))) {
-                        sampler_bias_offset_members.emplace_back(insn.word(3));
+                        sampler_bias_offset_members.emplace_back(load_id);
                     }
+                    break;
+                }
+                case spv::OpImageDrefGather:
+                case spv::OpImageSparseDrefGather: {
+                    // combined image samples are just OpLoad, but also can be separate image and sampler
+                    auto id = module->get_def(insn.word(3));  // <id> Sampled Image
+                    auto load_id = (id.opcode() == spv::OpSampledImage) ? id.word(3) : insn.word(3);
+                    image_dref_members.emplace_back(load_id);
                     break;
                 }
                 case spv::OpImageSampleDrefImplicitLod:
@@ -1243,10 +1261,16 @@ struct shader_module_used_operators {
                 case spv::OpImageSparseSampleDrefExplicitLod:
                 case spv::OpImageSparseSampleProjDrefImplicitLod:
                 case spv::OpImageSparseSampleProjDrefExplicitLod: {
-                    sampler_implicitLod_dref_proj_members.emplace_back(insn.word(3));  // Load id
+                    // combined image samples are just OpLoad, but also can be separate image and sampler
+                    auto id = module->get_def(insn.word(3));  // <id> Sampled Image
+                    auto sampler_load_id = (id.opcode() == spv::OpSampledImage) ? id.word(4) : insn.word(3);
+                    auto image_load_id = (id.opcode() == spv::OpSampledImage) ? id.word(3) : insn.word(3);
+
+                    image_dref_members.emplace_back(image_load_id);
+                    sampler_implicitLod_dref_proj_members.emplace_back(sampler_load_id);
                     // ImageOperands in index: 6
                     if (insn.len() > 6 && CheckImageOperandsBiasOffset(insn.word(6))) {
-                        sampler_bias_offset_members.emplace_back(insn.word(3));
+                        sampler_bias_offset_members.emplace_back(sampler_load_id);
                     }
                     break;
                 }
@@ -1254,12 +1278,20 @@ struct shader_module_used_operators {
                 case spv::OpImageSparseSampleExplicitLod: {
                     // ImageOperands in index: 5
                     if (insn.len() > 5 && CheckImageOperandsBiasOffset(insn.word(5))) {
-                        sampler_bias_offset_members.emplace_back(insn.word(3));
+                        // combined image samples are just OpLoad, but also can be separate image and sampler
+                        auto id = module->get_def(insn.word(3));  // <id> Sampled Image
+                        auto load_id = (id.opcode() == spv::OpSampledImage) ? id.word(4) : insn.word(3);
+                        sampler_bias_offset_members.emplace_back(load_id);
                     }
                     break;
                 }
                 case spv::OpStore: {
                     store_members.emplace_back(insn.word(1));  // object id or AccessChain id
+                    break;
+                }
+                case spv::OpImageRead:
+                case spv::OpImageSparseRead: {
+                    imagread_members.emplace_back(insn.word(3));  // Load id
                     break;
                 }
                 case spv::OpImageWrite: {
@@ -1351,15 +1383,26 @@ void SHADER_MODULE_STATE::IsSpecificDescriptorType(const spirv_inst_iter &id_it,
             type = get_def(type.word(3));  // Pointer type
         }
     }
+
     switch (type.opcode()) {
         case spv::OpTypeImage: {
             auto dim = type.word(3);
             if (dim != spv::DimSubpassData) {
                 used_operators.update(this);
 
+                // Sampled == 2 indicates used without a sampler (a storage image)
+                bool is_image_without_format = false;
+                if (type.word(7) == 2) is_image_without_format = type.word(8) == spv::ImageFormatUnknown;
+
                 if (CheckObjectIDFromOpLoad(id, used_operators.imagwrite_members, used_operators.load_members,
                                             used_operators.accesschain_members)) {
                     out_interface_var.is_writable = true;
+                    if (is_image_without_format) out_interface_var.is_write_without_format = true;
+                }
+                if (CheckObjectIDFromOpLoad(id, used_operators.imagread_members, used_operators.load_members,
+                                            used_operators.accesschain_members)) {
+                    out_interface_var.is_readable = true;
+                    if (is_image_without_format) out_interface_var.is_read_without_format = true;
                 }
                 if (CheckObjectIDFromOpLoad(id, used_operators.sampler_implicitLod_dref_proj_members, used_operators.load_members,
                                             used_operators.accesschain_members)) {
@@ -1374,6 +1417,10 @@ void SHADER_MODULE_STATE::IsSpecificDescriptorType(const spirv_inst_iter &id_it,
                     CheckObjectIDFromOpLoad(id, used_operators.atomic_store_members, used_operators.image_texel_pointer_members,
                                             used_operators.accesschain_members)) {
                     out_interface_var.is_atomic_operation = true;
+                }
+                if (CheckObjectIDFromOpLoad(id, used_operators.image_dref_members, used_operators.load_members,
+                                            used_operators.accesschain_members)) {
+                    out_interface_var.is_dref_operation = true;
                 }
 
                 for (auto &itp_id : used_operators.sampledImage_members) {
@@ -1423,6 +1470,17 @@ void SHADER_MODULE_STATE::IsSpecificDescriptorType(const spirv_inst_iter &id_it,
                         if (image_index >= out_interface_var.samplers_used_by_image.size()) {
                             out_interface_var.samplers_used_by_image.resize(image_index + 1);
                         }
+
+                        // Need to check again for these properties in case not using a combined image sampler
+                        if (CheckObjectIDFromOpLoad(sampler_id, used_operators.sampler_implicitLod_dref_proj_members,
+                                                    used_operators.load_members, used_operators.accesschain_members)) {
+                            out_interface_var.is_sampler_implicitLod_dref_proj = true;
+                        }
+                        if (CheckObjectIDFromOpLoad(sampler_id, used_operators.sampler_bias_offset_members,
+                                                    used_operators.load_members, used_operators.accesschain_members)) {
+                            out_interface_var.is_sampler_bias_offset = true;
+                        }
+
                         out_interface_var.samplers_used_by_image[image_index].emplace(
                             SamplerUsedByImage{DescriptorSlot{sampler_dec.descriptor_set, sampler_dec.binding}, sampler_index});
                     }
@@ -1479,7 +1537,8 @@ std::vector<std::pair<DescriptorSlot, interface_var>> SHADER_MODULE_STATE::Colle
         assert(insn != end());
 
         if (insn.opcode() == spv::OpVariable &&
-            (insn.word(3) == spv::StorageClassUniform || insn.word(3) == spv::StorageClassUniformConstant ||
+            (insn.word(3) == spv::StorageClassUniform ||
+             insn.word(3) == spv::StorageClassUniformConstant ||
              insn.word(3) == spv::StorageClassStorageBuffer)) {
             auto d = get_decorations(insn.word(2));
             unsigned set = d.descriptor_set;

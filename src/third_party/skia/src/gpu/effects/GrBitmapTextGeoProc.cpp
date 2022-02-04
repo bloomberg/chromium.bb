@@ -10,6 +10,7 @@
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrShaderCaps.h"
 #include "src/gpu/GrTexture.h"
+#include "src/gpu/KeyBuilder.h"
 #include "src/gpu/effects/GrAtlasedShaderHelpers.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
@@ -140,7 +141,7 @@ GrBitmapTextGeoProc::GrBitmapTextGeoProc(const GrShaderCaps& caps,
 
     fInTextureCoords = {"inTextureCoords", kUShort2_GrVertexAttribType,
                         caps.integerSupport() ? kUShort2_GrSLType : kFloat2_GrSLType};
-    this->setVertexAttributes(&fInPosition, 3);
+    this->setVertexAttributesWithImplicitOffsets(&fInPosition, 3);
 
     if (numActiveViews) {
         fAtlasDimensions = views[0].proxy()->dimensions();
@@ -177,7 +178,7 @@ void GrBitmapTextGeoProc::addNewViews(const GrSurfaceProxyView* views,
     this->setTextureSamplerCnt(numActiveViews);
 }
 
-void GrBitmapTextGeoProc::addToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const {
+void GrBitmapTextGeoProc::addToKey(const GrShaderCaps& caps, skgpu::KeyBuilder* b) const {
     b->addBool(fUsesW, "usesW");
     static_assert(kLast_GrMaskFormat < (1u << 2));
     b->addBits(2, fMaskFormat, "maskFormat");

@@ -20,12 +20,12 @@
 #include "dawn_native/VulkanBackend.h"
 #include "dawn_native/vulkan/ExternalHandle.h"
 
-namespace dawn_native { namespace vulkan {
+namespace dawn::native::vulkan {
     class Device;
     struct VulkanDeviceInfo;
-}}  // namespace dawn_native::vulkan
+}  // namespace dawn::native::vulkan
 
-namespace dawn_native { namespace vulkan { namespace external_memory {
+namespace dawn::native { namespace vulkan::external_memory {
 
     struct MemoryImportParams {
         VkDeviceSize allocationSize;
@@ -49,7 +49,8 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
         // True if the device reports it supports creating VkImages from external memory.
         bool SupportsCreateImage(const ExternalImageDescriptor* descriptor,
                                  VkFormat format,
-                                 VkImageUsageFlags usage);
+                                 VkImageUsageFlags usage,
+                                 bool* supportsDisjoint);
 
         // Returns the parameters required for importing memory
         ResultOrError<MemoryImportParams> GetMemoryImportParams(
@@ -72,6 +73,6 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
         bool mSupported = false;
     };
 
-}}}  // namespace dawn_native::vulkan::external_memory
+}}  // namespace dawn::native::vulkan::external_memory
 
 #endif  // DAWNNATIVE_VULKAN_EXTERNALMEMORY_SERVICE_H_

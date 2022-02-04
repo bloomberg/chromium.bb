@@ -18,6 +18,8 @@
 #include "src/compiler/schedule.h"
 #include "src/deoptimizer/deoptimizer.h"
 #include "src/execution/frames.h"
+#include "src/execution/isolate-utils-inl.h"
+#include "src/objects/instance-type-inl.h"
 #include "src/utils/ostreams.h"
 
 #if V8_ENABLE_WEBASSEMBLY
@@ -176,7 +178,7 @@ std::ostream& operator<<(std::ostream& os, const InstructionOperand& op) {
       }
     }
     case InstructionOperand::CONSTANT:
-      return os << "[constant:" << ConstantOperand::cast(op).virtual_register()
+      return os << "[constant:v" << ConstantOperand::cast(op).virtual_register()
                 << "]";
     case InstructionOperand::IMMEDIATE: {
       ImmediateOperand imm = ImmediateOperand::cast(op);
@@ -259,7 +261,7 @@ std::ostream& operator<<(std::ostream& os, const InstructionOperand& op) {
         case MachineRepresentation::kCompressed:
           os << "|c";
           break;
-        case MachineRepresentation::kCagedPointer:
+        case MachineRepresentation::kSandboxedPointer:
           os << "|cg";
           break;
         case MachineRepresentation::kMapWord:
@@ -282,7 +284,7 @@ std::ostream& operator<<(std::ostream& os, const MoveOperands& mo) {
   if (!mo.source().Equals(mo.destination())) {
     os << " = " << mo.source();
   }
-  return os << ";";
+  return os;
 }
 
 bool ParallelMove::IsRedundant() const {
@@ -371,11 +373,11 @@ bool Instruction::AreMovesRedundant() const {
 void Instruction::Print() const { StdoutStream{} << *this << std::endl; }
 
 std::ostream& operator<<(std::ostream& os, const ParallelMove& pm) {
-  const char* space = "";
+  const char* delimiter = "";
   for (MoveOperands* move : pm) {
     if (move->IsEliminated()) continue;
-    os << space << *move;
-    space = " ";
+    os << delimiter << *move;
+    delimiter = "; ";
   }
   return os;
 }
@@ -551,9 +553,11 @@ Handle<HeapObject> Constant::ToHeapObject() const {
   return value;
 }
 
-Handle<Code> Constant::ToCode() const {
+Handle<CodeT> Constant::ToCode() const {
   DCHECK_EQ(kHeapObject, type());
-  Handle<Code> value(reinterpret_cast<Address*>(static_cast<intptr_t>(value_)));
+  Handle<CodeT> value(
+      reinterpret_cast<Address*>(static_cast<intptr_t>(value_)));
+  DCHECK(value->IsCodeT(GetPtrComprCageBaseSlow(*value)));
   return value;
 }
 
@@ -931,7 +935,7 @@ static MachineRepresentation FilterRepresentation(MachineRepresentation rep) {
     case MachineRepresentation::kSimd128:
     case MachineRepresentation::kCompressedPointer:
     case MachineRepresentation::kCompressed:
-    case MachineRepresentation::kCagedPointer:
+    case MachineRepresentation::kSandboxedPointer:
       return rep;
     case MachineRepresentation::kNone:
     case MachineRepresentation::kMapWord:

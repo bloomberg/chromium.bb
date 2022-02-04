@@ -81,6 +81,7 @@ grpc_cc_library(
     ],
     language = "C++",
     deps = [
+        ":build",
         ":grpc_suppressions",
         ":stack_tracer",
         "//:gpr",
@@ -205,4 +206,26 @@ grpc_cc_library(
     deps = [
         "//:grpc",
     ],
+)
+
+grpc_cc_library(
+    name = "fake_udp_and_tcp_server",
+    srcs = ["fake_udp_and_tcp_server.cc"],
+    hdrs = ["fake_udp_and_tcp_server.h"],
+    external_deps = [
+        "absl/strings",
+        "absl/strings:str_format",
+    ],
+    language = "C++",
+    deps = [
+        ":grpc_test_util",
+        "//:gpr",
+        "//:grpc",
+    ],
+)
+
+grpc_cc_library(
+    name = "build",
+    srcs = ["build.cc"],
+    hdrs = ["build.h"],
 )

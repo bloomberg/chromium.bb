@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { isNode } from '../environment.js';
-
 import { assert } from './assert.js';
-import { debugError , helper} from './helper.js';
+import { helper, debugError } from './helper.js';
 import { getQueryHandlerAndSelector } from './QueryHandler.js';
-
+import { isNode } from '../environment.js';
 /**
  * @internal
  */
@@ -26,10 +24,11 @@ export function createJSHandle(context, remoteObject) {
     const frame = context.frame();
     if (remoteObject.subtype === 'node' && frame) {
         const frameManager = frame._frameManager;
-        return new ElementHandle(context, context._client, remoteObject, frameManager.page(), frameManager);
+        return new ElementHandle(context, context._client, remoteObject, frame, frameManager.page(), frameManager);
     }
     return new JSHandle(context, context._client, remoteObject);
 }
+const applyOffsetsToQuad = (quad, offsetX, offsetY) => quad.map((part) => ({ x: part.x + offsetX, y: part.y + offsetY }));
 /**
  * Represents an in-page JavaScript object. JSHandles can be created with the
  * {@link Page.evaluateHandle | page.evaluateHandle} method.
@@ -234,12 +233,59 @@ export class ElementHandle extends JSHandle {
     /**
      * @internal
      */
-    constructor(context, client, remoteObject, page, frameManager) {
+    constructor(context, client, remoteObject, frame, page, frameManager) {
         super(context, client, remoteObject);
         this._client = client;
         this._remoteObject = remoteObject;
+        this._frame = frame;
         this._page = page;
         this._frameManager = frameManager;
+    }
+    /**
+     * Wait for the `selector` to appear within the element. If at the moment of calling the
+     * method the `selector` already exists, the method will return immediately. If
+     * the `selector` doesn't appear after the `timeout` milliseconds of waiting, the
+     * function will throw.
+     *
+     * This method does not work across navigations or if the element is detached from DOM.
+     *
+     * @param selector - A
+     * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | selector}
+     * of an element to wait for
+     * @param options - Optional waiting parameters
+     * @returns Promise which resolves when element specified by selector string
+     * is added to DOM. Resolves to `null` if waiting for hidden: `true` and
+     * selector is not found in DOM.
+     * @remarks
+     * The optional parameters in `options` are:
+     *
+     * - `visible`: wait for the selected element to be present in DOM and to be
+     * visible, i.e. to not have `display: none` or `visibility: hidden` CSS
+     * properties. Defaults to `false`.
+     *
+     * - `hidden`: wait for the selected element to not be found in the DOM or to be hidden,
+     * i.e. have `display: none` or `visibility: hidden` CSS properties. Defaults to
+     * `false`.
+     *
+     * - `timeout`: maximum time to wait in milliseconds. Defaults to `30000`
+     * (30 seconds). Pass `0` to disable timeout. The default value can be changed
+     * by using the {@link Page.setDefaultTimeout} method.
+     */
+    async waitForSelector(selector, options = {}) {
+        const frame = this._context.frame();
+        const secondaryContext = await frame._secondaryWorld.executionContext();
+        const adoptedRoot = await secondaryContext._adoptElementHandle(this);
+        const handle = await frame._secondaryWorld.waitForSelector(selector, {
+            ...options,
+            root: adoptedRoot,
+        });
+        await adoptedRoot.dispose();
+        if (!handle)
+            return null;
+        const mainExecutionContext = await frame._mainWorld.executionContext();
+        const result = await mainExecutionContext._adoptElementHandle(handle);
+        await handle.dispose();
+        return result;
     }
     asElement() {
         return this;
@@ -296,6 +342,32 @@ export class ElementHandle extends JSHandle {
         if (error)
             throw new Error(error);
     }
+    async _getOOPIFOffsets(frame) {
+        let offsetX = 0;
+        let offsetY = 0;
+        while (frame.parentFrame()) {
+            const parent = frame.parentFrame();
+            if (!frame.isOOPFrame()) {
+                frame = parent;
+                continue;
+            }
+            const { backendNodeId } = await parent._client.send('DOM.getFrameOwner', {
+                frameId: frame._id,
+            });
+            const result = await parent._client.send('DOM.getBoxModel', {
+                backendNodeId: backendNodeId,
+            });
+            if (!result) {
+                break;
+            }
+            const contentBoxQuad = result.model.content;
+            const topLeftCorner = this._fromProtocolQuad(contentBoxQuad)[0];
+            offsetX += topLeftCorner.x;
+            offsetY += topLeftCorner.y;
+            frame = parent;
+        }
+        return { offsetX, offsetY };
+    }
     /**
      * Returns the middle point within an element unless a specific offset is provided.
      */
@@ -306,15 +378,17 @@ export class ElementHandle extends JSHandle {
                 objectId: this._remoteObject.objectId,
             })
                 .catch(debugError),
-            this._client.send('Page.getLayoutMetrics'),
+            this._page.client().send('Page.getLayoutMetrics'),
         ]);
         if (!result || !result.quads.length)
             throw new Error('Node is either not clickable or not an HTMLElement');
         // Filter out quads that have too small area to click into.
         // Fallback to `layoutViewport` in case of using Firefox.
         const { clientWidth, clientHeight } = layoutMetrics.cssLayoutViewport || layoutMetrics.layoutViewport;
+        const { offsetX, offsetY } = await this._getOOPIFOffsets(this._frame);
         const quads = result.quads
             .map((quad) => this._fromProtocolQuad(quad))
+            .map((quad) => applyOffsetsToQuad(quad, offsetX, offsetY))
             .map((quad) => this._intersectQuadWithViewport(quad, clientWidth, clientHeight))
             .filter((quad) => computeQuadArea(quad) > 1);
         if (!quads.length)
@@ -601,12 +675,13 @@ export class ElementHandle extends JSHandle {
         const result = await this._getBoxModel();
         if (!result)
             return null;
+        const { offsetX, offsetY } = await this._getOOPIFOffsets(this._frame);
         const quad = result.model.border;
         const x = Math.min(quad[0], quad[2], quad[4], quad[6]);
         const y = Math.min(quad[1], quad[3], quad[5], quad[7]);
         const width = Math.max(quad[0], quad[2], quad[4], quad[6]) - x;
         const height = Math.max(quad[1], quad[3], quad[5], quad[7]) - y;
-        return { x, y, width, height };
+        return { x: x + offsetX, y: y + offsetY, width, height };
     }
     /**
      * This method returns boxes of the element, or `null` if the element is not visible.
@@ -620,12 +695,13 @@ export class ElementHandle extends JSHandle {
         const result = await this._getBoxModel();
         if (!result)
             return null;
+        const { offsetX, offsetY } = await this._getOOPIFOffsets(this._frame);
         const { content, padding, border, margin, width, height } = result.model;
         return {
-            content: this._fromProtocolQuad(content),
-            padding: this._fromProtocolQuad(padding),
-            border: this._fromProtocolQuad(border),
-            margin: this._fromProtocolQuad(margin),
+            content: applyOffsetsToQuad(this._fromProtocolQuad(content), offsetX, offsetY),
+            padding: applyOffsetsToQuad(this._fromProtocolQuad(padding), offsetX, offsetY),
+            border: applyOffsetsToQuad(this._fromProtocolQuad(border), offsetX, offsetY),
+            margin: applyOffsetsToQuad(this._fromProtocolQuad(margin), offsetX, offsetY),
             width,
             height,
         };

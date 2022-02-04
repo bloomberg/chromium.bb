@@ -4,7 +4,7 @@
  *
  *   FreeType high-level API and common types (specification only).
  *
- * Copyright (C) 1996-2021 by
+ * Copyright (C) 1996-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -522,13 +522,15 @@ FT_BEGIN_HEADER
    *   size.
    *
    * @note:
-   *   An @FT_Face has one _active_ @FT_Size object that is used by functions
-   *   like @FT_Load_Glyph to determine the scaling transformation that in
-   *   turn is used to load and hint glyphs and metrics.
+   *   An @FT_Face has one _active_ `FT_Size` object that is used by
+   *   functions like @FT_Load_Glyph to determine the scaling transformation
+   *   that in turn is used to load and hint glyphs and metrics.
    *
-   *   You can use @FT_Set_Char_Size, @FT_Set_Pixel_Sizes, @FT_Request_Size
+   *   A newly created `FT_Size` object contains only meaningless zero values.
+   *   You must use @FT_Set_Char_Size, @FT_Set_Pixel_Sizes, @FT_Request_Size
    *   or even @FT_Select_Size to change the content (i.e., the scaling
-   *   values) of the active @FT_Size.
+   *   values) of the active `FT_Size`.  Otherwise, the scaling and hinting
+   *   will not be performed.
    *
    *   You can use @FT_New_Size to create additional size objects for a given
    *   @FT_Face, but they won't be used by other functions until you activate
@@ -2702,8 +2704,8 @@ FT_BEGIN_HEADER
    *   'https://www.freetype.org/freetype2/docs/glyphs/glyphs-2.html'.
    *
    *   Contrary to @FT_Set_Char_Size, this function doesn't have special code
-   *   to normalize zero-valued widths, heights, or resolutions (which lead
-   *   to errors in most cases).
+   *   to normalize zero-valued widths, heights, or resolutions, which are
+   *   treated as @FT_LOAD_NO_SCALE.
    *
    *   Don't use this function if you are using the FreeType cache API.
    */
@@ -2819,7 +2821,7 @@ FT_BEGIN_HEADER
    *
    *   load_flags ::
    *     A flag indicating what to load for this glyph.  The @FT_LOAD_XXX
-   *     constants can be used to control the glyph loading process (e.g.,
+   *     flags can be used to control the glyph loading process (e.g.,
    *     whether the outline should be scaled, whether to load bitmaps or
    *     not, whether to hint the outline, etc).
    *
@@ -2827,8 +2829,10 @@ FT_BEGIN_HEADER
    *   FreeType error code.  0~means success.
    *
    * @note:
-   *   The loaded glyph may be transformed.  See @FT_Set_Transform for the
-   *   details.
+   *   For proper scaling and hinting, the active @FT_Size object owned by
+   *   the face has to be meaningfully initialized by calling
+   *   @FT_Set_Char_Size before this function, for example.  The loaded
+   *   glyph may be transformed.  See @FT_Set_Transform for the details.
    *
    *   For subsetted CID-keyed fonts, `FT_Err_Invalid_Argument` is returned
    *   for invalid CID values (this is, for CID values that don't have a
@@ -2918,6 +2922,8 @@ FT_BEGIN_HEADER
    *
    *   FT_LOAD_NO_SCALE ::
    *     Don't scale the loaded outline glyph but keep it in font units.
+   *     This flag is also assumed if @FT_Size owned by the face was not
+   *     properly initialized.
    *
    *     This flag implies @FT_LOAD_NO_HINTING and @FT_LOAD_NO_BITMAP, and
    *     unsets @FT_LOAD_RENDER.
@@ -3410,7 +3416,7 @@ FT_BEGIN_HEADER
    *     @FT_Render_Mode for a list of possible values.
    *
    *     If @FT_RENDER_MODE_NORMAL is used, a previous call of @FT_Load_Glyph
-   *     with flag @FT_LOAD_COLOR makes FT_Render_Glyph provide a default
+   *     with flag @FT_LOAD_COLOR makes `FT_Render_Glyph` provide a default
    *     blending of colored glyph layers associated with the current glyph
    *     slot (provided the font contains such layers) instead of rendering
    *     the glyph slot's outline.  This is an experimental feature; see
@@ -3420,9 +3426,6 @@ FT_BEGIN_HEADER
    *   FreeType error code.  0~means success.
    *
    * @note:
-   *   To get meaningful results, font scaling values must be set with
-   *   functions like @FT_Set_Char_Size before calling `FT_Render_Glyph`.
-   *
    *   When FreeType outputs a bitmap of a glyph, it really outputs an alpha
    *   coverage map.  If a pixel is completely covered by a filled-in
    *   outline, the bitmap contains 0xFF at that pixel, meaning that

@@ -34,7 +34,7 @@ nasm --version
 
 # aom
 cd
-git clone -b v3.1.3 --depth 1 https://aomedia.googlesource.com/aom
+git clone -b v3.2.0 --depth 1 https://aomedia.googlesource.com/aom
 cd aom
 mkdir build.avif
 cd build.avif
@@ -52,7 +52,7 @@ ninja install
 
 # libgav1
 cd
-git clone -b v0.16.3 --depth 1 https://chromium.googlesource.com/codecs/libgav1
+git clone -b v0.17.0 --depth 1 https://chromium.googlesource.com/codecs/libgav1
 cd libgav1
 git clone -b lts_2021_03_24 --depth 1 https://github.com/abseil/abseil-cpp.git third_party/abseil-cpp
 mkdir build
@@ -62,7 +62,7 @@ ninja install
 
 # rav1e
 cd
-git clone -b 0.4 --depth 1 https://github.com/xiph/rav1e.git
+git clone -b 0.5 --depth 1 https://github.com/xiph/rav1e.git
 cd rav1e
 cargo cinstall --prefix=/usr --release
 

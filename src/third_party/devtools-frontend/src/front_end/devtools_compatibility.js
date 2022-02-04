@@ -385,7 +385,6 @@
     IssuesPanelOpenedFrom: 'DevTools.IssuesPanelOpenedFrom',
     IssuesPanelResourceOpened: 'DevTools.IssuesPanelResourceOpened',
     KeybindSetSettingChanged: 'DevTools.KeybindSetSettingChanged',
-    DualScreenDeviceEmulated: 'DevTools.DualScreenDeviceEmulated',
     ExperimentEnabledAtLaunch: 'DevTools.ExperimentEnabledAtLaunch',
     ExperimentEnabled: 'DevTools.ExperimentEnabled',
     ExperimentDisabled: 'DevTools.ExperimentDisabled',
@@ -541,6 +540,15 @@
      */
     getPreferences(callback) {
       DevToolsAPI.sendMessageToEmbedder('getPreferences', [], /** @type {function(?Object)} */ (callback));
+    }
+
+    /**
+     * @override
+     * @param {string} name
+     * @param {function(string)} callback
+     */
+    getPreference(name, callback) {
+      DevToolsAPI.sendMessageToEmbedder('getPreference', [name], /** @type {function(string)} */ (callback));
     }
 
     /**

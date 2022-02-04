@@ -49,7 +49,7 @@ uint32_t DndActionsToDragOperations(const base::flat_set<DndAction>& actions) {
   for (const DndAction action : actions) {
     switch (action) {
       case DndAction::kNone:
-        FALLTHROUGH;
+        [[fallthrough]];
         // We don't support the ask action
       case DndAction::kAsk:
         break;
@@ -296,8 +296,7 @@ void DragDropOperation::OnFileContentsRead(const std::string& mime_type,
 void DragDropOperation::OnWebCustomDataRead(const std::string& mime_type,
                                             const std::vector<uint8_t>& data) {
   DCHECK(os_exchange_data_);
-  base::Pickle pickle;
-  pickle.WriteBytes(data.data(), data.size());
+  base::Pickle pickle(reinterpret_cast<const char*>(data.data()), data.size());
   os_exchange_data_->SetPickledData(
       ui::ClipboardFormatType::WebCustomDataType(), pickle);
   mime_type_ = mime_type;

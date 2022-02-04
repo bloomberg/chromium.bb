@@ -206,7 +206,6 @@ template<typename PlainObjectType> class TensorRef : public TensorBase<TensorRef
       return m_evaluator->coeff(index);
     }
 
-#if EIGEN_HAS_VARIADIC_TEMPLATES
     template<typename... IndexTypes> EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE const Scalar operator()(Index firstIndex, IndexTypes... otherIndices) const
     {
@@ -221,85 +220,6 @@ template<typename PlainObjectType> class TensorRef : public TensorBase<TensorRef
       const array<Index, num_indices> indices{{firstIndex, otherIndices...}};
       return coeffRef(indices);
     }
-#else
-
-    EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE const Scalar operator()(Index i0, Index i1) const
-    {
-      array<Index, 2> indices;
-      indices[0] = i0;
-      indices[1] = i1;
-      return coeff(indices);
-    }
-    EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE const Scalar operator()(Index i0, Index i1, Index i2) const
-    {
-      array<Index, 3> indices;
-      indices[0] = i0;
-      indices[1] = i1;
-      indices[2] = i2;
-      return coeff(indices);
-    }
-    EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE const Scalar operator()(Index i0, Index i1, Index i2, Index i3) const
-    {
-      array<Index, 4> indices;
-      indices[0] = i0;
-      indices[1] = i1;
-      indices[2] = i2;
-      indices[3] = i3;
-      return coeff(indices);
-    }
-    EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE const Scalar operator()(Index i0, Index i1, Index i2, Index i3, Index i4) const
-    {
-      array<Index, 5> indices;
-      indices[0] = i0;
-      indices[1] = i1;
-      indices[2] = i2;
-      indices[3] = i3;
-      indices[4] = i4;
-      return coeff(indices);
-    }
-    EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE Scalar& coeffRef(Index i0, Index i1)
-    {
-      array<Index, 2> indices;
-      indices[0] = i0;
-      indices[1] = i1;
-      return coeffRef(indices);
-    }
-    EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE Scalar& coeffRef(Index i0, Index i1, Index i2)
-    {
-      array<Index, 3> indices;
-      indices[0] = i0;
-      indices[1] = i1;
-      indices[2] = i2;
-      return coeffRef(indices);
-    }
-    EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE Scalar& operator()(Index i0, Index i1, Index i2, Index i3)
-    {
-      array<Index, 4> indices;
-      indices[0] = i0;
-      indices[1] = i1;
-      indices[2] = i2;
-      indices[3] = i3;
-      return coeffRef(indices);
-    }
-    EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE Scalar& coeffRef(Index i0, Index i1, Index i2, Index i3, Index i4)
-    {
-      array<Index, 5> indices;
-      indices[0] = i0;
-      indices[1] = i1;
-      indices[2] = i2;
-      indices[3] = i3;
-      indices[4] = i4;
-      return coeffRef(indices);
-    }
-#endif
 
     template <std::size_t NumIndices> EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE const Scalar coeff(const array<Index, NumIndices>& indices) const

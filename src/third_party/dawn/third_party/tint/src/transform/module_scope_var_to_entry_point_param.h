@@ -33,11 +33,10 @@ namespace transform {
 ///
 /// Before:
 /// ```
-/// [[block]]
 /// struct S {
 ///   f : f32;
 /// };
-/// [[binding(0), group(0)]]
+/// @binding(0) @group(0)
 /// var<storage, read> s : S;
 /// var<private> p : f32 = 2.0;
 ///
@@ -45,7 +44,7 @@ namespace transform {
 ///   p = p + f;
 /// }
 ///
-/// [[stage(compute), workgroup_size(1)]]
+/// @stage(compute) @workgroup_size(1)
 /// fn main() {
 ///   foo();
 /// }
@@ -57,7 +56,7 @@ namespace transform {
 ///   *p = *p + (*sptr).f;
 /// }
 ///
-/// [[stage(compute), workgroup_size(1)]]
+/// @stage(compute) @workgroup_size(1)
 /// fn main(sptr : ptr<storage, S, read>) {
 ///   var<private> p : f32 = 2.0;
 ///   foo(&p, sptr);

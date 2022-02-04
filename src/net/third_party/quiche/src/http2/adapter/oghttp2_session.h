@@ -9,6 +9,7 @@
 
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "absl/types/variant.h"
 #include "http2/adapter/data_source.h"
 #include "http2/adapter/event_forwarder.h"
 #include "http2/adapter/header_validator.h"
@@ -40,6 +41,10 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
     Perspective perspective = Perspective::kClient;
     // The maximum HPACK table size to use.
     absl::optional<size_t> max_hpack_encoding_table_capacity = absl::nullopt;
+    // The maximum number of decoded header bytes that a stream can receive.
+    absl::optional<uint32_t> max_header_list_bytes = absl::nullopt;
+    // The maximum size of an individual header field, including name and value.
+    absl::optional<uint32_t> max_header_field_size = absl::nullopt;
     // Whether to automatically send PING acks when receiving a PING.
     bool auto_ping_ack = true;
     // Whether (as server) to send a RST_STREAM NO_ERROR when sending a fin on
@@ -49,6 +54,14 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
     // has indicated the end of data. If false, the server will assume that
     // submitting trailers indicates the end of data.
     bool trailers_require_end_data = false;
+    // Whether to mark all input data as consumed upon encountering a connection
+    // error while processing bytes. If true, subsequent processing will also
+    // mark all input data as consumed.
+    bool blackhole_data_on_connection_error = true;
+    // Whether to advertise support for the extended CONNECT semantics described
+    // in RFC 8441. If true, this endpoint will send the appropriate setting in
+    // initial SETTINGS.
+    bool allow_extended_connect = true;
   };
 
   OgHttp2Session(Http2VisitorInterface& visitor, Options options);
@@ -122,8 +135,9 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
     return !received_goaway_ && !decoder_.HasError();
   }
   bool want_write() const override {
-    return !frames_.empty() || !buffered_data_.empty() ||
-           write_scheduler_.HasReadyStreams() || !connection_metadata_.empty();
+    return !fatal_send_error_ &&
+           (!frames_.empty() || !buffered_data_.empty() ||
+            !connection_metadata_.empty() || HasReadyStream());
   }
   int GetRemoteWindowSize() const override { return connection_send_window_; }
 
@@ -209,6 +223,7 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
     void* user_data = nullptr;
     int32_t send_window = kInitialFlowControlWindowSize;
     absl::optional<HeaderType> received_header_type;
+    absl::optional<size_t> remaining_content_length;
     bool half_closed_local = false;
     bool half_closed_remote = false;
     // Indicates that `outbound_body` temporarily cannot produce data.
@@ -248,6 +263,13 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
                     type_ == HeaderType::RESPONSE_100);
       return validator_.status_header();
     }
+    absl::optional<size_t> content_length() const {
+      return validator_.content_length();
+    }
+    void AllowConnect() { validator_.AllowConnect(); }
+    void SetMaxFieldSize(uint32_t field_size) {
+      validator_.SetMaxFieldSize(field_size);
+    }
 
    private:
     OgHttp2Session& session_;
@@ -260,6 +282,8 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
     HeaderType type_ = HeaderType::RESPONSE;
     bool frame_contains_fin_ = false;
   };
+
+  struct QUICHE_EXPORT_PRIVATE ProcessBytesResultVisitor;
 
   // Queues the connection preface, if not already done.
   void MaybeSetupPreface();
@@ -283,13 +307,38 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
     SEND_ERROR,
   };
 
+  // Returns the int corresponding to the `result`, updating state as needed.
+  int InterpretSendResult(SendResult result);
+
+  enum class ProcessBytesError {
+    // A general, unspecified error.
+    kUnspecified,
+    // The (server-side) session received an invalid client connection preface.
+    kInvalidConnectionPreface,
+    // A user/visitor callback failed with a fatal error.
+    kVisitorCallbackFailed,
+  };
+  using ProcessBytesResult = absl::variant<int64_t, ProcessBytesError>;
+
+  // Attempts to process `bytes` and returns the number of bytes proccessed on
+  // success or the processing error on failure.
+  ProcessBytesResult ProcessBytesImpl(absl::string_view bytes);
+
+  // Returns true if at least one stream has data or control frames to write.
+  bool HasReadyStream() const;
+
+  // Returns the next stream that has something to write. If there are no such
+  // streams, returns zero.
+  Http2StreamId GetNextReadyStream();
+
   // Sends the buffered connection preface or serialized frame data, if any.
   SendResult MaybeSendBufferedData();
 
   // Serializes and sends queued frames.
   SendResult SendQueuedFrames();
 
-  void AfterFrameSent(uint8_t frame_type, uint32_t stream_id,
+  // Returns false if a fatal connection error occurred.
+  bool AfterFrameSent(uint8_t frame_type_int, uint32_t stream_id,
                       size_t payload_length, uint8_t flags,
                       uint32_t error_code);
 
@@ -335,6 +384,16 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
                            Http2VisitorInterface::ConnectionError error);
 
   void CloseStreamIfReady(uint8_t frame_type, uint32_t stream_id);
+
+  // Updates internal state to prepare for sending an immediate GOAWAY.
+  void PrepareForImmediateGoAway();
+
+  // Handles the potential end of received metadata for the given `stream_id`.
+  void MaybeHandleMetadataEndForStream(Http2StreamId stream_id);
+
+  void DecrementQueuedFrameCount(uint32_t stream_id, uint8_t frame_type);
+
+  void HandleContentLengthError(Http2StreamId stream_id);
 
   // Receives events when inbound frames are parsed.
   Http2VisitorInterface& visitor_;
@@ -388,8 +447,16 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
 
   WindowManager connection_window_manager_;
 
+  // Tracks the streams that have been marked for reset. A stream is removed
+  // from this set once it is closed.
   absl::flat_hash_set<Http2StreamId> streams_reset_;
+
+  // The number of frames currently queued per stream.
   absl::flat_hash_map<Http2StreamId, int> queued_frames_;
+  // Includes streams that are currently ready to write trailers.
+  absl::flat_hash_set<Http2StreamId> trailers_ready_;
+  // Includes streams that are currently ready to write metadata.
+  absl::flat_hash_set<Http2StreamId> metadata_ready_;
 
   MetadataSequence connection_metadata_;
 
@@ -415,7 +482,7 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
       std::numeric_limits<uint32_t>::max();
   uint32_t max_inbound_concurrent_streams_ =
       std::numeric_limits<uint32_t>::max();
-  Options options_;
+  const Options options_;
 
   // The HPACK encoder header table capacity that will be applied when
   // acking SETTINGS from the peer. Only contains a value if the peer advertises
@@ -427,6 +494,7 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   bool queued_preface_ = false;
   bool peer_supports_metadata_ = false;
   bool end_metadata_ = false;
+  bool sent_non_ack_settings_ = false;
 
   // Recursion guard for ProcessBytes().
   bool processing_bytes_ = false;
@@ -435,7 +503,14 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
 
   // Replace this with a stream ID, for multiple GOAWAY support.
   bool queued_goaway_ = false;
+  bool queued_immediate_goaway_ = false;
   bool latched_error_ = false;
+
+  // True if a fatal sending error has occurred.
+  bool fatal_send_error_ = false;
+
+  // True if a fatal processing visitor callback failed.
+  bool fatal_visitor_callback_failure_ = false;
 };
 
 }  // namespace adapter

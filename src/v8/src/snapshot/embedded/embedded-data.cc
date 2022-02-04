@@ -95,6 +95,20 @@ Builtin OffHeapInstructionStream::TryLookupCode(Isolate* isolate,
       !Builtins::IsBuiltinId(builtin)) {
     builtin = i::TryLookupCode(EmbeddedData::FromBlob(), address);
   }
+
+#ifdef V8_COMPRESS_POINTERS_IN_SHARED_CAGE
+  if (V8_SHORT_BUILTIN_CALLS_BOOL && !Builtins::IsBuiltinId(builtin)) {
+    // When shared pointer compression cage is enabled and it has the embedded
+    // code blob copy then it could have been used regardless of whether the
+    // isolate uses it or knows about it or not (see
+    // Code::OffHeapInstructionStart()).
+    // So, this blob has to be checked too.
+    CodeRange* code_range = CodeRange::GetProcessWideCodeRange().get();
+    if (code_range && code_range->embedded_blob_code_copy() != nullptr) {
+      builtin = i::TryLookupCode(EmbeddedData::FromBlob(code_range), address);
+    }
+  }
+#endif
   return builtin;
 }
 
@@ -207,7 +221,7 @@ void FinalizeEmbeddedCodeTargets(Isolate* isolate, EmbeddedData* blob) {
   STATIC_ASSERT(Builtins::kAllBuiltinsAreIsolateIndependent);
   for (Builtin builtin = Builtins::kFirst; builtin <= Builtins::kLast;
        ++builtin) {
-    Code code = isolate->builtins()->code(builtin);
+    Code code = FromCodeT(isolate->builtins()->code(builtin));
     RelocIterator on_heap_it(code, kRelocMask);
     RelocIterator off_heap_it(blob, code, kRelocMask);
 
@@ -261,7 +275,7 @@ EmbeddedData EmbeddedData::FromIsolate(Isolate* isolate) {
   STATIC_ASSERT(Builtins::kAllBuiltinsAreIsolateIndependent);
   for (Builtin builtin = Builtins::kFirst; builtin <= Builtins::kLast;
        ++builtin) {
-    Code code = builtins->code(builtin);
+    Code code = FromCodeT(builtins->code(builtin));
 
     // Sanity-check that the given builtin is isolate-independent and does not
     // use the trampoline register in its calling convention.
@@ -329,7 +343,7 @@ EmbeddedData EmbeddedData::FromIsolate(Isolate* isolate) {
   STATIC_ASSERT(Builtins::kAllBuiltinsAreIsolateIndependent);
   for (Builtin builtin = Builtins::kFirst; builtin <= Builtins::kLast;
        ++builtin) {
-    Code code = builtins->code(builtin);
+    Code code = FromCodeT(builtins->code(builtin));
     uint32_t offset =
         layout_descriptions[static_cast<int>(builtin)].metadata_offset;
     uint8_t* dst = raw_metadata_start + offset;
@@ -344,7 +358,7 @@ EmbeddedData EmbeddedData::FromIsolate(Isolate* isolate) {
   STATIC_ASSERT(Builtins::kAllBuiltinsAreIsolateIndependent);
   for (Builtin builtin = Builtins::kFirst; builtin <= Builtins::kLast;
        ++builtin) {
-    Code code = builtins->code(builtin);
+    Code code = FromCodeT(builtins->code(builtin));
     uint32_t offset =
         layout_descriptions[static_cast<int>(builtin)].instruction_offset;
     uint8_t* dst = raw_code_start + offset;

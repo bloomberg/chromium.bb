@@ -20,7 +20,7 @@
 
 #include "common/GPUInfo.h"
 
-namespace dawn_native { namespace vulkan {
+namespace dawn::native::vulkan {
 
     Adapter::Adapter(InstanceBase* instance,
                      VulkanInstance* vulkanInstance,
@@ -65,9 +65,9 @@ namespace dawn_native { namespace vulkan {
                 "Vulkan driver version: " + std::to_string(mDeviceInfo.properties.driverVersion);
         }
 
-        mPCIInfo.deviceId = mDeviceInfo.properties.deviceID;
-        mPCIInfo.vendorId = mDeviceInfo.properties.vendorID;
-        mPCIInfo.name = mDeviceInfo.properties.deviceName;
+        mDeviceId = mDeviceInfo.properties.deviceID;
+        mVendorId = mDeviceInfo.properties.vendorID;
+        mName = mDeviceInfo.properties.deviceName;
 
         switch (mDeviceInfo.properties.deviceType) {
             case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
@@ -150,6 +150,20 @@ namespace dawn_native { namespace vulkan {
         if (mDeviceInfo.properties.limits.timestampComputeAndGraphics == VK_TRUE) {
             mSupportedFeatures.EnableFeature(Feature::TimestampQuery);
         }
+
+        if (IsDepthStencilFormatSupported(VK_FORMAT_D24_UNORM_S8_UINT)) {
+            mSupportedFeatures.EnableFeature(Feature::Depth24UnormStencil8);
+        }
+
+        if (IsDepthStencilFormatSupported(VK_FORMAT_D32_SFLOAT_S8_UINT)) {
+            mSupportedFeatures.EnableFeature(Feature::Depth32FloatStencil8);
+        }
+
+#if defined(DAWN_USE_SYNC_FDS)
+        // TODO(chromium:1258986): Precisely enable the feature by querying the device's format
+        // features.
+        mSupportedFeatures.EnableFeature(Feature::MultiPlanarFormats);
+#endif
 
         return {};
     }
@@ -326,14 +340,14 @@ namespace dawn_native { namespace vulkan {
     }
 
     bool Adapter::SupportsExternalImages() const {
-        // Via dawn_native::vulkan::WrapVulkanImage
+        // Via dawn::native::vulkan::WrapVulkanImage
         return external_memory::Service::CheckSupport(mDeviceInfo) &&
                external_semaphore::Service::CheckSupport(mDeviceInfo, mPhysicalDevice,
                                                          mVulkanInstance->GetFunctions());
     }
 
-    ResultOrError<DeviceBase*> Adapter::CreateDeviceImpl(const DawnDeviceDescriptor* descriptor) {
+    ResultOrError<Ref<DeviceBase>> Adapter::CreateDeviceImpl(const DeviceDescriptor* descriptor) {
         return Device::Create(this, descriptor);
     }
 
-}}  // namespace dawn_native::vulkan
+}  // namespace dawn::native::vulkan

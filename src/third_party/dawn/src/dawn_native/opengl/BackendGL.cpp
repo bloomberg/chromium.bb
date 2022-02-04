@@ -22,7 +22,7 @@
 
 #include <cstring>
 
-namespace dawn_native { namespace opengl {
+namespace dawn::native::opengl {
 
     namespace {
 
@@ -132,7 +132,7 @@ namespace dawn_native { namespace opengl {
 
         // AdapterBase Implementation
         bool SupportsExternalImages() const override {
-            // Via dawn_native::opengl::WrapExternalEGLImage
+            // Via dawn::native::opengl::WrapExternalEGLImage
             return GetBackendType() == wgpu::BackendType::OpenGLES;
         }
 
@@ -186,16 +186,16 @@ namespace dawn_native { namespace opengl {
             }
             mFunctions.Enable(GL_SAMPLE_MASK);
 
-            mPCIInfo.name = reinterpret_cast<const char*>(mFunctions.GetString(GL_RENDERER));
+            mName = reinterpret_cast<const char*>(mFunctions.GetString(GL_RENDERER));
 
             // Workaroud to find vendor id from vendor name
             const char* vendor = reinterpret_cast<const char*>(mFunctions.GetString(GL_VENDOR));
-            mPCIInfo.vendorId = GetVendorIdFromVendors(vendor);
+            mVendorId = GetVendorIdFromVendors(vendor);
 
             mDriverDescription = std::string("OpenGL version ") +
                                  reinterpret_cast<const char*>(mFunctions.GetString(GL_VERSION));
 
-            if (mPCIInfo.name.find("SwiftShader") != std::string::npos) {
+            if (mName.find("SwiftShader") != std::string::npos) {
                 mAdapterType = wgpu::AdapterType::CPU;
             }
 
@@ -242,7 +242,7 @@ namespace dawn_native { namespace opengl {
 
                 if (supportsS3TC && (supportsTextureSRGB || supportsS3TCSRGB) && supportsRGTC &&
                     supportsBPTC) {
-                    mSupportedFeatures.EnableFeature(dawn_native::Feature::TextureCompressionBC);
+                    mSupportedFeatures.EnableFeature(dawn::native::Feature::TextureCompressionBC);
                 }
             }
 
@@ -254,8 +254,8 @@ namespace dawn_native { namespace opengl {
             return {};
         }
 
-        ResultOrError<DeviceBase*> CreateDeviceImpl(
-            const DawnDeviceDescriptor* descriptor) override {
+        ResultOrError<Ref<DeviceBase>> CreateDeviceImpl(
+            const DeviceDescriptor* descriptor) override {
             // There is no limit on the number of devices created from this adapter because they can
             // all share the same backing OpenGL context.
             return Device::Create(this, descriptor, mFunctions);
@@ -270,12 +270,12 @@ namespace dawn_native { namespace opengl {
         : BackendConnection(instance, backendType) {
     }
 
-    std::vector<std::unique_ptr<AdapterBase>> Backend::DiscoverDefaultAdapters() {
+    std::vector<Ref<AdapterBase>> Backend::DiscoverDefaultAdapters() {
         // The OpenGL backend needs at least "getProcAddress" to discover an adapter.
         return {};
     }
 
-    ResultOrError<std::vector<std::unique_ptr<AdapterBase>>> Backend::DiscoverAdapters(
+    ResultOrError<std::vector<Ref<AdapterBase>>> Backend::DiscoverAdapters(
         const AdapterDiscoveryOptionsBase* optionsBase) {
         // TODO(cwallez@chromium.org): For now only create a single OpenGL adapter because don't
         // know how to handle MakeCurrent.
@@ -288,14 +288,13 @@ namespace dawn_native { namespace opengl {
         DAWN_INVALID_IF(options->getProc == nullptr,
                         "AdapterDiscoveryOptions::getProc must be set");
 
-        std::unique_ptr<Adapter> adapter = std::make_unique<Adapter>(
-            GetInstance(), static_cast<wgpu::BackendType>(optionsBase->backendType));
+        Ref<Adapter> adapter = AcquireRef(
+            new Adapter(GetInstance(), static_cast<wgpu::BackendType>(optionsBase->backendType)));
         DAWN_TRY(adapter->InitializeGLFunctions(options->getProc));
         DAWN_TRY(adapter->Initialize());
 
         mCreatedAdapter = true;
-        std::vector<std::unique_ptr<AdapterBase>> adapters;
-        adapters.push_back(std::unique_ptr<AdapterBase>(adapter.release()));
+        std::vector<Ref<AdapterBase>> adapters{std::move(adapter)};
         return std::move(adapters);
     }
 
@@ -303,4 +302,4 @@ namespace dawn_native { namespace opengl {
         return new Backend(instance, backendType);
     }
 
-}}  // namespace dawn_native::opengl
+}  // namespace dawn::native::opengl

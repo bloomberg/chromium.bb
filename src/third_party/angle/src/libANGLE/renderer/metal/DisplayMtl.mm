@@ -27,6 +27,10 @@
 #include "libANGLE/trace.h"
 #include "platform/Platform.h"
 
+#ifdef ANGLE_METAL_XCODE_BUILDS_SHADERS
+#    include "libANGLE/renderer/metal/mtl_default_shaders_compiled.inc"
+#endif
+
 #include "EGL/eglext.h"
 
 #if defined(ANGLE_PLATFORM_MACOS) || defined(ANGLE_PLATFORM_MACCATALYST)
@@ -146,7 +150,7 @@ angle::Result DisplayMtl::initializeImpl(egl::Display *display)
 
         mMetalDeviceVendorId = mtl::GetDeviceVendorId(mMetalDevice);
 
-        mCmdQueue.set([[mMetalDevice.get() newCommandQueue] ANGLE_MTL_AUTORELEASE]);
+        mCmdQueue.set([[mMetalDevice newCommandQueue] ANGLE_MTL_AUTORELEASE]);
 
         mCapsInitialized = false;
 #if ANGLE_ENABLE_METAL_SPIRV
@@ -234,6 +238,22 @@ mtl::AutoObjCPtr<id<MTLDevice>> DisplayMtl::getMetalDeviceMatchingAttribute(
 #if defined(ANGLE_PLATFORM_MACOS) || defined(ANGLE_PLATFORM_MACCATALYST)
     auto deviceList = mtl::adoptObjCObj(MTLCopyAllDevices());
 
+    EGLAttrib high = attribs.get(EGL_PLATFORM_ANGLE_DEVICE_ID_HIGH_ANGLE, 0);
+    EGLAttrib low  = attribs.get(EGL_PLATFORM_ANGLE_DEVICE_ID_LOW_ANGLE, 0);
+    uint64_t deviceId =
+        angle::GetSystemDeviceIdFromParts(static_cast<uint32_t>(high), static_cast<uint32_t>(low));
+    // Check EGL_ANGLE_platform_angle_device_id to see if a device was specified.
+    if (deviceId != 0)
+    {
+        for (id<MTLDevice> device in deviceList.get())
+        {
+            if ([device registryID] == deviceId)
+            {
+                return device;
+            }
+        }
+    }
+
     NSMutableArray<id<MTLDevice>> *externalGPUs   = [[NSMutableArray alloc] init];
     NSMutableArray<id<MTLDevice>> *integratedGPUs = [[NSMutableArray alloc] init];
     NSMutableArray<id<MTLDevice>> *discreteGPUs   = [[NSMutableArray alloc] init];
@@ -290,17 +310,6 @@ mtl::AutoObjCPtr<id<MTLDevice>> DisplayMtl::getMetalDeviceMatchingAttribute(
         }
     }
 
-    // Default to use a low power device, look through integrated devices.
-    for (id<MTLDevice> device in integratedGPUs)
-    {
-        if (![device isHeadless])
-            return device;
-    }
-
-    // If we selected a low power device and there's no low-power devices avaialble, return the
-    // first (default) device.
-    if (deviceList.get().count > 0)
-        return deviceList[0];
 #endif
     // If we can't find anything, or are on a platform that doesn't support power options, create a
     // default device.
@@ -375,7 +384,7 @@ rx::ContextImpl *DisplayMtl::createContext(const gl::State &state,
                                            const gl::Context *shareContext,
                                            const egl::AttributeMap &attribs)
 {
-    return new ContextMtl(state, errorSet, this);
+    return new ContextMtl(state, errorSet, attribs, this);
 }
 
 StreamProducerImpl *DisplayMtl::createStreamProducerD3DTexture(
@@ -470,6 +479,9 @@ void DisplayMtl::generateExtensions(egl::DisplayExtensions *outExtensions) const
     // EGL_KHR_image
     outExtensions->image     = true;
     outExtensions->imageBase = true;
+
+    // EGL_ANGLE_metal_create_context_ownership_identity
+    outExtensions->metalCreateContextOwnershipIdentityANGLE = true;
 }
 
 void DisplayMtl::generateCaps(egl::Caps *outCaps) const {}
@@ -864,6 +876,7 @@ void DisplayMtl::initializeExtensions() const
     mNativeExtensions.drawBuffersEXT                = true;
     mNativeExtensions.drawBuffersIndexedEXT         = true;
     mNativeExtensions.drawBuffersIndexedOES         = true;
+    mNativeExtensions.fboRenderMipmapOES            = true;
     mNativeExtensions.fragDepthEXT                  = true;
     mNativeExtensions.framebufferBlitANGLE          = true;
     mNativeExtensions.framebufferBlitNV             = true;
@@ -913,7 +926,7 @@ void DisplayMtl::initializeExtensions() const
     mNativeExtensions.semaphoreEXT   = false;
     mNativeExtensions.semaphoreFdEXT = false;
 
-    mNativeExtensions.instancedArraysANGLE = mFeatures.hasBaseVertexInstancedDraw.enabled;
+    mNativeExtensions.instancedArraysANGLE = true;
     mNativeExtensions.instancedArraysEXT   = mNativeExtensions.instancedArraysANGLE;
 
     mNativeExtensions.robustBufferAccessBehaviorKHR = false;
@@ -932,6 +945,8 @@ void DisplayMtl::initializeExtensions() const
     mNativeExtensions.textureNpotOES = true;
 
     mNativeExtensions.texture3DOES = true;
+
+    mNativeExtensions.shaderTextureLodEXT = true;
 
     mNativeExtensions.standardDerivativesOES = true;
 
@@ -959,6 +974,9 @@ void DisplayMtl::initializeExtensions() const
         // GL_ARB_sync
         mNativeExtensions.syncARB = true;
     }
+
+    // GL_KHR_parallel_shader_compile
+    mNativeExtensions.parallelShaderCompileKHR = true;
 }
 
 void DisplayMtl::initializeTextureCaps() const
@@ -1028,9 +1046,6 @@ void DisplayMtl::initializeFeatures()
 
     ANGLE_FEATURE_CONDITION((&mFeatures), allowGenMultipleMipsPerPass, true);
     ANGLE_FEATURE_CONDITION((&mFeatures), forceBufferGPUStorage, false);
-
-    ANGLE_FEATURE_CONDITION((&mFeatures), hasDepthTextureFiltering,
-                            (isOSX || isCatalyst) && !isARM);
     ANGLE_FEATURE_CONDITION((&mFeatures), hasExplicitMemBarrier,
                             isMetal2_1 && (isOSX || isCatalyst) && !isARM);
     ANGLE_FEATURE_CONDITION((&mFeatures), hasDepthAutoResolve, supportsEitherGPUFamily(3, 2));
@@ -1173,155 +1188,12 @@ id<MTLLibrary> DisplayMtl::getDefaultShadersLib()
 
 bool DisplayMtl::supportsAppleGPUFamily(uint8_t iOSFamily) const
 {
-#if TARGET_OS_MACCATALYST
-    return false;
-#else
-#    if (__IPHONE_OS_VERSION_MAX_ALLOWED >= 130000) || (__TV_OS_VERSION_MAX_ALLOWED >= 130000) || \
-        (__MAC_OS_X_VERSION_MAX_ALLOWED >= 101500)
-    // If device supports [MTLDevice supportsFamily:], then use it.
-    if (ANGLE_APPLE_AVAILABLE_XI(10.15, 13.0))
-    {
-        MTLGPUFamily family;
-        switch (iOSFamily)
-        {
-            case 1:
-                family = MTLGPUFamilyApple1;
-                break;
-            case 2:
-                family = MTLGPUFamilyApple2;
-                break;
-            case 3:
-                family = MTLGPUFamilyApple3;
-                break;
-            case 4:
-                family = MTLGPUFamilyApple4;
-                break;
-            case 5:
-                family = MTLGPUFamilyApple5;
-                break;
-#        if TARGET_OS_IOS || (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 101600))
-            case 6:
-                family = MTLGPUFamilyApple6;
-                break;
-#        endif
-#        if (TARGET_OS_IOS && (__IPHONE_OS_VERSION_MAX_ALLOWED >= 140000)) || \
-            (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 101600))
-            case 7:
-                family = MTLGPUFamilyApple7;
-                break;
-#        endif
-            default:
-                return false;
-        }
-        return [getMetalDevice() supportsFamily:family];
-    }  // Metal 2.2
-#    endif  // __IPHONE_OS_VERSION_MAX_ALLOWED
-
-    // If device doesn't support [MTLDevice supportsFamily:], then use
-    // [MTLDevice supportsFeatureSet:].
-#    if TARGET_OS_IOS || TARGET_OS_TV
-    MTLFeatureSet featureSet;
-#    endif
-    switch (iOSFamily)
-    {
-#    if TARGET_OS_IOS
-        case 1:
-            featureSet = MTLFeatureSet_iOS_GPUFamily1_v1;
-            break;
-        case 2:
-            featureSet = MTLFeatureSet_iOS_GPUFamily2_v1;
-            break;
-        case 3:
-            featureSet = MTLFeatureSet_iOS_GPUFamily3_v1;
-            break;
-        case 4:
-            featureSet = MTLFeatureSet_iOS_GPUFamily4_v1;
-            break;
-#        if __IPHONE_OS_VERSION_MAX_ALLOWED >= 120000
-        case 5:
-            featureSet = MTLFeatureSet_iOS_GPUFamily5_v1;
-            break;
-#        endif  // __IPHONE_OS_VERSION_MAX_ALLOWED
-#    elif TARGET_OS_TV
-        case 1:
-        case 2:
-            featureSet = MTLFeatureSet_tvOS_GPUFamily1_v1;
-            break;
-        case 3:
-            featureSet = MTLFeatureSet_tvOS_GPUFamily2_v1;
-            break;
-#    endif  // TARGET_OS_IOS
-        default:
-            return false;
-    }
-
-#    if TARGET_OS_IOS || TARGET_OS_TV
-    return [getMetalDevice() supportsFeatureSet:featureSet];
-#    endif
-#endif  // TARGET_OS_MACCATALYST
+    return mtl::SupportsAppleGPUFamily(getMetalDevice(), iOSFamily);
 }
 
 bool DisplayMtl::supportsMacGPUFamily(uint8_t macFamily) const
 {
-#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
-#    if defined(__MAC_10_15)
-    // If device supports [MTLDevice supportsFamily:], then use it.
-    if (ANGLE_APPLE_AVAILABLE_XC(10.15, 13.0))
-    {
-        MTLGPUFamily family;
-
-        switch (macFamily)
-        {
-#        if TARGET_OS_MACCATALYST
-            case 1:
-                family = MTLGPUFamilyMacCatalyst1;
-                break;
-            case 2:
-                family = MTLGPUFamilyMacCatalyst2;
-                break;
-#        else   // TARGET_OS_MACCATALYST
-            case 1:
-                family = MTLGPUFamilyMac1;
-                break;
-            case 2:
-                family = MTLGPUFamilyMac2;
-                break;
-#        endif  // TARGET_OS_MACCATALYST
-            default:
-                return false;
-        }
-
-        return [getMetalDevice() supportsFamily:family];
-    }  // Metal 2.2
-#    endif
-
-    // If device doesn't support [MTLDevice supportsFamily:], then use
-    // [MTLDevice supportsFeatureSet:].
-#    if TARGET_OS_MACCATALYST
-    UNREACHABLE();
-    return false;
-#    else
-    MTLFeatureSet featureSet;
-    switch (macFamily)
-    {
-        case 1:
-            featureSet = MTLFeatureSet_macOS_GPUFamily1_v1;
-            break;
-#        if defined(__MAC_10_14)
-        case 2:
-            featureSet = MTLFeatureSet_macOS_GPUFamily2_v1;
-            break;
-#        endif
-        default:
-            return false;
-    }
-    return [getMetalDevice() supportsFeatureSet:featureSet];
-#    endif  // TARGET_OS_MACCATALYST
-#else       // #if TARGET_OS_OSX || TARGET_OS_MACCATALYST
-
-    return false;
-
-#endif
+    return mtl::SupportsMacGPUFamily(getMetalDevice(), macFamily);
 }
 
 bool DisplayMtl::supportsEitherGPUFamily(uint8_t iOSFamily, uint8_t macFamily) const
@@ -1329,6 +1201,30 @@ bool DisplayMtl::supportsEitherGPUFamily(uint8_t iOSFamily, uint8_t macFamily) c
     return supportsAppleGPUFamily(iOSFamily) || supportsMacGPUFamily(macFamily);
 }
 
+bool DisplayMtl::supports32BitFloatFiltering() const
+{
+#if (defined(__MAC_11_0) && __MAC_OS_X_VERSION_MIN_REQUIRED >= __MAC_11_0) ||        \
+    (defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_14_0) || \
+    (defined(__TVOS_14_0) && __TV_OS_VERSION_MIN_REQUIRED >= __TVOS_14_0)
+    if (@available(ios 14.0, macOS 11.0, *))
+    {
+        return [mMetalDevice supports32BitFloatFiltering];
+    }
+    else
+#endif
+    {
+        return supportsMacGPUFamily(1);
+    }
+}
+
+bool DisplayMtl::supportsDepth24Stencil8PixelFormat() const
+{
+#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+    return [mMetalDevice isDepth24Stencil8PixelFormatSupported];
+#else
+    return false;
+#endif
+}
 bool DisplayMtl::isAMD() const
 {
     return angle::IsAMD(mMetalDeviceVendorId);
@@ -1342,6 +1238,11 @@ bool DisplayMtl::isIntel() const
 bool DisplayMtl::isNVIDIA() const
 {
     return angle::IsNVIDIA(mMetalDeviceVendorId);
+}
+
+bool DisplayMtl::isSimulator() const
+{
+    return TARGET_OS_SIMULATOR;
 }
 
 #if ANGLE_MTL_EVENT_AVAILABLE

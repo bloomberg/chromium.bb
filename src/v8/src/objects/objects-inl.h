@@ -42,8 +42,8 @@
 #include "src/objects/tagged-impl-inl.h"
 #include "src/objects/tagged-index.h"
 #include "src/objects/templates.h"
-#include "src/security/caged-pointer-inl.h"
-#include "src/security/external-pointer-inl.h"
+#include "src/sandbox/external-pointer-inl.h"
+#include "src/sandbox/sandboxed-pointer-inl.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -644,20 +644,21 @@ MaybeHandle<Object> Object::SetElement(Isolate* isolate, Handle<Object> object,
   return value;
 }
 
-Address Object::ReadCagedPointerField(size_t offset,
-                                      PtrComprCageBase cage_base) const {
-  return i::ReadCagedPointerField(field_address(offset), cage_base);
+Address Object::ReadSandboxedPointerField(size_t offset,
+                                          PtrComprCageBase cage_base) const {
+  return i::ReadSandboxedPointerField(field_address(offset), cage_base);
 }
 
-void Object::WriteCagedPointerField(size_t offset, PtrComprCageBase cage_base,
-                                    Address value) {
-  i::WriteCagedPointerField(field_address(offset), cage_base, value);
+void Object::WriteSandboxedPointerField(size_t offset,
+                                        PtrComprCageBase cage_base,
+                                        Address value) {
+  i::WriteSandboxedPointerField(field_address(offset), cage_base, value);
 }
 
-void Object::WriteCagedPointerField(size_t offset, Isolate* isolate,
-                                    Address value) {
-  i::WriteCagedPointerField(field_address(offset), PtrComprCageBase(isolate),
-                            value);
+void Object::WriteSandboxedPointerField(size_t offset, Isolate* isolate,
+                                        Address value) {
+  i::WriteSandboxedPointerField(field_address(offset),
+                                PtrComprCageBase(isolate), value);
 }
 
 void Object::InitExternalPointerField(size_t offset, Isolate* isolate) {
@@ -782,6 +783,11 @@ Map HeapObject::map(PtrComprCageBase cage_base) const {
 }
 
 void HeapObject::set_map(Map value) {
+#if V8_ENABLE_WEBASSEMBLY
+  // In {WasmGraphBuilder::SetMap} and {WasmGraphBuilder::LoadMap}, we treat
+  // maps as immutable. Therefore we are not allowed to mutate them here.
+  DCHECK(!value.IsWasmStructMap() && !value.IsWasmArrayMap());
+#endif
 #ifdef VERIFY_HEAP
   if (FLAG_verify_heap && !value.is_null()) {
     GetHeapFromWritableObject(*this)->VerifyObjectLayoutChange(*this, value);
@@ -825,6 +831,7 @@ void HeapObject::set_map_no_write_barrier(Map value, RelaxedStoreTag tag) {
   }
 #endif
   set_map_word(MapWord::FromMap(value), tag);
+  SLOW_DCHECK(!WriteBarrier::IsRequired(*this, value));
 }
 
 void HeapObject::set_map_no_write_barrier(Map value, ReleaseStoreTag tag) {
@@ -834,6 +841,7 @@ void HeapObject::set_map_no_write_barrier(Map value, ReleaseStoreTag tag) {
   }
 #endif
   set_map_word(MapWord::FromMap(value), tag);
+  SLOW_DCHECK(!WriteBarrier::IsRequired(*this, value));
 }
 
 void HeapObject::set_map_after_allocation(Map value, WriteBarrierMode mode) {
@@ -845,6 +853,8 @@ void HeapObject::set_map_after_allocation(Map value, WriteBarrierMode mode) {
     // TODO(1600) We are passing kNullAddress as a slot because maps can never
     // be on an evacuation candidate.
     WriteBarrier::Marking(*this, ObjectSlot(kNullAddress), value);
+  } else {
+    SLOW_DCHECK(!WriteBarrier::IsRequired(*this, value));
   }
 #endif
 }

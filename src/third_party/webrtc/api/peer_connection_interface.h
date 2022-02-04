@@ -169,9 +169,16 @@ class StatsObserver : public rtc::RefCountInterface {
 };
 
 enum class SdpSemantics {
+  // TODO(https://crbug.com/webrtc/13528): Remove support for kPlanB.
   kPlanB_DEPRECATED,
   kPlanB [[deprecated]] = kPlanB_DEPRECATED,
-  kUnifiedPlan
+  kUnifiedPlan,
+  // The default SdpSemantics value is about to change to kUnifiedPlan. During a
+  // short transition period, kNotSpecified is used to ensure clients that don't
+  // set SdpSemantics are aware of the change by CHECK-crashing.
+  // TODO(https://crbug.com/webrtc/11121): When the default has changed to
+  // kUnifiedPlan, delete kNotSpecified.
+  kNotSpecified
 };
 
 class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
@@ -639,10 +646,17 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
     // the same media type.
     //
     // For users who have to interwork with legacy WebRTC implementations,
-    // it is possible to specify kPlanB until the code is finally removed.
+    // it is possible to specify kPlanB until the code is finally removed
+    // (https://crbug.com/webrtc/13528).
     //
     // For all other users, specify kUnifiedPlan.
-    SdpSemantics sdp_semantics = SdpSemantics::kPlanB_DEPRECATED;
+    //
+    // The default SdpSemantics value is about to change to kUnifiedPlan. During
+    // a short transition period, kNotSpecified is used to ensure clients that
+    // don't set SdpSemantics are aware of the change by CHECK-crashing.
+    // TODO(https://crbug.com/webrtc/11121): When the default has changed to
+    // kUnifiedPlan, delete kNotSpecified.
+    SdpSemantics sdp_semantics = SdpSemantics::kNotSpecified;
 
     // TODO(bugs.webrtc.org/9891) - Move to crypto_options or remove.
     // Actively reset the SRTP parameters whenever the DTLS transports
@@ -805,23 +819,41 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
       rtc::scoped_refptr<MediaStreamTrackInterface> track,
       const std::vector<std::string>& stream_ids) = 0;
 
-  // Remove an RtpSender from this PeerConnection.
-  // Returns true on success.
-  // TODO(steveanton): Replace with signature that returns RTCError.
-  virtual bool RemoveTrack(RtpSenderInterface* sender) = 0;
-
-  // Plan B semantics: Removes the RtpSender from this PeerConnection.
-  // Unified Plan semantics: Stop sending on the RtpSender and mark the
+  // Removes the connection between a MediaStreamTrack and the PeerConnection.
+  // Stops sending on the RtpSender and marks the
   // corresponding RtpTransceiver direction as no longer sending.
+  // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-removetrack
   //
   // Errors:
   // - INVALID_PARAMETER: `sender` is null or (Plan B only) the sender is not
   //       associated with this PeerConnection.
   // - INVALID_STATE: PeerConnection is closed.
+  //
+  // Plan B semantics: Removes the RtpSender from this PeerConnection.
+  //
   // TODO(bugs.webrtc.org/9534): Rename to RemoveTrack once the other signature
-  // is removed.
+  // is removed; remove default implementation once upstream is updated.
+  virtual RTCError RemoveTrackOrError(
+      rtc::scoped_refptr<RtpSenderInterface> sender) {
+    RTC_CHECK_NOTREACHED();
+    return RTCError();
+  }
+
+  // Legacy API for removing a track from the PeerConnection.
+  // Returns true on success.
+  // TODO(bugs.webrtc.org/9534): Replace with signature that returns RTCError.
+  ABSL_DEPRECATED("Use RemoveTrackOrError")
+  virtual bool RemoveTrack(RtpSenderInterface* sender) {
+    return RemoveTrackOrError(rtc::scoped_refptr<RtpSenderInterface>(sender))
+        .ok();
+  }
+
+  // Old name for the new API. Will be removed when clients are updated.
+  ABSL_DEPRECATED("Use RemoveTrackOrError")
   virtual RTCError RemoveTrackNew(
-      rtc::scoped_refptr<RtpSenderInterface> sender);
+      rtc::scoped_refptr<RtpSenderInterface> sender) {
+    return RemoveTrackOrError(sender);
+  }
 
   // AddTransceiver creates a new RtpTransceiver and adds it to the set of
   // transceivers. Adding a transceiver will cause future calls to CreateOffer
@@ -1294,14 +1326,6 @@ class PeerConnectionObserver {
 
   // A new ICE candidate has been gathered.
   virtual void OnIceCandidate(const IceCandidateInterface* candidate) = 0;
-
-  // Gathering of an ICE candidate failed.
-  // See https://w3c.github.io/webrtc-pc/#event-icecandidateerror
-  // `host_candidate` is a stringified socket address.
-  virtual void OnIceCandidateError(const std::string& host_candidate,
-                                   const std::string& url,
-                                   int error_code,
-                                   const std::string& error_text) {}
 
   // Gathering of an ICE candidate failed.
   // See https://w3c.github.io/webrtc-pc/#event-icecandidateerror

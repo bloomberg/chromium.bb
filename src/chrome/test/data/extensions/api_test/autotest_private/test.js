@@ -251,6 +251,12 @@ var defaultTests = [
     chrome.autotestPrivate.importCrostini('backup', chrome.test.callbackFail(
         'Crostini is not available for the current user'));
   },
+  function couldAllowCrostini() {
+    chrome.autotestPrivate.couldAllowCrostini(chrome.test.callbackPass(
+        result => {
+          chrome.test.assertFalse(result);
+        }));
+  },
   function takeScreenshot() {
     chrome.autotestPrivate.takeScreenshot(
       function(base64Png) {
@@ -916,6 +922,19 @@ var defaultTests = [
         chrome.test.assertTrue(data.hasOwnProperty('framesExpected') ||
                                data.hasOwnProperty('framesProduced') ||
                                data.hasOwnProperty('jankCount'));
+        chrome.test.succeed();
+      });
+    });
+  },
+  function startSmoothnessTrackingExplicitThroughputInterval() {
+    chrome.autotestPrivate.startSmoothnessTracking(100, async function() {
+      chrome.test.assertNoLastError();
+
+      await sleep(200);
+
+      chrome.autotestPrivate.stopSmoothnessTracking(function(data) {
+        chrome.test.assertNoLastError();
+        chrome.test.assertTrue(data.hasOwnProperty('throughput'));
         chrome.test.succeed();
       });
     });

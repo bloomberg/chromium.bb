@@ -92,10 +92,8 @@ class Environment : public UdpSocket::Client {
     remote_endpoint_ = endpoint;
   }
 
-  // Returns the current state of the UDP socket. This method is virtual
-  // to allow tests to simulate socket state.
   SocketState socket_state() const { return state_; }
-  void set_socket_state_for_testing(SocketState state) { state_ = state; }
+  void SetSocketStateForTesting(SocketState state);
 
   // Subscribe to socket changes. Callers can unsubscribe by passing
   // nullptr.

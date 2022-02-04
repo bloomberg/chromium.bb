@@ -739,7 +739,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="597121107011153418">{COUNT,plural, =1{# అంశంతో}other{# అంశాలతో}}</translation>
 <translation id="5981446804259161541">లేత నీలి ఆకుపచ్చ రంగు</translation>
 <translation id="5983179082906765664">నావిగేషన్ గ్రాన్యులారిటీని పెంచండి</translation>
-<translation id="5992285135956208197">గ్రాఫిక్స్ పత్రం</translation>
+<translation id="5992285135956208197">గ్రాఫిక్స్ డాక్యుమెంట్‌</translation>
 <translation id="5999630716831179808">వాయిస్‌లు</translation>
 <translation id="6006050241733874051">ఫారమ్</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{బ్యాక్‌స్లాష్ గుర్తు}other{# బ్యాక్‌స్లాష్ గుర్తులు}}</translation>
@@ -815,7 +815,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="6637586476836377253">log</translation>
 <translation id="6657128831881431364">ప్రోగ్రెస్ పట్టీ</translation>
 <translation id="6660819301598582123">దేశ భాషలందు తెలుగు లెస్స</translation>
-<translation id="667999046851023355">పత్రం</translation>
+<translation id="667999046851023355">డాక్యుమెంట్‌</translation>
 <translation id="6688209025607531203">నమూనా యేతర హెచ్చరిక</translation>
 <translation id="6689672606256159458">ముదురు గులాబీ నారింజ రంగు</translation>
 <translation id="669617842401078250"><ph name="FILE_NAME" /> డౌన్‌లోడ్ పాజ్ చేయబడింది</translation>
@@ -1038,7 +1038,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="817529114347680055">స్క్రీన్‌ను ఆన్ చేయండి</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">అడ్డు</translation>
-<translation id="8186185314313222077">పూర్తి స్క్రీన్‌ను టోగుల్ చేస్తుంది</translation>
+<translation id="8186185314313222077">ఫుల్-స్క్రీన్‌ను టోగుల్ చేస్తుంది</translation>
 <translation id="8199231515320852133">ప్రస్తుత సెల్ యొక్క ముఖ్య శీర్షికలను తెలియజేయండి</translation>
 <translation id="8202174735952881587">ఆకాశ నీలం</translation>
 <translation id="820469951249669083">తర్వాతి అడ్డు వరుసకు వెళ్లండి</translation>
@@ -1169,6 +1169,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="9223032053830369045">ముదురు ఎరుపు రంగు</translation>
 <translation id="923331726185079994">ChromeVox నవీకరించబడింది</translation>
 <translation id="93384979447910801">ముదురు సముద్ర ఆకుపచ్చ</translation>
+<translation id="937605981140327129">TalkBack ప్రస్తుతం ఇన్‌స్టాల్ చేయబడలేదు. దయచేసి Play Store ద్వారా Android AccessibilitySuiteను ఇన్‌స్టాల్ చేసి, మళ్లీ ట్రై చేయండి.</translation>
 <translation id="948171205378458592">ప్రసంగ రేటుని తగ్గించండి</translation>
 <translation id="957570623732056069">ఈ పాఠాన్ని నావిగేట్ చేయడానికి ఒక వేలుతో ఎడమవైపుకు లేదా కుడివైపుకు స్వైప్ చేయండి</translation>
 <translation id="958854023026327378">ఒక వేలితో కిందకి స్వైప్ చేయండి</translation>

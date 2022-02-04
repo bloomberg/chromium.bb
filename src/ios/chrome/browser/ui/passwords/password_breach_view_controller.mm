@@ -14,13 +14,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-// Picture width of the branding.
-constexpr CGFloat kLogoWidth = 180;
-
-}  // namespace
-
 @implementation PasswordBreachViewController
 
 #pragma mark - Public
@@ -35,22 +28,6 @@ constexpr CGFloat kLogoWidth = 180;
               kIOSEnablePasswordManagerBrandingUpdate)) {
     self.image = [UIImage imageNamed:@"password_breach_illustration"];
     self.showDismissBarButton = NO;
-
-    UIImageView* imageView = [[UIImageView alloc]
-        initWithImage:[UIImage imageNamed:@"passwords_logo_colored"]];
-    imageView.contentMode = UIViewContentModeScaleAspectFit;
-    imageView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.specificContentView addSubview:imageView];
-
-    [NSLayoutConstraint activateConstraints:@[
-      [imageView.topAnchor
-          constraintEqualToAnchor:self.specificContentView.topAnchor],
-      [imageView.centerXAnchor
-          constraintEqualToAnchor:self.specificContentView.centerXAnchor],
-      [imageView.widthAnchor constraintLessThanOrEqualToConstant:kLogoWidth],
-      [imageView.bottomAnchor
-          constraintEqualToAnchor:self.specificContentView.bottomAnchor],
-    ]];
   } else {
     self.image = [UIImage imageNamed:@"legacy_password_breach_illustration"];
   }

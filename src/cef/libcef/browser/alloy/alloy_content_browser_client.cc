@@ -5,6 +5,7 @@
 #include "libcef/browser/alloy/alloy_content_browser_client.h"
 
 #include <algorithm>
+#include <tuple>
 #include <utility>
 
 #include "include/cef_version.h"
@@ -46,7 +47,6 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/ignore_result.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -108,6 +108,7 @@
 #include "content/public/common/storage_quota_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
+#include "crypto/crypto_buildflags.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_protocols.h"
@@ -142,7 +143,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "url/gurl.h"
 
-#if defined(OS_POSIX) && !defined(OS_MAC)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
 #include "base/debug/leak_annotations.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
@@ -150,17 +151,17 @@
 #include "content/public/common/content_descriptors.h"
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "net/ssl/client_cert_store_mac.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "net/ssl/client_cert_store_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #endif
 
-#if defined(USE_NSS_CERTS)
+#if BUILDFLAG(USE_NSS_CERTS)
 #include "net/ssl/client_cert_store_nss.h"
 #endif
 
@@ -407,7 +408,7 @@ class CefQuotaPermissionContext : public content::QuotaPermissionContext {
   ~CefQuotaPermissionContext() override = default;
 };
 
-#if defined(OS_POSIX) && !defined(OS_MAC)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
 breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
     const std::string& process_type) {
   base::FilePath dumps_path;
@@ -462,7 +463,7 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
 
   return -1;
 }
-#endif  // defined(OS_POSIX) && !defined(OS_MAC)
+#endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
 
 // From chrome/browser/plugins/chrome_content_browser_client_plugins_part.cc.
 void BindPluginInfoHost(
@@ -573,18 +574,6 @@ bool AlloyContentBrowserClient::DoesSiteRequireDedicatedProcess(
   }
 
   return content::ContentBrowserClient::DoesSiteRequireDedicatedProcess(
-      browser_context, effective_site_url);
-}
-
-bool AlloyContentBrowserClient::ShouldLockProcessToSite(
-    content::BrowserContext* browser_context,
-    const GURL& effective_site_url) {
-  if (extensions::ExtensionsEnabled()) {
-    return extensions::ChromeContentBrowserClientExtensionsPart::
-        ShouldLockProcessToSite(browser_context, effective_site_url);
-  }
-
-  return content::ContentBrowserClient::ShouldLockProcessToSite(
       browser_context, effective_site_url);
 }
 
@@ -740,7 +729,7 @@ void AlloyContentBrowserClient::AppendExtraCommandLineSwitches(
     // associated values) if present in the browser command line.
     static const char* const kSwitchNames[] = {
       switches::kDisablePackLoading,
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       switches::kFrameworkDirPath,
       switches::kMainBundlePath,
 #endif
@@ -776,13 +765,13 @@ void AlloyContentBrowserClient::AppendExtraCommandLineSwitches(
     if (extensions::ExtensionsEnabled()) {
       content::RenderProcessHost* process =
           content::RenderProcessHost::FromID(child_process_id);
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
       // kPdfRenderer will be set for Windows in
       // RenderProcessHostImpl::AppendRendererCommandLine.
       if (process && process->IsPdf()) {
         command_line->AppendSwitch(switches::kPdfRenderer);
       }
-#endif  // !defined(OS_WIN)
+#endif  // !BUILDFLAG(IS_WIN)
 
       auto browser_context = process->GetBrowserContext();
       CefBrowserContext* cef_browser_context =
@@ -818,7 +807,7 @@ void AlloyContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
   }
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
   if (process_type == switches::kZygoteProcess) {
     if (browser_cmd->HasSwitch(switches::kBrowserSubprocessPath)) {
       // Force use of the sub-process executable path for the zygote process.
@@ -836,7 +825,7 @@ void AlloyContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->CopySwitchesFrom(*browser_cmd, kSwitchNames,
                                    base::size(kSwitchNames));
   }
-#endif  // defined(OS_LINUX)
+#endif  // BUILDFLAG(IS_LINUX)
 
   CefRefPtr<CefApp> app = CefAppManager::Get()->GetApplication();
   if (app.get()) {
@@ -846,7 +835,7 @@ void AlloyContentBrowserClient::AppendExtraCommandLineSwitches(
       CefRefPtr<CefCommandLineImpl> commandLinePtr(
           new CefCommandLineImpl(command_line, false, false));
       handler->OnBeforeChildProcessLaunch(commandLinePtr.get());
-      ignore_result(commandLinePtr->Detach(nullptr));
+      std::ignore = commandLinePtr->Detach(nullptr);
     }
   }
 }
@@ -1055,33 +1044,35 @@ AlloyContentBrowserClient::CreateDevToolsManagerDelegate() {
   return std::make_unique<CefDevToolsManagerDelegate>();
 }
 
-bool AlloyContentBrowserClient::BindAssociatedReceiverFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedInterfaceEndpointHandle* handle) {
-  if (interface_name == extensions::mojom::LocalFrameHost::Name_) {
-    extensions::ExtensionWebContentsObserver::BindLocalFrameHost(
-        mojo::PendingAssociatedReceiver<extensions::mojom::LocalFrameHost>(
-            std::move(*handle)),
-        render_frame_host);
-    return true;
-  }
-  if (interface_name == printing::mojom::PrintManagerHost::Name_) {
-    printing::CefPrintViewManager::BindPrintManagerHost(
-        mojo::PendingAssociatedReceiver<printing::mojom::PrintManagerHost>(
-            std::move(*handle)),
-        render_frame_host);
-    return true;
-  }
-  if (interface_name == pdf::mojom::PdfService::Name_) {
-    pdf::PDFWebContentsHelper::BindPdfService(
-        mojo::PendingAssociatedReceiver<pdf::mojom::PdfService>(
-            std::move(*handle)),
-        render_frame_host);
-    return true;
-  }
+void AlloyContentBrowserClient::
+    RegisterAssociatedInterfaceBindersForRenderFrameHost(
+        content::RenderFrameHost& render_frame_host,
+        blink::AssociatedInterfaceRegistry& associated_registry) {
+  associated_registry.AddInterface(base::BindRepeating(
+      [](content::RenderFrameHost* render_frame_host,
+         mojo::PendingAssociatedReceiver<extensions::mojom::LocalFrameHost>
+             receiver) {
+        extensions::ExtensionWebContentsObserver::BindLocalFrameHost(
+            std::move(receiver), render_frame_host);
+      },
+      &render_frame_host));
 
-  return false;
+  associated_registry.AddInterface(base::BindRepeating(
+      [](content::RenderFrameHost* render_frame_host,
+         mojo::PendingAssociatedReceiver<printing::mojom::PrintManagerHost>
+             receiver) {
+        printing::CefPrintViewManager::BindPrintManagerHost(std::move(receiver),
+                                                            render_frame_host);
+      },
+      &render_frame_host));
+
+  associated_registry.AddInterface(base::BindRepeating(
+      [](content::RenderFrameHost* render_frame_host,
+         mojo::PendingAssociatedReceiver<pdf::mojom::PdfService> receiver) {
+        pdf::PDFWebContentsHelper::BindPdfService(std::move(receiver),
+                                                  render_frame_host);
+      },
+      &render_frame_host));
 }
 
 std::vector<std::unique_ptr<content::NavigationThrottle>>
@@ -1151,7 +1142,7 @@ AlloyContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
   return interceptors;
 }
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 void AlloyContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
@@ -1161,7 +1152,7 @@ void AlloyContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     mappings->Share(kCrashDumpSignal, crash_signal_fd);
   }
 }
-#endif  // defined(OS_LINUX)
+#endif  // BUILDFLAG(IS_LINUX)
 
 void AlloyContentBrowserClient::ExposeInterfacesToRenderer(
     service_manager::BinderRegistry* registry,
@@ -1183,13 +1174,13 @@ std::unique_ptr<net::ClientCertStore>
 AlloyContentBrowserClient::CreateClientCertStore(
     content::BrowserContext* browser_context) {
   // Match the logic in ProfileNetworkContextService::CreateClientCertStore.
-#if defined(USE_NSS_CERTS)
+#if BUILDFLAG(USE_NSS_CERTS)
   // TODO: Add support for client implementation of crypto password dialog.
   return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreNSS(
       net::ClientCertStoreNSS::PasswordDelegateFactory()));
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreWin());
-#elif defined(OS_MAC)
+#elif BUILDFLAG(IS_MAC)
   return std::unique_ptr<net::ClientCertStore>(new net::ClientCertStoreMac());
 #else
 #error Unknown platform.
@@ -1230,6 +1221,7 @@ void AlloyContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
 void AlloyContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
     int render_process_id,
     int render_frame_id,
+    const absl::optional<url::Origin>& request_initiator_origin,
     NonNetworkURLLoaderFactoryMap* factories) {
   if (!extensions::ExtensionsEnabled())
     return;
@@ -1385,6 +1377,7 @@ bool AlloyContentBrowserClient::HandleExternalProtocol(
     ui::PageTransition page_transition,
     bool has_user_gesture,
     const absl::optional<url::Origin>& initiating_origin,
+    content::RenderFrameHost* initiator_document,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory) {
   // Call the other HandleExternalProtocol variant.
   return false;
@@ -1396,6 +1389,8 @@ bool AlloyContentBrowserClient::HandleExternalProtocol(
     content::NavigationUIData* navigation_data,
     network::mojom::WebSandboxFlags sandbox_flags,
     const network::ResourceRequest& resource_request,
+    const absl::optional<url::Origin>& initiating_origin,
+    content::RenderFrameHost* initiator_document,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory) {
   mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver =
       out_factory->InitWithNewPipeAndPassReceiver();

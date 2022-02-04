@@ -33,13 +33,13 @@
 
 typedef void* EGLImage;
 
-namespace dawn_native { namespace opengl {
+namespace dawn::native::opengl {
 
     class Device final : public DeviceBase {
       public:
-        static ResultOrError<Device*> Create(AdapterBase* adapter,
-                                             const DawnDeviceDescriptor* descriptor,
-                                             const OpenGLFunctions& functions);
+        static ResultOrError<Ref<Device>> Create(AdapterBase* adapter,
+                                                 const DeviceDescriptor* descriptor,
+                                                 const OpenGLFunctions& functions);
         ~Device() override;
 
         MaybeError Initialize();
@@ -81,7 +81,7 @@ namespace dawn_native { namespace opengl {
 
       private:
         Device(AdapterBase* adapter,
-               const DawnDeviceDescriptor* descriptor,
+               const DeviceDescriptor* descriptor,
                const OpenGLFunctions& functions);
 
         ResultOrError<Ref<BindGroupBase>> CreateBindGroupImpl(
@@ -126,6 +126,6 @@ namespace dawn_native { namespace opengl {
         GLFormatTable mFormatTable;
     };
 
-}}  // namespace dawn_native::opengl
+}  // namespace dawn::native::opengl
 
 #endif  // DAWNNATIVE_OPENGL_DEVICEGL_H_

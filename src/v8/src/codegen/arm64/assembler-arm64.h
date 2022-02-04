@@ -6,10 +6,8 @@
 #define V8_CODEGEN_ARM64_ASSEMBLER_ARM64_H_
 
 #include <deque>
-#include <list>
 #include <map>
 #include <memory>
-#include <vector>
 
 #include "src/base/optional.h"
 #include "src/codegen/arm64/constants-arm64.h"
@@ -264,7 +262,7 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
 
   // Returns the handle for the code object called at 'pc'.
   // This might need to be temporarily encoded as an offset into code_targets_.
-  inline Handle<Code> code_target_object_handle_at(Address pc);
+  inline Handle<CodeT> code_target_object_handle_at(Address pc);
   inline EmbeddedObjectIndex embedded_object_index_referenced_from(Address pc);
   inline void set_embedded_object_index_referenced_from(
       Address p, EmbeddedObjectIndex index);

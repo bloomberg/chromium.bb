@@ -32,8 +32,9 @@ sk_sp<skgpu::CommandBuffer> ResourceProvider::createCommandBuffer() {
 }
 
 sk_sp<skgpu::GraphicsPipeline> ResourceProvider::onCreateGraphicsPipeline(
-        const GraphicsPipelineDesc& desc) {
-    return GraphicsPipeline::Make(this->mtlGpu(), desc);
+        Context* context, const GraphicsPipelineDesc& pipelineDesc,
+        const RenderPassDesc& renderPassDesc) {
+    return GraphicsPipeline::Make(context, this->mtlGpu(), pipelineDesc, renderPassDesc);
 }
 
 sk_sp<skgpu::Texture> ResourceProvider::createTexture(SkISize dimensions,
@@ -47,7 +48,10 @@ sk_sp<skgpu::Texture> ResourceProvider::createWrappedTexture(const BackendTextur
         return nullptr;
     }
     sk_cfp<id<MTLTexture>> mtlTexture = sk_ret_cfp((id<MTLTexture>)mtlHandleTexture);
-    return Texture::MakeWrapped(texture.dimensions(), texture.info(), std::move(mtlTexture));
+    return Texture::MakeWrapped(this->mtlGpu(),
+                                texture.dimensions(),
+                                texture.info(),
+                                std::move(mtlTexture));
 }
 
 sk_sp<skgpu::Buffer> ResourceProvider::createBuffer(size_t size,

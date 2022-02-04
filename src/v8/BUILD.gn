@@ -302,14 +302,20 @@ declare_args() {
   # Sets -DV8_COMPRESS_ZONES.
   v8_enable_zone_compression = ""
 
-  # Enable V8 heap sandbox experimental feature.
-  # Sets -DV8_HEAP_SANDBOX.
-  v8_enable_heap_sandbox = ""
+  # Enable the experimental V8 sandbox.
+  # Sets -DV8_SANDBOX.
+  v8_enable_sandbox = false
 
-  # Enable the Virtual Memory Cage, which contains the pointer compression cage
-  # as well as ArrayBuffer BackingStores and WASM memory cages.
-  # Sets -DV8_VIRTUAL_MEMORY_CAGE.
-  v8_enable_virtual_memory_cage = ""
+  # Enable external pointer sandboxing. Requires v8_enable_sandbox.
+  # Sets -DV8_SANDBOXED_EXTERNAL_POINRTERS.
+  v8_enable_sandboxed_external_pointers = false
+
+  # Enable sandboxed pointers. Requires v8_enable_sandbox.
+  # Sets -DV8_SANDBOXED_POINTERS.
+  v8_enable_sandboxed_pointers = false
+
+  # Enable all available sandbox features. Implies v8_enable_sandbox.
+  v8_enable_sandbox_future = false
 
   # Experimental feature for collecting per-class zone memory stats.
   # Requires use_rtti = true
@@ -333,7 +339,7 @@ declare_args() {
   v8_enable_map_packing = false
 
   # Allow for JS promise hooks (instead of just C++).
-  v8_allow_javascript_in_promise_hooks = false
+  v8_enable_javascript_promise_hooks = false
 
   # Enable allocation folding globally (sets -dV8_ALLOCATION_FOLDING).
   # When it's disabled, the --turbo-allocation-folding runtime flag will be ignored.
@@ -348,11 +354,9 @@ declare_args() {
   # This is only used by nodejs.
   v8_scriptormodule_legacy_lifetime = false
 
-  # If enabled, the receiver is always included in the actual and formal
-  # parameter count of function with JS linkage.
-  # TODO(v8:11112): Remove once all architectures support the flag and it is
-  # enabled unconditionally.
-  v8_include_receiver_in_argc = true
+  # Change code emission and runtime features to be CET shadow-stack compliant
+  # (incomplete and experimental).
+  v8_enable_cet_shadow_stack = false
 }
 
 # Derived defaults.
@@ -403,12 +407,6 @@ if (v8_enable_fast_torque == "") {
 if (v8_enable_zone_compression == "") {
   v8_enable_zone_compression = false
 }
-if (v8_enable_heap_sandbox == "") {
-  v8_enable_heap_sandbox = false
-}
-if (v8_enable_virtual_memory_cage == "") {
-  v8_enable_virtual_memory_cage = v8_enable_heap_sandbox
-}
 if (v8_enable_short_builtin_calls == "") {
   v8_enable_short_builtin_calls =
       v8_current_cpu == "x64" || (!is_android && v8_current_cpu == "arm64")
@@ -453,6 +451,14 @@ if (v8_multi_arch_build &&
   v8_enable_pointer_compression = !v8_enable_pointer_compression
   v8_enable_pointer_compression_shared_cage = v8_enable_pointer_compression
 }
+
+# Check if it is a Chromium build and activate PAC/BTI if needed.
+# TODO(cavalcantii): have a single point of integration with PAC/BTI flags.
+if (build_with_chromium && v8_current_cpu == "arm64" &&
+    arm_control_flow_integrity == "standard") {
+  v8_control_flow_integrity = true
+}
+
 if (v8_enable_short_builtin_calls &&
     ((!v8_enable_pointer_compression && v8_current_cpu != "x64") ||
      v8_control_flow_integrity)) {
@@ -467,15 +473,16 @@ if (v8_enable_shared_ro_heap == "") {
                              v8_enable_pointer_compression_shared_cage
 }
 
-# Check if it is a Chromium build and activate PAC/BTI if needed.
-if (build_with_chromium && v8_current_cpu == "arm64" &&
-    arm_control_flow_integrity == "standard") {
-  v8_control_flow_integrity = true
+# Enable the v8 sandbox on 64-bit Chromium builds.
+if (build_with_chromium && v8_enable_pointer_compression_shared_cage) {
+  v8_enable_sandbox = true
 }
 
-# Enable the virtual memory cage on 64-bit Chromium builds.
-if (build_with_chromium && v8_enable_pointer_compression_shared_cage) {
-  v8_enable_virtual_memory_cage = true
+# Enable all available sandbox features if sandbox future is enabled.
+if (v8_enable_sandbox_future) {
+  v8_enable_sandboxed_pointers = true
+  v8_enable_sandboxed_external_pointers = true
+  v8_enable_sandbox = true
 }
 
 assert(!v8_disable_write_barriers || v8_enable_single_generation,
@@ -500,18 +507,18 @@ assert(!v8_enable_map_packing || v8_current_cpu == "x64",
 assert(!v8_enable_external_code_space || v8_enable_pointer_compression,
        "External code space feature requires pointer compression")
 
-assert(!v8_enable_heap_sandbox || v8_enable_pointer_compression,
-       "V8 Heap Sandbox requires pointer compression")
+assert(!v8_enable_sandbox || v8_enable_pointer_compression_shared_cage,
+       "Sandbox requires the shared pointer compression cage")
 
-assert(!v8_enable_heap_sandbox || !v8_enable_external_code_space,
-       "V8 Heap Sandbox is not compatible with external code space YET")
+assert(!v8_enable_sandboxed_pointers || v8_enable_sandbox,
+       "Sandboxed pointers require the sandbox")
 
-assert(!v8_enable_heap_sandbox || v8_enable_virtual_memory_cage,
-       "The Heap Sandbox requires the virtual memory cage")
+assert(!v8_enable_sandboxed_external_pointers || v8_enable_sandbox,
+       "Sandboxed external pointers require the sandbox")
 
 assert(
-    !v8_enable_virtual_memory_cage || v8_enable_pointer_compression_shared_cage,
-    "V8 VirtualMemoryCage requires the shared pointer compression cage")
+    !v8_enable_sandboxed_external_pointers || !v8_enable_external_code_space,
+    "Sandboxed external pointers are not compatible with external code space YET")
 
 assert(
     !v8_enable_pointer_compression_shared_cage || v8_enable_pointer_compression,
@@ -673,8 +680,9 @@ external_v8_defines = [
   "V8_COMPRESS_POINTERS_IN_ISOLATE_CAGE",
   "V8_31BIT_SMIS_ON_64BIT_ARCH",
   "V8_COMPRESS_ZONES",
-  "V8_HEAP_SANDBOX",
-  "V8_VIRTUAL_MEMORY_CAGE",
+  "V8_SANDBOX",
+  "V8_SANDBOXED_POINTERS",
+  "V8_SANDBOXED_EXTERNAL_POINTERS",
   "V8_DEPRECATION_WARNINGS",
   "V8_IMMINENT_DEPRECATION_WARNINGS",
   "V8_NO_ARGUMENTS_ADAPTOR",
@@ -702,11 +710,14 @@ if (v8_enable_pointer_compression || v8_enable_31bit_smis_on_64bit_arch) {
 if (v8_enable_zone_compression) {
   enabled_external_v8_defines += [ "V8_COMPRESS_ZONES" ]
 }
-if (v8_enable_heap_sandbox) {
-  enabled_external_v8_defines += [ "V8_HEAP_SANDBOX" ]
+if (v8_enable_sandbox) {
+  enabled_external_v8_defines += [ "V8_SANDBOX" ]
 }
-if (v8_enable_virtual_memory_cage) {
-  enabled_external_v8_defines += [ "V8_VIRTUAL_MEMORY_CAGE" ]
+if (v8_enable_sandboxed_pointers) {
+  enabled_external_v8_defines += [ "V8_SANDBOXED_POINTERS" ]
+}
+if (v8_enable_sandboxed_external_pointers) {
+  enabled_external_v8_defines += [ "V8_SANDBOXED_EXTERNAL_POINTERS" ]
 }
 if (v8_deprecation_warnings) {
   enabled_external_v8_defines += [ "V8_DEPRECATION_WARNINGS" ]
@@ -915,6 +926,9 @@ config("features") {
   if (v8_control_flow_integrity) {
     defines += [ "V8_ENABLE_CONTROL_FLOW_INTEGRITY" ]
   }
+  if (v8_enable_cet_shadow_stack) {
+    defines += [ "V8_ENABLE_CET_SHADOW_STACK" ]
+  }
   if (v8_enable_wasm_gdb_remote_debugging) {
     defines += [ "V8_ENABLE_WASM_GDB_REMOTE_DEBUGGING" ]
   }
@@ -945,8 +959,8 @@ config("features") {
   if (v8_dict_property_const_tracking) {
     defines += [ "V8_DICT_PROPERTY_CONST_TRACKING" ]
   }
-  if (v8_allow_javascript_in_promise_hooks) {
-    defines += [ "V8_ALLOW_JAVASCRIPT_IN_PROMISE_HOOKS" ]
+  if (v8_enable_javascript_promise_hooks) {
+    defines += [ "V8_ENABLE_JAVASCRIPT_PROMISE_HOOKS" ]
   }
   if (v8_enable_allocation_folding) {
     defines += [ "V8_ALLOCATION_FOLDING" ]
@@ -959,9 +973,6 @@ config("features") {
   }
   if (v8_advanced_bigint_algorithms) {
     defines += [ "V8_ADVANCED_BIGINT_ALGORITHMS" ]
-  }
-  if (v8_include_receiver_in_argc) {
-    defines += [ "V8_INCLUDE_RECEIVER_IN_ARGC" ]
   }
 }
 
@@ -1006,11 +1017,17 @@ config("toolchain") {
   }
   if (v8_current_cpu == "arm64") {
     defines += [ "V8_TARGET_ARCH_ARM64" ]
-    if (v8_control_flow_integrity) {
-      # TODO(v8:10026): Enable this in src/build.
-      if (current_cpu == "arm64") {
+    if (current_cpu == "arm64") {
+      # This will enable PAC+BTI in code generation and static code.
+      if (v8_control_flow_integrity) {
+        # TODO(v8:10026): Enable this in src/build.
         cflags += [ "-mbranch-protection=standard" ]
         asmflags = [ "-mmark-bti-property" ]
+      } else if (build_with_chromium && arm_control_flow_integrity == "pac") {
+        # This should enable PAC only in C++ code (and no CFI in runtime
+        # generated code). For details, see crbug.com/919548.
+        cflags += [ "-mbranch-protection=pac-ret" ]
+        asmflags = [ "-mbranch-protection=pac-ret" ]
       }
     }
   }
@@ -1716,6 +1733,7 @@ torque_files = [
   "src/objects/api-callbacks.tq",
   "src/objects/arguments.tq",
   "src/objects/bigint.tq",
+  "src/objects/call-site-info.tq",
   "src/objects/cell.tq",
   "src/objects/code.tq",
   "src/objects/contexts.tq",
@@ -1762,7 +1780,6 @@ torque_files = [
   "src/objects/script.tq",
   "src/objects/shared-function-info.tq",
   "src/objects/source-text-module.tq",
-  "src/objects/stack-frame-info.tq",
   "src/objects/string.tq",
   "src/objects/struct.tq",
   "src/objects/swiss-hash-table-helpers.tq",
@@ -2197,12 +2214,13 @@ action("v8_dump_build_config") {
     "v8_enable_pointer_compression=$v8_enable_pointer_compression",
     "v8_enable_pointer_compression_shared_cage=" +
         "$v8_enable_pointer_compression_shared_cage",
-    "v8_enable_virtual_memory_cage=$v8_enable_virtual_memory_cage",
+    "v8_enable_sandbox=$v8_enable_sandbox",
     "v8_enable_third_party_heap=$v8_enable_third_party_heap",
     "v8_enable_webassembly=$v8_enable_webassembly",
     "v8_dict_property_const_tracking=$v8_dict_property_const_tracking",
     "v8_control_flow_integrity=$v8_control_flow_integrity",
     "v8_target_cpu=\"$v8_target_cpu\"",
+    "v8_enable_cet_shadow_stack=$v8_enable_cet_shadow_stack",
   ]
 
   if (v8_current_cpu == "mips" || v8_current_cpu == "mipsel" ||
@@ -2272,6 +2290,7 @@ v8_source_set("v8_initializers") {
   deps = [
     ":torque_generated_initializers",
     ":v8_base_without_compiler",
+    ":v8_bigint",
     ":v8_shared_internal_headers",
     ":v8_tracing",
   ]
@@ -2320,6 +2339,7 @@ v8_source_set("v8_initializers") {
     "src/builtins/builtins-sharedarraybuffer-gen.cc",
     "src/builtins/builtins-string-gen.cc",
     "src/builtins/builtins-string-gen.h",
+    "src/builtins/builtins-temporal-gen.cc",
     "src/builtins/builtins-typed-array-gen.cc",
     "src/builtins/builtins-typed-array-gen.h",
     "src/builtins/builtins-utils-gen.h",
@@ -2346,6 +2366,8 @@ v8_source_set("v8_initializers") {
     "src/interpreter/interpreter-generator.h",
     "src/interpreter/interpreter-intrinsics-generator.cc",
     "src/interpreter/interpreter-intrinsics-generator.h",
+    "src/numbers/integer-literal-inl.h",
+    "src/numbers/integer-literal.h",
   ]
 
   if (v8_enable_webassembly) {
@@ -2765,7 +2787,6 @@ v8_header_set("v8_internal_headers") {
     "src/compiler/js-generic-lowering.h",
     "src/compiler/js-graph.h",
     "src/compiler/js-heap-broker.h",
-    "src/compiler/js-heap-copy-reducer.h",
     "src/compiler/js-inlining-heuristic.h",
     "src/compiler/js-inlining.h",
     "src/compiler/js-intrinsic-lowering.h",
@@ -2920,10 +2941,13 @@ v8_header_set("v8_internal_headers") {
     "src/heap/concurrent-allocator.h",
     "src/heap/concurrent-marking.h",
     "src/heap/cppgc-js/cpp-heap.h",
+    "src/heap/cppgc-js/cpp-marking-state-inl.h",
+    "src/heap/cppgc-js/cpp-marking-state.h",
     "src/heap/cppgc-js/cpp-snapshot.h",
     "src/heap/cppgc-js/unified-heap-marking-state.h",
     "src/heap/cppgc-js/unified-heap-marking-verifier.h",
     "src/heap/cppgc-js/unified-heap-marking-visitor.h",
+    "src/heap/embedder-tracing-inl.h",
     "src/heap/embedder-tracing.h",
     "src/heap/factory-base-inl.h",
     "src/heap/factory-base.h",
@@ -3066,6 +3090,8 @@ v8_header_set("v8_internal_headers") {
     "src/objects/backing-store.h",
     "src/objects/bigint-inl.h",
     "src/objects/bigint.h",
+    "src/objects/call-site-info-inl.h",
+    "src/objects/call-site-info.h",
     "src/objects/cell-inl.h",
     "src/objects/cell.h",
     "src/objects/code-inl.h",
@@ -3213,8 +3239,6 @@ v8_header_set("v8_internal_headers") {
     "src/objects/smi.h",
     "src/objects/source-text-module-inl.h",
     "src/objects/source-text-module.h",
-    "src/objects/stack-frame-info-inl.h",
-    "src/objects/stack-frame-info.h",
     "src/objects/string-comparator.h",
     "src/objects/string-inl.h",
     "src/objects/string-set-inl.h",
@@ -3315,12 +3339,12 @@ v8_header_set("v8_internal_headers") {
     "src/roots/roots.h",
     "src/runtime/runtime-utils.h",
     "src/runtime/runtime.h",
-    "src/security/caged-pointer-inl.h",
-    "src/security/caged-pointer.h",
-    "src/security/external-pointer-inl.h",
-    "src/security/external-pointer-table.h",
-    "src/security/external-pointer.h",
-    "src/security/vm-cage.h",
+    "src/sandbox/external-pointer-inl.h",
+    "src/sandbox/external-pointer-table.h",
+    "src/sandbox/external-pointer.h",
+    "src/sandbox/sandbox.h",
+    "src/sandbox/sandboxed-pointer-inl.h",
+    "src/sandbox/sandboxed-pointer.h",
     "src/snapshot/code-serializer.h",
     "src/snapshot/context-deserializer.h",
     "src/snapshot/context-serializer.h",
@@ -3413,6 +3437,7 @@ v8_header_set("v8_internal_headers") {
       "src/compiler/wasm-compiler.h",
       "src/compiler/wasm-escape-analysis.h",
       "src/compiler/wasm-inlining.h",
+      "src/compiler/wasm-loop-peeling.h",
       "src/debug/debug-wasm-objects-inl.h",
       "src/debug/debug-wasm-objects.h",
       "src/trap-handler/trap-handler-internal.h",
@@ -3701,8 +3726,8 @@ v8_header_set("v8_internal_headers") {
     ]
   } else if (v8_current_cpu == "ppc64") {
     sources += [  ### gcmole(arch:ppc64) ###
-      "src/baseline/s390/baseline-assembler-s390-inl.h",
-      "src/baseline/s390/baseline-compiler-s390-inl.h",
+      "src/baseline/ppc/baseline-assembler-ppc-inl.h",
+      "src/baseline/ppc/baseline-compiler-ppc-inl.h",
       "src/codegen/ppc/assembler-ppc-inl.h",
       "src/codegen/ppc/assembler-ppc.h",
       "src/codegen/ppc/constants-ppc.h",
@@ -3822,7 +3847,6 @@ v8_compiler_sources = [
   "src/compiler/js-generic-lowering.cc",
   "src/compiler/js-graph.cc",
   "src/compiler/js-heap-broker.cc",
-  "src/compiler/js-heap-copy-reducer.cc",
   "src/compiler/js-inlining-heuristic.cc",
   "src/compiler/js-inlining.cc",
   "src/compiler/js-intrinsic-lowering.cc",
@@ -3885,6 +3909,7 @@ if (v8_enable_webassembly) {
     "src/compiler/wasm-compiler.cc",
     "src/compiler/wasm-escape-analysis.cc",
     "src/compiler/wasm-inlining.cc",
+    "src/compiler/wasm-loop-peeling.cc",
   ]
 }
 
@@ -4205,6 +4230,7 @@ v8_source_set("v8_base_without_compiler") {
     "src/numbers/math-random.cc",
     "src/objects/backing-store.cc",
     "src/objects/bigint.cc",
+    "src/objects/call-site-info.cc",
     "src/objects/code-kind.cc",
     "src/objects/code.cc",
     "src/objects/compilation-cache-table.cc",
@@ -4232,6 +4258,7 @@ v8_source_set("v8_base_without_compiler") {
     "src/objects/js-segment-iterator.cc",
     "src/objects/js-segmenter.cc",
     "src/objects/js-segments.cc",
+    "src/objects/js-temporal-objects.cc",
     "src/objects/keys.cc",
     "src/objects/literal-objects.cc",
     "src/objects/lookup-cache.cc",
@@ -4250,7 +4277,6 @@ v8_source_set("v8_base_without_compiler") {
     "src/objects/scope-info.cc",
     "src/objects/shared-function-info.cc",
     "src/objects/source-text-module.cc",
-    "src/objects/stack-frame-info.cc",
     "src/objects/string-comparator.cc",
     "src/objects/string-table.cc",
     "src/objects/string.cc",
@@ -4340,8 +4366,8 @@ v8_source_set("v8_base_without_compiler") {
     "src/runtime/runtime-typedarray.cc",
     "src/runtime/runtime-weak-refs.cc",
     "src/runtime/runtime.cc",
-    "src/security/external-pointer-table.cc",
-    "src/security/vm-cage.cc",
+    "src/sandbox/external-pointer-table.cc",
+    "src/sandbox/sandbox.cc",
     "src/snapshot/code-serializer.cc",
     "src/snapshot/context-deserializer.cc",
     "src/snapshot/context-serializer.cc",
@@ -4830,6 +4856,8 @@ v8_source_set("torque_base") {
   visibility = [ ":*" ]  # Only targets in this file can depend on this.
 
   sources = [
+    "src/numbers/integer-literal-inl.h",
+    "src/numbers/integer-literal.h",
     "src/torque/ast.h",
     "src/torque/cc-generator.cc",
     "src/torque/cc-generator.h",
@@ -4883,6 +4911,7 @@ v8_source_set("torque_base") {
   ]
 
   deps = [
+    ":v8_bigint",
     ":v8_flags",
     ":v8_shared_internal_headers",
   ]

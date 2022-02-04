@@ -30,9 +30,9 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/strings/utf_string_conversions.h"
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
 namespace updater {
 namespace test {
@@ -66,6 +66,10 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
 
   void EnterTestMode(const GURL& url) const override {
     RunCommand("enter_test_mode", {Param("url", url.spec())});
+  }
+
+  void ExpectSelfUpdateSequence(ScopedServer* test_server) const override {
+    updater::test::ExpectSelfUpdateSequence(updater_scope_, test_server);
   }
 
   void ExpectUpdateSequence(ScopedServer* test_server,
@@ -104,6 +108,10 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("setup_fake_updater_lower_version");
   }
 
+  void SetupRealUpdaterLowerVersion() const override {
+    RunCommand("setup_real_updater_lower_version");
+  }
+
   void SetExistenceCheckerPath(const std::string& app_id,
                                const base::FilePath& path) const override {
     RunCommand("set_existence_checker_path",
@@ -136,6 +144,11 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
                {Param("exit_code", base::NumberToString(expected_exit_code))});
   }
 
+  void RunWakeActive(int expected_exit_code) const override {
+    RunCommand("run_wake_active",
+               {Param("exit_code", base::NumberToString(expected_exit_code))});
+  }
+
   void Update(const std::string& app_id) const override {
     RunCommand("update", {Param("app_id", app_id)});
   }
@@ -146,11 +159,11 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("register_app", {Param("app_id", app_id)});
   }
 
-  void WaitForServerExit() const override {
-    updater::test::WaitForServerExit(updater_scope_);
+  void WaitForUpdaterExit() const override {
+    updater::test::WaitForUpdaterExit(updater_scope_);
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void ExpectInterfacesRegistered() const override {
     RunCommand("expect_interfaces_registered");
   }
@@ -181,10 +194,10 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   void TearDownTestService() const override {
     updater::test::RunTestServiceCommand("teardown");
   }
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
   base::FilePath GetDifferentUserPath() const override {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
     // The updater_tests executable is owned by non-root.
     return base::PathService::CheckedGet(base::FILE_EXE);
 #else
@@ -232,7 +245,7 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     EXPECT_TRUE(base::PathExists(path));
     path = MakeAbsoluteFilePath(path);
     path = path.Append(FILE_PATH_LITERAL("updater_integration_tests_helper"));
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     path = path.AddExtension(L"exe");
 #endif
     EXPECT_TRUE(base::PathExists(path));

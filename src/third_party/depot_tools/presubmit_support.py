@@ -1715,7 +1715,7 @@ def DoPresubmitChecks(change,
 
     if not should_prompt and not presubmits_failed:
       sys.stdout.write('%s presubmit checks passed.\n' % python_version)
-    elif should_prompt:
+    elif should_prompt and not presubmits_failed:
       sys.stdout.write('There were %s presubmit warnings. ' % python_version)
       if may_prompt:
         presubmits_failed = not prompt_should_continue(

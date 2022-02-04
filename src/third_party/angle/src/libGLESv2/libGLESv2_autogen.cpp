@@ -2713,6 +2713,8 @@ void GL_APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, const 
     return GL_VertexPointer(size, type, stride, pointer);
 }
 
+// GL_ANDROID_extension_pack_es31a
+
 // GL_ANGLE_base_vertex_base_instance
 void GL_APIENTRY glDrawArraysInstancedBaseInstanceANGLE(GLenum mode,
                                                         GLint first,
@@ -4711,6 +4713,8 @@ void GL_APIENTRY glValidateProgramPipelineEXT(GLuint pipeline)
     return GL_ValidateProgramPipelineEXT(pipeline);
 }
 
+// GL_EXT_shader_framebuffer_fetch
+
 // GL_EXT_shader_framebuffer_fetch_non_coherent
 void GL_APIENTRY glFramebufferFetchBarrierEXT()
 {
@@ -4956,6 +4960,17 @@ void GL_APIENTRY glMaxShaderCompilerThreadsKHR(GLuint count)
 // GL_KHR_texture_compression_astc_ldr
 
 // GL_KHR_texture_compression_astc_sliced_3d
+
+// GL_MESA_framebuffer_flip_y
+void GL_APIENTRY glFramebufferParameteriMESA(GLenum target, GLenum pname, GLint param)
+{
+    return GL_FramebufferParameteriMESA(target, pname, param);
+}
+
+void GL_APIENTRY glGetFramebufferParameterivMESA(GLenum target, GLenum pname, GLint *params)
+{
+    return GL_GetFramebufferParameterivMESA(target, pname, params);
+}
 
 // GL_NV_fence
 void GL_APIENTRY glDeleteFencesNV(GLsizei n, const GLuint *fences)

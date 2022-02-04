@@ -22,40 +22,16 @@
 #include <string>
 #include <vector>
 
-namespace dawn_platform {
+namespace dawn::platform {
     class Platform;
-}  // namespace dawn_platform
+}  // namespace dawn::platform
 
 namespace wgpu {
     struct AdapterProperties;
+    struct DeviceDescriptor;
 }
 
-namespace dawn_native {
-
-    // DEPRECATED: use WGPUAdapterProperties instead.
-    struct PCIInfo {
-        uint32_t deviceId = 0;
-        uint32_t vendorId = 0;
-        std::string name;
-    };
-
-    // DEPRECATED: use WGPUBackendType instead.
-    enum class BackendType {
-        D3D12,
-        Metal,
-        Null,
-        OpenGL,
-        OpenGLES,
-        Vulkan,
-    };
-
-    // DEPRECATED: use WGPUAdapterType instead.
-    enum class DeviceType {
-        DiscreteGPU,
-        IntegratedGPU,
-        CPU,
-        Unknown,
-    };
+namespace dawn::native {
 
     class InstanceBase;
     class AdapterBase;
@@ -69,10 +45,6 @@ namespace dawn_native {
 
         const WGPURequiredLimits* requiredLimits = nullptr;
     };
-
-    // TODO(crbug.com/dawn/160): Remove when embedders of Dawn are updated to use
-    // DawnDeviceDescriptor.
-    using DeviceDescriptor = DawnDeviceDescriptor;
 
     // A struct to record the information of a toggle. A toggle is a code path in Dawn device that
     // can be manually configured to run or not outside Dawn, including workarounds, special
@@ -103,14 +75,10 @@ namespace dawn_native {
         Adapter(const Adapter& other);
         Adapter& operator=(const Adapter& other);
 
-        // DEPRECATED: use GetProperties instead.
-        BackendType GetBackendType() const;
-        DeviceType GetDeviceType() const;
-        const PCIInfo& GetPCIInfo() const;
-
         // Essentially webgpu.h's wgpuAdapterGetProperties while we don't have WGPUAdapter in
         // dawn.json
         void GetProperties(wgpu::AdapterProperties* properties) const;
+        void GetProperties(WGPUAdapterProperties* properties) const;
 
         std::vector<const char*> GetSupportedExtensions() const;
         std::vector<const char*> GetSupportedFeatures() const;
@@ -125,14 +93,23 @@ namespace dawn_native {
 
         explicit operator bool() const;
 
-        // Create a device on this adapter, note that the interface will change to include at least
-        // a device descriptor and a pointer to backend specific options.
-        // On an error, nullptr is returned.
-        WGPUDevice CreateDevice(const DawnDeviceDescriptor* deviceDescriptor = nullptr);
+        // Create a device on this adapter. On an error, nullptr is returned.
+        WGPUDevice CreateDevice(const DawnDeviceDescriptor* deviceDescriptor);
+        WGPUDevice CreateDevice(const wgpu::DeviceDescriptor* deviceDescriptor);
+        WGPUDevice CreateDevice(const WGPUDeviceDescriptor* deviceDescriptor = nullptr);
 
         void RequestDevice(const DawnDeviceDescriptor* descriptor,
                            WGPURequestDeviceCallback callback,
                            void* userdata);
+        void RequestDevice(const wgpu::DeviceDescriptor* descriptor,
+                           WGPURequestDeviceCallback callback,
+                           void* userdata);
+        void RequestDevice(const WGPUDeviceDescriptor* descriptor,
+                           WGPURequestDeviceCallback callback,
+                           void* userdata);
+
+        // Returns the underlying WGPUAdapter object.
+        WGPUAdapter Get() const;
 
         // Reset the backend device object for testing purposes.
         void ResetInternalDeviceForTesting();
@@ -177,6 +154,7 @@ namespace dawn_native {
         std::vector<Adapter> GetAdapters() const;
 
         const ToggleInfo* GetToggleInfo(const char* toggleName);
+        const FeatureInfo* GetFeatureInfo(WGPUFeatureName feature);
 
         // Enables backend validation layers
         void EnableBackendValidation(bool enableBackendValidation);
@@ -185,7 +163,7 @@ namespace dawn_native {
         // Enable debug capture on Dawn startup
         void EnableBeginCaptureOnStartup(bool beginCaptureOnStartup);
 
-        void SetPlatform(dawn_platform::Platform* platform);
+        void SetPlatform(dawn::platform::Platform* platform);
 
         // Returns the underlying WGPUInstance object.
         WGPUInstance Get() const;
@@ -239,12 +217,15 @@ namespace dawn_native {
     // Common properties of external images
     struct DAWN_NATIVE_EXPORT ExternalImageDescriptor {
       public:
-        const ExternalImageType type;
         const WGPUTextureDescriptor* cTextureDescriptor;  // Must match image creation params
         bool isInitialized;  // Whether the texture is initialized on import
+        ExternalImageType GetType() const;
 
       protected:
         ExternalImageDescriptor(ExternalImageType type);
+
+      private:
+        ExternalImageType mType;
     };
 
     struct DAWN_NATIVE_EXPORT ExternalImageAccessDescriptor {
@@ -255,11 +236,14 @@ namespace dawn_native {
 
     struct DAWN_NATIVE_EXPORT ExternalImageExportInfo {
       public:
-        const ExternalImageType type;
         bool isInitialized;  // Whether the texture is initialized after export
+        ExternalImageType GetType() const;
 
       protected:
         ExternalImageExportInfo(ExternalImageType type);
+
+      private:
+        ExternalImageType mType;
     };
 
     DAWN_NATIVE_EXPORT const char* GetObjectLabelForTesting(void* objectHandle);
@@ -269,6 +253,9 @@ namespace dawn_native {
     DAWN_NATIVE_EXPORT bool BindGroupLayoutBindingsEqualForTesting(WGPUBindGroupLayout a,
                                                                    WGPUBindGroupLayout b);
 
-}  // namespace dawn_native
+}  // namespace dawn::native
+
+// TODO(dawn:824): Remove once the deprecation period is passed.
+namespace dawn_native = dawn::native;
 
 #endif  // DAWNNATIVE_DAWNNATIVE_H_

@@ -13,6 +13,7 @@
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "third_party/base/cxx17_backports.h"
 #include "third_party/base/notreached.h"
+#include "third_party/base/numerics/safe_conversions.h"
 #include "third_party/base/ptr_util.h"
 
 namespace fxcodec {
@@ -54,7 +55,8 @@ IccTransform::~IccTransform() {
 // static
 std::unique_ptr<IccTransform> IccTransform::CreateTransformSRGB(
     pdfium::span<const uint8_t> span) {
-  ScopedCmsProfile srcProfile(cmsOpenProfileFromMem(span.data(), span.size()));
+  ScopedCmsProfile srcProfile(cmsOpenProfileFromMem(
+      span.data(), pdfium::base::checked_cast<cmsUInt32Number>(span.size())));
   if (!srcProfile)
     return nullptr;
 
@@ -89,11 +91,11 @@ std::unique_ptr<IccTransform> IccTransform::CreateTransformSRGB(
     return nullptr;
 
   cmsHTRANSFORM hTransform = nullptr;
-  const int intent = 0;
   switch (dstCS) {
     case cmsSigRgbData:
-      hTransform = cmsCreateTransform(srcProfile.get(), srcFormat,
-                                      dstProfile.get(), TYPE_BGR_8, intent, 0);
+      hTransform =
+          cmsCreateTransform(srcProfile.get(), srcFormat, dstProfile.get(),
+                             TYPE_BGR_8, INTENT_PERCEPTUAL, /*dwFlags=*/0);
       break;
     case cmsSigGrayData:
     case cmsSigCmykData:

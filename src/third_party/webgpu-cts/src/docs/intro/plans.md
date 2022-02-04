@@ -12,7 +12,7 @@ and potentially useful [helpers](../helper_index.txt).
 **A test plan must serve two functions:**
 
 - Describes the test, succinctly, but in enough detail that a reader can read *only* the test
-  plans in a file or directory and evaluate the completeness of the test coverage.
+  plans and evaluate coverage completeness of a file/directory.
 - Describes the test precisely enough that, when code is added, the reviewer can ensure that the
   test really covers what the test plan says.
 
@@ -60,8 +60,8 @@ For any notes which are not specific to a single test, or for preliminary notes 
 haven't been planned in full detail, put them in the test file's `description` variable at
 the top. Or, if they aren't associated with a test file, put them in a `README.txt` file.
 
-**Any notes about things which are unimplemented must be marked with `TODO:` inside
-the description string.**
+**Any notes about missing test coverage must be marked with the word `TODO` inside a
+description or README.** This makes them appear on the `/standalone/` page.
 
 ## 2. Open a pull request
 

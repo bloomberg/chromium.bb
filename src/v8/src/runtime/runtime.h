@@ -123,16 +123,14 @@ namespace internal {
 #define FOR_EACH_INTRINSIC_DEBUG(F, I)          \
   F(ClearStepping, 0, 1)                        \
   F(CollectGarbage, 1, 1)                       \
-  F(DebugAsyncFunctionEntered, 1, 1)            \
-  F(DebugAsyncFunctionSuspended, 1, 1)          \
-  F(DebugAsyncFunctionResumed, 1, 1)            \
-  F(DebugAsyncFunctionFinished, 2, 1)           \
+  F(DebugAsyncFunctionSuspended, 4, 1)          \
   F(DebugBreakAtEntry, 1, 1)                    \
   F(DebugCollectCoverage, 0, 1)                 \
   F(DebugGetLoadedScriptIds, 0, 1)              \
   F(DebugOnFunctionCall, 2, 1)                  \
   F(DebugPopPromise, 0, 1)                      \
   F(DebugPrepareStepInSuspendedGenerator, 0, 1) \
+  F(DebugPromiseThen, 1, 1)                     \
   F(DebugPushPromise, 1, 1)                     \
   F(DebugToggleBlockCoverage, 1, 1)             \
   F(DebugTogglePreciseCoverage, 1, 1)           \
@@ -184,8 +182,8 @@ namespace internal {
   I(AsyncFunctionAwaitCaught, 2, 1)           \
   I(AsyncFunctionAwaitUncaught, 2, 1)         \
   I(AsyncFunctionEnter, 2, 1)                 \
-  I(AsyncFunctionReject, 3, 1)                \
-  I(AsyncFunctionResolve, 3, 1)               \
+  I(AsyncFunctionReject, 2, 1)                \
+  I(AsyncFunctionResolve, 2, 1)               \
   I(AsyncGeneratorAwaitCaught, 2, 1)          \
   I(AsyncGeneratorAwaitUncaught, 2, 1)        \
   F(AsyncGeneratorHasCatchHandlerForPC, 1, 1) \
@@ -375,8 +373,6 @@ namespace internal {
   F(PromiseHookAfter, 1, 1)              \
   F(PromiseHookBefore, 1, 1)             \
   F(PromiseHookInit, 2, 1)               \
-  F(AwaitPromisesInit, 5, 1)             \
-  F(AwaitPromisesInitOld, 5, 1)          \
   F(PromiseRejectEventFromStack, 2, 1)   \
   F(PromiseRevokeReject, 1, 1)           \
   F(PromiseStatus, 1, 1)                 \
@@ -596,7 +592,7 @@ namespace internal {
   F(WasmDebugBreak, 0, 1)             \
   F(WasmAllocateRtt, 3, 1)            \
   F(WasmArrayCopy, 5, 1)              \
-  F(WasmAllocateContinuation, 0, 1)   \
+  F(WasmAllocateContinuation, 1, 1)   \
   F(WasmSyncStackLimit, 0, 1)
 
 #define FOR_EACH_INTRINSIC_WASM_TEST(F, I) \
@@ -608,6 +604,7 @@ namespace internal {
   F(GetWasmRecoveredTrapCount, 0, 1)       \
   F(IsAsmWasmCode, 1, 1)                   \
   F(IsLiftoffFunction, 1, 1)               \
+  F(IsTurboFanFunction, 1, 1)              \
   F(IsThreadInWasm, 0, 1)                  \
   F(IsWasmCode, 1, 1)                      \
   F(IsWasmTrapHandlerEnabled, 0, 1)        \

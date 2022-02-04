@@ -24,7 +24,7 @@ class DepthClampingTest : public DawnTest {
   protected:
     void SetUp() override {
         DawnTest::SetUp();
-        DAWN_TEST_UNSUPPORTED_IF(!SupportsFeatures({"depth-clamping"}));
+        DAWN_TEST_UNSUPPORTED_IF(!SupportsFeatures({wgpu::FeatureName::DepthClamping}));
 
         wgpu::TextureDescriptor renderTargetDescriptor;
         renderTargetDescriptor.size = {kRTSize, kRTSize};
@@ -45,7 +45,7 @@ class DepthClampingTest : public DawnTest {
         depthTextureView = depthTexture.CreateView();
 
         vsModule = utils::CreateShaderModule(device, R"(
-            [[block]] struct UBO {
+            struct UBO {
                 color : vec3<f32>;
                 depth : f32;
             };
@@ -56,7 +56,7 @@ class DepthClampingTest : public DawnTest {
             })");
 
         fsModule = utils::CreateShaderModule(device, R"(
-            [[block]] struct UBO {
+            struct UBO {
                 color : vec3<f32>;
                 depth : f32;
             };
@@ -67,10 +67,10 @@ class DepthClampingTest : public DawnTest {
             })");
     }
 
-    std::vector<const char*> GetRequiredFeatures() override {
-        std::vector<const char*> requiredFeatures = {};
-        if (SupportsFeatures({"depth-clamping"})) {
-            requiredFeatures.push_back("depth-clamping");
+    std::vector<wgpu::FeatureName> GetRequiredFeatures() override {
+        std::vector<wgpu::FeatureName> requiredFeatures = {};
+        if (SupportsFeatures({wgpu::FeatureName::DepthClamping})) {
+            requiredFeatures.push_back(wgpu::FeatureName::DepthClamping);
         }
         return requiredFeatures;
     }

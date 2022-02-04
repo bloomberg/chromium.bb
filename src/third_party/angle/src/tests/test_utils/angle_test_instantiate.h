@@ -45,6 +45,7 @@ bool IsNVIDIAShield();
 // GPU vendors.
 bool IsIntel();
 bool IsAMD();
+bool IsApple();
 bool IsARM();
 bool IsNVIDIA();
 bool IsQualcomm();
@@ -121,19 +122,23 @@ struct CombinedPrintToStringParamName
 
 #define ANGLE_ALL_TEST_PLATFORMS_ES1                                                   \
     ES1_D3D11(), ES1_OPENGL(), ES1_OPENGLES(), ES1_VULKAN(), ES1_VULKAN_SWIFTSHADER(), \
-        WithAsyncCommandQueueFeatureVulkan(ES1_VULKAN())
+        WithAsyncCommandQueueFeatureVulkan(ES1_VULKAN()),                              \
+        WithAsyncCommandQueueFeatureVulkan(ES1_VULKAN_SWIFTSHADER())
 
 #define ANGLE_ALL_TEST_PLATFORMS_ES2                                                               \
     ES2_D3D9(), ES2_D3D11(), ES2_OPENGL(), ES2_OPENGLES(), ES2_VULKAN(), ES2_VULKAN_SWIFTSHADER(), \
-        ES2_METAL(), WithAsyncCommandQueueFeatureVulkan(ES2_VULKAN())
+        ES2_METAL(), WithAsyncCommandQueueFeatureVulkan(ES2_VULKAN()),                             \
+        WithAsyncCommandQueueFeatureVulkan(ES2_VULKAN_SWIFTSHADER())
 
 #define ANGLE_ALL_TEST_PLATFORMS_ES3                                                   \
     ES3_D3D11(), ES3_OPENGL(), ES3_OPENGLES(), ES3_VULKAN(), ES3_VULKAN_SWIFTSHADER(), \
-        ES3_METAL(), WithAsyncCommandQueueFeatureVulkan(ES3_VULKAN())
+        ES3_METAL(), WithAsyncCommandQueueFeatureVulkan(ES3_VULKAN()),                 \
+        WithAsyncCommandQueueFeatureVulkan(ES3_VULKAN_SWIFTSHADER())
 
 #define ANGLE_ALL_TEST_PLATFORMS_ES31                                                       \
     ES31_D3D11(), ES31_OPENGL(), ES31_OPENGLES(), ES31_VULKAN(), ES31_VULKAN_SWIFTSHADER(), \
-        WithAsyncCommandQueueFeatureVulkan(ES31_VULKAN())
+        WithAsyncCommandQueueFeatureVulkan(ES31_VULKAN()),                                  \
+        WithAsyncCommandQueueFeatureVulkan(ES31_VULKAN_SWIFTSHADER())
 
 #define ANGLE_ALL_TEST_PLATFORMS_ES32 \
     ES32_VULKAN(), WithAsyncCommandQueueFeatureVulkan(ES32_VULKAN())
@@ -251,6 +256,14 @@ struct CombinedPrintToStringParamName
                              testing::Combine(ANGLE_INSTANTIATE_TEST_PLATFORMS(testName),         \
                                               combine1, combine2, combine3, combine4, combine5),  \
                              print)
+#define ANGLE_INSTANTIATE_TEST_COMBINE_6(testName, print, combine1, combine2, combine3, combine4,  \
+                                         combine5, combine6, first, ...)                           \
+    const decltype(first) testName##params[] = {first, ##__VA_ARGS__};                             \
+    INSTANTIATE_TEST_SUITE_P(                                                                      \
+        , testName,                                                                                \
+        testing::Combine(ANGLE_INSTANTIATE_TEST_PLATFORMS(testName), combine1, combine2, combine3, \
+                         combine4, combine5, combine6),                                            \
+        print)
 
 // Checks if a config is expected to be supported by checking a system-based allow list.
 bool IsConfigAllowlisted(const SystemInfo &systemInfo, const PlatformParameters &param);

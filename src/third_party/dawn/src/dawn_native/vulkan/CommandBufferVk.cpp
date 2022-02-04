@@ -38,7 +38,7 @@
 
 #include <algorithm>
 
-namespace dawn_native { namespace vulkan {
+namespace dawn::native::vulkan {
 
     namespace {
 
@@ -217,10 +217,11 @@ namespace dawn_native { namespace vulkan {
                 if (renderPass->attachmentState->HasDepthStencilAttachment()) {
                     const auto& attachmentInfo = renderPass->depthStencilAttachment;
 
-                    query.SetDepthStencil(attachmentInfo.view->GetTexture()->GetFormat().format,
-                                          attachmentInfo.depthLoadOp, attachmentInfo.depthStoreOp,
-                                          attachmentInfo.stencilLoadOp,
-                                          attachmentInfo.stencilStoreOp);
+                    query.SetDepthStencil(
+                        attachmentInfo.view->GetTexture()->GetFormat().format,
+                        attachmentInfo.depthLoadOp, attachmentInfo.depthStoreOp,
+                        attachmentInfo.stencilLoadOp, attachmentInfo.stencilStoreOp,
+                        attachmentInfo.depthReadOnly || attachmentInfo.stencilReadOnly);
                 }
 
                 query.SetSampleCount(renderPass->attachmentState->GetSampleCount());
@@ -443,7 +444,7 @@ namespace dawn_native { namespace vulkan {
         const Extent3D& copySize) {
         ASSERT(srcCopy.texture->GetFormat().format == dstCopy.texture->GetFormat().format);
         ASSERT(srcCopy.aspect == dstCopy.aspect);
-        dawn_native::Format format = srcCopy.texture->GetFormat();
+        dawn::native::Format format = srcCopy.texture->GetFormat();
         const TexelBlockInfo& blockInfo = format.GetAspectInfo(srcCopy.aspect).block;
         ASSERT(copySize.width % blockInfo.width == 0);
         uint32_t widthInBlocks = copySize.width / blockInfo.width;
@@ -1320,4 +1321,4 @@ namespace dawn_native { namespace vulkan {
         UNREACHABLE();
     }
 
-}}  // namespace dawn_native::vulkan
+}  // namespace dawn::native::vulkan

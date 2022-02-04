@@ -157,9 +157,9 @@ cholmod_dense viewAsCholmod(MatrixBase<Derived>& mat)
 /** Returns a view of the Cholmod sparse matrix \a cm as an Eigen sparse matrix.
   * The data are not copied but shared. */
 template<typename Scalar, int Flags, typename StorageIndex>
-MappedSparseMatrix<Scalar,Flags,StorageIndex> viewAsEigen(cholmod_sparse& cm)
+Map<SparseMatrix<Scalar,Flags,StorageIndex> > viewAsEigen(cholmod_sparse& cm)
 {
-  return MappedSparseMatrix<Scalar,Flags,StorageIndex>
+  return Map<SparseMatrix<Scalar,Flags,StorageIndex> >
          (cm.nrow, cm.ncol, static_cast<StorageIndex*>(cm.p)[cm.ncol],
           static_cast<StorageIndex*>(cm.p), static_cast<StorageIndex*>(cm.i),static_cast<Scalar*>(cm.x) );
 }

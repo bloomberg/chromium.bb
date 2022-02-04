@@ -43,14 +43,14 @@ export class ProgrammableStateTest extends GPUTest {
   ): GPUComputePipeline | GPURenderPipeline {
     switch (encoderType) {
       case 'compute pass': {
-        const wgsl = `[[block]] struct Data {
+        const wgsl = `struct Data {
             value : i32;
           };
-    
+
           [[group(${groups.a}), binding(0)]] var<storage> a : Data;
           [[group(${groups.b}), binding(0)]] var<storage> b : Data;
           [[group(${groups.out}), binding(0)]] var<storage, read_write> out : Data;
-    
+
           [[stage(compute), workgroup_size(1)]] fn main() {
             out.value = ${algorithm};
             return;
@@ -79,14 +79,14 @@ export class ProgrammableStateTest extends GPUTest {
           `,
 
           fragment: `
-            [[block]] struct Data {
+            struct Data {
               value : i32;
             };
-    
+
             [[group(${groups.a}), binding(0)]] var<storage> a : Data;
             [[group(${groups.b}), binding(0)]] var<storage> b : Data;
             [[group(${groups.out}), binding(0)]] var<storage, read_write> out : Data;
-    
+
             [[stage(fragment)]] fn frag_main() -> [[location(0)]] vec4<f32> {
               out.value = ${algorithm};
               return vec4<f32>(1.0, 0.0, 0.0, 1.0);

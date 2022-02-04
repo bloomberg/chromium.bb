@@ -499,10 +499,10 @@ template<typename MatrixType_, int QRPreconditioner> class JacobiSVD
     enum {
       RowsAtCompileTime = MatrixType::RowsAtCompileTime,
       ColsAtCompileTime = MatrixType::ColsAtCompileTime,
-      DiagSizeAtCompileTime = EIGEN_SIZE_MIN_PREFER_DYNAMIC(RowsAtCompileTime,ColsAtCompileTime),
+      DiagSizeAtCompileTime = internal::min_size_prefer_dynamic(RowsAtCompileTime,ColsAtCompileTime),
       MaxRowsAtCompileTime = MatrixType::MaxRowsAtCompileTime,
       MaxColsAtCompileTime = MatrixType::MaxColsAtCompileTime,
-      MaxDiagSizeAtCompileTime = EIGEN_SIZE_MIN_PREFER_FIXED(MaxRowsAtCompileTime,MaxColsAtCompileTime),
+      MaxDiagSizeAtCompileTime = internal::min_size_prefer_fixed(MaxRowsAtCompileTime,MaxColsAtCompileTime),
       MatrixOptions = MatrixType::Options
     };
 
@@ -638,7 +638,7 @@ void JacobiSVD<MatrixType, QRPreconditioner>::allocate(Eigen::Index rows, Eigen:
   m_computeThinV = (computationOptions & ComputeThinV) != 0;
   eigen_assert(!(m_computeFullU && m_computeThinU) && "JacobiSVD: you can't ask for both full and thin U");
   eigen_assert(!(m_computeFullV && m_computeThinV) && "JacobiSVD: you can't ask for both full and thin V");
-  eigen_assert(EIGEN_IMPLIES(m_computeThinU || m_computeThinV, MatrixType::ColsAtCompileTime==Dynamic) &&
+  eigen_assert(internal::check_implication(m_computeThinU || m_computeThinV, MatrixType::ColsAtCompileTime==Dynamic) &&
               "JacobiSVD: thin U and V are only available when your matrix has a dynamic number of columns.");
   if (QRPreconditioner == FullPivHouseholderQRPreconditioner)
   {

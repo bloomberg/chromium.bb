@@ -22,6 +22,7 @@
 #include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/prerender/prerender_host_registry.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -200,9 +201,15 @@ Shell* OpenBlankWindow(WebContentsImpl* web_contents) {
   EXPECT_TRUE(ExecJs(root, "last_opened_window = window.open()"));
   Shell* new_shell = new_shell_observer.GetShell();
   EXPECT_NE(new_shell->web_contents(), web_contents);
-  EXPECT_TRUE(
-      new_shell->web_contents()->GetController().GetLastCommittedEntry());
-  EXPECT_EQ(1, new_shell->web_contents()->GetController().GetEntryCount());
+  if (blink::features::IsInitialNavigationEntryEnabled()) {
+    EXPECT_TRUE(new_shell->web_contents()
+                    ->GetController()
+                    .GetLastCommittedEntry()
+                    ->IsInitialEntry());
+    EXPECT_EQ(1, new_shell->web_contents()->GetController().GetEntryCount());
+  } else {
+    EXPECT_EQ(0, new_shell->web_contents()->GetController().GetEntryCount());
+  }
   return new_shell;
 }
 
@@ -514,7 +521,7 @@ RenderProcessHostBadIpcMessageWaiter::Wait() {
 ShowPopupWidgetWaiter::ShowPopupWidgetWaiter(WebContentsImpl* web_contents,
                                              RenderFrameHostImpl* frame_host)
     : frame_host_(frame_host) {
-#if defined(OS_MAC) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
   web_contents_ = web_contents;
   web_contents_->set_show_popup_menu_callback_for_testing(base::BindOnce(
       &ShowPopupWidgetWaiter::ShowPopupMenu, base::Unretained(this)));
@@ -536,7 +543,7 @@ void ShowPopupWidgetWaiter::Wait() {
 }
 
 void ShowPopupWidgetWaiter::Stop() {
-#if defined(OS_MAC) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
   web_contents_->set_show_popup_menu_callback_for_testing(base::NullCallback());
 #endif
   frame_host_->SetCreateNewPopupCallbackForTesting(base::NullCallback());
@@ -565,7 +572,7 @@ void ShowPopupWidgetWaiter::DidCreatePopupWidget(
       .SwapImplForTesting(this);
 }
 
-#if defined(OS_MAC) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
 void ShowPopupWidgetWaiter::ShowPopupMenu(const gfx::Rect& bounds) {
   initial_rect_ = bounds;
   run_loop_.Quit();

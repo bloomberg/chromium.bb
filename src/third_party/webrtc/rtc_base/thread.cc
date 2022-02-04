@@ -75,6 +75,9 @@ class MessageHandlerWithTask final : public MessageHandler {
  public:
   MessageHandlerWithTask() {}
 
+  MessageHandlerWithTask(const MessageHandlerWithTask&) = delete;
+  MessageHandlerWithTask& operator=(const MessageHandlerWithTask&) = delete;
+
   void OnMessage(Message* msg) override {
     static_cast<rtc_thread_internal::MessageLikeTask*>(msg->pdata)->Run();
     delete msg->pdata;
@@ -82,8 +85,6 @@ class MessageHandlerWithTask final : public MessageHandler {
 
  private:
   ~MessageHandlerWithTask() override {}
-
-  RTC_DISALLOW_COPY_AND_ASSIGN(MessageHandlerWithTask);
 };
 
 class RTC_SCOPED_LOCKABLE MarkProcessingCritScope {
@@ -100,11 +101,12 @@ class RTC_SCOPED_LOCKABLE MarkProcessingCritScope {
     cs_->Leave();
   }
 
+  MarkProcessingCritScope(const MarkProcessingCritScope&) = delete;
+  MarkProcessingCritScope& operator=(const MarkProcessingCritScope&) = delete;
+
  private:
   const RecursiveCriticalSection* const cs_;
   size_t* processing_;
-
-  RTC_DISALLOW_COPY_AND_ASSIGN(MarkProcessingCritScope);
 };
 
 }  // namespace
@@ -1107,10 +1109,16 @@ void Thread::PostTask(std::unique_ptr<webrtc::QueuedTask> task) {
 
 void Thread::PostDelayedTask(std::unique_ptr<webrtc::QueuedTask> task,
                              uint32_t milliseconds) {
+  // This implementation does not support low precision yet.
+  PostDelayedHighPrecisionTask(std::move(task), milliseconds);
+}
+
+void Thread::PostDelayedHighPrecisionTask(
+    std::unique_ptr<webrtc::QueuedTask> task,
+    uint32_t milliseconds) {
   // Though PostDelayed takes MessageData by raw pointer (last parameter),
   // it still takes it with ownership.
-  PostDelayed(RTC_FROM_HERE, milliseconds, &queued_task_handler_,
-              /*id=*/0,
+  PostDelayed(RTC_FROM_HERE, milliseconds, &queued_task_handler_, /*id=*/0,
               new ScopedMessageData<webrtc::QueuedTask>(std::move(task)));
 }
 

@@ -124,7 +124,8 @@ struct WasmModule;
   V(WasmAllocateFreshRtt)                 \
   V(WasmAllocateStructWithRtt)            \
   V(WasmSubtypeCheck)                     \
-  V(WasmOnStackReplace)
+  V(WasmOnStackReplace)                   \
+  V(WasmSuspend)
 
 // Sorted, disjoint and non-overlapping memory regions. A region is of the
 // form [start, end). So there's no [start, end), [end, other_end),
@@ -292,7 +293,11 @@ class V8_EXPORT_PRIVATE WasmCode final {
   uint32_t raw_tagged_parameter_slots_for_serialization() const {
     return tagged_parameter_slots_;
   }
+
   bool is_liftoff() const { return tier() == ExecutionTier::kLiftoff; }
+
+  bool is_turbofan() const { return tier() == ExecutionTier::kTurbofan; }
+
   bool contains(Address pc) const {
     return reinterpret_cast<Address>(instructions_) <= pc &&
            pc < reinterpret_cast<Address>(instructions_ + instructions_size_);
@@ -1057,10 +1062,6 @@ class V8_EXPORT_PRIVATE WasmCodeManager final {
   // current thread.
   // Can only be called if {HasMemoryProtectionKeySupport()} is {true}.
   bool MemoryProtectionKeyWritable() const;
-
-  // This allocates a memory protection key (if none was allocated before),
-  // independent of the --wasm-memory-protection-keys flag.
-  void InitializeMemoryProtectionKeyForTesting();
 
   // Initialize the current thread's permissions for the memory protection key,
   // if we have support.

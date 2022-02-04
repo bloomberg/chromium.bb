@@ -268,9 +268,9 @@ static void getPhysicalDeviceDescriptorIndexingFeatures(T *features)
 template<typename T>
 static void getPhysicalDeviceVulkanMemoryModelFeatures(T *features)
 {
-	features->vulkanMemoryModel = VK_FALSE;
-	features->vulkanMemoryModelDeviceScope = VK_FALSE;
-	features->vulkanMemoryModelAvailabilityVisibilityChains = VK_FALSE;
+	features->vulkanMemoryModel = VK_TRUE;
+	features->vulkanMemoryModelDeviceScope = VK_TRUE;
+	features->vulkanMemoryModelAvailabilityVisibilityChains = VK_TRUE;
 }
 
 template<typename T>
@@ -304,7 +304,7 @@ static void getPhysicalDeviceBufferDeviceAddressFeatures(T *features)
 template<typename T>
 static void getPhysicalDeviceVulkan12Features(T *features)
 {
-	features->samplerMirrorClampToEdge = VK_FALSE;
+	features->samplerMirrorClampToEdge = VK_TRUE;
 	features->drawIndirectCount = VK_FALSE;
 	getPhysicalDevice8BitStorageFeaturesKHR(features);
 	getPhysicalDeviceShaderAtomicInt64Features(features);

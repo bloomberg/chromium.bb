@@ -28,7 +28,7 @@ constexpr CGFloat kActionsBottomMargin = 10;
 constexpr CGFloat kTallBannerMultiplier = 0.35;
 constexpr CGFloat kDefaultBannerMultiplier = 0.25;
 constexpr CGFloat kContentWidthMultiplier = 0.65;
-constexpr CGFloat kContentMaxWidth = 327;
+constexpr CGFloat kContentOptimalWidth = 327;
 constexpr CGFloat kMoreArrowMargin = 4;
 constexpr CGFloat kPreviousContentVisibleOnScroll = 0.15;
 constexpr CGFloat kSeparatorHeight = 1;
@@ -61,6 +61,9 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
 // it. The view should only be lazily instanciated when read externally.
 @property(nonatomic, strong, readwrite) UIView* topSpecificContentView;
 
+// Whether the image is currently being calculated; used to prevent infinite
+// recursions caused by |viewDidLayoutSubviews|.
+@property(nonatomic, assign) BOOL calculatingImageSize;
 @end
 
 @implementation PromoStyleViewController
@@ -259,10 +262,15 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
                                  constant:-extraBottomMargin],
   ]];
 
-  // Also constrain the width layout guide to a maximum constant, but at a lower
-  // priority so that it only applies in compact screens.
+  // This constraint is added to enforce that the content width should be as
+  // close to the optimal width as possible, within the range already activated
+  // for "widthLayoutGuide.widthAnchor" previously, with a higher priority.
+  // In this case, the content width in iPad and iPhone landscape mode should be
+  // the safe layout width multiplied by kContentWidthMultiplier, while the
+  // content width for a iPhone portrait mode should be kContentOptimalWidth.
   NSLayoutConstraint* contentLayoutGuideWidthConstraint =
-      [widthLayoutGuide.widthAnchor constraintEqualToConstant:kContentMaxWidth];
+      [widthLayoutGuide.widthAnchor
+          constraintEqualToConstant:kContentOptimalWidth];
   contentLayoutGuideWidthConstraint.priority = UILayoutPriorityRequired - 1;
   contentLayoutGuideWidthConstraint.active = YES;
 
@@ -295,12 +303,6 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
-  // Rescale image here as on iPad the view height isn't correctly set during
-  // -viewDidLoad.
-  self.imageView.image = [self scaleSourceImage:self.bannerImage
-                                   currentImage:self.imageView.image
-                                         toSize:[self computeBannerImageSize]];
-
   // Reset |didReachBottom| to make sure that its value is correctly updated
   // to reflect the scrolling state when the view reappears and is refreshed
   // (e.g., when getting back from a full screen view that was hidding this
@@ -330,6 +332,22 @@ constexpr CGFloat kLearnMoreButtonSide = 40;
       [self setReadMoreText];
     }
   });
+}
+
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+
+  // Prevents potential recursive calls to |viewDidLayoutSubviews|.
+  if (self.calculatingImageSize) {
+    return;
+  }
+  // Rescale image here as on iPad the view height isn't correctly set before
+  // subviews are laid out.
+  self.calculatingImageSize = YES;
+  self.imageView.image = [self scaleSourceImage:self.bannerImage
+                                   currentImage:self.imageView.image
+                                         toSize:[self computeBannerImageSize]];
+  self.calculatingImageSize = NO;
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size

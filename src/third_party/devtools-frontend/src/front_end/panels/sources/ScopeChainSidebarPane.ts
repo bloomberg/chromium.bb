@@ -102,7 +102,7 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox implements UI.ContextF
     this.infoElement = document.createElement('div');
     this.infoElement.className = 'gray-info-message';
     this.infoElement.tabIndex = -1;
-    this.update();
+    void this.update();
   }
 
   static instance(): ScopeChainSidebarPane {
@@ -113,7 +113,7 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox implements UI.ContextF
   }
 
   flavorChanged(_object: Object|null): void {
-    this.update();
+    void this.update();
   }
 
   focus(): void {
@@ -284,8 +284,7 @@ export class OpenLinearMemoryInspector extends UI.Widget.VBox implements UI.Cont
     }
 
     if (obj instanceof Bindings.DebuggerLanguagePlugins.ValueNode) {
-      const valueNode = /** @type {!Bindings.DebuggerLanguagePlugins.ValueNode} */ obj;
-      return valueNode.inspectableAddress !== undefined;
+      return obj.inspectableAddress !== undefined;
     }
 
     return false;
@@ -307,7 +306,7 @@ export class OpenLinearMemoryInspector extends UI.Widget.VBox implements UI.Cont
     let memoryObj: SDK.RemoteObject.RemoteObject = obj;
 
     if (obj instanceof Bindings.DebuggerLanguagePlugins.ValueNode) {
-      const valueNode = /** @type {!Bindings.DebuggerLanguagePlugins.ValueNode} */ obj;
+      const valueNode = obj;
       address = valueNode.inspectableAddress || 0;
       const callFrame = valueNode.callFrame;
       const response = await obj.debuggerModel().agent.invoke_evaluateOnCallFrame({
@@ -323,6 +322,6 @@ export class OpenLinearMemoryInspector extends UI.Widget.VBox implements UI.Cont
       memoryObj = runtimeModel.createRemoteObject(response.result);
     }
     Host.userMetrics.linearMemoryInspectorRevealedFrom(Host.UserMetrics.LinearMemoryInspectorRevealedFrom.ContextMenu);
-    controller.openInspectorView(memoryObj, address);
+    void controller.openInspectorView(memoryObj, address);
   }
 }

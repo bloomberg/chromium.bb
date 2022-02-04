@@ -33,11 +33,11 @@
 #include <mutex>
 #include <utility>
 
-namespace dawn_platform {
+namespace dawn::platform {
     class WorkerTaskPool;
-}  // namespace dawn_platform
+}  // namespace dawn::platform
 
-namespace dawn_native {
+namespace dawn::native {
     class AdapterBase;
     class AsyncTaskManager;
     class AttachmentState;
@@ -56,7 +56,7 @@ namespace dawn_native {
 
     class DeviceBase : public RefCounted {
       public:
-        DeviceBase(AdapterBase* adapter, const DawnDeviceDescriptor* descriptor);
+        DeviceBase(AdapterBase* adapter, const DeviceDescriptor* descriptor);
         virtual ~DeviceBase();
 
         void HandleError(InternalErrorType type, const char* message);
@@ -126,7 +126,7 @@ namespace dawn_native {
         MaybeError ValidateObject(const ApiObjectBase* object) const;
 
         AdapterBase* GetAdapter() const;
-        dawn_platform::Platform* GetPlatform() const;
+        dawn::platform::Platform* GetPlatform() const;
 
         // Returns the Format corresponding to the wgpu::TextureFormat or an error if the format
         // isn't a valid wgpu::TextureFormat or isn't supported by this device.
@@ -198,6 +198,8 @@ namespace dawn_native {
             const BindGroupLayoutDescriptor* descriptor,
             bool allowInternalBinding = false);
         ResultOrError<Ref<BufferBase>> CreateBuffer(const BufferDescriptor* descriptor);
+        ResultOrError<Ref<CommandEncoder>> CreateCommandEncoder(
+            const CommandEncoderDescriptor* descriptor);
         ResultOrError<Ref<ComputePipelineBase>> CreateComputePipeline(
             const ComputePipelineDescriptor* descriptor);
         MaybeError CreateComputePipelineAsync(
@@ -257,7 +259,9 @@ namespace dawn_native {
 
         QueueBase* APIGetQueue();
 
-        bool APIGetLimits(SupportedLimits* limits);
+        bool APIGetLimits(SupportedLimits* limits) const;
+        bool APIHasFeature(wgpu::FeatureName feature) const;
+        size_t APIEnumerateFeatures(wgpu::FeatureName* features) const;
         void APIInjectError(wgpu::ErrorType type, const char* message);
         bool APITick();
 
@@ -310,7 +314,6 @@ namespace dawn_native {
         void TrackObject(ApiObjectBase* object);
         std::mutex* GetObjectListMutex(ObjectType type);
 
-        std::vector<const char*> GetEnabledFeatures() const;
         std::vector<const char*> GetTogglesUsed() const;
         bool IsFeatureEnabled(Feature feature) const;
         bool IsToggleEnabled(Toggle toggle) const;
@@ -352,7 +355,7 @@ namespace dawn_native {
 
         AsyncTaskManager* GetAsyncTaskManager() const;
         CallbackTaskManager* GetCallbackTaskManager() const;
-        dawn_platform::WorkerTaskPool* GetWorkerTaskPool() const;
+        dawn::platform::WorkerTaskPool* GetWorkerTaskPool() const;
 
         void AddComputePipelineAsyncCallbackTask(Ref<ComputePipelineBase> pipeline,
                                                  std::string errorMessage,
@@ -440,8 +443,8 @@ namespace dawn_native {
             WGPUCreateRenderPipelineAsyncCallback callback,
             void* userdata);
 
-        void ApplyToggleOverrides(const DawnDeviceDescriptor* deviceDescriptor);
-        void ApplyFeatures(const DawnDeviceDescriptor* deviceDescriptor);
+        void ApplyToggleOverrides(const DawnTogglesDeviceDescriptor* togglesDescriptor);
+        void ApplyFeatures(const DeviceDescriptor* deviceDescriptor);
 
         void SetDefaultToggles();
 
@@ -535,10 +538,10 @@ namespace dawn_native {
         std::unique_ptr<PersistentCache> mPersistentCache;
 
         std::unique_ptr<CallbackTaskManager> mCallbackTaskManager;
-        std::unique_ptr<dawn_platform::WorkerTaskPool> mWorkerTaskPool;
+        std::unique_ptr<dawn::platform::WorkerTaskPool> mWorkerTaskPool;
         std::string mLabel;
     };
 
-}  // namespace dawn_native
+}  // namespace dawn::native
 
 #endif  // DAWNNATIVE_DEVICE_H_

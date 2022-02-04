@@ -15,24 +15,6 @@ lucicfg.config(
     ],
 )
 
-# Enable LUCI Realms support.
-lucicfg.enable_experiment("crbug.com/1085650")
-# Launch 0% of Swarming tasks for builds in "realms-aware mode"
-# TODO(https://crbug.com/1204972): ramp up to 100%.
-# luci.builder.defaults.experiments.set({"luci.use_realms": 0})
-
-# Enable LUCI Realms support.
-lucicfg.enable_experiment("crbug.com/1085650")
-
-luci.builder.defaults.experiments.set({
-    # Launch all builds and tasks in Angle in realms mode.
-    "luci.use_realms": 100,
-    # Make the recipe use results from RDB rather than inspecting the JSON.
-    # TODO(crbug.com/1135718): This experiment can be removed after it's enabled
-    # by default in the recipe.
-    "chromium.chromium_tests.use_rdb_results": 100,
-})
-
 luci.project(
     name = "angle",
     buildbucket = "cr-buildbucket.appspot.com",
@@ -155,7 +137,7 @@ _GOMA_RBE_PROD = {
 }
 
 def _recipe_for_package(cipd_package):
-    def recipe(*, name, cipd_version = None, recipe = None, use_bbagent = False):
+    def recipe(*, name, cipd_version = None, recipe = None):
         # Force the caller to put the recipe prefix rather than adding it
         # programatically to make the string greppable
         if not name.startswith(_RECIPE_NAME_PREFIX):
@@ -168,7 +150,7 @@ def _recipe_for_package(cipd_package):
             cipd_package = cipd_package,
             cipd_version = cipd_version,
             recipe = recipe,
-            use_bbagent = use_bbagent,
+            use_bbagent = True,
         )
 
     return recipe
@@ -216,6 +198,7 @@ def angle_builder(name, cpu):
     is_tsan = "-tsan" in name
     is_ubsan = "-ubsan" in name
     is_debug = "-dbg" in name
+    is_exp = "-exp" in name
     is_perf = name.endswith("-perf")
     is_trace = name.endswith("-trace")
     is_uwp = "winuwp" in name
@@ -236,6 +219,7 @@ def angle_builder(name, cpu):
         # Trace tests are only run on CQ if files in the capture folders change.
         location_regexp = [
             ".+/[+]/src/libANGLE/capture/.+",
+            ".+/[+]/src/tests/angle_end2end_tests_expectations.txt",
             ".+/[+]/src/tests/capture.+",
             ".+/[+]/src/tests/egl_tests/.+",
             ".+/[+]/src/tests/gl_tests/.+",
@@ -266,6 +250,8 @@ def angle_builder(name, cpu):
         short_name = "ubsan"
     elif is_debug:
         short_name = "dbg"
+    elif is_exp:
+        short_name = "exp"
     else:
         short_name = "rel"
 
@@ -322,8 +308,8 @@ def angle_builder(name, cpu):
             ),
         )
 
-        # Don't add TSAN/UBSAN to CQ (yet). http://anglebug.com/5795
-        if not is_tsan and not is_ubsan:
+        # Don't add experimental bots to CQ.
+        if not is_exp:
             luci.cq_tryjob_verifier(
                 cq_group = "main",
                 builder = "angle:try/" + name,
@@ -396,6 +382,7 @@ angle_builder("linux-ubsan-test", cpu = "x64")
 angle_builder("linux-dbg-compile", cpu = "x64")
 angle_builder("linux-test", cpu = "x64")
 angle_builder("mac-dbg-compile", cpu = "x64")
+angle_builder("mac-exp-test", cpu = "x64")
 angle_builder("mac-test", cpu = "x64")
 angle_builder("win-asan-test", cpu = "x64")
 angle_builder("win-dbg-compile", cpu = "x64")

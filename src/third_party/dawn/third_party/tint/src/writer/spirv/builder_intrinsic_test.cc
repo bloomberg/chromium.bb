@@ -829,6 +829,7 @@ INSTANTIATE_TEST_SUITE_P(IntrinsicBuilderTest,
                                          IntrinsicData{"ceil", "Ceil"},
                                          IntrinsicData{"cos", "Cos"},
                                          IntrinsicData{"cosh", "Cosh"},
+                                         IntrinsicData{"degrees", "Degrees"},
                                          IntrinsicData{"exp", "Exp"},
                                          IntrinsicData{"exp2", "Exp2"},
                                          IntrinsicData{"floor", "Floor"},
@@ -837,6 +838,7 @@ INSTANTIATE_TEST_SUITE_P(IntrinsicBuilderTest,
                                                        "InverseSqrt"},
                                          IntrinsicData{"log", "Log"},
                                          IntrinsicData{"log2", "Log2"},
+                                         IntrinsicData{"radians", "Radians"},
                                          IntrinsicData{"round", "RoundEven"},
                                          IntrinsicData{"sign", "FSign"},
                                          IntrinsicData{"sin", "Sin"},
@@ -1716,7 +1718,7 @@ TEST_F(IntrinsicBuilderTest, Call_ArrayLength) {
            Stage(ast::PipelineStage::kFragment),
        });
 
-  spirv::Builder& b = Build();
+  spirv::Builder& b = SanitizeAndBuild();
 
   ASSERT_TRUE(b.Build()) << b.error();
 
@@ -1765,7 +1767,7 @@ TEST_F(IntrinsicBuilderTest, Call_ArrayLength_OtherMembersInStruct) {
            Stage(ast::PipelineStage::kFragment),
        });
 
-  spirv::Builder& b = Build();
+  spirv::Builder& b = SanitizeAndBuild();
 
   ASSERT_TRUE(b.Build()) << b.error();
 
@@ -1844,9 +1846,9 @@ OpReturn
 
 TEST_F(IntrinsicBuilderTest, Call_ArrayLength_ViaLets_WithPtrNoise) {
   // [[block]] struct my_struct {
-  //   a : [[stride(4)]] array<f32>;
+  //   a : @stride(4) array<f32>;
   // };
-  // [[binding(1), group(2)]] var<storage, read> b : my_struct;
+  // @binding(1) @group(2) var<storage, read> b : my_struct;
   //
   // fn a_func() {
   //   let p = &*&b;
@@ -1911,7 +1913,7 @@ TEST_F(IntrinsicBuilderTest, Call_AtomicLoad) {
   //   i : atomic<i32>;
   // }
   //
-  // [[binding(1), group(2)]] var<storage, read_write> b : S;
+  // @binding(1) @group(2) var<storage, read_write> b : S;
   //
   // fn a_func() {
   //   let u : u32 = atomicLoad(&b.u);
@@ -1938,7 +1940,7 @@ TEST_F(IntrinsicBuilderTest, Call_AtomicLoad) {
        },
        ast::DecorationList{Stage(ast::PipelineStage::kFragment)});
 
-  spirv::Builder& b = Build();
+  spirv::Builder& b = SanitizeAndBuild();
 
   ASSERT_TRUE(b.Build()) << b.error();
 
@@ -1977,7 +1979,7 @@ TEST_F(IntrinsicBuilderTest, Call_AtomicStore) {
   //   i : atomic<i32>;
   // }
   //
-  // [[binding(1), group(2)]] var<storage, read_write> b : S;
+  // @binding(1) @group(2) var<storage, read_write> b : S;
   //
   // fn a_func() {
   //   var u = 1u;
@@ -2008,7 +2010,7 @@ TEST_F(IntrinsicBuilderTest, Call_AtomicStore) {
        },
        ast::DecorationList{Stage(ast::PipelineStage::kFragment)});
 
-  spirv::Builder& b = Build();
+  spirv::Builder& b = SanitizeAndBuild();
 
   ASSERT_TRUE(b.Build()) << b.error();
 
@@ -2057,7 +2059,7 @@ TEST_P(Intrinsic_Builtin_AtomicRMW_i32, Test) {
   //   v : atomic<i32>;
   // }
   //
-  // [[binding(1), group(2)]] var<storage, read_write> b : S;
+  // @binding(1) @group(2) var<storage, read_write> b : S;
   //
   // fn a_func() {
   //   var v = 10;
@@ -2083,7 +2085,7 @@ TEST_P(Intrinsic_Builtin_AtomicRMW_i32, Test) {
        },
        ast::DecorationList{Stage(ast::PipelineStage::kFragment)});
 
-  spirv::Builder& b = Build();
+  spirv::Builder& b = SanitizeAndBuild();
 
   ASSERT_TRUE(b.Build()) << b.error();
 
@@ -2135,7 +2137,7 @@ TEST_P(Intrinsic_Builtin_AtomicRMW_u32, Test) {
   //   v : atomic<u32>;
   // }
   //
-  // [[binding(1), group(2)]] var<storage, read_write> b : S;
+  // @binding(1) @group(2) var<storage, read_write> b : S;
   //
   // fn a_func() {
   //   var v = 10u;
@@ -2161,7 +2163,7 @@ TEST_P(Intrinsic_Builtin_AtomicRMW_u32, Test) {
        },
        ast::DecorationList{Stage(ast::PipelineStage::kFragment)});
 
-  spirv::Builder& b = Build();
+  spirv::Builder& b = SanitizeAndBuild();
 
   ASSERT_TRUE(b.Build()) << b.error();
 
@@ -2211,7 +2213,7 @@ TEST_F(IntrinsicBuilderTest, Call_AtomicExchange) {
   //   i : atomic<i32>;
   // }
   //
-  // [[binding(1), group(2)]] var<storage, read_write> b : S;
+  // @binding(1) @group(2) var<storage, read_write> b : S;
   //
   // fn a_func() {
   //   var u = 10u;
@@ -2244,7 +2246,7 @@ TEST_F(IntrinsicBuilderTest, Call_AtomicExchange) {
        },
        ast::DecorationList{Stage(ast::PipelineStage::kFragment)});
 
-  spirv::Builder& b = Build();
+  spirv::Builder& b = SanitizeAndBuild();
 
   ASSERT_TRUE(b.Build()) << b.error();
 
@@ -2293,7 +2295,7 @@ TEST_F(IntrinsicBuilderTest, Call_AtomicCompareExchangeWeak) {
   //   i : atomic<i32>;
   // }
   //
-  // [[binding(1), group(2)]] var<storage, read_write> b : S;
+  // @binding(1) @group(2) var<storage, read_write> b : S;
   //
   // fn a_func() {
   //   let u : vec2<u32> = atomicCompareExchangeWeak(&b.u, 10u);
@@ -2322,7 +2324,7 @@ TEST_F(IntrinsicBuilderTest, Call_AtomicCompareExchangeWeak) {
        },
        ast::DecorationList{Stage(ast::PipelineStage::kFragment)});
 
-  spirv::Builder& b = Build();
+  spirv::Builder& b = SanitizeAndBuild();
 
   ASSERT_TRUE(b.Build()) << b.error();
 

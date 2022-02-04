@@ -42,7 +42,7 @@ struct traits<Product<Lhs, Rhs, Option> >
     MaxColsAtCompileTime = RhsTraits::MaxColsAtCompileTime,
 
     // FIXME: only needed by GeneralMatrixMatrixTriangular
-    InnerSize = EIGEN_SIZE_MIN_PREFER_FIXED(LhsTraits::ColsAtCompileTime, RhsTraits::RowsAtCompileTime),
+    InnerSize = min_size_prefer_fixed(LhsTraits::ColsAtCompileTime, RhsTraits::RowsAtCompileTime),
 
     // The storage order is somewhat arbitrary here. The correct one will be determined through the evaluator.
     Flags = (MaxRowsAtCompileTime==1 && MaxColsAtCompileTime!=1) ? RowMajorBit

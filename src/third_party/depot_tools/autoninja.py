@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env python3
 # Copyright (c) 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -62,10 +62,10 @@ for index, arg in enumerate(input_args[1:]):
 input_args = [ arg for arg in input_args if arg != '-o' and arg != '--offline']
 
 use_goma = False
-use_rbe = False
+use_remoteexec = False
 
 # Currently get reclient binary and config dirs relative to output_dir.  If
-# they exist and using rbe, then automatically call bootstrap to start
+# they exist and using remoteexec, then automatically call bootstrap to start
 # reproxy.  This works under the current assumption that the output
 # directory is two levels up from chromium/src.
 reclient_bin_dir = os.path.join(
@@ -79,7 +79,8 @@ reclient_cfg = os.path.join(
 if os.path.exists(os.path.join(output_dir, 'args.gn')):
   with open(os.path.join(output_dir, 'args.gn')) as file_handle:
     for line in file_handle:
-      # Either use_goma or use_rbe activate build acceleration.
+      # Either use_goma, use_remoteexec or use_rbe (in deprecation)
+      # activate build acceleration.
       #
       # This test can match multi-argument lines. Examples of this are:
       # is_debug=false use_goma=true is_official_build=false
@@ -91,9 +92,9 @@ if os.path.exists(os.path.join(output_dir, 'args.gn')):
                    line_without_comment):
         use_goma = True
         continue
-      if re.search(r'(^|\s)(use_rbe)\s*=\s*true($|\s)',
+      if re.search(r'(^|\s)(use_rbe|use_remoteexec)\s*=\s*true($|\s)',
                    line_without_comment):
-        use_rbe = True
+        use_remoteexec = True
         continue
 else:
   for relative_path in [
@@ -160,7 +161,7 @@ args = prefix_args + [ninja_exe_path] + input_args[1:]
 
 num_cores = multiprocessing.cpu_count()
 if not j_specified and not t_specified:
-  if use_goma or use_rbe:
+  if use_goma or use_remoteexec:
     args.append('-j')
     core_multiplier = int(os.environ.get('NINJA_CORE_MULTIPLIER', '40'))
     j_value = num_cores * core_multiplier
@@ -194,9 +195,9 @@ for i in range(len(args)):
 if os.environ.get('NINJA_SUMMARIZE_BUILD', '0') == '1':
   args += ['-d', 'stats']
 
-# If using rbe and the necessary environment variables are set, also start
-# reproxy (via bootstrap) before running ninja.
-if (not offline and use_rbe and os.path.exists(reclient_bin_dir)
+# If using remoteexec and the necessary environment variables are set,
+# also start reproxy (via bootstrap) before running ninja.
+if (not offline and use_remoteexec and os.path.exists(reclient_bin_dir)
     and os.path.exists(reclient_cfg)):
   bootstrap = os.path.join(reclient_bin_dir, 'bootstrap')
   setup_args = [

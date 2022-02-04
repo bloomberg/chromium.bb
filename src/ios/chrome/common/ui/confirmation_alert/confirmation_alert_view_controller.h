@@ -86,10 +86,6 @@ extern NSString* const
 // The action handler for interactions in this View Controller.
 @property(nonatomic, weak) id<ConfirmationAlertActionHandler> actionHandler;
 
-// The container view for the screen-specific content. Derived view controllers
-// should add their UI elements to it, before the VC is loaded.
-@property(nonatomic, strong, readonly) UIView* specificContentView;
-
 @end
 
 #endif  // IOS_CHROME_COMMON_UI_CONFIRMATION_ALERT_CONFIRMATION_ALERT_VIEW_CONTROLLER_H_

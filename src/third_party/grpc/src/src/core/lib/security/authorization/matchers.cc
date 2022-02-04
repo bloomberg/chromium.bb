@@ -18,6 +18,7 @@
 
 #include <grpc/grpc_security_constants.h>
 
+#include "src/core/lib/address_utils/parse_address.h"
 #include "src/core/lib/address_utils/sockaddr_utils.h"
 
 namespace grpc_core {
@@ -200,8 +201,7 @@ bool AuthenticatedAuthorizationMatcher::Matches(
       }
     }
   }
-  // TODO(ashithasantosh): Check Subject field from certificate.
-  return false;
+  return matcher_.Match(args.GetSubject());
 }
 
 bool ReqServerNameAuthorizationMatcher::Matches(const EvaluateArgs&) const {

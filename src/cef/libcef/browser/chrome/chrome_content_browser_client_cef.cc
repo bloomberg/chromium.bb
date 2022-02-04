@@ -5,6 +5,8 @@
 
 #include "libcef/browser/chrome/chrome_content_browser_client_cef.h"
 
+#include <tuple>
+
 #include "libcef/browser/browser_frame.h"
 #include "libcef/browser/browser_info_manager.h"
 #include "libcef/browser/browser_manager.h"
@@ -24,7 +26,6 @@
 #include "libcef/common/command_line_impl.h"
 
 #include "base/command_line.h"
-#include "base/ignore_result.h"
 #include "base/path_service.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -35,6 +36,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/weak_document_ptr.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
@@ -47,7 +49,15 @@ void HandleExternalProtocolHelper(
     int frame_tree_node_id,
     content::NavigationUIData* navigation_data,
     network::mojom::WebSandboxFlags sandbox_flags,
-    const network::ResourceRequest& resource_request) {
+    const network::ResourceRequest& resource_request,
+    const absl::optional<url::Origin>& initiating_origin,
+    content::WeakDocumentPtr initiator_document) {
+  // May return nullptr if frame has been deleted or a cross-document navigation
+  // has committed in the same RenderFrameHost.
+  auto initiator_rfh = initiator_document.AsRenderFrameHostIfValid();
+  if (!initiator_rfh)
+    return;
+
   // Match the logic of the original call in
   // NavigationURLLoaderImpl::PrepareForNonInterceptedRequest.
   self->HandleExternalProtocol(
@@ -58,7 +68,7 @@ void HandleExternalProtocolHelper(
           static_cast<int>(blink::mojom::ResourceType::kMainFrame),
       sandbox_flags,
       static_cast<ui::PageTransition>(resource_request.transition_type),
-      resource_request.has_user_gesture, resource_request.request_initiator,
+      resource_request.has_user_gesture, initiating_origin, initiator_rfh,
       nullptr);
 }
 
@@ -118,7 +128,7 @@ void ChromeContentBrowserClientCef::AppendExtraCommandLineSwitches(
     command_line->CopySwitchesFrom(*browser_cmd, kSwitchNames,
                                    base::size(kSwitchNames));
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
     // kPdfRenderer will be set for Windows in
     // RenderProcessHostImpl::AppendRendererCommandLine.
     content::RenderProcessHost* process =
@@ -126,7 +136,7 @@ void ChromeContentBrowserClientCef::AppendExtraCommandLineSwitches(
     if (process && process->IsPdf()) {
       command_line->AppendSwitch(switches::kPdfRenderer);
     }
-#endif  // !defined(OS_WIN)
+#endif  // !BUILDFLAG(IS_WIN)
   }
 
   CefRefPtr<CefApp> app = CefAppManager::Get()->GetApplication();
@@ -137,7 +147,7 @@ void ChromeContentBrowserClientCef::AppendExtraCommandLineSwitches(
       CefRefPtr<CefCommandLineImpl> commandLinePtr(
           new CefCommandLineImpl(command_line, false, false));
       handler->OnBeforeChildProcessLaunch(commandLinePtr.get());
-      ignore_result(commandLinePtr->Detach(nullptr));
+      std::ignore = commandLinePtr->Detach(nullptr);
     }
   }
 }
@@ -256,6 +266,7 @@ bool ChromeContentBrowserClientCef::HandleExternalProtocol(
     ui::PageTransition page_transition,
     bool has_user_gesture,
     const absl::optional<url::Origin>& initiating_origin,
+    content::RenderFrameHost* initiator_document,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory) {
   // |out_factory| will be non-nullptr when this method is initially called
   // from NavigationURLLoaderImpl::PrepareForNonInterceptedRequest.
@@ -270,7 +281,7 @@ bool ChromeContentBrowserClientCef::HandleExternalProtocol(
   return ChromeContentBrowserClient::HandleExternalProtocol(
       url, web_contents_getter, child_id, frame_tree_node_id, navigation_data,
       is_main_frame, sandbox_flags, page_transition, has_user_gesture,
-      initiating_origin, nullptr);
+      initiating_origin, initiator_document, nullptr);
 }
 
 bool ChromeContentBrowserClientCef::HandleExternalProtocol(
@@ -279,16 +290,24 @@ bool ChromeContentBrowserClientCef::HandleExternalProtocol(
     content::NavigationUIData* navigation_data,
     network::mojom::WebSandboxFlags sandbox_flags,
     const network::ResourceRequest& resource_request,
+    const absl::optional<url::Origin>& initiating_origin,
+    content::RenderFrameHost* initiator_document,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory) {
   mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver =
       out_factory->InitWithNewPipeAndPassReceiver();
+
+  auto weak_initiator_document = initiator_document
+                                     ? initiator_document->GetWeakDocumentPtr()
+                                     : content::WeakDocumentPtr();
 
   // HandleExternalProtocolHelper may be called if nothing handles the request.
   auto request_handler = net_service::CreateInterceptedRequestHandler(
       web_contents_getter, frame_tree_node_id, resource_request,
       base::BindRepeating(HandleExternalProtocolHelper, base::Unretained(this),
                           web_contents_getter, frame_tree_node_id,
-                          navigation_data, sandbox_flags, resource_request));
+                          navigation_data, sandbox_flags, resource_request,
+                          initiating_origin,
+                          std::move(weak_initiator_document)));
 
   net_service::ProxyURLLoaderFactory::CreateProxy(
       web_contents_getter, std::move(receiver), std::move(request_handler));

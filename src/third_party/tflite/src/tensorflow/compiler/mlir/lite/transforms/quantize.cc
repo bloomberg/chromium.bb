@@ -17,6 +17,7 @@ limitations under the License.
 
 #include <cstddef>
 #include <string>
+#include <utility>
 
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/StringSwitch.h"
@@ -77,6 +78,13 @@ static llvm::cl::opt<bool> enable_dynamic_range_quantization(
     llvm::cl::init(false));
 
 // NOLINTNEXTLINE
+static llvm::cl::opt<bool> enable_weight_only_quantization(
+    "tfl-enable-weight-only-quantization", llvm::cl::value_desc("bool"),
+    llvm::cl::desc("Whether to run weight-only for post-training dynamic range "
+                   "quantization pass"),
+    llvm::cl::init(false));
+
+// NOLINTNEXTLINE
 static llvm::cl::opt<bool> enable_legacy_quantize(
     "tfl-legacy-quantize", llvm::cl::value_desc("bool"),
     llvm::cl::desc("Use legacy quantize mode in test. Valid when"
@@ -117,20 +125,31 @@ struct TFLQuantizationBase
                                    NumericVerifyOp, RootOp>(ctx, quant_params) {
   }
 
-  static bool AllowHybridOperand(Operation* quantized_op) {
+  static bool AllowDynamicRangeQuantizedOperand(Operation* quantized_op) {
     // Collect the input if dynamic range quantization is on and the op supports
     // it.
 
     return quantization_trait == kDynamicRangeQuantization &&
-           dyn_cast<DynamicRangeQuantizedOpInterface>(quantized_op);
+           dyn_cast_or_null<DynamicRangeQuantizedOpInterface>(quantized_op);
   }
 
-  static bool AllowHybridResult(Operation* quantized_op) {
+  static bool AllowDynamicRangeQuantizedResult(Operation* quantized_op) {
     // Collect the output if dynamic range quantization is on and the op
     // supports it.
 
     return quantization_trait == kDynamicRangeQuantization &&
-           dyn_cast<DynamicRangeQuantizedOpInterface>(quantized_op);
+           dyn_cast_or_null<DynamicRangeQuantizedOpInterface>(quantized_op);
+  }
+
+  static bool IsWeightOnlyOp(Operation* quantized_op, StringSet& ops_blocklist,
+                             bool weight_only_quantization) {
+    // Check whether the quantized_op needs to be quantized in weight-only
+    // manner.
+    const auto op_name = quantized_op->getName().getStringRef().str();
+    const bool is_blocklisted =
+        ops_blocklist.find(op_name) != ops_blocklist.end();
+
+    return is_blocklisted || weight_only_quantization;
   }
 };
 
@@ -164,17 +183,18 @@ struct TFLDynamicRangeQuantization
                             TFLDynamicRangeQuantization>(ctx, quant_params) {}
 };
 
-struct QuantizeConstPattern : public OpRewritePattern<QuantizeOp> {
+class QuantizeConstPattern : public OpRewritePattern<QuantizeOp> {
+ public:
   explicit QuantizeConstPattern(MLIRContext* context, bool legacy_float_scale)
       : OpRewritePattern<QuantizeOp>(context),
-        legacy_float_scale(legacy_float_scale) {}
+        legacy_float_scale_(legacy_float_scale) {}
   LogicalResult matchAndRewrite(QuantizeOp op,
                                 PatternRewriter& rewriter) const override {
     DenseFPElementsAttr attr;
     if (matchPattern(op.input(), m_Constant(&attr))) {
       auto qtype = op.qtypeAttr();
       Attribute quantized_attr;
-      if (legacy_float_scale) {
+      if (legacy_float_scale_) {
         quantized_attr = quant::QuantizeLegacy(attr, qtype.getValue());
       } else {
         quantized_attr = quant::Quantize(attr, qtype.getValue());
@@ -188,33 +208,29 @@ struct QuantizeConstPattern : public OpRewritePattern<QuantizeOp> {
   }
 
  private:
-  bool legacy_float_scale;
+  bool legacy_float_scale_;
 };
-
-#define LIST_FLAG_OR_STRING_SET(list, set) \
-  (!list.empty() ? StringSet(list.begin(), list.end()) : set)
 
 // Applies quantization on the model in TFL dialect.
 struct QuantizePass : public PassWrapper<QuantizePass, FunctionPass> {
  public:
   // Constructor used by the PassRegistration and only used by test.
   explicit QuantizePass() {
+    quant_specs.inference_type = tensorflow::DT_QINT8;
+    quant_specs.verify_numeric = enable_numeric_verify;
+    quant_specs.whole_model_verify = enable_whole_model_verify;
     quant_specs.legacy_float_scale = enable_legacy_quantize;
-    ops_blocklist =
+    quant_specs.weight_quantization = enable_dynamic_range_quantization;
+    quant_specs.weight_only_quantization = enable_weight_only_quantization;
+    quant_specs.ops_blocklist =
         StringSet(ops_blocklist_flag.begin(), ops_blocklist_flag.end());
-    nodes_blocklist =
+    quant_specs.nodes_blocklist =
         StringSet(nodes_blocklist_flag.begin(), nodes_blocklist_flag.end());
   }
 
   // Constructor used by manually creating the pass.
-  explicit QuantizePass(const QuantizationSpecs& quant_specs,
-                        const StringSet& ops_blocklist_set = {},
-                        const StringSet& nodes_blocklist_set = {})
-      : quant_specs(quant_specs),
-        ops_blocklist(
-            LIST_FLAG_OR_STRING_SET(ops_blocklist_flag, ops_blocklist_set)),
-        nodes_blocklist(LIST_FLAG_OR_STRING_SET(nodes_blocklist_flag,
-                                                nodes_blocklist_set)) {}
+  explicit QuantizePass(const QuantizationSpecs& quant_specs)
+      : quant_specs(quant_specs) {}
 
   StringRef getArgument() const final {
     // This is the argument used to refer to the pass in
@@ -230,11 +246,7 @@ struct QuantizePass : public PassWrapper<QuantizePass, FunctionPass> {
 
  private:
   QuantizationSpecs quant_specs;
-  StringSet ops_blocklist;
-  StringSet nodes_blocklist;
 };
-
-#undef LIST_FLAG_OR_STRING_SET
 
 #include "tensorflow/compiler/mlir/lite/transforms/generated_quantize.inc"
 
@@ -244,17 +256,13 @@ void QuantizePass::runOnFunction() {
   auto* ctx = func.getContext();
 
   const quant::QuantPassSpec quant_params = {
-      {enable_numeric_verify || quant_specs.verify_numeric, error_tolerance,
-       enable_whole_model_verify || quant_specs.whole_model_verify,
-       enable_log_if_failed},
-      ops_blocklist,
-      nodes_blocklist};
+      {quant_specs.verify_numeric, error_tolerance,
+       quant_specs.whole_model_verify, enable_log_if_failed},
+      quant_specs};
 
   TFL::populateWithGenerated(patterns);
 
-  // TODO(b/202451048): separate full and weight-only post-training dynamic
-  // range quantization
-  if (quant_specs.weight_quantization || enable_dynamic_range_quantization) {
+  if (quant_specs.weight_quantization || quant_specs.use_fake_quant_num_bits) {
     patterns.insert<TFLDynamicRangeQuantization>(ctx, quant_params);
   } else {
     patterns.insert<TFLFullQuantization, TFLFullQuantizationReverse>(
@@ -265,18 +273,28 @@ void QuantizePass::runOnFunction() {
   // Constant quantization is a lossy transformation, so they are applied only
   // after all the other patterns have been aplied.
   OwningRewritePatternList patterns_2(&getContext());
-  patterns_2.insert<QuantizeConstPattern>(
-      ctx, quant_specs.legacy_float_scale || enable_legacy_quantize);
+  patterns_2.insert<QuantizeConstPattern>(ctx, quant_specs.legacy_float_scale);
+  if (quant_params.numeric_verify_spec.whole_model_verify) {
+    patterns_2.insert<quant::RemoveDebugAttrPattern>(ctx);
+  }
   (void)applyPatternsAndFoldGreedily(func, std::move(patterns_2));
 }
 }  // namespace
+
+#define UPDATE_STRING_SET(new_set, set) (!new_set.empty() ? new_set : set)
 
 // Creates an instance of the TensorFlow Lite dialect QuantizeTFL pass.
 std::unique_ptr<OperationPass<FuncOp>> CreateQuantizePass(
     const QuantizationSpecs& quant_specs, const StringSet& ops_blocklist,
     const StringSet& nodes_blocklist) {
-  return std::make_unique<QuantizePass>(quant_specs, ops_blocklist,
-                                        nodes_blocklist);
+  QuantizationSpecs updated_quant_specs;
+  updated_quant_specs = quant_specs;
+  // If there's new blocklists given, update quant_specs to use the new one.
+  updated_quant_specs.ops_blocklist =
+      UPDATE_STRING_SET(ops_blocklist, quant_specs.ops_blocklist);
+  updated_quant_specs.nodes_blocklist =
+      UPDATE_STRING_SET(nodes_blocklist, quant_specs.nodes_blocklist);
+  return std::make_unique<QuantizePass>(updated_quant_specs);
 }
 
 std::unique_ptr<OperationPass<FuncOp>> CreateQuantizePass(
@@ -286,9 +304,11 @@ std::unique_ptr<OperationPass<FuncOp>> CreateQuantizePass(
   quant_specs.verify_numeric = verify_numeric;
   quant_specs.whole_model_verify = whole_model_verify;
   quant_specs.legacy_float_scale = legacy_float_scale;
-  return std::make_unique<QuantizePass>(quant_specs, ops_blocklist,
-                                        nodes_blocklist);
+  quant_specs.ops_blocklist = ops_blocklist;
+  quant_specs.nodes_blocklist = nodes_blocklist;
+  return std::make_unique<QuantizePass>(quant_specs);
 }
+
 static PassRegistration<QuantizePass> pass;
 
 }  // namespace TFL

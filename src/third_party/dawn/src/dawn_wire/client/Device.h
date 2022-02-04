@@ -20,12 +20,13 @@
 #include "common/LinkedList.h"
 #include "dawn_wire/WireCmd_autogen.h"
 #include "dawn_wire/client/ApiObjects_autogen.h"
+#include "dawn_wire/client/LimitsAndFeatures.h"
 #include "dawn_wire/client/ObjectBase.h"
 #include "dawn_wire/client/RequestTracker.h"
 
 #include <memory>
 
-namespace dawn_wire { namespace client {
+namespace dawn::wire::client {
 
     class Client;
     class Queue;
@@ -64,7 +65,12 @@ namespace dawn_wire { namespace client {
                                                  WGPUCreatePipelineAsyncStatus status,
                                                  const char* message);
 
-        bool GetLimits(WGPUSupportedLimits* limits);
+        bool GetLimits(WGPUSupportedLimits* limits) const;
+        bool HasFeature(WGPUFeatureName feature) const;
+        size_t EnumerateFeatures(WGPUFeatureName* features) const;
+        void SetLimits(const WGPUSupportedLimits* limits);
+        void SetFeatures(const WGPUFeatureName* features, uint32_t featuresCount);
+
         WGPUQueue GetQueue();
 
         void CancelCallbacksForDisconnect() override;
@@ -72,6 +78,7 @@ namespace dawn_wire { namespace client {
         std::weak_ptr<bool> GetAliveWeakPtr();
 
       private:
+        LimitsAndFeatures mLimitsAndFeatures;
         struct ErrorScopeData {
             WGPUErrorCallback callback = nullptr;
             void* userdata = nullptr;
@@ -100,6 +107,6 @@ namespace dawn_wire { namespace client {
         std::shared_ptr<bool> mIsAlive;
     };
 
-}}  // namespace dawn_wire::client
+}  // namespace dawn::wire::client
 
 #endif  // DAWNWIRE_CLIENT_DEVICE_H_

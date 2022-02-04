@@ -45,6 +45,9 @@ bool CheckSecurityRestrictions(LocalFrame& frame) {
   if (!frame.Loader().GetDocumentLoader()->ConsumeTextFragmentToken())
     return false;
 
+  if (frame.GetDocument()->contentType() != "text/html")
+    return false;
+
   // For cross origin initiated navigations, we only allow text
   // fragments if the frame is not script accessible by another frame, i.e. no
   // cross origin iframes or window.open.
@@ -398,12 +401,16 @@ void TextFragmentAnchor::DidFindMatch(
 
     DCHECK(first_node.GetLayoutObject());
 
+    // TODO(bokan): Refactor this to use the common
+    // FragmentAnchor::ScrollElementIntoViewWithOptions.
+    mojom::blink::ScrollIntoViewParamsPtr params =
+        ScrollAlignment::CreateScrollIntoViewParams(
+            ScrollAlignment::CenterAlways(), ScrollAlignment::CenterAlways(),
+            mojom::blink::ScrollType::kProgrammatic);
+    params->cross_origin_boundaries = false;
     PhysicalRect scrolled_bounding_box =
-        first_node.GetLayoutObject()->ScrollRectToVisible(
-            bounding_box, ScrollAlignment::CreateScrollIntoViewParams(
-                              ScrollAlignment::CenterAlways(),
-                              ScrollAlignment::CenterAlways(),
-                              mojom::blink::ScrollType::kProgrammatic));
+        first_node.GetLayoutObject()->ScrollRectToVisible(bounding_box,
+                                                          std::move(params));
     did_scroll_into_view_ = true;
 
     if (AXObjectCache* cache = frame_->GetDocument()->ExistingAXObjectCache())

@@ -20,12 +20,12 @@
 #include "src/gpu/GrPersistentCacheUtils.h"
 #include "src/gpu/GrProgramDesc.h"
 #include "src/gpu/GrShaderCaps.h"
-#include "src/gpu/GrShaderUtils.h"
 #include "src/gpu/GrSwizzle.h"
 #include "src/gpu/GrXferProcessor.h"
 #include "src/gpu/gl/GrGLGpu.h"
 #include "src/gpu/gl/GrGLProgram.h"
 #include "src/gpu/gl/builders/GrGLProgramBuilder.h"
+#include "src/utils/SkShaderUtils.h"
 
 #include <memory>
 #include "src/gpu/gl/builders/GrGLShaderStringBuilder.h"
@@ -123,25 +123,23 @@ void GrGLProgramBuilder::computeCountsAndStrides(GrGLuint programID,
     fInstanceAttributeCnt = geomProc.numInstanceAttributes();
     fAttributes = std::make_unique<GrGLProgram::Attribute[]>(
             fVertexAttributeCnt + fInstanceAttributeCnt);
-    auto addAttr = [&](int i, const auto& a, size_t* stride) {
+    auto addAttr = [&](int i, const auto& a) {
         fAttributes[i].fCPUType = a.cpuType();
         fAttributes[i].fGPUType = a.gpuType();
-        fAttributes[i].fOffset = *stride;
-        *stride += a.sizeAlign4();
+        fAttributes[i].fOffset = *a.offset();
         fAttributes[i].fLocation = i;
         if (bindAttribLocations) {
             GL_CALL(BindAttribLocation(programID, i, a.name()));
         }
     };
-    fVertexStride = 0;
+    fVertexStride = geomProc.vertexStride();
     int i = 0;
-    for (const auto& attr : geomProc.vertexAttributes()) {
-        addAttr(i++, attr, &fVertexStride);
+    for (auto attr : geomProc.vertexAttributes()) {
+        addAttr(i++, attr);
     }
-    SkASSERT(fVertexStride == geomProc.vertexStride());
-    fInstanceStride = 0;
-    for (const auto& attr : geomProc.instanceAttributes()) {
-        addAttr(i++, attr, &fInstanceStride);
+    fInstanceStride = geomProc.instanceStride();
+    for (auto attr : geomProc.instanceAttributes()) {
+        addAttr(i++, attr);
     }
     SkASSERT(fInstanceStride == geomProc.instanceStride());
 }
@@ -192,10 +190,10 @@ void GrGLProgramBuilder::storeShaderInCache(const SkSL::Program::Inputs& inputs,
         meta.fSettings = settings;
         meta.fHasCustomColorOutput = fFS.hasCustomColorOutput();
         meta.fHasSecondaryColorOutput = fFS.hasSecondaryOutput();
-        for (const auto& attr : this->geometryProcessor().vertexAttributes()) {
+        for (auto attr : this->geometryProcessor().vertexAttributes()) {
             meta.fAttributeNames.emplace_back(attr.name());
         }
-        for (const auto& attr : this->geometryProcessor().instanceAttributes()) {
+        for (auto attr : this->geometryProcessor().instanceAttributes()) {
             meta.fAttributeNames.emplace_back(attr.name());
         }
 
@@ -441,7 +439,7 @@ sk_sp<GrGLProgram> GrGLProgramBuilder::finalize(const GrGLPrecompiledProgram* pr
         if (fGpu->getContext()->priv().options().fShaderCacheStrategy ==
                 GrContextOptions::ShaderCacheStrategy::kSkSL) {
             for (int i = 0; i < kGrShaderTypeCount; ++i) {
-                glsl[i] = GrShaderUtils::PrettyPrint(*sksl[i]);
+                glsl[i] = SkShaderUtils::PrettyPrint(*sksl[i]);
             }
             isSkSL = true;
         }

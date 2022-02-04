@@ -29,9 +29,19 @@
 #include "base/base_export.h"
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/windows_types.h"
 #endif
+
+namespace cc {
+class Scheduler;
+}
+namespace base::internal {
+class TimerBase;
+}
+namespace content::responsiveness {
+class Calculator;
+}
 
 namespace base {
 
@@ -108,6 +118,8 @@ struct RawPtrNoOpImpl {
 
   // This is for accounting only, used by unit tests.
   static RAW_PTR_FUNC_ATTRIBUTES void IncrementSwapCountForTest() {}
+  static RAW_PTR_FUNC_ATTRIBUTES void
+  IncrementPointerToMemberOperatorCountForTest() {}
 };
 
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
@@ -274,6 +286,8 @@ struct BackupRefPtrImpl {
 
   // This is for accounting only, used by unit tests.
   static RAW_PTR_FUNC_ATTRIBUTES void IncrementSwapCountForTest() {}
+  static RAW_PTR_FUNC_ATTRIBUTES void
+  IncrementPointerToMemberOperatorCountForTest() {}
 
  private:
   // We've evaluated several strategies (inline nothing, various parts, or
@@ -314,6 +328,22 @@ struct IsSupportedType<T, std::enable_if_t<std::is_function<T>::value>> {
   static constexpr bool value = false;
 };
 
+// This section excludes some types from raw_ptr<T> to avoid them from being
+// used inside base::Unretained in performance sensitive places. These were
+// identified from sampling profiler data. See crbug.com/1287151 for more info.
+template <>
+struct IsSupportedType<cc::Scheduler> {
+  static constexpr bool value = false;
+};
+template <>
+struct IsSupportedType<base::internal::TimerBase> {
+  static constexpr bool value = false;
+};
+template <>
+struct IsSupportedType<content::responsiveness::Calculator> {
+  static constexpr bool value = false;
+};
+
 #if __OBJC__
 // raw_ptr<T> is not compatible with pointers to Objective-C classes for a
 // multitude of reasons. They may fail to compile in many cases, and wouldn't
@@ -328,7 +358,7 @@ struct IsSupportedType<T,
 };
 #endif  // __OBJC__
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // raw_ptr<HWND__> is unsafe at runtime - if the handle happens to also
 // represent a valid pointer into a PartitionAlloc-managed region then it can
 // lead to manipulating random memory when treating it as BackupRefPtr
@@ -538,6 +568,13 @@ class TRIVIAL_ABI raw_ptr {
     return *GetForDereference();
   }
   RAW_PTR_FUNC_ATTRIBUTES T* operator->() const { return GetForDereference(); }
+
+  // Disables `(my_raw_ptr->*pmf)(...)` as a workaround for
+  // the ICE in GCC parsing the code, reported at
+  // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=103455
+  template <typename PMF>
+  void operator->*(PMF) const = delete;
+
   // Deliberately implicit, because raw_ptr is supposed to resemble raw ptr.
   // NOLINTNEXTLINE(runtime/explicit)
   RAW_PTR_FUNC_ATTRIBUTES operator T*() const { return GetForExtraction(); }

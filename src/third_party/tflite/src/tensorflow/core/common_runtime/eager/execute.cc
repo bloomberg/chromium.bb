@@ -1014,6 +1014,10 @@ Status GetOrCreateKernelAndDevice(
     // on GPUs right now.
     bool allow_small_function_optimizations = false;
     bool int_args_and_retvals_on_device = false;
+    bool allow_control_flow_sync_execution = false;
+    // TODO(b/176491312): Remove this if shape inference on import flag is
+    // removed.
+    bool shape_inference_on_tfe_dialect_import = true;
     if (ctx.RunEagerOpAsFunction() && !op->is_function()) {
       EagerOperation* wrapped_op = nullptr;
       TF_RETURN_IF_ERROR(ValidateOp(op));
@@ -1023,6 +1027,8 @@ Status GetOrCreateKernelAndDevice(
       wrapped_op_releaser.reset(wrapped_op);
       run_function_with_flr = true;
       allow_small_function_optimizations = true;
+      allow_control_flow_sync_execution = true;
+      shape_inference_on_tfe_dialect_import = false;
       int_args_and_retvals_on_device = IntArgsAndRetvalsOnDevice(op);
       op = wrapped_op;
     }
@@ -1069,8 +1075,9 @@ Status GetOrCreateKernelAndDevice(
           std::move(input_resource_variable_dtypes_and_shapes), runner,
           ctx.GetCollectiveExecutorHandle(), ctx.HostCPU(), op->Name(),
           function_outputs_on_op_device, allow_small_function_optimizations,
-          int_args_and_retvals_on_device, std::move(rendezvous_creator),
-          get_op_id));
+          allow_control_flow_sync_execution,
+          shape_inference_on_tfe_dialect_import, int_args_and_retvals_on_device,
+          std::move(rendezvous_creator), get_op_id));
     } else {
       VLOG(2) << "Running " << ndef.op() << " using op kernel. "
               << ". Full node_def=" << ndef.DebugString();
@@ -1301,7 +1308,7 @@ Status EagerLocalExecute(EagerOperation* op, TensorHandle** retvals,
 // Run a Pack op to pack the tensors pointed by a packed input TensorHandle if
 // the op is a primitive op.
 Status MaybePackInputTensor(EagerOperation* op) {
-  if (op->is_function()) {
+  if (op->is_function() || op->EagerContext().RunEagerOpAsFunction()) {
     // Functions could take packed TensorHandles as inputs.
     return Status::OK();
   }

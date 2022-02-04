@@ -63,9 +63,14 @@
     {%- if member.type.category == "object" -%}
         {%- set Optional = "Optional" if member.optional else "" -%}
         WIRE_TRY(provider.Get{{Optional}}Id({{in}}, &{{out}}));
-    {% elif member.type.category == "structure"%}
-        {%- set Provider = ", provider" if member.type.may_have_dawn_object else "" -%}
-        WIRE_TRY({{as_cType(member.type.name)}}Serialize({{in}}, &{{out}}, buffer{{Provider}}));
+    {%- elif member.type.category == "structure" -%}
+        {%- if member.type.is_wire_transparent -%}
+            static_assert(sizeof({{out}}) == sizeof({{in}}), "Serialize memcpy size must match.");
+            memcpy(&{{out}}, &{{in}}, {{member_transfer_sizeof(member)}});
+        {%- else -%}
+            {%- set Provider = ", provider" if member.type.may_have_dawn_object else "" -%}
+            WIRE_TRY({{as_cType(member.type.name)}}Serialize({{in}}, &{{out}}, buffer{{Provider}}));
+        {%- endif -%}
     {%- else -%}
         {{out}} = {{in}};
     {%- endif -%}
@@ -77,11 +82,16 @@
         {%- set Optional = "Optional" if member.optional else "" -%}
         WIRE_TRY(resolver.Get{{Optional}}FromId({{in}}, &{{out}}));
     {%- elif member.type.category == "structure" -%}
-        WIRE_TRY({{as_cType(member.type.name)}}Deserialize(&{{out}}, &{{in}}, deserializeBuffer, allocator
-            {%- if member.type.may_have_dawn_object -%}
-                , resolver
-            {%- endif -%}
-        ));
+        {%- if member.type.is_wire_transparent -%}
+            static_assert(sizeof({{out}}) == sizeof({{in}}), "Deserialize memcpy size must match.");
+            memcpy(&{{out}}, const_cast<const {{member_transfer_type(member)}}*>(&{{in}}), {{member_transfer_sizeof(member)}});
+        {%- else -%}
+            WIRE_TRY({{as_cType(member.type.name)}}Deserialize(&{{out}}, &{{in}}, deserializeBuffer, allocator
+                {%- if member.type.may_have_dawn_object -%}
+                    , resolver
+                {%- endif -%}
+            ));
+        {%- endif -%}
     {%- else -%}
         static_assert(sizeof({{out}}) >= sizeof({{in}}), "Deserialize assignment may not narrow.");
         {{out}} = {{in}};
@@ -169,6 +179,7 @@
             {% endif %}
             {
                 {% if member.annotation != "value" %}
+                    {{ assert(member.annotation != "const*const*") }}
                     auto memberLength = {{member_length(member, "record.")}};
                     result += memberLength * {{member_transfer_sizeof(member)}};
                     //* Structures might contain more pointers so we need to add their extra size as well.
@@ -248,6 +259,7 @@
 
         //* Allocate space and write the non-value arguments in it.
         {% for member in members if member.annotation != "value" and member.length != "strlen" and not member.skip_serialize %}
+            {{ assert(member.annotation != "const*const*") }}
             {% set memberName = as_varName(member.name) %}
 
             {% if member.type.category != "object" and member.optional %}
@@ -357,6 +369,7 @@
 
         //* Get extra buffer data, and copy pointed to values in extra allocated space.
         {% for member in members if member.annotation != "value" and member.length != "strlen" %}
+            {{ assert(member.annotation != "const*const*") }}
             {% set memberName = as_varName(member.name) %}
 
             {% if member.type.category != "object" and member.optional %}
@@ -373,26 +386,39 @@
                 const volatile {{member_transfer_type(member)}}* memberBuffer;
                 WIRE_TRY(deserializeBuffer->ReadN(memberLength, &memberBuffer));
 
-                {{as_cType(member.type.name)}}* copiedMembers;
-                WIRE_TRY(GetSpace(allocator, memberLength, &copiedMembers));
-                record->{{memberName}} = copiedMembers;
+                //* For data-only members (e.g. "data" in WriteBuffer and WriteTexture), they are
+                //* not security sensitive so we can directly refer the data inside the transfer
+                //* buffer in dawn_native. For other members, as prevention of TOCTOU attacks is an
+                //* important feature of the wire, we must make sure every single value returned to
+                //* dawn_native must be a copy of what's in the wire.
+                {% if member.json_data["wire_is_data_only"] %}
+                    record->{{memberName}} =
+                        const_cast<const {{member_transfer_type(member)}}*>(memberBuffer);
 
-                {% if member.type.is_wire_transparent %}
-                    //* memcpy is not allowed to copy from volatile objects. However, these arrays
-                    //* are just used as plain data, and don't impact control flow. So if the
-                    //* underlying data were changed while the copy was still executing, we would
-                    //* get different data - but it wouldn't cause unexpected downstream effects.
-                    memcpy(
-                        copiedMembers,
-                        const_cast<const {{member_transfer_type(member)}}*>(memberBuffer),
-                        {{member_transfer_sizeof(member)}} * memberLength);
                 {% else %}
-                    //* This loop cannot overflow because it iterates up to |memberLength|. Even if
-                    //* memberLength were the maximum integer value, |i| would become equal to it
-                    //* just before exiting the loop, but not increment past or wrap around.
-                    for (decltype(memberLength) i = 0; i < memberLength; ++i) {
-                        {{deserialize_member(member, "memberBuffer[i]", "copiedMembers[i]")}}
-                    }
+                    {{as_cType(member.type.name)}}* copiedMembers;
+                    WIRE_TRY(GetSpace(allocator, memberLength, &copiedMembers));
+                    record->{{memberName}} = copiedMembers;
+
+                    {% if member.type.is_wire_transparent %}
+                        //* memcpy is not allowed to copy from volatile objects. However, these
+                        //* arrays are just used as plain data, and don't impact control flow. So if
+                        //* the underlying data were changed while the copy was still executing, we
+                        //* would get different data - but it wouldn't cause unexpected downstream
+                        //* effects.
+                        memcpy(
+                            copiedMembers,
+                            const_cast<const {{member_transfer_type(member)}}*>(memberBuffer),
+                           {{member_transfer_sizeof(member)}} * memberLength);
+                    {% else %}
+                        //* This loop cannot overflow because it iterates up to |memberLength|. Even
+                        //* if memberLength were the maximum integer value, |i| would become equal
+                        //* to it just before exiting the loop, but not increment past or wrap
+                        //* around.
+                        for (decltype(memberLength) i = 0; i < memberLength; ++i) {
+                            {{deserialize_member(member, "memberBuffer[i]", "copiedMembers[i]")}}
+                        }
+                    {% endif %}
                 {% endif %}
             }
         {% endfor %}
@@ -504,7 +530,7 @@
             return result;
         }
 
-        DAWN_NO_DISCARD WireResult SerializeChainedStruct({{ChainedStructPtr}} chainedStruct,
+        [[nodiscard]] WireResult SerializeChainedStruct({{ChainedStructPtr}} chainedStruct,
                                                           SerializeBuffer* buffer,
                                                           const ObjectIdProvider& provider) {
             ASSERT(chainedStruct != nullptr);
@@ -623,7 +649,7 @@
         }
 {% endmacro %}
 
-namespace dawn_wire {
+namespace dawn::wire {
 
     ObjectHandle::ObjectHandle() = default;
     ObjectHandle::ObjectHandle(ObjectId id, ObjectGeneration generation)
@@ -676,7 +702,7 @@ namespace dawn_wire {
         };
 
         size_t GetChainedStructExtraRequiredSize(const WGPUChainedStruct* chainedStruct);
-        DAWN_NO_DISCARD WireResult SerializeChainedStruct(const WGPUChainedStruct* chainedStruct,
+        [[nodiscard]] WireResult SerializeChainedStruct(const WGPUChainedStruct* chainedStruct,
                                                           SerializeBuffer* buffer,
                                                           const ObjectIdProvider& provider);
         WireResult DeserializeChainedStruct(const WGPUChainedStruct** outChainNext,
@@ -685,7 +711,7 @@ namespace dawn_wire {
                                             const ObjectIdResolver& resolver);
 
         size_t GetChainedStructExtraRequiredSize(WGPUChainedStructOut* chainedStruct);
-        DAWN_NO_DISCARD WireResult SerializeChainedStruct(WGPUChainedStructOut* chainedStruct,
+        [[nodiscard]] WireResult SerializeChainedStruct(WGPUChainedStructOut* chainedStruct,
                                                           SerializeBuffer* buffer,
                                                           const ObjectIdProvider& provider);
         WireResult DeserializeChainedStruct(WGPUChainedStructOut** outChainNext,
@@ -826,4 +852,4 @@ namespace dawn_wire {
                                               nullptr, resolver) == WireResult::Success;
     }
 
-}  // namespace dawn_wire
+}  // namespace dawn::wire

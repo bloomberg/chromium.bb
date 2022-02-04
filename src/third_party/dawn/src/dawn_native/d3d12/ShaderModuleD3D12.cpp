@@ -26,6 +26,8 @@
 #include "dawn_native/d3d12/PipelineLayoutD3D12.h"
 #include "dawn_native/d3d12/PlatformFunctions.h"
 #include "dawn_native/d3d12/UtilsD3D12.h"
+#include "dawn_platform/DawnPlatform.h"
+#include "dawn_platform/tracing/TraceEvent.h"
 
 #include <d3dcompiler.h>
 
@@ -34,7 +36,7 @@
 #include <sstream>
 #include <unordered_map>
 
-namespace dawn_native { namespace d3d12 {
+namespace dawn::native::d3d12 {
 
     namespace {
         ResultOrError<uint64_t> GetDXCompilerVersion(ComPtr<IDxcValidator> dxcValidator) {
@@ -90,11 +92,11 @@ namespace dawn_native { namespace d3d12 {
 
             std::map<tint::transform::BindingPoint, T, CompareBindingPoint> sorted(map.begin(),
                                                                                    map.end());
-            for (auto& entry : sorted) {
+            for (auto& [bindingPoint, value] : sorted) {
                 output << " ";
-                Serialize(output, entry.first);
+                Serialize(output, bindingPoint);
                 output << "=";
-                Serialize(output, entry.second);
+                Serialize(output, value);
             }
             output << ")";
         }
@@ -144,10 +146,7 @@ namespace dawn_native { namespace d3d12 {
             std::unordered_set<std::string> overriddenConstants;
 
             // Set pipeline overridden values
-            for (const auto& pipelineConstant : *pipelineConstantEntries) {
-                const std::string& name = pipelineConstant.first;
-                double value = pipelineConstant.second;
-
+            for (const auto& [name, value] : *pipelineConstantEntries) {
                 overriddenConstants.insert(name);
 
                 // This is already validated so `name` must exist
@@ -246,9 +245,7 @@ namespace dawn_native { namespace d3d12 {
                     // the Tint AST to make the "bindings" decoration match the offset chosen by
                     // d3d12::BindGroupLayout so that Tint produces HLSL with the correct registers
                     // assigned to each interface variable.
-                    for (const auto& it : groupBindingInfo) {
-                        BindingNumber binding = it.first;
-                        auto const& bindingInfo = it.second;
+                    for (const auto& [binding, bindingInfo] : groupBindingInfo) {
                         BindingIndex bindingIndex = bgl->GetBindingIndex(binding);
                         BindingPoint srcBindingPoint{static_cast<uint32_t>(group),
                                                      static_cast<uint32_t>(binding)};
@@ -379,8 +376,8 @@ namespace dawn_native { namespace d3d12 {
                 stream << " hasShaderFloat16Feature=" << hasShaderFloat16Feature;
 
                 stream << " defines={";
-                for (const auto& it : defineStrings) {
-                    stream << " <" << it.first << "," << it.second << ">";
+                for (const auto& [name, value] : defineStrings) {
+                    stream << " <" << name << "," << value << ">";
                 }
                 stream << " }";
 
@@ -463,15 +460,14 @@ namespace dawn_native { namespace d3d12 {
             // Build defines for overridable constants
             std::vector<std::pair<std::wstring, std::wstring>> defineStrings;
             defineStrings.reserve(request.defineStrings.size());
-            for (const auto& it : request.defineStrings) {
-                defineStrings.emplace_back(UTF8ToWStr(it.first.c_str()),
-                                           UTF8ToWStr(it.second.c_str()));
+            for (const auto& [name, value] : request.defineStrings) {
+                defineStrings.emplace_back(UTF8ToWStr(name.c_str()), UTF8ToWStr(value.c_str()));
             }
 
             std::vector<DxcDefine> dxcDefines;
             dxcDefines.reserve(defineStrings.size());
-            for (const auto& d : defineStrings) {
-                dxcDefines.push_back({d.first.c_str(), d.second.c_str()});
+            for (const auto& [name, value] : defineStrings) {
+                dxcDefines.push_back({name.c_str(), value.c_str()});
             }
 
             ComPtr<IDxcOperationResult> result;
@@ -584,8 +580,8 @@ namespace dawn_native { namespace d3d12 {
             std::vector<D3D_SHADER_MACRO> fxcDefines;
             if (request.defineStrings.size() > 0) {
                 fxcDefines.reserve(request.defineStrings.size() + 1);
-                for (const auto& d : request.defineStrings) {
-                    fxcDefines.push_back({d.first.c_str(), d.second.c_str()});
+                for (const auto& [name, value] : request.defineStrings) {
+                    fxcDefines.push_back({name.c_str(), value.c_str()});
                 }
                 // d3dCompile D3D_SHADER_MACRO* pDefines is a nullptr terminated array
                 fxcDefines.push_back({nullptr, nullptr});
@@ -602,7 +598,8 @@ namespace dawn_native { namespace d3d12 {
             return std::move(compiledShader);
         }
 
-        ResultOrError<std::string> TranslateToHLSL(const ShaderCompilationRequest& request,
+        ResultOrError<std::string> TranslateToHLSL(dawn::platform::Platform* platform,
+                                                   const ShaderCompilationRequest& request,
                                                    std::string* remappedEntryPointName) {
             std::ostringstream errorStream;
             errorStream << "Tint HLSL failure:" << std::endl;
@@ -637,9 +634,12 @@ namespace dawn_native { namespace d3d12 {
 
             tint::Program transformedProgram;
             tint::transform::DataMap transformOutputs;
-            DAWN_TRY_ASSIGN(transformedProgram,
-                            RunTransforms(&transformManager, request.program, transformInputs,
-                                          &transformOutputs, nullptr));
+            {
+                TRACE_EVENT0(platform, General, "RunTransforms");
+                DAWN_TRY_ASSIGN(transformedProgram,
+                                RunTransforms(&transformManager, request.program, transformInputs,
+                                              &transformOutputs, nullptr));
+            }
 
             if (auto* data = transformOutputs.Get<tint::transform::Renamer::Data>()) {
                 auto it = data->remappings.find(request.entryPointName);
@@ -667,6 +667,7 @@ namespace dawn_native { namespace d3d12 {
             // them as well. This would allow us to only upload root constants that are actually
             // read by the shader.
             options.array_length_from_uniform = request.arrayLengthFromUniform;
+            TRACE_EVENT0(platform, General, "tint::writer::hlsl::Generate");
             auto result = tint::writer::hlsl::Generate(&transformedProgram, options);
             DAWN_INVALID_IF(!result.success, "An error occured while generating HLSL: %s",
                             result.error);
@@ -675,7 +676,8 @@ namespace dawn_native { namespace d3d12 {
         }
 
         template <typename F>
-        MaybeError CompileShader(const PlatformFunctions* functions,
+        MaybeError CompileShader(dawn::platform::Platform* platform,
+                                 const PlatformFunctions* functions,
                                  IDxcLibrary* dxcLibrary,
                                  IDxcCompiler* dxcCompiler,
                                  ShaderCompilationRequest&& request,
@@ -685,7 +687,7 @@ namespace dawn_native { namespace d3d12 {
             // Compile the source shader to HLSL.
             std::string hlslSource;
             std::string remappedEntryPoint;
-            DAWN_TRY_ASSIGN(hlslSource, TranslateToHLSL(request, &remappedEntryPoint));
+            DAWN_TRY_ASSIGN(hlslSource, TranslateToHLSL(platform, request, &remappedEntryPoint));
             if (dumpShaders) {
                 std::ostringstream dumpedMsg;
                 dumpedMsg << "/* Dumped generated HLSL */" << std::endl << hlslSource;
@@ -693,14 +695,18 @@ namespace dawn_native { namespace d3d12 {
             }
             request.entryPointName = remappedEntryPoint.c_str();
             switch (request.compiler) {
-                case ShaderCompilationRequest::Compiler::DXC:
+                case ShaderCompilationRequest::Compiler::DXC: {
+                    TRACE_EVENT0(platform, General, "CompileShaderDXC");
                     DAWN_TRY_ASSIGN(compiledShader->compiledDXCShader,
                                     CompileShaderDXC(dxcLibrary, dxcCompiler, request, hlslSource));
                     break;
-                case ShaderCompilationRequest::Compiler::FXC:
+                }
+                case ShaderCompilationRequest::Compiler::FXC: {
+                    TRACE_EVENT0(platform, General, "CompileShaderFXC");
                     DAWN_TRY_ASSIGN(compiledShader->compiledFXCShader,
                                     CompileShaderFXC(functions, request, hlslSource));
                     break;
+                }
             }
 
             if (dumpShaders && request.compiler == ShaderCompilationRequest::Compiler::FXC) {
@@ -749,7 +755,9 @@ namespace dawn_native { namespace d3d12 {
                                                         SingleShaderStage stage,
                                                         PipelineLayout* layout,
                                                         uint32_t compileFlags) {
+        TRACE_EVENT0(GetDevice()->GetPlatform(), General, "ShaderModuleD3D12::Compile");
         ASSERT(!IsError());
+
         ScopedTintICEHandler scopedICEHandler(GetDevice());
 
         Device* device = ToBackend(GetDevice());
@@ -805,7 +813,7 @@ namespace dawn_native { namespace d3d12 {
             device->GetPersistentCache()->GetOrCreate(
                 shaderCacheKey, [&](auto doCache) -> MaybeError {
                     DAWN_TRY(CompileShader(
-                        device->GetFunctions(),
+                        device->GetPlatform(), device->GetFunctions(),
                         device->IsToggleEnabled(Toggle::UseDXC) ? device->GetDxcLibrary().Get()
                                                                 : nullptr,
                         device->IsToggleEnabled(Toggle::UseDXC) ? device->GetDxcCompiler().Get()
@@ -834,4 +842,4 @@ namespace dawn_native { namespace d3d12 {
         UNREACHABLE();
         return {};
     }
-}}  // namespace dawn_native::d3d12
+}  // namespace dawn::native::d3d12

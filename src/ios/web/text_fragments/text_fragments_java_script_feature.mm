@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/no_destructor.h"
 #import "ios/web/public/js_messaging/script_message.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frame_util.h"
@@ -51,7 +52,9 @@ void TextFragmentsJavaScriptFeature::ProcessTextFragments(
     std::string foreground_color_hex_rgb) {
   DCHECK(web_state);
   auto* frame = web::GetMainFrame(web_state);
-  DCHECK(frame);
+  if (!frame) {
+    return;
+  }
 
   base::Value bg_color = background_color_hex_rgb.empty()
                              ? base::Value()
@@ -73,7 +76,10 @@ void TextFragmentsJavaScriptFeature::RemoveHighlights(WebState* web_state,
                                                       const GURL& new_url) {
   DCHECK(web_state);
   auto* frame = web::GetMainFrame(web_state);
-  DCHECK(frame);
+  if (!frame) {
+    return;
+  }
+
   std::vector<base::Value> parameters;
   parameters.emplace_back(new_url.is_valid() ? new_url.spec() : "");
   CallJavaScriptFunction(frame, kRemoveHighlightsScript, parameters);

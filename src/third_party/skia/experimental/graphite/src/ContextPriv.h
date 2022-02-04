@@ -25,6 +25,9 @@ public:
 
     ResourceProvider* resourceProvider();
 
+    SkShaderCodeDictionary* shaderCodeDictionary();
+    const SkShaderCodeDictionary* shaderCodeDictionary() const;
+
 private:
     friend class Context; // to construct/copy this type.
 

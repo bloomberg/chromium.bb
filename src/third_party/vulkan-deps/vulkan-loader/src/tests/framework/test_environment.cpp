@@ -52,12 +52,8 @@ InstWrapper& InstWrapper::operator=(InstWrapper&& other) noexcept {
     return *this;
 }
 
-testing::AssertionResult InstWrapper::CheckCreate(VkResult result_to_check) {
-    VkResult res = functions->vkCreateInstance(create_info.get(), callbacks, &inst);
-    if (res == result_to_check)
-        return testing::AssertionSuccess();
-    else
-        return testing::AssertionFailure() << " Expected VkCreateInstance to return " << result_to_check << " but got " << res;
+void InstWrapper::CheckCreate(VkResult result_to_check) {
+    ASSERT_EQ(result_to_check, functions->vkCreateInstance(create_info.get(), callbacks, &inst));
 }
 
 std::vector<VkPhysicalDevice> InstWrapper::GetPhysDevs(uint32_t phys_dev_count, VkResult result_to_check) {
@@ -111,11 +107,11 @@ VkResult CreateDebugUtilsMessenger(DebugUtilsWrapper& debug_utils) {
 
 void FillDebugUtilsCreateDetails(InstanceCreateInfo& create_info, DebugUtilsLogger& logger) {
     create_info.add_extension("VK_EXT_debug_utils");
-    create_info.inst_info.pNext = logger.get();
+    create_info.instance_info.pNext = logger.get();
 }
 void FillDebugUtilsCreateDetails(InstanceCreateInfo& create_info, DebugUtilsWrapper& wrapper) {
     create_info.add_extension("VK_EXT_debug_utils");
-    create_info.inst_info.pNext = wrapper.get();
+    create_info.instance_info.pNext = wrapper.get();
 }
 
 PlatformShimWrapper::PlatformShimWrapper(DebugMode debug_mode) noexcept : debug_mode(debug_mode) {
@@ -178,96 +174,83 @@ FrameworkEnvironment::FrameworkEnvironment(DebugMode debug_mode) noexcept
     platform_shim->set_path(ManifestCategory::implicit_layer, implicit_layer_folder.location());
 }
 
-void FrameworkEnvironment::AddICD(TestICDDetails icd_details, const std::string& json_name) noexcept {
-    ManifestICD icd_manifest;
-    icd_manifest.lib_path = fs::fixup_backslashes_in_path(icd_details.icd_path);
-    icd_manifest.api_version = icd_details.api_version;
-    auto driver_loc = icd_folder.write(json_name, icd_manifest);
-    platform_shim->add_manifest(ManifestCategory::icd, driver_loc);
-}
-void FrameworkEnvironment::AddImplicitLayer(ManifestLayer layer_manifest, const std::string& json_name) noexcept {
-    for (auto& layer : layer_manifest.layers) {
-        if (!layer.lib_path.str().empty()) {
-            std::string new_layer_name = layer.name + "_" + layer.lib_path.filename().str();
+void FrameworkEnvironment::add_icd(TestICDDetails icd_details) noexcept {
+    size_t cur_icd_index = icds.size();
+    if (!icd_details.is_fake) {
+        fs::path new_driver_name = fs::path(icd_details.icd_path).stem() + "_" + std::to_string(cur_icd_index) +
+                                   fs::path(icd_details.icd_path).extension();
 
-            auto new_layer_location = implicit_layer_folder.copy_file(layer.lib_path, new_layer_name);
-            layer.lib_path = new_layer_location;
-        }
-    }
-
-    auto layer_loc = implicit_layer_folder.write(json_name, layer_manifest);
-    platform_shim->add_manifest(ManifestCategory::implicit_layer, layer_loc);
-}
-void FrameworkEnvironment::AddExplicitLayer(ManifestLayer layer_manifest, const std::string& json_name) noexcept {
-    for (auto& layer : layer_manifest.layers) {
-        if (!layer.lib_path.str().empty()) {
-            std::string new_layer_name = layer.name + "_" + layer.lib_path.filename().str();
-
-            auto new_layer_location = explicit_layer_folder.copy_file(layer.lib_path, new_layer_name);
-            layer.lib_path = new_layer_location;
-        }
-    }
-
-    auto layer_loc = explicit_layer_folder.write(json_name, layer_manifest);
-    platform_shim->add_manifest(ManifestCategory::explicit_layer, layer_loc);
-}
-
-EnvVarICDOverrideShim::EnvVarICDOverrideShim(DebugMode debug_mode) noexcept : FrameworkEnvironment(debug_mode) {}
-
-void EnvVarICDOverrideShim::SetEnvOverrideICD(const char* icd_path, const char* manifest_name) noexcept {
-    ManifestICD icd_manifest;
-    icd_manifest.lib_path = icd_path;
-    icd_manifest.api_version = VK_MAKE_VERSION(1, 0, 0);
-
-    icd_folder.write(manifest_name, icd_manifest);
-    set_env_var("VK_ICD_FILENAMES", (icd_folder.location() / manifest_name).str());
-
-    driver_wrapper = LibraryWrapper(fs::path(icd_path));
-
-    reset_icd = driver_wrapper.get_symbol<GetNewTestICDFunc>(RESET_ICD_FUNC_STR);
-}
-
-SingleICDShim::SingleICDShim(TestICDDetails icd_details, DebugMode debug_mode) noexcept : FrameworkEnvironment(debug_mode) {
-    icd_handle = TestICDHandle(icd_details.icd_path);
-    icd_handle.reset_icd();
-
-    AddICD(icd_details, "test_icd.json");
-}
-TestICD& SingleICDShim::get_test_icd() noexcept { return icd_handle.get_test_icd(); }
-TestICD& SingleICDShim::reset_icd() noexcept { return icd_handle.reset_icd(); }
-fs::path SingleICDShim::get_test_icd_path() noexcept { return icd_handle.get_icd_full_path(); }
-
-MultipleICDShim::MultipleICDShim(std::vector<TestICDDetails> icd_details_vector, DebugMode debug_mode) noexcept
-    : FrameworkEnvironment(debug_mode) {
-    uint32_t i = 0;
-    for (auto& test_icd_detail : icd_details_vector) {
-        fs::path new_driver_name =
-            fs::path(test_icd_detail.icd_path).stem() + "_" + std::to_string(i) + fs::path(test_icd_detail.icd_path).extension();
-
-        auto new_driver_location = icd_folder.copy_file(test_icd_detail.icd_path, new_driver_name.str());
+        auto new_driver_location = icd_folder.copy_file(icd_details.icd_path, new_driver_name.str());
 
         icds.push_back(TestICDHandle(new_driver_location));
         icds.back().reset_icd();
-        test_icd_detail.icd_path = new_driver_location.c_str();
-        AddICD(test_icd_detail, std::string("test_icd_") + std::to_string(i) + ".json");
-        i++;
+        icd_details.icd_path = new_driver_location;
+    }
+    std::string full_json_name = icd_details.json_name + "_" + std::to_string(cur_icd_index) + ".json";
+
+    auto driver_loc = icd_folder.write(full_json_name, ManifestICD{}
+                                                           .set_lib_path(fs::fixup_backslashes_in_path(icd_details.icd_path).str())
+                                                           .set_api_version(icd_details.api_version));
+
+    if (icd_details.use_env_var_icd_filenames) {
+        if (!env_var_vk_icd_filenames.empty()) {
+            env_var_vk_icd_filenames += OS_ENV_VAR_LIST_SEPARATOR;
+        }
+        env_var_vk_icd_filenames += (icd_folder.location() / full_json_name).str();
+        set_env_var("VK_ICD_FILENAMES", env_var_vk_icd_filenames);
+    } else {
+        platform_shim->add_manifest(ManifestCategory::icd, driver_loc);
     }
 }
-TestICD& MultipleICDShim::get_test_icd(int index) noexcept { return icds[index].get_test_icd(); }
-TestICD& MultipleICDShim::reset_icd(int index) noexcept { return icds[index].reset_icd(); }
-fs::path MultipleICDShim::get_test_icd_path(int index) noexcept { return icds[index].get_icd_full_path(); }
-
-FakeBinaryICDShim::FakeBinaryICDShim(TestICDDetails read_icd_details, TestICDDetails fake_icd_details,
-                                     DebugMode debug_mode) noexcept
-    : FrameworkEnvironment(debug_mode) {
-    real_icd = TestICDHandle(read_icd_details.icd_path);
-    real_icd.reset_icd();
-
-    // Must use name that isn't a substring of eachother, otherwise loader removes the other ICD
-    // EX test_icd.json is fully contained in fake_test_icd.json, causing test_icd.json to not be loaded
-    AddICD(fake_icd_details, "test_fake_icd.json");
-    AddICD(read_icd_details, "test_icd.json");
+void FrameworkEnvironment::add_implicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept {
+    add_layer_impl(layer_manifest, json_name, implicit_layer_folder, ManifestCategory::implicit_layer);
 }
-TestICD& FakeBinaryICDShim::get_test_icd() noexcept { return real_icd.get_test_icd(); }
-TestICD& FakeBinaryICDShim::reset_icd() noexcept { return real_icd.reset_icd(); }
-fs::path FakeBinaryICDShim::get_test_icd_path() noexcept { return real_icd.get_icd_full_path(); }
+void FrameworkEnvironment::add_explicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept {
+    add_layer_impl(layer_manifest, json_name, explicit_layer_folder, ManifestCategory::explicit_layer);
+}
+
+void FrameworkEnvironment::add_layer_impl(ManifestLayer& layer_manifest, const std::string& json_name,
+                                          fs::FolderManager& folder_manager, ManifestCategory category) {
+    // We have a special case for any of the wrap objects layers so get the string to the path
+    std::string wrap_layer = fs::fixup_backslashes_in_path(fs::path(TEST_LAYER_WRAP_OBJECTS)).str();
+
+    // Strip off ending
+#if defined(WIN32)
+    std::string library_extension = ".dll";
+#elif defined(__APPLE__)
+    std::string library_extension = ".dylib";
+#else
+    std::string library_extension = ".so";
+#endif
+    size_t index = 0;
+    index = wrap_layer.find(library_extension, index);
+    assert(index != std::string::npos);
+    wrap_layer.replace(index, library_extension.size(), "");
+
+    for (auto& layer : layer_manifest.layers) {
+        size_t cur_layer_index = layers.size();
+        if (!layer.lib_path.str().empty()) {
+            std::string new_layer_name = layer.name + "_" + std::to_string(cur_layer_index) + "_" + layer.lib_path.filename().str();
+
+            auto new_layer_location = folder_manager.copy_file(layer.lib_path, new_layer_name);
+
+            // Don't load the layer binary if using any of the wrap objects layers, since it doesn't export the same interface
+            // functions
+            if (fs::fixup_backslashes_in_path(layer.lib_path).str().rfind(wrap_layer) != 0) {
+                layers.push_back(TestLayerHandle(new_layer_location));
+                layers.back().reset_layer();
+            }
+            layer.lib_path = new_layer_location;
+        }
+    }
+
+    auto layer_loc = folder_manager.write(json_name, layer_manifest);
+    platform_shim->add_manifest(category, layer_loc);
+}
+
+TestICD& FrameworkEnvironment::get_test_icd(int index) noexcept { return icds[index].get_test_icd(); }
+TestICD& FrameworkEnvironment::reset_icd(int index) noexcept { return icds[index].reset_icd(); }
+fs::path FrameworkEnvironment::get_test_icd_path(int index) noexcept { return icds[index].get_icd_full_path(); }
+
+TestLayer& FrameworkEnvironment::get_test_layer(int index) noexcept { return layers[index].get_test_layer(); }
+TestLayer& FrameworkEnvironment::reset_layer(int index) noexcept { return layers[index].reset_layer(); }

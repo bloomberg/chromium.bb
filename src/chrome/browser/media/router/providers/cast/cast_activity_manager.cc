@@ -82,19 +82,6 @@ CastActivityManager::~CastActivityManager() {
   session_tracker_->RemoveObserver(this);
 }
 
-void CastActivityManager::AddRouteQuery(const MediaSource::Id& source) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  route_queries_.insert(source);
-  std::vector<MediaRoute> routes = GetRoutes();
-  if (!routes.empty())
-    NotifyOnRoutesUpdated(source, routes);
-}
-
-void CastActivityManager::RemoveRouteQuery(const MediaSource::Id& source) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  route_queries_.erase(source);
-}
-
 void CastActivityManager::LaunchSession(
     const CastMediaSource& cast_source,
     const MediaSinkInternal& sink,
@@ -145,7 +132,7 @@ void CastActivityManager::LaunchSessionParsed(
   MediaRoute::Id route_id =
       MediaRoute::GetMediaRouteId(presentation_id, sink_id, source);
   MediaRoute route(route_id, source, sink_id, /* description */ std::string(),
-                   /* is_local */ true, /* for_display */ true);
+                   /* is_local */ true);
   route.set_presentation_id(presentation_id);
   route.set_local_presentation(true);
   route.set_off_the_record(off_the_record);
@@ -428,17 +415,17 @@ void CastActivityManager::TerminateSession(
     const MediaRoute::Id& route_id,
     mojom::MediaRouteProvider::TerminateRouteCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const std::string source_id =
+      MediaRoute::GetMediaSourceIdFromMediaRouteId(route_id);
+  const std::string presentation_id =
+      MediaRoute::GetPresentationIdFromMediaRouteId(route_id);
   logger_->LogInfo(mojom::LogCategory::kRoute, kLoggerComponent,
-                   "Terminating a session.", "",
-                   MediaRoute::GetMediaSourceIdFromMediaRouteId(route_id),
-                   MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
+                   "Terminating a session.", "", source_id, presentation_id);
   auto activity_it = activities_.find(route_id);
   if (activity_it == activities_.end()) {
-    logger_->LogWarning(
-        mojom::LogCategory::kRoute, kLoggerComponent,
-        "Cannot find the activity to terminate with route id.", "",
-        MediaRoute::GetMediaSourceIdFromMediaRouteId(route_id),
-        MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
+    logger_->LogWarning(mojom::LogCategory::kRoute, kLoggerComponent,
+                        "Cannot find the activity to terminate with route id.",
+                        "", source_id, presentation_id);
     std::move(callback).Run("Activity not found",
                             RouteRequestResult::ROUTE_NOT_FOUND);
     return;
@@ -451,12 +438,14 @@ void CastActivityManager::TerminateSession(
   // There is no session associated with the route, e.g. the launch request is
   // still pending.
   if (!session_id) {
+    // |route_id| might be a reference to the item in |routes_by_tab_|.
+    // RemoveActivity() deletes this item in |routes_by_tab_| and invalidates
+    // |route_id|.
     RemoveActivity(activity_it, PresentationConnectionState::TERMINATED,
                    PresentationConnectionCloseReason::CLOSED);
     logger_->LogInfo(mojom::LogCategory::kRoute, kLoggerComponent,
-                     "Terminated session has no session ID.", "",
-                     MediaRoute::GetMediaSourceIdFromMediaRouteId(route_id),
-                     MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
+                     "Terminated session has no session ID.", "", source_id,
+                     presentation_id);
     std::move(callback).Run(absl::nullopt, RouteRequestResult::OK);
     return;
   }
@@ -730,7 +719,7 @@ void CastActivityManager::AddNonLocalActivity(const MediaSinkInternal& sink,
                    MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
   // Route description is set in SetOrUpdateSession().
   MediaRoute route(route_id, source, sink_id, /* description */ std::string(),
-                   /* is_local */ false, /* for_display */ true);
+                   /* is_local */ false);
   route.set_media_sink_name(sink.sink().name());
 
   CastActivity* activity_ptr = nullptr;
@@ -762,17 +751,7 @@ std::vector<MediaRoute> CastActivityManager::GetRoutes() const {
 
 void CastActivityManager::NotifyAllOnRoutesUpdated() {
   std::vector<MediaRoute> routes = GetRoutes();
-  for (const auto& source_id : route_queries_)
-    NotifyOnRoutesUpdated(source_id, routes);
-}
-
-void CastActivityManager::NotifyOnRoutesUpdated(
-    const MediaSource::Id& source_id,
-    const std::vector<MediaRoute>& routes) {
-  // Note: joinable_route_ids is empty as we are deprecating the join feature
-  // in the Harmony UI.
-  media_router_->OnRoutesUpdated(mojom::MediaRouteProviderId::CAST, routes,
-                                 source_id, std::vector<MediaRoute::Id>());
+  media_router_->OnRoutesUpdated(mojom::MediaRouteProviderId::CAST, routes);
 }
 
 void CastActivityManager::HandleLaunchSessionResponse(
@@ -896,7 +875,15 @@ void CastActivityManager::HandleStopSessionResponse(
     return;
   }
 
+  const std::string source_id =
+      MediaRoute::GetMediaSourceIdFromMediaRouteId(route_id);
+  const std::string presentation_id =
+      MediaRoute::GetPresentationIdFromMediaRouteId(route_id);
+
   if (result == cast_channel::Result::kOk) {
+    // |route_id| might be a reference to the item in |routes_by_tab_|.
+    // RemoveActivity() deletes this item in |routes_by_tab_| and invalidates
+    // |route_id|.
     RemoveActivity(activity_it, PresentationConnectionState::TERMINATED,
                    PresentationConnectionCloseReason::CLOSED);
     std::move(callback).Run(absl::nullopt, RouteRequestResult::OK);
@@ -904,16 +891,13 @@ void CastActivityManager::HandleStopSessionResponse(
     logger_->LogInfo(mojom::LogCategory::kRoute, kLoggerComponent,
                      "Terminated a route successfully after receiving "
                      "StopSession response OK.",
-                     "", MediaRoute::GetMediaSourceIdFromMediaRouteId(route_id),
-                     MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
+                     "", source_id, presentation_id);
   } else {
     std::string error_msg =
         "StopSession response is not OK. Failed to terminate route.";
     std::move(callback).Run(error_msg, RouteRequestResult::UNKNOWN_ERROR);
     logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent, error_msg,
-                      "",
-                      MediaRoute::GetMediaSourceIdFromMediaRouteId(route_id),
-                      MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
+                      "", source_id, presentation_id);
   }
 }
 

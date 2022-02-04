@@ -31,7 +31,11 @@
 #include "core/internal/endpoint_channel_manager.h"
 #include "core/internal/endpoint_manager.h"
 #include "core/internal/mediums/mediums.h"
+#ifdef NO_WEBRTC
+#include "core/internal/mediums/webrtc_stub.h"
+#else
 #include "core/internal/mediums/webrtc.h"
+#endif
 #include "core/internal/pcp.h"
 #include "core/internal/pcp_handler.h"
 #include "core/listeners.h"
@@ -454,9 +458,15 @@ class BasePcpHandler : public PcpHandler,
   // array.
   std::string GetHashedConnectionToken(const ByteArray& token_bytes);
 
-  static void LogConnectionAttempt(ClientProxy* client, Medium medium,
-                                   const std::string& endpoint_id,
-                                   bool is_incoming, absl::Time start_time);
+  static void LogConnectionAttemptFailure(ClientProxy* client, Medium medium,
+                                          const std::string& endpoint_id,
+                                          bool is_incoming,
+                                          absl::Time start_time,
+                                          EndpointChannel* endpoint_channel);
+
+  static void LogConnectionAttemptSuccess(
+      const std::string& endpoint_id,
+      const PendingConnectionInfo& connection_info);
 
   // Returns true if the client cancels the operation in progress through the
   // endpoint id. This is done by CancellationFlag.

@@ -14,7 +14,6 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
-#include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -51,7 +50,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #endif
 
@@ -433,11 +432,6 @@ class WebContents : public PageNavigator,
   virtual void ForEachFrame(
       const base::RepeatingCallback<void(RenderFrameHost*)>& on_frame) = 0;
 
-  // TODO(1208438): Migrate to |ForEachRenderFrameHost|.
-  // Sends the given IPC to all live frames in this WebContents and returns the
-  // number of sent messages (i.e. the number of processed frames).
-  virtual int SendToAllFrames(IPC::Message* message) = 0;
-
   // Calls |on_frame| for every RenderFrameHost in this WebContents. Note that
   // this includes RenderFrameHosts that are not descended from the primary main
   // frame (e.g. bfcached pages and prerendered pages). The order of traversal
@@ -596,10 +590,11 @@ class WebContents : public PageNavigator,
   // transitionWhile(). This being true implies that IsLoading() is also true.
   virtual bool ShouldShowLoadingUI() = 0;
 
-  // Returns whether the current main document has reached and finished
+  // Returns whether the current primary main document has reached and finished
   // executing its onload() handler. Corresponds to
-  // WebContentsObserver::DocumentOnLoadCompletedInMainFrame().
-  virtual bool IsDocumentOnLoadCompletedInMainFrame() = 0;
+  // WebContentsObserver::DocumentOnLoadCompletedInPrimaryMainFrame() and see
+  // comments there for more details.
+  virtual bool IsDocumentOnLoadCompletedInPrimaryMainFrame() = 0;
 
   // Returns whether this WebContents is waiting for a first-response for the
   // main resource of the page.
@@ -666,11 +661,11 @@ class WebContents : public PageNavigator,
   //
   // |is_activity| means the capture will cause the last active time to be
   // updated.
-  virtual base::ScopedClosureRunner IncrementCapturerCount(
+  [[nodiscard]] virtual base::ScopedClosureRunner IncrementCapturerCount(
       const gfx::Size& capture_size,
       bool stay_hidden,
       bool stay_awake,
-      bool is_activity = true) WARN_UNUSED_RESULT = 0;
+      bool is_activity = true) = 0;
 
   // Getter for the capture handle, which allows a captured application to
   // opt-in to exposing information to its capturer(s).
@@ -1042,7 +1037,7 @@ class WebContents : public PageNavigator,
   // Returns false if the request is no longer valid, otherwise true.
   virtual bool GotResponseToKeyboardLockRequest(bool allowed) = 0;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Called when the user has selected a color in the color chooser.
   virtual void DidChooseColorInColorChooser(SkColor color) = 0;
 
@@ -1126,10 +1121,13 @@ class WebContents : public PageNavigator,
       bool bypass_cache,
       ImageDownloadCallback callback) = 0;
 
-  // Finds text on a page. |search_text| should not be empty.
+  // Finds text on a page. |search_text| should not be empty. |skip_delay|
+  // indicates that the find request should be sent to the renderer immediately
+  // instead of waiting for privacy/performance mitigations.
   virtual void Find(int request_id,
                     const std::u16string& search_text,
-                    blink::mojom::FindOptionsPtr options) = 0;
+                    blink::mojom::FindOptionsPtr options,
+                    bool skip_delay = false) = 0;
 
   // Notifies the renderer that the user has closed the FindInPage window
   // (and what action to take regarding the selection).
@@ -1217,8 +1215,8 @@ class WebContents : public PageNavigator,
   // exit fullscreen; the scoped prohibition will still apply to all displays.
   // This supports sites using cross-screen window placement capabilities to
   // retain fullscreen and open or place a window on another screen.
-  virtual base::ScopedClosureRunner ForSecurityDropFullscreen(
-      int64_t display_id = display::kInvalidDisplayId) WARN_UNUSED_RESULT = 0;
+  [[nodiscard]] virtual base::ScopedClosureRunner ForSecurityDropFullscreen(
+      int64_t display_id = display::kInvalidDisplayId) = 0;
 
   // Unblocks requests from renderer for a newly created window. This is
   // used in showCreatedWindow() or sometimes later in cases where
@@ -1246,7 +1244,7 @@ class WebContents : public PageNavigator,
   // Tells the WebContents whether the context menu is showing.
   virtual void SetShowingContextMenu(bool showing) = 0;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
       const base::android::JavaRef<jobject>& jweb_contents_android);
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() = 0;
@@ -1269,7 +1267,7 @@ class WebContents : public PageNavigator,
   // scoped to this WebContents. This provides access to interfaces implemented
   // in Java in the browser process to C++ code in the browser process.
   virtual service_manager::InterfaceProvider* GetJavaInterfaces() = 0;
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
   // Returns true if the WebContents has completed its first meaningful paint
   // since the last navigation.

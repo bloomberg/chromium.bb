@@ -917,14 +917,17 @@ static avifResult avifDecoderItemValidateAV1(const avifDecoderItem * item, avifD
     const avifProperty * av1CProp = avifPropertyArrayFind(&item->properties, "av1C");
     if (!av1CProp) {
         // An av1C box is mandatory in all valid AVIF configurations. Bail out.
-        avifDiagnosticsPrintf(diag, "Item ID %u is missing mandatory av1C property", item->id);
+        avifDiagnosticsPrintf(diag, "Item ID %u of type '%.4s' is missing mandatory av1C property", item->id, (const char *)item->type);
         return AVIF_RESULT_BMFF_PARSE_FAILED;
     }
 
     const avifProperty * pixiProp = avifPropertyArrayFind(&item->properties, "pixi");
     if (!pixiProp && (strictFlags & AVIF_STRICT_PIXI_REQUIRED)) {
         // A pixi box is mandatory in all valid AVIF configurations. Bail out.
-        avifDiagnosticsPrintf(diag, "[Strict] Item ID %u is missing mandatory pixi property", item->id);
+        avifDiagnosticsPrintf(diag,
+                              "[Strict] Item ID %u of type '%.4s' is missing mandatory pixi property",
+                              item->id,
+                              (const char *)item->type);
         return AVIF_RESULT_BMFF_PARSE_FAILED;
     }
 
@@ -3109,12 +3112,11 @@ static avifResult avifDecoderFlush(avifDecoder * decoder)
     for (unsigned int i = 0; i < decoder->data->tiles.count; ++i) {
         avifTile * tile = &decoder->data->tiles.tile[i];
         tile->codec = avifCodecCreateInternal(decoder->codecChoice);
-        if (!tile->codec) {
-            return AVIF_RESULT_NO_CODEC_AVAILABLE;
+        if (tile->codec) {
+            tile->codec->diag = &decoder->diag;
+            tile->codec->operatingPoint = tile->operatingPoint;
+            tile->codec->allLayers = tile->input->allLayers;
         }
-        tile->codec->diag = &decoder->diag;
-        tile->codec->operatingPoint = tile->operatingPoint;
-        tile->codec->allLayers = tile->input->allLayers;
     }
     return AVIF_RESULT_OK;
 }
@@ -3611,6 +3613,12 @@ avifResult avifDecoderNextImage(avifDecoder * decoder)
     // with AVIF_RESULT_WAITING_ON_IO harmlessly / idempotently.
     for (unsigned int tileIndex = 0; tileIndex < decoder->data->tiles.count; ++tileIndex) {
         avifTile * tile = &decoder->data->tiles.tile[tileIndex];
+
+        // Ensure there's an AV1 codec available before doing anything else
+        if (!tile->codec) {
+            return AVIF_RESULT_NO_CODEC_AVAILABLE;
+        }
+
         if (nextImageIndex >= tile->input->samples.count) {
             return AVIF_RESULT_NO_IMAGES_REMAINING;
         }

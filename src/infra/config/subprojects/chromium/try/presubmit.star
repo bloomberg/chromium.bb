@@ -8,12 +8,11 @@ load("//lib/branches.star", "branches")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 load("//project.star", "branch_type")
+load("../fallback-cq.star", "fallback_cq")
 
 try_.defaults.set(
     cores = 8,
-    # TODO(gbeaty) After prod freeze, lower this to something sensible for the
-    # actual time these builders take
-    execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
+    execution_timeout = 15 * time.minute,
     list_view = "presubmit",
     main_list_view = "try",
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
@@ -40,10 +39,11 @@ def presubmit_builder(*, name, tryjob, **kwargs):
     against generated files being out of date, so they MUST run quickly so that
     the submit after a CQ dry run doesn't take long.
     """
-    tryjob_args = {a: getattr(tryjob, a) for a in dir(tryjob)}
-    tryjob_args["disable_reuse"] = True
-    tryjob_args["add_default_excludes"] = False
-    tryjob = try_.job(**tryjob_args)
+    if tryjob:
+        tryjob_args = {a: getattr(tryjob, a) for a in dir(tryjob)}
+        tryjob_args["disable_reuse"] = True
+        tryjob_args["add_default_excludes"] = False
+        tryjob = try_.job(**tryjob_args)
     return try_.builder(name = name, tryjob = tryjob, **kwargs)
 
 # Errors that this builder would catch would go unnoticed until a project is set
@@ -104,9 +104,26 @@ presubmit_builder(
 )
 
 presubmit_builder(
+    name = "builder-config-verifier",
+    description_html = "checks that builder configs in properties files match the recipe-side configs",
+    executable = "recipe:chromium/builder_config_verifier",
+    properties = {
+        "properties_file_globs": [
+            "infra/config/generated/builders/*/*/properties.textpb",
+        ],
+    },
+    # TODO(crbug.com/1288604) Add to the CQ once the recipe is ready
+    tryjob = None,
+    # tryjob = try_.job(
+    #     location_regexp = [r".+/[+]infra/config/generated/builders"],
+    # ),
+)
+
+presubmit_builder(
     name = "chromium_presubmit",
     branch_selector = branches.ALL_BRANCHES,
     executable = "recipe:presubmit",
+    execution_timeout = 40 * time.minute,
     properties = {
         "$depot_tools/presubmit": {
             "runhooks": True,
@@ -114,5 +131,13 @@ presubmit_builder(
         },
         "repo_name": "chromium",
     },
+    tryjob = try_.job(),
+)
+
+presubmit_builder(
+    name = "requires-testing-checker",
+    cq_group = fallback_cq.GROUP,
+    description_html = "prevents CLs that requires testing from landing on branches with no CQ",
+    executable = "recipe:requires_testing_checker",
     tryjob = try_.job(),
 )

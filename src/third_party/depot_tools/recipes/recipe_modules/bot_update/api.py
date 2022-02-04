@@ -360,7 +360,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
         if add_blamelists and 'manifest' in result:
           blamelist_pins = []
-          for name in revisions:
+          for name in sorted(revisions):
             m = result['manifest'][name]
             pin = {'id': m['revision']}
             pin['host'], pin['project'] = (

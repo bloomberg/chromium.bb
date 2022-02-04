@@ -29,7 +29,7 @@ class MockPeerConnectionInterface
     : public rtc::RefCountedObject<webrtc::PeerConnectionInterface> {
  public:
   static rtc::scoped_refptr<MockPeerConnectionInterface> Create() {
-    return new MockPeerConnectionInterface();
+    return rtc::make_ref_counted<MockPeerConnectionInterface>();
   }
 
   // PeerConnectionInterface
@@ -50,7 +50,7 @@ class MockPeerConnectionInterface
               (override));
   MOCK_METHOD(bool, RemoveTrack, (RtpSenderInterface*), (override));
   MOCK_METHOD(RTCError,
-              RemoveTrackNew,
+              RemoveTrackOrError,
               (rtc::scoped_refptr<RtpSenderInterface>),
               (override));
   MOCK_METHOD(RTCErrorOr<rtc::scoped_refptr<RtpTransceiverInterface>>,

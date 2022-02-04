@@ -21,6 +21,7 @@
 #include "core/fpdfdoc/cpdf_formcontrol.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fxcrt/fx_extension.h"
+#include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_color.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
@@ -67,7 +68,7 @@ const JSMethodSpec CJS_PublicMethods::GlobalFunctionSpecs[] = {
 
 namespace {
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 constexpr double kDoubleCorrect = 0.000000000000001;
 #endif
 
@@ -106,7 +107,7 @@ void AlertIfPossible(CJS_EventContext* pContext,
   }
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 ByteString CalculateString(double dValue,
                            int iDec,
                            int* iDec2,
@@ -118,12 +119,12 @@ ByteString CalculateString(double dValue,
   // Make sure the number of precision characters will fit.
   iDec = std::min(iDec, std::numeric_limits<double>::digits10);
 
-  std::stringstream ss;
+  fxcrt::ostringstream ss;
   ss << std::fixed << std::setprecision(iDec) << dValue;
-  std::string value = ss.str();
+  fxcrt::string value = ss.str();
   size_t pos = value.find('.');
   *iDec2 = pdfium::base::checked_cast<int>(
-      pos == std::string::npos ? value.size() : pos);
+      pos == fxcrt::string::npos ? value.size() : pos);
   return ByteString(value.c_str());
 }
 #endif
@@ -179,7 +180,7 @@ bool IsDigitSeparatorOrDecimalMark(int c) {
   return c == '.' || c == ',';
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 bool IsStyleWithDigitSeparator(int style) {
   return style == 0 || style == 2;
 }
@@ -202,7 +203,7 @@ char DecimalMarkForStyle(int style) {
   return IsStyleWithCommaDecimalMark(style) ? ',' : '.';
 }
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 void NormalizeDecimalMark(ByteString* str) {
   str->Replace(",", ".");
 }
@@ -593,7 +594,7 @@ WideString CJS_PublicMethods::PrintDateUsingFormat(double dDate,
 CJS_Result CJS_PublicMethods::AFNumber_Format(
     CJS_Runtime* pRuntime,
     const std::vector<v8::Local<v8::Value>>& params) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   if (params.size() != 6)
     return CJS_Result::Failure(JSMessage::kParamError);
 
@@ -787,7 +788,7 @@ CJS_Result CJS_PublicMethods::AFNumber_Keystroke(
 CJS_Result CJS_PublicMethods::AFPercent_Format(
     CJS_Runtime* pRuntime,
     const std::vector<v8::Local<v8::Value>>& params) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   if (params.size() < 2)
     return CJS_Result::Failure(JSMessage::kParamError);
 

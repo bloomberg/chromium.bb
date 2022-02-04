@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,8 @@ import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.
 
 import {isNonEmptyArray} from '../common/utils.js';
 
-import {WallpaperCollection} from './personalization_app.mojom-webui.js';
-import {Paths} from './personalization_router_element.js';
+import {GooglePhotosAlbum, WallpaperCollection} from './personalization_app.mojom-webui.js';
+import {isPersonalizationHubEnabled, Paths, PersonalizationRouter} from './personalization_router_element.js';
 import {WithPersonalizationStore} from './personalization_store.js';
 import {isNonEmptyString} from './utils.js';
 
@@ -49,12 +49,8 @@ export class PersonalizationBreadcrumb extends WithPersonalizationStore {
         type: String,
       },
 
-      /**
-       * The current Google Photos album id to display.
-       */
-      googlePhotosAlbumId: {
-        type: String,
-      },
+      /** The current Google Photos album id to display. */
+      googlePhotosAlbumId: String,
 
       /**
        * The current path of the page.
@@ -73,12 +69,8 @@ export class PersonalizationBreadcrumb extends WithPersonalizationStore {
         type: Array,
       },
 
-      /**
-       * The list of Google Photos albums.
-       */
-      googlePhotosAlbums_: {
-        type: Array,
-      },
+      /** The list of Google Photos albums. */
+      googlePhotosAlbums_: Array,
 
       showBackButton_: {
         type: Boolean,
@@ -92,24 +84,28 @@ export class PersonalizationBreadcrumb extends WithPersonalizationStore {
   path: string;
   private breadcrumbs_: string[];
   private collections_: WallpaperCollection[]|null;
-  private googlePhotosAlbums_: WallpaperCollection[]|null;
+  private googlePhotosAlbums_: GooglePhotosAlbum[]|null;
   private showBackButton_: boolean;
 
   connectedCallback() {
     super.connectedCallback();
-    this.watch('collections_', state => state.backdrop.collections);
-    this.watch('googlePhotosAlbums_', state => state.googlePhotos.albums);
+    this.watch('collections_', state => state.wallpaper.backdrop.collections);
+    this.watch(
+        'googlePhotosAlbums_', state => state.wallpaper.googlePhotos.albums);
     this.updateFromStore();
   }
 
   private computeBreadcrumbs_(
       path: string, collections: WallpaperCollection[]|null,
-      collectionId: string, googlePhotosAlbums: WallpaperCollection[]|null,
+      collectionId: string, googlePhotosAlbums: GooglePhotosAlbum[]|null,
       googlePhotosAlbumId: string|null): string[] {
-    const breadcrumbs = [this.i18n('title')];
-
+    const breadcrumbs = [];
     switch (path) {
+      case Paths.Collections:
+        breadcrumbs.push(this.i18n('wallpaperLabel'));
+        break;
       case Paths.CollectionImages:
+        breadcrumbs.push(this.i18n('wallpaperLabel'));
         if (isNonEmptyArray(collections)) {
           const collection =
               collections.find(collection => collection.id === collectionId);
@@ -119,6 +115,7 @@ export class PersonalizationBreadcrumb extends WithPersonalizationStore {
         }
         break;
       case Paths.GooglePhotosCollection:
+        breadcrumbs.push(this.i18n('wallpaperLabel'));
         breadcrumbs.push(this.i18n('googlePhotosLabel'));
         if (isNonEmptyString(googlePhotosAlbumId) &&
             isNonEmptyArray(googlePhotosAlbums)) {
@@ -126,24 +123,37 @@ export class PersonalizationBreadcrumb extends WithPersonalizationStore {
               googlePhotosAlbum =>
                   googlePhotosAlbum.id === googlePhotosAlbumId);
           if (googlePhotosAlbum) {
-            breadcrumbs.push(googlePhotosAlbum.name);
+            breadcrumbs.push(googlePhotosAlbum.title);
           }
         }
         break;
       case Paths.LocalCollection:
+        breadcrumbs.push(this.i18n('wallpaperLabel'));
         breadcrumbs.push(this.i18n('myImagesLabel'));
         break;
+      case Paths.User:
+        breadcrumbs.push(this.i18n('avatarLabel'));
+        break;
+      case Paths.Ambient:
+        breadcrumbs.push(this.i18n('screensaverLabel'));
+        break;
     }
-
     return breadcrumbs;
   }
 
   private computeShowBackButton_(path: string): boolean {
+    if (isPersonalizationHubEnabled()) {
+      return path !== Paths.Root;
+    }
     return path !== Paths.Collections;
   }
 
+  private showHomeButton_(): boolean {
+    return isPersonalizationHubEnabled();
+  }
+
   private getBackButtonAriaLabel_(): string {
-    return this.i18n('back', this.i18n('title'));
+    return this.i18n('back', this.i18n('wallpaperLabel'));
   }
 
   private onBackClick_() {
@@ -152,10 +162,19 @@ export class PersonalizationBreadcrumb extends WithPersonalizationStore {
 
   private onBreadcrumbClick_(e: RepeaterEvent) {
     const index = e.model.index;
-    const delta = this.breadcrumbs_.length - index - 1;
-    if (delta > 0) {
-      window.history.go(-delta);
+    // stay in same page if the user clicks on the last breadcrumb,
+    // else navigate to the corresponding page.
+    if (index < this.breadcrumbs_.length - 1) {
+      const pathElements = this.path.split('/');
+      const newPath = pathElements.slice(0, index + 2).join('/');
+      if (Object.values(Paths).includes(newPath as Paths)) {
+        PersonalizationRouter.instance().goToRoute(newPath as Paths);
+      }
     }
+  }
+
+  private onHomeIconClick_() {
+    PersonalizationRouter.instance().goToRoute(Paths.Root);
   }
 }
 

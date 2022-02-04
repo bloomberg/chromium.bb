@@ -20,7 +20,7 @@
 #include "napi.h"
 #include "src/dawn_node/interop/WebGPU.h"
 
-namespace wgpu { namespace binding {
+namespace wgpu::binding {
 
     // GPUCommandEncoder is an implementation of interop::GPUCommandEncoder that wraps a
     // wgpu::CommandEncoder.
@@ -35,6 +35,10 @@ namespace wgpu { namespace binding {
         interop::Interface<interop::GPUComputePassEncoder> beginComputePass(
             Napi::Env,
             interop::GPUComputePassDescriptor descriptor) override;
+        void clearBuffer(Napi::Env,
+                         interop::Interface<interop::GPUBuffer> buffer,
+                         interop::GPUSize64 offset,
+                         std::optional<interop::GPUSize64> size) override;
         void copyBufferToBuffer(Napi::Env,
                                 interop::Interface<interop::GPUBuffer> source,
                                 interop::GPUSize64 sourceOffset,
@@ -75,6 +79,6 @@ namespace wgpu { namespace binding {
         wgpu::CommandEncoder enc_;
     };
 
-}}  // namespace wgpu::binding
+}  // namespace wgpu::binding
 
 #endif  // DAWN_NODE_BINDING_GPUCOMMANDENCODER_H_

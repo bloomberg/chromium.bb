@@ -28,7 +28,7 @@
 
 namespace {
 
-    class DevNull : public dawn_wire::CommandSerializer {
+    class DevNull : public dawn::wire::CommandSerializer {
       public:
         size_t GetMaximumAllocationSize() const override {
             // Some fuzzer bots have a 2GB allocation limit. Pick a value reasonably below that.
@@ -48,7 +48,7 @@ namespace {
         std::vector<char> buf;
     };
 
-    std::unique_ptr<dawn_native::Instance> sInstance;
+    std::unique_ptr<dawn::native::Instance> sInstance;
     WGPUProcDeviceCreateSwapChain sOriginalDeviceCreateSwapChain = nullptr;
 
     bool sCommandsComplete = false;
@@ -68,7 +68,7 @@ int DawnWireServerFuzzer::Initialize(int* argc, char*** argv) {
     // TODO(crbug.com/1038952): The Instance must be static because destructing the vkInstance with
     // Swiftshader crashes libFuzzer. When this is fixed, move this into Run so that error injection
     // for adapter discovery can be fuzzed.
-    sInstance = std::make_unique<dawn_native::Instance>();
+    sInstance = std::make_unique<dawn::native::Instance>();
     sInstance->DiscoverDefaultAdapters();
 
     return 0;
@@ -89,15 +89,15 @@ int DawnWireServerFuzzer::Run(const uint8_t* data,
     size -= sizeof(uint64_t);
 
     if (supportsErrorInjection) {
-        dawn_native::EnableErrorInjector();
+        dawn::native::EnableErrorInjector();
 
         // Clear the error injector since it has the previous run's call counts.
-        dawn_native::ClearErrorInjector();
+        dawn::native::ClearErrorInjector();
 
-        dawn_native::InjectErrorAt(injectedErrorIndex);
+        dawn::native::InjectErrorAt(injectedErrorIndex);
     }
 
-    DawnProcTable procs = dawn_native::GetProcs();
+    DawnProcTable procs = dawn::native::GetProcs();
 
     // Swapchains receive a pointer to an implementation. The fuzzer will pass garbage in so we
     // intercept calls to create swapchains and make sure they always return error swapchains.
@@ -116,11 +116,11 @@ int DawnWireServerFuzzer::Run(const uint8_t* data,
     }
 
     DevNull devNull;
-    dawn_wire::WireServerDescriptor serverDesc = {};
+    dawn::wire::WireServerDescriptor serverDesc = {};
     serverDesc.procs = &procs;
     serverDesc.serializer = &devNull;
 
-    std::unique_ptr<dawn_wire::WireServer> wireServer(new dawn_wire::WireServer(serverDesc));
+    std::unique_ptr<dawn::wire::WireServer> wireServer(new dawn_wire::WireServer(serverDesc));
     wireServer->InjectDevice(device.Get(), 1, 0);
 
     wireServer->HandleCommands(reinterpret_cast<const char*>(data), size);

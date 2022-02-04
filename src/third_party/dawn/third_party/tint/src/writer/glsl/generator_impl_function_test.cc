@@ -127,7 +127,7 @@ TEST_F(GlslGeneratorImplTest_Function, PtrParameter) {
 
 TEST_F(GlslGeneratorImplTest_Function,
        Emit_Decoration_EntryPoint_WithInOutVars) {
-  // fn frag_main([[location(0)]] foo : f32) -> [[location(1)]] f32 {
+  // fn frag_main(@location(0) foo : f32) -> @location(1) f32 {
   //   return foo;
   // }
   auto* foo_in = Param("foo", ty.f32(), {Location(0)});
@@ -173,7 +173,7 @@ void main() {
 
 TEST_F(GlslGeneratorImplTest_Function,
        Emit_Decoration_EntryPoint_WithInOut_Builtins) {
-  // fn frag_main([[position(0)]] coord : vec4<f32>) -> [[frag_depth]] f32 {
+  // fn frag_main(@position(0) coord : vec4<f32>) -> @frag_depth f32 {
   //   return coord.x;
   // }
   auto* coord_in =
@@ -221,9 +221,9 @@ void main() {
 TEST_F(GlslGeneratorImplTest_Function,
        Emit_Decoration_EntryPoint_SharedStruct_DifferentStages) {
   // struct Interface {
-  //   [[builtin(position)]] pos : vec4<f32>;
-  //   [[location(1)]] col1 : f32;
-  //   [[location(2)]] col2 : f32;
+  //   @builtin(position) pos : vec4<f32>;
+  //   @location(1) col1 : f32;
+  //   @location(2) col2 : f32;
   // };
   // fn vert_main() -> Interface {
   //   return Interface(vec4<f32>(), 0.4, 0.6);
@@ -332,7 +332,7 @@ void main() {
 TEST_F(GlslGeneratorImplTest_Function,
        Emit_Decoration_EntryPoint_SharedStruct_HelperFunction) {
   // struct VertexOutput {
-  //   [[builtin(position)]] pos : vec4<f32>;
+  //   @builtin(position) pos : vec4<f32>;
   // };
   // fn foo(x : f32) -> VertexOutput {
   //   return VertexOutput(vec4<f32>(x, x, x, 1.0));
@@ -434,6 +434,9 @@ TEST_F(GlslGeneratorImplTest_Function,
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
+struct UBO {
+  vec4 coord;
+};
 
 layout (binding = 0) uniform UBO_1 {
   vec4 coord;
@@ -484,6 +487,9 @@ TEST_F(GlslGeneratorImplTest_Function,
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
+struct Uniforms {
+  vec4 coord;
+};
 
 layout (binding = 0) uniform Uniforms_1 {
   vec4 coord;
@@ -535,6 +541,10 @@ TEST_F(GlslGeneratorImplTest_Function,
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
+struct Data {
+  int a;
+  float b;
+};
 
 layout (binding = 0) buffer Data_1 {
   int a;
@@ -587,6 +597,10 @@ TEST_F(GlslGeneratorImplTest_Function,
             R"(#version 310 es
 precision mediump float;
 
+struct Data {
+  int a;
+  float b;
+};
 
 layout (binding = 0) buffer Data_1 {
   int a;
@@ -635,6 +649,10 @@ TEST_F(GlslGeneratorImplTest_Function,
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
+struct Data {
+  int a;
+  float b;
+};
 
 layout (binding = 0) buffer Data_1 {
   int a;
@@ -684,6 +702,10 @@ TEST_F(GlslGeneratorImplTest_Function,
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
+struct Data {
+  int a;
+  float b;
+};
 
 layout (binding = 0) buffer Data_1 {
   int a;
@@ -735,6 +757,9 @@ TEST_F(GlslGeneratorImplTest_Function,
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
+struct S {
+  float x;
+};
 
 layout (binding = 0) uniform S_1 {
   float x;
@@ -791,6 +816,9 @@ TEST_F(GlslGeneratorImplTest_Function,
             R"(#version 310 es
 precision mediump float;
 
+struct S {
+  float x;
+};
 
 layout (binding = 0) buffer S_1 {
   float x;
@@ -1004,15 +1032,15 @@ TEST_F(GlslGeneratorImplTest_Function,
   // [[block]] struct Data {
   //   d : f32;
   // };
-  // [[binding(0), group(0)]] var<storage> data : Data;
+  // @binding(0) @group(0) var<storage> data : Data;
   //
-  // [[stage(compute), workgroup_size(1)]]
+  // @stage(compute) @workgroup_size(1)
   // fn a() {
   //   var v = data.d;
   //   return;
   // }
   //
-  // [[stage(compute), workgroup_size(1)]]
+  // @stage(compute) @workgroup_size(1)
   // fn b() {
   //   var v = data.d;
   //   return;
@@ -1057,6 +1085,9 @@ TEST_F(GlslGeneratorImplTest_Function,
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
+struct Data {
+  float d;
+};
 
 layout (binding = 0) buffer Data_1 {
   float d;

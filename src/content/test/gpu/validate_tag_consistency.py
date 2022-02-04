@@ -18,8 +18,8 @@ TAG_HEADER = """\
 #         chromeos
 #         fuchsia
 #         linux ubuntu
-#         mac bigsur catalina lion highsierra mac-10.12 mojave mountainlion
-#             sierra
+#         mac bigsur catalina lion highsierra mac-10.12 mojave monterey
+#             mountainlion sierra
 #         win win7 win8 win10 ]
 # Devices
 # tags: [ android-nexus-5 android-nexus-5x android-nexus-9 android-pixel-2
@@ -140,8 +140,7 @@ def main():
   args = parser.parse_args()
   if args.function == 'apply':
     return Apply()
-  else:
-    return Validate()
+  return Validate()
 
 
 if __name__ == '__main__':

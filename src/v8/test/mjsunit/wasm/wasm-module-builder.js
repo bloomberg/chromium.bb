@@ -121,6 +121,7 @@ let kWasmAnyRef = -0x12;
 let kWasmEqRef = -0x13;
 let kWasmI31Ref = -0x16;
 let kWasmDataRef = -0x19;
+let kWasmArrayRef = -0x20;
 
 // Use the positive-byte versions inside function bodies.
 let kLeb128Mask = 0x7f;
@@ -129,8 +130,9 @@ let kAnyFuncCode = kFuncRefCode;  // Alias named as in the JS API spec
 let kExternRefCode = kWasmExternRef & kLeb128Mask;
 let kAnyRefCode = kWasmAnyRef & kLeb128Mask;
 let kEqRefCode = kWasmEqRef & kLeb128Mask;
-let kI31RefCode = kWasmI31Ref  & kLeb128Mask;
-let kDataRefCode = kWasmDataRef  & kLeb128Mask;
+let kI31RefCode = kWasmI31Ref & kLeb128Mask;
+let kDataRefCode = kWasmDataRef & kLeb128Mask;
+let kArrayRefCode = kWasmArrayRef & kLeb128Mask;
 
 let kWasmOptRef = 0x6c;
 let kWasmRef = 0x6b;
@@ -505,12 +507,19 @@ let kExprBrOnCastStaticFail = 0x47;
 let kExprRefIsFunc = 0x50;
 let kExprRefIsData = 0x51;
 let kExprRefIsI31 = 0x52;
+let kExprRefIsArray = 0x53;
 let kExprRefAsFunc = 0x58;
 let kExprRefAsData = 0x59;
 let kExprRefAsI31 = 0x5a;
+let kExprRefAsArray = 0x5b;
 let kExprBrOnFunc = 0x60;
 let kExprBrOnData = 0x61;
 let kExprBrOnI31 = 0x62;
+let kExprBrOnArray = 0x66;
+let kExprBrOnNonFunc = 0x63;
+let kExprBrOnNonData = 0x64;
+let kExprBrOnNonI31 = 0x65;
+let kExprBrOnNonArray = 0x67;
 
 // Numeric opcodes.
 let kExprI32SConvertSatF32 = 0x00;

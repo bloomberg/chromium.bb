@@ -31,7 +31,7 @@
 #include "dawn_native/vulkan/UtilsVulkan.h"
 #include "dawn_native/vulkan/VulkanError.h"
 
-namespace dawn_native { namespace vulkan {
+namespace dawn::native::vulkan {
 
     namespace {
         // Converts an Dawn texture dimension to a Vulkan image view type.
@@ -83,6 +83,9 @@ namespace dawn_native { namespace vulkan {
                         VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                 }
             }
+            if (usage & kReadOnlyRenderAttachment) {
+                flags |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+            }
             if (usage & kPresentTextureUsage) {
                 // The present usage is only used internally by the swapchain and is never used in
                 // combination with other usages.
@@ -129,7 +132,7 @@ namespace dawn_native { namespace vulkan {
                 flags |=
                     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
             }
-            if (usage & wgpu::TextureUsage::RenderAttachment) {
+            if (usage & (wgpu::TextureUsage::RenderAttachment | kReadOnlyRenderAttachment)) {
                 if (format.HasDepthOrStencil()) {
                     flags |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
                              VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
@@ -193,6 +196,12 @@ namespace dawn_native { namespace vulkan {
             // Fill in the image type, and paper over differences in how the array layer count is
             // specified between WebGPU and Vulkan.
             switch (texture.GetDimension()) {
+                case wgpu::TextureDimension::e1D:
+                    info->imageType = VK_IMAGE_TYPE_1D;
+                    info->extent = {size.width, 1, 1};
+                    info->arrayLayers = 1;
+                    break;
+
                 case wgpu::TextureDimension::e2D:
                     info->imageType = VK_IMAGE_TYPE_2D;
                     info->extent = {size.width, size.height, 1};
@@ -204,9 +213,6 @@ namespace dawn_native { namespace vulkan {
                     info->extent = {size.width, size.height, size.depthOrArrayLayers};
                     info->arrayLayers = 1;
                     break;
-
-                case wgpu::TextureDimension::e1D:
-                    UNREACHABLE();
             }
         }
 
@@ -308,6 +314,10 @@ namespace dawn_native { namespace vulkan {
                 } else {
                     return VK_FORMAT_D24_UNORM_S8_UINT;
                 }
+            case wgpu::TextureFormat::Depth24UnormStencil8:
+                return VK_FORMAT_D24_UNORM_S8_UINT;
+            case wgpu::TextureFormat::Depth32FloatStencil8:
+                return VK_FORMAT_D32_SFLOAT_S8_UINT;
 
             case wgpu::TextureFormat::BC1RGBAUnorm:
                 return VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
@@ -417,12 +427,10 @@ namespace dawn_native { namespace vulkan {
                 return VK_FORMAT_ASTC_12x12_SRGB_BLOCK;
 
             case wgpu::TextureFormat::R8BG8Biplanar420Unorm:
+                return VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+
             // TODO(dawn:666): implement stencil8
             case wgpu::TextureFormat::Stencil8:
-            // TODO(dawn:690): implement depth24unorm-stencil8
-            case wgpu::TextureFormat::Depth24UnormStencil8:
-            // TODO(dawn:690): implement depth32float-stencil8
-            case wgpu::TextureFormat::Depth32FloatStencil8:
             case wgpu::TextureFormat::Undefined:
                 break;
         }
@@ -442,6 +450,12 @@ namespace dawn_native { namespace vulkan {
         }
         if (usage & wgpu::TextureUsage::TextureBinding) {
             flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+            // If the sampled texture is a depth/stencil texture, its image layout will be set
+            // to DEPTH_STENCIL_READ_ONLY_OPTIMAL in order to support readonly depth/stencil
+            // attachment. That layout requires DEPTH_STENCIL_ATTACHMENT_BIT image usage.
+            if (format.HasDepthOrStencil() && format.isRenderable) {
+                flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+            }
         }
         if (usage & wgpu::TextureUsage::StorageBinding) {
             flags |= VK_IMAGE_USAGE_STORAGE_BIT;
@@ -452,6 +466,9 @@ namespace dawn_native { namespace vulkan {
             } else {
                 flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
             }
+        }
+        if (usage & kReadOnlyRenderAttachment) {
+            flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
         }
 
         return flags;
@@ -466,10 +483,17 @@ namespace dawn_native { namespace vulkan {
         }
 
         if (!wgpu::HasZeroOrOneBits(usage)) {
-            // Sampled | ReadOnlyStorage is the only possible multi-bit usage, if more appear  we
-            // might need additional special-casing.
-            ASSERT(usage == wgpu::TextureUsage::TextureBinding);
-            return VK_IMAGE_LAYOUT_GENERAL;
+            // Sampled | kReadOnlyRenderAttachment is the only possible multi-bit usage, if more
+            // appear we might need additional special-casing.
+            ASSERT(usage == (wgpu::TextureUsage::TextureBinding | kReadOnlyRenderAttachment));
+
+            // WebGPU requires both aspects to be readonly if the attachment's format does have
+            // both depth and stencil aspects. Vulkan 1.0 supports readonly for both aspects too
+            // via DEPTH_STENCIL_READ_ONLY image layout. Vulkan 1.1 and above can support separate
+            // readonly for a single aspect via DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL and
+            // DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL layouts. But Vulkan 1.0 cannot support
+            // it, and WebGPU doesn't need that currently.
+            return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
         }
 
         // Usage has a single bit so we can switch on its value directly.
@@ -477,17 +501,23 @@ namespace dawn_native { namespace vulkan {
             case wgpu::TextureUsage::CopyDst:
                 return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
-                // A texture that's sampled and storage may be used as both usages in the same pass.
-                // When that happens, the layout must be GENERAL because that's a requirement for
-                // the storage usage. We can't know at bindgroup creation time if that case will
-                // happen so we must prepare for the pessimistic case and always use the GENERAL
-                // layout.
+                // The layout returned here is the one that will be used at bindgroup creation time.
+                // The bindgrpup's layout must match the runtime layout of the image when it is
+                // used via the bindgroup, but we don't know exactly what it will be yet. So we
+                // have to prepare for the pessimistic case.
             case wgpu::TextureUsage::TextureBinding:
+                // Only VK_IMAGE_LAYOUT_GENERAL can do sampling and storage access of texture at the
+                // same time.
                 if (texture->GetInternalUsage() & wgpu::TextureUsage::StorageBinding) {
                     return VK_IMAGE_LAYOUT_GENERAL;
-                } else {
-                    return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 }
+                // The sampled image can be used as a readonly depth/stencil attachment at the same
+                // time if it is a depth/stencil renderable format, so the image layout need to be
+                // VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL.
+                if (texture->GetFormat().HasDepthOrStencil() && texture->GetFormat().isRenderable) {
+                    return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+                }
+                return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
                 // Vulkan texture copy functions require the image to be in _one_  known layout.
                 // Depending on whether parts of the texture have been transitioned to only CopySrc
@@ -509,6 +539,9 @@ namespace dawn_native { namespace vulkan {
                 } else {
                     return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                 }
+
+            case kReadOnlyRenderAttachment:
+                return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
             case kPresentTextureUsage:
                 return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
@@ -547,7 +580,7 @@ namespace dawn_native { namespace vulkan {
         return {};
     }
 
-    bool IsSampleCountSupported(const dawn_native::vulkan::Device* device,
+    bool IsSampleCountSupported(const dawn::native::vulkan::Device* device,
                                 const VkImageCreateInfo& imageCreateInfo) {
         ASSERT(device);
 
@@ -599,10 +632,12 @@ namespace dawn_native { namespace vulkan {
         : TextureBase(device, descriptor, state),
           // A usage of none will make sure the texture is transitioned before its first use as
           // required by the Vulkan spec.
-          mSubresourceLastUsages(ComputeAspectsForSubresourceStorage(),
-                                 GetArrayLayers(),
-                                 GetNumMipLevels(),
-                                 wgpu::TextureUsage::None) {
+          mSubresourceLastUsages(std::make_unique<SubresourceStorage<wgpu::TextureUsage>>(
+              (ShouldCombineDepthStencilBarriers() ? Aspect::CombinedDepthStencil
+                                                   : GetFormat().aspects),
+              GetArrayLayers(),
+              GetNumMipLevels(),
+              wgpu::TextureUsage::None)) {
     }
 
     MaybeError Texture::InitializeAsInternalTexture(VkImageUsageFlags extraUsages) {
@@ -668,8 +703,16 @@ namespace dawn_native { namespace vulkan {
                                                external_memory::Service* externalMemoryService) {
         VkFormat format = VulkanImageFormat(ToBackend(GetDevice()), GetFormat().format);
         VkImageUsageFlags usage = VulkanImageUsage(GetInternalUsage(), GetFormat());
-        DAWN_INVALID_IF(!externalMemoryService->SupportsCreateImage(descriptor, format, usage),
+        DAWN_INVALID_IF(!externalMemoryService->SupportsCreateImage(descriptor, format, usage,
+                                                                    &mSupportsDisjointVkImage),
                         "Creating an image from external memory is not supported.");
+        // mSubresourceLastUsages was initialized with Plane0/Plane1 in the constructor for
+        // multiplanar formats, so we need to correct it to Color here.
+        if (ShouldCombineMultiPlaneBarriers()) {
+            mSubresourceLastUsages = std::make_unique<SubresourceStorage<wgpu::TextureUsage>>(
+                ComputeAspectsForSubresourceStorage(), GetArrayLayers(), GetNumMipLevels(),
+                wgpu::TextureUsage::None);
+        }
 
         mExternalState = ExternalState::PendingAcquire;
 
@@ -743,14 +786,15 @@ namespace dawn_native { namespace vulkan {
         // Release the texture
         mExternalState = ExternalState::Released;
 
+        Aspect aspects = ComputeAspectsForSubresourceStorage();
         ASSERT(GetNumMipLevels() == 1 && GetArrayLayers() == 1);
-        wgpu::TextureUsage usage = mSubresourceLastUsages.Get(Aspect::Color, 0, 0);
+        wgpu::TextureUsage usage = mSubresourceLastUsages->Get(aspects, 0, 0);
 
         VkImageMemoryBarrier barrier;
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.pNext = nullptr;
         barrier.image = GetHandle();
-        barrier.subresourceRange.aspectMask = VulkanAspectMask(GetFormat().aspects);
+        barrier.subresourceRange.aspectMask = VulkanAspectMask(aspects);
         barrier.subresourceRange.baseMipLevel = 0;
         barrier.subresourceRange.levelCount = 1;
         barrier.subresourceRange.baseArrayLayer = 0;
@@ -842,24 +886,6 @@ namespace dawn_native { namespace vulkan {
         return mHandle;
     }
 
-    VkImageAspectFlags Texture::GetVkAspectMask(wgpu::TextureAspect aspect) const {
-        // TODO(enga): These masks could be precomputed.
-        switch (aspect) {
-            case wgpu::TextureAspect::All:
-                return VulkanAspectMask(GetFormat().aspects);
-            case wgpu::TextureAspect::DepthOnly:
-                ASSERT(GetFormat().aspects & Aspect::Depth);
-                return VulkanAspectMask(Aspect::Depth);
-            case wgpu::TextureAspect::StencilOnly:
-                ASSERT(GetFormat().aspects & Aspect::Stencil);
-                return VulkanAspectMask(Aspect::Stencil);
-            case wgpu::TextureAspect::Plane0Only:
-            case wgpu::TextureAspect::Plane1Only:
-                break;
-        }
-        UNREACHABLE();
-    }
-
     void Texture::TweakTransitionForExternalUsage(CommandRecordingContext* recordingContext,
                                                   std::vector<VkImageMemoryBarrier>* barriers,
                                                   size_t transitionBarrierStart) {
@@ -872,9 +898,10 @@ namespace dawn_native { namespace vulkan {
 
         if (mExternalState == ExternalState::PendingAcquire) {
             if (barriers->size() == transitionBarrierStart) {
-                barriers->push_back(BuildMemoryBarrier(
-                    this, wgpu::TextureUsage::None, wgpu::TextureUsage::None,
-                    SubresourceRange::SingleMipAndLayer(0, 0, GetFormat().aspects)));
+                barriers->push_back(
+                    BuildMemoryBarrier(this, wgpu::TextureUsage::None, wgpu::TextureUsage::None,
+                                       SubresourceRange::SingleMipAndLayer(
+                                           0, 0, ComputeAspectsForSubresourceStorage())));
             }
 
             VkImageMemoryBarrier* barrier = &(*barriers)[transitionBarrierStart];
@@ -947,13 +974,31 @@ namespace dawn_native { namespace vulkan {
         return false;
     }
 
+    // Base Vulkan doesn't support transitioning depth and stencil separately. We work around
+    // this limitation by combining the usages in the two planes of `textureUsages` into a
+    // single plane in a new SubresourceStorage<TextureUsage>. The barriers will be produced
+    // for DEPTH | STENCIL since the SubresourceRange uses Aspect::CombinedDepthStencil.
     bool Texture::ShouldCombineDepthStencilBarriers() const {
         return GetFormat().aspects == (Aspect::Depth | Aspect::Stencil);
+    }
+
+    // The Vulkan spec requires:
+    // "If image has a single-plane color format or is not disjoint, then the aspectMask member of
+    // subresourceRange must be VK_IMAGE_ASPECT_COLOR_BIT.".
+    // For multi-planar formats, we currently only support import them in non-disjoint way.
+    bool Texture::ShouldCombineMultiPlaneBarriers() const {
+        // TODO(chromium:1258986): Figure out how to support disjoint vkImage.
+        ASSERT(!mSupportsDisjointVkImage);
+        return GetFormat().aspects == (Aspect::Plane0 | Aspect::Plane1);
     }
 
     Aspect Texture::ComputeAspectsForSubresourceStorage() const {
         if (ShouldCombineDepthStencilBarriers()) {
             return Aspect::CombinedDepthStencil;
+        }
+        // Force to use Aspect::Color for Aspect::Plane0/1.
+        if (ShouldCombineMultiPlaneBarriers()) {
+            return Aspect::Color;
         }
         return GetFormat().aspects;
     }
@@ -963,16 +1008,13 @@ namespace dawn_native { namespace vulkan {
                                          std::vector<VkImageMemoryBarrier>* imageBarriers,
                                          VkPipelineStageFlags* srcStages,
                                          VkPipelineStageFlags* dstStages) {
-        // Base Vulkan doesn't support transitioning depth and stencil separately. We work around
-        // this limitation by combining the usages in the two planes of `textureUsages` into a
-        // single plane in a new SubresourceStorage<TextureUsage>. The barriers will be produced
-        // for DEPTH | STENCIL since the SubresourceRange uses Aspect::CombinedDepthStencil.
-        if (ShouldCombineDepthStencilBarriers()) {
-            SubresourceStorage<wgpu::TextureUsage> combinedUsages(
-                Aspect::CombinedDepthStencil, GetArrayLayers(), GetNumMipLevels());
+        if (ShouldCombineBarriers()) {
+            Aspect combinedAspect = ComputeAspectsForSubresourceStorage();
+            SubresourceStorage<wgpu::TextureUsage> combinedUsages(combinedAspect, GetArrayLayers(),
+                                                                  GetNumMipLevels());
             textureUsages.Iterate([&](const SubresourceRange& range, wgpu::TextureUsage usage) {
                 SubresourceRange updateRange = range;
-                updateRange.aspects = Aspect::CombinedDepthStencil;
+                updateRange.aspects = combinedAspect;
 
                 combinedUsages.Update(
                     updateRange, [&](const SubresourceRange&, wgpu::TextureUsage* combinedUsage) {
@@ -1003,7 +1045,7 @@ namespace dawn_native { namespace vulkan {
         // TODO(crbug.com/dawn/814): support 1D textures.
         ASSERT(GetDimension() != wgpu::TextureDimension::e1D);
 
-        mSubresourceLastUsages.Merge(
+        mSubresourceLastUsages->Merge(
             subresourceUsages, [&](const SubresourceRange& range, wgpu::TextureUsage* lastUsage,
                                    const wgpu::TextureUsage& newUsage) {
                 if (newUsage == wgpu::TextureUsage::None ||
@@ -1056,15 +1098,9 @@ namespace dawn_native { namespace vulkan {
         std::vector<VkImageMemoryBarrier>* imageBarriers,
         VkPipelineStageFlags* srcStages,
         VkPipelineStageFlags* dstStages) {
-        // Base Vulkan doesn't support transitioning depth and stencil separately. We work around
-        // this limitation by modifying the range to be on CombinedDepthStencil. The barriers will
-        // be produced for DEPTH | STENCIL since the SubresourceRange uses
-        // Aspect::CombinedDepthStencil.
-        if (ShouldCombineDepthStencilBarriers()) {
+        if (ShouldCombineBarriers()) {
             SubresourceRange updatedRange = range;
-            updatedRange.aspects = Aspect::CombinedDepthStencil;
-
-            std::vector<VkImageMemoryBarrier> newBarriers;
+            updatedRange.aspects = ComputeAspectsForSubresourceStorage();
             TransitionUsageAndGetResourceBarrierImpl(usage, updatedRange, imageBarriers, srcStages,
                                                      dstStages);
         } else {
@@ -1083,7 +1119,7 @@ namespace dawn_native { namespace vulkan {
         const Format& format = GetFormat();
 
         wgpu::TextureUsage allLastUsages = wgpu::TextureUsage::None;
-        mSubresourceLastUsages.Update(
+        mSubresourceLastUsages->Update(
             range, [&](const SubresourceRange& range, wgpu::TextureUsage* lastUsage) {
                 if (CanReuseWithoutBarrier(*lastUsage, usage)) {
                     return;
@@ -1256,7 +1292,8 @@ namespace dawn_native { namespace vulkan {
     }
 
     VkImageLayout Texture::GetCurrentLayoutForSwapChain() const {
-        return VulkanImageLayout(this, mSubresourceLastUsages.Get(Aspect::Color, 0, 0));
+        ASSERT(GetFormat().aspects == Aspect::Color);
+        return VulkanImageLayout(this, mSubresourceLastUsages->Get(Aspect::Color, 0, 0));
     }
 
     // static
@@ -1330,4 +1367,4 @@ namespace dawn_native { namespace vulkan {
                      reinterpret_cast<uint64_t&>(mHandle), "Dawn_InternalTextureView", GetLabel());
     }
 
-}}  // namespace dawn_native::vulkan
+}  // namespace dawn::native::vulkan

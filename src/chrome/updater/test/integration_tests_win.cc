@@ -47,6 +47,7 @@
 #include "chrome/updater/win/task_scheduler.h"
 #include "chrome/updater/win/win_constants.h"
 #include "chrome/updater/win/win_util.h"
+#include "components/crx_file/crx_verifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -66,13 +67,6 @@ enum class CheckInstallationVersions {
   kCheckSxSOnly = 0,
   kCheckActiveAndSxS = 1,
 };
-
-base::FilePath GetInstallerPath() {
-  base::FilePath test_executable;
-  if (!base::PathService::Get(base::FILE_EXE, &test_executable))
-    return base::FilePath();
-  return test_executable.DirName().AppendASCII("UpdaterSetup_test.exe");
-}
 
 // Returns the root directory where the updater product is installed. This
 // is the parent directory where the versioned directories of the
@@ -255,11 +249,14 @@ void CheckInstallation(UpdaterScope scope,
     }
   }
 
-  std::unique_ptr<TaskScheduler> task_scheduler =
-      TaskScheduler::CreateInstance();
-  const std::wstring task_name = GetTaskName(scope);
-  EXPECT_EQ(is_installed, task_scheduler->IsTaskRegistered(task_name.c_str()));
   if (is_installed) {
+    std::unique_ptr<TaskScheduler> task_scheduler =
+        TaskScheduler::CreateInstance();
+    const std::wstring task_name =
+        task_scheduler->FindFirstTaskName(GetTaskNamePrefix(scope));
+    EXPECT_TRUE(!task_name.empty());
+    EXPECT_TRUE(task_scheduler->IsTaskRegistered(task_name.c_str()));
+
     TaskScheduler::TaskInfo task_info;
     ASSERT_TRUE(task_scheduler->GetTaskInfo(task_name.c_str(), &task_info));
     ASSERT_EQ(task_info.exec_actions.size(), 1u);
@@ -290,11 +287,23 @@ void CheckInstallation(UpdaterScope scope,
 // Returns true is any updater process is found running in any session in the
 // system, regardless of its path.
 bool IsUpdaterRunning() {
-  ProcessFilterName filter(kUpdaterProcessName);
-  return base::ProcessIterator(&filter).NextProcessEntry();
+  return IsProcessRunning(kUpdaterProcessName);
+}
+
+void SleepFor(int seconds) {
+  VLOG(2) << "Sleeping " << seconds << " seconds...";
+  base::WaitableEvent().TimedWait(base::Seconds(seconds));
+  VLOG(2) << "Sleep complete.";
 }
 
 }  // namespace
+
+base::FilePath GetSetupExecutablePath() {
+  base::FilePath test_executable;
+  if (!base::PathService::Get(base::FILE_EXE, &test_executable))
+    return base::FilePath();
+  return test_executable.DirName().AppendASCII("UpdaterSetup_test.exe");
+}
 
 absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope) {
   absl::optional<base::FilePath> path = GetProductVersionPath(scope);
@@ -348,7 +357,12 @@ void Clean(UpdaterScope scope) {
 
   std::unique_ptr<TaskScheduler> task_scheduler =
       TaskScheduler::CreateInstance();
-  task_scheduler->DeleteTask(GetTaskName(scope).c_str());
+  const std::wstring task_name =
+      task_scheduler->FindFirstTaskName(GetTaskNamePrefix(scope));
+  if (!task_name.empty())
+    task_scheduler->DeleteTask(task_name.c_str());
+  EXPECT_TRUE(
+      task_scheduler->FindFirstTaskName(GetTaskNamePrefix(scope)).empty());
 
   absl::optional<base::FilePath> path = GetProductPath(scope);
   EXPECT_TRUE(path);
@@ -365,6 +379,7 @@ void EnterTestMode(const GURL& url) {
                   .SetUpdateURL(std::vector<std::string>{url.spec()})
                   .SetUseCUP(false)
                   .SetInitialDelay(0.1)
+                  .SetCrxVerifierFormat(crx_file::VerifierFormat::CRX3)
                   .Overwrite());
 }
 
@@ -388,23 +403,13 @@ void ExpectActiveUpdater(UpdaterScope scope) {
                     CheckInstallationVersions::kCheckActiveAndSxS);
 }
 
-void Install(UpdaterScope scope) {
-  const base::FilePath path = GetInstallerPath();
-  ASSERT_FALSE(path.empty());
-  base::CommandLine command_line(path);
-  command_line.AppendSwitch(kInstallSwitch);
-  int exit_code = -1;
-  ASSERT_TRUE(Run(scope, command_line, &exit_code));
-  EXPECT_EQ(0, exit_code);
-}
-
 void Uninstall(UpdaterScope scope) {
   // Note: updater_test.exe --uninstall is run from the build dir, not the
   // install dir, because it is useful for tests to be able to run it to clean
   // the system even if installation has failed or the installed binaries have
   // already been removed.
   base::FilePath path =
-      GetInstallerPath().DirName().AppendASCII("updater_test.exe");
+      GetSetupExecutablePath().DirName().AppendASCII("updater_test.exe");
   ASSERT_FALSE(path.empty());
   base::CommandLine command_line(path);
   command_line.AppendSwitch("uninstall");
@@ -414,6 +419,7 @@ void Uninstall(UpdaterScope scope) {
 
   // Uninstallation involves a race with the uninstall.cmd script and the
   // process exit. Sleep to allow the script to complete its work.
+  // TODO(crbug.com/1217765): Figure out a way to replace this.
   SleepFor(5);
 }
 
@@ -450,7 +456,7 @@ void ExpectNotActive(UpdaterScope /*scope*/, const std::string& id) {
 
 // Waits for all updater processes to end, including the server process holding
 // the prefs lock.
-void WaitForServerExit(UpdaterScope /*scope*/) {
+void WaitForUpdaterExit(UpdaterScope /*scope*/) {
   WaitFor(base::BindRepeating([]() { return !IsUpdaterRunning(); }));
 }
 
@@ -786,6 +792,10 @@ void InvokeTestServiceFunction(
   command.AppendSwitchASCII("--function", function_name);
   command.AppendSwitchASCII("--args", arguments_json_string);
   EXPECT_EQ(RunVPythonCommand(command), 0);
+}
+
+void SetupRealUpdaterLowerVersion(UpdaterScope scope) {
+  // TODO(crbug.com/1268555): Implement.
 }
 
 void RunUninstallCmdLine(UpdaterScope scope) {

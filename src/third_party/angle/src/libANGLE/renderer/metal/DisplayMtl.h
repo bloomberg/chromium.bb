@@ -14,6 +14,7 @@
 #include "libANGLE/angletypes.h"
 #include "libANGLE/renderer/DisplayImpl.h"
 #include "libANGLE/renderer/metal/mtl_command_buffer.h"
+#include "libANGLE/renderer/metal/mtl_context_device.h"
 #include "libANGLE/renderer/metal/mtl_format_utils.h"
 #include "libANGLE/renderer/metal/mtl_render_utils.h"
 #include "libANGLE/renderer/metal/mtl_state_cache.h"
@@ -124,9 +125,12 @@ class DisplayMtl : public DisplayImpl
     bool supportsEitherGPUFamily(uint8_t iOSFamily, uint8_t macFamily) const;
     bool supportsAppleGPUFamily(uint8_t iOSFamily) const;
     bool supportsMacGPUFamily(uint8_t macFamily) const;
+    bool supportsDepth24Stencil8PixelFormat() const;
+    bool supports32BitFloatFiltering() const;
     bool isAMD() const;
     bool isIntel() const;
     bool isNVIDIA() const;
+    bool isSimulator() const;
 
     id<MTLDevice> getMetalDevice() const { return mMetalDevice; }
 
@@ -136,15 +140,6 @@ class DisplayMtl : public DisplayImpl
     mtl::StateCache &getStateCache() { return mStateCache; }
 
     id<MTLLibrary> getDefaultShadersLib();
-
-    id<MTLDepthStencilState> getDepthStencilState(const mtl::DepthStencilDesc &desc)
-    {
-        return mStateCache.getDepthStencilState(getMetalDevice(), desc);
-    }
-    id<MTLSamplerState> getSamplerState(const mtl::SamplerDesc &desc)
-    {
-        return mStateCache.getSamplerState(getMetalDevice(), desc);
-    }
 
     const mtl::Format &getPixelFormat(angle::FormatID angleFormatId) const
     {

@@ -170,21 +170,6 @@ https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
   .params(u => u.combine('placeHolder1', ['placeHolder2', 'placeHolder3']))
   .unimplemented();
 
-g.test('float_builtin_functions,fract')
-  .uniqueId('58222ecf6f963798')
-  .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#float-builtin-functions')
-  .desc(
-    `
-fract:
-T is f32 or vecN<f32> fract(e: T ) -> T Returns the fractional bits of e (e.g. e - floor(e)). Component-wise when T is a vector. (GLSLstd450Fract)
-
-Please read the following guidelines before contributing:
-https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
-`
-  )
-  .params(u => u.combine('placeHolder1', ['placeHolder2', 'placeHolder3']))
-  .unimplemented();
-
 g.test('float_builtin_functions,scalar_case_frexp')
   .uniqueId('c5df46977f5b77a0')
   .specURL('https://www.w3.org/TR/2021/WD-WGSL-20210929/#float-builtin-functions')

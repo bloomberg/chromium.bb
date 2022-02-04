@@ -1007,7 +1007,7 @@ tensorflow::Status ContextInterface::EnableCollectiveOps(
 }
 
 tensorflow::Status ContextInterface::BuildFunctionRequestContext(
-    tensorflow::tfd::OpKernelRunnerTable* runner_table,
+    tensorflow::tfrt_stub::OpKernelRunnerTable* runner_table,
     RCReference<tfrt::RequestContext>* request_context) {
   auto* step_container = GetEagerContext()->StepContainer();
   RequestContextBuilder request_context_builder(
@@ -1354,6 +1354,11 @@ tensorflow::Status OperationInterface::Execute(
 
     ExecutionContext exec_ctx{std::move(request_ctx),
                               abort_location_handler_.GetCurrentLocation()};
+
+    // Make BEF executor to use TfThreadPoolWorkQueue to dispatch kernels.
+    exec_ctx.set_work_queue(
+        context_->GetTfrtContext()->GetTfThreadPoolWorkQueue());
+
     // Execute the function.
     function_state_->GetFunc()(exec_ctx, th_args, OpAttrsRef(attrs_),
                                result_ths, chain);
@@ -1490,6 +1495,9 @@ tensorflow::Status OperationInterface::Initialize() {
 
   tensorflow::TfrtFunctionCompileOptions compile_options;
 
+  // Use TFRT TPU OpKernel for training.
+  compile_options.tpu_lower_to_fallback = true;
+
   // Use the host device if the user does not place the function to a specific
   // device.
   compile_options.default_device =
@@ -1535,7 +1543,7 @@ tensorflow::Status OperationInterface::Initialize() {
   TF_RETURN_IF_ERROR(context_->GetFunctionCache().GetOrAddFunction(
       op_name_, device_name_, dev_set, context_->GetEagerContext(), corert,
       /*request_ctx_fn=*/
-      [this](tensorflow::tfd::OpKernelRunnerTable* runner_table,
+      [this](tensorflow::tfrt_stub::OpKernelRunnerTable* runner_table,
              RCReference<RequestContext>* request_ctx) {
         return context_->BuildFunctionRequestContext(runner_table, request_ctx);
       },

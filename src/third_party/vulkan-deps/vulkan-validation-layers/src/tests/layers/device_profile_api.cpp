@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -210,12 +210,21 @@ VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceFormatProperties(VkPhysicalDevice ph
 
 VKAPI_ATTR void VKAPI_CALL GetPhysicalDeviceFormatProperties2(VkPhysicalDevice physicalDevice, VkFormat format,
                                                               VkFormatProperties2 *pProperties) {
+    VkFormatProperties3KHR *fmt_props_3 = LvlFindModInChain<VkFormatProperties3KHR>(pProperties->pNext);
     std::lock_guard<std::mutex> lock(global_lock);
     layer_data *phy_dev_data = GetLayerDataPtr(physicalDevice, device_profile_api_dev_data_map);
     layer_data *instance_data = GetLayerDataPtr(phy_dev_data->instance, device_profile_api_dev_data_map);
     auto device_format_map_it = phy_dev_data->format_properties_map.find(format);
     if (device_format_map_it != phy_dev_data->format_properties_map.end()) {
         memcpy((void *)&(pProperties->formatProperties), &phy_dev_data->format_properties_map[format], sizeof(VkFormatProperties));
+        if (fmt_props_3) {
+            fmt_props_3->linearTilingFeatures =
+                static_cast<VkFormatFeatureFlags2KHR>(pProperties->formatProperties.linearTilingFeatures);
+            fmt_props_3->optimalTilingFeatures =
+                static_cast<VkFormatFeatureFlags2KHR>(pProperties->formatProperties.optimalTilingFeatures);
+            fmt_props_3->bufferFeatures =
+                static_cast<VkFormatFeatureFlags2KHR>(pProperties->formatProperties.bufferFeatures);
+        }
     } else {
         instance_data->dispatch_table.GetPhysicalDeviceFormatProperties2(physicalDevice, format, pProperties);
     }

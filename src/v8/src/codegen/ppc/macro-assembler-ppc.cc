@@ -1500,13 +1500,9 @@ void MacroAssembler::InvokePrologue(Register expected_parameter_count,
     sub(sp, sp, r0);
     // Update stack pointer.
     addi(dest, sp, Operand(-kSystemPointerSize));
-    if (!kJSArgcIncludesReceiver) {
-      addi(r0, actual_parameter_count, Operand(1));
-    } else {
-      mr(r0, actual_parameter_count);
-      cmpi(r0, Operand::Zero());
-      ble(&skip);
-    }
+    mr(r0, actual_parameter_count);
+    cmpi(r0, Operand::Zero());
+    ble(&skip);
     mtctr(r0);
 
     bind(&copy);
@@ -3605,7 +3601,7 @@ void TurboAssembler::ByteReverseU32(Register dst, Register val,
   ZeroExtWord32(dst, scratch);
 }
 
-void TurboAssembler::ByteReverseU64(Register dst, Register val) {
+void TurboAssembler::ByteReverseU64(Register dst, Register val, Register) {
   if (CpuFeatures::IsSupported(PPC_10_PLUS)) {
     brd(dst, val);
     return;

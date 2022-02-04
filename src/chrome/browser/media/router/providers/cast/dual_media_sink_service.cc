@@ -9,6 +9,7 @@
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service.h"
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service.h"
+#include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/providers/cast/cast_app_discovery_service.h"
 #include "chrome/browser/media/router/providers/cast/chrome_cast_message_handler.h"
@@ -40,7 +41,11 @@ DialMediaSinkServiceImpl* DualMediaSinkService::GetDialMediaSinkServiceImpl() {
   return dial_media_sink_service_->impl();
 }
 
-MediaSinkServiceBase* DualMediaSinkService::GetCastMediaSinkServiceImpl() {
+MediaSinkServiceBase* DualMediaSinkService::GetCastMediaSinkServiceBase() {
+  return cast_media_sink_service_->impl();
+}
+
+CastMediaSinkServiceImpl* DualMediaSinkService::GetCastMediaSinkServiceImpl() {
   return cast_media_sink_service_->impl();
 }
 
@@ -138,6 +143,13 @@ void DualMediaSinkService::BindLogger(LoggerImpl* logger_impl) {
       base::BindOnce(&CastAppDiscoveryService::BindLogger,
                      base::Unretained(cast_app_discovery_service_.get()),
                      std::move(cast_discovery_pending_remote)));
+}
+
+void DualMediaSinkService::RemoveLogger() {
+  if (!logger_is_bound_)
+    return;
+  logger_is_bound_ = false;
+  cast_media_sink_service_->RemoveLogger();
 }
 
 }  // namespace media_router

@@ -22,6 +22,13 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<variants name="AnnotationType">
+  <variant name="CotentVisibility" summary="Cotent Visibility"/>
+  <variant name="PageEntities" summary="Page Entities"/>
+  <variant name="PageTopics" summary="Page Topics"/>
+  <variant name="Unknown" summary="Unknown"/>
+</variants>
+
 <variants name="OptimizationTarget">
   <variant name="AutofillAssistant" summary="Autofill Assistant"/>
   <variant name="LanguageDetection" summary="Language detection"/>
@@ -32,6 +39,8 @@ chromium-metrics-reviews@google.com.
   <variant name="PageTopicsV2" summary="Page topics v2"/>
   <variant name="PageVisibility" summary="Page visibility"/>
   <variant name="PainfulPageLoad" summary="Painful page load"/>
+  <variant name="SegmentationChromeLowUserEngagement"
+      summary="Segmentation: Low user engagement with Chrome"/>
   <variant name="SegmentationChromeStartAndroid"
       summary="Chrome Start Android"/>
   <variant name="SegmentationDummyFeature" summary="Dummy feature"/>
@@ -220,6 +229,32 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="OptimizationGuide.HintsFetcher.GetHintsRequest.DroppedHosts.{RequestContext}"
+    units="counts" expires_after="M106">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>mcrouse@chromium.org</owner>
+  <summary>
+    Records the number of hosts that were dropped for a request made with
+    {RequestContext}, if the number of hosts dropped is non-zero. Will record at
+    most once per fetch.
+  </summary>
+  <token key="RequestContext" variants="RequestContext"/>
+</histogram>
+
+<histogram
+    name="OptimizationGuide.HintsFetcher.GetHintsRequest.DroppedUrls.{RequestContext}"
+    units="counts" expires_after="M106">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>mcrouse@chromium.org</owner>
+  <summary>
+    Records the number of URLs that were dropped for a request made with
+    {RequestContext}, if the number of URLs dropped is non-zero. Will record at
+    most once per fetch.
+  </summary>
+  <token key="RequestContext" variants="RequestContext"/>
+</histogram>
+
+<histogram
     name="OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency.{RequestContext}"
     units="ms" expires_after="2022-04-17">
   <owner>sophiechang@chromium.org</owner>
@@ -253,7 +288,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode"
-    enum="NetErrorCodes" expires_after="2022-05-08">
+    enum="NetErrorCodes" expires_after="2022-07-11">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -263,7 +298,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsFetcher.GetHintsRequest.Status"
-    enum="HttpResponseCode" expires_after="2022-05-08">
+    enum="HttpResponseCode" expires_after="2022-07-11">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -282,22 +317,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdate"
-    enum="OptimizationGuideHintsFetcherRequestStatus" expires_after="M106">
-  <obsolete>
-    Obsolete as of 12/2021.
-  </obsolete>
-  <owner>mcrouse@chromium.org</owner>
-  <owner>sophiechang@chromium.org</owner>
-  <summary>
-    The status of making a Batch Update context request of the OptmizationGuide
-    HintsFetcher. This includes whether a network request was actually sent or
-    not.
-  </summary>
-</histogram>
-
-<histogram
-    name="OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdate.{RequestContext}"
+<histogram name="OptimizationGuide.HintsFetcher.RequestStatus.{RequestContext}"
     enum="OptimizationGuideHintsFetcherRequestStatus" expires_after="M106">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
@@ -307,20 +327,6 @@ chromium-metrics-reviews@google.com.
     actually sent or not.
   </summary>
   <token key="RequestContext" variants="RequestContext"/>
-</histogram>
-
-<histogram name="OptimizationGuide.HintsFetcher.RequestStatus.PageNavigation"
-    enum="OptimizationGuideHintsFetcherRequestStatus" expires_after="M106">
-  <obsolete>
-    Obsolete as of 12/2021.
-  </obsolete>
-  <owner>mcrouse@chromium.org</owner>
-  <owner>sophiechang@chromium.org</owner>
-  <summary>
-    The status of making a Page Navigation context request of the
-    OptmizationGuide HintsFetcher. This includes whether a network request was
-    actually sent or not.
-  </summary>
 </histogram>
 
 <histogram
@@ -429,7 +435,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus"
     enum="OptimizationGuideRaceNavigationFetchAttemptStatus"
-    expires_after="2022-04-17">
+    expires_after="2022-06-19">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -507,10 +513,29 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="OptimizationGuide.ModelExecutor.ModelLoadingDuration.{OptimizationTarget}"
     units="ms" expires_after="M106">
+  <obsolete>
+    Replaced by
+    OptimizationGuide.ModelExecutor.ModelLoadingDuration2.{OptimizationTarget}
+    in M99 becuase the metrics recorded here were incorrect and should not be
+    used.
+  </obsolete>
   <owner>robertogden@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
     Records the time duration it took to load a model file (un)successfully for
+    {OptimizationTarget}. Recorded once per model load attempt for
+    {OptimizationTarget}.
+  </summary>
+  <token key="OptimizationTarget" variants="OptimizationTarget"/>
+</histogram>
+
+<histogram
+    name="OptimizationGuide.ModelExecutor.ModelLoadingDuration2.{OptimizationTarget}"
+    units="ms" expires_after="M106">
+  <owner>robertogden@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Records the time duration it took to load a model file successfully for
     {OptimizationTarget}. Recorded once per model load attempt for
     {OptimizationTarget}.
   </summary>
@@ -621,6 +646,56 @@ chromium-metrics-reviews@google.com.
     pushed to the client. This will be recorded at startup and when a new
     component is received.
   </summary>
+</histogram>
+
+<histogram
+    name="OptimizationGuide.PageContentAnnotations.BatchRequestedSize.{AnnotationType}"
+    units="counts" expires_after="M106">
+  <owner>robertogden@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Records the size of a {AnnotationType} BatchAnnotate request in how many
+    string inputs were given. Recorded once for every call to BatchAnnotate.
+  </summary>
+  <token key="AnnotationType" variants="AnnotationType"/>
+</histogram>
+
+<histogram
+    name="OptimizationGuide.PageContentAnnotations.BatchSuccess.{AnnotationType}"
+    enum="BooleanSuccess" expires_after="M106">
+  <owner>robertogden@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Records whether any input to a {AnnotationType} BatchAnnotate request was
+    executed successfully. Recorded once for every completed callback for
+    BatchAnnotate.
+  </summary>
+  <token key="AnnotationType" variants="AnnotationType"/>
+</histogram>
+
+<histogram
+    name="OptimizationGuide.PageContentAnnotations.JobExecutionTime.{AnnotationType}"
+    units="ms" expires_after="M106">
+  <owner>robertogden@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Records the total execution time of a {AnnotationType} BatchAnnotate
+    request. Recorded once for every completed callback for BatchAnnotate.
+  </summary>
+  <token key="AnnotationType" variants="AnnotationType"/>
+</histogram>
+
+<histogram
+    name="OptimizationGuide.PageContentAnnotations.JobScheduleTime.{AnnotationType}"
+    units="ms" expires_after="M106">
+  <owner>robertogden@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Records the time a {AnnotationType} BatchAnnotate request was waiting in the
+    queue before execution started. Recorded once for every completed callback
+    for BatchAnnotate.
+  </summary>
+  <token key="AnnotationType" variants="AnnotationType"/>
 </histogram>
 
 <histogram
@@ -1040,7 +1115,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.ProcessHintsResult"
-    enum="OptimizationGuideProcessHintsResult" expires_after="2022-04-10">
+    enum="OptimizationGuideProcessHintsResult" expires_after="2022-06-12">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>

@@ -19,6 +19,7 @@
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrVx.h"
+#include "src/gpu/KeyBuilder.h"
 #include "src/gpu/geometry/GrShape.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
@@ -341,7 +342,7 @@ public:
 
     const char* name() const override { return "FillRRectOp::Processor"; }
 
-    void addToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override {
+    void addToKey(const GrShaderCaps& caps, KeyBuilder* b) const override {
         b->addBits(kNumProcessorFlags, (uint32_t)fFlags,  "flags");
     }
 
@@ -353,7 +354,8 @@ private:
     Processor(GrAAType aaType, ProcessorFlags flags)
             : GrGeometryProcessor(kGrFillRRectOp_Processor_ClassID)
             , fFlags(flags) {
-        this->setVertexAttributes(kVertexAttribs, SK_ARRAY_COUNT(kVertexAttribs));
+        this->setVertexAttributesWithImplicitOffsets(kVertexAttribs,
+                                                     SK_ARRAY_COUNT(kVertexAttribs));
 
         fInstanceAttribs.emplace_back("skew", kFloat4_GrVertexAttribType, kFloat4_GrSLType);
         fInstanceAttribs.emplace_back("translate", kFloat2_GrVertexAttribType, kFloat2_GrSLType);
@@ -366,7 +368,8 @@ private:
                     "local_rect", kFloat4_GrVertexAttribType, kFloat4_GrSLType);
         }
         SkASSERT(fInstanceAttribs.count() <= kMaxInstanceAttribs);
-        this->setInstanceAttributes(fInstanceAttribs.begin(), fInstanceAttribs.count());
+        this->setInstanceAttributesWithImplicitOffsets(fInstanceAttribs.begin(),
+                                                       fInstanceAttribs.count());
     }
 
     inline static constexpr Attribute kVertexAttribs[] = {
@@ -467,7 +470,7 @@ static constexpr CoverageVertex kVertexData[] = {
         {{{0,0,0,1}},  {{-1,+1}},  {{0,-kOctoOffset}},  {{-1,+1}},  0,  0},
         {{{0,0,0,1}},  {{-1,+1}},  {{+kOctoOffset,0}},  {{-1,+1}},  0,  0}};
 
-GR_DECLARE_STATIC_UNIQUE_KEY(gVertexBufferKey);
+SKGPU_DECLARE_STATIC_UNIQUE_KEY(gVertexBufferKey);
 
 static constexpr uint16_t kIndexData[] = {
         // Inset octagon (solid coverage).
@@ -508,7 +511,7 @@ static constexpr uint16_t kIndexData[] = {
         39, 36, 38,
         36, 38, 37};
 
-GR_DECLARE_STATIC_UNIQUE_KEY(gIndexBufferKey);
+SKGPU_DECLARE_STATIC_UNIQUE_KEY(gIndexBufferKey);
 
 void FillRRectOpImpl::onPrepareDraws(GrMeshDrawTarget* target) {
     if (!fProgramInfo) {
@@ -546,13 +549,13 @@ void FillRRectOpImpl::onPrepareDraws(GrMeshDrawTarget* target) {
         SkASSERT(instanceWrter == end);
     }
 
-    GR_DEFINE_STATIC_UNIQUE_KEY(gIndexBufferKey);
+    SKGPU_DEFINE_STATIC_UNIQUE_KEY(gIndexBufferKey);
 
     fIndexBuffer = target->resourceProvider()->findOrMakeStaticBuffer(GrGpuBufferType::kIndex,
                                                                       sizeof(kIndexData),
                                                                       kIndexData, gIndexBufferKey);
 
-    GR_DEFINE_STATIC_UNIQUE_KEY(gVertexBufferKey);
+    SKGPU_DEFINE_STATIC_UNIQUE_KEY(gVertexBufferKey);
 
     fVertexBuffer = target->resourceProvider()->findOrMakeStaticBuffer(GrGpuBufferType::kVertex,
                                                                       sizeof(kVertexData),

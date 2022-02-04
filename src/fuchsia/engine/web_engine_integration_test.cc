@@ -78,7 +78,8 @@ class WebEngineIntegrationMediaTest : public WebEngineIntegrationTest {
   fuchsia::web::CreateContextParams ContextParamsWithAudioAndTestData() {
     fuchsia::web::CreateContextParams create_params =
         TestContextParamsWithTestData();
-    create_params.set_features(fuchsia::web::ContextFeatureFlags::AUDIO);
+    *create_params.mutable_features() |=
+        fuchsia::web::ContextFeatureFlags::AUDIO;
     return create_params;
   }
 
@@ -264,7 +265,7 @@ TEST_F(WebEngineIntegrationTest, RemoteDebuggingPort) {
       port_receiver;
   context_->GetRemoteDebuggingPort(
       cr_fuchsia::CallbackToFitFunction(port_receiver.GetCallback()));
-  port_receiver.Wait();
+  ASSERT_TRUE(port_receiver.Wait());
 
   ASSERT_TRUE(port_receiver.Get().is_response());
   uint16_t remote_debugging_port = port_receiver.Get().response().port;
@@ -347,7 +348,7 @@ TEST_F(WebEngineIntegrationTest, ContentDirectoryProvider) {
 TEST_F(WebEngineIntegrationMediaTest, PlayAudio) {
   CreateContextAndFrame(ContextParamsWithAudioAndTestData());
 
-  static uint16_t kTestMediaSessionId = 43;
+  static const uint16_t kTestMediaSessionId = 43;
   frame_->SetMediaSessionId(kTestMediaSessionId);
 
   ASSERT_NO_FATAL_FAILURE(LoadUrlAndExpectResponse(
@@ -388,6 +389,9 @@ TEST_F(WebEngineIntegrationMediaTest, PlayAudio_NoFlag) {
           [&is_requested](auto request) { is_requested = true; }));
   ZX_CHECK(status == ZX_OK, status) << "AddPublicService";
 
+  static const uint16_t kTestMediaSessionId = 1;
+  frame_->SetMediaSessionId(kTestMediaSessionId);
+
   ASSERT_NO_FATAL_FAILURE(LoadUrlAndExpectResponse(
       "fuchsia-dir://testdata/play_audio.html",
       cr_fuchsia::CreateLoadUrlParamsWithUserActivation()));
@@ -398,6 +402,9 @@ TEST_F(WebEngineIntegrationMediaTest, PlayAudio_NoFlag) {
 
 TEST_F(WebEngineIntegrationMediaTest, PlayVideo) {
   CreateContextAndFrame(ContextParamsWithAudioAndTestData());
+
+  static const uint16_t kTestMediaSessionId = 1;
+  frame_->SetMediaSessionId(kTestMediaSessionId);
 
   ASSERT_NO_FATAL_FAILURE(LoadUrlAndExpectResponse(
       kAutoplayVp9OpusToEndUrl,
@@ -527,7 +534,8 @@ class MAYBE_VulkanWebEngineIntegrationTest
 TEST_F(MAYBE_VulkanWebEngineIntegrationTest,
        WebGLContextPresentWithVulkanFeature) {
   fuchsia::web::CreateContextParams create_params = TestContextParams();
-  create_params.set_features(fuchsia::web::ContextFeatureFlags::VULKAN);
+  *create_params.mutable_features() |=
+      fuchsia::web::ContextFeatureFlags::VULKAN;
   CreateContextAndFrame(std::move(create_params));
 
   ASSERT_NO_FATAL_FAILURE(LoadUrlAndExpectResponse(
@@ -603,11 +611,13 @@ TEST_F(MAYBE_VulkanWebEngineIntegrationTest,
   // The VULKAN flag is required for hardware video decoders to be available.
   fuchsia::web::CreateContextParams create_params =
       ContextParamsWithAudioAndTestData();
-  create_params.set_features(
+  *create_params.mutable_features() |=
       fuchsia::web::ContextFeatureFlags::VULKAN |
-      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER |
-      fuchsia::web::ContextFeatureFlags::AUDIO);
+      fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER;
   CreateContextAndFrame(std::move(create_params));
+
+  static const uint16_t kTestMediaSessionId = 1;
+  frame_->SetMediaSessionId(kTestMediaSessionId);
 
   ASSERT_NO_FATAL_FAILURE(LoadUrlAndExpectResponse(
       kAutoplayVp9OpusToEndUrl,
@@ -629,6 +639,9 @@ TEST_F(WebEngineIntegrationMediaTest, HardwareVideoDecoderFlag_NotProvided) {
   fuchsia::web::CreateContextParams create_params =
       ContextParamsWithAudioAndTestData();
   CreateContextAndFrame(std::move(create_params));
+
+  static const uint16_t kTestMediaSessionId = 1;
+  frame_->SetMediaSessionId(kTestMediaSessionId);
 
   ASSERT_NO_FATAL_FAILURE(LoadUrlAndExpectResponse(
       kAutoplayVp9OpusToEndUrl,

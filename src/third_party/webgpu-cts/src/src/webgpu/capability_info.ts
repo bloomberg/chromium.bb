@@ -1,5 +1,5 @@
-// TODO: The generated Typedoc for this file is hard to navigate because it's alphabetized.
-// Consider using namespaces or renames to fix this?
+// MAINTENANCE_TODO: The generated Typedoc for this file is hard to navigate because it's
+// alphabetized. Consider using namespaces or renames to fix this?
 
 /* eslint-disable no-sparse-arrays */
 
@@ -121,7 +121,7 @@ const kUnsizedDepthStencilFormatInfo = /* prettier-ignore */ makeTable(kTexFmtIn
                            [        true,          true,   false,        ,          ,     false,     false,     false,             ,       undefined,            1,             1,                         ] as const, {
   'depth24plus':           [            ,              ,        ,    true,     false,          ,          ,          ,      'depth'],
   'depth24plus-stencil8':  [            ,              ,        ,    true,      true,          ,          ,          ,      'depth'],
-  // These should really be sized formats; see below TODO about multi-aspect formats.
+  // MAINTENANCE_TODO: These should really be sized formats; see below MAINTENANCE_TODO about multi-aspect formats.
   'depth24unorm-stencil8': [            ,              ,        ,    true,      true,          ,          ,          ,      'depth',                ,             ,              ,  'depth24unorm-stencil8'],
   'depth32float-stencil8': [            ,              ,        ,    true,      true,          ,          ,          ,      'depth',                ,             ,              ,  'depth32float-stencil8'],
 } as const);
@@ -194,7 +194,7 @@ const kASTCTextureFormatInfo = /* prettier-ignore */ makeTable(kTexFmtInfoHeader
 
 // Definitions for use locally. To access the table entries, use `kTextureFormatInfo`.
 
-// TODO: Consider generating the exports below programmatically by filtering the big list, instead
+// MAINTENANCE_TODO: Consider generating the exports below programmatically by filtering the big list, instead
 // of using these local constants? Requires some type magic though.
 /* prettier-ignore */ const   kCompressedTextureFormatInfo = { ...kBCTextureFormatInfo, ...kETC2TextureFormatInfo, ...kASTCTextureFormatInfo } as const;
 /* prettier-ignore */ const        kColorTextureFormatInfo = { ...kRegularTextureFormatInfo, ...kCompressedTextureFormatInfo } as const;
@@ -243,7 +243,7 @@ export const kRenderableColorTextureFormats = kRegularTextureFormats.filter(
 
 /** Per-GPUTextureFormat info. */
 // Exists just for documentation. Otherwise could be inferred by `makeTable`.
-// TODO: Refactor this to separate per-aspect data for multi-aspect formats. In particular:
+// MAINTENANCE_TODO: Refactor this to separate per-aspect data for multi-aspect formats. In particular:
 // - bytesPerBlock only makes sense on a per-aspect basis. But this table can't express that.
 //   So we put depth24unorm-stencil8 and depth32float-stencil8 to be unsized formats for now.
 export type TextureFormatInfo = {
@@ -324,6 +324,38 @@ export const kTextureAspectInfo: {
 /** List of all GPUTextureAspect values. */
 export const kTextureAspects = keysOf(kTextureAspectInfo);
 
+/** Per-GPUCompareFunction info. */
+export const kCompareFunctionInfo: {
+  readonly [k in GPUCompareFunction]: {};
+} = /* prettier-ignore */ {
+  'never': {},
+  'less': {},
+  'equal': {},
+  'less-equal': {},
+  'greater': {},
+  'not-equal': {},
+  'greater-equal': {},
+  'always': {},
+};
+/** List of all GPUCompareFunction values. */
+export const kCompareFunctions = keysOf(kCompareFunctionInfo);
+
+/** Per-GPUStencilOperation info. */
+export const kStencilOperationInfo: {
+  readonly [k in GPUStencilOperation]: {};
+} = /* prettier-ignore */ {
+  'keep': {},
+  'zero': {},
+  'replace': {},
+  'invert': {},
+  'increment-clamp': {},
+  'decrement-clamp': {},
+  'increment-wrap': {},
+  'decrement-wrap': {},
+};
+/** List of all GPUStencilOperation values. */
+export const kStencilOperations = keysOf(kStencilOperationInfo);
+
 const kDepthStencilFormatCapabilityInBufferTextureCopy = {
   // kUnsizedDepthStencilFormats
   depth24plus: {
@@ -350,8 +382,8 @@ const kDepthStencilFormatCapabilityInBufferTextureCopy = {
   },
   'depth24unorm-stencil8': {
     CopyB2T: ['stencil-only'],
-    CopyT2B: ['depth-only', 'stencil-only'],
-    texelAspectSize: { 'depth-only': 4, 'stencil-only': 1 },
+    CopyT2B: ['stencil-only'],
+    texelAspectSize: { 'depth-only': -1, 'stencil-only': 1 },
   },
   'depth32float-stencil8': {
     CopyB2T: ['stencil-only'],
@@ -806,23 +838,22 @@ export const kShaderStageCombinations: readonly GPUShaderStageFlags[] = [0, 1, 2
 /**
  * List of all possible texture sampleCount values.
  *
- * - TODO: Update with all possible sample counts when defined
- * - TODO: Switch existing tests to use kTextureSampleCounts
+ * MAINTENANCE_TODO: Switch existing tests to use kTextureSampleCounts
  */
 export const kTextureSampleCounts = [1, 4] as const;
 
 // Pipeline limits
 
-/**
- * Maximum number of color attachments to a render pass.
- *
- * - TODO: Update maximum color attachments when defined in the spec.
- */
-export const kMaxColorAttachments = 4;
-
+/** Maximum number of color attachments to a render pass, by spec. */
+export const kMaxColorAttachments = 8;
 /** `maxVertexBuffers` per GPURenderPipeline, by spec. */
 export const kMaxVertexBuffers = 8;
 /** `maxVertexAttributes` per GPURenderPipeline, by spec. */
 export const kMaxVertexAttributes = 16;
 /** `maxVertexBufferArrayStride` in a vertex buffer in a GPURenderPipeline, by spec. */
 export const kMaxVertexBufferArrayStride = 2048;
+
+/** The size of indirect draw parameters in the indirectBuffer of drawIndirect */
+export const kDrawIndirectParametersSize = 4;
+/** The size of indirect drawIndexed parameters in the indirectBuffer of drawIndexedIndirect */
+export const kDrawIndexedIndirectParametersSize = 5;

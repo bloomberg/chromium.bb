@@ -16,7 +16,7 @@
 
 #include "src/dawn_node/utils/Debug.h"
 
-namespace wgpu { namespace binding {
+namespace wgpu::binding {
 
     ////////////////////////////////////////////////////////////////////////////////
     // wgpu::bindings::GPUCommandBuffer
@@ -24,10 +24,6 @@ namespace wgpu { namespace binding {
 
     GPUCommandBuffer::GPUCommandBuffer(wgpu::CommandBuffer cmd_buf) : cmd_buf_(std::move(cmd_buf)) {
     }
-
-    interop::Promise<double> GPUCommandBuffer::getExecutionTime(Napi::Env) {
-        UNIMPLEMENTED();
-    };
 
     std::optional<std::string> GPUCommandBuffer::getLabel(Napi::Env) {
         UNIMPLEMENTED();
@@ -37,4 +33,4 @@ namespace wgpu { namespace binding {
         UNIMPLEMENTED();
     }
 
-}}  // namespace wgpu::binding
+}  // namespace wgpu::binding

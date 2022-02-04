@@ -1,6 +1,6 @@
-/* Copyright (c) 2015-2017, 2019-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2017, 2019-2021 Valve Corporation
- * Copyright (c) 2015-2017, 2019-2021 LunarG, Inc.
+/* Copyright (c) 2015-2017, 2019-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2017, 2019-2022 Valve Corporation
+ * Copyright (c) 2015-2017, 2019-2022 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -352,6 +352,17 @@ typedef std::unique_lock<ReadWriteLock> ReadLockGuard;
 #endif
 typedef std::unique_lock<ReadWriteLock> WriteLockGuard;
 
+// helper class for the very common case of getting and then locking a command buffer (or other state object)
+template <typename T, typename Guard>
+class LockedSharedPtr : public std::shared_ptr<T> {
+  public:
+    LockedSharedPtr(std::shared_ptr<T> &&ptr, Guard &&guard) : std::shared_ptr<T>(std::move(ptr)), guard_(std::move(guard)) {}
+    LockedSharedPtr() : std::shared_ptr<T>(), guard_() {}
+
+  private:
+    Guard guard_;
+};
+
 // Limited concurrent_unordered_map that supports internally-synchronized
 // insert/erase/access. Splits locking across N buckets and uses shared_mutex
 // for read/write locking. Iterators are not supported. The following
@@ -473,6 +484,31 @@ class vl_concurrent_unordered_map {
             }
         }
         return ret;
+    }
+
+    void clear() {
+        for (int h = 0; h < BUCKETS; ++h) {
+            WriteLockGuard lock(locks[h].lock);
+            maps[h].clear();
+        }
+    }
+
+    size_t size() const {
+        size_t result = 0;
+        for (int h = 0; h < BUCKETS; ++h) {
+            ReadLockGuard lock(locks[h].lock);
+            result += maps[h].size();
+        }
+        return result;
+    }
+
+    bool empty() const {
+        bool result = 0;
+        for (int h = 0; h < BUCKETS; ++h) {
+            ReadLockGuard lock(locks[h].lock);
+            result |= maps[h].empty();
+        }
+        return result;
     }
 
   private:

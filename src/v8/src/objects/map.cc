@@ -129,6 +129,7 @@ VisitorId Map::GetVisitorId(Map map) {
       return kVisitEmbedderDataArray;
 
     case OBJECT_BOILERPLATE_DESCRIPTION_TYPE:
+    case NAME_TO_INDEX_HASH_TABLE_TYPE:
     case CLOSURE_FEEDBACK_CELL_ARRAY_TYPE:
     case HASH_TABLE_TYPE:
     case ORDERED_HASH_MAP_TYPE:
@@ -2154,28 +2155,6 @@ int Map::ComputeMinObjectSlack(Isolate* isolate) {
   };
   transitions.TraverseTransitionTree(callback);
   return slack;
-}
-
-void Map::CompleteInobjectSlackTracking(Isolate* isolate) {
-  DisallowGarbageCollection no_gc;
-  // Has to be an initial map.
-  DCHECK(GetBackPointer().IsUndefined(isolate));
-
-  int slack = ComputeMinObjectSlack(isolate);
-  TransitionsAccessor transitions(isolate, *this, &no_gc);
-  TransitionsAccessor::TraverseCallback callback;
-  if (slack != 0) {
-    // Resize the initial map and all maps in its transition tree.
-    callback = [&](Map map) {
-      MapUpdater::ShrinkInstanceSize(isolate->map_updater_access(), map, slack);
-    };
-  } else {
-    callback = [](Map map) {
-      // Stop slack tracking for this map.
-      map.set_construction_counter(Map::kNoSlackTracking);
-    };
-  }
-  transitions.TraverseTransitionTree(callback);
 }
 
 void Map::SetInstanceDescriptors(Isolate* isolate, DescriptorArray descriptors,

@@ -114,6 +114,12 @@ float SearchResultsPageRankingWeight() {
   return std::max(0.f, weight);
 }
 
+float HasPageTitleRankingWeight() {
+  float weight = GetFieldTrialParamByFeatureAsDouble(
+      kOnDeviceClustering, "has_page_title_ranking_weight", 2.0);
+  return std::max(0.f, weight);
+}
+
 bool ContentClusterOnIntersectionSimilarity() {
   return GetFieldTrialParamByFeatureAsBool(
       kOnDeviceClustering, "use_content_clustering_intersection_similarity",
@@ -123,6 +129,16 @@ bool ContentClusterOnIntersectionSimilarity() {
 int ClusterIntersectionThreshold() {
   return GetFieldTrialParamByFeatureAsInt(
       kOnDeviceClustering, "content_clustering_intersection_threshold", 2);
+}
+
+bool ShouldIncludeCategoriesInKeywords() {
+  return GetFieldTrialParamByFeatureAsBool(
+      kOnDeviceClustering, "include_categories_in_keywords", true);
+}
+
+bool ShouldExcludeKeywordsFromNoisyVisits() {
+  return GetFieldTrialParamByFeatureAsBool(
+      kOnDeviceClustering, "exclude_keywords_from_noisy_visits", false);
 }
 
 }  // namespace features

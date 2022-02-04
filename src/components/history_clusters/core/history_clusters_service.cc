@@ -121,45 +121,6 @@ void FilterClustersMatchingQuery(std::string query,
                   clusters->end());
 }
 
-// Enforces the reverse-chronological invariant of clusters, as well the
-// by-score sorting of visits within clusters.
-void SortClusters(std::vector<Cluster>* clusters) {
-  DCHECK(clusters);
-  // Within each cluster, sort visits from best to worst using score.
-  // TODO(tommycli): Once cluster persistence is done, maybe we can eliminate
-  //  this sort step, if they are stored in-order.
-  for (auto& cluster : *clusters) {
-    base::ranges::sort(cluster.visits, [](auto& v1, auto& v2) {
-      if (v1.score != v2.score) {
-        // Use v1 > v2 to get higher scored visits BEFORE lower scored visits.
-        return v1.score > v2.score;
-      }
-
-      // Use v1 > v2 to get more recent visits BEFORE older visits.
-      return v1.annotated_visit.visit_row.visit_time >
-             v2.annotated_visit.visit_row.visit_time;
-    });
-  }
-
-  // After that, sort clusters reverse-chronologically based on their highest
-  // scored visit.
-  base::ranges::sort(*clusters, [&](auto& c1, auto& c2) {
-    // TODO(tommycli): If we can establish an invariant that no backend will
-    //  ever return an empty cluster, we can simplify the below code.
-    base::Time c1_time;
-    if (!c1.visits.empty()) {
-      c1_time = c1.visits.front().annotated_visit.visit_row.visit_time;
-    }
-    base::Time c2_time;
-    if (!c1.visits.empty()) {
-      c2_time = c2.visits.front().annotated_visit.visit_row.visit_time;
-    }
-
-    // Use c1 > c2 to get more recent clusters BEFORE older clusters.
-    return c1_time > c2_time;
-  });
-}
-
 // Gets a loggable JSON representation of `visits`.
 std::string GetDebugJSONForVisits(
     const std::vector<history::AnnotatedVisit>& visits) {
@@ -237,8 +198,9 @@ std::string GetDebugJSONForClusters(
       debug_visit.SetKey("entities", std::move(debug_entities));
 
       base::ListValue debug_duplicate_visits;
-      for (const auto duplicate_visit : visit.duplicate_visit_ids) {
-        debug_duplicate_visits.Append(int(duplicate_visit));
+      for (const auto& duplicate_visit : visit.duplicate_visits) {
+        debug_duplicate_visits.Append(static_cast<int>(
+            duplicate_visit.annotated_visit.visit_row.visit_id));
       }
       debug_visit.SetKey("duplicate_visits", std::move(debug_duplicate_visits));
 
@@ -254,6 +216,22 @@ std::string GetDebugJSONForClusters(
           debug_clusters_list, base::JSONWriter::OPTIONS_PRETTY_PRINT,
           &debug_string)) {
     debug_string = "Error: Could not write clusters to JSON.";
+  }
+  return debug_string;
+}
+
+std::string GetDebugJSONForKeywordSet(
+    const HistoryClustersService::KeywordSet& keyword_set) {
+  std::vector<base::Value> keyword_list;
+  for (const auto& keyword : keyword_set) {
+    keyword_list.emplace_back(keyword);
+  }
+
+  std::string debug_string;
+  if (!base::JSONWriter::WriteWithOptions(
+          base::Value(keyword_list), base::JSONWriter::OPTIONS_PRETTY_PRINT,
+          &debug_string)) {
+    debug_string = "Error: Could not write keywords list to JSON.";
   }
   return debug_string;
 }
@@ -451,12 +429,13 @@ bool HistoryClustersService::DoesQueryMatchAnyCluster(
     //  `query` parameter is set to empty. However, it would be nice if this
     //  was more explicit, rather than just a happy coincidence. Likely the real
     //  solution will be to explicitly ask the backend for this bag of keywords.
+    NotifyDebugMessage("Starting all_keywords_cache_ generation.");
     QueryClusters(
         /*query=*/"", begin_time, /*end_time=*/
         base::Time(), kMaxCountForKeywordCacheBatch,
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
                        weak_ptr_factory_.GetWeakPtr(), begin_time,
-                       std::make_unique<std::set<std::u16string>>(),
+                       std::make_unique<std::vector<std::u16string>>(),
                        &all_keywords_cache_),
         &cache_query_task_tracker_);
 
@@ -474,6 +453,7 @@ bool HistoryClustersService::DoesQueryMatchAnyCluster(
     // Update the timestamp right away, to prevent this from running again.
     short_keyword_cache_timestamp_ = base::Time::Now();
 
+    NotifyDebugMessage("Starting short_keywords_cache_ generation.");
     QueryClusters(
         /*query=*/"",
         /*begin_time=*/all_keywords_cache_timestamp_, /*end_time=*/
@@ -481,7 +461,7 @@ bool HistoryClustersService::DoesQueryMatchAnyCluster(
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
                        weak_ptr_factory_.GetWeakPtr(),
                        all_keywords_cache_timestamp_,
-                       std::make_unique<std::set<std::u16string>>(),
+                       std::make_unique<std::vector<std::u16string>>(),
                        &short_keyword_cache_),
         &cache_query_task_tracker_);
   }
@@ -491,78 +471,10 @@ bool HistoryClustersService::DoesQueryMatchAnyCluster(
   if (query.length() <= 1)
     return false;
 
-  query_parser::QueryNodeVector query_nodes;
-  query_parser::QueryParser::ParseQueryNodes(
-      base::UTF8ToUTF16(query), query_parser::MatchingAlgorithm::DEFAULT,
-      &query_nodes);
+  auto query_lower = base::i18n::ToLower(base::UTF8ToUTF16(query));
 
-  return query_parser::QueryParser::DoesQueryMatch(all_keywords_cache_,
-                                                   query_nodes,
-                                                   /*exact=*/true) ||
-         query_parser::QueryParser::DoesQueryMatch(short_keyword_cache_,
-                                                   query_nodes,
-                                                   /*exact=*/true);
-}
-
-// static
-std::vector<Cluster> HistoryClustersService::CollapseDuplicateVisits(
-    const std::vector<history::Cluster>& raw_clusters) {
-  std::vector<Cluster> result_clusters;
-  for (const auto& raw_cluster : raw_clusters) {
-    Cluster cluster;
-    cluster.cluster_id = raw_cluster.cluster_id;
-    cluster.keywords = raw_cluster.keywords;
-
-    // First stash all visits within the cluster in a id-keyed map.
-    base::flat_map<int64_t, Visit> visits_map;
-    visits_map.reserve(raw_cluster.visits.size());
-    for (const auto& raw_visit : raw_cluster.visits) {
-      Visit visit;
-      visit.annotated_visit = raw_visit.annotated_visit;
-      visit.normalized_url = raw_visit.normalized_url;
-      visit.score = raw_visit.score;
-
-      visits_map[visit.annotated_visit.visit_row.visit_id] = std::move(visit);
-    }
-
-    // Now do the actual un-flattening in a second loop.
-    for (const auto& raw_visit : raw_cluster.visits) {
-      int64_t visit_id = raw_visit.annotated_visit.visit_row.visit_id;
-
-      // For every duplicate marked in the original raw visit, find the visit
-      // in the id-keyed map, move it to the canonical visit's vector, and
-      // erase it from the map.
-      for (auto& duplicate_id : raw_visit.duplicate_visit_ids) {
-        auto duplicate_visit = visits_map.find(duplicate_id);
-        if (duplicate_visit == visits_map.end()) {
-          NOTREACHED() << "Visit has missing duplicate ID.";
-          continue;
-        }
-
-        // Move the duplicate visit into the vector of the canonical visit.
-        DCHECK(duplicate_visit->second.duplicate_visits.empty())
-            << "Duplicates shouldn't themselves have duplicates. "
-               "If they do, the output is undefined.";
-        auto& canonical_visit = visits_map[visit_id];
-        canonical_visit.duplicate_visits.push_back(
-            std::move(duplicate_visit->second));
-
-        // Remove the duplicate from the map.
-        visits_map.erase(duplicate_visit);
-      }
-    }
-
-    // Now move all our surviving visits, which should all be canonical visits,
-    // to the final cluster.
-    for (auto& visit_pair : visits_map) {
-      cluster.visits.push_back(std::move(visit_pair.second));
-    }
-
-    result_clusters.push_back(std::move(cluster));
-  }
-
-  DCHECK_EQ(result_clusters.size(), raw_clusters.size());
-  return result_clusters;
+  return short_keyword_cache_.contains(query_lower) ||
+         all_keywords_cache_.contains(query_lower);
 }
 
 void HistoryClustersService::ClearKeywordCache() {
@@ -575,8 +487,8 @@ void HistoryClustersService::ClearKeywordCache() {
 
 void HistoryClustersService::PopulateClusterKeywordCache(
     base::Time begin_time,
-    std::unique_ptr<std::set<std::u16string>> keyword_accumulator,
-    query_parser::QueryWordVector* cache,
+    std::unique_ptr<std::vector<std::u16string>> keyword_accumulator,
+    KeywordSet* cache,
     QueryClustersResult result) {
   const size_t max_keyword_phrases = kMaxKeywordPhrases.Get();
 
@@ -587,8 +499,11 @@ void HistoryClustersService::PopulateClusterKeywordCache(
       // simple first-pass technique to avoid overtriggering the omnibox action.
       continue;
     }
-    keyword_accumulator->insert(cluster.keywords.begin(),
-                                cluster.keywords.end());
+    // Lowercase the keywords for case insensitive matching while adding to the
+    // accumulator.
+    for (auto& keyword : cluster.keywords) {
+      keyword_accumulator->push_back(base::i18n::ToLower(keyword));
+    }
 
     // Limit the cache size. It's possible for the `cache.size()` to exceed
     // `max_keyword_phrases` since:
@@ -620,19 +535,12 @@ void HistoryClustersService::PopulateClusterKeywordCache(
     return;
   }
 
-  // TODO(manukh) Even though `keyword_accumulator` is a `std::set`, we still
-  //  often end up with duplicate keywords since different strings in the
-  //  accumulator may contain the same words. We should add a metric to measure
-  //  the keyword cache size and consider preventing duplicate keywords being
-  //  inserted.
-
-  // We've got all the keywords now, time to populate the cache.
-  cache->clear();
-  for (auto& keyword : *keyword_accumulator) {
-    // Each `keyword` may itself have multiple terms that we need to extract.
-    query_parser::QueryParser::ExtractQueryWords(base::i18n::ToLower(keyword),
-                                                 cache);
-  }
+  // We've got all the keywords now. Move them all into the flat_set at once
+  // via the constructor for efficiency (as recommended by the flat_set docs).
+  // De-duplication is handled by the flat_set itself.
+  *cache = KeywordSet(*keyword_accumulator);
+  NotifyDebugMessage("Cache construction complete:");
+  NotifyDebugMessage(GetDebugJSONForKeywordSet(*cache));
 
   // Record keyword phrase & keyword counts for the appropriate cache.
   if (cache == &all_keywords_cache_) {
@@ -731,9 +639,7 @@ QueryClustersResult HistoryClustersService::PostProcessClusters(
   }
 
   FilterClustersMatchingQuery(query, &raw_clusters);
-  result.clusters = CollapseDuplicateVisits(raw_clusters);
-  SortClusters(&result.clusters);
-
+  result.clusters = raw_clusters;
   return result;
 }
 

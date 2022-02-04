@@ -61,6 +61,10 @@ class ReceiverSession final : public Environment::SocketSubscriber {
 
     Receiver* video_receiver;
     VideoCaptureConfig video_config;
+
+    // The ID of the sender that this set of receivers was configured to
+    // communicate with.
+    std::string sender_id;
   };
 
   // This struct contains all of the information necessary to begin remoting
@@ -304,9 +308,12 @@ class ReceiverSession final : public Environment::SocketSubscriber {
   // In some cases, such as waiting for the UDP socket to be bound, we
   // may have a pending session that cannot start yet. This class provides
   // all necessary info to instantiate a session.
-  struct SessionProperties {
+  struct PendingOffer {
     // The cast mode the OFFER was sent for.
     CastMode mode;
+
+    // The sender that provided the OFFER.
+    std::string sender_id;
 
     // The selected audio and video streams from the original OFFER message.
     std::unique_ptr<AudioStream> selected_audio;
@@ -321,27 +328,31 @@ class ReceiverSession final : public Environment::SocketSubscriber {
   };
 
   // Specific message type handler methods.
-  void OnOffer(SenderMessage message);
-  void OnCapabilitiesRequest(SenderMessage message);
-  void OnRpcMessage(SenderMessage message);
+  void OnOffer(const std::string& sender_id, SenderMessage message);
+  void OnCapabilitiesRequest(const std::string& sender_id,
+                             SenderMessage message);
+  void OnRpcMessage(const std::string& sender_id, SenderMessage message);
+
+  // Sends an RPC message to the currently negotiated sender.
+  void SendRpcMessage(std::vector<uint8_t> message);
 
   // Selects streams from an offer based on its configuration, and sets
   // them in the session properties.
-  void SelectStreams(const Offer& offer, SessionProperties* properties);
+  void SelectStreams(const Offer& offer, PendingOffer* properties);
 
   // Creates receivers and sends an appropriate Answer message using the
   // session properties.
-  void InitializeSession(const SessionProperties& properties);
+  void InitializeSession(const PendingOffer& properties);
 
   // Used by SpawnReceivers to generate a receiver for a specific stream.
   std::unique_ptr<Receiver> ConstructReceiver(const Stream& stream);
 
   // Creates a set of configured receivers from a given pair of audio and
   // video streams. NOTE: either audio or video may be null, but not both.
-  ConfiguredReceivers SpawnReceivers(const SessionProperties& properties);
+  ConfiguredReceivers SpawnReceivers(const PendingOffer& properties);
 
   // Creates an ANSWER object. Assumes at least one stream is not nullptr.
-  Answer ConstructAnswer(const SessionProperties& properties);
+  Answer ConstructAnswer(const PendingOffer& properties);
 
   // Creates a ReceiverCapability version 2 object. This will be deprecated
   // as part of https://issuetracker.google.com/184429130.
@@ -351,7 +362,9 @@ class ReceiverSession final : public Environment::SocketSubscriber {
   void ResetReceivers(Client::ReceiversDestroyingReason reason);
 
   // Sends an error answer reply and notifies the client of the error.
-  void SendErrorAnswerReply(int sequence_number, const char* message);
+  void SendErrorAnswerReply(const std::string& sender_id,
+                            int sequence_number,
+                            const char* message);
 
   Client* const client_;
   Environment* const environment_;
@@ -360,6 +373,10 @@ class ReceiverSession final : public Environment::SocketSubscriber {
   // The sender_id of this session.
   const std::string session_id_;
 
+  // The ID of the sender that has the current negotiation. We ignore
+  // RPC messages from other senders.
+  std::string negotiated_sender_id_;
+
   // The session messenger used for the lifetime of this session.
   ReceiverSessionMessenger messenger_;
 
@@ -367,7 +384,7 @@ class ReceiverSession final : public Environment::SocketSubscriber {
   ReceiverPacketRouter packet_router_;
 
   // Any session pending while the UDP socket is being bound.
-  std::unique_ptr<SessionProperties> pending_session_;
+  std::unique_ptr<PendingOffer> pending_offer_;
 
   // The negotiated receivers we own, clients are notified of destruction
   // through |Client::OnReceiversDestroying|.

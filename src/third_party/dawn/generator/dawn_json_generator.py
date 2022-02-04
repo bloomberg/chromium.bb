@@ -29,6 +29,8 @@ class Metadata:
         self.namespace = metadata['namespace']
         self.c_prefix = metadata.get('c_prefix', self.namespace.upper())
         self.proc_table_prefix = metadata['proc_table_prefix']
+        self.impl_dir = metadata.get('impl_dir', '')
+        self.native_namespace = metadata['native_namespace']
         self.copyright_year = metadata.get('copyright_year', None)
 
 
@@ -65,6 +67,9 @@ class Name:
 
     def snake_case(self):
         return '_'.join(self.chunks)
+
+    def namespace_case(self):
+        return '::'.join(self.chunks)
 
     def js_enum_case(self):
         result = self.chunks[0].lower()
@@ -240,6 +245,21 @@ class StructureType(Record, Type):
         # two nextInChain members.
         assert not (self.extensible and self.chained)
 
+    def update_metadata(self):
+        Record.update_metadata(self)
+
+        if self.may_have_dawn_object:
+            self.is_wire_transparent = False
+            return
+
+        assert not (self.chained or self.extensible)
+
+        def get_is_wire_transparent(member):
+            return member.type.is_wire_transparent and member.annotation == 'value'
+
+        self.is_wire_transparent = all(
+            get_is_wire_transparent(m) for m in self.members)
+
     @property
     def output(self):
         return self.chained == "out" or self.extensible == "out"
@@ -297,6 +317,10 @@ def linked_record_members(json_data, types):
                     assert False
             elif m['length'] == 'strlen':
                 member.length = 'strlen'
+            elif isinstance(m['length'], int):
+                assert m['length'] > 0
+                member.length = "constant"
+                member.constant_length = m['length']
             else:
                 member.length = members_by_name[m['length']]
 
@@ -384,8 +408,10 @@ def topo_sort_structure(structs):
     return result
 
 
-def parse_json(json, enabled_tags):
-    is_enabled = lambda json_data: item_is_enabled(enabled_tags, json_data)
+def parse_json(json, enabled_tags, disabled_tags=None):
+    is_enabled = lambda json_data: item_is_enabled(
+        enabled_tags, json_data) and not item_is_disabled(
+            disabled_tags, json_data)
     category_to_parser = {
         'bitmask': BitmaskType,
         'enum': EnumType,
@@ -405,7 +431,7 @@ def parse_json(json, enabled_tags):
         by_category[name] = []
 
     for (name, json_data) in json.items():
-        if name[0] == '_' or not item_is_enabled(enabled_tags, json_data):
+        if name[0] == '_' or not is_enabled(json_data):
             continue
         category = json_data['category']
         parsed = category_to_parser[category](is_enabled, name, json_data)
@@ -443,12 +469,14 @@ def parse_json(json, enabled_tags):
         'types': types,
         'by_category': by_category,
         'enabled_tags': enabled_tags,
+        'disabled_tags': disabled_tags,
     }
     return {
         'metadata': Metadata(json['_metadata']),
         'types': types,
         'by_category': by_category,
         'enabled_tags': enabled_tags,
+        'disabled_tags': disabled_tags,
         'c_methods': lambda typ: c_methods(api_params, typ),
         'c_methods_sorted_by_name': get_c_methods_sorted_by_name(api_params),
     }
@@ -580,6 +608,8 @@ def convert_cType_to_cppType(typ, annotation, arg, indent=0):
             converted_members = ',\n'.join(converted_members)
 
             return as_cppType(typ.name) + ' {\n' + converted_members + '\n}'
+        elif typ.category == 'function pointer':
+            return 'reinterpret_cast<{}>({})'.format(as_cppType(typ.name), arg)
         else:
             return 'static_cast<{}>({})'.format(as_cppType(typ.name), arg)
     else:
@@ -594,6 +624,8 @@ def decorate(name, typ, arg):
         return typ + ' * ' + name
     elif arg.annotation == 'const*':
         return typ + ' const * ' + name
+    elif arg.annotation == 'const*const*':
+        return 'const ' + typ + '* const * ' + name
     else:
         assert False
 
@@ -607,6 +639,14 @@ def item_is_enabled(enabled_tags, json_data):
     tags = json_data.get('tags')
     if tags is None: return True
     return any(tag in enabled_tags for tag in tags)
+
+
+def item_is_disabled(disabled_tags, json_data):
+    if disabled_tags is None: return False
+    tags = json_data.get('tags')
+    if tags is None: return False
+
+    return any(tag in disabled_tags for tag in tags)
 
 
 def as_cppEnum(value_name):
@@ -649,6 +689,7 @@ def c_methods(params, typ):
             Method(Name('release'), params['types']['void'], [],
                    {'tags': ['dawn', 'emscripten']}),
         ] if item_is_enabled(params['enabled_tags'], x.json_data)
+        and not item_is_disabled(params['disabled_tags'], x.json_data)
     ]
 
 
@@ -720,7 +761,7 @@ class MultiGeneratorFromDawnJSON(Generator):
     def add_commandline_arguments(self, parser):
         allowed_targets = [
             'dawn_headers', 'dawncpp_headers', 'dawncpp', 'dawn_proc',
-            'mock_webgpu', 'dawn_wire', "dawn_native_utils"
+            'mock_api', 'dawn_wire', "dawn_native_utils"
         ]
 
         parser.add_argument('--dawn-json',
@@ -757,8 +798,8 @@ class MultiGeneratorFromDawnJSON(Generator):
         RENDER_PARAMS_BASE = make_base_render_params(metadata)
 
         api = metadata.api.lower()
+        prefix = metadata.proc_table_prefix.lower()
         if 'dawn_headers' in targets:
-            prefix = metadata.proc_table_prefix.lower()
             renders.append(
                 FileRender('api.h', 'src/include/dawn/' + api + '.h',
                            [RENDER_PARAMS_BASE, params_dawn]))
@@ -779,11 +820,11 @@ class MultiGeneratorFromDawnJSON(Generator):
 
         if 'dawn_proc' in targets:
             renders.append(
-                FileRender('dawn_proc.c', 'src/dawn/dawn_proc.c',
+                FileRender('dawn_proc.c', 'src/dawn/' + prefix + '_proc.c',
                            [RENDER_PARAMS_BASE, params_dawn]))
             renders.append(
                 FileRender('dawn_thread_dispatch_proc.cpp',
-                           'src/dawn/dawn_thread_dispatch_proc.cpp',
+                           'src/dawn/' + prefix + '_thread_dispatch_proc.cpp',
                            [RENDER_PARAMS_BASE, params_dawn]))
 
         if 'webgpu_dawn_native_proc' in targets:
@@ -794,7 +835,7 @@ class MultiGeneratorFromDawnJSON(Generator):
 
         if 'dawncpp' in targets:
             renders.append(
-                FileRender('webgpu_cpp.cpp', 'src/dawn/webgpu_cpp.cpp',
+                FileRender('api_cpp.cpp', 'src/dawn/' + api + '_cpp.cpp',
                            [RENDER_PARAMS_BASE, params_dawn]))
 
         if 'webgpu_headers' in targets:
@@ -814,28 +855,28 @@ class MultiGeneratorFromDawnJSON(Generator):
                 FileRender('api_cpp.h', 'emscripten-bits/' + api + '_cpp.h',
                            [RENDER_PARAMS_BASE, params_emscripten]))
             renders.append(
-                FileRender('webgpu_cpp.cpp', 'emscripten-bits/webgpu_cpp.cpp',
+                FileRender('api_cpp.cpp', 'emscripten-bits/' + api + '_cpp.cpp',
                            [RENDER_PARAMS_BASE, params_emscripten]))
             renders.append(
-                FileRender('webgpu_struct_info.json',
-                           'emscripten-bits/webgpu_struct_info.json',
+                FileRender('api_struct_info.json',
+                           'emscripten-bits/' + api + '_struct_info.json',
                            [RENDER_PARAMS_BASE, params_emscripten]))
             renders.append(
-                FileRender('library_webgpu_enum_tables.js',
-                           'emscripten-bits/library_webgpu_enum_tables.js',
+                FileRender('library_api_enum_tables.js',
+                           'emscripten-bits/library_' + api + '_enum_tables.js',
                            [RENDER_PARAMS_BASE, params_emscripten]))
 
-        if 'mock_webgpu' in targets:
+        if 'mock_api' in targets:
             mock_params = [
                 RENDER_PARAMS_BASE, params_dawn, {
                     'has_callback_arguments': has_callback_arguments
                 }
             ]
             renders.append(
-                FileRender('mock_webgpu.h', 'src/dawn/mock_webgpu.h',
+                FileRender('mock_api.h', 'src/dawn/mock_' + api + '.h',
                            mock_params))
             renders.append(
-                FileRender('mock_webgpu.cpp', 'src/dawn/mock_webgpu.cpp',
+                FileRender('mock_api.cpp', 'src/dawn/mock_' + api + '.cpp',
                            mock_params))
 
         if 'dawn_native_utils' in targets:
@@ -850,59 +891,66 @@ class MultiGeneratorFromDawnJSON(Generator):
                 }
             ]
 
+            impl_dir = metadata.impl_dir + '/' if metadata.impl_dir else ''
+            native_dir = impl_dir + Name(metadata.native_namespace).snake_case()
+            namespace = metadata.namespace
             renders.append(
                 FileRender('dawn_native/ValidationUtils.h',
-                           'src/dawn_native/ValidationUtils_autogen.h',
+                           'src/' + native_dir + '/ValidationUtils_autogen.h',
                            frontend_params))
             renders.append(
                 FileRender('dawn_native/ValidationUtils.cpp',
-                           'src/dawn_native/ValidationUtils_autogen.cpp',
+                           'src/' + native_dir + '/ValidationUtils_autogen.cpp',
                            frontend_params))
             renders.append(
                 FileRender('dawn_native/dawn_platform.h',
-                           'src/dawn_native/dawn_platform_autogen.h',
+                           'src/' + native_dir + '/' + prefix + '_platform_autogen.h',
                            frontend_params))
             renders.append(
-                FileRender('dawn_native/wgpu_structs.h',
-                           'src/dawn_native/wgpu_structs_autogen.h',
+                FileRender('dawn_native/api_structs.h',
+                           'src/' + native_dir + '/' + namespace + '_structs_autogen.h',
                            frontend_params))
             renders.append(
-                FileRender('dawn_native/wgpu_structs.cpp',
-                           'src/dawn_native/wgpu_structs_autogen.cpp',
+                FileRender('dawn_native/api_structs.cpp',
+                           'src/' + native_dir + '/' + namespace + '_structs_autogen.cpp',
                            frontend_params))
             renders.append(
                 FileRender('dawn_native/ProcTable.cpp',
-                           'src/dawn_native/ProcTable.cpp', frontend_params))
+                           'src/' + native_dir + '/ProcTable.cpp', frontend_params))
             renders.append(
                 FileRender('dawn_native/ChainUtils.h',
-                           'src/dawn_native/ChainUtils_autogen.h',
+                           'src/' + native_dir + '/ChainUtils_autogen.h',
                            frontend_params))
             renders.append(
                 FileRender('dawn_native/ChainUtils.cpp',
-                           'src/dawn_native/ChainUtils_autogen.cpp',
+                           'src/' + native_dir + '/ChainUtils_autogen.cpp',
                            frontend_params))
             renders.append(
-                FileRender('dawn_native/webgpu_absl_format.h',
-                           'src/dawn_native/webgpu_absl_format_autogen.h',
+                FileRender('dawn_native/api_absl_format.h',
+                           'src/' + native_dir + '/' + api + '_absl_format_autogen.h',
                            frontend_params))
             renders.append(
-                FileRender('dawn_native/webgpu_absl_format.cpp',
-                           'src/dawn_native/webgpu_absl_format_autogen.cpp',
+                FileRender('dawn_native/api_absl_format.cpp',
+                           'src/' + native_dir + '/' + api + '_absl_format_autogen.cpp',
                            frontend_params))
             renders.append(
                 FileRender('dawn_native/ObjectType.h',
-                           'src/dawn_native/ObjectType_autogen.h',
+                           'src/' + native_dir + '/ObjectType_autogen.h',
                            frontend_params))
             renders.append(
                 FileRender('dawn_native/ObjectType.cpp',
-                           'src/dawn_native/ObjectType_autogen.cpp',
+                           'src/' + native_dir + '/ObjectType_autogen.cpp',
                            frontend_params))
 
         if 'dawn_wire' in targets:
-            additional_params = compute_wire_params(params_dawn, wire_json)
+            params_dawn_wire = parse_json(loaded_json,
+                                          enabled_tags=['dawn', 'deprecated'],
+                                          disabled_tags=['native'])
+            additional_params = compute_wire_params(params_dawn_wire,
+                                                    wire_json)
 
             wire_params = [
-                RENDER_PARAMS_BASE, params_dawn, {
+                RENDER_PARAMS_BASE, params_dawn_wire, {
                     'as_wireType': lambda type : as_wireType(metadata, type),
                     'as_annotated_wireType': \
                         lambda arg: annotated(as_wireType(metadata, arg.type), arg),

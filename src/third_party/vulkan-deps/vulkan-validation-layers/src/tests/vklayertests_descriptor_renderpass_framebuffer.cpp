@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (c) 2015-2021 Google, Inc.
- * Modifications Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2022 Google, Inc.
+ * Modifications Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights reserved.
  * Modifications Copyright (C) 2021 ARM, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,9 +52,7 @@ TEST_F(VkLayerTest, InvalidDescriptorPoolConsistency) {
     ds_type_count.type = VK_DESCRIPTOR_TYPE_SAMPLER;
     ds_type_count.descriptorCount = 1;
 
-    VkDescriptorPoolCreateInfo ds_pool_ci = {};
-    ds_pool_ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    ds_pool_ci.pNext = NULL;
+    VkDescriptorPoolCreateInfo ds_pool_ci = LvlInitStruct<VkDescriptorPoolCreateInfo>();
     ds_pool_ci.flags = 0;
     ds_pool_ci.maxSets = 1;
     ds_pool_ci.poolSizeCount = 1;
@@ -102,8 +100,7 @@ TEST_F(VkLayerTest, BadSubpassIndices) {
     dependency.srcStageMask = kGraphicsStages;
     dependency.dstStageMask = kGraphicsStages;
 
-    VkRenderPassCreateInfo rpci = {};
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>();
     rpci.subpassCount = 2;
     rpci.pSubpasses = sci;
     rpci.dependencyCount = 1;
@@ -280,8 +277,7 @@ TEST_F(VkLayerTest, ImageBarrierSubpassConflict) {
                                   0,
                                   nullptr};
 
-    VkImageMemoryBarrier img_barrier = {};
-    img_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    VkImageMemoryBarrier img_barrier = LvlInitStruct<VkImageMemoryBarrier>();
     img_barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     img_barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     img_barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -481,8 +477,7 @@ TEST_F(VkLayerTest, RenderPassCreateAttachmentDescriptionInvalidFinalLayout) {
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &attach_ref;
-    VkRenderPassCreateInfo rpci = {};
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>();
     rpci.attachmentCount = 1;
     rpci.pAttachments = &attach_desc;
     rpci.subpassCount = 1;
@@ -1646,14 +1641,12 @@ TEST_F(VkLayerTest, RenderPassCreate2SubpassInvalidInputAttachmentParameters) {
 
     ASSERT_NO_FATAL_FAILURE(InitState());
 
-    VkAttachmentDescription2KHR attach_desc = {};
-    attach_desc.sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2_KHR;
+    VkAttachmentDescription2KHR attach_desc = LvlInitStruct<VkAttachmentDescription2>();
     attach_desc.format = VK_FORMAT_UNDEFINED;
     attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-    VkAttachmentReference2KHR reference = {};
-    reference.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+    VkAttachmentReference2KHR reference = LvlInitStruct<VkAttachmentReference2>();
     reference.layout = VK_IMAGE_LAYOUT_GENERAL;
     reference.aspectMask = 0;
 
@@ -1969,8 +1962,7 @@ TEST_F(VkLayerTest, RenderPassCreateInvalidMixedAttachmentSamplesAMD) {
     subpass.pColorAttachments = &color_ref;
     subpass.pDepthStencilAttachment = &depth_ref;
 
-    VkRenderPassCreateInfo rpci = {};
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>();
     rpci.attachmentCount = attachments.size();
     rpci.pAttachments = attachments.data();
     rpci.subpassCount = 1;
@@ -2073,9 +2065,7 @@ TEST_F(VkLayerTest, RenderPassBeginIncompatibleFramebufferRenderPass) {
     ASSERT_TRUE(image.initialized());
 
     VkImageView dsv;
-    VkImageViewCreateInfo dsvci = {};
-    dsvci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    dsvci.pNext = nullptr;
+    VkImageViewCreateInfo dsvci = LvlInitStruct<VkImageViewCreateInfo>();
     dsvci.image = image.handle();
     dsvci.viewType = VK_IMAGE_VIEW_TYPE_2D;
     dsvci.format = VK_FORMAT_D16_UNORM;
@@ -2158,9 +2148,7 @@ TEST_F(VkLayerTest, RenderPassBeginLayoutsFramebufferImageUsageMismatches) {
     ASSERT_TRUE(iai.initialized());
 
     VkImageView iav;
-    VkImageViewCreateInfo iavci = {};
-    iavci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    iavci.pNext = nullptr;
+    VkImageViewCreateInfo iavci = LvlInitStruct<VkImageViewCreateInfo>();
     iavci.image = iai.handle();
     iavci.viewType = VK_IMAGE_VIEW_TYPE_2D;
     iavci.format = VK_FORMAT_R8G8B8A8_UNORM;
@@ -2177,9 +2165,7 @@ TEST_F(VkLayerTest, RenderPassBeginLayoutsFramebufferImageUsageMismatches) {
     ASSERT_TRUE(cai.initialized());
 
     VkImageView cav;
-    VkImageViewCreateInfo cavci = {};
-    cavci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    cavci.pNext = nullptr;
+    VkImageViewCreateInfo cavci = LvlInitStruct<VkImageViewCreateInfo>();
     cavci.image = cai.handle();
     cavci.viewType = VK_IMAGE_VIEW_TYPE_2D;
     cavci.format = VK_FORMAT_R8G8B8A8_UNORM;
@@ -2296,7 +2282,7 @@ TEST_F(VkLayerTest, RenderPassBeginClearOpMismatch) {
     VkSubpassDescription subpass = {};
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &attach;
-    VkRenderPassCreateInfo rpci = {};
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>();
     rpci.subpassCount = 1;
     rpci.pSubpasses = &subpass;
     rpci.attachmentCount = 1;
@@ -2307,13 +2293,10 @@ TEST_F(VkLayerTest, RenderPassBeginClearOpMismatch) {
     attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
     rpci.pAttachments = &attach_desc;
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     VkRenderPass rp;
     vk::CreateRenderPass(m_device->device(), &rpci, NULL, &rp);
 
-    VkRenderPassBeginInfo rp_begin = {};
-    rp_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    rp_begin.pNext = NULL;
+    VkRenderPassBeginInfo rp_begin = LvlInitStruct<VkRenderPassBeginInfo>();
     rp_begin.renderPass = renderPass();
     rp_begin.framebuffer = framebuffer();
     rp_begin.clearValueCount = 0;  // Should be 1
@@ -2362,9 +2345,7 @@ TEST_F(VkLayerTest, RenderPassBeginSampleLocationsInvalidIndicesEXT) {
     ASSERT_TRUE(image.initialized());
 
     VkImageView dsv;
-    VkImageViewCreateInfo dsvci = {};
-    dsvci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    dsvci.pNext = nullptr;
+    VkImageViewCreateInfo dsvci = LvlInitStruct<VkImageViewCreateInfo>();
     dsvci.image = image.handle();
     dsvci.viewType = VK_IMAGE_VIEW_TYPE_2D;
     dsvci.format = VK_FORMAT_D16_UNORM;
@@ -2474,9 +2455,7 @@ TEST_F(VkLayerTest, InvalidSampleLocations) {
 
     const bool support_64_sample_count = ((sample_locations_props.sampleLocationSampleCounts & VK_SAMPLE_COUNT_64_BIT) != 0);
 
-    VkImageCreateInfo image_create_info = {};
-    image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    image_create_info.pNext = NULL;
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>();
     image_create_info.imageType = VK_IMAGE_TYPE_2D;
     image_create_info.extent.width = 128;
     image_create_info.extent.height = 128;
@@ -2541,38 +2520,32 @@ TEST_F(VkLayerTest, InvalidSampleLocations) {
         VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, nullptr, 0, m_renderPass, 2, m_framebuffer_attachments.data(), 128, 128, 1};
     vk::CreateFramebuffer(m_device->handle(), &m_framebuffer_info, nullptr, &m_framebuffer);
 
-    VkMultisamplePropertiesEXT multisample_prop;
+    VkMultisamplePropertiesEXT multisample_prop = LvlInitStruct<VkMultisamplePropertiesEXT>();
     vkGetPhysicalDeviceMultisamplePropertiesEXT(gpu(), VK_SAMPLE_COUNT_1_BIT, &multisample_prop);
     // 1 from VK_SAMPLE_COUNT_1_BIT
     const uint32_t valid_count =
         multisample_prop.maxSampleLocationGridSize.width * multisample_prop.maxSampleLocationGridSize.height * 1;
 
     std::vector<VkSampleLocationEXT> sample_location(valid_count,{0.5, 0.5});
-    VkSampleLocationsInfoEXT sample_locations_info = {};
-    sample_locations_info.sType = VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT;
-    sample_locations_info.pNext = nullptr;
+    VkSampleLocationsInfoEXT sample_locations_info = LvlInitStruct<VkSampleLocationsInfoEXT>();
     sample_locations_info.sampleLocationsPerPixel = VK_SAMPLE_COUNT_1_BIT;
     sample_locations_info.sampleLocationGridSize = multisample_prop.maxSampleLocationGridSize;
     sample_locations_info.sampleLocationsCount = valid_count;
     sample_locations_info.pSampleLocations = sample_location.data();
 
-    VkPipelineSampleLocationsStateCreateInfoEXT sample_location_state = {};
-    sample_location_state.sType = VK_STRUCTURE_TYPE_PIPELINE_SAMPLE_LOCATIONS_STATE_CREATE_INFO_EXT;
-    sample_location_state.pNext = nullptr;
+    VkPipelineSampleLocationsStateCreateInfoEXT sample_location_state =
+        LvlInitStruct<VkPipelineSampleLocationsStateCreateInfoEXT>();
     sample_location_state.sampleLocationsEnable = VK_TRUE;
     sample_location_state.sampleLocationsInfo = sample_locations_info;
 
-    VkPipelineMultisampleStateCreateInfo pipe_ms_state_ci = {};
-    pipe_ms_state_ci.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    pipe_ms_state_ci.pNext = &sample_location_state;
+    VkPipelineMultisampleStateCreateInfo pipe_ms_state_ci =
+        LvlInitStruct<VkPipelineMultisampleStateCreateInfo>(&sample_location_state);
     pipe_ms_state_ci.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
     pipe_ms_state_ci.sampleShadingEnable = 0;
     pipe_ms_state_ci.minSampleShading = 1.0;
     pipe_ms_state_ci.pSampleMask = NULL;
 
-    VkPipelineDepthStencilStateCreateInfo pipe_ds_state_ci = {};
-    pipe_ds_state_ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    pipe_ds_state_ci.pNext = nullptr;
+    VkPipelineDepthStencilStateCreateInfo pipe_ds_state_ci = LvlInitStruct<VkPipelineDepthStencilStateCreateInfo>();
     pipe_ds_state_ci.depthTestEnable = VK_TRUE;
     pipe_ds_state_ci.stencilTestEnable = VK_FALSE;
 
@@ -2635,8 +2608,7 @@ TEST_F(VkLayerTest, InvalidSampleLocations) {
 
     // Creates valid pipelines with dynamic state
     const VkDynamicState dyn_state = VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_EXT;
-    VkPipelineDynamicStateCreateInfo dyn_state_ci = {};
-    dyn_state_ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    VkPipelineDynamicStateCreateInfo dyn_state_ci = LvlInitStruct<VkPipelineDynamicStateCreateInfo>();
     dyn_state_ci.dynamicStateCount = 1;
     dyn_state_ci.pDynamicStates = &dyn_state;
 
@@ -2804,7 +2776,7 @@ TEST_F(VkLayerTest, RenderPassDestroyWhileInUse) {
     VkSubpassDescription subpass = {};
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &attach;
-    VkRenderPassCreateInfo rpci = {};
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>();
     rpci.subpassCount = 1;
     rpci.pSubpasses = &subpass;
     rpci.attachmentCount = 1;
@@ -2813,7 +2785,6 @@ TEST_F(VkLayerTest, RenderPassDestroyWhileInUse) {
     attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
     rpci.pAttachments = &attach_desc;
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     VkRenderPass rp;
     VkResult err = vk::CreateRenderPass(m_device->device(), &rpci, NULL, &rp);
     ASSERT_VK_SUCCESS(err);
@@ -2821,16 +2792,14 @@ TEST_F(VkLayerTest, RenderPassDestroyWhileInUse) {
     m_errorMonitor->ExpectSuccess();
 
     m_commandBuffer->begin();
-    VkRenderPassBeginInfo rpbi = {};
-    rpbi.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    VkRenderPassBeginInfo rpbi = LvlInitStruct<VkRenderPassBeginInfo>();
     rpbi.framebuffer = m_framebuffer;
     rpbi.renderPass = rp;
     m_commandBuffer->BeginRenderPass(rpbi);
     m_commandBuffer->EndRenderPass();
     m_commandBuffer->end();
 
-    VkSubmitInfo submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    VkSubmitInfo submit_info = LvlInitStruct<VkSubmitInfo>();
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &m_commandBuffer->handle();
     vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
@@ -2874,6 +2843,9 @@ TEST_F(VkLayerTest, FramebufferCreateErrors) {
             push_fragment_density_support = DeviceExtensionSupported(gpu(), nullptr, VK_EXT_FRAGMENT_DENSITY_MAP_2_EXTENSION_NAME);
             if (push_fragment_density_support) {
                 m_device_extension_names.push_back(VK_EXT_FRAGMENT_DENSITY_MAP_2_EXTENSION_NAME);
+            } else {
+                printf("%s Extension %s is not supported.\n", kSkipPrefix, VK_EXT_FRAGMENT_DENSITY_MAP_2_EXTENSION_NAME);
+                return;
             }
         }
     }
@@ -2902,7 +2874,7 @@ TEST_F(VkLayerTest, FramebufferCreateErrors) {
     attach.layout = VK_IMAGE_LAYOUT_GENERAL;
     VkSubpassDescription subpass = {};
     subpass.pColorAttachments = &attach;
-    VkRenderPassCreateInfo rpci = {};
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>();
     rpci.subpassCount = 1;
     rpci.pSubpasses = &subpass;
     rpci.attachmentCount = 1;
@@ -2911,7 +2883,6 @@ TEST_F(VkLayerTest, FramebufferCreateErrors) {
     attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
     rpci.pAttachments = &attach_desc;
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     VkRenderPass rp;
     VkResult err = vk::CreateRenderPass(m_device->device(), &rpci, NULL, &rp);
     ASSERT_VK_SUCCESS(err);
@@ -2919,9 +2890,7 @@ TEST_F(VkLayerTest, FramebufferCreateErrors) {
     VkImageView ivs[2];
     ivs[0] = m_renderTargets[0]->targetView(VK_FORMAT_B8G8R8A8_UNORM);
     ivs[1] = m_renderTargets[0]->targetView(VK_FORMAT_B8G8R8A8_UNORM);
-    VkFramebufferCreateInfo fb_info = {};
-    fb_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    fb_info.pNext = NULL;
+    VkFramebufferCreateInfo fb_info = LvlInitStruct<VkFramebufferCreateInfo>();
     fb_info.renderPass = rp;
     // Set mis-matching attachmentCount
     fb_info.attachmentCount = 2;
@@ -2961,9 +2930,7 @@ TEST_F(VkLayerTest, FramebufferCreateErrors) {
     vk::DestroyRenderPass(m_device->device(), rp_ds, NULL);
 
     {
-        VkImageCreateInfo image_ci = {};
-        image_ci.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        image_ci.pNext = NULL;
+        VkImageCreateInfo image_ci = LvlInitStruct<VkImageCreateInfo>();
         image_ci.imageType = VK_IMAGE_TYPE_3D;
         image_ci.format = VK_FORMAT_B8G8R8A8_UNORM;
         image_ci.extent.width = 256;
@@ -3034,8 +3001,7 @@ TEST_F(VkLayerTest, FramebufferCreateErrors) {
 
         // Create a image view with two mip levels.
         VkImageView view;
-        VkImageViewCreateInfo ivci = {};
-        ivci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        VkImageViewCreateInfo ivci = LvlInitStruct<VkImageViewCreateInfo>();
         ivci.image = image.handle();
         ivci.viewType = VK_IMAGE_VIEW_TYPE_2D;
         ivci.format = VK_FORMAT_B8G8R8A8_UNORM;
@@ -3111,17 +3077,16 @@ TEST_F(VkLayerTest, FramebufferCreateErrors) {
             attach_desc_fragment_density_map.format = attachment_format;
             attach_desc_fragment_density_map.samples = VK_SAMPLE_COUNT_1_BIT;
             attach_desc_fragment_density_map.finalLayout = VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT;
-            VkRenderPassFragmentDensityMapCreateInfoEXT fragment_density_map_create_info = {};
-            fragment_density_map_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_CREATE_INFO_EXT;
+            VkRenderPassFragmentDensityMapCreateInfoEXT fragment_density_map_create_info =
+                LvlInitStruct<VkRenderPassFragmentDensityMapCreateInfoEXT>();
             fragment_density_map_create_info.fragmentDensityMapAttachment.layout = VK_IMAGE_LAYOUT_GENERAL;
             VkSubpassDescription subpass_fragment_density_map = {};
-            VkRenderPassCreateInfo rpci_fragment_density_map = {};
-            rpci_fragment_density_map.pNext = &fragment_density_map_create_info;
+            VkRenderPassCreateInfo rpci_fragment_density_map =
+                LvlInitStruct<VkRenderPassCreateInfo>(&fragment_density_map_create_info);
             rpci_fragment_density_map.subpassCount = 1;
             rpci_fragment_density_map.pSubpasses = &subpass_fragment_density_map;
             rpci_fragment_density_map.attachmentCount = 1;
             rpci_fragment_density_map.pAttachments = &attach_desc_fragment_density_map;
-            rpci_fragment_density_map.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
             VkRenderPass rp_fragment_density_map;
 
             err = vk::CreateRenderPass(m_device->device(), &rpci_fragment_density_map, NULL, &rp_fragment_density_map);
@@ -3129,8 +3094,7 @@ TEST_F(VkLayerTest, FramebufferCreateErrors) {
 
             // Create view attachment
             VkImageView view_fragment_density_map;
-            VkImageViewCreateInfo ivci = {};
-            ivci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            VkImageViewCreateInfo ivci = LvlInitStruct<VkImageViewCreateInfo>();
             ivci.viewType = VK_IMAGE_VIEW_TYPE_2D;
             ivci.format = attachment_format;
             ivci.flags = 0;
@@ -3139,22 +3103,18 @@ TEST_F(VkLayerTest, FramebufferCreateErrors) {
             ivci.subresourceRange.levelCount = 1;
             ivci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-            VkFramebufferAttachmentImageInfoKHR fb_fdm = {};
-            fb_fdm.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENT_IMAGE_INFO_KHR;
+            VkFramebufferAttachmentImageInfoKHR fb_fdm = LvlInitStruct<VkFramebufferAttachmentImageInfoKHR>();
             fb_fdm.usage = VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT;
             fb_fdm.width = frame_width;
             fb_fdm.height = frame_height;
             fb_fdm.layerCount = 1;
             fb_fdm.viewFormatCount = 1;
             fb_fdm.pViewFormats = &attachment_format;
-            VkFramebufferAttachmentsCreateInfoKHR fb_aci_fdm = {};
-            fb_aci_fdm.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO_KHR;
+            VkFramebufferAttachmentsCreateInfoKHR fb_aci_fdm = LvlInitStruct<VkFramebufferAttachmentsCreateInfoKHR>();
             fb_aci_fdm.attachmentImageInfoCount = 1;
             fb_aci_fdm.pAttachmentImageInfos = &fb_fdm;
 
-            VkFramebufferCreateInfo fbci = {};
-            fbci.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            fbci.pNext = &fb_aci_fdm;
+            VkFramebufferCreateInfo fbci = LvlInitStruct<VkFramebufferCreateInfo>(&fb_aci_fdm);
             fbci.flags = 0;
             fbci.width = frame_width;
             fbci.height = frame_height;
@@ -3219,8 +3179,7 @@ TEST_F(VkLayerTest, FramebufferCreateErrors) {
 
         // Create view attachment with non-identity swizzle
         VkImageView view;
-        VkImageViewCreateInfo ivci = {};
-        ivci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        VkImageViewCreateInfo ivci = LvlInitStruct<VkImageViewCreateInfo>();
         ivci.image = image.handle();
         ivci.viewType = VK_IMAGE_VIEW_TYPE_2D;
         ivci.format = VK_FORMAT_B8G8R8A8_UNORM;
@@ -3297,8 +3256,7 @@ TEST_F(VkLayerTest, FramebufferCreateErrors) {
             ASSERT_TRUE(image.initialized());
 
             VkImageView view;
-            VkImageViewCreateInfo ivci = {};
-            ivci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            VkImageViewCreateInfo ivci = LvlInitStruct<VkImageViewCreateInfo>();
             ivci.image = image.handle();
             ivci.viewType = VK_IMAGE_VIEW_TYPE_2D;
             ivci.format = VK_FORMAT_R8G8B8A8_UNORM;
@@ -3422,9 +3380,7 @@ TEST_F(VkLayerTest, AllocDescriptorFromEmptyPool) {
     ds_type_count.type = VK_DESCRIPTOR_TYPE_SAMPLER;
     ds_type_count.descriptorCount = 2;
 
-    VkDescriptorPoolCreateInfo ds_pool_ci = {};
-    ds_pool_ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    ds_pool_ci.pNext = NULL;
+    VkDescriptorPoolCreateInfo ds_pool_ci = LvlInitStruct<VkDescriptorPoolCreateInfo>();
     ds_pool_ci.flags = 0;
     ds_pool_ci.maxSets = 1;
     ds_pool_ci.poolSizeCount = 1;
@@ -3489,9 +3445,7 @@ TEST_F(VkLayerTest, FreeDescriptorFromOneShotPool) {
     ds_type_count.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     ds_type_count.descriptorCount = 1;
 
-    VkDescriptorPoolCreateInfo ds_pool_ci = {};
-    ds_pool_ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    ds_pool_ci.pNext = NULL;
+    VkDescriptorPoolCreateInfo ds_pool_ci = LvlInitStruct<VkDescriptorPoolCreateInfo>();
     ds_pool_ci.maxSets = 1;
     ds_pool_ci.poolSizeCount = 1;
     ds_pool_ci.flags = 0;
@@ -3589,9 +3543,7 @@ TEST_F(VkLayerTest, InvalidDescriptorSetLayout) {
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineLayoutCreateInfo-pSetLayouts-parameter");
     ASSERT_NO_FATAL_FAILURE(Init());
     VkPipelineLayout pipeline_layout;
-    VkPipelineLayoutCreateInfo plci = {};
-    plci.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    plci.pNext = NULL;
+    VkPipelineLayoutCreateInfo plci = LvlInitStruct<VkPipelineLayoutCreateInfo>();
     plci.setLayoutCount = 1;
     plci.pSetLayouts = &bad_layout;
     vk::CreatePipelineLayout(device(), &plci, NULL, &pipeline_layout);
@@ -3626,8 +3578,7 @@ TEST_F(VkLayerTest, WriteDescriptorSetIntegrityCheck) {
     OneOffDescriptorSet descriptor_set(m_device, bindings);
     ASSERT_TRUE(descriptor_set.Initialized());
 
-    VkWriteDescriptorSet descriptor_write = {};
-    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
     descriptor_write.dstSet = descriptor_set.set_;
     descriptor_write.dstBinding = 0;
     descriptor_write.descriptorCount = 1;
@@ -3640,8 +3591,7 @@ TEST_F(VkLayerTest, WriteDescriptorSetIntegrityCheck) {
 
     // Create a buffer to update the descriptor with
     uint32_t qfi = 0;
-    VkBufferCreateInfo buffCI = {};
-    buffCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    VkBufferCreateInfo buffCI = LvlInitStruct<VkBufferCreateInfo>();
     buffCI.size = 1024;
     buffCI.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     buffCI.queueFamilyIndexCount = 1;
@@ -3751,8 +3701,7 @@ TEST_F(VkLayerTest, WriteDescriptorSetIdentitySwizzle) {
     ASSERT_TRUE(image_obj.initialized());
     VkImage image = image_obj.image();
 
-    VkImageViewCreateInfo image_view_ci = {};
-    image_view_ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    VkImageViewCreateInfo image_view_ci = LvlInitStruct<VkImageViewCreateInfo>();
     image_view_ci.image = image;
     image_view_ci.format = VK_FORMAT_R8G8B8A8_UNORM;
     image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -3792,8 +3741,7 @@ TEST_F(VkLayerTest, WriteDescriptorSetConsecutiveUpdates) {
                                                  });
 
     uint32_t qfi = 0;
-    VkBufferCreateInfo bci = {};
-    bci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    VkBufferCreateInfo bci = LvlInitStruct<VkBufferCreateInfo>();
     bci.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     bci.size = 2048;
     bci.queueFamilyIndexCount = 1;
@@ -3817,8 +3765,7 @@ TEST_F(VkLayerTest, WriteDescriptorSetConsecutiveUpdates) {
         buffer_info[2].offset = 0;
         buffer_info[2].range = 1024;
 
-        VkWriteDescriptorSet descriptor_write = {};
-        descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
         descriptor_write.dstSet = descriptor_set.set_;  // descriptor_set;
         descriptor_write.dstBinding = 0;
         descriptor_write.descriptorCount = 3;
@@ -3843,8 +3790,7 @@ TEST_F(VkLayerTest, WriteDescriptorSetConsecutiveUpdates) {
         pipe.InitInfo();
         pipe.shader_stages_ = {pipe.vs_->GetStageCreateInfo(), fs.GetStageCreateInfo()};
         const VkDynamicState dyn_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
-        VkPipelineDynamicStateCreateInfo dyn_state_ci = {};
-        dyn_state_ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        VkPipelineDynamicStateCreateInfo dyn_state_ci = LvlInitStruct<VkPipelineDynamicStateCreateInfo>();
         dyn_state_ci.dynamicStateCount = size(dyn_states);
         dyn_state_ci.pDynamicStates = dyn_states;
         pipe.dyn_state_ci_ = dyn_state_ci;
@@ -3870,8 +3816,7 @@ TEST_F(VkLayerTest, WriteDescriptorSetConsecutiveUpdates) {
     // buffer2 just went out of scope and was destroyed
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-DrawState-InvalidCommandBuffer-VkBuffer");
 
-    VkSubmitInfo submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    VkSubmitInfo submit_info = LvlInitStruct<VkSubmitInfo>();
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &m_commandBuffer->handle();
     vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
@@ -3962,15 +3907,11 @@ TEST_F(VkLayerTest, WriteDescriptorSetYcbcr) {
     image_obj.init(&image_ci);
     ASSERT_TRUE(image_obj.initialized());
 
-    VkSamplerYcbcrConversionInfo ycbcr_info = {};
-    ycbcr_info.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO;
-    ycbcr_info.pNext = nullptr;
+    VkSamplerYcbcrConversionInfo ycbcr_info = LvlInitStruct<VkSamplerYcbcrConversionInfo>();
     ycbcr_info.conversion = conversion;
 
     VkImageView image_view;
-    VkImageViewCreateInfo image_view_create_info = {};
-    image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    image_view_create_info.pNext = &ycbcr_info;
+    VkImageViewCreateInfo image_view_create_info = LvlInitStruct<VkImageViewCreateInfo>(&ycbcr_info);
     image_view_create_info.image = image_obj.handle();
     image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
     image_view_create_info.format = mp_format;
@@ -4001,8 +3942,7 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetBufferDestroyed) {
     {
         // Create a buffer to update the descriptor with
         uint32_t qfi = 0;
-        VkBufferCreateInfo buffCI = {};
-        buffCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        VkBufferCreateInfo buffCI = LvlInitStruct<VkBufferCreateInfo>();
         buffCI.size = 1024;
         buffCI.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         buffCI.queueFamilyIndexCount = 1;
@@ -4024,8 +3964,7 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetBufferDestroyed) {
         pipe.InitInfo();
         pipe.shader_stages_ = {pipe.vs_->GetStageCreateInfo(), fs.GetStageCreateInfo()};
         const VkDynamicState dyn_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
-        VkPipelineDynamicStateCreateInfo dyn_state_ci = {};
-        dyn_state_ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        VkPipelineDynamicStateCreateInfo dyn_state_ci = LvlInitStruct<VkPipelineDynamicStateCreateInfo>();
         dyn_state_ci.dynamicStateCount = size(dyn_states);
         dyn_state_ci.pDynamicStates = dyn_states;
         pipe.dyn_state_ci_ = dyn_state_ci;
@@ -4052,8 +3991,7 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetBufferDestroyed) {
     // Destroy buffer should invalidate the cmd buffer, causing error on submit
 
     // Attempt to submit cmd buffer
-    VkSubmitInfo submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    VkSubmitInfo submit_info = LvlInitStruct<VkSubmitInfo>();
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &m_commandBuffer->handle();
     // Invalid VkBuffer
@@ -4074,8 +4012,7 @@ TEST_F(VkLayerTest, InvalidDrawDescriptorSetBufferDestroyed) {
     {
         // Create a buffer to update the descriptor with
         uint32_t qfi = 0;
-        VkBufferCreateInfo buffCI = {};
-        buffCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        VkBufferCreateInfo buffCI = LvlInitStruct<VkBufferCreateInfo>();
         buffCI.size = 1024;
         buffCI.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         buffCI.queueFamilyIndexCount = 1;
@@ -4097,8 +4034,7 @@ TEST_F(VkLayerTest, InvalidDrawDescriptorSetBufferDestroyed) {
         pipe.InitInfo();
         pipe.shader_stages_ = {pipe.vs_->GetStageCreateInfo(), fs.GetStageCreateInfo()};
         const VkDynamicState dyn_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
-        VkPipelineDynamicStateCreateInfo dyn_state_ci = {};
-        dyn_state_ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        VkPipelineDynamicStateCreateInfo dyn_state_ci = LvlInitStruct<VkPipelineDynamicStateCreateInfo>();
         dyn_state_ci.dynamicStateCount = size(dyn_states);
         dyn_state_ci.pDynamicStates = dyn_states;
         pipe.dyn_state_ci_ = dyn_state_ci;
@@ -4139,9 +4075,7 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetImageSamplerDestroyed) {
     ds_type_count.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     ds_type_count.descriptorCount = 1;
 
-    VkDescriptorPoolCreateInfo ds_pool_ci = {};
-    ds_pool_ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    ds_pool_ci.pNext = NULL;
+    VkDescriptorPoolCreateInfo ds_pool_ci = LvlInitStruct<VkDescriptorPoolCreateInfo>();
     ds_pool_ci.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
     ds_pool_ci.maxSets = 1;
     ds_pool_ci.poolSizeCount = 1;
@@ -4177,9 +4111,7 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetImageSamplerDestroyed) {
     const VkFormat tex_format = VK_FORMAT_B8G8R8A8_UNORM;
     const int32_t tex_width = 32;
     const int32_t tex_height = 32;
-    VkImageCreateInfo image_create_info = {};
-    image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    image_create_info.pNext = NULL;
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>();
     image_create_info.imageType = VK_IMAGE_TYPE_2D;
     image_create_info.format = tex_format;
     image_create_info.extent.width = tex_width;
@@ -4199,9 +4131,7 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetImageSamplerDestroyed) {
     VkMemoryRequirements memory_reqs;
     VkDeviceMemory image_memory;
     bool pass;
-    VkMemoryAllocateInfo memory_info = {};
-    memory_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    memory_info.pNext = NULL;
+    VkMemoryAllocateInfo memory_info = LvlInitStruct<VkMemoryAllocateInfo>();
     memory_info.allocationSize = 0;
     memory_info.memoryTypeIndex = 0;
     vk::GetImageMemoryRequirements(m_device->device(), image, &memory_reqs);
@@ -4219,8 +4149,7 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetImageSamplerDestroyed) {
     err = vk::BindImageMemory(m_device->device(), image2, image_memory, aligned_size);
     ASSERT_VK_SUCCESS(err);
 
-    VkImageViewCreateInfo image_view_create_info = {};
-    image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    VkImageViewCreateInfo image_view_create_info = LvlInitStruct<VkImageViewCreateInfo>();
     image_view_create_info.image = image;
     image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
     image_view_create_info.format = tex_format;
@@ -4253,11 +4182,10 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetImageSamplerDestroyed) {
     img_info.imageView = tmp_view;
     img_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-    VkWriteDescriptorSet descriptor_write;
-    memset(&descriptor_write, 0, sizeof(descriptor_write));
-    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
     descriptor_write.dstSet = descriptorSet;
     descriptor_write.dstBinding = 0;
+    descriptor_write.dstArrayElement = 0;
     descriptor_write.descriptorCount = 1;
     descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     descriptor_write.pImageInfo = &img_info;
@@ -4285,8 +4213,7 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetImageSamplerDestroyed) {
     m_commandBuffer->begin();
 
     // Transit image layout from VK_IMAGE_LAYOUT_UNDEFINED into VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-    VkImageMemoryBarrier barrier = {};
-    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    VkImageMemoryBarrier barrier = LvlInitStruct<VkImageMemoryBarrier>();
     barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -4313,8 +4240,7 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetImageSamplerDestroyed) {
     m_commandBuffer->Draw(1, 0, 0, 0);
     m_commandBuffer->EndRenderPass();
     m_commandBuffer->end();
-    VkSubmitInfo submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    VkSubmitInfo submit_info = LvlInitStruct<VkSubmitInfo>();
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &m_commandBuffer->handle();
     // This first submit should be successful
@@ -4355,8 +4281,7 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetImageSamplerDestroyed) {
     vk::DestroySampler(m_device->device(), sampler, NULL);
     // Attempt to submit cmd buffer
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-DrawState-InvalidCommandBuffer-VkSampler");
-    submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info = LvlInitStruct<VkSubmitInfo>();
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &m_commandBuffer->handle();
     vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
@@ -4366,8 +4291,7 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetImageSamplerDestroyed) {
     img_info.sampler = sampler2;
     vk::UpdateDescriptorSets(m_device->device(), 1, &descriptor_write, 0, NULL);
 
-    VkCommandBufferBeginInfo info = {};
-    info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    VkCommandBufferBeginInfo info = LvlInitStruct<VkCommandBufferBeginInfo>();
     info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-DrawState-InvalidCommandBuffer-VkImage");
     m_commandBuffer->begin(&info);
@@ -4383,8 +4307,7 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetImageSamplerDestroyed) {
     // Destroy image invalidates the cmd buffer, causing error on submit
     vk::DestroyImage(m_device->device(), image, NULL);
     // Attempt to submit cmd buffer
-    submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info = LvlInitStruct<VkSubmitInfo>();
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &m_commandBuffer->handle();
     vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
@@ -4425,8 +4348,7 @@ TEST_F(VkLayerTest, InvalidCmdBufferDescriptorSetImageSamplerDestroyed) {
     vk::FreeDescriptorSets(m_device->device(), ds_pool, 1, &descriptorSet);
 
     // Attempt to submit cmd buffer containing the freed descriptor set
-    submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info = LvlInitStruct<VkSubmitInfo>();
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &m_commandBuffer->handle();
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "UNASSIGNED-CoreValidation-DrawState-InvalidCommandBuffer-VkDescriptorSet");
@@ -4461,8 +4383,7 @@ TEST_F(VkLayerTest, InvalidDescriptorSetSamplerDestroyed) {
     image.Init(32, 32, 1, tex_format, VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
     ASSERT_TRUE(image.initialized());
 
-    VkImageViewCreateInfo image_view_create_info = {};
-    image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    VkImageViewCreateInfo image_view_create_info = LvlInitStruct<VkImageViewCreateInfo>();
     image_view_create_info.image = image.handle();
     image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
     image_view_create_info.format = tex_format;
@@ -4491,11 +4412,10 @@ TEST_F(VkLayerTest, InvalidDescriptorSetSamplerDestroyed) {
     VkDescriptorImageInfo img_info1 = img_info;
     img_info1.sampler = sampler1;
 
-    VkWriteDescriptorSet descriptor_write;
-    memset(&descriptor_write, 0, sizeof(descriptor_write));
-    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
     descriptor_write.dstSet = descriptor_set.set_;
     descriptor_write.dstBinding = 0;
+    descriptor_write.dstArrayElement = 0;
     descriptor_write.descriptorCount = 1;
     descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     descriptor_write.pImageInfo = &img_info;
@@ -4595,11 +4515,10 @@ TEST_F(VkLayerTest, ImageDescriptorLayoutMismatch) {
     VkDescriptorImageInfo img_info = {};
     img_info.sampler = sampler.handle();
 
-    VkWriteDescriptorSet descriptor_write;
-    memset(&descriptor_write, 0, sizeof(descriptor_write));
-    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
     descriptor_write.dstSet = descriptorSet;
     descriptor_write.dstBinding = 0;
+    descriptor_write.dstArrayElement = 0;
     descriptor_write.descriptorCount = 1;
     descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     descriptor_write.pImageInfo = &img_info;
@@ -4618,8 +4537,7 @@ TEST_F(VkLayerTest, ImageDescriptorLayoutMismatch) {
 
     VkCommandBufferObj cmd_buf(m_device, m_commandPool);
 
-    VkSubmitInfo submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    VkSubmitInfo submit_info = LvlInitStruct<VkSubmitInfo>();
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &cmd_buf.handle();
 
@@ -4781,8 +4699,7 @@ TEST_F(VkLayerTest, DescriptorPoolInUseResetSignaled) {
     m_commandBuffer->EndRenderPass();
     m_commandBuffer->end();
     // Submit cmd buffer to put pool in-flight
-    VkSubmitInfo submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    VkSubmitInfo submit_info = LvlInitStruct<VkSubmitInfo>();
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &m_commandBuffer->handle();
     vk::QueueSubmit(m_device->m_queue, 1, &submit_info, VK_NULL_HANDLE);
@@ -4814,9 +4731,7 @@ TEST_F(VkLayerTest, DescriptorImageUpdateNoMemoryBound) {
     const VkFormat tex_format = VK_FORMAT_B8G8R8A8_UNORM;
     const int32_t tex_width = 32;
     const int32_t tex_height = 32;
-    VkImageCreateInfo image_create_info = {};
-    image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    image_create_info.pNext = NULL;
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>();
     image_create_info.imageType = VK_IMAGE_TYPE_2D;
     image_create_info.format = tex_format;
     image_create_info.extent.width = tex_width;
@@ -4834,9 +4749,7 @@ TEST_F(VkLayerTest, DescriptorImageUpdateNoMemoryBound) {
     VkMemoryRequirements memory_reqs;
     VkDeviceMemory image_memory;
     bool pass;
-    VkMemoryAllocateInfo memory_info = {};
-    memory_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    memory_info.pNext = NULL;
+    VkMemoryAllocateInfo memory_info = LvlInitStruct<VkMemoryAllocateInfo>();
     memory_info.allocationSize = 0;
     memory_info.memoryTypeIndex = 0;
     vk::GetImageMemoryRequirements(m_device->device(), image, &memory_reqs);
@@ -4849,8 +4762,7 @@ TEST_F(VkLayerTest, DescriptorImageUpdateNoMemoryBound) {
     err = vk::BindImageMemory(m_device->device(), image, image_memory, 0);
     ASSERT_VK_SUCCESS(err);
 
-    VkImageViewCreateInfo image_view_create_info = {};
-    image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    VkImageViewCreateInfo image_view_create_info = LvlInitStruct<VkImageViewCreateInfo>();
     image_view_create_info.image = image;
     image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
     image_view_create_info.format = tex_format;
@@ -4902,8 +4814,7 @@ TEST_F(VkLayerTest, InvalidDynamicOffsetCases) {
 
     // Create a buffer to update the descriptor with
     uint32_t qfi = 0;
-    VkBufferCreateInfo buffCI = {};
-    buffCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    VkBufferCreateInfo buffCI = LvlInitStruct<VkBufferCreateInfo>();
     buffCI.size = 1024;
     buffCI.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     buffCI.queueFamilyIndexCount = 1;
@@ -4974,8 +4885,7 @@ TEST_F(VkLayerTest, DescriptorBufferUpdateNoMemoryBound) {
 
     // Create a buffer to update the descriptor with
     uint32_t qfi = 0;
-    VkBufferCreateInfo buffCI = {};
-    buffCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    VkBufferCreateInfo buffCI = LvlInitStruct<VkBufferCreateInfo>();
     buffCI.size = 1024;
     buffCI.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     buffCI.queueFamilyIndexCount = 1;
@@ -5000,8 +4910,7 @@ TEST_F(VkLayerTest, InvalidDynamicDescriptorSet) {
 
     // Create a buffer to update the descriptor with
     uint32_t qfi = 0;
-    VkBufferCreateInfo buffer_ci = {};
-    buffer_ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    VkBufferCreateInfo buffer_ci = LvlInitStruct<VkBufferCreateInfo>();
     buffer_ci.size = buffer_size;
     buffer_ci.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     buffer_ci.queueFamilyIndexCount = 1;
@@ -5156,11 +5065,10 @@ TEST_F(VkLayerTest, DynamicOffsetWithNullBuffer) {
     buff_info[2].offset = 0;
     buff_info[2].range = 512;
 
-    VkWriteDescriptorSet descriptor_write;
-    memset(&descriptor_write, 0, sizeof(descriptor_write));
-    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
     descriptor_write.dstSet = descriptor_set.set_;
     descriptor_write.dstBinding = 0;
+    descriptor_write.dstArrayElement = 0;
     descriptor_write.descriptorCount = BINDING_COUNT;
     descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     descriptor_write.pBufferInfo = buff_info;
@@ -5219,8 +5127,7 @@ TEST_F(VkLayerTest, UpdateDescriptorSetMismatchType) {
     ASSERT_NO_FATAL_FAILURE(Init());
 
     uint32_t qfi = 0;
-    VkBufferCreateInfo buffer_ci = {};
-    buffer_ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    VkBufferCreateInfo buffer_ci = LvlInitStruct<VkBufferCreateInfo>();
     buffer_ci.size = m_device->props.limits.minUniformBufferOffsetAlignment;
     buffer_ci.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     buffer_ci.queueFamilyIndexCount = 1;
@@ -5265,9 +5172,7 @@ TEST_F(VkLayerTest, DescriptorSetCompatibility) {
     ds_type_count[4].type = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
     ds_type_count[4].descriptorCount = 2;
 
-    VkDescriptorPoolCreateInfo ds_pool_ci = {};
-    ds_pool_ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    ds_pool_ci.pNext = NULL;
+    VkDescriptorPoolCreateInfo ds_pool_ci = LvlInitStruct<VkDescriptorPoolCreateInfo>();
     ds_pool_ci.maxSets = 5;
     ds_pool_ci.poolSizeCount = NUM_DESCRIPTOR_TYPES;
     ds_pool_ci.pPoolSizes = ds_type_count;
@@ -5350,8 +5255,7 @@ TEST_F(VkLayerTest, DescriptorSetCompatibility) {
 
     // Add buffer binding for UBO
     uint32_t qfi = 0;
-    VkBufferCreateInfo bci = {};
-    bci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    VkBufferCreateInfo bci = LvlInitStruct<VkBufferCreateInfo>();
     bci.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     bci.size = 8;
     bci.queueFamilyIndexCount = 1;
@@ -5362,8 +5266,7 @@ TEST_F(VkLayerTest, DescriptorSetCompatibility) {
     buffer_info.buffer = buffer.handle();
     buffer_info.offset = 0;
     buffer_info.range = VK_WHOLE_SIZE;
-    VkWriteDescriptorSet descriptor_write = {};
-    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
     descriptor_write.dstSet = descriptorSet[0];
     descriptor_write.dstBinding = 0;
     descriptor_write.descriptorCount = 1;
@@ -5571,8 +5474,7 @@ TEST_F(VkLayerTest, DSUsageBitsErrors) {
     buff_info.buffer = buffer.handle();
     VkDescriptorImageInfo img_info = {};
     img_info.imageView = image_view;
-    VkWriteDescriptorSet descriptor_write = {};
-    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
     descriptor_write.dstBinding = 0;
     descriptor_write.descriptorCount = 1;
     descriptor_write.pTexelBufferView = &buffer_view;
@@ -5650,8 +5552,7 @@ TEST_F(VkLayerTest, DSBufferInfoErrors) {
     OneOffDescriptorSet descriptor_set(m_device, ds_bindings);
 
     // Create a buffer to be used for invalid updates
-    VkBufferCreateInfo buff_ci = {};
-    buff_ci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    VkBufferCreateInfo buff_ci = LvlInitStruct<VkBufferCreateInfo>();
     buff_ci.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     buff_ci.size = m_device->props.limits.minUniformBufferOffsetAlignment;
     buff_ci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -5660,8 +5561,7 @@ TEST_F(VkLayerTest, DSBufferInfoErrors) {
 
     VkDescriptorBufferInfo buff_info = {};
     buff_info.buffer = buffer.handle();
-    VkWriteDescriptorSet descriptor_write = {};
-    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
     descriptor_write.dstBinding = 0;
     descriptor_write.descriptorCount = 1;
     descriptor_write.pTexelBufferView = nullptr;
@@ -5834,8 +5734,7 @@ TEST_F(VkLayerTest, DSBufferLimitErrors) {
                                                      });
 
         // Create a buffer to be used for invalid updates
-        VkBufferCreateInfo bci = {};
-        bci.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        VkBufferCreateInfo bci = LvlInitStruct<VkBufferCreateInfo>();
         bci.usage = test_case.buffer_usage;
         bci.size = test_case.max_range + test_case.min_align;  // Make buffer bigger than range limit
         bci.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -5850,9 +5749,7 @@ TEST_F(VkLayerTest, DSBufferLimitErrors) {
         VkMemoryRequirements mem_reqs;
         vk::GetBufferMemoryRequirements(m_device->device(), buffer, &mem_reqs);
 
-        VkMemoryAllocateInfo mem_alloc = {};
-        mem_alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        mem_alloc.pNext = NULL;
+        VkMemoryAllocateInfo mem_alloc = LvlInitStruct<VkMemoryAllocateInfo>();
         mem_alloc.allocationSize = mem_reqs.size;
         bool pass = m_device->phy().set_memory_type(mem_reqs.memoryTypeBits, &mem_alloc, 0);
         if (!pass) {
@@ -5873,8 +5770,7 @@ TEST_F(VkLayerTest, DSBufferLimitErrors) {
 
         VkDescriptorBufferInfo buff_info = {};
         buff_info.buffer = buffer;
-        VkWriteDescriptorSet descriptor_write = {};
-        descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
         descriptor_write.dstBinding = 0;
         descriptor_write.descriptorCount = 1;
         descriptor_write.pTexelBufferView = nullptr;
@@ -5958,8 +5854,7 @@ TEST_F(VkLayerTest, DSAspectBitsErrors) {
             VkImage image = image_obj.image();
 
             // Now create view for image
-            VkImageViewCreateInfo image_view_ci = {};
-            image_view_ci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            VkImageViewCreateInfo image_view_ci = LvlInitStruct<VkImageViewCreateInfo>();
             image_view_ci.image = image;
             image_view_ci.format = depth_format;
             image_view_ci.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -6080,10 +5975,9 @@ TEST_F(VkLayerTest, DSUpdateOutOfBounds) {
     buff_info.offset = 0;
     buff_info.range = 1024;
 
-    VkWriteDescriptorSet descriptor_write;
-    memset(&descriptor_write, 0, sizeof(descriptor_write));
-    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
     descriptor_write.dstSet = descriptor_set.set_;
+    descriptor_write.dstBinding = 0;
     descriptor_write.dstArrayElement = 1; /* This index out of bounds for the update */
     descriptor_write.descriptorCount = 1;
     descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -6334,7 +6228,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPass) {
     VkSubpassDescription subpass = {};
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &color_att;
-    VkRenderPassCreateInfo rpci = {};
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>();
     rpci.subpassCount = 1;
     rpci.pSubpasses = &subpass;
     rpci.attachmentCount = 1;
@@ -6344,7 +6238,6 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPass) {
     attach_desc.format = VK_FORMAT_R8G8B8A8_UNORM;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
     rpci.pAttachments = &attach_desc;
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     VkRenderPass rp;
     vk::CreateRenderPass(m_device->device(), &rpci, NULL, &rp);
     VkPipelineObj pipe(m_device);
@@ -6359,12 +6252,10 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPass) {
     pipe.SetScissor(m_scissors);
     pipe.CreateVKPipeline(pipeline_layout.handle(), rp);
 
-    VkCommandBufferInheritanceInfo cbii = {};
-    cbii.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+    VkCommandBufferInheritanceInfo cbii = LvlInitStruct<VkCommandBufferInheritanceInfo>();
     cbii.renderPass = rp;
     cbii.subpass = 0;
-    VkCommandBufferBeginInfo cbbi = {};
-    cbbi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    VkCommandBufferBeginInfo cbbi = LvlInitStruct<VkCommandBufferBeginInfo>();
     cbbi.pInheritanceInfo = &cbii;
     vk::BeginCommandBuffer(m_commandBuffer->handle(), &cbbi);
     vk::CmdBeginRenderPass(m_commandBuffer->handle(), &m_renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -6443,9 +6334,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassFragmentDensityMap
     rpfdmi.sType = VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_CREATE_INFO_EXT;
     rpfdmi.fragmentDensityMapAttachment = ref;
 
-    VkRenderPassCreateInfo rpci = {};
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    rpci.pNext = &rpfdmi;
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>(&rpfdmi);
     rpci.attachmentCount = 2;
     rpci.pAttachments = attach;
     rpci.subpassCount = 1;
@@ -6464,8 +6353,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassFragmentDensityMap
     ASSERT_TRUE(image.initialized());
 
     VkImageView iv[2];
-    VkImageViewCreateInfo ivci = {};
-    ivci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    VkImageViewCreateInfo ivci = LvlInitStruct<VkImageViewCreateInfo>();
     ivci.image = image.handle();
     ivci.viewType = VK_IMAGE_VIEW_TYPE_2D;
     ivci.format = VK_FORMAT_B8G8R8A8_UNORM;
@@ -6476,8 +6364,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassFragmentDensityMap
     vk::CreateImageView(m_device->device(), &ivci, NULL, &iv[1]);
 
     // Create a framebuffer with rp1
-    VkFramebufferCreateInfo fbci = {};
-    fbci.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    VkFramebufferCreateInfo fbci = LvlInitStruct<VkFramebufferCreateInfo>();
     fbci.renderPass = rp1;
     fbci.attachmentCount = 2;
     fbci.pAttachments = iv;
@@ -6488,8 +6375,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassFragmentDensityMap
     VkFramebuffer fb;
     vk::CreateFramebuffer(m_device->handle(), &fbci, nullptr, &fb);
 
-    VkRenderPassBeginInfo rp_begin = {};
-    rp_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    VkRenderPassBeginInfo rp_begin = LvlInitStruct<VkRenderPassBeginInfo>();
     rp_begin.renderPass = rp1;
     rp_begin.framebuffer = fb;
     rp_begin.renderArea = {{0, 0}, {128, 128}};
@@ -6508,12 +6394,10 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassFragmentDensityMap
     pipe.CreateVKPipeline(pipeline_layout.handle(), rp2);
 
     // Begin renderpass and bind to pipeline
-    VkCommandBufferInheritanceInfo cbii = {};
-    cbii.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+    VkCommandBufferInheritanceInfo cbii = LvlInitStruct<VkCommandBufferInheritanceInfo>();
     cbii.renderPass = rp1;
     cbii.subpass = 0;
-    VkCommandBufferBeginInfo cbbi = {};
-    cbbi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    VkCommandBufferBeginInfo cbbi = LvlInitStruct<VkCommandBufferBeginInfo>();
     cbbi.pInheritanceInfo = &cbii;
     vk::BeginCommandBuffer(m_commandBuffer->handle(), &cbbi);
     vk::CmdBeginRenderPass(m_commandBuffer->handle(), &rp_begin, VK_SUBPASS_CONTENTS_INLINE);
@@ -6597,27 +6481,22 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassMultiview) {
     rpmvci.subpassCount = 1;
     rpmvci.pViewMasks = viewMasks;
 
-    VkRenderPassCreateInfo rpci = {};
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    rpci.pNext = &rpmvci;
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>(&rpmvci);
     rpci.attachmentCount = 1;
     rpci.pAttachments = &attach;
     rpci.subpassCount = 1;
     rpci.pSubpasses = &subpass;
 
     // Set up VkRenderPassCreateInfo2 struct used with VK_VERSION_1_2
-    VkAttachmentReference2 color_att2 = {};
-    color_att2.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
+    VkAttachmentReference2 color_att2 = LvlInitStruct<VkAttachmentReference2>();
     color_att2.layout = VK_IMAGE_LAYOUT_GENERAL;
 
-    VkAttachmentDescription2 attach2 = {};
-    attach2.sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2;
+    VkAttachmentDescription2 attach2 = LvlInitStruct<VkAttachmentDescription2>();
     attach2.samples = VK_SAMPLE_COUNT_1_BIT;
     attach2.format = VK_FORMAT_B8G8R8A8_UNORM;
     attach2.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-    VkSubpassDescription2 subpass2 = {};
-    subpass2.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2;
+    VkSubpassDescription2 subpass2 = LvlInitStruct<VkSubpassDescription2>();
     subpass2.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass2.viewMask = 0x3u;
     subpass2.colorAttachmentCount = 1;
@@ -6663,8 +6542,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassMultiview) {
     ASSERT_TRUE(image.initialized());
 
     VkImageView iv;
-    VkImageViewCreateInfo ivci = {};
-    ivci.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    VkImageViewCreateInfo ivci = LvlInitStruct<VkImageViewCreateInfo>();
     ivci.image = image.handle();
     ivci.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
     ivci.format = VK_FORMAT_B8G8R8A8_UNORM;
@@ -6674,8 +6552,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassMultiview) {
     vk::CreateImageView(m_device->device(), &ivci, NULL, &iv);
 
     // Create framebuffers for rp[0] and rp2[0]
-    VkFramebufferCreateInfo fbci = {};
-    fbci.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    VkFramebufferCreateInfo fbci = LvlInitStruct<VkFramebufferCreateInfo>();
     fbci.renderPass = rp[0];
     fbci.attachmentCount = 1;
     fbci.pAttachments = &iv;
@@ -6691,8 +6568,7 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassMultiview) {
         vk::CreateFramebuffer(m_device->handle(), &fbci, nullptr, &fb2);
     }
 
-    VkRenderPassBeginInfo rp_begin = {};
-    rp_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    VkRenderPassBeginInfo rp_begin = LvlInitStruct<VkRenderPassBeginInfo>();
     rp_begin.renderPass = rp[0];
     rp_begin.framebuffer = fb;
     rp_begin.renderArea = {{0, 0}, {128, 128}};
@@ -6745,12 +6621,10 @@ TEST_F(VkLayerTest, DrawWithPipelineIncompatibleWithRenderPassMultiview) {
         pipe2_2.CreateVKPipeline(pipeline_layout.handle(), rp2[2]);
     }
 
-    VkCommandBufferInheritanceInfo cbii = {};
-    cbii.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+    VkCommandBufferInheritanceInfo cbii = LvlInitStruct<VkCommandBufferInheritanceInfo>();
     cbii.renderPass = rp[0];
     cbii.subpass = 0;
-    VkCommandBufferBeginInfo cbbi = {};
-    cbbi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    VkCommandBufferBeginInfo cbbi = LvlInitStruct<VkCommandBufferBeginInfo>();
     cbbi.pInheritanceInfo = &cbii;
 
     // Begin rp[0] for VK_VERSION_1_0 test cases
@@ -6913,8 +6787,7 @@ TEST_F(VkLayerTest, UpdateDestroyDescriptorSetLayout) {
     info.buffer = buffer.handle();
     info.range = VK_WHOLE_SIZE;
 
-    VkWriteDescriptorSet write_descriptor = {};
-    write_descriptor.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    VkWriteDescriptorSet write_descriptor = LvlInitStruct<VkWriteDescriptorSet>();
     write_descriptor.dstSet = VK_NULL_HANDLE;  // must update this
     write_descriptor.dstBinding = 0;
     write_descriptor.descriptorCount = 1;
@@ -7039,13 +6912,10 @@ TEST_F(VkLayerTest, FramebufferIncompatible) {
     VkCommandBuffer sec_cb;
     err = vk::AllocateCommandBuffers(m_device->device(), &cbai, &sec_cb);
     ASSERT_VK_SUCCESS(err);
-    VkCommandBufferBeginInfo cbbi = {};
-    VkCommandBufferInheritanceInfo cbii = {};
-    cbii.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+    VkCommandBufferBeginInfo cbbi = LvlInitStruct<VkCommandBufferBeginInfo>();
+    VkCommandBufferInheritanceInfo cbii = LvlInitStruct<VkCommandBufferInheritanceInfo>();
     cbii.renderPass = renderPass();
     cbii.framebuffer = fb;
-    cbbi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    cbbi.pNext = NULL;
     cbbi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
     cbbi.pInheritanceInfo = &cbii;
     vk::BeginCommandBuffer(sec_cb, &cbbi);
@@ -7078,7 +6948,7 @@ TEST_F(VkLayerTest, RenderPassMissingAttachment) {
     attach.layout = VK_IMAGE_LAYOUT_GENERAL;
     VkSubpassDescription subpass = {};
     subpass.pColorAttachments = &attach;
-    VkRenderPassCreateInfo rpci = {};
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>();
     rpci.subpassCount = 1;
     rpci.pSubpasses = &subpass;
     rpci.attachmentCount = 1;
@@ -7087,7 +6957,6 @@ TEST_F(VkLayerTest, RenderPassMissingAttachment) {
     attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
     rpci.pAttachments = &attach_desc;
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     VkRenderPass rp;
     VkResult err = vk::CreateRenderPass(m_device->device(), &rpci, NULL, &rp);
     ASSERT_VK_SUCCESS(err);
@@ -7152,7 +7021,7 @@ TEST_F(VkLayerTest, AttachmentDescriptionUndefinedFormat) {
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments = &color_attach;
 
-    VkRenderPassCreateInfo rpci = {};
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>();
     rpci.subpassCount = 1;
     rpci.pSubpasses = &subpass;
     rpci.attachmentCount = 1;
@@ -7161,7 +7030,6 @@ TEST_F(VkLayerTest, AttachmentDescriptionUndefinedFormat) {
     attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
     rpci.pAttachments = &attach_desc;
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     VkRenderPass rp;
     VkResult result = vk::CreateRenderPass(m_device->device(), &rpci, NULL, &rp);
 
@@ -7241,9 +7109,7 @@ TEST_F(VkLayerTest, DuplicateDescriptorBinding) {
     dsl_binding[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     dsl_binding[2].pImmutableSamplers = NULL;
 
-    VkDescriptorSetLayoutCreateInfo ds_layout_ci = {};
-    ds_layout_ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    ds_layout_ci.pNext = NULL;
+    VkDescriptorSetLayoutCreateInfo ds_layout_ci = LvlInitStruct<VkDescriptorSetLayoutCreateInfo>();
     ds_layout_ci.bindingCount = NUM_BINDINGS;
     ds_layout_ci.pBindings = dsl_binding;
     VkDescriptorSetLayout ds_layout;
@@ -7384,9 +7250,7 @@ TEST_F(VkLayerTest, InvalidPushDescriptorImageLayout) {
     img_info.sampler = sampler;
     img_info.imageView = image_view;
     img_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    VkWriteDescriptorSet descriptor_write = {};
-    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptor_write.pNext = NULL;
+    VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
     descriptor_write.dstSet = 0;
     descriptor_write.descriptorCount = 1;
     descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -7613,7 +7477,7 @@ TEST_F(VkLayerTest, DescriptorIndexingSetLayout) {
             buffer_info[i].range = 128 * 128;
         }
         VkWriteDescriptorSet descriptor_writes[1] = {};
-        descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptor_writes[0] = LvlInitStruct<VkWriteDescriptorSet>();
         descriptor_writes[0].dstSet = ds;
         descriptor_writes[0].dstBinding = 0;
         descriptor_writes[0].descriptorCount = 3;
@@ -7715,8 +7579,7 @@ TEST_F(VkLayerTest, DescriptorIndexingUpdateAfterBind) {
     vk::AllocateDescriptorSets(m_device->handle(), &ds_alloc_info, &ds);
     ASSERT_VK_SUCCESS(err);
 
-    VkBufferCreateInfo buffCI = {};
-    buffCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    VkBufferCreateInfo buffCI = LvlInitStruct<VkBufferCreateInfo>();
     buffCI.size = 1024;
     buffCI.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 
@@ -7728,8 +7591,7 @@ TEST_F(VkLayerTest, DescriptorIndexingUpdateAfterBind) {
     VkMemoryRequirements mem_reqs;
     vk::GetBufferMemoryRequirements(m_device->device(), dynamic_uniform_buffer, &mem_reqs);
 
-    VkMemoryAllocateInfo mem_alloc_info = {};
-    mem_alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    VkMemoryAllocateInfo mem_alloc_info = LvlInitStruct<VkMemoryAllocateInfo>();
     mem_alloc_info.allocationSize = mem_reqs.size;
     m_device->phy().set_memory_type(mem_reqs.memoryTypeBits, &mem_alloc_info, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
     err = vk::AllocateMemory(m_device->device(), &mem_alloc_info, NULL, &mem);
@@ -7744,7 +7606,7 @@ TEST_F(VkLayerTest, DescriptorIndexingUpdateAfterBind) {
     buffInfo[0].range = 1024;
 
     VkWriteDescriptorSet descriptor_write[2] = {};
-    descriptor_write[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptor_write[0] = LvlInitStruct<VkWriteDescriptorSet>();
     descriptor_write[0].dstSet = ds;
     descriptor_write[0].dstBinding = 0;
     descriptor_write[0].descriptorCount = 1;
@@ -7755,8 +7617,7 @@ TEST_F(VkLayerTest, DescriptorIndexingUpdateAfterBind) {
     descriptor_write[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 
     VkPipelineLayout pipeline_layout;
-    VkPipelineLayoutCreateInfo pipeline_layout_ci = {};
-    pipeline_layout_ci.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    VkPipelineLayoutCreateInfo pipeline_layout_ci = LvlInitStruct<VkPipelineLayoutCreateInfo>();
     pipeline_layout_ci.setLayoutCount = 1;
     pipeline_layout_ci.pSetLayouts = &ds_layout;
 
@@ -7789,8 +7650,7 @@ TEST_F(VkLayerTest, DescriptorIndexingUpdateAfterBind) {
     vk::UpdateDescriptorSets(m_device->device(), 2, &descriptor_write[0], 0, NULL);
     m_errorMonitor->VerifyNotFound();
 
-    VkSubmitInfo submit_info = {};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    VkSubmitInfo submit_info = LvlInitStruct<VkSubmitInfo>();
     submit_info.commandBufferCount = 1;
     submit_info.pCommandBuffers = &m_commandBuffer->handle();
 
@@ -8168,8 +8028,7 @@ TEST_F(VkLayerTest, InlineUniformBlockEXT) {
 
     VkDescriptorSetLayoutBinding dslb = {};
     std::vector<VkDescriptorSetLayoutBinding> dslb_vec = {};
-    VkDescriptorSetLayoutCreateInfo ds_layout_ci = {};
-    ds_layout_ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    VkDescriptorSetLayoutCreateInfo ds_layout_ci = LvlInitStruct<VkDescriptorSetLayoutCreateInfo>();
     VkDescriptorSetLayout ds_layout = {};
 
     // Test too many bindings
@@ -8210,9 +8069,7 @@ TEST_F(VkLayerTest, InlineUniformBlockEXT) {
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineLayoutCreateInfo-descriptorType-02215");
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkPipelineLayoutCreateInfo-descriptorType-02217");
 
-    VkPipelineLayoutCreateInfo pipeline_layout_ci = {};
-    pipeline_layout_ci.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipeline_layout_ci.pNext = NULL;
+    VkPipelineLayoutCreateInfo pipeline_layout_ci = LvlInitStruct<VkPipelineLayoutCreateInfo>();
     pipeline_layout_ci.setLayoutCount = 1;
     pipeline_layout_ci.pSetLayouts = &ds_layout;
     VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
@@ -8242,9 +8099,7 @@ TEST_F(VkLayerTest, InlineUniformBlockEXT) {
     ds_type_count.type = VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT;
     ds_type_count.descriptorCount = 33;
 
-    VkDescriptorPoolCreateInfo ds_pool_ci = {};
-    ds_pool_ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    ds_pool_ci.pNext = NULL;
+    VkDescriptorPoolCreateInfo ds_pool_ci = LvlInitStruct<VkDescriptorPoolCreateInfo>();
     ds_pool_ci.flags = 0;
     ds_pool_ci.maxSets = 2;
     ds_pool_ci.poolSizeCount = 1;
@@ -8291,8 +8146,7 @@ TEST_F(VkLayerTest, InlineUniformBlockEXT) {
     m_errorMonitor->VerifyNotFound();
 
     // Test invalid VkWriteDescriptorSet parameters (array element and size must be multiple of 4)
-    VkWriteDescriptorSet descriptor_write = {};
-    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
     descriptor_write.dstSet = descriptor_sets[0];
     descriptor_write.dstBinding = 0;
     descriptor_write.dstArrayElement = 0;
@@ -8394,9 +8248,7 @@ TEST_F(VkLayerTest, InlineUniformBlockEXTFeature) {
     dslb.descriptorCount = 1;
     dslb.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    VkDescriptorSetLayoutCreateInfo ds_layout_ci = {};
-    ds_layout_ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    ds_layout_ci.pNext = nullptr;
+    VkDescriptorSetLayoutCreateInfo ds_layout_ci = LvlInitStruct<VkDescriptorSetLayoutCreateInfo>();
     ds_layout_ci.flags = 0;
     ds_layout_ci.bindingCount = 1;
     ds_layout_ci.pBindings = &dslb;
@@ -8425,11 +8277,10 @@ TEST_F(VkLayerTest, WrongdstArrayElement) {
     image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     descriptor_set.image_infos.emplace_back(image_info);
 
-    VkWriteDescriptorSet descriptor_write;
-    memset(&descriptor_write, 0, sizeof(descriptor_write));
-    descriptor_write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    VkWriteDescriptorSet descriptor_write = LvlInitStruct<VkWriteDescriptorSet>();
     descriptor_write.dstSet = descriptor_set.set_;
     descriptor_write.dstBinding = 0;
+    descriptor_write.dstArrayElement = 0;
     descriptor_write.descriptorCount = 1;
     descriptor_write.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
     descriptor_write.pImageInfo = descriptor_set.image_infos.data();
@@ -8476,9 +8327,7 @@ TEST_F(VkLayerTest, DescriptorSetLayoutMisc) {
     dsl_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     dsl_binding.pImmutableSamplers = nullptr;
 
-    VkDescriptorSetLayoutCreateInfo ds_layout_ci = {};
-    ds_layout_ci.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    ds_layout_ci.pNext = nullptr;
+    VkDescriptorSetLayoutCreateInfo ds_layout_ci = LvlInitStruct<VkDescriptorSetLayoutCreateInfo>();
     ds_layout_ci.bindingCount = 1;
     ds_layout_ci.pBindings = &dsl_binding;
 
@@ -8905,8 +8754,7 @@ TEST_F(VkLayerTest, ImageSubresourceOverlapBetweenAttachmentsAndDescriptorSets) 
     VkImageView view_input = image.targetView(format, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 1, 1);
     VkImageView attachments[] = {view_input, ds_view};
 
-    VkImageViewCreateInfo createView = {};
-    createView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    VkImageViewCreateInfo createView = LvlInitStruct<VkImageViewCreateInfo>();
     createView.image = image.handle();
     createView.viewType = VK_IMAGE_VIEW_TYPE_2D;
     createView.format = format;
@@ -9022,9 +8870,7 @@ TEST_F(VkLayerTest, ImageSubresourceOverlapBetweenAttachmentsAndDescriptorSets) 
                             {3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
                             {4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}};
 
-    VkPipelineDepthStencilStateCreateInfo pipe_ds_state_ci = {};
-    pipe_ds_state_ci.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    pipe_ds_state_ci.pNext = nullptr;
+    VkPipelineDepthStencilStateCreateInfo pipe_ds_state_ci = LvlInitStruct<VkPipelineDepthStencilStateCreateInfo>();
     pipe_ds_state_ci.depthTestEnable = VK_TRUE;
     pipe_ds_state_ci.stencilTestEnable = VK_FALSE;
 
@@ -9113,20 +8959,16 @@ TEST_F(VkLayerTest, InvalidFragmentShadingRateFramebufferUsage) {
 
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
 
-    VkAttachmentReference2 attach = {};
-    attach.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
+    VkAttachmentReference2 attach = LvlInitStruct<VkAttachmentReference2>();
     attach.layout = VK_IMAGE_LAYOUT_GENERAL;
     attach.attachment = 0;
 
-    VkFragmentShadingRateAttachmentInfoKHR fsr_attachment = {};
-    fsr_attachment.sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
+    VkFragmentShadingRateAttachmentInfoKHR fsr_attachment = LvlInitStruct<VkFragmentShadingRateAttachmentInfoKHR>();
     fsr_attachment.shadingRateAttachmentTexelSize = fsr_properties.minFragmentShadingRateAttachmentTexelSize;
     fsr_attachment.pFragmentShadingRateAttachment = &attach;
 
     // Create a renderPass with a single fsr attachment
-    VkSubpassDescription2 subpass = {};
-    subpass.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2;
-    subpass.pNext = &fsr_attachment;
+    VkSubpassDescription2 subpass = LvlInitStruct<VkSubpassDescription2>(&fsr_attachment);
 
     VkAttachmentDescription2 attach_desc = {};
     attach_desc.format = VK_FORMAT_R8_UINT;
@@ -9134,8 +8976,7 @@ TEST_F(VkLayerTest, InvalidFragmentShadingRateFramebufferUsage) {
     attach_desc.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-    VkRenderPassCreateInfo2 rpci = {};
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2;
+    VkRenderPassCreateInfo2 rpci = LvlInitStruct<VkRenderPassCreateInfo2>();
     rpci.subpassCount = 1;
     rpci.pSubpasses = &subpass;
     rpci.attachmentCount = 1;
@@ -9152,9 +8993,7 @@ TEST_F(VkLayerTest, InvalidFragmentShadingRateFramebufferUsage) {
     image.InitNoLayout(1, 1, 1, VK_FORMAT_R8_UINT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
     VkImageView imageView = image.targetView(VK_FORMAT_R8_UINT);
 
-    VkFramebufferCreateInfo fb_info = {};
-    fb_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    fb_info.pNext = NULL;
+    VkFramebufferCreateInfo fb_info = LvlInitStruct<VkFramebufferCreateInfo>();
     fb_info.renderPass = rp;
     fb_info.attachmentCount = 1;
     fb_info.pAttachments = &imageView;
@@ -9220,20 +9059,16 @@ TEST_F(VkLayerTest, InvalidFragmentShadingRateFramebufferDimensions) {
 
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
 
-    VkAttachmentReference2 attach = {};
-    attach.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
+    VkAttachmentReference2 attach = LvlInitStruct<VkAttachmentReference2>();
     attach.layout = VK_IMAGE_LAYOUT_GENERAL;
     attach.attachment = 0;
 
-    VkFragmentShadingRateAttachmentInfoKHR fsr_attachment = {};
-    fsr_attachment.sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
+    VkFragmentShadingRateAttachmentInfoKHR fsr_attachment = LvlInitStruct<VkFragmentShadingRateAttachmentInfoKHR>();
     fsr_attachment.shadingRateAttachmentTexelSize = fsr_properties.minFragmentShadingRateAttachmentTexelSize;
     fsr_attachment.pFragmentShadingRateAttachment = &attach;
 
     // Create a renderPass with a single fsr attachment
-    VkSubpassDescription2 subpass = {};
-    subpass.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2;
-    subpass.pNext = &fsr_attachment;
+    VkSubpassDescription2 subpass = LvlInitStruct<VkSubpassDescription2>(&fsr_attachment);
 
     VkAttachmentDescription2 attach_desc = {};
     attach_desc.format = VK_FORMAT_R8_UINT;
@@ -9241,8 +9076,7 @@ TEST_F(VkLayerTest, InvalidFragmentShadingRateFramebufferDimensions) {
     attach_desc.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-    VkRenderPassCreateInfo2 rpci = {};
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2;
+    VkRenderPassCreateInfo2 rpci = LvlInitStruct<VkRenderPassCreateInfo2>();
     rpci.subpassCount = 1;
     rpci.pSubpasses = &subpass;
     rpci.attachmentCount = 1;
@@ -9261,9 +9095,7 @@ TEST_F(VkLayerTest, InvalidFragmentShadingRateFramebufferDimensions) {
     image.InitNoLayout(ici);
     VkImageView imageView = image.targetView(VK_FORMAT_R8_UINT, VK_IMAGE_ASPECT_COLOR_BIT, 0, 1);
 
-    VkFramebufferCreateInfo fb_info = {};
-    fb_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    fb_info.pNext = NULL;
+    VkFramebufferCreateInfo fb_info = LvlInitStruct<VkFramebufferCreateInfo>();
     fb_info.renderPass = rp;
     fb_info.attachmentCount = 1;
     fb_info.pAttachments = &imageView;
@@ -9382,30 +9214,24 @@ TEST_F(VkLayerTest, InvalidFragmentShadingRateAttachments) {
 
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
 
-    VkAttachmentReference2 attach = {};
-    attach.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2;
+    VkAttachmentReference2 attach = LvlInitStruct<VkAttachmentReference2>();
     attach.layout = VK_IMAGE_LAYOUT_GENERAL;
     attach.attachment = 0;
 
-    VkFragmentShadingRateAttachmentInfoKHR fsr_attachment = {};
-    fsr_attachment.sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
+    VkFragmentShadingRateAttachmentInfoKHR fsr_attachment = LvlInitStruct<VkFragmentShadingRateAttachmentInfoKHR>();
     fsr_attachment.shadingRateAttachmentTexelSize = fsr_properties.minFragmentShadingRateAttachmentTexelSize;
     fsr_attachment.pFragmentShadingRateAttachment = &attach;
 
     // Create a renderPass with a single fsr attachment
-    VkSubpassDescription2 subpass = {};
-    subpass.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2;
-    subpass.pNext = &fsr_attachment;
+    VkSubpassDescription2 subpass = LvlInitStruct<VkSubpassDescription2>(&fsr_attachment);
 
-    VkAttachmentDescription2 attach_desc = {};
-    attach_desc.sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2;
+    VkAttachmentDescription2 attach_desc = LvlInitStruct<VkAttachmentDescription2>();
     attach_desc.format = VK_FORMAT_R8_UINT;
     attach_desc.samples = VK_SAMPLE_COUNT_1_BIT;
     attach_desc.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
     attach_desc.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-    VkRenderPassCreateInfo2 rpci = {};
-    rpci.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2;
+    VkRenderPassCreateInfo2 rpci = LvlInitStruct<VkRenderPassCreateInfo2>();
     rpci.subpassCount = 1;
     rpci.pSubpasses = &subpass;
     rpci.attachmentCount = 1;
@@ -9540,37 +9366,31 @@ TEST_F(VkLayerTest, FramebufferDepthStencilResolveAttachmentTests) {
 
     VkAttachmentDescription2KHR attachmentDescriptions[2] = {};
     // Depth/stencil attachment
-    attachmentDescriptions[0].sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2_KHR;
+    attachmentDescriptions[0] = LvlInitStruct<VkAttachmentDescription2>();
     attachmentDescriptions[0].format = attachmentFormat;
     attachmentDescriptions[0].samples = VK_SAMPLE_COUNT_4_BIT;
     attachmentDescriptions[0].finalLayout = VK_IMAGE_LAYOUT_GENERAL;
     // Depth/stencil resolve attachment
-    attachmentDescriptions[1].sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2_KHR;
+    attachmentDescriptions[1] = LvlInitStruct<VkAttachmentDescription2>();
     attachmentDescriptions[1].format = attachmentFormat;
     attachmentDescriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
     attachmentDescriptions[1].finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
-    VkAttachmentReference2KHR depthStencilAttachmentReference = {};
-    depthStencilAttachmentReference.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+    VkAttachmentReference2KHR depthStencilAttachmentReference = LvlInitStruct<VkAttachmentReference2>();
     depthStencilAttachmentReference.layout = VK_IMAGE_LAYOUT_GENERAL;
     depthStencilAttachmentReference.attachment = 0;
-    VkAttachmentReference2KHR depthStencilResolveAttachmentReference = {};
-    depthStencilResolveAttachmentReference.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+    VkAttachmentReference2KHR depthStencilResolveAttachmentReference = LvlInitStruct<VkAttachmentReference2>();
     depthStencilResolveAttachmentReference.layout = VK_IMAGE_LAYOUT_GENERAL;
     depthStencilResolveAttachmentReference.attachment = 1;
-    VkSubpassDescriptionDepthStencilResolveKHR subpassDescriptionDepthStencilResolve = {};
-    subpassDescriptionDepthStencilResolve.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE_KHR;
+    VkSubpassDescriptionDepthStencilResolveKHR subpassDescriptionDepthStencilResolve =
+        LvlInitStruct<VkSubpassDescriptionDepthStencilResolveKHR>();
     subpassDescriptionDepthStencilResolve.pDepthStencilResolveAttachment = &depthStencilResolveAttachmentReference;
     subpassDescriptionDepthStencilResolve.depthResolveMode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT_KHR;
     subpassDescriptionDepthStencilResolve.stencilResolveMode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT_KHR;
-    VkSubpassDescription2KHR subpassDescription = {};
-    subpassDescription.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2_KHR;
-    subpassDescription.pNext = &subpassDescriptionDepthStencilResolve;
+    VkSubpassDescription2KHR subpassDescription = LvlInitStruct<VkSubpassDescription2>(&subpassDescriptionDepthStencilResolve);
     subpassDescription.pDepthStencilAttachment = &depthStencilAttachmentReference;
 
-    VkRenderPassCreateInfo2KHR renderPassCreateInfo = {};
-    renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2_KHR;
-    renderPassCreateInfo.pNext = nullptr;
+    VkRenderPassCreateInfo2KHR renderPassCreateInfo = LvlInitStruct<VkRenderPassCreateInfo2>();
     renderPassCreateInfo.attachmentCount = 2;
     renderPassCreateInfo.subpassCount = 1;
     renderPassCreateInfo.pSubpasses = &subpassDescription;
@@ -9582,9 +9402,7 @@ TEST_F(VkLayerTest, FramebufferDepthStencilResolveAttachmentTests) {
 
     // Depth resolve attachment, mismatched image usage
     // Try creating Framebuffer with images, but with invalid image create usage flags
-    VkImageCreateInfo image_create_info = {};
-    image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    image_create_info.pNext = NULL;
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>();
     image_create_info.imageType = VK_IMAGE_TYPE_2D;
     image_create_info.format = attachmentFormat;
     image_create_info.extent.width = attachmentWidth;
@@ -9610,8 +9428,7 @@ TEST_F(VkLayerTest, FramebufferDepthStencilResolveAttachmentTests) {
     image_views[0] = ds_image.targetView(attachmentFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
     image_views[1] = ds_resolve_image.targetView(attachmentFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-    VkFramebufferCreateInfo framebufferCreateInfo = {};
-    framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    VkFramebufferCreateInfo framebufferCreateInfo = LvlInitStruct<VkFramebufferCreateInfo>();
     framebufferCreateInfo.width = attachmentWidth;
     framebufferCreateInfo.height = attachmentHeight;
     framebufferCreateInfo.layers = 1;
@@ -10375,12 +10192,12 @@ TEST_F(VkLayerTest, DepthStencilResolveAttachmentInvalidFormat) {
 
     VkAttachmentDescription2KHR attachmentDescriptions[2] = {};
     // Depth/stencil attachment
-    attachmentDescriptions[0].sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2_KHR;
+    attachmentDescriptions[0] = LvlInitStruct<VkAttachmentDescription2>();
     attachmentDescriptions[0].format = VK_FORMAT_R8_UNORM;
     attachmentDescriptions[0].samples = VK_SAMPLE_COUNT_1_BIT;
     attachmentDescriptions[0].finalLayout = VK_IMAGE_LAYOUT_GENERAL;
     // Depth/stencil resolve attachment
-    attachmentDescriptions[1].sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2_KHR;
+    attachmentDescriptions[1] = LvlInitStruct<VkAttachmentDescription2>();
     attachmentDescriptions[1].format = ds_format;
     attachmentDescriptions[1].samples = VK_SAMPLE_COUNT_4_BIT;
     attachmentDescriptions[1].finalLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -10524,8 +10341,7 @@ TEST_F(VkLayerTest, DescriptorUpdateOfMultipleBindingWithOneUpdateCall) {
             layoutBinding[i].stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
         }
 
-        VkDescriptorSetLayoutCreateInfo layoutCreate = {};
-        layoutCreate.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        VkDescriptorSetLayoutCreateInfo layoutCreate = LvlInitStruct<VkDescriptorSetLayoutCreateInfo>();
         layoutCreate.bindingCount = 3;
         layoutCreate.pBindings = layoutBinding;
 
@@ -10553,9 +10369,7 @@ TEST_F(VkLayerTest, DescriptorUpdateOfMultipleBindingWithOneUpdateCall) {
         poolSize[1].descriptorCount = 1;
         poolSize[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
 
-        VkDescriptorPoolCreateInfo poolCreate = {};
-        poolCreate.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        poolCreate.pNext = &descPoolInlineInfo;
+        VkDescriptorPoolCreateInfo poolCreate = LvlInitStruct<VkDescriptorPoolCreateInfo>(&descPoolInlineInfo);
         poolCreate.poolSizeCount = 2;
         poolCreate.pPoolSizes = poolSize;
         poolCreate.maxSets = 1;
@@ -10586,8 +10400,7 @@ TEST_F(VkLayerTest, DescriptorUpdateOfMultipleBindingWithOneUpdateCall) {
     writeInlineUbDesc.dataSize = sizeof(inline_data);
     writeInlineUbDesc.pData = inline_data;
 
-    VkWriteDescriptorSet writeDesc = {};
-    writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    VkWriteDescriptorSet writeDesc = LvlInitStruct<VkWriteDescriptorSet>();
     writeDesc.descriptorCount = sizeof(inline_data);
     writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT;
     writeDesc.dstBinding = 0;
@@ -11091,5 +10904,244 @@ TEST_F(VkLayerTest, MutableDescriptorSetLayoutMissingFeature) {
     binding.descriptorType = VK_DESCRIPTOR_TYPE_MUTABLE_VALVE;
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDescriptorSetLayoutCreateInfo-mutableDescriptorType-04595");
     vk::CreateDescriptorSetLayout(m_device->device(), &ds_layout_ci, nullptr, &ds_layout);
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, InvalidDeviceGroupRenderAreaDynamicRendering) {
+    TEST_DESCRIPTION("Begin rendering with invaid device group render area.");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    AddRequiredExtensions(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+        return;
+    }
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&dynamic_rendering_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (!dynamic_rendering_features.dynamicRendering) {
+        printf("%s Test requires (unsupported) dynamicRendering , skipping\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    VkRect2D renderArea = {};
+    renderArea.offset.x = -1;
+    renderArea.offset.y = -1;
+    renderArea.extent.width = 64;
+    renderArea.extent.height = 64;
+
+    VkDeviceGroupRenderPassBeginInfo device_group_render_pass_begin_info = LvlInitStruct<VkDeviceGroupRenderPassBeginInfo>();
+    device_group_render_pass_begin_info.deviceMask = 0x1;
+    device_group_render_pass_begin_info.deviceRenderAreaCount = 1;
+    device_group_render_pass_begin_info.pDeviceRenderAreas = &renderArea;
+
+    VkRenderingAttachmentInfoKHR color_attachment = {};
+    color_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+    color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    auto begin_rendering_info = LvlInitStruct<VkRenderingInfoKHR>(&device_group_render_pass_begin_info);
+    begin_rendering_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+    begin_rendering_info.flags = VK_RENDERING_CONTENTS_SECONDARY_COMMAND_BUFFERS_BIT_KHR;
+    begin_rendering_info.colorAttachmentCount = 1;
+    begin_rendering_info.pColorAttachments = &color_attachment;
+
+    m_commandBuffer->begin();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDeviceGroupRenderPassBeginInfo-offset-06166");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDeviceGroupRenderPassBeginInfo-offset-06167");
+    m_commandBuffer->BeginRendering(begin_rendering_info);
+    m_errorMonitor->VerifyFound();
+
+    renderArea.offset.x = 0;
+    renderArea.offset.y = 0;
+    renderArea.extent.width = m_device->props.limits.maxFramebufferWidth + 1;
+    renderArea.extent.height = m_device->props.limits.maxFramebufferHeight + 1;
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDeviceGroupRenderPassBeginInfo-offset-06168");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkDeviceGroupRenderPassBeginInfo-offset-06169");
+    m_commandBuffer->BeginRendering(begin_rendering_info);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->end();
+}
+
+TEST_F(VkLayerTest, EndRenderingWithIncorrectlyStartedRenderpassInstance) {
+    TEST_DESCRIPTION(
+        "Test EndRendering without starting the instance with BeginRendering, in the same command buffer or in a different once");
+
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    AddRequiredExtensions(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+        return;
+    }
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&dynamic_rendering_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (!dynamic_rendering_features.dynamicRendering) {
+        printf("%s Test requires (unsupported) dynamicRendering , skipping\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    VkAttachmentDescription attach[] = {
+        {0, VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED,
+         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+    };
+    VkAttachmentReference ref = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+    VkSubpassDescription subpass[] = {
+        {0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, nullptr, 1, &ref, nullptr, nullptr, 0, nullptr},
+    };
+    VkRenderPassCreateInfo rpci = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, nullptr, 0, 1, attach, 1, subpass, 0, nullptr};
+    VkRenderPass rp;
+    VkResult err = vk::CreateRenderPass(m_device->device(), &rpci, nullptr, &rp);
+    ASSERT_VK_SUCCESS(err);
+
+    VkImageObj image(m_device);
+    image.InitNoLayout(32, 32, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
+    VkImageView imageView = image.targetView(VK_FORMAT_R8G8B8A8_UNORM);
+
+    VkFramebufferCreateInfo fbci = {VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, nullptr, 0, rp, 1, &imageView, 32, 32, 1};
+    VkFramebuffer fb;
+    err = vk::CreateFramebuffer(m_device->device(), &fbci, nullptr, &fb);
+    ASSERT_VK_SUCCESS(err);
+
+    m_commandBuffer->begin();
+
+    VkRenderPassBeginInfo rpbi = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+                                  nullptr,
+                                  rp,
+                                  fb,
+                                  {{
+                                       0,
+                                       0,
+                                   },
+                                   {32, 32}},
+                                  0,
+                                  nullptr};
+
+    m_commandBuffer->BeginRenderPass(rpbi, VK_SUBPASS_CONTENTS_INLINE);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdEndRenderingKHR-None-06161");
+    m_commandBuffer->EndRendering();
+    m_errorMonitor->VerifyFound();
+
+    vk::DestroyFramebuffer(m_device->device(), fb, nullptr);
+    vk::DestroyRenderPass(m_device->device(), rp, nullptr);
+
+    VkFormat color_formats = {VK_FORMAT_R8G8B8A8_UNORM};
+
+    VkCommandBufferInheritanceRenderingInfoKHR inheritance_rendering_info = {};
+    inheritance_rendering_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO_KHR;
+    inheritance_rendering_info.colorAttachmentCount = 1;
+    inheritance_rendering_info.pColorAttachmentFormats = &color_formats;
+
+    VkCommandBufferObj secondary(m_device, m_commandPool, VK_COMMAND_BUFFER_LEVEL_SECONDARY);
+
+    const VkCommandBufferInheritanceInfo cmdbuff_ii = {
+        VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO,
+        &inheritance_rendering_info,  // pNext
+        VK_NULL_HANDLE,
+        0,  // subpass
+        VK_NULL_HANDLE,
+    };
+
+    VkCommandBufferBeginInfo cmdbuff__bi = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+                                            nullptr,  // pNext
+                                            VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, &cmdbuff_ii};
+    cmdbuff__bi.flags |= VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+    secondary.begin(&cmdbuff__bi);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdEndRenderingKHR-commandBuffer-06162");
+    secondary.EndRendering();
+    m_errorMonitor->VerifyFound();
+}
+
+TEST_F(VkLayerTest, EndRenderpassWithBeginRenderingRenderpassInstance) {
+    TEST_DESCRIPTION(
+        "Test EndRenderpass(2) starting the renderpass instance with BeginRendering");
+
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+
+    AddRequiredExtensions(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+    AddRequiredExtensions(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework());
+
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s %s or %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+               VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
+        return;
+    }
+
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Tests requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    auto dynamic_rendering_features = LvlInitStruct<VkPhysicalDeviceDynamicRenderingFeaturesKHR>();
+    auto features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&dynamic_rendering_features);
+    vk::GetPhysicalDeviceFeatures2(gpu(), &features2);
+    if (!dynamic_rendering_features.dynamicRendering) {
+        printf("%s Test requires (unsupported) dynamicRendering , skipping\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &features2));
+
+    VkImageObj image(m_device);
+    image.InitNoLayout(32, 32, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
+    VkImageView imageView = image.targetView(VK_FORMAT_R8G8B8A8_UNORM);
+
+    VkRenderingAttachmentInfoKHR color_attachment = {};
+    color_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+    color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    color_attachment.imageView = imageView;
+
+    VkRenderingInfoKHR begin_rendering_info = {};
+    begin_rendering_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+    begin_rendering_info.colorAttachmentCount = 1;
+    begin_rendering_info.pColorAttachments = &color_attachment;
+
+    m_commandBuffer->begin();
+
+    m_commandBuffer->BeginRendering(begin_rendering_info);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdEndRenderPass-None-06170");
+    m_commandBuffer->EndRenderPass();
+    m_errorMonitor->VerifyFound();
+
+    auto vkCmdEndRenderPass2KHR =
+        reinterpret_cast<PFN_vkCmdEndRenderPass2KHR>(vk::GetDeviceProcAddr(m_device->device(), "vkCmdEndRenderPass2KHR"));
+    ASSERT_TRUE(vkCmdEndRenderPass2KHR != nullptr);
+
+    VkSubpassEndInfoKHR subpassEndInfo = {VK_STRUCTURE_TYPE_SUBPASS_END_INFO_KHR, nullptr};
+
+    VkCommandBufferObj primary(m_device, m_commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+    primary.begin();
+    primary.BeginRendering(begin_rendering_info);
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdEndRenderPass2-None-06171");
+    vkCmdEndRenderPass2KHR(primary.handle(), &subpassEndInfo);
     m_errorMonitor->VerifyFound();
 }

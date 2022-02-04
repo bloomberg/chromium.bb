@@ -301,7 +301,7 @@ void DrawNormalTextHelper(const RetainPtr<CFX_DIBitmap>& bitmap,
 
 bool ShouldDrawDeviceText(const CFX_Font* pFont,
                           const CFX_TextRenderOptions& options) {
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   if (options.font_is_cid)
     return false;
 
@@ -1210,6 +1210,14 @@ bool CFX_RenderDevice::DrawNormalText(int nChars,
     DrawNormalTextHelper(bitmap, pGlyph, nrows, point->x, point->y, start_col,
                          end_col, normalize, x_subpixel, a, r, g, b);
   }
+
+#if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATH_)
+  // DrawNormalTextHelper() can result in unpremultiplied bitmaps for rendering
+  // glyphs. Make sure `bitmap` is premultiplied before proceeding or
+  // CFX_DIBBase::DebugVerifyBufferIsPreMultiplied() check will fail.
+  bitmap->PreMultiply();
+#endif
+
   if (bitmap->IsMaskFormat())
     SetBitMask(bitmap, bmp_rect.left, bmp_rect.top, fill_color);
   else

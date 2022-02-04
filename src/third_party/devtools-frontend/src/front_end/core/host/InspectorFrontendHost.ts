@@ -94,15 +94,15 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   }
 
   setIsDocked(isDocked: boolean, callback: () => void): void {
-    setTimeout(callback, 0);
+    window.setTimeout(callback, 0);
   }
 
   showSurvey(trigger: string, callback: (arg0: ShowSurveyResult) => void): void {
-    setTimeout(() => callback({surveyShown: false}), 0);
+    window.setTimeout(() => callback({surveyShown: false}), 0);
   }
 
   canShowSurvey(trigger: string, callback: (arg0: CanShowSurveyResult) => void): void {
-    setTimeout(() => callback({canShowSurvey: false}), 0);
+    window.setTimeout(() => callback({canShowSurvey: false}), 0);
   }
 
   /**
@@ -130,7 +130,7 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
     if (text === undefined || text === null) {
       return;
     }
-    navigator.clipboard.writeText(text);
+    void navigator.clipboard.writeText(text);
   }
 
   openInNewTab(url: string): void {
@@ -220,7 +220,8 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
 
   loadNetworkResource(
       url: string, headers: string, streamId: number, callback: (arg0: LoadNetworkResourceResult) => void): void {
-    Root.Runtime.loadResourcePromise(url)
+    fetch(url)
+        .then(result => result.text())
         .then(function(text) {
           resourceLoaderStreamWrite(streamId, text);
           callback({
@@ -257,6 +258,10 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
       prefs[name] = window.localStorage[name];
     }
     callback(prefs);
+  }
+
+  getPreference(name: string, callback: (arg0: string) => void): void {
+    callback(window.localStorage[name]);
   }
 
   setPreference(name: string, value: string): void {

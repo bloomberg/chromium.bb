@@ -69,7 +69,7 @@ static bool check_parameters(const Context& context,
                              std::vector<std::unique_ptr<Variable>>& parameters,
                              bool isMain) {
     auto typeIsValidForColor = [&](const Type& type) {
-        return type == *context.fTypes.fHalf4 || type == *context.fTypes.fFloat4;
+        return type.matches(*context.fTypes.fHalf4) || type.matches(*context.fTypes.fFloat4);
     };
 
     // The first color parameter passed to main() is the input color; the second is the dest color.
@@ -102,11 +102,13 @@ static bool check_parameters(const Context& context,
         }
 
         if (isMain) {
-            if (ProgramConfig::IsRuntimeEffect(context.fConfig->fKind)) {
+            if (ProgramConfig::IsRuntimeEffect(context.fConfig->fKind) &&
+                context.fConfig->fKind != ProgramKind::kCustomMeshFragment &&
+                context.fConfig->fKind != ProgramKind::kCustomMeshVertex) {
                 // We verify that the signature is fully correct later. For now, if this is a
                 // runtime effect of any flavor, a float2 param is supposed to be the coords, and a
                 // half4/float parameter is supposed to be the input or destination color:
-                if (type == *context.fTypes.fFloat2) {
+                if (type.matches(*context.fTypes.fFloat2)) {
                     m.fLayout.fBuiltin = SK_MAIN_COORDS_BUILTIN;
                     modifiersChanged = true;
                 } else if (typeIsValidForColor(type) &&
@@ -118,7 +120,7 @@ static bool check_parameters(const Context& context,
                 // For testing purposes, we have .sksl inputs that are treated as both runtime
                 // effects and fragment shaders. To make that work, fragment shaders are allowed to
                 // have a coords parameter.
-                if (type == *context.fTypes.fFloat2) {
+                if (type.matches(*context.fTypes.fFloat2)) {
                     m.fLayout.fBuiltin = SK_MAIN_COORDS_BUILTIN;
                     modifiersChanged = true;
                 }
@@ -138,12 +140,20 @@ static bool check_main_signature(const Context& context, int line, const Type& r
     ProgramKind kind = context.fConfig->fKind;
 
     auto typeIsValidForColor = [&](const Type& type) {
-        return type == *context.fTypes.fHalf4 || type == *context.fTypes.fFloat4;
+        return type.matches(*context.fTypes.fHalf4) || type.matches(*context.fTypes.fFloat4);
+    };
+
+    auto typeIsValidForAttributes = [&](const Type& type) {
+        return type.isStruct() && type.name() == "Attributes";
+    };
+
+    auto typeIsValidForVaryings = [&](const Type& type) {
+        return type.isStruct() && type.name() == "Varyings";
     };
 
     auto paramIsCoords = [&](int idx) {
         const Variable& p = *parameters[idx];
-        return p.type() == *context.fTypes.fFloat2 &&
+        return p.type().matches(*context.fTypes.fFloat2) &&
                p.modifiers().fFlags == 0 &&
                p.modifiers().fLayout.fBuiltin == SK_MAIN_COORDS_BUILTIN;
     };
@@ -153,6 +163,26 @@ static bool check_main_signature(const Context& context, int line, const Type& r
         return typeIsValidForColor(p.type()) &&
                p.modifiers().fFlags == 0 &&
                p.modifiers().fLayout.fBuiltin == builtinID;
+    };
+
+    auto paramIsInAttributes = [&](int idx) {
+        const Variable& p = *parameters[idx];
+        return typeIsValidForAttributes(p.type()) && p.modifiers().fFlags == 0;
+    };
+
+    auto paramIsOutVaryings = [&](int idx) {
+        const Variable& p = *parameters[idx];
+        return typeIsValidForVaryings(p.type()) && p.modifiers().fFlags == Modifiers::kOut_Flag;
+    };
+
+    auto paramIsInVaryings = [&](int idx) {
+        const Variable& p = *parameters[idx];
+        return typeIsValidForVaryings(p.type()) && p.modifiers().fFlags == 0;
+    };
+
+    auto paramIsOutColor = [&](int idx) {
+        const Variable& p = *parameters[idx];
+        return typeIsValidForColor(p.type()) && p.modifiers().fFlags == Modifiers::kOut_Flag;
     };
 
     auto paramIsInputColor = [&](int n) { return paramIsBuiltinColor(n, SK_INPUT_COLOR_BUILTIN); };
@@ -198,6 +228,33 @@ static bool check_main_signature(const Context& context, int line, const Type& r
                   paramIsDestColor(1))) {
                 errors.error(line, "'main' parameters must be (vec4|float4|half4, "
                                                                 "vec4|float4|half4)");
+                return false;
+            }
+            break;
+        }
+        case ProgramKind::kCustomMeshVertex: {
+            // float2 main(Attributes, out Varyings)
+            if (!returnType.matches(*context.fTypes.fFloat2)) {
+                errors.error(line, "'main' must return: 'vec2' or 'float2'");
+                return false;
+            }
+            if (!(parameters.size() == 2 && paramIsInAttributes(0) && paramIsOutVaryings(1))) {
+                errors.error(line, "'main' parameters must be (Attributes, out Varyings");
+                return false;
+            }
+            break;
+        }
+        case ProgramKind::kCustomMeshFragment: {
+            // float2 main(Varyings) -or- float2 main(Varyings, out half4|float4]) -or-
+            // void main(Varyings) -or- void main(Varyings, out half4|float4])
+            if (!returnType.matches(*context.fTypes.fFloat2) &&
+                !returnType.matches(*context.fTypes.fVoid)) {
+                errors.error(line, "'main' must return: 'vec2', 'float2', 'or' 'void'");
+                return false;
+            }
+            if (!((parameters.size() == 1 && paramIsInVaryings(0)) ||
+                  (parameters.size() == 2 && paramIsInVaryings(0) && paramIsOutColor(1)))) {
+                errors.error(line, "'main' parameters must be (Varyings, (out (half4|float4))?)");
                 return false;
             }
             break;
@@ -259,7 +316,7 @@ static bool find_existing_declaration(const Context& context,
             }
             bool match = true;
             for (size_t i = 0; i < parameters.size(); i++) {
-                if (parameters[i]->type() != other->parameters()[i]->type()) {
+                if (!parameters[i]->type().matches(other->parameters()[i]->type())) {
                     match = false;
                     break;
                 }
@@ -267,7 +324,7 @@ static bool find_existing_declaration(const Context& context,
             if (!match) {
                 continue;
             }
-            if (*returnType != other->returnType()) {
+            if (!returnType->matches(other->returnType())) {
                 std::vector<const Variable*> paramPtrs;
                 paramPtrs.reserve(parameters.size());
                 for (std::unique_ptr<Variable>& param : parameters) {
@@ -389,7 +446,7 @@ bool FunctionDeclaration::matches(const FunctionDeclaration& f) const {
         return false;
     }
     for (size_t i = 0; i < parameters.size(); i++) {
-        if (parameters[i]->type() != otherParameters[i]->type()) {
+        if (!parameters[i]->type().matches(otherParameters[i]->type())) {
             return false;
         }
     }

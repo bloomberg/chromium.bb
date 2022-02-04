@@ -7,14 +7,15 @@ load("//lib/branches.star", "branches")
 load("//lib/builders.star", "cpu", "goma", "os", "xcode")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
-load("//project.star", "settings")
 
 try_.defaults.set(
     builder_group = "tryserver.chromium.mac",
     builderless = True,
+    orchestrator_cores = 2,
     executable = try_.DEFAULT_EXECUTABLE,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
+    compilator_goma_jobs = goma.jobs.J150,
     os = os.MAC_ANY,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
@@ -43,42 +44,37 @@ try_.builder(
     os = os.MAC_DEFAULT,
 )
 
-try_.builder(
+try_.orchestrator_builder(
     name = "mac-rel",
+    compilator = "mac-rel-compilator",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
-    builderless = not settings.is_main,
-    use_clang_coverage = True,
-    goma_jobs = goma.jobs.J150,
     main_list_view = "try",
-    os = os.MAC_DEFAULT,
+    use_clang_coverage = True,
     tryjob = try_.job(),
 )
 
-try_.orchestrator_pair_builders(
-    name = "mac-rel-orchestrator",
+try_.compilator_builder(
+    name = "mac-rel-compilator",
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
-    use_clang_coverage = True,
-    orchestrator_cores = 2,
-    orchestrator_tryjob = try_.job(
-        experiment_percentage = 1,
-    ),
-    compilator_goma_jobs = goma.jobs.J150,
     os = os.MAC_DEFAULT,
-    compilator_name = "mac-rel-compilator",
 )
 
-try_.orchestrator_pair_builders(
+try_.orchestrator_builder(
     name = "mac11-arm64-rel",
+    compilator = "mac11-arm64-rel-compilator",
     main_list_view = "try",
-    orchestrator_cores = 2,
-    orchestrator_tryjob = try_.job(
-        experiment_percentage = 50,
+    tryjob = try_.job(
+        experiment_percentage = 100,
     ),
-    compilator_goma_jobs = goma.jobs.J150,
+)
+
+try_.compilator_builder(
+    name = "mac11-arm64-rel-compilator",
+    main_list_view = "try",
     os = os.MAC_11,
-    compilator_name = "mac11-arm64-rel-compilator",
-    # TODO (crbug/1271287): Revert when root issue is fixed
-    compilator_grace_period = 4 * time.minute,
+    # TODO (crbug.com/1245171): Revert when root issue is fixed
+    grace_period = 4 * time.minute,
 )
 
 # NOTE: the following trybots aren't sensitive to Mac version on which
@@ -162,6 +158,7 @@ ios_builder(
 ios_builder(
     name = "ios-simulator",
     branch_selector = branches.STANDARD_MILESTONE,
+    check_for_flakiness = True,
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_exclude_sources = "ios_test_files_and_test_utils",

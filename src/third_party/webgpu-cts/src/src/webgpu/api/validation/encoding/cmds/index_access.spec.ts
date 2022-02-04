@@ -1,10 +1,5 @@
 export const description = `
-indexed draws validation tests.
-
-TODO: Implement robustness test or operation test for drawIndexedIndirect. This validation test
-only test that drawIndexed can catch index buffer OOB and generate a validation error, but for
-drawIndexedIndirect no CPU validation is available, and the robustness access in that case should
-be tested.
+Validation tests for indexed draws accessing the index buffer.
 `;
 
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';

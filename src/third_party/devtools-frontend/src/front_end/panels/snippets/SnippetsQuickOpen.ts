@@ -48,7 +48,7 @@ export class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Provider {
     if (itemIndex === null) {
       return;
     }
-    evaluateScriptSnippet(this.snippets[itemIndex]);
+    void evaluateScriptSnippet(this.snippets[itemIndex]);
   }
 
   notFoundText(_query: string): string {
@@ -61,6 +61,11 @@ export class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Provider {
 
   detach(): void {
     this.snippets = [];
+  }
+
+  itemScoreAt(itemIndex: number, query: string): number {
+    // Prefer short matches over long matches
+    return query.length / this.snippets[itemIndex].name().length;
   }
 
   itemCount(): number {

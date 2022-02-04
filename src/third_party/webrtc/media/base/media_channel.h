@@ -38,7 +38,6 @@
 #include "common_video/include/quality_limitation_reason.h"
 #include "media/base/codec.h"
 #include "media/base/delayable.h"
-#include "media/base/media_config.h"
 #include "media/base/media_constants.h"
 #include "media/base/stream_params.h"
 #include "modules/audio_processing/include/audio_processing_statistics.h"
@@ -170,9 +169,8 @@ class MediaChannel {
     virtual ~NetworkInterface() {}
   };
 
-  MediaChannel(const MediaConfig& config,
-               webrtc::TaskQueueBase* network_thread);
-  explicit MediaChannel(webrtc::TaskQueueBase* network_thread);
+  explicit MediaChannel(webrtc::TaskQueueBase* network_thread,
+                        bool enable_dscp = false);
   virtual ~MediaChannel();
 
   virtual cricket::MediaType media_type() const = 0;
@@ -189,7 +187,7 @@ class MediaChannel {
   virtual void OnReadyToSend(bool ready) = 0;
   // Called when the network route used for sending packets changed.
   virtual void OnNetworkRouteChanged(
-      const std::string& transport_name,
+      absl::string_view transport_name,
       const rtc::NetworkRoute& network_route) = 0;
   // Creates a new outgoing media stream with SSRCs and CNAME as described
   // by sp.
@@ -210,11 +208,14 @@ class MediaChannel {
   // Resets any cached StreamParams for an unsignaled RecvStream, and removes
   // any existing unsignaled streams.
   virtual void ResetUnsignaledRecvStream() = 0;
-  // Informs the media channel when the transport's demuxer criteria is updated.
+  // This is currently a workaround because of the demuxer state being managed
+  // across two separate threads. Once the state is consistently managed on
+  // the same thread (network), this workaround can be removed.
+  // These two notifications inform the media channel when the transport's
+  // demuxer criteria is being updated.
   // * OnDemuxerCriteriaUpdatePending() happens on the same thread that the
   //   channel's streams are added and removed (worker thread).
-  // * OnDemuxerCriteriaUpdateComplete() happens on the thread where the demuxer
-  //   lives (network thread).
+  // * OnDemuxerCriteriaUpdateComplete() happens on the same thread.
   // Because the demuxer is updated asynchronously, there is a window of time
   // where packets are arriving to the channel for streams that have already
   // been removed on the worker thread. It is important NOT to treat these as
@@ -258,6 +259,10 @@ class MediaChannel {
   // worker_thread.
   void SetExtmapAllowMixed(bool extmap_allow_mixed);
   bool ExtmapAllowMixed() const;
+
+  // Returns `true` if a non-null NetworkInterface pointer is held.
+  // Must be called on the network thread.
+  bool HasNetworkInterface() const;
 
   virtual webrtc::RtpParameters GetRtpSendParameters(uint32_t ssrc) const = 0;
   virtual webrtc::RTCError SetRtpSendParameters(
@@ -774,11 +779,9 @@ struct AudioRecvParameters : RtpParameters<AudioCodec> {};
 
 class VoiceMediaChannel : public MediaChannel, public Delayable {
  public:
-  explicit VoiceMediaChannel(webrtc::TaskQueueBase* network_thread)
-      : MediaChannel(network_thread) {}
-  VoiceMediaChannel(const MediaConfig& config,
-                    webrtc::TaskQueueBase* network_thread)
-      : MediaChannel(config, network_thread) {}
+  VoiceMediaChannel(webrtc::TaskQueueBase* network_thread,
+                    bool enable_dscp = false)
+      : MediaChannel(network_thread, enable_dscp) {}
   ~VoiceMediaChannel() override {}
 
   cricket::MediaType media_type() const override;
@@ -846,11 +849,9 @@ struct VideoRecvParameters : RtpParameters<VideoCodec> {};
 
 class VideoMediaChannel : public MediaChannel, public Delayable {
  public:
-  explicit VideoMediaChannel(webrtc::TaskQueueBase* network_thread)
-      : MediaChannel(network_thread) {}
-  VideoMediaChannel(const MediaConfig& config,
-                    webrtc::TaskQueueBase* network_thread)
-      : MediaChannel(config, network_thread) {}
+  explicit VideoMediaChannel(webrtc::TaskQueueBase* network_thread,
+                             bool enable_dscp = false)
+      : MediaChannel(network_thread, enable_dscp) {}
   ~VideoMediaChannel() override {}
 
   cricket::MediaType media_type() const override;

@@ -202,7 +202,7 @@ ANGLE_NO_DISCARD bool ReplaceGLDepthRangeWithDriverUniform(TCompiler *compiler,
         symbolTable->findBuiltIn(ImmutableString("gl_DepthRange"), 0));
 
     // ANGLEUniforms.depthRange
-    TIntermBinary *angleEmulatedDepthRangeRef = driverUniforms->getDepthRangeRef();
+    TIntermTyped *angleEmulatedDepthRangeRef = driverUniforms->getDepthRangeRef();
 
     // Use this variable instead of gl_DepthRange everywhere.
     return ReplaceVariableWithTyped(compiler, root, depthRangeVar, angleEmulatedDepthRangeRef);
@@ -296,7 +296,7 @@ ANGLE_NO_DISCARD bool InsertFragCoordCorrection(TCompiler *compiler,
         flipXY = driverUniforms->getFlipXYRef();
     }
 
-    TIntermBinary *pivot = specConst->getHalfRenderArea();
+    TIntermTyped *pivot = specConst->getHalfRenderArea();
     if (!pivot)
     {
         pivot = driverUniforms->getHalfRenderAreaRef();
@@ -409,15 +409,6 @@ ANGLE_NO_DISCARD bool AddFragDataDeclaration(TCompiler &compiler, TIntermBlock &
     return RunAtTheEndOfShader(&compiler, &root, insertSequence, &symbolTable);
 }
 
-ANGLE_NO_DISCARD bool EmulateInstanceID(TCompiler &compiler,
-                                        TIntermBlock &root,
-                                        DriverUniform &driverUniforms)
-{
-    TIntermBinary *emuInstanceID = driverUniforms.getEmulatedInstanceId();
-    const TVariable *instanceID  = BuiltInVariable::gl_InstanceIndex();
-    return ReplaceVariableWithTyped(&compiler, &root, instanceID, emuInstanceID);
-}
-
 ANGLE_NO_DISCARD bool AppendVertexShaderTransformFeedbackOutputToMain(TCompiler &compiler,
                                                                       SymbolEnv &mSymbolEnv,
                                                                       TIntermBlock &root)
@@ -514,8 +505,8 @@ ANGLE_NO_DISCARD bool TranslatorMetalDirect::insertSampleMaskWritingLogic(
     //      ANGLE_writeSampleMask(ANGLE_angleUniforms.coverageMask,
     //      ANGLE_fragmentOut.gl_SampleMask);
     // }
-    TIntermSequence *args       = new TIntermSequence;
-    TIntermBinary *coverageMask = driverUniforms.getCoverageMaskFieldRef();
+    TIntermSequence *args      = new TIntermSequence;
+    TIntermTyped *coverageMask = driverUniforms.getCoverageMaskFieldRef();
     args->push_back(coverageMask);
     const TIntermSymbol *gl_SampleMask = FindSymbolNode(&root, ImmutableString("gl_SampleMask"));
     args->push_back(gl_SampleMask->deepCopy());
@@ -585,7 +576,7 @@ bool TranslatorMetalDirect::transformDepthBeforeCorrection(TIntermBlock *root,
     TIntermSwizzle *positionZ   = new TIntermSwizzle(positionRef, swizzleOffsetZ);
 
     // Create a ref to "depthRange.reserved"
-    TIntermBinary *viewportZScale = driverUniforms->getDepthRangeReservedFieldRef();
+    TIntermTyped *viewportZScale = driverUniforms->getDepthRangeReservedFieldRef();
 
     // Create the expression "gl_Position.z * depthRange.reserved".
     TIntermBinary *zScale = new TIntermBinary(EOpMul, positionZ->deepCopy(), viewportZScale);
@@ -1017,15 +1008,7 @@ bool TranslatorMetalDirect::translateImpl(TInfoSinkBase &sink,
 
     if (getShaderType() == GL_VERTEX_SHADER)
     {
-        auto negFlipY = driverUniforms->getNegFlipYRef();
-
-        if (mEmulatedInstanceID)
-        {
-            if (!EmulateInstanceID(*this, *root, *driverUniforms))
-            {
-                return false;
-            }
-        }
+        TIntermTyped *negFlipY = driverUniforms->getNegFlipYRef();
 
         if (!AppendVertexShaderPositionYCorrectionToMain(this, root, &getSymbolTable(), negFlipY))
         {

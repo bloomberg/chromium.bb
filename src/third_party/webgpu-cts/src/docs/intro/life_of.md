@@ -1,41 +1,46 @@
 # Life of a Test Change
 
-## Lifetime of new test plans
+A "test change" could be a new test, an expansion of an existing test, a test bug fix, or a
+modification to existing tests to make them match new spec changes.
 
-For anything in the spec/API/ToC that is not currently covered by
-the test plan. Note that (the completed portions of) the initial version of
-this document, is based on parts of the planned
-[Table of Contents](https://github.com/gpuweb/gpuweb/wiki/Table-of-Contents)
-as of ~2020-08.
+**CTS contributors should contribute to the tracker and strive to keep it up to date, especially
+relating to their own changes.**
 
-1. Test plan is written, reviewed, and landed (if the implementer is different from the planner,
-  they should review), with TODOs as needed.
-1. Tests are implemented, reviewed, and landed, with TODOs as needed.
+Filing new draft issues in the CTS project tracker is very lightweight.
+Anyone with access should do this eagerly, to ensure no testing ideas are forgotten.
+(And if you don't have access, just file a regular issue.)
 
-## Lifetime of test plan changes to match spec changes
+1. Enter a draft issue with "Status" "New (not in repo)" is in the
+    [CTS project tracker](https://github.com/orgs/gpuweb/projects/3) with any available info
+    (notes/plans to ensure full test coverage of the change). The source of this may be:
 
-For changes that come through the specification process.
+    - Anything in the spec/API that is found not to be covered by the CTS yet.
+    - Any test is found to be outdated or otherwise buggy.
+    - A spec change from the "Needs CTS Issue" column in the
+      [spec project tracker](https://github.com/orgs/gpuweb/projects/1).
+      Once information on the required test changes is entered into the CTS project tracker,
+      the spec issue moves to "Specification Done".
 
-1. Spec changes go through the [WebGPU project tracker](https://github.com/orgs/gpuweb/projects/1).
-1. Once they reach the "Needs Test Plan" column, they can be added into the CTS.
-  The item doesn't have to be fully tested, but must be reflected in the test plan in enough
-  detail (with any necessary TODOs) to ensure the tests are implemented fully, later on.
-  Then, the item can move to the "Specification Done" column.
-    - Some features may have tests written before their specification is complete.
-      If they are still in the "Needs Specification" column just make sure there
-      is a note on the issue that tests are being written, and make sure any spec
-      changes get reflected in the tests.
-1. Plan and implement as above.
+    Note: at some point, someone may make a PR to flush "New (not in repo)" issues into `TODO`s in
+    CTS file/test description text, changing their "Status" to "Open".
+    These may be done in bulk without linking back to the issue.
 
-## Lifetime of additions to existing test plans
+1. As necessary:
 
-For any new cases or testing found by any test plan author, WebGPU spec author,
-WebGPU implementer, WebGPU user, etc. For example, inspiration could come from
-reading an existing test suite (like dEQP or WebGL).
+    - Convert the draft issue to a full, numbered issue for linking from later PRs.
 
-1. Add notes, plans, or implementation to the CTS, with TODOs as needed to ensure the addition
-  gets implemented fully.
+        ![convert to issue button screenshot](convert_to_issue.png)
 
-A change may (or may not) have an associated issue on the spec or CTS repository on GitHub.
-If it is otherwise resolved, then it can be closed once reflected in the CTS, so that test work
-is tracked in just one place.
+    - Update the "Assignees" of the issue when an issue is assigned or unassigned
+      (you can assign yourself).
+    - Change the "Status" of the issue to "Started" once you start the task.
+
+1. Open one or more PRs, **each linking to the associated issue**.
+    Each PR may is reviewed and landed, and may leave further TODOs for parts it doesn't complete.
+
+    1. Test are "planned" in test descriptions. (For complex tests, open a separate PR with the
+      tests `.unimplemented()` so a reviewer can evaluate the plan before you implement tests.)
+    1. Tests are implemented.
+
+1. When **no TODOs remain** for an issue, close it and change its status to "Complete".
+    (Enter a new more, specific draft issue into the tracker if you need to track related TODOs.)

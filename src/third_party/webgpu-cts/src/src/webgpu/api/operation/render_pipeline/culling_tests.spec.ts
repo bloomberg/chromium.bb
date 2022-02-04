@@ -40,19 +40,25 @@ function faceColor(face: 'cw' | 'ccw', frontFace: GPUFrontFace, cullMode: GPUCul
 export const g = makeTestGroup(GPUTest);
 
 g.test('culling')
-  .params(u =>
-    u
-      .combine('frontFace', ['ccw', 'cw'] as const)
-      .combine('cullMode', ['none', 'front', 'back'] as const)
-      .beginSubcases()
-      .combine('depthStencilFormat', [
-        null,
-        'depth24plus',
-        'depth32float',
-        'depth24plus-stencil8',
-      ] as const)
-      // TODO: test triangle-strip as well
-      .combine('primitiveTopology', ['triangle-list'] as const)
+  .desc(
+    `
+TODO: test triangle-strip as well [1]
+TODO: check the contents of the depth and stencil outputs [2]
+`
+  )
+  .params(
+    u =>
+      u
+        .combine('frontFace', ['ccw', 'cw'] as const)
+        .combine('cullMode', ['none', 'front', 'back'] as const)
+        .beginSubcases()
+        .combine('depthStencilFormat', [
+          null,
+          'depth24plus',
+          'depth32float',
+          'depth24plus-stencil8',
+        ] as const)
+        .combine('primitiveTopology', ['triangle-list'] as const) // [1]
   )
   .fn(t => {
     const size = 4;
@@ -165,5 +171,5 @@ g.test('culling')
       { x: size - 1, y: size - 1 },
       { exp: kCWTriangleBottomRightColor }
     );
-    // TODO: check the contents of the depth and stencil outputs
+    // [2]: check the contents of the depth and stencil outputs
   });

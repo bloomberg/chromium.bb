@@ -130,6 +130,8 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const base::TickClock* tick_clock);
 
+  base::WeakPtr<Core> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
+
  private:
   // webrtc::DesktopCapturer::Callback interface.
   // A side-effect of this method is to schedule the next frame.
@@ -519,7 +521,7 @@ std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
   std::unique_ptr<webrtc::DesktopCapturer> capturer;
   std::unique_ptr<media::VideoCaptureDevice> result;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   options.set_allow_cropping_window_capturer(true);
   if (base::FeatureList::IsEnabled(features::kWebRtcAllowWgcDesktopCapturer))
     options.set_allow_wgc_capturer(true);
@@ -589,9 +591,8 @@ void DesktopCaptureDevice::AllocateAndStart(
     const media::VideoCaptureParams& params,
     std::unique_ptr<Client> client) {
   thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&Core::AllocateAndStart, base::Unretained(core_.get()),
-                     params, std::move(client)));
+      FROM_HERE, base::BindOnce(&Core::AllocateAndStart, core_->GetWeakPtr(),
+                                params, std::move(client)));
 }
 
 void DesktopCaptureDevice::StopAndDeAllocate() {
@@ -611,14 +612,14 @@ void DesktopCaptureDevice::SetNotificationWindowId(
     return;
   thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&Core::SetNotificationWindowId,
-                                base::Unretained(core_.get()), window_id));
+                                core_->GetWeakPtr(), window_id));
 }
 
 DesktopCaptureDevice::DesktopCaptureDevice(
     std::unique_ptr<webrtc::DesktopCapturer> capturer,
     DesktopMediaID::Type type)
     : thread_("desktopCaptureThread") {
-#if defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   // On Windows/OSX the thread must be a UI thread.
   base::MessagePumpType thread_type = base::MessagePumpType::UI;
 #else

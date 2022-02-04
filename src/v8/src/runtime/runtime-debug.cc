@@ -818,42 +818,52 @@ RUNTIME_FUNCTION(Runtime_IncBlockCounter) {
   UNREACHABLE();  // Never called. See the IncBlockCounter builtin instead.
 }
 
-RUNTIME_FUNCTION(Runtime_DebugAsyncFunctionEntered) {
-  DCHECK_EQ(1, args.length());
-  HandleScope scope(isolate);
-  CONVERT_ARG_HANDLE_CHECKED(JSPromise, promise, 0);
-  isolate->RunPromiseHook(PromiseHookType::kInit, promise,
-                          isolate->factory()->undefined_value());
-  if (isolate->debug()->is_active()) isolate->PushPromise(promise);
-  return ReadOnlyRoots(isolate).undefined_value();
-}
-
 RUNTIME_FUNCTION(Runtime_DebugAsyncFunctionSuspended) {
-  DCHECK_EQ(1, args.length());
+  DCHECK_EQ(4, args.length());
   HandleScope scope(isolate);
   CONVERT_ARG_HANDLE_CHECKED(JSPromise, promise, 0);
-  isolate->PopPromise();
-  isolate->OnAsyncFunctionStateChanged(promise, debug::kAsyncFunctionSuspended);
-  return ReadOnlyRoots(isolate).undefined_value();
+  CONVERT_ARG_HANDLE_CHECKED(JSPromise, outer_promise, 1);
+  CONVERT_ARG_HANDLE_CHECKED(JSFunction, reject_handler, 2);
+  CONVERT_BOOLEAN_ARG_CHECKED(is_predicted_as_caught, 3);
+
+  // Allocate the throwaway promise and fire the appropriate init
+  // hook for the throwaway promise (passing the {promise} as its
+  // parent).
+  Handle<JSPromise> throwaway = isolate->factory()->NewJSPromiseWithoutHook();
+  isolate->OnAsyncFunctionSuspended(throwaway, promise);
+
+  // The Promise will be thrown away and not handled, but it
+  // shouldn't trigger unhandled reject events as its work is done
+  throwaway->set_has_handler(true);
+
+  // Enable proper debug support for promises.
+  if (isolate->debug()->is_active()) {
+    Object::SetProperty(isolate, reject_handler,
+                        isolate->factory()->promise_forwarding_handler_symbol(),
+                        isolate->factory()->true_value(),
+                        StoreOrigin::kMaybeKeyed,
+                        Just(ShouldThrow::kThrowOnError))
+        .Check();
+    promise->set_handled_hint(is_predicted_as_caught);
+
+    // Mark the dependency to {outer_promise} in case the {throwaway}
+    // Promise is found on the Promise stack
+    Object::SetProperty(isolate, throwaway,
+                        isolate->factory()->promise_handled_by_symbol(),
+                        outer_promise, StoreOrigin::kMaybeKeyed,
+                        Just(ShouldThrow::kThrowOnError))
+        .Check();
+  }
+
+  return *throwaway;
 }
 
-RUNTIME_FUNCTION(Runtime_DebugAsyncFunctionResumed) {
+RUNTIME_FUNCTION(Runtime_DebugPromiseThen) {
   DCHECK_EQ(1, args.length());
   HandleScope scope(isolate);
-  CONVERT_ARG_HANDLE_CHECKED(JSPromise, promise, 0);
-  isolate->PushPromise(promise);
-  return ReadOnlyRoots(isolate).undefined_value();
-}
-
-RUNTIME_FUNCTION(Runtime_DebugAsyncFunctionFinished) {
-  DCHECK_EQ(2, args.length());
-  HandleScope scope(isolate);
-  CONVERT_BOOLEAN_ARG_CHECKED(has_suspend, 0);
-  CONVERT_ARG_HANDLE_CHECKED(JSPromise, promise, 1);
-  isolate->PopPromise();
-  if (has_suspend) {
-    isolate->OnAsyncFunctionStateChanged(promise,
-                                         debug::kAsyncFunctionFinished);
+  CONVERT_ARG_HANDLE_CHECKED(JSReceiver, promise, 0);
+  if (promise->IsJSPromise()) {
+    isolate->OnPromiseThen(Handle<JSPromise>::cast(promise));
   }
   return *promise;
 }

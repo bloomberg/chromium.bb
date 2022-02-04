@@ -504,7 +504,7 @@ g.test('uniform_buffer')
 
     const computeShaderModule = t.device.createShaderModule({
       code: `
-  [[block]] struct UBO {
+  struct UBO {
       value : vec4<u32>;
   };
   [[group(0), binding(0)]] var<uniform> ubo : UBO;
@@ -539,7 +539,7 @@ g.test('readonly_storage_buffer')
 
     const computeShaderModule = t.device.createShaderModule({
       code: `
-    [[block]] struct SSBO {
+    struct SSBO {
         value : vec4<u32>;
     };
     [[group(0), binding(0)]] var<storage, read> ssbo : SSBO;
@@ -574,7 +574,7 @@ g.test('storage_buffer')
 
     const computeShaderModule = t.device.createShaderModule({
       code: `
-    [[block]] struct SSBO {
+    struct SSBO {
         value : vec4<u32>;
     };
     [[group(0), binding(0)]] var<storage, read_write> ssbo : SSBO;

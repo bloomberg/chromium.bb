@@ -38,6 +38,8 @@ def TFFramework_Dialect : Dialect {
     static constexpr StringRef kTFEntryAttrName = "tf_entry";
     static constexpr size_t kAllocationAlignment = 16;
   }];
+
+  let emitAccessorPrefix = kEmitAccessorPrefix_Raw;
 }
 
 def TFFramework_OpKernelContextType : DialectType<TFFramework_Dialect,
@@ -284,6 +286,7 @@ def TFFramework_JITCompileFromStrOp : TFFramework_Op<"jit_compile_from_str",
     I64ArrayAttr:$unrollFactors,
     I64Attr:$maxSupportedRank,
     BoolAttr:$enableFtz,
+    BoolAttr:$index64Bit,
     BoolAttr:$cpuCodegen
   );
   let results = (outs TFFramework_JITCallableType:$result);

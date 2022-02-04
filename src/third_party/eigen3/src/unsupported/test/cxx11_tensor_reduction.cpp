@@ -501,10 +501,16 @@ void test_sum_accuracy() {
 
     // Compute the reference value in double precsion.
     double expected_sum = 0.0;
+    double abs_sum = 0.0;
     for (int i = 0; i < num_elements; ++i) {
       expected_sum += static_cast<double>(tensor(i));
+      abs_sum += static_cast<double>(numext::abs(tensor(i)));
     }
-    VERIFY_IS_APPROX(sum(), static_cast<ScalarType>(expected_sum));
+    // Test against probabilistic forward error bound. In reality, the error is much smaller
+    // when we use tree summation.
+    double err = Eigen::numext::abs(static_cast<double>(sum()) - expected_sum);
+    double tol = numext::sqrt(num_elements) * NumTraits<ScalarType>::epsilon() * static_cast<ScalarType>(abs_sum);
+    VERIFY_LE(err, tol);
   }
 }
 

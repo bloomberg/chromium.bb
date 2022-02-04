@@ -401,6 +401,21 @@
   "core/sdk/DebuggerModel.ts | withBlock": {
     "message": "With block"
   },
+  "core/sdk/EventBreakpointsModel.ts | auctionWorklet": {
+    "message": "Ad auction worklet"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletBiddingStart": {
+    "message": "Bidder bidding phase start"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletReportingStart": {
+    "message": "Bidder reporting phase start"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletReportingStart": {
+    "message": "Seller reporting phase start"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletScoringStart": {
+    "message": "Seller scoring phase start"
+  },
   "core/sdk/NetworkManager.ts | crossoriginReadBlockingCorb": {
     "message": "Cross-Origin Read Blocking (CORB) blocked cross-origin response {PH1} with MIME type {PH2}. See https://www.chromestatus.com/feature/5629709824032768 for more details."
   },
@@ -644,9 +659,6 @@
   "core/sdk/sdk-meta.ts | disableWebpFormat": {
     "message": "Disable WebP format"
   },
-  "core/sdk/sdk-meta.ts | disabledDarkMode": {
-    "message": "Disable"
-  },
   "core/sdk/sdk-meta.ts | doNotCaptureAsyncStackTraces": {
     "message": "Do not capture async stack traces"
   },
@@ -679,6 +691,9 @@
   },
   "core/sdk/sdk-meta.ts | doNotShowGridTrackSizes": {
     "message": "Do not show grid track sizes"
+  },
+  "core/sdk/sdk-meta.ts | doNotShowRulersOnHover": {
+    "message": "Do not show rulers on hover"
   },
   "core/sdk/sdk-meta.ts | emulateAFocusedPage": {
     "message": "Emulate a focused page"
@@ -743,9 +758,6 @@
   "core/sdk/sdk-meta.ts | enableWebpFormat": {
     "message": "Enable WebP format"
   },
-  "core/sdk/sdk-meta.ts | enabledDarkMode": {
-    "message": "Enable"
-  },
   "core/sdk/sdk-meta.ts | extendGridLines": {
     "message": "Extend grid lines"
   },
@@ -754,9 +766,6 @@
   },
   "core/sdk/sdk-meta.ts | hideFramesPerSecondFpsMeter": {
     "message": "Hide frames per second (FPS) meter"
-  },
-  "core/sdk/sdk-meta.ts | hideHittestBorders": {
-    "message": "Hide hit-test borders"
   },
   "core/sdk/sdk-meta.ts | hideLayerBorders": {
     "message": "Hide layer borders"
@@ -812,9 +821,6 @@
   "core/sdk/sdk-meta.ts | showGridTrackSizes": {
     "message": "Show grid track sizes"
   },
-  "core/sdk/sdk-meta.ts | showHittestBorders": {
-    "message": "Show hit-test borders"
-  },
   "core/sdk/sdk-meta.ts | showLayerBorders": {
     "message": "Show layer borders"
   },
@@ -833,8 +839,8 @@
   "core/sdk/sdk-meta.ts | showPaintFlashingRectangles": {
     "message": "Show paint flashing rectangles"
   },
-  "core/sdk/sdk-meta.ts | showRulers": {
-    "message": "Show rulers"
+  "core/sdk/sdk-meta.ts | showRulersOnHover": {
+    "message": "Show rulers on hover"
   },
   "core/sdk/sdk-meta.ts | showScrollPerformanceBottlenecks": {
     "message": "Show scroll performance bottlenecks"
@@ -875,14 +881,20 @@
   "entrypoints/inspector_main/RenderingOptions.ts | emulateAFocusedPage": {
     "message": "Emulate a focused page"
   },
+  "entrypoints/inspector_main/RenderingOptions.ts | emulateAutoDarkMode": {
+    "message": "Enable automatic dark mode"
+  },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAFocusedPage": {
     "message": "Emulates a focused page."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAutoDarkMode": {
-    "message": "Enables automatic dark mode for the inspected page."
+    "message": "Enables automatic dark mode and sets prefers-color-scheme to dark."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssColorgamutMediaFeature": {
     "message": "Forces CSS color-gamut media feature"
+  },
+  "entrypoints/inspector_main/RenderingOptions.ts | forcesCssForcedColors": {
+    "message": "Forces CSS forced-colours media feature"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssPreferscolorschemeMedia": {
     "message": "Forces CSS prefers-color-scheme media feature"
@@ -920,9 +932,6 @@
   "entrypoints/inspector_main/RenderingOptions.ts | highlightsFramesRedDetectedToBe": {
     "message": "Highlights frames (red) detected to be ads."
   },
-  "entrypoints/inspector_main/RenderingOptions.ts | hittestBorders": {
-    "message": "Hit-test borders"
-  },
   "entrypoints/inspector_main/RenderingOptions.ts | layerBorders": {
     "message": "Layer borders"
   },
@@ -943,9 +952,6 @@
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsAnOverlayWithCoreWebVitals": {
     "message": "Shows an overlay with Core Web Vitals."
-  },
-  "entrypoints/inspector_main/RenderingOptions.ts | showsBordersAroundHittestRegions": {
-    "message": "Shows borders around hit-test regions."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsLayerBordersOrangeoliveAnd": {
     "message": "Shows layer borders (orange/olive) and tiles (cyan)."
@@ -1001,7 +1007,7 @@
   "entrypoints/inspector_main/inspector_main-meta.ts | visionDeficiency": {
     "message": "vision deficiency"
   },
-  "entrypoints/js_app/JsMain.ts | main": {
+  "entrypoints/js_app/js_app.ts | main": {
     "message": "Main"
   },
   "entrypoints/main/MainImpl.ts | customizeAndControlDevtools": {
@@ -1036,9 +1042,6 @@
   },
   "entrypoints/main/MainImpl.ts | showConsoleDrawer": {
     "message": "Show console drawer"
-  },
-  "entrypoints/main/MainImpl.ts | theSystempreferredColorSchemeHas": {
-    "message": "The system-preferred colour scheme has changed. To apply this change to DevTools, reload."
   },
   "entrypoints/main/MainImpl.ts | undockIntoSeparateWindow": {
     "message": "Undock into separate window"
@@ -1190,41 +1193,41 @@
   "entrypoints/main/main-meta.ts | zoomOut": {
     "message": "Zoom out"
   },
-  "entrypoints/node_app/node_app-meta.ts | node": {
-    "message": "Node"
-  },
-  "entrypoints/node_app/node_app-meta.ts | showNode": {
-    "message": "Node"
-  },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | addConnection": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | addConnection": {
     "message": "Add connection"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
     "message": "Network address (e.g. localhost:9229)"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | noConnectionsSpecified": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | noConnectionsSpecified": {
     "message": "No connections specified"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
     "message": "Node.js debugging guide"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
     "message": "Specify network endpoint and DevTools will connect to it automatically. Read {PH1} to learn more."
   },
-  "entrypoints/node_main/NodeMain.ts | main": {
+  "entrypoints/node_app/NodeMain.ts | main": {
     "message": "Main"
   },
-  "entrypoints/node_main/NodeMain.ts | nodejsS": {
+  "entrypoints/node_app/NodeMain.ts | nodejsS": {
     "message": "Node.js: {PH1}"
   },
-  "entrypoints/node_main/node_main-meta.ts | connection": {
+  "entrypoints/node_app/node_app.ts | connection": {
     "message": "Connection"
   },
-  "entrypoints/node_main/node_main-meta.ts | node": {
+  "entrypoints/node_app/node_app.ts | networkTitle": {
+    "message": "Node"
+  },
+  "entrypoints/node_app/node_app.ts | node": {
     "message": "node"
   },
-  "entrypoints/node_main/node_main-meta.ts | showConnection": {
+  "entrypoints/node_app/node_app.ts | showConnection": {
     "message": "Show connection"
+  },
+  "entrypoints/node_app/node_app.ts | showNode": {
+    "message": "Node"
   },
   "entrypoints/worker_app/WorkerMain.ts | main": {
     "message": "Main"
@@ -1304,6 +1307,9 @@
   "models/har/Writer.ts | writingFile": {
     "message": "Writing file…"
   },
+  "models/issues_manager/ClientHintIssue.ts | clientHintsInfrastructure": {
+    "message": "Client hints infrastructure"
+  },
   "models/issues_manager/ContentSecurityPolicyIssue.ts | contentSecurityPolicyEval": {
     "message": "Content Security Policy – eval"
   },
@@ -1322,8 +1328,8 @@
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "Cross-origin resource sharing (CORS)"
   },
-  "models/issues_manager/CorsIssue.ts | corsForPrivateNetworksRfc": {
-    "message": "CORS for private networks (RFC1918)"
+  "models/issues_manager/CorsIssue.ts | corsPrivateNetworkAccess": {
+    "message": "Private network access"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | coopAndCoep": {
     "message": "COOP and COEP"
@@ -1559,8 +1565,17 @@
   "panels/accessibility/AXBreadcrumbsPane.ts | accessibilityTree": {
     "message": "Accessibility tree"
   },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentDescription": {
+    "message": "The accessibility tree moved to the top-right corner of the DOM tree."
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentName": {
+    "message": "Enable full-page accessibility tree"
+  },
   "panels/accessibility/AXBreadcrumbsPane.ts | ignored": {
     "message": "Ignored"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | reloadRequired": {
+    "message": "Reload required before the change takes effect."
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | scrollIntoView": {
     "message": "Scroll into view"
@@ -2051,6 +2066,12 @@
   "panels/application/AppManifestView.ts | couldNotDownloadARequiredIcon": {
     "message": "Could not download a required icon from the manifest"
   },
+  "panels/application/AppManifestView.ts | darkBackgroundColor": {
+    "message": "Dark background colour"
+  },
+  "panels/application/AppManifestView.ts | darkThemeColor": {
+    "message": "Dark theme colour"
+  },
   "panels/application/AppManifestView.ts | description": {
     "message": "Description"
   },
@@ -2314,384 +2335,6 @@
   },
   "panels/application/ApplicationPanelSidebar.ts | worker": {
     "message": "worker"
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
-    "message": "Only pages loaded via a GET request are eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
-    "message": "Only pages with a status code of 2XX can be cached."
-  },
-  "panels/application/BackForwardCacheStrings.ts | JavaScriptExecution": {
-    "message": "Chrome detected an attempt to execute JavaScript while in the cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | appBanner": {
-    "message": "Pages that requested an AppBanner are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
-    "message": "Back-forward cache is disabled by flags. Visit chrome://flags/#back-forward-cache to enable it locally on this device."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
-    "message": "Back-forward cache is disabled by the command line."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
-    "message": "Back-forward cache is disabled due to insufficient memory."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
-    "message": "Back-forward cache is not supported by delegate."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
-    "message": "Back-forward cache is disabled for pre-renderer."
-  },
-  "panels/application/BackForwardCacheStrings.ts | broadcastChannel": {
-    "message": "The page cannot be cached because it has a BroadcastChannel instance with registered listeners."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheControlNoStore": {
-    "message": "Pages with cache-control:no-store header cannot enter back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheFlushed": {
-    "message": "The cache was intentionally cleared."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheLimit": {
-    "message": "The page was evicted from the cache to allow another page to be cached."
-  },
-  "panels/application/BackForwardCacheStrings.ts | containsPlugins": {
-    "message": "Pages containing plug-ins are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileChooser": {
-    "message": "Pages that use FileChooser API are not eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileSystemAccess": {
-    "message": "Pages that use file system access API are not eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
-    "message": "Pages that use media device dispatcher are not eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaPlay": {
-    "message": "A media player was playing upon navigating away."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSession": {
-    "message": "Pages that use MediaSession API and set a playback state are not eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSessionService": {
-    "message": "Pages that use MediaSession API and set action handlers are not eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSecurityHandler": {
-    "message": "Pages that use SecurityHandler are not eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSerial": {
-    "message": "Pages that use Serial API are not eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
-    "message": "Pages that use WebAuthentication API are not eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebBluetooth": {
-    "message": "Pages that use WebBluetooth API are not eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebUSB": {
-    "message": "Pages that use WebUSB API are not eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
-    "message": "Pages that use a dedicated worker or worklet are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | documentLoaded": {
-    "message": "The document did not finish loading before navigating away."
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderAppBannerManager": {
-    "message": "EmbedderAppBannerManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
-    "message": "EmbedderChromePasswordManagerClientBindCredentialManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
-    "message": "EmbedderDomDistillerSelfDeletingRequestDelegate"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
-    "message": "EmbedderDomDistillerViewerSource"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
-    "message": "EmbedderExtensionMessaging"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
-    "message": "EmbedderExtensionMessagingForOpenPort"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
-    "message": "EmbedderExtensionSentMessageToCachedFrame"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensions": {
-    "message": "EmbedderExtensions"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderModalDialog": {
-    "message": "EmbedderModalDialogue"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOfflinePage": {
-    "message": "EmbedderOfflinePage"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
-    "message": "EmbedderOomInterventionTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
-    "message": "EmbedderPermissionRequestManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
-    "message": "EmbedderPopupBlockerTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
-    "message": "EmbedderSafeBrowsingThreatDetails"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
-    "message": "EmbedderSafeBrowsingTriggeredPopupBlocker"
-  },
-  "panels/application/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
-    "message": "A service worker was activated while the page was in back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | foregroundCacheLimit": {
-    "message": "The page was evicted from the cache to allow another page to be cached."
-  },
-  "panels/application/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
-    "message": "Pages that have granted media stream access are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | haveInnerContents": {
-    "message": "Pages that use portals are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | idleManager": {
-    "message": "Pages that use IdleManager are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | indexedDBConnection": {
-    "message": "Pages that have an open IndexedDB connection are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | ineligibleAPI": {
-    "message": "Ineligible APIs were used."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedJavascript": {
-    "message": "IPages that JavaScript is injected into by extensions are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedStyleSheet": {
-    "message": "Pages that StyleSheet is injected into by extensions are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | internalError": {
-    "message": "Internal error."
-  },
-  "panels/application/BackForwardCacheStrings.ts | keyboardLock": {
-    "message": "Pages that use keyboard lock are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | loading": {
-    "message": "The page did not finish loading before navigating away."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
-    "message": "Pages whose main resource has cache-control:no-cache cannot enter back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
-    "message": "Pages whose main resource has cache-control:no-store cannot enter back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
-    "message": "Navigation was cancelled before the page could be restored from back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
-    "message": "The page was evicted from the cache because an active network connection received too much data. Chrome limits the amount of data that a page may receive while cached."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
-    "message": "Pages that have inflight fetch() or XHR are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestRedirected": {
-    "message": "The page was evicted from back-forward cache because an active network request involved a redirect."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestTimeout": {
-    "message": "The page was evicted from the cache because a network connection was open too long. Chrome limits the amount of time that a page may receive data while cached."
-  },
-  "panels/application/BackForwardCacheStrings.ts | noResponseHead": {
-    "message": "Pages that do not have a valid response head cannot enter back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | notMainFrame": {
-    "message": "Navigation happened in a frame other than the main frame."
-  },
-  "panels/application/BackForwardCacheStrings.ts | optInUnloadHeaderNotPresent": {
-    "message": "The page has unload handler without the back-forward cache opt-in header."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
-    "message": "Pages with ongoing indexed DB transactions are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
-    "message": "Pages with an in-flight network request are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
-    "message": "Pages with an in-flight fetch network request are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
-    "message": "Pages with an in-flight network request are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
-    "message": "Pages with an in-flight XHR network request are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | paymentManager": {
-    "message": "Pages that use PaymentManager are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | pictureInPicture": {
-    "message": "Pages that use picture-in-picture are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | portal": {
-    "message": "Pages that use portals are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | printing": {
-    "message": "Pages that show Printing UI are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
-    "message": "The page was opened using window.open() and another tab has a reference to it, or the page opened a window."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessCrashed": {
-    "message": "The renderer process for the page in back-forward cache crashed."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessKilled": {
-    "message": "The renderer process for the page in back-forward cache was killed."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
-    "message": "Pages that have requested audio capture permissions are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
-    "message": "Pages that have requested sensor permissions are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
-    "message": "Pages that have requested background sync or fetch permissions are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedMIDIPermission": {
-    "message": "Pages that have requested MIDI permissions are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
-    "message": "Pages that have requested notifications permissions are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
-    "message": "Pages that have requested storage access are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
-    "message": "Pages that have requested video capture permissions are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
-    "message": "Only pages whose URL scheme is HTTP/HTTPS can be cached."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerClaim": {
-    "message": "The page was claimed by a service worker while it is in back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
-    "message": "A service worker attempted to send the page in back-forward cache a MessageEvent."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
-    "message": "ServiceWorker was unregistered while a page was in back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
-    "message": "The page was evicted from back-forward cache due to a service worker activation."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sessionRestored": {
-    "message": "Chrome restarted and cleared the back-forward cache entries."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sharedWorker": {
-    "message": "Pages that use SharedWorker are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechRecognizer": {
-    "message": "Pages that use SpeechRecogniser are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechSynthesis": {
-    "message": "Pages that use SpeechSynthesis are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subframeIsNavigating": {
-    "message": "An iframe on the page started a navigation that did not complete."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
-    "message": "Pages whose subresource has cache-control:no-cache cannot enter back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
-    "message": "Pages whose subresource has cache-control:no-store cannot enter back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeout": {
-    "message": "The page exceeded the maximum time in back-forward cache and expired."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
-    "message": "The page timed out entering back-forward cache (likely due to long-running page-hide handlers)."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
-    "message": "The page has an unload handler in the main frame."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
-    "message": "The page has an unload handler in a sub frame."
-  },
-  "panels/application/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
-    "message": "Browser has changed the user agent override header."
-  },
-  "panels/application/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
-    "message": "Pages that have granted access to record video or audio are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webDatabase": {
-    "message": "Pages that use WebDatabase are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webHID": {
-    "message": "Pages that use WebHID are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webLocks": {
-    "message": "Pages that use WebLocks are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webNfc": {
-    "message": "Pages that use WebNfc are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webOTPService": {
-    "message": "Pages that use WebOTPService are not currently eligible for bfcache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webRTC": {
-    "message": "Pages with WebRTC cannot enter back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webShare": {
-    "message": "Pages that use WebShare are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webSocket": {
-    "message": "Pages with WebSocket cannot enter back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webTransport": {
-    "message": "Pages with WebTransport cannot enter back-forward cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webXR": {
-    "message": "Pages that use WebXR are not currently eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheView.ts | backForwardCacheTitle": {
-    "message": "Back-forward cache"
-  },
-  "panels/application/BackForwardCacheView.ts | bfcacheStatus": {
-    "message": "Back-forward cache status"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantial": {
-    "message": "Not actionable"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantialExplanation": {
-    "message": "These reasons are not actionable, i.e. caching was prevented by something outside of the direct control of the page."
-  },
-  "panels/application/BackForwardCacheView.ts | mainFrame": {
-    "message": "Main frame"
-  },
-  "panels/application/BackForwardCacheView.ts | normalNavigation": {
-    "message": "Normal navigation (not restored from back-forward cache)"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeeded": {
-    "message": "Actionable"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeededExplanation": {
-    "message": "These reasons are actionable, i.e. they can be cleaned up to make the page eligible for back-forward cache."
-  },
-  "panels/application/BackForwardCacheView.ts | restoredFromBFCache": {
-    "message": "Restored from back-forward cache"
-  },
-  "panels/application/BackForwardCacheView.ts | runTest": {
-    "message": "Run test"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPending": {
-    "message": "Pending support"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPendingExplanation": {
-    "message": "Chrome support for these reasons is pending, i.e. they will not prevent the page from being eligible for back-forward cache in a future version of Chrome."
-  },
-  "panels/application/BackForwardCacheView.ts | unavailable": {
-    "message": "unavailable"
-  },
-  "panels/application/BackForwardCacheView.ts | unknown": {
-    "message": "unknown"
-  },
-  "panels/application/BackForwardCacheView.ts | url": {
-    "message": "URL"
   },
   "panels/application/BackgroundServiceView.ts | backgroundFetch": {
     "message": "Background fetch"
@@ -3251,6 +2894,387 @@
   "panels/application/application-meta.ts | stopRecordingEvents": {
     "message": "Stop recording events"
   },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
+    "message": "Only pages loaded via a GET request are eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
+    "message": "Only pages with a status code of 2XX can be cached."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | JavaScriptExecution": {
+    "message": "Chrome detected an attempt to execute JavaScript while in the cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | appBanner": {
+    "message": "Pages that requested an AppBanner are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
+    "message": "Back-forward cache is disabled by flags. Visit chrome://flags/#back-forward-cache to enable it locally on this device."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
+    "message": "Back-forward cache is disabled by the command line."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
+    "message": "Back-forward cache is disabled due to insufficient memory."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
+    "message": "Back-forward cache is not supported by delegate."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
+    "message": "Back-forward cache is disabled for pre-renderer."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | broadcastChannel": {
+    "message": "The page cannot be cached because it has a BroadcastChannel instance with registered listeners."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheControlNoStore": {
+    "message": "Pages with cache-control:no-store header cannot enter back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheFlushed": {
+    "message": "The cache was intentionally cleared."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheLimit": {
+    "message": "The page was evicted from the cache to allow another page to be cached."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | containsPlugins": {
+    "message": "Pages containing plug-ins are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileChooser": {
+    "message": "Pages that use FileChooser API are not eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileSystemAccess": {
+    "message": "Pages that use file system access API are not eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
+    "message": "Pages that use media device dispatcher are not eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaPlay": {
+    "message": "A media player was playing upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSession": {
+    "message": "Pages that use MediaSession API and set a playback state are not eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSessionService": {
+    "message": "Pages that use MediaSession API and set action handlers are not eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentScreenReader": {
+    "message": "Back-forward cache is disabled due to screen reader."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSecurityHandler": {
+    "message": "Pages that use SecurityHandler are not eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSerial": {
+    "message": "Pages that use Serial API are not eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
+    "message": "Pages that use WebAuthentication API are not eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebBluetooth": {
+    "message": "Pages that use WebBluetooth API are not eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebUSB": {
+    "message": "Pages that use WebUSB API are not eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
+    "message": "Pages that use a dedicated worker or worklet are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | documentLoaded": {
+    "message": "The document did not finish loading before navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderAppBannerManager": {
+    "message": "App banner was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
+    "message": "Chrome Password Manager was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
+    "message": "DOM distillation was in progress upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
+    "message": "DOM distiller viewer was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
+    "message": "Back-forward cache is disabled due to extensions using messaging API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
+    "message": "Extensions with long-lived connection should close the connection before entering back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
+    "message": "Extensions with long-lived connection attempted to send messages to frames in back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensions": {
+    "message": "Back-forward cache is disabled due to extensions."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderModalDialog": {
+    "message": "Modal dialogue such as form resubmission or HTTP password dialogue was shown for the page upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOfflinePage": {
+    "message": "The offline page was shown upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
+    "message": "Out-of-memory intervention bar was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
+    "message": "There were permission requests upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
+    "message": "Pop-up blocker was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
+    "message": "Safe Browsing details were shown upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
+    "message": "Safe Browsing considered this page to be abusive and blocked the pop-up."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
+    "message": "A service worker was activated while the page was in back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | foregroundCacheLimit": {
+    "message": "The page was evicted from the cache to allow another page to be cached."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
+    "message": "Pages that have granted media stream access are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | haveInnerContents": {
+    "message": "Pages that use portals are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | idleManager": {
+    "message": "Pages that use IdleManager are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | indexedDBConnection": {
+    "message": "Pages that have an open IndexedDB connection are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | ineligibleAPI": {
+    "message": "Ineligible APIs were used."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedJavascript": {
+    "message": "IPages that JavaScript is injected into by extensions are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedStyleSheet": {
+    "message": "Pages that StyleSheet is injected into by extensions are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | internalError": {
+    "message": "Internal error."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | keyboardLock": {
+    "message": "Pages that use keyboard lock are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | loading": {
+    "message": "The page did not finish loading before navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
+    "message": "Pages whose main resource has cache-control:no-cache cannot enter back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
+    "message": "Pages whose main resource has cache-control:no-store cannot enter back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
+    "message": "Navigation was cancelled before the page could be restored from back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
+    "message": "The page was evicted from the cache because an active network connection received too much data. Chrome limits the amount of data that a page may receive while cached."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
+    "message": "Pages that have inflight fetch() or XHR are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestRedirected": {
+    "message": "The page was evicted from back-forward cache because an active network request involved a redirect."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestTimeout": {
+    "message": "The page was evicted from the cache because a network connection was open too long. Chrome limits the amount of time that a page may receive data while cached."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | noResponseHead": {
+    "message": "Pages that do not have a valid response head cannot enter back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | notMainFrame": {
+    "message": "Navigation happened in a frame other than the main frame."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
+    "message": "Pages with ongoing indexed DB transactions are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
+    "message": "Pages with an in-flight network request are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
+    "message": "Pages with an in-flight fetch network request are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
+    "message": "Pages with an in-flight network request are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
+    "message": "Pages with an in-flight XHR network request are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | paymentManager": {
+    "message": "Pages that use PaymentManager are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | pictureInPicture": {
+    "message": "Pages that use picture-in-picture are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | portal": {
+    "message": "Pages that use portals are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | printing": {
+    "message": "Pages that show Printing UI are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
+    "message": "The page was opened using 'window.open()' and another tab has a reference to it, or the page opened a window."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessCrashed": {
+    "message": "The renderer process for the page in back-forward cache crashed."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessKilled": {
+    "message": "The renderer process for the page in back-forward cache was killed."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
+    "message": "Pages that have requested audio capture permissions are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
+    "message": "Pages that have requested sensor permissions are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
+    "message": "Pages that have requested background sync or fetch permissions are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedMIDIPermission": {
+    "message": "Pages that have requested MIDI permissions are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
+    "message": "Pages that have requested notifications permissions are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
+    "message": "Pages that have requested storage access are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
+    "message": "Pages that have requested video capture permissions are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
+    "message": "Only pages whose URL scheme is HTTP/HTTPS can be cached."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerClaim": {
+    "message": "The page was claimed by a service worker while it is in back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
+    "message": "A service worker attempted to send the page in back-forward cache a MessageEvent."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
+    "message": "ServiceWorker was unregistered while a page was in back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
+    "message": "The page was evicted from back-forward cache due to a service worker activation."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sessionRestored": {
+    "message": "Chrome restarted and cleared the back-forward cache entries."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sharedWorker": {
+    "message": "Pages that use SharedWorker are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechRecognizer": {
+    "message": "Pages that use SpeechRecogniser are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechSynthesis": {
+    "message": "Pages that use SpeechSynthesis are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subframeIsNavigating": {
+    "message": "An iframe on the page started a navigation that did not complete."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
+    "message": "Pages whose subresource has cache-control:no-cache cannot enter back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
+    "message": "Pages whose subresource has cache-control:no-store cannot enter back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeout": {
+    "message": "The page exceeded the maximum time in back-forward cache and expired."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
+    "message": "The page timed out entering back-forward cache (likely due to long-running page-hide handlers)."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
+    "message": "The page has an unload handler in the main frame."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
+    "message": "The page has an unload handler in a sub frame."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
+    "message": "Browser has changed the user agent override header."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
+    "message": "Pages that have granted access to record video or audio are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webDatabase": {
+    "message": "Pages that use WebDatabase are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webHID": {
+    "message": "Pages that use WebHID are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webLocks": {
+    "message": "Pages that use WebLocks are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webNfc": {
+    "message": "Pages that use WebNfc are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webOTPService": {
+    "message": "Pages that use WebOTPService are not currently eligible for bfcache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webRTC": {
+    "message": "Pages with WebRTC cannot enter back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webShare": {
+    "message": "Pages that use WebShare are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webSocket": {
+    "message": "Pages with WebSocket cannot enter back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webTransport": {
+    "message": "Pages with WebTransport cannot enter back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webXR": {
+    "message": "Pages that use WebXR are not currently eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheView.ts | backForwardCacheTitle": {
+    "message": "Back-forward cache"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantial": {
+    "message": "Not actionable"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantialExplanation": {
+    "message": "These reasons are not actionable, i.e. caching was prevented by something outside of the direct control of the page."
+  },
+  "panels/application/components/BackForwardCacheView.ts | learnMore": {
+    "message": "Learn more: back/forward cache eligibility"
+  },
+  "panels/application/components/BackForwardCacheView.ts | mainFrame": {
+    "message": "Main frame"
+  },
+  "panels/application/components/BackForwardCacheView.ts | normalNavigation": {
+    "message": "Not served from back/forward cache: to trigger back/forward cache, use Chrome's back/forward buttons, or use the test button below to automatically navigate away and back."
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeeded": {
+    "message": "Actionable"
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeededExplanation": {
+    "message": "These reasons are actionable i.e. they can be cleaned up to make the page eligible for back-forward cache."
+  },
+  "panels/application/components/BackForwardCacheView.ts | restoredFromBFCache": {
+    "message": "Successfully served from back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheView.ts | runTest": {
+    "message": "Test back/forward cache"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runningTest": {
+    "message": "Running test"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPending": {
+    "message": "Pending support"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPendingExplanation": {
+    "message": "Chrome support for these reasons is pending i.e. they will not prevent the page from being eligible for back-forward cache in a future version of Chrome."
+  },
+  "panels/application/components/BackForwardCacheView.ts | unavailable": {
+    "message": "unavailable"
+  },
+  "panels/application/components/BackForwardCacheView.ts | unknown": {
+    "message": "Unknown status"
+  },
+  "panels/application/components/BackForwardCacheView.ts | url": {
+    "message": "URL:"
+  },
   "panels/application/components/EndpointsGrid.ts | noEndpointsToDisplay": {
     "message": "No endpoints to display"
   },
@@ -3300,19 +3324,13 @@
     "message": "There was an ad script in the (async) stack when this frame was created. Examining the creation stack trace of this frame might provide more insight."
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTrace": {
-    "message": "Frame creation stack trace"
+    "message": "Frame creation Stack Trace"
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTraceExplanation": {
     "message": "This frame was created programmatically. The stack trace shows where this happened."
   },
-  "panels/application/components/FrameDetailsView.ts | crossoriginEmbedderPolicy": {
-    "message": "Cross-origin embedder policy"
-  },
   "panels/application/components/FrameDetailsView.ts | crossoriginIsolated": {
     "message": "Cross-origin isolated"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginOpenerPolicy": {
-    "message": "Cross-origin opener policy"
   },
   "panels/application/components/FrameDetailsView.ts | document": {
     "message": "Document"
@@ -3337,9 +3355,6 @@
   },
   "panels/application/components/FrameDetailsView.ts | origin": {
     "message": "Origin"
-  },
-  "panels/application/components/FrameDetailsView.ts | originTrials": {
-    "message": "Origin trials"
   },
   "panels/application/components/FrameDetailsView.ts | ownerElement": {
     "message": "Owner element"
@@ -4229,20 +4244,11 @@
   "panels/css_overview/CSSOverviewUnusedDeclarations.ts | widthAppliedToAnInlineElement": {
     "message": "Width applied to an inline element"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | activelyWorkingAndLookingForS": {
-    "message": "Our team is actively working on this feature and we are looking for your {PH1}!"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | captureOverview": {
     "message": "Capture overview"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | capturePageCSSOverview": {
     "message": "Capture an overview of your page’s CSS"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackInline": {
-    "message": "feedback"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackStandalone": {
-    "message": "Feedback"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | identifyCSSImprovements": {
     "message": "Identify potential CSS improvements"
@@ -4253,14 +4259,8 @@
   "panels/css_overview/components/CSSOverviewStartView.ts | locateAffectedElements": {
     "message": "Locate the affected elements in the elements panel"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | previewFeature": {
-    "message": "Preview feature"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | quickStartWithCSSOverview": {
     "message": "Quick start: get started with the new CSS overview panel"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | videoAndDocumentation": {
-    "message": "Video and documentation"
   },
   "panels/css_overview/css_overview-meta.ts | cssOverview": {
     "message": "CSS overview"
@@ -4591,6 +4591,21 @@
   },
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
     "message": "Rendered fonts"
+  },
+  "panels/elements/PropertiesWidget.ts | filter": {
+    "message": "Filter"
+  },
+  "panels/elements/PropertiesWidget.ts | filterProperties": {
+    "message": "Filter properties"
+  },
+  "panels/elements/PropertiesWidget.ts | noMatchingProperty": {
+    "message": "No matching property"
+  },
+  "panels/elements/PropertiesWidget.ts | showAll": {
+    "message": "Show all"
+  },
+  "panels/elements/PropertiesWidget.ts | showAllTooltip": {
+    "message": "When unchecked, only properties whose values are neither null nor undefined will be shown"
   },
   "panels/elements/StylePropertyTreeElement.ts | copyAllCssDeclarationsAsJs": {
     "message": "Copy all declarations as JS"
@@ -4980,7 +4995,7 @@
     "message": "Hide media queries"
   },
   "panels/emulation/emulation-meta.ts | hideRulers": {
-    "message": "Hide rulers"
+    "message": "Hide rulers in the Device Mode toolbar"
   },
   "panels/emulation/emulation-meta.ts | showDeviceFrame": {
     "message": "Show device frame"
@@ -4989,7 +5004,7 @@
     "message": "Show media queries"
   },
   "panels/emulation/emulation-meta.ts | showRulers": {
-    "message": "Show rulers"
+    "message": "Show rulers in the Device Mode toolbar"
   },
   "panels/emulation/emulation-meta.ts | toggleDeviceToolbar": {
     "message": "Toggle device toolbar"
@@ -5014,36 +5029,6 @@
   },
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "Toggle whether event listener is passive or blocking"
-  },
-  "panels/help/ReleaseNoteView.ts | close": {
-    "message": "Close"
-  },
-  "panels/help/ReleaseNoteView.ts | learnMore": {
-    "message": "Learn more"
-  },
-  "panels/help/help-meta.ts | bug": {
-    "message": "bug"
-  },
-  "panels/help/help-meta.ts | doNotShowWhatsNewAfterEachUpdate": {
-    "message": "Do not show 'What's new' after each update"
-  },
-  "panels/help/help-meta.ts | releaseNotes": {
-    "message": "Release notes"
-  },
-  "panels/help/help-meta.ts | reportADevtoolsIssue": {
-    "message": "Report a DevTools issue"
-  },
-  "panels/help/help-meta.ts | reportTranslationIssue": {
-    "message": "Report a translation issue"
-  },
-  "panels/help/help-meta.ts | showWhatsNew": {
-    "message": "Show what's new"
-  },
-  "panels/help/help-meta.ts | showWhatsNewAfterEachUpdate": {
-    "message": "Show 'What's new' after each update"
-  },
-  "panels/help/help-meta.ts | whatsNew": {
-    "message": "What’s new"
   },
   "panels/input/InputTimeline.ts | clearAll": {
     "message": "Clear all"
@@ -5261,8 +5246,20 @@
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceEventId": {
     "message": "Invalid attributionsourceeventid"
   },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceExpiry": {
+    "message": "Invalid attributionexpiry"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourcePriority": {
+    "message": "Invalid attributionsourcepriority"
+  },
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerData": {
     "message": "Invalid trigger-data"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerDedupKey": {
+    "message": "Invalid dedup-key"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerPriority": {
+    "message": "Invalid priority"
   },
   "panels/issues/AttributionReportingIssueDetailsView.ts | nViolations": {
     "message": "{n,plural, =1{# violation}other{# violations}}"
@@ -5290,6 +5287,9 @@
   },
   "panels/issues/CorsIssueDetailsView.ts | disallowedRequestMethod": {
     "message": "Disallowed request method"
+  },
+  "panels/issues/CorsIssueDetailsView.ts | failedRequest": {
+    "message": "Failed request"
   },
   "panels/issues/CorsIssueDetailsView.ts | header": {
     "message": "Header"
@@ -5366,8 +5366,14 @@
   "panels/issues/HiddenIssuesRow.ts | unhideAll": {
     "message": "Unhide all"
   },
-  "panels/issues/IssueKindView.ts | hideAllCurrent": {
-    "message": "Hide all current {PH1}"
+  "panels/issues/IssueKindView.ts | hideAllCurrentBreakingChanges": {
+    "message": "Hide all current breaking changes"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentImprovements": {
+    "message": "Hide all current improvements"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentPageErrors": {
+    "message": "Hide all current page errors"
   },
   "panels/issues/IssueView.ts | affectedResources": {
     "message": "Affected resources"
@@ -6307,6 +6313,9 @@
   },
   "panels/network/NetworkConfigView.ts | caching": {
     "message": "Caching"
+  },
+  "panels/network/NetworkConfigView.ts | clientHintsStatusText": {
+    "message": "User agent updated."
   },
   "panels/network/NetworkConfigView.ts | custom": {
     "message": "Custom…"
@@ -9153,7 +9162,7 @@
     "message": "Coverage: N/A"
   },
   "panels/sources/CoveragePlugin.ts | coverageS": {
-    "message": "Coverage: {PH1} %"
+    "message": "Coverage: {PH1}"
   },
   "panels/sources/CoveragePlugin.ts | showDetails": {
     "message": "Show details"
@@ -9412,6 +9421,15 @@
   },
   "panels/sources/OutlineQuickOpen.ts | openAJavascriptOrCssFileToSee": {
     "message": "Open a JavaScript or CSS file to see symbols"
+  },
+  "panels/sources/ProfilePlugin.ts | kb": {
+    "message": "kB"
+  },
+  "panels/sources/ProfilePlugin.ts | mb": {
+    "message": "MB"
+  },
+  "panels/sources/ProfilePlugin.ts | ms": {
+    "message": "ms"
   },
   "panels/sources/ScopeChainSidebarPane.ts | closure": {
     "message": "Closure"
@@ -11429,6 +11447,24 @@
   "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
     "message": "Show memory inspector"
   },
+  "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
+    "message": "Feedback"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewFeature": {
+    "message": "Preview feature"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewText": {
+    "message": "Our team is actively working on this feature and we would love to know what you think."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewTextFeedbackLink": {
+    "message": "Send us your feedback."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | videoAndDocumentation": {
+    "message": "Video and documentation"
+  },
+  "ui/components/panel_feedback/PreviewToggle.ts | previewTextFeedbackLink": {
+    "message": "Send us your feedback."
+  },
   "ui/components/request_link_icon/RequestLinkIcon.ts | clickToShowRequestInTheNetwork": {
     "message": "Click to open the network panel and show request for URL: {url}"
   },
@@ -11501,6 +11537,12 @@
   "ui/legacy/InspectorView.ts | drawer": {
     "message": "Tool drawer"
   },
+  "ui/legacy/InspectorView.ts | drawerHidden": {
+    "message": "Drawer hidden"
+  },
+  "ui/legacy/InspectorView.ts | drawerShown": {
+    "message": "Drawer shown"
+  },
   "ui/legacy/InspectorView.ts | mainToolbar": {
     "message": "Main toolbar"
   },
@@ -11539,6 +11581,9 @@
   },
   "ui/legacy/ListWidget.ts | saveString": {
     "message": "Save"
+  },
+  "ui/legacy/RemoteDebuggingTerminatedScreen.ts | debuggingConnectionWasClosed": {
+    "message": "Debugging connection was closed. Reason: "
   },
   "ui/legacy/RemoteDebuggingTerminatedScreen.ts | reconnectDevtools": {
     "message": "Reconnect DevTools"
@@ -11774,6 +11819,9 @@
   "ui/legacy/components/cookie_table/CookiesTable.ts | name": {
     "message": "Name"
   },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | opaquePartitionKey": {
+    "message": "(opaque)"
+  },
   "ui/legacy/components/cookie_table/CookiesTable.ts | session": {
     "message": "Session"
   },
@@ -11942,15 +11990,6 @@
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "Show as JavaScript object"
   },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keys": {
-    "message": "Keys"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keywords": {
-    "message": "keywords"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | lexicalScopeVariables": {
-    "message": "Lexical scope variables"
-  },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | collapseChildren": {
     "message": "Collapse children"
   },
@@ -12038,15 +12077,6 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | sSelected": {
     "message": "{PH1} selected"
   },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | kb": {
-    "message": "kB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | mb": {
-    "message": "MB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | ms": {
-    "message": "ms"
-  },
   "ui/legacy/components/perf_ui/NetworkPriorities.ts | high": {
     "message": "High"
   },
@@ -12119,8 +12149,8 @@
   "ui/legacy/components/quick_open/QuickInput.ts | pressEnterToConfirmOrEscapeTo": {
     "message": "{PH1} (Press 'Enter' to confirm or 'Escape' to cancel.)"
   },
-  "ui/legacy/components/quick_open/QuickOpen.ts | useTabToSwitchCommandsTypeToSeeAvailableCommands": {
-    "message": "Use Tab to switch commands. Type '?' to see available commands"
+  "ui/legacy/components/quick_open/QuickOpen.ts | typeToSeeAvailableCommands": {
+    "message": "Type '?' to see available commands"
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | openFile": {
     "message": "Open file"
@@ -12223,9 +12253,6 @@
   },
   "ui/legacy/components/source_frame/source_frame-meta.ts | tabCharacter": {
     "message": "Tab character"
-  },
-  "ui/legacy/components/text_editor/CodeMirrorTextEditor.ts | codeEditor": {
-    "message": "Code editor"
   },
   "ui/legacy/components/utils/ImagePreview.ts | currentSource": {
     "message": "Current source:"

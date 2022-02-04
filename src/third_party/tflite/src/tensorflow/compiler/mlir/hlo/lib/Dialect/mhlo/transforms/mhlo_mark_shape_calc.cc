@@ -61,7 +61,7 @@ class MarkShapeCalc : public MarkShapeCalculationPassBase<MarkShapeCalc> {
     // pass execution.
     cpu_placement_attr_ = StringAttr::get(context, kCpu);
     output_placement_attr_key_ =
-        Identifier::get(hlo::kOutputPlacementAttr, context);
+        StringAttr::get(context, hlo::kOutputPlacementAttr);
     true_attr_ = BoolAttr::get(context, true);
     return success();
   }
@@ -105,7 +105,7 @@ class MarkShapeCalc : public MarkShapeCalculationPassBase<MarkShapeCalc> {
 
   // Cached context-owned entities for fast pointer-based access.
   StringAttr cpu_placement_attr_;
-  Optional<Identifier> output_placement_attr_key_;
+  Optional<StringAttr> output_placement_attr_key_;
   BoolAttr true_attr_;
 };
 
@@ -167,7 +167,7 @@ void MarkShapeCalc::MarkRegardAsShapeCalcOps() {
 
     // Skip the Op that is already marked shape Op
     auto attr = op->getAttrOfType<BoolAttr>(kDiscShapeCalcAttr);
-    if ((attr != nullptr) && (attr.getValue() == true)) return;
+    if ((attr != nullptr) && (attr.getValue())) return;
 
     if (isa<mhlo::GetDimensionSizeOp, mhlo::PrintOp>(op)) {
       op->setAttr(kDiscShapeCalcAttr, true_attr_);
@@ -231,13 +231,13 @@ void MarkShapeCalc::MarkRegardAsShapeCalcOps() {
 void MarkShapeCalc::markI64ReturnedCpuScalarOps(
     FuncOp func, llvm::DenseSet<Operation*>& shape_calc_ops) {
   assert(func.getName() == "main");
-  auto return_op = func.front().getTerminator();
+  auto* return_op = func.front().getTerminator();
   if (!isa<mlir::ReturnOp>(return_op)) return;
   auto result_attrs = func.getAllResultAttrs();
   if (!result_attrs) return;
   auto returned_ops = return_op->getOperands();
   assert(returned_ops.size() == result_attrs.size());
-  for (auto output : llvm::enumerate(returned_ops)) {
+  for (const auto& output : llvm::enumerate(returned_ops)) {
     Operation* op = output.value().getDefiningOp();
     if (!op || !isMhloDialect(op)) continue;
     int idx = output.index();
@@ -270,7 +270,7 @@ void MarkShapeCalc::markShapeCalculationOps(
       auto iter = kShapeCalcOperandMap.find(op_type_id);
       if (iter != kShapeCalcOperandMap.end()) {
         for (auto operand_idx : iter->second) {
-          auto operand = op.getOperand(operand_idx).getDefiningOp();
+          auto* operand = op.getOperand(operand_idx).getDefiningOp();
           if (operand == nullptr || !isMhloDialect(operand)) continue;
           shape_calc_ops.insert(operand);
         }

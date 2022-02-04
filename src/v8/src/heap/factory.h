@@ -36,6 +36,7 @@ class BreakPointInfo;
 class CallableTask;
 class CallbackTask;
 class CallHandlerInfo;
+class CallSiteInfo;
 class Expression;
 class EmbedderDataArray;
 class ArrayBoilerplateDescription;
@@ -390,17 +391,25 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
 
   Handle<AccessorInfo> NewAccessorInfo();
 
+  Handle<ErrorStackData> NewErrorStackData(
+      Handle<Object> call_site_infos_or_formatted_stack,
+      Handle<Object> limit_or_stack_frame_infos);
+
   Handle<Script> CloneScript(Handle<Script> script);
 
   Handle<BreakPointInfo> NewBreakPointInfo(int source_position);
   Handle<BreakPoint> NewBreakPoint(int id, Handle<String> condition);
 
-  Handle<StackFrameInfo> NewStackFrameInfo(Handle<Object> receiver_or_instance,
-                                           Handle<Object> function,
-                                           Handle<HeapObject> code_object,
-                                           int code_offset_or_source_position,
-                                           int flags,
-                                           Handle<FixedArray> parameters);
+  Handle<CallSiteInfo> NewCallSiteInfo(Handle<Object> receiver_or_instance,
+                                       Handle<Object> function,
+                                       Handle<HeapObject> code_object,
+                                       int code_offset_or_source_position,
+                                       int flags,
+                                       Handle<FixedArray> parameters);
+  Handle<StackFrameInfo> NewStackFrameInfo(
+      Handle<HeapObject> shared_or_script,
+      int bytecode_offset_or_source_position, Handle<String> function_name,
+      bool is_constructor);
 
   // Allocate various microtasks.
   Handle<CallableTask> NewCallableTask(Handle<JSReceiver> callable,
@@ -589,19 +598,21 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
                                                        Handle<Map> rtt);
   Handle<WasmCapiFunctionData> NewWasmCapiFunctionData(
       Address call_target, Handle<Foreign> embedder_data,
-      Handle<Code> wrapper_code, Handle<Map> rtt,
+      Handle<CodeT> wrapper_code, Handle<Map> rtt,
       Handle<PodArray<wasm::ValueType>> serialized_sig);
   Handle<WasmExportedFunctionData> NewWasmExportedFunctionData(
-      Handle<Code> export_wrapper, Handle<WasmInstanceObject> instance,
+      Handle<CodeT> export_wrapper, Handle<WasmInstanceObject> instance,
       Address call_target, Handle<Object> ref, int func_index,
       Address sig_address, int wrapper_budget, Handle<Map> rtt);
-  Handle<WasmApiFunctionRef> NewWasmApiFunctionRef(Handle<JSReceiver> callable);
+  Handle<WasmApiFunctionRef> NewWasmApiFunctionRef(
+      Handle<JSReceiver> callable, Handle<HeapObject> suspender);
   // {opt_call_target} is kNullAddress for JavaScript functions, and
   // non-null for exported Wasm functions.
   Handle<WasmJSFunctionData> NewWasmJSFunctionData(
       Address opt_call_target, Handle<JSReceiver> callable, int return_count,
       int parameter_count, Handle<PodArray<wasm::ValueType>> serialized_sig,
-      Handle<Code> wrapper_code, Handle<Map> rtt);
+      Handle<CodeT> wrapper_code, Handle<Map> rtt,
+      Handle<HeapObject> suspender);
   Handle<WasmStruct> NewWasmStruct(const wasm::StructType* type,
                                    wasm::WasmValue* args, Handle<Map> map);
   Handle<WasmArray> NewWasmArray(const wasm::ArrayType* type,
@@ -1003,13 +1014,13 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
   }
 
   // This is the real Isolate that will be used for allocating and accessing
-  // external pointer entries when V8_HEAP_SANDBOX is enabled.
+  // external pointer entries when V8_SANDBOXED_EXTERNAL_POINTERS is enabled.
   Isolate* isolate_for_heap_sandbox() const {
-#ifdef V8_HEAP_SANDBOX
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
     return isolate();
 #else
     return nullptr;
-#endif  // V8_HEAP_SANDBOX
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
   }
 
   bool CanAllocateInReadOnlySpace();

@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -215,7 +215,7 @@ bool CoreChecks::ValidateFsOutputsAgainstDynamicRenderingRenderPass(SHADER_MODUL
     const bool alpha_to_coverage_enabled = pipeline->create_info.graphics.pMultisampleState != NULL &&
         pipeline->create_info.graphics.pMultisampleState->alphaToCoverageEnable == VK_TRUE;
 
-    for (uint32_t location = 0; location < pipeline->rp_state->dynamic_rendering_pipeline_create_info.colorAttachmentCount; ++location) {
+    for (uint32_t location = 0; location < location_map.size(); ++location) {
          const auto output = location_map[location].output;
 
         if (!output && pipeline->attachments[location].colorWriteMask != 0) {
@@ -223,7 +223,8 @@ bool CoreChecks::ValidateFsOutputsAgainstDynamicRenderingRenderPass(SHADER_MODUL
                 "Attachment %" PRIu32
                 " not written by fragment shader; undefined values will be written to attachment",
                 location);
-        } else if (output) {
+        } else if (output &&
+                  (location < pipeline->rp_state->dynamic_rendering_pipeline_create_info.colorAttachmentCount)) {
             auto format = pipeline->rp_state->dynamic_rendering_pipeline_create_info.pColorAttachmentFormats[location];
             const auto attachment_type = GetFormatType(format);
             const auto output_type = fs->GetFundamentalType(output->type_id);
@@ -1081,6 +1082,17 @@ bool CoreChecks::ValidateShaderStageInputOutputLimits(SHADER_MODULE_STATE const 
 bool CoreChecks::ValidateShaderStorageImageFormats(SHADER_MODULE_STATE const *src) const {
     bool skip = false;
 
+    // Checks based off shaderStorageImage(Read|Write)WithoutFormat are
+    // disabled if VK_KHR_format_feature_flags2 is supported.
+    //
+    //   https://github.com/KhronosGroup/Vulkan-Docs/blob/6177645341afc/appendices/spirvenv.txt#L553
+    //
+    // The other checks need to take into account the format features and so
+    // we apply that in the descriptor set matching validation code (see
+    // descriptor_sets.cpp).
+    if (has_format_feature2)
+        return skip;
+
     // Got through all ImageRead/Write instructions
     for (auto insn : *src) {
         switch (insn.opcode()) {
@@ -1115,13 +1127,11 @@ bool CoreChecks::ValidateShaderStorageImageFormats(SHADER_MODULE_STATE const *sr
 
     // Go through all variables for images and check decorations
     for (auto insn : *src) {
-        if (insn.opcode() != spv::OpVariable)
-            continue;
+        if (insn.opcode() != spv::OpVariable) continue;
 
         uint32_t var = insn.word(2);
         spirv_inst_iter type_def = src->GetImageFormatInst(insn.word(1));
-        if (type_def == src->end())
-            continue;
+        if (type_def == src->end()) continue;
         // Only check if the Image Dim operand is not SubpassData
         const auto dim = type_def.word(3);
         if (dim == spv::DimSubpassData) continue;
@@ -1807,7 +1817,8 @@ bool CoreChecks::ValidateAtomicsTypes(SHADER_MODULE_STATE const *src) const {
     return skip;
 }
 
-bool CoreChecks::ValidateExecutionModes(SHADER_MODULE_STATE const *src, spirv_inst_iter entrypoint) const {
+bool CoreChecks::ValidateExecutionModes(SHADER_MODULE_STATE const *src, spirv_inst_iter entrypoint, VkShaderStageFlagBits stage,
+                                        const PIPELINE_STATE *pipeline) const {
     auto entrypoint_id = entrypoint.word(2);
 
     // The first denorm execution mode encountered, along with its bit width.
@@ -2037,6 +2048,22 @@ bool CoreChecks::ValidateExecutionModes(SHADER_MODULE_STATE const *src, spirv_in
                     if (!enabled_features.maintenance4_features.maintenance4) {
                         skip |= LogError(device, "VUID-RuntimeSpirv-LocalSizeId-06434",
                                          "LocalSizeId execution mode used but maintenance4 feature not enabled");
+                    }
+                    break;
+                }
+
+                case spv::ExecutionModeEarlyFragmentTests: {
+                    if ((stage == VK_SHADER_STAGE_FRAGMENT_BIT) &&
+                        (pipeline && pipeline->create_info.graphics.pDepthStencilState &&
+                         (pipeline->create_info.graphics.pDepthStencilState->flags &
+                          (VK_PIPELINE_DEPTH_STENCIL_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_DEPTH_ACCESS_BIT_ARM |
+                           VK_PIPELINE_DEPTH_STENCIL_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_STENCIL_ACCESS_BIT_ARM)) != 0)) {
+                        skip |= LogError(
+                            device, " VUID-VkGraphicsPipelineCreateInfo-pStages-06466",
+                            "The fragment shader enables early fragment tests, but VkPipelineDepthStencilStateCreateInfo::flags == "
+                            "%s",
+                            string_VkPipelineDepthStencilStateCreateFlags(pipeline->create_info.graphics.pDepthStencilState->flags)
+                                .c_str());
                     }
                     break;
                 }
@@ -2581,7 +2608,7 @@ bool CoreChecks::ValidatePipelineShaderStage(const PIPELINE_STATE *pipeline, con
     skip |= ValidateShaderStorageImageFormats(module);
     skip |= ValidateShaderStageMaxResources(pStage->stage, pipeline);
     skip |= ValidateAtomicsTypes(module);
-    skip |= ValidateExecutionModes(module, entrypoint);
+    skip |= ValidateExecutionModes(module, entrypoint, pStage->stage, pipeline);
     skip |= ValidateSpecializations(pStage);
     skip |= ValidateDecorations(module);
     if (check_point_size && !pipeline->create_info.graphics.pRasterizationState->rasterizerDiscardEnable) {
@@ -2896,34 +2923,6 @@ bool CoreChecks::ValidateGraphicsPipelineShaderState(const PIPELINE_STATE *pipel
     return skip;
 }
 
-void CoreChecks::RecordGraphicsPipelineShaderDynamicState(PIPELINE_STATE *pipeline_state) {
-    if (phys_dev_ext_props.fragment_shading_rate_props.primitiveFragmentShadingRateWithMultipleViewports ||
-        !IsDynamic(pipeline_state, VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT_EXT)) {
-        return;
-    }
-
-    for (auto &stage : pipeline_state->stage_state) {
-        if (stage.stage_flag == VK_SHADER_STAGE_VERTEX_BIT || stage.stage_flag == VK_SHADER_STAGE_GEOMETRY_BIT ||
-            stage.stage_flag == VK_SHADER_STAGE_MESH_BIT_NV) {
-            bool primitiverate_written = false;
-
-            for (const auto &set : stage.module->GetBuiltinDecorationList()) {
-                auto insn = stage.module->at(set.offset);
-                if (set.builtin == spv::BuiltInPrimitiveShadingRateKHR) {
-                    primitiverate_written = stage.module->IsBuiltInWritten(insn, stage.entrypoint);
-                }
-                if (primitiverate_written) {
-                    break;
-                }
-            }
-
-            if (primitiverate_written) {
-                pipeline_state->wrote_primitive_shading_rate.insert(stage.stage_flag);
-            }
-        }
-    }
-}
-
 bool CoreChecks::ValidateGraphicsPipelineShaderDynamicState(const PIPELINE_STATE *pipeline, const CMD_BUFFER_STATE *pCB,
                                                             const char *caller, const DrawDispatchVuid &vuid) const {
     bool skip = false;
@@ -2933,7 +2932,7 @@ bool CoreChecks::ValidateGraphicsPipelineShaderDynamicState(const PIPELINE_STATE
             stage.stage_flag == VK_SHADER_STAGE_MESH_BIT_NV) {
             if (!phys_dev_ext_props.fragment_shading_rate_props.primitiveFragmentShadingRateWithMultipleViewports &&
                 IsDynamic(pipeline, VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT_EXT) && pCB->viewportWithCountCount != 1) {
-                if (pipeline->wrote_primitive_shading_rate.find(stage.stage_flag) != pipeline->wrote_primitive_shading_rate.end()) {
+                if (stage.wrote_primitive_shading_rate) {
                     skip |=
                         LogError(pipeline->pipeline(), vuid.viewport_count_primitive_shading_rate,
                                  "%s: %s shader of currently bound pipeline statically writes to PrimitiveShadingRateKHR built-in"
@@ -2965,7 +2964,7 @@ uint32_t CoreChecks::CalcShaderStageCount(const PIPELINE_STATE *pipeline, VkShad
     if (create_info.pLibraryInfo) {
         for (uint32_t i = 0; i < create_info.pLibraryInfo->libraryCount; ++i) {
             const auto library_pipeline = Get<PIPELINE_STATE>(create_info.pLibraryInfo->pLibraries[i]);
-            total += CalcShaderStageCount(library_pipeline, stageBit);
+            total += CalcShaderStageCount(library_pipeline.get(), stageBit);
         }
     }
 
@@ -2988,7 +2987,7 @@ bool CoreChecks::GroupHasValidIndex(const PIPELINE_STATE *pipeline, uint32_t gro
     // Search libraries
     if (create_info.pLibraryInfo) {
         for (uint32_t i = 0; i < create_info.pLibraryInfo->libraryCount; ++i) {
-            const auto library_pipeline = Get<PIPELINE_STATE>(create_info.pLibraryInfo->pLibraries[i]);
+            auto library_pipeline = Get<PIPELINE_STATE>(create_info.pLibraryInfo->pLibraries[i]);
             const uint32_t stage_count = library_pipeline->create_info.raytracing.ptr()->stageCount;
             if (group < stage_count) {
                 return (library_pipeline->create_info.raytracing.ptr()->pStages[group].stage & stage) != 0;

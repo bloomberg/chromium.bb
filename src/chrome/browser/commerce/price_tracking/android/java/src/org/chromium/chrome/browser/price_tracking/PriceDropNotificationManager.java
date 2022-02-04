@@ -21,16 +21,19 @@ import android.text.TextUtils;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.browserservices.intents.WebappConstants;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.NotificationIntentInterceptor;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscription;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscription.CommerceSubscriptionType;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscription.SubscriptionManagementType;
@@ -62,8 +65,13 @@ public class PriceDropNotificationManager {
             "org.chromium.chrome.browser.price_tracking.DESTINATION_URL";
     static final String EXTRA_ACTION_ID = "org.chromium.chrome.browser.price_tracking.ACTION_ID";
     static final String EXTRA_OFFER_ID = "org.chromium.chrome.browser.price_tracking.OFFER_ID";
+    static final String EXTRA_PRODUCT_CLUSTER_ID =
+            "org.chromium.chrome.browser.price_tracking.PRODUCT_CLUSTER_ID";
+    static final String EXTRA_NOTIFICATION_ID =
+            "org.chromium.chrome.browser.price_tracking.NOTIFICATION_ID";
 
     private static NotificationManagerProxy sNotificationManagerForTesting;
+    private static BookmarkBridge sBookmarkBridgeForTesting;
 
     /**
      * Used to host click logic for "turn off alert" action intent.
@@ -76,6 +84,10 @@ public class PriceDropNotificationManager {
             String destinationUrl = IntentUtils.safeGetStringExtra(intent, EXTRA_DESTINATION_URL);
             String actionId = IntentUtils.safeGetStringExtra(intent, EXTRA_ACTION_ID);
             String offerId = IntentUtils.safeGetStringExtra(intent, EXTRA_OFFER_ID);
+            String clusterId = IntentUtils.safeGetStringExtra(intent, EXTRA_PRODUCT_CLUSTER_ID);
+            int notificationId = IntentUtils.safeGetIntExtra(intent, EXTRA_NOTIFICATION_ID, 0);
+
+            dismissNotification(notificationId);
 
             if (TextUtils.isEmpty(offerId)) {
                 Log.e(TAG, "No offer id is provided when handling turn off alert action.");
@@ -90,10 +102,23 @@ public class PriceDropNotificationManager {
                 assert ACTION_ID_TURN_OFF_ALERT.equals(actionId)
                     : "Currently only turn off alert action uses this activity.";
                 priceDropNotificationManager.onNotificationActionClicked(
-                        actionId, destinationUrl, offerId, /*recordMetrics=*/false);
+                        actionId, destinationUrl, offerId, clusterId, /*recordMetrics=*/false);
                 // Finish immediately. Could be better to have a callback from shopping backend.
                 finish();
             });
+        }
+    }
+
+    /**
+     * Used to dismiss the notification after content click or "visit site" action click.
+     */
+    public static class DismissNotificationChromeActivity extends ChromeLauncherActivity {
+        @Override
+        public void onCreate(@Nullable Bundle savedInstanceState) {
+            int notificationId = IntentUtils.safeGetIntExtra(getIntent(), EXTRA_NOTIFICATION_ID, 0);
+            dismissNotification(notificationId);
+            super.onCreate(savedInstanceState);
+            finish();
         }
     }
 
@@ -194,28 +219,79 @@ public class PriceDropNotificationManager {
      */
     public void onNotificationActionClicked(
             String actionId, String url, @Nullable String offerId, boolean recordMetrics) {
+        onNotificationActionClicked(actionId, url, offerId, null, recordMetrics);
+    }
+
+    /**
+     * Handles the notification action click events.
+     *
+     * @param actionId the id used to identify certain action.
+     * @param url of the tab which triggered the notification.
+     * @param offerId the id of the offer associated with this notification.
+     * @param clusterId The id of the cluster associated with the product notification.
+     * @param recordMetrics Whether to record metrics using {@link NotificationUmaTracker}. Only
+     *         Chime notification code path should set this to true.
+     */
+    public void onNotificationActionClicked(String actionId, String url, @Nullable String offerId,
+            @Nullable String clusterId, boolean recordMetrics) {
         if (actionId.equals(ACTION_ID_VISIT_SITE) && recordMetrics) {
             NotificationUmaTracker.getInstance().onNotificationActionClick(
                     NotificationUmaTracker.ActionType.PRICE_DROP_VISIT_SITE,
                     NotificationUmaTracker.SystemNotificationType.PRICE_DROP_ALERTS,
                     NotificationIntentInterceptor.INVALID_CREATE_TIME);
         } else if (actionId.equals(ACTION_ID_TURN_OFF_ALERT)) {
-            if (offerId == null) return;
+            if (offerId == null && clusterId == null) return;
             SubscriptionsManagerImpl subscriptionsManager =
                     (new CommerceSubscriptionsServiceFactory())
                             .getForLastUsedProfile()
                             .getSubscriptionsManager();
-            subscriptionsManager.unsubscribe(
-                    new CommerceSubscription(CommerceSubscriptionType.PRICE_TRACK, offerId,
-                            SubscriptionManagementType.CHROME_MANAGED, TrackingIdType.OFFER_ID),
-                    (status) -> {
-                        assert status
-                                == SubscriptionsManager.StatusCode.OK
-                            : "Failed to remove subscriptions.";
-                        Log.e(TAG,
-                                String.format(Locale.US,
-                                        "Failed to remove subscriptions. Status: %d", status));
-                    });
+            Callback<Integer> callback = (status) -> {
+                assert status
+                        == SubscriptionsManager.StatusCode.OK : "Failed to remove subscriptions.";
+                Log.e(TAG,
+                        String.format(
+                                Locale.US, "Failed to remove subscriptions. Status: %d", status));
+            };
+            final BookmarkBridge bookmarkBridge;
+            if (sBookmarkBridgeForTesting != null) {
+                bookmarkBridge = sBookmarkBridgeForTesting;
+            } else {
+                bookmarkBridge = new BookmarkBridge(Profile.getLastUsedRegularProfile());
+            }
+
+            Runnable unsubscribeRunnable = () -> {
+                if (offerId != null) {
+                    subscriptionsManager.unsubscribe(
+                            new CommerceSubscription(CommerceSubscriptionType.PRICE_TRACK, offerId,
+                                    SubscriptionManagementType.CHROME_MANAGED,
+                                    TrackingIdType.OFFER_ID),
+                            callback);
+                }
+                if (clusterId != null) {
+                    subscriptionsManager.unsubscribe(
+                            new CommerceSubscription(CommerceSubscriptionType.PRICE_TRACK,
+                                    clusterId, SubscriptionManagementType.USER_MANAGED,
+                                    TrackingIdType.PRODUCT_CLUSTER_ID),
+                            callback);
+                }
+            };
+
+            // Only attempt to unsubscribe once the corresponding bookmarks can also be updated.
+            if (bookmarkBridge.isBookmarkModelLoaded()) {
+                unsubscribeRunnable.run();
+            } else {
+                bookmarkBridge.addObserver(new BookmarkBridge.BookmarkModelObserver() {
+                    @Override
+                    public void bookmarkModelLoaded() {
+                        unsubscribeRunnable.run();
+                        bookmarkBridge.removeObserver(this);
+                    }
+
+                    @Override
+                    public void bookmarkModelChanged() {}
+                });
+            }
+
             if (recordMetrics) {
                 NotificationUmaTracker.getInstance().onNotificationActionClick(
                         NotificationUmaTracker.ActionType.PRICE_DROP_TURN_OFF_ALERT,
@@ -225,23 +301,41 @@ public class PriceDropNotificationManager {
         }
     }
 
+    @Deprecated
+    public Intent getNotificationClickIntent(String url) {
+        return getNotificationClickIntent(url, 0);
+    }
+
     /**
      * @return The intent that we will use to send users to the tab which triggered the
      *         notification.
      *
      * @param url of the tab which triggered the notification.
+     * @param notificationId the notification id.
      */
-    public Intent getNotificationClickIntent(String url) {
+    public Intent getNotificationClickIntent(String url, int notificationId) {
         Intent intent =
                 new Intent()
                         .setAction(Intent.ACTION_VIEW)
                         .setData(Uri.parse(url))
-                        .setClass(mContext, ChromeLauncherActivity.class)
+                        .setClass(mContext, DismissNotificationChromeActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
                         .putExtra(Browser.EXTRA_APPLICATION_ID, mContext.getPackageName())
-                        .putExtra(WebappConstants.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
+                        .putExtra(WebappConstants.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true)
+                        .putExtra(EXTRA_NOTIFICATION_ID, notificationId);
         IntentUtils.addTrustedIntentExtras(intent);
         return intent;
+    }
+
+    @Deprecated
+    public Intent getNotificationActionClickIntent(String actionId, String url, String offerId) {
+        return getNotificationActionClickIntent(actionId, url, offerId, null, 0);
+    }
+
+    @Deprecated
+    public Intent getNotificationActionClickIntent(
+            String actionId, String url, String offerId, String clusterId) {
+        return getNotificationActionClickIntent(actionId, url, offerId, clusterId, 0);
     }
 
     /**
@@ -250,14 +344,22 @@ public class PriceDropNotificationManager {
      * @param actionId the id used to identify certain action.
      * @param url of the tab which triggered the notification.
      * @param offerId The offer id of the product.
+     * @param clusterId The cluster id of the product.
+     * @param notificationId the notification id.
      */
-    public Intent getNotificationActionClickIntent(String actionId, String url, String offerId) {
-        if (ACTION_ID_VISIT_SITE.equals(actionId)) return getNotificationClickIntent(url);
+    public Intent getNotificationActionClickIntent(
+            String actionId, String url, String offerId, String clusterId, int notificationId) {
+        if (ACTION_ID_VISIT_SITE.equals(actionId)) {
+            return getNotificationClickIntent(url, notificationId);
+        }
         if (ACTION_ID_TURN_OFF_ALERT.equals(actionId)) {
             Intent intent = new Intent(mContext, TrampolineActivity.class);
             intent.putExtra(EXTRA_DESTINATION_URL, url);
             intent.putExtra(EXTRA_ACTION_ID, actionId);
             intent.putExtra(EXTRA_OFFER_ID, offerId);
+            if (clusterId != null) intent.putExtra(EXTRA_PRODUCT_CLUSTER_ID, clusterId);
+            intent.putExtra(EXTRA_NOTIFICATION_ID, notificationId);
+            IntentUtils.addTrustedIntentExtras(intent);
             return intent;
         }
         return null;
@@ -346,6 +448,16 @@ public class PriceDropNotificationManager {
     }
 
     /**
+     * Set a mock BookmarkBridge for testing so we don't need to access Profile.
+     *
+     * @param bookmarkBridge The bookmark bridge to use.
+     */
+    @VisibleForTesting
+    public static void setBookmarkBridgeForTesting(BookmarkBridge bookmarkBridge) {
+        sBookmarkBridgeForTesting = bookmarkBridge;
+    }
+
+    /**
      * Delete price drop notification channel for testing.
      */
     @VisibleForTesting
@@ -353,5 +465,10 @@ public class PriceDropNotificationManager {
     public void deleteChannelForTesting() {
         mNotificationManager.deleteNotificationChannel(
                 ChromeChannelDefinitions.ChannelId.PRICE_DROP);
+    }
+
+    private static void dismissNotification(int notificationId) {
+        new NotificationManagerProxyImpl(ContextUtils.getApplicationContext())
+                .cancel(PriceDropNotifier.NOTIFICATION_TAG, notificationId);
     }
 }

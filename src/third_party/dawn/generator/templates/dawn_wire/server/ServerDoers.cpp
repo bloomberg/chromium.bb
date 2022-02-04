@@ -15,7 +15,7 @@
 #include "common/Assert.h"
 #include "dawn_wire/server/Server.h"
 
-namespace dawn_wire { namespace server {
+namespace dawn::wire::server {
     //* Implementation of the command doers
     {% for command in cmd_records["command"] %}
         {% set type = command.derived_object %}
@@ -94,9 +94,7 @@ namespace dawn_wire { namespace server {
                             //* Dawn native that makes all child objects internally null if their
                             //* Device is destroyed.
                             while (data->info->childObjectTypesAndIds.size() > 0) {
-                                ObjectType childObjectType;
-                                ObjectId childObjectId;
-                                std::tie(childObjectType, childObjectId) = UnpackObjectTypeAndId(
+                                auto [childObjectType, childObjectId] = UnpackObjectTypeAndId(
                                     *data->info->childObjectTypesAndIds.begin());
                                 if (!DoDestroyObject(childObjectType, childObjectId)) {
                                     return false;
@@ -120,4 +118,4 @@ namespace dawn_wire { namespace server {
         }
     }
 
-}}  // namespace dawn_wire::server
+}  // namespace dawn::wire::server

@@ -216,6 +216,10 @@ class Builder {
     functions_.back().push_var(operands);
   }
 
+  /// @returns true if the current instruction insertion point is
+  /// inside a basic block.
+  bool InsideBasicBlock() const;
+
   /// Converts a storage class to a SPIR-V storage class.
   /// @param klass the storage class to convert
   /// @returns the SPIR-V storage class or SpvStorageClassMax on error.
@@ -454,9 +458,24 @@ class Builder {
   /// @param stmt the statement to generate
   /// @returns true if the statement was generated
   bool GenerateStatement(const ast::Statement* stmt);
-  /// Geneates an OpLoad
-  /// @param type the type to load
-  /// @param id the variable id to load
+  /// Generates an expression. If the WGSL expression does not have reference
+  /// type, then return the SPIR-V ID for the expression. Otherwise implement
+  /// the WGSL Load Rule: generate an OpLoad and return the ID of the result.
+  /// Returns 0 if the expression could not be generated.
+  /// @param expr the semantic expression node to be generated
+  /// @returns the the ID of the expression, or loaded expression
+  uint32_t GenerateExpressionWithLoadIfNeeded(const sem::Expression* expr);
+  /// Generates an expression. If the WGSL expression does not have reference
+  /// type, then return the SPIR-V ID for the expression. Otherwise implement
+  /// the WGSL Load Rule: generate an OpLoad and return the ID of the result.
+  /// Returns 0 if the expression could not be generated.
+  /// @param expr the AST expression to be generated
+  /// @returns the the ID of the expression, or loaded expression
+  uint32_t GenerateExpressionWithLoadIfNeeded(const ast::Expression* expr);
+  /// Generates an OpLoad on the given ID if it has reference type in WGSL,
+  /// othewrise return the ID itself.
+  /// @param type the type of the expression
+  /// @param id the SPIR-V id of the experssion
   /// @returns the ID of the loaded value or `id` if type is not a reference
   uint32_t GenerateLoadIfNeeded(const sem::Type* type, uint32_t id);
   /// Generates an OpStore. Emits an error and returns false if we're
@@ -536,10 +555,10 @@ class Builder {
                                   const sem::Matrix* type,
                                   spv::Op op);
 
-  /// Converts AST image format to SPIR-V and pushes an appropriate capability.
+  /// Converts TexelFormat to SPIR-V and pushes an appropriate capability.
   /// @param format AST image format type
   /// @returns SPIR-V image format type
-  SpvImageFormat convert_image_format_to_spv(const ast::ImageFormat format);
+  SpvImageFormat convert_texel_format_to_spv(const ast::TexelFormat format);
 
   /// Determines if the given type constructor is created from constant values
   /// @param expr the expression to check

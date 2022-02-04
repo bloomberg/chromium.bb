@@ -21,7 +21,7 @@
 #include "common/vulkan_platform.h"
 #include "dawn_native/vulkan/VulkanInfo.h"
 
-namespace dawn_native { namespace vulkan {
+namespace dawn::native::vulkan {
 
     class VulkanInstance;
 
@@ -46,14 +46,14 @@ namespace dawn_native { namespace vulkan {
         MaybeError InitializeSupportedFeaturesImpl() override;
         MaybeError InitializeSupportedLimitsImpl(CombinedLimits* limits) override;
 
-        ResultOrError<DeviceBase*> CreateDeviceImpl(
-            const DawnDeviceDescriptor* descriptor) override;
+        ResultOrError<Ref<DeviceBase>> CreateDeviceImpl(
+            const DeviceDescriptor* descriptor) override;
 
         VkPhysicalDevice mPhysicalDevice;
         Ref<VulkanInstance> mVulkanInstance;
         VulkanDeviceInfo mDeviceInfo = {};
     };
 
-}}  // namespace dawn_native::vulkan
+}  // namespace dawn::native::vulkan
 
 #endif  // DAWNNATIVE_VULKAN_ADAPTERVK_H_

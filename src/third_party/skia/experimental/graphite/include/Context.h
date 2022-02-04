@@ -16,6 +16,8 @@
 
 #include "experimental/graphite/include/GraphiteTypes.h"
 
+class SkShaderCodeDictionary;
+
 namespace skgpu {
 
 class BackendTexture;
@@ -61,7 +63,7 @@ public:
 
     BackendApi backend() const { return fBackend; }
 
-    sk_sp<Recorder> createRecorder();
+    std::unique_ptr<Recorder> makeRecorder();
 
     void insertRecording(std::unique_ptr<Recording>);
     void submit(SyncToCpu = SyncToCpu::kNo);
@@ -102,6 +104,7 @@ private:
     std::vector<std::unique_ptr<Recording>> fRecordings;
     sk_sp<Gpu> fGpu;
     BackendApi fBackend;
+    std::unique_ptr<SkShaderCodeDictionary> fShaderCodeDictionary;
 };
 
 } // namespace skgpu

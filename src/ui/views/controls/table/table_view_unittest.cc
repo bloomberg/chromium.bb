@@ -142,7 +142,7 @@ class TableViewTestHelper {
 
 namespace {
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 constexpr int kCtrlOrCmdMask = ui::EF_COMMAND_DOWN;
 #else
 constexpr int kCtrlOrCmdMask = ui::EF_CONTROL_DOWN;
@@ -802,6 +802,19 @@ TEST_P(TableViewTest, ColumnVisibility) {
   EXPECT_EQ(1, table_->GetVisibleColumn(0).column.id);
   EXPECT_EQ(0, table_->GetVisibleColumn(1).column.id);
   EXPECT_EQ("rows=0 4 cols=0 2", helper_->GetPaintRegion(table_->bounds()));
+}
+
+// Regression tests for https://crbug.com/1283805, and
+// https://crbug.com/1283807.
+TEST_P(TableViewTest, NoCrashesWithAllColumnsHidden) {
+  // Set both initially visible columns hidden.
+  table_->SetColumnVisibility(0, false);
+  table_->SetColumnVisibility(1, false);
+  EXPECT_EQ(0u, helper_->visible_col_count());
+
+  // Remove and add rows in this state, there should be no crashes.
+  model_->RemoveRow(0);
+  model_->AddRows(1, 2, /*value_multiplier=*/10);
 }
 
 // Verifies resizing a column using the mouse works.
@@ -1477,7 +1490,7 @@ TEST_P(TableViewTest, SelectionNoSelectOnRemove) {
 }
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
 // Verifies selection works by way of a gesture.
 TEST_P(TableViewTest, SelectOnTap) {
   // Initially no selection.

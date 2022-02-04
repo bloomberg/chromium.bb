@@ -64,7 +64,7 @@ WasmCompilationResult WasmCompilationUnit::ExecuteImportWrapperCompilation(
   bool source_positions = is_asmjs_module(env->module);
   WasmCompilationResult result = compiler::CompileWasmImportCallWrapper(
       env, kind, sig, source_positions,
-      static_cast<int>(sig->parameter_count()));
+      static_cast<int>(sig->parameter_count()), wasm::kNoSuspend);
   return result;
 }
 
@@ -220,7 +220,9 @@ void JSToWasmWrapperCompilationUnit::Execute() {
 
 Handle<Code> JSToWasmWrapperCompilationUnit::Finalize() {
   if (use_generic_wrapper_) {
-    return isolate_->builtins()->code_handle(Builtin::kGenericJSToWasmWrapper);
+    return FromCodeT(
+        isolate_->builtins()->code_handle(Builtin::kGenericJSToWasmWrapper),
+        isolate_);
   }
 
   CompilationJob::Status status = job_->FinalizeJob(isolate_);

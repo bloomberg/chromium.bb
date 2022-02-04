@@ -13,6 +13,7 @@
 #include "experimental/graphite/src/ResourceTypes.h"
 #include "include/core/SkSize.h"
 #include "src/core/SkLRUCache.h"
+#include "src/gpu/ResourceKey.h"
 
 namespace skgpu {
 
@@ -29,7 +30,8 @@ public:
 
     virtual sk_sp<CommandBuffer> createCommandBuffer() = 0;
 
-    sk_sp<GraphicsPipeline> findOrCreateGraphicsPipeline(const GraphicsPipelineDesc&);
+    sk_sp<GraphicsPipeline> findOrCreateGraphicsPipeline(Context*, const GraphicsPipelineDesc&,
+                                                         const RenderPassDesc&);
 
     sk_sp<Texture> findOrCreateTexture(SkISize, const TextureInfo&);
     virtual sk_sp<Texture> createWrappedTexture(const BackendTexture&) = 0;
@@ -42,7 +44,9 @@ protected:
     const Gpu* fGpu;
 
 private:
-    virtual sk_sp<GraphicsPipeline> onCreateGraphicsPipeline(const GraphicsPipelineDesc&) = 0;
+    virtual sk_sp<GraphicsPipeline> onCreateGraphicsPipeline(Context*,
+                                                             const GraphicsPipelineDesc&,
+                                                             const RenderPassDesc&) = 0;
     virtual sk_sp<Texture> createTexture(SkISize, const TextureInfo&) = 0;
     virtual sk_sp<Buffer> createBuffer(size_t size, BufferType type, PrioritizeGpuReads) = 0;
 
@@ -52,14 +56,17 @@ private:
         ~GraphicsPipelineCache();
 
         void release();
-        sk_sp<GraphicsPipeline> refPipeline(const GraphicsPipelineDesc&);
+        sk_sp<GraphicsPipeline> refPipeline(Context*, const GraphicsPipelineDesc&,
+                                            const RenderPassDesc&);
 
     private:
         struct Entry;
-
-        SkLRUCache<const GraphicsPipelineDesc,
-                   std::unique_ptr<Entry>,
-                   GraphicsPipelineDesc::Hash> fMap;
+        struct KeyHash {
+            uint32_t operator()(const UniqueKey& key) const {
+                return key.hash();
+            }
+        };
+        SkLRUCache<UniqueKey, std::unique_ptr<Entry>, KeyHash> fMap;
 
         ResourceProvider* fResourceProvider;
     };

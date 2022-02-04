@@ -14,6 +14,7 @@
 
 #include "dawn_native/CopyTextureForBrowserHelper.h"
 
+#include "common/Log.h"
 #include "dawn_native/BindGroup.h"
 #include "dawn_native/BindGroupLayout.h"
 #include "dawn_native/Buffer.h"
@@ -32,14 +33,30 @@
 
 #include <unordered_set>
 
-namespace dawn_native {
+namespace dawn::native {
     namespace {
 
         static const char sCopyTextureForBrowserShader[] = R"(
-            [[block]] struct Uniforms {
-                u_scale: vec2<f32>;
-                u_offset: vec2<f32>;
-                u_alphaOp: u32;
+            struct GammaTransferParams {
+                G: f32;
+                A: f32;
+                B: f32;
+                C: f32;
+                D: f32;
+                E: f32;
+                F: f32;
+                padding: u32;
+            };
+
+            struct Uniforms {                                            // offset   align   size
+                scale: vec2<f32>;                                        // 0        8       8
+                offset: vec2<f32>;                                       // 8        8       8
+                steps_mask: u32;                                         // 16       4       4
+                // implicit padding;                                     // 20               12
+                conversion_matrix: mat3x3<f32>;                          // 32       16      48
+                gamma_decoding_params: GammaTransferParams;              // 80       4       32
+                gamma_encoding_params: GammaTransferParams;              // 112      4       32
+                gamma_decoding_for_dst_srgb_params: GammaTransferParams; // 144      4       32
             };
 
             [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
@@ -49,7 +66,26 @@ namespace dawn_native {
                 [[builtin(position)]] position : vec4<f32>;
             };
 
-            [[stage(vertex)]] fn vs_main(
+            // Chromium uses unified equation to construct gamma decoding function
+            // and gamma encoding function.
+            // The logic is:
+            //  if x < D
+            //      linear = C * x + F
+            //  nonlinear = pow(A * x + B, G) + E
+            // (https://source.chromium.org/chromium/chromium/src/+/main:ui/gfx/color_transform.cc;l=541)
+            // Expand the equation with sign() to make it handle all gamma conversions.
+            fn gamma_conversion(v: f32, params: GammaTransferParams) -> f32 {
+                // Linear part: C * x + F
+                if (abs(v) < params.D) {
+                    return sign(v) * (params.C * abs(v) + params.F);
+                }
+
+                // Gamma part: pow(A * x + B, G) + E
+                return sign(v) * (pow(params.A * abs(v) + params.B, params.G) + params.E);
+            }
+
+            [[stage(vertex)]]
+            fn vs_main(
                 [[builtin(vertex_index)]] VertexIndex : u32
             ) -> VertexOutputs {
                 var texcoord = array<vec2<f32>, 3>(
@@ -62,7 +98,7 @@ namespace dawn_native {
 
                 // Y component of scale is calculated by the copySizeHeight / textureHeight. Only
                 // flipY case can get negative number.
-                var flipY = uniforms.u_scale.y < 0.0;
+                var flipY = uniforms.scale.y < 0.0;
 
                 // Texture coordinate takes top-left as origin point. We need to map the
                 // texture to triangle carefully.
@@ -70,14 +106,14 @@ namespace dawn_native {
                     // We need to get the mirror positions(mirrored based on y = 0.5) on flip cases.
                     // Adopt transform to src texture and then mapping it to triangle coord which
                     // do a +1 shift on Y dimension will help us got that mirror position perfectly.
-                    output.texcoords = (texcoord[VertexIndex] * uniforms.u_scale + uniforms.u_offset) *
+                    output.texcoords = (texcoord[VertexIndex] * uniforms.scale + uniforms.offset) *
                         vec2<f32>(1.0, -1.0) + vec2<f32>(0.0, 1.0);
                 } else {
                     // For the normal case, we need to get the exact position.
                     // So mapping texture to triangle firstly then adopt the transform.
                     output.texcoords = (texcoord[VertexIndex] *
                         vec2<f32>(1.0, -1.0) + vec2<f32>(0.0, 1.0)) *
-                        uniforms.u_scale + uniforms.u_offset;
+                        uniforms.scale + uniforms.offset;
                 }
 
                 return output;
@@ -86,7 +122,8 @@ namespace dawn_native {
             [[binding(1), group(0)]] var mySampler: sampler;
             [[binding(2), group(0)]] var myTexture: texture_2d<f32>;
 
-            [[stage(fragment)]] fn fs_main(
+            [[stage(fragment)]]
+            fn fs_main(
                 [[location(0)]] texcoord : vec2<f32>
             ) -> [[location(0)]] vec4<f32> {
                 // Clamp the texcoord and discard the out-of-bound pixels.
@@ -98,45 +135,91 @@ namespace dawn_native {
 
                 // Swizzling of texture formats when sampling / rendering is handled by the
                 // hardware so we don't need special logic in this shader. This is covered by tests.
-                var srcColor = textureSample(myTexture, mySampler, texcoord);
+                var color = textureSample(myTexture, mySampler, texcoord);
 
-                // Handle alpha. Alpha here helps on the source content and dst content have
-                // different alpha config. There are three possible ops: DontChange, Premultiply
-                // and Unpremultiply.
-                // TODO(crbug.com/1217153): if wgsl support `constexpr` and allow it
-                // to be case selector, Replace 0u/1u/2u with a constexpr variable with
-                // meaningful name.
-                switch(uniforms.u_alphaOp) {
-                    case 0u: { // AlphaOp: DontChange
-                        break;
-                    }
-                    case 1u: { // AlphaOp: Premultiply
-                        srcColor = vec4<f32>(srcColor.rgb * srcColor.a, srcColor.a);
-                        break;
-                    }
-                    case 2u: { // AlphaOp: Unpremultiply
-                        if (srcColor.a != 0.0) {
-                            srcColor = vec4<f32>(srcColor.rgb / srcColor.a, srcColor.a);
-                        }
-                        break;
-                    }
-                    default: {
-                        break;
+                let kUnpremultiplyStep = 0x01u;
+                let kDecodeToLinearStep = 0x02u;
+                let kConvertToDstGamutStep = 0x04u;
+                let kEncodeToGammaStep = 0x08u;
+                let kPremultiplyStep = 0x10u;
+                let kDecodeForSrgbDstFormat = 0x20u;
+
+                // Unpremultiply step. Appling color space conversion op on premultiplied source texture
+                // also needs to unpremultiply first.
+                if (bool(uniforms.steps_mask & kUnpremultiplyStep)) {
+                    if (color.a != 0.0) {
+                        color = vec4<f32>(color.rgb / color.a, color.a);
                     }
                 }
 
-                return srcColor;
+                // Linearize the source color using the source color space’s
+                // transfer function if it is non-linear.
+                if (bool(uniforms.steps_mask & kDecodeToLinearStep)) {
+                    color = vec4<f32>(gamma_conversion(color.r, uniforms.gamma_decoding_params),
+                                      gamma_conversion(color.g, uniforms.gamma_decoding_params),
+                                      gamma_conversion(color.b, uniforms.gamma_decoding_params),
+                                      color.a);
+                }
+
+                // Convert unpremultiplied, linear source colors to the destination gamut by
+                // multiplying by a 3x3 matrix. Calculate transformFromXYZD50 * transformToXYZD50
+                // in CPU side and upload the final result in uniforms.
+                if (bool(uniforms.steps_mask & kConvertToDstGamutStep)) {
+                    color = vec4<f32>(uniforms.conversion_matrix * color.rgb, color.a);
+                }
+
+                // Encode that color using the inverse of the destination color
+                // space’s transfer function if it is non-linear.
+                if (bool(uniforms.steps_mask & kEncodeToGammaStep)) {
+                    color = vec4<f32>(gamma_conversion(color.r, uniforms.gamma_encoding_params),
+                                      gamma_conversion(color.g, uniforms.gamma_encoding_params),
+                                      gamma_conversion(color.b, uniforms.gamma_encoding_params),
+                                      color.a);
+                }
+
+                // Premultiply step.
+                if (bool(uniforms.steps_mask & kPremultiplyStep)) {
+                    color = vec4<f32>(color.rgb * color.a, color.a);
+                }
+
+                // Decode for copying from non-srgb formats to srgb formats
+                if (bool(uniforms.steps_mask & kDecodeForSrgbDstFormat)) {
+                    color = vec4<f32>(gamma_conversion(color.r, uniforms.gamma_decoding_for_dst_srgb_params),
+                                      gamma_conversion(color.g, uniforms.gamma_decoding_for_dst_srgb_params),
+                                      gamma_conversion(color.b, uniforms.gamma_decoding_for_dst_srgb_params),
+                                      color.a);
+                }
+
+                return color;
             }
         )";
+
+        // Follow the same order of skcms_TransferFunction
+        // https://source.chromium.org/chromium/chromium/src/+/main:third_party/skia/include/third_party/skcms/skcms.h;l=46;
+        struct GammaTransferParams {
+            float G = 0.0;
+            float A = 0.0;
+            float B = 0.0;
+            float C = 0.0;
+            float D = 0.0;
+            float E = 0.0;
+            float F = 0.0;
+            uint32_t padding = 0;
+        };
 
         struct Uniform {
             float scaleX;
             float scaleY;
             float offsetX;
             float offsetY;
-            wgpu::AlphaOp alphaOp;
+            uint32_t stepsMask = 0;
+            const std::array<uint32_t, 3> padding = {};  // 12 bytes padding
+            std::array<float, 12> conversionMatrix = {};
+            GammaTransferParams gammaDecodingParams = {};
+            GammaTransferParams gammaEncodingParams = {};
+            GammaTransferParams gammaDecodingForDstSrgbParams = {};
         };
-        static_assert(sizeof(Uniform) == 20, "");
+        static_assert(sizeof(Uniform) == 176, "");
 
         // TODO(crbug.com/dawn/856): Expand copyTextureForBrowser to support any
         // non-depth, non-stencil, non-compressed texture format pair copy. Now this API
@@ -160,7 +243,9 @@ namespace dawn_native {
                 case wgpu::TextureFormat::RG16Float:
                 case wgpu::TextureFormat::RG32Float:
                 case wgpu::TextureFormat::RGBA8Unorm:
+                case wgpu::TextureFormat::RGBA8UnormSrgb:
                 case wgpu::TextureFormat::BGRA8Unorm:
+                case wgpu::TextureFormat::BGRA8UnormSrgb:
                 case wgpu::TextureFormat::RGB10A2Unorm:
                 case wgpu::TextureFormat::RGBA16Float:
                 case wgpu::TextureFormat::RGBA32Float:
@@ -232,7 +317,6 @@ namespace dawn_native {
 
             return GetCachedPipeline(store, dstFormat);
         }
-
     }  // anonymous namespace
 
     MaybeError ValidateCopyTextureForBrowser(DeviceBase* device,
@@ -266,19 +350,44 @@ namespace dawn_native {
             "not 1.",
             source->texture->GetSampleCount(), destination->texture->GetSampleCount());
 
-        DAWN_TRY(ValidateCanUseAs(source->texture, wgpu::TextureUsage::CopySrc));
-        DAWN_TRY(ValidateCanUseAs(source->texture, wgpu::TextureUsage::TextureBinding));
+        DAWN_TRY(ValidateCanUseAs(source->texture, wgpu::TextureUsage::CopySrc,
+                                  UsageValidationMode::Default));
+        DAWN_TRY(ValidateCanUseAs(source->texture, wgpu::TextureUsage::TextureBinding,
+                                  UsageValidationMode::Default));
 
-        DAWN_TRY(ValidateCanUseAs(destination->texture, wgpu::TextureUsage::CopyDst));
-        DAWN_TRY(ValidateCanUseAs(destination->texture, wgpu::TextureUsage::RenderAttachment));
+        DAWN_TRY(ValidateCanUseAs(destination->texture, wgpu::TextureUsage::CopyDst,
+                                  UsageValidationMode::Default));
+        DAWN_TRY(ValidateCanUseAs(destination->texture, wgpu::TextureUsage::RenderAttachment,
+                                  UsageValidationMode::Default));
 
         DAWN_TRY(ValidateCopyTextureFormatConversion(source->texture->GetFormat().format,
                                                      destination->texture->GetFormat().format));
 
         DAWN_INVALID_IF(options->nextInChain != nullptr, "nextInChain must be nullptr");
-        DAWN_TRY(ValidateAlphaOp(options->alphaOp));
 
+        DAWN_TRY(ValidateAlphaMode(options->srcAlphaMode));
+        DAWN_TRY(ValidateAlphaMode(options->dstAlphaMode));
+
+        if (options->needsColorSpaceConversion) {
+            DAWN_INVALID_IF(options->srcTransferFunctionParameters == nullptr,
+                            "srcTransferFunctionParameters is nullptr when doing color conversion");
+            DAWN_INVALID_IF(options->conversionMatrix == nullptr,
+                            "conversionMatrix is nullptr when doing color conversion");
+            DAWN_INVALID_IF(options->dstTransferFunctionParameters == nullptr,
+                            "dstTransferFunctionParameters is nullptr when doing color conversion");
+        }
         return {};
+    }
+
+    // Whether the format of dst texture of CopyTextureForBrowser() is srgb or non-srgb.
+    bool IsSrgbDstFormat(wgpu::TextureFormat format) {
+        switch (format) {
+            case wgpu::TextureFormat::RGBA8UnormSrgb:
+            case wgpu::TextureFormat::BGRA8UnormSrgb:
+                return true;
+            default:
+                return false;
+        }
     }
 
     MaybeError DoCopyTextureForBrowser(DeviceBase* device,
@@ -294,6 +403,7 @@ namespace dawn_native {
             return {};
         }
 
+        bool isSrgbDstFormat = IsSrgbDstFormat(destination->texture->GetFormat().format);
         RenderPipelineBase* pipeline;
         DAWN_TRY_ASSIGN(pipeline, GetOrCreateCopyTextureForBrowserPipeline(
                                       device, destination->texture->GetFormat().format));
@@ -309,8 +419,7 @@ namespace dawn_native {
             copySize->width / static_cast<float>(srcTextureSize.width),
             copySize->height / static_cast<float>(srcTextureSize.height),  // scale
             source->origin.x / static_cast<float>(srcTextureSize.width),
-            source->origin.y / static_cast<float>(srcTextureSize.height),  // offset
-            wgpu::AlphaOp::DontChange  // alphaOp default value: DontChange
+            source->origin.y / static_cast<float>(srcTextureSize.height)  // offset
         };
 
         // Handle flipY. FlipY here means we flip the source texture firstly and then
@@ -321,8 +430,96 @@ namespace dawn_native {
             uniformData.offsetY += copySize->height / static_cast<float>(srcTextureSize.height);
         }
 
-        // Set alpha op.
-        uniformData.alphaOp = options->alphaOp;
+        uint32_t stepsMask = 0u;
+
+        // Steps to do color space conversion
+        // From https://skia.org/docs/user/color/
+        // - unpremultiply if the source color is premultiplied; Alpha is not involved in color
+        // management, and we need to divide it out if it’s multiplied in.
+        // - linearize the source color using the source color space’s transfer function
+        // - convert those unpremultiplied, linear source colors to XYZ D50 gamut by multiplying by
+        // a 3x3 matrix.
+        // - convert those XYZ D50 colors to the destination gamut by multiplying by a 3x3 matrix.
+        // - encode that color using the inverse of the destination color space’s transfer function.
+        // - premultiply by alpha if the destination is premultiplied.
+        // The reason to choose XYZ D50 as intermediate color space:
+        // From http://www.brucelindbloom.com/index.html?WorkingSpaceInfo.html
+        // "Since the Lab TIFF specification, the ICC profile specification and
+        // Adobe Photoshop all use a D50"
+        constexpr uint32_t kUnpremultiplyStep = 0x01;
+        constexpr uint32_t kDecodeToLinearStep = 0x02;
+        constexpr uint32_t kConvertToDstGamutStep = 0x04;
+        constexpr uint32_t kEncodeToGammaStep = 0x08;
+        constexpr uint32_t kPremultiplyStep = 0x10;
+        constexpr uint32_t kDecodeForSrgbDstFormat = 0x20;
+
+        if (options->srcAlphaMode == wgpu::AlphaMode::Premultiplied) {
+            if (options->needsColorSpaceConversion ||
+                options->srcAlphaMode != options->dstAlphaMode) {
+                stepsMask |= kUnpremultiplyStep;
+            }
+        }
+
+        if (options->needsColorSpaceConversion) {
+            stepsMask |= kDecodeToLinearStep;
+            const float* decodingParams = options->srcTransferFunctionParameters;
+
+            uniformData.gammaDecodingParams = {
+                decodingParams[0], decodingParams[1], decodingParams[2], decodingParams[3],
+                decodingParams[4], decodingParams[5], decodingParams[6]};
+
+            stepsMask |= kConvertToDstGamutStep;
+            const float* matrix = options->conversionMatrix;
+            uniformData.conversionMatrix = {{
+                matrix[0],
+                matrix[1],
+                matrix[2],
+                0.0,
+                matrix[3],
+                matrix[4],
+                matrix[5],
+                0.0,
+                matrix[6],
+                matrix[7],
+                matrix[8],
+                0.0,
+            }};
+
+            stepsMask |= kEncodeToGammaStep;
+            const float* encodingParams = options->dstTransferFunctionParameters;
+
+            uniformData.gammaEncodingParams = {
+                encodingParams[0], encodingParams[1], encodingParams[2], encodingParams[3],
+                encodingParams[4], encodingParams[5], encodingParams[6]};
+        }
+
+        if (options->dstAlphaMode == wgpu::AlphaMode::Premultiplied) {
+            if (options->needsColorSpaceConversion ||
+                options->srcAlphaMode != options->dstAlphaMode) {
+                stepsMask |= kPremultiplyStep;
+            }
+        }
+
+        // Copy to *-srgb texture should keep the bytes exactly the same as copy
+        // to non-srgb texture. Add an extra decode-to-linear step so that after the
+        // sampler of *-srgb format texture applying encoding, the bytes keeps the same
+        // as non-srgb format texture.
+        // NOTE: CopyTextureForBrowser() doesn't need to accept *-srgb format texture as
+        // source input. But above operation also valid for *-srgb format texture input and
+        // non-srgb format dst texture.
+        // TODO(crbug.com/dawn/1195): Reinterpret to non-srgb texture view on *-srgb texture
+        // and use it as render attachment when possible.
+        // TODO(crbug.com/dawn/1195): Opt the condition for this extra step. It is possible to
+        // bypass this extra step in some cases.
+        if (isSrgbDstFormat) {
+            stepsMask |= kDecodeForSrgbDstFormat;
+            // Get gamma-linear conversion params from https://en.wikipedia.org/wiki/SRGB with some
+            // mathematics. Order: {G, A, B, C, D, E, F, }
+            uniformData.gammaDecodingForDstSrgbParams = {
+                2.4, 1.0 / 1.055, 0.055 / 1.055, 1.0 / 12.92, 4.045e-02, 0.0, 0.0};
+        }
+
+        uniformData.stepsMask = stepsMask;
 
         Ref<BufferBase> uniformBuffer;
         DAWN_TRY_ASSIGN(
@@ -363,9 +560,9 @@ namespace dawn_native {
         dstTextureViewDesc.baseArrayLayer = destination->origin.z;
         dstTextureViewDesc.arrayLayerCount = 1;
         Ref<TextureViewBase> dstView;
+
         DAWN_TRY_ASSIGN(dstView,
                         device->CreateTextureView(destination->texture, &dstTextureViewDesc));
-
         // Prepare render pass color attachment descriptor.
         RenderPassColorAttachment colorAttachmentDesc;
 
@@ -398,8 +595,7 @@ namespace dawn_native {
 
         // Submit command buffer.
         device->GetQueue()->APISubmit(1, &submitCommandBuffer);
-
         return {};
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 #include "cef/libcef/features/features.h"
 
-#if defined(OS_NACL) || BUILDFLAG(IS_CEF_SANDBOX_BUILD)
+#if BUILDFLAG(IS_NACL) || BUILDFLAG(IS_CEF_SANDBOX_BUILD)
 #include "base/hash/sha1_nacl.h"
 #else
 #include "base/hash/sha1_boringssl.h"

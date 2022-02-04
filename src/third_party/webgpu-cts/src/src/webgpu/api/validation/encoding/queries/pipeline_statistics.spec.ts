@@ -3,6 +3,7 @@ Validation for encoding pipeline statistics queries.
 Excludes query begin/end balance and nesting (begin_end.spec.ts)
 and querySet/queryIndex (general.spec.ts).
 
+TODO: pipeline statistics queries are removed from core; consider moving tests to another suite.
 TODO:
 - Test pipelineStatistics with {undefined, empty, duplicated, full (control case)} values
 `;

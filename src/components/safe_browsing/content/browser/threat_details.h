@@ -24,6 +24,7 @@
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -86,6 +87,8 @@ class ThreatDetails : public content::WebContentsObserver {
       const UnsafeResource& resource,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       history::HistoryService* history_service,
+      base::RepeatingCallback<ChromeUserPopulation()>
+          get_user_population_callback,
       ReferrerChainProvider* referrer_chain_provider,
       bool trim_to_ad_tags,
       ThreatDetailsDoneCallback done_callback);
@@ -126,6 +129,8 @@ class ThreatDetails : public content::WebContentsObserver {
       const UnsafeResource& resource,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       history::HistoryService* history_service,
+      base::RepeatingCallback<ChromeUserPopulation()>
+          get_user_population_callback,
       ReferrerChainProvider* referrer_chain_provider,
       bool trim_to_ad_tags,
       ThreatDetailsDoneCallback done_callback);
@@ -172,7 +177,7 @@ class ThreatDetails : public content::WebContentsObserver {
 
   void OnReceivedThreatDOMDetails(
       mojo::Remote<mojom::ThreatReporter> threat_reporter,
-      content::RenderFrameHost* sender,
+      content::GlobalRenderFrameHostId sender_id,
       std::vector<mojom::ThreatDOMDetailsNodePtr> params);
 
   void AddRedirectUrlList(const std::vector<GURL>& urls);
@@ -205,6 +210,8 @@ class ThreatDetails : public content::WebContentsObserver {
   raw_ptr<content::BrowserContext> browser_context_;
 
   const UnsafeResource resource_;
+
+  base::RepeatingCallback<ChromeUserPopulation()> get_user_population_callback_;
 
   raw_ptr<ReferrerChainProvider> referrer_chain_provider_;
 
@@ -300,6 +307,8 @@ class ThreatDetailsFactory {
       const security_interstitials::UnsafeResource& unsafe_resource,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       history::HistoryService* history_service,
+      base::RepeatingCallback<ChromeUserPopulation()>
+          get_user_population_callback,
       ReferrerChainProvider* referrer_chain_provider,
       bool trim_to_ad_tags,
       ThreatDetailsDoneCallback done_callback) = 0;

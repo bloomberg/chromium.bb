@@ -37,7 +37,7 @@ class MockChildProcessLauncherClient
     client_->OnProcessLaunchFailed(error_code);
   }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   bool CanUseWarmUpConnection() override { return true; }
 #endif
 
@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(ChildProcessLauncherBrowserTest, ChildSpawnFail) {
   NavigationEntry* last_entry =
       shell()->web_contents()->GetController().GetLastCommittedEntry();
   // Make sure we didn't commit any navigation.
-  EXPECT_TRUE(last_entry->IsInitialEntry());
+  EXPECT_TRUE(!last_entry || last_entry->IsInitialEntry());
 
   // Navigate again and let the process spawn correctly.
   TestNavigationObserver nav_observer2(window->web_contents(), 1);

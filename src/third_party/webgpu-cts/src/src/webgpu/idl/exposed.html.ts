@@ -2,8 +2,6 @@
 
 import { assert } from '../../common/util/util.js';
 
-// TODO: Test all WebGPU interfaces.
-
 const items = [
   globalThis.navigator.gpu,
   globalThis.GPU,
@@ -17,6 +15,7 @@ const items = [
   globalThis.GPURenderPipeline,
   globalThis.GPUDeviceLostInfo,
   globalThis.GPUValidationError,
+  // Need to test the rest of the interfaces.
 ];
 
 for (const item of items) {

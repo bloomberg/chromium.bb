@@ -11,6 +11,7 @@
 #include "src/ic/handler-configuration.h"
 #include "src/objects/arguments-inl.h"
 #include "src/objects/bigint.h"
+#include "src/objects/call-site-info.h"
 #include "src/objects/cell.h"
 #include "src/objects/data-handler.h"
 #include "src/objects/fixed-array.h"
@@ -26,7 +27,6 @@
 #include "src/objects/ordered-hash-table-inl.h"
 #include "src/objects/property-descriptor-object.h"
 #include "src/objects/source-text-module.h"
-#include "src/objects/stack-frame-info.h"
 #include "src/objects/swiss-name-dictionary-inl.h"
 #include "src/objects/synthetic-module.h"
 #include "src/objects/template-objects.h"
@@ -1036,6 +1036,7 @@ auto BodyDescriptorApply(InstanceType type, Args&&... args) {
     case GLOBAL_DICTIONARY_TYPE:
     case NUMBER_DICTIONARY_TYPE:
     case SIMPLE_NUMBER_DICTIONARY_TYPE:
+    case NAME_TO_INDEX_HASH_TABLE_TYPE:
     case SCRIPT_CONTEXT_TABLE_TYPE:
       return CALL_APPLY(FixedArray);
     case EPHEMERON_HASH_TABLE_TYPE:

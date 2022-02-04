@@ -35,8 +35,10 @@
  */
 
 template <typename K, typename V,
-	  K kINVALID = hb_is_pointer (K) ? 0 : std::is_signed<K>::value ? hb_int_min (K) : (K) -1,
-	  V vINVALID = hb_is_pointer (V) ? 0 : std::is_signed<V>::value ? hb_int_min (V) : (V) -1>
+	  typename k_invalid_t = K,
+	  typename v_invalid_t = V,
+	  k_invalid_t kINVALID = hb_is_pointer (K) ? 0 : std::is_signed<K>::value ? hb_int_min (K) : (K) -1,
+	  v_invalid_t vINVALID = hb_is_pointer (V) ? 0 : std::is_signed<V>::value ? hb_int_min (V) : (V) -1>
 struct hb_hashmap_t
 {
   static constexpr K INVALID_KEY   = kINVALID;
@@ -62,8 +64,10 @@ struct hb_hashmap_t
     hb_copy (o, *this);
   }
 
-  static_assert (std::is_integral<K>::value || hb_is_pointer (K), "");
-  static_assert (std::is_integral<V>::value || hb_is_pointer (V), "");
+  static_assert (std::is_trivially_copyable<K>::value, "");
+  static_assert (std::is_trivially_copyable<V>::value, "");
+  static_assert (std::is_trivially_destructible<K>::value, "");
+  static_assert (std::is_trivially_destructible<V>::value, "");
 
   struct item_t
   {
@@ -75,9 +79,23 @@ struct hb_hashmap_t
 
     bool operator == (const K &o) { return hb_deref (key) == hb_deref (o); }
     bool operator == (const item_t &o) { return *this == o.key; }
-    bool is_unused () const    { return key == kINVALID; }
-    bool is_tombstone () const { return key != kINVALID && value == vINVALID; }
-    bool is_real () const { return key != kINVALID && value != vINVALID; }
+    bool is_unused () const
+    {
+      const K inv = kINVALID;
+      return key == inv;
+    }
+    bool is_tombstone () const
+    {
+      const K kinv = kINVALID;
+      const V vinv = vINVALID;
+      return key != kinv && value == vinv;
+    }
+    bool is_real () const
+    {
+      const K kinv = kINVALID;
+      const V vinv = vINVALID;
+      return key != kinv && value != vinv;
+    }
     hb_pair_t<K, V> get_pair() const { return hb_pair_t<K, V> (key, value); }
   };
 
@@ -244,11 +262,13 @@ struct hb_hashmap_t
   bool set_with_hash (K key, uint32_t hash, VV&& value)
   {
     if (unlikely (!successful)) return false;
-    if (unlikely (key == kINVALID)) return true;
+    const K kinv = kINVALID;
+    if (unlikely (key == kinv)) return true;
     if (unlikely ((occupancy + occupancy / 2) >= mask && !resize ())) return false;
     unsigned int i = bucket_for_hash (key, hash);
 
-    if (value == vINVALID && items[i].key != key)
+    const V vinv = vINVALID;
+    if (value == vinv && items[i].key != key)
       return true; /* Trying to delete non-existent key. */
 
     if (!items[i].is_unused ())
@@ -348,19 +368,23 @@ struct hb_hashmap_t
 
 struct hb_map_t : hb_hashmap_t<hb_codepoint_t,
 			       hb_codepoint_t,
+			       hb_codepoint_t,
+			       hb_codepoint_t,
 			       HB_MAP_VALUE_INVALID,
 			       HB_MAP_VALUE_INVALID>
 {
   using hashmap = hb_hashmap_t<hb_codepoint_t,
+			       hb_codepoint_t,
+			       hb_codepoint_t,
 			       hb_codepoint_t,
 			       HB_MAP_VALUE_INVALID,
 			       HB_MAP_VALUE_INVALID>;
 
   hb_map_t () = default;
   ~hb_map_t () = default;
-  hb_map_t (hb_map_t& o) = default;
-  hb_map_t& operator= (const hb_map_t& other) = default;
-  hb_map_t& operator= (hb_map_t&& other) = default;
+  hb_map_t (hb_map_t&) = default;
+  hb_map_t& operator= (const hb_map_t&) = default;
+  hb_map_t& operator= (hb_map_t&&) = default;
   hb_map_t (std::initializer_list<hb_pair_t<hb_codepoint_t, hb_codepoint_t>> lst) : hashmap (lst) {}
   template <typename Iterable,
 	    hb_requires (hb_is_iterable (Iterable))>

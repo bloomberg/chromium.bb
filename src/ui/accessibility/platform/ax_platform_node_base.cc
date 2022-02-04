@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -68,7 +69,9 @@ using UniqueIdMap = std::unordered_map<int32_t, AXPlatformNode*>;
 base::LazyInstance<UniqueIdMap>::Leaky g_unique_id_map =
     LAZY_INSTANCE_INITIALIZER;
 
-#if !BUILDFLAG_INTERNAL_HAS_NATIVE_ACCESSIBILITY()
+// TODO(fxbug.dev/91030): Remove the !BUILDFLAG(IS_FUCHSIA) condition once
+// fuchsia has native accessibility.
+#if !BUILDFLAG_INTERNAL_HAS_NATIVE_ACCESSIBILITY() && !BUILDFLAG(IS_FUCHSIA)
 // static
 AXPlatformNode* AXPlatformNode::Create(AXPlatformNodeDelegate* delegate) {
   AXPlatformNodeBase* node = new AXPlatformNodeBase();
@@ -126,6 +129,12 @@ gfx::NativeViewAccessible AXPlatformNodeBase::GetFocus() const {
 gfx::NativeViewAccessible AXPlatformNodeBase::GetParent() const {
   if (delegate_)
     return delegate_->GetParent();
+  return nullptr;
+}
+
+AXPlatformNodeBase* AXPlatformNodeBase::GetPlatformParent() const {
+  if (delegate_)
+    return FromNativeViewAccessible(delegate_->GetParent());
   return nullptr;
 }
 
@@ -307,7 +316,7 @@ void AXPlatformNodeBase::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
   }
 }
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 void AXPlatformNodeBase::AnnounceText(const std::u16string& text) {}
 #endif
 
@@ -639,6 +648,12 @@ bool AXPlatformNodeBase::GetStringListAttribute(
   if (!delegate_)
     return false;
   return delegate_->GetStringListAttribute(attribute, value);
+}
+
+bool AXPlatformNodeBase::HasHtmlAttribute(const char* attribute) const {
+  if (!delegate_)
+    return false;
+  return delegate_->HasHtmlAttribute(attribute);
 }
 
 const base::StringPairs& AXPlatformNodeBase::GetHtmlAttributes() const {
@@ -2109,38 +2124,6 @@ int AXPlatformNodeBase::NearestTextIndexToPoint(gfx::Point point) {
   return nearest_index;
 }
 
-std::string AXPlatformNodeBase::GetInvalidValue() const {
-  const AXPlatformNodeBase* target = this;
-  // The aria-invalid=spelling/grammar need to be exposed as text attributes for
-  // a range matching the visual underline representing the error.
-  if (static_cast<ax::mojom::InvalidState>(
-          target->GetIntAttribute(ax::mojom::IntAttribute::kInvalidState)) ==
-          ax::mojom::InvalidState::kNone &&
-      target->IsText() && target->GetParent()) {
-    // Text nodes need to reflect the invalid state of their parent object,
-    // otherwise spelling and grammar errors communicated through aria-invalid
-    // won't be reflected in text attributes.
-    target = static_cast<AXPlatformNodeBase*>(
-        FromNativeViewAccessible(target->GetParent()));
-  }
-
-  std::string invalid_value("");
-  // Note: spelling+grammar errors case is disallowed and not supported. It
-  // could possibly arise with aria-invalid on the ancestor of a spelling error,
-  // but this is not currently described in any spec and no real-world use cases
-  // have been found.
-  switch (static_cast<ax::mojom::InvalidState>(
-      target->GetIntAttribute(ax::mojom::IntAttribute::kInvalidState))) {
-    case ax::mojom::InvalidState::kNone:
-    case ax::mojom::InvalidState::kFalse:
-      break;
-    case ax::mojom::InvalidState::kTrue:
-      invalid_value = "true";
-      break;
-  }
-  return invalid_value;
-}
-
 ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
   ui::TextAttributeList attributes;
 
@@ -2166,14 +2149,11 @@ ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
     unsigned int red = SkColorGetR(color);
     unsigned int green = SkColorGetG(color);
     unsigned int blue = SkColorGetB(color);
-    // Don't expose default value of black.
-    if (red || green || blue) {
-      std::string color_value = "rgb(" + base::NumberToString(red) + ',' +
-                                base::NumberToString(green) + ',' +
-                                base::NumberToString(blue) + ')';
-      SanitizeTextAttributeValue(color_value, &color_value);
-      attributes.push_back(std::make_pair("color", color_value));
-    }
+    std::string color_value = "rgb(" + base::NumberToString(red) + ',' +
+                              base::NumberToString(green) + ',' +
+                              base::NumberToString(blue) + ')';
+    SanitizeTextAttributeValue(color_value, &color_value);
+    attributes.push_back(std::make_pair("color", color_value));
   }
 
   // First try to get the inherited font family name from the delegate. If we
@@ -2217,13 +2197,6 @@ ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
       attributes.push_back(std::make_pair("text-underline-style", "solid"));
     }
   }
-
-  // Screen readers look at the text attributes to determine if something is
-  // misspelled, so we need to propagate any spelling attributes from immediate
-  // parents of text-only objects.
-  std::string invalid_value = GetInvalidValue();
-  if (!invalid_value.empty())
-    attributes.push_back(std::make_pair("invalid", invalid_value));
 
   std::string language = GetDelegate()->GetLanguage();
   if (!language.empty()) {
@@ -2370,7 +2343,7 @@ std::string AXPlatformNodeBase::ComputeDetailsRoles() const {
           details_roles_set.insert("comment");
           break;
         }
-        FALLTHROUGH;
+        [[fallthrough]];
       }
       default:
         // Use * to indicate some other role.

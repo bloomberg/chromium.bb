@@ -5,13 +5,8 @@ Open Screen's LUCI configuration for post-submit and pre-submit builders.
 
 REPO_URL = "https://chromium.googlesource.com/openscreen"
 CHROMIUM_REPO_URL = "https://chromium.googlesource.com/chromium/src"
-MAC_VERSION = "Mac-10.15"
+MAC_VERSION = "Mac-11"
 REF = "refs/heads/main"
-
-# Enable LUCI Realms support.
-lucicfg.enable_experiment("crbug.com/1085650")
-luci.builder.defaults.experiments.set({"luci.use_realms": 100})
-
 
 luci.project(
     name = "openscreen",
@@ -178,9 +173,11 @@ def builder(builder_type, name, properties, os, cpu):
         cpu: the target central processing unit.
     """
     recipe_id = "openscreen"
+    use_python3 = False
     if properties:
         if "builder_group" in properties:
             recipe_id = "chromium"
+            use_python3 = True
         elif "runhooks" in properties:
             recipe_id = "run_presubmit"
 
@@ -201,6 +198,8 @@ def builder(builder_type, name, properties, os, cpu):
             cipd_package =
                 "infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build",
             cipd_version = "refs/heads/master",
+            use_bbagent = True,
+            use_python3 = use_python3,
         ),
         dimensions = {
             "pool": "luci.flex." + builder_type,

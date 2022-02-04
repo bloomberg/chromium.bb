@@ -89,13 +89,13 @@ class Struct : public Castable<Struct, Type> {
 
   /// @returns the byte alignment of the structure
   /// @note this may differ from the alignment of a structure member of this
-  /// structure type, if the member is annotated with the `[[align(n)]]`
+  /// structure type, if the member is annotated with the `@align(n)`
   /// decoration.
   uint32_t Align() const override;
 
   /// @returns the byte size of the structure
   /// @note this may differ from the size of a structure member of this
-  /// structure type, if the member is annotated with the `[[size(n)]]`
+  /// structure type, if the member is annotated with the `@size(n)`
   /// decoration.
   uint32_t Size() const override;
 
@@ -142,9 +142,6 @@ class Struct : public Castable<Struct, Type> {
     return pipeline_stage_uses_;
   }
 
-  /// @returns true if the struct has a block decoration
-  bool IsBlockDecorated() const { return declaration_->IsBlockDecorated(); }
-
   /// @returns the name for the type
   std::string type_name() const override;
 
@@ -152,6 +149,11 @@ class Struct : public Castable<Struct, Type> {
   /// @returns the name for this type that closely resembles how it would be
   /// declared in WGSL.
   std::string FriendlyName(const SymbolTable& symbols) const override;
+
+  /// @param symbols the program's symbol table
+  /// @returns a multiline string that describes the layout of this struct,
+  /// including size and alignment information.
+  std::string Layout(const tint::SymbolTable& symbols) const;
 
   /// @returns true if constructible as per
   /// https://gpuweb.github.io/gpuweb/wgsl/#constructible-types

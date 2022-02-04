@@ -6,7 +6,6 @@
 #define V8_WEB_SNAPSHOT_WEB_SNAPSHOT_H_
 
 #include <queue>
-#include <vector>
 
 #include "src/handles/handles.h"
 #include "src/objects/value-serializer.h"
@@ -282,6 +281,7 @@ class V8_EXPORT WebSnapshotDeserializer
   Handle<WeakFixedArray> shared_function_infos_;
   Handle<ObjectHashTable> shared_function_info_table_;
   Handle<Script> script_;
+  Handle<Object> script_name_;
 
   uint32_t string_count_ = 0;
   uint32_t map_count_ = 0;

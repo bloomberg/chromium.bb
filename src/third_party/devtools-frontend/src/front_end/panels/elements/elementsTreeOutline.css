@@ -34,7 +34,7 @@
 }
 
 .elements-disclosure li {
-  /** Keep margin-left & padding-left in sync with ElementsTreeElements.updateDecorators **/
+  /** Keep margin-left & padding-left in sync with ElementsTreeElements.updateDecorations **/
   padding: 1px 0 0 14px;
   margin-left: -2px;
   word-break: normal;
@@ -45,8 +45,12 @@
 }
 
 .elements-disclosure li.parent {
-  /** Keep it in sync with ElementsTreeElements.updateDecorators **/
-  margin-left: -13px;
+  display: flex;
+}
+
+.elements-disclosure li.parent:not(.always-parent) {
+  /** Keep it in sync with ElementsTreeElements.updateDecorations **/
+  margin-left: -12px;
 }
 
 .elements-disclosure li .selected-hint::before {
@@ -62,11 +66,12 @@
   opacity: 60%;
 }
 
-.elements-disclosure li.parent::before {
+.elements-disclosure li.parent:not(.always-parent)::before {
   box-sizing: border-box;
   user-select: none;
   -webkit-mask-image: var(--image-file-treeoutlineTriangles);
   -webkit-mask-size: 32px 24px;
+  height: 16px;
   content: "\A0\A0";
   color: transparent;
   text-shadow: none;
@@ -77,10 +82,6 @@
 
 .elements-disclosure li.parent.expanded::before {
   -webkit-mask-position: -16px 0;
-}
-
-.elements-disclosure li.always-parent::before {
-  visibility: hidden;
 }
 
 .elements-disclosure li .selection {
@@ -126,7 +127,7 @@
 
 .elements-disclosure ol {
   list-style-type: none;
-  /** Keep it in sync with ElementsTreeElements.updateDecorators **/
+  /** Keep it in sync with ElementsTreeElements.updateDecorations **/
   padding-inline-start: 12px;
   margin: 0;
 }

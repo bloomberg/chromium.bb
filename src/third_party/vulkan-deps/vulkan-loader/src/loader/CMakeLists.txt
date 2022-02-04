@@ -160,6 +160,9 @@ set(NORMAL_LOADER_SRCS
 
 if(WIN32)
     set(NORMAL_LOADER_SRCS ${NORMAL_LOADER_SRCS} loader_windows.c)
+else(UNIX AND NOT APPLE) # i.e.: Linux
+    set(NORMAL_LOADER_SRCS ${NORMAL_LOADER_SRCS} loader_linux.c)
+    set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS LOADER_ENABLE_LINUX_SORT)
 endif()
 
 set(OPT_LOADER_SRCS dev_ext_trampoline.c phys_dev_ext.c)
@@ -224,12 +227,12 @@ else(UNIX AND NOT APPLE) # i.e.: Linux
         set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
         set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
-        if (${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+        if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
             try_compile(ASSEMBLER_WORKS ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/asm_test_aarch64.S)
             if(ASSEMBLER_WORKS)
                 set(OPT_LOADER_SRCS ${OPT_LOADER_SRCS} unknown_ext_chain_gas_aarch64.S)
             endif()
-        elseif(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64" OR ${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86")
+        elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86" OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "^i.86$")
             check_include_file("cet.h" HAVE_CET_H)
             if(HAVE_CET_H)
                 set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS HAVE_CET_H)
@@ -250,7 +253,7 @@ else(UNIX AND NOT APPLE) # i.e.: Linux
         add_custom_target(loader_asm_gen_files DEPENDS gen_defines.asm)
     else()
         if(USE_GAS)
-            message(WARNING "Could not find working ${CMAKE_HOST_SYSTEM_PROCESSOR} GAS assembler\n${ASM_FAILURE_MSG}")
+            message(WARNING "Could not find working ${CMAKE_SYSTEM_PROCESSOR} GAS assembler\n${ASM_FAILURE_MSG}")
         else()
             message(WARNING "Assembly sources have been disabled\n${ASM_FAILURE_MSG}")
         endif()

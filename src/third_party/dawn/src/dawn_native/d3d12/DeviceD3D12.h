@@ -22,7 +22,7 @@
 #include "dawn_native/d3d12/Forward.h"
 #include "dawn_native/d3d12/TextureD3D12.h"
 
-namespace dawn_native { namespace d3d12 {
+namespace dawn::native::d3d12 {
 
     class CommandAllocatorManager;
     class PlatformFunctions;
@@ -41,8 +41,8 @@ namespace dawn_native { namespace d3d12 {
     // Definition of backend types
     class Device final : public DeviceBase {
       public:
-        static ResultOrError<Device*> Create(Adapter* adapter,
-                                             const DawnDeviceDescriptor* descriptor);
+        static ResultOrError<Ref<Device>> Create(Adapter* adapter,
+                                                 const DeviceDescriptor* descriptor);
         ~Device() override;
 
         MaybeError Initialize();
@@ -131,8 +131,6 @@ namespace dawn_native { namespace d3d12 {
         Ref<TextureBase> CreateExternalTexture(const TextureDescriptor* descriptor,
                                                ComPtr<ID3D12Resource> d3d12Texture,
                                                Ref<D3D11on12ResourceCacheEntry> d3d11on12Resource,
-                                               ExternalMutexSerial acquireMutexKey,
-                                               ExternalMutexSerial releaseMutexKey,
                                                bool isSwapChainTexture,
                                                bool isInitialized);
 
@@ -261,6 +259,6 @@ namespace dawn_native { namespace d3d12 {
         float mTimestampPeriod = 1.0f;
     };
 
-}}  // namespace dawn_native::d3d12
+}  // namespace dawn::native::d3d12
 
 #endif  // DAWNNATIVE_D3D12_DEVICED3D12_H_

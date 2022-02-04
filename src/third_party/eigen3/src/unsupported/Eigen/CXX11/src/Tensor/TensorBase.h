@@ -962,6 +962,11 @@ class TensorBase<Derived, ReadOnlyAccessors>
       return TensorForcedEvalOp<const Derived>(derived());
     }
 
+    // Returns a formatted tensor ready for printing to a stream
+    inline const TensorWithFormat<Derived,DerivedTraits::Layout,DerivedTraits::NumDimensions> format(const TensorIOFormat& fmt) const {
+      return TensorWithFormat<Derived,DerivedTraits::Layout,DerivedTraits::NumDimensions>(derived(), fmt);
+    }
+
     #ifdef EIGEN_READONLY_TENSORBASE_PLUGIN
     #include EIGEN_READONLY_TENSORBASE_PLUGIN
     #endif
@@ -1007,7 +1012,6 @@ class TensorBase : public TensorBase<Derived, ReadOnlyAccessors> {
       return derived() = this->template random<RandomGenerator>();
     }
 
-#if EIGEN_HAS_VARIADIC_TEMPLATES
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE Derived& setValues(
         const typename internal::Initializer<Derived, NumDimensions>::InitList& vals) {
@@ -1015,7 +1019,6 @@ class TensorBase : public TensorBase<Derived, ReadOnlyAccessors> {
       internal::initialize_tensor<Derived, NumDimensions>(eval, vals);
       return derived();
     }
-#endif  // EIGEN_HAS_VARIADIC_TEMPLATES
 
     template<typename OtherDerived> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     Derived& operator+=(const OtherDerived& other) {

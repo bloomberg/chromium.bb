@@ -85,10 +85,10 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/unicode_utilities.h"
+#include "ui/gfx/geometry/quad_f.h"
 
 #define EDIT_DEBUG 0
 
@@ -112,9 +112,8 @@ FrameSelection::FrameSelection(LocalFrame& frame)
 
 FrameSelection::~FrameSelection() = default;
 
-const CaretDisplayItemClient& FrameSelection::CaretDisplayItemClientForTesting()
-    const {
-  return frame_caret_->CaretDisplayItemClientForTesting();
+const EffectPaintPropertyNode& FrameSelection::CaretEffectNode() const {
+  return frame_caret_->CaretEffectNode();
 }
 
 bool FrameSelection::IsAvailable() const {
@@ -1149,69 +1148,44 @@ bool FrameSelection::SelectAroundCaret(
     TextGranularity text_granularity,
     HandleVisibility handle_visibility,
     ContextMenuVisibility context_menu_visibility) {
-  // Only supports word and sentence granularities for now.
-  DCHECK(text_granularity == TextGranularity::kWord ||
-         text_granularity == TextGranularity::kSentence);
+  CHECK(text_granularity == TextGranularity::kWord ||
+        text_granularity == TextGranularity::kSentence)
+      << "Only word and sentence granularities are supported for now";
 
-  const VisibleSelection& selection = ComputeVisibleSelectionInDOMTree();
-  // TODO(editing-dev): The use of VisibleSelection needs to be audited. See
-  // http://crbug.com/657237 for more details.
-  if (!selection.IsCaret())
+  EphemeralRange selection_range =
+      GetSelectionRangeAroundCaret(text_granularity);
+  if (selection_range.IsNull()) {
     return false;
-  const Position position = selection.Start();
-  static const WordSide kWordSideList[2] = {kNextWordIfOnBoundary,
-                                            kPreviousWordIfOnBoundary};
-  for (WordSide word_side : kWordSideList) {
-    Position start;
-    Position end;
-    // Use word granularity by default unless sentence granularity is explicitly
-    // requested.
-    if (text_granularity == TextGranularity::kSentence) {
-      start = StartOfSentencePosition(position);
-      end = EndOfSentence(position, SentenceTrailingSpaceBehavior::kOmitSpace)
-                .GetPosition();
-    } else {
-      start = StartOfWordPosition(position, word_side);
-      end = EndOfWordPosition(position, word_side);
-    }
-
-    // TODO(editing-dev): |StartOfWord()| and |EndOfWord()| should not make null
-    // for non-null parameter.
-    // See http://crbug.com/872443
-    if (start.IsNull() || end.IsNull())
-      continue;
-
-    if (start > end) {
-      // Since word boundaries are computed on flat tree, they can be reversed
-      // when mapped back to DOM.
-      std::swap(start, end);
-    }
-
-    String text = PlainText(EphemeralRange(start, end));
-    if (!text.IsEmpty() && !IsSeparator(text.CharacterStartingAt(0))) {
-      SetSelection(
-          SelectionInDOMTree::Builder().Collapse(start).Extend(end).Build(),
-          SetSelectionOptions::Builder()
-              .SetShouldCloseTyping(true)
-              .SetShouldClearTypingStyle(true)
-              .SetGranularity(text_granularity == TextGranularity::kSentence
-                                  ? TextGranularity::kSentence
-                                  : TextGranularity::kWord)
-              .SetShouldShowHandle(handle_visibility ==
-                                   HandleVisibility::kVisible)
-              .Build());
-
-      if (context_menu_visibility == ContextMenuVisibility::kVisible) {
-        ContextMenuAllowedScope scope;
-        frame_->GetEventHandler().ShowNonLocatedContextMenu(
-            /*override_target_element=*/nullptr, kMenuSourceTouch);
-      }
-
-      return true;
-    }
   }
 
-  return false;
+  SetSelection(
+      SelectionInDOMTree::Builder()
+          .Collapse(selection_range.StartPosition())
+          .Extend(selection_range.EndPosition())
+          .Build(),
+      SetSelectionOptions::Builder()
+          .SetShouldCloseTyping(true)
+          .SetShouldClearTypingStyle(true)
+          .SetGranularity(text_granularity)
+          .SetShouldShowHandle(handle_visibility == HandleVisibility::kVisible)
+          .Build());
+
+  if (context_menu_visibility == ContextMenuVisibility::kVisible) {
+    ContextMenuAllowedScope scope;
+    frame_->GetEventHandler().ShowNonLocatedContextMenu(
+        /*override_target_element=*/nullptr, kMenuSourceTouch);
+  }
+
+  return true;
+}
+
+EphemeralRange FrameSelection::GetWordSelectionRangeAroundCaret() const {
+  return GetSelectionRangeAroundCaret(TextGranularity::kWord);
+}
+
+EphemeralRange FrameSelection::GetSelectionRangeAroundCaretForTesting(
+    TextGranularity text_granularity) const {
+  return GetSelectionRangeAroundCaret(text_granularity);
 }
 
 GranularityStrategy* FrameSelection::GetGranularityStrategy() {
@@ -1344,6 +1318,59 @@ bool FrameSelection::IsDirectional() const {
 
 void FrameSelection::MarkCacheDirty() {
   selection_editor_->MarkCacheDirty();
+}
+
+EphemeralRange FrameSelection::GetSelectionRangeAroundCaret(
+    TextGranularity text_granularity) const {
+  DCHECK(text_granularity == TextGranularity::kWord ||
+         text_granularity == TextGranularity::kSentence)
+      << "Only word and sentence granularities are supported for now";
+
+  const VisibleSelection& selection = ComputeVisibleSelectionInDOMTree();
+  // TODO(editing-dev): The use of VisibleSelection needs to be audited. See
+  // http://crbug.com/657237 for more details.
+  if (!selection.IsCaret()) {
+    return EphemeralRange();
+  }
+  const Position position = selection.Start();
+  static const WordSide kWordSideList[2] = {kNextWordIfOnBoundary,
+                                            kPreviousWordIfOnBoundary};
+  for (WordSide word_side : kWordSideList) {
+    Position start;
+    Position end;
+    // Use word granularity by default unless sentence granularity is explicitly
+    // requested.
+    if (text_granularity == TextGranularity::kSentence) {
+      start = StartOfSentencePosition(position);
+      end = EndOfSentence(position, SentenceTrailingSpaceBehavior::kOmitSpace)
+                .GetPosition();
+    } else {
+      start = StartOfWordPosition(position, word_side);
+      end = EndOfWordPosition(position, word_side);
+    }
+
+    // TODO(editing-dev): |StartOfWord()| and |EndOfWord()| should not make null
+    // for non-null parameter.
+    // See http://crbug.com/872443
+    if (start.IsNull() || end.IsNull()) {
+      continue;
+    }
+
+    if (start > end) {
+      // Since word boundaries are computed on flat tree, they can be reversed
+      // when mapped back to DOM.
+      std::swap(start, end);
+    }
+
+    String text = PlainText(EphemeralRange(start, end));
+    if (text.IsEmpty() || IsSeparator(text.CharacterStartingAt(0))) {
+      continue;
+    }
+
+    return EphemeralRange(start, end);
+  }
+
+  return EphemeralRange();
 }
 
 }  // namespace blink

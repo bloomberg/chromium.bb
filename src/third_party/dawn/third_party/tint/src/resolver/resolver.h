@@ -93,6 +93,10 @@ class Resolver {
   bool IsPlain(const sem::Type* type) const;
 
   /// @param type the given type
+  /// @returns true if the given type is a fixed-footprint type
+  bool IsFixedFootprint(const sem::Type* type) const;
+
+  /// @param type the given type
   /// @returns true if the given type is storable
   bool IsStorable(const sem::Type* type) const;
 
@@ -104,8 +108,8 @@ class Resolver {
   /// Describes the context in which a variable is declared
   enum class VariableKind { kParameter, kLocal, kGlobal };
 
-  std::set<std::pair<const sem::Struct*, ast::StorageClass>>
-      valid_struct_storage_layouts_;
+  std::set<std::pair<const sem::Type*, ast::StorageClass>>
+      valid_type_storage_layouts_;
 
   /// Structure holding semantic information about a block (i.e. scope), such as
   /// parent block and variables declared in the block.
@@ -260,6 +264,7 @@ class Resolver {
                                   std::unordered_set<uint32_t>& locations,
                                   const Source& source,
                                   const bool is_input = false);
+  bool ValidateLoopStatement(const sem::LoopStatement* stmt);
   bool ValidateMatrix(const sem::Matrix* ty, const Source& source);
   bool ValidateFunctionParameter(const ast::Function* func,
                                  const sem::Variable* var);
@@ -287,9 +292,9 @@ class Resolver {
                                       const sem::Array* arr_type);
   bool ValidateTextureIntrinsicFunction(const sem::Call* call);
   bool ValidateNoDuplicateDecorations(const ast::DecorationList& decorations);
-  // sem::Struct is assumed to have at least one member
-  bool ValidateStorageClassLayout(const sem::Struct* type,
-                                  ast::StorageClass sc);
+  bool ValidateStorageClassLayout(const sem::Type* type,
+                                  ast::StorageClass sc,
+                                  Source source);
   bool ValidateStorageClassLayout(const sem::Variable* var);
 
   /// @returns true if the decoration list contains a

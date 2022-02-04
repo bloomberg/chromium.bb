@@ -2,9 +2,9 @@
 
 #include "dawn_platform/DawnPlatform.h"
 
-namespace dawn_native {
+namespace dawn::native {
 
-    AsyncTaskManager::AsyncTaskManager(dawn_platform::WorkerTaskPool* workerTaskPool)
+    AsyncTaskManager::AsyncTaskManager(dawn::platform::WorkerTaskPool* workerTaskPool)
         : mWorkerTaskPool(workerTaskPool) {
     }
 
@@ -46,8 +46,8 @@ namespace dawn_native {
             allPendingTasks.swap(mPendingTasks);
         }
 
-        for (auto& keyValue : allPendingTasks) {
-            keyValue.second->waitableEvent->Wait();
+        for (auto& [_, task] : allPendingTasks) {
+            task->waitableEvent->Wait();
         }
     }
 
@@ -62,4 +62,4 @@ namespace dawn_native {
         waitableTask->taskManager->HandleTaskCompletion(waitableTask.Get());
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

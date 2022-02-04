@@ -269,7 +269,6 @@ class Matrix
       : Base(internal::constructor_without_unaligned_array_assert())
     { EIGEN_INITIALIZE_COEFFS_IF_THAT_OPTION_IS_ENABLED }
 
-#if EIGEN_HAS_RVALUE_REFERENCES
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     Matrix(Matrix&& other) EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<Scalar>::value)
       : Base(std::move(other)) {}
@@ -279,9 +278,7 @@ class Matrix
       Base::operator=(std::move(other));
       return *this;
     }
-#endif
 
-#if EIGEN_HAS_CXX11
     /** \copydoc PlainObjectBase(const Scalar&, const Scalar&, const Scalar&,  const Scalar&, const ArgTypes&... args)
      *
      * Example: \include Matrix_variadic_ctor_cxx11.cpp
@@ -317,7 +314,6 @@ class Matrix
       */
     EIGEN_DEVICE_FUNC
     explicit EIGEN_STRONG_INLINE Matrix(const std::initializer_list<std::initializer_list<Scalar>>& list) : Base(list) {}
-#endif // end EIGEN_HAS_CXX11
 
 #ifndef EIGEN_PARSED_BY_DOXYGEN
 
@@ -505,8 +501,6 @@ EIGEN_MAKE_TYPEDEFS_ALL_SIZES(std::complex<double>, cd)
 #undef EIGEN_MAKE_TYPEDEFS
 #undef EIGEN_MAKE_FIXED_TYPEDEFS
 
-#if EIGEN_HAS_CXX11
-
 #define EIGEN_MAKE_TYPEDEFS(Size, SizeSuffix)                     \
 /** \ingroup matrixtypedefs */                                    \
 /** \brief \cpp11 */                                              \
@@ -551,8 +545,6 @@ using RowVector = Matrix<Type, 1, Size>;
 
 #undef EIGEN_MAKE_TYPEDEFS
 #undef EIGEN_MAKE_FIXED_TYPEDEFS
-
-#endif // EIGEN_HAS_CXX11
 
 } // end namespace Eigen
 

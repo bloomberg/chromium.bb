@@ -11,7 +11,6 @@
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/atomicops.h"
 #include "base/bits.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/discardable_memory.h"
@@ -22,21 +21,21 @@
 #include "base/tracing_buildflags.h"
 #include "build/build_config.h"
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL)
 // For madvise() which is available on all POSIX compatible systems.
 #include <sys/mman.h>
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "third_party/ashmem/ashmem.h"
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <windows.h>
 #include "base/win/windows_version.h"
 #endif
 
-#if defined(OS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
 #include <lib/zx/vmar.h>
 #include <zircon/types.h>
 #include "base/fuchsia/fuchsia_logging.h"
@@ -67,21 +66,21 @@ int64_t TimeToWireFormat(Time time);
 // Serialize to Unix time when using 4-byte wire format.
 // Note: 19 January 2038, this will cease to work.
 template <>
-Time ALLOW_UNUSED_TYPE TimeFromWireFormat<4>(int64_t value) {
+[[maybe_unused]] Time TimeFromWireFormat<4>(int64_t value) {
   return value ? Time::UnixEpoch() + Seconds(value) : Time();
 }
 template <>
-int64_t ALLOW_UNUSED_TYPE TimeToWireFormat<4>(Time time) {
+[[maybe_unused]] int64_t TimeToWireFormat<4>(Time time) {
   return time > Time::UnixEpoch() ? (time - Time::UnixEpoch()).InSeconds() : 0;
 }
 
 // Standard serialization format when using 8-byte wire format.
 template <>
-Time ALLOW_UNUSED_TYPE TimeFromWireFormat<8>(int64_t value) {
+[[maybe_unused]] Time TimeFromWireFormat<8>(int64_t value) {
   return Time::FromInternalValue(value);
 }
 template <>
-int64_t ALLOW_UNUSED_TYPE TimeToWireFormat<8>(Time time) {
+[[maybe_unused]] int64_t TimeToWireFormat<8>(Time time) {
   return time.ToInternalValue();
 }
 
@@ -123,7 +122,7 @@ size_t AlignToPageSize(size_t size) {
   return bits::AlignUp(size, base::GetPageSize());
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 bool UseAshmemUnpinningForDiscardableMemory() {
   if (!ashmem_device_is_supported())
     return false;
@@ -136,7 +135,7 @@ bool UseAshmemUnpinningForDiscardableMemory() {
   }
   return true;
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace
 
@@ -161,20 +160,12 @@ bool DiscardableSharedMemory::CreateAndMap(size_t size) {
   shared_memory_region_ =
       UnsafeSharedMemoryRegion::Create(checked_size.ValueOrDie());
 
-  // Failure in |CreateAndMap| will likely cause another process to crash, but
-  // not this one. We dump here and below to make it easier to investigate
-  // these crashes.
-  // TODO(crbug.com/1270558): Remove these calls when this bug is resolved.
-  if (!shared_memory_region_.IsValid()) {
-    base::debug::DumpWithoutCrashing();
+  if (!shared_memory_region_.IsValid())
     return false;
-  }
 
   shared_memory_mapping_ = shared_memory_region_.Map();
-  if (!shared_memory_mapping_.IsValid()) {
-    base::debug::DumpWithoutCrashing();
+  if (!shared_memory_mapping_.IsValid())
     return false;
-  }
 
   mapped_size_ = shared_memory_mapping_.mapped_size() -
                  AlignToPageSize(sizeof(SharedState));
@@ -284,11 +275,11 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
   if (!length)
       return PURGED;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Ensure that the platform won't discard the required pages.
   return LockPages(shared_memory_region_,
                    AlignToPageSize(sizeof(SharedState)) + offset, length);
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
   // On macOS, there is no mechanism to lock pages. However, we do need to call
   // madvise(MADV_FREE_REUSE) in order to correctly update accounting for memory
   // footprint via task_info().
@@ -406,13 +397,13 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
 // Note: this memory will not be accessed again.  The segment will be
 // freed asynchronously at a later time, so just do the best
 // immediately.
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL)
 // Linux and Android provide MADV_REMOVE which is preferred as it has a
 // behavior that can be verified in tests. Other POSIX flavors (MacOSX, BSDs),
 // provide MADV_FREE which has the same result but memory is purged lazily.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 #define MADV_PURGE_ARGUMENT MADV_REMOVE
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
 // MADV_FREE_REUSABLE is similar to MADV_FREE, but also marks the pages with the
 // reusable bit, which allows both Activity Monitor and memory-infra to
 // correctly track the pages.
@@ -428,7 +419,7 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
               AlignToPageSize(mapped_size_), MADV_PURGE_ARGUMENT)) {
     DPLOG(ERROR) << "madvise() failed";
   }
-#elif defined(OS_WIN)
+#elif BUILDFLAG(IS_WIN)
   // On Windows, discarded pages are not returned to the system immediately and
   // not guaranteed to be zeroed when returned to the application.
   using DiscardVirtualMemoryFunction =
@@ -454,7 +445,7 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
     void* ptr = VirtualAlloc(address, length, MEM_RESET, PAGE_READWRITE);
     CHECK(ptr);
   }
-#elif defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_FUCHSIA)
   // De-commit via our VMAR, rather than relying on the VMO handle, since the
   // handle may have been closed after the memory was mapped into this process.
   uint64_t address_int = reinterpret_cast<uint64_t>(
@@ -464,7 +455,7 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
       ZX_VMO_OP_DECOMMIT, address_int, AlignToPageSize(mapped_size_), nullptr,
       0);
   ZX_DCHECK(status == ZX_OK, status) << "zx_vmo_op_range(ZX_VMO_OP_DECOMMIT)";
-#endif  // defined(OS_FUCHSIA)
+#endif  // BUILDFLAG(IS_FUCHSIA)
 
   last_known_usage_ = Time();
   return true;
@@ -472,20 +463,21 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
 
 void DiscardableSharedMemory::ReleaseMemoryIfPossible(size_t offset,
                                                       size_t length) {
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL)
 // Linux and Android provide MADV_REMOVE which is preferred as it has a
 // behavior that can be verified in tests. Other POSIX flavors (MacOSX, BSDs),
 // provide MADV_FREE which has the same result but memory is purged lazily.
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 #define MADV_PURGE_ARGUMENT MADV_REMOVE
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
 // MADV_FREE_REUSABLE is similar to MADV_FREE, but also marks the pages with the
 // reusable bit, which allows both Activity Monitor and memory-infra to
 // correctly track the pages.
 #define MADV_PURGE_ARGUMENT MADV_FREE_REUSABLE
-#else  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#else  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
 #define MADV_PURGE_ARGUMENT MADV_FREE
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) ||
+        // BUILDFLAG(IS_ANDROID)
   // Advise the kernel to remove resources associated with purged pages.
   // Subsequent accesses of memory pages will succeed, but might result in
   // zero-fill-on-demand pages.
@@ -493,10 +485,10 @@ void DiscardableSharedMemory::ReleaseMemoryIfPossible(size_t offset,
               length, MADV_PURGE_ARGUMENT)) {
     DPLOG(ERROR) << "madvise() failed";
   }
-#else   // defined(OS_POSIX) && !defined(OS_NACL)
+#else   // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL)
   DiscardSystemPages(
       static_cast<char*>(shared_memory_mapping_.memory()) + offset, length);
-#endif  // defined(OS_POSIX) && !defined(OS_NACL)
+#endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_NACL)
 }
 
 bool DiscardableSharedMemory::IsMemoryResident() const {
@@ -565,7 +557,7 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::LockPages(
     const UnsafeSharedMemoryRegion& region,
     size_t offset,
     size_t length) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (region.IsValid()) {
     if (UseAshmemUnpinningForDiscardableMemory()) {
       int pin_result =
@@ -585,7 +577,7 @@ void DiscardableSharedMemory::UnlockPages(
     const UnsafeSharedMemoryRegion& region,
     size_t offset,
     size_t length) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (region.IsValid()) {
     if (UseAshmemUnpinningForDiscardableMemory()) {
       int unpin_result =
@@ -600,7 +592,7 @@ Time DiscardableSharedMemory::Now() const {
   return Time::Now();
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // static
 bool DiscardableSharedMemory::IsAshmemDeviceSupportedForTesting() {
   return UseAshmemUnpinningForDiscardableMemory();

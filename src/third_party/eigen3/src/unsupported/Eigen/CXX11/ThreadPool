@@ -30,7 +30,6 @@
 
 // The code depends on CXX11, so only include the module if the
 // compiler supports it.
-#if (EIGEN_COMP_CXXVER >= 11)
 #include <cstddef>
 #include <cstring>
 #include <time.h>
@@ -66,8 +65,6 @@
 #include "src/ThreadPool/ThreadEnvironment.h"
 #include "src/ThreadPool/Barrier.h"
 #include "src/ThreadPool/NonBlockingThreadPool.h"
-
-#endif
 
 #include "../../../Eigen/src/Core/util/ReenableStupidWarnings.h"
 

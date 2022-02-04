@@ -208,7 +208,7 @@ class CORE_EXPORT CanvasRenderingContext
   // This method gets called at the end of script tasks that modified
   // the contents of the canvas (called didDraw). It marks the completion
   // of a presentable frame.
-  virtual void FinalizeFrame() {}
+  virtual void FinalizeFrame(bool printing = false) {}
 
   // Thread::TaskObserver implementation
   void DidProcessTask(const base::PendingTask&) override;
@@ -287,15 +287,16 @@ class CORE_EXPORT CanvasRenderingContext
     return CanvasColorParams();
   }
 
- private:
-  void Dispose();
+  virtual void Dispose();
 
+ private:
   Member<CanvasRenderingContextHost> host_;
   CanvasColorParams color_params_;
   CanvasContextCreationAttributesCore creation_attributes_;
 
   void RenderTaskEnded();
   bool did_draw_in_current_task_ = false;
+  bool did_print_in_current_task_ = false;
 
   const CanvasRenderingAPI canvas_rendering_type_;
 };

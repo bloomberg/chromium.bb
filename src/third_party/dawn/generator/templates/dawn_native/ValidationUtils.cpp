@@ -12,15 +12,20 @@
 //* See the License for the specific language governing permissions and
 //* limitations under the License.
 
-#include "dawn_native/ValidationUtils_autogen.h"
+{% set impl_dir = metadata.impl_dir + "/" if metadata.impl_dir else "" %}
+{% set namespace_name = Name(metadata.native_namespace) %}
+{% set native_namespace = namespace_name.namespace_case() %}
+{% set native_dir = impl_dir + namespace_name.snake_case() %}
+#include "{{native_dir}}/ValidationUtils_autogen.h"
 
-namespace dawn_native {
+namespace {{native_namespace}} {
 
+    {% set namespace = metadata.namespace %}
     {% for type in by_category["enum"] %}
-        MaybeError Validate{{type.name.CamelCase()}}(wgpu::{{as_cppType(type.name)}} value) {
+        MaybeError Validate{{type.name.CamelCase()}}({{namespace}}::{{as_cppType(type.name)}} value) {
             switch (value) {
                 {% for value in type.values if value.valid %}
-                    case wgpu::{{as_cppType(type.name)}}::{{as_cppEnum(value.name)}}:
+                    case {{namespace}}::{{as_cppType(type.name)}}::{{as_cppEnum(value.name)}}:
                         return {};
                 {% endfor %}
                 default:
@@ -31,8 +36,8 @@ namespace dawn_native {
     {% endfor %}
 
     {% for type in by_category["bitmask"] %}
-        MaybeError Validate{{type.name.CamelCase()}}(wgpu::{{as_cppType(type.name)}} value) {
-            if ((value & static_cast<wgpu::{{as_cppType(type.name)}}>(~{{type.full_mask}})) == 0) {
+        MaybeError Validate{{type.name.CamelCase()}}({{namespace}}::{{as_cppType(type.name)}} value) {
+            if ((value & static_cast<{{namespace}}::{{as_cppType(type.name)}}>(~{{type.full_mask}})) == 0) {
                 return {};
             }
             return DAWN_VALIDATION_ERROR("Invalid value for {{as_cType(type.name)}}");
@@ -40,4 +45,4 @@ namespace dawn_native {
 
     {% endfor %}
 
-} // namespace dawn_native
+} // namespace {{native_namespace}}

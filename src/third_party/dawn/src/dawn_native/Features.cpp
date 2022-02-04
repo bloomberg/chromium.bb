@@ -18,7 +18,7 @@
 #include "common/BitSetIterator.h"
 #include "dawn_native/Features.h"
 
-namespace dawn_native {
+namespace dawn::native {
     namespace {
 
         struct FeatureEnumAndInfo {
@@ -83,7 +83,80 @@ namespace dawn_native {
               {"multiplanar-formats",
                "Import and use multi-planar texture formats with per plane views",
                "https://bugs.chromium.org/p/dawn/issues/detail?id=551"},
-              &WGPUDeviceProperties::multiPlanarFormats}}};
+              &WGPUDeviceProperties::multiPlanarFormats},
+             {Feature::DawnNative,
+              {"dawn-native", "WebGPU is running on top of dawn_native.",
+               "https://dawn.googlesource.com/dawn/+/refs/heads/main/docs/features/"
+               "dawn_native.md"},
+              &WGPUDeviceProperties::dawnNative}}};
+
+        Feature FromAPIFeature(wgpu::FeatureName feature) {
+            switch (feature) {
+                case wgpu::FeatureName::Undefined:
+                    return Feature::InvalidEnum;
+
+                case wgpu::FeatureName::TimestampQuery:
+                    return Feature::TimestampQuery;
+                case wgpu::FeatureName::PipelineStatisticsQuery:
+                    return Feature::PipelineStatisticsQuery;
+                case wgpu::FeatureName::TextureCompressionBC:
+                    return Feature::TextureCompressionBC;
+                case wgpu::FeatureName::TextureCompressionETC2:
+                    return Feature::TextureCompressionETC2;
+                case wgpu::FeatureName::TextureCompressionASTC:
+                    return Feature::TextureCompressionASTC;
+                case wgpu::FeatureName::DepthClamping:
+                    return Feature::DepthClamping;
+                case wgpu::FeatureName::Depth24UnormStencil8:
+                    return Feature::Depth24UnormStencil8;
+                case wgpu::FeatureName::Depth32FloatStencil8:
+                    return Feature::Depth32FloatStencil8;
+                case wgpu::FeatureName::DawnShaderFloat16:
+                    return Feature::ShaderFloat16;
+                case wgpu::FeatureName::DawnInternalUsages:
+                    return Feature::DawnInternalUsages;
+                case wgpu::FeatureName::DawnMultiPlanarFormats:
+                    return Feature::MultiPlanarFormats;
+                case wgpu::FeatureName::DawnNative:
+                    return Feature::DawnNative;
+
+                case wgpu::FeatureName::IndirectFirstInstance:
+                    return Feature::InvalidEnum;
+            }
+            return Feature::InvalidEnum;
+        }
+
+        wgpu::FeatureName ToAPIFeature(Feature feature) {
+            switch (feature) {
+                case Feature::TextureCompressionBC:
+                    return wgpu::FeatureName::TextureCompressionBC;
+                case Feature::TextureCompressionETC2:
+                    return wgpu::FeatureName::TextureCompressionETC2;
+                case Feature::TextureCompressionASTC:
+                    return wgpu::FeatureName::TextureCompressionASTC;
+                case Feature::PipelineStatisticsQuery:
+                    return wgpu::FeatureName::PipelineStatisticsQuery;
+                case Feature::TimestampQuery:
+                    return wgpu::FeatureName::TimestampQuery;
+                case Feature::DepthClamping:
+                    return wgpu::FeatureName::DepthClamping;
+                case Feature::Depth24UnormStencil8:
+                    return wgpu::FeatureName::Depth24UnormStencil8;
+                case Feature::Depth32FloatStencil8:
+                    return wgpu::FeatureName::Depth32FloatStencil8;
+                case Feature::ShaderFloat16:
+                    return wgpu::FeatureName::DawnShaderFloat16;
+                case Feature::DawnInternalUsages:
+                    return wgpu::FeatureName::DawnInternalUsages;
+                case Feature::MultiPlanarFormats:
+                    return wgpu::FeatureName::DawnMultiPlanarFormats;
+                case Feature::DawnNative:
+                    return wgpu::FeatureName::DawnNative;
+
+                case Feature::EnumCount:
+                    UNREACHABLE();
+            }
+        }
 
     }  // anonymous namespace
 
@@ -93,10 +166,30 @@ namespace dawn_native {
         featuresBitSet.set(featureIndex);
     }
 
+    void FeaturesSet::EnableFeature(wgpu::FeatureName feature) {
+        EnableFeature(FromAPIFeature(feature));
+    }
+
     bool FeaturesSet::IsEnabled(Feature feature) const {
         ASSERT(feature != Feature::InvalidEnum);
         const size_t featureIndex = static_cast<size_t>(feature);
         return featuresBitSet[featureIndex];
+    }
+
+    bool FeaturesSet::IsEnabled(wgpu::FeatureName feature) const {
+        Feature f = FromAPIFeature(feature);
+        return f != Feature::InvalidEnum && IsEnabled(f);
+    }
+
+    size_t FeaturesSet::EnumerateFeatures(wgpu::FeatureName* features) const {
+        for (uint32_t i : IterateBitSet(featuresBitSet)) {
+            wgpu::FeatureName feature = ToAPIFeature(static_cast<Feature>(i));
+            if (features != nullptr) {
+                *features = feature;
+                features += 1;
+            }
+        }
+        return featuresBitSet.count();
     }
 
     std::vector<const char*> FeaturesSet::GetEnabledFeatureNames() const {
@@ -104,8 +197,13 @@ namespace dawn_native {
 
         uint32_t index = 0;
         for (uint32_t i : IterateBitSet(featuresBitSet)) {
-            const char* featureName = FeatureEnumToName(static_cast<Feature>(i));
-            enabledFeatureNames[index] = featureName;
+            Feature feature = static_cast<Feature>(i);
+            ASSERT(feature != Feature::InvalidEnum);
+
+            const FeatureEnumAndInfo& featureNameAndInfo = kFeatureNameAndInfoList[i];
+            ASSERT(featureNameAndInfo.feature == feature);
+
+            enabledFeatureNames[index] = featureNameAndInfo.info.name;
             ++index;
         }
         return enabledFeatureNames;
@@ -119,13 +217,9 @@ namespace dawn_native {
         }
     }
 
-    const char* FeatureEnumToName(Feature feature) {
+    wgpu::FeatureName FeatureEnumToAPIFeature(Feature feature) {
         ASSERT(feature != Feature::InvalidEnum);
-
-        const FeatureEnumAndInfo& featureNameAndInfo =
-            kFeatureNameAndInfoList[static_cast<size_t>(feature)];
-        ASSERT(featureNameAndInfo.feature == feature);
-        return featureNameAndInfo.info.name;
+        return ToAPIFeature(feature);
     }
 
     FeaturesInfo::FeaturesInfo() {
@@ -136,14 +230,12 @@ namespace dawn_native {
         }
     }
 
-    const FeatureInfo* FeaturesInfo::GetFeatureInfo(const char* featureName) const {
-        ASSERT(featureName);
-
-        const auto& iter = mFeatureNameToEnumMap.find(featureName);
-        if (iter != mFeatureNameToEnumMap.cend()) {
-            return &kFeatureNameAndInfoList[static_cast<size_t>(iter->second)].info;
+    const FeatureInfo* FeaturesInfo::GetFeatureInfo(wgpu::FeatureName feature) const {
+        Feature f = FromAPIFeature(feature);
+        if (f == Feature::InvalidEnum) {
+            return nullptr;
         }
-        return nullptr;
+        return &kFeatureNameAndInfoList[static_cast<size_t>(f)].info;
     }
 
     Feature FeaturesInfo::FeatureNameToEnum(const char* featureName) const {
@@ -164,25 +256,22 @@ namespace dawn_native {
                 {"timestamp_query", "timestamp-query"},
                 {"multiplanar_formats", "multiplanar-formats"},
             }};
-        for (const auto& replacement : kReplacementsForDeprecatedNames) {
-            if (strcmp(featureName, replacement.first) == 0) {
-                return FeatureNameToEnum(replacement.second);
+        for (const auto& [name, replacement] : kReplacementsForDeprecatedNames) {
+            if (strcmp(featureName, name) == 0) {
+                return FeatureNameToEnum(replacement);
             }
         }
 
         return Feature::InvalidEnum;
     }
 
-    FeaturesSet FeaturesInfo::FeatureNamesToFeaturesSet(
-        const std::vector<const char*>& requiredFeatures) const {
-        FeaturesSet featuresSet;
-
-        for (const char* featureName : requiredFeatures) {
-            Feature featureEnum = FeatureNameToEnum(featureName);
-            ASSERT(featureEnum != Feature::InvalidEnum);
-            featuresSet.EnableFeature(featureEnum);
+    wgpu::FeatureName FeaturesInfo::FeatureNameToAPIEnum(const char* featureName) const {
+        Feature f = FeatureNameToEnum(featureName);
+        if (f != Feature::InvalidEnum) {
+            return ToAPIFeature(f);
         }
-        return featuresSet;
+        // Pass something invalid.
+        return static_cast<wgpu::FeatureName>(-1);
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

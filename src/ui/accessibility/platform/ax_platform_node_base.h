@@ -97,7 +97,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   void AnnounceText(const std::u16string& text) override;
 #endif
 
@@ -105,6 +105,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   bool IsDescendantOf(AXPlatformNode* ancestor) const override;
 
   // Helpers.
+  AXPlatformNodeBase* GetPlatformParent() const;
   AXPlatformNodeBase* GetPreviousSibling() const;
   AXPlatformNodeBase* GetNextSibling() const;
   AXPlatformNodeBase* GetFirstChild() const;
@@ -173,6 +174,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   bool GetStringListAttribute(ax::mojom::StringListAttribute attribute,
                               std::vector<std::string>* value) const;
 
+  bool HasHtmlAttribute(const char* attribute) const;
   const base::StringPairs& GetHtmlAttributes() const;
   bool GetHtmlAttribute(const char* attribute, std::string* value) const;
   bool GetHtmlAttribute(const char* attribute, std::u16string* value) const;
@@ -555,8 +557,6 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
       size_t* start,
       size_t* old_len,
       size_t* new_len);
-
-  std::string GetInvalidValue() const;
 
   // Based on the characteristics of this object, such as its role and the
   // presence of a multiselectable attribute, returns the maximum number of

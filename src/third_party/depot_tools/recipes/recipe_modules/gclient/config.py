@@ -79,7 +79,7 @@ def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
     #  - if revision is given, it's passed verbatim to bot_update for
     #    corresponding dependency. Otherwise (i.e. None), the patch will be
     #    applied on top of version pinned in DEPS.
-    # This is essentially a whitelist of which repos inside a solution
+    # This is essentially a allowlist of which repos inside a solution
     # can be patched automatically by bot_update based on
     # api.buildbucket.build.input.gerrit_changes[0].project
     # For example, if bare chromium solution has this entry in repo_path_map

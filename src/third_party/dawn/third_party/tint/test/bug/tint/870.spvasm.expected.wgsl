@@ -1,18 +1,17 @@
-type Arr = [[stride(4)]] array<i32, 6u>;
+type Arr = @stride(4) array<i32, 6u>;
 
 struct sspp962805860buildInformationS {
   footprint : vec4<f32>;
   offset : vec4<f32>;
   essence : i32;
   orientation : Arr;
-};
+}
 
-[[block]]
 struct x_B4_BuildInformation {
   passthru : sspp962805860buildInformationS;
-};
+}
 
-[[group(0), binding(2)]] var<storage, read> sspp962805860buildInformation : x_B4_BuildInformation;
+@group(0) @binding(2) var<storage, read> sspp962805860buildInformation : x_B4_BuildInformation;
 
 fn main_1() {
   var orientation : array<i32, 6u>;
@@ -26,7 +25,7 @@ fn main_1() {
   return;
 }
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   main_1();
 }

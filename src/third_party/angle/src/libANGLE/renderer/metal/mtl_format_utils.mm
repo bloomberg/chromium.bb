@@ -229,7 +229,7 @@ bool Format::isPVRTC() const
     switch (metalFormat)
     {
 #if (TARGET_OS_IOS && !TARGET_OS_MACCATALYST) || \
-    (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 101600))
+    (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED >= 110000))
         case MTLPixelFormatPVRTC_RGB_2BPP:
         case MTLPixelFormatPVRTC_RGB_2BPP_sRGB:
         case MTLPixelFormatPVRTC_RGB_4BPP:
@@ -367,7 +367,7 @@ void FormatTable::setCompressedFormatCaps(MTLPixelFormat formatId, bool filterab
     setFormatCaps(formatId, filterable, false, false, false, false, false, false);
 }
 
-void FormatTable::adjustFormatCapsForDevice(id<MTLDevice> device,
+void FormatTable::adjustFormatCapsForDevice(const mtl::ContextDevice &device,
                                             MTLPixelFormat id,
                                             bool supportsiOS2,
                                             bool supportsiOS4)

@@ -13,6 +13,7 @@
 #include "src/init/setup-isolate.h"
 #include "src/interpreter/interpreter.h"
 #include "src/objects/arguments.h"
+#include "src/objects/call-site-info.h"
 #include "src/objects/cell-inl.h"
 #include "src/objects/contexts.h"
 #include "src/objects/data-handler.h"
@@ -37,7 +38,6 @@
 #include "src/objects/shared-function-info.h"
 #include "src/objects/smi.h"
 #include "src/objects/source-text-module.h"
-#include "src/objects/stack-frame-info.h"
 #include "src/objects/string.h"
 #include "src/objects/synthetic-module.h"
 #include "src/objects/template-objects-inl.h"
@@ -476,6 +476,8 @@ bool Heap::CreateInitialMaps() {
     ALLOCATE_VARSIZE_MAP(NUMBER_DICTIONARY_TYPE, number_dictionary)
     ALLOCATE_VARSIZE_MAP(SIMPLE_NUMBER_DICTIONARY_TYPE,
                          simple_number_dictionary)
+    ALLOCATE_VARSIZE_MAP(NAME_TO_INDEX_HASH_TABLE_TYPE,
+                         name_to_index_hash_table)
 
     ALLOCATE_VARSIZE_MAP(EMBEDDER_DATA_ARRAY_TYPE, embedder_data_array)
     ALLOCATE_VARSIZE_MAP(EPHEMERON_HASH_TABLE_TYPE, ephemeron_hash_table)
@@ -811,6 +813,7 @@ void Heap::CreateInitialObjects() {
   set_shared_wasm_memories(roots.empty_weak_array_list());
 #ifdef V8_ENABLE_WEBASSEMBLY
   set_active_continuation(roots.undefined_value());
+  set_active_suspender(roots.undefined_value());
 #endif  // V8_ENABLE_WEBASSEMBLY
 
   set_script_list(roots.empty_weak_array_list());

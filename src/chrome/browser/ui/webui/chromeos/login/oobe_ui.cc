@@ -109,6 +109,8 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/component_extension_resources.h"
+#include "chrome/grit/gaia_auth_host_resources.h"
+#include "chrome/grit/gaia_auth_host_resources_map.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/oobe_conditional_resources.h"
 #include "chrome/grit/oobe_unconditional_resources_map.h"
@@ -149,13 +151,19 @@ constexpr char kArcPlaystoreLogoPath[] = "playstore.svg";
 constexpr char kArcSupervisionIconPath[] = "supervision_icon.png";
 constexpr char kCustomElementsHTMLPath[] = "custom_elements.html";
 constexpr char kCustomElementsJSPath[] = "custom_elements.js";
-constexpr char kDebuggerJSPath[] = "debug.js";
+constexpr char kDebuggerJSPath[] = "debug/debug.js";
+constexpr char kDebuggerMJSPath[] = "debug/debug.m.js";
+constexpr char kDebuggerUtilJSPath[] = "debug/debug_util.js";
 constexpr char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
+constexpr char kKeyboardUtilsForInjectionPath[] =
+    "components/keyboard_utils_for_injection.js";
+
 constexpr char kLoginJSPath[] = "login.js";
 constexpr char kOobeJSPath[] = "oobe.js";
 constexpr char kProductLogoPath[] = "product-logo.png";
 constexpr char kRecommendAppListViewJSPath[] = "recommend_app_list_view.js";
 constexpr char kTestAPIJSPath[] = "test_api.js";
+constexpr char kTestAPIJsMPath[] = "test_api/test_api.m.js";
 constexpr char kWebviewSamlInjectedJSPath[] = "webview_saml_injected.js";
 
 // Components
@@ -223,24 +231,6 @@ void AddAssistantScreensResources(content::WebUIDataSource* source) {
       network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
 }
 
-void AddGestureNavigationResources(content::WebUIDataSource* source) {
-  source->AddResourcePath("gesture_go_home.json",
-                          IDR_GESTURE_NAVIGATION_GO_HOME_ANIMATION);
-  source->AddResourcePath("gesture_go_back.json",
-                          IDR_GESTURE_NAVIGATION_GO_BACK_ANIMATION);
-  source->AddResourcePath("gesture_hotseat_overview.json",
-                          IDR_GESTURE_NAVIGATION_HOTSEAT_OVERVIEW_ANIMATION);
-  source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
-}
-
-void AddMarketingOptInResources(content::WebUIDataSource* source) {
-  source->AddResourcePath("all_set.json",
-                          IDR_MARKETING_OPT_IN_ALL_SET_ANIMATION);
-  source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
-}
-
 void AddMultiDeviceSetupResources(content::WebUIDataSource* source) {
   source->AddResourcePath("multidevice_setup_light.json",
                           IDR_MULTIDEVICE_SETUP_ANIMATION_LIGHT);
@@ -250,56 +240,59 @@ void AddMultiDeviceSetupResources(content::WebUIDataSource* source) {
       network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
 }
 
-void AddAppDownloadingResources(content::WebUIDataSource* source) {
-  source->AddResourcePath("downloading_apps.json",
-                          IDR_APPS_DOWNLOADING_ANIMATION);
-}
-
 void AddDebuggerResources(content::WebUIDataSource* source) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  bool enable_debugger =
-      command_line->HasSwitch(::chromeos::switches::kShowOobeDevOverlay);
+  bool enable_debugger = command_line->HasSwitch(switches::kShowOobeDevOverlay);
   // Enable for ChromeOS-on-linux for developers and test images.
   if (enable_debugger && base::SysInfo::IsRunningOnChromeOS()) {
     LOG(WARNING) << "OOBE Debug overlay can only be used on test images";
     base::SysInfo::CrashIfChromeOSNonTestImage();
   }
+  const bool poly3_enabled = features::IsOobePolymer3Enabled();
   if (enable_debugger) {
-    source->AddResourcePath(kDebuggerJSPath, IDR_OOBE_DEBUGGER_JS);
+    source->AddResourcePath(kDebuggerUtilJSPath, IDR_OOBE_DEBUGGER_UTIL_JS);
+    if (poly3_enabled) {
+      source->AddResourcePath(kDebuggerMJSPath, IDR_OOBE_DEBUGGER_M_JS);
+    } else {
+      source->AddResourcePath(kDebuggerJSPath, IDR_OOBE_DEBUGGER_JS);
+    }
   } else {
+    // Serve empty files under all resource paths.
+    source->AddResourcePath(kDebuggerMJSPath, IDR_OOBE_DEBUGGER_STUB_JS);
     source->AddResourcePath(kDebuggerJSPath, IDR_OOBE_DEBUGGER_STUB_JS);
+    source->AddResourcePath(kDebuggerUtilJSPath, IDR_OOBE_DEBUGGER_STUB_JS);
   }
 }
 
 void AddTestAPIResources(content::WebUIDataSource* source) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  bool enable_test_api =
-      command_line->HasSwitch(::chromeos::switches::kEnableOobeTestAPI);
+  bool enable_test_api = command_line->HasSwitch(switches::kEnableOobeTestAPI);
   if (enable_test_api) {
     source->AddResourcePath(kTestAPIJSPath, IDR_OOBE_TEST_API_JS);
+    source->AddResourcePath(kTestAPIJsMPath, IDR_OOBE_TEST_API_M_JS);
   } else {
     source->AddResourcePath(kTestAPIJSPath, IDR_OOBE_TEST_API_STUB_JS);
+    source->AddResourcePath(kTestAPIJsMPath, IDR_OOBE_TEST_API_STUB_M_JS);
   }
 }
 
 // Default and non-shared resource definition for kOobeDisplay display type.
 // chrome://oobe/oobe
 void AddOobeDisplayTypeDefaultResources(content::WebUIDataSource* source) {
-  if (switches::IsOsInstallAllowed()) {
-    source->SetDefaultResource(IDR_OS_INSTALL_OOBE_HTML);
-    source->AddResourcePath(kCustomElementsHTMLPath,
-                            IDR_CUSTOM_ELEMENTS_OS_INSTALL_OOBE_HTML);
-    source->AddResourcePath(kCustomElementsJSPath,
-                            IDR_CUSTOM_ELEMENTS_OS_INSTALL_OOBE_JS);
+  if (features::IsOobePolymer3Enabled()) {
+    // TODO(crbug.com/1279339): Separate CloudReady screens resources.
+    source->SetDefaultResource(IDR_OOBE_POLY3_HTML);
   } else {
-    if (features::IsOobePolymer3Enabled()) {
-      source->SetDefaultResource(IDR_OOBE_POLY3_HTML);
+    if (switches::IsOsInstallAllowed()) {
+      source->SetDefaultResource(IDR_OS_INSTALL_OOBE_HTML);
+      source->AddResourcePath(kCustomElementsHTMLPath,
+                              IDR_CUSTOM_ELEMENTS_OS_INSTALL_OOBE_HTML);
     } else {
       source->SetDefaultResource(IDR_OOBE_HTML);
       source->AddResourcePath(kCustomElementsHTMLPath,
                               IDR_CUSTOM_ELEMENTS_OOBE_HTML);
-      source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_OOBE_JS);
     }
+    source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_OOBE_JS);
   }
   source->AddResourcePath(kOobeJSPath, IDR_OOBE_JS);
 }
@@ -307,22 +300,21 @@ void AddOobeDisplayTypeDefaultResources(content::WebUIDataSource* source) {
 // Default and non-shared resource definition for kLoginDisplay display type.
 // chrome://oobe/login
 void AddLoginDisplayTypeDefaultResources(content::WebUIDataSource* source) {
-  if (switches::IsOsInstallAllowed()) {
-    source->SetDefaultResource(IDR_OS_INSTALL_LOGIN_HTML);
-    source->AddResourcePath(kCustomElementsHTMLPath,
-                            IDR_CUSTOM_ELEMENTS_OS_INSTALL_LOGIN_HTML);
-    source->AddResourcePath(kCustomElementsJSPath,
-                            IDR_CUSTOM_ELEMENTS_OS_INSTALL_LOGIN_JS);
+  if (features::IsOobePolymer3Enabled()) {
+    // TODO(crbug.com/1279339): Separate CloudReady screens resources.
+    source->SetDefaultResource(IDR_MD_LOGIN_POLY3_HTML);
   } else {
-    if (features::IsOobePolymer3Enabled()) {
-      source->SetDefaultResource(IDR_MD_LOGIN_POLY3_HTML);
+    if (switches::IsOsInstallAllowed()) {
+      source->SetDefaultResource(IDR_OS_INSTALL_LOGIN_HTML);
+      source->AddResourcePath(kCustomElementsHTMLPath,
+                              IDR_CUSTOM_ELEMENTS_OS_INSTALL_LOGIN_HTML);
     } else {
       source->SetDefaultResource(IDR_MD_LOGIN_HTML);
       source->AddResourcePath(kCustomElementsHTMLPath,
                               IDR_CUSTOM_ELEMENTS_LOGIN_HTML);
-      source->AddResourcePath(kCustomElementsJSPath,
-                              IDR_CUSTOM_ELEMENTS_LOGIN_JS);
     }
+    source->AddResourcePath(kCustomElementsJSPath,
+                            IDR_CUSTOM_ELEMENTS_LOGIN_JS);
   }
 
   source->AddResourcePath(kLoginJSPath, IDR_OOBE_JS);
@@ -358,10 +350,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   AddSyncConsentResources(source);
   AddArcScreensResources(source);
   AddAssistantScreensResources(source);
-  AddGestureNavigationResources(source);
-  AddMarketingOptInResources(source);
   AddMultiDeviceSetupResources(source);
-  AddAppDownloadingResources(source);
 
   AddDebuggerResources(source);
   AddTestAPIResources(source);
@@ -369,6 +358,8 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   source->AddResourcePath(kWebviewSamlInjectedJSPath,
                           IDR_GAIA_AUTH_WEBVIEW_SAML_INJECTED_JS);
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
+  source->AddResourcePath(kKeyboardUtilsForInjectionPath,
+                          IDR_KEYBOARD_UTILS_FOR_INJECTION_JS);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ObjectSrc, "object-src chrome:;");
   source->DisableTrustedTypesCSP();
@@ -653,8 +644,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  bool enable_debugger =
-      command_line->HasSwitch(::chromeos::switches::kShowOobeDevOverlay);
+  bool enable_debugger = command_line->HasSwitch(switches::kShowOobeDevOverlay);
   // TODO(crbug.com/1073095): Also enable for ChromeOS test images.
   // Enable for ChromeOS-on-linux for developers.
   bool test_mode = !base::SysInfo::IsRunningOnChromeOS();
@@ -664,8 +654,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
         std::make_unique<DebugOverlayHandler>(js_calls_container_.get()));
   }
 
-  bool enable_test_api =
-      command_line->HasSwitch(::chromeos::switches::kEnableOobeTestAPI);
+  bool enable_test_api = command_line->HasSwitch(switches::kEnableOobeTestAPI);
   if (enable_test_api) {
     AddWebUIHandler(
         std::make_unique<OobeTestAPIHandler>(js_calls_container_.get()));
@@ -693,6 +682,9 @@ void OobeUI::AddOobeComponents(content::WebUIDataSource* source,
   // Add all resources from OOBE's autogenerated GRD.
   source->AddResourcePaths(base::make_span(kOobeUnconditionalResources,
                                            kOobeUnconditionalResourcesSize));
+  // Add Gaia Authenticator resources
+  source->AddResourcePaths(base::make_span(kGaiaAuthHostResources,
+                                           kGaiaAuthHostResourcesSize));
 
   if (policy::EnrollmentRequisitionManager::IsRemoraRequisition()) {
     source->AddResourcePath(
@@ -708,8 +700,6 @@ void OobeUI::AddOobeComponents(content::WebUIDataSource* source,
                             IDR_OOBE_COMPONENTS_OOBE_CUSTOM_VARS_CSS_M_JS);
   }
 
-  source->AddResourcePath("welcome_screen_animation.json",
-                          IDR_LOGIN_WELCOME_SCREEN_ANIMATION);
   source->AddResourcePath("spinner.json", IDR_LOGIN_SPINNER_ANIMATION);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");

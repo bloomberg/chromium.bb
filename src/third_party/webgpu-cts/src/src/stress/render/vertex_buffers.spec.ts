@@ -17,7 +17,7 @@ function createHugeVertexBuffer(t: GPUTest, size: number) {
     compute: {
       module: t.device.createShaderModule({
         code: `
-        [[block]] struct Buffer { data: array<vec2<u32>>; };
+        struct Buffer { data: array<vec2<u32>>; };
         [[group(0), binding(0)]] var<storage, read_write> buffer: Buffer;
         [[stage(compute), workgroup_size(1)]] fn main(
             [[builtin(global_invocation_id)]] id: vec3<u32>) {

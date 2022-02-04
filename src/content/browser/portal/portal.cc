@@ -186,10 +186,8 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
     }
   }
 
-  FrameTreeNode* frame_tree_node =
-      portal_contents_->GetMainFrame()->frame_tree_node();
   RenderFrameProxyHost* proxy_host =
-      frame_tree_node->render_manager()->GetProxyToOuterDelegate();
+      portal_contents_->GetMainFrame()->GetProxyToOuterDelegate();
   proxy_host->SetRenderFrameProxyCreated(true);
   portal_contents_->ReattachToOuterWebContentsFrame();
 
@@ -261,7 +259,7 @@ void Portal::Navigate(const GURL& url,
   const blink::LocalFrameToken frame_token =
       owner_render_frame_host_->GetFrameToken();
   portal_root->navigator().NavigateFromFrameProxy(
-      portal_frame, url, &frame_token,
+      portal_frame, out_validated_url, &frame_token,
       owner_render_frame_host_->GetProcess()->GetID(),
       owner_render_frame_host_->GetLastCommittedOrigin(),
       owner_render_frame_host_->GetSiteInstance(),
@@ -496,7 +494,8 @@ std::pair<bool, blink::mojom::PortalActivateResult> Portal::CanActivate() {
 
   // If no navigation has yet committed in the portal, it cannot be activated as
   // this would lead to an empty tab contents (without even an about:blank).
-  if (portal_controller.GetLastCommittedEntry()->IsInitialEntry()) {
+  if (!portal_controller.GetLastCommittedEntry() ||
+      portal_controller.GetLastCommittedEntry()->IsInitialEntry()) {
     return std::make_pair(
         false,
         blink::mojom::PortalActivateResult::kRejectedDueToPortalNotReady);

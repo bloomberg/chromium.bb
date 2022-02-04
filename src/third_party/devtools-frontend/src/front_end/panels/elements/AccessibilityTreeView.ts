@@ -12,11 +12,11 @@ import {ElementsPanel} from './ElementsPanel.js';
 export class AccessibilityTreeView extends UI.Widget.VBox implements
     SDK.TargetManager.SDKModelObserver<SDK.AccessibilityModel.AccessibilityModel> {
   private accessibilityTreeComponent = new TreeOutline.TreeOutline.TreeOutline<AccessibilityTreeUtils.AXTreeNodeData>();
-  private readonly toggleButton: HTMLButtonElement;
+  private readonly toggleButton: HTMLElement;
   private inspectedDOMNode: SDK.DOMModel.DOMNode|null = null;
   private root: SDK.AccessibilityModel.AccessibilityNode|null = null;
 
-  constructor(toggleButton: HTMLButtonElement) {
+  constructor(toggleButton: HTMLElement) {
     super();
     // toggleButton is bound to a click handler on ElementsPanel to switch between the DOM tree
     // and accessibility tree views.
@@ -40,7 +40,7 @@ export class AccessibilityTreeView extends UI.Widget.VBox implements
         deferredNode.resolve(domNode => {
           if (domNode) {
             this.inspectedDOMNode = domNode;
-            ElementsPanel.instance().revealAndSelectNode(domNode, true, false);
+            void ElementsPanel.instance().revealAndSelectNode(domNode, true, false);
           }
         });
       }
@@ -134,18 +134,18 @@ export class AccessibilityTreeView extends UI.Widget.VBox implements
                   .EventTargetEvent<SDK.AccessibilityModel.EventTypes[SDK.AccessibilityModel.Events.TreeUpdated]>):
       void {
     if (!data.root) {
-      this.renderTree();
+      void this.renderTree();
       return;
     }
     const topFrameId = SDK.FrameManager.FrameManager.instance().getTopFrame()?.id;
     if (data.root?.getFrameId() !== topFrameId) {
-      this.renderTree();
+      void this.renderTree();
       return;
     }
     this.root = data.root;
-    this.accessibilityTreeComponent.collapseAllNodes();
+    void this.accessibilityTreeComponent.collapseAllNodes();
 
-    this.refreshAccessibilityTree();
+    void this.refreshAccessibilityTree();
   }
 
   modelAdded(model: SDK.AccessibilityModel.AccessibilityModel): void {

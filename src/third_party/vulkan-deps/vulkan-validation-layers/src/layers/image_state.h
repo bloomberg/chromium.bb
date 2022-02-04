@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -94,7 +94,7 @@ class IMAGE_STATE : public BINDABLE {
     const VkSwapchainKHR create_from_swapchain;
     std::shared_ptr<SWAPCHAIN_NODE> bind_swapchain;
     uint32_t swapchain_image_index;
-    const VkFormatFeatureFlags format_features;
+    const VkFormatFeatureFlags2KHR format_features;
     // Need to memory requirments for each plane if image is disjoint
     const bool disjoint;  // True if image was created with VK_IMAGE_CREATE_DISJOINT_BIT
     static constexpr int MAX_PLANES = 3;
@@ -113,9 +113,10 @@ class IMAGE_STATE : public BINDABLE {
 
     layer_data::unordered_set<IMAGE_STATE *> aliasing_images;
 
-    IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, const VkImageCreateInfo *pCreateInfo, VkFormatFeatureFlags features);
+    IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, const VkImageCreateInfo *pCreateInfo,
+                VkFormatFeatureFlags2KHR features);
     IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, const VkImageCreateInfo *pCreateInfo, VkSwapchainKHR swapchain,
-                uint32_t swapchain_index, VkFormatFeatureFlags features);
+                uint32_t swapchain_index, VkFormatFeatureFlags2KHR features);
     IMAGE_STATE(IMAGE_STATE const &rh_obj) = delete;
 
     VkImage image() const { return handle_.Cast<VkImage>(); }
@@ -204,15 +205,19 @@ class IMAGE_VIEW_STATE : public BASE_NODE {
     const VkSamplerYcbcrConversion samplerConversion;  // Handle of the ycbcr sampler conversion the image was created with, if any
     const VkFilterCubicImageViewImageFormatPropertiesEXT filter_cubic_props;
     const float min_lod;
-    const VkFormatFeatureFlags format_features;
+    const VkFormatFeatureFlags2KHR format_features;
     const VkImageUsageFlags inherited_usage;  // from spec #resources-image-inherited-usage
     std::shared_ptr<IMAGE_STATE> image_state;
 
     IMAGE_VIEW_STATE(const std::shared_ptr<IMAGE_STATE> &image_state, VkImageView iv, const VkImageViewCreateInfo *ci,
-                     VkFormatFeatureFlags ff, const VkFilterCubicImageViewImageFormatPropertiesEXT &cubic_props);
+                     VkFormatFeatureFlags2KHR ff, const VkFilterCubicImageViewImageFormatPropertiesEXT &cubic_props);
     IMAGE_VIEW_STATE(const IMAGE_VIEW_STATE &rh_obj) = delete;
-
     VkImageView image_view() const { return handle_.Cast<VkImageView>(); }
+
+    void LinkChildNodes() override {
+        // Connect child node(s), which cannot safely be done in the constructor.
+        image_state->AddParent(this);
+    }
 
     virtual ~IMAGE_VIEW_STATE() {
         if (!Destroyed()) {
@@ -249,6 +254,7 @@ class SWAPCHAIN_NODE : public BASE_NODE {
     uint32_t get_swapchain_image_count = 0;
     uint64_t max_present_id = 0;
     const safe_VkImageCreateInfo image_create_info;
+
     std::shared_ptr<SURFACE_STATE> surface;
     ValidationStateTracker *dev_data;
     uint32_t acquired_images = 0;
@@ -268,8 +274,6 @@ class SWAPCHAIN_NODE : public BASE_NODE {
     void AcquireImage(uint32_t image_index);
 
     void Destroy() override;
-
-    const NodeSet &ObjectBindings() const { return parent_nodes_; }
 
   protected:
     void NotifyInvalidate(const BASE_NODE::NodeList &invalid_nodes, bool unlink) override;
@@ -329,6 +333,8 @@ class SURFACE_STATE : public BASE_NODE {
     SWAPCHAIN_NODE *swapchain{nullptr};
 
   private:
+    std::unique_lock<std::mutex> Lock() const { return std::unique_lock<std::mutex>(lock_); }
+    mutable std::mutex lock_;
     mutable layer_data::unordered_map<GpuQueue, bool> gpu_queue_support_;
     mutable layer_data::unordered_map<VkPhysicalDevice, std::vector<VkPresentModeKHR>> present_modes_;
     mutable layer_data::unordered_map<VkPhysicalDevice, std::vector<VkSurfaceFormatKHR>> formats_;

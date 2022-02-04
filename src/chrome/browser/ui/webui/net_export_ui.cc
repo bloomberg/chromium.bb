@@ -50,7 +50,7 @@
 #include "cef/libcef/browser/alloy/alloy_dialog_util.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "components/browser_ui/share/android/intent_helper.h"
 #endif
 
@@ -276,7 +276,7 @@ void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {
                chrome_browser_net::GetPrerenderInfo(profile));
   SetIfNotNull(ui_thread_polled_data.get(), "extensionInfo",
                chrome_browser_net::GetExtensionInfo(profile));
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   SetIfNotNull(ui_thread_polled_data.get(), "serviceProviders",
                chrome_browser_net::GetWindowsServiceProviders());
 #endif
@@ -323,7 +323,7 @@ void NetExportMessageHandler::OnNewState(const base::DictionaryValue& state) {
 // static
 void NetExportMessageHandler::SendEmail(const base::FilePath& file_to_send) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (file_to_send.empty())
     return;
   std::string email;
@@ -363,7 +363,7 @@ void NetExportMessageHandler::ShowFileInShell(const base::FilePath& path) {
 
 // static
 bool NetExportMessageHandler::UsingMobileUI() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   return true;
 #else
   return false;

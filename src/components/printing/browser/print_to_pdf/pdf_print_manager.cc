@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "build/build_config.h"
 #include "components/printing/browser/print_to_pdf/pdf_print_utils.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/page_range.h"
@@ -98,6 +99,12 @@ void PdfPrintManager::PrintToPdf(
 
   if (callback_) {
     std::move(callback).Run(SIMULTANEOUS_PRINT_ACTIVE,
+                            base::MakeRefCounted<base::RefCountedString>());
+    return;
+  }
+
+  if (!rfh->IsRenderFrameLive()) {
+    std::move(callback).Run(PRINTING_FAILED,
                             base::MakeRefCounted<base::RefCountedString>());
     return;
   }
@@ -223,9 +230,25 @@ void PdfPrintManager::SetAccessibilityTree(
 }
 #endif
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 void PdfPrintManager::PdfWritingDone(int page_count) {}
 #endif
+
+void PdfPrintManager::RenderFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  PrintManager::RenderFrameDeleted(render_frame_host);
+
+  if (printing_rfh_ != render_frame_host) {
+    return;
+  }
+
+  if (callback_) {
+    std::move(callback_).Run(PRINTING_FAILED,
+                             base::MakeRefCounted<base::RefCountedString>());
+  }
+
+  Reset();
+}
 
 void PdfPrintManager::DidPrintDocument(
     printing::mojom::DidPrintDocumentParamsPtr params,
@@ -263,7 +286,15 @@ void PdfPrintManager::ReleaseJob(PrintResult result) {
 
   DCHECK(result == PRINT_SUCCESS || data_.empty());
   std::move(callback_).Run(result, base::RefCountedString::TakeString(&data_));
-  GetPrintRenderFrame(printing_rfh_)->PrintingDone(result == PRINT_SUCCESS);
+  // TODO(https://crbug.com/1286556): In theory, this should not be needed. In
+  // practice, nothing seems to restrict receiving incoming Mojo method calls
+  // for reporting the printing state to `printing_rfh_`.
+  //
+  // This should probably be changed so that the browser pushes endpoints to the
+  // renderer rather than the renderer connecting on-demand to the browser...
+  if (printing_rfh_ && printing_rfh_->IsRenderFrameLive()) {
+    GetPrintRenderFrame(printing_rfh_)->PrintingDone(result == PRINT_SUCCESS);
+  }
   Reset();
 }
 

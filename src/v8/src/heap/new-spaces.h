@@ -6,7 +6,6 @@
 #define V8_HEAP_NEW_SPACES_H_
 
 #include <atomic>
-#include <map>
 #include <memory>
 
 #include "src/base/macros.h"
@@ -107,7 +106,7 @@ class SemiSpace : public Space {
   void PrependPage(Page* page);
   void MovePageToTheEnd(Page* page);
 
-  Page* InitializePage(MemoryChunk* chunk);
+  Page* InitializePage(MemoryChunk* chunk) override;
 
   // Age mark accessors.
   Address age_mark() { return age_mark_; }
@@ -139,11 +138,18 @@ class SemiSpace : public Space {
 
   size_t Available() override { UNREACHABLE(); }
 
-  Page* first_page() { return reinterpret_cast<Page*>(Space::first_page()); }
-  Page* last_page() { return reinterpret_cast<Page*>(Space::last_page()); }
+  Page* first_page() override {
+    return reinterpret_cast<Page*>(memory_chunk_list_.front());
+  }
+  Page* last_page() override {
+    return reinterpret_cast<Page*>(memory_chunk_list_.back());
+  }
 
-  const Page* first_page() const {
-    return reinterpret_cast<const Page*>(Space::first_page());
+  const Page* first_page() const override {
+    return reinterpret_cast<const Page*>(memory_chunk_list_.front());
+  }
+  const Page* last_page() const override {
+    return reinterpret_cast<const Page*>(memory_chunk_list_.back());
   }
 
   iterator begin() { return iterator(first_page()); }
@@ -447,8 +453,11 @@ class V8_EXPORT_PRIVATE NewSpace
 
   SemiSpace* active_space() { return &to_space_; }
 
-  Page* first_page() { return to_space_.first_page(); }
-  Page* last_page() { return to_space_.last_page(); }
+  Page* first_page() override { return to_space_.first_page(); }
+  Page* last_page() override { return to_space_.last_page(); }
+
+  const Page* first_page() const override { return to_space_.first_page(); }
+  const Page* last_page() const override { return to_space_.last_page(); }
 
   iterator begin() { return to_space_.begin(); }
   iterator end() { return to_space_.end(); }

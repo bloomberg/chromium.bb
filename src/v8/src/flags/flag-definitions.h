@@ -169,21 +169,21 @@ struct MaybeBoolFlag {
 #define COMPRESS_POINTERS_IN_SHARED_CAGE_BOOL false
 #endif
 
-#ifdef V8_HEAP_SANDBOX
-#define V8_HEAP_SANDBOX_BOOL true
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+#define V8_SANDBOXED_EXTERNAL_POINTERS_BOOL true
 #else
-#define V8_HEAP_SANDBOX_BOOL false
+#define V8_SANDBOXED_EXTERNAL_POINTERS_BOOL false
 #endif
 
-#ifdef V8_VIRTUAL_MEMORY_CAGE
-#define V8_VIRTUAL_MEMORY_CAGE_BOOL true
+#ifdef V8_SANDBOX
+#define V8_SANDBOX_BOOL true
 #else
-#define V8_VIRTUAL_MEMORY_CAGE_BOOL false
+#define V8_SANDBOX_BOOL false
 #endif
 
-// D8's MultiMappedAllocator is only available on Linux, and only if the virtual
-// memory cage is not enabled.
-#if V8_OS_LINUX && !V8_VIRTUAL_MEMORY_CAGE_BOOL
+// D8's MultiMappedAllocator is only available on Linux, and only if the sandbox
+// is not enabled.
+#if V8_OS_LINUX && !V8_SANDBOX_BOOL
 #define MULTI_MAPPED_ALLOCATOR_AVAILABLE true
 #else
 #define MULTI_MAPPED_ALLOCATOR_AVAILABLE false
@@ -292,6 +292,8 @@ DEFINE_BOOL(allow_overwriting_for_next_flag, false,
 // Flags for language modes and experimental language features.
 DEFINE_BOOL(use_strict, false, "enforce strict mode")
 
+DEFINE_BOOL(trace_temporal, false, "trace temporal code")
+
 DEFINE_BOOL(harmony, false, "enable all completed harmony features")
 DEFINE_BOOL(harmony_shipping, true, "enable all shipped harmony features")
 
@@ -316,11 +318,9 @@ DEFINE_BOOL(harmony_shipping, true, "enable all shipped harmony features")
 #define HARMONY_STAGED_BASE(V)
 
 #ifdef V8_INTL_SUPPORT
-#define HARMONY_STAGED(V)                                 \
-  HARMONY_STAGED_BASE(V)                                  \
-  V(harmony_intl_best_fit_matcher, "Intl BestFitMatcher") \
-  V(harmony_intl_enumeration, "Intl Enumberation API")    \
-  V(harmony_intl_locale_info, "Intl locale info")
+#define HARMONY_STAGED(V) \
+  HARMONY_STAGED_BASE(V)  \
+  V(harmony_intl_best_fit_matcher, "Intl BestFitMatcher")
 #else
 #define HARMONY_STAGED(V) HARMONY_STAGED_BASE(V)
 #endif
@@ -337,7 +337,10 @@ DEFINE_BOOL(harmony_shipping, true, "enable all shipped harmony features")
   V(harmony_array_find_last, "harmony array find last helpers")
 
 #ifdef V8_INTL_SUPPORT
-#define HARMONY_SHIPPING(V) HARMONY_SHIPPING_BASE(V)
+#define HARMONY_SHIPPING(V)                           \
+  HARMONY_SHIPPING_BASE(V)                            \
+  V(harmony_intl_enumeration, "Intl Enumeration API") \
+  V(harmony_intl_locale_info, "Intl Locale info")
 #else
 #define HARMONY_SHIPPING(V) HARMONY_SHIPPING_BASE(V)
 #endif
@@ -431,7 +434,6 @@ DEFINE_NEG_IMPLICATION(enable_third_party_heap, inline_new)
 DEFINE_NEG_IMPLICATION(enable_third_party_heap, allocation_site_pretenuring)
 DEFINE_NEG_IMPLICATION(enable_third_party_heap, turbo_allocation_folding)
 DEFINE_NEG_IMPLICATION(enable_third_party_heap, concurrent_recompilation)
-DEFINE_NEG_IMPLICATION(enable_third_party_heap, concurrent_inlining)
 DEFINE_NEG_IMPLICATION(enable_third_party_heap, script_streaming)
 DEFINE_NEG_IMPLICATION(enable_third_party_heap,
                        parallel_compile_tasks_for_eager_toplevel)
@@ -517,7 +519,6 @@ DEFINE_WEAK_VALUE_IMPLICATION(future, write_protect_code_memory, false)
 DEFINE_BOOL_READONLY(dict_property_const_tracking,
                      V8_DICT_PROPERTY_CONST_TRACKING_BOOL,
                      "Use const tracking on dictionary properties")
-DEFINE_NEG_IMPLICATION(dict_property_const_tracking, concurrent_inlining)
 DEFINE_NEG_IMPLICATION(dict_property_const_tracking, turboprop)
 
 // Flags for jitless
@@ -545,7 +546,6 @@ DEFINE_BOOL(assert_types, false,
             "generate runtime type assertions to test the typer")
 // TODO(tebbi): Support allocating types from background thread.
 DEFINE_NEG_IMPLICATION(assert_types, concurrent_recompilation)
-DEFINE_NEG_IMPLICATION(assert_types, concurrent_inlining)
 
 DEFINE_BOOL(trace_compilation_dependencies, false, "trace code dependencies")
 // Depend on --trace-deopt-verbose for reporting dependency invalidations.
@@ -751,12 +751,13 @@ DEFINE_INT(concurrent_recompilation_queue_length, 8,
            "the length of the concurrent compilation queue")
 DEFINE_INT(concurrent_recompilation_delay, 0,
            "artificial compilation delay in ms")
-DEFINE_BOOL(concurrent_inlining, true,
-            "run optimizing compiler's inlining phase on a separate thread")
+// TODO(v8:12142): Remove this flag once all references (chromium feature flag,
+// finch trials, field trial configs) are gone.
+DEFINE_BOOL(concurrent_inlining, true, "deprecated, does nothing")
 DEFINE_BOOL(
     stress_concurrent_inlining, false,
     "create additional concurrent optimization jobs but throw away result")
-DEFINE_IMPLICATION(stress_concurrent_inlining, concurrent_inlining)
+DEFINE_IMPLICATION(stress_concurrent_inlining, concurrent_recompilation)
 DEFINE_NEG_IMPLICATION(stress_concurrent_inlining, lazy_feedback_allocation)
 DEFINE_WEAK_VALUE_IMPLICATION(stress_concurrent_inlining, interrupt_budget,
                               15 * KB)
@@ -922,8 +923,8 @@ DEFINE_BOOL(turbo_compress_translation_arrays, false,
 DEFINE_WEAK_IMPLICATION(future, turbo_inline_js_wasm_calls)
 DEFINE_BOOL(turbo_inline_js_wasm_calls, false, "inline JS->Wasm calls")
 DEFINE_BOOL(turbo_use_mid_tier_regalloc_for_huge_functions, false,
-            "fall back to the mid-tier register allocator for huge functions "
-            "(experimental)")
+            "fall back to the mid-tier register allocator for huge functions")
+DEFINE_WEAK_IMPLICATION(future, turbo_use_mid_tier_regalloc_for_huge_functions)
 DEFINE_BOOL(turbo_force_mid_tier_regalloc, false,
             "always use the mid-tier register allocator (for testing)")
 
@@ -984,6 +985,8 @@ DEFINE_BOOL(wasm_tier_up, true,
             "have an effect)")
 DEFINE_BOOL(wasm_dynamic_tiering, false,
             "enable dynamic tier up to the optimizing compiler")
+DEFINE_NEG_NEG_IMPLICATION(liftoff, wasm_dynamic_tiering)
+DEFINE_WEAK_IMPLICATION(future, wasm_dynamic_tiering)
 DEFINE_INT(wasm_tiering_budget, 1800000,
            "budget for dynamic tiering (rough approximation of bytes executed")
 DEFINE_INT(
@@ -1054,7 +1057,6 @@ FOREACH_WASM_FEATURE_FLAG(DECL_WASM_FLAG)
 #undef DECL_WASM_FLAG
 
 DEFINE_IMPLICATION(experimental_wasm_gc, experimental_wasm_typed_funcref)
-DEFINE_IMPLICATION(experimental_wasm_typed_funcref, experimental_wasm_reftypes)
 
 DEFINE_BOOL(wasm_gc_js_interop, false, "experimental WasmGC-JS interop")
 
@@ -1083,9 +1085,9 @@ DEFINE_BOOL(
     wasm_inlining, false,
     "enable inlining of wasm functions into wasm functions (experimental)")
 DEFINE_SIZE_T(
-    wasm_inlining_budget_factor, 100000,
+    wasm_inlining_budget_factor, 75000,
     "maximum allowed size to inline a function is given by {n / caller size}")
-DEFINE_SIZE_T(wasm_inlining_max_size, 1250,
+DEFINE_SIZE_T(wasm_inlining_max_size, 1000,
               "maximum size of a function that can be inlined, in TF nodes")
 DEFINE_BOOL(wasm_speculative_inlining, false,
             "enable speculative inlining of call_ref targets (experimental)")
@@ -1103,6 +1105,7 @@ DEFINE_NEG_IMPLICATION(liftoff_only, wasm_speculative_inlining)
 
 DEFINE_BOOL(wasm_loop_unrolling, true,
             "enable loop unrolling for wasm functions")
+DEFINE_BOOL(wasm_loop_peeling, false, "enable loop peeling for wasm functions")
 DEFINE_BOOL(wasm_fuzzer_gen_test, false,
             "generate a test case when running a wasm fuzzer")
 DEFINE_IMPLICATION(wasm_fuzzer_gen_test, single_threaded)

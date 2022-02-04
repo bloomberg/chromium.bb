@@ -535,7 +535,7 @@ Test the validations on the member 'aspect' of GPUImageCopyTexture in CopyTextur
       usage: GPUTextureUsage.COPY_DST,
     });
 
-    // TODO(jiawei.shao@intel.com): get the valid aspects from capability_info.ts.
+    // MAINTENANCE_TODO: get the valid aspects from capability_info.ts.
     const kValidAspectsForFormat = {
       rgba8unorm: ['all'],
 

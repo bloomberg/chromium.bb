@@ -22,6 +22,9 @@ to do.
 
 ## Contributing
 
+Testing tasks are tracked in the [CTS project tracker](https://github.com/orgs/gpuweb/projects/3).
+Go here if you're looking for tasks, or if you have a test idea that isn't already covered.
+
 If contributing conformance tests, the directory you'll work in is [`src/webgpu/`](../src/webgpu/).
 This directory is organized according to the goal of the test (API validation behavior vs
 actual results) and its target (API entry points and spec areas, e.g. texture sampling).
@@ -30,7 +33,7 @@ The contents of a test file (`src/webgpu/**/*.spec.ts`) are twofold:
 
 - Documentation ("test plans") on what tests do, how they do it, and what cases they cover.
   Some test plans are fully or partially unimplemented:
-  they either contain "TODO:" in a description or are `.unimplemented()`.
+  they either contain "TODO" in a description or are `.unimplemented()`.
 - Actual tests.
 
 **Please read the following short documents before contributing.**

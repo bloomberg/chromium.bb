@@ -96,7 +96,8 @@ Token Lexer::next() {
     return t;
   }
 
-  return {Token::Type::kError, begin_source(), "invalid character found"};
+  return {Token::Type::kError, begin_source(),
+          (is_null() ? "null character found" : "invalid character found")};
 }
 
 Source Lexer::begin_source() const {
@@ -114,6 +115,10 @@ void Lexer::end_source(Source& src) const {
 
 bool Lexer::is_eof() const {
   return pos_ >= len_;
+}
+
+bool Lexer::is_null() const {
+  return (pos_ < len_) && (content_->data[pos_] == 0);
 }
 
 bool Lexer::is_alpha(char ch) const {
@@ -175,6 +180,9 @@ Token Lexer::skip_comment() {
     // Line comment: ignore everything until the end of line
     // or end of input.
     while (!is_eof() && !matches(pos_, "\n")) {
+      if (is_null()) {
+        return {Token::Type::kError, begin_source(), "null character found"};
+      }
       pos_++;
       location_.column++;
     }
@@ -208,6 +216,8 @@ Token Lexer::skip_comment() {
         pos_++;
         location_.line++;
         location_.column = 1;
+      } else if (is_null()) {
+        return {Token::Type::kError, begin_source(), "null character found"};
       } else {
         // Anything else: skip and update source location.
         pos_++;
@@ -332,7 +342,7 @@ Token Lexer::try_hex_float() {
   auto source = begin_source();
 
   // clang-format off
-  // -?0x([0-9a-fA-F]*.?[0-9a-fA-F]+ | [0-9a-fA-F]+.[0-9a-fA-F]*)(p|P)(+|-)?[0-9]+  // NOLINT
+  // -?0[xX]([0-9a-fA-F]*.?[0-9a-fA-F]+ | [0-9a-fA-F]+.[0-9a-fA-F]*)(p|P)(+|-)?[0-9]+  // NOLINT
   // clang-format on
 
   // -?
@@ -341,8 +351,8 @@ Token Lexer::try_hex_float() {
     sign_bit = 1;
     end++;
   }
-  // 0x
-  if (matches(end, "0x")) {
+  // 0[xX]
+  if (matches(end, "0x") || matches(end, "0X")) {
     end += 2;
   } else {
     return {};
@@ -653,10 +663,11 @@ Token Lexer::try_hex_integer() {
     end++;
   }
 
-  if (!matches(end, "0x")) {
+  if (matches(end, "0x") || matches(end, "0X")) {
+    end += 2;
+  } else {
     return {};
   }
-  end += 2;
 
   auto first = end;
   while (!is_eof() && is_hex(content_->data[end])) {
@@ -669,6 +680,10 @@ Token Lexer::try_hex_integer() {
                   content_->data.substr(start, end - 1 - start) +
                   "...) has too many digits"};
     }
+  }
+  if (first == end) {
+    return {Token::Type::kError, source,
+            "integer or float hex literal has no significant digits"};
   }
 
   pos_ = end;
@@ -762,7 +777,11 @@ Token Lexer::try_punctuation() {
   auto source = begin_source();
   auto type = Token::Type::kUninitialized;
 
-  if (matches(pos_, "[[")) {
+  if (matches(pos_, "@")) {
+    type = Token::Type::kAttr;
+    pos_ += 1;
+    location_.column += 1;
+  } else if (matches(pos_, "[[")) {
     type = Token::Type::kAttrLeft;
     pos_ += 2;
     location_.column += 2;
@@ -952,76 +971,6 @@ Token Lexer::check_keyword(const Source& source, const std::string& str) {
     return {Token::Type::kFn, source, "fn"};
   if (str == "for")
     return {Token::Type::kFor, source, "for"};
-  if (str == "bgra8unorm")
-    return {Token::Type::kFormatBgra8Unorm, source, "bgra8unorm"};
-  if (str == "bgra8unorm_srgb")
-    return {Token::Type::kFormatBgra8UnormSrgb, source, "bgra8unorm_srgb"};
-  if (str == "r16float")
-    return {Token::Type::kFormatR16Float, source, "r16float"};
-  if (str == "r16sint")
-    return {Token::Type::kFormatR16Sint, source, "r16sint"};
-  if (str == "r16uint")
-    return {Token::Type::kFormatR16Uint, source, "r16uint"};
-  if (str == "r32float")
-    return {Token::Type::kFormatR32Float, source, "r32float"};
-  if (str == "r32sint")
-    return {Token::Type::kFormatR32Sint, source, "r32sint"};
-  if (str == "r32uint")
-    return {Token::Type::kFormatR32Uint, source, "r32uint"};
-  if (str == "r8sint")
-    return {Token::Type::kFormatR8Sint, source, "r8sint"};
-  if (str == "r8snorm")
-    return {Token::Type::kFormatR8Snorm, source, "r8snorm"};
-  if (str == "r8uint")
-    return {Token::Type::kFormatR8Uint, source, "r8uint"};
-  if (str == "r8unorm")
-    return {Token::Type::kFormatR8Unorm, source, "r8unorm"};
-  if (str == "rg11b10float")
-    return {Token::Type::kFormatRg11B10Float, source, "rg11b10float"};
-  if (str == "rg16float")
-    return {Token::Type::kFormatRg16Float, source, "rg16float"};
-  if (str == "rg16sint")
-    return {Token::Type::kFormatRg16Sint, source, "rg16sint"};
-  if (str == "rg16uint")
-    return {Token::Type::kFormatRg16Uint, source, "rg16uint"};
-  if (str == "rg32float")
-    return {Token::Type::kFormatRg32Float, source, "rg32float"};
-  if (str == "rg32sint")
-    return {Token::Type::kFormatRg32Sint, source, "rg32sint"};
-  if (str == "rg32uint")
-    return {Token::Type::kFormatRg32Uint, source, "rg32uint"};
-  if (str == "rg8sint")
-    return {Token::Type::kFormatRg8Sint, source, "rg8sint"};
-  if (str == "rg8snorm")
-    return {Token::Type::kFormatRg8Snorm, source, "rg8snorm"};
-  if (str == "rg8uint")
-    return {Token::Type::kFormatRg8Uint, source, "rg8uint"};
-  if (str == "rg8unorm")
-    return {Token::Type::kFormatRg8Unorm, source, "rg8unorm"};
-  if (str == "rgb10a2unorm")
-    return {Token::Type::kFormatRgb10A2Unorm, source, "rgb10a2unorm"};
-  if (str == "rgba16float")
-    return {Token::Type::kFormatRgba16Float, source, "rgba16float"};
-  if (str == "rgba16sint")
-    return {Token::Type::kFormatRgba16Sint, source, "rgba16sint"};
-  if (str == "rgba16uint")
-    return {Token::Type::kFormatRgba16Uint, source, "rgba16uint"};
-  if (str == "rgba32float")
-    return {Token::Type::kFormatRgba32Float, source, "rgba32float"};
-  if (str == "rgba32sint")
-    return {Token::Type::kFormatRgba32Sint, source, "rgba32sint"};
-  if (str == "rgba32uint")
-    return {Token::Type::kFormatRgba32Uint, source, "rgba32uint"};
-  if (str == "rgba8sint")
-    return {Token::Type::kFormatRgba8Sint, source, "rgba8sint"};
-  if (str == "rgba8snorm")
-    return {Token::Type::kFormatRgba8Snorm, source, "rgba8snorm"};
-  if (str == "rgba8uint")
-    return {Token::Type::kFormatRgba8Uint, source, "rgba8uint"};
-  if (str == "rgba8unorm")
-    return {Token::Type::kFormatRgba8Unorm, source, "rgba8unorm"};
-  if (str == "rgba8unorm_srgb")
-    return {Token::Type::kFormatRgba8UnormSrgb, source, "rgba8unorm_srgb"};
   if (str == "function")
     return {Token::Type::kFunction, source, "function"};
   if (str == "i32")

@@ -317,16 +317,10 @@ uint32_t Inspector::GetStorageSize(const std::string& entry_point) {
   size_t size = 0;
   auto* func_sem = program_->Sem().Get(func);
   for (auto& ruv : func_sem->TransitivelyReferencedUniformVariables()) {
-    const sem::Struct* s = ruv.first->Type()->UnwrapRef()->As<sem::Struct>();
-    if (s && s->IsBlockDecorated()) {
-      size += s->Size();
-    }
+    size += ruv.first->Type()->UnwrapRef()->Size();
   }
   for (auto& rsv : func_sem->TransitivelyReferencedStorageBufferVariables()) {
-    const sem::Struct* s = rsv.first->Type()->UnwrapRef()->As<sem::Struct>();
-    if (s) {
-      size += s->Size();
-    }
+    size += rsv.first->Type()->UnwrapRef()->Size();
   }
 
   if (static_cast<uint64_t>(size) >
@@ -377,21 +371,18 @@ std::vector<ResourceBinding> Inspector::GetUniformBufferResourceBindings(
     auto binding_info = ruv.second;
 
     auto* unwrapped_type = var->Type()->UnwrapRef();
-    auto* str = unwrapped_type->As<sem::Struct>();
-    if (str == nullptr) {
-      continue;
-    }
-
-    if (!str->IsBlockDecorated()) {
-      continue;
-    }
 
     ResourceBinding entry;
     entry.resource_type = ResourceBinding::ResourceType::kUniformBuffer;
     entry.bind_group = binding_info.group->value;
     entry.binding = binding_info.binding->value;
-    entry.size = str->Size();
-    entry.size_no_padding = str->SizeNoPadding();
+    entry.size = unwrapped_type->Size();
+    entry.size_no_padding = entry.size;
+    if (auto* str = unwrapped_type->As<sem::Struct>()) {
+      entry.size_no_padding = str->SizeNoPadding();
+    } else {
+      entry.size_no_padding = entry.size;
+    }
 
     result.push_back(entry);
   }
@@ -528,7 +519,7 @@ std::vector<ResourceBinding> Inspector::GetExternalTextureResourceBindings(
       ResourceBinding::ResourceType::kExternalTexture);
 }
 
-std::vector<SamplerTexturePair> Inspector::GetSamplerTextureUses(
+std::vector<sem::SamplerTexturePair> Inspector::GetSamplerTextureUses(
     const std::string& entry_point) {
   auto* func = FindEntryPointByName(entry_point);
   if (!func) {
@@ -671,10 +662,7 @@ std::vector<ResourceBinding> Inspector::GetStorageBufferResourceBindingsImpl(
       continue;
     }
 
-    auto* str = var->Type()->UnwrapRef()->As<sem::Struct>();
-    if (!str) {
-      continue;
-    }
+    auto* unwrapped_type = var->Type()->UnwrapRef();
 
     ResourceBinding entry;
     entry.resource_type =
@@ -682,8 +670,12 @@ std::vector<ResourceBinding> Inspector::GetStorageBufferResourceBindingsImpl(
                   : ResourceBinding::ResourceType::kStorageBuffer;
     entry.bind_group = binding_info.group->value;
     entry.binding = binding_info.binding->value;
-    entry.size = str->Size();
-    entry.size_no_padding = str->SizeNoPadding();
+    entry.size = unwrapped_type->Size();
+    if (auto* str = unwrapped_type->As<sem::Struct>()) {
+      entry.size_no_padding = str->SizeNoPadding();
+    } else {
+      entry.size_no_padding = entry.size;
+    }
 
     result.push_back(entry);
   }
@@ -761,8 +753,8 @@ std::vector<ResourceBinding> Inspector::GetStorageTextureResourceBindingsImpl(
 
     auto* base_type = texture_type->type();
     entry.sampled_kind = BaseTypeToSampledKind(base_type);
-    entry.image_format = TypeImageFormatToResourceBindingImageFormat(
-        texture_type->image_format());
+    entry.image_format = TypeTexelFormatToResourceBindingTexelFormat(
+        texture_type->texel_format());
 
     result.push_back(entry);
   }
@@ -778,7 +770,7 @@ void Inspector::GenerateSamplerTargets() {
   }
 
   sampler_targets_ = std::make_unique<std::unordered_map<
-      std::string, utils::UniqueVector<SamplerTexturePair>>>();
+      std::string, utils::UniqueVector<sem::SamplerTexturePair>>>();
 
   auto& sem = program_->Sem();
 

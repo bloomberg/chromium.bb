@@ -105,8 +105,6 @@ operator()(const RowIndices& rowIndices, const ColIndices& colIndices) EIGEN_IND
   return Base::operator()(internal::eval_expr_given_size(rowIndices,rows()),internal::eval_expr_given_size(colIndices,cols()));
 }
 
-#if EIGEN_HAS_STATIC_ARRAY_TEMPLATE
-
 // The following three overloads are needed to handle raw Index[N] arrays.
 
 template<typename RowIndicesT, std::size_t RowIndicesN, typename ColIndices>
@@ -133,7 +131,6 @@ operator()(const RowIndicesT (&rowIndices)[RowIndicesN], const ColIndicesT (&col
                     (derived(), rowIndices, colIndices);
 }
 
-#endif // EIGEN_HAS_STATIC_ARRAY_TEMPLATE
 
 // Overloads for 1D vectors/arrays
 
@@ -178,8 +175,6 @@ operator()(const IndexType& id) EIGEN_INDEXED_VIEW_METHOD_CONST
   return Base::operator()(internal::eval_expr_given_size(id,size()));
 }
 
-#if EIGEN_HAS_STATIC_ARRAY_TEMPLATE
-
 template<typename IndicesT, std::size_t IndicesN>
 typename internal::enable_if<IsRowMajor,
   IndexedView<EIGEN_INDEXED_VIEW_METHOD_CONST Derived,IvcIndex,const IndicesT (&)[IndicesN]> >::type
@@ -199,8 +194,6 @@ operator()(const IndicesT (&indices)[IndicesN]) EIGEN_INDEXED_VIEW_METHOD_CONST
   return IndexedView<EIGEN_INDEXED_VIEW_METHOD_CONST Derived,const IndicesT (&)[IndicesN],IvcIndex>
             (derived(), indices, IvcIndex(0));
 }
-
-#endif // EIGEN_HAS_STATIC_ARRAY_TEMPLATE
 
 #undef EIGEN_INDEXED_VIEW_METHOD_CONST
 #undef EIGEN_INDEXED_VIEW_METHOD_TYPE

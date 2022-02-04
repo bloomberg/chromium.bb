@@ -26,6 +26,7 @@ package_group(
         "//third_party/iree/...",
         "//tensorflow/compiler/mlir/...",
         "//tensorflow/lite/python/...",
+        "//waymo/ml/compiler/mlir/...",
         # Allow visibility from the mlir language server.
         "//learning/brain/mlir/mlir_lsp_server/...",
         "//research/language_modeling/sentence_explorer/ondevice/...",
@@ -334,7 +335,6 @@ cc_library(
     hdrs = [
         "utils/constant_utils.h",
     ],
-    copts = ["-std=c++14"],
     deps = [
         "//tensorflow/compiler/mlir/tensorflow",
         "//tensorflow/compiler/mlir/tensorflow:mangling_util",
@@ -354,7 +354,6 @@ cc_library(
     hdrs = [
         "utils/lstm_utils.h",
     ],
-    copts = ["-std=c++14"],
     deps = [
         ":tensorflow_lite",
         "//tensorflow/compiler/mlir/tensorflow",
@@ -393,7 +392,6 @@ cc_library(
     hdrs = [
         "utils/nms_utils.h",
     ],
-    copts = ["-std=c++14"],
     deps = [
         ":tensorflow_lite",
         "//tensorflow/compiler/mlir/tensorflow",
@@ -415,7 +413,6 @@ cc_library(
     hdrs = [
         "utils/tftext_utils.h",
     ],
-    copts = ["-std=c++14"],
     deps = [
         ":tensorflow_lite",
         "//tensorflow/compiler/mlir/tensorflow",
@@ -449,7 +446,6 @@ cc_library(
     hdrs = [
         "utils/perception_ops_utils.h",
     ],
-    copts = ["-std=c++14"],
     deps = [
         ":tensorflow_lite",
         "//tensorflow/compiler/mlir/tensorflow",
@@ -654,6 +650,7 @@ cc_library(
         "//tensorflow/compiler/mlir/lite/quantization/lite:tfl_to_std",
         "//tensorflow/core:lib",
         "//tensorflow/core:protos_all_cc",
+        "//tensorflow/core/platform:logging",
         "//tensorflow/lite/schema:schema_fbs",
         "//tensorflow/lite/tools/optimize:operator_property",
         "@com_google_absl//absl/container:flat_hash_set",
@@ -1013,6 +1010,7 @@ cc_library(
     ],
     deps = [
         "//tensorflow/compiler/mlir/lite/quantization:quantization_config",
+        "@com_google_absl//absl/strings",
         "@llvm-project//llvm:Support",
     ],
 )

@@ -23,7 +23,7 @@ void SetChannelCrashKey(const std::string& channel);
 // Set the crash server URL.
 void SetCrashServerURL(const std::string& url);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 extern void InitCrashKeysForTesting();
 
 struct SanitizationInfo {
@@ -59,7 +59,7 @@ extern void AddGpuFingerprintToMicrodumpCrashHandler(
 // generate dumps. Calling base::debug::DumpWithoutCrashing will still
 // generate a dump.
 extern void SuppressDumpGeneration();
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // Checks if crash reporting is enabled. Note that this is not the same as
 // being opted into metrics reporting (and crash reporting), which controls

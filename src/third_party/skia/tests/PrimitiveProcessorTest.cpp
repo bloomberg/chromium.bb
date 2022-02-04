@@ -21,6 +21,7 @@
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrProgramInfo.h"
+#include "src/gpu/KeyBuilder.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
@@ -94,7 +95,7 @@ private:
 
                 return std::make_unique<Impl>();
             }
-            void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder* builder) const override {
+            void addToKey(const GrShaderCaps&, skgpu::KeyBuilder* builder) const override {
                 builder->add32(fNumAttribs);
             }
 
@@ -115,7 +116,7 @@ private:
                                                                    kFloat2_GrSLType};
                     }
                 }
-                this->setVertexAttributes(fAttributes.get(), numAttribs);
+                this->setVertexAttributesWithImplicitOffsets(fAttributes.get(), numAttribs);
             }
 
             int fNumAttribs;

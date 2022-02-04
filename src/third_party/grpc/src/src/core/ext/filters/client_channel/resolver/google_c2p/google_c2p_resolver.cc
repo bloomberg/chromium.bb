@@ -18,12 +18,12 @@
 
 #include <random>
 
-#include "src/core/ext/filters/client_channel/resolver_registry.h"
 #include "src/core/ext/xds/xds_client.h"
 #include "src/core/lib/gpr/env.h"
 #include "src/core/lib/gpr/string.h"
 #include "src/core/lib/http/httpcli.h"
 #include "src/core/lib/iomgr/polling_entity.h"
+#include "src/core/lib/resolver/resolver_registry.h"
 #include "src/core/lib/security/credentials/alts/check_gcp_environment.h"
 
 namespace grpc_core {
@@ -362,20 +362,15 @@ class GoogleCloud2ProdResolverFactory : public ResolverFactory {
     return MakeOrphanable<GoogleCloud2ProdResolver>(std::move(args));
   }
 
-  const char* scheme() const override { return "google-c2p"; }
+  // TODO(roth): Remove experimental suffix once this code is proven stable.
+  const char* scheme() const override { return "google-c2p-experimental"; }
 };
 
 }  // namespace
 
 void GoogleCloud2ProdResolverInit() {
-  // TODO(roth): Remove env var protection once this code is proven stable.
-  UniquePtr<char> value(gpr_getenv("GRPC_EXPERIMENTAL_GOOGLE_C2P_RESOLVER"));
-  bool parsed_value;
-  bool parse_succeeded = gpr_parse_bool_value(value.get(), &parsed_value);
-  if (parse_succeeded && parsed_value) {
-    ResolverRegistry::Builder::RegisterResolverFactory(
-        absl::make_unique<GoogleCloud2ProdResolverFactory>());
-  }
+  ResolverRegistry::Builder::RegisterResolverFactory(
+      absl::make_unique<GoogleCloud2ProdResolverFactory>());
 }
 
 void GoogleCloud2ProdResolverShutdown() {}

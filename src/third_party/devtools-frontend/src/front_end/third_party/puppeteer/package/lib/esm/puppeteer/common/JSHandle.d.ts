@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 /// <reference types="node" />
-import { Protocol } from 'devtools-protocol';
-
-import { CDPSession } from './Connection.js';
-import { EvaluateFn, EvaluateFnReturnType, EvaluateHandleFn, SerializableOrJSHandle, UnwrapPromiseLike , WrapElementHandle} from './EvalTypes.js';
 import { ExecutionContext } from './ExecutionContext.js';
-import { Frame , FrameManager} from './FrameManager.js';
 import { Page, ScreenshotOptions } from './Page.js';
+import { CDPSession } from './Connection.js';
 import { KeyInput } from './USKeyboardLayout.js';
-
+import { FrameManager, Frame } from './FrameManager.js';
+import { Protocol } from 'devtools-protocol';
+import { EvaluateFn, SerializableOrJSHandle, EvaluateFnReturnType, EvaluateHandleFn, WrapElementHandle, UnwrapPromiseLike } from './EvalTypes.js';
 /**
  * @public
  */
@@ -224,12 +222,48 @@ export declare class JSHandle<HandleObjectType = unknown> {
  * @public
  */
 export declare class ElementHandle<ElementType extends Element = Element> extends JSHandle<ElementType> {
+    private _frame;
     private _page;
     private _frameManager;
     /**
      * @internal
      */
-    constructor(context: ExecutionContext, client: CDPSession, remoteObject: Protocol.Runtime.RemoteObject, page: Page, frameManager: FrameManager);
+    constructor(context: ExecutionContext, client: CDPSession, remoteObject: Protocol.Runtime.RemoteObject, frame: Frame, page: Page, frameManager: FrameManager);
+    /**
+     * Wait for the `selector` to appear within the element. If at the moment of calling the
+     * method the `selector` already exists, the method will return immediately. If
+     * the `selector` doesn't appear after the `timeout` milliseconds of waiting, the
+     * function will throw.
+     *
+     * This method does not work across navigations or if the element is detached from DOM.
+     *
+     * @param selector - A
+     * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | selector}
+     * of an element to wait for
+     * @param options - Optional waiting parameters
+     * @returns Promise which resolves when element specified by selector string
+     * is added to DOM. Resolves to `null` if waiting for hidden: `true` and
+     * selector is not found in DOM.
+     * @remarks
+     * The optional parameters in `options` are:
+     *
+     * - `visible`: wait for the selected element to be present in DOM and to be
+     * visible, i.e. to not have `display: none` or `visibility: hidden` CSS
+     * properties. Defaults to `false`.
+     *
+     * - `hidden`: wait for the selected element to not be found in the DOM or to be hidden,
+     * i.e. have `display: none` or `visibility: hidden` CSS properties. Defaults to
+     * `false`.
+     *
+     * - `timeout`: maximum time to wait in milliseconds. Defaults to `30000`
+     * (30 seconds). Pass `0` to disable timeout. The default value can be changed
+     * by using the {@link Page.setDefaultTimeout} method.
+     */
+    waitForSelector(selector: string, options?: {
+        visible?: boolean;
+        hidden?: boolean;
+        timeout?: number;
+    }): Promise<ElementHandle | null>;
     asElement(): ElementHandle<ElementType> | null;
     /**
      * Resolves to the content frame for element handles referencing
@@ -237,6 +271,7 @@ export declare class ElementHandle<ElementType extends Element = Element> extend
      */
     contentFrame(): Promise<Frame | null>;
     private _scrollIntoViewIfNeeded;
+    private _getOOPIFOffsets;
     /**
      * Returns the middle point within an element unless a specific offset is provided.
      */

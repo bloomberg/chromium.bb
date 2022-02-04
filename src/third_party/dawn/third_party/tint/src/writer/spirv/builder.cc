@@ -41,13 +41,16 @@
 #include "src/sem/variable.h"
 #include "src/sem/vector_type.h"
 #include "src/transform/add_empty_entry_point.h"
+#include "src/transform/add_spirv_block_decoration.h"
 #include "src/transform/canonicalize_entry_point_io.h"
 #include "src/transform/external_texture_transform.h"
 #include "src/transform/fold_constants.h"
 #include "src/transform/for_loop_to_loop.h"
 #include "src/transform/manager.h"
+#include "src/transform/remove_unreachable_statements.h"
 #include "src/transform/simplify_pointers.h"
 #include "src/transform/unshadow.h"
+#include "src/transform/var_for_dynamic_index.h"
 #include "src/transform/vectorize_scalar_matrix_constructors.h"
 #include "src/transform/zero_init_workgroup_memory.h"
 #include "src/utils/defer.h"
@@ -95,23 +98,6 @@ bool LastIsFallthrough(const ast::BlockStatement* stmts) {
   return !stmts->Empty() && stmts->Last()->Is<ast::FallthroughStatement>();
 }
 
-// A terminator is anything which will cause a SPIR-V terminator to be emitted.
-// This means things like breaks, fallthroughs and continues which all emit an
-// OpBranch or return for the OpReturn emission.
-bool LastIsTerminator(const ast::BlockStatement* stmts) {
-  if (IsAnyOf<ast::BreakStatement, ast::ContinueStatement,
-              ast::DiscardStatement, ast::ReturnStatement,
-              ast::FallthroughStatement>(stmts->Last())) {
-    return true;
-  }
-
-  if (auto* block = As<ast::BlockStatement>(stmts->Last())) {
-    return LastIsTerminator(block);
-  }
-
-  return false;
-}
-
 /// Returns the matrix type that is `type` or that is wrapped by
 /// one or more levels of an arrays inside of `type`.
 /// @param type the given type, which must not be null
@@ -149,6 +135,8 @@ uint32_t intrinsic_to_glsl_method(const sem::Intrinsic* intrinsic) {
       return GLSLstd450Cosh;
     case IntrinsicType::kCross:
       return GLSLstd450Cross;
+    case IntrinsicType::kDegrees:
+      return GLSLstd450Degrees;
     case IntrinsicType::kDeterminant:
       return GLSLstd450Determinant;
     case IntrinsicType::kDistance:
@@ -211,6 +199,8 @@ uint32_t intrinsic_to_glsl_method(const sem::Intrinsic* intrinsic) {
       return GLSLstd450PackHalf2x16;
     case IntrinsicType::kPow:
       return GLSLstd450Pow;
+    case IntrinsicType::kRadians:
+      return GLSLstd450Radians;
     case IntrinsicType::kReflect:
       return GLSLstd450Reflect;
     case IntrinsicType::kRefract:
@@ -271,6 +261,7 @@ SanitizedResult Sanitize(const Program* in,
   if (!disable_workgroup_init) {
     manager.Add<transform::ZeroInitWorkgroupMemory>();
   }
+  manager.Add<transform::RemoveUnreachableStatements>();
   manager.Add<transform::SimplifyPointers>();  // Required for arrayLength()
   manager.Add<transform::FoldConstants>();
   manager.Add<transform::ExternalTextureTransform>();
@@ -279,6 +270,8 @@ SanitizedResult Sanitize(const Program* in,
                                             // ZeroInitWorkgroupMemory
   manager.Add<transform::CanonicalizeEntryPointIO>();
   manager.Add<transform::AddEmptyEntryPoint>();
+  manager.Add<transform::AddSpirvBlockDecoration>();
+  manager.Add<transform::VarForDynamicIndex>();
 
   data.Add<transform::CanonicalizeEntryPointIO::Config>(
       transform::CanonicalizeEntryPointIO::Config(
@@ -406,15 +399,10 @@ bool Builder::GenerateAssignStatement(const ast::AssignmentStatement* assign) {
     if (lhs_id == 0) {
       return false;
     }
-    auto rhs_id = GenerateExpression(assign->rhs);
+    auto rhs_id = GenerateExpressionWithLoadIfNeeded(assign->rhs);
     if (rhs_id == 0) {
       return false;
     }
-
-    // If the thing we're assigning is a reference then we must load it first.
-    auto* type = TypeOf(assign->rhs);
-    rhs_id = GenerateLoadIfNeeded(type, rhs_id);
-
     return GenerateStore(lhs_id, rhs_id);
   }
 }
@@ -653,7 +641,7 @@ bool Builder::GenerateFunction(const ast::Function* func_ast) {
     }
   }
 
-  if (!LastIsTerminator(func_ast->body)) {
+  if (InsideBasicBlock()) {
     if (func->ReturnType()->Is<sem::Void>()) {
       push_function_inst(spv::Op::OpReturn, {});
     } else {
@@ -704,13 +692,9 @@ uint32_t Builder::GenerateFunctionTypeIfNeeded(const sem::Function* func) {
 bool Builder::GenerateFunctionVariable(const ast::Variable* var) {
   uint32_t init_id = 0;
   if (var->constructor) {
-    init_id = GenerateExpression(var->constructor);
+    init_id = GenerateExpressionWithLoadIfNeeded(var->constructor);
     if (init_id == 0) {
       return false;
-    }
-    auto* type = TypeOf(var->constructor);
-    if (type->Is<sem::Reference>()) {
-      init_id = GenerateLoadIfNeeded(type, init_id);
     }
   }
 
@@ -912,12 +896,10 @@ bool Builder::GenerateGlobalVariable(const ast::Variable* var) {
 
 bool Builder::GenerateIndexAccessor(const ast::IndexAccessorExpression* expr,
                                     AccessorInfo* info) {
-  auto idx_id = GenerateExpression(expr->index);
+  auto idx_id = GenerateExpressionWithLoadIfNeeded(expr->index);
   if (idx_id == 0) {
     return 0;
   }
-  auto* type = TypeOf(expr->index);
-  idx_id = GenerateLoadIfNeeded(type, idx_id);
 
   // If the source is a reference, we access chain into it.
   // In the future, pointers may support access-chaining.
@@ -937,12 +919,17 @@ bool Builder::GenerateIndexAccessor(const ast::IndexAccessorExpression* expr,
   auto extract = result_op();
   auto extract_id = extract.to_i();
 
-  // If the index is a literal, we use OpCompositeExtract.
-  if (auto* literal = expr->index->As<ast::IntLiteralExpression>()) {
-    if (!push_function_inst(spv::Op::OpCompositeExtract,
-                            {Operand::Int(result_type_id), extract,
-                             Operand::Int(info->source_id),
-                             Operand::Int(literal->ValueAsU32())})) {
+  // If the index is compile-time constant, we use OpCompositeExtract.
+  auto* idx = builder_.Sem().Get(expr->index);
+  if (auto idx_constval = idx->ConstantValue()) {
+    if (!push_function_inst(
+            spv::Op::OpCompositeExtract,
+            {
+                Operand::Int(result_type_id),
+                extract,
+                Operand::Int(info->source_id),
+                Operand::Int(idx_constval.ElementAs<uint32_t>(0)),
+            })) {
       return false;
     }
 
@@ -1129,6 +1116,9 @@ uint32_t Builder::GenerateAccessorExpression(const ast::Expression* expr) {
   }
   info.source_type = TypeOf(source);
 
+  // Note: Dynamic index on array and matrix values (lets) should have been
+  // promoted to storage with the VarForDynamicIndex transform.
+
   for (auto* accessor : accessors) {
     if (auto* array = accessor->As<ast::IndexAccessorExpression>()) {
       if (!GenerateIndexAccessor(array, &info)) {
@@ -1181,6 +1171,24 @@ uint32_t Builder::GenerateIdentifierExpression(
   return val;
 }
 
+uint32_t Builder::GenerateExpressionWithLoadIfNeeded(
+    const sem::Expression* expr) {
+  // The semantic node directly knows both the AST node and the resolved type.
+  if (const auto id = GenerateExpression(expr->Declaration())) {
+    return GenerateLoadIfNeeded(expr->Type(), id);
+  }
+  return 0;
+}
+
+uint32_t Builder::GenerateExpressionWithLoadIfNeeded(
+    const ast::Expression* expr) {
+  if (const auto id = GenerateExpression(expr)) {
+    // Perform a lookup to get the resolved type.
+    return GenerateLoadIfNeeded(TypeOf(expr), id);
+  }
+  return 0;
+}
+
 uint32_t Builder::GenerateLoadIfNeeded(const sem::Type* type, uint32_t id) {
   if (auto* ref = type->As<sem::Reference>()) {
     type = ref->StoreType();
@@ -1203,11 +1211,6 @@ uint32_t Builder::GenerateUnaryOpExpression(
   auto result = result_op();
   auto result_id = result.to_i();
 
-  auto val_id = GenerateExpression(expr->expr);
-  if (val_id == 0) {
-    return 0;
-  }
-
   spv::Op op = spv::Op::OpNop;
   switch (expr->op) {
     case ast::UnaryOp::kComplement:
@@ -1228,10 +1231,13 @@ uint32_t Builder::GenerateUnaryOpExpression(
       // Address-of converts a reference to a pointer, and dereference converts
       // a pointer to a reference. These are the same thing in SPIR-V, so this
       // is a no-op.
-      return val_id;
+      return GenerateExpression(expr->expr);
   }
 
-  val_id = GenerateLoadIfNeeded(TypeOf(expr->expr), val_id);
+  auto val_id = GenerateExpressionWithLoadIfNeeded(expr->expr);
+  if (val_id == 0) {
+    return 0;
+  }
 
   auto type_id = GenerateTypeIfNeeded(TypeOf(expr));
   if (type_id == 0) {
@@ -1371,11 +1377,7 @@ uint32_t Builder::GenerateTypeConstructorOrConversion(
   OperandList ops;
   for (auto* e : args) {
     uint32_t id = 0;
-    id = GenerateExpression(e->Declaration());
-    if (id == 0) {
-      return 0;
-    }
-    id = GenerateLoadIfNeeded(e->Type(), id);
+    id = GenerateExpressionWithLoadIfNeeded(e);
     if (id == 0) {
       return 0;
     }
@@ -1523,11 +1525,10 @@ uint32_t Builder::GenerateCastOrCopyOrPassthrough(
     return 0;
   }
 
-  auto val_id = GenerateExpression(from_expr);
+  auto val_id = GenerateExpressionWithLoadIfNeeded(from_expr);
   if (val_id == 0) {
     return 0;
   }
-  val_id = GenerateLoadIfNeeded(TypeOf(from_expr), val_id);
 
   auto* from_type = TypeOf(from_expr)->UnwrapRef();
 
@@ -1795,11 +1796,10 @@ uint32_t Builder::GenerateConstantVectorSplatIfNeeded(const sem::Vector* type,
 
 uint32_t Builder::GenerateShortCircuitBinaryExpression(
     const ast::BinaryExpression* expr) {
-  auto lhs_id = GenerateExpression(expr->lhs);
+  auto lhs_id = GenerateExpressionWithLoadIfNeeded(expr->lhs);
   if (lhs_id == 0) {
     return false;
   }
-  lhs_id = GenerateLoadIfNeeded(TypeOf(expr->lhs), lhs_id);
 
   // Get the ID of the basic block where control flow will diverge. It's the
   // last basic block generated for the left-hand-side of the operator.
@@ -1839,11 +1839,10 @@ uint32_t Builder::GenerateShortCircuitBinaryExpression(
   if (!GenerateLabel(block_id)) {
     return 0;
   }
-  auto rhs_id = GenerateExpression(expr->rhs);
+  auto rhs_id = GenerateExpressionWithLoadIfNeeded(expr->rhs);
   if (rhs_id == 0) {
     return 0;
   }
-  rhs_id = GenerateLoadIfNeeded(TypeOf(expr->rhs), rhs_id);
 
   // Get the block ID of the last basic block generated for the right-hand-side
   // expression. That block will be an immediate predecessor to the merge block.
@@ -1962,17 +1961,15 @@ uint32_t Builder::GenerateBinaryExpression(const ast::BinaryExpression* expr) {
     return GenerateShortCircuitBinaryExpression(expr);
   }
 
-  auto lhs_id = GenerateExpression(expr->lhs);
+  auto lhs_id = GenerateExpressionWithLoadIfNeeded(expr->lhs);
   if (lhs_id == 0) {
     return 0;
   }
-  lhs_id = GenerateLoadIfNeeded(TypeOf(expr->lhs), lhs_id);
 
-  auto rhs_id = GenerateExpression(expr->rhs);
+  auto rhs_id = GenerateExpressionWithLoadIfNeeded(expr->rhs);
   if (rhs_id == 0) {
     return 0;
   }
-  rhs_id = GenerateLoadIfNeeded(TypeOf(expr->rhs), rhs_id);
 
   auto result = result_op();
   auto result_id = result.to_i();
@@ -2249,11 +2246,7 @@ uint32_t Builder::GenerateFunctionCall(const sem::Call* call,
 
   size_t arg_idx = 0;
   for (auto* arg : expr->args) {
-    auto id = GenerateExpression(arg);
-    if (id == 0) {
-      return 0;
-    }
-    id = GenerateLoadIfNeeded(TypeOf(arg), id);
+    auto id = GenerateExpressionWithLoadIfNeeded(arg);
     if (id == 0) {
       return 0;
     }
@@ -2706,12 +2699,7 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
 
   // Generates the given expression, returning the operand ID
   auto gen = [&](const sem::Expression* expr) {
-    auto val_id = GenerateExpression(expr->Declaration());
-    if (val_id == 0) {
-      return Operand::Int(0);
-    }
-    val_id = GenerateLoadIfNeeded(expr->Type(), val_id);
-
+    const auto val_id = GenerateExpressionWithLoadIfNeeded(expr);
     return Operand::Int(val_id);
   };
 
@@ -3209,11 +3197,7 @@ bool Builder::GenerateAtomicIntrinsic(const sem::Call* call,
 
   uint32_t value_id = 0;
   if (call->Arguments().size() > 1) {
-    value_id = GenerateExpression(call->Arguments().back()->Declaration());
-    if (value_id == 0) {
-      return false;
-    }
-    value_id = GenerateLoadIfNeeded(call->Arguments().back()->Type(), value_id);
+    value_id = GenerateExpressionWithLoadIfNeeded(call->Arguments().back());
     if (value_id == 0) {
       return false;
     }
@@ -3449,11 +3433,10 @@ uint32_t Builder::GenerateBitcastExpression(
     return 0;
   }
 
-  auto val_id = GenerateExpression(expr->expr);
+  auto val_id = GenerateExpressionWithLoadIfNeeded(expr->expr);
   if (val_id == 0) {
     return 0;
   }
-  val_id = GenerateLoadIfNeeded(TypeOf(expr->expr), val_id);
 
   // Bitcast does not allow same types, just emit a CopyObject
   auto* to_type = TypeOf(expr)->UnwrapRef();
@@ -3480,11 +3463,10 @@ bool Builder::GenerateConditionalBlock(
     const ast::BlockStatement* true_body,
     size_t cur_else_idx,
     const ast::ElseStatementList& else_stmts) {
-  auto cond_id = GenerateExpression(cond);
+  auto cond_id = GenerateExpressionWithLoadIfNeeded(cond);
   if (cond_id == 0) {
     return false;
   }
-  cond_id = GenerateLoadIfNeeded(TypeOf(cond), cond_id);
 
   auto merge_block = result_op();
   auto merge_block_id = merge_block.to_i();
@@ -3517,7 +3499,7 @@ bool Builder::GenerateConditionalBlock(
     return false;
   }
   // We only branch if the last element of the body didn't already branch.
-  if (!LastIsTerminator(true_body)) {
+  if (InsideBasicBlock()) {
     if (!push_function_inst(spv::Op::OpBranch,
                             {Operand::Int(merge_block_id)})) {
       return false;
@@ -3542,7 +3524,7 @@ bool Builder::GenerateConditionalBlock(
         return false;
       }
     }
-    if (!LastIsTerminator(else_stmt->body)) {
+    if (InsideBasicBlock()) {
       if (!push_function_inst(spv::Op::OpBranch,
                               {Operand::Int(merge_block_id)})) {
         return false;
@@ -3576,7 +3558,10 @@ bool Builder::GenerateIfStatement(const ast::IfStatement* stmt) {
     if (is_just_a_break(stmt->body) && stmt->else_statements.empty()) {
       // It's a break-if.
       TINT_ASSERT(Writer, !backedge_stack_.empty());
-      const auto cond_id = GenerateExpression(stmt->condition);
+      const auto cond_id = GenerateExpressionWithLoadIfNeeded(stmt->condition);
+      if (!cond_id) {
+        return false;
+      }
       backedge_stack_.back() =
           Backedge(spv::Op::OpBranchConditional,
                    {Operand::Int(cond_id), Operand::Int(ci.break_target_id),
@@ -3588,7 +3573,11 @@ bool Builder::GenerateIfStatement(const ast::IfStatement* stmt) {
           is_just_a_break(es.back()->body)) {
         // It's a break-unless.
         TINT_ASSERT(Writer, !backedge_stack_.empty());
-        const auto cond_id = GenerateExpression(stmt->condition);
+        const auto cond_id =
+            GenerateExpressionWithLoadIfNeeded(stmt->condition);
+        if (!cond_id) {
+          return false;
+        }
         backedge_stack_.back() =
             Backedge(spv::Op::OpBranchConditional,
                      {Operand::Int(cond_id), Operand::Int(ci.loop_header_id),
@@ -3611,11 +3600,10 @@ bool Builder::GenerateSwitchStatement(const ast::SwitchStatement* stmt) {
 
   merge_stack_.push_back(merge_block_id);
 
-  auto cond_id = GenerateExpression(stmt->condition);
+  auto cond_id = GenerateExpressionWithLoadIfNeeded(stmt->condition);
   if (cond_id == 0) {
     return false;
   }
-  cond_id = GenerateLoadIfNeeded(TypeOf(stmt->condition), cond_id);
 
   auto default_block = result_op();
   auto default_block_id = default_block.to_i();
@@ -3684,7 +3672,7 @@ bool Builder::GenerateSwitchStatement(const ast::SwitchStatement* stmt) {
                               {Operand::Int(case_ids[i + 1])})) {
         return false;
       }
-    } else if (!LastIsTerminator(item->body)) {
+    } else if (InsideBasicBlock()) {
       if (!push_function_inst(spv::Op::OpBranch,
                               {Operand::Int(merge_block_id)})) {
         return false;
@@ -3709,11 +3697,10 @@ bool Builder::GenerateSwitchStatement(const ast::SwitchStatement* stmt) {
 
 bool Builder::GenerateReturnStatement(const ast::ReturnStatement* stmt) {
   if (stmt->value) {
-    auto val_id = GenerateExpression(stmt->value);
+    auto val_id = GenerateExpressionWithLoadIfNeeded(stmt->value);
     if (val_id == 0) {
       return false;
     }
-    val_id = GenerateLoadIfNeeded(TypeOf(stmt->value), val_id);
     if (!push_function_inst(spv::Op::OpReturnValue, {Operand::Int(val_id)})) {
       return false;
     }
@@ -3777,7 +3764,7 @@ bool Builder::GenerateLoopStatement(const ast::LoopStatement* stmt) {
     }
 
     // We only branch if the last element of the body didn't already branch.
-    if (!LastIsTerminator(stmt->body)) {
+    if (InsideBasicBlock()) {
       if (!push_function_inst(spv::Op::OpBranch,
                               {Operand::Int(continue_block_id)})) {
         return false;
@@ -3941,17 +3928,17 @@ uint32_t Builder::GenerateTypeIfNeeded(const sem::Type* type) {
         // the access type. Doing this ensures we de-dupe.
         type_name_to_id_[builder_
                              .create<sem::StorageTexture>(
-                                 st->dim(), st->image_format(),
+                                 st->dim(), st->texel_format(),
                                  ast::Access::kRead, st->type())
                              ->type_name()] = id;
         type_name_to_id_[builder_
                              .create<sem::StorageTexture>(
-                                 st->dim(), st->image_format(),
+                                 st->dim(), st->texel_format(),
                                  ast::Access::kWrite, st->type())
                              ->type_name()] = id;
         type_name_to_id_[builder_
                              .create<sem::StorageTexture>(
-                                 st->dim(), st->image_format(),
+                                 st->dim(), st->texel_format(),
                                  ast::Access::kReadWrite, st->type())
                              ->type_name()] = id;
       }
@@ -4039,7 +4026,7 @@ bool Builder::GenerateTextureType(const sem::Texture* texture,
 
   uint32_t format_literal = SpvImageFormat_::SpvImageFormatUnknown;
   if (auto* t = texture->As<sem::StorageTexture>()) {
-    format_literal = convert_image_format_to_spv(t->image_format());
+    format_literal = convert_texel_format_to_spv(t->texel_format());
   }
 
   push_type(spv::Op::OpTypeImage,
@@ -4142,7 +4129,9 @@ bool Builder::GenerateStructType(const sem::Struct* struct_type,
   ops.push_back(result);
 
   auto* decl = struct_type->Declaration();
-  if (decl && decl->IsBlockDecorated()) {
+  if (decl && ast::HasDecoration<
+                  transform::AddSpirvBlockDecoration::SpirvBlockDecoration>(
+                  decl->decorations)) {
     push_annot(spv::Op::OpDecorate,
                {Operand::Int(struct_id), Operand::Int(SpvDecorationBlock)});
   }
@@ -4314,99 +4303,45 @@ void Builder::AddInterpolationDecorations(uint32_t id,
   }
 }
 
-SpvImageFormat Builder::convert_image_format_to_spv(
-    const ast::ImageFormat format) {
+SpvImageFormat Builder::convert_texel_format_to_spv(
+    const ast::TexelFormat format) {
   switch (format) {
-    case ast::ImageFormat::kR8Unorm:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatR8;
-    case ast::ImageFormat::kR8Snorm:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatR8Snorm;
-    case ast::ImageFormat::kR8Uint:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatR8ui;
-    case ast::ImageFormat::kR8Sint:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatR8i;
-    case ast::ImageFormat::kR16Uint:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatR16ui;
-    case ast::ImageFormat::kR16Sint:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatR16i;
-    case ast::ImageFormat::kR16Float:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatR16f;
-    case ast::ImageFormat::kRg8Unorm:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatRg8;
-    case ast::ImageFormat::kRg8Snorm:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatRg8Snorm;
-    case ast::ImageFormat::kRg8Uint:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatRg8ui;
-    case ast::ImageFormat::kRg8Sint:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatRg8i;
-    case ast::ImageFormat::kR32Uint:
+    case ast::TexelFormat::kR32Uint:
       return SpvImageFormatR32ui;
-    case ast::ImageFormat::kR32Sint:
+    case ast::TexelFormat::kR32Sint:
       return SpvImageFormatR32i;
-    case ast::ImageFormat::kR32Float:
+    case ast::TexelFormat::kR32Float:
       return SpvImageFormatR32f;
-    case ast::ImageFormat::kRg16Uint:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatRg16ui;
-    case ast::ImageFormat::kRg16Sint:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatRg16i;
-    case ast::ImageFormat::kRg16Float:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatRg16f;
-    case ast::ImageFormat::kRgba8Unorm:
+    case ast::TexelFormat::kRgba8Unorm:
       return SpvImageFormatRgba8;
-    case ast::ImageFormat::kRgba8UnormSrgb:
-      return SpvImageFormatUnknown;
-    case ast::ImageFormat::kRgba8Snorm:
+    case ast::TexelFormat::kRgba8Snorm:
       return SpvImageFormatRgba8Snorm;
-    case ast::ImageFormat::kRgba8Uint:
+    case ast::TexelFormat::kRgba8Uint:
       return SpvImageFormatRgba8ui;
-    case ast::ImageFormat::kRgba8Sint:
+    case ast::TexelFormat::kRgba8Sint:
       return SpvImageFormatRgba8i;
-    case ast::ImageFormat::kBgra8Unorm:
-      return SpvImageFormatUnknown;
-    case ast::ImageFormat::kBgra8UnormSrgb:
-      return SpvImageFormatUnknown;
-    case ast::ImageFormat::kRgb10A2Unorm:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatRgb10A2;
-    case ast::ImageFormat::kRg11B10Float:
-      push_capability(SpvCapabilityStorageImageExtendedFormats);
-      return SpvImageFormatR11fG11fB10f;
-    case ast::ImageFormat::kRg32Uint:
+    case ast::TexelFormat::kRg32Uint:
       push_capability(SpvCapabilityStorageImageExtendedFormats);
       return SpvImageFormatRg32ui;
-    case ast::ImageFormat::kRg32Sint:
+    case ast::TexelFormat::kRg32Sint:
       push_capability(SpvCapabilityStorageImageExtendedFormats);
       return SpvImageFormatRg32i;
-    case ast::ImageFormat::kRg32Float:
+    case ast::TexelFormat::kRg32Float:
       push_capability(SpvCapabilityStorageImageExtendedFormats);
       return SpvImageFormatRg32f;
-    case ast::ImageFormat::kRgba16Uint:
+    case ast::TexelFormat::kRgba16Uint:
       return SpvImageFormatRgba16ui;
-    case ast::ImageFormat::kRgba16Sint:
+    case ast::TexelFormat::kRgba16Sint:
       return SpvImageFormatRgba16i;
-    case ast::ImageFormat::kRgba16Float:
+    case ast::TexelFormat::kRgba16Float:
       return SpvImageFormatRgba16f;
-    case ast::ImageFormat::kRgba32Uint:
+    case ast::TexelFormat::kRgba32Uint:
       return SpvImageFormatRgba32ui;
-    case ast::ImageFormat::kRgba32Sint:
+    case ast::TexelFormat::kRgba32Sint:
       return SpvImageFormatRgba32i;
-    case ast::ImageFormat::kRgba32Float:
+    case ast::TexelFormat::kRgba32Float:
       return SpvImageFormatRgba32f;
-    case ast::ImageFormat::kNone:
+    case ast::TexelFormat::kNone:
       return SpvImageFormatUnknown;
   }
   return SpvImageFormatUnknown;
@@ -4421,6 +4356,34 @@ bool Builder::push_function_inst(spv::Op op, const OperandList& operands) {
     return false;
   }
   functions_.back().push_inst(op, operands);
+  return true;
+}
+
+bool Builder::InsideBasicBlock() const {
+  if (functions_.empty()) {
+    return false;
+  }
+  const auto& instructions = functions_.back().instructions();
+  if (instructions.empty()) {
+    // The Function object does not explicitly represent its entry block
+    // label.  So return *true* because an empty list means the only
+    // thing in the function is that entry block label.
+    return true;
+  }
+  const auto& inst = instructions.back();
+  switch (inst.opcode()) {
+    case spv::Op::OpBranch:
+    case spv::Op::OpBranchConditional:
+    case spv::Op::OpSwitch:
+    case spv::Op::OpReturn:
+    case spv::Op::OpReturnValue:
+    case spv::Op::OpUnreachable:
+    case spv::Op::OpKill:
+    case spv::Op::OpTerminateInvocation:
+      return false;
+    default:
+      break;
+  }
   return true;
 }
 

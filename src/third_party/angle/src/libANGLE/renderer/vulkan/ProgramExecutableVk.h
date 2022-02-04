@@ -128,7 +128,7 @@ class ProgramExecutableVk
     ProgramVk *getShaderProgram(const gl::State &glState, gl::ShaderType shaderType) const;
 
     void fillProgramStateMap(const ContextVk *contextVk,
-                             gl::ShaderMap<const gl::ProgramState *> *programStatesOut);
+                             gl::ShaderMap<const gl::ProgramState *> *programStatesOut) const;
     const gl::ProgramExecutable &getGlExecutable();
 
     ProgramInfo &getGraphicsDefaultProgramInfo() { return mGraphicsProgramInfos[0]; }
@@ -161,8 +161,7 @@ class ProgramExecutableVk
     angle::Result updateShaderResourcesDescriptorSet(
         ContextVk *contextVk,
         FramebufferVk *framebufferVk,
-        const vk::ShaderBuffersDescriptorDesc &shaderBuffersDesc,
-        vk::CommandBufferHelper *commandBufferHelper);
+        const vk::ShaderBuffersDescriptorDesc &shaderBuffersDesc);
     angle::Result updateTransformFeedbackDescriptorSet(
         const gl::ProgramState &programState,
         gl::ShaderMap<DefaultUniformBlock> &defaultUniformBlocks,
@@ -174,8 +173,9 @@ class ProgramExecutableVk
                                                      ContextVk *contextVk,
                                                      FramebufferVk *framebufferVk);
 
+    template <typename CommandBufferT>
     angle::Result updateDescriptorSets(ContextVk *contextVk,
-                                       vk::CommandBuffer *commandBuffer,
+                                       CommandBufferT *commandBuffer,
                                        PipelineType pipelineType);
 
     void updateEarlyFragmentTestsOptimization(ContextVk *contextVk);
@@ -195,6 +195,8 @@ class ProgramExecutableVk
     {
         return mUniformBufferDescriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     }
+    bool usesDynamicShaderStorageBufferDescriptors() const { return false; }
+    bool usesDynamicAtomicCounterBufferDescriptors() const { return false; }
 
     bool areImmutableSamplersCompatible(
         const ImmutableSamplerIndexMap &immutableSamplerIndexMap) const

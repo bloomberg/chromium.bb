@@ -1233,14 +1233,15 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, NewTabDownload) {
   // Source and target are at different tabs.
   EXPECT_NE(nav_list->GetNavigationEvent(1)->source_tab_id,
             nav_list->GetNavigationEvent(1)->target_tab_id);
-  VerifyNavigationEvent(GURL(),     // source_url
-                        GURL(),     // source_main_frame_url
-                        blank_url,  // original_request_url
-                        blank_url,  // destination_url
-                        false,      // is_user_initiated,
-                        true,       // has_committed
-                        false,      // has_server_redirect
-                        nav_list->GetNavigationEvent(2));
+  VerifyNavigationEvent(
+      GURL(),     // source_url
+      GURL(),     // source_main_frame_url
+      blank_url,  // original_request_url
+      blank_url,  // destination_url
+      false,      // is_user_initiated,
+      blink::features::IsInitialNavigationEntryEnabled(),  // has_committed
+      false,  // has_server_redirect
+      nav_list->GetNavigationEvent(2));
   EXPECT_EQ(nav_list->GetNavigationEvent(2)->source_tab_id,
             nav_list->GetNavigationEvent(2)->target_tab_id);
   VerifyNavigationEvent(blank_url,     // source_url
@@ -1326,14 +1327,15 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   // Source and target are at different tabs.
   EXPECT_FALSE(nav_list->GetNavigationEvent(1)->source_tab_id ==
                nav_list->GetNavigationEvent(1)->target_tab_id);
-  VerifyNavigationEvent(GURL(),     // source_url
-                        GURL(),     // source_main_frame_url
-                        blank_url,  // original_request_url
-                        blank_url,  // destination_url
-                        false,      // is_user_initiated,
-                        true,       // has_committed
-                        false,      // has_server_redirect
-                        nav_list->GetNavigationEvent(2));
+  VerifyNavigationEvent(
+      GURL(),     // source_url
+      GURL(),     // source_main_frame_url
+      blank_url,  // original_request_url
+      blank_url,  // destination_url
+      false,      // is_user_initiated,
+      blink::features::IsInitialNavigationEntryEnabled(),  // has_committed
+      false,  // has_server_redirect
+      nav_list->GetNavigationEvent(2));
   EXPECT_EQ(nav_list->GetNavigationEvent(2)->source_tab_id,
             nav_list->GetNavigationEvent(2)->target_tab_id);
   VerifyNavigationEvent(blank_url,     // source_url
@@ -1594,14 +1596,15 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                         false,                   // has_committed
                         false,                   // has_server_redirect
                         nav_list->GetNavigationEvent(4));
-  VerifyNavigationEvent(GURL(),     // source_url
-                        GURL(),     // source_main_frame_url
-                        blank_url,  // original_request_url
-                        blank_url,  // destination_url
-                        false,      // is_user_initiated,
-                        true,       // has_committed
-                        false,      // has_server_redirect
-                        nav_list->GetNavigationEvent(5));
+  VerifyNavigationEvent(
+      GURL(),     // source_url
+      GURL(),     // source_main_frame_url
+      blank_url,  // original_request_url
+      blank_url,  // destination_url
+      false,      // is_user_initiated,
+      blink::features::IsInitialNavigationEntryEnabled(),  // has_committed
+      false,  // has_server_redirect
+      nav_list->GetNavigationEvent(5));
   VerifyNavigationEvent(blank_url,     // source_url
                         blank_url,     // source_main_frame_url
                         download_url,  // original_request_url
@@ -2444,8 +2447,16 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
           SafeBrowsingNavigationObserverManager::NAVIGATION_EVENT_NOT_FOUND));
 }
 
+// Test failure on macOS: crbug.com/1287901
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_AppendRecentNavigationsToEmptyReferrerChain \
+  DISABLED_AppendRecentNavigationsToEmptyReferrerChain
+#else
+#define MAYBE_AppendRecentNavigationsToEmptyReferrerChain \
+  AppendRecentNavigationsToEmptyReferrerChain
+#endif
 IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
-                       AppendRecentNavigationsToEmptyReferrerChain) {
+                       MAYBE_AppendRecentNavigationsToEmptyReferrerChain) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kSingleFrameTestURL)));
   GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
@@ -3365,8 +3376,16 @@ class SBNavigationObserverOmitNonUserGesturesBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// Test failure on macOS: crbug.com/1287901
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_AppendRecentNavigationsToEmptyReferrerChain \
+  DISABLED_AppendRecentNavigationsToEmptyReferrerChain
+#else
+#define MAYBE_AppendRecentNavigationsToEmptyReferrerChain \
+  AppendRecentNavigationsToEmptyReferrerChain
+#endif
 IN_PROC_BROWSER_TEST_F(SBNavigationObserverOmitNonUserGesturesBrowserTest,
-                       AppendRecentNavigationsToEmptyReferrerChain) {
+                       MAYBE_AppendRecentNavigationsToEmptyReferrerChain) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kSingleFrameTestURL)));
   GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);

@@ -66,7 +66,7 @@ enum class GpuWatchdogTimeoutEvent {
   kMaxValue = kSlowWatchdogThread,
 };
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 // If the actual time the watched GPU thread spent doing actual work is less
 // than the watchdog timeout, the GPU thread can continue running through
 // OnGPUWatchdogTimeout for at most 4 times before the gpu thread is killed.
@@ -124,8 +124,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
   // For gpu testing only. Return status for the watchdog tests
   bool IsGpuHangDetectedForTesting();
 
-  void WaitForPowerObserverAddedForTesting();
-
   // Implements base::Thread.
   void Init() override;
   void CleanUp() override;
@@ -169,11 +167,11 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
   void OnWatchdogTimeout();
   bool SlowWatchdogThread();
   bool WatchedThreadNeedsMoreThreadTime(bool no_gpu_hang_detected);
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   base::ThreadTicks GetWatchedThreadTime();
 #endif
 
-  // Do not change the function name. It is used for [GPU HANG] carsh reports.
+  // Do not change the function name. It is used for [GPU HANG] crash reports.
   void DeliberatelyTerminateToRecoverFromHang();
 
   // Records "GPU.WatchdogThread.Event".
@@ -183,7 +181,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
   // Records "GPU.WatchdogThread.Timeout"
   void GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent timeout_event);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Histograms recorded for WatchedThreadNeedsMoreThreadTime() function.
   void WatchedThreadNeedsMoreThreadTimeHistogram(
       bool no_gpu_hang_detected,
@@ -194,7 +192,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
   bool WithinOneMinFromPowerResumed();
   bool WithinOneMinFromForegrounded();
 
-#if defined(OS_LINUX) && !BUILDFLAG(IS_CHROMECAST)
+#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMECAST)
   void UpdateActiveTTY();
 #endif
   // The watchdog continues when it's not on the TTY of our host X11 server.
@@ -210,11 +208,11 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
   base::TimeDelta watchdog_timeout_;
 
   // The one-time watchdog timeout multiplier in the gpu initialization.
-  int watchdog_init_factor_;
+  const int watchdog_init_factor_;
 
   // The one-time watchdog timeout multiplier after the watchdog pauses and
   // restarts.
-  int watchdog_restart_factor_;
+  const int watchdog_restart_factor_;
 
   // The time the gpu watchdog was created.
   base::TimeTicks watchdog_start_timeticks_;
@@ -242,7 +240,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
   // The wall-clock time the next OnWatchdogTimeout() will be called.
   base::Time next_on_watchdog_timeout_time_;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   base::ThreadTicks last_on_watchdog_timeout_thread_ticks_;
 
   // The difference between the timeout and the actual time the watched thread
@@ -266,7 +264,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
   bool less_than_full_thread_time_after_capped_ = false;
 #endif
 
-#if defined(OS_LINUX) && !BUILDFLAG(IS_CHROMECAST)
+#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMECAST)
   FILE* tty_file_ = nullptr;
   int host_tty_ = -1;
   int active_tty_ = -1;
@@ -286,19 +284,12 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
   // The GPU watchdog is paused. The timeout task is temporarily stopped.
   bool is_paused_ = false;
 
-  // Whether the watchdog thread has added the power monitor observer.
-  // Read/Write by the watchdog thread only.
-  bool is_power_observer_added_ = false;
-
   // whether GpuWatchdogThreadEvent::kGpuWatchdogStart has been recorded.
   bool is_watchdog_start_histogram_recorded = false;
 
   // Read/Write by the watchdog thread only after initialized in the
   // constructor.
   bool in_gpu_initialization_ = false;
-
-  // The number of logical processors/cores on the current machine.
-  int num_of_processors_ = 0;
 
   // For the experiment and the debugging purpose
   size_t num_of_timeout_after_power_resume_ = 0;

@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { isNode } from '../environment.js';
-
 import { assert } from './assert.js';
-import { TimeoutError } from './Errors.js';
-import { debugError , helper} from './helper.js';
+import { helper, debugError } from './helper.js';
 import { LifecycleWatcher, } from './LifecycleWatcher.js';
+import { TimeoutError } from './Errors.js';
 import { getQueryHandlerAndSelector } from './QueryHandler.js';
-
+import { isNode } from '../environment.js';
 /**
  * @internal
  */
@@ -409,20 +407,22 @@ export class DOMWorld {
         const { visible: waitForVisible = false, hidden: waitForHidden = false, timeout = this._timeoutSettings.timeout(), } = options;
         const polling = waitForVisible || waitForHidden ? 'raf' : 'mutation';
         const title = `selector \`${selector}\`${waitForHidden ? ' to be hidden' : ''}`;
-        async function predicate(selector, waitForVisible, waitForHidden) {
+        async function predicate(root, selector, waitForVisible, waitForHidden) {
             const node = predicateQueryHandler
-                ? (await predicateQueryHandler(document, selector))
-                : document.querySelector(selector);
+                ? (await predicateQueryHandler(root, selector))
+                : root.querySelector(selector);
             return checkWaitForOptions(node, waitForVisible, waitForHidden);
         }
         const waitTaskOptions = {
             domWorld: this,
             predicateBody: helper.makePredicateString(predicate, queryOne),
+            predicateAcceptsContextElement: true,
             title,
             polling,
             timeout,
             args: [selector, waitForVisible, waitForHidden],
             binding,
+            root: options.root,
         };
         const waitTask = new WaitTask(waitTaskOptions);
         const jsHandle = await waitTask.promise;
@@ -437,17 +437,19 @@ export class DOMWorld {
         const { visible: waitForVisible = false, hidden: waitForHidden = false, timeout = this._timeoutSettings.timeout(), } = options;
         const polling = waitForVisible || waitForHidden ? 'raf' : 'mutation';
         const title = `XPath \`${xpath}\`${waitForHidden ? ' to be hidden' : ''}`;
-        function predicate(xpath, waitForVisible, waitForHidden) {
-            const node = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        function predicate(root, xpath, waitForVisible, waitForHidden) {
+            const node = document.evaluate(xpath, root, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
             return checkWaitForOptions(node, waitForVisible, waitForHidden);
         }
         const waitTaskOptions = {
             domWorld: this,
             predicateBody: helper.makePredicateString(predicate),
+            predicateAcceptsContextElement: true,
             title,
             polling,
             timeout,
             args: [xpath, waitForVisible, waitForHidden],
+            root: options.root,
         };
         const waitTask = new WaitTask(waitTaskOptions);
         const jsHandle = await waitTask.promise;
@@ -463,6 +465,7 @@ export class DOMWorld {
         const waitTaskOptions = {
             domWorld: this,
             predicateBody: pageFunction,
+            predicateAcceptsContextElement: false,
             title: 'function',
             polling,
             timeout,
@@ -483,6 +486,7 @@ export class WaitTask {
     constructor(options) {
         this._runCount = 0;
         this._terminated = false;
+        this._root = null;
         if (helper.isString(options.polling))
             assert(options.polling === 'raf' || options.polling === 'mutation', 'Unknown polling option: ' + options.polling);
         else if (helper.isNumber(options.polling))
@@ -497,7 +501,10 @@ export class WaitTask {
         this._domWorld = options.domWorld;
         this._polling = options.polling;
         this._timeout = options.timeout;
+        this._root = options.root;
         this._predicateBody = getPredicateBody(options.predicateBody);
+        this._predicateAcceptsContextElement =
+            options.predicateAcceptsContextElement;
         this._args = options.args;
         this._binding = options.binding;
         this._runCount = 0;
@@ -535,7 +542,7 @@ export class WaitTask {
         if (this._terminated || runCount !== this._runCount)
             return;
         try {
-            success = await context.evaluateHandle(waitForPredicatePageFunction, this._predicateBody, this._polling, this._timeout, ...this._args);
+            success = await context.evaluateHandle(waitForPredicatePageFunction, this._root || null, this._predicateBody, this._predicateAcceptsContextElement, this._polling, this._timeout, ...this._args);
         }
         catch (error_) {
             error = error_;
@@ -584,7 +591,8 @@ export class WaitTask {
         this._domWorld._waitTasks.delete(this);
     }
 }
-async function waitForPredicatePageFunction(predicateBody, polling, timeout, ...args) {
+async function waitForPredicatePageFunction(root, predicateBody, predicateAcceptsContextElement, polling, timeout, ...args) {
+    root = root || document;
     const predicate = new Function('...args', predicateBody);
     let timedOut = false;
     if (timeout)
@@ -599,7 +607,9 @@ async function waitForPredicatePageFunction(predicateBody, polling, timeout, ...
      * @returns {!Promise<*>}
      */
     async function pollMutation() {
-        const success = await predicate(...args);
+        const success = predicateAcceptsContextElement
+            ? await predicate(root, ...args)
+            : await predicate(...args);
         if (success)
             return Promise.resolve(success);
         let fulfill;
@@ -609,13 +619,15 @@ async function waitForPredicatePageFunction(predicateBody, polling, timeout, ...
                 observer.disconnect();
                 fulfill();
             }
-            const success = await predicate(...args);
+            const success = predicateAcceptsContextElement
+                ? await predicate(root, ...args)
+                : await predicate(...args);
             if (success) {
                 observer.disconnect();
                 fulfill(success);
             }
         });
-        observer.observe(document, {
+        observer.observe(root, {
             childList: true,
             subtree: true,
             attributes: true,
@@ -632,7 +644,9 @@ async function waitForPredicatePageFunction(predicateBody, polling, timeout, ...
                 fulfill();
                 return;
             }
-            const success = await predicate(...args);
+            const success = predicateAcceptsContextElement
+                ? await predicate(root, ...args)
+                : await predicate(...args);
             if (success)
                 fulfill(success);
             else
@@ -649,7 +663,9 @@ async function waitForPredicatePageFunction(predicateBody, polling, timeout, ...
                 fulfill();
                 return;
             }
-            const success = await predicate(...args);
+            const success = predicateAcceptsContextElement
+                ? await predicate(root, ...args)
+                : await predicate(...args);
             if (success)
                 fulfill(success);
             else

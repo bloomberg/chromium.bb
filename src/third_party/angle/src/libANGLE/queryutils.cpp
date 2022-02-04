@@ -1690,6 +1690,9 @@ void QueryFramebufferParameteriv(const Framebuffer *framebuffer, GLenum pname, G
         case GL_FRAMEBUFFER_DEFAULT_LAYERS_EXT:
             *params = framebuffer->getDefaultLayers();
             break;
+        case GL_FRAMEBUFFER_FLIP_Y_MESA:
+            *params = ConvertToGLBoolean(framebuffer->getFlipY());
+            break;
         default:
             UNREACHABLE();
             break;
@@ -1843,6 +1846,9 @@ void SetFramebufferParameteri(const Context *context,
             break;
         case GL_FRAMEBUFFER_DEFAULT_LAYERS_EXT:
             framebuffer->setDefaultLayers(param);
+            break;
+        case GL_FRAMEBUFFER_FLIP_Y_MESA:
+            framebuffer->setFlipY(ConvertToBool(param));
             break;
         default:
             UNREACHABLE();
@@ -4187,6 +4193,9 @@ void QueryContextAttrib(const gl::Context *context, EGLint attribute, EGLint *va
         case EGL_CONTEXT_PRIORITY_LEVEL_IMG:
             *value = static_cast<EGLint>(context->getContextPriority());
             break;
+        case EGL_PROTECTED_CONTENT_EXT:
+            *value = context->getState().hasProtectedContent();
+            break;
         default:
             UNREACHABLE();
             break;
@@ -4316,6 +4325,9 @@ egl::Error QuerySurfaceAttrib(const Display *display,
             break;
         case EGL_BITMAP_PIXEL_SIZE_KHR:
             *value = surface->getBitmapPixelSize();
+            break;
+        case EGL_PROTECTED_CONTENT_EXT:
+            *value = surface->hasProtectedContent();
             break;
         default:
             UNREACHABLE();

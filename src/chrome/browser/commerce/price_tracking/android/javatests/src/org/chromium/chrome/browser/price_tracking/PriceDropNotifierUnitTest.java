@@ -68,6 +68,7 @@ public class PriceDropNotifierUnitTest {
     private static final String ICON_URL = "http://www.example.com/icon";
     private static final String DESTINATION_URL = "http://www.example.com/destination";
     private static final String OFFER_ID = "offer_id";
+    private static final String PRODUCT_CLUSTER_ID = "cluster_id";
     private static final String ACTION_TEXT_0 = "action_text_0";
     private static final String ACTION_TEXT_1 = "action_text_1";
 
@@ -100,17 +101,24 @@ public class PriceDropNotifierUnitTest {
 
     static class TestPriceDropNotifier extends PriceDropNotifier {
         private final ImageFetcher mMockImageFetcher;
+        private final NotificationWrapperBuilder mMockNotificationBuilder;
 
         TestPriceDropNotifier(Context context, ImageFetcher imageFetcher,
-                NotificationBuilderFactory notificationBuilderFactory,
+                NotificationWrapperBuilder notificationBuilder,
                 NotificationManagerProxy notificationManager) {
-            super(context, notificationBuilderFactory, notificationManager);
+            super(context, notificationManager);
             mMockImageFetcher = imageFetcher;
+            mMockNotificationBuilder = notificationBuilder;
         }
 
         @Override
         protected ImageFetcher getImageFetcher() {
             return mMockImageFetcher;
+        }
+
+        @Override
+        protected NotificationWrapperBuilder getNotificationBuilder(int notificationId) {
+            return mMockNotificationBuilder;
         }
     }
 
@@ -119,8 +127,6 @@ public class PriceDropNotifierUnitTest {
 
     @Mock
     private ImageFetcher mImageFetcher;
-    @Mock
-    private PriceDropNotifier.NotificationBuilderFactory mNotificationBuilderFactory;
     @Mock
     private NotificationWrapperBuilder mNotificationBuilder;
     @Mock
@@ -142,10 +148,8 @@ public class PriceDropNotifierUnitTest {
     public void setUp() {
         ShadowLog.stream = System.out;
         mPriceDropNotifier = new TestPriceDropNotifier(ContextUtils.getApplicationContext(),
-                mImageFetcher, mNotificationBuilderFactory, mNotificationManagerProxy);
+                mImageFetcher, mNotificationBuilder, mNotificationManagerProxy);
         ChromeBrowserInitializer.setForTesting(mChromeInitializer);
-        when(mNotificationBuilderFactory.createNotificationBuilder())
-                .thenReturn(mNotificationBuilder);
         when(mNotificationBuilder.buildNotificationWrapper()).thenReturn(mNotificationWrapper);
     }
 
@@ -166,8 +170,8 @@ public class PriceDropNotifierUnitTest {
     }
 
     private void showNotification(List<ActionData> actionDataList) {
-        PriceDropNotifier.NotificationData data = new NotificationData(
-                TITLE, TEXT, ICON_URL, DESTINATION_URL, OFFER_ID, actionDataList);
+        PriceDropNotifier.NotificationData data = new NotificationData(TITLE, TEXT, ICON_URL,
+                DESTINATION_URL, OFFER_ID, PRODUCT_CLUSTER_ID, actionDataList);
         mPriceDropNotifier.showNotification(data);
     }
 
@@ -191,6 +195,7 @@ public class PriceDropNotifierUnitTest {
         verify(mNotificationBuilder, times(1)).setContentIntent(any(PendingIntentProvider.class));
         verify(mNotificationBuilder, times(1)).setSmallIcon(anyInt());
         verify(mNotificationBuilder, times(1)).setTimeoutAfter(anyLong());
+        verify(mNotificationBuilder, times(1)).setAutoCancel(eq(true));
     }
 
     @Test
@@ -205,7 +210,7 @@ public class PriceDropNotifierUnitTest {
     @Test
     public void testShowNotificationNoIconURL() {
         PriceDropNotifier.NotificationData data = new NotificationData(
-                TITLE, TEXT, /*iconUrl=*/null, DESTINATION_URL, OFFER_ID, null);
+                TITLE, TEXT, /*iconUrl=*/null, DESTINATION_URL, OFFER_ID, PRODUCT_CLUSTER_ID, null);
         mPriceDropNotifier.showNotification(data);
         verify(mNotificationBuilder, times(0)).setLargeIcon(any());
         verify(mNotificationBuilder, times(0)).setBigPictureStyle(any(), any());

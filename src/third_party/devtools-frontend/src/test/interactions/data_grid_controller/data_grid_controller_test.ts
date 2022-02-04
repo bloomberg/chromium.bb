@@ -52,6 +52,7 @@ async function waitForFirstBodyCellText(cellText: string) {
 describe('data grid controller', () => {
   preloadForCodeCoverage('data_grid_controller/basic.html');
 
+  // Fails on Mac after theming change
   it('lets the user right click on a header to show the context menu', async () => {
     await loadComponentDocExample('data_grid_controller/basic.html');
     await activateContextMenuOnColumnHeader('Key');
@@ -89,6 +90,7 @@ describe('data grid controller', () => {
         renderedText);
   });
 
+  // Fails on Mac after theming change
   it('lists sortable columns in a sub-menu and lets the user click to sort', async () => {
     await loadComponentDocExample('data_grid_controller/basic.html');
     await activateContextMenuOnColumnHeader('Key');
@@ -132,6 +134,7 @@ describe('data grid controller', () => {
         renderedText);
   });
 
+  // Fails on Mac after theming change
   it('lists sort by and header options when right clicking on a body row', async () => {
     await loadComponentDocExample('data_grid_controller/basic.html');
     await activateContextMenuOnBodyCell('Bravo');
@@ -144,6 +147,7 @@ describe('data grid controller', () => {
     await assertSubMenuItemsText('Sort By', ['Key', 'Value']);
   });
 
+  // Fails on Mac after theming change
   it('allows the parent to add custom context menu items', async () => {
     await loadComponentDocExample('data_grid_controller/custom-context-menu-items.html');
     await activateContextMenuOnBodyCell('Bravo');

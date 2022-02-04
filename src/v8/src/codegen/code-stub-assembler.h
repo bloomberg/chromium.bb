@@ -13,6 +13,7 @@
 #include "src/common/globals.h"
 #include "src/common/message-template.h"
 #include "src/compiler/code-assembler.h"
+#include "src/numbers/integer-literal.h"
 #include "src/objects/arguments.h"
 #include "src/objects/bigint.h"
 #include "src/objects/cell.h"
@@ -27,7 +28,7 @@
 #include "src/objects/swiss-name-dictionary.h"
 #include "src/objects/tagged-index.h"
 #include "src/roots/roots.h"
-#include "src/security/external-pointer.h"
+#include "src/sandbox/external-pointer.h"
 #include "torque-generated/exported-macros-assembler.h"
 
 namespace v8 {
@@ -803,6 +804,8 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
     return IsCodeTMap(LoadMap(object));
   }
 
+  // TODO(v8:11880): remove once Code::bytecode_or_interpreter_data field
+  // is cached in or moved to CodeT.
   TNode<Code> FromCodeT(TNode<CodeT> code) {
 #ifdef V8_EXTERNAL_CODE_SPACE
 #if V8_TARGET_BIG_ENDIAN
@@ -1048,22 +1051,23 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   //
 
   // Load a caged pointer value from an object.
-  TNode<RawPtrT> LoadCagedPointerFromObject(TNode<HeapObject> object,
-                                            int offset) {
-    return LoadCagedPointerFromObject(object, IntPtrConstant(offset));
+  TNode<RawPtrT> LoadSandboxedPointerFromObject(TNode<HeapObject> object,
+                                                int offset) {
+    return LoadSandboxedPointerFromObject(object, IntPtrConstant(offset));
   }
 
-  TNode<RawPtrT> LoadCagedPointerFromObject(TNode<HeapObject> object,
-                                            TNode<IntPtrT> offset);
+  TNode<RawPtrT> LoadSandboxedPointerFromObject(TNode<HeapObject> object,
+                                                TNode<IntPtrT> offset);
 
   // Stored a caged pointer value to an object.
-  void StoreCagedPointerToObject(TNode<HeapObject> object, int offset,
-                                 TNode<RawPtrT> pointer) {
-    StoreCagedPointerToObject(object, IntPtrConstant(offset), pointer);
+  void StoreSandboxedPointerToObject(TNode<HeapObject> object, int offset,
+                                     TNode<RawPtrT> pointer) {
+    StoreSandboxedPointerToObject(object, IntPtrConstant(offset), pointer);
   }
 
-  void StoreCagedPointerToObject(TNode<HeapObject> object,
-                                 TNode<IntPtrT> offset, TNode<RawPtrT> pointer);
+  void StoreSandboxedPointerToObject(TNode<HeapObject> object,
+                                     TNode<IntPtrT> offset,
+                                     TNode<RawPtrT> pointer);
 
   TNode<RawPtrT> EmptyBackingStoreBufferConstant();
 
@@ -1145,14 +1149,14 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
 
   TNode<RawPtrT> LoadJSTypedArrayExternalPointerPtr(
       TNode<JSTypedArray> holder) {
-    return LoadCagedPointerFromObject(holder,
-                                      JSTypedArray::kExternalPointerOffset);
+    return LoadSandboxedPointerFromObject(holder,
+                                          JSTypedArray::kExternalPointerOffset);
   }
 
   void StoreJSTypedArrayExternalPointerPtr(TNode<JSTypedArray> holder,
                                            TNode<RawPtrT> value) {
-    StoreCagedPointerToObject(holder, JSTypedArray::kExternalPointerOffset,
-                              value);
+    StoreSandboxedPointerToObject(holder, JSTypedArray::kExternalPointerOffset,
+                                  value);
   }
 
   // Load value from current parent frame by given offset in bytes.
@@ -2579,6 +2583,7 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
 
   TNode<BoolT> IsSymbolInstanceType(TNode<Int32T> instance_type);
   TNode<BoolT> IsInternalizedStringInstanceType(TNode<Int32T> instance_type);
+  TNode<BoolT> IsTemporalInstantInstanceType(TNode<Int32T> instance_type);
   TNode<BoolT> IsUniqueName(TNode<HeapObject> object);
   TNode<BoolT> IsUniqueNameNoIndex(TNode<HeapObject> object);
   TNode<BoolT> IsUniqueNameNoCachedIndex(TNode<HeapObject> object);
@@ -3620,9 +3625,12 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
       TNode<JSArrayBufferView> array, TNode<JSArrayBuffer> buffer,
       Label* detached_or_out_of_bounds);
 
-  void IsJSArrayBufferViewDetachedOrOutOfBounds(TNode<JSArrayBufferView> array,
-                                                Label* detached_or_oob,
-                                                Label* not_detached_nor_oob);
+  void IsJSArrayBufferViewDetachedOrOutOfBounds(
+      TNode<JSArrayBufferView> array_buffer_view, Label* detached_or_oob,
+      Label* not_detached_nor_oob);
+
+  TNode<BoolT> IsJSArrayBufferViewDetachedOrOutOfBoundsBoolean(
+      TNode<JSArrayBufferView> array_buffer_view);
 
   TNode<IntPtrT> RabGsabElementsKindToElementByteSize(
       TNode<Int32T> elementsKind);
@@ -3660,10 +3668,10 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   // Promise helpers
   TNode<Uint32T> PromiseHookFlags();
   TNode<BoolT> HasAsyncEventDelegate();
+#ifdef V8_ENABLE_JAVASCRIPT_PROMISE_HOOKS
   TNode<BoolT> IsContextPromiseHookEnabled(TNode<Uint32T> flags);
-  TNode<BoolT> IsContextPromiseHookEnabled() {
-    return IsContextPromiseHookEnabled(PromiseHookFlags());
-  }
+#endif
+  TNode<BoolT> IsIsolatePromiseHookEnabled(TNode<Uint32T> flags);
   TNode<BoolT> IsAnyPromiseHookEnabled(TNode<Uint32T> flags);
   TNode<BoolT> IsAnyPromiseHookEnabled() {
     return IsAnyPromiseHookEnabled(PromiseHookFlags());
@@ -3708,17 +3716,11 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
       FrameArgumentsArgcType argc_type =
           FrameArgumentsArgcType::kCountExcludesReceiver);
 
-  inline TNode<Int32T> JSParameterCount(TNode<Int32T> argc_without_receiver) {
-    return kJSArgcIncludesReceiver
-               ? Int32Add(argc_without_receiver,
-                          Int32Constant(kJSArgcReceiverSlots))
-               : argc_without_receiver;
+  inline TNode<Int32T> JSParameterCount(int argc_without_receiver) {
+    return Int32Constant(argc_without_receiver + kJSArgcReceiverSlots);
   }
   inline TNode<Word32T> JSParameterCount(TNode<Word32T> argc_without_receiver) {
-    return kJSArgcIncludesReceiver
-               ? Int32Add(argc_without_receiver,
-                          Int32Constant(kJSArgcReceiverSlots))
-               : argc_without_receiver;
+    return Int32Add(argc_without_receiver, Int32Constant(kJSArgcReceiverSlots));
   }
 
   // Support for printf-style debugging
@@ -3742,6 +3744,45 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   }
 
   bool ConstexprBoolNot(bool value) { return !value; }
+  int31_t ConstexprIntegerLiteralToInt31(const IntegerLiteral& i) {
+    return int31_t(i.To<int32_t>());
+  }
+  int32_t ConstexprIntegerLiteralToInt32(const IntegerLiteral& i) {
+    return i.To<int32_t>();
+  }
+  uint32_t ConstexprIntegerLiteralToUint32(const IntegerLiteral& i) {
+    return i.To<uint32_t>();
+  }
+  int8_t ConstexprIntegerLiteralToInt8(const IntegerLiteral& i) {
+    return i.To<int8_t>();
+  }
+  uint8_t ConstexprIntegerLiteralToUint8(const IntegerLiteral& i) {
+    return i.To<uint8_t>();
+  }
+  uint64_t ConstexprIntegerLiteralToUint64(const IntegerLiteral& i) {
+    return i.To<uint64_t>();
+  }
+  intptr_t ConstexprIntegerLiteralToIntptr(const IntegerLiteral& i) {
+    return i.To<intptr_t>();
+  }
+  uintptr_t ConstexprIntegerLiteralToUintptr(const IntegerLiteral& i) {
+    return i.To<uintptr_t>();
+  }
+  double ConstexprIntegerLiteralToFloat64(const IntegerLiteral& i) {
+    int64_t i_value = i.To<int64_t>();
+    double d_value = static_cast<double>(i_value);
+    CHECK_EQ(i_value, static_cast<int64_t>(d_value));
+    return d_value;
+  }
+  bool ConstexprIntegerLiteralEqual(IntegerLiteral lhs, IntegerLiteral rhs) {
+    return lhs == rhs;
+  }
+  IntegerLiteral ConstexprIntegerLiteralAdd(const IntegerLiteral& lhs,
+                                            const IntegerLiteral& rhs);
+  IntegerLiteral ConstexprIntegerLiteralLeftShift(const IntegerLiteral& lhs,
+                                                  const IntegerLiteral& rhs);
+  IntegerLiteral ConstexprIntegerLiteralBitwiseOr(const IntegerLiteral& lhs,
+                                                  const IntegerLiteral& rhs);
 
   bool ConstexprInt31Equal(int31_t a, int31_t b) { return a == b; }
   bool ConstexprInt31NotEqual(int31_t a, int31_t b) { return a != b; }

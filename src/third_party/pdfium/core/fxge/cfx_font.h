@@ -89,11 +89,11 @@ class CFX_Font {
 #if defined(PDF_ENABLE_XFA)
   bool LoadFile(RetainPtr<IFX_SeekableReadStream> pFile, int nFaceIndex);
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
   void SetFace(RetainPtr<CFX_Face> face);
   void SetFontSpan(pdfium::span<uint8_t> pSpan) { m_FontData = pSpan; }
   void SetSubstFont(std::unique_ptr<CFX_SubstFont> subst);
-#endif  // !defined(OS_WIN)
+#endif  // !BUILDFLAG(IS_WIN)
 #endif  // defined(PDF_ENABLE_XFA)
 
   const CFX_GlyphBitmap* LoadGlyphBitmap(
@@ -140,7 +140,7 @@ class CFX_Font {
   bool IsSubstFontBold() const;
 #endif
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   void* GetPlatformFont() const { return m_pPlatformFont; }
   void SetPlatformFont(void* font) { m_pPlatformFont = font; }
 #endif
@@ -148,7 +148,7 @@ class CFX_Font {
  private:
   RetainPtr<CFX_GlyphCache> GetOrCreateGlyphCache() const;
   void ClearGlyphCache();
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   void ReleasePlatformResource();
 #endif
   ByteString GetFamilyNameOrUntitled() const;
@@ -169,7 +169,7 @@ class CFX_Font {
   uint64_t m_ObjectTag = 0;
   bool m_bEmbedded = false;
   bool m_bVertical = false;
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   void* m_pPlatformFont = nullptr;
 #endif
 };

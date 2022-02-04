@@ -116,6 +116,16 @@ OobeTypes.PinSetupScreenParameters;
 OobeTypes.SecurityTokenPinDialogParameters;
 
 /**
+ * Data type that is expected for each app that is shown on the RecommendApps screen.
+ * @typedef {{
+ *   icon: string,
+ *   name: string,
+ *   package_name: string,
+ * }}
+ */
+OobeTypes.RecommendedAppsExpectedAppData;
+
+/**
  * Event sent from inner webview to enclosing Recommended apps screen.
  * @typedef {{
  *   type: (string|undefined),
@@ -145,3 +155,34 @@ OobeTypes.FatalErrorCode = {
   MISSING_GAIA_INFO: 3,
   CUSTOM: 4,
 };
+
+/**
+ * Screen steps used by EnterpriseEnrollmentElement. Defined here to
+ * avoid circular dependencies since it is needed by cr_ui.js
+ * @enum {string}
+ */
+OobeTypes.EnrollmentStep = {
+  SIGNIN: 'signin',
+  AD_JOIN: 'ad-join',
+  WORKING: 'working',
+  ATTRIBUTE_PROMPT: 'attribute-prompt',
+  ERROR: 'error',
+  SUCCESS: 'success',
+  CHECKING: 'checking',
+  TPM_CHECKING: 'tpm-checking',
+
+  /* TODO(dzhioev): define this step on C++ side.
+   */
+  ATTRIBUTE_PROMPT_ERROR: 'attribute-prompt-error',
+  ACTIVE_DIRECTORY_JOIN_ERROR: 'active-directory-join-error',
+};
+
+/**
+ * Verification figure for the Quick Start screen.
+ * @typedef {{
+ *   shape: number,
+ *   color: number,
+ *   digit: number,
+ * }}
+ */
+OobeTypes.QuickStartScreenFigureData;

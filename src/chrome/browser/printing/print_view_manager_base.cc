@@ -55,7 +55,7 @@
 #include "printing/printed_document.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "printing/printing_features.h"
 #endif
 
@@ -65,7 +65,7 @@
 #include "components/prefs/pref_service.h"
 #endif
 
-#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/browser/win/conflicts/module_database.h"
 #endif
 
@@ -202,12 +202,12 @@ mojom::PrintPagesParamsPtr CreateEmptyPrintPagesParamsPtr() {
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 void NotifySystemDialogCancelled(base::WeakPtr<PrintViewManagerBase> manager) {
   if (manager)
     manager->SystemDialogCancelled();
 }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 void UpdatePrintSettingsReplyOnIO(
     scoped_refptr<PrintQueriesQueue> queue,
@@ -224,7 +224,7 @@ void UpdatePrintSettingsReplyOnIO(
     params->pages = PageRange::GetPages(printer_query->settings().ranges());
   }
   bool canceled = printer_query->last_status() == mojom::ResultCode::kCanceled;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (canceled) {
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE,
@@ -296,7 +296,7 @@ void ScriptedPrintOnIO(mojom::ScriptedPrintParamsPtr params,
                        int process_id,
                        int routing_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   ModuleDatabase::GetInstance()->DisableThirdPartyBlocking();
 #endif
 
@@ -334,6 +334,10 @@ PrintViewManagerBase::~PrintViewManagerBase() {
 }
 
 bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
+  // Remember the ID for `rfh`, to enable checking that the `RenderFrameHost`
+  // is still valid after a possible inner message loop runs in
+  // `DisconnectFromCurrentPrintJob()`.
+  content::GlobalRenderFrameHostId rfh_id = rfh->GetGlobalId();
   auto weak_this = weak_ptr_factory_.GetWeakPtr();
   DisconnectFromCurrentPrintJob();
   if (!weak_this)
@@ -341,6 +345,10 @@ bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
 
   // Don't print / print preview crashed tabs.
   if (IsCrashed())
+    return false;
+
+  // Don't print if `rfh` is no longer live.
+  if (!content::RenderFrameHost::FromID(rfh_id) || !rfh->IsRenderFrameLive())
     return false;
 
   // TODO(crbug.com/809738)  Register with `PrintBackendServiceManager` when
@@ -381,7 +389,7 @@ void PrintViewManagerBase::PrintDocument(
     const gfx::Size& page_size,
     const gfx::Rect& content_area,
     const gfx::Point& offsets) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   const bool source_is_pdf =
       !print_job_->document()->settings().is_modifiable();
   if (!printing::features::ShouldPrintUsingXps(source_is_pdf)) {
@@ -414,7 +422,7 @@ void PrintViewManagerBase::OnPrintSettingsDone(
   // the system dialog is cancelled.
   if (printer_query->last_status() == mojom::ResultCode::kCanceled) {
     queue_->QueuePrinterQuery(std::move(printer_query));
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(&PrintViewManagerBase::SystemDialogCancelled,
                                   weak_ptr_factory_.GetWeakPtr()));
@@ -456,7 +464,7 @@ void PrintViewManagerBase::StartLocalPrintJob(
     return;
   }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   print_job_->ResetPageMapping();
 #endif
 
@@ -776,7 +784,7 @@ void PrintViewManagerBase::RenderFrameDeleted(
   }
 }
 
-#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintViewManagerBase::SystemDialogCancelled() {
   // System dialog was cancelled. Clean up the print job and notify the
   // BackgroundPrintingManager.
@@ -798,7 +806,7 @@ void PrintViewManagerBase::OnDocDone(int job_id, PrintedDocument* document) {
         base::DoNothing());
   }
 #endif
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   DCHECK_LE(number_pages(), kMaxPageCount);
   PdfWritingDone(base::checked_cast<int>(number_pages()));
 #endif
@@ -889,7 +897,7 @@ bool PrintViewManagerBase::CreateNewPrintJob(
   DCHECK(!print_job_);
   print_job_ = base::MakeRefCounted<PrintJob>();
   print_job_->Initialize(std::move(query), RenderSourceName(), number_pages());
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   print_job_->SetSource(web_contents()->GetBrowserContext()->IsOffTheRecord()
                             ? PrintJob::Source::PRINT_PREVIEW_INCOGNITO
                             : PrintJob::Source::PRINT_PREVIEW,
@@ -929,7 +937,7 @@ void PrintViewManagerBase::TerminatePrintJob(bool cancel) {
     // We don't need the metafile data anymore because the printing is canceled.
     print_job_->Cancel();
     quit_inner_loop_.Reset();
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     PdfWritingDone(0);
 #endif
   } else {
@@ -951,8 +959,12 @@ void PrintViewManagerBase::ReleasePrintJob() {
   if (!print_job_)
     return;
 
-  if (rfh)
+  if (rfh) {
+    // printing_rfh_ should only ever point to a RenderFrameHost with a live
+    // RenderFrame.
+    DCHECK(rfh->IsRenderFrameLive());
     GetPrintRenderFrame(rfh)->PrintingDone(printing_succeeded_);
+  }
 
   print_job_->RemoveObserver(*this);
 
@@ -1025,15 +1037,6 @@ bool PrintViewManagerBase::IsCrashed() {
   return web_contents()->IsCrashed();
 }
 
-bool PrintViewManagerBase::PrintNowInternal(
-    content::RenderFrameHost* rfh,
-    std::unique_ptr<IPC::Message> message) {
-  // Don't print / print preview crashed tabs.
-  if (IsCrashed())
-    return false;
-  return rfh->Send(message.release());
-}
-
 void PrintViewManagerBase::SetPrintingRFH(content::RenderFrameHost* rfh) {
   // Do not allow any print operation during prerendering.
   if (rfh->GetLifecycleState() ==
@@ -1048,6 +1051,10 @@ void PrintViewManagerBase::SetPrintingRFH(content::RenderFrameHost* rfh) {
     return;
   }
   DCHECK(!printing_rfh_);
+  // Protect against future unsafety, since printing_rfh_ is cleared by
+  // RenderFrameDeleted(), which will not be called if the render frame is not
+  // live.
+  CHECK(rfh->IsRenderFrameLive());
   printing_rfh_ = rfh;
 }
 
@@ -1074,7 +1081,8 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
 
 void PrintViewManagerBase::SendPrintingEnabled(bool enabled,
                                                content::RenderFrameHost* rfh) {
-  GetPrintRenderFrame(rfh)->SetPrintingEnabled(enabled);
+  if (rfh->IsRenderFrameLive())
+    GetPrintRenderFrame(rfh)->SetPrintingEnabled(enabled);
 }
 
 }  // namespace printing

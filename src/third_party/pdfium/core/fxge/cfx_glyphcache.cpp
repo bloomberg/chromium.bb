@@ -30,13 +30,13 @@
 #include "third_party/skia/include/core/SkStream.h"  // nogncheck
 #include "third_party/skia/include/core/SkTypeface.h"  // nogncheck
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "third_party/skia/include/core/SkFontMgr.h"  // nogncheck
 #include "third_party/skia/include/ports/SkFontMgr_empty.h"  // nogncheck
 #endif
 #endif
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 #include "core/fxge/cfx_textrenderoptions.h"
 #endif
 
@@ -253,7 +253,7 @@ const CFX_GlyphBitmap* CFX_GlyphCache::LoadGlyphBitmap(
     return nullptr;
 
   UniqueKeyGen keygen;
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   const bool bNative = text_options->native_text;
 #else
   const bool bNative = false;
@@ -261,7 +261,7 @@ const CFX_GlyphBitmap* CFX_GlyphCache::LoadGlyphBitmap(
   GenKey(&keygen, pFont, matrix, dest_width, anti_alias, bNative);
   ByteString FaceGlyphsKey(keygen.key_, keygen.key_len_);
 
-#if defined(OS_APPLE) && !defined(_SKIA_SUPPORT_) && \
+#if BUILDFLAG(IS_APPLE) && !defined(_SKIA_SUPPORT_) && \
     !defined(_SKIA_SUPPORT_PATHS_)
   const bool bDoLookUp = !text_options->native_text;
 #else
@@ -272,7 +272,7 @@ const CFX_GlyphBitmap* CFX_GlyphCache::LoadGlyphBitmap(
                              bFontStyle, dest_width, anti_alias);
   }
 
-#if defined(OS_APPLE) && !defined(_SKIA_SUPPORT_) && \
+#if BUILDFLAG(IS_APPLE) && !defined(_SKIA_SUPPORT_) && \
     !defined(_SKIA_SUPPORT_PATHS_)
   std::unique_ptr<CFX_GlyphBitmap> pGlyphBitmap;
   auto it = m_SizeMap.find(FaceGlyphsKey);
@@ -317,19 +317,19 @@ CFX_TypeFace* CFX_GlyphCache::GetDeviceCache(const CFX_Font* pFont) {
     m_pTypeface = SkTypeface::MakeFromStream(
         std::make_unique<SkMemoryStream>(span.data(), span.size()));
   }
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   if (!m_pTypeface) {
     sk_sp<SkFontMgr> customMgr(SkFontMgr_New_Custom_Empty());
     pdfium::span<const uint8_t> span = pFont->GetFontSpan();
     m_pTypeface = customMgr->makeFromStream(
         std::make_unique<SkMemoryStream>(span.data(), span.size()));
   }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
   return m_pTypeface.get();
 }
 #endif  // defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
 
-#if !defined(OS_APPLE)
+#if !BUILDFLAG(IS_APPLE)
 void CFX_GlyphCache::InitPlatform() {}
 #endif
 

@@ -189,14 +189,14 @@ TEST_F(BuilderTest, Emit_Multiple_EntryPoint_With_Same_ModuleVar) {
   // [[block]] struct Data {
   //   d : f32;
   // };
-  // [[binding(0), group(0)]] var<storage> data : Data;
+  // @binding(0) @group(0) var<storage> data : Data;
   //
-  // [[stage(compute), workgroup_size(1)]]
+  // @stage(compute) @workgroup_size(1)
   // fn a() {
   //   return;
   // }
   //
-  // [[stage(compute), workgroup_size(1)]]
+  // @stage(compute) @workgroup_size(1)
   // fn b() {
   //   return;
   // }
@@ -236,7 +236,7 @@ TEST_F(BuilderTest, Emit_Multiple_EntryPoint_With_Same_ModuleVar) {
                              WorkgroupSize(1)});
   }
 
-  spirv::Builder& b = Build();
+  spirv::Builder& b = SanitizeAndBuild();
 
   ASSERT_TRUE(b.Build());
   EXPECT_EQ(DumpBuilder(b), R"(OpCapability Shader

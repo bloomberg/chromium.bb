@@ -119,7 +119,7 @@ g.test('state_and_binding_index')
       validateFinishAndSubmit(state !== 'invalid' && index < maxBindGroups, state !== 'destroyed');
     }
 
-    // TODO: move to subcases() once we can query the device limits
+    // MAINTENANCE_TODO: move to subcases() once we can query the device limits
     for (const index of [1, maxBindGroups - 1, maxBindGroups]) {
       t.debug(`test bind group index ${index}`);
       await runTest(index);

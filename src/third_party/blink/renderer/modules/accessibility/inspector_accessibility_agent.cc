@@ -1065,12 +1065,15 @@ Response InspectorAccessibilityAgent::queryAXTree(
 void InspectorAccessibilityAgent::RefreshFrontendNodes() {
   auto nodes =
       std::make_unique<protocol::Array<protocol::Accessibility::AXNode>>();
-  for (AXObject* changed_node : dirty_nodes_) {
-    if (changed_node->IsDetached())
-      return;
-    nodes->push_back(BuildProtocolAXNodeForAXObject(*changed_node));
+  // Sometimes, computing properties for an object while serializing will
+  // mark other objects dirty. This makes us re-enter this function.
+  // To make this benign, we use a copy of dirty_nodes_ when iterating.
+  HeapHashSet<WeakMember<AXObject>> dirty_nodes_copy;
+  dirty_nodes_copy.swap(dirty_nodes_);
+  for (AXObject* changed_node : dirty_nodes_copy) {
+    if (!changed_node->IsDetached())
+      nodes->push_back(BuildProtocolAXNodeForAXObject(*changed_node));
   }
-  dirty_nodes_.clear();
   if (!nodes->empty())
     GetFrontend()->nodesUpdated(std::move(nodes));
 }
@@ -1091,7 +1094,7 @@ void InspectorAccessibilityAgent::AXEventFired(AXObject* ax_object,
       // Since we do not serialize location data we can ignore changes to this.
       break;
     default:
-      AXObjectModified(ax_object, false);
+      MarkAXObjectDirty(ax_object);
       RefreshFrontendNodes();
       break;
   }
@@ -1124,6 +1127,7 @@ void InspectorAccessibilityAgent::AXObjectModified(AXObject* ax_object,
   } else {
     MarkAXObjectDirty(ax_object);
   }
+  RefreshFrontendNodes();
 }
 
 void InspectorAccessibilityAgent::EnableAndReset() {

@@ -110,7 +110,7 @@ class SparseMatrix
     using Base::operator+=;
     using Base::operator-=;
 
-    typedef MappedSparseMatrix<Scalar,Flags> Map;
+    typedef Eigen::Map<SparseMatrix<Scalar,Flags,StorageIndex>> Map;
     typedef Diagonal<SparseMatrix> DiagonalReturnType;
     typedef Diagonal<const SparseMatrix> ConstDiagonalReturnType;
     typedef typename Base::InnerIterator InnerIterator;
@@ -126,7 +126,7 @@ class SparseMatrix
     typedef typename Base::IndexVector IndexVector;
     typedef typename Base::ScalarVector ScalarVector;
   protected:
-    typedef SparseMatrix<Scalar,(Flags&~RowMajorBit)|(IsRowMajor?RowMajorBit:0)> TransposedSparseMatrix;
+    typedef SparseMatrix<Scalar,(Flags&~RowMajorBit)|(IsRowMajor?RowMajorBit:0),StorageIndex> TransposedSparseMatrix;
 
     Index m_outerSize;
     Index m_innerSize;
@@ -288,10 +288,7 @@ class SparseMatrix
     #else
     template<class SizesType>
     inline void reserve(const SizesType& reserveSizes, const typename SizesType::value_type& enableif =
-    #if (!EIGEN_COMP_MSVC) || (EIGEN_COMP_MSVC>=1500) // MSVC 2005 fails to compile with this typename
-        typename
-    #endif
-        SizesType::value_type())
+        typename SizesType::value_type())
     {
       EIGEN_UNUSED_VARIABLE(enableif);
       reserveInnerVectors(reserveSizes);

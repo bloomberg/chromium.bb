@@ -1,6 +1,6 @@
 struct MyStruct {
   f1 : f32;
-};
+}
 
 type MyArray = array<f32, 10>;
 
@@ -42,7 +42,7 @@ fn var_decls() {
   var v15 = ret_MyArray();
 }
 
-[[stage(fragment)]]
-fn main() -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main() -> @location(0) vec4<f32> {
   return vec4<f32>(0.0, 0.0, 0.0, 0.0);
 }

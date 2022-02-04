@@ -268,7 +268,7 @@ RUNTIME_FUNCTION(Runtime_IsWasmCode) {
   SealHandleScope shs(isolate);
   DCHECK_EQ(1, args.length());
   CONVERT_ARG_CHECKED(JSFunction, function, 0);
-  Code code = function.code();
+  CodeT code = function.code();
   bool is_js_to_wasm = code.kind() == CodeKind::JS_TO_WASM_FUNCTION ||
                        (code.builtin_id() == Builtin::kGenericJSToWasmWrapper);
   return isolate->heap()->ToBoolean(is_js_to_wasm);
@@ -319,15 +319,12 @@ RUNTIME_FUNCTION(Runtime_GetWasmExceptionValues) {
   return *isolate->factory()->NewJSArrayWithElements(values);
 }
 
-// Wait until the given module is fully tiered up, then serialize it into an
-// array buffer.
 RUNTIME_FUNCTION(Runtime_SerializeWasmModule) {
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
   CONVERT_ARG_HANDLE_CHECKED(WasmModuleObject, module_obj, 0);
 
   wasm::NativeModule* native_module = module_obj->native_module();
-  native_module->compilation_state()->WaitForTopTierFinished();
   DCHECK(!native_module->compilation_state()->failed());
 
   wasm::WasmSerializer wasm_serializer(native_module);
@@ -468,6 +465,21 @@ RUNTIME_FUNCTION(Runtime_IsLiftoffFunction) {
   wasm::WasmCodeRefScope code_ref_scope;
   wasm::WasmCode* code = native_module->GetCode(func_index);
   return isolate->heap()->ToBoolean(code && code->is_liftoff());
+}
+
+RUNTIME_FUNCTION(Runtime_IsTurboFanFunction) {
+  HandleScope scope(isolate);
+  DCHECK_EQ(1, args.length());
+  CONVERT_ARG_HANDLE_CHECKED(JSFunction, function, 0);
+  CHECK(WasmExportedFunction::IsWasmExportedFunction(*function));
+  Handle<WasmExportedFunction> exp_fun =
+      Handle<WasmExportedFunction>::cast(function);
+  wasm::NativeModule* native_module =
+      exp_fun->instance().module_object().native_module();
+  uint32_t func_index = exp_fun->function_index();
+  wasm::WasmCodeRefScope code_ref_scope;
+  wasm::WasmCode* code = native_module->GetCode(func_index);
+  return isolate->heap()->ToBoolean(code && code->is_turbofan());
 }
 
 RUNTIME_FUNCTION(Runtime_FreezeWasmLazyCompilation) {

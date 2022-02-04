@@ -24,7 +24,7 @@
 #include "src/dawn_node/binding/Errors.h"
 #include "src/dawn_node/interop/WebGPU.h"
 
-namespace wgpu { namespace binding {
+namespace wgpu::binding {
 
     // ImplOfTraits is a traits helper that is used to associate the interop interface type to the
     // binding implementation type.
@@ -241,9 +241,6 @@ namespace wgpu { namespace binding {
 
         [[nodiscard]] bool Convert(wgpu::QueryType& out, const interop::GPUQueryType& in);
 
-        [[nodiscard]] bool Convert(wgpu::PipelineStatisticName& out,
-                                   const interop::GPUPipelineStatisticName& in);
-
         [[nodiscard]] bool Convert(wgpu::AddressMode& out, const interop::GPUAddressMode& in);
 
         [[nodiscard]] bool Convert(wgpu::FilterMode& out, const interop::GPUFilterMode& in);
@@ -359,8 +356,8 @@ namespace wgpu { namespace binding {
             }
             auto* els = Allocate<std::remove_const_t<OUT>>(in.size());
             size_t i = 0;
-            for (auto& it : in) {
-                if (!Convert(els[i++], it.first, it.second)) {
+            for (auto& [key, value] : in) {
+                if (!Convert(els[i++], key, value)) {
                     return false;
                 }
             }
@@ -393,6 +390,6 @@ namespace wgpu { namespace binding {
         std::vector<std::function<void()>> free_;
     };
 
-}}  // namespace wgpu::binding
+}  // namespace wgpu::binding
 
 #endif  // DAWN_NODE_BINDING_CONVERTER_H_

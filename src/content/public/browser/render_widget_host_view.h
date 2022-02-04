@@ -21,7 +21,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 #endif
 
@@ -261,7 +261,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Chromium-controlled view/window hierarchy.
   virtual bool HasExternalParent() const = 0;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Set the view's active state (i.e., tint state of controls).
   virtual void SetActive(bool active) = 0;
 
@@ -291,7 +291,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
       const std::vector<std::string>& file_paths,
       blink::mojom::ShareService::ShareCallback callback) = 0;
 
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
   // Indicates that this view should show the contents of |view| if it doesn't
   // have anything to show.

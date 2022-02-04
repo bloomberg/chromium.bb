@@ -312,6 +312,8 @@ std::string GetGlslStd450FuncName(uint32_t ext_opcode) {
       return "cosh";
     case GLSLstd450Cross:
       return "cross";
+    case GLSLstd450Degrees:
+      return "degrees";
     case GLSLstd450Distance:
       return "distance";
     case GLSLstd450Exp:
@@ -364,6 +366,8 @@ std::string GetGlslStd450FuncName(uint32_t ext_opcode) {
       return "pow";
     case GLSLstd450FSign:
       return "sign";
+    case GLSLstd450Radians:
+      return "radians";
     case GLSLstd450Reflect:
       return "reflect";
     case GLSLstd450Refract:
@@ -404,8 +408,6 @@ std::string GetGlslStd450FuncName(uint32_t ext_opcode) {
 
     case GLSLstd450SSign:
 
-    case GLSLstd450Radians:
-    case GLSLstd450Degrees:
     case GLSLstd450Asinh:
     case GLSLstd450Acosh:
     case GLSLstd450Atanh:
@@ -494,8 +496,9 @@ bool IsSampledImageAccess(SpvOp opcode) {
 }
 
 // @param opcode a SPIR-V opcode
-// @returns true if the given instruction is an image sampling operation.
-bool IsImageSampling(SpvOp opcode) {
+// @returns true if the given instruction is an image sampling, gather,
+// or gather-compare operation.
+bool IsImageSamplingOrGatherOrDrefGather(SpvOp opcode) {
   switch (opcode) {
     case SpvOpImageSampleImplicitLod:
     case SpvOpImageSampleExplicitLod:
@@ -506,6 +509,8 @@ bool IsImageSampling(SpvOp opcode) {
     case SpvOpImageSampleProjExplicitLod:
     case SpvOpImageSampleProjDrefImplicitLod:
     case SpvOpImageSampleProjDrefExplicitLod:
+    case SpvOpImageGather:
+    case SpvOpImageDrefGather:
       return true;
     default:
       break;
@@ -4111,41 +4116,6 @@ TypedExpression FunctionEmitter::EmitGlslStd450ExtInst(
     }
   }
 
-  // Some GLSLStd450 builtins don't have a WGSL equivalent. Polyfill them.
-  switch (ext_opcode) {
-    case GLSLstd450Radians: {
-      auto degrees = MakeOperand(inst, 2);
-      TINT_ASSERT(Reader, degrees.type->IsFloatScalarOrVector());
-
-      constexpr auto kPiOver180 = static_cast<float>(3.141592653589793 / 180.0);
-      auto* factor = builder_.Expr(kPiOver180);
-      if (degrees.type->Is<F32>()) {
-        return {degrees.type, builder_.Mul(degrees.expr, factor)};
-      } else {
-        uint32_t size = degrees.type->As<Vector>()->size;
-        return {degrees.type,
-                builder_.Mul(degrees.expr,
-                             builder_.vec(builder_.ty.f32(), size, factor))};
-      }
-    }
-
-    case GLSLstd450Degrees: {
-      auto radians = MakeOperand(inst, 2);
-      TINT_ASSERT(Reader, radians.type->IsFloatScalarOrVector());
-
-      constexpr auto k180OverPi = static_cast<float>(180.0 / 3.141592653589793);
-      auto* factor = builder_.Expr(k180OverPi);
-      if (radians.type->Is<F32>()) {
-        return {radians.type, builder_.Mul(radians.expr, factor)};
-      } else {
-        uint32_t size = radians.type->As<Vector>()->size;
-        return {radians.type,
-                builder_.Mul(radians.expr,
-                             builder_.vec(builder_.ty.f32(), size, factor))};
-      }
-    }
-  }
-
   const auto name = GetGlslStd450FuncName(ext_opcode);
   if (name.empty()) {
     Fail() << "unhandled GLSL.std.450 instruction " << ext_opcode;
@@ -5237,7 +5207,7 @@ const ast::Expression* FunctionEmitter::GetSamplerExpression(
 }
 
 bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
-  ast::ExpressionList params;
+  ast::ExpressionList args;
   const auto opcode = inst.opcode();
 
   // Form the texture operand.
@@ -5245,17 +5215,19 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
   if (!image) {
     return false;
   }
-  params.push_back(GetImageExpression(inst));
+  args.push_back(GetImageExpression(inst));
 
+  // Form the sampler operand, if needed.
   if (IsSampledImageAccess(opcode)) {
     // Form the sampler operand.
     if (auto* sampler = GetSamplerExpression(inst)) {
-      params.push_back(sampler);
+      args.push_back(sampler);
     } else {
       return false;
     }
   }
 
+  // Find the texture type.
   const Pointer* texture_ptr_type = parser_impl_.GetTypeForHandleVar(*image);
   if (!texture_ptr_type) {
     return Fail();
@@ -5275,15 +5247,30 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
   if (coords.empty()) {
     return false;
   }
-  params.insert(params.end(), coords.begin(), coords.end());
+  args.insert(args.end(), coords.begin(), coords.end());
   // Skip the coordinates operand.
   arg_index++;
 
   const auto num_args = inst.NumInOperands();
 
+  // Consumes the depth-reference argument, pushing it onto the end of
+  // the parameter list. Issues a diagnostic and returns false on error.
+  auto consume_dref = [&]() -> bool {
+    if (arg_index < num_args) {
+      args.push_back(MakeOperand(inst, arg_index).expr);
+      arg_index++;
+    } else {
+      return Fail()
+             << "image depth-compare instruction is missing a Dref operand: "
+             << inst.PrettyPrint();
+    }
+    return true;
+  };
+
   std::string builtin_name;
   bool use_level_of_detail_suffix = true;
   bool is_dref_sample = false;
+  bool is_gather_or_dref_gather = false;
   bool is_non_dref_sample = false;
   switch (opcode) {
     case SpvOpImageSampleImplicitLod:
@@ -5299,18 +5286,27 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
     case SpvOpImageSampleProjDrefExplicitLod:
       is_dref_sample = true;
       builtin_name = "textureSampleCompare";
-      if (arg_index < num_args) {
-        params.push_back(MakeOperand(inst, arg_index).expr);
-        arg_index++;
-      } else {
-        return Fail()
-               << "image depth-compare instruction is missing a Dref operand: "
-               << inst.PrettyPrint();
+      if (!consume_dref()) {
+        return false;
       }
       break;
     case SpvOpImageGather:
+      is_gather_or_dref_gather = true;
+      builtin_name = "textureGather";
+      if (!texture_type->Is<DepthTexture>()) {
+        // The explicit component is the *first* argument in WGSL.
+        args.insert(args.begin(), ToI32(MakeOperand(inst, arg_index)).expr);
+      }
+      // Skip over the component operand, even for depth textures.
+      arg_index++;
+      break;
     case SpvOpImageDrefGather:
-      return Fail() << " image gather is not yet supported";
+      is_gather_or_dref_gather = true;
+      builtin_name = "textureGatherCompare";
+      if (!consume_dref()) {
+        return false;
+      }
+      break;
     case SpvOpImageFetch:
     case SpvOpImageRead:
       // Read a single texel from a sampled or storage image.
@@ -5328,7 +5324,7 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
           return false;
         }
 
-        params.push_back(converted_texel);
+        args.push_back(converted_texel);
         arg_index++;
       } else {
         return Fail() << "image write is missing a Texel operand: "
@@ -5354,8 +5350,13 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
                        "level-of-detail bias: "
                     << inst.PrettyPrint();
     }
+    if (is_gather_or_dref_gather) {
+      return Fail() << "WGSL does not support image gather with "
+                       "level-of-detail bias: "
+                    << inst.PrettyPrint();
+    }
     builtin_name += "Bias";
-    params.push_back(MakeOperand(inst, arg_index).expr);
+    args.push_back(MakeOperand(inst, arg_index).expr);
     image_operands_mask ^= SpvImageOperandsBiasMask;
     arg_index++;
   }
@@ -5363,9 +5364,11 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
     if (use_level_of_detail_suffix) {
       builtin_name += "Level";
     }
-    if (is_dref_sample) {
+    if (is_dref_sample || is_gather_or_dref_gather) {
       // Metal only supports Lod = 0 for comparison sampling without
       // derivatives.
+      // Vulkan SPIR-V does not allow Lod with OpImageGather or
+      // OpImageDrefGather.
       if (!IsFloatZero(inst.GetSingleWordInOperand(arg_index))) {
         return Fail() << "WGSL comparison sampling without derivatives "
                          "requires level-of-detail 0.0"
@@ -5380,7 +5383,7 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
         // Convert it to a signed integer type.
         lod = ToI32(lod);
       }
-      params.push_back(lod.expr);
+      args.push_back(lod.expr);
     }
 
     image_operands_mask ^= SpvImageOperandsLodMask;
@@ -5390,7 +5393,7 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
                   ->IsAnyOf<DepthMultisampledTexture, MultisampledTexture>()) {
     // textureLoad requires an explicit level-of-detail parameter for
     // non-multisampled texture types.
-    params.push_back(parser_impl_.MakeNullValue(ty_.I32()));
+    args.push_back(parser_impl_.MakeNullValue(ty_.I32()));
   }
   if (arg_index + 1 < num_args &&
       (image_operands_mask & SpvImageOperandsGradMask)) {
@@ -5399,16 +5402,22 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
                        "explicit gradient: "
                     << inst.PrettyPrint();
     }
+    if (is_gather_or_dref_gather) {
+      return Fail() << "WGSL does not support image gather with "
+                       "explicit gradient: "
+                    << inst.PrettyPrint();
+    }
     builtin_name += "Grad";
-    params.push_back(MakeOperand(inst, arg_index).expr);
-    params.push_back(MakeOperand(inst, arg_index + 1).expr);
+    args.push_back(MakeOperand(inst, arg_index).expr);
+    args.push_back(MakeOperand(inst, arg_index + 1).expr);
     image_operands_mask ^= SpvImageOperandsGradMask;
     arg_index += 2;
   }
   if (arg_index < num_args &&
       (image_operands_mask & SpvImageOperandsConstOffsetMask)) {
-    if (!IsImageSampling(opcode)) {
-      return Fail() << "ConstOffset is only permitted for sampling operations: "
+    if (!IsImageSamplingOrGatherOrDrefGather(opcode)) {
+      return Fail() << "ConstOffset is only permitted for sampling, gather, or "
+                       "depth-reference gather operations: "
                     << inst.PrettyPrint();
     }
     switch (texture_type->dims) {
@@ -5422,14 +5431,14 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
                       << inst.PrettyPrint();
     }
 
-    params.push_back(ToSignedIfUnsigned(MakeOperand(inst, arg_index)).expr);
+    args.push_back(ToSignedIfUnsigned(MakeOperand(inst, arg_index)).expr);
     image_operands_mask ^= SpvImageOperandsConstOffsetMask;
     arg_index++;
   }
   if (arg_index < num_args &&
       (image_operands_mask & SpvImageOperandsSampleMask)) {
     // TODO(dneto): only permitted with ImageFetch
-    params.push_back(ToI32(MakeOperand(inst, arg_index)).expr);
+    args.push_back(ToI32(MakeOperand(inst, arg_index)).expr);
     image_operands_mask ^= SpvImageOperandsSampleMask;
     arg_index++;
   }
@@ -5438,10 +5447,16 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
                   << "): " << inst.PrettyPrint();
   }
 
+  // If any of the arguments are nullptr, then we've failed.
+  if (std::any_of(args.begin(), args.end(),
+                  [](auto* expr) { return expr == nullptr; })) {
+    return false;
+  }
+
   auto* ident = create<ast::IdentifierExpression>(
       Source{}, builder_.Symbols().Register(builtin_name));
   auto* call_expr =
-      create<ast::CallExpression>(Source{}, ident, std::move(params));
+      create<ast::CallExpression>(Source{}, ident, std::move(args));
 
   if (inst.type_id() != 0) {
     // It returns a value.
@@ -5461,8 +5476,8 @@ bool FunctionEmitter::EmitImageAccess(const spvtools::opt::Instruction& inst) {
     //   compare sample      f32   DrefImplicitLod      f32
     //   compare sample      f32   DrefExplicitLod      f32
     //   texel load          vec4  ImageFetch           f32
-    //   normal gather       vec4  ImageGather          vec4 TODO(dneto)
-    //   dref gather         vec4  ImageFetch           vec4 TODO(dneto)
+    //   normal gather       vec4  ImageGather          vec4
+    //   dref gather         vec4  ImageDrefGather      vec4
     // Construct a 4-element vector with the result from the builtin in the
     // first component.
     if (texture_type->IsAnyOf<DepthTexture, DepthMultisampledTexture>()) {

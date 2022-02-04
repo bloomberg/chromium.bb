@@ -2068,6 +2068,9 @@ void Decoder::DecodeRvvIVI(Instruction* instr) {
     case RO_V_VSLIDEDOWN_VI:
       Format(instr, "vslidedown.vi 'vd, 'vs2, 'uimm5'vm");
       break;
+    case RO_V_VSLIDEUP_VI:
+      Format(instr, "vslideup.vi   'vd, 'vs2, 'uimm5'vm");
+      break;
     case RO_V_VSRL_VI:
       Format(instr, "vsrl.vi   'vd, 'vs2, 'uimm5'vm");
       break;
@@ -2234,6 +2237,10 @@ void Decoder::DecodeRvvMVV(Instruction* instr) {
     case RO_V_VWXUNARY0:
       if (instr->Vs1Value() == 0x0) {
         Format(instr, "vmv.x.s   'rd, 'vs2");
+      } else if (instr->Vs1Value() == 0b10001) {
+        Format(instr, "vfirst.m  'rd, 'vs2");
+      } else if (instr->Vs1Value() == 0b10000) {
+        Format(instr, "vcpop.m   'rd, 'vs2");
       } else {
         UNSUPPORTED_RISCV();
       }
@@ -2396,6 +2403,12 @@ void Decoder::DecodeRvvFVV(Instruction* instr) {
           break;
         case VFSQRT_V:
           Format(instr, "vfsqrt.v  'vd, 'vs2'vm");
+          break;
+        case VFRSQRT7_V:
+          Format(instr, "vfrsqrt7.v 'vd, 'vs2'vm");
+          break;
+        case VFREC7_V:
+          Format(instr, "vfrec7.v  'vd, 'vs2'vm");
           break;
         default:
           break;

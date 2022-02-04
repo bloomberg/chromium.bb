@@ -14,6 +14,7 @@
 
 #include "dawn_native/DawnNative.h"
 
+#include "common/Log.h"
 #include "dawn_native/BindGroupLayout.h"
 #include "dawn_native/Buffer.h"
 #include "dawn_native/Device.h"
@@ -23,7 +24,42 @@
 
 // Contains the entry-points into dawn_native
 
-namespace dawn_native {
+namespace dawn::native {
+
+    namespace {
+        struct ComboDeprecatedDawnDeviceDescriptor : DeviceDescriptor {
+            ComboDeprecatedDawnDeviceDescriptor(const DawnDeviceDescriptor* deviceDescriptor) {
+                dawn::WarningLog() << "DawnDeviceDescriptor is deprecated. Please use "
+                                      "WGPUDeviceDescriptor instead.";
+
+                DeviceDescriptor* desc = this;
+
+                if (deviceDescriptor != nullptr) {
+                    desc->nextInChain = &mTogglesDesc;
+                    mTogglesDesc.forceEnabledToggles = deviceDescriptor->forceEnabledToggles.data();
+                    mTogglesDesc.forceEnabledTogglesCount =
+                        deviceDescriptor->forceEnabledToggles.size();
+                    mTogglesDesc.forceDisabledToggles =
+                        deviceDescriptor->forceDisabledToggles.data();
+                    mTogglesDesc.forceDisabledTogglesCount =
+                        deviceDescriptor->forceDisabledToggles.size();
+
+                    desc->requiredLimits =
+                        reinterpret_cast<const RequiredLimits*>(deviceDescriptor->requiredLimits);
+
+                    FeaturesInfo featuresInfo;
+                    for (const char* featureStr : deviceDescriptor->requiredFeatures) {
+                        mRequiredFeatures.push_back(featuresInfo.FeatureNameToAPIEnum(featureStr));
+                    }
+                    desc->requiredFeatures = mRequiredFeatures.data();
+                    desc->requiredFeaturesCount = mRequiredFeatures.size();
+                }
+            }
+
+            DawnTogglesDeviceDescriptor mTogglesDesc = {};
+            std::vector<wgpu::FeatureName> mRequiredFeatures = {};
+        };
+    }  // namespace
 
     const DawnProcTable& GetProcsAutogen();
 
@@ -40,62 +76,44 @@ namespace dawn_native {
     Adapter::Adapter() = default;
 
     Adapter::Adapter(AdapterBase* impl) : mImpl(impl) {
+        if (mImpl != nullptr) {
+            mImpl->Reference();
+        }
     }
 
     Adapter::~Adapter() {
+        if (mImpl != nullptr) {
+            mImpl->Release();
+        }
         mImpl = nullptr;
     }
 
-    Adapter::Adapter(const Adapter& other) = default;
-    Adapter& Adapter::operator=(const Adapter& other) = default;
+    Adapter::Adapter(const Adapter& other) : Adapter(other.mImpl) {
+    }
+
+    Adapter& Adapter::operator=(const Adapter& other) {
+        if (this != &other) {
+            if (mImpl) {
+                mImpl->Release();
+            }
+            mImpl = other.mImpl;
+            if (mImpl) {
+                mImpl->Reference();
+            }
+        }
+        return *this;
+    }
 
     void Adapter::GetProperties(wgpu::AdapterProperties* properties) const {
-        properties->backendType = mImpl->GetBackendType();
-        properties->adapterType = mImpl->GetAdapterType();
-        properties->driverDescription = mImpl->GetDriverDescription().c_str();
-        properties->deviceID = mImpl->GetPCIInfo().deviceId;
-        properties->vendorID = mImpl->GetPCIInfo().vendorId;
-        properties->name = mImpl->GetPCIInfo().name.c_str();
+        GetProperties(reinterpret_cast<WGPUAdapterProperties*>(properties));
     }
 
-    BackendType Adapter::GetBackendType() const {
-        switch (mImpl->GetBackendType()) {
-            case wgpu::BackendType::D3D12:
-                return BackendType::D3D12;
-            case wgpu::BackendType::Metal:
-                return BackendType::Metal;
-            case wgpu::BackendType::Null:
-                return BackendType::Null;
-            case wgpu::BackendType::OpenGL:
-                return BackendType::OpenGL;
-            case wgpu::BackendType::Vulkan:
-                return BackendType::Vulkan;
-            case wgpu::BackendType::OpenGLES:
-                return BackendType::OpenGLES;
-
-            case wgpu::BackendType::D3D11:
-            case wgpu::BackendType::WebGPU:
-                break;
-        }
-        UNREACHABLE();
+    void Adapter::GetProperties(WGPUAdapterProperties* properties) const {
+        mImpl->APIGetProperties(FromAPI(properties));
     }
 
-    DeviceType Adapter::GetDeviceType() const {
-        switch (mImpl->GetAdapterType()) {
-            case wgpu::AdapterType::DiscreteGPU:
-                return DeviceType::DiscreteGPU;
-            case wgpu::AdapterType::IntegratedGPU:
-                return DeviceType::IntegratedGPU;
-            case wgpu::AdapterType::CPU:
-                return DeviceType::CPU;
-            case wgpu::AdapterType::Unknown:
-                return DeviceType::Unknown;
-        }
-        UNREACHABLE();
-    }
-
-    const PCIInfo& Adapter::GetPCIInfo() const {
-        return mImpl->GetPCIInfo();
+    WGPUAdapter Adapter::Get() const {
+        return ToAPI(mImpl);
     }
 
     std::vector<const char*> Adapter::GetSupportedFeatures() const {
@@ -124,13 +142,37 @@ namespace dawn_native {
     }
 
     WGPUDevice Adapter::CreateDevice(const DawnDeviceDescriptor* deviceDescriptor) {
-        return ToAPI(mImpl->CreateDevice(deviceDescriptor));
+        ComboDeprecatedDawnDeviceDescriptor desc(deviceDescriptor);
+        return ToAPI(mImpl->APICreateDevice(&desc));
+    }
+
+    WGPUDevice Adapter::CreateDevice(const wgpu::DeviceDescriptor* deviceDescriptor) {
+        return CreateDevice(reinterpret_cast<const WGPUDeviceDescriptor*>(deviceDescriptor));
+    }
+
+    WGPUDevice Adapter::CreateDevice(const WGPUDeviceDescriptor* deviceDescriptor) {
+        return ToAPI(mImpl->APICreateDevice(FromAPI(deviceDescriptor)));
     }
 
     void Adapter::RequestDevice(const DawnDeviceDescriptor* descriptor,
                                 WGPURequestDeviceCallback callback,
                                 void* userdata) {
-        mImpl->RequestDevice(descriptor, callback, userdata);
+        ComboDeprecatedDawnDeviceDescriptor desc(descriptor);
+        mImpl->APIRequestDevice(&desc, callback, userdata);
+    }
+
+    void Adapter::RequestDevice(const wgpu::DeviceDescriptor* descriptor,
+                                WGPURequestDeviceCallback callback,
+                                void* userdata) {
+        mImpl->APIRequestDevice(reinterpret_cast<const DeviceDescriptor*>(descriptor), callback,
+                                userdata);
+    }
+
+    void Adapter::RequestDevice(const WGPUDeviceDescriptor* descriptor,
+                                WGPURequestDeviceCallback callback,
+                                void* userdata) {
+        mImpl->APIRequestDevice(reinterpret_cast<const DeviceDescriptor*>(descriptor), callback,
+                                userdata);
     }
 
     void Adapter::ResetInternalDeviceForTesting() {
@@ -166,14 +208,18 @@ namespace dawn_native {
     std::vector<Adapter> Instance::GetAdapters() const {
         // Adapters are owned by mImpl so it is safe to return non RAII pointers to them
         std::vector<Adapter> adapters;
-        for (const std::unique_ptr<AdapterBase>& adapter : mImpl->GetAdapters()) {
-            adapters.push_back({adapter.get()});
+        for (const Ref<AdapterBase>& adapter : mImpl->GetAdapters()) {
+            adapters.push_back({adapter.Get()});
         }
         return adapters;
     }
 
     const ToggleInfo* Instance::GetToggleInfo(const char* toggleName) {
         return mImpl->GetToggleInfo(toggleName);
+    }
+
+    const FeatureInfo* Instance::GetFeatureInfo(WGPUFeatureName feature) {
+        return mImpl->GetFeatureInfo(static_cast<wgpu::FeatureName>(feature));
     }
 
     void Instance::EnableBackendValidation(bool enableBackendValidation) {
@@ -190,7 +236,7 @@ namespace dawn_native {
         mImpl->EnableBeginCaptureOnStartup(beginCaptureOnStartup);
     }
 
-    void Instance::SetPlatform(dawn_platform::Platform* platform) {
+    void Instance::SetPlatform(dawn::platform::Platform* platform) {
         mImpl->SetPlatform(platform);
     }
 
@@ -232,12 +278,20 @@ namespace dawn_native {
 
     // ExternalImageDescriptor
 
-    ExternalImageDescriptor::ExternalImageDescriptor(ExternalImageType type) : type(type) {
+    ExternalImageDescriptor::ExternalImageDescriptor(ExternalImageType type) : mType(type) {
+    }
+
+    ExternalImageType ExternalImageDescriptor::GetType() const {
+        return mType;
     }
 
     // ExternalImageExportInfo
 
-    ExternalImageExportInfo::ExternalImageExportInfo(ExternalImageType type) : type(type) {
+    ExternalImageExportInfo::ExternalImageExportInfo(ExternalImageType type) : mType(type) {
+    }
+
+    ExternalImageType ExternalImageExportInfo::GetType() const {
+        return mType;
     }
 
     const char* GetObjectLabelForTesting(void* objectHandle) {
@@ -254,4 +308,4 @@ namespace dawn_native {
         return FromAPI(a)->IsLayoutEqual(FromAPI(b), excludePipelineCompatibiltyToken);
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

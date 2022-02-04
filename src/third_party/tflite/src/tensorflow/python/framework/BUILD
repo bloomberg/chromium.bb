@@ -1,6 +1,15 @@
 # python/framework package
 
-load("//tensorflow:tensorflow.bzl", "if_not_windows", "if_xla_available", "py_test", "tf_cc_shared_object", "tf_cc_test", "tf_gen_op_wrapper_py")
+load(
+    "//tensorflow:tensorflow.bzl",
+    "if_not_windows",
+    "if_oss",
+    "if_xla_available",
+    "py_test",
+    "tf_cc_shared_object",
+    "tf_cc_test",
+    "tf_gen_op_wrapper_py",
+)
 
 # buildifier: disable=same-origin-load
 load("//tensorflow:tensorflow.bzl", "tf_python_pybind_extension")
@@ -1047,8 +1056,19 @@ cuda_py_test(
     deps = [
         ":config",
         ":constant_op",
+        ":dtypes",
+        ":errors",
+        ":framework",
+        ":ops",
+        ":test_lib",
         ":test_ops",
+        "@absl_py//absl/testing:parameterized",
+        "//tensorflow/core:protos_all_py",
+        "//tensorflow/python/eager:context",
+        "//tensorflow/python/eager:def_function",
+        "//tensorflow/python:array_ops",
         "//tensorflow/python:client_testlib",
+        "//tensorflow/python:math_ops",
         "//tensorflow/python:platform",
         "//tensorflow/python/util",
     ] + tf_additional_xla_deps_py(),
@@ -1468,7 +1488,6 @@ tf_py_test(
     srcs = ["error_interpolation_test.py"],
     main = "error_interpolation_test.py",
     python_version = "PY3",
-    tags = ["no_oss_py310"],  # b/209088097
     deps = [
         ":constant_op",
         ":error_interpolation",
@@ -1583,7 +1602,7 @@ filegroup(
     srcs = [
         "testdata/metrics_export_meta_graph.pb",
     ],
-    visibility = ["//visibility:public"],
+    visibility = if_oss(["//visibility:public"]),
 )
 
 tf_py_test(
@@ -1709,6 +1728,7 @@ tf_py_test(
         ":test_ops",
         ":test_ops_2",
         "//tensorflow/core:protos_all_py",
+        "//tensorflow/core/function/trace_type",
         "//tensorflow/python:cond_v2",
         "//tensorflow/python:control_flow_ops",
         "//tensorflow/python:gradients",

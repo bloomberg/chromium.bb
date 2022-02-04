@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2021 Valve Corporation
-# Copyright (c) 2014-2021 LunarG, Inc.
+# Copyright (c) 2014-2022 Valve Corporation
+# Copyright (c) 2014-2022 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -50,8 +50,6 @@ if(BUILD_LAYER_SUPPORT_FILES)
         cast_utils.h
         hash_util.h
         hash_vk_types.h
-        vk_format_utils.h
-        vk_format_utils.cpp
         vk_layer_config.h
         vk_layer_config.cpp
         vk_layer_data.h
@@ -63,6 +61,8 @@ if(BUILD_LAYER_SUPPORT_FILES)
         vk_loader_platform.h
         xxhash.h
         xxhash.c
+        generated/vk_format_utils.h
+        generated/vk_format_utils.cpp
         generated/vk_validation_error_messages.h
         generated/vk_layer_dispatch_table.h
         generated/vk_dispatch_table_helper.h
@@ -162,6 +162,7 @@ set(CORE_VALIDATION_LIBRARY_FILES
     core_error_location.h
     core_error_location.cpp
     base_node.h
+    base_node.cpp
     device_memory_state.h
     device_memory_state.cpp
     buffer_state.h

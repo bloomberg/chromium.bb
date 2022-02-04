@@ -469,10 +469,10 @@ class ParserImpl {
   /// Parses a 'texture_external_type' grammar element
   /// @returns the parsed Type or nullptr if none matched
   Maybe<const ast::Type*> external_texture_type();
-  /// Parses a `image_storage_type` grammar element
+  /// Parses a `texel_format` grammar element
   /// @param use a description of what was being parsed if an error was raised
-  /// @returns returns the image format or kNone if none matched.
-  Expect<ast::ImageFormat> expect_image_storage_type(const std::string& use);
+  /// @returns returns the texel format or kNone if none matched.
+  Expect<ast::TexelFormat> expect_texel_format(const std::string& use);
   /// Parses a `function_header` grammar element
   /// @returns the parsed function header
   Maybe<FunctionHeader> function_header();
@@ -522,12 +522,9 @@ class ParserImpl {
   /// Parses a `if_stmt` grammar element
   /// @returns the parsed statement or nullptr
   Maybe<const ast::IfStatement*> if_stmt();
-  /// Parses a `elseif_stmt` grammar element
-  /// @returns the parsed elements
-  Maybe<ast::ElseStatementList> elseif_stmt();
-  /// Parses a `else_stmt` grammar element
+  /// Parses a list of `else_stmt` grammar elements
   /// @returns the parsed statement or nullptr
-  Maybe<const ast::ElseStatement*> else_stmt();
+  Expect<ast::ElseStatementList> else_stmts();
   /// Parses a `switch_stmt` grammar element
   /// @returns the parsed statement or nullptr
   Maybe<const ast::SwitchStatement*> switch_stmt();
@@ -672,7 +669,7 @@ class ParserImpl {
   /// Parses a `assignment_stmt` grammar element
   /// @returns the parsed assignment or nullptr
   Maybe<const ast::AssignmentStatement*> assignment_stmt();
-  /// Parses one or more bracketed decoration lists.
+  /// Parses one or more decoration lists.
   /// @return the parsed decoration list, or an empty list on error.
   Maybe<ast::DecorationList> decoration_list();
   /// Parses a list of decorations between `ATTR_LEFT` and `ATTR_RIGHT`
@@ -698,7 +695,7 @@ class ParserImpl {
  private:
   /// ReturnType resolves to the return type for the function or lambda F.
   template <typename F>
-  using ReturnType = typename std::result_of<F()>::type;
+  using ReturnType = typename std::invoke_result<F>::type;
 
   /// ResultType resolves to `T` for a `RESULT` of type Expect<T>.
   template <typename RESULT>

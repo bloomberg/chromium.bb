@@ -39,7 +39,7 @@
 #include "third_party/widevine/cdm/buildflags.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #include "ui/ozone/buildflags.h"
 #if defined(USE_AURA) && BUILDFLAG(OZONE_PLATFORM_X11)
 #include "ui/events/devices/x11/touch_factory_x11.h"
@@ -52,15 +52,14 @@
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/wm/core/wm_state.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/browser/win/parental_controls.h"
-#include "components/os_crypt/os_crypt.h"
 #endif
 #endif  // defined(USE_AURA)
 
 #if defined(TOOLKIT_VIEWS)
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 #else
@@ -68,13 +67,22 @@
 #endif
 #endif  // defined(TOOLKIT_VIEWS)
 
-#if defined(USE_AURA) && defined(OS_LINUX)
+#if defined(USE_AURA) && BUILDFLAG(IS_LINUX)
 #include "ui/base/ime/init/input_method_initializer.h"
 #endif
 
-#if defined(OS_LINUX)
-#include "libcef/browser/printing/print_dialog_linux.h"
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+#include "components/os_crypt/os_crypt.h"
 #endif
+
+#if BUILDFLAG(IS_LINUX)
+#include "base/path_service.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/grit/chromium_strings.h"
+#include "components/os_crypt/key_storage_config_linux.h"
+#include "libcef/browser/printing/print_dialog_linux.h"
+#include "ui/base/l10n/l10n_util.h"
+#endif  // BUILDFLAG(IS_LINUX)
 
 #if BUILDFLAG(ENABLE_MEDIA_FOUNDATION_WIDEVINE_CDM)
 #include "chrome/browser/component_updater/media_foundation_widevine_cdm_component_installer.h"
@@ -93,7 +101,7 @@ AlloyBrowserMainParts::~AlloyBrowserMainParts() {
 }
 
 int AlloyBrowserMainParts::PreEarlyInitialization() {
-#if defined(USE_AURA) && defined(OS_LINUX)
+#if defined(USE_AURA) && BUILDFLAG(IS_LINUX)
   // TODO(linux): Consider using a real input method or
   // views::LinuxUI::SetInstance.
   ui::InitializeInputMethodForTesting();
@@ -111,7 +119,7 @@ void AlloyBrowserMainParts::ToolkitInitialized() {
 #endif  // defined(USE_AURA)
 
 #if defined(TOOLKIT_VIEWS)
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   views_delegate_ = std::make_unique<ChromeViewsDelegate>();
   layout_provider_ = ChromeLayoutProvider::CreateLayoutProvider();
 #else
@@ -121,13 +129,13 @@ void AlloyBrowserMainParts::ToolkitInitialized() {
 }
 
 void AlloyBrowserMainParts::PreCreateMainMessageLoop() {
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #if defined(USE_AURA) && BUILDFLAG(OZONE_PLATFORM_X11)
   ui::TouchFactory::SetTouchDeviceListFromCommandLine();
 #endif
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Initialize the OSCrypt.
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
@@ -137,22 +145,44 @@ void AlloyBrowserMainParts::PreCreateMainMessageLoop() {
   // installer_util references strings that are normally compiled into
   // setup.exe.  In Chrome, these strings are in the locale files.
   ChromeBrowserMainPartsWin::SetupInstallerUtilStrings();
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
   media_router::ChromeMediaRouterFactory::DoPlatformInit();
 }
 
 void AlloyBrowserMainParts::PostCreateMainMessageLoop() {
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
   printing::PrintingContextLinux::SetCreatePrintDialogFunction(
       &CefPrintDialogLinux::CreatePrintDialog);
   printing::PrintingContextLinux::SetPdfPaperSizeFunction(
       &CefPrintDialogLinux::GetPdfPaperSize);
-#endif
+
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+
+  // Set up crypt config. This needs to be done before anything starts the
+  // network service, as the raw encryption key needs to be shared with the
+  // network service for encrypted cookie storage.
+  // Based on ChromeBrowserMainPartsLinux::PostCreateMainMessageLoop.
+  std::unique_ptr<os_crypt::Config> config =
+      std::make_unique<os_crypt::Config>();
+  // Forward to os_crypt the flag to use a specific password store.
+  config->store = command_line->GetSwitchValueASCII(switches::kPasswordStore);
+  // Forward the product name (defaults to "Chromium").
+  config->product_name = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
+  // OSCrypt may target keyring, which requires calls from the main thread.
+  config->main_thread_runner = content::GetUIThreadTaskRunner({});
+  // OSCrypt can be disabled in a special settings file.
+  config->should_use_preference =
+      command_line->HasSwitch(switches::kEnableEncryptionSelection);
+  base::PathService::Get(chrome::DIR_USER_DATA, &config->user_data_path);
+  DCHECK(!config->user_data_path.empty());
+  OSCrypt::SetConfig(std::move(config));
+#endif  // BUILDFLAG(IS_LINUX)
 }
 
 int AlloyBrowserMainParts::PreCreateThreads() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   PlatformInitialize();
 #endif
 
@@ -205,7 +235,7 @@ int AlloyBrowserMainParts::PreMainMessageLoopRun() {
 
   CefDevToolsManagerDelegate::StartHttpHandler(browser_context);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Windows parental controls calls can be slow, so we do an early init here
   // that calculates this value off of the UI thread.
   InitializeWinParentalControls();
@@ -249,7 +279,7 @@ void AlloyBrowserMainParts::PostMainMessageLoopRun() {
 void AlloyBrowserMainParts::PostDestroyThreads() {
 #if defined(TOOLKIT_VIEWS)
   views_delegate_.reset();
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   layout_provider_.reset();
 #endif
 #endif  // defined(TOOLKIT_VIEWS)

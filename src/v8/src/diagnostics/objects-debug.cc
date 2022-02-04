@@ -16,6 +16,7 @@
 #include "src/objects/allocation-site-inl.h"
 #include "src/objects/arguments-inl.h"
 #include "src/objects/bigint.h"
+#include "src/objects/call-site-info-inl.h"
 #include "src/objects/cell-inl.h"
 #include "src/objects/data-handler-inl.h"
 #include "src/objects/debug-objects-inl.h"
@@ -69,7 +70,6 @@
 #include "src/objects/oddball-inl.h"
 #include "src/objects/promise-inl.h"
 #include "src/objects/property-descriptor-object-inl.h"
-#include "src/objects/stack-frame-info-inl.h"
 #include "src/objects/struct-inl.h"
 #include "src/objects/swiss-name-dictionary-inl.h"
 #include "src/objects/synthetic-module-inl.h"
@@ -202,6 +202,7 @@ void HeapObject::HeapObjectVerify(Isolate* isolate) {
     case ORDERED_HASH_MAP_TYPE:
     case ORDERED_HASH_SET_TYPE:
     case ORDERED_NAME_DICTIONARY_TYPE:
+    case NAME_TO_INDEX_HASH_TABLE_TYPE:
     case NAME_DICTIONARY_TYPE:
     case GLOBAL_DICTIONARY_TYPE:
     case NUMBER_DICTIONARY_TYPE:
@@ -853,8 +854,8 @@ void JSFunction::JSFunctionVerify(Isolate* isolate) {
   CHECK(context(isolate, kRelaxedLoad).IsContext());
   VerifyPointer(isolate, raw_feedback_cell(isolate));
   CHECK(raw_feedback_cell(isolate).IsFeedbackCell());
-  VerifyPointer(isolate, raw_code(isolate));
-  CHECK(raw_code(isolate).IsCodeT());
+  VerifyPointer(isolate, code(isolate));
+  CHECK(code(isolate).IsCodeT());
   CHECK(map(isolate).is_callable());
   Handle<JSFunction> function(*this, isolate);
   LookupIterator it(isolate, function, isolate->factory()->prototype_string(),
@@ -1013,6 +1014,12 @@ void CodeDataContainer::CodeDataContainerVerify(Isolate* isolate) {
   CHECK(next_code_link().IsCodeT() || next_code_link().IsUndefined(isolate));
   if (V8_EXTERNAL_CODE_SPACE_BOOL) {
     if (raw_code() != Smi::zero()) {
+#ifdef V8_EXTERNAL_CODE_SPACE
+      // kind and builtin_id() getters are not available on CodeDataContainer
+      // when external code space is not enabled.
+      CHECK_EQ(code().kind(), kind());
+      CHECK_EQ(code().builtin_id(), builtin_id());
+#endif  // V8_EXTERNAL_CODE_SPACE
       CHECK_EQ(code().InstructionStart(), code_entry_point());
       CHECK_EQ(code().code_data_container(kAcquireLoad), *this);
     }
@@ -1778,8 +1785,8 @@ void PreparseData::PreparseDataVerify(Isolate* isolate) {
   }
 }
 
-void StackFrameInfo::StackFrameInfoVerify(Isolate* isolate) {
-  TorqueGeneratedClassVerifiers::StackFrameInfoVerify(*this, isolate);
+void CallSiteInfo::CallSiteInfoVerify(Isolate* isolate) {
+  TorqueGeneratedClassVerifiers::CallSiteInfoVerify(*this, isolate);
 #if V8_ENABLE_WEBASSEMBLY
   CHECK_IMPLIES(IsAsmJsWasm(), IsWasm());
   CHECK_IMPLIES(IsWasm(), receiver_or_instance().IsWasmInstanceObject());
@@ -1794,6 +1801,16 @@ void FunctionTemplateRareData::FunctionTemplateRareDataVerify(
     Isolate* isolate) {
   CHECK(c_function_overloads().IsFixedArray() ||
         c_function_overloads().IsUndefined(isolate));
+}
+
+void StackFrameInfo::StackFrameInfoVerify(Isolate* isolate) {
+  TorqueGeneratedClassVerifiers::StackFrameInfoVerify(*this, isolate);
+}
+
+void ErrorStackData::ErrorStackDataVerify(Isolate* isolate) {
+  TorqueGeneratedClassVerifiers::ErrorStackDataVerify(*this, isolate);
+  CHECK_IMPLIES(!call_site_infos_or_formatted_stack().IsFixedArray(),
+                limit_or_stack_frame_infos().IsFixedArray());
 }
 
 // Helper class for verifying the string table.

@@ -28,7 +28,6 @@ g.test('shared_with_buffer')
     // The test shader defines a structure that contains members decorated with built-in variable
     // attributes, and also layout attributes for the storage buffer.
     const wgsl = `
-      [[block]]
       struct S {
         /* byte offset:  0 */ [[size(32)]]  [[builtin(workgroup_id)]] group_id : vec3<u32>;
         /* byte offset: 32 */               [[builtin(local_invocation_index)]] local_index : u32;

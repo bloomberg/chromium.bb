@@ -111,11 +111,12 @@ public class PriceTrackingNotificationBridge {
 
         // Use UnsignedLongs to convert OfferId to avoid overflow.
         String offerId = UnsignedLongs.toString(priceDropPayload.getOfferId());
+        String clusterId = UnsignedLongs.toString(priceDropPayload.getProductClusterId());
         ChromeMessage chromeMessage = chromeNotification.getChromeMessage();
         PriceDropNotifier.NotificationData notificationData =
                 new PriceDropNotifier.NotificationData(title, text,
                         chromeMessage.hasIconImageUrl() ? chromeMessage.getIconImageUrl() : null,
-                        priceDropPayload.getDestinationUrl(), offerId,
+                        priceDropPayload.getDestinationUrl(), offerId, clusterId,
                         parseActions(chromeNotification));
         mNotifier.showNotification(notificationData);
     }
@@ -180,7 +181,7 @@ public class PriceTrackingNotificationBridge {
         }
 
         // Must have the offer id to ensure the subscription to function.
-        if (!priceDropPayload.hasOfferId()) return null;
+        if (!priceDropPayload.hasOfferId() || priceDropPayload.getOfferId() == 0) return null;
 
         // Must have the product name to show in the title.
         if (!priceDropPayload.hasProductName()

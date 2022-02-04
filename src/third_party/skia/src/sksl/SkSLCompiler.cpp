@@ -12,9 +12,9 @@
 
 #include "include/sksl/DSLCore.h"
 #include "src/core/SkTraceEvent.h"
+#include "src/sksl/SkSLBuiltinMap.h"
 #include "src/sksl/SkSLConstantFolder.h"
 #include "src/sksl/SkSLDSLParser.h"
-#include "src/sksl/SkSLIntrinsicMap.h"
 #include "src/sksl/SkSLOperators.h"
 #include "src/sksl/SkSLProgramSettings.h"
 #include "src/sksl/SkSLRehydrator.h"
@@ -57,13 +57,13 @@
 #include "spirv-tools/libspirv.hpp"
 #endif
 
-#if defined(SKSL_STANDALONE)
-
-// In standalone mode, we load the textual sksl source files. GN generates or copies these files
-// to the skslc executable directory. The "data" in this mode is just the filename.
-#define MODULE_DATA(name) MakeModulePath("sksl_" #name ".sksl")
-
+#ifdef SKSL_STANDALONE
+#define REHYDRATE 0
 #else
+#define REHYDRATE 1
+#endif
+
+#if REHYDRATE
 
 // At runtime, we load the dehydrated sksl data files. The data is a (pointer, size) pair.
 #include "src/sksl/generated/sksl_frag.dehydrated.sksl"
@@ -74,6 +74,12 @@
 
 #define MODULE_DATA(name) MakeModuleData(SKSL_INCLUDE_sksl_##name,\
                                          SKSL_INCLUDE_sksl_##name##_LENGTH)
+
+#else
+
+// In standalone mode, we load the textual sksl source files. GN generates or copies these files
+// to the skslc executable directory. The "data" in this mode is just the filename.
+#define MODULE_DATA(name) MakeModulePath("sksl_" #name ".sksl")
 
 #endif
 
@@ -249,26 +255,26 @@ const ParsedModule& Compiler::loadVertexModule() {
 
 static void add_glsl_type_aliases(SkSL::SymbolTable* symbols, const SkSL::BuiltinTypes& types) {
     // Add some aliases to the runtime effect modules so that it's friendlier, and more like GLSL.
-    symbols->addAlias("vec2", types.fFloat2.get());
-    symbols->addAlias("vec3", types.fFloat3.get());
-    symbols->addAlias("vec4", types.fFloat4.get());
+    symbols->addWithoutOwnership(types.fVec2.get());
+    symbols->addWithoutOwnership(types.fVec3.get());
+    symbols->addWithoutOwnership(types.fVec4.get());
 
-    symbols->addAlias("ivec2", types.fInt2.get());
-    symbols->addAlias("ivec3", types.fInt3.get());
-    symbols->addAlias("ivec4", types.fInt4.get());
+    symbols->addWithoutOwnership(types.fIVec2.get());
+    symbols->addWithoutOwnership(types.fIVec3.get());
+    symbols->addWithoutOwnership(types.fIVec4.get());
 
-    symbols->addAlias("bvec2", types.fBool2.get());
-    symbols->addAlias("bvec3", types.fBool3.get());
-    symbols->addAlias("bvec4", types.fBool4.get());
+    symbols->addWithoutOwnership(types.fBVec2.get());
+    symbols->addWithoutOwnership(types.fBVec3.get());
+    symbols->addWithoutOwnership(types.fBVec4.get());
 
-    symbols->addAlias("mat2", types.fFloat2x2.get());
-    symbols->addAlias("mat3", types.fFloat3x3.get());
-    symbols->addAlias("mat4", types.fFloat4x4.get());
+    symbols->addWithoutOwnership(types.fMat2.get());
+    symbols->addWithoutOwnership(types.fMat3.get());
+    symbols->addWithoutOwnership(types.fMat4.get());
 
     // Alias every private type to "invalid". This will prevent code from using built-in names like
     // `sampler2D` as variable names.
     for (BuiltinTypePtr privateType : kPrivateTypes) {
-        symbols->addAlias((types.*privateType)->name(), types.fInvalid.get());
+        symbols->add(Type::MakeAliasType((types.*privateType)->name(), *types.fInvalid));
     }
 }
 
@@ -295,6 +301,8 @@ const ParsedModule& Compiler::moduleForProgramKind(ProgramKind kind) {
         case ProgramKind::kRuntimeColorFilter: return this->loadPublicModule();        break;
         case ProgramKind::kRuntimeShader:      return this->loadRuntimeShaderModule(); break;
         case ProgramKind::kRuntimeBlender:     return this->loadPublicModule();        break;
+        case ProgramKind::kCustomMeshVertex:   return this->loadPublicModule();        break;
+        case ProgramKind::kCustomMeshFragment: return this->loadPublicModule();        break;
         case ProgramKind::kGeneric:            return this->loadPublicModule();        break;
     }
     SkUNREACHABLE;
@@ -322,23 +330,7 @@ LoadedModule Compiler::loadModule(ProgramKind kind,
     Program::Settings settings;
     settings.fReplaceSettings = !dehydrate;
 
-#if defined(SKSL_STANDALONE)
-    SkASSERT(this->errorCount() == 0);
-    SkASSERT(data.fPath);
-    std::ifstream in(data.fPath);
-    String text{std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
-    if (in.rdstate()) {
-        printf("error reading %s\n", data.fPath);
-        abort();
-    }
-    ParsedModule baseModule = {base, /*fIntrinsics=*/nullptr};
-    LoadedModule result = DSLParser(this, settings, kind,
-            std::move(text)).moduleInheritingFrom(std::move(baseModule));
-    if (this->errorCount()) {
-        printf("Unexpected errors: %s\n", this->fErrorText.c_str());
-        SkDEBUGFAILF("%s %s\n", data.fPath, this->fErrorText.c_str());
-    }
-#else
+#if REHYDRATE
     ProgramConfig config;
     config.fIsBuiltinCode = true;
     config.fKind = kind;
@@ -347,6 +339,22 @@ LoadedModule Compiler::loadModule(ProgramKind kind,
     SkASSERT(data.fData && (data.fSize != 0));
     Rehydrator rehydrator(fContext.get(), base, data.fData, data.fSize);
     LoadedModule result = { kind, rehydrator.symbolTable(), rehydrator.elements() };
+#else
+    SkASSERT(this->errorCount() == 0);
+    SkASSERT(data.fPath);
+    std::ifstream in(data.fPath);
+    String text{std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
+    if (in.rdstate()) {
+        printf("error reading %s\n", data.fPath);
+        abort();
+    }
+    ParsedModule baseModule = {base, /*fElements=*/nullptr};
+    LoadedModule result = DSLParser(this, settings, kind,
+            std::move(text)).moduleInheritingFrom(std::move(baseModule));
+    if (this->errorCount()) {
+        printf("Unexpected errors: %s\n", this->fErrorText.c_str());
+        SkDEBUGFAILF("%s %s\n", data.fPath, this->fErrorText.c_str());
+    }
 #endif
 
     return result;
@@ -357,21 +365,21 @@ ParsedModule Compiler::parseModule(ProgramKind kind, ModuleData data, const Pars
     this->optimize(module);
 
     // For modules that just declare (but don't define) intrinsic functions, there will be no new
-    // program elements. In that case, we can share our parent's intrinsic map:
+    // program elements. In that case, we can share our parent's element map:
     if (module.fElements.empty()) {
-        return ParsedModule{module.fSymbols, base.fIntrinsics};
+        return ParsedModule{module.fSymbols, base.fElements};
     }
 
-    auto intrinsics = std::make_shared<IntrinsicMap>(base.fIntrinsics.get());
+    auto elements = std::make_shared<BuiltinMap>(base.fElements.get());
 
-    // Now, transfer all of the program elements to an intrinsic map. This maps certain types of
-    // global objects to the declaring ProgramElement.
+    // Now, transfer all of the program elements to a builtin element map. This maps certain types
+    // of global objects to the declaring ProgramElement.
     for (std::unique_ptr<ProgramElement>& element : module.fElements) {
         switch (element->kind()) {
             case ProgramElement::Kind::kFunction: {
                 const FunctionDefinition& f = element->as<FunctionDefinition>();
                 SkASSERT(f.declaration().isBuiltin());
-                intrinsics->insertOrDie(f.declaration().description(), std::move(element));
+                elements->insertOrDie(f.declaration().description(), std::move(element));
                 break;
             }
             case ProgramElement::Kind::kFunctionPrototype: {
@@ -382,13 +390,13 @@ ParsedModule Compiler::parseModule(ProgramKind kind, ModuleData data, const Pars
                 const GlobalVarDeclaration& global = element->as<GlobalVarDeclaration>();
                 const Variable& var = global.declaration()->as<VarDeclaration>().var();
                 SkASSERT(var.isBuiltin());
-                intrinsics->insertOrDie(String(var.name()), std::move(element));
+                elements->insertOrDie(String(var.name()), std::move(element));
                 break;
             }
             case ProgramElement::Kind::kInterfaceBlock: {
                 const Variable& var = element->as<InterfaceBlock>().variable();
                 SkASSERT(var.isBuiltin());
-                intrinsics->insertOrDie(String(var.name()), std::move(element));
+                elements->insertOrDie(String(var.name()), std::move(element));
                 break;
             }
             default:
@@ -398,7 +406,7 @@ ParsedModule Compiler::parseModule(ProgramKind kind, ModuleData data, const Pars
         }
     }
 
-    return ParsedModule{module.fSymbols, std::move(intrinsics)};
+    return ParsedModule{module.fSymbols, std::move(elements)};
 }
 
 std::unique_ptr<Program> Compiler::convertProgram(ProgramKind kind,

@@ -43,16 +43,18 @@ const specsData: { [k: string]: SpecFile } = {
       const g = makeTestGroupForUnitTesting(UnitTest);
       g.test('hello').fn(() => {});
       g.test('bonjour').fn(() => {});
-      g.test('hola').fn(() => {});
+      g.test('hola')
+        .desc('TODO')
+        .fn(() => {});
       return g;
     })(),
   },
   'suite1/bar/biz.spec.js': {
-    description: 'desc 1f',
+    description: 'desc 1f TODO',
     g: makeTestGroupForUnitTesting(UnitTest), // file with no tests
   },
   'suite1/bar/buzz/buzz.spec.js': {
-    description: 'desc 1d',
+    description: 'desc 1d TODO',
     g: (() => {
       const g = makeTestGroupForUnitTesting(UnitTest);
       g.test('zap').fn(() => {});
@@ -646,7 +648,7 @@ async function testIterateCollapsed(
   t: LoadingTest,
   alwaysExpandThroughLevel: ExpandThroughLevel,
   expectations: string[],
-  expectedResult: 'throws' | string[],
+  expectedResult: 'throws' | string[] | [string, boolean | undefined][],
   includeEmptySubtrees = false
 ) {
   t.debug(`expandThrough=${alwaysExpandThroughLevel} expectations=${expectations}`);
@@ -659,13 +661,19 @@ async function testIterateCollapsed(
     return;
   }
   const tree = await treePromise;
-  const actualIter = tree.iterateCollapsedQueries(includeEmptySubtrees, alwaysExpandThroughLevel);
-  const actual = Array.from(actualIter, q => q.toString());
+  const actualIter = tree.iterateCollapsedNodes({
+    includeEmptySubtrees,
+    alwaysExpandThroughLevel,
+  });
+  const testingTODOs = expectedResult.length > 0 && expectedResult[0] instanceof Array;
+  const actual = Array.from(actualIter, ({ query, subtreeHasTODOs }) =>
+    testingTODOs ? [query.toString(), subtreeHasTODOs] : query.toString()
+  );
   if (!objectEquals(actual, expectedResult)) {
     t.fail(
       `iterateCollapsed failed:
-  got [${actual.join(', ')}]
-  exp [${expectedResult.join(', ')}]
+  got ${JSON.stringify(actual)}
+  exp ${JSON.stringify(expectedResult)}
 ${tree.toString()}`
     );
   }
@@ -677,18 +685,27 @@ g.test('print').fn(async () => {
 });
 
 g.test('iterateCollapsed').fn(async t => {
-  await testIterateCollapsed(t, 1, [], ['suite1:foo:*', 'suite1:bar,buzz,buzz:*', 'suite1:baz:*']);
+  await testIterateCollapsed(
+    t,
+    1,
+    [],
+    [
+      ['suite1:foo:*', true], // to-do propagated up from foo:hola
+      ['suite1:bar,buzz,buzz:*', true], // to-do in file description
+      ['suite1:baz:*', false],
+    ]
+  );
   await testIterateCollapsed(
     t,
     2,
     [],
     [
-      'suite1:foo:hello:*',
-      'suite1:foo:bonjour:*',
-      'suite1:foo:hola:*',
-      'suite1:bar,buzz,buzz:zap:*',
-      'suite1:baz:wye:*',
-      'suite1:baz:zed:*',
+      ['suite1:foo:hello:*', false],
+      ['suite1:foo:bonjour:*', false],
+      ['suite1:foo:hola:*', true], // to-do in test description
+      ['suite1:bar,buzz,buzz:zap:*', false],
+      ['suite1:baz:wye:*', false],
+      ['suite1:baz:zed:*', false],
     ]
   );
   await testIterateCollapsed(
@@ -696,14 +713,14 @@ g.test('iterateCollapsed').fn(async t => {
     3,
     [],
     [
-      'suite1:foo:hello:',
-      'suite1:foo:bonjour:',
-      'suite1:foo:hola:',
-      'suite1:bar,buzz,buzz:zap:',
-      'suite1:baz:wye:',
-      'suite1:baz:wye:x=1',
-      'suite1:baz:zed:a=1;b=2',
-      'suite1:baz:zed:b=3;a=1',
+      ['suite1:foo:hello:', undefined],
+      ['suite1:foo:bonjour:', undefined],
+      ['suite1:foo:hola:', undefined],
+      ['suite1:bar,buzz,buzz:zap:', undefined],
+      ['suite1:baz:wye:', undefined],
+      ['suite1:baz:wye:x=1', undefined],
+      ['suite1:baz:zed:a=1;b=2', undefined],
+      ['suite1:baz:zed:b=3;a=1', undefined],
     ]
   );
 

@@ -17,7 +17,7 @@ import subprocess2
 THIS_DIR = os.path.dirname(__file__)
 UPLOADER = os.path.join(THIS_DIR, 'ninjalog_uploader.py')
 CONFIG = os.path.join(THIS_DIR, 'ninjalog.cfg')
-VERSION = 2
+VERSION = 3
 
 
 def LoadConfig():
@@ -29,8 +29,7 @@ def LoadConfig():
         return config
 
   return {
-      'is-googler':
-      ninjalog_uploader.IsGoogler('chromium-build-stats.appspot.com'),
+      'is-googler': ninjalog_uploader.IsGoogler(),
       'countdown': 10,
       'version': VERSION,
   }
@@ -59,16 +58,18 @@ The following information will be uploaded with ninjalog.
 Uploading ninjalog will be started after you run autoninja another %d time.
 
 If you don't want to upload ninjalog, please run following command.
-$ %s opt-out
+$ python3 %s opt-out
 
 If you want to allow upload ninjalog from next autoninja run, please run the
 following command.
-$ %s opt-in
+$ python3 %s opt-in
 
 If you have questions about this, please send mail to infra-dev@chromium.org
 
 You can find a more detailed explanation in
 %s
+or
+https://chromium.googlesource.com/chromium/tools/depot_tools/+/main/ninjalog.README.md
 
 """ % (whitelisted, countdown, __file__, __file__,
        os.path.abspath(os.path.join(THIS_DIR, "ninjalog.README.md"))))

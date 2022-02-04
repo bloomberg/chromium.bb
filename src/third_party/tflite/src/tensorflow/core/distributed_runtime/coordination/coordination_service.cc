@@ -18,14 +18,13 @@ limitations under the License.
 #include <algorithm>
 #include <iterator>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/synchronization/notification.h"
 #include "tensorflow/core/common_runtime/device_mgr.h"
 #include "tensorflow/core/distributed_runtime/coordination/coordination_client.h"
-#include "tensorflow/core/distributed_runtime/worker_env.h"
-#include "tensorflow/core/framework/device_attributes.pb.h"
 #include "tensorflow/core/platform/env.h"
 #include "tensorflow/core/platform/errors.h"
 #include "tensorflow/core/platform/macros.h"
@@ -77,14 +76,14 @@ bool is_multi_client_leader(const ServerDef& server_def) {
 class CoordinationServiceStandaloneImpl : public CoordinationServiceInterface {
  public:
   CoordinationServiceStandaloneImpl(
-      std::unique_ptr<CoordinationClientCache> client_cache,
-      const WorkerEnv* env, const ServerDef& server_def);
+      std::unique_ptr<CoordinationClientCache> client_cache, Env* env,
+      const ServerDef& server_def);
   ~CoordinationServiceStandaloneImpl() override { Stop(); }
 
   void RegisterWorker(const std::string& job_name, int task_id,
                       uint64 incarnation, StatusCallback done) override;
   void WaitForAllTasks(const std::string& job_name, int task_id,
-                       std::vector<DeviceAttributes> devices,
+                       const CoordinationServiceDeviceInfo& devices,
                        StatusCallback done) override;
   Status RecordHeartbeat(const std::string& job_name, int task_id,
                          uint64 incarnation) override;
@@ -98,7 +97,7 @@ class CoordinationServiceStandaloneImpl : public CoordinationServiceInterface {
   Status DeleteKeyValue(const std::string& key) override;
 
  private:
-  const std::vector<DeviceAttributes>& ListClusterDevices() override
+  const CoordinationServiceDeviceInfo& ListClusterDevices() override
       TF_EXCLUSIVE_LOCKS_REQUIRED(state_mu_);
   void StartCheckStaleness();
   void Stop();
@@ -150,14 +149,14 @@ class CoordinationServiceStandaloneImpl : public CoordinationServiceInterface {
   };
 
   std::unique_ptr<CoordinationClientCache> client_cache_;
-  const WorkerEnv* const env_;  // Not owned.
+  Env& env_;
   const uint64 heartbeat_timeout_ms_;
 
   mutex state_mu_;
   condition_variable cluster_registered_cv_;
   absl::flat_hash_map<std::string, std::unique_ptr<TaskState>> cluster_state_
       TF_GUARDED_BY(state_mu_);
-  std::vector<DeviceAttributes> cluster_devices_ TF_GUARDED_BY(state_mu_);
+  CoordinationServiceDeviceInfo cluster_devices_ TF_GUARDED_BY(state_mu_);
   int cluster_pending_workers_ TF_GUARDED_BY(state_mu_);
 
   mutex kv_mu_;
@@ -225,10 +224,10 @@ void CoordinationServiceStandaloneImpl::TaskState::InvokeRegisteredCallback(
 }
 
 CoordinationServiceStandaloneImpl::CoordinationServiceStandaloneImpl(
-    std::unique_ptr<CoordinationClientCache> client_cache, const WorkerEnv* env,
+    std::unique_ptr<CoordinationClientCache> client_cache, Env* env,
     const ServerDef& server_def)
     : client_cache_(std::move(client_cache)),
-      env_(env),
+      env_(*env),
       heartbeat_timeout_ms_([&server_def]() -> uint64 {
         const auto& configs = server_def.default_session_config()
                                   .experimental()
@@ -259,7 +258,7 @@ CoordinationServiceStandaloneImpl::CoordinationServiceStandaloneImpl(
 
 void CoordinationServiceStandaloneImpl::StartCheckStaleness() {
   check_staleness_thread_.reset(
-      env_->env->StartThread({}, kHealthCheckThread, [this]() {
+      env_.StartThread({}, kHealthCheckThread, [this]() {
         // Used to store the job and task info if a task becomes stale
         DeviceNameUtils::ParsedName parsed;
         while (true) {
@@ -354,7 +353,7 @@ void CoordinationServiceStandaloneImpl::RegisterWorker(
 
 void CoordinationServiceStandaloneImpl::WaitForAllTasks(
     const std::string& job_name, int task_id,
-    std::vector<DeviceAttributes> devices, StatusCallback done) {
+    const CoordinationServiceDeviceInfo& devices, StatusCallback done) {
   const std::string& task_name = GetTaskName(job_name, task_id);
   mutex_lock l(state_mu_);
   if (!cluster_state_.contains(task_name)) {
@@ -364,16 +363,14 @@ void CoordinationServiceStandaloneImpl::WaitForAllTasks(
   }
   DCHECK_GT(cluster_pending_workers_, 0);
   cluster_state_[task_name]->SetRegisteredCallback(std::move(done));
-  cluster_devices_.insert(cluster_devices_.end(),
-                          std::make_move_iterator(devices.begin()),
-                          std::make_move_iterator(devices.end()));
+  cluster_devices_.MergeFrom(devices);
   cluster_pending_workers_--;
   if (cluster_pending_workers_ == 0) {
     DoneClusterRegistration(Status::OK());
   }
 }
 
-const std::vector<DeviceAttributes>&
+const CoordinationServiceDeviceInfo&
 CoordinationServiceStandaloneImpl::ListClusterDevices() {
   return cluster_devices_;
 }
@@ -576,7 +573,7 @@ Status CoordinationServiceStandaloneImpl::DeleteKeyValue(
 }  // namespace
 
 std::unique_ptr<CoordinationServiceInterface> EnableCoordinationService(
-    const WorkerEnv* env, const ServerDef& server_def,
+    Env* env, const ServerDef& server_def,
     std::unique_ptr<CoordinationClientCache> cache) {
   std::unique_ptr<CoordinationServiceInterface> coord_service;
   if (is_multi_client_leader(server_def)) {

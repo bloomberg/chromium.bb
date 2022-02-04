@@ -760,19 +760,30 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BackToAboutBlank) {
   )";
   std::string fetch_script = JsReplace(kFetchScriptTemplate, resource_url);
 
-  // Navigate to the test page and open a popup via |window.open|, explicitly
-  // specifying 'about:blank' destination, so that we can go back to it later.
+  // Navigate to the test page and open a popup via |window.open|.
   GURL initial_url("http://foo.com/title1.html");
   EXPECT_TRUE(NavigateToURL(shell(), initial_url));
   WebContentsAddedObserver popup_observer;
-  ASSERT_TRUE(ExecJs(shell(), "var popup = window.open('about:blank', '')"));
+  ASSERT_TRUE(ExecJs(shell(), "var popup = window.open('title1.html')"));
   WebContents* popup = popup_observer.GetWebContents();
-  EXPECT_EQ(GURL(url::kAboutBlankURL),
-            popup->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_TRUE(WaitForLoadStop(popup));
+  EXPECT_EQ(initial_url, popup->GetMainFrame()->GetLastCommittedURL());
   EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin(),
             popup->GetMainFrame()->GetLastCommittedOrigin());
-  EXPECT_EQ(url::Origin::Create(resource_url),
-            popup->GetMainFrame()->GetLastCommittedOrigin());
+
+  // Navigate the popup to about:blank. Note that we didn't directly
+  // window.open() to about:blank because otherwise the about:blank page will
+  // always get replaced on the next navigation.
+  {
+    TestNavigationObserver nav_observer(popup);
+    EXPECT_TRUE(ExecJs(popup, "location.href = 'about:blank';"));
+    nav_observer.Wait();
+    EXPECT_EQ(2, popup->GetController().GetEntryCount());
+    EXPECT_EQ(GURL(url::kAboutBlankURL),
+              popup->GetMainFrame()->GetLastCommittedURL());
+    EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetLastCommittedOrigin(),
+              popup->GetMainFrame()->GetLastCommittedOrigin());
+  }
 
   // Verify that CORB doesn't block same-origin request from the popup.
   {
@@ -781,10 +792,6 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BackToAboutBlank) {
     ASSERT_EQ("ok", EvalJs(popup, fetch_script));
     InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, resource);
   }
-
-  // Do a document.open() so that the initial empty document's history entry
-  // won't get replaced.
-  EXPECT_TRUE(ExecJs(popup, "document.open();"));
 
   // Navigate the popup and then go back to the 'about:blank' URL.
   TestNavigationObserver nav_observer(popup);
@@ -1046,7 +1053,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
 
 // TODO(lukasza): https://crbug.com/154571: Enable this test on Android once
 // SharedWorkers are also enabled on Android.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, SharedWorker) {
   embedded_test_server()->StartAcceptingConnections();
 
@@ -1126,7 +1133,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, SharedWorker) {
   InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing,
                     "nosniff.json");
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 // https://crbug.com/1218723 this is broken by SplitCacheByNetworkIsolationKey.
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,

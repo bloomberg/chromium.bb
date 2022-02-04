@@ -1,5 +1,7 @@
 export const description = `
 Positive and negative validation tests for variable and const.
+
+TODO: Find a better way to test arrays than using a single arbitrary size. [1]
 `;
 
 import { makeTestGroup } from '../../../common/framework/test_group.js';
@@ -34,7 +36,7 @@ const kTestTypes = [
   'mat4x2<f32>',
   'mat4x3<f32>',
   'mat4x4<f32>',
-  // TODO(sarahM0): 12 is a random number here. find a solution to replace it.
+  // [1]: 12 is a random number here. find a solution to replace it.
   'array<f32, 12>',
   'array<i32, 12>',
   'array<u32, 12>',

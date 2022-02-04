@@ -627,7 +627,7 @@
 <translation id="5302089807023311274">Reference i bibliografi</translation>
 <translation id="530391007967514163">Prøv at hoppe efter overskrift for at navigere i teksten nedenfor.</translation>
 <translation id="5304943142864553931">fanen <ph name="TITLE" /></translation>
-<translation id="5308380583665731573">Få forbindelse</translation>
+<translation id="5308380583665731573">Opret forbindelse</translation>
 <translation id="5310788376443009632">fjernet:</translation>
 <translation id="5316825363044614340">gå til næste linje</translation>
 <translation id="5320727453979144100">Sticky-tilstand er aktiveret</translation>
@@ -1168,6 +1168,7 @@
 <translation id="9223032053830369045">Mørkerød</translation>
 <translation id="923331726185079994">ChromeVox blev opdateret</translation>
 <translation id="93384979447910801">Mørk havgrøn</translation>
+<translation id="937605981140327129">TalkBack er ikke installeret i øjeblikket. Installer Android AccessibilitySuite via Play Store, og prøv igen.</translation>
 <translation id="948171205378458592">Skru ned for talehastighed</translation>
 <translation id="957570623732056069">Stryg til venstre eller højre med én finger for at navigere rundt i lektionen</translation>
 <translation id="958854023026327378">Stryg nedad med én finger</translation>

@@ -809,6 +809,17 @@ TEST(WideString, UpperLower) {
   EXPECT_EQ(L"", empty);
   empty.MakeUpper();
   EXPECT_EQ(L"", empty);
+
+  WideString empty_with_buffer(L"x");
+  empty_with_buffer.Delete(0);
+
+  WideString additional_empty_with_buffer_ref = empty_with_buffer;
+  additional_empty_with_buffer_ref.MakeLower();
+  EXPECT_EQ(L"", additional_empty_with_buffer_ref);
+
+  additional_empty_with_buffer_ref = empty_with_buffer;
+  additional_empty_with_buffer_ref.MakeUpper();
+  EXPECT_EQ(L"", additional_empty_with_buffer_ref);
 }
 
 TEST(WideString, Trim) {
@@ -1213,7 +1224,7 @@ TEST(WideString, ToLatin1) {
 
 TEST(WideString, ToDefANSI) {
   EXPECT_EQ("", WideString().ToDefANSI());
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   const char* kResult =
       "x"
       "?"
@@ -1265,7 +1276,7 @@ TEST(WideString, FromLatin1) {
 
 TEST(WideString, FromDefANSI) {
   EXPECT_EQ(L"", WideString::FromDefANSI(ByteStringView()));
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   const wchar_t* kResult =
       L"x"
       L"\u20ac"
@@ -1680,7 +1691,7 @@ TEST(WideString, FormatString) {
   EXPECT_EQ(L"cla", WideString::Format(L"%.3ls", L"clams"));
   EXPECT_EQ(L"\u043e\u043f", WideString(L"\u043e\u043f"));
 
-#if !defined(OS_APPLE)
+#if !BUILDFLAG(IS_APPLE)
   // See https://bugs.chromium.org/p/pdfium/issues/detail?id=1132
   EXPECT_EQ(L"\u043e\u043f", WideString::Format(L"\u043e\u043f"));
   EXPECT_EQ(L"\u043e\u043f", WideString::Format(L"%ls", L"\u043e\u043f"));

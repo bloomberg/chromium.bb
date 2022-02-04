@@ -460,6 +460,8 @@ EXPORTS
     glTranslatex
     glVertexPointer
 
+    ; GL_ANDROID_extension_pack_es31a
+
     ; GL_ANGLE_base_vertex_base_instance
     glDrawArraysInstancedBaseInstanceANGLE
     glDrawElementsInstancedBaseVertexBaseInstanceANGLE
@@ -829,6 +831,8 @@ EXPORTS
     glUseProgramStagesEXT
     glValidateProgramPipelineEXT
 
+    ; GL_EXT_shader_framebuffer_fetch
+
     ; GL_EXT_shader_framebuffer_fetch_non_coherent
     glFramebufferFetchBarrierEXT
 
@@ -926,6 +930,10 @@ EXPORTS
     ; GL_KHR_texture_compression_astc_ldr
 
     ; GL_KHR_texture_compression_astc_sliced_3d
+
+    ; GL_MESA_framebuffer_flip_y
+    glFramebufferParameteriMESA
+    glGetFramebufferParameterivMESA
 
     ; GL_NV_fence
     glDeleteFencesNV
@@ -1214,6 +1222,9 @@ EXPORTS
     EGL_HandleGPUSwitchANGLE
     EGL_ReacquireHighPowerGPUANGLE
     EGL_ReleaseHighPowerGPUANGLE
+
+    ; EGL_ANGLE_prepare_swap_buffers
+    EGL_PrepareSwapBuffersANGLE
 
     ; EGL_ANGLE_program_cache_control
     EGL_ProgramCacheGetAttribANGLE

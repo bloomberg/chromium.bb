@@ -26,8 +26,8 @@ TEST_F(ParserImplTest, Empty) {
 
 TEST_F(ParserImplTest, Parses) {
   auto p = parser(R"(
-[[stage(fragment)]]
-fn main() -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main() -> @location(0) vec4<f32> {
   return vec4<f32>(.4, .2, .3, 1);
 }
 )");
@@ -35,6 +35,27 @@ fn main() -> [[location(0)]] vec4<f32> {
 
   Program program = p->program();
   ASSERT_EQ(1u, program.AST().Functions().size());
+}
+
+TEST_F(ParserImplTest, Parses_ExtraSemicolons) {
+  auto p = parser(R"(
+;
+struct S {
+  a : f32;
+};;
+;
+fn foo() -> S {
+  ;
+  return S();;;
+  ;
+};;
+;
+)");
+  ASSERT_TRUE(p->Parse()) << p->error();
+
+  Program program = p->program();
+  ASSERT_EQ(1u, program.AST().Functions().size());
+  ASSERT_EQ(1u, program.AST().TypeDecls().size());
 }
 
 TEST_F(ParserImplTest, HandlesError) {
@@ -93,11 +114,11 @@ TEST_F(ParserImplTest, Comments_TerminatedBlockComment) {
  * /* I can nest /**/ comments. */
  * // I can nest line comments too.
  **/
-[[stage(fragment)]] // This is the stage
+@stage(fragment) // This is the stage
 fn main(/*
 no
 parameters
-*/) -> [[location(0)]] vec4<f32> {
+*/) -> @location(0) vec4<f32> {
   return/*block_comments_delimit_tokens*/vec4<f32>(.4, .2, .3, 1);
 }/* block comments are OK at EOF...*/)");
 
@@ -107,8 +128,8 @@ parameters
 
 TEST_F(ParserImplTest, Comments_UnterminatedBlockComment) {
   auto p = parser(R"(
-[[stage(fragment)]]
-fn main() -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main() -> @location(0) vec4<f32> {
   return vec4<f32>(.4, .2, .3, 1);
 } /* unterminated block comments are invalid ...)");
 

@@ -233,8 +233,10 @@ INSTANTIATE_TEST_SUITE_P(
         "precise_struct_block.vert",
         "maxClipDistances.vert",
         "findFunction.frag",
+        "noMatchingFunction.frag",
         "constantUnaryConversion.comp",
         "xfbUnsizedArray.error.vert",
+        "xfbUnsizedArray.error.tese",
         "glsl.140.layoutOffset.error.vert",
         "glsl.430.layoutOffset.error.vert",
         "glsl.450.subgroup.frag",
@@ -290,6 +292,8 @@ INSTANTIATE_TEST_SUITE_P(
         "GL_ARB_draw_instanced.vert",
         "GL_ARB_fragment_coord_conventions.vert",
         "BestMatchFunction.vert",
+        "EndStreamPrimitive.geom",
+        "floatBitsToInt.vert",
     })),
     FileNameAsCustomTestSuffix
 );

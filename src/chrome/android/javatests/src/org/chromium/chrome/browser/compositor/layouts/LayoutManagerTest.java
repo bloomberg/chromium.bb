@@ -193,10 +193,10 @@ public class LayoutManagerTest implements MockTabModelDelegate {
 
         mTabModelSelector = new MockTabModelSelector(standardTabCount, incognitoTabCount, this);
         if (standardIndexSelected != TabModel.INVALID_TAB_INDEX) {
-            TabModelUtils.setIndex(mTabModelSelector.getModel(false), standardIndexSelected);
+            TabModelUtils.setIndex(mTabModelSelector.getModel(false), standardIndexSelected, false);
         }
         if (incognitoIndexSelected != TabModel.INVALID_TAB_INDEX) {
-            TabModelUtils.setIndex(mTabModelSelector.getModel(true), incognitoIndexSelected);
+            TabModelUtils.setIndex(mTabModelSelector.getModel(true), incognitoIndexSelected, false);
         }
         mTabModelSelector.selectModel(incognitoSelected);
         Assert.assertNotNull(
@@ -217,7 +217,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
                 new OneshotSupplierImpl<>();
 
         mManagerPhone = new LayoutManagerChromePhone(layoutManagerHost, container, mStartSurface,
-                tabContentManagerSupplier, null, overviewModeBehaviorSupplier,
+                tabContentManagerSupplier, overviewModeBehaviorSupplier,
                 () -> mTopUiThemeColorProvider, new DummyJankTracker());
         verify(mStartSurfaceController)
                 .addOverviewModeObserver(mStartSurfaceOverviewModeCaptor.capture());

@@ -1490,7 +1490,7 @@ void Debug::InstallDebugBreakTrampoline() {
 
   if (!needs_to_use_trampoline) return;
 
-  Handle<Code> trampoline = BUILTIN_CODE(isolate_, DebugBreakTrampoline);
+  Handle<CodeT> trampoline = BUILTIN_CODE(isolate_, DebugBreakTrampoline);
   std::vector<Handle<JSFunction>> needs_compile;
   {
     HeapObjectIterator iterator(isolate_->heap());

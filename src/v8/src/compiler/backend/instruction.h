@@ -5,10 +5,8 @@
 #ifndef V8_COMPILER_BACKEND_INSTRUCTION_H_
 #define V8_COMPILER_BACKEND_INSTRUCTION_H_
 
-#include <deque>
 #include <iosfwd>
 #include <map>
-#include <set>
 
 #include "src/base/compiler-specific.h"
 #include "src/base/numbers/double.h"
@@ -553,7 +551,7 @@ class LocationOperand : public InstructionOperand {
       case MachineRepresentation::kTagged:
       case MachineRepresentation::kCompressedPointer:
       case MachineRepresentation::kCompressed:
-      case MachineRepresentation::kCagedPointer:
+      case MachineRepresentation::kSandboxedPointer:
         return true;
       case MachineRepresentation::kBit:
       case MachineRepresentation::kWord8:
@@ -1170,7 +1168,7 @@ class V8_EXPORT_PRIVATE Constant final {
   }
 
   Handle<HeapObject> ToHeapObject() const;
-  Handle<Code> ToCode() const;
+  Handle<CodeT> ToCode() const;
   const StringConstantBase* ToDelayedStringConstant() const;
 
  private:

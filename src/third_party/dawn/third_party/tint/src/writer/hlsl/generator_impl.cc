@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <iomanip>
 #include <set>
 #include <utility>
@@ -51,6 +52,7 @@
 #include "src/transform/decompose_memory_access.h"
 #include "src/transform/external_texture_transform.h"
 #include "src/transform/fold_trivial_single_use_lets.h"
+#include "src/transform/localize_struct_array_assignment.h"
 #include "src/transform/loop_to_for_loop.h"
 #include "src/transform/manager.h"
 #include "src/transform/num_workgroups_from_uniform.h"
@@ -74,26 +76,26 @@ namespace {
 const char kTempNamePrefix[] = "tint_tmp";
 const char kSpecConstantPrefix[] = "WGSL_SPEC_CONSTANT_";
 
-const char* image_format_to_rwtexture_type(ast::ImageFormat image_format) {
+const char* image_format_to_rwtexture_type(ast::TexelFormat image_format) {
   switch (image_format) {
-    case ast::ImageFormat::kRgba8Unorm:
-    case ast::ImageFormat::kRgba8Snorm:
-    case ast::ImageFormat::kRgba16Float:
-    case ast::ImageFormat::kR32Float:
-    case ast::ImageFormat::kRg32Float:
-    case ast::ImageFormat::kRgba32Float:
+    case ast::TexelFormat::kRgba8Unorm:
+    case ast::TexelFormat::kRgba8Snorm:
+    case ast::TexelFormat::kRgba16Float:
+    case ast::TexelFormat::kR32Float:
+    case ast::TexelFormat::kRg32Float:
+    case ast::TexelFormat::kRgba32Float:
       return "float4";
-    case ast::ImageFormat::kRgba8Uint:
-    case ast::ImageFormat::kRgba16Uint:
-    case ast::ImageFormat::kR32Uint:
-    case ast::ImageFormat::kRg32Uint:
-    case ast::ImageFormat::kRgba32Uint:
+    case ast::TexelFormat::kRgba8Uint:
+    case ast::TexelFormat::kRgba16Uint:
+    case ast::TexelFormat::kR32Uint:
+    case ast::TexelFormat::kRg32Uint:
+    case ast::TexelFormat::kRgba32Uint:
       return "uint4";
-    case ast::ImageFormat::kRgba8Sint:
-    case ast::ImageFormat::kRgba16Sint:
-    case ast::ImageFormat::kR32Sint:
-    case ast::ImageFormat::kRg32Sint:
-    case ast::ImageFormat::kRgba32Sint:
+    case ast::TexelFormat::kRgba8Sint:
+    case ast::TexelFormat::kRgba16Sint:
+    case ast::TexelFormat::kR32Sint:
+    case ast::TexelFormat::kRg32Sint:
+    case ast::TexelFormat::kRgba32Sint:
       return "int4";
     default:
       return nullptr;
@@ -144,6 +146,15 @@ SanitizedResult Sanitize(
       array_length_from_uniform.bindpoint_to_size_index;
 
   manager.Add<transform::Unshadow>();
+
+  // LocalizeStructArrayAssignment must come after:
+  // * SimplifyPointers, because it assumes assignment to arrays in structs are
+  // done directly, not indirectly.
+  // TODO(crbug.com/tint/1340): See if we can get rid of the duplicate
+  // SimplifyPointers transform. Can't do it right now because
+  // LocalizeStructArrayAssignment introduces pointers.
+  manager.Add<transform::SimplifyPointers>();
+  manager.Add<transform::LocalizeStructArrayAssignment>();
 
   // Attempt to convert `loop`s into for-loops. This is to try and massage the
   // output into something that will not cause FXC to choke or misbehave.
@@ -608,6 +619,127 @@ bool GeneratorImpl::EmitAssign(const ast::AssignmentStatement* stmt) {
   return true;
 }
 
+bool GeneratorImpl::EmitExpressionOrOneIfZero(std::ostream& out,
+                                              const ast::Expression* expr) {
+  // For constants, replace literal 0 with 1.
+  sem::Constant::Scalars elems;
+  if (const auto& val = builder_.Sem().Get(expr)->ConstantValue()) {
+    if (!val.AnyZero()) {
+      return EmitExpression(out, expr);
+    }
+
+    if (val.Type()->IsAnyOf<sem::I32, sem::U32>()) {
+      return EmitValue(out, val.Type(), 1);
+    }
+
+    if (auto* vec = val.Type()->As<sem::Vector>()) {
+      auto* elem_ty = vec->type();
+
+      if (!EmitType(out, val.Type(), ast::StorageClass::kNone,
+                    ast::Access::kUndefined, "")) {
+        return false;
+      }
+
+      out << "(";
+      for (size_t i = 0; i < val.Elements().size(); ++i) {
+        if (i != 0) {
+          out << ", ";
+        }
+        if (!val.WithScalarAt(i, [&](auto&& s) -> bool {
+              // Use std::equal_to to work around -Wfloat-equal warnings
+              auto equals_to =
+                  std::equal_to<std::remove_reference_t<decltype(s)>>{};
+
+              bool is_zero = equals_to(s, 0);
+              return EmitValue(out, elem_ty, is_zero ? 1 : static_cast<int>(s));
+            })) {
+          return false;
+        }
+      }
+      out << ")";
+      return true;
+    }
+
+    TINT_ICE(Writer, diagnostics_)
+        << "EmitExpressionOrOneIfZero expects integer scalar or vector";
+    return false;
+  }
+
+  auto* ty = TypeOf(expr)->UnwrapRef();
+
+  // For non-constants, we need to emit runtime code to check if the value is 0,
+  // and return 1 in that case.
+  std::string zero;
+  {
+    std::ostringstream ss;
+    EmitValue(ss, ty, 0);
+    zero = ss.str();
+  }
+  std::string one;
+  {
+    std::ostringstream ss;
+    EmitValue(ss, ty, 1);
+    one = ss.str();
+  }
+
+  // For identifiers, no need for a function call as it's fine to evaluate
+  // `expr` more than once.
+  if (expr->Is<ast::IdentifierExpression>()) {
+    out << "(";
+    if (!EmitExpression(out, expr)) {
+      return false;
+    }
+    out << " == " << zero << " ? " << one << " : ";
+    if (!EmitExpression(out, expr)) {
+      return false;
+    }
+    out << ")";
+    return true;
+  }
+
+  // For non-identifier expressions, call a function to make sure `expr` is only
+  // evaluated once.
+  auto name =
+      utils::GetOrCreate(value_or_one_if_zero_, ty, [&]() -> std::string {
+        // Example:
+        // int4 tint_value_or_one_if_zero_int4(int4 value) {
+        //   return value == 0 ? 0 : value;
+        // }
+        std::string ty_name;
+        {
+          std::ostringstream ss;
+          if (!EmitType(ss, ty, tint::ast::StorageClass::kInvalid,
+                        ast::Access::kUndefined, "")) {
+            return "";
+          }
+          ty_name = ss.str();
+        }
+
+        std::string fn = UniqueIdentifier("value_or_one_if_zero_" + ty_name);
+        line(&helpers_) << ty_name << " " << fn << "(" << ty_name
+                        << " value) {";
+        {
+          ScopedIndent si(&helpers_);
+          line(&helpers_) << "return value == " << zero << " ? " << one
+                          << " : value;";
+        }
+        line(&helpers_) << "}";
+        line(&helpers_);
+        return fn;
+      });
+
+  if (name.empty()) {
+    return false;
+  }
+
+  out << name << "(";
+  if (!EmitExpression(out, expr)) {
+    return false;
+  }
+  out << ")";
+  return true;
+}
+
 bool GeneratorImpl::EmitBinary(std::ostream& out,
                                const ast::BinaryExpression* expr) {
   if (expr->op == ast::BinaryOp::kLogicalAnd ||
@@ -731,22 +863,21 @@ bool GeneratorImpl::EmitBinary(std::ostream& out,
       break;
     case ast::BinaryOp::kDivide:
       out << "/";
-
-      if (auto val = builder_.Sem().Get(expr->rhs)->ConstantValue()) {
-        // Integer divide by zero is a DXC compile error, and undefined behavior
-        // in WGSL. Replace the 0 with 1.
-        if (val.Type()->Is<sem::I32>() && val.Elements()[0].i32 == 0) {
-          out << " 1";
-          return true;
-        }
-        if (val.Type()->Is<sem::U32>() && val.Elements()[0].u32 == 0u) {
-          out << " 1u";
-          return true;
-        }
+      // BUG(crbug.com/tint/1083): Integer divide/modulo by zero is a FXC
+      // compile error, and undefined behavior in WGSL.
+      if (TypeOf(expr->rhs)->UnwrapRef()->is_integer_scalar_or_vector()) {
+        out << " ";
+        return EmitExpressionOrOneIfZero(out, expr->rhs);
       }
       break;
     case ast::BinaryOp::kModulo:
       out << "%";
+      // BUG(crbug.com/tint/1083): Integer divide/modulo by zero is a FXC
+      // compile error, and undefined behavior in WGSL.
+      if (TypeOf(expr->rhs)->UnwrapRef()->is_integer_scalar_or_vector()) {
+        out << " ";
+        return EmitExpressionOrOneIfZero(out, expr->rhs);
+      }
       break;
     case ast::BinaryOp::kNone:
       diagnostics_.add_error(diag::System::Writer,
@@ -885,6 +1016,12 @@ bool GeneratorImpl::EmitIntrinsicCall(std::ostream& out,
   if (intrinsic->Type() == sem::IntrinsicType::kIsNormal) {
     return EmitIsNormalCall(out, expr, intrinsic);
   }
+  if (intrinsic->Type() == sem::IntrinsicType::kDegrees) {
+    return EmitDegreesCall(out, expr, intrinsic);
+  }
+  if (intrinsic->Type() == sem::IntrinsicType::kRadians) {
+    return EmitRadiansCall(out, expr, intrinsic);
+  }
   if (intrinsic->Type() == sem::IntrinsicType::kIgnore) {
     return EmitExpression(out, expr->args[0]);  // [DEPRECATED]
   }
@@ -900,7 +1037,6 @@ bool GeneratorImpl::EmitIntrinsicCall(std::ostream& out,
   if (intrinsic->IsAtomic()) {
     return EmitWorkgroupAtomicCall(out, expr, intrinsic);
   }
-
   auto name = generate_builtin_name(intrinsic);
   if (name.empty()) {
     return false;
@@ -1792,6 +1928,30 @@ bool GeneratorImpl::EmitIsNormalCall(std::ostream& out,
                 << "clamp(exponent, " << kMinNormalExponent << ", "
                 << kMaxNormalExponent << ");";
         line(b) << "return clamped == exponent;";
+        return true;
+      });
+}
+
+bool GeneratorImpl::EmitDegreesCall(std::ostream& out,
+                                    const ast::CallExpression* expr,
+                                    const sem::Intrinsic* intrinsic) {
+  return CallIntrinsicHelper(
+      out, expr, intrinsic,
+      [&](TextBuffer* b, const std::vector<std::string>& params) {
+        line(b) << "return " << params[0] << " * " << std::setprecision(20)
+                << sem::kRadToDeg << ";";
+        return true;
+      });
+}
+
+bool GeneratorImpl::EmitRadiansCall(std::ostream& out,
+                                    const ast::CallExpression* expr,
+                                    const sem::Intrinsic* intrinsic) {
+  return CallIntrinsicHelper(
+      out, expr, intrinsic,
+      [&](TextBuffer* b, const std::vector<std::string>& params) {
+        line(b) << "return " << params[0] << " * " << std::setprecision(20)
+                << sem::kDegToRad << ";";
         return true;
       });
 }
@@ -2709,14 +2869,6 @@ bool GeneratorImpl::EmitUniformVariable(const sem::Variable* var) {
   auto* decl = var->Declaration();
   auto binding_point = decl->BindingPoint();
   auto* type = var->Type()->UnwrapRef();
-
-  auto* str = type->As<sem::Struct>();
-  if (!str) {
-    // https://www.w3.org/TR/WGSL/#module-scope-variables
-    TINT_ICE(Writer, diagnostics_)
-        << "variables with uniform storage must be structure";
-  }
-
   auto name = builder_.Symbols().NameFor(decl->symbol);
   line() << "cbuffer cbuffer_" << name << RegisterAndSpace('b', binding_point)
          << " {";
@@ -2996,15 +3148,17 @@ bool GeneratorImpl::EmitLiteral(std::ostream& out,
   return true;
 }
 
-bool GeneratorImpl::EmitZeroValue(std::ostream& out, const sem::Type* type) {
+bool GeneratorImpl::EmitValue(std::ostream& out,
+                              const sem::Type* type,
+                              int value) {
   if (type->Is<sem::Bool>()) {
-    out << "false";
+    out << (value == 0 ? "false" : "true");
   } else if (type->Is<sem::F32>()) {
-    out << "0.0f";
+    out << value << ".0f";
   } else if (type->Is<sem::I32>()) {
-    out << "0";
+    out << value;
   } else if (type->Is<sem::U32>()) {
-    out << "0u";
+    out << value << "u";
   } else if (auto* vec = type->As<sem::Vector>()) {
     if (!EmitType(out, type, ast::StorageClass::kNone, ast::Access::kReadWrite,
                   "")) {
@@ -3015,7 +3169,7 @@ bool GeneratorImpl::EmitZeroValue(std::ostream& out, const sem::Type* type) {
       if (i != 0) {
         out << ", ";
       }
-      if (!EmitZeroValue(out, vec->type())) {
+      if (!EmitValue(out, vec->type(), value)) {
         return false;
       }
     }
@@ -3029,7 +3183,7 @@ bool GeneratorImpl::EmitZeroValue(std::ostream& out, const sem::Type* type) {
       if (i != 0) {
         out << ", ";
       }
-      if (!EmitZeroValue(out, mat->type())) {
+      if (!EmitValue(out, mat->type(), value)) {
         return false;
       }
     }
@@ -3039,14 +3193,18 @@ bool GeneratorImpl::EmitZeroValue(std::ostream& out, const sem::Type* type) {
                   "")) {
       return false;
     }
-    out << ")0";
+    out << ")" << value;
   } else {
     diagnostics_.add_error(
         diag::System::Writer,
-        "Invalid type for zero emission: " + type->type_name());
+        "Invalid type for value emission: " + type->type_name());
     return false;
   }
   return true;
+}
+
+bool GeneratorImpl::EmitZeroValue(std::ostream& out, const sem::Type* type) {
+  return EmitValue(out, type, 0);
 }
 
 bool GeneratorImpl::EmitLoop(const ast::LoopStatement* stmt) {
@@ -3066,7 +3224,7 @@ bool GeneratorImpl::EmitLoop(const ast::LoopStatement* stmt) {
     if (!EmitStatements(stmt->body->statements)) {
       return false;
     }
-    if (!emit_continuing()) {
+    if (!emit_continuing_()) {
       return false;
     }
   }
@@ -3146,7 +3304,7 @@ bool GeneratorImpl::EmitForLoop(const ast::ForLoopStatement* stmt) {
       return false;
     }
 
-    if (!emit_continuing()) {
+    if (!emit_continuing_()) {
       return false;
     }
   } else {
@@ -3347,13 +3505,7 @@ bool GeneratorImpl::EmitType(std::ostream& out,
       out << "ByteAddressBuffer";
       return true;
     case ast::StorageClass::kUniform: {
-      auto* str = type->As<sem::Struct>();
-      if (!str) {
-        // https://www.w3.org/TR/WGSL/#module-scope-variables
-        TINT_ICE(Writer, diagnostics_)
-            << "variables with uniform storage must be structure";
-      }
-      auto array_length = (str->Size() + 15) / 16;
+      auto array_length = (type->Size() + 15) / 16;
       out << "uint4 " << name << "[" << array_length << "]";
       if (name_printed) {
         *name_printed = true;
@@ -3457,11 +3609,11 @@ bool GeneratorImpl::EmitType(std::ostream& out,
     }
 
     if (storage) {
-      auto* component = image_format_to_rwtexture_type(storage->image_format());
+      auto* component = image_format_to_rwtexture_type(storage->texel_format());
       if (component == nullptr) {
         TINT_ICE(Writer, diagnostics_)
-            << "Unsupported StorageTexture ImageFormat: "
-            << static_cast<int>(storage->image_format());
+            << "Unsupported StorageTexture TexelFormat: "
+            << static_cast<int>(storage->texel_format());
         return false;
       }
       out << "<" << component << ">";

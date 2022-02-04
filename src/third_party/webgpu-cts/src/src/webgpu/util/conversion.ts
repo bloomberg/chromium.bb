@@ -163,7 +163,8 @@ export function packRGB9E5UFloat(r: number, g: number, b: number): number {
  * Asserts that a number is within the representable (inclusive) of the integer type with the
  * specified number of bits and signedness.
  *
- * TODO: Assert isInteger? Then this function "asserts that a number is representable" by the type
+ * MAINTENANCE_TODO: Assert isInteger? Then this function "asserts that a number is representable"
+ * by the type.
  */
 export function assertInIntegerRange(n: number, bits: number, signed: boolean): void {
   if (signed) {

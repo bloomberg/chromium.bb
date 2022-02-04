@@ -246,7 +246,7 @@ namespace Eigen {
                               &&  (!NumTraits<Scalar>::IsComplex)
             };
             typedef typename internal::conditional<TransposeInput,Transpose<const ActualMatrixType>, ActualMatrixType const&>::type RowMajorWrapper;
-            EIGEN_STATIC_ASSERT(EIGEN_IMPLIES(MatrixWrapper::MatrixFree,UpLo==(Lower|Upper)),MATRIX_FREE_CONJUGATE_GRADIENT_IS_COMPATIBLE_WITH_UPPER_UNION_LOWER_MODE_ONLY);
+            EIGEN_STATIC_ASSERT(internal::check_implication(MatrixWrapper::MatrixFree, UpLo==(Lower|Upper)),MATRIX_FREE_CONJUGATE_GRADIENT_IS_COMPATIBLE_WITH_UPPER_UNION_LOWER_MODE_ONLY);
             typedef typename internal::conditional<UpLo==(Lower|Upper),
                                                   RowMajorWrapper,
                                                   typename MatrixWrapper::template ConstSelfAdjointViewReturnType<UpLo>::Type

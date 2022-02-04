@@ -33,6 +33,7 @@
 #include "platform/base/bluetooth_utils.h"
 #include "platform/public/logging.h"
 #include "platform/public/system_clock.h"
+#include "proto/connections_enums.pb.h"
 
 namespace location {
 namespace nearby {
@@ -357,6 +358,7 @@ void BasePcpHandler::OnEncryptionSuccessRunnable(
 
   // Now we register our endpoint so that we can listen for both sides to
   // accept.
+  LogConnectionAttemptSuccess(endpoint_id, connection_info);
   endpoint_manager_->RegisterEndpoint(
       connection_info.client, endpoint_id,
       {
@@ -390,19 +392,6 @@ void BasePcpHandler::OnEncryptionSuccessRunnable(
       },
       std::move(connection_info.channel), connection_info.listener,
       connection_info.connection_token);
-
-  if (connection_info.is_incoming) {
-    connection_info.client->GetAnalyticsRecorder().OnIncomingConnectionAttempt(
-        proto::connections::INITIAL, medium, proto::connections::RESULT_SUCCESS,
-        SystemClock::ElapsedRealtime() - connection_info.start_time,
-        connection_info.connection_token);
-  } else {
-    connection_info.client->GetAnalyticsRecorder().OnOutgoingConnectionAttempt(
-        endpoint_id, proto::connections::INITIAL, medium,
-        proto::connections::RESULT_SUCCESS,
-        SystemClock::ElapsedRealtime() - connection_info.start_time,
-        connection_info.connection_token);
-  }
 
   if (auto future_status = connection_info.result.lock()) {
     NEARBY_LOGS(INFO) << "Connection established; Finalising future OK.";
@@ -503,7 +492,6 @@ Status BasePcpHandler::RequestConnection(ClientProxy* client,
         ConnectImplResult connect_impl_result;
 
         for (auto connect_endpoint : discovered_endpoints) {
-          absl::Time connect_start_time = SystemClock::ElapsedRealtime();
           if (!MediumSupportedByClientOptions(connect_endpoint->medium,
                                               options))
             continue;
@@ -511,10 +499,6 @@ Status BasePcpHandler::RequestConnection(ClientProxy* client,
           if (connect_impl_result.status.Ok()) {
             channel = std::move(connect_impl_result.endpoint_channel);
             break;
-          } else {
-            LogConnectionAttempt(client, connect_endpoint->medium,
-                                 connect_endpoint->endpoint_id,
-                                 /* is_incoming = */ false, connect_start_time);
           }
         }
 
@@ -720,7 +704,8 @@ void BasePcpHandler::ProcessPreConnectionInitiationFailure(
     result->Set(status);
   }
 
-  LogConnectionAttempt(client, medium, endpoint_id, is_incoming, start_time);
+  LogConnectionAttemptFailure(client, medium, endpoint_id, is_incoming,
+                              start_time, channel);
   // result is hold inside a swapper, and saved in PendingConnectionInfo.
   // PendingConnectionInfo destructor will clear the memory of SettableFuture
   // shared_ptr for result.
@@ -1079,10 +1064,9 @@ Exception BasePcpHandler::OnIncomingConnection(
           << "Failed to parse incoming connection request; client="
           << client->GetClientId()
           << "; device=" << absl::BytesToHexString(remote_endpoint_info.data());
-      ProcessPreConnectionInitiationFailure(client, medium, "", channel.get(),
-                                            /* is_incoming= */ false,
-                                            start_time, {Status::kError},
-                                            nullptr);
+      ProcessPreConnectionInitiationFailure(
+          client, medium, "", channel.get(),
+          /* is_incoming= */ false, start_time, {Status::kError}, nullptr);
       return {Exception::kSuccess};
     }
     return wrapped_frame.GetException();
@@ -1466,23 +1450,68 @@ std::string BasePcpHandler::GetHashedConnectionToken(
       .substr(0, kConnectionTokenLength);
 }
 
-void BasePcpHandler::LogConnectionAttempt(ClientProxy* client, Medium medium,
-                                          const std::string& endpoint_id,
-                                          bool is_incoming,
-                                          absl::Time start_time) {
+void BasePcpHandler::LogConnectionAttemptFailure(
+    ClientProxy* client, Medium medium, const std::string& endpoint_id,
+    bool is_incoming, absl::Time start_time,
+    EndpointChannel* endpoint_channel) {
   proto::connections::ConnectionAttemptResult result =
       Cancelled(client, endpoint_id) ? proto::connections::RESULT_CANCELLED
                                      : proto::connections::RESULT_ERROR;
+  std::unique_ptr<ConnectionAttemptMetadataParams>
+      connections_attempt_metadata_params;
+  if (endpoint_channel != nullptr) {
+    connections_attempt_metadata_params =
+        client->GetAnalyticsRecorder().BuildConnectionAttemptMetadataParams(
+            endpoint_channel->GetTechnology(), endpoint_channel->GetBand(),
+            endpoint_channel->GetFrequency(), endpoint_channel->GetTryCount());
+  }
   if (is_incoming) {
     client->GetAnalyticsRecorder().OnIncomingConnectionAttempt(
         proto::connections::INITIAL, medium, result,
         SystemClock::ElapsedRealtime() - start_time,
-        /* connection_token= */ "");
+        /* connection_token= */ "", connections_attempt_metadata_params.get());
   } else {
     client->GetAnalyticsRecorder().OnOutgoingConnectionAttempt(
         endpoint_id, proto::connections::INITIAL, medium, result,
         SystemClock::ElapsedRealtime() - start_time,
-        /* connection_token= */ "");
+        /* connection_token= */ "", connections_attempt_metadata_params.get());
+  }
+}
+
+void BasePcpHandler::LogConnectionAttemptSuccess(
+    const std::string& endpoint_id,
+    const PendingConnectionInfo& connection_info) {
+  std::unique_ptr<ConnectionAttemptMetadataParams>
+      connections_attempt_metadata_params;
+  if (connection_info.channel != nullptr) {
+    connections_attempt_metadata_params =
+        connection_info.client->GetAnalyticsRecorder()
+            .BuildConnectionAttemptMetadataParams(
+                connection_info.channel->GetTechnology(),
+                connection_info.channel->GetBand(),
+                connection_info.channel->GetFrequency(),
+                connection_info.channel->GetTryCount());
+  } else {
+    NEARBY_LOG(ERROR,
+               "PendingConnectionInfo channel is null for "
+               "LogConnectionAttemptSuccess. Bail out.");
+    return;
+  }
+  if (connection_info.is_incoming) {
+    connection_info.client->GetAnalyticsRecorder().OnIncomingConnectionAttempt(
+        proto::connections::INITIAL, connection_info.channel->GetMedium(),
+        proto::connections::RESULT_SUCCESS,
+        SystemClock::ElapsedRealtime() - connection_info.start_time,
+        connection_info.connection_token,
+        connections_attempt_metadata_params.get());
+  } else {
+    connection_info.client->GetAnalyticsRecorder().OnOutgoingConnectionAttempt(
+        endpoint_id, proto::connections::INITIAL,
+        connection_info.channel->GetMedium(),
+        proto::connections::RESULT_SUCCESS,
+        SystemClock::ElapsedRealtime() - connection_info.start_time,
+        connection_info.connection_token,
+        connections_attempt_metadata_params.get());
   }
 }
 

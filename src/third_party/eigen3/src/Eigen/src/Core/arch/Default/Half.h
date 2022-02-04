@@ -208,39 +208,39 @@ struct half : public half_impl::half_base {
 namespace std {
 template<>
 struct numeric_limits<Eigen::half> {
-  static const bool is_specialized = true;
-  static const bool is_signed = true;
-  static const bool is_integer = false;
-  static const bool is_exact = false;
-  static const bool has_infinity = true;
-  static const bool has_quiet_NaN = true;
-  static const bool has_signaling_NaN = true;
-  static const float_denorm_style has_denorm = denorm_present;
-  static const bool has_denorm_loss = false;
-  static const std::float_round_style round_style = std::round_to_nearest;
-  static const bool is_iec559 = false;
-  static const bool is_bounded = false;
-  static const bool is_modulo = false;
-  static const int digits = 11;
-  static const int digits10 = 3;      // according to http://half.sourceforge.net/structstd_1_1numeric__limits_3_01half__float_1_1half_01_4.html
-  static const int max_digits10 = 5;  // according to http://half.sourceforge.net/structstd_1_1numeric__limits_3_01half__float_1_1half_01_4.html
-  static const int radix = 2;
-  static const int min_exponent = -13;
-  static const int min_exponent10 = -4;
-  static const int max_exponent = 16;
-  static const int max_exponent10 = 4;
-  static const bool traps = true;
-  static const bool tinyness_before = false;
+  static EIGEN_CONSTEXPR const bool is_specialized = true;
+  static EIGEN_CONSTEXPR const bool is_signed = true;
+  static EIGEN_CONSTEXPR const bool is_integer = false;
+  static EIGEN_CONSTEXPR const bool is_exact = false;
+  static EIGEN_CONSTEXPR const bool has_infinity = true;
+  static EIGEN_CONSTEXPR const bool has_quiet_NaN = true;
+  static EIGEN_CONSTEXPR const bool has_signaling_NaN = true;
+  static EIGEN_CONSTEXPR const float_denorm_style has_denorm = denorm_present;
+  static EIGEN_CONSTEXPR const bool has_denorm_loss = false;
+  static EIGEN_CONSTEXPR const std::float_round_style round_style = std::round_to_nearest;
+  static EIGEN_CONSTEXPR const bool is_iec559 = false;
+  static EIGEN_CONSTEXPR const bool is_bounded = false;
+  static EIGEN_CONSTEXPR const bool is_modulo = false;
+  static EIGEN_CONSTEXPR const int digits = 11;
+  static EIGEN_CONSTEXPR const int digits10 = 3;      // according to http://half.sourceforge.net/structstd_1_1numeric__limits_3_01half__float_1_1half_01_4.html
+  static EIGEN_CONSTEXPR const int max_digits10 = 5;  // according to http://half.sourceforge.net/structstd_1_1numeric__limits_3_01half__float_1_1half_01_4.html
+  static EIGEN_CONSTEXPR const int radix = 2;
+  static EIGEN_CONSTEXPR const int min_exponent = -13;
+  static EIGEN_CONSTEXPR const int min_exponent10 = -4;
+  static EIGEN_CONSTEXPR const int max_exponent = 16;
+  static EIGEN_CONSTEXPR const int max_exponent10 = 4;
+  static EIGEN_CONSTEXPR const bool traps = true;
+  static EIGEN_CONSTEXPR const bool tinyness_before = false;
 
-  static Eigen::half (min)() { return Eigen::half_impl::raw_uint16_to_half(0x400); }
-  static Eigen::half lowest() { return Eigen::half_impl::raw_uint16_to_half(0xfbff); }
-  static Eigen::half (max)() { return Eigen::half_impl::raw_uint16_to_half(0x7bff); }
-  static Eigen::half epsilon() { return Eigen::half_impl::raw_uint16_to_half(0x0800); }
-  static Eigen::half round_error() { return Eigen::half(0.5); }
-  static Eigen::half infinity() { return Eigen::half_impl::raw_uint16_to_half(0x7c00); }
-  static Eigen::half quiet_NaN() { return Eigen::half_impl::raw_uint16_to_half(0x7e00); }
-  static Eigen::half signaling_NaN() { return Eigen::half_impl::raw_uint16_to_half(0x7d00); }
-  static Eigen::half denorm_min() { return Eigen::half_impl::raw_uint16_to_half(0x1); }
+  static EIGEN_CONSTEXPR Eigen::half (min)() { return Eigen::half_impl::raw_uint16_to_half(0x400); }
+  static EIGEN_CONSTEXPR Eigen::half lowest() { return Eigen::half_impl::raw_uint16_to_half(0xfbff); }
+  static EIGEN_CONSTEXPR Eigen::half (max)() { return Eigen::half_impl::raw_uint16_to_half(0x7bff); }
+  static EIGEN_CONSTEXPR Eigen::half epsilon() { return Eigen::half_impl::raw_uint16_to_half(0x0800); }
+  static EIGEN_CONSTEXPR Eigen::half round_error() { return Eigen::half_impl::raw_uint16_to_half(0x3800); }
+  static EIGEN_CONSTEXPR Eigen::half infinity() { return Eigen::half_impl::raw_uint16_to_half(0x7c00); }
+  static EIGEN_CONSTEXPR Eigen::half quiet_NaN() { return Eigen::half_impl::raw_uint16_to_half(0x7e00); }
+  static EIGEN_CONSTEXPR Eigen::half signaling_NaN() { return Eigen::half_impl::raw_uint16_to_half(0x7d00); }
+  static EIGEN_CONSTEXPR Eigen::half denorm_min() { return Eigen::half_impl::raw_uint16_to_half(0x1); }
 };
 
 // If std::numeric_limits<T> is specialized, should also specialize

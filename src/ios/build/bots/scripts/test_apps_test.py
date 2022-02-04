@@ -42,25 +42,54 @@ class UtilTest(test_runner_test.TestCase):
 class GetGTestFilterTest(test_runner_test.TestCase):
   """Tests for test_runner.get_gtest_filter."""
 
-  def test_correct(self):
+  def test_correct_included(self):
     """Ensures correctness of filter."""
-    tests = [
-      'test.1',
-      'test.2',
+    included = [
+        'test.1',
+        'test.2',
     ]
     expected = 'test.1:test.2'
 
-    self.assertEqual(test_apps.get_gtest_filter(tests), expected)
+    self.assertEqual(test_apps.get_gtest_filter(included, []), expected)
 
-  def test_correct_inverted(self):
+  def test_correct_excluded(self):
     """Ensures correctness of inverted filter."""
-    tests = [
-      'test.1',
-      'test.2',
+    excluded = [
+        'test.1',
+        'test.2',
     ]
     expected = '-test.1:test.2'
 
-    self.assertEqual(test_apps.get_gtest_filter(tests, invert=True), expected)
+    self.assertEqual(test_apps.get_gtest_filter([], excluded), expected)
+
+  def test_both_included_excluded(self):
+    """Ensures correctness when both included, excluded exist."""
+    included = ['test.1', 'test.2']
+    excluded = ['test.2', 'test.3']
+    expected = 'test.1'
+    self.assertEqual(test_apps.get_gtest_filter(included, excluded), expected)
+
+    included = ['test.1', 'test.2']
+    excluded = ['test.3', 'test.4']
+    expected = 'test.1:test.2'
+    self.assertEqual(test_apps.get_gtest_filter(included, excluded), expected)
+
+    included = ['test.1', 'test.2', 'test.3']
+    excluded = ['test.3']
+    expected = 'test.1:test.2'
+    self.assertEqual(test_apps.get_gtest_filter(included, excluded), expected)
+
+    included = ['test.1', 'test.2']
+    excluded = ['test.1', 'test.2']
+    expected = '-*'
+    self.assertEqual(test_apps.get_gtest_filter(included, excluded), expected)
+
+  def test_empty_included_excluded(self):
+    """Ensures correctness when both included, excluded are empty."""
+    with self.assertRaises(AssertionError) as ctx:
+      test_apps.get_gtest_filter([], [])
+      self.assertEuqals('One of included or excluded list should exist.',
+                        ctx.message)
 
 
 class EgtestsAppGetAllTestsTest(test_runner_test.TestCase):
@@ -118,6 +147,20 @@ class DeviceXCTestUnitTestsAppTest(test_runner_test.TestCase):
     xctestrun_node = test_app.fill_xctestrun_node()
     self.assertEqual(xctestrun_node, expected_xctestrun_node)
 
+  @mock.patch('test_apps.get_bundle_id', return_value=_BUNDLE_ID)
+  @mock.patch(
+      'test_apps.DeviceXCTestUnitTestsApp._xctest_path',
+      return_value=_XCTEST_PATH)
+  @mock.patch('os.path.exists', return_value=True)
+  def test_repeat_arg_in_xctestrun_node(self, *args):
+    """Tests fill_xctestrun_node method."""
+    test_app = test_apps.DeviceXCTestUnitTestsApp(
+        _TEST_APP_PATH, repeat_count=20)
+    xctestrun_node = test_app.fill_xctestrun_node()
+    self.assertIn(
+        '--gtest_repeat=20',
+        xctestrun_node.get('TestTargetName', {}).get('CommandLineArguments'))
+
 
 class SimulatorXCTestUnitTestsAppTest(test_runner_test.TestCase):
   """Tests to test methods of SimulatorXCTestUnitTestsApp."""
@@ -156,6 +199,20 @@ class SimulatorXCTestUnitTestsAppTest(test_runner_test.TestCase):
     }
     xctestrun_node = test_app.fill_xctestrun_node()
     self.assertEqual(xctestrun_node, expected_xctestrun_node)
+
+  @mock.patch('test_apps.get_bundle_id', return_value=_BUNDLE_ID)
+  @mock.patch(
+      'test_apps.SimulatorXCTestUnitTestsApp._xctest_path',
+      return_value=_XCTEST_PATH)
+  @mock.patch('os.path.exists', return_value=True)
+  def test_repeat_arg_in_xctestrun_node(self, *args):
+    """Tests fill_xctestrun_node method."""
+    test_app = test_apps.SimulatorXCTestUnitTestsApp(
+        _TEST_APP_PATH, repeat_count=20)
+    xctestrun_node = test_app.fill_xctestrun_node()
+    self.assertIn(
+        '--gtest_repeat=20',
+        xctestrun_node.get('TestTargetName', {}).get('CommandLineArguments'))
 
 
 class GTestsAppTest(test_runner_test.TestCase):

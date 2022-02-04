@@ -125,6 +125,11 @@ struct MhloToScalarOp<mhlo::OrOp> {
   using UOp = ::mlir::arith::OrIOp;
 };
 template <>
+struct MhloToScalarOp<mhlo::PopulationCountOp> {
+  using IOp = ::mlir::math::CtPopOp;
+  using UOp = ::mlir::math::CtPopOp;
+};
+template <>
 struct MhloToScalarOp<mhlo::RemOp> {
   using FOp = ::mlir::arith::RemFOp;
   using IOp = ::mlir::arith::RemSIOp;
@@ -309,6 +314,28 @@ inline Value MapMhloOpToStdScalarOp<mhlo::AbsOp>(Location loc,
         loc, arith::CmpIPredicate::sge, lhs, zero_intval);
     auto neg_val = b->create<ScalarIOp<mhlo::SubOp>>(loc, zero_intval, lhs);
     return b->create<::mlir::SelectOp>(loc, lhs_gt_zero, lhs, neg_val);
+  }
+  return nullptr;
+}
+
+template <>
+inline Value MapMhloOpToStdScalarOp<mhlo::CbrtOp>(Location loc,
+                                                  ArrayRef<Type> result_types,
+                                                  ArrayRef<Type> arg_types,
+                                                  ValueRange args,
+                                                  OpBuilder* b) {
+  mhlo::CbrtOp::Adaptor adaptor(args);
+  Type element_type = getElementTypeOrSelf(arg_types.front());
+  if (auto float_type = element_type.dyn_cast<FloatType>()) {
+    // Convert cbrt(x) to copysign(cbrt(abs(x), 1.0 / 3.0), x).
+    // This is to allow cbrt using pow while still handling negative numbers. It
+    // should match most cbrt intrinsics.
+    Value abs = b->create<mlir::math::AbsOp>(loc, adaptor.operand());
+    Value third = b->create<arith::ConstantOp>(
+        loc, b->getFloatAttr(float_type, 1.0 / 3.0));
+    Value pow = b->create<mlir::math::PowFOp>(loc, result_types[0], abs, third);
+    return b->create<mlir::math::CopySignOp>(loc, float_type, pow,
+                                             adaptor.operand());
   }
   return nullptr;
 }
@@ -765,6 +792,30 @@ inline Value MapMhloOpToStdScalarOp<mhlo::PowOp>(Location loc,
       lhs_is_neg_one, lb.create<::mlir::SelectOp>(rhs_is_even, one, neg_one),
       if_lhs_is_one);
   return lb.create<::mlir::SelectOp>(rhs_is_negative, if_lhs_is_neg_one, accum);
+}
+
+template <>
+inline Value MapMhloOpToStdScalarOp<mhlo::RoundOp>(Location loc,
+                                                   ArrayRef<Type> result_types,
+                                                   ArrayRef<Type> arg_types,
+                                                   ValueRange args,
+                                                   OpBuilder* b) {
+  mhlo::RoundOp::Adaptor adaptor(args);
+  auto lb = ImplicitLocOpBuilder(loc, *b);
+  auto operand = adaptor.operand();
+  auto operand_ty = operand.getType();
+  auto element_ty = getElementTypeOrSelf(operand_ty);
+
+  if (auto float_type = element_ty.dyn_cast<FloatType>()) {
+    Value half =
+        b->create<arith::ConstantOp>(loc, b->getFloatAttr(float_type, 0.5));
+    auto abs = lb.create<math::AbsOp>(operand_ty, operand);
+    auto add = lb.create<arith::AddFOp>(abs, half);
+    auto floor = lb.create<math::FloorOp>(add);
+    return lb.create<mlir::math::CopySignOp>(floor, operand);
+  }
+
+  return nullptr;
 }
 
 template <>

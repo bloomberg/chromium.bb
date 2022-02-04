@@ -4,7 +4,7 @@
  *
  *   TrueType and OpenType embedded bitmap support (body).
  *
- * Copyright (C) 2005-2021 by
+ * Copyright (C) 2005-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Copyright 2013 by Google, Inc.
@@ -729,6 +729,9 @@
     bit_height = bitmap->rows;
     pitch      = bitmap->pitch;
     line       = bitmap->buffer;
+
+    if ( !line )
+      goto Exit;
 
     width  = decoder->metrics->width;
     height = decoder->metrics->height;

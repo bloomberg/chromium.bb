@@ -9,6 +9,8 @@
 
 #include "experimental/graphite/include/TextureInfo.h"
 #include "experimental/graphite/include/mtl/MtlTypes.h"
+#include "experimental/graphite/src/CommandBuffer.h"
+#include "experimental/graphite/src/GraphicsPipelineDesc.h"
 #include "experimental/graphite/src/mtl/MtlUtils.h"
 #include "src/sksl/SkSLUtil.h"
 
@@ -311,18 +313,45 @@ skgpu::TextureInfo Caps::getDefaultDepthStencilTextureInfo(Mask<DepthStencilFlag
     return info;
 }
 
-bool Caps::isTexturable(const skgpu::TextureInfo& info) const {
-    return info.mtlTextureSpec().fUsage & MTLTextureUsageShaderRead &&
-           this->isTexturable((MTLPixelFormat)info.mtlTextureSpec().fFormat);
+UniqueKey Caps::makeGraphicsPipelineKey(const GraphicsPipelineDesc& pipelineDesc,
+                                        const RenderPassDesc& renderPassDesc) const {
+    UniqueKey pipelineKey;
+    {
+        static const skgpu::UniqueKey::Domain kGraphicsPipelineDomain = UniqueKey::GenerateDomain();
+        SkSpan<const uint32_t> pipelineDescKey = pipelineDesc.asKey();
+        UniqueKey::Builder builder(&pipelineKey, kGraphicsPipelineDomain,
+                                   pipelineDescKey.size() + 1, "GraphicsPipeline");
+        // add graphicspipelinedesc key
+        for (unsigned int i = 0; i < pipelineDescKey.size(); ++i) {
+            builder[i] = pipelineDescKey[i];
+        }
+        // add renderpassdesc key
+        mtl::TextureInfo colorInfo, depthStencilInfo;
+        renderPassDesc.fColorAttachment.fTextureInfo.getMtlTextureInfo(&colorInfo);
+        renderPassDesc.fDepthStencilAttachment.fTextureInfo.getMtlTextureInfo(&depthStencilInfo);
+        SkASSERT(colorInfo.fFormat < 65535 && depthStencilInfo.fFormat < 65535);
+        uint32_t renderPassKey = colorInfo.fFormat << 16 | depthStencilInfo.fFormat;
+        builder[pipelineDescKey.size()] = renderPassKey;
+        builder.finish();
+    }
+
+    return pipelineKey;
+}
+
+bool Caps::onIsTexturable(const skgpu::TextureInfo& info) const {
+    if (!(info.mtlTextureSpec().fUsage & MTLTextureUsageShaderRead)) {
+        return false;
+    }
+    if (info.mtlTextureSpec().fFramebufferOnly) {
+        return false;
+    }
+    return this->isTexturable((MTLPixelFormat)info.mtlTextureSpec().fFormat);
 }
 
 bool Caps::isTexturable(MTLPixelFormat format) const {
     // TODO: Fill out format table so that we can query all formats. For now we only support RGBA8
-    // which is supported everywhere.
-    if (format != MTLPixelFormatRGBA8Unorm) {
-        return false;
-    }
-    return true;
+    // and BGRA8 which is supported everywhere.
+    return format == MTLPixelFormatRGBA8Unorm || format == MTLPixelFormatBGRA8Unorm;
 }
 
 bool Caps::isRenderable(const skgpu::TextureInfo& info) const {
@@ -332,8 +361,9 @@ bool Caps::isRenderable(const skgpu::TextureInfo& info) const {
 
 bool Caps::isRenderable(MTLPixelFormat format, uint32_t numSamples) const {
     // TODO: Fill out format table so that we can query all formats. For now we only support RGBA8
-    // with a sampleCount of 1 which is supported everywhere.
-    if (format != MTLPixelFormatRGBA8Unorm || numSamples != 1) {
+    // and BGRA8 with a sampleCount of 1 which is supported everywhere.
+    if ((format != MTLPixelFormatRGBA8Unorm && format != MTLPixelFormatBGRA8Unorm) ||
+        numSamples != 1) {
         return false;
     }
     return true;
@@ -343,9 +373,11 @@ bool Caps::isRenderable(MTLPixelFormat format, uint32_t numSamples) const {
 bool Caps::onAreColorTypeAndTextureInfoCompatible(SkColorType type,
                                                   const skgpu::TextureInfo& info) const {
     // TODO: Fill out format table so that we can query all formats. For now we only support RGBA8
-    // for both the color type and format.
-    return type == kRGBA_8888_SkColorType &&
-           info.mtlTextureSpec().fFormat == MTLPixelFormatRGBA8Unorm;
+    // or BGRA8 for both the color type and format.
+    return (type == kRGBA_8888_SkColorType &&
+            info.mtlTextureSpec().fFormat == MTLPixelFormatRGBA8Unorm) ||
+           (type == kBGRA_8888_SkColorType &&
+            info.mtlTextureSpec().fFormat == MTLPixelFormatBGRA8Unorm);
 }
 
 } // namespace skgpu::mtl

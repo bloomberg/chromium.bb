@@ -297,7 +297,6 @@ bool PeerConnectionInterface::RTCConfiguration::operator==(
     bool disable_ipv6_on_wifi;
     int max_ipv6_networks;
     bool disable_link_local_networks;
-    bool enable_rtp_data_channel;
     absl::optional<int> screencast_min_bitrate;
     absl::optional<bool> combined_audio_video_bwe;
     absl::optional<bool> enable_dtls_srtp;
@@ -419,6 +418,20 @@ RTCErrorOr<rtc::scoped_refptr<PeerConnection>> PeerConnection::Create(
     std::unique_ptr<Call> call,
     const PeerConnectionInterface::RTCConfiguration& configuration,
     PeerConnectionDependencies dependencies) {
+  // Prior to adding this CHECK, the default value was kPlanB. Because kPlanB is
+  // about to be deprecated in favor of the spec-compliant kUnifiedPlan, the
+  // default will soon change to kUnifiedPlan. This CHECK ensures that anybody
+  // implicitly relying on the default being kPlanB is made aware of the change.
+  // To avoid crashing, you can overwrite sdp_semantics to kPlanB for the old
+  // behavior, but you will need to migrate to kUnifiedPlan before kPlanB is
+  // removed.
+  // TODO(https://crbug.com/webrtc/11121): When the default is kUnifiedPlan,
+  // delete kNotSpecified.
+  // TODO(https://crbug.com/webrtc/13528): Remove support for kPlanB.
+  RTC_CHECK(configuration.sdp_semantics != SdpSemantics::kNotSpecified)
+      << "Please specify sdp_semantics. The default is about to change to "
+      << "kUnifiedPlan.";
+
   RTCError config_error = cricket::P2PTransportChannel::ValidateIceConfig(
       ParseIceConfig(configuration));
   if (!config_error.ok()) {
@@ -847,12 +860,7 @@ RTCErrorOr<rtc::scoped_refptr<RtpSenderInterface>> PeerConnection::AddTrack(
   return sender_or_error;
 }
 
-bool PeerConnection::RemoveTrack(RtpSenderInterface* sender) {
-  TRACE_EVENT0("webrtc", "PeerConnection::RemoveTrack");
-  return RemoveTrackNew(sender).ok();
-}
-
-RTCError PeerConnection::RemoveTrackNew(
+RTCError PeerConnection::RemoveTrackOrError(
     rtc::scoped_refptr<RtpSenderInterface> sender) {
   RTC_DCHECK_RUN_ON(signaling_thread());
   if (!sender) {
@@ -1181,7 +1189,8 @@ void PeerConnection::GetStats(RTCStatsCollectorCallback* callback) {
   RTC_DCHECK(stats_collector_);
   RTC_DCHECK(callback);
   RTC_LOG_THREAD_BLOCK_COUNT();
-  stats_collector_->GetStatsReport(callback);
+  stats_collector_->GetStatsReport(
+      rtc::scoped_refptr<RTCStatsCollectorCallback>(callback));
 }
 
 void PeerConnection::GetStats(
@@ -1938,8 +1947,6 @@ void PeerConnection::OnIceCandidateError(const std::string& address,
     return;
   }
   Observer()->OnIceCandidateError(address, port, url, error_code, error_text);
-  // Leftover not to break wpt test during migration to the new API.
-  Observer()->OnIceCandidateError(address + ":", url, error_code, error_text);
 }
 
 void PeerConnection::OnIceCandidatesRemoved(
@@ -2668,8 +2675,8 @@ void PeerConnection::ReportTransportStats() {
       media_types_by_transport_name;
   for (const auto& transceiver : rtp_manager()->transceivers()->UnsafeList()) {
     if (transceiver->internal()->channel()) {
-      const std::string& transport_name =
-          transceiver->internal()->channel()->transport_name();
+      std::string transport_name(
+          transceiver->internal()->channel()->transport_name());
       media_types_by_transport_name[transport_name].insert(
           transceiver->media_type());
     }
@@ -2829,7 +2836,8 @@ bool PeerConnection::OnTransportChanged(
     if (dtls_transport) {
       signaling_thread()->PostTask(ToQueuedTask(
           signaling_thread_safety_.flag(),
-          [this, name = dtls_transport->internal()->transport_name()] {
+          [this,
+           name = std::string(dtls_transport->internal()->transport_name())] {
             RTC_DCHECK_RUN_ON(signaling_thread());
             sctp_transport_name_s_ = std::move(name);
           }));

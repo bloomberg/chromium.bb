@@ -282,7 +282,8 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
         } else if (BookmarkListEntry.isBookmarkEntry(holder.getItemViewType())) {
             BookmarkRow row = ((BookmarkRow) holder.itemView);
             BookmarkId id = getIdByPosition(position);
-            row.setBookmarkId(id, getLocationFromPosition(position));
+            row.setBookmarkId(id, getLocationFromPosition(position),
+                    BookmarkId.SHOPPING_FOLDER.equals(mCurrentFolder));
             row.setDragHandleOnTouchListener((v, event) -> {
                 if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                     mItemTouchHelper.startDrag(holder);
@@ -451,7 +452,7 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
      */
     void moveUpOne(BookmarkId bookmarkId) {
         int pos = getPositionForBookmark(bookmarkId);
-        assert isOrderable(getItemByPosition(pos));
+        assert isReorderable(getItemByPosition(pos));
         mElements.remove(pos);
         mElements.add(pos - 1,
                 BookmarkListEntry.createBookmarkEntry(
@@ -465,7 +466,7 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
      */
     void moveDownOne(BookmarkId bookmarkId) {
         int pos = getPositionForBookmark(bookmarkId);
-        assert isOrderable(getItemByPosition(pos));
+        assert isReorderable(getItemByPosition(pos));
         mElements.remove(pos);
         mElements.add(pos + 1,
                 BookmarkListEntry.createBookmarkEntry(
@@ -593,9 +594,9 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
         return endIndex;
     }
 
-    private boolean isOrderable(BookmarkListEntry entry) {
+    private boolean isReorderable(BookmarkListEntry entry) {
         return entry != null && entry.getBookmarkItem() != null
-                && entry.getBookmarkItem().isMovable();
+                && entry.getBookmarkItem().isReorderable();
     }
 
     @Override
@@ -608,7 +609,7 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
     @Override
     @VisibleForTesting
     public boolean isPassivelyDraggable(ViewHolder viewHolder) {
-        return isOrderable(getItemByHolder(viewHolder));
+        return isReorderable(getItemByHolder(viewHolder));
     }
 
     @VisibleForTesting

@@ -9,4 +9,4 @@ title: ChromeVox on Desktop Linux
 ---
 
 Moved to:
-<https://chromium.googlesource.com/chromium/src/+/lkgr/docs/accessibility/chromevox_on_desktop_linux.md>
+<https://chromium.googlesource.com/chromium/src/+/lkgr/docs/accessibility/os/chromevox_on_desktop_linux.md>

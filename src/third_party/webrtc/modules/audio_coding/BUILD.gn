@@ -993,7 +993,6 @@ rtc_library("neteq") {
   deps = [
     ":audio_coding_module_typedefs",
     ":webrtc_cng",
-    "..:module_api",
     "..:module_api_public",
     "../../api:array_view",
     "../../api:rtp_headers",
@@ -1319,7 +1318,6 @@ if (rtc_include_tests) {
         ":g722_test",
         ":ilbc_test",
         ":isac_api_test",
-        ":isac_fix_test",
         ":isac_switch_samprate_test",
         ":isac_test",
         ":neteq_ilbc_quality_test",
@@ -1439,7 +1437,6 @@ if (rtc_include_tests) {
 
     deps = audio_coding_deps + [
              "../../api:scoped_refptr",
-             "..:module_api",
              ":audio_coding",
              "../../api/audio_codecs:audio_codecs_api",
              "../../api/audio_codecs:builtin_audio_decoder_factory",
@@ -1837,20 +1834,6 @@ if (rtc_include_tests) {
         "//testing/gtest",
         "//third_party/abseil-cpp/absl/flags:flag",
       ]
-    }
-
-    rtc_test("isac_fix_test") {
-      testonly = true
-
-      sources = [ "codecs/isac/fix/test/kenny.cc" ]
-
-      deps = [
-        ":isac_fix",
-        "../../test:perf_test",
-        "../../test:test_support",
-      ]
-
-      data = [ "../../resources/speech_and_misc_wb.pcm" ]
     }
   }
 

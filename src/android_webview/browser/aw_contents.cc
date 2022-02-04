@@ -852,12 +852,12 @@ void AwContents::OnReceivedTouchIconUrl(const std::string& url,
       env, obj, ConvertUTF8ToJavaString(env, url), precomposed);
 }
 
-void AwContents::PostInvalidate() {
+void AwContents::PostInvalidate(bool inside_vsync) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj)
-    Java_AwContents_postInvalidateOnAnimation(env, obj);
+    Java_AwContents_postInvalidate(env, obj, inside_vsync);
 }
 
 void AwContents::OnNewPicture() {
@@ -883,7 +883,7 @@ base::android::ScopedJavaLocalRef<jbyteArray> AwContents::GetCertificate(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::NavigationEntry* entry =
       web_contents_->GetController().GetLastCommittedEntry();
-  if (entry->IsInitialEntry() || !entry->GetSSL().certificate) {
+  if (!entry || entry->IsInitialEntry() || !entry->GetSSL().certificate) {
     return ScopedJavaLocalRef<jbyteArray>();
   }
 
@@ -1033,8 +1033,12 @@ base::android::ScopedJavaLocalRef<jbyteArray> AwContents::GetOpaqueState(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Required optimization in WebViewClassic to not save any state if
   // there has been no navigations.
-  if (web_contents_->GetController().GetLastCommittedEntry()->IsInitialEntry())
+  if (!web_contents_->GetController().GetLastCommittedEntry() ||
+      web_contents_->GetController()
+          .GetLastCommittedEntry()
+          ->IsInitialEntry()) {
     return ScopedJavaLocalRef<jbyteArray>();
+  }
 
   base::Pickle pickle;
   WriteToPickle(*web_contents_, &pickle);
@@ -1197,7 +1201,8 @@ void AwContents::UpdateScrollState(const gfx::Point& max_scroll_offset,
 }
 
 void AwContents::DidOverscroll(const gfx::Vector2d& overscroll_delta,
-                               const gfx::Vector2dF& overscroll_velocity) {
+                               const gfx::Vector2dF& overscroll_velocity,
+                               bool inside_vsync) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
@@ -1205,7 +1210,7 @@ void AwContents::DidOverscroll(const gfx::Vector2d& overscroll_delta,
     return;
   Java_AwContents_didOverscroll(env, obj, overscroll_delta.x(),
                                 overscroll_delta.y(), overscroll_velocity.x(),
-                                overscroll_velocity.y());
+                                overscroll_velocity.y(), inside_vsync);
 }
 
 ui::TouchHandleDrawable* AwContents::CreateDrawable() {

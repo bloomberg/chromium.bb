@@ -41,12 +41,12 @@ function runShaderTest(
   });
 
   const source = `
-    [[block]] struct Constants {
+    struct Constants {
       zero: u32;
     };
     [[group(1), binding(0)]] var<uniform> constants: Constants;
 
-    [[block]] struct Result {
+    struct Result {
       value: u32;
     };
     [[group(1), binding(1)]] var<storage, write> result: Result;
@@ -211,7 +211,7 @@ g.test('linear_memory')
           bufferBindingSize = layout.size;
           const qualifiers = storageClass === 'storage' ? `storage, ${storageMode}` : storageClass;
           globalSource += `
-          [[block]] struct TestData {
+          struct TestData {
             data: ${type};
           };
           [[group(0), binding(0)]] var<${qualifiers}> s: TestData;`;

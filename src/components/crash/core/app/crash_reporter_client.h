@@ -11,7 +11,7 @@
 
 #include "build/build_config.h"
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
 namespace base {
 class FilePath;
 }
@@ -37,7 +37,7 @@ class CrashReporterClient {
   CrashReporterClient();
   virtual ~CrashReporterClient();
 
-#if !defined(OS_APPLE) && !defined(OS_WIN) && !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_APPLE) && !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_ANDROID)
   // Sets the crash reporting client ID, a unique identifier for the client
   // that is sending crash reports. After it is set, it should not be changed.
   // |client_guid| may either be a full GUID or a GUID that was already stripped
@@ -48,7 +48,7 @@ class CrashReporterClient {
   virtual void SetCrashReporterClientIdFromGUID(const std::string& client_guid);
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Returns true if the pipe name to connect to breakpad should be computed and
   // stored in the process's environment block. By default, returns true for the
   // "browser" process.
@@ -81,15 +81,17 @@ class CrashReporterClient {
   // Returns true if the running binary is a per-user installation.
   virtual bool GetIsPerUserInstall();
 
-  // Returns true if larger crash dumps should be dumped.
-  virtual bool GetShouldDumpLargerDumps();
-
   // Returns the result code to return when breakpad failed to respawn a
   // crashed process.
   virtual int GetResultCodeRespawnFailed();
 #endif
 
-#if defined(OS_POSIX)
+#if BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC))
+  // Returns true if larger crash dumps should be dumped.
+  virtual bool GetShouldDumpLargerDumps();
+#endif
+
+#if BUILDFLAG(IS_POSIX)
   // Returns a textual description of the product type and version to include
   // in the crash report. Neither out parameter should be set to NULL.
   // TODO(jperaza): Remove the 2-parameter overload of this method once all
@@ -100,7 +102,7 @@ class CrashReporterClient {
                                         std::string* version,
                                         std::string* channel);
 
-#if !defined(OS_MAC)
+#if !BUILDFLAG(IS_MAC)
   virtual base::FilePath GetReporterLogFilename();
 
   // Custom crash minidump handler after the minidump is generated.
@@ -117,7 +119,7 @@ class CrashReporterClient {
   // |crash_dir| was set. Windows has to use std::wstring because this code
   // needs to work in chrome_elf, where only kernel32.dll is allowed, and
   // base::FilePath and its dependencies pull in other DLLs.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   virtual bool GetCrashDumpLocation(std::wstring* crash_dir);
 #else
   virtual bool GetCrashDumpLocation(base::FilePath* crash_dir);
@@ -127,7 +129,7 @@ class CrashReporterClient {
   // |metrics_dir| was set. Windows has to use std::wstring because this code
   // needs to work in chrome_elf, where only kernel32.dll is allowed, and
   // base::FilePath and its dependencies pull in other DLLs.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   virtual bool GetCrashMetricsLocation(std::wstring* metrics_dir);
 #else
   virtual bool GetCrashMetricsLocation(base::FilePath* metrics_dir);
@@ -148,7 +150,7 @@ class CrashReporterClient {
   // that case, |breakpad_enabled| is set to the value enforced by policies.
   virtual bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // Used by WebView to sample crashes without generating the unwanted dumps. If
   // the returned value is less than 100, crash dumping will be sampled to that
   // percentage.
@@ -173,7 +175,7 @@ class CrashReporterClient {
   virtual bool ShouldWriteMinidumpToLog();
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   // Configures sanitization of crash dumps.
   // |allowed_annotations| is a nullptr terminated array of NUL-terminated
   // strings of allowed annotation names or nullptr if all annotations are
@@ -212,18 +214,18 @@ class CrashReporterClient {
   // Populate |arguments| with additional optional arguments.
   virtual void GetCrashOptionalArguments(std::vector<std::string>* arguments);
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Returns the absolute path to the external crash handler exe.
   virtual std::wstring GetCrashExternalHandler(const std::wstring& exe_dir);
 #endif
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Returns true if forwarding of crashes to the system crash reporter is
   // enabled for the browser process.
   virtual bool EnableBrowserCrashForwarding();
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MAC)
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
   // Provides an oportunity to modify the parameters that will be sent with a
   // crash upload.
   using ParameterMap = std::map<std::string, std::string>;

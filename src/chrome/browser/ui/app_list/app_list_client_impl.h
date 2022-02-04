@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_client.h"
+#include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
@@ -165,9 +166,14 @@ class AppListClientImpl
   struct StateForNewUser {
     // Indicates whether showing the app list has been recorded.
     bool showing_recorded = false;
+    bool shown_in_tablet_mode = false;
 
     // Indicates whether any launcher action has been recorded.
     bool action_recorded = false;
+
+    // Indicates whether the metric to track whether the user took action when
+    // the launcher was first shown was recorded.
+    bool first_open_success_recorded = false;
   };
 
   // session_manager::SessionManagerObserver:
@@ -187,8 +193,7 @@ class AppListClientImpl
 
   // Records the browser window status + the opened search result type when
   // the result is opened from the search box.
-  void RecordOpenedResultFromSearchBox(
-      ash::AppListSearchResultType result_type);
+  void RecordOpenedResultFromSearchBox(ash::SearchResultType result_type);
 
   // Maybe records the launcher action. Launcher actions include activating an
   // app and opening a search result from either a suggestion chip or the search

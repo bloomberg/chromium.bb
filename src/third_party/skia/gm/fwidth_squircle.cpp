@@ -69,7 +69,7 @@ public:
 
     const char* name() const override { return "FwidthSquircleTestProcessor"; }
 
-    void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const final {}
+    void addToKey(const GrShaderCaps&, skgpu::KeyBuilder*) const final {}
 
     std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const final;
 
@@ -77,7 +77,7 @@ private:
     FwidthSquircleTestProcessor(const SkMatrix& viewMatrix)
             : GrGeometryProcessor(kFwidthSquircleTestProcessor_ClassID)
             , fViewMatrix(viewMatrix) {
-        this->setVertexAttributes(&gVertex, 1);
+        this->setVertexAttributesWithImplicitOffsets(&gVertex, 1);
     }
 
     const SkMatrix fViewMatrix;

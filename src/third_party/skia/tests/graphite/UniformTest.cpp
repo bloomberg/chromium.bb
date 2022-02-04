@@ -7,14 +7,20 @@
 
 #include "tests/Test.h"
 
+#include "experimental/graphite/src/ContextPriv.h"
 #include "experimental/graphite/src/ContextUtils.h"
-#include "experimental/graphite/src/DrawList.h" // TODO: split PaintParams out into their own header
+#include "experimental/graphite/src/PaintParams.h"
 #include "include/core/SkPaint.h"
 #include "include/effects/SkGradientShader.h"
+#include "include/private/SkShaderCodeDictionary.h"
+#include "include/private/SkUniquePaintParamsID.h"
+#include "src/core/SkKeyHelpers.h"
 
 namespace {
 
-std::tuple<SkPaint, int> create_paint(skgpu::Combination combo) {
+std::tuple<SkPaint, int> create_paint(skgpu::ShaderCombo::ShaderType shaderType,
+                                      SkTileMode tm,
+                                      SkBlendMode bm) {
     SkPoint pts[2] = {{-100, -100},
                       {100,  100}};
     SkColor colors[2] = {SK_ColorRED, SK_ColorGREEN};
@@ -22,7 +28,7 @@ std::tuple<SkPaint, int> create_paint(skgpu::Combination combo) {
 
     sk_sp<SkShader> s;
     int numUniforms = 0;
-    switch (combo.fShaderType) {
+    switch (shaderType) {
         case skgpu::ShaderCombo::ShaderType::kNone:
             SkDEBUGFAIL("kNone cannot be represented as an SkPaint");
             break;
@@ -30,35 +36,35 @@ std::tuple<SkPaint, int> create_paint(skgpu::Combination combo) {
             numUniforms += 1;
             break;
         case skgpu::ShaderCombo::ShaderType::kLinearGradient:
-            s = SkGradientShader::MakeLinear(pts, colors, offsets, 2, combo.fTileMode);
+            s = SkGradientShader::MakeLinear(pts, colors, offsets, 2, tm);
             numUniforms += 6;
             break;
         case skgpu::ShaderCombo::ShaderType::kRadialGradient:
-            s = SkGradientShader::MakeRadial({0, 0}, 100, colors, offsets, 2, combo.fTileMode);
+            s = SkGradientShader::MakeRadial({0, 0}, 100, colors, offsets, 2, tm);
             numUniforms += 6;
             break;
         case skgpu::ShaderCombo::ShaderType::kSweepGradient:
-            s = SkGradientShader::MakeSweep(0, 0, colors, offsets, 2, combo.fTileMode,
+            s = SkGradientShader::MakeSweep(0, 0, colors, offsets, 2, tm,
                                             0, 359, 0, nullptr);
             numUniforms += 6;
             break;
         case skgpu::ShaderCombo::ShaderType::kConicalGradient:
             s = SkGradientShader::MakeTwoPointConical({100, 100}, 100,
                                                       {-100, -100}, 100,
-                                                      colors, offsets, 2, combo.fTileMode);
+                                                      colors, offsets, 2, tm);
             numUniforms += 6;
             break;
     }
     SkPaint p;
     p.setColor(SK_ColorRED);
     p.setShader(std::move(s));
-    p.setBlendMode(combo.fBlendMode);
+    p.setBlendMode(bm);
     return { p, numUniforms };
 }
 
 } // anonymous namespace
 
-DEF_GRAPHITE_TEST(UniformTest, reporter) {
+DEF_GRAPHITE_TEST_FOR_CONTEXTS(UniformTest, reporter, context) {
     using namespace skgpu;
 
     // Intentionally does not include ShaderType::kNone, which represents no fragment shading stage
@@ -77,15 +83,14 @@ DEF_GRAPHITE_TEST(UniformTest, reporter) {
             }
 
             for (auto bm : { SkBlendMode::kSrc, SkBlendMode::kSrcOver }) {
-                Combination expected;
+                SkPaintParamsKey expected = CreateKey(SkBackend::kGraphite, s, tm, bm);
 
-                expected.fShaderType = s;
-                expected.fTileMode = tm;
-                expected.fBlendMode = bm;
+                auto [ p, expectedNumUniforms ] = create_paint(s, tm, bm);
+                auto [ actualID, ud] = ExtractPaintData(context, PaintParams(p));
 
-                auto [ p, expectedNumUniforms ] = create_paint(expected);
-                auto [ actual, ud] = ExtractCombo(PaintParams(p));
-                REPORTER_ASSERT(reporter, expected == actual);
+                auto entry = context->priv().shaderCodeDictionary()->lookup(actualID);
+
+                REPORTER_ASSERT(reporter, expected == entry->paintParamsKey());
                 REPORTER_ASSERT(reporter, expectedNumUniforms == ud->count());
                 for (int i = 0; i < ud->count(); ++i) {
                     REPORTER_ASSERT(reporter, ud->offset(i) >= 0 && ud->offset(i) < ud->dataSize());

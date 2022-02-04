@@ -193,11 +193,11 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                          GLenum dst_alpha);
 
   void bufferData(GLenum target, int64_t size, GLenum usage);
-  void bufferData(GLenum target, DOMArrayBuffer* data, GLenum usage);
+  void bufferData(GLenum target, DOMArrayBufferBase* data, GLenum usage);
   void bufferData(GLenum target,
                   MaybeShared<DOMArrayBufferView> data,
                   GLenum usage);
-  void bufferSubData(GLenum target, int64_t offset, DOMArrayBuffer* data);
+  void bufferSubData(GLenum target, int64_t offset, DOMArrayBufferBase* data);
   void bufferSubData(GLenum target,
                      int64_t offset,
                      const FlexibleArrayBufferView& data);
@@ -717,7 +717,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   cc::Layer* CcLayer() const override;
   void Stop() override;
-  void FinalizeFrame() override;
+  void FinalizeFrame(bool printing) override;
   bool PushFrame() override;
 
   // DrawingBuffer::Client implementation.

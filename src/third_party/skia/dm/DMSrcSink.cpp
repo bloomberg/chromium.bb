@@ -84,6 +84,8 @@
 #include "experimental/graphite/include/Recorder.h"
 #include "experimental/graphite/include/Recording.h"
 #include "experimental/graphite/include/SkStuff.h"
+// TODO: Remove this src include once we figure out public readPixels call for Graphite.
+#include "experimental/graphite/src/Surface_Graphite.h"
 #include "tools/graphite/ContextFactory.h"
 #include "tools/graphite/GraphiteTestContext.h"
 #endif
@@ -2157,12 +2159,15 @@ Result GraphiteSink::draw(const Src& src,
 
     skiatest::graphite::ContextFactory factory;
     auto [_, context] = factory.getContextInfo(fContextType);
+    if (!context) {
+        return Result::Fatal("Could not create a context.");
+    }
 
     if (fTestPrecompile) {
         precompile(context.get());
     }
 
-    sk_sp<skgpu::Recorder> recorder = context->createRecorder();
+    std::unique_ptr<skgpu::Recorder> recorder = context->makeRecorder();
     if (!recorder) {
         return Result::Fatal("Could not create a recorder.");
     }
@@ -2170,7 +2175,7 @@ Result GraphiteSink::draw(const Src& src,
     dst->allocPixels(ii);
 
     {
-        sk_sp<SkSurface> surface = MakeGraphite(recorder, ii);
+        sk_sp<SkSurface> surface = MakeGraphite(recorder.get(), ii);
         if (!surface) {
             return Result::Fatal("Could not create a surface.");
         }
@@ -2179,7 +2184,15 @@ Result GraphiteSink::draw(const Src& src,
             return result;
         }
 
-        if (!surface->readPixels(*dst, 0, 0)) {
+        // For now we cast and call directly into Surface_Graphite. Once we have a been idea of
+        // what the public API for synchronous graphite readPixels we can update this call to use
+        // that instead.
+        SkPixmap pm;
+        if (!dst->peekPixels(&pm) ||
+            !static_cast<skgpu::Surface_Graphite*>(surface.get())->onReadPixels(context.get(),
+                                                                                pm,
+                                                                                0,
+                                                                                0)) {
             return Result::Fatal("Could not readback from surface.");
         }
     }

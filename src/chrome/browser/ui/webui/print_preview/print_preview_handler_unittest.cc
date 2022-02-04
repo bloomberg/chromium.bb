@@ -22,6 +22,7 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/printing/print_test_utils.h"
 #include "chrome/browser/printing/print_view_manager.h"
@@ -40,13 +41,14 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_web_ui.h"
 #include "printing/mojom/print.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #endif
 
@@ -400,6 +402,10 @@ class PrintPreviewHandlerTest : public testing::Test {
     initiator_web_contents_ = content::WebContents::Create(
         content::WebContents::CreateParams(profile_));
     content::WebContents* initiator = initiator_web_contents_.get();
+    // Ensure the initiator has a RenderFrameHost with a live RenderFrame, as
+    // the print code will not bother to send IPCs to a non-live RenderFrame.
+    content::NavigationSimulator::NavigateAndCommitFromDocument(
+        GURL("about:blank"), initiator->GetMainFrame());
     preview_web_contents_ = content::WebContents::Create(
         content::WebContents::CreateParams(profile_));
     PrintViewManager::CreateForWebContents(initiator);
@@ -438,7 +444,7 @@ class PrintPreviewHandlerTest : public testing::Test {
         ->PrintPreviewDone();
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   void DisableAshChrome() { handler_->local_printer_ = nullptr; }
 #endif
 
@@ -748,7 +754,7 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsNoPolicies) {
                                      absl::nullopt);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 TEST_F(PrintPreviewHandlerTest, InitialSettingsNoAsh) {
   DisableAshChrome();
   Initialize();
@@ -971,7 +977,7 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsDefaultPaperSizeCustomSize) {
       std::move(expected_initial_settings_policy));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 TEST_F(PrintPreviewHandlerTest, InitialSettingsMaxSheetsAllowedPolicy) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   crosapi::mojom::Policies policies;
@@ -1070,7 +1076,7 @@ TEST_F(PrintPreviewHandlerTest, InitialSettingsDefaultNoPin) {
   ValidateInitialSettingsAllowedDefaultModePolicy(
       *web_ui()->call_data().back(), "pin", absl::nullopt, base::Value(2));
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 TEST_F(PrintPreviewHandlerTest, GetPrinters) {
   Initialize();

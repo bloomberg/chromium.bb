@@ -22,12 +22,13 @@
 #import "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_parent_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_whats_new_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_category_wrapper.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_provider.h"
@@ -99,12 +100,17 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 // Item for the "Return to Recent Tab" tile.
 @property(nonatomic, strong)
     ContentSuggestionsReturnToRecentTabItem* returnToRecentTabItem;
+// Parent Item for single cell layout.
+@property(nonatomic, strong) ContentSuggestionsParentItem* parentItem;
 // Section Info for the What's New promo section.
 @property(nonatomic, strong)
     ContentSuggestionsSectionInformation* promoSectionInfo;
 // Section Info for the Most Visited section.
 @property(nonatomic, strong)
     ContentSuggestionsSectionInformation* mostVisitedSectionInfo;
+// Section Info for the single cell parent item section.
+@property(nonatomic, strong)
+    ContentSuggestionsSectionInformation* singleCellSectionInfo;
 // Whether the page impression has been recorded.
 @property(nonatomic, assign) BOOL recordedPageImpression;
 // Map the section information created to the relevant category.
@@ -125,12 +131,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     BOOL showMostRecentTabStartSurfaceTile;
 // Whether the incognito mode is available.
 @property(nonatomic, assign) BOOL incognitoAvailable;
+// Whether the user already tapped on the NTP promo and therefore should be
+// hidden.
+@property(nonatomic, assign) BOOL shouldHidePromoAfterTap;
 
 @end
 
 @implementation ContentSuggestionsMediator
-
-@synthesize dataSink = _dataSink;
 
 #pragma mark - Public
 
@@ -157,8 +164,12 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
                   largeIconCache:largeIconCache];
 
     _logoSectionInfo = LogoSectionInformation();
-    _promoSectionInfo = PromoSectionInformation();
-    _mostVisitedSectionInfo = MostVisitedSectionInformation();
+    if (IsSingleCellContentSuggestionsEnabled()) {
+      _singleCellSectionInfo = SingleCellSectionInformation();
+    } else {
+      _promoSectionInfo = PromoSectionInformation();
+      _mostVisitedSectionInfo = MostVisitedSectionInformation();
+    }
 
     _notificationPromo = std::make_unique<NotificationPromoWhatsNew>(
         GetApplicationContext()->GetLocalState());
@@ -187,7 +198,14 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 }
 
 - (void)reloadAllData {
-  [self.dataSink reloadAllData];
+  NSArray<ContentSuggestionsSectionInformation*>* sections =
+      [self sectionsInfo];
+  NSMutableDictionary<NSNumber*, NSArray*>* items =
+      [[NSMutableDictionary alloc] init];
+  for (ContentSuggestionsSectionInformation* section in sections) {
+    items[@(section.sectionID)] = [self itemsForSectionInfo:section];
+  }
+  [self.consumer reloadDataWithSections:sections andItems:items];
 }
 
 - (void)blockMostVisitedURL:(GURL)URL {
@@ -204,9 +222,10 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   return _notificationPromo.get();
 }
 
-- (void)setDataSink:(id<ContentSuggestionsDataSink>)dataSink {
-  _dataSink = dataSink;
-  self.faviconMediator.dataSink = dataSink;
+- (void)setConsumer:(id<ContentSuggestionsConsumer>)consumer {
+  _consumer = consumer;
+  self.faviconMediator.consumer = consumer;
+  [self reloadAllData];
 }
 
 + (NSUInteger)maxSitesShown {
@@ -242,8 +261,10 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
                        timeLabel];
   self.returnToRecentTabItem.subtitle = subtitle;
   self.showMostRecentTabStartSurfaceTile = YES;
-
-  [self.dataSink addSection:self.returnToRecentTabSectionInfo
+  NSArray<CSCollectionViewItem*>* items =
+      [self itemsForSectionInfo:self.returnToRecentTabSectionInfo];
+  [self.consumer addSection:self.returnToRecentTabSectionInfo
+                  withItems:items
                  completion:^{
                    [self.discoverFeedDelegate returnToRecentTabWasAdded];
                  }];
@@ -253,8 +274,14 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   DCHECK(IsStartSurfaceEnabled());
   if (self.showMostRecentTabStartSurfaceTile) {
     self.showMostRecentTabStartSurfaceTile = NO;
-    [self.dataSink clearSection:self.returnToRecentTabSectionInfo];
+    [self.consumer clearSection:self.returnToRecentTabSectionInfo];
   }
+}
+
+- (void)hidePromo {
+  self.shouldHidePromoAfterTap = YES;
+  // By reloading data, checking |notificationPromo| will remove the promo view.
+  [self reloadAllData];
 }
 
 #pragma mark - StartSurfaceRecentTabObserving
@@ -267,64 +294,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 - (void)mostRecentTabFaviconUpdatedWithImage:(UIImage*)image {
   if (self.returnToRecentTabItem) {
     self.returnToRecentTabItem.icon = image;
-    [self.dataSink itemHasChanged:self.returnToRecentTabItem];
-  }
-}
-
-#pragma mark - ContentSuggestionsDataSource
-
-- (NSArray<ContentSuggestionsSectionInformation*>*)sectionsInfo {
-  NSMutableArray<ContentSuggestionsSectionInformation*>* sectionsInfo =
-      [NSMutableArray array];
-
-  [sectionsInfo addObject:self.logoSectionInfo];
-
-  if (self.showMostRecentTabStartSurfaceTile) {
-    DCHECK(IsStartSurfaceEnabled());
-    [sectionsInfo addObject:self.returnToRecentTabSectionInfo];
-  }
-
-  if (_notificationPromo->CanShow()) {
-    [sectionsInfo addObject:self.promoSectionInfo];
-  }
-
-  [sectionsInfo addObject:self.mostVisitedSectionInfo];
-
-  return sectionsInfo;
-}
-
-- (NSArray<CSCollectionViewItem*>*)itemsForSectionInfo:
-    (ContentSuggestionsSectionInformation*)sectionInfo {
-  NSMutableArray<CSCollectionViewItem*>* convertedSuggestions =
-      [NSMutableArray array];
-
-  if (sectionInfo == self.logoSectionInfo) {
-    // Section empty on purpose.
-  } else if (sectionInfo == self.promoSectionInfo) {
-    if (_notificationPromo->CanShow()) {
-      ContentSuggestionsWhatsNewItem* item =
-          [[ContentSuggestionsWhatsNewItem alloc] initWithType:0];
-      item.icon = _notificationPromo->GetIcon();
-      item.text = base::SysUTF8ToNSString(_notificationPromo->promo_text());
-      [convertedSuggestions addObject:item];
-    }
-  } else if (sectionInfo == self.returnToRecentTabSectionInfo) {
-    DCHECK(IsStartSurfaceEnabled());
-    [convertedSuggestions addObject:self.returnToRecentTabItem];
-  } else if (sectionInfo == self.mostVisitedSectionInfo) {
-    [convertedSuggestions addObjectsFromArray:self.mostVisitedItems];
-    if (!ShouldHideShortcutsForStartSurface()) {
-      [convertedSuggestions addObjectsFromArray:self.actionButtonItems];
+    if (IsSingleCellContentSuggestionsEnabled()) {
+      self.parentItem.returnToRecentItem = self.returnToRecentTabItem;
+      [self.consumer itemHasChanged:self.parentItem];
+    } else {
+      [self.consumer itemHasChanged:self.returnToRecentTabItem];
     }
   }
-
-  return convertedSuggestions;
-}
-
-- (UIView*)headerViewForWidth:(CGFloat)width {
-  return [self.headerProvider
-      headerForWidth:width
-      safeAreaInsets:[self.discoverFeedDelegate safeAreaInsetsForDiscoverFeed]];
 }
 
 #pragma mark - MostVisitedSitesObserving
@@ -337,11 +313,15 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
       app_group::ContentWidgetFaviconsFolder());
 
   self.freshMostVisitedItems = [NSMutableArray array];
+  int index = 0;
   for (const ntp_tiles::NTPTile& tile : mostVisited) {
     ContentSuggestionsMostVisitedItem* item =
         ConvertNTPTile(tile, self.mostVisitedSectionInfo);
     item.commandHandler = self.commandHandler;
     item.incognitoAvailable = self.incognitoAvailable;
+    item.index = index;
+    DCHECK(index < kShortcutMinimumIndex);
+    index++;
     [self.faviconMediator fetchFaviconForMostVisited:item];
     [self.freshMostVisitedItems addObject:item];
   }
@@ -397,6 +377,75 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     [self.discoverFeedDelegate contentSuggestionsWasUpdated];
 }
 
+- (NSArray<ContentSuggestionsSectionInformation*>*)sectionsInfo {
+  NSMutableArray<ContentSuggestionsSectionInformation*>* sectionsInfo =
+      [NSMutableArray array];
+
+  [sectionsInfo addObject:self.logoSectionInfo];
+
+  if (IsSingleCellContentSuggestionsEnabled()) {
+    [sectionsInfo addObject:self.singleCellSectionInfo];
+  } else {
+    if (self.showMostRecentTabStartSurfaceTile) {
+      DCHECK(IsStartSurfaceEnabled());
+      [sectionsInfo addObject:self.returnToRecentTabSectionInfo];
+    }
+
+    if (_notificationPromo->CanShow()) {
+      [sectionsInfo addObject:self.promoSectionInfo];
+    }
+
+    [sectionsInfo addObject:self.mostVisitedSectionInfo];
+  }
+
+  return sectionsInfo;
+}
+
+- (NSArray<CSCollectionViewItem*>*)itemsForSectionInfo:
+    (ContentSuggestionsSectionInformation*)sectionInfo {
+  NSMutableArray<CSCollectionViewItem*>* convertedSuggestions =
+      [NSMutableArray array];
+
+  if (sectionInfo == self.logoSectionInfo) {
+    // Section empty on purpose.
+  } else if (sectionInfo == self.promoSectionInfo) {
+    if (_notificationPromo->CanShow()) {
+      ContentSuggestionsWhatsNewItem* item =
+          [[ContentSuggestionsWhatsNewItem alloc] initWithType:0];
+      item.icon = _notificationPromo->GetIcon();
+      item.text = base::SysUTF8ToNSString(_notificationPromo->promo_text());
+      [convertedSuggestions addObject:item];
+    }
+  } else if (sectionInfo == self.returnToRecentTabSectionInfo) {
+    DCHECK(IsStartSurfaceEnabled());
+    [convertedSuggestions addObject:self.returnToRecentTabItem];
+  } else if (sectionInfo == self.mostVisitedSectionInfo) {
+    [convertedSuggestions addObjectsFromArray:self.mostVisitedItems];
+    if (!ShouldHideShortcutsForStartSurface()) {
+      [convertedSuggestions addObjectsFromArray:self.actionButtonItems];
+    }
+  } else if (sectionInfo == self.singleCellSectionInfo) {
+    self.parentItem = [[ContentSuggestionsParentItem alloc] initWithType:0];
+    if (_notificationPromo->CanShow() && !self.shouldHidePromoAfterTap) {
+      ContentSuggestionsWhatsNewItem* item =
+          [[ContentSuggestionsWhatsNewItem alloc] initWithType:0];
+      item.icon = _notificationPromo->GetIcon();
+      item.text = base::SysUTF8ToNSString(_notificationPromo->promo_text());
+      self.parentItem.whatsNewItem = item;
+    }
+    if (self.showMostRecentTabStartSurfaceTile) {
+      self.parentItem.returnToRecentItem = self.returnToRecentTabItem;
+    }
+    self.parentItem.mostVisitedItems = self.mostVisitedItems;
+    if (!ShouldHideShortcutsForStartSurface()) {
+      self.parentItem.shortcutsItems = self.actionButtonItems;
+    }
+    [convertedSuggestions addObject:self.parentItem];
+  }
+
+  return convertedSuggestions;
+}
+
 #pragma mark - Properties
 
 - (NSArray<ContentSuggestionsMostVisitedActionItem*>*)actionButtonItems {
@@ -442,7 +491,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   self.readingListUnreadCount = model->unread_size();
   if (self.readingListItem) {
     self.readingListItem.count = self.readingListUnreadCount;
-    [self.dataSink itemHasChanged:self.readingListItem];
+    [self.consumer itemHasChanged:self.readingListItem];
   }
 }
 

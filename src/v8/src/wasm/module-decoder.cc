@@ -722,7 +722,6 @@ class ModuleDecoderImpl : public Decoder {
         }
         case kExternalTable: {
           // ===== Imported table ==============================================
-          if (!AddTable(module_.get())) break;
           import->index = static_cast<uint32_t>(module_->tables.size());
           module_->num_imported_tables++;
           module_->tables.emplace_back();
@@ -818,14 +817,9 @@ class ModuleDecoderImpl : public Decoder {
   }
 
   void DecodeTableSection() {
-    // TODO(ahaas): Set the correct limit to {kV8MaxWasmTables} once the
-    // implementation of ExternRef landed.
-    uint32_t max_count =
-        enabled_features_.has_reftypes() ? 100000 : kV8MaxWasmTables;
-    uint32_t table_count = consume_count("table count", max_count);
+    uint32_t table_count = consume_count("table count", kV8MaxWasmTables);
 
     for (uint32_t i = 0; ok() && i < table_count; i++) {
-      if (!AddTable(module_.get())) break;
       module_->tables.emplace_back();
       WasmTable* table = &module_->tables.back();
       const byte* type_position = pc();
@@ -865,13 +859,15 @@ class ModuleDecoderImpl : public Decoder {
   void DecodeGlobalSection() {
     uint32_t globals_count = consume_count("globals count", kV8MaxWasmGlobals);
     uint32_t imported_globals = static_cast<uint32_t>(module_->globals.size());
+    // It is important to not resize the globals vector from the beginning,
+    // because we use its current size when decoding the initializer.
     module_->globals.reserve(imported_globals + globals_count);
     for (uint32_t i = 0; ok() && i < globals_count; ++i) {
       TRACE("DecodeGlobal[%d] module+%d\n", i, static_cast<int>(pc_ - start_));
       ValueType type = consume_value_type();
       bool mutability = consume_mutability();
       if (failed()) break;
-      WireBytesRef init = consume_init_expr(module_.get(), type);
+      ConstantExpression init = consume_init_expr(module_.get(), type);
       module_->globals.push_back({type, mutability, init, {0}, false, false});
     }
     if (ok()) CalculateGlobalOffsets(module_.get());
@@ -996,9 +992,7 @@ class ModuleDecoderImpl : public Decoder {
         consume_count("element count", FLAG_wasm_max_table_size);
 
     for (uint32_t i = 0; i < element_count; ++i) {
-      bool expressions_as_elements;
-      WasmElemSegment segment =
-          consume_element_segment_header(&expressions_as_elements);
+      WasmElemSegment segment = consume_element_segment_header();
       if (failed()) return;
       DCHECK_NE(segment.type, kWasmBottom);
 
@@ -1006,20 +1000,13 @@ class ModuleDecoderImpl : public Decoder {
           consume_count("number of elements", max_table_init_entries());
 
       for (uint32_t j = 0; j < num_elem; j++) {
-        WasmElemSegment::Entry init =
-            expressions_as_elements
-                ? consume_element_expr()
-                : WasmElemSegment::Entry(WasmElemSegment::Entry::kRefFuncEntry,
-                                         consume_element_func_index());
+        ConstantExpression entry =
+            segment.element_type == WasmElemSegment::kExpressionElements
+                ? consume_init_expr(module_.get(), segment.type)
+                : ConstantExpression::RefFunc(
+                      consume_element_func_index(segment.type));
         if (failed()) return;
-        if (!IsSubtypeOf(TypeOf(init), segment.type, module_.get())) {
-          errorf(pc_,
-                 "Invalid type in the init expression. The expected type is "
-                 "'%s', but the actual type is '%s'.",
-                 segment.type.name().c_str(), TypeOf(init).name().c_str());
-          return;
-        }
-        segment.entries.push_back(init);
+        segment.entries.push_back(entry);
       }
       module_->elem_segments.push_back(std::move(segment));
     }
@@ -1100,7 +1087,7 @@ class ModuleDecoderImpl : public Decoder {
 
       bool is_active;
       uint32_t memory_index;
-      WireBytesRef dest_addr;
+      ConstantExpression dest_addr;
       consume_data_segment_header(&is_active, &memory_index, &dest_addr);
       if (failed()) break;
 
@@ -1472,7 +1459,7 @@ class ModuleDecoderImpl : public Decoder {
     return ok() ? result : nullptr;
   }
 
-  WireBytesRef DecodeInitExprForTesting(ValueType expected) {
+  ConstantExpression DecodeInitExprForTesting(ValueType expected) {
     return consume_init_expr(module_.get(), expected);
   }
 
@@ -1512,18 +1499,6 @@ class ModuleDecoderImpl : public Decoder {
   AccountingAllocator allocator_;
   Zone init_expr_zone_{&allocator_, "initializer expression zone"};
 
-  ValueType TypeOf(WasmElemSegment::Entry entry) {
-    switch (entry.kind) {
-      case WasmElemSegment::Entry::kGlobalGetEntry:
-        return module_->globals[entry.index].type;
-      case WasmElemSegment::Entry::kRefFuncEntry:
-        return ValueType::Ref(module_->functions[entry.index].sig_index,
-                              kNonNullable);
-      case WasmElemSegment::Entry::kRefNullEntry:
-        return ValueType::Ref(entry.index, kNullable);
-    }
-  }
-
   bool has_seen_unordered_section(SectionCode section_code) {
     return seen_unordered_sections_ & (1 << section_code);
   }
@@ -1534,16 +1509,6 @@ class ModuleDecoderImpl : public Decoder {
 
   uint32_t off(const byte* ptr) {
     return static_cast<uint32_t>(ptr - start_) + buffer_offset_;
-  }
-
-  bool AddTable(WasmModule* module) {
-    if (enabled_features_.has_reftypes()) return true;
-    if (module->tables.size() > 0) {
-      error("At most one table is supported");
-      return false;
-    } else {
-      return true;
-    }
   }
 
   bool AddMemory(WasmModule* module) {
@@ -1785,9 +1750,79 @@ class ModuleDecoderImpl : public Decoder {
     return true;
   }
 
-  WireBytesRef consume_init_expr(WasmModule* module, ValueType expected) {
-    FunctionBody body(FunctionSig::Build(&init_expr_zone_, {expected}, {}),
-                      buffer_offset_, pc_, end_);
+  ConstantExpression consume_init_expr(WasmModule* module, ValueType expected) {
+    uint32_t length;
+
+    // The error message mimics the one generated by the {WasmFullDecoder}.
+#define TYPE_CHECK(found)                                             \
+  if (V8_UNLIKELY(!IsSubtypeOf(found, expected, module_.get()))) {    \
+    errorf(pc() + 1,                                                  \
+           "type error in init. expression[0] (expected %s, got %s)", \
+           expected.name().c_str(), found.name().c_str());            \
+    return {};                                                        \
+  }
+
+    // To avoid initializing a {WasmFullDecoder} for the most common
+    // expressions, we replicate their decoding and validation here. The
+    // manually handled cases correspond to {ConstantExpression}'s kinds.
+    // We need to make sure to check that the expression ends in {kExprEnd};
+    // otherwise, it is just the first operand of a composite expression, and we
+    // fall back to the default case.
+    if (!more()) {
+      error("Beyond end of code");
+      return {};
+    }
+    switch (static_cast<WasmOpcode>(*pc())) {
+      case kExprI32Const: {
+        int32_t value =
+            read_i32v<kFullValidation>(pc() + 1, &length, "i32.const");
+        if (V8_UNLIKELY(failed())) return {};
+        if (V8_LIKELY(lookahead(1 + length, kExprEnd))) {
+          TYPE_CHECK(kWasmI32)
+          consume_bytes(length + 2);
+          return ConstantExpression::I32Const(value);
+        }
+        break;
+      }
+      case kExprRefFunc: {
+        uint32_t index =
+            read_u32v<kFullValidation>(pc() + 1, &length, "ref.func");
+        if (V8_UNLIKELY(failed())) return {};
+        if (V8_LIKELY(lookahead(1 + length, kExprEnd))) {
+          if (V8_UNLIKELY(index >= module_->functions.size())) {
+            errorf(pc() + 1, "function index %u out of bounds", index);
+            return {};
+          }
+          ValueType type =
+              enabled_features_.has_typed_funcref()
+                  ? ValueType::Ref(module_->functions[index].sig_index,
+                                   kNonNullable)
+                  : kWasmFuncRef;
+          TYPE_CHECK(type)
+          module_->functions[index].declared = true;
+          consume_bytes(length + 2);
+          return ConstantExpression::RefFunc(index);
+        }
+        break;
+      }
+      case kExprRefNull: {
+        HeapType type = value_type_reader::read_heap_type<kFullValidation>(
+            this, pc() + 1, &length, module_.get(), enabled_features_);
+        if (V8_UNLIKELY(failed())) return {};
+        if (V8_LIKELY(lookahead(1 + length, kExprEnd))) {
+          TYPE_CHECK(ValueType::Ref(type, kNullable))
+          consume_bytes(length + 2);
+          return ConstantExpression::RefNull(type.representation());
+        }
+        break;
+      }
+      default:
+        break;
+    }
+#undef TYPE_CHECK
+
+    auto sig = FixedSizeSignature<ValueType>::Returns(expected);
+    FunctionBody body(&sig, buffer_offset_, pc_, end_);
     WasmFeatures detected;
     WasmFullDecoder<Decoder::kFullValidation, InitExprInterface,
                     kInitExpression>
@@ -1810,7 +1845,8 @@ class ModuleDecoderImpl : public Decoder {
       return {};
     }
 
-    return {offset, static_cast<uint32_t>(decoder.end() - decoder.start())};
+    return ConstantExpression::WireBytes(
+        offset, static_cast<uint32_t>(decoder.end() - decoder.start()));
   }
 
   // Read a mutability flag
@@ -1830,12 +1866,8 @@ class ModuleDecoderImpl : public Decoder {
   }
 
   HeapType consume_super_type() {
-    uint32_t type_length;
-    HeapType result = value_type_reader::read_heap_type<kFullValidation>(
-        this, this->pc(), &type_length, module_.get(),
-        origin_ == kWasmOrigin ? enabled_features_ : WasmFeatures::None());
-    consume_bytes(type_length, "supertype");
-    return result;
+    return value_type_reader::consume_heap_type(this, module_.get(),
+                                                enabled_features_);
   }
 
   ValueType consume_storage_type() {
@@ -1854,27 +1886,13 @@ class ModuleDecoderImpl : public Decoder {
   }
 
   // Reads a reference type for tables and element segment headers.
-  // Unless extensions are enabled, only funcref is allowed.
-  // TODO(manoskouk): Replace this with consume_value_type (and checks against
-  //                  the returned type at callsites as needed) once the
-  //                  'reftypes' proposal is standardized.
   ValueType consume_reference_type() {
-    if (!enabled_features_.has_reftypes()) {
-      uint8_t ref_type = consume_u8("reference type");
-      if (ref_type != kFuncRefCode) {
-        error(pc_ - 1,
-              "invalid table type. Consider using experimental flags.");
-        return kWasmBottom;
-      }
-      return kWasmFuncRef;
-    } else {
-      const byte* position = pc();
-      ValueType result = consume_value_type();
-      if (!result.is_reference()) {
-        error(position, "expected reference type");
-      }
-      return result;
+    const byte* position = pc();
+    ValueType result = consume_value_type();
+    if (!result.is_reference()) {
+      error(position, "expected reference type");
     }
+    return result;
   }
 
   const FunctionSig* consume_sig(Zone* zone) {
@@ -1912,10 +1930,8 @@ class ModuleDecoderImpl : public Decoder {
     ValueType* fields = zone->NewArray<ValueType>(field_count);
     bool* mutabilities = zone->NewArray<bool>(field_count);
     for (uint32_t i = 0; ok() && i < field_count; ++i) {
-      ValueType field = consume_storage_type();
-      fields[i] = field;
-      bool mutability = consume_mutability();
-      mutabilities[i] = mutability;
+      fields[i] = consume_storage_type();
+      mutabilities[i] = consume_mutability();
     }
     if (failed()) return nullptr;
     uint32_t* offsets = zone->NewArray<uint32_t>(field_count);
@@ -1923,10 +1939,10 @@ class ModuleDecoderImpl : public Decoder {
   }
 
   const ArrayType* consume_array(Zone* zone) {
-    ValueType field = consume_storage_type();
-    if (failed()) return nullptr;
+    ValueType element_type = consume_storage_type();
     bool mutability = consume_mutability();
-    return zone->New<ArrayType>(field, mutability);
+    if (failed()) return nullptr;
+    return zone->New<ArrayType>(element_type, mutability);
   }
 
   // Consume the attribute field of an exception.
@@ -1940,8 +1956,7 @@ class ModuleDecoderImpl : public Decoder {
     return attribute;
   }
 
-  WasmElemSegment consume_element_segment_header(
-      bool* expressions_as_elements) {
+  WasmElemSegment consume_element_segment_header() {
     const byte* pos = pc();
 
     // The mask for the bit in the flag which indicates if the segment is
@@ -1969,15 +1984,12 @@ class ModuleDecoderImpl : public Decoder {
                                       ? WasmElemSegment::kStatusDeclarative
                                       : WasmElemSegment::kStatusPassive
                                 : WasmElemSegment::kStatusActive;
-    if (status == WasmElemSegment::kStatusDeclarative &&
-        !enabled_features_.has_reftypes()) {
-      error(
-          "Declarative element segments require --experimental-wasm-reftypes");
-      return {};
-    }
     const bool is_active = status == WasmElemSegment::kStatusActive;
 
-    *expressions_as_elements = flag & kExpressionsAsElementsMask;
+    WasmElemSegment::ElementType element_type =
+        flag & kExpressionsAsElementsMask
+            ? WasmElemSegment::kExpressionElements
+            : WasmElemSegment::kFunctionIndexElements;
 
     const bool has_table_index =
         is_active && (flag & kHasTableIndexOrIsDeclarativeMask);
@@ -1990,7 +2002,7 @@ class ModuleDecoderImpl : public Decoder {
     ValueType table_type =
         is_active ? module_->tables[table_index].type : kWasmBottom;
 
-    WireBytesRef offset;
+    ConstantExpression offset;
     if (is_active) {
       offset = consume_init_expr(module_.get(), kWasmI32);
       // Failed to parse offset initializer, return early.
@@ -2001,7 +2013,7 @@ class ModuleDecoderImpl : public Decoder {
     const bool backwards_compatible_mode =
         is_active && !(flag & kHasTableIndexOrIsDeclarativeMask);
     ValueType type;
-    if (*expressions_as_elements) {
+    if (element_type == WasmElemSegment::kExpressionElements) {
       type =
           backwards_compatible_mode ? kWasmFuncRef : consume_reference_type();
       if (is_active && !IsSubtypeOf(type, table_type, this->module_.get())) {
@@ -2044,14 +2056,14 @@ class ModuleDecoderImpl : public Decoder {
     }
 
     if (is_active) {
-      return {type, table_index, std::move(offset)};
+      return {type, table_index, std::move(offset), element_type};
     } else {
-      return {type, status == WasmElemSegment::kStatusDeclarative};
+      return {type, status, element_type};
     }
   }
 
   void consume_data_segment_header(bool* is_active, uint32_t* index,
-                                   WireBytesRef* offset) {
+                                   ConstantExpression* offset) {
     const byte* pos = pc();
     uint32_t flag = consume_u32v("flag");
 
@@ -2082,59 +2094,23 @@ class ModuleDecoderImpl : public Decoder {
     }
   }
 
-  uint32_t consume_element_func_index() {
+  uint32_t consume_element_func_index(ValueType expected) {
     WasmFunction* func = nullptr;
+    const byte* initial_pc = pc();
     uint32_t index =
         consume_func_index(module_.get(), &func, "element function index");
     if (failed()) return index;
-    func->declared = true;
-    DCHECK_NE(func, nullptr);
+    DCHECK_NOT_NULL(func);
     DCHECK_EQ(index, func->func_index);
-    return index;
-  }
-
-  // TODO(manoskouk): When reftypes lands, consider if we can implement this
-  // with consume_init_expr(). It will require changes in module-instantiate.cc,
-  // in {LoadElemSegmentImpl}.
-  WasmElemSegment::Entry consume_element_expr() {
-    uint8_t opcode = consume_u8("element opcode");
-    if (failed()) return {};
-    switch (opcode) {
-      case kExprRefNull: {
-        HeapTypeImmediate<kFullValidation> imm(WasmFeatures::All(), this,
-                                               this->pc(), module_.get());
-        consume_bytes(imm.length, "ref.null immediate");
-        expect_u8("end opcode", kExprEnd);
-        return {WasmElemSegment::Entry::kRefNullEntry,
-                static_cast<uint32_t>(imm.type.representation())};
-      }
-      case kExprRefFunc: {
-        uint32_t index = consume_element_func_index();
-        if (failed()) return {};
-        expect_u8("end opcode", kExprEnd);
-        return {WasmElemSegment::Entry::kRefFuncEntry, index};
-      }
-      case kExprGlobalGet: {
-        if (!enabled_features_.has_reftypes()) {
-          errorf(
-              "Unexpected opcode 0x%x in element. Enable with "
-              "--experimental-wasm-reftypes",
-              kExprGlobalGet);
-          return {};
-        }
-        uint32_t index = this->consume_u32v("global index");
-        if (failed()) return {};
-        if (index >= module_->globals.size()) {
-          errorf("Out-of-bounds global index %d", index);
-          return {};
-        }
-        expect_u8("end opcode", kExprEnd);
-        return {WasmElemSegment::Entry::kGlobalGetEntry, index};
-      }
-      default:
-        error("invalid opcode in element");
-        return {};
+    ValueType entry_type = ValueType::Ref(func->sig_index, kNonNullable);
+    if (V8_UNLIKELY(!IsSubtypeOf(entry_type, expected, module_.get()))) {
+      errorf(initial_pc,
+             "Invalid type in element entry: expected %s, got %s instead.",
+             expected.name().c_str(), entry_type.name().c_str());
+      return index;
     }
+    func->declared = true;
+    return index;
   }
 };
 
@@ -2258,9 +2234,10 @@ const FunctionSig* DecodeWasmSignatureForTesting(const WasmFeatures& enabled,
   return decoder.DecodeFunctionSignature(zone, start);
 }
 
-WireBytesRef DecodeWasmInitExprForTesting(const WasmFeatures& enabled,
-                                          const byte* start, const byte* end,
-                                          ValueType expected) {
+ConstantExpression DecodeWasmInitExprForTesting(const WasmFeatures& enabled,
+                                                const byte* start,
+                                                const byte* end,
+                                                ValueType expected) {
   ModuleDecoderImpl decoder(enabled, start, end, kWasmOrigin);
   AccountingAllocator allocator;
   decoder.StartDecoding(nullptr, &allocator);

@@ -387,7 +387,7 @@ class TabListMediator {
             } else {
                 mTabModelSelector.getCurrentModel().setIndex(
                         TabModelUtils.getTabIndexById(mTabModelSelector.getCurrentModel(), tabId),
-                        TabSelectionType.FROM_USER);
+                        TabSelectionType.FROM_USER, false);
             }
         }
 
@@ -575,7 +575,7 @@ class TabListMediator {
                     mTabModelSelector.getCurrentModel().setIndex(
                             TabModelUtils.getTabIndexById(
                                     mTabModelSelector.getCurrentModel(), tab.getId()),
-                            TabSelectionType.FROM_USER);
+                            TabSelectionType.FROM_USER, false);
                 }
                 if (sTabClosedFromMapTabClosedFromMap.containsKey(tab.getId())) {
                     @TabClosedFrom
@@ -1471,9 +1471,9 @@ class TabListMediator {
             // Incognito in both light/dark theme is the same as non-incognito mode in dark theme.
             // Non-incognito mode and incognito in both light/dark themes in dark theme all look
             // dark.
-            ColorStateList checkedDrawableColorList = AppCompatResources.getColorStateList(mContext,
-                    pseudoTab.isIncognito() ? R.color.default_icon_color_dark
-                                            : R.color.default_icon_color_inverse);
+            ColorStateList checkedDrawableColorList = ColorStateList.valueOf(pseudoTab.isIncognito()
+                            ? mContext.getColor(R.color.default_icon_color_dark)
+                            : SemanticColorUtils.getDefaultIconColorInverse(mContext));
             ColorStateList actionButtonBackgroundColorList =
                     AppCompatResources.getColorStateList(mContext,
                             pseudoTab.isIncognito() ? R.color.default_icon_color_light

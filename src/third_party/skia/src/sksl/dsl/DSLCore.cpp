@@ -73,7 +73,7 @@ public:
         SkSL::Compiler& compiler = *instance.fCompiler;
         const SkSL::Context& context = *compiler.fContext;
         // Variables defined in the pre-includes need their declaring elements added to the program
-        if (!instance.fConfig->fIsBuiltinCode && context.fIntrinsics) {
+        if (!instance.fConfig->fIsBuiltinCode && context.fBuiltins) {
             Transform::FindAndDeclareBuiltinVariables(context, instance.fConfig->fKind,
                     instance.fSharedElements);
         }
@@ -220,7 +220,7 @@ public:
         for (size_t i = 0; i < fields.size(); ++i) {
             const SkSL::Type::Field& f = fields[i];
             if (f.fName == SkSL::Compiler::RTADJUST_NAME) {
-                if (*f.fType == *context.fTypes.fFloat4) {
+                if (f.fType->matches(*context.fTypes.fFloat4)) {
                     ThreadContext::RTAdjustData& rtAdjust = ThreadContext::RTAdjustState();
                     rtAdjust.fInterfaceBlock = &intf.variable();
                     rtAdjust.fFieldIndex = i;

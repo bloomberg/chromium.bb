@@ -85,6 +85,10 @@
 #include "include/pathops/SkPathOps.h"
 #endif
 
+#if defined(SK_INCLUDE_RUNTIME_EFFECT) && defined(SK_INCLUDE_SKSL_TRACE)
+#include "include/sksl/SkSLDebugTrace.h"
+#endif
+
 #ifndef SK_NO_FONTS
 sk_sp<SkFontMgr> SkFontMgr_New_Custom_Data(sk_sp<SkData>* datas, int n);
 #endif
@@ -128,7 +132,8 @@ struct SimpleImageInfo {
 };
 
 SkImageInfo toSkImageInfo(const SimpleImageInfo& sii) {
-    return SkImageInfo::Make(sii.width, sii.height, sii.colorType, sii.alphaType, sii.colorSpace);
+    return SkImageInfo::Make(sii.width, sii.height, sii.colorType, sii.alphaType,
+                             sii.colorSpace ? sii.colorSpace : SkColorSpace::MakeSRGB());
 }
 
 #ifdef SK_GL
@@ -179,6 +184,10 @@ sk_sp<SkSurface> MakeOnScreenGLSurface(sk_sp<GrDirectContext> dContext, int widt
     GrGLint stencil;
     emscripten_glGetIntegerv(GL_STENCIL_BITS, &stencil);
 
+    if (!colorSpace) {
+        colorSpace = SkColorSpace::MakeSRGB();
+    }
+
     const auto colorSettings = ColorSettings(colorSpace);
     info.fFormat = colorSettings.pixFormat;
     GrBackendRenderTarget target(width, height, sampleCnt, stencil, info);
@@ -188,7 +197,8 @@ sk_sp<SkSurface> MakeOnScreenGLSurface(sk_sp<GrDirectContext> dContext, int widt
 }
 
 sk_sp<SkSurface> MakeRenderTarget(sk_sp<GrDirectContext> dContext, int width, int height) {
-    SkImageInfo info = SkImageInfo::MakeN32(width, height, SkAlphaType::kPremul_SkAlphaType);
+    SkImageInfo info = SkImageInfo::MakeN32(
+            width, height, SkAlphaType::kPremul_SkAlphaType, SkColorSpace::MakeSRGB());
 
     sk_sp<SkSurface> surface(SkSurface::MakeRenderTarget(dContext.get(),
                              SkBudgeted::kYes,
@@ -747,11 +757,16 @@ protected:
         }
 
         GrGLTextureInfo glInfo;
+        // This callback is defined in gpu.js
         glInfo.fID     = fCallback.call<uint32_t>("makeTexture");
         // The format and target should match how we make the texture on the JS side
         // See the implementation of the makeTexture function.
         glInfo.fFormat = GR_GL_RGBA8;
         glInfo.fTarget = GR_GL_TEXTURE_2D;
+
+        // In order to bind the image source to the texture, makeTexture has changed which
+        // texture is "in focus" for the WebGL context.
+        GrAsDirectContext(ctx)->resetContext(kTextureBinding_GrGLBackendState);
 
         static constexpr auto kMipmapped = GrMipmapped::kNo;
         GrBackendTexture backendTexture(info.width(), info.height(), kMipmapped, glInfo);
@@ -1761,6 +1776,21 @@ EMSCRIPTEN_BINDINGS(Skia) {
         }), allow_raw_pointers());
 
 #ifdef SK_INCLUDE_RUNTIME_EFFECT
+#ifdef SK_INCLUDE_SKSL_TRACE
+    class_<SkSL::DebugTrace>("DebugTrace")
+        .smart_ptr<sk_sp<SkSL::DebugTrace>>("sk_sp<DebugTrace>")
+        .function("writeTrace", optional_override([](SkSL::DebugTrace& self) -> std::string {
+            SkDynamicMemoryWStream wstream;
+            self.writeTrace(&wstream);
+            sk_sp<SkData> trace = wstream.detachAsData();
+            return std::string(reinterpret_cast<const char*>(trace->bytes()), trace->size());
+        }));
+
+    value_object<SkRuntimeEffect::TracedShader>("TracedShader")
+        .field("shader",     &SkRuntimeEffect::TracedShader::shader)
+        .field("debugTrace", &SkRuntimeEffect::TracedShader::debugTrace);
+#endif
+
     class_<SkRuntimeEffect>("RuntimeEffect")
         .smart_ptr<sk_sp<SkRuntimeEffect>>("sk_sp<RuntimeEffect>")
         .class_function("_Make", optional_override([](std::string sksl,
@@ -1774,6 +1804,14 @@ EMSCRIPTEN_BINDINGS(Skia) {
             }
             return effect;
         }))
+#ifdef SK_INCLUDE_SKSL_TRACE
+        .class_function("MakeTraced", optional_override([](
+                sk_sp<SkShader> shader,
+                int traceCoordX,
+                int traceCoordY) -> SkRuntimeEffect::TracedShader {
+            return SkRuntimeEffect::MakeTraced(shader, SkIPoint::Make(traceCoordX, traceCoordY));
+        }))
+#endif
         .function("_makeShader", optional_override([](SkRuntimeEffect& self, WASMPointerF32 fPtr, size_t fLen, bool isOpaque,
                                                       WASMPointerF32 mPtr)->sk_sp<SkShader> {
             void* inputData = reinterpret_cast<void*>(fPtr);

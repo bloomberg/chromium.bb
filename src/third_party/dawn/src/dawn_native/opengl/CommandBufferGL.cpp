@@ -34,7 +34,7 @@
 
 #include <cstring>
 
-namespace dawn_native { namespace opengl {
+namespace dawn::native::opengl {
 
     namespace {
 
@@ -756,7 +756,7 @@ namespace dawn_native { namespace opengl {
                                 break;
                             }
                             // Implementation for 2D array is the same as 3D.
-                            DAWN_FALLTHROUGH;
+                            [[fallthrough]];
                         }
 
                         case wgpu::TextureDimension::e3D: {
@@ -1488,4 +1488,4 @@ namespace dawn_native { namespace opengl {
         }
     }
 
-}}  // namespace dawn_native::opengl
+}  // namespace dawn::native::opengl

@@ -20,6 +20,7 @@
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
 #include "third_party/base/cxx17_backports.h"
+#include "third_party/base/numerics/safe_conversions.h"
 
 namespace fxcodec {
 
@@ -518,7 +519,7 @@ bool FaxDecoder::Rewind() {
 }
 
 pdfium::span<uint8_t> FaxDecoder::GetNextLine() {
-  int bitsize = m_SrcSpan.size() * 8;
+  int bitsize = pdfium::base::checked_cast<int>(m_SrcSpan.size() * 8);
   FaxSkipEOL(m_SrcSpan.data(), bitsize, &m_bitpos);
   if (m_bitpos >= bitsize)
     return pdfium::span<uint8_t>();
@@ -563,7 +564,8 @@ pdfium::span<uint8_t> FaxDecoder::GetNextLine() {
 }
 
 uint32_t FaxDecoder::GetSrcOffset() {
-  return std::min(static_cast<size_t>((m_bitpos + 7) / 8), m_SrcSpan.size());
+  return pdfium::base::checked_cast<uint32_t>(
+      std::min<size_t>((m_bitpos + 7) / 8, m_SrcSpan.size()));
 }
 
 void FaxDecoder::InvertBuffer() {
@@ -625,7 +627,7 @@ int FaxModule::FaxG4Decode(const uint8_t* src_buf,
   return bitpos;
 }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 namespace {
 const uint8_t BlackRunTerminator[128] = {
     0x37, 10, 0x02, 3,  0x03, 2,  0x02, 2,  0x03, 3,  0x03, 4,  0x02, 4,
@@ -798,7 +800,7 @@ void FaxEncoder::Encode(std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
   }
   if (m_DestBitpos)
     m_DestBuf.AppendByte(last_byte);
-  *dest_size = m_DestBuf.GetSize();
+  *dest_size = pdfium::base::checked_cast<uint32_t>(m_DestBuf.GetSize());
   *dest_buf = m_DestBuf.DetachBuffer();
 }
 
@@ -815,6 +817,6 @@ void FaxModule::FaxEncode(const uint8_t* src_buf,
   encoder.Encode(dest_buf, dest_size);
 }
 
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace fxcodec

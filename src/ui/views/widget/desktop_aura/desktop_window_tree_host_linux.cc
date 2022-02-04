@@ -382,6 +382,8 @@ void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
   properties->wm_class_class = params.wm_class_class;
   properties->wm_role_name = params.wm_role_name;
 
+  properties->wayland_app_id = params.wayland_app_id;
+
   properties->parent_widget = params.parent_widget;
 
   DCHECK(!properties->x11_extension_delegate);

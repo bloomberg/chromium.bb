@@ -466,6 +466,16 @@ class AutotestPrivateImportCrostiniFunction : public ExtensionFunction {
   void CrostiniImported(crostini::CrostiniResult);
 };
 
+class AutotestPrivateCouldAllowCrostiniFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.couldAllowCrostini",
+                             AUTOTESTPRIVATE_COULDALLOWCROSTINI)
+
+ private:
+  ~AutotestPrivateCouldAllowCrostiniFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateSetPluginVMPolicyFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setPluginVMPolicy",
@@ -940,6 +950,8 @@ class AutotestPrivateSetOverviewModeStateFunction : public ExtensionFunction {
   void OnOverviewModeChanged(bool for_start, bool finished);
 };
 
+// TODO(crbug.com/1275410): Replace this by introducing
+// autotestPrivate.setVirtualKeyboardVisibilityIfEnabled().
 class AutotestPrivateShowVirtualKeyboardIfEnabledFunction
     : public ExtensionFunction {
  public:
@@ -1328,6 +1340,10 @@ class AutotestPrivateSetWindowBoundsFunction : public ExtensionFunction {
 class AutotestPrivateStartSmoothnessTrackingFunction
     : public ExtensionFunction {
  public:
+  // Default sampling interval to collect display smoothness.
+  static constexpr base::TimeDelta kDefaultThroughputInterval =
+      base::Seconds(5);
+
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.startSmoothnessTracking",
                              AUTOTESTPRIVATE_STARTSMOOTHNESSTRACKING)
 
@@ -1345,7 +1361,9 @@ class AutotestPrivateStopSmoothnessTrackingFunction : public ExtensionFunction {
   ~AutotestPrivateStopSmoothnessTrackingFunction() override;
   ResponseAction Run() override;
 
-  void OnReportData(const cc::FrameSequenceMetrics::CustomReportData& data);
+  void OnReportData(
+      const cc::FrameSequenceMetrics::CustomReportData& frame_data,
+      std::vector<int>&& throughput);
   void OnTimeOut(int64_t display_id);
 
   base::OneShotTimer timeout_timer_;

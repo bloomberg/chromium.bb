@@ -83,7 +83,7 @@ export class ComputedStyleModel extends Common.ObjectWrapper.ObjectWrapper<Event
       clearTimeout(this.frameResizedTimer);
     }
 
-    this.frameResizedTimer = setTimeout(refreshContents.bind(this), 100);
+    this.frameResizedTimer = window.setTimeout(refreshContents.bind(this), 100);
   }
 
   private elementNode(): SDK.DOMModel.DOMNode|null {
@@ -98,11 +98,11 @@ export class ComputedStyleModel extends Common.ObjectWrapper.ObjectWrapper<Event
     const elementNode = this.elementNode();
     const cssModel = this.cssModel();
     if (!elementNode || !cssModel) {
-      return /** @type {?ComputedStyle} */ null as ComputedStyle | null;
+      return null;
     }
     const nodeId = elementNode.id;
     if (!nodeId) {
-      return /** @type {?ComputedStyle} */ null as ComputedStyle | null;
+      return null;
     }
 
     if (!this.computedStylePromise) {
