@@ -718,6 +718,7 @@ const FeatureEntry::Choice kLacrosSelectionChoices[] = {
 };
 
 const FeatureEntry::Choice kLacrosAvailabilityPolicyChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {crosapi::browser_util::kLacrosAvailabilityPolicyUserChoice,
      crosapi::browser_util::kLacrosAvailabilityPolicySwitch,
      crosapi::browser_util::kLacrosAvailabilityPolicyUserChoice},
@@ -3491,6 +3492,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVoiceButtonInTopToolbarName,
      flag_descriptions::kVoiceButtonInTopToolbarDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kVoiceButtonInTopToolbar)},
+    {"assistant-consent-modal", flag_descriptions::kAssistantConsentModalName,
+     flag_descriptions::kAssistantConsentModalDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAssistantConsentModal)},
     {"assistant-consent-simplified-text",
      flag_descriptions::kAssistantConsentSimplifiedTextName,
      flag_descriptions::kAssistantConsentSimplifiedTextDescription, kOsAndroid,

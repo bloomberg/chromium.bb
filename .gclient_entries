@@ -46,7 +46,7 @@ entries = {
   'src/third_party/harfbuzz-ng/src': 'https://chromium.googlesource.com/external/github.com/harfbuzz/harfbuzz.git@0acf466c44143de2e9b9cc0375cb25ec67cb132f',
   'src/third_party/highway/src': 'https://chromium.googlesource.com/external/github.com/google/highway.git@424360251cdcfc314cfc528f53c872ecd63af0f0',
   'src/third_party/hunspell_dictionaries': 'https://chromium.googlesource.com/chromium/deps/hunspell_dictionaries.git@18e09b9197a3b1d771c077c530d1a4ebad04c167',
-  'src/third_party/icu': 'https://chromium.googlesource.com/chromium/deps/icu.git@b9f6d0a5c5375dc4643f35360d257dba37c1d3e1',
+  'src/third_party/icu': 'https://chromium.googlesource.com/chromium/deps/icu.git@609143a639dcc0884a87c899614895ce129afdb8',
   'src/third_party/jsoncpp/source': 'https://chromium.googlesource.com/external/github.com/open-source-parsers/jsoncpp.git@9059f5cad030ba11d37818847443a53918c327b1',
   'src/third_party/leveldatabase/src': 'https://chromium.googlesource.com/external/leveldb.git@1b51a3a96821e5fd5175288724c95c1bde57b2f0',
   'src/third_party/libFuzzer/src': 'https://chromium.googlesource.com/chromium/llvm-project/compiler-rt/lib/fuzzer.git@debe7d2d1982e540fbd6bd78604bf001753f9e74',
