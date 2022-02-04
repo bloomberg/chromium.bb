@@ -68,8 +68,8 @@ const char kActive[] = "active";
 // We do the conversion because we previously stored these values as strings
 // rather than objects.
 // TODO(devlin): Remove the conversion once everyone's updated.
-void InitializeOverridesList(base::ListValue* list) {
-  base::ListValue migrated;
+void InitializeOverridesList(base::Value* list) {
+  base::Value migrated(base::Value::Type::LIST);
   std::set<std::string> seen_entries;
   for (auto& val : list->GetList()) {
     base::Value new_dict(base::Value::Type::DICTIONARY);
@@ -97,7 +97,7 @@ void InitializeOverridesList(base::ListValue* list) {
     }
   }
 
-  list->Swap(&migrated);
+  *list = std::move(migrated);
 }
 
 // Adds |override| to |list|, or, if there's already an entry for the override,
@@ -139,8 +139,8 @@ void AddOverridesToList(base::Value* list, const GURL& override_url) {
 // Validates that each entry in |list| contains a valid url and points to an
 // extension contained in |all_extensions| (and, if not, removes it).
 void ValidateOverridesList(const extensions::ExtensionSet* all_extensions,
-                           base::ListValue* list) {
-  base::ListValue migrated;
+                           base::Value* list) {
+  base::Value migrated(base::Value::Type::LIST);
   std::set<std::string> seen_hosts;
   for (auto& val : list->GetList()) {
     std::string* entry = nullptr;
@@ -166,7 +166,7 @@ void ValidateOverridesList(const extensions::ExtensionSet* all_extensions,
     migrated.Append(val.Clone());
   }
 
-  list->Swap(&migrated);
+  *list = std::move(migrated);
 }
 
 // Reloads the page in |web_contents| if it uses the same profile as |profile|
@@ -198,7 +198,7 @@ enum UpdateBehavior {
 
 // Updates the entry (if any) for |override_url| in |overrides_list| according
 // to |behavior|. Returns true if anything changed.
-bool UpdateOverridesList(base::ListValue* overrides_list,
+bool UpdateOverridesList(base::Value* overrides_list,
                          const std::string& override_url,
                          UpdateBehavior behavior) {
   auto iter = std::find_if(
@@ -218,7 +218,7 @@ bool UpdateOverridesList(base::ListValue* overrides_list,
           break;
         }
         // Else fall through and erase the broken pref.
-        FALLTHROUGH;
+        [[fallthrough]];
       }
       case UPDATE_REMOVE:
         overrides_list->EraseListIter(iter);
@@ -237,11 +237,12 @@ void UpdateOverridesLists(Profile* profile,
     return;
   PrefService* prefs = profile->GetPrefs();
   DictionaryPrefUpdate update(prefs, ExtensionWebUI::kExtensionURLOverrides);
-  base::DictionaryValue* all_overrides = update.Get();
+  base::Value* all_overrides = update.Get();
   for (const auto& page_override_pair : overrides) {
-    base::ListValue* page_overrides = nullptr;
+    base::Value* page_overrides =
+        all_overrides->FindListKey(page_override_pair.first);
     // If it's being unregistered, it should already be in the list.
-    if (!all_overrides->GetList(page_override_pair.first, &page_overrides)) {
+    if (!page_overrides) {
       NOTREACHED();
       continue;
     }
@@ -316,27 +317,24 @@ bool ValidateOverrideURL(const base::Value* override_url_value,
 }
 
 // Fetches each list in the overrides dictionary and runs |callback| on it.
-void ForEachOverrideList(
-    Profile* profile,
-    base::RepeatingCallback<void(base::ListValue*)> callback) {
+void ForEachOverrideList(Profile* profile,
+                         base::RepeatingCallback<void(base::Value*)> callback) {
   PrefService* prefs = profile->GetPrefs();
   DictionaryPrefUpdate update(prefs, ExtensionWebUI::kExtensionURLOverrides);
-  base::DictionaryValue* all_overrides = update.Get();
+  base::Value* all_overrides = update.Get();
 
-  // DictionaryValue::Iterator cannot be used to modify the list. Generate the
-  // set of keys instead.
+  // We shouldn't modify the list during iteration. Generate the set of keys
+  // instead.
   std::vector<std::string> keys;
-  for (base::DictionaryValue::Iterator iter(*all_overrides);
-       !iter.IsAtEnd(); iter.Advance()) {
-    keys.push_back(iter.key());
+  for (const auto entry : all_overrides->DictItems()) {
+    keys.push_back(entry.first);
   }
   for (const std::string& key : keys) {
-    base::ListValue* list = nullptr;
-    bool success = all_overrides->GetList(key, &list);
-    // In a perfect world, we could CHECK(success) here. Unfortunately, if a
+    base::Value* list = all_overrides->FindListKey(key);
+    // In a perfect world, we could CHECK(list) here. Unfortunately, if a
     // user's prefs are mangled (by malware, user modification, hard drive
     // corruption, evil robots, etc), this will fail. Instead, delete the pref.
-    if (!success) {
+    if (!list) {
       all_overrides->RemoveKey(key);
       continue;
     }
@@ -356,8 +354,9 @@ std::vector<GURL> GetOverridesForChromeURL(
   DCHECK(url.SchemeIs(content::kChromeUIScheme));
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  const base::DictionaryValue* overrides = profile->GetPrefs()->GetDictionary(
-      ExtensionWebUI::kExtensionURLOverrides);
+  const base::DictionaryValue* overrides =
+      &base::Value::AsDictionaryValue(*profile->GetPrefs()->GetDictionary(
+          ExtensionWebUI::kExtensionURLOverrides));
 
   const base::ListValue* url_list = nullptr;
   if (!overrides || !overrides->GetList(url.host_piece(), &url_list))
@@ -450,8 +449,8 @@ bool ExtensionWebUI::HandleChromeURLOverride(
 bool ExtensionWebUI::HandleChromeURLOverrideReverse(
     GURL* url, content::BrowserContext* browser_context) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  const base::DictionaryValue* overrides =
-      profile->GetPrefs()->GetDictionary(kExtensionURLOverrides);
+  const base::DictionaryValue* overrides = &base::Value::AsDictionaryValue(
+      *profile->GetPrefs()->GetDictionary(kExtensionURLOverrides));
   if (!overrides)
     return false;
 

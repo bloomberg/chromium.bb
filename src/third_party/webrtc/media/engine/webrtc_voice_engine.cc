@@ -411,7 +411,6 @@ void WebRtcVoiceEngine::Init() {
     options.audio_jitter_buffer_min_delay_ms = 0;
     options.audio_jitter_buffer_enable_rtx_handling = false;
     options.experimental_agc = false;
-    options.residual_echo_detector = true;
     bool error = ApplyOptions(options);
     RTC_DCHECK(error);
   }
@@ -623,10 +622,6 @@ bool WebRtcVoiceEngine::ApplyOptions(const AudioOptions& options_in) {
 
   if (options.highpass_filter) {
     apm_config.high_pass_filter.enabled = *options.highpass_filter;
-  }
-
-  if (options.residual_echo_detector) {
-    apm_config.residual_echo_detector.enabled = *options.residual_echo_detector;
   }
 
   if (options.noise_suppression) {
@@ -1337,7 +1332,7 @@ WebRtcVoiceMediaChannel::WebRtcVoiceMediaChannel(
     const AudioOptions& options,
     const webrtc::CryptoOptions& crypto_options,
     webrtc::Call* call)
-    : VoiceMediaChannel(config, call->network_thread()),
+    : VoiceMediaChannel(call->network_thread(), config.enable_dscp),
       worker_thread_(call->worker_thread()),
       engine_(engine),
       call_(call),
@@ -1867,13 +1862,15 @@ void WebRtcVoiceMediaChannel::SetSend(bool send) {
     return;
   }
 
-  // Apply channel specific options, and initialize the ADM for recording (this
-  // may take time on some platforms, e.g. Android).
+  // Apply channel specific options.
   if (send) {
     engine()->ApplyOptions(options_);
 
-    // InitRecording() may return an error if the ADM is already recording.
-    if (!engine()->adm()->RecordingIsInitialized() &&
+    // Initialize the ADM for recording (this may take time on some platforms,
+    // e.g. Android).
+    if (options_.init_recording_on_send.value_or(true) &&
+        // InitRecording() may return an error if the ADM is already recording.
+        !engine()->adm()->RecordingIsInitialized() &&
         !engine()->adm()->Recording()) {
       if (engine()->adm()->InitRecording() != 0) {
         RTC_LOG(LS_WARNING) << "Failed to initialize recording";
@@ -2289,14 +2286,15 @@ void WebRtcVoiceMediaChannel::OnPacketSent(const rtc::SentPacket& sent_packet) {
 }
 
 void WebRtcVoiceMediaChannel::OnNetworkRouteChanged(
-    const std::string& transport_name,
+    absl::string_view transport_name,
     const rtc::NetworkRoute& network_route) {
   RTC_DCHECK_RUN_ON(&network_thread_checker_);
 
   call_->OnAudioTransportOverheadChanged(network_route.packet_overhead);
 
   worker_thread_->PostTask(ToQueuedTask(
-      task_safety_, [this, name = transport_name, route = network_route] {
+      task_safety_,
+      [this, name = std::string(transport_name), route = network_route] {
         RTC_DCHECK_RUN_ON(worker_thread_);
         call_->GetTransportControllerSend()->OnNetworkRouteChanged(name, route);
       }));

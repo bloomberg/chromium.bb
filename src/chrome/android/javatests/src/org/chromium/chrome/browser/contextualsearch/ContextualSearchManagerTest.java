@@ -2598,8 +2598,7 @@ public class ContextualSearchManagerTest {
                 GURL.emptyGURL(), 0 /* navigationId */, false /* isPost */,
                 true /* hasUserGesture */, PageTransition.LINK, false /* isRedirect */,
                 true /* isExternalProtocol */, true /* isMainFrame */,
-                true /* isRendererInitiated */, false /* hasUserGestureCarryover */,
-                null /* initiatorOrigin */);
+                true /* isRendererInitiated */, null /* initiatorOrigin */);
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -2630,19 +2629,17 @@ public class ContextualSearchManagerTest {
         final ExternalNavigationHandler externalNavHandler =
                 new ExternalNavigationHandler(delegate);
 
-        final NavigationParams initialNavigationParams =
-                new NavigationParams(new GURL("http://test.com"), GURL.emptyGURL(),
-                        0 /* navigationId */, false /* isPost */, true /* hasUserGesture */,
-                        PageTransition.LINK, false /* isRedirect */, false /* isExternalProtocol */,
-                        true /* isMainFrame */, true /* isRendererInitiated */,
-                        false /* hasUserGestureCarryover */, null /* initiatorOrigin */);
+        final NavigationParams initialNavigationParams = new NavigationParams(
+                new GURL("http://test.com"), GURL.emptyGURL(), 0 /* navigationId */,
+                false /* isPost */, true /* hasUserGesture */, PageTransition.LINK,
+                false /* isRedirect */, false /* isExternalProtocol */, true /* isMainFrame */,
+                true /* isRendererInitiated */, null /* initiatorOrigin */);
         final NavigationParams redirectedNavigationParams = new NavigationParams(
                 new GURL("intent://test/#Intent;scheme=test;package=com.chrome.test;end"),
                 GURL.emptyGURL(), 0 /* navigationId */, false /* isPost */,
                 false /* hasUserGesture */, PageTransition.LINK, true /* isRedirect */,
                 true /* isExternalProtocol */, true /* isMainFrame */,
-                true /* isRendererInitiated */, false /* hasUserGestureCarryover */,
-                null /* initiatorOrigin */);
+                true /* isRendererInitiated */, null /* initiatorOrigin */);
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
@@ -2679,8 +2676,7 @@ public class ContextualSearchManagerTest {
                 GURL.emptyGURL(), 0 /* navigationId */, false /* isPost */,
                 false /* hasUserGesture */, PageTransition.LINK, false /* isRedirect */,
                 true /* isExternalProtocol */, true /* isMainFrame */,
-                true /* isRendererInitiated */, false /* hasUserGestureCarryover */,
-                null /* initiatorOrigin */);
+                true /* isRendererInitiated */, null /* initiatorOrigin */);
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -3548,7 +3544,7 @@ public class ContextualSearchManagerTest {
         Assert.assertEquals(
                 "The Tap gesture did not trigger a resolved search, or the resolve sequence did "
                         + "not complete.",
-                InternalState.SHOWING_TAP_SEARCH, internalStateControllerWrapper.getState());
+                InternalState.SEARCH_COMPLETED, internalStateControllerWrapper.getState());
     }
 
     /**
@@ -3580,10 +3576,9 @@ public class ContextualSearchManagerTest {
                 ContextualSearchInternalStateControllerWrapper.EXPECTED_LONGPRESS_RESOLVE_SEQUENCE,
                 internalStateControllerWrapper.getFinishedStates());
         Assert.assertEquals(
-                "The Long-press gesturedid not trigger a resolved search, or the resolve sequence "
+                "The Long-press gesture did not trigger a resolved search, or the resolve sequence "
                         + "did not complete.",
-                InternalState.SHOWING_RESOLVED_LONG_PRESS_SEARCH,
-                internalStateControllerWrapper.getState());
+                InternalState.SEARCH_COMPLETED, internalStateControllerWrapper.getState());
     }
 
     /**
@@ -4063,32 +4058,5 @@ public class ContextualSearchManagerTest {
         Assert.assertFalse("Expected the panel to not be showing after a close! "
                         + "Animation of the Bar height is the likely cause.",
                 mPanel.isShowing());
-    }
-
-    // --------------------------------------------------------------------------------------------
-    // Forced Caption Feature tests.
-    // --------------------------------------------------------------------------------------------
-
-    /**
-     * Tests that a caption is shown on a non intelligent search when the force-caption feature is
-     * enabled.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @DisabledTest(message = "Enable when rolling out the Forced Caption Features")
-    public void testNonResolveCaption() throws Exception {
-        // Simulate a non-resolve search and make sure no Caption is shown.
-        FeatureList.setTestFeatures(DISABLE_FORCE_CAPTION);
-        simulateNonResolveSearch("search");
-        Assert.assertFalse(mPanel.getSearchBarControl().getCaptionVisible());
-        closePanel();
-
-        // Now try again with Caption-forcing.
-        FeatureList.setTestFeatures(ENABLE_FORCE_CAPTION);
-        simulateNonResolveSearch("search");
-        Assert.assertTrue(mPanel.getSearchBarControl().getCaptionVisible());
-        closePanel();
     }
 }

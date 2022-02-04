@@ -27,6 +27,7 @@
 #include "src/core/SkCanvasPriv.h"
 #include "src/core/SkClipStack.h"
 #include "src/core/SkColorFilterBase.h"
+#include "src/core/SkCustomMeshPriv.h"
 #include "src/core/SkDraw.h"
 #include "src/core/SkGlyphRun.h"
 #include "src/core/SkImageFilterCache.h"
@@ -923,12 +924,15 @@ void SkCanvas::internalDrawDeviceWithFilter(SkBaseDevice* src,
             intermediateDevice->setOrigin(SkM44(srcToIntermediate),
                                           requiredInput.left(), requiredInput.top());
 
-            SkMatrix offsetLocalToDevice = intermediateDevice->localToDevice();
-            offsetLocalToDevice.preTranslate(srcSubset.left(), srcSubset.top());
-            // We draw with non-AA bilinear since we cover the destination but definitely don't have
-            // a pixel-aligned transform.
-            intermediateDevice->drawSpecial(srcImage.get(), offsetLocalToDevice,
-                                            SkSamplingOptions{SkFilterMode::kLinear}, {});
+            // We use drawPaint to fill the entire device with the src input + clamp tiling, which
+            // extends the backdrop's edge pixels to the parts of 'requiredInput' that map offscreen
+            // Without this, the intermediateDevice would contain transparent pixels that may then
+            // infect blurs and other filters with large kernels.
+            SkPaint imageFill;
+            imageFill.setShader(srcImage->asShader(SkTileMode::kClamp,
+                                                   SkSamplingOptions{SkFilterMode::kLinear},
+                                                   SkMatrix::Translate(srcSubset.topLeft())));
+            intermediateDevice->drawPaint(imageFill);
             filterInput = intermediateDevice->snapSpecial();
 
             // TODO: Like the non-intermediate case, we need to apply the image origin.
@@ -1796,6 +1800,17 @@ void SkCanvas::drawVertices(const SkVertices* vertices, SkBlendMode mode, const 
     this->onDrawVerticesObject(vertices, mode, paint);
 }
 
+#ifdef SK_ENABLE_SKSL
+void SkCanvas::drawCustomMesh(SkCustomMesh cm, sk_sp<SkBlender> blender, const SkPaint& paint) {
+    TRACE_EVENT0("skia", TRACE_FUNC);
+    RETURN_ON_FALSE(SkValidateCustomMesh(cm));
+    if (!blender) {
+        blender = SkBlender::Mode(SkBlendMode::kModulate);
+    }
+    this->onDrawCustomMesh(std::move(cm), std::move(blender), paint);
+}
+#endif
+
 void SkCanvas::drawPath(const SkPath& path, const SkPaint& paint) {
     TRACE_EVENT0("skia", TRACE_FUNC);
     this->onDrawPath(path, paint);
@@ -2437,6 +2452,21 @@ void SkCanvas::onDrawVerticesObject(const SkVertices* vertices, SkBlendMode bmod
         this->topDevice()->drawVertices(vertices, SkBlender::Mode(bmode), layer->paint());
     }
 }
+
+#ifdef SK_ENABLE_SKSL
+void SkCanvas::onDrawCustomMesh(SkCustomMesh cm, sk_sp<SkBlender> blender, const SkPaint& paint) {
+    SkPaint simplePaint = clean_paint_for_drawVertices(paint);
+
+    if (this->internalQuickReject(cm.bounds, simplePaint)) {
+        return;
+    }
+
+    auto layer = this->aboutToDraw(this, simplePaint, nullptr);
+    if (layer) {
+        this->topDevice()->drawCustomMesh(std::move(cm), std::move(blender), paint);
+    }
+}
+#endif
 
 void SkCanvas::drawPatch(const SkPoint cubics[12], const SkColor colors[4],
                          const SkPoint texCoords[4], SkBlendMode bmode,

@@ -442,7 +442,7 @@ public:
     nr = 4,
 
     // register block size along the M direction (currently, this one cannot be modified)
-    default_mr = (EIGEN_PLAIN_ENUM_MIN(16,NumberOfRegisters)/2/nr)*LhsPacketSize,
+    default_mr = (plain_enum_min(16, NumberOfRegisters)/2/nr)*LhsPacketSize,
 #if defined(EIGEN_HAS_SINGLE_INSTRUCTION_MADD) && !defined(EIGEN_VECTORIZE_ALTIVEC) && !defined(EIGEN_VECTORIZE_VSX) \
     && ((!EIGEN_COMP_MSVC) || (EIGEN_COMP_MSVC>=1914))
     // we assume 16 registers or more
@@ -571,7 +571,7 @@ public:
     // we assume 16 registers
     mr = 3*LhsPacketSize,
 #else
-    mr = (EIGEN_PLAIN_ENUM_MIN(16,NumberOfRegisters)/2/nr)*LhsPacketSize,
+    mr = (plain_enum_min(16, NumberOfRegisters)/2/nr)*LhsPacketSize,
 #endif
 
     LhsProgress = LhsPacketSize,
@@ -954,7 +954,7 @@ public:
     NumberOfRegisters = EIGEN_ARCH_DEFAULT_NUMBER_OF_REGISTERS,
     // FIXME: should depend on NumberOfRegisters
     nr = 4,
-    mr = (EIGEN_PLAIN_ENUM_MIN(16,NumberOfRegisters)/2/nr)*ResPacketSize,
+    mr = (plain_enum_min(16, NumberOfRegisters)/2/nr)*ResPacketSize,
 
     LhsProgress = ResPacketSize,
     RhsProgress = 1

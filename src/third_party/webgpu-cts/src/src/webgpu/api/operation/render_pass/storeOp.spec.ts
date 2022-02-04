@@ -269,12 +269,12 @@ formats, mip levels and array layers.
 
 - x= all (sized) depth stencil formats, all store ops, multiple mip levels, multiple array layers
 
-TODO: Also test unsized depth/stencil formats
+TODO: Also test unsized depth/stencil formats [1]
   `
   )
   .params(u =>
     u
-      .combine('depthStencilFormat', kSizedDepthStencilFormats) // TODO
+      .combine('depthStencilFormat', kSizedDepthStencilFormats) // [1]
       .combine('storeOperation', kStoreOps)
       .beginSubcases()
       .combine('mipLevel', kMipLevel)

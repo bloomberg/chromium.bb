@@ -1040,14 +1040,13 @@ static const struct {
 
 void V8HeapExplorer::ExtractContextReferences(HeapEntry* entry,
                                               Context context) {
+  DisallowGarbageCollection no_gc;
   if (!context.IsNativeContext() && context.is_declaration_context()) {
     ScopeInfo scope_info = context.scope_info();
     // Add context allocated locals.
-    int context_locals = scope_info.ContextLocalCount();
-    for (int i = 0; i < context_locals; ++i) {
-      String local_name = scope_info.ContextLocalName(i);
-      int idx = scope_info.ContextHeaderLength() + i;
-      SetContextReference(entry, local_name, context.get(idx),
+    for (auto it : ScopeInfo::IterateLocalNames(&scope_info, no_gc)) {
+      int idx = scope_info.ContextHeaderLength() + it->index();
+      SetContextReference(entry, it->name(), context.get(idx),
                           Context::OffsetOfElementAt(idx));
     }
     if (scope_info.HasContextAllocatedFunctionName()) {
@@ -1237,9 +1236,8 @@ void V8HeapExplorer::ExtractWeakCellReferences(HeapEntry* entry,
                    WeakCell::kUnregisterTokenOffset);
 }
 
-void V8HeapExplorer::TagBuiltinCodeObject(Object code, const char* name) {
-  DCHECK(code.IsCode() || (V8_EXTERNAL_CODE_SPACE_BOOL && code.IsCodeT()));
-  TagObject(code, names_->GetFormatted("(%s builtin)", name));
+void V8HeapExplorer::TagBuiltinCodeObject(CodeT code, const char* name) {
+  TagObject(FromCodeT(code), names_->GetFormatted("(%s builtin)", name));
 }
 
 void V8HeapExplorer::ExtractCodeReferences(HeapEntry* entry, Code code) {
@@ -1599,7 +1597,7 @@ class RootsReferencesExtractor : public RootVisitor {
   void VisitRootPointer(Root root, const char* description,
                         FullObjectSlot object) override {
     if (root == Root::kBuiltins) {
-      explorer_->TagBuiltinCodeObject(*object, description);
+      explorer_->TagBuiltinCodeObject(CodeT::cast(*object), description);
     }
     explorer_->SetGcSubrootReference(root, description, visiting_weak_roots_,
                                      *object);

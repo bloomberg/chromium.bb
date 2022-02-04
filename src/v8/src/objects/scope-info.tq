@@ -54,7 +54,7 @@ bitfield struct ScopeFlags extends uint31 {
   declaration_scope: bool: 1 bit;
   receiver_variable: VariableAllocationInfo: 2 bit;
   has_class_brand: bool: 1 bit;
-  has_saved_class_variable_index: bool: 1 bit;
+  has_saved_class_variable: bool: 1 bit;
   has_new_target: bool: 1 bit;
   // TODO(cbruni): Combine with function variable field when only storing the
   // function name.
@@ -97,6 +97,9 @@ struct ModuleVariable {
   properties: SmiTagged<VariableProperties>;
 }
 
+const kMaxInlinedLocalNamesSize:
+    constexpr int32 generates 'kScopeInfoMaxInlinedLocalNamesSize';
+
 @generateBodyDescriptor
 extern class ScopeInfo extends HeapObject {
   const flags: SmiTagged<ScopeFlags>;
@@ -108,10 +111,11 @@ extern class ScopeInfo extends HeapObject {
   // context.
   const context_local_count: Smi;
 
-  // Contains the names of local variables and parameters that are allocated
-  // in the context. They are stored in increasing order of the context slot
-  // index starting with Context::MIN_CONTEXT_SLOTS.
-  context_local_names[context_local_count]: String;
+  // Contains the names of inlined local variables and parameters that are
+  // allocated in the context. They are stored in increasing order of the
+  // context slot index starting with Context::MIN_CONTEXT_SLOTS.
+  context_local_names[Convert<intptr>(context_local_count) < kMaxInlinedLocalNamesSize ? context_local_count : 0]:
+      String;
 
   // Contains the variable modes and initialization flags corresponding to
   // the context locals in ContextLocalNames.
@@ -119,8 +123,9 @@ extern class ScopeInfo extends HeapObject {
 
   // If the scope is a class scope and it has static private methods that
   // may be accessed directly or through eval, one slot is reserved to hold
-  // the context slot index for the class variable.
-  saved_class_variable_info?[flags.has_saved_class_variable_index]: Smi;
+  // the offset in the field storage of the hash table (or the slot index if
+  // local names are inlined) for the class variable.
+  saved_class_variable_info?[flags.has_saved_class_variable]: Smi;
 
   // If the scope belongs to a named function expression this part contains
   // information about the function variable. It always occupies two array

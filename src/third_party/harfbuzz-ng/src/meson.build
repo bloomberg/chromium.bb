@@ -1,6 +1,6 @@
 project('harfbuzz', 'c', 'cpp',
-  meson_version: '>= 0.52.0',
-  version: '3.1.1',
+  meson_version: '>= 0.55.0',
+  version: '3.2.0',
   default_options: [
     'cpp_rtti=false',       # Just to support msvc, we are passing -fno-exceptions also anyway
     'cpp_std=c++11',
@@ -61,6 +61,7 @@ check_headers = [
   ['unistd.h'],
   ['sys/mman.h'],
   ['stdbool.h'],
+  ['xlocale.h'],
 ]
 
 check_funcs = [
@@ -70,6 +71,8 @@ check_funcs = [
   ['getpagesize'],
   ['mmap'],
   ['isatty'],
+  ['uselocale'],
+  ['newlocale'],
 ]
 
 m_dep = cpp.find_library('m', required: false)
@@ -141,18 +144,12 @@ if not get_option('cairo').disabled()
   endif
 
   if not cairo_dep.found()
-    # Requires Meson 0.54.0 to use cairo subproject
-    if meson.version().version_compare('>=0.54.0')
-      # Note that we don't have harfbuzz -> cairo -> freetype2 -> harfbuzz fallback
-      # dependency cycle here because we have configured freetype2 above with
-      # harfbuzz support disabled, so when cairo will lookup freetype2 dependency
-      # it will be forced to use that one.
-      cairo_dep = dependency('cairo', fallback: 'cairo', required: get_option('cairo'))
-      cairo_ft_dep = dependency('cairo-ft', fallback: 'cairo', required: get_option('cairo'))
-    elif get_option('cairo').enabled()
-      error('cairo feature is enabled but it cannot be found on the system and ' +
-            'meson>=0.54.0 is required to build it as subproject')
-    endif
+    # Note that we don't have harfbuzz -> cairo -> freetype2 -> harfbuzz fallback
+    # dependency cycle here because we have configured freetype2 above with
+    # harfbuzz support disabled, so when cairo will lookup freetype2 dependency
+    # it will be forced to use that one.
+    cairo_dep = dependency('cairo', fallback: 'cairo', required: get_option('cairo'))
+    cairo_ft_dep = dependency('cairo-ft', fallback: 'cairo', required: get_option('cairo'))
   endif
 endif
 
@@ -245,12 +242,17 @@ if host_machine.system() == 'windows' and not get_option('gdi').disabled()
 endif
 
 # DirectWrite (Windows)
+directwrite_dep = null_dep
 if host_machine.system() == 'windows' and not get_option('directwrite').disabled()
   if get_option('directwrite').enabled() and not cpp.has_header('dwrite_1.h')
     error('DirectWrite was enabled explicitly, but required header is missing.')
   endif
 
-  conf.set('HAVE_DIRECTWRITE', 1)
+  directwrite_dep = cpp.find_library('dwrite', required: get_option('directwrite'))
+
+  if directwrite_dep.found()
+    conf.set('HAVE_DIRECTWRITE', 1)
+  endif
 endif
 
 # CoreText (macOS)
@@ -387,19 +389,6 @@ build_summary = {
      'Benchmark': get_option('benchmark').enabled(),
     },
 }
-if meson.version().version_compare('>=0.53')
-  foreach section_title, section : build_summary
-    summary(section, bool_yn: true, section: section_title)
-  endforeach
-else
-  summary = ['']
-  foreach section_title, section : build_summary
-    summary += '  @0@:'.format(section_title)
-    foreach feature, value : section
-      summary += '    @0@:'.format(feature)
-      summary += '          @0@'.format(value)
-    endforeach
-    summary += ''
-  endforeach
-  message('\n'.join(summary))
-endif
+foreach section_title, section : build_summary
+  summary(section, bool_yn: true, section: section_title)
+endforeach

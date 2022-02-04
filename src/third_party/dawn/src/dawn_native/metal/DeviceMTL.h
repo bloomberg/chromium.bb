@@ -30,7 +30,7 @@
 #include <memory>
 #include <mutex>
 
-namespace dawn_native { namespace metal {
+namespace dawn::native::metal {
 
     namespace {
         struct KalmanInfo;
@@ -38,9 +38,9 @@ namespace dawn_native { namespace metal {
 
     class Device final : public DeviceBase {
       public:
-        static ResultOrError<Device*> Create(AdapterBase* adapter,
-                                             NSPRef<id<MTLDevice>> mtlDevice,
-                                             const DawnDeviceDescriptor* descriptor);
+        static ResultOrError<Ref<Device>> Create(AdapterBase* adapter,
+                                                 NSPRef<id<MTLDevice>> mtlDevice,
+                                                 const DeviceDescriptor* descriptor);
         ~Device() override;
 
         MaybeError Initialize();
@@ -77,7 +77,7 @@ namespace dawn_native { namespace metal {
       private:
         Device(AdapterBase* adapter,
                NSPRef<id<MTLDevice>> mtlDevice,
-               const DawnDeviceDescriptor* descriptor);
+               const DeviceDescriptor* descriptor);
 
         ResultOrError<Ref<BindGroupBase>> CreateBindGroupImpl(
             const BindGroupDescriptor* descriptor) override;
@@ -149,6 +149,6 @@ namespace dawn_native { namespace metal {
         std::unique_ptr<KalmanInfo> mKalmanInfo;
     };
 
-}}  // namespace dawn_native::metal
+}  // namespace dawn::native::metal
 
 #endif  // DAWNNATIVE_METAL_DEVICEMTL_H_

@@ -183,21 +183,6 @@ void DecodeError(Decoder* decoder, const char* str) {
 
 namespace value_type_reader {
 
-V8_INLINE WasmFeature feature_for_heap_type(HeapType heap_type) {
-  switch (heap_type.representation()) {
-    case HeapType::kFunc:
-    case HeapType::kExtern:
-      return WasmFeature::kFeature_reftypes;
-    case HeapType::kEq:
-    case HeapType::kI31:
-    case HeapType::kData:
-    case HeapType::kAny:
-      return WasmFeature::kFeature_gc;
-    case HeapType::kBottom:
-      UNREACHABLE();
-  }
-}
-
 // If {module} is not null, the read index will be checked against the module's
 // type capacity.
 template <Decoder::ValidateFlag validate>
@@ -215,29 +200,27 @@ HeapType read_heap_type(Decoder* decoder, const byte* pc,
     uint8_t uint_7_mask = 0x7F;
     uint8_t code = static_cast<ValueTypeCode>(heap_index) & uint_7_mask;
     switch (code) {
-      case kFuncRefCode:
       case kEqRefCode:
-      case kExternRefCode:
       case kI31RefCode:
       case kDataRefCode:
-      case kAnyRefCode: {
-        HeapType result = HeapType::from_code(code);
-        if (!VALIDATE(enabled.contains(feature_for_heap_type(result)))) {
+      case kArrayRefCode:
+      case kAnyRefCode:
+        if (!VALIDATE(enabled.has_gc())) {
           DecodeError<validate>(
               decoder, pc,
-              "invalid heap type '%s', enable with --experimental-wasm-%s",
-              result.name().c_str(),
-              WasmFeatures::name_for_feature(feature_for_heap_type(result)));
+              "invalid heap type '%s', enable with --experimental-wasm-gc",
+              HeapType::from_code(code).name().c_str());
           return HeapType(HeapType::kBottom);
         }
-        return result;
-      }
+        V8_FALLTHROUGH;
+      case kExternRefCode:
+      case kFuncRefCode:
+        return HeapType::from_code(code);
       default:
         DecodeError<validate>(decoder, pc, "Unknown heap type %" PRId64,
                               heap_index);
         return HeapType(HeapType::kBottom);
     }
-    UNREACHABLE();
   } else {
     if (!VALIDATE(enabled.has_typed_funcref())) {
       DecodeError<validate>(decoder, pc,
@@ -264,6 +247,9 @@ HeapType read_heap_type(Decoder* decoder, const byte* pc,
   }
 }
 
+HeapType consume_heap_type(Decoder* decoder, const WasmModule* module,
+                           const WasmFeatures& enabled);
+
 // Read a value type starting at address {pc} using {decoder}.
 // No bytes are consumed.
 // The length of the read value type is written in {length}.
@@ -281,26 +267,27 @@ ValueType read_value_type(Decoder* decoder, const byte* pc,
   }
   ValueTypeCode code = static_cast<ValueTypeCode>(val);
   switch (code) {
-    case kFuncRefCode:
     case kEqRefCode:
-    case kExternRefCode:
     case kI31RefCode:
     case kDataRefCode:
-    case kAnyRefCode: {
-      HeapType heap_type = HeapType::from_code(code);
-      Nullability nullability = code == kI31RefCode || code == kDataRefCode
-                                    ? kNonNullable
-                                    : kNullable;
-      ValueType result = ValueType::Ref(heap_type, nullability);
-      if (!VALIDATE(enabled.contains(feature_for_heap_type(heap_type)))) {
+    case kArrayRefCode:
+    case kAnyRefCode:
+      if (!VALIDATE(enabled.has_gc())) {
         DecodeError<validate>(
             decoder, pc,
-            "invalid value type '%s', enable with --experimental-wasm-%s",
-            result.name().c_str(),
-            WasmFeatures::name_for_feature(feature_for_heap_type(heap_type)));
+            "invalid value type '%sref', enable with --experimental-wasm-gc",
+            HeapType::from_code(code).name().c_str());
         return kWasmBottom;
       }
-      return result;
+      V8_FALLTHROUGH;
+    case kExternRefCode:
+    case kFuncRefCode: {
+      HeapType heap_type = HeapType::from_code(code);
+      Nullability nullability =
+          code == kI31RefCode || code == kDataRefCode || code == kArrayRefCode
+              ? kNonNullable
+              : kNullable;
+      return ValueType::Ref(heap_type, nullability);
     }
     case kI32Code:
       return kWasmI32;
@@ -958,144 +945,149 @@ struct ControlBase : public PcForErrors<validate> {
     WasmRttSubMode mode)                                                  \
   F(DoReturn, uint32_t drop_values)
 
-#define INTERFACE_NON_CONSTANT_FUNCTIONS(F)                                   \
-  /* Control: */                                                              \
-  F(Block, Control* block)                                                    \
-  F(Loop, Control* block)                                                     \
-  F(Try, Control* block)                                                      \
-  F(If, const Value& cond, Control* if_block)                                 \
-  F(FallThruTo, Control* c)                                                   \
-  F(PopControl, Control* block)                                               \
-  /* Instructions: */                                                         \
-  F(UnOp, WasmOpcode opcode, const Value& value, Value* result)               \
-  F(BinOp, WasmOpcode opcode, const Value& lhs, const Value& rhs,             \
-    Value* result)                                                            \
-  F(RefAsNonNull, const Value& arg, Value* result)                            \
-  F(Drop)                                                                     \
-  F(LocalGet, Value* result, const IndexImmediate<validate>& imm)             \
-  F(LocalSet, const Value& value, const IndexImmediate<validate>& imm)        \
-  F(LocalTee, const Value& value, Value* result,                              \
-    const IndexImmediate<validate>& imm)                                      \
-  F(AllocateLocals, base::Vector<Value> local_values)                         \
-  F(DeallocateLocals, uint32_t count)                                         \
-  F(GlobalSet, const Value& value, const GlobalIndexImmediate<validate>& imm) \
-  F(TableGet, const Value& index, Value* result,                              \
-    const IndexImmediate<validate>& imm)                                      \
-  F(TableSet, const Value& index, const Value& value,                         \
-    const IndexImmediate<validate>& imm)                                      \
-  F(Trap, TrapReason reason)                                                  \
-  F(NopForTestingUnsupportedInLiftoff)                                        \
-  F(Select, const Value& cond, const Value& fval, const Value& tval,          \
-    Value* result)                                                            \
-  F(BrOrRet, uint32_t depth, uint32_t drop_values)                            \
-  F(BrIf, const Value& cond, uint32_t depth)                                  \
-  F(BrTable, const BranchTableImmediate<validate>& imm, const Value& key)     \
-  F(Else, Control* if_block)                                                  \
-  F(LoadMem, LoadType type, const MemoryAccessImmediate<validate>& imm,       \
-    const Value& index, Value* result)                                        \
-  F(LoadTransform, LoadType type, LoadTransformationKind transform,           \
-    const MemoryAccessImmediate<validate>& imm, const Value& index,           \
-    Value* result)                                                            \
-  F(LoadLane, LoadType type, const Value& value, const Value& index,          \
-    const MemoryAccessImmediate<validate>& imm, const uint8_t laneidx,        \
-    Value* result)                                                            \
-  F(StoreMem, StoreType type, const MemoryAccessImmediate<validate>& imm,     \
-    const Value& index, const Value& value)                                   \
-  F(StoreLane, StoreType type, const MemoryAccessImmediate<validate>& imm,    \
-    const Value& index, const Value& value, const uint8_t laneidx)            \
-  F(CurrentMemoryPages, Value* result)                                        \
-  F(MemoryGrow, const Value& value, Value* result)                            \
-  F(CallDirect, const CallFunctionImmediate<validate>& imm,                   \
-    const Value args[], Value returns[])                                      \
-  F(CallIndirect, const Value& index,                                         \
-    const CallIndirectImmediate<validate>& imm, const Value args[],           \
-    Value returns[])                                                          \
-  F(CallRef, const Value& func_ref, const FunctionSig* sig,                   \
-    uint32_t sig_index, const Value args[], const Value returns[])            \
-  F(ReturnCallRef, const Value& func_ref, const FunctionSig* sig,             \
-    uint32_t sig_index, const Value args[])                                   \
-  F(ReturnCall, const CallFunctionImmediate<validate>& imm,                   \
-    const Value args[])                                                       \
-  F(ReturnCallIndirect, const Value& index,                                   \
-    const CallIndirectImmediate<validate>& imm, const Value args[])           \
-  F(BrOnNull, const Value& ref_object, uint32_t depth,                        \
-    bool pass_null_along_branch, Value* result_on_fallthrough)                \
-  F(BrOnNonNull, const Value& ref_object, uint32_t depth)                     \
-  F(SimdOp, WasmOpcode opcode, base::Vector<Value> args, Value* result)       \
-  F(SimdLaneOp, WasmOpcode opcode, const SimdLaneImmediate<validate>& imm,    \
-    const base::Vector<Value> inputs, Value* result)                          \
-  F(S128Const, const Simd128Immediate<validate>& imm, Value* result)          \
-  F(Simd8x16ShuffleOp, const Simd128Immediate<validate>& imm,                 \
-    const Value& input0, const Value& input1, Value* result)                  \
-  F(Throw, const TagIndexImmediate<validate>& imm,                            \
-    const base::Vector<Value>& args)                                          \
-  F(Rethrow, Control* block)                                                  \
-  F(CatchException, const TagIndexImmediate<validate>& imm, Control* block,   \
-    base::Vector<Value> caught_values)                                        \
-  F(Delegate, uint32_t depth, Control* block)                                 \
-  F(CatchAll, Control* block)                                                 \
-  F(AtomicOp, WasmOpcode opcode, base::Vector<Value> args,                    \
-    const MemoryAccessImmediate<validate>& imm, Value* result)                \
-  F(AtomicFence)                                                              \
-  F(MemoryInit, const MemoryInitImmediate<validate>& imm, const Value& dst,   \
-    const Value& src, const Value& size)                                      \
-  F(DataDrop, const IndexImmediate<validate>& imm)                            \
-  F(MemoryCopy, const MemoryCopyImmediate<validate>& imm, const Value& dst,   \
-    const Value& src, const Value& size)                                      \
-  F(MemoryFill, const MemoryIndexImmediate<validate>& imm, const Value& dst,  \
-    const Value& value, const Value& size)                                    \
-  F(TableInit, const TableInitImmediate<validate>& imm,                       \
-    base::Vector<Value> args)                                                 \
-  F(ElemDrop, const IndexImmediate<validate>& imm)                            \
-  F(TableCopy, const TableCopyImmediate<validate>& imm,                       \
-    base::Vector<Value> args)                                                 \
-  F(TableGrow, const IndexImmediate<validate>& imm, const Value& value,       \
-    const Value& delta, Value* result)                                        \
-  F(TableSize, const IndexImmediate<validate>& imm, Value* result)            \
-  F(TableFill, const IndexImmediate<validate>& imm, const Value& start,       \
-    const Value& value, const Value& count)                                   \
-  F(StructGet, const Value& struct_object,                                    \
-    const FieldImmediate<validate>& field, bool is_signed, Value* result)     \
-  F(StructSet, const Value& struct_object,                                    \
-    const FieldImmediate<validate>& field, const Value& field_value)          \
-  F(ArrayNewWithRtt, const ArrayIndexImmediate<validate>& imm,                \
-    const Value& length, const Value& initial_value, const Value& rtt,        \
-    Value* result)                                                            \
-  F(ArrayNewDefault, const ArrayIndexImmediate<validate>& imm,                \
-    const Value& length, const Value& rtt, Value* result)                     \
-  F(ArrayGet, const Value& array_obj,                                         \
-    const ArrayIndexImmediate<validate>& imm, const Value& index,             \
-    bool is_signed, Value* result)                                            \
-  F(ArraySet, const Value& array_obj,                                         \
-    const ArrayIndexImmediate<validate>& imm, const Value& index,             \
-    const Value& value)                                                       \
-  F(ArrayLen, const Value& array_obj, Value* result)                          \
-  F(ArrayCopy, const Value& src, const Value& src_index, const Value& dst,    \
-    const Value& dst_index, const Value& length)                              \
-  F(I31New, const Value& input, Value* result)                                \
-  F(I31GetS, const Value& input, Value* result)                               \
-  F(I31GetU, const Value& input, Value* result)                               \
-  F(RefTest, const Value& obj, const Value& rtt, Value* result)               \
-  F(RefCast, const Value& obj, const Value& rtt, Value* result)               \
-  F(AssertNull, const Value& obj, Value* result)                              \
-  F(BrOnCast, const Value& obj, const Value& rtt, Value* result_on_branch,    \
-    uint32_t depth)                                                           \
-  F(BrOnCastFail, const Value& obj, const Value& rtt,                         \
-    Value* result_on_fallthrough, uint32_t depth)                             \
-  F(RefIsFunc, const Value& object, Value* result)                            \
-  F(RefIsData, const Value& object, Value* result)                            \
-  F(RefIsI31, const Value& object, Value* result)                             \
-  F(RefAsFunc, const Value& object, Value* result)                            \
-  F(RefAsData, const Value& object, Value* result)                            \
-  F(RefAsI31, const Value& object, Value* result)                             \
-  F(BrOnFunc, const Value& object, Value* value_on_branch, uint32_t br_depth) \
-  F(BrOnData, const Value& object, Value* value_on_branch, uint32_t br_depth) \
-  F(BrOnI31, const Value& object, Value* value_on_branch, uint32_t br_depth)  \
-  F(BrOnNonFunc, const Value& object, Value* value_on_fallthrough,            \
-    uint32_t br_depth)                                                        \
-  F(BrOnNonData, const Value& object, Value* value_on_fallthrough,            \
-    uint32_t br_depth)                                                        \
-  F(BrOnNonI31, const Value& object, Value* value_on_fallthrough,             \
+#define INTERFACE_NON_CONSTANT_FUNCTIONS(F) /*       force 80 columns       */ \
+  /* Control: */                                                               \
+  F(Block, Control* block)                                                     \
+  F(Loop, Control* block)                                                      \
+  F(Try, Control* block)                                                       \
+  F(If, const Value& cond, Control* if_block)                                  \
+  F(FallThruTo, Control* c)                                                    \
+  F(PopControl, Control* block)                                                \
+  /* Instructions: */                                                          \
+  F(UnOp, WasmOpcode opcode, const Value& value, Value* result)                \
+  F(BinOp, WasmOpcode opcode, const Value& lhs, const Value& rhs,              \
+    Value* result)                                                             \
+  F(RefAsNonNull, const Value& arg, Value* result)                             \
+  F(Drop)                                                                      \
+  F(LocalGet, Value* result, const IndexImmediate<validate>& imm)              \
+  F(LocalSet, const Value& value, const IndexImmediate<validate>& imm)         \
+  F(LocalTee, const Value& value, Value* result,                               \
+    const IndexImmediate<validate>& imm)                                       \
+  F(AllocateLocals, base::Vector<Value> local_values)                          \
+  F(DeallocateLocals, uint32_t count)                                          \
+  F(GlobalSet, const Value& value, const GlobalIndexImmediate<validate>& imm)  \
+  F(TableGet, const Value& index, Value* result,                               \
+    const IndexImmediate<validate>& imm)                                       \
+  F(TableSet, const Value& index, const Value& value,                          \
+    const IndexImmediate<validate>& imm)                                       \
+  F(Trap, TrapReason reason)                                                   \
+  F(NopForTestingUnsupportedInLiftoff)                                         \
+  F(Select, const Value& cond, const Value& fval, const Value& tval,           \
+    Value* result)                                                             \
+  F(BrOrRet, uint32_t depth, uint32_t drop_values)                             \
+  F(BrIf, const Value& cond, uint32_t depth)                                   \
+  F(BrTable, const BranchTableImmediate<validate>& imm, const Value& key)      \
+  F(Else, Control* if_block)                                                   \
+  F(LoadMem, LoadType type, const MemoryAccessImmediate<validate>& imm,        \
+    const Value& index, Value* result)                                         \
+  F(LoadTransform, LoadType type, LoadTransformationKind transform,            \
+    const MemoryAccessImmediate<validate>& imm, const Value& index,            \
+    Value* result)                                                             \
+  F(LoadLane, LoadType type, const Value& value, const Value& index,           \
+    const MemoryAccessImmediate<validate>& imm, const uint8_t laneidx,         \
+    Value* result)                                                             \
+  F(StoreMem, StoreType type, const MemoryAccessImmediate<validate>& imm,      \
+    const Value& index, const Value& value)                                    \
+  F(StoreLane, StoreType type, const MemoryAccessImmediate<validate>& imm,     \
+    const Value& index, const Value& value, const uint8_t laneidx)             \
+  F(CurrentMemoryPages, Value* result)                                         \
+  F(MemoryGrow, const Value& value, Value* result)                             \
+  F(CallDirect, const CallFunctionImmediate<validate>& imm,                    \
+    const Value args[], Value returns[])                                       \
+  F(CallIndirect, const Value& index,                                          \
+    const CallIndirectImmediate<validate>& imm, const Value args[],            \
+    Value returns[])                                                           \
+  F(CallRef, const Value& func_ref, const FunctionSig* sig,                    \
+    uint32_t sig_index, const Value args[], const Value returns[])             \
+  F(ReturnCallRef, const Value& func_ref, const FunctionSig* sig,              \
+    uint32_t sig_index, const Value args[])                                    \
+  F(ReturnCall, const CallFunctionImmediate<validate>& imm,                    \
+    const Value args[])                                                        \
+  F(ReturnCallIndirect, const Value& index,                                    \
+    const CallIndirectImmediate<validate>& imm, const Value args[])            \
+  F(BrOnNull, const Value& ref_object, uint32_t depth,                         \
+    bool pass_null_along_branch, Value* result_on_fallthrough)                 \
+  F(BrOnNonNull, const Value& ref_object, uint32_t depth)                      \
+  F(SimdOp, WasmOpcode opcode, base::Vector<Value> args, Value* result)        \
+  F(SimdLaneOp, WasmOpcode opcode, const SimdLaneImmediate<validate>& imm,     \
+    const base::Vector<Value> inputs, Value* result)                           \
+  F(S128Const, const Simd128Immediate<validate>& imm, Value* result)           \
+  F(Simd8x16ShuffleOp, const Simd128Immediate<validate>& imm,                  \
+    const Value& input0, const Value& input1, Value* result)                   \
+  F(Throw, const TagIndexImmediate<validate>& imm,                             \
+    const base::Vector<Value>& args)                                           \
+  F(Rethrow, Control* block)                                                   \
+  F(CatchException, const TagIndexImmediate<validate>& imm, Control* block,    \
+    base::Vector<Value> caught_values)                                         \
+  F(Delegate, uint32_t depth, Control* block)                                  \
+  F(CatchAll, Control* block)                                                  \
+  F(AtomicOp, WasmOpcode opcode, base::Vector<Value> args,                     \
+    const MemoryAccessImmediate<validate>& imm, Value* result)                 \
+  F(AtomicFence)                                                               \
+  F(MemoryInit, const MemoryInitImmediate<validate>& imm, const Value& dst,    \
+    const Value& src, const Value& size)                                       \
+  F(DataDrop, const IndexImmediate<validate>& imm)                             \
+  F(MemoryCopy, const MemoryCopyImmediate<validate>& imm, const Value& dst,    \
+    const Value& src, const Value& size)                                       \
+  F(MemoryFill, const MemoryIndexImmediate<validate>& imm, const Value& dst,   \
+    const Value& value, const Value& size)                                     \
+  F(TableInit, const TableInitImmediate<validate>& imm,                        \
+    base::Vector<Value> args)                                                  \
+  F(ElemDrop, const IndexImmediate<validate>& imm)                             \
+  F(TableCopy, const TableCopyImmediate<validate>& imm,                        \
+    base::Vector<Value> args)                                                  \
+  F(TableGrow, const IndexImmediate<validate>& imm, const Value& value,        \
+    const Value& delta, Value* result)                                         \
+  F(TableSize, const IndexImmediate<validate>& imm, Value* result)             \
+  F(TableFill, const IndexImmediate<validate>& imm, const Value& start,        \
+    const Value& value, const Value& count)                                    \
+  F(StructGet, const Value& struct_object,                                     \
+    const FieldImmediate<validate>& field, bool is_signed, Value* result)      \
+  F(StructSet, const Value& struct_object,                                     \
+    const FieldImmediate<validate>& field, const Value& field_value)           \
+  F(ArrayNewWithRtt, const ArrayIndexImmediate<validate>& imm,                 \
+    const Value& length, const Value& initial_value, const Value& rtt,         \
+    Value* result)                                                             \
+  F(ArrayNewDefault, const ArrayIndexImmediate<validate>& imm,                 \
+    const Value& length, const Value& rtt, Value* result)                      \
+  F(ArrayGet, const Value& array_obj,                                          \
+    const ArrayIndexImmediate<validate>& imm, const Value& index,              \
+    bool is_signed, Value* result)                                             \
+  F(ArraySet, const Value& array_obj,                                          \
+    const ArrayIndexImmediate<validate>& imm, const Value& index,              \
+    const Value& value)                                                        \
+  F(ArrayLen, const Value& array_obj, Value* result)                           \
+  F(ArrayCopy, const Value& src, const Value& src_index, const Value& dst,     \
+    const Value& dst_index, const Value& length)                               \
+  F(I31New, const Value& input, Value* result)                                 \
+  F(I31GetS, const Value& input, Value* result)                                \
+  F(I31GetU, const Value& input, Value* result)                                \
+  F(RefTest, const Value& obj, const Value& rtt, Value* result)                \
+  F(RefCast, const Value& obj, const Value& rtt, Value* result)                \
+  F(AssertNull, const Value& obj, Value* result)                               \
+  F(BrOnCast, const Value& obj, const Value& rtt, Value* result_on_branch,     \
+    uint32_t depth)                                                            \
+  F(BrOnCastFail, const Value& obj, const Value& rtt,                          \
+    Value* result_on_fallthrough, uint32_t depth)                              \
+  F(RefIsFunc, const Value& object, Value* result)                             \
+  F(RefIsData, const Value& object, Value* result)                             \
+  F(RefIsI31, const Value& object, Value* result)                              \
+  F(RefIsArray, const Value& object, Value* result)                            \
+  F(RefAsFunc, const Value& object, Value* result)                             \
+  F(RefAsData, const Value& object, Value* result)                             \
+  F(RefAsI31, const Value& object, Value* result)                              \
+  F(RefAsArray, const Value& object, Value* result)                            \
+  F(BrOnFunc, const Value& object, Value* value_on_branch, uint32_t br_depth)  \
+  F(BrOnData, const Value& object, Value* value_on_branch, uint32_t br_depth)  \
+  F(BrOnI31, const Value& object, Value* value_on_branch, uint32_t br_depth)   \
+  F(BrOnArray, const Value& object, Value* value_on_branch, uint32_t br_depth) \
+  F(BrOnNonFunc, const Value& object, Value* value_on_fallthrough,             \
+    uint32_t br_depth)                                                         \
+  F(BrOnNonData, const Value& object, Value* value_on_fallthrough,             \
+    uint32_t br_depth)                                                         \
+  F(BrOnNonI31, const Value& object, Value* value_on_fallthrough,              \
+    uint32_t br_depth)                                                         \
+  F(BrOnNonArray, const Value& object, Value* value_on_fallthrough,            \
     uint32_t br_depth)
 
 // Generic Wasm bytecode decoder with utilities for decoding immediates,
@@ -1281,6 +1273,8 @@ class WasmDecoder : public Decoder {
   }
 
   bool Validate(const byte* pc, GlobalIndexImmediate<validate>& imm) {
+    // We compare with the current size of the globals vector. This is important
+    // if we are decoding a constant expression in the global section.
     if (!VALIDATE(imm.index < module_->globals.size())) {
       DecodeError(pc, "Invalid global index: %u", imm.index);
       return false;
@@ -1354,13 +1348,6 @@ class WasmDecoder : public Decoder {
 
   bool Validate(const byte* pc, CallIndirectImmediate<validate>& imm) {
     if (!ValidateSignature(pc, imm.sig_imm)) return false;
-    // call_indirect is not behind the reftypes feature, so we have to impose
-    // the older format if reftypes is not enabled.
-    if (!VALIDATE((imm.table_imm.index == 0 && imm.table_imm.length == 1) ||
-                  this->enabled_.has_reftypes())) {
-      DecodeError(pc + imm.sig_imm.length, "expected table index 0, found %u",
-                  imm.table_imm.index);
-    }
     if (!ValidateTable(pc + imm.sig_imm.length, imm.table_imm)) {
       return false;
     }
@@ -1538,6 +1525,9 @@ class WasmDecoder : public Decoder {
   // The following Validate* functions all validate an IndexImmediate, albeit
   // differently according to context.
   bool ValidateTable(const byte* pc, IndexImmediate<validate>& imm) {
+    if (imm.index > 0 || imm.length > 1) {
+      this->detected_->Add(kFeature_reftypes);
+    }
     if (!VALIDATE(imm.index < module_->tables.size())) {
       DecodeError(pc, "invalid table index: %u", imm.index);
       return false;
@@ -2518,9 +2508,16 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
             Append("T");
             break;
           case kControlIfElse:
+            Append("E");
+            break;
           case kControlTryCatch:
+            Append("C");
+            break;
           case kControlTryCatchAll:
-          case kControlLet:  // TODO(7748): Implement
+            Append("A");
+            break;
+          case kControlLet:
+            Append("D");
             break;
         }
         if (c.start_merge.arity) Append("%u-", c.start_merge.arity);
@@ -2941,7 +2938,7 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
   }
 
   DECODE(SelectWithType) {
-    CHECK_PROTOTYPE_OPCODE(reftypes);
+    this->detected_->Add(kFeature_reftypes);
     SelectTypeImmediate<validate> imm(this->enabled_, this, this->pc_ + 1,
                                       this->module_);
     if (this->failed()) return 0;
@@ -3075,7 +3072,7 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
   }
 
   DECODE(RefNull) {
-    CHECK_PROTOTYPE_OPCODE(reftypes);
+    this->detected_->Add(kFeature_reftypes);
     HeapTypeImmediate<validate> imm(this->enabled_, this, this->pc_ + 1,
                                     this->module_);
     if (!VALIDATE(this->ok())) return 0;
@@ -3087,7 +3084,7 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
   }
 
   DECODE(RefIsNull) {
-    CHECK_PROTOTYPE_OPCODE(reftypes);
+    this->detected_->Add(kFeature_reftypes);
     Value value = Peek(0, 0);
     Value result = CreateValue(kWasmI32);
     switch (value.type.kind()) {
@@ -3116,7 +3113,7 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
   }
 
   DECODE(RefFunc) {
-    CHECK_PROTOTYPE_OPCODE(reftypes);
+    this->detected_->Add(kFeature_reftypes);
     IndexImmediate<validate> imm(this, this->pc_ + 1, "function index");
     if (!this->ValidateFunction(this->pc_ + 1, imm)) return 0;
     HeapType heap_type(this->enabled_.has_typed_funcref()
@@ -3221,7 +3218,7 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
   }
 
   DECODE(TableGet) {
-    CHECK_PROTOTYPE_OPCODE(reftypes);
+    this->detected_->Add(kFeature_reftypes);
     IndexImmediate<validate> imm(this, this->pc_ + 1, "table index");
     if (!this->ValidateTable(this->pc_ + 1, imm)) return 0;
     Value index = Peek(0, 0, kWasmI32);
@@ -3233,7 +3230,7 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
   }
 
   DECODE(TableSet) {
-    CHECK_PROTOTYPE_OPCODE(reftypes);
+    this->detected_->Add(kFeature_reftypes);
     IndexImmediate<validate> imm(this, this->pc_ + 1, "table index");
     if (!this->ValidateTable(this->pc_ + 1, imm)) return 0;
     Value value = Peek(0, 1, this->module_->tables[imm.index].type);
@@ -3419,7 +3416,7 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
         this->pc_, &opcode_length, "numeric index");
     if (full_opcode == kExprTableGrow || full_opcode == kExprTableSize ||
         full_opcode == kExprTableFill) {
-      CHECK_PROTOTYPE_OPCODE(reftypes);
+      this->detected_->Add(kFeature_reftypes);
     }
     trace_msg->AppendOpcode(full_opcode);
     return DecodeNumericOpcode(full_opcode, opcode_length);
@@ -4332,9 +4329,11 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
       }
       case kExprArrayLen: {
         NON_CONST_ONLY
+        // Read but ignore an immediate array type index.
+        // TODO(7748): Remove this once we are ready to make breaking changes.
         ArrayIndexImmediate<validate> imm(this, this->pc_ + opcode_length);
-        if (!this->Validate(this->pc_ + opcode_length, imm)) return 0;
-        Value array_obj = Peek(0, 0, ValueType::Ref(imm.index, kNullable));
+        Value array_obj =
+            Peek(0, 0, ValueType::Ref(HeapType::kArray, kNullable));
         Value value = CreateValue(kWasmI32);
         CALL_INTERFACE_IF_OK_AND_REACHABLE(ArrayLen, array_obj, &value);
         Drop(array_obj);
@@ -4612,12 +4611,13 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
                             control_.size())) {
           return 0;
         }
+        uint32_t pc_offset = opcode_length + branch_depth.length;
         Value rtt = Peek(0, 1);  // This is safe for the ...Static instruction.
         if (opcode == kExprBrOnCastStatic) {
-          IndexImmediate<validate> imm(this, this->pc_ + opcode_length,
+          IndexImmediate<validate> imm(this, this->pc_ + pc_offset,
                                        "type index");
           if (!this->ValidateType(this->pc_ + opcode_length, imm)) return 0;
-          opcode_length += imm.length;
+          pc_offset += imm.length;
           rtt = CreateValue(ValueType::Rtt(
               imm.index, GetSubtypingDepth(this->module_, imm.index)));
           CALL_INTERFACE_IF_OK_AND_REACHABLE(RttCanon, imm.index, &rtt);
@@ -4682,7 +4682,7 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
 
         Drop(result_on_branch);
         Push(obj);  // Restore stack state on fallthrough.
-        return opcode_length + branch_depth.length;
+        return pc_offset;
       }
       case kExprBrOnCastFail:
       case kExprBrOnCastStaticFail: {
@@ -4693,12 +4693,13 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
                             control_.size())) {
           return 0;
         }
+        uint32_t pc_offset = opcode_length + branch_depth.length;
         Value rtt = Peek(0, 1);  // This is safe for the ...Static instruction.
         if (opcode == kExprBrOnCastStaticFail) {
-          IndexImmediate<validate> imm(this, this->pc_ + opcode_length,
+          IndexImmediate<validate> imm(this, this->pc_ + pc_offset,
                                        "type index");
           if (!this->ValidateType(this->pc_ + opcode_length, imm)) return 0;
-          opcode_length += imm.length;
+          pc_offset += imm.length;
           rtt = CreateValue(ValueType::Rtt(
               imm.index, GetSubtypingDepth(this->module_, imm.index)));
           CALL_INTERFACE_IF_OK_AND_REACHABLE(RttCanon, imm.index, &rtt);
@@ -4771,7 +4772,7 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
         // Make sure the correct value is on the stack state on fallthrough.
         Drop(obj);
         Push(result_on_fallthrough);
-        return opcode_length + branch_depth.length;
+        return pc_offset;
       }
 #define ABSTRACT_TYPE_CHECK(heap_type)                                  \
   case kExprRefIs##heap_type: {                                         \
@@ -4787,6 +4788,7 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
         ABSTRACT_TYPE_CHECK(Data)
         ABSTRACT_TYPE_CHECK(Func)
         ABSTRACT_TYPE_CHECK(I31)
+        ABSTRACT_TYPE_CHECK(Array)
 #undef ABSTRACT_TYPE_CHECK
 
 #define ABSTRACT_TYPE_CAST(heap_type)                                      \
@@ -4804,10 +4806,12 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
         ABSTRACT_TYPE_CAST(Data)
         ABSTRACT_TYPE_CAST(Func)
         ABSTRACT_TYPE_CAST(I31)
+        ABSTRACT_TYPE_CAST(Array)
 #undef ABSTRACT_TYPE_CAST
 
       case kExprBrOnData:
       case kExprBrOnFunc:
+      case kExprBrOnArray:
       case kExprBrOnI31: {
         NON_CONST_ONLY
         BranchDepthImmediate<validate> branch_depth(this,
@@ -4834,7 +4838,10 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
         HeapType::Representation heap_type =
             opcode == kExprBrOnFunc
                 ? HeapType::kFunc
-                : opcode == kExprBrOnData ? HeapType::kData : HeapType::kI31;
+                : opcode == kExprBrOnData
+                      ? HeapType::kData
+                      : opcode == kExprBrOnArray ? HeapType::kArray
+                                                 : HeapType::kI31;
         Value result_on_branch =
             CreateValue(ValueType::Ref(heap_type, kNonNullable));
         Push(result_on_branch);
@@ -4848,6 +4855,8 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
             CALL_INTERFACE(BrOnFunc, obj, value_on_branch, branch_depth.depth);
           } else if (opcode == kExprBrOnData) {
             CALL_INTERFACE(BrOnData, obj, value_on_branch, branch_depth.depth);
+          } else if (opcode == kExprBrOnArray) {
+            CALL_INTERFACE(BrOnArray, obj, value_on_branch, branch_depth.depth);
           } else {
             CALL_INTERFACE(BrOnI31, obj, value_on_branch, branch_depth.depth);
           }
@@ -4859,6 +4868,7 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
       }
       case kExprBrOnNonData:
       case kExprBrOnNonFunc:
+      case kExprBrOnNonArray:
       case kExprBrOnNonI31: {
         NON_CONST_ONLY
         BranchDepthImmediate<validate> branch_depth(this,
@@ -4880,7 +4890,10 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
         HeapType::Representation heap_type =
             opcode == kExprBrOnNonFunc
                 ? HeapType::kFunc
-                : opcode == kExprBrOnNonData ? HeapType::kData : HeapType::kI31;
+                : opcode == kExprBrOnNonData
+                      ? HeapType::kData
+                      : opcode == kExprBrOnNonArray ? HeapType::kArray
+                                                    : HeapType::kI31;
         Value value_on_fallthrough =
             CreateValue(ValueType::Ref(heap_type, kNonNullable));
 
@@ -4890,6 +4903,9 @@ class WasmFullDecoder : public WasmDecoder<validate, decoding_mode> {
                            branch_depth.depth);
           } else if (opcode == kExprBrOnNonData) {
             CALL_INTERFACE(BrOnNonData, obj, &value_on_fallthrough,
+                           branch_depth.depth);
+          } else if (opcode == kExprBrOnNonArray) {
+            CALL_INTERFACE(BrOnNonArray, obj, &value_on_fallthrough,
                            branch_depth.depth);
           } else {
             CALL_INTERFACE(BrOnNonI31, obj, &value_on_fallthrough,

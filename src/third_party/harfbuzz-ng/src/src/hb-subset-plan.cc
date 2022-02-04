@@ -41,7 +41,7 @@
 #include "hb-ot-math-table.hh"
 
 
-typedef hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> script_langsys_map;
+typedef hb_hashmap_t<unsigned, hb_set_t *> script_langsys_map;
 #ifndef HB_NO_SUBSET_CFF
 static inline void
 _add_cff_seac_components (const OT::cff1::accelerator_t &cff,
@@ -100,11 +100,23 @@ static void _collect_layout_indices (hb_face_t		  *face,
   if (!features.alloc (table.get_feature_count () + 1))
     return;
 
+  hb_set_t visited_features;
+  bool retain_all_features = true;
   for (unsigned i = 0; i < table.get_feature_count (); i++)
   {
     hb_tag_t tag = table.get_feature_tag (i);
-    if (tag && layout_features_to_retain->has (tag))
-      features.push (tag);
+    if (!tag) continue;
+    if (!layout_features_to_retain->has (tag))
+    {
+      retain_all_features = false;
+      continue;
+    }
+    
+    if (visited_features.has (tag))
+      continue;
+
+    features.push (tag);
+    visited_features.add (tag);
   }
 
   if (!features)
@@ -113,7 +125,7 @@ static void _collect_layout_indices (hb_face_t		  *face,
   // The collect function needs a null element to signal end of the array.
   features.push (0);
 
-  if (features.get_size () == table.get_feature_count () + 1)
+  if (retain_all_features)
   {
     // Looking for all features, trigger the faster collection method.
     layout_collect_func (face,
@@ -236,7 +248,6 @@ static void _colr_closure (hb_face_t *face,
   unsigned glyphs_num;
   {
     glyphs_num = glyphs_colred->get_population ();
-
     // Collect all glyphs referenced by COLRv0
     hb_set_t glyphset_colrv0;
     for (hb_codepoint_t gid : glyphs_colred->iter ())
@@ -385,6 +396,7 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
   _colr_closure (plan->source, plan->colrv1_layers, plan->colr_palettes, &cur_glyphset);
   _remove_invalid_gids (&cur_glyphset, plan->source->get_num_glyphs ());
 
+  hb_set_set (plan->_glyphset_colred, &cur_glyphset);
   // Populate a full set of glyphs to retain by adding all referenced
   // composite glyphs.
   for (hb_codepoint_t gid : cur_glyphset.iter ())
@@ -499,6 +511,7 @@ hb_subset_plan_create (hb_face_t	 *face,
   plan->_glyphset = hb_set_create ();
   plan->_glyphset_gsub = hb_set_create ();
   plan->_glyphset_mathed = hb_set_create ();
+  plan->_glyphset_colred = hb_set_create ();
   plan->codepoint_to_glyph = hb_map_create ();
   plan->glyph_map = hb_map_create ();
   plan->reverse_glyph_map = hb_map_create ();
@@ -567,6 +580,7 @@ hb_subset_plan_destroy (hb_subset_plan_t *plan)
   hb_set_destroy (plan->_glyphset);
   hb_set_destroy (plan->_glyphset_gsub);
   hb_set_destroy (plan->_glyphset_mathed);
+  hb_set_destroy (plan->_glyphset_colred);
   hb_map_destroy (plan->gsub_lookups);
   hb_map_destroy (plan->gpos_lookups);
   hb_map_destroy (plan->gsub_features);

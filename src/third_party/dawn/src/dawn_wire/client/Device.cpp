@@ -20,7 +20,7 @@
 #include "dawn_wire/client/Client.h"
 #include "dawn_wire/client/ObjectAllocator.h"
 
-namespace dawn_wire { namespace client {
+namespace dawn::wire::client {
 
     Device::Device(Client* clientIn, uint32_t initialRefcount, uint32_t initialId)
         : ObjectBase(clientIn, initialRefcount, initialId), mIsAlive(std::make_shared<bool>()) {
@@ -65,6 +65,26 @@ namespace dawn_wire { namespace client {
                     "Device destroyed before callback", request->userdata);
             }
         });
+    }
+
+    bool Device::GetLimits(WGPUSupportedLimits* limits) const {
+        return mLimitsAndFeatures.GetLimits(limits);
+    }
+
+    bool Device::HasFeature(WGPUFeatureName feature) const {
+        return mLimitsAndFeatures.HasFeature(feature);
+    }
+
+    size_t Device::EnumerateFeatures(WGPUFeatureName* features) const {
+        return mLimitsAndFeatures.EnumerateFeatures(features);
+    }
+
+    void Device::SetLimits(const WGPUSupportedLimits* limits) {
+        return mLimitsAndFeatures.SetLimits(limits);
+    }
+
+    void Device::SetFeatures(const WGPUFeatureName* features, uint32_t featuresCount) {
+        return mLimitsAndFeatures.SetFeatures(features, featuresCount);
     }
 
     void Device::HandleError(WGPUErrorType errorType, const char* message) {
@@ -196,12 +216,6 @@ namespace dawn_wire { namespace client {
         return Buffer::CreateError(this);
     }
 
-    bool Device::GetLimits(WGPUSupportedLimits* limits) {
-        // Not implemented in the wire.
-        UNREACHABLE();
-        return false;
-    }
-
     WGPUQueue Device::GetQueue() {
         // The queue is lazily created because if a Device is created by
         // Reserve/Inject, we cannot send the GetQueue message until
@@ -261,7 +275,7 @@ namespace dawn_wire { namespace client {
             client->ComputePipelineAllocator().GetObject(request.pipelineObjectID);
 
         // If the return status is a failure we should give a null pipeline to the callback and
-        // free the allocation both on the client side and the server side.
+        // free the allocation.
         if (status != WGPUCreatePipelineAsyncStatus_Success) {
             client->ComputePipelineAllocator().Free(pipelineAllocation);
             request.createComputePipelineAsyncCallback(status, nullptr, message, request.userdata);
@@ -312,7 +326,7 @@ namespace dawn_wire { namespace client {
             client->RenderPipelineAllocator().GetObject(request.pipelineObjectID);
 
         // If the return status is a failure we should give a null pipeline to the callback and
-        // free the allocation both on the client side and the server side.
+        // free the allocation.
         if (status != WGPUCreatePipelineAsyncStatus_Success) {
             client->RenderPipelineAllocator().Free(pipelineAllocation);
             request.createRenderPipelineAsyncCallback(status, nullptr, message, request.userdata);
@@ -325,4 +339,4 @@ namespace dawn_wire { namespace client {
         return true;
     }
 
-}}  // namespace dawn_wire::client
+}  // namespace dawn::wire::client

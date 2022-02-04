@@ -15,10 +15,10 @@
 """Cache to manage concrete functions and their signatures."""
 
 import collections
-from typing import Sequence, Optional, Tuple
+from typing import Optional, Sequence, Tuple
 
+from tensorflow.core.function import trace_type
 from tensorflow.python.eager import context
-from tensorflow.python.eager import function_trace_type
 from tensorflow.python.framework import device as pydev
 from tensorflow.python.framework import func_graph as func_graph_module
 from tensorflow.python.framework import ops
@@ -27,14 +27,6 @@ from tensorflow.python.saved_model import save_context
 from tensorflow.python.types import trace
 from tensorflow.python.util import memory
 
-# A temporary flag. Turning this on will allow tf.function to aggressively avoid
-# retracing ResourceVariable inputs. This feature will change tf.function's
-# Variable tracing behavior, hence we want to limit the potential blockers that
-# are not detected by Global TAP.
-# TODO(jiaweix): remove this flag and related args (b/198782192)
-_ENCODE_VARIABLES_BY_RESOURCE_ID = True
-# TODO(b/201533914): Remove this flag and related args
-USE_FULL_TRACE_TYPE = True
 # TODO(b/182990542): Enable and remove flag when stable.
 DELETE_WITH_WEAKREF = False
 
@@ -185,7 +177,7 @@ class FunctionCache:
     return True
 
   def add(self, key: FunctionCacheKey,
-          deletion_observer: function_trace_type.WeakrefDeletionObserver,
+          deletion_observer: trace_type.WeakrefDeletionObserver,
           concrete):
     """Adds a new concrete function alongside its key.
 
@@ -250,13 +242,12 @@ class _FunctionGarbageCollector(object):
 def make_cache_key(
     args,
     include_tensor_ranks_only: bool = False
-) -> Tuple[FunctionCacheKey, function_trace_type.WeakrefDeletionObserver]:
+) -> Tuple[FunctionCacheKey, trace_type.WeakrefDeletionObserver]:
   """Computes the cache key given the function arguments."""
-  signature_context = function_trace_type.SignatureContext(
+  signature_context = trace_type.SignatureContext(
       include_tensor_ranks_only)
-  function_signature = function_trace_type.make_function_signature(
-      args, signature_context, _ENCODE_VARIABLES_BY_RESOURCE_ID,
-      USE_FULL_TRACE_TYPE)
+  function_signature = trace_type.make_function_signature(
+      args, signature_context)
   return FunctionCacheKey(
       function_signature,
       _make_execution_context()), signature_context.deletion_observer

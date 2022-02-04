@@ -2129,9 +2129,6 @@ TEST(PopAndReturnConstant) {
     CSA_CHECK(&m, m.Word32Equal(argc, m.Int32Constant(kNumParams)));
 
     int pop_count = kNumParams;
-    if (!kJSArgcIncludesReceiver) {
-      pop_count += 1;  // Include receiver.
-    }
     m.PopAndReturn(m.IntPtrConstant(pop_count), m.SmiConstant(1234));
   }
 
@@ -2166,9 +2163,6 @@ TEST(PopAndReturnVariable) {
     CSA_CHECK(&m, m.Word32Equal(argc, m.Int32Constant(kNumParams)));
 
     int pop_count = kNumParams;
-    if (!kJSArgcIncludesReceiver) {
-      pop_count += 1;  // Include receiver.
-    }
     m.PopAndReturn(m.IntPtrConstant(pop_count), m.SmiConstant(1234));
   }
 
@@ -2960,9 +2954,9 @@ TEST(AllocateFunctionWithMapAndContext) {
   CHECK(!fun->has_prototype_slot());
   CHECK_EQ(*isolate->factory()->promise_capability_default_resolve_shared_fun(),
            fun->shared());
-  CHECK_EQ(FromCodeT(isolate->factory()
-                         ->promise_capability_default_resolve_shared_fun()
-                         ->GetCode()),
+  CHECK_EQ(isolate->factory()
+               ->promise_capability_default_resolve_shared_fun()
+               ->GetCode(),
            fun->code());
 }
 

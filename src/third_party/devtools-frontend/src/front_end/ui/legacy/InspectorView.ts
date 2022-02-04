@@ -198,7 +198,7 @@ export class InspectorView extends VBox implements ViewLocationResolver {
         Host.InspectorFrontendHostAPI.Events.ShowPanel, showPanel.bind(this));
 
     function showPanel(this: InspectorView, {data: panelName}: Common.EventTarget.EventTargetEvent<string>): void {
-      this.showPanel(panelName);
+      void this.showPanel(panelName);
     }
 
     if (shouldShowLocaleInfobar()) {
@@ -259,7 +259,7 @@ export class InspectorView extends VBox implements ViewLocationResolver {
     if (!view) {
       throw new Error(`Expected view for panel '${panelName}'`);
     }
-    return /** @type {!Promise.<!Panel>} */ view.widget() as Promise<Panel>;
+    return view.widget() as Promise<Panel>;
   }
 
   onSuspendStateChanged(allTargetsSuspended: boolean): void {
@@ -375,7 +375,7 @@ export class InspectorView extends VBox implements ViewLocationResolver {
         const panelName = this.tabbedPane.tabIds()[panelIndex];
         if (panelName) {
           if (!Dialog.hasInstance() && !this.currentPanelLocked) {
-            this.showPanel(panelName);
+            void this.showPanel(panelName);
           }
           event.consume(true);
         }
@@ -478,7 +478,6 @@ function shouldShowLocaleInfobar(): boolean {
 function createLocaleInfobar(): Infobar {
   const devtoolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance();
   const closestSupportedLocale = devtoolsLocale.lookupClosestDevToolsLocale(navigator.language);
-  // @ts-ignore TODO(crbug.com/1163928) Wait for Intl support.
   const locale = new Intl.Locale(closestSupportedLocale);
   const closestSupportedLanguageInCurrentLocale =
       new Intl.DisplayNames([devtoolsLocale.locale], {type: 'language'}).of(locale.language || 'en');

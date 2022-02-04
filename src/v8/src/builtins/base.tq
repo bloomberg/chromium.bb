@@ -9,6 +9,7 @@
 #include 'src/heap/factory-inl.h'
 #include 'src/objects/arguments.h'
 #include 'src/objects/bigint.h'
+#include 'src/objects/call-site-info.h'
 #include 'src/objects/elements-kind.h'
 #include 'src/objects/free-space.h'
 #include 'src/objects/js-function.h'
@@ -18,7 +19,6 @@
 #include 'src/objects/js-weak-refs.h'
 #include 'src/objects/objects.h'
 #include 'src/objects/source-text-module.h'
-#include 'src/objects/stack-frame-info.h'
 #include 'src/objects/synthetic-module.h'
 #include 'src/objects/template-objects.h'
 #include 'src/torque/runtime-support.h'
@@ -209,6 +209,7 @@ extern class HashTable extends FixedArray generates 'TNode<FixedArray>';
 extern class OrderedHashMap extends HashTable;
 extern class OrderedHashSet extends HashTable;
 extern class OrderedNameDictionary extends HashTable;
+extern class NameToIndexHashTable extends HashTable;
 extern class NameDictionary extends HashTable;
 extern class GlobalDictionary extends HashTable;
 extern class SimpleNumberDictionary extends HashTable;
@@ -306,6 +307,16 @@ extern enum ElementsKind extends int32 {
   BIGUINT64_ELEMENTS,
   BIGINT64_ELEMENTS,
   RAB_GSAB_UINT8_ELEMENTS,
+  RAB_GSAB_INT8_ELEMENTS,
+  RAB_GSAB_UINT16_ELEMENTS,
+  RAB_GSAB_INT16_ELEMENTS,
+  RAB_GSAB_UINT32_ELEMENTS,
+  RAB_GSAB_INT32_ELEMENTS,
+  RAB_GSAB_FLOAT32_ELEMENTS,
+  RAB_GSAB_FLOAT64_ELEMENTS,
+  RAB_GSAB_UINT8_CLAMPED_ELEMENTS,
+  RAB_GSAB_BIGUINT64_ELEMENTS,
+  RAB_GSAB_BIGINT64_ELEMENTS,
   // TODO(torque): Allow duplicate enum values.
   // FIRST_FIXED_TYPED_ARRAY_ELEMENTS_KIND,
   // FIRST_RAB_GSAB_FIXED_TYPED_ARRAY_ELEMENTS_KIND,
@@ -484,9 +495,6 @@ const kWasmArrayHeaderSize:
 
 const kHeapObjectHeaderSize:
     constexpr int32 generates 'HeapObject::kHeaderSize';
-
-const kDictModePrototypes:
-    constexpr bool generates 'V8_ENABLE_SWISS_NAME_DICTIONARY_BOOL';
 
 type TheHole extends Oddball;
 type Null extends Oddball;

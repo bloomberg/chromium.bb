@@ -48,7 +48,6 @@
 #include "src/sksl/ir/SkSLSwitchCase.h"
 #include "src/sksl/ir/SkSLSwitchStatement.h"
 #include "src/sksl/ir/SkSLSwizzle.h"
-#include "src/sksl/ir/SkSLSymbolAlias.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
 #include "src/sksl/ir/SkSLTernaryExpression.h"
 #include "src/sksl/ir/SkSLUnresolvedFunction.h"
@@ -155,14 +154,6 @@ void Dehydrator::write(const Symbol& s) {
                 this->writeU16(this->symbolId(p));
             }
             this->write(f.returnType());
-            break;
-        }
-        case Symbol::Kind::kSymbolAlias: {
-            const SymbolAlias& alias = s.as<SymbolAlias>();
-            this->writeCommand(Rehydrator::kSymbolAlias_Command);
-            this->writeId(&alias);
-            this->write(alias.name());
-            this->write(*alias.origSymbol());
             break;
         }
         case Symbol::Kind::kUnresolvedFunction: {
@@ -519,7 +510,12 @@ void Dehydrator::write(const Statement* s) {
                 this->writeU8(ss.cases().size());
                 for (const std::unique_ptr<Statement>& stmt : ss.cases()) {
                     const SwitchCase& sc = stmt->as<SwitchCase>();
-                    this->write(sc.value().get());
+                    if (sc.isDefault()) {
+                        this->writeU8(1);
+                    } else {
+                        this->writeU8(0);
+                        this->writeS32(sc.value());
+                    }
                     this->write(sc.statement().get());
                 }
                 break;

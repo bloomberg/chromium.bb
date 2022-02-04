@@ -72,7 +72,9 @@ GCTracer::Scope::Scope(GCTracer* tracer, ScopeId scope, ThreadKind thread_kind)
 #ifdef V8_RUNTIME_CALL_STATS
   if (V8_LIKELY(!TracingFlags::is_runtime_stats_enabled())) return;
   if (thread_kind_ == ThreadKind::kMain) {
-    DCHECK_EQ(tracer_->heap_->isolate()->thread_id(), ThreadId::Current());
+#if DEBUG
+    AssertMainThread();
+#endif  // DEBUG
     runtime_stats_ =
         tracer_->heap_->isolate()->counters()->runtime_call_stats();
     runtime_stats_->Enter(&timer_, GCTracer::RCSCounterFromScope(scope));
@@ -89,7 +91,10 @@ GCTracer::Scope::~Scope() {
   double duration_ms = tracer_->MonotonicallyIncreasingTimeInMs() - start_time_;
 
   if (thread_kind_ == ThreadKind::kMain) {
-    DCHECK_EQ(tracer_->heap_->isolate()->thread_id(), ThreadId::Current());
+#if DEBUG
+    AssertMainThread();
+#endif  // DEBUG
+
     tracer_->AddScopeSample(scope_, duration_ms);
     if (scope_ == ScopeId::MC_INCREMENTAL ||
         scope_ == ScopeId::MC_INCREMENTAL_START ||
@@ -109,6 +114,19 @@ GCTracer::Scope::~Scope() {
   runtime_stats_->Leave(&timer_);
 #endif  // defined(V8_RUNTIME_CALL_STATS)
 }
+
+#if DEBUG
+void GCTracer::Scope::AssertMainThread() {
+  Isolate* isolate = tracer_->heap_->isolate();
+  Isolate* shared_isolate = isolate->shared_isolate();
+  ThreadId thread_id = ThreadId::Current();
+
+  // Either run on isolate's main thread or on the current main thread of the
+  // shared isolate during shared GCs.
+  DCHECK(isolate->thread_id() == thread_id ||
+         (shared_isolate && shared_isolate->thread_id() == thread_id));
+}
+#endif  // DEBUG
 
 const char* GCTracer::Scope::Name(ScopeId id) {
 #define CASE(scope)  \
@@ -564,7 +582,7 @@ void GCTracer::Print() const {
       "[%d:%p] "
       "%8.0f ms: "
       "%s%s%s %.1f (%.1f) -> %.1f (%.1f) MB, "
-      "%.1f / %.1f ms %s (average mu = %.3f, current mu = %.3f) %s %s\n",
+      "%.1f / %.1f ms %s (average mu = %.3f, current mu = %.3f) %s; %s\n",
       base::OS::GetCurrentProcessId(),
       reinterpret_cast<void*>(heap_->isolate()),
       heap_->isolate()->time_millis_since_init(),
@@ -1330,6 +1348,9 @@ void CopyTimeMetrics(
   metrics.mark_wall_clock_duration_in_us = cppgc_metrics.mark_duration_us;
   DCHECK_NE(-1, cppgc_metrics.sweep_duration_us);
   metrics.sweep_wall_clock_duration_in_us = cppgc_metrics.sweep_duration_us;
+  metrics.total_wall_clock_duration_in_us =
+      metrics.mark_wall_clock_duration_in_us +
+      metrics.sweep_wall_clock_duration_in_us;
 }
 
 void CopyTimeMetrics(
@@ -1343,6 +1364,11 @@ void CopyTimeMetrics(
   metrics.sweep_wall_clock_duration_in_us = cppgc_metrics.sweep_duration_us;
   DCHECK_NE(-1, cppgc_metrics.weak_duration_us);
   metrics.weak_wall_clock_duration_in_us = cppgc_metrics.weak_duration_us;
+  metrics.total_wall_clock_duration_in_us =
+      metrics.compact_wall_clock_duration_in_us +
+      metrics.mark_wall_clock_duration_in_us +
+      metrics.sweep_wall_clock_duration_in_us +
+      metrics.weak_wall_clock_duration_in_us;
 }
 
 void CopySizeMetrics(
@@ -1381,7 +1407,16 @@ void GCTracer::ReportFullCycleToRecorder() {
   const std::shared_ptr<metrics::Recorder>& recorder =
       heap_->isolate()->metrics_recorder();
   DCHECK_NOT_NULL(recorder);
-  if (!recorder->HasEmbedderRecorder()) return;
+  metrics_report_pending_ = false;
+  if (!recorder->HasEmbedderRecorder()) {
+    incremental_mark_batched_events_.events.clear();
+    if (heap_->cpp_heap()) {
+      v8::internal::CppHeap::From(heap_->cpp_heap())
+          ->GetMetricRecorder()
+          ->ClearCachedEvents();
+    }
+    return;
+  }
   if (!incremental_mark_batched_events_.events.empty()) {
     FlushBatchedIncrementalEvents(incremental_mark_batched_events_,
                                   heap_->isolate());
@@ -1394,6 +1429,7 @@ void GCTracer::ReportFullCycleToRecorder() {
         optional_cppgc_event =
             cpp_heap->GetMetricRecorder()->ExtractLastFullGcEvent();
     DCHECK(optional_cppgc_event.has_value());
+    DCHECK(!cpp_heap->GetMetricRecorder()->MetricsReportPending());
     const cppgc::internal::MetricRecorder::FullCycle& cppgc_event =
         optional_cppgc_event.value();
     CopyTimeMetrics(event.total_cpp, cppgc_event.total);
@@ -1416,7 +1452,6 @@ void GCTracer::ReportFullCycleToRecorder() {
   }
   // TODO(chromium:1154636): Populate v8 metrics.
   recorder->AddMainThreadEvent(event, GetContextId(heap_->isolate()));
-  metrics_report_pending_ = false;
 }
 
 void GCTracer::ReportIncrementalMarkingStepToRecorder() {
@@ -1452,16 +1487,26 @@ void GCTracer::ReportYoungCycleToRecorder() {
   DCHECK_NOT_NULL(recorder);
   if (!recorder->HasEmbedderRecorder()) return;
   v8::metrics::GarbageCollectionYoungCycle event;
+  // Reason:
+  event.reason = static_cast<int>(current_.gc_reason);
   // Total:
   const double total_wall_clock_duration_in_us =
       (current_.scopes[Scope::SCAVENGER] +
-       current_.scopes[Scope::SCAVENGER_BACKGROUND_SCAVENGE_PARALLEL]) *
+       current_.scopes[Scope::MINOR_MARK_COMPACTOR] +
+       current_.scopes[Scope::SCAVENGER_BACKGROUND_SCAVENGE_PARALLEL] +
+       current_.scopes[Scope::MINOR_MC_BACKGROUND_EVACUATE_COPY] +
+       current_.scopes[Scope::MINOR_MC_BACKGROUND_MARKING] +
+       current_.scopes[Scope::MINOR_MC_BACKGROUND_EVACUATE_UPDATE_POINTERS]) *
       base::Time::kMicrosecondsPerMillisecond;
+  // TODO(chromium:1154636): Consider adding BACKGROUND_YOUNG_ARRAY_BUFFER_SWEEP
+  // (both for the case of the scavenger and the minor mark-compactor), and
+  // BACKGROUND_UNMAPPER (for the case of the minor mark-compactor).
   event.total_wall_clock_duration_in_us =
       static_cast<int64_t>(total_wall_clock_duration_in_us);
   // MainThread:
   const double main_thread_wall_clock_duration_in_us =
-      current_.scopes[Scope::SCAVENGER] *
+      (current_.scopes[Scope::SCAVENGER] +
+       current_.scopes[Scope::MINOR_MARK_COMPACTOR]) *
       base::Time::kMicrosecondsPerMillisecond;
   event.main_thread_wall_clock_duration_in_us =
       static_cast<int64_t>(main_thread_wall_clock_duration_in_us);

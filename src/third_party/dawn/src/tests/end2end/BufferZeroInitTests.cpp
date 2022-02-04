@@ -19,16 +19,16 @@
 #include "utils/TestUtils.h"
 #include "utils/WGPUHelpers.h"
 
-#define EXPECT_LAZY_CLEAR(N, statement)                                                       \
-    do {                                                                                      \
-        if (UsesWire()) {                                                                     \
-            statement;                                                                        \
-        } else {                                                                              \
-            size_t lazyClearsBefore = dawn_native::GetLazyClearCountForTesting(device.Get()); \
-            statement;                                                                        \
-            size_t lazyClearsAfter = dawn_native::GetLazyClearCountForTesting(device.Get());  \
-            EXPECT_EQ(N, lazyClearsAfter - lazyClearsBefore);                                 \
-        }                                                                                     \
+#define EXPECT_LAZY_CLEAR(N, statement)                                                        \
+    do {                                                                                       \
+        if (UsesWire()) {                                                                      \
+            statement;                                                                         \
+        } else {                                                                               \
+            size_t lazyClearsBefore = dawn::native::GetLazyClearCountForTesting(device.Get()); \
+            statement;                                                                         \
+            size_t lazyClearsAfter = dawn::native::GetLazyClearCountForTesting(device.Get());  \
+            EXPECT_EQ(N, lazyClearsAfter - lazyClearsBefore);                                  \
+        }                                                                                      \
     } while (0)
 
 namespace {
@@ -46,10 +46,10 @@ namespace {
 
 class BufferZeroInitTest : public DawnTest {
   protected:
-    std::vector<const char*> GetRequiredFeatures() override {
-        std::vector<const char*> requiredFeatures = {};
-        if (SupportsFeatures({"timestamp-query"})) {
-            requiredFeatures.push_back("timestamp-query");
+    std::vector<wgpu::FeatureName> GetRequiredFeatures() override {
+        std::vector<wgpu::FeatureName> requiredFeatures = {};
+        if (SupportsFeatures({wgpu::FeatureName::TimestampQuery})) {
+            requiredFeatures.push_back(wgpu::FeatureName::TimestampQuery);
         }
         return requiredFeatures;
     }
@@ -997,7 +997,7 @@ TEST_P(BufferZeroInitTest, BoundAsUniformBuffer) {
 
     constexpr uint32_t kBoundBufferSize = 16u;
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
-        [[block]] struct UBO {
+        struct UBO {
             value : vec4<u32>;
         };
         [[group(0), binding(0)]] var<uniform> ubo : UBO;
@@ -1036,7 +1036,7 @@ TEST_P(BufferZeroInitTest, BoundAsReadonlyStorageBuffer) {
 
     constexpr uint32_t kBoundBufferSize = 16u;
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
-        [[block]] struct SSBO {
+        struct SSBO {
             value : vec4<u32>;
         };
         [[group(0), binding(0)]] var<storage, read> ssbo : SSBO;
@@ -1075,7 +1075,7 @@ TEST_P(BufferZeroInitTest, BoundAsStorageBuffer) {
 
     constexpr uint32_t kBoundBufferSize = 32u;
     wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
-        [[block]] struct SSBO {
+        struct SSBO {
             value : array<vec4<u32>, 2>;
         };
         [[group(0), binding(0)]] var<storage, read_write> ssbo : SSBO;
@@ -1316,7 +1316,7 @@ TEST_P(BufferZeroInitTest, ResolveQuerySet) {
     DAWN_SUPPRESS_TEST_IF(IsMetal() && IsAMD());
 
     // Skip if timestamp feature is not supported on device
-    DAWN_TEST_UNSUPPORTED_IF(!SupportsFeatures({"timestamp-query"}));
+    DAWN_TEST_UNSUPPORTED_IF(!SupportsFeatures({wgpu::FeatureName::TimestampQuery}));
 
     // crbug.com/dawn/940: Does not work on Mac 11.0+. Backend validation changed.
     DAWN_TEST_UNSUPPORTED_IF(IsMacOS() && !IsMacOS(10));

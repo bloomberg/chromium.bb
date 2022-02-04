@@ -1419,7 +1419,7 @@ class SetBindGroupValidationTest : public ValidationTest {
                 })");
 
         wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
-                [[block]] struct S {
+                struct S {
                     value : vec2<f32>;
                 };
 
@@ -1443,7 +1443,7 @@ class SetBindGroupValidationTest : public ValidationTest {
 
     wgpu::ComputePipeline CreateComputePipeline() {
         wgpu::ShaderModule csModule = utils::CreateShaderModule(device, R"(
-                [[block]] struct S {
+                struct S {
                     value : vec2<f32>;
                 };
 
@@ -1871,7 +1871,7 @@ class SetBindGroupPersistenceValidationTest : public ValidationTest {
             device.CreatePipelineLayout(&pipelineLayoutDescriptor);
 
         std::stringstream ss;
-        ss << "[[block]] struct S { value : vec2<f32>; };";
+        ss << "struct S { value : vec2<f32>; };";
 
         // Build a shader which has bindings that match the pipeline layout.
         for (uint32_t l = 0; l < layouts.size(); ++l) {
@@ -1916,9 +1916,7 @@ class SetBindGroupPersistenceValidationTest : public ValidationTest {
 
 // Test it is valid to set bind groups before setting the pipeline.
 TEST_F(SetBindGroupPersistenceValidationTest, BindGroupBeforePipeline) {
-    std::vector<wgpu::BindGroupLayout> bindGroupLayouts;
-    wgpu::RenderPipeline pipeline;
-    std::tie(bindGroupLayouts, pipeline) = SetUpLayoutsAndPipeline({{
+    auto [bindGroupLayouts, pipeline] = SetUpLayoutsAndPipeline({{
         {{
             wgpu::BufferBindingType::Uniform,
             wgpu::BufferBindingType::Uniform,
@@ -1957,9 +1955,7 @@ TEST_F(SetBindGroupPersistenceValidationTest, BindGroupBeforePipeline) {
 // Test that it is valid to draw with bind groups that are not "inherited". They persist
 // after a pipeline change.
 TEST_F(SetBindGroupPersistenceValidationTest, NotVulkanInheritance) {
-    std::vector<wgpu::BindGroupLayout> bindGroupLayoutsA;
-    wgpu::RenderPipeline pipelineA;
-    std::tie(bindGroupLayoutsA, pipelineA) = SetUpLayoutsAndPipeline({{
+    auto [bindGroupLayoutsA, pipelineA] = SetUpLayoutsAndPipeline({{
         {{
             wgpu::BufferBindingType::Uniform,
             wgpu::BufferBindingType::Storage,
@@ -1970,9 +1966,7 @@ TEST_F(SetBindGroupPersistenceValidationTest, NotVulkanInheritance) {
         }},
     }});
 
-    std::vector<wgpu::BindGroupLayout> bindGroupLayoutsB;
-    wgpu::RenderPipeline pipelineB;
-    std::tie(bindGroupLayoutsB, pipelineB) = SetUpLayoutsAndPipeline({{
+    auto [bindGroupLayoutsB, pipelineB] = SetUpLayoutsAndPipeline({{
         {{
             wgpu::BufferBindingType::Storage,
             wgpu::BufferBindingType::Uniform,
@@ -2051,7 +2045,7 @@ class BindGroupLayoutCompatibilityTest : public ValidationTest {
 
     wgpu::RenderPipeline CreateRenderPipeline(std::vector<wgpu::BindGroupLayout> bindGroupLayouts) {
         return CreateFSRenderPipeline(R"(
-            [[block]] struct S {
+            struct S {
                 value : vec2<f32>;
             };
 
@@ -2086,7 +2080,7 @@ class BindGroupLayoutCompatibilityTest : public ValidationTest {
     wgpu::ComputePipeline CreateComputePipeline(
         std::vector<wgpu::BindGroupLayout> bindGroupLayouts) {
         return CreateComputePipeline(R"(
-            [[block]] struct S {
+            struct S {
                 value : vec2<f32>;
             };
 

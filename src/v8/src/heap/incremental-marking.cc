@@ -235,6 +235,16 @@ void IncrementalMarking::StartMarking() {
 
   is_compacting_ = collector_->StartCompaction(
       MarkCompactCollector::StartCompactionMode::kIncremental);
+
+  auto embedder_flags = heap_->flags_for_embedder_tracer();
+  {
+    TRACE_GC(heap()->tracer(),
+             GCTracer::Scope::MC_INCREMENTAL_EMBEDDER_PROLOGUE);
+    // PrepareForTrace should be called before visitor initialization in
+    // StartMarking. It is only used with CppHeap.
+    heap_->local_embedder_heap_tracer()->PrepareForTrace(embedder_flags);
+  }
+
   collector_->StartMarking();
 
   SetState(MARKING);
@@ -261,8 +271,7 @@ void IncrementalMarking::StartMarking() {
     // marking (including write barriers) is fully set up.
     TRACE_GC(heap()->tracer(),
              GCTracer::Scope::MC_INCREMENTAL_EMBEDDER_PROLOGUE);
-    heap_->local_embedder_heap_tracer()->TracePrologue(
-        heap_->flags_for_embedder_tracer());
+    heap_->local_embedder_heap_tracer()->TracePrologue(embedder_flags);
   }
 
   heap_->InvokeIncrementalMarkingEpilogueCallbacks();
@@ -533,13 +542,15 @@ StepResult IncrementalMarking::EmbedderStep(double expected_duration_ms,
   LocalEmbedderHeapTracer* local_tracer = heap_->local_embedder_heap_tracer();
   const double start = heap_->MonotonicallyIncreasingTimeInMs();
   const double deadline = start + expected_duration_ms;
-  bool empty_worklist;
-  {
+  bool empty_worklist = true;
+  if (local_marking_worklists()->PublishWrapper()) {
+    DCHECK(local_marking_worklists()->IsWrapperEmpty());
+  } else {
+    // Cannot directly publish wrapper objects.
     LocalEmbedderHeapTracer::ProcessingScope scope(local_tracer);
     HeapObject object;
     size_t cnt = 0;
-    empty_worklist = true;
-    while (local_marking_worklists()->PopEmbedder(&object)) {
+    while (local_marking_worklists()->PopWrapper(&object)) {
       scope.TracePossibleWrapper(JSObject::cast(object));
       if (++cnt == kObjectsToProcessBeforeDeadlineCheck) {
         if (deadline <= heap_->MonotonicallyIncreasingTimeInMs()) {
@@ -586,7 +597,6 @@ void IncrementalMarking::Hurry() {
   }
 }
 
-
 void IncrementalMarking::Stop() {
   if (IsStopped()) return;
   if (FLAG_trace_incremental_marking) {
@@ -601,8 +611,7 @@ void IncrementalMarking::Stop() {
         std::max(0, old_generation_size_mb - old_generation_limit_mb));
   }
 
-  SpaceIterator it(heap_);
-  while (it.HasNext()) {
+  for (SpaceIterator it(heap_); it.HasNext();) {
     Space* space = it.Next();
     if (space == heap_->new_space()) {
       space->RemoveAllocationObserver(&new_generation_observer_);
@@ -629,12 +638,10 @@ void IncrementalMarking::Stop() {
   background_live_bytes_.clear();
 }
 
-
 void IncrementalMarking::Finalize() {
   Hurry();
   Stop();
 }
-
 
 void IncrementalMarking::FinalizeMarking(CompletionAction action) {
   DCHECK(!finalize_marking_completed_);

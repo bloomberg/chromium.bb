@@ -101,7 +101,7 @@ have unexpected values then get drawn to the color buffer, which is later checke
         return vf;
       }
 
-      [[block]] struct Output {
+      struct Output {
         // Each fragment (that didn't get clipped) writes into one element of this output.
         // (Anything that doesn't get written is already zero.)
         fragInputZDiff: array<f32, ${kNumTestPoints}>;
@@ -193,8 +193,8 @@ have unexpected values then get drawn to the color buffer, which is later checke
       primitive: { topology: 'point-list' },
       depthStencil: {
         format,
-        // TODO: This check is probably very susceptible to floating point error.
-        // Replace it with two checks (less + greater) with an epsilon applied in the check shader?
+        // NOTE: This check is probably very susceptible to floating point error. If it fails, maybe
+        // replace it with two checks (less + greater) with an epsilon applied in the check shader?
         depthCompare: 'not-equal', // Expect every depth value to be exactly equal.
         depthWriteEnabled: true, // If the check failed, overwrite with the expected result.
       },
@@ -348,6 +348,7 @@ to be empty.`
   .params(u =>
     u //
       .combine('format', kDepthStencilFormats)
+      .filter(p => kTextureFormatInfo[p.format].depth)
       .combine('clampDepth', [false, true])
       .combine('multisampled', [false, true])
   )

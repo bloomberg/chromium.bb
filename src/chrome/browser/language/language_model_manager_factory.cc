@@ -24,14 +24,13 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/browser/ulp_metrics_logger.h"
 #include "components/language/core/common/language_experiments.h"
-#include "components/language/core/language_model/baseline_language_model.h"
 #include "components/language/core/language_model/fluent_language_model.h"
 #include "components/language/core/language_model/ulp_language_model.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_prefs.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/language/android/jni_headers/LanguageBridge_jni.h"
@@ -39,7 +38,7 @@
 
 namespace {
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Records per-initialization ULP-related metrics.
 void RecordULPInitMetrics(Profile* profile,
                           const std::vector<std::string>& ulp_languages) {
@@ -118,37 +117,24 @@ void CreateAndAddULPLanguageModel(Profile* profile,
 
 void PrepareLanguageModels(Profile* const profile,
                            language::LanguageModelManager* const manager) {
-  // Create and set the primary Language Model to use based on the state of
-  // experiments.
-  switch (language::GetOverrideLanguageModel()) {
-    case language::OverrideLanguageModel::FLUENT:
-      manager->AddModel(
-          language::LanguageModelManager::ModelType::FLUENT,
-          std::make_unique<language::FluentLanguageModel>(profile->GetPrefs()));
-      manager->SetPrimaryModel(
-          language::LanguageModelManager::ModelType::FLUENT);
-      break;
-    case language::OverrideLanguageModel::GEO:
-      manager->AddModel(language::LanguageModelManager::ModelType::GEO,
-                        std::make_unique<language::GeoLanguageModel>(
-                            language::GeoLanguageProvider::GetInstance()));
-      manager->SetPrimaryModel(language::LanguageModelManager::ModelType::GEO);
-      break;
-    case language::OverrideLanguageModel::DEFAULT:
-    default:
-      manager->AddModel(
-          language::LanguageModelManager::ModelType::BASELINE,
-          std::make_unique<language::BaselineLanguageModel>(
-              profile->GetPrefs(), g_browser_process->GetApplicationLocale(),
-              language::prefs::kAcceptLanguages));
-      manager->SetPrimaryModel(
-          language::LanguageModelManager::ModelType::BASELINE);
-      break;
+  // Use the GeoLanguageModel as the primary Language Model if its experiment is
+  // enabled, and the FluentLanguageModel otherwise.
+  if (language::GetOverrideLanguageModel() ==
+      language::OverrideLanguageModel::GEO) {
+    manager->AddModel(language::LanguageModelManager::ModelType::GEO,
+                      std::make_unique<language::GeoLanguageModel>(
+                          language::GeoLanguageProvider::GetInstance()));
+    manager->SetPrimaryModel(language::LanguageModelManager::ModelType::GEO);
+  } else {
+    manager->AddModel(
+        language::LanguageModelManager::ModelType::FLUENT,
+        std::make_unique<language::FluentLanguageModel>(profile->GetPrefs()));
+    manager->SetPrimaryModel(language::LanguageModelManager::ModelType::FLUENT);
   }
 
     // On Android, additionally create a ULPLanguageModel and populate it with
     // ULP data.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(language::kUseULPLanguagesInChrome)) {
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock()},

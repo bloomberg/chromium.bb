@@ -651,6 +651,7 @@ distribute_py_test(
     shard_count = 12,
     tags = [
         "multi_and_single_gpu",
+        "no_cuda_asan",  # b/213388775
         "no_rocm",
     ],
     tpu_tags = [
@@ -1126,8 +1127,9 @@ distribute_py_test(
     shard_count = 10,
     tags = [
         "multi_and_single_gpu",
-        "no_cuda_asan",  # times out
-        "notsan",  # b/177098062
+        "no_cuda_asan",  # TODO(b/214574707): times out
+        "nogpu",  # TODO(b/214574707): times out
+        "notsan",  # TODO(b/177098062): flaky for over a year
     ],
     deps = [
         ":collective_all_reduce_strategy",
@@ -1539,7 +1541,6 @@ distribute_py_test(
     main = "distribute_utils_test.py",
     tags = [
         "multi_and_single_gpu",
-        "no_oss_py310",  # b/209158747
     ],
     deps = [
         ":combinations",
@@ -1622,6 +1623,7 @@ distribute_py_test(
     main = "moving_averages_test.py",
     tags = [
         "no_windows",  # TODO(b/184424727): Re-enable this.
+        "notpu",  # TODO(b/210145904)
     ],
     deps = [
         ":collective_all_reduce_strategy",

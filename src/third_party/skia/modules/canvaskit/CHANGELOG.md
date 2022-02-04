@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+ - Surface factories always produce a surface with an attached color space. Specifying `null` to
+   `CanvasKit.MakeWebGLCanvasSurface` or calling any factory that does not take a color space
+   will now create a surface with a color space of `CanvasKit.ColorSpace.SRGB`.
+
+## [0.32.0] - 2021-12-15
+
 ### Breaking
  - `Canvas.drawVertices` and `Canvas.drawPatch` treat the default blend mode differently.
    See https://bugs.chromium.org/p/skia/issues/detail?id=12662.
@@ -15,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Rough implementation of `measureText` to Canvas2D emulation layer. For accurate numbers, clients
    should use a real shaping library, like SkParagraph.
  - `AnimatedImage.currentFrameDuration` has been added, as well as some clarifying documentation.
+
+### Fixed
+ - Drawing images created from MakeLazyImageFromTextureSource should no longer cause a draw to only
+   partially show up on some frames <https://crbug.com/skia/12740>.
 
 ## [0.31.0] - 2021-11-16
 

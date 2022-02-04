@@ -130,6 +130,12 @@
 #define EGL_PLATFORM_ANGLE_DEVICE_CONTEXT_VOLATILE_CGL_ANGLE 0x34A3
 #endif /* EGL_ANGLE_platform_angle_device_context_volatile_cgl */
 
+#ifndef EGL_ANGLE_platform_angle_device_id
+#define EGL_ANGLE_platform_angle_device_id
+#define EGL_PLATFORM_ANGLE_DEVICE_ID_HIGH_ANGLE 0x34D6
+#define EGL_PLATFORM_ANGLE_DEVICE_ID_LOW_ANGLE 0x34D7
+#endif /* EGL_ANGLE_platform_angle_device_id */
+
 #ifndef EGL_ANGLE_x11_visual
 #define EGL_ANGLE_x11_visual
 #define EGL_X11_VISUAL_ID_ANGLE 0x33A3
@@ -175,6 +181,11 @@ EGLAPI EGLBoolean EGLAPIENTRY eglStreamPostD3DTextureANGLE(EGLDisplay dpy, EGLSt
 #define EGL_CHROMIUM_create_context_bind_generates_resource 1
 #define EGL_CONTEXT_BIND_GENERATES_RESOURCE_CHROMIUM 0x33AD
 #endif /* EGL_CHROMIUM_create_context_bind_generates_resource */
+
+#ifndef EGL_ANGLE_metal_create_context_ownership_identity
+#define EGL_ANGLE_metal_create_context_ownership_identity 1
+#define EGL_CONTEXT_METAL_OWNERSHIP_IDENTITY_ANGLE 0x34D2
+#endif /* EGL_ANGLE_metal_create_context_ownership_identity */
 
 #ifndef EGL_ANGLE_create_context_client_arrays
 #define EGL_ANGLE_create_context_client_arrays 1
@@ -328,6 +339,14 @@ EGLAPI EGLBoolean EGLAPIENTRY eglSwapBuffersWithFrameTokenANGLE(EGLDisplay dpy, 
 #endif
 #endif /* EGL_ANGLE_swap_with_frame_token */
 
+#ifndef EGL_ANGLE_prepare_swap_buffers
+#define EGL_ANGLE_prepare_swap_buffers 1
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLPREPARESWAPBUFFERSANGLEPROC)(EGLDisplay dpy, EGLSurface surface);
+#ifdef EGL_EGLEXT_PROTOTYPES
+EGLAPI EGLBoolean EGLAPIENTRY eglPrepareSwapBuffersANGLE(EGLDisplay dpy, EGLSurface surface);
+#endif
+#endif /* EGL_ANGLE_prepare_swap_buffers */
+
 #ifndef EGL_ANGLE_device_eagl
 #define EGL_ANGLE_device_eagl 1
 #define EGL_EAGL_CONTEXT_ANGLE 0x348C
@@ -371,6 +390,9 @@ EGLAPI EGLBoolean EGLAPIENTRY eglSwapBuffersWithFrameTokenANGLE(EGLDisplay dpy, 
 
 #ifndef EGL_ANGLE_vulkan_image
 #define EGL_ANGLE_vulkan_image
+#define EGL_VULKAN_IMAGE_ANGLE 0x34D3
+#define EGL_VULKAN_IMAGE_CREATE_INFO_HI_ANGLE 0x34D4
+#define EGL_VULKAN_IMAGE_CREATE_INFO_LO_ANGLE 0x34D5
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLEXPORTVKIMAGEANGLEPROC)(EGLDisplay dpy, EGLImage image, void* vk_image, void* vk_image_create_info);
 #endif /* EGL_ANGLE_vulkan_image */
 

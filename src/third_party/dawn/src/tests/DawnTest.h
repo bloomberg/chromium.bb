@@ -25,6 +25,7 @@
 #include "tests/ParamGenerator.h"
 #include "tests/ToggleParser.h"
 #include "utils/ScopedAutoreleasePool.h"
+#include "utils/TextureUtils.h"
 
 #include <dawn_platform/DawnPlatform.h>
 #include <gmock/gmock.h>
@@ -94,6 +95,9 @@
     AddTextureBetweenColorsExpectation(__FILE__, __LINE__, color0, color1, texture, x, y)
 
 #define EXPECT_TEXTURE_EQ(...) AddTextureExpectation(__FILE__, __LINE__, __VA_ARGS__)
+
+#define EXPECT_TEXTURE_FLOAT16_EQ(...) \
+    AddTextureExpectation<float, uint16_t>(__FILE__, __LINE__, __VA_ARGS__)
 
 #define ASSERT_DEVICE_ERROR_MSG(statement, matcher)             \
     StartExpectDeviceError(matcher);                            \
@@ -197,11 +201,11 @@ namespace detail {
     class ExpectBetweenColors;
 }  // namespace detail
 
-namespace dawn_wire {
+namespace dawn::wire {
     class CommandHandler;
     class WireClient;
     class WireServer;
-}  // namespace dawn_wire
+}  // namespace dawn::wire
 
 void InitDawnEnd2EndTestEnvironment(int argc, char** argv);
 
@@ -220,8 +224,8 @@ class DawnTestEnvironment : public testing::Environment {
     void TearDown() override;
 
     bool UsesWire() const;
-    dawn_native::BackendValidationLevel GetBackendValidationLevel() const;
-    dawn_native::Instance* GetInstance() const;
+    dawn::native::BackendValidationLevel GetBackendValidationLevel() const;
+    dawn::native::Instance* GetInstance() const;
     bool HasVendorIdFilter() const;
     uint32_t GetVendorIdFilter() const;
     bool HasBackendTypeFilter() const;
@@ -236,17 +240,17 @@ class DawnTestEnvironment : public testing::Environment {
     bool RunSuppressedTests() const;
 
   protected:
-    std::unique_ptr<dawn_native::Instance> mInstance;
+    std::unique_ptr<dawn::native::Instance> mInstance;
 
   private:
     void ParseArgs(int argc, char** argv);
-    std::unique_ptr<dawn_native::Instance> CreateInstanceAndDiscoverAdapters();
-    void SelectPreferredAdapterProperties(const dawn_native::Instance* instance);
-    void PrintTestConfigurationAndAdapterInfo(dawn_native::Instance* instance) const;
+    std::unique_ptr<dawn::native::Instance> CreateInstanceAndDiscoverAdapters();
+    void SelectPreferredAdapterProperties(const dawn::native::Instance* instance);
+    void PrintTestConfigurationAndAdapterInfo(dawn::native::Instance* instance) const;
 
     bool mUseWire = false;
-    dawn_native::BackendValidationLevel mBackendValidationLevel =
-        dawn_native::BackendValidationLevel::Disabled;
+    dawn::native::BackendValidationLevel mBackendValidationLevel =
+        dawn::native::BackendValidationLevel::Disabled;
     bool mBeginCaptureOnStartup = false;
     bool mHasVendorIdFilter = false;
     uint32_t mVendorIdFilter = 0;
@@ -257,7 +261,7 @@ class DawnTestEnvironment : public testing::Environment {
 
     ToggleParser mToggleParser;
 
-    std::vector<dawn_native::DeviceType> mDevicePreferences;
+    std::vector<wgpu::AdapterType> mDevicePreferences;
     std::vector<TestAdapterProperties> mAdapterProperties;
 
     std::unique_ptr<utils::PlatformDebugLogger> mPlatformDebugLogger;
@@ -318,9 +322,9 @@ class DawnTestBase {
     wgpu::BackendType GetBackendTypeFilter() const;
 
     wgpu::Instance GetInstance() const;
-    dawn_native::Adapter GetAdapter() const;
+    dawn::native::Adapter GetAdapter() const;
 
-    virtual std::unique_ptr<dawn_platform::Platform> CreateTestPlatform();
+    virtual std::unique_ptr<dawn::platform::Platform> CreateTestPlatform();
 
     struct PrintToStringParamName {
         PrintToStringParamName(const char* test);
@@ -353,6 +357,30 @@ class DawnTestBase {
 
     // T - expected value Type
     // U - actual value Type (defaults = T)
+    template <typename T, typename U = T>
+    std::ostringstream& AddTextureExpectation(const char* file,
+                                              int line,
+                                              const T* expectedData,
+                                              const wgpu::Texture& texture,
+                                              wgpu::Origin3D origin,
+                                              wgpu::Extent3D extent,
+                                              wgpu::TextureFormat format,
+                                              T tolerance = 0,
+                                              uint32_t level = 0,
+                                              wgpu::TextureAspect aspect = wgpu::TextureAspect::All,
+                                              uint32_t bytesPerRow = 0) {
+        uint32_t texelBlockSize = utils::GetTexelBlockSizeInBytes(format);
+        uint32_t texelComponentCount = utils::GetWGSLRenderableColorTextureComponentCount(format);
+
+        return AddTextureExpectationImpl(
+            file, line,
+            new detail::ExpectEq<T, U>(
+                expectedData,
+                texelComponentCount * extent.width * extent.height * extent.depthOrArrayLayers,
+                tolerance),
+            texture, origin, extent, level, aspect, texelBlockSize, bytesPerRow);
+    }
+
     template <typename T, typename U = T>
     std::ostringstream& AddTextureExpectation(const char* file,
                                               int line,
@@ -481,13 +509,13 @@ class DawnTestBase {
     void FlushWire();
     void WaitForAllOperations();
 
-    bool SupportsFeatures(const std::vector<const char*>& features);
+    bool SupportsFeatures(const std::vector<wgpu::FeatureName>& features);
 
     // Called in SetUp() to get the features required to be enabled in the tests. The tests must
     // check if the required features are supported by the adapter in this function and guarantee
     // the returned features are all supported by the adapter. The tests may provide different
     // code path to handle the situation when not all features are supported.
-    virtual std::vector<const char*> GetRequiredFeatures();
+    virtual std::vector<wgpu::FeatureName> GetRequiredFeatures();
 
     virtual wgpu::RequiredLimits GetRequiredLimits(const wgpu::SupportedLimits&);
 
@@ -569,9 +597,9 @@ class DawnTestBase {
     // Assuming the data is mapped, checks all expectations
     void ResolveExpectations();
 
-    dawn_native::Adapter mBackendAdapter;
+    dawn::native::Adapter mBackendAdapter;
 
-    std::unique_ptr<dawn_platform::Platform> mTestPlatform;
+    std::unique_ptr<dawn::platform::Platform> mTestPlatform;
 };
 
 #define DAWN_SKIP_TEST_IF_BASE(condition, type, reason)   \
@@ -593,22 +621,22 @@ class DawnTestBase {
 #define DAWN_SUPPRESS_TEST_IF(condition) \
     DAWN_SKIP_TEST_IF_BASE(!RunSuppressedTests() && condition, "suppressed", condition)
 
-#define EXPECT_DEPRECATION_WARNINGS(statement, n)                                \
-    do {                                                                         \
-        if (UsesWire()) {                                                        \
-            statement;                                                           \
-        } else {                                                                 \
-            size_t warningsBefore =                                              \
-                dawn_native::GetDeprecationWarningCountForTesting(device.Get()); \
-            statement;                                                           \
-            size_t warningsAfter =                                               \
-                dawn_native::GetDeprecationWarningCountForTesting(device.Get()); \
-            EXPECT_EQ(mLastWarningCount, warningsBefore);                        \
-            if (!HasToggleEnabled("skip_validation")) {                          \
-                EXPECT_EQ(warningsAfter, warningsBefore + n);                    \
-            }                                                                    \
-            mLastWarningCount = warningsAfter;                                   \
-        }                                                                        \
+#define EXPECT_DEPRECATION_WARNINGS(statement, n)                                 \
+    do {                                                                          \
+        if (UsesWire()) {                                                         \
+            statement;                                                            \
+        } else {                                                                  \
+            size_t warningsBefore =                                               \
+                dawn::native::GetDeprecationWarningCountForTesting(device.Get()); \
+            statement;                                                            \
+            size_t warningsAfter =                                                \
+                dawn::native::GetDeprecationWarningCountForTesting(device.Get()); \
+            EXPECT_EQ(mLastWarningCount, warningsBefore);                         \
+            if (!HasToggleEnabled("skip_validation")) {                           \
+                EXPECT_EQ(warningsAfter, warningsBefore + n);                     \
+            }                                                                     \
+            mLastWarningCount = warningsAfter;                                    \
+        }                                                                         \
     } while (0)
 #define EXPECT_DEPRECATION_WARNING(statement) EXPECT_DEPRECATION_WARNINGS(statement, 1)
 

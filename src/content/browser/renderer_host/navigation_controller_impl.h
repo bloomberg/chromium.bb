@@ -189,7 +189,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // navigations as initiated by the renderer.
   void GoToOffsetFromRenderer(int offset);
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // The difference between (Can)GoToOffsetWithSkipping and
   // (Can)GoToOffset/(Can)GoToOffsetInSandboxedFrame is that this respects the
   // history manipulation intervention and will exclude skippable entries.
@@ -355,7 +355,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
 // Returns true if the string corresponds to a valid data URL, false
 // otherwise.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   static bool ValidateDataURLAsString(
       const scoped_refptr<const base::RefCountedString>& data_url_as_string);
 #endif
@@ -396,6 +396,17 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // FrameNavigationEntries are serialized and added to |request|'s commit
   // params.
   void PopulateAppHistoryEntryVectors(NavigationRequest* request);
+
+  // The appHistory API exposes the urls of some non-current same-origin
+  // FrameNavigationEntries to the renderer. This helper checks whether the
+  // given ReferrerPolicy makes an attempt to hide a page's URL (e.g., in
+  // referrer headers) and thus whether the URL should be hidden from appHistory
+  // entries as well.
+  static bool ShouldProtectUrlInAppHistory(
+      network::mojom::ReferrerPolicy referrer_policy);
+
+  // Returns whether the last NavigationEntry encountered a post-commit error.
+  bool has_post_commit_error_entry() const;
 
  private:
   friend class RestoreHelper;
@@ -734,7 +745,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
                                       const url::Origin& pending_origin,
                                       FrameTreeNode* node,
                                       SiteInstance* site_instance,
-                                      int64_t previous_item_sequence_number);
+                                      int64_t pending_item_sequence_number,
+                                      int64_t pending_document_sequence_number);
   // Helper for NavigateToAppHistoryKey(). Ensures that we only navigate to
   // |target_entry| if it matches |current_entry|'s origin and site instance, as
   // well as having |app_history_key| as its key.

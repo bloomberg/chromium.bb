@@ -47,6 +47,7 @@
                                                                                                    \
     /* GLES2+ Extensions */                                                                        \
                                                                                                    \
+    /* GL_ANDROID_extension_pack_es31a */                                                          \
     /* GL_ANGLE_depth_texture */                                                                   \
     /* GL_ANGLE_framebuffer_blit */                                                                \
     /* GL_ANGLE_instanced_arrays */                                                                \
@@ -142,10 +143,10 @@
     void importMemoryFd(MemoryObjectID memoryPacked, GLuint64 size, HandleType handleTypePacked,   \
                         GLint fd);                                                                 \
     /* GL_EXT_multi_draw_indirect */                                                               \
-    void multiDrawArraysIndirect(GLenum mode, const void *indirect, GLsizei drawcount,             \
-                                 GLsizei stride);                                                  \
-    void multiDrawElementsIndirect(GLenum mode, GLenum type, const void *indirect,                 \
-                                   GLsizei drawcount, GLsizei stride);                             \
+    void multiDrawArraysIndirect(PrimitiveMode modePacked, const void *indirect,                   \
+                                 GLsizei drawcount, GLsizei stride);                               \
+    void multiDrawElementsIndirect(PrimitiveMode modePacked, DrawElementsType typePacked,          \
+                                   const void *indirect, GLsizei drawcount, GLsizei stride);       \
     /* GL_EXT_multisample_compatibility */                                                         \
     /* GL_EXT_multisampled_render_to_texture */                                                    \
     void framebufferTexture2DMultisample(GLenum target, GLenum attachment,                         \
@@ -178,6 +179,7 @@
     /* GL_EXT_semaphore_fd */                                                                      \
     void importSemaphoreFd(SemaphoreID semaphorePacked, HandleType handleTypePacked, GLint fd);    \
     /* GL_EXT_separate_shader_objects */                                                           \
+    /* GL_EXT_shader_framebuffer_fetch */                                                          \
     /* GL_EXT_shader_framebuffer_fetch_non_coherent */                                             \
     void framebufferFetchBarrier();                                                                \
     /* GL_EXT_shader_io_blocks */                                                                  \
@@ -216,6 +218,9 @@
     /* GL_KHR_texture_compression_astc_hdr */                                                      \
     /* GL_KHR_texture_compression_astc_ldr */                                                      \
     /* GL_KHR_texture_compression_astc_sliced_3d */                                                \
+    /* GL_MESA_framebuffer_flip_y */                                                               \
+    void framebufferParameteriMESA(GLenum target, GLenum pname, GLint param);                      \
+    void getFramebufferParameterivMESA(GLenum target, GLenum pname, GLint *params);                \
     /* GL_NV_EGL_stream_consumer_external */                                                       \
     /* GL_NV_depth_buffer_float2 */                                                                \
     /* GL_NV_fence */                                                                              \

@@ -4,7 +4,7 @@
  *
  *   The FreeType private base classes (body).
  *
- * Copyright (C) 1996-2021 by
+ * Copyright (C) 1996-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -857,6 +857,11 @@
     driver  = face->driver;
     library = driver->root.library;
     hinter  = library->auto_hinter;
+
+    /* undefined scale means no scale */
+    if ( face->size->metrics.x_ppem == 0 ||
+         face->size->metrics.y_ppem == 0 )
+      load_flags |= FT_LOAD_NO_SCALE;
 
     /* resolve load flags dependencies */
 
@@ -5729,7 +5734,7 @@
     SFNT_Service  sfnt;
 
 
-    if ( !face || !paint || !paint )
+    if ( !face || !paint )
       return 0;
 
     if ( !FT_IS_SFNT( face ) )

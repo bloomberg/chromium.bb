@@ -37,7 +37,7 @@ TEST_F(RemovePhoniesTest, EmptyModule) {
 
 TEST_F(RemovePhoniesTest, NoSideEffects) {
   auto* src = R"(
-[[group(0), binding(0)]] var t : texture_2d<f32>;
+@group(0) @binding(0) var t : texture_2d<f32>;
 
 fn f() {
   var v : i32;
@@ -54,7 +54,7 @@ fn f() {
 )";
 
   auto* expect = R"(
-[[group(0), binding(0)]] var t : texture_2d<f32>;
+@group(0) @binding(0) var t : texture_2d<f32>;
 
 fn f() {
   var v : i32;
@@ -173,12 +173,11 @@ fn f() {
 
 TEST_F(RemovePhoniesTest, ForLoop) {
   auto* src = R"(
-[[block]]
 struct S {
   arr : array<i32>;
 };
 
-[[group(0), binding(0)]] var<storage, read_write> s : S;
+@group(0) @binding(0) var<storage, read_write> s : S;
 
 fn x() -> i32 {
   return 0;
@@ -203,12 +202,11 @@ fn f() {
 )";
 
   auto* expect = R"(
-[[block]]
 struct S {
   arr : array<i32>;
-};
+}
 
-[[group(0), binding(0)]] var<storage, read_write> s : S;
+@group(0) @binding(0) var<storage, read_write> s : S;
 
 fn x() -> i32 {
   return 0;

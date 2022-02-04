@@ -169,8 +169,8 @@ InvokeParams InvokeParams::SetUpForRunMicrotasks(
   return params;
 }
 
-Handle<Code> JSEntry(Isolate* isolate, Execution::Target execution_target,
-                     bool is_construct) {
+Handle<CodeT> JSEntry(Isolate* isolate, Execution::Target execution_target,
+                      bool is_construct) {
   if (is_construct) {
     DCHECK_EQ(Execution::Target::kCallable, execution_target);
     return BUILTIN_CODE(isolate, JSConstructEntry);
@@ -207,9 +207,9 @@ MaybeHandle<Context> NewScriptContext(Isolate* isolate,
       native_context->script_context_table(), isolate);
 
   // Find name clashes.
-  for (int var = 0; var < scope_info->ContextLocalCount(); var++) {
-    Handle<String> name(scope_info->ContextLocalName(var), isolate);
-    VariableMode mode = scope_info->ContextLocalMode(var);
+  for (auto it : ScopeInfo::IterateLocalNames(scope_info)) {
+    Handle<String> name(it->name(), isolate);
+    VariableMode mode = scope_info->ContextLocalMode(it->index());
     VariableLookupResult lookup;
     if (ScriptContextTable::Lookup(isolate, *script_context, *name, &lookup)) {
       if (IsLexicalVariableMode(mode) || IsLexicalVariableMode(lookup.mode)) {
@@ -390,7 +390,7 @@ V8_WARN_UNUSED_RESULT MaybeHandle<Object> Invoke(Isolate* isolate,
 
   // Placeholder for return value.
   Object value;
-  Handle<Code> code =
+  Handle<CodeT> code =
       JSEntry(isolate, params.execution_target, params.is_construct);
   {
     // Save and restore context around invocation and block the

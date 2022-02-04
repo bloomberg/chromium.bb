@@ -724,7 +724,7 @@ BytecodeGraphBuilder::Environment::Environment(
 int BytecodeGraphBuilder::Environment::RegisterToValuesIndex(
     interpreter::Register the_register) const {
   if (the_register.is_parameter()) {
-    return the_register.ToParameterIndex(parameter_count());
+    return the_register.ToParameterIndex();
   } else {
     return the_register.index() + register_base();
   }
@@ -2225,8 +2225,8 @@ void BytecodeGraphBuilder::VisitCreateClosure() {
           bytecode_iterator().GetFlagOperand(2))
           ? AllocationType::kOld
           : AllocationType::kYoung;
-  CodeTRef compile_lazy = MakeRef(
-      broker(), ToCodeT(*BUILTIN_CODE(jsgraph()->isolate(), CompileLazy)));
+  CodeTRef compile_lazy =
+      MakeRef(broker(), *BUILTIN_CODE(jsgraph()->isolate(), CompileLazy));
   const Operator* op =
       javascript()->CreateClosure(shared_info, compile_lazy, allocation);
   Node* closure = NewNode(

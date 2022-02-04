@@ -21,6 +21,7 @@
 #include "dawn_native/BindGroup.h"
 #include "dawn_native/BindGroupLayout.h"
 #include "dawn_native/Buffer.h"
+#include "dawn_native/ChainUtils_autogen.h"
 #include "dawn_native/CommandBuffer.h"
 #include "dawn_native/CommandEncoder.h"
 #include "dawn_native/CompilationMessages.h"
@@ -51,7 +52,7 @@
 #include <mutex>
 #include <unordered_set>
 
-namespace dawn_native {
+namespace dawn::native {
 
     // DeviceBase sub-structures
 
@@ -172,15 +173,19 @@ namespace dawn_native {
 
     // DeviceBase
 
-    DeviceBase::DeviceBase(AdapterBase* adapter, const DawnDeviceDescriptor* descriptor)
+    DeviceBase::DeviceBase(AdapterBase* adapter, const DeviceDescriptor* descriptor)
         : mInstance(adapter->GetInstance()), mAdapter(adapter), mNextPipelineCompatibilityToken(1) {
-        if (descriptor != nullptr) {
-            ApplyToggleOverrides(descriptor);
-            ApplyFeatures(descriptor);
-        }
+        ASSERT(descriptor != nullptr);
 
-        if (descriptor != nullptr && descriptor->requiredLimits != nullptr) {
-            mLimits.v1 = ReifyDefaultLimits(FromAPI(descriptor->requiredLimits)->limits);
+        const DawnTogglesDeviceDescriptor* togglesDesc = nullptr;
+        FindInChain(descriptor->nextInChain, &togglesDesc);
+        if (togglesDesc != nullptr) {
+            ApplyToggleOverrides(togglesDesc);
+        }
+        ApplyFeatures(descriptor);
+
+        if (descriptor->requiredLimits != nullptr) {
+            mLimits.v1 = ReifyDefaultLimits(descriptor->requiredLimits->limits);
         } else {
             GetDefaultLimits(&mLimits.v1);
         }
@@ -400,6 +405,12 @@ namespace dawn_native {
     }
 
     void DeviceBase::APIDestroy() {
+        // TODO(crbug.com/dawn/628) Re-enable once CTS testing is in place and passing.
+        if (IsToggleEnabled(Toggle::DisallowUnsafeAPIs)) {
+            ConsumedError(DAWN_VALIDATION_ERROR(
+                "Explicit device.destroy() is disallowed because it is not fully implemented"));
+            return;
+        }
         Destroy();
     }
 
@@ -530,6 +541,7 @@ namespace dawn_native {
         }
         ErrorScope scope = mErrorScopeStack->Pop();
         if (callback != nullptr) {
+            // TODO(crbug.com/dawn/1122): Call callbacks only on wgpuInstanceProcessEvents
             callback(static_cast<WGPUErrorType>(scope.GetErrorType()), scope.GetErrorMessage(),
                      userdata);
         }
@@ -590,7 +602,7 @@ namespace dawn_native {
         return mAdapter;
     }
 
-    dawn_platform::Platform* DeviceBase::GetPlatform() const {
+    dawn::platform::Platform* DeviceBase::GetPlatform() const {
         return GetAdapter()->GetInstance()->GetPlatform();
     }
 
@@ -743,23 +755,23 @@ namespace dawn_native {
 
     Ref<ComputePipelineBase> DeviceBase::AddOrGetCachedComputePipeline(
         Ref<ComputePipelineBase> computePipeline) {
-        auto insertion = mCaches->computePipelines.insert(computePipeline.Get());
-        if (insertion.second) {
+        auto [cachedPipeline, inserted] = mCaches->computePipelines.insert(computePipeline.Get());
+        if (inserted) {
             computePipeline->SetIsCachedReference();
             return computePipeline;
         } else {
-            return *(insertion.first);
+            return *cachedPipeline;
         }
     }
 
     Ref<RenderPipelineBase> DeviceBase::AddOrGetCachedRenderPipeline(
         Ref<RenderPipelineBase> renderPipeline) {
-        auto insertion = mCaches->renderPipelines.insert(renderPipeline.Get());
-        if (insertion.second) {
+        auto [cachedPipeline, inserted] = mCaches->renderPipelines.insert(renderPipeline.Get());
+        if (inserted) {
             renderPipeline->SetIsCachedReference();
             return renderPipeline;
         } else {
-            return *(insertion.first);
+            return *cachedPipeline;
         }
     }
 
@@ -941,7 +953,13 @@ namespace dawn_native {
         if (descriptor == nullptr) {
             descriptor = &defaultDescriptor;
         }
-        return new CommandEncoder(this, descriptor);
+
+        Ref<CommandEncoder> result;
+        if (ConsumedError(CreateCommandEncoder(descriptor), &result,
+                          "calling %s.CreateCommandEncoder(%s).", this, descriptor)) {
+            return CommandEncoder::MakeError(this);
+        }
+        return result.Detach();
     }
     ComputePipelineBase* DeviceBase::APICreateComputePipeline(
         const ComputePipelineDescriptor* descriptor) {
@@ -968,6 +986,7 @@ namespace dawn_native {
         // callback.
         if (maybeResult.IsError()) {
             std::unique_ptr<ErrorData> error = maybeResult.AcquireError();
+            // TODO(crbug.com/dawn/1122): Call callbacks only on wgpuInstanceProcessEvents
             callback(WGPUCreatePipelineAsyncStatus_Error, nullptr, error->GetMessage().c_str(),
                      userdata);
         }
@@ -1010,6 +1029,7 @@ namespace dawn_native {
         // callback.
         if (maybeResult.IsError()) {
             std::unique_ptr<ErrorData> error = maybeResult.AcquireError();
+            // TODO(crbug.com/dawn/1122): Call callbacks only on wgpuInstanceProcessEvents
             callback(WGPUCreatePipelineAsyncStatus_Error, nullptr, error->GetMessage().c_str(),
                      userdata);
         }
@@ -1140,16 +1160,14 @@ namespace dawn_native {
         return result.Detach();
     }
 
-    void DeviceBase::ApplyFeatures(const DawnDeviceDescriptor* deviceDescriptor) {
+    void DeviceBase::ApplyFeatures(const DeviceDescriptor* deviceDescriptor) {
         ASSERT(deviceDescriptor);
-        ASSERT(GetAdapter()->SupportsAllRequestedFeatures(deviceDescriptor->requiredFeatures));
+        ASSERT(GetAdapter()->SupportsAllRequiredFeatures(
+            {deviceDescriptor->requiredFeatures, deviceDescriptor->requiredFeaturesCount}));
 
-        mEnabledFeatures = GetAdapter()->GetInstance()->FeatureNamesToFeaturesSet(
-            deviceDescriptor->requiredFeatures);
-    }
-
-    std::vector<const char*> DeviceBase::GetEnabledFeatures() const {
-        return mEnabledFeatures.GetEnabledFeatureNames();
+        for (uint32_t i = 0; i < deviceDescriptor->requiredFeaturesCount; ++i) {
+            mEnabledFeatures.EnableFeature(deviceDescriptor->requiredFeatures[i]);
+        }
     }
 
     bool DeviceBase::IsFeatureEnabled(Feature feature) const {
@@ -1197,13 +1215,21 @@ namespace dawn_native {
         }
     }
 
-    bool DeviceBase::APIGetLimits(SupportedLimits* limits) {
+    bool DeviceBase::APIGetLimits(SupportedLimits* limits) const {
         ASSERT(limits != nullptr);
         if (limits->nextInChain != nullptr) {
             return false;
         }
         limits->limits = mLimits.v1;
         return true;
+    }
+
+    bool DeviceBase::APIHasFeature(wgpu::FeatureName feature) const {
+        return mEnabledFeatures.IsEnabled(feature);
+    }
+
+    size_t DeviceBase::APIEnumerateFeatures(wgpu::FeatureName* features) const {
+        return mEnabledFeatures.EnumerateFeatures(features);
     }
 
     void DeviceBase::APIInjectError(wgpu::ErrorType type, const char* message) {
@@ -1293,6 +1319,15 @@ namespace dawn_native {
         return AddOrGetCachedComputePipeline(std::move(uninitializedComputePipeline));
     }
 
+    ResultOrError<Ref<CommandEncoder>> DeviceBase::CreateCommandEncoder(
+        const CommandEncoderDescriptor* descriptor) {
+        DAWN_TRY(ValidateIsAlive());
+        if (IsValidationEnabled()) {
+            DAWN_TRY(ValidateCommandEncoderDescriptor(this, descriptor));
+        }
+        return CommandEncoder::Create(this, descriptor);
+    }
+
     MaybeError DeviceBase::CreateComputePipelineAsync(
         const ComputePipelineDescriptor* descriptor,
         WGPUCreateComputePipelineAsyncCallback callback,
@@ -1314,6 +1349,7 @@ namespace dawn_native {
         Ref<ComputePipelineBase> cachedComputePipeline =
             GetCachedComputePipeline(uninitializedComputePipeline.Get());
         if (cachedComputePipeline.Get() != nullptr) {
+            // TODO(crbug.com/dawn/1122): Call callbacks only on wgpuInstanceProcessEvents
             callback(WGPUCreatePipelineAsyncStatus_Success, ToAPI(cachedComputePipeline.Detach()),
                      "", userdata);
         } else {
@@ -1460,6 +1496,7 @@ namespace dawn_native {
         Ref<RenderPipelineBase> cachedRenderPipeline =
             GetCachedRenderPipeline(uninitializedRenderPipeline.Get());
         if (cachedRenderPipeline != nullptr) {
+            // TODO(crbug.com/dawn/1122): Call callbacks only on wgpuInstanceProcessEvents
             callback(WGPUCreatePipelineAsyncStatus_Success, ToAPI(cachedRenderPipeline.Detach()),
                      "", userdata);
         } else {
@@ -1592,18 +1629,20 @@ namespace dawn_native {
         SetToggle(Toggle::DisallowUnsafeAPIs, true);
     }
 
-    void DeviceBase::ApplyToggleOverrides(const DawnDeviceDescriptor* deviceDescriptor) {
-        ASSERT(deviceDescriptor);
+    void DeviceBase::ApplyToggleOverrides(const DawnTogglesDeviceDescriptor* togglesDescriptor) {
+        ASSERT(togglesDescriptor != nullptr);
 
-        for (const char* toggleName : deviceDescriptor->forceEnabledToggles) {
-            Toggle toggle = GetAdapter()->GetInstance()->ToggleNameToEnum(toggleName);
+        for (uint32_t i = 0; i < togglesDescriptor->forceEnabledTogglesCount; ++i) {
+            Toggle toggle = GetAdapter()->GetInstance()->ToggleNameToEnum(
+                togglesDescriptor->forceEnabledToggles[i]);
             if (toggle != Toggle::InvalidEnum) {
                 mEnabledToggles.Set(toggle, true);
                 mOverridenToggles.Set(toggle, true);
             }
         }
-        for (const char* toggleName : deviceDescriptor->forceDisabledToggles) {
-            Toggle toggle = GetAdapter()->GetInstance()->ToggleNameToEnum(toggleName);
+        for (uint32_t i = 0; i < togglesDescriptor->forceDisabledTogglesCount; ++i) {
+            Toggle toggle = GetAdapter()->GetInstance()->ToggleNameToEnum(
+                togglesDescriptor->forceDisabledToggles[i]);
             if (toggle != Toggle::InvalidEnum) {
                 mEnabledToggles.Set(toggle, false);
                 mOverridenToggles.Set(toggle, true);
@@ -1636,7 +1675,7 @@ namespace dawn_native {
         return mCallbackTaskManager.get();
     }
 
-    dawn_platform::WorkerTaskPool* DeviceBase::GetWorkerTaskPool() const {
+    dawn::platform::WorkerTaskPool* DeviceBase::GetWorkerTaskPool() const {
         return mWorkerTaskPool.get();
     }
 
@@ -1716,4 +1755,4 @@ namespace dawn_native {
         return false;
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

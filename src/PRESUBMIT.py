@@ -659,8 +659,12 @@ _BANNED_CPP_FUNCTIONS = (
        '^chrome/services/sharing/nearby/',
        # gRPC provides some C++ libraries that use std::shared_ptr<>.
        '^chromeos/services/libassistant/grpc/',
+       '^chromecast/cast_core/grpc',
+       '^chromecast/cast_core/runtime/browser',
        # Fuchsia provides C++ libraries that use std::shared_ptr<>.
        '.*fuchsia.*test\.(cc|h)',
+       # Needed for clang plugin tests
+       '^tools/clang/plugins/tests/',
        _THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     (
@@ -678,6 +682,15 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       False,  # Only a warning since it is already used.
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    (
+      r'\b(absl|std)::any\b',
+      (
+        'absl::any / std::any are not safe to use in a component build.'
+      ),
+      True,
+      # Not an error in third party folders, though it probably should be :)
+      [_THIRD_PARTY_EXCEPT_BLINK],
     ),
     (
       r'/\bstd::bind\b',
@@ -1053,34 +1066,6 @@ _KNOWN_TEST_DATA_AND_INVALID_JSON_FILE_PATTERNS = [
     r'^third_party[\\/]blink[\\/]renderer[\\/]devtools[\\/]protocol\.json$',
     r'^third_party[\\/]blink[\\/]web_tests[\\/]external[\\/]wpt[\\/]',
 ]
-
-
-_VALID_OS_MACROS = (
-    # Please keep sorted.
-    'OS_AIX',
-    'OS_ANDROID',
-    'OS_APPLE',
-    'OS_ASMJS',
-    'OS_BSD',
-    'OS_CAT',       # For testing.
-    'OS_CHROMEOS',
-    'OS_CYGWIN',    # third_party code.
-    'OS_FREEBSD',
-    'OS_FUCHSIA',
-    'OS_IOS',
-    'OS_LINUX',
-    'OS_MAC',
-    'OS_NACL',
-    'OS_NACL_NONSFI',
-    'OS_NACL_SFI',
-    'OS_NETBSD',
-    'OS_OPENBSD',
-    'OS_POSIX',
-    'OS_QNX',
-    'OS_SOLARIS',
-    'OS_WIN',
-)
-
 
 # These are not checked on the public chromium-presubmit trybot.
 # Add files here that rely on .py files that exists only for target_os="android"
@@ -3467,6 +3452,22 @@ def _CheckAndroidXmlStyle(input_api, output_api, is_check_on_upload):
   else:
     return checkxmlstyle.CheckStyleOnCommit(input_api, output_api)
 
+def _CheckAndroidInfoBarDeprecation(input_api, output_api):
+  """Checks Android Infobar Deprecation """
+
+  import sys
+  original_sys_path = sys.path
+  try:
+    sys.path = sys.path + [input_api.os_path.join(
+        input_api.PresubmitLocalPath(), 'tools', 'android',
+        'infobar_deprecation')]
+    import infobar_deprecation
+  finally:
+    # Restore sys.path to what it was before.
+    sys.path = original_sys_path
+
+  return infobar_deprecation.CheckDeprecationOnUpload(input_api, output_api)
+
 
 class PydepsChecker(object):
   def __init__(self, input_api, pydeps_files):
@@ -3704,8 +3705,6 @@ def CheckNoDeprecatedCss(input_api, output_api):
                    input_api.DEFAULT_FILES_TO_SKIP +
                    (r"^chrome/common/extensions/docs",
                     r"^chrome/docs",
-                    r"^components/dom_distiller/core/css/distilledpage_ios.css",
-                    r"^components/neterror/resources/neterror.css",
                     r"^native_client_sdk"))
   file_filter = lambda f: input_api.FilterSourceFile(
       f, files_to_check=file_inclusion_pattern, files_to_skip=files_to_skip)
@@ -4166,6 +4165,7 @@ def ChecksAndroidSpecificOnUpload(input_api, output_api):
   results.extend(_CheckAndroidXmlStyle(input_api, output_api, True))
   results.extend(_CheckNewImagesWarning(input_api, output_api))
   results.extend(_CheckAndroidNoBannedImports(input_api, output_api))
+  results.extend(_CheckAndroidInfoBarDeprecation(input_api, output_api))
   return results
 
 def ChecksAndroidSpecificOnCommit(input_api, output_api):
@@ -4222,6 +4222,113 @@ def CheckAccessibilityRelnotesField(input_api, output_api):
              "of ui/accessibility/OWNERS.")
 
   return [output_api.PresubmitNotifyResult(message)]
+
+
+_ACCESSIBILITY_EVENTS_TEST_PATH = (
+    r"^content[\\/]test[\\/]data[\\/]accessibility[\\/]event[\\/].*\.html",
+)
+
+_ACCESSIBILITY_TREE_TEST_PATH = (
+    r"^content[\\/]test[\\/]data[\\/]accessibility[\\/]accname[\\/].*\.html",
+    r"^content[\\/]test[\\/]data[\\/]accessibility[\\/]aria[\\/].*\.html",
+    r"^content[\\/]test[\\/]data[\\/]accessibility[\\/]css[\\/].*\.html",
+    r"^content[\\/]test[\\/]data[\\/]accessibility[\\/]html[\\/].*\.html",
+)
+
+_ACCESSIBILITY_ANDROID_EVENTS_TEST_PATH = (
+    r"^.*[\\/]WebContentsAccessibilityEventsTest\.java",
+)
+
+_ACCESSIBILITY_ANDROID_TREE_TEST_PATH = (
+    r"^.*[\\/]WebContentsAccessibilityEventsTest\.java",
+)
+
+def CheckAccessibilityEventsTestsAreIncludedForAndroid(input_api, output_api):
+  """Checks that commits that include a newly added, renamed/moved, or deleted
+  test in the DumpAccessibilityEventsTest suite also includes a corresponding
+  change to the Android test."""
+  def FilePathFilter(affected_file):
+    paths = _ACCESSIBILITY_EVENTS_TEST_PATH
+    return input_api.FilterSourceFile(affected_file, files_to_check=paths)
+
+  def AndroidFilePathFilter(affected_file):
+    paths = _ACCESSIBILITY_ANDROID_EVENTS_TEST_PATH
+    return input_api.FilterSourceFile(affected_file, files_to_check=paths)
+
+  # Only consider changes in the events test data path with html type.
+  if not any(input_api.AffectedFiles(include_deletes=True,
+                                     file_filter=FilePathFilter)):
+    return []
+
+  # If the commit contains any change to the Android test file, ignore.
+  if any(input_api.AffectedFiles(include_deletes=True,
+                                 file_filter=AndroidFilePathFilter)):
+    return []
+
+  # Only consider changes that are adding/renaming or deleting a file
+  message = []
+  for f in input_api.AffectedFiles(include_deletes=True,
+                                   file_filter=FilePathFilter):
+    if f.Action()=='A' or f.Action()=='D':
+      message = ("It appears that you are adding, renaming or deleting"
+                 "\na dump_accessibility_events* test, but have not included"
+                 "\na corresponding change for Android."
+                 "\nPlease include (or remove) the test from:"
+                 "\n    content/public/android/javatests/src/org/chromium/"
+                 "content/browser/accessibility/"
+                 "WebContentsAccessibilityEventsTest.java"
+                 "\nIf this message is confusing or annoying, please contact"
+                 "\nmembers of ui/accessibility/OWNERS.")
+
+  # If no message was set, return empty.
+  if not len(message):
+    return []
+
+  return [output_api.PresubmitPromptWarning(message)]
+
+def CheckAccessibilityTreeTestsAreIncludedForAndroid(input_api, output_api):
+  """Checks that commits that include a newly added, renamed/moved, or deleted
+  test in the DumpAccessibilityTreeTest suite also includes a corresponding
+  change to the Android test."""
+  def FilePathFilter(affected_file):
+    paths = _ACCESSIBILITY_TREE_TEST_PATH
+    return input_api.FilterSourceFile(affected_file, files_to_check=paths)
+
+  def AndroidFilePathFilter(affected_file):
+    paths = _ACCESSIBILITY_ANDROID_TREE_TEST_PATH
+    return input_api.FilterSourceFile(affected_file, files_to_check=paths)
+
+  # Only consider changes in the various tree test data paths with html type.
+  if not any(input_api.AffectedFiles(include_deletes=True,
+                                     file_filter=FilePathFilter)):
+    return []
+
+  # If the commit contains any change to the Android test file, ignore.
+  if any(input_api.AffectedFiles(include_deletes=True,
+                                 file_filter=AndroidFilePathFilter)):
+    return []
+
+  # Only consider changes that are adding/renaming or deleting a file
+  message = []
+  for f in input_api.AffectedFiles(include_deletes=True,
+                                   file_filter=FilePathFilter):
+    if f.Action()=='A' or f.Action()=='D':
+      message = ("It appears that you are adding, renaming or deleting"
+                 "\na dump_accessibility_tree* test, but have not included"
+                 "\na corresponding change for Android."
+                 "\nPlease include (or remove) the test from:"
+                 "\n    content/public/android/javatests/src/org/chromium/"
+                 "content/browser/accessibility/"
+                 "WebContentsAccessibilityTreeTest.java"
+                 "\nIf this message is confusing or annoying, please contact"
+                 "\nmembers of ui/accessibility/OWNERS.")
+
+  # If no message was set, return empty.
+  if not len(message):
+    return []
+
+  return [output_api.PresubmitPromptWarning(message)]
+
 
 # string pattern, sequence of strings to show when pattern matches,
 # error flag. True if match is a presubmit error, otherwise it's a warning.
@@ -4320,8 +4427,8 @@ def CheckPatchFiles(input_api, output_api):
 
 def CheckBuildConfigMacrosWithoutInclude(input_api, output_api):
   # Excludes OS_CHROMEOS, which is not defined in build_config.h.
-  macro_re = input_api.re.compile(r'^\s*#(el)?if.*\bdefined\(((OS_(?!CHROMEOS)|'
-                                  'COMPILER_|ARCH_CPU_|WCHAR_T_IS_)[^)]*)')
+  macro_re = input_api.re.compile(
+      r'^\s*#(el)?if.*\bdefined\(((COMPILER_|ARCH_CPU_|WCHAR_T_IS_)[^)]*)')
   include_re = input_api.re.compile(
       r'^#include\s+"build/build_config.h"', input_api.re.MULTILINE)
   extension_re = input_api.re.compile(r'\.[a-z]+$')
@@ -4409,55 +4516,33 @@ def CheckForSuperfluousStlIncludesInHeaders(input_api, output_api):
   return []
 
 
-def _DidYouMeanOSMacro(bad_macro):
-  try:
-    return {'A': 'OS_ANDROID',
-            'B': 'OS_BSD',
-            'C': 'OS_CHROMEOS',
-            'F': 'OS_FREEBSD',
-            'I': 'OS_IOS',
-            'L': 'OS_LINUX',
-            'M': 'OS_MAC',
-            'N': 'OS_NACL',
-            'O': 'OS_OPENBSD',
-            'P': 'OS_POSIX',
-            'S': 'OS_SOLARIS',
-            'W': 'OS_WIN'}[bad_macro[3].upper()]
-  except KeyError:
-    return ''
-
-
-def _CheckForInvalidOSMacrosInFile(input_api, f):
+def _CheckForDeprecatedOSMacrosInFile(input_api, f):
   """Check for sensible looking, totally invalid OS macros."""
   preprocessor_statement = input_api.re.compile(r'^\s*#')
-  os_macro = input_api.re.compile(r'defined\((OS_[^)]+)\)')
+  os_macro = input_api.re.compile(r'defined\(OS_([^)]+)\)')
   results = []
   for lnum, line in f.ChangedContents():
     if preprocessor_statement.search(line):
       for match in os_macro.finditer(line):
-        if not match.group(1) in _VALID_OS_MACROS:
-          good = _DidYouMeanOSMacro(match.group(1))
-          did_you_mean = ' (did you mean %s?)' % good if good else ''
-          results.append('    %s:%d %s%s' % (f.LocalPath(),
-                                             lnum,
-                                             match.group(1),
-                                             did_you_mean))
+        results.append('  %s:%d: %s' % (f.LocalPath(), lnum, 'defined(OS_' +
+                       match.group(1) + ') -> BUILDFLAG(IS_' + match.group(1) +
+                       ')'))
   return results
 
 
-def CheckForInvalidOSMacros(input_api, output_api):
+def CheckForDeprecatedOSMacros(input_api, output_api):
   """Check all affected files for invalid OS macros."""
   bad_macros = []
   for f in input_api.AffectedSourceFiles(None):
     if not f.LocalPath().endswith(('.py', '.js', '.html', '.css', '.md')):
-      bad_macros.extend(_CheckForInvalidOSMacrosInFile(input_api, f))
+      bad_macros.extend(_CheckForDeprecatedOSMacrosInFile(input_api, f))
 
   if not bad_macros:
     return []
 
   return [output_api.PresubmitError(
-      'Possibly invalid OS macro[s] found. Please fix your code\n'
-      'or add your macro to src/PRESUBMIT.py.', bad_macros)]
+      'OS macros have been deprecated. Please use BUILDFLAGs instead (still '
+      'defined in build_config.h):', bad_macros)]
 
 
 def _CheckForInvalidIfDefinedMacrosInFile(input_api, f):
@@ -5401,7 +5486,7 @@ def CheckMPArchApiUsage(input_api, output_api):
      'RenderViewDeleted',
      'RenderViewHostChanged',
      'DocumentAvailableInMainFrame',
-     'DocumentOnLoadCompletedInMainFrame',
+     'DocumentOnLoadCompletedInPrimaryMainFrame',
      'DOMContentLoaded',
      'DidFinishLoad',
   ]

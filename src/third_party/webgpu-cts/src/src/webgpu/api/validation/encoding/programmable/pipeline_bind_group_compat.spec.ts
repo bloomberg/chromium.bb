@@ -8,6 +8,7 @@ TODO:
     - x= all relevant stages
 
 TODO: subsume existing test, rewrite fixture as needed.
+TODO: Add externalTexture to kResourceTypes [1]
 `;
 
 import { kUnitCaseParamsBuilder } from '../../../../../common/framework/params_builder.js';
@@ -32,7 +33,7 @@ const kRenderCmds = ['draw', 'drawIndexed', 'drawIndirect', 'drawIndexedIndirect
 type RenderCmd = typeof kRenderCmds[number];
 
 // Test resource type compatibility in pipeline and bind group
-// TODO: Add externalTexture
+// [1]: Need to add externalTexture
 const kResourceTypes: ValidBindableResource[] = [
   'uniformBuf',
   'filtSamp',

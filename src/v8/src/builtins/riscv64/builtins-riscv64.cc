@@ -2434,7 +2434,7 @@ void Builtins::Generate_CallFunction(MacroAssembler* masm,
   //  -- a0 : the number of arguments
   //  -- a1 : the function to call (checked to be a JSFunction)
   // -----------------------------------
-  __ AssertFunction(a1);
+  __ AssertCallableFunction(a1);
 
   Label class_constructor;
   __ LoadTaggedPointerField(
@@ -3147,6 +3147,11 @@ void Builtins::Generate_GenericJSToWasmWrapper(MacroAssembler* masm) {
 }
 
 void Builtins::Generate_WasmReturnPromiseOnSuspend(MacroAssembler* masm) {
+  // TODO(v8:12191): Implement for this platform.
+  __ Trap();
+}
+
+void Builtins::Generate_WasmSuspend(MacroAssembler* masm) {
   // TODO(v8:12191): Implement for this platform.
   __ Trap();
 }

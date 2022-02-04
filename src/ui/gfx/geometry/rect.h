@@ -23,15 +23,16 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 typedef struct tagRECT RECT;
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
 typedef struct CGRect CGRect;
 #endif
 
 namespace gfx {
 
 class Insets;
+class Outsets;
 
 class GEOMETRY_EXPORT Rect {
  public:
@@ -46,16 +47,16 @@ class GEOMETRY_EXPORT Rect {
         size_(GetClampedValue(origin.x(), size.width()),
               GetClampedValue(origin.y(), size.height())) {}
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   explicit Rect(const RECT& r);
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
   explicit Rect(const CGRect& r);
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Construct an equivalent Win32 RECT object.
   RECT ToRECT() const;
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
   // Construct an equivalent CoreGraphics object.
   CGRect ToCGRect() const;
 #endif
@@ -160,6 +161,7 @@ class GEOMETRY_EXPORT Rect {
   void Outset(int left, int top, int right, int bottom) {
     Inset(-left, -top, -right, -bottom);
   }
+  void Outset(const Outsets& outsets);
 
   // Move the rectangle by a horizontal and vertical distance.
   void Offset(int horizontal, int vertical) {

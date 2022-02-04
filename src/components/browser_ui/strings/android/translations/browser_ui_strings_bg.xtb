@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Разрешаване на „бисквитките“</translation>
 <translation id="2228071138934252756">За да разрешите на <ph name="APP_NAME" /> да осъществява достъп до камерата ви, тя трябва да бъде включена и от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="2241634353105152135">Само веднъж</translation>
+<translation id="2253414712144136228">Премахване на <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">Извеждане на запитване, когато сайт иска да открива устройства с Bluetooth в близост (препоръчително)</translation>
 <translation id="2315043854645842844">Избраният сертификат от страната на клиента не се поддържа от операционната система.</translation>
 <translation id="2359808026110333948">Напред</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">Показване на информацията</translation>
 <translation id="3123473560110926937">Блокиране на някои сайтове</translation>
 <translation id="3198916472715691905">Съхранявани данни: <ph name="STORAGE_AMOUNT" /></translation>
+<translation id="3203366800380907218">От мрежата</translation>
 <translation id="321187648315454507">За да разрешите на <ph name="APP_NAME" /> да ви изпраща известия, те трябва да бъдат включени и от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3277252321222022663">Разрешаване на достъпа на сайтовете до сензорите (препоръчително)</translation>
@@ -118,6 +120,7 @@
 <translation id="4008040567710660924">Разрешаване на „бисквитките“ за конкретен сайт.</translation>
 <translation id="4046123991198612571">Следващ запис</translation>
 <translation id="4165986682804962316">Настройки за сайта</translation>
+<translation id="4194328954146351878">Извеждане на запитване, преди да се разреши на сайтовете да четат и променят информация на устройства с NFC (препоръчително)</translation>
 <translation id="4200726100658658164">Отваряне на настройките за местоположението</translation>
 <translation id="4226663524361240545">Възможно е устройството да вибрира при известия</translation>
 <translation id="4259722352634471385">Навигирането е блокирано: <ph name="URL" /></translation>
@@ -180,7 +183,6 @@
 <translation id="5677928146339483299">Блокирано</translation>
 <translation id="5689516760719285838">Местоположение</translation>
 <translation id="5690795753582697420">Камерата е изключена от настройките на Android</translation>
-<translation id="5710871682236653961">Извеждане на запитване преди разрешаване на сайтовете да изпращат и получават информация при допиране на устройства с NFC (препоръчително)</translation>
 <translation id="5719847187258001597">Всички съхранявани от <ph name="ORIGIN" /> или от съответното приложение на началния екран данни и „бисквитки“ ще бъдат изчистени.</translation>
 <translation id="5771720122942595109">Достъпът до <ph name="PERMISSION_1" /> е блокиран</translation>
 <translation id="5804241973901381774">Разрешения</translation>
@@ -239,7 +241,6 @@
 <translation id="7016516562562142042">Разрешено за текущата търсеща машина</translation>
 <translation id="7053983685419859001">Блокиране</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Избран е 1}other{Избрани са #}}</translation>
-<translation id="7070090581017165256">Всичко за този сайт</translation>
 <translation id="7087918508125750058">Избрани: <ph name="ITEM_COUNT" />. Налице са опции близо до горната част на екрана</translation>
 <translation id="7141896414559753902">Блокиране на показването на изскачащи прозорци и пренасочвания от сайтовете (препоръчително)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
@@ -254,7 +255,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Сайт използва микрофона ви</translation>
 <translation id="7561196759112975576">Винаги</translation>
-<translation id="7572498721684305250">Блокиране на сайтовете, така че да не изпращат и получават информация при допиране на устройства с NFC</translation>
 <translation id="757524316907819857">Блокиране на възможността на сайтовете да възпроизвеждат защитено съдържание</translation>
 <translation id="7649070708921625228">Помощ</translation>
 <translation id="7658239707568436148">Отказ</translation>
@@ -321,6 +321,7 @@
 <translation id="8903921497873541725">Увеличаване на мащаба</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Функцията за NFC е изключена на това устройство. Включете я от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
+<translation id="8928445016601307354">Блокиране на сайтовете, така че да не могат да четат и променят информация на устройства с NFC (препоръчително)</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Блокиране на „бисквитките“ за конкретен сайт.</translation>
 <translation id="8959122750345127698">Навигирането не е възможно: <ph name="URL" /></translation>

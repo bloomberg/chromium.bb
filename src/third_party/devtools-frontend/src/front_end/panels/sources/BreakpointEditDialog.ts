@@ -106,7 +106,7 @@ export class BreakpointEditDialog extends UI.Widget.Widget {
 
     const content = oldCondition || '';
     const finishIfComplete = (view: CodeMirror.EditorView): boolean => {
-      TextEditor.JavaScript.isExpressionComplete(view.state.doc.toString()).then((complete): void => {
+      void TextEditor.JavaScript.isExpressionComplete(view.state.doc.toString()).then((complete): void => {
         if (complete) {
           this.finishEditing(true, this.editor.state.doc.toString());
         } else {
@@ -172,12 +172,13 @@ export class BreakpointEditDialog extends UI.Widget.Widget {
 
   private onTypeChanged(): void {
     const type = this.breakpointType;
+    this.isLogpoint = type === BreakpointType.Logpoint;
     if (type === BreakpointType.Breakpoint) {
       this.finishEditing(true, '');
-    } else {
-      this.editor.dispatch({effects: this.placeholderCompartment.reconfigure(this.getPlaceholder())});
-      this.updateTooltip();
+      return;
     }
+    this.editor.dispatch({effects: this.placeholderCompartment.reconfigure(this.getPlaceholder())});
+    this.updateTooltip();
   }
 
   private get breakpointType(): string|null {
@@ -205,7 +206,7 @@ export class BreakpointEditDialog extends UI.Widget.Widget {
     }
   }
 
-  private finishEditing(committed: boolean, condition: string): void {
+  finishEditing(committed: boolean, condition: string): void {
     if (this.finished) {
       return;
     }
@@ -214,7 +215,7 @@ export class BreakpointEditDialog extends UI.Widget.Widget {
     if (this.isLogpoint) {
       condition = BreakpointEditDialog.conditionForLogpoint(condition);
     }
-    this.onFinish({committed, condition});
+    void this.onFinish({committed, condition});
   }
 
   wasShown(): void {

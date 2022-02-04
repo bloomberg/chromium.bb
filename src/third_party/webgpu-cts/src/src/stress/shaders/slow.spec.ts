@@ -15,7 +15,7 @@ g.test('compute')
     const buffer = t.makeBufferWithContents(data, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC);
     const module = t.device.createShaderModule({
       code: `
-        [[block]] struct Buffer { data: array<u32>; };
+        struct Buffer { data: array<u32>; };
         [[group(0), binding(0)]] var<storage, read_write> buffer: Buffer;
         [[stage(compute), workgroup_size(1)]] fn main(
             [[builtin(global_invocation_id)]] id: vec3<u32>) {
@@ -48,7 +48,7 @@ g.test('vertex')
   .fn(async t => {
     const module = t.device.createShaderModule({
       code: `
-        [[block]] struct Data { counter: u32; increment: u32; };
+        struct Data { counter: u32; increment: u32; };
         [[group(0), binding(0)]] var<uniform> data: Data;
         [[stage(vertex)]] fn vmain() -> [[builtin(position)]] vec4<f32> {
           var counter: u32 = data.counter;
@@ -120,7 +120,7 @@ g.test('fragment')
   .fn(async t => {
     const module = t.device.createShaderModule({
       code: `
-        [[block]] struct Data { counter: u32; increment: u32; };
+        struct Data { counter: u32; increment: u32; };
         [[group(0), binding(0)]] var<uniform> data: Data;
         [[stage(vertex)]] fn vmain() -> [[builtin(position)]] vec4<f32> {
           return vec4<f32>(0.0, 0.0, 0.0, 1.0);

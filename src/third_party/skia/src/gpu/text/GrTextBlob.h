@@ -208,7 +208,7 @@ public:
         uint32_t fScalerContextFlags;
         SkMatrix fPositionMatrix;
         // Below here fields are of size 1 byte.
-        uint8_t fSetOfDrawingTypes;
+        bool fHasSomeDirectSubRuns;
         bool fHasBlur;
         SkPaint::Style fStyle;
         SkPaint::Join fJoin;
@@ -222,6 +222,7 @@ public:
     static sk_sp<GrTextBlob> Make(const SkGlyphRunList& glyphRunList,
                                   const SkPaint& paint,
                                   const SkMatrix& positionMatrix,
+                                  bool supportBilerpAtlas,
                                   const GrSDFTControl& control,
                                   SkGlyphRunListPainter* painter);
 
@@ -238,6 +239,7 @@ public:
     void addKey(const Key& key);
     bool hasPerspective() const;
     const SkMatrix& initialPositionMatrix() const { return fInitialPositionMatrix; }
+    bool supportBilerpAtlas() const { return fSupportBilerpAtlas; }
 
     std::tuple<SkScalar, SkScalar> scaleBounds() const { return {fMaxMinScale, fMinMaxScale}; }
     bool canReuse(const SkPaint& paint, const SkMatrix& positionMatrix) const;
@@ -248,14 +250,10 @@ public:
     const GrSubRunList& subRunList() const { return fSubRunList; }
 
 private:
-    GrTextBlob(int allocSize, const SkMatrix& positionMatrix, SkColor initialLuminance);
-
-    template<typename AddSingleMaskFormat>
-    void addMultiMaskFormat(
-            AddSingleMaskFormat addSingle,
-            const SkZip<SkGlyphVariant, SkPoint>& drawables,
-            sk_sp<SkStrike>&& strike,
-            SkScalar strikeToSourceScale);
+    GrTextBlob(int allocSize,
+               bool supportBilerpAtlas,
+               const SkMatrix& positionMatrix,
+               SkColor initialLuminance);
 
     // Methods to satisfy SkGlyphRunPainterInterface
     void processDeviceMasks(const SkZip<SkGlyphVariant, SkPoint>& drawables,
@@ -282,6 +280,9 @@ private:
 
     // Overall size of this struct plus vertices and glyphs at the end.
     const int fSize;
+
+    // Support using bilerp for directly mapped sub runs.
+    const bool fSupportBilerpAtlas;
 
     // The initial view matrix combined with the initial origin. Used to determine if a cached
     // subRun can be used in this draw situation.

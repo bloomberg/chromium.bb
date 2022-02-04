@@ -15,10 +15,6 @@
 #ifndef PLATFORM_IMPL_WINDOWS_TEST_UTILS_H_
 #define PLATFORM_IMPL_WINDOWS_TEST_UTILS_H_
 
-#include <Windows.h>
-#include <stdio.h>
-
-#include <string>
 #include <xstring>
 
 #include "platform/base/payload_id.h"

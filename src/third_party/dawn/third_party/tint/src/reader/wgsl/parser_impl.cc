@@ -161,9 +161,9 @@ struct BlockCounters {
   /// @return the current enter-exit depth for the given block token type. If
   /// `t` is not a block token type, then 0 is always returned.
   int consume(const Token& t) {
-    if (t.Is(Token::Type::kAttrLeft))
+    if (t.Is(Token::Type::kAttrLeft))  // [DEPRECATED]
       return attrs++;
-    if (t.Is(Token::Type::kAttrRight))
+    if (t.Is(Token::Type::kAttrRight))  // [DEPRECATED]
       return attrs--;
     if (t.Is(Token::Type::kBraceLeft))
       return brace++;
@@ -349,7 +349,7 @@ void ParserImpl::translation_unit() {
 //  | global_variable_decl SEMICLON
 //  | global_constant_decl SEMICOLON
 //  | type_alias SEMICOLON
-//  | struct_decl SEMICOLON
+//  | struct_decl
 //  | function_decl
 Expect<bool> ParserImpl::expect_global_decl() {
   if (match(Token::Type::kSemicolon) || match(Token::Type::kEOF))
@@ -404,9 +404,6 @@ Expect<bool> ParserImpl::expect_global_decl() {
       return Failure::kErrored;
 
     if (str.matched) {
-      if (!expect("struct declaration", Token::Type::kSemicolon))
-        return Failure::kErrored;
-
       builder_.AST().AddTypeDecl(str.value);
       return true;
     }
@@ -563,7 +560,7 @@ Maybe<ParserImpl::VarDeclInfo> ParserImpl::variable_decl(bool allow_inferred) {
 //  | depth_texture_type
 //  | sampled_texture_type LESS_THAN type_decl GREATER_THAN
 //  | multisampled_texture_type LESS_THAN type_decl GREATER_THAN
-//  | storage_texture_type LESS_THAN image_storage_type
+//  | storage_texture_type LESS_THAN texel_format
 //                         COMMA access GREATER_THAN
 Maybe<const ast::Type*> ParserImpl::texture_sampler_types() {
   auto type = sampler_type();
@@ -607,9 +604,9 @@ Maybe<const ast::Type*> ParserImpl::texture_sampler_types() {
   if (storage.matched) {
     const char* use = "storage texture type";
     using StorageTextureInfo =
-        std::pair<tint::ast::ImageFormat, tint::ast::Access>;
+        std::pair<tint::ast::TexelFormat, tint::ast::Access>;
     auto params = expect_lt_gt_block(use, [&]() -> Expect<StorageTextureInfo> {
-      auto format = expect_image_storage_type(use);
+      auto format = expect_texel_format(use);
       if (format.errored) {
         return Failure::kErrored;
       }
@@ -745,150 +742,78 @@ Maybe<const ast::Type*> ParserImpl::depth_texture_type() {
   return Failure::kNoMatch;
 }
 
-// image_storage_type
-//  : R8UNORM
-//  | R8SNORM
-//  | R8UINT
-//  | R8SINT
-//  | R16UINT
-//  | R16SINT
-//  | R16FLOAT
-//  | RG8UNORM
-//  | RG8SNORM
-//  | RG8UINT
-//  | RG8SINT
-//  | R32UINT
-//  | R32SINT
-//  | R32FLOAT
-//  | RG16UINT
-//  | RG16SINT
-//  | RG16FLOAT
-//  | RGBA8UNORM
-/// | RGBA8UNORM-SRGB
-//  | RGBA8SNORM
-//  | RGBA8UINT
-//  | RGBA8SINT
-//  | BGRA8UNORM
-//  | BGRA8UNORM-SRGB
-//  | RGB10A2UNORM
-//  | RG11B10FLOAT
-//  | RG32UINT
-//  | RG32SINT
-//  | RG32FLOAT
-//  | RGBA16UINT
-//  | RGBA16SINT
-//  | RGBA16FLOAT
-//  | RGBA32UINT
-//  | RGBA32SINT
-//  | RGBA32FLOAT
-Expect<ast::ImageFormat> ParserImpl::expect_image_storage_type(
+// texel_format
+//  : 'rgba8unorm'
+//  | 'rgba8snorm'
+//  | 'rgba8uint'
+//  | 'rgba8sint'
+//  | 'rgba16uint'
+//  | 'rgba16sint'
+//  | 'rgba16float'
+//  | 'r32uint'
+//  | 'r32sint'
+//  | 'r32float'
+//  | 'rg32uint'
+//  | 'rg32sint'
+//  | 'rg32float'
+//  | 'rgba32uint'
+//  | 'rgba32sint'
+//  | 'rgba32float'
+Expect<ast::TexelFormat> ParserImpl::expect_texel_format(
     const std::string& use) {
-  if (match(Token::Type::kFormatR8Unorm))
-    return ast::ImageFormat::kR8Unorm;
-
-  if (match(Token::Type::kFormatR8Snorm))
-    return ast::ImageFormat::kR8Snorm;
-
-  if (match(Token::Type::kFormatR8Uint))
-    return ast::ImageFormat::kR8Uint;
-
-  if (match(Token::Type::kFormatR8Sint))
-    return ast::ImageFormat::kR8Sint;
-
-  if (match(Token::Type::kFormatR16Uint))
-    return ast::ImageFormat::kR16Uint;
-
-  if (match(Token::Type::kFormatR16Sint))
-    return ast::ImageFormat::kR16Sint;
-
-  if (match(Token::Type::kFormatR16Float))
-    return ast::ImageFormat::kR16Float;
-
-  if (match(Token::Type::kFormatRg8Unorm))
-    return ast::ImageFormat::kRg8Unorm;
-
-  if (match(Token::Type::kFormatRg8Snorm))
-    return ast::ImageFormat::kRg8Snorm;
-
-  if (match(Token::Type::kFormatRg8Uint))
-    return ast::ImageFormat::kRg8Uint;
-
-  if (match(Token::Type::kFormatRg8Sint))
-    return ast::ImageFormat::kRg8Sint;
-
-  if (match(Token::Type::kFormatR32Uint))
-    return ast::ImageFormat::kR32Uint;
-
-  if (match(Token::Type::kFormatR32Sint))
-    return ast::ImageFormat::kR32Sint;
-
-  if (match(Token::Type::kFormatR32Float))
-    return ast::ImageFormat::kR32Float;
-
-  if (match(Token::Type::kFormatRg16Uint))
-    return ast::ImageFormat::kRg16Uint;
-
-  if (match(Token::Type::kFormatRg16Sint))
-    return ast::ImageFormat::kRg16Sint;
-
-  if (match(Token::Type::kFormatRg16Float))
-    return ast::ImageFormat::kRg16Float;
-
-  if (match(Token::Type::kFormatRgba8Unorm))
-    return ast::ImageFormat::kRgba8Unorm;
-
-  if (match(Token::Type::kFormatRgba8UnormSrgb))
-    return ast::ImageFormat::kRgba8UnormSrgb;
-
-  if (match(Token::Type::kFormatRgba8Snorm))
-    return ast::ImageFormat::kRgba8Snorm;
-
-  if (match(Token::Type::kFormatRgba8Uint))
-    return ast::ImageFormat::kRgba8Uint;
-
-  if (match(Token::Type::kFormatRgba8Sint))
-    return ast::ImageFormat::kRgba8Sint;
-
-  if (match(Token::Type::kFormatBgra8Unorm))
-    return ast::ImageFormat::kBgra8Unorm;
-
-  if (match(Token::Type::kFormatBgra8UnormSrgb))
-    return ast::ImageFormat::kBgra8UnormSrgb;
-
-  if (match(Token::Type::kFormatRgb10A2Unorm))
-    return ast::ImageFormat::kRgb10A2Unorm;
-
-  if (match(Token::Type::kFormatRg11B10Float))
-    return ast::ImageFormat::kRg11B10Float;
-
-  if (match(Token::Type::kFormatRg32Uint))
-    return ast::ImageFormat::kRg32Uint;
-
-  if (match(Token::Type::kFormatRg32Sint))
-    return ast::ImageFormat::kRg32Sint;
-
-  if (match(Token::Type::kFormatRg32Float))
-    return ast::ImageFormat::kRg32Float;
-
-  if (match(Token::Type::kFormatRgba16Uint))
-    return ast::ImageFormat::kRgba16Uint;
-
-  if (match(Token::Type::kFormatRgba16Sint))
-    return ast::ImageFormat::kRgba16Sint;
-
-  if (match(Token::Type::kFormatRgba16Float))
-    return ast::ImageFormat::kRgba16Float;
-
-  if (match(Token::Type::kFormatRgba32Uint))
-    return ast::ImageFormat::kRgba32Uint;
-
-  if (match(Token::Type::kFormatRgba32Sint))
-    return ast::ImageFormat::kRgba32Sint;
-
-  if (match(Token::Type::kFormatRgba32Float))
-    return ast::ImageFormat::kRgba32Float;
-
-  return add_error(peek().source(), "invalid format", use);
+  auto tok = next();
+  if (tok.IsIdentifier()) {
+    auto s = tok.to_str();
+    if (s == "rgba8unorm") {
+      return ast::TexelFormat::kRgba8Unorm;
+    }
+    if (s == "rgba8snorm") {
+      return ast::TexelFormat::kRgba8Snorm;
+    }
+    if (s == "rgba8uint") {
+      return ast::TexelFormat::kRgba8Uint;
+    }
+    if (s == "rgba8sint") {
+      return ast::TexelFormat::kRgba8Sint;
+    }
+    if (s == "rgba16uint") {
+      return ast::TexelFormat::kRgba16Uint;
+    }
+    if (s == "rgba16sint") {
+      return ast::TexelFormat::kRgba16Sint;
+    }
+    if (s == "rgba16float") {
+      return ast::TexelFormat::kRgba16Float;
+    }
+    if (s == "r32uint") {
+      return ast::TexelFormat::kR32Uint;
+    }
+    if (s == "r32sint") {
+      return ast::TexelFormat::kR32Sint;
+    }
+    if (s == "r32float") {
+      return ast::TexelFormat::kR32Float;
+    }
+    if (s == "rg32uint") {
+      return ast::TexelFormat::kRg32Uint;
+    }
+    if (s == "rg32sint") {
+      return ast::TexelFormat::kRg32Sint;
+    }
+    if (s == "rg32float") {
+      return ast::TexelFormat::kRg32Float;
+    }
+    if (s == "rgba32uint") {
+      return ast::TexelFormat::kRgba32Uint;
+    }
+    if (s == "rgba32sint") {
+      return ast::TexelFormat::kRgba32Sint;
+    }
+    if (s == "rgba32float") {
+      return ast::TexelFormat::kRgba32Float;
+    }
+  }
+  return add_error(tok.source(), "invalid format", use);
 }
 
 // variable_ident_decl
@@ -1154,19 +1079,23 @@ Expect<const ast::Type*> ParserImpl::expect_type_decl_atomic(Token t) {
 
 Expect<const ast::Type*> ParserImpl::expect_type_decl_vector(Token t) {
   uint32_t count = 2;
-  if (t.Is(Token::Type::kVec3))
+  if (t.Is(Token::Type::kVec3)) {
     count = 3;
-  else if (t.Is(Token::Type::kVec4))
+  } else if (t.Is(Token::Type::kVec4)) {
     count = 4;
+  }
 
-  const char* use = "vector";
+  const ast::Type* subtype = nullptr;
+  if (peek_is(Token::Type::kLessThan)) {
+    const char* use = "vector";
+    auto ty = expect_lt_gt_block(use, [&] { return expect_type(use); });
+    if (ty.errored) {
+      return Failure::kErrored;
+    }
+    subtype = ty.value;
+  }
 
-  auto subtype = expect_lt_gt_block(use, [&] { return expect_type(use); });
-  if (subtype.errored)
-    return Failure::kErrored;
-
-  return builder_.ty.vec(make_source_range_from(t.source()), subtype.value,
-                         count);
+  return builder_.ty.vec(make_source_range_from(t.source()), subtype, count);
 }
 
 Expect<const ast::Type*> ParserImpl::expect_type_decl_array(
@@ -1217,14 +1146,18 @@ Expect<const ast::Type*> ParserImpl::expect_type_decl_matrix(Token t) {
     rows = 4;
   }
 
-  const char* use = "matrix";
+  const ast::Type* subtype = nullptr;
+  if (peek_is(Token::Type::kLessThan)) {
+    const char* use = "matrix";
+    auto ty = expect_lt_gt_block(use, [&] { return expect_type(use); });
+    if (ty.errored) {
+      return Failure::kErrored;
+    }
+    subtype = ty.value;
+  }
 
-  auto subtype = expect_lt_gt_block(use, [&] { return expect_type(use); });
-  if (subtype.errored)
-    return Failure::kErrored;
-
-  return builder_.ty.mat(make_source_range_from(t.source()), subtype.value,
-                         columns, rows);
+  return builder_.ty.mat(make_source_range_from(t.source()), subtype, columns,
+                         rows);
 }
 
 // storage_class
@@ -1450,7 +1383,8 @@ Expect<ast::VariableList> ParserImpl::expect_param_list() {
   while (continue_parsing()) {
     // Check for the end of the list.
     auto t = peek();
-    if (!t.IsIdentifier() && !t.Is(Token::Type::kAttrLeft)) {
+    if (!t.IsIdentifier() && !t.Is(Token::Type::kAttr) &&
+        !t.Is(Token::Type::kAttrLeft)) {
       break;
     }
 
@@ -1532,7 +1466,7 @@ Expect<ast::Builtin> ParserImpl::expect_builtin() {
 }
 
 // body_stmt
-//   : BRACKET_LEFT statements BRACKET_RIGHT
+//   : BRACE_LEFT statements BRACE_RIGHT
 Expect<ast::BlockStatement*> ParserImpl::expect_body_stmt() {
   return expect_brace_block("", [&]() -> Expect<ast::BlockStatement*> {
     auto stmts = expect_statements();
@@ -1783,7 +1717,7 @@ Maybe<const ast::VariableDeclStatement*> ParserImpl::variable_stmt() {
 }
 
 // if_stmt
-//   : IF paren_rhs_stmt body_stmt elseif_stmt? else_stmt?
+//   : IF paren_rhs_stmt body_stmt ( ELSE else_stmts ) ?
 Maybe<const ast::IfStatement*> ParserImpl::if_stmt() {
   Source source;
   if (!match(Token::Type::kIf, &source))
@@ -1797,59 +1731,52 @@ Maybe<const ast::IfStatement*> ParserImpl::if_stmt() {
   if (body.errored)
     return Failure::kErrored;
 
-  auto elseif = elseif_stmt();
-  if (elseif.errored)
+  auto el = else_stmts();
+  if (el.errored) {
     return Failure::kErrored;
-
-  auto el = else_stmt();
-  if (el.errored)
-    return Failure::kErrored;
-  if (el.matched)
-    elseif.value.push_back(el.value);
-
-  return create<ast::IfStatement>(source, condition.value, body.value,
-                                  elseif.value);
-}
-
-// elseif_stmt
-//   : ELSE_IF paren_rhs_stmt body_stmt elseif_stmt?
-Maybe<ast::ElseStatementList> ParserImpl::elseif_stmt() {
-  Source source;
-  if (!match(Token::Type::kElseIf, &source))
-    return Failure::kNoMatch;
-
-  ast::ElseStatementList ret;
-  while (continue_parsing()) {
-    auto condition = expect_paren_rhs_stmt();
-    if (condition.errored)
-      return Failure::kErrored;
-
-    auto body = expect_body_stmt();
-    if (body.errored)
-      return Failure::kErrored;
-
-    ret.push_back(
-        create<ast::ElseStatement>(source, condition.value, body.value));
-
-    if (!match(Token::Type::kElseIf, &source))
-      break;
   }
 
-  return ret;
+  return create<ast::IfStatement>(source, condition.value, body.value,
+                                  std::move(el.value));
 }
 
-// else_stmt
-//   : ELSE body_stmt
-Maybe<const ast::ElseStatement*> ParserImpl::else_stmt() {
-  Source source;
-  if (!match(Token::Type::kElse, &source))
-    return Failure::kNoMatch;
+// else_stmts
+//  : body_stmt
+//  | if_stmt
+Expect<ast::ElseStatementList> ParserImpl::else_stmts() {
+  ast::ElseStatementList stmts;
+  while (continue_parsing()) {
+    Source start;
 
-  auto body = expect_body_stmt();
-  if (body.errored)
-    return Failure::kErrored;
+    bool else_if = false;
+    if (match(Token::Type::kElse, &start)) {
+      else_if = match(Token::Type::kIf);
+    } else if (match(Token::Type::kElseIf, &start)) {
+      deprecated(start, "'elseif' is now 'else if'");
+      else_if = true;
+    } else {
+      break;
+    }
 
-  return create<ast::ElseStatement>(source, nullptr, body.value);
+    const ast::Expression* cond = nullptr;
+    if (else_if) {
+      auto condition = expect_paren_rhs_stmt();
+      if (condition.errored) {
+        return Failure::kErrored;
+      }
+      cond = condition.value;
+    }
+
+    auto body = expect_body_stmt();
+    if (body.errored) {
+      return Failure::kErrored;
+    }
+
+    Source source = make_source_range_from(start);
+    stmts.emplace_back(create<ast::ElseStatement>(source, cond, body.value));
+  }
+
+  return stmts;
 }
 
 // switch_stmt
@@ -2908,11 +2835,21 @@ Maybe<ast::DecorationList> ParserImpl::decoration_list() {
   ast::DecorationList decos;
 
   while (continue_parsing()) {
-    auto list = decoration_bracketed_list(decos);
-    if (list.errored)
-      errored = true;
-    if (!list.matched)
-      break;
+    if (match(Token::Type::kAttr)) {
+      if (auto deco = expect_decoration(); deco.errored) {
+        errored = true;
+      } else {
+        decos.emplace_back(deco.value);
+      }
+    } else {  // [DEPRECATED] - old [[decoration]] style
+      auto list = decoration_bracketed_list(decos);
+      if (list.errored) {
+        errored = true;
+      }
+      if (!list.matched) {
+        break;
+      }
+    }
 
     matched = true;
   }
@@ -2929,11 +2866,15 @@ Maybe<ast::DecorationList> ParserImpl::decoration_list() {
 Maybe<bool> ParserImpl::decoration_bracketed_list(ast::DecorationList& decos) {
   const char* use = "decoration list";
 
-  if (!match(Token::Type::kAttrLeft)) {
+  Source source;
+  if (!match(Token::Type::kAttrLeft, &source)) {
     return Failure::kNoMatch;
   }
 
-  Source source;
+  deprecated(source,
+             "[[decoration]] style decorations have been replaced with "
+             "@decoration style");
+
   if (match(Token::Type::kAttrRight, &source))
     return add_error(source, "empty decoration list");
 
@@ -2953,7 +2894,7 @@ Maybe<bool> ParserImpl::decoration_bracketed_list(ast::DecorationList& decos) {
 
       if (is_decoration(peek())) {
         // We have two decorations in a bracket without a separating comma.
-        // e.g. [[location(1) group(2)]]
+        // e.g. @location(1) group(2)
         //                    ^^^ expected comma
         expect(use, Token::Type::kComma);
         return Failure::kErrored;
@@ -3125,6 +3066,7 @@ Maybe<const ast::Decoration*> ParserImpl::decoration() {
   }
 
   if (s == kBlockDecoration) {
+    deprecated(t.source(), "[[block]] attributes have been removed from WGSL");
     return create<ast::StructBlockDecoration>(t.source());
   }
 
@@ -3134,7 +3076,9 @@ Maybe<const ast::Decoration*> ParserImpl::decoration() {
       auto val = expect_nonzero_positive_sint(use);
       if (val.errored)
         return Failure::kErrored;
-
+      deprecated(t.source(),
+                 "the @stride attribute is deprecated; use a larger type if "
+                 "necessary");
       return create<ast::StrideDecoration>(t.source(), val.value);
     });
   }
@@ -3165,7 +3109,7 @@ Maybe<const ast::Decoration*> ParserImpl::decoration() {
     const char* use = "override decoration";
 
     if (peek_is(Token::Type::kParenLeft)) {
-      // [[override(x)]]
+      // @override(x)
       return expect_paren_block(use, [&]() -> Result {
         auto val = expect_positive_sint(use);
         if (val.errored)

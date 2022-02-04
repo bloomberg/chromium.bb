@@ -18,11 +18,11 @@ export function completion(): CodeMirror.Extension {
 export async function completeInContext(
     textBefore: string, query: string, force: boolean = false): Promise<UI.SuggestBox.Suggestions> {
   const state = CodeMirror.EditorState.create({
-    doc: textBefore,
+    doc: textBefore + query,
     selection: {anchor: textBefore.length},
     extensions: CodeMirror.javascript.javascriptLanguage,
   });
-  const result = await javascriptCompletionSource(new CodeMirror.CompletionContext(state, textBefore.length, force));
+  const result = await javascriptCompletionSource(new CodeMirror.CompletionContext(state, state.doc.length, force));
   return result ?
       result.options.filter((o): boolean => o.label.startsWith(query)).map((o): UI.SuggestBox.Suggestion => ({
                                                                              text: o.label,
@@ -255,7 +255,7 @@ class PropertyCache {
 
   set(expression: string, value: Promise<CompletionSet>): void {
     this.#cache.set(expression, value);
-    setTimeout(() => {
+    window.setTimeout(() => {
       if (this.#cache.get(expression) === value) {
         this.#cache.delete(expression);
       }

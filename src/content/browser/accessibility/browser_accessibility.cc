@@ -10,7 +10,6 @@
 #include <iterator>
 
 #include "base/logging.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,7 +18,7 @@
 #include "content/common/ax_serialization_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
-#include "third_party/blink/public/strings/grit/blink_strings.h"
+#include "third_party/blink/public/strings/grit/blink_accessibility_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -104,26 +103,6 @@ BrowserAccessibility* GetTextFieldInnerEditorElement(
   if (text_container->GetRole() == ax::mojom::Role::kGenericContainer)
     return text_container;
   return nullptr;
-}
-
-int GetBoundaryTextOffsetInsideBaseAnchor(
-    ax::mojom::MoveDirection direction,
-    const BrowserAccessibility::AXPosition& base,
-    const BrowserAccessibility::AXPosition& position) {
-  if (base->GetAnchor() == position->GetAnchor())
-    return position->text_offset();
-
-  // If the position is outside the anchor of the base position, then return
-  // the first or last position in the same direction.
-  switch (direction) {
-    case ax::mojom::MoveDirection::kNone:
-      NOTREACHED();
-      return position->text_offset();
-    case ax::mojom::MoveDirection::kBackward:
-      return base->CreatePositionAtStartOfAnchor()->text_offset();
-    case ax::mojom::MoveDirection::kForward:
-      return base->CreatePositionAtEndOfAnchor()->text_offset();
-  }
 }
 
 }  // namespace
@@ -1158,29 +1137,6 @@ std::string BrowserAccessibility::SubtreeToStringHelper(size_t level) {
   return result;
 }
 
-absl::optional<int> BrowserAccessibility::FindTextBoundary(
-    ax::mojom::TextBoundary boundary,
-    int offset,
-    ax::mojom::MoveDirection direction,
-    ax::mojom::TextAffinity affinity) const {
-  const AXPosition position = CreateTextPositionAt(offset, affinity);
-
-  // On Windows and Linux ATK, searching for a text boundary should always stop
-  // at the boundary of the current object.
-  auto boundary_behavior = ui::AXBoundaryBehavior::StopAtAnchorBoundary;
-  // On Windows and Linux ATK, it is standard text navigation behavior to stop
-  // if we are searching in the backwards direction and the current position is
-  // already at the required text boundary.
-  DCHECK_NE(direction, ax::mojom::MoveDirection::kNone);
-  if (direction == ax::mojom::MoveDirection::kBackward)
-    boundary_behavior = ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary;
-
-  return GetBoundaryTextOffsetInsideBaseAnchor(
-      direction, position,
-      position->CreatePositionAtTextBoundary(boundary, direction,
-                                             boundary_behavior));
-}
-
 const std::vector<gfx::NativeViewAccessible>
 BrowserAccessibility::GetUIADirectChildrenInRange(
     ui::AXPlatformNodeDelegate* start,
@@ -1349,6 +1305,10 @@ bool BrowserAccessibility::GetStringListAttribute(
     ax::mojom::StringListAttribute attribute,
     std::vector<std::string>* value) const {
   return node_->GetStringListAttribute(attribute, value);
+}
+
+bool BrowserAccessibility::HasHtmlAttribute(const char* attribute) const {
+  return node_->HasHtmlAttribute(attribute);
 }
 
 const BrowserAccessibility::HtmlAttributes&
@@ -1600,20 +1560,28 @@ bool BrowserAccessibility::PlatformChildIterator::operator!=(
   return GetIndexInParent() != rhs.GetIndexInParent();
 }
 
-void BrowserAccessibility::PlatformChildIterator::operator++() {
+BrowserAccessibility::PlatformChildIterator&
+BrowserAccessibility::PlatformChildIterator::operator++() {
   ++platform_iterator;
+  return *this;
 }
 
-void BrowserAccessibility::PlatformChildIterator::operator++(int) {
+BrowserAccessibility::PlatformChildIterator&
+BrowserAccessibility::PlatformChildIterator::operator++(int) {
   ++platform_iterator;
+  return *this;
 }
 
-void BrowserAccessibility::PlatformChildIterator::operator--() {
+BrowserAccessibility::PlatformChildIterator&
+BrowserAccessibility::PlatformChildIterator::operator--() {
   --platform_iterator;
+  return *this;
 }
 
-void BrowserAccessibility::PlatformChildIterator::operator--(int) {
+BrowserAccessibility::PlatformChildIterator&
+BrowserAccessibility::PlatformChildIterator::operator--(int) {
   --platform_iterator;
+  return *this;
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformChildIterator::get() const {

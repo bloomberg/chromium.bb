@@ -29,7 +29,6 @@ fn marg8uintin() {
   _ = isNormal(2.0);
 }
 
-[[block]]
 struct Uniforms {
   numTriangles : u32;
   gridSize : u32;
@@ -37,9 +36,8 @@ struct Uniforms {
   pad2 : u32;
   bbMin : vec3<f32>;
   bbMax : vec3<f32>;
-};
+}
 
-[[block]]
 struct Dbg {
   offsetCounter : atomic<u32>;
   pad0 : u32;
@@ -53,44 +51,39 @@ struct Dbg {
   value_f32_1 : f32;
   value_f32_2 : f32;
   value_f32_3 : f32;
-};
+}
 
-[[block]]
 struct F32s {
-  values : [[stride(4)]] array<f32>;
-};
+  values : array<f32>;
+}
 
-[[block]]
 struct U32s {
-  values : [[stride(4)]] array<u32>;
-};
+  values : array<u32>;
+}
 
-[[block]]
 struct I32s {
-  values : [[stride(4)]] array<i32>;
-};
+  values : array<i32>;
+}
 
-[[block]]
 struct AU32s {
-  values : [[stride(4)]] array<atomic<u32>>;
-};
+  values : array<atomic<u32>>;
+}
 
-[[block]]
 struct AI32s {
-  values : [[stride(4)]] array<atomic<i32>>;
-};
+  values : array<atomic<i32>>;
+}
 
-[[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
+@binding(0) @group(0) var<uniform> uniforms : Uniforms;
 
-[[binding(10), group(0)]] var<storage, read_write> indices : U32s;
+@binding(10) @group(0) var<storage, read_write> indices : U32s;
 
-[[binding(11), group(0)]] var<storage, read_write> positions : F32s;
+@binding(11) @group(0) var<storage, read_write> positions : F32s;
 
-[[binding(20), group(0)]] var<storage, read_write> counters : AU32s;
+@binding(20) @group(0) var<storage, read_write> counters : AU32s;
 
-[[binding(21), group(0)]] var<storage, read_write> LUT : AI32s;
+@binding(21) @group(0) var<storage, read_write> LUT : AI32s;
 
-[[binding(50), group(0)]] var<storage, read_write> dbg : Dbg;
+@binding(50) @group(0) var<storage, read_write> dbg : Dbg;
 
 fn toVoxelPos(position : vec3<f32>) -> vec3<f32> {
   var bbMin = vec3<f32>(uniforms.bbMin.x, uniforms.bbMin.y, uniforms.bbMin.z);
@@ -130,8 +123,8 @@ fn doIgnore() {
   var g55 = atomicLoad(&(LUT.values[0]));
 }
 
-[[stage(compute), workgroup_size(128)]]
-fn main_count([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>) {
+@stage(compute) @workgroup_size(128)
+fn main_count(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
   var triangleIndex = GlobalInvocationID.x;
   if ((triangleIndex >= uniforms.numTriangles)) {
     return;

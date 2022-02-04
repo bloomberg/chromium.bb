@@ -49,6 +49,9 @@ bool g_profile_migration_completed_for_test = false;
 
 absl::optional<bool> g_lacros_primary_browser_for_test;
 
+LacrosLaunchSwitchSource g_lacros_launch_switch_source =
+    LacrosLaunchSwitchSource::kUnknown;
+
 // At session start the value for LacrosLaunchSwitch logic is applied and the
 // result is stored in this value which is used after that as a cache.
 absl::optional<LacrosLaunchSwitch> g_lacros_launch_switch_cache;
@@ -207,7 +210,7 @@ Channel GetStatefulLacrosChannel() {
 }
 
 static_assert(
-    crosapi::mojom::Crosapi::Version_ == 60,
+    crosapi::mojom::Crosapi::Version_ == 61,
     "if you add a new crosapi, please add it to kInterfaceVersionEntries");
 
 }  // namespace
@@ -236,15 +239,6 @@ const base::Feature kLacrosDisableChromeApps{"LacrosDisableChromeApps",
 const base::Feature kLacrosGooglePolicyRollout{
     "LacrosGooglePolicyRollout", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable this to turn on profile migration for non-googlers. Currently the
-// feature is only limited to googlers only.
-const base::Feature kLacrosProfileMigrationForAnyUser{
-    "LacrosProfileMigrationForAnyUser", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Emergency switch to turn off profile migration via Finch.
-const base::Feature kLacrosProfileMigrationForceOff{
-    "LacrosProfileMigrationForceOff", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const Channel kLacrosDefaultChannel = Channel::DEV;
 
 const char kLacrosStabilitySwitch[] = "lacros-stability";
@@ -256,6 +250,21 @@ const char kLacrosStabilityChannelStable[] = "stable";
 const char kLacrosSelectionSwitch[] = "lacros-selection";
 const char kLacrosSelectionRootfs[] = "rootfs";
 const char kLacrosSelectionStateful[] = "stateful";
+
+// The internal name in about_flags.cc for the lacros-availablility-policy
+// config.
+const char kLacrosAvailabilityPolicyInternalName[] =
+    "lacros-availability-policy";
+
+// The commandline flag name of lacros-availability-policy.
+// The value should be the policy value as defined just below.
+// The values need to be consistent with policy_value_to_enum above.
+const char kLacrosAvailabilityPolicySwitch[] = "lacros-availability-policy";
+const char kLacrosAvailabilityPolicyUserChoice[] = "user_choice";
+const char kLacrosAvailabilityPolicyLacrosDisabled[] = "lacros_disabled";
+const char kLacrosAvailabilityPolicySideBySide[] = "side_by_side";
+const char kLacrosAvailabilityPolicyLacrosPrimary[] = "lacros_primary";
+const char kLacrosAvailabilityPolicyLacrosOnly[] = "lacros_only";
 
 const char kLaunchOnLoginPref[] = "lacros.launch_on_login";
 const char kClearUserDataDir1Pref[] = "lacros.clear_user_data_dir_1";
@@ -357,9 +366,8 @@ bool IsLacrosEnabled(Channel channel) {
 bool IsProfileMigrationEnabled(const AccountId& account_id) {
   // Emergency switch to turn off profile migration. Turn this on via Finch in
   // case profile migration needs to be turned off after launch.
-  if (base::FeatureList::IsEnabled(kLacrosProfileMigrationForceOff)) {
-    LOG(WARNING)
-        << "Profile migration is turned off by kLacrosProfileMigrationForceOff";
+  if (base::FeatureList::IsEnabled(
+          ash::features::kLacrosProfileMigrationForceOff)) {
     return false;
   }
 
@@ -367,7 +375,8 @@ bool IsProfileMigrationEnabled(const AccountId& account_id) {
   //  `kLacrosProfileMigrationForAnyUser` can be enabled to allow testing with
   //  non-googler accounts.
   if (gaia::IsGoogleInternalAccountEmail(account_id.GetUserEmail()) ||
-      base::FeatureList::IsEnabled(kLacrosProfileMigrationForAnyUser))
+      base::FeatureList::IsEnabled(
+          ash::features::kLacrosProfileMigrationForAnyUser))
     return true;
 
   return false;
@@ -554,10 +563,9 @@ bool DoesMetadataSupportNewAccountManager(base::Value* metadata) {
 
 base::Version GetDataVer(PrefService* local_state,
                          const std::string& user_id_hash) {
-  const base::DictionaryValue* data_versions =
-      local_state->GetDictionary(kDataVerPref);
+  const base::Value* data_versions = local_state->GetDictionary(kDataVerPref);
   const std::string* data_version_str =
-      data_versions->FindStringPath(user_id_hash);
+      data_versions->FindStringKey(user_id_hash);
 
   if (!data_version_str)
     return base::Version();
@@ -570,8 +578,8 @@ void RecordDataVer(PrefService* local_state,
                    const base::Version& version) {
   DCHECK(version.IsValid());
   DictionaryPrefUpdate update(local_state, kDataVerPref);
-  base::DictionaryValue* dict = update.Get();
-  dict->SetString(user_id_hash, version.GetString());
+  base::Value* dict = update.Get();
+  dict->SetStringKey(user_id_hash, version.GetString());
 }
 
 bool IsDataWipeRequired(const std::string& user_id_hash) {
@@ -634,10 +642,12 @@ void CacheLacrosLaunchSwitch(const policy::PolicyMap& map) {
     LOG(ERROR) << "Trying to cache LacrosLaunchSwitch and the value was set";
     return;
   }
+  g_lacros_launch_switch_source = LacrosLaunchSwitchSource::kPossiblySetByUser;
   // Users can set this switch in chrome://flags to disable the effect of the
   // lacros-availability policy.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(ash::switches::kLacrosAvailabilityIgnore)) {
+    g_lacros_launch_switch_source = LacrosLaunchSwitchSource::kForcedByUser;
     g_lacros_launch_switch_cache = LacrosLaunchSwitch::kUserChoice;
     return;
   }
@@ -663,6 +673,9 @@ void CacheLacrosLaunchSwitch(const policy::PolicyMap& map) {
     g_lacros_launch_switch_cache = LacrosLaunchSwitch::kUserChoice;
     return;
   }
+
+  if (result != LacrosLaunchSwitch::kUserChoice)
+    g_lacros_launch_switch_source = LacrosLaunchSwitchSource::kForcedByPolicy;
 
   g_lacros_launch_switch_cache = result;
 }
@@ -733,7 +746,7 @@ void SetProfileMigrationCompletedForUser(PrefService* local_state,
                                          const std::string& user_id_hash) {
   DictionaryPrefUpdate update(local_state,
                               kProfileMigrationCompletedForUserPref);
-  base::DictionaryValue* dict = update.Get();
+  base::Value* dict = update.Get();
   dict->SetBoolKey(user_id_hash, true);
 }
 
@@ -741,12 +754,26 @@ void ClearProfileMigrationCompletedForUser(PrefService* local_state,
                                            const std::string& user_id_hash) {
   DictionaryPrefUpdate update(local_state,
                               kProfileMigrationCompletedForUserPref);
-  base::DictionaryValue* dict = update.Get();
+  base::Value* dict = update.Get();
   dict->RemoveKey(user_id_hash);
 }
 
 void SetProfileMigrationCompletedForTest(bool is_completed) {
   g_profile_migration_completed_for_test = is_completed;
+}
+
+LacrosLaunchSwitchSource GetLacrosLaunchSwitchSource() {
+  return g_lacros_launch_switch_source;
+}
+
+base::StringPiece GetLacrosAvailabilityPolicyName(LacrosLaunchSwitch value) {
+  for (const auto& entry : policy_value_to_enum) {
+    if (entry.second == value)
+      return entry.first;
+  }
+
+  NOTREACHED();
+  return base::StringPiece();
 }
 
 }  // namespace browser_util

@@ -277,7 +277,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     await Common.Revealer.reveal(this);
 
     // Make sure we are in the next frame before stopping the world with confirm
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise(resolve => window.setTimeout(resolve, 0));
 
     const shouldUpdate = window.confirm(i18nString(UIStrings.thisFileWasChangedExternally));
     if (shouldUpdate) {
@@ -293,7 +293,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
 
   private commitContent(content: string): void {
     if (this.projectInternal.canSetFileContent()) {
-      this.projectInternal.setFileContent(this, content, false);
+      void this.projectInternal.setFileContent(this, content, false);
     }
     this.contentCommitted(content, true);
   }
@@ -353,7 +353,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
   setContent(content: string, isBase64: boolean): void {
     this.contentEncodedInternal = isBase64;
     if (this.projectInternal.canSetFileContent()) {
-      this.projectInternal.setFileContent(this, content, isBase64);
+      void this.projectInternal.setFileContent(this, content, isBase64);
     }
     this.contentCommitted(content, true);
   }

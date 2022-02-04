@@ -223,7 +223,7 @@ adb pull /sdcard/Android/data/$PACKAGE_NAME/angle_capture/. $LABEL/
 The list of traces is tracked in [restricted_traces.json](restricted_traces.json). Manually add your
 new trace to this list. Use version "1" for the trace version.
 
-You can also use a tool called `jq` to update the list. This ensures we get them in
+On Linux, you can also use a tool called `jq` to update the list. This ensures we get them in
 alphabetical order with no duplicates. It can also be done by hand if you are unable to install it,
 for some reason.
 ```
@@ -237,25 +237,21 @@ jq ".traces = (.traces + [\"$LABEL $VERSION\"] | unique)" restricted_traces.json
 
 ## Run code auto-generation
 
-We use two scripts to update the test harness so it will compile and run the new trace:
+The [`gen_restricted_traces`](gen_restricted_traces.py) script auto-generates entries
+in our checkout dependencies to sync restricted trace data on checkout. To trigger
+code generation run the following from the angle root folder:
 ```
-python ./gen_restricted_traces.py
-cd ../../..
 python ./scripts/run_code_generation.py
 ```
-After this you should be able to `git diff` and see your new trace added to the harness files:
-```
-$ git diff --stat
- scripts/code_generation_hashes/restricted_traces.json     | 12 +++++++-----
- src/tests/restricted_traces/.gitignore                    |  2 ++
- src/tests/restricted_traces/restricted_traces.json        |  1 +
- src/tests/restricted_traces/restricted_traces_autogen.cpp | 19 +++++++++++++++++++
- src/tests/restricted_traces/restricted_traces_autogen.gni |  1 +
- src/tests/restricted_traces/restricted_traces_autogen.h   |  1 +
- 6 files changed, 31 insertions(+), 5 deletions(-)
-```
-Note the absence of the traces themselves listed above.  They are automatically .gitignored since
-they won't be checked in directly to the repo.
+After this you should be able to `git diff` and see changes in the following files:
+
+ * `DEPS`
+ * `scripts/code_generation_hashes/restricted_traces.json`
+ * `src/tests/restricted_traces/restricted_traces.json` (this is the file you originally modified)
+
+Note the absence of the traces themselves listed above. They are automatically
+ignored by [`.gitignore`](.gitignore) since they won't be checked in directly
+to the repo.
 
 ## Upload your trace to CIPD
 
@@ -264,7 +260,7 @@ be done by Googlers with write access to the trace CIPD prefix. If you need writ
 someone listed in the `OWNERS` file.
 
 ```
-sync_restricted_traces_to_cipd.py
+./sync_restricted_traces_to_cipd.py
 ```
 
 ## Upload your CL
@@ -276,3 +272,244 @@ git cl upload
 ```
 
 You're now ready to run your new trace on CI!
+
+# Upgrading existing traces
+
+With tracer updates sometimes we want to re-run tracing to upgrade the trace file format or to
+take advantage of new tracer improvements. The [`retrace_restricted_traces`](retrace_restricted_traces.py)
+script allows us to re-run tracing using [SwiftShader](https://swiftshader.googlesource.com/SwiftShader)
+on a desktop machine. As of writing we require re-tracing on a Windows machine because of size
+limitations with a Linux app window.
+
+## Prep work: Back up existing traces
+
+This will save the original traces in a temporary folder if you need to revert to the prior trace format:
+
+```
+py ./src/tests/restricted_traces/retrace_restricted_traces.py backup "*"
+```
+
+*Note: on Linux, remove the command `py` prefix to the Python scripts.*
+
+This will save the traces to `./retrace-backups`. At any time you can revert the trace files by running:
+
+```
+py ./src/tests/restricted_traces/retrace_restricted_traces.py restore "*"
+```
+
+## Part 1: Sanity Check with T-Rex
+
+First we'll retrace a single app to verify the workflow is intact. Please
+ensure you replace the specified variables with paths that work on your
+configuration and checkout:
+
+### Step 1/3: Capture T-Rex with Validation
+
+```
+export TRACE_GN_PATH=out/Debug
+export TRACE_NAME=trex_200
+py ./src/tests/restricted_traces/retrace_restricted_traces.py upgrade $TRACE_GN_PATH retrace-wip -f $TRACE_NAME --validation --limit 3
+```
+
+The `--validation` flag will turn on additional validation checks in the
+trace. The `--limit 3` flag forces a maximum of 3 frames of tracing so the
+test will run more quickly. The trace will end up in the `retrace-wip`
+folder.
+
+### Step 2/3: Validate T-Rex
+
+The command below will update your copy of the trace, rebuild, the run the
+test suite with validation enabled:
+
+```
+py ./src/tests/restricted_traces/retrace_restricted_traces.py validate $TRACE_GN_PATH retrace-wip $TRACE_NAME
+```
+
+If the trace failed validation, see the section below on diagnosing tracer
+errors. Otherwise proceed with the steps below.
+
+### Step 3/3: Restore the Canonical T-Rex Trace
+
+```
+py ./src/tests/restricted_traces/retrace_restricted_traces.py restore $TRACE_NAME
+```
+
+## Part 2: Do a limited trace upgrade with validation enabled
+
+### Step 1/3: Upgrade all traces with a limit of 3 frames
+
+```
+py ./src/tests/restricted_traces/retrace_restricted_traces.py upgrade $TRACE_GN_PATH retrace-wip --validation --limit 3  --no-overwrite
+```
+
+If this process gets interrupted, re-run the upgrade command. The
+`--no-overwrite` argument will ensure it will complete eventually.
+
+If any traces failed to upgrade, see the section below on diagnosing tracer
+errors. Otherwise proceed with the steps below.
+
+### Step 2/3: Validate all upgraded traces
+
+```
+py ./src/tests/restricted_traces/retrace_restricted_traces.py validate $TRACE_GN_PATH retrace-wip "*"
+```
+
+If any traces failed validation, see the section below on diagnosing tracer
+errors. Otherwise proceed with the steps below.
+
+### Step 3/3: Restore all traces
+
+```
+py ./src/tests/restricted_traces/retrace_restricted_traces.py restore "*"
+```
+
+## Part 3: Do the full trace upgrade
+
+```
+rm -rf retrace-wip
+py ./src/tests/restricted_traces/retrace_restricted_traces.py upgrade $TRACE_GN_PATH retrace-wip --no-overwrite
+```
+
+If this process gets interrupted, re-run the upgrade command. The
+`--no-overwrite` argument will ensure it will complete eventually.
+
+If any traces failed to upgrade, see the section below on diagnosing tracer
+errors. Otherwise proceed with the steps below.
+
+## Part 4: Test the upgraded traces under an experimental prefix (slow)
+
+Because there still may be trace errors undetected by validation, we first
+upload the traces to a temporary CIPD path for testing. After a successful
+run on the CQ, we will then upload them to the main ANGLE prefix.
+
+To enable the experimental prefix, edit
+[`restricted_traces.json`](restricted_traces.json) to use a version
+number beginning with 'x'. For example:
+
+```
+  "traces": [
+    "aliexpress x1",
+    "among_us x1",
+    "angry_birds_2_1500 x1",
+    "arena_of_valor x1",
+    "asphalt_8 x1",
+    "avakin_life x1",
+... and so on ...
+```
+
+Then run:
+
+```
+py ./src/tests/restricted_traces/retrace_restricted_traces.py restore -o retrace-wip "*"
+py ./src/tests/restricted_traces/sync_restricted_traces_to_cipd.py
+py ./scripts/run_code_generation.py
+```
+
+The restore command will copy the new traces from the `retrace-wip` directory
+into the trace folder before we call the sync script.
+
+After these commands complete succesfully, create and upload a CL as normal.
+Run CQ +1 Dry-Run. If you find a test regression, see the section below on
+diagnosing tracer errors. Otherwise proceed with the steps below.
+
+## Part 5: Upload the verified traces to CIPD under the stable prefix
+
+Now that you've validated the traces on the CQ, update
+[`restricted_traces.json`](restricted_traces.json) to remove the 'x' prefix
+and incrementing the version of the traces (skipping versions if you prefer)
+and then run:
+
+```
+py ./src/tests/restricted_traces/sync_restricted_traces_to_cipd.py
+py ./scripts/run_code_generation.py
+```
+
+Then create and upload a CL as normal. Congratulations, you've finished the
+trace upgrade!
+
+# Diagnosing and fixing tracer errors
+
+## Debugging a crash or GLES error
+
+Ensure you're building ANGLE in Debug. Then look in the retrace script output
+to find the exact command line and environment variables the script uses to
+produce the failure. For example:
+
+```
+INFO:root:ANGLE_CAPTURE_LABEL=trex_200 ANGLE_CAPTURE_OUT_DIR=C:\src\angle\retrace-wip\trex_200 ANGLE_CAPTURE_FRAME_START=2 ANGLE_CAPTURE_FRAME_END=4 ANGLE_CAPTURE_VALIDATION=1 ANGLE_FEATURE_OVERRIDES_ENABLED=allocateNonZeroMemory:forceInitShaderVariables ANGLE_CAPTURE_TRIM_ENABLED=1 out/Debug\angle_perftests.exe --gtest_filter=TracePerfTest.Run/vulkan_swiftshader_trex_200 --max-steps-performed 3 --retrace-mode --enable-all-trace-tests
+```
+
+Once you can reproduce the issue you can use a debugger or other standard
+debugging processes to find the root cause and a fix.
+
+## Debugging a serialization difference
+
+If you encouter a serialization mismatch in the retrace, you can find the
+complete serialization output by looking in the retrace script output. ANGLE
+saves the complete serialization file contents on any mismatch. You can
+inspect and diff these files in a text editor to help diagnose what objects
+are faulty.
+
+If the mismatch is with a Buffer or Texture object content, you can manually
+edit the `frame_capture_utils.cpp` file to force some or all of the objects
+to serialize their entire contents. This can help show what kind of pixel or
+data differences might be causing the issue. For example, change this line:
+
+```
+json->addBlob("data", dataPtr->data(), dataPtr->size());
+```
+
+to
+
+```
+json->addBlobWithMax("data", dataPtr->data(), dataPtr->size(), 1000000);
+```
+
+Note: in the future, we might make this option exposed via an envioronment
+variable, or even allow serialization of entire data blocks in text-encoded
+form that could be decoded to separate files.
+
+If you still can't determine what code might be causing the state difference,
+we can insert finer-grained serialization checkpoints to "bisect" where the
+coding mismatch is happening. It is not possible to force checkpoints after
+every GLES call, because serialization and validation is so prohibitively
+expensive. ANGLE instead has feature in the tracer that allows us to
+precisely control where the tracer inserts and validates the checkpoints, by
+using a boolean expression language.
+
+The retrace script command `--validation-expr` allows us to specify a C-like
+expression that determines when to add serialization checkpoints. For
+example, we can specify this validation expression:
+
+```
+((frame == 2) && (call < 1189) && (call > 1100) && ((call % 5) == 0))
+```
+
+Using this expression will insert a serialization checkpoint in the second
+frame, on every 5th captured call, and when the captured call count is
+between 1101 and 1188. Here the `call` keyword denotes the call counter,
+which resets to 1 every frame, and increments by 1 with every captured GLES
+API call. The `frame` keyword denotes the frame counter, which starts at 1
+and increments by 1 every captured frame. The expression syntax supports all
+common C boolean operators.
+
+By finding a starting and ending frame range, and narrowing this range through
+experimentation, you can pinpoint the exact call that triggers the
+serialization mismatch, and then diagnose and fix the root cause. In some
+cases you can use RenderDoc or other frame debugging tools to inspect
+resource states before/after the bad call once you have found it.
+
+See also: [`http://crrev.com/c/3136094`](http://crrev.com/c/3136094)
+
+## Debugging a pixel test failure without a serialization mismatch
+
+Sometimes you manage to complete validation and upload, just to find a golden
+image pixel difference that manifests in some trace configurations. These
+problems can be harder to root cause. For instance, some configurations may
+render undefined pixels that are in practice well-defined on most GLES
+implementations.
+
+The pixel differences can also be a product of mismatched state even if the
+trace validation says all states are matched. Because ANGLE's GLES state
+serialization is incomplete, it can help to check the state serialization
+logic and add missing features as necessary.

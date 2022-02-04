@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -96,6 +96,12 @@ struct DrawDispatchVuid {
     const char* dynamic_rendering_depth_sample = kVUIDUndefined;
     const char* dynamic_rendering_stencil_sample = kVUIDUndefined;
     const char* dynamic_rendering_multi_sample = kVUIDUndefined;
+    const char* dynamic_rendering_06189 = kVUIDUndefined;
+    const char* dynamic_rendering_06190 = kVUIDUndefined;
+    const char* dynamic_rendering_06198 = kVUIDUndefined;
+    const char* storage_image_read_without_format = kVUIDUndefined;
+    const char* storage_image_write_without_format = kVUIDUndefined;
+    const char* depth_compare_sample = kVUIDUndefined;
 };
 
 struct ValidateBeginQueryVuids {
@@ -124,6 +130,30 @@ struct SubresourceRangeErrorCodes {
 typedef subresource_adapter::BothRangeMap<VkImageLayout, 16> GlobalImageLayoutRangeMap;
 typedef layer_data::unordered_map<const IMAGE_STATE*, layer_data::optional<GlobalImageLayoutRangeMap>> GlobalImageLayoutMap;
 
+// Much of the data stored in CMD_BUFFER_STATE is only used by core validation, and is
+// set up by Record calls in class CoreChecks. Because both the state tracker and
+// core methods must lock CMD_BUFFER_STATE, it is possible for a Validate call to
+// 'interrupt' a Record call and get only the state updated by whichever code
+// locked and unlocked the CB first. This can only happen if the application
+// is violating section 3.6 'Threading Behavior' of the specification, which
+// requires that command buffers be externally synchronized. Still, we'd prefer
+// not to crash if that happens. In most cases the core Record method is operating
+// on separate data members from the state tracker. But in the case of vkCmdWaitEvents*,
+// both methods operate on the same state in ways that could very easily crash if
+// not done within the same lock guard. Overriding RecordWaitEvents() allows
+// this to all happen completely while the state tracker is holding the lock.
+// Eventually we'll probably want to move all of the core state into this derived
+// class.
+class CORE_CMD_BUFFER_STATE : public CMD_BUFFER_STATE {
+  public:
+    CORE_CMD_BUFFER_STATE(ValidationStateTracker* dev_data, VkCommandBuffer cb, const VkCommandBufferAllocateInfo* pCreateInfo,
+                          const COMMAND_POOL_STATE* cmd_pool)
+        : CMD_BUFFER_STATE(dev_data, cb, pCreateInfo, cmd_pool) {}
+
+    void RecordWaitEvents(CMD_TYPE cmd_type, uint32_t eventCount, const VkEvent* pEvents,
+                          VkPipelineStageFlags2KHR src_stage_mask) override;
+};
+
 class CoreChecks : public ValidationStateTracker {
   public:
     using StateTracker = ValidationStateTracker;
@@ -151,7 +181,6 @@ class CoreChecks : public ValidationStateTracker {
         SimpleErrorLocation(const char* func_name_, const char* vuid_) : func_name(func_name_), vuid(vuid_) {}
     };
 
-    bool VerifyQueueStateToSeq(const QUEUE_STATE* initial_queue, uint64_t initial_seq) const;
     bool ValidateSetMemBinding(VkDeviceMemory mem, const BINDABLE& mem_binding, const char* apiName) const;
     bool ValidateDeviceQueueFamily(uint32_t queue_family, const char* cmd_name, const char* parameter_name, const char* error_code,
                                    bool optional) const;
@@ -159,10 +188,8 @@ class CoreChecks : public ValidationStateTracker {
     bool ValidateGetImageMemoryRequirements2(const VkImageMemoryRequirementsInfo2* pInfo, const char* func_name) const;
     bool CheckCommandBuffersInFlight(const COMMAND_POOL_STATE* pPool, const char* action, const char* error_code) const;
     bool CheckCommandBufferInFlight(const CMD_BUFFER_STATE* cb_node, const char* action, const char* error_code) const;
-    bool VerifyQueueStateToFence(VkFence fence) const;
     void StoreMemRanges(VkDeviceMemory mem, VkDeviceSize offset, VkDeviceSize size);
     bool ValidateIdleDescriptorSet(VkDescriptorSet set, const char* func_str) const;
-    bool SemaphoreWasSignaled(VkSemaphore semaphore) const;
     bool ValidatePipelineLocked(std::vector<std::shared_ptr<PIPELINE_STATE>> const& pPipelines, int pipelineIndex) const;
     bool ValidatePipelineUnlocked(const PIPELINE_STATE* pPipeline, uint32_t pipelineIndex) const;
     bool ValidImageBufferQueue(const CMD_BUFFER_STATE* cb_node, const VulkanTypedHandle& object, uint32_t queueFamilyIndex,
@@ -173,7 +200,8 @@ class CoreChecks : public ValidationStateTracker {
                                      const Location& loc) const;
     bool ValidateSemaphoresForSubmit(struct SemaphoreSubmitState& state, VkQueue queue, const VkSubmitInfo2KHR* submit,
                                      const Location& loc) const;
-    bool ValidateMaxTimelineSemaphoreValueDifference(const Location& loc, VkSemaphore semaphore, uint64_t value) const;
+    bool ValidateMaxTimelineSemaphoreValueDifference(const Location& loc, const SEMAPHORE_STATE& semaphore_state,
+                                                     uint64_t value) const;
     bool ValidateStatus(const CMD_BUFFER_STATE* pNode, CBStatusFlags status_mask, const char* fail_msg, const char* msg_code) const;
     bool ValidateDrawStateFlags(const CMD_BUFFER_STATE* pCB, const PIPELINE_STATE* pPipe, bool indexed, const char* msg_code) const;
     bool LogInvalidAttachmentMessage(const char* type1_string, const RENDER_PASS_STATE* rp1_state, const char* type2_string,
@@ -403,7 +431,7 @@ class CoreChecks : public ValidationStateTracker {
 
     bool ValidateBindAccelerationStructureMemory(VkDevice device, const VkBindAccelerationStructureMemoryInfoNV& info) const;
     // Prototypes for CoreChecks accessor functions
-    VkFormatProperties GetPDFormatProperties(const VkFormat format) const;
+    VkFormatProperties3KHR GetPDFormatProperties(const VkFormat format) const;
     const VkPhysicalDeviceMemoryProperties* GetPhysicalDeviceMemoryProperties();
 
     bool FormatRequiresYcbcrConversionExplicitly(const VkFormat format) const;
@@ -528,7 +556,6 @@ class CoreChecks : public ValidationStateTracker {
     bool ValidateGraphicsPipelineShaderDynamicState(const PIPELINE_STATE* pPipeline, const CMD_BUFFER_STATE* pCB,
                                                     const char* caller, const DrawDispatchVuid& vuid) const;
     bool ValidateGraphicsPipelineBlendEnable(const PIPELINE_STATE* pPipeline) const;
-    void RecordGraphicsPipelineShaderDynamicState(PIPELINE_STATE *pipeline);
     bool ValidateComputePipelineShaderState(PIPELINE_STATE* pPipeline) const;
     uint32_t CalcShaderStageCount(const PIPELINE_STATE* pipeline, VkShaderStageFlagBits stageBit) const;
     bool GroupHasValidIndex(const PIPELINE_STATE* pipeline, uint32_t group, uint32_t stage) const;
@@ -560,7 +587,8 @@ class CoreChecks : public ValidationStateTracker {
                                    const PIPELINE_STATE* pipeline) const;
     bool ValidateShaderSubgroupSizeControl(VkPipelineShaderStageCreateInfo const* pStage) const;
     bool ValidateAtomicsTypes(SHADER_MODULE_STATE const* src) const;
-    bool ValidateExecutionModes(SHADER_MODULE_STATE const* src, spirv_inst_iter entrypoint) const;
+    bool ValidateExecutionModes(SHADER_MODULE_STATE const* src, spirv_inst_iter entrypoint, VkShaderStageFlagBits stage,
+                                const PIPELINE_STATE* pipeline) const;
     bool ValidateViConsistency(VkPipelineVertexInputStateCreateInfo const* vi) const;
     bool ValidateViAgainstVsInputs(VkPipelineVertexInputStateCreateInfo const* vi, SHADER_MODULE_STATE const* vs,
                                    spirv_inst_iter entrypoint) const;
@@ -786,7 +814,7 @@ class CoreChecks : public ValidationStateTracker {
     bool ValidateImageUsageFlags(IMAGE_STATE const* image_state, VkFlags desired, bool strict, const char* msgCode,
                                  char const* func_name, char const* usage_string) const;
 
-    bool ValidateImageFormatFeatureFlags(IMAGE_STATE const* image_state, VkFormatFeatureFlags desired, char const* func_name,
+    bool ValidateImageFormatFeatureFlags(IMAGE_STATE const* image_state, VkFormatFeatureFlags2KHR desired, char const* func_name,
                                          const char* vuid) const;
 
     bool ValidateImageSubresourceLayers(const CMD_BUFFER_STATE* cb_node, const VkImageSubresourceLayers* subresource_layers,
@@ -939,10 +967,6 @@ class CoreChecks : public ValidationStateTracker {
                                                const VkComputePipelineCreateInfo* pCreateInfos,
                                                const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines,
                                                void* pipe_state) const override;
-    void PostCallRecordCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache, uint32_t count,
-                                                           const VkGraphicsPipelineCreateInfo* pCreateInfos,
-                                                           const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines,
-                                                           VkResult result, void* cgpl_state_data) override;
     bool PreCallValidateGetPipelineExecutablePropertiesKHR(VkDevice device, const VkPipelineInfoKHR* pPipelineInfo,
                                                            uint32_t* pExecutableCount,
                                                            VkPipelineExecutablePropertiesKHR* pProperties) const override;
@@ -1018,10 +1042,6 @@ class CoreChecks : public ValidationStateTracker {
     bool PreCallValidateAllocateMemory(VkDevice device, const VkMemoryAllocateInfo* pAllocateInfo,
                                        const VkAllocationCallbacks* pAllocator, VkDeviceMemory* pMemory) const override;
     bool PreCallValidateFreeMemory(VkDevice device, VkDeviceMemory mem, const VkAllocationCallbacks* pAllocator) const override;
-    bool PreCallValidateWaitForFences(VkDevice device, uint32_t fenceCount, const VkFence* pFences, VkBool32 waitAll,
-                                      uint64_t timeout) const override;
-    bool PreCallValidateQueueWaitIdle(VkQueue queue) const override;
-    bool PreCallValidateDeviceWaitIdle(VkDevice device) const override;
     bool PreCallValidateCreateSemaphore(VkDevice device, const VkSemaphoreCreateInfo* pCreateInfo,
                                         const VkAllocationCallbacks* pAllocator, VkSemaphore* pSemaphore) const override;
     bool PreCallValidateWaitSemaphores(VkDevice device, const VkSemaphoreWaitInfo* pWaitInfo, uint64_t timeout) const override;
@@ -1254,7 +1274,7 @@ class CoreChecks : public ValidationStateTracker {
     bool PreCallValidateCmdBeginQuery(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t slot,
                                       VkFlags flags) const override;
     void PreCallRecordCmdBeginQuery(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t slot, VkFlags flags) override;
-    void EnqueueVerifyEndQuery(VkCommandBuffer, const QueryObject& query_obj);
+    void EnqueueVerifyEndQuery(CMD_BUFFER_STATE&, const QueryObject& query_obj);
     bool PreCallValidateCmdEndQuery(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t slot) const override;
     void PreCallRecordCmdEndQuery(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t slot) override;
     bool ValidateQueryPoolIndex(VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount, const char* func_name,
@@ -1638,4 +1658,8 @@ class CoreChecks : public ValidationStateTracker {
     bool PreCallValidateGetPhysicalDeviceXlibPresentationSupportKHR(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex,
                                                                     Display* dpy, VisualID visualID) const override;
 #endif  // VK_USE_PLATFORM_XLIB_KHR
+    std::shared_ptr<CMD_BUFFER_STATE> CreateCmdBufferState(VkCommandBuffer cb, const VkCommandBufferAllocateInfo* create_info,
+                                                           const COMMAND_POOL_STATE* pool) override {
+        return std::static_pointer_cast<CMD_BUFFER_STATE>(std::make_shared<CORE_CMD_BUFFER_STATE>(this, cb, create_info, pool));
+    }
 };      // Class CoreChecks

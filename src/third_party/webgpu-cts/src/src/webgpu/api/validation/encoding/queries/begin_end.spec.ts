@@ -1,6 +1,7 @@
 export const description = `
 Validation for encoding begin/endable queries.
 
+TODO: pipeline statistics queries are removed from core; consider moving tests to another suite.
 TODO: tests for pipeline statistics queries:
 - balance: {
     - begin 0, end 1

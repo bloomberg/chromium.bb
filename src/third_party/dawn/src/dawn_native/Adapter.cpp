@@ -15,12 +15,15 @@
 #include "dawn_native/Adapter.h"
 
 #include "common/Constants.h"
+#include "dawn_native/Device.h"
 #include "dawn_native/Instance.h"
+#include "dawn_native/ValidationUtils_autogen.h"
 
-namespace dawn_native {
+namespace dawn::native {
 
     AdapterBase::AdapterBase(InstanceBase* instance, wgpu::BackendType backend)
         : mInstance(instance), mBackend(backend) {
+        mSupportedFeatures.EnableFeature(Feature::DawnNative);
         mSupportedFeatures.EnableFeature(Feature::DawnInternalUsages);
     }
 
@@ -30,14 +33,12 @@ namespace dawn_native {
             InitializeSupportedFeaturesImpl(),
             "gathering supported features for \"%s\" - \"%s\" (vendorId=%#06x deviceId=%#06x "
             "backend=%s type=%s)",
-            mPCIInfo.name, mDriverDescription, mPCIInfo.vendorId, mPCIInfo.deviceId, mBackend,
-            mAdapterType);
+            mName, mDriverDescription, mVendorId, mDeviceId, mBackend, mAdapterType);
         DAWN_TRY_CONTEXT(
             InitializeSupportedLimitsImpl(&mLimits),
             "gathering supported limits for \"%s\" - \"%s\" (vendorId=%#06x deviceId=%#06x "
             "backend=%s type=%s)",
-            mPCIInfo.name, mDriverDescription, mPCIInfo.vendorId, mPCIInfo.deviceId, mBackend,
-            mAdapterType);
+            mName, mDriverDescription, mVendorId, mDeviceId, mBackend, mAdapterType);
 
         // Enforce internal Dawn constants.
         mLimits.v1.maxVertexBufferArrayStride =
@@ -69,20 +70,75 @@ namespace dawn_native {
         return {};
     }
 
+    bool AdapterBase::APIGetLimits(SupportedLimits* limits) const {
+        return GetLimits(limits);
+    }
+
+    void AdapterBase::APIGetProperties(AdapterProperties* properties) const {
+        properties->vendorID = mVendorId;
+        properties->deviceID = mDeviceId;
+        properties->name = mName.c_str();
+        properties->driverDescription = mDriverDescription.c_str();
+        properties->adapterType = mAdapterType;
+        properties->backendType = mBackend;
+    }
+
+    bool AdapterBase::APIHasFeature(wgpu::FeatureName feature) const {
+        return mSupportedFeatures.IsEnabled(feature);
+    }
+
+    size_t AdapterBase::APIEnumerateFeatures(wgpu::FeatureName* features) const {
+        return mSupportedFeatures.EnumerateFeatures(features);
+    }
+
+    DeviceBase* AdapterBase::APICreateDevice(const DeviceDescriptor* descriptor) {
+        DeviceDescriptor defaultDesc = {};
+        if (descriptor == nullptr) {
+            descriptor = &defaultDesc;
+        }
+        auto result = CreateDeviceInternal(descriptor);
+        if (result.IsError()) {
+            mInstance->ConsumedError(result.AcquireError());
+            return nullptr;
+        }
+        return result.AcquireSuccess().Detach();
+    }
+
+    void AdapterBase::APIRequestDevice(const DeviceDescriptor* descriptor,
+                                       WGPURequestDeviceCallback callback,
+                                       void* userdata) {
+        static constexpr DeviceDescriptor kDefaultDescriptor = {};
+        if (descriptor == nullptr) {
+            descriptor = &kDefaultDescriptor;
+        }
+        auto result = CreateDeviceInternal(descriptor);
+
+        if (result.IsError()) {
+            std::unique_ptr<ErrorData> errorData = result.AcquireError();
+            // TODO(crbug.com/dawn/1122): Call callbacks only on wgpuInstanceProcessEvents
+            callback(WGPURequestDeviceStatus_Error, nullptr,
+                     errorData->GetFormattedMessage().c_str(), userdata);
+            return;
+        }
+
+        Ref<DeviceBase> device = result.AcquireSuccess();
+
+        WGPURequestDeviceStatus status =
+            device == nullptr ? WGPURequestDeviceStatus_Unknown : WGPURequestDeviceStatus_Success;
+        // TODO(crbug.com/dawn/1122): Call callbacks only on wgpuInstanceProcessEvents
+        callback(status, ToAPI(device.Detach()), nullptr, userdata);
+    }
+
+    uint32_t AdapterBase::GetVendorId() const {
+        return mVendorId;
+    }
+
+    uint32_t AdapterBase::GetDeviceId() const {
+        return mDeviceId;
+    }
+
     wgpu::BackendType AdapterBase::GetBackendType() const {
         return mBackend;
-    }
-
-    wgpu::AdapterType AdapterBase::GetAdapterType() const {
-        return mAdapterType;
-    }
-
-    const std::string& AdapterBase::GetDriverDescription() const {
-        return mDriverDescription;
-    }
-
-    const PCIInfo& AdapterBase::GetPCIInfo() const {
-        return mPCIInfo;
     }
 
     InstanceBase* AdapterBase::GetInstance() const {
@@ -93,14 +149,10 @@ namespace dawn_native {
         return mSupportedFeatures;
     }
 
-    bool AdapterBase::SupportsAllRequestedFeatures(
-        const std::vector<const char*>& requestedFeatures) const {
-        for (const char* featureStr : requestedFeatures) {
-            Feature featureEnum = mInstance->FeatureNameToEnum(featureStr);
-            if (featureEnum == Feature::InvalidEnum) {
-                return false;
-            }
-            if (!mSupportedFeatures.IsEnabled(featureEnum)) {
+    bool AdapterBase::SupportsAllRequiredFeatures(
+        const ityp::span<size_t, const wgpu::FeatureName>& features) const {
+        for (wgpu::FeatureName f : features) {
+            if (!mSupportedFeatures.IsEnabled(f)) {
                 return false;
             }
         }
@@ -109,8 +161,8 @@ namespace dawn_native {
 
     WGPUDeviceProperties AdapterBase::GetAdapterProperties() const {
         WGPUDeviceProperties adapterProperties = {};
-        adapterProperties.deviceID = mPCIInfo.deviceId;
-        adapterProperties.vendorID = mPCIInfo.vendorId;
+        adapterProperties.deviceID = mDeviceId;
+        adapterProperties.vendorID = mVendorId;
         adapterProperties.adapterType = static_cast<WGPUAdapterType>(mAdapterType);
 
         mSupportedFeatures.InitializeDeviceProperties(&adapterProperties);
@@ -136,57 +188,27 @@ namespace dawn_native {
         return true;
     }
 
-    DeviceBase* AdapterBase::CreateDevice(const DawnDeviceDescriptor* descriptor) {
-        DeviceBase* result = nullptr;
+    ResultOrError<Ref<DeviceBase>> AdapterBase::CreateDeviceInternal(
+        const DeviceDescriptor* descriptor) {
+        ASSERT(descriptor != nullptr);
 
-        if (mInstance->ConsumedError(CreateDeviceInternal(&result, descriptor))) {
-            return nullptr;
+        for (uint32_t i = 0; i < descriptor->requiredFeaturesCount; ++i) {
+            wgpu::FeatureName f = descriptor->requiredFeatures[i];
+            DAWN_TRY(ValidateFeatureName(f));
+            DAWN_INVALID_IF(!mSupportedFeatures.IsEnabled(f),
+                            "Requested feature %s is not supported.", f);
         }
 
-        return result;
-    }
-
-    void AdapterBase::RequestDevice(const DawnDeviceDescriptor* descriptor,
-                                    WGPURequestDeviceCallback callback,
-                                    void* userdata) {
-        DeviceBase* device = nullptr;
-        MaybeError err = CreateDeviceInternal(&device, descriptor);
-
-        if (err.IsError()) {
-            std::unique_ptr<ErrorData> errorData = err.AcquireError();
-            callback(WGPURequestDeviceStatus_Error, ToAPI(device),
-                     errorData->GetFormattedMessage().c_str(), userdata);
-            return;
-        }
-        WGPURequestDeviceStatus status =
-            device == nullptr ? WGPURequestDeviceStatus_Unknown : WGPURequestDeviceStatus_Success;
-        callback(status, ToAPI(device), nullptr, userdata);
-    }
-
-    MaybeError AdapterBase::CreateDeviceInternal(DeviceBase** result,
-                                                 const DawnDeviceDescriptor* descriptor) {
-        if (descriptor != nullptr) {
-            for (const char* featureStr : descriptor->requiredFeatures) {
-                Feature featureEnum = mInstance->FeatureNameToEnum(featureStr);
-                DAWN_INVALID_IF(featureEnum == Feature::InvalidEnum,
-                                "Requested feature %s is unknown.", featureStr);
-                DAWN_INVALID_IF(!mSupportedFeatures.IsEnabled(featureEnum),
-                                "Requested feature %s is disabled.", featureStr);
-            }
-        }
-
-        if (descriptor != nullptr && descriptor->requiredLimits != nullptr) {
+        if (descriptor->requiredLimits != nullptr) {
             DAWN_TRY_CONTEXT(
                 ValidateLimits(mUseTieredLimits ? ApplyLimitTiers(mLimits.v1) : mLimits.v1,
-                               FromAPI(descriptor->requiredLimits)->limits),
+                               descriptor->requiredLimits->limits),
                 "validating required limits");
 
             DAWN_INVALID_IF(descriptor->requiredLimits->nextInChain != nullptr,
                             "nextInChain is not nullptr.");
         }
-
-        DAWN_TRY_ASSIGN(*result, CreateDeviceImpl(descriptor));
-        return {};
+        return CreateDeviceImpl(descriptor);
     }
 
     void AdapterBase::SetUseTieredLimits(bool useTieredLimits) {
@@ -202,4 +224,4 @@ namespace dawn_native {
             "ResetInternalDeviceForTesting should only be used with the D3D12 backend.");
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

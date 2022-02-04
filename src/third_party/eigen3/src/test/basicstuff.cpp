@@ -69,10 +69,8 @@ template<typename MatrixType> void basicStuff(const MatrixType& m)
   x = v1(static_cast<unsigned int>(r1));
   x = v1(static_cast<signed long>(r1));
   x = v1(static_cast<unsigned long>(r1));
-#if EIGEN_HAS_CXX11
   x = v1(static_cast<long long int>(r1));
   x = v1(static_cast<unsigned long long int>(r1));
-#endif
 
   VERIFY_IS_APPROX(               v1,    v1);
   VERIFY_IS_NOT_APPROX(           v1,    2*v1);
@@ -231,10 +229,8 @@ struct casting_test_runner {
     casting_test<SrcScalar, uint16_t>::run();
     casting_test<SrcScalar, int32_t>::run();
     casting_test<SrcScalar, uint32_t>::run();
-#if EIGEN_HAS_CXX11
     casting_test<SrcScalar, int64_t>::run();
     casting_test<SrcScalar, uint64_t>::run();
-#endif
     casting_test<SrcScalar, half>::run();
     casting_test<SrcScalar, bfloat16>::run();
     casting_test<SrcScalar, float>::run();
@@ -264,10 +260,8 @@ void casting_all() {
   casting_test_runner<uint16_t>::run();
   casting_test_runner<int32_t>::run();
   casting_test_runner<uint32_t>::run();
-#if EIGEN_HAS_CXX11
   casting_test_runner<int64_t>::run();
   casting_test_runner<uint64_t>::run();
-#endif
   casting_test_runner<half>::run();
   casting_test_runner<bfloat16>::run();
   casting_test_runner<float>::run();

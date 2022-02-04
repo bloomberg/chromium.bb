@@ -24,7 +24,7 @@
 
 #include "dawn/webgpu_cpp_print.h"
 
-namespace wgpu { namespace utils {
+namespace wgpu::utils {
 
     // Write() is a helper for printing container types to the std::ostream.
     // Write() is used by the LOG() macro below.
@@ -71,14 +71,14 @@ namespace wgpu { namespace utils {
     std::ostream& Write(std::ostream& out, const std::unordered_map<K, V>& value) {
         out << "{";
         bool first = true;
-        for (auto it : value) {
+        for (auto& [key, value] : value) {
             if (!first) {
                 out << ", ";
             }
             first = false;
-            Write(out, it.first);
+            Write(out, key);
             out << ": ";
-            Write(out, it.second);
+            Write(out, value);
         }
         return out << "}";
     }
@@ -141,6 +141,6 @@ namespace wgpu { namespace utils {
 #define UNREACHABLE(...) \
     ::wgpu::utils::Fatal("UNREACHABLE", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
 
-}}  // namespace wgpu::utils
+}  // namespace wgpu::utils
 
 #endif  // DAWNNODE_UTILS_DEBUG_H_

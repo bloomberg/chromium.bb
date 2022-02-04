@@ -25,7 +25,7 @@
 
 #include <CoreVideo/CVPixelBuffer.h>
 
-namespace dawn_native { namespace metal {
+namespace dawn::native::metal {
 
     namespace {
         bool UsageNeedsTextureView(wgpu::TextureUsage usage) {
@@ -111,6 +111,49 @@ namespace dawn_native { namespace metal {
             }
 
             return false;
+        }
+
+        // Metal only allows format reinterpretation to happen on swizzle pattern or conversion
+        // between linear space and sRGB without setting MTLTextureUsagePixelFormatView flag. For
+        // example, creating bgra8Unorm texture view on rgba8Unorm texture or creating
+        // rgba8Unorm_srgb texture view on rgab8Unorm texture.
+        bool AllowFormatReinterpretationWithoutFlag(MTLPixelFormat origin,
+                                                    MTLPixelFormat reinterpretation) {
+            switch (origin) {
+                case MTLPixelFormatRGBA8Unorm:
+                    return reinterpretation == MTLPixelFormatBGRA8Unorm ||
+                           reinterpretation == MTLPixelFormatRGBA8Unorm_sRGB;
+                case MTLPixelFormatBGRA8Unorm:
+                    return reinterpretation == MTLPixelFormatRGBA8Unorm ||
+                           reinterpretation == MTLPixelFormatBGRA8Unorm_sRGB;
+                case MTLPixelFormatRGBA8Unorm_sRGB:
+                    return reinterpretation == MTLPixelFormatBGRA8Unorm_sRGB ||
+                           reinterpretation == MTLPixelFormatRGBA8Unorm;
+                case MTLPixelFormatBGRA8Unorm_sRGB:
+                    return reinterpretation == MTLPixelFormatRGBA8Unorm_sRGB ||
+                           reinterpretation == MTLPixelFormatBGRA8Unorm;
+#if defined(DAWN_PLATFORM_MACOS)
+                case MTLPixelFormatBC1_RGBA:
+                    return reinterpretation == MTLPixelFormatBC1_RGBA_sRGB;
+                case MTLPixelFormatBC1_RGBA_sRGB:
+                    return reinterpretation == MTLPixelFormatBC1_RGBA;
+                case MTLPixelFormatBC2_RGBA:
+                    return reinterpretation == MTLPixelFormatBC2_RGBA_sRGB;
+                case MTLPixelFormatBC2_RGBA_sRGB:
+                    return reinterpretation == MTLPixelFormatBC2_RGBA;
+                case MTLPixelFormatBC3_RGBA:
+                    return reinterpretation == MTLPixelFormatBC3_RGBA_sRGB;
+                case MTLPixelFormatBC3_RGBA_sRGB:
+                    return reinterpretation == MTLPixelFormatBC3_RGBA;
+                case MTLPixelFormatBC7_RGBAUnorm:
+                    return reinterpretation == MTLPixelFormatBC7_RGBAUnorm_sRGB;
+                case MTLPixelFormatBC7_RGBAUnorm_sRGB:
+                    return reinterpretation == MTLPixelFormatBC7_RGBAUnorm;
+#endif
+
+                default:
+                    return false;
+            }
         }
 
         ResultOrError<wgpu::TextureFormat> GetFormatEquivalentToIOSurfaceFormat(uint32_t format) {
@@ -222,6 +265,7 @@ namespace dawn_native { namespace metal {
             case wgpu::TextureFormat::Depth24Plus:
                 return MTLPixelFormatDepth32Float;
             case wgpu::TextureFormat::Depth24PlusStencil8:
+            case wgpu::TextureFormat::Depth32FloatStencil8:
                 return MTLPixelFormatDepth32Float_Stencil8;
             case wgpu::TextureFormat::Depth16Unorm:
                 if (@available(macOS 10.12, iOS 13.0, *)) {
@@ -232,6 +276,9 @@ namespace dawn_native { namespace metal {
                 }
 
 #if defined(DAWN_PLATFORM_MACOS)
+            case wgpu::TextureFormat::Depth24UnormStencil8:
+                return MTLPixelFormatDepth24Unorm_Stencil8;
+
             case wgpu::TextureFormat::BC1RGBAUnorm:
                 return MTLPixelFormatBC1_RGBA;
             case wgpu::TextureFormat::BC1RGBAUnormSrgb:
@@ -261,6 +308,8 @@ namespace dawn_native { namespace metal {
             case wgpu::TextureFormat::BC7RGBAUnormSrgb:
                 return MTLPixelFormatBC7_RGBAUnorm_sRGB;
 #else
+            case wgpu::TextureFormat::Depth24UnormStencil8:
+
             case wgpu::TextureFormat::BC1RGBAUnorm:
             case wgpu::TextureFormat::BC1RGBAUnormSrgb:
             case wgpu::TextureFormat::BC2RGBAUnorm:
@@ -321,10 +370,6 @@ namespace dawn_native { namespace metal {
 
             // TODO(dawn:666): implement stencil8
             case wgpu::TextureFormat::Stencil8:
-            // TODO(dawn:690): implement depth24unorm-stencil8
-            case wgpu::TextureFormat::Depth24UnormStencil8:
-            // TODO(dawn:690): implement depth32float-stencil8
-            case wgpu::TextureFormat::Depth32FloatStencil8:
             case wgpu::TextureFormat::Undefined:
                 UNREACHABLE();
         }
@@ -378,9 +423,11 @@ namespace dawn_native { namespace metal {
         MTLTextureDescriptor* mtlDesc = mtlDescRef.Get();
 
         mtlDesc.width = GetWidth();
-        mtlDesc.height = GetHeight();
         mtlDesc.sampleCount = GetSampleCount();
-        // TODO: add MTLTextureUsagePixelFormatView when needed when we support format
+        // Metal only allows format reinterpretation to happen on swizzle pattern or conversion
+        // between linear space and sRGB. For example, creating bgra8Unorm texture view on
+        // rgba8Unorm texture or creating rgba8Unorm_srgb texture view on rgab8Unorm texture.
+        // TODO: add MTLTextureUsagePixelFormatView when needed when we support other format
         // reinterpretation.
         mtlDesc.usage = MetalTextureUsage(GetFormat(), GetInternalUsage(), GetSampleCount());
         mtlDesc.pixelFormat = MetalPixelFormat(GetFormat().format);
@@ -390,9 +437,17 @@ namespace dawn_native { namespace metal {
         // Choose the correct MTLTextureType and paper over differences in how the array layer count
         // is specified.
         switch (GetDimension()) {
-            case wgpu::TextureDimension::e2D:
+            case wgpu::TextureDimension::e1D:
+                mtlDesc.arrayLength = 1;
                 mtlDesc.depth = 1;
+                ASSERT(mtlDesc.sampleCount == 1);
+                mtlDesc.textureType = MTLTextureType1D;
+                break;
+
+            case wgpu::TextureDimension::e2D:
+                mtlDesc.height = GetHeight();
                 mtlDesc.arrayLength = GetArrayLayers();
+                mtlDesc.depth = 1;
                 if (mtlDesc.arrayLength > 1) {
                     ASSERT(mtlDesc.sampleCount == 1);
                     mtlDesc.textureType = MTLTextureType2DArray;
@@ -403,14 +458,12 @@ namespace dawn_native { namespace metal {
                 }
                 break;
             case wgpu::TextureDimension::e3D:
+                mtlDesc.height = GetHeight();
                 mtlDesc.depth = GetDepth();
                 mtlDesc.arrayLength = 1;
                 ASSERT(mtlDesc.sampleCount == 1);
                 mtlDesc.textureType = MTLTextureType3D;
                 break;
-
-            case wgpu::TextureDimension::e1D:
-                UNREACHABLE();
         }
 
         return mtlDescRef;
@@ -505,6 +558,17 @@ namespace dawn_native { namespace metal {
 
     id<MTLTexture> Texture::GetMTLTexture() {
         return mMtlTexture.Get();
+    }
+
+    NSPRef<id<MTLTexture>> Texture::CreateFormatView(wgpu::TextureFormat format) {
+        if (GetFormat().format == format) {
+            return mMtlTexture;
+        }
+
+        ASSERT(AllowFormatReinterpretationWithoutFlag(MetalPixelFormat(GetFormat().format),
+                                                      MetalPixelFormat(format)));
+        return AcquireNSPRef(
+            [mMtlTexture.Get() newTextureViewWithPixelFormat:MetalPixelFormat(format)]);
     }
 
     MaybeError Texture::ClearTexture(CommandRecordingContext* commandContext,
@@ -746,8 +810,17 @@ namespace dawn_native { namespace metal {
             MTLPixelFormat format = MetalPixelFormat(descriptor->format);
             if (descriptor->aspect == wgpu::TextureAspect::StencilOnly) {
                 if (@available(macOS 10.12, iOS 10.0, *)) {
-                    ASSERT(format == MTLPixelFormatDepth32Float_Stencil8);
-                    format = MTLPixelFormatX32_Stencil8;
+                    if (format == MTLPixelFormatDepth32Float_Stencil8) {
+                        format = MTLPixelFormatX32_Stencil8;
+                    }
+#if defined(DAWN_PLATFORM_MACOS)
+                    else if (format == MTLPixelFormatDepth24Unorm_Stencil8) {
+                        format = MTLPixelFormatX24_Stencil8;
+                    }
+#endif
+                    else {
+                        UNREACHABLE();
+                    }
                 } else {
                     // TODO(enga): Add a workaround to back combined depth/stencil textures
                     // with Sampled usage using two separate textures.
@@ -781,4 +854,4 @@ namespace dawn_native { namespace metal {
         ASSERT(mMtlTextureView != nullptr);
         return mMtlTextureView.Get();
     }
-}}  // namespace dawn_native::metal
+}  // namespace dawn::native::metal

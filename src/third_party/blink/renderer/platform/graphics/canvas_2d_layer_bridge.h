@@ -38,7 +38,6 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/raster_interface.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_host.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -48,6 +47,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 
 struct SkImageInfo;
@@ -85,7 +85,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
       viz::TransferableResource* out_resource,
       viz::ReleaseCallback* out_release_callback) override;
 
-  void FinalizeFrame();
+  void FinalizeFrame(bool printing = false);
   void SetIsInHiddenPage(bool);
   void SetIsBeingDisplayed(bool);
   void SetFilterQuality(cc::PaintFlags::FilterQuality filter_quality);
@@ -156,7 +156,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   }
   CanvasResourceProvider* GetOrCreateResourceProvider();
   CanvasResourceProvider* ResourceProvider() const;
-  void FlushRecording();
+  void FlushRecording(bool printing = false);
 
   sk_sp<cc::PaintRecord> getLastRecord() {
     return last_record_tainted_by_write_pixels_ ? nullptr : last_recording_;

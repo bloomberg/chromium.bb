@@ -18,12 +18,12 @@ namespace {
 
     class ToggleValidationTest : public ValidationTest {};
 
-    // Tests querying the detail of a toggle from dawn_native::InstanceBase works correctly.
+    // Tests querying the detail of a toggle from dawn::native::InstanceBase works correctly.
     TEST_F(ToggleValidationTest, QueryToggleInfo) {
         // Query with a valid toggle name
         {
             const char* kValidToggleName = "emulate_store_and_msaa_resolve";
-            const dawn_native::ToggleInfo* toggleInfo = instance->GetToggleInfo(kValidToggleName);
+            const dawn::native::ToggleInfo* toggleInfo = instance->GetToggleInfo(kValidToggleName);
             ASSERT_NE(nullptr, toggleInfo);
             ASSERT_NE(nullptr, toggleInfo->name);
             ASSERT_NE(nullptr, toggleInfo->description);
@@ -33,7 +33,8 @@ namespace {
         // Query with an invalid toggle name
         {
             const char* kInvalidToggleName = "!@#$%^&*";
-            const dawn_native::ToggleInfo* toggleInfo = instance->GetToggleInfo(kInvalidToggleName);
+            const dawn::native::ToggleInfo* toggleInfo =
+                instance->GetToggleInfo(kInvalidToggleName);
             ASSERT_EQ(nullptr, toggleInfo);
         }
     }
@@ -43,11 +44,14 @@ namespace {
         // Create device with a valid name of a toggle
         {
             const char* kValidToggleName = "emulate_store_and_msaa_resolve";
-            dawn_native::DawnDeviceDescriptor descriptor;
-            descriptor.forceEnabledToggles.push_back(kValidToggleName);
+            wgpu::DeviceDescriptor descriptor;
+            wgpu::DawnTogglesDeviceDescriptor togglesDesc;
+            descriptor.nextInChain = &togglesDesc;
+            togglesDesc.forceEnabledToggles = &kValidToggleName;
+            togglesDesc.forceEnabledTogglesCount = 1;
 
             WGPUDevice deviceWithToggle = adapter.CreateDevice(&descriptor);
-            std::vector<const char*> toggleNames = dawn_native::GetTogglesUsed(deviceWithToggle);
+            std::vector<const char*> toggleNames = dawn::native::GetTogglesUsed(deviceWithToggle);
             bool validToggleExists = false;
             for (const char* toggle : toggleNames) {
                 if (strcmp(toggle, kValidToggleName) == 0) {
@@ -60,11 +64,14 @@ namespace {
         // Create device with an invalid toggle name
         {
             const char* kInvalidToggleName = "!@#$%^&*";
-            dawn_native::DawnDeviceDescriptor descriptor;
-            descriptor.forceEnabledToggles.push_back(kInvalidToggleName);
+            wgpu::DeviceDescriptor descriptor;
+            wgpu::DawnTogglesDeviceDescriptor togglesDesc;
+            descriptor.nextInChain = &togglesDesc;
+            togglesDesc.forceEnabledToggles = &kInvalidToggleName;
+            togglesDesc.forceEnabledTogglesCount = 1;
 
             WGPUDevice deviceWithToggle = adapter.CreateDevice(&descriptor);
-            std::vector<const char*> toggleNames = dawn_native::GetTogglesUsed(deviceWithToggle);
+            std::vector<const char*> toggleNames = dawn::native::GetTogglesUsed(deviceWithToggle);
             bool InvalidToggleExists = false;
             for (const char* toggle : toggleNames) {
                 if (strcmp(toggle, kInvalidToggleName) == 0) {
@@ -77,11 +84,14 @@ namespace {
 
     TEST_F(ToggleValidationTest, TurnOffVsyncWithToggle) {
         const char* kValidToggleName = "turn_off_vsync";
-        dawn_native::DawnDeviceDescriptor descriptor;
-        descriptor.forceEnabledToggles.push_back(kValidToggleName);
+        wgpu::DeviceDescriptor descriptor;
+        wgpu::DawnTogglesDeviceDescriptor togglesDesc;
+        descriptor.nextInChain = &togglesDesc;
+        togglesDesc.forceEnabledToggles = &kValidToggleName;
+        togglesDesc.forceEnabledTogglesCount = 1;
 
         WGPUDevice deviceWithToggle = adapter.CreateDevice(&descriptor);
-        std::vector<const char*> toggleNames = dawn_native::GetTogglesUsed(deviceWithToggle);
+        std::vector<const char*> toggleNames = dawn::native::GetTogglesUsed(deviceWithToggle);
         bool validToggleExists = false;
         for (const char* toggle : toggleNames) {
             if (strcmp(toggle, kValidToggleName) == 0) {

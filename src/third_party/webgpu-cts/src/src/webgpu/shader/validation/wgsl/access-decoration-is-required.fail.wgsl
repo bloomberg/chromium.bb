@@ -1,6 +1,5 @@
 // v-0035: The access decoration is required for 'particles'.
 
-[[block]]
 struct Particles {
   particles : [[stride(16)]] array<f32, 4>;
 };

@@ -96,6 +96,15 @@
         "command": "npm run tsdoc",
         "problemMatcher": []
       },
+      {
+        "group": "build",
+        "label": "grunt: run:lint",
+        "detail": "Run eslint",
+
+        "type": "shell",
+        "command": "npx grunt run:lint",
+        "problemMatcher": ["$eslint-stylish"]
+      },
     ]
   }
 }

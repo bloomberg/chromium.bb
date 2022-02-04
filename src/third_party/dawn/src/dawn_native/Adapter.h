@@ -17,6 +17,8 @@
 
 #include "dawn_native/DawnNative.h"
 
+#include "common/RefCounted.h"
+#include "common/ityp_span.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/Features.h"
 #include "dawn_native/Limits.h"
@@ -24,33 +26,37 @@
 
 #include <string>
 
-namespace dawn_native {
+namespace dawn::native {
 
     class DeviceBase;
 
-    class AdapterBase {
+    class AdapterBase : public RefCounted {
       public:
         AdapterBase(InstanceBase* instance, wgpu::BackendType backend);
         virtual ~AdapterBase() = default;
 
         MaybeError Initialize();
 
+        // WebGPU API
+        bool APIGetLimits(SupportedLimits* limits) const;
+        void APIGetProperties(AdapterProperties* properties) const;
+        bool APIHasFeature(wgpu::FeatureName feature) const;
+        size_t APIEnumerateFeatures(wgpu::FeatureName* features) const;
+        void APIRequestDevice(const DeviceDescriptor* descriptor,
+                              WGPURequestDeviceCallback callback,
+                              void* userdata);
+        DeviceBase* APICreateDevice(const DeviceDescriptor* descriptor = nullptr);
+
+        uint32_t GetVendorId() const;
+        uint32_t GetDeviceId() const;
         wgpu::BackendType GetBackendType() const;
-        wgpu::AdapterType GetAdapterType() const;
-        const std::string& GetDriverDescription() const;
-        const PCIInfo& GetPCIInfo() const;
         InstanceBase* GetInstance() const;
-
-        DeviceBase* CreateDevice(const DawnDeviceDescriptor* descriptor = nullptr);
-
-        void RequestDevice(const DawnDeviceDescriptor* descriptor,
-                           WGPURequestDeviceCallback callback,
-                           void* userdata);
 
         void ResetInternalDeviceForTesting();
 
         FeaturesSet GetSupportedFeatures() const;
-        bool SupportsAllRequestedFeatures(const std::vector<const char*>& requestedFeatures) const;
+        bool SupportsAllRequiredFeatures(
+            const ityp::span<size_t, const wgpu::FeatureName>& features) const;
         WGPUDeviceProperties GetAdapterProperties() const;
 
         bool GetLimits(SupportedLimits* limits) const;
@@ -60,14 +66,16 @@ namespace dawn_native {
         virtual bool SupportsExternalImages() const = 0;
 
       protected:
-        PCIInfo mPCIInfo = {};
+        uint32_t mVendorId = 0xFFFFFFFF;
+        uint32_t mDeviceId = 0xFFFFFFFF;
+        std::string mName;
         wgpu::AdapterType mAdapterType = wgpu::AdapterType::Unknown;
         std::string mDriverDescription;
         FeaturesSet mSupportedFeatures;
 
       private:
-        virtual ResultOrError<DeviceBase*> CreateDeviceImpl(
-            const DawnDeviceDescriptor* descriptor) = 0;
+        virtual ResultOrError<Ref<DeviceBase>> CreateDeviceImpl(
+            const DeviceDescriptor* descriptor) = 0;
 
         virtual MaybeError InitializeImpl() = 0;
 
@@ -77,8 +85,7 @@ namespace dawn_native {
         // Check base WebGPU limits and populate supported limits.
         virtual MaybeError InitializeSupportedLimitsImpl(CombinedLimits* limits) = 0;
 
-        MaybeError CreateDeviceInternal(DeviceBase** result,
-                                        const DawnDeviceDescriptor* descriptor);
+        ResultOrError<Ref<DeviceBase>> CreateDeviceInternal(const DeviceDescriptor* descriptor);
 
         virtual MaybeError ResetInternalDeviceForTestingImpl();
         InstanceBase* mInstance = nullptr;
@@ -87,6 +94,6 @@ namespace dawn_native {
         bool mUseTieredLimits = false;
     };
 
-}  // namespace dawn_native
+}  // namespace dawn::native
 
 #endif  // DAWNNATIVE_ADAPTER_H_

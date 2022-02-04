@@ -1,6 +1,6 @@
 struct S_inner {
   a : f32;
-};
+}
 
 struct S {
   member_bool : bool;
@@ -13,9 +13,9 @@ struct S {
   member_m2x3 : mat2x3<f32>;
   member_arr : array<f32, 4>;
   member_struct : S_inner;
-};
+}
 
-[[stage(compute), workgroup_size(1)]]
+@stage(compute) @workgroup_size(1)
 fn main() {
   let s : S = S();
 }

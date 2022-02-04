@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.5)
 # and find_package()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
-project(libavif LANGUAGES C VERSION 0.9.2)
+project(libavif LANGUAGES C VERSION 0.9.3)
 
 # Set C99 as the default
 set(CMAKE_C_STANDARD 99)
@@ -19,7 +19,7 @@ set(CMAKE_C_STANDARD 99)
 #     Increment MINOR. Set PATCH to 0
 #   If the source code was changed, but there were no interface changes:
 #     Increment PATCH.
-set(LIBRARY_VERSION_MAJOR 12)
+set(LIBRARY_VERSION_MAJOR 13)
 set(LIBRARY_VERSION_MINOR 0)
 set(LIBRARY_VERSION_PATCH 0)
 set(LIBRARY_VERSION "${LIBRARY_VERSION_MAJOR}.${LIBRARY_VERSION_MINOR}.${LIBRARY_VERSION_PATCH}")
@@ -129,6 +129,13 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang")
         -Wno-sign-conversion
         -Wno-error=c11-extensions
     )
+    # Some headers such as glib-2.0 use identifier names that start with '_' followed by a capital letter.
+    # The C standard reserves names beginning with an underscore and various other combinations.
+    # ISO/IEC 9899:1999 (aka C99 standard) 7.1.3 Reserved identifiers
+    check_c_compiler_flag(-Wreserved-identifier HAVE_RESERVED_IDENTIFIER_WARNING)
+    if(HAVE_RESERVED_IDENTIFIER_WARNING)
+        add_definitions(-Wno-reserved-identifier)
+    endif()
     # The detection of cross compilation by -Wpoison-system-directories has false positives on macOS because
     # --sysroot is implicitly added. Turn the warning off.
     if(NOT DEFINED HAVE_POISON_SYSTEM_DIRECTORIES_WARNING)
@@ -226,12 +233,16 @@ endif()
 find_package(libyuv QUIET) # not required
 if(libyuv_FOUND)
     # libyuv 1755 exposed all of the I*Matrix() functions, which libavif relies on.
+    # libyuv 1774 exposed ScalePlane_12 function, which libavif can use for some additional optimizations.
     if(NOT LIBYUV_VERSION)
         message(STATUS "libavif: libyuv found, but version unknown; libyuv-based fast paths disabled.")
     elseif(LIBYUV_VERSION LESS 1755)
         message(STATUS "libavif: libyuv (${LIBYUV_VERSION}) found, but is too old; libyuv-based fast paths disabled.")
     else()
         message(STATUS "libavif: libyuv (${LIBYUV_VERSION}) found; libyuv-based fast paths enabled.")
+        if(LIBYUV_VERSION LESS 1774)
+            message(STATUS "libavif: some libyuv optimizations require at least version 1774 to work.")
+        endif()
         set(AVIF_PLATFORM_DEFINITIONS ${AVIF_PLATFORM_DEFINITIONS} -DAVIF_LIBYUV_ENABLED=1)
         set(AVIF_PLATFORM_INCLUDES ${AVIF_PLATFORM_INCLUDES} ${LIBYUV_INCLUDE_DIR})
         set(AVIF_PLATFORM_LIBRARIES ${AVIF_PLATFORM_LIBRARIES} ${LIBYUV_LIBRARY})
@@ -286,7 +297,12 @@ if(AVIF_CODEC_LIBGAV1)
     )
 
     if(AVIF_LOCAL_LIBGAV1)
-        set(LIB_FILENAME "${CMAKE_CURRENT_SOURCE_DIR}/ext/libgav1/build/libgav1${CMAKE_STATIC_LIBRARY_SUFFIX}")
+        set (AVIF_LIBGAV1_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/libgav1/build")
+        # If ${ANDROID_ABI} is set, look for the library under that subdirectory.
+        if (DEFINED ANDROID_ABI)
+            set(AVIF_LIBGAV1_BUILD_DIR "${AVIF_LIBGAV1_BUILD_DIR}/${ANDROID_ABI}")
+        endif()
+        set(LIB_FILENAME "${AVIF_LIBGAV1_BUILD_DIR}/libgav1${CMAKE_STATIC_LIBRARY_SUFFIX}")
         if(NOT EXISTS "${LIB_FILENAME}")
             message(FATAL_ERROR "libavif: ${LIB_FILENAME} is missing, bailing out")
         endif()
@@ -328,12 +344,12 @@ if(AVIF_CODEC_RAV1E)
             find_package(rav1e REQUIRED)
             set(AVIF_CODEC_INCLUDES ${AVIF_CODEC_INCLUDES} ${RAV1E_INCLUDE_DIR})
         endif()
-        set(AVIF_CODEC_LIBRARIES ${AVIF_CODEC_LIBRARIES} ${RAV1E_LIBRARY})
+        set(AVIF_CODEC_LIBRARIES ${AVIF_CODEC_LIBRARIES} ${RAV1E_LIBRARIES})
     endif()
 
     # Unfortunately, rav1e requires a few more libraries
     if(WIN32)
-        set(AVIF_PLATFORM_LIBRARIES ${AVIF_PLATFORM_LIBRARIES} ws2_32.lib userenv.lib)
+        set(AVIF_PLATFORM_LIBRARIES ${AVIF_PLATFORM_LIBRARIES} ws2_32.lib bcrypt.lib userenv.lib)
     elseif(UNIX AND NOT APPLE)
         set(AVIF_PLATFORM_LIBRARIES ${AVIF_PLATFORM_LIBRARIES} ${CMAKE_DL_LIBS}) # for backtrace
     endif()
@@ -520,9 +536,6 @@ if(AVIF_BUILD_TESTS)
     add_executable(aviftest
         apps/shared/y4m.c
         tests/aviftest.c
-        tests/cJSON.c
-        tests/compare.c
-        tests/testcase.c
     )
     if(AVIF_LOCAL_LIBGAV1)
         set_target_properties(aviftest PROPERTIES LINKER_LANGUAGE "CXX")
@@ -545,7 +558,7 @@ if(AVIF_BUILD_TESTS)
 
     if(AVIF_ENABLE_COVERAGE)
         add_custom_target(avif_coverage
-            COMMAND LLVM_PROFILE_FILE=${CMAKE_BINARY_DIR}/aviftest.profraw $<TARGET_FILE:aviftest> ${CMAKE_CURRENT_SOURCE_DIR}/tests/data --io-only
+            COMMAND LLVM_PROFILE_FILE=${CMAKE_BINARY_DIR}/aviftest.profraw $<TARGET_FILE:aviftest> ${CMAKE_CURRENT_SOURCE_DIR}/tests/data
             COMMAND ${XCRUN} llvm-profdata merge -sparse ${CMAKE_BINARY_DIR}/aviftest.profraw -o ${CMAKE_BINARY_DIR}/aviftest.profdata
             COMMAND cmake -E make_directory ${CMAKE_BINARY_DIR}/coverage
             COMMAND ${XCRUN} llvm-cov show $<TARGET_FILE:aviftest> -instr-profile=${CMAKE_BINARY_DIR}/aviftest.profdata -project-title=libavif --format html -output-dir=${CMAKE_BINARY_DIR}/coverage

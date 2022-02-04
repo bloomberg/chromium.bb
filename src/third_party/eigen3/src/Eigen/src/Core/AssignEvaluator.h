@@ -42,7 +42,7 @@ public:
     DstAlignment = DstEvaluator::Alignment,
     SrcAlignment = SrcEvaluator::Alignment,
     DstHasDirectAccess = (DstFlags & DirectAccessBit) == DirectAccessBit,
-    JointAlignment = EIGEN_PLAIN_ENUM_MIN(DstAlignment,SrcAlignment)
+    JointAlignment = plain_enum_min(DstAlignment, SrcAlignment)
   };
 
 private:
@@ -53,8 +53,8 @@ private:
     InnerMaxSize = int(Dst::IsVectorAtCompileTime) ? int(Dst::MaxSizeAtCompileTime)
               : int(DstFlags)&RowMajorBit ? int(Dst::MaxColsAtCompileTime)
               : int(Dst::MaxRowsAtCompileTime),
-    RestrictedInnerSize = EIGEN_SIZE_MIN_PREFER_FIXED(InnerSize,MaxPacketSize),
-    RestrictedLinearSize = EIGEN_SIZE_MIN_PREFER_FIXED(Dst::SizeAtCompileTime,MaxPacketSize),
+    RestrictedInnerSize = min_size_prefer_fixed(InnerSize, MaxPacketSize),
+    RestrictedLinearSize = min_size_prefer_fixed(Dst::SizeAtCompileTime, MaxPacketSize),
     OuterStride = int(outer_stride_at_compile_time<Dst>::ret),
     MaxSizeAtCompileTime = Dst::SizeAtCompileTime
   };

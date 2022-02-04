@@ -7,6 +7,8 @@
 // LSAN_OPTIONS=suppressions=/path/to/suppressions. Please refer to
 // http://dev.chromium.org/developers/testing/leaksanitizer for more info.
 
+#include "build/build_config.h"
+
 #if defined(LEAK_SANITIZER)
 
 // Please make sure the code below declares a single string variable
@@ -70,7 +72,7 @@ char kLSanDefaultSuppressions[] =
     // Suppress leaks in CreateCdmInstance. https://crbug.com/961062
     "leak:media::CdmAdapter::CreateCdmInstance\n"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
     // Suppress leak in FileStream. crbug.com/1263374
     "leak:chromeos::PipeReader::StartIO\n"
     // Supppress AnimationObserverToHideView leak. crbug.com/1261464
@@ -78,9 +80,7 @@ char kLSanDefaultSuppressions[] =
     // Suppress AnimationSequence leak. crbug.com/1265031
     "leak:ash::LockStateController::StartPostLockAnimation\n"
     // Suppress leak in SurfaceDrawContext. crbug.com/1265033
-    "leak:skgpu::v1::SurfaceDrawContext::drawGlyphRunListWithCache\n"
-    // Suppress leak in PagedAppsGridView. crbug.com/1276658
-    "leak:ash::PagedAppsGridView::AnimateCardifiedState\n"
+    "leak:skgpu::v1::SurfaceDrawContext::drawGlyphRunList\n"
 #endif
 
     // PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.

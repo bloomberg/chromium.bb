@@ -20,7 +20,7 @@
 #include "napi.h"
 #include "src/dawn_node/interop/WebGPU.h"
 
-namespace wgpu { namespace binding {
+namespace wgpu::binding {
 
     // GPUComputePassEncoder is an implementation of interop::GPUComputePassEncoder that wraps a
     // wgpu::ComputePassEncoder.
@@ -43,13 +43,6 @@ namespace wgpu { namespace binding {
         void dispatchIndirect(Napi::Env,
                               interop::Interface<interop::GPUBuffer> indirectBuffer,
                               interop::GPUSize64 indirectOffset) override;
-        void beginPipelineStatisticsQuery(Napi::Env,
-                                          interop::Interface<interop::GPUQuerySet> querySet,
-                                          interop::GPUSize32 queryIndex) override;
-        void endPipelineStatisticsQuery(Napi::Env) override;
-        void writeTimestamp(Napi::Env,
-                            interop::Interface<interop::GPUQuerySet> querySet,
-                            interop::GPUSize32 queryIndex) override;
         void endPass(Napi::Env) override;
         void setBindGroup(Napi::Env,
                           interop::GPUIndex32 index,
@@ -71,6 +64,6 @@ namespace wgpu { namespace binding {
         wgpu::ComputePassEncoder enc_;
     };
 
-}}  // namespace wgpu::binding
+}  // namespace wgpu::binding
 
 #endif  // DAWN_NODE_BINDING_GPUCOMPUTEPASSENCODER_H_

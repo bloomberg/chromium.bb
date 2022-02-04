@@ -31,7 +31,7 @@
 
 #include <vector>
 
-namespace dawn_native { namespace metal {
+namespace dawn::native::metal {
 
     namespace {
 
@@ -194,7 +194,7 @@ namespace dawn_native { namespace metal {
             // MTLDevice’s counterSets property declares which counter sets it supports. Check
             // whether it's available on the device before requesting a counter set.
             id<MTLCounterSet> counterSet = nil;
-            for (id<MTLCounterSet> set in device.counterSets) {
+            for (id<MTLCounterSet> set in [device counterSets]) {
                 if ([set.name caseInsensitiveCompare:counterSetName] == NSOrderedSame) {
                     counterSet = set;
                     break;
@@ -211,7 +211,7 @@ namespace dawn_native { namespace metal {
             // if there is a counter unsupported.
             for (MTLCommonCounter counterName : counterNames) {
                 bool found = false;
-                for (id<MTLCounter> counter in counterSet.counters) {
+                for (id<MTLCounter> counter in [counterSet counters]) {
                     if ([counter.name caseInsensitiveCompare:counterName] == NSOrderedSame) {
                         found = true;
                         break;
@@ -243,12 +243,12 @@ namespace dawn_native { namespace metal {
       public:
         Adapter(InstanceBase* instance, id<MTLDevice> device)
             : AdapterBase(instance, wgpu::BackendType::Metal), mDevice(device) {
-            mPCIInfo.name = std::string([[*mDevice name] UTF8String]);
+            mName = std::string([[*mDevice name] UTF8String]);
 
             PCIIDs ids;
             if (!instance->ConsumedError(GetDevicePCIInfo(device, &ids))) {
-                mPCIInfo.vendorId = ids.vendorId;
-                mPCIInfo.deviceId = ids.deviceId;
+                mVendorId = ids.vendorId;
+                mDeviceId = ids.deviceId;
             }
 
 #if defined(DAWN_PLATFORM_IOS)
@@ -272,13 +272,13 @@ namespace dawn_native { namespace metal {
 
         // AdapterBase Implementation
         bool SupportsExternalImages() const override {
-            // Via dawn_native::metal::WrapIOSurface
+            // Via dawn::native::metal::WrapIOSurface
             return true;
         }
 
       private:
-        ResultOrError<DeviceBase*> CreateDeviceImpl(
-            const DawnDeviceDescriptor* descriptor) override {
+        ResultOrError<Ref<DeviceBase>> CreateDeviceImpl(
+            const DeviceDescriptor* descriptor) override {
             return Device::Create(this, mDevice, descriptor);
         }
 
@@ -311,7 +311,7 @@ namespace dawn_native { namespace metal {
                     // fails to call without any copy commands on MTLBlitCommandEncoder. This issue
                     // has been fixed on macOS 11.0. See crbug.com/dawn/545
                     enableTimestampQuery &=
-                        !(gpu_info::IsAMD(GetPCIInfo().vendorId) && IsMacOSVersionAtLeast(11));
+                        !(gpu_info::IsAMD(mVendorId) && IsMacOSVersionAtLeast(11));
 #endif
 
                     if (enableTimestampQuery) {
@@ -323,6 +323,17 @@ namespace dawn_native { namespace metal {
             if (@available(macOS 10.11, iOS 11.0, *)) {
                 mSupportedFeatures.EnableFeature(Feature::DepthClamping);
             }
+
+            if (@available(macOS 10.11, iOS 9.0, *)) {
+                mSupportedFeatures.EnableFeature(Feature::Depth32FloatStencil8);
+            }
+
+#if defined(DAWN_PLATFORM_MACOS)
+            // MTLPixelFormatDepth24Unorm_Stencil8 is only available on macOS 10.11+
+            if ([*mDevice isDepth24Stencil8PixelFormatSupported]) {
+                mSupportedFeatures.EnableFeature(Feature::Depth24UnormStencil8);
+            }
+#endif
 
             return {};
         }
@@ -547,7 +558,7 @@ namespace dawn_native { namespace metal {
         }
     }
 
-    std::vector<std::unique_ptr<AdapterBase>> Backend::DiscoverDefaultAdapters() {
+    std::vector<Ref<AdapterBase>> Backend::DiscoverDefaultAdapters() {
         AdapterDiscoveryOptions options;
         auto result = DiscoverAdapters(&options);
         if (result.IsError()) {
@@ -557,11 +568,11 @@ namespace dawn_native { namespace metal {
         return result.AcquireSuccess();
     }
 
-    ResultOrError<std::vector<std::unique_ptr<AdapterBase>>> Backend::DiscoverAdapters(
+    ResultOrError<std::vector<Ref<AdapterBase>>> Backend::DiscoverAdapters(
         const AdapterDiscoveryOptionsBase* optionsBase) {
         ASSERT(optionsBase->backendType == WGPUBackendType_Metal);
 
-        std::vector<std::unique_ptr<AdapterBase>> adapters;
+        std::vector<Ref<AdapterBase>> adapters;
         BOOL supportedVersion = NO;
 #if defined(DAWN_PLATFORM_MACOS)
         if (@available(macOS 10.11, *)) {
@@ -570,7 +581,7 @@ namespace dawn_native { namespace metal {
             NSRef<NSArray<id<MTLDevice>>> devices = AcquireNSRef(MTLCopyAllDevices());
 
             for (id<MTLDevice> device in devices.Get()) {
-                std::unique_ptr<Adapter> adapter = std::make_unique<Adapter>(GetInstance(), device);
+                Ref<Adapter> adapter = AcquireRef(new Adapter(GetInstance(), device));
                 if (!GetInstance()->ConsumedError(adapter->Initialize())) {
                     adapters.push_back(std::move(adapter));
                 }
@@ -582,8 +593,8 @@ namespace dawn_native { namespace metal {
         if (@available(iOS 8.0, *)) {
             supportedVersion = YES;
             // iOS only has a single device so MTLCopyAllDevices doesn't exist there.
-            std::unique_ptr<Adapter> adapter =
-                std::make_unique<Adapter>(GetInstance(), MTLCreateSystemDefaultDevice());
+            Ref<Adapter> adapter =
+                AcquireRef(new Adapter(GetInstance(), MTLCreateSystemDefaultDevice()));
             if (!GetInstance()->ConsumedError(adapter->Initialize())) {
                 adapters.push_back(std::move(adapter));
             }
@@ -602,4 +613,4 @@ namespace dawn_native { namespace metal {
         return new Backend(instance);
     }
 
-}}  // namespace dawn_native::metal
+}  // namespace dawn::native::metal

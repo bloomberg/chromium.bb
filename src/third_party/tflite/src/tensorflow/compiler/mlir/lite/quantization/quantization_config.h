@@ -19,9 +19,11 @@ limitations under the License.
 #ifndef TENSORFLOW_COMPILER_MLIR_LITE_QUANTIZATION_QUANTIZATION_CONFIG_H_
 #define TENSORFLOW_COMPILER_MLIR_LITE_QUANTIZATION_QUANTIZATION_CONFIG_H_
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
 #include "llvm/ADT/Optional.h"
 #include "llvm/ADT/SmallVector.h"
@@ -31,13 +33,26 @@ limitations under the License.
 namespace mlir {
 namespace TFL {
 
+// Stores information about how to quantize a user-specified custom operation.
+struct CustomOpInfo {
+  std::vector<std::int32_t> quantizable_input_indices;
+  bool is_weight_only;
+};
+
 using ::tflite::optimize::ReducedPrecisionSupport;
+using StringSet = absl::flat_hash_set<std::string>;
+using CustomOpMap = std::unordered_map<std::string, CustomOpInfo>;
 
 struct QuantizationSpecs {
   // Which function this node quant specifications belong to.
   std::string target_func = "main";
 
-  // Whether allow weight-only quantization. This is the easiest quantization
+  // Whether the quantization passes are triggered for post-training
+  // quantization. If it is true, the model input doesn't require user specified
+  // input ranges.
+  bool post_training_quantization = false;
+
+  // Whether allow dynamic range quantization. This is the easiest quantization
   // mode which doesn't require QAT or sample inputs. But it can only target
   // DT_HALF and DT_QINT8 inference type.
   bool weight_quantization = false;
@@ -45,12 +60,17 @@ struct QuantizationSpecs {
   // Whether use the MLIR dynamic range quantizer instead of the old TOCO one.
   bool enable_mlir_dynamic_range_quantizer = false;
 
-  // Whether the quantization passes are triggered for post-training
-  // quantization. If it is true, the model input doesn't require user specified
-  // input ranges.
-  // TODO(fengliuai): The `weight_quantization` is just a special case of
-  // post-training quantization. We need to deprecate the `weight_quantization`.
-  bool post_training_quantization = false;
+  // Whether allow weight-only quantization. This scheme quantize weights but
+  // will dequantize them back at runtime which is useful to save memory when
+  // the kernel support is not yet avilable in lower precisions. Used in MLIR
+  // dynamic range quantizer.
+  bool weight_only_quantization = false;
+
+  // The minimum number of elements in a weights array required to apply
+  // quantization. This is especially useful not to quantize small tensors as
+  // it is hard to get performance benefits from them with quantization. Used
+  // in MLIR dynamic range quantizer with int8 weight data type.
+  int64_t minimum_elements_for_weights = 1024;
 
   // Calculate scales in float to keep quantized values the same with old TOCO
   // quantizer.
@@ -155,6 +175,22 @@ struct QuantizationSpecs {
   // (output of previous quantized layer). When enabled, float and quantized ops
   // will run with respective float and quantized output of previous ops.
   bool whole_model_verify = false;
+
+  // Whether to use fake quant attributes to calculate quantization parameters.
+  bool use_fake_quant_num_bits = false;
+
+  // Names of ops to block from quantization. Used in QuantizePass.
+  // For dynamic range quantization, ops in blocklist are quantized in weight-
+  // only manner.
+  StringSet ops_blocklist;
+
+  // Names of locations to block from quantization. Used in QuantizePass.
+  StringSet nodes_blocklist;
+
+  // TODO(b/214186439): Support custom op quantization for MLIR dynamic range
+  // quantization
+  // Map from custom op code to custom op quantization information.
+  CustomOpMap custom_map;
 };
 
 // Parses the command line flag strings to the quantization specification for

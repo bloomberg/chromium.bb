@@ -156,6 +156,8 @@ Compiler::Compiler(rx::GLImplFactory *implFactory, const State &state, egl::Disp
     mResources.EXT_shader_framebuffer_fetch_non_coherent =
         extensions.shaderFramebufferFetchNonCoherentEXT;
 
+    mResources.EXT_shader_framebuffer_fetch = extensions.shaderFramebufferFetchEXT;
+
     // GL_EXT_clip_cull_distance
     mResources.EXT_clip_cull_distance = extensions.clipCullDistanceEXT;
 
@@ -180,6 +182,9 @@ Compiler::Compiler(rx::GLImplFactory *implFactory, const State &state, egl::Disp
     // OES_sample_variables
     mResources.OES_sample_variables = extensions.sampleVariablesOES;
     mResources.MaxSamples           = caps.maxSamples;
+
+    // ANDROID_extension_pack_es31a
+    mResources.ANDROID_extension_pack_es31a = extensions.extensionPackEs31aANDROID;
 
     // GLSL ES 3.1 constants
     mResources.MaxProgramTextureGatherOffset    = caps.maxProgramTextureGatherOffset;

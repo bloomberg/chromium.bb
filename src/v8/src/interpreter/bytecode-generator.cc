@@ -2813,7 +2813,6 @@ void BytecodeGenerator::BuildClassProperty(ClassLiteral::Property* property) {
   // Private methods are not initialized in BuildClassProperty.
   DCHECK_IMPLIES(property->is_private(),
                  property->kind() == ClassLiteral::Property::FIELD);
-  builder()->SetExpressionPosition(property->key());
 
   bool is_literal_store = property->key()->IsPropertyName() &&
                           !property->is_computed_name() &&
@@ -3627,12 +3626,10 @@ void BytecodeGenerator::BuildAsyncReturn(int source_position) {
   } else {
     DCHECK(IsAsyncFunction(info()->literal()->kind()) ||
            IsAsyncModule(info()->literal()->kind()));
-    RegisterList args = register_allocator()->NewRegisterList(3);
+    RegisterList args = register_allocator()->NewRegisterList(2);
     builder()
         ->MoveRegister(generator_object(), args[0])  // generator
         .StoreAccumulatorInRegister(args[1])         // value
-        .LoadBoolean(info()->literal()->CanSuspend())
-        .StoreAccumulatorInRegister(args[2])  // can_suspend
         .CallRuntime(Runtime::kInlineAsyncFunctionResolve, args);
   }
 

@@ -50,20 +50,18 @@ if (NOT TARGET glfw)
     add_subdirectory(${DAWN_GLFW_DIR} "${CMAKE_CURRENT_BINARY_DIR}/glfw")
 endif()
 
-if (DAWN_BUILD_EXAMPLES)
-    if (NOT TARGET glm)
-        message(STATUS "Dawn: using GLM at ${DAWN_GLM_DIR}")
-        add_subdirectory(${DAWN_GLM_DIR} "${CMAKE_CURRENT_BINARY_DIR}/glm")
-    endif()
-endif()
-
 if (NOT TARGET libtint)
     message(STATUS "Dawn: using Tint at ${DAWN_TINT_DIR}")
     # TODO(crbug.com/tint/1217): Tint expects glslang for validation when
     # building the GLSL writer, but currently Dawn does not provide this
     # third_party dependency. Disable the GLSL writer for now.
     set(TINT_BUILD_GLSL_WRITER OFF)
+    # TODO(crbug.com/tint/455): Tint does not currently build with CMake when
+    # BUILD_SHARED_LIBS=1, so always build it as static for now.
+    set(BUILD_SHARED_LIBS_SAVED ${BUILD_SHARED_LIBS})
+    set(BUILD_SHARED_LIBS 0)
     add_subdirectory(${DAWN_TINT_DIR} "${CMAKE_CURRENT_BINARY_DIR}/tint")
+    set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_SAVED})
 endif()
 
 if (NOT TARGET libabsl)

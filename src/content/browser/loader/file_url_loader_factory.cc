@@ -45,6 +45,7 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/cors/cors.h"
@@ -59,7 +60,7 @@
 #include "storage/common/file_system/file_system_util.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "base/win/shortcut.h"
 #endif
 
@@ -229,7 +230,8 @@ class FileURLDirectoryLoader
     head->mime_type = "text/html";
     head->charset = "utf-8";
     head->response_type = response_type;
-    client->OnReceiveResponse(std::move(head));
+    client->OnReceiveResponse(std::move(head),
+                              mojo::ScopedDataPipeConsumerHandle());
     client->OnStartLoadingResponseBody(std::move(consumer_handle));
     client_ = std::move(client);
 
@@ -276,9 +278,9 @@ class FileURLDirectoryLoader
     base::FilePath filename = data.info.GetName();
     if (filename.value() != base::FilePath::kCurrentDirectory &&
         filename.value() != base::FilePath::kParentDirectory) {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       std::string raw_bytes;  // Empty on Windows means UTF-8 encoded name.
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
       const std::string& raw_bytes = filename.value();
 #endif
       pending_data_.append(net::GetDirectoryListingEntry(
@@ -519,7 +521,7 @@ class FileURLLoader : public network::mojom::URLLoader {
       return;
     }
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     base::FilePath shortcut_target;
     if (link_following_policy == LinkFollowingPolicy::kFollow &&
         base::LowerCaseEqualsASCII(path.Extension(), ".lnk") &&
@@ -556,7 +558,7 @@ class FileURLLoader : public network::mojom::URLLoader {
       client_->OnReceiveRedirect(redirect_info, std::move(head));
       return;
     }
-#endif  // defined(OS_WIN)
+#endif  // BUILDFLAG(IS_WIN)
 
     mojo::ScopedDataPipeProducerHandle producer_handle;
     mojo::ScopedDataPipeConsumerHandle consumer_handle;
@@ -674,11 +676,18 @@ class FileURLLoader : public network::mojom::URLLoader {
       head->mime_type.assign(new_type);
       head->did_mime_sniff = true;
     }
-    if (head->headers) {
-      head->headers->AddHeader(net::HttpRequestHeaders::kContentType,
-                               head->mime_type);
+    if (!head->headers) {
+      head->headers =
+          base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
     }
-    client_->OnReceiveResponse(std::move(head));
+    head->headers->AddHeader(net::HttpRequestHeaders::kContentType,
+                             head->mime_type);
+    // We add a Last-Modified header to file responses so that our
+    // implementation of document.lastModified can access it (crbug.com/875299).
+    head->headers->AddHeader(net::HttpResponseHeaders::kLastModified,
+                             base::TimeFormatHTTP(info.last_modified));
+    client_->OnReceiveResponse(std::move(head),
+                               mojo::ScopedDataPipeConsumerHandle());
     client_->OnStartLoadingResponseBody(std::move(consumer_handle));
 
     if (total_bytes_to_send == 0) {
@@ -814,8 +823,7 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity) ||
       (request.request_initiator &&
-       (request.request_initiator->IsSameOriginWith(
-            url::Origin::Create(request.url)) ||
+       (request.request_initiator->IsSameOriginWith(request.url) ||
         (shared_cors_origin_access_list_ &&
          shared_cors_origin_access_list_->GetOriginAccessList()
                  .CheckAccessState(*request.request_initiator, request.url) ==

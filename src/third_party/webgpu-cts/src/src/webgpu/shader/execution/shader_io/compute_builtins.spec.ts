@@ -98,11 +98,9 @@ g.test('inputs')
 
     // WGSL shader that stores every builtin value to a buffer, for every invocation in the grid.
     const wgsl = `
-      [[block]]
       struct S {
         data : array<u32>;
       };
-      [[block]]
       struct V {
         data : array<vec3<u32>>;
       };

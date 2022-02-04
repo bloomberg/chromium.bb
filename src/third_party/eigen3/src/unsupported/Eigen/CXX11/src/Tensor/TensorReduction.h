@@ -108,7 +108,7 @@ struct preserve_inner_most_dims {
   static const bool value = false;
 };
 
-#if EIGEN_HAS_CONSTEXPR && EIGEN_HAS_VARIADIC_TEMPLATES
+#if EIGEN_HAS_CONSTEXPR
 template <typename ReducedDims, int NumTensorDims>
 struct are_inner_most_dims<ReducedDims, NumTensorDims, ColMajor>{
   static const bool tmp1 = indices_statically_known_to_increase<ReducedDims>();
@@ -190,7 +190,7 @@ struct InnerMostDimReducer<Self, Op, true, false> {
     constexpr Index packetSize = internal::unpacket_traits<typename Self::PacketReturnType>::size;
     Index start = 0;
     typename Self::PacketReturnType paccum0 = reducer0.template initializePacket<typename Self::PacketReturnType>();
-    if (numValuesToReduce >= 4*packetSize) {
+    if (!Self::ReducerTraits::IsStateful && numValuesToReduce >= 4*packetSize) {
       const Index VectorizedSize4 = (numValuesToReduce / (4*packetSize)) * (4*packetSize);
       typename Self::PacketReturnType paccum1 = reducer0.template initializePacket<typename Self::PacketReturnType>();
       typename Self::PacketReturnType paccum2 = reducer0.template initializePacket<typename Self::PacketReturnType>();
@@ -313,7 +313,7 @@ struct InnerMostDimPreserver<0, Self, Op, true> {
     using Index = typename Self::Index;
     const Index stride = self.m_reducedStrides[0];
     const Index size = self.m_reducedDims[0];
-    if (size >= 16) {
+    if (!Self::ReducerTraits::IsStateful && size >= 16) {
       const Index unrolled_size4 = (size / 4) * 4;
       typename Self::PacketReturnType accum1 = reducer0.template initializePacket<typename Self::PacketReturnType>();
       typename Self::PacketReturnType accum2 = reducer0.template initializePacket<typename Self::PacketReturnType>();
@@ -633,7 +633,7 @@ static const bool RunningOnGPU = false;
           m_fastOutputStrides[i] = internal::TensorIntDivisor<Index>(m_outputStrides[i]);
         }
       } else {
-        m_outputStrides[NumOutputDims - 1] = 1;
+        m_outputStrides[static_cast<size_t>(NumOutputDims - 1)] = 1;
         for (int i = NumOutputDims - 2; i >= 0; --i) {
           m_outputStrides[i] = m_outputStrides[i + 1] * m_dimensions[i + 1];
           m_fastOutputStrides[i] = internal::TensorIntDivisor<Index>(m_outputStrides[i]);
@@ -680,7 +680,7 @@ static const bool RunningOnGPU = false;
             ? internal::array_prod(input_dims)
             : (static_cast<int>(Layout) == static_cast<int>(ColMajor))
                   ? m_preservedStrides[0]
-                  : m_preservedStrides[NumOutputDims - 1];
+                  : m_preservedStrides[static_cast<size_t>(NumOutputDims - 1)];
   }
 
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Dimensions& dimensions() const { return m_dimensions; }

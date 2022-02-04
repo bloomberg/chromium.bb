@@ -856,16 +856,19 @@ uint32_t LibvpxVp8Encoder::MaxIntraTarget(uint32_t optimalBuffersize) {
 }
 
 uint32_t LibvpxVp8Encoder::FrameDropThreshold(size_t spatial_idx) const {
-  bool enable_frame_dropping = codec_.VP8().frameDroppingOn;
+  if (!codec_.VP8().frameDroppingOn) {
+    return 0;
+  }
+
   // If temporal layers are used, they get to override the frame dropping
   // setting, as eg. ScreenshareLayers does not work as intended with frame
   // dropping on and DefaultTemporalLayers will have performance issues with
   // frame dropping off.
   RTC_DCHECK(frame_buffer_controller_);
   RTC_DCHECK_LT(spatial_idx, frame_buffer_controller_->StreamCount());
-  enable_frame_dropping =
-      frame_buffer_controller_->SupportsEncoderFrameDropping(spatial_idx);
-  return enable_frame_dropping ? 30 : 0;
+  return frame_buffer_controller_->SupportsEncoderFrameDropping(spatial_idx)
+             ? 30
+             : 0;
 }
 
 size_t LibvpxVp8Encoder::SteadyStateSize(int sid, int tid) {
@@ -1184,6 +1187,8 @@ int LibvpxVp8Encoder::GetEncodedPartitions(const VideoFrame& input_image,
         libvpx_->codec_control(&encoders_[encoder_idx], VP8E_GET_LAST_QUANTIZER,
                                &qp_128);
         encoded_images_[encoder_idx].qp_ = qp_128;
+        encoded_images_[encoder_idx].SetAtTargetQuality(
+            qp_128 <= variable_framerate_experiment_.steady_state_qp);
         encoded_complete_callback_->OnEncodedImage(encoded_images_[encoder_idx],
                                                    &codec_specific);
         const size_t steady_state_size = SteadyStateSize(

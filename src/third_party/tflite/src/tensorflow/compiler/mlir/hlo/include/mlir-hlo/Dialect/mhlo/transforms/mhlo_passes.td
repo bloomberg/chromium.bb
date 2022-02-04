@@ -46,11 +46,6 @@ def LegalizeControlFlowPass : FunctionPass<"mhlo-legalize-control-flow"> {
   let constructor = "createLegalizeControlFlowPass()";
 }
 
-def LegalizeControlFlowToScfPass : FunctionPass<"mhlo-control-flow-to-scf"> {
-  let summary = "Legalize from MHLO control flow to SCF control flow.";
-  let constructor = "createControlFlowToScfPass()";
-}
-
 def LegalizeEinsumToDotGeneralPass : FunctionPass<"mhlo-legalize-einsum-to-dot-general"> {
   let summary = "Legalizes einsum ops to dot_general ops.";
   let constructor = "createLegalizeEinsumToDotGeneralPass()";
@@ -65,6 +60,11 @@ def LegalizeGatherToTorchIndexSelectPass : FunctionPass<"mhlo-legalize-gather-to
 def LegalizeTanhToApproximationPass : FunctionPass<"mhlo-legalize-trigonometric-to-approximation"> {
   let summary = "Legalize trigonometric operations from standard dialect to an approximation.";
   let constructor = "createLegalizeTrigonometricToApproximationPass()";
+}
+
+def HloLegalizeShapeOpsToStandardPass : FunctionPass<"hlo-legalize-shapeops-to-standard"> {
+  let summary = "Legalize shape operations from HLO dialect to standard dialect.";
+  let constructor = "createLegalizeHloShapeOpsToStandardPass()";
 }
 
 def HloLegalizeToLinalgPass : FunctionPass<"hlo-legalize-to-linalg"> {
@@ -168,6 +168,29 @@ def BroadcastPropagationPass : FunctionPass<"mhlo-broadcast-propagation"> {
     "broadcast the operands rather than the result. This will eventually allow "
     "for larger fusions.";
   let constructor = "createBroadcastPropagationPass()";
+}
+
+// TODO(frgossen): Limit this pass to merging of assuming regions and factor out
+// broadcast propagation into its own pass.
+def MergeAssumingOpsPass : FunctionPass<"mhlo-merge-assuming-ops"> {
+  let summary = "Move dynamic broadcasts up over element-wise operations and "
+    "broadcast the operands rather than the result. This will eventually allow "
+    "for larger fusions.";
+  let constructor = "createMergeAssumingOpsPass()";
+  let options = [
+      Option<"propagate_broadcasts_", "propagate-broadcasts", "bool",
+             /*default=*/"true",
+             "Also propagate broadcasts with a pattern-based rewrite.">,
+  ];
+}
+
+def GroupReductionDimensionsPass
+    : FunctionPass<"group-reduction-dimensions"> {
+  let summary = "Group dimensions of reduction operations";
+  let description = "Group reduction and parallel dimensions of reduction "
+    "operations and realize them through equivalent 1D or 2D reductions, if "
+    "possible.";
+  let constructor = "createGroupReductionDimensionsPass()";
 }
 
 def TestUnfuseBatchNormPass : Pass<"mhlo-test-unfuse-batch-norm", "FuncOp"> {

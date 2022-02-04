@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -186,7 +187,7 @@ int WebSocketTransportConnectJob::DoResolveHostComplete(int result) {
     OnHostResolutionCallbackResult callback_result =
         params_->host_resolution_callback().Run(
             ToLegacyDestinationEndpoint(params_->destination()),
-            request_->GetAddressResults().value());
+            *request_->GetAddressResults());
     if (callback_result == OnHostResolutionCallbackResult::kMayBeDeletedAsync) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&WebSocketTransportConnectJob::OnIOComplete,
@@ -206,9 +207,8 @@ int WebSocketTransportConnectJob::DoTransportConnect() {
   int result = ERR_UNEXPECTED;
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
 
-  for (AddressList::const_iterator it =
-           request_->GetAddressResults().value().begin();
-       it != request_->GetAddressResults().value().end(); ++it) {
+  for (AddressList::const_iterator it = request_->GetAddressResults()->begin();
+       it != request_->GetAddressResults()->end(); ++it) {
     switch (it->GetFamily()) {
       case ADDRESS_FAMILY_IPV4:
         ipv4_addresses.push_back(*it);
@@ -238,7 +238,8 @@ int WebSocketTransportConnectJob::DoTransportConnect() {
     switch (result) {
       case OK:
         DCHECK(request_);
-        SetSocket(ipv6_job_->PassSocket(), request_->GetDnsAliasResults());
+        SetSocket(ipv6_job_->PassSocket(),
+                  base::OptionalFromPtr(request_->GetDnsAliasResults()));
         race_result_ = had_ipv4_ ? TransportConnectJob::RACE_IPV6_WINS
                                  : TransportConnectJob::RACE_IPV6_SOLO;
         return result;
@@ -265,7 +266,8 @@ int WebSocketTransportConnectJob::DoTransportConnect() {
     result = ipv4_job_->Start();
     if (result == OK) {
       DCHECK(request_);
-      SetSocket(ipv4_job_->PassSocket(), request_->GetDnsAliasResults());
+      SetSocket(ipv4_job_->PassSocket(),
+                base::OptionalFromPtr(request_->GetDnsAliasResults()));
       race_result_ = had_ipv6_ ? TransportConnectJob::RACE_IPV4_WINS
                                : TransportConnectJob::RACE_IPV4_SOLO;
     }
@@ -296,7 +298,8 @@ void WebSocketTransportConnectJob::OnSubJobComplete(
         break;
     }
     DCHECK(request_);
-    SetSocket(job->PassSocket(), request_->GetDnsAliasResults());
+    SetSocket(job->PassSocket(),
+              base::OptionalFromPtr(request_->GetDnsAliasResults()));
 
     // Make sure all connections are cancelled even if this object fails to be
     // deleted.

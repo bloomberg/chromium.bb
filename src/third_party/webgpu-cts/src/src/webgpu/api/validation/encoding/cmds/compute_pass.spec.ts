@@ -123,9 +123,6 @@ indirectBuffer with 6 elements.
   - valid, within the buffer: {beginning, middle, end} of the buffer
   - invalid, non-multiple of 4
   - invalid, the last element is outside the buffer
-
-TODO: test specifically which call the validation error occurs in.
-      (Should be finish() for invalid, but submit() for destroyed.)
 `
   )
   .paramsSubcasesOnly(u =>

@@ -74,8 +74,10 @@ extern "C" {
 #if !defined(LIBYUV_DISABLE_X86) && \
     (defined(_M_IX86) || defined(__x86_64__) || defined(__i386__))
 // Conversions:
-#define HAS_ABGRTOUVROW_SSSE3
 #define HAS_ABGRTOYROW_SSSE3
+#if !defined(LIBYUV_BIT_EXACT)
+#define HAS_ABGRTOUVROW_SSSE3
+#endif
 #define HAS_ARGB1555TOARGBROW_SSE2
 #define HAS_ARGB4444TOARGBROW_SSE2
 #define HAS_ARGBEXTRACTALPHAROW_SSE2
@@ -87,13 +89,15 @@ extern "C" {
 #define HAS_ARGBTORGB24ROW_SSSE3
 #define HAS_ARGBTORGB565DITHERROW_SSE2
 #define HAS_ARGBTORGB565ROW_SSE2
+#define HAS_ARGBTOYJROW_SSSE3
+#define HAS_ARGBTOYROW_SSSE3
+#define HAS_BGRATOYROW_SSSE3
+#if !defined(LIBYUV_BIT_EXACT)
 #define HAS_ARGBTOUV444ROW_SSSE3
 #define HAS_ARGBTOUVJROW_SSSE3
 #define HAS_ARGBTOUVROW_SSSE3
-#define HAS_ARGBTOYJROW_SSSE3
-#define HAS_ARGBTOYROW_SSSE3
 #define HAS_BGRATOUVROW_SSSE3
-#define HAS_BGRATOYROW_SSSE3
+#endif
 #define HAS_COPYROW_ERMS
 #define HAS_COPYROW_SSE2
 #define HAS_H422TOARGBROW_SSSE3
@@ -119,14 +123,16 @@ extern "C" {
 #define HAS_NV21TORGB24ROW_SSSE3
 #define HAS_RAWTOARGBROW_SSSE3
 #define HAS_RAWTORGB24ROW_SSSE3
-#define HAS_RAWTOYROW_SSSE3
 #define HAS_RGB24TOARGBROW_SSSE3
+#define HAS_RGB565TOARGBROW_SSE2
+#define HAS_RAWTOYROW_SSSE3
 #define HAS_RGB24TOYROW_SSSE3
+#define HAS_RGBATOYROW_SSSE3
+#if !defined(LIBYUV_BIT_EXACT)
 #define HAS_RGB24TOYJROW_SSSE3
 #define HAS_RAWTOYJROW_SSSE3
-#define HAS_RGB565TOARGBROW_SSE2
 #define HAS_RGBATOUVROW_SSSE3
-#define HAS_RGBATOYROW_SSSE3
+#endif
 #define HAS_SETROW_ERMS
 #define HAS_SETROW_X86
 #define HAS_SPLITUVROW_SSE2
@@ -142,7 +148,9 @@ extern "C" {
 // Effects:
 #define HAS_ARGBADDROW_SSE2
 #define HAS_ARGBAFFINEROW_SSE2
+#if !defined(LIBYUV_BIT_EXACT)
 #define HAS_ARGBATTENUATEROW_SSSE3
+#endif
 #define HAS_ARGBBLENDROW_SSSE3
 #define HAS_ARGBCOLORMATRIXROW_SSSE3
 #define HAS_ARGBCOLORTABLEROW_X86
@@ -192,12 +200,14 @@ extern "C" {
 #define HAS_ARGBPOLYNOMIALROW_AVX2
 #define HAS_ARGBSHUFFLEROW_AVX2
 #define HAS_ARGBTORGB565DITHERROW_AVX2
+#define HAS_ARGBTOYJROW_AVX2
+#define HAS_RAWTOYJROW_AVX2
+#define HAS_RGB24TOYJROW_AVX2
+#define HAS_ARGBTOYROW_AVX2
+#if !defined(LIBYUV_BIT_EXACT)
 #define HAS_ARGBTOUVJROW_AVX2
 #define HAS_ARGBTOUVROW_AVX2
-#define HAS_ARGBTOYJROW_AVX2
-#define HAS_ARGBTOYROW_AVX2
-#define HAS_RGB24TOYJROW_AVX2
-#define HAS_RAWTOYJROW_AVX2
+#endif
 #define HAS_COPYROW_AVX
 #define HAS_H422TOARGBROW_AVX2
 #define HAS_HALFFLOATROW_AVX2
@@ -230,7 +240,9 @@ extern "C" {
 
 // Effects:
 #define HAS_ARGBADDROW_AVX2
+#if !defined(LIBYUV_BIT_EXACT)
 #define HAS_ARGBATTENUATEROW_AVX2
+#endif
 #define HAS_ARGBMULTIPLYROW_AVX2
 #define HAS_ARGBSUBTRACTROW_AVX2
 #define HAS_ARGBUNATTENUATEROW_AVX2
@@ -291,13 +303,16 @@ extern "C" {
 #define HAS_MERGEXRGBROW_SSE2
 #define HAS_MERGERGBROW_SSSE3
 #define HAS_MIRRORUVROW_SSSE3
+#define HAS_NV21TOYUV24ROW_SSSE3
 #define HAS_P210TOAR30ROW_SSSE3
 #define HAS_P210TOARGBROW_SSSE3
 #define HAS_P410TOAR30ROW_SSSE3
 #define HAS_P410TOARGBROW_SSSE3
 #define HAS_RAWTORGBAROW_SSSE3
 #define HAS_RGB24MIRRORROW_SSSE3
+#if !defined(LIBYUV_BIT_EXACT)
 #define HAS_RGBATOYJROW_SSSE3
+#endif
 #define HAS_SPLITARGBROW_SSE2
 #define HAS_SPLITARGBROW_SSSE3
 #define HAS_SPLITXRGBROW_SSE2
@@ -319,8 +334,10 @@ extern "C" {
     (defined(__x86_64__) || defined(__i386__)) && \
     (defined(CLANG_HAS_AVX2) || defined(GCC_HAS_AVX2))
 #define HAS_ABGRTOAR30ROW_AVX2
+#if !defined(LIBYUV_BIT_EXACT)
 #define HAS_ABGRTOUVROW_AVX2
 #define HAS_ABGRTOYROW_AVX2
+#endif
 #define HAS_ARGBTOAR30ROW_AVX2
 #define HAS_ARGBTORAWROW_AVX2
 #define HAS_ARGBTORGB24ROW_AVX2
@@ -339,6 +356,7 @@ extern "C" {
 #define HAS_MERGEXR64ROW_AVX2
 #define HAS_MERGEXRGB16TO8ROW_AVX2
 #define HAS_MERGEXRGBROW_AVX2
+#define HAS_NV21TOYUV24ROW_AVX2
 #define HAS_I210TOAR30ROW_AVX2
 #define HAS_I210TOARGBROW_AVX2
 #define HAS_I212TOAR30ROW_AVX2
@@ -356,13 +374,13 @@ extern "C" {
 #define HAS_MERGEUVROW_16_AVX2
 #define HAS_MIRRORUVROW_AVX2
 #define HAS_MULTIPLYROW_16_AVX2
+#if !defined(LIBYUV_BIT_EXACT)
 #define HAS_RGBATOYJROW_AVX2
+#endif
 #define HAS_SPLITARGBROW_AVX2
 #define HAS_SPLITXRGBROW_AVX2
 #define HAS_SPLITUVROW_16_AVX2
 #define HAS_SWAPUVROW_AVX2
-// TODO(fbarchard): Fix AVX2 version of YUV24
-// #define HAS_NV21TOYUV24ROW_AVX2
 
 #if defined(__x86_64__) || !defined(__pic__)
 // TODO(fbarchard): fix build error on android_full_debug=1
@@ -454,10 +472,12 @@ extern "C" {
 #define HAS_RAWTORGB24ROW_NEON
 #define HAS_RAWTORGBAROW_NEON
 #define HAS_RAWTOUVROW_NEON
+#define HAS_RAWTOUVJROW_NEON
 #define HAS_RAWTOYJROW_NEON
 #define HAS_RAWTOYROW_NEON
 #define HAS_RGB24TOARGBROW_NEON
 #define HAS_RGB24TOUVROW_NEON
+#define HAS_RGB24TOUVJROW_NEON
 #define HAS_RGB24TOYJROW_NEON
 #define HAS_RGB24TOYROW_NEON
 #define HAS_RGB565TOARGBROW_NEON
@@ -1078,6 +1098,16 @@ void RAWToUVRow_NEON(const uint8_t* src_raw,
                      uint8_t* dst_u,
                      uint8_t* dst_v,
                      int width);
+void RGB24ToUVJRow_NEON(const uint8_t* src_rgb24,
+                        int src_stride_rgb24,
+                        uint8_t* dst_u,
+                        uint8_t* dst_v,
+                        int width);
+void RAWToUVJRow_NEON(const uint8_t* src_raw,
+                      int src_stride_raw,
+                      uint8_t* dst_u,
+                      uint8_t* dst_v,
+                      int width);
 void RGB565ToUVRow_NEON(const uint8_t* src_rgb565,
                         int src_stride_rgb565,
                         uint8_t* dst_u,
@@ -1415,6 +1445,16 @@ void RAWToUVRow_Any_NEON(const uint8_t* src_ptr,
                          uint8_t* dst_u,
                          uint8_t* dst_v,
                          int width);
+void RGB24ToUVJRow_Any_NEON(const uint8_t* src_ptr,
+                            int src_stride,
+                            uint8_t* dst_u,
+                            uint8_t* dst_v,
+                            int width);
+void RAWToUVJRow_Any_NEON(const uint8_t* src_ptr,
+                          int src_stride,
+                          uint8_t* dst_u,
+                          uint8_t* dst_v,
+                          int width);
 void RGB565ToUVRow_Any_NEON(const uint8_t* src_ptr,
                             int src_stride,
                             uint8_t* dst_u,
@@ -1560,6 +1600,16 @@ void RAWToUVRow_C(const uint8_t* src_rgb,
                   uint8_t* dst_u,
                   uint8_t* dst_v,
                   int width);
+void RGB24ToUVJRow_C(const uint8_t* src_rgb,
+                     int src_stride_rgb,
+                     uint8_t* dst_u,
+                     uint8_t* dst_v,
+                     int width);
+void RAWToUVJRow_C(const uint8_t* src_rgb,
+                   int src_stride_rgb,
+                   uint8_t* dst_u,
+                   uint8_t* dst_v,
+                   int width);
 void RGB565ToUVRow_C(const uint8_t* src_rgb565,
                      int src_stride_rgb565,
                      uint8_t* dst_u,
@@ -3177,6 +3227,10 @@ void NV21ToRGB24Row_AVX2(const uint8_t* src_y,
                          uint8_t* dst_rgb24,
                          const struct YuvConstants* yuvconstants,
                          int width);
+void NV21ToYUV24Row_SSSE3(const uint8_t* src_y,
+                          const uint8_t* src_vu,
+                          uint8_t* dst_yuv24,
+                          int width);
 void NV21ToYUV24Row_AVX2(const uint8_t* src_y,
                          const uint8_t* src_vu,
                          uint8_t* dst_yuv24,
@@ -3518,6 +3572,10 @@ void NV21ToRGB24Row_Any_AVX2(const uint8_t* y_buf,
                              uint8_t* dst_ptr,
                              const struct YuvConstants* yuvconstants,
                              int width);
+void NV21ToYUV24Row_Any_SSSE3(const uint8_t* src_y,
+                              const uint8_t* src_vu,
+                              uint8_t* dst_yuv24,
+                              int width);
 void NV21ToYUV24Row_Any_AVX2(const uint8_t* src_y,
                              const uint8_t* src_vu,
                              uint8_t* dst_yuv24,

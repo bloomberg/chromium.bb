@@ -216,7 +216,7 @@ g.test('large_draw')
       vertex: {
         module: t.device.createShaderModule({
           code: `
-          [[block]] struct Params {
+          struct Params {
             numVertices: u32;
             numInstances: u32;
           };

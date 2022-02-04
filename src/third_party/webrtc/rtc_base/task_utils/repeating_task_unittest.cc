@@ -101,6 +101,12 @@ class FakeTaskQueue : public TaskQueueBase {
   absl::optional<uint32_t> last_delay_;
 };
 
+// NOTE: Since this utility class holds a raw pointer to a variable that likely
+// lives on the stack, it's important that any repeating tasks that use this
+// class be explicitly stopped when the test criteria have been met. If the
+// task is not stopped, an instance of this class can be deleted when the
+// pointed-to MockClosure has been deleted and we end up trying to call a
+// virtual method on a deleted object in the dtor.
 class MoveOnlyClosure {
  public:
   explicit MoveOnlyClosure(MockClosure* mock) : mock_(mock) {}
@@ -233,14 +239,28 @@ TEST(RepeatingTaskTest, TaskCanStopItself) {
   EXPECT_EQ(counter.load(), 1);
 }
 
+TEST(RepeatingTaskTest, TaskCanStopItselfByReturningInfinity) {
+  std::atomic_int counter(0);
+  SimulatedClock clock(Timestamp::Zero());
+  FakeTaskQueue task_queue(&clock);
+  RepeatingTaskHandle handle = RepeatingTaskHandle::Start(&task_queue, [&] {
+    ++counter;
+    return TimeDelta::PlusInfinity();
+  });
+  EXPECT_EQ(task_queue.last_delay(), 0u);
+  // Task cancelled itself so wants to be released.
+  EXPECT_TRUE(task_queue.AdvanceTimeAndRunLastTask());
+  EXPECT_EQ(counter.load(), 1);
+}
+
 TEST(RepeatingTaskTest, ZeroReturnValueRepostsTheTask) {
   NiceMock<MockClosure> closure;
   rtc::Event done;
   EXPECT_CALL(closure, Call())
       .WillOnce(Return(TimeDelta::Zero()))
-      .WillOnce(Invoke([&done] {
+      .WillOnce(Invoke([&] {
         done.Set();
-        return kTimeout;
+        return TimeDelta::PlusInfinity();
       }));
   TaskQueueForTest task_queue("queue");
   RepeatingTaskHandle::Start(task_queue.Get(), MoveOnlyClosure(&closure));
@@ -253,9 +273,9 @@ TEST(RepeatingTaskTest, StartPeriodicTask) {
   EXPECT_CALL(closure, Call())
       .WillOnce(Return(TimeDelta::Millis(20)))
       .WillOnce(Return(TimeDelta::Millis(20)))
-      .WillOnce(Invoke([&done] {
+      .WillOnce(Invoke([&] {
         done.Set();
-        return kTimeout;
+        return TimeDelta::PlusInfinity();
       }));
   TaskQueueForTest task_queue("queue");
   RepeatingTaskHandle::Start(task_queue.Get(), closure.AsStdFunction());

@@ -1,5 +1,7 @@
 export const description = `
 Tests for validation in createQuerySet.
+
+TODO: pipeline statistics queries are removed from core; consider moving tests to another suite.
 `;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';

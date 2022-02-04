@@ -3879,8 +3879,9 @@ void CodeGenerator::AssembleArchDeoptBranch(Instruction* instr,
   AssembleArchBranch(instr, branch);
 }
 
-void CodeGenerator::AssembleArchJump(RpoNumber target) {
-  if (!IsNextInAssemblyOrder(target)) __ Branch(GetLabel(target));
+void CodeGenerator::AssembleArchJumpRegardlessOfAssemblyOrder(
+    RpoNumber target) {
+  __ Branch(GetLabel(target));
 }
 
 #if V8_ENABLE_WEBASSEMBLY
@@ -4337,9 +4338,6 @@ void CodeGenerator::AssembleReturn(InstructionOperand* additional_pop_count) {
   if (drop_jsargs) {
     // We must pop all arguments from the stack (including the receiver). This
     // number of arguments is given by max(1 + argc_reg, parameter_slots).
-    if (!kJSArgcIncludesReceiver) {
-      __ Daddu(t0, t0, Operand(1));  // Also pop the receiver.
-    }
     if (parameter_slots > 1) {
       __ li(kScratchReg, parameter_slots);
       __ slt(kScratchReg2, t0, kScratchReg);

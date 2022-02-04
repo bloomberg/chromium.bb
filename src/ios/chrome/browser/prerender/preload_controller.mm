@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
+#include "ios/chrome/browser/download/mime_type_util.h"
 #import "ios/chrome/browser/history/history_tab_helper.h"
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -660,8 +661,7 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
   // http://crbug.com/436813 for more details.
   // On iOS 13, PDF are getting focused when loaded, preventing the user from
   // typing in the omnibox. See crbug.com/1017352.
-  return mimeType == "application/octet-stream" ||
-         mimeType == "application/pdf";
+  return mimeType == kBinaryDataMimeType || mimeType == "application/pdf";
 }
 
 - (void)removeScheduledPrerenderRequests {
@@ -697,10 +697,18 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
     return;
   }
 
+  // Use web::WebState::CreateWithStorageSession to clone the
+  // _webStateToReplace navigation history. This may create an
+  // unrealized WebState, however, PreloadController needs a realized
+  // one, so force the realization.
+  // TODO(crbug.com/1291626): remove when there is a way to
+  // clone a WebState navigation history.
   web::WebState::CreateParams createParams(self.browserState);
   _webState = web::WebState::CreateWithStorageSession(
       createParams, _webStateToReplace->BuildSessionStorage());
+  _webState->ForceRealized();
   _webStateToReplace = nullptr;
+
   // Add the preload controller as a policyDecider before other tab helpers, so
   // that it can block the navigation if needed before other policy deciders
   // execute thier side effects (eg. AppLauncherTabHelper launching app).

@@ -21,7 +21,7 @@
 #include <cstdint>
 #include <map>
 
-namespace dawn_wire { namespace client {
+namespace dawn::wire::client {
 
     class Device;
     class MemoryTransferService;
@@ -59,16 +59,16 @@ namespace dawn_wire { namespace client {
                 // Move mRequests to a local variable so that further reentrant modifications of
                 // mRequests don't invalidate the iterators.
                 auto allRequests = std::move(mRequests);
-                for (auto& it : allRequests) {
-                    closeFunc(&it.second);
+                for (auto& [_, request] : allRequests) {
+                    closeFunc(&request);
                 }
             }
         }
 
         template <typename F>
         void ForAll(F&& f) {
-            for (auto& it : mRequests) {
-                f(&it.second);
+            for (auto& [_, request] : mRequests) {
+                f(&request);
             }
         }
 
@@ -77,6 +77,6 @@ namespace dawn_wire { namespace client {
         std::map<uint64_t, Request> mRequests;
     };
 
-}}  // namespace dawn_wire::client
+}  // namespace dawn::wire::client
 
 #endif  // DAWNWIRE_CLIENT_REQUESTTRACKER_H_

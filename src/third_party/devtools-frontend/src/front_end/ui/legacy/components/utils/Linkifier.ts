@@ -255,7 +255,7 @@ export class Linkifier implements SDK.TargetManager.Observer {
     const linkDisplayOptions = {showColumnNumber: linkifyURLOptions.showColumnNumber};
 
     const currentOnLiveLocationUpdate = this.onLiveLocationUpdate;
-    Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+    void Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
         .createLiveLocation(rawLocation, this.updateAnchor.bind(this, link, linkDisplayOptions), pool)
         .then(liveLocation => {
           if (liveLocation) {
@@ -356,7 +356,7 @@ export class Linkifier implements SDK.TargetManager.Observer {
     const linkDisplayOptions = {showColumnNumber: false};
 
     const currentOnLiveLocationUpdate = this.onLiveLocationUpdate;
-    Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+    void Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
         .createStackTraceTopFrameLiveLocation(
             debuggerModel.createRawLocationsByStackTrace(stackTrace),
             this.updateAnchor.bind(this, link, linkDisplayOptions), pool)
@@ -395,7 +395,7 @@ export class Linkifier implements SDK.TargetManager.Observer {
     const linkDisplayOptions = {showColumnNumber: false};
 
     const currentOnLiveLocationUpdate = this.onLiveLocationUpdate;
-    Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance()
+    void Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance()
         .createLiveLocation(rawLocation, this.updateAnchor.bind(this, link, linkDisplayOptions), pool)
         .then(liveLocation => {
           linkInfo.liveLocation = liveLocation;
@@ -437,7 +437,7 @@ export class Linkifier implements SDK.TargetManager.Observer {
         if (header && header.ownerNode) {
           anchor.addEventListener('click', event => {
             event.consume(true);
-            Common.Revealer.reveal(header.ownerNode || null);
+            void Common.Revealer.reveal(header.ownerNode || null);
           }, false);
           // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
           // This workaround is needed to make stylelint happy
@@ -678,7 +678,7 @@ export class Linkifier implements SDK.TargetManager.Observer {
   }
 
   static linkInfo(link: Element|null): _LinkInfo|null {
-    return /** @type {?_LinkInfo} */ link ? infoByAnchor.get(link) || null : null as _LinkInfo | null;
+    return link ? infoByAnchor.get(link) || null : null as _LinkInfo | null;
   }
 
   private static handleClick(event: Event): boolean {
@@ -700,7 +700,7 @@ export class Linkifier implements SDK.TargetManager.Observer {
   static invokeFirstAction(linkInfo: _LinkInfo): boolean {
     const actions = Linkifier.linkActions(linkInfo);
     if (actions.length) {
-      actions[0].handler.call(null);
+      void actions[0].handler.call(null);
       return true;
     }
     return false;
@@ -801,7 +801,7 @@ export class Linkifier implements SDK.TargetManager.Observer {
     }
 
     if (uiLocation && uiLocation.uiSourceCode) {
-      const contentProvider = /** @type {!Workspace.UISourceCode.UISourceCode} */ uiLocation.uiSourceCode;
+      const contentProvider = uiLocation.uiSourceCode;
       result.push({
         section: 'clipboard',
         title: UI.UIUtils.copyFileNameLabel(),

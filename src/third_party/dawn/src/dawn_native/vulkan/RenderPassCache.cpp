@@ -20,7 +20,7 @@
 #include "dawn_native/vulkan/TextureVk.h"
 #include "dawn_native/vulkan/VulkanError.h"
 
-namespace dawn_native { namespace vulkan {
+namespace dawn::native::vulkan {
 
     namespace {
         VkAttachmentLoadOp VulkanAttachmentLoadOp(wgpu::LoadOp op) {
@@ -34,6 +34,8 @@ namespace dawn_native { namespace vulkan {
         }
 
         VkAttachmentStoreOp VulkanAttachmentStoreOp(wgpu::StoreOp op) {
+            // TODO(crbug.com/dawn/485): return STORE_OP_STORE_NONE_QCOM if the device has required
+            // extension.
             switch (op) {
                 case wgpu::StoreOp::Store:
                     return VK_ATTACHMENT_STORE_OP_STORE;
@@ -62,13 +64,15 @@ namespace dawn_native { namespace vulkan {
                                                wgpu::LoadOp depthLoadOpIn,
                                                wgpu::StoreOp depthStoreOpIn,
                                                wgpu::LoadOp stencilLoadOpIn,
-                                               wgpu::StoreOp stencilStoreOpIn) {
+                                               wgpu::StoreOp stencilStoreOpIn,
+                                               bool readOnly) {
         hasDepthStencil = true;
         depthStencilFormat = format;
         depthLoadOp = depthLoadOpIn;
         depthStoreOp = depthStoreOpIn;
         stencilLoadOp = stencilLoadOpIn;
         stencilStoreOp = stencilStoreOpIn;
+        readOnlyDepthStencil = readOnly;
     }
 
     void RenderPassCacheQuery::SetSampleCount(uint32_t sampleCount) {
@@ -82,8 +86,8 @@ namespace dawn_native { namespace vulkan {
 
     RenderPassCache::~RenderPassCache() {
         std::lock_guard<std::mutex> lock(mMutex);
-        for (auto it : mCache) {
-            mDevice->fn.DestroyRenderPass(mDevice->GetVkDevice(), it.second, nullptr);
+        for (auto [_, renderPass] : mCache) {
+            mDevice->fn.DestroyRenderPass(mDevice->GetVkDevice(), renderPass, nullptr);
         }
 
         mCache.clear();
@@ -144,17 +148,23 @@ namespace dawn_native { namespace vulkan {
             depthStencilAttachment = &depthStencilAttachmentRef;
 
             depthStencilAttachmentRef.attachment = attachmentCount;
-            depthStencilAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            depthStencilAttachmentRef.layout =
+                query.readOnlyDepthStencil ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+                                           : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
             attachmentDesc.flags = 0;
             attachmentDesc.format = VulkanImageFormat(mDevice, query.depthStencilFormat);
             attachmentDesc.samples = vkSampleCount;
+
             attachmentDesc.loadOp = VulkanAttachmentLoadOp(query.depthLoadOp);
             attachmentDesc.storeOp = VulkanAttachmentStoreOp(query.depthStoreOp);
             attachmentDesc.stencilLoadOp = VulkanAttachmentLoadOp(query.stencilLoadOp);
             attachmentDesc.stencilStoreOp = VulkanAttachmentStoreOp(query.stencilStoreOp);
-            attachmentDesc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            attachmentDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            // There is only one subpass, so it is safe to set both initialLayout and finalLayout to
+            // the only subpass's layout.
+            attachmentDesc.initialLayout = depthStencilAttachmentRef.layout;
+            attachmentDesc.finalLayout = depthStencilAttachmentRef.layout;
 
             ++attachmentCount;
         }
@@ -230,12 +240,13 @@ namespace dawn_native { namespace vulkan {
         HashCombine(&hash, Hash(query.resolveTargetMask));
 
         for (ColorAttachmentIndex i : IterateBitSet(query.colorMask)) {
-            HashCombine(&hash, query.colorFormats[i], query.colorLoadOp[i]);
+            HashCombine(&hash, query.colorFormats[i], query.colorLoadOp[i], query.colorStoreOp[i]);
         }
 
         HashCombine(&hash, query.hasDepthStencil);
         if (query.hasDepthStencil) {
-            HashCombine(&hash, query.depthStencilFormat, query.depthLoadOp, query.stencilLoadOp);
+            HashCombine(&hash, query.depthStencilFormat, query.depthLoadOp, query.depthStoreOp,
+                        query.stencilLoadOp, query.stencilStoreOp, query.readOnlyDepthStencil);
         }
 
         HashCombine(&hash, query.sampleCount);
@@ -259,7 +270,8 @@ namespace dawn_native { namespace vulkan {
 
         for (ColorAttachmentIndex i : IterateBitSet(a.colorMask)) {
             if ((a.colorFormats[i] != b.colorFormats[i]) ||
-                (a.colorLoadOp[i] != b.colorLoadOp[i])) {
+                (a.colorLoadOp[i] != b.colorLoadOp[i]) ||
+                (a.colorStoreOp[i] != b.colorStoreOp[i])) {
                 return false;
             }
         }
@@ -270,11 +282,13 @@ namespace dawn_native { namespace vulkan {
 
         if (a.hasDepthStencil) {
             if ((a.depthStencilFormat != b.depthStencilFormat) ||
-                (a.depthLoadOp != b.depthLoadOp) || (a.stencilLoadOp != b.stencilLoadOp)) {
+                (a.depthLoadOp != b.depthLoadOp) || (a.stencilLoadOp != b.stencilLoadOp) ||
+                (a.depthStoreOp != b.depthStoreOp) || (a.stencilStoreOp != b.stencilStoreOp) ||
+                (a.readOnlyDepthStencil != b.readOnlyDepthStencil)) {
                 return false;
             }
         }
 
         return true;
     }
-}}  // namespace dawn_native::vulkan
+}  // namespace dawn::native::vulkan

@@ -144,7 +144,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper<EventT
         new Workspace.UISourceCode.UILocation(uiSourceCode, lineNumber, columnNumber);
     const normalizedLocation = await this.debuggerWorkspaceBinding.normalizeUILocation(uiLocation);
     if (normalizedLocation.id() !== uiLocation.id()) {
-      Common.Revealer.reveal(normalizedLocation);
+      void Common.Revealer.reveal(normalizedLocation);
       uiLocation = normalizedLocation;
     }
     return this.innerSetBreakpoint(
@@ -479,7 +479,7 @@ export class Breakpoint implements SDK.TargetManager.SDKModelObserver<SDK.Debugg
       }
     }
     for (const modelBreakpoint of this.#modelBreakpoints.values()) {
-      modelBreakpoint.scheduleUpdateInDebugger();
+      void modelBreakpoint.scheduleUpdateInDebugger();
     }
   }
 
@@ -487,7 +487,7 @@ export class Breakpoint implements SDK.TargetManager.SDKModelObserver<SDK.Debugg
     this.isRemoved = true;
     const removeFromStorage = !keepInStorage;
     for (const modelBreakpoint of this.#modelBreakpoints.values()) {
-      modelBreakpoint.scheduleUpdateInDebugger();
+      void modelBreakpoint.scheduleUpdateInDebugger();
       modelBreakpoint.removeEventListeners();
     }
 
@@ -540,7 +540,7 @@ export class ModelBreakpoint {
   readonly #liveLocations: LiveLocationPool;
   readonly #uiLocations: Map<LiveLocation, Workspace.UISourceCode.UILocation>;
   #hasPendingUpdate: boolean;
-  #isUpdating: boolean;
+  #updatePromise: Promise<void>|null;
   #cancelCallback: boolean;
   #currentState: Breakpoint.State|null;
   #breakpointIds: Protocol.Debugger.BreakpointId[];
@@ -560,12 +560,12 @@ export class ModelBreakpoint {
     this.#debuggerModel.addEventListener(
         SDK.DebuggerModel.Events.DebuggerWasEnabled, this.scheduleUpdateInDebugger, this);
     this.#hasPendingUpdate = false;
-    this.#isUpdating = false;
+    this.#updatePromise = null;
     this.#cancelCallback = false;
     this.#currentState = null;
     this.#breakpointIds = [];
     if (this.#debuggerModel.debuggerEnabled()) {
-      this.scheduleUpdateInDebugger();
+      void this.scheduleUpdateInDebugger();
     }
   }
 
@@ -578,20 +578,18 @@ export class ModelBreakpoint {
     this.#liveLocations.disposeAll();
   }
 
-  scheduleUpdateInDebugger(): void {
-    if (this.#isUpdating) {
-      this.#hasPendingUpdate = true;
-      return;
+  scheduleUpdateInDebugger(): Promise<void> {
+    this.#hasPendingUpdate = true;
+    if (!this.#updatePromise) {
+      this.#updatePromise = (async(): Promise<void> => {
+        while (this.#hasPendingUpdate) {
+          this.#hasPendingUpdate = false;
+          await this.updateInDebugger();
+        }
+        this.#updatePromise = null;
+      })();
     }
-
-    this.#isUpdating = true;
-    this.updateInDebugger().then(() => {
-      this.#isUpdating = false;
-      if (this.#hasPendingUpdate) {
-        this.#hasPendingUpdate = false;
-        this.scheduleUpdateInDebugger();
-      }
-    });
+    return this.#updatePromise;
   }
 
   private scriptDiverged(): boolean {
@@ -692,7 +690,7 @@ export class ModelBreakpoint {
       // disappearing if the Debugger is actually not enabled
       // yet. This quickfix should be removed as soon as we have a solution
       // to correctly synchronize the front-end with the inspector back-end.
-      this.scheduleUpdateInDebugger();
+      void this.scheduleUpdateInDebugger();
       return;
     }
 
@@ -721,7 +719,7 @@ export class ModelBreakpoint {
     await Promise.all(this.#breakpointIds.map(id => this.#debuggerModel.removeBreakpoint(id)));
     this.didRemoveFromDebugger();
     this.#currentState = null;
-    this.scheduleUpdateInDebugger();
+    void this.scheduleUpdateInDebugger();
   }
 
   private didRemoveFromDebugger(): void {
@@ -773,10 +771,10 @@ export class ModelBreakpoint {
   }
 
   cleanUpAfterDebuggerIsGone(): void {
-    if (this.#isUpdating) {
+    if (this.#updatePromise) {
       this.#cancelCallback = true;
     }
-
+    this.#hasPendingUpdate = false;
     this.resetLocations();
     this.#currentState = null;
     if (this.#breakpointIds.length) {

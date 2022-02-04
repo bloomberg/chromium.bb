@@ -562,6 +562,7 @@ if (rtc_include_tests && !build_with_chromium) {
       "rtc_base/task_utils:pending_task_safety_flag_unittests",
       "rtc_base/task_utils:repeating_task_unittests",
       "rtc_base/task_utils:to_queued_task_unittests",
+      "rtc_base/units:units_unittests",
       "sdk:sdk_tests",
       "test:rtp_test_utils",
       "test:test_main",
@@ -625,6 +626,7 @@ if (rtc_include_tests && !build_with_chromium) {
       "test:test_common",
       "test:test_main",
       "test:video_test_common",
+      "video:video_legacy_tests",
       "video:video_tests",
       "video/adaptation:video_adaptation_tests",
     ]
@@ -719,6 +721,9 @@ group("poison_audio_codecs") {
 }
 
 group("poison_default_task_queue") {
+}
+
+group("poison_default_echo_detector") {
 }
 
 group("poison_rtc_json") {

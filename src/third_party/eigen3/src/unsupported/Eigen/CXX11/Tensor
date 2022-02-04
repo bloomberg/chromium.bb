@@ -13,8 +13,6 @@
 
 #include "../../../Eigen/Core"
 
-#if EIGEN_HAS_CXX11
-
 #include "../SpecialFunctions"
 
 #include "../../../Eigen/src/Core/util/DisableStupidWarnings.h"
@@ -38,6 +36,8 @@
 #include <cmath>
 #include <cstddef>
 #include <cstring>
+#include <iterator>
+#include <numeric>
 #include <random>
 #include <thread>
 
@@ -75,6 +75,8 @@
 #include "src/Tensor/TensorUInt128.h"
 #include "src/Tensor/TensorIntDiv.h"
 #include "src/Tensor/TensorGlobalFunctions.h"
+
+#include "src/Tensor/TensorIO.h"
 
 #include "src/Tensor/TensorBase.h"
 #include "src/Tensor/TensorBlock.h"
@@ -129,9 +131,8 @@
 #include "src/Tensor/TensorMap.h"
 #include "src/Tensor/TensorRef.h"
 
-#include "src/Tensor/TensorIO.h"
+
 
 #include "../../../Eigen/src/Core/util/ReenableStupidWarnings.h"
 
-#endif  // EIGEN_HAS_CXX11
 //#endif // EIGEN_CXX11_TENSOR_MODULE_H

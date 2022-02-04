@@ -493,7 +493,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     this.saveButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.saveProfile), 'largeicon-download');
     this.saveButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, _event => {
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceExported);
-      this.saveToFile();
+      void this.saveToFile();
     });
     this.panelToolbar.appendSeparator();
     this.panelToolbar.appendToolbarItem(this.loadButton);
@@ -624,7 +624,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
   private contextMenu(event: Event): void {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.appendItemsAtLocation('timelineMenu');
-    contextMenu.show();
+    void contextMenu.show();
   }
   async saveToFile(): Promise<void> {
     if (this.state !== State.Idle) {
@@ -772,7 +772,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
 
   private async getCoverageViewWidget(): Promise<Coverage.CoverageView.CoverageView> {
     const view = (UI.ViewManager.ViewManager.instance().view('coverage') as UI.View.View);
-    return /** @type {!Coverage.CoverageView.CoverageView} */ await view.widget() as Coverage.CoverageView.CoverageView;
+    return await view.widget() as Coverage.CoverageView.CoverageView;
   }
 
   private async startRecording(): Promise<void> {
@@ -886,10 +886,10 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
   toggleRecording(): void {
     if (this.state === State.Idle) {
       this.recordingPageReload = false;
-      this.startRecording();
+      void this.startRecording();
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.TimelineStarted);
     } else if (this.state === State.Recording) {
-      this.stopRecording();
+      void this.stopRecording();
     }
   }
 
@@ -898,7 +898,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
       return;
     }
     this.recordingPageReload = true;
-    this.startRecording();
+    void this.startRecording();
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.TimelinePageReloadStarted);
   }
 
@@ -1090,7 +1090,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     this.historyManager.addRecording(this.performanceModel);
 
     if (this.startCoverage.get()) {
-      UI.ViewManager.ViewManager.instance()
+      void UI.ViewManager.ViewManager.instance()
           .showView('coverage')
           .then(() => this.getCoverageViewWidget())
           .then(widget => widget.processBacklog())
@@ -1148,20 +1148,19 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
       return;
     }
     const controller = this.controller;
-    await new Promise(r => setTimeout(r, this.millisecondsToRecordAfterLoadEvent));
+    await new Promise(r => window.setTimeout(r, this.millisecondsToRecordAfterLoadEvent));
 
     // Check if we're still in the same recording session.
     if (controller !== this.controller || this.state !== State.Recording) {
       return;
     }
-    this.stopRecording();
+    void this.stopRecording();
   }
 
   private frameForSelection(selection: TimelineSelection): TimelineModel.TimelineFrameModel.TimelineFrame|null {
     switch (selection.type()) {
       case TimelineSelection.Type.Frame:
-        return /** @type {!TimelineModel.TimelineFrameModel.TimelineFrame} */ selection.object() as
-            TimelineModel.TimelineFrameModel.TimelineFrame;
+        return selection.object() as TimelineModel.TimelineFrameModel.TimelineFrame;
       case TimelineSelection.Type.Range:
         return null;
       case TimelineSelection.Type.TraceEvent:
@@ -1484,7 +1483,7 @@ export class LoadTimelineHandler implements Common.QueryParamHandler.QueryParamH
   }
 
   handleQueryParam(value: string): void {
-    UI.ViewManager.ViewManager.instance().showView('timeline').then(() => {
+    void UI.ViewManager.ViewManager.instance().showView('timeline').then(() => {
       TimelinePanel.instance().loadFromURL(window.decodeURIComponent(value));
     });
   }
@@ -1515,7 +1514,7 @@ export class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
         panel.recordReload();
         return true;
       case 'timeline.save-to-file':
-        panel.saveToFile();
+        void panel.saveToFile();
         return true;
       case 'timeline.load-from-file':
         panel.selectFileToLoad();
@@ -1527,7 +1526,7 @@ export class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
         panel.jumpToFrame(1);
         return true;
       case 'timeline.show-history':
-        panel.showHistory();
+        void panel.showHistory();
         return true;
       case 'timeline.previous-recording':
         panel.navigateHistory(1);

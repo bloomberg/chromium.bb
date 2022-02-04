@@ -110,6 +110,7 @@ gles_requestable_extensions = [
     "GL_EXT_semaphore",
     "GL_EXT_semaphore_fd",
     "GL_EXT_separate_shader_objects",
+    "GL_EXT_shader_framebuffer_fetch",
     "GL_EXT_shader_framebuffer_fetch_non_coherent",
     "GL_EXT_shader_io_blocks",
     "GL_EXT_shader_non_constant_global_initializers",
@@ -141,6 +142,7 @@ gles_requestable_extensions = [
     "GL_KHR_texture_compression_astc_hdr",
     "GL_KHR_texture_compression_astc_ldr",
     "GL_KHR_texture_compression_astc_sliced_3d",
+    "GL_MESA_framebuffer_flip_y",
     "GL_NV_depth_buffer_float2",
     "GL_NV_EGL_stream_consumer_external",
     "GL_NV_framebuffer_blit",
@@ -218,6 +220,7 @@ angle_es_only_extensions = [
 ]
 
 gles_es_only_extensions = [
+    "GL_ANDROID_extension_pack_es31a",
     "GL_ANGLE_depth_texture",
     "GL_ANGLE_translated_shader_source",
     "GL_EXT_debug_label",
@@ -289,7 +292,9 @@ supported_egl_extensions = [
     "EGL_ANGLE_display_texture_share_group",
     "EGL_ANGLE_feature_control",
     "EGL_ANGLE_ggp_stream_descriptor",
+    "EGL_ANGLE_metal_create_context_ownership_identity",
     "EGL_ANGLE_power_preference",
+    "EGL_ANGLE_prepare_swap_buffers",
     "EGL_ANGLE_program_cache_control",
     "EGL_ANGLE_query_surface_pointer",
     "EGL_ANGLE_stream_producer_d3d_texture",

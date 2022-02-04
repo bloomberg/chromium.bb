@@ -512,15 +512,17 @@ bool QuicCryptoServerConfig::SetConfigs(
 
 void QuicCryptoServerConfig::SetSourceAddressTokenKeys(
     const std::vector<std::string>& keys) {
+  // TODO(b/208866709)
   source_address_token_boxer_.SetKeys(keys);
 }
 
-void QuicCryptoServerConfig::GetConfigIds(
-    std::vector<std::string>* scids) const {
+std::vector<std::string> QuicCryptoServerConfig::GetConfigIds() const {
   QuicReaderMutexLock locked(&configs_lock_);
+  std::vector<std::string> scids;
   for (auto it = configs_.begin(); it != configs_.end(); ++it) {
-    scids->push_back(it->first);
+    scids.push_back(it->first);
   }
+  return scids;
 }
 
 void QuicCryptoServerConfig::ValidateClientHello(
@@ -538,6 +540,10 @@ void QuicCryptoServerConfig::ValidateClientHello(
           client_hello, client_address.host(), now));
 
   absl::string_view requested_scid;
+  // We ignore here the return value from GetStringPiece. If there is no SCID
+  // tag, EvaluateClientHello will discover that because GetCurrentConfigs will
+  // not have found the requested config (i.e. because none of the configs will
+  // have an empty string as its id).
   client_hello.GetStringPiece(kSCID, &requested_scid);
   Configs configs;
   if (!GetCurrentConfigs(now, requested_scid,
@@ -1575,9 +1581,14 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
   std::unique_ptr<CryptoHandshakeMessage> msg =
       CryptoFramer::ParseMessage(protobuf.config());
 
+  if (!msg) {
+    QUIC_LOG(WARNING) << "Failed to parse server config message";
+    return nullptr;
+  }
+
   if (msg->tag() != kSCFG) {
     QUIC_LOG(WARNING) << "Server config message has tag " << msg->tag()
-                      << " expected " << kSCFG;
+                      << ", but expected " << kSCFG;
     return nullptr;
   }
 
@@ -1597,6 +1608,7 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
     QUIC_LOG(WARNING) << "Server config message is missing SCID";
     return nullptr;
   }
+  QUICHE_DCHECK(!scid.empty());
   config->id = std::string(scid);
 
   if (msg->GetTaglist(kAEAD, &config->aead) != QUIC_NO_ERROR) {

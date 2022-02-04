@@ -70,6 +70,10 @@ using TextAttributeMap = std::map<int, TextAttributeList>;
 // otherwise.
 class AX_EXPORT AXPlatformNodeDelegate {
  public:
+  using AXPosition = ui::AXNodePosition::AXPositionInstance;
+  using SerializedPosition = ui::AXNodePosition::SerializedPosition;
+  using AXRange = ui::AXRange<AXPosition::element_type>;
+
   AXPlatformNodeDelegate(const AXPlatformNodeDelegate&) = delete;
   AXPlatformNodeDelegate& operator=(const AXPlatformNodeDelegate&) = delete;
 
@@ -154,6 +158,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual bool GetStringListAttribute(
       ax::mojom::StringListAttribute attribute,
       std::vector<std::string>* value) const = 0;
+  virtual bool HasHtmlAttribute(const char* attribute) const = 0;
   virtual const base::StringPairs& GetHtmlAttributes() const = 0;
   virtual bool GetHtmlAttribute(const char* attribute,
                                 std::string* value) const = 0;
@@ -312,10 +317,10 @@ class AX_EXPORT AXPlatformNodeDelegate {
     virtual ~ChildIterator() = default;
     virtual bool operator==(const ChildIterator& rhs) const = 0;
     virtual bool operator!=(const ChildIterator& rhs) const = 0;
-    virtual void operator++() = 0;
-    virtual void operator++(int) = 0;
-    virtual void operator--() = 0;
-    virtual void operator--(int) = 0;
+    virtual ChildIterator& operator++() = 0;
+    virtual ChildIterator& operator++(int) = 0;
+    virtual ChildIterator& operator--() = 0;
+    virtual ChildIterator& operator--(int) = 0;
     virtual gfx::NativeViewAccessible GetNativeViewAccessible() const = 0;
     virtual int GetIndexInParent() const = 0;
     virtual AXPlatformNodeDelegate& operator*() const = 0;
@@ -479,21 +484,6 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual std::u16string GetAuthorUniqueId() const = 0;
 
   virtual const AXUniqueId& GetUniqueId() const = 0;
-
-  // Finds the previous or next offset from the provided offset, that matches
-  // the provided boundary type.
-  //
-  // This method finds text boundaries in the text used for platform text APIs.
-  // Implementations may use side-channel data such as line or word indices to
-  // produce appropriate results. It may optionally return no value, indicating
-  // that the delegate does not have all the information required to calculate
-  // this value and it is the responsibility of the AXPlatformNode itself to
-  // to calculate it.
-  virtual absl::optional<int> FindTextBoundary(
-      ax::mojom::TextBoundary boundary,
-      int offset,
-      ax::mojom::MoveDirection direction,
-      ax::mojom::TextAffinity affinity) const = 0;
 
   // Return a vector of all the descendants of this delegate's node. This method
   // is only meaningful for Windows UIA.

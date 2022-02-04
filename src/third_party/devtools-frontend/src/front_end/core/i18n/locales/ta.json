@@ -401,6 +401,21 @@
   "core/sdk/DebuggerModel.ts | withBlock": {
     "message": "With பிரிவு"
   },
+  "core/sdk/EventBreakpointsModel.ts | auctionWorklet": {
+    "message": "விளம்பர ஏல Worklet"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletBiddingStart": {
+    "message": "பிடர் பிட்டிங் நிலையின் தொடக்கம்"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletReportingStart": {
+    "message": "பிடர் ரிப்போர்ட்டிங் நிலையின் தொடக்கம்"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletReportingStart": {
+    "message": "செல்லர் ரிப்போர்ட்டிங் நிலையின் தொடக்கம்"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletScoringStart": {
+    "message": "செல்லர் ஸ்கோரிங் நிலையின் தொடக்கம்"
+  },
   "core/sdk/NetworkManager.ts | crossoriginReadBlockingCorb": {
     "message": "{PH2} MIME வகையுடன் கூடிய, {PH1} தளத்தின் கிராஸ் ஆரிஜின் பதிலைக் கிராஸ் ஆரிஜின் ரீட் ப்ளாக்கிங் (Cross-Origin Read Blocking (CORB)) அல்காரிதம் தடுத்துள்ளது. கூடுதல் தகவல்களுக்கு, https://www.chromestatus.com/feature/5629709824032768 தளத்திற்குச் செல்லவும்."
   },
@@ -644,9 +659,6 @@
   "core/sdk/sdk-meta.ts | disableWebpFormat": {
     "message": "WebP வடிவமைப்பை முடக்கு"
   },
-  "core/sdk/sdk-meta.ts | disabledDarkMode": {
-    "message": "முடக்கு"
-  },
   "core/sdk/sdk-meta.ts | doNotCaptureAsyncStackTraces": {
     "message": "ஒத்திசையாத ஸ்டாக் டிரேஸ்களைப் படமெடுக்காதே"
   },
@@ -679,6 +691,9 @@
   },
   "core/sdk/sdk-meta.ts | doNotShowGridTrackSizes": {
     "message": "கட்டத்தின் டிராக் அளவுகளைக் காட்டாதே"
+  },
+  "core/sdk/sdk-meta.ts | doNotShowRulersOnHover": {
+    "message": "கர்சரை மேலே கொண்டு செல்லும்போது ரூலர்களைக் காட்டாதே"
   },
   "core/sdk/sdk-meta.ts | emulateAFocusedPage": {
     "message": "மையப்படுத்தப்பட்ட பக்கத்தைச் செயல்படுத்து"
@@ -743,9 +758,6 @@
   "core/sdk/sdk-meta.ts | enableWebpFormat": {
     "message": "WebP வடிவமைப்பை இயக்கு"
   },
-  "core/sdk/sdk-meta.ts | enabledDarkMode": {
-    "message": "இயக்கு"
-  },
   "core/sdk/sdk-meta.ts | extendGridLines": {
     "message": "கட்டங்களை அதிகப்படுத்து"
   },
@@ -754,9 +766,6 @@
   },
   "core/sdk/sdk-meta.ts | hideFramesPerSecondFpsMeter": {
     "message": "ஒரு வினாடிக்கு ஃபிரேம்களின் எண்ணிக்கையைக் (frames per second - FPS) கணக்கிடும் மீட்டரை மறை"
-  },
-  "core/sdk/sdk-meta.ts | hideHittestBorders": {
-    "message": "ஹிட் சோதனை பார்டர்களை மறை"
   },
   "core/sdk/sdk-meta.ts | hideLayerBorders": {
     "message": "லேயர் பாடர்களை மறை"
@@ -812,9 +821,6 @@
   "core/sdk/sdk-meta.ts | showGridTrackSizes": {
     "message": "கட்டத்தின் டிராக் அளவுகளைக் காட்டு"
   },
-  "core/sdk/sdk-meta.ts | showHittestBorders": {
-    "message": "ஹிட் சோதனை பார்டர்களைக் காட்டு"
-  },
   "core/sdk/sdk-meta.ts | showLayerBorders": {
     "message": "லேயரின் பார்டர்களைக் காட்டு"
   },
@@ -833,8 +839,8 @@
   "core/sdk/sdk-meta.ts | showPaintFlashingRectangles": {
     "message": "வலைப்பக்கத்தைக் காட்டும்போது ஒளிரும் கட்டங்களைக் காட்டு"
   },
-  "core/sdk/sdk-meta.ts | showRulers": {
-    "message": "ரூலர்களைக் காட்டு"
+  "core/sdk/sdk-meta.ts | showRulersOnHover": {
+    "message": "கர்சரை மேலே கொண்டு செல்லும்போது ரூலர்களைக் காட்டு"
   },
   "core/sdk/sdk-meta.ts | showScrollPerformanceBottlenecks": {
     "message": "ஸ்க்ரோல் செயல்திறன் குறித்த சிக்கல்களைக் காட்டு"
@@ -875,14 +881,20 @@
   "entrypoints/inspector_main/RenderingOptions.ts | emulateAFocusedPage": {
     "message": "மையப்படுத்தப்பட்ட பக்கத்தைச் செயல்படுத்து"
   },
+  "entrypoints/inspector_main/RenderingOptions.ts | emulateAutoDarkMode": {
+    "message": "Enable automatic dark mode"
+  },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAFocusedPage": {
     "message": "மையப்படுத்தப்பட்ட பக்கத்தைச் செயல்படுத்தும்."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAutoDarkMode": {
-    "message": "ஆய்வு செய்யப்பட்ட பக்கத்திற்கான டார்க் பயன்முறையைத் தானாக இயக்கும்."
+    "message": "Enables automatic dark mode and sets prefers-color-scheme to dark."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssColorgamutMediaFeature": {
     "message": "CSS color-gamut மீடியா அம்சத்தை இயக்கும்"
+  },
+  "entrypoints/inspector_main/RenderingOptions.ts | forcesCssForcedColors": {
+    "message": "CSS forced-colors மீடியா அம்சத்தை இயக்கும்"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssPreferscolorschemeMedia": {
     "message": "CSS prefers-color-scheme மீடியா அம்சத்தை இயக்கும்"
@@ -920,9 +932,6 @@
   "entrypoints/inspector_main/RenderingOptions.ts | highlightsFramesRedDetectedToBe": {
     "message": "விளம்பரங்களாகக் கண்டறியப்படும் ஃபிரேம்களை ஹைலைட் (சிவப்பு) செய்யும்."
   },
-  "entrypoints/inspector_main/RenderingOptions.ts | hittestBorders": {
-    "message": "ஹிட் சோதனை பார்டர்கள்"
-  },
   "entrypoints/inspector_main/RenderingOptions.ts | layerBorders": {
     "message": "லேயர் பார்டர்கள்"
   },
@@ -943,9 +952,6 @@
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsAnOverlayWithCoreWebVitals": {
     "message": "வலைதளத்தின் முக்கியமான அடிப்படை விவரங்களுடன் கூடிய மேல் அடுக்கைக் காட்டும்."
-  },
-  "entrypoints/inspector_main/RenderingOptions.ts | showsBordersAroundHittestRegions": {
-    "message": "ஹிட் சோதனைப் பகுதிகளைச் சுற்றியுள்ள பார்டர்களைக் காட்டும்."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsLayerBordersOrangeoliveAnd": {
     "message": "லேயர் பார்டர்களையும் (ஆரஞ்சு/ஆலிவ்) கட்டங்களையும் (சியான்) காட்டு."
@@ -1001,7 +1007,7 @@
   "entrypoints/inspector_main/inspector_main-meta.ts | visionDeficiency": {
     "message": "பார்வைக் குறைபாடு"
   },
-  "entrypoints/js_app/JsMain.ts | main": {
+  "entrypoints/js_app/js_app.ts | main": {
     "message": "முதன்மை"
   },
   "entrypoints/main/MainImpl.ts | customizeAndControlDevtools": {
@@ -1036,9 +1042,6 @@
   },
   "entrypoints/main/MainImpl.ts | showConsoleDrawer": {
     "message": "கன்சோல் டிராயரைக் காட்டு"
-  },
-  "entrypoints/main/MainImpl.ts | theSystempreferredColorSchemeHas": {
-    "message": "சிஸ்டம் பரிந்துரைக்கும் வண்ணத் திட்டம் மாற்றப்பட்டது. டெவெலப்பர் கருவிகளில் இந்த மாற்றத்தைச் செயல்படுத்த ரெஃப்ரெஷ் செய்யவும்."
   },
   "entrypoints/main/MainImpl.ts | undockIntoSeparateWindow": {
     "message": "தனி சாளரத்தில் காட்டு"
@@ -1190,41 +1193,41 @@
   "entrypoints/main/main-meta.ts | zoomOut": {
     "message": "சிறிதாக்கும்"
   },
-  "entrypoints/node_app/node_app-meta.ts | node": {
-    "message": "கணு"
-  },
-  "entrypoints/node_app/node_app-meta.ts | showNode": {
-    "message": "கணு"
-  },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | addConnection": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | addConnection": {
     "message": "இணைப்பைச் சேர்"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
     "message": "நெட்வொர்க் முகவரி (எ.கா. localhost:9229)"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | noConnectionsSpecified": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | noConnectionsSpecified": {
     "message": "இணைப்புகள் எதுவும் குறிப்பிடப்படவில்லை"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
     "message": "Node.js பிழைதிருத்த வழிகாட்டி"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
     "message": "நெட்வொர்க் எண்ட்பாயிண்ட்டைக் குறிப்பிட்டால் DevTools அதனுடன் தானாக இணைக்கப்படும். மேலும் அறிய {PH1} ஐப் பார்க்கவும்."
   },
-  "entrypoints/node_main/NodeMain.ts | main": {
+  "entrypoints/node_app/NodeMain.ts | main": {
     "message": "முதன்மை"
   },
-  "entrypoints/node_main/NodeMain.ts | nodejsS": {
+  "entrypoints/node_app/NodeMain.ts | nodejsS": {
     "message": "Node.js: {PH1}"
   },
-  "entrypoints/node_main/node_main-meta.ts | connection": {
+  "entrypoints/node_app/node_app.ts | connection": {
     "message": "இணைப்பு"
   },
-  "entrypoints/node_main/node_main-meta.ts | node": {
+  "entrypoints/node_app/node_app.ts | networkTitle": {
     "message": "கணு"
   },
-  "entrypoints/node_main/node_main-meta.ts | showConnection": {
+  "entrypoints/node_app/node_app.ts | node": {
+    "message": "கணு"
+  },
+  "entrypoints/node_app/node_app.ts | showConnection": {
     "message": "இணைப்பைக் காட்டு"
+  },
+  "entrypoints/node_app/node_app.ts | showNode": {
+    "message": "கணு"
   },
   "entrypoints/worker_app/WorkerMain.ts | main": {
     "message": "முதன்மை"
@@ -1245,7 +1248,7 @@
     "message": "{PH2} தளத்திற்கான பிழைதிருத்தக் குறியீடுகளை [{PH1}] ஏற்றியுள்ளது. ஆனால் எந்த ஆதாரக் கோப்புகளையும் கண்டறியவில்லை"
   },
   "models/bindings/DebuggerLanguagePlugins.ts | loadedDebugSymbolsForFound": {
-    "message": "{PH2} தளத்திற்கான பிழைதிருத்தக் குறியீடுகளை ஏற்றியுள்ளது. அத்துடன் {PH3} ஆதாரக் கோப்புகளையும் [{PH1}] கண்டறிந்துள்ளது"
+    "message": "{PH2} தளத்திற்கான பிழைதிருத்தக் குறியீடுகளை ஏற்றியுள்ளது. அத்துடன் {PH3} ஆதார ஃபைல்களையும் [{PH1}] கண்டறிந்துள்ளது"
   },
   "models/bindings/DebuggerLanguagePlugins.ts | loadingDebugSymbolsFor": {
     "message": "{PH2} தளத்திற்கான பிழைதிருத்தக் குறியீடுகளை [{PH1}] ஏற்றுகிறது..."
@@ -1304,6 +1307,9 @@
   "models/har/Writer.ts | writingFile": {
     "message": "ஃபைலை எழுதுகிறது…"
   },
+  "models/issues_manager/ClientHintIssue.ts | clientHintsInfrastructure": {
+    "message": "Client Hints Infrastructure"
+  },
   "models/issues_manager/ContentSecurityPolicyIssue.ts | contentSecurityPolicyEval": {
     "message": "உள்ளடக்கப் பாதுகாப்புக் கொள்கை - Eval"
   },
@@ -1322,8 +1328,8 @@
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "கிராஸ் ஆரிஜின் ரிசோர்ஸ் ஷேரிங் (CORS)"
   },
-  "models/issues_manager/CorsIssue.ts | corsForPrivateNetworksRfc": {
-    "message": "தனிப்பட்ட நெட்வொர்க்குகளுக்கான CORS (RFC1918)"
+  "models/issues_manager/CorsIssue.ts | corsPrivateNetworkAccess": {
+    "message": "தனிப்பட்ட நெட்வொர்க் அணுகல்"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | coopAndCoep": {
     "message": "COOP & COEP"
@@ -1559,8 +1565,17 @@
   "panels/accessibility/AXBreadcrumbsPane.ts | accessibilityTree": {
     "message": "அணுகல்தன்மை வரிசை"
   },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentDescription": {
+    "message": "DOM ட்ரீயின் மேல் வலது மூலைக்கு அணுகல்தன்மை ட்ரீ நகர்த்தப்பட்டது."
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentName": {
+    "message": "முழுப் பக்க அணுகல்தன்மை ட்ரீயை இயக்கு"
+  },
   "panels/accessibility/AXBreadcrumbsPane.ts | ignored": {
     "message": "தவிர்க்கப்பட்டது"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | reloadRequired": {
+    "message": "மாற்றம் செயல்படுத்தப்பட ரெஃப்ரெஷ் செய்ய வேண்டும்."
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | scrollIntoView": {
     "message": "காட்டப்படும் வரை நகர்த்துக"
@@ -2051,6 +2066,12 @@
   "panels/application/AppManifestView.ts | couldNotDownloadARequiredIcon": {
     "message": "மெனிஃபெஸ்ட்டில் இருந்து அவசியமான ஐகானைப் பதிவிறக்க முடியவில்லை"
   },
+  "panels/application/AppManifestView.ts | darkBackgroundColor": {
+    "message": "Dark background color"
+  },
+  "panels/application/AppManifestView.ts | darkThemeColor": {
+    "message": "Dark theme color"
+  },
   "panels/application/AppManifestView.ts | description": {
     "message": "விளக்கம்"
   },
@@ -2314,384 +2335,6 @@
   },
   "panels/application/ApplicationPanelSidebar.ts | worker": {
     "message": "worker"
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
-    "message": "GET கோரிக்கை மூலம் ஏற்றப்பட்ட பக்கங்களை மட்டுமே ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியும்."
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
-    "message": "2XX நிலைக் குறியீட்டுடன் இருக்கும் பக்கங்களை மட்டுமே தற்காலிகமாகச் சேமிக்க முடியும்."
-  },
-  "panels/application/BackForwardCacheStrings.ts | JavaScriptExecution": {
-    "message": "பக்கம் தற்காலிகச் சேமிப்பில் சேமிக்கப்பட்டிருக்கும்போது JavaScriptடைச் செயல்படுத்துவதற்கு முயற்சி செய்யப்பட்டதாக Chrome கண்டறிந்துள்ளது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | appBanner": {
-    "message": "AppBannerரைக் கோரிய பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
-    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சம் flags பக்கத்தில் முடக்கப்பட்டுள்ளது. சாதனத்தில் இதை இயக்க, chrome://flags/#back-forward-cache என்ற பக்கத்திற்குச் செல்லவும்."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
-    "message": "கட்டளை மூலம் ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சம் முடக்கப்பட்டுள்ளது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
-    "message": "போதுமான நினைவகம் இல்லாததால் ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சம் முடக்கப்பட்டுள்ளது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
-    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தை உட்பொதிவில் பயன்படுத்த முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
-    "message": "முன்கூட்டியே ரென்டர் செய்யப்படுவதற்காக ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சம் முடக்கப்பட்டுள்ளது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | broadcastChannel": {
-    "message": "பதிவுசெய்யப்பட்ட லிசனர்களுடன் கூடிய BroadcastChannel நேர்வைப் பக்கம் கொண்டுள்ளதால் அதைத் தற்காலிகமாகச் சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheControlNoStore": {
-    "message": "‘cache-control:no-store’ என்ற தலைப்புடன் கூடிய பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேர்க்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheFlushed": {
-    "message": "தற்காலிகச் சேமிப்பு வேண்டுமென்றே அழிக்கப்பட்டுள்ளது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheLimit": {
-    "message": "மற்றொரு பக்கத்தைத் தற்காலிகமாகச் சேமிப்பதற்காக இந்தப் பக்கம் தற்காலிகச் சேமிப்பில் இருந்து அகற்றப்பட்டது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | containsPlugins": {
-    "message": "செருகுநிரல்களைக் கொண்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileChooser": {
-    "message": "FileChooser APIயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileSystemAccess": {
-    "message": "File System Access APIயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
-    "message": "Media Device Dispatcherரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaPlay": {
-    "message": "வெளியேறும்போது மீடியா பிளேயர் பிளேயாகிக் கொண்டிருந்தது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSession": {
-    "message": "MediaSession APIயைப் பயன்படுத்தி பிளேபேக் நிலையை அமைக்கும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSessionService": {
-    "message": "MediaSession APIயைப் பயன்படுத்தி செயல்பாட்டு ஹேண்ட்லர்களை அமைக்கும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSecurityHandler": {
-    "message": "SecurityHandlerரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSerial": {
-    "message": "Serial APIயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
-    "message": "WebAuthentication APIயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebBluetooth": {
-    "message": "WebBluetooth APIயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebUSB": {
-    "message": "WebUSB APIயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
-    "message": "பிரத்தியேக worker/workletடைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | documentLoaded": {
-    "message": "வெளியேறுவதற்கு முன் ஆவணம் ஏற்றப்படவில்லை."
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderAppBannerManager": {
-    "message": "EmbedderAppBannerManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
-    "message": "EmbedderChromePasswordManagerClientBindCredentialManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
-    "message": "EmbedderDomDistillerSelfDeletingRequestDelegate"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
-    "message": "EmbedderDomDistillerViewerSource"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
-    "message": "EmbedderExtensionMessaging"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
-    "message": "EmbedderExtensionMessagingForOpenPort"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
-    "message": "EmbedderExtensionSentMessageToCachedFrame"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensions": {
-    "message": "EmbedderExtensions"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderModalDialog": {
-    "message": "EmbedderModalDialog"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOfflinePage": {
-    "message": "EmbedderOfflinePage"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
-    "message": "EmbedderOomInterventionTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
-    "message": "EmbedderPermissionRequestManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
-    "message": "EmbedderPopupBlockerTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
-    "message": "EmbedderSafeBrowsingThreatDetails"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
-    "message": "EmbedderSafeBrowsingTriggeredPopupBlocker"
-  },
-  "panels/application/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
-    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் பக்கம் சேமிக்கப்பட்டிருந்தபோது service worker இயக்கப்பட்டுள்ளது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | foregroundCacheLimit": {
-    "message": "மற்றொரு பக்கத்தைத் தற்காலிகமாகச் சேமிப்பதற்காக இந்தப் பக்கம் தற்காலிகச் சேமிப்பில் இருந்து அகற்றப்பட்டது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
-    "message": "மீடியா ஸ்ட்ரீம் அணுகலை வழங்கியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | haveInnerContents": {
-    "message": "போர்ட்டல்களைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | idleManager": {
-    "message": "IdleManagerரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | indexedDBConnection": {
-    "message": "பொது IndexedDB இணைப்பைக் கொண்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | ineligibleAPI": {
-    "message": "பொருத்தமற்ற APIகள் பயன்படுத்தப்பட்டுள்ளன."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedJavascript": {
-    "message": "நீட்டிப்புகள் மூலம் JavaScript உள்ளிடப்பட்ட IPageகளை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedStyleSheet": {
-    "message": "நீட்டிப்புகள் மூலம் StyleSheet உள்ளிடப்பட்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | internalError": {
-    "message": "அகப் பிழை."
-  },
-  "panels/application/BackForwardCacheStrings.ts | keyboardLock": {
-    "message": "கீபோர்டு லாக்கைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | loading": {
-    "message": "வெளியேறுவதற்கு முன் பக்கம் ஏற்றப்படவில்லை."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
-    "message": "முதன்மை ஆதாரத்தில் ‘cache-control:no-cache’ என்ற தலைப்பைக் கொண்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேர்க்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
-    "message": "முதன்மை ஆதாரத்தில் ‘cache-control:no-store’ என்ற தலைப்பைக் கொண்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேர்க்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
-    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தின் மூலம் பக்கம் மீட்டெடுக்கப்படுவதற்கு முன் வழிசெலுத்துதல் ரத்துசெய்யப்பட்டது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
-    "message": "செயலில் உள்ள நெட்வொர்க் இணைப்பு அதிகளவு டேட்டாவைப் பெற்றதால் தற்காலிகச் சேமிப்பில் இருந்து பக்கம் அகற்றப்பட்டது. பக்கம் தற்காலிகமாகச் சேமிக்கப்படும்போது அது எவ்வளவு நேரம் டேட்டாவைப் பெறலாம் என்பதை Chrome கட்டுப்படுத்தும்."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
-    "message": "fetch() அல்லது XHR நெட்வொர்க் கோரிக்கை நிலுவையில் உள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestRedirected": {
-    "message": "செயலில் உள்ள நெட்வொர்க் கோரிக்கை திசைதிருப்பப்பட்டதால் ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் இருந்து பக்கம் அகற்றப்பட்டது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestTimeout": {
-    "message": "நெட்வொர்க் இணைப்பு நீண்ட நேரம் திறந்திருந்ததால் தற்காலிகச் சேமிப்பில் இருந்து பக்கம் அகற்றப்பட்டது. பக்கம் தற்காலிகமாகச் சேமிக்கப்படும்போது அது எவ்வளவு நேரம் டேட்டாவைப் பெறலாம் என்பதை Chrome கட்டுப்படுத்தும்."
-  },
-  "panels/application/BackForwardCacheStrings.ts | noResponseHead": {
-    "message": "சரியான ‘பதிலளிப்புத் தலைப்பு’ இல்லாத பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேர்க்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | notMainFrame": {
-    "message": "முதன்மை ஃபிரேமில் அல்லாமல் வேறு ஃபிரேமில் வழிசெலுத்துதல் மேற்கொள்ளப்பட்டது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | optInUnloadHeaderNotPresent": {
-    "message": "பக்கத்தில், ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்திற்கான ஆப்ட்-இன் தலைப்பு இல்லாமல் அன்லோடு ஹேண்ட்லர் உள்ளது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
-    "message": "செயலில் உள்ள indexed DB பரிமாற்றங்களைக் கொண்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
-    "message": "நெட்வொர்க் கோரிக்கை நிலுவையில் உள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
-    "message": "fetch() நெட்வொர்க் கோரிக்கை நிலுவையில் உள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
-    "message": "நெட்வொர்க் கோரிக்கை நிலுவையில் உள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
-    "message": "XHR நெட்வொர்க் கோரிக்கை நிலுவையில் உள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | paymentManager": {
-    "message": "PaymentManagerரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | pictureInPicture": {
-    "message": "பிக்ச்சர்-இன்-பிக்ச்சர் அம்சத்தைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | portal": {
-    "message": "போர்ட்டல்களைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | printing": {
-    "message": "Printing UIயைக் காட்டும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
-    "message": "window.open() செயல்பாட்டைப் பயன்படுத்தி பக்கம் திறக்கப்பட்டதுடன் அதற்கான குறிப்பை மற்றொரு உலாவிப் பக்கம் கொண்டுள்ளது அல்லது சாளரத்தைப் பக்கம் திறந்துள்ளது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessCrashed": {
-    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் உள்ள பக்கத்திற்கான ரென்டரிங் செயலாக்கம் சிதைந்துவிட்டது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessKilled": {
-    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் உள்ள பக்கத்திற்கான ரென்டரிங் செயலாக்கம் நிறுத்தப்பட்டது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
-    "message": "ஆடியோவை ரெக்கார்டு செய்வதற்கான அனுமதிகளைக் கோரியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
-    "message": "சென்சார் அனுமதிகளைக் கோரியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
-    "message": "பின்னணி ஒத்திசைவு அல்லது பெறுதல் அனுமதிகளைக் கோரியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedMIDIPermission": {
-    "message": "MIDI அனுமதிகளைக் கோரியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
-    "message": "அறிவிப்புகளுக்கான அனுமதிகளைக் கோரியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
-    "message": "சேமிப்பக அணுகலைக் கோரியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
-    "message": "வீடியோவை ரெக்கார்டு செய்வதற்கான அனுமதிகளைக் கோரியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
-    "message": "HTTP / HTTPS என்ற URL ஸ்கீமைக் கொண்ட பக்கங்களை மட்டுமே தற்காலிகமாகச் சேமிக்க முடியும்."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerClaim": {
-    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் பக்கம் இருக்கும்போது service worker மூலம் அது கோரப்பட்டது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
-    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்கப்பட்டுள்ள பக்கத்திற்கு MessageEvent பண்பை அனுப்ப service worker முயற்சி செய்துள்ளது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
-    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் பக்கம் இருந்தபோது ServiceWorker பதிவுநீக்கம் செய்யப்பட்டது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
-    "message": "service worker இயக்கப்பட்டதால் ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் இருந்து பக்கம் அகற்றப்பட்டது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sessionRestored": {
-    "message": "Chrome மீண்டும் தொடங்கப்பட்டு ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தின் உள்ளீடுகள் அழிக்கப்பட்டன."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sharedWorker": {
-    "message": "SharedWorkerரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechRecognizer": {
-    "message": "SpeechRecognizerரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechSynthesis": {
-    "message": "SpeechSynthesisஸைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subframeIsNavigating": {
-    "message": "பக்கத்தில் உள்ள ஒரு iframe தொடங்கிய வழிசெலுத்துதல் நிறைவடையவில்லை."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
-    "message": "துணை ஆதாரத்தில் ‘cache-control:no-cache’ என்ற தலைப்பைக் கொண்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேர்க்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
-    "message": "துணை ஆதாரத்தில் ‘cache-control:no-store’ என்ற தலைப்பைக் கொண்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேர்க்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeout": {
-    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமித்து வைப்பதற்கான அதிகபட்ச நேரத்தை இந்தப் பக்கம் தாண்டிவிட்டதால் அது காலாவதியாகிவிட்டது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
-    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் பக்கத்தைச் சேர்ப்பதற்கான நேரம் முடிந்துவிட்டது (நீண்ட நேரம் செயல்படும் pagehide ஹேண்ட்லர்கள் காரணமாக இவ்வாறு நடந்திருக்கலாம்)."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
-    "message": "பக்கத்தின் முதன்மை ஃபிரேமில் அகற்றுதல் ஹேண்ட்லர் உள்ளது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
-    "message": "பக்கத்தின் துணை ஃபிரேமில் அகற்றுதல் ஹேண்ட்லர் உள்ளது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
-    "message": "யூசர் ஏஜெண்ட் ஓவர்-ரைடு தலைப்பை உலாவி மாற்றியுள்ளது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
-    "message": "வீடியோ/ஆடியோவை ரெக்கார்டு செய்வதற்கான அணுகலை வழங்கியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webDatabase": {
-    "message": "WebDatabaseஸைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webHID": {
-    "message": "WebHIDயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webLocks": {
-    "message": "WebLocksஸைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webNfc": {
-    "message": "WebNfcயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webOTPService": {
-    "message": "WebOTPServiceஸைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webRTC": {
-    "message": "WebRTCயுடன் கூடிய பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேர்க்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webShare": {
-    "message": "WebShareரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webSocket": {
-    "message": "WebSocketடுடன் கூடிய பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேர்க்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webTransport": {
-    "message": "WebTransportடுடன் கூடிய பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webXR": {
-    "message": "WebXRரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
-  },
-  "panels/application/BackForwardCacheView.ts | backForwardCacheTitle": {
-    "message": "முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்"
-  },
-  "panels/application/BackForwardCacheView.ts | bfcacheStatus": {
-    "message": "முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல் அம்சத்தின் நிலை"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantial": {
-    "message": "நடவடிக்கை எடுக்க முடியாதவை"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantialExplanation": {
-    "message": "இவற்றுக்குத் தீர்வுகாண முடியாது. அதாவது, பக்கத்தின் நேரடிக் கட்டுப்பாட்டில் இல்லாத ஏதோ ஒன்றின் மூலம் தற்காலிகச் சேமிப்பு தடுக்கப்பட்டது."
-  },
-  "panels/application/BackForwardCacheView.ts | mainFrame": {
-    "message": "முதன்மை ஃபிரேம்"
-  },
-  "panels/application/BackForwardCacheView.ts | normalNavigation": {
-    "message": "இயல்பான வழிச்செலுத்தல் (முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமிக்கும் அம்சம் மூலம் மீட்டெடுக்கப்படவில்லை)"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeeded": {
-    "message": "நடவடிக்கை எடுக்கக் கூடியவை"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeededExplanation": {
-    "message": "இவற்றுக்குத் தீர்வுகாண முடியும். அதாவது, இந்தச் சிக்கல்களைத் தீர்ப்பதன் மூலம் பக்கத்தை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேர்க்கலாம்."
-  },
-  "panels/application/BackForwardCacheView.ts | restoredFromBFCache": {
-    "message": "முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல் அம்சத்தின் மூலம் மீட்டெடுக்கப்பட்டது"
-  },
-  "panels/application/BackForwardCacheView.ts | runTest": {
-    "message": "சோதனையை இயக்கு"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPending": {
-    "message": "உதவி நிலுவையிலுள்ளது"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPendingExplanation": {
-    "message": "இவற்றுக்கான Chrome உதவி நிலுவையில் உள்ளது. இனிவரும் Chrome பதிப்பில் ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் பக்கம் சேமிக்கப்படுவதை இவை தடுக்காது."
-  },
-  "panels/application/BackForwardCacheView.ts | unavailable": {
-    "message": "கிடைக்கவில்லை"
-  },
-  "panels/application/BackForwardCacheView.ts | unknown": {
-    "message": "தெரியவில்லை"
-  },
-  "panels/application/BackForwardCacheView.ts | url": {
-    "message": "URL"
   },
   "panels/application/BackgroundServiceView.ts | backgroundFetch": {
     "message": "பின்னணியில் பெறுக"
@@ -3251,6 +2894,387 @@
   "panels/application/application-meta.ts | stopRecordingEvents": {
     "message": "நிகழ்வுகளை ரெக்கார்டு செய்வதை நிறுத்து"
   },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
+    "message": "GET கோரிக்கை மூலம் ஏற்றப்பட்ட பக்கங்களை மட்டுமே ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியும்."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
+    "message": "2XX நிலைக் குறியீட்டுடன் இருக்கும் பக்கங்களை மட்டுமே தற்காலிகமாகச் சேமிக்க முடியும்."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | JavaScriptExecution": {
+    "message": "பக்கம் தற்காலிகச் சேமிப்பில் சேமிக்கப்பட்டிருக்கும்போது JavaScriptடைச் செயல்படுத்துவதற்கு முயற்சி செய்யப்பட்டதாக Chrome கண்டறிந்துள்ளது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | appBanner": {
+    "message": "AppBannerரைக் கோரிய பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
+    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சம் flags பக்கத்தில் முடக்கப்பட்டுள்ளது. சாதனத்தில் இதை இயக்க, chrome://flags/#back-forward-cache என்ற பக்கத்திற்குச் செல்லவும்."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
+    "message": "கட்டளை மூலம் ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சம் முடக்கப்பட்டுள்ளது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
+    "message": "போதுமான நினைவகம் இல்லாததால் ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சம் முடக்கப்பட்டுள்ளது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
+    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தை உட்பொதிவில் பயன்படுத்த முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
+    "message": "முன்கூட்டியே ரென்டர் செய்யப்படுவதற்காக ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சம் முடக்கப்பட்டுள்ளது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | broadcastChannel": {
+    "message": "பதிவுசெய்யப்பட்ட லிசனர்களுடன் கூடிய BroadcastChannel நேர்வைப் பக்கம் கொண்டுள்ளதால் அதைத் தற்காலிகமாகச் சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheControlNoStore": {
+    "message": "‘cache-control:no-store’ என்ற தலைப்புடன் கூடிய பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேர்க்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheFlushed": {
+    "message": "தற்காலிகச் சேமிப்பு வேண்டுமென்றே அழிக்கப்பட்டுள்ளது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheLimit": {
+    "message": "மற்றொரு பக்கத்தைத் தற்காலிகமாகச் சேமிப்பதற்காக இந்தப் பக்கம் தற்காலிகச் சேமிப்பில் இருந்து அகற்றப்பட்டது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | containsPlugins": {
+    "message": "செருகுநிரல்களைக் கொண்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileChooser": {
+    "message": "FileChooser APIயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileSystemAccess": {
+    "message": "File System Access APIயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
+    "message": "Media Device Dispatcherரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaPlay": {
+    "message": "வெளியேறும்போது மீடியா பிளேயர் பிளேயாகிக் கொண்டிருந்தது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSession": {
+    "message": "MediaSession APIயைப் பயன்படுத்தி பிளேபேக் நிலையை அமைக்கும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSessionService": {
+    "message": "MediaSession APIயைப் பயன்படுத்தி செயல்பாட்டு ஹேண்ட்லர்களை அமைக்கும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentScreenReader": {
+    "message": "Back/forward cache is disabled due to screen reader."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSecurityHandler": {
+    "message": "SecurityHandlerரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSerial": {
+    "message": "Serial APIயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
+    "message": "WebAuthentication APIயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebBluetooth": {
+    "message": "WebBluetooth APIயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebUSB": {
+    "message": "WebUSB APIயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
+    "message": "பிரத்தியேக worker/workletடைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | documentLoaded": {
+    "message": "வெளியேறுவதற்கு முன் ஆவணம் ஏற்றப்படவில்லை."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderAppBannerManager": {
+    "message": "App Banner was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
+    "message": "Chrome Password Manager was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
+    "message": "DOM distillation was in progress upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
+    "message": "DOM Distiller Viewer was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
+    "message": "Back/forward cache is disabled due to extensions using messaging API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
+    "message": "Extensions with long-lived connection should close the connection before entering back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
+    "message": "Extensions with long-lived connection attempted to send messages to frames in back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensions": {
+    "message": "Back/forward cache is disabled due to extensions."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderModalDialog": {
+    "message": "Modal dialog such as form resubmission or http password dialog was shown for the page upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOfflinePage": {
+    "message": "The offline page was shown upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
+    "message": "Out-Of-Memory Intervention bar was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
+    "message": "There were permission requests upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
+    "message": "Popup blocker was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
+    "message": "Safe Browsing details were shown upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
+    "message": "Safe Browsing considered this page to be abusive and blocked popup."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
+    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் பக்கம் சேமிக்கப்பட்டிருந்தபோது service worker இயக்கப்பட்டுள்ளது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | foregroundCacheLimit": {
+    "message": "மற்றொரு பக்கத்தைத் தற்காலிகமாகச் சேமிப்பதற்காக இந்தப் பக்கம் தற்காலிகச் சேமிப்பில் இருந்து அகற்றப்பட்டது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
+    "message": "மீடியா ஸ்ட்ரீம் அணுகலை வழங்கியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | haveInnerContents": {
+    "message": "போர்ட்டல்களைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | idleManager": {
+    "message": "IdleManagerரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | indexedDBConnection": {
+    "message": "பொது IndexedDB இணைப்பைக் கொண்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | ineligibleAPI": {
+    "message": "பொருத்தமற்ற APIகள் பயன்படுத்தப்பட்டுள்ளன."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedJavascript": {
+    "message": "நீட்டிப்புகள் மூலம் JavaScript உள்ளிடப்பட்ட IPageகளை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedStyleSheet": {
+    "message": "நீட்டிப்புகள் மூலம் StyleSheet உள்ளிடப்பட்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | internalError": {
+    "message": "அகப் பிழை."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | keyboardLock": {
+    "message": "கீபோர்டு லாக்கைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | loading": {
+    "message": "வெளியேறுவதற்கு முன் பக்கம் ஏற்றப்படவில்லை."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
+    "message": "முதன்மை ஆதாரத்தில் ‘cache-control:no-cache’ என்ற தலைப்பைக் கொண்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேர்க்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
+    "message": "முதன்மை ஆதாரத்தில் ‘cache-control:no-store’ என்ற தலைப்பைக் கொண்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேர்க்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
+    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தின் மூலம் பக்கம் மீட்டெடுக்கப்படுவதற்கு முன் வழிசெலுத்துதல் ரத்துசெய்யப்பட்டது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
+    "message": "செயலில் உள்ள நெட்வொர்க் இணைப்பு அதிகளவு டேட்டாவைப் பெற்றதால் தற்காலிகச் சேமிப்பில் இருந்து பக்கம் அகற்றப்பட்டது. பக்கம் தற்காலிகமாகச் சேமிக்கப்படும்போது அது எவ்வளவு நேரம் டேட்டாவைப் பெறலாம் என்பதை Chrome கட்டுப்படுத்தும்."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
+    "message": "fetch() அல்லது XHR நெட்வொர்க் கோரிக்கை நிலுவையில் உள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestRedirected": {
+    "message": "செயலில் உள்ள நெட்வொர்க் கோரிக்கை திசைதிருப்பப்பட்டதால் ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் இருந்து பக்கம் அகற்றப்பட்டது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestTimeout": {
+    "message": "நெட்வொர்க் இணைப்பு நீண்ட நேரம் திறந்திருந்ததால் தற்காலிகச் சேமிப்பில் இருந்து பக்கம் அகற்றப்பட்டது. பக்கம் தற்காலிகமாகச் சேமிக்கப்படும்போது அது எவ்வளவு நேரம் டேட்டாவைப் பெறலாம் என்பதை Chrome கட்டுப்படுத்தும்."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | noResponseHead": {
+    "message": "சரியான ‘பதிலளிப்புத் தலைப்பு’ இல்லாத பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேர்க்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | notMainFrame": {
+    "message": "முதன்மை ஃபிரேமில் அல்லாமல் வேறு ஃபிரேமில் வழிசெலுத்துதல் மேற்கொள்ளப்பட்டது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
+    "message": "செயலில் உள்ள indexed DB பரிமாற்றங்களைக் கொண்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
+    "message": "நெட்வொர்க் கோரிக்கை நிலுவையில் உள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
+    "message": "fetch() நெட்வொர்க் கோரிக்கை நிலுவையில் உள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
+    "message": "நெட்வொர்க் கோரிக்கை நிலுவையில் உள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
+    "message": "XHR நெட்வொர்க் கோரிக்கை நிலுவையில் உள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | paymentManager": {
+    "message": "PaymentManagerரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | pictureInPicture": {
+    "message": "பிக்ச்சர்-இன்-பிக்ச்சர் அம்சத்தைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | portal": {
+    "message": "போர்ட்டல்களைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | printing": {
+    "message": "Printing UIயைக் காட்டும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
+    "message": "‘window.open()’ செயல்பாட்டைப் பயன்படுத்தி பக்கம் திறக்கப்பட்டதுடன் அதற்கான குறிப்பை மற்றொரு உலாவிப் பக்கம் கொண்டுள்ளது அல்லது சாளரத்தைப் பக்கம் திறந்துள்ளது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessCrashed": {
+    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் உள்ள பக்கத்திற்கான ரென்டரிங் செயலாக்கம் சிதைந்துவிட்டது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessKilled": {
+    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் உள்ள பக்கத்திற்கான ரென்டரிங் செயலாக்கம் நிறுத்தப்பட்டது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
+    "message": "ஆடியோவை ரெக்கார்டு செய்வதற்கான அனுமதிகளைக் கோரியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
+    "message": "சென்சார் அனுமதிகளைக் கோரியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
+    "message": "பின்னணி ஒத்திசைவு அல்லது பெறுதல் அனுமதிகளைக் கோரியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedMIDIPermission": {
+    "message": "MIDI அனுமதிகளைக் கோரியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
+    "message": "அறிவிப்புகளுக்கான அனுமதிகளைக் கோரியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
+    "message": "சேமிப்பக அணுகலைக் கோரியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
+    "message": "வீடியோவை ரெக்கார்டு செய்வதற்கான அனுமதிகளைக் கோரியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
+    "message": "HTTP / HTTPS என்ற URL ஸ்கீமைக் கொண்ட பக்கங்களை மட்டுமே தற்காலிகமாகச் சேமிக்க முடியும்."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerClaim": {
+    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் பக்கம் இருக்கும்போது service worker மூலம் அது கோரப்பட்டது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
+    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்கப்பட்டுள்ள பக்கத்திற்கு MessageEvent பண்பை அனுப்ப service worker முயற்சி செய்துள்ளது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
+    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் பக்கம் இருந்தபோது ServiceWorker பதிவுநீக்கம் செய்யப்பட்டது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
+    "message": "service worker இயக்கப்பட்டதால் ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் இருந்து பக்கம் அகற்றப்பட்டது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sessionRestored": {
+    "message": "Chrome மீண்டும் தொடங்கப்பட்டு ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தின் உள்ளீடுகள் அழிக்கப்பட்டன."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sharedWorker": {
+    "message": "SharedWorkerரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechRecognizer": {
+    "message": "SpeechRecognizerரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechSynthesis": {
+    "message": "SpeechSynthesisஸைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subframeIsNavigating": {
+    "message": "பக்கத்தில் உள்ள ஒரு iframe தொடங்கிய வழிசெலுத்துதல் நிறைவடையவில்லை."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
+    "message": "துணை ஆதாரத்தில் ‘cache-control:no-cache’ என்ற தலைப்பைக் கொண்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேர்க்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
+    "message": "துணை ஆதாரத்தில் ‘cache-control:no-store’ என்ற தலைப்பைக் கொண்ட பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேர்க்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeout": {
+    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமித்து வைப்பதற்கான அதிகபட்ச நேரத்தை இந்தப் பக்கம் தாண்டிவிட்டதால் அது காலாவதியாகிவிட்டது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
+    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் பக்கத்தைச் சேர்ப்பதற்கான நேரம் முடிந்துவிட்டது (நீண்ட நேரம் செயல்படும் pagehide ஹேண்ட்லர்கள் காரணமாக இவ்வாறு நடந்திருக்கலாம்)."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
+    "message": "பக்கத்தின் முதன்மை ஃபிரேமில் அகற்றுதல் ஹேண்ட்லர் உள்ளது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
+    "message": "பக்கத்தின் துணை ஃபிரேமில் அகற்றுதல் ஹேண்ட்லர் உள்ளது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
+    "message": "யூசர் ஏஜெண்ட் ஓவர்-ரைடு தலைப்பை உலாவி மாற்றியுள்ளது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
+    "message": "வீடியோ/ஆடியோவை ரெக்கார்டு செய்வதற்கான அணுகலை வழங்கியுள்ள பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webDatabase": {
+    "message": "WebDatabaseஸைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webHID": {
+    "message": "WebHIDயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webLocks": {
+    "message": "WebLocksஸைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webNfc": {
+    "message": "WebNfcயைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webOTPService": {
+    "message": "WebOTPServiceஸைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webRTC": {
+    "message": "WebRTCயுடன் கூடிய பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேர்க்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webShare": {
+    "message": "WebShareரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webSocket": {
+    "message": "WebSocketடுடன் கூடிய பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேர்க்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webTransport": {
+    "message": "WebTransportடுடன் கூடிய பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webXR": {
+    "message": "WebXRரைப் பயன்படுத்தும் பக்கங்களை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் தற்போது சேமிக்க முடியாது."
+  },
+  "panels/application/components/BackForwardCacheView.ts | backForwardCacheTitle": {
+    "message": "முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantial": {
+    "message": "நடவடிக்கை எடுக்க முடியாதவை"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantialExplanation": {
+    "message": "இவற்றுக்குத் தீர்வுகாண முடியாது. அதாவது, பக்கத்தின் நேரடிக் கட்டுப்பாட்டில் இல்லாத ஏதோ ஒன்றின் மூலம் தற்காலிகச் சேமிப்பு தடுக்கப்பட்டது."
+  },
+  "panels/application/components/BackForwardCacheView.ts | learnMore": {
+    "message": "மேலும் அறிக: 'முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்' அம்சத்தின் தகுதிநிலை"
+  },
+  "panels/application/components/BackForwardCacheView.ts | mainFrame": {
+    "message": "முதன்மை ஃபிரேம்"
+  },
+  "panels/application/components/BackForwardCacheView.ts | normalNavigation": {
+    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தின் மூலம் பக்கம் மீட்டெடுக்கப்படவில்லை: அந்த அம்சத்தைத் தொடங்க, Chromeமின் ‘முந்தையது/அடுத்தது பட்டன்களைப்’ பயன்படுத்தவும் அல்லது தானாக வெளியேறுவதற்கும் திரும்பி வருவதற்கும் கீழே உள்ள சோதனை பட்டனைப் பயன்படுத்தவும்."
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeeded": {
+    "message": "நடவடிக்கை எடுக்கக் கூடியவை"
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeededExplanation": {
+    "message": "இவற்றுக்குத் தீர்வுகாண முடியும். அதாவது, இந்தச் சிக்கல்களைத் தீர்ப்பதன் மூலம் பக்கத்தை ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் சேர்க்கலாம்."
+  },
+  "panels/application/components/BackForwardCacheView.ts | restoredFromBFCache": {
+    "message": "‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தின் மூலம் பக்கம் மீட்டெடுக்கப்பட்டது."
+  },
+  "panels/application/components/BackForwardCacheView.ts | runTest": {
+    "message": "'முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்' அம்சம் கிடைக்கிறதா எனச் சோதனை செய்"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runningTest": {
+    "message": "சோதனை நடைபெறுகிறது"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPending": {
+    "message": "உதவி நிலுவையிலுள்ளது"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPendingExplanation": {
+    "message": "இவற்றுக்கான Chrome உதவி நிலுவையில் உள்ளது. இனிவரும் Chrome பதிப்பில் ‘முன் பின் பக்கங்களைத் தற்காலிகமாகச் சேமித்தல்’ அம்சத்தில் பக்கம் சேமிக்கப்படுவதை இவை தடுக்காது."
+  },
+  "panels/application/components/BackForwardCacheView.ts | unavailable": {
+    "message": "கிடைக்கவில்லை"
+  },
+  "panels/application/components/BackForwardCacheView.ts | unknown": {
+    "message": "நிலை தெரியவில்லை"
+  },
+  "panels/application/components/BackForwardCacheView.ts | url": {
+    "message": "URL:"
+  },
   "panels/application/components/EndpointsGrid.ts | noEndpointsToDisplay": {
     "message": "காட்டுவதற்கு எண்ட்பாயிண்ட்டுகள் எதுவுமில்லை"
   },
@@ -3297,22 +3321,16 @@
     "message": "ஆதாரங்கள் பேனலைக் காட்ட கிளிக் செய்க"
   },
   "panels/application/components/FrameDetailsView.ts | createdByAdScriptExplanation": {
-    "message": "இந்த ஃப்ரேம் உருவாக்கப்பட்டபோது ஸ்டேக்கில் (ஒத்திசையாதது) விளம்பர ஸ்கிரிப்ட் இருந்தது. இந்த ஃப்ரேமின் உருவாக்க ஸ்டேக் டிரேஸை ஆய்வுசெய்தால் கூடுதல் புள்ளிவிவரம் கிடைக்கக்கூடும்."
+    "message": "இந்த ஃப்ரேம் உருவாக்கப்பட்டபோது (async) stack இல் விளம்பர ஸ்கிரிப்ட் இருந்தது. இந்த ஃப்ரேமின் உருவாக்க stack trace ஐ ஆய்வுசெய்தால் கூடுதல் புள்ளிவிவரம் கிடைக்கக்கூடும்."
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTrace": {
-    "message": "ஃபிரேம் கிரியேஷன் ஸ்டாக் டிரேஸ்"
+    "message": "ஃபிரேம் உருவாக்கத்திற்கான Stack Trace"
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTraceExplanation": {
-    "message": "நிரல் மூலமாக இந்த ஃபிரேம் உருவாக்கப்பட்டது. இது எங்கே நிகழ்ந்தது என்பதை ஸ்டாக் டிரேஸ் காட்டும்."
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginEmbedderPolicy": {
-    "message": "கிராஸ் ஆரிஜின் உட்பொதிவுக் கொள்கை"
+    "message": "நிரல் மூலமாக இந்த ஃபிரேம் உருவாக்கப்பட்டது. இது எங்கே நிகழ்ந்தது என stack trace காட்டுகிறது."
   },
   "panels/application/components/FrameDetailsView.ts | crossoriginIsolated": {
     "message": "கிராஸ் ஆரிஜின் தனிமைப்படுத்தப்பட்டது"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginOpenerPolicy": {
-    "message": "கிராஸ் ஆரிஜின் ஓப்பனர் கொள்கை"
   },
   "panels/application/components/FrameDetailsView.ts | document": {
     "message": "ஆவணம்"
@@ -3324,7 +3342,7 @@
     "message": "மேலும் அறிக"
   },
   "panels/application/components/FrameDetailsView.ts | localhostIsAlwaysASecureContext": {
-    "message": "Localhost எப்போதுமே ஒரு பாதுகாப்பான சூழல்"
+    "message": "Localhost எப்போதும் ஒரு பாதுகாப்பான சூழல்"
   },
   "panels/application/components/FrameDetailsView.ts | matchedBlockingRuleExplanation": {
     "message": "இந்த ஃபிரேமின் தற்போதைய (அல்லது முந்தைய) முதன்மை ஆவணம் ஒரு விளம்பர ஆதாரம் என்பதால் இது விளம்பர ஃபிரேமாகக் கருதப்படுகிறது."
@@ -3337,9 +3355,6 @@
   },
   "panels/application/components/FrameDetailsView.ts | origin": {
     "message": "ஆரிஜின்"
-  },
-  "panels/application/components/FrameDetailsView.ts | originTrials": {
-    "message": "தொடக்கச் சோதனைகள்"
   },
   "panels/application/components/FrameDetailsView.ts | ownerElement": {
     "message": "உரிமையாளர் உறுப்பு"
@@ -3366,10 +3381,10 @@
     "message": "பாதுகாப்பு & தனிமை"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIs": {
-    "message": "SharedArrayBuffer கன்ஸ்ட்ரக்டர் கிடைக்கிறது, SABகளை postMessage வழியாக இடமாற்றலாம்"
+    "message": "SharedArrayBuffer கன்ஸ்ட்ரக்டர் கிடைக்கிறது. postMessage வழியாக SABs இடமாற்றப்படலாம்"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIsAvailable": {
-    "message": "SharedArrayBuffer கன்ஸ்ட்ரக்டர் கிடைக்கிறது, ஆனால் SABகளை postMessage வழியாக மாற்ற முடியாது"
+    "message": "SharedArrayBuffer கன்ஸ்ட்ரக்டர் கிடைக்கிறது. ஆனால் postMessage வழியாக SABs மாற்றப்பட முடியாது"
   },
   "panels/application/components/FrameDetailsView.ts | theFramesSchemeIsInsecure": {
     "message": "ஃபிரேமின் திட்டம் பாதுகாப்பற்றது"
@@ -3378,7 +3393,7 @@
     "message": "performance.measureUserAgentSpecificMemory() API உள்ளது"
   },
   "panels/application/components/FrameDetailsView.ts | thePerformancemeasureuseragentspecificmemory": {
-    "message": "performance.measureUserAgentSpecificMemory() API கிடைக்கவில்லை"
+    "message": "performance.measureUserAgentSpecificMemory() API இல்லை"
   },
   "panels/application/components/FrameDetailsView.ts | thisAdditionalDebugging": {
     "message": "'நெறிமுறை மானிட்டர்' பரிசோதனை இயக்கப்பட்டிருப்பதால் இந்தக் கூடுதல் (பிழைதிருத்தத்) தகவல்கள் காட்டப்படுகின்றன."
@@ -3624,7 +3639,7 @@
     "message": "மாற்றங்கள் இல்லை"
   },
   "panels/changes/ChangesView.ts | revertAllChangesToCurrentFile": {
-    "message": "தற்போதைய கோப்பில் செய்த எல்லா மாற்றங்களையும் ரத்துசெய்து பழையபடி மாற்றும்"
+    "message": "தற்போதைய ஃபைலில் செய்த எல்லா மாற்றங்களையும் ரத்துசெய்து பழையபடி மாற்றும்"
   },
   "panels/changes/ChangesView.ts | sDeletions": {
     "message": "{n,plural, =1{# நீக்குதல் (-)}other{# நீக்குதல்கள் (-)}}"
@@ -4229,20 +4244,11 @@
   "panels/css_overview/CSSOverviewUnusedDeclarations.ts | widthAppliedToAnInlineElement": {
     "message": "இன்லைன் பண்புக்கூறுக்கு Width பயன்படுத்தப்பட்டது"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | activelyWorkingAndLookingForS": {
-    "message": "இந்த அம்சத்தை மேம்படுத்த எங்கள் குழு முனைப்புடன் செயல்பட்டு வருகிறது. மேலும், உங்கள் {PH1} ஐ எதிர்பார்க்கிறோம்!"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | captureOverview": {
     "message": "மேலோட்டத்தைப் படமெடு"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | capturePageCSSOverview": {
     "message": "உங்கள் பக்கத்திற்கான CSS மேலோட்டப் பார்வை அறிக்கையை உருவாக்கலாம்"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackInline": {
-    "message": "கருத்து"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackStandalone": {
-    "message": "Feedback"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | identifyCSSImprovements": {
     "message": "சாத்தியமுள்ள CSS மேம்பாடுகளை அடையாளம் காணுதல்"
@@ -4253,14 +4259,8 @@
   "panels/css_overview/components/CSSOverviewStartView.ts | locateAffectedElements": {
     "message": "உறுப்புகள் பேனலில் உள்ள பாதிக்கப்பட்ட உறுப்புகளைக் கண்டறியலாம்"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | previewFeature": {
-    "message": "மாதிரிக்காட்சி அம்சம்"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | quickStartWithCSSOverview": {
     "message": "விரைவுத் தொடக்கம்: புதிய CSS மேலோட்டப் பார்வைக்கான பேனலைப் பயன்படுத்தத் தொடங்குதல்"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | videoAndDocumentation": {
-    "message": "வீடியோ & ஆவணங்கள்"
   },
   "panels/css_overview/css_overview-meta.ts | cssOverview": {
     "message": "CSS மேலோட்டப் பார்வை"
@@ -4359,7 +4359,7 @@
     "message": "ஸ்டைலுக்குச் செல்"
   },
   "panels/elements/ComputedStyleWidget.ts | noMatchingProperty": {
-    "message": "பொருந்தும் உடைமைகள் எதுவும் இல்லை"
+    "message": "பொருந்தும் பண்புகள் எதுவுமில்லை"
   },
   "panels/elements/ComputedStyleWidget.ts | showAll": {
     "message": "அனைத்தையும் காட்டு"
@@ -4591,6 +4591,21 @@
   },
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
     "message": "ரெண்டர் செய்யப்பட்ட எழுத்து வடிவங்கள்"
+  },
+  "panels/elements/PropertiesWidget.ts | filter": {
+    "message": "வடிப்பான்"
+  },
+  "panels/elements/PropertiesWidget.ts | filterProperties": {
+    "message": "பண்புகளை வடிகட்டும்"
+  },
+  "panels/elements/PropertiesWidget.ts | noMatchingProperty": {
+    "message": "பொருந்தும் பண்புகள் எதுவுமில்லை"
+  },
+  "panels/elements/PropertiesWidget.ts | showAll": {
+    "message": "அனைத்தையும் காட்டு"
+  },
+  "panels/elements/PropertiesWidget.ts | showAllTooltip": {
+    "message": "தேர்வுநீக்கினால், மதிப்புகள் இல்லாமலோ வரையறுக்கப்படாமலோ இருக்கும் பண்புகள் மட்டுமே காட்டப்படும்"
   },
   "panels/elements/StylePropertyTreeElement.ts | copyAllCssDeclarationsAsJs": {
     "message": "வரையறைகள் அனைத்தையும் JS ஆக நகலெடு"
@@ -4980,7 +4995,7 @@
     "message": "மீடியா வினவல்களை மறை"
   },
   "panels/emulation/emulation-meta.ts | hideRulers": {
-    "message": "ரூலர்களை மறை"
+    "message": "சாதனப் பயன்முறை கருவிப்பட்டியில் ரூலர்களை மறை"
   },
   "panels/emulation/emulation-meta.ts | showDeviceFrame": {
     "message": "சாதன ஃபிரேமைக் காட்டு"
@@ -4989,7 +5004,7 @@
     "message": "மீடியா வினவல்களைக் காட்டு"
   },
   "panels/emulation/emulation-meta.ts | showRulers": {
-    "message": "ரூலர்களைக் காட்டு"
+    "message": "சாதனப் பயன்முறை கருவிப்பட்டியில் ரூலர்களைக் காட்டு"
   },
   "panels/emulation/emulation-meta.ts | toggleDeviceToolbar": {
     "message": "சாதனத்தின் கருவிப்பட்டிக்கு மாறு"
@@ -5014,36 +5029,6 @@
   },
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "ஈவண்ட் லிசனர் பேஸிவ் ஆக உள்ளதா தடுக்கிறதா என்று நிலைமாற்று"
-  },
-  "panels/help/ReleaseNoteView.ts | close": {
-    "message": "மூடுக"
-  },
-  "panels/help/ReleaseNoteView.ts | learnMore": {
-    "message": "மேலும் அறிக"
-  },
-  "panels/help/help-meta.ts | bug": {
-    "message": "பிழை"
-  },
-  "panels/help/help-meta.ts | doNotShowWhatsNewAfterEachUpdate": {
-    "message": "ஒவ்வொரு புதுப்பிப்பிற்குப் பிறகும் புதிதாக என்ன உள்ளது என்பதைக் காட்டாதே"
-  },
-  "panels/help/help-meta.ts | releaseNotes": {
-    "message": "வெளியீட்டுக் குறிப்புகள்"
-  },
-  "panels/help/help-meta.ts | reportADevtoolsIssue": {
-    "message": "டெவெலப்பர் கருவிகள் குறித்த சிக்கலைப் புகாரளி"
-  },
-  "panels/help/help-meta.ts | reportTranslationIssue": {
-    "message": "மொழிபெயர்ப்புச் சிக்கலைப் புகாரளி"
-  },
-  "panels/help/help-meta.ts | showWhatsNew": {
-    "message": "புதியவற்றைக் காட்டு"
-  },
-  "panels/help/help-meta.ts | showWhatsNewAfterEachUpdate": {
-    "message": "ஒவ்வொரு புதுப்பிப்பிற்குப் பிறகும் புதியவற்றைக் காட்டு"
-  },
-  "panels/help/help-meta.ts | whatsNew": {
-    "message": "புதியவை"
   },
   "panels/input/InputTimeline.ts | clearAll": {
     "message": "அனைத்தையும் அழி"
@@ -5261,8 +5246,20 @@
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceEventId": {
     "message": "தவறான attributionsourceeventid"
   },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceExpiry": {
+    "message": "தவறான attributionexpiry"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourcePriority": {
+    "message": "தவறான attributionsourcepriority"
+  },
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerData": {
     "message": "தவறான trigger-data"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerDedupKey": {
+    "message": "தவறான dedup-key"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerPriority": {
+    "message": "தவறான priority"
   },
   "panels/issues/AttributionReportingIssueDetailsView.ts | nViolations": {
     "message": "{n,plural, =1{# மீறல்}other{# மீறல்கள்}}"
@@ -5290,6 +5287,9 @@
   },
   "panels/issues/CorsIssueDetailsView.ts | disallowedRequestMethod": {
     "message": "அனுமதிக்கப்படாத கோரிக்கை முறை"
+  },
+  "panels/issues/CorsIssueDetailsView.ts | failedRequest": {
+    "message": "தோல்வியடைந்த கோரிக்கை"
   },
   "panels/issues/CorsIssueDetailsView.ts | header": {
     "message": "தலைப்பு"
@@ -5366,8 +5366,14 @@
   "panels/issues/HiddenIssuesRow.ts | unhideAll": {
     "message": "அனைத்தையும் காட்டு"
   },
-  "panels/issues/IssueKindView.ts | hideAllCurrent": {
-    "message": "தற்போதைய {PH1} அனைத்தையும் மறை"
+  "panels/issues/IssueKindView.ts | hideAllCurrentBreakingChanges": {
+    "message": "தற்போதைய பாதிக்கும் மாற்றங்கள் அனைத்தையும் மறை"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentImprovements": {
+    "message": "தற்போதைய மேம்பாடுகள் அனைத்தையும் மறை"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentPageErrors": {
+    "message": "தற்போதைய பக்கப் பிழைகள் அனைத்தையும் மறை"
   },
   "panels/issues/IssueView.ts | affectedResources": {
     "message": "பாதிக்கப்பட்ட மூலங்கள்"
@@ -6307,6 +6313,9 @@
   },
   "panels/network/NetworkConfigView.ts | caching": {
     "message": "தற்காலிகமாகச் சேமிக்கிறது"
+  },
+  "panels/network/NetworkConfigView.ts | clientHintsStatusText": {
+    "message": "பயனர் ஏஜெண்ட் புதுப்பிக்கப்பட்டது."
   },
   "panels/network/NetworkConfigView.ts | custom": {
     "message": "பிரத்தியேகம்..."
@@ -9153,7 +9162,7 @@
     "message": "கவரேஜ்: இல்லை"
   },
   "panels/sources/CoveragePlugin.ts | coverageS": {
-    "message": "கவரேஜ்: {PH1} %"
+    "message": "கவரேஜ்: {PH1}"
   },
   "panels/sources/CoveragePlugin.ts | showDetails": {
     "message": "விவரங்களைக் காட்டு"
@@ -9267,7 +9276,7 @@
     "message": "சோர்ஸ் மேப் கண்டறியப்பட்டது."
   },
   "panels/sources/DebuggerPlugin.ts | sourceMapFoundButIgnoredForFile": {
-    "message": "சோர்ஸ் மேப் கண்டறியப்பட்டது. ஆனால் புறக்கணிப்புப் பட்டியலில் உள்ள கோப்பிற்குப் புறக்கணிக்கப்பட்டது."
+    "message": "சோர்ஸ் மேப் கண்டறியப்பட்டது. ஆனால் புறக்கணிப்புப் பட்டியலில் உள்ள ஃபைலுக்குப் புறக்கணிக்கப்பட்டது."
   },
   "panels/sources/DebuggerPlugin.ts | theDebuggerWillSkipStepping": {
     "message": "பிழைதிருத்தி, ஸ்கிரிப்ட்டுகளைத் தவிர்த்துவிடுவதோடு எக்ஸெப்ஷன்களையும் பொருட்படுத்தாது."
@@ -9411,7 +9420,16 @@
     "message": "முடிவுகள் எதுவுமில்லை"
   },
   "panels/sources/OutlineQuickOpen.ts | openAJavascriptOrCssFileToSee": {
-    "message": "குறியீடுகளைப் பார்க்க, JavaScript/CSS கோப்பினைத் திறக்கவும்"
+    "message": "குறியீடுகளைப் பார்க்க, JavaScript/CSS ஃபைலைத் திறக்கவும்"
+  },
+  "panels/sources/ProfilePlugin.ts | kb": {
+    "message": "கி.பை."
+  },
+  "panels/sources/ProfilePlugin.ts | mb": {
+    "message": "மெ.பை."
+  },
+  "panels/sources/ProfilePlugin.ts | ms": {
+    "message": "மிவி"
   },
   "panels/sources/ScopeChainSidebarPane.ts | closure": {
     "message": "உள்ளடங்கிய செயல்பாடு"
@@ -9567,7 +9585,7 @@
     "message": "பணியிடத்தில் சேர்க்க ஃபோல்டரில் இழுத்து விடவும்"
   },
   "panels/sources/SourcesView.ts | openFile": {
-    "message": "கோப்பினைத் திற"
+    "message": "ஃபைலைத் திற"
   },
   "panels/sources/SourcesView.ts | runCommand": {
     "message": "கட்டளையை இயக்கு"
@@ -10131,7 +10149,7 @@
     "message": "மொபைல் சாதனங்களில் இயங்கும் போது JavaScript சாம்பிளிங்கை முடக்கும், சுமையைக் குறைக்கும்"
   },
   "panels/timeline/TimelinePanel.ts | dropTimelineFileOrUrlHere": {
-    "message": "காலப்பதிவு கோப்பினையோ URLலையோ இங்கே இழுத்து விடவும்"
+    "message": "காலப்பதிவு ஃபைலையோ URLலையோ இங்கே இழுத்து விடவும்"
   },
   "panels/timeline/TimelinePanel.ts | enableAdvancedPaint": {
     "message": "மேம்பட்ட பெயிண்ட் இன்ஸ்ட்ரூமென்டேஷனை (வேகம் குறைவான) இயக்கு"
@@ -11429,6 +11447,24 @@
   "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
     "message": "நினைவகக் கண்காணிப்புக் கருவியைக் காட்டு"
   },
+  "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
+    "message": "Feedback"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewFeature": {
+    "message": "மாதிரிக்காட்சி அம்சம்"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewText": {
+    "message": "இந்த அம்சத்தை மேம்படுத்த எங்கள் குழு முனைப்புடன் செயல்பட்டு வருகிறது. மேலும், உங்கள் கருத்தைத் தெரிந்துகொள்ள விரும்புகிறோம்."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewTextFeedbackLink": {
+    "message": "கருத்து வழங்குக."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | videoAndDocumentation": {
+    "message": "வீடியோ & ஆவணங்கள்"
+  },
+  "ui/components/panel_feedback/PreviewToggle.ts | previewTextFeedbackLink": {
+    "message": "கருத்து வழங்குக."
+  },
   "ui/components/request_link_icon/RequestLinkIcon.ts | clickToShowRequestInTheNetwork": {
     "message": "நெட்வொர்க் பேனலைத் திறந்து URLக்கான கோரிக்கையைப் பார்க்க கிளிக் செய்க: {url}"
   },
@@ -11501,6 +11537,12 @@
   "ui/legacy/InspectorView.ts | drawer": {
     "message": "டூல் டிராயர்"
   },
+  "ui/legacy/InspectorView.ts | drawerHidden": {
+    "message": "டிராயர் மறைக்கப்பட்டுள்ளது"
+  },
+  "ui/legacy/InspectorView.ts | drawerShown": {
+    "message": "டிராயர் காட்டப்படுகிறது"
+  },
   "ui/legacy/InspectorView.ts | mainToolbar": {
     "message": "முதன்மைக் கருவிப்பட்டி"
   },
@@ -11539,6 +11581,9 @@
   },
   "ui/legacy/ListWidget.ts | saveString": {
     "message": "சேமி"
+  },
+  "ui/legacy/RemoteDebuggingTerminatedScreen.ts | debuggingConnectionWasClosed": {
+    "message": "Debugging connection was closed. Reason: "
   },
   "ui/legacy/RemoteDebuggingTerminatedScreen.ts | reconnectDevtools": {
     "message": "DevTools ஐ மீண்டும் இணை"
@@ -11774,6 +11819,9 @@
   "ui/legacy/components/cookie_table/CookiesTable.ts | name": {
     "message": "பெயர்"
   },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | opaquePartitionKey": {
+    "message": "(ஒபேக்)"
+  },
   "ui/legacy/components/cookie_table/CookiesTable.ts | session": {
     "message": "அமர்வு"
   },
@@ -11942,15 +11990,6 @@
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "JavaScript ஆப்ஜெக்ட்டாகக் காட்டு"
   },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keys": {
-    "message": "விசைகள்"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keywords": {
-    "message": "தேடல் குறிப்புகள்"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | lexicalScopeVariables": {
-    "message": "லெக்ஸிகல் ஸ்கோப் மாறிகள்"
-  },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | collapseChildren": {
     "message": "உபநிலையைச் சுருக்கு"
   },
@@ -12038,15 +12077,6 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | sSelected": {
     "message": "{PH1} தேர்ந்தெடுக்கப்பட்டது"
   },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | kb": {
-    "message": "கி.பை."
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | mb": {
-    "message": "மெ.பை."
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | ms": {
-    "message": "மிவி"
-  },
   "ui/legacy/components/perf_ui/NetworkPriorities.ts | high": {
     "message": "அதிகம்"
   },
@@ -12119,8 +12149,8 @@
   "ui/legacy/components/quick_open/QuickInput.ts | pressEnterToConfirmOrEscapeTo": {
     "message": "{PH1} (உறுதிசெய்ய 'Enter' விசையையோ ரத்துசெய்ய 'Esc' விசையையோ அழுத்தவும்.)"
   },
-  "ui/legacy/components/quick_open/QuickOpen.ts | useTabToSwitchCommandsTypeToSeeAvailableCommands": {
-    "message": "கட்டளைகளுக்கு இடையில் மாற, Tab பட்டனைப் பயன்படுத்தவும். கட்டளைகளைப் பார்க்க, '?' என டைப் செய்யவும்"
+  "ui/legacy/components/quick_open/QuickOpen.ts | typeToSeeAvailableCommands": {
+    "message": "கட்டளைகளைப் பார்க்க, '?' ஐ உள்ளிடவும்"
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | openFile": {
     "message": "ஃபைலைத் திற"
@@ -12223,9 +12253,6 @@
   },
   "ui/legacy/components/source_frame/source_frame-meta.ts | tabCharacter": {
     "message": "Tab எழுத்து"
-  },
-  "ui/legacy/components/text_editor/CodeMirrorTextEditor.ts | codeEditor": {
-    "message": "குறியீடு எடிட்டர்"
   },
   "ui/legacy/components/utils/ImagePreview.ts | currentSource": {
     "message": "தற்போதைய ஆதாரம்:"

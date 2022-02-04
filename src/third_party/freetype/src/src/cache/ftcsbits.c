@@ -4,7 +4,7 @@
  *
  *   FreeType sbits manager (body).
  *
- * Copyright (C) 2000-2021 by
+ * Copyright (C) 2000-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -233,7 +233,7 @@
       goto Exit;
     }
 
-    if ( !FT_NEW( snode ) )
+    if ( !FT_QNEW( snode ) )
     {
       FT_UInt  count, start;
 

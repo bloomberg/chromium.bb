@@ -11,6 +11,7 @@
 #include "experimental/graphite/src/ResourceTypes.h"
 #include "include/core/SkImageInfo.h"
 #include "include/core/SkRefCnt.h"
+#include "src/gpu/ResourceKey.h"
 
 namespace SkSL {
 struct ShaderCaps;
@@ -18,6 +19,8 @@ struct ShaderCaps;
 
 namespace skgpu {
 
+class GraphicsPipelineDesc;
+struct RenderPassDesc;
 class TextureInfo;
 
 class Caps : public SkRefCnt {
@@ -39,9 +42,12 @@ public:
                                                           uint32_t sampleCount,
                                                           Protected) const = 0;
 
+    virtual UniqueKey makeGraphicsPipelineKey(const GraphicsPipelineDesc&,
+                                              const RenderPassDesc&) const = 0;
+
     bool areColorTypeAndTextureInfoCompatible(SkColorType, const TextureInfo&) const;
 
-    virtual bool isTexturable(const TextureInfo&) const = 0;
+    bool isTexturable(const TextureInfo&) const;
     virtual bool isRenderable(const TextureInfo&) const = 0;
 
     int maxTextureSize() const { return fMaxTextureSize; }
@@ -59,6 +65,7 @@ protected:
     std::unique_ptr<SkSL::ShaderCaps> fShaderCaps;
 
 private:
+    virtual bool onIsTexturable(const TextureInfo&) const = 0;
     virtual bool onAreColorTypeAndTextureInfoCompatible(SkColorType, const TextureInfo&) const = 0;
 };
 

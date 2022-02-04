@@ -37,12 +37,15 @@ class ASH_EXPORT AppListTestApi {
   // productivity launcher in clamshell mode.
   void WaitForBubbleWindow(bool wait_for_opening_animation);
 
-  // Waits until all the animations on the app list widget end. No operations
+  // Waits until the animation to show the app list becomes idle. No operations
   // if the app list widget is already idle.
-  void WaitUntilAppListAnimationIdle();
+  void WaitForAppListShowAnimation(bool is_bubble_window);
 
   // Returns whether there is an item for |app_id|.
   bool HasApp(const std::string& app_id);
+
+  // Returns the name displayed in the launcher for the provided app list item.
+  std::u16string GetAppListItemViewName(const std::string& item_id);
 
   // Returns ids of the items in top level app list view.
   std::vector<std::string> GetTopLevelViewIdList();
@@ -82,14 +85,42 @@ class ASH_EXPORT AppListTestApi {
   // Returns the top level apps grid view. Could be ScrollableAppsGridView if
   // bubble launcher is enabled or PagedAppsGridView otherwise.
   AppsGridView* GetTopLevelAppsGridView();
+  const AppsGridView* GetTopLevelAppsGridView() const;
+
+  // Returns the apps grid view in the folder.
+  AppsGridView* GetFolderAppsGridView();
+
+  // Returns whether the folder view is under animation.
+  bool IsFolderViewAnimating() const;
 
   // Returns the app list bubble's undo button that reverts the temporary
   // sorting order when triggered.
   views::View* GetBubbleReorderUndoButton();
 
+  // Returns the fullscreen app list's undo button that reverts the temporary
+  // sorting order when triggered.
+  views::View* GetFullscreenReorderUndoButton();
+
   // Returns the visibility of the app list bubble's undo toast where the undo
   // button is located.
   bool GetBubbleReorderUndoToastVisibility() const;
+
+  // Returns the visibility of the fullscreen app list's undo toast where the
+  // undo button is located.
+  bool GetFullscreenReorderUndoToastVisibility() const;
+
+  // Registers a callback that runs when all the animations scheduled to show or
+  // hide the folder view complete.
+  void SetFolderViewAnimationCallback(
+      base::OnceClosure folder_animation_done_callback);
+
+  // Adds a callback that runs at the end of the reorder animation. The callback
+  // carries a boolean parameter that is true if the animation is aborted.
+  void AddReorderAnimationCallback(
+      base::RepeatingCallback<void(bool)> callback);
+
+  // Returns true if there is any waiting reorder animation test callback.
+  bool HasAnyWaitingReorderDoneCallback() const;
 };
 
 }  // namespace ash

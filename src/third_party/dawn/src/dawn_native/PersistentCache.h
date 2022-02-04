@@ -20,11 +20,11 @@
 #include <mutex>
 #include <vector>
 
-namespace dawn_platform {
+namespace dawn::platform {
     class CachingInterface;
 }
 
-namespace dawn_native {
+namespace dawn::native {
 
     using PersistentCacheKey = std::vector<uint8_t>;
 
@@ -80,13 +80,13 @@ namespace dawn_native {
         ScopedCachedBlob LoadData(const PersistentCacheKey& key);
         void StoreData(const PersistentCacheKey& key, const void* value, size_t size);
 
-        dawn_platform::CachingInterface* GetPlatformCache();
+        dawn::platform::CachingInterface* GetPlatformCache();
 
         DeviceBase* mDevice = nullptr;
 
         std::mutex mMutex;
-        dawn_platform::CachingInterface* mCache = nullptr;
+        dawn::platform::CachingInterface* mCache = nullptr;
     };
-}  // namespace dawn_native
+}  // namespace dawn::native
 
 #endif  // DAWNNATIVE_PERSISTENTCACHE_H_

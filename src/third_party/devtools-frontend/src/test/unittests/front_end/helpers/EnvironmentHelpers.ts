@@ -18,26 +18,6 @@ import type * as UIModule from '../../../../front_end/ui/legacy/legacy.js';
 // initialization phase.
 let UI: typeof UIModule;
 
-// Expose the locale.
-i18n.DevToolsLocale.DevToolsLocale.instance({
-  create: true,
-  data: {
-    navigatorLanguage: 'en-US',
-    settingLanguage: 'en-US',
-    lookupClosestDevToolsLocale: () => 'en-US',
-  },
-});
-
-// Load the strings from the resource file.
-const locale = i18n.DevToolsLocale.DevToolsLocale.instance().locale;
-// proxied call.
-try {
-  await i18n.i18n.fetchAndRegisterLocaleData(locale);
-} catch (error) {
-  // eslint-disable-next-line no-console
-  console.warn('EnvironmentHelper: Loading en-US locale failed', error.message);
-}
-
 let targetManager: SDK.TargetManager.TargetManager;
 
 function initializeTargetManagerIfNecessary() {
@@ -58,7 +38,35 @@ function createSettingValue(
   return {category, settingName, defaultValue, settingType};
 }
 
+const REGISTERED_EXPERIMENTS = [
+  'preciseChanges',
+  'captureNodeCreationStacks',
+  'protocolMonitor',
+  'hideIssuesFeature',
+  'wasmDWARFDebugging',
+  'keyboardShortcutEditor',
+];
+
 export async function initializeGlobalVars({reset = true} = {}) {
+  // Expose the locale.
+  i18n.DevToolsLocale.DevToolsLocale.instance({
+    create: true,
+    data: {
+      navigatorLanguage: 'en-US',
+      settingLanguage: 'en-US',
+      lookupClosestDevToolsLocale: () => 'en-US',
+    },
+  });
+
+  // Load the strings from the resource file.
+  const locale = i18n.DevToolsLocale.DevToolsLocale.instance().locale;
+  // proxied call.
+  try {
+    await i18n.i18n.fetchAndRegisterLocaleData(locale);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn('EnvironmentHelper: Loading en-US locale failed', error.message);
+  }
 
   // Create the appropriate settings needed to boot.
   const settings = [
@@ -151,14 +159,18 @@ export async function initializeGlobalVars({reset = true} = {}) {
   Common.Settings.Settings.instance(
       {forceNew: reset, syncedStorage: storage, globalStorage: storage, localStorage: storage});
 
+  for (const experimentName of REGISTERED_EXPERIMENTS) {
+    Root.Runtime.experiments.register(experimentName, '');
+  }
+
   // Dynamically import UI after the rest of the environment is set up, otherwise it will fail.
   UI = await import('../../../../front_end/ui/legacy/legacy.js');
   UI.ZoomManager.ZoomManager.instance(
       {forceNew: true, win: window, frontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance});
 
-  // Needed for any context menus which may be created - either in a test or via
-  // rendering a component in the component docs server.
-  UI.GlassPane.GlassPane.setContainer(document.body);
+  // Initialize theme support and context menus.
+  Common.Settings.Settings.instance().createSetting('uiTheme', 'systemPreferred');
+  UI.UIUtils.initializeUIUtils(document);
 
   initializeTargetManagerIfNecessary();
 }
@@ -169,6 +181,8 @@ export async function deinitializeGlobalVars() {
   const globalObject = (globalThis as unknown as {SDK?: {}, ls?: {}});
   delete globalObject.SDK;
   delete globalObject.ls;
+
+  Root.Runtime.experiments.clearForTest();
 
   // Remove instances.
   SDK.TargetManager.TargetManager.removeInstance();

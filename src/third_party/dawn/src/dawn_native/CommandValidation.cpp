@@ -26,7 +26,7 @@
 #include "dawn_native/RenderPipeline.h"
 #include "dawn_native/ValidationUtils_autogen.h"
 
-namespace dawn_native {
+namespace dawn::native {
 
     // Performs validation of the "synchronization scope" rules of WebGPU.
     MaybeError ValidateSyncScopeResourceUsage(const SyncScopeResourceUsage& scope) {
@@ -267,6 +267,13 @@ namespace dawn_native {
                                         const Extent3D& copySize) {
         const TextureBase* texture = textureCopy.texture;
         DAWN_TRY(device->ValidateObject(texture));
+
+        // TODO(https://crbug.com/dawn/814): Disallow 1D texture copies until they are implemented.
+        DAWN_INVALID_IF(texture->GetDimension() == wgpu::TextureDimension::e1D,
+                        "%s is used in a copy and has dimension %s. Copies with %s aren't "
+                        "implemented (yet) and are disallowed. See https://crbug.com/dawn/814.",
+                        texture, wgpu::TextureDimension::e1D, wgpu::TextureDimension::e1D);
+
         DAWN_INVALID_IF(textureCopy.mipLevel >= texture->GetNumMipLevels(),
                         "MipLevel (%u) is greater than the number of mip levels (%u) in %s.",
                         textureCopy.mipLevel, texture->GetNumMipLevels(), texture);
@@ -429,28 +436,32 @@ namespace dawn_native {
     MaybeError ValidateTextureToTextureCopyRestrictions(const ImageCopyTexture& src,
                                                         const ImageCopyTexture& dst,
                                                         const Extent3D& copySize) {
-        // Metal requires texture-to-texture copies be the same format
-        DAWN_INVALID_IF(src.texture->GetFormat().format != dst.texture->GetFormat().format,
-                        "Source %s format (%s) and destination %s format (%s) do not match.",
-                        src.texture, src.texture->GetFormat().format, dst.texture,
-                        dst.texture->GetFormat().format);
+        // Metal requires texture-to-texture copies happens between texture formats that equal to
+        // each other or only have diff on srgb-ness.
+        DAWN_INVALID_IF(
+            !src.texture->GetFormat().CopyCompatibleWith(dst.texture->GetFormat()),
+            "Source %s format (%s) and destination %s format (%s) are not copy compatible.",
+            src.texture, src.texture->GetFormat().format, dst.texture,
+            dst.texture->GetFormat().format);
 
         return ValidateTextureToTextureCopyCommonRestrictions(src, dst, copySize);
     }
 
-    MaybeError ValidateCanUseAs(const TextureBase* texture, wgpu::TextureUsage usage) {
+    MaybeError ValidateCanUseAs(const TextureBase* texture,
+                                wgpu::TextureUsage usage,
+                                UsageValidationMode mode) {
         ASSERT(wgpu::HasZeroOrOneBits(usage));
-        DAWN_INVALID_IF(!(texture->GetUsage() & usage), "%s usage (%s) doesn't include %s.",
-                        texture, texture->GetUsage(), usage);
-
-        return {};
-    }
-
-    MaybeError ValidateInternalCanUseAs(const TextureBase* texture, wgpu::TextureUsage usage) {
-        ASSERT(wgpu::HasZeroOrOneBits(usage));
-        DAWN_INVALID_IF(!(texture->GetInternalUsage() & usage),
-                        "%s internal usage (%s) doesn't include %s.", texture,
-                        texture->GetInternalUsage(), usage);
+        switch (mode) {
+            case UsageValidationMode::Default:
+                DAWN_INVALID_IF(!(texture->GetUsage() & usage), "%s usage (%s) doesn't include %s.",
+                                texture, texture->GetUsage(), usage);
+                break;
+            case UsageValidationMode::Internal:
+                DAWN_INVALID_IF(!(texture->GetInternalUsage() & usage),
+                                "%s internal usage (%s) doesn't include %s.", texture,
+                                texture->GetInternalUsage(), usage);
+                break;
+        }
 
         return {};
     }
@@ -459,8 +470,7 @@ namespace dawn_native {
         ASSERT(wgpu::HasZeroOrOneBits(usage));
         DAWN_INVALID_IF(!(buffer->GetUsage() & usage), "%s usage (%s) doesn't include %s.", buffer,
                         buffer->GetUsage(), usage);
-
         return {};
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

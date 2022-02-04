@@ -1,5 +1,3 @@
-SKIP: FAILED
-
 struct QuicksortObject {
   int numbers[10];
 };
@@ -30,8 +28,16 @@ void swap_i1_i1_(inout int i, inout int j) {
   temp = x_935;
   const int x_30_save = x_28;
   const int x_936 = obj.numbers[x_30_save];
-  obj.numbers[x_30_save] = 0;
-  obj.numbers[x_30_save] = x_936;
+  {
+    int tint_symbol_1[10] = obj.numbers;
+    tint_symbol_1[x_30_save] = 0;
+    obj.numbers = tint_symbol_1;
+  }
+  {
+    int tint_symbol_3[10] = obj.numbers;
+    tint_symbol_3[x_30_save] = x_936;
+    obj.numbers = tint_symbol_3;
+  }
   const int x_31 = obj.numbers[x_30_save];
   const int x_937 = temp;
   temp = 0;
@@ -46,31 +52,51 @@ void swap_i1_i1_(inout int i, inout int j) {
   i = x_939;
   const int x_32 = i;
   const int x_940 = obj.numbers[x_30_save];
-  obj.numbers[x_30_save] = 0;
-  obj.numbers[x_30_save] = x_940;
+  {
+    int tint_symbol_5[10] = obj.numbers;
+    tint_symbol_5[x_30_save] = 0;
+    obj.numbers = tint_symbol_5;
+  }
+  {
+    int tint_symbol_7[10] = obj.numbers;
+    tint_symbol_7[x_30_save] = x_940;
+    obj.numbers = tint_symbol_7;
+  }
   const int x_33 = j;
   const int x_941 = i;
   i = 0;
   i = x_941;
   const float3 x_526 = float3(x_525.x, x_525.z, x_525.z);
   const int x_942 = obj.numbers[x_30_save];
-  obj.numbers[x_30_save] = 0;
-  obj.numbers[x_30_save] = x_942;
+  {
+    int tint_symbol_9[10] = obj.numbers;
+    tint_symbol_9[x_30_save] = 0;
+    obj.numbers = tint_symbol_9;
+  }
+  {
+    int tint_symbol_11[10] = obj.numbers;
+    tint_symbol_11[x_30_save] = x_942;
+    obj.numbers = tint_symbol_11;
+  }
   const int x_34_save = x_33;
   const int x_35 = obj.numbers[x_34_save];
   const QuicksortObject x_943 = obj;
-  const int tint_symbol_4[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_5 = {tint_symbol_4};
-  obj = tint_symbol_5;
+  const int tint_symbol_52[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_53 = {tint_symbol_52};
+  obj = tint_symbol_53;
   obj = x_943;
   const float2 x_527 = float2(x_526.x, x_526.x);
   const int x_36_save = x_32;
   const float3 x_528 = float3(x_524.x, x_524.z, x_524.x);
-  obj.numbers[x_36_save] = x_35;
+  {
+    int tint_symbol_13[10] = obj.numbers;
+    tint_symbol_13[x_36_save] = x_35;
+    obj.numbers = tint_symbol_13;
+  }
   const QuicksortObject x_944 = obj;
-  const int tint_symbol_6[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_7 = {tint_symbol_6};
-  obj = tint_symbol_7;
+  const int tint_symbol_54[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_55 = {tint_symbol_54};
+  obj = tint_symbol_55;
   obj = x_944;
   const float3 x_529 = float3(x_526.y, x_526.z, x_526.x);
   const int x_945 = i;
@@ -82,26 +108,54 @@ void swap_i1_i1_(inout int i, inout int j) {
   temp = x_946;
   const float2 x_530 = float2(x_529.z, x_529.y);
   const int x_947 = obj.numbers[x_34_save];
-  obj.numbers[x_34_save] = 0;
-  obj.numbers[x_34_save] = x_947;
+  {
+    int tint_symbol_15[10] = obj.numbers;
+    tint_symbol_15[x_34_save] = 0;
+    obj.numbers = tint_symbol_15;
+  }
+  {
+    int tint_symbol_17[10] = obj.numbers;
+    tint_symbol_17[x_34_save] = x_947;
+    obj.numbers = tint_symbol_17;
+  }
   const int x_38 = temp;
   const int x_948 = j;
   j = 0;
   j = x_948;
   const float3 x_531 = float3(x_527.x, x_526.y, x_526.x);
   const int x_949 = obj.numbers[x_36_save];
-  obj.numbers[x_36_save] = 0;
-  obj.numbers[x_36_save] = x_949;
+  {
+    int tint_symbol_19[10] = obj.numbers;
+    tint_symbol_19[x_36_save] = 0;
+    obj.numbers = tint_symbol_19;
+  }
+  {
+    int tint_symbol_21[10] = obj.numbers;
+    tint_symbol_21[x_36_save] = x_949;
+    obj.numbers = tint_symbol_21;
+  }
   const QuicksortObject x_950 = obj;
-  const int tint_symbol_8[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_9 = {tint_symbol_8};
-  obj = tint_symbol_9;
+  const int tint_symbol_56[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_57 = {tint_symbol_56};
+  obj = tint_symbol_57;
   obj = x_950;
   const float3 x_532 = float3(x_528.x, x_528.y, x_528.x);
   const int x_951 = obj.numbers[x_34_save];
-  obj.numbers[x_34_save] = 0;
-  obj.numbers[x_34_save] = x_951;
-  obj.numbers[x_37] = x_38;
+  {
+    int tint_symbol_23[10] = obj.numbers;
+    tint_symbol_23[x_34_save] = 0;
+    obj.numbers = tint_symbol_23;
+  }
+  {
+    int tint_symbol_25[10] = obj.numbers;
+    tint_symbol_25[x_34_save] = x_951;
+    obj.numbers = tint_symbol_25;
+  }
+  {
+    int tint_symbol_27[10] = obj.numbers;
+    tint_symbol_27[x_37] = x_38;
+    obj.numbers = tint_symbol_27;
+  }
   return;
 }
 
@@ -124,8 +178,16 @@ int performPartition_i1_i1_(inout int l, inout int h) {
   l = x_953;
   const int x_42_save = x_41;
   const int x_954 = obj.numbers[x_42_save];
-  obj.numbers[x_42_save] = 0;
-  obj.numbers[x_42_save] = x_954;
+  {
+    int tint_symbol_29[10] = obj.numbers;
+    tint_symbol_29[x_42_save] = 0;
+    obj.numbers = tint_symbol_29;
+  }
+  {
+    int tint_symbol_31[10] = obj.numbers;
+    tint_symbol_31[x_42_save] = x_954;
+    obj.numbers = tint_symbol_31;
+  }
   const int x_43 = obj.numbers[x_42_save];
   const int x_955 = param_3;
   param_3 = 0;
@@ -151,9 +213,9 @@ int performPartition_i1_i1_(inout int l, inout int h) {
   const float3 x_536 = float3(x_534.x, x_534.z, x_535.x);
   j_1 = 10;
   const QuicksortObject x_960 = obj;
-  const int tint_symbol_10[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_11 = {tint_symbol_10};
-  obj = tint_symbol_11;
+  const int tint_symbol_58[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_59 = {tint_symbol_58};
+  obj = tint_symbol_59;
   obj = x_960;
   [loop] while (true) {
     const int x_961 = pivot;
@@ -168,9 +230,9 @@ int performPartition_i1_i1_(inout int l, inout int h) {
     pivot = x_963;
     x_537 = float2(float3(1.0f, 2.0f, 3.0f).y, float3(1.0f, 2.0f, 3.0f).z);
     const QuicksortObject x_964 = obj;
-    const int tint_symbol_12[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    const QuicksortObject tint_symbol_13 = {tint_symbol_12};
-    obj = tint_symbol_13;
+    const int tint_symbol_60[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const QuicksortObject tint_symbol_61 = {tint_symbol_60};
+    obj = tint_symbol_61;
     obj = x_964;
     const int x_56 = h;
     const int x_965 = h;
@@ -192,8 +254,16 @@ int performPartition_i1_i1_(inout int l, inout int h) {
     }
     const int x_60 = j_1;
     const int x_969 = obj.numbers[x_42_save];
-    obj.numbers[x_42_save] = 0;
-    obj.numbers[x_42_save] = x_969;
+    {
+      int tint_symbol_33[10] = obj.numbers;
+      tint_symbol_33[x_42_save] = 0;
+      obj.numbers = tint_symbol_33;
+    }
+    {
+      int tint_symbol_35[10] = obj.numbers;
+      tint_symbol_35[x_42_save] = x_969;
+      obj.numbers = tint_symbol_35;
+    }
     const int x_61_save = x_60;
     const int x_970 = h;
     h = 0;
@@ -204,9 +274,9 @@ int performPartition_i1_i1_(inout int l, inout int h) {
     param_1 = x_971;
     const int x_62 = obj.numbers[x_61_save];
     const QuicksortObject x_972 = obj;
-    const int tint_symbol_14[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    const QuicksortObject tint_symbol_15 = {tint_symbol_14};
-    obj = tint_symbol_15;
+    const int tint_symbol_62[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const QuicksortObject tint_symbol_63 = {tint_symbol_62};
+    obj = tint_symbol_63;
     obj = x_972;
     const int x_63 = pivot;
     const float2 x_540 = float2(float3(1.0f, 2.0f, 3.0f).y, x_534.z);
@@ -264,9 +334,9 @@ int performPartition_i1_i1_(inout int l, inout int h) {
       param_1 = x_985;
     }
     const QuicksortObject x_986 = obj;
-    const int tint_symbol_16[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    const QuicksortObject tint_symbol_17 = {tint_symbol_16};
-    obj = tint_symbol_17;
+    const int tint_symbol_64[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const QuicksortObject tint_symbol_65 = {tint_symbol_64};
+    obj = tint_symbol_65;
     obj = x_986;
     {
       const int x_987 = h;
@@ -278,8 +348,16 @@ int performPartition_i1_i1_(inout int l, inout int h) {
       h = x_988;
       const float3 x_547 = float3(x_539.x, x_541.z, x_541.z);
       const int x_989 = obj.numbers[x_61_save];
-      obj.numbers[x_61_save] = 0;
-      obj.numbers[x_61_save] = x_989;
+      {
+        int tint_symbol_37[10] = obj.numbers;
+        tint_symbol_37[x_61_save] = 0;
+        obj.numbers = tint_symbol_37;
+      }
+      {
+        int tint_symbol_39[10] = obj.numbers;
+        tint_symbol_39[x_61_save] = x_989;
+        obj.numbers = tint_symbol_39;
+      }
       const int x_990 = param;
       param = 0;
       param = x_990;
@@ -289,19 +367,35 @@ int performPartition_i1_i1_(inout int l, inout int h) {
       param_1 = x_991;
       const float3 x_548 = float3(x_541.y, x_541.z, x_541.x);
       const int x_992 = obj.numbers[x_61_save];
-      obj.numbers[x_61_save] = 0;
-      obj.numbers[x_61_save] = x_992;
+      {
+        int tint_symbol_41[10] = obj.numbers;
+        tint_symbol_41[x_61_save] = 0;
+        obj.numbers = tint_symbol_41;
+      }
+      {
+        int tint_symbol_43[10] = obj.numbers;
+        tint_symbol_43[x_61_save] = x_992;
+        obj.numbers = tint_symbol_43;
+      }
     }
   }
   const int x_76 = i_1;
   const int x_993 = obj.numbers[x_42_save];
-  obj.numbers[x_42_save] = 0;
-  obj.numbers[x_42_save] = x_993;
+  {
+    int tint_symbol_45[10] = obj.numbers;
+    tint_symbol_45[x_42_save] = 0;
+    obj.numbers = tint_symbol_45;
+  }
+  {
+    int tint_symbol_47[10] = obj.numbers;
+    tint_symbol_47[x_42_save] = x_993;
+    obj.numbers = tint_symbol_47;
+  }
   const float2 x_549 = float2(x_534.x, x_534.y);
   const QuicksortObject x_994 = obj;
-  const int tint_symbol_18[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_19 = {tint_symbol_18};
-  obj = tint_symbol_19;
+  const int tint_symbol_66[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_67 = {tint_symbol_66};
+  obj = tint_symbol_67;
   obj = x_994;
   const int x_995 = h;
   h = 0;
@@ -369,8 +463,8 @@ void quicksort_() {
   param_5 = x_1007;
   h_1 = 9;
   const int x_1008[10] = stack;
-  const int tint_symbol_20[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  stack = tint_symbol_20;
+  const int tint_symbol_68[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  stack = tint_symbol_68;
   stack = x_1008;
   const float2 x_556 = float2(float3(1.0f, 2.0f, 3.0f).y, float3(1.0f, 2.0f, 3.0f).y);
   const int x_1009 = param_5;
@@ -403,15 +497,15 @@ void quicksort_() {
   param_4 = x_1015;
   const int x_95 = l_1;
   const QuicksortObject x_1016 = obj;
-  const int tint_symbol_21[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_22 = {tint_symbol_21};
-  obj = tint_symbol_22;
+  const int tint_symbol_69[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_70 = {tint_symbol_69};
+  obj = tint_symbol_70;
   obj = x_1016;
   const float3 x_560 = float3(x_559.y, x_559.x, x_557.x);
   const int x_96_save = x_94;
   const int x_1017[10] = stack;
-  const int tint_symbol_23[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  stack = tint_symbol_23;
+  const int tint_symbol_71[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  stack = tint_symbol_71;
   stack = x_1017;
   const float3 x_561 = float3(x_556.y, x_556.y, x_556.y);
   const int x_1018 = l_1;
@@ -461,13 +555,13 @@ void quicksort_() {
     h_1 = 0;
     h_1 = x_1028;
     const int x_1029[10] = stack;
-    const int tint_symbol_24[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    stack = tint_symbol_24;
+    const int tint_symbol_72[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    stack = tint_symbol_72;
     stack = x_1029;
     const int x_106 = top;
     const int x_1030[10] = stack;
-    const int tint_symbol_25[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    stack = tint_symbol_25;
+    const int tint_symbol_73[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    stack = tint_symbol_73;
     stack = x_1030;
     const float2 x_567 = float2(x_558.x, x_564.z);
     const int x_1031 = param_4;
@@ -478,9 +572,9 @@ void quicksort_() {
       break;
     }
     const QuicksortObject x_1032 = obj;
-    const int tint_symbol_26[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    const QuicksortObject tint_symbol_27 = {tint_symbol_26};
-    obj = tint_symbol_27;
+    const int tint_symbol_74[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const QuicksortObject tint_symbol_75 = {tint_symbol_74};
+    obj = tint_symbol_75;
     obj = x_1032;
     const float3 x_568 = float3(x_559.y, x_559.x, x_563.y);
     const int x_1033 = param_4;
@@ -505,8 +599,8 @@ void quicksort_() {
     stack[x_96_save] = x_1037;
     const int x_111 = stack[x_110_save];
     const int x_1038[10] = stack;
-    const int tint_symbol_28[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    stack = tint_symbol_28;
+    const int tint_symbol_76[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    stack = tint_symbol_76;
     stack = x_1038;
     const float3 x_571 = float3(x_559.y, x_559.x, x_564.y);
     const int x_1039 = l_1;
@@ -514,8 +608,8 @@ void quicksort_() {
     l_1 = x_1039;
     h_1 = x_111;
     const int x_1040[10] = stack;
-    const int tint_symbol_29[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    stack = tint_symbol_29;
+    const int tint_symbol_77[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    stack = tint_symbol_77;
     stack = x_1040;
     const float2 x_572 = float2(x_562.y, x_561.y);
     const int x_1041 = p;
@@ -606,8 +700,8 @@ void quicksort_() {
       stack[x_100_save] = 0;
       stack[x_100_save] = x_1061;
       const int x_1062[10] = stack;
-      const int tint_symbol_30[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-      stack = tint_symbol_30;
+      const int tint_symbol_78[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+      stack = tint_symbol_78;
       stack = x_1062;
       const float2 x_584 = float2(x_569.z, x_569.y);
       const float3 x_585 = float3(x_580.y, x_577.x, x_577.x);
@@ -646,8 +740,8 @@ void quicksort_() {
       h_1 = x_1070;
       top = x_133;
       const int x_1071[10] = stack;
-      const int tint_symbol_31[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-      stack = tint_symbol_31;
+      const int tint_symbol_79[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+      stack = tint_symbol_79;
       stack = x_1071;
       const int x_134 = p;
       const float2 x_590 = float2(x_576.x, x_573.y);
@@ -672,9 +766,9 @@ void quicksort_() {
     stack[x_96_save] = x_1076;
     const float2 x_592 = float2(float3(1.0f, 2.0f, 3.0f).x, float3(1.0f, 2.0f, 3.0f).y);
     const QuicksortObject x_1077 = obj;
-    const int tint_symbol_32[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    const QuicksortObject tint_symbol_33 = {tint_symbol_32};
-    obj = tint_symbol_33;
+    const int tint_symbol_80[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const QuicksortObject tint_symbol_81 = {tint_symbol_80};
+    obj = tint_symbol_81;
     obj = x_1077;
     const int x_137 = p;
     const int x_1078 = stack[x_114_save];
@@ -739,8 +833,8 @@ void quicksort_() {
       const float2 x_601 = float2(x_563.x, x_563.y);
       stack[x_147_save] = asint((1u + asuint(x_145)));
       const int x_1093[10] = stack;
-      const int tint_symbol_34[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-      stack = tint_symbol_34;
+      const int tint_symbol_82[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+      stack = tint_symbol_82;
       stack = x_1093;
       const int x_148 = top;
       const int x_1094 = stack[x_114_save];
@@ -748,8 +842,8 @@ void quicksort_() {
       stack[x_114_save] = x_1094;
       const float2 x_602 = float2(x_565.y, x_599.y);
       const int x_1095[10] = stack;
-      const int tint_symbol_35[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-      stack = tint_symbol_35;
+      const int tint_symbol_83[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+      stack = tint_symbol_83;
       stack = x_1095;
       const int x_149 = (x_148 + asint(1u));
       const int x_1096 = stack[x_147_save];
@@ -784,9 +878,9 @@ void quicksort_() {
       l_1 = x_1103;
       const float2 x_604 = float2(x_563.z, x_564.x);
       const QuicksortObject x_1104 = obj;
-      const int tint_symbol_36[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-      const QuicksortObject tint_symbol_37 = {tint_symbol_36};
-      obj = tint_symbol_37;
+      const int tint_symbol_84[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+      const QuicksortObject tint_symbol_85 = {tint_symbol_84};
+      obj = tint_symbol_85;
       obj = x_1104;
     }
   }
@@ -805,15 +899,15 @@ void main_1() {
   uv = x_717;
   i_2 = 0;
   const QuicksortObject x_721 = obj;
-  const int tint_symbol_38[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_39 = {tint_symbol_38};
-  obj = tint_symbol_39;
+  const int tint_symbol_86[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_87 = {tint_symbol_86};
+  obj = tint_symbol_87;
   obj = x_721;
   if (true) {
     const QuicksortObject x_722 = obj;
-    const int tint_symbol_40[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    const QuicksortObject tint_symbol_41 = {tint_symbol_40};
-    obj = tint_symbol_41;
+    const int tint_symbol_88[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const QuicksortObject tint_symbol_89 = {tint_symbol_88};
+    obj = tint_symbol_89;
     obj = x_722;
     const float2 x_431 = float2(float3(1.0f, 2.0f, 3.0f).x, float3(1.0f, 2.0f, 3.0f).x);
     const int x_158 = i_2;
@@ -825,15 +919,15 @@ void main_1() {
     color = x_725;
     const float2 x_432 = float2(x_431.y, x_431.y);
     const QuicksortObject x_726 = obj;
-    const int tint_symbol_42[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    const QuicksortObject tint_symbol_43 = {tint_symbol_42};
-    obj = tint_symbol_43;
+    const int tint_symbol_90[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const QuicksortObject tint_symbol_91 = {tint_symbol_90};
+    obj = tint_symbol_91;
     obj = x_726;
   }
   const QuicksortObject x_756 = obj;
-  const int tint_symbol_44[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_45 = {tint_symbol_44};
-  obj = tint_symbol_45;
+  const int tint_symbol_92[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_93 = {tint_symbol_92};
+  obj = tint_symbol_93;
   obj = x_756;
   const float2 x_446 = float2(float2(0.0f, 0.0f).x, float2(0.0f, 0.0f).x);
   const int x_757 = i_2;
@@ -841,9 +935,9 @@ void main_1() {
   i_2 = x_757;
   quicksort_();
   const QuicksortObject x_758 = obj;
-  const int tint_symbol_46[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_47 = {tint_symbol_46};
-  obj = tint_symbol_47;
+  const int tint_symbol_94[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_95 = {tint_symbol_94};
+  obj = tint_symbol_95;
   obj = x_758;
   const float4 x_184 = gl_FragCoord;
   const float2 x_759 = uv;
@@ -856,18 +950,18 @@ void main_1() {
   const float2 x_185 = float2(x_184.x, x_184.y);
   const float3 x_448 = float3(x_185.y, x_446.y, x_446.y);
   const QuicksortObject x_761 = obj;
-  const int tint_symbol_48[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_49 = {tint_symbol_48};
-  obj = tint_symbol_49;
+  const int tint_symbol_96[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_97 = {tint_symbol_96};
+  obj = tint_symbol_97;
   obj = x_761;
   const float2 x_762 = uv;
   uv = float2(0.0f, 0.0f);
   uv = x_762;
   const float2 x_191 = asfloat(x_188[0].xy);
   const QuicksortObject x_763 = obj;
-  const int tint_symbol_50[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_51 = {tint_symbol_50};
-  obj = tint_symbol_51;
+  const int tint_symbol_98[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_99 = {tint_symbol_98};
+  obj = tint_symbol_99;
   obj = x_763;
   const float3 x_449 = float3(x_184.y, float3(1.0f, 2.0f, 3.0f).z, x_184.w);
   const float3 x_764 = color;
@@ -875,9 +969,9 @@ void main_1() {
   color = x_764;
   const float2 x_192 = (x_185 / x_191);
   const QuicksortObject x_765 = obj;
-  const int tint_symbol_52[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_53 = {tint_symbol_52};
-  obj = tint_symbol_53;
+  const int tint_symbol_100[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_101 = {tint_symbol_100};
+  obj = tint_symbol_101;
   obj = x_765;
   const float2 x_450 = float2(x_447.x, x_185.y);
   const float3 x_766 = color;
@@ -893,18 +987,18 @@ void main_1() {
   color = x_768;
   const float3 x_451 = float3(x_185.x, x_185.y, x_446.y);
   const QuicksortObject x_769 = obj;
-  const int tint_symbol_54[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_55 = {tint_symbol_54};
-  obj = tint_symbol_55;
+  const int tint_symbol_102[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_103 = {tint_symbol_102};
+  obj = tint_symbol_103;
   obj = x_769;
   const int x_770 = obj.numbers[0u];
   obj.numbers[0u] = 0;
   obj.numbers[0u] = x_770;
   const int x_201 = obj.numbers[0u];
   const QuicksortObject x_771 = obj;
-  const int tint_symbol_56[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_57 = {tint_symbol_56};
-  obj = tint_symbol_57;
+  const int tint_symbol_104[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_105 = {tint_symbol_104};
+  obj = tint_symbol_105;
   obj = x_771;
   const int x_772 = obj.numbers[0u];
   obj.numbers[0u] = 0;
@@ -918,9 +1012,9 @@ void main_1() {
   i_2 = 0;
   i_2 = x_774;
   const QuicksortObject x_775 = obj;
-  const int tint_symbol_58[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_59 = {tint_symbol_58};
-  obj = tint_symbol_59;
+  const int tint_symbol_106[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_107 = {tint_symbol_106};
+  obj = tint_symbol_107;
   obj = x_775;
   const float3 x_453 = float3(x_451.x, x_450.x, x_450.y);
   color.x = (x_206 + float(x_201));
@@ -937,9 +1031,9 @@ void main_1() {
   uv.x = 0.0f;
   uv.x = x_778;
   const QuicksortObject x_779 = obj;
-  const int tint_symbol_60[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_61 = {tint_symbol_60};
-  obj = tint_symbol_61;
+  const int tint_symbol_108[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_109 = {tint_symbol_108};
+  obj = tint_symbol_109;
   obj = x_779;
   if ((x_210 > 0.25f)) {
     const int x_780 = i_2;
@@ -954,18 +1048,18 @@ void main_1() {
     uv.x = x_782;
     const int x_216 = obj.numbers[1];
     const QuicksortObject x_783 = obj;
-    const int tint_symbol_62[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    const QuicksortObject tint_symbol_63 = {tint_symbol_62};
-    obj = tint_symbol_63;
+    const int tint_symbol_110[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const QuicksortObject tint_symbol_111 = {tint_symbol_110};
+    obj = tint_symbol_111;
     obj = x_783;
     const float2 x_457 = float2(x_454.x, x_454.x);
     const float2 x_784 = uv;
     uv = float2(0.0f, 0.0f);
     uv = x_784;
     const QuicksortObject x_785 = obj;
-    const int tint_symbol_64[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    const QuicksortObject tint_symbol_65 = {tint_symbol_64};
-    obj = tint_symbol_65;
+    const int tint_symbol_112[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const QuicksortObject tint_symbol_113 = {tint_symbol_112};
+    obj = tint_symbol_113;
     obj = x_785;
     const float2 x_458 = float2(float3(1.0f, 2.0f, 3.0f).z, float2(0.0f, 0.0f).y);
     const int x_786 = i_2;
@@ -1083,9 +1177,9 @@ void main_1() {
     color.x = 0.0f;
     color.x = x_816;
     const QuicksortObject x_817 = obj;
-    const int tint_symbol_66[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    const QuicksortObject tint_symbol_67 = {tint_symbol_66};
-    obj = tint_symbol_67;
+    const int tint_symbol_114[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const QuicksortObject tint_symbol_115 = {tint_symbol_114};
+    obj = tint_symbol_115;
     obj = x_817;
     const float3 x_468 = float3(x_467.x, x_467.x, x_467.x);
     const float x_818 = uv[0];
@@ -1194,9 +1288,9 @@ void main_1() {
     uv[0] = x_844;
     const float3 x_482 = float3(x_455.x, x_475.y, x_455.y);
     const QuicksortObject x_845 = obj;
-    const int tint_symbol_68[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    const QuicksortObject tint_symbol_69 = {tint_symbol_68};
-    obj = tint_symbol_69;
+    const int tint_symbol_116[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const QuicksortObject tint_symbol_117 = {tint_symbol_116};
+    obj = tint_symbol_117;
     obj = x_845;
     const float x_846 = uv.y;
     uv.y = 0.0f;
@@ -1267,9 +1361,9 @@ void main_1() {
     obj.numbers[6u] = x_863;
     const float2 x_490 = float2(x_480.z, x_480.z);
     const QuicksortObject x_864 = obj;
-    const int tint_symbol_70[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    const QuicksortObject tint_symbol_71 = {tint_symbol_70};
-    obj = tint_symbol_71;
+    const int tint_symbol_118[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const QuicksortObject tint_symbol_119 = {tint_symbol_118};
+    obj = tint_symbol_119;
     obj = x_864;
     color.y = (float(x_280) + x_283);
     const float x_865 = color.x;
@@ -1286,9 +1380,9 @@ void main_1() {
   color.x = x_867;
   const float x_287 = uv.y;
   const QuicksortObject x_868 = obj;
-  const int tint_symbol_72[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_73 = {tint_symbol_72};
-  obj = tint_symbol_73;
+  const int tint_symbol_120[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_121 = {tint_symbol_120};
+  obj = tint_symbol_121;
   obj = x_868;
   const float2 x_493 = float2(x_475.x, x_475.y);
   const float x_869 = uv[0];
@@ -1448,9 +1542,9 @@ void main_1() {
     uv.x = 0.0f;
     uv.x = x_910;
     const QuicksortObject x_911 = obj;
-    const int tint_symbol_74[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    const QuicksortObject tint_symbol_75 = {tint_symbol_74};
-    obj = tint_symbol_75;
+    const int tint_symbol_122[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const QuicksortObject tint_symbol_123 = {tint_symbol_122};
+    obj = tint_symbol_123;
     obj = x_911;
     const float3 x_513 = float3(x_505.z, x_505.x, x_448.x);
     const int x_912 = obj.numbers[8];
@@ -1502,14 +1596,14 @@ void main_1() {
   uv.x = 0.0f;
   uv.x = x_923;
   const QuicksortObject x_924 = obj;
-  const int tint_symbol_76[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_77 = {tint_symbol_76};
-  obj = tint_symbol_77;
+  const int tint_symbol_124[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_125 = {tint_symbol_124};
+  obj = tint_symbol_125;
   obj = x_924;
   const QuicksortObject x_925 = obj;
-  const int tint_symbol_78[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_79 = {tint_symbol_78};
-  obj = tint_symbol_79;
+  const int tint_symbol_126[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_127 = {tint_symbol_126};
+  obj = tint_symbol_127;
   obj = x_925;
   const float x_926 = color.y;
   color.y = 0.0f;
@@ -1528,9 +1622,9 @@ void main_1() {
   uv.x = x_929;
   x_GLF_color = x_330;
   const QuicksortObject x_930 = obj;
-  const int tint_symbol_80[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  const QuicksortObject tint_symbol_81 = {tint_symbol_80};
-  obj = tint_symbol_81;
+  const int tint_symbol_128[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  const QuicksortObject tint_symbol_129 = {tint_symbol_128};
+  obj = tint_symbol_129;
   obj = x_930;
   const float3 x_522 = float3(x_330.w, x_330.y, x_493.x);
   const float x_931 = color.x;
@@ -1542,25 +1636,23 @@ void main_1() {
 struct main_out {
   float4 x_GLF_color_1;
 };
-struct tint_symbol_1 {
+struct tint_symbol_49 {
   float4 gl_FragCoord_param : SV_Position;
 };
-struct tint_symbol_2 {
+struct tint_symbol_50 {
   float4 x_GLF_color_1 : SV_Target0;
 };
 
 main_out main_inner(float4 gl_FragCoord_param) {
   gl_FragCoord = gl_FragCoord_param;
   main_1();
-  const main_out tint_symbol_82 = {x_GLF_color};
-  return tint_symbol_82;
+  const main_out tint_symbol_130 = {x_GLF_color};
+  return tint_symbol_130;
 }
 
-tint_symbol_2 main(tint_symbol_1 tint_symbol) {
-  const main_out inner_result = main_inner(tint_symbol.gl_FragCoord_param);
-  tint_symbol_2 wrapper_result = (tint_symbol_2)0;
+tint_symbol_50 main(tint_symbol_49 tint_symbol_48) {
+  const main_out inner_result = main_inner(tint_symbol_48.gl_FragCoord_param);
+  tint_symbol_50 wrapper_result = (tint_symbol_50)0;
   wrapper_result.x_GLF_color_1 = inner_result.x_GLF_color_1;
   return wrapper_result;
 }
-C:\src\tint\test\Shader@0x000001EB41548320(156,10-21): error X3531: can't unroll loops marked with loop attribute
-

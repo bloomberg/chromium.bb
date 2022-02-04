@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/storage_partition.h"
@@ -253,8 +254,11 @@ class NavigationEarlyHintsManager::PreloadURLLoaderClient
     : public network::mojom::URLLoaderClient,
       public mojo::DataPipeDrainer::Client {
  public:
-  PreloadURLLoaderClient(NavigationEarlyHintsManager& owner, const GURL& url)
-      : owner_(owner), url_(url) {}
+  PreloadURLLoaderClient(NavigationEarlyHintsManager& owner,
+                         const network::ResourceRequest& request)
+      : owner_(owner),
+        url_(request.url),
+        request_destination_(request.destination) {}
 
   ~PreloadURLLoaderClient() override = default;
 
@@ -267,11 +271,17 @@ class NavigationEarlyHintsManager::PreloadURLLoaderClient
   // mojom::URLLoaderClient overrides:
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override {
   }
-  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head,
+                         mojo::ScopedDataPipeConsumerHandle body) override {
     if (head->network_accessed || !head->was_fetched_via_cache)
       return;
     result_.was_canceled = true;
+    auto weak_this = weak_ptr_factory_.GetWeakPtr();
     MaybeCompletePreload();
+    if (!weak_this)
+      return;
+    if (body)
+      OnStartLoadingResponseBody(std::move(body));
   }
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          network::mojom::URLResponseHeadPtr head) override {}
@@ -319,6 +329,12 @@ class NavigationEarlyHintsManager::PreloadURLLoaderClient
 
   void MaybeCompletePreload() {
     if (CanCompletePreload()) {
+      if (!result_.was_canceled) {
+        base::UmaHistogramEnumeration(
+            kEarlyHintsPreloadRequestDestinationHistogramName,
+            request_destination_);
+      }
+
       // Delete `this`.
       owner_.OnPreloadComplete(url_, result_);
     }
@@ -326,9 +342,12 @@ class NavigationEarlyHintsManager::PreloadURLLoaderClient
 
   NavigationEarlyHintsManager& owner_;
   const GURL url_;
+  const network::mojom::RequestDestination request_destination_;
 
   PreloadedResource result_;
   std::unique_ptr<mojo::DataPipeDrainer> response_body_drainer_;
+
+  base::WeakPtrFactory<PreloadURLLoaderClient> weak_ptr_factory_{this};
 };
 
 NavigationEarlyHintsManager::NavigationEarlyHintsManager(
@@ -506,8 +525,7 @@ void NavigationEarlyHintsManager::MaybePreloadHintedResource(
                               frame_tree_node_id_),
           /*navigation_ui_data=*/nullptr, frame_tree_node_id_);
 
-  auto loader_client =
-      std::make_unique<PreloadURLLoaderClient>(*this, request.url);
+  auto loader_client = std::make_unique<PreloadURLLoaderClient>(*this, request);
   auto loader = blink::ThrottlingURLLoader::CreateLoaderAndStart(
       shared_loader_factory_, std::move(throttles),
       content::GlobalRequestID::MakeBrowserInitiated().request_id,

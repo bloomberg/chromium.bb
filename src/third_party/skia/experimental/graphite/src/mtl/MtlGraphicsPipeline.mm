@@ -8,13 +8,17 @@
 #include "experimental/graphite/src/mtl/MtlGraphicsPipeline.h"
 
 #include "experimental/graphite/include/TextureInfo.h"
+#include "experimental/graphite/src/ContextPriv.h"
 #include "experimental/graphite/src/GraphicsPipelineDesc.h"
+#include "experimental/graphite/src/Log.h"
 #include "experimental/graphite/src/Renderer.h"
 #include "experimental/graphite/src/mtl/MtlGpu.h"
 #include "experimental/graphite/src/mtl/MtlResourceProvider.h"
 #include "experimental/graphite/src/mtl/MtlUtils.h"
 #include "include/core/SkSpan.h"
+#include "include/gpu/ShaderErrorHandler.h"
 #include "include/private/SkSLString.h"
+#include "include/private/SkShaderCodeDictionary.h"
 
 namespace skgpu::mtl {
 
@@ -86,6 +90,9 @@ SkSL::String emit_SkSL_attributes(SkSpan<const Attribute> vertexAttrs,
                 case SLType::kFloat2:
                     result.append("float2");
                     break;
+                case SLType::kFloat3:
+                    result.append("float3");
+                    break;
                 case SLType::kFloat:
                     result.append("float");
                     break;
@@ -148,21 +155,45 @@ SkSL::String get_sksl_vs(const GraphicsPipelineDesc& desc) {
     return sksl;
 }
 
-SkSL::String get_sksl_fs(const GraphicsPipelineDesc& desc) {
+SkSL::String get_sksl_fs(const Context* context,
+                         const GraphicsPipelineDesc& desc,
+                         bool* writesColor) {
     SkSL::String sksl;
 
-    // Typedefs needed for painting
-    auto paintUniforms = GetUniforms(desc.shaderCombo().fShaderType);
-    if (!paintUniforms.empty()) {
-        sksl += emit_SKSL_uniforms(2, "FS", paintUniforms);
+    SkPaintParamsKey key;
+    auto entry = context->priv().shaderCodeDictionary()->lookup(desc.paintParamsID());
+    if (entry) {
+        key = entry->paintParamsKey();
     }
 
-    sksl += "layout(location = 0, index = 0) out half4 sk_FragColor;\n";
-    sksl += "void main() {\n"
-            "    half4 outColor;\n";
-    sksl += GetShaderSkSL(desc.shaderCombo().fShaderType);
-    sksl += "    sk_FragColor = outColor;\n"
-            "}\n";
+    *writesColor = false;
+    // TODO: make this more flexible so the individual blocks can be linked together. Right now
+    // this loop relies on only one shader snippet and a blend mode being added to a key.
+    int curHeaderOffset = 0;
+    while (curHeaderOffset < key.sizeInBytes()) {
+        auto [codeSnippetID, blockSize] = key.readCodeSnippetID(curHeaderOffset);
+        if (codeSnippetID == CodeSnippetID::kSimpleBlendMode) {
+            curHeaderOffset += blockSize;
+            continue;
+        }
+
+        // Typedefs needed for painting
+        auto paintUniforms = GetUniforms(codeSnippetID);
+        if (!paintUniforms.empty()) {
+            sksl += emit_SKSL_uniforms(2, "FS", paintUniforms);
+        }
+
+        sksl += "layout(location = 0, index = 0) out half4 sk_FragColor;\n";
+        sksl += "void main() {\n"
+                "    half4 outColor;\n";
+        sksl += GetShaderSkSL(codeSnippetID);
+        sksl += "    sk_FragColor = outColor;\n"
+                "}\n";
+
+        *writesColor = codeSnippetID != CodeSnippetID::kDepthStencilOnlyDraw;
+
+        curHeaderOffset += blockSize;
+    }
 
     return sksl;
 }
@@ -307,43 +338,51 @@ enum ShaderType {
 };
 static const int kShaderTypeCount = kLast_ShaderType + 1;
 
-sk_sp<GraphicsPipeline> GraphicsPipeline::Make(const Gpu* gpu,
-                                               const skgpu::GraphicsPipelineDesc& desc) {
+sk_sp<GraphicsPipeline> GraphicsPipeline::Make(const Context* context,
+                                               const Gpu* gpu,
+                                               const skgpu::GraphicsPipelineDesc& pipelineDesc,
+                                               const skgpu::RenderPassDesc& renderPassDesc) {
     sk_cfp<MTLRenderPipelineDescriptor*> psoDescriptor([[MTLRenderPipelineDescriptor alloc] init]);
 
     SkSL::String msl[kShaderTypeCount];
     SkSL::Program::Inputs inputs[kShaderTypeCount];
     SkSL::Program::Settings settings;
 
+    ShaderErrorHandler* errorHandler = DefaultShaderErrorHandler();
     if (!SkSLToMSL(gpu,
-                   get_sksl_vs(desc),
+                   get_sksl_vs(pipelineDesc),
                    SkSL::ProgramKind::kVertex,
                    settings,
                    &msl[kVertex_ShaderType],
-                   &inputs[kVertex_ShaderType])) {
+                   &inputs[kVertex_ShaderType],
+                   errorHandler)) {
         return nullptr;
     }
 
+    bool writesColor;
     if (!SkSLToMSL(gpu,
-                   get_sksl_fs(desc),
+                   get_sksl_fs(context, pipelineDesc, &writesColor),
                    SkSL::ProgramKind::kFragment,
                    settings,
                    &msl[kFragment_ShaderType],
-                   &inputs[kFragment_ShaderType])) {
+                   &inputs[kFragment_ShaderType],
+                   errorHandler)) {
         return nullptr;
     }
 
     sk_cfp<id<MTLLibrary>> shaderLibraries[kShaderTypeCount];
 
     shaderLibraries[kVertex_ShaderType] = CompileShaderLibrary(gpu,
-                                                               msl[kVertex_ShaderType]);
+                                                               msl[kVertex_ShaderType],
+                                                               errorHandler);
     shaderLibraries[kFragment_ShaderType] = CompileShaderLibrary(gpu,
-                                                                 msl[kFragment_ShaderType]);
+                                                                 msl[kFragment_ShaderType],
+                                                                 errorHandler);
     if (!shaderLibraries[kVertex_ShaderType] || !shaderLibraries[kFragment_ShaderType]) {
         return nullptr;
     }
 
-    (*psoDescriptor).label = @(desc.renderStep()->name());
+    (*psoDescriptor).label = @(pipelineDesc.renderStep()->name());
 
     (*psoDescriptor).vertexFunction =
             [shaderLibraries[kVertex_ShaderType].get() newFunctionWithName: @"vertexMain"];
@@ -351,37 +390,32 @@ sk_sp<GraphicsPipeline> GraphicsPipeline::Make(const Gpu* gpu,
             [shaderLibraries[kFragment_ShaderType].get() newFunctionWithName: @"fragmentMain"];
 
     // TODO: I *think* this gets cleaned up by the pipelineDescriptor?
-    (*psoDescriptor).vertexDescriptor = create_vertex_descriptor(desc.renderStep());
+    (*psoDescriptor).vertexDescriptor = create_vertex_descriptor(pipelineDesc.renderStep());
 
     // TODO: I *think* this gets cleaned up by the pipelineDescriptor as well?
     auto mtlColorAttachment = [[MTLRenderPipelineColorAttachmentDescriptor alloc] init];
 
-    mtlColorAttachment.pixelFormat = MTLPixelFormatRGBA8Unorm;
+    mtl::TextureInfo mtlTexInfo;
+    renderPassDesc.fColorAttachment.fTextureInfo.getMtlTextureInfo(&mtlTexInfo);
+
+    mtlColorAttachment.pixelFormat = (MTLPixelFormat)mtlTexInfo.fFormat;
+
     mtlColorAttachment.blendingEnabled = FALSE;
-    mtlColorAttachment.writeMask = MTLColorWriteMaskAll;
+
+    mtlColorAttachment.writeMask = writesColor ? MTLColorWriteMaskAll : MTLColorWriteMaskNone;
 
     (*psoDescriptor).colorAttachments[0] = mtlColorAttachment;
 
-    Mask<DepthStencilFlags> depthStencilFlags = desc.renderStep()->depthStencilFlags();
-    if (depthStencilFlags != DepthStencilFlags::kNone) {
-        skgpu::TextureInfo texInfo =
-                gpu->caps()->getDefaultDepthStencilTextureInfo(depthStencilFlags,
-                                                               1 /*sampleCount*/, // TODO: MSAA
-                                                               Protected::kNo);
-        mtl::TextureInfo mtlTexInfo;
-        texInfo.getMtlTextureInfo(&mtlTexInfo);
-        if (depthStencilFlags & DepthStencilFlags::kStencil) {
-            (*psoDescriptor).stencilAttachmentPixelFormat = (MTLPixelFormat)mtlTexInfo.fFormat;
-        } else {
-            (*psoDescriptor).stencilAttachmentPixelFormat = MTLPixelFormatInvalid;
-        }
-        if (depthStencilFlags & DepthStencilFlags::kDepth) {
-            (*psoDescriptor).depthAttachmentPixelFormat = (MTLPixelFormat)mtlTexInfo.fFormat;
-        } else {
-            (*psoDescriptor).depthAttachmentPixelFormat = MTLPixelFormatInvalid;
-        }
+    renderPassDesc.fDepthStencilAttachment.fTextureInfo.getMtlTextureInfo(&mtlTexInfo);
+    MTLPixelFormat depthStencilFormat = (MTLPixelFormat)mtlTexInfo.fFormat;
+    if (FormatIsStencil(depthStencilFormat)) {
+        (*psoDescriptor).stencilAttachmentPixelFormat = depthStencilFormat;
     } else {
         (*psoDescriptor).stencilAttachmentPixelFormat = MTLPixelFormatInvalid;
+    }
+    if (FormatIsDepth(depthStencilFormat)) {
+        (*psoDescriptor).depthAttachmentPixelFormat = depthStencilFormat;
+    } else {
         (*psoDescriptor).depthAttachmentPixelFormat = MTLPixelFormatInvalid;
     }
 
@@ -390,21 +424,27 @@ sk_sp<GraphicsPipeline> GraphicsPipeline::Make(const Gpu* gpu,
             [gpu->device() newRenderPipelineStateWithDescriptor:psoDescriptor.get()
                                                           error:&error]);
     if (!pso) {
-        SkDebugf("Pipeline creation failure\n");
-        SkDebugf("Errors:\n%s", error.debugDescription.UTF8String);
+        SKGPU_LOG_E("Pipeline creation failure:\n%s", error.debugDescription.UTF8String);
         return nullptr;
     }
 
     auto resourceProvider = (skgpu::mtl::ResourceProvider*) gpu->resourceProvider();
-    const DepthStencilSettings& depthStencilSettings = desc.renderStep()->depthStencilSettings();
+    const DepthStencilSettings& depthStencilSettings =
+            pipelineDesc.renderStep()->depthStencilSettings();
     id<MTLDepthStencilState> dss = resourceProvider->findOrCreateCompatibleDepthStencilState(
             depthStencilSettings);
 
-    return sk_sp<GraphicsPipeline>(new GraphicsPipeline(std::move(pso),
-                                                        dss,
-                                                        depthStencilSettings.fStencilReferenceValue,
-                                                        desc.renderStep()->vertexStride(),
-                                                        desc.renderStep()->instanceStride()));
+    return sk_sp<GraphicsPipeline>(
+            new GraphicsPipeline(gpu,
+                                 std::move(pso),
+                                 dss,
+                                 depthStencilSettings.fStencilReferenceValue,
+                                 pipelineDesc.renderStep()->vertexStride(),
+                                 pipelineDesc.renderStep()->instanceStride()));
+}
+
+void GraphicsPipeline::onFreeGpuData() {
+    fPipelineState.reset();
 }
 
 } // namespace skgpu::mtl

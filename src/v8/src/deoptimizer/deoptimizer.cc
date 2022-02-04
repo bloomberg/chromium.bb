@@ -431,7 +431,7 @@ void Deoptimizer::DeoptimizeFunction(JSFunction function, Code code) {
   TimerEventScope<TimerEventDeoptimizeCode> timer(isolate);
   TRACE_EVENT0("v8", "V8.DeoptimizeCode");
   function.ResetIfCodeFlushed();
-  if (code.is_null()) code = function.code();
+  if (code.is_null()) code = FromCodeT(function.code());
 
   if (CodeKindCanDeoptimize(code.kind())) {
     // Mark the code for deoptimization and unlink any functions that also
@@ -1063,7 +1063,7 @@ void Deoptimizer::DoComputeUnoptimizedFrame(TranslatedFrame* translated_frame,
       !goto_catch_handler;
   const bool is_baseline = shared.HasBaselineCode();
   Code dispatch_builtin =
-      builtins->code(DispatchBuiltinFor(is_baseline, advance_bc));
+      FromCodeT(builtins->code(DispatchBuiltinFor(is_baseline, advance_bc)));
 
   if (verbose_tracing_enabled()) {
     PrintF(trace_scope()->file(), "  translating %s frame ",
@@ -1092,14 +1092,11 @@ void Deoptimizer::DoComputeUnoptimizedFrame(TranslatedFrame* translated_frame,
     }
   }
 
-  // Note: parameters_count includes the receiver.
-  // TODO(v8:11112): Simplify once the receiver is always included in argc.
   if (verbose_tracing_enabled() && is_bottommost &&
-      actual_argument_count_ - kJSArgcReceiverSlots > parameters_count - 1) {
-    PrintF(
-        trace_scope_->file(),
-        "    -- %d extra argument(s) already in the stack --\n",
-        actual_argument_count_ - kJSArgcReceiverSlots - parameters_count + 1);
+      actual_argument_count_ > parameters_count) {
+    PrintF(trace_scope_->file(),
+           "    -- %d extra argument(s) already in the stack --\n",
+           actual_argument_count_ - parameters_count);
   }
   frame_writer.PushStackJSArguments(value_iterator, parameters_count);
 
@@ -1180,7 +1177,7 @@ void Deoptimizer::DoComputeUnoptimizedFrame(TranslatedFrame* translated_frame,
         (translated_state_.frames()[frame_index - 1]).kind();
     argc = previous_frame_kind == TranslatedFrame::kArgumentsAdaptor
                ? output_[frame_index - 1]->parameter_count()
-               : parameters_count - (kJSArgcIncludesReceiver ? 0 : 1);
+               : parameters_count;
   }
   frame_writer.PushRawValue(argc, "actual argument count\n");
 
@@ -1306,7 +1303,7 @@ void Deoptimizer::DoComputeUnoptimizedFrame(TranslatedFrame* translated_frame,
     Register context_reg = JavaScriptFrame::context_register();
     output_frame->SetRegister(context_reg.code(), context_value);
     // Set the continuation for the topmost frame.
-    Code continuation = builtins->code(Builtin::kNotifyDeoptimized);
+    CodeT continuation = builtins->code(Builtin::kNotifyDeoptimized);
     output_frame->SetContinuation(
         static_cast<intptr_t>(continuation.InstructionStart()));
   }
@@ -1387,7 +1384,8 @@ void Deoptimizer::DoComputeConstructStubFrame(TranslatedFrame* translated_frame,
   CHECK(!is_topmost || deopt_kind_ == DeoptimizeKind::kLazy);
 
   Builtins* builtins = isolate_->builtins();
-  Code construct_stub = builtins->code(Builtin::kJSConstructStubGeneric);
+  Code construct_stub =
+      FromCodeT(builtins->code(Builtin::kJSConstructStubGeneric));
   BytecodeOffset bytecode_offset = translated_frame->bytecode_offset();
 
   const int parameters_count = translated_frame->height();
@@ -1466,7 +1464,7 @@ void Deoptimizer::DoComputeConstructStubFrame(TranslatedFrame* translated_frame,
   frame_writer.PushTranslatedValue(value_iterator++, "context");
 
   // Number of incoming arguments.
-  const uint32_t argc = parameters_count - (kJSArgcIncludesReceiver ? 0 : 1);
+  const uint32_t argc = parameters_count;
   frame_writer.PushRawObject(Smi::FromInt(argc), "argc\n");
 
   // The constructor function was mentioned explicitly in the
@@ -1541,7 +1539,7 @@ void Deoptimizer::DoComputeConstructStubFrame(TranslatedFrame* translated_frame,
   // Set the continuation for the topmost frame.
   if (is_topmost) {
     DCHECK_EQ(DeoptimizeKind::kLazy, deopt_kind_);
-    Code continuation = builtins->code(Builtin::kNotifyDeoptimized);
+    CodeT continuation = builtins->code(Builtin::kNotifyDeoptimized);
     output_frame->SetContinuation(
         static_cast<intptr_t>(continuation.InstructionStart()));
   }
@@ -1965,7 +1963,7 @@ void Deoptimizer::DoComputeBuiltinContinuation(
   // For JSToWasmBuiltinContinuations use ContinueToCodeStubBuiltin, and not
   // ContinueToCodeStubBuiltinWithResult because we don't want to overwrite the
   // return value that we have already set.
-  Code continue_to_builtin =
+  CodeT continue_to_builtin =
       isolate()->builtins()->code(TrampolineForBuiltinContinuation(
           mode, frame_info.frame_has_result_stack_slot() &&
                     !is_js_to_wasm_builtin_continuation));
@@ -1981,7 +1979,7 @@ void Deoptimizer::DoComputeBuiltinContinuation(
         static_cast<intptr_t>(continue_to_builtin.InstructionStart()));
   }
 
-  Code continuation = isolate()->builtins()->code(Builtin::kNotifyDeoptimized);
+  CodeT continuation = isolate()->builtins()->code(Builtin::kNotifyDeoptimized);
   output_frame->SetContinuation(
       static_cast<intptr_t>(continuation.InstructionStart()));
 }

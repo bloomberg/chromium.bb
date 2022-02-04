@@ -19,7 +19,7 @@
 
 #include "dawn_native/d3d12/d3d12_platform.h"
 
-namespace dawn_native { namespace d3d12 {
+namespace dawn::native::d3d12 {
 
     class PlatformFunctions;
 
@@ -40,8 +40,8 @@ namespace dawn_native { namespace d3d12 {
 
         const PlatformFunctions* GetFunctions() const;
 
-        std::vector<std::unique_ptr<AdapterBase>> DiscoverDefaultAdapters() override;
-        ResultOrError<std::vector<std::unique_ptr<AdapterBase>>> DiscoverAdapters(
+        std::vector<Ref<AdapterBase>> DiscoverDefaultAdapters() override;
+        ResultOrError<std::vector<Ref<AdapterBase>>> DiscoverAdapters(
             const AdapterDiscoveryOptionsBase* optionsBase) override;
 
       private:
@@ -54,6 +54,6 @@ namespace dawn_native { namespace d3d12 {
         ComPtr<IDxcValidator> mDxcValidator;
     };
 
-}}  // namespace dawn_native::d3d12
+}  // namespace dawn::native::d3d12
 
 #endif  // DAWNNATIVE_D3D12_BACKENDD3D12_H_

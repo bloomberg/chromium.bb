@@ -461,8 +461,9 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   ComPtr<IRawElementProviderSimple> before_link_text_raw =
       QueryInterfaceFromNode<IRawElementProviderSimple>(before_link_text_node);
 
-  BrowserAccessibility* link_node = FindNode(
-      ax::mojom::Role::kLink, "Link text 1 Link text 2Link text 3 Link text 4");
+  BrowserAccessibility* link_node =
+      FindNode(ax::mojom::Role::kLink,
+               "Link text 1 Link text 2 Link text 3 Link text 4");
   ASSERT_NE(nullptr, link_node);
   ComPtr<IRawElementProviderSimple> link_raw =
       QueryInterfaceFromNode<IRawElementProviderSimple>(link_node);
@@ -2758,7 +2759,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       /*expected_count*/ -1);
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Word));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"\xA0\n");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"\xA0");
 
   // Case 2: test on range that includes the whitespace and the following word.
   GetTextRangeProviderFromTextNode(*node, &text_range_provider);
@@ -2771,7 +2772,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
                                    /*expected_count*/ 1);
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Word));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"\xA0\n");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"\xA0");
 
   // Case 3: test on degenerate range after whitespace.
   node = FindNode(ax::mojom::Role::kStaticText, "3.14");

@@ -1,14 +1,17 @@
-intrinsics/ignore/uniform_buffer.wgsl:10:5 warning: use of deprecated intrinsic
+intrinsics/ignore/uniform_buffer.wgsl:9:5 warning: use of deprecated intrinsic
     ignore(u);
     ^^^^^^
 
-intrinsics/ignore/uniform_buffer.wgsl:11:5 warning: use of deprecated intrinsic
+intrinsics/ignore/uniform_buffer.wgsl:10:5 warning: use of deprecated intrinsic
     ignore(u.i);
     ^^^^^^
 
 #version 310 es
 precision mediump float;
 
+struct S {
+  int i;
+};
 
 layout (binding = 0) uniform S_1 {
   int i;

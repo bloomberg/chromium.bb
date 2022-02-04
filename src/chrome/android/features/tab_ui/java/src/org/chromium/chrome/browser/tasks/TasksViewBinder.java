@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_TEXT_WATCHER;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_ICON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_MANAGER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_TOGGLE_CHECKED;
@@ -18,12 +19,14 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGN
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_LENS_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_SURFACE_BODY_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_TITLE_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.LENS_BUTTON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_CONTAINER_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.QUERY_TILES_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.RESET_TASK_SURFACE_HEADER_SCROLL_POSITION;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.TAB_SWITCHER_TITLE_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.TASKS_SURFACE_BODY_TOP_MARGIN;
@@ -81,6 +84,8 @@ class TasksViewBinder {
             view.setSurfaceBodyVisibility(model.get(IS_SURFACE_BODY_VISIBLE));
         } else if (propertyKey == IS_TAB_CAROUSEL_VISIBLE) {
             view.setTabCarouselVisibility(model.get(IS_TAB_CAROUSEL_VISIBLE));
+        } else if (propertyKey == IS_TAB_CAROUSEL_TITLE_VISIBLE) {
+            view.setTabCarouselTitleVisibility(model.get(IS_TAB_CAROUSEL_TITLE_VISIBLE));
         } else if (propertyKey == IS_VOICE_RECOGNITION_BUTTON_VISIBLE) {
             view.getSearchBoxCoordinator().setVoiceSearchButtonVisibility(
                     model.get(IS_VOICE_RECOGNITION_BUTTON_VISIBLE));
@@ -91,6 +96,8 @@ class TasksViewBinder {
             view.setMoreTabsOnClickListener(model.get(MORE_TABS_CLICK_LISTENER));
         } else if (propertyKey == MV_TILES_VISIBLE) {
             view.setMostVisitedVisibility(model.get(MV_TILES_VISIBLE) ? View.VISIBLE : View.GONE);
+        } else if (propertyKey == QUERY_TILES_VISIBLE) {
+            view.setQueryTilesVisibility(model.get(QUERY_TILES_VISIBLE) ? View.VISIBLE : View.GONE);
         } else if (propertyKey == VOICE_SEARCH_BUTTON_CLICK_LISTENER) {
             view.getSearchBoxCoordinator().addVoiceSearchButtonClickListener(
                     model.get(VOICE_SEARCH_BUTTON_CLICK_LISTENER));
@@ -100,6 +107,8 @@ class TasksViewBinder {
             view.setMVTilesContainerTopMargin(model.get(MV_TILES_CONTAINER_TOP_MARGIN));
         } else if (propertyKey == TAB_SWITCHER_TITLE_TOP_MARGIN) {
             view.setTabSwitcherTitleTopMargin(model.get(TAB_SWITCHER_TITLE_TOP_MARGIN));
+        } else if (propertyKey == FAKE_SEARCH_BOX_TOP_MARGIN) {
+            view.setFakeSearchBoxTopMargin(model.get(FAKE_SEARCH_BOX_TOP_MARGIN));
         } else if (propertyKey == RESET_TASK_SURFACE_HEADER_SCROLL_POSITION) {
             view.resetScrollPosition();
         }

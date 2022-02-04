@@ -3,13 +3,6 @@ Tests for the general aspects of draw/drawIndexed/drawIndirect/drawIndexedIndire
 
 Primitive topology tested in api/operation/render_pipeline/primitive_topology.spec.ts.
 Index format tested in api/operation/command_buffer/render/state_tracking.spec.ts.
-
-* arguments - Test that draw arguments are passed correctly.
-
-TODO:
-* default_arguments - Test defaults to draw / drawIndexed.
-  - arg= {instance_count, first, first_instance, base_vertex}
-  - mode= {draw, drawIndexed}
 `;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
@@ -59,8 +52,7 @@ Params:
   )
   .fn(async t => {
     if (t.params.first_instance > 0 && t.params.indirect) {
-      // TODO: 'as' cast because types don't have this feature name yet
-      await t.selectDeviceOrSkipTestCase('indirect-first-instance' as GPUFeatureName);
+      await t.selectDeviceOrSkipTestCase('indirect-first-instance');
     }
 
     const renderTargetSize = [72, 36];
@@ -117,7 +109,7 @@ struct Inputs {
 
     const fragmentModule = t.device.createShaderModule({
       code: `
-[[block]] struct Output {
+struct Output {
   value : u32;
 };
 
@@ -326,6 +318,15 @@ struct Inputs {
       }
     }
   });
+
+g.test('default_arguments')
+  .desc(
+    `TODO: Test defaults to draw / drawIndexed. Maybe merge with the 'arguments' test.
+- arg= {instance_count, first, first_instance, base_vertex}
+- mode= {draw, drawIndexed}
+  `
+  )
+  .unimplemented();
 
 g.test('vertex_attributes,basic')
   .desc(
@@ -562,7 +563,7 @@ ${accumulateVariableDeclarationsInFragmentShader}
 struct OutPrimitive {
 ${vertexInputShaderLocations.map(i => `  attrib${i} : ${wgslFormat};`).join('\n')}
 };
-[[block]] struct OutBuffer {
+struct OutBuffer {
   primitives : [[stride(${vertexInputShaderLocations.length * 4})]] array<OutPrimitive>;
 };
 [[group(0), binding(0)]] var<storage, read_write> outBuffer : OutBuffer;

@@ -90,10 +90,6 @@ ConfigurableStorageDelegate::GetRateLimits(
   return rate_limits_;
 }
 
-uint64_t ConfigurableStorageDelegate::GetFakeEventSourceTriggerData() const {
-  return fake_event_source_trigger_data_;
-}
-
 base::TimeDelta ConfigurableStorageDelegate::GetDeleteExpiredSourcesFrequency()
     const {
   return delete_expired_sources_frequency_;
@@ -145,9 +141,10 @@ void MockAttributionManager::NotifySourceDeactivated(
     observer.OnSourceDeactivated(source);
 }
 
-void MockAttributionManager::NotifyReportSent(const SentReport& info) {
+void MockAttributionManager::NotifyReportSent(const AttributionReport& report,
+                                              const SendResult& info) {
   for (Observer& observer : observers_)
-    observer.OnReportSent(info);
+    observer.OnReportSent(report, info);
 }
 
 void MockAttributionManager::NotifyReportDropped(
@@ -209,9 +206,15 @@ SourceBuilder& SourceBuilder::SetAttributionLogic(
   return *this;
 }
 
-SourceBuilder& SourceBuilder::SetImpressionId(
-    absl::optional<StorableSource::Id> impression_id) {
-  impression_id_ = impression_id;
+SourceBuilder& SourceBuilder::SetFakeTriggerData(
+    absl::optional<uint64_t> fake_trigger_data) {
+  fake_trigger_data_ = fake_trigger_data;
+  return *this;
+}
+
+SourceBuilder& SourceBuilder::SetSourceId(
+    absl::optional<StorableSource::Id> source_id) {
+  source_id_ = source_id;
   return *this;
 }
 
@@ -225,7 +228,7 @@ StorableSource SourceBuilder::Build() const {
       source_event_id_, impression_origin_, conversion_origin_,
       reporting_origin_, impression_time_,
       /*expiry_time=*/impression_time_ + expiry_, source_type_, priority_,
-      attribution_logic_, impression_id_);
+      attribution_logic_, fake_trigger_data_, source_id_);
   impression.SetDedupKeys(dedup_keys_);
   return impression;
 }
@@ -291,8 +294,8 @@ ReportBuilder& ReportBuilder::SetTriggerData(uint64_t trigger_data) {
   return *this;
 }
 
-ReportBuilder& ReportBuilder::SetConversionTime(base::Time time) {
-  conversion_time_ = time;
+ReportBuilder& ReportBuilder::SetTriggerTime(base::Time time) {
+  trigger_time_ = time;
   return *this;
 }
 
@@ -313,15 +316,15 @@ ReportBuilder& ReportBuilder::SetExternalReportId(
 }
 
 ReportBuilder& ReportBuilder::SetReportId(
-    absl::optional<AttributionReport::Id> id) {
+    absl::optional<AttributionReport::EventLevelData::Id> id) {
   report_id_ = id;
   return *this;
 }
 
 AttributionReport ReportBuilder::Build() const {
-  return AttributionReport(source_, trigger_data_, conversion_time_,
-                           report_time_, priority_, external_report_id_,
-                           report_id_);
+  return AttributionReport(
+      source_, trigger_time_, report_time_, external_report_id_,
+      AttributionReport::EventLevelData(trigger_data_, priority_, report_id_));
 }
 
 // Custom comparator for `StorableSource` that does not take impression IDs
@@ -338,22 +341,52 @@ bool operator==(const StorableSource& a, const StorableSource& b) {
   return tie(a) == tie(b);
 }
 
-// Custom comparator for comparing two vectors of conversion reports. Does not
-// compare impression and conversion IDs as they are set by the underlying
-// sqlite db and should not be tested.
-bool operator==(const AttributionReport& a, const AttributionReport& b) {
-  const auto tie = [](const AttributionReport& conversion) {
-    return std::make_tuple(conversion.impression, conversion.trigger_data,
-                           conversion.conversion_time, conversion.report_time,
-                           conversion.priority, conversion.external_report_id,
-                           conversion.failed_send_attempts);
+bool operator==(const HistogramContribution& a,
+                const HistogramContribution& b) {
+  const auto tie = [](const HistogramContribution& contribution) {
+    return std::make_tuple(contribution.bucket(), contribution.value());
   };
   return tie(a) == tie(b);
 }
 
-bool operator==(const SentReport& a, const SentReport& b) {
-  const auto tie = [](const SentReport& info) {
-    return std::make_tuple(info.report, info.status, info.http_response_code);
+bool operator==(const AggregatableAttribution& a, AggregatableAttribution& b) {
+  const auto tie = [](const AggregatableAttribution& aggregate_attribution) {
+    return std::make_tuple(
+        aggregate_attribution.source_id, aggregate_attribution.trigger_time,
+        aggregate_attribution.report_time, aggregate_attribution.contributions);
+  };
+  return tie(a) == tie(b);
+}
+
+// Does not compare ID as it is set by the underlying sqlite db and
+// should not be tested.
+bool operator==(const AttributionReport::EventLevelData& a,
+                const AttributionReport::EventLevelData& b) {
+  const auto tie = [](const AttributionReport::EventLevelData& data) {
+    return std::make_tuple(data.trigger_data, data.priority);
+  };
+  return tie(a) == tie(b);
+}
+
+// Does not compare ID as it is set by the underlying sqlite db and
+// should not be tested.
+bool operator==(const AttributionReport::AggregateContributionData& a,
+                const AttributionReport::AggregateContributionData& b) {
+  return a.contribution == b.contribution;
+}
+
+bool operator==(const AttributionReport& a, const AttributionReport& b) {
+  const auto tie = [](const AttributionReport& report) {
+    return std::make_tuple(report.source(), report.trigger_time(),
+                           report.report_time(), report.external_report_id(),
+                           report.failed_send_attempts(), report.data());
+  };
+  return tie(a) == tie(b);
+}
+
+bool operator==(const SendResult& a, const SendResult& b) {
+  const auto tie = [](const SendResult& info) {
+    return std::make_tuple(info.status, info.http_response_code);
   };
   return tie(a) == tie(b);
 }
@@ -479,9 +512,9 @@ std::ostream& operator<<(std::ostream& out, const StorableSource& impression) {
       << ",source_type=" << impression.source_type()
       << ",priority=" << impression.priority()
       << ",attribution_logic=" << impression.attribution_logic()
-      << ",impression_id="
-      << (impression.impression_id()
-              ? base::NumberToString(**impression.impression_id())
+      << ",source_id="
+      << (impression.source_id()
+              ? base::NumberToString(**impression.source_id())
               : "null")
       << ",dedup_keys=[";
 
@@ -494,46 +527,85 @@ std::ostream& operator<<(std::ostream& out, const StorableSource& impression) {
   return out << "]}";
 }
 
-std::ostream& operator<<(std::ostream& out, const AttributionReport& report) {
-  return out << "{impression=" << report.impression
-             << ",trigger_data=" << report.trigger_data
-             << ",conversion_time=" << report.conversion_time
-             << ",report_time=" << report.report_time
-             << ",priority=" << report.priority
-             << ",external_report_id=" << report.external_report_id
-             << ",conversion_id="
-             << (report.conversion_id
-                     ? base::NumberToString(**report.conversion_id)
-                     : "null")
-             << ",failed_send_attempts=" << report.failed_send_attempts << "}";
+std::ostream& operator<<(std::ostream& out,
+                         const HistogramContribution& contribution) {
+  return out << "{bucket=" << contribution.bucket()
+             << ",value=" << contribution.value() << "}";
 }
 
-std::ostream& operator<<(std::ostream& out, SentReport::Status status) {
+std::ostream& operator<<(std::ostream& out,
+                         const AggregatableAttribution& aggregate_attribution) {
+  out << "{source_id=" << aggregate_attribution.source_id
+      << ",trigger_time=" << aggregate_attribution.trigger_time
+      << ",report_time=" << aggregate_attribution.report_time
+      << ",contributions=[";
+
+  const char* separator = "";
+  for (const HistogramContribution& contribution :
+       aggregate_attribution.contributions) {
+    out << separator << contribution;
+    separator = ", ";
+  }
+
+  return out << "]}";
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const AttributionReport::EventLevelData& data) {
+  return out << "{trigger_data=" << data.trigger_data
+             << ",priority=" << data.priority
+             << ",id=" << (data.id ? base::NumberToString(**data.id) : "null")
+             << "}";
+}
+
+std::ostream& operator<<(
+    std::ostream& out,
+    const AttributionReport::AggregateContributionData& data) {
+  return out << "{contribution=" << data.contribution
+             << ",id=" << (data.id ? base::NumberToString(**data.id) : "null")
+             << "}";
+}
+
+namespace {
+std::ostream& operator<<(
+    std::ostream& out,
+    const absl::variant<AttributionReport::EventLevelData,
+                        AttributionReport::AggregateContributionData>& data) {
+  absl::visit([&out](const auto& v) { out << v; }, data);
+  return out;
+}
+}  // namespace
+
+std::ostream& operator<<(std::ostream& out, const AttributionReport& report) {
+  out << "{source=" << report.source()
+      << ",trigger_time=" << report.trigger_time()
+      << ",report_time=" << report.report_time()
+      << ",external_report_id=" << report.external_report_id()
+      << ",failed_send_attempts=" << report.failed_send_attempts()
+      << ",data=" << report.data() << "}";
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out, SendResult::Status status) {
   switch (status) {
-    case SentReport::Status::kSent:
+    case SendResult::Status::kSent:
       out << "kSent";
       break;
-    case SentReport::Status::kTransientFailure:
+    case SendResult::Status::kTransientFailure:
       out << "kTransientFailure";
       break;
-    case SentReport::Status::kFailure:
+    case SendResult::Status::kFailure:
       out << "kFailure";
       break;
-    case SentReport::Status::kDropped:
+    case SendResult::Status::kDropped:
       out << "kDropped";
-      break;
-    case SentReport::Status::kOffline:
-      out << "kOffline";
-      break;
-    case SentReport::Status::kRemovedFromQueue:
-      out << "kRemovedFromQueue";
       break;
   }
   return out;
 }
 
-std::ostream& operator<<(std::ostream& out, const SentReport& info) {
-  return out << "{report=" << info.report << ",status=" << info.status
+std::ostream& operator<<(std::ostream& out, const SendResult& info) {
+  return out << "{status=" << info.status
              << ",http_response_code=" << info.http_response_code << "}";
 }
 

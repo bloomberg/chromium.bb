@@ -43,11 +43,104 @@
   ##############################################################################
   # Temporal tests to be implemented
   # https://crbug.com/v8/11544
-  'temporal/plain*': [FAIL],
-  'temporal/duration*': [FAIL],
-  'temporal/calendar*': [FAIL],
-  'temporal/zoned*': [FAIL],
-  'temporal/instant*': [FAIL],
+  'temporal/calendar-date-add': [FAIL],
+  'temporal/calendar-date-from-fields': [FAIL],
+  'temporal/calendar-date-until': [FAIL],
+  'temporal/calendar-day': [FAIL],
+  'temporal/calendar-day-of-week': [FAIL],
+  'temporal/calendar-day-of-year': [FAIL],
+  'temporal/calendar-days-in-month': [FAIL],
+  'temporal/calendar-days-in-week': [FAIL],
+  'temporal/calendar-days-in-year': [FAIL],
+  'temporal/calendar-fields': [FAIL],
+  'temporal/calendar-from': [FAIL],
+  'temporal/calendar-in-leap-year': [FAIL],
+  'temporal/calendar-merge-fields': [FAIL],
+  'temporal/calendar-month': [FAIL],
+  'temporal/calendar-month-code': [FAIL],
+  'temporal/calendar-month-day-from-fields': [FAIL],
+  'temporal/calendar-months-in-year': [FAIL],
+  'temporal/calendar-week-of-year': [FAIL],
+  'temporal/calendar-year': [FAIL],
+  'temporal/calendar-year-month-from-fields': [FAIL],
+  'temporal/duration-abs': [FAIL],
+  'temporal/duration-add': [FAIL],
+  'temporal/duration-from': [FAIL],
+  'temporal/duration-negated': [FAIL],
+  'temporal/duration-to-json': [FAIL],
+  'temporal/duration-with': [FAIL],
+  'temporal/instant-add': [FAIL],
+  'temporal/instant-compare': [FAIL],
+  'temporal/instant-constructor': [FAIL],
+  'temporal/instant-equals': [FAIL],
+  'temporal/instant-from-epoch-microseconds': [FAIL],
+  'temporal/instant-from-epoch-milliseconds': [FAIL],
+  'temporal/instant-from-epoch-nanoseconds': [FAIL],
+  'temporal/instant-from-epoch-seconds': [FAIL],
+  'temporal/instant-subtract': [FAIL],
+  'temporal/instant-to-json': [FAIL],
+  'temporal/instant-toJSON': [FAIL],
+  'temporal/instant-valueOf': [FAIL],
+  'temporal/plain-date-add': [FAIL],
+  'temporal/plain-date-compare': [FAIL],
+  'temporal/plain-date-equals': [FAIL],
+  'temporal/plain-date-from': [FAIL],
+  'temporal/plain-date-get-day': [FAIL],
+  'temporal/plain-date-get-dayOfWeek': [FAIL],
+  'temporal/plain-date-get-dayOfYear': [FAIL],
+  'temporal/plain-date-get-daysInMonth': [FAIL],
+  'temporal/plain-date-get-daysInWeek': [FAIL],
+  'temporal/plain-date-get-daysInYear': [FAIL],
+  'temporal/plain-date-get-era': [FAIL],
+  'temporal/plain-date-get-eraYear': [FAIL],
+  'temporal/plain-date-get-inLeapYear': [FAIL],
+  'temporal/plain-date-get-month': [FAIL],
+  'temporal/plain-date-get-monthCode': [FAIL],
+  'temporal/plain-date-get-monthsInYear': [FAIL],
+  'temporal/plain-date-get-weekOfYear': [FAIL],
+  'temporal/plain-date-get-year': [FAIL],
+  'temporal/plain-date-time-add': [FAIL],
+  'temporal/plain-date-time-compare': [FAIL],
+  'temporal/plain-date-time-equals': [FAIL],
+  'temporal/plain-date-time-from': [FAIL],
+  'temporal/plain-date-time-get-day': [FAIL],
+  'temporal/plain-date-time-get-dayOfWeek': [FAIL],
+  'temporal/plain-date-time-get-dayOfYear': [FAIL],
+  'temporal/plain-date-time-get-daysInMonth': [FAIL],
+  'temporal/plain-date-time-get-daysInWeek': [FAIL],
+  'temporal/plain-date-time-get-daysInYear': [FAIL],
+  'temporal/plain-date-time-get-era': [FAIL],
+  'temporal/plain-date-time-get-eraYear': [FAIL],
+  'temporal/plain-date-time-get-hour': [FAIL],
+  'temporal/plain-date-time-get-inLeapYear': [FAIL],
+  'temporal/plain-date-time-get-microsecond': [FAIL],
+  'temporal/plain-date-time-get-millisecond': [FAIL],
+  'temporal/plain-date-time-get-minute': [FAIL],
+  'temporal/plain-date-time-get-month': [FAIL],
+  'temporal/plain-date-time-get-monthCode': [FAIL],
+  'temporal/plain-date-time-get-monthsInYear': [FAIL],
+  'temporal/plain-date-time-get-nanosecond': [FAIL],
+  'temporal/plain-date-time-get-second': [FAIL],
+  'temporal/plain-date-time-get-weekOfYear': [FAIL],
+  'temporal/plain-date-time-get-year': [FAIL],
+  'temporal/plain-date-time-subtract': [FAIL],
+  'temporal/plain-date-time-to-json': [FAIL],
+  'temporal/plain-date-time-to-plain-date': [FAIL],
+  'temporal/plain-date-time-to-plain-month-day': [FAIL],
+  'temporal/plain-date-time-to-plain-time': [FAIL],
+  'temporal/plain-date-time-to-plain-year-month': [FAIL],
+  'temporal/plain-date-time-valueOf': [FAIL],
+  'temporal/plain-date-time-with': [FAIL],
+  'temporal/plain-date-time-with-calendar': [FAIL],
+  'temporal/plain-date-time-with-plain-date': [FAIL],
+  'temporal/plain-date-time-with-plain-time': [FAIL],
+  'temporal/plain-date-to-json': [FAIL],
+  'temporal/plain-date-to-plain-date-time': [FAIL],
+  'temporal/plain-date-to-plain-month-day': [FAIL],
+  'temporal/plain-date-to-plain-year-month': [FAIL],
+  'temporal/plain-date-valueOf': [FAIL],
+  'temporal/plain-date-with': [FAIL],
+  'temporal/plain-date-with-calendar': [FAIL],
 
   ##############################################################################
   # Open bugs.
@@ -86,6 +179,9 @@
 
   # https://crbug.com/v8/10948
   'wasm/atomics': [PASS, ['arch == arm and not simulator_run', SKIP]],
+
+  # crbug.com/v8/12472 Stack overflow during regexp node generation.
+  'regress/regress-crbug-595657': [SKIP],
 
   ##############################################################################
   # Tests where variants make no sense.
@@ -449,6 +545,9 @@
 
   # Temporal intl tests won't work in no_i18n
   'temporal/function-exist': [FAIL],
+
+  # Non-BMP characters currently aren't considered identifiers in no_i18n
+  'harmony/private-name-surrogate-pair': [PASS,FAIL],
 }],  # 'no_i18n'
 
 ##############################################################################
@@ -984,6 +1083,11 @@
   # in the module, that can be modified by all instances.
   'wasm/wasm-dynamic-tiering': [SKIP],
 
+  # The test relies on precise switching of code kinds of wasm functions. With
+  # multiple isolates that share the wasm functions, the precise switching is
+  # not possible.
+  'wasm/serialization-with-compilation-hints': [SKIP],
+
   # waitAsync tests modify the global state (across Isolates)
   'harmony/atomics-waitasync': [SKIP],
   'harmony/atomics-waitasync-1thread-2timeout': [SKIP],
@@ -1303,9 +1407,9 @@
 }], # arch not in (x64, ia32, arm64, arm, s390x, ppc64, mipsel, mips64el, loong64)
 
 ##############################################################################
-['system != linux or virtual_memory_cage == True', {
+['system != linux or sandbox == True', {
   # Multi-mapped mock allocator is only available on Linux, and only if the
-  # virtual memory cage is not enabled.
+  # sandbox is not enabled.
   'regress/regress-crbug-1041232': [SKIP],
   'regress/regress-crbug-1104608': [SKIP],
 }],
@@ -1462,6 +1566,13 @@
   'regress/wasm/regress-1242300': [SKIP],
   'regress/wasm/regress-1242689': [SKIP],
   'regress/wasm/regress-1264462': [SKIP],
+  'regress/wasm/regress-1271244': [SKIP],
+  'regress/wasm/regress-1271538': [SKIP],
+  'regress/wasm/regress-1282224': [SKIP],
+  'regress/wasm/regress-1283042': [SKIP],
+  'regress/wasm/regress-1284980': [SKIP],
+  'regress/wasm/regress-1286253': [SKIP],
+  'regress/wasm/regress-1289678': [SKIP],
 }],  # no_simd_hardware == True
 
 ##############################################################################
@@ -1503,6 +1614,7 @@
   'compiler/test-literal-map-migration': [SKIP],
   'compiler/deopt-pretenure': [SKIP],
   'compiler/fast-api-sequences-x64': [SKIP],
+  'compiler/regress-store-store-elim': [SKIP],
 
   # TODO(v8:12031): Reimplement elements kinds transitions when concurrent
   # inlining.

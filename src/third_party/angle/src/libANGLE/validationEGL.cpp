@@ -564,6 +564,7 @@ bool ValidateGetPlatformDisplayCommon(const ValidationContext *val,
         bool enableD3D11on12         = false;
         bool presentPathSpecified    = false;
         bool luidSpecified           = false;
+        bool deviceIdSpecified       = false;
 
         Optional<EGLAttrib> majorVersion;
         Optional<EGLAttrib> minorVersion;
@@ -759,6 +760,16 @@ bool ValidateGetPlatformDisplayCommon(const ValidationContext *val,
                             return false;
                     }
                     break;
+                case EGL_PLATFORM_ANGLE_DEVICE_ID_HIGH_ANGLE:
+                case EGL_PLATFORM_ANGLE_DEVICE_ID_LOW_ANGLE:
+                    if (!clientExtensions.platformANGLEDeviceId)
+                    {
+                        val->setError(EGL_BAD_ATTRIBUTE,
+                                      "EGL_ANGLE_platform_angle_device_id is not supported");
+                        return false;
+                    }
+                    deviceIdSpecified = true;
+                    break;
                 default:
                     break;
             }
@@ -837,6 +848,19 @@ bool ValidateGetPlatformDisplayCommon(const ValidationContext *val,
                 val->setError(EGL_BAD_ATTRIBUTE,
                               "If either EGL_PLATFORM_ANGLE_D3D_LUID_HIGH_ANGLE "
                               "and/or EGL_PLATFORM_ANGLE_D3D_LUID_LOW_ANGLE are "
+                              "specified, at least one must non-zero.");
+                return false;
+            }
+        }
+
+        if (deviceIdSpecified)
+        {
+            if (attribMap.get(EGL_PLATFORM_ANGLE_DEVICE_ID_HIGH_ANGLE, 0) == 0 &&
+                attribMap.get(EGL_PLATFORM_ANGLE_DEVICE_ID_LOW_ANGLE, 0) == 0)
+            {
+                val->setError(EGL_BAD_ATTRIBUTE,
+                              "If either EGL_PLATFORM_ANGLE_DEVICE_ID_HIGH_ANGLE "
+                              "and/or EGL_PLATFORM_ANGLE_DEVICE_ID_LOW_ANGLE are "
                               "specified, at least one must non-zero.");
                 return false;
             }
@@ -1623,6 +1647,15 @@ bool ValidateCreateContextAttribute(const ValidationContext *val,
             }
             break;
 
+        case EGL_CONTEXT_METAL_OWNERSHIP_IDENTITY_ANGLE:
+            if (!display->getExtensions().metalCreateContextOwnershipIdentityANGLE)
+            {
+                val->setError(EGL_BAD_ATTRIBUTE,
+                              "Attribute EGL_CONTEXT_METAL_OWNERSHIP_IDENTITY_ANGLE requires "
+                              "EGL_ANGLE_metal_create_context_ownership_identity.");
+            }
+            break;
+
         default:
             val->setError(EGL_BAD_ATTRIBUTE, "Unknown attribute: 0x%04" PRIxPTR "X", attribute);
             return false;
@@ -1866,6 +1899,16 @@ bool ValidateCreateContextAttributeValue(const ValidationContext *val,
                 val->setError(EGL_BAD_ATTRIBUTE,
                               "EGL_PROTECTED_CONTENT_EXT must "
                               "be either EGL_TRUE or EGL_FALSE.");
+                return false;
+            }
+            break;
+
+        case EGL_CONTEXT_METAL_OWNERSHIP_IDENTITY_ANGLE:
+            if (value == 0)
+            {
+                val->setError(EGL_BAD_ATTRIBUTE,
+                              "EGL_CONTEXT_METAL_OWNERSHIP_IDENTITY_ANGLE must"
+                              "be non-zero.");
                 return false;
             }
             break;
@@ -3347,6 +3390,17 @@ bool ValidateCreateImage(const ValidationContext *val,
                 }
                 break;
 
+            case EGL_VULKAN_IMAGE_CREATE_INFO_HI_ANGLE:
+            case EGL_VULKAN_IMAGE_CREATE_INFO_LO_ANGLE:
+                if (!displayExtensions.vulkanImageANGLE)
+                {
+                    val->setError(EGL_BAD_ATTRIBUTE,
+                                  "Attribute EGL_VULKAN_IMAGE_CREATE_INFO_{HI,LO}_ANGLE require "
+                                  "extension EGL_ANGLE_vulkan_image.");
+                    return false;
+                }
+                break;
+
             default:
                 val->setError(EGL_BAD_PARAMETER, "invalid attribute: 0x%04" PRIxPTR "X", attribute);
                 return false;
@@ -3713,6 +3767,42 @@ bool ValidateCreateImage(const ValidationContext *val,
             {
                 val->setError(EGL_BAD_CONTEXT, "ctx must be EGL_NO_CONTEXT.");
                 return false;
+            }
+
+            ANGLE_EGL_TRY_RETURN(
+                val->eglThread,
+                display->validateImageClientBuffer(context, target, buffer, attributes),
+                val->entryPoint, val->labeledObject, false);
+            break;
+        case EGL_VULKAN_IMAGE_ANGLE:
+            if (!displayExtensions.vulkanImageANGLE)
+            {
+                val->setError(EGL_BAD_PARAMETER, "EGL_ANGLE_vulkan_image not supported.");
+                return false;
+            }
+
+            if (context != nullptr)
+            {
+                val->setError(EGL_BAD_CONTEXT, "ctx must be EGL_NO_CONTEXT.");
+                return false;
+            }
+
+            {
+                const EGLenum kRequiredParameters[] = {
+                    EGL_VULKAN_IMAGE_CREATE_INFO_HI_ANGLE,
+                    EGL_VULKAN_IMAGE_CREATE_INFO_LO_ANGLE,
+                };
+                for (EGLenum requiredParameter : kRequiredParameters)
+                {
+                    if (!attributes.contains(requiredParameter))
+                    {
+                        val->setError(EGL_BAD_PARAMETER,
+                                      "Missing required parameter 0x%X for image target "
+                                      "EGL_VULKAN_IMAGE_ANGLE.",
+                                      requiredParameter);
+                        return false;
+                    }
+                }
             }
 
             ANGLE_EGL_TRY_RETURN(
@@ -5388,6 +5478,14 @@ bool ValidateQuerySurface(const ValidationContext *val,
             }
             break;
 
+        case EGL_PROTECTED_CONTENT_EXT:
+            if (!display->getExtensions().protectedContentEXT)
+            {
+                val->setError(EGL_BAD_ATTRIBUTE, "EGL_EXT_protected_content not supported");
+                return false;
+            }
+            break;
+
         default:
             val->setError(EGL_BAD_ATTRIBUTE, "Invalid surface attribute: 0x%04X", attribute);
             return false;
@@ -5429,6 +5527,14 @@ bool ValidateQueryContext(const ValidationContext *val,
                 val->setError(EGL_BAD_ATTRIBUTE,
                               "Attribute EGL_CONTEXT_PRIORITY_LEVEL_IMG requires "
                               "extension EGL_IMG_context_priority.");
+                return false;
+            }
+            break;
+
+        case EGL_PROTECTED_CONTENT_EXT:
+            if (!display->getExtensions().protectedContentEXT)
+            {
+                val->setError(EGL_BAD_ATTRIBUTE, "EGL_EXT_protected_content not supported");
                 return false;
             }
             break;
@@ -5894,6 +6000,13 @@ bool ValidateSwapBuffersWithFrameTokenANGLE(const ValidationContext *val,
     ANGLE_VALIDATION_TRY(ValidateSurface(val, display, surface));
 
     return true;
+}
+
+bool ValidatePrepareSwapBuffersANGLE(const ValidationContext *val,
+                                     const Display *display,
+                                     const Surface *surface)
+{
+    return ValidateSwapBuffers(val, display, surface);
 }
 
 bool ValidateSignalSyncKHR(const ValidationContext *val,

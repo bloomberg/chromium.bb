@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -378,13 +378,21 @@ bool StatelessValidation::manual_PreCallValidateCreateDevice(VkPhysicalDevice ph
     }
 
     {
-        bool maint1 = IsExtEnabled(extension_state_by_name(device_extensions, VK_KHR_MAINTENANCE_1_EXTENSION_NAME));
+        bool maint1 = IsExtEnabledByCreateinfo(extension_state_by_name(device_extensions, VK_KHR_MAINTENANCE_1_EXTENSION_NAME));
         bool negative_viewport =
-            IsExtEnabled(extension_state_by_name(device_extensions, VK_AMD_NEGATIVE_VIEWPORT_HEIGHT_EXTENSION_NAME));
-        if (maint1 && negative_viewport) {
-            skip |= LogError(device, "VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-00374",
-                             "VkDeviceCreateInfo->ppEnabledExtensionNames must not simultaneously include VK_KHR_maintenance1 and "
-                             "VK_AMD_negative_viewport_height.");
+            IsExtEnabledByCreateinfo(extension_state_by_name(device_extensions, VK_AMD_NEGATIVE_VIEWPORT_HEIGHT_EXTENSION_NAME));
+        if (negative_viewport) {
+            // Only need to check for VK_KHR_MAINTENANCE_1_EXTENSION_NAME if api version is 1.0, otherwise it's deprecated due to
+            // integration into api version 1.1
+            if (api_version >= VK_API_VERSION_1_1) {
+                skip |= LogError(device, "VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-01840",
+                                 "vkCreateDevice(): VkDeviceCreateInfo->ppEnabledExtensionNames must not include "
+                                 "VK_AMD_negative_viewport_height if api version is greater than or equal to 1.1.");
+            } else if (maint1) {
+                skip |= LogError(device, "VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-00374",
+                                 "vkCreateDevice(): VkDeviceCreateInfo->ppEnabledExtensionNames must not simultaneously include "
+                                 "VK_KHR_maintenance1 and VK_AMD_negative_viewport_height.");
+            }
         }
     }
 
@@ -461,7 +469,7 @@ bool StatelessValidation::manual_PreCallValidateCreateDevice(VkPhysicalDevice ph
             if ((0 == strncmp(extension, VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE)) &&
                 (vulkan_11_features->shaderDrawParameters == VK_FALSE)) {
                 skip |= LogError(
-                    instance, "VUID-VkDeviceCreateInfo-ppEnabledExtensions-04476",
+                    instance, "VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-04476",
                     "vkCreateDevice(): %s is enabled but VkPhysicalDeviceVulkan11Features::shaderDrawParameters is not VK_TRUE.",
                     VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME);
             }
@@ -505,13 +513,13 @@ bool StatelessValidation::manual_PreCallValidateCreateDevice(VkPhysicalDevice ph
             if ((0 == strncmp(extension, VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE)) &&
                 (vulkan_12_features->drawIndirectCount == VK_FALSE)) {
                 skip |= LogError(
-                    instance, "VUID-VkDeviceCreateInfo-ppEnabledExtensions-02831",
+                    instance, "VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02831",
                     "vkCreateDevice(): %s is enabled but VkPhysicalDeviceVulkan12Features::drawIndirectCount is not VK_TRUE.",
                     VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME);
             }
             if ((0 == strncmp(extension, VK_KHR_SAMPLER_MIRROR_CLAMP_TO_EDGE_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE)) &&
                 (vulkan_12_features->samplerMirrorClampToEdge == VK_FALSE)) {
-                skip |= LogError(instance, "VUID-VkDeviceCreateInfo-ppEnabledExtensions-02832",
+                skip |= LogError(instance, "VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02832",
                                  "vkCreateDevice(): %s is enabled but VkPhysicalDeviceVulkan12Features::samplerMirrorClampToEdge "
                                  "is not VK_TRUE.",
                                  VK_KHR_SAMPLER_MIRROR_CLAMP_TO_EDGE_EXTENSION_NAME);
@@ -519,14 +527,14 @@ bool StatelessValidation::manual_PreCallValidateCreateDevice(VkPhysicalDevice ph
             if ((0 == strncmp(extension, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE)) &&
                 (vulkan_12_features->descriptorIndexing == VK_FALSE)) {
                 skip |= LogError(
-                    instance, "VUID-VkDeviceCreateInfo-ppEnabledExtensions-02833",
+                    instance, "VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02833",
                     "vkCreateDevice(): %s is enabled but VkPhysicalDeviceVulkan12Features::descriptorIndexing is not VK_TRUE.",
                     VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
             }
             if ((0 == strncmp(extension, VK_EXT_SAMPLER_FILTER_MINMAX_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE)) &&
                 (vulkan_12_features->samplerFilterMinmax == VK_FALSE)) {
                 skip |= LogError(
-                    instance, "VUID-VkDeviceCreateInfo-ppEnabledExtensions-02834",
+                    instance, "VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02834",
                     "vkCreateDevice(): %s is enabled but VkPhysicalDeviceVulkan12Features::samplerFilterMinmax is not VK_TRUE.",
                     VK_EXT_SAMPLER_FILTER_MINMAX_EXTENSION_NAME);
             }
@@ -534,7 +542,7 @@ bool StatelessValidation::manual_PreCallValidateCreateDevice(VkPhysicalDevice ph
                 ((vulkan_12_features->shaderOutputViewportIndex == VK_FALSE) ||
                  (vulkan_12_features->shaderOutputLayer == VK_FALSE))) {
                 skip |=
-                    LogError(instance, "VUID-VkDeviceCreateInfo-ppEnabledExtensions-02835",
+                    LogError(instance, "VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02835",
                              "vkCreateDevice(): %s is enabled but both VkPhysicalDeviceVulkan12Features::shaderOutputViewportIndex "
                              "and VkPhysicalDeviceVulkan12Features::shaderOutputLayer are not VK_TRUE.",
                              VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME);
@@ -2896,6 +2904,7 @@ bool StatelessValidation::manual_PreCallValidateCreateGraphicsPipelines(VkDevice
 
                 bool uses_color_attachment = false;
                 bool uses_depthstencil_attachment = false;
+                VkSubpassDescriptionFlags subpass_flags = 0;
                 {
                     std::unique_lock<std::mutex> lock(renderpass_map_mutex);
                     const auto subpasses_uses_it = renderpasses_states.find(pCreateInfos[i].renderPass);
@@ -2907,6 +2916,7 @@ bool StatelessValidation::manual_PreCallValidateCreateGraphicsPipelines(VkDevice
                         if (subpasses_uses.subpasses_using_depthstencil_attachment.count(pCreateInfos[i].subpass)) {
                             uses_depthstencil_attachment = true;
                         }
+                        subpass_flags = subpasses_uses.subpasses_flags[pCreateInfos[i].subpass];
                     }
                     lock.unlock();
                 }
@@ -3006,6 +3016,59 @@ bool StatelessValidation::manual_PreCallValidateCreateGraphicsPipelines(VkDevice
                                          "VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO",
                                          i);
                     }
+
+                    if ((pCreateInfos[i].pDepthStencilState->flags &
+                         VK_PIPELINE_DEPTH_STENCIL_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_DEPTH_ACCESS_BIT_ARM) != 0) {
+                        const auto *rasterization_order_attachment_access_feature =
+                            LvlFindInChain<VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM>(device_createinfo_pnext);
+                        const bool rasterization_order_depth_attachment_access_feature_enabled =
+                            rasterization_order_attachment_access_feature &&
+                            rasterization_order_attachment_access_feature->rasterizationOrderDepthAttachmentAccess == VK_TRUE;
+                        if (!rasterization_order_depth_attachment_access_feature_enabled) {
+                            skip |= LogError(
+                                device, "VUID-VkPipelineDepthStencilStateCreateInfo-rasterizationOrderDepthAttachmentAccess-06463",
+                                "VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM::"
+                                "rasterizationOrderDepthAttachmentAccess == VK_FALSE, but "
+                                "VkPipelineDepthStencilStateCreateInfo::flags == %s",
+                                string_VkPipelineDepthStencilStateCreateFlags(pCreateInfos[i].pDepthStencilState->flags).c_str());
+                        }
+
+                        if ((subpass_flags & VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_DEPTH_ACCESS_BIT_ARM) == 0) {
+                            skip |= LogError(
+                                device, "VUID-VkGraphicsPipelineCreateInfo-flags-06485",
+                                "VkPipelineDepthStencilStateCreateInfo::flags == %s but "
+                                "VkRenderPassCreateInfo::VkSubpassDescription::flags == %s",
+                                string_VkPipelineDepthStencilStateCreateFlags(pCreateInfos[i].pDepthStencilState->flags).c_str(),
+                                string_VkSubpassDescriptionFlags(subpass_flags).c_str());
+                        }
+                    }
+
+                    if ((pCreateInfos[i].pDepthStencilState->flags &
+                         VK_PIPELINE_DEPTH_STENCIL_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_STENCIL_ACCESS_BIT_ARM) != 0) {
+                        const auto *rasterization_order_attachment_access_feature =
+                            LvlFindInChain<VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM>(device_createinfo_pnext);
+                        const bool rasterization_order_stencil_attachment_access_feature_enabled =
+                            rasterization_order_attachment_access_feature &&
+                            rasterization_order_attachment_access_feature->rasterizationOrderStencilAttachmentAccess == VK_TRUE;
+                        if (!rasterization_order_stencil_attachment_access_feature_enabled) {
+                            skip |= LogError(
+                                device,
+                                "VUID-VkPipelineDepthStencilStateCreateInfo-rasterizationOrderStencilAttachmentAccess-06464",
+                                "VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM::"
+                                "rasterizationOrderStencilAttachmentAccess == VK_FALSE, but "
+                                "VkPipelineDepthStencilStateCreateInfo::flags == %s",
+                                string_VkPipelineDepthStencilStateCreateFlags(pCreateInfos[i].pDepthStencilState->flags).c_str());
+                        }
+
+                        if ((subpass_flags & VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_STENCIL_ACCESS_BIT_ARM) == 0) {
+                            skip |= LogError(
+                                device, "VUID-VkGraphicsPipelineCreateInfo-flags-06486",
+                                "VkPipelineDepthStencilStateCreateInfo::flags == %s but "
+                                "VkRenderPassCreateInfo::VkSubpassDescription::flags == %s",
+                                string_VkPipelineDepthStencilStateCreateFlags(pCreateInfos[i].pDepthStencilState->flags).c_str(),
+                                string_VkSubpassDescriptionFlags(subpass_flags).c_str());
+                        }
+                    }
                 }
 
                 const VkStructureType allowed_structs_vk_pipeline_color_blend_state_create_info[] = {
@@ -3034,6 +3097,33 @@ bool StatelessValidation::manual_PreCallValidateCreateGraphicsPipelines(VkDevice
                                            "VkPipelineColorBlendStateCreateFlagBits", AllVkPipelineColorBlendStateCreateFlagBits,
                                            pCreateInfos[i].pColorBlendState->flags, kOptionalFlags,
                                            "VUID-VkPipelineColorBlendStateCreateInfo-flags-parameter");
+
+                    if ((pCreateInfos[i].pColorBlendState->flags &
+                         VK_PIPELINE_COLOR_BLEND_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_BIT_ARM) != 0) {
+                        const auto *rasterization_order_attachment_access_feature =
+                            LvlFindInChain<VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM>(device_createinfo_pnext);
+                        const bool rasterization_order_color_attachment_access_feature_enabled =
+                            rasterization_order_attachment_access_feature &&
+                            rasterization_order_attachment_access_feature->rasterizationOrderColorAttachmentAccess == VK_TRUE;
+
+                        if (!rasterization_order_color_attachment_access_feature_enabled) {
+                            skip |= LogError(
+                                device, "VUID-VkPipelineColorBlendStateCreateInfo-rasterizationOrderColorAttachmentAccess-06465",
+                                "VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesARM::"
+                                "rasterizationColorAttachmentAccess == VK_FALSE, but "
+                                "VkPipelineColorBlendStateCreateInfo::flags == %s",
+                                string_VkPipelineColorBlendStateCreateFlags(pCreateInfos[i].pColorBlendState->flags).c_str());
+                        }
+
+                        if ((subpass_flags & VK_SUBPASS_DESCRIPTION_RASTERIZATION_ORDER_ATTACHMENT_COLOR_ACCESS_BIT_ARM) == 0) {
+                            skip |= LogError(
+                                device, "VUID-VkGraphicsPipelineCreateInfo-flags-06484",
+                                "VkPipelineColorBlendStateCreateInfo::flags == %s but "
+                                "VkRenderPassCreateInfo::VkSubpassDescription::flags == %s",
+                                string_VkPipelineColorBlendStateCreateFlags(pCreateInfos[i].pColorBlendState->flags).c_str(),
+                                string_VkSubpassDescriptionFlags(subpass_flags).c_str());
+                        }
+                    }
 
                     skip |= validate_bool32(
                         "vkCreateGraphicsPipelines",
@@ -3912,7 +4002,7 @@ bool StatelessValidation::manual_PreCallValidateFreeDescriptorSets(VkDevice devi
 
 bool StatelessValidation::validate_WriteDescriptorSet(const char *vkCallingFunction, const uint32_t descriptorWriteCount,
                                                       const VkWriteDescriptorSet *pDescriptorWrites,
-                                                      const bool validateDstSet) const {
+                                                      const bool isPushDescriptor) const {
     bool skip = false;
 
     if (pDescriptorWrites != NULL) {
@@ -3925,7 +4015,7 @@ bool StatelessValidation::validate_WriteDescriptorSet(const char *vkCallingFunct
             }
 
             // If called from vkCmdPushDescriptorSetKHR, the dstSet member is ignored.
-            if (validateDstSet) {
+            if (!isPushDescriptor) {
                 // dstSet must be a valid VkDescriptorSet handle
                 skip |= validate_required_handle(vkCallingFunction,
                                                  ParameterName("pDescriptorWrites[%i].dstSet", ParameterName::IndexVector{i}),
@@ -3937,19 +4027,33 @@ bool StatelessValidation::validate_WriteDescriptorSet(const char *vkCallingFunct
                 (pDescriptorWrites[i].descriptorType == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE) ||
                 (pDescriptorWrites[i].descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE) ||
                 (pDescriptorWrites[i].descriptorType == VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT)) {
-                // If descriptorType is VK_DESCRIPTOR_TYPE_SAMPLER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                // VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
-                // pImageInfo must be a pointer to an array of descriptorCount valid VkDescriptorImageInfo structures.
-                // Valid imageView handles are checked in ObjectLifetimes::ValidateDescriptorWrite.
                 if (pDescriptorWrites[i].pImageInfo == nullptr) {
-                    skip |=
-                        LogError(device, "VUID-VkWriteDescriptorSet-descriptorType-00322",
-                                 "%s(): if pDescriptorWrites[%" PRIu32
-                                 "].descriptorType is "
-                                 "VK_DESCRIPTOR_TYPE_SAMPLER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, "
-                                 "VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE or "
-                                 "VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, pDescriptorWrites[%" PRIu32 "].pImageInfo must not be NULL.",
-                                 vkCallingFunction, i, i);
+                    if (!isPushDescriptor) {
+                        // If descriptorType is VK_DESCRIPTOR_TYPE_SAMPLER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                        // VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE or
+                        // VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, pImageInfo must be a pointer to an array of descriptorCount valid
+                        // VkDescriptorImageInfo structures. Valid imageView handles are checked in
+                        // ObjectLifetimes::ValidateDescriptorWrite.
+                        skip |= LogError(
+                            device, "VUID-vkUpdateDescriptorSets-pDescriptorWrites-06493",
+                            "%s(): if pDescriptorWrites[%" PRIu32
+                            "].descriptorType is VK_DESCRIPTOR_TYPE_SAMPLER, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, "
+                            "VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE or "
+                            "VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, pDescriptorWrites[%" PRIu32 "].pImageInfo must not be NULL.",
+                            vkCallingFunction, i, i);
+                    } else if ((pDescriptorWrites[i].descriptorType == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE) ||
+                               (pDescriptorWrites[i].descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE) ||
+                               (pDescriptorWrites[i].descriptorType == VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT)) {
+                        // If called from vkCmdPushDescriptorSetKHR, pImageInfo is only requred for descriptor types
+                        // VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, and
+                        // VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT
+                        skip |= LogError(device, "VUID-vkCmdPushDescriptorSetKHR-pDescriptorWrites-06494",
+                                         "%s(): if pDescriptorWrites[%" PRIu32
+                                         "].descriptorType is VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE "
+                                         "or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, pDescriptorWrites[%" PRIu32
+                                         "].pImageInfo must not be NULL.",
+                                         vkCallingFunction, i, i);
+                    }
                 } else if (pDescriptorWrites[i].descriptorType != VK_DESCRIPTOR_TYPE_SAMPLER) {
                     // If descriptorType is VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
                     // VK_DESCRIPTOR_TYPE_STORAGE_IMAGE or VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, the imageLayout
@@ -4120,7 +4224,7 @@ bool StatelessValidation::manual_PreCallValidateUpdateDescriptorSets(VkDevice de
                                                                      const VkWriteDescriptorSet *pDescriptorWrites,
                                                                      uint32_t descriptorCopyCount,
                                                                      const VkCopyDescriptorSet *pDescriptorCopies) const {
-    return validate_WriteDescriptorSet("vkUpdateDescriptorSets", descriptorWriteCount, pDescriptorWrites);
+    return validate_WriteDescriptorSet("vkUpdateDescriptorSets", descriptorWriteCount, pDescriptorWrites, false);
 }
 
 bool StatelessValidation::manual_PreCallValidateCreateRenderPass(VkDevice device, const VkRenderPassCreateInfo *pCreateInfo,
@@ -5110,7 +5214,7 @@ bool StatelessValidation::manual_PreCallValidateCmdPushDescriptorSetKHR(VkComman
                                                                         VkPipelineLayout layout, uint32_t set,
                                                                         uint32_t descriptorWriteCount,
                                                                         const VkWriteDescriptorSet *pDescriptorWrites) const {
-    return validate_WriteDescriptorSet("vkCmdPushDescriptorSetKHR", descriptorWriteCount, pDescriptorWrites, false);
+    return validate_WriteDescriptorSet("vkCmdPushDescriptorSetKHR", descriptorWriteCount, pDescriptorWrites, true);
 }
 
 bool StatelessValidation::manual_PreCallValidateCmdSetExclusiveScissorNV(VkCommandBuffer commandBuffer,
@@ -6118,6 +6222,12 @@ bool StatelessValidation::PreCallValidateGetDeviceGroupSurfacePresentModes2EXT(V
                                       allowed_structs_VkPhysicalDeviceSurfaceInfo2KHR, GeneratedVulkanHeaderVersion,
                                       "VUID-VkPhysicalDeviceSurfaceInfo2KHR-pNext-pNext",
                                       "VUID-VkPhysicalDeviceSurfaceInfo2KHR-sType-unique");
+
+        if (pSurfaceInfo->surface == VK_NULL_HANDLE && !instance_extensions.vk_google_surfaceless_query) {
+            skip |= LogError(device, "VUID-vkGetPhysicalDeviceSurfacePresentModes2EXT-pSurfaceInfo-06521",
+                             "vkGetPhysicalDeviceSurfacePresentModes2EXT: pSurfaceInfo->surface is VK_NULL_HANDLE and "
+                             "VK_GOOGLE_surfaceless_query is not enabled.");
+        }
 
         skip |= validate_required_handle("vkGetDeviceGroupSurfacePresentModes2EXT", "pSurfaceInfo->surface", pSurfaceInfo->surface);
     }
@@ -8035,3 +8145,67 @@ bool StatelessValidation::manual_PreCallValidateCmdBeginConditionalRenderingEXT(
 
     return skip;
 }
+
+bool StatelessValidation::manual_PreCallValidateGetPhysicalDeviceSurfaceFormatsKHR(VkPhysicalDevice physicalDevice,
+                                                                                   VkSurfaceKHR surface,
+                                                                                   uint32_t *pSurfaceFormatCount,
+                                                                                   VkSurfaceFormatKHR *pSurfaceFormats) const {
+    bool skip = false;
+    if (surface == VK_NULL_HANDLE && !instance_extensions.vk_google_surfaceless_query) {
+        skip |= LogError(
+            physicalDevice, "VUID-vkGetPhysicalDeviceSurfaceFormatsKHR-surface-06524",
+            "vkGetPhysicalDeviceSurfaceFormatsKHR(): surface is VK_NULL_HANDLE and VK_GOOGLE_surfaceless_query is not enabled.");
+    }
+    return skip;
+}
+
+bool StatelessValidation::manual_PreCallValidateGetPhysicalDeviceSurfacePresentModesKHR(VkPhysicalDevice physicalDevice,
+                                                                                        VkSurfaceKHR surface,
+                                                                                        uint32_t *pPresentModeCount,
+                                                                                        VkPresentModeKHR *pPresentModes) const {
+    bool skip = false;
+    if (surface == VK_NULL_HANDLE && !instance_extensions.vk_google_surfaceless_query) {
+        skip |= LogError(
+            physicalDevice, "VUID-vkGetPhysicalDeviceSurfacePresentModesKHR-surface-06524",
+            "vkGetPhysicalDeviceSurfacePresentModesKHR: surface is VK_NULL_HANDLE and VK_GOOGLE_surfaceless_query is not enabled.");
+    }
+    return skip;
+}
+
+bool StatelessValidation::manual_PreCallValidateGetPhysicalDeviceSurfaceCapabilities2KHR(
+    VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSurfaceInfo2KHR *pSurfaceInfo,
+    VkSurfaceCapabilities2KHR *pSurfaceCapabilities) const {
+    bool skip = false;
+    if (pSurfaceInfo && pSurfaceInfo->surface == VK_NULL_HANDLE && !instance_extensions.vk_google_surfaceless_query) {
+        skip |= LogError(physicalDevice, "VUID-vkGetPhysicalDeviceSurfaceCapabilities2KHR-pSurfaceInfo-06520",
+                         "vkGetPhysicalDeviceSurfaceCapabilities2KHR: pSurfaceInfo->surface is VK_NULL_HANDLE and "
+                         "VK_GOOGLE_surfaceless_query is not enabled.");
+    }
+    return skip;
+}
+
+bool StatelessValidation::manual_PreCallValidateGetPhysicalDeviceSurfaceFormats2KHR(
+    VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSurfaceInfo2KHR *pSurfaceInfo, uint32_t *pSurfaceFormatCount,
+    VkSurfaceFormat2KHR *pSurfaceFormats) const {
+    bool skip = false;
+    if (pSurfaceInfo && pSurfaceInfo->surface == VK_NULL_HANDLE && !instance_extensions.vk_google_surfaceless_query) {
+        skip |= LogError(physicalDevice, "VUID-vkGetPhysicalDeviceSurfaceFormats2KHR-pSurfaceInfo-06521",
+                         "vkGetPhysicalDeviceSurfaceFormats2KHR: pSurfaceInfo->surface is VK_NULL_HANDLE and "
+                         "VK_GOOGLE_surfaceless_query is not enabled.");
+    }
+    return skip;
+}
+
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+bool StatelessValidation::manual_PreCallValidateGetPhysicalDeviceSurfacePresentModes2EXT(
+    VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSurfaceInfo2KHR *pSurfaceInfo, uint32_t *pPresentModeCount,
+    VkPresentModeKHR *pPresentModes) const {
+    bool skip = false;
+    if (pSurfaceInfo && pSurfaceInfo->surface == VK_NULL_HANDLE && !instance_extensions.vk_google_surfaceless_query) {
+        skip |= LogError(physicalDevice, "VUID-vkGetPhysicalDeviceSurfacePresentModes2EXT-pSurfaceInfo-06521",
+                         "vkGetPhysicalDeviceSurfacePresentModes2EXT: pSurfaceInfo->surface is VK_NULL_HANDLE and "
+                         "VK_GOOGLE_surfaceless_query is not enabled.");
+    }
+    return skip;
+}
+#endif  // VK_USE_PLATFORM_WIN32_KHR

@@ -36,13 +36,14 @@ public:
             // each patch that explicitly tells the shader what type of curve it is.
             fInstanceAttribs.emplace_back("curveType", kFloat_GrVertexAttribType, kFloat_GrSLType);
         }
-        this->setInstanceAttributes(fInstanceAttribs.data(), fInstanceAttribs.count());
+        this->setInstanceAttributesWithImplicitOffsets(fInstanceAttribs.data(),
+                                                       fInstanceAttribs.count());
         SkASSERT(fInstanceAttribs.count() <= kMaxInstanceAttribCount);
 
         if (!shaderCaps.vertexIDSupport()) {
             constexpr static Attribute kVertexIdxAttrib("vertexidx", kFloat_GrVertexAttribType,
                                                         kFloat_GrSLType);
-            this->setVertexAttributes(&kVertexIdxAttrib, 1);
+            this->setVertexAttributesWithImplicitOffsets(&kVertexIdxAttrib, 1);
         }
     }
 
@@ -50,7 +51,7 @@ public:
 
 private:
     const char* name() const final { return "tessellate_HullShader"; }
-    void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const final {}
+    void addToKey(const GrShaderCaps&, KeyBuilder*) const final {}
     std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const final;
 
     constexpr static int kMaxInstanceAttribCount = 3;
@@ -106,9 +107,9 @@ std::unique_ptr<GrGeometryProcessor::ProgramImpl> HullShader::makeProgramImpl(
             float2 v3 = p3 - p0;
 
             // Reorder the points so v2 bisects v1 and v3.
-            if (sign(cross(v2, v1)) == sign(cross(v2, v3))) {
+            if (sign(cross_length_2d(v2, v1)) == sign(cross_length_2d(v2, v3))) {
                 float2 tmp = p2;
-                if (sign(cross(v1, v2)) != sign(cross(v1, v3))) {
+                if (sign(cross_length_2d(v1, v2)) != sign(cross_length_2d(v1, v3))) {
                     p2 = p1;  // swap(p2, p1)
                     p1 = tmp;
                 } else {
@@ -141,7 +142,7 @@ std::unique_ptr<GrGeometryProcessor::ProgramImpl> HullShader::makeProgramImpl(
                 v->codeAppendf(R"(
                 next = p%i - p%i;)", (i + 1) % 4, i);
                 v->codeAppendf(R"(
-                dir = sign(cross(prev, next));
+                dir = sign(cross_length_2d(prev, next));
                 if (vertexidx == %i) {
                     vertexdir = dir;
                     localcoord = p%i;
@@ -397,7 +398,7 @@ void PathInnerTriangulateOp::onPrePrepare(GrRecordingContext* context,
     }
 }
 
-GR_DECLARE_STATIC_UNIQUE_KEY(gHullVertexBufferKey);
+SKGPU_DECLARE_STATIC_UNIQUE_KEY(gHullVertexBufferKey);
 
 void PathInnerTriangulateOp::onPrepare(GrOpFlushState* flushState) {
     const GrCaps& caps = flushState->caps();
@@ -459,7 +460,7 @@ void PathInnerTriangulateOp::onPrepare(GrOpFlushState* flushState) {
     if (!caps.shaderCaps()->vertexIDSupport()) {
         constexpr static float kStripOrderIDs[4] = {0, 1, 3, 2};
 
-        GR_DEFINE_STATIC_UNIQUE_KEY(gHullVertexBufferKey);
+        SKGPU_DEFINE_STATIC_UNIQUE_KEY(gHullVertexBufferKey);
 
         fHullVertexBufferIfNoIDSupport = flushState->resourceProvider()->findOrMakeStaticBuffer(
                 GrGpuBufferType::kVertex, sizeof(kStripOrderIDs), kStripOrderIDs,

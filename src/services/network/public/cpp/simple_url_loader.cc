@@ -140,7 +140,7 @@ class StringUploadDataPipeGetter : public mojom::DataPipeGetter {
           std::min(static_cast<size_t>(32 * 1024),
                    upload_string_.length() - write_position_));
       if (write_size == 0) {
-        // Upload is done. Close the uplaod body pipe and wait for another call
+        // Upload is done. Close the upload body pipe and wait for another call
         // to Read().
         ResetBodyPipe();
         return;
@@ -253,7 +253,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   // Called by BodyHandler when the BodyHandler body handler is done. If |error|
   // is not net::OK, some error occurred reading or consuming the body. If it is
   // net::OK, the pipe was closed and all data received was successfully
-  // handled. This could indicate an error, concellation, or completion. To
+  // handled. This could indicate an error, cancellation, or completion. To
   // determine which case this is, the size will also be compared to the size
   // reported in URLLoaderCompletionStatus(), if
   // URLLoaderCompletionStatus indicates a success.
@@ -311,7 +311,8 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
 
   // mojom::URLLoaderClient implementation;
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override;
-  void OnReceiveResponse(mojom::URLResponseHeadPtr response_head) override;
+  void OnReceiveResponse(mojom::URLResponseHeadPtr response_head,
+                         mojo::ScopedDataPipeConsumerHandle body) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          mojom::URLResponseHeadPtr response_head) override;
   void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override;
@@ -1031,7 +1032,7 @@ class SaveToFileBodyHandler : public BodyHandler {
       }
     }
 
-    // These are set on cosntruction and accessed on both task runners.
+    // These are set on construction and accessed on both task runners.
     const scoped_refptr<base::SequencedTaskRunner> body_handler_task_runner_;
     const scoped_refptr<base::SequencedTaskRunner> file_writer_task_runner_;
 
@@ -1504,7 +1505,7 @@ void SimpleURLLoaderImpl::FinishWithResult(int net_error) {
 
   client_receiver_.reset();
   url_loader_.reset();
-  timeout_timer_.Stop();
+  timeout_timer_.AbandonAndStop();
 
   request_state_->finished = true;
   request_state_->net_error = net_error;
@@ -1604,7 +1605,8 @@ void SimpleURLLoaderImpl::OnReceiveEarlyHints(
     network::mojom::EarlyHintsPtr early_hints) {}
 
 void SimpleURLLoaderImpl::OnReceiveResponse(
-    mojom::URLResponseHeadPtr response_head) {
+    mojom::URLResponseHeadPtr response_head,
+    mojo::ScopedDataPipeConsumerHandle body) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (request_state_->response_info) {
     // The final headers have already been received, so the URLLoader is
@@ -1628,9 +1630,8 @@ void SimpleURLLoaderImpl::OnReceiveResponse(
     return;
   }
 
+  base::WeakPtr<SimpleURLLoaderImpl> weak_this = weak_ptr_factory_.GetWeakPtr();
   if (on_response_started_callback_) {
-    base::WeakPtr<SimpleURLLoaderImpl> weak_this =
-        weak_ptr_factory_.GetWeakPtr();
     // Copy |final_url_| to a stack allocated GURL so it remains valid even if
     // the callback deletes |this|.
     GURL final_url = final_url_;
@@ -1641,8 +1642,15 @@ void SimpleURLLoaderImpl::OnReceiveResponse(
   }
 
   request_state_->response_info = std::move(response_head);
-  if (!allow_http_error_results_ && response_code / 100 != 2)
+  if (!allow_http_error_results_ && response_code / 100 != 2) {
     FinishWithResult(net::ERR_HTTP_RESPONSE_CODE_FAILURE);
+    return;
+  }
+
+  if (!weak_this)
+    return;
+  if (body)
+    OnStartLoadingResponseBody(std::move(body));
 }
 
 void SimpleURLLoaderImpl::OnReceiveRedirect(

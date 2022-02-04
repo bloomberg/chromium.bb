@@ -22,7 +22,8 @@ namespace {
 
 std::string SumColumn(bool dynamic_row, bool dynamic_col, int32_t rows,
                       int32_t cols) {
-  return GetTFSumIR({rows, cols}, {dynamic_row, dynamic_col}, {0});
+  return GetReductionIR("tf.Sum", {rows, cols}, {dynamic_row, dynamic_col}, {0},
+                        "f32");
 }
 
 auto EigenSumColumn() {
@@ -50,7 +51,7 @@ llvm::SmallVector<InputTensorSpec> Inputs(ssize_t rows, ssize_t cols) {
 #define BM(FN) BM_##FN->Arg(0);
 
 #define BM_SUITE(NAME, DYNAMIC_ROW, DYNAMIC_COL, ROWS, COLS)               \
-  BM(CpurtV(NAME, SumColumn(DYNAMIC_ROW, DYNAMIC_COL, ROWS, COLS), "main", \
+  BM(JitrtV(NAME, SumColumn(DYNAMIC_ROW, DYNAMIC_COL, ROWS, COLS), "main", \
             Inputs(ROWS, COLS)));                                          \
   BM(Eigen(NAME, EigenSumColumn(), Inputs(ROWS, COLS)));                   \
   BM(Tfrt(NAME, SumColumn(DYNAMIC_ROW, DYNAMIC_COL, ROWS, COLS), "main",   \

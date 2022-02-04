@@ -30,13 +30,15 @@ const T2& choose(Cond<false>, const T1&, const T2& second) {
 template <typename T, typename X, typename Y>
 EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
 T divup(const X x, const Y y) {
-  return static_cast<T>((x + y - 1) / y);
+  // Note: This form is used because it cannot overflow.
+  return static_cast<T>(x == 0 ? 0 : (x - 1) / y + 1);
 }
 
 template <typename T>
 EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
 T divup(const T x, const T y) {
-  return static_cast<T>((x + y - 1) / y);
+  // Note: This form is used because it cannot overflow.
+  return static_cast<T>(x == 0 ? 0 : (x - 1) / y + 1);
 }
 
 template <size_t n> struct max_n_1 {
@@ -262,13 +264,12 @@ template <typename Idx> struct IndexPair {
 };
 
 
-#ifdef EIGEN_HAS_SFINAE
 namespace internal {
 
-  template<typename IndexType, typename Index, Index... Is>
+  template<typename IndexType, typename Index, Index First, Index... Is>
   EIGEN_CONSTEXPR EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-  array<Index, sizeof...(Is)> customIndices2Array(IndexType& idx, numeric_list<Index, Is...>) {
-    return { idx[Is]... };
+  array<Index, 1 + sizeof...(Is)> customIndices2Array(IndexType& idx, numeric_list<Index, First, Is...>) {
+    return { idx[First], idx[Is]... };
   }
   template<typename IndexType, typename Index>
   EIGEN_CONSTEXPR EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
@@ -306,9 +307,6 @@ namespace internal {
   };
 
 }
-#endif
-
-
 
 }  // namespace Eigen
 

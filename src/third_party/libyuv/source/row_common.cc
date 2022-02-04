@@ -28,15 +28,20 @@ extern "C" {
 
 // The following macro from row_win makes the C code match the row_win code,
 // which is 7 bit fixed point for ARGBToI420:
-#if !defined(LIBYUV_DISABLE_X86) && defined(_MSC_VER) && \
-    !defined(__clang__) && (defined(_M_IX86) || defined(_M_X64))
+#if !defined(LIBYUV_BIT_EXACT) && !defined(LIBYUV_DISABLE_X86) && \
+    defined(_MSC_VER) && !defined(__clang__) &&                   \
+    (defined(_M_IX86) || defined(_M_X64))
 #define LIBYUV_RGB7 1
 #endif
 
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || \
-    defined(_M_IX86)
+#if !defined(LIBYUV_BIT_EXACT) && (defined(__x86_64__) || defined(_M_X64) || \
+                                   defined(__i386__) || defined(_M_IX86))
 #define LIBYUV_ARGBTOUV_PAVGB 1
 #define LIBYUV_RGBTOU_TRUNCATE 1
+#define LIBYUV_ATTENUATE_DUP 1
+#endif
+#if defined(LIBYUV_BIT_EXACT)
+#define LIBYUV_UNATTENUATE_DUP 1
 #endif
 
 // llvm x86 is poor at ternary operator, so use branchless min/max.
@@ -337,8 +342,8 @@ void ARGBToRGB565DitherRow_C(const uint8_t* src_argb,
     uint8_t b1 = clamp255(src_argb[4] + dither1) >> 3;
     uint8_t g1 = clamp255(src_argb[5] + dither1) >> 2;
     uint8_t r1 = clamp255(src_argb[6] + dither1) >> 3;
-    WRITEWORD(dst_rgb, b0 | (g0 << 5) | (r0 << 11) | (b1 << 16) | (g1 << 21) |
-                           (r1 << 27));
+    *(uint16_t*)(dst_rgb + 0) = b0 | (g0 << 5) | (r0 << 11);
+    *(uint16_t*)(dst_rgb + 2) = b1 | (g1 << 5) | (r1 << 11);
     dst_rgb += 4;
     src_argb += 8;
   }
@@ -362,8 +367,8 @@ void ARGBToARGB1555Row_C(const uint8_t* src_argb, uint8_t* dst_rgb, int width) {
     uint8_t g1 = src_argb[5] >> 3;
     uint8_t r1 = src_argb[6] >> 3;
     uint8_t a1 = src_argb[7] >> 7;
-    *(uint32_t*)(dst_rgb) = b0 | (g0 << 5) | (r0 << 10) | (a0 << 15) |
-                            (b1 << 16) | (g1 << 21) | (r1 << 26) | (a1 << 31);
+    *(uint16_t*)(dst_rgb + 0) = b0 | (g0 << 5) | (r0 << 10) | (a0 << 15);
+    *(uint16_t*)(dst_rgb + 2) = b1 | (g1 << 5) | (r1 << 10) | (a1 << 15);
     dst_rgb += 4;
     src_argb += 8;
   }
@@ -387,8 +392,8 @@ void ARGBToARGB4444Row_C(const uint8_t* src_argb, uint8_t* dst_rgb, int width) {
     uint8_t g1 = src_argb[5] >> 4;
     uint8_t r1 = src_argb[6] >> 4;
     uint8_t a1 = src_argb[7] >> 4;
-    *(uint32_t*)(dst_rgb) = b0 | (g0 << 4) | (r0 << 8) | (a0 << 12) |
-                            (b1 << 16) | (g1 << 20) | (r1 << 24) | (a1 << 28);
+    *(uint16_t*)(dst_rgb + 0) = b0 | (g0 << 4) | (r0 << 8) | (a0 << 12);
+    *(uint16_t*)(dst_rgb + 2) = b1 | (g1 << 4) | (r1 << 8) | (a1 << 12);
     dst_rgb += 4;
     src_argb += 8;
   }
@@ -522,6 +527,7 @@ static __inline int RGBToY(uint8_t r, uint8_t g, uint8_t b) {
 
 #define AVGB(a, b) (((a) + (b) + 1) >> 1)
 
+// LIBYUV_RGBTOU_TRUNCATE mimics x86 code that does not round.
 #ifdef LIBYUV_RGBTOU_TRUNCATE
 static __inline int RGBToU(uint8_t r, uint8_t g, uint8_t b) {
   return (112 * b - 74 * g - 38 * r + 0x8000) >> 8;
@@ -530,7 +536,7 @@ static __inline int RGBToV(uint8_t r, uint8_t g, uint8_t b) {
   return (112 * r - 94 * g - 18 * b + 0x8000) >> 8;
 }
 #else
-// TODO(fbarchard): Add rounding to SIMD and use this
+// TODO(fbarchard): Add rounding to x86 SIMD and use this
 static __inline int RGBToU(uint8_t r, uint8_t g, uint8_t b) {
   return (112 * b - 74 * g - 38 * r + 0x8080) >> 8;
 }
@@ -539,6 +545,7 @@ static __inline int RGBToV(uint8_t r, uint8_t g, uint8_t b) {
 }
 #endif
 
+// LIBYUV_ARGBTOUV_PAVGB mimics x86 code that subsamples with 2 pavgb.
 #if !defined(LIBYUV_ARGBTOUV_PAVGB)
 static __inline int RGB2xToU(uint16_t r, uint16_t g, uint16_t b) {
   return ((112 / 2) * b - (74 / 2) * g - (38 / 2) * r + 0x8080) >> 8;
@@ -551,7 +558,6 @@ static __inline int RGB2xToV(uint16_t r, uint16_t g, uint16_t b) {
 // ARGBToY_C and ARGBToUV_C
 // Intel version mimic SSE/AVX which does 2 pavgb
 #if LIBYUV_ARGBTOUV_PAVGB
-
 #define MAKEROWY(NAME, R, G, B, BPP)                                       \
   void NAME##ToYRow_C(const uint8_t* src_rgb, uint8_t* dst_y, int width) { \
     int x;                                                                 \
@@ -2273,8 +2279,8 @@ void I422ToARGB4444Row_C(const uint8_t* src_y,
     b1 = b1 >> 4;
     g1 = g1 >> 4;
     r1 = r1 >> 4;
-    *(uint32_t*)(dst_argb4444) = b0 | (g0 << 4) | (r0 << 8) | (b1 << 16) |
-                                 (g1 << 20) | (r1 << 24) | 0xf000f000;
+    *(uint16_t*)(dst_argb4444 + 0) = b0 | (g0 << 4) | (r0 << 8) | 0xf000;
+    *(uint16_t*)(dst_argb4444 + 2) = b1 | (g1 << 4) | (r1 << 8) | 0xf000;
     src_y += 2;
     src_u += 1;
     src_v += 1;
@@ -2311,8 +2317,8 @@ void I422ToARGB1555Row_C(const uint8_t* src_y,
     b1 = b1 >> 3;
     g1 = g1 >> 3;
     r1 = r1 >> 3;
-    *(uint32_t*)(dst_argb1555) = b0 | (g0 << 5) | (r0 << 10) | (b1 << 16) |
-                                 (g1 << 21) | (r1 << 26) | 0x80008000;
+    *(uint16_t*)(dst_argb1555 + 0) = b0 | (g0 << 5) | (r0 << 10) | 0x8000;
+    *(uint16_t*)(dst_argb1555 + 2) = b1 | (g1 << 5) | (r1 << 10) | 0x8000;
     src_y += 2;
     src_u += 1;
     src_v += 1;
@@ -2349,8 +2355,8 @@ void I422ToRGB565Row_C(const uint8_t* src_y,
     b1 = b1 >> 3;
     g1 = g1 >> 2;
     r1 = r1 >> 3;
-    *(uint32_t*)(dst_rgb565) =
-        b0 | (g0 << 5) | (r0 << 11) | (b1 << 16) | (g1 << 21) | (r1 << 27);
+    *(uint16_t*)(dst_rgb565 + 0) = b0 | (g0 << 5) | (r0 << 11);  // for ubsan
+    *(uint16_t*)(dst_rgb565 + 2) = b1 | (g1 << 5) | (r1 << 11);
     src_y += 2;
     src_u += 1;
     src_v += 1;
@@ -2476,8 +2482,8 @@ void NV12ToRGB565Row_C(const uint8_t* src_y,
     b1 = b1 >> 3;
     g1 = g1 >> 2;
     r1 = r1 >> 3;
-    *(uint32_t*)(dst_rgb565) =
-        b0 | (g0 << 5) | (r0 << 11) | (b1 << 16) | (g1 << 21) | (r1 << 27);
+    *(uint16_t*)(dst_rgb565 + 0) = b0 | (g0 << 5) | (r0 << 11);
+    *(uint16_t*)(dst_rgb565 + 2) = b1 | (g1 << 5) | (r1 << 11);
     src_y += 2;
     src_uv += 2;
     dst_rgb565 += 4;  // Advance 2 pixels.
@@ -3151,11 +3157,11 @@ void BlendPlaneRow_C(const uint8_t* src0,
 }
 #undef UBLEND
 
-#if defined(__aarch64__) || defined(__arm__)
-#define ATTENUATE(f, a) (f * a + 128) >> 8
-#else
+#if LIBYUV_ATTENUATE_DUP
 // This code mimics the SSSE3 version for better testability.
 #define ATTENUATE(f, a) (a | (a << 8)) * (f | (f << 8)) >> 24
+#else
+#define ATTENUATE(f, a) (f * a + 128) >> 8
 #endif
 
 // Multiply source RGB by alpha and store to destination.
@@ -3242,6 +3248,14 @@ const uint32_t fixed_invtbl8[256] = {
     T(0xfc),    T(0xfd),    T(0xfe), 0x01000100};
 #undef T
 
+#if LIBYUV_UNATTENUATE_DUP
+// This code mimics the Intel SIMD version for better testability.
+#define UNATTENUATE(f, ia) clamp255(((f | (f << 8)) * ia) >> 16)
+#else
+#define UNATTENUATE(f, ia) clamp255((f * ia) >> 8)
+#endif
+
+// mimics the Intel SIMD code for exactness.
 void ARGBUnattenuateRow_C(const uint8_t* src_argb,
                           uint8_t* dst_argb,
                           int width) {
@@ -3252,13 +3266,11 @@ void ARGBUnattenuateRow_C(const uint8_t* src_argb,
     uint32_t r = src_argb[2];
     const uint32_t a = src_argb[3];
     const uint32_t ia = fixed_invtbl8[a] & 0xffff;  // 8.8 fixed point
-    b = (b * ia) >> 8;
-    g = (g * ia) >> 8;
-    r = (r * ia) >> 8;
+
     // Clamping should not be necessary but is free in assembly.
-    dst_argb[0] = clamp255(b);
-    dst_argb[1] = clamp255(g);
-    dst_argb[2] = clamp255(r);
+    dst_argb[0] = UNATTENUATE(b, ia);
+    dst_argb[1] = UNATTENUATE(g, ia);
+    dst_argb[2] = UNATTENUATE(r, ia);
     dst_argb[3] = a;
     src_argb += 4;
     dst_argb += 4;

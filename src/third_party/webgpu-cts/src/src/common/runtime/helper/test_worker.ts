@@ -25,8 +25,8 @@ export class TestWorker {
       }
       this.resolvers.get(query)!(result as LiveTestCaseResult);
 
-      // TODO(kainino0x): update the Logger with this result (or don't have a logger and update the
-      // entire results JSON somehow at some point).
+      // MAINTENANCE_TODO(kainino0x): update the Logger with this result (or don't have a logger and
+      // update the entire results JSON somehow at some point).
     };
   }
 

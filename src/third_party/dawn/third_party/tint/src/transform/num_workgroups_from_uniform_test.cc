@@ -57,8 +57,8 @@ TEST_F(NumWorkgroupsFromUniformTest, Error_MissingCanonicalizeEntryPointIO) {
 
 TEST_F(NumWorkgroupsFromUniformTest, Basic) {
   auto* src = R"(
-[[stage(compute), workgroup_size(1)]]
-fn main([[builtin(num_workgroups)]] num_wgs : vec3<u32>) {
+@stage(compute) @workgroup_size(1)
+fn main(@builtin(num_workgroups) num_wgs : vec3<u32>) {
   let groups_x = num_wgs.x;
   let groups_y = num_wgs.y;
   let groups_z = num_wgs.z;
@@ -66,12 +66,11 @@ fn main([[builtin(num_workgroups)]] num_wgs : vec3<u32>) {
 )";
 
   auto* expect = R"(
-[[block]]
 struct tint_symbol_2 {
   num_workgroups : vec3<u32>;
-};
+}
 
-[[group(0), binding(30)]] var<uniform> tint_symbol_3 : tint_symbol_2;
+@group(0) @binding(30) var<uniform> tint_symbol_3 : tint_symbol_2;
 
 fn main_inner(num_wgs : vec3<u32>) {
   let groups_x = num_wgs.x;
@@ -79,7 +78,7 @@ fn main_inner(num_wgs : vec3<u32>) {
   let groups_z = num_wgs.z;
 }
 
-[[stage(compute), workgroup_size(1)]]
+@stage(compute) @workgroup_size(1)
 fn main() {
   main_inner(tint_symbol_3.num_workgroups);
 }
@@ -97,10 +96,10 @@ fn main() {
 TEST_F(NumWorkgroupsFromUniformTest, StructOnlyMember) {
   auto* src = R"(
 struct Builtins {
-  [[builtin(num_workgroups)]] num_wgs : vec3<u32>;
+  @builtin(num_workgroups) num_wgs : vec3<u32>;
 };
 
-[[stage(compute), workgroup_size(1)]]
+@stage(compute) @workgroup_size(1)
 fn main(in : Builtins) {
   let groups_x = in.num_wgs.x;
   let groups_y = in.num_wgs.y;
@@ -109,16 +108,15 @@ fn main(in : Builtins) {
 )";
 
   auto* expect = R"(
-[[block]]
 struct tint_symbol_2 {
   num_workgroups : vec3<u32>;
-};
+}
 
-[[group(0), binding(30)]] var<uniform> tint_symbol_3 : tint_symbol_2;
+@group(0) @binding(30) var<uniform> tint_symbol_3 : tint_symbol_2;
 
 struct Builtins {
   num_wgs : vec3<u32>;
-};
+}
 
 fn main_inner(in : Builtins) {
   let groups_x = in.num_wgs.x;
@@ -126,7 +124,7 @@ fn main_inner(in : Builtins) {
   let groups_z = in.num_wgs.z;
 }
 
-[[stage(compute), workgroup_size(1)]]
+@stage(compute) @workgroup_size(1)
 fn main() {
   main_inner(Builtins(tint_symbol_3.num_workgroups));
 }
@@ -144,12 +142,12 @@ fn main() {
 TEST_F(NumWorkgroupsFromUniformTest, StructMultipleMembers) {
   auto* src = R"(
 struct Builtins {
-  [[builtin(global_invocation_id)]] gid : vec3<u32>;
-  [[builtin(num_workgroups)]] num_wgs : vec3<u32>;
-  [[builtin(workgroup_id)]] wgid : vec3<u32>;
+  @builtin(global_invocation_id) gid : vec3<u32>;
+  @builtin(num_workgroups) num_wgs : vec3<u32>;
+  @builtin(workgroup_id) wgid : vec3<u32>;
 };
 
-[[stage(compute), workgroup_size(1)]]
+@stage(compute) @workgroup_size(1)
 fn main(in : Builtins) {
   let groups_x = in.num_wgs.x;
   let groups_y = in.num_wgs.y;
@@ -158,25 +156,24 @@ fn main(in : Builtins) {
 )";
 
   auto* expect = R"(
-[[block]]
 struct tint_symbol_2 {
   num_workgroups : vec3<u32>;
-};
+}
 
-[[group(0), binding(30)]] var<uniform> tint_symbol_3 : tint_symbol_2;
+@group(0) @binding(30) var<uniform> tint_symbol_3 : tint_symbol_2;
 
 struct Builtins {
   gid : vec3<u32>;
   num_wgs : vec3<u32>;
   wgid : vec3<u32>;
-};
+}
 
 struct tint_symbol_1 {
-  [[builtin(global_invocation_id)]]
+  @builtin(global_invocation_id)
   gid : vec3<u32>;
-  [[builtin(workgroup_id)]]
+  @builtin(workgroup_id)
   wgid : vec3<u32>;
-};
+}
 
 fn main_inner(in : Builtins) {
   let groups_x = in.num_wgs.x;
@@ -184,7 +181,7 @@ fn main_inner(in : Builtins) {
   let groups_z = in.num_wgs.z;
 }
 
-[[stage(compute), workgroup_size(1)]]
+@stage(compute) @workgroup_size(1)
 fn main(tint_symbol : tint_symbol_1) {
   main_inner(Builtins(tint_symbol.gid, tint_symbol_3.num_workgroups, tint_symbol.wgid));
 }
@@ -202,31 +199,31 @@ fn main(tint_symbol : tint_symbol_1) {
 TEST_F(NumWorkgroupsFromUniformTest, MultipleEntryPoints) {
   auto* src = R"(
 struct Builtins1 {
-  [[builtin(num_workgroups)]] num_wgs : vec3<u32>;
+  @builtin(num_workgroups) num_wgs : vec3<u32>;
 };
 
 struct Builtins2 {
-  [[builtin(global_invocation_id)]] gid : vec3<u32>;
-  [[builtin(num_workgroups)]] num_wgs : vec3<u32>;
-  [[builtin(workgroup_id)]] wgid : vec3<u32>;
+  @builtin(global_invocation_id) gid : vec3<u32>;
+  @builtin(num_workgroups) num_wgs : vec3<u32>;
+  @builtin(workgroup_id) wgid : vec3<u32>;
 };
 
-[[stage(compute), workgroup_size(1)]]
+@stage(compute) @workgroup_size(1)
 fn main1(in : Builtins1) {
   let groups_x = in.num_wgs.x;
   let groups_y = in.num_wgs.y;
   let groups_z = in.num_wgs.z;
 }
 
-[[stage(compute), workgroup_size(1)]]
+@stage(compute) @workgroup_size(1)
 fn main2(in : Builtins2) {
   let groups_x = in.num_wgs.x;
   let groups_y = in.num_wgs.y;
   let groups_z = in.num_wgs.z;
 }
 
-[[stage(compute), workgroup_size(1)]]
-fn main3([[builtin(num_workgroups)]] num_wgs : vec3<u32>) {
+@stage(compute) @workgroup_size(1)
+fn main3(@builtin(num_workgroups) num_wgs : vec3<u32>) {
   let groups_x = num_wgs.x;
   let groups_y = num_wgs.y;
   let groups_z = num_wgs.z;
@@ -234,22 +231,21 @@ fn main3([[builtin(num_workgroups)]] num_wgs : vec3<u32>) {
 )";
 
   auto* expect = R"(
-[[block]]
 struct tint_symbol_6 {
   num_workgroups : vec3<u32>;
-};
+}
 
-[[group(0), binding(30)]] var<uniform> tint_symbol_7 : tint_symbol_6;
+@group(0) @binding(30) var<uniform> tint_symbol_7 : tint_symbol_6;
 
 struct Builtins1 {
   num_wgs : vec3<u32>;
-};
+}
 
 struct Builtins2 {
   gid : vec3<u32>;
   num_wgs : vec3<u32>;
   wgid : vec3<u32>;
-};
+}
 
 fn main1_inner(in : Builtins1) {
   let groups_x = in.num_wgs.x;
@@ -257,17 +253,17 @@ fn main1_inner(in : Builtins1) {
   let groups_z = in.num_wgs.z;
 }
 
-[[stage(compute), workgroup_size(1)]]
+@stage(compute) @workgroup_size(1)
 fn main1() {
   main1_inner(Builtins1(tint_symbol_7.num_workgroups));
 }
 
 struct tint_symbol_3 {
-  [[builtin(global_invocation_id)]]
+  @builtin(global_invocation_id)
   gid : vec3<u32>;
-  [[builtin(workgroup_id)]]
+  @builtin(workgroup_id)
   wgid : vec3<u32>;
-};
+}
 
 fn main2_inner(in : Builtins2) {
   let groups_x = in.num_wgs.x;
@@ -275,7 +271,7 @@ fn main2_inner(in : Builtins2) {
   let groups_z = in.num_wgs.z;
 }
 
-[[stage(compute), workgroup_size(1)]]
+@stage(compute) @workgroup_size(1)
 fn main2(tint_symbol_2 : tint_symbol_3) {
   main2_inner(Builtins2(tint_symbol_2.gid, tint_symbol_7.num_workgroups, tint_symbol_2.wgid));
 }
@@ -286,7 +282,7 @@ fn main3_inner(num_wgs : vec3<u32>) {
   let groups_z = num_wgs.z;
 }
 
-[[stage(compute), workgroup_size(1)]]
+@stage(compute) @workgroup_size(1)
 fn main3() {
   main3_inner(tint_symbol_7.num_workgroups);
 }
@@ -304,11 +300,11 @@ fn main3() {
 TEST_F(NumWorkgroupsFromUniformTest, NoUsages) {
   auto* src = R"(
 struct Builtins {
-  [[builtin(global_invocation_id)]] gid : vec3<u32>;
-  [[builtin(workgroup_id)]] wgid : vec3<u32>;
+  @builtin(global_invocation_id) gid : vec3<u32>;
+  @builtin(workgroup_id) wgid : vec3<u32>;
 };
 
-[[stage(compute), workgroup_size(1)]]
+@stage(compute) @workgroup_size(1)
 fn main(in : Builtins) {
 }
 )";
@@ -317,19 +313,19 @@ fn main(in : Builtins) {
 struct Builtins {
   gid : vec3<u32>;
   wgid : vec3<u32>;
-};
+}
 
 struct tint_symbol_1 {
-  [[builtin(global_invocation_id)]]
+  @builtin(global_invocation_id)
   gid : vec3<u32>;
-  [[builtin(workgroup_id)]]
+  @builtin(workgroup_id)
   wgid : vec3<u32>;
-};
+}
 
 fn main_inner(in : Builtins) {
 }
 
-[[stage(compute), workgroup_size(1)]]
+@stage(compute) @workgroup_size(1)
 fn main(tint_symbol : tint_symbol_1) {
   main_inner(Builtins(tint_symbol.gid, tint_symbol.wgid));
 }

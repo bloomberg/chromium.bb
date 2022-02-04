@@ -1422,7 +1422,7 @@ def stack(values, axis=0, name="stack"):
     try:
       # If the input is a constant list, it can be converted to a constant op
       return ops.convert_to_tensor(values, name=name)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, NotImplementedError):
       pass  # Input list contains non-constant tensors
 
   value_shape = ops.convert_to_tensor(values[0], name=name)._shape_tuple()  # pylint: disable=protected-access
@@ -5739,7 +5739,7 @@ def batch_gather_nd(params, indices, batch_dims, name=None):
     v1=["tensor_scatter_nd_update", "tensor_scatter_update"])
 @dispatch.add_dispatch_support
 def tensor_scatter_nd_update(tensor, indices, updates, name=None):
-  """"Scatter `updates` into an existing tensor according to `indices`.
+  """Scatter `updates` into an existing tensor according to `indices`.
 
   This operation creates a new tensor by applying sparse `updates` to the
   input `tensor`. This is similar to an index assignment.

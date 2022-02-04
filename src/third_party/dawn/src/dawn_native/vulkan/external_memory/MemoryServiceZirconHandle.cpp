@@ -20,7 +20,7 @@
 #include "dawn_native/vulkan/VulkanError.h"
 #include "dawn_native/vulkan/external_memory/MemoryService.h"
 
-namespace dawn_native { namespace vulkan { namespace external_memory {
+namespace dawn::native { namespace vulkan::external_memory {
 
     Service::Service(Device* device)
         : mDevice(device), mSupported(CheckSupport(device->GetDeviceInfo())) {
@@ -81,7 +81,9 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
 
     bool Service::SupportsCreateImage(const ExternalImageDescriptor* descriptor,
                                       VkFormat format,
-                                      VkImageUsageFlags usage) {
+                                      VkImageUsageFlags usage,
+                                      bool* supportsDisjoint) {
+        *supportsDisjoint = false;
         return mSupported;
     }
 
@@ -153,4 +155,4 @@ namespace dawn_native { namespace vulkan { namespace external_memory {
         return image;
     }
 
-}}}  // namespace dawn_native::vulkan::external_memory
+}}  // namespace dawn::native::vulkan::external_memory

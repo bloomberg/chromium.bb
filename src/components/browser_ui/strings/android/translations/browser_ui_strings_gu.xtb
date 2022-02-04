@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">કુકીને મંજૂરી આપો</translation>
 <translation id="2228071138934252756"><ph name="APP_NAME" /> તમારો કૅમેરા ઍક્સેસ કરી શકે તે માટે <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં પણ કૅમેરા ચાલુ કરો.</translation>
 <translation id="2241634353105152135">માત્ર એક વખત</translation>
+<translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> કાઢી નાખો</translation>
 <translation id="2289270750774289114">જ્યારે કોઈ સાઇટ નજીકના બ્લૂટૂથ ડિવાઇસને શોધવા માગે ત્યારે પૂછો (સુઝાવ આપેલ)</translation>
 <translation id="2315043854645842844">ઓપરેટિંગ સિસ્ટમ દ્વારા ક્લાઇન્ટ તરફની પ્રમાણપત્ર પસંદગી સપોર્ટ કરતી નથી.</translation>
 <translation id="2359808026110333948">આગળ વધો</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">માહિતી બતાવો</translation>
 <translation id="3123473560110926937">કેટલીક સાઇટ પર બ્લૉક થયેલું છે</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> સંગ્રહિત ડેટા</translation>
+<translation id="3203366800380907218">વેબ પરથી</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> તમને નોટિફિકેશન મોકલી શકે તે માટે <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં પણ નોટિફિકેશન ચાલુ કરો.</translation>
 <translation id="3227137524299004712">માઇક્રોફોન</translation>
 <translation id="3277252321222022663">સાઇટને સેન્સરના ઍક્સેસની મંજૂરી આપો (સુઝાવ આપેલો છે)</translation>
@@ -118,6 +120,7 @@
 <translation id="4008040567710660924">કોઈ ચોક્કસ સાઇટ માટે કુકીને મંજૂરી આપો.</translation>
 <translation id="4046123991198612571">આગલો ટ્રૅક</translation>
 <translation id="4165986682804962316">સાઇટ સેટિંગ</translation>
+<translation id="4194328954146351878">NFC ડિવાઇસ પર સાઇટને માહિતી જોવાની અને બદલવાની મંજૂરી આપતા પહેલાં પૂછો (ભલામણ કરવામાં આવે છે)</translation>
 <translation id="4200726100658658164">સ્થાન સેટિંગ ખોલો</translation>
 <translation id="4226663524361240545">સૂચનાઓ ઉપકરણને વાઇબ્રેટ કરી શકે છે</translation>
 <translation id="4259722352634471385">નેવિગેશન અવરોધિત છે: <ph name="URL" /></translation>
@@ -180,7 +183,6 @@
 <translation id="5677928146339483299">બ્લૉક કરેલ</translation>
 <translation id="5689516760719285838">સ્થાન</translation>
 <translation id="5690795753582697420">Android સેટિંગમાંથી કૅમેરા બંધ કરવામાં આવ્યો છે</translation>
-<translation id="5710871682236653961">જ્યારે તમે NFC ડિવાઇસ પર ટૅપ કરો ત્યારે સાઇટને માહિતી મોકલવા અને પ્રાપ્ત કરવાની મંજૂરી આપતા પહેલાં પૂછો (સુઝાવ આપેલો છે)</translation>
 <translation id="5719847187258001597">આમ કરવાથી તમારી હોમ સ્ક્રીન પર <ph name="ORIGIN" /> અથવા તેની ઍપ દ્વારા સ્ટોર કરવામાં આવેલો બધો ડેટા અને કૂકી સાફ કરવામાં આવશે.</translation>
 <translation id="5771720122942595109"><ph name="PERMISSION_1" /> બ્લૉક કરી</translation>
 <translation id="5804241973901381774">પરવાનગીઓ</translation>
@@ -239,7 +241,6 @@
 <translation id="7016516562562142042">હાલનાં શોધ એન્જિન માટે મંજૂર</translation>
 <translation id="7053983685419859001">અવરોધિત કરો</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 પસંદ કરી}one{# પસંદ કરી}other{# પસંદ કરી}}</translation>
-<translation id="7070090581017165256">આ સાઇટ વિશે</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" />ની પસંદગી કરી. સ્ક્રીનના ટોચની નજીક વિકલ્પો ઉપલબ્ધ છે</translation>
 <translation id="7141896414559753902">સાઇટને પૉપ-અપ અને રીડાયરેક્ટ બતાવવા દેવાથી બ્લૉક કરો (સુઝાવ આપીએ છીએ)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -254,7 +255,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">કોઈ સાઇટ તમારા માઇક્રોફોનનો ઉપયોગ કરી રહી છે</translation>
 <translation id="7561196759112975576">હંમેશાં</translation>
-<translation id="7572498721684305250">જ્યારે તમે NFC ડિવાઇસ પર ટૅપ કરો ત્યારે સાઇટને માહિતી મોકલવા અને પ્રાપ્ત કરવાથી બ્લૉક કરો</translation>
 <translation id="757524316907819857">સાઇટને સંરક્ષિત કન્ટેન્ટ ચલાવવાથી બ્લૉક કરો</translation>
 <translation id="7649070708921625228">સહાય</translation>
 <translation id="7658239707568436148">રદ કરો</translation>
@@ -321,6 +321,7 @@
 <translation id="8903921497873541725">ઝૂમ વધારો</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">આ ડિવાઇસ માટે NFC સેવા બંધ કરેલી છે. તેને <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં ચાલુ કરો.</translation>
+<translation id="8928445016601307354">NFC ડિવાઇસ પર સાઇટને માહિતી જોવાથી અને બદલવાથી બ્લૉક કરો</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">કોઈ ચોક્કસ સાઇટ માટે કુકીને બ્લૉક કરો.</translation>
 <translation id="8959122750345127698">નેવિગેશન બિનપહોંચ યોગ્ય છે: <ph name="URL" /></translation>

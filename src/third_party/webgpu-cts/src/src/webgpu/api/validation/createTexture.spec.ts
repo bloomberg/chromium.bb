@@ -121,29 +121,35 @@ g.test('mipLevelCount,format')
       .combine('dimension', [undefined, ...kTextureDimensions])
       .beginSubcases()
       .combine('format', kTextureFormats)
-      .combine('mipLevelCount', [1, 3, 6, 7])
+      .combine('mipLevelCount', [1, 2, 3, 6, 7])
       // Filter out incompatible dimension type and format combinations.
       .filter(({ dimension, format }) => textureDimensionAndFormatCompatible(dimension, format))
+      .combine('largestDimension', [0, 1, 2])
+      .unless(({ dimension, largestDimension }) => dimension === '1d' && largestDimension > 0)
   )
   .fn(async t => {
-    const { dimension, format, mipLevelCount } = t.params;
+    const { dimension, format, mipLevelCount, largestDimension } = t.params;
     const info = kTextureFormatInfo[format];
     await t.selectDeviceOrSkipTestCase(info.feature);
 
     // Compute dimensions such that the dimensions are in range [17, 32] and aligned with the
     // format block size so that there will be exactly 6 mip levels.
-    const maxMipLevelCount = 5;
-    const textureWidth =
-      Math.floor(((1 << maxMipLevelCount) - 1) / info.blockWidth) * info.blockWidth;
-    const textureHeight =
-      Math.floor(((1 << maxMipLevelCount) - 1) / info.blockHeight) * info.blockHeight;
-    assert(17 <= textureWidth && textureWidth <= 32);
-    assert(17 <= textureHeight && textureHeight <= 32);
+    const kTargetMipLevelCount = 5;
+    const kTargetLargeSize = (1 << kTargetMipLevelCount) - 1;
+    const largeSize = [
+      Math.floor(kTargetLargeSize / info.blockWidth) * info.blockWidth,
+      Math.floor(kTargetLargeSize / info.blockHeight) * info.blockHeight,
+      kTargetLargeSize,
+    ];
+    assert(17 <= largeSize[0] && largeSize[0] <= 32);
+    assert(17 <= largeSize[1] && largeSize[1] <= 32);
 
     // Note that compressed formats are not valid for 1D. They have already been filtered out for 1D
     // in this test. So there is no dilemma about size.width equals 1 vs
     // size.width % info.blockHeight equals 0 for 1D compressed formats.
-    const size = dimension === '1d' ? [textureWidth, 1, 1] : [textureWidth, textureHeight, 1];
+    const size = [info.blockWidth, info.blockHeight, 1];
+    size[largestDimension] = largeSize[largestDimension];
+
     const descriptor = {
       size,
       mipLevelCount,
@@ -152,7 +158,7 @@ g.test('mipLevelCount,format')
       usage: GPUTextureUsage.TEXTURE_BINDING,
     };
 
-    const success = mipLevelCount <= maxMipLevelCount;
+    const success = mipLevelCount <= maxMipLevelCount(descriptor);
 
     t.expectValidationError(() => {
       t.device.createTexture(descriptor);
@@ -284,11 +290,12 @@ g.test('sampleCount,valid_sampleCount_with_other_parameter_varies')
       .combine('usage', kTextureUsages)
       // Filter out incompatible dimension type and format combinations.
       .filter(({ dimension, format }) => textureDimensionAndFormatCompatible(dimension, format))
-      .unless(({ usage, format }) => {
+      .unless(({ usage, format, mipLevelCount, dimension }) => {
         const info = kTextureFormatInfo[format];
         return (
           ((usage & GPUConst.TextureUsage.RENDER_ATTACHMENT) !== 0 && !info.renderable) ||
-          ((usage & GPUConst.TextureUsage.STORAGE_BINDING) !== 0 && !info.storage)
+          ((usage & GPUConst.TextureUsage.STORAGE_BINDING) !== 0 && !info.storage) ||
+          (mipLevelCount !== 1 && dimension === '1d')
         );
       })
   )
@@ -398,8 +405,8 @@ g.test('texture_size,1d_texture')
   .desc(`Test texture size requirement for 1D texture`)
   .paramsSubcasesOnly(u =>
     u //
-      // Compressed textures are invalid for 1D.
-      .combine('format', kUncompressedTextureFormats)
+      // Compressed and depth-stencil textures are invalid for 1D.
+      .combine('format', kRegularTextureFormats)
       .combine('width', [
         DefaultLimits.maxTextureDimension1D - 1,
         DefaultLimits.maxTextureDimension1D,

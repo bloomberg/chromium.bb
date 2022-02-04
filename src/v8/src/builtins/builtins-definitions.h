@@ -423,8 +423,8 @@ namespace internal {
                                                                                \
   /* AsyncFunction */                                                          \
   TFS(AsyncFunctionEnter, kClosure, kReceiver)                                 \
-  TFS(AsyncFunctionReject, kAsyncFunctionObject, kReason, kCanSuspend)         \
-  TFS(AsyncFunctionResolve, kAsyncFunctionObject, kValue, kCanSuspend)         \
+  TFS(AsyncFunctionReject, kAsyncFunctionObject, kReason)                      \
+  TFS(AsyncFunctionResolve, kAsyncFunctionObject, kValue)                      \
   TFC(AsyncFunctionLazyDeoptContinuation, AsyncFunctionStackParameter)         \
   TFS(AsyncFunctionAwaitCaught, kAsyncFunctionObject, kValue)                  \
   TFS(AsyncFunctionAwaitUncaught, kAsyncFunctionObject, kValue)                \
@@ -948,6 +948,7 @@ namespace internal {
   /* Wasm */                                                                   \
   IF_WASM(ASM, GenericJSToWasmWrapper, Dummy)                                  \
   IF_WASM(ASM, WasmReturnPromiseOnSuspend, Dummy)                              \
+  IF_WASM(ASM, WasmSuspend, WasmSuspend)                                       \
   IF_WASM(ASM, WasmCompileLazy, Dummy)                                         \
   IF_WASM(ASM, WasmDebugBreak, Dummy)                                          \
   IF_WASM(ASM, WasmOnStackReplace, Dummy)                                      \
@@ -1637,7 +1638,10 @@ namespace internal {
   /* Temporal #sec-temporal.calendar.prototype.tostring */                     \
   CPP(TemporalCalendarPrototypeToString)                                       \
   /* Temporal #sec-temporal.calendar.prototype.tojson */                       \
-  CPP(TemporalCalendarPrototypeToJSON)
+  CPP(TemporalCalendarPrototypeToJSON)                                         \
+                                                                               \
+  /* "Private" (created but not exposed) Bulitins needed by Temporal */        \
+  TFJ(TemporalInstantFixedArrayFromIterable, kJSArgcReceiverSlots, kIterable)
 
 #define BUILTIN_LIST_BASE(CPP, TFJ, TFC, TFS, TFH, ASM) \
   BUILTIN_LIST_BASE_TIER0(CPP, TFJ, TFC, TFS, TFH, ASM) \

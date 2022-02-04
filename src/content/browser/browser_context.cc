@@ -23,7 +23,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -171,7 +170,7 @@ void BrowserContext::AsyncObliterateStoragePartition(
 }
 
 void BrowserContext::GarbageCollectStoragePartitions(
-    std::unique_ptr<std::unordered_set<base::FilePath>> active_paths,
+    std::unordered_set<base::FilePath> active_paths,
     base::OnceClosure done) {
   impl()->GetOrCreateStoragePartitionMap()->GarbageCollect(
       std::move(active_paths), std::move(done));

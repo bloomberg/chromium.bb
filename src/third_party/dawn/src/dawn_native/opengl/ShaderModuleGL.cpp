@@ -22,6 +22,8 @@
 #include "dawn_native/opengl/DeviceGL.h"
 #include "dawn_native/opengl/PipelineLayoutGL.h"
 #include "dawn_native/opengl/SpirvUtils.h"
+#include "dawn_platform/DawnPlatform.h"
+#include "dawn_platform/tracing/TraceEvent.h"
 
 #include <spirv_glsl.hpp>
 
@@ -34,7 +36,7 @@
 
 #include <sstream>
 
-namespace dawn_native { namespace opengl {
+namespace dawn::native::opengl {
 
     std::string GetBindingName(BindGroupIndex group, BindingNumber bindingNumber) {
         std::ostringstream o;
@@ -96,11 +98,11 @@ namespace dawn_native { namespace opengl {
                 DAWN_INVALID_IF(bindGroupIndex >= kMaxBindGroupsTyped,
                                 "Bind group index over limits in the SPIRV");
 
-                const auto& it =
+                const auto& [entry, inserted] =
                     (*bindings)[bindGroupIndex].emplace(bindingNumber, ShaderBindingInfo{});
-                DAWN_INVALID_IF(!it.second, "Shader has duplicate bindings");
+                DAWN_INVALID_IF(!inserted, "Shader has duplicate bindings");
 
-                ShaderBindingInfo* info = &it.first->second;
+                ShaderBindingInfo* info = &entry->second;
                 info->id = resource.id;
                 info->base_type_id = resource.base_type_id;
                 info->bindingType = bindingType;
@@ -265,23 +267,32 @@ namespace dawn_native { namespace opengl {
                                                              CombinedSamplerInfo* combinedSamplers,
                                                              const PipelineLayout* layout,
                                                              bool* needsDummySampler) const {
+        TRACE_EVENT0(GetDevice()->GetPlatform(), General, "TranslateToGLSL");
         tint::transform::SingleEntryPoint singleEntryPointTransform;
 
         tint::transform::DataMap transformInputs;
         transformInputs.Add<tint::transform::SingleEntryPoint::Config>(entryPointName);
 
         tint::Program program;
-        DAWN_TRY_ASSIGN(program, RunTransforms(&singleEntryPointTransform, GetTintProgram(),
-                                               transformInputs, nullptr, nullptr));
+        {
+            TRACE_EVENT0(GetDevice()->GetPlatform(), General, "RunTransforms");
+            DAWN_TRY_ASSIGN(program, RunTransforms(&singleEntryPointTransform, GetTintProgram(),
+                                                   transformInputs, nullptr, nullptr));
+        }
 
         tint::writer::spirv::Options tintOptions;
         tintOptions.disable_workgroup_init =
             GetDevice()->IsToggleEnabled(Toggle::DisableWorkgroupInit);
-        auto result = tint::writer::spirv::Generate(&program, tintOptions);
-        DAWN_INVALID_IF(!result.success, "An error occured while generating SPIR-V: %s.",
-                        result.error);
+        std::vector<uint32_t> spirv;
+        {
+            TRACE_EVENT0(GetDevice()->GetPlatform(), General, "tint::writer::spirv::Generate");
+            auto result = tint::writer::spirv::Generate(&program, tintOptions);
+            DAWN_INVALID_IF(!result.success, "An error occured while generating SPIR-V: %s.",
+                            result.error);
 
-        std::vector<uint32_t> spirv = std::move(result.spirv);
+            spirv = std::move(result.spirv);
+        }
+
         DAWN_TRY(
             ValidateSpirv(GetDevice(), spirv, GetDevice()->IsToggleEnabled(Toggle::DumpShaders)));
 
@@ -397,4 +408,4 @@ namespace dawn_native { namespace opengl {
         return glsl;
     }
 
-}}  // namespace dawn_native::opengl
+}  // namespace dawn::native::opengl

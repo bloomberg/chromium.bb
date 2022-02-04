@@ -901,11 +901,11 @@ class ProgramBuilder {
     }
 
     /// @param dims the dimensionality of the texture
-    /// @param format the image format of the texture
+    /// @param format the texel format of the texture
     /// @param access the access control of the texture
     /// @returns the storage texture
     const ast::StorageTexture* storage_texture(ast::TextureDimension dims,
-                                               ast::ImageFormat format,
+                                               ast::TexelFormat format,
                                                ast::Access access) const {
       auto* subtype = ast::StorageTexture::SubtypeFor(format, *builder);
       return builder->create<ast::StorageTexture>(dims, format, subtype,
@@ -914,12 +914,12 @@ class ProgramBuilder {
 
     /// @param source the Source of the node
     /// @param dims the dimensionality of the texture
-    /// @param format the image format of the texture
+    /// @param format the texel format of the texture
     /// @param access the access control of the texture
     /// @returns the storage texture
     const ast::StorageTexture* storage_texture(const Source& source,
                                                ast::TextureDimension dims,
-                                               ast::ImageFormat format,
+                                               ast::TexelFormat format,
                                                ast::Access access) const {
       auto* subtype = ast::StorageTexture::SubtypeFor(format, *builder);
       return builder->create<ast::StorageTexture>(source, dims, format, subtype,
@@ -1661,6 +1661,16 @@ class ProgramBuilder {
   template <typename LHS, typename RHS>
   const ast::Expression* Div(LHS&& lhs, RHS&& rhs) {
     return create<ast::BinaryExpression>(ast::BinaryOp::kDivide,
+                                         Expr(std::forward<LHS>(lhs)),
+                                         Expr(std::forward<RHS>(rhs)));
+  }
+
+  /// @param lhs the left hand argument to the modulo operation
+  /// @param rhs the right hand argument to the modulo operation
+  /// @returns a `ast::BinaryExpression` applying modulo of `lhs` by `rhs`
+  template <typename LHS, typename RHS>
+  const ast::Expression* Mod(LHS&& lhs, RHS&& rhs) {
+    return create<ast::BinaryExpression>(ast::BinaryOp::kModulo,
                                          Expr(std::forward<LHS>(lhs)),
                                          Expr(std::forward<RHS>(rhs)));
   }
@@ -2465,6 +2475,15 @@ class ProgramBuilder {
       const std::unordered_set<const TypeInfo*>& transforms) {
     for (auto* transform : transforms) {
       transforms_applied_.emplace(transform);
+    }
+  }
+
+  /// Unmarks that the given transform `T` has been applied to this program.
+  template <typename T>
+  void UnsetTransformApplied() {
+    auto it = transforms_applied_.find(&TypeInfo::Of<T>());
+    if (it != transforms_applied_.end()) {
+      transforms_applied_.erase(it);
     }
   }
 

@@ -37,6 +37,7 @@
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
@@ -83,6 +84,11 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+}
+
+namespace gfx {
+class QuadF;
+class RectF;
 }
 
 namespace ukm {
@@ -144,8 +150,6 @@ class EventListener;
 template <typename EventType>
 class EventWithHitTestResults;
 class ExceptionState;
-class FloatQuad;
-class FloatRect;
 class FontMatchingMetrics;
 class FormController;
 class FrameCallback;
@@ -214,6 +218,7 @@ class TransformSource;
 class TreeWalker;
 class TrustedHTML;
 class V8NodeFilter;
+class V8ObservableArrayCSSStyleSheet;
 class V8UnionElementCreationOptionsOrString;
 class V8UnionStringOrTrustedHTML;
 class ViewportData;
@@ -268,8 +273,26 @@ using DocumentClassFlags = unsigned char;
 using ExplicitlySetAttrElementsMap =
     HeapHashMap<QualifiedName, Member<HeapLinkedHashSet<WeakMember<Element>>>>;
 
+// Represents the start and end time of the unload event.
+struct UnloadEventTiming {
+  bool can_request;
+  base::TimeTicks unload_event_start;
+  base::TimeTicks unload_event_end;
+};
+
+// Used to gather the unload event timing of an unloading document, to be used
+// in a new document (if it's same-origin).
+struct UnloadEventTimingInfo {
+  // The origin of the new document that replaces the older document.
+  const scoped_refptr<SecurityOrigin> new_document_origin;
+  // The unload timing of the old document. This is only set from
+  // Document::DispatchUnloadEvents() of the old document. This might not be set
+  // if no old document gets unloaded.
+  absl::optional<UnloadEventTiming> unload_timing;
+};
+
 // A document (https://dom.spec.whatwg.org/#concept-document) is the root node
-// of a tree of DOM nodes, generally resulting from the parsing of an markup
+// of a tree of DOM nodes, generally resulting from the parsing of a markup
 // (typically, HTML) resource.
 //
 // A document may or may not have a browsing context
@@ -617,12 +640,11 @@ class CORE_EXPORT Document : public ContainerNode,
     kRunPostLayoutTasksSynchronously,
   };
   void UpdateStyleAndLayoutForNode(const Node*, DocumentUpdateReason);
+  void UpdateStyleAndLayoutForRange(const Range*, DocumentUpdateReason);
   void IncLayoutCallsCounter() { ++layout_calls_counter_; }
   void IncLayoutCallsCounterNG() { ++layout_calls_counter_ng_; }
   void IncLayoutBlockCounter() { ++layout_blocks_counter_; }
   void IncLayoutBlockCounterNG() { ++layout_blocks_counter_ng_; }
-  void IncLayoutFlexboxCounterNG() { ++layout_flexbox_counter_ng_; }
-  void IncLayoutGridCounterNG() { ++layout_grid_counter_ng_; }
 
   scoped_refptr<const ComputedStyle> StyleForPage(uint32_t page_index);
 
@@ -723,16 +745,9 @@ class CORE_EXPORT Document : public ContainerNode,
                                  bool is_reload,
                                  bool& did_allow_navigation);
 
-  struct UnloadEventTiming {
-    bool can_request;
-    base::TimeTicks unload_event_start;
-    base::TimeTicks unload_event_end;
-  };
   // Dispatches "pagehide", "visibilitychange" and "unload" events, if not
-  // dispatched already. Fills unload timing if present and |committing_origin|
-  // has access to the unload timing of the document.
-  void DispatchUnloadEvents(SecurityOrigin* committing_origin,
-                            absl::optional<Document::UnloadEventTiming>*);
+  // dispatched already. Fills `unload_timing_info` if present.
+  void DispatchUnloadEvents(UnloadEventTimingInfo* unload_timing_info);
 
   void DispatchFreezeEvent();
 
@@ -823,6 +838,11 @@ class CORE_EXPORT Document : public ContainerNode,
     return printing_ == kPrinting || printing_ == kFinishingPrinting;
   }
   void SetPrinting(PrintingState);
+  // Call this if printing is about to begin, so that any unloaded resources
+  // (such as lazy-loaded images) necessary for printing are requested and
+  // marked as blocking load. Returns whether any resources have started
+  // loading as a result.
+  bool WillPrintSoon();
 
   enum PaintPreviewState {
     // A paint preview is not in the process of being captured.
@@ -1065,6 +1085,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void OverrideLastModified(const AtomicString& modified) {
     override_last_modified_ = modified;
   }
+  absl::optional<base::Time> lastModifiedTime() const;
   String lastModified() const;
 
   // The cookieURL is used to query the cookie database for this document's
@@ -1381,10 +1402,10 @@ class CORE_EXPORT Document : public ContainerNode,
                               const ElementRegistrationOptions*,
                               ExceptionState&);
 
-  void AdjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>&,
-                                                const LayoutObject&) const;
-  void AdjustFloatRectForScrollAndAbsoluteZoom(FloatRect&,
-                                               const LayoutObject&) const;
+  void AdjustQuadsForScrollAndAbsoluteZoom(Vector<gfx::QuadF>&,
+                                           const LayoutObject&) const;
+  void AdjustRectForScrollAndAbsoluteZoom(gfx::RectF&,
+                                          const LayoutObject&) const;
 
   void SetContextFeatures(ContextFeatures&);
   ContextFeatures& GetContextFeatures() const { return *context_features_; }
@@ -1413,7 +1434,6 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   void AttachCompositorTimeline(CompositorAnimationTimeline*) const;
-  void DetachCompositorTimeline(CompositorAnimationTimeline*) const;
 
   void AddToTopLayer(Element*, const Element* before = nullptr);
   void RemoveFromTopLayer(Element*);
@@ -1630,6 +1650,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // Re-collect the META values that apply and pass to LayerTreeHost.
   void BatterySavingsMetaChanged();
 
+  // A META element with name=supports-reduced-motion was added, removed, or
+  // modified. Re-collect the META values.
+  void SupportsReducedMotionMetaChanged();
+
   // Use counter related functions.
   void CountUse(mojom::WebFeature feature) final;
   void CountDeprecation(mojom::WebFeature feature) final;
@@ -1739,6 +1763,16 @@ class CORE_EXPORT Document : public ContainerNode,
   void ObserveForIntrinsicSize(Element* element);
   void UnobserveForIntrinsicSize(Element* element);
 
+  // Returns true if motion should be forcibly reduced in animations on this
+  // document. This returns true if all of the following conditions are true:
+  // 1. The user prefers reduced motion.
+  // 2. The document does not contain a meta tag indicating it supports and uses
+  //    prefers-reduced-motion media queries.
+  // 3. The ForceReduceMotion feature is enabled.
+  // For more details and explanation, see
+  // https://github.com/flackr/reduce-motion/blob/main/explainer.md
+  bool ShouldForceReduceMotion() const;
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 
@@ -1749,6 +1783,16 @@ class CORE_EXPORT Document : public ContainerNode,
     return parser_sync_policy_;
   }
 
+  void OnAdoptedStyleSheetSet(ScriptState*,
+                              V8ObservableArrayCSSStyleSheet&,
+                              uint32_t,
+                              Member<CSSStyleSheet>&,
+                              ExceptionState&) override;
+  void OnAdoptedStyleSheetDelete(ScriptState*,
+                                 V8ObservableArrayCSSStyleSheet&,
+                                 uint32_t,
+                                 ExceptionState&) override;
+
  private:
   friend class DocumentTest;
   friend class IgnoreDestructiveWriteCountIncrementer;
@@ -1758,6 +1802,8 @@ class CORE_EXPORT Document : public ContainerNode,
   friend class HasMatchedCacheScope;
   friend class CanvasRenderingAPIUkmMetricsTest;
   friend class OffscreenCanvasRenderingAPIUkmMetricsTest;
+  FRIEND_TEST_ALL_PREFIXES(LazyLoadAutomaticImagesTest,
+                           LoadAllImagesIfPrinting);
   FRIEND_TEST_ALL_PREFIXES(FrameFetchContextSubresourceFilterTest,
                            DuringOnFreeze);
   FRIEND_TEST_ALL_PREFIXES(DocumentTest, FindInPageUkm);
@@ -2251,12 +2297,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // The number of LayoutNGMixin<LayoutBlock> instances
   uint32_t layout_blocks_counter_ng_ = 0;
 
-  // The number of LayoutNGFlexibleBox instances
-  uint32_t layout_flexbox_counter_ng_ = 0;
-
-  // The number of LayoutNGGrid instances
-  uint32_t layout_grid_counter_ng_ = 0;
-
   bool deferred_compositor_commit_is_allowed_ = false;
 
   // True when the document was created (in DomImplementation) for specific MIME
@@ -2321,6 +2361,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // call or potential user prompt.
   bool expressly_denied_storage_access_ = false;
 
+  // True if the developer supplied a media query indicating that
+  // the site has support for reduced motion.
+  bool supports_reduced_motion_ = false;
+
   Member<FontPreloadManager> font_preload_manager_;
 
   int async_script_count_ = 0;
@@ -2337,6 +2381,9 @@ class CORE_EXPORT Document : public ContainerNode,
   HeapVector<Member<HTMLMetaElement>> meta_theme_color_elements_;
 
   Member<ResizeObserver> intrinsic_size_observer_;
+
+  // Whether any resource loads that block printing are happening.
+  bool loading_for_print_ = false;
 
   // If you want to add new data members to blink::Document, please reconsider
   // if the members really should be in blink::Document.  document.h is a very

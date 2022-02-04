@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -67,6 +68,7 @@ import org.chromium.chrome.browser.xsurface.SurfaceScope;
 import org.chromium.chrome.browser.xsurface.SurfaceScopeDependencyProvider;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.feed.proto.wire.ReliabilityLoggingEnums.DiscoverLaunchResult;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.signin.identitymanager.IdentityManager;
@@ -75,12 +77,10 @@ import org.chromium.ui.base.WindowAndroid;
 /**
  * Tests for {@link FeedSurfaceCoordinator}.
  *
- * EnhancedProtectionPromoCard does not need to be disabled. Its value just need to be set.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@Features.DisableFeatures({ChromeFeatureList.ENHANCED_PROTECTION_PROMO_CARD,
-        ChromeFeatureList.WEB_FEED, ChromeFeatureList.INTEREST_FEED_V2_AUTOPLAY,
+@Features.DisableFeatures({ChromeFeatureList.WEB_FEED, ChromeFeatureList.INTEREST_FEED_V2_AUTOPLAY,
         ChromeFeatureList.FEED_INTERACTIVE_REFRESH, ChromeFeatureList.FEED_BACK_TO_TOP})
 @Features.EnableFeatures({ChromeFeatureList.FEED_RELIABILITY_LOGGING})
 public class FeedSurfaceCoordinatorTest {
@@ -335,6 +335,61 @@ public class FeedSurfaceCoordinatorTest {
     public void testLogUiStarting() {
         verify(mLaunchReliabilityLogger, times(1))
                 .logUiStarting(SURFACE_TYPE, SURFACE_CREATION_TIME_NS);
+    }
+
+    @Test
+    public void testActivityPaused() {
+        when(mLaunchReliabilityLogger.isLaunchInProgress()).thenReturn(true);
+        mCoordinator.onActivityPaused();
+        verify(mLaunchReliabilityLogger, times(1))
+                .logLaunchFinished(anyLong(), eq(DiscoverLaunchResult.FRAGMENT_PAUSED.getNumber()));
+    }
+
+    @Test
+    public void testActivityResumed() {
+        mCoordinator.onActivityResumed();
+        verify(mLaunchReliabilityLogger, times(1)).cancelPendingFinished();
+    }
+
+    @Test
+    public void testOmniboxFocused() {
+        when(mLaunchReliabilityLogger.isLaunchInProgress()).thenReturn(true);
+        mCoordinator.onOmniboxFocused();
+        verify(mLaunchReliabilityLogger, times(1))
+                .pendingFinished(anyLong(), eq(DiscoverLaunchResult.SEARCH_BOX_TAPPED.getNumber()));
+    }
+
+    @Test
+    public void testVoiceSearch() {
+        when(mLaunchReliabilityLogger.isLaunchInProgress()).thenReturn(true);
+        mCoordinator.onVoiceSearch();
+        verify(mLaunchReliabilityLogger, times(1))
+                .pendingFinished(
+                        anyLong(), eq(DiscoverLaunchResult.VOICE_SEARCH_TAPPED.getNumber()));
+    }
+
+    @Test
+    public void testUrlFocusChange() {
+        when(mLaunchReliabilityLogger.isLaunchInProgress()).thenReturn(true);
+        mCoordinator.onUrlFocusChange(/*hasFocus=*/true);
+        verify(mLaunchReliabilityLogger, never()).cancelPendingFinished();
+
+        mCoordinator.onUrlFocusChange(/*hasFocus=*/false);
+        verify(mLaunchReliabilityLogger, times(1)).cancelPendingFinished();
+    }
+
+    @Test
+    public void testSetupHeaders_feedOn() {
+        mCoordinator.setupHeaders(true);
+        // Item count contains: feed header only
+        assertEquals(1, mContentManagerCaptor.getValue().getItemCount());
+    }
+
+    @Test
+    public void testSetupHeaders_feedOff() {
+        mCoordinator.setupHeaders(false);
+        // Item count contains: nothing, since ntp header is null
+        assertEquals(0, mContentManagerCaptor.getValue().getItemCount());
     }
 
     private boolean hasStreamBound() {

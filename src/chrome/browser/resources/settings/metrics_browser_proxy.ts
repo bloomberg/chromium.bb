@@ -85,6 +85,29 @@ export enum SafeBrowsingInteractions {
   COUNT = 8,
 }
 
+/**
+ * All Privacy guide interactions with metrics.
+ *
+ * These values are persisted to logs. Entries should not be renumbered and
+ * numeric values should never be reused.
+ *
+ * Must be kept in sync with SettingsPrivacyGuideInteractions in emus.xml.
+ */
+export enum PrivacyGuideInteractions {
+  WELCOME_NEXT_BUTTON = 0,
+  MSBB_NEXT_BUTTON = 1,
+  HISTORY_SYNC_NEXT_BUTTON = 2,
+  SAFE_BROWSING_NEXT_BUTTON = 3,
+  COOKIES_NEXT_BUTTON = 4,
+  COMPLETION_NEXT_BUTTON = 5,
+  SETTINGS_LINK_ROW_ENTRY = 6,
+  PROMO_ENTRY = 7,
+  SWAA_COMPLETION_LINK = 8,
+  PRIVACY_SANDBOX_COMPLETION_LINK = 9,
+  // Leave this at the end.
+  COUNT = 10,
+}
+
 export interface MetricsBrowserProxy {
   /**
    * Helper function that calls recordAction with one action from
@@ -110,6 +133,20 @@ export interface MetricsBrowserProxy {
    * SafeBrowsing.Settings.UserAction histogram
    */
   recordSafeBrowsingInteractionHistogram(interaction: SafeBrowsingInteractions):
+      void;
+
+  /**
+   * Helper function that calls recordHistogram for the
+   * Settings.PrivacyGuide.NextNavigation histogram
+   */
+  recordPrivacyGuideNextNavigationHistogram(interaction:
+                                                PrivacyGuideInteractions): void;
+
+  /**
+   * Helper function that calls recordHistogram for the
+   * Settings.PrivacyGuide.EntryExit histogram
+   */
+  recordPrivacyGuideEntryExitHistogram(interaction: PrivacyGuideInteractions):
       void;
 }
 
@@ -139,6 +176,21 @@ export class MetricsBrowserProxyImpl implements MetricsBrowserProxy {
     chrome.send('metricsHandler:recordInHistogram', [
       'SafeBrowsing.Settings.UserAction.Default', interaction,
       SafeBrowsingInteractions.COUNT
+    ]);
+  }
+
+  recordPrivacyGuideNextNavigationHistogram(interaction:
+                                                PrivacyGuideInteractions) {
+    chrome.send('metricsHandler:recordInHistogram', [
+      'Settings.PrivacyGuide.NextNavigation', interaction,
+      PrivacyGuideInteractions.COUNT
+    ]);
+  }
+
+  recordPrivacyGuideEntryExitHistogram(interaction: PrivacyGuideInteractions) {
+    chrome.send('metricsHandler:recordInHistogram', [
+      'Settings.PrivacyGuide.EntryExit', interaction,
+      PrivacyGuideInteractions.COUNT
     ]);
   }
 

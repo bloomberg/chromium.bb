@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">السماح بملفات تعريف الارتباط</translation>
 <translation id="2228071138934252756">‏للسماح لتطبيق <ph name="APP_NAME" /> بالوصول إلى الكاميرا، يُرجى أيضًا تفعيل الكاميرا في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="2241634353105152135">مرة واحدة فقط</translation>
+<translation id="2253414712144136228">إزالة <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">طلب الإذن عند محاولة موقع إلكتروني العثور على أجهزة البلوتوث المجاورة (إجراء موصَى به)</translation>
 <translation id="2315043854645842844">لا يدعم نظام التشغيل تحديد الشهادة من جانب العميل.</translation>
 <translation id="2359808026110333948">متابعة</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">عرض المعلومات</translation>
 <translation id="3123473560110926937">حظر الإعلانات في بعض المواقع</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> من البيانات المخزّنة</translation>
+<translation id="3203366800380907218">من الويب</translation>
 <translation id="321187648315454507">‏للسماح لتطبيق <ph name="APP_NAME" /> بإرسال الإشعارات إليك، يُرجى أيضًا تفعيل الإشعارات في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">الميكروفون</translation>
 <translation id="3277252321222022663">يمكنك السماح للمواقع بالوصول إلى أجهزة الاستشعار (مُقترَح).</translation>
@@ -118,6 +120,7 @@
 <translation id="4008040567710660924">السماح لموقع إلكتروني معيّن بتشغيل ملفات تعريف الارتباط</translation>
 <translation id="4046123991198612571">المقطع الصوتي التالي</translation>
 <translation id="4165986682804962316">إعدادات المواقع الإلكترونية</translation>
+<translation id="4194328954146351878">‏يتم طلب الإذن قبل السماح للمواقع الإلكترونية بالاطّلاع على المعلومات وتعديلها على الأجهزة المزوَّدة بتقنية NFC (إعداد مُقترَح).</translation>
 <translation id="4200726100658658164">فتح إعدادات الموقع الجغرافي</translation>
 <translation id="4226663524361240545">يمكن أن تؤدي الإشعارات إلى اهتزاز الجهاز</translation>
 <translation id="4259722352634471385">التنقل محظور: <ph name="URL" /></translation>
@@ -180,7 +183,6 @@
 <translation id="5677928146339483299">الحظر</translation>
 <translation id="5689516760719285838">الموقع الجغرافي</translation>
 <translation id="5690795753582697420">‏تم إيقاف الكاميرا في إعدادات Android.</translation>
-<translation id="5710871682236653961">‏السؤال قبل السماح للمواقع الإلكترونية بإرسال المعلومات وتلقّيها عند النقر على أجهزة NFC (مستحسن)</translation>
 <translation id="5719847187258001597">سيؤدي هذا الإجراء إلى محو جميع البيانات وملفات تعريف الارتباط المُخزّنة من خلال <ph name="ORIGIN" /> أو من خلال التطبيق على الشاشة الرئيسية.</translation>
 <translation id="5771720122942595109">تم حظر <ph name="PERMISSION_1" />.</translation>
 <translation id="5804241973901381774">الأذونات</translation>
@@ -239,7 +241,6 @@
 <translation id="7016516562562142042">تم منح الإذن لمحرّك البحث الحالي</translation>
 <translation id="7053983685419859001">حظر</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{تم اختيار عنصر واحد}zero{تم اختيار # عنصر}two{تم اختيار عنصرين (#)}few{تم اختيار # عناصر}many{تم اختيار # عنصرًا}other{تم اختيار # عنصر}}</translation>
-<translation id="7070090581017165256">لمحة عن هذا الموقع الإلكتروني</translation>
 <translation id="7087918508125750058">تم اختيار <ph name="ITEM_COUNT" /> عنصر، ويمكنك الاطّلاع على الخيارات في الجزء العلوي من الشاشة.</translation>
 <translation id="7141896414559753902">منع المواقع الإلكترونية من عرض النوافذ المنبثقة وعمليات إعادة التوجيه (مُوصى به)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> كيلوبايت</translation>
@@ -254,7 +255,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">هناك موقع إلكتروني يستخدم الميكروفون.</translation>
 <translation id="7561196759112975576">دومًا</translation>
-<translation id="7572498721684305250">‏حظر المواقع الإلكترونية من إرسال المعلومات وتلقّيها عند النقر على أجهزة NFC.</translation>
 <translation id="757524316907819857">منع المواقع الإلكترونية من تشغيل المحتوى المحمي</translation>
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="7658239707568436148">إلغاء</translation>
@@ -321,6 +321,7 @@
 <translation id="8903921497873541725">تكبير</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">‏تقنية NFC غير مفعّلة على هذا الجهاز. فعّلها في<ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
+<translation id="8928445016601307354">‏يتيح لك هذا الإعداد منع المواقع الإلكترونية من الاطّلاع على المعلومات وتعديلها على الأجهزة المزوَّدة بتقنية NFC.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">حظر ملفات تعريف الارتباط لموقع إلكتروني مُحدَّد.</translation>
 <translation id="8959122750345127698">التنقل غير قابل للوصول: <ph name="URL" /></translation>

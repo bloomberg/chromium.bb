@@ -168,6 +168,7 @@
   V(_, computed_string, "<computed>")                                 \
   V(_, configurable_string, "configurable")                           \
   V(_, conjunction_string, "conjunction")                             \
+  V(_, constrain_string, "constrain")                                 \
   V(_, construct_string, "construct")                                 \
   V(_, constructor_string, "constructor")                             \
   V(_, current_string, "current")                                     \
@@ -196,7 +197,7 @@
   V(_, dot_home_object_string, ".home_object")                        \
   V(_, dot_result_string, ".result")                                  \
   V(_, dot_repl_result_string, ".repl_result")                        \
-  V(_, dot_static_home_object_string, ".static_home_object")          \
+  V(_, dot_static_home_object_string, "._static_home_object")         \
   V(_, dot_string, ".")                                               \
   V(_, dot_switch_tag_string, ".switch_tag")                          \
   V(_, dotAll_string, "dotAll")                                       \
@@ -229,6 +230,7 @@
   V(_, get_string, "get")                                             \
   V(_, getOffsetNanosecondsFor_string, "getOffsetNanosecondsFor")     \
   V(_, getOwnPropertyDescriptor_string, "getOwnPropertyDescriptor")   \
+  V(_, getPossibleInstantsFor_string, "getPossibleInstantsFor")       \
   V(_, getPrototypeOf_string, "getPrototypeOf")                       \
   V(_, global_string, "global")                                       \
   V(_, globalThis_string, "globalThis")                               \
@@ -326,6 +328,8 @@
   V(_, overflow_string, "overflow")                                   \
   V(_, ownKeys_string, "ownKeys")                                     \
   V(_, percent_string, "percent")                                     \
+  V(_, plainDate_string, "plainDate")                                 \
+  V(_, plainTime_string, "plainTime")                                 \
   V(_, position_string, "position")                                   \
   V(_, preventExtensions_string, "preventExtensions")                 \
   V(_, private_constructor_string, "#constructor")                    \
@@ -343,11 +347,13 @@
   V(_, RegExp_string, "RegExp")                                       \
   V(_, regexp_to_string, "[object RegExp]")                           \
   V(_, reject_string, "reject")                                       \
+  V(_, relativeTo_string, "relativeTo")                               \
   V(_, resizable_string, "resizable")                                 \
   V(_, ResizableArrayBuffer_string, "ResizableArrayBuffer")           \
   V(_, resolve_string, "resolve")                                     \
   V(_, return_string, "return")                                       \
   V(_, revoke_string, "revoke")                                       \
+  V(_, roundingIncrement_string, "roundingIncrement")                 \
   V(_, RuntimeError_string, "RuntimeError")                           \
   V(_, WebAssemblyException_string, "WebAssembly.Exception")          \
   V(_, Script_string, "Script")                                       \
@@ -415,15 +421,15 @@
 
 #define PRIVATE_SYMBOL_LIST_GENERATOR(V, _)    \
   V(_, array_buffer_wasm_memory_symbol)        \
-  V(_, call_site_frame_info_symbol)            \
+  V(_, call_site_info_symbol)                  \
   V(_, console_context_id_symbol)              \
   V(_, console_context_name_symbol)            \
   V(_, class_fields_symbol)                    \
   V(_, class_positions_symbol)                 \
-  V(_, detailed_stack_trace_symbol)            \
   V(_, elements_transition_symbol)             \
   V(_, error_end_pos_symbol)                   \
   V(_, error_script_symbol)                    \
+  V(_, error_stack_symbol)                     \
   V(_, error_start_pos_symbol)                 \
   V(_, frozen_symbol)                          \
   V(_, interpreter_trampoline_symbol)          \
@@ -440,7 +446,6 @@
   V(_, regexp_result_regexp_input_symbol)      \
   V(_, regexp_result_regexp_last_index_symbol) \
   V(_, sealed_symbol)                          \
-  V(_, stack_trace_symbol)                     \
   V(_, strict_function_transition_symbol)      \
   V(_, wasm_exception_tag_symbol)              \
   V(_, wasm_exception_values_symbol)           \

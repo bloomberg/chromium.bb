@@ -336,9 +336,9 @@ bool GeneratorImpl::EmitFunction(const ast::Function* func) {
 }
 
 bool GeneratorImpl::EmitImageFormat(std::ostream& out,
-                                    const ast::ImageFormat fmt) {
+                                    const ast::TexelFormat fmt) {
   switch (fmt) {
-    case ast::ImageFormat::kNone:
+    case ast::TexelFormat::kNone:
       diagnostics_.add_error(diag::System::Writer, "unknown image format");
       return false;
     default:
@@ -369,7 +369,7 @@ bool GeneratorImpl::EmitType(std::ostream& out, const ast::Type* ty) {
   if (auto* ary = ty->As<ast::Array>()) {
     for (auto* deco : ary->decorations) {
       if (auto* stride = deco->As<ast::StrideDecoration>()) {
-        out << "[[stride(" << stride->stride << ")]] ";
+        out << "@stride(" << stride->stride << ") ";
       }
     }
 
@@ -393,11 +393,14 @@ bool GeneratorImpl::EmitType(std::ostream& out, const ast::Type* ty) {
   } else if (ty->Is<ast::I32>()) {
     out << "i32";
   } else if (auto* mat = ty->As<ast::Matrix>()) {
-    out << "mat" << mat->columns << "x" << mat->rows << "<";
-    if (!EmitType(out, mat->type)) {
-      return false;
+    out << "mat" << mat->columns << "x" << mat->rows;
+    if (auto* el_ty = mat->type) {
+      out << "<";
+      if (!EmitType(out, el_ty)) {
+        return false;
+      }
+      out << ">";
     }
-    out << ">";
   } else if (auto* ptr = ty->As<ast::Pointer>()) {
     out << "ptr<" << ptr->storage_class << ", ";
     if (!EmitType(out, ptr->type)) {
@@ -493,11 +496,14 @@ bool GeneratorImpl::EmitType(std::ostream& out, const ast::Type* ty) {
   } else if (ty->Is<ast::U32>()) {
     out << "u32";
   } else if (auto* vec = ty->As<ast::Vector>()) {
-    out << "vec" << vec->width << "<";
-    if (!EmitType(out, vec->type)) {
-      return false;
+    out << "vec" << vec->width;
+    if (auto* el_ty = vec->type) {
+      out << "<";
+      if (!EmitType(out, el_ty)) {
+        return false;
+      }
+      out << ">";
     }
-    out << ">";
   } else if (ty->Is<ast::Void>()) {
     out << "void";
   } else if (auto* tn = ty->As<ast::TypeName>()) {
@@ -520,7 +526,7 @@ bool GeneratorImpl::EmitStructType(const ast::Struct* str) {
   line() << "struct " << program_->Symbols().NameFor(str->name) << " {";
 
   auto add_padding = [&](uint32_t size) {
-    line() << "[[size(" << size << ")]]";
+    line() << "@size(" << size << ")";
 
     // Note: u32 is the smallest primitive we currently support. When WGSL
     // supports smaller types, this will need to be updated.
@@ -530,7 +536,7 @@ bool GeneratorImpl::EmitStructType(const ast::Struct* str) {
   increment_indent();
   uint32_t offset = 0;
   for (auto* mem : str->members) {
-    // TODO(crbug.com/tint/798) move the [[offset]] decoration handling to the
+    // TODO(crbug.com/tint/798) move the @offset decoration handling to the
     // transform::Wgsl sanitizer.
     if (auto* mem_sem = program_->Sem().Get(mem)) {
       offset = utils::RoundUp(mem_sem->Align(), offset);
@@ -567,7 +573,7 @@ bool GeneratorImpl::EmitStructType(const ast::Struct* str) {
   }
   decrement_indent();
 
-  line() << "};";
+  line() << "}";
   return true;
 }
 
@@ -619,14 +625,13 @@ bool GeneratorImpl::EmitVariable(std::ostream& out, const ast::Variable* var) {
 
 bool GeneratorImpl::EmitDecorations(std::ostream& out,
                                     const ast::DecorationList& decos) {
-  out << "[[";
   bool first = true;
   for (auto* deco : decos) {
     if (!first) {
-      out << ", ";
+      out << " ";
     }
     first = false;
-
+    out << "@";
     if (auto* workgroup = deco->As<ast::WorkgroupDecoration>()) {
       auto values = workgroup->Values();
       out << "workgroup_size(";
@@ -680,7 +685,6 @@ bool GeneratorImpl::EmitDecorations(std::ostream& out,
       return false;
     }
   }
-  out << "]]";
 
   return true;
 }
@@ -949,7 +953,7 @@ bool GeneratorImpl::EmitIf(const ast::IfStatement* stmt) {
   for (auto* e : stmt->else_statements) {
     if (e->condition) {
       auto out = line();
-      out << "} elseif (";
+      out << "} else if (";
       if (!EmitExpression(out, e->condition)) {
         return false;
       }

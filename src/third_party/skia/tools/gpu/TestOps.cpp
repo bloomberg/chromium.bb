@@ -14,6 +14,7 @@
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrProgramInfo.h"
+#include "src/gpu/KeyBuilder.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
@@ -26,7 +27,7 @@ public:
     GP(const SkMatrix& localMatrix, bool wideColor)
             : GrGeometryProcessor(kTestRectOp_ClassID), fLocalMatrix(localMatrix) {
         fInColor = MakeColorAttribute("color", wideColor);
-        this->setVertexAttributes(&fInPosition, 3);
+        this->setVertexAttributesWithImplicitOffsets(&fInPosition, 3);
     }
 
     const char* name() const override { return "TestRectOp::GP"; }
@@ -68,7 +69,7 @@ public:
         return std::make_unique<Impl>();
     }
 
-    void addToKey(const GrShaderCaps& shaderCaps, GrProcessorKeyBuilder* b) const override {
+    void addToKey(const GrShaderCaps& shaderCaps, skgpu::KeyBuilder* b) const override {
         b->add32(ProgramImpl::ComputeMatrixKey(shaderCaps, fLocalMatrix));
     }
 

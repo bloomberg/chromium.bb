@@ -4,6 +4,7 @@
 
 #include "components/optimization_guide/content/browser/page_content_annotations_model_manager.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros_local.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
@@ -17,7 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 
 #if BUILDFLAG(BUILD_WITH_INTERNAL_OPTIMIZATION_GUIDE)
-#include "components/optimization_guide/internal/page_entities_model_executor_impl.h"
+#include "components/optimization_guide/core/page_entities_model_executor_impl.h"
 #endif
 
 namespace optimization_guide {
@@ -45,18 +46,6 @@ GetOrCreateCurrentContentModelAnnotations(
   if (current_annotations)
     return current_annotations;
   return std::make_unique<history::VisitContentModelAnnotations>();
-}
-
-void PretendToExecuteJob(base::OnceClosure callback,
-                         std::unique_ptr<PageContentAnnotationJob> job) {
-  while (absl::optional<std::string> input = job->GetNextInput()) {
-    job->PostNewResult(
-        BatchAnnotationResult::CreatePageTopicsResult(*input, absl::nullopt));
-  }
-  // Note to future self: The ordering of these callbacks being run will be
-  // important once actually being run on an executor.
-  job->OnComplete();
-  std::move(callback).Run();
 }
 
 }  // namespace
@@ -494,7 +483,7 @@ void PageContentAnnotationsModelManager::NotifyWhenModelAvailable(
     return;
   }
 
-  // TODO(crbug/1249632): Add support for page entities.
+  // TODO(crbug/1278828): Add support for page entities.
 
   std::move(callback).Run(false);
 }
@@ -506,6 +495,11 @@ PageContentAnnotationsModelManager::GetModelInfoForType(
       on_demand_page_topics_model_executor_) {
     return on_demand_page_topics_model_executor_->GetModelInfo();
   }
+  if (type == AnnotationType::kContentVisibility &&
+      page_visibility_model_executor_) {
+    return page_visibility_model_executor_->GetModelInfo();
+  }
+  // TODO(crbug/1278828): Add support for page entities.
   return absl::nullopt;
 }
 
@@ -513,6 +507,11 @@ void PageContentAnnotationsModelManager::Annotate(
     BatchAnnotationCallback callback,
     const std::vector<std::string>& inputs,
     AnnotationType annotation_type) {
+  base::UmaHistogramCounts100(
+      "OptimizationGuide.PageContentAnnotations.BatchRequestedSize." +
+          AnnotationTypeToString(annotation_type),
+      inputs.size());
+
   std::unique_ptr<PageContentAnnotationJob> job =
       std::make_unique<PageContentAnnotationJob>(std::move(callback), inputs,
                                                  annotation_type);
@@ -592,11 +591,15 @@ void PageContentAnnotationsModelManager::MaybeStartNextAnnotationJob() {
     return;
   }
 
-  // TODO(crbug/1249632): Actually run the model instead.
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PretendToExecuteJob, std::move(on_job_complete_callback),
-                     std::move(job)));
+  // TODO(crbug/1278828): Add support for page entities.
+  if (job->type() == AnnotationType::kPageEntities) {
+    job->FillWithNullOutputs();
+    job->OnComplete();
+    job.reset();
+    std::move(on_job_complete_callback).Run();
+    return;
+  }
+  NOTREACHED();
 }
 
 }  // namespace optimization_guide

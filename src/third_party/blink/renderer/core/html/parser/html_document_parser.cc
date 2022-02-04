@@ -50,7 +50,6 @@
 #include "third_party/blink/renderer/core/html/parser/html_resource_preloader.h"
 #include "third_party/blink/renderer/core/html/parser/html_tree_builder.h"
 #include "third_party/blink/renderer/core/html/parser/pump_session.h"
-#include "third_party/blink/renderer/core/html/parser/subresource_redirect_origins_preloader.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -61,7 +60,6 @@
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -1144,7 +1142,7 @@ void HTMLDocumentParser::ConstructTreeFromHTMLToken() {
   }
 
   // We clear the token_ in case ConstructTreeFromAtomicToken
-  // synchronously re-enters the parser. We don't clear the token immedately
+  // synchronously re-enters the parser. We don't clear the token immediately
   // for kCharacter tokens because the AtomicHTMLToken avoids copying the
   // characters by keeping a pointer to the underlying buffer in the
   // HTMLToken. Fortunately, kCharacter tokens can't cause us to re-enter
@@ -1345,6 +1343,15 @@ void HTMLDocumentParser::Append(const String& input_source) {
     return;
   }
 
+  // If we are preloading, FinishAppend() will be called later in
+  // CommitPreloadedData().
+  if (IsPreloading())
+    return;
+
+  FinishAppend();
+}
+
+void HTMLDocumentParser::FinishAppend() {
   // Schedule a tokenizer pump to process this new data. We schedule to give
   // paint a chance to happen, and because devtools somehow depends on it
   // for js loads.
@@ -1355,6 +1362,15 @@ void HTMLDocumentParser::Append(const String& input_source) {
   } else {
     PumpTokenizerIfPossible();
   }
+}
+
+void HTMLDocumentParser::CommitPreloadedData() {
+  if (!IsPreloading())
+    return;
+
+  SetIsPreloading(false);
+  if (task_runner_state_->HaveSeenFirstByte() && !IsStopped())
+    FinishAppend();
 }
 
 void HTMLDocumentParser::end() {
@@ -1831,10 +1847,6 @@ void HTMLDocumentParser::FetchQueuedPreloads() {
     base::UmaHistogramTimes(base::StrCat({"Blink.FetchQueuedPreloadsTime",
                                           GetPreloadHistogramSuffix()}),
                             timer.Elapsed());
-  }
-  if (auto* subresource_redirect_origins_preloader =
-          SubresourceRedirectOriginsPreloader::From(*GetDocument())) {
-    subresource_redirect_origins_preloader->PreloadOriginsNow();
   }
 }
 

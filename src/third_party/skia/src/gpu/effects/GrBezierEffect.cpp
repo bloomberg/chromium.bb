@@ -5,8 +5,10 @@
  * found in the LICENSE file.
  */
 
-#include "src/gpu/GrShaderCaps.h"
 #include "src/gpu/effects/GrBezierEffect.h"
+
+#include "src/gpu/GrShaderCaps.h"
+#include "src/gpu/KeyBuilder.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
@@ -151,7 +153,7 @@ void GrConicEffect::Impl::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
 
 GrConicEffect::~GrConicEffect() = default;
 
-void GrConicEffect::addToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const {
+void GrConicEffect::addToKey(const GrShaderCaps& caps, skgpu::KeyBuilder* b) const {
     uint32_t key = 0;
     key |= fCoverageScale == 0xff ? 0x8  : 0x0;
     key |= fUsesLocalCoords       ? 0x10 : 0x0;
@@ -175,7 +177,7 @@ GrConicEffect::GrConicEffect(const SkPMColor4f& color, const SkMatrix& viewMatri
         , fLocalMatrix(viewMatrix)
         , fUsesLocalCoords(usesLocalCoords)
         , fCoverageScale(coverage) {
-    this->setVertexAttributes(kAttributes, SK_ARRAY_COUNT(kAttributes));
+    this->setVertexAttributesWithImplicitOffsets(kAttributes, SK_ARRAY_COUNT(kAttributes));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -304,7 +306,7 @@ void GrQuadEffect::Impl::onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) {
 
 GrQuadEffect::~GrQuadEffect() = default;
 
-void GrQuadEffect::addToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const {
+void GrQuadEffect::addToKey(const GrShaderCaps& caps, skgpu::KeyBuilder* b) const {
     uint32_t key = 0;
     key |= fCoverageScale != 0xff ? 0x8  : 0x0;
     key |= fUsesLocalCoords       ? 0x10 : 0x0;
@@ -328,7 +330,7 @@ GrQuadEffect::GrQuadEffect(const SkPMColor4f& color, const SkMatrix& viewMatrix,
     , fLocalMatrix(localMatrix)
     , fUsesLocalCoords(usesLocalCoords)
     , fCoverageScale(coverage) {
-    this->setVertexAttributes(kAttributes, SK_ARRAY_COUNT(kAttributes));
+    this->setVertexAttributesWithImplicitOffsets(kAttributes, SK_ARRAY_COUNT(kAttributes));
 }
 
 //////////////////////////////////////////////////////////////////////////////

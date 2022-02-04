@@ -5,7 +5,7 @@
 import type * as puppeteer from 'puppeteer';
 
 import {$, $$, assertNotNullOrUndefined, click, getBrowserAndPages, goToResource, pasteText, timeout, waitFor, waitForAria, waitForFunction} from '../../shared/helper.js';
-import {AsyncScope} from '../../shared/mocha-extensions.js';
+import {AsyncScope} from '../../shared/async-scope.js';
 
 export const CONSOLE_TAB_SELECTOR = '#tab-console';
 export const CONSOLE_MESSAGES_SELECTOR = '.console-group-messages';
@@ -65,14 +65,6 @@ export async function waitForLastConsoleMessageToHaveContent(expectedTextContent
     }
     const lastMessageContent = await messages[messages.length - 1].evaluate(message => message.textContent);
     return lastMessageContent === expectedTextContent;
-  });
-}
-
-export async function waitForAutocompletionTooltipToHaveContent(expectedAutocompletion: string) {
-  await waitForFunction(async () => {
-    const preview = await waitFor('.console-eager-inner-preview > span');
-    return preview.evaluate(
-        (node, expectedAutocompletion) => node.innerHTML === expectedAutocompletion, expectedAutocompletion);
   });
 }
 

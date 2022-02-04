@@ -28,7 +28,7 @@
 #include <functional>
 #include <set>
 
-namespace dawn_native {
+namespace dawn::native {
 
     namespace {
         MaybeError ValidateStorageTextureFormat(DeviceBase* device,
@@ -89,23 +89,14 @@ namespace dawn_native {
                     buffer.type == kInternalStorageBufferBinding) {
                     allowedStages &= ~wgpu::ShaderStage::Vertex;
                 }
-
-                // Dynamic storage buffers aren't bounds checked properly in D3D12. Disallow them as
-                // unsafe until the bounds checks are implemented.
-                DAWN_INVALID_IF(
-                    device->IsToggleEnabled(Toggle::DisallowUnsafeAPIs) &&
-                        buffer.hasDynamicOffset &&
-                        (buffer.type == wgpu::BufferBindingType::Storage ||
-                         buffer.type == kInternalStorageBufferBinding ||
-                         buffer.type == wgpu::BufferBindingType::ReadOnlyStorage),
-                    "Dynamic storage buffers are disallowed because they aren't secure yet. "
-                    "See https://crbug.com/dawn/429");
             }
+
             if (entry.sampler.type != wgpu::SamplerBindingType::Undefined) {
                 bindingMemberCount++;
                 bindingType = BindingInfoType::Sampler;
                 DAWN_TRY(ValidateSamplerBindingType(entry.sampler.type));
             }
+
             if (entry.texture.sampleType != wgpu::TextureSampleType::Undefined) {
                 bindingMemberCount++;
                 bindingType = BindingInfoType::Texture;
@@ -124,6 +115,7 @@ namespace dawn_native {
                     "View dimension (%s) for a multisampled texture bindings was not %s.",
                     viewDimension, wgpu::TextureViewDimension::e2D);
             }
+
             if (entry.storageTexture.access != wgpu::StorageTextureAccess::Undefined) {
                 bindingMemberCount++;
                 bindingType = BindingInfoType::StorageTexture;
@@ -393,8 +385,8 @@ namespace dawn_native {
             }
             IncrementBindingCounts(&mBindingCounts, binding);
 
-            const auto& it = mBindingMap.emplace(BindingNumber(binding.binding), i);
-            ASSERT(it.second);
+            const auto& [_, inserted] = mBindingMap.emplace(BindingNumber(binding.binding), i);
+            ASSERT(inserted);
         }
         ASSERT(CheckBufferBindingsFirst({mBindingInfo.data(), GetBindingCount()}));
         ASSERT(mBindingInfo.size() <= kMaxBindingsPerPipelineLayoutTyped);
@@ -456,11 +448,10 @@ namespace dawn_native {
 
         // std::map is sorted by key, so two BGLs constructed in different orders
         // will still record the same.
-        for (const auto& it : mBindingMap) {
-            recorder.Record(it.first, it.second);
+        for (const auto [id, index] : mBindingMap) {
+            recorder.Record(id, index);
 
-            const BindingInfo& info = mBindingInfo[it.second];
-
+            const BindingInfo& info = mBindingInfo[index];
             recorder.Record(info.buffer.hasDynamicOffset, info.visibility, info.bindingType,
                             info.buffer.type, info.buffer.minBindingSize, info.sampler.type,
                             info.texture.sampleType, info.texture.viewDimension,
@@ -565,4 +556,4 @@ namespace dawn_native {
         }
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

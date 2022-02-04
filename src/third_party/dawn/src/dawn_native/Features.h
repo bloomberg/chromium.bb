@@ -19,9 +19,11 @@
 #include <unordered_map>
 #include <vector>
 
+#include "common/ityp_bitset.h"
+#include "dawn/webgpu_cpp.h"
 #include "dawn_native/DawnNative.h"
 
-namespace dawn_native {
+namespace dawn::native {
 
     enum class Feature {
         TextureCompressionBC,
@@ -37,6 +39,7 @@ namespace dawn_native {
         // Dawn-specific
         DawnInternalUsages,
         MultiPlanarFormats,
+        DawnNative,
 
         EnumCount,
         InvalidEnum = EnumCount,
@@ -49,12 +52,17 @@ namespace dawn_native {
         std::bitset<static_cast<size_t>(Feature::EnumCount)> featuresBitSet;
 
         void EnableFeature(Feature feature);
+        void EnableFeature(wgpu::FeatureName feature);
         bool IsEnabled(Feature feature) const;
+        bool IsEnabled(wgpu::FeatureName feature) const;
+        // Returns |count|, the number of features. Writes out all |count| values if |features| is
+        // non-null.
+        size_t EnumerateFeatures(wgpu::FeatureName* features) const;
         std::vector<const char*> GetEnabledFeatureNames() const;
         void InitializeDeviceProperties(WGPUDeviceProperties* properties) const;
     };
 
-    const char* FeatureEnumToName(Feature feature);
+    wgpu::FeatureName FeatureEnumToAPIFeature(Feature feature);
 
     class FeaturesInfo {
       public:
@@ -62,15 +70,14 @@ namespace dawn_native {
 
         // Used to query the details of an feature. Return nullptr if featureName is not a valid
         // name of an feature supported in Dawn
-        const FeatureInfo* GetFeatureInfo(const char* featureName) const;
+        const FeatureInfo* GetFeatureInfo(wgpu::FeatureName feature) const;
         Feature FeatureNameToEnum(const char* featureName) const;
-        FeaturesSet FeatureNamesToFeaturesSet(
-            const std::vector<const char*>& requiredFeatures) const;
+        wgpu::FeatureName FeatureNameToAPIEnum(const char* featureName) const;
 
       private:
         std::unordered_map<std::string, Feature> mFeatureNameToEnumMap;
     };
 
-}  // namespace dawn_native
+}  // namespace dawn::native
 
 #endif  // DAWNNATIVE_FEATURES_H_

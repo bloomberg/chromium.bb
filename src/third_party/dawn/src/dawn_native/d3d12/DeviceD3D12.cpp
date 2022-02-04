@@ -44,7 +44,7 @@
 
 #include <sstream>
 
-namespace dawn_native { namespace d3d12 {
+namespace dawn::native::d3d12 {
 
     // TODO(dawn:155): Figure out these values.
     static constexpr uint16_t kShaderVisibleDescriptorHeapSize = 1024;
@@ -56,11 +56,11 @@ namespace dawn_native { namespace d3d12 {
     static constexpr uint64_t kMaxDebugMessagesToPrint = 5;
 
     // static
-    ResultOrError<Device*> Device::Create(Adapter* adapter,
-                                          const DawnDeviceDescriptor* descriptor) {
+    ResultOrError<Ref<Device>> Device::Create(Adapter* adapter,
+                                              const DeviceDescriptor* descriptor) {
         Ref<Device> device = AcquireRef(new Device(adapter, descriptor));
         DAWN_TRY(device->Initialize());
-        return device.Detach();
+        return device;
     }
 
     MaybeError Device::Initialize() {
@@ -534,16 +534,13 @@ namespace dawn_native { namespace d3d12 {
         const TextureDescriptor* descriptor,
         ComPtr<ID3D12Resource> d3d12Texture,
         Ref<D3D11on12ResourceCacheEntry> d3d11on12Resource,
-        ExternalMutexSerial acquireMutexKey,
-        ExternalMutexSerial releaseMutexKey,
         bool isSwapChainTexture,
         bool isInitialized) {
         Ref<Texture> dawnTexture;
-        if (ConsumedError(
-                Texture::CreateExternalImage(this, descriptor, std::move(d3d12Texture),
-                                             std::move(d3d11on12Resource), acquireMutexKey,
-                                             releaseMutexKey, isSwapChainTexture, isInitialized),
-                &dawnTexture)) {
+        if (ConsumedError(Texture::CreateExternalImage(this, descriptor, std::move(d3d12Texture),
+                                                       std::move(d3d11on12Resource),
+                                                       isSwapChainTexture, isInitialized),
+                          &dawnTexture)) {
             return nullptr;
         }
         return {dawnTexture};
@@ -587,15 +584,16 @@ namespace dawn_native { namespace d3d12 {
         // By default use the maximum shader-visible heap size allowed.
         SetToggle(Toggle::UseD3D12SmallShaderVisibleHeapForTesting, false);
 
-        PCIInfo pciInfo = GetAdapter()->GetPCIInfo();
+        uint32_t deviceId = GetAdapter()->GetDeviceId();
+        uint32_t vendorId = GetAdapter()->GetVendorId();
 
         // Currently this workaround is only needed on Intel Gen9 and Gen9.5 GPUs.
         // See http://crbug.com/1161355 for more information.
-        if (gpu_info::IsIntel(pciInfo.vendorId) &&
-            (gpu_info::IsSkylake(pciInfo.deviceId) || gpu_info::IsKabylake(pciInfo.deviceId) ||
-             gpu_info::IsCoffeelake(pciInfo.deviceId))) {
+        if (gpu_info::IsIntel(vendorId) &&
+            (gpu_info::IsSkylake(deviceId) || gpu_info::IsKabylake(deviceId) ||
+             gpu_info::IsCoffeelake(deviceId))) {
             constexpr gpu_info::D3DDriverVersion kFirstDriverVersionWithFix = {30, 0, 100, 9864};
-            if (gpu_info::CompareD3DDriverVersion(pciInfo.vendorId,
+            if (gpu_info::CompareD3DDriverVersion(vendorId,
                                                   ToBackend(GetAdapter())->GetDriverVersion(),
                                                   kFirstDriverVersionWithFix) < 0) {
                 SetToggle(
@@ -742,4 +740,4 @@ namespace dawn_native { namespace d3d12 {
         return ToBackend(computePipeline)->UsesNumWorkgroups();
     }
 
-}}  // namespace dawn_native::d3d12
+}  // namespace dawn::native::d3d12

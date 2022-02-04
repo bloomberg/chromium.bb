@@ -51,7 +51,7 @@ namespace {
 
 }  // namespace
 
-namespace wgpu { namespace binding {
+namespace wgpu::binding {
 
     ////////////////////////////////////////////////////////////////////////////////
     // wgpu::bindings::GPU
@@ -59,7 +59,7 @@ namespace wgpu { namespace binding {
     GPU::GPU(Flags flags) : flags_(std::move(flags)) {
         // TODO: Disable in 'release'
         instance_.EnableBackendValidation(true);
-        instance_.SetBackendValidationLevel(dawn_native::BackendValidationLevel::Full);
+        instance_.SetBackendValidationLevel(dawn::native::BackendValidationLevel::Full);
 
         // Setting the DllDir changes where we load adapter DLLs from (e.g. d3dcompiler_47.dll)
         if (auto dir = flags_.Get("dlldir")) {
@@ -112,6 +112,9 @@ namespace wgpu { namespace binding {
         std::transform(forceBackend.begin(), forceBackend.end(), forceBackend.begin(),
                        [](char c) { return std::tolower(c); });
 
+        // Default to first adapter if a backend is not specified
+        size_t adapterIndex = 0;
+
         if (!forceBackend.empty()) {
             if (forceBackend == "null") {
                 targetBackendType = wgpu::BackendType::Null;
@@ -129,18 +132,29 @@ namespace wgpu { namespace binding {
                 targetBackendType = wgpu::BackendType::OpenGL;
             } else if (forceBackend == "opengles" || forceBackend == "gles") {
                 targetBackendType = wgpu::BackendType::OpenGLES;
+            } else {
+                promise.Reject("unknown backend '" + forceBackend + "'");
+                return promise;
             }
         }
 
-        // Default to first adapter if we don't find a match
-        size_t adapterIndex = 0;
+        bool found = false;
         for (size_t i = 0; i < adapters.size(); ++i) {
             wgpu::AdapterProperties props;
             adapters[i].GetProperties(&props);
             if (props.backendType == targetBackendType) {
                 adapterIndex = i;
+                found = true;
                 break;
             }
+        }
+        if (!found) {
+            if (!forceBackend.empty()) {
+                promise.Reject("backend '" + forceBackend + "' not found");
+            } else {
+                promise.Reject("no suitable backends found");
+            }
+            return promise;
         }
 
         auto adapter = GPUAdapter::Create<GPUAdapter>(env, adapters[adapterIndex], flags_);
@@ -148,4 +162,4 @@ namespace wgpu { namespace binding {
         return promise;
     }
 
-}}  // namespace wgpu::binding
+}  // namespace wgpu::binding

@@ -2095,7 +2095,8 @@ class MockURLLoader : public network::mojom::URLLoader {
           response_info->headers =
               base::MakeRefCounted<net::HttpResponseHeaders>(
                   net::HttpUtil::AssembleRawHeaders(headers));
-          client_->OnReceiveResponse(std::move(response_info));
+          client_->OnReceiveResponse(std::move(response_info),
+                                     mojo::ScopedDataPipeConsumerHandle());
           break;
         }
         case TestLoaderEvent::kReceived401Response: {
@@ -2104,7 +2105,8 @@ class MockURLLoader : public network::mojom::URLLoader {
           response_info->headers =
               base::MakeRefCounted<net::HttpResponseHeaders>(
                   net::HttpUtil::AssembleRawHeaders(headers));
-          client_->OnReceiveResponse(std::move(response_info));
+          client_->OnReceiveResponse(std::move(response_info),
+                                     mojo::ScopedDataPipeConsumerHandle());
           break;
         }
         case TestLoaderEvent::kReceived501Response: {
@@ -2113,7 +2115,8 @@ class MockURLLoader : public network::mojom::URLLoader {
           response_info->headers =
               base::MakeRefCounted<net::HttpResponseHeaders>(
                   net::HttpUtil::AssembleRawHeaders(headers));
-          client_->OnReceiveResponse(std::move(response_info));
+          client_->OnReceiveResponse(std::move(response_info),
+                                     mojo::ScopedDataPipeConsumerHandle());
           break;
         }
         case TestLoaderEvent::kBodyBufferReceived: {
@@ -2391,7 +2394,13 @@ TEST_P(SimpleURLLoaderTest, CloseClientPipeBeforeBodyStarts) {
 // This test tries closing the client pipe / completing the request in most
 // possible valid orders relative to read events (Which always occur in the same
 // order).
-TEST_P(SimpleURLLoaderTest, CloseClientPipeOrder) {
+// TODO(crbug.com/1286251): Flakes on ios simulator.
+#if defined(OS_IOS)
+#define MAYBE_CloseClientPipeOrder DISABLED_CloseClientPipeOrder
+#else
+#define MAYBE_CloseClientPipeOrder CloseClientPipeOrder
+#endif
+TEST_P(SimpleURLLoaderTest, MAYBE_CloseClientPipeOrder) {
   enum class ClientCloseOrder {
     kBeforeData,
     kDuringData,

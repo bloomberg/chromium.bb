@@ -8,11 +8,13 @@
 #include <stdint.h>
 
 #include "ash/components/phonehub/notification.h"
+#include "ash/components/phonehub/notification_access_manager.h"
 #include "ash/components/phonehub/recent_app_click_observer.h"
 #include "ash/components/phonehub/recent_apps_interaction_handler.h"
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -21,11 +23,17 @@ namespace ash {
 namespace phonehub {
 
 // The handler that exposes APIs to interact with Phone Hub Recent Apps.
-class RecentAppsInteractionHandlerImpl : public RecentAppsInteractionHandler {
+class RecentAppsInteractionHandlerImpl
+    : public RecentAppsInteractionHandler,
+      public multidevice_setup::MultiDeviceSetupClient::Observer,
+      public NotificationAccessManager::Observer {
  public:
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  explicit RecentAppsInteractionHandlerImpl(PrefService* pref_service);
+  explicit RecentAppsInteractionHandlerImpl(
+      PrefService* pref_service,
+      multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+      NotificationAccessManager* notification_access_manager);
   ~RecentAppsInteractionHandlerImpl() override;
 
   // RecentAppsInteractionHandler:
@@ -38,11 +46,24 @@ class RecentAppsInteractionHandlerImpl : public RecentAppsInteractionHandler {
       base::Time last_accessed_timestamp) override;
   std::vector<Notification::AppMetadata> FetchRecentAppMetadataList() override;
 
+  // MultiDeviceSetupClient::Observer:
+  void OnFeatureStatesChanged(
+      const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+          feature_states_map) override;
+  void OnHostStatusChanged(
+      const multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice&
+          host_device_with_status) override;
+
+  // NotificationAccessManager::Observer:
+  void OnNotificationAccessChanged() override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RecentAppsInteractionHandlerTest, RecentAppsUpdated);
 
   void LoadRecentAppMetadataListFromPrefIfNeed();
   void SaveRecentAppMetadataListToPref();
+  void ComputeAndUpdateUiState();
+  void ClearRecentAppMetadataListAndPref();
 
   // Whether this class has finished loading |recent_app_metadata_list_| from
   // pref.
@@ -52,6 +73,8 @@ class RecentAppsInteractionHandlerImpl : public RecentAppsInteractionHandler {
   std::vector<std::pair<Notification::AppMetadata, base::Time>>
       recent_app_metadata_list_;
   PrefService* pref_service_;
+  multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
+  NotificationAccessManager* notification_access_manager_;
 };
 
 }  // namespace phonehub

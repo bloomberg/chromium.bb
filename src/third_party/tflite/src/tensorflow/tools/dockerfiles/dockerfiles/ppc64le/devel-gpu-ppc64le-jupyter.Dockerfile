@@ -123,6 +123,7 @@ RUN python3 -m pip --no-cache-dir install \
     Pillow \
     h5py \
     keras_preprocessing \
+    tb-nightly \
     matplotlib \
     mock \
     'numpy<1.19.0' \
@@ -133,7 +134,7 @@ RUN python3 -m pip --no-cache-dir install \
     enum34
 
 # Build and install bazel
-ENV BAZEL_VERSION 4.2.1
+ENV BAZEL_VERSION 4.2.2
 WORKDIR /
 RUN mkdir /bazel && \
     cd /bazel && \

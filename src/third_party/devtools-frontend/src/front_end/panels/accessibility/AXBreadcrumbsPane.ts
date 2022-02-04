@@ -374,7 +374,7 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
     if (deferredNode) {
       deferredNode.resolve(domNode => {
         this.axSidebarView.setNode(domNode, true /* fromAXTree */);
-        Common.Revealer.reveal(domNode, true /* omitFocus */);
+        void Common.Revealer.reveal(domNode, true /* omitFocus */);
       });
     }
 
@@ -407,11 +407,11 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
       if (!deferredNode) {
         return;
       }
-      deferredNode.resolvePromise().then(domNode => {
+      void deferredNode.resolvePromise().then(domNode => {
         if (!domNode) {
           return;
         }
-        domNode.scrollIntoView();
+        void domNode.scrollIntoView();
       });
     });
 
@@ -419,7 +419,7 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
     if (deferredNode) {
       contextMenu.appendApplicableItems(deferredNode);
     }
-    contextMenu.show();
+    void contextMenu.show();
   }
   wasShown(): void {
     super.wasShown();
@@ -499,11 +499,11 @@ export class AXBreadcrumb {
   }
 
   element(): HTMLElement {
-    return /** @type {!HTMLElement} */ this.elementInternal as HTMLElement;
+    return this.elementInternal;
   }
 
   nodeElement(): HTMLElement {
-    return /** @type {!HTMLElement} */ this.nodeElementInternal as HTMLElement;
+    return this.nodeElementInternal;
   }
 
   appendChild(breadcrumb: AXBreadcrumb): void {

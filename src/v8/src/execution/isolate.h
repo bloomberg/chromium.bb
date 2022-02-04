@@ -37,9 +37,10 @@
 #include "src/objects/code.h"
 #include "src/objects/contexts.h"
 #include "src/objects/debug-objects.h"
+#include "src/objects/js-objects.h"
 #include "src/runtime/runtime.h"
-#include "src/security/external-pointer-table.h"
-#include "src/security/vm-cage.h"
+#include "src/sandbox/external-pointer-table.h"
+#include "src/sandbox/sandbox.h"
 #include "src/strings/unicode.h"
 #include "src/utils/allocation.h"
 
@@ -578,6 +579,7 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   };
 
   static void InitializeOncePerProcess();
+  static void DisposeOncePerProcess();
 
   // Creates Isolate object. Must be used instead of constructing Isolate with
   // new operator.
@@ -744,6 +746,7 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   THREAD_LOCAL_TOP_ADDRESS(Address, pending_handler_constant_pool)
   THREAD_LOCAL_TOP_ADDRESS(Address, pending_handler_fp)
   THREAD_LOCAL_TOP_ADDRESS(Address, pending_handler_sp)
+  THREAD_LOCAL_TOP_ADDRESS(uintptr_t, num_frames_above_pending_handler)
 
   THREAD_LOCAL_TOP_ACCESSOR(bool, external_caught_exception)
 
@@ -894,18 +897,19 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
                                         void* ptr4 = nullptr);
   // Similar to the above but without collecting the stack trace.
   V8_NOINLINE void PushParamsAndDie(void* ptr1 = nullptr, void* ptr2 = nullptr,
-                                    void* ptr3 = nullptr, void* ptr4 = nullptr);
-  Handle<FixedArray> CaptureCurrentStackTrace(
-      int frame_limit, StackTrace::StackTraceOptions options);
-  Handle<Object> CaptureSimpleStackTrace(Handle<JSReceiver> error_object,
-                                         FrameSkipMode mode,
-                                         Handle<Object> caller);
-  MaybeHandle<JSReceiver> CaptureAndSetDetailedStackTrace(
-      Handle<JSReceiver> error_object);
-  MaybeHandle<JSReceiver> CaptureAndSetSimpleStackTrace(
-      Handle<JSReceiver> error_object, FrameSkipMode mode,
-      Handle<Object> caller);
-  Handle<FixedArray> GetDetailedStackTrace(Handle<JSObject> error_object);
+                                    void* ptr3 = nullptr, void* ptr4 = nullptr,
+                                    void* ptr5 = nullptr, void* ptr6 = nullptr);
+  Handle<FixedArray> CaptureDetailedStackTrace(
+      int limit, StackTrace::StackTraceOptions options);
+  MaybeHandle<JSObject> CaptureAndSetErrorStack(Handle<JSObject> error_object,
+                                                FrameSkipMode mode,
+                                                Handle<Object> caller);
+  Handle<FixedArray> GetDetailedStackTrace(Handle<JSReceiver> error_object);
+  Handle<FixedArray> GetSimpleStackTrace(Handle<JSReceiver> error_object);
+  // Walks the JS stack to find the first frame with a script name or
+  // source URL. The inspected frames are the same as for the detailed stack
+  // trace.
+  Handle<String> CurrentScriptNameOrSourceURL();
 
   Address GetAbstractPC(int* line, int* column);
 
@@ -949,8 +953,13 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
     async_event_delegate_ = delegate;
     PromiseHookStateUpdated();
   }
-  void OnAsyncFunctionStateChanged(Handle<JSPromise> promise,
-                                   debug::DebugAsyncActionType);
+
+  // Async function and promise instrumentation support.
+  void OnAsyncFunctionSuspended(Handle<JSPromise> promise,
+                                Handle<JSPromise> parent);
+  void OnPromiseThen(Handle<JSPromise> promise);
+  void OnPromiseBefore(Handle<JSPromise> promise);
+  void OnPromiseAfter(Handle<JSPromise> promise);
 
   // Re-throw an exception.  This involves no error reporting since error
   // reporting was handled when the exception was thrown originally.
@@ -993,13 +1002,19 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   bool ComputeLocation(MessageLocation* target);
   bool ComputeLocationFromException(MessageLocation* target,
                                     Handle<Object> exception);
-  bool ComputeLocationFromStackTrace(MessageLocation* target,
-                                     Handle<Object> exception);
+  bool ComputeLocationFromSimpleStackTrace(MessageLocation* target,
+                                           Handle<Object> exception);
+  bool ComputeLocationFromDetailedStackTrace(MessageLocation* target,
+                                             Handle<Object> exception);
 
   Handle<JSMessageObject> CreateMessage(Handle<Object> exception,
                                         MessageLocation* location);
   Handle<JSMessageObject> CreateMessageOrAbort(Handle<Object> exception,
                                                MessageLocation* location);
+  // Similar to Isolate::CreateMessage but DOESN'T inspect the JS stack and
+  // only looks at the "detailed stack trace" as the "simple stack trace" might
+  // have already been stringified.
+  Handle<JSMessageObject> CreateMessageFromException(Handle<Object> exception);
 
   // Out of resource exception helpers.
   Object StackOverflow();
@@ -1172,9 +1187,6 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   V8_INLINE Address* builtin_table() { return isolate_data_.builtin_table(); }
   V8_INLINE Address* builtin_tier0_table() {
     return isolate_data_.builtin_tier0_table();
-  }
-  V8_INLINE Address* builtin_code_data_container_table() {
-    return isolate_data_.builtin_code_data_container_table();
   }
 
   bool IsBuiltinTableHandleLocation(Address* handle_location);
@@ -1569,11 +1581,13 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   }
 #endif
 
+#ifdef V8_ENABLE_JAVASCRIPT_PROMISE_HOOKS
   void SetHasContextPromiseHooks(bool context_promise_hook) {
     promise_hook_flags_ = PromiseHookFields::HasContextPromiseHook::update(
         promise_hook_flags_, context_promise_hook);
     PromiseHookStateUpdated();
   }
+#endif  // V8_ENABLE_JAVASCRIPT_PROMISE_HOOKS
 
   bool HasContextPromiseHooks() const {
     return PromiseHookFields::HasContextPromiseHook::decode(
@@ -1857,7 +1871,7 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   LocalHeap* main_thread_local_heap();
   LocalHeap* CurrentLocalHeap();
 
-#ifdef V8_HEAP_SANDBOX
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
   ExternalPointerTable& external_pointer_table() {
     return isolate_data_.external_pointer_table_;
   }
@@ -1969,10 +1983,7 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
 
   static base::Thread::LocalStorageKey per_isolate_thread_data_key_;
   static base::Thread::LocalStorageKey isolate_key_;
-
-#ifdef DEBUG
   static std::atomic<bool> isolate_key_created_;
-#endif
 
   void Deinit();
 
@@ -1991,9 +2002,6 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   // then return true.
   bool PropagatePendingExceptionToExternalTryCatch(
       ExceptionHandlerType top_handler);
-
-  void RunPromiseHookForAsyncEventDelegate(PromiseHookType type,
-                                           Handle<JSPromise> promise);
 
   bool HasIsolatePromiseHooks() const {
     return PromiseHookFields::HasIsolatePromiseHook::decode(
@@ -2503,7 +2511,8 @@ class StackTraceFailureMessage {
 
   explicit StackTraceFailureMessage(Isolate* isolate, StackTraceMode mode,
                                     void* ptr1 = nullptr, void* ptr2 = nullptr,
-                                    void* ptr3 = nullptr, void* ptr4 = nullptr);
+                                    void* ptr3 = nullptr, void* ptr4 = nullptr,
+                                    void* ptr5 = nullptr, void* ptr6 = nullptr);
 
   V8_NOINLINE void Print() volatile;
 
@@ -2517,6 +2526,8 @@ class StackTraceFailureMessage {
   void* ptr2_;
   void* ptr3_;
   void* ptr4_;
+  void* ptr5_;
+  void* ptr6_;
   void* code_objects_[4];
   char js_stack_trace_[kStacktraceBufferSize];
   uintptr_t end_marker_ = kEndMarker;

@@ -12,7 +12,7 @@ import re
 import unittest
 
 from wpt_common import (
-    BaseWptScriptAdapter, EXTERNAL_WPT_TESTS_DIR, WEB_TESTS_DIR)
+    BaseWptScriptAdapter, TESTS_ROOT_DIR, WEB_TESTS_DIR)
 
 from blinkpy.common.host_mock import MockHost
 from blinkpy.web_tests.port.factory_mock import MockPortFactory
@@ -122,8 +122,7 @@ class BaseWptScriptAdapterTest(unittest.TestCase):
         self._create_json_output(json_dict)
         self.wpt_adapter.do_post_test_run_tasks()
 
-        baseline_artifacts = {'wpt_actual_status': ['OK'],
-                              'actual_text': [
+        baseline_artifacts = {'actual_text': [
                                   (os.path.join('layout-test-results',
                                                 'external', 'wpt', 'fail',
                                                 'test_variant1-actual.txt'))]}
@@ -156,8 +155,7 @@ class BaseWptScriptAdapterTest(unittest.TestCase):
                                      'external', 'wpt', 'fail', 'test.html')
         self._create_json_output(json_dict)
         self.wpt_adapter.do_post_test_run_tasks()
-        baseline_artifacts = {'wpt_actual_status': ['OK'],
-                              'actual_text': [
+        baseline_artifacts = {'actual_text': [
                                   (os.path.join('layout-test-results',
                                                 'external', 'wpt', 'fail',
                                                 'test_variant1-actual.txt'))]}
@@ -190,8 +188,7 @@ class BaseWptScriptAdapterTest(unittest.TestCase):
         self.wpt_adapter.do_post_test_run_tasks()
         test_abs_path = os.path.join(WEB_TESTS_DIR,
                                      'external', 'wpt', 'fail', 'test.html')
-        baseline_artifacts = {'wpt_actual_status': ['OK'],
-                              'actual_text': [
+        baseline_artifacts = {'actual_text': [
                                   os.path.join('layout-test-results',
                                                'external', 'wpt', 'fail',
                                                'test-actual.txt')]}
@@ -472,7 +469,7 @@ class BaseWptScriptAdapterTest(unittest.TestCase):
         self._create_json_output(json_dict)
         # Also create a checked-in metadata file for this test
         self.host.filesystem.write_text_file(
-            os.path.join(EXTERNAL_WPT_TESTS_DIR, "test.html.ini"),
+            os.path.join(TESTS_ROOT_DIR, "test.html.ini"),
             "test.html checked-in metadata")
         self.wpt_adapter.do_post_test_run_tasks()
         written_files = self.wpt_adapter.fs.written_files
@@ -551,7 +548,7 @@ class BaseWptScriptAdapterTest(unittest.TestCase):
         # matches the test *file* name, not the test name (which includes the
         # variant).
         self.host.filesystem.write_text_file(
-            os.path.join(EXTERNAL_WPT_TESTS_DIR, "variant.html.ini"),
+            os.path.join(TESTS_ROOT_DIR, "variant.html.ini"),
             "variant.html checked-in metadata")
         self.wpt_adapter.do_post_test_run_tasks()
         written_files = self.wpt_adapter.fs.written_files
@@ -610,7 +607,7 @@ class BaseWptScriptAdapterTest(unittest.TestCase):
         # matches the test *file* name, not the test name (which includes test
         # scope).
         self.host.filesystem.write_text_file(
-            os.path.join(EXTERNAL_WPT_TESTS_DIR,
+            os.path.join(TESTS_ROOT_DIR,
                          "dir/multiglob.https.any.js.ini"),
             "dir/multiglob checked-in metadata")
         self.wpt_adapter.do_post_test_run_tasks()

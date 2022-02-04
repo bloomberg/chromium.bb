@@ -160,7 +160,7 @@ UseInfo TruncatingUseInfoFromRepresentation(MachineRepresentation rep) {
       return UseInfo::Bool();
     case MachineRepresentation::kCompressedPointer:
     case MachineRepresentation::kCompressed:
-    case MachineRepresentation::kCagedPointer:
+    case MachineRepresentation::kSandboxedPointer:
     case MachineRepresentation::kSimd128:
     case MachineRepresentation::kNone:
       break;
@@ -1075,7 +1075,7 @@ class RepresentationSelector {
       return MachineRepresentation::kWord64;
     } else if (type.Is(Type::ExternalPointer()) ||
                type.Is(Type::SandboxedExternalPointer()) ||
-               type.Is(Type::CagedPointer())) {
+               type.Is(Type::SandboxedPointer())) {
       return MachineType::PointerRepresentation();
     }
     return MachineRepresentation::kTagged;
@@ -2100,17 +2100,6 @@ class RepresentationSelector {
       //------------------------------------------------------------------
       // JavaScript operators.
       //------------------------------------------------------------------
-      case IrOpcode::kToBoolean: {
-        if (truncation.IsUsedAsBool()) {
-          ProcessInput<T>(node, 0, UseInfo::Bool());
-          SetOutput<T>(node, MachineRepresentation::kBit);
-          if (lower<T>()) DeferReplacement(node, node->InputAt(0));
-        } else {
-          VisitInputs<T>(node);
-          SetOutput<T>(node, MachineRepresentation::kTaggedPointer);
-        }
-        return;
-      }
       case IrOpcode::kJSToNumber:
       case IrOpcode::kJSToNumberConvertBigInt:
       case IrOpcode::kJSToNumeric: {
@@ -2135,6 +2124,17 @@ class RepresentationSelector {
       //------------------------------------------------------------------
       // Simplified operators.
       //------------------------------------------------------------------
+      case IrOpcode::kToBoolean: {
+        if (truncation.IsUsedAsBool()) {
+          ProcessInput<T>(node, 0, UseInfo::Bool());
+          SetOutput<T>(node, MachineRepresentation::kBit);
+          if (lower<T>()) DeferReplacement(node, node->InputAt(0));
+        } else {
+          VisitInputs<T>(node);
+          SetOutput<T>(node, MachineRepresentation::kTaggedPointer);
+        }
+        return;
+      }
       case IrOpcode::kBooleanNot: {
         if (lower<T>()) {
           NodeInfo* input_info = GetInfo(node->InputAt(0));

@@ -40,7 +40,7 @@ std::tuple<SkGlyph*, size_t> SkScalerCache::glyph(SkPackedGlyphID packedGlyphID)
 }
 
 std::tuple<SkGlyphDigest, size_t> SkScalerCache::digest(SkPackedGlyphID packedGlyphID) {
-    SkGlyphDigest* digest = fDigestForPackedGlyphID.find(packedGlyphID);
+    SkGlyphDigest* digest = fDigestForPackedGlyphID.find(packedGlyphID.value());
 
     if (digest != nullptr) {
         return {*digest, 0};
@@ -53,7 +53,7 @@ std::tuple<SkGlyphDigest, size_t> SkScalerCache::digest(SkPackedGlyphID packedGl
 SkGlyphDigest SkScalerCache::addGlyph(SkGlyph* glyph) {
     size_t index = fGlyphForIndex.size();
     SkGlyphDigest digest = SkGlyphDigest{index, *glyph};
-    fDigestForPackedGlyphID.set(glyph->getPackedID(), digest);
+    fDigestForPackedGlyphID.set(digest);
     fGlyphForIndex.push_back(glyph);
     return digest;
 }
@@ -110,7 +110,7 @@ std::tuple<SkGlyph*, size_t> SkScalerCache::mergeGlyphAndImage(
         SkPackedGlyphID toID, const SkGlyph& from) {
     SkAutoMutexExclusive lock{fMu};
     // TODO(herb): remove finding the glyph when we are sure there are no glyph collisions.
-    SkGlyphDigest* digest = fDigestForPackedGlyphID.find(toID);
+    SkGlyphDigest* digest = fDigestForPackedGlyphID.find(toID.value());
     if (digest != nullptr) {
         // Since there is no search for replacement glyphs, this glyph should not exist yet.
         SkDEBUGFAIL("This implies adding to an existing glyph. This should not happen.");
@@ -195,7 +195,16 @@ size_t SkScalerCache::prepareForMaskDrawing(
             if (digest.canDrawAsMask()) {
                 drawables->push_back(fGlyphForIndex[digest.index()], i);
             } else {
-                rejects->reject(i);
+                // Only collect dimensions of the color glyphs assuming that paths will take care
+                // of the large mask glyphs. This may be inaccurate in the very rare case where
+                // a bitmap only font is being used.
+                // N.B. this must have the same behavior as RemoteStrike::prepareForMaskDrawing.
+                if (digest.isColor()) {
+                    // Paths can't handle color, so these will fall to the drawing of last resort.
+                    rejects->reject(i, digest.maxDimension());
+                } else {
+                    rejects->reject(i);
+                }
             }
         });
 

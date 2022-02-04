@@ -49,13 +49,14 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 // eslint-disable-next-line rulesdir/es_modules_import
 import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.css.js';
 import type {Chrome} from '../../../extension-api/ExtensionAPI.js'; // eslint-disable-line rulesdir/es_modules_import
 
+import {format} from './ConsoleFormat.js';
 import type {ConsoleViewportElement} from './ConsoleViewport.js';
 import consoleViewStyles from './consoleView.css.js';
+import {parseSourcePositionsFromErrorStack} from './ErrorStackParser.js';
 
 const UIStrings = {
   /**
@@ -206,7 +207,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
   private readonly linkifier: Components.Linkifier.Linkifier;
   private repeatCountInternal: number;
   private closeGroupDecorationCount: number;
-  private readonly nestingLevelInternal: number;
+  private consoleGroupInternal: ConsoleGroupViewMessage|null;
   private selectableChildren: {
     element: HTMLElement,
     forceSelect: () => void,
@@ -238,14 +239,13 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
   constructor(
       consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier,
       requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver,
-      nestingLevel: number, onResize: (arg0: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>) => void) {
+      onResize: (arg0: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>) => void) {
     this.message = consoleMessage;
     this.linkifier = linkifier;
     this.requestResolver = requestResolver;
     this.issueResolver = issueResolver;
     this.repeatCountInternal = 1;
     this.closeGroupDecorationCount = 0;
-    this.nestingLevelInternal = nestingLevel;
     this.selectableChildren = [];
     this.messageResized = onResize;
     this.elementInternal = null;
@@ -269,6 +269,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
     this.lastInSimilarGroup = false;
     this.groupKeyInternal = '';
     this.repeatCountElement = null;
+    this.consoleGroupInternal = null;
   }
 
   element(): HTMLElement {
@@ -587,9 +588,8 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
 
     // Multiple parameters with the first being a format string. Save unused substitutions.
     if (shouldFormatMessage) {
-      const result = this.formatWithSubstitutionString(
+      parameters = this.formatWithSubstitutionString(
           (parameters[0].description as string), parameters.slice(1), formattedResult);
-      parameters = Array.from(result.unusedSubstitutions || []);
       if (parameters.length) {
         UI.UIUtils.createTextChild(formattedResult, ' ');
       }
@@ -703,7 +703,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
       this.previewFormatter.appendObjectPreview(titleElement, obj.preview, false /* isEntry */);
     } else if (obj.type === 'function') {
       const functionElement = titleElement.createChild('span');
-      ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.formatObjectAsFunction(obj, functionElement, false);
+      void ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.formatObjectAsFunction(obj, functionElement, false);
       titleElement.classList.add('object-value-function');
     } else if (obj.subtype === 'trustedtype') {
       titleElement.appendChild(this.formatParameterAsTrustedType(obj));
@@ -735,7 +735,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
 
   private formatParameterAsFunction(func: SDK.RemoteObject.RemoteObject, includePreview?: boolean): HTMLElement {
     const result = document.createElement('span');
-    SDK.RemoteObject.RemoteFunction.objectAsFunction(func).targetFunction().then(formatTargetFunction.bind(this));
+    void SDK.RemoteObject.RemoteFunction.objectAsFunction(func).targetFunction().then(formatTargetFunction.bind(this));
     return result;
 
     function formatTargetFunction(this: ConsoleViewMessage, targetFunction: SDK.RemoteObject.RemoteObject): void {
@@ -748,7 +748,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
         UI.Tooltip.Tooltip.install(note, i18nString(UIStrings.functionWasResolvedFromBound));
       }
       result.addEventListener('contextmenu', this.contextMenuEventFired.bind(this, targetFunction), false);
-      promise.then(() => this.formattedParameterAsFunctionForTest());
+      void promise.then(() => this.formattedParameterAsFunctionForTest());
     }
   }
 
@@ -758,7 +758,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
   private contextMenuEventFired(obj: SDK.RemoteObject.RemoteObject, event: Event): void {
     const contextMenu = new UI.ContextMenu.ContextMenu(event);
     contextMenu.appendApplicableItems(obj);
-    contextMenu.show();
+    void contextMenu.show();
   }
 
   protected renderPropertyPreviewOrAccessor(
@@ -779,7 +779,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
     if (!domModel) {
       return result;
     }
-    domModel.pushObjectAsNodeToFrontend(remoteObject).then(async (node: SDK.DOMModel.DOMNode|null) => {
+    void domModel.pushObjectAsNodeToFrontend(remoteObject).then(async (node: SDK.DOMModel.DOMNode|null) => {
       if (!node) {
         result.appendChild(this.formatParameterAsObject(remoteObject, false));
         return;
@@ -867,188 +867,65 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
   }
 
   private formatWithSubstitutionString(
-      format: string, parameters: SDK.RemoteObject.RemoteObject[], formattedResult: HTMLElement): {
-    formattedResult: Element,
-    unusedSubstitutions: ArrayLike<SDK.RemoteObject.RemoteObject>|null,
-  } {
-    function parameterFormatter(
-        this: ConsoleViewMessage, force: boolean, includePreview: boolean,
-        obj?: string|SDK.RemoteObject.RemoteObject): string|HTMLElement|undefined {
-      if (obj instanceof SDK.RemoteObject.RemoteObject) {
-        return this.formatParameter(obj, force, includePreview);
-      }
-      return stringFormatter(obj);
-    }
-
-    function stringFormatter(obj?: string|SDK.RemoteObject.RemoteObject): string|undefined {
-      if (obj === undefined) {
-        return undefined;
-      }
-      if (typeof obj === 'string') {
-        return obj;
-      }
-      return obj.description;
-    }
-
-    function floatFormatter(obj?: string|SDK.RemoteObject.RemoteObject): number|string|undefined {
-      if (obj instanceof SDK.RemoteObject.RemoteObject) {
-        if (typeof obj.value !== 'number') {
-          return 'NaN';
+      formatString: string, parameters: SDK.RemoteObject.RemoteObject[],
+      formattedResult: HTMLElement): SDK.RemoteObject.RemoteObject[] {
+    const currentStyle = new Map();
+    const {tokens, args} = format(formatString, parameters);
+    for (const token of tokens) {
+      switch (token.type) {
+        case 'generic': {
+          formattedResult.append(this.formatParameter(token.value, true /* force */, false /* includePreview */));
+          break;
         }
-        return obj.value;
-      }
-      return undefined;
-    }
-
-    function integerFormatter(obj?: string|SDK.RemoteObject.RemoteObject): string|number|undefined {
-      if (obj instanceof SDK.RemoteObject.RemoteObject) {
-        if (obj.type === 'bigint') {
-          return obj.description;
+        case 'optimal': {
+          formattedResult.append(this.formatParameter(token.value, false /* force */, true /* includePreview */));
+          break;
         }
-        if (typeof obj.value !== 'number') {
-          return 'NaN';
-        }
-        return Math.floor(obj.value);
-      }
-      return undefined;
-    }
-
-    function bypassFormatter(obj?: string|SDK.RemoteObject.RemoteObject): Node|string {
-      return (obj instanceof Node) ? obj : '';
-    }
-
-    let currentStyle: Map<string, {value: string, priority: string}>|null = null;
-    function styleFormatter(obj?: string|SDK.RemoteObject.RemoteObject): void {
-      currentStyle = new Map();
-      const buffer = document.createElement('span');
-      if (obj === undefined) {
-        return;
-      }
-      if (typeof obj === 'string' || !obj.description) {
-        return;
-      }
-      buffer.setAttribute('style', obj.description);
-      for (const property of buffer.style) {
-        if (isAllowedProperty(property)) {
-          const info = {
-            value: buffer.style.getPropertyValue(property),
-            priority: buffer.style.getPropertyPriority(property),
-          };
-          currentStyle.set(property, info);
-        }
-      }
-    }
-
-    function isAllowedProperty(property: string): boolean {
-      // Make sure that allowed properties do not interfere with link visibility.
-      const prefixes = [
-        'background',
-        'border',
-        'color',
-        'font',
-        'line',
-        'margin',
-        'padding',
-        'text',
-        '-webkit-background',
-        '-webkit-border',
-        '-webkit-font',
-        '-webkit-margin',
-        '-webkit-padding',
-        '-webkit-text',
-      ];
-      for (const prefix of prefixes) {
-        if (property.startsWith(prefix)) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const formatters: Record<string, Platform.StringUtilities.FormatterFunction<any>> = {};
-    // Firebug uses %o for formatting objects.
-    formatters.o = parameterFormatter.bind(this, false /* force */, true /* includePreview */);
-    formatters.s = stringFormatter;
-    formatters.f = floatFormatter;
-    // Firebug allows both %i and %d for formatting integers.
-    formatters.i = integerFormatter;
-    formatters.d = integerFormatter;
-
-    // Firebug uses %c for styling the message.
-    formatters.c = styleFormatter;
-
-    // Support %O to force object formatting, instead of the type-based %o formatting.
-    formatters.O = parameterFormatter.bind(this, true /* force */, false /* includePreview */);
-
-    formatters._ = bypassFormatter;
-
-    function append(this: ConsoleViewMessage, a: HTMLElement, b?: string|Node): HTMLElement {
-      if (b instanceof Node) {
-        a.appendChild(b);
-        return a;
-      }
-      if (typeof b === 'undefined') {
-        return a;
-      }
-      if (!currentStyle) {
-        a.appendChild(this.linkifyStringAsFragment(String(b)));
-        return a;
-      }
-      const lines = String(b).split('\n');
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const lineFragment = this.linkifyStringAsFragment(line);
-        const wrapper = document.createElement('span');
-        wrapper.style.setProperty('contain', 'paint');
-        wrapper.style.setProperty('display', 'inline-block');
-        wrapper.style.setProperty('max-width', '100%');
-        wrapper.appendChild(lineFragment);
-        applyCurrentStyle(wrapper);
-        for (const child of wrapper.children) {
-          if (child.classList.contains('devtools-link') && child instanceof HTMLElement) {
-            this.applyForcedVisibleStyle(child);
+        case 'string': {
+          if (currentStyle.size === 0) {
+            formattedResult.append(this.linkifyStringAsFragment(token.value));
+          } else {
+            const lines = token.value.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+              if (i > 0) {
+                formattedResult.append(document.createElement('br'));
+              }
+              const wrapper = document.createElement('span');
+              wrapper.style.setProperty('contain', 'paint');
+              wrapper.style.setProperty('display', 'inline-block');
+              wrapper.style.setProperty('max-width', '100%');
+              wrapper.appendChild(this.linkifyStringAsFragment(lines[i]));
+              for (const [property, {value, priority}] of currentStyle) {
+                wrapper.style.setProperty(property, value, priority);
+              }
+              formattedResult.append(wrapper);
+            }
           }
+          break;
         }
-        a.appendChild(wrapper);
-        if (i < lines.length - 1) {
-          a.appendChild(document.createElement('br'));
+        case 'style': {
+          // Make sure that allowed properties do not interfere with link visibility.
+          const ALLOWED_PROPERTY_PREFIXES =
+              ['background', 'border', 'color', 'font', 'line', 'margin', 'padding', 'text'];
+
+          currentStyle.clear();
+          const buffer = document.createElement('span');
+          buffer.setAttribute('style', token.value);
+          for (const property of buffer.style) {
+            if (!ALLOWED_PROPERTY_PREFIXES.some(
+                    prefix => property.startsWith(prefix) || property.startsWith(`-webkit-${prefix}`))) {
+              continue;
+            }
+            currentStyle.set(property, {
+              value: buffer.style.getPropertyValue(property),
+              priority: buffer.style.getPropertyPriority(property),
+            });
+          }
+          break;
         }
       }
-      return a;
     }
-
-    function applyCurrentStyle(element: HTMLElement): void {
-      if (!currentStyle) {
-        return;
-      }
-      for (const [property, {value, priority}] of currentStyle.entries()) {
-        element.style.setProperty((property as string), value, priority);
-      }
-    }
-
-    // Platform.StringUtilities.format does treat formattedResult like a Builder, result is an object.
-    return Platform.StringUtilities.format(format, parameters, formatters, formattedResult, append.bind(this));
-  }
-
-  private applyForcedVisibleStyle(element: HTMLElement): void {
-    element.style.setProperty('-webkit-text-stroke', '0', 'important');
-    element.style.setProperty('text-decoration', 'underline', 'important');
-
-    const themedColor = ThemeSupport.ThemeSupport.instance().patchColorText(
-        'rgb(33%, 33%, 33%)', ThemeSupport.ThemeSupport.ColorUsage.Foreground);
-    element.style.setProperty('color', themedColor, 'important');
-
-    let backgroundColor = 'hsl(0, 0%, 100%)';
-    if (this.message.level === Protocol.Log.LogEntryLevel.Error) {
-      backgroundColor = 'hsl(0, 100%, 97%)';
-    } else if (this.message.level === Protocol.Log.LogEntryLevel.Warning || this.shouldRenderAsWarning()) {
-      backgroundColor = 'hsl(50, 100%, 95%)';
-    }
-    const themedBackgroundColor = ThemeSupport.ThemeSupport.instance().patchColorText(
-        backgroundColor, ThemeSupport.ThemeSupport.ColorUsage.Background);
-    element.style.setProperty('background-color', themedBackgroundColor, 'important');
+    return args;
   }
 
   matchesFilterRegex(regexObject: RegExp): boolean {
@@ -1084,7 +961,24 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
   }
 
   nestingLevel(): number {
-    return this.nestingLevelInternal;
+    let nestingLevel = 0;
+    for (let group = this.consoleGroup(); group !== null; group = group.consoleGroup()) {
+      nestingLevel++;
+    }
+    return nestingLevel;
+  }
+
+  setConsoleGroup(group: ConsoleGroupViewMessage): void {
+    console.assert(this.consoleGroupInternal === null);
+    this.consoleGroupInternal = group;
+  }
+
+  clearConsoleGroup(): void {
+    this.consoleGroupInternal = null;
+  }
+
+  consoleGroup(): ConsoleGroupViewMessage|null {
+    return this.consoleGroupInternal;
   }
 
   setInSimilarGroup(inSimilarGroup: boolean, isLast?: boolean): void {
@@ -1295,7 +1189,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
     }
 
     this.nestingLevelMarkers = [];
-    for (let i = 0; i < this.nestingLevelInternal; ++i) {
+    for (let i = 0; i < this.nestingLevel(); ++i) {
       this.nestingLevelMarkers.push(this.elementInternal.createChild('div', 'nesting-level-marker'));
     }
     this.updateCloseGroupDecorations();
@@ -1529,100 +1423,17 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
   }
 
   private tryFormatAsError(string: string): HTMLElement|null {
-    function startsWith(prefix: string): boolean {
-      return string.startsWith(prefix);
-    }
-
     const runtimeModel = this.message.runtimeModel();
-    // TODO: Consider removing these in favor of a simpler regex.
-    const errorPrefixes = [
-      'AggregateError',
-      'Error',
-      'EvalError',
-      'RangeError',
-      'ReferenceError',
-      'SyntaxError',
-      'TypeError',
-      'URIError',
-    ];
-    if (!runtimeModel || !errorPrefixes.some(startsWith) && !/^[\w.]+Error\b/.test(string)) {
+    if (!runtimeModel) {
       return null;
     }
+
+    const linkInfos = parseSourcePositionsFromErrorStack(runtimeModel, string);
+    if (!linkInfos?.length) {
+      return null;
+    }
+
     const debuggerModel = runtimeModel.debuggerModel();
-    const baseURL = runtimeModel.target().inspectedURL();
-
-    const lines = string.split('\n');
-    const linkInfos = [];
-    for (const line of lines) {
-      const isCallFrameLine = /^\s*at\s/.test(line);
-      if (!isCallFrameLine && linkInfos.length && linkInfos[linkInfos.length - 1].link) {
-        return null;
-      }
-
-      if (!isCallFrameLine) {
-        linkInfos.push({line});
-        continue;
-      }
-
-      let openBracketIndex = -1;
-      let closeBracketIndex = -1;
-      const inBracketsWithLineAndColumn = /\([^\)\(]+:\d+:\d+\)/g;
-      const inBrackets = /\([^\)\(]+\)/g;
-      let lastMatch: RegExpExecArray|null = null;
-      let currentMatch;
-      while ((currentMatch = inBracketsWithLineAndColumn.exec(line))) {
-        lastMatch = currentMatch;
-      }
-      if (!lastMatch) {
-        while ((currentMatch = inBrackets.exec(line))) {
-          lastMatch = currentMatch;
-        }
-      }
-      if (lastMatch) {
-        openBracketIndex = lastMatch.index;
-        closeBracketIndex = lastMatch.index + lastMatch[0].length - 1;
-      }
-      const hasOpenBracket = openBracketIndex !== -1;
-      let left = hasOpenBracket ? openBracketIndex + 1 : line.indexOf('at') + 3;
-      if (!hasOpenBracket && line.indexOf('async ') === left) {
-        left += 6;
-      }
-      const right = hasOpenBracket ? closeBracketIndex : line.length;
-      const linkCandidate = line.substring(left, right);
-      const splitResult = Common.ParsedURL.ParsedURL.splitLineAndColumn(linkCandidate);
-      if (!splitResult) {
-        return null;
-      }
-
-      if (splitResult.url === '<anonymous>') {
-        linkInfos.push({line});
-        continue;
-      }
-      let url = parseOrScriptMatch(splitResult.url);
-      if (!url && Common.ParsedURL.ParsedURL.isRelativeURL(splitResult.url)) {
-        url = parseOrScriptMatch(Common.ParsedURL.ParsedURL.completeURL(baseURL, splitResult.url));
-      }
-      if (!url) {
-        return null;
-      }
-
-      linkInfos.push({
-        line,
-        link: {
-          url,
-          enclosedInBraces: hasOpenBracket,
-          positionLeft: left,
-          positionRight: right,
-          lineNumber: splitResult.lineNumber,
-          columnNumber: splitResult.columnNumber,
-        },
-      });
-    }
-
-    if (!linkInfos.length) {
-      return null;
-    }
-
     const formattedResult = document.createElement('span');
     for (let i = 0; i < linkInfos.length; ++i) {
       const newline = i < linkInfos.length - 1 ? '\n' : '';
@@ -1659,7 +1470,8 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
       // If we were able to parse the function name from the stack trace line, try to replace it with an expansion of
       // any inline frames.
       const selectableChildIndex = this.selectableChildren.length - 1;
-      this.expandInlineStackFrames(
+      void this
+          .expandInlineStackFrames(
               debuggerModel, prefixWithoutFunction, suffix, link.url, link.lineNumber, link.columnNumber,
               formattedResult, formattedLine)
           .then(modified => {
@@ -1671,25 +1483,6 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
     }
 
     return formattedResult;
-
-    function parseOrScriptMatch(url: string|null): string|null {
-      if (!url) {
-        return null;
-      }
-      const parsedURL = Common.ParsedURL.ParsedURL.fromString(url);
-      if (parsedURL) {
-        return parsedURL.url;
-      }
-      if (debuggerModel.scriptsForSourceURL(url).length) {
-        return url;
-      }
-      // nodejs stack traces contain (absolute) file paths, but v8 reports them as file: urls.
-      const fileUrl = new URL(url, 'file://');
-      if (debuggerModel.scriptsForSourceURL(fileUrl.href).length) {
-        return fileUrl.href;
-      }
-      return null;
-    }
   }
 
   private linkifyWithCustomLinkifier(
@@ -1824,17 +1617,18 @@ export class ConsoleGroupViewMessage extends ConsoleViewMessage {
   private collapsedInternal: boolean;
   private expandGroupIcon: UI.Icon.Icon|null;
   private readonly onToggle: () => void;
+  private groupEndMessageInternal: ConsoleViewMessage|null;
 
   constructor(
       consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier,
       requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver,
-      nestingLevel: number, onToggle: () => void,
-      onResize: (arg0: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>) => void) {
+      onToggle: () => void, onResize: (arg0: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>) => void) {
     console.assert(consoleMessage.isGroupStartMessage());
-    super(consoleMessage, linkifier, requestResolver, issueResolver, nestingLevel, onResize);
+    super(consoleMessage, linkifier, requestResolver, issueResolver, onResize);
     this.collapsedInternal = consoleMessage.type === Protocol.Runtime.ConsoleAPICalledEventType.StartGroupCollapsed;
     this.expandGroupIcon = null;
     this.onToggle = onToggle;
+    this.groupEndMessageInternal = null;
   }
 
   private setCollapsed(collapsed: boolean): void {
@@ -1885,6 +1679,28 @@ export class ConsoleGroupViewMessage extends ConsoleViewMessage {
       this.repeatCountElement.insertBefore(this.expandGroupIcon, this.repeatCountElement.firstChild);
     }
   }
+
+  messagesHidden(): boolean {
+    if (this.collapsed()) {
+      return true;
+    }
+    const parent = this.consoleGroup();
+    return Boolean(parent && parent.messagesHidden());
+  }
+
+  setGroupEnd(viewMessage: ConsoleViewMessage): void {
+    if (viewMessage.consoleMessage().type !== Protocol.Runtime.ConsoleAPICalledEventType.EndGroup) {
+      throw new Error('Invalid console message as group end');
+    }
+    if (this.groupEndMessageInternal !== null) {
+      throw new Error('Console group already has an end');
+    }
+    this.groupEndMessageInternal = viewMessage;
+  }
+
+  groupEnd(): ConsoleViewMessage|null {
+    return this.groupEndMessageInternal;
+  }
 }
 
 export class ConsoleCommand extends ConsoleViewMessage {
@@ -1893,8 +1709,8 @@ export class ConsoleCommand extends ConsoleViewMessage {
   constructor(
       consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier,
       requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver,
-      nestingLevel: number, onResize: (arg0: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>) => void) {
-    super(consoleMessage, linkifier, requestResolver, issueResolver, nestingLevel, onResize);
+      onResize: (arg0: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>) => void) {
+    super(consoleMessage, linkifier, requestResolver, issueResolver, onResize);
     this.formattedCommand = null;
   }
 
@@ -1916,7 +1732,7 @@ export class ConsoleCommand extends ConsoleViewMessage {
     newContentElement.appendChild(this.formattedCommand);
 
     if (this.formattedCommand.textContent.length < MaxLengthToIgnoreHighlighter) {
-      CodeHighlighter.CodeHighlighter.highlightNode(this.formattedCommand, 'text/javascript')
+      void CodeHighlighter.CodeHighlighter.highlightNode(this.formattedCommand, 'text/javascript')
           .then(this.updateSearch.bind(this));
     } else {
       this.updateSearch();
@@ -1951,8 +1767,8 @@ export class ConsoleTableMessageView extends ConsoleViewMessage {
   constructor(
       consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier,
       requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver,
-      nestingLevel: number, onResize: (arg0: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>) => void) {
-    super(consoleMessage, linkifier, requestResolver, issueResolver, nestingLevel, onResize);
+      onResize: (arg0: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>) => void) {
+    super(consoleMessage, linkifier, requestResolver, issueResolver, onResize);
     console.assert(consoleMessage.type === Protocol.Runtime.ConsoleAPICalledEventType.Table);
     this.dataGrid = null;
   }

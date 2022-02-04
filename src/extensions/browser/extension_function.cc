@@ -35,7 +35,6 @@
 #include "extensions/browser/blob_holder.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_function_registry.h"
-#include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/renderer_startup_helper.h"
@@ -594,6 +593,10 @@ void ExtensionFunction::SetDispatcher(
 }
 
 void ExtensionFunction::Shutdown() {
+  // Wait until the end of this function to delete |this|, in case
+  // OnBrowserContextShutdown() decrements the refcount.
+  scoped_refptr<ExtensionFunction> keep_alive{this};
+
   // Allow the extension function to perform any cleanup before nulling out
   // `browser_context_`.
   OnBrowserContextShutdown();

@@ -1,6 +1,8 @@
 export const description = `copyTexturetoTexture operation tests
 
 TODO: remove fragment stage in InitializeDepthAspect() when browsers support null fragment stage.
+TODO: 1d/3d texture tests [1]
+TODO: 1d texture tests
 `;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
@@ -36,7 +38,7 @@ class F extends GPUTest {
     format: SizedTextureFormat,
     mipLevel: number
   ): Uint8Array {
-    // TODO(jiawei.shao@intel.com): support 3D textures
+    // [1]: Does not presently support 1d/3d textures.
     const textureSizeAtLevel = physicalMipSize(textureSize, format, '2d', mipLevel);
     const bytesPerBlock = kTextureFormatInfo[format].bytesPerBlock;
     const blockWidthInTexel = kTextureFormatInfo[format].blockWidth;
@@ -309,7 +311,7 @@ class F extends GPUTest {
       vertex: {
         module: this.device.createShaderModule({
           code: `
-            [[block]] struct Params {
+            struct Params {
               copyLayer: f32;
             };
             [[group(0), binding(0)]] var<uniform> param: Params;

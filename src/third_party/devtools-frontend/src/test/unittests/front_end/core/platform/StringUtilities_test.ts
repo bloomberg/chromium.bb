@@ -168,355 +168,6 @@ describe('StringUtilities', () => {
     });
   });
 
-  describe('tokenizeFormatString', () => {
-    it('deals with tokenizers that return undefined', () => {
-      const tokens = Platform.StringUtilities.tokenizeFormatString('%c%s', {
-        c: () => {},
-        s: () => {},
-      });
-      assert.deepEqual(tokens, [
-        {
-          value: undefined,
-          precision: -1,
-          specifier: 'c',
-          substitutionIndex: 0,
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-        },
-        {
-          value: undefined,
-          precision: -1,
-          specifier: 's',
-          substitutionIndex: 1,
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-        },
-      ]);
-    });
-
-    it('deals with ANSI colors', () => {
-      const types = [3, 9, 4, 10];
-      const colors = [];
-      for (const type of types) {
-        for (let i = 0; i < 10; ++i) {
-          colors.push(type * 10 + i);
-        }
-      }
-
-      const tokens =
-          Platform.StringUtilities.tokenizeFormatString(colors.map(c => `\u001b[${c}m`).join(''), {c: () => {}});
-
-      const expectedTokens: Platform.StringUtilities.FormatterToken[] = [
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: black',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: red',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: green',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: yellow',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: blue',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: magenta',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: cyan',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: lightGray',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: default',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: darkGray',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: lightRed',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: lightGreen',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: lightYellow',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: lightBlue',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: lightMagenta',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: lightCyan',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'color: white',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : black',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : red',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : green',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : yellow',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : blue',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : magenta',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : cyan',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : lightGray',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : default',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : darkGray',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : lightRed',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : lightGreen',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : lightYellow',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : lightBlue',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : lightMagenta',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : lightCyan',
-          },
-        },
-        {
-          precision: undefined,
-          substitutionIndex: undefined,
-          specifier: 'c',
-          type: Platform.StringUtilities.FormatterType.SPECIFIER,
-          value: {
-            description: 'background : white',
-          },
-        },
-      ];
-
-      assert.deepEqual(tokens, expectedTokens);
-    });
-  });
-
   describe('toTitleCase', () => {
     it('converts a string to title case', () => {
       const output = Platform.StringUtilities.toTitleCase('foo bar baz');
@@ -796,6 +447,75 @@ describe('StringUtilities', () => {
       assert.strictEqual(Platform.StringUtilities.findUnclosedCssQuote('a'), '');
       assert.strictEqual(Platform.StringUtilities.findUnclosedCssQuote('"ab"c\'de\'f'), '');
       assert.strictEqual(Platform.StringUtilities.findUnclosedCssQuote('"a\\\'b"c\\\'de\'f\\\'\''), '');
+    });
+  });
+
+  describe('sprintf', () => {
+    it('correctly deals with empty format string', () => {
+      assert.strictEqual(Platform.StringUtilities.sprintf(''), '');
+      assert.strictEqual(Platform.StringUtilities.sprintf('', 1), '');
+    });
+
+    it('replaces %% with %', () => {
+      assert.strictEqual(Platform.StringUtilities.sprintf('%%s %%d %%f'), '%s %d %f');
+    });
+
+    it('correctly substitutes %d', () => {
+      assert.strictEqual(Platform.StringUtilities.sprintf('%d', NaN), '0');
+      assert.strictEqual(Platform.StringUtilities.sprintf('%d days', 1.5), '1 days');
+    });
+
+    it('correctly substitutes %d with precision', () => {
+      assert.strictEqual(Platform.StringUtilities.sprintf('%.1d', 2), '2');
+      assert.strictEqual(Platform.StringUtilities.sprintf('%.2d', 3), '03');
+      assert.strictEqual(Platform.StringUtilities.sprintf('%.2d', 333), '333');
+    });
+
+    it('correctly substitutes %f', () => {
+      assert.strictEqual(Platform.StringUtilities.sprintf('%f', NaN), '0');
+      assert.strictEqual(Platform.StringUtilities.sprintf('%f', 1), '1');
+    });
+
+    it('correctly substitutes %f with precision', () => {
+      assert.strictEqual(Platform.StringUtilities.sprintf('%.2f', NaN), '0.00');
+      assert.strictEqual(Platform.StringUtilities.sprintf('%.2f', 1), '1.00');
+      assert.strictEqual(Platform.StringUtilities.sprintf('%.2f', 1.23456), '1.23');
+      assert.strictEqual(Platform.StringUtilities.sprintf('%.3f', 1.23456), '1.235');
+    });
+
+    it('correctly substitutes %s', () => {
+      assert.strictEqual(Platform.StringUtilities.sprintf('Hello %s!', 'World'), 'Hello World!');
+      assert.strictEqual(Platform.StringUtilities.sprintf('Hello %s!', '%d', 1), 'Hello %d!');
+    });
+
+    it('correctly substitutes %s with precision', () => {
+      assert.strictEqual(Platform.StringUtilities.sprintf('Hello %.1s!', 'World'), 'Hello W!');
+      assert.strictEqual(Platform.StringUtilities.sprintf('Hello %.10s!', 'World'), 'Hello World!');
+    });
+
+    it('triggers correct type conversion', () => {
+      const obj = {
+        toString() {
+          return '5';
+        },
+        valueOf() {
+          return 6;
+        },
+      };
+      assert.strictEqual(Platform.StringUtilities.sprintf('%d', obj), '6');
+      assert.strictEqual(Platform.StringUtilities.sprintf('%.2f', obj), '6.00');
+      assert.strictEqual(Platform.StringUtilities.sprintf('%s', obj), '5');
+    });
+
+    it('deals with parameter indices', () => {
+      assert.strictEqual(Platform.StringUtilities.sprintf('%2$s %1$s!', 'World', 'Hello'), 'Hello World!');
+      assert.throws(() => Platform.StringUtilities.sprintf('%0$s', 'World'));
+    });
+
+    it('signals error when too few parameters are given', () => {
+      assert.throws(() => Platform.StringUtilities.sprintf('%2$s', 'World'));
+      assert.throws(() => Platform.StringUtilities.sprintf('%2$s %s!', 'World', 'Hello'));
+      assert.throws(() => Platform.StringUtilities.sprintf('%s %d', 'World'));
     });
   });
 });

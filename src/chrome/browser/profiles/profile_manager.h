@@ -9,7 +9,6 @@
 
 #include <stddef.h>
 
-#include <list>
 #include <map>
 #include <memory>
 #include <set>
@@ -23,6 +22,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,9 +30,9 @@
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/common/buildflags.h"
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/browser_list_observer.h"
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 class AccountProfileMapper;
@@ -82,16 +82,28 @@ class ProfileManager : public Profile::Delegate {
   // loaded. Does not block.
   static Profile* GetLastUsedProfileIfLoaded();
 
-  // Same as GetLastUsedProfile() but returns the incognito Profile if
-  // incognito mode is forced. This should be used if the last used Profile
+  // Same as `GetLastUsedProfile()` but returns the incognito `Profile` if
+  // incognito mode is forced. This should be used if the last used `Profile`
   // will be used to open new browser windows.
-  // WARNING: if the profile does not exist, this function creates it
-  // synchronously, causing blocking file I/O.
+  // WARNING: if the `Profile` does not exist, this function creates it
+  // synchronously, causing blocking file I/O. Use
+  // `LoadLastUsedProfileAllowedByPolicy()` instead.
   static Profile* GetLastUsedProfileAllowedByPolicy();
 
-  // Helper function that returns true if OffTheRecord mode is forced for
-  // |profile| (normal mode is not available for browsing).
-  static bool IsOffTheRecordModeForced(Profile* profile);
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  // Same as `GetLastUsedProfileAllowedByPolicy()`, but asynchronously loads the
+  // `Profile` if it's not already loaded.
+  // TODO(https://crbug.com/1176734): Implement on Ash. Requires handling the
+  // cases where the user is not logged in, and implementing an asynchronous
+  // version of `GetActiveUserOrOffTheRecordProfile()`.
+  static void LoadLastUsedProfileAllowedByPolicy(
+      ProfileLoadedCallback callback);
+#endif
+
+  // Helper function that returns the OffTheRecord profile if it is forced for
+  // `profile` (normal mode is not available for browsing).
+  // Returns nullptr if `profile` is nullptr.
+  static Profile* MaybeForceOffTheRecordMode(Profile* profile);
 
   // Get the Profiles which are currently open, i.e. have open browsers or were
   // open the last time Chrome was running. Profiles that fail to initialize are
@@ -101,19 +113,31 @@ class ProfileManager : public Profile::Delegate {
   // the last one).
   static std::vector<Profile*> GetLastOpenedProfiles();
 
+  // WARNING: do not use this function on Desktop platforms (Windows, Mac,
+  // Linux). See https://crbug.com/1264436 for more info.
+  // TODO(https://crbug.com/1264436): restrict this function to Android and
+  // ChromeOS.
+  //
   // Get the profile for the user which created the current session.
   // Note that in case of a guest account this will return a 'suitable' profile.
   static Profile* GetPrimaryUserProfile();
 
+  // WARNING: do not use this function on Desktop platforms (Windows, Mac,
+  // Linux). See https://crbug.com/1264436 for more info.
+  // TODO(https://crbug.com/1264436): restrict this function to Android and
+  // ChromeOS.
+  //
   // Get the profile for the currently active user.
   // Note that in case of a guest account this will return a 'suitable' profile.
   static Profile* GetActiveUserProfile();
 
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_ANDROID)
   // Load and return the initial profile for browser. On ChromeOS, this returns
   // either the sign-in profile or the active user profile depending on whether
   // browser is started normally or is restarted after crash. On other
   // platforms, this returns the default profile.
   static Profile* CreateInitialProfile();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_ANDROID)
 
   void AddObserver(ProfileManagerObserver* observer);
   void RemoveObserver(ProfileManagerObserver* observer);
@@ -223,7 +247,7 @@ class ProfileManager : public Profile::Delegate {
   AccountProfileMapper* GetAccountProfileMapper();
 #endif
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Less strict version of ScheduleProfileForDeletion(), silently exits if
   // profile is either scheduling or marked for deletion.
   void MaybeScheduleProfileForDeletion(
@@ -286,8 +310,11 @@ class ProfileManager : public Profile::Delegate {
   bool HasKeepAliveForTesting(const Profile* profile,
                               ProfileKeepAliveOrigin origin);
 
-  // Returns true if there's at least one profile in a "zombie" state, which
-  // means either:
+  // Disables the periodic reporting of profile metrics, as this is causing
+  // tests to time out.
+  void DisableProfileMetricsForTesting();
+
+  // Returns the number of profiles in a "zombie" state, which means either:
   //
   //   - this profile was destroyed from memory,
   //   - this profile has a refcount of 0, meaning it's safe to destroy.
@@ -298,7 +325,7 @@ class ProfileManager : public Profile::Delegate {
   //
   // This is used for an A/B test, that measures the impact of the
   // DestroyProfileOnBrowserClose variation on memory usage.
-  bool HasZombieProfile() const;
+  size_t GetZombieProfileCount() const;
 
  protected:
   // Creates a new profile by calling into the profile's profile creation
@@ -386,8 +413,11 @@ class ProfileManager : public Profile::Delegate {
   void AddKeepAlive(const Profile* profile, ProfileKeepAliveOrigin origin);
   void RemoveKeepAlive(const Profile* profile, ProfileKeepAliveOrigin origin);
 
-  // Removes the kWaitingForFirstBrowserWindow keepalive. This allows a Profile*
-  // to be deleted from now on, even if it never had a visible browser window.
+  void RecordZombieMetrics();
+
+  // Removes the kWaitingForFirstBrowserWindow keepalive. This allows a
+  // Profile* to be deleted from now on, even if it never had a visible
+  // browser window.
   void ClearFirstBrowserWindowKeepAlive(const Profile* profile);
 
   // Helper for RemoveKeepAlive() and ClearFirstBrowserWindowFlag(). If the
@@ -412,7 +442,7 @@ class ProfileManager : public Profile::Delegate {
   // Returns true if the profile was added, false otherwise.
   bool AddProfile(std::unique_ptr<Profile> profile);
 
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // Removes the Profile at |profile_dir| from the manager and destroys it. If
   // it's an ephemeral profile, also nuke the |profile_dir| directory from disk
   // afterwards.
@@ -424,7 +454,7 @@ class ProfileManager : public Profile::Delegate {
   // null if creation fails.
   Profile* CreateAndInitializeProfile(const base::FilePath& profile_dir);
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // Continues the scheduled profile deletion after closing all the profile's
   // browsers tabs. Creates a new profile if the profile to be deleted is the
   // last non-supervised profile. In the Mac, loads the next non-supervised
@@ -484,7 +514,7 @@ class ProfileManager : public Profile::Delegate {
 
   void SaveActiveProfiles();
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   void OnBrowserOpened(Browser* browser);
   void OnBrowserClosed(Browser* browser);
 
@@ -523,7 +553,7 @@ class ProfileManager : public Profile::Delegate {
       Profile::CreateStatus status);
 
   void OnClosingAllBrowsersChanged(bool closing);
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   // Destroy after |profile_attributes_storage_| since Profile destruction may
   // trigger some observers to unregister themselves.
@@ -554,9 +584,9 @@ class ProfileManager : public Profile::Delegate {
   // default.
   bool logged_in_ = false;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   BrowserListObserver browser_list_observer_{this};
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   // Maps profile path to ProfileInfo (if profile has been created). Use
   // RegisterProfile() to add into this map. This map owns all loaded profile
@@ -582,7 +612,13 @@ class ProfileManager : public Profile::Delegate {
   // Set of profile dirs that were loaded during this browsing session at some
   // point (or are currently loaded). This is used to measure memory savings
   // from DestroyProfileOnBrowserClose.
+  //
+  // Doesn't include the System and Guest profile paths.
   std::set<base::FilePath> ever_loaded_profiles_;
+
+  // Runs a task every 30 minutes to record the number of zombie & non-zombie
+  // profiles in memory.
+  base::RepeatingTimer zombie_metrics_timer_;
 
   // Controls whether to initialize some services. Only disabled for testing.
   bool do_final_services_init_ = true;

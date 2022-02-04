@@ -42,7 +42,7 @@ export interface PanelFeedbackData {
 export class PanelFeedback extends HTMLElement {
   static readonly litTagName = LitHtml.literal`devtools-panel-feedback`;
   readonly #shadow = this.attachShadow({mode: 'open'});
-  readonly #boundRender = this.render.bind(this);
+  readonly #boundRender = this.#render.bind(this);
 
   #props: PanelFeedbackData = {
     feedbackUrl: '',
@@ -56,10 +56,10 @@ export class PanelFeedback extends HTMLElement {
 
   set data(data: PanelFeedbackData) {
     this.#props = data;
-    ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
   }
 
-  private render(): void {
+  #render(): void {
     if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {
       throw new Error('PanelFeedback render was not scheduled');
     }

@@ -36,6 +36,19 @@ function(tint_spvtools_compile_options TARGET)
   endif()
 endfunction()
 
+## Tint diagnostic utilities. Used by libtint and tint_utils_io.
+add_library(tint_diagnostic_utils
+  debug.cc
+  debug.h
+  diagnostic/diagnostic.cc
+  diagnostic/diagnostic.h
+  diagnostic/formatter.cc
+  diagnostic/formatter.h
+  diagnostic/printer.cc
+  diagnostic/printer.h
+)
+tint_default_compile_options(tint_diagnostic_utils)
+
 set(TINT_LIB_SRCS
   ../include/tint/tint.h
   ast/access.cc
@@ -208,23 +221,14 @@ set(TINT_LIB_SRCS
   castable.h
   clone_context.cc
   clone_context.h
-  debug.cc
-  debug.h
   demangler.cc
   demangler.h
-  diagnostic/diagnostic.cc
-  diagnostic/diagnostic.h
-  diagnostic/formatter.cc
-  diagnostic/formatter.h
-  diagnostic/printer.cc
-  diagnostic/printer.h
   inspector/entry_point.cc
   inspector/entry_point.h
   inspector/inspector.cc
   inspector/inspector.h
   inspector/resource_binding.cc
   inspector/resource_binding.h
-  inspector/sampler_texture_pair.h
   inspector/scalar.cc
   inspector/scalar.h
   intrinsic_table.cc
@@ -277,6 +281,7 @@ set(TINT_LIB_SRCS
   sem/pipeline_stage_set.h
   sem/node.cc
   sem/node.h
+  sem/sampler_texture_pair.h
   sem/statement.cc
   sem/struct.cc
   sem/type_mappings.h
@@ -290,6 +295,8 @@ set(TINT_LIB_SRCS
   traits.h
   transform/add_empty_entry_point.cc
   transform/add_empty_entry_point.h
+  transform/add_spirv_block_decoration.cc
+  transform/add_spirv_block_decoration.h
   transform/array_length_from_uniform.cc
   transform/array_length_from_uniform.h
   transform/binding_remapper.cc
@@ -310,6 +317,8 @@ set(TINT_LIB_SRCS
   transform/fold_constants.h
   transform/fold_trivial_single_use_lets.cc
   transform/fold_trivial_single_use_lets.h
+  transform/localize_struct_array_assignment.cc
+  transform/localize_struct_array_assignment.h
   transform/for_loop_to_loop.cc
   transform/for_loop_to_loop.h
   transform/glsl.cc
@@ -346,6 +355,8 @@ set(TINT_LIB_SRCS
   transform/unshadow.h
   transform/vectorize_scalar_matrix_constructors.cc
   transform/vectorize_scalar_matrix_constructors.h
+  transform/var_for_dynamic_index.cc
+  transform/var_for_dynamic_index.h
   transform/vertex_pulling.cc
   transform/vertex_pulling.h
   transform/wrap_arrays_in_structs.cc
@@ -529,6 +540,7 @@ add_library(tint_utils_io
   utils/io/tmpfile.h
 )
 tint_default_compile_options(tint_utils_io)
+target_link_libraries(tint_utils_io tint_diagnostic_utils)
 
 ## Tint validation utilities. Used by tests and the tint executable.
 add_library(tint_val
@@ -556,6 +568,7 @@ target_link_libraries(tint_val tint_utils_io)
 ## Tint library
 add_library(libtint ${TINT_LIB_SRCS})
 tint_default_compile_options(libtint)
+target_link_libraries(libtint tint_diagnostic_utils)
 if (${COMPILER_IS_LIKE_GNU})
   target_compile_options(libtint PRIVATE -fvisibility=hidden)
 endif()
@@ -568,6 +581,7 @@ if (${TINT_BUILD_FUZZERS})
   # Tint library with fuzzer instrumentation
   add_library(libtint-fuzz ${TINT_LIB_SRCS})
   tint_default_compile_options(libtint-fuzz)
+  target_link_libraries(libtint-fuzz tint_diagnostic_utils)
   if (${COMPILER_IS_LIKE_GNU})
     target_compile_options(libtint-fuzz PRIVATE -fvisibility=hidden)
   endif()
@@ -592,7 +606,10 @@ if(${TINT_BUILD_SPV_READER} OR ${TINT_BUILD_SPV_WRITER})
   endif()
 endif()
 
-if(${TINT_BUILD_TESTS})
+################################################################################
+# Tests
+################################################################################
+if(TINT_BUILD_TESTS)
   set(TINT_TEST_SRCS
     ast/alias_test.cc
     ast/array_test.cc
@@ -822,7 +839,6 @@ if(${TINT_BUILD_TESTS})
       reader/wgsl/parser_impl_continuing_stmt_test.cc
       reader/wgsl/parser_impl_depth_texture_type_test.cc
       reader/wgsl/parser_impl_external_texture_type_test.cc
-      reader/wgsl/parser_impl_else_stmt_test.cc
       reader/wgsl/parser_impl_elseif_stmt_test.cc
       reader/wgsl/parser_impl_equality_expression_test.cc
       reader/wgsl/parser_impl_error_msg_test.cc
@@ -837,7 +853,6 @@ if(${TINT_BUILD_TESTS})
       reader/wgsl/parser_impl_global_decl_test.cc
       reader/wgsl/parser_impl_global_variable_decl_test.cc
       reader/wgsl/parser_impl_if_stmt_test.cc
-      reader/wgsl/parser_impl_image_storage_type_test.cc
       reader/wgsl/parser_impl_inclusive_or_expression_test.cc
       reader/wgsl/parser_impl_logical_and_expression_test.cc
       reader/wgsl/parser_impl_logical_or_expression_test.cc
@@ -869,6 +884,7 @@ if(${TINT_BUILD_TESTS})
       reader/wgsl/parser_impl_test.cc
       reader/wgsl/parser_impl_test_helper.cc
       reader/wgsl/parser_impl_test_helper.h
+      reader/wgsl/parser_impl_texel_format_test.cc
       reader/wgsl/parser_impl_texture_sampler_types_test.cc
       reader/wgsl/parser_impl_type_alias_test.cc
       reader/wgsl/parser_impl_type_decl_test.cc
@@ -957,6 +973,7 @@ if(${TINT_BUILD_TESTS})
   if(${TINT_BUILD_WGSL_READER} AND ${TINT_BUILD_WGSL_WRITER})
     list(APPEND TINT_TEST_SRCS
       transform/add_empty_entry_point_test.cc
+      transform/add_spirv_block_decoration_test.cc
       transform/array_length_from_uniform_test.cc
       transform/binding_remapper_test.cc
       transform/calculate_array_length_test.cc
@@ -968,6 +985,7 @@ if(${TINT_BUILD_TESTS})
       transform/fold_constants_test.cc
       transform/fold_trivial_single_use_lets_test.cc
       transform/for_loop_to_loop_test.cc
+      transform/localize_struct_array_assignment_test.cc
       transform/loop_to_for_loop_test.cc
       transform/module_scope_var_to_entry_point_param_test.cc
       transform/multiplanar_external_texture_test.cc
@@ -982,6 +1000,7 @@ if(${TINT_BUILD_TESTS})
       transform/single_entry_point_test.cc
       transform/test_helper.h
       transform/unshadow_test.cc
+      transform/var_for_dynamic_index_test.cc
       transform/vectorize_scalar_matrix_constructors_test.cc
       transform/vertex_pulling_test.cc
       transform/wrap_arrays_in_structs_test.cc
@@ -1106,6 +1125,7 @@ if(${TINT_BUILD_TESTS})
   endif()
 
   add_executable(tint_unittests ${TINT_TEST_SRCS})
+  set_target_properties(${target} PROPERTIES FOLDER "Tests")
 
   if(NOT MSVC)
     target_compile_options(tint_unittests PRIVATE
@@ -1125,4 +1145,41 @@ if(${TINT_BUILD_TESTS})
   endif()
 
   add_test(NAME tint_unittests COMMAND tint_unittests)
-endif()
+endif(TINT_BUILD_TESTS)
+
+################################################################################
+# Benchmarks
+################################################################################
+if(TINT_BUILD_BENCHMARKS)
+  if(NOT TINT_BUILD_WGSL_READER)
+    message(FATAL_ERROR "TINT_BUILD_BENCHMARKS requires TINT_BUILD_WGSL_READER")
+  endif()
+
+  set(TINT_BENCHMARK_SRC
+    "benchmark/benchmark.cc"
+    "reader/wgsl/parser_bench.cc"
+  )
+
+  if (${TINT_BUILD_GLSL_WRITER})
+    list(APPEND TINT_BENCHMARK_SRC writer/glsl/generator_bench.cc)
+  endif()
+  if (${TINT_BUILD_HLSL_WRITER})
+    list(APPEND TINT_BENCHMARK_SRC writer/hlsl/generator_bench.cc)
+  endif()
+  if (${TINT_BUILD_MSL_WRITER})
+    list(APPEND TINT_BENCHMARK_SRC writer/msl/generator_bench.cc)
+  endif()
+  if (${TINT_BUILD_SPV_WRITER})
+    list(APPEND TINT_BENCHMARK_SRC writer/spirv/generator_bench.cc)
+  endif()
+  if (${TINT_BUILD_WGSL_WRITER})
+    list(APPEND TINT_BENCHMARK_SRC writer/wgsl/generator_bench.cc)
+  endif()
+
+  add_executable(tint-benchmark ${TINT_BENCHMARK_SRC})
+  set_target_properties(${target} PROPERTIES FOLDER "Benchmarks")
+
+  tint_core_compile_options(tint-benchmark)
+
+  target_link_libraries(tint-benchmark PRIVATE benchmark::benchmark libtint)
+endif(TINT_BUILD_BENCHMARKS)

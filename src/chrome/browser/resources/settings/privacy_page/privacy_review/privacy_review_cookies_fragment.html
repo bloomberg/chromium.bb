@@ -1,19 +1,21 @@
 <style include="privacy-review-fragment-shared"></style>
-<div class="header">
+<div class="header" focus-element tabindex="-1">
   <picture>
     <source
         srcset="./images/privacy_review/cookies_graphic_dark.svg"
         media="(prefers-color-scheme: dark)">
     <img alt="" src="./images/privacy_review/cookies_graphic.svg">
   </picture>
-  <div class="header-label">$i18n{privacyReviewCookiesCardHeader}</div>
+  <h2 class="header-label">$i18n{privacyReviewCookiesCardHeader}</h2>
 </div>
 <settings-radio-group id="cookiesRadioGroup"
     pref="{{prefs.generated.cookie_primary_setting}}"
     selectable-elements="settings-collapse-radio-button">
   <settings-collapse-radio-button pref="[[prefs.generated.cookie_primary_setting]]"
       name="[[cookiePrimarySettingEnum_.BLOCK_THIRD_PARTY_INCOGNITO]]"
-      label="$i18n{privacyReviewCookiesCardBlockTpcIncognitoSubheader}">
+      label="$i18n{privacyReviewCookiesCardBlockTpcIncognitoSubheader}"
+      expand-aria-label=
+          "$i18n{cookiePageBlockThirdIncognitoExpandA11yLabel}">
     <div slot="collapse" class="description-wrapper-radio two-column">
       <div class="description-column description-column-first">
         <div class=description-header>
@@ -30,18 +32,23 @@
       </div>
       <div class="description-column">
         <div class=description-header>
-          $i18n{privacyReviewWhatYouShareWithWebsites}
+          $i18n{privacyReviewThingsToConsider}
         </div>
         <privacy-review-description-item
             icon="settings20:block"
             label="$i18n{privacyReviewCookiesCardBlockTpcIncognitoPrivacyDescription1}">
+        </privacy-review-description-item>
+        <privacy-review-description-item
+            icon="settings20:incognito-unfilled"
+            label="$i18n{privacyReviewCookiesCardBlockTpcIncognitoPrivacyDescription2}">
         </privacy-review-description-item>
       </div>
     </div>
   </settings-collapse-radio-button>
   <settings-collapse-radio-button pref="[[prefs.generated.cookie_primary_setting]]"
       name="[[cookiePrimarySettingEnum_.BLOCK_THIRD_PARTY]]"
-      label="$i18n{privacyReviewCookiesCardBlockTpcSubheader}">
+      label="$i18n{privacyReviewCookiesCardBlockTpcSubheader}"
+      expand-aria-label="$i18n{cookiePageBlockThirdExpandA11yLabel}">
     <div slot="collapse" class="description-wrapper-radio two-column">
       <div class="description-column description-column-first">
         <div class=description-header>
@@ -58,7 +65,7 @@
       </div>
       <div class="description-column">
         <div class=description-header>
-          $i18n{privacyReviewWhatYouShareWithWebsites}
+          $i18n{privacyReviewThingsToConsider}
         </div>
         <privacy-review-description-item
             icon="settings20:block"

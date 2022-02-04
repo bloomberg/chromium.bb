@@ -55,6 +55,7 @@
 #include "src/heap/safepoint.h"
 #include "src/ic/ic.h"
 #include "src/numbers/hash-seed-inl.h"
+#include "src/objects/call-site-info-inl.h"
 #include "src/objects/elements.h"
 #include "src/objects/field-type.h"
 #include "src/objects/heap-number-inl.h"
@@ -63,7 +64,6 @@
 #include "src/objects/managed-inl.h"
 #include "src/objects/objects-inl.h"
 #include "src/objects/slots.h"
-#include "src/objects/stack-frame-info-inl.h"
 #include "src/objects/transitions.h"
 #include "src/regexp/regexp.h"
 #include "src/snapshot/snapshot.h"
@@ -3558,16 +3558,12 @@ void DetailedErrorStackTraceTest(const char* src,
   CHECK(try_catch.HasCaught());
   Handle<Object> exception = v8::Utils::OpenHandle(*try_catch.Exception());
 
-  Isolate* isolate = CcTest::i_isolate();
-  Handle<Name> key = isolate->factory()->stack_trace_symbol();
-
-  Handle<FixedArray> stack_trace(Handle<FixedArray>::cast(
-      Object::GetProperty(isolate, exception, key).ToHandleChecked()));
-  test(stack_trace);
+  test(CcTest::i_isolate()->GetSimpleStackTrace(
+      Handle<JSReceiver>::cast(exception)));
 }
 
 FixedArray ParametersOf(Handle<FixedArray> stack_trace, int frame_index) {
-  return StackFrameInfo::cast(stack_trace->get(frame_index)).parameters();
+  return CallSiteInfo::cast(stack_trace->get(frame_index)).parameters();
 }
 
 // * Test interpreted function error
@@ -3995,8 +3991,7 @@ TEST(EnsureAllocationSiteDependentCodesProcessed) {
     CHECK_EQ(dependency.length(), DependentCode::kSlotsPerEntry);
     MaybeObject code = dependency.Get(0 + DependentCode::kCodeSlotOffset);
     CHECK(code->IsWeak());
-    CHECK_EQ(bar_handle->code(),
-             FromCodeT(CodeT::cast(code->GetHeapObjectAssumeWeak())));
+    CHECK_EQ(bar_handle->code(), CodeT::cast(code->GetHeapObjectAssumeWeak()));
     Smi groups = dependency.Get(0 + DependentCode::kGroupsSlotOffset).ToSmi();
     CHECK_EQ(static_cast<DependentCode::DependencyGroups>(groups.value()),
              DependentCode::kAllocationSiteTransitionChangedGroup |
@@ -4149,7 +4144,8 @@ TEST(CellsInOptimizedCodeAreWeak) {
         *v8::Local<v8::Function>::Cast(CcTest::global()
                                            ->Get(context.local(), v8_str("bar"))
                                            .ToLocalChecked())));
-    code = scope.CloseAndEscape(Handle<Code>(bar->code(), isolate));
+    code = handle(FromCodeT(bar->code()), isolate);
+    code = scope.CloseAndEscape(code);
   }
 
   // Now make sure that a gc should get rid of the function
@@ -4193,7 +4189,8 @@ TEST(ObjectsInOptimizedCodeAreWeak) {
         *v8::Local<v8::Function>::Cast(CcTest::global()
                                            ->Get(context.local(), v8_str("bar"))
                                            .ToLocalChecked())));
-    code = scope.CloseAndEscape(Handle<Code>(bar->code(), isolate));
+    code = handle(FromCodeT(bar->code()), isolate);
+    code = scope.CloseAndEscape(code);
   }
 
   // Now make sure that a gc should get rid of the function
@@ -4255,7 +4252,8 @@ TEST(NewSpaceObjectsInOptimizedCode) {
     CcTest::heap()->Verify();
 #endif
     CHECK(!bar->code().marked_for_deoptimization());
-    code = scope.CloseAndEscape(Handle<Code>(bar->code(), isolate));
+    code = handle(FromCodeT(bar->code()), isolate);
+    code = scope.CloseAndEscape(code);
   }
 
   // Now make sure that a gc should get rid of the function
@@ -4299,7 +4297,8 @@ TEST(ObjectsInEagerlyDeoptimizedCodeAreWeak) {
         *v8::Local<v8::Function>::Cast(CcTest::global()
                                            ->Get(context.local(), v8_str("bar"))
                                            .ToLocalChecked())));
-    code = scope.CloseAndEscape(Handle<Code>(bar->code(), isolate));
+    code = handle(FromCodeT(bar->code()), isolate);
+    code = scope.CloseAndEscape(code);
   }
 
   CHECK(code->marked_for_deoptimization());
@@ -4361,10 +4360,11 @@ TEST(NextCodeLinkIsWeak) {
         OptimizeDummyFunction(CcTest::isolate(), "mortal");
     Handle<JSFunction> immortal =
         OptimizeDummyFunction(CcTest::isolate(), "immortal");
-    CHECK_EQ(immortal->code().next_code_link(), ToCodeT(mortal->code()));
-    code_chain_length_before = GetCodeChainLength(immortal->code());
+    CHECK_EQ(immortal->code().next_code_link(), mortal->code());
+    code_chain_length_before = GetCodeChainLength(FromCodeT(immortal->code()));
     // Keep the immortal code and let the mortal code die.
-    code = scope.CloseAndEscape(Handle<Code>(immortal->code(), isolate));
+    code = handle(FromCodeT(immortal->code()), isolate);
+    code = scope.CloseAndEscape(code);
     CompileRun("mortal = null; immortal = null;");
   }
   CcTest::CollectAllAvailableGarbage();
@@ -4390,9 +4390,10 @@ TEST(NextCodeLinkInCodeDataContainerIsCleared) {
         OptimizeDummyFunction(CcTest::isolate(), "mortal1");
     Handle<JSFunction> mortal2 =
         OptimizeDummyFunction(CcTest::isolate(), "mortal2");
-    CHECK_EQ(mortal2->code().next_code_link(), ToCodeT(mortal1->code()));
-    code_data_container = scope.CloseAndEscape(Handle<CodeDataContainer>(
-        mortal2->code().code_data_container(kAcquireLoad), isolate));
+    CHECK_EQ(mortal2->code().next_code_link(), mortal1->code());
+    code_data_container =
+        handle(CodeDataContainerFromCodeT(mortal2->code()), isolate);
+    code_data_container = scope.CloseAndEscape(code_data_container);
     CompileRun("mortal1 = null; mortal2 = null;");
   }
   CcTest::CollectAllAvailableGarbage();
@@ -5206,7 +5207,7 @@ TEST(PreprocessStackTrace) {
   CHECK(try_catch.HasCaught());
   Isolate* isolate = CcTest::i_isolate();
   Handle<Object> exception = v8::Utils::OpenHandle(*try_catch.Exception());
-  Handle<Name> key = isolate->factory()->stack_trace_symbol();
+  Handle<Name> key = isolate->factory()->error_stack_symbol();
   Handle<Object> stack_trace =
       Object::GetProperty(isolate, exception, key).ToHandleChecked();
   Handle<Object> code =

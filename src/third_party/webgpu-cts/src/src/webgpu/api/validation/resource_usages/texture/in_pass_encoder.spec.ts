@@ -863,7 +863,7 @@ g.test('replaced_binding')
     pass.setBindGroup(0, bindGroup1);
     pass.endPass();
 
-    // TODO: If the Compatible Usage List (https://gpuweb.github.io/gpuweb/#compatible-usage-list)
+    // MAINTENANCE_TODO: If the Compatible Usage List (https://gpuweb.github.io/gpuweb/#compatible-usage-list)
     // gets programmatically defined in capability_info, use it here, instead of this logic, for clarity.
     let success = entry.storageTexture?.access !== 'write-only';
     // Replaced bindings should not be validated in compute pass, because validation only occurs

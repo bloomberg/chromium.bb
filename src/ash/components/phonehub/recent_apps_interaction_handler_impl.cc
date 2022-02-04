@@ -6,11 +6,20 @@
 
 #include "ash/components/phonehub/notification.h"
 #include "ash/components/phonehub/pref_names.h"
+#include "base/logging.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
 namespace ash {
 namespace phonehub {
+
+using ::chromeos::multidevice_setup::mojom::Feature;
+using ::chromeos::multidevice_setup::mojom::FeatureState;
+using ::chromeos::multidevice_setup::mojom::HostStatus;
+using HostStatusWithDevice =
+    ::chromeos::multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice;
+using FeatureStatesMap =
+    ::chromeos::multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap;
 
 const size_t kMaxMostRecentApps = 5;
 
@@ -21,10 +30,20 @@ void RecentAppsInteractionHandlerImpl::RegisterPrefs(
 }
 
 RecentAppsInteractionHandlerImpl::RecentAppsInteractionHandlerImpl(
-    PrefService* pref_service)
-    : pref_service_(pref_service) {}
+    PrefService* pref_service,
+    multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+    NotificationAccessManager* notification_access_manager)
+    : pref_service_(pref_service),
+      multidevice_setup_client_(multidevice_setup_client),
+      notification_access_manager_(notification_access_manager) {
+  multidevice_setup_client_->AddObserver(this);
+  notification_access_manager_->AddObserver(this);
+}
 
-RecentAppsInteractionHandlerImpl::~RecentAppsInteractionHandlerImpl() = default;
+RecentAppsInteractionHandlerImpl::~RecentAppsInteractionHandlerImpl() {
+  multidevice_setup_client_->RemoveObserver(this);
+  notification_access_manager_->RemoveObserver(this);
+}
 
 void RecentAppsInteractionHandlerImpl::AddRecentAppClickObserver(
     RecentAppClickObserver* observer) {
@@ -76,6 +95,7 @@ void RecentAppsInteractionHandlerImpl::NotifyRecentAppAddedOrUpdated(
             });
 
   SaveRecentAppMetadataListToPref();
+  ComputeAndUpdateUiState();
 }
 
 std::vector<Notification::AppMetadata>
@@ -117,6 +137,58 @@ void RecentAppsInteractionHandlerImpl::SaveRecentAppMetadataListToPref() {
   }
   pref_service_->Set(prefs::kRecentAppsHistory,
                      base::Value(std::move(app_metadata_value_list)));
+}
+
+void RecentAppsInteractionHandlerImpl::OnFeatureStatesChanged(
+    const FeatureStatesMap& feature_states_map) {
+  ComputeAndUpdateUiState();
+}
+
+void RecentAppsInteractionHandlerImpl::OnHostStatusChanged(
+    const HostStatusWithDevice& host_device_with_status) {
+  if (host_device_with_status.first != HostStatus::kHostVerified)
+    ClearRecentAppMetadataListAndPref();
+}
+
+void RecentAppsInteractionHandlerImpl::OnNotificationAccessChanged() {
+  ComputeAndUpdateUiState();
+}
+
+void RecentAppsInteractionHandlerImpl::ComputeAndUpdateUiState() {
+  ui_state_ = RecentAppsUiState::HIDDEN;
+
+  LoadRecentAppMetadataListFromPrefIfNeed();
+
+  // There are three cases we need to handle:
+  // 1. If no recent app in list and necessary permission be granted, the
+  // placeholder view will be shown.
+  // 2. If some recent apps in list and streaming is allowed, the recent apps
+  // view will be shown.
+  // 3. Otherwise, no recent apps view will be shown.
+  bool allow_streaming = multidevice_setup_client_->GetFeatureState(
+                             Feature::kEche) == FeatureState::kEnabledByUser;
+  if (!allow_streaming) {
+    NotifyRecentAppsViewUiStateUpdated();
+    return;
+  }
+  if (recent_app_metadata_list_.empty()) {
+    bool notifications_enabled =
+        multidevice_setup_client_->GetFeatureState(
+            Feature::kPhoneHubNotifications) == FeatureState::kEnabledByUser;
+    bool grant_notification_access_on_host =
+        notification_access_manager_->GetAccessStatus() ==
+        phonehub::NotificationAccessManager::AccessStatus::kAccessGranted;
+    if (notifications_enabled && grant_notification_access_on_host)
+      ui_state_ = RecentAppsUiState::PLACEHOLDER_VIEW;
+  } else {
+    ui_state_ = RecentAppsUiState::ITEMS_VISIBLE;
+  }
+  NotifyRecentAppsViewUiStateUpdated();
+}
+
+void RecentAppsInteractionHandlerImpl::ClearRecentAppMetadataListAndPref() {
+  recent_app_metadata_list_.clear();
+  pref_service_->ClearPref(prefs::kRecentAppsHistory);
 }
 
 }  // namespace phonehub

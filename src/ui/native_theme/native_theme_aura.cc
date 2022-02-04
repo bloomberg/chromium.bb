@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -17,6 +18,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -48,13 +50,13 @@ const SkScalar kScrollRadius =
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTheme:
 
-#if !defined(OS_APPLE)
+#if !BUILDFLAG(IS_APPLE)
 // static
 NativeTheme* NativeTheme::GetInstanceForWeb() {
   return NativeThemeAura::web_instance();
 }
 
-#if !defined(OS_WIN)
+#if !BUILDFLAG(IS_WIN)
 // static
 NativeTheme* NativeTheme::GetInstanceForNativeUi() {
   static base::NoDestructor<NativeThemeAura> s_native_theme(false, false);
@@ -65,8 +67,8 @@ NativeTheme* NativeTheme::GetInstanceForDarkUI() {
   static base::NoDestructor<NativeThemeAura> s_native_theme(false, true);
   return s_native_theme.get();
 }
-#endif  // !OS_WIN
-#endif  // !OS_APPLE
+#endif  // !BUILDFLAG(IS_WIN)
+#endif  // !BUILDFLAG(IS_APPLE)
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeThemeAura:
@@ -102,22 +104,23 @@ NativeThemeAura* NativeThemeAura::web_instance() {
 }
 
 SkColor NativeThemeAura::FocusRingColorForBaseColor(SkColor base_color) const {
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   // On Mac OSX, the system Accent Color setting is darkened a bit
   // for better contrast.
   return SkColorSetA(base_color, 166);
 #else
   return base_color;
-#endif  // OS_APPLE
+#endif  // BUILDFLAG(IS_APPLE)
 }
 
 void NativeThemeAura::PaintMenuPopupBackground(
     cc::PaintCanvas* canvas,
+    const ColorProvider* color_provider,
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background,
     ColorScheme color_scheme) const {
-  SkColor color =
-      GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor, color_scheme);
+  DCHECK(color_provider);
+  SkColor color = color_provider->GetColor(kColorMenuBackground);
   if (menu_background.corner_radius > 0) {
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kFill_Style);
@@ -140,12 +143,13 @@ void NativeThemeAura::PaintMenuPopupBackground(
 
 void NativeThemeAura::PaintMenuItemBackground(
     cc::PaintCanvas* canvas,
+    const ColorProvider* color_provider,
     State state,
     const gfx::Rect& rect,
     const MenuItemExtraParams& menu_item,
     ColorScheme color_scheme) const {
-  CommonThemePaintMenuItemBackground(this, canvas, state, rect, menu_item,
-                                     color_scheme);
+  CommonThemePaintMenuItemBackground(this, color_provider, canvas, state, rect,
+                                     menu_item);
 }
 
 void NativeThemeAura::PaintArrowButton(

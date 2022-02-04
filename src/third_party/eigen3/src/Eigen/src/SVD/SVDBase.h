@@ -77,10 +77,10 @@ public:
   enum {
     RowsAtCompileTime = MatrixType::RowsAtCompileTime,
     ColsAtCompileTime = MatrixType::ColsAtCompileTime,
-    DiagSizeAtCompileTime = EIGEN_SIZE_MIN_PREFER_DYNAMIC(RowsAtCompileTime,ColsAtCompileTime),
+    DiagSizeAtCompileTime = internal::min_size_prefer_dynamic(RowsAtCompileTime,ColsAtCompileTime),
     MaxRowsAtCompileTime = MatrixType::MaxRowsAtCompileTime,
     MaxColsAtCompileTime = MatrixType::MaxColsAtCompileTime,
-    MaxDiagSizeAtCompileTime = EIGEN_SIZE_MIN_PREFER_FIXED(MaxRowsAtCompileTime,MaxColsAtCompileTime),
+    MaxDiagSizeAtCompileTime = internal::min_size_prefer_fixed(MaxRowsAtCompileTime,MaxColsAtCompileTime),
     MatrixOptions = MatrixType::Options
   };
 
@@ -355,7 +355,7 @@ bool SVDBase<MatrixType>::allocate(Index rows, Index cols, unsigned int computat
   m_computeThinV = (computationOptions & ComputeThinV) != 0;
   eigen_assert(!(m_computeFullU && m_computeThinU) && "SVDBase: you can't ask for both full and thin U");
   eigen_assert(!(m_computeFullV && m_computeThinV) && "SVDBase: you can't ask for both full and thin V");
-  eigen_assert(EIGEN_IMPLIES(m_computeThinU || m_computeThinV, MatrixType::ColsAtCompileTime==Dynamic) &&
+  eigen_assert(internal::check_implication(m_computeThinU || m_computeThinV, MatrixType::ColsAtCompileTime==Dynamic) &&
 	       "SVDBase: thin U and V are only available when your matrix has a dynamic number of columns.");
 
   m_diagSize = (std::min)(m_rows, m_cols);

@@ -105,6 +105,13 @@ class ASH_EXPORT AppListPresenterImpl
                             AppListShowSource show_source,
                             base::TimeTicks event_time_stamp);
 
+  // Handles `AppListController::UpdateAppListWithNewSortingOrder()` for the
+  // app list presenter.
+  void UpdateForNewSortingOrder(
+      const absl::optional<AppListSortOrder>& new_order,
+      bool animate,
+      base::OnceClosure update_position_closure);
+
   // Returns current visibility of the app list. Deprecated, use
   // |IsAtLeastPartiallyVisible| instead.
   bool IsVisibleDeprecated() const;

@@ -43,7 +43,7 @@
     X(Higher,           maxStorageBuffersPerShaderStage,     8,     8) \
     X(Higher,          maxStorageTexturesPerShaderStage,     4,     4) \
     X(Higher,           maxUniformBuffersPerShaderStage,    12,    12) \
-    X(Higher,               maxUniformBufferBindingSize, 16384, 16384) \
+    X(Higher,               maxUniformBufferBindingSize, 65536, 65536) \
     X( Lower,           minUniformBufferOffsetAlignment,   256,   256) \
     X( Lower,           minStorageBufferOffsetAlignment,   256,   256) \
     X(Higher,                          maxVertexBuffers,     8,     8) \
@@ -67,7 +67,7 @@
     LIMITS_STORAGE_BUFFER_BINDING_SIZE(X) \
     LIMITS_OTHER(X)
 
-namespace dawn_native {
+namespace dawn::native {
     namespace {
         template <uint32_t A, uint32_t B>
         constexpr void StaticAssertSame() {
@@ -210,4 +210,4 @@ namespace dawn_native {
         return limits;
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

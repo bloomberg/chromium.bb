@@ -22,6 +22,9 @@
 #include <initializer_list>
 #include <vector>
 
+struct SkIRect;
+enum class SkPathFillType;
+
 namespace skgpu {
 
 class DrawWriter;
@@ -39,7 +42,10 @@ public:
     // The DrawWriter is configured with the vertex and instance strides of the RenderStep, and its
     // primitive type. The recorded draws will be executed with a graphics pipeline compatible with
     // this RenderStep.
-    virtual void writeVertices(DrawWriter*, const Transform&, const Shape&) const = 0;
+    virtual void writeVertices(DrawWriter*,
+                               const SkIRect& bounds,
+                               const Transform&,
+                               const Shape&) const = 0;
 
     // Write out the uniform values (aligned for the layout). These values will be de-duplicated
     // across all draws using the RenderStep before uploading to the GPU, but it can be assumed the
@@ -51,6 +57,7 @@ public:
     // Similarly, it would be nice if this could write into reusable storage and then DrawPass or
     // UniformCache handles making an sk_sp if we need to assign a new unique ID to the uniform data
     virtual sk_sp<UniformData> writeUniforms(Layout layout,
+                                             const SkIRect& bounds,
                                              const Transform&,
                                              const Shape&) const = 0;
 
@@ -162,6 +169,7 @@ private:
     size_t fVertexStride;   // derived from vertex attribute set
     size_t fInstanceStride; // derived from instance attribute set
 };
+SKGPU_MAKE_MASK_OPS(RenderStep::Flags);
 
 /**
  * The actual technique for rasterizing a high-level draw recorded in a DrawList is handled by a
@@ -183,8 +191,8 @@ public:
     // Graphite defines a limited set of renderers in order to increase likelihood of batching
     // across draw calls, and reduce the number of shader permutations required. These Renderers
     // are stateless singletons and remain alive for the entire program. Each Renderer corresponds
-    // to a specific recording function on DrawList.
-    static const Renderer& StencilAndFillPath();
+    // to a specific recording function on DrawList and fill type.
+    static const Renderer& StencilAndFillPath(SkPathFillType);
     // TODO: Not on the immediate sprint target, but show what needs to be added for DrawList's API
     // static const Renderer& FillConvexPath();
     // static const Renderer& StrokePath();

@@ -40,7 +40,7 @@ void EmulatedVirtualAddressSubspace::SetRandomSeed(int64_t seed) {
 
 Address EmulatedVirtualAddressSubspace::RandomPageAddress() {
   MutexGuard guard(&mutex_);
-  Address addr = base() + (rng_.NextInt64() % size());
+  Address addr = base() + (static_cast<uint64_t>(rng_.NextInt64()) % size());
   return RoundDown(addr, allocation_granularity());
 }
 
@@ -77,13 +77,14 @@ Address EmulatedVirtualAddressSubspace::AllocatePages(
     while (!UnmappedRegionContains(hint, size)) {
       hint = RandomPageAddress();
     }
+    hint = RoundDown(hint, alignment);
 
-    Address region =
+    const Address result =
         parent_space_->AllocatePages(hint, size, alignment, permissions);
-    if (region && UnmappedRegionContains(region, size)) {
-      return region;
-    } else if (region) {
-      CHECK(parent_space_->FreePages(region, size));
+    if (UnmappedRegionContains(result, size)) {
+      return result;
+    } else if (result) {
+      CHECK(parent_space_->FreePages(result, size));
     }
 
     // Retry at a different address.
@@ -108,6 +109,26 @@ bool EmulatedVirtualAddressSubspace::SetPagePermissions(
     Address address, size_t size, PagePermissions permissions) {
   DCHECK(Contains(address, size));
   return parent_space_->SetPagePermissions(address, size, permissions);
+}
+
+bool EmulatedVirtualAddressSubspace::AllocateGuardRegion(Address address,
+                                                         size_t size) {
+  if (MappedRegionContains(address, size)) {
+    MutexGuard guard(&mutex_);
+    return region_allocator_.AllocateRegionAt(address, size);
+  }
+  if (!UnmappedRegionContains(address, size)) return false;
+  return parent_space_->AllocateGuardRegion(address, size);
+}
+
+bool EmulatedVirtualAddressSubspace::FreeGuardRegion(Address address,
+                                                     size_t size) {
+  if (MappedRegionContains(address, size)) {
+    MutexGuard guard(&mutex_);
+    return region_allocator_.FreeRegion(address) == size;
+  }
+  if (!UnmappedRegionContains(address, size)) return false;
+  return parent_space_->FreeGuardRegion(address, size);
 }
 
 bool EmulatedVirtualAddressSubspace::CanAllocateSubspaces() {

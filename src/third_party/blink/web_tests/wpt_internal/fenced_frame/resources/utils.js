@@ -14,9 +14,6 @@ const KEYS = {
   // This key is only used to test that the server-side stash works properly.
   "dummy"                                       : "00000000-0000-0000-0000-000000000000",
 
-  "document.referrer"                           : "00000000-0000-0000-0000-000000000001",
-  "document.referrer ACK"                       : "00000000-0000-0000-0000-000000000002",
-
   "window.top"                                  : "00000000-0000-0000-0000-000000000003",
   "window.top ACK"                              : "00000000-0000-0000-0000-000000000004",
 
@@ -40,8 +37,6 @@ const KEYS = {
   "ready_for_navigation"                        : "00000000-0000-0000-0000-000000000010",
 
   "secFetchDest.value"                          : "00000000-0000-0000-0000-000000000011",
-
-  "window.prompt"                               : "00000000-0000-0000-0000-000000000012",
 
   "fenced_navigation_complete"                  : "00000000-0000-0000-0000-000000000013",
   "outer_page_ready_for_next_fenced_navigation" : "00000000-0000-0000-0000-000000000014",
@@ -97,7 +92,73 @@ const KEYS = {
   "embed_no_coep"                               : "00000000-0000-0000-0000-000000000032",
 
   "hid.getDevice"                               : "00000000-0000-0000-0000-000000000033",
+
+  "ndef.write"                                  : "00000000-0000-0000-0000-000000000034",
+  "ndef.scan"                                   : "00000000-0000-0000-0000-000000000035",
+
+  "history_navigation_performed"                : "00000000-0000-0000-0000-000000000036",
+  "outer_page_ready"                            : "00000000-0000-0000-0000-000000000037",
+
+  "resize_lock_inner_page_is_ready"             : "00000000-0000-0000-0000-000000000038",
+  "resize_lock_resize_is_done"                  : "00000000-0000-0000-0000-000000000039",
+  "resize_lock_report_inner_dimensions"         : "00000000-0000-0000-0000-00000000004A",
+
+  "csp"                                         : "00000000-0000-0000-0000-00000000004B",
+
+  "cookie_value"                                : "00000000-0000-0000-0000-00000000004C",
+
+  "csp-fenced-frame-src-blocked"                : "00000000-0000-0000-0000-00000000004D",
+  "csp-fenced-frame-src-allowed"                : "00000000-0000-0000-0000-00000000004E",
+  "csp-frame-src-blocked"                       : "00000000-0000-0000-0000-00000000004F",
+  "csp-frame-src-allowed"                       : "00000000-0000-0000-0000-000000000050",
+
+  "frame_navigation"                            : "00000000-0000-0000-0000-000000000051",
+  "frame_navigation ACK"                        : "00000000-0000-0000-0000-000000000052",
+
+  "maxframes_response"                          : "00000000-0000-0000-0000-000000000053",
   // Add keys above this list, incrementing the key UUID in hexadecimal
+}
+
+// Creates a URL that includes a list of stash key UUIDs that are being used
+// in the test. This allows us to generate UUIDs on the fly and let anything
+// (iframes, fenced frames, pop-ups, etc...) that wouldn't have access to the
+// original UUID variable know what the UUIDs are.
+// @param {string} href - The base url of the page being navigated to
+// @param {string list} keylist - The list of key UUIDs to be used. Note that
+//                                order matters when extracting the keys
+function generateURL(href, keylist) {
+  const ret_url = new URL(href, location.href);
+  ret_url.searchParams.append("keylist", keylist.join(','));
+  return ret_url.toString().replace(/%2C/g,",");
+}
+
+// Extracts a list of UUIDs from the from the current page's URL.
+// @returns {string list} - The list of UUIDs extracted from the page. This can
+//                          be read into multiple variables using the
+//                          [key1, key2, etc...] = parseKeyList(); pattern.
+function parseKeylist() {
+  const url = new URL(location.href);
+  const keylist = url.searchParams.get("keylist");
+  return keylist.split(',');
+}
+
+// Converts a key string into a key uuid using a cryptographic hash function.
+// This function only works in secure contexts (HTTPS).
+async function stringToStashKey(string) {
+  // Compute a SHA-256 hash of the input string, and convert it to hex.
+  const data = new TextEncoder().encode(string);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  const digest_array = Array.from(new Uint8Array(digest));
+  const digest_as_hex = digest_array.map(b => b.toString(16).padStart(2, '0')).join('');
+
+  // UUIDs are structured as 8X-4X-4X-4X-12X.
+  // Use the first 32 hex digits and ignore the rest.
+  const digest_slices = [digest_as_hex.slice(0,8),
+                         digest_as_hex.slice(8,12),
+                         digest_as_hex.slice(12,16),
+                         digest_as_hex.slice(16,20),
+                         digest_as_hex.slice(20,32)];
+  return digest_slices.join('-');
 }
 
 function attachFencedFrame(url) {
@@ -113,6 +174,9 @@ function attachFencedFrame(url) {
 
 // Reads the value specified by `key` from the key-value store on the server.
 async function readValueFromServer(key) {
+  // Resolve the key if it is a Promise.
+  key = await key;
+
   const serverUrl = `${STORE_URL}?key=${key}`;
   const response = await fetch(serverUrl);
   if (!response.ok)
@@ -129,6 +193,9 @@ async function readValueFromServer(key) {
 // Convenience wrapper around the above getter that will wait until a value is
 // available on the server.
 async function nextValueFromServer(key) {
+  // Resolve the key if it is a Promise.
+  key = await key;
+
   while (true) {
     // Fetches the test result from the server.
     const { status, value } = await readValueFromServer(key);
@@ -144,6 +211,9 @@ async function nextValueFromServer(key) {
 
 // Writes `value` for `key` in the key-value store on the server.
 async function writeValueToServer(key, value, origin = '') {
+  // Resolve the key if it is a Promise.
+  key = await key;
+
   const serverUrl = `${origin}${STORE_URL}?key=${key}&value=${value}`;
   await fetch(serverUrl, {"mode": "no-cors"});
 }

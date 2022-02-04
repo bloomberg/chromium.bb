@@ -52,6 +52,10 @@ const UIStrings = {
   *@description Text describing that a specific feature is blocked by a Permissions Policy specified in a request header.
   */
   disabledByHeader: 'disabled by "`Permissions-Policy`" header',
+  /**
+   *@description Text describing that a specific feature is blocked by virtue of being inside a fenced frame tree.
+   */
+  disabledByFencedFrame: 'disabled inside a `fencedframe`',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/components/PermissionsPolicySection.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -84,25 +88,25 @@ export function renderIconLink(
 
 export class PermissionsPolicySection extends HTMLElement {
   static readonly litTagName = LitHtml.literal`devtools-resources-permissions-policy-section`;
-  private readonly shadow = this.attachShadow({mode: 'open'});
-  private permissionsPolicySectionData: PermissionsPolicySectionData = {policies: [], showDetails: false};
+  readonly #shadow = this.attachShadow({mode: 'open'});
+  #permissionsPolicySectionData: PermissionsPolicySectionData = {policies: [], showDetails: false};
 
   set data(data: PermissionsPolicySectionData) {
-    this.permissionsPolicySectionData = data;
-    this.render();
+    this.#permissionsPolicySectionData = data;
+    void this.#render();
   }
 
   connectedCallback(): void {
-    this.shadow.adoptedStyleSheets = [permissionsPolicySectionStyles];
+    this.#shadow.adoptedStyleSheets = [permissionsPolicySectionStyles];
   }
 
-  private toggleShowPermissionsDisallowedDetails(): void {
-    this.permissionsPolicySectionData.showDetails = !this.permissionsPolicySectionData.showDetails;
-    this.render();
+  #toggleShowPermissionsDisallowedDetails(): void {
+    this.#permissionsPolicySectionData.showDetails = !this.#permissionsPolicySectionData.showDetails;
+    void this.#render();
   }
 
-  private renderAllowed(): LitHtml.TemplateResult|{} {
-    const allowed = this.permissionsPolicySectionData.policies.filter(p => p.allowed).map(p => p.feature).sort();
+  #renderAllowed(): LitHtml.TemplateResult|{} {
+    const allowed = this.#permissionsPolicySectionData.policies.filter(p => p.allowed).map(p => p.feature).sort();
     if (!allowed.length) {
       return LitHtml.nothing;
     }
@@ -115,19 +119,19 @@ export class PermissionsPolicySection extends HTMLElement {
     `;
   }
 
-  private async renderDisallowed(): Promise<LitHtml.TemplateResult|{}> {
-    const disallowed = this.permissionsPolicySectionData.policies.filter(p => !p.allowed)
+  async #renderDisallowed(): Promise<LitHtml.TemplateResult|{}> {
+    const disallowed = this.#permissionsPolicySectionData.policies.filter(p => !p.allowed)
                            .sort((a, b) => a.feature.localeCompare(b.feature));
     if (!disallowed.length) {
       return LitHtml.nothing;
     }
-    if (!this.permissionsPolicySectionData.showDetails) {
+    if (!this.#permissionsPolicySectionData.showDetails) {
       return LitHtml.html`
         <${ReportView.ReportView.ReportKey.litTagName}>${i18nString(UIStrings.disabledFeatures)}</${
           ReportView.ReportView.ReportKey.litTagName}>
         <${ReportView.ReportView.ReportValue.litTagName}>
           ${disallowed.map(p => p.feature).join(', ')}
-          <button class="link" @click=${(): void => this.toggleShowPermissionsDisallowedDetails()}>
+          <button class="link" @click=${(): void => this.#toggleShowPermissionsDisallowedDetails()}>
             ${i18nString(UIStrings.showDetails)}
           </button>
         </${ReportView.ReportView.ReportValue.litTagName}>
@@ -144,10 +148,18 @@ export class PermissionsPolicySection extends HTMLElement {
       const resource = frame && frame.resourceForURL(frame.url);
       const linkTargetRequest =
           blockReason === Protocol.Page.PermissionsPolicyBlockReason.Header && resource && resource.request;
-      const blockReasonText = blockReason === Protocol.Page.PermissionsPolicyBlockReason.IframeAttribute ?
-          i18nString(UIStrings.disabledByIframe) :
-          blockReason === Protocol.Page.PermissionsPolicyBlockReason.Header ? i18nString(UIStrings.disabledByHeader) :
-                                                                              '';
+      const blockReasonText = ((): String => {
+        switch (blockReason) {
+          case Protocol.Page.PermissionsPolicyBlockReason.IframeAttribute:
+            return i18nString(UIStrings.disabledByIframe);
+          case Protocol.Page.PermissionsPolicyBlockReason.Header:
+            return i18nString(UIStrings.disabledByHeader);
+          case Protocol.Page.PermissionsPolicyBlockReason.InFencedFrameTree:
+            return i18nString(UIStrings.disabledByFencedFrame);
+          default:
+            return '';
+        }
+      })();
       const revealHeader = async(): Promise<void> => {
         if (!linkTargetRequest) {
           return;
@@ -198,7 +210,7 @@ export class PermissionsPolicySection extends HTMLElement {
       <${ReportView.ReportView.ReportValue.litTagName} class="policies-list">
         ${featureRows}
         <div class="permissions-row">
-          <button class="link" @click=${(): void => this.toggleShowPermissionsDisallowedDetails()}>
+          <button class="link" @click=${(): void => this.#toggleShowPermissionsDisallowedDetails()}>
             ${i18nString(UIStrings.hideDetails)}
           </button>
         </div>
@@ -206,7 +218,7 @@ export class PermissionsPolicySection extends HTMLElement {
     `;
   }
 
-  private async render(): Promise<void> {
+  async #render(): Promise<void> {
     await coordinator.write('PermissionsPolicySection render', () => {
       // Disabled until https://crbug.com/1079231 is fixed.
       // clang-format off
@@ -214,12 +226,12 @@ export class PermissionsPolicySection extends HTMLElement {
         LitHtml.html`
           <${ReportView.ReportView.ReportSectionHeader.litTagName}>${i18n.i18n.lockedString('Permissions Policy')}</${
             ReportView.ReportView.ReportSectionHeader.litTagName}>
-          ${this.renderAllowed()}
-          ${LitHtml.Directives.until(this.renderDisallowed(), LitHtml.nothing)}
+          ${this.#renderAllowed()}
+          ${LitHtml.Directives.until(this.#renderDisallowed(), LitHtml.nothing)}
           <${ReportView.ReportView.ReportSectionDivider.litTagName}></${
             ReportView.ReportView.ReportSectionDivider.litTagName}>
         `,
-        this.shadow, {host: this},
+        this.#shadow, {host: this},
       );
       // clang-format on
     });

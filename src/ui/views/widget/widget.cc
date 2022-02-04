@@ -16,6 +16,7 @@
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/default_style.h"
 #include "ui/base/hit_test.h"
@@ -50,7 +51,7 @@
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #include "ui/views/linux_ui/linux_ui.h"
 #endif
 
@@ -610,6 +611,10 @@ void Widget::SetVisibilityAnimationDuration(const base::TimeDelta& duration) {
 
 void Widget::SetVisibilityAnimationTransition(VisibilityTransition transition) {
   native_widget_->SetVisibilityAnimationTransition(transition);
+}
+
+bool Widget::IsMoveLoopSupported() const {
+  return native_widget_->IsMoveLoopSupported();
 }
 
 Widget::MoveLoopResult Widget::RunMoveLoop(
@@ -1780,7 +1785,7 @@ const ui::NativeTheme* Widget::GetNativeTheme() const {
       parent_)
     return parent_->GetNativeTheme();
 
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
   if (const views::LinuxUI* linux_ui = views::LinuxUI::instance()) {
     if (auto* native_theme = linux_ui->GetNativeTheme(GetNativeWindow()))
       return native_theme;

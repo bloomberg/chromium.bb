@@ -74,6 +74,13 @@ class V8_EXPORT_PRIVATE LocalEmbedderHeapTracer final {
     WrapperCache wrapper_cache_;
   };
 
+  static V8_INLINE bool ExtractWrappableInfo(Isolate*, JSObject,
+                                             const WrapperDescriptor&,
+                                             WrapperInfo*);
+  static V8_INLINE bool ExtractWrappableInfo(
+      Isolate*, const WrapperDescriptor&, const EmbedderDataSlot& type_slot,
+      const EmbedderDataSlot& instance_slot, WrapperInfo*);
+
   explicit LocalEmbedderHeapTracer(Isolate* isolate) : isolate_(isolate) {}
 
   ~LocalEmbedderHeapTracer() {
@@ -91,6 +98,7 @@ class V8_EXPORT_PRIVATE LocalEmbedderHeapTracer final {
 
   void SetRemoteTracer(EmbedderHeapTracer* tracer);
   void SetCppHeap(CppHeap* cpp_heap);
+  void PrepareForTrace(EmbedderHeapTracer::TraceFlags flags);
   void TracePrologue(EmbedderHeapTracer::TraceFlags flags);
   void TraceEpilogue();
   void EnterFinalPause();
@@ -148,6 +156,8 @@ class V8_EXPORT_PRIVATE LocalEmbedderHeapTracer final {
   EmbedderHeapTracer::EmbedderStackState embedder_stack_state() const {
     return embedder_stack_state_;
   }
+
+  void EmbedderWriteBarrier(Heap*, JSObject);
 
  private:
   static constexpr size_t kEmbedderAllocatedThreshold = 128 * KB;

@@ -1,17 +1,16 @@
 struct QuicksortObject {
   numbers : array<i32, 10u>;
-};
+}
 
-[[block]]
 struct buf0 {
   resolution : vec2<f32>;
-};
+}
 
 var<private> obj : QuicksortObject;
 
 var<private> gl_FragCoord : vec4<f32>;
 
-[[group(0), binding(0)]] var<uniform> x_188 : buf0;
+@group(0) @binding(0) var<uniform> x_188 : buf0;
 
 var<private> x_GLF_color : vec4<f32>;
 
@@ -801,7 +800,7 @@ fn main_1() {
   let x_756 : QuicksortObject = obj;
   obj = QuicksortObject(array<i32, 10u>(0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
   obj = x_756;
-  let x_446 : vec2<f32> = vec2<f32>(vec2<f32>(0.0, 0.0).x, vec2<f32>(0.0, 0.0).x);
+  let x_446 : vec2<f32> = vec2<f32>(vec2<f32>().x, vec2<f32>().x);
   let x_757 : i32 = i_2;
   i_2 = 0;
   i_2 = x_757;
@@ -813,7 +812,7 @@ fn main_1() {
   let x_759 : vec2<f32> = uv;
   uv = vec2<f32>(0.0, 0.0);
   uv = x_759;
-  let x_447 : vec2<f32> = vec2<f32>(vec2<f32>(0.0, 0.0).y, vec2<f32>(0.0, 0.0).y);
+  let x_447 : vec2<f32> = vec2<f32>(vec2<f32>().y, vec2<f32>().y);
   let x_760 : vec2<f32> = uv;
   uv = vec2<f32>(0.0, 0.0);
   uv = x_760;
@@ -899,7 +898,7 @@ fn main_1() {
     let x_781 : i32 = *(x_200);
     *(x_200) = 0;
     *(x_200) = x_781;
-    let x_456 : vec3<f32> = vec3<f32>(vec2<f32>(0.0, 0.0).y, x_448.y, x_448.y);
+    let x_456 : vec3<f32> = vec3<f32>(vec2<f32>().y, x_448.y, x_448.y);
     let x_782 : f32 = uv.x;
     uv.x = 0.0;
     uv.x = x_782;
@@ -914,7 +913,7 @@ fn main_1() {
     let x_785 : QuicksortObject = obj;
     obj = QuicksortObject(array<i32, 10u>(0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
     obj = x_785;
-    let x_458 : vec2<f32> = vec2<f32>(vec3<f32>(1.0, 2.0, 3.0).z, vec2<f32>(0.0, 0.0).y);
+    let x_458 : vec2<f32> = vec2<f32>(vec3<f32>(1.0, 2.0, 3.0).z, vec2<f32>().y);
     let x_786 : i32 = i_2;
     i_2 = 0;
     i_2 = x_786;
@@ -954,7 +953,7 @@ fn main_1() {
   let x_796 : f32 = uv.x;
   uv.x = 0.0;
   uv.x = x_796;
-  let x_461 : vec2<f32> = vec2<f32>(vec2<f32>(0.0, 0.0).y, vec2<f32>(0.0, 0.0).y);
+  let x_461 : vec2<f32> = vec2<f32>(vec2<f32>().y, vec2<f32>().y);
   let x_797 : f32 = uv.x;
   uv.x = 0.0;
   uv.x = x_797;
@@ -999,7 +998,7 @@ fn main_1() {
     let x_808 : i32 = i_2;
     i_2 = 0;
     i_2 = x_808;
-    let x_466 : vec2<f32> = vec2<f32>(x_455.y, vec2<f32>(0.0, 0.0).y);
+    let x_466 : vec2<f32> = vec2<f32>(x_455.y, vec2<f32>().y);
     let x_809 : i32 = i_2;
     i_2 = 0;
     i_2 = x_809;
@@ -1051,7 +1050,7 @@ fn main_1() {
     let x_822 : i32 = *(x_200);
     *(x_200) = 0;
     *(x_200) = x_822;
-    let x_470 : vec2<f32> = vec2<f32>(vec2<f32>(0.0, 0.0).x, vec2<f32>(0.0, 0.0).y);
+    let x_470 : vec2<f32> = vec2<f32>(vec2<f32>().x, vec2<f32>().y);
     let x_823 : f32 = color.z;
     color.z = 0.0;
     color.z = x_823;
@@ -1094,7 +1093,7 @@ fn main_1() {
   color.x = x_832;
   let x_476 : vec2<f32> = vec2<f32>(x_451.z, x_460.y);
   color.y = (x_257 + f32(x_254));
-  let x_477 : vec3<f32> = vec3<f32>(vec2<f32>(0.0, 0.0).x, x_472.x, vec2<f32>(0.0, 0.0).y);
+  let x_477 : vec3<f32> = vec3<f32>(vec2<f32>().x, x_472.x, vec2<f32>().y);
   let x_833 : f32 = uv.x;
   uv.x = 0.0;
   uv.x = x_833;
@@ -1109,14 +1108,14 @@ fn main_1() {
   let x_836 : i32 = i_2;
   i_2 = 0;
   i_2 = x_836;
-  let x_479 : vec3<f32> = vec3<f32>(vec2<f32>(0.0, 0.0).y, x_454.y, vec2<f32>(0.0, 0.0).x);
+  let x_479 : vec3<f32> = vec3<f32>(vec2<f32>().y, x_454.y, vec2<f32>().x);
   let x_837 : i32 = *(x_200);
   *(x_200) = 0;
   *(x_200) = x_837;
   let x_838 : f32 = color.y;
   color.y = 0.0;
   color.y = x_838;
-  let x_480 : vec3<f32> = vec3<f32>(x_446.x, x_446.x, vec2<f32>(0.0, 0.0).y);
+  let x_480 : vec3<f32> = vec3<f32>(x_446.x, x_446.x, vec2<f32>().y);
   let x_839 : f32 = uv.x;
   uv.x = 0.0;
   uv.x = x_839;
@@ -1319,7 +1318,7 @@ fn main_1() {
   let x_891 : f32 = color.y;
   color.y = 0.0;
   color.y = x_891;
-  let x_504 : vec2<f32> = vec2<f32>(x_453.y, vec2<f32>(0.0, 0.0).x);
+  let x_504 : vec2<f32> = vec2<f32>(x_453.y, vec2<f32>().x);
   let x_892 : f32 = color.x;
   color.x = 0.0;
   color.x = x_892;
@@ -1420,7 +1419,7 @@ fn main_1() {
     let x_918 : f32 = uv.x;
     uv.x = 0.0;
     uv.x = x_918;
-    let x_517 : vec3<f32> = vec3<f32>(vec2<f32>(0.0, 0.0).x, vec2<f32>(0.0, 0.0).x, vec2<f32>(0.0, 0.0).y);
+    let x_517 : vec3<f32> = vec3<f32>(vec2<f32>().x, vec2<f32>().x, vec2<f32>().y);
     color.x = (f32(x_317) + x_320);
     let x_919 : f32 = color.x;
     color.x = 0.0;
@@ -1475,12 +1474,12 @@ fn main_1() {
 }
 
 struct main_out {
-  [[location(0)]]
+  @location(0)
   x_GLF_color_1 : vec4<f32>;
-};
+}
 
-[[stage(fragment)]]
-fn main([[builtin(position)]] gl_FragCoord_param : vec4<f32>) -> main_out {
+@stage(fragment)
+fn main(@builtin(position) gl_FragCoord_param : vec4<f32>) -> main_out {
   gl_FragCoord = gl_FragCoord_param;
   main_1();
   return main_out(x_GLF_color);

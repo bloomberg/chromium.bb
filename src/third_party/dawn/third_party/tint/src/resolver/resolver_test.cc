@@ -200,7 +200,7 @@ TEST_F(ResolverTest, Stmt_Loop) {
   auto* body_lhs = Expr("v");
   auto* body_rhs = Expr(2.3f);
 
-  auto* body = Block(Assign(body_lhs, body_rhs));
+  auto* body = Block(Assign(body_lhs, body_rhs), Break());
   auto* continuing_lhs = Expr("v");
   auto* continuing_rhs = Expr(2.3f);
 
@@ -920,7 +920,7 @@ TEST_F(ResolverTest, Function_CallSites) {
 }
 
 TEST_F(ResolverTest, Function_WorkgroupSize_NotSet) {
-  // [[stage(compute), workgroup_size(1)]]
+  // @stage(compute) @workgroup_size(1)
   // fn main() {}
   auto* func = Func("main", ast::VariableList{}, ty.void_(), {}, {});
 
@@ -938,7 +938,7 @@ TEST_F(ResolverTest, Function_WorkgroupSize_NotSet) {
 }
 
 TEST_F(ResolverTest, Function_WorkgroupSize_Literals) {
-  // [[stage(compute), workgroup_size(8, 2, 3)]]
+  // @stage(compute) @workgroup_size(8, 2, 3)
   // fn main() {}
   auto* func =
       Func("main", ast::VariableList{}, ty.void_(), {},
@@ -961,7 +961,7 @@ TEST_F(ResolverTest, Function_WorkgroupSize_Consts) {
   // let width = 16;
   // let height = 8;
   // let depth = 2;
-  // [[stage(compute), workgroup_size(width, height, depth)]]
+  // @stage(compute) @workgroup_size(width, height, depth)
   // fn main() {}
   GlobalConst("width", ty.i32(), Expr(16));
   GlobalConst("height", ty.i32(), Expr(8));
@@ -986,7 +986,7 @@ TEST_F(ResolverTest, Function_WorkgroupSize_Consts) {
 TEST_F(ResolverTest, Function_WorkgroupSize_Consts_NestedInitializer) {
   // let width = i32(i32(i32(8)));
   // let height = i32(i32(i32(4)));
-  // [[stage(compute), workgroup_size(width, height)]]
+  // @stage(compute) @workgroup_size(width, height)
   // fn main() {}
   GlobalConst("width", ty.i32(),
               Construct(ty.i32(), Construct(ty.i32(), Construct(ty.i32(), 8))));
@@ -1010,10 +1010,10 @@ TEST_F(ResolverTest, Function_WorkgroupSize_Consts_NestedInitializer) {
 }
 
 TEST_F(ResolverTest, Function_WorkgroupSize_OverridableConsts) {
-  // [[override(0)]] let width = 16;
-  // [[override(1)]] let height = 8;
-  // [[override(2)]] let depth = 2;
-  // [[stage(compute), workgroup_size(width, height, depth)]]
+  // @override(0) let width = 16;
+  // @override(1) let height = 8;
+  // @override(2) let depth = 2;
+  // @stage(compute) @workgroup_size(width, height, depth)
   // fn main() {}
   auto* width = GlobalConst("width", ty.i32(), Expr(16), {Override(0)});
   auto* height = GlobalConst("height", ty.i32(), Expr(8), {Override(1)});
@@ -1036,10 +1036,10 @@ TEST_F(ResolverTest, Function_WorkgroupSize_OverridableConsts) {
 }
 
 TEST_F(ResolverTest, Function_WorkgroupSize_OverridableConsts_NoInit) {
-  // [[override(0)]] let width : i32;
-  // [[override(1)]] let height : i32;
-  // [[override(2)]] let depth : i32;
-  // [[stage(compute), workgroup_size(width, height, depth)]]
+  // @override(0) let width : i32;
+  // @override(1) let height : i32;
+  // @override(2) let depth : i32;
+  // @stage(compute) @workgroup_size(width, height, depth)
   // fn main() {}
   auto* width = GlobalConst("width", ty.i32(), nullptr, {Override(0)});
   auto* height = GlobalConst("height", ty.i32(), nullptr, {Override(1)});
@@ -1062,9 +1062,9 @@ TEST_F(ResolverTest, Function_WorkgroupSize_OverridableConsts_NoInit) {
 }
 
 TEST_F(ResolverTest, Function_WorkgroupSize_Mixed) {
-  // [[override(1)]] let height = 2;
+  // @override(1) let height = 2;
   // let depth = 3;
-  // [[stage(compute), workgroup_size(8, height, depth)]]
+  // @stage(compute) @workgroup_size(8, height, depth)
   // fn main() {}
   auto* height = GlobalConst("height", ty.i32(), Expr(2), {Override(0)});
   GlobalConst("depth", ty.i32(), Expr(3));
@@ -1816,8 +1816,8 @@ TEST_F(ResolverTest, Access_SetForStorageBuffer) {
 }
 
 TEST_F(ResolverTest, BindingPoint_SetForResources) {
-  // [[group(1), binding(2)]] var s1 : sampler;
-  // [[group(3), binding(4)]] var s2 : sampler;
+  // @group(1) @binding(2) var s1 : sampler;
+  // @group(3) @binding(4) var s2 : sampler;
   auto* s1 = Global(Sym(), ty.sampler(ast::SamplerKind::kSampler),
                     ast::DecorationList{create<ast::GroupDecoration>(1),
                                         create<ast::BindingDecoration>(2)});
@@ -2020,6 +2020,146 @@ TEST_F(ResolverTest, UnaryOp_Negation) {
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(), "12:34 error: cannot negate expression of type 'u32");
+}
+
+TEST_F(ResolverTest, TextureSampler_TextureSample) {
+  Global("t", ty.sampled_texture(ast::TextureDimension::k2d, ty.f32()),
+         GroupAndBinding(1, 1));
+  Global("s", ty.sampler(ast::SamplerKind::kSampler), GroupAndBinding(1, 2));
+
+  auto* call = CallStmt(Call("textureSample", "t", "s", vec2<f32>(1.0f, 2.0f)));
+  const ast::Function* f = Func("test_function", {}, ty.void_(), {call},
+                                {Stage(ast::PipelineStage::kFragment)});
+
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+
+  const sem::Function* sf = Sem().Get(f);
+  auto pairs = sf->TextureSamplerPairs();
+  ASSERT_EQ(pairs.size(), 1u);
+  EXPECT_TRUE(pairs[0].first != nullptr);
+  EXPECT_TRUE(pairs[0].second != nullptr);
+}
+
+TEST_F(ResolverTest, TextureSampler_TextureSampleInFunction) {
+  Global("t", ty.sampled_texture(ast::TextureDimension::k2d, ty.f32()),
+         GroupAndBinding(1, 1));
+  Global("s", ty.sampler(ast::SamplerKind::kSampler), GroupAndBinding(1, 2));
+
+  auto* inner_call =
+      CallStmt(Call("textureSample", "t", "s", vec2<f32>(1.0f, 2.0f)));
+  const ast::Function* inner_func =
+      Func("inner_func", {}, ty.void_(), {inner_call});
+  auto* outer_call = CallStmt(Call("inner_func"));
+  const ast::Function* outer_func =
+      Func("outer_func", {}, ty.void_(), {outer_call},
+           {Stage(ast::PipelineStage::kFragment)});
+
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+
+  auto inner_pairs = Sem().Get(inner_func)->TextureSamplerPairs();
+  ASSERT_EQ(inner_pairs.size(), 1u);
+  EXPECT_TRUE(inner_pairs[0].first != nullptr);
+  EXPECT_TRUE(inner_pairs[0].second != nullptr);
+
+  auto outer_pairs = Sem().Get(outer_func)->TextureSamplerPairs();
+  ASSERT_EQ(outer_pairs.size(), 1u);
+  EXPECT_TRUE(outer_pairs[0].first != nullptr);
+  EXPECT_TRUE(outer_pairs[0].second != nullptr);
+}
+
+TEST_F(ResolverTest, TextureSampler_TextureSampleFunctionDiamondSameVariables) {
+  Global("t", ty.sampled_texture(ast::TextureDimension::k2d, ty.f32()),
+         GroupAndBinding(1, 1));
+  Global("s", ty.sampler(ast::SamplerKind::kSampler), GroupAndBinding(1, 2));
+
+  auto* inner_call_1 =
+      CallStmt(Call("textureSample", "t", "s", vec2<f32>(1.0f, 2.0f)));
+  const ast::Function* inner_func_1 =
+      Func("inner_func_1", {}, ty.void_(), {inner_call_1});
+  auto* inner_call_2 =
+      CallStmt(Call("textureSample", "t", "s", vec2<f32>(3.0f, 4.0f)));
+  const ast::Function* inner_func_2 =
+      Func("inner_func_2", {}, ty.void_(), {inner_call_2});
+  auto* outer_call_1 = CallStmt(Call("inner_func_1"));
+  auto* outer_call_2 = CallStmt(Call("inner_func_2"));
+  const ast::Function* outer_func =
+      Func("outer_func", {}, ty.void_(), {outer_call_1, outer_call_2},
+           {Stage(ast::PipelineStage::kFragment)});
+
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+
+  auto inner_pairs_1 = Sem().Get(inner_func_1)->TextureSamplerPairs();
+  ASSERT_EQ(inner_pairs_1.size(), 1u);
+  EXPECT_TRUE(inner_pairs_1[0].first != nullptr);
+  EXPECT_TRUE(inner_pairs_1[0].second != nullptr);
+
+  auto inner_pairs_2 = Sem().Get(inner_func_2)->TextureSamplerPairs();
+  ASSERT_EQ(inner_pairs_1.size(), 1u);
+  EXPECT_TRUE(inner_pairs_2[0].first != nullptr);
+  EXPECT_TRUE(inner_pairs_2[0].second != nullptr);
+
+  auto outer_pairs = Sem().Get(outer_func)->TextureSamplerPairs();
+  ASSERT_EQ(outer_pairs.size(), 1u);
+  EXPECT_TRUE(outer_pairs[0].first != nullptr);
+  EXPECT_TRUE(outer_pairs[0].second != nullptr);
+}
+
+TEST_F(ResolverTest,
+       TextureSampler_TextureSampleFunctionDiamondDifferentVariables) {
+  Global("t1", ty.sampled_texture(ast::TextureDimension::k2d, ty.f32()),
+         GroupAndBinding(1, 1));
+  Global("t2", ty.sampled_texture(ast::TextureDimension::k2d, ty.f32()),
+         GroupAndBinding(1, 2));
+  Global("s", ty.sampler(ast::SamplerKind::kSampler), GroupAndBinding(1, 3));
+
+  auto* inner_call_1 =
+      CallStmt(Call("textureSample", "t1", "s", vec2<f32>(1.0f, 2.0f)));
+  const ast::Function* inner_func_1 =
+      Func("inner_func_1", {}, ty.void_(), {inner_call_1});
+  auto* inner_call_2 =
+      CallStmt(Call("textureSample", "t2", "s", vec2<f32>(3.0f, 4.0f)));
+  const ast::Function* inner_func_2 =
+      Func("inner_func_2", {}, ty.void_(), {inner_call_2});
+  auto* outer_call_1 = CallStmt(Call("inner_func_1"));
+  auto* outer_call_2 = CallStmt(Call("inner_func_2"));
+  const ast::Function* outer_func =
+      Func("outer_func", {}, ty.void_(), {outer_call_1, outer_call_2},
+           {Stage(ast::PipelineStage::kFragment)});
+
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+
+  auto inner_pairs_1 = Sem().Get(inner_func_1)->TextureSamplerPairs();
+  ASSERT_EQ(inner_pairs_1.size(), 1u);
+  EXPECT_TRUE(inner_pairs_1[0].first != nullptr);
+  EXPECT_TRUE(inner_pairs_1[0].second != nullptr);
+
+  auto inner_pairs_2 = Sem().Get(inner_func_2)->TextureSamplerPairs();
+  ASSERT_EQ(inner_pairs_2.size(), 1u);
+  EXPECT_TRUE(inner_pairs_2[0].first != nullptr);
+  EXPECT_TRUE(inner_pairs_2[0].second != nullptr);
+
+  auto outer_pairs = Sem().Get(outer_func)->TextureSamplerPairs();
+  ASSERT_EQ(outer_pairs.size(), 2u);
+  EXPECT_TRUE(outer_pairs[0].first == inner_pairs_1[0].first);
+  EXPECT_TRUE(outer_pairs[0].second == inner_pairs_1[0].second);
+  EXPECT_TRUE(outer_pairs[1].first == inner_pairs_2[0].first);
+  EXPECT_TRUE(outer_pairs[1].second == inner_pairs_2[0].second);
+}
+
+TEST_F(ResolverTest, TextureSampler_TextureDimensions) {
+  Global("t", ty.sampled_texture(ast::TextureDimension::k2d, ty.f32()),
+         GroupAndBinding(1, 2));
+
+  auto* call = Call("textureDimensions", "t");
+  const ast::Function* f = WrapInFunction(call);
+
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+
+  const sem::Function* sf = Sem().Get(f);
+  auto pairs = sf->TextureSamplerPairs();
+  ASSERT_EQ(pairs.size(), 1u);
+  EXPECT_TRUE(pairs[0].first != nullptr);
+  EXPECT_TRUE(pairs[0].second == nullptr);
 }
 }  // namespace
 }  // namespace resolver

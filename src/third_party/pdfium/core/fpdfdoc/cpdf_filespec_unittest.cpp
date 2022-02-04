@@ -24,7 +24,7 @@ TEST(cpdf_filespec, EncodeDecodeFileName) {
     {L"", L""},
     // only file name.
     {L"test.pdf", L"test.pdf"},
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     // With drive identifier.
     {L"r:\\pdfdocs\\spec.pdf", L"/r/pdfdocs/spec.pdf"},
     // Relative path.
@@ -35,7 +35,7 @@ TEST(cpdf_filespec, EncodeDecodeFileName) {
     {L"\\\\pdfdocs\\spec.pdf", L"/pdfdocs/spec.pdf"},
 // Network resource name. It is not supported yet.
 // {L"pclib/eng:\\pdfdocs\\spec.pdf", L"/pclib/eng/pdfdocs/spec.pdf"},
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
     // Absolute path with colon separator.
     {L"Mac HD:PDFDocs:spec.pdf", L"/Mac HD/PDFDocs/spec.pdf"},
     // Relative path with colon separator.
@@ -62,10 +62,10 @@ TEST(cpdf_filespec, GetFileName) {
   {
     // String object.
     static const pdfium::NullTermWstrFuncTestData test_data = {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       L"/C/docs/test.pdf",
       L"C:\\docs\\test.pdf"
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
       L"/Mac HD/docs/test.pdf",
       L"Mac HD:docs:test.pdf"
 #else
@@ -80,13 +80,13 @@ TEST(cpdf_filespec, GetFileName) {
   {
     // Dictionary object.
     static const pdfium::NullTermWstrFuncTestData test_data[] = {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
       {L"/C/docs/test.pdf", L"C:\\docs\\test.pdf"},
       {L"/D/docs/test.pdf", L"D:\\docs\\test.pdf"},
       {L"/E/docs/test.pdf", L"E:\\docs\\test.pdf"},
       {L"/F/docs/test.pdf", L"F:\\docs\\test.pdf"},
       {L"/G/docs/test.pdf", L"G:\\docs\\test.pdf"},
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
       {L"/Mac HD/docs1/test.pdf", L"Mac HD:docs1:test.pdf"},
       {L"/Mac HD/docs2/test.pdf", L"Mac HD:docs2:test.pdf"},
       {L"/Mac HD/docs3/test.pdf", L"Mac HD:docs3:test.pdf"},
@@ -138,10 +138,10 @@ TEST(cpdf_filespec, GetFileName) {
 
 TEST(cpdf_filespec, SetFileName) {
   static const pdfium::NullTermWstrFuncTestData test_data = {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     L"C:\\docs\\test.pdf",
     L"/C/docs/test.pdf"
-#elif defined(OS_APPLE)
+#elif BUILDFLAG(IS_APPLE)
     L"Mac HD:docs:test.pdf",
     L"/Mac HD/docs/test.pdf"
 #else

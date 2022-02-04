@@ -135,7 +135,7 @@ class Ref<SparseMatrixType, Options>
     template<int OtherOptions>
     inline Ref(const SparseMatrix<MatScalar,OtherOptions,MatIndex>& expr);
     template<int OtherOptions>
-    inline Ref(const MappedSparseMatrix<MatScalar,OtherOptions,MatIndex>& expr);
+    inline Ref(const Map<SparseMatrix<MatScalar,OtherOptions,MatIndex>>& expr);
   public:
 
     typedef internal::SparseRefBase<Ref> Base;
@@ -150,15 +150,15 @@ class Ref<SparseMatrixType, Options>
       eigen_assert( ((Options & int(StandardCompressedFormat))==0) || (expr.isCompressed()) );
       Base::construct(expr.derived());
     }
-    
+
     template<int OtherOptions>
-    inline Ref(MappedSparseMatrix<MatScalar,OtherOptions,MatIndex>& expr)
+    inline Ref(Map<SparseMatrix<MatScalar,OtherOptions,MatIndex> >& expr)
     {
       EIGEN_STATIC_ASSERT(bool(Traits::template match<SparseMatrix<MatScalar,OtherOptions,MatIndex> >::MatchAtCompileTime), STORAGE_LAYOUT_DOES_NOT_MATCH);
       eigen_assert( ((Options & int(StandardCompressedFormat))==0) || (expr.isCompressed()) );
       Base::construct(expr.derived());
     }
-    
+
     template<typename Derived>
     inline Ref(const SparseCompressedBase<Derived>& expr)
     #else

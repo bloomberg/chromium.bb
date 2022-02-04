@@ -104,15 +104,15 @@ try_.builder(
 )
 
 try_.builder(
-    name = "win10_chromium_x64_20h2_fyi_rel_ng",
-    builderless = False,
-    use_clang_coverage = True,
-    coverage_test_types = ["unit", "overall"],
-    os = os.WINDOWS_10_20h2,
+    name = "win10_chromium_x64_dbg_ng",
+    os = os.WINDOWS_10,
 )
 
 try_.builder(
-    name = "win10_chromium_x64_dbg_ng",
+    name = "win11-x64-fyi-rel",
+    builderless = True,
+    use_clang_coverage = True,
+    coverage_test_types = ["unit", "overall"],
     os = os.WINDOWS_10,
 )
 
@@ -136,7 +136,7 @@ try_.compilator_builder(
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     main_list_view = "try",
     # TODO (crbug.com/1245171): Revert when root issue is fixed
-    grace_period = 3 * time.minute,
+    grace_period = 4 * time.minute,
 )
 
 try_.builder(

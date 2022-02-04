@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,6 +31,7 @@
 #include "vk_object_types.h"
 #include "vk_layer_data.h"
 #include "vk_layer_logging.h"
+#include "vk_layer_utils.h"
 
 #include <atomic>
 
@@ -45,82 +46,74 @@ struct hash<VulkanTypedHandle> {
 };
 }  // namespace std
 
-class BASE_NODE {
+// inheriting from enable_shared_from_this<> adds a method, shared_from_this(), which
+// returns a shared_ptr version of the current object. It requires the object to
+// be created with std::make_shared<> and it MUST NOT be used from the constructor
+class BASE_NODE : public std::enable_shared_from_this<BASE_NODE> {
   public:
-    using NodeSet = layer_data::unordered_set<BASE_NODE *>;
-    using NodeList = small_vector<BASE_NODE *, 4>;
+    // Parent nodes are stored as weak_ptrs to avoid cyclic memory dependencies.
+    // Because weak_ptrs cannot safely be used as hash keys, the parents are stored
+    // in a map keyed by VulkanTypedHandle. This also allows looking for specific
+    // parent types without locking every weak_ptr.
+    using NodeMap = layer_data::unordered_map<VulkanTypedHandle, std::weak_ptr<BASE_NODE>>;
+    using NodeList = small_vector<std::shared_ptr<BASE_NODE>, 4, uint32_t>;
 
     template <typename Handle>
     BASE_NODE(Handle h, VulkanObjectType t) : handle_(h, t), destroyed_(false) {}
 
-    virtual ~BASE_NODE() { Destroy(); }
+    // because shared_from_this() does not work from the constructor, this 2nd phase
+    // constructor is where a state object should call AddParent() on its child nodes.
+    // It is called as part of ValidationStateTracker::Add()
+    virtual void LinkChildNodes() {}
 
-    virtual void Destroy() {
-        Invalidate();
-        destroyed_ = true;
-    }
+    virtual ~BASE_NODE();
+
+    // Because state objects are reference counted, they may outlive the vulkan objects
+    // they represent. Destroy() is called when the vulkan object is destroyed, so that
+    // it can be cleaned up before all references are gone. It also triggers notifications
+    // to parent objects.
+    virtual void Destroy();
 
     bool Destroyed() const { return destroyed_; }
 
     const VulkanTypedHandle &Handle() const { return handle_; }
     VulkanObjectType Type() const { return handle_.type; }
 
-    virtual bool InUse() const {
-        bool result = false;
-        for (auto& node: parent_nodes_) {
-            result |= node->InUse();
-            if (result) {
-                break;
-            }
-        }
-        return result;
-    }
+    virtual bool InUse() const;
 
-    virtual bool AddParent(BASE_NODE *parent_node) {
-        auto result = parent_nodes_.emplace(parent_node);
-        return result.second;
-    }
+    virtual bool AddParent(BASE_NODE *parent_node);
+    virtual void RemoveParent(BASE_NODE *parent_node);
 
-    virtual void RemoveParent(BASE_NODE *parent_node) {
-        parent_nodes_.erase(parent_node);
-    }
+    // Invalidate is called on a state object to inform its parents that it
+    // is being destroyed (unlink == true) or otherwise becoming invalid (unlink == false)
+    void Invalidate(bool unlink = true);
 
-    void Invalidate(bool unlink = true) {
-        NodeList invalid_nodes;
-        invalid_nodes.emplace_back(this);
-        for (auto& node: parent_nodes_) {
-            node->NotifyInvalidate(invalid_nodes, unlink);
-        }
-        if (unlink) {
-            parent_nodes_.clear();
-        }
-    }
+    // Helper to let objects examine their immediate parents without holding the tree lock.
+    NodeMap ObjectBindings() const;
+
   protected:
-    // NOTE: the entries in invalid_nodes will likely be destroyed & deleted
-    // after the NotifyInvalidate() calls finish.
-    virtual void NotifyInvalidate(const NodeList &invalid_nodes, bool unlink) {
-        if (parent_nodes_.size() == 0) {
-            return;
-        }
-        NodeList up_nodes = invalid_nodes;
-        up_nodes.emplace_back(this);
-        for (auto& node: parent_nodes_) {
-            node->NotifyInvalidate(up_nodes, unlink);
-        }
-        if (unlink) {
-            parent_nodes_.clear();
-        }
-    }
+    // Called recursively for every parent object of something that has become invalid
+    virtual void NotifyInvalidate(const NodeList &invalid_nodes, bool unlink);
+
+    // returns a copy of the current set of parents so that they can be walked
+    // without the tree lock held. If unlink == true, parent_nodes_ is also cleared.
+    NodeMap GetParentsForInvalidate(bool unlink);
 
     VulkanTypedHandle handle_;
 
     // Set to true when the API-level object is destroyed, but this object may
     // hang around until its shared_ptr refcount goes to zero.
-    bool destroyed_;
+    std::atomic<bool> destroyed_;
+
+  private:
+    ReadLockGuard ReadLockTree() const { return ReadLockGuard(tree_lock_); }
+    WriteLockGuard WriteLockTree() { return WriteLockGuard(tree_lock_); }
 
     // Set of immediate parent nodes for this object. For an in-use object, the
     // parent nodes should form a tree with the root being a command buffer.
-    NodeSet parent_nodes_;
+    NodeMap parent_nodes_;
+    // Lock guarding parent_nodes_, this lock MUST NOT be used for other purposes.
+    mutable ReadWriteLock tree_lock_;
 };
 
 class REFCOUNTED_NODE : public BASE_NODE {

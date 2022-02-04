@@ -34,6 +34,8 @@ namespace vk
     FUNC(Allocation)               \
     FUNC(Allocator)                \
     FUNC(Buffer)                   \
+    FUNC(BufferBlock)              \
+    FUNC(BufferSubAllocation)      \
     FUNC(BufferView)               \
     FUNC(CommandPool)              \
     FUNC(DescriptorPool)           \
@@ -456,6 +458,22 @@ class Allocator : public WrappedObject<Allocator, VmaAllocator>
                   uint32_t apiVersion,
                   VkDeviceSize preferredLargeHeapBlockSize);
 
+    // Initializes the buffer handle and memory allocation.
+    VkResult createBuffer(const VkBufferCreateInfo &bufferCreateInfo,
+                          VkMemoryPropertyFlags requiredFlags,
+                          VkMemoryPropertyFlags preferredFlags,
+                          bool persistentlyMappedBuffers,
+                          uint32_t *memoryTypeIndexOut,
+                          Buffer *bufferOut,
+                          Allocation *allocationOut) const;
+
+    void getMemoryTypeProperties(uint32_t memoryTypeIndex, VkMemoryPropertyFlags *flagsOut) const;
+    VkResult findMemoryTypeIndexForBufferInfo(const VkBufferCreateInfo &bufferCreateInfo,
+                                              VkMemoryPropertyFlags requiredFlags,
+                                              VkMemoryPropertyFlags preferredFlags,
+                                              bool persistentlyMappedBuffers,
+                                              uint32_t *memoryTypeIndexOut) const;
+
     void buildStatsString(char **statsString, VkBool32 detailedMap);
     void freeStatsString(char *statsString);
 };
@@ -468,11 +486,11 @@ class Allocation final : public WrappedObject<Allocation, VmaAllocation>
 
     VkResult map(const Allocator &allocator, uint8_t **mapPointer) const;
     void unmap(const Allocator &allocator) const;
-    void flush(const Allocator &allocator, VkDeviceSize offset, VkDeviceSize size);
-    void invalidate(const Allocator &allocator, VkDeviceSize offset, VkDeviceSize size);
+    void flush(const Allocator &allocator, VkDeviceSize offset, VkDeviceSize size) const;
+    void invalidate(const Allocator &allocator, VkDeviceSize offset, VkDeviceSize size) const;
 
   private:
-    friend class BufferMemoryAllocator;
+    friend class Allocator;
 };
 
 class RenderPass final : public WrappedObject<RenderPass, VkRenderPass>
@@ -503,7 +521,7 @@ class Buffer final : public WrappedObject<Buffer, VkBuffer>
     void getMemoryRequirements(VkDevice device, VkMemoryRequirements *memoryRequirementsOut);
 
   private:
-    friend class BufferMemoryAllocator;
+    friend class Allocator;
 };
 
 class BufferView final : public WrappedObject<BufferView, VkBufferView>
@@ -631,6 +649,18 @@ class QueryPool final : public WrappedObject<QueryPool, VkQueryPool>
                         void *data,
                         VkDeviceSize stride,
                         VkQueryResultFlags flags) const;
+};
+
+// VirtualBlock
+class VirtualBlock final : public WrappedObject<VirtualBlock, VmaVirtualBlock>
+{
+  public:
+    VirtualBlock() = default;
+    void destroy(VkDevice device);
+    VkResult init(VkDevice device, vma::VirtualBlockCreateFlags flags, VkDeviceSize size);
+
+    VkResult allocate(VkDeviceSize size, VkDeviceSize alignment, VkDeviceSize *offsetOut);
+    void free(VkDeviceSize offset);
 };
 
 // CommandPool implementation.
@@ -1342,6 +1372,42 @@ ANGLE_INLINE VkResult Allocator::init(VkPhysicalDevice physicalDevice,
                               preferredLargeHeapBlockSize, &mHandle);
 }
 
+ANGLE_INLINE VkResult Allocator::createBuffer(const VkBufferCreateInfo &bufferCreateInfo,
+                                              VkMemoryPropertyFlags requiredFlags,
+                                              VkMemoryPropertyFlags preferredFlags,
+                                              bool persistentlyMappedBuffers,
+                                              uint32_t *memoryTypeIndexOut,
+                                              Buffer *bufferOut,
+                                              Allocation *allocationOut) const
+{
+    ASSERT(valid());
+    ASSERT(bufferOut && !bufferOut->valid());
+    ASSERT(allocationOut && !allocationOut->valid());
+    return vma::CreateBuffer(mHandle, &bufferCreateInfo, requiredFlags, preferredFlags,
+                             persistentlyMappedBuffers, memoryTypeIndexOut, &bufferOut->mHandle,
+                             &allocationOut->mHandle);
+}
+
+ANGLE_INLINE void Allocator::getMemoryTypeProperties(uint32_t memoryTypeIndex,
+                                                     VkMemoryPropertyFlags *flagsOut) const
+{
+    ASSERT(valid());
+    vma::GetMemoryTypeProperties(mHandle, memoryTypeIndex, flagsOut);
+}
+
+ANGLE_INLINE VkResult
+Allocator::findMemoryTypeIndexForBufferInfo(const VkBufferCreateInfo &bufferCreateInfo,
+                                            VkMemoryPropertyFlags requiredFlags,
+                                            VkMemoryPropertyFlags preferredFlags,
+                                            bool persistentlyMappedBuffers,
+                                            uint32_t *memoryTypeIndexOut) const
+{
+    ASSERT(valid());
+    return vma::FindMemoryTypeIndexForBufferInfo(mHandle, &bufferCreateInfo, requiredFlags,
+                                                 preferredFlags, persistentlyMappedBuffers,
+                                                 memoryTypeIndexOut);
+}
+
 ANGLE_INLINE void Allocator::buildStatsString(char **statsString, VkBool32 detailedMap)
 {
     ASSERT(valid());
@@ -1378,7 +1444,7 @@ ANGLE_INLINE void Allocation::unmap(const Allocator &allocator) const
 
 ANGLE_INLINE void Allocation::flush(const Allocator &allocator,
                                     VkDeviceSize offset,
-                                    VkDeviceSize size)
+                                    VkDeviceSize size) const
 {
     ASSERT(valid());
     vma::FlushAllocation(allocator.getHandle(), mHandle, offset, size);
@@ -1386,7 +1452,7 @@ ANGLE_INLINE void Allocation::flush(const Allocator &allocator,
 
 ANGLE_INLINE void Allocation::invalidate(const Allocator &allocator,
                                          VkDeviceSize offset,
-                                         VkDeviceSize size)
+                                         VkDeviceSize size) const
 {
     ASSERT(valid());
     vma::InvalidateAllocation(allocator.getHandle(), mHandle, offset, size);
@@ -1759,6 +1825,35 @@ ANGLE_INLINE VkResult QueryPool::getResults(VkDevice device,
     ASSERT(valid());
     return vkGetQueryPoolResults(device, mHandle, firstQuery, queryCount, dataSize, data, stride,
                                  flags);
+}
+
+// VirtualBlock implementation.
+ANGLE_INLINE void VirtualBlock::destroy(VkDevice device)
+{
+    if (valid())
+    {
+        vma::DestroyVirtualBlock(mHandle);
+        mHandle = VK_NULL_HANDLE;
+    }
+}
+
+ANGLE_INLINE VkResult VirtualBlock::init(VkDevice device,
+                                         vma::VirtualBlockCreateFlags flags,
+                                         VkDeviceSize size)
+{
+    return vma::CreateVirtualBlock(size, flags, &mHandle);
+}
+
+ANGLE_INLINE VkResult VirtualBlock::allocate(VkDeviceSize size,
+                                             VkDeviceSize alignment,
+                                             VkDeviceSize *offsetOut)
+{
+    return vma::VirtualAllocate(mHandle, size, alignment, offsetOut);
+}
+
+ANGLE_INLINE void VirtualBlock::free(VkDeviceSize offset)
+{
+    vma::VirtualFree(mHandle, offset);
 }
 }  // namespace vk
 }  // namespace rx

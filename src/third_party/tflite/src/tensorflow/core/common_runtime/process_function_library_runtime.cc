@@ -685,7 +685,9 @@ ProcessFunctionLibraryRuntime::AsyncAttributes::Summarize(const Graph* graph) {
     if (node->IsRecv() || node->IsHostRecv()) {
       has_recv_op = true;
     }
-    if (!ValidateOpIsSafeForSyncExecution(*node).ok()) {
+    if (!ValidateOpIsSafeForSyncExecution(*node,
+                                          allow_control_flow_sync_execution())
+             .ok()) {
       has_unsafe_op = true;
     }
   }
@@ -894,6 +896,8 @@ Status ProcessFunctionLibraryRuntime::InstantiateMultiDevice(
   optimization_options.composite_devices = &composite_devices;
   optimization_options.default_function_device = default_device;
   optimization_options.function_def = fdef;
+  optimization_options.shape_inference_on_tfe_dialect_import =
+      options.shape_inference_on_tfe_dialect_import;
 
   DumpGraph("Before running PRE_PLACEMENT passes", graph.get());
   if (should_run_optimization_passes) {
@@ -1034,7 +1038,8 @@ Status ProcessFunctionLibraryRuntime::InstantiateMultiDevice(
     for (const auto& pair : subgraphs) {
       ComponentFunctionData* comp_data = &data->glue_[pair.first];
       const Graph* subgraph = pair.second.get();
-      comp_data->async_attributes = AsyncAttributes(subgraph);
+      comp_data->async_attributes =
+          AsyncAttributes(subgraph, options.allow_control_flow_sync_execution);
       if (comp_data->async_attributes.summary() ==
           AsyncAttributes::kAsyncRequired) {
         data->enable_sync_execution = false;
@@ -1085,6 +1090,8 @@ Status ProcessFunctionLibraryRuntime::InstantiateMultiDevice(
       opts.create_kernels_eagerly = options.create_kernels_eagerly;
       opts.state_handle = options.state_handle;
       opts.allow_small_function_optimizations = data->enable_sync_execution;
+      opts.allow_control_flow_sync_execution =
+          options.allow_control_flow_sync_execution;
       auto attrs = AttrSlice(&shard.attr());
       VLOG(1) << "Start instantiating component function " << unique_name
               << " on device " << target;

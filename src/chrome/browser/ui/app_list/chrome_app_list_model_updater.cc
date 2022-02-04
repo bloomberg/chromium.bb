@@ -319,6 +319,11 @@ void ChromeAppListModelUpdater::PublishSearchResults(
   search_model_.PublishResults(std::move(ash_results), categories);
 }
 
+void ChromeAppListModelUpdater::ClearSearchResults() {
+  published_results_.clear();
+  search_model_.DeleteAllResults();
+}
+
 std::vector<ChromeSearchResult*>
 ChromeAppListModelUpdater::GetPublishedSearchResultsForTest() {
   return published_results_;
@@ -793,6 +798,10 @@ void ChromeAppListModelUpdater::RequestMoveItemToFolder(
     if (is_under_temporary_sort()) {
       EndTemporarySortAndTakeAction(EndAction::kCommitAndClearSort);
     } else {
+      if (order_delegate_) {
+        order_delegate_->SetAppListPreferredOrder(
+            ash::AppListSortOrder::kCustom);
+      }
       // NOTE: Committing temporary sort will also reset page breaks, so they
       // don't have to be sanitized again in that case.
       sync_model_sanitizer_->SanitizePageBreaksForProductivityLauncher(
@@ -830,8 +839,14 @@ void ChromeAppListModelUpdater::RequestMoveItemToRoot(
   if (!ash::features::IsProductivityLauncherEnabled())
     ClearFolderIfItHasSingleChild(old_parent);
 
-  sync_model_sanitizer_->SanitizePageBreaksForProductivityLauncher(
-      GetTopLevelItemIds(), /*reset_page_breaks=*/false);
+  if (is_under_temporary_sort()) {
+    EndTemporarySortAndTakeAction(EndAction::kCommitAndClearSort);
+  } else {
+    if (order_delegate_)
+      order_delegate_->SetAppListPreferredOrder(ash::AppListSortOrder::kCustom);
+    sync_model_sanitizer_->SanitizePageBreaksForProductivityLauncher(
+        GetTopLevelItemIds(), /*reset_page_breaks=*/false);
+  }
 }
 
 void ChromeAppListModelUpdater::RequestAppListSort(
@@ -867,13 +882,15 @@ void ChromeAppListModelUpdater::RequestAppListSort(
       app_list::reorder::GenerateReorderParamsForAppListItems(order,
                                                               GetItems());
 
-  // Send the update in the temporary sorting order to ash.
-  ash::AppListController::Get()->OnTemporarySortOrderChanged(order);
+  // Return early if reordering is not required.
+  if (!reorder_params.size())
+    return;
 
-  // Notify the ash side of the new positions. Updates are local-only because
-  // `temporary_sort_manager_` is active.
-  for (const auto& reorder_param : reorder_params)
-    SetItemPosition(reorder_param.sync_item_id, reorder_param.ordinal);
+  ash::AppListController::Get()->UpdateAppListWithNewSortingOrder(
+      order, /*animate=*/true,
+      base::BindOnce(
+          &ChromeAppListModelUpdater::UpdateItemPositionWithReorderParam,
+          weak_ptr_factory_.GetWeakPtr(), std::move(reorder_params)));
 }
 
 void ChromeAppListModelUpdater::RequestAppListSortRevert() {
@@ -895,6 +912,10 @@ void ChromeAppListModelUpdater::RequestPositionUpdate(
     if (temporary_sort_manager_) {
       EndTemporarySortAndTakeAction(EndAction::kCommitAndClearSort);
     } else {
+      if (order_delegate_) {
+        order_delegate_->SetAppListPreferredOrder(
+            ash::AppListSortOrder::kCustom);
+      }
       // NOTE: Committing temporary sort will also reset page breaks, so they
       // don't have to be sanitized again in that case.
       sync_model_sanitizer_->SanitizePageBreaksForProductivityLauncher(
@@ -946,6 +967,7 @@ void ChromeAppListModelUpdater::EndTemporarySortAndTakeAction(
   // Allow item updates to be propagated to observers.
   temporary_sort_manager_->Deactivate();
 
+  base::OnceClosure update_position_closure;
   switch (action) {
     case EndAction::kCommit:
       CommitTemporaryPositions();
@@ -953,7 +975,10 @@ void ChromeAppListModelUpdater::EndTemporarySortAndTakeAction(
           temporary_sort_manager_->temporary_order());
       break;
     case EndAction::kRevert:
-      RevertTemporaryPositions();
+      update_position_closure = base::BindOnce(
+          &ChromeAppListModelUpdater::UpdateItemPositionWithReorderParam,
+          weak_ptr_factory_.GetWeakPtr(),
+          CalculateReorderParamsForRevertOrder());
       break;
     case EndAction::kCommitAndClearSort:
       CommitTemporaryPositions();
@@ -963,40 +988,9 @@ void ChromeAppListModelUpdater::EndTemporarySortAndTakeAction(
 
   temporary_sort_manager_.reset();
 
-  // Send the update in the temporary sorting order to ash.
-  ash::AppListController::Get()->OnTemporarySortOrderChanged(
-      /*new_order=*/absl::nullopt);
-}
-
-void ChromeAppListModelUpdater::RevertTemporaryPositions() {
-  const std::map<std::string, std::unique_ptr<ChromeAppListItem>>& items =
-      item_manager_->items();
-  for (const auto& id_item_pair : items) {
-    const std::string& id = id_item_pair.first;
-
-    // TODO(https://crbug.com/1260447): the features of temporary sort are
-    // partially implemented. The cases of app installation/removal are not
-    // handled right now. As a result, the ids in `temporary_sort_manager_`
-    // can be inconsistent with those in `item_manager_`. Therefore manually
-    // check the existence of `id` here. When the issue gets addressed, replace
-    // with a DCHECK statement.
-    if (!temporary_sort_manager_->HasId(id))
-      continue;
-
-    const syncer::StringOrdinal& temporary_position =
-        id_item_pair.second->position();
-    const syncer::StringOrdinal& permanent_position =
-        temporary_sort_manager_->GetPermanentPositionForId(id);
-
-    if (temporary_position.IsValid() && permanent_position.IsValid() &&
-        temporary_position.Equals(permanent_position)) {
-      // Skip if `temporary_position` is equal to `permanent_position`.
-      continue;
-    }
-
-    // Set the local item with permanent position.
-    SetItemPosition(id, permanent_position);
-  }
+  const bool animate = !update_position_closure.is_null();
+  ash::AppListController::Get()->UpdateAppListWithNewSortingOrder(
+      /*new_order=*/absl::nullopt, animate, std::move(update_position_closure));
 }
 
 void ChromeAppListModelUpdater::CommitTemporaryPositions() {
@@ -1038,6 +1032,41 @@ void ChromeAppListModelUpdater::CommitTemporaryPositions() {
   }
 }
 
+std::vector<app_list::reorder::ReorderParam>
+ChromeAppListModelUpdater::CalculateReorderParamsForRevertOrder() const {
+  std::vector<app_list::reorder::ReorderParam> reorder_params;
+
+  const std::map<std::string, std::unique_ptr<ChromeAppListItem>>& items =
+      item_manager_->items();
+  for (const auto& id_item_pair : items) {
+    const std::string& id = id_item_pair.first;
+
+    // TODO(https://crbug.com/1260447): the features of temporary sort are
+    // partially implemented. The cases of app installation/removal are not
+    // handled right now. As a result, the ids in `temporary_sort_manager_`
+    // can be inconsistent with those in `item_manager_`. Therefore manually
+    // check the existence of `id` here. When the issue gets addressed, replace
+    // with a DCHECK statement.
+    if (!temporary_sort_manager_->HasId(id))
+      continue;
+
+    const syncer::StringOrdinal& temporary_position =
+        id_item_pair.second->position();
+    const syncer::StringOrdinal& permanent_position =
+        temporary_sort_manager_->GetPermanentPositionForId(id);
+
+    if (temporary_position.IsValid() && permanent_position.IsValid() &&
+        temporary_position.Equals(permanent_position)) {
+      // Skip if `temporary_position` is equal to `permanent_position`.
+      continue;
+    }
+
+    reorder_params.emplace_back(id, permanent_position);
+  }
+
+  return reorder_params;
+}
+
 void ChromeAppListModelUpdater::ClearFolderIfItHasSingleChild(
     const std::string& folder_id) {
   ash::AppListFolderItem* folder = model_.FindFolderItem(folder_id);
@@ -1050,4 +1079,10 @@ void ChromeAppListModelUpdater::ClearFolderIfItHasSingleChild(
     metadata->position = folder->position();
     model_.SetItemMetadata(item_id, std::move(metadata));
   }
+}
+
+void ChromeAppListModelUpdater::UpdateItemPositionWithReorderParam(
+    const std::vector<app_list::reorder::ReorderParam>& reorder_params) {
+  for (const auto& reorder_param : reorder_params)
+    SetItemPosition(reorder_param.sync_item_id, reorder_param.ordinal);
 }

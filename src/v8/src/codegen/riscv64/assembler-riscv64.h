@@ -664,25 +664,6 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
     return (mask << 7) | (tail << 6) | ((vsew & 0x7) << 3) | (vlmul & 0x7);
   }
 
-  void vsetvli(Register rd, Register rs1, VSew vsew, Vlmul vlmul,
-               TailAgnosticType tail = tu, MaskAgnosticType mask = mu);
-
-  void vsetivli(Register rd, uint8_t uimm, VSew vsew, Vlmul vlmul,
-                TailAgnosticType tail = tu, MaskAgnosticType mask = mu);
-
-  inline void vsetvlmax(Register rd, VSew vsew, Vlmul vlmul,
-                        TailAgnosticType tail = tu,
-                        MaskAgnosticType mask = mu) {
-    vsetvli(rd, zero_reg, vsew, vlmul, tu, mu);
-  }
-
-  inline void vsetvl(VSew vsew, Vlmul vlmul, TailAgnosticType tail = tu,
-                     MaskAgnosticType mask = mu) {
-    vsetvli(zero_reg, zero_reg, vsew, vlmul, tu, mu);
-  }
-
-  void vsetvl(Register rd, Register rs1, Register rs2);
-
   void vl(VRegister vd, Register rs1, uint8_t lumop, VSew vsew,
           MaskType mask = NoMask);
   void vls(VRegister vd, Register rs1, Register rs2, VSew vsew,
@@ -1001,6 +982,8 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
 
   DEFINE_VFUNARY(vfclass_v, VFUNARY1_FUNCT6, VFCLASS_V)
   DEFINE_VFUNARY(vfsqrt_v, VFUNARY1_FUNCT6, VFSQRT_V)
+  DEFINE_VFUNARY(vfrsqrt7_v, VFUNARY1_FUNCT6, VFRSQRT7_V)
+  DEFINE_VFUNARY(vfrec7_v, VFUNARY1_FUNCT6, VFREC7_V)
 #undef DEFINE_VFUNARY
 
   void vnot_vv(VRegister dst, VRegister src, MaskType mask = NoMask) {
@@ -1017,6 +1000,10 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   void vfabs_vv(VRegister dst, VRegister src, MaskType mask = NoMask) {
     vfsngjx_vv(dst, src, src, mask);
   }
+  void vfirst_m(Register rd, VRegister vs2, MaskType mask = NoMask);
+
+  void vcpop_m(Register rd, VRegister vs2, MaskType mask = NoMask);
+
   // Privileged
   void uret();
   void sret();
@@ -1293,6 +1280,7 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
     constpool_.RecordEntry(data, rmode);
   }
 
+  friend class VectorUnit;
   class VectorUnit {
    public:
     inline int32_t sew() const { return 2 ^ (sew_ + 3); }
@@ -1445,6 +1433,25 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   bool is_buffer_growth_blocked() const { return block_buffer_growth_; }
 
  private:
+  void vsetvli(Register rd, Register rs1, VSew vsew, Vlmul vlmul,
+               TailAgnosticType tail = tu, MaskAgnosticType mask = mu);
+
+  void vsetivli(Register rd, uint8_t uimm, VSew vsew, Vlmul vlmul,
+                TailAgnosticType tail = tu, MaskAgnosticType mask = mu);
+
+  inline void vsetvlmax(Register rd, VSew vsew, Vlmul vlmul,
+                        TailAgnosticType tail = tu,
+                        MaskAgnosticType mask = mu) {
+    vsetvli(rd, zero_reg, vsew, vlmul, tu, mu);
+  }
+
+  inline void vsetvl(VSew vsew, Vlmul vlmul, TailAgnosticType tail = tu,
+                     MaskAgnosticType mask = mu) {
+    vsetvli(zero_reg, zero_reg, vsew, vlmul, tu, mu);
+  }
+
+  void vsetvl(Register rd, Register rs1, Register rs2);
+
   // Avoid overflows for displacements etc.
   static const int kMaximalBufferSize = 512 * MB;
 
@@ -1644,7 +1651,9 @@ class V8_EXPORT_PRIVATE Assembler : public AssemblerBase {
   void GenInstrV(Opcode opcode, uint8_t width, VRegister vd, Register rs1,
                  VRegister vs2, MaskType mask, uint8_t IsMop, bool IsMew,
                  uint8_t Nf);
-
+  // vmv_xs vcpop_m vfirst_m
+  void GenInstrV(uint8_t funct6, Opcode opcode, Register rd, uint8_t vs1,
+                 VRegister vs2, MaskType mask);
   // Labels.
   void print(const Label* L);
   void bind_to(Label* L, int pos);

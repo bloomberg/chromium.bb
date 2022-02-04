@@ -29,7 +29,7 @@ g.test('memcpy').fn(async t => {
     compute: {
       module: t.device.createShaderModule({
         code: `
-          [[block]] struct Data {
+          struct Data {
               value : u32;
           };
 
@@ -107,7 +107,7 @@ g.test('large_dispatch')
       compute: {
         module: t.device.createShaderModule({
           code: `
-            [[block]] struct OutputBuffer {
+            struct OutputBuffer {
               value : array<u32>;
             };
 

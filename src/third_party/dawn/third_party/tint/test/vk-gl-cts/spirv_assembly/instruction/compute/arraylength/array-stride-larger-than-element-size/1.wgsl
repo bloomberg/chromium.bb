@@ -1,18 +1,16 @@
-[[block]]
 struct Buf1 {
   result : i32;
 };
 
-type RTArr = [[stride(4)]] array<u32>;
+type RTArr = @stride(4) array<u32>;
 
-[[block]]
 struct Buf0 {
   values : RTArr;
 };
 
-[[group(0), binding(1)]] var<storage, read_write> x_4 : Buf1;
+@group(0) @binding(1) var<storage, read_write> x_4 : Buf1;
 
-[[group(0), binding(0)]] var<storage, read_write> x_7 : Buf0;
+@group(0) @binding(0) var<storage, read_write> x_7 : Buf0;
 
 fn main_1() {
   var i : u32;
@@ -39,7 +37,7 @@ fn main_1() {
   return;
 }
 
-[[stage(compute), workgroup_size(1, 1, 1)]]
+@stage(compute) @workgroup_size(1, 1, 1)
 fn main() {
   main_1();
 }

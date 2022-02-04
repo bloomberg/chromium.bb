@@ -215,7 +215,7 @@ class V8_EXPORT_PRIVATE Compiler : public AllStatic {
       const ScriptDetails& script_details, ScriptStreamingData* streaming_data);
 
   static Handle<SharedFunctionInfo> GetSharedFunctionInfoForWebSnapshot(
-      Isolate* isolate, Handle<String> source);
+      Isolate* isolate, Handle<String> source, MaybeHandle<Object> script_name);
 
   // Create a shared function info object for the given function literal
   // node (the code may be lazily compiled).
@@ -234,7 +234,7 @@ class V8_EXPORT_PRIVATE Compiler : public AllStatic {
   // instead of generating JIT code for a function at all.
 
   // Generate and return optimized code for OSR, or empty handle on failure.
-  V8_WARN_UNUSED_RESULT static MaybeHandle<Code> GetOptimizedCodeForOSR(
+  V8_WARN_UNUSED_RESULT static MaybeHandle<CodeT> GetOptimizedCodeForOSR(
       Isolate* isolate, Handle<JSFunction> function, BytecodeOffset osr_offset,
       JavaScriptFrame* osr_frame);
 };
@@ -517,6 +517,7 @@ class V8_EXPORT_PRIVATE BackgroundCompileTask {
       TimedHistogram* timer, int max_stack_size);
 
   void Run();
+  void RunOnMainThread(Isolate* isolate);
   void Run(LocalIsolate* isolate,
            ReusableUnoptimizedCompileState* reusable_state);
 

@@ -140,7 +140,7 @@ if (queries.length === 0) {
 
   assert(total > 0, 'found no tests!');
 
-  // TODO: write results out somewhere (a file?)
+  // MAINTENANCE_TODO: write results out somewhere (a file?)
   if (printJSON) {
     console.log(log.asJSON(2));
   }

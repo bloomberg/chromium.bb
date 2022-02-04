@@ -147,6 +147,13 @@ class TasksView extends CoordinatorLayoutForPointer {
      */
     void setTabCarouselVisibility(boolean isVisible) {
         mCarouselTabSwitcherContainer.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Set the visibility of the tab carousel title.
+     * @param isVisible Whether it's visible.
+     */
+    void setTabCarouselTitleVisibility(boolean isVisible) {
         findViewById(R.id.tab_switcher_title).setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
 
@@ -162,6 +169,13 @@ class TasksView extends CoordinatorLayoutForPointer {
      */
     void setMostVisitedVisibility(int visibility) {
         findViewById(R.id.mv_tiles_container).setVisibility(visibility);
+    }
+
+    /**
+     * Set the visibility of the Most Visited Tiles.
+     */
+    void setQueryTilesVisibility(int visibility) {
+        findViewById(R.id.query_tiles_container).setVisibility(visibility);
     }
 
     /**
@@ -341,6 +355,16 @@ class TasksView extends CoordinatorLayoutForPointer {
         MarginLayoutParams params =
                 (MarginLayoutParams) mHeaderView.findViewById(R.id.tab_switcher_title)
                         .getLayoutParams();
+        params.topMargin = topMargin;
+    }
+
+    /**
+     * Set the top margin for the fake search box.
+     * @param topMargin The top margin to set.
+     */
+    void setFakeSearchBoxTopMargin(int topMargin) {
+        MarginLayoutParams params =
+                (MarginLayoutParams) findViewById(R.id.fake_search_box).getLayoutParams();
         params.topMargin = topMargin;
     }
 

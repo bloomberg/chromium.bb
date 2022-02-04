@@ -6,6 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_mac.h"
+#include "ui/accessibility/platform/ax_utils_mac.h"
 #include "ui/accessibility/platform/inspect/ax_property_node.h"
 
 using ui::AXPropertyNode;
@@ -189,7 +190,7 @@ OptionalNSObject AttributeInvoker::InvokeFor(
   if (IsNSAccessibilityElement(target) || IsAXUIElement(target))
     return InvokeForAXElement(target, property_node);
 
-  if (content::IsAXTextMarkerRange(target)) {
+  if (ui::IsAXTextMarkerRange(target)) {
     return InvokeForAXTextMarkerRange(target, property_node);
   }
 
@@ -250,14 +251,17 @@ OptionalNSObject AttributeInvoker::InvokeForAXElement(
     }
   }
 
-  // Invoke any methods that are declared in the NSAccessibility protocol. Note
-  // that they all start with the prefix "accessibility...", ignore all
-  // other selectors the object may respond.
-  if (base::StartsWith(property_node.name_or_value, "accessibility")) {
-    auto optional_id = PerformAXSelector(target, property_node.name_or_value);
-    if (optional_id) {
+  // Only invoke methods whose names start with "accessibility", or
+  // "isAccessibility" that is specific to NSAccessibility or UIAccessibility
+  // protocols if the object responds to a corresponding selector. Ignore all
+  // other selectors the object may respond to because it exposes unwanted
+  // NSAccessibility attributes listed in default filters as a side effect.
+  if (base::StartsWith(property_node.name_or_value, "accessibility") ||
+      base::StartsWith(property_node.name_or_value, "isAccessibility")) {
+    absl::optional<id> optional_id =
+        PerformAXSelector(target, property_node.name_or_value);
+    if (optional_id)
       return OptionalNSObject(*optional_id);
-    }
   }
 
   // Unmatched attribute.

@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include "api/jsep.h"
 #include "api/media_types.h"
 #include "media/base/media_channel.h"
@@ -32,8 +33,11 @@ class ChannelInterface {
 
   virtual MediaChannel* media_channel() const = 0;
 
+  // Returns a string view for the transport name. Fetching the transport name
+  // must be done on the network thread only and note that the lifetime of
+  // the returned object should be assumed to only be the calling scope.
   // TODO(deadbeef): This is redundant; remove this.
-  virtual const std::string& transport_name() const = 0;
+  virtual absl::string_view transport_name() const = 0;
 
   virtual const std::string& content_name() const = 0;
 
@@ -47,10 +51,10 @@ class ChannelInterface {
   // Channel control
   virtual bool SetLocalContent(const MediaContentDescription* content,
                                webrtc::SdpType type,
-                               std::string* error_desc) = 0;
+                               std::string& error_desc) = 0;
   virtual bool SetRemoteContent(const MediaContentDescription* content,
                                 webrtc::SdpType type,
-                                std::string* error_desc) = 0;
+                                std::string& error_desc) = 0;
   virtual bool SetPayloadTypeDemuxingEnabled(bool enabled) = 0;
 
   // Access to the local and remote streams that were set on the channel.

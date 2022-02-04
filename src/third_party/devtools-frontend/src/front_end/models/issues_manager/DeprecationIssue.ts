@@ -3,21 +3,21 @@
 // found in the LICENSE file.
 
 import type * as SDK from '../../core/sdk/sdk.js';
-import type * as Protocol from '../../generated/protocol.js';
+import * as Protocol from '../../generated/protocol.js';
 
 import {Issue, IssueCategory, IssueKind} from './Issue.js';
 import type {MarkdownIssueDescription} from './MarkdownIssueDescription.js';
 
-export const enum IssueCode {
-  DeprecationIssue = 'DeprecationIssue',
-}
-
-export class DeprecationIssue extends Issue<IssueCode> {
-  private issueDetails: Protocol.Audits.DeprecationIssueDetails;
+export class DeprecationIssue extends Issue {
+  #issueDetails: Protocol.Audits.DeprecationIssueDetails;
 
   constructor(issueDetails: Protocol.Audits.DeprecationIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel) {
-    super(IssueCode.DeprecationIssue, issuesModel);
-    this.issueDetails = issueDetails;
+    const issueCode = [
+      Protocol.Audits.InspectorIssueCode.DeprecationIssue,
+      issueDetails.deprecationType,
+    ].join('::');
+    super({code: issueCode, umaCode: 'DeprecationIssue'}, issuesModel);
+    this.#issueDetails = issueDetails;
   }
 
   getCategory(): IssueCategory {
@@ -25,7 +25,7 @@ export class DeprecationIssue extends Issue<IssueCode> {
   }
 
   details(): Protocol.Audits.DeprecationIssueDetails {
-    return this.issueDetails;
+    return this.#issueDetails;
   }
 
   getDescription(): MarkdownIssueDescription|null {
@@ -34,21 +34,21 @@ export class DeprecationIssue extends Issue<IssueCode> {
       substitutions: new Map([
         // TODO(crbug.com/1264960): Re-work format to add i18n support per:
         // https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/devtools_protocol/README.md
-        ['PLACEHOLDER_message', String(this.issueDetails.message)],
+        ['PLACEHOLDER_message', String(this.#issueDetails.message)],
       ]),
       links: [],
     };
   }
 
   sources(): Iterable<Protocol.Audits.SourceCodeLocation> {
-    if (this.issueDetails.sourceCodeLocation) {
-      return [this.issueDetails.sourceCodeLocation];
+    if (this.#issueDetails.sourceCodeLocation) {
+      return [this.#issueDetails.sourceCodeLocation];
     }
     return [];
   }
 
   primaryKey(): string {
-    return JSON.stringify(this.issueDetails);
+    return JSON.stringify(this.#issueDetails);
   }
 
   getKind(): IssueKind {

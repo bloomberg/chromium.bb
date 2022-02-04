@@ -252,9 +252,9 @@ class SparseLU : public SparseSolverBase<SparseLU<MatrixType_,OrderingType_> >, 
       * y = b; matrixU().solveInPlace(y);
       * \endcode
       */
-    SparseLUMatrixUReturnType<SCMatrix,MappedSparseMatrix<Scalar,ColMajor,StorageIndex> > matrixU() const
+    SparseLUMatrixUReturnType<SCMatrix,Map<SparseMatrix<Scalar,ColMajor,StorageIndex> > > matrixU() const
     {
-      return SparseLUMatrixUReturnType<SCMatrix, MappedSparseMatrix<Scalar,ColMajor,StorageIndex> >(m_Lstore, m_Ustore);
+      return SparseLUMatrixUReturnType<SCMatrix, Map<SparseMatrix<Scalar,ColMajor,StorageIndex> > >(m_Lstore, m_Ustore);
     }
 
     /**
@@ -476,7 +476,7 @@ class SparseLU : public SparseSolverBase<SparseLU<MatrixType_,OrderingType_> >, 
     std::string m_lastError;
     NCMatrix m_mat; // The input (permuted ) matrix 
     SCMatrix m_Lstore; // The lower triangular matrix (supernodal)
-    MappedSparseMatrix<Scalar,ColMajor,StorageIndex> m_Ustore; // The upper triangular matrix
+    Map<SparseMatrix<Scalar,ColMajor,StorageIndex>> m_Ustore; // The upper triangular matrix
     PermutationType m_perm_c; // Column permutation 
     PermutationType m_perm_r ; // Row permutation
     IndexVector m_etree; // Column elimination tree 
@@ -791,7 +791,7 @@ void SparseLU<MatrixType, OrderingType>::factorize(const MatrixType& matrix)
   // Create supernode matrix L 
   m_Lstore.setInfos(m, n, m_glu.lusup, m_glu.xlusup, m_glu.lsub, m_glu.xlsub, m_glu.supno, m_glu.xsup); 
   // Create the column major upper sparse matrix  U; 
-  new (&m_Ustore) MappedSparseMatrix<Scalar, ColMajor, StorageIndex> ( m, n, m_nnzU, m_glu.xusub.data(), m_glu.usub.data(), m_glu.ucol.data() );
+  new (&m_Ustore) Map<SparseMatrix<Scalar, ColMajor, StorageIndex>> ( m, n, m_nnzU, m_glu.xusub.data(), m_glu.usub.data(), m_glu.ucol.data() );
   
   m_info = Success;
   m_factorizationIsOk = true;

@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,6 +120,7 @@ class StatelessValidation : public ValidationObject {
     struct SubpassesUsageStates {
         layer_data::unordered_set<uint32_t> subpasses_using_color_attachment;
         layer_data::unordered_set<uint32_t> subpasses_using_depthstencil_attachment;
+        std::vector<VkSubpassDescriptionFlags> subpasses_flags;
     };
 
     // Though this validation object is predominantly statless, the Framebuffer checks are greatly simplified by creating and
@@ -1227,7 +1228,11 @@ class StatelessValidation : public ValidationObject {
                     initial_layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL ||
                     initial_layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL ||
                     initial_layout == VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL) {
-                    vuid = use_rp2 ? "VUID-VkAttachmentDescription2-format-03294" : "VUID-VkAttachmentDescription-format-03280";
+                    vuid = use_rp2 ? "VUID-VkAttachmentDescription2-format-03294"
+                           : (initial_layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL ||
+                              initial_layout == VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL)
+                               ? "VUID-VkAttachmentDescription-format-06487"
+                               : "VUID-VkAttachmentDescription-format-03280";
                     skip |= LogError(device, vuid,
                                      "%s: pCreateInfo->pAttachments[%d].initialLayout must not be "
                                      "VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, "
@@ -1240,7 +1245,11 @@ class StatelessValidation : public ValidationObject {
                     final_layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL ||
                     final_layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL ||
                     final_layout == VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL) {
-                    vuid = use_rp2 ? "VUID-VkAttachmentDescription2-format-03296" : "VUID-VkAttachmentDescription-format-03282";
+                    vuid = use_rp2 ? "VUID-VkAttachmentDescription2-format-03296"
+                           : (final_layout == VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL ||
+                              final_layout == VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL)
+                               ? "VUID-VkAttachmentDescription-format-06488"
+                               : "VUID-VkAttachmentDescription-format-03282";
                     skip |= LogError(device, vuid,
                                      "%s: pCreateInfo->pAttachments[%d].finalLayout must not be "
                                      "VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, "
@@ -1302,6 +1311,7 @@ class StatelessValidation : public ValidationObject {
         auto &renderpass_state = renderpasses_states[renderPass];
         lock.unlock();
 
+        renderpass_state.subpasses_flags.resize(pCreateInfo->subpassCount);
         for (uint32_t subpass = 0; subpass < pCreateInfo->subpassCount; ++subpass) {
             bool uses_color = false;
             for (uint32_t i = 0; i < pCreateInfo->pSubpasses[subpass].colorAttachmentCount && !uses_color; ++i)
@@ -1314,6 +1324,7 @@ class StatelessValidation : public ValidationObject {
 
             if (uses_color) renderpass_state.subpasses_using_color_attachment.insert(subpass);
             if (uses_depthstencil) renderpass_state.subpasses_using_depthstencil_attachment.insert(subpass);
+            renderpass_state.subpasses_flags[subpass] = pCreateInfo->pSubpasses[subpass].flags;
         }
     }
 
@@ -1431,7 +1442,7 @@ class StatelessValidation : public ValidationObject {
                                                          VkDescriptorSetLayout *pSetLayout) const;
 
     bool validate_WriteDescriptorSet(const char *vkCallingFunction, const uint32_t descriptorWriteCount,
-                                     const VkWriteDescriptorSet *pDescriptorWrites, const bool validateDstSet = true) const;
+                                     const VkWriteDescriptorSet *pDescriptorWrites, const bool isPushDescriptor) const;
     bool manual_PreCallValidateUpdateDescriptorSets(VkDevice device, uint32_t descriptorWriteCount,
                                                     const VkWriteDescriptorSet *pDescriptorWrites, uint32_t descriptorCopyCount,
                                                     const VkCopyDescriptorSet *pDescriptorCopies) const;
@@ -1787,6 +1798,29 @@ class StatelessValidation : public ValidationObject {
                                                    VkQueryResultFlags flags) const;
     bool manual_PreCallValidateCmdBeginConditionalRenderingEXT(
         VkCommandBuffer commandBuffer, const VkConditionalRenderingBeginInfoEXT *pConditionalRenderingBegin) const;
+
+    bool manual_PreCallValidateGetPhysicalDeviceSurfaceFormatsKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
+                                                                  uint32_t *pSurfaceFormatCount,
+                                                                  VkSurfaceFormatKHR *pSurfaceFormats) const;
+
+    bool manual_PreCallValidateGetPhysicalDeviceSurfacePresentModesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
+                                                                       uint32_t *pPresentModeCount,
+                                                                       VkPresentModeKHR *pPresentModes) const;
+
+    bool manual_PreCallValidateGetPhysicalDeviceSurfaceCapabilities2KHR(VkPhysicalDevice physicalDevice,
+                                                                        const VkPhysicalDeviceSurfaceInfo2KHR *pSurfaceInfo,
+                                                                        VkSurfaceCapabilities2KHR *pSurfaceCapabilities) const;
+
+    bool manual_PreCallValidateGetPhysicalDeviceSurfaceFormats2KHR(VkPhysicalDevice physicalDevice,
+                                                                   const VkPhysicalDeviceSurfaceInfo2KHR *pSurfaceInfo,
+                                                                   uint32_t *pSurfaceFormatCount,
+                                                                   VkSurfaceFormat2KHR *pSurfaceFormats) const;
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+    bool manual_PreCallValidateGetPhysicalDeviceSurfacePresentModes2EXT(VkPhysicalDevice physicalDevice,
+                                                                        const VkPhysicalDeviceSurfaceInfo2KHR *pSurfaceInfo,
+                                                                        uint32_t *pPresentModeCount,
+                                                                        VkPresentModeKHR *pPresentModes) const;
+#endif  // VK_USE_PLATFORM_WIN32_KHR
 
 #include "parameter_validation.h"
 };  // Class StatelessValidation

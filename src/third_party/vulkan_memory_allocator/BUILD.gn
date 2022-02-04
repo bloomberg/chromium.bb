@@ -30,6 +30,7 @@ config("vulkan_memory_allocator_config") {
   defines = [
     "VMA_DYNAMIC_VULKAN_FUNCTIONS=0",
     "VMA_STATIC_VULKAN_FUNCTIONS=0",
+    "VMA_USE_STL_CONTAINERS=1",
   ]
 }
 

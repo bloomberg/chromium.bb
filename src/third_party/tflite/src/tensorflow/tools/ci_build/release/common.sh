@@ -17,7 +17,7 @@
 
 # Keep in sync with tensorflow_estimator and configure.py.
 # LINT.IfChange
-LATEST_BAZEL_VERSION=4.2.1
+LATEST_BAZEL_VERSION=4.2.2
 # LINT.ThenChange(
 #   //tensorflow/opensource_only/configure.py,
 #   //tensorflow_estimator/google/kokoro/common.sh,
@@ -117,7 +117,7 @@ function install_ubuntu_16_pip_deps {
   done
 
   # First, upgrade pypi wheels
-  "${PIP_CMD}" install --user --upgrade 'setuptools<53' pip wheel
+  "${PIP_CMD}" install --user --upgrade 'setuptools<60' pip wheel
 
   # LINT.IfChange(linux_pip_installations_orig)
   # Remove any historical keras package if they are installed.
@@ -146,7 +146,7 @@ function install_ubuntu_16_python_pip_deps {
   done
 
   # First, upgrade pypi wheels
-  ${PIP_CMD} install --user --upgrade 'setuptools<53' pip wheel
+  ${PIP_CMD} install --user --upgrade 'setuptools<60' pip wheel
 
   # LINT.IfChange(linux_pip_installations)
   # Remove any historical keras package if they are installed.
@@ -175,11 +175,7 @@ function setup_venv_ubuntu () {
   # First argument needs to be the python executable.
   ${1} -m venv ~/.venv/tf
   source ~/.venv/tf/bin/activate
-  if [[ "$1" == "python3.10" ]]; then
-    REQUIREMENTS_FNAME="requirements_ubuntu_py310.txt"
-  else
-    REQUIREMENTS_FNAME="requirements_ubuntu.txt"
-  fi
+  REQUIREMENTS_FNAME="requirements_ubuntu.txt"
   install_ubuntu_pip_deps
 }
 
@@ -192,12 +188,8 @@ function remove_venv_ubuntu () {
 function install_ubuntu_pip_deps_novenv () {
   # Install on default python Env (No Virtual Env for pip packages)
   PIP_CMD="${1} -m pip"
-  if [[ "$1" == "python3.10" ]]; then
-    REQUIREMENTS_FNAME="requirements_ubuntu_py310.txt"
-  else
-    REQUIREMENTS_FNAME="requirements_ubuntu.txt"
-  fi
-  ${PIP_CMD} install --user --upgrade setuptools pip wheel pyparsing auditwheel~=3.3.1
+  REQUIREMENTS_FNAME="requirements_ubuntu.txt"
+  ${PIP_CMD} install --user --upgrade 'setuptools<60' pip wheel pyparsing auditwheel~=3.3.1
   ${PIP_CMD} install --user -r tensorflow/tools/ci_build/release/${REQUIREMENTS_FNAME}
   ${PIP_CMD} list
 
@@ -264,7 +256,7 @@ function install_macos_pip_deps {
   PIP_CMD="python -m pip"
 
   # First, upgrade pypi wheels
-  ${PIP_CMD} install --upgrade 'setuptools<53' pip wheel
+  ${PIP_CMD} install --upgrade 'setuptools<60' pip wheel
 
   # LINT.IfChange(mac_pip_installations)
   # Remove any historical keras package if they are installed.
@@ -283,7 +275,7 @@ function install_macos_pip_deps_no_venv {
   PIP_CMD="${1} -m pip"
 
   # First, upgrade pypi wheels
-  ${PIP_CMD} install --user --upgrade 'setuptools<53' pip wheel
+  ${PIP_CMD} install --user --upgrade 'setuptools<60' pip wheel
 
   # LINT.IfChange(mac_pip_installations)
   # Remove any historical keras package if they are installed.
@@ -312,11 +304,11 @@ function setup_python_from_pyenv_macos {
     PY_VERSION=$1
   fi
 
-  git clone --branch 1.2.27 https://github.com/pyenv/pyenv.git
+  git clone --branch v2.2.2 https://github.com/pyenv/pyenv.git
 
   PYENV_ROOT="$(pwd)/pyenv"
   export PYENV_ROOT
-  export PATH="$PYENV_ROOT/bin:$PATH"
+  export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
 
   eval "$(pyenv init -)"
 

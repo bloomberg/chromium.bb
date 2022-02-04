@@ -293,8 +293,6 @@ template<typename PlainObjectType> void check_const_correctness(const PlainObjec
   VERIFY( !(Map<ConstPlainObjectType, Aligned>::Flags & LvalueBit) );
 }
 
-#if EIGEN_HAS_RVALUE_REFERENCES
-
 // Regression for bug 1573
 struct MovableClass {
   // The following line is a workaround for gcc 4.7 and 4.8 (see bug 1573 comments).
@@ -306,8 +304,6 @@ struct MovableClass {
   MovableClass& operator=(MovableClass&&) = default;
   Quaternionf m_quat;
 };
-
-#endif
 
 EIGEN_DECLARE_TEST(geo_quaternion)
 {

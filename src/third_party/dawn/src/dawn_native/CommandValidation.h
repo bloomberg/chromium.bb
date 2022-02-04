@@ -21,7 +21,7 @@
 
 #include <vector>
 
-namespace dawn_native {
+namespace dawn::native {
 
     class QuerySetBase;
     struct SyncScopeResourceUsage;
@@ -73,12 +73,16 @@ namespace dawn_native {
                                                         const ImageCopyTexture& dst,
                                                         const Extent3D& copySize);
 
-    MaybeError ValidateCanUseAs(const TextureBase* texture, wgpu::TextureUsage usage);
+    enum class UsageValidationMode {
+        Default,
+        Internal,
+    };
 
-    MaybeError ValidateInternalCanUseAs(const TextureBase* texture, wgpu::TextureUsage usage);
-
+    MaybeError ValidateCanUseAs(const TextureBase* texture,
+                                wgpu::TextureUsage usage,
+                                UsageValidationMode mode);
     MaybeError ValidateCanUseAs(const BufferBase* buffer, wgpu::BufferUsage usage);
 
-}  // namespace dawn_native
+}  // namespace dawn::native
 
 #endif  // DAWNNATIVE_COMMANDVALIDATION_H_

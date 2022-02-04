@@ -121,108 +121,23 @@ RUNTIME_FUNCTION(Runtime_PromiseHookInit) {
   return ReadOnlyRoots(isolate).undefined_value();
 }
 
-namespace {
-
-Handle<JSPromise> AwaitPromisesInitCommon(Isolate* isolate,
-                                          Handle<Object> value,
-                                          Handle<JSPromise> promise,
-                                          Handle<JSPromise> outer_promise,
-                                          Handle<JSFunction> reject_handler,
-                                          bool is_predicted_as_caught) {
-  // Allocate the throwaway promise and fire the appropriate init
-  // hook for the throwaway promise (passing the {promise} as its
-  // parent).
-  Handle<JSPromise> throwaway = isolate->factory()->NewJSPromiseWithoutHook();
-  isolate->RunAllPromiseHooks(PromiseHookType::kInit, throwaway, promise);
-
-  // On inspector side we capture async stack trace and store it by
-  // outer_promise->async_task_id when async function is suspended first time.
-  // To use captured stack trace later throwaway promise should have the same
-  // async_task_id as outer_promise since we generate WillHandle and DidHandle
-  // events using throwaway promise.
-  throwaway->set_async_task_id(outer_promise->async_task_id());
-
-  // The Promise will be thrown away and not handled, but it
-  // shouldn't trigger unhandled reject events as its work is done
-  throwaway->set_has_handler(true);
-
-  // Enable proper debug support for promises.
-  if (isolate->debug()->is_active()) {
-    if (value->IsJSPromise()) {
-      Object::SetProperty(
-          isolate, reject_handler,
-          isolate->factory()->promise_forwarding_handler_symbol(),
-          isolate->factory()->true_value(), StoreOrigin::kMaybeKeyed,
-          Just(ShouldThrow::kThrowOnError))
-          .Check();
-      Handle<JSPromise>::cast(value)->set_handled_hint(is_predicted_as_caught);
-    }
-
-    // Mark the dependency to {outer_promise} in case the {throwaway}
-    // Promise is found on the Promise stack
-    Object::SetProperty(isolate, throwaway,
-                        isolate->factory()->promise_handled_by_symbol(),
-                        outer_promise, StoreOrigin::kMaybeKeyed,
-                        Just(ShouldThrow::kThrowOnError))
-        .Check();
-  }
-
-  return throwaway;
-}
-
-}  // namespace
-
-RUNTIME_FUNCTION(Runtime_AwaitPromisesInit) {
-  DCHECK_EQ(5, args.length());
-  HandleScope scope(isolate);
-  CONVERT_ARG_HANDLE_CHECKED(Object, value, 0);
-  CONVERT_ARG_HANDLE_CHECKED(JSPromise, promise, 1);
-  CONVERT_ARG_HANDLE_CHECKED(JSPromise, outer_promise, 2);
-  CONVERT_ARG_HANDLE_CHECKED(JSFunction, reject_handler, 3);
-  CONVERT_BOOLEAN_ARG_CHECKED(is_predicted_as_caught, 4);
-  return *AwaitPromisesInitCommon(isolate, value, promise, outer_promise,
-                                  reject_handler, is_predicted_as_caught);
-}
-
-RUNTIME_FUNCTION(Runtime_AwaitPromisesInitOld) {
-  DCHECK_EQ(5, args.length());
-  HandleScope scope(isolate);
-  CONVERT_ARG_HANDLE_CHECKED(Object, value, 0);
-  CONVERT_ARG_HANDLE_CHECKED(JSPromise, promise, 1);
-  CONVERT_ARG_HANDLE_CHECKED(JSPromise, outer_promise, 2);
-  CONVERT_ARG_HANDLE_CHECKED(JSFunction, reject_handler, 3);
-  CONVERT_BOOLEAN_ARG_CHECKED(is_predicted_as_caught, 4);
-
-  // Fire the init hook for the wrapper promise (that we created for the
-  // {value} previously).
-  isolate->RunAllPromiseHooks(PromiseHookType::kInit, promise, outer_promise);
-  return *AwaitPromisesInitCommon(isolate, value, promise, outer_promise,
-                                  reject_handler, is_predicted_as_caught);
-}
-
 RUNTIME_FUNCTION(Runtime_PromiseHookBefore) {
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
-  CONVERT_ARG_HANDLE_CHECKED(JSReceiver, maybe_promise, 0);
-  if (!maybe_promise->IsJSPromise())
-    return ReadOnlyRoots(isolate).undefined_value();
-  Handle<JSPromise> promise = Handle<JSPromise>::cast(maybe_promise);
-  if (isolate->debug()->is_active()) isolate->PushPromise(promise);
-  isolate->RunPromiseHook(PromiseHookType::kBefore, promise,
-                          isolate->factory()->undefined_value());
+  CONVERT_ARG_HANDLE_CHECKED(JSReceiver, promise, 0);
+  if (promise->IsJSPromise()) {
+    isolate->OnPromiseBefore(Handle<JSPromise>::cast(promise));
+  }
   return ReadOnlyRoots(isolate).undefined_value();
 }
 
 RUNTIME_FUNCTION(Runtime_PromiseHookAfter) {
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
-  CONVERT_ARG_HANDLE_CHECKED(JSReceiver, maybe_promise, 0);
-  if (!maybe_promise->IsJSPromise())
-    return ReadOnlyRoots(isolate).undefined_value();
-  Handle<JSPromise> promise = Handle<JSPromise>::cast(maybe_promise);
-  if (isolate->debug()->is_active()) isolate->PopPromise();
-  isolate->RunPromiseHook(PromiseHookType::kAfter, promise,
-                          isolate->factory()->undefined_value());
+  CONVERT_ARG_HANDLE_CHECKED(JSReceiver, promise, 0);
+  if (promise->IsJSPromise()) {
+    isolate->OnPromiseAfter(Handle<JSPromise>::cast(promise));
+  }
   return ReadOnlyRoots(isolate).undefined_value();
 }
 

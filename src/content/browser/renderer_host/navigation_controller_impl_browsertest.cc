@@ -142,7 +142,7 @@ class NavigationControllerBrowserTestBase : public ContentBrowserTest {
     TitleWatcher title_watcher(shell()->web_contents(),
                                base::UTF8ToUTF16(title));
     if (use_load_data_as_string_with_base_url) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
       shell()->LoadDataAsStringWithBaseURL(history_url, data, base_url);
 #else
       NOTREACHED();
@@ -443,7 +443,7 @@ class LoadDataWithBaseURLWithPossiblyEmptyURLsBrowserTest
 // used in the NavigationEntries.
 IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLWithPossiblyEmptyURLsBrowserTest,
                        LoadDataWithBaseURLThenReload) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // LoadDataAsStringWithBaseURL is only supported on Android.
   if (use_load_data_as_string_with_base_url())
     return;
@@ -481,7 +481,7 @@ IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLWithPossiblyEmptyURLsBrowserTest,
   // 1) Load data, but don't commit yet.
   TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
   if (use_load_data_as_string_with_base_url()) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     shell()->LoadDataAsStringWithBaseURL(supplied_history_url, data,
                                          supplied_base_url);
 #else
@@ -570,7 +570,7 @@ IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLWithPossiblyEmptyURLsBrowserTest,
 // same-document navigations after LoadDataWithBaseURL instead.
 IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLWithPossiblyEmptyURLsBrowserTest,
                        LoadDataWithBaseURLThenRendererInitiatedSameDocument) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // LoadDataAsStringWithBaseURL is only supported on Android.
   if (use_load_data_as_string_with_base_url())
     return;
@@ -664,7 +664,7 @@ IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLWithPossiblyEmptyURLsBrowserTest,
 // same-document navigations after LoadDataWithBaseURL instead.
 IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLWithPossiblyEmptyURLsBrowserTest,
                        LoadDataWithBaseURLThenBrowserInitiatedSameDocument) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // LoadDataAsStringWithBaseURL is only supported on Android.
   if (use_load_data_as_string_with_base_url())
     return;
@@ -946,7 +946,7 @@ class LoadDataWithBaseURLBrowserTest
 // URL given is invalid.
 IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLBrowserTest,
                        LoadDataWithInvalidBaseURL) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // LoadDataAsStringWithBaseURL is only supported on Android.
   if (use_load_data_as_string_with_base_url())
     return;
@@ -1024,7 +1024,7 @@ class BlockAllCommitContentBrowserClient : public TestContentBrowserClient {
 // typically blocked by an embedder, because it bypasses the renderer check.
 IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLBrowserTest,
                        LoadDataWithBlockedDataURL) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // LoadDataAsStringWithBaseURL is only supported on Android.
   if (use_load_data_as_string_with_base_url())
     return;
@@ -1123,7 +1123,7 @@ IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLBrowserTest,
 // the checks since the base URL is invalid.
 IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLBrowserTest,
                        LoadDataWithBlockedDataURLAndInvalidBaseURL) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // LoadDataAsStringWithBaseURL is only supported on Android.
   if (use_load_data_as_string_with_base_url())
     return;
@@ -1155,7 +1155,7 @@ IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLBrowserTest,
       shell()->web_contents()->GetMainFrame()->GetProcess());
 
   if (use_load_data_as_string_with_base_url()) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     shell()->LoadDataAsStringWithBaseURL(history_url, data, base_url);
 #else
     NOTREACHED();
@@ -1176,7 +1176,7 @@ IN_PROC_BROWSER_TEST_P(LoadDataWithBaseURLBrowserTest,
 IN_PROC_BROWSER_TEST_P(
     LoadDataWithBaseURLBrowserTest,
     LoadDataWithBaseURLThenJavaScriptURLThenSameDocumentNavigation) {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   // LoadDataAsStringWithBaseURL is only supported on Android.
   if (use_load_data_as_string_with_base_url())
     return;
@@ -1415,7 +1415,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
   // Load data and commit.
   TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   shell()->LoadDataAsStringWithBaseURL(history_url, data, base_url);
 #else
   shell()->LoadDataWithBaseURL(history_url, data, base_url);
@@ -1759,7 +1759,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 
   // Load data and commit.
   TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   shell()->LoadDataAsStringWithBaseURL(history_url, data, base_url);
 #else
   shell()->LoadDataWithBaseURL(history_url, data, base_url);
@@ -7096,7 +7096,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // recreated on history navigation, disable back/forward cache to force a
   // reload and a URL fetch.
   DisableBackForwardCacheForTesting(contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // 4. Go back, recreating the iframe. The subframe entry won't be found, and
   // we should fall back to the default URL.
@@ -7193,7 +7193,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // recreated on history navigation, disable back/forward cache to force a
   // reload and a URL fetch.
   DisableBackForwardCacheForTesting(contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // 3. Go back, recreating the iframe.  The subframe will have a new name this
   // time, so we won't find a history item for it.  We should let the new data
@@ -7302,7 +7302,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // later recreated on history navigations. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // 1. Start on a page that injects a nested iframe into an injected
   // about:blank iframe.
@@ -7405,7 +7405,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // later recreated on history navigations. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   // 1. Start on a page that injects a nested iframe srcdoc which contains a
   // nested iframe.
   GURL main_url(embedded_test_server()->GetURL(
@@ -7633,7 +7633,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // later recreated on history navigations. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // 1. Start on a page with two frames.
   GURL initial_url(
@@ -7813,7 +7813,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // later recreated on history navigations. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // 1. Start on a page with an iframe.
   GURL initial_url(embedded_test_server()->GetURL(
@@ -8098,6 +8098,199 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // Verify that the parent was able to script the iframe.
   EXPECT_EQ("Injected text",
             EvalJs(root->child_at(0), "document.body.innerHTML"));
+}
+
+// Verify that calling Restore() and LoadIfNecessary() on a NavigationController
+// that already has existing entries & non-null pending entry won't crash and
+// won't clear existing non-initial entries. This can happen because WebView's
+// restoreState() API, which triggers the session restore code, can be called at
+// any point in time, which used to cause crashes.
+// Regression test for https://crbug.com/1287624.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       RestoreAndLoadOnUsedNavigationController) {
+  GURL url_1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  GURL url_3(embedded_test_server()->GetURL("a.com", "/title3.html"));
+
+  // 1. Start in a tab with 1 NavigationEntry.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetPrimaryFrameTree()
+                            .root();
+  EXPECT_EQ(url_1, root->current_url());
+
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* entry1 = controller.GetLastCommittedEntry();
+
+  // 2. Create a NavigationEntry with the same PageState as |entry1|.
+  std::unique_ptr<NavigationEntryImpl> restored_entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          NavigationController::CreateNavigationEntry(
+              url_1, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
+              nullptr /* blob_url_loader_factory */));
+  EXPECT_EQ(0U, restored_entry->root_node()->children.size());
+  std::unique_ptr<NavigationEntryRestoreContextImpl> context =
+      std::make_unique<NavigationEntryRestoreContextImpl>();
+  restored_entry->SetPageState(entry1->GetPageState(), context.get());
+
+  // 3. Create a new tab with a new NavigationController, and navigate it twice.
+  Shell* new_shell = Shell::CreateNewWindow(
+      controller.GetBrowserContext(), GURL::EmptyGURL(), nullptr, gfx::Size());
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetPrimaryFrameTree()
+          .root();
+  NavigationControllerImpl& new_controller =
+      static_cast<NavigationControllerImpl&>(
+          new_shell->web_contents()->GetController());
+  EXPECT_TRUE(NavigateToURL(new_shell, url_2));
+  EXPECT_EQ(1, new_controller.GetEntryCount());
+  EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* entry2 = new_controller.GetLastCommittedEntry();
+  EXPECT_EQ(url_2, entry2->GetURL());
+
+  EXPECT_TRUE(NavigateToURL(new_shell, url_3));
+  EXPECT_EQ(2, new_controller.GetEntryCount());
+  EXPECT_EQ(1, new_controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url_3, new_controller.GetLastCommittedEntry()->GetURL());
+
+  // 4. Start and pause a back navigation in the new NavigationController, which
+  // will set the pending entry to `entry2`. Disable BFCache so that we can
+  // pause the navigation.
+  DisableBackForwardCacheForTesting(new_shell->web_contents(),
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
+  TestNavigationManager back_navigation_manager(new_shell->web_contents(),
+                                                url_2);
+  new_controller.GoBack();
+  EXPECT_TRUE(back_navigation_manager.WaitForRequestStart());
+  EXPECT_EQ(entry2, new_controller.GetPendingEntry());
+  EXPECT_TRUE(new_root->navigation_request());
+
+  // 5. Restore `restored_entry` in the new tab.
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  entries.push_back(std::move(restored_entry));
+  new_controller.Restore(entries.size() - 1, RestoreType::kRestored, &entries);
+  // The previously existing entries were kept, in addition to the restored
+  // entries. Note that the last committed entry index is updated to 0, which
+  // is supposed to point to `url_1`'s entry, but actually points to `url_2`'s
+  // entry because the pre-existing entries are not cleared.
+  // TODO(https://crbug.com/1287624): Fix this.
+  EXPECT_EQ(3, new_controller.GetEntryCount());
+  EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url_2, new_controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url_3, new_controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(url_1, new_controller.GetEntryAtIndex(2)->GetURL());
+  // The pending entry is not cleared and the back navigation is still pending.
+  EXPECT_EQ(entry2, new_controller.GetPendingEntry());
+  EXPECT_TRUE(new_root->navigation_request());
+
+  // 6. Call LoadIfNecessary() in the new tab.
+  ASSERT_EQ(0u, entries.size());
+  {
+    TestNavigationObserver restore_observer(new_shell->web_contents());
+    new_controller.LoadIfNecessary();
+    restore_observer.Wait();
+  }
+  // Because the pending entry still pointed to the back navigation's entry,
+  // `url_2` is loaded instead of the entry restored from the other tab.
+  // TODO(https://crbug.com/1287624): This should load the restored entry
+  // instead.
+  EXPECT_EQ(3, new_controller.GetEntryCount());
+  EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* current_entry = new_controller.GetLastCommittedEntry();
+  EXPECT_EQ(entry2, current_entry);
+  EXPECT_EQ(url_2, current_entry->GetURL());
+  EXPECT_EQ(url_2, new_root->current_url());
+}
+
+// Verify that calling Restore with an empty set of entries does not crash,
+// since this may be possible via Android WebView's restoreState() API.
+// See https://crbug.com/1287624.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       RestoreEmptyAndLoadOnUsedNavigationController) {
+  GURL url_1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+
+  // 1. Create a new tab with a new NavigationController, and navigate it twice.
+  Shell* new_shell =
+      Shell::CreateNewWindow(shell()->web_contents()->GetBrowserContext(),
+                             GURL::EmptyGURL(), nullptr, gfx::Size());
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetPrimaryFrameTree()
+          .root();
+  NavigationControllerImpl& new_controller =
+      static_cast<NavigationControllerImpl&>(
+          new_shell->web_contents()->GetController());
+  EXPECT_TRUE(NavigateToURL(new_shell, url_1));
+  EXPECT_EQ(1, new_controller.GetEntryCount());
+  EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* entry1 = new_controller.GetLastCommittedEntry();
+  EXPECT_EQ(url_1, entry1->GetURL());
+
+  EXPECT_TRUE(NavigateToURL(new_shell, url_2));
+  EXPECT_EQ(2, new_controller.GetEntryCount());
+  EXPECT_EQ(1, new_controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url_2, new_controller.GetLastCommittedEntry()->GetURL());
+
+  // 2. Start and pause a back navigation in the new NavigationController, which
+  // will set the pending entry to `entry1`. Disable BFCache so that we can
+  // pause the navigation.
+  DisableBackForwardCacheForTesting(new_shell->web_contents(),
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
+  TestNavigationManager back_navigation_manager(new_shell->web_contents(),
+                                                url_1);
+  new_controller.GoBack();
+  EXPECT_TRUE(back_navigation_manager.WaitForRequestStart());
+  EXPECT_EQ(entry1, new_controller.GetPendingEntry());
+  EXPECT_TRUE(new_root->navigation_request());
+
+  // 3. Restore an empty set of entries in the new tab, which is possible via
+  // Android WebView's restoreState API.
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  new_controller.Restore(-1, RestoreType::kRestored, &entries);
+  // The previously existing entries were kept without crashing, and no changes
+  // to the entries were made except the last committed index.
+  // TODO(https://crbug.com/1287624): A selected index of -1 should not be
+  // allowed.
+  EXPECT_EQ(2, new_controller.GetEntryCount());
+  if (blink::features::IsInitialNavigationEntryEnabled()) {
+    // When InitialNavigationEntry is enabled, there is always a valid index.
+    EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
+  } else {
+    EXPECT_EQ(-1, new_controller.GetLastCommittedEntryIndex());
+  }
+  EXPECT_EQ(url_1, new_controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url_2, new_controller.GetEntryAtIndex(1)->GetURL());
+  // The pending entry is not cleared and the back navigation is still pending.
+  EXPECT_EQ(entry1, new_controller.GetPendingEntry());
+  EXPECT_TRUE(new_root->navigation_request());
+
+  // 4. Call LoadIfNecessary() in the new tab.
+  ASSERT_EQ(0u, entries.size());
+  {
+    TestNavigationObserver restore_observer(new_shell->web_contents());
+    new_controller.LoadIfNecessary();
+    restore_observer.Wait();
+  }
+  // Because the pending entry still pointed to the back navigation's entry,
+  // `url_1` is loaded.
+  // TODO(https://crbug.com/1287624): A selected index of -1 should not be
+  // allowed.
+  if (blink::features::IsInitialNavigationEntryEnabled()) {
+    EXPECT_EQ(2, new_controller.GetEntryCount());
+  } else {
+    // Somehow the later entry is pruned in this unusual case.
+    EXPECT_EQ(1, new_controller.GetEntryCount());
+  }
+  EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* current_entry = new_controller.GetLastCommittedEntry();
+  EXPECT_EQ(url_1, current_entry->GetURL());
+  EXPECT_EQ(url_1, new_root->current_url());
 }
 
 // Verifies that the |frame_unique_name| is set to the correct frame, so that we
@@ -8492,7 +8685,7 @@ IN_PROC_BROWSER_TEST_P(
   // later recreated on history navigations. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetPrimaryFrameTree()
@@ -11980,7 +12173,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // start another forward navigation while another forward navigation has
   // already started.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   // Navigate to a page with an iframe.
   GURL url_a(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_data_iframe.html"));
@@ -12009,11 +12202,11 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // Navigate the top-level frame to another page with an iframe.
   GURL url_b(embedded_test_server()->GetURL(
       "/navigation_controller/page_with_iframe.html"));
-  GURL frame_url_b1(url::kAboutBlankURL);
+  GURL frame_url_2(url::kAboutBlankURL);
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(url_b, root->current_url());
-  EXPECT_EQ(frame_url_b1, root->child_at(0)->current_url());
+  EXPECT_EQ(frame_url_2, root->child_at(0)->current_url());
 
   // Go back two entries. The original frame URL should be back.
   ASSERT_TRUE(controller.CanGoToOffset(-2));
@@ -12048,7 +12241,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(url_b, root->current_url());
-  EXPECT_EQ(frame_url_b1, root->child_at(0)->current_url());
+  EXPECT_EQ(frame_url_2, root->child_at(0)->current_url());
 
   // Check the PageState of the previous entry to ensure it isn't corrupted.
   NavigationEntry* entry = controller.GetEntryAtIndex(1);
@@ -13714,7 +13907,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
 // extensions rely on them being silently blocked. See https://crbug.com/935175
 // and https://cbug.com/941653.
 // This test is flaky on Linux : http://crbug.com/1223051
-#if defined(OS_LINUX)
+#if BUILDFLAG(IS_LINUX)
 #define MAYBE_JavascriptRedirectSilentlyCanceled \
   DISABLED_JavascriptRedirectSilentlyCanceled
 #else
@@ -14144,7 +14337,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // later recreated on history navigations. Disable back/forward cache to
   // ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
 
@@ -14258,7 +14451,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // (which would fail with a 404 error). Disable back/forward cache to ensure
   // that it doesn't happen.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -14740,7 +14933,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // is still in use by the bfcached document, disable back/forward cache to
   // ensure that the process gets deleted.
   DisableBackForwardCacheForTesting(contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   RenderProcessHostWatcher prev_host_watcher(
       prev_host, RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
@@ -15625,7 +15818,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // instead of redirecting, disable back/forward cache to ensure that redirect
   // happens on history navigation.
   DisableBackForwardCacheForTesting(contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // Back, which should redirect to |url3|.
   FrameNavigateParamsCapturer capturer(root);
@@ -16079,7 +16272,7 @@ IN_PROC_BROWSER_TEST_P(
   // on navigation as it is stored in bfcache, disable back/forward cache to
   // ensure that the RFH will enter pending deletion state.
   DisableBackForwardCacheForTesting(contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // Navigate the main frame cross-process and wait for the unload event to
   // fire.
@@ -17156,7 +17349,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Test GoToOffset with enable history intervention.
 IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        GoToOffsetWithSkippingEnableHistoryIntervention) {
@@ -17209,7 +17402,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(non_skippable_url, controller.GetLastCommittedEntry()->GetURL());
 }
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // Tests that the navigation entry that is marked as skippable on back/forward
 // button does not get skipped for GoToOffset calls.
@@ -17302,7 +17495,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
 // redirected_url2]
 IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
                        SetSkipOnBackForwardDoSkipForGoToOffsetWithSkipping) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   GURL non_skippable_url(
       embedded_test_server()->GetURL("/frame_tree/top.html"));
   EXPECT_TRUE(NavigateToURL(shell(), non_skippable_url));
@@ -17380,7 +17573,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerHistoryInterventionBrowserTest,
   EXPECT_EQ(4, controller.GetCurrentEntryIndex());
   EXPECT_EQ(4, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(redirected_url2, controller.GetLastCommittedEntry()->GetURL());
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 // Tests that the navigation entry that is marked as skippable on back/forward
@@ -17815,11 +18008,6 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTestNoServer,
 class SandboxedNavigationControllerBrowserTest
     : public NavigationControllerBrowserTest {
  protected:
-  void SetUp() override {
-    feature_list_.InitAndEnableFeature(
-        features::kHistoryPreventSandboxedNavigation);
-    NavigationControllerBrowserTest::SetUp();
-  }
 
   void SetupNavigation() {
     NavigationControllerImpl& controller =
@@ -17937,8 +18125,7 @@ class SandboxedNavigationControllerWithBfcacheBrowserTest
   void SetUp() override {
     feature_list_.InitWithFeaturesAndParameters(
         {{features::kBackForwardCache,
-          {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}},
-         {features::kHistoryPreventSandboxedNavigation, {}}},
+          {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
         // Allow BackForwardCache for all devices regardless of their memory.
         {features::kBackForwardCacheMemoryControls});
     NavigationControllerBrowserTest::SetUp();
@@ -17982,11 +18169,6 @@ IN_PROC_BROWSER_TEST_P(SandboxedNavigationControllerWithBfcacheBrowserTest,
 class SandboxedNavigationControllerPopupBrowserTest
     : public NavigationControllerBrowserTest {
  protected:
-  void SetUp() override {
-    feature_list_.InitAndEnableFeature(
-        features::kHistoryPreventSandboxedNavigation);
-    NavigationControllerBrowserTest::SetUp();
-  }
 
   void SetupNavigation() {
     EXPECT_EQ(1u, Shell::windows().size());
@@ -18203,7 +18385,7 @@ class DidCommitNavigationCanceller : public DidCommitNavigationInterceptor {
 }  //  namespace
 
 // Test is flaky on Mac: https://crbug.com/1151545.
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof \
   DISABLED_CrossProcessIframeToInvalidURLCancelsRedirectSpoof
 #else
@@ -19328,7 +19510,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // navigation and later recreated on the back navigation. Disable back/forward
   // cache to ensure that it doesn't get preserved in the cache.
   DisableBackForwardCacheForTesting(shell()->web_contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   // Navigate main frame to another url.
   EXPECT_TRUE(NavigateToURL(
@@ -19590,7 +19772,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // This test specifically observes behavior of creating a new frame during a
   // history navigation, so disable the back forward cache.
   DisableBackForwardCacheForTesting(contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());
@@ -19625,7 +19807,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // This test specifically observes behavior of creating a new frame during a
   // history navigation, so disable the back forward cache.
   DisableBackForwardCacheForTesting(contents(),
-                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+                                    BackForwardCache::TEST_REQUIRES_NO_CACHING);
 
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
       shell()->web_contents()->GetController());

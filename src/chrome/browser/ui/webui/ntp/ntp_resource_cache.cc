@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/cookie_controls_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/buildflags.h"
@@ -58,6 +57,10 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#endif
+
+#if !BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #endif
 
 using content::BrowserThread;
@@ -280,6 +283,10 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
         IDS_REVAMPED_INCOGNITO_NTP_DOES_NOT_DESCRIPTION);
     replacements["learnMore"] =
         l10n_util::GetStringUTF8(IDS_REVAMPED_INCOGNITO_NTP_LEARN_MORE);
+    replacements["cookieControlsTitle"] = l10n_util::GetStringUTF8(
+        IDS_REVAMPED_INCOGNITO_NTP_OTR_THIRD_PARTY_COOKIE);
+    replacements["cookieControlsDescription"] = l10n_util::GetStringUTF8(
+        IDS_REVAMPED_INCOGNITO_NTP_OTR_THIRD_PARTY_COOKIE_SUBLABEL);
   } else {
     replacements["incognitoTabHeading"] =
         l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_TITLE);
@@ -289,6 +296,10 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
         l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_NOT_SAVED);
     replacements["learnMore"] =
         l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_LEARN_MORE_LINK);
+    replacements["cookieControlsTitle"] =
+        l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE);
+    replacements["cookieControlsDescription"] =
+        l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE_SUBLABEL);
   }
 
   replacements["learnMoreLink"] = kLearnMoreIncognitoUrl;
@@ -297,10 +308,6 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
           features::kUpdateHistoryEntryPointsInIncognito)
           ? IDS_NEW_INCOGNITO_TAB_TITLE
           : IDS_NEW_TAB_TITLE);
-  replacements["cookieControlsTitle"] =
-      l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE);
-  replacements["cookieControlsDescription"] =
-      l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE_SUBLABEL);
   replacements["cookieControlsToggleChecked"] =
       cookie_controls_service->GetToggleCheckedValue() ? "checked" : "";
   replacements["hideTooltipIcon"] =

@@ -33,11 +33,11 @@
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrPersistentCacheUtils.h"
-#include "src/gpu/GrShaderUtils.h"
 #include "src/image/SkImage_Base.h"
 #include "src/sksl/SkSLCompiler.h"
 #include "src/utils/SkJSONWriter.h"
 #include "src/utils/SkOSPath.h"
+#include "src/utils/SkShaderUtils.h"
 #include "tools/Resources.h"
 #include "tools/RuntimeBlendUtils.h"
 #include "tools/ToolUtils.h"
@@ -51,6 +51,7 @@
 #include "tools/viewer/ParticlesSlide.h"
 #include "tools/viewer/SKPSlide.h"
 #include "tools/viewer/SampleSlide.h"
+#include "tools/viewer/SkSLDebuggerSlide.h"
 #include "tools/viewer/SkSLSlide.h"
 #include "tools/viewer/SlideDir.h"
 #include "tools/viewer/SvgSlide.h"
@@ -873,6 +874,14 @@ void Viewer::initSlides() {
     // Runtime shader editor
     {
         auto slide = sk_make_sp<SkSLSlide>();
+        if (!CommandLineFlags::ShouldSkip(FLAGS_match, slide->getName().c_str())) {
+            fSlides.push_back(std::move(slide));
+        }
+    }
+
+    // Runtime shader debugger
+    {
+        auto slide = sk_make_sp<SkSLDebuggerSlide>();
         if (!CommandLineFlags::ShouldSkip(FLAGS_match, slide->getName().c_str())) {
             fSlides.push_back(std::move(slide));
         }
@@ -2747,7 +2756,7 @@ void Viewer::drawImGui() {
         for (int i = 0; i < gShaderErrorHandler.fErrors.count(); ++i) {
             ImGui::TextWrapped("%s", gShaderErrorHandler.fErrors[i].c_str());
             SkSL::String sksl(gShaderErrorHandler.fShaders[i].c_str());
-            GrShaderUtils::VisitLineByLine(sksl, [](int lineNumber, const char* lineText) {
+            SkShaderUtils::VisitLineByLine(sksl, [](int lineNumber, const char* lineText) {
                 ImGui::TextWrapped("%4i\t%s\n", lineNumber, lineText);
             });
         }

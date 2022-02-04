@@ -20,6 +20,8 @@ T is f32 or vecN<f32> cos(e: T ) -> T Returns the cosine of e. Component-wise wh
 
 Please read the following guidelines before contributing:
 https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
+
+TODO(#792): Decide what the ground-truth is for these tests. [1]
 `
   )
   .params(u =>
@@ -30,7 +32,7 @@ https://github.com/gpuweb/cts/blob/main/docs/plan_autogen.md
   .fn(async t => {
     const cases = new Array<Case>(1000);
     for (let i = 0; i < cases.length; i++) {
-      // TODO(https://github.com/gpuweb/cts/issues/792): Decide what the ground-truth is for these tests.
+      // [1]: Need to decide what the ground-truth is.
       const angle = -Math.PI + (2.0 * Math.PI * i) / (cases.length - 1);
       cases[i] = { input: f32(angle), expected: f32(Math.cos(angle)) };
     }

@@ -49,6 +49,7 @@
 <translation id="2212565012507486665">Ruhusu vidakuzi</translation>
 <translation id="2228071138934252756">Ili uruhusu <ph name="APP_NAME" /> ifikie kamera yako, washa pia kamera katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="2241634353105152135">Mara moja tu</translation>
+<translation id="2253414712144136228">Ondoa <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="2289270750774289114">Niulize wakati tovuti inataka kugundua vifaa vya Bluetooth vilivyo karibu (inapendekezwa)</translation>
 <translation id="2315043854645842844">Uchaguzi wa cheti cha sehemu ya seva teja hautumiwi na mfumo wa uendeshaji.</translation>
 <translation id="2359808026110333948">Endelea</translation>
@@ -89,6 +90,7 @@
 <translation id="3115898365077584848">Onyesha Maelezo</translation>
 <translation id="3123473560110926937">Yamezuiwa kwenye baadhi ya tovuti</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> za data iliyohifadhiwa</translation>
+<translation id="3203366800380907218">Kutoka kwenye wavuti</translation>
 <translation id="321187648315454507">Ili uruhusu <ph name="APP_NAME" /> ikutumie arifa, washa pia arifa katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Maikrofoni</translation>
 <translation id="3277252321222022663">Ruhusu tovuti zifikie vitambuzi (inapendekezwa)</translation>
@@ -118,6 +120,7 @@
 <translation id="4008040567710660924">Ruhusu vidakuzi katika tovuti maalum.</translation>
 <translation id="4046123991198612571">Wimbo unaofuata</translation>
 <translation id="4165986682804962316">Mipangilio ya tovuti</translation>
+<translation id="4194328954146351878">Uliza kabla ya kuruhusu tovuti zione na zibadilishe maelezo kwenye vifaa vya NFC (inapendekezwa)</translation>
 <translation id="4200726100658658164">Fungua Mipangilio ya Mahali</translation>
 <translation id="4226663524361240545">Arifa huenda zitatetemesha kifaa</translation>
 <translation id="4259722352634471385">Kudurusu kumezuiwa: <ph name="URL" /></translation>
@@ -180,7 +183,6 @@
 <translation id="5677928146339483299">Kumezuiwa</translation>
 <translation id="5689516760719285838">Mahali</translation>
 <translation id="5690795753582697420">Kamera imezimwa katika mipangilio ya Android</translation>
-<translation id="5710871682236653961">Uliza kabla ya kuruhusu tovuti kutuma na kupokea maelezo unapogusa vifaa vya NFC (inapendekezwa)</translation>
 <translation id="5719847187258001597">Hatua hii itafuta data na vidakuzi vyote vilivyohifadhiwa na <ph name="ORIGIN" /> au na programu yake kwenye Skrini yako ya kwanza.</translation>
 <translation id="5771720122942595109">Umezuia <ph name="PERMISSION_1" /></translation>
 <translation id="5804241973901381774">Idhini</translation>
@@ -239,7 +241,6 @@
 <translation id="7016516562562142042">Imeruhusiwa kwa mtambo wa sasa wa kutafuta</translation>
 <translation id="7053983685419859001">Zuia</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Umechagua 1}other{Umechagua #}}</translation>
-<translation id="7070090581017165256">Kuhusu tovuti hii</translation>
 <translation id="7087918508125750058">Imechagua <ph name="ITEM_COUNT" />. Chaguo zinapatikana karibu na sehemu ya juu ya skrini</translation>
 <translation id="7141896414559753902">Zuia tovuti zisionyeshe madirisha ibukizi na kuelekeza kwingine (inapendekezwa)</translation>
 <translation id="7176368934862295254">KB <ph name="KILOBYTES" /></translation>
@@ -254,7 +255,6 @@
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Tovuti inatumia maikrofoni yako</translation>
 <translation id="7561196759112975576">Kila wakati</translation>
-<translation id="7572498721684305250">Zuia tovuti zisitume na kupokea maelezo wakati unagusa vifaa vya NFC</translation>
 <translation id="757524316907819857">Zuia tovuti zisicheze maudhui yanayolindwa</translation>
 <translation id="7649070708921625228">Usaidizi</translation>
 <translation id="7658239707568436148">Ghairi</translation>
@@ -321,6 +321,7 @@
 <translation id="8903921497873541725">Kuza karibu</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Kipengele cha NFC kimezimwa kwenye kifaa hiki. Kiwashe katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
+<translation id="8928445016601307354">Zuia tovuti zisione wala kubadilisha maelezo kwenye vifaa vya NFC</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8958424370300090006">Zuia vidakuzi katika tovuti maalum.</translation>
 <translation id="8959122750345127698">Kudurusu hakufikiki: <ph name="URL" /></translation>

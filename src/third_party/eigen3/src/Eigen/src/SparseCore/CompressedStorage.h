@@ -225,22 +225,6 @@ class CompressedStorage
       }
     }
 
-    void prune(const Scalar& reference, const RealScalar& epsilon = NumTraits<RealScalar>::dummy_precision())
-    {
-      Index k = 0;
-      Index n = size();
-      for (Index i=0; i<n; ++i)
-      {
-        if (!internal::isMuchSmallerThan(value(i), reference, epsilon))
-        {
-          value(k) = value(i);
-          index(k) = index(i);
-          ++k;
-        }
-      }
-      resize(k,0);
-    }
-
   protected:
 
     inline void reallocate(Index size)

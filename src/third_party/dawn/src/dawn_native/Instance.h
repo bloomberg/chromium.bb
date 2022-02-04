@@ -28,11 +28,11 @@
 #include <unordered_map>
 #include <vector>
 
-namespace dawn_platform {
+namespace dawn::platform {
     class Platform;
-}  // namespace dawn_platform
+}  // namespace dawn::platform
 
-namespace dawn_native {
+namespace dawn::native {
 
     class Surface;
     class XlibXcbFunctions;
@@ -45,10 +45,14 @@ namespace dawn_native {
       public:
         static InstanceBase* Create(const InstanceDescriptor* descriptor = nullptr);
 
+        void APIRequestAdapter(const RequestAdapterOptions* options,
+                               WGPURequestAdapterCallback callback,
+                               void* userdata);
+
         void DiscoverDefaultAdapters();
         bool DiscoverAdapters(const AdapterDiscoveryOptionsBase* options);
 
-        const std::vector<std::unique_ptr<AdapterBase>>& GetAdapters() const;
+        const std::vector<Ref<AdapterBase>>& GetAdapters() const;
 
         // Used to handle error that happen up to device creation.
         bool ConsumedError(MaybeError maybeError);
@@ -60,9 +64,7 @@ namespace dawn_native {
 
         // Used to query the details of an feature. Return nullptr if featureName is not a valid
         // name of an feature supported in Dawn.
-        const FeatureInfo* GetFeatureInfo(const char* featureName);
-        Feature FeatureNameToEnum(const char* featureName);
-        FeaturesSet FeatureNamesToFeaturesSet(const std::vector<const char*>& requiredFeatures);
+        const FeatureInfo* GetFeatureInfo(wgpu::FeatureName feature);
 
         bool IsBackendValidationEnabled() const;
         void SetBackendValidationLevel(BackendValidationLevel level);
@@ -71,8 +73,8 @@ namespace dawn_native {
         void EnableBeginCaptureOnStartup(bool beginCaptureOnStartup);
         bool IsBeginCaptureOnStartupEnabled() const;
 
-        void SetPlatform(dawn_platform::Platform* platform);
-        dawn_platform::Platform* GetPlatform();
+        void SetPlatform(dawn::platform::Platform* platform);
+        dawn::platform::Platform* GetPlatform();
 
         // Get backend-independent libraries that need to be loaded dynamically.
         const XlibXcbFunctions* GetOrCreateXlibXcbFunctions();
@@ -94,6 +96,9 @@ namespace dawn_native {
 
         MaybeError DiscoverAdaptersInternal(const AdapterDiscoveryOptionsBase* options);
 
+        ResultOrError<Ref<AdapterBase>> RequestAdapterInternal(
+            const RequestAdapterOptions* options);
+
         BackendsBitset mBackendsConnected;
 
         bool mDiscoveredDefaultAdapters = false;
@@ -101,11 +106,11 @@ namespace dawn_native {
         bool mBeginCaptureOnStartup = false;
         BackendValidationLevel mBackendValidationLevel = BackendValidationLevel::Disabled;
 
-        dawn_platform::Platform* mPlatform = nullptr;
-        std::unique_ptr<dawn_platform::Platform> mDefaultPlatform;
+        dawn::platform::Platform* mPlatform = nullptr;
+        std::unique_ptr<dawn::platform::Platform> mDefaultPlatform;
 
         std::vector<std::unique_ptr<BackendConnection>> mBackends;
-        std::vector<std::unique_ptr<AdapterBase>> mAdapters;
+        std::vector<Ref<AdapterBase>> mAdapters;
 
         FeaturesInfo mFeaturesInfo;
         TogglesInfo mTogglesInfo;
@@ -115,6 +120,6 @@ namespace dawn_native {
 #endif  // defined(DAWN_USE_X11)
     };
 
-}  // namespace dawn_native
+}  // namespace dawn::native
 
 #endif  // DAWNNATIVE_INSTANCE_H_

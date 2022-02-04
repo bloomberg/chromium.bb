@@ -21,12 +21,12 @@
 
 #include <cstring>
 
-namespace dawn_native { namespace vulkan {
+namespace dawn::native::vulkan {
 
     namespace {
         ResultOrError<InstanceExtSet> GatherInstanceExtensions(
             const char* layerName,
-            const dawn_native::vulkan::VulkanFunctions& vkFunctions,
+            const dawn::native::vulkan::VulkanFunctions& vkFunctions,
             const std::unordered_map<std::string, InstanceExt>& knownExts) {
             uint32_t count = 0;
             VkResult vkResult = VkResult::WrapUnsafe(
@@ -219,10 +219,12 @@ namespace dawn_native { namespace vulkan {
         // because these extensions (transitively) depend on it in `EnsureDependencies`
         VkPhysicalDeviceFeatures2 features2 = {};
         features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        features2.pNext = nullptr;
         PNextChainBuilder featuresChain(&features2);
 
         VkPhysicalDeviceProperties2 properties2 = {};
         properties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        features2.pNext = nullptr;
         PNextChainBuilder propertiesChain(&properties2);
 
         if (info.extensions[DeviceExt::ShaderFloat16Int8]) {
@@ -329,4 +331,4 @@ namespace dawn_native { namespace vulkan {
         return std::move(info);
     }
 
-}}  // namespace dawn_native::vulkan
+}  // namespace dawn::native::vulkan

@@ -85,11 +85,11 @@ static v8::CodeEventType GetCodeEventTypeForTag(
 
 static const char* ComputeMarker(SharedFunctionInfo shared, AbstractCode code) {
   CodeKind kind = code.kind();
-  // We record interpreter trampoline builting copies as having the
+  // We record interpreter trampoline builtin copies as having the
   // "interpreted" marker.
   if (FLAG_interpreted_frames_native_stack && kind == CodeKind::BUILTIN &&
       code.GetCode().is_interpreter_trampoline_builtin() &&
-      code.GetCode() !=
+      ToCodeT(code.GetCode()) !=
           *BUILTIN_CODE(shared.GetIsolate(), InterpreterEntryTrampoline)) {
     kind = CodeKind::INTERPRETED_FUNCTION;
   }
@@ -1613,20 +1613,6 @@ void Logger::MoveEventInternal(LogEventsAndTags event, Address from,
   msg.WriteToLogFile();
 }
 
-void Logger::ResourceEvent(const char* name, const char* tag) {
-  if (!FLAG_log) return;
-  MSG_BUILDER();
-  msg << name << kNext << tag << kNext;
-
-  uint32_t sec, usec;
-  if (base::OS::GetUserTime(&sec, &usec) != -1) {
-    msg << sec << kNext << usec << kNext;
-  }
-  msg.AppendFormatString("%.0f",
-                         V8::GetCurrentPlatform()->CurrentClockTimeMillis());
-  msg.WriteToLogFile();
-}
-
 void Logger::SuspectReadEvent(Name name, Object obj) {
   if (!FLAG_log_suspect) return;
   MSG_BUILDER();
@@ -1912,7 +1898,7 @@ EnumerateCompiledFunctions(Heap* heap) {
           Script::cast(function.shared().script()).HasValidSource()) {
         compiled_funcs.emplace_back(
             handle(function.shared(), isolate),
-            handle(AbstractCode::cast(function.code()), isolate));
+            handle(AbstractCode::cast(FromCodeT(function.code())), isolate));
       }
     }
   }
@@ -2182,7 +2168,7 @@ void ExistingCodeLogger::LogCodeObject(Object object) {
       break;
     case CodeKind::BUILTIN:
       if (Code::cast(object).is_interpreter_trampoline_builtin() &&
-          Code::cast(object) !=
+          ToCodeT(Code::cast(object)) !=
               *BUILTIN_CODE(isolate_, InterpreterEntryTrampoline)) {
         return;
       }

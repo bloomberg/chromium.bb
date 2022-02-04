@@ -22,6 +22,7 @@
         "c_prefix": "WGPU",
         "namespace": "wgpu",
         "proc_table_prefix": "Dawn",
+        "native_namespace": "dawn native",
         "copyright_year": "2019"
     },
 
@@ -49,16 +50,14 @@
     "request adapter options": {
         "category": "structure",
         "extensible": "in",
-        "tags": ["upstream"],
         "members": [
-            {"name": "compatible surface", "type": "surface"},
-            {"name": "power preference", "type": "power preference", "tags": ["upstream"]},
-            {"name": "force fallback adapter", "type": "bool", "tags": ["upstream"]}
+            {"name": "compatible surface", "type": "surface", "optional": true},
+            {"name": "power preference", "type": "power preference", "default": "undefined"},
+            {"name": "force fallback adapter", "type": "bool", "default": "false"}
         ]
     },
     "request adapter status": {
         "category": "enum",
-        "tags": ["upstream"],
         "emscripten_no_enum_table": true,
         "values": [
             {"value": 0, "name": "success"},
@@ -69,29 +68,25 @@
     },
     "request adapter callback": {
         "category": "function pointer",
-        "tags": ["upstream"],
         "args": [
             {"name": "status", "type": "request adapter status"},
             {"name": "adapter", "type": "adapter"},
-            {"name": "message", "type": "char", "annotation": "const*"},
+            {"name": "message", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "userdata", "type": "void", "annotation": "*"}
         ]
     },
     "adapter": {
         "category": "object",
-        "tags": ["upstream"],
         "methods": [
             {
                 "name": "get limits",
                 "returns": "bool",
-                "tags": ["upstream"],
                 "args": [
                     {"name": "limits", "type": "supported limits", "annotation": "*"}
                 ]
             },
             {
                 "name": "get properties",
-                "tags": ["upstream"],
                 "args": [
                     {"name": "properties", "type": "adapter properties", "annotation": "*"}
                 ]
@@ -99,17 +94,32 @@
             {
                 "name": "has feature",
                 "returns": "bool",
-                "tags": ["upstream"],
                 "args": [
                     {"name": "feature", "type": "feature name"}
+                ]
+            },
+            {
+                "tags": ["dawn"],
+                "name": "enumerate features",
+                "returns": "size_t",
+                "args": [
+                    {"name": "features", "type": "feature name", "annotation": "*"}
                 ]
             },
             {
                 "name": "request device",
                 "args": [
                     {"name": "descriptor", "type": "device descriptor", "annotation": "const*"},
-                    {"name": "function pointer", "type": "request device callback"},
+                    {"name": "callback", "type": "request device callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
+                ]
+            },
+            {
+                "name": "create device",
+                "tags": ["dawn"],
+                "returns": "device",
+                "args": [
+                    {"name": "descriptor", "type": "device descriptor", "annotation": "const*", "optional": "true"}
                 ]
             }
         ]
@@ -139,13 +149,22 @@
     "device descriptor": {
         "category": "structure",
         "extensible": "in",
-        "tags": ["upstream"],
-        "_TODO": "Add requiredFeatures and requiredLimits support",
         "members": [
             {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
-            {"name": "required features count", "type": "uint32_t"},
-            {"name": "required features", "type": "feature name", "annotation": "const*", "length": "required features count"},
-            {"name": "required limits", "type": "required limits", "annotation": "const*"}
+            {"name": "required features count", "type": "uint32_t", "default": 0},
+            {"name": "required features", "type": "feature name", "annotation": "const*", "length": "required features count", "default": "nullptr"},
+            {"name": "required limits", "type": "required limits", "annotation": "const*", "optional": true}
+        ]
+    },
+    "dawn toggles device descriptor": {
+        "tags": ["dawn", "native"],
+        "category": "structure",
+        "chained": "in",
+        "members": [
+            {"name": "force enabled toggles count", "type": "uint32_t", "default": 0},
+            {"name": "force enabled toggles", "type": "char", "annotation": "const*const*", "length": "force enabled toggles count"},
+            {"name": "force disabled toggles count", "type": "uint32_t", "default": 0},
+            {"name": "force disabled toggles", "type": "char", "annotation": "const*const*", "length": "force disabled toggles count"}
         ]
     },
     "address mode": {
@@ -381,7 +400,7 @@
                     {"name": "mode", "type": "map mode"},
                     {"name": "offset", "type": "size_t"},
                     {"name": "size", "type": "size_t"},
-                    {"name": "function pointer", "type": "buffer map callback"},
+                    {"name": "callback", "type": "buffer map callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
@@ -855,22 +874,30 @@
             {"name": "compute", "type": "programmable stage descriptor"}
         ]
     },
-    "alpha op": {
+    "alpha mode": {
         "category": "enum",
         "tags": ["dawn"],
         "values": [
-            {"value": 0, "name": "dont change"},
-            {"value": 1, "name": "premultiply"},
-            {"value": 2, "name": "unpremultiply"}
+            {"value": 0, "name": "premultiplied"},
+            {"value": 1, "name": "unpremultiplied"}
         ]
     },
     "copy texture for browser options": {
         "category": "structure",
         "extensible": "in",
         "tags": ["dawn"],
+        "_TODO": "support number as length input",
         "members": [
-            {"name": "flipY", "type": "bool", "default": "false"},
-            {"name": "alphaOp", "type": "alpha op", "default": "dont change"}
+            {"name": "flip y", "type": "bool", "default": "false"},
+            {"name": "needs color space conversion", "type": "bool", "default": "false"},
+            {"name": "src alpha mode", "type": "alpha mode", "default": "unpremultiplied"},
+            {"name": "src transfer function parameters", "type": "float", "annotation": "const*",
+                     "length": 7, "optional": true},
+            {"name": "conversion matrix", "type": "float", "annotation": "const*",
+                     "length": 9, "optional": true},
+            {"name": "dst transfer function parameters", "type": "float", "annotation": "const*",
+                     "length": 7, "optional": true},
+            {"name": "dst alpha mode", "type": "alpha mode", "default": "unpremultiplied"}
         ]
     },
     "create compute pipeline async callback": {
@@ -958,7 +985,7 @@
                 "returns": "void",
                 "args": [
                     {"name": "descriptor", "type": "compute pipeline descriptor", "annotation": "const*"},
-                    {"name": "function pointer", "type": "create compute pipeline async callback"},
+                    {"name": "callback", "type": "create compute pipeline async callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
@@ -989,7 +1016,7 @@
                 "returns": "void",
                 "args": [
                     {"name": "descriptor", "type": "render pipeline descriptor", "annotation": "const*"},
-                    {"name": "function pointer", "type": "create render pipeline async callback"},
+                    {"name": "callback", "type": "create render pipeline async callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
@@ -1047,6 +1074,22 @@
                 ]
             },
             {
+                "tags": ["dawn"],
+                "name": "has feature",
+                "returns": "bool",
+                "args": [
+                    {"name": "feature", "type": "feature name"}
+                ]
+            },
+            {
+                "tags": ["dawn"],
+                "name": "enumerate features",
+                "returns": "size_t",
+                "args": [
+                    {"name": "features", "type": "feature name", "annotation": "*"}
+                ]
+            },
+            {
                 "name": "get queue",
                 "returns": "queue"
             },
@@ -1069,7 +1112,7 @@
             {
                 "name": "set uncaptured error callback",
                 "args": [
-                    {"name": "function pointer", "type": "error callback"},
+                    {"name": "callback", "type": "error callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
@@ -1077,14 +1120,14 @@
                 "name": "set logging callback",
                 "tags": ["dawn"],
                 "args": [
-                    {"name": "function pointer", "type": "logging callback"},
+                    {"name": "callback", "type": "logging callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
             {
                 "name": "set device lost callback",
                 "args": [
-                    {"name": "function pointer", "type": "device lost callback"},
+                    {"name": "callback", "type": "device lost callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
@@ -1098,7 +1141,7 @@
                 "name": "pop error scope",
                 "returns": "bool",
                 "args": [
-                    {"name": "function pointer", "type": "error callback"},
+                    {"name": "callback", "type": "error callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             }
@@ -1140,6 +1183,7 @@
             {"name": "depth32 float stencil8", "type": "bool", "default": "false"},
             {"name": "invalid feature", "type": "bool", "default": "false"},
             {"name": "dawn internal usages", "type": "bool", "default": "false"},
+            {"name": "dawn native", "type": "bool", "default": "false"},
             {"name": "limits", "type": "supported limits"}
         ]
     },
@@ -1275,7 +1319,6 @@
     },
     "feature name": {
         "category": "enum",
-        "tags": ["upstream"],
         "values": [
             {"value": 0, "name": "undefined", "jsrepr": "undefined"},
             {"value": 1, "name": "depth clip control", "tags": ["upstream"]},
@@ -1287,7 +1330,11 @@
             {"value": 7, "name": "texture compression ETC2"},
             {"value": 8, "name": "texture compression ASTC"},
             {"value": 9, "name": "indirect first instance"},
-            {"value": 1000, "name": "depth clamping", "tags": ["emscripten", "dawn"]}
+            {"value": 1000, "name": "depth clamping", "tags": ["emscripten", "dawn"]},
+            {"value": 1001, "name": "dawn shader float 16", "tags": ["dawn"]},
+            {"value": 1002, "name": "dawn internal usages", "tags": ["dawn"]},
+            {"value": 1003, "name": "dawn multi planar formats", "tags": ["dawn"]},
+            {"value": 1004, "name": "dawn native", "tags": ["dawn", "native"]}
         ]
     },
     "filter mode": {
@@ -1349,10 +1396,9 @@
             },
             {
                 "name": "request adapter",
-                "tags": ["upstream"],
                 "args": [
                     {"name": "options", "type": "request adapter options", "annotation": "const*"},
-                    {"name": "function pointer", "type": "request adapter callback"},
+                    {"name": "callback", "type": "request adapter callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             }
@@ -1455,7 +1501,6 @@
     },
     "power preference": {
         "category": "enum",
-        "tags": ["upstream"],
         "values": [
             {"value": 0, "name": "undefined"},
             {"value": 1, "name": "low power"},
@@ -1541,7 +1586,7 @@
                 "name": "on submitted work done",
                 "args": [
                     {"name": "signal value", "type": "uint64_t"},
-                    {"name": "function pointer", "type": "queue work done callback"},
+                    {"name": "callback", "type": "queue work done callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
@@ -1974,7 +2019,7 @@
         "args": [
             {"name": "status", "type": "request device status"},
             {"name": "device", "type": "device"},
-            {"name": "message", "type": "char", "annotation": "const*"},
+            {"name": "message", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "userdata", "type": "void", "annotation": "*"}
         ]
     },
@@ -2139,7 +2184,7 @@
             {
                 "name": "get compilation info",
                 "args": [
-                    {"name": "function pointer", "type": "compilation info callback"},
+                    {"name": "callback", "type": "compilation info callback"},
                     {"name": "userdata", "type": "void", "annotation": "*"}
                 ]
             },
@@ -2251,7 +2296,7 @@
             {"name": "hwnd", "type": "void", "annotation": "*"}
         ]
     },
-    "surface descriptor from xlib": {
+    "surface descriptor from xlib window": {
         "category": "structure",
         "chained": "in",
         "tags": ["native"],
@@ -2313,7 +2358,7 @@
             {"value": 0, "name": "invalid", "valid": false},
             {"value": 1, "name": "surface descriptor from metal layer", "tags": ["native"]},
             {"value": 2, "name": "surface descriptor from windows HWND", "tags": ["native"]},
-            {"value": 3, "name": "surface descriptor from xlib", "tags": ["native"]},
+            {"value": 3, "name": "surface descriptor from xlib window", "tags": ["native"]},
             {"value": 4, "name": "surface descriptor from canvas HTML selector"},
             {"value": 5, "name": "shader module SPIRV descriptor"},
             {"value": 6, "name": "shader module WGSL descriptor"},
@@ -2323,7 +2368,9 @@
             {"value": 10, "name": "external texture binding layout", "tags": ["dawn"]},
             {"value": 11, "name": "surface descriptor from windows swap chain panel", "tags": ["dawn"]},
             {"value": 1000, "name": "dawn texture internal usage descriptor", "tags": ["dawn"]},
-            {"value": 1001, "name": "primitive depth clamping state", "tags": ["dawn", "emscripten"]}
+            {"value": 1001, "name": "primitive depth clamping state", "tags": ["dawn", "emscripten"]},
+            {"value": 1002, "name": "dawn toggles device descriptor", "tags": ["dawn", "native"]},
+            {"value": 1003, "name": "dawn encoder internal usage descriptor", "tags": ["dawn"]}
         ]
     },
     "texture": {
@@ -2686,6 +2733,14 @@
         "tags": ["dawn"],
         "members": [
             {"name": "internal usage", "type": "texture usage", "default": "none"}
+        ]
+    },
+    "dawn encoder internal usage descriptor": {
+        "category": "structure",
+        "chained": "in",
+        "tags": ["dawn"],
+        "members": [
+            {"name": "use internal usages", "type": "bool", "default": "false"}
         ]
     }
 }

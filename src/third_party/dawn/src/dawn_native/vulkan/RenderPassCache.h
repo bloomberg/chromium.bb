@@ -28,7 +28,7 @@
 #include <mutex>
 #include <unordered_map>
 
-namespace dawn_native { namespace vulkan {
+namespace dawn::native::vulkan {
 
     class Device;
 
@@ -47,7 +47,8 @@ namespace dawn_native { namespace vulkan {
                              wgpu::LoadOp depthLoadOp,
                              wgpu::StoreOp depthStoreOp,
                              wgpu::LoadOp stencilLoadOp,
-                             wgpu::StoreOp stencilStoreOp);
+                             wgpu::StoreOp stencilStoreOp,
+                             bool readOnly);
         void SetSampleCount(uint32_t sampleCount);
 
         ityp::bitset<ColorAttachmentIndex, kMaxColorAttachments> colorMask;
@@ -62,6 +63,7 @@ namespace dawn_native { namespace vulkan {
         wgpu::StoreOp depthStoreOp;
         wgpu::LoadOp stencilLoadOp;
         wgpu::StoreOp stencilStoreOp;
+        bool readOnlyDepthStencil;
 
         uint32_t sampleCount;
     };
@@ -99,6 +101,6 @@ namespace dawn_native { namespace vulkan {
         Cache mCache;
     };
 
-}}  // namespace dawn_native::vulkan
+}  // namespace dawn::native::vulkan
 
 #endif  // DAWNNATIVE_VULKAN_RENDERPASSCACHE_H_

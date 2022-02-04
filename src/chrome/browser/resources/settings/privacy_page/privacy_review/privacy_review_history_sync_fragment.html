@@ -1,18 +1,18 @@
 <style include="privacy-review-fragment-shared"></style>
-<div class="header">
+<div class="header" focus-element tabindex="-1">
   <picture>
     <source
         srcset="./images/privacy_review/history_sync_graphic_dark.svg"
         media="(prefers-color-scheme: dark)">
     <img alt="" src="./images/privacy_review/history_sync_graphic.svg">
   </picture>
-  <div class="header-label">$i18n{privacyReviewHistorySyncCardHeader}</div>
+  <h2 class="header-label">$i18n{privacyReviewHistorySyncCardHeader}</h2>
 </div>
 <div class="embedded-setting-wrapper">
   <settings-toggle-button id="historyToggle"
       pref="{{historySyncVirtualPref_}}"
       on-change="onToggleClick_"
-      label="$i18n{historyCheckboxLabel}">
+      label="$i18n{privacyReviewHistorySyncSettingLabel}">
   </settings-toggle-button>
 </div>
 <div class="description-wrapper two-column">
@@ -31,7 +31,7 @@
   </div>
   <div class="description-column">
     <div class=description-header>
-      $i18n{privacyReviewWhatYouShareWithGoogle}
+      $i18n{privacyReviewThingsToConsider}
     </div>
     <privacy-review-description-item
         icon="settings20:link"

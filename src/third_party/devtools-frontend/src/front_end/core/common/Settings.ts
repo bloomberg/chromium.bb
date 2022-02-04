@@ -36,7 +36,7 @@ import {Format} from './Color.js';
 import {Console} from './Console.js';
 import type {GenericEvents, EventDescriptor, EventTargetEvent} from './EventTarget.js';
 import {ObjectWrapper} from './Object.js';
-import {getLocalizedSettingsCategory, getRegisteredSettings, maybeRemoveSettingExtension, RegExpSettingItem, registerSettingExtension, registerSettingsForTest, resetSettings, SettingCategory, SettingExtensionOption, SettingRegistration, SettingType} from './SettingRegistration.js';
+import {getLocalizedSettingsCategory, getRegisteredSettings, maybeRemoveSettingExtension, type RegExpSettingItem, registerSettingExtension, registerSettingsForTest, resetSettings, SettingCategory, type SettingExtensionOption, type SettingRegistration, SettingType} from './SettingRegistration.js';
 
 let settingsInstance: Settings|undefined;
 
@@ -197,6 +197,7 @@ export class Settings {
 
 export interface SettingsBackingStore {
   register(setting: string): void;
+  get(setting: string): Promise<string>;
   set(setting: string, value: string): void;
   remove(setting: string): void;
   clear(): void;
@@ -205,6 +206,7 @@ export interface SettingsBackingStore {
 export const NOOP_STORAGE: SettingsBackingStore = {
   register: () => {},
   set: () => {},
+  get: () => Promise.resolve(''),
   remove: () => {},
   clear: () => {},
 };
@@ -234,6 +236,17 @@ export class SettingsStorage {
   get(name: string): string {
     name = this.storagePrefix + name;
     return this.object[name];
+  }
+
+  async forceGet(originalName: string): Promise<string> {
+    const name = this.storagePrefix + originalName;
+    const value = await this.backingStore.get(name);
+    if (value && value !== this.object[name]) {
+      this.set(originalName, value);
+    } else if (!value) {
+      this.remove(originalName);
+    }
+    return value;
   }
 
   remove(name: string): void {
@@ -290,6 +303,7 @@ export class Setting<V> {
   // TODO(crbug.com/1172300) Type cannot be inferred without changes to consumers. See above.
   #serializer: Serializer<unknown, V> = JSON;
   #hadUserAction?: boolean;
+  #disabled?: boolean;
 
   constructor(
       readonly name: string, readonly defaultValue: V, private readonly eventSupport: ObjectWrapper<GenericEvents>,
@@ -333,6 +347,15 @@ export class Setting<V> {
     this.#requiresUserAction = requiresUserAction;
   }
 
+  disabled(): boolean {
+    return this.#disabled || false;
+  }
+
+  setDisabled(disabled: boolean): void {
+    this.#disabled = disabled;
+    this.eventSupport.dispatchEventToListeners(this.name);
+  }
+
   get(): V {
     if (this.#requiresUserAction && !this.#hadUserAction) {
       return this.defaultValue;
@@ -350,6 +373,26 @@ export class Setting<V> {
         this.storage.remove(this.name);
       }
     }
+    return this.#value;
+  }
+
+  async forceGet(): Promise<V> {
+    const name = this.name;
+    const oldValue = this.storage.get(name);
+    const value = await this.storage.forceGet(name);
+    this.#value = this.defaultValue;
+    if (value) {
+      try {
+        this.#value = this.#serializer.parse(value);
+      } catch (e) {
+        this.storage.remove(this.name);
+      }
+    }
+
+    if (oldValue !== value) {
+      this.eventSupport.dispatchEventToListeners(this.name, this.#value);
+    }
+
     return this.#value;
   }
 

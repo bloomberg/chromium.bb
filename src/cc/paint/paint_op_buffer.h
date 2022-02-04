@@ -16,7 +16,6 @@
 
 #include "base/callback.h"
 #include "base/check_op.h"
-#include "base/containers/flat_map.h"
 #include "base/containers/stack_container.h"
 #include "base/debug/alias.h"
 #include "base/memory/aligned_memory.h"
@@ -28,6 +27,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_flags.h"
+#include "cc/paint/skottie_color_map.h"
 #include "cc/paint/skottie_frame_data.h"
 #include "cc/paint/skottie_resource_metadata.h"
 #include "cc/paint/skottie_wrapper.h"
@@ -811,7 +811,8 @@ class CC_PAINT_EXPORT DrawSkottieOp final : public PaintOp {
   DrawSkottieOp(scoped_refptr<SkottieWrapper> skottie,
                 SkRect dst,
                 float t,
-                SkottieFrameDataMap images);
+                SkottieFrameDataMap images,
+                const SkottieColorMap& color_map);
   ~DrawSkottieOp();
   static void Raster(const DrawSkottieOp* op,
                      SkCanvas* canvas,
@@ -832,6 +833,8 @@ class CC_PAINT_EXPORT DrawSkottieOp final : public PaintOp {
   // assets generally do not change from frame to frame in most animations, that
   // means in practice, this map is often empty.
   SkottieFrameDataMap images;
+  // Node name hashes and corresponding colors to use for dynamic coloration.
+  SkottieColorMap color_map;
 
  private:
   SkottieWrapper::FrameDataFetchResult GetImageAssetForRaster(

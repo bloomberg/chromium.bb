@@ -1641,7 +1641,7 @@ void MacroAssembler::CallRuntime(const Runtime::Function* f, int num_arguments,
   Mov(x0, num_arguments);
   Mov(x1, ExternalReference::Create(f));
 
-  Handle<Code> code =
+  Handle<CodeT> code =
       CodeFactory::CEntry(isolate(), f->result_size, save_doubles);
   Call(code, RelocInfo::CODE_TARGET);
 }
@@ -1650,8 +1650,9 @@ void MacroAssembler::JumpToExternalReference(const ExternalReference& builtin,
                                              bool builtin_exit_frame) {
   ASM_CODE_COMMENT(this);
   Mov(x1, builtin);
-  Handle<Code> code = CodeFactory::CEntry(isolate(), 1, SaveFPRegsMode::kIgnore,
-                                          ArgvMode::kStack, builtin_exit_frame);
+  Handle<CodeT> code =
+      CodeFactory::CEntry(isolate(), 1, SaveFPRegsMode::kIgnore,
+                          ArgvMode::kStack, builtin_exit_frame);
   Jump(code, RelocInfo::CODE_TARGET);
 }
 
@@ -1859,11 +1860,11 @@ void TurboAssembler::Jump(Address target, RelocInfo::Mode rmode,
   JumpHelper(offset, rmode, cond);
 }
 
-void TurboAssembler::Jump(Handle<Code> code, RelocInfo::Mode rmode,
+void TurboAssembler::Jump(Handle<CodeT> code, RelocInfo::Mode rmode,
                           Condition cond) {
   DCHECK(RelocInfo::IsCodeTarget(rmode));
   DCHECK_IMPLIES(options().isolate_independent_code,
-                 Builtins::IsIsolateIndependentBuiltin(*code));
+                 Builtins::IsIsolateIndependentBuiltin(FromCodeT(*code)));
 
   if (options().inline_offheap_trampolines) {
     Builtin builtin = Builtin::kNoBuiltinId;
@@ -1907,9 +1908,9 @@ void TurboAssembler::Call(Address target, RelocInfo::Mode rmode) {
   }
 }
 
-void TurboAssembler::Call(Handle<Code> code, RelocInfo::Mode rmode) {
+void TurboAssembler::Call(Handle<CodeT> code, RelocInfo::Mode rmode) {
   DCHECK_IMPLIES(options().isolate_independent_code,
-                 Builtins::IsIsolateIndependentBuiltin(*code));
+                 Builtins::IsIsolateIndependentBuiltin(FromCodeT(*code)));
   BlockPoolsScope scope(this);
 
   if (options().inline_offheap_trampolines) {
@@ -1921,7 +1922,7 @@ void TurboAssembler::Call(Handle<Code> code, RelocInfo::Mode rmode) {
     }
   }
 
-  DCHECK(code->IsExecutable());
+  DCHECK(FromCodeT(*code).IsExecutable());
   if (CanUseNearCallOrJump(rmode)) {
     EmbeddedObjectIndex index = AddEmbeddedObject(code);
     DCHECK(is_int32(index));
@@ -2023,6 +2024,11 @@ void TurboAssembler::TailCallBuiltin(Builtin builtin) {
 void TurboAssembler::LoadCodeObjectEntry(Register destination,
                                          Register code_object) {
   ASM_CODE_COMMENT(this);
+  if (V8_EXTERNAL_CODE_SPACE_BOOL) {
+    LoadCodeDataContainerEntry(destination, code_object);
+    return;
+  }
+
   // Code objects are called differently depending on whether we are generating
   // builtin code (which will later be embedded into the binary) or compiling
   // user JS code at runtime.
@@ -2292,11 +2298,7 @@ void MacroAssembler::InvokePrologue(Register formal_parameter_count,
   Register slots_to_copy = x4;
   Register slots_to_claim = x5;
 
-  if (kJSArgcIncludesReceiver) {
-    Mov(slots_to_copy, actual_argument_count);
-  } else {
-    Add(slots_to_copy, actual_argument_count, 1);  // Copy with receiver.
-  }
+  Mov(slots_to_copy, actual_argument_count);
   Mov(slots_to_claim, extra_argument_count);
   Tbz(extra_argument_count, 0, &even_extra_count);
 
@@ -2310,9 +2312,6 @@ void MacroAssembler::InvokePrologue(Register formal_parameter_count,
     Register scratch = x11;
     Add(slots_to_claim, extra_argument_count, 1);
     And(scratch, actual_argument_count, 1);
-    if (!kJSArgcIncludesReceiver) {
-      Eor(scratch, scratch, 1);
-    }
     Sub(slots_to_claim, slots_to_claim, Operand(scratch, LSL, 1));
   }
 
@@ -2333,13 +2332,7 @@ void MacroAssembler::InvokePrologue(Register formal_parameter_count,
   }
 
   Bind(&skip_move);
-  Register actual_argument_with_receiver = actual_argument_count;
   Register pointer_next_value = x5;
-  if (!kJSArgcIncludesReceiver) {
-    actual_argument_with_receiver = x4;
-    Add(actual_argument_with_receiver, actual_argument_count,
-        1);  // {slots_to_copy} was scratched.
-  }
 
   // Copy extra arguments as undefined values.
   {
@@ -2347,7 +2340,7 @@ void MacroAssembler::InvokePrologue(Register formal_parameter_count,
     Register undefined_value = x6;
     Register count = x7;
     LoadRoot(undefined_value, RootIndex::kUndefinedValue);
-    SlotAddress(pointer_next_value, actual_argument_with_receiver);
+    SlotAddress(pointer_next_value, actual_argument_count);
     Mov(count, extra_argument_count);
     Bind(&loop);
     Str(undefined_value,
@@ -2360,7 +2353,7 @@ void MacroAssembler::InvokePrologue(Register formal_parameter_count,
   {
     Label skip;
     Register total_args_slots = x4;
-    Add(total_args_slots, actual_argument_with_receiver, extra_argument_count);
+    Add(total_args_slots, actual_argument_count, extra_argument_count);
     Tbz(total_args_slots, 0, &skip);
     Str(padreg, MemOperand(pointer_next_value));
     Bind(&skip);
@@ -3072,40 +3065,40 @@ void MacroAssembler::RecordWriteField(Register object, int offset,
   Bind(&done);
 }
 
-void TurboAssembler::EncodeCagedPointer(const Register& value) {
+void TurboAssembler::EncodeSandboxedPointer(const Register& value) {
   ASM_CODE_COMMENT(this);
-#ifdef V8_CAGED_POINTERS
+#ifdef V8_SANDBOXED_POINTERS
   Sub(value, value, kPtrComprCageBaseRegister);
-  Mov(value, Operand(value, LSL, kCagedPointerShift));
+  Mov(value, Operand(value, LSL, kSandboxedPointerShift));
 #else
   UNREACHABLE();
 #endif
 }
 
-void TurboAssembler::DecodeCagedPointer(const Register& value) {
+void TurboAssembler::DecodeSandboxedPointer(const Register& value) {
   ASM_CODE_COMMENT(this);
-#ifdef V8_CAGED_POINTERS
+#ifdef V8_SANDBOXED_POINTERS
   Add(value, kPtrComprCageBaseRegister,
-      Operand(value, LSR, kCagedPointerShift));
+      Operand(value, LSR, kSandboxedPointerShift));
 #else
   UNREACHABLE();
 #endif
 }
 
-void TurboAssembler::LoadCagedPointerField(const Register& destination,
-                                           const MemOperand& field_operand) {
+void TurboAssembler::LoadSandboxedPointerField(
+    const Register& destination, const MemOperand& field_operand) {
   ASM_CODE_COMMENT(this);
   Ldr(destination, field_operand);
-  DecodeCagedPointer(destination);
+  DecodeSandboxedPointer(destination);
 }
 
-void TurboAssembler::StoreCagedPointerField(
+void TurboAssembler::StoreSandboxedPointerField(
     const Register& value, const MemOperand& dst_field_operand) {
   ASM_CODE_COMMENT(this);
   UseScratchRegisterScope temps(this);
   Register scratch = temps.AcquireX();
   Mov(scratch, value);
-  EncodeCagedPointer(scratch);
+  EncodeSandboxedPointer(scratch);
   Str(scratch, dst_field_operand);
 }
 
@@ -3115,7 +3108,7 @@ void TurboAssembler::LoadExternalPointerField(Register destination,
                                               Register isolate_root) {
   DCHECK(!AreAliased(destination, isolate_root));
   ASM_CODE_COMMENT(this);
-#ifdef V8_HEAP_SANDBOX
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
   UseScratchRegisterScope temps(this);
   Register external_table = temps.AcquireX();
   if (isolate_root == no_reg) {
@@ -3134,7 +3127,7 @@ void TurboAssembler::LoadExternalPointerField(Register destination,
   }
 #else
   Ldr(destination, field_operand);
-#endif  // V8_HEAP_SANDBOX
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
 }
 
 void TurboAssembler::MaybeSaveRegisters(RegList registers) {
@@ -3212,7 +3205,7 @@ void TurboAssembler::CallRecordWriteStub(
     if (options().inline_offheap_trampolines) {
       CallBuiltin(builtin);
     } else {
-      Handle<Code> code_target = isolate()->builtins()->code_handle(builtin);
+      Handle<CodeT> code_target = isolate()->builtins()->code_handle(builtin);
       Call(code_target, RelocInfo::CODE_TARGET);
     }
   }

@@ -81,13 +81,13 @@ static wgpu::BackendType backendType = wgpu::BackendType::OpenGL;
 #endif
 
 static CmdBufType cmdBufType = CmdBufType::Terrible;
-static std::unique_ptr<dawn_native::Instance> instance;
+static std::unique_ptr<dawn::native::Instance> instance;
 static utils::BackendBinding* binding = nullptr;
 
 static GLFWwindow* window = nullptr;
 
-static dawn_wire::WireServer* wireServer = nullptr;
-static dawn_wire::WireClient* wireClient = nullptr;
+static dawn::wire::WireServer* wireServer = nullptr;
+static dawn::wire::WireClient* wireClient = nullptr;
 static utils::TerribleCommandBuffer* c2sBuf = nullptr;
 static utils::TerribleCommandBuffer* s2cBuf = nullptr;
 
@@ -110,15 +110,15 @@ wgpu::Device CreateCppDawnDevice() {
         return wgpu::Device();
     }
 
-    instance = std::make_unique<dawn_native::Instance>();
+    instance = std::make_unique<dawn::native::Instance>();
     utils::DiscoverAdapter(instance.get(), window, backendType);
 
     // Get an adapter for the backend to use, and create the device.
-    dawn_native::Adapter backendAdapter;
+    dawn::native::Adapter backendAdapter;
     {
-        std::vector<dawn_native::Adapter> adapters = instance->GetAdapters();
+        std::vector<dawn::native::Adapter> adapters = instance->GetAdapters();
         auto adapterIt = std::find_if(adapters.begin(), adapters.end(),
-                                      [](const dawn_native::Adapter adapter) -> bool {
+                                      [](const dawn::native::Adapter adapter) -> bool {
                                           wgpu::AdapterProperties properties;
                                           adapter.GetProperties(&properties);
                                           return properties.backendType == backendType;
@@ -128,7 +128,7 @@ wgpu::Device CreateCppDawnDevice() {
     }
 
     WGPUDevice backendDevice = backendAdapter.CreateDevice();
-    DawnProcTable backendProcs = dawn_native::GetProcs();
+    DawnProcTable backendProcs = dawn::native::GetProcs();
 
     binding = utils::CreateBinding(backendType, window, backendDevice);
     if (binding == nullptr) {
@@ -149,18 +149,18 @@ wgpu::Device CreateCppDawnDevice() {
             c2sBuf = new utils::TerribleCommandBuffer();
             s2cBuf = new utils::TerribleCommandBuffer();
 
-            dawn_wire::WireServerDescriptor serverDesc = {};
+            dawn::wire::WireServerDescriptor serverDesc = {};
             serverDesc.procs = &backendProcs;
             serverDesc.serializer = s2cBuf;
 
-            wireServer = new dawn_wire::WireServer(serverDesc);
+            wireServer = new dawn::wire::WireServer(serverDesc);
             c2sBuf->SetHandler(wireServer);
 
-            dawn_wire::WireClientDescriptor clientDesc = {};
+            dawn::wire::WireClientDescriptor clientDesc = {};
             clientDesc.serializer = c2sBuf;
 
-            wireClient = new dawn_wire::WireClient(clientDesc);
-            procs = dawn_wire::client::GetProcs();
+            wireClient = new dawn::wire::WireClient(clientDesc);
+            procs = dawn::wire::client::GetProcs();
             s2cBuf->SetHandler(wireClient);
 
             auto deviceReservation = wireClient->ReserveDevice();

@@ -25,11 +25,11 @@ using MultiplanarExternalTextureTest = TransformTest;
 // result in an error.
 TEST_F(MultiplanarExternalTextureTest, ErrorNoPassedData) {
   auto* src = R"(
-[[group(0), binding(0)]] var s : sampler;
-[[group(0), binding(1)]] var ext_tex : texture_external;
+@group(0) @binding(0) var s : sampler;
+@group(0) @binding(1) var ext_tex : texture_external;
 
-[[stage(fragment)]]
-fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@builtin(position) coord : vec4<f32>) -> @location(0) vec4<f32> {
   return textureSampleLevel(ext_tex, s, coord.xy);
 }
 )";
@@ -43,11 +43,11 @@ fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
 // Running the transform with incorrect binding data should result in an error.
 TEST_F(MultiplanarExternalTextureTest, ErrorIncorrectBindingPont) {
   auto* src = R"(
-[[group(0), binding(0)]] var s : sampler;
-[[group(0), binding(1)]] var ext_tex : texture_external;
+@group(0) @binding(0) var s : sampler;
+@group(0) @binding(1) var ext_tex : texture_external;
 
-[[stage(fragment)]]
-fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@builtin(position) coord : vec4<f32>) -> @location(0) vec4<f32> {
   return textureSampleLevel(ext_tex, s, coord.xy);
 }
 )";
@@ -67,10 +67,10 @@ fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
 // Tests that the transform works with a textureDimensions call.
 TEST_F(MultiplanarExternalTextureTest, Dimensions) {
   auto* src = R"(
-[[group(0), binding(0)]] var ext_tex : texture_external;
+@group(0) @binding(0) var ext_tex : texture_external;
 
-[[stage(fragment)]]
-fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@builtin(position) coord : vec4<f32>) -> @location(0) vec4<f32> {
   var dim : vec2<i32>;
   dim = textureDimensions(ext_tex);
   return vec4<f32>(0.0, 0.0, 0.0, 0.0);
@@ -78,23 +78,22 @@ fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
 )";
 
   auto* expect = R"(
-[[block]]
 struct ExternalTextureParams {
   numPlanes : u32;
   vr : f32;
   ug : f32;
   vg : f32;
   ub : f32;
-};
+}
 
-[[group(0), binding(1)]] var ext_tex_plane_1 : texture_2d<f32>;
+@group(0) @binding(1) var ext_tex_plane_1 : texture_2d<f32>;
 
-[[group(0), binding(2)]] var<uniform> ext_tex_params : ExternalTextureParams;
+@group(0) @binding(2) var<uniform> ext_tex_params : ExternalTextureParams;
 
-[[group(0), binding(0)]] var ext_tex : texture_2d<f32>;
+@group(0) @binding(0) var ext_tex : texture_2d<f32>;
 
-[[stage(fragment)]]
-fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@builtin(position) coord : vec4<f32>) -> @location(0) vec4<f32> {
   var dim : vec2<i32>;
   dim = textureDimensions(ext_tex);
   return vec4<f32>(0.0, 0.0, 0.0, 0.0);
@@ -111,32 +110,31 @@ fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
 // Test that the transform works with a textureSampleLevel call.
 TEST_F(MultiplanarExternalTextureTest, BasicTextureSampleLevel) {
   auto* src = R"(
-[[group(0), binding(0)]] var s : sampler;
-[[group(0), binding(1)]] var ext_tex : texture_external;
+@group(0) @binding(0) var s : sampler;
+@group(0) @binding(1) var ext_tex : texture_external;
 
-[[stage(fragment)]]
-fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@builtin(position) coord : vec4<f32>) -> @location(0) vec4<f32> {
   return textureSampleLevel(ext_tex, s, coord.xy);
 }
 )";
 
   auto* expect = R"(
-[[group(0), binding(0)]] var s : sampler;
+@group(0) @binding(0) var s : sampler;
 
-[[block]]
 struct ExternalTextureParams {
   numPlanes : u32;
   vr : f32;
   ug : f32;
   vg : f32;
   ub : f32;
-};
+}
 
-[[group(0), binding(2)]] var ext_tex_plane_1 : texture_2d<f32>;
+@group(0) @binding(2) var ext_tex_plane_1 : texture_2d<f32>;
 
-[[group(0), binding(3)]] var<uniform> ext_tex_params : ExternalTextureParams;
+@group(0) @binding(3) var<uniform> ext_tex_params : ExternalTextureParams;
 
-[[group(0), binding(1)]] var ext_tex : texture_2d<f32>;
+@group(0) @binding(1) var ext_tex : texture_2d<f32>;
 
 fn textureSampleExternal(plane0 : texture_2d<f32>, plane1 : texture_2d<f32>, smp : sampler, coord : vec2<f32>, params : ExternalTextureParams) -> vec4<f32> {
   if ((params.numPlanes == 1u)) {
@@ -152,8 +150,8 @@ fn textureSampleExternal(plane0 : texture_2d<f32>, plane1 : texture_2d<f32>, smp
   return vec4<f32>(r, g, b, 1.0);
 }
 
-[[stage(fragment)]]
-fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@builtin(position) coord : vec4<f32>) -> @location(0) vec4<f32> {
   return textureSampleExternal(ext_tex, ext_tex_plane_1, s, coord.xy, ext_tex_params);
 }
 )";
@@ -168,29 +166,28 @@ fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
 // Tests that the transform works with a textureLoad call.
 TEST_F(MultiplanarExternalTextureTest, BasicTextureLoad) {
   auto* src = R"(
-[[group(0), binding(0)]] var ext_tex : texture_external;
+@group(0) @binding(0) var ext_tex : texture_external;
 
-[[stage(fragment)]]
-fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@builtin(position) coord : vec4<f32>) -> @location(0) vec4<f32> {
   return textureLoad(ext_tex, vec2<i32>(1, 1));
 }
 )";
 
   auto* expect = R"(
-[[block]]
 struct ExternalTextureParams {
   numPlanes : u32;
   vr : f32;
   ug : f32;
   vg : f32;
   ub : f32;
-};
+}
 
-[[group(0), binding(1)]] var ext_tex_plane_1 : texture_2d<f32>;
+@group(0) @binding(1) var ext_tex_plane_1 : texture_2d<f32>;
 
-[[group(0), binding(2)]] var<uniform> ext_tex_params : ExternalTextureParams;
+@group(0) @binding(2) var<uniform> ext_tex_params : ExternalTextureParams;
 
-[[group(0), binding(0)]] var ext_tex : texture_2d<f32>;
+@group(0) @binding(0) var ext_tex : texture_2d<f32>;
 
 fn textureLoadExternal(plane0 : texture_2d<f32>, plane1 : texture_2d<f32>, coord : vec2<i32>, params : ExternalTextureParams) -> vec4<f32> {
   if ((params.numPlanes == 1u)) {
@@ -206,8 +203,8 @@ fn textureLoadExternal(plane0 : texture_2d<f32>, plane1 : texture_2d<f32>, coord
   return vec4<f32>(r, g, b, 1.0);
 }
 
-[[stage(fragment)]]
-fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@builtin(position) coord : vec4<f32>) -> @location(0) vec4<f32> {
   return textureLoadExternal(ext_tex, ext_tex_plane_1, vec2<i32>(1, 1), ext_tex_params);
 }
 )";
@@ -223,32 +220,31 @@ fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
 // call.
 TEST_F(MultiplanarExternalTextureTest, TextureSampleAndTextureLoad) {
   auto* src = R"(
-[[group(0), binding(0)]] var s : sampler;
-[[group(0), binding(1)]] var ext_tex : texture_external;
+@group(0) @binding(0) var s : sampler;
+@group(0) @binding(1) var ext_tex : texture_external;
 
-[[stage(fragment)]]
-fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@builtin(position) coord : vec4<f32>) -> @location(0) vec4<f32> {
   return textureSampleLevel(ext_tex, s, coord.xy) + textureLoad(ext_tex, vec2<i32>(1, 1));
 }
 )";
 
   auto* expect = R"(
-[[group(0), binding(0)]] var s : sampler;
+@group(0) @binding(0) var s : sampler;
 
-[[block]]
 struct ExternalTextureParams {
   numPlanes : u32;
   vr : f32;
   ug : f32;
   vg : f32;
   ub : f32;
-};
+}
 
-[[group(0), binding(2)]] var ext_tex_plane_1 : texture_2d<f32>;
+@group(0) @binding(2) var ext_tex_plane_1 : texture_2d<f32>;
 
-[[group(0), binding(3)]] var<uniform> ext_tex_params : ExternalTextureParams;
+@group(0) @binding(3) var<uniform> ext_tex_params : ExternalTextureParams;
 
-[[group(0), binding(1)]] var ext_tex : texture_2d<f32>;
+@group(0) @binding(1) var ext_tex : texture_2d<f32>;
 
 fn textureSampleExternal(plane0 : texture_2d<f32>, plane1 : texture_2d<f32>, smp : sampler, coord : vec2<f32>, params : ExternalTextureParams) -> vec4<f32> {
   if ((params.numPlanes == 1u)) {
@@ -278,8 +274,8 @@ fn textureLoadExternal(plane0 : texture_2d<f32>, plane1 : texture_2d<f32>, coord
   return vec4<f32>(r, g, b, 1.0);
 }
 
-[[stage(fragment)]]
-fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@builtin(position) coord : vec4<f32>) -> @location(0) vec4<f32> {
   return (textureSampleExternal(ext_tex, ext_tex_plane_1, s, coord.xy, ext_tex_params) + textureLoadExternal(ext_tex, ext_tex_plane_1, vec2<i32>(1, 1), ext_tex_params));
 }
 )";
@@ -294,53 +290,52 @@ fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
 // Tests that the transform works with many instances of texture_external.
 TEST_F(MultiplanarExternalTextureTest, ManyTextureSampleLevel) {
   auto* src = R"(
-[[group(0), binding(0)]] var s : sampler;
-[[group(0), binding(1)]] var ext_tex : texture_external;
-[[group(0), binding(2)]] var ext_tex_1 : texture_external;
-[[group(0), binding(3)]] var ext_tex_2 : texture_external;
-[[group(1), binding(0)]] var ext_tex_3 : texture_external;
+@group(0) @binding(0) var s : sampler;
+@group(0) @binding(1) var ext_tex : texture_external;
+@group(0) @binding(2) var ext_tex_1 : texture_external;
+@group(0) @binding(3) var ext_tex_2 : texture_external;
+@group(1) @binding(0) var ext_tex_3 : texture_external;
 
-[[stage(fragment)]]
-fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@builtin(position) coord : vec4<f32>) -> @location(0) vec4<f32> {
   return textureSampleLevel(ext_tex, s, coord.xy) + textureSampleLevel(ext_tex_1, s, coord.xy) + textureSampleLevel(ext_tex_2, s, coord.xy) + textureSampleLevel(ext_tex_3, s, coord.xy);
 }
 )";
 
   auto* expect = R"(
-[[group(0), binding(0)]] var s : sampler;
+@group(0) @binding(0) var s : sampler;
 
-[[block]]
 struct ExternalTextureParams {
   numPlanes : u32;
   vr : f32;
   ug : f32;
   vg : f32;
   ub : f32;
-};
+}
 
-[[group(0), binding(4)]] var ext_tex_plane_1 : texture_2d<f32>;
+@group(0) @binding(4) var ext_tex_plane_1 : texture_2d<f32>;
 
-[[group(0), binding(5)]] var<uniform> ext_tex_params : ExternalTextureParams;
+@group(0) @binding(5) var<uniform> ext_tex_params : ExternalTextureParams;
 
-[[group(0), binding(1)]] var ext_tex : texture_2d<f32>;
+@group(0) @binding(1) var ext_tex : texture_2d<f32>;
 
-[[group(0), binding(6)]] var ext_tex_plane_1_1 : texture_2d<f32>;
+@group(0) @binding(6) var ext_tex_plane_1_1 : texture_2d<f32>;
 
-[[group(0), binding(7)]] var<uniform> ext_tex_params_1 : ExternalTextureParams;
+@group(0) @binding(7) var<uniform> ext_tex_params_1 : ExternalTextureParams;
 
-[[group(0), binding(2)]] var ext_tex_1 : texture_2d<f32>;
+@group(0) @binding(2) var ext_tex_1 : texture_2d<f32>;
 
-[[group(0), binding(8)]] var ext_tex_plane_1_2 : texture_2d<f32>;
+@group(0) @binding(8) var ext_tex_plane_1_2 : texture_2d<f32>;
 
-[[group(0), binding(9)]] var<uniform> ext_tex_params_2 : ExternalTextureParams;
+@group(0) @binding(9) var<uniform> ext_tex_params_2 : ExternalTextureParams;
 
-[[group(0), binding(3)]] var ext_tex_2 : texture_2d<f32>;
+@group(0) @binding(3) var ext_tex_2 : texture_2d<f32>;
 
-[[group(1), binding(1)]] var ext_tex_plane_1_3 : texture_2d<f32>;
+@group(1) @binding(1) var ext_tex_plane_1_3 : texture_2d<f32>;
 
-[[group(1), binding(2)]] var<uniform> ext_tex_params_3 : ExternalTextureParams;
+@group(1) @binding(2) var<uniform> ext_tex_params_3 : ExternalTextureParams;
 
-[[group(1), binding(0)]] var ext_tex_3 : texture_2d<f32>;
+@group(1) @binding(0) var ext_tex_3 : texture_2d<f32>;
 
 fn textureSampleExternal(plane0 : texture_2d<f32>, plane1 : texture_2d<f32>, smp : sampler, coord : vec2<f32>, params : ExternalTextureParams) -> vec4<f32> {
   if ((params.numPlanes == 1u)) {
@@ -356,8 +351,8 @@ fn textureSampleExternal(plane0 : texture_2d<f32>, plane1 : texture_2d<f32>, smp
   return vec4<f32>(r, g, b, 1.0);
 }
 
-[[stage(fragment)]]
-fn main([[builtin(position)]] coord : vec4<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@builtin(position) coord : vec4<f32>) -> @location(0) vec4<f32> {
   return (((textureSampleExternal(ext_tex, ext_tex_plane_1, s, coord.xy, ext_tex_params) + textureSampleExternal(ext_tex_1, ext_tex_plane_1_1, s, coord.xy, ext_tex_params_1)) + textureSampleExternal(ext_tex_2, ext_tex_plane_1_2, s, coord.xy, ext_tex_params_2)) + textureSampleExternal(ext_tex_3, ext_tex_plane_1_3, s, coord.xy, ext_tex_params_3));
 }
 )";
@@ -382,24 +377,23 @@ fn f(t : texture_external, s : sampler) {
   textureSampleLevel(t, s, vec2<f32>(1.0, 2.0));
 }
 
-[[group(0), binding(0)]] var ext_tex : texture_external;
-[[group(0), binding(1)]] var smp : sampler;
+@group(0) @binding(0) var ext_tex : texture_external;
+@group(0) @binding(1) var smp : sampler;
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   f(ext_tex, smp);
 }
 )";
 
   auto* expect = R"(
-[[block]]
 struct ExternalTextureParams {
   numPlanes : u32;
   vr : f32;
   ug : f32;
   vg : f32;
   ub : f32;
-};
+}
 
 fn textureSampleExternal(plane0 : texture_2d<f32>, plane1 : texture_2d<f32>, smp : sampler, coord : vec2<f32>, params : ExternalTextureParams) -> vec4<f32> {
   if ((params.numPlanes == 1u)) {
@@ -419,15 +413,15 @@ fn f(t : texture_2d<f32>, ext_tex_plane_1 : texture_2d<f32>, ext_tex_params : Ex
   textureSampleExternal(t, ext_tex_plane_1, s, vec2<f32>(1.0, 2.0), ext_tex_params);
 }
 
-[[group(0), binding(2)]] var ext_tex_plane_1_1 : texture_2d<f32>;
+@group(0) @binding(2) var ext_tex_plane_1_1 : texture_2d<f32>;
 
-[[group(0), binding(3)]] var<uniform> ext_tex_params_1 : ExternalTextureParams;
+@group(0) @binding(3) var<uniform> ext_tex_params_1 : ExternalTextureParams;
 
-[[group(0), binding(0)]] var ext_tex : texture_2d<f32>;
+@group(0) @binding(0) var ext_tex : texture_2d<f32>;
 
-[[group(0), binding(1)]] var smp : sampler;
+@group(0) @binding(1) var smp : sampler;
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   f(ext_tex, ext_tex_plane_1_1, ext_tex_params_1, smp);
 }
@@ -449,24 +443,23 @@ fn f(s : sampler, t : texture_external) {
   textureSampleLevel(t, s, vec2<f32>(1.0, 2.0));
 }
 
-[[group(0), binding(0)]] var ext_tex : texture_external;
-[[group(0), binding(1)]] var smp : sampler;
+@group(0) @binding(0) var ext_tex : texture_external;
+@group(0) @binding(1) var smp : sampler;
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   f(smp, ext_tex);
 }
 )";
 
   auto* expect = R"(
-[[block]]
 struct ExternalTextureParams {
   numPlanes : u32;
   vr : f32;
   ug : f32;
   vg : f32;
   ub : f32;
-};
+}
 
 fn textureSampleExternal(plane0 : texture_2d<f32>, plane1 : texture_2d<f32>, smp : sampler, coord : vec2<f32>, params : ExternalTextureParams) -> vec4<f32> {
   if ((params.numPlanes == 1u)) {
@@ -486,15 +479,15 @@ fn f(s : sampler, t : texture_2d<f32>, ext_tex_plane_1 : texture_2d<f32>, ext_te
   textureSampleExternal(t, ext_tex_plane_1, s, vec2<f32>(1.0, 2.0), ext_tex_params);
 }
 
-[[group(0), binding(2)]] var ext_tex_plane_1_1 : texture_2d<f32>;
+@group(0) @binding(2) var ext_tex_plane_1_1 : texture_2d<f32>;
 
-[[group(0), binding(3)]] var<uniform> ext_tex_params_1 : ExternalTextureParams;
+@group(0) @binding(3) var<uniform> ext_tex_params_1 : ExternalTextureParams;
 
-[[group(0), binding(0)]] var ext_tex : texture_2d<f32>;
+@group(0) @binding(0) var ext_tex : texture_2d<f32>;
 
-[[group(0), binding(1)]] var smp : sampler;
+@group(0) @binding(1) var smp : sampler;
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   f(smp, ext_tex, ext_tex_plane_1_1, ext_tex_params_1);
 }
@@ -517,25 +510,24 @@ fn f(t : texture_external, s : sampler, t2 : texture_external) {
   textureSampleLevel(t2, s, vec2<f32>(1.0, 2.0));
 }
 
-[[group(0), binding(0)]] var ext_tex : texture_external;
-[[group(0), binding(1)]] var smp : sampler;
-[[group(0), binding(2)]] var ext_tex2 : texture_external;
+@group(0) @binding(0) var ext_tex : texture_external;
+@group(0) @binding(1) var smp : sampler;
+@group(0) @binding(2) var ext_tex2 : texture_external;
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   f(ext_tex, smp, ext_tex2);
 }
 )";
 
   auto* expect = R"(
-[[block]]
 struct ExternalTextureParams {
   numPlanes : u32;
   vr : f32;
   ug : f32;
   vg : f32;
   ub : f32;
-};
+}
 
 fn textureSampleExternal(plane0 : texture_2d<f32>, plane1 : texture_2d<f32>, smp : sampler, coord : vec2<f32>, params : ExternalTextureParams) -> vec4<f32> {
   if ((params.numPlanes == 1u)) {
@@ -556,21 +548,21 @@ fn f(t : texture_2d<f32>, ext_tex_plane_1 : texture_2d<f32>, ext_tex_params : Ex
   textureSampleExternal(t2, ext_tex_plane_1_1, s, vec2<f32>(1.0, 2.0), ext_tex_params_1);
 }
 
-[[group(0), binding(3)]] var ext_tex_plane_1_2 : texture_2d<f32>;
+@group(0) @binding(3) var ext_tex_plane_1_2 : texture_2d<f32>;
 
-[[group(0), binding(4)]] var<uniform> ext_tex_params_2 : ExternalTextureParams;
+@group(0) @binding(4) var<uniform> ext_tex_params_2 : ExternalTextureParams;
 
-[[group(0), binding(0)]] var ext_tex : texture_2d<f32>;
+@group(0) @binding(0) var ext_tex : texture_2d<f32>;
 
-[[group(0), binding(1)]] var smp : sampler;
+@group(0) @binding(1) var smp : sampler;
 
-[[group(0), binding(5)]] var ext_tex_plane_1_3 : texture_2d<f32>;
+@group(0) @binding(5) var ext_tex_plane_1_3 : texture_2d<f32>;
 
-[[group(0), binding(6)]] var<uniform> ext_tex_params_3 : ExternalTextureParams;
+@group(0) @binding(6) var<uniform> ext_tex_params_3 : ExternalTextureParams;
 
-[[group(0), binding(2)]] var ext_tex2 : texture_2d<f32>;
+@group(0) @binding(2) var ext_tex2 : texture_2d<f32>;
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   f(ext_tex, ext_tex_plane_1_2, ext_tex_params_2, smp, ext_tex2, ext_tex_plane_1_3, ext_tex_params_3);
 }
@@ -597,24 +589,23 @@ fn f(t : texture_external, s : sampler) {
   nested(t, s);
 }
 
-[[group(0), binding(0)]] var ext_tex : texture_external;
-[[group(0), binding(1)]] var smp : sampler;
+@group(0) @binding(0) var ext_tex : texture_external;
+@group(0) @binding(1) var smp : sampler;
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   f(ext_tex, smp);
 }
 )";
 
   auto* expect = R"(
-[[block]]
 struct ExternalTextureParams {
   numPlanes : u32;
   vr : f32;
   ug : f32;
   vg : f32;
   ub : f32;
-};
+}
 
 fn textureSampleExternal(plane0 : texture_2d<f32>, plane1 : texture_2d<f32>, smp : sampler, coord : vec2<f32>, params : ExternalTextureParams) -> vec4<f32> {
   if ((params.numPlanes == 1u)) {
@@ -638,15 +629,15 @@ fn f(t : texture_2d<f32>, ext_tex_plane_1_1 : texture_2d<f32>, ext_tex_params_1 
   nested(t, ext_tex_plane_1_1, ext_tex_params_1, s);
 }
 
-[[group(0), binding(2)]] var ext_tex_plane_1_2 : texture_2d<f32>;
+@group(0) @binding(2) var ext_tex_plane_1_2 : texture_2d<f32>;
 
-[[group(0), binding(3)]] var<uniform> ext_tex_params_2 : ExternalTextureParams;
+@group(0) @binding(3) var<uniform> ext_tex_params_2 : ExternalTextureParams;
 
-[[group(0), binding(0)]] var ext_tex : texture_2d<f32>;
+@group(0) @binding(0) var ext_tex : texture_2d<f32>;
 
-[[group(0), binding(1)]] var smp : sampler;
+@group(0) @binding(1) var smp : sampler;
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   f(ext_tex, ext_tex_plane_1_2, ext_tex_params_2, smp);
 }

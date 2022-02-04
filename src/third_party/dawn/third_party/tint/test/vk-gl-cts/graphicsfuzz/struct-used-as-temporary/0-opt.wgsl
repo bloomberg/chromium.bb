@@ -1,4 +1,3 @@
-[[block]]
 struct S {
   field0 : vec4<f32>;
 };
@@ -9,7 +8,7 @@ struct S_1 {
 
 var<private> x_3 : vec4<f32>;
 
-[[group(0), binding(0)]] var<uniform> x_5 : S;
+@group(0) @binding(0) var<uniform> x_5 : S;
 
 fn main_1() {
   let x_20 : vec4<f32> = x_5.field0;
@@ -21,11 +20,11 @@ fn main_1() {
 }
 
 struct main_out {
-  [[location(0)]]
+  @location(0)
   x_3_1 : vec4<f32>;
 };
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() -> main_out {
   main_1();
   return main_out(x_3);

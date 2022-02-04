@@ -75,6 +75,7 @@ namespace kernel_gen {
 namespace {
 
 using mlir::Value;
+using mlir::memref::RankOp;
 using mlir::scf::ParallelOp;
 
 constexpr llvm::StringRef kGpuBinaryAttrName = "gpu.binary";
@@ -98,10 +99,10 @@ bool IsSmallAlloc(Value alloc) {
     if (type.getRank() <= kMaxRankOfAllocatedMemRef) {
       for (Value alloc_arg : alloc.getDefiningOp()->getOperands()) {
         if (auto select = alloc_arg.getDefiningOp<mlir::SelectOp>()) {
-          if (!select.getTrueValue().getDefiningOp<mlir::RankOp>() ||
-              !select.getFalseValue().getDefiningOp<mlir::RankOp>())
+          if (!select.getTrueValue().getDefiningOp<RankOp>() ||
+              !select.getFalseValue().getDefiningOp<RankOp>())
             return false;
-        } else if (!alloc_arg.getDefiningOp<mlir::RankOp>()) {
+        } else if (!alloc_arg.getDefiningOp<RankOp>()) {
           return false;
         }
       }
@@ -197,14 +198,15 @@ Status LowerTFToJITInvocation(mlir::ModuleOp module,
                               llvm::ArrayRef<int64_t> tile_sizes,
                               llvm::ArrayRef<int64_t> unroll_factors,
                               int64_t max_supported_rank, bool enable_ftz,
-                              bool cpu_codegen) {
+                              bool index_64bit, bool cpu_codegen,
+                              bool jit_i64_indexed_for_large_tensors) {
   mlir::PassManager pm(module.getContext());
   applyTensorflowAndCLOptions(pm);
 
   pm.addNestedPass<mlir::FuncOp>(
       mlir::kernel_gen::transforms::CreateTFToJITInvocationPass(
           tile_sizes, unroll_factors, max_supported_rank, enable_ftz,
-          cpu_codegen));
+          index_64bit, cpu_codegen, jit_i64_indexed_for_large_tensors));
   pm.addPass(mlir::kernel_gen::tf_framework::CreateEmbedTFFrameworkPass());
   pm.addPass(
       mlir::kernel_gen::transforms::CreateComputeOpAndFuncBufferizePass());
@@ -219,10 +221,18 @@ Status LowerTFToJITInvocation(mlir::ModuleOp module,
 
 Status LowerTFtoLoops(mlir::ModuleOp module, llvm::ArrayRef<int64_t> tile_sizes,
                       llvm::ArrayRef<int64_t> unroll_factors,
-                      int64_t max_supported_rank, bool cpu_codegen) {
+                      int64_t max_supported_rank, bool enable_ftz,
+                      bool index_64bit, bool cpu_codegen,
+                      bool jit_i64_indexed_for_large_tensors) {
   mlir::PassManager pm(module.getContext());
   applyTensorflowAndCLOptions(pm);
-
+  if (jit_i64_indexed_for_large_tensors) {
+    pm.addNestedPass<mlir::FuncOp>(
+        mlir::kernel_gen::transforms::CreateTFToJITInvocationPass(
+            tile_sizes, unroll_factors, max_supported_rank, enable_ftz,
+            index_64bit, cpu_codegen,
+            /*jit_i64_indexed_for_large_tensors=*/true));
+  }
   pm.addNestedPass<mlir::FuncOp>(mlir::mhlo::createLegalizeTFNoFallbackPass(
       /*allow_partial_conversion=*/false));
   pm.addNestedPass<mlir::FuncOp>(
@@ -236,11 +246,13 @@ Status LowerTFtoLoops(mlir::ModuleOp module, llvm::ArrayRef<int64_t> tile_sizes,
   pm.addNestedPass<mlir::FuncOp>(mlir::createCanonicalizerPass());
   pm.addNestedPass<mlir::FuncOp>(
       mlir::kernel_gen::transforms::CreateShapeSimplification());
-  pm.addNestedPass<mlir::FuncOp>(mlir::mhlo::createBroadcastPropagationPass());
+  pm.addNestedPass<mlir::FuncOp>(mlir::mhlo::createMergeAssumingOpsPass());
   pm.addNestedPass<mlir::FuncOp>(mlir::createCSEPass());
 
-  // Transform HLO operations to LinAlg.
+  // Transform HLO operations to LinAlg and standard.
   pm.addNestedPass<mlir::FuncOp>(::mlir::mhlo::createLegalizeHloToLinalgPass());
+  pm.addNestedPass<mlir::FuncOp>(
+      mlir::mhlo::createLegalizeHloShapeOpsToStandardPass());
   pm.addPass(mlir::createCanonicalizerPass());
   pm.addNestedPass<mlir::FuncOp>(mlir::createCSEPass());
 
@@ -373,7 +385,9 @@ Status LowerLoopsToGPUorCPU(mlir::ModuleOp module, bool embed_memref_prints,
   pm.addNestedPass<::mlir::FuncOp>(mlir::createForLoopSpecializationPass());
   // Take launches to launches with kernels.
   if (!cpu_codegen) {
-    pm.addPass(::mlir::createGpuKernelOutliningPass());
+    const std::string gpuDataLayoutSpec =
+        "#dlti.dl_spec<#dlti.dl_entry<index,32:i32>>";
+    pm.addPass(mlir::createGpuKernelOutliningPass(gpuDataLayoutSpec));
   }
 
   pm.addPass(::mlir::createLowerAffinePass());
@@ -495,17 +509,21 @@ StatusOr<mlir::OwningModuleRef> GenerateKernelForTfCode(
     llvm::ArrayRef<std::string> architectures,
     llvm::ArrayRef<int64_t> tile_sizes, llvm::ArrayRef<int64_t> unroll_factors,
     int64_t max_supported_rank, bool embed_memref_prints, bool print_ptx,
-    bool print_llvmir, bool enable_ftz, bool cpu_codegen, bool jit_compile) {
+    bool print_llvmir, bool enable_ftz, bool index_64bit, bool cpu_codegen,
+    bool jit_compile, bool jit_i64_indexed_for_large_tensors) {
   TF_ASSIGN_OR_RETURN(mlir::OwningModuleRef module,
                       SetupContextAndParseModule(context, tf_code));
 
   if (jit_compile) {
-    TF_RETURN_IF_ERROR(
-        LowerTFToJITInvocation(module.get(), tile_sizes, unroll_factors,
-                               max_supported_rank, enable_ftz, cpu_codegen));
+    TF_RETURN_IF_ERROR(LowerTFToJITInvocation(
+        module.get(), tile_sizes, unroll_factors, max_supported_rank,
+        enable_ftz, index_64bit, cpu_codegen,
+        /*jit_i64_indexed_for_large_tensors=*/false));
   } else {
     TF_RETURN_IF_ERROR(LowerTFtoLoops(module.get(), tile_sizes, unroll_factors,
-                                      max_supported_rank, cpu_codegen));
+                                      max_supported_rank, enable_ftz,
+                                      index_64bit, cpu_codegen,
+                                      jit_i64_indexed_for_large_tensors));
     TF_RETURN_IF_ERROR(
         LowerLoopsToGPUorCPU(module.get(), embed_memref_prints, cpu_codegen));
     if (!cpu_codegen) {

@@ -21,7 +21,7 @@
 // Deal with i387 extended precision
 #if EIGEN_ARCH_i386 && !(EIGEN_ARCH_x86_64)
 
-#if EIGEN_COMP_GNUC_STRICT && EIGEN_GNUC_AT_LEAST(4,4)
+#if EIGEN_COMP_GNUC_STRICT
 #pragma GCC optimize ("-ffloat-store")
 #else
 #undef VERIFY_IS_EQUAL

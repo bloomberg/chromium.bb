@@ -331,7 +331,7 @@ static void SetupOptions(int argc, const char* argv[], Options* options) {
   options->force = NO;
 
   extern int optind;
-  char ch;
+  int ch;
 
   while ((ch = getopt(argc, (char* const*)argv, "p:k:t:c:i:hf?")) != -1) {
     switch (ch) {

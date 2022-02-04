@@ -27,7 +27,7 @@
 #include <cmath>
 #include <sstream>
 
-namespace dawn_native {
+namespace dawn::native {
     absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
         VertexFormatBaseType value,
         const absl::FormatConversionSpec& spec,
@@ -287,6 +287,19 @@ namespace dawn_native {
                                 std::isnan(descriptor->depthBiasClamp),
                             "Either depthBiasSlopeScale (%f) or depthBiasClamp (%f) is NaN.",
                             descriptor->depthBiasSlopeScale, descriptor->depthBiasClamp);
+
+            DAWN_INVALID_IF(
+                !format->HasDepth() && (descriptor->depthCompare != wgpu::CompareFunction::Always ||
+                                        descriptor->depthWriteEnabled),
+                "Depth stencil format (%s) doesn't have depth aspect while depthCompare (%s) is "
+                "not %s or depthWriteEnabled (%u) is true.",
+                descriptor->format, descriptor->depthCompare, wgpu::CompareFunction::Always,
+                descriptor->depthWriteEnabled);
+
+            DAWN_INVALID_IF(!format->HasStencil() && StencilTestEnabled(descriptor),
+                            "Depth stencil format (%s) doesn't have stencil aspect while stencil "
+                            "test or stencil write is enabled.",
+                            descriptor->format);
 
             return {};
         }
@@ -1049,4 +1062,4 @@ namespace dawn_native {
         return true;
     }
 
-}  // namespace dawn_native
+}  // namespace dawn::native

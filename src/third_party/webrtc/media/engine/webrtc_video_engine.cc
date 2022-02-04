@@ -479,7 +479,6 @@ WebRtcVideoChannel::WebRtcVideoSendStream::ConfigureVideoEncoderSettings(
                           (parameters_.config.rtp.ssrcs.size() == 1 ||
                            NumActiveStreams(rtp_parameters_) == 1);
 
-  bool frame_dropping = !is_screencast;
   bool denoising;
   bool codec_default_denoising = false;
   if (is_screencast) {
@@ -493,7 +492,6 @@ WebRtcVideoChannel::WebRtcVideoSendStream::ConfigureVideoEncoderSettings(
   if (absl::EqualsIgnoreCase(codec.name, kH264CodecName)) {
     webrtc::VideoCodecH264 h264_settings =
         webrtc::VideoEncoder::GetDefaultH264Settings();
-    h264_settings.frameDroppingOn = frame_dropping;
     return rtc::make_ref_counted<
         webrtc::VideoEncoderConfig::H264EncoderSpecificSettings>(h264_settings);
   }
@@ -503,7 +501,6 @@ WebRtcVideoChannel::WebRtcVideoSendStream::ConfigureVideoEncoderSettings(
     vp8_settings.automaticResizeOn = automatic_resize;
     // VP8 denoising is enabled by default.
     vp8_settings.denoisingOn = codec_default_denoising ? true : denoising;
-    vp8_settings.frameDroppingOn = frame_dropping;
     return rtc::make_ref_counted<
         webrtc::VideoEncoderConfig::Vp8EncoderSpecificSettings>(vp8_settings);
   }
@@ -525,15 +522,16 @@ WebRtcVideoChannel::WebRtcVideoSendStream::ConfigureVideoEncoderSettings(
     // Ensure frame dropping is always enabled.
     RTC_DCHECK(vp9_settings.frameDroppingOn);
     if (!is_screencast) {
-      webrtc::FieldTrialFlag interlayer_pred_experiment_enabled =
-          webrtc::FieldTrialFlag("Enabled");
+      webrtc::FieldTrialFlag interlayer_pred_experiment_enabled("Enabled");
       webrtc::FieldTrialEnum<webrtc::InterLayerPredMode> inter_layer_pred_mode(
           "inter_layer_pred_mode", webrtc::InterLayerPredMode::kOnKeyPic,
           {{"off", webrtc::InterLayerPredMode::kOff},
            {"on", webrtc::InterLayerPredMode::kOn},
            {"onkeypic", webrtc::InterLayerPredMode::kOnKeyPic}});
+      webrtc::FieldTrialFlag force_flexible_mode("FlexibleMode");
       webrtc::ParseFieldTrial(
-          {&interlayer_pred_experiment_enabled, &inter_layer_pred_mode},
+          {&interlayer_pred_experiment_enabled, &inter_layer_pred_mode,
+           &force_flexible_mode},
           call_->trials().Lookup("WebRTC-Vp9InterLayerPred"));
       if (interlayer_pred_experiment_enabled) {
         vp9_settings.interLayerPred = inter_layer_pred_mode;
@@ -541,6 +539,7 @@ WebRtcVideoChannel::WebRtcVideoSendStream::ConfigureVideoEncoderSettings(
         // Limit inter-layer prediction to key pictures by default.
         vp9_settings.interLayerPred = webrtc::InterLayerPredMode::kOnKeyPic;
       }
+      vp9_settings.flexibleMode = force_flexible_mode.Get();
     } else {
       // Multiple spatial layers vp9 screenshare needs flexible mode.
       vp9_settings.flexibleMode = vp9_settings.numberOfSpatialLayers > 1;
@@ -687,7 +686,7 @@ WebRtcVideoChannel::WebRtcVideoChannel(
     webrtc::VideoEncoderFactory* encoder_factory,
     webrtc::VideoDecoderFactory* decoder_factory,
     webrtc::VideoBitrateAllocatorFactory* bitrate_allocator_factory)
-    : VideoMediaChannel(config, call->network_thread()),
+    : VideoMediaChannel(call->network_thread(), config.enable_dscp),
       worker_thread_(call->worker_thread()),
       call_(call),
       unsignalled_ssrc_handler_(&default_unsignalled_ssrc_handler_),
@@ -1070,8 +1069,16 @@ webrtc::RtpParameters WebRtcVideoChannel::GetRtpSendParameters(
   // Need to add the common list of codecs to the send stream-specific
   // RTP parameters.
   for (const VideoCodec& codec : send_params_.codecs) {
-    rtp_params.codecs.push_back(codec.ToCodecParameters());
+    if (send_codec_ && send_codec_->codec.id == codec.id) {
+      // Put the current send codec to the front of the codecs list.
+      RTC_DCHECK_EQ(codec.name, send_codec_->codec.name);
+      rtp_params.codecs.insert(rtp_params.codecs.begin(),
+                               codec.ToCodecParameters());
+    } else {
+      rtp_params.codecs.push_back(codec.ToCodecParameters());
+    }
   }
+
   return rtp_params;
 }
 
@@ -1596,11 +1603,8 @@ void WebRtcVideoChannel::OnDemuxerCriteriaUpdatePending() {
 }
 
 void WebRtcVideoChannel::OnDemuxerCriteriaUpdateComplete() {
-  RTC_DCHECK_RUN_ON(&network_thread_checker_);
-  worker_thread_->PostTask(ToQueuedTask(task_safety_, [this] {
-    RTC_DCHECK_RUN_ON(&thread_checker_);
-    ++demuxer_criteria_completed_id_;
-  }));
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  ++demuxer_criteria_completed_id_;
 }
 
 bool WebRtcVideoChannel::SetSink(
@@ -1870,11 +1874,12 @@ void WebRtcVideoChannel::OnReadyToSend(bool ready) {
 }
 
 void WebRtcVideoChannel::OnNetworkRouteChanged(
-    const std::string& transport_name,
+    absl::string_view transport_name,
     const rtc::NetworkRoute& network_route) {
   RTC_DCHECK_RUN_ON(&network_thread_checker_);
   worker_thread_->PostTask(ToQueuedTask(
-      task_safety_, [this, name = transport_name, route = network_route] {
+      task_safety_,
+      [this, name = std::string(transport_name), route = network_route] {
         RTC_DCHECK_RUN_ON(&thread_checker_);
         webrtc::RtpTransportControllerSendInterface* transport =
             call_->GetTransportControllerSend();

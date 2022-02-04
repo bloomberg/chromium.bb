@@ -57,6 +57,7 @@ namespace v8_inspector {
 namespace V8RuntimeAgentImplState {
 static const char customObjectFormatterEnabled[] =
     "customObjectFormatterEnabled";
+static const char maxCallStackSizeToCapture[] = "maxCallStackSizeToCapture";
 static const char runtimeEnabled[] = "runtimeEnabled";
 static const char bindings[] = "bindings";
 static const char globalBindingsKey[] = "";
@@ -499,7 +500,13 @@ Response V8RuntimeAgentImpl::setMaxCallStackSizeToCapture(int size) {
     return Response::ServerError(
         "maxCallStackSizeToCapture should be non-negative");
   }
-  V8StackTraceImpl::maxCallStackSizeToCapture = size;
+  TRACE_EVENT_WITH_FLOW1(
+      TRACE_DISABLED_BY_DEFAULT("v8.inspector"),
+      "V8RuntimeAgentImpl::setMaxCallStackSizeToCapture", this,
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "size", size);
+  if (!m_enabled) return Response::ServerError("Runtime agent is not enabled");
+  m_state->setInteger(V8RuntimeAgentImplState::maxCallStackSizeToCapture, size);
+  m_inspector->debugger()->setMaxCallStackSizeToCapture(this, size);
   return Response::Success();
 }
 
@@ -802,6 +809,34 @@ Response V8RuntimeAgentImpl::removeBinding(const String16& name) {
   return Response::Success();
 }
 
+Response V8RuntimeAgentImpl::getExceptionDetails(
+    const String16& errorObjectId,
+    Maybe<protocol::Runtime::ExceptionDetails>* out_exceptionDetails) {
+  InjectedScript::ObjectScope scope(m_session, errorObjectId);
+  Response response = scope.initialize();
+  if (!response.IsSuccess()) return response;
+
+  const v8::Local<v8::Value> error = scope.object();
+  if (!error->IsNativeError())
+    return Response::InvalidParams("errorObjectId is not a JS error object");
+
+  const v8::Local<v8::Message> message =
+      v8::debug::CreateMessageFromException(m_inspector->isolate(), error);
+
+  response = scope.injectedScript()->createExceptionDetails(
+      message, error, scope.objectGroupName(), out_exceptionDetails);
+  if (!response.IsSuccess()) return response;
+
+  CHECK(out_exceptionDetails->isJust());
+
+  // When an exception object is present, `createExceptionDetails` assumes
+  // the exception is uncaught and will overwrite the text field to "Uncaught".
+  // Lets use the normal message text instead.
+  out_exceptionDetails->fromJust()->setText(
+      toProtocolString(m_inspector->isolate(), message->Get()));
+  return Response::Success();
+}
+
 void V8RuntimeAgentImpl::bindingCalled(const String16& name,
                                        const String16& payload,
                                        int executionContextId) {
@@ -839,6 +874,11 @@ void V8RuntimeAgentImpl::restore() {
           V8RuntimeAgentImplState::customObjectFormatterEnabled, false))
     m_session->setCustomObjectFormatterEnabled(true);
 
+  int size;
+  if (m_state->getInteger(V8RuntimeAgentImplState::maxCallStackSizeToCapture,
+                          &size))
+    m_inspector->debugger()->setMaxCallStackSizeToCapture(this, size);
+
   m_inspector->forEachContext(
       m_session->contextGroupId(),
       [this](InspectedContext* context) { addBindings(context); });
@@ -846,11 +886,15 @@ void V8RuntimeAgentImpl::restore() {
 
 Response V8RuntimeAgentImpl::enable() {
   if (m_enabled) return Response::Success();
+  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("v8.inspector"),
+                         "V8RuntimeAgentImpl::enable", this,
+                         TRACE_EVENT_FLAG_FLOW_OUT);
   m_inspector->client()->beginEnsureAllContextsInGroup(
       m_session->contextGroupId());
   m_enabled = true;
   m_state->setBoolean(V8RuntimeAgentImplState::runtimeEnabled, true);
-  m_inspector->enableStackCapturingIfNeeded();
+  m_inspector->debugger()->setMaxCallStackSizeToCapture(
+      this, V8StackTraceImpl::kDefaultMaxCallStackSizeToCapture);
   m_session->reportAllContexts(this);
   V8ConsoleMessageStorage* storage =
       m_inspector->ensureConsoleMessageStorage(m_session->contextGroupId());
@@ -862,10 +906,13 @@ Response V8RuntimeAgentImpl::enable() {
 
 Response V8RuntimeAgentImpl::disable() {
   if (!m_enabled) return Response::Success();
+  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("v8.inspector"),
+                         "V8RuntimeAgentImpl::disable", this,
+                         TRACE_EVENT_FLAG_FLOW_IN);
   m_enabled = false;
   m_state->setBoolean(V8RuntimeAgentImplState::runtimeEnabled, false);
   m_state->remove(V8RuntimeAgentImplState::bindings);
-  m_inspector->disableStackCapturingIfNeeded();
+  m_inspector->debugger()->setMaxCallStackSizeToCapture(this, -1);
   m_session->setCustomObjectFormatterEnabled(false);
   reset();
   m_inspector->client()->endEnsureAllContextsInGroup(

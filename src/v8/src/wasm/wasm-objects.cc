@@ -106,7 +106,6 @@ size_t EstimateNativeAllocationsSize(const WasmModule* module) {
 enum DispatchTableElements : int {
   kDispatchTableInstanceOffset,
   kDispatchTableIndexOffset,
-  kDispatchTableFunctionTableOffset,
   // Marker:
   kDispatchTableNumElements
 };
@@ -408,6 +407,7 @@ void WasmTableObject::Set(Isolate* isolate, Handle<WasmTableObject> table,
       return;
     case wasm::HeapType::kEq:
     case wasm::HeapType::kData:
+    case wasm::HeapType::kArray:
     case wasm::HeapType::kI31:
       // TODO(7748): Implement once we have struct/arrays/i31ref tables.
       UNREACHABLE();
@@ -449,6 +449,7 @@ Handle<Object> WasmTableObject::Get(Isolate* isolate,
     case wasm::HeapType::kEq:
     case wasm::HeapType::kI31:
     case wasm::HeapType::kData:
+    case wasm::HeapType::kArray:
     case wasm::HeapType::kAny:
       // TODO(7748): Implement once we have a story for struct/arrays/i31ref in
       // JS.
@@ -579,12 +580,14 @@ void WasmTableObject::UpdateDispatchTables(
         instance->module_object().native_module();
     wasm::WasmImportWrapperCache* cache = native_module->import_wrapper_cache();
     auto kind = compiler::WasmImportCallKind::kWasmToCapi;
-    wasm::WasmCode* wasm_code = cache->MaybeGet(kind, &sig, param_count);
+    wasm::WasmCode* wasm_code =
+        cache->MaybeGet(kind, &sig, param_count, wasm::kNoSuspend);
     if (wasm_code == nullptr) {
       wasm::WasmCodeRefScope code_ref_scope;
       wasm::WasmImportWrapperCache::ModificationScope cache_scope(cache);
       wasm_code = compiler::CompileWasmCapiCallWrapper(native_module, &sig);
-      wasm::WasmImportWrapperCache::CacheKey key(kind, &sig, param_count);
+      wasm::WasmImportWrapperCache::CacheKey key(kind, &sig, param_count,
+                                                 wasm::kNoSuspend);
       cache_scope[key] = wasm_code;
       wasm_code->IncRef();
       isolate->counters()->wasm_generated_code_size()->Increment(
@@ -797,13 +800,14 @@ void SetInstanceMemory(Handle<WasmInstanceObject> instance,
 }
 }  // namespace
 
-Handle<WasmMemoryObject> WasmMemoryObject::New(
+MaybeHandle<WasmMemoryObject> WasmMemoryObject::New(
     Isolate* isolate, MaybeHandle<JSArrayBuffer> maybe_buffer, int maximum) {
   Handle<JSArrayBuffer> buffer;
   if (!maybe_buffer.ToHandle(&buffer)) {
     // If no buffer was provided, create a zero-length one.
     auto backing_store =
         BackingStore::AllocateWasmMemory(isolate, 0, 0, SharedFlag::kNotShared);
+    if (!backing_store) return {};
     buffer = isolate->factory()->NewJSArrayBuffer(std::move(backing_store));
   }
 
@@ -1076,7 +1080,7 @@ FunctionTargetAndRef::FunctionTargetAndRef(
 
 void ImportedFunctionEntry::SetWasmToJs(
     Isolate* isolate, Handle<JSReceiver> callable,
-    const wasm::WasmCode* wasm_to_js_wrapper) {
+    const wasm::WasmCode* wasm_to_js_wrapper, Handle<HeapObject> suspender) {
   TRACE_IFT("Import callable 0x%" PRIxPTR "[%d] = {callable=0x%" PRIxPTR
             ", target=%p}\n",
             instance_->ptr(), index_, callable->ptr(),
@@ -1084,7 +1088,7 @@ void ImportedFunctionEntry::SetWasmToJs(
   DCHECK(wasm_to_js_wrapper->kind() == wasm::WasmCode::kWasmToJsWrapper ||
          wasm_to_js_wrapper->kind() == wasm::WasmCode::kWasmToCapiWrapper);
   Handle<WasmApiFunctionRef> ref =
-      isolate->factory()->NewWasmApiFunctionRef(callable);
+      isolate->factory()->NewWasmApiFunctionRef(callable, suspender);
   instance_->imported_function_refs().set(index_, *ref);
   instance_->imported_function_targets()[index_] =
       wasm_to_js_wrapper->instruction_start();
@@ -1385,16 +1389,18 @@ WasmInstanceObject::GetOrCreateWasmInternalFunction(
   Handle<Object> entry =
       FixedArray::get(module_object->export_wrappers(), wrapper_index, isolate);
 
-  Handle<Code> wrapper;
-  if (entry->IsCode()) {
-    wrapper = Handle<Code>::cast(entry);
+  Handle<CodeT> wrapper;
+  if (entry->IsCodeT()) {
+    wrapper = Handle<CodeT>::cast(entry);
   } else {
     // The wrapper may not exist yet if no function in the exports section has
     // this signature. We compile it and store the wrapper in the module for
     // later use.
-    wrapper = wasm::JSToWasmWrapperCompilationUnit::CompileJSToWasmWrapper(
-        isolate, function.sig, instance->module(), function.imported);
-    module_object->export_wrappers().set(wrapper_index, ToCodeT(*wrapper));
+    wrapper = ToCodeT(
+        wasm::JSToWasmWrapperCompilationUnit::CompileJSToWasmWrapper(
+            isolate, function.sig, instance->module(), function.imported),
+        isolate);
+    module_object->export_wrappers().set(wrapper_index, *wrapper);
   }
   auto external = Handle<WasmExternalFunction>::cast(WasmExportedFunction::New(
       isolate, instance, function_index,
@@ -1446,8 +1452,8 @@ void WasmInstanceObject::ImportWasmJSFunctionIntoTable(
     const wasm::WasmFeatures enabled = native_module->enabled_features();
     auto resolved = compiler::ResolveWasmImportCall(
         callable, sig, instance->module(), enabled);
-    compiler::WasmImportCallKind kind = resolved.first;
-    callable = resolved.second;  // Update to ultimate target.
+    compiler::WasmImportCallKind kind = resolved.kind;
+    callable = resolved.callable;  // Update to ultimate target.
     DCHECK_NE(compiler::WasmImportCallKind::kLinkError, kind);
     wasm::CompilationEnv env = native_module->CreateCompilationEnv();
     // {expected_arity} should only be used if kind != kJSFunctionArityMismatch.
@@ -1457,9 +1463,13 @@ void WasmInstanceObject::ImportWasmJSFunctionIntoTable(
                            ->shared()
                            .internal_formal_parameter_count_without_receiver();
     }
+    wasm::Suspend suspend =
+        resolved.suspender.is_null() || resolved.suspender->IsUndefined()
+            ? wasm::kNoSuspend
+            : wasm::kSuspend;
     // TODO(manoskouk): Reuse js_function->wasm_to_js_wrapper_code().
     wasm::WasmCompilationResult result = compiler::CompileWasmImportCallWrapper(
-        &env, kind, sig, false, expected_arity);
+        &env, kind, sig, false, expected_arity, suspend);
     wasm::CodeSpaceWriteScope write_scope(native_module);
     std::unique_ptr<wasm::WasmCode> wasm_code = native_module->AddCode(
         result.func_index, result.code_desc, result.frame_slot_count,
@@ -1477,8 +1487,9 @@ void WasmInstanceObject::ImportWasmJSFunctionIntoTable(
   }
 
   // Update the dispatch table.
+  Handle<HeapObject> suspender = handle(js_function->GetSuspender(), isolate);
   Handle<WasmApiFunctionRef> ref =
-      isolate->factory()->NewWasmApiFunctionRef(callable);
+      isolate->factory()->NewWasmApiFunctionRef(callable, suspender);
   WasmIndirectFunctionTable::cast(
       instance->indirect_function_tables().get(table_index))
       .Set(entry_index, sig_id, call_target, *ref);
@@ -1784,6 +1795,8 @@ Handle<WasmSuspenderObject> WasmSuspenderObject::New(Isolate* isolate) {
   auto suspender = Handle<WasmSuspenderObject>::cast(
       isolate->factory()->NewJSObject(suspender_cons, AllocationType::kOld));
   suspender->set_continuation(ReadOnlyRoots(isolate).undefined_value());
+  suspender->set_parent(ReadOnlyRoots(isolate).undefined_value());
+  suspender->set_state(Inactive);
   return suspender;
 }
 
@@ -1843,7 +1856,7 @@ uint32_t WasmExceptionPackage::GetEncodedSize(const wasm::WasmTag* tag) {
 bool WasmExportedFunction::IsWasmExportedFunction(Object object) {
   if (!object.IsJSFunction()) return false;
   JSFunction js_function = JSFunction::cast(object);
-  Code code = js_function.code();
+  CodeT code = js_function.code();
   if (CodeKind::JS_TO_WASM_FUNCTION != code.kind() &&
       code.builtin_id() != Builtin::kGenericJSToWasmWrapper &&
       code.builtin_id() != Builtin::kWasmReturnPromiseOnSuspend) {
@@ -1882,8 +1895,7 @@ Handle<WasmCapiFunction> WasmCapiFunction::New(
   Handle<Map> rtt = isolate->factory()->wasm_internal_function_map();
   Handle<WasmCapiFunctionData> fun_data =
       isolate->factory()->NewWasmCapiFunctionData(
-          call_target, embedder_data,
-          isolate->builtins()->code_handle(Builtin::kIllegal), rtt,
+          call_target, embedder_data, BUILTIN_CODE(isolate, Illegal), rtt,
           serialized_signature);
   Handle<SharedFunctionInfo> shared =
       isolate->factory()->NewSharedFunctionInfoForWasmCapiFunction(fun_data);
@@ -1904,7 +1916,7 @@ int WasmExportedFunction::function_index() {
 
 Handle<WasmExportedFunction> WasmExportedFunction::New(
     Isolate* isolate, Handle<WasmInstanceObject> instance, int func_index,
-    int arity, Handle<Code> export_wrapper) {
+    int arity, Handle<CodeT> export_wrapper) {
   DCHECK(
       CodeKind::JS_TO_WASM_FUNCTION == export_wrapper->kind() ||
       (export_wrapper->is_builtin() &&
@@ -1920,7 +1932,9 @@ Handle<WasmExportedFunction> WasmExportedFunction::New(
   const wasm::FunctionSig* sig = instance->module()->functions[func_index].sig;
   Address call_target = instance->GetCallTarget(func_index);
   Handle<Map> rtt;
-  if (FLAG_experimental_wasm_gc) {
+  bool has_gc =
+      instance->module_object().native_module()->enabled_features().has_gc();
+  if (has_gc) {
     int sig_index = instance->module()->functions[func_index].sig_index;
     // TODO(7748): Create funcref RTTs lazily?
     rtt = handle(Map::cast(instance->managed_object_maps().get(sig_index)),
@@ -2028,7 +2042,8 @@ bool WasmJSFunction::IsWasmJSFunction(Object object) {
 
 Handle<WasmJSFunction> WasmJSFunction::New(Isolate* isolate,
                                            const wasm::FunctionSig* sig,
-                                           Handle<JSReceiver> callable) {
+                                           Handle<JSReceiver> callable,
+                                           Handle<HeapObject> suspender) {
   DCHECK_LE(sig->all().size(), kMaxInt);
   int sig_size = static_cast<int>(sig->all().size());
   int return_count = static_cast<int>(sig->return_count());
@@ -2040,8 +2055,9 @@ Handle<WasmJSFunction> WasmJSFunction::New(Isolate* isolate,
   }
   // TODO(wasm): Think about caching and sharing the JS-to-JS wrappers per
   // signature instead of compiling a new one for every instantiation.
-  Handle<Code> wrapper_code =
-      compiler::CompileJSToJSWrapper(isolate, sig, nullptr).ToHandleChecked();
+  Handle<CodeT> wrapper_code = ToCodeT(
+      compiler::CompileJSToJSWrapper(isolate, sig, nullptr).ToHandleChecked(),
+      isolate);
 
   // WasmJSFunctions use on-heap Code objects as call targets, so we can't
   // cache the target address, unless the WasmJSFunction wraps a
@@ -2057,7 +2073,7 @@ Handle<WasmJSFunction> WasmJSFunction::New(Isolate* isolate,
   Handle<Map> rtt = factory->wasm_internal_function_map();
   Handle<WasmJSFunctionData> function_data = factory->NewWasmJSFunctionData(
       call_target, callable, return_count, parameter_count, serialized_sig,
-      wrapper_code, rtt);
+      wrapper_code, rtt, suspender);
 
   if (wasm::WasmFeatures::FromIsolate(isolate).has_typed_funcref()) {
     using CK = compiler::WasmImportCallKind;
@@ -2073,9 +2089,14 @@ Handle<WasmJSFunction> WasmJSFunction::New(Isolate* isolate,
     }
     // TODO(wasm): Think about caching and sharing the wasm-to-JS wrappers per
     // signature instead of compiling a new one for every instantiation.
-    Handle<Code> wasm_to_js_wrapper_code =
-        compiler::CompileWasmToJSWrapper(isolate, sig, kind, expected_arity)
-            .ToHandleChecked();
+    wasm::Suspend suspend =
+        suspender.is_null() ? wasm::kNoSuspend : wasm::kSuspend;
+    DCHECK_IMPLIES(!suspender.is_null(), !suspender->IsUndefined());
+    Handle<CodeT> wasm_to_js_wrapper_code =
+        ToCodeT(compiler::CompileWasmToJSWrapper(isolate, sig, kind,
+                                                 expected_arity, suspend)
+                    .ToHandleChecked(),
+                isolate);
     function_data->internal().set_code(*wasm_to_js_wrapper_code);
   }
 
@@ -2101,6 +2122,12 @@ JSReceiver WasmJSFunction::GetCallable() const {
   return JSReceiver::cast(WasmApiFunctionRef::cast(
                               shared().wasm_js_function_data().internal().ref())
                               .callable());
+}
+
+HeapObject WasmJSFunction::GetSuspender() const {
+  return WasmApiFunctionRef::cast(
+             shared().wasm_js_function_data().internal().ref())
+      .suspender();
 }
 
 const wasm::FunctionSig* WasmJSFunction::GetSignature(Zone* zone) {
@@ -2196,8 +2223,9 @@ bool TypecheckJSObject(Isolate* isolate, const WasmModule* module,
     case kOptRef:
       if (value->IsNull(isolate)) return true;
       V8_FALLTHROUGH;
-    case kRef:
-      switch (expected.heap_representation()) {
+    case kRef: {
+      HeapType::Representation repr = expected.heap_representation();
+      switch (repr) {
         case HeapType::kFunc: {
           if (!(WasmExternalFunction::IsWasmExternalFunction(*value) ||
                 WasmCapiFunction::IsWasmCapiFunction(*value))) {
@@ -2212,6 +2240,7 @@ bool TypecheckJSObject(Isolate* isolate, const WasmModule* module,
         case HeapType::kAny:
           return true;
         case HeapType::kData:
+        case HeapType::kArray:
         case HeapType::kEq:
         case HeapType::kI31: {
           // TODO(7748): Change this when we have a decision on the JS API for
@@ -2229,22 +2258,21 @@ bool TypecheckJSObject(Isolate* isolate, const WasmModule* module,
             value = it.GetDataValue();
           }
 
-          if (expected.is_reference_to(HeapType::kEq)) return true;
-
-          if (expected.is_reference_to(HeapType::kData)) {
-            if (value->IsSmi()) {
-              *error_message = "dataref-typed object must be a heap object";
-              return false;
-            }
-            return true;
-          } else {
-            DCHECK(expected.is_reference_to(HeapType::kI31));
+          if (repr == HeapType::kI31) {
             if (!value->IsSmi()) {
               *error_message = "i31ref-typed object cannot be a heap object";
               return false;
             }
             return true;
           }
+
+          if (!((repr == HeapType::kEq && value->IsSmi()) ||
+                (repr != HeapType::kArray && value->IsWasmStruct()) ||
+                value->IsWasmArray())) {
+            *error_message = "object incompatible with wasm type";
+            return false;
+          }
+          return true;
         }
         default:
           if (module == nullptr) {
@@ -2314,6 +2342,7 @@ bool TypecheckJSObject(Isolate* isolate, const WasmModule* module,
               "Javascript is not supported yet.";
           return false;
       }
+    }
     case kRtt:
     case kRttWithDepth:
       // TODO(7748): Implement when the JS API for rtts is decided on.

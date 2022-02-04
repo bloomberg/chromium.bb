@@ -81,9 +81,13 @@ struct FieldAccess {
   ConstFieldInfo const_field_info;      // the constness of this access, and the
                                     // field owner map, if the access is const
   bool is_store_in_literal;  // originates from a kStoreInLiteral access
-#ifdef V8_HEAP_SANDBOX
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
   ExternalPointerTag external_pointer_tag = kExternalPointerNullTag;
 #endif
+  bool maybe_initializing_or_transitioning_store;  // store is potentially
+                                                   // initializing a newly
+                                                   // allocated object or part
+                                                   // of a map transition.
 
   FieldAccess()
       : base_is_tagged(kTaggedBase),
@@ -92,18 +96,18 @@ struct FieldAccess {
         machine_type(MachineType::None()),
         write_barrier_kind(kFullWriteBarrier),
         const_field_info(ConstFieldInfo::None()),
-        is_store_in_literal(false) {}
+        is_store_in_literal(false),
+        maybe_initializing_or_transitioning_store(false) {}
 
   FieldAccess(BaseTaggedness base_is_tagged, int offset, MaybeHandle<Name> name,
               MaybeHandle<Map> map, Type type, MachineType machine_type,
               WriteBarrierKind write_barrier_kind,
               ConstFieldInfo const_field_info = ConstFieldInfo::None(),
-              bool is_store_in_literal = false
-#ifdef V8_HEAP_SANDBOX
-              ,
-              ExternalPointerTag external_pointer_tag = kExternalPointerNullTag
+              bool is_store_in_literal = false,
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+              ExternalPointerTag external_pointer_tag = kExternalPointerNullTag,
 #endif
-              )
+              bool maybe_initializing_or_transitioning_store = false)
       : base_is_tagged(base_is_tagged),
         offset(offset),
         name(name),
@@ -112,12 +116,12 @@ struct FieldAccess {
         machine_type(machine_type),
         write_barrier_kind(write_barrier_kind),
         const_field_info(const_field_info),
-        is_store_in_literal(is_store_in_literal)
-#ifdef V8_HEAP_SANDBOX
-        ,
-        external_pointer_tag(external_pointer_tag)
+        is_store_in_literal(is_store_in_literal),
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+        external_pointer_tag(external_pointer_tag),
 #endif
-  {
+        maybe_initializing_or_transitioning_store(
+            maybe_initializing_or_transitioning_store) {
     DCHECK_GE(offset, 0);
     DCHECK_IMPLIES(
         machine_type.IsMapWord(),
@@ -1043,7 +1047,8 @@ class V8_EXPORT_PRIVATE SimplifiedOperatorBuilder final
 
   const Operator* LoadFieldByIndex();
   const Operator* LoadField(FieldAccess const&);
-  const Operator* StoreField(FieldAccess const&);
+  const Operator* StoreField(FieldAccess const&,
+                             bool maybe_initializing_or_transitioning = true);
 
   // load-element [base + index]
   const Operator* LoadElement(ElementAccess const&);
@@ -1068,10 +1073,22 @@ class V8_EXPORT_PRIVATE SimplifiedOperatorBuilder final
                                                      Type value_type);
 
   // load-from-object [base + offset]
+  // This operator comes in two flavors: LoadImmutableFromObject guarantees that
+  // the underlying object field will be initialized at most once for the
+  // duration of the program. This enables more optimizations in
+  // CsaLoadElimination.
+  // Note: LoadImmutableFromObject is unrelated to LoadImmutable and is lowered
+  // into a regular Load.
   const Operator* LoadFromObject(ObjectAccess const&);
+  const Operator* LoadImmutableFromObject(ObjectAccess const&);
 
   // store-to-object [base + offset], value
+  // This operator comes in two flavors: InitializeImmutableInObject guarantees
+  // that the underlying object field has not and will not be initialized again
+  // for the duration of the program. This enables more optimizations in
+  // CsaLoadElimination.
   const Operator* StoreToObject(ObjectAccess const&);
+  const Operator* InitializeImmutableInObject(ObjectAccess const&);
 
   // load-typed-element buffer, [base + external + index]
   const Operator* LoadTypedElement(ExternalArrayType const&);

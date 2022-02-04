@@ -26,7 +26,7 @@
 #include "dawn_native/vulkan/NativeSwapChainImplVk.h"
 #include "dawn_native/vulkan/TextureVk.h"
 
-namespace dawn_native { namespace vulkan {
+namespace dawn::native::vulkan {
 
     VkInstance GetInstance(WGPUDevice device) {
         Device* backendDevice = ToBackend(FromAPI(device));
@@ -83,7 +83,7 @@ namespace dawn_native { namespace vulkan {
 
     WGPUTexture WrapVulkanImage(WGPUDevice device, const ExternalImageDescriptorVk* descriptor) {
 #if defined(DAWN_PLATFORM_LINUX)
-        switch (descriptor->type) {
+        switch (descriptor->GetType()) {
             case ExternalImageType::OpaqueFD:
             case ExternalImageType::DmaBuf: {
                 Device* backendDevice = ToBackend(FromAPI(device));
@@ -108,7 +108,7 @@ namespace dawn_native { namespace vulkan {
             return false;
         }
 #if defined(DAWN_PLATFORM_LINUX)
-        switch (info->type) {
+        switch (info->GetType()) {
             case ExternalImageType::OpaqueFD:
             case ExternalImageType::DmaBuf: {
                 Texture* backendTexture = ToBackend(FromAPI(texture));
@@ -126,4 +126,4 @@ namespace dawn_native { namespace vulkan {
 #endif  // DAWN_PLATFORM_LINUX
     }
 
-}}  // namespace dawn_native::vulkan
+}  // namespace dawn::native::vulkan

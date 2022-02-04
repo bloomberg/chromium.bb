@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "third_party/base/compiler_specific.h"
 
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
 
 #include <mach/vm_page_size.h>
 
@@ -39,10 +39,10 @@
 namespace pdfium {
 namespace {
 
-#if !defined(OS_APPLE)
+#if !BUILDFLAG(IS_APPLE)
 
 constexpr ALWAYS_INLINE int PageAllocationGranularityShift() {
-#if defined(OS_WIN) || defined(ARCH_CPU_PPC64)
+#if BUILDFLAG(IS_WIN) || defined(ARCH_CPU_PPC64)
   // Modern ppc64 systems support 4kB (shift = 12) and 64kB (shift = 16) page
   // sizes.  Since 64kB is the de facto standard on the platform and binaries
   // compiled for 64kB are likely to work on 4kB systems, 64kB is a good choice
@@ -63,7 +63,7 @@ namespace base {
 
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 PageAllocationGranularity() {
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   return vm_page_size;
 #else
   return 1ULL << PageAllocationGranularityShift();
@@ -82,7 +82,7 @@ PageAllocationGranularityBaseMask() {
 
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 SystemPageSize() {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   return 4096;
 #else
   return PageAllocationGranularity();
@@ -105,7 +105,7 @@ static constexpr size_t kPageMetadataSize = 1 << kPageMetadataShift;
 // See DecommitSystemPages(), this is not guaranteed to be synchronous on all
 // platforms.
 static constexpr bool kDecommittedPagesAreAlwaysZeroed =
-#if defined(OS_APPLE)
+#if BUILDFLAG(IS_APPLE)
     false;
 #else
     true;

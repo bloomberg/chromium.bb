@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include <float.h>
 #endif
 
@@ -104,6 +104,9 @@ double Tween::CalculateValue(Tween::Type type, double state) {
 
     case ACCEL_0_80_DECEL_80:
       return gfx::CubicBezier(0, 0.8, 0.2, 1).Solve(state);
+
+    case ACCEL_0_100_DECEL_80:
+      return gfx::CubicBezier(0, 1, 0.2, 1).Solve(state);
   }
 
   NOTREACHED();
@@ -188,7 +191,7 @@ int Tween::IntValueBetween(double value, int start, int target) {
     delta--;
   else
     delta++;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   return start + static_cast<int>(value * _nextafter(delta, 0));
 #else
   return start + static_cast<int>(value * nextafter(delta, 0));

@@ -47,6 +47,8 @@ cc_library(
         ":SkCpu_src",
         ":SkCubicClipper_src",
         ":SkCubicMap_src",
+        ":SkCustomMeshPriv_src",
+        ":SkCustomMesh_src",
         ":SkDataTable_src",
         ":SkData_src",
         ":SkDebug_src",
@@ -98,7 +100,6 @@ cc_library(
         ":SkMD5_src",
         ":SkMallocPixelRef_src",
         ":SkMalloc_src",
-        ":SkMarkerStack_src",
         ":SkMaskBlurFilter_src",
         ":SkMaskCache_src",
         ":SkMaskFilter_src",
@@ -152,7 +153,6 @@ cc_library(
         ":SkRect_src",
         ":SkRegion_path_src",
         ":SkRegion_src",
-        ":SkRemoteGlyphCache_src",
         ":SkResourceCache_src",
         ":SkScalar_src",
         ":SkScalerCache_src",
@@ -993,13 +993,13 @@ generated_cc_atom(
         ":SkCanvasPriv_hdr",
         ":SkClipStack_hdr",
         ":SkColorFilterBase_hdr",
+        ":SkCustomMeshPriv_hdr",
         ":SkDraw_hdr",
         ":SkGlyphRun_hdr",
         ":SkImageFilterCache_hdr",
         ":SkImageFilter_Base_hdr",
         ":SkLatticeIter_hdr",
         ":SkMSAN_hdr",
-        ":SkMarkerStack_hdr",
         ":SkMatrixPriv_hdr",
         ":SkMatrixUtils_hdr",
         ":SkPaintPriv_hdr",
@@ -1072,8 +1072,8 @@ generated_cc_atom(
         "//include/core:SkRect_hdr",
         "//include/core:SkRegion_hdr",
         "//include/core:SkShader_hdr",
-        "//include/private:GrResourceKey_hdr",
         "//include/private:SkDeque_hdr",
+        "//src/gpu:ResourceKey_hdr",
     ],
 )
 
@@ -1494,6 +1494,7 @@ generated_cc_atom(
         "//include/core:SkBlender_hdr",
         "//include/core:SkCanvas_hdr",
         "//include/core:SkColor_hdr",
+        "//include/core:SkCustomMesh_hdr",
         "//include/core:SkRefCnt_hdr",
         "//include/core:SkRegion_hdr",
         "//include/core:SkShader_hdr",
@@ -1515,7 +1516,6 @@ generated_cc_atom(
         ":SkImageFilter_Base_hdr",
         ":SkImagePriv_hdr",
         ":SkLatticeIter_hdr",
-        ":SkMarkerStack_hdr",
         ":SkMatrixPriv_hdr",
         ":SkOpts_hdr",
         ":SkPathPriv_hdr",
@@ -2147,7 +2147,7 @@ generated_cc_atom(
         "//src/gpu:GrRecordingContextPriv_hdr",
         "//src/gpu:SkGr_hdr",
         "//src/gpu/text:GrSDFTControl_hdr",
-        "//src/gpu/text:GrTextBlobCache_hdr",
+        "//src/gpu/text:GrTextBlobRedrawCoordinator_hdr",
         "//src/gpu/v1:SurfaceDrawContext_v1_hdr",
     ],
 )
@@ -2196,6 +2196,7 @@ generated_cc_atom(
     deps = [
         ":SkMask_hdr",
         ":SkMathPriv_hdr",
+        ":SkStrikeForGPU_hdr",
         "//include/core:SkPath_hdr",
         "//include/core:SkTypes_hdr",
         "//include/private:SkChecksum_hdr",
@@ -2604,23 +2605,6 @@ generated_cc_atom(
         ":SkSafeMath_hdr",
         "//include/private:SkMalloc_hdr",
     ],
-)
-
-generated_cc_atom(
-    name = "SkMarkerStack_hdr",
-    hdrs = ["SkMarkerStack.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//include/core:SkM44_hdr",
-        "//include/core:SkRefCnt_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "SkMarkerStack_src",
-    srcs = ["SkMarkerStack.cpp"],
-    visibility = ["//:__subpackages__"],
-    deps = [":SkMarkerStack_hdr"],
 )
 
 generated_cc_atom(
@@ -3639,10 +3623,7 @@ generated_cc_atom(
     name = "SkPromiseImageTexture_src",
     srcs = ["SkPromiseImageTexture.cpp"],
     visibility = ["//:__subpackages__"],
-    deps = [
-        ":SkMessageBus_hdr",
-        "//include/core:SkPromiseImageTexture_hdr",
-    ],
+    deps = ["//include/core:SkPromiseImageTexture_hdr"],
 )
 
 generated_cc_atom(
@@ -4099,44 +4080,6 @@ generated_cc_atom(
 )
 
 generated_cc_atom(
-    name = "SkRemoteGlyphCache_hdr",
-    hdrs = ["SkRemoteGlyphCache.h"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        "//include/core:SkData_hdr",
-        "//include/core:SkRefCnt_hdr",
-        "//include/utils:SkNoDrawCanvas_hdr",
-    ],
-)
-
-generated_cc_atom(
-    name = "SkRemoteGlyphCache_src",
-    srcs = ["SkRemoteGlyphCache.cpp"],
-    visibility = ["//:__subpackages__"],
-    deps = [
-        ":SkDevice_hdr",
-        ":SkDraw_hdr",
-        ":SkEnumerate_hdr",
-        ":SkGlyphRun_hdr",
-        ":SkRemoteGlyphCache_hdr",
-        ":SkScalerCache_hdr",
-        ":SkStrikeCache_hdr",
-        ":SkStrikeForGPU_hdr",
-        ":SkTLazy_hdr",
-        ":SkTraceEvent_hdr",
-        ":SkTypeface_remote_hdr",
-        "//include/core:SkSerialProcs_hdr",
-        "//include/core:SkSpan_hdr",
-        "//include/core:SkTypeface_hdr",
-        "//include/gpu:GrContextOptions_hdr",
-        "//include/private:SkChecksum_hdr",
-        "//include/private:SkTHash_hdr",
-        "//src/gpu:GrDrawOpAtlas_hdr",
-        "//src/gpu/text:GrSDFTControl_hdr",
-    ],
-)
-
-generated_cc_atom(
     name = "SkResourceCache_hdr",
     hdrs = ["SkResourceCache.h"],
     visibility = ["//:__subpackages__"],
@@ -4203,6 +4146,7 @@ generated_cc_atom(
         "//include/effects:SkRuntimeEffect_hdr",
         "//include/gpu:GrRecordingContext_hdr",
         "//include/private:SkMutex_hdr",
+        "//include/sksl:DSLCore_hdr",
         "//src/gpu:GrColorInfo_hdr",
         "//src/gpu:GrFPArgs_hdr",
         "//src/gpu:GrImageInfo_hdr",
@@ -4213,10 +4157,12 @@ generated_cc_atom(
         "//src/image:SkImage_Gpu_hdr",
         "//src/sksl:SkSLAnalysis_hdr",
         "//src/sksl:SkSLCompiler_hdr",
+        "//src/sksl:SkSLSharedCompiler_hdr",
         "//src/sksl:SkSLUtil_hdr",
         "//src/sksl/codegen:SkSLVMCodeGenerator_hdr",
         "//src/sksl/ir:SkSLFunctionDefinition_hdr",
         "//src/sksl/ir:SkSLVarDeclarations_hdr",
+        "//src/sksl/tracing:SkVMDebugTrace_hdr",
     ],
 )
 
@@ -4552,6 +4498,8 @@ generated_cc_atom(
         "//include/core:SkBitmap_hdr",
         "//include/core:SkCanvas_hdr",
         "//include/core:SkImage_hdr",
+        "//include/core:SkMatrix_hdr",
+        "//include/core:SkTileMode_hdr",
         "//include/gpu:GrDirectContext_hdr",
         "//include/gpu:GrRecordingContext_hdr",
         "//src/gpu:GrImageInfo_hdr",
@@ -4560,6 +4508,7 @@ generated_cc_atom(
         "//src/gpu:GrTextureProxy_hdr",
         "//src/image:SkImage_Base_hdr",
         "//src/image:SkImage_Gpu_hdr",
+        "//src/shaders:SkImageShader_hdr",
     ],
 )
 
@@ -4710,7 +4659,6 @@ generated_cc_atom(
     hdrs = ["SkStrikeForGPU.h"],
     visibility = ["//:__subpackages__"],
     deps = [
-        ":SkGlyph_hdr",
         "//include/core:SkPaint_hdr",
         "//include/core:SkPoint_hdr",
         "//include/core:SkSpan_hdr",
@@ -5043,7 +4991,7 @@ generated_cc_atom(
         "//include/core:SkRSXform_hdr",
         "//include/core:SkTextBlob_hdr",
         "//include/core:SkTypeface_hdr",
-        "//src/gpu/text:GrTextBlobCache_hdr",
+        "//src/gpu/text:GrTextBlobRedrawCoordinator_hdr",
     ],
 )
 
@@ -5129,11 +5077,11 @@ generated_cc_atom(
         ":SkAdvancedTypefaceMetrics_hdr",
         ":SkDescriptor_hdr",
         ":SkFontDescriptor_hdr",
-        ":SkRemoteGlyphCache_hdr",
         ":SkScalerContext_hdr",
         "//include/core:SkFontStyle_hdr",
         "//include/core:SkPaint_hdr",
         "//include/core:SkTypeface_hdr",
+        "//include/private/chromium:SkChromeRemoteGlyphCache_hdr",
     ],
 )
 
@@ -5142,12 +5090,12 @@ generated_cc_atom(
     srcs = ["SkTypeface_remote.cpp"],
     visibility = ["//:__subpackages__"],
     deps = [
-        ":SkRemoteGlyphCache_hdr",
         ":SkScalerCache_hdr",
         ":SkStrikeCache_hdr",
         ":SkTraceEvent_hdr",
         ":SkTypeface_remote_hdr",
         "//include/core:SkPaint_hdr",
+        "//include/private/chromium:SkChromeRemoteGlyphCache_hdr",
     ],
 )
 
@@ -5282,6 +5230,7 @@ generated_cc_atom(
         "//include/private:SkHalf_hdr",
         "//include/private:SkTFitsIn_hdr",
         "//include/private:SkThreadID_hdr",
+        "//src/utils:SkVMVisualizer_hdr",
     ],
 )
 
@@ -5545,5 +5494,115 @@ generated_cc_atom(
         "//include/core:SkTypes_hdr",
         "//include/private:SkTemplates_hdr",
         "//include/private:SkTo_hdr",
+    ],
+)
+
+generated_cc_atom(
+    name = "SkChromeRemoteGlyphCache_src",
+    srcs = ["SkChromeRemoteGlyphCache.cpp"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":SkDevice_hdr",
+        ":SkDraw_hdr",
+        ":SkEnumerate_hdr",
+        ":SkGlyphRun_hdr",
+        ":SkScalerCache_hdr",
+        ":SkStrikeCache_hdr",
+        ":SkStrikeForGPU_hdr",
+        ":SkTLazy_hdr",
+        ":SkTraceEvent_hdr",
+        ":SkTypeface_remote_hdr",
+        "//include/core:SkSerialProcs_hdr",
+        "//include/core:SkSpan_hdr",
+        "//include/core:SkTypeface_hdr",
+        "//include/gpu:GrContextOptions_hdr",
+        "//include/private:SkChecksum_hdr",
+        "//include/private:SkTHash_hdr",
+        "//include/private/chromium:SkChromeRemoteGlyphCache_hdr",
+        "//src/gpu:GrDrawOpAtlas_hdr",
+        "//src/gpu/text:GrSDFTControl_hdr",
+    ],
+)
+
+generated_cc_atom(
+    name = "SkCustomMeshPriv_hdr",
+    hdrs = ["SkCustomMeshPriv.h"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//include/core:SkCustomMesh_hdr",
+        "//include/private:GrTypesPriv_hdr",
+    ],
+)
+
+generated_cc_atom(
+    name = "SkCustomMeshPriv_src",
+    srcs = ["SkCustomMeshPriv.cpp"],
+    visibility = ["//:__subpackages__"],
+    deps = [":SkCustomMeshPriv_hdr"],
+)
+
+generated_cc_atom(
+    name = "SkCustomMesh_src",
+    srcs = ["SkCustomMesh.cpp"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":SkCustomMeshPriv_hdr",
+        "//include/core:SkCustomMesh_hdr",
+        "//src/gpu:GrShaderCaps_hdr",
+        "//src/sksl:SkSLCompiler_hdr",
+        "//src/sksl:SkSLSharedCompiler_hdr",
+        "//src/sksl/ir:SkSLFunctionDefinition_hdr",
+        "//src/sksl/ir:SkSLProgram_hdr",
+        "//src/sksl/ir:SkSLVarDeclarations_hdr",
+    ],
+)
+
+generated_cc_atom(
+    name = "SkDebugUtils_hdr",
+    hdrs = ["SkDebugUtils.h"],
+    visibility = ["//:__subpackages__"],
+    deps = ["//include/core:SkTileMode_hdr"],
+)
+
+generated_cc_atom(
+    name = "SkKeyHelpers_hdr",
+    hdrs = ["SkKeyHelpers.h"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//experimental/graphite/include:Context_hdr",
+        "//include/core:SkBlendMode_hdr",
+        "//include/core:SkShader_hdr",
+        "//include/core:SkTileMode_hdr",
+    ],
+)
+
+generated_cc_atom(
+    name = "SkKeyHelpers_src",
+    srcs = ["SkKeyHelpers.cpp"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":SkDebugUtils_hdr",
+        ":SkKeyHelpers_hdr",
+        "//include/private:SkPaintParamsKey_hdr",
+    ],
+)
+
+generated_cc_atom(
+    name = "SkPaintParamsKey_src",
+    srcs = ["SkPaintParamsKey.cpp"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":SkKeyHelpers_hdr",
+        "//include/private:SkPaintParamsKey_hdr",
+    ],
+)
+
+generated_cc_atom(
+    name = "SkShaderCodeDictionary_src",
+    srcs = ["SkShaderCodeDictionary.cpp"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":SkOpts_hdr",
+        "//include/private:SkShaderCodeDictionary_hdr",
     ],
 )

@@ -20,7 +20,7 @@
 #include "utils/TerribleCommandBuffer.h"
 
 using namespace testing;
-using namespace dawn_wire;
+using namespace dawn::wire;
 
 WireTest::WireTest() {
 }
@@ -38,8 +38,8 @@ server::MemoryTransferService* WireTest::GetServerMemoryTransferService() {
 
 void WireTest::SetUp() {
     DawnProcTable mockProcs;
-    WGPUDevice mockDevice;
-    api.GetProcTableAndDevice(&mockProcs, &mockDevice);
+    api.GetProcTable(&mockProcs);
+    WGPUDevice mockDevice = api.GetNewDevice();
 
     // This SetCallback call cannot be ignored because it is done as soon as we start the server
     EXPECT_CALL(api, OnDeviceSetUncapturedErrorCallback(_, _, _)).Times(Exactly(1));
@@ -65,7 +65,7 @@ void WireTest::SetUp() {
     mWireClient.reset(new WireClient(clientDesc));
     mS2cBuf->SetHandler(mWireClient.get());
 
-    dawnProcSetProcs(&dawn_wire::client::GetProcs());
+    dawnProcSetProcs(&dawn::wire::client::GetProcs());
 
     auto deviceReservation = mWireClient->ReserveDevice();
     EXPECT_CALL(api, DeviceReference(mockDevice));
@@ -120,11 +120,11 @@ void WireTest::FlushServer(bool success) {
     ASSERT_EQ(mS2cBuf->Flush(), success);
 }
 
-dawn_wire::WireServer* WireTest::GetWireServer() {
+dawn::wire::WireServer* WireTest::GetWireServer() {
     return mWireServer.get();
 }
 
-dawn_wire::WireClient* WireTest::GetWireClient() {
+dawn::wire::WireClient* WireTest::GetWireClient() {
     return mWireClient.get();
 }
 

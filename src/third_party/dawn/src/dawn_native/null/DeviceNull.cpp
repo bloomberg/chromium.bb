@@ -20,12 +20,14 @@
 #include "dawn_native/Instance.h"
 #include "dawn_native/Surface.h"
 
-namespace dawn_native { namespace null {
+namespace dawn::native::null {
 
     // Implementation of pre-Device objects: the null adapter, null backend connection and Connect()
 
     Adapter::Adapter(InstanceBase* instance) : AdapterBase(instance, wgpu::BackendType::Null) {
-        mPCIInfo.name = "Null backend";
+        mVendorId = 0;
+        mDeviceId = 0;
+        mName = "Null backend";
         mAdapterType = wgpu::AdapterType::CPU;
         MaybeError err = Initialize();
         ASSERT(err.IsSuccess());
@@ -38,8 +40,11 @@ namespace dawn_native { namespace null {
     }
 
     // Used for the tests that intend to use an adapter without all features enabled.
-    void Adapter::SetSupportedFeatures(const std::vector<const char*>& requiredFeatures) {
-        mSupportedFeatures = GetInstance()->FeatureNamesToFeaturesSet(requiredFeatures);
+    void Adapter::SetSupportedFeatures(const std::vector<wgpu::FeatureName>& requiredFeatures) {
+        mSupportedFeatures = {};
+        for (wgpu::FeatureName f : requiredFeatures) {
+            mSupportedFeatures.EnableFeature(f);
+        }
     }
 
     MaybeError Adapter::InitializeImpl() {
@@ -57,7 +62,7 @@ namespace dawn_native { namespace null {
         return {};
     }
 
-    ResultOrError<DeviceBase*> Adapter::CreateDeviceImpl(const DawnDeviceDescriptor* descriptor) {
+    ResultOrError<Ref<DeviceBase>> Adapter::CreateDeviceImpl(const DeviceDescriptor* descriptor) {
         return Device::Create(this, descriptor);
     }
 
@@ -66,11 +71,11 @@ namespace dawn_native { namespace null {
         Backend(InstanceBase* instance) : BackendConnection(instance, wgpu::BackendType::Null) {
         }
 
-        std::vector<std::unique_ptr<AdapterBase>> DiscoverDefaultAdapters() override {
+        std::vector<Ref<AdapterBase>> DiscoverDefaultAdapters() override {
             // There is always a single Null adapter because it is purely CPU based and doesn't
             // depend on the system.
-            std::vector<std::unique_ptr<AdapterBase>> adapters;
-            std::unique_ptr<Adapter> adapter = std::make_unique<Adapter>(GetInstance());
+            std::vector<Ref<AdapterBase>> adapters;
+            Ref<Adapter> adapter = AcquireRef(new Adapter(GetInstance()));
             adapters.push_back(std::move(adapter));
             return adapters;
         }
@@ -95,11 +100,11 @@ namespace dawn_native { namespace null {
     // Device
 
     // static
-    ResultOrError<Device*> Device::Create(Adapter* adapter,
-                                          const DawnDeviceDescriptor* descriptor) {
+    ResultOrError<Ref<Device>> Device::Create(Adapter* adapter,
+                                              const DeviceDescriptor* descriptor) {
         Ref<Device> device = AcquireRef(new Device(adapter, descriptor));
         DAWN_TRY(device->Initialize());
-        return device.Detach();
+        return device;
     }
 
     Device::~Device() {
@@ -512,4 +517,4 @@ namespace dawn_native { namespace null {
         return 1.0f;
     }
 
-}}  // namespace dawn_native::null
+}  // namespace dawn::native::null

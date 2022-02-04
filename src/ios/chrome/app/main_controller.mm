@@ -68,7 +68,6 @@
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
 #include "ios/chrome/browser/credential_provider/credential_provider_buildflags.h"
-#import "ios/chrome/browser/credential_provider/feature_flags.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/external_files/external_file_remover_factory.h"
 #import "ios/chrome/browser/external_files/external_file_remover_impl.h"
@@ -119,6 +118,7 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
 #import "ios/public/provider/chrome/browser/overrides/overrides_api.h"
+#import "ios/public/provider/chrome/browser/ui_utils/ui_utils_api.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #import "ios/web/common/features.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
@@ -137,9 +137,9 @@
 
 namespace {
 
-// Constants for deferring reseting the startup attempt count (to give the app
+// Constants for deferring resetting the startup attempt count (to give the app
 // a little while to make sure it says alive).
-NSString* const kStartupAttemptReset = @"StartupAttempReset";
+NSString* const kStartupAttemptReset = @"StartupAttemptReset";
 
 // Constants for deferring memory debugging tools startup.
 NSString* const kMemoryDebuggingToolsStartup = @"MemoryDebuggingToolsStartup";
@@ -295,7 +295,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   WindowConfigurationRecorder* _windowConfigurationRecorder;
 
-  // Hander for the startup tasks, deferred or not.
+  // Handler for the startup tasks, deferred or not.
   StartupTasks* _startupTasks;
 
   // List of closure to run as part of shutdown. The closure will be called
@@ -431,8 +431,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   _chromeMain = [ChromeMainStarter startChromeMain];
 
-  // Initialize the ChromeBrowserProvider.
-  ios::GetChromeBrowserProvider().Initialize();
+  // Initialize the provider UI global state.
+  ios::provider::InitializeUI();
 
   // If the user has interacted with the app, then start (or continue) watching
   // for crashes. Otherwise, do not watch for crashes.
@@ -687,7 +687,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [appState addAgent:[[AppMetricsAppStateAgent alloc] init]];
   [appState addAgent:[[SafeModeAppAgent alloc] init]];
 
-  // Create the window accessibility agent only when multuple windows are
+  // Create the window accessibility agent only when multiple windows are
   // possible.
   if (base::ios::IsMultipleScenesSupported()) {
     [appState addAgent:[[WindowAccessibityChangeNotifierAppAgent alloc] init]];
@@ -777,7 +777,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   // Under the UIScene API, the scene delegate does not receive
   // sceneDidDisconnect: notifications on app termination. We mark remaining
-  // connected scene states as diconnected in order to allow services to
+  // connected scene states as disconnected in order to allow services to
   // properly unregister their observers and tear down remaining UI.
   for (SceneState* sceneState in self.appState.connectedScenes) {
     sceneState.activationLevel = SceneActivationLevelUnattached;
@@ -805,7 +805,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (void)registerForOrientationChangeNotifications {
   // Register device orientation. UI orientation will be registered by
-  // each window BVC. These two events may be triggered independantely.
+  // each window BVC. These two events may be triggered independently.
   [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(orientationDidChange:)
@@ -990,11 +990,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
 
-  NSNumber* passwordCreationValue = [NSNumber
-      numberWithBool:base::FeatureList::IsEnabled(kPasswordCreationEnabled)];
-  NSNumber* passwordCreationVersion =
-      [NSNumber numberWithInt:kPasswordCreationFeatureVersion];
-
   NSNumber* credentialProviderExtensionPromoValue =
       [NSNumber numberWithBool:base::FeatureList::IsEnabled(
                                    kCredentialProviderExtensionPromo)];
@@ -1015,10 +1010,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   //   }
   // }
   NSDictionary* fieldTrialValues = @{
-    base::SysUTF8ToNSString(kPasswordCreationEnabled.name) : @{
-      kFieldTrialValueKey : passwordCreationValue,
-      kFieldTrialVersionKey : passwordCreationVersion,
-    },
     base::SysUTF8ToNSString(kCredentialProviderExtensionPromo.name) : @{
       kFieldTrialValueKey : credentialProviderExtensionPromoValue,
       kFieldTrialVersionKey : credentialProviderExtensionPromoVersion,

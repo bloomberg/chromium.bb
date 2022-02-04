@@ -25,7 +25,7 @@
 
 #include <map>
 
-namespace dawn_native { namespace vulkan {
+namespace dawn::native::vulkan {
 
     namespace {
 
@@ -95,8 +95,7 @@ namespace dawn_native { namespace vulkan {
         ityp::vector<BindingIndex, VkDescriptorSetLayoutBinding> bindings;
         bindings.reserve(GetBindingCount());
 
-        for (const auto& it : GetBindingMap()) {
-            BindingIndex bindingIndex = it.second;
+        for (const auto& [_, bindingIndex] : GetBindingMap()) {
             const BindingInfo& bindingInfo = GetBindingInfo(bindingIndex);
 
             VkDescriptorSetLayoutBinding vkBinding;
@@ -197,4 +196,4 @@ namespace dawn_native { namespace vulkan {
                      reinterpret_cast<uint64_t&>(mHandle), "Dawn_BindGroupLayout", GetLabel());
     }
 
-}}  // namespace dawn_native::vulkan
+}  // namespace dawn::native::vulkan

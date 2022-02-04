@@ -35,6 +35,7 @@
 #include "cc/layers/texture_layer.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/raster_interface.h"
+#include "gpu/config/gpu_finch_features.h"
 
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -42,13 +43,13 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_context_rate_limiter.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -368,7 +369,8 @@ void Canvas2DLayerBridge::SetIsInHiddenPage(bool hidden) {
 
   if (!lose_context_in_background_ && !lose_context_in_background_scheduled_ &&
       ResourceProvider() && !context_lost_ && IsHidden() &&
-      RuntimeEnabledFeatures::CanvasContextLostInBackgroundEnabled()) {
+      base::FeatureList::IsEnabled(
+          ::features::kCanvasContextLostInBackground)) {
     lose_context_in_background_scheduled_ = true;
     if (dont_use_idle_scheduling_for_testing_) {
       Thread::Current()->GetTaskRunner()->PostTask(
@@ -381,7 +383,8 @@ void Canvas2DLayerBridge::SetIsInHiddenPage(bool hidden) {
     }
   } else if (CANVAS2D_HIBERNATION_ENABLED && ResourceProvider() &&
              IsAccelerated() && IsHidden() && !hibernation_scheduled_ &&
-             !RuntimeEnabledFeatures::CanvasContextLostInBackgroundEnabled()) {
+             !base::FeatureList::IsEnabled(
+                 ::features::kCanvasContextLostInBackground)) {
     if (layer_)
       layer_->ClearTexture();
     logger_->ReportHibernationEvent(kHibernationScheduled);
@@ -513,7 +516,7 @@ void Canvas2DLayerBridge::FinishRasterTimers(
   }
 }
 
-void Canvas2DLayerBridge::FlushRecording() {
+void Canvas2DLayerBridge::FlushRecording(bool printing) {
   if (!have_recorded_draw_commands_ || !GetOrCreateResourceProvider())
     return;
 
@@ -551,7 +554,8 @@ void Canvas2DLayerBridge::FlushRecording() {
     timer.emplace();
   }
 
-  last_recording_ = ResourceProvider()->FlushCanvasAndMaybePreserveRecording();
+  last_recording_ =
+      ResourceProvider()->FlushCanvasAndMaybePreserveRecording(printing);
 
   last_record_tainted_by_write_pixels_ = false;
 
@@ -692,7 +696,7 @@ void Canvas2DLayerBridge::DidDraw() {
   have_recorded_draw_commands_ = true;
 }
 
-void Canvas2DLayerBridge::FinalizeFrame() {
+void Canvas2DLayerBridge::FinalizeFrame(bool printing) {
   TRACE_EVENT0("blink", "Canvas2DLayerBridge::FinalizeFrame");
 
   // Make sure surface is ready for painting: fix the rendering mode now
@@ -700,7 +704,7 @@ void Canvas2DLayerBridge::FinalizeFrame() {
   if (!GetOrCreateResourceProvider())
     return;
 
-  FlushRecording();
+  FlushRecording(printing);
   if (is_being_displayed_) {
     ++frames_since_last_commit_;
     // Make sure the GPU is never more than two animation frames behind.

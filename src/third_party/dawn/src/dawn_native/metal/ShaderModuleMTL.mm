@@ -19,12 +19,14 @@
 #include "dawn_native/metal/DeviceMTL.h"
 #include "dawn_native/metal/PipelineLayoutMTL.h"
 #include "dawn_native/metal/RenderPipelineMTL.h"
+#include "dawn_platform/DawnPlatform.h"
+#include "dawn_platform/tracing/TraceEvent.h"
 
 #include <tint/tint.h>
 
 #include <sstream>
 
-namespace dawn_native { namespace metal {
+namespace dawn::native::metal {
 
     // static
     ResultOrError<Ref<ShaderModule>> ShaderModule::Create(Device* device,
@@ -68,10 +70,7 @@ namespace dawn_native { namespace metal {
         for (BindGroupIndex group : IterateBitSet(layout->GetBindGroupLayoutsMask())) {
             const BindGroupLayoutBase::BindingMap& bindingMap =
                 layout->GetBindGroupLayout(group)->GetBindingMap();
-            for (const auto& it : bindingMap) {
-                BindingNumber bindingNumber = it.first;
-                BindingIndex bindingIndex = it.second;
-
+            for (const auto [bindingNumber, bindingIndex] : bindingMap) {
                 const BindingInfo& bindingInfo =
                     layout->GetBindGroupLayout(group)->GetBindingInfo(bindingIndex);
 
@@ -135,8 +134,11 @@ namespace dawn_native { namespace metal {
 
         tint::Program program;
         tint::transform::DataMap transformOutputs;
-        DAWN_TRY_ASSIGN(program, RunTransforms(&transformManager, GetTintProgram(), transformInputs,
-                                               &transformOutputs, nullptr));
+        {
+            TRACE_EVENT0(GetDevice()->GetPlatform(), General, "RunTransforms");
+            DAWN_TRY_ASSIGN(program, RunTransforms(&transformManager, GetTintProgram(),
+                                                   transformInputs, &transformOutputs, nullptr));
+        }
 
         if (auto* data = transformOutputs.Get<tint::transform::Renamer::Data>()) {
             auto it = data->remappings.find(entryPointName);
@@ -159,6 +161,7 @@ namespace dawn_native { namespace metal {
         options.emit_vertex_point_size =
             stage == SingleShaderStage::Vertex &&
             renderPipeline->GetPrimitiveTopology() == wgpu::PrimitiveTopology::PointList;
+        TRACE_EVENT0(GetDevice()->GetPlatform(), General, "tint::writer::msl::Generate");
         auto result = tint::writer::msl::Generate(&program, options);
         DAWN_INVALID_IF(!result.success, "An error occured while generating MSL: %s.",
                         result.error);
@@ -177,6 +180,8 @@ namespace dawn_native { namespace metal {
                                             id constantValuesPointer,
                                             uint32_t sampleMask,
                                             const RenderPipeline* renderPipeline) {
+        TRACE_EVENT0(GetDevice()->GetPlatform(), General, "ShaderModuleMTL::CreateFunction");
+
         ASSERT(!IsError());
         ASSERT(out);
 
@@ -219,10 +224,15 @@ namespace dawn_native { namespace metal {
         }
         auto mtlDevice = ToBackend(GetDevice())->GetMTLDevice();
         NSError* error = nullptr;
-        NSPRef<id<MTLLibrary>> library =
-            AcquireNSPRef([mtlDevice newLibraryWithSource:mslSource.Get()
-                                                  options:compileOptions.Get()
-                                                    error:&error]);
+
+        NSPRef<id<MTLLibrary>> library;
+        {
+            TRACE_EVENT0(GetDevice()->GetPlatform(), General, "MTLDevice::newLibraryWithSource");
+            library = AcquireNSPRef([mtlDevice newLibraryWithSource:mslSource.Get()
+                                                            options:compileOptions.Get()
+                                                              error:&error]);
+        }
+
         if (error != nullptr) {
             DAWN_INVALID_IF(error.code != MTLLibraryErrorCompileWarning,
                             "Unable to create library object: %s.",
@@ -233,24 +243,27 @@ namespace dawn_native { namespace metal {
         NSRef<NSString> name =
             AcquireNSRef([[NSString alloc] initWithUTF8String:remappedEntryPointName.c_str()]);
 
-        if (constantValuesPointer != nil) {
-            if (@available(macOS 10.12, *)) {
-                MTLFunctionConstantValues* constantValues = constantValuesPointer;
-                out->function = AcquireNSPRef([*library newFunctionWithName:name.Get()
-                                                             constantValues:constantValues
-                                                                      error:&error]);
-                if (error != nullptr) {
-                    if (error.code != MTLLibraryErrorCompileWarning) {
-                        return DAWN_VALIDATION_ERROR(std::string("Function compile error: ") +
-                                                     [error.localizedDescription UTF8String]);
+        {
+            TRACE_EVENT0(GetDevice()->GetPlatform(), General, "MTLLibrary::newFunctionWithName");
+            if (constantValuesPointer != nil) {
+                if (@available(macOS 10.12, *)) {
+                    MTLFunctionConstantValues* constantValues = constantValuesPointer;
+                    out->function = AcquireNSPRef([*library newFunctionWithName:name.Get()
+                                                                 constantValues:constantValues
+                                                                          error:&error]);
+                    if (error != nullptr) {
+                        if (error.code != MTLLibraryErrorCompileWarning) {
+                            return DAWN_VALIDATION_ERROR(std::string("Function compile error: ") +
+                                                         [error.localizedDescription UTF8String]);
+                        }
                     }
+                    ASSERT(out->function != nil);
+                } else {
+                    UNREACHABLE();
                 }
-                ASSERT(out->function != nil);
             } else {
-                UNREACHABLE();
+                out->function = AcquireNSPRef([*library newFunctionWithName:name.Get()]);
             }
-        } else {
-            out->function = AcquireNSPRef([*library newFunctionWithName:name.Get()]);
         }
 
         if (GetDevice()->IsToggleEnabled(Toggle::MetalEnableVertexPulling) &&
@@ -260,4 +273,4 @@ namespace dawn_native { namespace metal {
 
         return {};
     }
-}}  // namespace dawn_native::metal
+}  // namespace dawn::native::metal

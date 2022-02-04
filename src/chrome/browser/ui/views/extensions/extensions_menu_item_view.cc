@@ -74,6 +74,14 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
           new ExtensionsMenuButton(browser, controller.get(), allow_pinning)),
       controller_(std::move(controller)),
       model_(ToolbarActionsModel::Get(profile_)) {
+  // Items with kSiteAccess type should only be created if their
+  // associated extension has or requests access to the current page.
+  if (item_type == MenuItemType::kSiteAccess) {
+    DCHECK(controller_->GetPageInteractionStatus(
+               browser->tab_strip_model()->GetActiveWebContents()) !=
+           ToolbarActionViewController::PageInteractionStatus::kNone);
+  }
+
   // Set so the extension button receives enter/exit on children to retain hover
   // status when hovering child views.
   SetNotifyEnterExitOnChild(true);
@@ -201,8 +209,9 @@ void ExtensionsMenuItemView::AddPinButton() {
 void ExtensionsMenuItemView::AddContextMenuButton() {
   DCHECK_EQ(item_type_, MenuItemType::kExtensions);
 
-  context_menu_controller_ =
-      std::make_unique<ExtensionContextMenuController>(controller_.get());
+  context_menu_controller_ = std::make_unique<ExtensionContextMenuController>(
+      controller_.get(),
+      extensions::ExtensionContextMenuModel::ContextMenuSource::kMenuItem);
 
   auto context_menu_button = std::make_unique<HoverButton>(
       views::Button::PressedCallback(), std::u16string());

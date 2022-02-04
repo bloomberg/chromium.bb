@@ -182,6 +182,7 @@ class SdpOfferAnswerHandler : public SdpStateProvider,
   rtc::scoped_refptr<StreamCollectionInterface> remote_streams();
 
  private:
+  class RemoteDescriptionOperation;
   class ImplicitCreateSessionDescriptionObserver;
 
   friend class ImplicitCreateSessionDescriptionObserver;
@@ -231,10 +232,24 @@ class SdpOfferAnswerHandler : public SdpStateProvider,
       std::unique_ptr<SessionDescriptionInterface> desc,
       const std::map<std::string, const cricket::ContentGroup*>&
           bundle_groups_by_mid);
-  RTCError ApplyRemoteDescription(
+  void ApplyRemoteDescription(
+      std::unique_ptr<RemoteDescriptionOperation> operation);
+
+  RTCError ReplaceRemoteDescription(
       std::unique_ptr<SessionDescriptionInterface> desc,
-      const std::map<std::string, const cricket::ContentGroup*>&
-          bundle_groups_by_mid);
+      SdpType sdp_type,
+      std::unique_ptr<SessionDescriptionInterface>* replaced_description)
+      RTC_RUN_ON(signaling_thread());
+
+  // Part of ApplyRemoteDescription steps specific to Unified Plan.
+  void ApplyRemoteDescriptionUpdateTransceiverState(SdpType sdp_type);
+
+  // Part of ApplyRemoteDescription steps specific to plan b.
+  void PlanBUpdateSendersAndReceivers(
+      const cricket::ContentInfo* audio_content,
+      const cricket::AudioContentDescription* audio_desc,
+      const cricket::ContentInfo* video_content,
+      const cricket::VideoContentDescription* video_desc);
 
   // Implementation of the offer/answer exchange operations. These are chained
   // onto the `operations_chain_` when the public CreateOffer(), CreateAnswer(),
@@ -249,8 +264,11 @@ class SdpOfferAnswerHandler : public SdpStateProvider,
       std::unique_ptr<SessionDescriptionInterface> desc,
       rtc::scoped_refptr<SetLocalDescriptionObserverInterface> observer);
   void DoSetRemoteDescription(
-      std::unique_ptr<SessionDescriptionInterface> desc,
-      rtc::scoped_refptr<SetRemoteDescriptionObserverInterface> observer);
+      std::unique_ptr<RemoteDescriptionOperation> operation);
+
+  // Called after a DoSetRemoteDescription operation completes.
+  void SetRemoteDescriptionPostProcess(bool was_answer)
+      RTC_RUN_ON(signaling_thread());
 
   // Update the state, signaling if necessary.
   void ChangeSignalingState(
@@ -482,9 +500,11 @@ class SdpOfferAnswerHandler : public SdpStateProvider,
   // exist.
   void UpdateEndedRemoteMediaStreams();
 
-  // Uses all remote candidates in `remote_desc` in this session.
-  bool UseCandidatesInSessionDescription(
-      const SessionDescriptionInterface* remote_desc);
+  // Uses all remote candidates in the currently set remote_description().
+  // If no remote description is currently set (nullptr), the return value will
+  // be true. If `UseCandidate()` fails for any candidate in the remote
+  // description, the return value will be false.
+  bool UseCandidatesInRemoteDescription();
   // Uses `candidate` in this session.
   bool UseCandidate(const IceCandidateInterface* candidate);
   // Returns true if we are ready to push down the remote candidate.

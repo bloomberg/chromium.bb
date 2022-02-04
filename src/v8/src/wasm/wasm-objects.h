@@ -91,7 +91,8 @@ class ImportedFunctionEntry {
   // Initialize this entry as a Wasm to JS call. This accepts the isolate as a
   // parameter, since it must allocate a tuple.
   V8_EXPORT_PRIVATE void SetWasmToJs(Isolate*, Handle<JSReceiver> callable,
-                                     const wasm::WasmCode* wasm_to_js_wrapper);
+                                     const wasm::WasmCode* wasm_to_js_wrapper,
+                                     Handle<HeapObject> suspender);
   // Initialize this entry as a Wasm to Wasm call.
   void SetWasmToWasm(WasmInstanceObject target_instance, Address call_target);
 
@@ -254,7 +255,7 @@ class WasmMemoryObject
                                             Handle<WasmInstanceObject> object);
   inline bool has_maximum_pages();
 
-  V8_EXPORT_PRIVATE static Handle<WasmMemoryObject> New(
+  V8_EXPORT_PRIVATE static MaybeHandle<WasmMemoryObject> New(
       Isolate* isolate, MaybeHandle<JSArrayBuffer> buffer, int maximum);
 
   V8_EXPORT_PRIVATE static MaybeHandle<WasmMemoryObject> New(Isolate* isolate,
@@ -597,7 +598,7 @@ class WasmExportedFunction : public JSFunction {
 
   V8_EXPORT_PRIVATE static Handle<WasmExportedFunction> New(
       Isolate* isolate, Handle<WasmInstanceObject> instance, int func_index,
-      int arity, Handle<Code> export_wrapper);
+      int arity, Handle<CodeT> export_wrapper);
 
   Address GetWasmCallTarget();
 
@@ -622,9 +623,11 @@ class WasmJSFunction : public JSFunction {
 
   static Handle<WasmJSFunction> New(Isolate* isolate,
                                     const wasm::FunctionSig* sig,
-                                    Handle<JSReceiver> callable);
+                                    Handle<JSReceiver> callable,
+                                    Handle<HeapObject> suspender);
 
   JSReceiver GetCallable() const;
+  HeapObject GetSuspender() const;
   // Deserializes the signature of this function using the provided zone. Note
   // that lifetime of the signature is hence directly coupled to the zone.
   const wasm::FunctionSig* GetSignature(Zone* zone);
@@ -693,7 +696,6 @@ class WasmFunctionData
     : public TorqueGeneratedWasmFunctionData<WasmFunctionData, HeapObject> {
  public:
   DECL_ACCESSORS(internal, WasmInternalFunction)
-  DECL_ACCESSORS(wrapper_code, Code)
 
   DECL_PRINTER(WasmFunctionData)
 
@@ -736,8 +738,6 @@ class WasmInternalFunction
     : public TorqueGeneratedWasmInternalFunction<WasmInternalFunction,
                                                  Foreign> {
  public:
-  DECL_ACCESSORS(code, Code)
-
   // Returns a handle to the corresponding WasmInternalFunction if {external} is
   // a WasmExternalFunction, or an empty handle otherwise.
   static MaybeHandle<WasmInternalFunction> FromExternal(Handle<Object> external,
@@ -749,9 +749,6 @@ class WasmInternalFunction
   class BodyDescriptor;
 
   TQ_OBJECT_CONSTRUCTORS(WasmInternalFunction)
-
- private:
-  DECL_ACCESSORS(raw_code, CodeT)
 };
 
 // Information for a WasmJSFunction which is referenced as the function data of
@@ -761,7 +758,7 @@ class WasmJSFunctionData
     : public TorqueGeneratedWasmJSFunctionData<WasmJSFunctionData,
                                                WasmFunctionData> {
  public:
-  DECL_ACCESSORS(wasm_to_js_wrapper_code, Code)
+  DECL_ACCESSORS(wasm_to_js_wrapper_code, CodeT)
 
   // Dispatched behavior.
   DECL_PRINTER(WasmJSFunctionData)
@@ -1015,6 +1012,7 @@ class WasmContinuationObject
 class WasmSuspenderObject
     : public TorqueGeneratedWasmSuspenderObject<WasmSuspenderObject, JSObject> {
  public:
+  enum State : int { Inactive = 0, Active, Suspended };
   static Handle<WasmSuspenderObject> New(Isolate* isolate);
   // TODO(thibaudm): returnPromiseOnSuspend & suspendOnReturnedPromise.
   DECL_PRINTER(WasmSuspenderObject)

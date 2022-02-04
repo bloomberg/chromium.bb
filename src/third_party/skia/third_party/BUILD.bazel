@@ -70,7 +70,7 @@ cc_library(
     ],
     copts = [
         "-isystem third_party/libpng/",
-        #"-Wno-unused-but-set-variable",
+        "-Wno-unused-but-set-variable",
     ],
     includes = [
         # This adds -isystem "third_party/externals/libpng" to any dependent
@@ -198,18 +198,6 @@ cc_library(
     local_defines = ZLIB_DEFINES,
     # This allows users of zlib to just do #include "zlib.h"
     strip_include_prefix = "externals/zlib/",
-)
-
-# This library is used to fix linking errors when trying to statically link in some symbols
-# The symbols defined here:
-# https://github.com/llvm/llvm-project/blob/main/libcxx/include/__support/musl/xlocale.h
-# are defined to be inlined, however they are missing during the final linking of a static
-# executable. By re-defining them in our own .a file, this makes the linker happy.
-cc_library(
-    name = "musl_compat",
-    srcs = [
-        "musl_compat/locale.c",
-    ],
 )
 
 JPEGTURBO_SRCS = [
@@ -2077,6 +2065,7 @@ cc_library(
     hdrs = ICU_HDRS,
     copts = [
         "-Wno-deprecated-declarations",
+        "-Wno-unused-but-set-variable",
         "-Wno-unused-function",
     ],
     defines = [
@@ -2359,6 +2348,7 @@ HARFBUZZ_SRCS = [
     "externals/harfbuzz/src/hb-ot-tag-table.hh",
     "externals/harfbuzz/src/hb-ot-tag.cc",
     "externals/harfbuzz/src/hb-ot-var-avar-table.hh",
+    "externals/harfbuzz/src/hb-ot-var-common.hh",
     "externals/harfbuzz/src/hb-ot-var-fvar-table.hh",
     "externals/harfbuzz/src/hb-ot-var-gvar-table.hh",
     "externals/harfbuzz/src/hb-ot-var-hvar-table.hh",

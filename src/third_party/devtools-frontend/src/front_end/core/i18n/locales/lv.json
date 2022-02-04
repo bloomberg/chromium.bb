@@ -401,6 +401,21 @@
   "core/sdk/DebuggerModel.ts | withBlock": {
     "message": "With blokkodu"
   },
+  "core/sdk/EventBreakpointsModel.ts | auctionWorklet": {
+    "message": "Viena uzdevuma konteksts reklāmu izsolei"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletBiddingStart": {
+    "message": "Izsoles dalībnieku cenu noteikšanas fāzes sākums"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletReportingStart": {
+    "message": "Izsoles dalībnieku pārskata fāzes sākums"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletReportingStart": {
+    "message": "Pārdevēju pārskata fāzes sākums"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletScoringStart": {
+    "message": "Pārdevēju novērtēšanas fāzes sākums"
+  },
   "core/sdk/NetworkManager.ts | crossoriginReadBlockingCorb": {
     "message": "Citas izcelsmes datu lasīšanas bloķēšanas (CORB) algoritms bloķēja citas izcelsmes atbildi ({PH1}) ar šādu MIME veida vienumu: {PH2}. Plašāku informāciju skatiet lapā https://www.chromestatus.com/feature/5629709824032768."
   },
@@ -644,9 +659,6 @@
   "core/sdk/sdk-meta.ts | disableWebpFormat": {
     "message": "Atspējot formātu WebP"
   },
-  "core/sdk/sdk-meta.ts | disabledDarkMode": {
-    "message": "Atspējot"
-  },
   "core/sdk/sdk-meta.ts | doNotCaptureAsyncStackTraces": {
     "message": "Netvert asinhronus steka trasējumus"
   },
@@ -679,6 +691,9 @@
   },
   "core/sdk/sdk-meta.ts | doNotShowGridTrackSizes": {
     "message": "Nerādīt režģa šūnu izmērus"
+  },
+  "core/sdk/sdk-meta.ts | doNotShowRulersOnHover": {
+    "message": "Nerādīt mērjoslas, kad kursors tiek virzīts tām pāri"
   },
   "core/sdk/sdk-meta.ts | emulateAFocusedPage": {
     "message": "Emulēt izceltu lapu"
@@ -743,9 +758,6 @@
   "core/sdk/sdk-meta.ts | enableWebpFormat": {
     "message": "Iespējot formātu WebP"
   },
-  "core/sdk/sdk-meta.ts | enabledDarkMode": {
-    "message": "Iespējot"
-  },
   "core/sdk/sdk-meta.ts | extendGridLines": {
     "message": "Paplašināt režģa rindas"
   },
@@ -754,9 +766,6 @@
   },
   "core/sdk/sdk-meta.ts | hideFramesPerSecondFpsMeter": {
     "message": "Paslēpt kadru skaitu sekundē"
-  },
-  "core/sdk/sdk-meta.ts | hideHittestBorders": {
-    "message": "Paslēpt trāpījumu pārbaudes robežas"
   },
   "core/sdk/sdk-meta.ts | hideLayerBorders": {
     "message": "Paslēpt slāņa robežas"
@@ -812,9 +821,6 @@
   "core/sdk/sdk-meta.ts | showGridTrackSizes": {
     "message": "Rādīt režģa šūnu izmērus"
   },
-  "core/sdk/sdk-meta.ts | showHittestBorders": {
-    "message": "Rādīt trāpījumu pārbaudes robežas"
-  },
   "core/sdk/sdk-meta.ts | showLayerBorders": {
     "message": "Rādīt slāņa robežas"
   },
@@ -833,8 +839,8 @@
   "core/sdk/sdk-meta.ts | showPaintFlashingRectangles": {
     "message": "Rādīt marķējumu ar mirgojošiem taisnstūriem"
   },
-  "core/sdk/sdk-meta.ts | showRulers": {
-    "message": "Rādīt mērjoslas"
+  "core/sdk/sdk-meta.ts | showRulersOnHover": {
+    "message": "Rādīt mērjoslas, kad kursors tiek virzīts tām pāri"
   },
   "core/sdk/sdk-meta.ts | showScrollPerformanceBottlenecks": {
     "message": "Rādīt ritināšanas veiktspējas elementus ar nepietiekamu caurlaides spēju"
@@ -875,14 +881,20 @@
   "entrypoints/inspector_main/RenderingOptions.ts | emulateAFocusedPage": {
     "message": "Emulēt izceltu lapu"
   },
+  "entrypoints/inspector_main/RenderingOptions.ts | emulateAutoDarkMode": {
+    "message": "Enable automatic dark mode"
+  },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAFocusedPage": {
     "message": "Emulē izceltu lapu."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAutoDarkMode": {
-    "message": "Tiek iespējots automātisks tumšais režīms pārbaudītajai lapai."
+    "message": "Enables automatic dark mode and sets prefers-color-scheme to dark."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssColorgamutMediaFeature": {
     "message": "Piespiedu kārtā lieto CSS datu nesēju funkciju color-gamut"
+  },
+  "entrypoints/inspector_main/RenderingOptions.ts | forcesCssForcedColors": {
+    "message": "CSS multivides funkcijas forced-colors piespiedu lietošana"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssPreferscolorschemeMedia": {
     "message": "Piespiedu kārtā lieto CSS datu nesēju funkciju prefers-color-scheme"
@@ -920,9 +932,6 @@
   "entrypoints/inspector_main/RenderingOptions.ts | highlightsFramesRedDetectedToBe": {
     "message": "Izceļ (sarkanā krāsā) ietvarus, kuros konstatētas reklāmas."
   },
-  "entrypoints/inspector_main/RenderingOptions.ts | hittestBorders": {
-    "message": "Trāpījuma pārbaudes robežas"
-  },
   "entrypoints/inspector_main/RenderingOptions.ts | layerBorders": {
     "message": "Slāņa robežas"
   },
@@ -943,9 +952,6 @@
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsAnOverlayWithCoreWebVitals": {
     "message": "Rāda tīmekļa pamatrādītāju pārklājumu"
-  },
-  "entrypoints/inspector_main/RenderingOptions.ts | showsBordersAroundHittestRegions": {
-    "message": "Rāda robežas ap trāpījumu pārbaudes apgabaliem."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsLayerBordersOrangeoliveAnd": {
     "message": "Rāda slāņa robežas (oranža/olīvzaļa krāsa) un elementus (ciānzilā krāsā)."
@@ -1001,7 +1007,7 @@
   "entrypoints/inspector_main/inspector_main-meta.ts | visionDeficiency": {
     "message": "redzes traucējumi"
   },
-  "entrypoints/js_app/JsMain.ts | main": {
+  "entrypoints/js_app/js_app.ts | main": {
     "message": "Galvenais"
   },
   "entrypoints/main/MainImpl.ts | customizeAndControlDevtools": {
@@ -1036,9 +1042,6 @@
   },
   "entrypoints/main/MainImpl.ts | showConsoleDrawer": {
     "message": "Rādīt konsoles atvilktni"
-  },
-  "entrypoints/main/MainImpl.ts | theSystempreferredColorSchemeHas": {
-    "message": "Sistēmas preferencēs norādītā krāsu shēma tika mainīta. Lai šo izmaiņu lietotu izstrādātāja rīkos, veiciet atkārtotu ielādi."
   },
   "entrypoints/main/MainImpl.ts | undockIntoSeparateWindow": {
     "message": "Atcelt dokošanu atsevišķā logā"
@@ -1190,41 +1193,41 @@
   "entrypoints/main/main-meta.ts | zoomOut": {
     "message": "Tālināšana"
   },
-  "entrypoints/node_app/node_app-meta.ts | node": {
-    "message": "Mezgls"
-  },
-  "entrypoints/node_app/node_app-meta.ts | showNode": {
-    "message": "Mezgls"
-  },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | addConnection": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | addConnection": {
     "message": "Pievienot savienojumu"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
     "message": "Tīkla adrese (piemēram, localhost:9229)"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | noConnectionsSpecified": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | noConnectionsSpecified": {
     "message": "Nav norādīts neviens savienojums"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
     "message": "Node.js atkļūdošanas ceļvedis"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
     "message": "Norādiet tīkla galapunktu, un Izstrādātāja rīki automātiski izveidos savienojumu ar to. Plašāka informācija: {PH1}."
   },
-  "entrypoints/node_main/NodeMain.ts | main": {
+  "entrypoints/node_app/NodeMain.ts | main": {
     "message": "Galvenais"
   },
-  "entrypoints/node_main/NodeMain.ts | nodejsS": {
+  "entrypoints/node_app/NodeMain.ts | nodejsS": {
     "message": "Node.js: {PH1}"
   },
-  "entrypoints/node_main/node_main-meta.ts | connection": {
+  "entrypoints/node_app/node_app.ts | connection": {
     "message": "Savienojums"
   },
-  "entrypoints/node_main/node_main-meta.ts | node": {
+  "entrypoints/node_app/node_app.ts | networkTitle": {
+    "message": "Mezgls"
+  },
+  "entrypoints/node_app/node_app.ts | node": {
     "message": "mezgls"
   },
-  "entrypoints/node_main/node_main-meta.ts | showConnection": {
+  "entrypoints/node_app/node_app.ts | showConnection": {
     "message": "Rādīt rīku Connection"
+  },
+  "entrypoints/node_app/node_app.ts | showNode": {
+    "message": "Mezgls"
   },
   "entrypoints/worker_app/WorkerMain.ts | main": {
     "message": "Galvenais"
@@ -1304,6 +1307,9 @@
   "models/har/Writer.ts | writingFile": {
     "message": "Notiek rakstīšana failā…"
   },
+  "models/issues_manager/ClientHintIssue.ts | clientHintsInfrastructure": {
+    "message": "Client Hints Infrastructure"
+  },
   "models/issues_manager/ContentSecurityPolicyIssue.ts | contentSecurityPolicyEval": {
     "message": "Satura drošības politika — novērtēšana"
   },
@@ -1322,8 +1328,8 @@
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "Citas izcelsmes resursu kopīgošana (CORS)"
   },
-  "models/issues_manager/CorsIssue.ts | corsForPrivateNetworksRfc": {
-    "message": "CORS privātajiem tīkliem (RFC1918)"
+  "models/issues_manager/CorsIssue.ts | corsPrivateNetworkAccess": {
+    "message": "Piekļuve privātam tīklam"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | coopAndCoep": {
     "message": "COOP un COEP"
@@ -1559,8 +1565,17 @@
   "panels/accessibility/AXBreadcrumbsPane.ts | accessibilityTree": {
     "message": "Pieejamības koks"
   },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentDescription": {
+    "message": "Pieejamības koks ir pārvietots uz DOM koka augšējo labo stūri."
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentName": {
+    "message": "Iespējot visas lapas pieejamības koku"
+  },
   "panels/accessibility/AXBreadcrumbsPane.ts | ignored": {
     "message": "Ignorēts"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | reloadRequired": {
+    "message": "Lai izmaiņas stātos spēkā, nepieciešama atkārtota ielāde."
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | scrollIntoView": {
     "message": "Ritināt, līdz redzams"
@@ -2051,6 +2066,12 @@
   "panels/application/AppManifestView.ts | couldNotDownloadARequiredIcon": {
     "message": "Nevarēja lejupielādēt obligātu ikonu no manifesta"
   },
+  "panels/application/AppManifestView.ts | darkBackgroundColor": {
+    "message": "Dark background color"
+  },
+  "panels/application/AppManifestView.ts | darkThemeColor": {
+    "message": "Dark theme color"
+  },
   "panels/application/AppManifestView.ts | description": {
     "message": "Apraksts"
   },
@@ -2314,384 +2335,6 @@
   },
   "panels/application/ApplicationPanelSidebar.ts | worker": {
     "message": "skripts"
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
-    "message": "Tikai lapas, kuras tiek ielādētas, saņemot GET pieprasījumu, ir piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
-    "message": "Kešatmiņā var saglabāt tikai lapas ar statusa kodu 2XX."
-  },
-  "panels/application/BackForwardCacheStrings.ts | JavaScriptExecution": {
-    "message": "Pārlūkā Chrome tiks konstatēts mēģinājums izpildīt JavaScript kodu kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | appBanner": {
-    "message": "Lapas, kurās tiek pieprasīts AppBanner, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
-    "message": "Pilnīgu saglabāšanu kešatmiņā atspējoja karodziņu iestatījumi. Lai šajā ierīcē to iespējotu lokāli, atveriet lapu chrome://flags/#back-forward-cache."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
-    "message": "Komandrinda atspējoja pilnīgu saglabāšanu kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
-    "message": "Pilnīga saglabāšana kešatmiņā ir atspējota, jo atmiņā pietrūka vietas."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
-    "message": "Pilnīgu saglabāšanu kešatmiņā neatbalsta deleģētais elements"
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
-    "message": "Pirmsielādes atveidotājs atspējoja pilnīgu saglabāšanu kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | broadcastChannel": {
-    "message": "Lapu nevar saglabāt kešatmiņā, jo tajā ir BroadcastChannel instance ar reģistrētiem klausītājiem."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheControlNoStore": {
-    "message": "Lapas, kurās ir galvene cache-control:no-store, nevar pilnīgi saglabāt kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheFlushed": {
-    "message": "Kešatmiņa tika mērķtiecīgi notīrīta."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheLimit": {
-    "message": "Šīs lapas dati tika izlikti no kešatmiņas, lai kešatmiņā varētu saglabāt citu lapu."
-  },
-  "panels/application/BackForwardCacheStrings.ts | containsPlugins": {
-    "message": "Lapas ar spraudņiem pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileChooser": {
-    "message": "Lapas, kurās tiek izmantota saskarne FileChooser API, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileSystemAccess": {
-    "message": "Lapas, kurās tiek izmantota saskarne File System Access API, nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
-    "message": "Lapas, kurās tiek izmantots multivides ierīču dispečers, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaPlay": {
-    "message": "Pāriešanas brīdī darbojās multivides atskaņotājs."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSession": {
-    "message": "Lapas, kurās tiek izmantota saskarne MediaSession API un kurās ir iestatīts atskaņošanas stāvoklis, nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSessionService": {
-    "message": "Lapas, kurās tiek izmantota saskarne MediaSession API un kurās ir iestatīti darbību apdarinātāji, nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSecurityHandler": {
-    "message": "Lapas, kurās tiek izmantots apdarinātājs SecurityHandler, nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSerial": {
-    "message": "Lapas, kurās tiek izmantota saskarne Serial API, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
-    "message": "Lapas, kurās tiek izmantota saskarne WebAuthetication API, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebBluetooth": {
-    "message": "Lapas, kurās tiek izmantota saskarne WebBluetooth API, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebUSB": {
-    "message": "Lapas, kurās tiek izmantota saskarne WebUSB API, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
-    "message": "Lapas, kurās tiek izmantota saskarne DedicatedWorker vai Worklet, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | documentLoaded": {
-    "message": "Dokuments tika aizvērts vēl pirms bija pabeigta tā ielāde."
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderAppBannerManager": {
-    "message": "EmbedderAppBannerManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
-    "message": "EmbedderChromePasswordManagerClientBindCredentialManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
-    "message": "EmbedderDomDistillerSelfDeletingRequestDelegate"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
-    "message": "EmbedderDomDistillerViewerSource"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
-    "message": "EmbedderExtensionMessaging"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
-    "message": "EmbedderExtensionMessagingForOpenPort"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
-    "message": "EmbedderExtensionSentMessageToCachedFrame"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensions": {
-    "message": "EmbedderExtensions"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderModalDialog": {
-    "message": "EmbedderModalDialog"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOfflinePage": {
-    "message": "EmbedderOfflinePage"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
-    "message": "EmbedderOomInterventionTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
-    "message": "EmbedderPermissionRequestManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
-    "message": "EmbedderPopupBlockerTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
-    "message": "EmbedderSafeBrowsingThreatDetails"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
-    "message": "EmbedderSafeBrowsingTriggeredPopupBlocker"
-  },
-  "panels/application/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
-    "message": "Kamēr noritēja lapas pilnīga saglabāšana kešatmiņā, tika aktivizēts pakalpojuma skripts."
-  },
-  "panels/application/BackForwardCacheStrings.ts | foregroundCacheLimit": {
-    "message": "Šīs lapas dati tika izlikti no kešatmiņas, lai kešatmiņā varētu saglabāt citu lapu."
-  },
-  "panels/application/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
-    "message": "Lapas, kurās ir piešķirta piekļuve multivides straumei, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | haveInnerContents": {
-    "message": "Lapas, kurās tiek izmantoti portāli, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | idleManager": {
-    "message": "Lapas, kurās tiek izmantota saskarne IdleManager, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | indexedDBConnection": {
-    "message": "Lapas, kurās ir atvērts IndexedDB savienojums, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | ineligibleAPI": {
-    "message": "Tika izmantotas nepiemērotas API."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedJavascript": {
-    "message": "Lapas, kurās paplašinājumi iepludina JavaScript kodu, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedStyleSheet": {
-    "message": "Lapas, kurās paplašinājumi iepludina stilu lapu, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | internalError": {
-    "message": "Iekšēja kļūda."
-  },
-  "panels/application/BackForwardCacheStrings.ts | keyboardLock": {
-    "message": "Lapas, kurās tiek izmantota tastatūras bloķēšana, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | loading": {
-    "message": "Lapa tika aizvērta vēl pirms bija pabeigta tās ielāde."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
-    "message": "Lapas, kuru galvenā resursa direktīva ir cache-control:no-cache, nevar pilnīgi saglabāt kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
-    "message": "Lapas, kuru galvenā resursa direktīva ir cache-control:no-store, nevar pilnīgi saglabāt kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
-    "message": "Pāriešana tika pārtraukta pirms kešatmiņā pilnīgi saglabātas lapas atjaunošanas."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
-    "message": "Lapas dati tika izlikti no kešatmiņas, jo aktīvajā tīkla savienojumā tika saņemts pārmērīgs daudzums datu. Pārlūkā Chrome tiek ierobežots datu daudzums, ko lapa var saņemt, kad tiek saglabāta kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
-    "message": "Lapas, kurās ir aktīvi ienešanas vai XHR notikumi, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestRedirected": {
-    "message": "Šīs lapas dati tika izlikti no kešatmiņas, jo aktīvs tīkla savienojuma pieprasījums ietvēra novirzīšanu."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestTimeout": {
-    "message": "Šīs lapas dati tika izlikti no kešatmiņas, jo tīkla savienojums bija atvērts pārāk ilgi. Pārlūkā Chrome tiek ierobežots laiks, kurā lapa var saņemt datus, kamēr norit tās saglabāšana kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | noResponseHead": {
-    "message": "Lapas, kurām nav derīgas atbildes galvenes, nevar pilnīgi saglabāt kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | notMainFrame": {
-    "message": "Pāriešana notika citā ietvarā, nevis galvenajā ietvarā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | optInUnloadHeaderNotPresent": {
-    "message": "Lapā ir ielādes atcelšanas apdarinātājs, bet nav pieteikšanās galvene pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
-    "message": "Lapas, kurās notiek IndexedDB operācijas, pašlaik nav piemērotas pilnīgai saglabāšanai atmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
-    "message": "Lapas, kurās ir aktīvs tīkla pieprasījums, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
-    "message": "Lapas, kurās ir aktīvs tīkla ienešanas pieprasījums, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
-    "message": "Lapas, kurās ir aktīvs tīkla pieprasījums, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
-    "message": "Lapas, kurās ir aktīvs XHR tīkla pieprasījums, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | paymentManager": {
-    "message": "Lapas, kurās tiek izmantota saskarne PaymentManager, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | pictureInPicture": {
-    "message": "Lapas, kurās tiek izmantota funkcija “Attēls attēlā”, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | portal": {
-    "message": "Lapas, kurās tiek izmantoti portāli, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | printing": {
-    "message": "Lapas, kurās rādīta drukāšanas saskarne, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
-    "message": "Lapa tika atvērta, izmantojot metodi window.open(), un citā cilnē ir ietverta tās atsauce, vai lapa tika atvērta logā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessCrashed": {
-    "message": "Kešatmiņā pilnīgi saglabātas lapas atveidotājs avarēja."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessKilled": {
-    "message": "Kešatmiņā pilnīgi saglabātas lapas atveidotāja darbība tika pārtraukta."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
-    "message": "Lapas, kurās tika pieprasītas audio ierakstīšanas atļaujas, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
-    "message": "Lapas, kurās tika pieprasītas sensoru atļaujas, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
-    "message": "Lapas, kurās tika pieprasītas atļaujas sinhronizācijai fonā vai ienešanai, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedMIDIPermission": {
-    "message": "Lapas, kurās tika pieprasīta MIDI ierīču atļauja, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
-    "message": "Lapas, kurās tika pieprasītas paziņojumu atļaujas, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
-    "message": "Lapas, kurās tika pieprasīta piekļuve krātuvei, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
-    "message": "Lapas, kurās tika pieprasītas video ierakstīšanas atļaujas, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
-    "message": "Kešatmiņā var saglabāt tikai tādas lapas, kuru URL shēma ietver HTTP vai HTTPS."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerClaim": {
-    "message": "Kamēr noritēja lapas pilnīga saglabāšana kešatmiņā, lapu pieprasīja pakalpojuma skripts."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
-    "message": "Pakalpojuma skripts mēģināja nosūtīt rekvizītu MessageEvent lapai, kas tiek pilnīgi saglabāta kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
-    "message": "ServiceWorker reģistrācija tika atcelta, kamēr noritēja lapas pilnīga saglabāšana kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
-    "message": "Lapas dati tika izlikti no kešatmiņas, jo tika aktivizēts pakalpojuma skripts."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sessionRestored": {
-    "message": "Pārlūks Chrome tika restartēts, un kešatmiņā pilnīgi saglabātie ieraksti tika notīrīti."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sharedWorker": {
-    "message": "Lapas, kurās tiek izmantota saskarne SharedWorker, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechRecognizer": {
-    "message": "Lapas, kurās tiek izmantota saskarne SpeedRecognizer, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechSynthesis": {
-    "message": "Lapas, kurās tiek izmantota saskarne SpeechSynthesis, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subframeIsNavigating": {
-    "message": "Lapas Iframe ietvarā tika sākta pāriešana, bet tā netika pabeigta."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
-    "message": "Lapas, kuru apakšresursa direktīva ir cache-control:no-cache, nevar pilnīgi saglabāt kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
-    "message": "Lapas, kuru apakšresursa direktīva ir cache-control:no-store, nevar pilnīgi saglabāt kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeout": {
-    "message": "Tika pārsniegts maksimālais laiks lapas pilnīgai saglabāšanai kešatmiņā, un lapas derīguma termiņš beidzās."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
-    "message": "Sākot pilnīgu saglabāšanu kešatmiņā, lapā iestājās noildze (iespējams, to izraisīja ieilgusi lapas paslēpšanas notikumu apdarinātāju darbība)."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
-    "message": "Lapas galvenajā ietvarā ir ielādēšanas atcelšanas apdarinātājs."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
-    "message": "Lapas apakšietvarā ir ielādēšanas atcelšanas apdarinātājs."
-  },
-  "panels/application/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
-    "message": "Pārlūkā tika mainīta lietotāja aģenta ignorēšanas galvene."
-  },
-  "panels/application/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
-    "message": "Lapas, kurās ir piešķirta piekļuves video vai audio ierakstīšanai, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webDatabase": {
-    "message": "Lapas, kurās tiek izmantots WebDatabase, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webHID": {
-    "message": "Lapas, kurās tiek izmantota saskarne WebHID, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webLocks": {
-    "message": "Lapas, kurās tiek izmantota saskarne WebLocks, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webNfc": {
-    "message": "Lapas, kurās tiek izmantota saskarne WebNfc, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webOTPService": {
-    "message": "Lapas, kurās tiek izmantota saskarne WebOTPService, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webRTC": {
-    "message": "Lapas, kurās tiek izmantota saskarne WebRTC, nevar pilnīgi saglabāt kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webShare": {
-    "message": "Lapas, kurās tiek izmantots starpniekserveris WebShare, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webSocket": {
-    "message": "Lapas, kurās tiek izmantots protokols WebSocket, nevar pilnīgi saglabāt kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webTransport": {
-    "message": "Lapas, kurās tiek izmantota saskarne WebTransport, nevar pilnīgi saglabāt kešatmiņā."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webXR": {
-    "message": "Lapas, kurās tiek izmantota saskarne WebXR, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
-  },
-  "panels/application/BackForwardCacheView.ts | backForwardCacheTitle": {
-    "message": "Pilnīga saglabāšana kešatmiņā"
-  },
-  "panels/application/BackForwardCacheView.ts | bfcacheStatus": {
-    "message": "Pilnīgas saglabāšanas kešatmiņā statuss"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantial": {
-    "message": "Nav jāveic nekādas darbības"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantialExplanation": {
-    "message": "Šīs problēmas nevar novērst — saglabāšanu kešatmiņā liedza ārējs faktors, ko lapā nevar kontrolēt."
-  },
-  "panels/application/BackForwardCacheView.ts | mainFrame": {
-    "message": "Galvenais ietvars"
-  },
-  "panels/application/BackForwardCacheView.ts | normalNavigation": {
-    "message": "Standarta navigācija (bez atjaunošanas no pilnīgas saglabāšanas kešatmiņā)"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeeded": {
-    "message": "Jāveic noteiktas darbības"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeededExplanation": {
-    "message": "Lai lapa būtu piemērota pilnīgai saglabāšanai kešatmiņā, šīs problēmas var novērst."
-  },
-  "panels/application/BackForwardCacheView.ts | restoredFromBFCache": {
-    "message": "Atjaunots no pilnīgas saglabāšanas kešatmiņā"
-  },
-  "panels/application/BackForwardCacheView.ts | runTest": {
-    "message": "Izpildīt pārbaudi"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPending": {
-    "message": "Vēl netiek atbalstīta"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPendingExplanation": {
-    "message": "Pārlūkā Chrome šie risinājumi vēl netiek atbalstīti, taču nākamajās Chrome versijās to lietojums neliegs lapas pilnīgu saglabāšanu kešatmiņā."
-  },
-  "panels/application/BackForwardCacheView.ts | unavailable": {
-    "message": "nav pieejams"
-  },
-  "panels/application/BackForwardCacheView.ts | unknown": {
-    "message": "nezināms"
-  },
-  "panels/application/BackForwardCacheView.ts | url": {
-    "message": "URL"
   },
   "panels/application/BackgroundServiceView.ts | backgroundFetch": {
     "message": "Ienešana fonā"
@@ -3251,6 +2894,387 @@
   "panels/application/application-meta.ts | stopRecordingEvents": {
     "message": "Apturēt notikumu reģistrēšanu"
   },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
+    "message": "Tikai lapas, kuras tiek ielādētas, saņemot GET pieprasījumu, ir piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
+    "message": "Kešatmiņā var saglabāt tikai lapas ar statusa kodu 2XX."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | JavaScriptExecution": {
+    "message": "Pārlūkā Chrome tiks konstatēts mēģinājums izpildīt JavaScript kodu kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | appBanner": {
+    "message": "Lapas, kurās tiek pieprasīts AppBanner, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
+    "message": "Pilnīgu saglabāšanu kešatmiņā atspējoja karodziņu iestatījumi. Lai šajā ierīcē to iespējotu lokāli, atveriet lapu chrome://flags/#back-forward-cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
+    "message": "Komandrinda atspējoja pilnīgu saglabāšanu kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
+    "message": "Pilnīga saglabāšana kešatmiņā ir atspējota, jo atmiņā pietrūka vietas."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
+    "message": "Pilnīgu saglabāšanu kešatmiņā neatbalsta deleģētais elements"
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
+    "message": "Pirmsielādes atveidotājs atspējoja pilnīgu saglabāšanu kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | broadcastChannel": {
+    "message": "Lapu nevar saglabāt kešatmiņā, jo tajā ir BroadcastChannel instance ar reģistrētiem klausītājiem."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheControlNoStore": {
+    "message": "Lapas, kurās ir galvene cache-control:no-store, nevar pilnīgi saglabāt kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheFlushed": {
+    "message": "Kešatmiņa tika mērķtiecīgi notīrīta."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheLimit": {
+    "message": "Šīs lapas dati tika izlikti no kešatmiņas, lai kešatmiņā varētu saglabāt citu lapu."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | containsPlugins": {
+    "message": "Lapas ar spraudņiem pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileChooser": {
+    "message": "Lapas, kurās tiek izmantota saskarne FileChooser API, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileSystemAccess": {
+    "message": "Lapas, kurās tiek izmantota saskarne File System Access API, nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
+    "message": "Lapas, kurās tiek izmantots multivides ierīču dispečers, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaPlay": {
+    "message": "Pāriešanas brīdī darbojās multivides atskaņotājs."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSession": {
+    "message": "Lapas, kurās tiek izmantota saskarne MediaSession API un kurās ir iestatīts atskaņošanas stāvoklis, nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSessionService": {
+    "message": "Lapas, kurās tiek izmantota saskarne MediaSession API un kurās ir iestatīti darbību apdarinātāji, nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentScreenReader": {
+    "message": "Back/forward cache is disabled due to screen reader."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSecurityHandler": {
+    "message": "Lapas, kurās tiek izmantots apdarinātājs SecurityHandler, nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSerial": {
+    "message": "Lapas, kurās tiek izmantota saskarne Serial API, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
+    "message": "Lapas, kurās tiek izmantota saskarne WebAuthetication API, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebBluetooth": {
+    "message": "Lapas, kurās tiek izmantota saskarne WebBluetooth API, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebUSB": {
+    "message": "Lapas, kurās tiek izmantota saskarne WebUSB API, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
+    "message": "Lapas, kurās tiek izmantota saskarne DedicatedWorker vai Worklet, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | documentLoaded": {
+    "message": "Dokuments tika aizvērts vēl pirms bija pabeigta tā ielāde."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderAppBannerManager": {
+    "message": "App Banner was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
+    "message": "Chrome Password Manager was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
+    "message": "DOM distillation was in progress upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
+    "message": "DOM Distiller Viewer was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
+    "message": "Back/forward cache is disabled due to extensions using messaging API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
+    "message": "Extensions with long-lived connection should close the connection before entering back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
+    "message": "Extensions with long-lived connection attempted to send messages to frames in back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensions": {
+    "message": "Back/forward cache is disabled due to extensions."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderModalDialog": {
+    "message": "Modal dialog such as form resubmission or http password dialog was shown for the page upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOfflinePage": {
+    "message": "The offline page was shown upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
+    "message": "Out-Of-Memory Intervention bar was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
+    "message": "There were permission requests upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
+    "message": "Popup blocker was present upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
+    "message": "Safe Browsing details were shown upon navigating away."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
+    "message": "Safe Browsing considered this page to be abusive and blocked popup."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
+    "message": "Kamēr noritēja lapas pilnīga saglabāšana kešatmiņā, tika aktivizēts pakalpojuma skripts."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | foregroundCacheLimit": {
+    "message": "Šīs lapas dati tika izlikti no kešatmiņas, lai kešatmiņā varētu saglabāt citu lapu."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
+    "message": "Lapas, kurās ir piešķirta piekļuve multivides straumei, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | haveInnerContents": {
+    "message": "Lapas, kurās tiek izmantoti portāli, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | idleManager": {
+    "message": "Lapas, kurās tiek izmantota saskarne IdleManager, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | indexedDBConnection": {
+    "message": "Lapas, kurās ir atvērts IndexedDB savienojums, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | ineligibleAPI": {
+    "message": "Tika izmantotas nepiemērotas API."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedJavascript": {
+    "message": "Lapas, kurās paplašinājumi iepludina JavaScript kodu, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedStyleSheet": {
+    "message": "Lapas, kurās paplašinājumi iepludina stilu lapu, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | internalError": {
+    "message": "Iekšēja kļūda."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | keyboardLock": {
+    "message": "Lapas, kurās tiek izmantota tastatūras bloķēšana, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | loading": {
+    "message": "Lapa tika aizvērta vēl pirms bija pabeigta tās ielāde."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
+    "message": "Lapas, kuru galvenā resursa direktīva ir cache-control:no-cache, nevar pilnīgi saglabāt kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
+    "message": "Lapas, kuru galvenā resursa direktīva ir cache-control:no-store, nevar pilnīgi saglabāt kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
+    "message": "Pāriešana tika pārtraukta pirms kešatmiņā pilnīgi saglabātas lapas atjaunošanas."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
+    "message": "Lapas dati tika izlikti no kešatmiņas, jo aktīvajā tīkla savienojumā tika saņemts pārmērīgs daudzums datu. Pārlūkā Chrome tiek ierobežots datu daudzums, ko lapa var saņemt, kad tiek saglabāta kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
+    "message": "Lapas, kurās ir aktīvi ienešanas vai XHR notikumi, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestRedirected": {
+    "message": "Šīs lapas dati tika izlikti no kešatmiņas, jo aktīvs tīkla savienojuma pieprasījums ietvēra novirzīšanu."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestTimeout": {
+    "message": "Šīs lapas dati tika izlikti no kešatmiņas, jo tīkla savienojums bija atvērts pārāk ilgi. Pārlūkā Chrome tiek ierobežots laiks, kurā lapa var saņemt datus, kamēr norit tās saglabāšana kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | noResponseHead": {
+    "message": "Lapas, kurām nav derīgas atbildes galvenes, nevar pilnīgi saglabāt kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | notMainFrame": {
+    "message": "Pāriešana notika citā ietvarā, nevis galvenajā ietvarā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
+    "message": "Lapas, kurās notiek IndexedDB operācijas, pašlaik nav piemērotas pilnīgai saglabāšanai atmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
+    "message": "Lapas, kurās ir aktīvs tīkla pieprasījums, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
+    "message": "Lapas, kurās ir aktīvs tīkla ienešanas pieprasījums, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
+    "message": "Lapas, kurās ir aktīvs tīkla pieprasījums, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
+    "message": "Lapas, kurās ir aktīvs XHR tīkla pieprasījums, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | paymentManager": {
+    "message": "Lapas, kurās tiek izmantota saskarne PaymentManager, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | pictureInPicture": {
+    "message": "Lapas, kurās tiek izmantota funkcija “Attēls attēlā”, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | portal": {
+    "message": "Lapas, kurās tiek izmantoti portāli, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | printing": {
+    "message": "Lapas, kurās rādīta drukāšanas saskarne, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
+    "message": "Lapa tika atvērta, izmantojot metodi window.open(), un citā cilnē ir atsauce uz šo lapu, vai arī lapa tika atvērta logā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessCrashed": {
+    "message": "Kešatmiņā pilnīgi saglabātas lapas atveidotājs avarēja."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessKilled": {
+    "message": "Kešatmiņā pilnīgi saglabātas lapas atveidotāja darbība tika pārtraukta."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
+    "message": "Lapas, kurās tika pieprasītas audio ierakstīšanas atļaujas, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
+    "message": "Lapas, kurās tika pieprasītas sensoru atļaujas, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
+    "message": "Lapas, kurās tika pieprasītas atļaujas sinhronizācijai fonā vai ienešanai, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedMIDIPermission": {
+    "message": "Lapas, kurās tika pieprasīta MIDI ierīču atļauja, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
+    "message": "Lapas, kurās tika pieprasītas paziņojumu atļaujas, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
+    "message": "Lapas, kurās tika pieprasīta piekļuve krātuvei, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
+    "message": "Lapas, kurās tika pieprasītas video ierakstīšanas atļaujas, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
+    "message": "Kešatmiņā var saglabāt tikai tādas lapas, kuru URL shēma ietver HTTP vai HTTPS."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerClaim": {
+    "message": "Kamēr noritēja lapas pilnīga saglabāšana kešatmiņā, lapu pieprasīja pakalpojuma skripts."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
+    "message": "Pakalpojuma skripts mēģināja nosūtīt rekvizītu MessageEvent lapai, kas tiek pilnīgi saglabāta kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
+    "message": "ServiceWorker reģistrācija tika atcelta, kamēr noritēja lapas pilnīga saglabāšana kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
+    "message": "Lapas dati tika izlikti no kešatmiņas, jo tika aktivizēts pakalpojuma skripts."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sessionRestored": {
+    "message": "Pārlūks Chrome tika restartēts, un kešatmiņā pilnīgi saglabātie ieraksti tika notīrīti."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sharedWorker": {
+    "message": "Lapas, kurās tiek izmantota saskarne SharedWorker, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechRecognizer": {
+    "message": "Lapas, kurās tiek izmantota saskarne SpeedRecognizer, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechSynthesis": {
+    "message": "Lapas, kurās tiek izmantota saskarne SpeechSynthesis, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subframeIsNavigating": {
+    "message": "Lapas Iframe ietvarā tika sākta pāriešana, bet tā netika pabeigta."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
+    "message": "Lapas, kuru apakšresursa direktīva ir cache-control:no-cache, nevar pilnīgi saglabāt kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
+    "message": "Lapas, kuru apakšresursa direktīva ir cache-control:no-store, nevar pilnīgi saglabāt kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeout": {
+    "message": "Tika pārsniegts maksimālais laiks lapas pilnīgai saglabāšanai kešatmiņā, un lapas derīguma termiņš beidzās."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
+    "message": "Sākot pilnīgu saglabāšanu kešatmiņā, lapā iestājās noildze (iespējams, to izraisīja ieilgusi lapas paslēpšanas notikumu apdarinātāju darbība)."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
+    "message": "Lapas galvenajā ietvarā ir ielādēšanas atcelšanas apdarinātājs."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
+    "message": "Lapas apakšietvarā ir ielādēšanas atcelšanas apdarinātājs."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
+    "message": "Pārlūkā tika mainīta lietotāja aģenta ignorēšanas galvene."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
+    "message": "Lapas, kurās ir piešķirta piekļuves video vai audio ierakstīšanai, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webDatabase": {
+    "message": "Lapas, kurās tiek izmantots WebDatabase, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webHID": {
+    "message": "Lapas, kurās tiek izmantota saskarne WebHID, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webLocks": {
+    "message": "Lapas, kurās tiek izmantota saskarne WebLocks, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webNfc": {
+    "message": "Lapas, kurās tiek izmantota saskarne WebNfc, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webOTPService": {
+    "message": "Lapas, kurās tiek izmantota saskarne WebOTPService, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webRTC": {
+    "message": "Lapas, kurās tiek izmantota saskarne WebRTC, nevar pilnīgi saglabāt kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webShare": {
+    "message": "Lapas, kurās tiek izmantots starpniekserveris WebShare, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webSocket": {
+    "message": "Lapas, kurās tiek izmantots protokols WebSocket, nevar pilnīgi saglabāt kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webTransport": {
+    "message": "Lapas, kurās tiek izmantota saskarne WebTransport, nevar pilnīgi saglabāt kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webXR": {
+    "message": "Lapas, kurās tiek izmantota saskarne WebXR, pašlaik nav piemērotas pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheView.ts | backForwardCacheTitle": {
+    "message": "Pilnīga saglabāšana kešatmiņā"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantial": {
+    "message": "Nav jāveic nekādas darbības"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantialExplanation": {
+    "message": "Šīs problēmas nevar novērst — saglabāšanu kešatmiņā liedza ārējs faktors, ko lapā nevar kontrolēt."
+  },
+  "panels/application/components/BackForwardCacheView.ts | learnMore": {
+    "message": "Uzzināt vairāk: pilnīgas saglabāšanas kešatmiņā piemērotība"
+  },
+  "panels/application/components/BackForwardCacheView.ts | mainFrame": {
+    "message": "Galvenais ietvars"
+  },
+  "panels/application/components/BackForwardCacheView.ts | normalNavigation": {
+    "message": "Netika parādīta no pilnīgas saglabāšanas kešatmiņā: lai aktivizētu pilnīgu saglabāšanu kešatmiņā, izmantojiet pārlūka Chrome pogas Atpakaļ/Tālāk vai tālāk redzamo testēšanas pogu, lai automātiski pārietu uz citu lapu un atpakaļ."
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeeded": {
+    "message": "Jāveic noteiktas darbības"
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeededExplanation": {
+    "message": "Šīs problēmas ir iespējams novērst, lai lapa būtu piemērota pilnīgai saglabāšanai kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheView.ts | restoredFromBFCache": {
+    "message": "Sekmīgi parādīta no pilnīgas saglabāšanas kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheView.ts | runTest": {
+    "message": "Testēt pilnīgu saglabāšanu kešatmiņā"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runningTest": {
+    "message": "Notiek testēšana"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPending": {
+    "message": "Vēl netiek atbalstīta"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPendingExplanation": {
+    "message": "Pārlūkā Chrome šos iemeslus ir plānots atbalstīt vēlāk — kādā no nākamajām Chrome versijām to lietojums neliegs lapas pilnīgu saglabāšanu kešatmiņā."
+  },
+  "panels/application/components/BackForwardCacheView.ts | unavailable": {
+    "message": "nav pieejams"
+  },
+  "panels/application/components/BackForwardCacheView.ts | unknown": {
+    "message": "Nezināms statuss"
+  },
+  "panels/application/components/BackForwardCacheView.ts | url": {
+    "message": "URL:"
+  },
   "panels/application/components/EndpointsGrid.ts | noEndpointsToDisplay": {
     "message": "Nav beigu punktu, ko parādīt"
   },
@@ -3297,22 +3321,16 @@
     "message": "Noklikšķiniet, lai skatītu panelī Avoti"
   },
   "panels/application/components/FrameDetailsView.ts | createdByAdScriptExplanation": {
-    "message": "Kad šis ietvars tika izveidots, (asinhronajā) stekā bija reklāmu skripts. Izpētiet šī ietvara izveides steka trasējumu, lai gūtu plašāku ieskatu."
+    "message": "Kad šis ietvars tika izveidots, šajā stekā bija reklāmu skripts: (async) stack. Lai gūtu plašāku ieskatu, jāizpēta šī ietvara izveides stack trace."
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTrace": {
-    "message": "Ietvara izveides steka trasēšana"
+    "message": "Ietvara izveides Stack Trace"
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTraceExplanation": {
-    "message": "Šis ietvars tika izveidots programmatiski. Steka trasējumā ir norādīts, kur tas notika."
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginEmbedderPolicy": {
-    "message": "Politika par citas izcelsmes resursu iegulšanu"
+    "message": "Šis ietvars tika izveidots programmatiski; stack trace norāda, kur tas notika."
   },
   "panels/application/components/FrameDetailsView.ts | crossoriginIsolated": {
     "message": "Izolēts no citas izcelsmes resursiem"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginOpenerPolicy": {
-    "message": "Politika par citas izcelsmes resursu atvēršanu"
   },
   "panels/application/components/FrameDetailsView.ts | document": {
     "message": "Dokuments"
@@ -3324,7 +3342,7 @@
     "message": "Uzzināt vairāk"
   },
   "panels/application/components/FrameDetailsView.ts | localhostIsAlwaysASecureContext": {
-    "message": "“Localhost” vienmēr ir drošs konteksts"
+    "message": "Localhost vienmēr ir drošs konteksts"
   },
   "panels/application/components/FrameDetailsView.ts | matchedBlockingRuleExplanation": {
     "message": "Šis ietvars tiek uzskatīts par reklāmas ietvaru, jo tā pašreizējais (vai iepriekšējais) galvenais dokuments ir reklāmu resurss."
@@ -3337,9 +3355,6 @@
   },
   "panels/application/components/FrameDetailsView.ts | origin": {
     "message": "Izcelsme"
-  },
-  "panels/application/components/FrameDetailsView.ts | originTrials": {
-    "message": "Izcelsmes izmēģinājumi"
   },
   "panels/application/components/FrameDetailsView.ts | ownerElement": {
     "message": "Īpašnieka elements"
@@ -3366,10 +3381,10 @@
     "message": "Drošība un izolācija"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIs": {
-    "message": "Ir pieejams veidotājs SharedArrayBuffer, un koplietotos masīvu buferus var pārsūtīt, izmantojot metodi postMessage"
+    "message": "Ir pieejams veidotājs SharedArrayBuffer, un SABs objektus var pārsūtīt, izmantojot metodi postMessage"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIsAvailable": {
-    "message": "Ir pieejams veidotājs SharedArrayBuffer, taču koplietotos masīvu buferus nevar pārsūtīt, izmantojot metodi postMessage"
+    "message": "Ir pieejams veidotājs SharedArrayBuffer, taču SABs objektus nevar pārsūtīt, izmantojot metodi postMessage"
   },
   "panels/application/components/FrameDetailsView.ts | theFramesSchemeIsInsecure": {
     "message": "Ietvara shēma nav droša"
@@ -3378,7 +3393,7 @@
     "message": "Saskarne performance.measureUserAgentSpecificMemory() API ir pieejama"
   },
   "panels/application/components/FrameDetailsView.ts | thePerformancemeasureuseragentspecificmemory": {
-    "message": "Saskarne performance.measureUserAgentSpecificMemory() API nav pieejama"
+    "message": "Saskarne performance.measureUserAgentSpecificMemory() API nav pieejama"
   },
   "panels/application/components/FrameDetailsView.ts | thisAdditionalDebugging": {
     "message": "Šī papildu (atkļūdošanas) informācija tiek rādīta, jo ir iespējots eksperiments “Protokola pārraugs”."
@@ -4229,20 +4244,11 @@
   "panels/css_overview/CSSOverviewUnusedDeclarations.ts | widthAppliedToAnInlineElement": {
     "message": "Width vērtība tiek lietota iekļautam elementam"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | activelyWorkingAndLookingForS": {
-    "message": "Mūsu komanda aktīvi pilnveido šo funkciju, tāpēc priecāsimies saņemt jūsu {PH1}!"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | captureOverview": {
     "message": "Tveršanas kopsavilkums"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | capturePageCSSOverview": {
     "message": "Lapas CSS kopsavilkuma izveide"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackInline": {
-    "message": "atsauksmes"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackStandalone": {
-    "message": "Atsauksmes"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | identifyCSSImprovements": {
     "message": "Potenciālu CSS uzlabojumu noteikšana"
@@ -4253,14 +4259,8 @@
   "panels/css_overview/components/CSSOverviewStartView.ts | locateAffectedElements": {
     "message": "Skatiet ietekmētos elementus panelī Elementi."
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | previewFeature": {
-    "message": "Priekšskatījuma funkcija"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | quickStartWithCSSOverview": {
     "message": "Īsā pamācība darba sākšanai ar jauno CSS kopsavilkuma paneli"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | videoAndDocumentation": {
-    "message": "Video un dokumentācija"
   },
   "panels/css_overview/css_overview-meta.ts | cssOverview": {
     "message": "CSS kopsavilkums"
@@ -4359,7 +4359,7 @@
     "message": "Pāriet uz stilu"
   },
   "panels/elements/ComputedStyleWidget.ts | noMatchingProperty": {
-    "message": "Nav atbilstošu īpašumu"
+    "message": "Nav atbilstošu rekvizītu"
   },
   "panels/elements/ComputedStyleWidget.ts | showAll": {
     "message": "Rādīt visu"
@@ -4591,6 +4591,21 @@
   },
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
     "message": "Atveidotie fonti"
+  },
+  "panels/elements/PropertiesWidget.ts | filter": {
+    "message": "Filtrs"
+  },
+  "panels/elements/PropertiesWidget.ts | filterProperties": {
+    "message": "Filtrēt rekvizītus"
+  },
+  "panels/elements/PropertiesWidget.ts | noMatchingProperty": {
+    "message": "Nav atbilstošu rekvizītu"
+  },
+  "panels/elements/PropertiesWidget.ts | showAll": {
+    "message": "Rādīt visu"
+  },
+  "panels/elements/PropertiesWidget.ts | showAllTooltip": {
+    "message": "Ja šī izvēles rūtiņa nav atzīmēta, tiks rādīti tikai rekvizīti, kuru vērtība nav tukša vai nedefinēta."
   },
   "panels/elements/StylePropertyTreeElement.ts | copyAllCssDeclarationsAsJs": {
     "message": "Kopēt visas deklarācijas kā JS"
@@ -4980,7 +4995,7 @@
     "message": "Paslēpt datu nesēja vaicājumus"
   },
   "panels/emulation/emulation-meta.ts | hideRulers": {
-    "message": "Paslēpt mērjoslas"
+    "message": "Rīkjoslā “Ierīces režīms” paslēpt mērjoslas"
   },
   "panels/emulation/emulation-meta.ts | showDeviceFrame": {
     "message": "Rādīt ierīces ietvaru"
@@ -4989,7 +5004,7 @@
     "message": "Rādīt datu nesēja vaicājumus"
   },
   "panels/emulation/emulation-meta.ts | showRulers": {
-    "message": "Rādīt mērjoslas"
+    "message": "Rīkjoslā “Ierīces režīms” rādīt mērjoslas"
   },
   "panels/emulation/emulation-meta.ts | toggleDeviceToolbar": {
     "message": "Pārslēgt ierīces rīkjoslu"
@@ -5014,36 +5029,6 @@
   },
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "Pārslēgt notikumu uztvērēju pasīvā vai bloķēšanas režīmā"
-  },
-  "panels/help/ReleaseNoteView.ts | close": {
-    "message": "Aizvērt"
-  },
-  "panels/help/ReleaseNoteView.ts | learnMore": {
-    "message": "Uzzināt vairāk"
-  },
-  "panels/help/help-meta.ts | bug": {
-    "message": "kļūda"
-  },
-  "panels/help/help-meta.ts | doNotShowWhatsNewAfterEachUpdate": {
-    "message": "Pēc atjaunināšanas nerādīt sadaļu Jaunumi"
-  },
-  "panels/help/help-meta.ts | releaseNotes": {
-    "message": "Piezīmes par izdevumu"
-  },
-  "panels/help/help-meta.ts | reportADevtoolsIssue": {
-    "message": "Ziņot par Izstrādātāja rīku problēmu"
-  },
-  "panels/help/help-meta.ts | reportTranslationIssue": {
-    "message": "Ziņot par tulkošanas problēmu"
-  },
-  "panels/help/help-meta.ts | showWhatsNew": {
-    "message": "Parādīt rīku Jaunumi"
-  },
-  "panels/help/help-meta.ts | showWhatsNewAfterEachUpdate": {
-    "message": "Pēc katras atjaunināšanas reizes parādīt sadaļu Jaunumi"
-  },
-  "panels/help/help-meta.ts | whatsNew": {
-    "message": "Jaunumi"
   },
   "panels/input/InputTimeline.ts | clearAll": {
     "message": "Notīrīt visu"
@@ -5261,8 +5246,20 @@
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceEventId": {
     "message": "Nederīgs: attributionsourceeventid"
   },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceExpiry": {
+    "message": "Nederīga atribūta “attributionexpiry” vērtība"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourcePriority": {
+    "message": "Nederīga atribūta “attributionsourcepriority” vērtība"
+  },
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerData": {
     "message": "Nederīgs: trigger-data"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerDedupKey": {
+    "message": "Nederīga parametra “dedup-key” vērtība"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerPriority": {
+    "message": "Nederīga parametra “priority” vērtība"
   },
   "panels/issues/AttributionReportingIssueDetailsView.ts | nViolations": {
     "message": "{n,plural, =1{# pārkāpums}zero{# pārkāpumu}one{# pārkāpums}other{# pārkāpumi}}"
@@ -5290,6 +5287,9 @@
   },
   "panels/issues/CorsIssueDetailsView.ts | disallowedRequestMethod": {
     "message": "Neatļauta pieprasījuma metode"
+  },
+  "panels/issues/CorsIssueDetailsView.ts | failedRequest": {
+    "message": "Pieprasījums neizdevās"
   },
   "panels/issues/CorsIssueDetailsView.ts | header": {
     "message": "Galvene"
@@ -5366,8 +5366,14 @@
   "panels/issues/HiddenIssuesRow.ts | unhideAll": {
     "message": "Parādīt visas slēptās problēmas"
   },
-  "panels/issues/IssueKindView.ts | hideAllCurrent": {
-    "message": "Slēpt visas pašreizējās {PH1}"
+  "panels/issues/IssueKindView.ts | hideAllCurrentBreakingChanges": {
+    "message": "Paslēpt visas pašreizējās traucējumus radošās izmaiņas"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentImprovements": {
+    "message": "Paslēpt visus pašreizējos uzlabojumus"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentPageErrors": {
+    "message": "Paslēpt visas pašreizējās lapas kļūdas"
   },
   "panels/issues/IssueView.ts | affectedResources": {
     "message": "Ietekmētie resursi"
@@ -6307,6 +6313,9 @@
   },
   "panels/network/NetworkConfigView.ts | caching": {
     "message": "Notiek saglabāšana kešatmiņā"
+  },
+  "panels/network/NetworkConfigView.ts | clientHintsStatusText": {
+    "message": "Lietotāja aģents ir atjaunināts."
   },
   "panels/network/NetworkConfigView.ts | custom": {
     "message": "Pielāgots…"
@@ -9153,7 +9162,7 @@
     "message": "Tvērums: nav attiecināms"
   },
   "panels/sources/CoveragePlugin.ts | coverageS": {
-    "message": "Tvērums: {PH1}%"
+    "message": "Atbilstība: {PH1}"
   },
   "panels/sources/CoveragePlugin.ts | showDetails": {
     "message": "Rādīt informāciju"
@@ -9412,6 +9421,15 @@
   },
   "panels/sources/OutlineQuickOpen.ts | openAJavascriptOrCssFileToSee": {
     "message": "Lai skatītu simbolus, atveriet JavaScript vai CSS failu"
+  },
+  "panels/sources/ProfilePlugin.ts | kb": {
+    "message": "kB"
+  },
+  "panels/sources/ProfilePlugin.ts | mb": {
+    "message": "MB"
+  },
+  "panels/sources/ProfilePlugin.ts | ms": {
+    "message": "ms"
   },
   "panels/sources/ScopeChainSidebarPane.ts | closure": {
     "message": "Slēgšana"
@@ -11429,6 +11447,24 @@
   "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
     "message": "Rādīt rīku Atmiņas pārbaudītājs"
   },
+  "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
+    "message": "Atsauksmes"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewFeature": {
+    "message": "Priekšskatījuma funkcija"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewText": {
+    "message": "Mūsu komanda aktīvi pilnveido šo funkciju, tāpēc mēs priecātos uzzināt jūsu viedokli."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewTextFeedbackLink": {
+    "message": "Nosūtīt atsauksmes"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | videoAndDocumentation": {
+    "message": "Video un dokumentācija"
+  },
+  "ui/components/panel_feedback/PreviewToggle.ts | previewTextFeedbackLink": {
+    "message": "Nosūtīt atsauksmes"
+  },
   "ui/components/request_link_icon/RequestLinkIcon.ts | clickToShowRequestInTheNetwork": {
     "message": "Noklikšķiniet, lai atvērtu tīkla paneli un rādītu URL pieprasījumu: {url}"
   },
@@ -11501,6 +11537,12 @@
   "ui/legacy/InspectorView.ts | drawer": {
     "message": "Rīka atvilktne"
   },
+  "ui/legacy/InspectorView.ts | drawerHidden": {
+    "message": "Atvilktne ir paslēpta"
+  },
+  "ui/legacy/InspectorView.ts | drawerShown": {
+    "message": "Atvilktne ir redzama"
+  },
   "ui/legacy/InspectorView.ts | mainToolbar": {
     "message": "Galvenā rīkjosla"
   },
@@ -11539,6 +11581,9 @@
   },
   "ui/legacy/ListWidget.ts | saveString": {
     "message": "Saglabāt"
+  },
+  "ui/legacy/RemoteDebuggingTerminatedScreen.ts | debuggingConnectionWasClosed": {
+    "message": "Debugging connection was closed. Reason: "
   },
   "ui/legacy/RemoteDebuggingTerminatedScreen.ts | reconnectDevtools": {
     "message": "Atkārtoti izveidot savienojumu ar DevTools"
@@ -11774,6 +11819,9 @@
   "ui/legacy/components/cookie_table/CookiesTable.ts | name": {
     "message": "Nosaukums"
   },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | opaquePartitionKey": {
+    "message": "(nepārredzams)"
+  },
   "ui/legacy/components/cookie_table/CookiesTable.ts | session": {
     "message": "Sesija"
   },
@@ -11942,15 +11990,6 @@
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "Rādīt kā JavaScript objektu"
   },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keys": {
-    "message": "Atslēgas"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keywords": {
-    "message": "atslēgvārdi"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | lexicalScopeVariables": {
-    "message": "Leksiskā tvēruma mainīgie"
-  },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | collapseChildren": {
     "message": "Sakļaut pakārtotos elementus"
   },
@@ -12038,15 +12077,6 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | sSelected": {
     "message": "Izvēlēta grupa {PH1}"
   },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | kb": {
-    "message": "kB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | mb": {
-    "message": "MB"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | ms": {
-    "message": "ms"
-  },
   "ui/legacy/components/perf_ui/NetworkPriorities.ts | high": {
     "message": "Augsta"
   },
@@ -12119,8 +12149,8 @@
   "ui/legacy/components/quick_open/QuickInput.ts | pressEnterToConfirmOrEscapeTo": {
     "message": "{PH1} (Lai apstiprinātu, nospiediet ievadīšanas taustiņu. Lai atceltu, nospiediet atsoļa taustiņu.)"
   },
-  "ui/legacy/components/quick_open/QuickOpen.ts | useTabToSwitchCommandsTypeToSeeAvailableCommands": {
-    "message": "Izmantojiet tabulēšanas taustiņu, lai pārslēgtu komandas. Lai skatītu pieejamās komandas, ierakstiet jautājuma zīmi (“?”)."
+  "ui/legacy/components/quick_open/QuickOpen.ts | typeToSeeAvailableCommands": {
+    "message": "Lai skatītu pieejamās komandas, ierakstiet simbolu “?”"
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | openFile": {
     "message": "Atvērt failu"
@@ -12223,9 +12253,6 @@
   },
   "ui/legacy/components/source_frame/source_frame-meta.ts | tabCharacter": {
     "message": "Tabulēšanas rakstzīme"
-  },
-  "ui/legacy/components/text_editor/CodeMirrorTextEditor.ts | codeEditor": {
-    "message": "Koda redaktors"
   },
   "ui/legacy/components/utils/ImagePreview.ts | currentSource": {
     "message": "Pašreizējais avots:"

@@ -95,7 +95,6 @@ export class TestGroup<F extends Fixture> implements TestGroupBuilder<F> {
     this.seen.add(name);
   }
 
-  // TODO: This could take a fixture, too, to override the one for the group.
   test(name: string): TestBuilderWithName<F> {
     const testCreationStack = new Error(`Test created: ${name}`);
 
@@ -207,8 +206,10 @@ class TestBuilder {
   }
 
   fn(fn: TestFn<Fixture, {}>): void {
-    // TODO: add TODO if there's no description? (and make sure it only ends up on actual tests,
-    // not on test parents in the tree, which is what happens if you do it here, not sure why)
+    // eslint-disable-next-line no-warning-comments
+    // MAINTENANCE_TODO: add "TODO" if there's no description? (and make sure it only ends up on
+    // actual tests, not on test parents in the tree, which is what happens if you do it here, not
+    // sure why)
     assert(this.testFn === undefined);
     this.testFn = fn;
   }

@@ -263,6 +263,7 @@ if (is_android) {
       "api/org/webrtc/FrameDecryptor.java",
       "api/org/webrtc/FrameEncryptor.java",
       "api/org/webrtc/IceCandidate.java",
+      "api/org/webrtc/IceCandidateErrorEvent.java",
       "api/org/webrtc/MediaConstraints.java",
       "api/org/webrtc/MediaSource.java",
       "api/org/webrtc/MediaStream.java",
@@ -509,6 +510,15 @@ if (is_android) {
       ":video_api_java",
       ":video_java",
       "//rtc_base:base_java",
+    ]
+  }
+
+  rtc_android_library("dav1d_java") {
+    visibility = [ "*" ]
+    sources = [ "api/org/webrtc/Dav1dDecoder.java" ]
+    deps = [
+      ":dav1d_av1_jni",
+      ":video_java",
     ]
   }
 
@@ -860,13 +870,25 @@ if (current_os == "linux" || is_android) {
   rtc_library("libaom_av1_jni") {
     visibility = [ "*" ]
     allow_poison = [ "software_video_codecs" ]
-    sources = [ "src/jni/av1_codec.cc" ]
+    sources = [ "src/jni/libaom_av1_codec.cc" ]
     deps = [
       ":base_jni",
       ":generated_libaom_av1_jni",
       ":video_jni",
       "../../modules/video_coding/codecs/av1:libaom_av1_decoder",
       "../../modules/video_coding/codecs/av1:libaom_av1_encoder",
+    ]
+  }
+
+  rtc_library("dav1d_av1_jni") {
+    visibility = [ "*" ]
+    allow_poison = [ "software_video_codecs" ]
+    sources = [ "src/jni/dav1d_codec.cc" ]
+    deps = [
+      ":base_jni",
+      ":generated_dav1d_jni",
+      ":video_jni",
+      "../../modules/video_coding/codecs/av1:dav1d_decoder",
     ]
   }
 
@@ -1320,6 +1342,13 @@ if (current_os == "linux" || is_android) {
     jni_generator_include = "//sdk/android/src/jni/jni_generator_helper.h"
   }
 
+  generate_jni("generated_dav1d_jni") {
+    sources = [ "api/org/webrtc/Dav1dDecoder.java" ]
+
+    namespace = "webrtc::jni"
+    jni_generator_include = "//sdk/android/src/jni/jni_generator_helper.h"
+  }
+
   generate_jni("generated_peerconnection_jni") {
     sources = [
       "api/org/webrtc/AddIceObserver.java",
@@ -1330,6 +1359,7 @@ if (current_os == "linux" || is_android) {
       "api/org/webrtc/DataChannel.java",
       "api/org/webrtc/DtmfSender.java",
       "api/org/webrtc/IceCandidate.java",
+      "api/org/webrtc/IceCandidateErrorEvent.java",
       "api/org/webrtc/MediaConstraints.java",
       "api/org/webrtc/MediaSource.java",
       "api/org/webrtc/MediaStream.java",

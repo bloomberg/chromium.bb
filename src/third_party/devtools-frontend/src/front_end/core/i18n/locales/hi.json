@@ -401,6 +401,21 @@
   "core/sdk/DebuggerModel.ts | withBlock": {
     "message": "With सेक्शन"
   },
+  "core/sdk/EventBreakpointsModel.ts | auctionWorklet": {
+    "message": "Ad Auction Worklet"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletBiddingStart": {
+    "message": "Bidder Bidding Phase Start"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeBidderWorkletReportingStart": {
+    "message": "Bidder Reporting Phase Start"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletReportingStart": {
+    "message": "Seller Reporting Phase Start"
+  },
+  "core/sdk/EventBreakpointsModel.ts | beforeSellerWorkletScoringStart": {
+    "message": "Seller Scoring Phase Start"
+  },
   "core/sdk/NetworkManager.ts | crossoriginReadBlockingCorb": {
     "message": "क्रॉस-ओरिजन रीड ब्लॉकिंग (सीओआरबी) से {PH1} MIME टाइप वाला {PH2} क्रॉस-ओरिजन जवाब ब्लॉक किया गया. ज़्यादा जानकारी के लिए, https://www.chromestatus.com/feature/5629709824032768 देखें."
   },
@@ -644,9 +659,6 @@
   "core/sdk/sdk-meta.ts | disableWebpFormat": {
     "message": "WebP फ़ॉर्मैट बंद करें"
   },
-  "core/sdk/sdk-meta.ts | disabledDarkMode": {
-    "message": "बंद करें"
-  },
   "core/sdk/sdk-meta.ts | doNotCaptureAsyncStackTraces": {
     "message": "एक साथ काम नहीं करने वाली स्टैक ट्रेस कैप्चर न करें"
   },
@@ -679,6 +691,9 @@
   },
   "core/sdk/sdk-meta.ts | doNotShowGridTrackSizes": {
     "message": "ग्रिड ट्रैक के साइज़ न दिखाएं"
+  },
+  "core/sdk/sdk-meta.ts | doNotShowRulersOnHover": {
+    "message": "किसी आइटम के ऊपर कर्सर घुमाने पर रूलर न दिखाएं"
   },
   "core/sdk/sdk-meta.ts | emulateAFocusedPage": {
     "message": "फ़ोकस किए गए पेज को एम्युलेट करें"
@@ -743,9 +758,6 @@
   "core/sdk/sdk-meta.ts | enableWebpFormat": {
     "message": "WebP फ़ॉर्मैट चालू करें"
   },
-  "core/sdk/sdk-meta.ts | enabledDarkMode": {
-    "message": "चालू करें"
-  },
   "core/sdk/sdk-meta.ts | extendGridLines": {
     "message": "ग्रिड लाइनें आगे बढ़ाएं"
   },
@@ -754,9 +766,6 @@
   },
   "core/sdk/sdk-meta.ts | hideFramesPerSecondFpsMeter": {
     "message": "फ़्रेम प्रति सेकंड (FPS) मीटर छिपाएं"
-  },
-  "core/sdk/sdk-meta.ts | hideHittestBorders": {
-    "message": "हिट-टेस्ट बॉर्डर छिपाना"
   },
   "core/sdk/sdk-meta.ts | hideLayerBorders": {
     "message": "लेआउट बॉर्डर छिपाएं"
@@ -812,9 +821,6 @@
   "core/sdk/sdk-meta.ts | showGridTrackSizes": {
     "message": "ग्रिड ट्रैक के साइज़ दिखाएं"
   },
-  "core/sdk/sdk-meta.ts | showHittestBorders": {
-    "message": "हिट-टेस्ट बॉर्डर दिखाना"
-  },
   "core/sdk/sdk-meta.ts | showLayerBorders": {
     "message": "लेयर बॉर्डर दिखाएं"
   },
@@ -833,8 +839,8 @@
   "core/sdk/sdk-meta.ts | showPaintFlashingRectangles": {
     "message": "पेंट फ़्लैशिंग आयत दिखाएं"
   },
-  "core/sdk/sdk-meta.ts | showRulers": {
-    "message": "पैमाने दिखाएं"
+  "core/sdk/sdk-meta.ts | showRulersOnHover": {
+    "message": "किसी आइटम के ऊपर कर्सर घुमाने पर रूलर दिखाएं"
   },
   "core/sdk/sdk-meta.ts | showScrollPerformanceBottlenecks": {
     "message": "स्क्रोल परफ़ॉर्मेंस बॉटलनेक दिखाएं"
@@ -875,14 +881,20 @@
   "entrypoints/inspector_main/RenderingOptions.ts | emulateAFocusedPage": {
     "message": "फ़ोकस किए गए पेज को एम्युलेट करें"
   },
+  "entrypoints/inspector_main/RenderingOptions.ts | emulateAutoDarkMode": {
+    "message": "गहरे रंग वाला मोड अपने-आप चालू करें"
+  },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAFocusedPage": {
     "message": "फ़ोकस किए गए किसी पेज को एम्युलेट करें."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAutoDarkMode": {
-    "message": "जिस पेज की जांच की गई है उसके लिए, गहरे रंग वाला मोड अपने-आप चालू करें."
+    "message": "यह, गहरे रंग वाला मोड अपने-आप चालू करती है. साथ ही, prefers-color-scheme को dark पर सेट करती है."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssColorgamutMediaFeature": {
     "message": "सीएसएस color-gamut मीडिया फ़ीचर के लिए बाध्य किया जाता है"
+  },
+  "entrypoints/inspector_main/RenderingOptions.ts | forcesCssForcedColors": {
+    "message": "'फ़ोर्सेस सीएसएस फ़ोर्स्ड-कलर्स' मीडिया फ़ीचर"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | forcesCssPreferscolorschemeMedia": {
     "message": "सीएसएस prefers-color-scheme मीडिया फ़ीचर के लिए बाध्य किया जाता है"
@@ -920,9 +932,6 @@
   "entrypoints/inspector_main/RenderingOptions.ts | highlightsFramesRedDetectedToBe": {
     "message": "विज्ञापन के तौर पर दिखने वाले फ़्रेम (लाल) हाइलाइट करें."
   },
-  "entrypoints/inspector_main/RenderingOptions.ts | hittestBorders": {
-    "message": "हिट-टेस्ट बॉर्डर"
-  },
   "entrypoints/inspector_main/RenderingOptions.ts | layerBorders": {
     "message": "लेयर बॉर्डर"
   },
@@ -943,9 +952,6 @@
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsAnOverlayWithCoreWebVitals": {
     "message": "वेबसाइट कैसा प्रदर्शन कर रही है इसके बारे में जानकारी वाले ओवरले दिखाता है."
-  },
-  "entrypoints/inspector_main/RenderingOptions.ts | showsBordersAroundHittestRegions": {
-    "message": "हिट-टेस्ट क्षेत्र के आस-पास की बॉर्डर दिखाएं."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | showsLayerBordersOrangeoliveAnd": {
     "message": "यह बॉर्डर (ऑरेंज/ऑलिव) और टाइल (स्यान) की लेयर दिखाता है."
@@ -1001,7 +1007,7 @@
   "entrypoints/inspector_main/inspector_main-meta.ts | visionDeficiency": {
     "message": "देखने की क्षमता में कमी"
   },
-  "entrypoints/js_app/JsMain.ts | main": {
+  "entrypoints/js_app/js_app.ts | main": {
     "message": "मुख्य"
   },
   "entrypoints/main/MainImpl.ts | customizeAndControlDevtools": {
@@ -1036,9 +1042,6 @@
   },
   "entrypoints/main/MainImpl.ts | showConsoleDrawer": {
     "message": "कंसोल दराज दिखाएं"
-  },
-  "entrypoints/main/MainImpl.ts | theSystempreferredColorSchemeHas": {
-    "message": "सिस्टम के हिसाब से सुझाई गई कलर स्कीम बदल दी गई है. DevTools पर यह बदलाव लागू करने के लिए, फिर से लोड करें."
   },
   "entrypoints/main/MainImpl.ts | undockIntoSeparateWindow": {
     "message": "अलग विंडो में अनडॉक करें"
@@ -1190,41 +1193,41 @@
   "entrypoints/main/main-meta.ts | zoomOut": {
     "message": "ज़ूम आउट करें"
   },
-  "entrypoints/node_app/node_app-meta.ts | node": {
-    "message": "नोड"
-  },
-  "entrypoints/node_app/node_app-meta.ts | showNode": {
-    "message": "नोड"
-  },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | addConnection": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | addConnection": {
     "message": "कनेक्शन जोड़ें"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | networkAddressEgLocalhost": {
     "message": "नेटवर्क का पता (जैसे कि localhost:9229)"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | noConnectionsSpecified": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | noConnectionsSpecified": {
     "message": "किसी भी कनेक्शन के बारे में नहीं बताया गया"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | nodejsDebuggingGuide": {
     "message": "Node.js को डीबग करने वाला गाइड"
   },
-  "entrypoints/node_main/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
+  "entrypoints/node_app/NodeConnectionsPanel.ts | specifyNetworkEndpointAnd": {
     "message": "नेटवर्क एंडपॉइंट के बारे में बताएं और DevTools अपने-आप ही इससे कनेक्ट हो जाएगा. ज़्यादा जानने के लिए, {PH1} पढ़ें."
   },
-  "entrypoints/node_main/NodeMain.ts | main": {
+  "entrypoints/node_app/NodeMain.ts | main": {
     "message": "मुख्य"
   },
-  "entrypoints/node_main/NodeMain.ts | nodejsS": {
+  "entrypoints/node_app/NodeMain.ts | nodejsS": {
     "message": "Node.js: {PH1}"
   },
-  "entrypoints/node_main/node_main-meta.ts | connection": {
+  "entrypoints/node_app/node_app.ts | connection": {
     "message": "कनेक्शन"
   },
-  "entrypoints/node_main/node_main-meta.ts | node": {
+  "entrypoints/node_app/node_app.ts | networkTitle": {
     "message": "नोड"
   },
-  "entrypoints/node_main/node_main-meta.ts | showConnection": {
+  "entrypoints/node_app/node_app.ts | node": {
+    "message": "नोड"
+  },
+  "entrypoints/node_app/node_app.ts | showConnection": {
     "message": "कनेक्शन दिखाएं"
+  },
+  "entrypoints/node_app/node_app.ts | showNode": {
+    "message": "नोड"
   },
   "entrypoints/worker_app/WorkerMain.ts | main": {
     "message": "मुख्य"
@@ -1304,6 +1307,9 @@
   "models/har/Writer.ts | writingFile": {
     "message": "फ़ाइल में लिखा जा रहा है…"
   },
+  "models/issues_manager/ClientHintIssue.ts | clientHintsInfrastructure": {
+    "message": "क्लाइंट हिंट इन्फ़्रास्ट्रक्चर"
+  },
   "models/issues_manager/ContentSecurityPolicyIssue.ts | contentSecurityPolicyEval": {
     "message": "कॉन्टेंट की सुरक्षा के बारे में नीति - Eval"
   },
@@ -1322,8 +1328,8 @@
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "क्रॉस-ऑरिजिन रिसॉर्स शेयरिंग (CORS)"
   },
-  "models/issues_manager/CorsIssue.ts | corsForPrivateNetworksRfc": {
-    "message": "निजी नेटवर्क के सीओआरएस (RFC1918)"
+  "models/issues_manager/CorsIssue.ts | corsPrivateNetworkAccess": {
+    "message": "निजी नेटवर्क का ऐक्सेस"
   },
   "models/issues_manager/CrossOriginEmbedderPolicyIssue.ts | coopAndCoep": {
     "message": "COOP और COEP"
@@ -1559,8 +1565,17 @@
   "panels/accessibility/AXBreadcrumbsPane.ts | accessibilityTree": {
     "message": "सुलभता ट्री"
   },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentDescription": {
+    "message": "सुलभता ट्री को डीओएम ट्री के सबसे ऊपरी दाएं कोने पर ले जाया गया."
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | fullTreeExperimentName": {
+    "message": "सुलभता ट्री को बड़ा करके पूरे पेज पर देखें"
+  },
   "panels/accessibility/AXBreadcrumbsPane.ts | ignored": {
     "message": "अनदेखा किया गया"
+  },
+  "panels/accessibility/AXBreadcrumbsPane.ts | reloadRequired": {
+    "message": "बदलाव लागू करने के लिए, DevTools को फिर से लोड करना ज़रूरी है."
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | scrollIntoView": {
     "message": "देखने के लिए स्क्रोल करें"
@@ -2051,6 +2066,12 @@
   "panels/application/AppManifestView.ts | couldNotDownloadARequiredIcon": {
     "message": "मेनिफ़ेस्ट में से एक ज़रूरी आइकॉन को डाउनलोड नहीं किया जा सका"
   },
+  "panels/application/AppManifestView.ts | darkBackgroundColor": {
+    "message": "गहरे रंग का बैकग्राउंड"
+  },
+  "panels/application/AppManifestView.ts | darkThemeColor": {
+    "message": "गहरे रंग वाली थीम"
+  },
   "panels/application/AppManifestView.ts | description": {
     "message": "ब्यौरा"
   },
@@ -2232,7 +2253,7 @@
     "message": "थीम का रंग"
   },
   "panels/application/ApplicationPanelCacheSection.ts | backForwardCache": {
-    "message": "बैक-फ़ॉरवर्ड कैश मेमोरी"
+    "message": "बैक/फ़ॉरवर्ड कैश मेमोरी"
   },
   "panels/application/ApplicationPanelCacheSection.ts | cacheStorage": {
     "message": "कैश मेमोरी स्टोरेज"
@@ -2314,384 +2335,6 @@
   },
   "panels/application/ApplicationPanelSidebar.ts | worker": {
     "message": "वर्कर"
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
-    "message": "जीईटी अनुरोध की मदद से लोड किए गए पेज ही बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल कर सकते हैं."
-  },
-  "panels/application/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
-    "message": "सिर्फ़ 2XX स्टेटस कोड वाले पेजों को कैश मेमोरी में सेव किया जा सकता है."
-  },
-  "panels/application/BackForwardCacheStrings.ts | JavaScriptExecution": {
-    "message": "Chrome ने कैश मेमोरी में सेव पेज के लिए JavaScript चलाने की कोशिश का पता लगाया."
-  },
-  "panels/application/BackForwardCacheStrings.ts | appBanner": {
-    "message": "जिन पेजों के लिए AppBanner का अनुरोध किया गया है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
-    "message": "फ़्लैग की मदद से बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा बंद की गई. इस डिवाइस पर यह सुविधा चालू करने के लिए, chrome://flags/#back-forward-cache पर जाएं."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
-    "message": "बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा को कमांड लाइन की मदद से बंद किया गया."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
-    "message": "कम मेमोरी की वजह से बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा बंद है."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
-    "message": "डेलिगेट के लिए, बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा बंद है."
-  },
-  "panels/application/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
-    "message": "प्रीरेंडरर के लिए, बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा को बंद किया गया."
-  },
-  "panels/application/BackForwardCacheStrings.ts | broadcastChannel": {
-    "message": "पेज को कैश मेमोरी में सेव नहीं किया जा सकता, क्योंकि इसमें रजिस्टर किए गए लिसनर के साथ BroadcastChannel इंस्टेंस मौजूद है."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheControlNoStore": {
-    "message": "जिन पेजों के हेडर में cache-control:no-store मौजूद होता है उन्हें बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किया जा सकता."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheFlushed": {
-    "message": "कैश मेमोरी जान-बूझकर मिटाई गई."
-  },
-  "panels/application/BackForwardCacheStrings.ts | cacheLimit": {
-    "message": "पेज को कैश मेमोरी से हटा दिया गया था, ताकि दूसरे पेज को कैश मेमोरी में सेव करने की अनुमति दी जा सके."
-  },
-  "panels/application/BackForwardCacheStrings.ts | containsPlugins": {
-    "message": "जिन पेजों पर प्लग इन मौजूद हैं वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileChooser": {
-    "message": "FileChooser API का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentFileSystemAccess": {
-    "message": "File System Access API का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
-    "message": "Media Device Dispatcher का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaPlay": {
-    "message": "पेज से जाने के बाद भी मीडिया प्लेयर पर मीडिया चल रहा था."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSession": {
-    "message": "MediaSession API का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentMediaSessionService": {
-    "message": "MediaSession API और सेट ऐक्शन हैंडलर का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSecurityHandler": {
-    "message": "SecurityHandler का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentSerial": {
-    "message": "Serial API का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
-    "message": "WebAuthetication API का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebBluetooth": {
-    "message": "WebBluetooth API का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | contentWebUSB": {
-    "message": "WebUSB API का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
-    "message": "खास तौर पर काम करने वाले वर्कर या वर्कलेट का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | documentLoaded": {
-    "message": "इस दस्तावेज़ से जाने से पहले, यह पूरी तरह से लोड नहीं हुआ था."
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderAppBannerManager": {
-    "message": "EmbedderAppBannerManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
-    "message": "EmbedderChromePasswordManagerClientBindCredentialManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
-    "message": "EmbedderDomDistillerSelfDeletingRequestDelegate"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
-    "message": "EmbedderDomDistillerViewerSource"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
-    "message": "EmbedderExtensionMessaging"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
-    "message": "EmbedderExtensionMessagingForOpenPort"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
-    "message": "EmbedderExtensionSentMessageToCachedFrame"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderExtensions": {
-    "message": "EmbedderExtensions"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderModalDialog": {
-    "message": "EmbedderModalDialog"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOfflinePage": {
-    "message": "EmbedderOfflinePage"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
-    "message": "EmbedderOomInterventionTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
-    "message": "EmbedderPermissionRequestManager"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
-    "message": "EmbedderPopupBlockerTabHelper"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
-    "message": "EmbedderSafeBrowsingThreatDetails"
-  },
-  "panels/application/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
-    "message": "EmbedderSafeBrowsingTriggeredPopupBlocker"
-  },
-  "panels/application/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
-    "message": "बैक-फ़ॉरवर्ड कैश मेमोरी में पेज के मौजूद होने के दौरान एक सर्विस वर्कर को चालू किया गया."
-  },
-  "panels/application/BackForwardCacheStrings.ts | foregroundCacheLimit": {
-    "message": "पेज को कैश मेमोरी से हटा दिया गया था, ताकि दूसरे पेज को कैश मेमोरी में सेव करने की अनुमति दी जा सके."
-  },
-  "panels/application/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
-    "message": "जिन पेजों पर मीडिया स्ट्रीम को ऐक्सेस किया जा सकता है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | haveInnerContents": {
-    "message": "पोर्टल का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | idleManager": {
-    "message": "IdleManager का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | indexedDBConnection": {
-    "message": "जिन पेजों के लिए कोई ओपेन IndexedDB कनेक्शन मौजूद है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | ineligibleAPI": {
-    "message": "गलत एपीआई इस्तेमाल किए गए थे."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedJavascript": {
-    "message": "जिन पेजों के लिए, एक्सटेंशन की मदद से JavaScript को इंजेक्ट किया जाता है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | injectedStyleSheet": {
-    "message": "जिन पेजों के स्टाइलशीट, एक्सटेंशन की मदद से इंजेक्ट किए जाते हैं वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | internalError": {
-    "message": "कोई अंदरूनी गड़बड़ी हुई."
-  },
-  "panels/application/BackForwardCacheStrings.ts | keyboardLock": {
-    "message": "कीबोर्ड लॉक का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | loading": {
-    "message": "इस पेज को छोड़ने से पहले, यह पूरी तरह से लोड नहीं हुआ था."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
-    "message": "जिन पेजों के मुख्य संसाधन में cache-control:no-cache मौजूद होता है उन्हें बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किया जा सकता."
-  },
-  "panels/application/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
-    "message": "जिन पेजों के मुख्य संसाधन में cache-control:no-store मौजूद होता है उन्हें बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किया जा सकता."
-  },
-  "panels/application/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
-    "message": "पेज को बैक-फ़ॉरवर्ड कैश मेमोरी से वापस लाने से पहले ही, नेविगेशन को रद्द कर दिया गया था."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
-    "message": "पेज को कैश मेमोरी से हटा दिया गया था क्योंकि चालू इंटरनेट कनेक्शन में बहुत ज़्यादा डेटा मिला था. Chrome, कैश मेमोरी में सेव किए गए पेज को मिलने वाले डेटा की मात्रा को सीमित करता है."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
-    "message": "जिन पेजों में इनफ़्लाइट fetch() या XHR मौजूद होता है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestRedirected": {
-    "message": "पेज को कैश मेमोरी से हटा दिया गया था, क्योंकि दूसरे वेबलिंक पर भेजने का एक नेटवर्क अनुरोध ऐक्टिव था."
-  },
-  "panels/application/BackForwardCacheStrings.ts | networkRequestTimeout": {
-    "message": "पेज को कैश मेमोरी से हटा दिया गया था, क्योंकि कोई इंटरनेट कनेक्शन बहुत देर से चालू था. Chrome, कैश मेमोरी में सेव किए गए पेज को मिलने वाले डेटा की अवधि को सीमित करता है."
-  },
-  "panels/application/BackForwardCacheStrings.ts | noResponseHead": {
-    "message": "जिन पेजों के मान्य रिस्पॉन्स हेड नहीं होते उन्हें बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किया जा सकता."
-  },
-  "panels/application/BackForwardCacheStrings.ts | notMainFrame": {
-    "message": "नेविगेशन, मुख्य फ़्रेम की जगह किसी और फ़्रेम में हुआ."
-  },
-  "panels/application/BackForwardCacheStrings.ts | optInUnloadHeaderNotPresent": {
-    "message": "पेज पर अनलोड हैंडलर मौजूद है, जिसके लिए बैक-फ़ॉरवर्ड कैश मेमोरी ऑप्ट-इन हेडर इस्तेमाल नहीं किया गया है."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
-    "message": "जिस पेज के लिए इंडेक्स किया गया DB ट्रांज़ैक्शन चल रहा हो वह फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकता."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
-    "message": "जिन पेजों के लिए इन-फ़्लाइट नेटवर्क का अनुरोध किया गया है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
-    "message": "जिन पेजों के लिए इन-फ़्लाइट नेटवर्क को फ़ेच करने का अनुरोध किया गया है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
-    "message": "जिन पेजों के लिए इन-फ़्लाइट नेटवर्क का अनुरोध किया गया है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
-    "message": "जिन पेजों के लिए इन-फ़्लाइट XHR नेटवर्क का अनुरोध किया गया है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | paymentManager": {
-    "message": "PaymentManager का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | pictureInPicture": {
-    "message": "पिक्चर में पिक्चर सुविधा का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | portal": {
-    "message": "पोर्टल का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | printing": {
-    "message": "जिन पेजों के लिए प्रिंटिंग यूज़र इंटरफ़ेस (यूआई) दिखता है उनके लिए फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा इस्तेमाल नहीं की जा सकती."
-  },
-  "panels/application/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
-    "message": "पेज को window.open() की मदद से खोला गया था और इसका एक रेफ़रंस दूसरे टैब में मौजूद है या पेज किसी नए विंडो में खुला है."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessCrashed": {
-    "message": "बैक-फ़ॉरवर्ड कैश मेमोरी में पेज रेंडर करने की प्रोसेस बंद हो गई."
-  },
-  "panels/application/BackForwardCacheStrings.ts | rendererProcessKilled": {
-    "message": "बैक-फ़ॉरवर्ड कैश मेमोरी में पेज रेंडर करने की प्रोसेस बंद कर दी गई है."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
-    "message": "जिन पेजों के लिए ऑडियो रिकॉर्ड करने की अनुमतियां मांगी गई हैं वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
-    "message": "जिन पेजों ने सेंसर अनुमतियां मांगी हैं वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
-    "message": "जिन पेजों ने बैकग्राउंड सिंक या अनुमतियां फ़ेच करने का अनुरोध किया है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedMIDIPermission": {
-    "message": "जिन पेजों ने MIDI अनुमतियां मांगी हैं वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
-    "message": "जिन पेजों ने सूचनाएं भेजने के लिए अनुमतियां मांगी हैं वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
-    "message": "जिन पेजों ने डिवाइस के स्टोरेज का ऐक्सेस मांगा है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
-    "message": "जिन पेजों ने वीडियो रिकॉर्ड करने की अनुमतियां मांगी हैं वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
-    "message": "सिर्फ़ उन पेजों को कैश मेमोरी में सेव किया जा सकता है जिनकी यूआरएल स्कीम एचटीटीपी / एचटीटीपीएस है."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerClaim": {
-    "message": "जब यह पेज बैक-फ़ॉरवर्ड कैश मेमोरी में सेव किया गया था, तब उस पर किसी सर्विस वर्कर ने दावा किया था."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
-    "message": "किसी सर्विस वर्कर ने बैक-फ़ॉरवर्ड कैश मेमोरी में मौजूद पेज को MessageEvent भेजने की कोशिश की."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
-    "message": "एक पेज के बैक-फ़ॉरवर्ड कैश मेमोरी में मौजूद होने के दौरान, ServiceWorker का रजिस्ट्रेशन रद्द किया गया."
-  },
-  "panels/application/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
-    "message": "सर्विस वर्कर ऐक्टिवेट होने की वजह से, इस पेज को बैक-फ़ॉरवर्ड कैश मेमोरी से हटा दिया गया था."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sessionRestored": {
-    "message": "Chrome रीस्टार्ट हो गया और बैक-फ़ॉरवर्ड कैश मेमोरी में सेव की गई एंट्री मिट गईं."
-  },
-  "panels/application/BackForwardCacheStrings.ts | sharedWorker": {
-    "message": "SharedWorker का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechRecognizer": {
-    "message": "SpeechRecognizer का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | speechSynthesis": {
-    "message": "SpeechSynthesis का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subframeIsNavigating": {
-    "message": "पेज पर मौजूद किसी iframe ने नेविगेशन शुरू किया, जो पूरा नहीं हो सका."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
-    "message": "जिन पेजों के सबरिसोर्स में cache-control:no-cache मौजूद होता है उन्हें बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किया जा सकता."
-  },
-  "panels/application/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
-    "message": "जिन पेजों के सबरिसोर्स में cache-control:no-store मौजूद होता है उन्हें बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किया जा सकता."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeout": {
-    "message": "बैक-फ़ॉरवर्ड कैश मेमोरी में रहने की समय-सीमा पूरी करने की वजह से, पेज एक्सपायर हो गया."
-  },
-  "panels/application/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
-    "message": "पेज को बैक-फ़ॉरवर्ड कैश मेमोरी में सेव करने में लगने वाले समय की सीमा खत्म हो चुकी है (इस बात की ज़्यादा संभावना है कि ऐसा pagehide हैंडलर के ज़्यादा समय तक चलते रहने की वजह से हुआ होगा)."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
-    "message": "पेज के मुख्य फ़्रेम में अनलोड हैंडलर मौजूद है."
-  },
-  "panels/application/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
-    "message": "पेज के किसी सब फ़्रेम में कोई अनलोड हैंडलर मौजूद है."
-  },
-  "panels/application/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
-    "message": "ब्राउज़र ने उपयोगकर्ता एजेंट को बदलने वाला हेडर बदल दिया है."
-  },
-  "panels/application/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
-    "message": "जिन पेजों ने वीडियो या ऑडियो रिकॉर्ड करने का ऐक्सेस दिया है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webDatabase": {
-    "message": "WebDatabase का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webHID": {
-    "message": "WebHID का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webLocks": {
-    "message": "WebLocks का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webNfc": {
-    "message": "WebNfc का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webOTPService": {
-    "message": "WebOTPService का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webRTC": {
-    "message": "WebRTC की सुविधा वाले पेज, बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किए जा सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webShare": {
-    "message": "WebShare का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webSocket": {
-    "message": "WebSocket की सुविधा वाले पेज, बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किए जा सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webTransport": {
-    "message": "WebTransport की सुविधा वाले पेज, बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किए जा सकते."
-  },
-  "panels/application/BackForwardCacheStrings.ts | webXR": {
-    "message": "WebXR का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
-  },
-  "panels/application/BackForwardCacheView.ts | backForwardCacheTitle": {
-    "message": "बैक-फ़ॉरवर्ड कैश मेमोरी"
-  },
-  "panels/application/BackForwardCacheView.ts | bfcacheStatus": {
-    "message": "बैक-फ़ॉरवर्ड कैश मेमोरी की स्थिति"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantial": {
-    "message": "कार्रवाई नहीं की जा सकती"
-  },
-  "panels/application/BackForwardCacheView.ts | circumstantialExplanation": {
-    "message": "इन वजहों के लिए कार्रवाइयां नहीं की जा सकतीं. जैसे, कैश मेमोरी में पेज किसी ऐसी वजह से सेव न होना जिस पर पेज का कोई कंट्रोल नहीं है."
-  },
-  "panels/application/BackForwardCacheView.ts | mainFrame": {
-    "message": "मुख्य फ़्रेम"
-  },
-  "panels/application/BackForwardCacheView.ts | normalNavigation": {
-    "message": "सामान्य नेविगेशन (बैक-फ़ॉरवर्ड कैश मेमोरी से डेटा वापस नहीं लाया गया)"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeeded": {
-    "message": "कार्रवाई की जा सकती है"
-  },
-  "panels/application/BackForwardCacheView.ts | pageSupportNeededExplanation": {
-    "message": "इन वजहों पर कार्रवाई की जा सकती है. इसका मतलब है कि पेज की इन समस्याओं को ठीक करके, उसे बैक-फ़ॉरवर्ड कैश मेमोरी में सेव किया जा सकता है."
-  },
-  "panels/application/BackForwardCacheView.ts | restoredFromBFCache": {
-    "message": "बैक-फ़ॉरवर्ड कैश मेमोरी से वापस लाया गया"
-  },
-  "panels/application/BackForwardCacheView.ts | runTest": {
-    "message": "टेस्ट चलाएं"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPending": {
-    "message": "सहायता की मंज़ूरी बाकी है"
-  },
-  "panels/application/BackForwardCacheView.ts | supportPendingExplanation": {
-    "message": "इन वजहों को Chrome से अनुमति मिलना बाकी है. इसका मतलब है कि Chrome के बाद के वर्शन में, इन वजहों के चलते पेज को बैक-फ़ॉरवर्ड कैश मेमोरी में सेव होने से नहीं रोका जाएगा."
-  },
-  "panels/application/BackForwardCacheView.ts | unavailable": {
-    "message": "उपलब्ध नहीं है"
-  },
-  "panels/application/BackForwardCacheView.ts | unknown": {
-    "message": "कैश के बारे में कोई जानकारी नहीं है"
-  },
-  "panels/application/BackForwardCacheView.ts | url": {
-    "message": "यूआरएल"
   },
   "panels/application/BackgroundServiceView.ts | backgroundFetch": {
     "message": "बैकग्राउंड फ़ेच"
@@ -3251,6 +2894,387 @@
   "panels/application/application-meta.ts | stopRecordingEvents": {
     "message": "इवेंट रिकॉर्ड करना बंद करें"
   },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
+    "message": "जीईटी अनुरोध की मदद से लोड किए गए पेज ही बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल कर सकते हैं."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | HTTPStatusNotOK": {
+    "message": "सिर्फ़ 2XX स्टेटस कोड वाले पेजों को कैश मेमोरी में सेव किया जा सकता है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | JavaScriptExecution": {
+    "message": "Chrome ने कैश मेमोरी में सेव पेज के लिए JavaScript चलाने की कोशिश का पता लगाया."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | appBanner": {
+    "message": "जिन पेजों के लिए AppBanner का अनुरोध किया गया है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabled": {
+    "message": "फ़्लैग की मदद से बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा बंद की गई. इस डिवाइस पर यह सुविधा चालू करने के लिए, chrome://flags/#back-forward-cache पर जाएं."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByCommandLine": {
+    "message": "बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा को कमांड लाइन की मदद से बंद किया गया."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledByLowMemory": {
+    "message": "कम मेमोरी की वजह से बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा बंद है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForDelegate": {
+    "message": "डेलिगेट के लिए, बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा बंद है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | backForwardCacheDisabledForPrerender": {
+    "message": "प्रीरेंडरर के लिए, बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा को बंद किया गया."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | broadcastChannel": {
+    "message": "पेज को कैश मेमोरी में सेव नहीं किया जा सकता, क्योंकि इसमें रजिस्टर किए गए लिसनर के साथ BroadcastChannel इंस्टेंस मौजूद है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheControlNoStore": {
+    "message": "जिन पेजों के हेडर में cache-control:no-store मौजूद होता है उन्हें बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किया जा सकता."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheFlushed": {
+    "message": "कैश मेमोरी जान-बूझकर मिटाई गई."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | cacheLimit": {
+    "message": "पेज को कैश मेमोरी से हटा दिया गया था, ताकि दूसरे पेज को कैश मेमोरी में सेव करने की अनुमति दी जा सके."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | containsPlugins": {
+    "message": "जिन पेजों पर प्लग इन मौजूद हैं वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileChooser": {
+    "message": "FileChooser API का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentFileSystemAccess": {
+    "message": "File System Access API का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaDevicesDispatcherHost": {
+    "message": "Media Device Dispatcher का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaPlay": {
+    "message": "पेज से जाने के बाद भी मीडिया प्लेयर पर मीडिया चल रहा था."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSession": {
+    "message": "MediaSession API का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentMediaSessionService": {
+    "message": "MediaSession API और सेट ऐक्शन हैंडलर का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentScreenReader": {
+    "message": "स्क्रीन रीडर वजह से, बैक/फ़ॉरवर्ड कैश मेमोरी की सुविधा बंद है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSecurityHandler": {
+    "message": "SecurityHandler का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentSerial": {
+    "message": "Serial API का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebAuthenticationAPI": {
+    "message": "WebAuthetication API का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebBluetooth": {
+    "message": "WebBluetooth API का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentWebUSB": {
+    "message": "WebUSB API का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
+    "message": "खास तौर पर काम करने वाले वर्कर या वर्कलेट का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | documentLoaded": {
+    "message": "इस दस्तावेज़ से जाने से पहले, यह पूरी तरह से लोड नहीं हुआ था."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderAppBannerManager": {
+    "message": "पेज छोड़कर जाने पर, ऐप्लिकेशन बैनर दिखाया गया था."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderChromePasswordManagerClientBindCredentialManager": {
+    "message": "पेज छोड़कर जाने पर, Chrome पासवर्ड मैनेजर का पेज दिखाया गया था."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerSelfDeletingRequestDelegate": {
+    "message": "पेज छोड़कर जाने पर, डीओएम डिस्टलेशन की प्रोसेस जारी थी."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderDomDistillerViewerSource": {
+    "message": "पेज छोड़कर जाने पर, डीओएम डिस्टलर व्यूअर दिखाया गया था."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessaging": {
+    "message": "मैसेज सेवा एपीआई का इस्तेमाल करने वाले एक्सटेंशन की वजह से, बैक/फ़ॉरवर्ड कैश मेमोरी की सुविधा बंद है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionMessagingForOpenPort": {
+    "message": "अगर कोई एक्सटेंशन लंबे समय से किसी एक कनेक्शन से जुड़ा है, तो उसे बैक/फ़ॉरवर्ड कैश मेमोरी में सेव करने से पहले, कनेक्शन को बंद करना होगा."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensionSentMessageToCachedFrame": {
+    "message": "उस एक्सटेंशन ने बैक/फ़ॉरवर्ड कैश मेमोरी में मौजूद फ़्रेम को मैसेज भेजने की कोशिश की जो लंबे समय से किसी एक कनेक्शन से जुड़ा है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderExtensions": {
+    "message": "एक्सटेंशन की वजह से, बैक/फ़ॉरवर्ड कैश मेमोरी की सुविधा बंद है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderModalDialog": {
+    "message": "पेज छोड़कर जाने पर, मोडल डायलॉग दिखाए गए थे, जैसे कि फ़ॉर्म को फिर से सबमिट करने या एचटीटीपी पासवर्ड वाले डायलॉग."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOfflinePage": {
+    "message": "पेज छोड़कर जाने पर, ऑफ़लाइन पेज दिखाया गया था."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderOomInterventionTabHelper": {
+    "message": "पेज छोड़कर जाने पर, Out-Of-Memory Intervention बार दिखाया गया था."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPermissionRequestManager": {
+    "message": "पेज छोड़कर जाने पर, अनुमति के अनुरोध दिखाए गए थे."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderPopupBlockerTabHelper": {
+    "message": "पेज छोड़कर जाने पर, पॉप-अप ब्लॉकर दिखाया गया था."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingThreatDetails": {
+    "message": "पेज छोड़कर जाने पर, सुरक्षित ब्राउज़िंग की जानकारी दिखाई गई थी."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | embedderSafeBrowsingTriggeredPopupBlocker": {
+    "message": "सुरक्षित ब्राउज़िंग की मदद से पता चला है कि इस पेज पर नुकसान पहुंचाने वाली जानकारी मौजूद है. इसलिए, पॉप-अप को ब्लॉक कर दिया गया है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | enteredBackForwardCacheBeforeServiceWorkerHostAdded": {
+    "message": "बैक-फ़ॉरवर्ड कैश मेमोरी में पेज के मौजूद होने के दौरान एक सर्विस वर्कर को चालू किया गया."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | foregroundCacheLimit": {
+    "message": "पेज को कैश मेमोरी से हटा दिया गया था, ताकि दूसरे पेज को कैश मेमोरी में सेव करने की अनुमति दी जा सके."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | grantedMediaStreamAccess": {
+    "message": "जिन पेजों पर मीडिया स्ट्रीम को ऐक्सेस किया जा सकता है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | haveInnerContents": {
+    "message": "पोर्टल का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | idleManager": {
+    "message": "IdleManager का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | indexedDBConnection": {
+    "message": "जिन पेजों के लिए कोई ओपेन IndexedDB कनेक्शन मौजूद है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | ineligibleAPI": {
+    "message": "गलत एपीआई इस्तेमाल किए गए थे."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedJavascript": {
+    "message": "जिन पेजों के लिए, एक्सटेंशन की मदद से JavaScript को इंजेक्ट किया जाता है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | injectedStyleSheet": {
+    "message": "जिन पेजों के स्टाइलशीट, एक्सटेंशन की मदद से इंजेक्ट किए जाते हैं वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | internalError": {
+    "message": "कोई अंदरूनी गड़बड़ी हुई."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | keyboardLock": {
+    "message": "कीबोर्ड लॉक का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | loading": {
+    "message": "इस पेज को छोड़ने से पहले, यह पूरी तरह से लोड नहीं हुआ था."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoCache": {
+    "message": "जिन पेजों के मुख्य संसाधन में cache-control:no-cache मौजूद होता है उन्हें बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किया जा सकता."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | mainResourceHasCacheControlNoStore": {
+    "message": "जिन पेजों के मुख्य संसाधन में cache-control:no-store मौजूद होता है उन्हें बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किया जा सकता."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | navigationCancelledWhileRestoring": {
+    "message": "पेज को बैक-फ़ॉरवर्ड कैश मेमोरी से वापस लाने से पहले ही, नेविगेशन को रद्द कर दिया गया था."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkExceedsBufferLimit": {
+    "message": "पेज को कैश मेमोरी से हटा दिया गया था क्योंकि चालू इंटरनेट कनेक्शन में बहुत ज़्यादा डेटा मिला था. Chrome, कैश मेमोरी में सेव किए गए पेज को मिलने वाले डेटा की मात्रा को सीमित करता है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestDatapipeDrainedAsBytesConsumer": {
+    "message": "जिन पेजों में इनफ़्लाइट fetch() या XHR मौजूद होता है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestRedirected": {
+    "message": "पेज को कैश मेमोरी से हटा दिया गया था, क्योंकि दूसरे वेबलिंक पर भेजने का एक नेटवर्क अनुरोध ऐक्टिव था."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | networkRequestTimeout": {
+    "message": "पेज को कैश मेमोरी से हटा दिया गया था, क्योंकि कोई इंटरनेट कनेक्शन बहुत देर से चालू था. Chrome, कैश मेमोरी में सेव किए गए पेज को मिलने वाले डेटा की अवधि को सीमित करता है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | noResponseHead": {
+    "message": "जिन पेजों के मान्य रिस्पॉन्स हेड नहीं होते उन्हें बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किया जा सकता."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | notMainFrame": {
+    "message": "नेविगेशन, मुख्य फ़्रेम की जगह किसी और फ़्रेम में हुआ."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingIndexedDBTransaction": {
+    "message": "जिस पेज के लिए इंडेक्स किया गया DB ट्रांज़ैक्शन चल रहा हो वह फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकता."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestDirectSocket": {
+    "message": "जिन पेजों के लिए इन-फ़्लाइट नेटवर्क का अनुरोध किया गया है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestFetch": {
+    "message": "जिन पेजों के लिए इन-फ़्लाइट नेटवर्क को फ़ेच करने का अनुरोध किया गया है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestOthers": {
+    "message": "जिन पेजों के लिए इन-फ़्लाइट नेटवर्क का अनुरोध किया गया है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
+    "message": "जिन पेजों के लिए इन-फ़्लाइट XHR नेटवर्क का अनुरोध किया गया है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | paymentManager": {
+    "message": "PaymentManager का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | pictureInPicture": {
+    "message": "पिक्चर में पिक्चर सुविधा का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | portal": {
+    "message": "पोर्टल का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | printing": {
+    "message": "जिन पेजों के लिए प्रिंटिंग यूज़र इंटरफ़ेस (यूआई) दिखता है उनके लिए फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा इस्तेमाल नहीं की जा सकती."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | relatedActiveContentsExist": {
+    "message": "पेज को 'window.open()' की मदद से खोला गया था और इसका रेफ़रंस दूसरे टैब में मौजूद है या पेज किसी नई विंडो में खुला है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessCrashed": {
+    "message": "बैक-फ़ॉरवर्ड कैश मेमोरी में पेज रेंडर करने की प्रोसेस बंद हो गई."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | rendererProcessKilled": {
+    "message": "बैक-फ़ॉरवर्ड कैश मेमोरी में पेज रेंडर करने की प्रोसेस बंद कर दी गई है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedAudioCapturePermission": {
+    "message": "जिन पेजों के लिए ऑडियो रिकॉर्ड करने की अनुमतियां मांगी गई हैं वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackForwardCacheBlockedSensors": {
+    "message": "जिन पेजों ने सेंसर अनुमतियां मांगी हैं वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedBackgroundWorkPermission": {
+    "message": "जिन पेजों ने बैकग्राउंड सिंक या अनुमतियां फ़ेच करने का अनुरोध किया है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedMIDIPermission": {
+    "message": "जिन पेजों ने MIDI अनुमतियां मांगी हैं वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedNotificationsPermission": {
+    "message": "जिन पेजों ने सूचनाएं भेजने के लिए अनुमतियां मांगी हैं वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedStorageAccessGrant": {
+    "message": "जिन पेजों ने डिवाइस के स्टोरेज का ऐक्सेस मांगा है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | requestedVideoCapturePermission": {
+    "message": "जिन पेजों ने वीडियो रिकॉर्ड करने की अनुमतियां मांगी हैं वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | schemeNotHTTPOrHTTPS": {
+    "message": "सिर्फ़ उन पेजों को कैश मेमोरी में सेव किया जा सकता है जिनकी यूआरएल स्कीम एचटीटीपी / एचटीटीपीएस है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerClaim": {
+    "message": "जब यह पेज बैक-फ़ॉरवर्ड कैश मेमोरी में सेव किया गया था, तब उस पर किसी सर्विस वर्कर ने दावा किया था."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerPostMessage": {
+    "message": "किसी सर्विस वर्कर ने बैक-फ़ॉरवर्ड कैश मेमोरी में मौजूद पेज को MessageEvent भेजने की कोशिश की."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerUnregistration": {
+    "message": "एक पेज के बैक-फ़ॉरवर्ड कैश मेमोरी में मौजूद होने के दौरान, ServiceWorker का रजिस्ट्रेशन रद्द किया गया."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | serviceWorkerVersionActivation": {
+    "message": "सर्विस वर्कर ऐक्टिवेट होने की वजह से, इस पेज को बैक-फ़ॉरवर्ड कैश मेमोरी से हटा दिया गया था."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sessionRestored": {
+    "message": "Chrome रीस्टार्ट हो गया और बैक-फ़ॉरवर्ड कैश मेमोरी में सेव की गई एंट्री मिट गईं."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | sharedWorker": {
+    "message": "SharedWorker का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechRecognizer": {
+    "message": "SpeechRecognizer का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | speechSynthesis": {
+    "message": "SpeechSynthesis का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subframeIsNavigating": {
+    "message": "पेज पर मौजूद किसी iframe ने नेविगेशन शुरू किया, जो पूरा नहीं हो सका."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoCache": {
+    "message": "जिन पेजों के सबरिसोर्स में cache-control:no-cache मौजूद होता है उन्हें बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किया जा सकता."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | subresourceHasCacheControlNoStore": {
+    "message": "जिन पेजों के सबरिसोर्स में cache-control:no-store मौजूद होता है उन्हें बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किया जा सकता."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeout": {
+    "message": "बैक-फ़ॉरवर्ड कैश मेमोरी में रहने की समय-सीमा पूरी करने की वजह से, पेज एक्सपायर हो गया."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
+    "message": "पेज को बैक-फ़ॉरवर्ड कैश मेमोरी में सेव करने में लगने वाले समय की सीमा खत्म हो चुकी है (इस बात की ज़्यादा संभावना है कि ऐसा pagehide हैंडलर के ज़्यादा समय तक चलते रहने की वजह से हुआ होगा)."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
+    "message": "पेज के मुख्य फ़्रेम में अनलोड हैंडलर मौजूद है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInSubFrame": {
+    "message": "पेज के किसी सब फ़्रेम में कोई अनलोड हैंडलर मौजूद है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | userAgentOverrideDiffers": {
+    "message": "ब्राउज़र ने उपयोगकर्ता एजेंट को बदलने वाला हेडर बदल दिया है."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | wasGrantedMediaAccess": {
+    "message": "जिन पेजों ने वीडियो या ऑडियो रिकॉर्ड करने का ऐक्सेस दिया है वे फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webDatabase": {
+    "message": "WebDatabase का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webHID": {
+    "message": "WebHID का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webLocks": {
+    "message": "WebLocks का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webNfc": {
+    "message": "WebNfc का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webOTPService": {
+    "message": "WebOTPService का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webRTC": {
+    "message": "WebRTC की सुविधा वाले पेज, बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किए जा सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webShare": {
+    "message": "WebShare का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webSocket": {
+    "message": "WebSocket की सुविधा वाले पेज, बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किए जा सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webTransport": {
+    "message": "WebTransport की सुविधा वाले पेज, बैक-फ़ॉरवर्ड कैश मेमोरी में सेव नहीं किए जा सकते."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | webXR": {
+    "message": "WebXR का इस्तेमाल करने वाले पेज, फ़िलहाल बैक-फ़ॉरवर्ड कैश मेमोरी की सुविधा का इस्तेमाल नहीं कर सकते."
+  },
+  "panels/application/components/BackForwardCacheView.ts | backForwardCacheTitle": {
+    "message": "बैक/फ़ॉरवर्ड कैश मेमोरी"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantial": {
+    "message": "कार्रवाई नहीं की जा सकती"
+  },
+  "panels/application/components/BackForwardCacheView.ts | circumstantialExplanation": {
+    "message": "इन वजहों के लिए कार्रवाइयां नहीं की जा सकतीं. जैसे, कैश मेमोरी में पेज किसी ऐसी वजह से सेव न होना जिस पर पेज का कोई कंट्रोल नहीं है."
+  },
+  "panels/application/components/BackForwardCacheView.ts | learnMore": {
+    "message": "ज़्यादा जानें: बैक/फ़ॉरवर्ड कैश मेमोरी इस्तेमाल करने से जुड़ी ज़रूरी शर्तें"
+  },
+  "panels/application/components/BackForwardCacheView.ts | mainFrame": {
+    "message": "मुख्य फ़्रेम"
+  },
+  "panels/application/components/BackForwardCacheView.ts | normalNavigation": {
+    "message": "पेज को बैक/फ़ॉरवर्ड कैश मेमोरी से रीस्टोर नहीं किया गया: बैक/फ़ॉरवर्ड कैश मेमोरी को ट्रिगर करने के लिए, Chrome में मौजूद पीछे या आगे जाने वाले बटन का इस्तेमाल करें. इसके अलावा, पिछले या अगले पेज पर अपने-आप पहुंचने के लिए, नीचे दिए गए टेस्ट बटन का इस्तेमाल करें."
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeeded": {
+    "message": "कार्रवाई की जा सकती है"
+  },
+  "panels/application/components/BackForwardCacheView.ts | pageSupportNeededExplanation": {
+    "message": "इन वजहों पर कार्रवाई की जा सकती है. इसका मतलब है कि इन समस्याओं को ठीक करके, पेज को बैक/फ़ॉरवर्ड कैश मेमोरी में सेव किया जा सकता है."
+  },
+  "panels/application/components/BackForwardCacheView.ts | restoredFromBFCache": {
+    "message": "पेज को बैक/फ़ॉरवर्ड कैश मेमोरी से रीस्टोर किया गया."
+  },
+  "panels/application/components/BackForwardCacheView.ts | runTest": {
+    "message": "जांचें कि बैक/फ़ॉरवर्ड कैश मेमोरी उपलब्ध है या नहीं"
+  },
+  "panels/application/components/BackForwardCacheView.ts | runningTest": {
+    "message": "जांच की जा रही है"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPending": {
+    "message": "सहायता की मंज़ूरी बाकी है"
+  },
+  "panels/application/components/BackForwardCacheView.ts | supportPendingExplanation": {
+    "message": "इन वजहों को Chrome से अनुमति मिलना बाकी है. इसका मतलब है कि Chrome के, बाद के वर्शन में, इन वजहों के चलते पेज को बैक/फ़ॉरवर्ड कैश मेमोरी में सेव होने से नहीं रोका जाएगा."
+  },
+  "panels/application/components/BackForwardCacheView.ts | unavailable": {
+    "message": "उपलब्ध नहीं है"
+  },
+  "panels/application/components/BackForwardCacheView.ts | unknown": {
+    "message": "स्थिति के बारे में जानकारी नहीं है"
+  },
+  "panels/application/components/BackForwardCacheView.ts | url": {
+    "message": "यूआरएल:"
+  },
   "panels/application/components/EndpointsGrid.ts | noEndpointsToDisplay": {
     "message": "दिखाने के लिए कोई एंडपॉइंट नहीं है"
   },
@@ -3297,22 +3321,16 @@
     "message": "स्रोत पैनल में दिखाने के लिए क्लिक करें"
   },
   "panels/application/components/FrameDetailsView.ts | createdByAdScriptExplanation": {
-    "message": "जब यह फ़्रेम बनाया गया था, तब स्टैक (एक साथ काम नहीं करने वाली प्रोसेस) में विज्ञापन स्क्रिप्ट थी. इस फ़्रेम के स्टैक ट्रेस को बनाए जाने की जांच से ज़्यादा जानकारी मिल सकती है."
+    "message": "जब यह फ़्रेम बनाया गया था, तब (async) stack में एक विज्ञापन स्क्रिप्ट थी. इस फ़्रेम के stack trace को बनाए जाने की जांच से ज़्यादा जानकारी मिल सकती है."
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTrace": {
-    "message": "फ़्रेम क्रिएशन के लिए स्टैक ट्रेस"
+    "message": "फ़्रेम बनाने से जुड़ा Stack Trace"
   },
   "panels/application/components/FrameDetailsView.ts | creationStackTraceExplanation": {
-    "message": "इस फ़्रेम को प्रोग्रामैटिक तौर पर बनाया गया था. स्टैक ट्रेस दिखाता है कि इसे कहां बनाया गया था"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginEmbedderPolicy": {
-    "message": "क्रॉस-ऑरिजिन एम्बेडर नीति"
+    "message": "इस फ़्रेम को प्रोग्राम की मदद से बनाया गया था. stack trace से यह पता चलता है कि फ़्रेम कहां बना था."
   },
   "panels/application/components/FrameDetailsView.ts | crossoriginIsolated": {
     "message": "आइसोलेट किए गए क्रॉस-ऑरिजिन"
-  },
-  "panels/application/components/FrameDetailsView.ts | crossoriginOpenerPolicy": {
-    "message": "क्रॉस-ओरिजन ओपनर पॉलिसी"
   },
   "panels/application/components/FrameDetailsView.ts | document": {
     "message": "दस्तावेज़"
@@ -3324,7 +3342,7 @@
     "message": "ज़्यादा जानें"
   },
   "panels/application/components/FrameDetailsView.ts | localhostIsAlwaysASecureContext": {
-    "message": "स्थानीय होस्ट (लोकल होस्ट) हमेशा से एक सुरक्षित कॉन्टेक्स्ट है"
+    "message": "Localhost हमेशा एक सुरक्षित कॉन्टेक्स्ट होता है"
   },
   "panels/application/components/FrameDetailsView.ts | matchedBlockingRuleExplanation": {
     "message": "इस फ़्रेम को विज्ञापन फ़्रेम के तौर पर माना जाता है, क्योंकि इसका मौजूदा (या पिछला) मुख्य दस्तावेज़ विज्ञापन संसाधन है."
@@ -3336,10 +3354,7 @@
     "message": "नहीं"
   },
   "panels/application/components/FrameDetailsView.ts | origin": {
-    "message": "ओरिजन"
-  },
-  "panels/application/components/FrameDetailsView.ts | originTrials": {
-    "message": "ऑरिजिन ट्रायल"
+    "message": "ऑरिजिन"
   },
   "panels/application/components/FrameDetailsView.ts | ownerElement": {
     "message": "ऑनर एलिमेंट"
@@ -3366,10 +3381,10 @@
     "message": "सुरक्षा और अलग रखना"
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIs": {
-    "message": "SharedArrayBuffer कंस्ट्रक्टर उपलब्ध है और इसे (SABs) postMessage के ज़रिए ट्रांसफ़र किया जा सकता है."
+    "message": "SharedArrayBuffer कंस्ट्रक्टर उपलब्ध है और postMessage के ज़रिए SABs को ट्रांसफ़र किया जा सकता है."
   },
   "panels/application/components/FrameDetailsView.ts | sharedarraybufferConstructorIsAvailable": {
-    "message": "SharedArrayBuffer कंस्ट्रक्टर उपलब्ध है, लेकिन इसे (SABs) postMessage के ज़रिए ट्रांसफ़र नहीं किया जा सकता"
+    "message": "SharedArrayBuffer कंस्ट्रक्टर उपलब्ध है, लेकिन postMessage के ज़रिए SABs को ट्रांसफ़र नहीं किया जा सकता."
   },
   "panels/application/components/FrameDetailsView.ts | theFramesSchemeIsInsecure": {
     "message": "फ़्रेम की स्कीम असुरक्षित है"
@@ -4229,20 +4244,11 @@
   "panels/css_overview/CSSOverviewUnusedDeclarations.ts | widthAppliedToAnInlineElement": {
     "message": "Width को एक इनलाइन एलिमेंट पर लागू किया गया"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | activelyWorkingAndLookingForS": {
-    "message": "हमारी टीम इस सुविधा पर लगातार काम कर रही है और हमें आपके {PH1} का इंतज़ार है!"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | captureOverview": {
     "message": "कैप्चर की खास जानकारी"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | capturePageCSSOverview": {
     "message": "अपने पेज की सीएसएस की खास जानकारी देखें"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackInline": {
-    "message": "सुझाव/शिकायत/राय"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | feedbackStandalone": {
-    "message": "Feedback"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | identifyCSSImprovements": {
     "message": "सीएसएस में किए जा सकने वाले सुधारों का पता लगाना"
@@ -4253,14 +4259,8 @@
   "panels/css_overview/components/CSSOverviewStartView.ts | locateAffectedElements": {
     "message": "जिन एलिमेंट पर असर पड़ा है उन्हें एलिमेंट पैनल में लोकेट करें"
   },
-  "panels/css_overview/components/CSSOverviewStartView.ts | previewFeature": {
-    "message": "झलक देखने की सुविधा"
-  },
   "panels/css_overview/components/CSSOverviewStartView.ts | quickStartWithCSSOverview": {
     "message": "क्विक स्टार्ट: सीएसएस की खास जानकारी वाले नए पैनल का इस्तेमाल शुरू करना"
-  },
-  "panels/css_overview/components/CSSOverviewStartView.ts | videoAndDocumentation": {
-    "message": "वीडियो और दस्तावेज़"
   },
   "panels/css_overview/css_overview-meta.ts | cssOverview": {
     "message": "सीएसएस की खास जानकारी"
@@ -4362,7 +4362,7 @@
     "message": "इससे मिलती-जुलती कोई प्रॉपर्टी नहीं है"
   },
   "panels/elements/ComputedStyleWidget.ts | showAll": {
-    "message": "सभी दिखाएं"
+    "message": "सभी प्रॉपर्टी दिखाएं"
   },
   "panels/elements/DOMLinkifier.ts | node": {
     "message": "<node>"
@@ -4591,6 +4591,21 @@
   },
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
     "message": "रेंडर किए गए फ़ॉन्ट"
+  },
+  "panels/elements/PropertiesWidget.ts | filter": {
+    "message": "फ़िल्टर करें"
+  },
+  "panels/elements/PropertiesWidget.ts | filterProperties": {
+    "message": "प्रॉपर्टी फ़िल्टर करें"
+  },
+  "panels/elements/PropertiesWidget.ts | noMatchingProperty": {
+    "message": "इससे मिलती-जुलती कोई प्रॉपर्टी नहीं है"
+  },
+  "panels/elements/PropertiesWidget.ts | showAll": {
+    "message": "सभी प्रॉपर्टी दिखाएं"
+  },
+  "panels/elements/PropertiesWidget.ts | showAllTooltip": {
+    "message": "सही का निशान हटाने पर, सिर्फ़ वे प्रॉपर्टी दिखेंगी जिनकी वैल्यू पहले से सेट की गई है या जिनकी वैल्यू शून्य नहीं है"
   },
   "panels/elements/StylePropertyTreeElement.ts | copyAllCssDeclarationsAsJs": {
     "message": "सभी एलान को JS के तौर पर कॉपी करें"
@@ -4887,7 +4902,7 @@
     "message": "मीडिया क्वेरी छिपाएं"
   },
   "panels/emulation/DeviceModeToolbar.ts | hideRulers": {
-    "message": "पैमाने छिपाएं"
+    "message": "रूलर छिपाएं"
   },
   "panels/emulation/DeviceModeToolbar.ts | landscape": {
     "message": "लैंडस्केप"
@@ -4926,7 +4941,7 @@
     "message": "मीडिया क्वेरी दिखाएं"
   },
   "panels/emulation/DeviceModeToolbar.ts | showRulers": {
-    "message": "पैमाने दिखाएं"
+    "message": "रूलर दिखाएं"
   },
   "panels/emulation/DeviceModeToolbar.ts | toggleDualscreenMode": {
     "message": "दो स्क्रीन वाले मोड को टॉगल करें"
@@ -4980,7 +4995,7 @@
     "message": "मीडिया क्वेरी छिपाएं"
   },
   "panels/emulation/emulation-meta.ts | hideRulers": {
-    "message": "पैमाने छिपाएं"
+    "message": "'डिवाइस मोड' टूलबार में रूलर छिपाएं"
   },
   "panels/emulation/emulation-meta.ts | showDeviceFrame": {
     "message": "डिवाइस का फ़्रेम दिखाएं"
@@ -4989,7 +5004,7 @@
     "message": "मीडिया क्वेरी दिखाएं"
   },
   "panels/emulation/emulation-meta.ts | showRulers": {
-    "message": "पैमाना दिखाएं"
+    "message": "'डिवाइस मोड' टूलबार में रूलर दिखाएं"
   },
   "panels/emulation/emulation-meta.ts | toggleDeviceToolbar": {
     "message": "डिवाइस टूलबार टॉगल करें"
@@ -5014,36 +5029,6 @@
   },
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "इवेंट लिस्नर पैसिव हो या ब्लॉक हो, इसके लिए टॉगल करें"
-  },
-  "panels/help/ReleaseNoteView.ts | close": {
-    "message": "बंद करें"
-  },
-  "panels/help/ReleaseNoteView.ts | learnMore": {
-    "message": "ज़्यादा जानें"
-  },
-  "panels/help/help-meta.ts | bug": {
-    "message": "गड़बड़ी"
-  },
-  "panels/help/help-meta.ts | doNotShowWhatsNewAfterEachUpdate": {
-    "message": "हर अपडेट के बाद जो नया हो उसे न देखें"
-  },
-  "panels/help/help-meta.ts | releaseNotes": {
-    "message": "प्रॉडक्ट की जानकारी"
-  },
-  "panels/help/help-meta.ts | reportADevtoolsIssue": {
-    "message": "किसी DevTools समस्या की शिकायत करें"
-  },
-  "panels/help/help-meta.ts | reportTranslationIssue": {
-    "message": "अनुवाद से जुड़ी समस्या की शिकायत करें"
-  },
-  "panels/help/help-meta.ts | showWhatsNew": {
-    "message": "'नया क्या है' टूल दिखाएं"
-  },
-  "panels/help/help-meta.ts | showWhatsNewAfterEachUpdate": {
-    "message": "दिखाएं कि हर अपडेट के बाद क्या बदला है"
-  },
-  "panels/help/help-meta.ts | whatsNew": {
-    "message": "नया क्या है"
   },
   "panels/input/InputTimeline.ts | clearAll": {
     "message": "सभी सूचनाएं मिटाएं"
@@ -5261,8 +5246,20 @@
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceEventId": {
     "message": "attributionsourceeventid अमान्य है"
   },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourceExpiry": {
+    "message": "attributionexpiry अमान्य है"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidSourcePriority": {
+    "message": "attributionsourcepriority अमान्य है"
+  },
   "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerData": {
     "message": "trigger-data अमान्य है"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerDedupKey": {
+    "message": "dedup-key अमान्य है"
+  },
+  "panels/issues/AttributionReportingIssueDetailsView.ts | invalidTriggerPriority": {
+    "message": "priority अमान्य है"
   },
   "panels/issues/AttributionReportingIssueDetailsView.ts | nViolations": {
     "message": "{n,plural, =1{# उल्लंघन}one{# उल्लंघन}other{# उल्लंघन}}"
@@ -5290,6 +5287,9 @@
   },
   "panels/issues/CorsIssueDetailsView.ts | disallowedRequestMethod": {
     "message": "अनुरोध का अस्वीकार किया गया तरीका"
+  },
+  "panels/issues/CorsIssueDetailsView.ts | failedRequest": {
+    "message": "अनुरोध पूरा नहीं किया जा सका"
   },
   "panels/issues/CorsIssueDetailsView.ts | header": {
     "message": "हेडर"
@@ -5366,8 +5366,14 @@
   "panels/issues/HiddenIssuesRow.ts | unhideAll": {
     "message": "छुपी हुई सभी समस्याएं दिखाएं"
   },
-  "panels/issues/IssueKindView.ts | hideAllCurrent": {
-    "message": "सभी मौजूदा {PH1} छिपाएं"
+  "panels/issues/IssueKindView.ts | hideAllCurrentBreakingChanges": {
+    "message": "अभी किए गए ऐसे सभी बदलावों को छिपाएं जो नुकसान पहुंचा सकते हैं"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentImprovements": {
+    "message": "अभी किए गए सभी सुधारों को छिपाएं"
+  },
+  "panels/issues/IssueKindView.ts | hideAllCurrentPageErrors": {
+    "message": "पेज में मौजूद सभी गड़बड़ियों को छिपाएं"
   },
   "panels/issues/IssueView.ts | affectedResources": {
     "message": "वे संसाधन जिन पर असर हुआ है"
@@ -6307,6 +6313,9 @@
   },
   "panels/network/NetworkConfigView.ts | caching": {
     "message": "कैश मेमोरी में ले जाना"
+  },
+  "panels/network/NetworkConfigView.ts | clientHintsStatusText": {
+    "message": "उपयोगकर्ता एजेंट अपडेट किया गया."
   },
   "panels/network/NetworkConfigView.ts | custom": {
     "message": "कस्टम..."
@@ -9153,7 +9162,7 @@
     "message": "कवरेज: लागू नहीं"
   },
   "panels/sources/CoveragePlugin.ts | coverageS": {
-    "message": "कवरेज: {PH1} %"
+    "message": "कवरेज: {PH1}"
   },
   "panels/sources/CoveragePlugin.ts | showDetails": {
     "message": "जानकारी दिखाएं"
@@ -9412,6 +9421,15 @@
   },
   "panels/sources/OutlineQuickOpen.ts | openAJavascriptOrCssFileToSee": {
     "message": "सिंबल देखने के लिए, कोई JavaScript या सीएसएस फ़ाइल खोलें"
+  },
+  "panels/sources/ProfilePlugin.ts | kb": {
+    "message": "केबी"
+  },
+  "panels/sources/ProfilePlugin.ts | mb": {
+    "message": "एमबी"
+  },
+  "panels/sources/ProfilePlugin.ts | ms": {
+    "message": "मिलीसेकंड"
   },
   "panels/sources/ScopeChainSidebarPane.ts | closure": {
     "message": "बंद होना"
@@ -11429,6 +11447,24 @@
   "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
     "message": "स्टोरेज की जांच करने वाला टूल देखें"
   },
+  "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
+    "message": "Feedback"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewFeature": {
+    "message": "झलक देखने की सुविधा"
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewText": {
+    "message": "हमारी टीम इस सुविधा पर लगातार काम कर रही है और हम जानना चाहते हैं कि इसके बारे में आपका क्या कहना है."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | previewTextFeedbackLink": {
+    "message": "हमें अपनी राय, शिकायत या सुझाव भेजें."
+  },
+  "ui/components/panel_feedback/PanelFeedback.ts | videoAndDocumentation": {
+    "message": "वीडियो और दस्तावेज़"
+  },
+  "ui/components/panel_feedback/PreviewToggle.ts | previewTextFeedbackLink": {
+    "message": "हमें अपनी राय, शिकायत या सुझाव भेजें."
+  },
   "ui/components/request_link_icon/RequestLinkIcon.ts | clickToShowRequestInTheNetwork": {
     "message": "यूआरएल का अनुरोध दिखाने और नेटवर्क पैनल खोलने के लिए, क्लिक करें: {url}"
   },
@@ -11501,6 +11537,12 @@
   "ui/legacy/InspectorView.ts | drawer": {
     "message": "टूल का दराज़"
   },
+  "ui/legacy/InspectorView.ts | drawerHidden": {
+    "message": "दराज छिपाई गई"
+  },
+  "ui/legacy/InspectorView.ts | drawerShown": {
+    "message": "दराज दिखाई गई"
+  },
   "ui/legacy/InspectorView.ts | mainToolbar": {
     "message": "मुख्य टूलबार"
   },
@@ -11539,6 +11581,9 @@
   },
   "ui/legacy/ListWidget.ts | saveString": {
     "message": "सेव करें"
+  },
+  "ui/legacy/RemoteDebuggingTerminatedScreen.ts | debuggingConnectionWasClosed": {
+    "message": "डीबग करने के लिए इस्तेमाल हो रहा कनेक्शन बंद था. वजह: "
   },
   "ui/legacy/RemoteDebuggingTerminatedScreen.ts | reconnectDevtools": {
     "message": "DevTools को फिर से कनेक्ट करें"
@@ -11774,6 +11819,9 @@
   "ui/legacy/components/cookie_table/CookiesTable.ts | name": {
     "message": "नाम"
   },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | opaquePartitionKey": {
+    "message": "(ओपेक)"
+  },
   "ui/legacy/components/cookie_table/CookiesTable.ts | session": {
     "message": "सत्र"
   },
@@ -11942,15 +11990,6 @@
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "JavaScript ऑब्जेक्ट के तौर पर दिखाएं"
   },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keys": {
-    "message": "कुंजियां"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | keywords": {
-    "message": "कीवर्ड"
-  },
-  "ui/legacy/components/object_ui/JavaScriptAutocomplete.ts | lexicalScopeVariables": {
-    "message": "लेक्सिकल स्कोप वैरिएबल"
-  },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | collapseChildren": {
     "message": "पैरंट ग्रुप के एक हिस्से को छोटा करें"
   },
@@ -12038,15 +12077,6 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | sSelected": {
     "message": "{PH1} चुना गया"
   },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | kb": {
-    "message": "केबी"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | mb": {
-    "message": "एमबी"
-  },
-  "ui/legacy/components/perf_ui/LineLevelProfile.ts | ms": {
-    "message": "मिलीसेकंड"
-  },
   "ui/legacy/components/perf_ui/NetworkPriorities.ts | high": {
     "message": "सबसे अच्छा"
   },
@@ -12119,8 +12149,8 @@
   "ui/legacy/components/quick_open/QuickInput.ts | pressEnterToConfirmOrEscapeTo": {
     "message": "{PH1} (पुष्टि करने के लिए 'Enter' और रद्द करने के लिए 'Escape' दबाएं.)"
   },
-  "ui/legacy/components/quick_open/QuickOpen.ts | useTabToSwitchCommandsTypeToSeeAvailableCommands": {
-    "message": "एक निर्देश से अन्य निर्देश पर जाने के लिए टैब का इस्तेमाल करें. उपलब्ध निर्देशों को देखने के लिए '?' टाइप करें"
+  "ui/legacy/components/quick_open/QuickOpen.ts | typeToSeeAvailableCommands": {
+    "message": "उपलब्ध निर्देशों को देखने के लिए '?' टाइप करें"
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | openFile": {
     "message": "फ़ाइल खोलें"
@@ -12223,9 +12253,6 @@
   },
   "ui/legacy/components/source_frame/source_frame-meta.ts | tabCharacter": {
     "message": "टैब वर्ण"
-  },
-  "ui/legacy/components/text_editor/CodeMirrorTextEditor.ts | codeEditor": {
-    "message": "कोड एडिटर"
   },
   "ui/legacy/components/utils/ImagePreview.ts | currentSource": {
     "message": "मौजूदा सोर्स:"

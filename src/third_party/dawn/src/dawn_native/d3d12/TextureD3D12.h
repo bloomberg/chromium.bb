@@ -24,7 +24,7 @@
 #include "dawn_native/d3d12/ResourceHeapAllocationD3D12.h"
 #include "dawn_native/d3d12/d3d12_platform.h"
 
-namespace dawn_native { namespace d3d12 {
+namespace dawn::native::d3d12 {
 
     class CommandRecordingContext;
     class Device;
@@ -45,8 +45,6 @@ namespace dawn_native { namespace d3d12 {
             const TextureDescriptor* descriptor,
             ComPtr<ID3D12Resource> d3d12Texture,
             Ref<D3D11on12ResourceCacheEntry> d3d11on12Resource,
-            ExternalMutexSerial acquireMutexKey,
-            ExternalMutexSerial releaseMutexKey,
             bool isSwapChainTexture,
             bool isInitialized);
         static ResultOrError<Ref<Texture>> Create(Device* device,
@@ -66,8 +64,12 @@ namespace dawn_native { namespace d3d12 {
                                                        Aspect aspects,
                                                        bool depthReadOnly,
                                                        bool stencilReadOnly) const;
+
         void EnsureSubresourceContentInitialized(CommandRecordingContext* commandContext,
                                                  const SubresourceRange& range);
+
+        MaybeError AcquireKeyedMutex();
+        void ReleaseKeyedMutex();
 
         void TrackUsageAndGetResourceBarrierForPass(CommandRecordingContext* commandContext,
                                                     std::vector<D3D12_RESOURCE_BARRIER>* barrier,
@@ -96,8 +98,6 @@ namespace dawn_native { namespace d3d12 {
         MaybeError InitializeAsExternalTexture(const TextureDescriptor* descriptor,
                                                ComPtr<ID3D12Resource> d3d12Texture,
                                                Ref<D3D11on12ResourceCacheEntry> d3d11on12Resource,
-                                               ExternalMutexSerial acquireMutexKey,
-                                               ExternalMutexSerial releaseMutexKey,
                                                bool isSwapChainTexture);
         MaybeError InitializeAsSwapChainTexture(ComPtr<ID3D12Resource> d3d12Texture);
 
@@ -136,8 +136,6 @@ namespace dawn_native { namespace d3d12 {
         bool mSwapChainTexture = false;
         D3D12_RESOURCE_FLAGS mD3D12ResourceFlags;
 
-        ExternalMutexSerial mAcquireMutexKey = ExternalMutexSerial(0);
-        ExternalMutexSerial mReleaseMutexKey = ExternalMutexSerial(0);
         Ref<D3D11on12ResourceCacheEntry> mD3D11on12Resource;
     };
 
@@ -159,6 +157,6 @@ namespace dawn_native { namespace d3d12 {
 
         D3D12_SHADER_RESOURCE_VIEW_DESC mSrvDesc;
     };
-}}  // namespace dawn_native::d3d12
+}  // namespace dawn::native::d3d12
 
 #endif  // DAWNNATIVE_D3D12_TEXTURED3D12_H_

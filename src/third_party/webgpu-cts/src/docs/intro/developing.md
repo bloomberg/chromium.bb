@@ -66,6 +66,12 @@ You can make local configuration changes in `.vscode/`, which is untracked by Gi
 
 ## Pull Requests
 
+When opening a pull request, fill out the PR checklist and attach the issue number.
+If an issue hasn't been opened, find the draft issue on the
+[project tracker](https://github.com/orgs/gpuweb/projects/3) and choose "Convert to issue":
+
+![convert to issue button screenshot](convert_to_issue.png)
+
 Opening a pull request will automatically notify reviewers.
 
 To make the review process smoother, once a reviewer has started looking at your change:
@@ -80,3 +86,14 @@ To make the review process smoother, once a reviewer has started looking at your
 - When you address a review comment, mark the thread as "Resolved".
 
 Pull requests will (usually) be landed with the "Squash and merge" option.
+
+### TODOs
+
+The word "TODO" refers to missing test coverage. It may only appear inside file/test descriptions
+and README files (enforced by linting).
+
+To use comments to refer to TODOs inside the description, use a backreference, e.g., in the
+description, `TODO: Also test the FROBNICATE usage flag [1]`, and somewhere in the code, `[1]:
+Need to add FROBNICATE to this list.`.
+
+Use `MAINTENANCE_TODO` for TODOs which don't impact test coverage.

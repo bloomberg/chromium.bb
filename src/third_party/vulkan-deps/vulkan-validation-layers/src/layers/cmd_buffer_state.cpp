@@ -1,7 +1,7 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,6 +58,7 @@ void COMMAND_POOL_STATE::Free(uint32_t count, const VkCommandBuffer *command_buf
 
 void COMMAND_POOL_STATE::Reset() {
     for (auto &entry : commandBuffers) {
+        auto guard = entry.second->WriteLock();
         entry.second->Reset();
     }
 }
@@ -252,14 +253,14 @@ const IMAGE_VIEW_STATE *CMD_BUFFER_STATE::GetActiveAttachmentImageViewState(uint
     return active_attachments->at(index);
 }
 
-void CMD_BUFFER_STATE::AddChild(BASE_NODE *child_node) {
+void CMD_BUFFER_STATE::AddChild(std::shared_ptr<BASE_NODE> &child_node) {
     assert(child_node);
     if (child_node->AddParent(this)) {
         object_bindings.insert(child_node);
     }
 }
 
-void CMD_BUFFER_STATE::RemoveChild(BASE_NODE *child_node) {
+void CMD_BUFFER_STATE::RemoveChild(std::shared_ptr<BASE_NODE> &child_node) {
     assert(child_node);
     child_node->RemoveParent(this);
     object_bindings.erase(child_node);
@@ -357,12 +358,6 @@ void CMD_BUFFER_STATE::Reset() {
 
     transform_feedback_active = false;
 
-    // Remove object bindings
-    for (auto *base_obj : object_bindings) {
-        RemoveChild(base_obj);
-    }
-    object_bindings.clear();
-
     // Clean up the label data
     ResetCmdDebugUtilsLabel(dev_data->report_data, commandBuffer());
 
@@ -451,30 +446,33 @@ void CMD_BUFFER_STATE::Destroy() {
 }
 
 void CMD_BUFFER_STATE::NotifyInvalidate(const BASE_NODE::NodeList &invalid_nodes, bool unlink) {
-    if (state == CB_RECORDING) {
-        state = CB_INVALID_INCOMPLETE;
-    } else if (state == CB_RECORDED) {
-        state = CB_INVALID_COMPLETE;
-    }
-    assert(!invalid_nodes.empty());
-    LogObjectList log_list;
-    for (auto *obj : invalid_nodes) {
-        log_list.object_list.emplace_back(obj->Handle());
-    }
-    broken_bindings.emplace(invalid_nodes[0]->Handle(), log_list);
+    {
+        auto guard = WriteLock();
+        if (state == CB_RECORDING) {
+            state = CB_INVALID_INCOMPLETE;
+        } else if (state == CB_RECORDED) {
+            state = CB_INVALID_COMPLETE;
+        }
+        assert(!invalid_nodes.empty());
+        LogObjectList log_list;
+        for (auto &obj : invalid_nodes) {
+            log_list.object_list.emplace_back(obj->Handle());
+        }
+        broken_bindings.emplace(invalid_nodes[0]->Handle(), log_list);
 
-    if (unlink) {
-        for (auto *obj : invalid_nodes) {
-            object_bindings.erase(obj);
-            switch (obj->Type()) {
-                case kVulkanObjectTypeCommandBuffer:
-                    linkedCommandBuffers.erase(static_cast<CMD_BUFFER_STATE *>(obj));
-                    break;
-                case kVulkanObjectTypeImage:
-                    image_layout_map.erase(static_cast<IMAGE_STATE *>(obj));
-                    break;
-                default:
-                    break;
+        if (unlink) {
+            for (auto &obj : invalid_nodes) {
+                object_bindings.erase(obj);
+                switch (obj->Type()) {
+                    case kVulkanObjectTypeCommandBuffer:
+                        linkedCommandBuffers.erase(static_cast<CMD_BUFFER_STATE *>(obj.get()));
+                        break;
+                    case kVulkanObjectTypeImage:
+                        image_layout_map.erase(static_cast<IMAGE_STATE *>(obj.get()));
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }
@@ -605,8 +603,7 @@ void CMD_BUFFER_STATE::UpdateAttachmentsView(const VkRenderPassBeginInfo *pRende
     for (uint32_t i = 0; i < attachments.size(); ++i) {
         if (imageless) {
             if (attachment_info_struct && i < attachment_info_struct->attachmentCount) {
-                auto res =
-                    attachments_view_states.insert(dev_data->GetShared<IMAGE_VIEW_STATE>(attachment_info_struct->pAttachments[i]));
+                auto res = attachments_view_states.insert(dev_data->Get<IMAGE_VIEW_STATE>(attachment_info_struct->pAttachments[i]));
                 attachments[i] = res.first->get();
             }
         } else {
@@ -619,15 +616,15 @@ void CMD_BUFFER_STATE::UpdateAttachmentsView(const VkRenderPassBeginInfo *pRende
 void CMD_BUFFER_STATE::BeginRenderPass(CMD_TYPE cmd_type, const VkRenderPassBeginInfo *pRenderPassBegin,
                                        const VkSubpassContents contents) {
     RecordCmd(cmd_type);
-    activeFramebuffer = dev_data->GetShared<FRAMEBUFFER_STATE>(pRenderPassBegin->framebuffer);
-    activeRenderPass = dev_data->GetShared<RENDER_PASS_STATE>(pRenderPassBegin->renderPass);
+    activeFramebuffer = dev_data->Get<FRAMEBUFFER_STATE>(pRenderPassBegin->framebuffer);
+    activeRenderPass = dev_data->Get<RENDER_PASS_STATE>(pRenderPassBegin->renderPass);
     activeRenderPassBeginInfo = safe_VkRenderPassBeginInfo(pRenderPassBegin);
     activeSubpass = 0;
     activeSubpassContents = contents;
 
     // Connect this RP to cmdBuffer
     if (!dev_data->disabled[command_buffer_state] && activeRenderPass) {
-        AddChild(activeRenderPass.get());
+        AddChild(activeRenderPass);
     }
 
     auto chained_device_group_struct = LvlFindInChain<VkDeviceGroupRenderPassBeginInfo>(pRenderPassBegin->pNext);
@@ -653,7 +650,7 @@ void CMD_BUFFER_STATE::BeginRenderPass(CMD_TYPE cmd_type, const VkRenderPassBegi
         UpdateAttachmentsView(pRenderPassBegin);
 
         // Connect this framebuffer and its children to this cmdBuffer
-        AddChild(activeFramebuffer.get());
+        AddChild(activeFramebuffer);
     }
 }
 
@@ -708,8 +705,8 @@ void CMD_BUFFER_STATE::BeginRendering(CMD_TYPE cmd_type, const VkRenderingInfoKH
         colorResolveAttachment = nullptr;
 
         if (pRenderingInfo->pColorAttachments[i].imageView != VK_NULL_HANDLE) {
-            auto res = attachments_view_states.insert(
-                dev_data->GetShared<IMAGE_VIEW_STATE>(pRenderingInfo->pColorAttachments[i].imageView));
+            auto res =
+                attachments_view_states.insert(dev_data->Get<IMAGE_VIEW_STATE>(pRenderingInfo->pColorAttachments[i].imageView));
             colorAttachment = res.first->get();
             if (pRenderingInfo->pColorAttachments[i].resolveMode != VK_RESOLVE_MODE_NONE &&
                 pRenderingInfo->pColorAttachments[i].resolveImageView != VK_NULL_HANDLE) {
@@ -724,8 +721,7 @@ void CMD_BUFFER_STATE::BeginRendering(CMD_TYPE cmd_type, const VkRenderingInfoKH
         depthAttachment = nullptr;
         depthResolveAttachment = nullptr;
 
-        auto res =
-            attachments_view_states.insert(dev_data->GetShared<IMAGE_VIEW_STATE>(pRenderingInfo->pDepthAttachment->imageView));
+        auto res = attachments_view_states.insert(dev_data->Get<IMAGE_VIEW_STATE>(pRenderingInfo->pDepthAttachment->imageView));
         depthAttachment = res.first->get();
         if (pRenderingInfo->pDepthAttachment->resolveMode != VK_RESOLVE_MODE_NONE &&
             pRenderingInfo->pDepthAttachment->resolveImageView != VK_NULL_HANDLE) {
@@ -739,8 +735,7 @@ void CMD_BUFFER_STATE::BeginRendering(CMD_TYPE cmd_type, const VkRenderingInfoKH
         stencilAttachment = nullptr;
         stencilResolveAttachment = nullptr;
 
-        auto res =
-            attachments_view_states.insert(dev_data->GetShared<IMAGE_VIEW_STATE>(pRenderingInfo->pStencilAttachment->imageView));
+        auto res = attachments_view_states.insert(dev_data->Get<IMAGE_VIEW_STATE>(pRenderingInfo->pStencilAttachment->imageView));
         stencilAttachment = res.first->get();
         if (pRenderingInfo->pStencilAttachment->resolveMode != VK_RESOLVE_MODE_NONE &&
             pRenderingInfo->pStencilAttachment->resolveImageView != VK_NULL_HANDLE) {
@@ -763,11 +758,11 @@ void CMD_BUFFER_STATE::Begin(const VkCommandBufferBeginInfo *pBeginInfo) {
         if ((createInfo.level != VK_COMMAND_BUFFER_LEVEL_PRIMARY) &&
             (beginInfo.flags & VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT)) {
             if (beginInfo.pInheritanceInfo->renderPass) {
-                activeRenderPass = dev_data->GetShared<RENDER_PASS_STATE>(beginInfo.pInheritanceInfo->renderPass);
+                activeRenderPass = dev_data->Get<RENDER_PASS_STATE>(beginInfo.pInheritanceInfo->renderPass);
                 activeSubpass = beginInfo.pInheritanceInfo->subpass;
 
                 if (beginInfo.pInheritanceInfo->framebuffer) {
-                    activeFramebuffer = dev_data->GetShared<FRAMEBUFFER_STATE>(beginInfo.pInheritanceInfo->framebuffer);
+                    activeFramebuffer = dev_data->Get<FRAMEBUFFER_STATE>(beginInfo.pInheritanceInfo->framebuffer);
                     active_subpasses = nullptr;
                     active_attachments = nullptr;
 
@@ -786,7 +781,7 @@ void CMD_BUFFER_STATE::Begin(const VkCommandBufferBeginInfo *pBeginInfo) {
 
                         // Connect this framebuffer and its children to this cmdBuffer
                         if (!dev_data->disabled[command_buffer_state]) {
-                            AddChild(activeFramebuffer.get());
+                            AddChild(activeFramebuffer);
                         }
                     }
                 }
@@ -831,7 +826,7 @@ void CMD_BUFFER_STATE::End(VkResult result) {
 void CMD_BUFFER_STATE::ExecuteCommands(uint32_t commandBuffersCount, const VkCommandBuffer *pCommandBuffers) {
     RecordCmd(CMD_EXECUTECOMMANDS);
     for (uint32_t i = 0; i < commandBuffersCount; i++) {
-        auto sub_cb_state = dev_data->Get<CMD_BUFFER_STATE>(pCommandBuffers[i]);
+        auto sub_cb_state = dev_data->GetWrite<CMD_BUFFER_STATE>(pCommandBuffers[i]);
         assert(sub_cb_state);
         if (!(sub_cb_state->beginInfo.flags & VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT)) {
             if (beginInfo.flags & VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT) {
@@ -855,7 +850,7 @@ void CMD_BUFFER_STATE::ExecuteCommands(uint32_t commandBuffersCount, const VkCom
         }
 
         sub_cb_state->primaryCommandBuffer = commandBuffer();
-        linkedCommandBuffers.insert(sub_cb_state);
+        linkedCommandBuffers.insert(sub_cb_state.get());
         AddChild(sub_cb_state);
         for (auto &function : sub_cb_state->queryUpdates) {
             queryUpdates.push_back(function);
@@ -889,10 +884,11 @@ void CMD_BUFFER_STATE::PushDescriptorSetState(VkPipelineBindPoint pipelineBindPo
     auto &push_descriptor_set = last_bound.push_descriptor_set;
     // If we are disturbing the current push_desriptor_set clear it
     if (!push_descriptor_set || !CompatForSet(set, last_bound, pipeline_layout->compat_for_set)) {
-        last_bound.UnbindAndResetPushDescriptorSet(this, new cvdescriptorset::DescriptorSet(0, nullptr, dsl, 0, dev_data));
+        last_bound.UnbindAndResetPushDescriptorSet(
+            this, std::make_shared<cvdescriptorset::DescriptorSet>(VK_NULL_HANDLE, nullptr, dsl, 0, dev_data));
     }
 
-    UpdateLastBoundDescriptorSets(pipelineBindPoint, pipeline_layout, set, 1, nullptr, push_descriptor_set.get(), 0, nullptr);
+    UpdateLastBoundDescriptorSets(pipelineBindPoint, pipeline_layout, set, 1, nullptr, push_descriptor_set, 0, nullptr);
     last_bound.pipeline_layout = pipeline_layout->layout();
 
     // Now that we have either the new or extant push_descriptor set ... do the write updates against it
@@ -928,7 +924,7 @@ void CMD_BUFFER_STATE::UpdateDrawState(CMD_TYPE cmd_type, const VkPipelineBindPo
         for (const auto &set_binding_pair : pipe->active_slots) {
             uint32_t set_index = set_binding_pair.first;
             // Pull the set node
-            cvdescriptorset::DescriptorSet *descriptor_set = state.per_set[set_index].bound_descriptor_set;
+            auto &descriptor_set = state.per_set[set_index].bound_descriptor_set;
 
             // For the "bindless" style resource usage with many descriptors, need to optimize command <-> descriptor binding
 
@@ -947,7 +943,7 @@ void CMD_BUFFER_STATE::UpdateDrawState(CMD_TYPE cmd_type, const VkPipelineBindPo
             bool descriptor_set_changed =
                 !reduced_map.IsManyDescriptors() ||
                 // Update if descriptor set (or contents) has changed
-                state.per_set[set_index].validated_set != descriptor_set ||
+                state.per_set[set_index].validated_set != descriptor_set.get() ||
                 state.per_set[set_index].validated_set_change_count != descriptor_set->GetChangeCount() ||
                 (!dev_data->disabled[image_layout_validation] &&
                  state.per_set[set_index].validated_set_image_layout_change_count != image_layout_change_count);
@@ -958,6 +954,10 @@ void CMD_BUFFER_STATE::UpdateDrawState(CMD_TYPE cmd_type, const VkPipelineBindPo
                                               binding_req_map.end());
 
             if (need_update) {
+                if (!dev_data->disabled[command_buffer_state] && !descriptor_set->IsPushDescriptor()) {
+                    AddChild(descriptor_set);
+                }
+
                 // Bind this set and its active descriptor resources to the command buffer
                 if (!descriptor_set_changed && reduced_map.IsManyDescriptors()) {
                     // Only record the bindings that haven't already been recorded
@@ -971,7 +971,7 @@ void CMD_BUFFER_STATE::UpdateDrawState(CMD_TYPE cmd_type, const VkPipelineBindPo
                     descriptor_set->UpdateDrawState(dev_data, this, cmd_type, pipe, binding_req_map);
                 }
 
-                state.per_set[set_index].validated_set = descriptor_set;
+                state.per_set[set_index].validated_set = descriptor_set.get();
                 state.per_set[set_index].validated_set_change_count = descriptor_set->GetChangeCount();
                 state.per_set[set_index].validated_set_image_layout_change_count = image_layout_change_count;
                 if (reduced_map.IsManyDescriptors()) {
@@ -997,7 +997,7 @@ void CMD_BUFFER_STATE::UpdateDrawState(CMD_TYPE cmd_type, const VkPipelineBindPo
 void CMD_BUFFER_STATE::UpdateLastBoundDescriptorSets(VkPipelineBindPoint pipeline_bind_point,
                                                      const PIPELINE_LAYOUT_STATE *pipeline_layout, uint32_t first_set,
                                                      uint32_t set_count, const VkDescriptorSet *pDescriptorSets,
-                                                     cvdescriptorset::DescriptorSet *push_descriptor_set,
+                                                     std::shared_ptr<cvdescriptorset::DescriptorSet> &push_descriptor_set,
                                                      uint32_t dynamic_offset_count, const uint32_t *p_dynamic_offsets) {
     assert((pDescriptorSets == nullptr) ^ (push_descriptor_set == nullptr));
     // Defensive
@@ -1011,13 +1011,19 @@ void CMD_BUFFER_STATE::UpdateLastBoundDescriptorSets(VkPipelineBindPoint pipelin
     // Some useful shorthand
     const auto lv_bind_point = ConvertToLvlBindPoint(pipeline_bind_point);
     auto &last_bound = lastBound[lv_bind_point];
+    last_bound.pipeline_layout = pipeline_layout->layout();
     auto &pipe_compat_ids = pipeline_layout->compat_for_set;
+    // Resize binding arrays
+    uint32_t last_set_index = first_set + set_count - 1;
+    if (last_set_index >= last_bound.per_set.size()) {
+        last_bound.per_set.resize(last_set_index + 1);
+    }
     const uint32_t current_size = static_cast<uint32_t>(last_bound.per_set.size());
 
     // We need this three times in this function, but nowhere else
-    auto push_descriptor_cleanup = [&last_bound](const cvdescriptorset::DescriptorSet *ds) -> bool {
+    auto push_descriptor_cleanup = [&last_bound](const std::shared_ptr<cvdescriptorset::DescriptorSet> &ds) -> bool {
         if (ds && ds->IsPushDescriptor()) {
-            assert(ds == last_bound.push_descriptor_set.get());
+            assert(ds == last_bound.push_descriptor_set);
             last_bound.push_descriptor_set = nullptr;
             return true;
         }
@@ -1056,10 +1062,11 @@ void CMD_BUFFER_STATE::UpdateLastBoundDescriptorSets(VkPipelineBindPoint pipelin
     const uint32_t *input_dynamic_offsets = p_dynamic_offsets;  // "read" pointer for dynamic offset data
     for (uint32_t input_idx = 0; input_idx < set_count; input_idx++) {
         auto set_idx = input_idx + first_set;  // set_idx is index within layout, input_idx is index within input descriptor sets
-        auto descriptor_set = push_descriptor_set ? push_descriptor_set : dev_data->Get<cvdescriptorset::DescriptorSet>(pDescriptorSets[input_idx]);
+        auto descriptor_set =
+            push_descriptor_set ? push_descriptor_set : dev_data->Get<cvdescriptorset::DescriptorSet>(pDescriptorSets[input_idx]);
 
         // Record binding (or push)
-        if (descriptor_set != last_bound.push_descriptor_set.get()) {
+        if (descriptor_set != last_bound.push_descriptor_set) {
             // Only cleanup the push descriptors if they aren't the currently used set.
             push_descriptor_cleanup(last_bound.per_set[set_idx].bound_descriptor_set);
         }
@@ -1079,7 +1086,7 @@ void CMD_BUFFER_STATE::UpdateLastBoundDescriptorSets(VkPipelineBindPoint pipelin
             }
             if (!descriptor_set->IsPushDescriptor()) {
                 // Can't cache validation of push_descriptors
-                validated_descriptor_sets.insert(descriptor_set);
+                validated_descriptor_sets.insert(descriptor_set.get());
             }
         }
     }
@@ -1166,7 +1173,7 @@ void CMD_BUFFER_STATE::RecordStateCmd(CMD_TYPE cmd_type, CBStatusFlags state_bit
     static_status &= ~state_bits;
 }
 
-void CMD_BUFFER_STATE::RecordTransferCmd(CMD_TYPE cmd_type, BINDABLE *buf1, BINDABLE *buf2) {
+void CMD_BUFFER_STATE::RecordTransferCmd(CMD_TYPE cmd_type, std::shared_ptr<BINDABLE> &&buf1, std::shared_ptr<BINDABLE> &&buf2) {
     RecordCmd(cmd_type);
     if (buf1) {
         AddChild(buf1);
@@ -1193,10 +1200,9 @@ void CMD_BUFFER_STATE::RecordSetEvent(CMD_TYPE cmd_type, VkEvent event, VkPipeli
     if (!waitedEvents.count(event)) {
         writeEventsBeforeWait.push_back(event);
     }
-    eventUpdates.emplace_back(
-        [event, stageMask](const ValidationStateTracker *device_data, bool do_validate, EventToStageMap *localEventToStageMap) {
-            return SetEventStageMask(event, stageMask, localEventToStageMap);
-        });
+    eventUpdates.emplace_back([event, stageMask](CMD_BUFFER_STATE &, bool do_validate, EventToStageMap *localEventToStageMap) {
+        return SetEventStageMask(event, stageMask, localEventToStageMap);
+    });
 }
 
 void CMD_BUFFER_STATE::RecordResetEvent(CMD_TYPE cmd_type, VkEvent event, VkPipelineStageFlags2KHR stageMask) {
@@ -1212,12 +1218,13 @@ void CMD_BUFFER_STATE::RecordResetEvent(CMD_TYPE cmd_type, VkEvent event, VkPipe
         writeEventsBeforeWait.push_back(event);
     }
 
-    eventUpdates.emplace_back([event](const ValidationStateTracker *, bool do_validate, EventToStageMap *localEventToStageMap) {
+    eventUpdates.emplace_back([event](CMD_BUFFER_STATE &, bool do_validate, EventToStageMap *localEventToStageMap) {
         return SetEventStageMask(event, VkPipelineStageFlags2KHR(0), localEventToStageMap);
     });
 }
 
-void CMD_BUFFER_STATE::RecordWaitEvents(CMD_TYPE cmd_type, uint32_t eventCount, const VkEvent *pEvents) {
+void CMD_BUFFER_STATE::RecordWaitEvents(CMD_TYPE cmd_type, uint32_t eventCount, const VkEvent *pEvents,
+                                        VkPipelineStageFlags2KHR src_stage_mask) {
     RecordCmd(cmd_type);
     for (uint32_t i = 0; i < eventCount; ++i) {
         if (!dev_data->disabled[command_buffer_state]) {
@@ -1294,11 +1301,12 @@ void CMD_BUFFER_STATE::Submit(uint32_t perf_submit_pass) {
     }
 
     for (const auto &function : eventUpdates) {
-        function(nullptr, /*do_validate*/ false, &local_event_to_stage_map);
+        function(*this, /*do_validate*/ false, &local_event_to_stage_map);
     }
 
     for (const auto &eventStagePair : local_event_to_stage_map) {
-        dev_data->Get<EVENT_STATE>(eventStagePair.first)->stageMask = eventStagePair.second;
+        auto event_state = dev_data->Get<EVENT_STATE>(eventStagePair.first);
+        event_state->stageMask = eventStagePair.second;
     }
 }
 

@@ -20,7 +20,7 @@
 #include "napi.h"
 #include "src/dawn_node/interop/WebGPU.h"
 
-namespace wgpu { namespace binding {
+namespace wgpu::binding {
 
     // GPURenderPassEncoder is an implementation of interop::GPURenderPassEncoder that wraps a
     // wgpu::RenderPassEncoder.
@@ -50,13 +50,6 @@ namespace wgpu { namespace binding {
         void setStencilReference(Napi::Env, interop::GPUStencilValue reference) override;
         void beginOcclusionQuery(Napi::Env, interop::GPUSize32 queryIndex) override;
         void endOcclusionQuery(Napi::Env) override;
-        void beginPipelineStatisticsQuery(Napi::Env,
-                                          interop::Interface<interop::GPUQuerySet> querySet,
-                                          interop::GPUSize32 queryIndex) override;
-        void endPipelineStatisticsQuery(Napi::Env) override;
-        void writeTimestamp(Napi::Env,
-                            interop::Interface<interop::GPUQuerySet> querySet,
-                            interop::GPUSize32 queryIndex) override;
         void executeBundles(
             Napi::Env,
             std::vector<interop::Interface<interop::GPURenderBundle>> bundles) override;
@@ -110,6 +103,6 @@ namespace wgpu { namespace binding {
         wgpu::RenderPassEncoder enc_;
     };
 
-}}  // namespace wgpu::binding
+}  // namespace wgpu::binding
 
 #endif  // DAWN_NODE_BINDING_GPURENDERPASSENCODER_H_

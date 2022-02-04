@@ -1540,48 +1540,48 @@ void CodeStubAssembler::BranchIfToBooleanIsTrue(TNode<Object> value,
   }
 }
 
-TNode<RawPtrT> CodeStubAssembler::LoadCagedPointerFromObject(
+TNode<RawPtrT> CodeStubAssembler::LoadSandboxedPointerFromObject(
     TNode<HeapObject> object, TNode<IntPtrT> field_offset) {
-#ifdef V8_CAGED_POINTERS
+#ifdef V8_SANDBOXED_POINTERS
   return ReinterpretCast<RawPtrT>(
-      LoadObjectField<CagedPtrT>(object, field_offset));
+      LoadObjectField<SandboxedPtrT>(object, field_offset));
 #else
   return LoadObjectField<RawPtrT>(object, field_offset);
-#endif  // V8_CAGED_POINTERS
+#endif  // V8_SANDBOXED_POINTERS
 }
 
-void CodeStubAssembler::StoreCagedPointerToObject(TNode<HeapObject> object,
-                                                  TNode<IntPtrT> offset,
-                                                  TNode<RawPtrT> pointer) {
-#ifdef V8_CAGED_POINTERS
-  TNode<CagedPtrT> caged_pointer = ReinterpretCast<CagedPtrT>(pointer);
-#ifdef DEBUG
-  // Verify pointer points into the cage.
-  TNode<ExternalReference> cage_base_address =
-      ExternalConstant(ExternalReference::virtual_memory_cage_base_address());
-  TNode<ExternalReference> cage_end_address =
-      ExternalConstant(ExternalReference::virtual_memory_cage_end_address());
-  TNode<UintPtrT> cage_base = Load<UintPtrT>(cage_base_address);
-  TNode<UintPtrT> cage_end = Load<UintPtrT>(cage_end_address);
-  CSA_DCHECK(this, UintPtrGreaterThanOrEqual(caged_pointer, cage_base));
-  CSA_DCHECK(this, UintPtrLessThan(caged_pointer, cage_end));
-#endif  // DEBUG
-  StoreObjectFieldNoWriteBarrier<CagedPtrT>(object, offset, caged_pointer);
+void CodeStubAssembler::StoreSandboxedPointerToObject(TNode<HeapObject> object,
+                                                      TNode<IntPtrT> offset,
+                                                      TNode<RawPtrT> pointer) {
+#ifdef V8_SANDBOXED_POINTERS
+  TNode<SandboxedPtrT> sbx_ptr = ReinterpretCast<SandboxedPtrT>(pointer);
+
+  // Ensure pointer points into the sandbox.
+  TNode<ExternalReference> sandbox_base_address =
+      ExternalConstant(ExternalReference::sandbox_base_address());
+  TNode<ExternalReference> sandbox_end_address =
+      ExternalConstant(ExternalReference::sandbox_end_address());
+  TNode<UintPtrT> sandbox_base = Load<UintPtrT>(sandbox_base_address);
+  TNode<UintPtrT> sandbox_end = Load<UintPtrT>(sandbox_end_address);
+  CSA_CHECK(this, UintPtrGreaterThanOrEqual(sbx_ptr, sandbox_base));
+  CSA_CHECK(this, UintPtrLessThan(sbx_ptr, sandbox_end));
+
+  StoreObjectFieldNoWriteBarrier<SandboxedPtrT>(object, offset, sbx_ptr);
 #else
   StoreObjectFieldNoWriteBarrier<RawPtrT>(object, offset, pointer);
-#endif  // V8_CAGED_POINTERS
+#endif  // V8_SANDBOXED_POINTERS
 }
 
 TNode<RawPtrT> CodeStubAssembler::EmptyBackingStoreBufferConstant() {
-#ifdef V8_CAGED_POINTERS
-  // TODO(chromium:1218005) consider creating a LoadCagedPointerConstant() if
-  // more of these constants are required later on.
+#ifdef V8_SANDBOXED_POINTERS
+  // TODO(chromium:1218005) consider creating a LoadSandboxedPointerConstant()
+  // if more of these constants are required later on.
   TNode<ExternalReference> empty_backing_store_buffer =
       ExternalConstant(ExternalReference::empty_backing_store_buffer());
   return Load<RawPtrT>(empty_backing_store_buffer);
 #else
   return ReinterpretCast<RawPtrT>(IntPtrConstant(0));
-#endif  // V8_CAGED_POINTERS
+#endif  // V8_SANDBOXED_POINTERS
 }
 
 TNode<ExternalPointerT> CodeStubAssembler::ChangeUint32ToExternalPointer(
@@ -1598,7 +1598,7 @@ TNode<Uint32T> CodeStubAssembler::ChangeExternalPointerToUint32(
 
 void CodeStubAssembler::InitializeExternalPointerField(TNode<HeapObject> object,
                                                        TNode<IntPtrT> offset) {
-#ifdef V8_HEAP_SANDBOX
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
   TNode<ExternalReference> external_pointer_table_address = ExternalConstant(
       ExternalReference::external_pointer_table_address(isolate()));
   TNode<Uint32T> table_length = UncheckedCast<Uint32T>(
@@ -1639,7 +1639,7 @@ void CodeStubAssembler::InitializeExternalPointerField(TNode<HeapObject> object,
 TNode<RawPtrT> CodeStubAssembler::LoadExternalPointerFromObject(
     TNode<HeapObject> object, TNode<IntPtrT> offset,
     ExternalPointerTag external_pointer_tag) {
-#ifdef V8_HEAP_SANDBOX
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
   TNode<ExternalReference> external_pointer_table_address = ExternalConstant(
       ExternalReference::external_pointer_table_address(isolate()));
   TNode<RawPtrT> table = UncheckedCast<RawPtrT>(
@@ -1661,13 +1661,13 @@ TNode<RawPtrT> CodeStubAssembler::LoadExternalPointerFromObject(
   return UncheckedCast<RawPtrT>(UncheckedCast<WordT>(entry));
 #else
   return LoadObjectField<RawPtrT>(object, offset);
-#endif  // V8_HEAP_SANDBOX
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
 }
 
 void CodeStubAssembler::StoreExternalPointerToObject(
     TNode<HeapObject> object, TNode<IntPtrT> offset, TNode<RawPtrT> pointer,
     ExternalPointerTag external_pointer_tag) {
-#ifdef V8_HEAP_SANDBOX
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
   TNode<ExternalReference> external_pointer_table_address = ExternalConstant(
       ExternalReference::external_pointer_table_address(isolate()));
   TNode<RawPtrT> table = UncheckedCast<RawPtrT>(
@@ -1690,7 +1690,7 @@ void CodeStubAssembler::StoreExternalPointerToObject(
                       value);
 #else
   StoreObjectFieldNoWriteBarrier<RawPtrT>(object, offset, pointer);
-#endif  // V8_HEAP_SANDBOX
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
 }
 
 TNode<Object> CodeStubAssembler::LoadFromParentFrame(int offset) {
@@ -2985,13 +2985,16 @@ TNode<BytecodeArray> CodeStubAssembler::LoadSharedFunctionInfoBytecodeArray(
   GotoIfNot(HasInstanceType(var_result.value(), CODET_TYPE),
             &check_for_interpreter_data);
   {
-    TNode<Code> code = FromCodeT(CAST(var_result.value()));
+    TNode<CodeT> code = CAST(var_result.value());
+#ifdef DEBUG
+    TNode<Int32T> code_flags =
+        LoadObjectField<Int32T>(code, CodeT::kFlagsOffset);
     CSA_DCHECK(
-        this, Word32Equal(DecodeWord32<Code::KindField>(LoadObjectField<Int32T>(
-                              code, Code::kFlagsOffset)),
+        this, Word32Equal(DecodeWord32<CodeT::KindField>(code_flags),
                           Int32Constant(static_cast<int>(CodeKind::BASELINE))));
+#endif  // DEBUG
     TNode<HeapObject> baseline_data = LoadObjectField<HeapObject>(
-        code, Code::kDeoptimizationDataOrInterpreterDataOffset);
+        FromCodeT(code), Code::kDeoptimizationDataOrInterpreterDataOffset);
     var_result = baseline_data;
   }
   Goto(&check_for_interpreter_data);
@@ -6379,6 +6382,11 @@ TNode<BoolT> CodeStubAssembler::IsStringInstanceType(
     TNode<Int32T> instance_type) {
   STATIC_ASSERT(INTERNALIZED_STRING_TYPE == FIRST_TYPE);
   return Int32LessThan(instance_type, Int32Constant(FIRST_NONSTRING_TYPE));
+}
+
+TNode<BoolT> CodeStubAssembler::IsTemporalInstantInstanceType(
+    TNode<Int32T> instance_type) {
+  return InstanceTypeEqual(instance_type, JS_TEMPORAL_INSTANT_TYPE);
 }
 
 TNode<BoolT> CodeStubAssembler::IsOneByteStringInstanceType(
@@ -13893,8 +13901,8 @@ void CodeStubAssembler::ThrowIfArrayBufferViewBufferIsDetached(
 
 TNode<RawPtrT> CodeStubAssembler::LoadJSArrayBufferBackingStorePtr(
     TNode<JSArrayBuffer> array_buffer) {
-  return LoadCagedPointerFromObject(array_buffer,
-                                    JSArrayBuffer::kBackingStoreOffset);
+  return LoadSandboxedPointerFromObject(array_buffer,
+                                        JSArrayBuffer::kBackingStoreOffset);
 }
 
 TNode<JSArrayBuffer> CodeStubAssembler::LoadJSArrayBufferViewBuffer(
@@ -14024,21 +14032,23 @@ CodeStubAssembler::LoadVariableLengthJSArrayBufferViewByteLength(
 }
 
 void CodeStubAssembler::IsJSArrayBufferViewDetachedOrOutOfBounds(
-    TNode<JSArrayBufferView> array, Label* detached_or_oob,
+    TNode<JSArrayBufferView> array_buffer_view, Label* detached_or_oob,
     Label* not_detached_nor_oob) {
-  TNode<JSArrayBuffer> buffer = LoadJSArrayBufferViewBuffer(array);
+  TNode<JSArrayBuffer> buffer = LoadJSArrayBufferViewBuffer(array_buffer_view);
 
   GotoIf(IsDetachedBuffer(buffer), detached_or_oob);
-  GotoIfNot(IsVariableLengthJSArrayBufferView(array), not_detached_nor_oob);
+  GotoIfNot(IsVariableLengthJSArrayBufferView(array_buffer_view),
+            not_detached_nor_oob);
   GotoIf(IsSharedArrayBuffer(buffer), not_detached_nor_oob);
 
   {
     TNode<UintPtrT> buffer_byte_length = LoadJSArrayBufferByteLength(buffer);
-    TNode<UintPtrT> array_byte_offset = LoadJSArrayBufferViewByteOffset(array);
+    TNode<UintPtrT> array_byte_offset =
+        LoadJSArrayBufferViewByteOffset(array_buffer_view);
 
     Label length_tracking(this), not_length_tracking(this);
-    Branch(IsLengthTrackingJSArrayBufferView(array), &length_tracking,
-           &not_length_tracking);
+    Branch(IsLengthTrackingJSArrayBufferView(array_buffer_view),
+           &length_tracking, &not_length_tracking);
 
     BIND(&length_tracking);
     {
@@ -14053,13 +14063,36 @@ void CodeStubAssembler::IsJSArrayBufferViewDetachedOrOutOfBounds(
       // Check if the backing RAB has shrunk so that the buffer is out of
       // bounds.
       TNode<UintPtrT> array_byte_length =
-          LoadJSArrayBufferViewByteLength(array);
+          LoadJSArrayBufferViewByteLength(array_buffer_view);
       Branch(UintPtrGreaterThanOrEqual(
                  buffer_byte_length,
                  UintPtrAdd(array_byte_offset, array_byte_length)),
              not_detached_nor_oob, detached_or_oob);
     }
   }
+}
+
+TNode<BoolT> CodeStubAssembler::IsJSArrayBufferViewDetachedOrOutOfBoundsBoolean(
+    TNode<JSArrayBufferView> array_buffer_view) {
+  Label is_detached_or_out_of_bounds(this),
+      not_detached_nor_out_of_bounds(this), end(this);
+  TVARIABLE(BoolT, result);
+
+  IsJSArrayBufferViewDetachedOrOutOfBounds(array_buffer_view,
+                                           &is_detached_or_out_of_bounds,
+                                           &not_detached_nor_out_of_bounds);
+  BIND(&is_detached_or_out_of_bounds);
+  {
+    result = BoolConstant(true);
+    Goto(&end);
+  }
+  BIND(&not_detached_nor_out_of_bounds);
+  {
+    result = BoolConstant(false);
+    Goto(&end);
+  }
+  BIND(&end);
+  return result.value();
 }
 
 // ES #sec-integerindexedobjectbytelength
@@ -14200,19 +14233,12 @@ TNode<Object> CodeStubArguments::AtIndex(int index) const {
 }
 
 TNode<IntPtrT> CodeStubArguments::GetLengthWithoutReceiver() const {
-  TNode<IntPtrT> argc = argc_;
-  if (kJSArgcIncludesReceiver) {
-    argc = assembler_->IntPtrSub(argc, assembler_->IntPtrConstant(1));
-  }
-  return argc;
+  return assembler_->IntPtrSub(
+      argc_, assembler_->IntPtrConstant(kJSArgcReceiverSlots));
 }
 
 TNode<IntPtrT> CodeStubArguments::GetLengthWithReceiver() const {
-  TNode<IntPtrT> argc = argc_;
-  if (!kJSArgcIncludesReceiver) {
-    argc = assembler_->IntPtrAdd(argc, assembler_->IntPtrConstant(1));
-  }
-  return argc;
+  return argc_;
 }
 
 TNode<Object> CodeStubArguments::GetOptionalArgumentValue(
@@ -14381,10 +14407,17 @@ TNode<BoolT> CodeStubAssembler::IsAnyPromiseHookEnabled(TNode<Uint32T> flags) {
   return IsSetWord32(flags, mask);
 }
 
+TNode<BoolT> CodeStubAssembler::IsIsolatePromiseHookEnabled(
+    TNode<Uint32T> flags) {
+  return IsSetWord32<Isolate::PromiseHookFields::HasIsolatePromiseHook>(flags);
+}
+
+#ifdef V8_ENABLE_JAVASCRIPT_PROMISE_HOOKS
 TNode<BoolT> CodeStubAssembler::IsContextPromiseHookEnabled(
     TNode<Uint32T> flags) {
   return IsSetWord32<Isolate::PromiseHookFields::HasContextPromiseHook>(flags);
 }
+#endif
 
 TNode<BoolT> CodeStubAssembler::
     IsIsolatePromiseHookEnabledOrHasAsyncEventDelegate(TNode<Uint32T> flags) {
@@ -14412,13 +14445,8 @@ TNode<CodeT> CodeStubAssembler::LoadBuiltin(TNode<Smi> builtin_id) {
   TNode<IntPtrT> offset =
       ElementOffsetFromIndex(SmiToBInt(builtin_id), SYSTEM_POINTER_ELEMENTS);
 
-  TNode<ExternalReference> table = ExternalConstant(
-#ifdef V8_EXTERNAL_CODE_SPACE
-      ExternalReference::builtins_code_data_container_table(isolate())
-#else
-      ExternalReference::builtins_table(isolate())
-#endif  // V8_EXTERNAL_CODE_SPACE
-  );    // NOLINT(whitespace/parens)
+  TNode<ExternalReference> table =
+      ExternalConstant(ExternalReference::builtins_table(isolate()));
 
   return CAST(BitcastWordToTagged(Load<RawPtrT>(table, offset)));
 }
@@ -14496,7 +14524,7 @@ TNode<CodeT> CodeStubAssembler::GetSharedFunctionInfoCode(
 
   // IsBytecodeArray: Interpret bytecode
   BIND(&check_is_bytecode_array);
-  sfi_code = HeapConstant(BUILTIN_CODET(isolate(), InterpreterEntryTrampoline));
+  sfi_code = HeapConstant(BUILTIN_CODE(isolate(), InterpreterEntryTrampoline));
   Goto(&done);
 
   // IsBaselineData: Execute baseline code
@@ -14510,12 +14538,12 @@ TNode<CodeT> CodeStubAssembler::GetSharedFunctionInfoCode(
   // IsUncompiledDataWithPreparseData | IsUncompiledDataWithoutPreparseData:
   // Compile lazy
   BIND(&check_is_uncompiled_data);
-  sfi_code = HeapConstant(BUILTIN_CODET(isolate(), CompileLazy));
+  sfi_code = HeapConstant(BUILTIN_CODE(isolate(), CompileLazy));
   Goto(if_compile_lazy ? if_compile_lazy : &done);
 
   // IsFunctionTemplateInfo: API call
   BIND(&check_is_function_template_info);
-  sfi_code = HeapConstant(BUILTIN_CODET(isolate(), HandleApiCall));
+  sfi_code = HeapConstant(BUILTIN_CODE(isolate(), HandleApiCall));
   Goto(&done);
 
   // IsInterpreterData: Interpret bytecode
@@ -14539,7 +14567,7 @@ TNode<CodeT> CodeStubAssembler::GetSharedFunctionInfoCode(
 
   // IsAsmWasmData: Instantiate using AsmWasmData
   BIND(&check_is_asm_wasm_data);
-  sfi_code = HeapConstant(BUILTIN_CODET(isolate(), InstantiateAsmJs));
+  sfi_code = HeapConstant(BUILTIN_CODE(isolate(), InstantiateAsmJs));
   Goto(&done);
 #endif  // V8_ENABLE_WEBASSEMBLY
 
@@ -14697,12 +14725,8 @@ TNode<Object> CodeStubAssembler::GetArgumentValue(TorqueStructArguments args,
 TorqueStructArguments CodeStubAssembler::GetFrameArguments(
     TNode<RawPtrT> frame, TNode<IntPtrT> argc,
     FrameArgumentsArgcType argc_type) {
-  if (kJSArgcIncludesReceiver &&
-      argc_type == FrameArgumentsArgcType::kCountExcludesReceiver) {
+  if (argc_type == FrameArgumentsArgcType::kCountExcludesReceiver) {
     argc = IntPtrAdd(argc, IntPtrConstant(kJSArgcReceiverSlots));
-  } else if (!kJSArgcIncludesReceiver &&
-             argc_type == FrameArgumentsArgcType::kCountIncludesReceiver) {
-    argc = IntPtrSub(argc, IntPtrConstant(1));
   }
   return CodeStubArguments(this, argc, frame).GetTorqueArguments();
 }

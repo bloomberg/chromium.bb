@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef BufferWriter_DEFINED
-#define BufferWriter_DEFINED
+#ifndef skgpu_BufferWriter_DEFINED
+#define skgpu_BufferWriter_DEFINED
 
 #include "include/core/SkRect.h"
 #include "include/private/SkColorData.h"
@@ -18,7 +18,7 @@ namespace skgpu {
 
 struct BufferWriter {
 public:
-    operator bool() const { return fPtr != nullptr; }
+    explicit operator bool() const { return fPtr != nullptr; }
 
 protected:
     BufferWriter() = default;
@@ -349,4 +349,4 @@ struct UniformWriter : public BufferWriter {
 
 }  // namespace skgpu
 
-#endif // BufferWriter_DEFINED
+#endif // skgpu_BufferWriter_DEFINED

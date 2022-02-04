@@ -232,9 +232,9 @@ template<typename ExpressionType, int Direction> class VectorwiseOp
     typename ExtendedType<OtherDerived>::Type
     extendedTo(const DenseBase<OtherDerived>& other) const
     {
-      EIGEN_STATIC_ASSERT(EIGEN_IMPLIES(isVertical, OtherDerived::MaxColsAtCompileTime==1),
+      EIGEN_STATIC_ASSERT(internal::check_implication(isVertical, OtherDerived::MaxColsAtCompileTime==1),
                           YOU_PASSED_A_ROW_VECTOR_BUT_A_COLUMN_VECTOR_WAS_EXPECTED)
-      EIGEN_STATIC_ASSERT(EIGEN_IMPLIES(isHorizontal, OtherDerived::MaxRowsAtCompileTime==1),
+      EIGEN_STATIC_ASSERT(internal::check_implication(isHorizontal, OtherDerived::MaxRowsAtCompileTime==1),
                           YOU_PASSED_A_COLUMN_VECTOR_BUT_A_ROW_VECTOR_WAS_EXPECTED)
       return typename ExtendedType<OtherDerived>::Type
                       (other.derived(),
@@ -255,9 +255,9 @@ template<typename ExpressionType, int Direction> class VectorwiseOp
     typename OppositeExtendedType<OtherDerived>::Type
     extendedToOpposite(const DenseBase<OtherDerived>& other) const
     {
-      EIGEN_STATIC_ASSERT(EIGEN_IMPLIES(isHorizontal, OtherDerived::MaxColsAtCompileTime==1),
+      EIGEN_STATIC_ASSERT(internal::check_implication(isHorizontal, OtherDerived::MaxColsAtCompileTime==1),
                           YOU_PASSED_A_ROW_VECTOR_BUT_A_COLUMN_VECTOR_WAS_EXPECTED)
-      EIGEN_STATIC_ASSERT(EIGEN_IMPLIES(isVertical, OtherDerived::MaxRowsAtCompileTime==1),
+      EIGEN_STATIC_ASSERT(internal::check_implication(isVertical, OtherDerived::MaxRowsAtCompileTime==1),
                           YOU_PASSED_A_COLUMN_VECTOR_BUT_A_ROW_VECTOR_WAS_EXPECTED)
       return typename OppositeExtendedType<OtherDerived>::Type
                       (other.derived(),

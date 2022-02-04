@@ -1,5 +1,32 @@
 # Tint changes during Origin Trial
 
+## Changes for M99
+
+### Breaking changes
+
+Obviously infinite loops (no condition, no break) are now a validation error.
+
+### Deprecated Features
+
+The following features have been deprecated and will be removed in M102:
+
+* The `[[block]]` attribute has been deprecated. [tint:1324](https://crbug.com/tint/1324)
+* Attributes now use the `@decoration` syntax instead of the `[[decoration]]` syntax. [tint:1382](https://crbug.com/tint/1382)
+* `elseif` has been replaced with `else if`. [tint:1289](https://crbug.com/tint/1289)
+* The `[[stride]]` attribute has been deprecated. [tint:1381](https://crbug.com/tint/1381)
+
+### New Features
+
+* Vector and matrix element type can now be inferred from constructor argument types. [tint:1334](https://crbug.com/tint/1334)
+* Added builtins `degrees()` and `radians()` for converting between degrees and radians. [tint:1329](https://crbug.com/tint/1329)
+* `let` arrays and matrices can now be dynamically indexed. [tint:1352](https://crbug.com/tint/1352)
+* Storage and Uniform buffer types no longer have to be structures. [tint:1372](crbug.com/tint/1372)
+* A struct declaration does not have to be followed by a semicolon. [tint:1380](crbug.com/tint/1380)
+
+### Fixes
+
+* Fixed an issue where for-loops that contain array or structure constructors in the loop initializer statements, condition expressions or continuing statements could fail to compile. [tint:1364](https://crbug.com/tint/1364)
+
 ## Changes for M98
 
 ### Breaking Changes
@@ -48,6 +75,7 @@
 
 * Swizzling of `vec3` types in `storage` and `uniform` buffers has been fixed for Metal 1.x. [tint:1249](https://crbug.com/tint/1249)
 * Calling a function that returns an unused value no longer produces an FXC compilation error. [tint:1259](https://crbug.com/tint/1259)
+* `abs()` fixed for unsigned integers on SPIR-V backend
 
 ## Changes for M95
 
@@ -60,4 +88,3 @@
 
 * Hex floats: now correctly errors when the magnitude is non-zero, and the exponent would cause overflow. [tint:1150](https://crbug.com/tint/1150), [tint:1166](https://crbug.com/tint/1166)
 * Identifiers beginning with an underscore are now correctly rejected.  [tint:1179](https://crbug.com/tint/1179)
-* `abs()` fixed for unsigned integers on SPIR-V backend

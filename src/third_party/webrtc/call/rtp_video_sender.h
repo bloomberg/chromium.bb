@@ -35,7 +35,6 @@
 #include "modules/rtp_rtcp/source/rtp_sender_video.h"
 #include "modules/rtp_rtcp/source/rtp_sequence_number_map.h"
 #include "modules/rtp_rtcp/source/rtp_video_header.h"
-#include "rtc_base/constructor_magic.h"
 #include "rtc_base/rate_limiter.h"
 #include "rtc_base/synchronization/mutex.h"
 #include "rtc_base/thread_annotations.h"
@@ -88,6 +87,9 @@ class RtpVideoSender : public RtpVideoSenderInterface,
       const CryptoOptions& crypto_options,  // move inside RtpTransport
       rtc::scoped_refptr<FrameTransformerInterface> frame_transformer);
   ~RtpVideoSender() override;
+
+  RtpVideoSender(const RtpVideoSender&) = delete;
+  RtpVideoSender& operator=(const RtpVideoSender&) = delete;
 
   // RtpVideoSender will only route packets if being active, all packets will be
   // dropped otherwise.
@@ -170,7 +172,11 @@ class RtpVideoSender : public RtpVideoSenderInterface,
   const bool has_packet_feedback_;
   const bool simulate_generic_structure_;
 
-  // TODO(holmer): Remove mutex_ once RtpVideoSender runs on the
+  // Semantically equivalent to checking for `transport_->GetWorkerQueue()`
+  // but some tests need to be updated to call from the correct context.
+  RTC_NO_UNIQUE_ADDRESS SequenceChecker transport_checker_;
+
+  // TODO(bugs.webrtc.org/13517): Remove mutex_ once RtpVideoSender runs on the
   // transport task queue.
   mutable Mutex mutex_;
   bool active_ RTC_GUARDED_BY(mutex_);
@@ -205,8 +211,6 @@ class RtpVideoSender : public RtpVideoSenderInterface,
   // This map is set at construction time and never changed, but it's
   // non-trivial to make it properly const.
   std::map<uint32_t, RtpRtcpInterface*> ssrc_to_rtp_module_;
-
-  RTC_DISALLOW_COPY_AND_ASSIGN(RtpVideoSender);
 };
 
 }  // namespace webrtc

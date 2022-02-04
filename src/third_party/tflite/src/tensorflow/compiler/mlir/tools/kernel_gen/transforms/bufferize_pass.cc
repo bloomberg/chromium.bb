@@ -27,7 +27,7 @@ limitations under the License.
 #include "mlir/Dialect/Bufferization/IR/Bufferization.h"  // from @llvm-project
 #include "mlir/Dialect/Bufferization/Transforms/Bufferize.h"  // from @llvm-project
 #include "mlir/Dialect/Complex/IR/Complex.h"  // from @llvm-project
-#include "mlir/Dialect/Linalg/IR/LinalgTypes.h"  // from @llvm-project
+#include "mlir/Dialect/Linalg/IR/Linalg.h"  // from @llvm-project
 #include "mlir/Dialect/Linalg/Transforms/Transforms.h"  // from @llvm-project
 #include "mlir/Dialect/Math/IR/Math.h"  // from @llvm-project
 #include "mlir/Dialect/MemRef/IR/MemRef.h"  // from @llvm-project
@@ -114,8 +114,8 @@ struct ComputeOpAndFuncBufferizePass
     : public ComputeOpAndFuncBufferizePassBase<ComputeOpAndFuncBufferizePass> {
   // TODO(b/173201243): Move to tablegen.
   void getDependentDialects(DialectRegistry& registry) const override {
-    registry.insert<bufferization::BufferizationDialect, lmhlo::LmhloDialect,
-                    memref::MemRefDialect>();
+    registry.insert<linalg::LinalgDialect, bufferization::BufferizationDialect,
+                    lmhlo::LmhloDialect, memref::MemRefDialect>();
   }
 
   void runOnOperation() override {
@@ -140,13 +140,15 @@ struct ComputeOpAndFuncBufferizePass
     mhlo::populateHLOToMemrefConversionPattern(
         &converter, &remove_sign_converter, &patterns,
         /*enforce_identity_map=*/[](Operation* op) {
-          // Force identity maps for return and tiled_loop as they don't support
-          // memrefs with affine_maps.
+          // Force identity maps for several ops which don't support memrefs
+          // with affine_maps.
           return llvm::any_of(op->getUsers(), [](Operation* user) {
-            return isa<mlir::ReturnOp>(user) || isa<linalg::TiledLoopOp>(user);
+            return isa<mlir::ReturnOp, mhlo::DynamicReshapeOp, tensor::CastOp,
+                       tensor::CollapseShapeOp, tensor::ExpandShapeOp,
+                       linalg::TiledLoopOp>(user);
           });
         });
-    populateFuncOpTypeConversionPattern(patterns, converter);
+    populateFunctionLikeTypeConversionPattern<FuncOp>(patterns, converter);
     populateCallOpTypeConversionPattern(patterns, converter);
     populateBranchOpInterfaceTypeConversionPattern(patterns, converter);
     populateReturnOpTypeConversionPattern(patterns, converter);
@@ -250,18 +252,18 @@ struct FinalBufferizePass : public FinalBufferizePassBase<FinalBufferizePass> {
     target.addLegalOp<FuncOp, ModuleOp>();
 
     target.addIllegalDialect<mhlo::MhloDialect>();
-    target.addIllegalOp<
-        tensor::GenerateOp, tensor::ExtractOp, tensor::FromElementsOp,
-        tensor::CastOp, tensor::DimOp, chlo::MinimumBroadcastShapesOp,
-        bufferization::ToTensorOp, bufferization::ToMemrefOp,
-        linalg::TensorExpandShapeOp, linalg::TensorCollapseShapeOp>();
+    target.addIllegalOp<tensor::GenerateOp, tensor::ExtractOp,
+                        tensor::FromElementsOp, tensor::CastOp, tensor::DimOp,
+                        tensor::RankOp, chlo::MinimumBroadcastShapesOp,
+                        bufferization::ToTensorOp, bufferization::ToMemrefOp,
+                        tensor::ExpandShapeOp, tensor::CollapseShapeOp>();
     bufferization::BufferizeTypeConverter converter;
     auto typesAreLegal = [&converter](Operation* op) {
       return converter.isLegal(op->getOperandTypes()) &&
              converter.isLegal(op->getResultTypes());
     };
     target.addDynamicallyLegalOp<ConstantOp, arith::ConstantOp,
-                                 arith::IndexCastOp, RankOp, SelectOp,
+                                 arith::IndexCastOp, SelectOp,
                                  tf_framework::JITExecuteOp>(typesAreLegal);
 
     RewritePatternSet patterns(&getContext());

@@ -45,6 +45,7 @@
 #include "services/network/public/mojom/url_request.mojom-forward.h"
 #include "services/network/resource_scheduler/resource_scheduler.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
+#include "services/network/test/client_security_state_builder.h"
 #include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "services/network/test/mock_devtools_observer.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -117,7 +118,8 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     for (const auto& header : extra_headers)
       response->headers->SetHeader(header.first, header.second);
 
-    client_remote_->OnReceiveResponse(std::move(response));
+    client_remote_->OnReceiveResponse(std::move(response),
+                                      mojo::ScopedDataPipeConsumerHandle());
   }
 
   void NotifyClientOnComplete(int error_code) {
@@ -3433,33 +3435,6 @@ TEST_F(CorsURLLoaderTest, PrivateNetworkAccessDoesNotShareCache) {
   EXPECT_EQ(GetRequest().method, "OPTIONS");
 }
 
-class ClientSecurityStateBuilder {
- public:
-  ClientSecurityStateBuilder() = default;
-  ~ClientSecurityStateBuilder() = default;
-
-  ClientSecurityStateBuilder& WithPrivateNetworkRequestPolicy(
-      mojom::PrivateNetworkRequestPolicy policy) {
-    state_.private_network_request_policy = policy;
-    return *this;
-  }
-
-  ClientSecurityStateBuilder& WithIPAddressSpace(mojom::IPAddressSpace space) {
-    state_.ip_address_space = space;
-    return *this;
-  }
-
-  ClientSecurityStateBuilder& WithIsSecureContext(bool is_secure_context) {
-    state_.is_web_secure_context = is_secure_context;
-    return *this;
-  }
-
-  mojom::ClientSecurityStatePtr Build() const { return state_.Clone(); }
-
- private:
-  mojom::ClientSecurityState state_;
-};
-
 class RequestTrustedParamsBuilder {
  public:
   RequestTrustedParamsBuilder() = default;
@@ -3830,7 +3805,9 @@ TEST_F(CorsURLLoaderTest, PrivateNetworkAccessPolicyWarnPreflightCorsError) {
   EXPECT_EQ(client().completion_status().error_code, net::ERR_FAILED);
   EXPECT_THAT(client().completion_status().cors_error_status,
               Optional(CorsErrorStatus(
-                  mojom::CorsError::kPreflightMissingAllowOriginHeader)));
+                  mojom::CorsError::kPreflightMissingAllowOriginHeader,
+                  network::mojom::IPAddressSpace::kPrivate,
+                  network::mojom::IPAddressSpace::kUnknown)));
 
   EXPECT_THAT(histogram_tester.GetAllSamples(kPreflightErrorHistogramName),
               ElementsAre(MakeBucket(
@@ -3844,7 +3821,9 @@ TEST_F(CorsURLLoaderTest, PrivateNetworkAccessPolicyWarnPreflightCorsError) {
       *devtools_observer.cors_error_params();
   EXPECT_EQ(
       error_params.status,
-      CorsErrorStatus(mojom::CorsError::kPreflightMissingAllowOriginHeader));
+      CorsErrorStatus(mojom::CorsError::kPreflightMissingAllowOriginHeader,
+                      network::mojom::IPAddressSpace::kPrivate,
+                      network::mojom::IPAddressSpace::kUnknown));
   EXPECT_FALSE(error_params.is_warning);
   ASSERT_TRUE(error_params.client_security_state);
   EXPECT_TRUE(error_params.client_security_state->is_web_secure_context);
@@ -4035,7 +4014,9 @@ TEST_F(CorsURLLoaderTest, PrivateNetworkAccessPolicyBlockCorsError) {
   EXPECT_EQ(client().completion_status().error_code, net::ERR_FAILED);
   EXPECT_THAT(client().completion_status().cors_error_status,
               Optional(CorsErrorStatus(
-                  mojom::CorsError::kPreflightMissingAllowOriginHeader)));
+                  mojom::CorsError::kPreflightMissingAllowOriginHeader,
+                  network::mojom::IPAddressSpace::kPrivate,
+                  network::mojom::IPAddressSpace::kUnknown)));
 
   EXPECT_THAT(histogram_tester.GetAllSamples(kPreflightErrorHistogramName),
               ElementsAre(MakeBucket(
@@ -4049,7 +4030,9 @@ TEST_F(CorsURLLoaderTest, PrivateNetworkAccessPolicyBlockCorsError) {
       *devtools_observer.cors_error_params();
   EXPECT_EQ(
       error_params.status,
-      CorsErrorStatus(mojom::CorsError::kPreflightMissingAllowOriginHeader));
+      CorsErrorStatus(mojom::CorsError::kPreflightMissingAllowOriginHeader,
+                      network::mojom::IPAddressSpace::kPrivate,
+                      network::mojom::IPAddressSpace::kUnknown));
   EXPECT_FALSE(error_params.is_warning);
   ASSERT_TRUE(error_params.client_security_state);
   EXPECT_TRUE(error_params.client_security_state->is_web_secure_context);

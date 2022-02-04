@@ -17,6 +17,9 @@
 #include "experimental/graphite/src/Gpu.h"
 #include "experimental/graphite/src/GraphicsPipelineDesc.h"
 #include "experimental/graphite/src/Renderer.h"
+#include "include/core/SkPathTypes.h"
+#include "include/private/SkShaderCodeDictionary.h"
+#include "src/core/SkKeyHelpers.h"
 
 #ifdef SK_METAL
 #include "experimental/graphite/src/mtl/MtlTrampoline.h"
@@ -24,7 +27,11 @@
 
 namespace skgpu {
 
-Context::Context(sk_sp<Gpu> gpu, BackendApi backend) : fGpu(std::move(gpu)), fBackend(backend) {}
+Context::Context(sk_sp<Gpu> gpu, BackendApi backend)
+        : fGpu(std::move(gpu))
+        , fBackend(backend)
+        , fShaderCodeDictionary(std::make_unique<SkShaderCodeDictionary>()) {
+}
 Context::~Context() {}
 
 #ifdef SK_METAL
@@ -38,8 +45,8 @@ sk_sp<Context> Context::MakeMetal(const mtl::BackendContext& backendContext) {
 }
 #endif
 
-sk_sp<Recorder> Context::createRecorder() {
-    return sk_sp<Recorder>(new Recorder(sk_ref_sp(this)));
+std::unique_ptr<Recorder> Context::makeRecorder() {
+    return std::unique_ptr<Recorder>(new Recorder(sk_ref_sp(this)));
 }
 
 void Context::insertRecording(std::unique_ptr<Recording> recording) {
@@ -58,17 +65,28 @@ void Context::submit(SyncToCpu syncToCpu) {
 }
 
 void Context::preCompile(const PaintCombo& paintCombo) {
+    static const Renderer* kRenderers[] = {
+            &Renderer::StencilAndFillPath(SkPathFillType::kWinding),
+            &Renderer::StencilAndFillPath(SkPathFillType::kEvenOdd),
+            &Renderer::StencilAndFillPath(SkPathFillType::kInverseWinding),
+            &Renderer::StencilAndFillPath(SkPathFillType::kInverseEvenOdd)
+    };
+
     for (auto bm: paintCombo.fBlendModes) {
         for (auto& shaderCombo: paintCombo.fShaders) {
             for (auto shaderType: shaderCombo.fTypes) {
                 for (auto tm: shaderCombo.fTileModes) {
-                    Combination c {shaderType, tm, bm};
+                    SkPaintParamsKey key = CreateKey(SkBackend::kGraphite, shaderType, tm, bm);
 
                     GraphicsPipelineDesc desc;
 
-                    for (const Renderer* r : {&Renderer::StencilAndFillPath()}) {
+                    for (const Renderer* r : kRenderers) {
                         for (auto&& s : r->steps()) {
-                            desc.setProgram(s, c);
+                            if (s->performsShading()) {
+
+                                auto entry = fShaderCodeDictionary->findOrCreate(key);
+                                desc.setProgram(s, entry->uniqueID());
+                            }
                             // TODO: Combine with renderpass description set to generate full
                             // GraphicsPipeline and MSL program. Cache that compiled pipeline on
                             // the resource provider in a map from desc -> pipeline so that any
@@ -79,6 +97,8 @@ void Context::preCompile(const PaintCombo& paintCombo) {
             }
         }
     }
+    // TODO: Iterate over the renderers and make descriptions for the steps that don't perform
+    // shading, and just use ShaderType::kNone.
 }
 
 BackendTexture Context::createBackendTexture(SkISize dimensions, const TextureInfo& info) {

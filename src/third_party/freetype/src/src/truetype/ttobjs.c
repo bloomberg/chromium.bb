@@ -4,7 +4,7 @@
  *
  *   Objects manager (body).
  *
- * Copyright (C) 1996-2021 by
+ * Copyright (C) 1996-2022 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1434,6 +1434,8 @@
                                            size_metrics->y_ppem );
       size->ttmetrics.y_ratio = 0x10000L;
     }
+
+    size->widthp = tt_face_get_device_metrics( face, size_metrics->x_ppem, 0 );
 
     size->metrics = size_metrics;
 

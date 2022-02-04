@@ -38,6 +38,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/action_after_pagehide.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/event_page_show_persisted.h"
 #include "third_party/blink/public/mojom/permissions_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -201,7 +202,9 @@ class LocalDOMWindow::NetworkStateObserver final
       online_observer_handle_;
 };
 
-LocalDOMWindow::LocalDOMWindow(LocalFrame& frame, WindowAgent* agent)
+LocalDOMWindow::LocalDOMWindow(LocalFrame& frame,
+                               WindowAgent* agent,
+                               bool anonymous)
     : DOMWindow(frame),
       ExecutionContext(V8PerIsolateData::MainThreadIsolate(), agent),
       script_controller_(MakeGarbageCollected<ScriptController>(
@@ -219,8 +222,8 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame, WindowAgent* agent)
           MakeGarbageCollected<
               HeapHashMap<int, Member<ContentSecurityPolicy>>>()),
       token_(frame.GetLocalFrameToken()),
-      network_state_observer_(
-          MakeGarbageCollected<NetworkStateObserver>(this)) {}
+      network_state_observer_(MakeGarbageCollected<NetworkStateObserver>(this)),
+      anonymous_(anonymous) {}
 
 void LocalDOMWindow::BindContentSecurityPolicy() {
   DCHECK(!GetContentSecurityPolicy()->IsBound());
@@ -692,7 +695,7 @@ void LocalDOMWindow::CountUseOnlyInCrossSiteIframe(
     CountUse(feature);
 }
 
-bool LocalDOMWindow::HasInsecureContextInAncestors() {
+bool LocalDOMWindow::HasInsecureContextInAncestors() const {
   for (Frame* parent = GetFrame()->Tree().Parent(); parent;
        parent = parent->Tree().Parent()) {
     auto* origin = parent->GetSecurityContext()->GetSecurityOrigin();
@@ -717,7 +720,11 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
   document_ = init.CreateDocument();
   document_->Initialize();
 
-  GetScriptController().UpdateDocument();
+  // If early body loading is turned on, UpdateDocument() will be called right
+  // after the body starts loading.
+  if (!base::FeatureList::IsEnabled(features::kEarlyBodyLoad))
+    GetScriptController().UpdateDocument();
+
   document_->GetViewportData().UpdateViewportDescription();
 
   auto* frame_scheduler = GetFrame()->GetFrameScheduler();
@@ -1199,8 +1206,6 @@ Element* LocalDOMWindow::frameElement() const {
 
   return DynamicTo<HTMLFrameOwnerElement>(owner);
 }
-
-void LocalDOMWindow::blur() {}
 
 void LocalDOMWindow::print(ScriptState* script_state) {
   // Don't try to print if there's no frame attached anymore.
@@ -2181,9 +2186,7 @@ bool LocalDOMWindow::CrossOriginIsolatedCapability() const {
 }
 
 bool LocalDOMWindow::DirectSocketCapability() const {
-  return Agent::IsDirectSocketEnabled() &&
-         IsFeatureEnabled(
-             mojom::blink::PermissionsPolicyFeature::kDirectSockets);
+  return Agent::IsDirectSocketEnabled();
 }
 
 ukm::UkmRecorder* LocalDOMWindow::UkmRecorder() {

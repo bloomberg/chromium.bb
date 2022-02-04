@@ -45,7 +45,6 @@
 #include "src/core/lib/surface/channel.h"
 #include "src/core/lib/surface/validate_metadata.h"
 #include "src/core/lib/transport/metadata_batch.h"
-#include "src/core/lib/transport/static_metadata.h"
 #include "src/core/lib/transport/timeout_encoding.h"
 #include "src/core/lib/transport/transport_impl.h"
 
@@ -417,7 +416,14 @@ static void convert_cronet_array_to_metadata(
       value = grpc_slice_intern(
           grpc_slice_from_static_string(header_array->headers[i].value));
     }
-    mds->Append(header_array->headers[i].key, value);
+    mds->Append(header_array->headers[i].key, grpc_core::Slice(value),
+                [&](absl::string_view error, const grpc_core::Slice& value) {
+                  gpr_log(GPR_DEBUG, "Failed to parse metadata: %s",
+                          absl::StrCat("key=", header_array->headers[i].key,
+                                       " error=", error,
+                                       " value=", value.as_string_view())
+                              .c_str());
+                });
   }
 }
 
@@ -714,49 +720,53 @@ class CronetMetadataEncoder {
   CronetMetadataEncoder& operator=(const CronetMetadataEncoder&) = delete;
 
   template <class T, class V>
-  void Encode(T, V value) {
-    auto value_slice = T::Encode(value);
-    auto key_slice = grpc_slice_from_static_string(T::key());
-    auto mdelem = grpc_mdelem_from_slices(key_slice, value_slice);
-    Encode(mdelem);
-    GRPC_MDELEM_UNREF(mdelem);
+  void Encode(T, const V& value) {
+    Encode(grpc_core::Slice::FromStaticString(T::key()),
+           grpc_core::Slice(T::Encode(value)));
   }
 
-  void Encode(grpc_mdelem mdelem) {
-    char* key = grpc_slice_to_c_string(GRPC_MDKEY(mdelem));
+  void Encode(grpc_core::HttpSchemeMetadata,
+              grpc_core::HttpSchemeMetadata::ValueType) {
+    /* Cronet populates these fields on its own */
+  }
+  void Encode(grpc_core::HttpAuthorityMetadata,
+              const grpc_core::HttpAuthorityMetadata::ValueType&) {
+    /* Cronet populates these fields on its own */
+  }
+
+  void Encode(grpc_core::HttpMethodMetadata,
+              grpc_core::HttpMethodMetadata::ValueType method) {
+    switch (method) {
+      case grpc_core::HttpMethodMetadata::kPost:
+        *method_ = "POST";
+        break;
+      case grpc_core::HttpMethodMetadata::kPut:
+        *method_ = "PUT";
+        break;
+      case grpc_core::HttpMethodMetadata::kGet:
+        *method_ = "GET";
+        break;
+      case grpc_core::HttpMethodMetadata::kInvalid:
+        abort();
+    }
+  }
+
+  void Encode(grpc_core::HttpPathMetadata,
+              const grpc_core::HttpPathMetadata::ValueType& path) {
+    /* Create URL by appending :path value to the hostname */
+    *url_ = absl::StrCat("https://", host_, path.as_string_view());
+  }
+
+  void Encode(const grpc_core::Slice& key_slice,
+              const grpc_core::Slice& value_slice) {
+    char* key = grpc_slice_to_c_string(key_slice.c_slice());
     char* value;
-    if (grpc_is_binary_header_internal(GRPC_MDKEY(mdelem))) {
-      grpc_slice wire_value = grpc_chttp2_base64_encode(GRPC_MDVALUE(mdelem));
+    if (grpc_is_binary_header_internal(value_slice.c_slice())) {
+      grpc_slice wire_value = grpc_chttp2_base64_encode(value_slice.c_slice());
       value = grpc_slice_to_c_string(wire_value);
       grpc_slice_unref_internal(wire_value);
     } else {
-      value = grpc_slice_to_c_string(GRPC_MDVALUE(mdelem));
-    }
-    if (grpc_slice_eq_static_interned(GRPC_MDKEY(mdelem), GRPC_MDSTR_SCHEME) ||
-        grpc_slice_eq_static_interned(GRPC_MDKEY(mdelem),
-                                      GRPC_MDSTR_AUTHORITY)) {
-      /* Cronet populates these fields on its own */
-      gpr_free(key);
-      gpr_free(value);
-      return;
-    }
-    if (grpc_slice_eq_static_interned(GRPC_MDKEY(mdelem), GRPC_MDSTR_METHOD)) {
-      if (grpc_slice_eq_static_interned(GRPC_MDVALUE(mdelem), GRPC_MDSTR_PUT)) {
-        *method_ = "PUT";
-      } else {
-        /* POST method in default*/
-        *method_ = "POST";
-      }
-      gpr_free(key);
-      gpr_free(value);
-      return;
-    }
-    if (grpc_slice_eq_static_interned(GRPC_MDKEY(mdelem), GRPC_MDSTR_PATH)) {
-      /* Create URL by appending :path value to the hostname */
-      *url_ = absl::StrCat("https://", host_, value);
-      gpr_free(key);
-      gpr_free(value);
-      return;
+      value = grpc_slice_to_c_string(value_slice.c_slice());
     }
     CRONET_LOG(GPR_DEBUG, "header %s = %s", key, value);
     GPR_ASSERT(count_ < capacity_);
@@ -800,13 +810,7 @@ static void parse_grpc_header(const uint8_t* data, int* length,
 }
 
 static bool header_has_authority(const grpc_metadata_batch* b) {
-  bool found = false;
-  b->ForEach([&](grpc_mdelem elem) {
-    if (grpc_slice_eq_static_interned(GRPC_MDKEY(elem), GRPC_MDSTR_AUTHORITY)) {
-      found = true;
-    }
-  });
-  return found;
+  return b->get_pointer(grpc_core::HttpAuthorityMetadata()) != nullptr;
 }
 
 /*

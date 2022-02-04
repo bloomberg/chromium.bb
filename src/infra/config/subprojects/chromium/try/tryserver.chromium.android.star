@@ -32,8 +32,23 @@ try_.builder(
     name = "android-10-arm64-rel",
 )
 
-try_.builder(
+try_.orchestrator_builder(
     name = "android-11-x86-rel",
+    compilator = "android-11-x86-rel-compilator",
+    # TODO(crbug.com/1137474): Enable it on branch after running on CQ
+    # branch_selector = branches.STANDARD_MILESTONE,
+    main_list_view = "try",
+    # TODO(crbug.com/1137474): Fully enable once it works fine
+    tryjob = try_.job(
+        experiment_percentage = 5,
+    ),
+)
+
+try_.compilator_builder(
+    name = "android-11-x86-rel-compilator",
+    # TODO(crbug.com/1137474): Enable it on branch after running on CQ
+    # branch_selector = branches.STANDARD_MILESTONE,
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -377,11 +392,6 @@ try_.builder(
 try_.builder(
     name = "android_cfi_rel_ng",
     cores = 32,
-)
-
-try_.builder(
-    name = "android_clang_dbg_recipe",
-    goma_jobs = goma.jobs.J300,
 )
 
 try_.builder(

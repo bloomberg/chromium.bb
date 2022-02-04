@@ -1,6 +1,6 @@
 export const description = `
+TODO: pipeline statistics queries are removed from core; consider moving tests to another suite.
 TODO:
-
 - Start a pipeline statistics query in all possible encoders:
     - queryIndex {in, out of} range for GPUQuerySet
     - GPUQuerySet {valid, invalid, device mismatched}

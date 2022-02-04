@@ -18,6 +18,7 @@
 #include "include/utils/SkShadowUtils.h"
 #include "src/core/SkAutoPixmapStorage.h"
 #include "src/core/SkConvertPixels.h"
+#include "src/core/SkCustomMeshPriv.h"
 #include "src/core/SkDrawProcs.h"
 #include "src/core/SkDrawShadowInfo.h"
 #include "src/core/SkGlyphRunPainter.h"
@@ -30,6 +31,7 @@
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrClip.h"
 #include "src/gpu/GrColor.h"
+#include "src/gpu/GrColorSpaceXform.h"
 #include "src/gpu/GrDataUtils.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrDrawingManager.h"
@@ -55,7 +57,7 @@
 #include "src/gpu/geometry/GrStyledShape.h"
 #include "src/gpu/ops/ClearOp.h"
 #include "src/gpu/ops/DrawAtlasOp.h"
-#include "src/gpu/ops/DrawVerticesOp.h"
+#include "src/gpu/ops/DrawCustomMeshOp.h"
 #include "src/gpu/ops/DrawableOp.h"
 #include "src/gpu/ops/FillRRectOp.h"
 #include "src/gpu/ops/FillRectOp.h"
@@ -68,7 +70,7 @@
 #include "src/gpu/ops/StrokeRectOp.h"
 #include "src/gpu/ops/TextureOp.h"
 #include "src/gpu/text/GrSDFTControl.h"
-#include "src/gpu/text/GrTextBlobCache.h"
+#include "src/gpu/text/GrTextBlobRedrawCoordinator.h"
 #include "src/gpu/v1/PathRenderer.h"
 
 #define ASSERT_OWNED_RESOURCE(R) SkASSERT(!(R) || (R)->getContext() == this->drawingManager()->getContext())
@@ -346,53 +348,6 @@ void SurfaceDrawContext::drawGlyphRunListNoCache(const GrClip* clip,
     }
 }
 
-void SurfaceDrawContext::drawGlyphRunListWithCache(const GrClip* clip,
-                                                   const SkMatrixProvider& viewMatrix,
-                                                   const SkGlyphRunList& glyphRunList,
-                                                   const SkPaint& paint) {
-    SkMatrix positionMatrix{viewMatrix.localToDevice()};
-    positionMatrix.preTranslate(glyphRunList.origin().x(), glyphRunList.origin().y());
-
-    GrSDFTControl control =
-            this->recordingContext()->priv().getSDFTControl(
-                    this->surfaceProps().isUseDeviceIndependentFonts());
-
-    auto [canCache, key] = GrTextBlob::Key::Make(glyphRunList,
-                                                 paint,
-                                                 fSurfaceProps,
-                                                 this->colorInfo(),
-                                                 positionMatrix,
-                                                 control);
-
-    sk_sp<GrTextBlob> blob;
-    GrTextBlobCache* textBlobCache = fContext->priv().getTextBlobCache();
-    if (canCache) {
-        blob = textBlobCache->find(key);
-    }
-
-    if (blob == nullptr || !blob->canReuse(paint, positionMatrix)) {
-        if (blob != nullptr) {
-            // We have to remake the blob because changes may invalidate our masks.
-            // TODO we could probably get away with reuse most of the time if the pointer is unique,
-            //      but we'd have to clear the SubRun information
-            textBlobCache->remove(blob.get());
-        }
-
-        blob = GrTextBlob::Make(glyphRunList, paint, positionMatrix, control, &fGlyphPainter);
-
-        if (canCache) {
-            blob->addKey(key);
-            // The blob may already have been created on a different thread. Use the first one
-            // that was there.
-            blob = textBlobCache->addOrReturnExisting(glyphRunList, blob);
-        }
-    }
-
-    for (const GrSubRun& subRun : blob->subRunList()) {
-        subRun.draw(clip, viewMatrix, glyphRunList.origin(), paint, this);
-    }
-}
-
 // choose to use the GrTextBlob cache or not.
 bool gGrDrawTextNoCache = false;
 void SurfaceDrawContext::drawGlyphRunList(const GrClip* clip,
@@ -417,7 +372,8 @@ void SurfaceDrawContext::drawGlyphRunList(const GrClip* clip,
         // build the sub run directly and place it in the op.
         this->drawGlyphRunListNoCache(clip, viewMatrix, glyphRunList, paint);
     } else {
-        this->drawGlyphRunListWithCache(clip, viewMatrix, glyphRunList, paint);
+        GrTextBlobRedrawCoordinator* textBlobCache = fContext->priv().getTextBlobCache();
+        textBlobCache->drawGlyphRunList(clip, viewMatrix, glyphRunList, paint, this);
     }
 }
 
@@ -988,13 +944,40 @@ void SurfaceDrawContext::drawVertices(const GrClip* clip,
 
     SkASSERT(vertices);
     GrAAType aaType = fCanUseDynamicMSAA ? GrAAType::kMSAA : this->chooseAAType(GrAA::kNo);
-    GrOp::Owner op = DrawVerticesOp::Make(fContext,
-                                          std::move(paint),
-                                          std::move(vertices),
-                                          matrixProvider,
-                                          aaType,
-                                          this->colorInfo().refColorSpaceXformFromSRGB(),
-                                          overridePrimType);
+    GrOp::Owner op = DrawCustomMeshOp::Make(fContext,
+                                            std::move(paint),
+                                            std::move(vertices),
+                                            overridePrimType,
+                                            matrixProvider,
+                                            aaType,
+                                            this->colorInfo().refColorSpaceXformFromSRGB());
+    this->addDrawOp(clip, std::move(op));
+}
+
+void SurfaceDrawContext::drawCustomMesh(const GrClip* clip,
+                                        GrPaint&& paint,
+                                        const SkMatrixProvider& matrixProvider,
+                                        SkCustomMesh cm) {
+    ASSERT_SINGLE_OWNER
+    RETURN_IF_ABANDONED
+    SkDEBUGCODE(this->validate();)
+    GR_CREATE_TRACE_MARKER_CONTEXT("SurfaceDrawContext", "drawVertices", fContext);
+
+    AutoCheckFlush acf(this->drawingManager());
+
+    SkASSERT(SkValidateCustomMesh(cm));
+
+    auto xform = GrColorSpaceXform::Make(SkCustomMeshSpecificationPriv::ColorSpace(*cm.spec),
+                                         SkCustomMeshSpecificationPriv::AlphaType(*cm.spec),
+                                         this->colorInfo().colorSpace(),
+                                         this->colorInfo().alphaType());
+    GrAAType aaType = fCanUseDynamicMSAA ? GrAAType::kMSAA : this->chooseAAType(GrAA::kNo);
+    GrOp::Owner op = DrawCustomMeshOp::Make(fContext,
+                                            std::move(paint),
+                                            std::move(cm),
+                                            matrixProvider,
+                                            aaType,
+                                            std::move(xform));
     this->addDrawOp(clip, std::move(op));
 }
 

@@ -63,6 +63,12 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
     private Integer mDesiredPopupContentWidth;
 
     /**
+     * View that is showing behind the context menu. If menu is shown as a popup without scrim, this
+     * view will be used to dispatch touch events other than ACTION_DOWN.
+     */
+    private @Nullable View mTouchEventDelegateView;
+
+    /**
      * Creates an instance of the ContextMenuDialog.
      * @param ownerActivity The activity in which the dialog should run
      * @param theme A style resource describing the theme to use for the window, or {@code 0} to use
@@ -81,11 +87,15 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
      *         visually.
      * @param popupMargin The margin for the context menu.
      * @param desiredPopupContentWidth The desired width for the content of the context menu.
+     * @param touchEventDelegateView View View that is showing behind the context menu. If menu is
+     *         shown as a popup without scrim, and this view is provided, the context menu will
+     *         dispatch touch events other than ACTION_DOWN.
      */
     public ContextMenuDialog(Activity ownerActivity, int theme, float touchPointXPx,
             float touchPointYPx, float topContentOffsetPx, int topMarginPx, int bottomMarginPx,
             View layout, View contentView, boolean isPopup, boolean shouldRemoveScrim,
-            @Nullable Integer popupMargin, @Nullable Integer desiredPopupContentWidth) {
+            @Nullable Integer popupMargin, @Nullable Integer desiredPopupContentWidth,
+            @Nullable View touchEventDelegateView) {
         super(ownerActivity, theme);
         mActivity = ownerActivity;
         mTouchPointXPx = touchPointXPx;
@@ -99,6 +109,7 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
         mShouldRemoveScrim = shouldRemoveScrim;
         mPopupMargin = popupMargin;
         mDesiredPopupContentWidth = desiredPopupContentWidth;
+        mTouchEventDelegateView = touchEventDelegateView;
     }
 
     @Override
@@ -173,6 +184,12 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
                         mPopupWindow.setDesiredContentWidth(mDesiredPopupContentWidth);
                     }
                     mPopupWindow.setOutsideTouchable(false);
+                    // Set popup focusable so the screen reader can announce the popup properly.
+                    mPopupWindow.setFocusable(true);
+                    // If the popup is dismissed, dismiss this dialog as well. This is required when
+                    // the popup is dismissed through backpress / hardware accessiries where the
+                    // #dismiss is not triggered by #onTouchEvent.
+                    mPopupWindow.addOnDismissListener(ContextMenuDialog.this::dismiss);
                     mPopupWindow.show();
                 } else {
                     // Otherwise, the menu will already be in the hierarchy, and we need to make
@@ -257,6 +274,9 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             dismiss();
             return true;
+        }
+        if (mIsPopup && mShouldRemoveScrim && mTouchEventDelegateView != null) {
+            return mTouchEventDelegateView.dispatchTouchEvent(event);
         }
         return false;
     }

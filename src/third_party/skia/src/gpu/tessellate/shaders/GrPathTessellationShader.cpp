@@ -25,14 +25,14 @@ public:
                                        PatchAttribs::kNone) {
         constexpr static Attribute kInputPointAttrib{"inputPoint", kFloat2_GrVertexAttribType,
                                                      kFloat2_GrSLType};
-        this->setVertexAttributes(&kInputPointAttrib, 1);
+        this->setVertexAttributesWithImplicitOffsets(&kInputPointAttrib, 1);
     }
 
     int maxTessellationSegments(const GrShaderCaps&) const override { SkUNREACHABLE; }
 
 private:
     const char* name() const final { return "tessellate_SimpleTriangleShader"; }
-    void addToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const final {}
+    void addToKey(const GrShaderCaps&, skgpu::KeyBuilder*) const final {}
     std::unique_ptr<ProgramImpl> makeProgramImpl(const GrShaderCaps&) const final;
 };
 

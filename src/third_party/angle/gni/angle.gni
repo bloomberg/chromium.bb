@@ -316,6 +316,10 @@ template("angle_executable") {
     if (angle_has_build && is_win) {
       data_deps += [ "//build/win:runtime_libs" ]
     }
+
+    if (is_ios) {
+      check_includes = false
+    }
   }
 }
 
@@ -536,17 +540,12 @@ template("angle_trace_fixture") {
 }
 
 template("angle_trace") {
-  _trace_prefix = invoker.trace_prefix
   angle_shared_library(target_name) {
     testonly = true
 
     # Similar to capture replay sample, use the file index for sources
-    sources = [
-                "${_trace_prefix}.cpp",
-                "${_trace_prefix}.h",
-              ] + invoker.sources
+    sources = invoker.sources
 
-    # TODO(http://anglebug.com/5133): Revert back to non-autogen'ed data.
     data = invoker.data
     defines = [ "ANGLE_REPLAY_IMPLEMENTATION" ]
     suppressed_configs += [ "$angle_root:constructor_and_destructor_warnings" ]
@@ -577,8 +576,60 @@ template("angle_trace") {
       output_name = invoker.output_name
     }
   }
+}
 
-  angle_source_set(target_name + "_headers") {
-    sources = [ "${_trace_prefix}.h" ]
+set_defaults("angle_trace_library") {
+  # Uses a short name to work around file path limits on Windows.
+  short_names = false
+}
+
+template("angle_trace_library") {
+  _trace_json = read_file(invoker.json_path, "json")
+  _trace_targets = []
+
+  if (invoker.short_names) {
+    _trace_counter = 1
+  }
+
+  foreach(_trace_and_version, _trace_json.traces) {
+    _trace_and_version_arr = []
+    _trace_and_version_arr = string_split(_trace_and_version)
+    _trace = _trace_and_version_arr[0]
+    if (defined(invoker.trace_dir)) {
+      _trace_dir = invoker.trace_dir
+    } else {
+      _trace_dir = _trace
+    }
+    _trace_json_path = "$_trace_dir/$_trace.json"
+    _trace_data = []
+    _trace_data = read_file(_trace_json_path, "json")
+
+    if (invoker.short_names) {
+      _target = "cr_trace_${_trace_counter}"
+      _trace_counter += 1
+    } else {
+      _target = "${target_name}_$_trace"
+    }
+    angle_trace(_target) {
+      sources = rebase_path(_trace_data.TraceFiles, ".", _trace_dir)
+
+      data = [
+        "$_trace_dir/$_trace.json",
+        "$_trace_dir/$_trace.angledata.gz",
+      ]
+      fixture = invoker.trace_fixture
+
+      if (invoker.short_names) {
+        output_name = _trace
+      }
+    }
+
+    _trace_targets += [ ":$_target" ]
+  }
+
+  group(target_name) {
+    testonly = true
+    data = [ invoker.json_path ]
+    data_deps = _trace_targets
   }
 }

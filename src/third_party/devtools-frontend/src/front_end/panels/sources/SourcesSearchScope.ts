@@ -135,7 +135,7 @@ export class SourcesSearchScope implements Search.SearchConfig.SearchScope {
       promises.push(promise);
     }
 
-    Promise.all(promises).then(this.processMatchingFiles.bind(
+    void Promise.all(promises).then(this.processMatchingFiles.bind(
         this, this.searchId, searchContentProgress, this.searchFinishedCallback.bind(this, true)));
   }
 
@@ -222,7 +222,7 @@ export class SourcesSearchScope implements Search.SearchConfig.SearchScope {
       if (uiSourceCode.isDirty()) {
         contentLoaded.call(this, uiSourceCode, uiSourceCode.workingCopy());
       } else {
-        uiSourceCode.requestContent().then(deferredContent => {
+        void uiSourceCode.requestContent().then(deferredContent => {
           contentLoaded.call(this, uiSourceCode, deferredContent.content || '');
         });
       }
@@ -240,7 +240,7 @@ export class SourcesSearchScope implements Search.SearchConfig.SearchScope {
 
       ++callbacksLeft;
       const uiSourceCode = files[fileIndex++];
-      setTimeout(searchInNextFile.bind(this, uiSourceCode), 0);
+      window.setTimeout(searchInNextFile.bind(this, uiSourceCode), 0);
     }
 
     function contentLoaded(

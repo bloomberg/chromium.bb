@@ -14,7 +14,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -43,7 +42,7 @@
 #include "ui/views/view.h"
 #include "ui/views/word_lookup_client.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include <vector>
 #endif
 
@@ -51,11 +50,11 @@ namespace base {
 class TimeDelta;
 }
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 namespace ui {
 class ScopedPasswordInputEnabler;
 }
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
 namespace views {
 
@@ -83,7 +82,7 @@ class VIEWS_EXPORT Textfield : public View,
     kLastCommandId = kSelectAll,
   };
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   static constexpr gfx::SelectionBehavior kLineSelectionBehavior =
       gfx::SELECTION_EXTEND;
   static constexpr gfx::SelectionBehavior kWordSelectionBehavior =
@@ -236,6 +235,9 @@ class VIEWS_EXPORT Textfield : public View,
     placeholder_font_list_ = font_list;
   }
 
+  int placeholder_text_draw_flags() const {
+    return placeholder_text_draw_flags_;
+  }
   void set_placeholder_text_draw_flags(int flags) {
     placeholder_text_draw_flags_ = flags;
   }
@@ -443,7 +445,7 @@ class VIEWS_EXPORT Textfield : public View,
   // Set whether the text should be used to improve typing suggestions.
   void SetShouldDoLearning(bool value) { should_do_learning_ = value; }
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   bool SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
@@ -455,21 +457,21 @@ class VIEWS_EXPORT Textfield : public View,
   bool SetAutocorrectRange(const gfx::Range& range) override;
 #endif
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
   void GetActiveTextInputControlLayoutBounds(
       absl::optional<gfx::Rect>* control_bounds,
       absl::optional<gfx::Rect>* selection_bounds) override;
 #endif
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void SetActiveCompositionForAccessibility(
       const gfx::Range& range,
       const std::u16string& active_composition_text,
       bool is_composition_committed) override;
 #endif
 
-  base::CallbackListSubscription AddTextChangedCallback(
-      views::PropertyChangedCallback callback) WARN_UNUSED_RESULT;
+  [[nodiscard]] base::CallbackListSubscription AddTextChangedCallback(
+      views::PropertyChangedCallback callback);
 
  protected:
   TextfieldModel* textfield_model() { return model_.get(); }
@@ -764,10 +766,10 @@ class VIEWS_EXPORT Textfield : public View,
   // View containing the text cursor.
   raw_ptr<View> cursor_view_ = nullptr;
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Used to track active password input sessions.
   std::unique_ptr<ui::ScopedPasswordInputEnabler> password_input_enabler_;
-#endif  // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_MAC)
 
   // How this textfield was focused.
   ui::TextInputClient::FocusReason focus_reason_ =

@@ -123,7 +123,15 @@ bool GeneratorImpl::Generate() {
         return false;
       }
     } else if (auto* str = decl->As<ast::Struct>()) {
-      if (!str->IsBlockDecorated()) {
+      // Skip emission if the struct contains a runtime-sized array, since its
+      // only use will be as the store-type of a buffer and we emit those
+      // elsewhere.
+      // TODO(crbug.com/tint/1339): We could also avoid emitting any other
+      // struct that is only used as a buffer store type.
+      TINT_ASSERT(Writer, str->members.size() > 0);
+      auto* last_member = str->members[str->members.size() - 1];
+      auto* arr = last_member->type->As<ast::Array>();
+      if (!arr || !arr->IsRuntimeArray()) {
         if (!EmitStructType(current_buffer_, builder_.Sem().Get(str))) {
           return false;
         }
@@ -496,6 +504,12 @@ bool GeneratorImpl::EmitIntrinsicCall(std::ostream& out,
   }
   if (intrinsic->Type() == sem::IntrinsicType::kIsNormal) {
     return EmitIsNormalCall(out, expr, intrinsic);
+  }
+  if (intrinsic->Type() == sem::IntrinsicType::kDegrees) {
+    return EmitDegreesCall(out, expr, intrinsic);
+  }
+  if (intrinsic->Type() == sem::IntrinsicType::kRadians) {
+    return EmitRadiansCall(out, expr, intrinsic);
   }
   if (intrinsic->Type() == sem::IntrinsicType::kIgnore) {
     return EmitExpression(out, expr->args[0]);  // [DEPRECATED]
@@ -945,6 +959,30 @@ bool GeneratorImpl::EmitIsNormalCall(std::ostream& out,
       });
 }
 
+bool GeneratorImpl::EmitDegreesCall(std::ostream& out,
+                                    const ast::CallExpression* expr,
+                                    const sem::Intrinsic* intrinsic) {
+  return CallIntrinsicHelper(
+      out, expr, intrinsic,
+      [&](TextBuffer* b, const std::vector<std::string>& params) {
+        line(b) << "return " << params[0] << " * " << std::setprecision(20)
+                << sem::kRadToDeg << ";";
+        return true;
+      });
+}
+
+bool GeneratorImpl::EmitRadiansCall(std::ostream& out,
+                                    const ast::CallExpression* expr,
+                                    const sem::Intrinsic* intrinsic) {
+  return CallIntrinsicHelper(
+      out, expr, intrinsic,
+      [&](TextBuffer* b, const std::vector<std::string>& params) {
+        line(b) << "return " << params[0] << " * " << std::setprecision(20)
+                << sem::kDegToRad << ";";
+        return true;
+      });
+}
+
 bool GeneratorImpl::EmitDataPackingCall(std::ostream& out,
                                         const ast::CallExpression* expr,
                                         const sem::Intrinsic* intrinsic) {
@@ -1180,33 +1218,28 @@ bool GeneratorImpl::EmitTextureCall(std::ostream& out,
   switch (intrinsic->Type()) {
     case sem::IntrinsicType::kTextureSample:
     case sem::IntrinsicType::kTextureSampleBias:
-      out << "texture(";
+      out << "texture";
       break;
     case sem::IntrinsicType::kTextureSampleLevel:
-      out << "textureLod(";
+      out << "textureLod";
       break;
     case sem::IntrinsicType::kTextureGather:
     case sem::IntrinsicType::kTextureGatherCompare:
-      out << (intrinsic->Signature().IndexOf(sem::ParameterUsage::kOffset) < 0
-                  ? "textureGather("
-                  : "textureGatherOffset(");
+      out << "textureGather";
       break;
     case sem::IntrinsicType::kTextureSampleGrad:
-      out << "textureGrad(";
+      out << "textureGrad";
       break;
     case sem::IntrinsicType::kTextureSampleCompare:
-      out << "texture(";
-      glsl_ret_width = 1;
-      break;
     case sem::IntrinsicType::kTextureSampleCompareLevel:
-      out << "texture(";
+      out << "texture";
       glsl_ret_width = 1;
       break;
     case sem::IntrinsicType::kTextureLoad:
-      out << "texelFetch(";
+      out << "texelFetch";
       break;
     case sem::IntrinsicType::kTextureStore:
-      out << "imageStore(";
+      out << "imageStore";
       break;
     default:
       diagnostics_.add_error(
@@ -1215,6 +1248,12 @@ bool GeneratorImpl::EmitTextureCall(std::ostream& out,
               std::string(intrinsic->str()) + "'");
       return false;
   }
+
+  if (intrinsic->Signature().IndexOf(sem::ParameterUsage::kOffset) >= 0) {
+    out << "Offset";
+  }
+
+  out << "(";
 
   if (!EmitExpression(out, texture))
     return false;
@@ -1239,8 +1278,8 @@ bool GeneratorImpl::EmitTextureCall(std::ostream& out,
     }
   }
 
-  for (auto usage : {Usage::kDepthRef, Usage::kBias, Usage::kLevel, Usage::kDdx,
-                     Usage::kDdy, Usage::kSampleIndex, Usage::kOffset,
+  for (auto usage : {Usage::kDepthRef, Usage::kLevel, Usage::kDdx, Usage::kDdy,
+                     Usage::kSampleIndex, Usage::kOffset, Usage::kBias,
                      Usage::kComponent, Usage::kValue}) {
     if (auto* e = arg(usage)) {
       out << ", ";
@@ -2101,7 +2140,7 @@ bool GeneratorImpl::EmitLoop(const ast::LoopStatement* stmt) {
     if (!EmitStatements(stmt->body->statements)) {
       return false;
     }
-    if (!emit_continuing()) {
+    if (!emit_continuing_()) {
       return false;
     }
   }
@@ -2181,7 +2220,7 @@ bool GeneratorImpl::EmitForLoop(const ast::ForLoopStatement* stmt) {
       return false;
     }
 
-    if (!emit_continuing()) {
+    if (!emit_continuing_()) {
       return false;
     }
   } else {

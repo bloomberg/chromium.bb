@@ -141,7 +141,9 @@ struct ModuleScopeVarToEntryPointParam::State {
       struct NewVar {
         Symbol symbol;
         bool is_pointer;
+        bool is_wrapped;
       };
+      const char* kWrappedArrayMemberName = "arr";
       std::unordered_map<const sem::Variable*, NewVar> var_to_newvar;
 
       // We aggregate all workgroup variables into a struct to avoid hitting
@@ -157,6 +159,7 @@ struct ModuleScopeVarToEntryPointParam::State {
 
       for (auto* var : func_sem->TransitivelyReferencedGlobals()) {
         auto sc = var->StorageClass();
+        auto* ty = var->Type()->UnwrapRef();
         if (sc == ast::StorageClass::kNone) {
           continue;
         }
@@ -174,12 +177,13 @@ struct ModuleScopeVarToEntryPointParam::State {
         auto new_var_symbol = ctx.dst->Sym();
 
         // Helper to create an AST node for the store type of the variable.
-        auto store_type = [&]() {
-          return CreateASTTypeFor(ctx, var->Type()->UnwrapRef());
-        };
+        auto store_type = [&]() { return CreateASTTypeFor(ctx, ty); };
 
         // Track whether the new variable is a pointer or not.
         bool is_pointer = false;
+
+        // Track whether the new variable was wrapped in a struct or not.
+        bool is_wrapped = false;
 
         if (is_entry_point) {
           if (var->Type()->UnwrapRef()->is_handle()) {
@@ -200,8 +204,23 @@ struct ModuleScopeVarToEntryPointParam::State {
                 ast::DisabledValidation::kEntryPointParameter));
             attributes.push_back(
                 ctx.dst->Disable(ast::DisabledValidation::kIgnoreStorageClass));
-            auto* param_type = ctx.dst->ty.pointer(
-                store_type(), sc, var->Declaration()->declared_access);
+
+            auto* param_type = store_type();
+            if (auto* arr = ty->As<sem::Array>();
+                arr && arr->IsRuntimeSized()) {
+              // Wrap runtime-sized arrays in structures, so that we can declare
+              // pointers to them. Ideally we'd just emit the array itself as a
+              // pointer, but this is not representable in Tint's AST.
+              CloneStructTypes(ty);
+              auto* wrapper = ctx.dst->Structure(
+                  ctx.dst->Sym(),
+                  {ctx.dst->Member(kWrappedArrayMemberName, param_type)});
+              param_type = ctx.dst->ty.Of(wrapper);
+              is_wrapped = true;
+            }
+
+            param_type = ctx.dst->ty.pointer(
+                param_type, sc, var->Declaration()->declared_access);
             auto* param =
                 ctx.dst->Param(new_var_symbol, param_type, attributes);
             ctx.InsertFront(func_ast->params, param);
@@ -283,11 +302,15 @@ struct ModuleScopeVarToEntryPointParam::State {
 
               expr = ctx.dst->Deref(expr);
             }
+            if (is_wrapped) {
+              // Get the member from the wrapper structure.
+              expr = ctx.dst->MemberAccessor(expr, kWrappedArrayMemberName);
+            }
             ctx.Replace(user->Declaration(), expr);
           }
         }
 
-        var_to_newvar[var] = {new_var_symbol, is_pointer};
+        var_to_newvar[var] = {new_var_symbol, is_pointer, is_wrapped};
       }
 
       if (!workgroup_parameter_members.empty()) {
@@ -322,7 +345,12 @@ struct ModuleScopeVarToEntryPointParam::State {
           auto new_var = var_to_newvar[target_var];
           bool is_handle = target_var->Type()->UnwrapRef()->is_handle();
           const ast::Expression* arg = ctx.dst->Expr(new_var.symbol);
-          if (is_entry_point && !is_handle && !new_var.is_pointer) {
+          if (new_var.is_wrapped) {
+            // The variable is wrapped in a struct, so we need to pass a pointer
+            // to the struct member instead.
+            arg = ctx.dst->AddressOf(ctx.dst->MemberAccessor(
+                ctx.dst->Deref(arg), kWrappedArrayMemberName));
+          } else if (is_entry_point && !is_handle && !new_var.is_pointer) {
             // We need to pass a pointer and we don't already have one, so take
             // the address of the new variable.
             arg = ctx.dst->AddressOf(arg);

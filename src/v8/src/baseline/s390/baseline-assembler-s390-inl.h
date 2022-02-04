@@ -289,28 +289,28 @@ void BaselineAssembler::JumpIfByte(Condition cc, Register value, int32_t byte,
 }
 
 void BaselineAssembler::Move(interpreter::Register output, Register source) {
-  UNIMPLEMENTED();
+  Move(RegisterFrameOperand(output), source);
 }
 void BaselineAssembler::Move(Register output, TaggedIndex value) {
-  UNIMPLEMENTED();
+  __ mov(output, Operand(value.ptr()));
 }
 void BaselineAssembler::Move(MemOperand output, Register source) {
-  UNIMPLEMENTED();
+  __ StoreU64(source, output);
 }
 void BaselineAssembler::Move(Register output, ExternalReference reference) {
-  UNIMPLEMENTED();
+  __ Move(output, reference);
 }
 void BaselineAssembler::Move(Register output, Handle<HeapObject> value) {
-  UNIMPLEMENTED();
+  __ Move(output, value);
 }
 void BaselineAssembler::Move(Register output, int32_t value) {
-  UNIMPLEMENTED();
+  __ mov(output, Operand(value));
 }
 void BaselineAssembler::MoveMaybeSmi(Register output, Register source) {
-  UNIMPLEMENTED();
+  __ mov(output, source);
 }
 void BaselineAssembler::MoveSmi(Register output, Register source) {
-  UNIMPLEMENTED();
+  __ mov(output, source);
 }
 
 namespace detail {
@@ -424,33 +424,42 @@ void BaselineAssembler::Pop(T... registers) {
 
 void BaselineAssembler::LoadTaggedPointerField(Register output, Register source,
                                                int offset) {
-  UNIMPLEMENTED();
+  __ LoadTaggedPointerField(output, FieldMemOperand(source, offset));
 }
 void BaselineAssembler::LoadTaggedSignedField(Register output, Register source,
                                               int offset) {
-  UNIMPLEMENTED();
+  __ LoadTaggedSignedField(output, FieldMemOperand(source, offset));
 }
 void BaselineAssembler::LoadTaggedAnyField(Register output, Register source,
                                            int offset) {
-  UNIMPLEMENTED();
+  __ LoadAnyTaggedField(output, FieldMemOperand(source, offset));
 }
 void BaselineAssembler::LoadByteField(Register output, Register source,
                                       int offset) {
-  UNIMPLEMENTED();
+  __ LoadU8(output, FieldMemOperand(source, offset));
 }
 void BaselineAssembler::StoreTaggedSignedField(Register target, int offset,
                                                Smi value) {
-  UNIMPLEMENTED();
+  ASM_CODE_COMMENT(masm_);
+  ScratchRegisterScope temps(this);
+  Register tmp = temps.AcquireScratch();
+  __ LoadSmiLiteral(tmp, value);
+  __ StoreTaggedField(tmp, FieldMemOperand(target, offset), r0);
 }
 void BaselineAssembler::StoreTaggedFieldWithWriteBarrier(Register target,
                                                          int offset,
                                                          Register value) {
-  UNIMPLEMENTED();
+  ASM_CODE_COMMENT(masm_);
+  Register scratch = WriteBarrierDescriptor::SlotAddressRegister();
+  DCHECK(!AreAliased(target, value, scratch));
+  __ StoreTaggedField(value, FieldMemOperand(target, offset), r0);
+  __ RecordWriteField(target, offset, value, scratch, kLRHasNotBeenSaved,
+                      SaveFPRegsMode::kIgnore);
 }
 void BaselineAssembler::StoreTaggedFieldNoWriteBarrier(Register target,
                                                        int offset,
                                                        Register value) {
-  UNIMPLEMENTED();
+  __ StoreTaggedField(value, FieldMemOperand(target, offset), r0);
 }
 
 void BaselineAssembler::AddToInterruptBudgetAndJumpIfNotExceeded(

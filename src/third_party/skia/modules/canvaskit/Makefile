@@ -71,7 +71,7 @@ npm:
 
 	# These features are turned off to keep code size smaller for the
 	# general use case.
-	./compile.sh release no_skottie no_particles no_rt_shader no_alias_font no_effects_deserialization
+	./compile.sh release no_skottie no_particles no_rt_shader no_sksl_trace no_alias_font no_effects_deserialization
 	cp ../../out/canvaskit_wasm/canvaskit.js       ./npm_build/bin
 	cp ../../out/canvaskit_wasm/canvaskit.wasm     ./npm_build/bin
 
@@ -93,9 +93,6 @@ gm_tests:
 	cp ../../out/wasm_gm_tests/wasm_gm_tests.wasm     ./out
 
 local-example:
-	rm -rf node_modules/canvaskit
-	mkdir -p node_modules
-	ln -s ../npm_build node_modules/canvaskit
 	echo "Go check out http://localhost:8000/npm_build/example.html"
 	python3 ../../tools/serve_wasm.py
 

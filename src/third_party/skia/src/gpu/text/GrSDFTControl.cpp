@@ -45,33 +45,17 @@ GrSDFTControl::GrSDFTControl(
     SkASSERT_RELEASE(0 < min && min <= max);
 }
 
-auto GrSDFTControl::drawingType(
-        const SkFont& font, const SkPaint& paint, const SkMatrix& viewMatrix) const -> DrawingType {
+bool GrSDFTControl::isDirect(SkScalar approximateDeviceTextSize, const SkPaint& paint) const {
+    return !isSDFT(approximateDeviceTextSize, paint) &&
+            approximateDeviceTextSize < SkStrikeCommon::kSkSideTooBigForAtlas;
+}
 
-    // Use paths as the first choice for hairlines and perspective.
-    if ((paint.getStyle() == SkPaint::kStroke_Style && paint.getStrokeWidth() == 0)
-            || viewMatrix.hasPerspective()) {
-        return kPath;
-    }
-
-    SkScalar maxScale = viewMatrix.getMaxScale();
-    SkScalar scaledTextSize = maxScale * font.getSize();
-
-    // If we can't use SDFT, then make a simple choice between direct or path.
-    if (!fAbleToUseSDFT || paint.getMaskFilter() || paint.getStyle() != SkPaint::kFill_Style) {
-        constexpr int kAboveIsPath = SkStrikeCommon::kSkSideTooBigForAtlas;
-        return scaledTextSize < kAboveIsPath ? kDirect : kPath;
-    }
-
-    // Hinted text looks far better at small resolutions
-    // Scaling up beyond 2x yields undesirable artifacts
-    if (scaledTextSize < fMinDistanceFieldFontSize) {
-        return kDirect;
-    } else if (fMaxDistanceFieldFontSize < scaledTextSize) {
-        return kPath;
-    }
-
-    return kSDFT;
+bool GrSDFTControl::isSDFT(SkScalar approximateDeviceTextSize, const SkPaint& paint) const {
+    return fAbleToUseSDFT &&
+           paint.getMaskFilter() == nullptr &&
+           paint.getStyle() == SkPaint::kFill_Style &&
+           fMinDistanceFieldFontSize <= approximateDeviceTextSize &&
+           approximateDeviceTextSize <= fMaxDistanceFieldFontSize;
 }
 
 SkScalar scaled_text_size(const SkScalar textSize, const SkMatrix& viewMatrix) {

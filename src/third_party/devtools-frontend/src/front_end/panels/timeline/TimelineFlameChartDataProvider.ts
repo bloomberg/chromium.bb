@@ -243,6 +243,25 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     this.interactionsHeaderLevel2 = this.buildGroupStyle({padding: 2, nestingLevel: 1});
     this.experienceHeader = this.buildGroupStyle({collapsible: false});
 
+    ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, () => {
+      const headers = [
+        this.headerLevel1,
+        this.headerLevel2,
+        this.staticHeader,
+        this.framesHeader,
+        this.collapsibleTimingsHeader,
+        this.timingsHeader,
+        this.screenshotsHeader,
+        this.interactionsHeaderLevel1,
+        this.interactionsHeaderLevel2,
+        this.experienceHeader,
+      ];
+      for (const header of headers) {
+        header.color = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-text-primary');
+        header.backgroundColor = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background');
+      }
+    });
+
     this.flowEventIndexById = new Map();
   }
 
@@ -251,16 +270,13 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
       padding: 4,
       height: 17,
       collapsible: true,
-      color:
-          ThemeSupport.ThemeSupport.instance().patchColorText('#222', ThemeSupport.ThemeSupport.ColorUsage.Foreground),
-      backgroundColor:
-          ThemeSupport.ThemeSupport.instance().patchColorText('white', ThemeSupport.ThemeSupport.ColorUsage.Background),
+      color: ThemeSupport.ThemeSupport.instance().getComputedValue('--color-text-primary'),
+      backgroundColor: ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background'),
       font: this.font,
       nestingLevel: 0,
       shareHeaderLine: true,
     };
-    return /** @type {!PerfUI.FlameChart.GroupStyle} */ Object.assign(defaultGroupStyle, extra) as
-        PerfUI.FlameChart.GroupStyle;
+    return Object.assign(defaultGroupStyle, extra);
   }
 
   setModel(performanceModel: PerformanceModel|null): void {
@@ -933,9 +949,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
   }
 
   private entryType(entryIndex: number): EntryType {
-    return this.entryTypeByLevel[/** @type {!PerfUI.FlameChart.TimelineData} */ (
-                                     this.timelineDataInternal as PerfUI.FlameChart.TimelineData)
-                                     .entryLevels[entryIndex]];
+    return this.entryTypeByLevel[(this.timelineDataInternal as PerfUI.FlameChart.TimelineData).entryLevels[entryIndex]];
   }
 
   prepareHighlightedEntryInfo(entryIndex: number): Element|null {
@@ -1143,7 +1157,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     }
 
     if (type === entryTypes.Screenshot) {
-      this.drawScreenshot(entryIndex, context, barX, barY, barWidth, barHeight);
+      void this.drawScreenshot(entryIndex, context, barX, barY, barWidth, barHeight);
       return true;
     }
 

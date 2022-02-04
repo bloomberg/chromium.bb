@@ -174,12 +174,11 @@ fn f() {
 // 0xffffffff. If WGSL supports 64-bit indexing, re-enable this test.
 TEST_F(RobustnessTest, DISABLED_LargeArrays_Idx) {
   auto* src = R"(
-[[block]]
 struct S {
   a : array<f32, 0x7fffffff>;
   b : array<f32>;
 };
-[[group(0), binding(0)]] var<storage, read> s : S;
+@group(0) @binding(0) var<storage, read> s : S;
 
 fn f() {
   // Signed
@@ -213,13 +212,12 @@ fn f() {
 )";
 
   auto* expect = R"(
-[[block]]
 struct S {
   a : array<f32, 2147483647>;
   b : array<f32>;
 };
 
-[[group(0), binding(0)]] var<storage, read> s : S;
+@group(0) @binding(0) var<storage, read> s : S;
 
 fn f() {
   var i32_a1 : f32 = s.a[2147483646];
@@ -581,7 +579,7 @@ fn f() {
 
 // TODO(dsinclair): Implement when constant_id exists
 TEST_F(RobustnessTest, DISABLED_Vector_Constant_Id_Clamps) {
-  // [[override(1300)]] let idx : i32;
+  // @override(1300) let idx : i32;
   // var a : vec3<f32>
   // var b : f32 = a[idx]
   //
@@ -590,7 +588,7 @@ TEST_F(RobustnessTest, DISABLED_Vector_Constant_Id_Clamps) {
 
 // TODO(dsinclair): Implement when constant_id exists
 TEST_F(RobustnessTest, DISABLED_Array_Constant_Id_Clamps) {
-  // [[override(1300)]] let idx : i32;
+  // @override(1300) let idx : i32;
   // var a : array<f32, 4>
   // var b : f32 = a[idx]
   //
@@ -599,7 +597,7 @@ TEST_F(RobustnessTest, DISABLED_Array_Constant_Id_Clamps) {
 
 // TODO(dsinclair): Implement when constant_id exists
 TEST_F(RobustnessTest, DISABLED_Matrix_Column_Constant_Id_Clamps) {
-  // [[override(1300)]] let idx : i32;
+  // @override(1300) let idx : i32;
   // var a : mat3x2<f32>
   // var b : f32 = a[idx][1]
   //
@@ -608,7 +606,7 @@ TEST_F(RobustnessTest, DISABLED_Matrix_Column_Constant_Id_Clamps) {
 
 // TODO(dsinclair): Implement when constant_id exists
 TEST_F(RobustnessTest, DISABLED_Matrix_Row_Constant_Id_Clamps) {
-  // [[override(1300)]] let idx : i32;
+  // @override(1300) let idx : i32;
   // var a : mat3x2<f32>
   // var b : f32 = a[1][idx]
   //
@@ -617,12 +615,11 @@ TEST_F(RobustnessTest, DISABLED_Matrix_Row_Constant_Id_Clamps) {
 
 TEST_F(RobustnessTest, RuntimeArray_Clamps) {
   auto* src = R"(
-[[block]]
 struct S {
   a : f32;
   b : array<f32>;
 };
-[[group(0), binding(0)]] var<storage, read> s : S;
+@group(0) @binding(0) var<storage, read> s : S;
 
 fn f() {
   var d : f32 = s.b[25];
@@ -630,13 +627,12 @@ fn f() {
 )";
 
   auto* expect = R"(
-[[block]]
 struct S {
   a : f32;
   b : array<f32>;
-};
+}
 
-[[group(0), binding(0)]] var<storage, read> s : S;
+@group(0) @binding(0) var<storage, read> s : S;
 
 fn f() {
   var d : f32 = s.b[min(25u, (arrayLength(&(s.b)) - 1u))];
@@ -656,14 +652,14 @@ TEST_F(RobustnessTest, DISABLED_Atomics_Clamp) {
 // Clamp textureLoad() coord, array_index and level values
 TEST_F(RobustnessTest, TextureLoad_Clamp) {
   auto* src = R"(
-[[group(0), binding(0)]] var tex_1d : texture_1d<f32>;
-[[group(0), binding(0)]] var tex_2d : texture_2d<f32>;
-[[group(0), binding(0)]] var tex_2d_arr : texture_2d_array<f32>;
-[[group(0), binding(0)]] var tex_3d : texture_3d<f32>;
-[[group(0), binding(0)]] var tex_ms_2d : texture_multisampled_2d<f32>;
-[[group(0), binding(0)]] var tex_depth_2d : texture_depth_2d;
-[[group(0), binding(0)]] var tex_depth_2d_arr : texture_depth_2d_array;
-[[group(0), binding(0)]] var tex_external : texture_external;
+@group(0) @binding(0) var tex_1d : texture_1d<f32>;
+@group(0) @binding(0) var tex_2d : texture_2d<f32>;
+@group(0) @binding(0) var tex_2d_arr : texture_2d_array<f32>;
+@group(0) @binding(0) var tex_3d : texture_3d<f32>;
+@group(0) @binding(0) var tex_ms_2d : texture_multisampled_2d<f32>;
+@group(0) @binding(0) var tex_depth_2d : texture_depth_2d;
+@group(0) @binding(0) var tex_depth_2d_arr : texture_depth_2d_array;
+@group(0) @binding(0) var tex_external : texture_external;
 
 fn f() {
   var array_idx : i32;
@@ -683,21 +679,21 @@ fn f() {
 
   auto* expect =
       R"(
-[[group(0), binding(0)]] var tex_1d : texture_1d<f32>;
+@group(0) @binding(0) var tex_1d : texture_1d<f32>;
 
-[[group(0), binding(0)]] var tex_2d : texture_2d<f32>;
+@group(0) @binding(0) var tex_2d : texture_2d<f32>;
 
-[[group(0), binding(0)]] var tex_2d_arr : texture_2d_array<f32>;
+@group(0) @binding(0) var tex_2d_arr : texture_2d_array<f32>;
 
-[[group(0), binding(0)]] var tex_3d : texture_3d<f32>;
+@group(0) @binding(0) var tex_3d : texture_3d<f32>;
 
-[[group(0), binding(0)]] var tex_ms_2d : texture_multisampled_2d<f32>;
+@group(0) @binding(0) var tex_ms_2d : texture_multisampled_2d<f32>;
 
-[[group(0), binding(0)]] var tex_depth_2d : texture_depth_2d;
+@group(0) @binding(0) var tex_depth_2d : texture_depth_2d;
 
-[[group(0), binding(0)]] var tex_depth_2d_arr : texture_depth_2d_array;
+@group(0) @binding(0) var tex_depth_2d_arr : texture_depth_2d_array;
 
-[[group(0), binding(0)]] var tex_external : texture_external;
+@group(0) @binding(0) var tex_external : texture_external;
 
 fn f() {
   var array_idx : i32;
@@ -722,13 +718,13 @@ fn f() {
 // Clamp textureStore() coord, array_index and level values
 TEST_F(RobustnessTest, TextureStore_Clamp) {
   auto* src = R"(
-[[group(0), binding(0)]] var tex1d : texture_storage_1d<rgba8sint, write>;
+@group(0) @binding(0) var tex1d : texture_storage_1d<rgba8sint, write>;
 
-[[group(0), binding(1)]] var tex2d : texture_storage_2d<rgba8sint, write>;
+@group(0) @binding(1) var tex2d : texture_storage_2d<rgba8sint, write>;
 
-[[group(0), binding(2)]] var tex2d_arr : texture_storage_2d_array<rgba8sint, write>;
+@group(0) @binding(2) var tex2d_arr : texture_storage_2d_array<rgba8sint, write>;
 
-[[group(0), binding(3)]] var tex3d : texture_storage_3d<rgba8sint, write>;
+@group(0) @binding(3) var tex3d : texture_storage_3d<rgba8sint, write>;
 
 fn f() {
   textureStore(tex1d, 10, vec4<i32>());
@@ -739,13 +735,13 @@ fn f() {
 )";
 
   auto* expect = R"(
-[[group(0), binding(0)]] var tex1d : texture_storage_1d<rgba8sint, write>;
+@group(0) @binding(0) var tex1d : texture_storage_1d<rgba8sint, write>;
 
-[[group(0), binding(1)]] var tex2d : texture_storage_2d<rgba8sint, write>;
+@group(0) @binding(1) var tex2d : texture_storage_2d<rgba8sint, write>;
 
-[[group(0), binding(2)]] var tex2d_arr : texture_storage_2d_array<rgba8sint, write>;
+@group(0) @binding(2) var tex2d_arr : texture_storage_2d_array<rgba8sint, write>;
 
-[[group(0), binding(3)]] var tex3d : texture_storage_3d<rgba8sint, write>;
+@group(0) @binding(3) var tex3d : texture_storage_3d<rgba8sint, write>;
 
 fn f() {
   textureStore(tex1d, clamp(10, i32(), (textureDimensions(tex1d) - i32(1))), vec4<i32>());
@@ -778,13 +774,12 @@ TEST_F(RobustnessTest, DISABLED_Shadowed_Variable) {
 // Check that existing use of min() and arrayLength() do not get renamed.
 TEST_F(RobustnessTest, DontRenameSymbols) {
   auto* src = R"(
-[[block]]
 struct S {
   a : f32;
   b : array<f32>;
 };
 
-[[group(0), binding(0)]] var<storage, read> s : S;
+@group(0) @binding(0) var<storage, read> s : S;
 
 let c : u32 = 1u;
 
@@ -796,13 +791,12 @@ fn f() {
 )";
 
   auto* expect = R"(
-[[block]]
 struct S {
   a : f32;
   b : array<f32>;
-};
+}
 
-[[group(0), binding(0)]] var<storage, read> s : S;
+@group(0) @binding(0) var<storage, read> s : S;
 
 let c : u32 = 1u;
 
@@ -819,18 +813,17 @@ fn f() {
 }
 
 const char* kOmitSourceShader = R"(
-[[block]]
 struct S {
   a : array<f32, 4>;
   b : array<f32>;
 };
-[[group(0), binding(0)]] var<storage, read> s : S;
+@group(0) @binding(0) var<storage, read> s : S;
 
-type UArr = [[stride(16)]] array<f32, 4>;
-[[block]] struct U {
+type UArr = @stride(16) array<f32, 4>;
+struct U {
   a : UArr;
 };
-[[group(1), binding(0)]] var<uniform> u : U;
+@group(1) @binding(0) var<uniform> u : U;
 
 fn f() {
   // Signed
@@ -878,22 +871,20 @@ fn f() {
 
 TEST_F(RobustnessTest, OmitNone) {
   auto* expect = R"(
-[[block]]
 struct S {
   a : array<f32, 4>;
   b : array<f32>;
-};
+}
 
-[[group(0), binding(0)]] var<storage, read> s : S;
+@group(0) @binding(0) var<storage, read> s : S;
 
-type UArr = [[stride(16)]] array<f32, 4>;
+type UArr = @stride(16) array<f32, 4>;
 
-[[block]]
 struct U {
   a : UArr;
-};
+}
 
-[[group(1), binding(0)]] var<uniform> u : U;
+@group(1) @binding(0) var<uniform> u : U;
 
 fn f() {
   var i32_sa1 : f32 = s.a[3];
@@ -943,22 +934,20 @@ fn f() {
 
 TEST_F(RobustnessTest, OmitStorage) {
   auto* expect = R"(
-[[block]]
 struct S {
   a : array<f32, 4>;
   b : array<f32>;
-};
+}
 
-[[group(0), binding(0)]] var<storage, read> s : S;
+@group(0) @binding(0) var<storage, read> s : S;
 
-type UArr = [[stride(16)]] array<f32, 4>;
+type UArr = @stride(16) array<f32, 4>;
 
-[[block]]
 struct U {
   a : UArr;
-};
+}
 
-[[group(1), binding(0)]] var<uniform> u : U;
+@group(1) @binding(0) var<uniform> u : U;
 
 fn f() {
   var i32_sa1 : f32 = s.a[4];
@@ -1010,22 +999,20 @@ fn f() {
 
 TEST_F(RobustnessTest, OmitUniform) {
   auto* expect = R"(
-[[block]]
 struct S {
   a : array<f32, 4>;
   b : array<f32>;
-};
+}
 
-[[group(0), binding(0)]] var<storage, read> s : S;
+@group(0) @binding(0) var<storage, read> s : S;
 
-type UArr = [[stride(16)]] array<f32, 4>;
+type UArr = @stride(16) array<f32, 4>;
 
-[[block]]
 struct U {
   a : UArr;
-};
+}
 
-[[group(1), binding(0)]] var<uniform> u : U;
+@group(1) @binding(0) var<uniform> u : U;
 
 fn f() {
   var i32_sa1 : f32 = s.a[3];
@@ -1077,22 +1064,20 @@ fn f() {
 
 TEST_F(RobustnessTest, OmitBoth) {
   auto* expect = R"(
-[[block]]
 struct S {
   a : array<f32, 4>;
   b : array<f32>;
-};
+}
 
-[[group(0), binding(0)]] var<storage, read> s : S;
+@group(0) @binding(0) var<storage, read> s : S;
 
-type UArr = [[stride(16)]] array<f32, 4>;
+type UArr = @stride(16) array<f32, 4>;
 
-[[block]]
 struct U {
   a : UArr;
-};
+}
 
-[[group(1), binding(0)]] var<uniform> u : U;
+@group(1) @binding(0) var<uniform> u : U;
 
 fn f() {
   var i32_sa1 : f32 = s.a[4];

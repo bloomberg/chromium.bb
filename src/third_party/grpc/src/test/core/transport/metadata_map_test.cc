@@ -16,6 +16,7 @@
 
 #include <gtest/gtest.h>
 
+#include "src/core/lib/resource_quota/resource_quota.h"
 #include "src/core/lib/slice/slice_internal.h"
 #include "src/core/lib/transport/metadata_batch.h"
 #include "test/core/util/test_config.h"
@@ -23,18 +24,21 @@
 namespace grpc_core {
 namespace testing {
 
+static auto* g_memory_allocator = new MemoryAllocator(
+    ResourceQuota::Default()->memory_quota()->CreateMemoryAllocator("test"));
+
 TEST(MetadataMapTest, Noop) {
-  auto arena = MakeScopedArena(1024);
+  auto arena = MakeScopedArena(1024, g_memory_allocator);
   MetadataMap<>(arena.get());
 }
 
 TEST(MetadataMapTest, NoopWithDeadline) {
-  auto arena = MakeScopedArena(1024);
+  auto arena = MakeScopedArena(1024, g_memory_allocator);
   MetadataMap<GrpcTimeoutMetadata>(arena.get());
 }
 
 TEST(MetadataMapTest, SimpleOps) {
-  auto arena = MakeScopedArena(1024);
+  auto arena = MakeScopedArena(1024, g_memory_allocator);
   MetadataMap<GrpcTimeoutMetadata> map(arena.get());
   EXPECT_EQ(map.get_pointer(GrpcTimeoutMetadata()), nullptr);
   EXPECT_EQ(map.get(GrpcTimeoutMetadata()), absl::nullopt);
@@ -54,10 +58,9 @@ class FakeEncoder {
  public:
   std::string output() { return output_; }
 
-  void Encode(grpc_mdelem md) {
-    output_ +=
-        absl::StrCat("LEGACY CALL: key=", StringViewFromSlice(GRPC_MDKEY(md)),
-                     " value=", StringViewFromSlice(GRPC_MDVALUE(md)), "\n");
+  void Encode(const Slice& key, const Slice& value) {
+    output_ += absl::StrCat("UNKNOWN METADATUM: key=", key.as_string_view(),
+                            " value=", value.as_string_view(), "\n");
   }
 
   void Encode(GrpcTimeoutMetadata, grpc_millis deadline) {
@@ -70,7 +73,7 @@ class FakeEncoder {
 
 TEST(MetadataMapTest, EmptyEncodeTest) {
   FakeEncoder encoder;
-  auto arena = MakeScopedArena(1024);
+  auto arena = MakeScopedArena(1024, g_memory_allocator);
   MetadataMap<GrpcTimeoutMetadata> map(arena.get());
   map.Encode(&encoder);
   EXPECT_EQ(encoder.output(), "");
@@ -78,7 +81,7 @@ TEST(MetadataMapTest, EmptyEncodeTest) {
 
 TEST(MetadataMapTest, TimeoutEncodeTest) {
   FakeEncoder encoder;
-  auto arena = MakeScopedArena(1024);
+  auto arena = MakeScopedArena(1024, g_memory_allocator);
   MetadataMap<GrpcTimeoutMetadata> map(arena.get());
   map.Set(GrpcTimeoutMetadata(), 1234);
   map.Encode(&encoder);

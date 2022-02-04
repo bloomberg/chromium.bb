@@ -7,7 +7,7 @@ import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ClearBrowsingDataBrowserProxyImpl, ContentSettingsTypes, CookiePrimarySetting, SafeBrowsingSetting, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {HatsBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyPageBrowserProxyImpl, Route, Router, routes, SecureDnsMode, SettingsPrivacyPageElement, TrustSafetyInteraction} from 'chrome://settings/settings.js';
+import {HatsBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyGuideInteractions, PrivacyPageBrowserProxyImpl, Route, Router, routes, SecureDnsMode, SettingsPrivacyPageElement, StatusAction, SyncStatus, TrustSafetyInteraction} from 'chrome://settings/settings.js';
 
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, isChildVisible, isVisible} from 'chrome://webui-test/test_util.js';
@@ -205,18 +205,17 @@ suite('PrivacyPage', function() {
 
 suite('PrivacyReviewEnabled', function() {
   let page: SettingsPrivacyPageElement;
+  let metricsBrowserProxy: TestMetricsBrowserProxy;
 
   setup(function() {
+    metricsBrowserProxy = new TestMetricsBrowserProxy();
+    MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
     document.body.innerHTML = '';
     page = document.createElement('settings-privacy-page');
     page.prefs = {
       // Need privacy_sandbox pref for the page's setup.
       privacy_sandbox: {
         apis_enabled: {value: true},
-      },
-      privacy_review: {
-        show_welcome_card:
-            {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true},
       },
       privacy_guide: {
         viewed: {
@@ -239,13 +238,47 @@ suite('PrivacyReviewEnabled', function() {
     return flushTasks();
   });
 
-  test('privacyReviewRowVisible', function() {
+  test('privacyReviewRowVisibleChildAccount', function() {
     assertTrue(isChildVisible(page, '#privacyReviewLinkRow'));
+
+    // The user signs in to a child user account. This hides the privacy review
+    // entry point.
+    const syncStatus:
+        SyncStatus = {childUser: true, statusAction: StatusAction.NO_ACTION};
+    webUIListenerCallback('sync-status-changed', syncStatus);
+    flush();
+    assertFalse(isChildVisible(page, '#privacyReviewLinkRow'));
+
+    // The user is no longer signed in to a child user account. This doesn't
+    // show the entry point.
+    syncStatus.childUser = false;
+    webUIListenerCallback('sync-status-changed', syncStatus);
+    flush();
+    assertFalse(isChildVisible(page, '#privacyReviewLinkRow'));
   });
 
-  test('privacyReviewRowClick', function() {
+  test('privacyReviewRowVisibleManaged', function() {
+    assertTrue(isChildVisible(page, '#privacyReviewLinkRow'));
+
+    // The user becomes managed. This hides the privacy review entry point.
+    webUIListenerCallback('is-managed-changed', true);
+    flush();
+    assertFalse(isChildVisible(page, '#privacyReviewLinkRow'));
+
+    // The user is no longer managed. This doesn't show the entry point.
+    webUIListenerCallback('is-managed-changed', false);
+    flush();
+    assertFalse(isChildVisible(page, '#privacyReviewLinkRow'));
+  });
+
+  test('privacyReviewRowClick', async function() {
     page.shadowRoot!.querySelector<HTMLElement>(
                         '#privacyReviewLinkRow')!.click();
+
+    const result = await metricsBrowserProxy.whenCalled(
+        'recordPrivacyGuideEntryExitHistogram');
+    assertEquals(PrivacyGuideInteractions.SETTINGS_LINK_ROW_ENTRY, result);
+
     // Ensure the correct Settings page is shown.
     assertEquals(routes.PRIVACY_REVIEW, Router.getInstance().getCurrentRoute());
   });

@@ -654,7 +654,7 @@ Status ConvertKeyActionToKeyEvent(const base::DictionaryValue* action_object,
   base::DictionaryValue* pressed;
   if (!input_state->GetDictionary("pressed", &pressed))
     return Status(kUnknownError, "missing 'pressed'");
-  bool already_pressed = pressed->HasKey(key);
+  bool already_pressed = pressed->FindKey(key);
   if (!is_key_down && !already_pressed)
     return Status(kOk);
 
@@ -668,9 +668,11 @@ Status ConvertKeyActionToKeyEvent(const base::DictionaryValue* action_object,
     }
   }
 
-  int modifiers;
-  if (!input_state->GetInteger("modifiers", &modifiers))
+  absl::optional<int> maybe_modifiers = input_state->FindIntKey("modifiers");
+  if (!maybe_modifiers)
     return Status(kUnknownError, "missing 'modifiers'");
+
+  int modifiers = *maybe_modifiers;
 
   bool is_modifier_key = false;
   bool is_special_key = false;

@@ -45,6 +45,7 @@ hb_memory_mode_t
 HB_SEGMENT_PROPERTIES_DEFAULT
 HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT
 hb_buffer_create
+hb_buffer_create_similar
 hb_buffer_reference
 hb_buffer_get_empty
 hb_buffer_destroy
@@ -103,6 +104,7 @@ hb_buffer_serialize_format_to_string
 hb_buffer_serialize_list_formats
 hb_segment_properties_equal
 hb_segment_properties_hash
+hb_segment_properties_overlay
 hb_buffer_diff
 hb_buffer_set_message_func
 hb_buffer_t
@@ -329,9 +331,11 @@ hb_font_get_parent
 hb_font_get_ppem
 hb_font_get_ptem
 hb_font_get_scale
+hb_font_get_synthetic_slant
 hb_font_get_user_data
 hb_font_get_variation_glyph
 hb_font_get_variation_glyph_func_t
+hb_font_get_var_coords_design
 hb_font_get_var_coords_normalized
 hb_font_glyph_from_string
 hb_font_glyph_to_string
@@ -345,6 +349,7 @@ hb_font_set_parent
 hb_font_set_ppem
 hb_font_set_ptem
 hb_font_set_scale
+hb_font_set_synthetic_slant
 hb_font_set_user_data
 hb_font_set_variations
 hb_font_set_var_coords_design
