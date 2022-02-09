@@ -163,6 +163,7 @@ static bool DumpSymbolsToTempFile(const wchar_t* file,
 static bool DoSymUploadV2(
     const wchar_t* api_url,
     const wchar_t* api_key,
+    int* timeout_ms,
     const wstring& debug_file,
     const wstring& debug_id,
     const wstring& symbol_file,
@@ -174,6 +175,7 @@ static bool DoSymUploadV2(
     SymbolStatus symbolStatus = SymbolCollectorClient::CheckSymbolStatus(
       url,
       key,
+      timeout_ms,
       debug_file,
       debug_id);
     if (symbolStatus == SymbolStatus::Found) {
@@ -191,6 +193,7 @@ static bool DoSymUploadV2(
   if (!SymbolCollectorClient::CreateUploadUrl(
       url,
       key,
+      timeout_ms,
       &uploadUrlResponse)) {
     wprintf(L"Failed to create upload URL.\n");
     return false;
@@ -203,7 +206,7 @@ static bool DoSymUploadV2(
   bool success = HTTPUpload::SendPutRequest(
     signed_url,
     symbol_file,
-    /* timeout = */ NULL,
+    timeout_ms,
     &response,
     &response_code);
   if (!success) {
@@ -228,6 +231,7 @@ static bool DoSymUploadV2(
     SymbolCollectorClient::CompleteUpload(
       url,
       key,
+      timeout_ms,
       upload_key,
       debug_file,
       debug_id);
@@ -339,12 +343,8 @@ int wmain(int argc, wchar_t* argv[]) {
       api_key = argv[currentarg++];
 
       success = DoSymUploadV2(
-        api_url,
-        api_key,
-        pdb_info.debug_file,
-        pdb_info.debug_identifier,
-        symbol_file,
-        force);
+          api_url, api_key, timeout == -1 ? nullptr : &timeout,
+          pdb_info.debug_file, pdb_info.debug_identifier, symbol_file, force);
     } else {
       printUsageAndExit();
     }

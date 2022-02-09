@@ -343,8 +343,10 @@ void PDBSourceLineWriter::Lines::AddLine(const Line& line) {
   do {
     auto iter = line_map_.lower_bound(line.rva);
     if (iter == line_map_.end()) {
-      --iter;
-      intercept(iter->second);
+      if (!line_map_.empty()) {
+        --iter;
+        intercept(iter->second);
+      }
       break;
     }
     is_intercept = false;
@@ -569,6 +571,10 @@ bool PDBSourceLineWriter::PrintSourceFiles() {
     fprintf(stderr, "findChildren failed\n");
     return false;
   }
+
+  // Print a dummy file with id equals 0 to represent unknown file, because
+  // inline records might have unknown call site.
+  fwprintf(output_, L"FILE %d unknown file\n", 0);
 
   CComPtr<IDiaSymbol> compiland;
   ULONG count;

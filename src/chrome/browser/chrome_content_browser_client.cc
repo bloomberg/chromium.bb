@@ -4985,10 +4985,13 @@ void ChromeContentBrowserClient::
   content::BrowserContext* browser_context =
       content::RenderProcessHost::FromID(render_process_id)
           ->GetBrowserContext();
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(browser_context)
-          ->enabled_extensions()
-          .GetExtensionOrAppByURL(request_initiator_origin->GetURL());
+  const extensions::Extension* extension = nullptr;
+
+  if (request_initiator_origin != absl::nullopt) {
+    extension = extensions::ExtensionRegistry::Get(browser_context)
+                    ->enabled_extensions()
+                    .GetExtensionOrAppByURL(request_initiator_origin->GetURL());
+  }
 
   // For service worker contexts, we only allow file access. The remainder of
   // this code is used to allow extensions to access chrome:-scheme
@@ -5829,8 +5832,8 @@ std::string ChromeContentBrowserClient::GetUserAgent() {
 std::string ChromeContentBrowserClient::GetUserAgentBasedOnPolicy(
     content::BrowserContext* context) {
   embedder_support::ForceMajorVersionToMinorPosition
-      force_major_version_to_minor =
-          GetForceMajorVersionToMinorPosition(context);
+      force_major_version_to_minor = embedder_support::GetMajorToMinorFromPrefs(
+          Profile::FromBrowserContext(context)->GetPrefs());
   switch (GetUserAgentReductionEnterprisePolicyState(context)) {
     case UserAgentReductionEnterprisePolicyState::kForceDisabled:
       return embedder_support::GetFullUserAgent(force_major_version_to_minor);
@@ -6408,22 +6411,6 @@ ChromeContentBrowserClient::GetUserAgentReductionEnterprisePolicyState(
   }
 
   return UserAgentReductionEnterprisePolicyState::kDefault;
-}
-
-embedder_support::ForceMajorVersionToMinorPosition
-ChromeContentBrowserClient::GetForceMajorVersionToMinorPosition(
-    content::BrowserContext* context) {
-  int policy = Profile::FromBrowserContext(context)->GetPrefs()->GetInteger(
-      prefs::kForceMajorVersionToMinorPositionInUserAgent);
-  switch (policy) {
-    case 0:
-      return embedder_support::ForceMajorVersionToMinorPosition::kDefault;
-    case 1:
-      return embedder_support::ForceMajorVersionToMinorPosition::kForceDisabled;
-    case 2:
-      return embedder_support::ForceMajorVersionToMinorPosition::kForceEnabled;
-  }
-  return embedder_support::ForceMajorVersionToMinorPosition::kDefault;
 }
 
 bool ChromeContentBrowserClient::ShouldDisableOriginAgentClusterDefault(
