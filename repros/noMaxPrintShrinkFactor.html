@@ -1,0 +1,31 @@
+<html>
+<body>
+
+<script>
+function on_click(size) {
+    document.getElementById('elem').style.width = size + '%';
+}
+</script>
+
+<input name="group1" type="radio" value="100" onclick="on_click(100)"><label>100%</label>
+<input name="group1" type="radio" value="200" onclick="on_click(200)"><label>200%</label>
+
+<br>
+<br>
+
+<div id="elem" style="width: 100%">
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et <span style="color:red">dolore magna</span> aliqua. Aliquet sagittis id consectetur purus ut. <span style="color:magenta">Nunc congue nisi vitae suscipit tellus mauris a diam maecenas. Laoreet id donec ultrices tincidunt arcu non. Habitant morbi tristique senectus et netus et. Eu volutpat odio facilisis</span> mauris sit amet massa vitae. Id faucibus nisl tincidunt eget nullam. Sodales neque sodales ut etiam. Parturient montes nascetur ridiculus mus mauris vitae ultricies leo. Velit aliquet sagittis id consectetur.
+</div>
+
+<br>
+
+<button onclick="window.print()">Print</button>
+
+
+<h4>Steps to reproduce</h4>
+Click 200% and then the Print button
+<br>
+Without the patch <code>feature/no-max-print-shrink-factor</code>, the magenta colored text is cut off to the point that only two words are visible.
+
+</body>
+</html>
