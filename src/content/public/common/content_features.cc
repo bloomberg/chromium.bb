@@ -894,6 +894,11 @@ const base::Feature kSuppressDifferentOriginSubframeJSDialogs{
 const base::Feature kSyntheticPointerActions{"SyntheticPointerActions",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether optimizations controlled by kNavigationThreadingOptimizations are
+// moved to the IO thread or a separate background thread.
+const base::Feature kThreadingOptimizationsOnIO{
+    "ThreadingOptimizationsOnIO", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables async touchpad pinch zoom events. We check the ACK of the first
 // synthetic wheel event in a pinch sequence, then send the rest of the
 // synthetic wheel events of the pinch sequence as non-blocking if the first
@@ -958,7 +963,7 @@ const base::Feature kWarnAboutSecurePrivateNetworkRequests{
 
 // Enable window controls overlays for desktop PWAs
 const base::Feature kWebAppWindowControlsOverlay{
-    "WebAppWindowControlsOverlay", base::FEATURE_ENABLED_BY_DEFAULT};
+    "WebAppWindowControlsOverlay", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable WebAssembly baseline compilation (Liftoff).
 const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
