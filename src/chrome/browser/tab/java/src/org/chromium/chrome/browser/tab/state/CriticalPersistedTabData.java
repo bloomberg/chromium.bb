@@ -82,7 +82,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
     private @TabUserAgent int mUserAgent;
 
     @VisibleForTesting
-    protected CriticalPersistedTabData(Tab tab) {
+    public CriticalPersistedTabData(Tab tab) {
         super(tab,
                 PersistedTabDataConfiguration.get(CriticalPersistedTabData.class, tab.isIncognito())
                         .getStorage(),
@@ -282,6 +282,8 @@ public class CriticalPersistedTabData extends PersistedTabData {
                 return TabLaunchType.FROM_APP_WIDGET;
             case LaunchTypeAtCreation.SIZE:
                 return TabLaunchType.SIZE;
+            case LaunchTypeAtCreation.UNKNOWN:
+                return null;
             default:
                 assert false : "Unexpected deserialization of LaunchAtCreationType: "
                                + flatBufferLaunchType;
@@ -709,5 +711,12 @@ public class CriticalPersistedTabData extends PersistedTabData {
     @VisibleForTesting
     public void setShouldSaveForTesting(boolean shouldSaveForTesting) {
         mShouldSaveForTesting = shouldSaveForTesting;
+    }
+
+    /**
+     * @return true if the serialized {@link CriticalPersistedTabData} is empty.
+     */
+    public static boolean isEmptySerialization(ByteBuffer byteBuffer) {
+        return byteBuffer == null || byteBuffer.limit() == 0;
     }
 }

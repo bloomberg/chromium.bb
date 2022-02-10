@@ -14,13 +14,18 @@
 <translation id="1028781062521375153">Докладніше</translation>
 <translation id="1030706264415084469">Сайт <ph name="URL" /> хоче постійно зберігати великий обсяг даних на вашому пристрої</translation>
 <translation id="1032854598605920125">Обернути за годинниковою стрілкою</translation>
+<translation id="1033329911862281889">В анонімному режимі ваші дії в Інтернеті не стають невидимими:
+        <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />сайти та сервіси, якими вони користуються, бачать інформацію про ваші відвідування;<ph name="END_LIST_ITEM" />
+          <ph name="LIST_ITEM" />роботодавці та заклади освіти можуть відстежувати ваші дії у веб-переглядачі;<ph name="END_LIST_ITEM" />
+          <ph name="LIST_ITEM" />постачальники послуг Інтернету (ISP) можуть відстежувати веб-трафік.<ph name="END_LIST_ITEM" />
+        <ph name="END_LIST" /></translation>
 <translation id="1036348656032585052">Вимкнути</translation>
 <translation id="1036982837258183574">Натисніть |<ph name="ACCELERATOR" />|, щоб вийти з повноекранного режиму</translation>
 <translation id="1038106730571050514">Показувати пропозиції</translation>
 <translation id="1038842779957582377">Невідоме ім’я</translation>
 <translation id="1041998700806130099">Повідомлення на аркуші вихідних даних</translation>
 <translation id="1048785276086539861">Коли ви редагуєте примітки, документ переходить у режим перегляду по одній сторінці</translation>
-<translation id="1049743911850919806">Анонімний перегляд</translation>
 <translation id="1050038467049342496">Закрийте інші додатки</translation>
 <translation id="1055184225775184556">&amp;Відмінити додавання</translation>
 <translation id="1056898198331236512">Застереження</translation>
@@ -48,6 +53,7 @@
 <translation id="112840717907525620">Кеш-пам’ять правила не пошкоджено</translation>
 <translation id="1130564665089811311">Кнопка "Перекласти сторінку"; натисніть Enter, що перекласти цю сторінку в Google Перекладачі</translation>
 <translation id="1131264053432022307">Скопійоване зображення</translation>
+<translation id="1142846828089312304">Блокувати файли cookie третіх сторін в анонімному режимі</translation>
 <translation id="1150979032973867961">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Операційна система вашого комп’ютера не вважає його сертифікат безпеки надійним. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
 <translation id="1151972924205500581">Потрібен пароль</translation>
 <translation id="1156303062776767266">Ви переглядаєте локальний або спільний файл</translation>
@@ -181,6 +187,12 @@
 <translation id="1483493594462132177">Надіслати</translation>
 <translation id="1484290072879560759">Вибрати адресу доставки</translation>
 <translation id="1492194039220927094">Сповіщення про правила:</translation>
+<translation id="149293076951187737">Коли ви закриваєте всі анонімні вкладки в Chrome, з пристрою видаляються дані про ваші дії в них, зокрема:
+          <ph name="BEGIN_LIST" />
+            <ph name="LIST_ITEM" />дії у веб-переглядачі;<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />історію пошуку;<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />інформацію, яку ви вводите у формах.<ph name="END_LIST_ITEM" />
+          <ph name="END_LIST" /></translation>
 <translation id="1495677929897281669">Назад на вкладку</translation>
 <translation id="1501859676467574491">Показує картки з облікового запису Google</translation>
 <translation id="1507202001669085618">&lt;p&gt;Це повідомлення про помилку з’являється, якщо ви користуєтеся порталом Wi-Fi, на який потрібно ввійти, перш ніж підключитися до мережі.&lt;/p&gt;
@@ -285,6 +297,7 @@
     структура заголовка неправильна, тому веб-переглядач не може виконати
     ваш запит для сайту <ph name="SITE" />. Оператори можуть використовувати
     правило джерела, щоб налаштувати захист та інші ресурси сайту.</translation>
+<translation id="1774592222195216949"><ph name="BEGIN_LINK" />Докладніше про анонімний режим у Chromium<ph name="END_LINK" /></translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1787142507584202372">Тут відображатимуться ваші відкриті вкладки</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
@@ -526,6 +539,12 @@
 <translation id="2597378329261239068">Цей документ захищено паролем. Введіть пароль.</translation>
 <translation id="2609632851001447353">Різновиди</translation>
 <translation id="2610561535971892504">Натиснути, щоб скопіювати</translation>
+<translation id="2617988307566202237">Chrome <ph name="BEGIN_EMPHASIS" />не зберігатиме<ph name="END_EMPHASIS" />:
+          <ph name="BEGIN_LIST" />
+            <ph name="LIST_ITEM" />історію веб-перегляду;
+            <ph name="LIST_ITEM" />файли cookie та дані із сайтів
+            <ph name="LIST_ITEM" />інформацію, яку ви вводите у формах.
+          <ph name="END_LIST" /></translation>
 <translation id="2618023639789766142">C10 (конверт)</translation>
 <translation id="2623663032199728144">Може просити доступ до інформації про ваші екрани</translation>
 <translation id="2625385379895617796">Ваш годинник спішить</translation>
@@ -736,12 +755,6 @@
 <translation id="3345782426586609320">Очі</translation>
 <translation id="3355823806454867987">Змінити налаштування проксі...</translation>
 <translation id="3360103848165129075">Аркуш обробника платежу</translation>
-<translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />не зберігатиме<ph name="END_EMPHASIS" />:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />історію веб-перегляду
-          <ph name="LIST_ITEM" />файли cookie та дані із сайтів
-          <ph name="LIST_ITEM" />дані, які ви заповнюєте у формах
-        <ph name="END_LIST" /></translation>
 <translation id="3362968246557010467">Правило було автоматично скопійовано з правила <ph name="OLD_POLICY" />, яке не підтримується. Натомість потрібно застосувати це правило.</translation>
 <translation id="3364869320075768271">Сайт <ph name="URL" /> хоче отримати доступ до ваших даних і пристрою віртуальної реальності</translation>
 <translation id="3366477098757335611">Переглянути картки</translation>
@@ -1160,6 +1173,7 @@
 <translation id="4628948037717959914">Фотографія</translation>
 <translation id="4631649115723685955">З кешбеком</translation>
 <translation id="4636930964841734540">Інформація</translation>
+<translation id="4638670630777875591">Анонімний режим у Chromium</translation>
 <translation id="464342062220857295">Функції пошуку</translation>
 <translation id="4644670975240021822">Зворотний порядок лицевою стороною вниз</translation>
 <translation id="4646534391647090355">Перейти зараз</translation>
@@ -1222,12 +1236,6 @@
 <translation id="4819347708020428563">Редагувати примітки в режимі перегляду за умовчанням?</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />; натисніть Tab, а потім – Enter, щоб швидко створити нову таблицю Google</translation>
 <translation id="4825507807291741242">Потужний</translation>
-<translation id="4827402517081186284">В анонімному режимі ваші дії в Інтернеті не стають невидимими:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />коли ви відвідуєте веб-сайти, вони бачать це;<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />роботодавці та заклади освіти можуть відстежувати ваші дії у веб-переглядачі;<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />постачальники послуг Інтернету (ISP) можуть відстежувати веб-трафік.<ph name="END_LIST_ITEM" />
-        <ph name="END_LIST" /></translation>
 <translation id="4829962028570902310">Ігнорується, оскільки це правило можна налаштувати лише через хмарні правила для користувачів.</translation>
 <translation id="483241715238664915">Увімкнути попередження</translation>
 <translation id="4838327282952368871">Мрійливий</translation>
@@ -1261,6 +1269,7 @@
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" /> з <ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4929871932072157101"><ph name="KEYWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />; натисніть Tab, а потім – Enter, щоб шукати</translation>
 <translation id="4930153903256238152">Велика місткість</translation>
+<translation id="4940163644868678279">Анонімний режим у Chrome</translation>
 <translation id="4943872375798546930">Не знайдено жодного результату</translation>
 <translation id="4950898438188848926">Кнопка перемикання вкладки: натисніть Enter, щоб перейти на відкриту вкладку, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Дії</translation>
@@ -1621,6 +1630,7 @@
 <translation id="6120179357481664955">Запам'ятати ідентифікатор UPI?</translation>
 <translation id="6124432979022149706">Конектори Chrome Enterprise</translation>
 <translation id="6127379762771434464">Веб-сайт видалено</translation>
+<translation id="6132161237766805930"><ph name="BEGIN_LINK" />Докладніше про анонімний режим у Chrome<ph name="END_LINK" /></translation>
 <translation id="6146055958333702838">Перевірте всі кабелі та перезавантажте всі маршрутизатори, модеми чи інші мережеві
     пристрої, які ви використовуєте.</translation>
 <translation id="614940544461990577">Спробуйте:</translation>
@@ -1797,7 +1807,6 @@
 <translation id="6757797048963528358">Ваш пристрій перейшов у режим сну.</translation>
 <translation id="6767985426384634228">Оновити адресу?</translation>
 <translation id="6768213884286397650">Hagaki (листівка)</translation>
-<translation id="6774185088257932239"><ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /> про анонімний режим</translation>
 <translation id="6775759552199460396">JIS B2</translation>
 <translation id="67862343314499040">Фіолетовий</translation>
 <translation id="6786747875388722282">Розширення</translation>
@@ -1897,6 +1906,12 @@
 <translation id="7111012039238467737">(Дійсний)</translation>
 <translation id="7118618213916969306">Пошук URL-адреси з буфера обміну, <ph name="SHORT_URL" /></translation>
 <translation id="7119414471315195487">Закрийте інші вкладки та програми</translation>
+<translation id="7129355289156517987">Коли ви закриваєте всі анонімні вкладки в Chromium, з пристрою видаляються дані про ваші дії в них, зокрема:
+          <ph name="BEGIN_LIST" />
+            <ph name="LIST_ITEM" />дії у веб-переглядачі;<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />історію пошуку;<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />інформацію, яку ви вводите у формах.<ph name="END_LIST_ITEM" />
+          <ph name="END_LIST" /></translation>
 <translation id="7129409597930077180">Неможливо відправити замовлення на цю адресу. Укажіть іншу адресу.</translation>
 <translation id="7132939140423847331">Ваш адміністратор заборонив копіювати ці дані.</translation>
 <translation id="7135130955892390533">Показати статус</translation>
@@ -2015,6 +2030,12 @@
 <translation id="7485870689360869515">Даних не знайдено.</translation>
 <translation id="7495528107193238112">Підключення заблоковано. Щоб вирішити проблему, зв'яжіться з власником сайту.</translation>
 <translation id="7497998058912824456">Кнопка "Створити документ"; натисніть Enter, щоб швидко створити новий документ Google</translation>
+<translation id="7506488012654002225">Chromium <ph name="BEGIN_EMPHASIS" />не зберігатиме<ph name="END_EMPHASIS" />:
+          <ph name="BEGIN_LIST" />
+            <ph name="LIST_ITEM" />історію веб-перегляду;
+            <ph name="LIST_ITEM" />файли cookie та дані із сайтів
+            <ph name="LIST_ITEM" />інформацію, яку ви вводите у формах.
+          <ph name="END_LIST" /></translation>
 <translation id="7508255263130623398">Отриманий ідентифікатор правил пристрою порожній або не збігається з поточним ідентифікатором пристрою</translation>
 <translation id="7508870219247277067">Світло-зелений</translation>
 <translation id="7511955381719512146">Можливо, щоб під’єднатися до цієї мережі Wi-Fi, потрібно відвідати сторінку <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -2234,6 +2255,7 @@
 <translation id="8202370299023114387">Конфлікт</translation>
 <translation id="8206978196348664717">Prc4 (конверт)</translation>
 <translation id="8211406090763984747">З’єднання безпечне</translation>
+<translation id="8217240300496046857">Сайти не можуть використовувати файли cookie, через які відстежуються ваші дії в Інтернеті. Функції на деяких сайтах можуть не працювати.</translation>
 <translation id="8218327578424803826">Указане місцезнаходження:</translation>
 <translation id="8220146938470311105">C7/C6 (конверт)</translation>
 <translation id="8225771182978767009">Користувач, який налаштував комп’ютер, заблокував цей сайт.</translation>
@@ -2277,12 +2299,6 @@
 <translation id="8317207217658302555">Оновити ARCore?</translation>
 <translation id="831997045666694187">Увечері</translation>
 <translation id="8321476692217554900">сповіщення</translation>
-<translation id="8328484624016508118">Коли ви закриєте всі анонімні вкладки, у Chrome буде видалено:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />дані про ваші дії у веб-переглядачі на цьому пристрої;<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />вашу історію пошуку на цьому пристрої;<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />інформацію, яку ви вводили у форми.<ph name="END_LIST_ITEM" />
-        <ph name="END_LIST" /></translation>
 <translation id="8332188693563227489">Відмовлено в доступі до хосту <ph name="HOST_NAME" /></translation>
 <translation id="833262891116910667">Виділити</translation>
 <translation id="8339163506404995330">Сторінки цією мовою (<ph name="LANGUAGE" />) не перекладатимуться</translation>

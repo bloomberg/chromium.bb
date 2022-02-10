@@ -188,7 +188,6 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/embedder_support/content_settings_utils.h"
 #include "components/embedder_support/switches.h"
-#include "components/embedder_support/user_agent_utils.h"
 #include "components/enterprise/content/clipboard_restriction_service.h"
 #include "components/enterprise/content/pref_names.h"
 #include "components/error_page/common/error.h"
@@ -1331,6 +1330,9 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
       prefs::kUserAgentReduction,
       UserAgentReductionEnterprisePolicyState::kDefault);
   registry->RegisterBooleanPref(prefs::kOriginAgentClusterDefaultEnabled, true);
+  registry->RegisterIntegerPref(
+      prefs::kForceMajorVersionToMinorPositionInUserAgent,
+      embedder_support::ForceMajorVersionToMinorPosition::kDefault);
 }
 
 // static
@@ -4986,10 +4988,13 @@ void ChromeContentBrowserClient::
   content::BrowserContext* browser_context =
       content::RenderProcessHost::FromID(render_process_id)
           ->GetBrowserContext();
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(browser_context)
-          ->enabled_extensions()
-          .GetExtensionOrAppByURL(request_initiator_origin->GetURL());
+  const extensions::Extension* extension = nullptr;
+
+  if (request_initiator_origin != absl::nullopt) {
+    extension = extensions::ExtensionRegistry::Get(browser_context)
+                    ->enabled_extensions()
+                    .GetExtensionOrAppByURL(request_initiator_origin->GetURL());
+  }
 
   // For service worker contexts, we only allow file access. The remainder of
   // this code is used to allow extensions to access chrome:-scheme
@@ -5831,14 +5836,18 @@ std::string ChromeContentBrowserClient::GetUserAgent() {
 
 std::string ChromeContentBrowserClient::GetUserAgentBasedOnPolicy(
     content::BrowserContext* context) {
+  embedder_support::ForceMajorVersionToMinorPosition
+      force_major_version_to_minor = embedder_support::GetMajorToMinorFromPrefs(
+          Profile::FromBrowserContext(context)->GetPrefs());
   switch (GetUserAgentReductionEnterprisePolicyState(context)) {
     case UserAgentReductionEnterprisePolicyState::kForceDisabled:
-      return embedder_support::GetFullUserAgent();
+      return embedder_support::GetFullUserAgent(force_major_version_to_minor);
     case UserAgentReductionEnterprisePolicyState::kForceEnabled:
-      return GetReducedUserAgent();
+      return embedder_support::GetReducedUserAgent(
+          force_major_version_to_minor);
     case UserAgentReductionEnterprisePolicyState::kDefault:
     default:
-      return GetUserAgent();
+      return embedder_support::GetUserAgent(force_major_version_to_minor);
   }
 }
 

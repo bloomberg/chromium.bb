@@ -93,6 +93,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &commerce::kCommerceMerchantViewer,
     &commerce::kCommercePriceTracking,
     &commerce::kShoppingList,
+    &commerce::kShoppingPDPMetrics,
     &content_creation::kLightweightReactions,
     &content_settings::kDarkenWebsitesCheckboxInThemesSetting,
     &device::kWebAuthPhoneSupport,
@@ -157,6 +158,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAllowNewIncognitoTabIntents,
     &kAndroidLayoutChangeTabReparenting,
     &kAndroidSearchEngineChoiceNotification,
+    &kAssistantConsentModal,
     &kAssistantConsentSimplifiedText,
     &kAssistantConsentV2,
     &kAssistantIntentExperimentId,
@@ -398,6 +400,9 @@ const base::Feature kFocusOmniboxInIncognitoTabIntents{
 
 const base::Feature kAndroidSearchEngineChoiceNotification{
     "AndroidSearchEngineChoiceNotification", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAssistantConsentModal{"AssistantConsentModal",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAssistantConsentSimplifiedText{
     "AssistantConsentSimplifiedText", base::FEATURE_DISABLED_BY_DEFAULT};

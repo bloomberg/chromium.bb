@@ -109,6 +109,7 @@
 <translation id="1100504063505580045">ಪ್ರಸ್ತುತ ಐಕಾನ್</translation>
 <translation id="1103523840287552314">ಯಾವಾಗಲೂ ಅನುವಾದಿಸಿ <ph name="LANGUAGE" /></translation>
 <translation id="1108600514891325577">&amp;ನಿಲ್ಲಿಸು</translation>
+<translation id="1108938384783527433">ಇತಿಹಾಸ ಸಿಂಕ್</translation>
 <translation id="1110155001042129815">ಕಾಯಿರಿ</translation>
 <translation id="1110965959145884739">ಈ ಸಾಧನದಲ್ಲಿ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬೇಕಿರುವ ಭಾಷೆಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ. ಡಿಸ್ಕ್ ಸ್ಪೇಸ್ ಉಳಿತಾಯ ಮಾಡಲು ಬಳಕೆದಾರರ ನಡುವೆ ಭಾಷಾ ಫೈಲ್‌ಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತದೆ. <ph name="BEGIN_LINK_LEARN_MORE" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="1111781754511998498">ಪ್ರಾಜೆಕ್ಟರ್</translation>
@@ -1699,6 +1700,7 @@
 <translation id="2684004000387153598">ಮುಂದುವರಿಸಲು, ಸರಿ ಎಂಬುದನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ. ಆಮೇಲೆ, ನಿಮ್ಮ ಇಮೇಲ್ ವಿಳಾಸಕ್ಕಾಗಿ ಹೊಸ ಪ್ರೊಫೈಲ್ ಅನ್ನು ರಚಿಸಲು, ವ್ಯಕ್ತಿಯನ್ನು ಸೇರಿಸಿ ಎಂಬುದನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="2687403674020088961">ಎಲ್ಲಾ ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ (ಇದನ್ನು ನಾವು ಶಿಫಾರಸು ಮಾಡುವುದಿಲ್ಲ)</translation>
 <translation id="2687407218262674387">Google ಸೇವಾ ನಿಯಮಗಳು</translation>
+<translation id="2687621393791886981">ನನ್ನನ್ನು ಆನಂತರ ಕೇಳಿ</translation>
 <translation id="2688196195245426394">ಸರ್ವರ್‌ನೊಂದಿಗೆ ಸಾಧನವನ್ನು ನೋಂದಾಯಿಸುವಾಗ ದೋಷ: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">ಭಾಷೆ ಆಯ್ಕೆಗಳನ್ನು ತೋರಿಸು</translation>
 <translation id="2691385045260836588">ಮಾದರಿ</translation>
@@ -1903,6 +1905,7 @@
 <translation id="287205682142673348">ಪೋರ್ಟ್ ಫಾರ್ವರ್ಡ್ ಮಾಡುವಿಕೆ</translation>
 <translation id="287286579981869940"><ph name="PROVIDER_NAME" /> ಸೇರಿಸಿ...</translation>
 <translation id="2872961005593481000">ಮುಚ್ಚಿಬಿಡಿ </translation>
+<translation id="2873995907777332853">ಎಲ್ಲಾ ಕುಕಿಗಳನ್ನು ನಿರ್ಬಂಧಿಸುವ ಕುರಿತು ವಿವರಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="2874939134665556319">ಹಿಂದಿನ ಟ್ರ್ಯಾಕ್</translation>
 <translation id="2875698561019555027">(Chrome ದೋಷ ಪುಟಗಳು)</translation>
 <translation id="2876336351874743617">ಬೆರಳು 2</translation>
@@ -2209,6 +2212,7 @@
 <translation id="3189187154924005138">ದೊಡ್ಡ ಕರ್ಸರ್</translation>
 <translation id="3190558889382726167">ಪಾಸ್‌ವರ್ಡ್ ಉಳಿಸಲಾಗಿದೆ</translation>
 <translation id="3192947282887913208">ಆಡಿಯೋ ಫೈಲ್‌ಗಳು</translation>
+<translation id="3194786596445804250">ಥರ್ಡ್-ಪಾರ್ಟಿ ಕುಕಿಗಳನ್ನು ನಿರ್ಬಂಧಿಸುವ ಕುರಿತು ವಿವರಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="3197453258332670132">ಬಲ-ಕ್ಲಿಕ್ ಅಥವಾ ದೀರ್ಘಕಾಲ ಒತ್ತಿಹಿಡಿಯಿರಿ, ನೀವು ಆಯ್ಕೆಮಾಡಿದ ಪಠ್ಯಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಮಾಹಿತಿಯನ್ನು ತೋರಿಸಿ</translation>
 <translation id="3199127022143353223">ಸರ್ವರ್‌ಗಳು</translation>
 <translation id="3200061262156232574">ನಿಮ್ಮ ಶಾಪಿಂಗ್‌ ಕಾರ್ಟ್‌ನಲ್ಲಿ</translation>
@@ -5307,6 +5311,7 @@
 <translation id="6455264371803474013">ನಿರ್ದಿಷ್ಟ ಸೈಟ್‌ಗಳಲ್ಲಿ</translation>
 <translation id="6455894534188563617">&amp;ಹೊಸ ಫೋಲ್ಡರ್</translation>
 <translation id="645705751491738698">JavaScript ನಿರ್ಬಂಧಿಸುವಿಕೆಯನ್ನು ಮುಂದುವರಿಸಿ</translation>
+<translation id="6458347417133445570">ಎಲ್ಲಾ ಕುಕಿಗಳನ್ನು ಅನುಮತಿಸುವ ಕುರಿತು ವಿವರಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="6458701200018867744">ಅಪ್‌ಲೋಡ್‌ ವಿಫಲವಾಗಿದೆ (<ph name="WEBRTC_LOG_UPLOAD_TIME" />).</translation>
 <translation id="6459488832681039634">ಹುಡುಕಲು ಆಯ್ಕೆಯನ್ನು ಬಳಸಿ</translation>
 <translation id="6459799433792303855">ಮತ್ತೊಂದು ಡಿಸ್‌ಪ್ಲೇಗೆ ಸಕ್ರಿಯ ವಿಂಡೋವನ್ನು ಸರಿಸಲಾಗಿದೆ.</translation>
@@ -6740,6 +6745,7 @@
 <translation id="7919210519031517829"><ph name="DURATION" />ಸೆ</translation>
 <translation id="7920363873148656176"><ph name="ORIGIN" />, <ph name="FILENAME" /> ಅನ್ನು ವೀಕ್ಷಿಸಬಹುದು</translation>
 <translation id="7920482456679570420">ನೀವು ಕಾಗುಣಿತ ಪರೀಕ್ಷೆಯನ್ನು ಸ್ಕಿಪ್ ಮಾಡಲು ಬಯಸುವ ಪದಗಳನ್ನು ಸೇರಿಸಿ</translation>
+<translation id="7922935920104868876">ಅಜ್ಞಾತ ಮೋಡ್‌ನಲ್ಲಿ ಥರ್ಡ್-ಪಾರ್ಟಿ ಕುಕಿಗಳನ್ನು ನಿರ್ಬಂಧಿಸುವ ಕುರಿತು ವಿವರಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="7924358170328001543">ಪೋರ್ಟ್ ಫಾರ್ವರ್ಡ್ ಮಾಡುವಾಗ ದೋಷ ಕಂಡುಬಂದಿದೆ</translation>
 <translation id="7925108652071887026">ಸ್ವಯಂಭರ್ತಿ ಡೇಟಾ</translation>
 <translation id="792514962475806987">ಡಾಕ್ ಮಾಡಿರುವುದಕ್ಕೆ ಝೂಮ್‌ ಮಟ್ಟ:</translation>
@@ -7211,6 +7217,7 @@
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8412136526970428322"><ph name="PERMISSION" /> ಮತ್ತು <ph name="COUNT" /> ಕ್ಕೂ ಹೆಚ್ಚಿನವುಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ</translation>
 <translation id="8413385045638830869">ಮೊದಲು ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
+<translation id="8414249071344507766">ಎರಡು ದಿನಗಳ ಮಟ್ಟಿಗೆ ನೆನಪುಗಳನ್ನು ಮರೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="8416730306157376817"><ph name="BATTERY_PERCENTAGE" />% (ಕೇಸ್)</translation>
 <translation id="8417548266957501132">ಪೋಷಕರ ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="8418445294933751433">ಟ್ಯಾಬ್‌ನಂತೆ &amp;ತೋರಿಸಿ</translation>
