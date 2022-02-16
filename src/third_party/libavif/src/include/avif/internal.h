@@ -59,10 +59,11 @@ void avifCalcYUVCoefficients(const avifImage * image, float * outR, float * outG
         uint32_t count;                                    \
         uint32_t capacity;                                 \
     } TYPENAME
-void avifArrayCreate(void * arrayStruct, uint32_t elementSize, uint32_t initialCapacity);
+avifBool avifArrayCreate(void * arrayStruct, uint32_t elementSize, uint32_t initialCapacity);
 uint32_t avifArrayPushIndex(void * arrayStruct);
 void * avifArrayPushPtr(void * arrayStruct);
 void avifArrayPush(void * arrayStruct, void * element);
+void avifArrayPop(void * arrayStruct);
 void avifArrayDestroy(void * arrayStruct);
 
 typedef struct avifAlphaParams
@@ -147,6 +148,12 @@ typedef struct avifReformatState
 // * AVIF_RESULT_NOT_IMPLEMENTED - The fast path for this combination is not implemented with libyuv, use built-in YUV conversion
 // * [any other error]           - Return error to caller
 avifResult avifImageYUVToRGBLibYUV(const avifImage * image, avifRGBImage * rgb);
+
+// Returns:
+// * AVIF_RESULT_OK               - Converted successfully with libyuv.
+// * AVIF_RESULT_NOT_IMPLEMENTED  - The fast path for this conversion is not implemented with libyuv, use built-in conversion.
+// * AVIF_RESULT_INVALID_ARGUMENT - Return error to caller.
+avifResult avifRGBImageToF16LibYUV(avifRGBImage * rgb);
 
 // Returns:
 // * AVIF_RESULT_OK              - (Un)Premultiply successfully with libyuv

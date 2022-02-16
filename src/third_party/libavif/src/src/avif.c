@@ -93,6 +93,7 @@ const char * avifResultToString(avifResult result)
         case AVIF_RESULT_WAITING_ON_IO:                 return "Waiting on IO";
         case AVIF_RESULT_INVALID_ARGUMENT:              return "Invalid argument";
         case AVIF_RESULT_NOT_IMPLEMENTED:               return "Not implemented";
+        case AVIF_RESULT_OUT_OF_MEMORY:                 return "Out of memory";
         case AVIF_RESULT_UNKNOWN_ERROR:
         default:
             break;
@@ -378,6 +379,7 @@ void avifRGBImageSetDefaults(avifRGBImage * rgb, const avifImage * image)
     rgb->alphaPremultiplied = AVIF_FALSE; // Most expect RGBA output to *not* be premultiplied. Those that do can opt-in by
                                           // setting this to match image->alphaPremultiplied or forcing this to true
                                           // after calling avifRGBImageSetDefaults(),
+    rgb->isFloat = AVIF_FALSE;
 }
 
 void avifRGBImageAllocatePixels(avifRGBImage * rgb)
@@ -733,8 +735,14 @@ static char * avifStrdup(const char * str)
 avifCodecSpecificOptions * avifCodecSpecificOptionsCreate(void)
 {
     avifCodecSpecificOptions * ava = avifAlloc(sizeof(avifCodecSpecificOptions));
-    avifArrayCreate(ava, sizeof(avifCodecSpecificOption), 4);
+    if (!avifArrayCreate(ava, sizeof(avifCodecSpecificOption), 4)) {
+        goto error;
+    }
     return ava;
+
+error:
+    avifFree(ava);
+    return NULL;
 }
 
 void avifCodecSpecificOptionsDestroy(avifCodecSpecificOptions * csOptions)

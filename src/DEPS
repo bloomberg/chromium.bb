@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'b7aed3fa978b9ff8ca52f24a018ad660fadf74c7',
+  'angle_revision': 'abdccddb7534a11e62c062ff1320f4bbcc6ce45b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -384,7 +384,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libavif
   # and whatever else without interference from each other.
-  'libavif_revision': '97306bf64266cf9571dd141f3d04492534a9deea',
+  'libavif_revision': '91bc33a6bd761f70013d7f0f041262626e1d5cad',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
@@ -1049,7 +1049,8 @@ deps = {
   # Tools used when building Chrome for Chrome OS. This affects both the Simple
   # Chrome workflow, as well as the chromeos-chrome ebuild.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '97b377bc5158bf4292080707310eaf1079636da1',
+      # This revision is https://crrev.com/c/3465318 on the M99 release branch.
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '11f085b8b6c5a0f838f1b2a7779afa97ebdcd7c0',
       'condition': 'checkout_chromeos',
   },
 
@@ -1743,7 +1744,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@cde85c451664ff95a39fb6c642a65bea951a00b0',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@72c3b6a84cbb1ee16696783238fd8ef4a52c981a',
     'condition': 'checkout_src_internal',
   },
 

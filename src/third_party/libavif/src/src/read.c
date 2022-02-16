@@ -237,17 +237,35 @@ typedef struct avifSampleTable
     uint32_t allSamplesSize; // If this is non-zero, sampleSizes will be empty and all samples will be this size
 } avifSampleTable;
 
+static void avifSampleTableDestroy(avifSampleTable * sampleTable);
+
 static avifSampleTable * avifSampleTableCreate()
 {
     avifSampleTable * sampleTable = (avifSampleTable *)avifAlloc(sizeof(avifSampleTable));
     memset(sampleTable, 0, sizeof(avifSampleTable));
-    avifArrayCreate(&sampleTable->chunks, sizeof(avifSampleTableChunk), 16);
-    avifArrayCreate(&sampleTable->sampleDescriptions, sizeof(avifSampleDescription), 2);
-    avifArrayCreate(&sampleTable->sampleToChunks, sizeof(avifSampleTableSampleToChunk), 16);
-    avifArrayCreate(&sampleTable->sampleSizes, sizeof(avifSampleTableSampleSize), 16);
-    avifArrayCreate(&sampleTable->timeToSamples, sizeof(avifSampleTableTimeToSample), 16);
-    avifArrayCreate(&sampleTable->syncSamples, sizeof(avifSyncSample), 16);
+    if (!avifArrayCreate(&sampleTable->chunks, sizeof(avifSampleTableChunk), 16)) {
+        goto error;
+    }
+    if (!avifArrayCreate(&sampleTable->sampleDescriptions, sizeof(avifSampleDescription), 2)) {
+        goto error;
+    }
+    if (!avifArrayCreate(&sampleTable->sampleToChunks, sizeof(avifSampleTableSampleToChunk), 16)) {
+        goto error;
+    }
+    if (!avifArrayCreate(&sampleTable->sampleSizes, sizeof(avifSampleTableSampleSize), 16)) {
+        goto error;
+    }
+    if (!avifArrayCreate(&sampleTable->timeToSamples, sizeof(avifSampleTableTimeToSample), 16)) {
+        goto error;
+    }
+    if (!avifArrayCreate(&sampleTable->syncSamples, sizeof(avifSyncSample), 16)) {
+        goto error;
+    }
     return sampleTable;
+
+error:
+    avifSampleTableDestroy(sampleTable);
+    return NULL;
 }
 
 static void avifSampleTableDestroy(avifSampleTable * sampleTable)
@@ -346,8 +364,14 @@ avifCodecDecodeInput * avifCodecDecodeInputCreate(void)
 {
     avifCodecDecodeInput * decodeInput = (avifCodecDecodeInput *)avifAlloc(sizeof(avifCodecDecodeInput));
     memset(decodeInput, 0, sizeof(avifCodecDecodeInput));
-    avifArrayCreate(&decodeInput->samples, sizeof(avifDecodeSample), 1);
+    if (!avifArrayCreate(&decodeInput->samples, sizeof(avifDecodeSample), 1)) {
+        goto error;
+    }
     return decodeInput;
+
+error:
+    avifFree(decodeInput);
+    return NULL;
 }
 
 void avifCodecDecodeInputDestroy(avifCodecDecodeInput * decodeInput)
@@ -666,13 +690,23 @@ typedef struct avifMeta
     uint32_t primaryItemID;
 } avifMeta;
 
+static void avifMetaDestroy(avifMeta * meta);
+
 static avifMeta * avifMetaCreate()
 {
     avifMeta * meta = (avifMeta *)avifAlloc(sizeof(avifMeta));
     memset(meta, 0, sizeof(avifMeta));
-    avifArrayCreate(&meta->items, sizeof(avifDecoderItem), 8);
-    avifArrayCreate(&meta->properties, sizeof(avifProperty), 16);
+    if (!avifArrayCreate(&meta->items, sizeof(avifDecoderItem), 8)) {
+        goto error;
+    }
+    if (!avifArrayCreate(&meta->properties, sizeof(avifProperty), 16)) {
+        goto error;
+    }
     return meta;
+
+error:
+    avifMetaDestroy(meta);
+    return NULL;
 }
 
 static void avifMetaDestroy(avifMeta * meta)
@@ -704,11 +738,21 @@ static avifDecoderItem * avifMetaFindItem(avifMeta * meta, uint32_t itemID)
     }
 
     avifDecoderItem * item = (avifDecoderItem *)avifArrayPushPtr(&meta->items);
-    avifArrayCreate(&item->properties, sizeof(avifProperty), 16);
-    avifArrayCreate(&item->extents, sizeof(avifExtent), 1);
+    if (!avifArrayCreate(&item->properties, sizeof(avifProperty), 16)) {
+        goto error;
+    }
+    if (!avifArrayCreate(&item->extents, sizeof(avifExtent), 1)) {
+        goto error;
+    }
     item->id = itemID;
     item->meta = meta;
     return item;
+
+error:
+    avifArrayDestroy(&item->extents);
+    avifArrayDestroy(&item->properties);
+    avifArrayPop(&meta->items);
+    return NULL;
 }
 
 typedef struct avifDecoderData
@@ -732,14 +776,24 @@ typedef struct avifDecoderData
     // bitstream, i.e. if the property is present, colour information in the bitstream shall be ignored."
 } avifDecoderData;
 
+static void avifDecoderDataDestroy(avifDecoderData * data);
+
 static avifDecoderData * avifDecoderDataCreate()
 {
     avifDecoderData * data = (avifDecoderData *)avifAlloc(sizeof(avifDecoderData));
     memset(data, 0, sizeof(avifDecoderData));
     data->meta = avifMetaCreate();
-    avifArrayCreate(&data->tracks, sizeof(avifTrack), 2);
-    avifArrayCreate(&data->tiles, sizeof(avifTile), 8);
+    if (!avifArrayCreate(&data->tracks, sizeof(avifTrack), 2)) {
+        goto error;
+    }
+    if (!avifArrayCreate(&data->tiles, sizeof(avifTile), 8)) {
+        goto error;
+    }
     return data;
+
+error:
+    avifDecoderDataDestroy(data);
+    return NULL;
 }
 
 static void avifDecoderDataResetCodec(avifDecoderData * data)
@@ -2526,7 +2580,10 @@ static avifBool avifParseSampleDescriptionBox(avifSampleTable * sampleTable, con
         CHECK(avifROStreamReadBoxHeader(&s, &sampleEntryHeader));
 
         avifSampleDescription * description = (avifSampleDescription *)avifArrayPushPtr(&sampleTable->sampleDescriptions);
-        avifArrayCreate(&description->properties, sizeof(avifProperty), 16);
+        if (!avifArrayCreate(&description->properties, sizeof(avifProperty), 16)) {
+            avifArrayPop(&sampleTable->sampleDescriptions);
+            return AVIF_FALSE;
+        }
         memcpy(description->format, sampleEntryHeader.type, sizeof(description->format));
         size_t remainingBytes = avifROStreamRemainingBytes(&s);
         if (!memcmp(description->format, "av01", 4) && (remainingBytes > VISUALSAMPLEENTRY_SIZE)) {
@@ -3817,17 +3874,22 @@ avifResult avifDecoderNthImage(avifDecoder * decoder, uint32_t frameIndex)
 
 avifBool avifDecoderIsKeyframe(const avifDecoder * decoder, uint32_t frameIndex)
 {
-    if (!decoder->data) {
+    if (!decoder->data || (decoder->data->tiles.count == 0)) {
         // Nothing has been parsed yet
         return AVIF_FALSE;
     }
 
-    if ((decoder->data->tiles.count > 0) && decoder->data->tiles.tile[0].input) {
-        if (frameIndex < decoder->data->tiles.tile[0].input->samples.count) {
-            return decoder->data->tiles.tile[0].input->samples.sample[frameIndex].sync;
+    // *All* tiles for the requested frameIndex must be keyframes in order for
+    //  avifDecoderIsKeyframe() to return true, otherwise we may seek to a frame in which the color
+    //  planes are a keyframe but the alpha plane isn't a keyframe, which will cause an alpha plane
+    //  decode failure.
+    for (unsigned int i = 0; i < decoder->data->tiles.count; ++i) {
+        const avifTile * tile = &decoder->data->tiles.tile[i];
+        if ((frameIndex >= tile->input->samples.count) || !tile->input->samples.sample[frameIndex].sync) {
+            return AVIF_FALSE;
         }
     }
-    return AVIF_FALSE;
+    return AVIF_TRUE;
 }
 
 uint32_t avifDecoderNearestKeyframe(const avifDecoder * decoder, uint32_t frameIndex)
