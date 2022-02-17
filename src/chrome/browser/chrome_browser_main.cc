@@ -1531,11 +1531,13 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
         browser_process_->local_state());
   }
 
+#if !BUILDFLAG(ENABLE_CEF)
   // Needs to be done before PostProfileInit, since login manager on CrOS is
   // called inside PostProfileInit.
   content::WebUIControllerFactory::RegisterFactory(
       ChromeWebUIControllerFactory::GetInstance());
   ChromeUntrustedWebUIControllerFactory::RegisterInstance();
+#endif
 
 #if BUILDFLAG(IS_ANDROID)
   page_info::SetPageInfoClient(new ChromePageInfoClient());
