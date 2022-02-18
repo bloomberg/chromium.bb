@@ -53,6 +53,8 @@ bool StoreFullPagePlugin(content::WebContents** result,
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
+}  // namespace
+
 // Pick the right RenderFrameHost based on the WebContents.
 content::RenderFrameHost* GetRenderFrameHostToUse(
     content::WebContents* contents) {
@@ -67,8 +69,6 @@ content::RenderFrameHost* GetRenderFrameHostToUse(
 #endif
   return contents->GetMainFrame();
 }
-
-}  // namespace
 
 void StartPrint(
     content::WebContents* contents,

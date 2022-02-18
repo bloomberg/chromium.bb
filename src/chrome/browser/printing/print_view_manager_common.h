@@ -36,6 +36,10 @@ content::RenderFrameHost* GetFrameToPrint(content::WebContents* contents);
 // guest's WebContents instead.
 content::WebContents* GetWebContentsToUse(content::WebContents* contents);
 
+// Pick the right RenderFrameHost based on the WebContents.
+content::RenderFrameHost* GetRenderFrameHostToUse(
+    content::WebContents* contents);
+
 }  // namespace printing
 
 #endif  // CHROME_BROWSER_PRINTING_PRINT_VIEW_MANAGER_COMMON_H_
