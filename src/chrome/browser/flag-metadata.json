@@ -785,6 +785,11 @@
     "expiry_milestone": 98
   },
   {
+    "name": "close-all-tabs-modal-dialog",
+    "owners": [ "ckitagawa", "fredmello" ],
+    "expiry_milestone": 103
+  },
+  {
     "name": "closed-tab-cache",
     "owners": [
       "altimin@chromium.org",
@@ -1010,11 +1015,6 @@
     "name": "crostini-use-dlc",
     "owners": [ "sidereal", "davidmunro@google.com", "nverne" ],
     "expiry_milestone": 100
-  },
-  {
-    "name": "crostini-use-lxd-4",
-    "owners": [ "sidereal", "davidmunro@google.com", "nverne" ],
-    "expiry_milestone": 110
   },
   {
     "name": "crostini-virtual-keyboard-support",
@@ -3491,6 +3491,12 @@
     "expiry_milestone": 112
   },
   {
+    "name": "improve-reader-mode-prompt",
+    "owners": ["lazzzis@google.com", "aishwaryarj@google.com",
+               "//chrome/android/java/src/org/chromium/chrome/browser/dom_distiller/OWNERS"],
+    "expiry_milestone": 110
+  },
+  {
     "name": "improved-desks-keyboard-shortcuts",
     "owners": [ "zxdan", "janetmac"],
     "expiry_milestone": 101
@@ -3920,7 +3926,7 @@
   {
     "name": "messages-for-android-reader-mode",
     "owners": [ "pavely", "lazzzis" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 105
   },
   {
     "name": "messages-for-android-safety-tip",

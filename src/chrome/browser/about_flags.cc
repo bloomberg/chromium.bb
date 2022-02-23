@@ -3488,6 +3488,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
      flag_descriptions::kReaderModeHeuristicsDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
+    {"improve-reader-mode-prompt",
+     flag_descriptions::kImproveReaderModePromptName,
+     flag_descriptions::kImproveReaderModePromptDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kImproveReaderModePrompt)},
     {"voice-button-in-top-toolbar",
      flag_descriptions::kVoiceButtonInTopToolbarName,
      flag_descriptions::kVoiceButtonInTopToolbarDescription, kOsAndroid,
@@ -3596,9 +3600,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTerminalTmuxIntegrationName,
      flag_descriptions::kTerminalTmuxIntegrationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kTerminalTmuxIntegration)},
-    {"crostini-use-lxd-4", flag_descriptions::kCrostiniUseLxd4Name,
-     flag_descriptions::kCrostiniUseLxd4Description, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUseLxd4)},
     {"crostini-multi-container", flag_descriptions::kCrostiniMultiContainerName,
      flag_descriptions::kCrostiniMultiContainerDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniMultiContainer)},
@@ -7739,6 +7740,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLacrosNonSyncingProfilesDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kLacrosNonSyncingProfiles)},
 #endif
+
+#if BUILDFLAG(IS_ANDROID)
+    {"close-all-tabs-modal-dialog",
+     flag_descriptions::kCloseAllTabsModalDialogName,
+     flag_descriptions::kCloseAllTabsModalDialogDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCloseAllTabsModalDialog)},
+#endif  // BUILDFLAG(IS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

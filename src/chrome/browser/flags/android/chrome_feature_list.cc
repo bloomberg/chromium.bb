@@ -170,6 +170,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kBackgroundThreadPool,
     &kBookmarkBottomSheet,
     &kCastDeviceFilter,
+    &kCloseAllTabsModalDialog,
     &kCloseTabSuggestions,
     &kCriticalPersistedTabData,
     &kCCTBackgroundTab,
@@ -253,6 +254,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kProbabilisticCryptidRenderer,
     &kQuickActionSearchWidgetAndroid,
     &kReachedCodeProfiler,
+    &kImproveReaderModePrompt,
     &kReaderModeInCCT,
     &kReengagementNotification,
     &kRelatedSearches,
@@ -441,6 +443,9 @@ const base::Feature kConditionalTabStripAndroid{
 // Used in downstream code.
 const base::Feature kCastDeviceFilter{"CastDeviceFilter",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCloseAllTabsModalDialog{"CloseAllTabsModalDialog",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCloseTabSuggestions{"CloseTabSuggestions",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -655,6 +660,9 @@ const base::Feature kHomepagePromoCard{"HomepagePromoCard",
 
 const base::Feature kImmersiveUiMode{"ImmersiveUiMode",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kImproveReaderModePrompt{"ImproveReaderModePrompt",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kIncognitoReauthenticationForAndroid{
     "IncognitoReauthenticationForAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
