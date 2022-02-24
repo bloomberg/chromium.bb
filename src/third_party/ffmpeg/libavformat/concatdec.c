@@ -191,6 +191,7 @@ static int copy_stream_props(AVStream *st, AVStream *source_st)
     avpriv_set_pts_info(st, 64, source_st->time_base.num, source_st->time_base.den);
 
     av_dict_copy(&st->metadata, source_st->metadata, 0);
+    ff_stream_side_data_copy(st, source_st);
     return 0;
 }
 
@@ -409,7 +410,7 @@ static int concat_read_close(AVFormatContext *avf)
 }
 
 #define MAX_ARGS 3
-#define NEEDS_UNSAFE   (1 << 1)
+#define NEEDS_UNSAFE   (1 << 0)
 #define NEEDS_FILE     (1 << 1)
 #define NEEDS_STREAM   (1 << 2)
 

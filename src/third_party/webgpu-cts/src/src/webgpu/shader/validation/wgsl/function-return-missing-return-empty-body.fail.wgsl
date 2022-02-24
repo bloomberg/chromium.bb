@@ -4,6 +4,6 @@
 fn func() -> i32 {
 }
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
 }

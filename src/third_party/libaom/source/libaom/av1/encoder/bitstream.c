@@ -4097,9 +4097,11 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size,
 
   // The TD is now written outside the frame encode loop
 
-  // write sequence header obu at each key frame, preceded by 4-byte size
-  if (cm->current_frame.frame_type == KEY_FRAME &&
-      cpi->ppi->gf_group.refbuf_state[cpi->gf_frame_index] == REFBUF_RESET) {
+  // write sequence header obu at each key frame or intra_only frame,
+  // preceded by 4-byte size
+  if (cm->current_frame.frame_type == INTRA_ONLY_FRAME ||
+      (cm->current_frame.frame_type == KEY_FRAME &&
+       cpi->ppi->gf_group.refbuf_state[cpi->gf_frame_index] == REFBUF_RESET)) {
     obu_header_size = av1_write_obu_header(
         level_params, &cpi->frame_header_count, OBU_SEQUENCE_HEADER, 0, data);
 

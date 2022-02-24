@@ -319,18 +319,21 @@ JBig2_Result CJBig2_Context::ProcessingParseSegmentData(
         return JBig2_Result::kFailure;
       return ParseGenericRefinementRegion(pSegment);
     case 48: {
-      uint16_t wTemp;
+      uint8_t segment_flags;
+      uint16_t striping_info;
       auto pPageInfo = std::make_unique<JBig2PageInfo>();
       if (m_pStream->readInteger(&pPageInfo->m_dwWidth) != 0 ||
           m_pStream->readInteger(&pPageInfo->m_dwHeight) != 0 ||
           m_pStream->readInteger(&pPageInfo->m_dwResolutionX) != 0 ||
           m_pStream->readInteger(&pPageInfo->m_dwResolutionY) != 0 ||
-          m_pStream->read1Byte(&pPageInfo->m_cFlags) != 0 ||
-          m_pStream->readShortInteger(&wTemp) != 0) {
+          m_pStream->read1Byte(&segment_flags) != 0 ||
+          m_pStream->readShortInteger(&striping_info) != 0) {
         return JBig2_Result::kFailure;
       }
-      pPageInfo->m_bIsStriped = !!(wTemp & 0x8000);
-      pPageInfo->m_wMaxStripeSize = wTemp & 0x7fff;
+
+      pPageInfo->m_bDefaultPixelValue = !!(segment_flags & 4);
+      pPageInfo->m_bIsStriped = !!(striping_info & 0x8000);
+      pPageInfo->m_wMaxStripeSize = striping_info & 0x7fff;
       bool bMaxHeight = (pPageInfo->m_dwHeight == 0xffffffff);
       if (bMaxHeight && !pPageInfo->m_bIsStriped)
         pPageInfo->m_bIsStriped = true;
@@ -346,10 +349,11 @@ JBig2_Result CJBig2_Context::ProcessingParseSegmentData(
         return JBig2_Result::kFailure;
       }
 
-      m_pPage->Fill((pPageInfo->m_cFlags & 4) ? 1 : 0);
+      m_pPage->Fill(pPageInfo->m_bDefaultPixelValue);
       m_PageInfoList.push_back(std::move(pPageInfo));
       m_bInPage = true;
-    } break;
+      break;
+    }
     case 49:
       m_bInPage = false;
       return JBig2_Result::kEndReached;
@@ -382,14 +386,14 @@ JBig2_Result CJBig2_Context::ParseSymbolDict(CJBig2_Segment* pSegment) {
   pSymbolDictDecoder->SDREFAGG = (wFlags >> 1) & 0x0001;
   pSymbolDictDecoder->SDTEMPLATE = (wFlags >> 10) & 0x0003;
   pSymbolDictDecoder->SDRTEMPLATE = !!((wFlags >> 12) & 0x0003);
-  if (pSymbolDictDecoder->SDHUFF == 0) {
+  if (!pSymbolDictDecoder->SDHUFF) {
     const uint32_t dwTemp = (pSymbolDictDecoder->SDTEMPLATE == 0) ? 8 : 2;
     for (uint32_t i = 0; i < dwTemp; ++i) {
       if (m_pStream->read1Byte((uint8_t*)&pSymbolDictDecoder->SDAT[i]) != 0)
         return JBig2_Result::kFailure;
     }
   }
-  if (pSymbolDictDecoder->SDREFAGG == 1 && !pSymbolDictDecoder->SDRTEMPLATE) {
+  if (pSymbolDictDecoder->SDREFAGG && !pSymbolDictDecoder->SDRTEMPLATE) {
     for (int32_t i = 0; i < 4; ++i) {
       if (m_pStream->read1Byte((uint8_t*)&pSymbolDictDecoder->SDRAT[i]) != 0)
         return JBig2_Result::kFailure;
@@ -440,7 +444,7 @@ JBig2_Result CJBig2_Context::ParseSymbolDict(CJBig2_Segment* pSegment) {
 
   uint8_t cSDHUFFDH = (wFlags >> 2) & 0x0003;
   uint8_t cSDHUFFDW = (wFlags >> 4) & 0x0003;
-  if (pSymbolDictDecoder->SDHUFF == 1) {
+  if (pSymbolDictDecoder->SDHUFF) {
     if (cSDHUFFDH == 2 || cSDHUFFDW == 2)
       return JBig2_Result::kFailure;
 
@@ -477,7 +481,7 @@ JBig2_Result CJBig2_Context::ParseSymbolDict(CJBig2_Segment* pSegment) {
         return JBig2_Result::kFailure;
       pSymbolDictDecoder->SDHUFFBMSIZE = pSeg->m_HuffmanTable.get();
     }
-    if (pSymbolDictDecoder->SDREFAGG == 1) {
+    if (pSymbolDictDecoder->SDREFAGG) {
       uint8_t cSDHUFFAGGINST = (wFlags >> 7) & 0x0001;
       if (cSDHUFFAGGINST == 0) {
         pSymbolDictDecoder->SDHUFFAGGINST = GetHuffmanTable(1);
@@ -491,8 +495,8 @@ JBig2_Result CJBig2_Context::ParseSymbolDict(CJBig2_Segment* pSegment) {
     }
   }
 
-  const bool bUseGbContext = (pSymbolDictDecoder->SDHUFF == 0);
-  const bool bUseGrContext = (pSymbolDictDecoder->SDREFAGG == 1);
+  const bool bUseGbContext = !pSymbolDictDecoder->SDHUFF;
+  const bool bUseGrContext = pSymbolDictDecoder->SDREFAGG;
   const size_t gbContextSize =
       GetHuffContextSize(pSymbolDictDecoder->SDTEMPLATE);
   const size_t grContextSize =
@@ -598,10 +602,10 @@ JBig2_Result CJBig2_Context::ParseTextRegion(CJBig2_Segment* pSegment) {
   }
   pTRD->SBRTEMPLATE = !!((wFlags >> 15) & 0x0001);
 
-  if (pTRD->SBHUFF == 1 && m_pStream->readShortInteger(&wFlags) != 0) {
+  if (pTRD->SBHUFF && m_pStream->readShortInteger(&wFlags) != 0) {
     return JBig2_Result::kFailure;
   }
-  if (pTRD->SBREFINE == 1 && !pTRD->SBRTEMPLATE) {
+  if (pTRD->SBREFINE && !pTRD->SBRTEMPLATE) {
     for (int32_t i = 0; i < 4; ++i) {
       if (m_pStream->read1Byte((uint8_t*)&pTRD->SBRAT[i]) != 0)
         return JBig2_Result::kFailure;
@@ -656,7 +660,7 @@ JBig2_Result CJBig2_Context::ParseTextRegion(CJBig2_Segment* pSegment) {
     pTRD->SBSYMS = nullptr;
   }
 
-  if (pTRD->SBHUFF == 1) {
+  if (pTRD->SBHUFF) {
     std::vector<JBig2HuffmanCode> SBSYMCODES =
         DecodeSymbolIDHuffmanTable(pTRD->SBNUMSYMS);
     if (SBSYMCODES.empty())
@@ -672,7 +676,7 @@ JBig2_Result CJBig2_Context::ParseTextRegion(CJBig2_Segment* pSegment) {
     pTRD->SBSYMCODELEN = (uint8_t)dwTemp;
   }
 
-  if (pTRD->SBHUFF == 1) {
+  if (pTRD->SBHUFF) {
     uint8_t cSBHUFFFS = wFlags & 0x0003;
     uint8_t cSBHUFFDS = (wFlags >> 2) & 0x0003;
     uint8_t cSBHUFFDT = (wFlags >> 4) & 0x0003;
@@ -778,33 +782,30 @@ JBig2_Result CJBig2_Context::ParseTextRegion(CJBig2_Segment* pSegment) {
     }
   }
   std::unique_ptr<JBig2ArithCtx, FxFreeDeleter> grContext;
-  if (pTRD->SBREFINE == 1) {
+  if (pTRD->SBREFINE) {
     const size_t size = GetRefAggContextSize(pTRD->SBRTEMPLATE);
     grContext.reset(FX_Alloc(JBig2ArithCtx, size));
   }
-  if (pTRD->SBHUFF == 0) {
+  pSegment->m_nResultType = JBIG2_IMAGE_POINTER;
+  if (pTRD->SBHUFF) {
+    pSegment->m_Image = pTRD->DecodeHuffman(m_pStream.get(), grContext.get());
+    if (!pSegment->m_Image)
+      return JBig2_Result::kFailure;
+    m_pStream->alignByte();
+  } else {
     auto pArithDecoder = std::make_unique<CJBig2_ArithDecoder>(m_pStream.get());
-    pSegment->m_nResultType = JBIG2_IMAGE_POINTER;
     pSegment->m_Image =
         pTRD->DecodeArith(pArithDecoder.get(), grContext.get(), nullptr);
     if (!pSegment->m_Image)
       return JBig2_Result::kFailure;
     m_pStream->alignByte();
     m_pStream->offset(2);
-  } else {
-    pSegment->m_nResultType = JBIG2_IMAGE_POINTER;
-    pSegment->m_Image = pTRD->DecodeHuffman(m_pStream.get(), grContext.get());
-    if (!pSegment->m_Image)
-      return JBig2_Result::kFailure;
-    m_pStream->alignByte();
   }
   if (pSegment->m_cFlags.s.type != 4) {
     if (!m_bBufSpecified) {
       const auto& pPageInfo = m_PageInfoList.back();
-      if ((pPageInfo->m_bIsStriped == 1) &&
-          (ri.y + ri.height > m_pPage->height())) {
-        m_pPage->Expand(ri.y + ri.height, (pPageInfo->m_cFlags & 4) ? 1 : 0);
-      }
+      if (pPageInfo->m_bIsStriped && ri.y + ri.height > m_pPage->height())
+        m_pPage->Expand(ri.y + ri.height, pPageInfo->m_bDefaultPixelValue);
     }
     m_pPage->ComposeFrom(ri.x, ri.y, pSegment->m_Image.get(),
                          (JBig2ComposeOp)(ri.flags & 0x03));
@@ -829,7 +830,12 @@ JBig2_Result CJBig2_Context::ParsePatternDict(CJBig2_Segment* pSegment,
   pPDD->HDMMR = cFlags & 0x01;
   pPDD->HDTEMPLATE = (cFlags >> 1) & 0x03;
   pSegment->m_nResultType = JBIG2_PATTERN_DICT_POINTER;
-  if (pPDD->HDMMR == 0) {
+  if (pPDD->HDMMR) {
+    pSegment->m_PatternDict = pPDD->DecodeMMR(m_pStream.get());
+    if (!pSegment->m_PatternDict)
+      return JBig2_Result::kFailure;
+    m_pStream->alignByte();
+  } else {
     const size_t size = GetHuffContextSize(pPDD->HDTEMPLATE);
     std::unique_ptr<JBig2ArithCtx, FxFreeDeleter> gbContext(
         FX_Alloc(JBig2ArithCtx, size));
@@ -841,11 +847,6 @@ JBig2_Result CJBig2_Context::ParsePatternDict(CJBig2_Segment* pSegment,
 
     m_pStream->alignByte();
     m_pStream->offset(2);
-  } else {
-    pSegment->m_PatternDict = pPDD->DecodeMMR(m_pStream.get());
-    if (!pSegment->m_PatternDict)
-      return JBig2_Result::kFailure;
-    m_pStream->alignByte();
   }
   return JBig2_Result::kSuccess;
 }
@@ -896,7 +897,12 @@ JBig2_Result CJBig2_Context::ParseHalftoneRegion(CJBig2_Segment* pSegment,
   pHRD->HPW = pPatternDict->HDPATS[0]->width();
   pHRD->HPH = pPatternDict->HDPATS[0]->height();
   pSegment->m_nResultType = JBIG2_IMAGE_POINTER;
-  if (pHRD->HMMR == 0) {
+  if (pHRD->HMMR) {
+    pSegment->m_Image = pHRD->DecodeMMR(m_pStream.get());
+    if (!pSegment->m_Image)
+      return JBig2_Result::kFailure;
+    m_pStream->alignByte();
+  } else {
     const size_t size = GetHuffContextSize(pHRD->HTEMPLATE);
     std::unique_ptr<JBig2ArithCtx, FxFreeDeleter> gbContext(
         FX_Alloc(JBig2ArithCtx, size));
@@ -908,19 +914,12 @@ JBig2_Result CJBig2_Context::ParseHalftoneRegion(CJBig2_Segment* pSegment,
 
     m_pStream->alignByte();
     m_pStream->offset(2);
-  } else {
-    pSegment->m_Image = pHRD->DecodeMMR(m_pStream.get());
-    if (!pSegment->m_Image)
-      return JBig2_Result::kFailure;
-    m_pStream->alignByte();
   }
   if (pSegment->m_cFlags.s.type != 20) {
     if (!m_bBufSpecified) {
       const auto& pPageInfo = m_PageInfoList.back();
-      if (pPageInfo->m_bIsStriped == 1 &&
-          ri.y + ri.height > m_pPage->height()) {
-        m_pPage->Expand(ri.y + ri.height, (pPageInfo->m_cFlags & 4) ? 1 : 0);
-      }
+      if (pPageInfo->m_bIsStriped && ri.y + ri.height > m_pPage->height())
+        m_pPage->Expand(ri.y + ri.height, pPageInfo->m_bDefaultPixelValue);
     }
     m_pPage->ComposeFrom(ri.x, ri.y, pSegment->m_Image.get(),
                          (JBig2ComposeOp)(ri.flags & 0x03));
@@ -945,7 +944,7 @@ JBig2_Result CJBig2_Context::ParseGenericRegion(CJBig2_Segment* pSegment,
     pGRD->MMR = cFlags & 0x01;
     pGRD->GBTEMPLATE = (cFlags >> 1) & 0x03;
     pGRD->TPGDON = (cFlags >> 3) & 0x01;
-    if (pGRD->MMR == 0) {
+    if (!pGRD->MMR) {
       if (pGRD->GBTEMPLATE == 0) {
         for (int32_t i = 0; i < 8; ++i) {
           if (m_pStream->read1Byte((uint8_t*)&pGRD->GBAT[i]) != 0)
@@ -958,11 +957,18 @@ JBig2_Result CJBig2_Context::ParseGenericRegion(CJBig2_Segment* pSegment,
         }
       }
     }
-    pGRD->USESKIP = 0;
+    pGRD->USESKIP = false;
     m_pGRD = std::move(pGRD);
   }
   pSegment->m_nResultType = JBIG2_IMAGE_POINTER;
-  if (m_pGRD->MMR == 0) {
+  if (m_pGRD->MMR) {
+    m_pGRD->StartDecodeMMR(&pSegment->m_Image, m_pStream.get());
+    if (!pSegment->m_Image) {
+      m_pGRD.reset();
+      return JBig2_Result::kFailure;
+    }
+    m_pStream->alignByte();
+  } else {
     if (m_gbContext.empty())
       m_gbContext.resize(GetHuffContextSize(m_pGRD->GBTEMPLATE));
 
@@ -983,10 +989,10 @@ JBig2_Result CJBig2_Context::ParseGenericRegion(CJBig2_Segment* pSegment,
         if (pSegment->m_cFlags.s.type != 36) {
           if (!m_bBufSpecified) {
             const auto& pPageInfo = m_PageInfoList.back();
-            if ((pPageInfo->m_bIsStriped == 1) &&
-                (m_ri.y + m_ri.height > m_pPage->height())) {
+            if (pPageInfo->m_bIsStriped &&
+                m_ri.y + m_ri.height > m_pPage->height()) {
               m_pPage->Expand(m_ri.y + m_ri.height,
-                              (pPageInfo->m_cFlags & 4) ? 1 : 0);
+                              pPageInfo->m_bDefaultPixelValue);
             }
           }
           const FX_RECT& rect = m_pGRD->GetReplaceRect();
@@ -1006,22 +1012,12 @@ JBig2_Result CJBig2_Context::ParseGenericRegion(CJBig2_Segment* pSegment,
     }
     m_pStream->alignByte();
     m_pStream->offset(2);
-  } else {
-    m_pGRD->StartDecodeMMR(&pSegment->m_Image, m_pStream.get());
-    if (!pSegment->m_Image) {
-      m_pGRD.reset();
-      return JBig2_Result::kFailure;
-    }
-    m_pStream->alignByte();
   }
   if (pSegment->m_cFlags.s.type != 36) {
     if (!m_bBufSpecified) {
       JBig2PageInfo* pPageInfo = m_PageInfoList.back().get();
-      if ((pPageInfo->m_bIsStriped == 1) &&
-          (m_ri.y + m_ri.height > m_pPage->height())) {
-        m_pPage->Expand(m_ri.y + m_ri.height,
-                        (pPageInfo->m_cFlags & 4) ? 1 : 0);
-      }
+      if (pPageInfo->m_bIsStriped && m_ri.y + m_ri.height > m_pPage->height())
+        m_pPage->Expand(m_ri.y + m_ri.height, pPageInfo->m_bDefaultPixelValue);
     }
     const FX_RECT& rect = m_pGRD->GetReplaceRect();
     m_pPage->ComposeFromWithRect(m_ri.x + rect.left, m_ri.y + rect.top,
@@ -1091,10 +1087,8 @@ JBig2_Result CJBig2_Context::ParseGenericRefinementRegion(
   if (pSegment->m_cFlags.s.type != 40) {
     if (!m_bBufSpecified) {
       JBig2PageInfo* pPageInfo = m_PageInfoList.back().get();
-      if ((pPageInfo->m_bIsStriped == 1) &&
-          (ri.y + ri.height > m_pPage->height())) {
-        m_pPage->Expand(ri.y + ri.height, (pPageInfo->m_cFlags & 4) ? 1 : 0);
-      }
+      if (pPageInfo->m_bIsStriped && ri.y + ri.height > m_pPage->height())
+        m_pPage->Expand(ri.y + ri.height, pPageInfo->m_bDefaultPixelValue);
     }
     m_pPage->ComposeFrom(ri.x, ri.y, pSegment->m_Image.get(),
                          (JBig2ComposeOp)(ri.flags & 0x03));

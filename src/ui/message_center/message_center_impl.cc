@@ -5,6 +5,7 @@
 #include "ui/message_center/message_center_impl.h"
 
 #include <algorithm>
+#include <iterator>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -139,7 +140,7 @@ size_t MessageCenterImpl::NotificationCount() const {
 bool MessageCenterImpl::HasPopupNotifications() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return !IsMessageCenterVisible() &&
-      notification_list_->HasPopupNotifications(blockers_);
+         notification_list_->HasPopupNotifications(blockers_);
 }
 
 bool MessageCenterImpl::IsQuietMode() const {
@@ -155,17 +156,35 @@ Notification* MessageCenterImpl::FindNotificationById(const std::string& id) {
   return notification_list_->GetNotificationById(id);
 }
 
-Notification* MessageCenterImpl::FindParentNotificationForOriginUrl(
-    const GURL& origin_url) {
-  if (origin_url.is_empty())
+Notification* MessageCenterImpl::FindParentNotification(
+    Notification* notification) {
+  // For a notification to have a parent notification, they must have identical
+  // origin urls and profile_ids. To make sure that the notifications come from
+  // the same website for the same user. If either fields are empty there can
+  // not be a parent notification.
+  if (notification->origin_url().is_empty() ||
+      notification->notifier_id().profile_id.empty() ||
+      notification->notifier_id().type != NotifierType::WEB_PAGE) {
     return nullptr;
+  }
 
   NotificationList::Notifications notifications =
-      notification_list_->GetNotificationsByOriginUrl(origin_url);
+      notification_list_->GetNotificationsByOriginUrl(
+          notification->origin_url());
 
-  if (notifications.size())
-    return *std::prev(notifications.end());
-  return nullptr;
+  std::string account_id = notification->notifier_id().profile_id;
+  auto account_match = [&account_id](Notification* notification) {
+    return account_id == notification->notifier_id().profile_id;
+  };
+
+  // `notifications` keeps notifications ordered with the most recent one in the
+  // front. We do a lookup starting with the oldest notification to find the
+  // parent notification.
+  auto parent_notification =
+      std::find_if(notifications.rbegin(), notifications.rend(), account_match);
+
+  return parent_notification == notifications.rend() ? nullptr
+                                                     : *parent_notification;
 }
 
 Notification* MessageCenterImpl::FindPopupNotificationById(
@@ -216,6 +235,14 @@ MessageCenterImpl::GetPopupNotifications() {
   return notification_list_->GetPopupNotifications(blockers_, nullptr);
 }
 
+NotificationList::PopupNotifications
+MessageCenterImpl::GetPopupNotificationsWithoutBlocker(
+    const NotificationBlocker& blocker) const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return notification_list_->GetPopupNotificationsWithoutBlocker(blockers_,
+                                                                 blocker);
+}
+
 //------------------------------------------------------------------------------
 // Client code interface.
 void MessageCenterImpl::AddNotification(
@@ -229,6 +256,12 @@ void MessageCenterImpl::AddNotification(
   for (NotificationBlocker* blocker : blockers_)
     blocker->CheckState();
 
+  auto* parent = FindParentNotification(notification.get());
+  if (notification->allow_group() && parent && !notification->group_parent()) {
+    parent->SetGroupParent();
+    notification->SetGroupChild();
+  }
+
   // Sometimes the notification can be added with the same id and the
   // |notification_list| will replace the notification instead of adding new.
   // This is essentially an update rather than addition.
@@ -236,12 +269,6 @@ void MessageCenterImpl::AddNotification(
   if (already_exists) {
     UpdateNotification(id, std::move(notification));
     return;
-  }
-
-  auto* parent = FindParentNotificationForOriginUrl(notification->origin_url());
-  if (notification->allow_group() && parent) {
-    parent->SetGroupParent();
-    notification->SetGroupChild();
   }
 
   notification_list_->AddNotification(std::move(notification));
@@ -487,9 +514,8 @@ void MessageCenterImpl::ResetSinglePopup(const std::string& id) {
   }
 }
 
-void MessageCenterImpl::DisplayedNotification(
-    const std::string& id,
-    const DisplaySource source) {
+void MessageCenterImpl::DisplayedNotification(const std::string& id,
+                                              const DisplaySource source) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // This method may be called from the handlers, so we shouldn't manipulate
@@ -555,6 +581,12 @@ const std::u16string& MessageCenterImpl::GetSystemNotificationAppName() const {
 void MessageCenterImpl::SetSystemNotificationAppName(
     const std::u16string& name) {
   system_notification_app_name_ = name;
+}
+
+void MessageCenterImpl::OnMessageViewHovered(
+    const std::string& notification_id) {
+  for (MessageCenterObserver& observer : observer_list_)
+    observer.OnMessageViewHovered(notification_id);
 }
 
 void MessageCenterImpl::DisableTimersForTest() {

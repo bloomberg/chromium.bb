@@ -48,8 +48,6 @@ def compile_swiftshader(api, extra_tokens, swiftshader_root, cc, cxx, out):
   san = None
   if 'MSAN' in extra_tokens:
     san = ('msan','memory')
-  elif 'TSAN' in extra_tokens:
-    san = ('tsan','thread')
 
   if san:
     short,full = san
@@ -129,9 +127,9 @@ def compile_fn(api, checkout_root, out_dir):
       api.step('select xcode', [
           'sudo', 'xcode-select', '-switch', xcode_app_path])
       if 'iOS' in extra_tokens:
-        # Need to verify compilation for Metal on 9.0 and above
-        env['IPHONEOS_DEPLOYMENT_TARGET'] = '9.0'
-        args['ios_min_target'] = '"9.0"'
+        # Our current min-spec for Skia is iOS 11
+        env['IPHONEOS_DEPLOYMENT_TARGET'] = '11.0'
+        args['ios_min_target'] = '"11.0"'
       else:
         # We have some bots on 10.13.
         env['MACOSX_DEPLOYMENT_TARGET'] = '10.13'
@@ -282,7 +280,12 @@ def compile_fn(api, checkout_root, out_dir):
   if 'Vulkan' in extra_tokens and not 'Android' in extra_tokens:
     args['skia_use_vulkan'] = 'true'
     args['skia_enable_vulkan_debug_layers'] = 'true'
-    args['skia_use_gl'] = 'false'
+    # When running TSAN with Vulkan on NVidia, we experienced some timeouts. We found
+    # a workaround (in GrContextFactory) that requires GL (in addition to Vulkan).
+    if 'TSAN' in extra_tokens:
+      args['skia_use_gl'] = 'true'
+    else:
+      args['skia_use_gl'] = 'false'
   if 'Direct3D' in extra_tokens:
     args['skia_use_direct3d'] = 'true'
     args['skia_use_gl'] = 'false'

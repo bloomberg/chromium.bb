@@ -57,8 +57,8 @@ class Gitiles(recipe_api.RecipeApi):
       args.extend([
           '--accept-statuses',
           ','.join([str(s) for s in accept_statuses])])
-    return self.m.python(
-        step_name, self.resource('gerrit_client.py'), args, **kwargs)
+    cmd = ['vpython3', '-u', self.resource('gerrit_client.py')] + args
+    return self.m.step(step_name, cmd, **kwargs)
 
   def refs(self, url, step_name='refs', attempts=None):
     """Returns a list of refs in the remote repository."""

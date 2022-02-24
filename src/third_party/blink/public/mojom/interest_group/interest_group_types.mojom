@@ -47,26 +47,13 @@ struct InterestGroup {
   array<InterestGroupAd>? ad_components;
 };
 
-// Represents all buyers, the "*" wildcard in JavaScript.
-// For use only with InterestGroupBuyers.
-struct AllBuyers {
-};
-
-// For use only with AuctionAdConfig.
-//
-// All origins must use https.
-union InterestGroupBuyers {
-  array<url.mojom.Origin> buyers;
-  AllBuyers all_buyers;
-};
-
 // Subset of AuctionAdConfig that is not shared by all auctions that are
 // using the same SellerWorklet object (so it's "not shared" between
 // AuctionConfigs that share the same SellerWorklet). Other AuctionAdConfig
 // parameters all must be the same for two auctions to share a Sellerworklet.
 struct AuctionAdConfigNonSharedParams {
   // Owners of interest groups allowed to participate in the auction.
-  blink.mojom.InterestGroupBuyers? interest_group_buyers;
+  array<url.mojom.Origin>? interest_group_buyers;
 
   // Opaque JSON data, passed as object to auction worklet.
   string? auction_signals;
@@ -74,11 +61,18 @@ struct AuctionAdConfigNonSharedParams {
   // Opaque JSON data, passed as object to auction worklet.
   string? seller_signals;
 
-  // Keys of `per_buyer_signals` must be a subset of origins specified by
-  // `interest_group_buyers`. Value is opaque JSON data, passed as object to
-  // auction worklet.
-  map<url.mojom.Origin, string>?
-      per_buyer_signals;
+  // Keys of `per_buyer_signals` must be valid HTTPS origins. Value is opaque
+  // JSON data, passed as object to auction worklet.
+  map<url.mojom.Origin, string>? per_buyer_signals;
+
+  // Keys of `per_buyer_timeouts` must be valid HTTPS origins, or '*'. Values
+  // restrict the runtime (in milliseconds) of particular buyer's generateBid()
+  // scripts.
+  map<url.mojom.Origin, mojo_base.mojom.TimeDelta>? per_buyer_timeouts;
+
+  // The value restricts generateBid() script's runtime (in milliseconds) of all
+  // buyers with unspecified timeouts, if not Null.
+  mojo_base.mojom.TimeDelta? all_buyers_timeout;
 };
 
 // Configuration to pass to RunAdAuction().
@@ -106,4 +100,8 @@ struct AuctionAdConfig {
 
   // Other parameters are grouped in a struct that is passed to SellerWorklets.
   AuctionAdConfigNonSharedParams auction_ad_config_non_shared_params;
+
+  // Nested auctions whose results will also be fed to `seller`. Only the top
+  // level auction config can have component auctions.
+  array<AuctionAdConfig> component_auctions;
 };

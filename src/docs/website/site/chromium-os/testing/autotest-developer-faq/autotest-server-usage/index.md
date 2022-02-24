@@ -11,14 +11,14 @@ title: Autotest Server Usage Guide
 ---
 
 Note these steps are to be ran after you have setup Autotest:
-<https://sites.google.com/a/chromium.org/dev/chromium-os/testing/autotest-developer-faq/setup-autotest-server>
+<https://www.chromium.org/chromium-os/testing/autotest-developer-faq/setup-autotest-server>
 and have the local Autotest Web Frontend running. To verify simply navigate to
 <http://localhost>
 
 ## Add Hosts
 
 Add hosts. *Note you need to ensure that you have SSH Access Setup Properly:
-<https://sites.google.com/a/chromium.org/dev/chromium-os/testing/autotest-developer-faq/ssh-test-keys-setup>*
+<https://www.chromium.org/chromium-os/testing/autotest-developer-faq/ssh-test-keys-setup>*
 
 ```none
 /usr/local/autotest/cli/atest host create hostname

@@ -1047,6 +1047,9 @@ EXPORTS
 
     ; GL_OES_point_sprite
 
+    ; GL_OES_primitive_bounding_box
+    glPrimitiveBoundingBoxOES
+
     ; GL_OES_query_matrix
     glQueryMatrixxOES
 
@@ -1280,6 +1283,9 @@ EXPORTS
     EGL_LockSurfaceKHR
     EGL_QuerySurface64KHR
     EGL_UnlockSurfaceKHR
+
+    ; EGL_KHR_partial_update
+    EGL_SetDamageRegionKHR
 
     ; EGL_KHR_reusable_sync
     EGL_SignalSyncKHR

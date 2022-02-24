@@ -108,56 +108,10 @@ TEST_F(LocalFrameTest, IsLazyLoadingImageAllowedWithSettingDisabled) {
 
 TEST_F(LocalFrameTest, IsLazyLoadingImageAllowedWithAutomaticDisabled) {
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
-  ScopedAutomaticLazyImageLoadingForTest
-      scoped_automatic_lazy_image_loading_for_test(false);
   auto page_holder = std::make_unique<DummyPageHolder>(
       gfx::Size(800, 600), nullptr, nullptr,
       base::BindOnce(&EnableLazyLoadInSettings));
   EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kEnabledExplicit,
-            page_holder->GetFrame().GetLazyLoadImageSetting());
-}
-
-TEST_F(LocalFrameTest, IsLazyLoadingImageAllowedWhenNotRestricted) {
-  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
-  ScopedAutomaticLazyImageLoadingForTest
-      scoped_automatic_lazy_image_loading_for_test(true);
-  ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
-      scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(
-          false);
-  auto page_holder = std::make_unique<DummyPageHolder>(
-      gfx::Size(800, 600), nullptr, nullptr,
-      base::BindOnce(&EnableLazyLoadInSettings));
-  EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kEnabledAutomatic,
-            page_holder->GetFrame().GetLazyLoadImageSetting());
-}
-
-TEST_F(LocalFrameTest,
-       IsLazyLoadingImageAllowedWhenRestrictedWithDataSaverDisabled) {
-  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
-  ScopedAutomaticLazyImageLoadingForTest
-      scoped_automatic_lazy_image_loading_for_test(true);
-  ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
-      scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(true);
-  GetNetworkStateNotifier().SetSaveDataEnabled(false);
-  auto page_holder = std::make_unique<DummyPageHolder>(
-      gfx::Size(800, 600), nullptr, nullptr,
-      base::BindOnce(&EnableLazyLoadInSettings));
-  EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kEnabledExplicit,
-            page_holder->GetFrame().GetLazyLoadImageSetting());
-}
-
-TEST_F(LocalFrameTest,
-       IsLazyLoadingImageAllowedWhenRestrictedWithDataSaverEnabled) {
-  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
-  ScopedAutomaticLazyImageLoadingForTest
-      scoped_automatic_lazy_image_loading_for_test(true);
-  ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
-      scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(true);
-  GetNetworkStateNotifier().SetSaveDataEnabled(true);
-  auto page_holder = std::make_unique<DummyPageHolder>(
-      gfx::Size(800, 600), nullptr, nullptr,
-      base::BindOnce(&EnableLazyLoadInSettings));
-  EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kEnabledAutomatic,
             page_holder->GetFrame().GetLazyLoadImageSetting());
 }
 
@@ -267,5 +221,12 @@ TEST_F(LocalFrameTest, CharacterIndexAtPointWithPinchZoom) {
   EXPECT_EQ(waiter.index(), 5ul);
 }
 #endif
-
+TEST_F(LocalFrameTest, NavigationCounter) {
+  auto page_holder = std::make_unique<DummyPageHolder>();
+  EXPECT_EQ(0u, page_holder->GetFrame().GetNavigationCounter());
+  page_holder->GetFrame().IncrementNavigationCounter();
+  EXPECT_EQ(1u, page_holder->GetFrame().GetNavigationCounter());
+  page_holder->GetFrame().IncrementNavigationCounter();
+  EXPECT_EQ(2u, page_holder->GetFrame().GetNavigationCounter());
+}
 }  // namespace blink

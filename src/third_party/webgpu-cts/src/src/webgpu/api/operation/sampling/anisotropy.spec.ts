@@ -59,12 +59,12 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
         module: this.device.createShaderModule({
           code: `
             struct Outputs {
-              [[builtin(position)]] Position : vec4<f32>;
-              [[location(0)]] fragUV : vec2<f32>;
+              @builtin(position) Position : vec4<f32>;
+              @location(0) fragUV : vec2<f32>;
             };
 
-            [[stage(vertex)]] fn main(
-              [[builtin(vertex_index)]] VertexIndex : u32) -> Outputs {
+            @stage(vertex) fn main(
+              @builtin(vertex_index) VertexIndex : u32) -> Outputs {
               var position : array<vec3<f32>, 6> = array<vec3<f32>, 6>(
                 vec3<f32>(-0.5, 0.5, -0.5),
                 vec3<f32>(0.5, 0.5, -0.5),
@@ -99,13 +99,13 @@ class SamplerAnisotropicFilteringSlantedPlaneTest extends GPUTest {
       fragment: {
         module: this.device.createShaderModule({
           code: `
-            [[group(0), binding(0)]] var sampler0 : sampler;
-            [[group(0), binding(1)]] var texture0 : texture_2d<f32>;
+            @group(0) @binding(0) var sampler0 : sampler;
+            @group(0) @binding(1) var texture0 : texture_2d<f32>;
 
-            [[stage(fragment)]] fn main(
-              [[builtin(position)]] FragCoord : vec4<f32>,
-              [[location(0)]] fragUV: vec2<f32>)
-              -> [[location(0)]] vec4<f32> {
+            @stage(fragment) fn main(
+              @builtin(position) FragCoord : vec4<f32>,
+              @location(0) fragUV: vec2<f32>)
+              -> @location(0) vec4<f32> {
                 return textureSample(texture0, sampler0, fragUV);
             }
             `,

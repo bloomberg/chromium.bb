@@ -189,8 +189,11 @@ var OSSettingsOsBluetoothDevicesSubpageV3Test =
   /** @override */
   get featureList() {
     return {
-      enabled:
-          super.featureList.enabled.concat(['ash::features::kBluetoothRevamp'])
+      enabled: super.featureList.enabled.concat([
+        'ash::features::kBluetoothRevamp',
+        'ash::features::kFastPair',
+        'ash::features::kFastPairSoftwareScanning',
+      ])
     };
   }
 };
@@ -242,6 +245,29 @@ var OSSettingsOsBluetoothDeviceDetailSubpageV3Test =
 TEST_F('OSSettingsOsBluetoothDeviceDetailSubpageV3Test', 'AllJsTests', () => {
   mocha.run();
 });
+
+// TODO(crbug.com/1237598) Move this test back into the list of tests below once
+// Bluetooth revamp is launched.
+var OSSettingsOsBluetoothTrueWirelessImagesV3Test =
+    class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_bluetooth_true_wireless_images_tests.m.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled:
+          super.featureList.enabled.concat(['ash::features::kBluetoothRevamp'])
+    };
+  }
+};
+
+TEST_F('OSSettingsOsBluetoothTrueWirelessImagesV3Test', 'AllJsTests', () => {
+  mocha.run();
+});
+
 
 var OSSettingsSearchEngineV3Test = class extends OSSettingsV3BrowserTest {
   /** @override */
@@ -321,7 +347,7 @@ TEST_F('OSSettingsSearchEngineV3Test', 'AllJsTests', () => {
  ['LocalizedLink', 'localized_link_test.m.js'],
  ['LockScreenPage', 'lock_screen_tests.m.js'],
  ['ManageAccessibilityPage', 'manage_accessibility_page_tests.m.js'],
- ['MultideviceCameraRollItem', 'multidevice_camera_roll_item_tests.m.js'],
+ ['MultideviceCombinedSetupItem', 'multidevice_combined_setup_item_tests.m.js'],
  // TODO(crbug.com/1227116): Re-enable once flakiness is fixed.
  //  ['MultideviceFeatureItem', 'multidevice_feature_item_tests.m.js'],
  ['MultideviceFeatureToggle', 'multidevice_feature_toggle_tests.m.js'],
@@ -386,6 +412,7 @@ TEST_F('OSSettingsSearchEngineV3Test', 'AllJsTests', () => {
  ['ResetPage', 'os_reset_page_test.m.js'],
  ['SettingsSchedulerSlider', 'settings_scheduler_slider_test.m.js'],
  ['SearchSubpage', 'search_subpage_test.m.js'],
+ ['SettingsTrafficCounters', 'settings_traffic_counters_test.m.js'],
  ['SmartInputsPage', 'smart_inputs_page_test.m.js'],
  ['SmbPage', 'smb_shares_page_tests.m.js'],
  ['SmartPrivacySubpage', 'smart_privacy_subpage_tests.m.js'],

@@ -53,7 +53,6 @@
   'temporal/calendar-days-in-week': [FAIL],
   'temporal/calendar-days-in-year': [FAIL],
   'temporal/calendar-fields': [FAIL],
-  'temporal/calendar-from': [FAIL],
   'temporal/calendar-in-leap-year': [FAIL],
   'temporal/calendar-merge-fields': [FAIL],
   'temporal/calendar-month': [FAIL],
@@ -85,44 +84,10 @@
   'temporal/plain-date-compare': [FAIL],
   'temporal/plain-date-equals': [FAIL],
   'temporal/plain-date-from': [FAIL],
-  'temporal/plain-date-get-day': [FAIL],
-  'temporal/plain-date-get-dayOfWeek': [FAIL],
-  'temporal/plain-date-get-dayOfYear': [FAIL],
-  'temporal/plain-date-get-daysInMonth': [FAIL],
-  'temporal/plain-date-get-daysInWeek': [FAIL],
-  'temporal/plain-date-get-daysInYear': [FAIL],
-  'temporal/plain-date-get-era': [FAIL],
-  'temporal/plain-date-get-eraYear': [FAIL],
-  'temporal/plain-date-get-inLeapYear': [FAIL],
-  'temporal/plain-date-get-month': [FAIL],
-  'temporal/plain-date-get-monthCode': [FAIL],
-  'temporal/plain-date-get-monthsInYear': [FAIL],
-  'temporal/plain-date-get-weekOfYear': [FAIL],
-  'temporal/plain-date-get-year': [FAIL],
   'temporal/plain-date-time-add': [FAIL],
   'temporal/plain-date-time-compare': [FAIL],
   'temporal/plain-date-time-equals': [FAIL],
   'temporal/plain-date-time-from': [FAIL],
-  'temporal/plain-date-time-get-day': [FAIL],
-  'temporal/plain-date-time-get-dayOfWeek': [FAIL],
-  'temporal/plain-date-time-get-dayOfYear': [FAIL],
-  'temporal/plain-date-time-get-daysInMonth': [FAIL],
-  'temporal/plain-date-time-get-daysInWeek': [FAIL],
-  'temporal/plain-date-time-get-daysInYear': [FAIL],
-  'temporal/plain-date-time-get-era': [FAIL],
-  'temporal/plain-date-time-get-eraYear': [FAIL],
-  'temporal/plain-date-time-get-hour': [FAIL],
-  'temporal/plain-date-time-get-inLeapYear': [FAIL],
-  'temporal/plain-date-time-get-microsecond': [FAIL],
-  'temporal/plain-date-time-get-millisecond': [FAIL],
-  'temporal/plain-date-time-get-minute': [FAIL],
-  'temporal/plain-date-time-get-month': [FAIL],
-  'temporal/plain-date-time-get-monthCode': [FAIL],
-  'temporal/plain-date-time-get-monthsInYear': [FAIL],
-  'temporal/plain-date-time-get-nanosecond': [FAIL],
-  'temporal/plain-date-time-get-second': [FAIL],
-  'temporal/plain-date-time-get-weekOfYear': [FAIL],
-  'temporal/plain-date-time-get-year': [FAIL],
   'temporal/plain-date-time-subtract': [FAIL],
   'temporal/plain-date-time-to-json': [FAIL],
   'temporal/plain-date-time-to-plain-date': [FAIL],
@@ -131,7 +96,6 @@
   'temporal/plain-date-time-to-plain-year-month': [FAIL],
   'temporal/plain-date-time-valueOf': [FAIL],
   'temporal/plain-date-time-with': [FAIL],
-  'temporal/plain-date-time-with-calendar': [FAIL],
   'temporal/plain-date-time-with-plain-date': [FAIL],
   'temporal/plain-date-time-with-plain-time': [FAIL],
   'temporal/plain-date-to-json': [FAIL],
@@ -140,7 +104,6 @@
   'temporal/plain-date-to-plain-year-month': [FAIL],
   'temporal/plain-date-valueOf': [FAIL],
   'temporal/plain-date-with': [FAIL],
-  'temporal/plain-date-with-calendar': [FAIL],
 
   ##############################################################################
   # Open bugs.
@@ -182,6 +145,7 @@
 
   # crbug.com/v8/12472 Stack overflow during regexp node generation.
   'regress/regress-crbug-595657': [SKIP],
+  'regress/regress-475705': [SKIP],
 
   ##############################################################################
   # Tests where variants make no sense.
@@ -298,7 +262,6 @@
   'regress/regress-500980': [PASS, HEAVY],
   'regress/regress-599414-array-concat-fast-path': [PASS, HEAVY],
   'regress/regress-678917': [PASS, HEAVY],
-  'regress/regress-752764': [PASS, HEAVY],
   'regress/regress-779407': [PASS, HEAVY],
   'regress/regress-852258': [PASS, HEAVY],
   'regress/regress-862433': [PASS, HEAVY],
@@ -343,8 +306,6 @@
 
   # worker creation/shutdown is very slow in debug mode
   'd8/d8-worker-shutdown*': [SLOW],
-  # Allocates a huge string and then flattens it.
-  'regress/regress-752764': [SLOW],
 
   # BUG(v8:11745) The test allocates too much memory, making it slow on debug.
   'compiler/regress-crbug-11564': [SKIP],
@@ -403,8 +364,6 @@
   'regress/regress-1122': [SKIP],
   'regress/regress-331444': [SKIP],
   'regress/regress-353551': [SKIP],
-  'regress/regress-1138075': [SKIP],
-  'regress/regress-1138611': [SKIP],
   'regress/regress-crbug-119926': [SKIP],
   'regress/short-circuit': [SKIP],
   'stack-traces-overflow': [SKIP],
@@ -461,6 +420,9 @@
 
   # BUG(v8:11240)
   'regress/regress-v8-9267-1': [SKIP],
+
+  # BUG(v8:12561)
+  'spread-large-map': [SKIP],
 }],  # 'gc_stress'
 
 ##############################################################################
@@ -475,6 +437,8 @@
 
   # Tests tracing when generating wasm in TurboFan.
   'tools/compiler-trace-flags-wasm': [SKIP],
+
+  'compiler/fast-api-calls-wasm': [SKIP],
 }],  # not has_webassembly or variant == jitless
 
 ##############################################################################
@@ -545,6 +509,10 @@
 
   # Temporal intl tests won't work in no_i18n
   'temporal/function-exist': [FAIL],
+  'temporal/plain-date-get-era': [FAIL],
+  'temporal/plain-date-get-eraYear': [FAIL],
+  'temporal/plain-date-time-get-era': [FAIL],
+  'temporal/plain-date-time-get-eraYear': [FAIL],
 
   # Non-BMP characters currently aren't considered identifiers in no_i18n
   'harmony/private-name-surrogate-pair': [PASS,FAIL],
@@ -734,7 +702,6 @@
   # BUG(v8:6924). The test uses a lot of memory.
   'regress/wasm/regress-694433': [SKIP],
   'es6/typedarray': [PASS, NO_VARIANTS],
-  'regress/regress-752764': [PASS, SLOW, NO_VARIANTS],
 
   # BUG(v8:9242). Uses a lot of memory.
   'regress/regress-599414-array-concat-fast-path': [PASS, SLOW],
@@ -860,7 +827,6 @@
   'math-floor-of-div-minus-zero': [SKIP],
 
   # Requires too much memory on MIPS.
-  'regress/regress-752764': [SKIP],
   'regress/regress-779407': [SKIP],
   'harmony/bigint/regressions': [SKIP],
 
@@ -917,7 +883,6 @@
   'math-floor-of-div-minus-zero': [SKIP],
 
   # Requires too much memory on MIPS.
-  'regress/regress-752764': [SKIP],
   'regress/regress-779407': [SKIP],
 }],  # 'arch == mips64el or arch == mips64'
 
@@ -960,7 +925,6 @@
   'math-floor-of-div-minus-zero': [SKIP],
 
   # Requires too much memory on RISC-V.
-  'regress/regress-752764': [SKIP],
   'regress/regress-779407': [SKIP],
   'harmony/bigint/regressions': [SKIP],
 
@@ -972,10 +936,6 @@
 
   # This often fails in debug mode because it is too slow
   'd8/d8-performance-now': [PASS, ['mode == debug', SKIP]],
-
-  # https://github.com/v8-riscv/v8/issues/418
-  'regress/regress-1138075': [SKIP],
-  'regress/regress-1138611': [SKIP],
 
   # SIMD not be implemented
   'regress/wasm/regress-1054466': [SKIP],
@@ -996,7 +956,6 @@
   'regress/wasm/regress-1199662': [SKIP],
   'regress/wasm/regress-1231950': [SKIP],
   'regress/wasm/regress-1264462': [SKIP],
-  'regress/regress-1172797': [SKIP],
   'regress/wasm/regress-1179025': [SKIP],
   'wasm/multi-value-simd': [SKIP],
   'wasm/liftoff-simd-params': [SKIP],
@@ -1048,8 +1007,6 @@
   'tzoffset-transition-new-york-noi18n': [SKIP],
   'tzoffset-seoul': [SKIP],
   'tzoffset-seoul-noi18n': [SKIP],
-  # OOM:
-  'regress/regress-752764': [FAIL],
   # Flaky OOM:
   'regress/regress-748069': [SKIP],
   'regress/regress-779407': [SKIP],
@@ -1235,6 +1192,9 @@
   # BUG(v8:11858): Deadlocks in predictable mode when waiting for the native
   # module cache entry to be completed.
   'regress/wasm/regress-709684': [SKIP],
+
+  # BUG(v8:12605): flaky test.
+  'wasm/grow-shared-memory': [SKIP],
 }],  # 'predictable == True'
 
 ##############################################################################
@@ -1345,12 +1305,6 @@
   # in the 'nooptimization' variant.
   'regress/wasm/regress-7785': [SKIP],
 }],  # variant == nooptimization
-
-##############################################################################
-['(arch == arm or arch == arm64)', {
-  # Flaky tests: https://crbug.com/v8/8090
-  'regress/regress-752764': [SKIP],
-}],  # (arch == arm or arch == arm64)
 
 ##############################################################################
 ['gcov_coverage', {
@@ -1535,6 +1489,10 @@
   # stress-concurrent-allocation reverts the pretenuring decision due to low
   # survival rate in old generation.
   'compiler/deopt-pretenure': [SKIP],
+  # BUG(v8:9506): slow tests.
+  'wasm/shared-memory-worker-gc-stress': [SKIP],
+  # BUG(v8:12607): flaky test.
+  'harmony/sharedarraybuffer-worker-gc-stress': [SKIP],
 }],  # variant == stress_concurrent_allocation
 
 ##############################################################################
@@ -1572,7 +1530,9 @@
   'regress/wasm/regress-1283042': [SKIP],
   'regress/wasm/regress-1284980': [SKIP],
   'regress/wasm/regress-1286253': [SKIP],
+  'regress/wasm/regress-1283395': [SKIP],
   'regress/wasm/regress-1289678': [SKIP],
+  'regress/wasm/regress-1290079': [SKIP],
 }],  # no_simd_hardware == True
 
 ##############################################################################
@@ -1823,5 +1783,10 @@
   'tzoffset-transition-lord-howe': [FAIL],
   'tzoffset-transition-moscow': [FAIL],
 }], # variant == google3_nociu
+
+# Tests that cannot run without JS shared memory
+['no_js_shared_memory', {
+  'shared-memory/*': [SKIP],
+}],  # 'no_js_shared_memory'
 
 ]

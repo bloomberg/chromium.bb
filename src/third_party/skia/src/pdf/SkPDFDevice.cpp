@@ -504,7 +504,7 @@ void SkPDFDevice::internalDrawPathWithFilter(const SkClipStack& clipStack,
 
     SkIRect bounds = clipStack.bounds(this->bounds()).roundOut();
     SkMask sourceMask;
-    if (!SkDraw::DrawToMask(path, &bounds, paint->getMaskFilter(), &SkMatrix::I(),
+    if (!SkDraw::DrawToMask(path, bounds, paint->getMaskFilter(), &SkMatrix::I(),
                             &sourceMask, SkMask::kComputeBoundsAndRenderImage_CreateMode,
                             initStyle)) {
         return;
@@ -956,7 +956,9 @@ void SkPDFDevice::internalDrawGlyphRun(
     }
 }
 
-void SkPDFDevice::onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) {
+void SkPDFDevice::onDrawGlyphRunList(SkCanvas*,
+                                     const SkGlyphRunList& glyphRunList,
+                                     const SkPaint& paint) {
     SkASSERT(!glyphRunList.hasRSXForm());
     for (const SkGlyphRun& glyphRun : glyphRunList) {
         this->internalDrawGlyphRun(glyphRun, glyphRunList.origin(), paint);

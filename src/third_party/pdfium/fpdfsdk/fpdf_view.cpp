@@ -217,17 +217,6 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_SetSandBoxPolicy(FPDF_DWORD policy,
 }
 
 #if BUILDFLAG(IS_WIN)
-#if defined(PDFIUM_PRINT_TEXT_WITH_GDI)
-FPDF_EXPORT void FPDF_CALLCONV
-FPDF_SetTypefaceAccessibleFunc(PDFiumEnsureTypefaceCharactersAccessible func) {
-  g_pdfium_typeface_accessible_func = func;
-}
-
-FPDF_EXPORT void FPDF_CALLCONV FPDF_SetPrintTextWithGDI(FPDF_BOOL use_gdi) {
-  g_pdfium_print_text_with_gdi = !!use_gdi;
-}
-#endif  // PDFIUM_PRINT_TEXT_WITH_GDI
-
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_SetPrintMode(int mode) {
   if (mode < FPDF_PRINTMODE_EMF ||
       mode > FPDF_PRINTMODE_POSTSCRIPT3_TYPE42_PASSTHROUGH) {
@@ -1259,7 +1248,7 @@ FPDF_GetTrailerEnds(FPDF_DOCUMENT document,
 
   // Traverse the document.
   syntax->SetPos(0);
-  while (1) {
+  while (true) {
     CPDF_SyntaxParser::WordResult word_result = syntax->GetNextWord();
     if (word_result.is_number) {
       // The object number was read. Read the generation number.
@@ -1281,7 +1270,7 @@ FPDF_GetTrailerEnds(FPDF_DOCUMENT document,
     } else if (word_result.word == "startxref") {
       syntax->GetNextWord();
     } else if (word_result.word == "xref") {
-      while (1) {
+      while (true) {
         word_result = syntax->GetNextWord();
         if (word_result.word.IsEmpty() || word_result.word == "startxref")
           break;

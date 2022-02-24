@@ -21,24 +21,25 @@
 #include "src/ast/assignment_statement.h"
 #include "src/ast/bitcast_expression.h"
 #include "src/ast/break_statement.h"
+#include "src/ast/builtin_texture_helper_test.h"
 #include "src/ast/call_statement.h"
 #include "src/ast/continue_statement.h"
 #include "src/ast/float_literal_expression.h"
+#include "src/ast/id_attribute.h"
 #include "src/ast/if_statement.h"
-#include "src/ast/intrinsic_texture_helper_test.h"
 #include "src/ast/loop_statement.h"
-#include "src/ast/override_decoration.h"
 #include "src/ast/return_statement.h"
-#include "src/ast/stage_decoration.h"
-#include "src/ast/struct_block_decoration.h"
+#include "src/ast/stage_attribute.h"
+#include "src/ast/struct_block_attribute.h"
 #include "src/ast/switch_statement.h"
 #include "src/ast/unary_op_expression.h"
 #include "src/ast/variable_decl_statement.h"
-#include "src/ast/workgroup_decoration.h"
+#include "src/ast/workgroup_attribute.h"
 #include "src/resolver/resolver_test_helper.h"
 #include "src/sem/call.h"
 #include "src/sem/function.h"
 #include "src/sem/member_accessor_expression.h"
+#include "src/sem/module.h"
 #include "src/sem/reference_type.h"
 #include "src/sem/sampled_texture_type.h"
 #include "src/sem/statement.h"
@@ -266,7 +267,7 @@ TEST_F(ResolverTest, Stmt_Switch) {
 
 TEST_F(ResolverTest, Stmt_Call) {
   ast::VariableList params;
-  Func("my_func", params, ty.void_(), {Return()}, ast::DecorationList{});
+  Func("my_func", params, ty.void_(), {Return()}, ast::AttributeList{});
 
   auto* expr = Call("my_func");
 
@@ -353,7 +354,7 @@ TEST_F(ResolverTest, Stmt_VariableDecl_OuterScopeAfterInnerScope) {
   auto* bar_f32_decl = Decl(bar_f32);
 
   Func("func", params, ty.void_(), {inner, foo_f32_decl, bar_f32_decl},
-       ast::DecorationList{});
+       ast::AttributeList{});
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
   ASSERT_NE(TypeOf(foo_i32_init), nullptr);
@@ -391,7 +392,7 @@ TEST_F(ResolverTest, Stmt_VariableDecl_ModuleScopeAfterFunctionScope) {
   auto* fn_i32 = Var("foo", ty.i32(), ast::StorageClass::kNone, Expr(2));
   auto* fn_i32_init = fn_i32->constructor;
   auto* fn_i32_decl = Decl(fn_i32);
-  Func("func_i32", params, ty.void_(), {fn_i32_decl}, ast::DecorationList{});
+  Func("func_i32", params, ty.void_(), {fn_i32_decl}, ast::AttributeList{});
 
   // Declare f32 "foo" at module scope
   auto* mod_f32 = Var("foo", ty.f32(), ast::StorageClass::kPrivate, Expr(2.f));
@@ -402,7 +403,7 @@ TEST_F(ResolverTest, Stmt_VariableDecl_ModuleScopeAfterFunctionScope) {
   auto* fn_f32 = Var("bar", ty.f32(), ast::StorageClass::kNone, Expr("foo"));
   auto* fn_f32_init = fn_f32->constructor;
   auto* fn_f32_decl = Decl(fn_f32);
-  Func("func_f32", params, ty.void_(), {fn_f32_decl}, ast::DecorationList{});
+  Func("func_f32", params, ty.void_(), {fn_f32_decl}, ast::AttributeList{});
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
   ASSERT_NE(TypeOf(mod_init), nullptr);
@@ -494,7 +495,7 @@ TEST_F(ResolverTest, Expr_Bitcast) {
 
 TEST_F(ResolverTest, Expr_Call) {
   ast::VariableList params;
-  Func("my_func", params, ty.f32(), {Return(0.0f)}, ast::DecorationList{});
+  Func("my_func", params, ty.f32(), {Return(0.0f)}, ast::AttributeList{});
 
   auto* call = Call("my_func");
   WrapInFunction(call);
@@ -507,7 +508,7 @@ TEST_F(ResolverTest, Expr_Call) {
 
 TEST_F(ResolverTest, Expr_Call_InBinaryOp) {
   ast::VariableList params;
-  Func("func", params, ty.f32(), {Return(0.0f)}, ast::DecorationList{});
+  Func("func", params, ty.f32(), {Return(0.0f)}, ast::AttributeList{});
 
   auto* expr = Add(Call("func"), Call("func"));
   WrapInFunction(expr);
@@ -535,7 +536,7 @@ TEST_F(ResolverTest, Expr_Call_WithParams) {
   EXPECT_TRUE(TypeOf(param)->Is<sem::F32>());
 }
 
-TEST_F(ResolverTest, Expr_Call_Intrinsic) {
+TEST_F(ResolverTest, Expr_Call_Builtin) {
   auto* call = Call("round", 2.4f);
   WrapInFunction(call);
 
@@ -644,7 +645,7 @@ TEST_F(ResolverTest, Expr_Identifier_FunctionVariable_Const) {
            Decl(var),
            decl,
        },
-       ast::DecorationList{});
+       ast::AttributeList{});
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
@@ -669,7 +670,7 @@ TEST_F(ResolverTest, IndexAccessor_Dynamic_Ref_F32) {
            Decl(idx),
            Decl(f),
        },
-       ast::DecorationList{});
+       ast::AttributeList{});
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
@@ -688,7 +689,7 @@ TEST_F(ResolverTest, Expr_Identifier_FunctionVariable) {
            Decl(var),
            assign,
        },
-       ast::DecorationList{});
+       ast::AttributeList{});
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
@@ -720,7 +721,7 @@ TEST_F(ResolverTest, Expr_Identifier_Function_Ptr) {
            p_decl,
            assign,
        },
-       ast::DecorationList{});
+       ast::AttributeList{});
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
@@ -736,7 +737,7 @@ TEST_F(ResolverTest, Expr_Identifier_Function_Ptr) {
 
 TEST_F(ResolverTest, Expr_Call_Function) {
   Func("my_func", ast::VariableList{}, ty.f32(), {Return(0.0f)},
-       ast::DecorationList{});
+       ast::AttributeList{});
 
   auto* call = Call("my_func");
   WrapInFunction(call);
@@ -783,13 +784,13 @@ TEST_F(ResolverTest, Function_Parameters) {
 
 TEST_F(ResolverTest, Function_RegisterInputOutputVariables) {
   auto* s = Structure("S", {Member("m", ty.u32())},
-                      {create<ast::StructBlockDecoration>()});
+                      {create<ast::StructBlockAttribute>()});
 
   auto* sb_var = Global("sb_var", ty.Of(s), ast::StorageClass::kStorage,
                         ast::Access::kReadWrite,
-                        ast::DecorationList{
-                            create<ast::BindingDecoration>(0),
-                            create<ast::GroupDecoration>(0),
+                        ast::AttributeList{
+                            create<ast::BindingAttribute>(0),
+                            create<ast::GroupAttribute>(0),
                         });
   auto* wg_var = Global("wg_var", ty.f32(), ast::StorageClass::kWorkgroup);
   auto* priv_var = Global("priv_var", ty.f32(), ast::StorageClass::kPrivate);
@@ -817,13 +818,13 @@ TEST_F(ResolverTest, Function_RegisterInputOutputVariables) {
 
 TEST_F(ResolverTest, Function_RegisterInputOutputVariables_SubFunction) {
   auto* s = Structure("S", {Member("m", ty.u32())},
-                      {create<ast::StructBlockDecoration>()});
+                      {create<ast::StructBlockAttribute>()});
 
   auto* sb_var = Global("sb_var", ty.Of(s), ast::StorageClass::kStorage,
                         ast::Access::kReadWrite,
-                        ast::DecorationList{
-                            create<ast::BindingDecoration>(0),
-                            create<ast::GroupDecoration>(0),
+                        ast::AttributeList{
+                            create<ast::BindingAttribute>(0),
+                            create<ast::GroupAttribute>(0),
                         });
   auto* wg_var = Global("wg_var", ty.f32(), ast::StorageClass::kWorkgroup);
   auto* priv_var = Global("priv_var", ty.f32(), ast::StorageClass::kPrivate);
@@ -831,13 +832,13 @@ TEST_F(ResolverTest, Function_RegisterInputOutputVariables_SubFunction) {
   Func("my_func", ast::VariableList{}, ty.f32(),
        {Assign("wg_var", "wg_var"), Assign("sb_var", "sb_var"),
         Assign("priv_var", "priv_var"), Return(0.0f)},
-       ast::DecorationList{});
+       ast::AttributeList{});
 
   auto* func2 = Func("func", ast::VariableList{}, ty.void_(),
                      {
                          WrapInStatement(Call("my_func")),
                      },
-                     ast::DecorationList{});
+                     ast::AttributeList{});
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
@@ -1010,14 +1011,14 @@ TEST_F(ResolverTest, Function_WorkgroupSize_Consts_NestedInitializer) {
 }
 
 TEST_F(ResolverTest, Function_WorkgroupSize_OverridableConsts) {
-  // @override(0) let width = 16;
-  // @override(1) let height = 8;
-  // @override(2) let depth = 2;
+  // @id(0) override width = 16;
+  // @id(1) override height = 8;
+  // @id(2) override depth = 2;
   // @stage(compute) @workgroup_size(width, height, depth)
   // fn main() {}
-  auto* width = GlobalConst("width", ty.i32(), Expr(16), {Override(0)});
-  auto* height = GlobalConst("height", ty.i32(), Expr(8), {Override(1)});
-  auto* depth = GlobalConst("depth", ty.i32(), Expr(2), {Override(2)});
+  auto* width = Override("width", ty.i32(), Expr(16), {Id(0)});
+  auto* height = Override("height", ty.i32(), Expr(8), {Id(1)});
+  auto* depth = Override("depth", ty.i32(), Expr(2), {Id(2)});
   auto* func = Func("main", ast::VariableList{}, ty.void_(), {},
                     {Stage(ast::PipelineStage::kCompute),
                      WorkgroupSize("width", "height", "depth")});
@@ -1036,14 +1037,14 @@ TEST_F(ResolverTest, Function_WorkgroupSize_OverridableConsts) {
 }
 
 TEST_F(ResolverTest, Function_WorkgroupSize_OverridableConsts_NoInit) {
-  // @override(0) let width : i32;
-  // @override(1) let height : i32;
-  // @override(2) let depth : i32;
+  // @id(0) override width : i32;
+  // @id(1) override height : i32;
+  // @id(2) override depth : i32;
   // @stage(compute) @workgroup_size(width, height, depth)
   // fn main() {}
-  auto* width = GlobalConst("width", ty.i32(), nullptr, {Override(0)});
-  auto* height = GlobalConst("height", ty.i32(), nullptr, {Override(1)});
-  auto* depth = GlobalConst("depth", ty.i32(), nullptr, {Override(2)});
+  auto* width = Override("width", ty.i32(), nullptr, {Id(0)});
+  auto* height = Override("height", ty.i32(), nullptr, {Id(1)});
+  auto* depth = Override("depth", ty.i32(), nullptr, {Id(2)});
   auto* func = Func("main", ast::VariableList{}, ty.void_(), {},
                     {Stage(ast::PipelineStage::kCompute),
                      WorkgroupSize("width", "height", "depth")});
@@ -1062,11 +1063,11 @@ TEST_F(ResolverTest, Function_WorkgroupSize_OverridableConsts_NoInit) {
 }
 
 TEST_F(ResolverTest, Function_WorkgroupSize_Mixed) {
-  // @override(1) let height = 2;
+  // @id(1) override height = 2;
   // let depth = 3;
   // @stage(compute) @workgroup_size(8, height, depth)
   // fn main() {}
-  auto* height = GlobalConst("height", ty.i32(), Expr(2), {Override(0)});
+  auto* height = Override("height", ty.i32(), Expr(2), {Id(0)});
   GlobalConst("depth", ty.i32(), Expr(3));
   auto* func = Func("main", ast::VariableList{}, ty.void_(), {},
                     {Stage(ast::PipelineStage::kCompute),
@@ -1753,7 +1754,7 @@ TEST_F(ResolverTest, StorageClass_SetsIfMissing) {
   auto* var = Var("var", ty.i32());
 
   auto* stmt = Decl(var);
-  Func("func", ast::VariableList{}, ty.void_(), {stmt}, ast::DecorationList{});
+  Func("func", ast::VariableList{}, ty.void_(), {stmt}, ast::AttributeList{});
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
@@ -1763,9 +1764,9 @@ TEST_F(ResolverTest, StorageClass_SetsIfMissing) {
 TEST_F(ResolverTest, StorageClass_SetForSampler) {
   auto* t = ty.sampler(ast::SamplerKind::kSampler);
   auto* var = Global("var", t,
-                     ast::DecorationList{
-                         create<ast::BindingDecoration>(0),
-                         create<ast::GroupDecoration>(0),
+                     ast::AttributeList{
+                         create<ast::BindingAttribute>(0),
+                         create<ast::GroupAttribute>(0),
                      });
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -1777,9 +1778,9 @@ TEST_F(ResolverTest, StorageClass_SetForSampler) {
 TEST_F(ResolverTest, StorageClass_SetForTexture) {
   auto* t = ty.sampled_texture(ast::TextureDimension::k1d, ty.f32());
   auto* var = Global("var", t,
-                     ast::DecorationList{
-                         create<ast::BindingDecoration>(0),
-                         create<ast::GroupDecoration>(0),
+                     ast::AttributeList{
+                         create<ast::BindingAttribute>(0),
+                         create<ast::GroupAttribute>(0),
                      });
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -1791,7 +1792,7 @@ TEST_F(ResolverTest, StorageClass_SetForTexture) {
 TEST_F(ResolverTest, StorageClass_DoesNotSetOnConst) {
   auto* var = Const("var", ty.i32(), Construct(ty.i32()));
   auto* stmt = Decl(var);
-  Func("func", ast::VariableList{}, ty.void_(), {stmt}, ast::DecorationList{});
+  Func("func", ast::VariableList{}, ty.void_(), {stmt}, ast::AttributeList{});
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
@@ -1802,12 +1803,12 @@ TEST_F(ResolverTest, Access_SetForStorageBuffer) {
   // [[block]] struct S { x : i32 };
   // var<storage> g : S;
   auto* s = Structure("S", {Member(Source{{12, 34}}, "x", ty.i32())},
-                      {create<ast::StructBlockDecoration>()});
+                      {create<ast::StructBlockAttribute>()});
   auto* var =
       Global(Source{{56, 78}}, "g", ty.Of(s), ast::StorageClass::kStorage,
-             ast::DecorationList{
-                 create<ast::BindingDecoration>(0),
-                 create<ast::GroupDecoration>(0),
+             ast::AttributeList{
+                 create<ast::BindingAttribute>(0),
+                 create<ast::GroupAttribute>(0),
              });
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -1819,11 +1820,11 @@ TEST_F(ResolverTest, BindingPoint_SetForResources) {
   // @group(1) @binding(2) var s1 : sampler;
   // @group(3) @binding(4) var s2 : sampler;
   auto* s1 = Global(Sym(), ty.sampler(ast::SamplerKind::kSampler),
-                    ast::DecorationList{create<ast::GroupDecoration>(1),
-                                        create<ast::BindingDecoration>(2)});
+                    ast::AttributeList{create<ast::GroupAttribute>(1),
+                                       create<ast::BindingAttribute>(2)});
   auto* s2 = Global(Sym(), ty.sampler(ast::SamplerKind::kSampler),
-                    ast::DecorationList{create<ast::GroupDecoration>(3),
-                                        create<ast::BindingDecoration>(4)});
+                    ast::AttributeList{create<ast::GroupAttribute>(3),
+                                       create<ast::BindingAttribute>(4)});
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 
@@ -1833,7 +1834,7 @@ TEST_F(ResolverTest, BindingPoint_SetForResources) {
             (sem::BindingPoint{3u, 4u}));
 }
 
-TEST_F(ResolverTest, Function_EntryPoints_StageDecoration) {
+TEST_F(ResolverTest, Function_EntryPoints_StageAttribute) {
   // fn b() {}
   // fn c() { b(); }
   // fn a() { c(); }
@@ -1854,29 +1855,29 @@ TEST_F(ResolverTest, Function_EntryPoints_StageDecoration) {
 
   ast::VariableList params;
   auto* func_b =
-      Func("b", params, ty.f32(), {Return(0.0f)}, ast::DecorationList{});
+      Func("b", params, ty.f32(), {Return(0.0f)}, ast::AttributeList{});
   auto* func_c =
       Func("c", params, ty.f32(), {Assign("second", Call("b")), Return(0.0f)},
-           ast::DecorationList{});
+           ast::AttributeList{});
 
   auto* func_a =
       Func("a", params, ty.f32(), {Assign("first", Call("c")), Return(0.0f)},
-           ast::DecorationList{});
+           ast::AttributeList{});
 
   auto* ep_1 = Func("ep_1", params, ty.void_(),
                     {
                         Assign("call_a", Call("a")),
                         Assign("call_b", Call("b")),
                     },
-                    ast::DecorationList{Stage(ast::PipelineStage::kCompute),
-                                        WorkgroupSize(1)});
+                    ast::AttributeList{Stage(ast::PipelineStage::kCompute),
+                                       WorkgroupSize(1)});
 
   auto* ep_2 = Func("ep_2", params, ty.void_(),
                     {
                         Assign("call_c", Call("c")),
                     },
-                    ast::DecorationList{Stage(ast::PipelineStage::kCompute),
-                                        WorkgroupSize(1)});
+                    ast::AttributeList{Stage(ast::PipelineStage::kCompute),
+                                       WorkgroupSize(1)});
 
   ASSERT_TRUE(r()->Resolve()) << r()->error();
 
@@ -2161,6 +2162,28 @@ TEST_F(ResolverTest, TextureSampler_TextureDimensions) {
   EXPECT_TRUE(pairs[0].first != nullptr);
   EXPECT_TRUE(pairs[0].second == nullptr);
 }
+
+TEST_F(ResolverTest, ModuleDependencyOrderedDeclarations) {
+  auto* f0 = Func("f0", {}, ty.void_(), {});
+  auto* v0 = Global("v0", ty.i32(), ast::StorageClass::kPrivate);
+  auto* a0 = Alias("a0", ty.i32());
+  auto* s0 = Structure("s0", {Member("m", ty.i32())});
+  auto* f1 = Func("f1", {}, ty.void_(), {});
+  auto* v1 = Global("v1", ty.i32(), ast::StorageClass::kPrivate);
+  auto* a1 = Alias("a1", ty.i32());
+  auto* s1 = Structure("s1", {Member("m", ty.i32())});
+  auto* f2 = Func("f2", {}, ty.void_(), {});
+  auto* v2 = Global("v2", ty.i32(), ast::StorageClass::kPrivate);
+  auto* a2 = Alias("a2", ty.i32());
+  auto* s2 = Structure("s2", {Member("m", ty.i32())});
+
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+
+  ASSERT_NE(Sem().Module(), nullptr);
+  EXPECT_THAT(Sem().Module()->DependencyOrderedDeclarations(),
+              ElementsAre(f0, v0, a0, s0, f1, v1, a1, s1, f2, v2, a2, s2));
+}
+
 }  // namespace
 }  // namespace resolver
 }  // namespace tint

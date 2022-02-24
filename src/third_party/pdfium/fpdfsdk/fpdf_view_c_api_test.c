@@ -353,11 +353,14 @@ int CheckPDFiumCApi() {
 
     // fpdf_structtree.h
     CHK(FPDF_StructElement_CountChildren);
+    CHK(FPDF_StructElement_GetActualText);
     CHK(FPDF_StructElement_GetAltText);
     CHK(FPDF_StructElement_GetChildAtIndex);
     CHK(FPDF_StructElement_GetID);
     CHK(FPDF_StructElement_GetLang);
     CHK(FPDF_StructElement_GetMarkedContentID);
+    CHK(FPDF_StructElement_GetObjType);
+    CHK(FPDF_StructElement_GetParent);
     CHK(FPDF_StructElement_GetStringAttribute);
     CHK(FPDF_StructElement_GetTitle);
     CHK(FPDF_StructElement_GetType);
@@ -497,14 +500,8 @@ int CheckPDFiumCApi() {
 #endif
 #if defined(_WIN32)
     CHK(FPDF_SetPrintMode);
-#if defined(PDFIUM_PRINT_TEXT_WITH_GDI)
-    CHK(FPDF_SetPrintTextWithGDI);
-#endif
 #endif
     CHK(FPDF_SetSandBoxPolicy);
-#if defined(_WIN32) && defined(PDFIUM_PRINT_TEXT_WITH_GDI)
-    CHK(FPDF_SetTypefaceAccessibleFunc);
-#endif
     CHK(FPDF_VIEWERREF_GetDuplex);
     CHK(FPDF_VIEWERREF_GetName);
     CHK(FPDF_VIEWERREF_GetNumCopies);

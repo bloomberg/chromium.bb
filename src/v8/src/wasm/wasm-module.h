@@ -344,15 +344,28 @@ class V8_EXPORT_PRIVATE AsmJsOffsetInformation {
   std::unique_ptr<AsmJsOffsets> decoded_offsets_;
 };
 
+// Used as the supertype for a type at the top of the type hierarchy.
+constexpr uint32_t kNoSuperType = std::numeric_limits<uint32_t>::max();
+
 struct TypeDefinition {
-  explicit TypeDefinition(const FunctionSig* sig) : function_sig(sig) {}
-  explicit TypeDefinition(const StructType* type) : struct_type(type) {}
-  explicit TypeDefinition(const ArrayType* type) : array_type(type) {}
+  enum Kind { kFunction, kStruct, kArray };
+
+  TypeDefinition(const FunctionSig* sig, uint32_t supertype)
+      : function_sig(sig), supertype(supertype), kind(kFunction) {}
+  TypeDefinition(const StructType* type, uint32_t supertype)
+      : struct_type(type), supertype(supertype), kind(kStruct) {}
+  TypeDefinition(const ArrayType* type, uint32_t supertype)
+      : array_type(type), supertype(supertype), kind(kArray) {}
+  TypeDefinition()
+      : function_sig(nullptr), supertype(kNoSuperType), kind(kFunction) {}
+
   union {
     const FunctionSig* function_sig;
     const StructType* struct_type;
     const ArrayType* array_type;
   };
+  uint32_t supertype;
+  Kind kind;
 };
 
 struct V8_EXPORT_PRIVATE WasmDebugSymbols {
@@ -378,11 +391,6 @@ struct TypeFeedbackStorage {
 
 struct WasmTable;
 
-// End of a chain of explicit supertypes.
-constexpr uint32_t kGenericSuperType = 0xFFFFFFFE;
-// Used for types that have no explicit supertype.
-constexpr uint32_t kNoSuperType = 0xFFFFFFFF;
-
 // Static representation of a module.
 struct V8_EXPORT_PRIVATE WasmModule {
   std::unique_ptr<Zone> signature_zone;
@@ -395,7 +403,6 @@ struct V8_EXPORT_PRIVATE WasmModule {
   bool mem_export = false;         // true if the memory is exported
   int start_function_index = -1;   // start function, >= 0 if any
 
-  std::vector<WasmGlobal> globals;
   // Size of the buffer required for all globals that are not imported and
   // mutable.
   uint32_t untagged_globals_buffer_size = 0;
@@ -410,26 +417,26 @@ struct V8_EXPORT_PRIVATE WasmModule {
   // ID and length).
   WireBytesRef code = {0, 0};
   WireBytesRef name = {0, 0};
-  std::vector<TypeDefinition> types;  // by type index
-  std::vector<uint8_t> type_kinds;    // by type index
-  std::vector<uint32_t> supertypes;   // by type index
-  // Map from each type index to the index of its corresponding canonical index.
-  // Canonical indices do not correspond to types.
-  // Note: right now, only functions are canonicalized, and arrays and structs
-  // map to 0.
-  std::vector<uint32_t> canonicalized_type_ids;
+
+  void add_type(TypeDefinition type) {
+    types.push_back(type);
+    uint32_t canonical_id = type.kind == TypeDefinition::kFunction
+                                ? signature_map.FindOrInsert(*type.function_sig)
+                                : 0;
+    canonicalized_type_ids.push_back(canonical_id);
+  }
 
   bool has_type(uint32_t index) const { return index < types.size(); }
 
   void add_signature(const FunctionSig* sig, uint32_t supertype) {
-    types.push_back(TypeDefinition(sig));
-    type_kinds.push_back(kWasmFunctionTypeCode);
-    supertypes.push_back(supertype);
-    uint32_t canonical_id = sig ? signature_map.FindOrInsert(*sig) : 0;
+    types.push_back(TypeDefinition(sig, supertype));
+    DCHECK_NOT_NULL(sig);
+    uint32_t canonical_id = signature_map.FindOrInsert(*sig);
     canonicalized_type_ids.push_back(canonical_id);
   }
   bool has_signature(uint32_t index) const {
-    return index < types.size() && type_kinds[index] == kWasmFunctionTypeCode;
+    return index < types.size() &&
+           types[index].kind == TypeDefinition::kFunction;
   }
   const FunctionSig* signature(uint32_t index) const {
     DCHECK(has_signature(index));
@@ -437,14 +444,12 @@ struct V8_EXPORT_PRIVATE WasmModule {
   }
 
   void add_struct_type(const StructType* type, uint32_t supertype) {
-    types.push_back(TypeDefinition(type));
-    type_kinds.push_back(kWasmStructTypeCode);
-    supertypes.push_back(supertype);
+    types.push_back(TypeDefinition(type, supertype));
     // No canonicalization for structs.
     canonicalized_type_ids.push_back(0);
   }
   bool has_struct(uint32_t index) const {
-    return index < types.size() && type_kinds[index] == kWasmStructTypeCode;
+    return index < types.size() && types[index].kind == TypeDefinition::kStruct;
   }
   const StructType* struct_type(uint32_t index) const {
     DCHECK(has_struct(index));
@@ -452,14 +457,12 @@ struct V8_EXPORT_PRIVATE WasmModule {
   }
 
   void add_array_type(const ArrayType* type, uint32_t supertype) {
-    types.push_back(TypeDefinition(type));
-    type_kinds.push_back(kWasmArrayTypeCode);
-    supertypes.push_back(supertype);
+    types.push_back(TypeDefinition(type, supertype));
     // No canonicalization for arrays.
     canonicalized_type_ids.push_back(0);
   }
   bool has_array(uint32_t index) const {
-    return index < types.size() && type_kinds[index] == kWasmArrayTypeCode;
+    return index < types.size() && types[index].kind == TypeDefinition::kArray;
   }
   const ArrayType* array_type(uint32_t index) const {
     DCHECK(has_array(index));
@@ -467,14 +470,23 @@ struct V8_EXPORT_PRIVATE WasmModule {
   }
 
   uint32_t supertype(uint32_t index) const {
-    DCHECK(index < supertypes.size());
-    return supertypes[index];
+    DCHECK(index < types.size());
+    return types[index].supertype;
   }
   bool has_supertype(uint32_t index) const {
     return supertype(index) != kNoSuperType;
   }
 
+  std::vector<TypeDefinition> types;  // by type index
+  // Map from each type index to the index of its corresponding canonical index.
+  // Canonical indices do not correspond to types.
+  // Note: right now, only functions are canonicalized, and arrays and structs
+  // map to 0.
+  std::vector<uint32_t> canonicalized_type_ids;
+  // Canonicalizing map for signature indexes.
+  SignatureMap signature_map;
   std::vector<WasmFunction> functions;
+  std::vector<WasmGlobal> globals;
   std::vector<WasmDataSegment> data_segments;
   std::vector<WasmTable> tables;
   std::vector<WasmImport> import_table;
@@ -483,9 +495,6 @@ struct V8_EXPORT_PRIVATE WasmModule {
   std::vector<WasmElemSegment> elem_segments;
   std::vector<WasmCompilationHint> compilation_hints;
   BranchHintInfo branch_hints;
-  SignatureMap signature_map;  // canonicalizing map for signature indexes.
-  // Entries in this storage are short-lived: when tier-up of a function is
-  // scheduled, an entry is placed; the Turbofan graph builder consumes it.
   mutable TypeFeedbackStorage type_feedback;
 
   ModuleOrigin origin = kWasmOrigin;  // origin of the module
@@ -498,7 +507,6 @@ struct V8_EXPORT_PRIVATE WasmModule {
 
   explicit WasmModule(std::unique_ptr<Zone> signature_zone = nullptr);
   WasmModule(const WasmModule&) = delete;
-  ~WasmModule();
   WasmModule& operator=(const WasmModule&) = delete;
 };
 

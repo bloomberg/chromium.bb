@@ -180,32 +180,8 @@ template<typename T> struct packet_traits;
 
 template<typename T> struct unpacket_traits;
 
-// If we vectorize regardless of alignment, pick the full-sized packet if:
-//
-// * The size is large enough;
-// * Picking it will result in less operations than picking the half size.
-//   Consider the case where the size is 12, the full packet is 8, and the
-//   half packet is 4. If we pick the full packet we'd have 1 + 4 operations,
-//   but only 3 operations if we pick the half-packet.
-//
-// The reason why we only do this with EIGEN_UNALIGNED_VECTORIZE is that if
-// we chose packets which do not divide the data size exactly we're going to
-// be left with some possibly unaligned data at the end.
-#if EIGEN_UNALIGNED_VECTORIZE
-template<int Size, typename PacketType,
-         bool Stop =
-           Size==Dynamic ||
-           (Size >= unpacket_traits<PacketType>::size &&
-             // If the packet size is 1 we're always good -- it will always divide things perfectly.
-             // We have this check since otherwise 1/2 would be 0 in the division below.
-             (unpacket_traits<PacketType>::size == 1 ||
-               (Size/unpacket_traits<PacketType>::size + Size%unpacket_traits<PacketType>::size) <=
-               (Size/(unpacket_traits<PacketType>::size/2) + Size%(unpacket_traits<PacketType>::size/2)))) ||
-           is_same<PacketType,typename unpacket_traits<PacketType>::half>::value>
-#else
 template<int Size, typename PacketType,
          bool Stop = Size==Dynamic || (Size%unpacket_traits<PacketType>::size)==0 || is_same<PacketType,typename unpacket_traits<PacketType>::half>::value>
-#endif
 struct find_best_packet_helper;
 
 template< int Size, typename PacketType>
@@ -527,8 +503,8 @@ struct generic_xpr_base<Derived, XprKind, Dense>
 template<typename XprType, typename CastType> struct cast_return_type
 {
   typedef typename XprType::Scalar CurrentScalarType;
-  typedef typename remove_all<CastType>::type _CastType;
-  typedef typename _CastType::Scalar NewScalarType;
+  typedef typename remove_all<CastType>::type CastType_;
+  typedef typename CastType_::Scalar NewScalarType;
   typedef typename conditional<is_same<CurrentScalarType,NewScalarType>::value,
                               const XprType&,CastType>::type type;
 };

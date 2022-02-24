@@ -65,7 +65,6 @@ functions by defining EIGEN_HAS_C99_MATH=1.
  - \b EIGEN_HAS_C99_MATH - controls the usage of C99 math functions such as erf, erfc, lgamma, etc.
  - \b EIGEN_HAS_CXX11_MATH - controls the implementation of some functions such as round, logp1, isinf, isnan, etc.
  - \b EIGEN_HAS_STD_RESULT_OF - defines whether std::result_of is supported
- - \b EIGEN_HAS_CONSTEXPR - defines whether relaxed const expression are supported
  - \b EIGEN_NO_IO - Disables any usage and support for `<iostreams>`.
 
 \section TopicPreprocessorDirectivesAssertions Assertions

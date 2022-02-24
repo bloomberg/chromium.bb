@@ -6,10 +6,12 @@ package org.chromium.chrome.browser.page_info;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.Visibility.GONE;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
@@ -57,6 +59,7 @@ import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.history.HistoryContentManager;
 import org.chromium.chrome.browser.history.StubbedHistoryProvider;
@@ -77,6 +80,7 @@ import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.location.LocationUtils;
+import org.chromium.components.page_info.PageInfoAdPersonalizationController;
 import org.chromium.components.page_info.PageInfoController;
 import org.chromium.components.page_info.PageInfoFeatures;
 import org.chromium.components.user_prefs.UserPrefs;
@@ -87,7 +91,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.net.test.ServerCertificate;
-import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.RenderTestRule;
 import org.chromium.url.GURL;
 
@@ -167,10 +170,6 @@ public class PageInfoViewTest {
     @ClassRule
     public static final ChromeTabbedActivityTestRule sActivityTestRule =
             new ChromeTabbedActivityTestRule();
-
-    @ClassRule
-    public static DisableAnimationsTestRule sDisableAnimationsTestRule =
-            new DisableAnimationsTestRule();
 
     @Rule
     public final BlankCTATabInitialStateRule mInitialStateRule =
@@ -757,6 +756,54 @@ public class PageInfoViewTest {
         int callCount = onDidStartNavigationHelper.getCallCount();
         onView(withText("www.example.com")).perform(click());
         onDidStartNavigationHelper.waitForCallback(callCount);
+    }
+
+    /**
+     * Tests PageInfo on a website with ad personalization info.
+     */
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @Features.EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_3)
+    public void testShowAdPersonalizationInfo() throws IOException {
+        loadUrlAndOpenPageInfo(
+                mTestServerRule.getServer().getURLWithHostName("example.com", sSimpleHtml));
+        mRenderTestRule.render(getPageInfoView(), "PageInfo_AdPersonalization");
+    }
+
+    /**
+     * Tests ad personalization subpage.
+     */
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @Features.EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_3)
+    public void testShowAdPersonalizationInfoSubPage() throws IOException {
+        loadUrlAndOpenPageInfo(
+                mTestServerRule.getServer().getURLWithHostName("example.com", sSimpleHtml));
+        onView(withId(PageInfoAdPersonalizationController.ROW_ID)).perform(click());
+        onViewWaiting(allOf(withText(R.string.page_info_ad_manage_interests), isDisplayed()));
+        mRenderTestRule.render(getPageInfoView(), "PageInfo_AdPersonalizationSubPage");
+    }
+
+    /**
+     * Tests opening ad personalization settings.
+     */
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_3)
+    public void testOpenAdPersonalizationSettings() throws IOException {
+        loadUrlAndOpenPageInfo(
+                mTestServerRule.getServer().getURLWithHostName("example.com", sSimpleHtml));
+        onView(withId(PageInfoAdPersonalizationController.ROW_ID)).perform(click());
+        onViewWaiting(allOf(withText(R.string.page_info_ad_manage_interests), isDisplayed()))
+                .perform(click());
+        // Check that settings are displayed.
+        onView(withText(R.string.privacy_sandbox_topic_interests_category))
+                .check(matches(isDisplayed()));
+        // Leave settings view.
+        onView(withContentDescription("Navigate up")).perform(click());
+        onView(withText(R.string.privacy_sandbox_topic_interests_category)).check(doesNotExist());
     }
 
     // TODO(1071762): Add tests for preview pages, offline pages, offline state and other states.

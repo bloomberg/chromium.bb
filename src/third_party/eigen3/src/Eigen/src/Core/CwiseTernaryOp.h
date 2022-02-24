@@ -43,10 +43,10 @@ struct traits<CwiseTernaryOp<TernaryOp, Arg1, Arg2, Arg3> > {
   typedef typename Arg1::Nested Arg1Nested;
   typedef typename Arg2::Nested Arg2Nested;
   typedef typename Arg3::Nested Arg3Nested;
-  typedef typename remove_reference<Arg1Nested>::type _Arg1Nested;
-  typedef typename remove_reference<Arg2Nested>::type _Arg2Nested;
-  typedef typename remove_reference<Arg3Nested>::type _Arg3Nested;
-  enum { Flags = _Arg1Nested::Flags & RowMajorBit };
+  typedef typename remove_reference<Arg1Nested>::type Arg1Nested_;
+  typedef typename remove_reference<Arg2Nested>::type Arg2Nested_;
+  typedef typename remove_reference<Arg3Nested>::type Arg3Nested_;
+  enum { Flags = Arg1Nested_::Flags & RowMajorBit };
 };
 }  // end namespace internal
 
@@ -115,9 +115,9 @@ class CwiseTernaryOp : public CwiseTernaryOpImpl<
   typedef typename internal::ref_selector<Arg1Type>::type Arg1Nested;
   typedef typename internal::ref_selector<Arg2Type>::type Arg2Nested;
   typedef typename internal::ref_selector<Arg3Type>::type Arg3Nested;
-  typedef typename internal::remove_reference<Arg1Nested>::type _Arg1Nested;
-  typedef typename internal::remove_reference<Arg2Nested>::type _Arg2Nested;
-  typedef typename internal::remove_reference<Arg3Nested>::type _Arg3Nested;
+  typedef typename internal::remove_reference<Arg1Nested>::type Arg1Nested_;
+  typedef typename internal::remove_reference<Arg2Nested>::type Arg2Nested_;
+  typedef typename internal::remove_reference<Arg3Nested>::type Arg3Nested_;
 
   EIGEN_DEVICE_FUNC
   EIGEN_STRONG_INLINE CwiseTernaryOp(const Arg1& a1, const Arg2& a2,
@@ -165,13 +165,13 @@ class CwiseTernaryOp : public CwiseTernaryOpImpl<
 
   /** \returns the first argument nested expression */
   EIGEN_DEVICE_FUNC
-  const _Arg1Nested& arg1() const { return m_arg1; }
+  const Arg1Nested_& arg1() const { return m_arg1; }
   /** \returns the first argument nested expression */
   EIGEN_DEVICE_FUNC
-  const _Arg2Nested& arg2() const { return m_arg2; }
+  const Arg2Nested_& arg2() const { return m_arg2; }
   /** \returns the third argument nested expression */
   EIGEN_DEVICE_FUNC
-  const _Arg3Nested& arg3() const { return m_arg3; }
+  const Arg3Nested_& arg3() const { return m_arg3; }
   /** \returns the functor representing the ternary operation */
   EIGEN_DEVICE_FUNC
   const TernaryOp& functor() const { return m_functor; }

@@ -12,7 +12,7 @@ fate-matroska-prores-header-insertion-bz2: CMD = framecrc -i $(TARGET_SAMPLES)/m
 FATE_MATROSKA-$(call DEMMUX, MATROSKA, MATROSKA) += fate-matroska-remux
 fate-matroska-remux: CMD = md5pipe -i $(TARGET_SAMPLES)/vp9-test-vectors/vp90-2-2pass-akiyo.webm -color_trc 4 -c:v copy -fflags +bitexact -strict -2 -f matroska
 fate-matroska-remux: CMP = oneline
-fate-matroska-remux: REF = 26fabd90326e3de4bb6afe1b216ce232
+fate-matroska-remux: REF = b9c7b650349972c9dce42ab79b472917
 
 FATE_MATROSKA-$(call ALLYES, MATROSKA_DEMUXER VORBIS_PARSER) += fate-matroska-xiph-lacing
 fate-matroska-xiph-lacing: CMD = framecrc -i $(TARGET_SAMPLES)/mkv/xiph_lacing.mka -c:a copy
@@ -66,6 +66,66 @@ fate-webm-dash-chapters: CMD = transcode ogg $(TARGET_SAMPLES)/vorbis/vorbis_cha
 FATE_MATROSKA_FFMPEG_FFPROBE-$(call DEMMUX, MATROSKA, MATROSKA) \
                                += fate-matroska-zero-length-block
 fate-matroska-zero-length-block: CMD = transcode matroska $(TARGET_SAMPLES)/mkv/zero_length_block.mks matroska "-c:s copy -dash 1 -dash_track_number 2000000000 -reserve_index_space 62 -metadata_header_padding 1 -default_mode infer_no_subs" "-c:s copy" "" "-show_entries stream_tags=description"
+
+# This mainly tests the Matroska muxer's ability to shift the data
+# to create enough free space to write the Cues at the front.
+# The metadata_header_padding has been chosen so that three attempts
+# to write the Cues are necessary.
+# It also tests writing PCM audio in both endiannesses and putting
+# Cues with the same timestamp in the same CuePoint as well as
+# omitting CRC-32 elements when writing Matroska.
+FATE_MATROSKA-$(call ALLYES, FILE_PROTOCOL WAV_DEMUXER PCM_S24LE_DECODER    \
+                             PCM_S24BE_ENCODER MATROSKA_MUXER               \
+                             MATROSKA_DEMUXER FRAMECRC_MUXER PIPE_PROTOCOL) \
+                += fate-matroska-move-cues-to-front
+fate-matroska-move-cues-to-front: CMD = transcode wav $(TARGET_SAMPLES)/audio-reference/divertimenti_2ch_96kHz_s24.wav matroska "-map 0 -map 0 -c:a:0 pcm_s24be -c:a:1 copy -cluster_time_limit 5 -cues_to_front yes -metadata_header_padding 7840 -write_crc32 0" "-map 0 -c copy -t 0.1"
+
+# This tests DOVI (reading from MP4 and Matroska and writing to Matroska)
+# as well as writing the Cues at the front (by shifting data) if
+# the initially reserved amount of space turns out to be insufficient.
+FATE_MATROSKA_FFMPEG_FFPROBE-$(call ALLYES, FILE_PROTOCOL MOV_DEMUXER       \
+                                            HEVC_DECODER MATROSKA_MUXER     \
+                                            MATROSKA_DEMUXER FRAMECRC_MUXER \
+                                            PIPE_PROTOCOL)                  \
+                               += fate-matroska-dovi-write-config7
+fate-matroska-dovi-write-config7: CMD = transcode mov $(TARGET_SAMPLES)/mov/dovi-p7.mp4 matroska "-map 0 -c copy -cues_to_front yes -reserve_index_space 40  -metadata_header_padding 64339" "-map 0 -c copy" "" "-show_entries stream_side_data_list"
+
+FATE_MATROSKA_FFMPEG_FFPROBE-$(call ALLYES, FILE_PROTOCOL PIPE_PROTOCOL \
+                                            MOV_DEMUXER MATROSKA_DEMUXER \
+                                            HEVC_DECODER AAC_DECODER      \
+                                            MATROSKA_MUXER FRAMECRC_MUXER) \
+                               += fate-matroska-dovi-write-config8
+fate-matroska-dovi-write-config8: CMD = transcode mov $(TARGET_SAMPLES)/hevc/dv84.mov matroska "-c copy" "-map 0 -c copy -t 0.4" "" "-show_entries stream_side_data_list -select_streams v"
+
+# This tests the scenario like tickets #4536, #5784 where
+# the first packet (with the overall lowest dts) is a video packet,
+# whereas an audio packet to be muxed later has the overall lowest pts
+# which happens to be negative and therefore needs to be shifted.
+# (-ss 1.09 ensures that a video frame has the lowest dts of all packets;
+# yet there is an audio packet with the overall lowest pts. output_ts_offset
+# makes the pts of the audio packet, but not the leading video packet negative
+# so that we run into the above issue.)
+FATE_MATROSKA-$(call ALLYES, FILE_PROTOCOL MPEGTS_DEMUXER MPEGVIDEO_PARSER  \
+                             MPEG2VIDEO_DECODER EXTRACT_EXTRADATA_BSF       \
+                             MP3FLOAT_DECODER MATROSKA_MUXER                \
+                             MATROSKA_DEMUXER FRAMECRC_MUXER PIPE_PROTOCOL) \
+                += fate-matroska-avoid-negative-ts
+fate-matroska-avoid-negative-ts: CMD = transcode mpegts $(TARGET_SAMPLES)/mpeg2/t.mpg matroska "-c copy -ss 1.09 -output_ts_offset -60ms" "-c copy -t 0.4"
+
+# This tests writing the MS-compatibility modes V_MS/VFW/FOURCC and A_MS/ACM.
+# It furthermore tests writing the Cues at the front if the cues_to_front
+# option is set and more than enough space has been reserved in advance.
+# (Btw: The keyframe flags of the input video stream seem wrong.)
+FATE_MATROSKA-$(call ALLYES, FILE_PROTOCOL AVI_DEMUXER MATROSKA_MUXER \
+                             MATROSKA_DEMUXER FRAMECRC_MUXER          \
+                             PIPE_PROTOCOL) += fate-matroska-ms-mode
+fate-matroska-ms-mode: CMD = transcode avi $(TARGET_SAMPLES)/vp5/potter512-400-partial.avi matroska "-map 0 -c copy -cues_to_front yes -reserve_index_space 5000" "-map 0 -c copy -t 1"
+
+# This tests Matroska's QT-compatibility mode.
+FATE_MATROSKA-$(call ALLYES, FILE_PROTOCOL MOV_DEMUXER MATROSKA_MUXER       \
+                             MATROSKA_DEMUXER FRAMECRC_MUXER PIPE_PROTOCOL) \
+                += fate-matroska-qt-mode
+fate-matroska-qt-mode: CMD = transcode mov $(TARGET_SAMPLES)/svq1/marymary-shackles.mov matroska "-c copy" "-c copy -t 3"
 
 # This test the following features of the Matroska muxer: Writing projection
 # stream side-data; not setting any track to default if the user requested it;

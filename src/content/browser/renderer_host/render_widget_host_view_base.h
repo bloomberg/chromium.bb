@@ -371,6 +371,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
 
   virtual void SetLastPointerType(ui::EventPointerType last_pointer_type) {}
 
+  // Returns true if the view is in the active window.
+  virtual bool IsInActiveWindow() const;
+
   //----------------------------------------------------------------------------
   // The following methods are related to IME.
   // TODO(ekaramad): Most of the IME methods should not stay virtual after IME
@@ -593,6 +596,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   // instead.
   void OnShowWithPageVisibility(PageVisibilityState page_visibility);
 
+  void UpdateSystemCursorSize(const gfx::Size& cursor_size);
+
   // Each platform should override this to call RenderWidgetHostImpl::WasShown
   // and DelegatedFrameHost::WasShown, and do any platform-specific bookkeeping
   // needed.  The given `visible_time_request`, if any, should be passed to
@@ -650,6 +655,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   bool is_currently_scrolling_viewport_ = false;
 
   raw_ptr<TooltipObserver> tooltip_observer_for_testing_ = nullptr;
+
+  // Cursor size in logical pixels, obtained from the OS. This value is general
+  // to all displays.
+  gfx::Size system_cursor_size_;
 
   // True if the widget has a external parent view/window outside of the
   // Chromium-controlled view/window hierarchy.

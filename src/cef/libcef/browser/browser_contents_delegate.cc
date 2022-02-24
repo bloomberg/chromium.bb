@@ -331,8 +331,7 @@ void CefBrowserContentsDelegate::OnFrameFocused(
   OnStateChanged(State::kFocusedFrame);
 }
 
-void CefBrowserContentsDelegate::DocumentAvailableInMainFrame(
-    content::RenderFrameHost* render_frame_host) {
+void CefBrowserContentsDelegate::PrimaryMainDocumentElementAvailable() {
   has_document_ = true;
   OnStateChanged(State::kDocument);
 
@@ -439,16 +438,6 @@ void CefBrowserContentsDelegate::TitleWasSet(content::NavigationEntry* entry) {
     OnTitleChange(entry->GetTitle());
   else if (web_contents())
     OnTitleChange(web_contents()->GetTitle());
-}
-
-void CefBrowserContentsDelegate::PluginCrashed(
-    const base::FilePath& plugin_path,
-    base::ProcessId plugin_pid) {
-  if (auto c = client()) {
-    if (auto handler = c->GetRequestHandler()) {
-      handler->OnPluginCrashed(browser(), plugin_path.value());
-    }
-  }
 }
 
 void CefBrowserContentsDelegate::DidUpdateFaviconURL(

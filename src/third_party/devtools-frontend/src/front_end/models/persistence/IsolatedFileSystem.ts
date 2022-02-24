@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// TODO(crbug.com/1253323): All casts to UrlString will be removed from this file when migration to branded types is complete.
-
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -77,13 +75,12 @@ export class IsolatedFileSystem extends PlatformFileSystem {
   private readonly excludedFoldersSetting: Common.Settings.Setting<{[path: string]: string[]}>;
   private excludedFoldersInternal: Set<string>;
   private readonly excludedEmbedderFolders: string[];
-  private readonly initialFilePathsInternal: Set<string>;
-  private readonly initialGitFoldersInternal: Set<string>;
+  private readonly initialFilePathsInternal: Set<Platform.DevToolsPath.EncodedPathString>;
+  private readonly initialGitFoldersInternal: Set<Platform.DevToolsPath.EncodedPathString>;
   private readonly fileLocks: Map<string, Promise<void>>;
 
   constructor(
       manager: IsolatedFileSystemManager, path: string, embedderPath: string, domFileSystem: FileSystem, type: string) {
-    // TODO(crbug.com/1253323): Cast to UrlString will be removed when migration to branded types is complete.
     super(path, type);
     this.manager = manager;
     this.embedderPathInternal = embedderPath;
@@ -98,12 +95,12 @@ export class IsolatedFileSystem extends PlatformFileSystem {
     this.fileLocks = new Map();
   }
 
-  static create(
+  static async create(
       manager: IsolatedFileSystemManager, path: string, embedderPath: string, type: string, name: string,
       rootURL: string): Promise<IsolatedFileSystem|null> {
     const domFileSystem = Host.InspectorFrontendHost.InspectorFrontendHostInstance.isolatedFileSystem(name, rootURL);
     if (!domFileSystem) {
-      return Promise.resolve(null as IsolatedFileSystem | null);
+      return null as IsolatedFileSystem | null;
     }
 
     const fileSystem = new IsolatedFileSystem(manager, path, embedderPath, domFileSystem, type);
@@ -129,7 +126,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
     const promise = new Promise<Metadata|null>(f => {
       fulfill = f;
     });
-    this.domFileSystem.root.getFile(path, undefined, fileEntryLoaded, errorHandler);
+    this.domFileSystem.root.getFile(decodeURIComponent(path), undefined, fileEntryLoaded, errorHandler);
     return promise;
 
     function fileEntryLoaded(entry: FileEntry): void {
@@ -143,11 +140,11 @@ export class IsolatedFileSystem extends PlatformFileSystem {
     }
   }
 
-  initialFilePaths(): string[] {
+  initialFilePaths(): Platform.DevToolsPath.EncodedPathString[] {
     return [...this.initialFilePathsInternal];
   }
 
-  initialGitFolders(): string[] {
+  initialGitFolders(): Platform.DevToolsPath.EncodedPathString[] {
     return [...this.initialGitFoldersInternal];
   }
 
@@ -168,16 +165,19 @@ export class IsolatedFileSystem extends PlatformFileSystem {
             if (this.isFileExcluded(entry.fullPath)) {
               continue;
             }
-            this.initialFilePathsInternal.add(entry.fullPath.substr(1));
+            this.initialFilePathsInternal.add(Common.ParsedURL.ParsedURL.rawPathToEncodedPathString(
+                Common.ParsedURL.ParsedURL.substr(entry.fullPath as Platform.DevToolsPath.RawPathString, 1)));
           } else {
             if (entry.fullPath.endsWith('/.git')) {
               const lastSlash = entry.fullPath.lastIndexOf('/');
-              const parentFolder = entry.fullPath.substring(1, lastSlash);
-              this.initialGitFoldersInternal.add(parentFolder);
+              const parentFolder = Common.ParsedURL.ParsedURL.substr(
+                  entry.fullPath as Platform.DevToolsPath.RawPathString, 1, lastSlash);
+              this.initialGitFoldersInternal.add(Common.ParsedURL.ParsedURL.rawPathToEncodedPathString(parentFolder));
             }
             if (this.isFileExcluded(entry.fullPath + '/')) {
-              this.excludedEmbedderFolders.push(Common.ParsedURL.ParsedURL.capFilePrefix(
-                  this.path() + entry.fullPath as Platform.DevToolsPath.UrlString, Host.Platform.isWin()));
+              const url = Common.ParsedURL.ParsedURL.concatenate(this.path(), entry.fullPath);
+              this.excludedEmbedderFolders.push(
+                  Common.ParsedURL.ParsedURL.urlToRawPathString(url, Host.Platform.isWin()));
               continue;
             }
             ++pendingRequests;
@@ -221,7 +221,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
   }
 
   async createFile(path: string, name: string|null): Promise<string|null> {
-    const dirEntry = await this.createFoldersIfNotExist(path);
+    const dirEntry = await this.createFoldersIfNotExist(decodeURIComponent(path));
     if (!dirEntry) {
       return null;
     }
@@ -230,7 +230,8 @@ export class IsolatedFileSystem extends PlatformFileSystem {
     if (!fileEntry) {
       return null;
     }
-    return fileEntry.fullPath.substr(1);
+    return Common.ParsedURL.ParsedURL.rawPathToEncodedPathString(
+        Common.ParsedURL.ParsedURL.substr(fileEntry.fullPath as Platform.DevToolsPath.RawPathString, 1));
 
     function createFileCandidate(
         this: IsolatedFileSystem, name: string, newFileIndex?: number): Promise<FileEntry|null> {
@@ -256,7 +257,8 @@ export class IsolatedFileSystem extends PlatformFileSystem {
     const promise = new Promise<boolean>(resolve => {
       resolveCallback = resolve;
     });
-    this.domFileSystem.root.getFile(path, undefined, fileEntryLoaded.bind(this), errorHandler.bind(this));
+    this.domFileSystem.root.getFile(
+        decodeURIComponent(path), undefined, fileEntryLoaded.bind(this), errorHandler.bind(this));
     return promise;
 
     function fileEntryLoaded(this: IsolatedFileSystem, fileEntry: FileEntry): void {
@@ -279,7 +281,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
 
   requestFileBlob(path: string): Promise<Blob|null> {
     return new Promise(resolve => {
-      this.domFileSystem.root.getFile(path, undefined, entry => {
+      this.domFileSystem.root.getFile(decodeURIComponent(path), undefined, entry => {
         entry.file(resolve, errorHandler.bind(this));
       }, errorHandler.bind(this));
 
@@ -347,7 +349,8 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         // @ts-ignore TODO(crbug.com/1172300) Properly type this after jsdoc to ts migration
         callback = x;
       });
-      this.domFileSystem.root.getFile(path, {create: true}, fileEntryLoaded.bind(this), errorHandler.bind(this));
+      this.domFileSystem.root.getFile(
+          decodeURIComponent(path), {create: true}, fileEntryLoaded.bind(this), errorHandler.bind(this));
       return promise;
     };
 
@@ -391,7 +394,8 @@ export class IsolatedFileSystem extends PlatformFileSystem {
     let fileEntry: FileEntry;
     let dirEntry: DirectoryEntry;
 
-    this.domFileSystem.root.getFile(path, undefined, fileEntryLoaded.bind(this), errorHandler.bind(this));
+    this.domFileSystem.root.getFile(
+        decodeURIComponent(path), undefined, fileEntryLoaded.bind(this), errorHandler.bind(this));
 
     function fileEntryLoaded(this: IsolatedFileSystem, entry: FileEntry): void {
       if (entry.name === newName) {
@@ -458,7 +462,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
   }
 
   private requestEntries(path: string, callback: (arg0: Array<FileEntry>) => void): void {
-    this.domFileSystem.root.getDirectory(path, undefined, innerCallback.bind(this), errorHandler);
+    this.domFileSystem.root.getDirectory(decodeURIComponent(path), undefined, innerCallback.bind(this), errorHandler);
 
     function innerCallback(this: IsolatedFileSystem, dirEntry: DirectoryEntry): void {
       this.readDirectory(dirEntry, callback);
@@ -553,9 +557,9 @@ export class IsolatedFileSystem extends PlatformFileSystem {
                                              Common.ResourceType.resourceTypes.Document;
   }
 
-  tooltipForURL(url: string): string {
+  tooltipForURL(url: Platform.DevToolsPath.UrlString): string {
     const path = Platform.StringUtilities.trimMiddle(
-        Common.ParsedURL.ParsedURL.capFilePrefix(url as Platform.DevToolsPath.UrlString, Host.Platform.isWin()), 150);
+        Common.ParsedURL.ParsedURL.urlToRawPathString(url, Host.Platform.isWin()), 150);
     return i18nString(UIStrings.linkedToS, {PH1: path});
   }
 

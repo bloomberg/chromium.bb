@@ -5,6 +5,7 @@
 #include "content/public/app/content_main.h"
 
 #include "base/allocator/buildflags.h"
+#include "base/allocator/partition_alloc_support.h"
 #include "base/at_exit.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -244,6 +245,7 @@ int ContentMainInitialize(ContentMainParams params,
 #if BUILDFLAG(IS_MAC) && BUILDFLAG(USE_ALLOCATOR_SHIM)
     base::allocator::InitializeAllocatorShim();
 #endif
+    base::allocator::InstallDanglingRawPtrChecks();
     base::EnableTerminationOnOutOfMemory();
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)

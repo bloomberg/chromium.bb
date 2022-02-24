@@ -14,9 +14,9 @@
 #include "base/location.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
+#include "media/base/crc_16.h"
 #include "media/base/media_export.h"
 #include "media/base/media_serializers_base.h"
-#include "media/base/status_codes.h"
 
 // Mojo namespaces for serialization friend declarations.
 namespace mojo {
@@ -45,12 +45,29 @@ using StatusCodeType = uint16_t;
 // This is the type that TypedStatusTraits::Group should be.
 using StatusGroupType = base::StringPiece;
 
+// This is the type that a status will get serialized into for UKM purposes.
+using UKMPackedType = uint64_t;
+
 namespace internal {
+
+union UKMPackHelper {
+  struct bits {
+    uint16_t group;
+    StatusCodeType code;
+    uint32_t extra_data;
+  } __attribute__((packed)) bits;
+  UKMPackedType packed;
+
+  static_assert(sizeof(bits) == sizeof(packed));
+};
 
 struct MEDIA_EXPORT StatusData {
   StatusData();
   StatusData(const StatusData&);
-  StatusData(StatusGroupType group, StatusCodeType code, std::string message);
+  StatusData(StatusGroupType group,
+             StatusCodeType code,
+             std::string message,
+             UKMPackedType root_cause);
   ~StatusData();
   StatusData& operator=(const StatusData&);
 
@@ -70,39 +87,65 @@ struct MEDIA_EXPORT StatusData {
   // Stack frames
   std::vector<base::Value> frames;
 
-  // Causes
-  std::vector<StatusData> causes;
+  // Store a root cause. Helpful for debugging, as it can end up containing
+  // the chain of causes.
+  std::unique_ptr<StatusData> cause;
 
   // Data attached to the error
   base::Value data;
+
+  // The root-cause status, as packed for UKM.
+  UKMPackedType packed_root_cause = 0;
 };
 
 // Helper class to allow traits with no default enum.
 template <typename T>
 struct StatusTraitsHelper {
-  // If T defines DefaultEnumValue(), then return it.  Otherwise, return an
+  // If T defines DefaultEnumValue(), then return it. Otherwise, return an
   // empty optional.
   static constexpr absl::optional<typename T::Codes> DefaultEnumValue() {
     return DefaultEnumValueImpl(0);
+  }
+
+  // If T defined PackExtraData(), then evaluate it. Otherwise, return a default
+  // value. |PackExtraData| is an optional method that can operate on the
+  // internal status data in order to pack it into a 32-bit entry for UKM.
+  static constexpr uint32_t PackExtraData(const StatusData& info) {
+    return DefaultPackExtraData(info, 0);
   }
 
  private:
   // Call with an (ignored) int, which will choose the first one if it isn't
   // removed by SFINAE, else will use the varargs one below.
   template <typename X = T>
-  static constexpr typename std::enable_if<
-      std::is_pointer<decltype(&X::DefaultEnumValue)>::value,
-      absl::optional<typename T::Codes>>::type
+  static constexpr typename std::enable_if_t<
+      std::is_pointer_v<decltype(&X::DefaultEnumValue)>,
+      absl::optional<typename T::Codes>>
   DefaultEnumValueImpl(int) {
     // Make sure the signature is correct, just for sanity.
     static_assert(
         std::is_same<decltype(T::DefaultEnumValue), typename T::Codes()>::value,
-        "TypedStatus Traits::DefaultEnumValue() must return Traits::Codes.");
+        "TypedStatus::Traits::DefaultEnumValue() must return Traits::Codes.");
     return T::DefaultEnumValue();
   }
 
   static constexpr absl::optional<typename T::Codes> DefaultEnumValueImpl(...) {
     return {};
+  }
+
+  template <typename X = T>
+  static constexpr
+      typename std::enable_if_t<std::is_pointer_v<decltype(&X::PackExtraData)>,
+                                uint32_t>
+      DefaultPackExtraData(const StatusData& info, int) {
+    static_assert(
+        std::is_same_v<decltype(T::PackExtraData(info)), uint32_t>,
+        "Traits::PackExtraData(const StatusData&) must return uint32_t");
+    return T::PackExtraData(info);
+  }
+
+  static constexpr int DefaultPackExtraData(const StatusData&, ...) {
+    return 0;
   }
 };
 
@@ -138,6 +181,18 @@ MEDIA_EXPORT std::ostream& operator<<(
     const OkStatusImplicitConstructionHelper&);
 
 }  // namespace internal
+
+// Constant names for serialized TypedStatus<T>.
+struct MEDIA_EXPORT StatusConstants {
+  static const char kCodeKey[];
+  static const char kGroupKey[];
+  static const char kMsgKey[];
+  static const char kStackKey[];
+  static const char kDataKey[];
+  static const char kCauseKey[];
+  static const char kFileKey[];
+  static const char kLineKey[];
+};
 
 // See media/base/status.md for details and instructions for using TypedStatus.
 template <typename T>
@@ -192,7 +247,7 @@ class MEDIA_EXPORT TypedStatus {
     }
     data_ = std::make_unique<internal::StatusData>(
         Traits::Group(), static_cast<StatusCodeType>(code),
-        std::string(message));
+        std::string(message), 0);
     data_->AddLocation(location);
   }
 
@@ -267,8 +322,7 @@ class MEDIA_EXPORT TypedStatus {
   // Add |cause| as the error that triggered this one.
   template <typename AnyTraitsType>
   TypedStatus<T>&& AddCause(TypedStatus<AnyTraitsType>&& cause) && {
-    DCHECK(data_ && cause.data_);
-    data_->causes.push_back(*cause.data_);
+    AddCause(std::move(cause));
     return std::move(*this);
   }
 
@@ -276,7 +330,29 @@ class MEDIA_EXPORT TypedStatus {
   template <typename AnyTraitsType>
   void AddCause(TypedStatus<AnyTraitsType>&& cause) & {
     DCHECK(data_ && cause.data_);
-    data_->causes.push_back(*cause.data_);
+    // The |cause| status is about to lose it's type forever. If it has no
+    // causes, it might be sourced as the "root cause" status when sending to
+    // UKM later, so it must be pre-emptively packed.
+    if (!cause.data_->cause) {
+      // If |cause| has no cause, then it shouldn't have |packed_root_cause|
+      // either.
+      DCHECK_EQ(cause.data_->packed_root_cause, 0lu);
+      data_->packed_root_cause = cause.PackForUkm();
+    } else {
+      // If |cause| has a cause, it should have taken that causes's root-cause
+      // when it was added as a cause. Since we're adding |cause| as our cause
+      // now, we should steal |cause|'s root cause to be out root cause.
+      DCHECK_NE(cause.data_->packed_root_cause, 0lu);
+      data_->packed_root_cause = cause.data_->packed_root_cause;
+    }
+    data_->cause = std::move(cause.data_);
+  }
+
+  template <typename UKMBuilder>
+  void ToUKM(UKMBuilder& builder) const {
+    builder.SetStatus(PackForUkm());
+    if (data_)
+      builder.SetRootCause(data_->packed_root_cause);
   }
 
   inline bool operator==(Codes code) const { return code == this->code(); }
@@ -432,9 +508,6 @@ class MEDIA_EXPORT TypedStatus {
  private:
   std::unique_ptr<internal::StatusData> data_;
 
-  // Let the status sink talk about the internal data.
-  friend class StatusSink;
-
   template <typename StatusEnum, typename DataView>
   friend struct mojo::StructTraits;
 
@@ -445,8 +518,16 @@ class MEDIA_EXPORT TypedStatus {
   template <typename StatusEnum>
   friend class TypedStatus;
 
-  void SetInternalData(std::unique_ptr<internal::StatusData> data) {
-    data_ = std::move(data);
+  UKMPackedType PackForUkm() const {
+    internal::UKMPackHelper result;
+    result.bits.group = crc16(Traits::Group().data());
+    result.bits.code = static_cast<StatusCodeType>(code());
+    if (data_) {
+      result.bits.extra_data =
+          internal::StatusTraitsHelper<Traits>::PackExtraData(*data_);
+    }
+
+    return result.packed;
   }
 };
 
@@ -459,18 +540,6 @@ template <typename T>
 inline bool operator!=(typename T::Codes code, const TypedStatus<T>& status) {
   return status != code;
 }
-
-// Define TypedStatus<StatusCode> as Status in the media namespace for
-// backwards compatibility. Also define StatusOr as Status::Or for the
-// same reason.
-struct GeneralStatusTraits {
-  using Codes = StatusCode;
-  static constexpr StatusGroupType Group() { return "GeneralStatusCode"; }
-  static constexpr StatusCode DefaultEnumValue() { return StatusCode::kOk; }
-};
-using Status = TypedStatus<GeneralStatusTraits>;
-template <typename T>
-using StatusOr = Status::Or<T>;
 
 // Convenience function to return |kOk|.
 // OK won't have a message, trace, or data associated with them, and DCHECK

@@ -135,10 +135,10 @@ def get_targets(args, parser, use_null_terminator):
     # Take stdin as a newline or null separated list of files.
     if use_null_terminator:
       return sys.stdin.read().split('\0')
-    else:
-      return sys.stdin.read().splitlines()
-  else:
-    return args
+
+    return sys.stdin.read().splitlines()
+
+  return args
 
 
 def upload_to_google_storage(

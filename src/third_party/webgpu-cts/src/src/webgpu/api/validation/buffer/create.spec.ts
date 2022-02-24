@@ -4,7 +4,11 @@ Tests for validation in createBuffer.
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { assert } from '../../../../common/util/util.js';
-import { kBufferSizeAlignment } from '../../../capability_info.js';
+import {
+  kAllBufferUsageBits,
+  kBufferSizeAlignment,
+  kBufferUsages,
+} from '../../../capability_info.js';
 import { GPUConst } from '../../../constants.js';
 import { kMaxSafeMultipleOf8 } from '../../../util/math.js';
 import { ValidationTest } from '../validation_test.js';
@@ -13,7 +17,9 @@ export const g = makeTestGroup(ValidationTest);
 
 assert(kBufferSizeAlignment === 4);
 g.test('size')
-  .desc('Test buffer size alignment.')
+  .desc(
+    'Test buffer size alignment is validated to be a multiple of 4 if mappedAtCreation is true.'
+  )
   .params(u =>
     u
       .combine('mappedAtCreation', [false, true])
@@ -26,21 +32,50 @@ g.test('size')
         kBufferSizeAlignment * 2,
       ])
   )
-  .unimplemented();
+  .fn(t => {
+    const { mappedAtCreation, size } = t.params;
+    const isValid = !mappedAtCreation || size % kBufferSizeAlignment === 0;
+    const usage = BufferUsage.COPY_SRC;
+    t.expectGPUError(
+      'validation',
+      () => t.device.createBuffer({ size, usage, mappedAtCreation }),
+      !isValid
+    );
+  });
+
+const kInvalidUsage = 0x8000;
+assert((kInvalidUsage & kAllBufferUsageBits) === 0);
 
 g.test('usage')
-  .desc('Test combinations of (one to two?) usage flags.')
+  .desc('Test combinations of zero to two usage flags are validated to be valid.')
   .params(u =>
-    u //
+    u
+      .combine('usage1', [0, ...kBufferUsages, kInvalidUsage])
+      .combine('usage2', [0, ...kBufferUsages, kInvalidUsage])
       .beginSubcases()
       .combine('mappedAtCreation', [false, true])
-      .combine('usage', [
-        // Not implemented
-      ])
   )
-  .unimplemented();
+  .fn(t => {
+    const { mappedAtCreation, usage1, usage2 } = t.params;
+    const usage = usage1 | usage2;
+
+    const isValid =
+      usage !== 0 &&
+      (usage & ~kAllBufferUsageBits) === 0 &&
+      ((usage & GPUBufferUsage.MAP_READ) === 0 ||
+        (usage & ~(GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ)) === 0) &&
+      ((usage & GPUBufferUsage.MAP_WRITE) === 0 ||
+        (usage & ~(GPUBufferUsage.COPY_SRC | GPUBufferUsage.MAP_WRITE)) === 0);
+
+    t.expectGPUError(
+      'validation',
+      () => t.device.createBuffer({ size: kBufferSizeAlignment * 2, usage, mappedAtCreation }),
+      !isValid
+    );
+  });
 
 const BufferUsage = GPUConst.BufferUsage;
+
 g.test('createBuffer_invalid_and_oom')
   .desc(
     `When creating a mappable buffer, it's expected that shmem may be immediately allocated

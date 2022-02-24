@@ -30,6 +30,7 @@
 #endif  // TINT_BUILD_SPV_READER
 
 #include "src/utils/io/command.h"
+#include "src/utils/string.h"
 #include "src/val/val.h"
 #include "tint/tint.h"
 
@@ -103,10 +104,7 @@ const char kUsage[] = R"(Usage: tint [options] <input-file>
   -o <name>                 -- Output file name.  Use "-" for standard output
   --transform <name list>   -- Runs transforms, name list is comma separated
                                Available transforms:
-                                first_index_offset
-                                fold_trivial_single_use_lets
-                                renamer
-                                robustness
+${transforms}
   --parse-only              -- Stop after parsing the input
   --disable-workgroup-init  -- Disable workgroup memory zero initialization.
   --demangle                -- Preserve original source names. Demangle them.
@@ -824,17 +822,17 @@ EShLanguage pipeline_stage_to_esh_language(tint::ast::PipelineStage stage) {
 /// @returns true on success
 bool GenerateGlsl(const tint::Program* program, const Options& options) {
 #if TINT_BUILD_GLSL_WRITER
-  bool success = true;
   if (options.validate) {
     glslang::InitializeProcess();
   }
-  tint::writer::glsl::Options gen_options;
-  tint::inspector::Inspector inspector(program);
-  for (auto& entry_point : inspector.GetEntryPoints()) {
+
+  auto generate = [&](const tint::Program* prg,
+                      const std::string entry_point_name) -> bool {
+    tint::writer::glsl::Options gen_options;
     auto result =
-        tint::writer::glsl::Generate(program, gen_options, entry_point.name);
+        tint::writer::glsl::Generate(prg, gen_options, entry_point_name);
     if (!result.success) {
-      PrintWGSL(std::cerr, *program);
+      PrintWGSL(std::cerr, *prg);
       std::cerr << "Failed to generate: " << result.error << std::endl;
       return false;
     }
@@ -858,10 +856,24 @@ bool GenerateGlsl(const tint::Program* program, const Options& options) {
           std::cerr << "Error parsing GLSL shader:\n"
                     << shader.getInfoLog() << "\n"
                     << shader.getInfoDebugLog() << "\n";
-          success = false;
+          return false;
         }
       }
     }
+    return true;
+  };
+
+  tint::inspector::Inspector inspector(program);
+
+  if (inspector.GetEntryPoints().empty()) {
+    // Pass empty string here so that the GLSL generator will generate
+    // code for all functions, reachable or not.
+    return generate(program, "");
+  }
+
+  bool success = true;
+  for (auto& entry_point : inspector.GetEntryPoints()) {
+    success &= generate(program, entry_point.name);
   }
   return success;
 #else
@@ -895,8 +907,43 @@ int main(int argc, const char** argv) {
     return 1;
   }
 
+  struct TransformFactory {
+    const char* name;
+    std::function<void(tint::transform::Manager& manager,
+                       tint::transform::DataMap& inputs)>
+        make;
+  };
+  std::vector<TransformFactory> transforms = {
+      {"first_index_offset",
+       [](tint::transform::Manager& m, tint::transform::DataMap& i) {
+         i.Add<tint::transform::FirstIndexOffset::BindingPoint>(0, 0);
+         m.Add<tint::transform::FirstIndexOffset>();
+       }},
+      {"fold_trivial_single_use_lets",
+       [](tint::transform::Manager& m, tint::transform::DataMap&) {
+         m.Add<tint::transform::FoldTrivialSingleUseLets>();
+       }},
+      {"renamer",
+       [](tint::transform::Manager& m, tint::transform::DataMap&) {
+         m.Add<tint::transform::Renamer>();
+       }},
+      {"robustness",
+       [](tint::transform::Manager& m, tint::transform::DataMap&) {
+         m.Add<tint::transform::Robustness>();
+       }},
+  };
+  auto transform_names = [&] {
+    std::stringstream names;
+    for (auto& t : transforms) {
+      names << "   " << t.name << std::endl;
+    }
+    return names.str();
+  };
+
   if (options.show_help) {
-    std::cout << kUsage << std::endl;
+    std::string usage =
+        tint::utils::ReplaceAll(kUsage, "${transforms}", transform_names());
+    std::cout << usage << std::endl;
     return 0;
   }
 
@@ -1029,18 +1076,17 @@ int main(int argc, const char** argv) {
     // be run that needs user input. Should we find a way to support that here
     // maybe through a provided file?
 
-    if (name == "first_index_offset") {
-      transform_inputs.Add<tint::transform::FirstIndexOffset::BindingPoint>(0,
-                                                                            0);
-      transform_manager.Add<tint::transform::FirstIndexOffset>();
-    } else if (name == "fold_trivial_single_use_lets") {
-      transform_manager.Add<tint::transform::FoldTrivialSingleUseLets>();
-    } else if (name == "renamer") {
-      transform_manager.Add<tint::transform::Renamer>();
-    } else if (name == "robustness") {
-      transform_manager.Add<tint::transform::Robustness>();
-    } else {
-      std::cerr << "Unknown transform name: " << name << std::endl;
+    bool found = false;
+    for (auto& t : transforms) {
+      if (t.name == name) {
+        t.make(transform_manager, transform_inputs);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      std::cerr << "Unknown transform: " << name << std::endl;
+      std::cerr << "Available transforms: " << std::endl << transform_names();
       return 1;
     }
   }
@@ -1063,9 +1109,6 @@ int main(int argc, const char** argv) {
     }
 #if TINT_BUILD_GLSL_WRITER
     case Format::kGlsl: {
-      transform_inputs.Add<tint::transform::Renamer::Config>(
-          tint::transform::Renamer::Target::kGlslKeywords);
-      transform_manager.Add<tint::transform::Renamer>();
       break;
     }
 #endif  // TINT_BUILD_GLSL_WRITER

@@ -1451,7 +1451,9 @@ void BytecodeGenerator::GenerateBytecodeBody() {
   // The derived constructor case is handled in VisitCallSuper.
   if (IsBaseConstructor(function_kind())) {
     if (literal->class_scope_has_private_brand()) {
-      BuildPrivateBrandInitialization(builder()->Receiver());
+      ClassScope* scope = info()->scope()->outer_scope()->AsClassScope();
+      DCHECK_NOT_NULL(scope->brand());
+      BuildPrivateBrandInitialization(builder()->Receiver(), scope->brand());
     }
 
     if (literal->requires_instance_members_initializer()) {
@@ -2813,6 +2815,7 @@ void BytecodeGenerator::BuildClassProperty(ClassLiteral::Property* property) {
   // Private methods are not initialized in BuildClassProperty.
   DCHECK_IMPLIES(property->is_private(),
                  property->kind() == ClassLiteral::Property::FIELD);
+  builder()->SetExpressionPosition(property->key());
 
   bool is_literal_store = property->key()->IsPropertyName() &&
                           !property->is_computed_name() &&
@@ -2891,18 +2894,33 @@ void BytecodeGenerator::BuildInvalidPropertyAccess(MessageTemplate tmpl,
       .Throw();
 }
 
-void BytecodeGenerator::BuildPrivateBrandInitialization(Register receiver) {
-  Variable* brand = info()->scope()->outer_scope()->AsClassScope()->brand();
+void BytecodeGenerator::BuildPrivateBrandInitialization(Register receiver,
+                                                        Variable* brand) {
+  BuildVariableLoad(brand, HoleCheckMode::kElided);
   int depth = execution_context()->ContextChainDepth(brand->scope());
   ContextScope* class_context = execution_context()->Previous(depth);
-
-  BuildVariableLoad(brand, HoleCheckMode::kElided);
-  Register brand_reg = register_allocator()->NewRegister();
-  FeedbackSlot slot = feedback_spec()->AddKeyedDefineOwnICSlot();
-  builder()
-      ->StoreAccumulatorInRegister(brand_reg)
-      .LoadAccumulatorWithRegister(class_context->reg())
-      .DefineKeyedProperty(receiver, brand_reg, feedback_index(slot));
+  if (class_context) {
+    Register brand_reg = register_allocator()->NewRegister();
+    FeedbackSlot slot = feedback_spec()->AddKeyedDefineOwnICSlot();
+    builder()
+        ->StoreAccumulatorInRegister(brand_reg)
+        .LoadAccumulatorWithRegister(class_context->reg())
+        .DefineKeyedProperty(receiver, brand_reg, feedback_index(slot));
+  } else {
+    // We are in the slow case where super() is called from a nested
+    // arrow function or a eval(), so the class scope context isn't
+    // tracked in a context register in the stack, and we have to
+    // walk the context chain from the runtime to find it.
+    DCHECK_NE(info()->literal()->scope()->outer_scope(), brand->scope());
+    RegisterList brand_args = register_allocator()->NewRegisterList(4);
+    builder()
+        ->StoreAccumulatorInRegister(brand_args[1])
+        .MoveRegister(receiver, brand_args[0])
+        .MoveRegister(execution_context()->reg(), brand_args[2])
+        .LoadLiteral(Smi::FromInt(depth))
+        .StoreAccumulatorInRegister(brand_args[3])
+        .CallRuntime(Runtime::kAddPrivateBrand, brand_args);
+  }
 }
 
 void BytecodeGenerator::BuildInstanceMemberInitialization(Register constructor,
@@ -4168,17 +4186,19 @@ void BytecodeGenerator::BuildDestructuringArrayAssignment(
               ->LoadNamedProperty(next_result,
                                   ast_string_constants()->done_string(),
                                   feedback_index(next_done_load_slot))
-              .JumpIfTrue(ToBooleanMode::kConvertToBoolean, is_done.New())
-              .LoadNamedProperty(next_result,
-                                 ast_string_constants()->value_string(),
-                                 feedback_index(next_value_load_slot))
-              .StoreAccumulatorInRegister(next_result)
-              .LoadFalse()
-              .StoreAccumulatorInRegister(done)
-              .LoadAccumulatorWithRegister(next_result);
+              .JumpIfTrue(ToBooleanMode::kConvertToBoolean, is_done.New());
 
           // Only do the assignment if this is not a hole (i.e. 'elided').
           if (!target->IsTheHoleLiteral()) {
+            builder()
+                ->LoadNamedProperty(next_result,
+                                    ast_string_constants()->value_string(),
+                                    feedback_index(next_value_load_slot))
+                .StoreAccumulatorInRegister(next_result)
+                .LoadFalse()
+                .StoreAccumulatorInRegister(done)
+                .LoadAccumulatorWithRegister(next_result);
+
             // [<pattern> = <init>] = <value>
             //   becomes (roughly)
             // temp = <value>.next();
@@ -4199,6 +4219,7 @@ void BytecodeGenerator::BuildDestructuringArrayAssignment(
 
             BuildAssignment(lhs_data, op, lookup_hoisting_mode);
           } else {
+            builder()->LoadFalse().StoreAccumulatorInRegister(done);
             DCHECK_EQ(lhs_data.assign_type(), NON_PROPERTY);
             is_done.Bind(builder());
           }
@@ -5214,6 +5235,7 @@ void BytecodeGenerator::BuildPrivateBrandCheck(Property* property,
       builder()->CompareReference(object).JumpIfTrue(
           ToBooleanMode::kAlreadyBoolean, &return_check);
       const AstRawString* name = scope->class_variable()->raw_name();
+      RegisterAllocationScope register_scope(this);
       RegisterList args = register_allocator()->NewRegisterList(2);
       builder()
           ->LoadLiteral(
@@ -5631,8 +5653,25 @@ void BytecodeGenerator::VisitCallSuper(Call* expr) {
   Register instance = register_allocator()->NewRegister();
   builder()->StoreAccumulatorInRegister(instance);
 
-  if (info()->literal()->class_scope_has_private_brand()) {
-    BuildPrivateBrandInitialization(instance);
+  // The constructor scope always needs ScopeInfo, so we are certain that
+  // the first constructor scope found in the outer scope chain is the
+  // scope that we are looking for for this super() call.
+  // Note that this doesn't necessarily mean that the constructor needs
+  // a context, if it doesn't this would get handled specially in
+  // BuildPrivateBrandInitialization().
+  DeclarationScope* constructor_scope = info()->scope()->GetConstructorScope();
+
+  // We can rely on the class_scope_has_private_brand bit to tell if the
+  // constructor needs private brand initialization, and if that's
+  // the case we are certain that its outer class scope requires a context to
+  // keep the brand variable, so we can just get the brand variable
+  // from the outer scope.
+  if (constructor_scope->class_scope_has_private_brand()) {
+    DCHECK(constructor_scope->outer_scope()->is_class_scope());
+    ClassScope* class_scope = constructor_scope->outer_scope()->AsClassScope();
+    DCHECK_NOT_NULL(class_scope->brand());
+    Variable* brand = class_scope->brand();
+    BuildPrivateBrandInitialization(instance, brand);
   }
 
   // The derived constructor has the correct bit set always, so we

@@ -209,15 +209,17 @@ bool TlsClientHandshaker::SetAlpn() {
 
   // Enable ALPS only for versions that use HTTP/3 frames.
   for (const std::string& alpn_string : alpns) {
-    ParsedQuicVersion version = ParseQuicVersionString(alpn_string);
-    if (!version.IsKnown() || !version.UsesHttp3()) {
-      continue;
-    }
-    if (SSL_add_application_settings(
-            ssl(), reinterpret_cast<const uint8_t*>(alpn_string.data()),
-            alpn_string.size(), nullptr, /* settings_len = */ 0) != 1) {
-      QUIC_BUG(quic_bug_10576_7) << "Failed to enable ALPS.";
-      return false;
+    for (const ParsedQuicVersion& version : session()->supported_versions()) {
+      if (!version.UsesHttp3() || AlpnForVersion(version) != alpn_string) {
+        continue;
+      }
+      if (SSL_add_application_settings(
+              ssl(), reinterpret_cast<const uint8_t*>(alpn_string.data()),
+              alpn_string.size(), nullptr, /* settings_len = */ 0) != 1) {
+        QUIC_BUG(quic_bug_10576_7) << "Failed to enable ALPS.";
+        return false;
+      }
+      break;
     }
   }
 
@@ -239,9 +241,6 @@ bool TlsClientHandshaker::SetTransportParameters() {
 
   if (!handshaker_delegate()->FillTransportParameters(&params)) {
     return false;
-  }
-  if (!user_agent_id_.empty()) {
-    params.user_agent_id = user_agent_id_;
   }
 
   // Notify QuicConnectionDebugVisitor.
@@ -393,10 +392,6 @@ HandshakeState TlsClientHandshaker::GetHandshakeState() const {
 size_t TlsClientHandshaker::BufferSizeLimitForLevel(
     EncryptionLevel level) const {
   return TlsHandshaker::BufferSizeLimitForLevel(level);
-}
-
-bool TlsClientHandshaker::KeyUpdateSupportedLocally() const {
-  return true;
 }
 
 std::unique_ptr<QuicDecrypter>

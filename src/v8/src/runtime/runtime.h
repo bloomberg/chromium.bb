@@ -107,11 +107,10 @@ namespace internal {
   F(CompileForOnStackReplacement, 0, 1)   \
   F(CompileLazy, 1, 1)                    \
   F(CompileBaseline, 1, 1)                \
-  F(CompileOptimized_Concurrent, 1, 1)    \
-  F(CompileOptimized_NotConcurrent, 1, 1) \
+  F(CompileTurbofan_Concurrent, 1, 1)     \
+  F(CompileTurbofan_NotConcurrent, 1, 1)  \
   F(InstallBaselineCode, 1, 1)            \
   F(HealOptimizedCodeSlot, 1, 1)          \
-  F(FunctionFirstExecution, 1, 1)         \
   F(InstantiateAsmJs, 4, 1)               \
   F(NotifyDeoptimized, 0, 1)              \
   F(ObserveNode, 1, 1)                    \
@@ -223,7 +222,6 @@ namespace internal {
   F(IncrementUseCounter, 1, 1)                               \
   F(BytecodeBudgetInterruptFromBytecode, 1, 1)               \
   F(BytecodeBudgetInterruptWithStackCheckFromBytecode, 1, 1) \
-  F(BytecodeBudgetInterruptFromCode, 1, 1)                   \
   F(NewError, 2, 1)                                          \
   F(NewReferenceError, 2, 1)                                 \
   F(NewSyntaxError, 2, 1)                                    \
@@ -287,6 +285,7 @@ namespace internal {
 
 #define FOR_EACH_INTRINSIC_OBJECT(F, I)                         \
   F(AddDictionaryProperty, 3, 1)                                \
+  F(AddPrivateBrand, 4, 1)                                      \
   F(AllocateHeapNumber, 0, 1)                                   \
   F(CollectTypeProfile, 3, 1)                                   \
   F(CompleteInobjectSlackTrackingForMap, 1, 1)                  \
@@ -478,7 +477,6 @@ namespace internal {
   F(DeoptimizeFunction, 1, 1)                 \
   F(DisallowCodegenFromStrings, 1, 1)         \
   F(DisassembleFunction, 1, 1)                \
-  F(DynamicCheckMapsEnabled, 0, 1)            \
   F(EnableCodeLoggingForTesting, 0, 1)        \
   F(EnsureFeedbackVectorForFunction, 1, 1)    \
   F(DisableOptimizationFinalization, 0, 1)    \
@@ -522,8 +520,8 @@ namespace internal {
   F(IsConcatSpreadableProtector, 0, 1)        \
   F(IsConcurrentRecompilationSupported, 0, 1) \
   F(IsDictPropertyConstTrackingEnabled, 0, 1) \
-  F(IsMidTierTurboprop, 0, 1)                 \
-  F(IsTopTierTurboprop, 0, 1)                 \
+  F(IsSameHeapObject, 2, 1)                   \
+  F(IsSharedString, 1, 1)                     \
   F(MapIteratorProtector, 0, 1)               \
   F(NeverOptimizeFunction, 1, 1)              \
   F(NewRegExpWithBacktrackLimit, 3, 1)        \
@@ -547,11 +545,11 @@ namespace internal {
   F(SetAllocationTimeout, -1 /* 2 || 3 */, 1) \
   F(SetForceSlowPath, 1, 1)                   \
   F(SetIteratorProtector, 0, 1)               \
+  F(SharedGC, 0, 1)                           \
   F(SimulateNewspaceFull, 0, 1)               \
   F(StringIteratorProtector, 0, 1)            \
   F(SystemBreak, 0, 1)                        \
   F(TakeHeapSnapshot, -1, 1)                  \
-  F(TierupFunctionOnNextCall, -1, 1)          \
   F(TraceEnter, 0, 1)                         \
   F(TraceExit, 1, 1)                          \
   F(TurbofanStaticAssert, 1, 1)               \
@@ -590,10 +588,11 @@ namespace internal {
   F(WasmCompileWrapper, 2, 1)         \
   F(WasmTriggerTierUp, 1, 1)          \
   F(WasmDebugBreak, 0, 1)             \
-  F(WasmAllocateRtt, 3, 1)            \
   F(WasmArrayCopy, 5, 1)              \
+  F(WasmArrayInitFromData, 5, 1)      \
   F(WasmAllocateContinuation, 1, 1)   \
-  F(WasmSyncStackLimit, 0, 1)
+  F(WasmSyncStackLimit, 0, 1)         \
+  F(WasmCreateResumePromise, 2, 1)
 
 #define FOR_EACH_INTRINSIC_WASM_TEST(F, I) \
   F(DeserializeWasmModule, 2, 1)           \

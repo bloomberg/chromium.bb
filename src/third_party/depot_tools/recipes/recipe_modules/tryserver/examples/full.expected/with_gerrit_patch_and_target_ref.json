@@ -233,35 +233,6 @@
     ]
   },
   {
-    "cmd": [
-      "git",
-      "-c",
-      "core.quotePath=false",
-      "diff",
-      "--cached",
-      "--name-only"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:linux"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "git diff to analyze patch",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@files@None/foo.cc@@@",
-      "@@@STEP_LOG_END@files@@@",
-      "@@@SET_BUILD_PROPERTY@affected_files@{\"first_100\": [\"None/foo.cc\"], \"total_count\": 1}@@@"
-    ]
-  },
-  {
     "cmd": [],
     "name": "TRYJOB SET SUBPROJECT_TAG",
     "~followup_annotations": [

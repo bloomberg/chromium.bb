@@ -268,6 +268,14 @@ bool FunctionLiteral::private_name_lookup_skips_outer_class() const {
   return scope()->private_name_lookup_skips_outer_class();
 }
 
+bool FunctionLiteral::class_scope_has_private_brand() const {
+  return scope()->class_scope_has_private_brand();
+}
+
+void FunctionLiteral::set_class_scope_has_private_brand(bool value) {
+  return scope()->set_class_scope_has_private_brand(value);
+}
+
 ObjectLiteralProperty::ObjectLiteralProperty(Expression* key, Expression* value,
                                              Kind kind, bool is_computed_name)
     : LiteralProperty(key, value, is_computed_name),
@@ -669,7 +677,8 @@ void ArrayLiteral::BuildBoilerplateDescription(IsolateT* isolate) {
   // elements array to a copy-on-write array.
   if (is_simple() && depth() == 1 && array_index > 0 &&
       IsSmiOrObjectElementsKind(kind)) {
-    elements->set_map(ReadOnlyRoots(isolate).fixed_cow_array_map());
+    elements->set_map_safe_transition(
+        ReadOnlyRoots(isolate).fixed_cow_array_map());
   }
 
   boilerplate_description_ =

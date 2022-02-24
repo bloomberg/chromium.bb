@@ -197,6 +197,12 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   _mostVisitedSites.reset();
 }
 
+- (void)refreshMostVisitedTiles {
+  // Refresh in case there are new MVT to show.
+  _mostVisitedSites->RefreshTiles();
+  _mostVisitedSites->Refresh();
+}
+
 - (void)reloadAllData {
   NSArray<ContentSuggestionsSectionInformation*>* sections =
       [self sectionsInfo];
@@ -322,11 +328,16 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     item.index = index;
     DCHECK(index < kShortcutMinimumIndex);
     index++;
-    [self.faviconMediator fetchFaviconForMostVisited:item];
+    if (IsSingleCellContentSuggestionsEnabled()) {
+      [self.faviconMediator fetchFaviconForMostVisited:item
+                                            parentItem:self.parentItem];
+    } else {
+      [self.faviconMediator fetchFaviconForMostVisited:item];
+    }
     [self.freshMostVisitedItems addObject:item];
   }
 
-  if ([self.mostVisitedItems count] > 0) {
+  if (!IsSingleNtpEnabled() && [self.mostVisitedItems count] > 0) {
     // If some content is already displayed to the user, do not update without a
     // user action.
     return;
@@ -349,7 +360,12 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
   for (ContentSuggestionsMostVisitedItem* item in self.mostVisitedItems) {
     if (item.URL == siteURL) {
-      [self.faviconMediator fetchFaviconForMostVisited:item];
+      if (IsSingleCellContentSuggestionsEnabled()) {
+        [self.faviconMediator fetchFaviconForMostVisited:item
+                                              parentItem:self.parentItem];
+      } else {
+        [self.faviconMediator fetchFaviconForMostVisited:item];
+      }
       return;
     }
   }
@@ -381,7 +397,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   NSMutableArray<ContentSuggestionsSectionInformation*>* sectionsInfo =
       [NSMutableArray array];
 
-  [sectionsInfo addObject:self.logoSectionInfo];
+  if (!IsContentSuggestionsHeaderMigrationEnabled()) {
+    [sectionsInfo addObject:self.logoSectionInfo];
+  }
 
   if (IsSingleCellContentSuggestionsEnabled()) {
     [sectionsInfo addObject:self.singleCellSectionInfo];

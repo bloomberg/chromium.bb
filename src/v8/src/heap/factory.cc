@@ -1063,6 +1063,7 @@ MaybeHandle<String> Factory::NewExternalStringFromOneByte(
   external_string.set_length(static_cast<int>(length));
   external_string.set_raw_hash_field(String::kEmptyHashField);
   external_string.SetResource(isolate(), resource);
+
   isolate()->heap()->RegisterExternalString(external_string);
 
   return Handle<String>(external_string, isolate());
@@ -1085,7 +1086,9 @@ MaybeHandle<String> Factory::NewExternalStringFromTwoByte(
   string.set_length(static_cast<int>(length));
   string.set_raw_hash_field(String::kEmptyHashField);
   string.SetResource(isolate(), resource);
+
   isolate()->heap()->RegisterExternalString(string);
+
   return Handle<ExternalTwoByteString>(string, isolate());
 }
 
@@ -1112,9 +1115,9 @@ Symbol Factory::NewSymbolInternal(AllocationType allocation) {
       Symbol::kSize, allocation, read_only_roots().symbol_map()));
   DisallowGarbageCollection no_gc;
   // Generate a random hash value.
-  int hash = isolate()->GenerateIdentityHash(Name::kHashBitMask);
-  symbol.set_raw_hash_field(Name::kIsNotIntegerIndexMask |
-                            (hash << Name::kHashShift));
+  int hash = isolate()->GenerateIdentityHash(Name::HashBits::kMax);
+  symbol.set_raw_hash_field(
+      Name::CreateHashFieldValue(hash, Name::HashFieldType::kHash));
   symbol.set_description(read_only_roots().undefined_value(),
                          SKIP_WRITE_BARRIER);
   symbol.set_flags(0);
@@ -1207,7 +1210,9 @@ Handle<ScriptContextTable> Factory::NewScriptContextTable() {
   Handle<ScriptContextTable> context_table = Handle<ScriptContextTable>::cast(
       NewFixedArrayWithMap(read_only_roots().script_context_table_map_handle(),
                            ScriptContextTable::kMinLength));
+  Handle<NameToIndexHashTable> names = NameToIndexHashTable::New(isolate(), 16);
   context_table->set_used(0, kReleaseStore);
+  context_table->set_names_to_context_index(*names);
   return context_table;
 }
 
@@ -1483,7 +1488,6 @@ Handle<WasmTypeInfo> Factory::NewWasmTypeInfo(
   // The supertypes list is constant after initialization, so we pretenure
   // that too. The subtypes list, however, is expected to grow (and hence be
   // replaced), so we don't pretenure it.
-  Handle<ArrayList> subtypes = ArrayList::New(isolate(), 0);
   Handle<FixedArray> supertypes;
   if (opt_parent.is_null()) {
     supertypes = NewFixedArray(wasm::kMinimumSupertypeArraySize);
@@ -1512,7 +1516,7 @@ Handle<WasmTypeInfo> Factory::NewWasmTypeInfo(
   result.AllocateExternalPointerEntries(isolate());
   result.set_foreign_address(isolate(), type_address);
   result.set_supertypes(*supertypes);
-  result.set_subtypes(*subtypes);
+  result.set_subtypes(ReadOnlyRoots(isolate()).empty_array_list());
   result.set_instance_size(instance_size_bytes);
   result.set_instance(*instance);
   return handle(result, isolate());
@@ -1574,6 +1578,17 @@ Handle<WasmJSFunctionData> Factory::NewWasmJSFunctionData(
   return handle(result, isolate());
 }
 
+Handle<WasmOnFulfilledData> Factory::NewWasmOnFulfilledData(
+    Handle<WasmSuspenderObject> suspender) {
+  Map map = *wasm_onfulfilled_data_map();
+  WasmOnFulfilledData result =
+      WasmOnFulfilledData::cast(AllocateRawWithImmortalMap(
+          map.instance_size(), AllocationType::kOld, map));
+  DisallowGarbageCollection no_gc;
+  result.set_suspender(*suspender);
+  return handle(result, isolate());
+}
+
 Handle<WasmExportedFunctionData> Factory::NewWasmExportedFunctionData(
     Handle<CodeT> export_wrapper, Handle<WasmInstanceObject> instance,
     Address call_target, Handle<Object> ref, int func_index,
@@ -1593,8 +1608,12 @@ Handle<WasmExportedFunctionData> Factory::NewWasmExportedFunctionData(
   result.set_function_index(func_index);
   result.set_signature(*sig_foreign);
   result.set_wrapper_budget(wrapper_budget);
-  result.set_c_wrapper_code(*BUILTIN_CODE(isolate(), Illegal),
-                            SKIP_WRITE_BARRIER);
+  // We can't skip the write barrier when V8_EXTERNAL_CODE_SPACE is enabled
+  // because in this case the CodeT (CodeDataContainer) objects are not
+  // immovable.
+  result.set_c_wrapper_code(
+      *BUILTIN_CODE(isolate(), Illegal),
+      V8_EXTERNAL_CODE_SPACE_BOOL ? UPDATE_WRITE_BARRIER : SKIP_WRITE_BARRIER);
   result.set_packed_args_size(0);
   result.set_suspender(*undefined_value());
   return handle(result, isolate());
@@ -1620,12 +1639,13 @@ Handle<WasmCapiFunctionData> Factory::NewWasmCapiFunctionData(
   return handle(result, isolate());
 }
 
-Handle<WasmArray> Factory::NewWasmArray(
+Handle<WasmArray> Factory::NewWasmArrayFromElements(
     const wasm::ArrayType* type, const std::vector<wasm::WasmValue>& elements,
     Handle<Map> map) {
   uint32_t length = static_cast<uint32_t>(elements.size());
   HeapObject raw =
       AllocateRaw(WasmArray::SizeFor(*map, length), AllocationType::kYoung);
+  DisallowGarbageCollection no_gc;
   raw.set_map_after_allocation(*map);
   WasmArray result = WasmArray::cast(raw);
   result.set_raw_properties_or_hash(*empty_fixed_array(), kRelaxedStore);
@@ -1643,6 +1663,27 @@ Handle<WasmArray> Factory::NewWasmArray(
       TaggedField<Object>::store(result, offset, *elements[i].to_ref());
     }
   }
+  return handle(result, isolate());
+}
+
+Handle<WasmArray> Factory::NewWasmArrayFromMemory(uint32_t length,
+                                                  Handle<Map> map,
+                                                  Address source) {
+  wasm::ValueType element_type = reinterpret_cast<wasm::ArrayType*>(
+                                     map->wasm_type_info().foreign_address())
+                                     ->element_type();
+  DCHECK(element_type.is_numeric());
+  HeapObject raw =
+      AllocateRaw(WasmArray::SizeFor(*map, length), AllocationType::kYoung);
+  DisallowGarbageCollection no_gc;
+  raw.set_map_after_allocation(*map);
+  WasmArray result = WasmArray::cast(raw);
+  result.set_raw_properties_or_hash(*empty_fixed_array(), kRelaxedStore);
+  result.set_length(length);
+  MemCopy(reinterpret_cast<void*>(result.ElementAddress(0)),
+          reinterpret_cast<void*>(source),
+          length * element_type.element_size_bytes());
+
   return handle(result, isolate());
 }
 
@@ -1676,6 +1717,11 @@ Factory::NewSharedFunctionInfoForWasmExportedFunction(
 Handle<SharedFunctionInfo> Factory::NewSharedFunctionInfoForWasmJSFunction(
     Handle<String> name, Handle<WasmJSFunctionData> data) {
   return NewSharedFunctionInfo(name, data, Builtin::kNoBuiltinId);
+}
+
+Handle<SharedFunctionInfo> Factory::NewSharedFunctionInfoForWasmOnFulfilled(
+    Handle<WasmOnFulfilledData> data) {
+  return NewSharedFunctionInfo({}, data, Builtin::kNoBuiltinId);
 }
 
 Handle<SharedFunctionInfo> Factory::NewSharedFunctionInfoForWasmCapiFunction(
@@ -1814,6 +1860,14 @@ Map Factory::InitializeMap(Map map, InstanceType type, int instance_size,
                            ElementsKind elements_kind,
                            int inobject_properties) {
   DisallowGarbageCollection no_gc;
+  map.set_bit_field(0);
+  map.set_bit_field2(Map::Bits2::NewTargetIsBaseBit::encode(true));
+  int bit_field3 =
+      Map::Bits3::EnumLengthBits::encode(kInvalidEnumCacheSentinel) |
+      Map::Bits3::OwnsDescriptorsBit::encode(true) |
+      Map::Bits3::ConstructionCounterBits::encode(Map::kNoSlackTracking) |
+      Map::Bits3::IsExtensibleBit::encode(true);
+  map.set_bit_field3(bit_field3);
   map.set_instance_type(type);
   HeapObject raw_null_value = *null_value();
   map.set_prototype(raw_null_value, SKIP_WRITE_BARRIER);
@@ -1840,14 +1894,6 @@ Map Factory::InitializeMap(Map map, InstanceType type, int instance_size,
   map.SetInstanceDescriptors(isolate(), *empty_descriptor_array(), 0);
   // Must be called only after |instance_type| and |instance_size| are set.
   map.set_visitor_id(Map::GetVisitorId(map));
-  map.set_bit_field(0);
-  map.set_bit_field2(Map::Bits2::NewTargetIsBaseBit::encode(true));
-  int bit_field3 =
-      Map::Bits3::EnumLengthBits::encode(kInvalidEnumCacheSentinel) |
-      Map::Bits3::OwnsDescriptorsBit::encode(true) |
-      Map::Bits3::ConstructionCounterBits::encode(Map::kNoSlackTracking) |
-      Map::Bits3::IsExtensibleBit::encode(true);
-  map.set_bit_field3(bit_field3);
   DCHECK(!map.is_in_retained_map_list());
   map.clear_padding();
   map.set_elements_kind(elements_kind);
@@ -2699,7 +2745,6 @@ Handle<SourceTextModule> Factory::NewSourceTextModule(
   Handle<FixedArray> requested_modules =
       requested_modules_length > 0 ? NewFixedArray(requested_modules_length)
                                    : empty_fixed_array();
-  Handle<ArrayList> async_parent_modules = ArrayList::New(isolate(), 0);
 
   ReadOnlyRoots roots(isolate());
   SourceTextModule module = SourceTextModule::cast(
@@ -2723,7 +2768,7 @@ Handle<SourceTextModule> Factory::NewSourceTextModule(
   module.set_async(IsAsyncModule(sfi->kind()));
   module.set_async_evaluating_ordinal(SourceTextModule::kNotAsyncEvaluated);
   module.set_cycle_root(roots.the_hole_value(), SKIP_WRITE_BARRIER);
-  module.set_async_parent_modules(*async_parent_modules);
+  module.set_async_parent_modules(roots.empty_array_list());
   module.set_pending_async_dependencies(0);
   return handle(module, isolate());
 }

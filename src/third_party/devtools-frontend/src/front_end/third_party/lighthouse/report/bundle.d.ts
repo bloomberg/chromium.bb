@@ -257,6 +257,7 @@ export class ReportUIFeatures {
         icon?: string;
         onClick: () => void;
     }): HTMLElementByTagName;
+    resetUIState(): void;
     /**
      * Returns the html that recreates this report.
      * @return {string}
@@ -288,9 +289,6 @@ export class ReportUIFeatures {
      */
     _getThirdPartyRows(rowEls: HTMLElement[], finalUrl: string): Array<HTMLElement>;
     /**
-     * DevTools uses its own file manager to download files, so it redefines this function.
-     * Wrapper is necessary so DevTools can still override this function.
-     *
      * @param {Blob|File} blob
      */
     _saveFile(blob: Blob | File): void;

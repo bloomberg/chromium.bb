@@ -1,4 +1,4 @@
-// Copyright 2021 The Tint Authors.
+// Copyright 2022 The Tint Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,79 +13,56 @@
 // limitations under the License.
 
 #include "src/transform/var_for_dynamic_index.h"
-
-#include <utility>
-
 #include "src/program_builder.h"
-#include "src/sem/array.h"
-#include "src/sem/block_statement.h"
-#include "src/sem/expression.h"
-#include "src/sem/statement.h"
-#include "src/transform/for_loop_to_loop.h"
+#include "src/transform/utils/hoist_to_decl_before.h"
 
-namespace tint {
-namespace transform {
+namespace tint::transform {
 
 VarForDynamicIndex::VarForDynamicIndex() = default;
 
 VarForDynamicIndex::~VarForDynamicIndex() = default;
 
-void VarForDynamicIndex::Run(CloneContext& ctx, const DataMap&, DataMap&) {
-  ProgramBuilder out;
-  if (!Requires<ForLoopToLoop>(ctx)) {
-    return;
-  }
+void VarForDynamicIndex::Run(CloneContext& ctx,
+                             const DataMap&,
+                             DataMap&) const {
+  HoistToDeclBefore hoist_to_decl_before(ctx);
 
-  auto& sem = ctx.src->Sem();
+  // Extracts array and matrix values that are dynamically indexed to a
+  // temporary `var` local that is then indexed.
+  auto dynamic_index_to_var =
+      [&](const ast::IndexAccessorExpression* access_expr) {
+        auto* index_expr = access_expr->index;
+        auto* object_expr = access_expr->object;
+        auto& sem = ctx.src->Sem();
+
+        if (sem.Get(index_expr)->ConstantValue()) {
+          // Index expression resolves to a compile time value.
+          // As this isn't a dynamic index, we can ignore this.
+          return true;
+        }
+
+        auto* indexed = sem.Get(object_expr);
+        if (!indexed->Type()->IsAnyOf<sem::Array, sem::Matrix>()) {
+          // We only care about array and matrices.
+          return true;
+        }
+
+        // TODO(bclayton): group multiple accesses in the same object.
+        // e.g. arr[i] + arr[i+1] // Don't create two vars for this
+        return hoist_to_decl_before.Add(indexed, object_expr, false,
+                                        "var_for_index");
+      };
 
   for (auto* node : ctx.src->ASTNodes().Objects()) {
     if (auto* access_expr = node->As<ast::IndexAccessorExpression>()) {
-      // Found an array accessor expression
-      auto* index_expr = access_expr->index;
-      auto* object_expr = access_expr->object;
-
-      if (sem.Get(index_expr)->ConstantValue()) {
-        // Index expression resolves to a compile time value.
-        // As this isn't a dynamic index, we can ignore this.
-        continue;
+      if (!dynamic_index_to_var(access_expr)) {
+        return;
       }
-
-      auto* indexed = sem.Get(object_expr);
-      if (!indexed->Type()->IsAnyOf<sem::Array, sem::Matrix>()) {
-        // This transform currently only cares about array and matrices.
-        continue;
-      }
-
-      // Construct a `var` declaration to hold the value in memory.
-      // TODO(bclayton): group multiple accesses in the same object.
-      // e.g. arr[i] + arr[i+1] // Don't create two vars for this
-      auto var_name = ctx.dst->Symbols().New("var_for_index");
-      auto* var_decl = ctx.dst->Decl(
-          ctx.dst->Var(var_name, nullptr, ctx.Clone(object_expr)));
-
-      // Statement that owns the expression
-      auto* stmt = indexed->Stmt();
-      // Block that owns the statement
-      auto* block = stmt->Parent()->As<sem::BlockStatement>();
-      if (!block) {
-        TINT_ICE(Transform, ctx.dst->Diagnostics())
-            << "statement parent was not a block";
-        continue;
-      }
-
-      // Insert the `var` declaration before the statement that performs the
-      // indexing. Note that for indexing chains, AST node ordering guarantees
-      // that the inner-most index variable will be placed first in the block.
-      ctx.InsertBefore(block->Declaration()->statements, stmt->Declaration(),
-                       var_decl);
-
-      // Replace the original index expression with the new `var`.
-      ctx.Replace(object_expr, ctx.dst->Expr(var_name));
     }
   }
 
+  hoist_to_decl_before.Apply();
   ctx.Clone();
 }
 
-}  // namespace transform
-}  // namespace tint
+}  // namespace tint::transform

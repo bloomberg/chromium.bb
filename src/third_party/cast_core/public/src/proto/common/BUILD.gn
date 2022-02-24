@@ -13,26 +13,30 @@
 # limitations under the License.
 
 import("//third_party/cast_core/public/src/proto/proto.gni")
-cast_core_proto_library("duration") {
+cast_core_proto_library("duration_proto") {
     sources = [
         "duration.proto",
     ]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }
 
-cast_core_proto_library("application_config") {
+cast_core_proto_library("application_config_proto") {
     sources = [
         "application_config.proto",
     ]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }
 
-cast_core_proto_library("runtime_metadata") {
+cast_core_proto_library("runtime_metadata_proto") {
     sources = [
         "runtime_metadata.proto",
     ]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }
 
-cast_core_proto_library("service_info") {
+cast_core_proto_library("service_info_proto") {
     sources = [
         "service_info.proto",
     ]
+    proto_in_dir = "//third_party/cast_core/public/src"
 }

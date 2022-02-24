@@ -584,15 +584,9 @@ inline WasmOpcode LoadStoreOpcodeOf(MachineType type, bool store) {
   __VA_ARGS__, WASM_GC_OP(kExprArrayInitStatic), static_cast<byte>(index), \
       static_cast<byte>(length)
 
-#define WASM_RTT_WITH_DEPTH(depth, typeidx) \
-  kRttWithDepthCode, U32V_1(depth), U32V_1(typeidx)
 #define WASM_RTT(typeidx) kRttCode, U32V_1(typeidx)
 #define WASM_RTT_CANON(typeidx) \
   WASM_GC_OP(kExprRttCanon), static_cast<byte>(typeidx)
-#define WASM_RTT_SUB(typeidx, supertype) \
-  supertype, WASM_GC_OP(kExprRttSub), static_cast<byte>(typeidx)
-#define WASM_RTT_FRESH_SUB(typeidx, supertype) \
-  supertype, WASM_GC_OP(kExprRttFreshSub), static_cast<byte>(typeidx)
 
 #define WASM_I31_NEW(val) val, WASM_GC_OP(kExprI31New)
 #define WASM_I31_GET_S(val) val, WASM_GC_OP(kExprI31GetS)

@@ -45,10 +45,10 @@ struct traits<CwiseBinaryOp<BinaryOp, Lhs, Rhs> >
                                       typename traits<Rhs>::StorageIndex>::type StorageIndex;
   typedef typename Lhs::Nested LhsNested;
   typedef typename Rhs::Nested RhsNested;
-  typedef typename remove_reference<LhsNested>::type _LhsNested;
-  typedef typename remove_reference<RhsNested>::type _RhsNested;
+  typedef typename remove_reference<LhsNested>::type LhsNested_;
+  typedef typename remove_reference<RhsNested>::type RhsNested_;
   enum {
-    Flags = cwise_promote_storage_order<typename traits<Lhs>::StorageKind,typename traits<Rhs>::StorageKind,_LhsNested::Flags & RowMajorBit,_RhsNested::Flags & RowMajorBit>::value
+    Flags = cwise_promote_storage_order<typename traits<Lhs>::StorageKind,typename traits<Rhs>::StorageKind,LhsNested_::Flags & RowMajorBit,RhsNested_::Flags & RowMajorBit>::value
   };
 };
 } // end namespace internal
@@ -102,8 +102,8 @@ class CwiseBinaryOp :
 
     typedef typename internal::ref_selector<LhsType>::type LhsNested;
     typedef typename internal::ref_selector<RhsType>::type RhsNested;
-    typedef typename internal::remove_reference<LhsNested>::type _LhsNested;
-    typedef typename internal::remove_reference<RhsNested>::type _RhsNested;
+    typedef typename internal::remove_reference<LhsNested>::type LhsNested_;
+    typedef typename internal::remove_reference<RhsNested>::type RhsNested_;
 
 #if EIGEN_COMP_MSVC
     //Required for Visual Studio or the Copy constructor will probably not get inlined!
@@ -131,10 +131,10 @@ class CwiseBinaryOp :
 
     /** \returns the left hand side nested expression */
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-    const _LhsNested& lhs() const { return m_lhs; }
+    const LhsNested_& lhs() const { return m_lhs; }
     /** \returns the right hand side nested expression */
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-    const _RhsNested& rhs() const { return m_rhs; }
+    const RhsNested_& rhs() const { return m_rhs; }
     /** \returns the functor representing the binary operation */
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     const BinaryOp& functor() const { return m_functor; }

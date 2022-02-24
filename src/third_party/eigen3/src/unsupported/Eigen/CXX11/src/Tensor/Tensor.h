@@ -275,7 +275,7 @@ class Tensor : public TensorBase<Tensor<Scalar_, NumIndices_, Options_, IndexTyp
 
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE Tensor(const Self& other)
-      : m_storage(other.m_storage)
+      : Base(other), m_storage(other.m_storage)
     {
     }
 
@@ -388,7 +388,6 @@ class Tensor : public TensorBase<Tensor<Scalar_, NumIndices_, Options_, IndexTyp
       // Nothing to do: rank 0 tensors have fixed size
     }
 
-#ifdef EIGEN_HAS_INDEX_LIST
     template <typename FirstType, typename... OtherTypes>
     EIGEN_DEVICE_FUNC
     void resize(const Eigen::IndexList<FirstType, OtherTypes...>& dimensions) {
@@ -398,7 +397,6 @@ class Tensor : public TensorBase<Tensor<Scalar_, NumIndices_, Options_, IndexTyp
       }
       resize(dims);
     }
-#endif
 
     /** Custom Dimension */
     template<typename CustomDimension,

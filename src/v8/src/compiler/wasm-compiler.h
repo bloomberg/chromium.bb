@@ -15,6 +15,7 @@
 // Clients of this interface shouldn't depend on lots of compiler internals.
 // Do not include anything from src/compiler here!
 #include "src/base/small-vector.h"
+#include "src/objects/js-function.h"
 #include "src/runtime/runtime.h"
 #include "src/wasm/function-body-decoder.h"
 #include "src/wasm/function-compiler.h"
@@ -72,6 +73,7 @@ enum class WasmImportCallKind : uint8_t {
   kLinkError,                // static Wasm->Wasm type error
   kRuntimeTypeError,         // runtime Wasm->JS type error
   kWasmToCapi,               // fast Wasm->C-API call
+  kWasmToJSFastApi,          // fast Wasm->JS Fast API C call
   kWasmToWasm,               // fast Wasm->Wasm call
   kJSFunctionArityMatch,     // fast Wasm->JS call
   kJSFunctionArityMismatch,  // Wasm->JS, needs adapter frame
@@ -130,6 +132,11 @@ V8_EXPORT_PRIVATE wasm::WasmCompilationResult CompileWasmImportCallWrapper(
 // Compiles a host call wrapper, which allows Wasm to call host functions.
 wasm::WasmCode* CompileWasmCapiCallWrapper(wasm::NativeModule*,
                                            const wasm::FunctionSig*);
+
+// Compiles a wrapper to call a Fast API function from Wasm.
+wasm::WasmCode* CompileWasmJSFastCallWrapper(wasm::NativeModule*,
+                                             const wasm::FunctionSig*,
+                                             Handle<JSFunction> target);
 
 // Returns an OptimizedCompilationJob object for a JS to Wasm wrapper.
 std::unique_ptr<OptimizedCompilationJob> NewJSToWasmCompilationJob(
@@ -223,7 +230,7 @@ class WasmGraphBuilder {
   struct ObjectReferenceKnowledge {
     bool object_can_be_null;
     ReferenceKind reference_kind;
-    int8_t rtt_depth;
+    uint8_t rtt_depth;
   };
   enum EnforceBoundsCheck : bool {  // --
     kNeedsBoundsCheck = true,
@@ -299,7 +306,8 @@ class WasmGraphBuilder {
   void AppendToMerge(Node* merge, Node* from);
   void AppendToPhi(Node* phi, Node* from);
 
-  void StackCheck(wasm::WasmCodePosition);
+  void StackCheck(WasmInstanceCacheNodes* shared_memory_instance_cache,
+                  wasm::WasmCodePosition);
 
   void PatchInStackCheckIfNeeded();
 
@@ -498,13 +506,15 @@ class WasmGraphBuilder {
   void ArrayCopy(Node* dst_array, Node* dst_index, CheckForNull dst_null_check,
                  Node* src_array, Node* src_index, CheckForNull src_null_check,
                  Node* length, wasm::WasmCodePosition position);
-  Node* ArrayInit(uint32_t array_index, const wasm::ArrayType* type, Node* rtt,
+  Node* ArrayInit(const wasm::ArrayType* type, Node* rtt,
                   base::Vector<Node*> elements);
+  Node* ArrayInitFromData(const wasm::ArrayType* type, uint32_t data_segment,
+                          Node* offset, Node* length, Node* rtt,
+                          wasm::WasmCodePosition position);
   Node* I31New(Node* input);
   Node* I31GetS(Node* input);
   Node* I31GetU(Node* input);
   Node* RttCanon(uint32_t type_index);
-  Node* RttSub(uint32_t type_index, Node* parent_rtt, WasmRttSubMode mode);
 
   Node* RefTest(Node* object, Node* rtt, ObjectReferenceKnowledge config);
   Node* RefCast(Node* object, Node* rtt, ObjectReferenceKnowledge config,
@@ -698,6 +708,9 @@ class WasmGraphBuilder {
   // generates {index > max ? Smi(max) : Smi(index)}
   Node* BuildConvertUint32ToSmiWithSaturation(Node* index, uint32_t maxval);
 
+  void MemTypeToUintPtrOrOOBTrap(std::initializer_list<Node**> nodes,
+                                 wasm::WasmCodePosition position);
+
   Node* IsNull(Node* object);
 
   void GetGlobalBaseAndOffset(const wasm::WasmGlobal&, Node** base_node,
@@ -769,7 +782,9 @@ class WasmGraphBuilder {
   Node* BuildMultiReturnFixedArrayFromIterable(const wasm::FunctionSig* sig,
                                                Node* iterable, Node* context);
 
-  Node* BuildUnsandboxExternalPointer(Node* external_pointer);
+  Node* BuildLoadExternalPointerFromObject(
+      Node* object, int offset,
+      ExternalPointerTag tag = kForeignForeignAddressTag);
 
   Node* BuildLoadCallTargetFromExportedFunctionData(Node* function_data);
 

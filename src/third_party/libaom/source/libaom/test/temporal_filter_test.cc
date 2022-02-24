@@ -11,6 +11,8 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <memory>
+#include <new>
 #include <string>
 #include <tuple>
 
@@ -178,8 +180,9 @@ void TemporalFilterTest::RunTest(int isRandom, int run_times,
     const int filter_strength = 5;
     const int mb_row = 0;
     const int mb_col = 0;
-    YV12_BUFFER_CONFIG *ref_frame =
-        (YV12_BUFFER_CONFIG *)malloc(sizeof(YV12_BUFFER_CONFIG));
+    std::unique_ptr<YV12_BUFFER_CONFIG> ref_frame(new (std::nothrow)
+                                                      YV12_BUFFER_CONFIG);
+    ASSERT_NE(ref_frame, nullptr);
     ref_frame->y_crop_height = 360;
     ref_frame->y_crop_width = 540;
     ref_frame->heights[PLANE_TYPE_Y] = height;
@@ -191,7 +194,8 @@ void TemporalFilterTest::RunTest(int isRandom, int run_times,
     ref_frame->flags = 0;  // Only support low bit-depth test.
     memcpy(src, src1_, 1024 * 3 * sizeof(uint8_t));
 
-    MACROBLOCKD *mbd = (MACROBLOCKD *)malloc(sizeof(MACROBLOCKD));
+    std::unique_ptr<MACROBLOCKD> mbd(new (std::nothrow) MACROBLOCKD);
+    ASSERT_NE(mbd, nullptr);
     mbd->bd = 8;
     for (int plane = AOM_PLANE_Y; plane < num_planes; plane++) {
       int plane_height = plane ? height >> subsampling_y : height;
@@ -202,19 +206,20 @@ void TemporalFilterTest::RunTest(int isRandom, int run_times,
       mbd->plane[plane].subsampling_y = plane ? subsampling_y : 0;
     }
 
-    params_.ref_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                     sigma, subblock_mvs, subblock_mses, q_factor,
+    params_.ref_func(ref_frame.get(), mbd.get(), block_size, mb_row, mb_col,
+                     num_planes, sigma, subblock_mvs, subblock_mses, q_factor,
                      filter_strength, src2_, accumulator_ref, count_ref);
-    params_.tst_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                     sigma, subblock_mvs, subblock_mses, q_factor,
+    params_.tst_func(ref_frame.get(), mbd.get(), block_size, mb_row, mb_col,
+                     num_planes, sigma, subblock_mvs, subblock_mses, q_factor,
                      filter_strength, src2_, accumulator_mod, count_mod);
 
     if (run_times > 1) {
       aom_usec_timer_start(&ref_timer);
       for (int j = 0; j < run_times; j++) {
-        params_.ref_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                         sigma, subblock_mvs, subblock_mses, q_factor,
-                         filter_strength, src2_, accumulator_ref, count_ref);
+        params_.ref_func(ref_frame.get(), mbd.get(), block_size, mb_row, mb_col,
+                         num_planes, sigma, subblock_mvs, subblock_mses,
+                         q_factor, filter_strength, src2_, accumulator_ref,
+                         count_ref);
       }
       aom_usec_timer_mark(&ref_timer);
       const int elapsed_time_c =
@@ -222,9 +227,10 @@ void TemporalFilterTest::RunTest(int isRandom, int run_times,
 
       aom_usec_timer_start(&test_timer);
       for (int j = 0; j < run_times; j++) {
-        params_.tst_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                         sigma, subblock_mvs, subblock_mses, q_factor,
-                         filter_strength, src2_, accumulator_mod, count_mod);
+        params_.tst_func(ref_frame.get(), mbd.get(), block_size, mb_row, mb_col,
+                         num_planes, sigma, subblock_mvs, subblock_mses,
+                         q_factor, filter_strength, src2_, accumulator_mod,
+                         count_mod);
       }
       aom_usec_timer_mark(&test_timer);
       const int elapsed_time_simd =
@@ -251,9 +257,6 @@ void TemporalFilterTest::RunTest(int isRandom, int run_times,
         }
       }
     }
-
-    free(ref_frame);
-    free(mbd);
   }
 }
 
@@ -433,8 +436,9 @@ void HBDTemporalFilterTest::RunTest(int isRandom, int run_times, int BD,
     const int filter_strength = 5;
     const int mb_row = 0;
     const int mb_col = 0;
-    YV12_BUFFER_CONFIG *ref_frame =
-        (YV12_BUFFER_CONFIG *)malloc(sizeof(YV12_BUFFER_CONFIG));
+    std::unique_ptr<YV12_BUFFER_CONFIG> ref_frame(new (std::nothrow)
+                                                      YV12_BUFFER_CONFIG);
+    ASSERT_NE(ref_frame, nullptr);
     ref_frame->y_crop_height = 360;
     ref_frame->y_crop_width = 540;
     ref_frame->heights[PLANE_TYPE_Y] = height;
@@ -446,7 +450,8 @@ void HBDTemporalFilterTest::RunTest(int isRandom, int run_times, int BD,
     ref_frame->flags = YV12_FLAG_HIGHBITDEPTH;  // Only Hihgbd bit-depth test.
     memcpy(src, src1_, 1024 * 3 * sizeof(uint16_t));
 
-    MACROBLOCKD *mbd = (MACROBLOCKD *)malloc(sizeof(MACROBLOCKD));
+    std::unique_ptr<MACROBLOCKD> mbd(new (std::nothrow) MACROBLOCKD);
+    ASSERT_NE(mbd, nullptr);
     mbd->bd = BD;
     for (int plane = AOM_PLANE_Y; plane < num_planes; plane++) {
       int plane_height = plane ? height >> subsampling_y : height;
@@ -457,21 +462,21 @@ void HBDTemporalFilterTest::RunTest(int isRandom, int run_times, int BD,
       mbd->plane[plane].subsampling_y = plane ? subsampling_y : 0;
     }
 
-    params_.ref_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                     sigma, subblock_mvs, subblock_mses, q_factor,
+    params_.ref_func(ref_frame.get(), mbd.get(), block_size, mb_row, mb_col,
+                     num_planes, sigma, subblock_mvs, subblock_mses, q_factor,
                      filter_strength, CONVERT_TO_BYTEPTR(src2_),
                      accumulator_ref, count_ref);
-    params_.tst_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                     sigma, subblock_mvs, subblock_mses, q_factor,
+    params_.tst_func(ref_frame.get(), mbd.get(), block_size, mb_row, mb_col,
+                     num_planes, sigma, subblock_mvs, subblock_mses, q_factor,
                      filter_strength, CONVERT_TO_BYTEPTR(src2_),
                      accumulator_mod, count_mod);
 
     if (run_times > 1) {
       aom_usec_timer_start(&ref_timer);
       for (int j = 0; j < run_times; j++) {
-        params_.ref_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                         sigma, subblock_mvs, subblock_mses, q_factor,
-                         filter_strength, CONVERT_TO_BYTEPTR(src2_),
+        params_.ref_func(ref_frame.get(), mbd.get(), block_size, mb_row, mb_col,
+                         num_planes, sigma, subblock_mvs, subblock_mses,
+                         q_factor, filter_strength, CONVERT_TO_BYTEPTR(src2_),
                          accumulator_ref, count_ref);
       }
       aom_usec_timer_mark(&ref_timer);
@@ -480,9 +485,9 @@ void HBDTemporalFilterTest::RunTest(int isRandom, int run_times, int BD,
 
       aom_usec_timer_start(&test_timer);
       for (int j = 0; j < run_times; j++) {
-        params_.tst_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
-                         sigma, subblock_mvs, subblock_mses, q_factor,
-                         filter_strength, CONVERT_TO_BYTEPTR(src2_),
+        params_.tst_func(ref_frame.get(), mbd.get(), block_size, mb_row, mb_col,
+                         num_planes, sigma, subblock_mvs, subblock_mses,
+                         q_factor, filter_strength, CONVERT_TO_BYTEPTR(src2_),
                          accumulator_mod, count_mod);
       }
       aom_usec_timer_mark(&test_timer);
@@ -510,9 +515,6 @@ void HBDTemporalFilterTest::RunTest(int isRandom, int run_times, int BD,
         }
       }
     }
-
-    free(ref_frame);
-    free(mbd);
   }
 }
 

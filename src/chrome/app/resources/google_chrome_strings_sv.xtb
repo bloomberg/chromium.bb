@@ -176,7 +176,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5170938038195470297">Profilen kan inte användas eftersom den tillhör en nyare version av Google Chrome.
 
 Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om du vill använda en nyare version av Chrome.</translation>
-<translation id="5193136243808726294">Det går inte att öppna den här sidan i Google Chrome OS.</translation>
 <translation id="521447420733633466">Om du delar en enhet med vänner och familj kan de konfigurera Chrome precis som de vill och surfa separat.</translation>
 <translation id="5251420635869119124">Gäster kan använda Chrome utan att lämna spår.</translation>
 <translation id="5334487786912937552">Du behöver ge Chrome åtkomst till lagringsutrymmet om det ska gå att ladda ned filer</translation>
@@ -187,8 +186,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om d
 Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="556024056938947818">Google Chrome försöker visa lösenord.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5657226924540934362">Om en inställning saknas på den här sidan tittar du i <ph name="LINK_BEGIN" />
-      inställningarna för Chrome OS<ph name="LINK_END" /></translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan vara skadlig och har blockerats av Chrome.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Administratören meddelar att du bör starta om Chrome så att uppdateringen tillämpas}=1{Administratören meddelar att du bör starta om Chrome så att uppdateringen tillämpas. Inkognitofönstret öppnas inte igen.}other{Administratören meddelar att du bör starta om Chrome så att uppdateringen tillämpas. De # inkognitofönstren öppnas inte igen.}}</translation>
 <translation id="5686916850681061684">Anpassa och styr Google Chrome. Någonting behöver ses över. Klicka här för mer information.</translation>

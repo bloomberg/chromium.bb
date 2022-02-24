@@ -96,7 +96,7 @@ PICK_MODE_CONTEXT *av1_alloc_pmc(const struct AV1_COMP *const cpi,
 
   if (num_pix <= MAX_PALETTE_SQUARE) {
     for (int i = 0; i < 2; ++i) {
-      if (!cpi->sf.rt_sf.use_nonrd_pick_mode || frame_is_intra_only(cm)) {
+      if (cm->features.allow_screen_content_tools) {
         AOM_CHECK_MEM_ERROR(
             &error, ctx->color_index_map[i],
             aom_memalign(32, num_pix * sizeof(*ctx->color_index_map[i])));

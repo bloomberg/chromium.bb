@@ -772,8 +772,7 @@ static bool IsNodeInNodes(
 
 static Node* FindViablePreviousSibling(
     const Node& node,
-    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes
-) {
+    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes) {
   for (Node* sibling = node.previousSibling(); sibling;
        sibling = sibling->previousSibling()) {
     if (!IsNodeInNodes(sibling, nodes))
@@ -784,8 +783,7 @@ static Node* FindViablePreviousSibling(
 
 static Node* FindViableNextSibling(
     const Node& node,
-    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes
-) {
+    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes) {
   for (Node* sibling = node.nextSibling(); sibling;
        sibling = sibling->nextSibling()) {
     if (!IsNodeInNodes(sibling, nodes))
@@ -1285,7 +1283,12 @@ Element* Node::FlatTreeParentForChildDirty() const {
       return data->AssignedSlot();
     return nullptr;
   }
-  return ParentOrShadowHostElement();
+  Element* parent = ParentOrShadowHostElement();
+  if (HTMLSlotElement* slot = DynamicTo<HTMLSlotElement>(parent)) {
+    if (slot->HasAssignedNodesNoRecalc())
+      return nullptr;
+  }
+  return parent;
 }
 
 void Node::MarkAncestorsWithChildNeedsReattachLayoutTree() {
@@ -1360,11 +1363,12 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
   if (change_type > existing_change_type)
     SetStyleChange(change_type);
 
-  auto* this_element = DynamicTo<Element>(this);
   if (existing_change_type == kNoStyleChange)
     MarkAncestorsWithChildNeedsStyleRecalc();
 
-  if (this_element && HasRareData())
+  // NOTE: If we are being called from SetNeedsAnimationStyleRecalc(), the
+  // AnimationStyleChange bit may be reset to 'true'.
+  if (auto* this_element = DynamicTo<Element>(this))
     this_element->SetAnimationStyleChange(false);
 
   if (auto* svg_element = DynamicTo<SVGElement>(this))
@@ -1668,13 +1672,13 @@ bool Node::CanStartSelection() const {
 
   if (GetLayoutObject()) {
     const ComputedStyle& style = GetLayoutObject()->StyleRef();
-    if (style.UserSelect() == EUserSelect::kNone)
+    EUserSelect user_select = style.UsedUserSelect();
+    if (user_select == EUserSelect::kNone)
       return false;
     // We allow selections to begin within |user-select: text/all| sub trees
     // but not if the element is draggable.
     if (style.UserDrag() != EUserDrag::kElement &&
-        (style.UserSelect() == EUserSelect::kText ||
-         style.UserSelect() == EUserSelect::kAll))
+        (user_select == EUserSelect::kText || user_select == EUserSelect::kAll))
       return true;
   }
   ContainerNode* parent = FlatTreeTraversal::Parent(*this);
@@ -3316,7 +3320,16 @@ void Node::FlatTreeParentChanged() {
     // Clear ensured styles so that we can use IsEnsuredOutsideFlatTree() to
     // determine that we are outside the flat tree before updating the style
     // recalc root in MarkAncestorsWithChildNeedsStyleRecalc().
-    if (style->IsEnsuredOutsideFlatTree())
+    bool detach = style->IsEnsuredOutsideFlatTree();
+    if (!detach) {
+      // If the recalc parent does not have a computed style, we are either in
+      // a display:none subtree or outside the flat tree. Detach to make sure
+      // we don't unnecessarily mark for recalc or hold on to ComputedStyle or
+      // LayoutObjects in such subtrees.
+      if (Element* recalc_parent = GetStyleRecalcParent())
+        detach = !recalc_parent->GetComputedStyle();
+    }
+    if (detach)
       DetachLayoutTree();
   }
   // The node changed the flat tree position by being slotted to a new slot or
@@ -3327,7 +3340,14 @@ void Node::FlatTreeParentChanged() {
     // child-dirty flags are updated, but the SetNeedsStyleRecalc() call below
     // will skip MarkAncestorsWithChildNeedsStyleRecalc() if the node was
     // already dirty.
-    MarkAncestorsWithChildNeedsStyleRecalc();
+    if (ShouldSkipMarkingStyleDirty()) {
+      // If set, the dirty bits should have been cleared by DetachLayoutTree
+      // above.
+      DCHECK(!ChildNeedsStyleRecalc());
+      DCHECK(!NeedsStyleRecalc());
+    } else {
+      MarkAncestorsWithChildNeedsStyleRecalc();
+    }
   }
   SetNeedsStyleRecalc(kLocalStyleChange,
                       StyleChangeReasonForTracing::Create(

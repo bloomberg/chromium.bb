@@ -2,6 +2,9 @@ Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
 version <next>:
+
+
+version 5.0:
 - ADPCM IMA Westwood encoder
 - Westwood AUD muxer
 - ADPCM IMA Acorn Replay decoder
@@ -30,6 +33,21 @@ version <next>:
 - xcorrelate video filter
 - varblur video filter
 - huesaturation video filter
+- colorspectrum source video filter
+- RTP packetizer for uncompressed video (RFC 4175)
+- bitpacked encoder
+- VideoToolbox VP9 hwaccel
+- VideoToolbox ProRes hwaccel
+- support loongarch.
+- aspectralstats audio filter
+- adynamicsmooth audio filter
+- libplacebo filter
+- vflip_vulkan, hflip_vulkan and flip_vulkan filters
+- adynamicequalizer audio filter
+- yadif_videotoolbox filter
+- VideoToolbox ProRes encoder
+- anlmf audio filter
+- IMF demuxer (experimental)
 
 
 version 4.4:

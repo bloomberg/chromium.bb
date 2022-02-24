@@ -67,6 +67,8 @@ struct PhysicalDevice {
     // VkDevice handles created from this physical device
     std::vector<VkDevice> device_handles;
 
+    std::vector<DispatchableHandle<VkQueue>> queue_handles;
+
     // List of function names which are 'known' to the physical device but have test defined implementations
     // The purpose of this list is so that vkGetDeviceProcAddr returns 'a real function pointer' in tests
     // without actually implementing any of the logic inside of it.
@@ -74,6 +76,11 @@ struct PhysicalDevice {
 };
 
 struct PhysicalDeviceGroup {
+    PhysicalDeviceGroup() {}
+    PhysicalDeviceGroup(PhysicalDevice const& physical_device) { physical_device_handles.push_back(&physical_device); }
+    PhysicalDeviceGroup(std::vector<PhysicalDevice*> const& physical_devices) {
+        physical_device_handles.insert(physical_device_handles.end(), physical_devices.begin(), physical_devices.end());
+    }
     PhysicalDeviceGroup& use_physical_device(PhysicalDevice const& physical_device) {
         physical_device_handles.push_back(&physical_device);
         return *this;

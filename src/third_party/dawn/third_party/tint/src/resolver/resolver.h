@@ -23,7 +23,7 @@
 #include <utility>
 #include <vector>
 
-#include "src/intrinsic_table.h"
+#include "src/builtin_table.h"
 #include "src/program_builder.h"
 #include "src/resolver/dependency_graph.h"
 #include "src/scope_stack.h"
@@ -59,11 +59,11 @@ namespace sem {
 class Array;
 class Atomic;
 class BlockStatement;
+class Builtin;
 class CaseStatement;
 class ElseStatement;
 class ForLoopStatement;
 class IfStatement;
-class Intrinsic;
 class LoopStatement;
 class Statement;
 class SwitchStatement;
@@ -191,10 +191,10 @@ class Resolver {
                           const std::vector<const sem::Expression*> args,
                           sem::Behaviors arg_behaviors);
   sem::Expression* Identifier(const ast::IdentifierExpression*);
-  sem::Call* IntrinsicCall(const ast::CallExpression*,
-                           sem::IntrinsicType,
-                           const std::vector<const sem::Expression*> args,
-                           const std::vector<const sem::Type*> arg_tys);
+  sem::Call* BuiltinCall(const ast::CallExpression*,
+                         sem::BuiltinType,
+                         const std::vector<const sem::Expression*> args,
+                         const std::vector<const sem::Type*> arg_tys);
   sem::Expression* Literal(const ast::LiteralExpression*);
   sem::Expression* MemberAccessor(const ast::MemberAccessorExpression*);
   sem::Call* TypeConversion(const ast::CallExpression* expr,
@@ -219,6 +219,7 @@ class Resolver {
   sem::ElseStatement* ElseStatement(const ast::ElseStatement*);
   sem::Statement* FallthroughStatement(const ast::FallthroughStatement*);
   sem::ForLoopStatement* ForLoopStatement(const ast::ForLoopStatement*);
+  sem::GlobalVariable* GlobalVariable(const ast::Variable*);
   sem::Statement* Parameter(const ast::Variable*);
   sem::IfStatement* IfStatement(const ast::IfStatement*);
   sem::LoopStatement* LoopStatement(const ast::LoopStatement*);
@@ -228,24 +229,22 @@ class Resolver {
   sem::Statement* VariableDeclStatement(const ast::VariableDeclStatement*);
   bool Statements(const ast::StatementList&);
 
-  bool GlobalVariable(const ast::Variable*);
-
   // AST and Type validation methods
   // Each return true on success, false on failure.
   bool ValidateAlias(const ast::Alias*);
   bool ValidateArray(const sem::Array* arr, const Source& source);
-  bool ValidateArrayStrideDecoration(const ast::StrideDecoration* deco,
-                                     uint32_t el_size,
-                                     uint32_t el_align,
-                                     const Source& source);
+  bool ValidateArrayStrideAttribute(const ast::StrideAttribute* attr,
+                                    uint32_t el_size,
+                                    uint32_t el_align,
+                                    const Source& source);
   bool ValidateAtomic(const ast::Atomic* a, const sem::Atomic* s);
   bool ValidateAtomicVariable(const sem::Variable* var);
   bool ValidateAssignment(const ast::AssignmentStatement* a);
   bool ValidateBitcast(const ast::BitcastExpression* cast, const sem::Type* to);
   bool ValidateBreakStatement(const sem::Statement* stmt);
-  bool ValidateBuiltinDecoration(const ast::BuiltinDecoration* deco,
-                                 const sem::Type* storage_type,
-                                 const bool is_input);
+  bool ValidateBuiltinAttribute(const ast::BuiltinAttribute* attr,
+                                const sem::Type* storage_type,
+                                const bool is_input);
   bool ValidateContinueStatement(const sem::Statement* stmt);
   bool ValidateDiscardStatement(const sem::Statement* stmt);
   bool ValidateElseStatement(const sem::ElseStatement* stmt);
@@ -256,14 +255,14 @@ class Resolver {
   bool ValidateFunctionCall(const sem::Call* call);
   bool ValidateGlobalVariable(const sem::Variable* var);
   bool ValidateIfStatement(const sem::IfStatement* stmt);
-  bool ValidateInterpolateDecoration(const ast::InterpolateDecoration* deco,
-                                     const sem::Type* storage_type);
-  bool ValidateIntrinsicCall(const sem::Call* call);
-  bool ValidateLocationDecoration(const ast::LocationDecoration* location,
-                                  const sem::Type* type,
-                                  std::unordered_set<uint32_t>& locations,
-                                  const Source& source,
-                                  const bool is_input = false);
+  bool ValidateInterpolateAttribute(const ast::InterpolateAttribute* attr,
+                                    const sem::Type* storage_type);
+  bool ValidateBuiltinCall(const sem::Call* call);
+  bool ValidateLocationAttribute(const ast::LocationAttribute* location,
+                                 const sem::Type* type,
+                                 std::unordered_set<uint32_t>& locations,
+                                 const Source& source,
+                                 const bool is_input = false);
   bool ValidateLoopStatement(const sem::LoopStatement* stmt);
   bool ValidateMatrix(const sem::Matrix* ty, const Source& source);
   bool ValidateFunctionParameter(const ast::Function* func,
@@ -290,23 +289,23 @@ class Resolver {
                                        const sem::Type* type);
   bool ValidateArrayConstructorOrCast(const ast::CallExpression* ctor,
                                       const sem::Array* arr_type);
-  bool ValidateTextureIntrinsicFunction(const sem::Call* call);
-  bool ValidateNoDuplicateDecorations(const ast::DecorationList& decorations);
+  bool ValidateTextureBuiltinFunction(const sem::Call* call);
+  bool ValidateNoDuplicateAttributes(const ast::AttributeList& attributes);
   bool ValidateStorageClassLayout(const sem::Type* type,
                                   ast::StorageClass sc,
                                   Source source);
   bool ValidateStorageClassLayout(const sem::Variable* var);
 
-  /// @returns true if the decoration list contains a
-  /// ast::DisableValidationDecoration with the validation mode equal to
+  /// @returns true if the attribute list contains a
+  /// ast::DisableValidationAttribute with the validation mode equal to
   /// `validation`
-  bool IsValidationDisabled(const ast::DecorationList& decorations,
+  bool IsValidationDisabled(const ast::AttributeList& attributes,
                             ast::DisabledValidation validation) const;
 
-  /// @returns true if the decoration list does not contains a
-  /// ast::DisableValidationDecoration with the validation mode equal to
+  /// @returns true if the attribute list does not contains a
+  /// ast::DisableValidationAttribute with the validation mode equal to
   /// `validation`
-  bool IsValidationEnabled(const ast::DecorationList& decorations,
+  bool IsValidationEnabled(const ast::AttributeList& attributes,
                            ast::DisabledValidation validation) const;
 
   /// Resolves the WorkgroupSize for the given function, assigning it to
@@ -346,7 +345,7 @@ class Resolver {
 
   /// @returns the semantic info for the variable `var`. If an error is
   /// raised, nullptr is returned.
-  /// @note this method does not resolve the decorations as these are
+  /// @note this method does not resolve the attributes as these are
   /// context-dependent (global, local, parameter)
   /// @param var the variable to create or return the `VariableInfo` for
   /// @param kind what kind of variable we are declaring
@@ -462,9 +461,8 @@ class Resolver {
     return const_cast<T*>(As<T>(sem));
   }
 
-  /// @returns true if the symbol is the name of an intrinsic (builtin)
-  /// function.
-  bool IsIntrinsic(Symbol) const;
+  /// @returns true if the symbol is the name of a builtin function.
+  bool IsBuiltin(Symbol) const;
 
   /// @returns true if `expr` is the current CallStatement's CallExpression
   bool IsCallStatement(const ast::Expression* expr) const;
@@ -520,7 +518,7 @@ class Resolver {
 
   ProgramBuilder* const builder_;
   diag::List& diagnostics_;
-  std::unique_ptr<IntrinsicTable> const intrinsic_table_;
+  std::unique_ptr<BuiltinTable> const builtin_table_;
   DependencyGraph dependencies_;
   std::vector<sem::Function*> entry_points_;
   std::unordered_map<const sem::Type*, const Source&> atomic_composite_info_;

@@ -30,10 +30,6 @@ namespace content {
 class WebContents;
 }
 
-namespace feature_engagement {
-class Tracker;
-}
-
 namespace ui {
 class ListSelectionModel;
 }
@@ -76,6 +72,7 @@ class BrowserTabStripController : public TabStripController,
   void AddSelectionFromAnchorTo(int model_index) override;
   bool BeforeCloseTab(int model_index, CloseTabSource source) override;
   void CloseTab(int model_index) override;
+  void ToggleTabAudioMute(int model_index) override;
   void AddTabToGroup(int model_index,
                      const tab_groups::TabGroupId& group) override;
   void RemoveTabFromGroup(int model_index) override;
@@ -129,6 +126,7 @@ class BrowserTabStripController : public TabStripController,
       TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
+  void OnTabWillBeAdded() override;
   void OnTabGroupChanged(const TabGroupChange& change) override;
   void TabChangedAt(content::WebContents* contents,
                     int model_index,
@@ -144,6 +142,9 @@ class BrowserTabStripController : public TabStripController,
   void SetTabNeedsAttentionAt(int index, bool attention) override;
 
   const Browser* browser() const { return browser_view_->browser(); }
+
+  // Test-specific methods.
+  void CloseContextMenuForTesting();
 
  private:
   class TabContextMenuContents;
@@ -162,8 +163,6 @@ class BrowserTabStripController : public TabStripController,
   raw_ptr<TabStrip> tabstrip_;
 
   raw_ptr<BrowserView> browser_view_;
-
-  const raw_ptr<feature_engagement::Tracker> feature_engagement_tracker_;
 
   // If non-NULL it means we're showing a menu for the tab.
   std::unique_ptr<TabContextMenuContents> context_menu_contents_;

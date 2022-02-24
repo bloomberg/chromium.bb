@@ -1324,6 +1324,9 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(
       continue;
 
     WindowState* other_state = WindowState::Get(*i);
+    if (!other_state)
+      continue;
+
     if (other_state->window() == GetTarget() ||
         !other_state->window()->IsVisible() ||
         !other_state->IsNormalOrSnapped() || !other_state->CanResize()) {
@@ -1597,7 +1600,7 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
   switch (snap_type) {
     case SnapType::kPrimary:
     case SnapType::kSecondary:
-      if (!window_state()->CanSnap())
+      if (!window_state()->CanSnapOnDisplay(display))
         snap_type = SnapType::kNone;
       break;
     case SnapType::kMaximize:

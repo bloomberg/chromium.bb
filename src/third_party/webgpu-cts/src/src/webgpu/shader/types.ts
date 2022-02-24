@@ -134,7 +134,7 @@ export function* generateTypes({
     // Sized
     if (storageClass === 'uniform') {
       yield {
-        type: `[[stride(16)]] array<${scalarType},${kArrayLength}>`,
+        type: `@stride(16) array<${scalarType},${kArrayLength}>`,
         _kTypeInfo: arrayTypeInfo,
       };
     } else {

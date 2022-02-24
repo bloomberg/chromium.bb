@@ -70,7 +70,7 @@ class F extends ValidationTest {
       vertex: {
         module: this.device.createShaderModule({
           code: `
-            [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+            @stage(vertex) fn main() -> @builtin(position) vec4<f32> {
               return vec4<f32>(0.0, 0.0, 0.0, 0.0);
             }`,
         }),
@@ -78,7 +78,7 @@ class F extends ValidationTest {
       },
       fragment: {
         module: this.device.createShaderModule({
-          code: '[[stage(fragment)]] fn main() {}',
+          code: '@stage(fragment) fn main() {}',
         }),
         entryPoint: 'main',
         targets,

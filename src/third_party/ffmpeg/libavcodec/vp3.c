@@ -2685,7 +2685,14 @@ static int vp3_decode_frame(AVCodecContext *avctx,
             skip_bits(&gb, 4); /* width code */
             skip_bits(&gb, 4); /* height code */
             if (s->version) {
-                s->version = get_bits(&gb, 5);
+                int version = get_bits(&gb, 5);
+#if !CONFIG_VP4_DECODER
+                if (version >= 2) {
+                    av_log(avctx, AV_LOG_ERROR, "This build does not support decoding VP4.\n");
+                    return AVERROR_DECODER_NOT_FOUND;
+                }
+#endif
+                s->version = version;
                 if (avctx->frame_number == 0)
                     av_log(s->avctx, AV_LOG_DEBUG,
                            "VP version: %d\n", s->version);
@@ -3142,10 +3149,10 @@ static av_cold int theora_decode_init(AVCodecContext *avctx)
                    "Unknown Theora config packet: %d\n", ptype & ~0x80);
             break;
         }
-        if (ptype != 0x81 && 8 * header_len[i] != get_bits_count(&gb))
+        if (ptype != 0x81 && get_bits_left(&gb) >= 8U)
             av_log(avctx, AV_LOG_WARNING,
                    "%d bits left in packet %X\n",
-                   8 * header_len[i] - get_bits_count(&gb), ptype);
+                   get_bits_left(&gb), ptype);
         if (s->theora < 0x030200)
             break;
     }

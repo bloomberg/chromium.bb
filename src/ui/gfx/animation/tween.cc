@@ -15,6 +15,11 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/geometry/transform_operations.h"
 
 #if BUILDFLAG(IS_WIN)
 #include <float.h>
@@ -87,6 +92,9 @@ double Tween::CalculateValue(Tween::Type type, double state) {
     case ACCEL_LIN_DECEL_100:
       return gfx::CubicBezier(0, 0, 0, 1).Solve(state);
 
+    case ACCEL_LIN_DECEL_100_3:
+      return gfx::CubicBezier(0, 0, 0, 0.97).Solve(state);
+
     case ACCEL_20_DECEL_60:
       return gfx::CubicBezier(0.2, 0, 0.4, 1).Solve(state);
 
@@ -101,6 +109,9 @@ double Tween::CalculateValue(Tween::Type type, double state) {
 
     case ACCEL_0_40_DECEL_100:
       return gfx::CubicBezier(0, 0.4, 0, 1).Solve(state);
+
+    case ACCEL_40_DECEL_100_3:
+      return gfx::CubicBezier(0.40, 0, 0, 0.97).Solve(state);
 
     case ACCEL_0_80_DECEL_80:
       return gfx::CubicBezier(0, 0.8, 0.2, 1).Solve(state);

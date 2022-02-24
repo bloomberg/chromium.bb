@@ -47,8 +47,8 @@ template<typename Scalar,typename StorageIndex> void sparse_vector(int rows, int
     for (typename SparseVectorType::InnerIterator it(v1); it; ++it,++j)
     {
       VERIFY(nonzerocoords[j]==it.index());
-      VERIFY(it.value()==v1.coeff(it.index()));
-      VERIFY(it.value()==refV1.coeff(it.index()));
+      VERIFY_IS_EQUAL(it.value(), v1.coeff(it.index()));
+      VERIFY_IS_EQUAL(it.value(), refV1.coeff(it.index()));
     }
   }
   VERIFY_IS_APPROX(v1, refV1);

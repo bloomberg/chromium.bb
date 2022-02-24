@@ -1,7 +1,6 @@
 SKIP: FAILED
 
 #version 310 es
-precision mediump float;
 
 struct Uniforms {
   float NAN;
@@ -10,41 +9,44 @@ struct Uniforms {
   ivec3 outShape;
   ivec2 outShapeStrides;
 };
+
 struct ssbOut {
   float result[];
 };
+
 struct ssbA {
   float A[];
 };
+
 struct ssbB {
   float B[];
 };
 
 int dimAOuter_1 = 0;
-layout (binding = 3) uniform Uniforms_1 {
+layout(binding = 3) uniform Uniforms_1 {
   float NAN;
   ivec3 aShape;
   ivec3 bShape;
   ivec3 outShape;
   ivec2 outShapeStrides;
 } x_48;
+
 int dimInner_1 = 0;
 int dimBOuter_1 = 0;
-layout (binding = 0) buffer ssbOut_1 {
+layout(binding = 0, std430) buffer ssbOut_1 {
   float result[];
 } x_54;
 uvec3 tint_symbol = uvec3(0u, 0u, 0u);
 uvec3 tint_symbol_1 = uvec3(0u, 0u, 0u);
 shared float mm_Asub[64][64];
 shared float mm_Bsub[64][1];
-layout (binding = 1) buffer ssbA_1 {
+layout(binding = 1, std430) buffer ssbA_1 {
   float A[];
 } x_165;
 int batch = 0;
-layout (binding = 2) buffer ssbB_1 {
+layout(binding = 2, std430) buffer ssbB_1 {
   float B[];
 } x_185;
-
 bool coordsInBounds_vi2_vi2_(inout ivec2 coord, inout ivec2 shape) {
   bool x_87 = false;
   bool x_88_phi = false;
@@ -274,7 +276,7 @@ void mm_matMul_i1_i1_i1_(inout int dimAOuter, inout int dimInner, inout int dimB
           }
         }
       }
-      memoryBarrierShared();
+      barrier();
       k = 0;
       {
         for(; (k < 64); k = (k + 1)) {
@@ -306,7 +308,7 @@ void mm_matMul_i1_i1_i1_(inout int dimAOuter, inout int dimInner, inout int dimB
           }
         }
       }
-      memoryBarrierShared();
+      barrier();
     }
   }
   innerRow_4 = 0;
@@ -371,13 +373,7 @@ void main_1() {
   return;
 }
 
-struct tint_symbol_6 {
-  uvec3 tint_symbol_3;
-  uint local_invocation_index;
-  uvec3 tint_symbol_4;
-};
-
-void tint_symbol_2_inner(uvec3 tint_symbol_3, uvec3 tint_symbol_4, uint local_invocation_index) {
+void tint_symbol_2(uvec3 tint_symbol_3, uvec3 tint_symbol_4, uint local_invocation_index) {
   {
     uint i_1 = local_invocation_index;
     uint i_2 = (local_invocation_index % 1u);
@@ -390,26 +386,17 @@ void tint_symbol_2_inner(uvec3 tint_symbol_3, uvec3 tint_symbol_4, uint local_in
       mm_Asub[i][i_1] = 0.0f;
     }
   }
-  memoryBarrierShared();
+  barrier();
   tint_symbol = tint_symbol_3;
   tint_symbol_1 = tint_symbol_4;
   main_1();
 }
 
 layout(local_size_x = 1, local_size_y = 64, local_size_z = 1) in;
-void tint_symbol_2(tint_symbol_6 tint_symbol_5) {
-  tint_symbol_2_inner(tint_symbol_5.tint_symbol_3, tint_symbol_5.tint_symbol_4, tint_symbol_5.local_invocation_index);
+void main() {
+  tint_symbol_2(gl_LocalInvocationID, gl_GlobalInvocationID, gl_LocalInvocationIndex);
   return;
 }
-void main() {
-  tint_symbol_6 inputs;
-  inputs.tint_symbol_3 = gl_LocalInvocationID;
-  inputs.local_invocation_index = uint(gl_LocalInvocationIndex);
-  inputs.tint_symbol_4 = gl_GlobalInvocationID;
-  tint_symbol_2(inputs);
-}
-
-
 Error parsing GLSL shader:
 ERROR: 0:12: '' : array size required 
 ERROR: 0:13: '' : compilation terminated 

@@ -36,6 +36,12 @@ class VirtualAddressSpaceBase
 };
 
 /*
+ * Helper routine to determine whether one set of page permissions (the lhs) is
+ * a subset of another one (the rhs).
+ */
+V8_BASE_EXPORT bool IsSubset(PagePermissions lhs, PagePermissions rhs);
+
+/*
  * The virtual address space of the current process. Conceptionally, there
  * should only be one such "root" instance. However, in practice there is no
  * issue with having multiple instances as the actual resources are managed by
@@ -62,11 +68,18 @@ class V8_BASE_EXPORT VirtualAddressSpace : public VirtualAddressSpaceBase {
 
   bool FreeGuardRegion(Address address, size_t size) override;
 
+  Address AllocateSharedPages(Address hint, size_t size,
+                              PagePermissions permissions,
+                              PlatformSharedMemoryHandle handle,
+                              uint64_t offset) override;
+
+  bool FreeSharedPages(Address address, size_t size) override;
+
   bool CanAllocateSubspaces() override;
 
   std::unique_ptr<v8::VirtualAddressSpace> AllocateSubspace(
       Address hint, size_t size, size_t alignment,
-      PagePermissions max_permissions) override;
+      PagePermissions max_page_permissions) override;
 
   bool DiscardSystemPages(Address address, size_t size) override;
 
@@ -100,11 +113,18 @@ class V8_BASE_EXPORT VirtualAddressSubspace : public VirtualAddressSpaceBase {
 
   bool FreeGuardRegion(Address address, size_t size) override;
 
+  Address AllocateSharedPages(Address hint, size_t size,
+                              PagePermissions permissions,
+                              PlatformSharedMemoryHandle handle,
+                              uint64_t offset) override;
+
+  bool FreeSharedPages(Address address, size_t size) override;
+
   bool CanAllocateSubspaces() override { return true; }
 
   std::unique_ptr<v8::VirtualAddressSpace> AllocateSubspace(
       Address hint, size_t size, size_t alignment,
-      PagePermissions max_permissions) override;
+      PagePermissions max_page_permissions) override;
 
   bool DiscardSystemPages(Address address, size_t size) override;
 
@@ -118,7 +138,8 @@ class V8_BASE_EXPORT VirtualAddressSubspace : public VirtualAddressSpaceBase {
   bool FreeSubspace(VirtualAddressSubspace* subspace) override;
 
   VirtualAddressSubspace(AddressSpaceReservation reservation,
-                         VirtualAddressSpaceBase* parent_space);
+                         VirtualAddressSpaceBase* parent_space,
+                         PagePermissions max_page_permissions);
 
   // The address space reservation backing this subspace.
   AddressSpaceReservation reservation_;

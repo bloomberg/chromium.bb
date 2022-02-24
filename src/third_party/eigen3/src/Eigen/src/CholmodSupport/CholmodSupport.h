@@ -438,7 +438,7 @@ class CholmodBase : public SparseSolverBase<Derived>
       if (m_cholmodFactor->is_ll)
         logDet *= 2.0;
       return logDet;
-    };
+    }
 
     template<typename Stream>
     void dumpMemory(Stream& /*s*/)

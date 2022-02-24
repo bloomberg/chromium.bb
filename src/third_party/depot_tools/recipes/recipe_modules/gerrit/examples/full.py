@@ -44,7 +44,8 @@ def RunSteps(api):
                                         'main',
                                         {'chrome/VERSION': '99.99.99.99'},
                                         'Dummy CL.',
-                                        submit=True)
+                                        submit=True,
+                                        cc_list=['foo@example.com'])
   assert int(change_info['_number']) == 91827, change_info
   assert change_info['status'] == 'MERGED'
 

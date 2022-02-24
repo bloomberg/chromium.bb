@@ -13,6 +13,7 @@ vpath %.v    $(SRC_PATH)
 vpath %.texi $(SRC_PATH)
 vpath %.cu   $(SRC_PATH)
 vpath %.ptx  $(SRC_PATH)
+vpath %.metal $(SRC_PATH)
 vpath %/fate_config.sh.template $(SRC_PATH)
 
 TESTTOOLS   = audiogen videogen rotozoom tiny_psnr tiny_ssim base64 audiomatch
@@ -89,7 +90,8 @@ SUBDIR_VARS := CLEANFILES FFLIBS HOSTPROGS TESTPROGS TOOLS               \
                ARMV5TE-OBJS ARMV6-OBJS ARMV8-OBJS VFP-OBJS NEON-OBJS     \
                ALTIVEC-OBJS VSX-OBJS MMX-OBJS X86ASM-OBJS                \
                MIPSFPU-OBJS MIPSDSPR2-OBJS MIPSDSP-OBJS MSA-OBJS         \
-               MMI-OBJS OBJS SLIBOBJS HOSTOBJS TESTOBJS
+               MMI-OBJS LSX-OBJS LASX-OBJS OBJS SLIBOBJS SHLIBOBJS       \
+               STLIBOBJS HOSTOBJS TESTOBJS
 
 define RESET
 $(1) :=

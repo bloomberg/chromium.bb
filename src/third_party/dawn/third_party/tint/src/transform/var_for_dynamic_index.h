@@ -1,4 +1,4 @@
-// Copyright 2021 The Tint Authors.
+// Copyright 2022 The Tint Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,14 +17,12 @@
 
 #include "src/transform/transform.h"
 
-namespace tint {
-namespace transform {
+namespace tint::transform {
 
 /// A transform that extracts array and matrix values that are dynamically
 /// indexed to a temporary `var` local before performing the index. This
 /// transform is used by the SPIR-V writer as there is no SPIR-V instruction
 /// that can dynamically index a non-pointer composite.
-/// Requires the ForLoopToLoop transform to be run first.
 class VarForDynamicIndex : public Transform {
  public:
   /// Constructor
@@ -40,10 +38,11 @@ class VarForDynamicIndex : public Transform {
   /// ProgramBuilder
   /// @param inputs optional extra transform-specific input data
   /// @param outputs optional extra transform-specific output data
-  void Run(CloneContext& ctx, const DataMap& inputs, DataMap& outputs) override;
+  void Run(CloneContext& ctx,
+           const DataMap& inputs,
+           DataMap& outputs) const override;
 };
 
-}  // namespace transform
-}  // namespace tint
+}  // namespace tint::transform
 
 #endif  // SRC_TRANSFORM_VAR_FOR_DYNAMIC_INDEX_H_

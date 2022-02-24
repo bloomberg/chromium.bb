@@ -116,7 +116,7 @@ class Mirror(object):
 
   def __init__(self, url, refs=None, commits=None, print_func=None):
     self.url = url
-    self.fetch_specs = set([self.parse_fetch_spec(ref) for ref in (refs or [])])
+    self.fetch_specs = {self.parse_fetch_spec(ref) for ref in (refs or [])}
     self.fetch_commits = set(commits or [])
     self.basedir = self.UrlToCacheDir(url)
     self.mirror_path = os.path.join(self.GetCachePath(), self.basedir)
@@ -576,8 +576,7 @@ class Mirror(object):
     if not prev_dest_prefix:
       return
     for path in ls_out_set:
-      if (path == prev_dest_prefix + '/' or
-          path == prev_dest_prefix + '.ready'):
+      if path in (prev_dest_prefix + '/', prev_dest_prefix + '.ready'):
         continue
       if path.endswith('.ready'):
         gsutil.call('rm', path)

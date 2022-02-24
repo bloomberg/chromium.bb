@@ -48,6 +48,15 @@ const (
 	wgsl   = outputFormat("wgsl")
 )
 
+// Directories we don't generate expected PASS result files for.
+// These directories contain large corpora of tests for which the generated code
+// is uninteresting.
+var dirsWithNoPassExpectations = []string{
+	"/test/benchmark/",
+	"/test/unittest/",
+	"/test/vk-gl-cts/",
+}
+
 func main() {
 	if err := run(); err != nil {
 		fmt.Println(err)
@@ -76,7 +85,7 @@ func run() error {
 	var maxFilenameColumnWidth int
 	numCPU := runtime.NumCPU()
 	fxc, verbose, generateExpected, generateSkip := false, false, false, false
-	flag.StringVar(&formatList, "format", "wgsl,spvasm,msl,hlsl", "comma separated list of formats to emit. Possible values are: all, wgsl, spvasm, msl, hlsl, glsl")
+	flag.StringVar(&formatList, "format", "all", "comma separated list of formats to emit. Possible values are: all, wgsl, spvasm, msl, hlsl, glsl")
 	flag.StringVar(&filter, "filter", "**.wgsl, **.spvasm, **.spv", "comma separated list of glob patterns for test files")
 	flag.StringVar(&dxcPath, "dxc", "", "path to DXC executable for validating HLSL output")
 	flag.StringVar(&xcrunPath, "xcrun", "", "path to xcrun executable for validating MSL output")
@@ -133,7 +142,8 @@ func run() error {
 					"**.expected.wgsl",
 					"**.expected.spvasm",
 					"**.expected.msl",
-					"**.expected.hlsl"
+					"**.expected.hlsl",
+					"**.expected.glsl"
 				]
 			}
 		]
@@ -489,8 +499,16 @@ type job struct {
 
 func (j job) run(wd, exe string, fxc bool, dxcPath, xcrunPath string, generateExpected, generateSkip bool) {
 	j.result <- func() status {
-		// Is there an expected output?
-		expected := loadExpectedFile(j.file, j.format)
+		// expectedFilePath is the path to the expected output file for the given test
+		expectedFilePath := j.file + ".expected." + string(j.format)
+
+		// Is there an expected output file? If so, load it.
+		expected, expectedFileExists := "", false
+		if content, err := ioutil.ReadFile(expectedFilePath); err == nil {
+			expected = string(content)
+			expectedFileExists = true
+		}
+
 		skipped := false
 		if strings.HasPrefix(expected, "SKIP") { // Special SKIP token
 			skipped = true
@@ -545,9 +563,29 @@ func (j job) run(wd, exe string, fxc bool, dxcPath, xcrunPath string, generateEx
 		out = strings.ReplaceAll(out, "\r\n", "\n")
 		matched := expected == "" || expected == out
 
+		canEmitPassExpectationFile := true
+		for _, noPass := range dirsWithNoPassExpectations {
+			if strings.Contains(j.file, filepath.FromSlash(noPass)) {
+				canEmitPassExpectationFile = false
+				break
+			}
+		}
+
+		saveExpectedFile := func(path string, content string) error {
+			return ioutil.WriteFile(path, []byte(content), 0666)
+		}
+
 		if ok && generateExpected && (validate || !skipped) {
-			saveExpectedFile(j.file, j.format, out)
-			matched = true
+			// User requested to update PASS expectations, and test passed.
+			if canEmitPassExpectationFile {
+				saveExpectedFile(expectedFilePath, out)
+			} else if expectedFileExists {
+				// Test lives in a directory where we do not want to save PASS
+				// files, and there already exists an expectation file. Test has
+				// likely started passing. Delete the old expectation.
+				os.Remove(expectedFilePath)
+			}
+			matched = true // test passed and matched expectations
 		}
 
 		switch {
@@ -559,14 +597,14 @@ func (j job) run(wd, exe string, fxc bool, dxcPath, xcrunPath string, generateEx
 
 		case skipped:
 			if generateSkip {
-				saveExpectedFile(j.file, j.format, "SKIP: FAILED\n\n"+out)
+				saveExpectedFile(expectedFilePath, "SKIP: FAILED\n\n"+out)
 			}
 			return status{code: skip, timeTaken: timeTaken}
 
 		case !ok:
 			// Compiler returned non-zero exit code
 			if generateSkip {
-				saveExpectedFile(j.file, j.format, "SKIP: FAILED\n\n"+out)
+				saveExpectedFile(expectedFilePath, "SKIP: FAILED\n\n"+out)
 			}
 			err := fmt.Errorf("%s", out)
 			return status{code: fail, err: err, timeTaken: timeTaken}
@@ -574,7 +612,7 @@ func (j job) run(wd, exe string, fxc bool, dxcPath, xcrunPath string, generateEx
 		default:
 			// Compiler returned zero exit code, or output was not as expected
 			if generateSkip {
-				saveExpectedFile(j.file, j.format, "SKIP: FAILED\n\n"+out)
+				saveExpectedFile(expectedFilePath, "SKIP: FAILED\n\n"+out)
 			}
 
 			// Expected output did not match
@@ -600,36 +638,6 @@ func (j job) run(wd, exe string, fxc bool, dxcPath, xcrunPath string, generateEx
 			return status{code: fail, err: err, timeTaken: timeTaken}
 		}
 	}()
-}
-
-// loadExpectedFile loads the expected output file for the test file at 'path'
-// and the output format 'format'. If the file does not exist, or cannot be
-// read, then an empty string is returned.
-func loadExpectedFile(path string, format outputFormat) string {
-	content, err := ioutil.ReadFile(expectedFilePath(path, format))
-	if err != nil {
-		return ""
-	}
-	return string(content)
-}
-
-// saveExpectedFile writes the expected output file for the test file at 'path'
-// and the output format 'format', with the content 'content'.
-func saveExpectedFile(path string, format outputFormat, content string) error {
-	// Don't generate expected results for certain directories that contain
-	// large corpora of tests for which the generated code is uninteresting.
-	for _, exclude := range []string{"/test/unittest/", "/test/vk-gl-cts/"} {
-		if strings.Contains(path, filepath.FromSlash(exclude)) {
-			return nil
-		}
-	}
-	return ioutil.WriteFile(expectedFilePath(path, format), []byte(content), 0666)
-}
-
-// expectedFilePath returns the expected output file path for the test file at
-// 'path' and the output format 'format'.
-func expectedFilePath(path string, format outputFormat) string {
-	return path + ".expected." + string(format)
 }
 
 // indent returns the string 's' indented with 'n' whitespace characters

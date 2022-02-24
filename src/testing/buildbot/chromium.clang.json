@@ -815,23 +815,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -1480,23 +1463,6 @@
         },
         "test": "wtf_unittests",
         "test_id_prefix": "ninja://third_party/blink/renderer/platform/wtf:wtf_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "x11_unittests",
-        "test_id_prefix": "ninja://ui/platform_window/x11:x11_unittests/"
       },
       {
         "merge": {
@@ -2523,24 +2489,6 @@
         },
         "test": "ipc_tests",
         "test_id_prefix": "ninja://ipc:ipc_tests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19042"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
       },
       {
         "merge": {
@@ -4280,24 +4228,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19042"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -5988,7 +5918,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com",
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 20
         },
         "test": "chrome_public_test_apk",
@@ -6045,7 +5975,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "service_account": "chrome-gold@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "chrome_public_unit_test_apk",
         "test_id_prefix": "ninja://chrome/android:chrome_public_unit_test_apk/"
@@ -7055,56 +6985,6 @@
         },
         "test": "ipc_tests",
         "test_id_prefix": "ninja://ipc:ipc_tests/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "jingle_unittests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
-              "location": "bin",
-              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_os_type": "userdebug",
-              "device_type": "bullhead",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
       },
       {
         "args": [
@@ -9503,24 +9383,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -9577,6 +9439,24 @@
         },
         "test": "midi_unittests",
         "test_id_prefix": "ninja://media/midi:midi_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_core_unittests",
+        "test_id_prefix": "ninja://mojo/core:mojo_core_unittests/"
       },
       {
         "merge": {
@@ -10163,39 +10043,6 @@
       },
       {
         "args": [
-          "depth_capture",
-          "--show-stdout",
-          "--browser=web-engine-shell",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "fuchsia_telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "depth_capture_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://content/test:fuchsia_telemetry_gpu_integration_test/"
-      },
-      {
-        "args": [
           "gpu_process",
           "--show-stdout",
           "--browser=web-engine-shell",
@@ -10332,7 +10179,7 @@
             }
           ],
           "idempotent": false,
-          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://content/test:fuchsia_telemetry_gpu_integration_test/"
       },
@@ -10404,7 +10251,7 @@
             }
           ],
           "idempotent": false,
-          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://content/test:fuchsia_telemetry_gpu_integration_test/"
       },
@@ -11111,25 +10958,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "arm64",
-              "inside_docker": "1",
-              "os": "Ubuntu-20.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -11170,6 +10998,25 @@
         },
         "test": "midi_unittests",
         "test_id_prefix": "ninja://media/midi:midi_unittests/"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "inside_docker": "1",
+              "os": "Ubuntu-20.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_core_unittests",
+        "test_id_prefix": "ninja://mojo/core:mojo_core_unittests/"
       },
       {
         "merge": {
@@ -12490,23 +12337,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -13176,23 +13006,6 @@
         },
         "test": "wtf_unittests",
         "test_id_prefix": "ninja://third_party/blink/renderer/platform/wtf:wtf_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "x11_unittests",
-        "test_id_prefix": "ninja://ui/platform_window/x11:x11_unittests/"
       },
       {
         "merge": {
@@ -14206,26 +14019,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -15021,26 +14814,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "x11_unittests",
-        "test_id_prefix": "ninja://ui/platform_window/x11:x11_unittests/"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
         "name": "xr_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -15073,32 +14846,6 @@
         },
         "test": "zlib_unittests",
         "test_id_prefix": "ninja://third_party/zlib:zlib_unittests/"
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "isolate_name": "chrome_sizes",
-        "merge": {
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "chrome_sizes",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
       }
     ]
   },
@@ -15937,23 +15684,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -16606,23 +16336,6 @@
         },
         "test": "wtf_unittests",
         "test_id_prefix": "ninja://third_party/blink/renderer/platform/wtf:wtf_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "x11_unittests",
-        "test_id_prefix": "ninja://ui/platform_window/x11:x11_unittests/"
       },
       {
         "merge": {
@@ -17543,24 +17256,6 @@
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04",
-              "pool": "chrome.tests"
-            }
-          ],
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -18275,24 +17970,6 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04",
-              "pool": "chrome.tests"
-            }
-          ],
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "x11_unittests",
-        "test_id_prefix": "ninja://ui/platform_window/x11:x11_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
         "name": "xr_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -18652,18 +18329,6 @@
         },
         "test": "ipc_tests",
         "test_id_prefix": "ninja://ipc:ipc_tests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
       },
       {
         "merge": {
@@ -19660,23 +19325,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -20348,23 +19996,6 @@
         },
         "test": "wtf_unittests",
         "test_id_prefix": "ninja://third_party/blink/renderer/platform/wtf:wtf_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "x11_unittests",
-        "test_id_prefix": "ninja://ui/platform_window/x11:x11_unittests/"
       },
       {
         "merge": {
@@ -21238,23 +20869,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -21924,23 +21538,6 @@
         },
         "test": "wtf_unittests",
         "test_id_prefix": "ninja://third_party/blink/renderer/platform/wtf:wtf_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "x11_unittests",
-        "test_id_prefix": "ninja://ui/platform_window/x11:x11_unittests/"
       },
       {
         "merge": {
@@ -22809,24 +22406,6 @@
         },
         "test": "ipc_tests",
         "test_id_prefix": "ninja://ipc:ipc_tests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.15"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
       },
       {
         "merge": {
@@ -24797,27 +24376,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.15"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -26392,25 +25950,6 @@
         },
         "test": "ipc_tests",
         "test_id_prefix": "ninja://ipc:ipc_tests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-10.15",
-              "pool": "chrome.tests"
-            }
-          ],
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
       },
       {
         "merge": {
@@ -28151,18 +27690,6 @@
           "can_use_on_swarming_builders": true,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -29434,18 +28961,6 @@
           "can_use_on_swarming_builders": true,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -30675,18 +30190,6 @@
         },
         "test": "ipc_tests",
         "test_id_prefix": "ninja://ipc:ipc_tests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
       },
       {
         "merge": {
@@ -32278,24 +31781,6 @@
         },
         "test": "ipc_tests",
         "test_id_prefix": "ninja://ipc:ipc_tests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19042"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
       },
       {
         "merge": {
@@ -34173,24 +33658,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19042"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -36052,24 +35519,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19042"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -37228,18 +36677,6 @@
         },
         "test": "ipc_tests",
         "test_id_prefix": "ninja://ipc:ipc_tests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
       },
       {
         "merge": {
@@ -38452,24 +37889,6 @@
         },
         "test": "ipc_tests",
         "test_id_prefix": "ninja://ipc:ipc_tests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10",
-              "pool": "chrome.tests"
-            }
-          ],
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
       },
       {
         "merge": {
@@ -40347,24 +39766,6 @@
           ],
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10",
-              "pool": "chrome.tests"
-            }
-          ],
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
       },
@@ -41232,11 +40633,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "absl_hardening_tests",
@@ -41244,7 +40645,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "absl_hardening_tests_iPhone 6s 15.0",
+        "name": "absl_hardening_tests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41266,12 +40667,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -41283,11 +40684,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "base_unittests",
@@ -41295,7 +40696,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests_iPhone 6s 15.0",
+        "name": "base_unittests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41317,12 +40718,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -41334,11 +40735,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "boringssl_crypto_tests",
@@ -41346,7 +40747,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_crypto_tests_iPhone 6s 15.0",
+        "name": "boringssl_crypto_tests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41368,12 +40769,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -41385,11 +40786,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "boringssl_ssl_tests",
@@ -41397,7 +40798,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_ssl_tests_iPhone 6s 15.0",
+        "name": "boringssl_ssl_tests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41419,12 +40820,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -41436,11 +40837,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "components_unittests",
@@ -41448,7 +40849,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests_iPhone 6s 15.0",
+        "name": "components_unittests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41470,12 +40871,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -41487,11 +40888,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "crypto_unittests",
@@ -41499,7 +40900,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crypto_unittests_iPhone 6s 15.0",
+        "name": "crypto_unittests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41521,12 +40922,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -41538,11 +40939,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "gfx_unittests",
@@ -41550,7 +40951,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests_iPhone 6s 15.0",
+        "name": "gfx_unittests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41572,12 +40973,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -41589,11 +40990,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "google_apis_unittests",
@@ -41601,7 +41002,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "google_apis_unittests_iPhone 6s 15.0",
+        "name": "google_apis_unittests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41623,12 +41024,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -41640,11 +41041,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "ios_chrome_unittests",
@@ -41652,7 +41053,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests_iPhone 6s 15.0",
+        "name": "ios_chrome_unittests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41674,12 +41075,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -41691,11 +41092,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "ios_net_unittests",
@@ -41703,7 +41104,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_net_unittests_iPhone 6s 15.0",
+        "name": "ios_net_unittests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41725,12 +41126,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -41742,11 +41143,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "ios_web_inttests",
@@ -41754,7 +41155,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests_iPhone 6s 15.0",
+        "name": "ios_web_inttests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41776,12 +41177,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -41793,11 +41194,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "ios_web_unittests",
@@ -41805,7 +41206,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests_iPhone 6s 15.0",
+        "name": "ios_web_unittests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41827,12 +41228,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -41844,11 +41245,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "ios_web_view_inttests",
@@ -41856,7 +41257,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests_iPhone 6s 15.0",
+        "name": "ios_web_view_inttests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41878,12 +41279,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -41895,11 +41296,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "net_unittests",
@@ -41907,7 +41308,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "net_unittests_iPhone 6s 15.0",
+        "name": "net_unittests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41929,12 +41330,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -41946,11 +41347,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "skia_unittests",
@@ -41958,7 +41359,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests_iPhone 6s 15.0",
+        "name": "skia_unittests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -41980,12 +41381,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -41997,11 +41398,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "sql_unittests",
@@ -42009,7 +41410,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "sql_unittests_iPhone 6s 15.0",
+        "name": "sql_unittests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -42031,12 +41432,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -42048,11 +41449,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "ui_base_unittests",
@@ -42060,7 +41461,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests_iPhone 6s 15.0",
+        "name": "ui_base_unittests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -42082,12 +41483,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -42099,11 +41500,11 @@
           "--platform",
           "iPhone 6s",
           "--version",
-          "15.0",
+          "15.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "13a233",
+          "13c100",
           "--xctest"
         ],
         "isolate_name": "url_unittests",
@@ -42111,7 +41512,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "url_unittests_iPhone 6s 15.0",
+        "name": "url_unittests_iPhone 6s 15.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -42133,12 +41534,12 @@
           ],
           "named_caches": [
             {
-              "name": "xcode_ios_13a233",
+              "name": "xcode_ios_13c100",
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_15_0",
-              "path": "Runtime-ios-15.0"
+              "name": "runtime_ios_15_2",
+              "path": "Runtime-ios-15.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -43897,23 +43298,6 @@
         },
         "test": "ipc_tests",
         "test_id_prefix": "ninja://ipc:ipc_tests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-19042"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "jingle_unittests",
-        "test_id_prefix": "ninja://jingle:jingle_unittests/"
       },
       {
         "merge": {

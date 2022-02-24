@@ -11,6 +11,7 @@
 #include <stdlib.h>
 
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -50,6 +51,9 @@ using pdfium::fxjse::kClassTag;
 using pdfium::fxjse::kFuncTag;
 
 namespace {
+
+// Maximum number of characters Acrobat can fit in a text box.
+constexpr int kMaxCharCount = 15654908;
 
 const double kFinancialPrecision = 0.00000001;
 
@@ -1648,6 +1652,17 @@ std::vector<v8::Local<v8::Value>> ParseResolveResult(
   return resultValues;
 }
 
+// Returns 0 if the provided `arg` is an invalid payment period count.
+int GetValidatedPaymentPeriods(v8::Isolate* isolate, v8::Local<v8::Value> arg) {
+  double periods = ValueToDouble(isolate, arg);
+  if (periods < 1 ||
+      periods > static_cast<double>(std::numeric_limits<int32_t>::max())) {
+    return 0;
+  }
+
+  return static_cast<int>(periods);
+}
+
 }  // namespace
 
 const FXJSE_CLASS_DESCRIPTOR kFormCalcFM2JSDescriptor = {
@@ -2684,8 +2699,8 @@ void CFXJSE_FormCalcContext::Apr(
 
   double nPrincipal = ValueToDouble(info.GetIsolate(), argOne);
   double nPayment = ValueToDouble(info.GetIsolate(), argTwo);
-  double nPeriods = ValueToDouble(info.GetIsolate(), argThree);
-  if (nPrincipal <= 0 || nPayment <= 0 || nPeriods <= 0) {
+  int nPeriods = GetValidatedPaymentPeriods(info.GetIsolate(), argThree);
+  if (nPrincipal <= 0 || nPayment <= 0 || nPeriods == 0) {
     pContext->ThrowArgumentMismatchException();
     return;
   }
@@ -2770,8 +2785,8 @@ void CFXJSE_FormCalcContext::FV(
 
   double nAmount = ValueToDouble(info.GetIsolate(), argOne);
   double nRate = ValueToDouble(info.GetIsolate(), argTwo);
-  double nPeriod = ValueToDouble(info.GetIsolate(), argThree);
-  if ((nRate < 0) || (nPeriod <= 0) || (nAmount <= 0)) {
+  int nPeriods = GetValidatedPaymentPeriods(info.GetIsolate(), argThree);
+  if (nAmount <= 0 || nRate < 0 || nPeriods == 0) {
     pContext->ThrowArgumentMismatchException();
     return;
   }
@@ -2779,12 +2794,12 @@ void CFXJSE_FormCalcContext::FV(
   double dResult = 0;
   if (nRate) {
     double nTemp = 1;
-    for (int i = 0; i < nPeriod; ++i) {
+    for (int i = 0; i < nPeriods; ++i) {
       nTemp *= 1 + nRate;
     }
     dResult = nAmount * (nTemp - 1) / nRate;
   } else {
-    dResult = nAmount * nPeriod;
+    dResult = nAmount * nPeriods;
   }
 
   info.GetReturnValue().Set(dResult);
@@ -2913,19 +2928,15 @@ void CFXJSE_FormCalcContext::Pmt(
     return;
   }
 
-  float nPrincipal = ValueToFloat(info.GetIsolate(), argOne);
-  float nRate = ValueToFloat(info.GetIsolate(), argTwo);
-  float nPeriods = ValueToFloat(info.GetIsolate(), argThree);
-  if ((nPrincipal <= 0) || (nRate <= 0) || (nPeriods <= 0)) {
+  double nPrincipal = ValueToDouble(info.GetIsolate(), argOne);
+  double nRate = ValueToDouble(info.GetIsolate(), argTwo);
+  int nPeriods = GetValidatedPaymentPeriods(info.GetIsolate(), argThree);
+  if (nPrincipal <= 0 || nRate <= 0 || nPeriods == 0) {
     pContext->ThrowArgumentMismatchException();
     return;
   }
 
-  float nTmp = 1 + nRate;
-  float nSum = nTmp;
-  for (int32_t i = 0; i < nPeriods - 1; ++i)
-    nSum *= nTmp;
-
+  double nSum = pow(1.0 + nRate, nPeriods);
   info.GetReturnValue().Set((nPrincipal * nRate * nSum) / (nSum - 1));
 }
 
@@ -3012,18 +3023,14 @@ void CFXJSE_FormCalcContext::PV(
 
   double nAmount = ValueToDouble(info.GetIsolate(), argOne);
   double nRate = ValueToDouble(info.GetIsolate(), argTwo);
-  double nPeriod = ValueToDouble(info.GetIsolate(), argThree);
-  if ((nAmount <= 0) || (nRate < 0) || (nPeriod <= 0)) {
+  int nPeriods = GetValidatedPaymentPeriods(info.GetIsolate(), argThree);
+  if (nAmount <= 0 || nRate < 0 || nPeriods == 0) {
     pContext->ThrowArgumentMismatchException();
     return;
   }
 
-  double nTemp = 1;
-  for (int32_t i = 0; i < nPeriod; ++i)
-    nTemp *= 1 + nRate;
-
-  nTemp = 1 / nTemp;
-  info.GetReturnValue().Set(nAmount * ((1 - nTemp) / nRate));
+  double nTemp = 1 / pow(1.0 + nRate, nPeriods);
+  info.GetReturnValue().Set(nAmount * ((1.0 - nTemp) / nRate));
 }
 
 // static
@@ -3048,14 +3055,13 @@ void CFXJSE_FormCalcContext::Rate(
 
   float nFuture = ValueToFloat(info.GetIsolate(), argOne);
   float nPresent = ValueToFloat(info.GetIsolate(), argTwo);
-  float nTotalNumber = ValueToFloat(info.GetIsolate(), argThree);
-  if ((nFuture <= 0) || (nPresent < 0) || (nTotalNumber <= 0)) {
+  int nPeriods = GetValidatedPaymentPeriods(info.GetIsolate(), argThree);
+  if (nFuture <= 0 || nPresent < 0 || nPeriods == 0) {
     pContext->ThrowArgumentMismatchException();
     return;
   }
 
-  info.GetReturnValue().Set(powf(nFuture / nPresent, 1.0f / nTotalNumber) -
-                            1.0f);
+  info.GetReturnValue().Set(powf(nFuture / nPresent, 1.0f / nPeriods) - 1.0f);
 }
 
 // static
@@ -4160,8 +4166,6 @@ void CFXJSE_FormCalcContext::Space(
     return;
   }
 
-  // Maximum number of characters Acrobat can fit in a text box.
-  constexpr int kMaxCharCount = 15654908;
   int count = std::max(0, ValueToInteger(info.GetIsolate(), argOne));
   if (count > kMaxCharCount) {
     ToFormCalcContext(pThis)->ThrowException("String too long.");
@@ -4193,6 +4197,10 @@ void CFXJSE_FormCalcContext::Str(
   if (argc > 1) {
     v8::Local<v8::Value> widthValue = GetSimpleValue(info, 1);
     iWidth = static_cast<int32_t>(ValueToFloat(info.GetIsolate(), widthValue));
+    if (iWidth > kMaxCharCount) {
+      ToFormCalcContext(pThis)->ThrowException("String too long.");
+      return;
+    }
   }
 
   int32_t iPrecision = 0;

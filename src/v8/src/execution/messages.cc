@@ -305,7 +305,8 @@ MaybeHandle<Object> ErrorUtils::FormatStackTrace(Isolate* isolate,
   const bool in_recursion = isolate->formatting_stack_trace();
   const bool has_overflowed = i::StackLimitCheck{isolate}.HasOverflowed();
   Handle<Context> error_context;
-  if (!in_recursion && error->GetCreationContext().ToHandle(&error_context)) {
+  if (!in_recursion && !has_overflowed &&
+      error->GetCreationContext().ToHandle(&error_context)) {
     DCHECK(error_context->IsNativeContext());
 
     if (isolate->HasPrepareStackTraceCallback()) {
@@ -321,7 +322,7 @@ MaybeHandle<Object> ErrorUtils::FormatStackTrace(Isolate* isolate,
           isolate->RunPrepareStackTraceCallback(error_context, error, sites),
           Object);
       return result;
-    } else if (!has_overflowed) {
+    } else {
       Handle<JSFunction> global_error =
           handle(error_context->error_function(), isolate);
 
@@ -556,7 +557,8 @@ MaybeHandle<JSObject> ErrorUtils::Construct(
     Handle<Name> cause_string = isolate->factory()->cause_string();
     if (options->IsJSReceiver()) {
       Handle<JSReceiver> js_options = Handle<JSReceiver>::cast(options);
-      Maybe<bool> has_cause = JSObject::HasProperty(js_options, cause_string);
+      Maybe<bool> has_cause =
+          JSObject::HasProperty(isolate, js_options, cause_string);
       if (has_cause.IsNothing()) {
         DCHECK((isolate)->has_pending_exception());
         return MaybeHandle<JSObject>();

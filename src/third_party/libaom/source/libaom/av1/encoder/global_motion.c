@@ -153,7 +153,7 @@ static void force_wmtype(WarpedMotionParams *wm, TransformationType wmtype) {
       wm->wmmat[4] = -wm->wmmat[3];
       wm->wmmat[5] = wm->wmmat[2];
       AOM_FALLTHROUGH_INTENDED;
-    case AFFINE: wm->wmmat[6] = wm->wmmat[7] = 0; break;
+    case AFFINE: break;
     default: assert(0);
   }
   wm->wmtype = wmtype;

@@ -604,6 +604,52 @@ void SplitUVRow_NEON(const uint8_t* src_uv,
   );
 }
 
+// Reads 16 byte Y's from tile and writes out 16 Y's.
+// MM21 Y tiles are 16x32 so src_tile_stride = 512 bytes
+// MM21 UV tiles are 8x16 so src_tile_stride = 256 bytes
+// width measured in bytes so 8 UV = 16.
+void DetileRow_NEON(const uint8_t* src,
+                    ptrdiff_t src_tile_stride,
+                    uint8_t* dst,
+                    int width) {
+  asm volatile(
+      "1:                                        \n"
+      "ld1         {v0.16b}, [%0], %3            \n"  // load 16 bytes
+      "subs        %w2, %w2, #16                 \n"  // 16 processed per loop
+      "prfm        pldl1keep, [%0, 1792]         \n"  // 7 tiles of 256b ahead
+      "st1         {v0.16b}, [%1], #16           \n"  // store 16 bytes
+      "b.gt        1b                            \n"
+      : "+r"(src),            // %0
+        "+r"(dst),            // %1
+        "+r"(width)           // %2
+      : "r"(src_tile_stride)  // %3
+      : "cc", "memory", "v0"  // Clobber List
+  );
+}
+
+// Read 16 bytes of UV, detile, and write 8 bytes of U and 8 bytes of V.
+void DetileSplitUVRow_NEON(const uint8_t* src_uv,
+                           ptrdiff_t src_tile_stride,
+                           uint8_t* dst_u,
+                           uint8_t* dst_v,
+                           int width) {
+  asm volatile(
+      "1:                                        \n"
+      "ld2         {v0.8b,v1.8b}, [%0], %4       \n"
+      "subs        %w3, %w3, #16                 \n"
+      "prfm        pldl1keep, [%0, 1792]          \n"
+      "st1         {v0.8b}, [%1], #8             \n"
+      "st1         {v1.8b}, [%2], #8             \n"
+      "b.gt        1b                            \n"
+      : "+r"(src_uv),               // %0
+        "+r"(dst_u),                // %1
+        "+r"(dst_v),                // %2
+        "+r"(width)                 // %3
+      : "r"(src_tile_stride)        // %4
+      : "cc", "memory", "v0", "v1"  // Clobber List
+  );
+}
+
 #if LIBYUV_USE_ST2
 // Reads 16 U's and V's and writes out 16 pairs of UV.
 void MergeUVRow_NEON(const uint8_t* src_u,
@@ -3907,14 +3953,14 @@ void NV21ToYUV24Row_NEON(const uint8_t* src_y,
   asm volatile(
       "ld1         {v5.16b,v6.16b,v7.16b}, [%4]  \n"  // 3 shuffler constants
       "1:                                        \n"
-      "ld1         {v0.16b}, [%0], #16           \n"   // load 16 Y values
-      "ld1         {v1.16b}, [%1], #16           \n"   // load 8 VU values
+      "ld1         {v0.16b}, [%0], #16           \n"    // load 16 Y values
+      "ld1         {v1.16b}, [%1], #16           \n"    // load 8 VU values
       "tbl         v2.16b, {v0.16b,v1.16b}, v5.16b \n"  // weave into YUV24
       "prfm        pldl1keep, [%0, 448]          \n"
       "tbl         v3.16b, {v0.16b,v1.16b}, v6.16b \n"
       "prfm        pldl1keep, [%1, 448]          \n"
       "tbl         v4.16b, {v0.16b,v1.16b}, v7.16b \n"
-      "subs        %w3, %w3, #16                 \n"     // 16 pixels per loop
+      "subs        %w3, %w3, #16                 \n"      // 16 pixels per loop
       "st1         {v2.16b,v3.16b,v4.16b}, [%2], #48 \n"  // store 16 YUV pixels
       "b.gt        1b                            \n"
       : "+r"(src_y),            // %0

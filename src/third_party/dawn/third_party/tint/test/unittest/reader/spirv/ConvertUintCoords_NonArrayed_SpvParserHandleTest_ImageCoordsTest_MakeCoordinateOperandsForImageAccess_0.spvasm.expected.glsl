@@ -3,8 +3,7 @@ SKIP: FAILED
 #version 310 es
 precision mediump float;
 
-uniform highp sampler1D x_20;
-
+uniform highp sampler1D x_20_1;
 void main_1() {
   float float_var = 0.0f;
   int i1 = 1;
@@ -19,20 +18,19 @@ void main_1() {
   vec2 vf12 = vec2(1.0f, 2.0f);
   vec3 vf123 = vec3(1.0f, 2.0f, 3.0f);
   vec4 vf1234 = vec4(1.0f, 2.0f, 3.0f, 4.0f);
-  vec4 x_73 = texelFetch(x_20, int(u1), 0);
+  vec4 x_73 = texelFetch(x_20_1, int(u1), 0);
   uint x_1000 = 0u;
   return;
 }
 
 void tint_symbol() {
   main_1();
-  return;
 }
+
 void main() {
   tint_symbol();
+  return;
 }
-
-
 Error parsing GLSL shader:
 ERROR: 0:4: 'sampler1D' : Reserved word. 
 ERROR: 0:4: '' : compilation terminated 

@@ -244,7 +244,10 @@ void WaylandWindow::OnChannelDestroyed() {
   base::circular_deque<
       std::pair<WaylandSubsurface*, ui::ozone::mojom::WaylandOverlayConfigPtr>>
       subsurfaces_to_overlays;
-  subsurfaces_to_overlays.reserve(wayland_subsurfaces_.size() + 1);
+  subsurfaces_to_overlays.reserve(wayland_subsurfaces_.size() +
+                                  (primary_subsurface() ? 1 : 0));
+  if (primary_subsurface())
+    subsurfaces_to_overlays.emplace_back(primary_subsurface(), nullptr);
   for (auto& subsurface : wayland_subsurfaces_)
     subsurfaces_to_overlays.emplace_back(subsurface.get(), nullptr);
 
@@ -533,13 +536,9 @@ void WaylandWindow::OnDragEnter(const gfx::PointF& point,
   if (!drop_handler)
     return;
 
-  auto location_px = gfx::ScalePoint(TranslateLocationToRootWindow(point),
-                                     window_scale(), window_scale());
-
-  // Wayland sends locations in DIP so they need to be translated to
-  // physical pixels.
   // TODO(crbug.com/1102857): get the real event modifier here.
-  drop_handler->OnDragEnter(location_px, std::move(data), operation,
+  drop_handler->OnDragEnter(ToRootWindowPixel(point), std::move(data),
+                            operation,
                             /*modifiers=*/0);
 }
 
@@ -548,13 +547,8 @@ int WaylandWindow::OnDragMotion(const gfx::PointF& point, int operation) {
   if (!drop_handler)
     return 0;
 
-  auto location_px = gfx::ScalePoint(TranslateLocationToRootWindow(point),
-                                     window_scale(), window_scale());
-
-  // Wayland sends locations in DIP so they need to be translated to
-  // physical pixels.
   // TODO(crbug.com/1102857): get the real event modifier here.
-  return drop_handler->OnDragMotion(location_px, operation,
+  return drop_handler->OnDragMotion(ToRootWindowPixel(point), operation,
                                     /*modifiers=*/0);
 }
 
@@ -699,6 +693,20 @@ gfx::PointF WaylandWindow::TranslateLocationToRootWindow(
   return location + gfx::Vector2dF(offset);
 }
 
+gfx::PointF WaylandWindow::ToRootWindowPixel(const gfx::PointF& location_dp) {
+  // Wayland sends coordinates in "surface-local" coordinates. In the common
+  // case, this is in DP. However, when we use surface pixel coordinates, the
+  // location is in relative pixels (so it shouldn't be scaled). Surface pixel
+  // coordinates are used to support fractional scaling in Lacros. Wayland
+  // scaling isn't used because Wayland only supports integer scaling.
+  // See crbug.com/1294417.
+  gfx::PointF location_px = TranslateLocationToRootWindow(location_dp);
+  if (!connection_->surface_submission_in_pixel_coordinates())
+    location_px.Scale(window_scale());
+
+  return location_px;
+}
+
 WaylandWindow* WaylandWindow::GetTopMostChildWindow() {
   return child_window_ ? child_window_->GetTopMostChildWindow() : this;
 }
@@ -805,7 +813,7 @@ bool WaylandWindow::CommitOverlays(
   if (split == overlays.end() && overlays.front()->z_order == INT32_MIN)
     main_overlay = overlays.begin();
 
-  gfx::Size visual_size = (*main_overlay)->bounds_rect.size();
+  gfx::SizeF visual_size = (*main_overlay)->bounds_rect.size();
   float buffer_scale = (*main_overlay)->surface_scale_factor;
   auto& rounded_clip_bounds = (*main_overlay)->rounded_clip_bounds;
 
@@ -823,19 +831,9 @@ bool WaylandWindow::CommitOverlays(
       std::max(overlays.size() - num_background_planes,
                wayland_subsurfaces_.size() + 1));
 
-  // TODO(fangzhoug): Keeping this surface alive removes the black background
-  // when doing animation of showing/hiding auxiliary windows. i.e. Without
-  // overlay delegation feature, black background is shown on tooltip. So keep a
-  // fake config for primary_subsurface when it is not in the overlay list, such
-  // that the frame_manager does not destroy the subsurface.
-  subsurfaces_to_overlays.emplace_back(
-      primary_subsurface(),
-      num_primary_planes ? std::move(*split)
-                         : ui::ozone::mojom::WaylandOverlayConfig::New());
-  if (!num_primary_planes) {
-    auto& primary_config = subsurfaces_to_overlays.back().second;
-    primary_config->opacity =
-        primary_subsurface()->wayland_surface()->opacity();
+  if (num_primary_planes) {
+    subsurfaces_to_overlays.emplace_back(primary_subsurface(),
+                                         std::move(*split));
   }
 
   {

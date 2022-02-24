@@ -1,8 +1,9 @@
-export const description = `Validation tests for buffer related parameters for copies`;
+export const description = `Validation tests for buffer related parameters for buffer <-> texture copies`;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import {
   kSizedTextureFormats,
+  kTextureDimensions,
   kTextureFormatInfo,
   textureDimensionAndFormatCompatible,
 } from '../../../capability_info.js';
@@ -15,7 +16,13 @@ import { ImageCopyTest, formatCopyableWithMethod } from './image_copy.js';
 export const g = makeTestGroup(ImageCopyTest);
 
 g.test('valid')
-  .desc(`The buffer must be valid and not destroyed.`)
+  .desc(
+    `
+Test that the buffer must be valid and not destroyed.
+- for all buffer <-> texture copy methods
+- for various buffer states
+`
+  )
   .params(u =>
     u //
       // B2B copy validations are at api,validation,encoding,cmds,copyBufferToBuffer.spec.ts
@@ -50,7 +57,14 @@ g.test('valid')
   });
 
 g.test('usage')
-  .desc(`The buffer must have the appropriate COPY_SRC/COPY_DST usage.`)
+  .desc(
+    `
+Test the buffer must have the appropriate COPY_SRC/COPY_DST usage.
+TODO update such that it tests
+- for all buffer source usages
+- for all buffer destintation usages
+`
+  )
   .params(u =>
     u
       // B2B copy validations are at api,validation,encoding,cmds,copyBufferToBuffer.spec.ts
@@ -92,21 +106,29 @@ g.test('usage')
 
 g.test('bytes_per_row_alignment')
   .desc(
-    `Test that bytesPerRow must be a multiple of 256 for CopyB2T and CopyT2B if it is required.`
+    `
+Test that bytesPerRow must be a multiple of 256 for CopyB2T and CopyT2B if it is required.
+- for all copy methods between linear data and textures
+- for all texture dimensions
+- for all sized formats.
+- for various bytesPerRow aligned to 256 or not
+- for various number of blocks rows copied
+`
   )
   .params(u =>
     u //
       .combine('method', kImageCopyTypes)
-      .combine('dimension', ['2d', '3d'] as const)
       .combine('format', kSizedTextureFormats)
-      .filter(({ dimension, format }) => textureDimensionAndFormatCompatible(dimension, format))
       .filter(formatCopyableWithMethod)
+      .combine('dimension', kTextureDimensions)
+      .filter(({ dimension, format }) => textureDimensionAndFormatCompatible(dimension, format))
       .beginSubcases()
       .combine('bytesPerRow', [undefined, 0, 1, 255, 256, 257, 512])
       .combine('copyHeightInBlocks', [0, 1, 2, 3])
       .expand('_textureHeightInBlocks', p => [
         p.copyHeightInBlocks === 0 ? 1 : p.copyHeightInBlocks,
       ])
+      .unless(p => p.dimension === '1d' && p.copyHeightInBlocks > 1)
       // Depth/stencil format copies must copy the whole subresource.
       .unless(p => {
         const info = kTextureFormatInfo[p.format];

@@ -151,6 +151,11 @@ class SerializationData {
   const std::vector<CompiledWasmModule>& compiled_wasm_modules() {
     return compiled_wasm_modules_;
   }
+  const std::vector<v8::Global<v8::Value>>& shared_values() {
+    return shared_values_;
+  }
+
+  void ClearSharedValuesUnderLockIfNeeded();
 
  private:
   struct DataDeleter {
@@ -162,6 +167,7 @@ class SerializationData {
   std::vector<std::shared_ptr<v8::BackingStore>> backing_stores_;
   std::vector<std::shared_ptr<v8::BackingStore>> sab_backing_stores_;
   std::vector<CompiledWasmModule> compiled_wasm_modules_;
+  std::vector<v8::Global<v8::Value>> shared_values_;
 
  private:
   friend class Serializer;
@@ -636,6 +642,8 @@ class Shell : public i::AllStatic {
   static void HostInitializeImportMetaObject(Local<Context> context,
                                              Local<Module> module,
                                              Local<Object> meta);
+  static MaybeLocal<Context> HostCreateShadowRealmContext(
+      Local<Context> initiator_context);
 
 #ifdef V8_FUZZILLI
   static void Fuzzilli(const v8::FunctionCallbackInfo<v8::Value>& args);

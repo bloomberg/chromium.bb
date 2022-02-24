@@ -46,8 +46,7 @@ interface UISourceCodeData {
   metadata: Workspace.UISourceCode.UISourceCodeMetadata|null;
 }
 
-export class ContentProviderBasedProject extends Workspace.Workspace.ProjectStore implements
-    Workspace.Workspace.Project {
+export class ContentProviderBasedProject extends Workspace.Workspace.ProjectStore {
   readonly #contentProviders: Map<string, TextUtils.ContentProvider.ContentProvider>;
   readonly #isServiceProjectInternal: boolean;
   readonly #uiSourceCodeToData: WeakMap<Workspace.UISourceCode.UISourceCode, UISourceCodeData>;
@@ -199,7 +198,7 @@ export class ContentProviderBasedProject extends Workspace.Workspace.ProjectStor
   }
 
   indexContent(progress: Common.Progress.Progress): void {
-    void Promise.resolve().then(progress.done.bind(progress));
+    queueMicrotask(progress.done.bind(progress));
   }
 
   addUISourceCodeWithProvider(

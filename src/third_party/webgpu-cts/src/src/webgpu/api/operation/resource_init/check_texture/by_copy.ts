@@ -11,7 +11,6 @@ export const checkContentsByBufferCopy: CheckContents = (
   subresourceRange
 ) => {
   for (const { level: mipLevel, layer } of subresourceRange.each()) {
-    assert(params.dimension !== '1d');
     assert(params.format in kTextureFormatInfo);
     const format = params.format as EncodableTextureFormat;
 
@@ -33,7 +32,6 @@ export const checkContentsByTextureCopy: CheckContents = (
   subresourceRange
 ) => {
   for (const { level, layer } of subresourceRange.each()) {
-    assert(params.dimension !== '1d');
     assert(params.format in kTextureFormatInfo);
     const format = params.format as EncodableTextureFormat;
 

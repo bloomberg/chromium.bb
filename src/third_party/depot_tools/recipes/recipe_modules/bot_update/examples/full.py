@@ -79,7 +79,6 @@ def RunSteps(api):
       suffix=suffix,
       gerrit_no_reset=gerrit_no_reset,
       gerrit_no_rebase_patch_ref=gerrit_no_rebase_patch_ref,
-      disable_syntax_validation=True,
       patch_refs=patch_refs,
       add_blamelists=add_blamelists,
       set_output_commit=set_output_commit,

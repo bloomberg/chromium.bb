@@ -169,7 +169,6 @@
 <translation id="5139423532931106058">Personalizează-ți profilul Chrome</translation>
 <translation id="5163087008893166964">Bun venit la Chrome; fereastră de browser nouă deschisă</translation>
 <translation id="5170938038195470297">Profilul dvs. nu poate fi utilizat, deoarece provine de la o versiune Google Chrome mai recentă. Este posibil ca unele funcții să nu fie disponibile. Specificați un director de profil diferit sau utilizați o versiune Chrome mai nouă.</translation>
-<translation id="5193136243808726294">Sistemul de operare Google Chrome nu poate deschide pagina.</translation>
 <translation id="521447420733633466">Dacă permiți accesul la un dispozitiv, familia și prietenii pot să navigheze separat și să configureze Chrome cum doresc</translation>
 <translation id="5251420635869119124">Invitații pot folosi Chrome fără a lăsa nicio urmă.</translation>
 <translation id="5334487786912937552">Pentru a descărca fișiere, Chrome necesită permisiunea de acces la stocare</translation>
@@ -178,8 +177,6 @@
 <translation id="5430073640787465221">Fișierul dvs. de preferințe este fie deteriorat, fie nevalid. Google Chrome nu poate recupera setările dvs.</translation>
 <translation id="556024056938947818">Google Chrome încearcă să afișeze parolele.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5657226924540934362">Dacă o setare nu apare în pagină, încearcă <ph name="LINK_BEGIN" />
-    setările sistemului de operare Chrome<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Este posibil ca <ph name="FILE_NAME" /> să fie periculos, așadar Chrome l-a blocat.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Administratorul solicită să relansezi Chrome pentru a aplica această actualizare}=1{Administratorul solicită să relansezi Chrome pentru a aplica această actualizare. Fereastra incognito nu se va mai deschide.}few{Administratorul solicită să relansezi Chrome pentru a aplica această actualizare. Cele # ferestre incognito nu se vor mai deschide.}other{Administratorul solicită să relansezi Chrome pentru a aplica această actualizare. Cele # de ferestre incognito nu se vor mai deschide.}}</translation>
 <translation id="5686916850681061684">Personalizează și controlează Google Chrome. Ceva are nevoie de atenția ta – dă clic pentru detalii.</translation>

@@ -17,7 +17,7 @@
 #include "src/execution/frames-inl.h"
 #include "src/execution/isolate-inl.h"
 #include "src/execution/protectors-inl.h"
-#include "src/execution/runtime-profiler.h"
+#include "src/execution/tiering-manager.h"
 #include "src/handles/handles-inl.h"
 #include "src/ic/call-optimization.h"
 #include "src/ic/handler-configuration-inl.h"
@@ -345,7 +345,7 @@ void IC::OnFeedbackChanged(Isolate* isolate, FeedbackVector vector,
   }
 #endif
 
-  isolate->runtime_profiler()->NotifyICChanged();
+  isolate->tiering_manager()->NotifyICChanged();
 }
 
 namespace {
@@ -531,8 +531,7 @@ MaybeHandle<Object> LoadGlobalIC::Load(Handle<Name> name,
         global->native_context().script_context_table(), isolate());
 
     VariableLookupResult lookup_result;
-    if (ScriptContextTable::Lookup(isolate(), *script_contexts, *str_name,
-                                   &lookup_result)) {
+    if (script_contexts->Lookup(str_name, &lookup_result)) {
       Handle<Context> script_context = ScriptContextTable::GetContext(
           isolate(), script_contexts, lookup_result.context_index);
 
@@ -884,7 +883,6 @@ inline WasmValueType GetWasmValueType(wasm::ValueType type) {
     TYPE_CASE(OptRef)
 
     case wasm::kRtt:
-    case wasm::kRttWithDepth:
       // Rtt values are not supposed to be made available to JavaScript side.
       UNREACHABLE();
 
@@ -1696,8 +1694,7 @@ MaybeHandle<Object> StoreGlobalIC::Store(Handle<Name> name,
       global->native_context().script_context_table(), isolate());
 
   VariableLookupResult lookup_result;
-  if (ScriptContextTable::Lookup(isolate(), *script_contexts, *str_name,
-                                 &lookup_result)) {
+  if (script_contexts->Lookup(str_name, &lookup_result)) {
     Handle<Context> script_context = ScriptContextTable::GetContext(
         isolate(), script_contexts, lookup_result.context_index);
     if (lookup_result.mode == VariableMode::kConst) {
@@ -2956,8 +2953,7 @@ RUNTIME_FUNCTION(Runtime_StoreGlobalIC_Slow) {
       native_context->script_context_table(), isolate);
 
   VariableLookupResult lookup_result;
-  if (ScriptContextTable::Lookup(isolate, *script_contexts, *name,
-                                 &lookup_result)) {
+  if (script_contexts->Lookup(name, &lookup_result)) {
     Handle<Context> script_context = ScriptContextTable::GetContext(
         isolate, script_contexts, lookup_result.context_index);
     if (lookup_result.mode == VariableMode::kConst) {

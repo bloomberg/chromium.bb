@@ -4,9 +4,58 @@ Unreleased:
   Trace Processor:
     *
   UI:
-    *
+    * Added flow arrows between binder transaction pairs (request/reply
+      and async send/async recv).
   SDK:
     *
+
+
+v24.2 - 2022-02-10:
+  SDK:
+    * Revert of incremental timestamps, introduced in v24.0.
+      Some clients were depending on non-incremental timestamps.
+      Future releases will re-enable this but offer an opt-out.
+
+
+v24.1 - 2022-02-09:
+  Tracing service and probes:
+    * Fixed build failures on Windows.
+  Trace Processor:
+    * Fixed build failures on Windows.
+
+
+v24.0 - 2022-02-08:
+  Tracing service and probes:
+    * Added "cpufreq_period_ms" in data source "linux.sys_stats" to poll
+      /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq periodically.
+    * Added support for Trusty TEE workqueue events.
+    * Added support for more PMU events in traced_perf.
+    * Changed output format of perfetto --query. Made the output more compact
+      and added a summary of ongoing tracing sessions for the caller UID.
+    * Changed timeout for traced stall detection from 2s to 4s.
+    * Changed internal buffer management to split trace filtering in smaller
+      tasks and avoid too large memory allocation when filtering.
+    * Fixed a bug that could cause producers to see Flush() requests after an
+      OnStop() and mis-behave if the tracing session is extremely short.
+  Trace Processor:
+    * Added support for passing multiple SQL statements to ExecuteQuery(). All
+      queries will be executed fully, with the returned iterator yielding rows
+      for the final statement.
+    * Added support for multi-line SQL comments; previously only single line
+      comments were supported.
+  UI:
+    * Added support for parsing instant events from legacy systrace formats.
+    * Added ingestion and visualization for inet_sock_set_state and
+      tcp_retransmit_skb events, showing TCP connections on dedicated tracks.
+    * Changed HTTP+RPC to use the /websocket endpoint available in newer
+      versions of trace_processor --httpd.
+    * Changed text selection/copy: now allowed by default for DOM elements.
+    * Changed search to also lookup slices by ID when the term is a number.
+    * Changed postMessage() API, suppressed confirmation dialog when the opener
+      is in the same origin, for cases when the UI is self-hosted.
+  SDK:
+    * Changed timestamps emitted by the SDK to be incremental by default, using
+      ClockSnapshot + TracePacketDefaults.
 
 
 v23.0 - 2022-01-11:
@@ -65,6 +114,9 @@ v22.0 - 2021-12-03:
       the middle of a suspend/resume. Switched from SND_TIMEO to poll(POLLOUT).
     * Added "linux.sysfs_power" data source to poll /sys/class/power_supply/
       and report periodically battery charge and drain rate if supported.
+    * Add snapshotting for non-BOOTTIME ftrace clocks. This fixes handling of
+      ftrace events from old Linux kernel versions (i.e. 3.x) and adds
+      proper support for using the "global" clock rather than "boot".
   Trace Processor:
     * Speeded up proto trace ingestion by 2x (~20 MB/s -> ~40 MB/s).
     * Changed LIKE comparisions to be case-senstive. This may break existing
@@ -75,6 +127,7 @@ v22.0 - 2021-12-03:
     * Changed how displayTimeUnit is handled in JSON traces to match catapult.
     * Added websocket endpoint to RPC interface to reduce query latency.
     * Added support for hot-reloading metrics (see //docs/analysis/metrics.md).
+    * Added ingestion support for non-BOOTTIME ftrace clocks.
   UI:
     * Added ability to save/restore record config. Remember last used config.
     * Fixed bug causing the recording page to hold onto the USB interface making

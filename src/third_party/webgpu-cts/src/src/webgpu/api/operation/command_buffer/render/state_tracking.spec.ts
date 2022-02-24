@@ -3,10 +3,6 @@ Ensure state is set correctly. Tries to stress state caching (setting different 
 times in different orders) for setIndexBuffer and setVertexBuffer.
 Equivalent tests for setBindGroup and setPipeline are in programmable/state_tracking.spec.ts.
 Equivalent tests for viewport/scissor/blend/reference are in render/dynamic_state.spec.ts
-
-TODO: plan and implement
-- Test that drawing after having set vertex buffer slots not used by the pipeline.
-- Test that setting / not setting the index buffer does not impact a non-indexed draw.
 `;
 
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
@@ -19,14 +15,14 @@ class VertexAndIndexStateTrackingTest extends GPUTest {
         module: this.device.createShaderModule({
           code: `
         struct Inputs {
-          [[location(0)]] vertexPosition : f32;
-          [[location(1)]] vertexColor : vec4<f32>;
+          @location(0) vertexPosition : f32;
+          @location(1) vertexColor : vec4<f32>;
         };
         struct Outputs {
-          [[builtin(position)]] position : vec4<f32>;
-          [[location(0)]] color : vec4<f32>;
+          @builtin(position) position : vec4<f32>;
+          @location(0) color : vec4<f32>;
         };
-        [[stage(vertex)]]
+        @stage(vertex)
         fn main(input : Inputs)-> Outputs {
           var outputs : Outputs;
           outputs.position =
@@ -58,10 +54,10 @@ class VertexAndIndexStateTrackingTest extends GPUTest {
         module: this.device.createShaderModule({
           code: `
         struct Input {
-          [[location(0)]] color : vec4<f32>;
+          @location(0) color : vec4<f32>;
         };
-        [[stage(fragment)]]
-        fn main(input : Input) -> [[location(0)]] vec4<f32> {
+        @stage(fragment)
+        fn main(input : Input) -> @location(0) vec4<f32> {
           return input.color;
         }`,
         }),
@@ -369,6 +365,259 @@ g.test('change_pipeline_before_and_after_vertex_buffer')
         'rgba8unorm',
         { x: i, y: 0 },
         { exp: expectedColor }
+      );
+    }
+  });
+
+g.test('set_vertex_buffer_but_not_used_in_draw')
+  .desc(
+    `
+  Test that drawing after having set vertex buffer slots not used by the pipeline works correctly.
+  - In the test there are 2 draw calls in the render pass. The first draw call uses 2 vertex buffers
+    (position and color), and the second draw call only uses 1 vertex buffer (for color, the vertex
+    position is defined as constant values in the vertex shader). The test verifies if both of these
+    two draw calls work correctly.
+  `
+  )
+  .fn(async t => {
+    const kPositions = new Float32Array([-0.75, -0.25]);
+    const kColors = new Uint8Array([255, 0, 0, 255, 0, 255, 0, 255]);
+
+    // Initialize the vertex buffers with required vertex attributes (position: f32, color: f32x4)
+    const kAttributeStride = 4;
+    const positionBuffer = t.makeBufferWithContents(kPositions, GPUBufferUsage.VERTEX);
+    const colorBuffer = t.makeBufferWithContents(kColors, GPUBufferUsage.VERTEX);
+
+    const fragmentState: GPUFragmentState = {
+      module: t.device.createShaderModule({
+        code: `
+      struct Input {
+        @location(0) color : vec4<f32>;
+      };
+      @stage(fragment)
+      fn main(input : Input) -> @location(0) vec4<f32> {
+        return input.color;
+      }`,
+      }),
+      entryPoint: 'main',
+      targets: [{ format: 'rgba8unorm' }],
+    };
+
+    // Create renderPipeline1 that uses both positionBuffer and colorBuffer.
+    const renderPipeline1 = t.device.createRenderPipeline({
+      vertex: {
+        module: t.device.createShaderModule({
+          code: `
+        struct Inputs {
+          @location(0) vertexColor : vec4<f32>;
+          @location(1) vertexPosition : f32;
+        };
+        struct Outputs {
+          @builtin(position) position : vec4<f32>;
+          @location(0) color : vec4<f32>;
+        };
+        @stage(vertex)
+        fn main(input : Inputs)-> Outputs {
+          var outputs : Outputs;
+          outputs.position =
+            vec4<f32>(input.vertexPosition, 0.5, 0.0, 1.0);
+          outputs.color = input.vertexColor;
+          return outputs;
+        }`,
+        }),
+        entryPoint: 'main',
+        buffers: [
+          {
+            arrayStride: kAttributeStride,
+            attributes: [
+              {
+                format: 'unorm8x4',
+                offset: 0,
+                shaderLocation: 0,
+              },
+            ],
+          },
+          {
+            arrayStride: kAttributeStride,
+            attributes: [
+              {
+                format: 'float32',
+                offset: 0,
+                shaderLocation: 1,
+              },
+            ],
+          },
+        ],
+      },
+      fragment: fragmentState,
+      primitive: {
+        topology: 'point-list',
+      },
+    });
+
+    const renderPipeline2 = t.device.createRenderPipeline({
+      vertex: {
+        module: t.device.createShaderModule({
+          code: `
+        struct Inputs {
+          @builtin(vertex_index) vertexIndex : u32;
+          @location(0) vertexColor : vec4<f32>;
+        };
+        struct Outputs {
+          @builtin(position) position : vec4<f32>;
+          @location(0) color : vec4<f32>;
+        };
+        @stage(vertex)
+        fn main(input : Inputs)-> Outputs {
+          var kPositions = array<f32, 2> (0.25, 0.75);
+          var outputs : Outputs;
+          outputs.position =
+              vec4(kPositions[input.vertexIndex], 0.5, 0.0, 1.0);
+          outputs.color = input.vertexColor;
+          return outputs;
+        }`,
+        }),
+        entryPoint: 'main',
+        buffers: [
+          {
+            arrayStride: kAttributeStride,
+            attributes: [
+              {
+                format: 'unorm8x4',
+                offset: 0,
+                shaderLocation: 0,
+              },
+            ],
+          },
+        ],
+      },
+      fragment: fragmentState,
+      primitive: {
+        topology: 'point-list',
+      },
+    });
+
+    const kPointsCount = 4;
+    const outputTexture = t.device.createTexture({
+      format: 'rgba8unorm',
+      size: [kPointsCount, 1, 1],
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+
+    const encoder = t.device.createCommandEncoder();
+    const renderPass = encoder.beginRenderPass({
+      colorAttachments: [
+        {
+          view: outputTexture.createView(),
+          loadValue: [0, 0, 0, 1],
+          storeOp: 'store',
+        },
+      ],
+    });
+
+    renderPass.setVertexBuffer(0, colorBuffer);
+    renderPass.setVertexBuffer(1, positionBuffer);
+    renderPass.setPipeline(renderPipeline1);
+    renderPass.draw(2);
+
+    renderPass.setPipeline(renderPipeline2);
+    renderPass.draw(2);
+
+    renderPass.endPass();
+
+    t.queue.submit([encoder.finish()]);
+
+    const kExpectedColors = [
+      kColors.subarray(0, 4),
+      kColors.subarray(4),
+      kColors.subarray(0, 4),
+      kColors.subarray(4),
+    ];
+
+    for (let i = 0; i < kPointsCount; ++i) {
+      t.expectSinglePixelIn2DTexture(
+        outputTexture,
+        'rgba8unorm',
+        { x: i, y: 0 },
+        { exp: kExpectedColors[i] }
+      );
+    }
+  });
+
+g.test('set_index_buffer_before_non_indexed_draw')
+  .desc(
+    `
+  Test that setting / not setting the index buffer does not impact a non-indexed draw.
+  `
+  )
+  .fn(async t => {
+    const kPositions = [-0.75, -0.25, 0.25, 0.75];
+    const kColors = [
+      new Uint8Array([255, 0, 0, 255]),
+      new Uint8Array([0, 255, 0, 255]),
+      new Uint8Array([0, 0, 255, 255]),
+      new Uint8Array([255, 0, 255, 255]),
+    ];
+
+    // Initialize the vertex buffer with required vertex attributes (position: f32, color: f32x4)
+    const vertexBuffer = t.device.createBuffer({
+      usage: GPUBufferUsage.VERTEX,
+      size: t.kVertexAttributeSize * kPositions.length,
+      mappedAtCreation: true,
+    });
+    t.trackForCleanup(vertexBuffer);
+    const vertexAttributes = vertexBuffer.getMappedRange();
+    for (let i = 0; i < kPositions.length; ++i) {
+      const baseOffset = t.kVertexAttributeSize * i;
+      const vertexPosition = new Float32Array(vertexAttributes, baseOffset, 1);
+      vertexPosition[0] = kPositions[i];
+      const vertexColor = new Uint8Array(vertexAttributes, baseOffset + 4, 4);
+      vertexColor.set(kColors[i]);
+    }
+    vertexBuffer.unmap();
+
+    // Initialize the index buffer with 2 uint16 indices (2, 3).
+    const indexBuffer = t.makeBufferWithContents(new Uint16Array([2, 3]), GPUBufferUsage.INDEX);
+
+    const renderPipeline = t.GetRenderPipelineForTest(t.kVertexAttributeSize);
+
+    const kPointsCount = 4;
+    const outputTexture = t.device.createTexture({
+      format: 'rgba8unorm',
+      size: [kPointsCount, 1, 1],
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+
+    const encoder = t.device.createCommandEncoder();
+    const renderPass = encoder.beginRenderPass({
+      colorAttachments: [
+        {
+          view: outputTexture.createView(),
+          loadValue: [0, 0, 0, 1],
+          storeOp: 'store',
+        },
+      ],
+    });
+
+    // The first draw call is an indexed one (the third and fourth color are involved)
+    renderPass.setVertexBuffer(0, vertexBuffer);
+    renderPass.setIndexBuffer(indexBuffer, 'uint16');
+    renderPass.setPipeline(renderPipeline);
+    renderPass.drawIndexed(2);
+
+    // The second draw call is a non-indexed one (the first and second color are involved)
+    renderPass.draw(2);
+
+    renderPass.endPass();
+
+    t.queue.submit([encoder.finish()]);
+
+    for (let i = 0; i < kPointsCount; ++i) {
+      t.expectSinglePixelIn2DTexture(
+        outputTexture,
+        'rgba8unorm',
+        { x: i, y: 0 },
+        { exp: kColors[i] }
       );
     }
   });

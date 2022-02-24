@@ -453,12 +453,12 @@ struct triangular_product_impl<Mode,LhsIsTriangular,Lhs,false,Rhs,false>
     // Apply correction if the diagonal is unit and a scalar factor was nested:
     if ((Mode&UnitDiag)==UnitDiag)
     {
-      if (LhsIsTriangular && lhs_alpha!=LhsScalar(1))
+      if (LhsIsTriangular && !numext::is_exactly_one(lhs_alpha))
       {
         Index diagSize = (std::min)(lhs.rows(),lhs.cols());
         dst.topRows(diagSize) -= ((lhs_alpha-LhsScalar(1))*a_rhs).topRows(diagSize);
       }
-      else if ((!LhsIsTriangular) && rhs_alpha!=RhsScalar(1))
+      else if ((!LhsIsTriangular) && !numext::is_exactly_one(rhs_alpha))
       {
         Index diagSize = (std::min)(rhs.rows(),rhs.cols());
         dst.leftCols(diagSize) -= (rhs_alpha-RhsScalar(1))*a_lhs.leftCols(diagSize);

@@ -171,6 +171,11 @@ class V8_EXPORT_PRIVATE Scope : public NON_EXPORTED_BASE(ZoneObject) {
                                       AstValueFactory* ast_value_factory,
                                       DeserializationMode deserialization_mode);
 
+  template <typename IsolateT>
+  EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE)
+  static void SetScriptScopeInfo(IsolateT* isolate,
+                                 DeclarationScope* script_scope);
+
   // Checks if the block scope is redundant, i.e. it does not contain any
   // block scoped declarations. In that case it is removed from the scope
   // tree and its children are reparented.
@@ -424,6 +429,9 @@ class V8_EXPORT_PRIVATE Scope : public NON_EXPORTED_BASE(ZoneObject) {
     return num_heap_slots() > 0;
   }
 
+#ifdef DEBUG
+  bool IsReparsedMemberInitializerScope() const;
+#endif
   // Use Scope::ForEach for depth first traversal of scopes.
   // Before:
   // void Scope::VisitRecursively() {
@@ -450,6 +458,8 @@ class V8_EXPORT_PRIVATE Scope : public NON_EXPORTED_BASE(ZoneObject) {
     // Recurse/descend into inner scopes.
     kDescend
   };
+
+  bool IsConstructorScope() const;
 
   // Check is this scope is an outer scope of the given scope.
   bool IsOuterScopeOf(Scope* other) const;
@@ -546,6 +556,11 @@ class V8_EXPORT_PRIVATE Scope : public NON_EXPORTED_BASE(ZoneObject) {
   // 'this' is bound, and what determines the function kind.
   DeclarationScope* GetReceiverScope();
 
+  // Find the first constructor scope. Its outer scope is where the instance
+  // members that should be initialized right after super() is called
+  // are declared.
+  DeclarationScope* GetConstructorScope();
+
   // Find the first class scope or object literal block scope. This is where
   // 'super' is bound.
   Scope* GetHomeObjectScope();
@@ -604,6 +619,10 @@ class V8_EXPORT_PRIVATE Scope : public NON_EXPORTED_BASE(ZoneObject) {
     DCHECK(is_home_object_scope());
     needs_home_object_ = true;
   }
+
+  VariableProxy* NewHomeObjectVariableProxy(AstNodeFactory* factory,
+                                            const AstRawString* name,
+                                            int start_pos);
 
   bool RemoveInnerScope(Scope* inner_scope) {
     DCHECK_NOT_NULL(inner_scope);
@@ -863,7 +882,7 @@ class V8_EXPORT_PRIVATE DeclarationScope : public Scope {
   FunctionKind function_kind() const { return function_kind_; }
 
   // Inform the scope that the corresponding code uses "super".
-  void RecordSuperPropertyUsage() {
+  Scope* RecordSuperPropertyUsage() {
     DCHECK(IsConciseMethod(function_kind()) ||
            IsAccessorFunction(function_kind()) ||
            IsClassConstructor(function_kind()));
@@ -871,6 +890,7 @@ class V8_EXPORT_PRIVATE DeclarationScope : public Scope {
     Scope* home_object_scope = GetHomeObjectScope();
     DCHECK_NOT_NULL(home_object_scope);
     home_object_scope->set_needs_home_object();
+    return home_object_scope;
   }
 
   bool uses_super_property() const { return uses_super_property_; }
@@ -1226,6 +1246,13 @@ class V8_EXPORT_PRIVATE DeclarationScope : public Scope {
   // to REPL_GLOBAL. Should only be called on REPL scripts.
   void RewriteReplGlobalVariables();
 
+  void set_class_scope_has_private_brand(bool value) {
+    class_scope_has_private_brand_ = value;
+  }
+  bool class_scope_has_private_brand() const {
+    return class_scope_has_private_brand_;
+  }
+
  private:
   V8_INLINE void AllocateParameter(Variable* var, int index);
 
@@ -1273,7 +1300,7 @@ class V8_EXPORT_PRIVATE DeclarationScope : public Scope {
   bool has_this_reference_ : 1;
   bool has_this_declaration_ : 1;
   bool needs_private_name_context_chain_recalc_ : 1;
-
+  bool class_scope_has_private_brand_ : 1;
   // If the scope is a function scope, this is the function kind.
   FunctionKind function_kind_;
 
@@ -1474,6 +1501,18 @@ class V8_EXPORT_PRIVATE ClassScope : public Scope {
     should_save_class_variable_index_ = true;
   }
 
+  // Finalize the reparsed class scope, called when reparsing the
+  // class scope for the initializer member function.
+  // If the reparsed scope declares any variable that needs allocation
+  // fixup using the scope info, needs_allocation_fixup is true.
+  void FinalizeReparsedClassScope(Isolate* isolate,
+                                  MaybeHandle<ScopeInfo> outer_scope_info,
+                                  AstValueFactory* ast_value_factory,
+                                  bool needs_allocation_fixup);
+#ifdef DEBUG
+  bool is_reparsed_class_scope() const { return is_reparsed_class_scope_; }
+#endif
+
  private:
   friend class Scope;
   friend class PrivateNameScopeIterator;
@@ -1519,6 +1558,9 @@ class V8_EXPORT_PRIVATE ClassScope : public Scope {
   // This is only maintained during reparsing, restored from the
   // preparsed data.
   bool should_save_class_variable_index_ = false;
+#ifdef DEBUG
+  bool is_reparsed_class_scope_ = false;
+#endif
 };
 
 // Iterate over the private name scope chain. The iteration proceeds from the

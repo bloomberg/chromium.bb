@@ -42,7 +42,7 @@ They are summarized in the following tables:
 
 <tr><td>LeastSquaresConjugateGradient \n <tt>\#include<Eigen/\link IterativeLinearSolvers_Module IterativeLinearSolvers\endlink></tt></td><td>CG for rectangular least-square problem</td><td>Rectangular</td>
     <td>IdentityPreconditioner, [LeastSquareDiagonalPreconditioner]</td>
-    <td>Solve for min |A'Ax-b|^2 without forming A'A</td></tr>
+    <td>Solve for min |Ax-b|^2 without forming A'A</td></tr>
 
 <tr><td>BiCGSTAB \n <tt>\#include<Eigen/\link IterativeLinearSolvers_Module IterativeLinearSolvers\endlink></tt></td><td>Iterative stabilized bi-conjugate gradient</td><td>Square</td>
     <td>IdentityPreconditioner, [DiagonalPreconditioner], IncompleteLUT</td>

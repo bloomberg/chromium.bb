@@ -53,8 +53,8 @@
 #include "src/execution/messages.h"
 #include "src/execution/microtask-queue.h"
 #include "src/execution/protectors-inl.h"
-#include "src/execution/runtime-profiler.h"
 #include "src/execution/simulator.h"
+#include "src/execution/tiering-manager.h"
 #include "src/execution/v8threads.h"
 #include "src/execution/vm-state-inl.h"
 #include "src/handles/global-handles-inl.h"
@@ -2599,14 +2599,15 @@ void Isolate::PushPromise(Handle<JSObject> promise) {
   tltop->promise_on_stack_ = new PromiseOnStack(global_promise, prev);
 }
 
-void Isolate::PopPromise() {
+bool Isolate::PopPromise() {
   ThreadLocalTop* tltop = thread_local_top();
-  if (tltop->promise_on_stack_ == nullptr) return;
+  if (tltop->promise_on_stack_ == nullptr) return false;
   PromiseOnStack* prev = tltop->promise_on_stack_->prev();
   Handle<Object> global_promise = tltop->promise_on_stack_->promise();
   delete tltop->promise_on_stack_;
   tltop->promise_on_stack_ = prev;
   global_handles()->Destroy(global_promise.location());
+  return true;
 }
 
 namespace {
@@ -2765,7 +2766,8 @@ void Isolate::InstallConditionalFeatures(Handle<Context> context) {
   Handle<JSGlobalObject> global = handle(context->global_object(), this);
   Handle<String> sab_name = factory()->SharedArrayBuffer_string();
   if (IsSharedArrayBufferConstructorEnabled(context)) {
-    if (!JSObject::HasRealNamedProperty(global, sab_name).FromMaybe(true)) {
+    if (!JSObject::HasRealNamedProperty(this, global, sab_name)
+             .FromMaybe(true)) {
       JSObject::AddProperty(this, global, factory()->SharedArrayBuffer_string(),
                             shared_array_buffer_fun(), DONT_ENUM);
     }
@@ -3211,17 +3213,19 @@ Isolate::Isolate(std::unique_ptr<i::IsolateAllocator> isolate_allocator,
 
   handle_scope_data_.Initialize();
 
-  // When pointer compression is on with a per-Isolate cage, allocation in the
-  // shared Isolate can point into the per-Isolate RO heap as the offsets are
-  // constant across Isolates.
+  // A shared Isolate is used to support JavaScript shared memory features
+  // across Isolates. These features require all of the following to hold in the
+  // build configuration:
   //
-  // When pointer compression is on with a shared cage or when pointer
-  // compression is off, a shared RO heap is required. Otherwise a shared
-  // allocation requested by a client Isolate could point into the client
-  // Isolate's RO space (e.g. an RO map) whose pages gets unmapped when it is
-  // disposed.
-  CHECK_IMPLIES(is_shared_, COMPRESS_POINTERS_IN_ISOLATE_CAGE_BOOL ||
-                                V8_SHARED_RO_HEAP_BOOL);
+  // 1. The RO space is shared, so e.g. immortal RO maps can be shared across
+  //   Isolates.
+  // 2. HeapObjects are shareable across Isolates, which requires either
+  //   pointers to be uncompressed (!COMPRESS_POINTER_BOOL), or that there is a
+  //   single virtual memory reservation shared by all Isolates in the process
+  //   for compressing pointers (COMPRESS_POINTERS_IN_SHARED_CAGE_BOOL).
+  CHECK_IMPLIES(is_shared_, V8_SHARED_RO_HEAP_BOOL &&
+                                (!COMPRESS_POINTERS_BOOL ||
+                                 COMPRESS_POINTERS_IN_SHARED_CAGE_BOOL));
 
 #define ISOLATE_INIT_EXECUTE(type, name, initial_value) \
   name##_ = (initial_value);
@@ -3274,10 +3278,10 @@ void Isolate::CheckIsolateLayout() {
 #ifdef V8_SANDBOXED_EXTERNAL_POINTERS
   CHECK_EQ(static_cast<int>(OFFSET_OF(ExternalPointerTable, buffer_)),
            Internals::kExternalPointerTableBufferOffset);
-  CHECK_EQ(static_cast<int>(OFFSET_OF(ExternalPointerTable, length_)),
-           Internals::kExternalPointerTableLengthOffset);
   CHECK_EQ(static_cast<int>(OFFSET_OF(ExternalPointerTable, capacity_)),
            Internals::kExternalPointerTableCapacityOffset);
+  CHECK_EQ(static_cast<int>(OFFSET_OF(ExternalPointerTable, freelist_head_)),
+           Internals::kExternalPointerTableFreelistHeadOffset);
 #endif
 }
 
@@ -3383,9 +3387,9 @@ void Isolate::Deinit() {
   builtins_.TearDown();
   bootstrapper_->TearDown();
 
-  if (runtime_profiler_ != nullptr) {
-    delete runtime_profiler_;
-    runtime_profiler_ = nullptr;
+  if (tiering_manager_ != nullptr) {
+    delete tiering_manager_;
+    tiering_manager_ = nullptr;
   }
 
   delete heap_profiler_;
@@ -3433,6 +3437,10 @@ void Isolate::Deinit() {
   SetCodePages(nullptr);
 
   ClearSerializerData();
+
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+  external_pointer_table().TearDown();
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
 
   {
     base::MutexGuard lock_guard(&thread_data_table_mutex_);
@@ -3953,6 +3961,10 @@ bool Isolate::Init(SnapshotData* startup_snapshot_data,
 
   isolate_data_.external_reference_table()->Init(this);
 
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+  external_pointer_table().Init(this);
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
+
 #if V8_ENABLE_WEBASSEMBLY
   wasm::GetWasmEngine()->AddIsolate(this);
 #endif  // V8_ENABLE_WEBASSEMBLY
@@ -4023,9 +4035,9 @@ bool Isolate::Init(SnapshotData* startup_snapshot_data,
     optimizing_compile_dispatcher_ = new OptimizingCompileDispatcher(this);
   }
 
-  // Initialize runtime profiler before deserialization, because collections may
-  // occur, clearing/updating ICs.
-  runtime_profiler_ = new RuntimeProfiler(this);
+  // Initialize before deserialization since collections may occur,
+  // clearing/updating ICs (and thus affecting tiering decisions).
+  tiering_manager_ = new TieringManager(this);
 
   // If we are deserializing, read the state into the now-empty heap.
   {
@@ -4295,6 +4307,7 @@ CodeTracer* Isolate::GetCodeTracer() {
 }
 
 bool Isolate::use_optimizer() {
+  // TODO(v8:7700): Update this predicate for a world with multiple tiers.
   return FLAG_opt && !serializer_enabled_ && CpuFeatures::SupportsOptimizer() &&
          !is_precise_count_code_coverage();
 }
@@ -4761,6 +4774,32 @@ MaybeHandle<JSObject> Isolate::RunHostInitializeImportMetaObjectCallback(
 void Isolate::SetHostInitializeImportMetaObjectCallback(
     HostInitializeImportMetaObjectCallback callback) {
   host_initialize_import_meta_object_callback_ = callback;
+}
+
+void Isolate::SetHostCreateShadowRealmContextCallback(
+    HostCreateShadowRealmContextCallback callback) {
+  host_create_shadow_realm_context_callback_ = callback;
+}
+
+MaybeHandle<NativeContext> Isolate::RunHostCreateShadowRealmContextCallback() {
+  if (host_create_shadow_realm_context_callback_ == nullptr) {
+    Handle<Object> exception =
+        factory()->NewError(error_function(), MessageTemplate::kUnsupported);
+    Throw(*exception);
+    return kNullMaybeHandle;
+  }
+
+  v8::Local<v8::Context> api_context =
+      v8::Utils::ToLocal(Handle<Context>(native_context()));
+  v8::Local<v8::Context> shadow_realm_context;
+  ASSIGN_RETURN_ON_SCHEDULED_EXCEPTION_VALUE(
+      this, shadow_realm_context,
+      host_create_shadow_realm_context_callback_(api_context),
+      MaybeHandle<NativeContext>());
+  Handle<Context> shadow_realm_context_handle =
+      v8::Utils::OpenHandle(*shadow_realm_context);
+  DCHECK(shadow_realm_context_handle->IsNativeContext());
+  return Handle<NativeContext>::cast(shadow_realm_context_handle);
 }
 
 MaybeHandle<Object> Isolate::RunPrepareStackTraceCallback(

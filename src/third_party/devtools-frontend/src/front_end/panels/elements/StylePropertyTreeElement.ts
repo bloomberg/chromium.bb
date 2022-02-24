@@ -6,6 +6,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
@@ -116,6 +117,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
   private prompt: CSSPropertyPrompt|null;
   private lastComputedValue: string|null;
   private contextForTest!: Context|undefined;
+  #propertyTextFromSource: string;
 
   constructor(
       stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles,
@@ -145,6 +147,8 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     this.prompt = null;
 
     this.lastComputedValue = null;
+
+    this.#propertyTextFromSource = property.propertyText || '';
   }
 
   matchedStyles(): SDK.CSSMatchedStyles.CSSMatchedStyles {
@@ -477,6 +481,8 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     } else {
       this.listItemElement.classList.remove('disabled');
     }
+
+    this.listItemElement.classList.toggle('changed', this.isPropertyChanged(this.property));
   }
 
   node(): SDK.DOMModel.DOMNode|null {
@@ -519,6 +525,14 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     this.matchedStylesInternal.resetActiveProperties();
     this.updatePane();
     this.styleTextAppliedForTest();
+  }
+
+  private isPropertyChanged(property: SDK.CSSProperty.CSSProperty): boolean {
+    if (!Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES)) {
+      return false;
+    }
+    // Check local cache first, then check against diffs from the workspace.
+    return this.#propertyTextFromSource !== property.propertyText || this.parentPane().isPropertyChanged(property);
   }
 
   async onpopulate(): Promise<void> {
@@ -714,6 +728,14 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         UI.ARIAUtils.setAccessibleName(
             enabledCheckboxElement, `${this.nameElement.textContent} ${this.valueElement.textContent}`);
       }
+
+      const copyIcon = UI.Icon.Icon.create('largeicon-copy', 'copy');
+      UI.Tooltip.Tooltip.install(copyIcon, i18nString(UIStrings.copyDeclaration));
+      copyIcon.addEventListener('click', () => {
+        const propertyText = `${this.property.name}: ${this.property.value};`;
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(propertyText);
+      });
+      this.listItemElement.append(copyIcon);
       this.listItemElement.insertBefore(enabledCheckboxElement, this.listItemElement.firstChild);
     }
   }
@@ -1469,6 +1491,9 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
       }
       this.styleTextAppliedForTest();
       return;
+    }
+    if (updatedProperty) {
+      this.listItemElement.classList.toggle('changed', this.isPropertyChanged(updatedProperty));
     }
 
     this.matchedStylesInternal.resetActiveProperties();

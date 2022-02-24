@@ -169,7 +169,6 @@
 <translation id="5139423532931106058">Tilpass Chrome-profilen din</translation>
 <translation id="5163087008893166964">Velkommen til Chrome – et nytt nettleservindu er åpnet</translation>
 <translation id="5170938038195470297">Profilen din kan ikke brukes fordi den er fra en nyere versjon av Google Chrome. Enkelte funksjoner kan være utilgjengelige. Angi en annen profilkatalog, eller bruk en nyere versjon av Chrome.</translation>
-<translation id="5193136243808726294">Google Chrome OS kan ikke åpne denne siden</translation>
 <translation id="521447420733633466">Hvis du deler en enhet med andre, kan venner og familie surfe hver for seg og konfigurere Chrome akkurat slik de vil</translation>
 <translation id="5251420635869119124">Gjester kan bruke Chrome uten å etterlate seg spor.</translation>
 <translation id="5334487786912937552">Chrome må ha lagringstilgang for å kunne laste ned filer</translation>
@@ -178,8 +177,6 @@
 <translation id="5430073640787465221">Innstillingsfilen er skadet eller ugyldig. Google Chrome kan ikke gjenopprette innstillingene dine.</translation>
 <translation id="556024056938947818">Google Chrome prøver å vise passord.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-Inn)</translation>
-<translation id="5657226924540934362">Hvis en innstilling ikke vises på denne siden, kan du gå til <ph name="LINK_BEGIN" />
-    innstillingene for Chrome OS<ph name="LINK_END" /></translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan være farlig, så Chrome har blokkert den.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Administratoren din ber deg om å starte Chrome på nytt for å ta i bruk denne oppdateringen}=1{Administratoren din ber deg om å starte Chrome på nytt for å ta i bruk denne oppdateringen. Inkognitovinduet ditt blir ikke gjenåpnet.}other{Administratoren din ber deg om å starte Chrome på nytt for å ta i bruk denne oppdateringen. De # inkognitovinduene dine blir ikke gjenåpnet.}}</translation>
 <translation id="5686916850681061684">Tilpass og kontrollér Google Chrome. Det er noe du må se på – klikk for mer informasjon.</translation>

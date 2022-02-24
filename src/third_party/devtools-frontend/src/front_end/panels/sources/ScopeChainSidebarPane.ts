@@ -34,13 +34,13 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as SourceMapScopes from '../../models/source_map_scopes/source_map_scopes.js';
 import * as LinearMemoryInspector from '../../ui/components/linear_memory_inspector/linear_memory_inspector.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
 import scopeChainSidebarPaneStyles from './scopeChainSidebarPane.css.js';
-import {resolveScopeChain, resolveScopeInObject, resolveThisObject} from './SourceMapNamesResolver.js';
 
 const UIStrings = {
   /**
@@ -90,6 +90,8 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox implements UI.ContextF
   private readonly expandController: ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeExpandController;
   private readonly linkifier: Components.Linkifier.Linkifier;
   private infoElement: HTMLDivElement;
+  #scopesScript: SDK.Script.Script|null = null;
+
   private constructor() {
     super(true);
 
@@ -126,6 +128,34 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox implements UI.ContextF
     }
   }
 
+  private sourceMapAttached(
+      event: Common.EventTarget.EventTargetEvent<{client: SDK.Script.Script, sourceMap: SDK.SourceMap.SourceMap}>):
+      void {
+    if (event.data.client === this.#scopesScript) {
+      void this.update();
+    }
+  }
+
+  private setScopeSourceMapSubscription(callFrame: SDK.DebuggerModel.CallFrame|null): void {
+    const oldScript = this.#scopesScript;
+    this.#scopesScript = callFrame?.script ?? null;
+
+    // Shortcut for the case when we are listening to the same model.
+    if (oldScript?.debuggerModel === this.#scopesScript?.debuggerModel) {
+      return;
+    }
+
+    if (oldScript) {
+      oldScript.debuggerModel.sourceMapManager().removeEventListener(
+          SDK.SourceMapManager.Events.SourceMapAttached, this.sourceMapAttached, this);
+    }
+
+    if (this.#scopesScript) {
+      this.#scopesScript.debuggerModel.sourceMapManager().addEventListener(
+          SDK.SourceMapManager.Events.SourceMapAttached, this.sourceMapAttached, this);
+    }
+  }
+
   private async update(): Promise<void> {
     // The `resolveThisObject(callFrame)` and `resolveScopeChain(callFrame)` calls
     // below may take a while to complete, so indicate to the user that something
@@ -137,7 +167,11 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox implements UI.ContextF
     this.linkifier.reset();
 
     const callFrame = UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
-    const [thisObject, scopeChain] = await Promise.all([resolveThisObject(callFrame), resolveScopeChain(callFrame)]);
+    this.setScopeSourceMapSubscription(callFrame);
+    const [thisObject, scopeChain] = await Promise.all([
+      SourceMapScopes.NamesResolver.resolveThisObject(callFrame),
+      SourceMapScopes.NamesResolver.resolveScopeChain(callFrame),
+    ]);
     // By now the developer might have moved on, and we don't want to show stale
     // scope information, so check again that we're still on the same CallFrame.
     if (callFrame === UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame)) {
@@ -212,7 +246,7 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox implements UI.ContextF
     titleElement.createChild('div', 'scope-chain-sidebar-pane-section-title').textContent = title;
 
     const section = new ObjectUI.ObjectPropertiesSection.RootElement(
-        resolveScopeInObject(scope), this.linkifier, emptyPlaceholder,
+        SourceMapScopes.NamesResolver.resolveScopeInObject(scope), this.linkifier, emptyPlaceholder,
         ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.All, extraProperties);
     section.title = titleElement;
     section.listItemElement.classList.add('scope-chain-sidebar-pane-section');

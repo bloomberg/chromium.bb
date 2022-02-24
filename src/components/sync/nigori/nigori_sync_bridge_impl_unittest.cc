@@ -14,7 +14,6 @@
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/nigori/key_derivation_params.h"
-#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/nigori/keystore_keys_cryptographer.h"
 #include "components/sync/nigori/nigori_state.h"
 #include "components/sync/nigori/nigori_storage.h"
@@ -162,6 +161,10 @@ NigoriMetadataBatch CreateDummyNigoriMetadataBatch(
 std::unique_ptr<Nigori> MakeNigoriKey(const KeyParamsForTesting& key_params) {
   return Nigori::CreateByDerivation(key_params.derivation_params,
                                     key_params.password);
+}
+
+KeyDerivationParams MakeCustomPassphraseKeyDerivationParams() {
+  return KeyDerivationParams::CreateForScrypt("salt");
 }
 
 class MockNigoriLocalChangeProcessor : public NigoriLocalChangeProcessor {
@@ -660,7 +663,8 @@ TEST_F(NigoriSyncBridgeImplTest,
 
   ASSERT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
               Eq(absl::nullopt));
-  bridge()->SetEncryptionPassphrase("passphrase");
+  bridge()->SetEncryptionPassphrase("passphrase",
+                                    MakeCustomPassphraseKeyDerivationParams());
   bridge()->SetKeystoreKeys({kRawKeystoreKey});
 
   // TODO(crbug.com/922900): revisit expectations once conflict resolution is
@@ -905,7 +909,8 @@ TEST_F(NigoriSyncBridgeImplTest,
   // Calling SetEncryptionPassphrase() triggers a commit cycle but doesn't
   // immediately expose the new state, until the commit completes.
   EXPECT_CALL(*processor(), Put(HasCustomPassphraseNigori()));
-  bridge()->SetEncryptionPassphrase(kCustomPassphrase);
+  bridge()->SetEncryptionPassphrase(kCustomPassphrase,
+                                    MakeCustomPassphraseKeyDerivationParams());
   EXPECT_THAT(bridge()->GetData(), HasCustomPassphraseNigori());
 
   // Mimic commit completion.
@@ -950,7 +955,8 @@ TEST_F(NigoriSyncBridgeImplTest,
 
   // Set up custom passphrase locally, but don't emulate commit completion.
   const std::string kCustomPassphrase = "custom_passphrase";
-  bridge()->SetEncryptionPassphrase(kCustomPassphrase);
+  bridge()->SetEncryptionPassphrase(kCustomPassphrase,
+                                    MakeCustomPassphraseKeyDerivationParams());
 
   // Emulate conflict with rotated keystore Nigori.
   const std::vector<uint8_t> kRawKeystoreKey2 = {5, 6, 7, 8};
@@ -1008,7 +1014,8 @@ TEST_F(NigoriSyncBridgeImplTest, ShouldNotAllowCustomPassphraseChange) {
               Eq(absl::nullopt));
 
   EXPECT_CALL(*observer(), OnPassphraseAccepted()).Times(0);
-  bridge()->SetEncryptionPassphrase("new_passphrase");
+  bridge()->SetEncryptionPassphrase("new_passphrase",
+                                    MakeCustomPassphraseKeyDerivationParams());
 }
 
 TEST_F(NigoriSyncBridgeImplPersistenceTest, ShouldRestoreKeystoreNigori) {
@@ -1268,7 +1275,8 @@ TEST_F(NigoriSyncBridgeImplTest,
   // Calling SetEncryptionPassphrase() triggers a commit cycle but doesn't
   // immediately expose the new state, until the commit completes.
   EXPECT_CALL(*processor(), Put(HasCustomPassphraseNigori()));
-  bridge()->SetEncryptionPassphrase(kCustomPassphrase);
+  bridge()->SetEncryptionPassphrase(kCustomPassphrase,
+                                    MakeCustomPassphraseKeyDerivationParams());
   EXPECT_THAT(bridge()->GetData(), HasCustomPassphraseNigori());
 
   // Mimic commit completion.

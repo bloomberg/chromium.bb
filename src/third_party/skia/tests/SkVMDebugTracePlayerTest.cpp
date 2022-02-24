@@ -15,7 +15,7 @@
 
 using LineNumberMap = SkSL::SkVMDebugTracePlayer::LineNumberMap;
 
-static sk_sp<SkSL::SkVMDebugTrace> make_trace(skiatest::Reporter* r, SkSL::String src) {
+static sk_sp<SkSL::SkVMDebugTrace> make_trace(skiatest::Reporter* r, std::string src) {
     SkSL::ShaderCaps caps;
     SkSL::Compiler compiler(&caps);
     SkSL::Program::Settings settings;
@@ -251,7 +251,7 @@ DEF_TEST(SkSLTracePlayerVariables, r) {
     sk_sp<SkSL::SkVMDebugTrace> trace = make_trace(r,
 R"(                                   // Line 1
 float func() {                        // Line 2
-    float z = 456;                    // Line 3
+    float x = 4, y = 5, z = 6;        // Line 3
     return z;                         // Line 4
 }                                     // Line 5
 int main() {                          // Line 6
@@ -266,7 +266,7 @@ int main() {                          // Line 6
     SkSL::SkVMDebugTracePlayer player;
     player.reset(trace);
 
-    REPORTER_ASSERT(r, player.getLineNumbersReached() == LineNumberMap({{3, 1}, {4, 1}, {7, 1},
+    REPORTER_ASSERT(r, player.getLineNumbersReached() == LineNumberMap({{3, 3}, {4, 1}, {7, 1},
                                                                         {8, 1}, {9, 1}, {10, 1},
                                                                         {11, 1}, {12, 1}}));
     player.step();
@@ -291,15 +291,25 @@ int main() {                          // Line 6
     REPORTER_ASSERT(r, make_local_vars_string(*trace, player) == "");
     player.step();
 
+    REPORTER_ASSERT(r, player.getCurrentLine() == 3);
+    REPORTER_ASSERT(r, make_stack_string(*trace, player) == "int main() -> float func()");
+    REPORTER_ASSERT(r, make_local_vars_string(*trace, player) == "##x = 4");
+    player.step();
+
+    REPORTER_ASSERT(r, player.getCurrentLine() == 3);
+    REPORTER_ASSERT(r, make_stack_string(*trace, player) == "int main() -> float func()");
+    REPORTER_ASSERT(r, make_local_vars_string(*trace, player) == "##y = 5, x = 4");
+    player.step();
+
     REPORTER_ASSERT(r, player.getCurrentLine() == 4);
     REPORTER_ASSERT(r, make_stack_string(*trace, player) == "int main() -> float func()");
-    REPORTER_ASSERT(r, make_local_vars_string(*trace, player) == "##z = 456");
+    REPORTER_ASSERT(r, make_local_vars_string(*trace, player) == "##z = 6, y = 5, x = 4");
     player.step();
 
     REPORTER_ASSERT(r, player.getCurrentLine() == 9);
     REPORTER_ASSERT(r, make_stack_string(*trace, player) == "int main()");
     REPORTER_ASSERT(r, make_local_vars_string(*trace, player) ==
-                       "##[func].result = 456, b = true, a = 123");
+                       "##[func].result = 6, b = true, a = 123");
     player.step();
 
     REPORTER_ASSERT(r, player.getCurrentLine() == 10);
@@ -327,6 +337,59 @@ int main() {                          // Line 6
     REPORTER_ASSERT(r, make_stack_string(*trace, player) == "");
     REPORTER_ASSERT(r, make_global_vars_string(*trace, player) == "##[main].result = 123");
 }
+
+DEF_TEST(SkSLTracePlayerVariableGroups, r) {
+    sk_sp<SkSL::SkVMDebugTrace> trace = make_trace(r,
+R"(                                   // Line 1
+struct S { int x, y, z; };            // Line 2
+int main() {                          // Line 3
+    S s;                              // Line 4
+    int arr[3];                       // Line 5
+    s.y = 1;                          // Line 6
+    arr[1] = 2;                       // Line 7
+    s.x = 3;                          // Line 8
+    arr[2] = 4;                       // Line 9
+    return 0;                         // Line 10
+}                                     // Line 11
+)");
+    SkSL::SkVMDebugTracePlayer player;
+    player.reset(trace);
+    player.step();
+
+    REPORTER_ASSERT(r, player.getCurrentLine() == 4);
+    REPORTER_ASSERT(r, make_stack_string(*trace, player) == "int main()");
+    REPORTER_ASSERT(r, make_local_vars_string(*trace, player) == "");
+    player.step();
+
+    REPORTER_ASSERT(r, player.getCurrentLine() == 5);
+    REPORTER_ASSERT(r, make_local_vars_string(*trace, player) == "##s.x = 0, ##s.y = 0, ##s.z = 0");
+    player.step();
+
+    REPORTER_ASSERT(r, player.getCurrentLine() == 6);
+    REPORTER_ASSERT(r, make_local_vars_string(*trace, player) ==
+                       "##arr[0] = 0, ##arr[1] = 0, ##arr[2] = 0, s.x = 0, s.y = 0, s.z = 0");
+    player.step();
+
+    REPORTER_ASSERT(r, player.getCurrentLine() == 7);
+    REPORTER_ASSERT(r, make_local_vars_string(*trace, player) ==
+                       "s.x = 0, ##s.y = 1, s.z = 0, arr[0] = 0, arr[1] = 0, arr[2] = 0");
+    player.step();
+
+    REPORTER_ASSERT(r, player.getCurrentLine() == 8);
+    REPORTER_ASSERT(r, make_local_vars_string(*trace, player) ==
+                       "arr[0] = 0, ##arr[1] = 2, arr[2] = 0, s.x = 0, s.y = 1, s.z = 0");
+    player.step();
+
+    REPORTER_ASSERT(r, player.getCurrentLine() == 9);
+    REPORTER_ASSERT(r, make_local_vars_string(*trace, player) ==
+                       "##s.x = 3, s.y = 1, s.z = 0, arr[0] = 0, arr[1] = 2, arr[2] = 0");
+    player.step();
+
+    REPORTER_ASSERT(r, player.getCurrentLine() == 10);
+    REPORTER_ASSERT(r, make_local_vars_string(*trace, player) ==
+                       "arr[0] = 0, arr[1] = 2, ##arr[2] = 4, s.x = 3, s.y = 1, s.z = 0");
+}
+
 
 DEF_TEST(SkSLTracePlayerIfStatement, r) {
     sk_sp<SkSL::SkVMDebugTrace> trace = make_trace(r,

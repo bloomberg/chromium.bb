@@ -188,6 +188,7 @@ function detectLineSeparator(text: string): CM.Extension {
 
 const baseKeymap = CM.keymap.of([
   {key: 'Tab', run: CM.acceptCompletion},
+  {key: 'End', run: CM.acceptCompletion},
   {key: 'Ctrl-m', run: CM.cursorMatchingBracket, shift: CM.selectMatchingBracket},
   {key: 'Mod-/', run: CM.toggleComment},
   {key: 'Mod-d', run: CM.selectNextOccurrence},
@@ -202,10 +203,11 @@ function themeIsDark(): boolean {
   return setting === 'systemPreferred' ? window.matchMedia('(prefers-color-scheme: dark)').matches : setting === 'dark';
 }
 
-const dummyDarkTheme = CM.EditorView.theme({}, {dark: true});
+export const dummyDarkTheme = CM.EditorView.theme({}, {dark: true});
+export const themeSelection = new CM.Compartment();
 
 export function theme(): CM.Extension {
-  return [editorTheme, themeIsDark() ? dummyDarkTheme : []];
+  return [editorTheme, themeIsDark() ? themeSelection.of(dummyDarkTheme) : themeSelection.of([])];
 }
 
 let sideBarElement: HTMLElement|null = null;

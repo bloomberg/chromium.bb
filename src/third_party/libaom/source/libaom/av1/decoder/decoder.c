@@ -530,7 +530,7 @@ int av1_get_raw_frame(AV1Decoder *pbi, size_t index, YV12_BUFFER_CONFIG **sd,
 }
 
 // Get the highest-spatial-layer output
-// TODO(david.barker): What should this do?
+// TODO(rachelbarker): What should this do?
 int av1_get_frame_to_show(AV1Decoder *pbi, YV12_BUFFER_CONFIG *frame) {
   if (pbi->num_output_frames == 0) return -1;
 

@@ -5,6 +5,15 @@ This directory contains a test suite for the Vulkan loader.
 These tests are not exhaustive &mdash; they are expected to be supplemented with other tests, such as CTS.
 
 
+## Test specific CMake Configuration
+
+| Option                         | Platform | Default | Description                                              |
+| ------------------------------ | -------- | ------- | -------------------------------------------------------- |
+| BUILD_TESTS                    | All      | `OFF`   | Controls whether or not the loader tests are built.      |
+| ENABLE_LIVE_VERIFICATION_TESTS | All      | `OFF`   | Enables building of tests meant to run with live drivers |
+| TEST_USE_ADDRESS_SANITIZER     | Linux    | `OFF`   | Enables Address Sanitizer in the loader and tests        |
+| TEST_USE_THREAD_SANITIZER      | Linux    | `OFF`   | Enables Thread Sanitizer in the loader and tests         |
+
 ## Running Tests
 
 For most purposes `ctest` is the desired method of running tests.
@@ -33,9 +42,11 @@ IMPORTANT NOTES:
 
 ## Using a specific loader with the tests
 
-The environment variable `VK_LOADER_TEST_LOADER_PATH` can be used to specify which vulkan-loader binary should be used. This is useful when writing tests to exercise
-a bug fix. Simply build the loader without the fix, stash it in a known location. Write the fix and the test that should exercise the bug and it passes. Then run the
-test again but with this env-var set to the older loader without the fix and show that the test now fails.
+The environment variable `VK_LOADER_TEST_LOADER_PATH` can be used to specify which vulkan-loader binary should be used.
+This is useful when writing tests to exercise a bug fix.
+Simply build the loader without the fix, stash it in a known location.
+Write the fix and the test that should exercise the bug and it passes.
+Then run the test again but with this env-var set to the older loader without the fix and show that the test now fails.
 
 Basic usage example:
 ```c

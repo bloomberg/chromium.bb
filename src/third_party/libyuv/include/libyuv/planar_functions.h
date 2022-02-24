@@ -83,6 +83,28 @@ void SetPlane(uint8_t* dst_y,
               int height,
               uint32_t value);
 
+// Convert a plane of tiles of 16 x H to linear.
+LIBYUV_API
+void DetilePlane(const uint8_t* src_y,
+                 int src_stride_y,
+                 uint8_t* dst_y,
+                 int dst_stride_y,
+                 int width,
+                 int height,
+                 int tile_height);
+
+// Convert a UV plane of tiles of 16 x H into linear U and V planes.
+LIBYUV_API
+void DetileSplitUVPlane(const uint8_t* src_uv,
+                        int src_stride_uv,
+                        uint8_t* dst_u,
+                        int dst_stride_u,
+                        uint8_t* dst_v,
+                        int dst_stride_v,
+                        int width,
+                        int height,
+                        int tile_height);
+
 // Split interleaved UV plane into separate U and V planes.
 LIBYUV_API
 void SplitUVPlane(const uint8_t* src_uv,

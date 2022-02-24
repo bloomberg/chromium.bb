@@ -2,7 +2,7 @@
 
 let a : vec2<f32> = vec2<f32>(0.1, 1.0);
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   var a: u32;
   return;

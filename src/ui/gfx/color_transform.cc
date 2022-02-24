@@ -1060,6 +1060,53 @@ class ColorTransformPQToneMapToLinear : public ColorTransformStep {
   }
 };
 
+// Scale the color such that the luminance `input_max_value` maps to
+// `output_max_value`. This assumes that the third color component is
+// luminance.
+class ColorTransformToneMapInXYZ : public ColorTransformStep {
+ public:
+  ColorTransformToneMapInXYZ(float input_max_value, float output_max_value)
+      : a_(output_max_value / (input_max_value * input_max_value)),
+        b_(1.f / output_max_value) {}
+
+  // ColorTransformStep implementation:
+  void Transform(ColorTransform::TriStim* color, size_t num) const override {
+    for (size_t i = 0; i < num; i++) {
+      float L = color[i].z();
+      if (L > 0.f)
+        color[i].Scale((1.f + a_ * L) / (1.f + b_ * L));
+    }
+  }
+  void AppendShaderSource(std::stringstream* hdr,
+                          std::stringstream* src,
+                          size_t step_index) const override {
+    *hdr << "vec3 ToneMapStep" << step_index << "(vec3 color) {\n"
+         << "  vec3 result = color;\n"
+         << "  float L = color.b;\n"
+         << "  if (L > 0.0) {\n"
+         << "    result *= (1.0 + " << a_ << "*L) / \n"
+         << "              (1.0 + " << b_ << "*L);\n"
+         << "  }\n"
+         << "  return result;\n"
+         << "}\n";
+    *src << "  color.rgb = ToneMapStep" << step_index << "(color.rgb);\n";
+  }
+  void AppendSkShaderSource(std::stringstream* src) const override {
+    *src << "{\n"
+         << "  half L = color.b;\n"
+         << "  if (L > 0.0) {\n"
+         << "    color.rgb *= (1.0 + " << a_ << "*L) / \n"
+         << "                 (1.0 + " << b_ << "*L);\n"
+         << "  }\n"
+         << "}\n";
+  }
+
+ private:
+  // Constants derived from `input_max_value` and `output_max_value`.
+  const float a_;
+  const float b_;
+};
+
 void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
     const ColorSpace& src,
     const ColorSpace& dst,
@@ -1092,39 +1139,45 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
   if (!dst.IsValid())
     return;
 
-  skcms_TransferFunction src_to_linear_fn;
-  if (src.GetTransferFunction(&src_to_linear_fn)) {
-    steps_.push_back(std::make_unique<ColorTransformSkTransferFn>(
-        src_to_linear_fn, src.HasExtendedSkTransferFn()));
-  } else if (src.GetTransferID() == ColorSpace::TransferID::ARIB_STD_B67) {
-    if (dst.IsHDR()) {
-      float sdr_white_level = 0.f;
-      src.GetSDRWhiteLevel(&sdr_white_level);
+  switch (src.GetTransferID()) {
+    case ColorSpace::TransferID::HLG:
+      if (options.tone_map_pq_and_hlg_to_sdr) {
+        // HLG is designed such that treating it as 2.2 gamma content works
+        // well.
+        constexpr skcms_TransferFunction kGamma22 = {2.2, 1, 0, 0, 0, 0, 0};
+        steps_.push_back(
+            std::make_unique<ColorTransformSkTransferFn>(kGamma22, false));
+      } else {
+        steps_.push_back(std::make_unique<ColorTransformHLGToLinear>(
+            options.sdr_max_luminance_nits));
+      }
+      break;
+    case ColorSpace::TransferID::PQ:
+      if (options.tone_map_pq_and_hlg_to_sdr) {
+        steps_.push_back(std::make_unique<ColorTransformPQToneMapToLinear>());
+      } else {
+        steps_.push_back(std::make_unique<ColorTransformPQToLinear>(
+            options.sdr_max_luminance_nits));
+      }
+      break;
+    case ColorSpace::TransferID::PIECEWISE_HDR: {
+      skcms_TransferFunction fn;
+      float p, q, r;
+      ColorTransformPiecewiseHDR::GetParams(src, &fn, &p, &q, &r);
       steps_.push_back(
-          std::make_unique<ColorTransformHLGToLinear>(sdr_white_level));
-    } else {
-      // HLG is designed such that treating it as 2.2 gamma content works well.
-      constexpr skcms_TransferFunction kGamma22 = {2.2, 1, 0, 0, 0, 0, 0};
-      steps_.push_back(
-          std::make_unique<ColorTransformSkTransferFn>(kGamma22, false));
+          std::make_unique<ColorTransformPiecewiseHDR>(fn, p, q, r));
+      break;
     }
-  } else if (src.GetTransferID() == ColorSpace::TransferID::SMPTEST2084) {
-    if (dst.IsHDR()) {
-      float sdr_white_level = 0.f;
-      src.GetSDRWhiteLevel(&sdr_white_level);
-      steps_.push_back(
-          std::make_unique<ColorTransformPQToLinear>(sdr_white_level));
-    } else {
-      steps_.push_back(std::make_unique<ColorTransformPQToneMapToLinear>());
+    default: {
+      skcms_TransferFunction src_to_linear_fn;
+      if (src.GetTransferFunction(&src_to_linear_fn)) {
+        steps_.push_back(std::make_unique<ColorTransformSkTransferFn>(
+            src_to_linear_fn, src.HasExtendedSkTransferFn()));
+      } else {
+        steps_.push_back(
+            std::make_unique<ColorTransformToLinear>(src.GetTransferID()));
+      }
     }
-  } else if (src.GetTransferID() == ColorSpace::TransferID::PIECEWISE_HDR) {
-    skcms_TransferFunction fn;
-    float p, q, r;
-    ColorTransformPiecewiseHDR::GetParams(src, &fn, &p, &q, &r);
-    steps_.push_back(std::make_unique<ColorTransformPiecewiseHDR>(fn, p, q, r));
-  } else {
-    steps_.push_back(
-        std::make_unique<ColorTransformToLinear>(src.GetTransferID()));
   }
 
   if (src.GetMatrixID() == ColorSpace::MatrixID::BT2020_CL) {
@@ -1135,6 +1188,31 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
   steps_.push_back(
       std::make_unique<ColorTransformMatrix>(GetPrimaryTransform(src)));
 
+  // Perform tone mapping while we're in XYZ space, because in this space, the
+  // third component is already luminance.
+  if (options.tone_map_pq_and_hlg_to_dst) {
+    float src_max_luminance_relative = 1.f;
+    switch (src.GetTransferID()) {
+      case ColorSpace::TransferID::HLG: {
+        // The maximum value that ColorTransformHLGToLinear can produce.
+        src_max_luminance_relative =
+            12 * (gfx::ColorSpace::kDefaultSDRWhiteLevel /
+                  options.sdr_max_luminance_nits);
+        break;
+      }
+      case ColorSpace::TransferID::PQ:
+        // The maximum value that ColorTransformPQToLinear can produce.
+        src_max_luminance_relative = 10000 / options.sdr_max_luminance_nits;
+        break;
+      default:
+        break;
+    }
+    if (src_max_luminance_relative > options.dst_max_luminance_relative) {
+      steps_.push_back(std::make_unique<ColorTransformToneMapInXYZ>(
+          src_max_luminance_relative, options.dst_max_luminance_relative));
+    }
+  }
+
   steps_.push_back(
       std::make_unique<ColorTransformMatrix>(Invert(GetPrimaryTransform(dst))));
   if (dst.GetMatrixID() == ColorSpace::MatrixID::BT2020_CL) {
@@ -1143,29 +1221,35 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
         GetTransferMatrix(dst, options.dst_bit_depth)));
   }
 
-  skcms_TransferFunction dst_from_linear_fn;
-  if (dst.GetInverseTransferFunction(&dst_from_linear_fn)) {
-    steps_.push_back(std::make_unique<ColorTransformSkTransferFn>(
-        dst_from_linear_fn, dst.HasExtendedSkTransferFn()));
-  } else if (dst.GetTransferID() == ColorSpace::TransferID::ARIB_STD_B67) {
-    float sdr_white_level = 0.f;
-    dst.GetSDRWhiteLevel(&sdr_white_level);
-    steps_.push_back(
-        std::make_unique<ColorTransformHLGFromLinear>(sdr_white_level));
-  } else if (dst.GetTransferID() == ColorSpace::TransferID::SMPTEST2084) {
-    float sdr_white_level = 0.f;
-    dst.GetSDRWhiteLevel(&sdr_white_level);
-    steps_.push_back(
-        std::make_unique<ColorTransformPQFromLinear>(sdr_white_level));
-  } else if (dst.GetTransferID() == ColorSpace::TransferID::PIECEWISE_HDR) {
-    skcms_TransferFunction fn;
-    float p, q, r;
-    ColorTransformPiecewiseHDR::GetParams(dst, &fn, &p, &q, &r);
-    ColorTransformPiecewiseHDR::InvertParams(&fn, &p, &q, &r);
-    steps_.push_back(std::make_unique<ColorTransformPiecewiseHDR>(fn, p, q, r));
-  } else {
-    steps_.push_back(
-        std::make_unique<ColorTransformFromLinear>(dst.GetTransferID()));
+  switch (dst.GetTransferID()) {
+    case ColorSpace::TransferID::HLG:
+      steps_.push_back(std::make_unique<ColorTransformHLGFromLinear>(
+          options.sdr_max_luminance_nits));
+      break;
+    case ColorSpace::TransferID::PQ:
+      steps_.push_back(std::make_unique<ColorTransformPQFromLinear>(
+          options.sdr_max_luminance_nits));
+      break;
+    case ColorSpace::TransferID::PIECEWISE_HDR: {
+      skcms_TransferFunction fn;
+      float p, q, r;
+      ColorTransformPiecewiseHDR::GetParams(dst, &fn, &p, &q, &r);
+      ColorTransformPiecewiseHDR::InvertParams(&fn, &p, &q, &r);
+      steps_.push_back(
+          std::make_unique<ColorTransformPiecewiseHDR>(fn, p, q, r));
+      break;
+    }
+    default: {
+      skcms_TransferFunction dst_from_linear_fn;
+      if (dst.GetInverseTransferFunction(&dst_from_linear_fn)) {
+        steps_.push_back(std::make_unique<ColorTransformSkTransferFn>(
+            dst_from_linear_fn, dst.HasExtendedSkTransferFn()));
+      } else {
+        steps_.push_back(
+            std::make_unique<ColorTransformFromLinear>(dst.GetTransferID()));
+      }
+      break;
+    }
   }
 
   // ITU-T H.273: If MatrixCoefficients is equal to 0 (Identity) or 8 (YCgCo),

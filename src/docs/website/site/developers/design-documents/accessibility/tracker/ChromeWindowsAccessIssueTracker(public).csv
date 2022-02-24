@@ -61,7 +61,7 @@ Area: WebKit and WebKit / Chromium infrastructure
 
 WebKit document root node should display MSAA name (page title) and value (URL),Bug,crbug.com/36169,ctguil@chromium.org,P1,"CL prepared, needs tests & WebKit upstreaming"
 WebKit table cell role should be overridden by ARIA role on cell,Bug,https://bugs.webkit.org/show_bug.cgi?id=28923,ctguil@chromium.org,P1,"CL prepared, needs tests & WebKit upstreaming"
-Complete the WAI-ARIA role support (the ones not needing IA2),Bug,crbug.com/19982,ctguil@chromium.org,,In progress - role support listed at: http://dev.chromium.org/developers/design-documents/accessibility#TOC-WAI-ARIA-Roles
+Complete the WAI-ARIA role support (the ones not needing IA2),Bug,crbug.com/19982,ctguil@chromium.org,,In progress - role support listed at: http://www.chromium.org/developers/design-documents/accessibility#TOC-WAI-ARIA-Roles
 [Accessibility] No notification for page refresh,Bug,crbug.com/36093,ctguil@chromium.org
 Screen reader support for web content is needed (includes IA2 - bug will be broken into smaller ones as we spec out more details of what's needed),Bug,crbug.com/13291,"ctguil@chromium.org
 klink@chromium.org"
@@ -80,10 +80,10 @@ Implement accessibilityController in test shell,Bug,crbug.com/10322,dglazkov,,In
 
 Area: Documentation
 
-Add documentation for keyboard navigation of bookmarks bar and Alt+E/Alt+F to the Chrome design document,Doc,,klink,,"Done - live at: http://sites.google.com/a/chromium.org/dev/developers/design-documents/accessibility, and also listed in the general Chrome Keyboard Shortcuts document: http://www.google.com/support/chrome/bin/answer.py?answer=95743"
+Add documentation for keyboard navigation of bookmarks bar and Alt+E/Alt+F to the Chrome design document,Doc,,klink,,"Done - live at: http://www.chromium.org/developers/design-documents/accessibility, and also listed in the general Chrome Keyboard Shortcuts document: http://www.google.com/support/chrome/bin/answer.py?answer=95743"
 File bugs on WAI-ARIA states and properties,Doc,,klink
 File bugs on live region support,Doc,,klink
-Move issue tracker to public place,Doc,,klink,,Done - live at: http://sites.google.com/a/chromium.org/dev/developers/design-documents/accessibility/tracker
-Compose Accessibility User Guidelines for Google Chrome,Doc,,klink,,Done - live at: http://sites.google.com/a/chromium.org/dev/developers/design-documents/accessibility
-Create changelog page,Doc,,klink,,Done - live at: http://sites.google.com/a/chromium.org/dev/developers/design-documents/accessibility/tracker
-Add all outstanding bugs to this spreadsheet,Doc,,klink,,Done - live at: http://sites.google.com/a/chromium.org/dev/developers/design-documents/accessibility/tracker
+Move issue tracker to public place,Doc,,klink,,Done - live at: http://www.chromium.org/developers/design-documents/accessibility/tracker
+Compose Accessibility User Guidelines for Google Chrome,Doc,,klink,,Done - live at: http://www.chromium.org/developers/design-documents/accessibility
+Create changelog page,Doc,,klink,,Done - live at: http://www.chromium.org/developers/design-documents/accessibility/tracker
+Add all outstanding bugs to this spreadsheet,Doc,,klink,,Done - live at: http://www.chromium.org/developers/design-documents/accessibility/tracker

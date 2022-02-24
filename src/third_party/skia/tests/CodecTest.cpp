@@ -1683,7 +1683,7 @@ DEF_TEST(Codec_webp_rowsDecoded, r) {
     sk_sp<SkData> subset = SkData::MakeSubset(data.get(), 0, truncatedSize);
     std::unique_ptr<SkCodec> codec = SkCodec::MakeFromData(std::move(subset));
     if (!codec) {
-        ERRORF(r, "Failed to create a codec for %s truncated to only %lu bytes",
+        ERRORF(r, "Failed to create a codec for %s truncated to only %zu bytes",
                path, truncatedSize);
         return;
     }
@@ -1745,8 +1745,7 @@ DEF_TEST(Codec_ossfuzz6274, r) {
         ERRORF(r, "Invalid data gave non-nullptr image");
     }
     return;
-#endif
-
+#else
     if (!image) {
         ERRORF(r, "Missing %s", file);
         return;
@@ -1773,6 +1772,7 @@ DEF_TEST(Codec_ossfuzz6274, r) {
             ERRORF(r, "did not initialize pixels! %i, %i is %x", i, j, actual);
         }
     }
+#endif
 }
 
 DEF_TEST(Codec_78329453, r) {

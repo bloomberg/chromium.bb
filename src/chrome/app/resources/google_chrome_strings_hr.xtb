@@ -170,7 +170,6 @@
 <translation id="5139423532931106058">Prilagodite profil u Chromeu</translation>
 <translation id="5163087008893166964">Dobro došli u Chrome; otvorio se novi prozor preglednika</translation>
 <translation id="5170938038195470297">Vaš se profil ne može upotrijebiti jer pripada novijoj verziji proizvoda Google Chrome. Neke značajke možda nisu dostupne. Navedite drugi direktorij profila ili upotrijebite noviju verziju proizvoda Chrome.</translation>
-<translation id="5193136243808726294">OS Google Chrome ne može otvoriti ovu stranicu.</translation>
 <translation id="521447420733633466">Ako dijelite uređaj, prijatelji i članovi obitelji mogu zasebno pregledavati i postaviti Chrome prema svojim željama</translation>
 <translation id="5251420635869119124">Gosti mogu upotrebljavati Chrome bez ostavljanja tragova o upotrebi.</translation>
 <translation id="5334487786912937552">Chrome treba dopuštenje za pristup pohrani radi preuzimanja datoteka</translation>
@@ -179,8 +178,6 @@
 <translation id="5430073640787465221">Datoteka vaših postavki oštećena je ili nevažeća. Google Chrome nema mogućnost oporavka vaših postavki.</translation>
 <translation id="556024056938947818">Google Chrome pokušava prikazati zaporke.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5657226924540934362">Ako se postavka ne prikazuje na ovoj stranici, pogledajte <ph name="LINK_BEGIN" />
-      postavke OS-a Chrome<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Datoteka <ph name="FILE_NAME" /> mogla bi biti opasna, pa ju je Chrome blokirao.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Vaš administrator traži da ponovno pokrenete Chrome radi primjene tog ažuriranja}=1{Vaš administrator traži da ponovno pokrenete Chrome radi primjene tog ažuriranja. Anonimni se prozor neće ponovno otvoriti.}one{Vaš administrator traži da ponovno pokrenete Chrome radi primjene tog ažuriranja. Vaš # anonimni prozor neće se ponovno otvoriti.}few{Vaš administrator traži da ponovno pokrenete Chrome radi primjene tog ažuriranja. Vaša # anonimna prozora neće se ponovno otvoriti.}other{Vaš administrator traži da ponovno pokrenete Chrome radi primjene tog ažuriranja. Vaših # anonimnih prozora neće se ponovno otvoriti.}}</translation>
 <translation id="5686916850681061684">Prilagodite Google Chrome i upravljajte njime. Trebate obratiti pozornost na nešto – kliknite za pojedinosti.</translation>

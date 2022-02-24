@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/shelf/gradient_layer_delegate.h"
+#include "ash/controls/gradient_layer_delegate.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/check_op.h"
@@ -75,7 +75,10 @@ void ScrollViewGradientHelper::UpdateGradientZone() {
   // If a gradient is needed, lazily create the GradientLayerDelegate.
   if (!gradient_layer_) {
     DVLOG(1) << "Adding gradient mask layer";
-    gradient_layer_ = std::make_unique<GradientLayerDelegate>();
+    // Animate showing the gradient to avoid a visual "pop" at the end of the
+    // clamshell launcher open animation.
+    gradient_layer_ =
+        std::make_unique<GradientLayerDelegate>(/*animate_in=*/true);
     scroll_view_->layer()->SetMaskLayer(gradient_layer_->layer());
   }
 

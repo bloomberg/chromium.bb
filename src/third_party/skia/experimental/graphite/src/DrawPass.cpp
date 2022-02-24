@@ -16,8 +16,10 @@
 #include "experimental/graphite/src/DrawContext.h"
 #include "experimental/graphite/src/DrawList.h"
 #include "experimental/graphite/src/DrawWriter.h"
+#include "experimental/graphite/src/GlobalCache.h"
 #include "experimental/graphite/src/GraphicsPipeline.h"
 #include "experimental/graphite/src/GraphicsPipelineDesc.h"
+#include "experimental/graphite/src/RecorderPriv.h"
 #include "experimental/graphite/src/Renderer.h"
 #include "experimental/graphite/src/ResourceProvider.h"
 #include "experimental/graphite/src/TextureProxy.h"
@@ -27,6 +29,7 @@
 
 #include "src/core/SkMathPriv.h"
 #include "src/core/SkTBlockList.h"
+#include "src/core/SkUniformData.h"
 #include "src/gpu/BufferWriter.h"
 
 #include <algorithm>
@@ -174,16 +177,21 @@ public:
     UniformBindingCache(DrawBufferManager* bufferMgr, UniformCache* cache)
             : fBufferMgr(bufferMgr), fCache(cache) {}
 
-    uint32_t addUniforms(sk_sp<UniformData> data) {
-        if (!data) {
+    uint32_t addUniforms(std::unique_ptr<SkUniformBlock> uniformBlock) {
+        if (!uniformBlock || uniformBlock->empty()) {
             return UniformCache::kInvalidUniformID;
         }
 
-        uint32_t index = fCache->insert(data);
+        uint32_t index = fCache->insert(std::move(uniformBlock));
         if (fBindings.find(index) == fBindings.end()) {
+            SkUniformBlock* tmp = fCache->lookup(index);
             // First time encountering this data, so upload to the GPU
-            auto [writer, bufferInfo] = fBufferMgr->getUniformWriter(data->dataSize());
-            writer.write(data->data(), data->dataSize());
+            size_t totalDataSize = tmp->totalSize();
+            auto [writer, bufferInfo] = fBufferMgr->getUniformWriter(totalDataSize);
+            for (auto& u : *tmp) {
+                writer.write(u->data(), u->dataSize());
+            }
+
             fBindings.insert({index, bufferInfo});
         }
 
@@ -265,10 +273,10 @@ std::unique_ptr<DrawPass> DrawPass::Make(Recorder* recorder,
 
     Rect passBounds = Rect::InfiniteInverted();
 
-    DrawBufferManager* bufferMgr = recorder->drawBufferManager();
+    DrawBufferManager* bufferMgr = recorder->priv().drawBufferManager();
     UniformCache geometryUniforms;
     UniformBindingCache geometryUniformBindings(bufferMgr, &geometryUniforms);
-    UniformBindingCache shadingUniformBindings(bufferMgr, recorder->uniformCache());
+    UniformBindingCache shadingUniformBindings(bufferMgr, recorder->priv().uniformCache());
 
     std::unordered_map<const GraphicsPipelineDesc*, uint32_t, Hash, Eq> pipelineDescToIndex;
 
@@ -285,12 +293,13 @@ std::unique_ptr<DrawPass> DrawPass::Make(Recorder* recorder,
         // bound independently of those used by the rest of the RenderStep, then we can upload now
         // and remember the location for re-use on any RenderStep that does shading.
         SkUniquePaintParamsID shaderID;
-        sk_sp<UniformData> shadingUniforms = nullptr;
+        std::unique_ptr<SkUniformBlock> shadingUniforms;
         uint32_t shadingIndex = UniformCache::kInvalidUniformID;
         if (draw.fPaintParams.has_value()) {
-            std::tie(shaderID, shadingUniforms) = ExtractPaintData(recorder->context(),
-                                                                   draw.fPaintParams.value());
-            shadingIndex = shadingUniformBindings.addUniforms(shadingUniforms);
+            SkShaderCodeDictionary* dict =
+                    recorder->priv().resourceProvider()->shaderCodeDictionary();
+            std::tie(shaderID, shadingUniforms) = ExtractPaintData(dict, draw.fPaintParams.value());
+            shadingIndex = shadingUniformBindings.addUniforms(std::move(shadingUniforms));
         } // else depth-only
 
         for (int stepIndex = 0; stepIndex < draw.fRenderer.numRenderSteps(); ++stepIndex) {
@@ -311,7 +320,9 @@ std::unique_ptr<DrawPass> DrawPass::Make(Recorder* recorder,
                                                     draw.fClip.scissor(),
                                                     draw.fTransform,
                                                     draw.fShape);
-                geometryIndex = geometryUniformBindings.addUniforms(std::move(uniforms));
+
+                geometryIndex = geometryUniformBindings.addUniforms(
+                        std::make_unique<SkUniformBlock>(std::move(uniforms)));
             }
 
             GraphicsPipelineDesc desc;
@@ -416,10 +427,9 @@ std::unique_ptr<DrawPass> DrawPass::Make(Recorder* recorder,
     return drawPass;
 }
 
-void DrawPass::addCommands(Context* context, CommandBuffer* buffer,
+void DrawPass::addCommands(ResourceProvider* resourceProvider,
+                           CommandBuffer* buffer,
                            const RenderPassDesc& renderPassDesc) const {
-    auto resourceProvider = context->priv().resourceProvider();
-
     // TODO: Validate RenderPass state against DrawPass's target and requirements?
     // Generate actual GraphicsPipeline objects combining the target-level properties and each of
     // the GraphicsPipelineDesc's referenced in this DrawPass.
@@ -428,8 +438,8 @@ void DrawPass::addCommands(Context* context, CommandBuffer* buffer,
     std::vector<sk_sp<GraphicsPipeline>> fullPipelines;
     fullPipelines.reserve(fPipelineDescs.count());
     for (const GraphicsPipelineDesc& pipelineDesc : fPipelineDescs.items()) {
-        fullPipelines.push_back(resourceProvider->findOrCreateGraphicsPipeline(
-                context, pipelineDesc, renderPassDesc));
+        fullPipelines.push_back(resourceProvider->findOrCreateGraphicsPipeline(pipelineDesc,
+                                                                               renderPassDesc));
     }
 
     // Set viewport to the entire texture for now (eventually, we may have logically smaller bounds

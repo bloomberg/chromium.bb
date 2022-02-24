@@ -120,6 +120,7 @@ template<> struct packet_traits<float>  : default_packet_traits
     HasExp = 1,
     HasSqrt = EIGEN_FAST_MATH,
     HasRsqrt = EIGEN_FAST_MATH,
+    HasReciprocal = EIGEN_FAST_MATH,
     HasTanh = EIGEN_FAST_MATH,
     HasErf = EIGEN_FAST_MATH,
 #endif
@@ -357,6 +358,39 @@ template <>
 EIGEN_STRONG_INLINE Packet8d pmadd(const Packet8d& a, const Packet8d& b,
                                    const Packet8d& c) {
   return _mm512_fmadd_pd(a, b, c);
+}
+
+template <>
+EIGEN_STRONG_INLINE Packet16f pmsub(const Packet16f& a, const Packet16f& b,
+                                    const Packet16f& c) {
+  return _mm512_fmsub_ps(a, b, c);
+}
+template <>
+EIGEN_STRONG_INLINE Packet8d pmsub(const Packet8d& a, const Packet8d& b,
+                                   const Packet8d& c) {
+  return _mm512_fmsub_pd(a, b, c);
+}
+
+template <>
+EIGEN_STRONG_INLINE Packet16f pnmadd(const Packet16f& a, const Packet16f& b,
+                                    const Packet16f& c) {
+  return _mm512_fnmadd_ps(a, b, c);
+}
+template <>
+EIGEN_STRONG_INLINE Packet8d pnmadd(const Packet8d& a, const Packet8d& b,
+                                   const Packet8d& c) {
+  return _mm512_fnmadd_pd(a, b, c);
+}
+
+template <>
+EIGEN_STRONG_INLINE Packet16f pnmsub(const Packet16f& a, const Packet16f& b,
+                                    const Packet16f& c) {
+  return _mm512_fnmsub_ps(a, b, c);
+}
+template <>
+EIGEN_STRONG_INLINE Packet8d pnmsub(const Packet8d& a, const Packet8d& b,
+                                   const Packet8d& c) {
+  return _mm512_fnmsub_pd(a, b, c);
 }
 #endif
 
@@ -1772,7 +1806,7 @@ EIGEN_STRONG_INLINE Packet16h float2half(const Packet16f& a) {
 }
 
 template<> EIGEN_STRONG_INLINE Packet16h ptrue(const Packet16h& a) {
-  return ptrue(Packet8i(a));
+  return Packet16h(ptrue(Packet8i(a)));
 }
 
 template <>
@@ -1801,16 +1835,16 @@ EIGEN_STRONG_INLINE Packet16h plset<Packet16h>(const half& a) {
 template<> EIGEN_STRONG_INLINE Packet16h por(const Packet16h& a,const Packet16h& b) {
   // in some cases Packet8i is a wrapper around __m256i, so we need to
   // cast to Packet8i to call the correct overload.
-  return por(Packet8i(a),Packet8i(b));
+  return Packet16h(por(Packet8i(a),Packet8i(b)));
 }
 template<> EIGEN_STRONG_INLINE Packet16h pxor(const Packet16h& a,const Packet16h& b) {
-  return pxor(Packet8i(a),Packet8i(b));
+  return Packet16h(pxor(Packet8i(a),Packet8i(b)));
 }
 template<> EIGEN_STRONG_INLINE Packet16h pand(const Packet16h& a,const Packet16h& b) {
-  return pand(Packet8i(a),Packet8i(b));
+  return Packet16h(pand(Packet8i(a),Packet8i(b)));
 }
 template<> EIGEN_STRONG_INLINE Packet16h pandnot(const Packet16h& a,const Packet16h& b) {
-  return pandnot(Packet8i(a),Packet8i(b));
+  return Packet16h(pandnot(Packet8i(a),Packet8i(b)));
 }
 
 template<> EIGEN_STRONG_INLINE Packet16h pselect(const Packet16h& mask, const Packet16h& a, const Packet16h& b) {
@@ -2265,28 +2299,28 @@ EIGEN_STRONG_INLINE Packet16bf F32ToBf16(const Packet16f& a) {
 
 template <>
 EIGEN_STRONG_INLINE Packet16bf ptrue(const Packet16bf& a) {
-  return ptrue<Packet8i>(a);
+  return Packet16bf(ptrue<Packet8i>(Packet8i(a)));
 }
 
 template <>
 EIGEN_STRONG_INLINE Packet16bf por(const Packet16bf& a, const Packet16bf& b) {
-  return por<Packet8i>(a, b);
+  return Packet16bf(por<Packet8i>(Packet8i(a), Packet8i(b)));
 }
 
 template <>
 EIGEN_STRONG_INLINE Packet16bf pxor(const Packet16bf& a, const Packet16bf& b) {
-  return pxor<Packet8i>(a, b);
+  return Packet16bf(pxor<Packet8i>(Packet8i(a), Packet8i(b)));
 }
 
 template <>
 EIGEN_STRONG_INLINE Packet16bf pand(const Packet16bf& a, const Packet16bf& b) {
-  return pand<Packet8i>(a, b);
+  return Packet16bf(pand<Packet8i>(Packet8i(a), Packet8i(b)));
 }
 
 template <>
 EIGEN_STRONG_INLINE Packet16bf pandnot(const Packet16bf& a,
                                        const Packet16bf& b) {
-  return pandnot<Packet8i>(a, b);
+  return Packet16bf(pandnot<Packet8i>(Packet8i(a), Packet8i(b)));
 }
 
 template <>

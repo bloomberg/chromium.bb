@@ -44,12 +44,14 @@
 
 #define QSV_HAVE_TRELLIS QSV_VERSION_ATLEAST(1, 8)
 #define QSV_HAVE_MAX_SLICE_SIZE QSV_VERSION_ATLEAST(1, 9)
+#define QSV_HAVE_DISABLEDEBLOCKIDC QSV_VERSION_ATLEAST(1, 9)
 #define QSV_HAVE_BREF_TYPE      QSV_VERSION_ATLEAST(1, 8)
 
 #define QSV_HAVE_LA     QSV_VERSION_ATLEAST(1, 7)
 #define QSV_HAVE_LA_DS  QSV_VERSION_ATLEAST(1, 8)
 #define QSV_HAVE_LA_HRD QSV_VERSION_ATLEAST(1, 11)
 #define QSV_HAVE_VDENC  QSV_VERSION_ATLEAST(1, 15)
+#define QSV_HAVE_PREF   QSV_VERSION_ATLEAST(1, 16)
 
 #define QSV_HAVE_GPB    QSV_VERSION_ATLEAST(1, 18)
 
@@ -94,9 +96,11 @@
 { "extbrc",         "Extended bitrate control",               OFFSET(qsv.extbrc),         AV_OPT_TYPE_INT, { .i64 = -1 }, -1,          1, VE },                         \
 { "adaptive_i",     "Adaptive I-frame placement",             OFFSET(qsv.adaptive_i),     AV_OPT_TYPE_INT, { .i64 = -1 }, -1,          1, VE },                         \
 { "adaptive_b",     "Adaptive B-frame placement",             OFFSET(qsv.adaptive_b),     AV_OPT_TYPE_INT, { .i64 = -1 }, -1,          1, VE },                         \
+{ "p_strategy",     "Enable P-pyramid: 0-default 1-simple 2-pyramid(bf need to be set to 0).",    OFFSET(qsv.p_strategy), AV_OPT_TYPE_INT,    { .i64 = 0}, 0,    2, VE },                         \
 { "b_strategy",     "Strategy to choose between I/P/B-frames", OFFSET(qsv.b_strategy),    AV_OPT_TYPE_INT, { .i64 = -1 }, -1,          1, VE },                         \
 { "forced_idr",     "Forcing I frames as IDR frames",         OFFSET(qsv.forced_idr),     AV_OPT_TYPE_BOOL,{ .i64 = 0  },  0,          1, VE },                         \
 { "low_power", "enable low power mode(experimental: many limitations by mfx version, BRC modes, etc.)", OFFSET(qsv.low_power), AV_OPT_TYPE_BOOL, { .i64 = -1}, -1, 1, VE},\
+{ "dblk_idc", "This option disable deblocking. It has value in range 0~2.",   OFFSET(qsv.dblk_idc),   AV_OPT_TYPE_INT,    { .i64 = 0 },   0,  2,  VE},    \
 
 extern const AVCodecHWConfigInternal *const ff_qsv_enc_hw_configs[];
 
@@ -169,6 +173,7 @@ typedef struct QSVEncContext {
     int rdo;
     int max_frame_size;
     int max_slice_size;
+    int dblk_idc;
 
     int tile_cols;
     int tile_rows;
@@ -184,6 +189,7 @@ typedef struct QSVEncContext {
     int adaptive_i;
     int adaptive_b;
     int b_strategy;
+    int p_strategy;
     int cavlc;
 
     int int_ref_type;
@@ -194,6 +200,7 @@ typedef struct QSVEncContext {
     int repeat_pps;
     int low_power;
     int gpb;
+    int transform_skip;
 
     int a53_cc;
 

@@ -12,12 +12,14 @@
 #ifndef AOM_AV1_ENCODER_THIRDPASS_H_
 #define AOM_AV1_ENCODER_THIRDPASS_H_
 
+#include "av1/common/enums.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/ratectrl.h"
+#include "av1/encoder/tpl_model.h"
 
 struct AV1_COMP;
 
@@ -33,6 +35,15 @@ typedef struct {
   int use_arf;
 } THIRD_PASS_GOP_INFO;
 
+#if CONFIG_BITRATE_ACCURACY
+typedef struct TPL_INFO {
+  int gf_length;
+  int tpl_ready;
+  TplTxfmStats txfm_stats_list[MAX_LENGTH_TPL_FRAME_STATS];
+  double qstep_ratio_ls[MAX_LENGTH_TPL_FRAME_STATS];
+} TPL_INFO;
+#endif  // CONFIG_BITRATE_ACCURACY
+
 typedef struct {
   BLOCK_SIZE bsize;
   PARTITION_TYPE partition;
@@ -40,6 +51,7 @@ typedef struct {
   int mi_col_start;
   int_mv mv[2];
   MV_REFERENCE_FRAME ref_frame[2];
+  PREDICTION_MODE pred_mode;
 } THIRD_PASS_MI_INFO;
 
 // Struct to store useful information about a frame for the third pass.
@@ -53,6 +65,10 @@ typedef struct {
   int base_q_idx;
   int is_show_existing_frame;
   int is_show_frame;
+  int bits_allocated;
+  int actual_bits;
+  uint64_t sse;
+  double bpm_factor;
   FRAME_TYPE frame_type;
   unsigned int order_hint;
   THIRD_PASS_MI_INFO *mi_info;
@@ -83,6 +99,8 @@ typedef struct {
   // error info pointer
   struct aom_internal_error_info *err_info;
 
+  int this_frame_bits;
+
   /* --- Members for third pass encoding --- */
   // Array to store info about each frame.
   // frame_info[0] should point to the current frame.
@@ -108,12 +126,24 @@ void av1_set_gop_third_pass(THIRD_PASS_DEC_CTX *ctx);
 // sure that frame_info[0] always corresponds to the current frame.
 void av1_pop_third_pass_info(THIRD_PASS_DEC_CTX *ctx);
 
+void av1_open_second_pass_log(struct AV1_COMP *cpi, int is_read);
+void av1_close_second_pass_log(struct AV1_COMP *cpi);
+
 // Write the current GOP information into the second pass log file.
 void av1_write_second_pass_gop_info(struct AV1_COMP *cpi);
+// Write the information of the frames in this GOP into the second pass log
+// file.
+void av1_write_second_pass_per_frame_info(struct AV1_COMP *cpi, int gf_index);
 
 // Read the next GOP information from the second pass log file.
-void av1_read_second_pass_gop_info(struct AV1_COMP *cpi,
-                                   THIRD_PASS_GOP_INFO *gop_info);
+void av1_read_second_pass_gop_info(FILE *second_pass_log_stream,
+                                   THIRD_PASS_GOP_INFO *gop_info,
+                                   struct aom_internal_error_info *error);
+// read the information of the frames in next GOP from the second pass log file.
+void av1_read_second_pass_per_frame_info(FILE *second_pass_log_stream,
+                                         THIRD_PASS_FRAME_INFO *frame_info_arr,
+                                         int frame_info_count,
+                                         struct aom_internal_error_info *error);
 
 int av1_check_use_arf(THIRD_PASS_DEC_CTX *ctx);
 
@@ -147,6 +177,18 @@ void av1_third_pass_get_adjusted_mi(THIRD_PASS_MI_INFO *third_pass_mi,
 PARTITION_TYPE av1_third_pass_get_sb_part_type(THIRD_PASS_DEC_CTX *ctx,
                                                THIRD_PASS_MI_INFO *this_mi);
 
+#if CONFIG_BITRATE_ACCURACY
+
+void av1_pack_tpl_info(TPL_INFO *tpl_info, const GF_GROUP *gf_group,
+                       const TplParams *tpl_data);
+
+void av1_write_tpl_info(const TPL_INFO *tpl_info, FILE *log_stream,
+                        struct aom_internal_error_info *error);
+
+void av1_read_tpl_info(TPL_INFO *tpl_info, FILE *log_stream,
+                       struct aom_internal_error_info *error);
+
+#endif  // CONFIG_BITRATE_ACCURACY
 #ifdef __cplusplus
 }  // extern "C"
 #endif

@@ -18,10 +18,11 @@
 #include <utility>
 
 #include "src/ast/call_statement.h"
-#include "src/ast/disable_validation_decoration.h"
+#include "src/ast/disable_validation_attribute.h"
 #include "src/program_builder.h"
 #include "src/sem/block_statement.h"
 #include "src/sem/call.h"
+#include "src/sem/function.h"
 #include "src/sem/statement.h"
 #include "src/sem/struct.h"
 #include "src/sem/variable.h"
@@ -71,11 +72,24 @@ CalculateArrayLength::BufferSizeIntrinsic::Clone(CloneContext* ctx) const {
 CalculateArrayLength::CalculateArrayLength() = default;
 CalculateArrayLength::~CalculateArrayLength() = default;
 
-void CalculateArrayLength::Run(CloneContext& ctx, const DataMap&, DataMap&) {
-  auto& sem = ctx.src->Sem();
-  if (!Requires<SimplifyPointers>(ctx)) {
-    return;
+bool CalculateArrayLength::ShouldRun(const Program* program,
+                                     const DataMap&) const {
+  for (auto* fn : program->AST().Functions()) {
+    if (auto* sem_fn = program->Sem().Get(fn)) {
+      for (auto* builtin : sem_fn->DirectlyCalledBuiltins()) {
+        if (builtin->Type() == sem::BuiltinType::kArrayLength) {
+          return true;
+        }
+      }
+    }
   }
+  return false;
+}
+
+void CalculateArrayLength::Run(CloneContext& ctx,
+                               const DataMap&,
+                               DataMap&) const {
+  auto& sem = ctx.src->Sem();
 
   // get_buffer_size_intrinsic() emits the function decorated with
   // BufferSizeIntrinsic that is transformed by the HLSL writer into a call to
@@ -87,30 +101,25 @@ void CalculateArrayLength::Run(CloneContext& ctx, const DataMap&, DataMap&) {
       auto* type = CreateASTTypeFor(ctx, buffer_type);
       auto* disable_validation = ctx.dst->Disable(
           ast::DisabledValidation::kIgnoreConstructibleFunctionParameter);
-      auto* func = ctx.dst->create<ast::Function>(
+      ctx.dst->AST().AddFunction(ctx.dst->create<ast::Function>(
           name,
           ast::VariableList{
               // Note: The buffer parameter requires the kStorage StorageClass
               // in order for HLSL to emit this as a ByteAddressBuffer.
               ctx.dst->create<ast::Variable>(
                   ctx.dst->Sym("buffer"), ast::StorageClass::kStorage,
-                  ast::Access::kUndefined, type, true, nullptr,
-                  ast::DecorationList{disable_validation}),
+                  ast::Access::kUndefined, type, true, false, nullptr,
+                  ast::AttributeList{disable_validation}),
               ctx.dst->Param("result",
                              ctx.dst->ty.pointer(ctx.dst->ty.u32(),
                                                  ast::StorageClass::kFunction)),
           },
           ctx.dst->ty.void_(), nullptr,
-          ast::DecorationList{
+          ast::AttributeList{
               ctx.dst->ASTNodes().Create<BufferSizeIntrinsic>(ctx.dst->ID()),
           },
-          ast::DecorationList{});
-      if (auto* str = buffer_type->As<sem::Struct>()) {
-        ctx.InsertAfter(ctx.src->AST().GlobalDeclarations(), str->Declaration(),
-                        func);
-      } else {
-        ctx.InsertFront(ctx.src->AST().GlobalDeclarations(), func);
-      }
+          ast::AttributeList{}));
+
       return name;
     });
   };
@@ -122,8 +131,8 @@ void CalculateArrayLength::Run(CloneContext& ctx, const DataMap&, DataMap&) {
   for (auto* node : ctx.src->ASTNodes().Objects()) {
     if (auto* call_expr = node->As<ast::CallExpression>()) {
       auto* call = sem.Get(call_expr);
-      if (auto* intrinsic = call->Target()->As<sem::Intrinsic>()) {
-        if (intrinsic->Type() == sem::IntrinsicType::kArrayLength) {
+      if (auto* builtin = call->Target()->As<sem::Builtin>()) {
+        if (builtin->Type() == sem::BuiltinType::kArrayLength) {
           // We're dealing with an arrayLength() call
 
           // A runtime-sized array can only appear as the store type of a

@@ -130,10 +130,15 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   // Use commandline args to enable the Discover feed for this test case.
   // Disabled elsewhere to account for possible flakiness.
   AppLaunchConfiguration config;
+  // TODO(crbug.com/1265565):Once kSingleNtp is launched, investigate further as
+  // to why this test is failing.
+  if ([self isRunningTest:@selector
+            (testNewSearchFromNewTabMenuAfterTogglingFeed)]) {
+    config.features_disabled.push_back(kSingleNtp);
+  }
   config.additional_args.push_back(std::string("--") +
                                    switches::kEnableDiscoverFeed);
   config.features_enabled.push_back(kDiscoverFeedInNtp);
-  config.features_disabled.push_back(kStartSurface);
   return config;
 }
 
@@ -438,7 +443,10 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   [NewTabPageAppInterface setWhatsNewPromoToMoveToDock];
 
   // Open a new tab to have the promo.
-  [ChromeEarlGreyUI openNewTab];
+  // Need to close all NTPs to ensure NotificationPromo is reset when
+  // kSingleNtp is enabled.
+  [ChromeEarlGrey closeCurrentTab];
+  [ChromeEarlGrey openNewTab];
 
   // Tap the promo.
   [[EarlGrey
@@ -996,7 +1004,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
   // The feed header button may be offscreen, so scroll to find it if needed.
   id<GREYMatcher> headerButton =
-      grey_allOf(grey_accessibilityID(kNTPFeedHeaderButtonIdentifier),
+      grey_allOf(grey_accessibilityID(kNTPFeedHeaderMenuButtonIdentifier),
                  grey_sufficientlyVisible(), nil);
   [[[EarlGrey selectElementWithMatcher:headerButton]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 100.0f)
@@ -1018,7 +1026,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
   // The feed header button may be offscreen, so scroll to find it if needed.
   id<GREYMatcher> headerButton =
-      grey_allOf(grey_accessibilityID(kNTPFeedHeaderButtonIdentifier),
+      grey_allOf(grey_accessibilityID(kNTPFeedHeaderMenuButtonIdentifier),
                  grey_sufficientlyVisible(), nil);
   [[[EarlGrey selectElementWithMatcher:headerButton]
          usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 100.0f)

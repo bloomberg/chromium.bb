@@ -46,32 +46,22 @@ Output::Output(Program&& p) : program(std::move(p)) {}
 Transform::Transform() = default;
 Transform::~Transform() = default;
 
-Output Transform::Run(const Program* program, const DataMap& data /* = {} */) {
+Output Transform::Run(const Program* program,
+                      const DataMap& data /* = {} */) const {
   ProgramBuilder builder;
   CloneContext ctx(&builder, program);
   Output output;
   Run(ctx, data, output.data);
-  builder.SetTransformApplied(this);
   output.program = Program(std::move(builder));
   return output;
 }
 
-void Transform::Run(CloneContext& ctx, const DataMap&, DataMap&) {
+void Transform::Run(CloneContext& ctx, const DataMap&, DataMap&) const {
   TINT_UNIMPLEMENTED(Transform, ctx.dst->Diagnostics())
       << "Transform::Run() unimplemented for " << TypeInfo().name;
 }
 
-bool Transform::Requires(CloneContext& ctx,
-                         std::initializer_list<const ::tint::TypeInfo*> deps) {
-  for (auto* dep : deps) {
-    if (!ctx.src->HasTransformApplied(dep)) {
-      ctx.dst->Diagnostics().add_error(
-          diag::System::Transform, std::string(TypeInfo().name) +
-                                       " depends on " + std::string(dep->name) +
-                                       " but the dependency was not run");
-      return false;
-    }
-  }
+bool Transform::ShouldRun(const Program*, const DataMap&) const {
   return true;
 }
 
@@ -117,14 +107,14 @@ const ast::Type* Transform::CreateASTTypeFor(CloneContext& ctx,
   }
   if (auto* a = ty->As<sem::Array>()) {
     auto* el = CreateASTTypeFor(ctx, a->ElemType());
-    ast::DecorationList decos;
+    ast::AttributeList attrs;
     if (!a->IsStrideImplicit()) {
-      decos.emplace_back(ctx.dst->create<ast::StrideDecoration>(a->Stride()));
+      attrs.emplace_back(ctx.dst->create<ast::StrideAttribute>(a->Stride()));
     }
     if (a->IsRuntimeSized()) {
-      return ctx.dst->ty.array(el, nullptr, std::move(decos));
+      return ctx.dst->ty.array(el, nullptr, std::move(attrs));
     } else {
-      return ctx.dst->ty.array(el, a->Count(), std::move(decos));
+      return ctx.dst->ty.array(el, a->Count(), std::move(attrs));
     }
   }
   if (auto* s = ty->As<sem::Struct>()) {

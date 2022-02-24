@@ -27,6 +27,7 @@ import org.chromium.base.supplier.BooleanSupplier;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.BackPressHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.fonts.FontPreloader;
 import org.chromium.chrome.browser.metrics.UmaUtils;
@@ -131,9 +132,17 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
      */
     private FirstRunPagerAdapter mPagerAdapter;
 
+    @Override
+    protected void onPreCreate() {
+        super.onPreCreate();
+        BackPressHelper.create(this, getOnBackPressedDispatcher(), () -> {
+            handleBackPressed();
+            return true;
+        });
+    }
+
     /** Creates first page and sets up adapter. Should result UI being shown on the screen. */
     private void createFirstPage() {
-        FREMobileIdentityConsistencyFieldTrial.createFirstRunTrial();
         BooleanSupplier showWelcomePage = () -> !FirstRunStatus.shouldSkipWelcomePage();
         if (FREMobileIdentityConsistencyFieldTrial.isEnabled()) {
             mPages.add(new FirstRunPage<>(SigninFirstRunFragment.class, showWelcomePage));
@@ -234,6 +243,10 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
     @Override
     public void triggerLayoutInflation() {
+        // Generate trial group as early as possible to guarantee it's available by the time native
+        // needs to register the synthetic trial group. See https://crbug.com/1295692 for details.
+        FREMobileIdentityConsistencyFieldTrial.createFirstRunTrial();
+
         initializeStateFromLaunchData();
         RecordHistogram.recordTimesHistogram("MobileFre.FromLaunch.TriggerLayoutInflation",
                 SystemClock.elapsedRealtime() - mIntentCreationElapsedRealtimeMs);
@@ -399,8 +412,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         }
     }
 
-    @Override
-    public void onBackPressed() {
+    private void handleBackPressed() {
         // Terminate if we are still waiting for the native or for Android EDU / GAIA Child checks.
         if (!mPostNativeAndPolicyPagesCreated) {
             abortFirstRunExperience();
@@ -536,8 +548,6 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         flushPersistentData();
 
         if (sObserver != null) sObserver.onAcceptTermsOfService(this);
-
-        advanceToNextPage();
     }
 
     /** Initialize local state from launch intent and from saved instance state. */

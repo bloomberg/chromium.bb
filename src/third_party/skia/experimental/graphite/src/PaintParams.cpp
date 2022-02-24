@@ -8,9 +8,9 @@
 #include "experimental/graphite/src/PaintParams.h"
 
 #include "include/core/SkShader.h"
-#include "include/private/SkPaintParamsKey.h"
 #include "src/core/SkBlenderBase.h"
 #include "src/core/SkKeyHelpers.h"
+#include "src/core/SkPaintParamsKey.h"
 #include "src/shaders/SkShaderBase.h"
 
 namespace skgpu {
@@ -31,7 +31,7 @@ PaintParams::PaintParams(const PaintParams& other) = default;
 PaintParams::~PaintParams() = default;
 PaintParams& PaintParams::operator=(const PaintParams& other) = default;
 
-skstd::optional<SkBlendMode> PaintParams::asBlendMode() const {
+std::optional<SkBlendMode> PaintParams::asBlendMode() const {
     return fBlender ? as_BB(fBlender)->asBlendMode()
                     : SkBlendMode::kSrcOver;
 }
@@ -42,21 +42,22 @@ sk_sp<SkShader> PaintParams::refShader() const { return fShader; }
 
 void PaintParams::toKey(SkShaderCodeDictionary* dict,
                         SkBackend backend,
-                        SkPaintParamsKey* key) const {
+                        SkPaintParamsKeyBuilder* builder,
+                        SkUniformBlock* uniformBlock) const {
 
     if (fShader) {
-        as_SB(fShader)->addToKey(dict, backend, key);
+        as_SB(fShader)->addToKey(dict, backend, builder, uniformBlock);
     } else {
-        SolidColorShaderBlock::AddToKey(backend, key);
+        SolidColorShaderBlock::AddToKey(dict, backend, builder, uniformBlock, fColor);
     }
 
     if (fBlender) {
-        as_BB(fBlender)->addToKey(dict, backend, key);
+        as_BB(fBlender)->addToKey(dict, backend, builder, uniformBlock);
     } else {
-        BlendModeBlock::AddToKey(backend, key, SkBlendMode::kSrcOver);
+        BlendModeBlock::AddToKey(dict, backend, builder, uniformBlock, SkBlendMode::kSrcOver);
     }
 
-    SkASSERT(key->sizeInBytes() > 0);
+    SkASSERT(builder->sizeInBytes() > 0);
 }
 
 } // namespace skgpu

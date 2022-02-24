@@ -17,12 +17,13 @@ import("scripts/dawn_overrides_with_defaults.gni")
 group("all") {
   testonly = true
   deps = [
-    "src/dawn_native:webgpu_dawn",
-    "src/fuzzers:dawn_fuzzers",
-    "src/tests:dawn_tests",
+    "src/dawn/fuzzers",
+    "src/dawn/native:webgpu_dawn",
+    "src/dawn/tests",
+    "src/fuzzers/dawn:dawn_fuzzers",
   ]
   if (dawn_standalone) {
-    deps += [ "examples:dawn_samples" ]
+    deps += [ "samples/dawn:samples" ]
   }
 }
 

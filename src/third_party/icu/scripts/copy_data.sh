@@ -51,6 +51,15 @@ function copy_data {
   echo "Done with copying pre-built ICU data file for $1."
 }
 
+function copy_hash_data {
+  echo "Copying icudtl.dat.hash for $1"
+
+  rm -f "${TOPSRC}/$2/icudtl.dat.hash"
+  cp "data/out/tmp/icudt${VERSION}l.dat.hash" "${TOPSRC}/$2/icudtl.dat.hash"
+
+  echo "Done with copying icudtl.dat.hash for $1."
+}
+
 function copy_android_extra {
   echo "Copying icudtl_extra.dat for AndroidExtra"
 
@@ -69,6 +78,31 @@ function copy_android_extra {
   echo "Done with copying pre-built ICU data file for AndroidExtra."
 }
 
+function align_data {
+  echo "Aligning files in icudtl.dat for $1"
+
+  local ORIGINAL="data/out/tmp/icudt${VERSION}l.dat"
+  local ALIGNED="data/out/tmp/icudt${VERSION}l-aligned.dat"
+
+  rm -f "${ALIGNED}"
+  "${TOPSRC}/scripts/icualign.py" "${ORIGINAL}" "${ALIGNED}"
+  mv "${ALIGNED}" "${ORIGINAL}"
+
+  echo "Done with aligning files in icudtl.dat for $1."
+}
+
+function hash_data {
+  echo "Hashing icudtl.dat for $1"
+
+  local DATA_FILE="data/out/tmp/icudt${VERSION}l.dat"
+  local HASH_FILE="data/out/tmp/icudt${VERSION}l.dat.hash"
+
+  rm -f "${HASH_FILE}"
+  "$TOPSRC/scripts/icuhash.py" "${DATA_FILE}" "${HASH_FILE}"
+
+  echo "Done with hashing icudtl.dat for $1."
+}
+
 
 BACKUP_DIR="dataout/$1"
 function backup_outdir {
@@ -79,7 +113,10 @@ function backup_outdir {
 
 case "$1" in
   "chromeos")
+    align_data ChromeOS
+    hash_data ChromeOS
     copy_data ChromeOS $1
+    copy_hash_data ChromeOS $1
     backup_outdir $1
     ;;
   "common")

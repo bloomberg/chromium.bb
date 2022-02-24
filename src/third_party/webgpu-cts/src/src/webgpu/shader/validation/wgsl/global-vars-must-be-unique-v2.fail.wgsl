@@ -6,7 +6,7 @@ fn a() {
   return;
 }
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   return;
 }

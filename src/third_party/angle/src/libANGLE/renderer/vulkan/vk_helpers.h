@@ -63,19 +63,6 @@ struct TextureUnit final
 class BufferHelper;
 using BufferHelperPointerVector = std::vector<std::unique_ptr<BufferHelper>>;
 
-enum class DynamicBufferPolicy
-{
-    // Used where future allocations from the dynamic buffer are unlikely, so it's best to free the
-    // memory when the allocated buffers are no longer in use.
-    OneShotUse,
-    // Used where multiple small allocations are made every frame, so it's worth keeping the free
-    // buffers around to avoid release/reallocation.
-    FrequentSmallAllocations,
-    // Used where bursts of allocation happen occasionally, but the steady state may make
-    // allocations every now and then.  In that case, a limited number of buffers are retained.
-    SporadicTextureUpload,
-};
-
 class DynamicBuffer : angle::NonCopyable
 {
   public:
@@ -83,62 +70,28 @@ class DynamicBuffer : angle::NonCopyable
     DynamicBuffer(DynamicBuffer &&other);
     ~DynamicBuffer();
 
-    // Init is called after the buffer creation so that the alignment can be specified later.
     void init(RendererVk *renderer,
               VkBufferUsageFlags usage,
               size_t alignment,
               size_t initialSize,
-              bool hostVisible,
-              DynamicBufferPolicy policy);
-
-    // Init that gives the ability to pass in specified memory property flags for the buffer.
-    void initWithFlags(RendererVk *renderer,
-                       VkBufferUsageFlags usage,
-                       size_t alignment,
-                       size_t initialSize,
-                       VkMemoryPropertyFlags memoryProperty,
-                       DynamicBufferPolicy policy);
+              bool hostVisible);
 
     // This call will allocate a new region at the end of the current buffer. If it can't find
     // enough space in the current buffer, it returns false. This gives caller a chance to deal with
     // buffer switch that may occur with allocate call.
-    bool allocateFromCurrentBuffer(size_t sizeInBytes, uint8_t **ptrOut, VkDeviceSize *offsetOut);
+    bool allocateFromCurrentBuffer(size_t sizeInBytes, BufferHelper **bufferHelperOut);
 
-    // This call will allocate a new region at the end of the buffer. It internally may trigger
-    // a new buffer to be created (which is returned in the optional parameter
-    // `newBufferAllocatedOut`).  The new region will be in the returned buffer at given offset. If
-    // a memory pointer is given, the buffer will be automatically map()ed.
-    angle::Result allocateWithAlignment(ContextVk *contextVk,
-                                        size_t sizeInBytes,
-                                        size_t alignment,
-                                        uint8_t **ptrOut,
-                                        VkBuffer *bufferOut,
-                                        VkDeviceSize *offsetOut,
-                                        bool *newBufferAllocatedOut);
-
-    // Allocate with default alignment
+    // This call will allocate a new region at the end of the buffer with default alignment. It
+    // internally may trigger a new buffer to be created (which is returned in the optional
+    // parameter `newBufferAllocatedOut`). The new region will be in the returned buffer at given
+    // offset.
     angle::Result allocate(ContextVk *contextVk,
                            size_t sizeInBytes,
-                           uint8_t **ptrOut,
-                           VkBuffer *bufferOut,
-                           VkDeviceSize *offsetOut,
-                           bool *newBufferAllocatedOut)
-    {
-        return allocateWithAlignment(contextVk, sizeInBytes, mAlignment, ptrOut, bufferOut,
-                                     offsetOut, newBufferAllocatedOut);
-    }
-
-    // After a sequence of writes, call flush to ensure the data is visible to the device.
-    angle::Result flush(ContextVk *contextVk);
-
-    // After a sequence of writes, call invalidate to ensure the data is visible to the host.
-    angle::Result invalidate(ContextVk *contextVk);
+                           BufferHelper **bufferHelperOut,
+                           bool *newBufferAllocatedOut);
 
     // This releases resources when they might currently be in use.
     void release(RendererVk *renderer);
-
-    // This releases all the buffers that have been allocated since this was last called.
-    void releaseInFlightBuffers(ContextVk *contextVk);
 
     // This adds inflight buffers to the context's mResourceUseList and then releases them
     void releaseInFlightBuffersToResourceUseList(ContextVk *contextVk);
@@ -171,11 +124,9 @@ class DynamicBuffer : angle::NonCopyable
 
     VkBufferUsageFlags mUsage;
     bool mHostVisible;
-    DynamicBufferPolicy mPolicy;
     size_t mInitialSize;
     std::unique_ptr<BufferHelper> mBuffer;
     uint32_t mNextAllocationOffset;
-    uint32_t mLastFlushOrInvalidateOffset;
     size_t mSize;
     size_t mAlignment;
     VkMemoryPropertyFlags mMemoryPropertyFlags;
@@ -199,16 +150,16 @@ class DescriptorPoolHelper : public Resource
     bool valid() { return mDescriptorPool.valid(); }
 
     bool hasCapacity(uint32_t descriptorSetCount) const;
-    angle::Result init(ContextVk *contextVk,
+    angle::Result init(Context *context,
                        const std::vector<VkDescriptorPoolSize> &poolSizesIn,
                        uint32_t maxSets);
     void destroy(VkDevice device);
     void release(ContextVk *contextVk);
 
-    angle::Result allocateSets(ContextVk *contextVk,
-                               const VkDescriptorSetLayout *descriptorSetLayout,
-                               uint32_t descriptorSetCount,
-                               VkDescriptorSet *descriptorSetsOut);
+    angle::Result allocateDescriptorSets(ContextVk *contextVk,
+                                         const DescriptorSetLayout &descriptorSetLayout,
+                                         uint32_t descriptorSetCount,
+                                         VkDescriptorSet *descriptorSetsOut);
 
   private:
     uint32_t mFreeDescriptorSets;
@@ -227,7 +178,7 @@ class DynamicDescriptorPool final : angle::NonCopyable
     // The DynamicDescriptorPool only handles one pool size at this time.
     // Note that setSizes[i].descriptorCount is expected to be the number of descriptors in
     // an individual set.  The pool size will be calculated accordingly.
-    angle::Result init(ContextVk *contextVk,
+    angle::Result init(Context *context,
                        const VkDescriptorPoolSize *setSizes,
                        size_t setSizeCount,
                        VkDescriptorSetLayout descriptorSetLayout);
@@ -236,11 +187,12 @@ class DynamicDescriptorPool final : angle::NonCopyable
 
     // We use the descriptor type to help count the number of free sets.
     // By convention, sets are indexed according to the constants in vk_cache_utils.h.
-    ANGLE_INLINE angle::Result allocateSets(ContextVk *contextVk,
-                                            const VkDescriptorSetLayout *descriptorSetLayout,
-                                            uint32_t descriptorSetCount,
-                                            RefCountedDescriptorPoolBinding *bindingOut,
-                                            VkDescriptorSet *descriptorSetsOut)
+    ANGLE_INLINE angle::Result allocateDescriptorSets(
+        ContextVk *contextVk,
+        const DescriptorSetLayout &descriptorSetLayout,
+        uint32_t descriptorSetCount,
+        RefCountedDescriptorPoolBinding *bindingOut,
+        VkDescriptorSet *descriptorSetsOut)
     {
         bool ignoreNewPoolAllocated;
         return allocateSetsAndGetInfo(contextVk, descriptorSetLayout, descriptorSetCount,
@@ -250,7 +202,7 @@ class DynamicDescriptorPool final : angle::NonCopyable
     // We use the descriptor type to help count the number of free sets.
     // By convention, sets are indexed according to the constants in vk_cache_utils.h.
     angle::Result allocateSetsAndGetInfo(ContextVk *contextVk,
-                                         const VkDescriptorSetLayout *descriptorSetLayout,
+                                         const DescriptorSetLayout &descriptorSetLayout,
                                          uint32_t descriptorSetCount,
                                          RefCountedDescriptorPoolBinding *bindingOut,
                                          VkDescriptorSet *descriptorSetsOut,
@@ -728,56 +680,64 @@ class BufferHelper : public ReadWriteResource
     BufferHelper(BufferHelper &&other);
     BufferHelper &operator=(BufferHelper &&other);
 
-    angle::Result init(ContextVk *contextVk,
+    angle::Result init(vk::Context *context,
                        const VkBufferCreateInfo &createInfo,
                        VkMemoryPropertyFlags memoryPropertyFlags);
     angle::Result initExternal(ContextVk *contextVk,
                                VkMemoryPropertyFlags memoryProperties,
                                const VkBufferCreateInfo &requestedCreateInfo,
                                GLeglClientBufferEXT clientBuffer);
-    angle::Result initSubAllocation(ContextVk *contextVk,
+    angle::Result initSuballocation(ContextVk *contextVk,
                                     uint32_t memoryTypeIndex,
                                     size_t size,
                                     size_t alignment);
 
     // Helper functions to initialize a buffer for a specific usage
-    // Initialize a buffer with alignment good for shader storage or copyBuffer .
-    angle::Result initForVertexConversion(ContextVk *contextVk,
-                                          size_t size,
-                                          MemoryHostVisibility hostVisibility);
-    // Initialize a host visible buffer with alignment good for copyBuffer .
-    angle::Result initForCopyBuffer(ContextVk *contextVk, size_t size, MemoryCoherency coherency);
-    // Initialize a host visible buffer with alignment good for copyImage .
-    angle::Result initForCopyImage(ContextVk *contextVk,
-                                   size_t size,
-                                   MemoryCoherency coherency,
-                                   angle::FormatID formatId,
-                                   VkDeviceSize *offset,
-                                   uint8_t **dataPtr);
+    // Suballocate a buffer with alignment good for shader storage or copyBuffer .
+    angle::Result allocateForVertexConversion(ContextVk *contextVk,
+                                              size_t size,
+                                              MemoryHostVisibility hostVisibility);
+    // Suballocate a host visible buffer with alignment good for copyBuffer .
+    angle::Result allocateForCopyBuffer(ContextVk *contextVk,
+                                        size_t size,
+                                        MemoryCoherency coherency);
+    // Suballocate a host visible buffer with alignment good for copyImage .
+    angle::Result allocateForCopyImage(ContextVk *contextVk,
+                                       size_t size,
+                                       MemoryCoherency coherency,
+                                       angle::FormatID formatId,
+                                       VkDeviceSize *offset,
+                                       uint8_t **dataPtr);
 
     void destroy(RendererVk *renderer);
     void release(RendererVk *renderer);
 
     BufferSerial getBufferSerial() const { return mSerial; }
-    bool valid() const { return mSubAllocation.valid(); }
-    const Buffer &getBuffer() const { return mSubAllocation.getBuffer(); }
-    const BufferBlock *getBufferBlock() const { return mSubAllocation.getBlock(); }
-    VkDeviceSize getOffset() const { return mSubAllocation.getOffset(); }
-    VkDeviceSize getSize() const { return mSubAllocation.getSize(); }
+    BufferSerial getBlockSerial() const
+    {
+        ASSERT(mSuballocation.valid());
+        return mSuballocation.getBlockSerial();
+    }
+    bool valid() const { return mSuballocation.valid(); }
+    const Buffer &getBuffer() const { return mSuballocation.getBuffer(); }
+    VkDeviceSize getOffset() const { return mSuballocation.getOffset(); }
+    VkDeviceSize getSize() const { return mSuballocation.getSize(); }
     VkMemoryMapFlags getMemoryPropertyFlags() const
     {
-        return mSubAllocation.getMemoryPropertyFlags();
+        return mSuballocation.getMemoryPropertyFlags();
     }
     uint8_t *getMappedMemory() const
     {
         ASSERT(isMapped());
-        return isExternalBuffer() ? mMemory.getMappedMemory() : mSubAllocation.getMappedMemory();
+        return mSuballocation.getMappedMemory();
     }
-    bool isHostVisible() const { return mSubAllocation.isHostVisible(); }
-    bool isCoherent() const { return mSubAllocation.isCoherent(); }
+    // Returns the main buffer block's pointer.
+    uint8_t *getBlockMemory() const { return mSuballocation.getBlockMemory(); }
+    VkDeviceSize getBlockMemorySize() const { return mSuballocation.getBlockMemorySize(); }
+    bool isHostVisible() const { return mSuballocation.isHostVisible(); }
+    bool isCoherent() const { return mSuballocation.isCoherent(); }
 
-    bool isMapped() const { return isExternalBuffer() ? true : mSubAllocation.isMapped(); }
-    bool isExternalBuffer() const { return mMemory.isExternalBuffer(); }
+    bool isMapped() const { return mSuballocation.isMapped(); }
 
     // Also implicitly sets up the correct barriers.
     angle::Result copyFromBuffer(ContextVk *contextVk,
@@ -785,9 +745,9 @@ class BufferHelper : public ReadWriteResource
                                  uint32_t regionCount,
                                  const VkBufferCopy *copyRegions);
 
-    angle::Result map(ContextVk *contextVk, uint8_t **ptrOut);
+    angle::Result map(Context *context, uint8_t **ptrOut);
     angle::Result mapWithOffset(ContextVk *contextVk, uint8_t **ptrOut, size_t offset);
-    void unmap(RendererVk *renderer);
+    void unmap(RendererVk *renderer) {}
     // After a sequence of writes, call flush to ensure the data is visible to the device.
     angle::Result flush(RendererVk *renderer);
     angle::Result flush(RendererVk *renderer, VkDeviceSize offset, VkDeviceSize size);
@@ -819,6 +779,8 @@ class BufferHelper : public ReadWriteResource
     bool recordWriteBarrier(VkAccessFlags writeAccessType,
                             VkPipelineStageFlags writeStage,
                             PipelineBarrier *barrier);
+    void fillWithColor(const angle::Color<uint8_t> &color,
+                       const gl::InternalFormat &internalFormat);
 
   private:
     void initializeBarrierTracker(Context *context);
@@ -826,11 +788,15 @@ class BufferHelper : public ReadWriteResource
                                           VkBufferUsageFlags usage,
                                           VkDeviceSize size);
 
-    // For external memory only
-    BufferMemory mMemory;
+    // Only called by DynamicBuffer.
+    friend class DynamicBuffer;
+    void setSuballocationOffsetAndSize(VkDeviceSize offset, VkDeviceSize size)
+    {
+        mSuballocation.setOffsetAndSize(offset, size);
+    }
 
-    // SubAllocation object.
-    BufferSubAllocation mSubAllocation;
+    // Suballocation object.
+    BufferSuballocation mSuballocation;
 
     // For memory barriers.
     uint32_t mCurrentQueueFamilyIndex;
@@ -860,7 +826,7 @@ class BufferPool : angle::NonCopyable
     angle::Result allocateBuffer(ContextVk *contextVk,
                                  VkDeviceSize sizeInBytes,
                                  VkDeviceSize alignment,
-                                 BufferSubAllocation *suballocation);
+                                 BufferSuballocation *suballocation);
 
     // This frees resources immediately.
     void destroy(RendererVk *renderer);
@@ -1032,7 +998,8 @@ class CommandBufferHelperCommon : angle::NonCopyable
 
     // Tracks resources used in the command buffer.
     // For Buffers, we track the read/write access type so we can enable simultaneous reads.
-    angle::FastIntegerMap<BufferAccess> mUsedBuffers;
+    static constexpr uint32_t kFastMapSize = 16;
+    angle::FastUnorderedMap<BufferSerial, BufferAccess, kFastMapSize> mUsedBuffers;
 };
 
 class OutsideRenderPassCommandBufferHelper final : public CommandBufferHelperCommon
@@ -1157,6 +1124,7 @@ class RenderPassCommandBufferHelper final : public CommandBufferHelperCommon
 
     void beginTransformFeedback(size_t validBufferCount,
                                 const VkBuffer *counterBuffers,
+                                const VkDeviceSize *counterBufferOffsets,
                                 bool rebindBuffers);
 
     void endTransformFeedback();
@@ -1286,6 +1254,7 @@ class RenderPassCommandBufferHelper final : public CommandBufferHelperCommon
 
     // Transform feedback state
     gl::TransformFeedbackBuffersArray<VkBuffer> mTransformFeedbackCounterBuffers;
+    gl::TransformFeedbackBuffersArray<VkDeviceSize> mTransformFeedbackCounterBufferOffsets;
     uint32_t mValidTransformFeedbackBufferCount;
     bool mRebindTransformFeedbackBuffers;
     bool mIsTransformFeedbackActiveUnpaused;
@@ -1314,7 +1283,7 @@ class RenderPassCommandBufferHelper final : public CommandBufferHelperCommon
     // Tracks resources used in the command buffer.
     // Images have unique layouts unlike buffers therefore we can't support simultaneous reads with
     // different layout.
-    angle::FastIntegerSet mRenderPassUsedImages;
+    angle::FastUnorderedSet<ImageSerial, kFastMapSize> mRenderPassUsedImages;
 
     ImageHelper *mDepthStencilImage;
     ImageHelper *mDepthStencilResolveImage;
@@ -1869,6 +1838,9 @@ class ImageHelper final : public Resource, public angle::Subject
                                         uint32_t layerCount) const;
     bool hasStagedUpdatesInAllocatedLevels() const;
 
+    bool removeStagedClearUpdatesAndReturnColor(gl::LevelIndex levelGL,
+                                                const VkClearColorValue **color);
+
     void recordWriteBarrier(Context *context,
                             VkImageAspectFlags aspectMask,
                             ImageLayout newLayout,
@@ -1951,6 +1923,20 @@ class ImageHelper final : public Resource, public angle::Subject
                                         BufferHelper *dstBuffer,
                                         uint8_t **outDataPtr);
 
+    angle::Result copySurfaceImageToBuffer(DisplayVk *displayVk,
+                                           gl::LevelIndex sourceLevelGL,
+                                           uint32_t layerCount,
+                                           uint32_t baseLayer,
+                                           const gl::Box &sourceArea,
+                                           vk::BufferHelper *bufferHelperOut);
+
+    angle::Result copyBufferToSurfaceImage(DisplayVk *displayVk,
+                                           gl::LevelIndex destLevelGL,
+                                           uint32_t layerCount,
+                                           uint32_t baseLayer,
+                                           const gl::Box &destArea,
+                                           vk::BufferHelper *bufferHelper);
+
     static angle::Result GetReadPixelsParams(ContextVk *contextVk,
                                              const gl::PixelPackState &packState,
                                              gl::Buffer *packBuffer,
@@ -1970,6 +1956,14 @@ class ImageHelper final : public Resource, public angle::Subject
                                         GLenum format,
                                         GLenum type,
                                         void *pixels);
+
+    angle::Result readPixelsForCompressedGetImage(ContextVk *contextVk,
+                                                  const gl::PixelPackState &packState,
+                                                  gl::Buffer *packBuffer,
+                                                  gl::LevelIndex levelGL,
+                                                  uint32_t layer,
+                                                  uint32_t layerCount,
+                                                  void *pixels);
 
     angle::Result readPixels(ContextVk *contextVk,
                              const gl::Rectangle &area,
@@ -2002,7 +1996,7 @@ class ImageHelper final : public Resource, public angle::Subject
         return mYcbcrConversionDesc.mIsExternalFormat ? mYcbcrConversionDesc.mExternalOrVkFormat
                                                       : 0;
     }
-    const YcbcrConversionDesc *getYcbcrConversionDesc() const { return &mYcbcrConversionDesc; }
+    const YcbcrConversionDesc &getYcbcrConversionDesc() const { return mYcbcrConversionDesc; }
     void updateYcbcrConversionDesc(RendererVk *rendererVk,
                                    uint64_t externalFormat,
                                    VkSamplerYcbcrModelConversion conversionModel,
@@ -2038,9 +2032,12 @@ class ImageHelper final : public Resource, public angle::Subject
     void restoreSubresourceStencilContent(gl::LevelIndex level,
                                           uint32_t layerIndex,
                                           uint32_t layerCount);
-    angle::Result reformatStagedUpdate(ContextVk *contextVk,
-                                       angle::FormatID srcFormatID,
-                                       angle::FormatID dstFormatID);
+    angle::Result reformatStagedBufferUpdates(ContextVk *contextVk,
+                                              angle::FormatID srcFormatID,
+                                              angle::FormatID dstFormatID);
+    bool hasStagedImageUpdatesWithMismatchedFormat(gl::LevelIndex levelStart,
+                                                   gl::LevelIndex levelEnd,
+                                                   angle::FormatID formatID) const;
 
   private:
     enum class UpdateSource
@@ -2306,7 +2303,7 @@ class ImageHelper final : public Resource, public angle::Subject
 
 ANGLE_INLINE bool RenderPassCommandBufferHelper::usesImage(const ImageHelper &image) const
 {
-    return mRenderPassUsedImages.contains(image.getImageSerial().getValue());
+    return mRenderPassUsedImages.contains(image.getImageSerial());
 }
 
 // A vector of image views, such as one per level or one per layer.
@@ -2350,63 +2347,65 @@ class ImageViewHelper final : public Resource
 
     const ImageView &getLinearReadImageView() const
     {
-        return getValidReadViewImpl(mPerLevelLinearReadImageViews);
+        return getValidReadViewImpl(mPerLevelRangeLinearReadImageViews);
     }
     const ImageView &getSRGBReadImageView() const
     {
-        return getValidReadViewImpl(mPerLevelSRGBReadImageViews);
+        return getValidReadViewImpl(mPerLevelRangeSRGBReadImageViews);
     }
     const ImageView &getLinearFetchImageView() const
     {
-        return getValidReadViewImpl(mPerLevelLinearFetchImageViews);
+        return getValidReadViewImpl(mPerLevelRangeLinearFetchImageViews);
     }
     const ImageView &getSRGBFetchImageView() const
     {
-        return getValidReadViewImpl(mPerLevelSRGBFetchImageViews);
+        return getValidReadViewImpl(mPerLevelRangeSRGBFetchImageViews);
     }
     const ImageView &getLinearCopyImageView() const
     {
-        return getValidReadViewImpl(mPerLevelLinearCopyImageViews);
+        return getValidReadViewImpl(mPerLevelRangeLinearCopyImageViews);
     }
     const ImageView &getSRGBCopyImageView() const
     {
-        return getValidReadViewImpl(mPerLevelSRGBCopyImageViews);
+        return getValidReadViewImpl(mPerLevelRangeSRGBCopyImageViews);
     }
     const ImageView &getStencilReadImageView() const
     {
-        return getValidReadViewImpl(mPerLevelStencilReadImageViews);
+        return getValidReadViewImpl(mPerLevelRangeStencilReadImageViews);
     }
 
     const ImageView &getReadImageView() const
     {
-        return mLinearColorspace ? getReadViewImpl(mPerLevelLinearReadImageViews)
-                                 : getReadViewImpl(mPerLevelSRGBReadImageViews);
+        return mLinearColorspace ? getReadViewImpl(mPerLevelRangeLinearReadImageViews)
+                                 : getReadViewImpl(mPerLevelRangeSRGBReadImageViews);
     }
 
     const ImageView &getFetchImageView() const
     {
-        return mLinearColorspace ? getReadViewImpl(mPerLevelLinearFetchImageViews)
-                                 : getReadViewImpl(mPerLevelSRGBFetchImageViews);
+        return mLinearColorspace ? getReadViewImpl(mPerLevelRangeLinearFetchImageViews)
+                                 : getReadViewImpl(mPerLevelRangeSRGBFetchImageViews);
     }
 
     const ImageView &getCopyImageView() const
     {
-        return mLinearColorspace ? getReadViewImpl(mPerLevelLinearCopyImageViews)
-                                 : getReadViewImpl(mPerLevelSRGBCopyImageViews);
+        return mLinearColorspace ? getReadViewImpl(mPerLevelRangeLinearCopyImageViews)
+                                 : getReadViewImpl(mPerLevelRangeSRGBCopyImageViews);
     }
 
     // Used when initialized RenderTargets.
     bool hasStencilReadImageView() const
     {
-        return mCurrentMaxLevel.get() < mPerLevelStencilReadImageViews.size()
-                   ? mPerLevelStencilReadImageViews[mCurrentMaxLevel.get()].valid()
+        return mCurrentBaseMaxLevelHash < mPerLevelRangeStencilReadImageViews.size()
+                   ? mPerLevelRangeStencilReadImageViews[mCurrentBaseMaxLevelHash].valid()
                    : false;
     }
 
     bool hasFetchImageView() const
     {
-        if ((mLinearColorspace && mCurrentMaxLevel.get() < mPerLevelLinearFetchImageViews.size()) ||
-            (!mLinearColorspace && mCurrentMaxLevel.get() < mPerLevelSRGBFetchImageViews.size()))
+        if ((mLinearColorspace &&
+             mCurrentBaseMaxLevelHash < mPerLevelRangeLinearFetchImageViews.size()) ||
+            (!mLinearColorspace &&
+             mCurrentBaseMaxLevelHash < mPerLevelRangeSRGBFetchImageViews.size()))
         {
             return getFetchImageView().valid();
         }
@@ -2418,8 +2417,10 @@ class ImageViewHelper final : public Resource
 
     bool hasCopyImageView() const
     {
-        if ((mLinearColorspace && mCurrentMaxLevel.get() < mPerLevelLinearCopyImageViews.size()) ||
-            (!mLinearColorspace && mCurrentMaxLevel.get() < mPerLevelSRGBCopyImageViews.size()))
+        if ((mLinearColorspace &&
+             mCurrentBaseMaxLevelHash < mPerLevelRangeLinearCopyImageViews.size()) ||
+            (!mLinearColorspace &&
+             mCurrentBaseMaxLevelHash < mPerLevelRangeSRGBCopyImageViews.size()))
         {
             return getCopyImageView().valid();
         }
@@ -2494,40 +2495,40 @@ class ImageViewHelper final : public Resource
   private:
     ImageView &getReadImageView()
     {
-        return mLinearColorspace ? getReadViewImpl(mPerLevelLinearReadImageViews)
-                                 : getReadViewImpl(mPerLevelSRGBReadImageViews);
+        return mLinearColorspace ? getReadViewImpl(mPerLevelRangeLinearReadImageViews)
+                                 : getReadViewImpl(mPerLevelRangeSRGBReadImageViews);
     }
     ImageView &getFetchImageView()
     {
-        return mLinearColorspace ? getReadViewImpl(mPerLevelLinearFetchImageViews)
-                                 : getReadViewImpl(mPerLevelSRGBFetchImageViews);
+        return mLinearColorspace ? getReadViewImpl(mPerLevelRangeLinearFetchImageViews)
+                                 : getReadViewImpl(mPerLevelRangeSRGBFetchImageViews);
     }
     ImageView &getCopyImageView()
     {
-        return mLinearColorspace ? getReadViewImpl(mPerLevelLinearCopyImageViews)
-                                 : getReadViewImpl(mPerLevelSRGBCopyImageViews);
+        return mLinearColorspace ? getReadViewImpl(mPerLevelRangeLinearCopyImageViews)
+                                 : getReadViewImpl(mPerLevelRangeSRGBCopyImageViews);
     }
 
     // Used by public get*ImageView() methods to do proper assert based on vector size and validity
     inline const ImageView &getValidReadViewImpl(const ImageViewVector &imageViewVector) const
     {
-        ASSERT(mCurrentMaxLevel.get() < imageViewVector.size() &&
-               imageViewVector[mCurrentMaxLevel.get()].valid());
-        return imageViewVector[mCurrentMaxLevel.get()];
+        ASSERT(mCurrentBaseMaxLevelHash < imageViewVector.size() &&
+               imageViewVector[mCurrentBaseMaxLevelHash].valid());
+        return imageViewVector[mCurrentBaseMaxLevelHash];
     }
 
     // Used by public get*ImageView() methods to do proper assert based on vector size
     inline const ImageView &getReadViewImpl(const ImageViewVector &imageViewVector) const
     {
-        ASSERT(mCurrentMaxLevel.get() < imageViewVector.size());
-        return imageViewVector[mCurrentMaxLevel.get()];
+        ASSERT(mCurrentBaseMaxLevelHash < imageViewVector.size());
+        return imageViewVector[mCurrentBaseMaxLevelHash];
     }
 
     // Used by private get*ImageView() methods to do proper assert based on vector size
     inline ImageView &getReadViewImpl(ImageViewVector &imageViewVector)
     {
-        ASSERT(mCurrentMaxLevel.get() < imageViewVector.size());
-        return imageViewVector[mCurrentMaxLevel.get()];
+        ASSERT(mCurrentBaseMaxLevelHash < imageViewVector.size());
+        return imageViewVector[mCurrentBaseMaxLevelHash];
     }
 
     // Creates views with multiple layers and levels.
@@ -2556,21 +2557,24 @@ class ImageViewHelper final : public Resource
                                         uint32_t layerCount,
                                         VkImageUsageFlags imageUsageFlags);
 
-    // For applications that frequently switch a texture's max level, and make no other changes to
-    // the texture, keep track of the currently-used max level, and keep one "read view" per
-    // max-level
-    LevelIndex mCurrentMaxLevel;
-
-    // Read views (one per max-level)
-    ImageViewVector mPerLevelLinearReadImageViews;
-    ImageViewVector mPerLevelSRGBReadImageViews;
-    ImageViewVector mPerLevelLinearFetchImageViews;
-    ImageViewVector mPerLevelSRGBFetchImageViews;
-    ImageViewVector mPerLevelLinearCopyImageViews;
-    ImageViewVector mPerLevelSRGBCopyImageViews;
-    ImageViewVector mPerLevelStencilReadImageViews;
+    // For applications that frequently switch a texture's base/max level, and make no other changes
+    // to the texture, keep track of the currently-used base and max levels, and keep one "read
+    // view" per each combination.  The value stored here is base<<4|max, used to look up the view
+    // in a vector.
+    static_assert(gl::IMPLEMENTATION_MAX_TEXTURE_LEVELS <= 16,
+                  "Not enough bits in mCurrentBaseMaxLevelHash");
+    uint8_t mCurrentBaseMaxLevelHash;
 
     bool mLinearColorspace;
+
+    // Read views (one per [base, max] level range)
+    ImageViewVector mPerLevelRangeLinearReadImageViews;
+    ImageViewVector mPerLevelRangeSRGBReadImageViews;
+    ImageViewVector mPerLevelRangeLinearFetchImageViews;
+    ImageViewVector mPerLevelRangeSRGBFetchImageViews;
+    ImageViewVector mPerLevelRangeLinearCopyImageViews;
+    ImageViewVector mPerLevelRangeSRGBCopyImageViews;
+    ImageViewVector mPerLevelRangeStencilReadImageViews;
 
     // Draw views
     LayerLevelImageViewVector mLayerLevelDrawImageViews;

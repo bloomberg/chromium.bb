@@ -192,7 +192,19 @@
   # Apple silicon. See:
   # https://developer.apple.com/library/archive/documentation/Xcode/Conceptual/iPhoneOSABIReference/Articles/ARM64FunctionCallingConventions.html
   'test-assembler-arm64/printf_no_preserve': [SKIP],
+
+  # https://crbug.com/v8/12588
+  'test-run-wasm-relaxed-simd/RunWasm_F32x4Qfma_interpreter': [SKIP],
+  'test-run-wasm-relaxed-simd/RunWasm_F32x4Qfms_interpreter': [SKIP],
+  'test-run-wasm-relaxed-simd/RunWasm_F64x2Qfma_interpreter': [SKIP],
+  'test-run-wasm-relaxed-simd/RunWasm_F64x2Qfms_interpreter': [SKIP],
 }],  # arch == arm64 and system == macos and not simulator_run
+
+##############################################################################
+['arch == arm and not simulator_run', {
+  # Fails on ODROID: https://crbug.com/v8/11634
+  'test-wasm-metrics/*': [SKIP],
+}],  # arch == arm and not simulator_run
 
 ##############################################################################
 ['variant == nooptimization and (arch == arm or arch == arm64) and simulator_run', {
@@ -716,19 +728,6 @@
   # Too slow on arm64 simulator on Mac.
   'test-cpu-profiler/MultipleIsolates': [PASS, ['arch == arm64 and system == macos and simulator_run', SKIP]],
 }], # variant == jitless
-
-##############################################################################
-['variant == turboprop or variant == turboprop_as_toptier', {
-  # Require inlining.
-  'test-cpu-profiler/DeoptAtFirstLevelInlinedSource': [SKIP],
-  'test-cpu-profiler/DeoptAtSecondLevelInlinedSource': [SKIP],
-  'test-cpu-profiler/DeoptUntrackedFunction': [SKIP],
-  # Turboprop doesn't use call feedback and hence doesn't inline even if
-  # the inlining flag is explicitly set.
-  'test-cpu-profiler/DetailedSourcePositionAPI_Inlining': [SKIP],
-  'test-calls-with-arraylike-or-spread/*': [SKIP],
-  'test-js-to-wasm/*': [SKIP],
-}],  # variant == turboprop or variant == turboprop_as_toptier
 
 ##############################################################################
 ['no_i18n == True', {

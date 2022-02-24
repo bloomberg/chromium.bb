@@ -121,8 +121,7 @@ class CefBrowserContentsDelegate : public content::WebContentsDelegate,
   void PrimaryMainFrameRenderProcessGone(
       base::TerminationStatus status) override;
   void OnFrameFocused(content::RenderFrameHost* render_frame_host) override;
-  void DocumentAvailableInMainFrame(
-      content::RenderFrameHost* render_frame_host) override;
+  void PrimaryMainDocumentElementAvailable() override;
   void LoadProgressChanged(double progress) override;
   void DidStopLoading() override;
   void DidFinishNavigation(
@@ -131,8 +130,6 @@ class CefBrowserContentsDelegate : public content::WebContentsDelegate,
                    const GURL& validated_url,
                    int error_code) override;
   void TitleWasSet(content::NavigationEntry* entry) override;
-  void PluginCrashed(const base::FilePath& plugin_path,
-                     base::ProcessId plugin_pid) override;
   void DidUpdateFaviconURL(
       content::RenderFrameHost* render_frame_host,
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;

@@ -59,7 +59,7 @@ template<typename MatrixType, unsigned int Mode_> class SparseSelfAdjointView
     typedef typename MatrixType::StorageIndex StorageIndex;
     typedef Matrix<StorageIndex,Dynamic,1> VectorI;
     typedef typename internal::ref_selector<MatrixType>::non_const_type MatrixTypeNested;
-    typedef typename internal::remove_all<MatrixTypeNested>::type _MatrixTypeNested;
+    typedef typename internal::remove_all<MatrixTypeNested>::type MatrixTypeNested_;
     
     explicit inline SparseSelfAdjointView(MatrixType& matrix) : m_matrix(matrix)
     {
@@ -70,7 +70,7 @@ template<typename MatrixType, unsigned int Mode_> class SparseSelfAdjointView
     inline Index cols() const { return m_matrix.cols(); }
 
     /** \internal \returns a reference to the nested matrix */
-    const _MatrixTypeNested& matrix() const { return m_matrix; }
+    const MatrixTypeNested_& matrix() const { return m_matrix; }
     typename internal::remove_reference<MatrixTypeNested>::type& matrix() { return m_matrix; }
 
     /** \returns an expression of the matrix product between a sparse self-adjoint matrix \c *this and a sparse matrix \a rhs.
@@ -126,9 +126,9 @@ template<typename MatrixType, unsigned int Mode_> class SparseSelfAdjointView
     
     /** \returns an expression of P H P^-1 */
     // TODO implement twists in a more evaluator friendly fashion
-    SparseSymmetricPermutationProduct<_MatrixTypeNested,Mode> twistedBy(const PermutationMatrix<Dynamic,Dynamic,StorageIndex>& perm) const
+    SparseSymmetricPermutationProduct<MatrixTypeNested_,Mode> twistedBy(const PermutationMatrix<Dynamic,Dynamic,StorageIndex>& perm) const
     {
-      return SparseSymmetricPermutationProduct<_MatrixTypeNested,Mode>(m_matrix, perm);
+      return SparseSymmetricPermutationProduct<MatrixTypeNested_,Mode>(m_matrix, perm);
     }
 
     template<typename SrcMatrixType,int SrcMode>
@@ -340,7 +340,7 @@ struct generic_product_impl<LhsView, Rhs, SparseSelfAdjointShape, DenseShape, Pr
   template<typename Dest>
   static void scaleAndAddTo(Dest& dst, const LhsView& lhsView, const Rhs& rhs, const typename Dest::Scalar& alpha)
   {
-    typedef typename LhsView::_MatrixTypeNested Lhs;
+    typedef typename LhsView::MatrixTypeNested_ Lhs;
     typedef typename nested_eval<Lhs,Dynamic>::type LhsNested;
     typedef typename nested_eval<Rhs,Dynamic>::type RhsNested;
     LhsNested lhsNested(lhsView.matrix());
@@ -357,7 +357,7 @@ struct generic_product_impl<Lhs, RhsView, DenseShape, SparseSelfAdjointShape, Pr
   template<typename Dest>
   static void scaleAndAddTo(Dest& dst, const Lhs& lhs, const RhsView& rhsView, const typename Dest::Scalar& alpha)
   {
-    typedef typename RhsView::_MatrixTypeNested Rhs;
+    typedef typename RhsView::MatrixTypeNested_ Rhs;
     typedef typename nested_eval<Lhs,Dynamic>::type LhsNested;
     typedef typename nested_eval<Rhs,Dynamic>::type RhsNested;
     LhsNested lhsNested(lhs);

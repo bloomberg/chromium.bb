@@ -111,8 +111,6 @@ struct Value {
 
     struct ValRef {
         ValRef(skvm::Val& val) : fVal(val) {}
-        // Required until C++17 copy elision
-        ValRef(const ValRef&) = default;
 
         ValRef& operator=(ValRef    v) { fVal = v.fVal; return *this; }
         ValRef& operator=(skvm::Val v) { fVal = v;      return *this; }
@@ -188,10 +186,14 @@ private:
     int getDebugFunctionInfo(const FunctionDeclaration& decl);
 
     /** Used by `createSlot` to add this variable to the SkVMSlotInfo array inside SkVMDebugTrace.*/
-    void addDebugSlotInfo(String varName, const Type& type, int line, int fnReturnValue);
+    void addDebugSlotInfo(const std::string& varName, const Type& type, int line,
+                          int fnReturnValue);
+
+    void addDebugSlotInfoForGroup(const std::string& varName, const Type& type, int line,
+                                  int* groupIndex, int fnReturnValue);
 
     /** Used by `getSlot` to create a new slot on its first access. */
-    size_t createSlot(const String& name, const Type& type, int line, int fnReturnValue);
+    size_t createSlot(const std::string& name, const Type& type, int line, int fnReturnValue);
 
     /**
      * Returns the slot holding v's Val(s). Allocates storage if this is first time 'v' is
@@ -576,25 +578,23 @@ void SkVMGenerator::writeToSlot(int slot, skvm::Val value) {
     fSlots[slot].val = value;
 }
 
-void SkVMGenerator::addDebugSlotInfo(String varName,
-                                     const Type& type,
-                                     int line,
-                                     int fnReturnValue) {
+void SkVMGenerator::addDebugSlotInfoForGroup(const std::string& varName, const Type& type, int line,
+                                             int* groupIndex, int fnReturnValue) {
     SkASSERT(fDebugTrace);
     switch (type.typeKind()) {
         case Type::TypeKind::kArray: {
             int nslots = type.columns();
             const Type& elemType = type.componentType();
             for (int slot = 0; slot < nslots; ++slot) {
-                this->addDebugSlotInfo(varName + "[" + to_string(slot) + "]",
-                                       elemType, line, fnReturnValue);
+                this->addDebugSlotInfoForGroup(varName + "[" + std::to_string(slot) + "]", elemType,
+                                               line, groupIndex, fnReturnValue);
             }
             break;
         }
         case Type::TypeKind::kStruct: {
             for (const Type::Field& field : type.fields()) {
-                this->addDebugSlotInfo(varName + "." + field.fName,
-                                       *field.fType, line, fnReturnValue);
+                this->addDebugSlotInfoForGroup(varName + "." + std::string(field.fName),
+                                               *field.fType, line, groupIndex, fnReturnValue);
             }
             break;
         }
@@ -614,6 +614,7 @@ void SkVMGenerator::addDebugSlotInfo(String varName,
                 slotInfo.columns = type.columns();
                 slotInfo.rows = type.rows();
                 slotInfo.componentIndex = slot;
+                slotInfo.groupIndex = (*groupIndex)++;
                 slotInfo.numberKind = numberKind;
                 slotInfo.line = line;
                 slotInfo.fnReturnValue = fnReturnValue;
@@ -624,7 +625,14 @@ void SkVMGenerator::addDebugSlotInfo(String varName,
     }
 }
 
-size_t SkVMGenerator::createSlot(const String& name,
+void SkVMGenerator::addDebugSlotInfo(const std::string& varName, const Type& type, int line,
+                                     int fnReturnValue) {
+    int groupIndex = 0;
+    this->addDebugSlotInfoForGroup(varName, type, line, &groupIndex, fnReturnValue);
+    SkASSERT((size_t)groupIndex == type.slotCount());
+}
+
+size_t SkVMGenerator::createSlot(const std::string& name,
                                  const Type& type,
                                  int line,
                                  int fnReturnValue) {
@@ -657,7 +665,7 @@ size_t SkVMGenerator::getSlot(const Variable& v) {
         return entry->second;
     }
 
-    size_t slot = this->createSlot(String(v.name()), v.type(), v.fLine, /*fnReturnValue=*/-1);
+    size_t slot = this->createSlot(std::string(v.name()), v.type(), v.fLine, /*fnReturnValue=*/-1);
     fVariableMap[&v] = slot;
     return slot;
 }
@@ -671,7 +679,7 @@ size_t SkVMGenerator::getSlot(const FunctionDefinition& fn) {
     const FunctionDeclaration& decl = fn.declaration();
     int fnReturnValue = fDebugTrace ? this->getDebugFunctionInfo(decl) : -1;
 
-    size_t slot = this->createSlot("[" + decl.name() + "].result",
+    size_t slot = this->createSlot("[" + std::string(decl.name()) + "].result",
                                    decl.returnType(),
                                    fn.fLine,
                                    fnReturnValue);
@@ -1820,13 +1828,17 @@ skvm::Val SkVMGenerator::writeConditionalStore(skvm::Val lhs, skvm::Val rhs, skv
 
 void SkVMGenerator::writeBlock(const Block& b) {
     skvm::I32 mask = this->mask();
-    this->emitTraceScope(mask, +1);
+    if (b.isScope()) {
+        this->emitTraceScope(mask, +1);
+    }
 
     for (const std::unique_ptr<Statement>& stmt : b.children()) {
         this->writeStatement(*stmt);
     }
 
-    this->emitTraceScope(mask, -1);
+    if (b.isScope()) {
+        this->emitTraceScope(mask, -1);
+    }
 }
 
 void SkVMGenerator::writeBreakStatement() {
@@ -2192,11 +2204,11 @@ const FunctionDefinition* Program_GetFunction(const Program& program, const char
     return nullptr;
 }
 
-static void gather_uniforms(UniformInfo* info, const Type& type, const String& name) {
+static void gather_uniforms(UniformInfo* info, const Type& type, const std::string& name) {
     switch (type.typeKind()) {
         case Type::TypeKind::kStruct:
             for (const auto& f : type.fields()) {
-                gather_uniforms(info, *f.fType, name + "." + f.fName);
+                gather_uniforms(info, *f.fType, name + "." + std::string(f.fName));
             }
             break;
         case Type::TypeKind::kArray:
@@ -2226,7 +2238,7 @@ std::unique_ptr<UniformInfo> Program_GetUniformInfo(const Program& program) {
         const GlobalVarDeclaration& decl = e->as<GlobalVarDeclaration>();
         const Variable& var = decl.declaration()->as<VarDeclaration>().var();
         if (var.modifiers().fFlags & Modifiers::kUniform_Flag) {
-            gather_uniforms(info.get(), var.type(), String(var.name()));
+            gather_uniforms(info.get(), var.type(), std::string(var.name()));
         }
     }
     return info;

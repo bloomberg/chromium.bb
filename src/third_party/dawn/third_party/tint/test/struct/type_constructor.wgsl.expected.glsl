@@ -1,5 +1,4 @@
 #version 310 es
-precision mediump float;
 
 struct S1 {
   int a;
@@ -7,20 +6,22 @@ struct S1 {
   int c;
   int d;
 };
+
 struct S2 {
   int e;
   S1 f;
 };
+
 struct S3 {
   int g;
   S1 h;
   S2 i;
 };
+
 struct T {
   int a[2];
 };
 
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void tint_symbol() {
   int x = 42;
   S1 empty = S1(0, 0, 0, 0);
@@ -57,10 +58,10 @@ void tint_symbol() {
   int tint_symbol_18[2] = int[2](1, (aosoa_nonempty[0].a[0] + 1));
   T tint_symbol_19 = T(tint_symbol_18);
   T aosoa_nonempty_with_expr[2] = T[2](tint_symbol_19, aosoa_nonempty[1]);
-  return;
 }
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void main() {
   tint_symbol();
+  return;
 }
-
-

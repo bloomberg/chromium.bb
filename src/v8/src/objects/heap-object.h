@@ -35,6 +35,11 @@ class HeapObject : public Object {
   DECL_GETTER(map, Map)
   inline void set_map(Map value);
 
+  // This method behaves the same as `set_map` but marks the map transition as
+  // safe for the concurrent marker (object layout doesn't change) during
+  // verification.
+  inline void set_map_safe_transition(Map value);
+
   inline ObjectSlot map_slot() const;
 
   // The no-write-barrier version.  This is OK if the object is white and in
@@ -47,6 +52,7 @@ class HeapObject : public Object {
   // Access the map using acquire load and release store.
   DECL_ACQUIRE_GETTER(map, Map)
   inline void set_map(Map value, ReleaseStoreTag);
+  inline void set_map_safe_transition(Map value, ReleaseStoreTag);
 
   // Compare-and-swaps map word using release store, returns true if the map
   // word was actually swapped.
@@ -126,6 +132,9 @@ class HeapObject : public Object {
   template <typename ObjectVisitor>
   inline void IterateFast(PtrComprCageBase cage_base, ObjectVisitor* v);
 
+  template <typename ObjectVisitor>
+  inline void IterateFast(Map map, int object_size, ObjectVisitor* v);
+
   // Iterates over all pointers contained in the object except the
   // first map pointer.  The object type is given in the first
   // parameter. This function does not access the map pointer in the
@@ -161,6 +170,7 @@ class HeapObject : public Object {
   inline ObjectSlot RawField(int byte_offset) const;
   inline MaybeObjectSlot RawMaybeWeakField(int byte_offset) const;
   inline CodeObjectSlot RawCodeField(int byte_offset) const;
+  inline ExternalPointer_t RawExternalPointerField(int byte_offset) const;
 
   DECL_CAST(HeapObject)
 
@@ -229,6 +239,20 @@ class HeapObject : public Object {
   inline HeapObject(Address ptr, AllowInlineSmiStorage allow_smi);
 
   OBJECT_CONSTRUCTORS(HeapObject, Object);
+
+ private:
+  enum class VerificationMode {
+    kSafeMapTransition,
+    kPotentialLayoutChange,
+  };
+
+  enum class EmitWriteBarrier {
+    kYes,
+    kNo,
+  };
+
+  template <EmitWriteBarrier emit_write_barrier, typename MemoryOrder>
+  V8_INLINE void set_map(Map value, MemoryOrder order, VerificationMode mode);
 };
 
 OBJECT_CONSTRUCTORS_IMPL(HeapObject, Object)

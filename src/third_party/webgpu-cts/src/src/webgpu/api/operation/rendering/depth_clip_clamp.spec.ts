@@ -89,12 +89,12 @@ have unexpected values then get drawn to the color buffer, which is later checke
       //////// "Test" entry points
 
       struct VFTest {
-        [[builtin(position)]] pos: vec4<f32>;
-        [[location(0)]] vertexIndex: u32;
+        @builtin(position) pos: vec4<f32>;
+        @location(0) @interpolate(flat) vertexIndex: u32;
       };
 
-      [[stage(vertex)]]
-      fn vtest([[builtin(vertex_index)]] idx: u32) -> VFTest {
+      @stage(vertex)
+      fn vtest(@builtin(vertex_index) idx: u32) -> VFTest {
         var vf: VFTest;
         vf.pos = vec4<f32>(vertexX(idx), 0.0, vertexZ(idx), 1.0);
         vf.vertexIndex = idx;
@@ -106,19 +106,19 @@ have unexpected values then get drawn to the color buffer, which is later checke
         // (Anything that doesn't get written is already zero.)
         fragInputZDiff: array<f32, ${kNumTestPoints}>;
       };
-      [[group(0), binding(0)]] var <storage, read_write> output: Output;
+      @group(0) @binding(0) var <storage, read_write> output: Output;
 
       fn checkZ(vf: VFTest) {
         output.fragInputZDiff[vf.vertexIndex] = vf.pos.z - expectedFragPosZ(vf.vertexIndex);
       }
 
-      [[stage(fragment)]]
-      fn ftest_WriteDepth(vf: VFTest) -> [[builtin(frag_depth)]] f32 {
+      @stage(fragment)
+      fn ftest_WriteDepth(vf: VFTest) -> @builtin(frag_depth) f32 {
         checkZ(vf);
         return kDepths[vf.vertexIndex % ${kNumDepthValues}u];
       }
 
-      [[stage(fragment)]]
+      @stage(fragment)
       fn ftest_NoWriteDepth(vf: VFTest) {
         checkZ(vf);
       }
@@ -126,12 +126,12 @@ have unexpected values then get drawn to the color buffer, which is later checke
       //////// "Check" entry points
 
       struct VFCheck {
-        [[builtin(position)]] pos: vec4<f32>;
-        [[location(0)]] vertexIndex: u32;
+        @builtin(position) pos: vec4<f32>;
+        @location(0) @interpolate(flat) vertexIndex: u32;
       };
 
-      [[stage(vertex)]]
-      fn vcheck([[builtin(vertex_index)]] idx: u32) -> VFCheck {
+      @stage(vertex)
+      fn vcheck(@builtin(vertex_index) idx: u32) -> VFCheck {
         var vf: VFCheck;
         // Depth=0.5 because we want to render every point, not get clipped.
         vf.pos = vec4<f32>(vertexX(idx), 0.0, 0.5, 1.0);
@@ -140,11 +140,11 @@ have unexpected values then get drawn to the color buffer, which is later checke
       }
 
       struct FCheck {
-        [[builtin(frag_depth)]] depth: f32;
-        [[location(0)]] color: f32;
+        @builtin(frag_depth) depth: f32;
+        @location(0) color: f32;
       };
 
-      [[stage(fragment)]]
+      @stage(fragment)
       fn fcheck(vf: VFCheck) -> FCheck {
         let vertZ = vertexZ(vf.vertexIndex);
         let outOfRange = vertZ < 0.0 || vertZ > 1.0;
@@ -377,12 +377,12 @@ to be empty.`
       }
 
       struct VF {
-        [[builtin(position)]] pos: vec4<f32>;
-        [[location(0)]] vertexIndex: u32;
+        @builtin(position) pos: vec4<f32>;
+        @location(0) @interpolate(flat) vertexIndex: u32;
       };
 
-      [[stage(vertex)]]
-      fn vmain([[builtin(vertex_index)]] idx: u32) -> VF {
+      @stage(vertex)
+      fn vmain(@builtin(vertex_index) idx: u32) -> VF {
         var vf: VF;
         // Depth=0.5 because we want to render every point, not get clipped.
         vf.pos = vec4<f32>(vertexX(idx), 0.0, 0.5, 1.0);
@@ -390,18 +390,18 @@ to be empty.`
         return vf;
       }
 
-      [[stage(fragment)]]
-      fn finit(vf: VF) -> [[builtin(frag_depth)]] f32 {
+      @stage(fragment)
+      fn finit(vf: VF) -> @builtin(frag_depth) f32 {
         // Expected values of the ftest pipeline.
         return clamp(kDepths[vf.vertexIndex], vpMin, vpMax);
       }
 
       struct FTest {
-        [[builtin(frag_depth)]] depth: f32;
-        [[location(0)]] color: f32;
+        @builtin(frag_depth) depth: f32;
+        @location(0) color: f32;
       };
 
-      [[stage(fragment)]]
+      @stage(fragment)
       fn ftest(vf: VF) -> FTest {
         var f: FTest;
         f.depth = kDepths[vf.vertexIndex]; // Should get clamped to the viewport.

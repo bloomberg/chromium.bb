@@ -132,6 +132,7 @@ source_set("base") {
     "container_names.h",
     "content_decryption_module.cc",
     "content_decryption_module.h",
+    "crc_16.h",
     "data_buffer.cc",
     "data_buffer.h",
     "data_source.cc",
@@ -284,8 +285,6 @@ source_set("base") {
     "sinc_resampler.h",
     "status.cc",
     "status.h",
-    "status_codes.cc",
-    "status_codes.h",
     "stream_parser.cc",
     "stream_parser.h",
     "stream_parser_buffer.cc",
@@ -479,6 +478,7 @@ source_set("video_facing") {
 if (is_android) {
   java_cpp_enum("java_enums") {
     sources = [
+      "audio_parameters.h",
       "container_names.h",
       "encryption_scheme.h",
       "video_codecs.h",
@@ -578,6 +578,7 @@ source_set("unit_tests") {
     "channel_mixer_unittest.cc",
     "channel_mixing_matrix_unittest.cc",
     "container_names_unittest.cc",
+    "crc_16_unittest.cc",
     "data_buffer_unittest.cc",
     "decoder_buffer_queue_unittest.cc",
     "decoder_buffer_unittest.cc",

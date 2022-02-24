@@ -33,6 +33,9 @@
 #include "av1/encoder/gop_structure.h"
 #include "av1/encoder/pass2_strategy.h"
 #include "av1/encoder/temporal_filter.h"
+#if CONFIG_THREE_PASS
+#include "av1/encoder/thirdpass.h"
+#endif  // CONFIG_THREE_PASS
 #include "av1/encoder/tpl_model.h"
 
 #if CONFIG_TUNE_VMAF
@@ -1057,9 +1060,14 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
   if (cpi->oxcf.pass == 2) end_timing(cpi, apply_filtering_time);
 #endif
 
+  int set_mv_params = frame_params->frame_type == KEY_FRAME ||
+                      update_type == ARF_UPDATE || update_type == GF_UPDATE;
+  cm->show_frame = frame_params->show_frame;
+  cm->current_frame.frame_type = frame_params->frame_type;
   // TODO(bohanli): Why is this? what part of it is necessary?
   av1_set_frame_size(cpi, cm->superres_upscaled_width,
                      cm->superres_upscaled_height);
+  if (set_mv_params) av1_set_mv_search_params(cpi);
 
 #if CONFIG_RD_COMMAND
   if (frame_params->frame_type == KEY_FRAME) {
@@ -1088,7 +1096,7 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
       if (!cpi->skip_tpl_setup_stats) {
         av1_tpl_preload_rc_estimate(cpi, frame_params);
         av1_tpl_setup_stats(cpi, 0, frame_params);
-#if CONFIG_BITRATE_ACCURACY
+#if CONFIG_BITRATE_ACCURACY && !CONFIG_THREE_PASS
         assert(cpi->gf_frame_index == 0);
         av1_vbr_rc_update_q_index_list(&cpi->vbr_rc_info, &cpi->ppi->tpl_data,
                                        gf_group, cm->seq_params->bit_depth);
@@ -1097,6 +1105,17 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     } else {
       av1_init_tpl_stats(&cpi->ppi->tpl_data);
     }
+#if CONFIG_BITRATE_ACCURACY && CONFIG_THREE_PASS
+    if (cpi->oxcf.pass == AOM_RC_SECOND_PASS &&
+        cpi->second_pass_log_stream != NULL) {
+      TPL_INFO *tpl_info;
+      AOM_CHECK_MEM_ERROR(cm->error, tpl_info, aom_malloc(sizeof(*tpl_info)));
+      av1_pack_tpl_info(tpl_info, gf_group, &cpi->ppi->tpl_data);
+      av1_write_tpl_info(tpl_info, cpi->second_pass_log_stream,
+                         cpi->common.error);
+      aom_free(tpl_info);
+    }
+#endif  // CONFIG_BITRATE_ACCURACY && CONFIG_THREE_PASS
   }
 
   if (av1_encode(cpi, dest, frame_input, frame_params, frame_results) !=
@@ -1526,6 +1545,42 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
   memset(&frame_input, 0, sizeof(frame_input));
   memset(&frame_params, 0, sizeof(frame_params));
   memset(&frame_results, 0, sizeof(frame_results));
+
+#if CONFIG_BITRATE_ACCURACY && CONFIG_THREE_PASS
+  VBR_RATECTRL_INFO *vbr_rc_info = &cpi->vbr_rc_info;
+  if (oxcf->pass == AOM_RC_THIRD_PASS && vbr_rc_info->ready == 0) {
+    THIRD_PASS_FRAME_INFO frame_info[MAX_THIRD_PASS_BUF];
+    av1_open_second_pass_log(cpi, 1);
+    FILE *second_pass_log_stream = cpi->second_pass_log_stream;
+    fseek(second_pass_log_stream, 0, SEEK_END);
+    size_t file_size = ftell(second_pass_log_stream);
+    rewind(second_pass_log_stream);
+    size_t read_size = 0;
+    while (read_size < file_size) {
+      THIRD_PASS_GOP_INFO gop_info;
+      struct aom_internal_error_info *error = cpi->common.error;
+      // Read in GOP information from the second pass file.
+      av1_read_second_pass_gop_info(second_pass_log_stream, &gop_info, error);
+      TPL_INFO *tpl_info;
+      AOM_CHECK_MEM_ERROR(cm->error, tpl_info, aom_malloc(sizeof(*tpl_info)));
+      av1_read_tpl_info(tpl_info, second_pass_log_stream, error);
+      // Read in per-frame info from second-pass encoding
+      av1_read_second_pass_per_frame_info(second_pass_log_stream, frame_info,
+                                          gop_info.num_frames, error);
+      av1_vbr_rc_append_tpl_info(vbr_rc_info, tpl_info);
+      read_size = ftell(second_pass_log_stream);
+      aom_free(tpl_info);
+    }
+    av1_close_second_pass_log(cpi);
+    vbr_rc_info->base_q_index = av1_vbr_rc_info_estimate_base_q(
+        vbr_rc_info->total_bit_budget, cm->seq_params->bit_depth,
+        vbr_rc_info->scale_factors, vbr_rc_info->total_frame_count,
+        vbr_rc_info->update_type_list, vbr_rc_info->qstep_ratio_list,
+        vbr_rc_info->txfm_stats_list, vbr_rc_info->q_index_list,
+        vbr_rc_info->estimated_bitrate_byframe);
+    vbr_rc_info->ready = 1;
+  }
+#endif  // CONFIG_BITRATE_ACCURACY && CONFIG_THREE_PASS
 
   // Check if we need to stuff more src frames
   if (flush == 0) {

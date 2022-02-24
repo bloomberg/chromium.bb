@@ -229,8 +229,8 @@ struct traits<TensorConvolutionOp<Dimensions, InputXprType, KernelXprType> >
                                       typename traits<KernelXprType>::Index>::type Index;
   typedef typename InputXprType::Nested LhsNested;
   typedef typename KernelXprType::Nested RhsNested;
-  typedef typename remove_reference<LhsNested>::type _LhsNested;
-  typedef typename remove_reference<RhsNested>::type _RhsNested;
+  typedef typename remove_reference<LhsNested>::type LhsNested_;
+  typedef typename remove_reference<RhsNested>::type RhsNested_;
   static const int NumDimensions = traits<InputXprType>::NumDimensions;
   static const int Layout = traits<InputXprType>::Layout;
   typedef typename conditional<Pointer_type_promotion<typename InputXprType::Scalar, Scalar>::val,

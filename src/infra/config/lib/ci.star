@@ -104,12 +104,10 @@ def ci_builder(
         resultdb.export_test_results(
             bq_table = "chrome-luci-data.chromium.gpu_ci_test_results",
             predicate = resultdb.test_result_predicate(
-                # Only match the telemetry_gpu_integration_test and
-                # fuchsia_telemetry_gpu_integration_test targets.
-                # Android Telemetry targets also have a suffix added to the end
-                # denoting the binary that's included, so also catch those with
-                # [^/]*.
-                test_id_regexp = "ninja://(chrome/test:|content/test:fuchsia_)telemetry_gpu_integration_test[^/]*/.+",
+                # Only match the telemetry_gpu_integration_test target and its
+                # Fuchsia and Android variants that have a suffix added to the
+                # end. Those are caught with [^/]*.
+                test_id_regexp = "ninja://chrome/test:telemetry_gpu_integration_test[^/]*/.+",
             ),
         ),
         resultdb.export_test_results(
@@ -129,6 +127,16 @@ def ci_builder(
         # chrome_browser_release sheriff rotation
         branches.value({branches.STANDARD_BRANCHES: "chrome_browser_release"}),
     )
+
+    # All builders that are selected for extended stable should be part of the
+    # chrome_browser_release sheriff rotation (this is less straightforward than
+    # above because desktop extended stable can coexist with CrOS LTS and we
+    # don't want the CrOS LTS builders to appear in the chrome_browser_release
+    # tree)
+    if branches.matches(branch_selector, target = branches.DESKTOP_EXTENDED_STABLE_BRANCHES):
+        sheriff_rotations = args.listify(sheriff_rotations, branches.value({
+            branches.DESKTOP_EXTENDED_STABLE_BRANCHES: "chrome_browser_release",
+        }))
 
     goma_enable_ats = defaults.get_value_from_kwargs("goma_enable_ats", kwargs)
     if goma_enable_ats == args.COMPUTE:

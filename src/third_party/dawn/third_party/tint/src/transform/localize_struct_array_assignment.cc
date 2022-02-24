@@ -215,16 +215,10 @@ LocalizeStructArrayAssignment::~LocalizeStructArrayAssignment() = default;
 
 void LocalizeStructArrayAssignment::Run(CloneContext& ctx,
                                         const DataMap&,
-                                        DataMap&) {
-  if (!Requires<SimplifyPointers>(ctx)) {
-    return;
-  }
-
+                                        DataMap&) const {
   State state(ctx);
   state.Run();
-
-  // This transform may introduce pointers
-  ctx.dst->UnsetTransformApplied<transform::SimplifyPointers>();
 }
+
 }  // namespace transform
 }  // namespace tint

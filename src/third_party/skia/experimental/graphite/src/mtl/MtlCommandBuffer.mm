@@ -15,6 +15,7 @@
 #include "experimental/graphite/src/mtl/MtlGpu.h"
 #include "experimental/graphite/src/mtl/MtlGraphicsPipeline.h"
 #include "experimental/graphite/src/mtl/MtlRenderCommandEncoder.h"
+#include "experimental/graphite/src/mtl/MtlSampler.h"
 #include "experimental/graphite/src/mtl/MtlTexture.h"
 #include "experimental/graphite/src/mtl/MtlUtils.h"
 
@@ -277,6 +278,22 @@ void CommandBuffer::onBindIndexBuffer(const skgpu::Buffer* indexBuffer, size_t o
     }
 }
 
+void CommandBuffer::onBindTextures(const TextureBindEntry* entries, int count) {
+    for (int i = 0; i < count; ++i) {
+        SkASSERT(entries[i].fTexture);
+        id<MTLTexture> texture = ((Texture*)entries[i].fTexture.get())->mtlTexture();
+        fActiveRenderCommandEncoder->setFragmentTexture(texture, entries[i].fBindIndex);
+    }
+}
+
+void CommandBuffer::onBindSamplers(const SamplerBindEntry* entries, int count) {
+    for (int i = 0; i < count; ++i) {
+        SkASSERT(entries[i].fSampler);
+        id<MTLSamplerState> samplerState = ((Sampler*)entries[i].fSampler.get())->mtlSamplerState();
+        fActiveRenderCommandEncoder->setFragmentSamplerState(samplerState, entries[i].fBindIndex);
+    }
+}
+
 void CommandBuffer::onSetScissor(unsigned int left, unsigned int top,
                                  unsigned int width, unsigned int height) {
     SkASSERT(fActiveRenderCommandEncoder);
@@ -377,12 +394,24 @@ void CommandBuffer::onDrawIndexedInstanced(PrimitiveType type, unsigned int base
     }
 }
 
+static bool check_max_blit_width(int widthInPixels) {
+    if (widthInPixels > 32767) {
+        SkASSERT(false); // surfaces should not be this wide anyway
+        return false;
+    }
+    return true;
+}
+
 bool CommandBuffer::onCopyTextureToBuffer(const skgpu::Texture* texture,
                                           SkIRect srcRect,
                                           const skgpu::Buffer* buffer,
                                           size_t bufferOffset,
                                           size_t bufferRowBytes) {
     SkASSERT(!fActiveRenderCommandEncoder);
+
+    if (!check_max_blit_width(srcRect.width())) {
+        return false;
+    }
 
     id<MTLTexture> mtlTexture = static_cast<const Texture*>(texture)->mtlTexture();
     id<MTLBuffer> mtlBuffer = static_cast<const Buffer*>(buffer)->mtlBuffer();
@@ -403,6 +432,42 @@ bool CommandBuffer::onCopyTextureToBuffer(const skgpu::Texture* texture,
         blitCmdEncoder->synchronizeResource(mtlBuffer);
 #endif
     }
+#ifdef SK_ENABLE_MTL_DEBUG_INFO
+    blitCmdEncoder->popDebugGroup();
+#endif
+    return true;
+}
+
+bool CommandBuffer::onCopyBufferToTexture(const skgpu::Buffer* buffer,
+                                          const skgpu::Texture* texture,
+                                          const BufferTextureCopyData* copyData,
+                                          int count) {
+    SkASSERT(!fActiveRenderCommandEncoder);
+
+    id<MTLBuffer> mtlBuffer = static_cast<const Buffer*>(buffer)->mtlBuffer();
+    id<MTLTexture> mtlTexture = static_cast<const Texture*>(texture)->mtlTexture();
+
+    BlitCommandEncoder* blitCmdEncoder = this->getBlitCommandEncoder();
+    if (!blitCmdEncoder) {
+        return false;
+    }
+
+#ifdef SK_ENABLE_MTL_DEBUG_INFO
+    blitCmdEncoder->pushDebugGroup(@"uploadToTexture");
+#endif
+    for (int i = 0; i < count; ++i) {
+        if (!check_max_blit_width(copyData[i].fRect.width())) {
+            return false;
+        }
+
+        blitCmdEncoder->copyFromBuffer(mtlBuffer,
+                                       copyData[i].fBufferOffset,
+                                       copyData[i].fBufferRowBytes,
+                                       mtlTexture,
+                                       copyData[i].fRect,
+                                       copyData[i].fMipLevel);
+    }
+
 #ifdef SK_ENABLE_MTL_DEBUG_INFO
     blitCmdEncoder->popDebugGroup();
 #endif

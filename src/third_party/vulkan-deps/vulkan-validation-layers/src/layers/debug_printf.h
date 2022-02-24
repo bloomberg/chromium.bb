@@ -1,6 +1,6 @@
-/* Copyright (c) 2020-2021 The Khronos Group Inc.
- * Copyright (c) 2020-2021 Valve Corporation
- * Copyright (c) 2020-2021 LunarG, Inc.
+/* Copyright (c) 2020-2022 The Khronos Group Inc.
+ * Copyright (c) 2020-2022 Valve Corporation
+ * Copyright (c) 2020-2022 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ struct DPFBufferInfo {
 struct DPFShaderTracker {
     VkPipeline pipeline;
     VkShaderModule shader_module;
-    std::vector<unsigned int> pgm;
+    std::vector<uint32_t> pgm;
 };
 
 enum vartype { varsigned, varunsigned, varfloat };
@@ -125,6 +125,8 @@ class DebugPrintf : public ValidationStateTracker {
                                       const VkImageMemoryBarrier* pImageMemoryBarriers) const override;
     bool PreCallValidateCmdWaitEvents2KHR(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent* pEvents,
                                           const VkDependencyInfoKHR* pDependencyInfos) const override;
+    bool PreCallValidateCmdWaitEvents2(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent* pEvents,
+                                       const VkDependencyInfo* pDependencyInfos) const override;
 
     void PreCallRecordCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipelineCache, uint32_t count,
                                               const VkGraphicsPipelineCreateInfo* pCreateInfos,
@@ -161,13 +163,12 @@ class DebugPrintf : public ValidationStateTracker {
                                                     const VkAllocationCallbacks* pAllocator, VkPipeline* pPipelines,
                                                     VkResult result, void* crtpl_state_data) override;
     void PreCallRecordDestroyPipeline(VkDevice device, VkPipeline pipeline, const VkAllocationCallbacks* pAllocator) override;
-    bool InstrumentShader(const VkShaderModuleCreateInfo* pCreateInfo, std::vector<unsigned int>& new_pgm,
-                          uint32_t* unique_shader_id);
+    bool InstrumentShader(const VkShaderModuleCreateInfo* pCreateInfo, std::vector<uint32_t>& new_pgm, uint32_t* unique_shader_id);
     void PreCallRecordCreateShaderModule(VkDevice device, const VkShaderModuleCreateInfo* pCreateInfo,
                                          const VkAllocationCallbacks* pAllocator, VkShaderModule* pShaderModule,
                                          void* csm_state_data) override;
     std::vector<DPFSubstring> ParseFormatString(std::string format_string);
-    std::string FindFormatString(std::vector<unsigned int> pgm, uint32_t string_id);
+    std::string FindFormatString(std::vector<uint32_t> pgm, uint32_t string_id);
     void AnalyzeAndGenerateMessages(VkCommandBuffer command_buffer, VkQueue queue, DPFBufferInfo &buffer_info,
                                     uint32_t operation_index, uint32_t* const debug_output_buffer);
     void PreCallRecordCmdDraw(VkCommandBuffer commandBuffer, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex,
@@ -252,8 +253,11 @@ class DebugPrintf : public ValidationStateTracker {
 
     void PostCallRecordQueueSubmit(VkQueue queue, uint32_t submitCount, const VkSubmitInfo* pSubmits, VkFence fence,
                                    VkResult result) override;
+    void RecordQueueSubmit2(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2* pSubmits, VkFence fence, VkResult result);
     void PostCallRecordQueueSubmit2KHR(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2KHR* pSubmits, VkFence fence,
                                        VkResult result) override;
+    void PostCallRecordQueueSubmit2(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2* pSubmits, VkFence fence,
+                                    VkResult result) override;
     void AllocateDebugPrintfResources(const VkCommandBuffer cmd_buffer, const VkPipelineBindPoint bind_point);
 
     std::shared_ptr<CMD_BUFFER_STATE_PRINTF> GetCBState(VkCommandBuffer commandBuffer) {

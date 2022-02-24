@@ -324,8 +324,8 @@ void BrowserSwitchHandler::HandleLaunchAlternativeBrowserAndCloseTab(
   DCHECK(args);
   AllowJavascript();
 
-  std::string callback_id = args->GetList()[0].GetString();
-  std::string url_spec = args->GetList()[1].GetString();
+  std::string callback_id = args->GetListDeprecated()[0].GetString();
+  std::string url_spec = args->GetListDeprecated()[1].GetString();
   GURL url(url_spec);
 
   auto* service = GetBrowserSwitcherService(web_ui());
@@ -334,7 +334,7 @@ void BrowserSwitchHandler::HandleLaunchAlternativeBrowserAndCloseTab(
     // This URL shouldn't open in an alternative browser. Abort launch, because
     // something weird is going on (e.g. race condition from a new sitelist
     // being loaded).
-    RejectJavascriptCallback(args->GetList()[0], base::Value());
+    RejectJavascriptCallback(args->GetListDeprecated()[0], base::Value());
     return;
   }
 
@@ -364,9 +364,8 @@ void BrowserSwitchHandler::OnLaunchFinished(base::TimeTicks start,
     GotoNewTabPage(web_ui()->GetWebContents());
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&content::WebContents::ClosePage,
-                       base::Unretained(web_ui()->GetWebContents())));
+        FROM_HERE, base::BindOnce(&content::WebContents::ClosePage,
+                                  web_ui()->GetWebContents()->GetWeakPtr()));
   }
 }
 
@@ -392,16 +391,16 @@ void BrowserSwitchHandler::HandleGetAllRulesets(const base::ListValue* args) {
       RuleSetToDict(*service->sitelist()->GetExternalGreylist());
   retval.SetKey("external_greylist", std::move(external_greylist_dict));
 
-  ResolveJavascriptCallback(args->GetList()[0], retval);
+  ResolveJavascriptCallback(args->GetListDeprecated()[0], retval);
 }
 
 void BrowserSwitchHandler::HandleGetDecision(const base::ListValue* args) {
   DCHECK(args);
   AllowJavascript();
 
-  GURL url = GURL(args->GetList()[1].GetString());
+  GURL url = GURL(args->GetListDeprecated()[1].GetString());
   if (!url.is_valid()) {
-    RejectJavascriptCallback(args->GetList()[0], base::Value());
+    RejectJavascriptCallback(args->GetListDeprecated()[0], base::Value());
     return;
   }
 
@@ -439,7 +438,7 @@ void BrowserSwitchHandler::HandleGetDecision(const base::ListValue* args) {
                                     decision.matching_rule->ToString()));
   }
 
-  ResolveJavascriptCallback(args->GetList()[0], retval);
+  ResolveJavascriptCallback(args->GetListDeprecated()[0], retval);
 }
 
 void BrowserSwitchHandler::HandleGetTimestamps(const base::ListValue* args) {
@@ -450,7 +449,7 @@ void BrowserSwitchHandler::HandleGetTimestamps(const base::ListValue* args) {
   auto* downloader = service->sitelist_downloader();
 
   if (!downloader) {
-    ResolveJavascriptCallback(args->GetList()[0], base::Value());
+    ResolveJavascriptCallback(args->GetListDeprecated()[0], base::Value());
     return;
   }
 
@@ -460,7 +459,7 @@ void BrowserSwitchHandler::HandleGetTimestamps(const base::ListValue* args) {
   retval.Set("next_fetch", std::make_unique<base::Value>(
                                downloader->next_refresh_time().ToJsTime()));
 
-  ResolveJavascriptCallback(args->GetList()[0], retval);
+  ResolveJavascriptCallback(args->GetListDeprecated()[0], retval);
 }
 
 void BrowserSwitchHandler::HandleGetRulesetSources(
@@ -481,7 +480,7 @@ void BrowserSwitchHandler::HandleGetRulesetSources(
     // a nested object.
     retval.SetKey(source.pref_name, std::move(val));
   }
-  ResolveJavascriptCallback(args->GetList()[0], retval);
+  ResolveJavascriptCallback(args->GetListDeprecated()[0], retval);
 }
 
 void BrowserSwitchHandler::HandleRefreshXml(const base::ListValue* args) {
@@ -496,7 +495,7 @@ void BrowserSwitchHandler::HandleIsBrowserSwitchEnabled(
   AllowJavascript();
 
   auto* service = GetBrowserSwitcherService(web_ui());
-  ResolveJavascriptCallback(args->GetList()[0],
+  ResolveJavascriptCallback(args->GetListDeprecated()[0],
                             base::Value(service->prefs().IsEnabled()));
 }
 

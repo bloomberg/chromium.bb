@@ -36,7 +36,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 
 import type {Project} from './WorkspaceImpl.js';
-import {Events as WorkspaceImplEvents, projectTypes} from './WorkspaceImpl.js';
+import {Events as WorkspaceImplEvents} from './WorkspaceImpl.js';
 
 const UIStrings = {
   /**
@@ -56,7 +56,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
   private projectInternal: Project;
   private urlInternal: string;
   private readonly originInternal: string;
-  private readonly parentURLInternal: string;
+  private readonly parentURLInternal: Platform.DevToolsPath.UrlString;
   private nameInternal: string;
   private contentTypeInternal: Common.ResourceType.ResourceType;
   private requestContentPromise: Promise<TextUtils.ContentProvider.DeferredContent>|null;
@@ -81,14 +81,18 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     const parsedURL = Common.ParsedURL.ParsedURL.fromString(url);
     if (parsedURL) {
       this.originInternal = parsedURL.securityOrigin();
-      this.parentURLInternal = this.originInternal + parsedURL.folderPathComponents;
-      this.nameInternal = parsedURL.lastPathComponent;
+      this.parentURLInternal = this.originInternal + parsedURL.folderPathComponents as Platform.DevToolsPath.UrlString;
       if (parsedURL.queryParams) {
-        this.nameInternal += '?' + parsedURL.queryParams;
+        // in case file name contains query params, it doesn't look like a normal file name anymore
+        // so it can as well remain encoded
+        this.nameInternal = parsedURL.lastPathComponent + '?' + parsedURL.queryParams;
+      } else {
+        // file name looks best decoded
+        this.nameInternal = decodeURIComponent(parsedURL.lastPathComponent);
       }
     } else {
       this.originInternal = '';
-      this.parentURLInternal = '';
+      this.parentURLInternal = '' as Platform.DevToolsPath.UrlString;
       this.nameInternal = url;
     }
 
@@ -118,11 +122,11 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     return this.projectInternal.mimeType(this);
   }
 
-  url(): string {
-    return this.urlInternal;
+  url(): Platform.DevToolsPath.UrlString {
+    return this.urlInternal as Platform.DevToolsPath.UrlString;
   }
 
-  parentURL(): string {
+  parentURL(): Platform.DevToolsPath.UrlString {
     return this.parentURLInternal;
   }
 
@@ -138,15 +142,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     if (!this.nameInternal) {
       return i18nString(UIStrings.index);
     }
-    let name: string = this.nameInternal;
-    try {
-      if (this.project().type() === projectTypes.FileSystem) {
-        name = unescape(name);
-      } else {
-        name = decodeURI(name);
-      }
-    } catch (error) {
-    }
+    const name = this.nameInternal;
     return skipTrim ? name : Platform.StringUtilities.trimEndWithMaxLength(name, 100);
   }
 
@@ -178,10 +174,12 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
 
   private updateName(name: string, url: string, contentType?: Common.ResourceType.ResourceType): void {
     const oldURL = this.urlInternal;
-    this.urlInternal = this.urlInternal.substring(0, this.urlInternal.length - this.nameInternal.length) + name;
     this.nameInternal = name;
     if (url) {
       this.urlInternal = url;
+    } else {
+      this.urlInternal = Common.ParsedURL.ParsedURL.relativePathToUrlString(
+          name as Platform.DevToolsPath.RawPathString, oldURL as Platform.DevToolsPath.UrlString);
     }
     if (contentType) {
       this.contentTypeInternal = contentType;
@@ -191,8 +189,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
         WorkspaceImplEvents.UISourceCodeRenamed, {oldURL: oldURL, uiSourceCode: this});
   }
 
-  // TODO(crbug.com/1253323): Cast to RawPathString will be removed when migration to branded types is complete.
-  contentURL(): string {
+  contentURL(): Platform.DevToolsPath.UrlString {
     return this.url();
   }
 
@@ -263,8 +260,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
       return;
     }
 
-    if (this.contentInternal && 'content' in this.contentInternal &&
-        this.contentInternal.content === updatedContent.content) {
+    if (this.contentInternal?.content === updatedContent.content) {
       this.lastAcceptedContent = null;
       return;
     }
@@ -331,7 +327,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
     if (this.isDirty()) {
       return this.workingCopyInternal as string;
     }
-    return (this.contentInternal && 'content' in this.contentInternal && this.contentInternal.content) || '';
+    return this.contentInternal?.content || '';
   }
 
   resetWorkingCopy(): void {
@@ -393,7 +389,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
   }
 
   content(): string {
-    return (this.contentInternal && 'content' in this.contentInternal && this.contentInternal.content) || '';
+    return this.contentInternal?.content || '';
   }
 
   loadError(): string|null {
@@ -439,7 +435,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes>
   }
 
   removeMessage(message: Message): void {
-    if (this.messagesInternal && this.messagesInternal.delete(message)) {
+    if (this.messagesInternal?.delete(message)) {
       this.dispatchEventToListeners(Events.MessageRemoved, message);
     }
   }

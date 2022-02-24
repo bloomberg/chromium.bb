@@ -260,7 +260,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
     return UI.Fragment.html`<span class="name">${name}</span>`;
   }
 
-  static valueElementForFunctionDescription(description?: string|null, includePreview?: boolean, defaultName?: string):
+  static valueElementForFunctionDescription(description?: string, includePreview?: boolean, defaultName?: string):
       Element {
     const valueElement = document.createElement('span');
     valueElement.classList.add('object-value-function');
@@ -1612,12 +1612,12 @@ export class Renderer implements UI.UIUtils.Renderer {
     return rendererInstance;
   }
 
-  render(object: Object, options?: UI.UIUtils.Options): Promise<{
+  async render(object: Object, options?: UI.UIUtils.Options): Promise<{
     node: Node,
     tree: UI.TreeOutline.TreeOutline|null,
   }|null> {
     if (!(object instanceof SDK.RemoteObject.RemoteObject)) {
-      return Promise.reject(new Error('Can\'t render ' + object));
+      throw new Error('Can\'t render ' + object);
     }
     options = options || {title: undefined, editable: undefined};
     const title = options.title;
@@ -1626,10 +1626,10 @@ export class Renderer implements UI.UIUtils.Renderer {
       section.titleLessMode();
     }
     section.editable = Boolean(options.editable);
-    return Promise.resolve(({node: section.element, tree: section} as {
+    return {node: section.element, tree: section} as {
       node: Node,
       tree: UI.TreeOutline.TreeOutline | null,
-    } | null));
+    } | null;
   }
 }
 

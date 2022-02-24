@@ -41,7 +41,6 @@ import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.uiautomator.UiDevice;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -81,6 +80,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
+import org.chromium.chrome.browser.layouts.LayoutTestUtils;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -94,7 +94,6 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -195,8 +194,7 @@ public class StartSurfaceTest {
     // clang-format off
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS +
         "/home_button_on_grid_tab_switcher/false"})
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.O,
-                     message = "https://crbug.com/1291957")
+    @DisabledTest(message = "https://crbug.com/1291957")
     public void testShow_SingleAsHomepage() {
         // clang-format on
         if (!mImmediateReturn) {
@@ -235,8 +233,8 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS})
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.O,
-                     message = "https://crbug.com/1291957")
+    @DisableIf.
+    Build(sdk_is_less_than = Build.VERSION_CODES.O, message = "https://crbug.com/1291957")
     public void testShow_SingleAsHomepage_NoIncognitoSwitch() {
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
@@ -418,7 +416,7 @@ public class StartSurfaceTest {
         TabUiTestHelper.verifyTabModelTabCount(cta, 0, 1);
 
         // Simulates pressing the Android's home button and bringing Chrome to the background.
-        pressHome();
+        StartSurfaceTestUtils.pressHome();
 
         // Simulates pressing Chrome's icon and launching Chrome from warm start.
         mActivityTestRule.resumeMainActivityFromLauncher();
@@ -430,7 +428,10 @@ public class StartSurfaceTest {
                     mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
             onViewWaiting(withId(R.id.secondary_tasks_surface_view));
         } else {
-            onViewWaiting(withId(R.id.new_tab_incognito_container));
+            int container_id = ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_NTP_REVAMP)
+                    ? R.id.revamped_incognito_ntp_container
+                    : R.id.new_tab_incognito_container;
+            onViewWaiting(withId(container_id)).check(matches(isDisplayed()));
         }
     }
 
@@ -723,6 +724,7 @@ public class StartSurfaceTest {
         StartSurfaceTestUtils.pressHomePageButton(cta);
         assertFalse(bottomSheetTestSupport.hasSuppressionTokens());
 
+        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
         StartSurfaceTestUtils.clickMoreTabs(cta);
         onViewWaiting(withId(R.id.secondary_tasks_surface_view));
         assertTrue(bottomSheetTestSupport.hasSuppressionTokens());
@@ -852,7 +854,10 @@ public class StartSurfaceTest {
         // show.
         onView(withId(R.id.home_button)).perform(click());
         assertFalse(cta.getLayoutManager().overviewVisible());
-        onViewWaiting(withId(R.id.new_tab_incognito_container)).check(matches(isDisplayed()));
+        int container_id = ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_NTP_REVAMP)
+                ? R.id.revamped_incognito_ntp_container
+                : R.id.new_tab_incognito_container;
+        onViewWaiting(withId(container_id)).check(matches(isDisplayed()));
     }
 
     @Test
@@ -1062,7 +1067,7 @@ public class StartSurfaceTest {
             AppMenuTestSupport.showAppMenu(mActivityTestRule.getAppMenuCoordinator(), null, false);
         });
 
-        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+        assertNull(AppMenuTestSupport.getMenuItemPropertyModel(
                 mActivityTestRule.getAppMenuCoordinator(), R.id.icon_row_menu_id));
         assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
                 mActivityTestRule.getAppMenuCoordinator(), R.id.new_tab_menu_id));
@@ -1096,7 +1101,7 @@ public class StartSurfaceTest {
                 != null;
         ModelList menuItemsModelList =
                 AppMenuTestSupport.getMenuModelList(mActivityTestRule.getAppMenuCoordinator());
-        assertEquals(hasUpdateMenuItem ? 12 : 11, menuItemsModelList.size());
+        assertEquals(hasUpdateMenuItem ? 11 : 10, menuItemsModelList.size());
     }
 
     @Test
@@ -1184,11 +1189,5 @@ public class StartSurfaceTest {
      */
     private boolean isInstantReturn() {
         return mUseInstantStart && mImmediateReturn;
-    }
-
-    private void pressHome() {
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        device.pressHome();
-        ChromeApplicationTestUtils.waitUntilChromeInBackground();
     }
 }

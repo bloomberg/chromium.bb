@@ -243,6 +243,7 @@ gles_es_only_extensions = [
     "GL_OES_depth_texture",
     "GL_OES_EGL_sync",
     "GL_OES_packed_depth_stencil",
+    "GL_OES_primitive_bounding_box",
     "GL_OES_surfaceless_context",
 ]
 
@@ -324,6 +325,7 @@ supported_egl_extensions = [
     "EGL_KHR_lock_surface3",
     "EGL_KHR_mutable_render_buffer",
     "EGL_KHR_no_config_context",
+    "EGL_KHR_partial_update",
     "EGL_KHR_reusable_sync",
     "EGL_KHR_stream",
     "EGL_KHR_stream_consumer_gltexture",

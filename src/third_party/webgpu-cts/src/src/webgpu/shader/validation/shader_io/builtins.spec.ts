@@ -64,7 +64,7 @@ const kTestTypes = [
 
 g.test('stage_inout')
   .desc(
-    `Test that each [[builtin]] attribute is validated against the required stage and in/out usage for that built-in variable.`
+    `Test that each @builtin]] attribute is validated against the required stage and in/out usage for that built-in variable.`
   )
   .params(u =>
     u
@@ -76,7 +76,7 @@ g.test('stage_inout')
   )
   .fn(t => {
     const code = generateShader({
-      attribute: `[[builtin(${t.params.name})]]`,
+      attribute: `@builtin(${t.params.name})`,
       type: t.params.type,
       stage: t.params.target_stage,
       io: t.params.target_io,
@@ -96,7 +96,7 @@ g.test('stage_inout')
 
 g.test('type')
   .desc(
-    `Test that each [[builtin]] attribute is validated against the required type of that built-in variable.`
+    `Test that each @builtin]] attribute is validated against the required type of that built-in variable.`
   )
   .params(u =>
     u
@@ -116,7 +116,7 @@ g.test('type')
     }
 
     code += generateShader({
-      attribute: `[[builtin(${t.params.name})]]`,
+      attribute: `@builtin(${t.params.name})`,
       type: t.params.target_type,
       stage: t.params.stage,
       io: t.params.io,
@@ -146,7 +146,7 @@ g.test('nesting')
     // Generate a struct that contains a sample_mask builtin, nested inside another struct.
     let code = `
     struct Inner {
-      [[builtin(sample_mask)]] value : u32;
+      @builtin(sample_mask) value : u32;
     };
     struct Outer {
       inner : Inner;
@@ -168,26 +168,34 @@ g.test('duplicates')
   .desc(`Test that duplicated built-in variables are validated.`)
   .params(u =>
     u
-      // Place two [[builtin(sample_mask)]] attributes onto the entry point function.
+      // Place two @builtin(sample_mask) attributes onto the entry point function.
       // We use `sample_mask` as it is valid as both an input and output for the same entry point.
       // The function:
       // - has two non-struct parameters (`p1` and `p2`)
       // - has two struct parameters each with two members (`s1{a,b}` and `s2{a,b}`)
       // - returns a struct with two members (`ra` and `rb`)
-      // By default, all of these variables will have unique [[location()]] attributes.
+      // By default, all of these variables will have unique @location() attributes.
       .combine('first', ['p1', 's1a', 's2a', 'ra'] as const)
       .combine('second', ['p2', 's1b', 's2b', 'rb'] as const)
       .beginSubcases()
   )
   .fn(t => {
-    const p1 = t.params.first === 'p1' ? '[[builtin(sample_mask)]]' : '[[location(1)]]';
-    const p2 = t.params.second === 'p2' ? '[[builtin(sample_mask)]]' : '[[location(2)]]';
-    const s1a = t.params.first === 's1a' ? '[[builtin(sample_mask)]]' : '[[location(3)]]';
-    const s1b = t.params.second === 's1b' ? '[[builtin(sample_mask)]]' : '[[location(4)]]';
-    const s2a = t.params.first === 's2a' ? '[[builtin(sample_mask)]]' : '[[location(5)]]';
-    const s2b = t.params.second === 's2b' ? '[[builtin(sample_mask)]]' : '[[location(6)]]';
-    const ra = t.params.first === 'ra' ? '[[builtin(sample_mask)]]' : '[[location(1)]]';
-    const rb = t.params.second === 'rb' ? '[[builtin(sample_mask)]]' : '[[location(2)]]';
+    const p1 =
+      t.params.first === 'p1' ? '@builtin(sample_mask)' : '@location(1) @interpolate(flat)';
+    const p2 =
+      t.params.second === 'p2' ? '@builtin(sample_mask)' : '@location(2) @interpolate(flat)';
+    const s1a =
+      t.params.first === 's1a' ? '@builtin(sample_mask)' : '@location(3) @interpolate(flat)';
+    const s1b =
+      t.params.second === 's1b' ? '@builtin(sample_mask)' : '@location(4) @interpolate(flat)';
+    const s2a =
+      t.params.first === 's2a' ? '@builtin(sample_mask)' : '@location(5) @interpolate(flat)';
+    const s2b =
+      t.params.second === 's2b' ? '@builtin(sample_mask)' : '@location(6) @interpolate(flat)';
+    const ra =
+      t.params.first === 'ra' ? '@builtin(sample_mask)' : '@location(1) @interpolate(flat)';
+    const rb =
+      t.params.second === 'rb' ? '@builtin(sample_mask)' : '@location(2) @interpolate(flat)';
     const code = `
     struct S1 {
       ${s1a} a : u32;
@@ -201,7 +209,7 @@ g.test('duplicates')
       ${ra} a : u32;
       ${rb} b : u32;
     };
-    [[stage(fragment)]]
+    @stage(fragment)
     fn main(${p1} p1 : u32,
             ${p2} p2 : u32,
             s1 : S1,
@@ -211,7 +219,7 @@ g.test('duplicates')
     }
     `;
 
-    // The test should fail if both [[builtin(sample_mask)]] attributes are on the input parameters
+    // The test should fail if both @builtin(sample_mask) attributes are on the input parameters
     // or structures, or it they are both on the output struct. Otherwise it should pass.
     const firstIsRet = t.params.first === 'ra';
     const secondIsRet = t.params.second === 'rb';
@@ -220,11 +228,11 @@ g.test('duplicates')
   });
 
 g.test('missing_vertex_position')
-  .desc(`Test that vertex shaders are required to output [[builtin(position)]].`)
+  .desc(`Test that vertex shaders are required to output @builtin(position).`)
   .params(u =>
     u
       .combine('use_struct', [true, false] as const)
-      .combine('attribute', ['[[builtin(position)]]', '[[location(0)]]'] as const)
+      .combine('attribute', ['@builtin(position)', '@location(0)'] as const)
       .beginSubcases()
   )
   .fn(t => {
@@ -233,12 +241,12 @@ g.test('missing_vertex_position')
       ${t.params.attribute} value : vec4<f32>;
     };
 
-    [[stage(vertex)]]
+    @stage(vertex)
     fn main() -> ${t.params.use_struct ? 'S' : `${t.params.attribute} vec4<f32>`} {
       return ${t.params.use_struct ? 'S' : 'vec4<f32>'}();
     }
     `;
 
-    // Expect to pass only when using [[builtin(position)]].
-    t.expectCompileResult(t.params.attribute === '[[builtin(position)]]', code);
+    // Expect to pass only when using @builtin(position).
+    t.expectCompileResult(t.params.attribute === '@builtin(position)', code);
   });

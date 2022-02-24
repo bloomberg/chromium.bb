@@ -137,21 +137,25 @@ struct numeric_limits<Eigen::bfloat16> {
   static EIGEN_CONSTEXPR const bool has_infinity = true;
   static EIGEN_CONSTEXPR const bool has_quiet_NaN = true;
   static EIGEN_CONSTEXPR const bool has_signaling_NaN = true;
-  static EIGEN_CONSTEXPR const float_denorm_style has_denorm = std::denorm_absent;
+  static EIGEN_CONSTEXPR const float_denorm_style has_denorm = std::denorm_present;
   static EIGEN_CONSTEXPR const bool has_denorm_loss = false;
   static EIGEN_CONSTEXPR const std::float_round_style round_style = numeric_limits<float>::round_style;
-  static EIGEN_CONSTEXPR const bool is_iec559 = false;
+  static EIGEN_CONSTEXPR const bool is_iec559 = true;
+  // The C++ standard defines this as "true if the set of values representable
+  // by the type is finite." BFloat16 has finite precision.
   static EIGEN_CONSTEXPR const bool is_bounded = true;
   static EIGEN_CONSTEXPR const bool is_modulo = false;
   static EIGEN_CONSTEXPR const int digits = 8;
   static EIGEN_CONSTEXPR const int digits10 = 2;
   static EIGEN_CONSTEXPR const int max_digits10 = 4;
-  static EIGEN_CONSTEXPR const int radix = 2;
+  static EIGEN_CONSTEXPR const int radix = numeric_limits<float>::radix;
   static EIGEN_CONSTEXPR const int min_exponent = numeric_limits<float>::min_exponent;
   static EIGEN_CONSTEXPR const int min_exponent10 = numeric_limits<float>::min_exponent10;
   static EIGEN_CONSTEXPR const int max_exponent = numeric_limits<float>::max_exponent;
   static EIGEN_CONSTEXPR const int max_exponent10 = numeric_limits<float>::max_exponent10;
   static EIGEN_CONSTEXPR const bool traps = numeric_limits<float>::traps;
+  // IEEE754: "The implementer shall choose how tininess is detected, but shall
+  // detect tininess in the same way for all operations in radix two"
   static EIGEN_CONSTEXPR const bool tinyness_before = numeric_limits<float>::tinyness_before;
 
   static EIGEN_CONSTEXPR Eigen::bfloat16 (min)() { return Eigen::bfloat16_impl::raw_uint16_to_bfloat16(0x0080); }
@@ -161,7 +165,7 @@ struct numeric_limits<Eigen::bfloat16> {
   static EIGEN_CONSTEXPR Eigen::bfloat16 round_error() { return Eigen::bfloat16_impl::raw_uint16_to_bfloat16(0x3f00); }
   static EIGEN_CONSTEXPR Eigen::bfloat16 infinity() { return Eigen::bfloat16_impl::raw_uint16_to_bfloat16(0x7f80); }
   static EIGEN_CONSTEXPR Eigen::bfloat16 quiet_NaN() { return Eigen::bfloat16_impl::raw_uint16_to_bfloat16(0x7fc0); }
-  static EIGEN_CONSTEXPR Eigen::bfloat16 signaling_NaN() { return Eigen::bfloat16_impl::raw_uint16_to_bfloat16(0x7f81); }
+  static EIGEN_CONSTEXPR Eigen::bfloat16 signaling_NaN() { return Eigen::bfloat16_impl::raw_uint16_to_bfloat16(0x7fa0); }
   static EIGEN_CONSTEXPR Eigen::bfloat16 denorm_min() { return Eigen::bfloat16_impl::raw_uint16_to_bfloat16(0x0001); }
 };
 

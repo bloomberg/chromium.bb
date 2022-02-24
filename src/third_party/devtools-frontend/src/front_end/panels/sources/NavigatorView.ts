@@ -400,7 +400,9 @@ export class NavigatorView extends UI.Widget.VBox implements SDK.TargetManager.O
 
     const removedFrame = (event.data.frame as SDK.ResourceTreeModel.ResourceTreeFrame | null);
     const node = Array.from(this.uiSourceCodeNodes.get(uiSourceCode)).find(node => node.frame() === removedFrame);
-    this.removeUISourceCodeNode((node as NavigatorUISourceCodeTreeNode));
+    if (node) {
+      this.removeUISourceCodeNode(node);
+    }
   }
 
   private acceptsUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode): boolean {
@@ -428,9 +430,12 @@ export class NavigatorView extends UI.Widget.VBox implements SDK.TargetManager.O
     const isFromSourceMap = uiSourceCode.contentType().isFromSourceMap();
     let path;
     if (uiSourceCode.project().type() === Workspace.Workspace.projectTypes.FileSystem) {
-      path = Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.relativePath(uiSourceCode).slice(0, -1);
+      path =
+          Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.relativePath(uiSourceCode).slice(0, -1) as
+          Platform.DevToolsPath.EncodedPathString[];
     } else {
-      path = Common.ParsedURL.ParsedURL.extractPath(uiSourceCode.url()).split('/').slice(1, -1);
+      path = Common.ParsedURL.ParsedURL.extractPath(uiSourceCode.url()).split('/').slice(1, -1) as
+          Platform.DevToolsPath.EncodedPathString[];
     }
 
     const project = uiSourceCode.project();
@@ -503,7 +508,8 @@ export class NavigatorView extends UI.Widget.VBox implements SDK.TargetManager.O
       const commonPrefix = reversedIndex.longestPrefix(reversedPath, false /* fullWordOnly */);
       reversedIndex.add(reversedPath);
       const prefixPath = reversedPath.substring(0, commonPrefix.length + 1);
-      const path = encoder.decode(Platform.StringUtilities.reverse(prefixPath));
+      const path = Common.ParsedURL.ParsedURL.encodedPathToRawPathString(
+          encoder.decode(Platform.StringUtilities.reverse(prefixPath)) as Platform.DevToolsPath.EncodedPathString);
 
       const fileSystemNode = this.rootNode.child(project.id());
       if (fileSystemNode) {
@@ -539,7 +545,7 @@ export class NavigatorView extends UI.Widget.VBox implements SDK.TargetManager.O
   private folderNode(
       uiSourceCode: Workspace.UISourceCode.UISourceCode, project: Workspace.Workspace.Project,
       target: SDK.Target.Target|null, frame: SDK.ResourceTreeModel.ResourceTreeFrame|null, projectOrigin: string,
-      path: string[], fromSourceMap: boolean): NavigatorTreeNode {
+      path: Platform.DevToolsPath.EncodedPathString[], fromSourceMap: boolean): NavigatorTreeNode {
     if (Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode)) {
       return this.rootNode;
     }
@@ -568,7 +574,7 @@ export class NavigatorView extends UI.Widget.VBox implements SDK.TargetManager.O
     if (project.type() === Workspace.Workspace.projectTypes.FileSystem) {
       type = Types.FileSystemFolder;
     }
-    const name = path[path.length - 1];
+    const name = Common.ParsedURL.ParsedURL.encodedPathToRawPathString(path[path.length - 1]);
 
     folderNode = new NavigatorFolderTreeNode(this, project, folderId, type, folderPath, name);
     this.subfolderNodes.set(folderId, folderNode);
@@ -848,10 +854,8 @@ export class NavigatorView extends UI.Widget.VBox implements SDK.TargetManager.O
     }
 
     if (project.type() === Workspace.Workspace.projectTypes.FileSystem) {
-      // TODO(crbug.com/1253323): Cast to RawPathString will be removed when migration to branded types is complete.
-      const folderPath = Common.ParsedURL.ParsedURL.capFilePrefix(
-          Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.completeURL(project, path) as
-              Platform.DevToolsPath.UrlString,
+      const folderPath = Common.ParsedURL.ParsedURL.urlToRawPathString(
+          Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.completeURL(project, path),
           Host.Platform.isWin());
       contextMenu.revealSection().appendItem(
           i18nString(UIStrings.openFolder),
@@ -1360,7 +1364,7 @@ export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
     this.treeElement.title = titleText;
     this.treeElement.updateIcon();
 
-    let tooltip = this.uiSourceCodeInternal.url();
+    let tooltip: string = this.uiSourceCodeInternal.url();
     if (this.uiSourceCodeInternal.contentType().isFromSourceMap()) {
       tooltip = i18nString(UIStrings.sFromSourceMap, {PH1: this.uiSourceCodeInternal.displayName()});
     }

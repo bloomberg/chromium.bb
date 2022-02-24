@@ -19,6 +19,9 @@
 namespace v8 {
 namespace internal {
 
+// scope-info-tq.inc uses NameToIndexHashTable.
+class NameToIndexHashTable;
+
 #include "torque-generated/src/objects/scope-info-tq.inc"
 
 template <typename T>
@@ -88,8 +91,11 @@ class ScopeInfo : public TorqueGeneratedScopeInfo<ScopeInfo, HeapObject> {
   // or context-allocated?
   bool HasAllocatedReceiver() const;
 
-  // Does this scope has class brand (for private methods)?
-  bool HasClassBrand() const;
+  // Does this scope has class brand (for private methods)? If it's a class
+  // scope, this indicates whether the class has a private brand. If it's a
+  // constructor scope, this indicates whther it needs to initialize the
+  // brand.
+  bool ClassScopeHasPrivateBrand() const;
 
   // Does this scope contain a saved class variable for checking receivers of
   // static private methods?
@@ -144,17 +150,18 @@ class ScopeInfo : public TorqueGeneratedScopeInfo<ScopeInfo, HeapObject> {
   inline bool HasInlinedLocalNames() const;
 
   template <typename ScopeInfoPtr>
-  class LocalNamesIterator;
+  class LocalNamesRange;
 
-  static inline LocalNamesIterator<Handle<ScopeInfo>> IterateLocalNames(
+  static inline LocalNamesRange<Handle<ScopeInfo>> IterateLocalNames(
       Handle<ScopeInfo> scope_info);
 
-  static inline LocalNamesIterator<ScopeInfo*> IterateLocalNames(
+  static inline LocalNamesRange<ScopeInfo*> IterateLocalNames(
       ScopeInfo* scope_info, const DisallowGarbageCollection& no_gc);
 
   // Return the name of a given context local.
   // It should only be used if inlined local names.
   String ContextInlinedLocalName(int var) const;
+  String ContextInlinedLocalName(PtrComprCageBase cage_base, int var) const;
 
   // Return the mode of the given context local.
   VariableMode ContextLocalMode(int var) const;
@@ -180,8 +187,9 @@ class ScopeInfo : public TorqueGeneratedScopeInfo<ScopeInfo, HeapObject> {
   // returns a value < 0. The name must be an internalized string.
   // If the slot is present and mode != nullptr, sets *mode to the corresponding
   // mode for that variable.
-  static int ContextSlotIndex(ScopeInfo scope_info, String name,
-                              VariableLookupResult* lookup_result);
+  int ContextSlotIndex(Handle<String> name);
+  int ContextSlotIndex(Handle<String> name,
+                       VariableLookupResult* lookup_result);
 
   // Lookup metadata of a MODULE-allocated variable.  Return 0 if there is no
   // module variable with the given name (the index value of a MODULE variable
@@ -298,6 +306,8 @@ class ScopeInfo : public TorqueGeneratedScopeInfo<ScopeInfo, HeapObject> {
 
  private:
   friend class WebSnapshotDeserializer;
+
+  int InlinedLocalNamesLookup(String name);
 
   int ContextLocalNamesIndex() const;
   int ContextLocalInfosIndex() const;

@@ -374,10 +374,11 @@ typedef struct _cef_settings_t {
 
   ///
   // Set to a value between 1024 and 65535 to enable remote debugging on the
-  // specified port. For example, if 8080 is specified the remote debugging URL
-  // will be http://localhost:8080. CEF can be remotely debugged from any CEF or
-  // Chrome browser window. Also configurable using the "remote-debugging-port"
-  // command-line switch.
+  // specified port. Also configurable using the "remote-debugging-port"
+  // command-line switch. Remote debugging can be accessed by loading the
+  // chrome://inspect page in Google Chrome. Port numbers 9222 and 9229 are
+  // discoverable by default. Other port numbers may need to be configured via
+  // "Discover network targets" on the Devices tab.
   ///
   int remote_debugging_port;
 
@@ -575,12 +576,6 @@ typedef struct _cef_browser_settings_t {
   // command-line switch.
   ///
   cef_state_t javascript_dom_paste;
-
-  ///
-  // Controls whether any plugins will be loaded. Also configurable using the
-  // "disable-plugins" command-line switch.
-  ///
-  cef_state_t plugins;
 
   ///
   // Controls whether image URLs will be loaded from the network. A cached image
@@ -2470,32 +2465,6 @@ typedef enum {
   SCALE_FACTOR_250P,
   SCALE_FACTOR_300P,
 } cef_scale_factor_t;
-
-///
-// Plugin policies supported by CefRequestContextHandler::OnBeforePluginLoad.
-///
-typedef enum {
-  ///
-  // Allow the content.
-  ///
-  PLUGIN_POLICY_ALLOW,
-
-  ///
-  // Allow important content and block unimportant content based on heuristics.
-  // The user can manually load blocked content.
-  ///
-  PLUGIN_POLICY_DETECT_IMPORTANT,
-
-  ///
-  // Block the content. The user can manually load blocked content.
-  ///
-  PLUGIN_POLICY_BLOCK,
-
-  ///
-  // Disable the content. The user cannot load disabled content.
-  ///
-  PLUGIN_POLICY_DISABLE,
-} cef_plugin_policy_t;
 
 ///
 // Policy for how the Referrer HTTP header value will be sent during navigation.

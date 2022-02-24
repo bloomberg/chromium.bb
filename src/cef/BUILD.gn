@@ -657,8 +657,6 @@ static_library("libcef_static") {
     "libcef/browser/thread_util.h",
     "libcef/browser/web_contents_dialog_helper.cc",
     "libcef/browser/web_contents_dialog_helper.h",
-    "libcef/browser/web_plugin_impl.cc",
-    "libcef/browser/web_plugin_impl.h",
     "libcef/browser/x509_certificate_impl.cc",
     "libcef/browser/x509_certificate_impl.h",
     "libcef/browser/x509_cert_principal_impl.cc",
@@ -848,7 +846,6 @@ static_library("libcef_static") {
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/crx_file",
-    "//components/data_use_measurement/core",
     "//components/google/core/common",
     "//components/keyed_service/content:content",
     "//components/keyed_service/core:core",
@@ -1331,7 +1328,7 @@ grit("cef_strings") {
   outputs = [
     "grit/cef_strings.h",
   ]
-  all_locales = locales + [ "fake-bidi" ]
+  all_locales = platform_pak_locales + [ "fake-bidi" ]
   foreach(locale, all_locales) {
     outputs += [ "cef_strings_${locale}.pak" ]
   }

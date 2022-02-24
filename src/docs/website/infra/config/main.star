@@ -43,13 +43,12 @@ RECIPE_NAME = 'chromium_website'
 # See the note above for more.
 #
 
-lucicfg.check_version("1.23.3", "Please update depot_tools")
+lucicfg.check_version("1.30.9", "Please update depot_tools")
 
 _LINUX_OS = "Ubuntu-18.04"
 
-# Enable LUCI Realms support and launch all builds in realms-aware mode.
-lucicfg.enable_experiment("crbug.com/1085650")
-luci.builder.defaults.experiments.set({"luci.use_realms": 100})
+# Use LUCI Scheduler BBv2 names and add Scheduler realms configs.
+lucicfg.enable_experiment("crbug.com/1182002")
 
 lucicfg.config(
     config_dir = "generated",
@@ -125,15 +124,18 @@ luci.binding(
     groups = "flex-ci-led-users",
 )
 
+luci.recipe(
+    name = RECIPE_NAME,
+    cipd_package = RECIPE_CIPD_PACKAGE,
+    cipd_version = "refs/heads/main",
+    use_bbagent = True,
+    use_python3 = True,
+)
+
 luci.builder(
     name = "chromium-website-ci-builder",
     bucket = "ci",
-    executable = luci.recipe(
-        name = RECIPE_NAME,
-        cipd_package = RECIPE_CIPD_PACKAGE,
-        cipd_version = "refs/heads/main",
-        use_bbagent = True,
-    ),
+    executable = RECIPE_NAME,
     service_account = "chromium-website-ci-builder@chops-service-accounts.iam.gserviceaccount.com",
     execution_timeout = 1 * time.hour,
     dimensions = {"cpu": "x86-64", "os": _LINUX_OS, "pool": "luci.flex.ci"},
@@ -204,12 +206,7 @@ luci.binding(
 luci.builder(
     name = "chromium-website-try-builder",
     bucket = "try",
-    executable = luci.recipe(
-        name = RECIPE_NAME,
-        cipd_package = RECIPE_CIPD_PACKAGE,
-        cipd_version = "refs/heads/main",
-        use_bbagent = True,
-    ),
+    executable = RECIPE_NAME,
     service_account = "chromium-website-try-builder@chops-service-accounts.iam.gserviceaccount.com",
     execution_timeout = 1 * time.hour,
     dimensions = {"cpu": "x86-64", "os": _LINUX_OS, "pool": "luci.flex.try"},

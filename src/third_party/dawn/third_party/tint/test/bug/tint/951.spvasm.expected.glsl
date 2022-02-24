@@ -1,14 +1,15 @@
 SKIP: FAILED
 
 #version 310 es
-precision mediump float;
 
 struct ssbOut {
   float result[];
 };
+
 struct ssbA {
   float A[];
 };
+
 struct Uniforms {
   float NAN;
   int aShape;
@@ -17,14 +18,14 @@ struct Uniforms {
   int size;
 };
 
-layout (binding = 0) buffer ssbOut_1 {
+layout(binding = 0, std430) buffer ssbOut_1 {
   float result[];
 } x_16;
-layout (binding = 1) buffer ssbA_1 {
+layout(binding = 1, std430) buffer ssbA_1 {
   float A[];
 } x_20;
 uvec3 tint_symbol = uvec3(0u, 0u, 0u);
-layout (binding = 2) uniform Uniforms_1 {
+layout(binding = 2) uniform Uniforms_1 {
   float NAN;
   int aShape;
   int outShape;
@@ -76,30 +77,19 @@ void main_1() {
   return;
 }
 
-struct tint_symbol_4 {
-  uvec3 tint_symbol_2;
-};
-
-void tint_symbol_1_inner(uvec3 tint_symbol_2) {
+void tint_symbol_1(uvec3 tint_symbol_2) {
   tint_symbol = tint_symbol_2;
   main_1();
 }
 
 layout(local_size_x = 128, local_size_y = 1, local_size_z = 1) in;
-void tint_symbol_1(tint_symbol_4 tint_symbol_3) {
-  tint_symbol_1_inner(tint_symbol_3.tint_symbol_2);
+void main() {
+  tint_symbol_1(gl_GlobalInvocationID);
   return;
 }
-void main() {
-  tint_symbol_4 inputs;
-  inputs.tint_symbol_2 = gl_GlobalInvocationID;
-  tint_symbol_1(inputs);
-}
-
-
 Error parsing GLSL shader:
-ERROR: 0:5: '' : array size required 
-ERROR: 0:6: '' : compilation terminated 
+ERROR: 0:4: '' : array size required 
+ERROR: 0:5: '' : compilation terminated 
 ERROR: 2 compilation errors.  No code generated.
 
 

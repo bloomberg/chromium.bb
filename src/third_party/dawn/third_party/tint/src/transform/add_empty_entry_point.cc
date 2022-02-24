@@ -27,13 +27,19 @@ AddEmptyEntryPoint::AddEmptyEntryPoint() = default;
 
 AddEmptyEntryPoint::~AddEmptyEntryPoint() = default;
 
-void AddEmptyEntryPoint::Run(CloneContext& ctx, const DataMap&, DataMap&) {
-  for (auto* func : ctx.src->AST().Functions()) {
+bool AddEmptyEntryPoint::ShouldRun(const Program* program,
+                                   const DataMap&) const {
+  for (auto* func : program->AST().Functions()) {
     if (func->IsEntryPoint()) {
-      ctx.Clone();
-      return;
+      return false;
     }
   }
+  return true;
+}
+
+void AddEmptyEntryPoint::Run(CloneContext& ctx,
+                             const DataMap&,
+                             DataMap&) const {
   ctx.dst->Func(ctx.dst->Symbols().New("unused_entry_point"), {},
                 ctx.dst->ty.void_(), {},
                 {ctx.dst->Stage(ast::PipelineStage::kCompute),

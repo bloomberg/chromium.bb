@@ -870,6 +870,7 @@
 
 /* Program Binary */
 #define GR_GL_NUM_PROGRAM_BINARY_FORMATS     0x87FE
+#define GR_GL_PROGRAM_BINARY_FORMATS         0x87FF
 
 /* Shader Precision-Specified Types */
 #define GR_GL_LOW_FLOAT                      0x8DF0
@@ -1110,7 +1111,7 @@
 #define GR_GL_NUM_SAMPLE_COUNTS                             0x9380
 
 /* EGL Defines */
-#define GR_EGL_NO_DISPLAY                                   ((GrEGLDisplay)0)
+#define GR_EGL_NO_DISPLAY                                   ((GrEGLDisplay)nullptr)
 #define GR_EGL_EXTENSIONS                                   0x3055
 #define GR_EGL_GL_TEXTURE_2D                                0x30B1
 #define GR_EGL_GL_TEXTURE_LEVEL                             0x30BC
@@ -1118,7 +1119,7 @@
 #define GR_EGL_FALSE                                        0x0
 #define GR_EGL_TRUE                                         0x1
 #define GR_EGL_NONE                                         0x3038
-#define GR_EGL_NO_IMAGE                                    ((GrEGLImage)0)
+#define GR_EGL_NO_IMAGE                                     ((GrEGLImage)nullptr)
 
 /* Programs */
 #define GR_GL_PROGRAM_BINARY_RETRIEVABLE_HINT               0x8257

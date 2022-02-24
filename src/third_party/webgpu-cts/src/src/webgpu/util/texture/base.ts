@@ -41,18 +41,43 @@ export function physicalMipSize(
   dimension: GPUTextureDimension,
   level: number
 ): Required<GPUExtent3DDict> {
-  assert(dimension === '2d');
-  assert(Math.max(baseSize.width, baseSize.height) >> level > 0);
+  switch (dimension) {
+    case '1d':
+      assert(level === 0 && baseSize.height === 1 && baseSize.depthOrArrayLayers === 1);
+      return { width: baseSize.width, height: 1, depthOrArrayLayers: 1 };
 
-  const virtualWidthAtLevel = Math.max(baseSize.width >> level, 1);
-  const virtualHeightAtLevel = Math.max(baseSize.height >> level, 1);
-  const physicalWidthAtLevel = align(virtualWidthAtLevel, kTextureFormatInfo[format].blockWidth);
-  const physicalHeightAtLevel = align(virtualHeightAtLevel, kTextureFormatInfo[format].blockHeight);
-  return {
-    width: physicalWidthAtLevel,
-    height: physicalHeightAtLevel,
-    depthOrArrayLayers: baseSize.depthOrArrayLayers,
-  };
+    case '2d': {
+      assert(Math.max(baseSize.width, baseSize.height) >> level > 0);
+
+      const virtualWidthAtLevel = Math.max(baseSize.width >> level, 1);
+      const virtualHeightAtLevel = Math.max(baseSize.height >> level, 1);
+      const physicalWidthAtLevel = align(
+        virtualWidthAtLevel,
+        kTextureFormatInfo[format].blockWidth
+      );
+      const physicalHeightAtLevel = align(
+        virtualHeightAtLevel,
+        kTextureFormatInfo[format].blockHeight
+      );
+      return {
+        width: physicalWidthAtLevel,
+        height: physicalHeightAtLevel,
+        depthOrArrayLayers: baseSize.depthOrArrayLayers,
+      };
+    }
+
+    case '3d': {
+      assert(Math.max(baseSize.width, baseSize.height, baseSize.depthOrArrayLayers) >> level > 0);
+      assert(
+        kTextureFormatInfo[format].blockWidth === 1 && kTextureFormatInfo[format].blockHeight === 1
+      );
+      return {
+        width: Math.max(baseSize.width >> level, 1),
+        height: Math.max(baseSize.height >> level, 1),
+        depthOrArrayLayers: Math.max(baseSize.depthOrArrayLayers >> level, 1),
+      };
+    }
+  }
 }
 
 /**

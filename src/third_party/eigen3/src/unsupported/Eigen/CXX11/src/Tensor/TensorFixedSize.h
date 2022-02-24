@@ -215,7 +215,7 @@ class TensorFixedSize : public TensorBase<TensorFixedSize<Scalar_, Dimensions_, 
 
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE TensorFixedSize(const Self& other)
-      : m_storage(other.m_storage)
+      : Base(other), m_storage(other.m_storage)
     {
     }
 

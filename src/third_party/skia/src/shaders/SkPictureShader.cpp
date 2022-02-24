@@ -13,6 +13,7 @@
 #include "include/private/SkImageInfoPriv.h"
 #include "src/core/SkArenaAlloc.h"
 #include "src/core/SkImagePriv.h"
+#include "src/core/SkMatrixPriv.h"
 #include "src/core/SkMatrixProvider.h"
 #include "src/core/SkMatrixUtils.h"
 #include "src/core/SkPicturePriv.h"
@@ -184,7 +185,13 @@ struct CachedImageInfo {
             SkSize size;
             // Use a rotation-invariant scale
             if (!m.decomposeScale(&size, nullptr)) {
-                size = {1, 1};
+                SkPoint center = {bounds.centerX(), bounds.centerY()};
+                SkScalar area = SkMatrixPriv::DifferentialAreaScale(m, center);
+                if (!SkScalarIsFinite(area) || SkScalarNearlyZero(area)) {
+                    size = {1, 1}; // ill-conditioned matrix
+                } else {
+                    size.fWidth = size.fHeight = SkScalarSqrt(area);
+                }
             }
             size.fWidth  *= bounds.width();
             size.fHeight *= bounds.height();
@@ -401,7 +408,7 @@ std::unique_ptr<GrFragmentProcessor> SkPictureShader::asFragmentProcessor(
     GrProxyProvider* provider = ctx->priv().proxyProvider();
     GrSurfaceProxyView view;
     if (auto proxy = provider->findOrCreateProxyByUniqueKey(key)) {
-        view = GrSurfaceProxyView(proxy, kTopLeft_GrSurfaceOrigin, GrSwizzle());
+        view = GrSurfaceProxyView(proxy, kTopLeft_GrSurfaceOrigin, skgpu::Swizzle());
     } else {
         const int msaaSampleCount = 0;
         const SkSurfaceProps* props = nullptr;

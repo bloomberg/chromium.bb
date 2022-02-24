@@ -1,5 +1,4 @@
 #version 310 es
-precision mediump float;
 
 struct LightData {
   vec4 position;
@@ -7,22 +6,21 @@ struct LightData {
   float radius;
 };
 
-layout (binding = 0) buffer LightsBuffer_1 {
+layout(binding = 0, std430) buffer LightsBuffer_1 {
   LightData lights[];
 } lightsBuffer;
-
 struct TileLightIdData {
   uint count;
   uint lightId[64];
 };
+
 struct Tiles {
   TileLightIdData data[4];
 };
 
-layout (binding = 0) buffer Tiles_1 {
+layout(binding = 0, std430) buffer Tiles_1 {
   TileLightIdData data[4];
 } tileLightId;
-
 struct Config {
   uint numLights;
   uint numTiles;
@@ -32,7 +30,7 @@ struct Config {
   uint tileSize;
 };
 
-layout (binding = 0) uniform Config_1 {
+layout(binding = 0) uniform Config_1 {
   uint numLights;
   uint numTiles;
   uint tileCountX;
@@ -49,7 +47,7 @@ struct Uniforms {
   vec4 fullScreenSize;
 };
 
-layout (binding = 0) uniform Uniforms_1 {
+layout(binding = 0) uniform Uniforms_1 {
   vec4 tint_symbol;
   vec4 tint_symbol_1;
   mat4 viewMatrix;
@@ -57,11 +55,7 @@ layout (binding = 0) uniform Uniforms_1 {
   vec4 fullScreenSize;
 } uniforms;
 
-struct tint_symbol_4 {
-  uvec3 GlobalInvocationID;
-};
-
-void tint_symbol_2_inner(uvec3 GlobalInvocationID) {
+void tint_symbol_2(uvec3 GlobalInvocationID) {
   uint index = GlobalInvocationID.x;
   if ((index >= config.numLights)) {
     return;
@@ -142,14 +136,7 @@ void tint_symbol_2_inner(uvec3 GlobalInvocationID) {
 }
 
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
-void tint_symbol_2(tint_symbol_4 tint_symbol_3) {
-  tint_symbol_2_inner(tint_symbol_3.GlobalInvocationID);
+void main() {
+  tint_symbol_2(gl_GlobalInvocationID);
   return;
 }
-void main() {
-  tint_symbol_4 inputs;
-  inputs.GlobalInvocationID = gl_GlobalInvocationID;
-  tint_symbol_2(inputs);
-}
-
-

@@ -30,6 +30,7 @@
 
 #include "av1/common/cfl.h"
 #include "av1/common/common.h"
+#include "av1/common/common_data.h"
 #include "av1/common/entropy.h"
 #include "av1/common/entropymode.h"
 #include "av1/common/idct.h"
@@ -236,7 +237,7 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
              cpi->oxcf.algo_cfg.enable_tpl_model) {
     // Setup deltaq based on tpl stats
     current_qindex =
-        av1_get_q_for_deltaq_objective(cpi, sb_size, mi_row, mi_col);
+        av1_get_q_for_deltaq_objective(cpi, td, NULL, sb_size, mi_row, mi_col);
   } else if (cpi->oxcf.q_cfg.deltaq_mode == DELTA_Q_PERCEPTUAL_AI) {
     current_qindex = av1_get_sbq_perceptual_ai(cpi, sb_size, mi_row, mi_col);
   } else if (cpi->oxcf.q_cfg.deltaq_mode == DELTA_Q_USER_RATING_BASED) {
@@ -525,8 +526,14 @@ static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
     }
   }
 
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  start_timing(cpi, nonrd_use_partition_time);
+#endif
   av1_nonrd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
                           pc_root);
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  end_timing(cpi, nonrd_use_partition_time);
+#endif
 
   if (sf->rt_sf.skip_cdef_sb) {
     // If 128x128 block is used, we need to set the flag for all 4 64x64 sub
@@ -579,7 +586,9 @@ static INLINE void init_encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
         setup_delta_q(cpi, td, x, tile_info, mi_row, mi_col, num_planes);
         av1_tpl_rdmult_setup_sb(cpi, x, sb_size, mi_row, mi_col);
       }
-      if (cpi->oxcf.algo_cfg.enable_tpl_model) {
+
+      // TODO(jingning): revisit this function.
+      if (cpi->oxcf.algo_cfg.enable_tpl_model && 0) {
         adjust_rdmult_tpl_model(cpi, x, mi_row, mi_col);
       }
     }
@@ -590,6 +599,10 @@ static INLINE void init_encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
   (void)mi_col;
   (void)gather_tpl_data;
 #endif
+
+  if (cpi->oxcf.mode == ALLINTRA) {
+    x->intra_sb_rdmult_modifier = 128;
+  }
 
   reset_mb_rd_record(x->txfm_search_info.mb_rd_record);
   av1_zero(x->picked_ref_frames_mask);
@@ -628,12 +641,13 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
 
   // Encode the superblock
   if (sf->part_sf.partition_search_type == VAR_BASED_PARTITION) {
-#if CONFIG_COLLECT_COMPONENT_TIMING
-    start_timing(cpi, rd_use_partition_time);
-#endif
     // partition search starting from a variance-based partition
     av1_set_offsets(cpi, tile_info, x, mi_row, mi_col, sb_size);
     av1_choose_var_based_partitioning(cpi, tile_info, td, x, mi_row, mi_col);
+
+#if CONFIG_COLLECT_COMPONENT_TIMING
+    start_timing(cpi, rd_use_partition_time);
+#endif
     PC_TREE *const pc_root = av1_alloc_pc_tree_node(sb_size);
     av1_rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
                          &dummy_rate, &dummy_dist, 1, pc_root);
@@ -680,6 +694,7 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
 #if CONFIG_PARTITION_SEARCH_ORDER
       if (cpi->ext_part_controller.ready && !frame_is_intra_only(cm)) {
         av1_reset_part_sf(&cpi->sf.part_sf);
+        av1_reset_sf_for_ext_part(cpi);
         RD_STATS this_rdc;
         av1_rd_partition_search(cpi, td, tile_data, tp, sms_root, mi_row,
                                 mi_col, sb_size, &this_rdc);
@@ -735,15 +750,12 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
 
 // Check if the cost update of symbols mode, coeff and dv are tile or off.
 static AOM_INLINE int is_mode_coeff_dv_upd_freq_tile_or_off(
-    const AV1_COMP *const cpi, const CostUpdateFreq *const cost_upd_freq) {
+    const AV1_COMP *const cpi) {
   const INTER_MODE_SPEED_FEATURES *const inter_sf = &cpi->sf.inter_sf;
 
-  return ((cost_upd_freq->coeff >= COST_UPD_TILE ||
-           inter_sf->coeff_cost_upd_level == INTERNAL_COST_UPD_OFF) &&
-          (cost_upd_freq->mode >= COST_UPD_TILE ||
-           inter_sf->mode_cost_upd_level == INTERNAL_COST_UPD_OFF) &&
-          (cost_upd_freq->dv >= COST_UPD_TILE ||
-           cpi->sf.intra_sf.dv_cost_upd_level == INTERNAL_COST_UPD_OFF));
+  return (inter_sf->coeff_cost_upd_level <= INTERNAL_COST_UPD_TILE &&
+          inter_sf->mode_cost_upd_level <= INTERNAL_COST_UPD_TILE &&
+          cpi->sf.intra_sf.dv_cost_upd_level <= INTERNAL_COST_UPD_TILE);
 }
 
 // When row-mt is enabled and cost update frequencies are set to off/tile,
@@ -754,13 +766,11 @@ static AOM_INLINE int delay_wait_for_top_right_sb(const AV1_COMP *const cpi) {
   const MODE mode = cpi->oxcf.mode;
   if (mode == GOOD) return 0;
 
-  const CostUpdateFreq *const cost_upd_freq = &cpi->oxcf.cost_upd_freq;
   if (mode == ALLINTRA)
-    return is_mode_coeff_dv_upd_freq_tile_or_off(cpi, cost_upd_freq);
+    return is_mode_coeff_dv_upd_freq_tile_or_off(cpi);
   else if (mode == REALTIME)
-    return (is_mode_coeff_dv_upd_freq_tile_or_off(cpi, cost_upd_freq) &&
-            (cost_upd_freq->mv >= COST_UPD_TILE ||
-             cpi->sf.inter_sf.mv_cost_upd_level == INTERNAL_COST_UPD_OFF));
+    return (is_mode_coeff_dv_upd_freq_tile_or_off(cpi) &&
+            cpi->sf.inter_sf.mv_cost_upd_level <= INTERNAL_COST_UPD_TILE);
   else
     return 0;
 }
@@ -784,7 +794,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
   bool row_mt_enabled = mt_info->row_mt_enabled;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
-  const int sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, tile_data->tile_info);
+  const int sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, tile_info);
   const BLOCK_SIZE sb_size = cm->seq_params->sb_size;
   const int mib_size = cm->seq_params->mib_size;
   const int mib_size_log2 = cm->seq_params->mib_size_log2;
@@ -815,7 +825,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
     // In realtime/allintra mode and when frequency of cost updates is off/tile,
     // wait for the top superblock to finish encoding. Otherwise, wait for the
     // top-right superblock to finish encoding.
-    (*(enc_row_mt->sync_read_ptr))(
+    enc_row_mt->sync_read_ptr(
         row_mt_sync, sb_row, sb_col_in_tile - delay_wait_for_top_right_sb(cpi));
     const int update_cdf = tile_data->allow_update_cdf && row_mt_enabled;
     if (update_cdf && (tile_info->mi_row_start != mi_row)) {
@@ -865,6 +875,9 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
 
     produce_gradients_for_sb(cpi, x, sb_size, mi_row, mi_col);
 
+    init_src_var_info_of_4x4_sub_blocks(cpi, x->src_var_info_of_4x4_sub_blocks,
+                                        sb_size);
+
     // encode the superblock
     if (use_nonrd_mode) {
       encode_nonrd_sb(cpi, td, tile_data, tp, mi_row, mi_col, seg_skip);
@@ -880,8 +893,8 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
         memcpy(x->row_ctx + sb_col_in_tile - 1, xd->tile_ctx,
                sizeof(*xd->tile_ctx));
     }
-    (*(enc_row_mt->sync_write_ptr))(row_mt_sync, sb_row, sb_col_in_tile,
-                                    sb_cols_in_tile);
+    enc_row_mt->sync_write_ptr(row_mt_sync, sb_row, sb_col_in_tile,
+                               sb_cols_in_tile);
   }
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, encode_sb_row_time);
@@ -960,11 +973,11 @@ void av1_init_tile_data(AV1_COMP *cpi) {
         token_info->tile_tok[tile_row][tile_col] = pre_tok + tile_tok;
         pre_tok = token_info->tile_tok[tile_row][tile_col];
         tile_tok = allocated_tokens(
-            *tile_info, cm->seq_params->mib_size_log2 + MI_SIZE_LOG2,
+            tile_info, cm->seq_params->mib_size_log2 + MI_SIZE_LOG2,
             num_planes);
         token_info->tplist[tile_row][tile_col] = tplist + tplist_count;
         tplist = token_info->tplist[tile_row][tile_col];
-        tplist_count = av1_get_sb_rows_in_tile(cm, tile_data->tile_info);
+        tplist_count = av1_get_sb_rows_in_tile(cm, tile_info);
       }
       tile_data->allow_update_cdf = !cm->tiles.large_scale;
       tile_data->allow_update_cdf = tile_data->allow_update_cdf &&
@@ -1289,6 +1302,29 @@ static AOM_INLINE void setup_prune_ref_frame_mask(AV1_COMP *cpi) {
   }
 }
 
+static int allow_deltaq_mode(AV1_COMP *cpi) {
+#if !CONFIG_REALTIME_ONLY
+  AV1_COMMON *const cm = &cpi->common;
+  BLOCK_SIZE sb_size = cm->seq_params->sb_size;
+  int sbs_wide = mi_size_wide[sb_size];
+  int sbs_high = mi_size_high[sb_size];
+
+  int64_t delta_rdcost = 0;
+  for (int mi_row = 0; mi_row < cm->mi_params.mi_rows; mi_row += sbs_high) {
+    for (int mi_col = 0; mi_col < cm->mi_params.mi_cols; mi_col += sbs_wide) {
+      int64_t this_delta_rdcost = 0;
+      av1_get_q_for_deltaq_objective(cpi, &cpi->td, &this_delta_rdcost, sb_size,
+                                     mi_row, mi_col);
+      delta_rdcost += this_delta_rdcost;
+    }
+  }
+  return delta_rdcost < 0;
+#else
+  (void)cpi;
+  return 1;
+#endif  // !CONFIG_REALTIME_ONLY
+}
+
 /*!\brief Encoder setup(only for the current frame), encoding, and recontruction
  * for a single frame
  *
@@ -1452,8 +1488,13 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
     const GF_GROUP *gf_group = &cpi->ppi->gf_group;
     if (cm->delta_q_info.delta_q_present_flag) {
       if (deltaq_mode == DELTA_Q_OBJECTIVE &&
-          !is_frame_tpl_eligible(gf_group, cpi->gf_frame_index))
+          gf_group->update_type[cpi->gf_frame_index] == LF_UPDATE)
         cm->delta_q_info.delta_q_present_flag = 0;
+
+      if (deltaq_mode == DELTA_Q_OBJECTIVE &&
+          cm->delta_q_info.delta_q_present_flag) {
+        cm->delta_q_info.delta_q_present_flag &= allow_deltaq_mode(cpi);
+      }
     }
 
     // Reset delta_q_used flag

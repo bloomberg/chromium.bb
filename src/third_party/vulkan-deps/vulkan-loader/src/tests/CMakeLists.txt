@@ -1,6 +1,6 @@
 # ~~~
-# Copyright (c) 2014-2018 Valve Corporation
-# Copyright (c) 2014-2018 LunarG, Inc.
+# Copyright (c) 2014-2022 Valve Corporation
+# Copyright (c) 2014-2022 LunarG, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 # Use these options to force a specific sanitizer on all test executables
 option(TEST_USE_ADDRESS_SANITIZER "Linux only: Advanced memory checking" OFF)
 option(TEST_USE_THREAD_SANITIZER "Linux only: Advanced thread checking" OFF)
+option(ENABLE_LIVE_VERIFICATION_TESTS "Enable tests which expect to run on live drivers. Meant for manual verification only" OFF)
 
 include(GoogleTest)
 add_subdirectory(framework)
@@ -29,6 +30,7 @@ add_executable(
         loader_testing_main.cpp
         loader_alloc_callback_tests.cpp
         loader_get_proc_addr_tests.cpp
+        loader_debug_ext_tests.cpp
         loader_handle_validation_tests.cpp
         loader_layer_tests.cpp
         loader_regression_tests.cpp
@@ -44,6 +46,11 @@ add_executable(
         loader_threading_tests.cpp)
 target_link_libraries(test_threading PRIVATE testing_dependencies)
 
+# executables that are meant for testing against real drivers rather than the mocks
+if (ENABLE_LIVE_VERIFICATION_TESTS)
+    add_subdirectory(live_verification)
+endif()
+
 if(WIN32)
     # Copy loader and googletest (gtest) libs to test dir so the test executable can find them.
     add_custom_command(TARGET test_regression POST_BUILD
@@ -52,6 +59,12 @@ if(WIN32)
     if(TARGET vulkan)
         add_custom_command(TARGET test_regression POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:vulkan> $<TARGET_FILE_DIR:test_regression>)
+    endif()
+
+    # Copy the gtest shared lib (if built) to the live verification tests directory so the tests finds it.
+    if(ENABLE_LIVE_VERIFICATION_TESTS)
+        add_custom_command(TARGET test_regression POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:gtest> $<TARGET_FILE_DIR:dynamic_rendering_get_proc_addr>)
     endif()
 endif()
 

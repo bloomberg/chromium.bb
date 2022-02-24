@@ -15,7 +15,7 @@
         "limitations under the License."
     ],
 
-    "_doc": "See docs/codegen.md",
+    "_doc": "See docs/dawn/codegen.md",
 
     "_metadata": {
         "api": "WebGPU",
@@ -790,7 +790,7 @@
             },
             {
                 "name": "begin pipeline statistics query",
-                "tags": ["upstream"],
+                "tags": ["upstream", "emscripten"],
                 "args": [
                     {"name": "query set", "type": "query set"},
                     {"name": "query index", "type": "uint32_t"}
@@ -799,9 +799,9 @@
             {
                 "name": "dispatch",
                 "args": [
-                    {"name": "x", "type": "uint32_t"},
-                    {"name": "y", "type": "uint32_t", "default": "1"},
-                    {"name": "z", "type": "uint32_t", "default": "1"}
+                    {"name": "workgroupCountX", "type": "uint32_t"},
+                    {"name": "workgroupCountY", "type": "uint32_t", "default": "1"},
+                    {"name": "workgroupCountZ", "type": "uint32_t", "default": "1"}
                 ]
             },
             {
@@ -812,11 +812,15 @@
                 ]
             },
             {
-                "name": "end pass"
+                "name": "end"
+            },
+            {
+                "name": "end pass",
+                "tags": ["deprecated"]
             },
             {
                 "name": "end pipeline statistics query",
-                "tags": ["upstream"]
+                "tags": ["upstream", "emscripten"]
             },
             {
                 "name": "set label",
@@ -1314,14 +1318,15 @@
         "members": [
             {"name": "label", "type": "char", "annotation": "const*", "length": "strlen", "optional": true},
             {"name": "plane 0", "type": "texture view"},
-            {"name": "format", "type": "texture format"}
+            {"name": "plane 1", "type": "texture view", "optional": true},
+            {"name": "color space", "type": "predefined color space", "default": "srgb"}
         ]
     },
     "feature name": {
         "category": "enum",
         "values": [
             {"value": 0, "name": "undefined", "jsrepr": "undefined"},
-            {"value": 1, "name": "depth clip control", "tags": ["upstream"]},
+            {"value": 1, "name": "depth clip control", "tags": ["upstream", "emscripten"]},
             {"value": 2, "name": "depth24 unorm stencil8"},
             {"value": 3, "name": "depth32 float stencil8"},
             {"value": 4, "name": "timestamp query"},
@@ -1392,7 +1397,7 @@
             },
             {
                 "name": "process events",
-                "tags": ["upstream"]
+                "tags": ["upstream", "emscripten"]
             },
             {
                 "name": "request adapter",
@@ -1408,6 +1413,15 @@
         "category": "structure",
         "extensible": "in",
         "members": []
+    },
+    "dawn instance descriptor": {
+        "tags": ["dawn", "native"],
+        "category": "structure",
+        "chained": "in",
+        "members": [
+            {"name": "additional runtime search paths count", "type": "uint32_t", "default": 0},
+            {"name": "additional runtime search paths", "type": "char", "annotation": "const*const*", "length": "additional runtime search paths count"}
+        ]
     },
     "vertex attribute": {
         "category": "structure",
@@ -1439,8 +1453,9 @@
         "category": "enum",
         "emscripten_no_enum_table": true,
         "values": [
-            {"value": 0, "name": "clear"},
-            {"value": 1, "name": "load"}
+            {"value": 0, "name": "undefined", "valid": false, "jsrepr": "undefined"},
+            {"value": 1, "name": "clear"},
+            {"value": 2, "name": "load"}
         ]
     },
     "map mode": {
@@ -1454,8 +1469,9 @@
     "store op": {
         "category": "enum",
         "values": [
-            {"value": 0, "name": "store"},
-            {"value": 1, "name": "discard"}
+            {"value": 0, "name": "undefined", "valid": false, "jsrepr": "undefined"},
+            {"value": 1, "name": "store"},
+            {"value": 2, "name": "discard"}
         ]
     },
     "origin 3D": {
@@ -1502,9 +1518,16 @@
     "power preference": {
         "category": "enum",
         "values": [
-            {"value": 0, "name": "undefined"},
+            {"value": 0, "name": "undefined", "jsrepr": "undefined"},
             {"value": 1, "name": "low power"},
             {"value": 2, "name": "high performance"}
+        ]
+    },
+    "predefined color space": {
+        "category": "enum",
+        "values": [
+            {"value": 0, "name": "undefined", "jsrepr": "undefined"},
+            {"value": 1, "name": "srgb"}
         ]
     },
     "present mode": {
@@ -1785,12 +1808,12 @@
         "category": "structure",
         "members": [
             {"name": "view", "type": "texture view"},
-            {"name": "depth load op", "type": "load op"},
-            {"name": "depth store op", "type": "store op"},
-            {"name": "clear depth", "type": "float"},
+            {"name": "depth load op", "type": "load op", "default": "undefined"},
+            {"name": "depth store op", "type": "store op", "default": "undefined"},
+            {"name": "clear depth", "type": "float", "default": "0"},
             {"name": "depth read only", "type": "bool", "default": "false"},
-            {"name": "stencil load op", "type": "load op"},
-            {"name": "stencil store op", "type": "store op"},
+            {"name": "stencil load op", "type": "load op", "default": "undefined"},
+            {"name": "stencil store op", "type": "store op", "default": "undefined"},
             {"name": "clear stencil", "type": "uint32_t", "default": "0"},
             {"name": "stencil read only", "type": "bool", "default": "false"}
         ]
@@ -1941,7 +1964,7 @@
             },
             {
                 "name": "begin pipeline statistics query",
-                "tags": ["upstream"],
+                "tags": ["upstream", "emscripten"],
                 "args": [
                     {"name": "query set", "type": "query set"},
                     {"name": "query index", "type": "uint32_t"}
@@ -1959,11 +1982,15 @@
                 ]
             },
             {
-                "name": "end pass"
+                "name": "end"
+            },
+            {
+                "name": "end pass",
+                "tags": ["deprecated"]
             },
             {
                 "name": "end pipeline statistics query",
-                "tags": ["upstream"]
+                "tags": ["upstream", "emscripten"]
             },
             {
                 "name": "set label",
@@ -2070,7 +2097,7 @@
     "primitive depth clip control": {
         "category": "structure",
         "chained": "in",
-        "tags": ["upstream"],
+        "tags": ["upstream", "emscripten"],
         "members": [
             {"name": "unclipped depth", "type": "bool", "default": "false"}
         ]
@@ -2258,7 +2285,7 @@
             {
                 "name": "get preferred format",
                 "returns": "texture format",
-                "tags": ["upstream"],
+                "tags": ["upstream", "emscripten"],
                 "args": [
                     {"name": "adapter", "type": "adapter"}
                 ]
@@ -2362,7 +2389,7 @@
             {"value": 4, "name": "surface descriptor from canvas HTML selector"},
             {"value": 5, "name": "shader module SPIRV descriptor"},
             {"value": 6, "name": "shader module WGSL descriptor"},
-            {"value": 7, "name": "primitive depth clip control", "tags": ["upstream"]},
+            {"value": 7, "name": "primitive depth clip control", "tags": ["upstream", "emscripten"]},
             {"value": 8, "name": "surface descriptor from windows core window", "tags": ["dawn"]},
             {"value": 9, "name": "external texture binding entry", "tags": ["dawn"]},
             {"value": 10, "name": "external texture binding layout", "tags": ["dawn"]},
@@ -2370,7 +2397,8 @@
             {"value": 1000, "name": "dawn texture internal usage descriptor", "tags": ["dawn"]},
             {"value": 1001, "name": "primitive depth clamping state", "tags": ["dawn", "emscripten"]},
             {"value": 1002, "name": "dawn toggles device descriptor", "tags": ["dawn", "native"]},
-            {"value": 1003, "name": "dawn encoder internal usage descriptor", "tags": ["dawn"]}
+            {"value": 1003, "name": "dawn encoder internal usage descriptor", "tags": ["dawn"]},
+            {"value": 1004, "name": "dawn instance descriptor", "tags": ["dawn", "native"]}
         ]
     },
     "texture": {

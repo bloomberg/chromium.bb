@@ -133,20 +133,6 @@
       "use_goma": true
     }
   },
-  "gpu-fyi-try-win10-nvidia-sk-dawn-rel-64": {
-    "gn_args": {
-      "blink_enable_generated_code_formatting": false,
-      "dcheck_always_on": true,
-      "enable_skia_dawn_gtests": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "skia_use_dawn": true,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
   "gpu-fyi-try-win7-amd-rel-32": {
     "gn_args": {
       "blink_enable_generated_code_formatting": false,
@@ -243,6 +229,16 @@
       "use_libfuzzer": true
     }
   },
+  "win10-clang-tidy-rel": {
+    "gn_args": {
+      "blink_enable_generated_code_formatting": false,
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 0,
+      "use_goma": true
+    }
+  },
   "win10-rel-orchestrator": {
     "gn_args": {
       "blink_enable_generated_code_formatting": false,
@@ -304,21 +300,6 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
-      "use_goma": true
-    }
-  },
-  "win10_chromium_x64_rel_ng_rts": {
-    "gn_args": {
-      "blink_enable_generated_code_formatting": false,
-      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
-      "dcheck_always_on": true,
-      "enable_resource_allowlist_generation": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "use_clang_coverage": true,
       "use_goma": true
     }
   },

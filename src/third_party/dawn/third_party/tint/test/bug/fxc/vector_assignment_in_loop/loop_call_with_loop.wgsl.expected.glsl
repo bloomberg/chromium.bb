@@ -1,11 +1,9 @@
 #version 310 es
-precision mediump float;
 
 vec2 v2f = vec2(0.0f, 0.0f);
 ivec3 v3i = ivec3(0, 0, 0);
 uvec4 v4u = uvec4(0u, 0u, 0u, 0u);
 bvec2 v2b = bvec2(false, false);
-
 void foo() {
   {
     for(int i = 0; (i < 2); i = (i + 1)) {
@@ -17,17 +15,16 @@ void foo() {
   }
 }
 
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void tint_symbol() {
   {
     for(int i = 0; (i < 2); i = (i + 1)) {
       foo();
     }
   }
-  return;
 }
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void main() {
   tint_symbol();
+  return;
 }
-
-

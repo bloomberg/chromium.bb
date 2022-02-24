@@ -17,9 +17,11 @@
 #include <utility>
 
 #include "src/program_builder.h"
-#include "src/transform/add_spirv_block_decoration.h"
-#include "src/transform/calculate_array_length.h"
+#include "src/transform/add_empty_entry_point.h"
+#include "src/transform/add_spirv_block_attribute.h"
+#include "src/transform/binding_remapper.h"
 #include "src/transform/canonicalize_entry_point_io.h"
+#include "src/transform/combine_samplers.h"
 #include "src/transform/decompose_memory_access.h"
 #include "src/transform/external_texture_transform.h"
 #include "src/transform/fold_trivial_single_use_lets.h"
@@ -28,6 +30,7 @@
 #include "src/transform/pad_array_elements.h"
 #include "src/transform/promote_initializers_to_const_var.h"
 #include "src/transform/remove_phonies.h"
+#include "src/transform/renamer.h"
 #include "src/transform/simplify_pointers.h"
 #include "src/transform/single_entry_point.h"
 #include "src/transform/unshadow.h"
@@ -42,12 +45,18 @@ namespace transform {
 Glsl::Glsl() = default;
 Glsl::~Glsl() = default;
 
-Output Glsl::Run(const Program* in, const DataMap& inputs) {
+Output Glsl::Run(const Program* in, const DataMap& inputs) const {
   Manager manager;
   DataMap data;
 
   auto* cfg = inputs.Get<Config>();
 
+  if (cfg && !cfg->entry_point.empty()) {
+    manager.Add<SingleEntryPoint>();
+    data.Add<SingleEntryPoint::Config>(cfg->entry_point);
+  }
+  manager.Add<Renamer>();
+  data.Add<Renamer::Config>(Renamer::Target::kGlslKeywords);
   manager.Add<Unshadow>();
 
   // Attempt to convert `loop`s into for-loops. This is to try and massage the
@@ -63,26 +72,31 @@ Output Glsl::Run(const Program* in, const DataMap& inputs) {
   manager.Add<CanonicalizeEntryPointIO>();
   manager.Add<SimplifyPointers>();
 
-  // Running SingleEntryPoint before RemovePhonies prevents variables
-  // referenced only by phonies from being optimized out. Strictly
-  // speaking, that optimization isn't incorrect, but it prevents some
-  // tests (e.g., types/texture/*) from producing useful results.
-  if (cfg) {
-    manager.Add<SingleEntryPoint>();
-    data.Add<SingleEntryPoint::Config>(cfg->entry_point);
-  }
   manager.Add<RemovePhonies>();
-  manager.Add<CalculateArrayLength>();
+  manager.Add<CombineSamplers>();
+  if (auto* binding_info = inputs.Get<CombineSamplers::BindingInfo>()) {
+    data.Add<CombineSamplers::BindingInfo>(*binding_info);
+  } else {
+    data.Add<CombineSamplers::BindingInfo>(CombineSamplers::BindingMap(),
+                                           sem::BindingPoint());
+  }
+  manager.Add<BindingRemapper>();
+  if (auto* remappings = inputs.Get<BindingRemapper::Remappings>()) {
+    data.Add<BindingRemapper::Remappings>(*remappings);
+  } else {
+    BindingRemapper::BindingPoints bp;
+    BindingRemapper::AccessControls ac;
+    data.Add<BindingRemapper::Remappings>(bp, ac, /* mayCollide */ true);
+  }
   manager.Add<ExternalTextureTransform>();
   manager.Add<PromoteInitializersToConstVar>();
-  manager.Add<PadArrayElements>();
-  manager.Add<AddSpirvBlockDecoration>();
 
-  // For now, canonicalize to structs for all IO, as in HLSL.
-  // TODO(senorblanco): we could skip this by accessing global entry point
-  // variables directly.
+  manager.Add<PadArrayElements>();
+  manager.Add<AddEmptyEntryPoint>();
+  manager.Add<AddSpirvBlockAttribute>();
+
   data.Add<CanonicalizeEntryPointIO::Config>(
-      CanonicalizeEntryPointIO::ShaderStyle::kHlsl);
+      CanonicalizeEntryPointIO::ShaderStyle::kGlsl);
   auto out = manager.Run(in, data);
   if (!out.program.IsValid()) {
     return out;
@@ -90,22 +104,8 @@ Output Glsl::Run(const Program* in, const DataMap& inputs) {
 
   ProgramBuilder builder;
   CloneContext ctx(&builder, &out.program);
-  AddEmptyEntryPoint(ctx);
   ctx.Clone();
-  builder.SetTransformApplied(this);
   return Output{Program(std::move(builder))};
-}
-
-void Glsl::AddEmptyEntryPoint(CloneContext& ctx) const {
-  for (auto* func : ctx.src->AST().Functions()) {
-    if (func->IsEntryPoint()) {
-      return;
-    }
-  }
-  ctx.dst->Func(ctx.dst->Symbols().New("unused_entry_point"), {},
-                ctx.dst->ty.void_(), {},
-                {ctx.dst->Stage(ast::PipelineStage::kCompute),
-                 ctx.dst->WorkgroupSize(1)});
 }
 
 Glsl::Config::Config(const std::string& ep, bool disable_wi)

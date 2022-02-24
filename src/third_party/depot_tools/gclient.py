@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -238,7 +238,7 @@ class Hook(object):
         not gclient_eval.EvaluateCondition(self._condition, self._variables)):
       return
 
-    cmd = [arg for arg in self._action]
+    cmd = list(self._action)
 
     if cmd[0] == 'python':
       cmd[0] = 'vpython'
@@ -373,8 +373,8 @@ class DependencySettings(object):
   def target_os(self):
     if self.local_target_os is not None:
       return tuple(set(self.local_target_os).union(self.parent.target_os))
-    else:
-      return self.parent.target_os
+
+    return self.parent.target_os
 
   @property
   def target_cpu(self):
@@ -618,7 +618,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # this line to the solution.
     for dep_name, dep_info in self.custom_deps.items():
       if dep_name not in deps:
-        deps[dep_name] = {'url': dep_info, 'dep_type': 'git'}
+        # Don't add it to the solution for the values of "None" and "unmanaged"
+        # in order to force these kinds of custom_deps to act as revision
+        # overrides (via revision_overrides). Having them function as revision
+        # overrides allows them to be applied to recursive dependencies.
+        # https://crbug.com/1031185
+        if dep_info and not dep_info.endswith('@unmanaged'):
+          deps[dep_name] = {'url': dep_info, 'dep_type': 'git'}
 
     # Make child deps conditional on any parent conditions. This ensures that,
     # when flattened, recursed entries have the correct restrictions, even if
@@ -1420,7 +1426,7 @@ solutions = %(solution_list)s
     if 'all' in enforced_os:
       enforced_os = self.DEPS_OS_CHOICES.values()
     self._enforced_os = tuple(set(enforced_os))
-    self._enforced_cpu = detect_host_arch.HostArch(),
+    self._enforced_cpu = (detect_host_arch.HostArch(), )
     self._root_dir = root_dir
     self._cipd_root = None
     self.config_content = None
@@ -1830,7 +1836,7 @@ it or fix the checkout.
     if command == 'update':
       gn_args_dep = self.dependencies[0]
       if gn_args_dep._gn_args_from:
-        deps_map = dict([(dep.name, dep) for dep in gn_args_dep.dependencies])
+        deps_map = {dep.name: dep for dep in gn_args_dep.dependencies}
         gn_args_dep = deps_map.get(gn_args_dep._gn_args_from)
       if gn_args_dep and gn_args_dep.HasGNArgsFile():
         gn_args_dep.WriteGNArgsFile()
@@ -1874,11 +1880,12 @@ it or fix the checkout.
         entries = {}
         def GrabDeps(dep):
           """Recursively grab dependencies."""
-          for d in dep.dependencies:
-            d.PinToActualRevision()
-            if ShouldPrintRevision(d):
-              entries[d.name] = d.url
-            GrabDeps(d)
+          for rec_d in dep.dependencies:
+            rec_d.PinToActualRevision()
+            if ShouldPrintRevision(rec_d):
+              entries[rec_d.name] = rec_d.url
+            GrabDeps(rec_d)
+
         GrabDeps(d)
         json_output.append({
             'name': d.name,
@@ -2275,7 +2282,7 @@ class Flattener(object):
       if key not in self._vars:
         continue
       # Don't "override" existing vars if it's actually the same value.
-      elif self._vars[key][1] == value:
+      if self._vars[key][1] == value:
         continue
       # Anything else is overriding a default value from the DEPS.
       self._vars[key] = (hierarchy + ' [custom_var override]', value)

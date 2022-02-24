@@ -19,6 +19,7 @@
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_model_provider.h"
+#include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
@@ -144,15 +145,14 @@ void PageContentAnnotationsService::Annotate(const HistoryVisit& visit) {
   LOCAL_HISTOGRAM_BOOLEAN(
       "PageContentAnnotations.AnnotateVisit.AnnotationRequested", true);
 
-  if (annotated_text_cache_.Peek(*visit.text_to_annotate) !=
-      annotated_text_cache_.end()) {
+  auto it = annotated_text_cache_.Peek(*visit.text_to_annotate);
+  if (it != annotated_text_cache_.end()) {
     // We have annotations the text for this visit, so return that immediately
     // rather than re-executing the model.
     //
     // TODO(crbug.com/1291275): If the model was updated, the cached value could
     // be stale so we should invalidate the cache on model updates.
-    OnPageContentAnnotated(
-        visit, annotated_text_cache_.Get(*visit.text_to_annotate)->second);
+    OnPageContentAnnotated(visit, it->second);
     base::UmaHistogramBoolean(
         "OptimizationGuide.PageContentAnnotations.AnnotateVisitResultCached",
         true);
@@ -164,6 +164,7 @@ void PageContentAnnotationsService::Annotate(const HistoryVisit& visit) {
       false);
   if (visits_to_annotate_.size() >= features::AnnotateVisitBatchSize()) {
     if (current_visit_annotation_batch_.empty()) {
+      // Used for testing.
       LOCAL_HISTOGRAM_BOOLEAN(
           "PageContentAnnotations.AnnotateVisit.BatchAnnotationStarted", true);
       current_visit_annotation_batch_ = std::move(visits_to_annotate_);
@@ -173,9 +174,11 @@ void PageContentAnnotationsService::Annotate(const HistoryVisit& visit) {
     // The queue is full and an batch annotation is actively being done so
     // we will remove the "oldest" visit.
     visits_to_annotate_.erase(visits_to_annotate_.begin());
+    // Used for testing.
     LOCAL_HISTOGRAM_BOOLEAN(
         "PageContentAnnotations.AnnotateVisit.QueueFullVisitDropped", true);
   }
+  // Used for testing.
   LOCAL_HISTOGRAM_BOOLEAN(
       "PageContentAnnotations.AnnotateVisit.AnnotationRequestQueued", true);
 #endif
@@ -185,8 +188,11 @@ void PageContentAnnotationsService::Annotate(const HistoryVisit& visit) {
 void PageContentAnnotationsService::AnnotateVisitBatch() {
   DCHECK(!current_visit_annotation_batch_.empty());
 
-  // if (pause_execution_for_testing_)
-  // return;
+  if (switches::StopHistoryVisitBatchAnnotateForTesting()) {
+    // Code beyond this is tested in multiple places. This just ensures the
+    // calls up to this point can be more easily configured.
+    return;
+  }
 
   if (current_visit_annotation_batch_.empty()) {
     return;
@@ -241,15 +247,25 @@ absl::optional<ModelInfo> PageContentAnnotationsService::GetModelInfoForType(
 #endif
 }
 
-void PageContentAnnotationsService::NotifyWhenModelAvailable(
+void PageContentAnnotationsService::RequestAndNotifyWhenModelAvailable(
     AnnotationType type,
     base::OnceCallback<void(bool)> callback) {
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   DCHECK(model_manager_);
-  model_manager_->NotifyWhenModelAvailable(type, std::move(callback));
+  model_manager_->RequestAndNotifyWhenModelAvailable(type, std::move(callback));
 #else
   std::move(callback).Run(false);
 #endif
+}
+
+void PageContentAnnotationsService::PersistSearchMetadata(
+    const HistoryVisit& visit,
+    const SearchMetadata& search_metadata) {
+  QueryURL(visit,
+           base::BindOnce(&history::HistoryService::AddSearchMetadataForVisit,
+                          history_service_->AsWeakPtr(),
+                          search_metadata.normalized_url,
+                          search_metadata.search_terms));
 }
 
 void PageContentAnnotationsService::ExtractRelatedSearches(

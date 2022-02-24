@@ -2,7 +2,7 @@
 
 var<workgroup> w : array<i32, 4> = array<i32, 4>(0, 1, 0, 1);
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
 }
 

@@ -90,11 +90,11 @@ template<typename SparseMatrixType> void sparse_block(const SparseMatrixType& re
           
           VERIFY_IS_APPROX(m.middleCols(j,w).coeff(r,c), refMat.middleCols(j,w).coeff(r,c));
           VERIFY_IS_APPROX(m.middleRows(i,h).coeff(r,c), refMat.middleRows(i,h).coeff(r,c));
-          if(m.middleCols(j,w).coeff(r,c) != Scalar(0))
+          if(!numext::is_exactly_zero(m.middleCols(j, w).coeff(r, c)))
           {
             VERIFY_IS_APPROX(m.middleCols(j,w).coeffRef(r,c), refMat.middleCols(j,w).coeff(r,c));
           }
-          if(m.middleRows(i,h).coeff(r,c) != Scalar(0))
+          if(!numext::is_exactly_zero(m.middleRows(i, h).coeff(r, c)))
           {
             VERIFY_IS_APPROX(m.middleRows(i,h).coeff(r,c), refMat.middleRows(i,h).coeff(r,c));
           }
@@ -166,14 +166,14 @@ template<typename SparseMatrixType> void sparse_block(const SparseMatrixType& re
     {
       VERIFY(j==numext::real(m3.innerVector(j).nonZeros()));
       if(j>0)
-        VERIFY(RealScalar(j)==numext::real(m3.innerVector(j).lastCoeff()));
+        VERIFY_IS_EQUAL(RealScalar(j), numext::real(m3.innerVector(j).lastCoeff()));
     }
     m3.makeCompressed();
     for(Index j=0; j<(std::min)(outer, inner); ++j)
     {
       VERIFY(j==numext::real(m3.innerVector(j).nonZeros()));
       if(j>0)
-        VERIFY(RealScalar(j)==numext::real(m3.innerVector(j).lastCoeff()));
+        VERIFY_IS_EQUAL(RealScalar(j), numext::real(m3.innerVector(j).lastCoeff()));
     }
 
     VERIFY(m3.innerVector(j0).nonZeros() == m3.transpose().innerVector(j0).nonZeros());

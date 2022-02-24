@@ -15,7 +15,6 @@
 #include "include/core/SkRect.h"
 #include "include/core/SkScalar.h"
 #include "include/core/SkSize.h"
-#include "include/core/SkSurfaceProps.h"
 #include "src/core/SkDevice.h"
 #include "src/core/SkGlyphRunPainter.h"
 #include "src/core/SkRasterClip.h"
@@ -29,6 +28,7 @@ class SkPixmap;
 class SkRasterHandleAllocator;
 class SkRRect;
 class SkSurface;
+class SkSurfaceProps;
 struct SkPoint;
 struct SkCustomMesh;
 
@@ -107,7 +107,7 @@ protected:
 
     ///////////////////////////////////////////////////////////////////////////
 
-    void onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPaint& paint) override;
+    void onDrawGlyphRunList(SkCanvas*, const SkGlyphRunList&, const SkPaint&) override;
     bool onReadPixels(const SkPixmap&, int x, int y) override;
     bool onWritePixels(const SkPixmap&, int, int) override;
     bool onPeekPixels(SkPixmap*) override;
@@ -157,27 +157,6 @@ private:
 
 
     using INHERITED = SkBaseDevice;
-};
-
-class SkBitmapDeviceFilteredSurfaceProps {
-public:
-    SkBitmapDeviceFilteredSurfaceProps(const SkBitmap& bitmap, const SkPaint& paint,
-                                       const SkSurfaceProps& surfaceProps)
-        : fSurfaceProps((kN32_SkColorType != bitmap.colorType() || !paint.isSrcOver())
-                        ? fLazy.init(surfaceProps.flags(), kUnknown_SkPixelGeometry)
-                        : &surfaceProps)
-    { }
-
-    SkBitmapDeviceFilteredSurfaceProps(const SkBitmapDeviceFilteredSurfaceProps&) = delete;
-    SkBitmapDeviceFilteredSurfaceProps& operator=(const SkBitmapDeviceFilteredSurfaceProps&) = delete;
-    SkBitmapDeviceFilteredSurfaceProps(SkBitmapDeviceFilteredSurfaceProps&&) = delete;
-    SkBitmapDeviceFilteredSurfaceProps& operator=(SkBitmapDeviceFilteredSurfaceProps&&) = delete;
-
-    const SkSurfaceProps& operator()() const { return *fSurfaceProps; }
-
-private:
-    SkTLazy<SkSurfaceProps> fLazy;
-    SkSurfaceProps const * const fSurfaceProps;
 };
 
 #endif // SkBitmapDevice_DEFINED

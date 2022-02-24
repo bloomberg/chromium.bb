@@ -309,9 +309,14 @@ export class MainImpl {
         'timelineV8RuntimeCallStats', 'Timeline: V8 Runtime Call Stats on Timeline', true);
     Root.Runtime.experiments.register('timelineWebGL', 'Timeline: WebGL-based flamechart');
     Root.Runtime.experiments.register('timelineReplayEvent', 'Timeline: Replay input events', true);
+
+    // Debugging
     Root.Runtime.experiments.register(
         'wasmDWARFDebugging', 'WebAssembly Debugging: Enable DWARF support', undefined,
         'https://developer.chrome.com/blog/wasm-debugging-2020/');
+    Root.Runtime.experiments.register(
+        'evaluateExpressionsWithSourceMaps', 'Console: Resolve variable names in expressions using source maps',
+        undefined);
 
     // Dual-screen
     Root.Runtime.experiments.register(
@@ -365,13 +370,25 @@ export class MainImpl {
         'https://developer.chrome.com/blog/new-in-devtools-96/#length');
 
     // Display precise changes in the Changes tab.
-    Root.Runtime.experiments.register('preciseChanges', 'Display more precise changes in the Changes tab');
+    Root.Runtime.experiments.register(
+        Root.Runtime.ExperimentName.PRECISE_CHANGES, 'Display more precise changes in the Changes tab');
+
+    // Integrate CSS changes in the Styles pane.
+    Root.Runtime.experiments.register(
+        Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES, 'Sync CSS changes in the Styles pane');
+
+    // Local overrides for response headers
+    Root.Runtime.experiments.register(
+        Root.Runtime.ExperimentName.HEADER_OVERRIDES, 'Local overrides for response headers');
+
+    // New Lighthouse panel with timespan and snapshot mode
+    Root.Runtime.experiments.register('lighthousePanelFR', 'Use Lighthouse panel with timespan and snapshot modes');
 
     Root.Runtime.experiments.enableExperimentsByDefault([
       'sourceOrderViewer',
       'hideIssuesFeature',
       'cssTypeComponentLength',
-      'preciseChanges',
+      Root.Runtime.ExperimentName.PRECISE_CHANGES,
       'reportingApiDebugging',
       Root.Runtime.ExperimentName.SYNC_SETTINGS,
     ]);

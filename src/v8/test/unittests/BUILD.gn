@@ -16,6 +16,7 @@ if (is_fuchsia) {
 
   fuchsia_package_runner("v8_unittests_fuchsia") {
     testonly = true
+    use_cfv2 = false
     package = ":v8_unittests_pkg"
     package_name_override = "v8_unittests"
   }
@@ -162,10 +163,9 @@ v8_source_set("cppgc_unittests_sources") {
 v8_executable("unittests") {
   testonly = true
 
-  # TODO(machenbach): Translate from gyp.
-  #['OS=="aix"', {
-  #  'ldflags': [ '-Wl,-bbigtoc' ],
-  #}],
+  if (current_os == "aix") {
+    ldflags = [ "-Wl,-bbigtoc" ]
+  }
 
   deps = [
     ":unittests_sources",

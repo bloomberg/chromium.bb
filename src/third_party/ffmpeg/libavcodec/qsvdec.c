@@ -570,7 +570,7 @@ static int qsv_decode(AVCodecContext *avctx, QSVContext *q,
             return AVERROR_BUG;
         }
 
-        out_frame->queued = 1;
+        out_frame->queued += 1;
         av_fifo_generic_write(q->async_fifo, &out_frame, sizeof(out_frame), NULL);
         av_fifo_generic_write(q->async_fifo, &sync,      sizeof(sync),      NULL);
     } else {
@@ -583,7 +583,7 @@ static int qsv_decode(AVCodecContext *avctx, QSVContext *q,
 
         av_fifo_generic_read(q->async_fifo, &out_frame, sizeof(out_frame), NULL);
         av_fifo_generic_read(q->async_fifo, &sync,      sizeof(sync),      NULL);
-        out_frame->queued = 0;
+        out_frame->queued -= 1;
 
         if (avctx->pix_fmt != AV_PIX_FMT_QSV) {
             do {
@@ -753,8 +753,6 @@ static void qsv_clear_buffers(QSVDecContext *s)
 static av_cold int qsv_decode_close(AVCodecContext *avctx)
 {
     QSVDecContext *s = avctx->priv_data;
-
-    av_freep(&s->qsv.load_plugins);
 
     qsv_decode_close_qsvcontext(&s->qsv);
 

@@ -793,6 +793,19 @@ bool CheckTimelineSemaphoreSupportAndInitState(VkRenderFramework *renderFramewor
     if (!timeline_semaphore_features.timelineSemaphore) {
         return false;
     }
+
+    PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR =
+        (PFN_vkGetPhysicalDeviceProperties2KHR)vk::GetInstanceProcAddr(renderFramework->instance(),
+                                                                       "vkGetPhysicalDeviceProperties2KHR");
+    VkPhysicalDeviceTimelineSemaphoreProperties timeline_semaphore_props =
+        LvlInitStruct<VkPhysicalDeviceTimelineSemaphoreProperties>();
+    VkPhysicalDeviceProperties2 pd_props2 = LvlInitStruct<VkPhysicalDeviceProperties2>(&timeline_semaphore_props);
+    vkGetPhysicalDeviceProperties2KHR(renderFramework->gpu(), &pd_props2);
+    if (timeline_semaphore_props.maxTimelineSemaphoreValueDifference == 0) {
+        // If using MockICD and devsim the value might be zero'ed and cause false errors
+        return false;
+    }
+
     renderFramework->InitState(nullptr, &features2);
     return true;
 }
@@ -816,8 +829,8 @@ void VkLayerTest::VKTriangleTest(BsoFailSelect failCase) {
 
     ASSERT_NO_FATAL_FAILURE(InitViewport());
 
-    VkShaderObj vs(m_device, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, this);
-    VkShaderObj ps(m_device, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT, this);
+    VkShaderObj vs(this, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT);
+    VkShaderObj ps(this, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT);
 
     VkPipelineObj pipelineobj(m_device);
     pipelineobj.AddDefaultColorAttachment();
@@ -1149,6 +1162,9 @@ uint32_t VkLayerTest::SetTargetApiVersion(uint32_t target_api_version) {
     if (target_api_version == 0) target_api_version = VK_API_VERSION_1_0;
     if (target_api_version <= m_instance_api_version) {
         m_target_api_version = target_api_version;
+        app_info_.apiVersion = m_target_api_version;
+    } else {
+        m_target_api_version = m_instance_api_version;
         app_info_.apiVersion = m_target_api_version;
     }
     return m_target_api_version;
@@ -1673,8 +1689,8 @@ void CreatePipelineHelper::InitDynamicStateInfo() {
 }
 
 void CreatePipelineHelper::InitShaderInfo() {
-    vs_.reset(new VkShaderObj(layer_test_.DeviceObj(), bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT, &layer_test_));
-    fs_.reset(new VkShaderObj(layer_test_.DeviceObj(), bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT, &layer_test_));
+    vs_.reset(new VkShaderObj(&layer_test_, bindStateVertShaderText, VK_SHADER_STAGE_VERTEX_BIT));
+    fs_.reset(new VkShaderObj(&layer_test_, bindStateFragShaderText, VK_SHADER_STAGE_FRAGMENT_BIT));
     // We shouldn't need a fragment shader but add it to be able to run on more devices
     shader_stages_ = {vs_->GetStageCreateInfo(), fs_->GetStageCreateInfo()};
 }
@@ -1829,7 +1845,7 @@ void CreateComputePipelineHelper::InitPipelineLayoutInfo() {
 }
 
 void CreateComputePipelineHelper::InitShaderInfo() {
-    cs_.reset(new VkShaderObj(layer_test_.DeviceObj(), bindStateMinimalShaderText, VK_SHADER_STAGE_COMPUTE_BIT, &layer_test_));
+    cs_.reset(new VkShaderObj(&layer_test_, bindStateMinimalShaderText, VK_SHADER_STAGE_COMPUTE_BIT));
     // We shouldn't need a fragment shader but add it to be able to run on more devices
 }
 
@@ -2051,12 +2067,9 @@ void CreateNVRayTracingPipelineHelper::InitShaderInfoKHR() {
         }
     )glsl";
 
-    rgs_.reset(new VkShaderObj(layer_test_.DeviceObj(), rayGenShaderText, VK_SHADER_STAGE_RAYGEN_BIT_KHR, &layer_test_, "main",
-                               false, nullptr, SPV_ENV_VULKAN_1_2));
-    chs_.reset(new VkShaderObj(layer_test_.DeviceObj(), closestHitShaderText, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, &layer_test_,
-                               "main", false, nullptr, SPV_ENV_VULKAN_1_2));
-    mis_.reset(new VkShaderObj(layer_test_.DeviceObj(), missShaderText, VK_SHADER_STAGE_MISS_BIT_KHR, &layer_test_, "main", false, nullptr,
-                               SPV_ENV_VULKAN_1_2));
+    rgs_.reset(new VkShaderObj(&layer_test_, rayGenShaderText, VK_SHADER_STAGE_RAYGEN_BIT_KHR, SPV_ENV_VULKAN_1_2));
+    chs_.reset(new VkShaderObj(&layer_test_, closestHitShaderText, VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR, SPV_ENV_VULKAN_1_2));
+    mis_.reset(new VkShaderObj(&layer_test_, missShaderText, VK_SHADER_STAGE_MISS_BIT_KHR, SPV_ENV_VULKAN_1_2));
 
     shader_stages_ = {rgs_->GetStageCreateInfo(), chs_->GetStageCreateInfo(), mis_->GetStageCreateInfo()};
 }
@@ -2106,9 +2119,9 @@ void CreateNVRayTracingPipelineHelper::InitShaderInfo() {  // DONE
         }
     )glsl";
 
-    rgs_.reset(new VkShaderObj(layer_test_.DeviceObj(), rayGenShaderText, VK_SHADER_STAGE_RAYGEN_BIT_NV, &layer_test_));
-    chs_.reset(new VkShaderObj(layer_test_.DeviceObj(), closestHitShaderText, VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV, &layer_test_));
-    mis_.reset(new VkShaderObj(layer_test_.DeviceObj(), missShaderText, VK_SHADER_STAGE_MISS_BIT_NV, &layer_test_));
+    rgs_.reset(new VkShaderObj(&layer_test_, rayGenShaderText, VK_SHADER_STAGE_RAYGEN_BIT_NV));
+    chs_.reset(new VkShaderObj(&layer_test_, closestHitShaderText, VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV));
+    mis_.reset(new VkShaderObj(&layer_test_, missShaderText, VK_SHADER_STAGE_MISS_BIT_NV));
 
     shader_stages_ = {rgs_->GetStageCreateInfo(), chs_->GetStageCreateInfo(), mis_->GetStageCreateInfo()};
 }
@@ -2392,9 +2405,7 @@ bool InitFrameworkForRayTracingTest(VkRenderFramework *renderFramework, bool isK
                                     bool need_push_descriptors, bool deferred_state_init, VkPhysicalDeviceFeatures2KHR *features2) {
     const std::array<const char *, 1> required_instance_extensions = {{VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}};
     for (const char *required_instance_extension : required_instance_extensions) {
-        if (renderFramework->InstanceExtensionSupported(required_instance_extension)) {
-            instance_extension_names.push_back(required_instance_extension);
-        } else {
+        if (!renderFramework->AddRequiredInstanceExtensions(required_instance_extension)) {
             printf("%s %s instance extension not supported, skipping test\n", kSkipPrefix, required_instance_extension);
             return false;
         }
@@ -2440,13 +2451,12 @@ bool InitFrameworkForRayTracingTest(VkRenderFramework *renderFramework, bool isK
     }
 
     for (const char *required_device_extension : required_device_extensions) {
-        if (renderFramework->DeviceExtensionSupported(renderFramework->gpu(), nullptr, required_device_extension)) {
-            device_extension_names.push_back(required_device_extension);
-        } else {
+        if (!renderFramework->AddRequiredDeviceExtensions(required_device_extension)) {
             printf("%s %s device extension not supported, skipping test\n", kSkipPrefix, required_device_extension);
             return false;
         }
     }
+
     if (features2) {
         // extension enabled as dependency of RT extension
         auto vkGetPhysicalDeviceFeatures2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2KHR>(
@@ -3207,12 +3217,12 @@ void VkLayerTest::OOBRayTracingShadersTestBody(bool gpu_assisted) {
             m_errorMonitor->SetDesiredFailureMsg(kErrorBit, test.expected_error);
         }
 
-        VkShaderObj rgen_shader(m_device, test.rgen_shader_source.c_str(), VK_SHADER_STAGE_RAYGEN_BIT_NV, this, "main");
-        VkShaderObj ahit_shader(m_device, test.ahit_shader_source.c_str(), VK_SHADER_STAGE_ANY_HIT_BIT_NV, this, "main");
-        VkShaderObj chit_shader(m_device, test.chit_shader_source.c_str(), VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV, this, "main");
-        VkShaderObj miss_shader(m_device, test.miss_shader_source.c_str(), VK_SHADER_STAGE_MISS_BIT_NV, this, "main");
-        VkShaderObj intr_shader(m_device, test.intr_shader_source.c_str(), VK_SHADER_STAGE_INTERSECTION_BIT_NV, this, "main");
-        VkShaderObj call_shader(m_device, test.call_shader_source.c_str(), VK_SHADER_STAGE_CALLABLE_BIT_NV, this, "main");
+        VkShaderObj rgen_shader(this, test.rgen_shader_source, VK_SHADER_STAGE_RAYGEN_BIT_NV);
+        VkShaderObj ahit_shader(this, test.ahit_shader_source, VK_SHADER_STAGE_ANY_HIT_BIT_NV);
+        VkShaderObj chit_shader(this, test.chit_shader_source, VK_SHADER_STAGE_CLOSEST_HIT_BIT_NV);
+        VkShaderObj miss_shader(this, test.miss_shader_source, VK_SHADER_STAGE_MISS_BIT_NV);
+        VkShaderObj intr_shader(this, test.intr_shader_source, VK_SHADER_STAGE_INTERSECTION_BIT_NV);
+        VkShaderObj call_shader(this, test.call_shader_source, VK_SHADER_STAGE_CALLABLE_BIT_NV);
 
         VkPipelineShaderStageCreateInfo stage_create_infos[6] = {};
         stage_create_infos[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

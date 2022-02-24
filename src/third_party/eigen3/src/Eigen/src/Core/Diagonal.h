@@ -20,8 +20,8 @@ namespace Eigen {
   *
   * \brief Expression of a diagonal/subdiagonal/superdiagonal in a matrix
   *
-  * \param MatrixType the type of the object in which we are taking a sub/main/super diagonal
-  * \param DiagIndex the index of the sub/super diagonal. The default is 0 and it means the main diagonal.
+  * \tparam MatrixType the type of the object in which we are taking a sub/main/super diagonal
+  * \tparam DiagIndex the index of the sub/super diagonal. The default is 0 and it means the main diagonal.
   *              A positive value means a superdiagonal, a negative value means a subdiagonal.
   *              You can also use DynamicIndex so the index can be set at runtime.
   *
@@ -40,7 +40,7 @@ struct traits<Diagonal<MatrixType,DiagIndex> >
  : traits<MatrixType>
 {
   typedef typename ref_selector<MatrixType>::type MatrixTypeNested;
-  typedef typename remove_reference<MatrixTypeNested>::type _MatrixTypeNested;
+  typedef typename remove_reference<MatrixTypeNested>::type MatrixTypeNested_;
   typedef typename MatrixType::StorageKind StorageKind;
   enum {
     RowsAtCompileTime = (int(DiagIndex) == DynamicIndex || int(MatrixType::SizeAtCompileTime) == Dynamic) ? Dynamic
@@ -54,7 +54,7 @@ struct traits<Diagonal<MatrixType,DiagIndex> >
                                            MatrixType::MaxColsAtCompileTime - plain_enum_max( DiagIndex, 0))),
     MaxColsAtCompileTime = 1,
     MaskLvalueBit = is_lvalue<MatrixType>::value ? LvalueBit : 0,
-    Flags = (unsigned int)_MatrixTypeNested::Flags & (RowMajorBit | MaskLvalueBit | DirectAccessBit) & ~RowMajorBit, // FIXME DirectAccessBit should not be handled by expressions
+    Flags = (unsigned int)MatrixTypeNested_::Flags & (RowMajorBit | MaskLvalueBit | DirectAccessBit) & ~RowMajorBit, // FIXME DirectAccessBit should not be handled by expressions
     MatrixTypeOuterStride = outer_stride_at_compile_time<MatrixType>::ret,
     InnerStrideAtCompileTime = MatrixTypeOuterStride == Dynamic ? Dynamic : MatrixTypeOuterStride+1,
     OuterStrideAtCompileTime = 0

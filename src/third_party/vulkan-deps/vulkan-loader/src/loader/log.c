@@ -1,8 +1,8 @@
 /*
  *
- * Copyright (c) 2014-2021 The Khronos Group Inc.
- * Copyright (c) 2014-2021 Valve Corporation
- * Copyright (c) 2014-2021 LunarG, Inc.
+ * Copyright (c) 2014-2022 The Khronos Group Inc.
+ * Copyright (c) 2014-2022 Valve Corporation
+ * Copyright (c) 2014-2022 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,8 +105,7 @@ void loader_log(const struct loader_instance *inst, VkFlags msg_type, int32_t ms
         VkDebugUtilsMessengerCallbackDataEXT callback_data;
         VkDebugUtilsObjectNameInfoEXT object_name;
 
-        if ((msg_type & VULKAN_LOADER_INFO_BIT) != 0 || (msg_type & VULKAN_LOADER_LAYER_BIT) != 0 ||
-            (msg_type & VULKAN_LOADER_DRIVER_BIT) != 0) {
+        if ((msg_type & VULKAN_LOADER_INFO_BIT) != 0) {
             severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
         } else if ((msg_type & VULKAN_LOADER_WARN_BIT) != 0) {
             severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
@@ -114,10 +113,17 @@ void loader_log(const struct loader_instance *inst, VkFlags msg_type, int32_t ms
             severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
         } else if ((msg_type & VULKAN_LOADER_DEBUG_BIT) != 0) {
             severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
+        } else if ((msg_type & VULKAN_LOADER_LAYER_BIT) != 0 || (msg_type & VULKAN_LOADER_DRIVER_BIT) != 0) {
+            // Just driver or just layer bit should be treated as an info message in debug utils.
+            severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
         }
 
         if ((msg_type & VULKAN_LOADER_PERF_BIT) != 0) {
             type = VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        } else if ((msg_type & VULKAN_LOADER_VALIDATION_BIT) != 0) {
+            // For loader logging, if it's a validation message, we still want to also keep the general flag as well
+            // so messages of type validation can still be triggered for general message callbacks.
+            type = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
         } else {
             type = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT;
         }

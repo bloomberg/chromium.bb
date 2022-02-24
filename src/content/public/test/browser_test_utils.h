@@ -23,10 +23,12 @@
 #include "base/scoped_observation.h"
 #include "base/template_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/types/strong_alias.h"
 #include "build/build_config.h"
 #include "cc/test/pixel_test_utils.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/commit_deferring_condition.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
@@ -39,6 +41,7 @@
 #include "content/public/common/page_type.h"
 #include "content/public/test/fake_frame_widget.h"
 #include "ipc/message_filter.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/base/load_flags.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_partition_key_collection.h"
@@ -878,13 +881,19 @@ enum EvalJsOptions {
 
 // Walks the frame tree of the specified `page`, also descending into any inner
 // frame-trees (e.g. GuestView), and returns the sole frame that matches the
-// specified predicate function. This function will DCHECK if no frames match
-// the specified predicate, or if more than one frame matches.
+// specified predicate function. Returns nullptr if no frame matches.
+// EXPECTs that at most one frame matches.
+RenderFrameHost* FrameMatchingPredicateOrNullptr(
+    Page& page,
+    base::RepeatingCallback<bool(RenderFrameHost*)> predicate);
+
+// Same like FrameMatchingPredicateOrNullptr(), but EXPECTs that exactly one
+// frame matches.
 RenderFrameHost* FrameMatchingPredicate(
     Page& page,
     base::RepeatingCallback<bool(RenderFrameHost*)> predicate);
 
-// Predicates for use with FrameMatchingPredicate.
+// Predicates for use with FrameMatchingPredicate[OrNullPtr]().
 bool FrameMatchesName(const std::string& name, RenderFrameHost* frame);
 bool FrameIsChildOfMainFrame(RenderFrameHost* frame);
 bool FrameHasSourceUrl(const GURL& url, RenderFrameHost* frame);
@@ -1572,20 +1581,23 @@ class FrameDeletedObserver {
 // navigation it will ignore all subsequent navigations. Explicitly create
 // multiple instances of this class if you want to pause multiple navigations.
 //
-// Note2: For a BFCache restore navigation, the navigation will not run
-// NavigationThrottles. The manager in this case uses a CommitDeferringCondition
-// for pausing the navigation at the equivalent of WillProcessResponse. However,
-// in this navigation you cannot use WaitForRequestStart; if you want to yield
-// before WillProcessResponse, use WaitForFirstYieldAfterDidStartNavigation.
-//
-// Note3: For a prerender activation, this class cannot pause the navigation as
-// the prerender activation doesn't run NavigationThrottles and runs
+// Note2: For a prerender activation, this class cannot pause the navigation as
+// the activation doesn't run NavigationThrottles and runs
 // CommitDeferringConditions before StartNavigation() that WebContentsObserver
-// cannot observe.
-// TODO(nhiroki): Provide a way to pause the prerender activation. We could do
-// the similar thing as MockCommitDeferringConditionInstaller does like adding a
-// closure that generates a deferring condition to pause the navigation in
-// CommitDeferringConditionRunner.
+// cannot observe. Use TestActivationManager in these cases instead.
+//
+// Note3: For a BFCache restore navigation, the navigation will not run
+// NavigationThrottles. The manager in this case uses a
+// CommitDeferringCondition for pausing the navigation at the equivalent of
+// WillProcessResponse. However, in this navigation you cannot use
+// WaitForRequestStart; if you want to yield before WillProcessResponse, use
+// WaitForFirstYieldAfterDidStartNavigation.
+// TODO(bokan): Hopefully BFCache will soon work like prerender activation
+// does. Prefer TestActivationManager for BFCache activations as well.
+// https://crbug.com/1226442.
+//
+// TODO(bokan): Remove uses of this class for page activations and add a DCHECK
+// that the navigation isn't page activating.
 class TestNavigationManager : public WebContentsObserver {
  public:
   // Monitors any frame in WebContents.
@@ -1711,6 +1723,120 @@ class TestNavigationManager : public WebContentsObserver {
   base::OnceClosure commit_deferring_condition_resume_closure_;
 
   base::WeakPtrFactory<TestNavigationManager> weak_factory_{this};
+};
+
+// Like TestNavigationManager but for page activating navigations like
+// Back-Forward Cache restores and prerendering activations. This can be used
+// to pause and resume the navigation at certain points during an activation.
+// Note that only a single navigation will be tracked by this manager. When
+// this object is live, a matching navigation will be automatically paused at
+// kBeforeChecks and resumed automatically when a Wait method is called.
+class TestActivationManager : public WebContentsObserver {
+ public:
+  TestActivationManager(WebContents* web_contents, const GURL& url);
+  TestActivationManager(const TestActivationManager&) = delete;
+  TestActivationManager& operator=(const TestActivationManager&) = delete;
+
+  ~TestActivationManager() override;
+
+  // Waits until the navigation is about to start running
+  // CommitDeferringConditions. i.e. before any (non-test)
+  // CommitDeferringConditions have run.
+  [[nodiscard]] bool WaitForBeforeChecks();
+
+  // Waits until the navigation has finished running CommitDeferringConditions.
+  // i.e. all (non-test) CommitDeferringConditions have completed.  Resuming
+  // from here will post a task that will synchronously commit the navigation.
+  [[nodiscard]] bool WaitForAfterChecks();
+
+  // Waits until the navigation has completed or been deleted.
+  void WaitForNavigationFinished();
+
+  // If the manager paused the navigation, this method can be used to proceed
+  // to the next state.
+  void ResumeActivation();
+
+  // Returns the navigation handle being observed by this
+  // TestActivationManager. This will be null until a navigation matching the
+  // given URL starts running its CommitDeferringConditions. It'll also be
+  // cleared when the navigation finishes.
+  NavigationHandle* GetNavigationHandle();
+
+  // Whether the navigation successfully committed.
+  bool was_committed() const { return was_committed_; }
+
+  // Whether the navigation successfully committed and was not an error page.
+  bool was_successful() const { return was_successful_; }
+
+  // Whether the navigation finished successfully as a page activation. This
+  // can be false in the case that the activation failed and the navigation
+  // continues as a regular, non-activating, navigation.
+  bool was_activated() const { return was_activated_; }
+
+  // Returns true if the navigation is paused by the TestActivationManager.
+  bool is_paused() const { return !resume_callback_.is_null(); }
+
+ private:
+  enum class ActivationState {
+    kInitial,
+    kBeforeChecks,
+    kAfterChecks,
+    kFinished
+  };
+
+  CommitDeferringCondition::Result FirstConditionCallback(
+      CommitDeferringCondition& condition,
+      base::OnceClosure resume_callback);
+  CommitDeferringCondition::Result LastConditionCallback(
+      CommitDeferringCondition& condition,
+      base::OnceClosure resume_callback);
+
+  // WebContentsObserver:
+  void DidFinishNavigation(NavigationHandle* handle) override;
+
+  bool WaitForDesiredState();
+  void StopWaitingIfNeeded();
+
+  // The URL this manager is watching for. Navigations to a URL that do not
+  // match this will be ignored.
+  const GURL url_;
+
+  // Set when a matching navigation reaches kBeforeChecks and cleared when the
+  // navigation is deleted/finished.
+  NavigationRequest* request_ = nullptr;
+
+  // If the navigation is paused in the first or last CommitDeferringCondition
+  // (i.e. the one installed by this manager for testing), this will be the
+  // closure used to resume the navigation. Note: invoking resume_callback_
+  // will start running further conditions, it doesn't just quit a RunLoop like
+  // `quit_closure_`.
+  base::OnceClosure resume_callback_;
+
+  // When the manager is blocked waiting on a state (e.g.
+  // WaitForNavigationFinished), this closure will quit the waiting runloop so
+  // that the manager client can proceed.
+  base::OnceClosure quit_closure_;
+
+  // These are RAII helpers that will install a testing
+  // CommitDeferringCondition before (first_condition_inserter_) and after
+  // (last_condition_inserter_) all other CommitDeferringConditions that
+  // TestActivationManager will use to pause the navigation.
+  class ConditionInserter;
+  std::unique_ptr<ConditionInserter> first_condition_inserter_;
+  std::unique_ptr<ConditionInserter> last_condition_inserter_;
+
+  ActivationState current_state_ = ActivationState::kInitial;
+  ActivationState desired_state_ = ActivationState::kBeforeChecks;
+
+  // Prevents the TestActivationManager from attaching to more than one
+  // matching activation.
+  bool is_tracking_activation_ = false;
+
+  bool was_committed_ = false;
+  bool was_successful_ = false;
+  bool was_activated_ = false;
+
+  base::WeakPtrFactory<TestActivationManager> weak_factory_{this};
 };
 
 class NavigationHandleCommitObserver : public content::WebContentsObserver {
@@ -1856,7 +1982,9 @@ class ContextMenuInterceptor
 
  private:
   raw_ptr<content::RenderFrameHostImpl> render_frame_host_impl_;
-  raw_ptr<blink::mojom::LocalFrameHost> impl_;
+  mojo::test::ScopedSwapImplForTesting<
+      mojo::AssociatedReceiver<blink::mojom::LocalFrameHost>>
+      swapped_impl_;
   std::unique_ptr<base::RunLoop> run_loop_;
   base::OnceClosure quit_closure_;
   blink::UntrustworthyContextMenuParams last_params_;
@@ -1884,7 +2012,9 @@ class UpdateUserActivationStateInterceptor
 
  private:
   raw_ptr<content::RenderFrameHostImpl> render_frame_host_impl_;
-  raw_ptr<blink::mojom::LocalFrameHost> impl_;
+  mojo::test::ScopedSwapImplForTesting<
+      mojo::AssociatedReceiver<blink::mojom::LocalFrameHost>>
+      swapped_impl_;
   base::OnceClosure quit_handler_;
   bool update_user_activation_state_ = false;
 };
@@ -1973,7 +2103,9 @@ class SynchronizeVisualPropertiesInterceptor
   bool last_pinch_gesture_active_ = false;
   std::unique_ptr<base::RunLoop> pinch_end_run_loop_;
 
-  raw_ptr<blink::mojom::RemoteFrameHost> impl_;
+  mojo::test::ScopedSwapImplForTesting<
+      mojo::AssociatedReceiver<blink::mojom::RemoteFrameHost>>
+      swapped_impl_;
 
   base::WeakPtrFactory<SynchronizeVisualPropertiesInterceptor> weak_factory_{
       this};

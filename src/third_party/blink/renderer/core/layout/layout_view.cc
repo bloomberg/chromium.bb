@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -129,6 +130,7 @@ void LayoutView::Trace(Visitor* visitor) const {
   visitor->Trace(frame_view_);
   visitor->Trace(fragmentation_context_);
   visitor->Trace(layout_quote_head_);
+  visitor->Trace(svg_text_descendants_);
   visitor->Trace(hit_test_cache_);
   LayoutBlockFlow::Trace(visitor);
 }
@@ -461,6 +463,12 @@ void LayoutView::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
 LogicalSize LayoutView::InitialContainingBlockSize() const {
   return LogicalSize(LayoutUnit(ViewLogicalWidthForBoxSizing()),
                      LayoutUnit(ViewLogicalHeightForBoxSizing()));
+}
+
+TrackedDescendantsMap& LayoutView::SvgTextDescendantsMap() {
+  if (!svg_text_descendants_)
+    svg_text_descendants_ = MakeGarbageCollected<TrackedDescendantsMap>();
+  return *svg_text_descendants_;
 }
 
 void LayoutView::Paint(const PaintInfo& paint_info) const {
@@ -847,6 +855,24 @@ gfx::SizeF LayoutView::ViewportSizeForViewportUnits() const {
                         : gfx::SizeF();
 }
 
+gfx::SizeF LayoutView::SmallViewportSizeForViewportUnits() const {
+  NOT_DESTROYED();
+  return GetFrameView() ? GetFrameView()->SmallViewportSizeForViewportUnits()
+                        : gfx::SizeF();
+}
+
+gfx::SizeF LayoutView::LargeViewportSizeForViewportUnits() const {
+  NOT_DESTROYED();
+  return GetFrameView() ? GetFrameView()->LargeViewportSizeForViewportUnits()
+                        : gfx::SizeF();
+}
+
+gfx::SizeF LayoutView::DynamicViewportSizeForViewportUnits() const {
+  NOT_DESTROYED();
+  return GetFrameView() ? GetFrameView()->DynamicViewportSizeForViewportUnits()
+                        : gfx::SizeF();
+}
+
 void LayoutView::WillBeDestroyed() {
   NOT_DESTROYED();
   // TODO(wangxianzhu): This is a workaround of crbug.com/570706.
@@ -863,6 +889,23 @@ void LayoutView::UpdateFromStyle() {
   // LayoutView of the main frame is responsible for painting base background.
   if (GetFrameView()->ShouldPaintBaseBackgroundColor())
     SetHasBoxDecorationBackground(true);
+}
+
+void LayoutView::StyleDidChange(StyleDifference diff,
+                                const ComputedStyle* old_style) {
+  NOT_DESTROYED();
+  LayoutBlockFlow::StyleDidChange(diff, old_style);
+
+  LocalFrame& frame = GetFrameView()->GetFrame();
+  if (frame.IsMainFrame()) {
+    // |VisualViewport::UsedColorScheme| depends on the LayoutView's used
+    // color scheme.
+    if (!old_style ||
+        old_style->UsedColorScheme() !=
+            frame.GetPage()->GetVisualViewport().UsedColorScheme()) {
+      frame.GetPage()->GetVisualViewport().UsedColorSchemeChanged();
+    }
+  }
 }
 
 RecalcLayoutOverflowResult LayoutView::RecalcLayoutOverflow() {

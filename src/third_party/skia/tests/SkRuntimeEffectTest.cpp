@@ -333,7 +333,7 @@ public:
     }
 
     void test(std::array<GrColor, 4> expected, PreTestFn preTestCallback = nullptr) {
-        auto shader = fBuilder->makeShader(/*localMatrix=*/nullptr, /*isOpaque=*/false);
+        auto shader = fBuilder->makeShader();
         if (!shader) {
             REPORT_FAILURE(fReporter, "shader", SkString("Effect didn't produce a shader"));
             return;
@@ -350,7 +350,7 @@ public:
     }
 
     std::string trace(const SkIPoint& traceCoord) {
-        sk_sp<SkShader> shader = fBuilder->makeShader(/*localMatrix=*/nullptr, /*isOpaque=*/false);
+        sk_sp<SkShader> shader = fBuilder->makeShader();
         if (!shader) {
             REPORT_FAILURE(fReporter, "shader", SkString("Effect didn't produce a shader"));
             return {};
@@ -844,10 +844,10 @@ DEF_TEST(SkRuntimeShaderBuilderReuse, r) {
     // Test passes if this sequence doesn't assert.  skbug.com/10667
     SkRuntimeShaderBuilder b(std::move(effect));
     b.uniform("x") = 0.0f;
-    auto shader_0 = b.makeShader(/*localMatrix=*/nullptr, /*isOpaque=*/false);
+    auto shader_0 = b.makeShader();
 
     b.uniform("x") = 1.0f;
-    auto shader_1 = b.makeShader(/*localMatrix=*/nullptr, /*isOpaque=*/true);
+    auto shader_1 = b.makeShader();
 }
 
 DEF_TEST(SkRuntimeBlendBuilderReuse, r) {
@@ -892,7 +892,7 @@ DEF_TEST(SkRuntimeShaderBuilderSetUniforms, r) {
     REPORTER_ASSERT(r, !b.uniform("offset").set<float>(origin, 3));
 #endif
 
-    auto shader = b.makeShader(/*localMatrix=*/nullptr, /*isOpaque=*/false);
+    auto shader = b.makeShader();
 }
 
 DEF_TEST(SkRuntimeEffectThreaded, r) {
@@ -945,9 +945,9 @@ static void test_RuntimeEffectStructNameReuse(skiatest::Reporter* r, GrRecording
     ));
     REPORTER_ASSERT(r, childEffect, "%s\n", err.c_str());
     sk_sp<SkShader> nullChild = nullptr;
-    sk_sp<SkShader> child = childEffect->makeShader(/*uniforms=*/nullptr, &nullChild,
-                                                    /*childCount=*/1, /*localMatrix=*/nullptr,
-                                                    /*isOpaque=*/false);
+    sk_sp<SkShader> child = childEffect->makeShader(/*uniforms=*/nullptr,
+                                                    &nullChild,
+                                                    /*childCount=*/1);
 
     SkImageInfo info = SkImageInfo::Make(2, 2, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
     sk_sp<SkSurface> surface = rContext
@@ -1046,6 +1046,91 @@ DEF_TEST(SkRuntimeShaderSampleCoords, r) {
     // Use of coords passed to helper function
     test("half4 helper(float2 xy) { return child.eval(xy); }"
          "half4 main(float2 xy) { return helper(xy); }", true, true);
+}
+
+DEF_TEST(SkRuntimeShaderIsOpaque, r) {
+    // This test verifies that we detect certain simple patterns in runtime shaders, and can deduce
+    // (via code in SkSL::Analysis::ReturnsOpaqueColor) that the resulting shader is always opaque.
+    // That logic is conservative, and the tests below reflect this.
+
+    auto test = [&](const char* body, bool expectOpaque) {
+        auto [effect, err] = SkRuntimeEffect::MakeForShader(SkStringPrintf(R"(
+            uniform shader cOnes;
+            uniform shader cZeros;
+            uniform float4 uOnes;
+            uniform float4 uZeros;
+            half4 main(float2 xy) {
+                %s
+            })", body));
+        REPORTER_ASSERT(r, effect);
+
+        auto cOnes = SkShaders::Color(SK_ColorWHITE);
+        auto cZeros = SkShaders::Color(SK_ColorTRANSPARENT);
+        SkASSERT(cOnes->isOpaque());
+        SkASSERT(!cZeros->isOpaque());
+
+        SkRuntimeShaderBuilder builder(effect);
+        builder.child("cOnes") = std::move(cOnes);
+        builder.child("cZeros") = std::move(cZeros);
+        builder.uniform("uOnes") = SkColors::kWhite;
+        builder.uniform("uZeros") = SkColors::kTransparent;
+
+        auto shader = builder.makeShader();
+        REPORTER_ASSERT(r, shader->isOpaque() == expectOpaque);
+    };
+
+    // Cases where our optimization is valid, and works:
+
+    // Returning opaque literals
+    test("return half4(1);",          true);
+    test("return half4(0, 1, 0, 1);", true);
+    test("return half4(0, 0, 0, 1);", true);
+
+    // Simple expressions involving uniforms
+    test("return uZeros.rgb1;",          true);
+    test("return uZeros.bgra.rgb1;",     true);
+    test("return half4(uZeros.rgb, 1);", true);
+
+    // Simple expressions involving child.eval
+    test("return cZeros.eval(xy).rgb1;",          true);
+    test("return cZeros.eval(xy).bgra.rgb1;",     true);
+    test("return half4(cZeros.eval(xy).rgb, 1);", true);
+
+    // Multiple returns
+    test("if (xy.x < 100) { return uZeros.rgb1; } else { return cZeros.eval(xy).rgb1; }", true);
+
+    // More expression cases:
+    test("return (cZeros.eval(xy) * uZeros).rgb1;", true);
+    test("return half4(1, 1, 1, 0.5 + 0.5);",       true);
+
+    // Constant variable propagation
+    test("const half4 kWhite = half4(1); return kWhite;", true);
+
+    // Cases where our optimization is not valid, and does not happen:
+
+    // Returning non-opaque literals
+    test("return half4(0);",          false);
+    test("return half4(1, 1, 1, 0);", false);
+
+    // Returning non-opaque uniforms or children
+    test("return uZeros;",          false);
+    test("return cZeros.eval(xy);", false);
+
+    // Multiple returns
+    test("if (xy.x < 100) { return uZeros; } else { return cZeros.eval(xy).rgb1; }", false);
+    test("if (xy.x < 100) { return uZeros.rgb1; } else { return cZeros.eval(xy); }", false);
+
+    // There should (must) not be any false-positive cases. There are false-negatives.
+    // In these cases, our optimization would be valid, but does not happen:
+
+    // More complex expressions that can't be simplified
+    test("return xy.x < 100 ? uZeros.rgb1 : cZeros.eval(xy).rgb1;", false);
+
+    // Finally, there are cases that are conditional on the uniforms and children. These *could*
+    // determine dynamically if the uniform and/or child being referenced is opaque, and use that
+    // information. Today, we don't do this, so we pessimistically assume they're transparent:
+    test("return uOnes;",          false);
+    test("return cOnes.eval(xy);", false);
 }
 
 DEF_GPUTEST_FOR_ALL_CONTEXTS(GrSkSLFP_Specialized, r, ctxInfo) {

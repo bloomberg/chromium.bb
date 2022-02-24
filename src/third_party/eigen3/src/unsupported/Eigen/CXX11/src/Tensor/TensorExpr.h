@@ -37,7 +37,7 @@ struct traits<TensorCwiseNullaryOp<NullaryOp, XprType> >
   typedef traits<XprType> XprTraits;
   typedef typename XprType::Scalar Scalar;
   typedef typename XprType::Nested XprTypeNested;
-  typedef typename remove_reference<XprTypeNested>::type _XprTypeNested;
+  typedef typename remove_reference<XprTypeNested>::type XprTypeNested_;
   static const int NumDimensions = XprTraits::NumDimensions;
   static const int Layout = XprTraits::Layout;
   typedef typename XprTraits::PointerType PointerType;
@@ -88,7 +88,7 @@ struct traits<TensorCwiseUnaryOp<UnaryOp, XprType> >
   typedef typename result_of<UnaryOp(typename XprType::Scalar)>::type Scalar;
   typedef traits<XprType> XprTraits;
   typedef typename XprType::Nested XprTypeNested;
-  typedef typename remove_reference<XprTypeNested>::type _XprTypeNested;
+  typedef typename remove_reference<XprTypeNested>::type XprTypeNested_;
   static const int NumDimensions = XprTraits::NumDimensions;
   static const int Layout = XprTraits::Layout;
   typedef typename TypeConversion<Scalar, 
@@ -163,8 +163,8 @@ struct traits<TensorCwiseBinaryOp<BinaryOp, LhsXprType, RhsXprType> >
       typename traits<RhsXprType>::Index>::type Index;
   typedef typename LhsXprType::Nested LhsNested;
   typedef typename RhsXprType::Nested RhsNested;
-  typedef typename remove_reference<LhsNested>::type _LhsNested;
-  typedef typename remove_reference<RhsNested>::type _RhsNested;
+  typedef typename remove_reference<LhsNested>::type LhsNested_;
+  typedef typename remove_reference<RhsNested>::type RhsNested_;
   static const int NumDimensions = XprTraits::NumDimensions;
   static const int Layout = XprTraits::Layout;
   typedef typename TypeConversion<Scalar,
@@ -244,9 +244,9 @@ struct traits<TensorCwiseTernaryOp<TernaryOp, Arg1XprType, Arg2XprType, Arg3XprT
   typedef typename Arg1XprType::Nested Arg1Nested;
   typedef typename Arg2XprType::Nested Arg2Nested;
   typedef typename Arg3XprType::Nested Arg3Nested;
-  typedef typename remove_reference<Arg1Nested>::type _Arg1Nested;
-  typedef typename remove_reference<Arg2Nested>::type _Arg2Nested;
-  typedef typename remove_reference<Arg3Nested>::type _Arg3Nested;
+  typedef typename remove_reference<Arg1Nested>::type Arg1Nested_;
+  typedef typename remove_reference<Arg2Nested>::type Arg2Nested_;
+  typedef typename remove_reference<Arg3Nested>::type Arg3Nested_;
   static const int NumDimensions = XprTraits::NumDimensions;
   static const int Layout = XprTraits::Layout;
   typedef typename TypeConversion<Scalar,

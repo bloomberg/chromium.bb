@@ -650,13 +650,17 @@ void PermissionUmaUtil::PermissionPromptResolved(
   if (requests[0]->request_type() == RequestType::kGeolocation ||
       requests[0]->request_type() == RequestType::kNotifications) {
     if (ui_disposition ==
-        PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_CHIP) {
+            PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_CHIP ||
+        ui_disposition == PermissionPromptDisposition::MESSAGE_UI ||
+        ui_disposition == PermissionPromptDisposition::MINI_INFOBAR) {
       base::UmaHistogramBoolean("Permissions.Prompt." + permission_type + "." +
                                     permission_disposition + "." +
                                     action_string + ".DidClickManage",
                                 did_click_managed);
     } else if (ui_disposition == PermissionPromptDisposition::
-                                     LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP) {
+                                     LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP ||
+               ui_disposition == PermissionPromptDisposition::MESSAGE_UI ||
+               ui_disposition == PermissionPromptDisposition::MINI_INFOBAR) {
       base::UmaHistogramBoolean("Permissions.Prompt." + permission_type + "." +
                                     permission_disposition + "." +
                                     action_string + ".DidClickLearnMore",
@@ -1056,8 +1060,26 @@ void PermissionUmaUtil::RecordDSEEffectiveSetting(
 // static
 void PermissionUmaUtil::RecordPermissionPredictionSource(
     PermissionPredictionSource prediction_source) {
-  base::UmaHistogramEnumeration("Permissions.PredictionService.PredictionSource",
-                                prediction_source);
+  base::UmaHistogramEnumeration(
+      "Permissions.PredictionService.PredictionSource", prediction_source);
+}
+
+// static
+void PermissionUmaUtil::RecordPermissionPredictionServiceHoldback(
+    RequestType request_type,
+    bool is_on_device,
+    bool is_heldback) {
+  if (is_on_device) {
+    base::UmaHistogramBoolean(
+        "Permissions.OnDevicePredictionService.Response." +
+            GetPermissionRequestString(GetUmaValueForRequestType(request_type)),
+        is_heldback);
+  } else {
+    base::UmaHistogramBoolean(
+        "Permissions.PredictionService.Response." +
+            GetPermissionRequestString(GetUmaValueForRequestType(request_type)),
+        is_heldback);
+  }
 }
 
 std::string PermissionUmaUtil::GetPermissionActionString(

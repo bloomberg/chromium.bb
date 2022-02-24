@@ -15,15 +15,6 @@
 # Don't build testing in third_party dependencies
 set(BUILD_TESTING OFF)
 
-if (DAWN_REQUIRES_SPIRV_CROSS AND NOT TARGET spirv-cross)
-    set(SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS ON CACHE BOOL "" FORCE)
-    set(SPIRV_CROSS_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
-    set(SPIRV_CROSS_SKIP_INSTALL ON CACHE BOOL "" FORCE)
-
-    message(STATUS "Dawn: using spirv-cross at ${DAWN_SPIRV_CROSS_DIR}")
-    add_subdirectory(${DAWN_SPIRV_CROSS_DIR} "${CMAKE_CURRENT_BINARY_DIR}/spirv-cross")
-endif()
-
 if (NOT TARGET SPIRV-Headers)
     set(SPIRV_HEADERS_SKIP_EXAMPLES ON CACHE BOOL "" FORCE)
     set(SPIRV_HEADERS_SKIP_INSTALL ON CACHE BOOL "" FORCE)
@@ -52,10 +43,10 @@ endif()
 
 if (NOT TARGET libtint)
     message(STATUS "Dawn: using Tint at ${DAWN_TINT_DIR}")
-    # TODO(crbug.com/tint/1217): Tint expects glslang for validation when
-    # building the GLSL writer, but currently Dawn does not provide this
-    # third_party dependency. Disable the GLSL writer for now.
-    set(TINT_BUILD_GLSL_WRITER OFF)
+    set(TINT_BUILD_GLSL_WRITER ON)
+    # Don't build the samples because they require glslang and Dawn does not
+    # provide this third_party dependency.
+    set(TINT_BUILD_SAMPLES OFF)
     # TODO(crbug.com/tint/455): Tint does not currently build with CMake when
     # BUILD_SHARED_LIBS=1, so always build it as static for now.
     set(BUILD_SHARED_LIBS_SAVED ${BUILD_SHARED_LIBS})

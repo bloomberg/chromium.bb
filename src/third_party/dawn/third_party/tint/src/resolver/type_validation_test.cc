@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/ast/override_decoration.h"
+#include "src/ast/id_attribute.h"
 #include "src/ast/return_statement.h"
-#include "src/ast/stage_decoration.h"
-#include "src/ast/struct_block_decoration.h"
+#include "src/ast/stage_attribute.h"
+#include "src/ast/struct_block_attribute.h"
 #include "src/resolver/resolver.h"
 #include "src/resolver/resolver_test_helper.h"
 #include "src/sem/multisampled_texture_type.h"
@@ -79,9 +79,8 @@ TEST_F(ResolverTypeValidationTest, VariableDeclNoConstructor_Pass) {
 }
 
 TEST_F(ResolverTypeValidationTest, GlobalConstantNoConstructor_Pass) {
-  // @override(0) let a :i32;
-  GlobalConst(Source{{12, 34}}, "a", ty.i32(), nullptr,
-              ast::DecorationList{create<ast::OverrideDecoration>(0)});
+  // @id(0) override a :i32;
+  Override(Source{{12, 34}}, "a", ty.i32(), nullptr, ast::AttributeList{Id(0)});
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 }
@@ -98,7 +97,7 @@ TEST_F(ResolverTypeValidationTest, GlobalConstantWithStorageClass_Fail) {
   AST().AddGlobalVariable(create<ast::Variable>(
       Source{{12, 34}}, Symbols().Register("global_var"),
       ast::StorageClass::kPrivate, ast::Access::kUndefined, ty.f32(), true,
-      Expr(1.23f), ast::DecorationList{}));
+      false, Expr(1.23f), ast::AttributeList{}));
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
@@ -190,7 +189,7 @@ TEST_F(ResolverTypeValidationTest,
            Decl(Source{{12, 34}}, var0),
            Return(),
        },
-       ast::DecorationList{});
+       ast::AttributeList{});
 
   Func("func1", ast::VariableList{}, ty.void_(),
        ast::StatementList{
@@ -346,9 +345,9 @@ TEST_F(ResolverTypeValidationTest, ArraySize_TooBig_ExplicitStride) {
 }
 
 TEST_F(ResolverTypeValidationTest, ArraySize_OverridableConstant) {
-  // [[override]] let size = 10;
+  // override size = 10;
   // var<private> a : array<f32, size>;
-  GlobalConst("size", nullptr, Expr(10), {Override()});
+  Override("size", nullptr, Expr(10));
   Global("a", ty.array(ty.f32(), Expr(Source{{12, 34}}, "size")),
          ast::StorageClass::kPrivate);
   EXPECT_FALSE(r()->Resolve());
@@ -406,7 +405,7 @@ TEST_F(ResolverTypeValidationTest, RuntimeArrayInFunction_Fail) {
        ast::StatementList{
            Decl(var),
        },
-       ast::DecorationList{
+       ast::AttributeList{
            Stage(ast::PipelineStage::kVertex),
        });
 
@@ -493,7 +492,7 @@ TEST_F(ResolverTypeValidationTest, RuntimeArrayIsLast_Pass) {
                 Member("vf", ty.f32()),
                 Member("rt", ty.array<f32>()),
             },
-            {create<ast::StructBlockDecoration>()});
+            {create<ast::StructBlockAttribute>()});
 
   WrapInFunction();
 
@@ -559,7 +558,7 @@ TEST_F(ResolverTypeValidationTest, RuntimeArrayIsNotLast_Fail) {
                 Member(Source{{12, 34}}, "rt", ty.array<f32>()),
                 Member("vf", ty.f32()),
             },
-            {create<ast::StructBlockDecoration>()});
+            {create<ast::StructBlockAttribute>()});
 
   WrapInFunction();
 
@@ -602,13 +601,13 @@ TEST_F(ResolverTypeValidationTest, RuntimeArrayAsParameter_Fail) {
        ast::StatementList{
            Return(),
        },
-       ast::DecorationList{});
+       ast::AttributeList{});
 
   Func("main", ast::VariableList{}, ty.void_(),
        ast::StatementList{
            Return(),
        },
-       ast::DecorationList{
+       ast::AttributeList{
            Stage(ast::PipelineStage::kVertex),
        });
 
@@ -630,7 +629,7 @@ TEST_F(ResolverTypeValidationTest, PtrToRuntimeArrayAsParameter_Fail) {
        ast::StatementList{
            Return(),
        },
-       ast::DecorationList{});
+       ast::AttributeList{});
 
   EXPECT_FALSE(r()->Resolve()) << r()->error();
   EXPECT_EQ(
@@ -653,7 +652,7 @@ TEST_F(ResolverTypeValidationTest, AliasRuntimeArrayIsNotLast_Fail) {
                 Member(Source{{12, 34}}, "b", ty.Of(alias)),
                 Member("a", ty.u32()),
             },
-            {create<ast::StructBlockDecoration>()});
+            {create<ast::StructBlockAttribute>()});
 
   WrapInFunction();
 
@@ -677,7 +676,7 @@ TEST_F(ResolverTypeValidationTest, AliasRuntimeArrayIsLast_Pass) {
                 Member("a", ty.u32()),
                 Member("b", ty.Of(alias)),
             },
-            {create<ast::StructBlockDecoration>()});
+            {create<ast::StructBlockAttribute>()});
 
   WrapInFunction();
 
@@ -693,6 +692,30 @@ TEST_F(ResolverTypeValidationTest, ArrayOfNonStorableType) {
   EXPECT_EQ(r()->error(),
             "12:34 error: texture_2d<f32> cannot be used as an element type of "
             "an array");
+}
+
+TEST_F(ResolverTypeValidationTest, VariableAsType) {
+  // var<private> a : i32;
+  // var<private> b : a;
+  Global("a", ty.i32(), ast::StorageClass::kPrivate);
+  Global("b", ty.type_name("a"), ast::StorageClass::kPrivate);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            R"(error: cannot use variable 'a' as type
+note: 'a' declared here)");
+}
+
+TEST_F(ResolverTypeValidationTest, FunctionAsType) {
+  // fn f() {}
+  // var<private> v : f;
+  Func("f", {}, ty.void_(), {});
+  Global("v", ty.type_name("f"), ast::StorageClass::kPrivate);
+
+  EXPECT_FALSE(r()->Resolve());
+  EXPECT_EQ(r()->error(),
+            R"(error: cannot use function 'f' as type
+note: 'f' declared here)");
 }
 
 namespace GetCanonicalTests {
@@ -773,7 +796,7 @@ TEST_P(MultisampledTextureDimensionTest, All) {
   auto& params = GetParam();
   Global(Source{{12, 34}}, "a", ty.multisampled_texture(params.dim, ty.i32()),
          ast::StorageClass::kNone, nullptr,
-         ast::DecorationList{GroupAndBinding(0, 0)});
+         ast::AttributeList{GroupAndBinding(0, 0)});
 
   if (params.is_valid) {
     EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -822,7 +845,7 @@ TEST_P(MultisampledTextureTypeTest, All) {
          ty.multisampled_texture(ast::TextureDimension::k2d,
                                  params.type_func(*this)),
          ast::StorageClass::kNone, nullptr,
-         ast::DecorationList{GroupAndBinding(0, 0)});
+         ast::AttributeList{GroupAndBinding(0, 0)});
 
   if (params.is_valid) {
     EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -864,7 +887,7 @@ TEST_P(StorageTextureDimensionTest, All) {
                          ast::TexelFormat::kR32Uint, ast::Access::kWrite);
 
   Global("a", st, ast::StorageClass::kNone,
-         ast::DecorationList{GroupAndBinding(0, 0)});
+         ast::AttributeList{GroupAndBinding(0, 0)});
 
   if (params.is_valid) {
     EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -917,22 +940,22 @@ TEST_P(StorageTextureFormatTest, All) {
   auto* st_a = ty.storage_texture(Source{{12, 34}}, ast::TextureDimension::k1d,
                                   params.format, ast::Access::kWrite);
   Global("a", st_a, ast::StorageClass::kNone,
-         ast::DecorationList{GroupAndBinding(0, 0)});
+         ast::AttributeList{GroupAndBinding(0, 0)});
 
   auto* st_b = ty.storage_texture(ast::TextureDimension::k2d, params.format,
                                   ast::Access::kWrite);
   Global("b", st_b, ast::StorageClass::kNone,
-         ast::DecorationList{GroupAndBinding(0, 1)});
+         ast::AttributeList{GroupAndBinding(0, 1)});
 
   auto* st_c = ty.storage_texture(ast::TextureDimension::k2dArray,
                                   params.format, ast::Access::kWrite);
   Global("c", st_c, ast::StorageClass::kNone,
-         ast::DecorationList{GroupAndBinding(0, 2)});
+         ast::AttributeList{GroupAndBinding(0, 2)});
 
   auto* st_d = ty.storage_texture(ast::TextureDimension::k3d, params.format,
                                   ast::Access::kWrite);
   Global("d", st_d, ast::StorageClass::kNone,
-         ast::DecorationList{GroupAndBinding(0, 3)});
+         ast::AttributeList{GroupAndBinding(0, 3)});
 
   if (params.is_valid) {
     EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -959,7 +982,7 @@ TEST_F(StorageTextureAccessTest, MissingAccess_Fail) {
                          ast::TexelFormat::kR32Uint, ast::Access::kUndefined);
 
   Global("a", st, ast::StorageClass::kNone,
-         ast::DecorationList{GroupAndBinding(0, 0)});
+         ast::AttributeList{GroupAndBinding(0, 0)});
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
@@ -975,7 +998,7 @@ TEST_F(StorageTextureAccessTest, RWAccess_Fail) {
                          ast::TexelFormat::kR32Uint, ast::Access::kReadWrite);
 
   Global("a", st, ast::StorageClass::kNone, nullptr,
-         ast::DecorationList{GroupAndBinding(0, 0)});
+         ast::AttributeList{GroupAndBinding(0, 0)});
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
@@ -991,7 +1014,7 @@ TEST_F(StorageTextureAccessTest, ReadOnlyAccess_Fail) {
                                 ast::TexelFormat::kR32Uint, ast::Access::kRead);
 
   Global("a", st, ast::StorageClass::kNone, nullptr,
-         ast::DecorationList{GroupAndBinding(0, 0)});
+         ast::AttributeList{GroupAndBinding(0, 0)});
 
   EXPECT_FALSE(r()->Resolve());
   EXPECT_EQ(r()->error(),
@@ -1008,7 +1031,7 @@ TEST_F(StorageTextureAccessTest, WriteOnlyAccess_Pass) {
                          ast::Access::kWrite);
 
   Global("a", st, ast::StorageClass::kNone, nullptr,
-         ast::DecorationList{GroupAndBinding(0, 0)});
+         ast::AttributeList{GroupAndBinding(0, 0)});
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 }

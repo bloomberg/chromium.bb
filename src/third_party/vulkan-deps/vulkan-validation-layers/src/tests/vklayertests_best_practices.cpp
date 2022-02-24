@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (c) 2015-2021 Google, Inc.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2022 Google, Inc.
  * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,8 +20,8 @@
 #include "best_practices_error_enums.h"
 
 void VkBestPracticesLayerTest::InitBestPracticesFramework() {
-    // Enable all vendor-specific checks    
-    InitBestPracticesFramework("");    
+    // Enable all vendor-specific checks
+    InitBestPracticesFramework("");
 }
 
 void VkBestPracticesLayerTest::InitBestPracticesFramework(const char* vendor_checks_to_enable) {
@@ -133,6 +133,7 @@ TEST_F(VkBestPracticesLayerTest, UseDeprecatedInstanceExtensions) {
     // Create a 1.0 vulkan instance and request an extension promoted to core in 1.1
     m_errorMonitor->ExpectSuccess(VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT);
     m_errorMonitor->SetUnexpectedError("UNASSIGNED-khronos-Validation-debug-build-warning-message");
+    m_errorMonitor->SetUnexpectedError("UNASSIGNED-khronos-Validation-fine-grained-locking-warning-message");
     VkApplicationInfo new_info{};
     new_info.apiVersion = VK_API_VERSION_1_0;
     new_info.pApplicationName = ici.pApplicationInfo->pApplicationName;
@@ -1207,12 +1208,52 @@ TEST_F(VkBestPracticesLayerTest, CreatePipelineVsFsTypeMismatchArraySize) {
         }
     )glsl";
 
-    VkShaderObj vs(m_device, vsSource, VK_SHADER_STAGE_VERTEX_BIT, this);
-    VkShaderObj fs(m_device, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT, this);
+    VkShaderObj vs(this, vsSource, VK_SHADER_STAGE_VERTEX_BIT);
+    VkShaderObj fs(this, fsSource, VK_SHADER_STAGE_FRAGMENT_BIT);
 
     const auto set_info = [&](CreatePipelineHelper &helper) {
         helper.shader_stages_ = {vs.GetStageCreateInfo(), fs.GetStageCreateInfo()};
     };
     CreatePipelineHelper::OneshotTest(*this, set_info, kPerformanceWarningBit | kErrorBit,
                                       "UNASSIGNED-CoreValidation-Shader-OutputNotConsumed");
+}
+
+TEST_F(VkBestPracticesLayerTest, WorkgroupSizeDeprecated) {
+    TEST_DESCRIPTION("SPIR-V 1.6 deprecated WorkgroupSize build-in.");
+
+    SetTargetApiVersion(VK_API_VERSION_1_3);
+    AddRequiredExtensions(VK_KHR_MAINTENANCE_4_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitBestPracticesFramework());
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    if (!AreRequestedExtensionsEnabled()) {
+        printf("%s Extension %s is not supported, skipping test.\n", kSkipPrefix, VK_KHR_MAINTENANCE_4_EXTENSION_NAME);
+        return;
+    }
+
+    const std::string spv_source = R"(
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint GLCompute %main "main"
+               OpExecutionMode %main LocalSize 1 1 1
+               OpSource GLSL 450
+               OpName %main "main"
+               OpDecorate %gl_WorkGroupSize BuiltIn WorkgroupSize
+       %void = OpTypeVoid
+          %3 = OpTypeFunction %void
+       %uint = OpTypeInt 32 0
+     %uint_1 = OpConstant %uint 1
+     %v3uint = OpTypeVector %uint 3
+%gl_WorkGroupSize = OpConstantComposite %v3uint %uint_1 %uint_1 %uint_1
+       %main = OpFunction %void None %3
+          %5 = OpLabel
+               OpReturn
+               OpFunctionEnd
+        )";
+
+    const auto set_info = [&](CreateComputePipelineHelper &helper) {
+        helper.cs_.reset(new VkShaderObj(this, spv_source, VK_SHADER_STAGE_COMPUTE_BIT, SPV_ENV_VULKAN_1_0, SPV_SOURCE_ASM));
+    };
+    CreateComputePipelineHelper::OneshotTest(*this, set_info, kWarningBit,
+                                             "UNASSIGNED-BestPractices-SpirvDeprecated_WorkgroupSize");
 }

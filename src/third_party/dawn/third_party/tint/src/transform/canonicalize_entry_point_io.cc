@@ -20,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-#include "src/ast/disable_validation_decoration.h"
+#include "src/ast/disable_validation_attribute.h"
 #include "src/program_builder.h"
 #include "src/sem/function.h"
 #include "src/transform/unshadow.h"
@@ -41,10 +41,10 @@ namespace {
 // those with builtin attributes.
 bool StructMemberComparator(const ast::StructMember* a,
                             const ast::StructMember* b) {
-  auto* a_loc = ast::GetDecoration<ast::LocationDecoration>(a->decorations);
-  auto* b_loc = ast::GetDecoration<ast::LocationDecoration>(b->decorations);
-  auto* a_blt = ast::GetDecoration<ast::BuiltinDecoration>(a->decorations);
-  auto* b_blt = ast::GetDecoration<ast::BuiltinDecoration>(b->decorations);
+  auto* a_loc = ast::GetAttribute<ast::LocationAttribute>(a->attributes);
+  auto* b_loc = ast::GetAttribute<ast::LocationAttribute>(b->attributes);
+  auto* a_blt = ast::GetAttribute<ast::BuiltinAttribute>(a->attributes);
+  auto* b_blt = ast::GetAttribute<ast::BuiltinAttribute>(b->attributes);
   if (a_loc) {
     if (!b_loc) {
       // `a` has location attribute and `b` does not: `a` goes first.
@@ -62,15 +62,15 @@ bool StructMemberComparator(const ast::StructMember* a,
   }
 }
 
-// Returns true if `deco` is a shader IO decoration.
-bool IsShaderIODecoration(const ast::Decoration* deco) {
-  return deco->IsAnyOf<ast::BuiltinDecoration, ast::InterpolateDecoration,
-                       ast::InvariantDecoration, ast::LocationDecoration>();
+// Returns true if `attr` is a shader IO attribute.
+bool IsShaderIOAttribute(const ast::Attribute* attr) {
+  return attr->IsAnyOf<ast::BuiltinAttribute, ast::InterpolateAttribute,
+                       ast::InvariantAttribute, ast::LocationAttribute>();
 }
 
-// Returns true if `decos` contains a `sample_mask` builtin.
-bool HasSampleMask(const ast::DecorationList& decos) {
-  auto* builtin = ast::GetDecoration<ast::BuiltinDecoration>(decos);
+// Returns true if `attrs` contains a `sample_mask` builtin.
+bool HasSampleMask(const ast::AttributeList& attrs) {
+  auto* builtin = ast::GetAttribute<ast::BuiltinAttribute>(attrs);
   return builtin && builtin->builtin == ast::Builtin::kSampleMask;
 }
 
@@ -85,7 +85,7 @@ struct CanonicalizeEntryPointIO::State {
     /// The type of the output value.
     const ast::Type* type;
     /// The shader IO attributes.
-    ast::DecorationList attributes;
+    ast::AttributeList attributes;
     /// The value itself.
     const ast::Expression* value;
   };
@@ -128,17 +128,20 @@ struct CanonicalizeEntryPointIO::State {
         func_ast(function),
         func_sem(ctx.src->Sem().Get(function)) {}
 
-  /// Clones the shader IO decorations from `src`.
-  /// @param src the decorations to clone
-  /// @return the cloned decorations
-  ast::DecorationList CloneShaderIOAttributes(const ast::DecorationList& src) {
-    ast::DecorationList new_decorations;
-    for (auto* deco : src) {
-      if (IsShaderIODecoration(deco)) {
-        new_decorations.push_back(ctx.Clone(deco));
+  /// Clones the shader IO attributes from `src`.
+  /// @param src the attributes to clone
+  /// @param do_interpolate whether to clone InterpolateAttribute
+  /// @return the cloned attributes
+  ast::AttributeList CloneShaderIOAttributes(const ast::AttributeList& src,
+                                             bool do_interpolate) {
+    ast::AttributeList new_attributes;
+    for (auto* attr : src) {
+      if (IsShaderIOAttribute(attr) &&
+          (do_interpolate || !attr->Is<ast::InterpolateAttribute>())) {
+        new_attributes.push_back(ctx.Clone(attr));
       }
     }
-    return new_decorations;
+    return new_attributes;
   }
 
   /// Create or return a symbol for the wrapper function's struct parameter.
@@ -157,16 +160,17 @@ struct CanonicalizeEntryPointIO::State {
   /// @returns an expression which evaluates to the value of the shader input
   const ast::Expression* AddInput(std::string name,
                                   const sem::Type* type,
-                                  ast::DecorationList attributes) {
+                                  ast::AttributeList attributes) {
     auto* ast_type = CreateASTTypeFor(ctx, type);
-    if (cfg.shader_style == ShaderStyle::kSpirv) {
+    if (cfg.shader_style == ShaderStyle::kSpirv ||
+        cfg.shader_style == ShaderStyle::kGlsl) {
       // Vulkan requires that integer user-defined fragment inputs are
       // always decorated with `Flat`.
       // TODO(crbug.com/tint/1224): Remove this once a flat interpolation
       // attribute is required for integers.
       if (type->is_integer_scalar_or_vector() &&
-          ast::HasDecoration<ast::LocationDecoration>(attributes) &&
-          !ast::HasDecoration<ast::InterpolateDecoration>(attributes) &&
+          ast::HasAttribute<ast::LocationAttribute>(attributes) &&
+          !ast::HasAttribute<ast::InterpolateAttribute>(attributes) &&
           func_ast->PipelineStage() == ast::PipelineStage::kFragment) {
         attributes.push_back(ctx.dst->Interpolate(
             ast::InterpolationType::kFlat, ast::InterpolationSampling::kNone));
@@ -176,20 +180,33 @@ struct CanonicalizeEntryPointIO::State {
       attributes.push_back(
           ctx.dst->Disable(ast::DisabledValidation::kIgnoreStorageClass));
 
-      // Create the global variable and use its value for the shader input.
+      // In GLSL, if it's a builtin, override the name with the
+      // corresponding gl_ builtin name
+      auto* builtin = ast::GetAttribute<ast::BuiltinAttribute>(attributes);
+      if (cfg.shader_style == ShaderStyle::kGlsl && builtin) {
+        name = GLSLBuiltinToString(builtin->builtin, func_ast->PipelineStage(),
+                                   ast::StorageClass::kInput);
+      }
       auto symbol = ctx.dst->Symbols().New(name);
+
+      // Create the global variable and use its value for the shader input.
       const ast::Expression* value = ctx.dst->Expr(symbol);
-      if (HasSampleMask(attributes)) {
-        // Vulkan requires the type of a SampleMask builtin to be an array.
-        // Declare it as array<u32, 1> and then load the first element.
-        ast_type = ctx.dst->ty.array(ast_type, 1);
-        value = ctx.dst->IndexAccessor(value, 0);
+
+      if (builtin) {
+        if (cfg.shader_style == ShaderStyle::kGlsl) {
+          value = FromGLSLBuiltin(builtin->builtin, value, ast_type);
+        } else if (builtin->builtin == ast::Builtin::kSampleMask) {
+          // Vulkan requires the type of a SampleMask builtin to be an array.
+          // Declare it as array<u32, 1> and then load the first element.
+          ast_type = ctx.dst->ty.array(ast_type, 1);
+          value = ctx.dst->IndexAccessor(value, 0);
+        }
       }
       ctx.dst->Global(symbol, ast_type, ast::StorageClass::kInput,
                       std::move(attributes));
       return value;
     } else if (cfg.shader_style == ShaderStyle::kMsl &&
-               ast::HasDecoration<ast::BuiltinDecoration>(attributes)) {
+               ast::HasAttribute<ast::BuiltinAttribute>(attributes)) {
       // If this input is a builtin and we are targeting MSL, then add it to the
       // parameter list and pass it directly to the inner function.
       Symbol symbol = input_names.emplace(name).second
@@ -216,7 +233,7 @@ struct CanonicalizeEntryPointIO::State {
   /// @param value the value of the shader output
   void AddOutput(std::string name,
                  const sem::Type* type,
-                 ast::DecorationList attributes,
+                 ast::AttributeList attributes,
                  const ast::Expression* value) {
     // Vulkan requires that integer user-defined vertex outputs are
     // always decorated with `Flat`.
@@ -224,11 +241,21 @@ struct CanonicalizeEntryPointIO::State {
     // attribute is required for integers.
     if (cfg.shader_style == ShaderStyle::kSpirv &&
         type->is_integer_scalar_or_vector() &&
-        ast::HasDecoration<ast::LocationDecoration>(attributes) &&
-        !ast::HasDecoration<ast::InterpolateDecoration>(attributes) &&
+        ast::HasAttribute<ast::LocationAttribute>(attributes) &&
+        !ast::HasAttribute<ast::InterpolateAttribute>(attributes) &&
         func_ast->PipelineStage() == ast::PipelineStage::kVertex) {
       attributes.push_back(ctx.dst->Interpolate(
           ast::InterpolationType::kFlat, ast::InterpolationSampling::kNone));
+    }
+
+    // In GLSL, if it's a builtin, override the name with the
+    // corresponding gl_ builtin name
+    if (cfg.shader_style == ShaderStyle::kGlsl) {
+      if (auto* b = ast::GetAttribute<ast::BuiltinAttribute>(attributes)) {
+        name = GLSLBuiltinToString(b->builtin, func_ast->PipelineStage(),
+                                   ast::StorageClass::kOutput);
+        value = ToGLSLBuiltin(b->builtin, value, type);
+      }
     }
 
     OutputValue output;
@@ -247,11 +274,11 @@ struct CanonicalizeEntryPointIO::State {
   void ProcessNonStructParameter(const sem::Parameter* param) {
     // Remove the shader IO attributes from the inner function parameter, and
     // attach them to the new object instead.
-    ast::DecorationList attributes;
-    for (auto* deco : param->Declaration()->decorations) {
-      if (IsShaderIODecoration(deco)) {
-        ctx.Remove(param->Declaration()->decorations, deco);
-        attributes.push_back(ctx.Clone(deco));
+    ast::AttributeList attributes;
+    for (auto* attr : param->Declaration()->attributes) {
+      if (IsShaderIOAttribute(attr)) {
+        ctx.Remove(param->Declaration()->attributes, attr);
+        attributes.push_back(ctx.Clone(attr));
       }
     }
 
@@ -279,7 +306,15 @@ struct CanonicalizeEntryPointIO::State {
 
       auto* member_ast = member->Declaration();
       auto name = ctx.src->Symbols().NameFor(member_ast->symbol);
-      auto attributes = CloneShaderIOAttributes(member_ast->decorations);
+
+      // In GLSL, do not add interpolation attributes on vertex input
+      bool do_interpolate = true;
+      if (cfg.shader_style == ShaderStyle::kGlsl &&
+          func_ast->PipelineStage() == ast::PipelineStage::kVertex) {
+        do_interpolate = false;
+      }
+      auto attributes =
+          CloneShaderIOAttributes(member_ast->attributes, do_interpolate);
       auto* input_expr = AddInput(name, member->Type(), std::move(attributes));
       inner_struct_values.push_back(input_expr);
     }
@@ -296,6 +331,12 @@ struct CanonicalizeEntryPointIO::State {
   /// @param original_result the result object produced by the original function
   void ProcessReturnType(const sem::Type* inner_ret_type,
                          Symbol original_result) {
+    bool do_interpolate = true;
+    // In GLSL, do not add interpolation attributes on fragment output
+    if (cfg.shader_style == ShaderStyle::kGlsl &&
+        func_ast->PipelineStage() == ast::PipelineStage::kFragment) {
+      do_interpolate = false;
+    }
     if (auto* str = inner_ret_type->As<sem::Struct>()) {
       for (auto* member : str->Members()) {
         if (member->Type()->Is<sem::Struct>()) {
@@ -305,15 +346,16 @@ struct CanonicalizeEntryPointIO::State {
 
         auto* member_ast = member->Declaration();
         auto name = ctx.src->Symbols().NameFor(member_ast->symbol);
-        auto attributes = CloneShaderIOAttributes(member_ast->decorations);
+        auto attributes =
+            CloneShaderIOAttributes(member_ast->attributes, do_interpolate);
 
         // Extract the original structure member.
         AddOutput(name, member->Type(), std::move(attributes),
                   ctx.dst->MemberAccessor(original_result, name));
       }
     } else if (!inner_ret_type->Is<sem::Void>()) {
-      auto attributes =
-          CloneShaderIOAttributes(func_ast->return_type_decorations);
+      auto attributes = CloneShaderIOAttributes(
+          func_ast->return_type_attributes, do_interpolate);
 
       // Propagate the non-struct return value as is.
       AddOutput("value", func_sem->ReturnType(), std::move(attributes),
@@ -348,6 +390,15 @@ struct CanonicalizeEntryPointIO::State {
               {ctx.dst->Builtin(ast::Builtin::kPointSize)}, ctx.dst->Expr(1.f));
   }
 
+  /// Create an expression for gl_Position.[component]
+  /// @param component the component of gl_Position to access
+  /// @returns the new expression
+  const ast::Expression* GLPosition(const char* component) {
+    Symbol pos = ctx.dst->Symbols().Register("gl_Position");
+    Symbol c = ctx.dst->Symbols().Register(component);
+    return ctx.dst->MemberAccessor(ctx.dst->Expr(pos), ctx.dst->Expr(c));
+  }
+
   /// Create the wrapper function's struct parameter and type objects.
   void CreateInputStruct() {
     // Sort the struct members to satisfy HLSL interfacing matching rules.
@@ -357,7 +408,7 @@ struct CanonicalizeEntryPointIO::State {
     // Create the new struct type.
     auto struct_name = ctx.dst->Sym();
     auto* in_struct = ctx.dst->create<ast::Struct>(
-        struct_name, wrapper_struct_param_members, ast::DecorationList{});
+        struct_name, wrapper_struct_param_members, ast::AttributeList{});
     ctx.InsertBefore(ctx.src->AST().GlobalDeclarations(), func_ast, in_struct);
 
     // Create a new function parameter using this struct type.
@@ -397,7 +448,7 @@ struct CanonicalizeEntryPointIO::State {
 
     // Create the new struct type.
     auto* out_struct = ctx.dst->create<ast::Struct>(
-        ctx.dst->Sym(), wrapper_struct_output_members, ast::DecorationList{});
+        ctx.dst->Sym(), wrapper_struct_output_members, ast::AttributeList{});
     ctx.InsertBefore(ctx.src->AST().GlobalDeclarations(), func_ast, out_struct);
 
     // Create the output struct object, assign its members, and return it.
@@ -412,10 +463,10 @@ struct CanonicalizeEntryPointIO::State {
   }
 
   /// Create and assign the wrapper function's output variables.
-  void CreateSpirvOutputVariables() {
+  void CreateGlobalOutputVariables() {
     for (auto& outval : wrapper_output_values) {
       // Disable validation for use of the `output` storage class.
-      ast::DecorationList attributes = std::move(outval.attributes);
+      ast::AttributeList attributes = std::move(outval.attributes);
       attributes.push_back(
           ctx.dst->Disable(ast::DisabledValidation::kIgnoreStorageClass));
 
@@ -438,10 +489,17 @@ struct CanonicalizeEntryPointIO::State {
   // Recreate the original function without entry point attributes and call it.
   /// @returns the inner function call expression
   const ast::CallExpression* CallInnerFunction() {
-    // Add a suffix to the function name, as the wrapper function will take the
-    // original entry point name.
-    auto ep_name = ctx.src->Symbols().NameFor(func_ast->symbol);
-    auto inner_name = ctx.dst->Symbols().New(ep_name + "_inner");
+    Symbol inner_name;
+    if (cfg.shader_style == ShaderStyle::kGlsl) {
+      // In GLSL, clone the original entry point name, as the wrapper will be
+      // called "main".
+      inner_name = ctx.Clone(func_ast->symbol);
+    } else {
+      // Add a suffix to the function name, as the wrapper function will take
+      // the original entry point name.
+      auto ep_name = ctx.src->Symbols().NameFor(func_ast->symbol);
+      inner_name = ctx.dst->Symbols().New(ep_name + "_inner");
+    }
 
     // Clone everything, dropping the function and return type attributes.
     // The parameter attributes will have already been stripped during
@@ -449,7 +507,7 @@ struct CanonicalizeEntryPointIO::State {
     auto* inner_function = ctx.dst->create<ast::Function>(
         inner_name, ctx.Clone(func_ast->params),
         ctx.Clone(func_ast->return_type), ctx.Clone(func_ast->body),
-        ast::DecorationList{}, ast::DecorationList{});
+        ast::AttributeList{}, ast::AttributeList{});
     ctx.Replace(func_ast, inner_function);
 
     // Call the function.
@@ -472,7 +530,7 @@ struct CanonicalizeEntryPointIO::State {
     // Exit early if there is no shader IO to handle.
     if (func_sem->Parameters().size() == 0 &&
         func_sem->ReturnType()->Is<sem::Void>() && !needs_fixed_sample_mask &&
-        !needs_vertex_point_size) {
+        !needs_vertex_point_size && cfg.shader_style != ShaderStyle::kGlsl) {
       return;
     }
 
@@ -526,8 +584,9 @@ struct CanonicalizeEntryPointIO::State {
 
     // Produce the entry point outputs, if necessary.
     if (!wrapper_output_values.empty()) {
-      if (cfg.shader_style == ShaderStyle::kSpirv) {
-        CreateSpirvOutputVariables();
+      if (cfg.shader_style == ShaderStyle::kSpirv ||
+          cfg.shader_style == ShaderStyle::kGlsl) {
+        CreateGlobalOutputVariables();
       } else {
         auto* output_struct = CreateOutputStruct();
         wrapper_ret_type = [&, output_struct] {
@@ -536,25 +595,142 @@ struct CanonicalizeEntryPointIO::State {
       }
     }
 
+    if (cfg.shader_style == ShaderStyle::kGlsl &&
+        func_ast->PipelineStage() == ast::PipelineStage::kVertex) {
+      auto* pos_y = GLPosition("y");
+      auto* negate_pos_y = ctx.dst->create<ast::UnaryOpExpression>(
+          ast::UnaryOp::kNegation, GLPosition("y"));
+      wrapper_body.push_back(ctx.dst->Assign(pos_y, negate_pos_y));
+
+      auto* two_z = ctx.dst->Mul(ctx.dst->Expr(2.0f), GLPosition("z"));
+      auto* fixed_z = ctx.dst->Sub(two_z, GLPosition("w"));
+      wrapper_body.push_back(ctx.dst->Assign(GLPosition("z"), fixed_z));
+    }
+
     // Create the wrapper entry point function.
-    // Take the name of the original entry point function.
-    auto name = ctx.Clone(func_ast->symbol);
+    // For GLSL, use "main", otherwise take the name of the original
+    // entry point function.
+    Symbol name;
+    if (cfg.shader_style == ShaderStyle::kGlsl) {
+      name = ctx.dst->Symbols().New("main");
+    } else {
+      name = ctx.Clone(func_ast->symbol);
+    }
+
     auto* wrapper_func = ctx.dst->create<ast::Function>(
         name, wrapper_ep_parameters, wrapper_ret_type(),
-        ctx.dst->Block(wrapper_body), ctx.Clone(func_ast->decorations),
-        ast::DecorationList{});
+        ctx.dst->Block(wrapper_body), ctx.Clone(func_ast->attributes),
+        ast::AttributeList{});
     ctx.InsertAfter(ctx.src->AST().GlobalDeclarations(), func_ast,
                     wrapper_func);
+  }
+
+  /// Retrieve the gl_ string corresponding to a builtin.
+  /// @param builtin the builtin
+  /// @param stage the current pipeline stage
+  /// @param storage_class the storage class (input or output)
+  /// @returns the gl_ string corresponding to that builtin
+  const char* GLSLBuiltinToString(ast::Builtin builtin,
+                                  ast::PipelineStage stage,
+                                  ast::StorageClass storage_class) {
+    switch (builtin) {
+      case ast::Builtin::kPosition:
+        switch (stage) {
+          case ast::PipelineStage::kVertex:
+            return "gl_Position";
+          case ast::PipelineStage::kFragment:
+            return "gl_FragCoord";
+          default:
+            return "";
+        }
+      case ast::Builtin::kVertexIndex:
+        return "gl_VertexID";
+      case ast::Builtin::kInstanceIndex:
+        return "gl_InstanceID";
+      case ast::Builtin::kFrontFacing:
+        return "gl_FrontFacing";
+      case ast::Builtin::kFragDepth:
+        return "gl_FragDepth";
+      case ast::Builtin::kLocalInvocationId:
+        return "gl_LocalInvocationID";
+      case ast::Builtin::kLocalInvocationIndex:
+        return "gl_LocalInvocationIndex";
+      case ast::Builtin::kGlobalInvocationId:
+        return "gl_GlobalInvocationID";
+      case ast::Builtin::kNumWorkgroups:
+        return "gl_NumWorkGroups";
+      case ast::Builtin::kWorkgroupId:
+        return "gl_WorkGroupID";
+      case ast::Builtin::kSampleIndex:
+        return "gl_SampleID";
+      case ast::Builtin::kSampleMask:
+        if (storage_class == ast::StorageClass::kInput) {
+          return "gl_SampleMaskIn";
+        } else {
+          return "gl_SampleMask";
+        }
+      default:
+        return "";
+    }
+  }
+
+  /// Convert a given GLSL builtin value to the corresponding WGSL value.
+  /// @param builtin the builtin variable
+  /// @param value the value to convert
+  /// @param ast_type (inout) the incoming WGSL and outgoing GLSL types
+  /// @returns an expression representing the GLSL builtin converted to what
+  /// WGSL expects
+  const ast::Expression* FromGLSLBuiltin(ast::Builtin builtin,
+                                         const ast::Expression* value,
+                                         const ast::Type*& ast_type) {
+    switch (builtin) {
+      case ast::Builtin::kVertexIndex:
+      case ast::Builtin::kInstanceIndex:
+      case ast::Builtin::kSampleIndex:
+        // GLSL uses i32 for these, so bitcast to u32.
+        value = ctx.dst->Bitcast(ast_type, value);
+        ast_type = ctx.dst->ty.i32();
+        break;
+      case ast::Builtin::kSampleMask:
+        // gl_SampleMask is an array of i32. Retrieve the first element and
+        // bitcast it to u32.
+        value = ctx.dst->IndexAccessor(value, 0);
+        value = ctx.dst->Bitcast(ast_type, value);
+        ast_type = ctx.dst->ty.array(ctx.dst->ty.i32(), 1);
+        break;
+      default:
+        break;
+    }
+    return value;
+  }
+
+  /// Convert a given WGSL value to the type expected when assigning to a
+  /// GLSL builtin.
+  /// @param builtin the builtin variable
+  /// @param value the value to convert
+  /// @param type (out) the type to which the value was converted
+  /// @returns the converted value which can be assigned to the GLSL builtin
+  const ast::Expression* ToGLSLBuiltin(ast::Builtin builtin,
+                                       const ast::Expression* value,
+                                       const sem::Type*& type) {
+    switch (builtin) {
+      case ast::Builtin::kVertexIndex:
+      case ast::Builtin::kInstanceIndex:
+      case ast::Builtin::kSampleIndex:
+      case ast::Builtin::kSampleMask:
+        type = ctx.dst->create<sem::I32>();
+        value = ctx.dst->Bitcast(CreateASTTypeFor(ctx, type), value);
+        break;
+      default:
+        break;
+    }
+    return value;
   }
 };
 
 void CanonicalizeEntryPointIO::Run(CloneContext& ctx,
                                    const DataMap& inputs,
-                                   DataMap&) {
-  if (!Requires<Unshadow>(ctx)) {
-    return;
-  }
-
+                                   DataMap&) const {
   auto* cfg = inputs.Get<Config>();
   if (cfg == nullptr) {
     ctx.dst->Diagnostics().add_error(
@@ -568,9 +744,9 @@ void CanonicalizeEntryPointIO::Run(CloneContext& ctx,
   for (auto* ty : ctx.src->AST().TypeDecls()) {
     if (auto* struct_ty = ty->As<ast::Struct>()) {
       for (auto* member : struct_ty->members) {
-        for (auto* deco : member->decorations) {
-          if (IsShaderIODecoration(deco)) {
-            ctx.Remove(member->decorations, deco);
+        for (auto* attr : member->attributes) {
+          if (IsShaderIOAttribute(attr)) {
+            ctx.Remove(member->attributes, attr);
           }
         }
       }

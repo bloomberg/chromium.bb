@@ -99,7 +99,7 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #define CSEGS(cs_bw, cs_bh, cs_rowoff, cs_coloff)                              \
   count_segs(cm, xd, tile, mi + mis * (cs_rowoff) + (cs_coloff),               \
              no_pred_segcounts, temporal_predictor_count, t_unpred_seg_counts, \
-             (cs_bw), (cs_bh), mi_row + (cs_rowoff), mi_col + (cs_coloff));
+             (cs_bw), (cs_bh), mi_row + (cs_rowoff), mi_col + (cs_coloff))
 
   if (bsize == BLOCK_8X8)
     partition = PARTITION_NONE;

@@ -308,6 +308,14 @@ webrtc_fuzzer_test("audio_decoder_multiopus_fuzzer") {
   ]
 }
 
+webrtc_fuzzer_test("audio_decoder_pcm16b_fuzzer") {
+  sources = [ "audio_decoder_pcm16b_fuzzer.cc" ]
+  deps = [
+    ":audio_decoder_fuzzer",
+    "../../modules/audio_coding:pcm16b",
+  ]
+}
+
 rtc_library("audio_encoder_fuzzer") {
   testonly = true
   sources = [
@@ -416,6 +424,7 @@ if (!build_with_chromium) {
       "../../pc:libjingle_peerconnection",
       "../../test:test_support",
     ]
+    absl_deps = [ "//third_party/abseil-cpp/absl/strings" ]
     seed_corpus = "corpora/sdp-corpus"
   }
 }
@@ -586,6 +595,7 @@ webrtc_fuzzer_test("rtp_frame_reference_finder_fuzzer") {
 webrtc_fuzzer_test("frame_buffer2_fuzzer") {
   sources = [ "frame_buffer2_fuzzer.cc" ]
   deps = [
+    "../../modules/video_coding:timing",
     "../../modules/video_coding/",
     "../time_controller:time_controller",
   ]
@@ -598,6 +608,7 @@ webrtc_fuzzer_test("frame_buffer3_fuzzer") {
     "../../api:array_view",
     "../../api/video:encoded_frame",
     "../../modules/video_coding:frame_buffer",
+    "../../rtc_base:rtc_numerics",
   ]
 }
 

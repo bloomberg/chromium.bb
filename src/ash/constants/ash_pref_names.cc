@@ -685,9 +685,8 @@ const char kQuickUnlockFingerprintRecord[] = "quick_unlock.fingerprint.record";
 
 // A list of allowed quick unlock modes. A quick unlock mode can only be used if
 // its type is on this list, or if type all (all quick unlock modes enabled) is
-// on this list. The pref name variable was changed to match the policy, the
-// actual pref name stays the same to preserve the backward compatibility
-const char kQuickUnlockModeAllowlist[] = "quick_unlock_mode_whitelist";
+// on this list.
+const char kQuickUnlockModeAllowlist[] = "quick_unlock_mode_allowlist";
 
 // String pref storing the salt for the pin quick unlock mechanism.
 const char kQuickUnlockPinSalt[] = "quick_unlock.pin.salt";
@@ -784,6 +783,15 @@ const char kUsbPowerShareEnabled[] = "ash.power.usb_power_share_enabled";
 const char kSuggestedContentInfoShownInLauncher[] =
     "ash.launcher.suggested_content_info_shown";
 
+// A dictionary value that determines whether the reorder nudge in app list
+// should show to the users.
+const char kAppListReorderNudge[] = "ash.launcher.app_list_reorder_nudge";
+
+// A dictionary pref that stores information related to the privacy notice in
+// the continue files section for the launcher.
+const char kLauncherFilesPrivacyNotice[] =
+    "ash.launcher.continue_section_privacy_notice";
+
 // A boolean pref that indicates whether the Suggested Content privacy info may
 // be displayed to user. A false value indicates that the info can be displayed
 // if the value of |kSuggestedContentInfoShownInLauncher| is smaller than the
@@ -811,6 +819,10 @@ const char kXkbAutoRepeatInterval[] =
 // preferences to not be user-configurable or sync with the cloud. The prefs are
 // now user-configurable and syncable again, but we don't want to overwrite the
 // current values with the old synced values, so we continue to use this suffix.
+
+// A boolean pref that causes top-row keys to be interpreted as function keys
+// instead of as media keys.
+const char kSendFunctionKeys[] = "settings.language.send_function_keys";
 
 // A boolean pref which is true if touchpad reverse scroll is enabled.
 const char kNaturalScroll[] = "settings.touchpad.natural_scroll";
@@ -912,6 +924,9 @@ const char kFilesAppUIPrefsMigrated[] = "ash.filesapp.ui_prefs_migrated";
 // Boolean value for the DeviceLoginScreenWebUILazyLoading device policy.
 const char kLoginScreenWebUILazyLoading[] =
     "ash.login.LoginScreenWebUILazyLoading";
+
+// Boolean value for the FloatingWorkspaceEnabled policy
+const char kFloatingWorkspaceEnabled[] = "ash.floating_workspace_enabled";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

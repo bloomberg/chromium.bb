@@ -95,6 +95,7 @@ class AVxFirstPassEncoderThreadTest
 
     firstpass_stats_.buf =
         realloc(firstpass_stats_.buf, firstpass_stats_.sz + pkt_size);
+    ASSERT_NE(firstpass_stats_.buf, nullptr);
     memcpy((uint8_t *)firstpass_stats_.buf + firstpass_stats_.sz, pkt_buf,
            pkt_size);
     firstpass_stats_.sz += pkt_size;

@@ -411,6 +411,8 @@ Node* MemoryLowering::DecodeExternalPointer(
 #ifdef V8_SANDBOXED_EXTERNAL_POINTERS
   DCHECK(V8_SANDBOXED_EXTERNAL_POINTERS_BOOL);
   DCHECK(node->opcode() == IrOpcode::kLoad);
+  DCHECK_EQ(kExternalPointerSize, kUInt32Size);
+  DCHECK_NE(kExternalPointerNullTag, external_pointer_tag);
   Node* effect = NodeProperties::GetEffectInput(node);
   Node* control = NodeProperties::GetControlInput(node);
   __ InitializeEffectControl(effect, control);
@@ -418,25 +420,31 @@ Node* MemoryLowering::DecodeExternalPointer(
   // Clone the load node and put it here.
   // TODO(turbofan): consider adding GraphAssembler::Clone() suitable for
   // cloning nodes from arbitrary locaions in effect/control chains.
-  Node* index = __ AddNode(graph()->CloneNode(node));
+  STATIC_ASSERT(kExternalPointerIndexShift > kSystemPointerSizeLog2);
+  Node* shifted_index = __ AddNode(graph()->CloneNode(node));
+  Node* shift_amount =
+      __ Int32Constant(kExternalPointerIndexShift - kSystemPointerSizeLog2);
+  Node* offset = __ Word32Shr(shifted_index, shift_amount);
 
   // Uncomment this to generate a breakpoint for debugging purposes.
   // __ DebugBreak();
 
   // Decode loaded external pointer.
-  STATIC_ASSERT(kExternalPointerSize == kSystemPointerSize);
-  Node* external_pointer_table_address = __ ExternalConstant(
+  //
+  // Here we access the external pointer table through an ExternalReference.
+  // Alternatively, we could also hardcode the address of the table since it is
+  // never reallocated. However, in that case we must be able to guarantee that
+  // the generated code is never executed under a different Isolate, as that
+  // would allow access to external objects from different Isolates. It also
+  // would break if the code is serialized/deserialized at some point.
+  Node* table_address = __ ExternalConstant(
       ExternalReference::external_pointer_table_address(isolate()));
-  Node* table = __ Load(MachineType::Pointer(), external_pointer_table_address,
+  Node* table = __ Load(MachineType::Pointer(), table_address,
                         Internals::kExternalPointerTableBufferOffset);
-  // TODO(v8:10391, saelo): bounds check if table is not caged
-  Node* offset = __ Int32Mul(index, __ Int32Constant(8));
   Node* decoded_ptr =
       __ Load(MachineType::Pointer(), table, __ ChangeUint32ToUint64(offset));
-  if (external_pointer_tag != 0) {
-    Node* tag = __ IntPtrConstant(~external_pointer_tag);
-    decoded_ptr = __ WordAnd(decoded_ptr, tag);
-  }
+  Node* tag = __ IntPtrConstant(~external_pointer_tag);
+  decoded_ptr = __ WordAnd(decoded_ptr, tag);
   return decoded_ptr;
 #else
   return node;
@@ -466,30 +474,27 @@ Reduction MemoryLowering::ReduceLoadField(Node* node) {
   node->InsertInput(graph_zone(), 1, offset);
   MachineType type = access.machine_type;
   if (V8_SANDBOXED_EXTERNAL_POINTERS_BOOL &&
-      access.type.Is(Type::SandboxedExternalPointer())) {
-    // External pointer table indices are 32bit numbers
+      access.type.Is(Type::ExternalPointer())) {
+    // External pointer table indices are stored as 32-bit numbers
     type = MachineType::Uint32();
   }
 
   if (type.IsMapWord()) {
-    DCHECK(!access.type.Is(Type::SandboxedExternalPointer()));
+    DCHECK(!access.type.Is(Type::ExternalPointer()));
     return ReduceLoadMap(node);
   }
 
   NodeProperties::ChangeOp(node, machine()->Load(type));
 
-  if (V8_SANDBOXED_EXTERNAL_POINTERS_BOOL &&
-      access.type.Is(Type::SandboxedExternalPointer())) {
 #ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+  if (access.type.Is(Type::ExternalPointer())) {
     ExternalPointerTag tag = access.external_pointer_tag;
-#else
-    ExternalPointerTag tag = kExternalPointerNullTag;
-#endif
+    DCHECK_NE(kExternalPointerNullTag, tag);
     node = DecodeExternalPointer(node, tag);
     return Replace(node);
-  } else {
-    DCHECK(!access.type.Is(Type::SandboxedExternalPointer()));
   }
+#endif
+
   return Changed(node);
 }
 
@@ -536,8 +541,7 @@ Reduction MemoryLowering::ReduceStoreField(Node* node,
   FieldAccess const& access = FieldAccessOf(node->op());
   // External pointer must never be stored by optimized code.
   DCHECK_IMPLIES(V8_SANDBOXED_EXTERNAL_POINTERS_BOOL,
-                 !access.type.Is(Type::ExternalPointer()) &&
-                     !access.type.Is(Type::SandboxedExternalPointer()));
+                 !access.type.Is(Type::ExternalPointer()));
   // SandboxedPointers are not currently stored by optimized code.
   DCHECK(!access.type.Is(Type::SandboxedPointer()));
   MachineType machine_type = access.machine_type;

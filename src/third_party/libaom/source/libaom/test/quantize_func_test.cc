@@ -103,9 +103,11 @@ class QuantizeTestBase
 
   virtual void SetUp() {
     qtab_ = reinterpret_cast<QuanTable *>(aom_memalign(32, sizeof(*qtab_)));
+    ASSERT_NE(qtab_, nullptr);
     const int n_coeffs = coeff_num();
     coeff_ = reinterpret_cast<CoeffType *>(
         aom_memalign(32, 6 * n_coeffs * sizeof(CoeffType)));
+    ASSERT_NE(coeff_, nullptr);
     InitQuantizer();
   }
 

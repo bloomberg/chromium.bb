@@ -473,10 +473,6 @@ void LiftoffAssembler::SpillInstance(Register instance) {
 
 void LiftoffAssembler::ResetOSRTarget() {}
 
-void LiftoffAssembler::FillInstanceInto(Register dst) {
-  Ld(dst, liftoff::GetInstanceOperand());
-}
-
 void LiftoffAssembler::LoadTaggedPointer(Register dst, Register src_addr,
                                          Register offset_reg,
                                          int32_t offset_imm,
@@ -990,7 +986,6 @@ void LiftoffAssembler::Spill(int offset, LiftoffRegister reg, ValueKind kind) {
     case kRef:
     case kOptRef:
     case kRtt:
-    case kRttWithDepth:
       Sd(reg.gp(), dst);
       break;
     case kF32:
@@ -1327,7 +1322,7 @@ void LiftoffAssembler::emit_i64_addi(LiftoffRegister dst, LiftoffRegister lhs,
                                      int64_t imm) {
   TurboAssembler::Add64(dst.gp(), lhs.gp(), Operand(imm));
 }
-void LiftoffAssembler::emit_u32_to_intptr(Register dst, Register src) {
+void LiftoffAssembler::emit_u32_to_uintptr(Register dst, Register src) {
   addw(dst, src, zero_reg);
 }
 

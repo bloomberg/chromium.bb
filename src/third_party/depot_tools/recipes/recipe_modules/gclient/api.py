@@ -100,11 +100,11 @@ class GclientApi(recipe_api.RecipeApi):
           self.m.buildbucket.build.builder.builder,
           self.m.buildbucket.build.id)
     with self.m.context(env=env, env_suffixes=env_suffixes):
-      return self.m.python(prefix + name,
-                           self.repo_resource('gclient.py'),
-                           cmd,
-                           infra_step=infra_step,
-                           **kwargs)
+      cmd = ['python3', '-u', self.repo_resource('gclient.py')] + cmd
+      return self.m.step(prefix + name,
+                         cmd,
+                         infra_step=infra_step,
+                         **kwargs)
 
   @property
   def use_mirror(self):
@@ -292,24 +292,8 @@ class GclientApi(recipe_api.RecipeApi):
     """Remove all index.lock files. If a previous run of git crashed, bot was
     reset, etc... we might end up with leftover index.lock files.
     """
-    self.m.python.inline(
-      'cleanup index.lock',
-      """
-        from __future__ import print_function
-        import os, sys
-
-        build_path = sys.argv[1]
-        if os.path.exists(build_path):
-          for (path, dir, files) in os.walk(build_path):
-            for cur_file in files:
-              if cur_file.endswith('index.lock'):
-                path_to_file = os.path.join(path, cur_file)
-                print('deleting %s' % path_to_file)
-                os.remove(path_to_file)
-      """,
-      args=[self.m.path['start_dir']],
-      infra_step=True,
-    )
+    cmd = ['python3', '-u', self.resource('cleanup.py'), self.m.path['start_dir']]
+    return self.m.step('cleanup index.lock', cmd)
 
   def get_gerrit_patch_root(self, gclient_config=None):
     """Returns local path to the repo where gerrit patch will be applied.
@@ -398,7 +382,7 @@ class GclientApi(recipe_api.RecipeApi):
 
         step_result = self(
             'recursively git diff all DEPS',
-            ['recurse', 'python', self.resource('diff_deps.py')],
+            ['recurse', 'python3', self.resource('diff_deps.py')],
             stdout=self.m.raw_io.output_text(add_output_log=True),
         )
 

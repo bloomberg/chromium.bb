@@ -516,10 +516,7 @@ if (is_android) {
   rtc_android_library("dav1d_java") {
     visibility = [ "*" ]
     sources = [ "api/org/webrtc/Dav1dDecoder.java" ]
-    deps = [
-      ":dav1d_av1_jni",
-      ":video_java",
-    ]
+    deps = [ ":video_java" ]
   }
 
   rtc_android_library("swcodecs_java") {
@@ -794,7 +791,9 @@ if (current_os == "linux" || is_android) {
       "../../modules/audio_device",
       "../../modules/audio_processing:api",
       "../../modules/utility",
+      "../../pc:media_stream_observer",
       "../../pc:peerconnection",
+      "../../pc:webrtc_sdp",
       "../../rtc_base",
       "../../rtc_base:checks",
       "../../rtc_base:rtc_base_approved",
@@ -876,7 +875,7 @@ if (current_os == "linux" || is_android) {
       ":generated_libaom_av1_jni",
       ":video_jni",
       "../../modules/video_coding/codecs/av1:libaom_av1_decoder",
-      "../../modules/video_coding/codecs/av1:libaom_av1_encoder",
+      "../../modules/video_coding/codecs/av1:libaom_av1_encoder_if_supported",
     ]
   }
 

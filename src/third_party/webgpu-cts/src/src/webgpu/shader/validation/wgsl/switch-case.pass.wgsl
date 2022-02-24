@@ -1,6 +1,6 @@
 // correct use of switch statement
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   var a: i32 = 2;
   switch (a) {

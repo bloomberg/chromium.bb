@@ -96,6 +96,9 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
+using WebExposedIsolationLevel =
+    content::RenderFrameHost::WebExposedIsolationLevel;
+
 using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
@@ -584,6 +587,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_VIRTUAL_CARD_MANUAL_FALLBACK:
       ShowVirtualCardManualFallbackBubble(browser_);
       break;
+    case IDC_VIRTUAL_CARD_ENROLL:
+      ShowVirtualCardEnrollBubble(browser_);
+      break;
     case IDC_TRANSLATE_PAGE:
       Translate(browser_);
       break;
@@ -990,6 +996,14 @@ bool BrowserCommandController::IsShowingLocationBar() {
          browser_->toolbar_overridden();
 }
 
+bool BrowserCommandController::IsWebAppOrCustomTab() const {
+  return
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      browser_->is_type_custom_tab() ||
+#endif
+      web_app::AppBrowserController::IsWebApp(browser_);
+}
+
 void BrowserCommandController::InitCommandState() {
   // All browser commands whose state isn't set automagically some other way
   // (like Back & Forward with initial page load) must have their state
@@ -1111,18 +1125,12 @@ void BrowserCommandController::InitCommandState() {
       IDC_HOME, normal_window || browser_->is_type_app() ||
                     browser_->is_type_app_popup());
 
-  const bool is_web_app_or_custom_tab =
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-      browser_->is_type_custom_tab() ||
-#endif
-      web_app::AppBrowserController::IsWebApp(browser_);
   // Hosted app browser commands.
+  const bool is_web_app_or_custom_tab = IsWebAppOrCustomTab();
   const bool enable_copy_url =
       is_web_app_or_custom_tab ||
       sharing_hub::SharingHubOmniboxEnabled(browser_->profile());
   command_updater_.UpdateCommandEnabled(IDC_COPY_URL, enable_copy_url);
-  command_updater_.UpdateCommandEnabled(IDC_OPEN_IN_CHROME,
-                                        is_web_app_or_custom_tab);
   command_updater_.UpdateCommandEnabled(IDC_SITE_SETTINGS,
                                         is_web_app_or_custom_tab);
   command_updater_.UpdateCommandEnabled(IDC_WEB_APP_MENU_APP_INFO,
@@ -1286,6 +1294,12 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   // of this command.
   command_updater_.UpdateCommandEnabled(IDC_OPEN_IN_PWA_WINDOW,
                                         web_app::CanPopOutWebApp(profile()));
+
+  bool is_isolated_app =
+      current_web_contents->GetMainFrame()->GetWebExposedIsolationLevel() >=
+      WebExposedIsolationLevel::kMaybeIsolatedApplication;
+  command_updater_.UpdateCommandEnabled(
+      IDC_OPEN_IN_CHROME, IsWebAppOrCustomTab() && !is_isolated_app);
 
   command_updater_.UpdateCommandEnabled(
       IDC_TOGGLE_REQUEST_TABLET_SITE,

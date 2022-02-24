@@ -76,7 +76,6 @@ inline void Load(LiftoffAssembler* assm, LiftoffRegister dst, Register base,
     case kOptRef:
     case kRef:
     case kRtt:
-    case kRttWithDepth:
       assm->mov(dst.gp(), src);
       break;
     case kI64:
@@ -105,7 +104,6 @@ inline void Store(LiftoffAssembler* assm, Register base, int32_t offset,
     case kOptRef:
     case kRef:
     case kRtt:
-    case kRttWithDepth:
       assm->mov(dst, src.gp());
       break;
     case kI64:
@@ -121,7 +119,10 @@ inline void Store(LiftoffAssembler* assm, Register base, int32_t offset,
     case kS128:
       assm->movdqu(dst, src.fp());
       break;
-    default:
+    case kVoid:
+    case kBottom:
+    case kI8:
+    case kI16:
       UNREACHABLE();
   }
 }
@@ -132,6 +133,7 @@ inline void push(LiftoffAssembler* assm, LiftoffRegister reg, ValueKind kind,
     case kI32:
     case kRef:
     case kOptRef:
+    case kRtt:
       assm->AllocateStackSpace(padding);
       assm->push(reg.gp());
       break;
@@ -152,7 +154,10 @@ inline void push(LiftoffAssembler* assm, LiftoffRegister reg, ValueKind kind,
       assm->AllocateStackSpace(sizeof(double) * 2 + padding);
       assm->movdqu(Operand(esp, 0), reg.fp());
       break;
-    default:
+    case kVoid:
+    case kBottom:
+    case kI8:
+    case kI16:
       UNREACHABLE();
   }
 }
@@ -377,10 +382,6 @@ void LiftoffAssembler::SpillInstance(Register instance) {
 }
 
 void LiftoffAssembler::ResetOSRTarget() {}
-
-void LiftoffAssembler::FillInstanceInto(Register dst) {
-  mov(dst, liftoff::GetInstanceOperand());
-}
 
 void LiftoffAssembler::LoadTaggedPointer(Register dst, Register src_addr,
                                          Register offset_reg,
@@ -1198,7 +1199,6 @@ void LiftoffAssembler::Spill(int offset, LiftoffRegister reg, ValueKind kind) {
     case kOptRef:
     case kRef:
     case kRtt:
-    case kRttWithDepth:
       mov(dst, reg.gp());
       break;
     case kI64:
@@ -1862,10 +1862,6 @@ bool LiftoffAssembler::emit_i64_popcnt(LiftoffRegister dst,
   return true;
 }
 
-void LiftoffAssembler::emit_u32_to_intptr(Register dst, Register src) {
-  // This is a nop on ia32.
-}
-
 void LiftoffAssembler::emit_f32_add(DoubleRegister dst, DoubleRegister lhs,
                                     DoubleRegister rhs) {
   if (CpuFeatures::IsSupported(AVX)) {
@@ -2462,7 +2458,6 @@ void LiftoffAssembler::emit_cond_jump(LiftoffCondition liftoff_cond,
       case kRef:
       case kOptRef:
       case kRtt:
-      case kRttWithDepth:
         DCHECK(liftoff_cond == kEqual || liftoff_cond == kUnequal);
         V8_FALLTHROUGH;
       case kI32:

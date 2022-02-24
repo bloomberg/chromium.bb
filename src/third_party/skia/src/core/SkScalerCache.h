@@ -39,6 +39,10 @@ public:
     std::tuple<const SkPath*, size_t> mergePath(
             SkGlyph* glyph, const SkPath* path, bool hairline) SK_EXCLUDES(fMu);
 
+    // If the drawable has never been set, then add a drawble to glyph.
+    std::tuple<SkDrawable*, size_t> mergeDrawable(
+            SkGlyph* glyph, sk_sp<SkDrawable> drawable) SK_EXCLUDES(fMu);
+
     /** Return the number of glyphs currently cached. */
     int countCachedGlyphs() const SK_EXCLUDES(fMu);
 
@@ -61,7 +65,7 @@ public:
     std::tuple<SkSpan<const SkGlyph*>, size_t> prepareImages(
             SkSpan<const SkPackedGlyphID> glyphIDs, const SkGlyph* results[]) SK_EXCLUDES(fMu);
 
-    size_t prepareForDrawingMasksCPU(SkDrawableGlyphBuffer* drawables) SK_EXCLUDES(fMu);
+    size_t prepareForDrawingMasksCPU(SkDrawableGlyphBuffer* accepted) SK_EXCLUDES(fMu);
 
     // SkStrikeForGPU APIs
     const SkGlyphPositionRoundingSpec& roundingSpec() const {
@@ -69,13 +73,16 @@ public:
     }
 
     size_t prepareForMaskDrawing(
-            SkDrawableGlyphBuffer* drawables, SkSourceGlyphBuffer* rejects) SK_EXCLUDES(fMu);
+            SkDrawableGlyphBuffer* accepted, SkSourceGlyphBuffer* rejected) SK_EXCLUDES(fMu);
 
     size_t prepareForSDFTDrawing(
-            SkDrawableGlyphBuffer* drawables, SkSourceGlyphBuffer* rejects) SK_EXCLUDES(fMu);
+            SkDrawableGlyphBuffer* accepted, SkSourceGlyphBuffer* rejected) SK_EXCLUDES(fMu);
 
     size_t prepareForPathDrawing(
-            SkDrawableGlyphBuffer* drawables, SkSourceGlyphBuffer* rejects) SK_EXCLUDES(fMu);
+            SkDrawableGlyphBuffer* accepted, SkSourceGlyphBuffer* rejected) SK_EXCLUDES(fMu);
+
+    size_t prepareForDrawableDrawing(
+            SkDrawableGlyphBuffer* accepted, SkSourceGlyphBuffer* rejected) SK_EXCLUDES(fMu);
 
     void dump() const SK_EXCLUDES(fMu);
 
@@ -83,7 +90,7 @@ public:
 
 private:
     template <typename Fn>
-    size_t commonFilterLoop(SkDrawableGlyphBuffer* drawables, Fn&& fn) SK_REQUIRES(fMu);
+    size_t commonFilterLoop(SkDrawableGlyphBuffer* accepted, Fn&& fn) SK_REQUIRES(fMu);
 
     // Return a glyph. Create it if it doesn't exist, and initialize the glyph with metrics and
     // advances using a scaler.
@@ -98,6 +105,9 @@ private:
 
     // If the path has never been set, then use the scaler context to add the glyph.
     std::tuple<const SkPath*, size_t> preparePath(SkGlyph*) SK_REQUIRES(fMu);
+
+    // If the drawable has never been set, then use the scaler context to add the glyph.
+    std::tuple<SkDrawable*, size_t> prepareDrawable(SkGlyph*) SK_REQUIRES(fMu);
 
     enum PathDetail {
         kMetricsOnly,

@@ -207,9 +207,14 @@ enum aome_enc_control_id {
    * encoding process, values greater than 0 will increase encoder speed at
    * the expense of quality.
    *
-   * Valid range: 0..9. 0 runs the slowest, and 9 runs the fastest;
+   * Valid range: 0..10. 0 runs the slowest, and 10 runs the fastest;
    * quality improves as speed decreases (since more compression
    * possibilities are explored).
+   *
+   * NOTE: 10 is only allowed in AOM_USAGE_REALTIME. In AOM_USAGE_GOOD_QUALITY
+   * and AOM_USAGE_ALL_INTRA, 9 is the highest allowed value. However,
+   * AOM_USAGE_GOOD_QUALITY treats 7..9 the same as 6. Also, AOM_USAGE_REALTIME
+   * treats 0..4 the same as 5.
    */
   AOME_SET_CPUUSED = 13,
 
@@ -1411,6 +1416,35 @@ enum aome_enc_control_id {
    * - 0 = Default. Disable rate control for external encoders.
    */
   AV1E_SET_RTC_EXTERNAL_RC = 152,
+
+  /*!\brief Codec control function to enable frame parallel multi-threading
+   * of the encoder, unsigned int parameter
+   *
+   * - 0 = disable (default)
+   * - 1 = enable
+   */
+  AV1E_SET_FP_MT = 153,
+
+  /*!\brief Codec control to enable actual frame parallel encode or
+   * simulation of frame parallel encode in FPMT unit test, unsigned int
+   * parameter
+   *
+   * - 0 = simulate frame parallel encode
+   * - 1 = actual frame parallel encode (default)
+   *
+   * \note This is only used in FPMT unit test.
+   */
+  AV1E_SET_FP_MT_UNIT_TEST = 154,
+
+  /*!\brief Codec control function to get the target sequence level index for
+   * each operating point. int* parameter. There can be at most 32 operating
+   * points. The results will be written into a provided integer array of
+   * sufficient size. If a target level is not set, the result will be 31.
+   * Please refer to https://aomediacodec.github.io/av1-spec/#levels for more
+   * details on level definitions and indices.
+   */
+  AV1E_GET_TARGET_SEQ_LEVEL_IDX = 155,
+
   // Any new encoder control IDs should be added above.
   // Maximum allowed encoder control ID is 229.
   // No encoder control ID should be added below.
@@ -1510,6 +1544,23 @@ typedef enum {
   AOM_TUNE_VMAF_NEG_MAX_GAIN = 7,
   AOM_TUNE_BUTTERAUGLI = 8,
 } aom_tune_metric;
+
+/*!\brief Distortion metric to use for RD optimization.
+ *
+ * Changes the encoder to use a different distortion metric for RD search. Note
+ * that this value operates on a "lower level" compared to aom_tune_metric - it
+ * affects the distortion metric inside a block, while aom_tune_metric only
+ * affects RD across blocks.
+ *
+ */
+typedef enum {
+  // Use PSNR for in-block rate-distortion optimization.
+  AOM_DIST_METRIC_PSNR,
+  // Use quantization matrix-weighted PSNR for in-block rate-distortion
+  // optimization. If --enable-qm=1 is not specified, this falls back to
+  // behaving in the same way as AOM_DIST_METRIC_PSNR.
+  AOM_DIST_METRIC_QM_PSNR,
+} aom_dist_metric;
 
 #define AOM_MAX_LAYERS 32   /**< Max number of layers */
 #define AOM_MAX_SS_LAYERS 4 /**< Max number of spatial layers */
@@ -1855,6 +1906,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_SUPERBLOCK_SIZE, unsigned int)
 AOM_CTRL_USE_TYPE(AV1E_GET_SEQ_LEVEL_IDX, int *)
 #define AOM_CTRL_AV1E_GET_SEQ_LEVEL_IDX
 
+AOM_CTRL_USE_TYPE(AV1E_GET_TARGET_SEQ_LEVEL_IDX, int *)
+#define AOM_CTRL_AV1E_GET_TARGET_SEQ_LEVEL_IDX
+
 AOM_CTRL_USE_TYPE(AV1E_GET_BASELINE_GF_INTERVAL, int *)
 #define AOM_CTRL_AV1E_GET_BASELINE_GF_INTERVAL
 
@@ -1984,6 +2038,12 @@ AOM_CTRL_USE_TYPE(AV1E_SET_AUTO_INTRA_TOOLS_OFF, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_RTC_EXTERNAL_RC, int)
 #define AOM_CTRL_AV1E_SET_RTC_EXTERNAL_RC
+
+AOM_CTRL_USE_TYPE(AV1E_SET_FP_MT, unsigned int)
+#define AOM_CTRL_AV1E_SET_FP_MT
+
+AOM_CTRL_USE_TYPE(AV1E_SET_FP_MT_UNIT_TEST, unsigned int)
+#define AOM_CTRL_AV1E_SET_FP_MT_UNIT_TEST
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

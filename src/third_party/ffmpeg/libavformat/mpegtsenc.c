@@ -1140,9 +1140,7 @@ static int mpegts_init(AVFormatContext *s)
     ts->nit.write_packet = section_write_packet;
     ts->nit.opaque       = s;
 
-    ts->pkt = av_packet_alloc();
-    if (!ts->pkt)
-        return AVERROR(ENOMEM);
+    ts->pkt = ffformatcontext(s)->pkt;
 
     /* assign pids to each stream */
     for (i = 0; i < s->nb_streams; i++) {
@@ -2186,8 +2184,6 @@ static void mpegts_deinit(AVFormatContext *s)
     MpegTSService *service;
     int i;
 
-    av_packet_free(&ts->pkt);
-
     for (i = 0; i < s->nb_streams; i++) {
         AVStream *st = s->streams[i];
         MpegTSWriteStream *ts_st = st->priv_data;
@@ -2208,10 +2204,10 @@ static void mpegts_deinit(AVFormatContext *s)
     av_freep(&ts->services);
 }
 
-static int mpegts_check_bitstream(struct AVFormatContext *s, const AVPacket *pkt)
+static int mpegts_check_bitstream(AVFormatContext *s, AVStream *st,
+                                  const AVPacket *pkt)
 {
     int ret = 1;
-    AVStream *st = s->streams[pkt->stream_index];
 
     if (st->codecpar->codec_id == AV_CODEC_ID_H264) {
         if (pkt->size >= 5 && AV_RB32(pkt->data) != 0x0000001 &&

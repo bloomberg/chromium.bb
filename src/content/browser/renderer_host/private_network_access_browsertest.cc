@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -303,8 +304,21 @@ class PrivateNetworkAccessBrowserTest
             {
                 blink::features::kPlzDedicatedWorker,
                 features::kBlockInsecurePrivateNetworkRequests,
+                features::kPrivateNetworkAccessSendPreflights,
             },
             {}) {}
+};
+
+class PrivateNetworkAccessBrowserTestDisableWebSecurity
+    : public PrivateNetworkAccessBrowserTest {
+ public:
+  PrivateNetworkAccessBrowserTestDisableWebSecurity() = default;
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PrivateNetworkAccessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableWebSecurity);
+  }
 };
 
 // Test with insecure private network subresource requests blocked, including
@@ -418,7 +432,6 @@ class PrivateNetworkAccessBrowserTestNoBlocking
             {
                 features::kBlockInsecurePrivateNetworkRequests,
                 features::kBlockInsecurePrivateNetworkRequestsFromPrivate,
-                features::kWarnAboutSecurePrivateNetworkRequests,
                 features::kBlockInsecurePrivateNetworkRequestsForNavigations,
             }) {}
 };
@@ -2169,11 +2182,8 @@ IN_PROC_BROWSER_TEST_F(
 // These tests verify the correct setting of
 // `ClientSecurityState.private_network_request_policy` in various situations.
 
-// This test verifies that with the blocking feature disabled, the private
-// network request policy used by RenderFrameHostImpl is to warn about requests
-// from non-secure contexts.
-IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestNoBlocking,
-                       PrivateNetworkPolicyIsPreflightWarnByDefault) {
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestDisableWebSecurity,
+                       PrivateNetworkPolicyIsAllowInsecure) {
   EXPECT_TRUE(NavigateToURL(shell(), InsecurePublicURL(kDefaultPath)));
 
   const network::mojom::ClientSecurityStatePtr security_state =
@@ -2182,15 +2192,11 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestNoBlocking,
 
   EXPECT_FALSE(security_state->is_web_secure_context);
   EXPECT_EQ(security_state->private_network_request_policy,
-            network::mojom::PrivateNetworkRequestPolicy::kPreflightWarn);
+            network::mojom::PrivateNetworkRequestPolicy::kAllow);
 }
 
-// This test verifies that with the blocking feature disabled, the private
-// network request policy used by RenderFrameHostImpl is to send unenforced
-// preflight requests from secure contexts.
-IN_PROC_BROWSER_TEST_F(
-    PrivateNetworkAccessBrowserTestNoBlocking,
-    PrivateNetworkPolicyIsPreflightWarnByDefaultForSecureContexts) {
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestDisableWebSecurity,
+                       PrivateNetworkPolicyIsAllowSecure) {
   EXPECT_TRUE(NavigateToURL(shell(), SecurePublicURL(kDefaultPath)));
 
   const network::mojom::ClientSecurityStatePtr security_state =
@@ -2199,7 +2205,39 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_TRUE(security_state->is_web_secure_context);
   EXPECT_EQ(security_state->private_network_request_policy,
-            network::mojom::PrivateNetworkRequestPolicy::kPreflightWarn);
+            network::mojom::PrivateNetworkRequestPolicy::kAllow);
+}
+
+// This test verifies that with the blocking feature disabled, the private
+// network request policy used by RenderFrameHostImpl is to warn about requests
+// from non-secure contexts.
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestNoBlocking,
+                       PrivateNetworkPolicyIsWarnByDefault) {
+  EXPECT_TRUE(NavigateToURL(shell(), InsecurePublicURL(kDefaultPath)));
+
+  const network::mojom::ClientSecurityStatePtr security_state =
+      root_frame_host()->BuildClientSecurityState();
+  ASSERT_FALSE(security_state.is_null());
+
+  EXPECT_FALSE(security_state->is_web_secure_context);
+  EXPECT_EQ(security_state->private_network_request_policy,
+            network::mojom::PrivateNetworkRequestPolicy::kWarn);
+}
+
+// This test verifies that with the blocking feature disabled, the private
+// network request policy used by RenderFrameHostImpl is to send unenforced
+// preflight requests from secure contexts.
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestNoBlocking,
+                       PrivateNetworkPolicyIsWarnByDefaultForSecureContexts) {
+  EXPECT_TRUE(NavigateToURL(shell(), SecurePublicURL(kDefaultPath)));
+
+  const network::mojom::ClientSecurityStatePtr security_state =
+      root_frame_host()->BuildClientSecurityState();
+  ASSERT_FALSE(security_state.is_null());
+
+  EXPECT_TRUE(security_state->is_web_secure_context);
+  EXPECT_EQ(security_state->private_network_request_policy,
+            network::mojom::PrivateNetworkRequestPolicy::kAllow);
 }
 
 // This test verifies that by default, the private network request policy used
@@ -2590,6 +2628,17 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestNoBlocking,
                          FetchSubresourceScript(InsecureLocalURL(kCorsPath))));
 }
 
+// Check that the `--disable-web-security` command-line switch disables PNA
+// checks.
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestDisableWebSecurity,
+                       PrivateNetworkRequestIsNotBlocked) {
+  EXPECT_TRUE(NavigateToURL(shell(), InsecureLocalURL(kDefaultPath)));
+
+  // Check that the page can load a local resource.
+  EXPECT_EQ(true, EvalJs(root_frame_host(),
+                         FetchSubresourceScript(InsecureLocalURL(kCorsPath))));
+}
+
 // This test verifies that when preflights are disabled, requests:
 //  - from a secure page with the "treat-as-public-address" CSP directive
 //  - to a local IP address
@@ -2919,7 +2968,7 @@ IN_PROC_BROWSER_TEST_F(
 // TODO(https://crbug.com/1124340): Decide whether this is bad and either change
 // this test or delete this todo.
 IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
-                       FromInsecurePublicToCachedLocalIsBlocked) {
+                       FromInsecurePublicToCachedLocalIsNotBlocked) {
   GURL cached_url = SecureLocalURL(kCacheablePath);
 
   // Cache the resource first, by fetching it from a document in the same IP

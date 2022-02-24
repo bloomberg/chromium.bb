@@ -87,7 +87,6 @@ body>main {
     width: 100%;
     padding: 0;
     margin: 0;
-    user-select: none;
     overscroll-behavior: none;
 }
 
@@ -185,9 +184,6 @@ button.close {
 }
 
 .alerts {
-  * {
-    user-select: text;
-  }
   grid-area: alerts;
   background-color: #f2f2f2;
   >div {
@@ -238,6 +234,12 @@ button.close {
       .dropdown {
         display: inline-block;
         position: relative;
+      }
+      .indent {
+        display: inline-block;
+        // 24px is the width of expand_more/expand_less icon to pad out cells
+        // without the button
+        width: 24px;
       }
       .popup-menu {
         position: absolute;
@@ -449,6 +451,7 @@ canvas.main-canvas {
 
 .panels {
   grid-area: space;
+  user-select: none;
 }
 
 .panel {
@@ -498,13 +501,8 @@ header.overview {
       color: hsl(213, 22%, 40%);
   }
   span.code {
-    user-select: text;
     flex-grow: 1;
   }
-}
-
-.query-error {
-  user-select: text;
 }
 
 button.query-ctrl {
@@ -620,6 +618,10 @@ button.query-ctrl {
     min-height: 40px;
     transition: background-color .4s;
 
+    .track-title {
+      user-select: text;
+    }
+
     .chip {
       background-color: #bed6ff;
       border-radius: 3px;
@@ -698,6 +700,35 @@ button.query-ctrl {
 
 .disallow-selection {
   user-select: none;
+}
+
+.pivot-table-redux {
+  user-select: text;
+
+  button.mode-button {
+    border-radius: 10px;
+    padding: 7px;
+    margin: 5px;
+    background-color: #c7d0db;
+  }
+
+  &.edit {
+    padding: 10px;
+    display: flex;
+  }
+
+  &.query-error {
+    color: red;
+  }
+
+  .total-values {
+    text-align: right;
+    padding-right: 10px;
+  }
+
+  .empty-result {
+    padding: 10px;
+  }
 }
 
 .pivot-table-editor-container {
@@ -785,7 +816,6 @@ button.query-ctrl {
     }
   }
   span {
-    user-select: text;
     flex-grow: 1;
   }
 }

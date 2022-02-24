@@ -143,6 +143,23 @@ static int set_vt_partitioning(AV1_COMP *cpi, MACROBLOCK *const x,
   variance_node vt;
   const int block_width = mi_size_wide[bsize];
   const int block_height = mi_size_high[bsize];
+  int bs_width_check = block_width;
+  int bs_height_check = block_height;
+  int bs_width_vert_check = block_width >> 1;
+  int bs_height_horiz_check = block_height >> 1;
+  // On the right and bottom boundary we only need to check
+  // if half the bsize fits, because boundary is extended
+  // up to 64. So do this check only for sb_size = 64X64.
+  if (cm->seq_params->sb_size == BLOCK_64X64) {
+    if (tile->mi_col_end == cm->mi_params.mi_cols) {
+      bs_width_check = (block_width >> 1) + 1;
+      bs_width_vert_check = (block_width >> 2) + 1;
+    }
+    if (tile->mi_row_end == cm->mi_params.mi_rows) {
+      bs_height_check = (block_height >> 1) + 1;
+      bs_height_horiz_check = (block_height >> 2) + 1;
+    }
+  }
 
   assert(block_height == block_width);
   tree_to_node(data, bsize, &vt);
@@ -155,8 +172,8 @@ static int set_vt_partitioning(AV1_COMP *cpi, MACROBLOCK *const x,
   if (bsize == bsize_min) {
     // Variance already computed to set the force_split.
     if (frame_is_intra_only(cm)) get_variance(&vt.part_variances->none);
-    if (mi_col + block_width <= tile->mi_col_end &&
-        mi_row + block_height <= tile->mi_row_end &&
+    if (mi_col + bs_width_check <= tile->mi_col_end &&
+        mi_row + bs_height_check <= tile->mi_row_end &&
         vt.part_variances->none.variance < threshold) {
       set_block_size(cpi, x, xd, mi_row, mi_col, bsize);
       return 1;
@@ -172,15 +189,15 @@ static int set_vt_partitioning(AV1_COMP *cpi, MACROBLOCK *const x,
       return 0;
     }
     // If variance is low, take the bsize (no split).
-    if (mi_col + block_width <= tile->mi_col_end &&
-        mi_row + block_height <= tile->mi_row_end &&
+    if (mi_col + bs_width_check <= tile->mi_col_end &&
+        mi_row + bs_height_check <= tile->mi_row_end &&
         vt.part_variances->none.variance < threshold) {
       set_block_size(cpi, x, xd, mi_row, mi_col, bsize);
       return 1;
     }
     // Check vertical split.
-    if (mi_row + block_height <= tile->mi_row_end &&
-        mi_col + block_width / 2 <= tile->mi_col_end) {
+    if (mi_row + bs_height_check <= tile->mi_row_end &&
+        mi_col + bs_width_vert_check <= tile->mi_col_end) {
       BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_VERT);
       get_variance(&vt.part_variances->vert[0]);
       get_variance(&vt.part_variances->vert[1]);
@@ -194,8 +211,8 @@ static int set_vt_partitioning(AV1_COMP *cpi, MACROBLOCK *const x,
       }
     }
     // Check horizontal split.
-    if (mi_col + block_width <= tile->mi_col_end &&
-        mi_row + block_height / 2 <= tile->mi_row_end) {
+    if (mi_col + bs_width_check <= tile->mi_col_end &&
+        mi_row + bs_height_horiz_check <= tile->mi_row_end) {
       BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_HORZ);
       get_variance(&vt.part_variances->horz[0]);
       get_variance(&vt.part_variances->horz[1]);
@@ -344,9 +361,8 @@ static AOM_INLINE void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[],
   AV1_COMMON *const cm = &cpi->common;
   const int is_key_frame = frame_is_intra_only(cm);
   const int threshold_multiplier = is_key_frame ? 120 : 1;
-  int64_t threshold_base =
-      (int64_t)(threshold_multiplier *
-                cpi->enc_quant_dequant_params.dequants.y_dequant_QTX[q][1]);
+  const int ac_q = av1_ac_quant_QTX(q, 0, cm->seq_params->bit_depth);
+  int64_t threshold_base = (int64_t)(threshold_multiplier * ac_q);
   const int current_qindex = cm->quant_params.base_qindex;
   const int threshold_left_shift = cpi->sf.rt_sf.var_part_split_threshold_shift;
 
@@ -372,121 +388,127 @@ static AOM_INLINE void set_vbp_thresholds(AV1_COMP *cpi, int64_t thresholds[],
       thresholds[3] = threshold_base >> shift_val;
     }
     thresholds[4] = threshold_base << 2;
-  } else {
-    // Increase partition thresholds for noisy content. Apply it only for
-    // superblocks where sumdiff is low, as we assume the sumdiff of superblock
-    // whose only change is due to noise will be low (i.e, noise will average
-    // out over large block).
-    if (cpi->noise_estimate.enabled && content_lowsumdiff &&
-        (cm->width * cm->height > 640 * 480) &&
-        cm->current_frame.frame_number > 60) {
-      NOISE_LEVEL noise_level =
-          av1_noise_estimate_extract_level(&cpi->noise_estimate);
-      if (noise_level == kHigh)
-        threshold_base = (5 * threshold_base) >> 1;
-      else if (noise_level == kMedium &&
-               !cpi->sf.rt_sf.force_large_partition_blocks)
-        threshold_base = (5 * threshold_base) >> 2;
-    }
-    // TODO(kyslov) Enable var based partition adjusment on temporal denoising
+    return;
+  }
+
+  // Increase partition thresholds for noisy content. Apply it only for
+  // superblocks where sumdiff is low, as we assume the sumdiff of superblock
+  // whose only change is due to noise will be low (i.e, noise will average
+  // out over large block).
+  if (cpi->noise_estimate.enabled && content_lowsumdiff &&
+      (cm->width * cm->height > 640 * 480) &&
+      cm->current_frame.frame_number > 60) {
+    NOISE_LEVEL noise_level =
+        av1_noise_estimate_extract_level(&cpi->noise_estimate);
+    if (noise_level == kHigh)
+      threshold_base = (5 * threshold_base) >> 1;
+    else if (noise_level == kMedium &&
+             !cpi->sf.rt_sf.force_large_partition_blocks)
+      threshold_base = (5 * threshold_base) >> 2;
+  }
+  // TODO(kyslov) Enable var based partition adjusment on temporal denoising
 #if 0  // CONFIG_AV1_TEMPORAL_DENOISING
-    if (cpi->oxcf.noise_sensitivity > 0 && denoise_svc(cpi) &&
-        cpi->oxcf.speed > 5 && cpi->denoiser.denoising_level >= kDenLow)
+  if (cpi->oxcf.noise_sensitivity > 0 && denoise_svc(cpi) &&
+      cpi->oxcf.speed > 5 && cpi->denoiser.denoising_level >= kDenLow)
       threshold_base =
           av1_scale_part_thresh(threshold_base, cpi->denoiser.denoising_level,
                                 content_state, cpi->svc.temporal_layer_id);
-    else
-      threshold_base =
-        scale_part_thresh_content(threshold_base, cpi->oxcf.speed, cm->width,
-                                  cm->height, cpi->svc.non_reference_frame);
-#else
-    // Increase base variance threshold based on content_state/sum_diff level.
+  else
     threshold_base =
         scale_part_thresh_content(threshold_base, cpi->oxcf.speed, cm->width,
                                   cm->height, cpi->svc.non_reference_frame);
+#else
+  // Increase base variance threshold based on content_state/sum_diff level.
+  threshold_base =
+      scale_part_thresh_content(threshold_base, cpi->oxcf.speed, cm->width,
+                                cm->height, cpi->svc.non_reference_frame);
 #endif
-    thresholds[0] = threshold_base >> 1;
-    thresholds[1] = threshold_base;
-    thresholds[3] = threshold_base << threshold_left_shift;
-    if (cm->width >= 1280 && cm->height >= 720)
-      thresholds[3] = thresholds[3] << 1;
-    if (cm->width * cm->height <= 352 * 288) {
-      if (current_qindex >= QINDEX_HIGH_THR) {
-        threshold_base = (5 * threshold_base) >> 1;
-        thresholds[1] = threshold_base >> 3;
-        thresholds[2] = threshold_base << 2;
-        thresholds[3] = threshold_base << 5;
-      } else if (current_qindex < QINDEX_LOW_THR) {
-        thresholds[1] = threshold_base >> 3;
-        thresholds[2] = threshold_base >> 1;
-        thresholds[3] = threshold_base << 3;
-      } else {
-        int64_t qi_diff_low = current_qindex - QINDEX_LOW_THR;
-        int64_t qi_diff_high = QINDEX_HIGH_THR - current_qindex;
-        int64_t threshold_diff = QINDEX_HIGH_THR - QINDEX_LOW_THR;
-        int64_t threshold_base_high = (5 * threshold_base) >> 1;
-
-        threshold_diff = threshold_diff > 0 ? threshold_diff : 1;
-        threshold_base = (qi_diff_low * threshold_base_high +
-                          qi_diff_high * threshold_base) /
-                         threshold_diff;
-        thresholds[1] = threshold_base >> 3;
-        thresholds[2] = ((qi_diff_low * threshold_base) +
-                         qi_diff_high * (threshold_base >> 1)) /
-                        threshold_diff;
-        thresholds[3] = ((qi_diff_low * (threshold_base << 5)) +
-                         qi_diff_high * (threshold_base << 3)) /
-                        threshold_diff;
-      }
-    } else if (cm->width < 1280 && cm->height < 720) {
-      thresholds[2] = (5 * threshold_base) >> 2;
-    } else if (cm->width < 1920 && cm->height < 1080) {
-      thresholds[2] = threshold_base << 1;
+  thresholds[0] = threshold_base >> 1;
+  thresholds[1] = threshold_base;
+  thresholds[3] = threshold_base << threshold_left_shift;
+  if (cm->width >= 1280 && cm->height >= 720)
+    thresholds[3] = thresholds[3] << 1;
+  if (cm->width * cm->height <= 352 * 288) {
+    if (current_qindex >= QINDEX_HIGH_THR) {
+      threshold_base = (5 * threshold_base) >> 1;
+      thresholds[1] = threshold_base >> 3;
+      thresholds[2] = threshold_base << 2;
+      thresholds[3] = threshold_base << 5;
+    } else if (current_qindex < QINDEX_LOW_THR) {
+      thresholds[1] = threshold_base >> 3;
+      thresholds[2] = threshold_base >> 1;
+      thresholds[3] = threshold_base << 3;
     } else {
-      thresholds[2] = (5 * threshold_base) >> 1;
+      int64_t qi_diff_low = current_qindex - QINDEX_LOW_THR;
+      int64_t qi_diff_high = QINDEX_HIGH_THR - current_qindex;
+      int64_t threshold_diff = QINDEX_HIGH_THR - QINDEX_LOW_THR;
+      int64_t threshold_base_high = (5 * threshold_base) >> 1;
+
+      threshold_diff = threshold_diff > 0 ? threshold_diff : 1;
+      threshold_base =
+          (qi_diff_low * threshold_base_high + qi_diff_high * threshold_base) /
+          threshold_diff;
+      thresholds[1] = threshold_base >> 3;
+      thresholds[2] = ((qi_diff_low * threshold_base) +
+                       qi_diff_high * (threshold_base >> 1)) /
+                      threshold_diff;
+      thresholds[3] = ((qi_diff_low * (threshold_base << 5)) +
+                       qi_diff_high * (threshold_base << 3)) /
+                      threshold_diff;
     }
-    if (cpi->sf.rt_sf.force_large_partition_blocks) {
-      double weight;
-      const int win = 20;
-      if (current_qindex < QINDEX_LARGE_BLOCK_THR - win)
-        weight = 1.0;
-      else if (current_qindex > QINDEX_LARGE_BLOCK_THR + win)
-        weight = 0.0;
-      else
-        weight =
-            1.0 - (current_qindex - QINDEX_LARGE_BLOCK_THR + win) / (2 * win);
-      if (cm->width * cm->height > 640 * 480) {
-        for (int i = 0; i < 4; i++) {
-          thresholds[i] <<= 1;
-        }
+  } else if (cm->width < 1280 && cm->height < 720) {
+    thresholds[2] = (5 * threshold_base) >> 2;
+  } else if (cm->width < 1920 && cm->height < 1080) {
+    thresholds[2] = threshold_base << 1;
+  } else {
+    thresholds[2] = (5 * threshold_base) >> 1;
+  }
+  if (cpi->sf.rt_sf.force_large_partition_blocks) {
+    double weight;
+    const int win = 20;
+    if (current_qindex < QINDEX_LARGE_BLOCK_THR - win)
+      weight = 1.0;
+    else if (current_qindex > QINDEX_LARGE_BLOCK_THR + win)
+      weight = 0.0;
+    else
+      weight =
+          1.0 - (current_qindex - QINDEX_LARGE_BLOCK_THR + win) / (2 * win);
+    if (cm->width * cm->height > 640 * 480) {
+      for (int i = 0; i < 4; i++) {
+        thresholds[i] <<= 1;
       }
-      if (cm->width * cm->height <= 352 * 288) {
+    }
+    if (cm->width * cm->height <= 352 * 288) {
+      thresholds[3] = INT32_MAX;
+      if (segment_id == 0) {
         thresholds[1] <<= 2;
-        thresholds[2] <<= 5;
-        thresholds[3] = INT32_MAX;
-        // Condition the increase of partition thresholds on the segment
-        // and the content. Avoid the increase for superblocks which have
-        // high source sad, unless the whole frame has very high motion
-        // (i.e, cpi->rc.avg_source_sad is very large, in which case all blocks
-        // have high source sad).
-      } else if (cm->width * cm->height > 640 * 480 && segment_id == 0 &&
-                 (source_sad != kHighSad || cpi->rc.avg_source_sad > 50000)) {
-        thresholds[0] = (3 * thresholds[0]) >> 1;
-        thresholds[3] = INT32_MAX;
-        if (current_qindex > QINDEX_LARGE_BLOCK_THR) {
-          thresholds[1] = (int)((1 - weight) * (thresholds[1] << 1) +
-                                weight * thresholds[1]);
-          thresholds[2] = (int)((1 - weight) * (thresholds[2] << 1) +
-                                weight * thresholds[2]);
-        }
-      } else if (current_qindex > QINDEX_LARGE_BLOCK_THR && segment_id == 0 &&
-                 (source_sad != kHighSad || cpi->rc.avg_source_sad > 50000)) {
-        thresholds[1] =
-            (int)((1 - weight) * (thresholds[1] << 2) + weight * thresholds[1]);
-        thresholds[2] =
-            (int)((1 - weight) * (thresholds[2] << 4) + weight * thresholds[2]);
-        thresholds[3] = INT32_MAX;
+        thresholds[2] <<= (source_sad == kLowSad) ? 5 : 4;
+      } else {
+        thresholds[1] <<= 1;
+        thresholds[2] <<= 3;
       }
+      // Condition the increase of partition thresholds on the segment
+      // and the content. Avoid the increase for superblocks which have
+      // high source sad, unless the whole frame has very high motion
+      // (i.e, cpi->rc.avg_source_sad is very large, in which case all blocks
+      // have high source sad).
+    } else if (cm->width * cm->height > 640 * 480 && segment_id == 0 &&
+               (source_sad != kHighSad || cpi->rc.avg_source_sad > 50000)) {
+      thresholds[0] = (3 * thresholds[0]) >> 1;
+      thresholds[3] = INT32_MAX;
+      if (current_qindex > QINDEX_LARGE_BLOCK_THR) {
+        thresholds[1] =
+            (int)((1 - weight) * (thresholds[1] << 1) + weight * thresholds[1]);
+        thresholds[2] =
+            (int)((1 - weight) * (thresholds[2] << 1) + weight * thresholds[2]);
+      }
+    } else if (current_qindex > QINDEX_LARGE_BLOCK_THR && segment_id == 0 &&
+               (source_sad != kHighSad || cpi->rc.avg_source_sad > 50000)) {
+      thresholds[1] =
+          (int)((1 - weight) * (thresholds[1] << 2) + weight * thresholds[1]);
+      thresholds[2] =
+          (int)((1 - weight) * (thresholds[2] << 4) + weight * thresholds[2]);
+      thresholds[3] = INT32_MAX;
     }
   }
 }
@@ -1004,6 +1026,9 @@ static void setup_planes(AV1_COMP *cpi, MACROBLOCK *x, unsigned int *y_sad,
 int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
                                       ThreadData *td, MACROBLOCK *x, int mi_row,
                                       int mi_col) {
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  start_timing(cpi, choose_var_based_partitioning_time);
+#endif
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   const int64_t *const vbp_thresholds = cpi->vbp_info.thresholds;
@@ -1281,5 +1306,8 @@ int av1_choose_var_based_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
 
   if (vt2) aom_free(vt2);
   if (vt) aom_free(vt);
+#if CONFIG_COLLECT_COMPONENT_TIMING
+  end_timing(cpi, choose_var_based_partitioning_time);
+#endif
   return 0;
 }

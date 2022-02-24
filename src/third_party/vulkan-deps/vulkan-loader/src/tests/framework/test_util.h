@@ -198,6 +198,10 @@ struct path {
     std::string& str() { return contents; }
     size_t size() const { return contents.size(); };
 
+    // equality
+    bool operator==(path const& other) const noexcept { return contents == other.contents; }
+    bool operator!=(path const& other) const noexcept { return !(*this == other); }
+
    private:
     std::string contents;
 };
@@ -212,8 +216,10 @@ class FolderManager {
    public:
     explicit FolderManager(path root_path, std::string name, DebugMode debug = DebugMode::none);
     ~FolderManager();
-    path write(std::string const& name, ManifestICD const& icd_manifest);
-    path write(std::string const& name, ManifestLayer const& layer_manifest);
+    FolderManager(FolderManager const&) = delete;
+    FolderManager& operator=(FolderManager const&) = delete;
+
+    path write_manifest(std::string const& name, std::string const& contents);
 
     // close file handle, delete file, remove `name` from managed file list.
     void remove(std::string const& name);
@@ -223,9 +229,6 @@ class FolderManager {
 
     // location of the managed folder
     path location() const { return folder; }
-
-    FolderManager(FolderManager const&) = delete;
-    FolderManager& operator=(FolderManager const&) = delete;
 
    private:
     DebugMode debug;
@@ -294,6 +297,20 @@ inline void* loader_platform_get_proc_address(loader_platform_dl_handle library,
 inline const char* loader_platform_get_proc_address_error(const char* name) { return dlerror(); }
 #endif
 
+class FromVoidStarFunc {
+   private:
+    void* function;
+
+   public:
+    FromVoidStarFunc(void* function) : function(function) {}
+    FromVoidStarFunc(PFN_vkVoidFunction function) : function(reinterpret_cast<void*>(function)) {}
+
+    template <typename T>
+    operator T() {
+        return reinterpret_cast<T>(function);
+    }
+};
+
 struct LibraryWrapper {
     explicit LibraryWrapper() noexcept {}
     explicit LibraryWrapper(fs::path const& lib_path) noexcept : lib_path(lib_path) {
@@ -326,15 +343,14 @@ struct LibraryWrapper {
         }
         return *this;
     }
-    template <typename T>
-    T get_symbol(const char* symbol_name) const {
-        assert(lib_handle != NULL && "Cannot get symbol with null library handle");
-        T symbol = reinterpret_cast<T>(loader_platform_get_proc_address(lib_handle, symbol_name));
-        if (symbol == NULL) {
+    FromVoidStarFunc get_symbol(const char* symbol_name) const {
+        assert(lib_handle != nullptr && "Cannot get symbol with null library handle");
+        void* symbol = loader_platform_get_proc_address(lib_handle, symbol_name);
+        if (symbol == nullptr) {
             fprintf(stderr, "Unable to open symbol %s: %s\n", symbol_name, loader_platform_get_proc_address_error(symbol_name));
-            assert(symbol != NULL && "Must be able to get symbol");
+            assert(symbol != nullptr && "Must be able to get symbol");
         }
-        return symbol;
+        return FromVoidStarFunc(symbol);
     }
 
     explicit operator bool() const noexcept { return lib_handle != nullptr; }
@@ -343,6 +359,10 @@ struct LibraryWrapper {
     fs::path lib_path;
 };
 
+template <typename T>
+PFN_vkVoidFunction to_vkVoidFunction(T func) {
+    return reinterpret_cast<PFN_vkVoidFunction>(func);
+}
 template <typename T>
 struct FRAMEWORK_EXPORT DispatchableHandle {
     DispatchableHandle() {
@@ -460,8 +480,10 @@ bool string_eq(const char* a, const char* b) noexcept;
 bool string_eq(const char* a, const char* b, size_t len) noexcept;
 
 inline std::string version_to_string(uint32_t version) {
-    return std::to_string(VK_VERSION_MAJOR(version)) + "." + std::to_string(VK_VERSION_MINOR(version)) + "." +
-           std::to_string(VK_VERSION_PATCH(version));
+    std::string out = std::to_string(VK_API_VERSION_MAJOR(version)) + "." + std::to_string(VK_API_VERSION_MINOR(version)) + "." +
+                      std::to_string(VK_API_VERSION_PATCH(version));
+    if (VK_API_VERSION_VARIANT(version) != 0) out += std::to_string(VK_API_VERSION_VARIANT(version)) + "." + out;
+    return out;
 }
 
 // Macro to ease the definition of variables with builder member functions
@@ -536,7 +558,7 @@ struct ManifestLayer {
             BUILDER_VALUE(FunctionOverride, std::string, vk_func, {})
             BUILDER_VALUE(FunctionOverride, std::string, override_name, {})
 
-            std::string get_manifest_str() const { return std::string("{ \"") + vk_func + "\":\"" + override_name + "\" }"; }
+            std::string get_manifest_str() const { return std::string("\"") + vk_func + "\":\"" + override_name + "\""; }
         };
         struct Extension {
             Extension() noexcept {}
@@ -550,7 +572,7 @@ struct ManifestLayer {
         BUILDER_VALUE(LayerDescription, std::string, name, {})
         BUILDER_VALUE(LayerDescription, Type, type, Type::INSTANCE)
         BUILDER_VALUE(LayerDescription, fs::path, lib_path, {})
-        BUILDER_VALUE(LayerDescription, uint32_t, api_version, VK_MAKE_VERSION(1, 0, 0))
+        BUILDER_VALUE(LayerDescription, uint32_t, api_version, VK_API_VERSION_1_0)
         BUILDER_VALUE(LayerDescription, uint32_t, implementation_version, 0)
         BUILDER_VALUE(LayerDescription, std::string, description, {})
         BUILDER_VECTOR(LayerDescription, FunctionOverride, functions, function)
@@ -559,7 +581,9 @@ struct ManifestLayer {
         BUILDER_VALUE(LayerDescription, std::string, enable_environment, {})
         BUILDER_VALUE(LayerDescription, std::string, disable_environment, {})
         BUILDER_VECTOR(LayerDescription, std::string, component_layers, component_layer)
-        BUILDER_VECTOR(LayerDescription, std::string, pre_instance_functions, pre_instance_function)
+        BUILDER_VECTOR(LayerDescription, std::string, blacklisted_layers, blacklisted_layer)
+        BUILDER_VECTOR(LayerDescription, std::string, override_paths, override_path)
+        BUILDER_VECTOR(LayerDescription, FunctionOverride, pre_instance_functions, pre_instance_function)
 
         std::string get_manifest_str() const;
         VkLayerProperties get_layer_properties() const;
@@ -572,9 +596,9 @@ struct ManifestLayer {
 
 struct Extension {
     BUILDER_VALUE(Extension, std::string, extensionName, {})
-    BUILDER_VALUE(Extension, uint32_t, specVersion, VK_MAKE_VERSION(1, 0, 0))
+    BUILDER_VALUE(Extension, uint32_t, specVersion, VK_API_VERSION_1_0)
 
-    Extension(std::string extensionName, uint32_t specVersion = VK_MAKE_VERSION(1, 0, 0))
+    Extension(std::string extensionName, uint32_t specVersion = VK_API_VERSION_1_0)
         : extensionName(extensionName), specVersion(specVersion) {}
 
     VkExtensionProperties get() const noexcept {
@@ -706,6 +730,32 @@ struct VulkanFunctions {
     PFN_vkGetDeviceQueue vkGetDeviceQueue = nullptr;
 
     VulkanFunctions();
+
+    FromVoidStarFunc load(VkInstance inst, const char* func_name) {
+        return FromVoidStarFunc(vkGetInstanceProcAddr(inst, func_name));
+    }
+
+    FromVoidStarFunc load(VkDevice device, const char* func_name) {
+        return FromVoidStarFunc(vkGetDeviceProcAddr(device, func_name));
+    }
+};
+
+struct DeviceFunctions {
+    PFN_vkGetDeviceProcAddr vkGetDeviceProcAddr = nullptr;
+    PFN_vkDestroyDevice vkDestroyDevice = nullptr;
+    PFN_vkGetDeviceQueue vkGetDeviceQueue = nullptr;
+    PFN_vkCreateCommandPool vkCreateCommandPool = nullptr;
+    PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers = nullptr;
+    PFN_vkDestroyCommandPool vkDestroyCommandPool = nullptr;
+    PFN_vkCreateSwapchainKHR vkCreateSwapchainKHR = nullptr;
+    PFN_vkDestroySwapchainKHR vkDestroySwapchainKHR = nullptr;
+
+    DeviceFunctions() = default;
+    DeviceFunctions(const VulkanFunctions& vulkan_functions, VkDevice device);
+
+    FromVoidStarFunc load(VkDevice device, const char* func_name) const {
+        return FromVoidStarFunc(vkGetDeviceProcAddr(device, func_name));
+    }
 };
 
 struct InstanceCreateInfo {
@@ -715,13 +765,16 @@ struct InstanceCreateInfo {
     BUILDER_VALUE(InstanceCreateInfo, std::string, engine_name, {})
     BUILDER_VALUE(InstanceCreateInfo, uint32_t, app_version, 0)
     BUILDER_VALUE(InstanceCreateInfo, uint32_t, engine_version, 0)
-    BUILDER_VALUE(InstanceCreateInfo, uint32_t, api_version, VK_MAKE_VERSION(1, 0, 0))
+    BUILDER_VALUE(InstanceCreateInfo, uint32_t, api_version, VK_API_VERSION_1_0)
     BUILDER_VECTOR(InstanceCreateInfo, const char*, enabled_layers, layer)
     BUILDER_VECTOR(InstanceCreateInfo, const char*, enabled_extensions, extension)
+    // tell the get() function to not provide `application_info`
+    BUILDER_VALUE(InstanceCreateInfo, bool, fill_in_application_info, true)
 
     InstanceCreateInfo();
 
     VkInstanceCreateInfo* get() noexcept;
+
     InstanceCreateInfo& set_api_version(uint32_t major, uint32_t minor, uint32_t patch);
 };
 
@@ -730,6 +783,7 @@ struct DeviceQueueCreateInfo {
     BUILDER_VECTOR(DeviceQueueCreateInfo, float, priorities, priority)
 
     DeviceQueueCreateInfo();
+    VkDeviceQueueCreateInfo get() noexcept;
 };
 
 struct DeviceCreateInfo {
@@ -737,9 +791,11 @@ struct DeviceCreateInfo {
     BUILDER_VECTOR(DeviceCreateInfo, const char*, enabled_extensions, extension)
     BUILDER_VECTOR(DeviceCreateInfo, const char*, enabled_layers, layer)
     BUILDER_VECTOR(DeviceCreateInfo, DeviceQueueCreateInfo, queue_info_details, device_queue)
-    BUILDER_VECTOR(DeviceCreateInfo, VkDeviceQueueCreateInfo, queue_infos, queue_info)
 
     VkDeviceCreateInfo* get() noexcept;
+
+   private:
+    std::vector<VkDeviceQueueCreateInfo> device_queue_infos;
 };
 
 inline bool operator==(const VkExtent3D& a, const VkExtent3D& b) {
@@ -765,6 +821,36 @@ inline bool operator==(const VkExtensionProperties& a, const VkExtensionProperti
 inline bool operator!=(const VkExtensionProperties& a, const VkExtensionProperties& b) { return !(a == b); }
 
 struct VulkanFunction {
-    const char* name;
+    std::string name;
     void* function;
 };
+template <typename T, size_t U>
+bool check_permutation(std::initializer_list<const char*> expected, std::array<T, U> const& returned) {
+    if (expected.size() != returned.size()) return false;
+    for (uint32_t i = 0; i < expected.size(); i++) {
+        bool found = false;
+        for (auto& elem : returned) {
+            if (string_eq(*(expected.begin() + i), elem.layerName)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) return false;
+    }
+    return true;
+}
+template <typename T, size_t U>
+bool check_permutation(std::initializer_list<const char*> expected, std::vector<T> const& returned) {
+    if (expected.size() != returned.size()) return false;
+    for (uint32_t i = 0; i < expected.size(); i++) {
+        bool found = false;
+        for (auto& elem : returned) {
+            if (string_eq(*(expected.begin() + i), elem.layerName)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) return false;
+    }
+    return true;
+}

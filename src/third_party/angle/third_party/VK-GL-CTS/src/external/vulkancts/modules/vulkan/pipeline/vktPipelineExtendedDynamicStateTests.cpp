@@ -610,7 +610,7 @@ struct MeshParams
 	float		scaleY;
 	float		offsetX;
 	float		offsetY;
-	float		fanScale;
+	float		stripScale;
 
 	MeshParams (const tcu::Vec4&	color_		= kDefaultTriangleColor,
 				float				depth_		= 0.0f,
@@ -619,15 +619,15 @@ struct MeshParams
 				float				scaleY_		= 1.0f,
 				float				offsetX_	= 0.0f,
 				float				offsetY_	= 0.0f,
-				float				fanScale_	= 0.0f)
-		: color		(color_)
-		, depth		(depth_)
-		, reversed	(reversed_)
-		, scaleX	(scaleX_)
-		, scaleY	(scaleY_)
-		, offsetX	(offsetX_)
-		, offsetY	(offsetY_)
-		, fanScale	(fanScale_)
+				float				stripScale_	= 0.0f)
+		: color			(color_)
+		, depth			(depth_)
+		, reversed		(reversed_)
+		, scaleX		(scaleX_)
+		, scaleY		(scaleY_)
+		, offsetX		(offsetX_)
+		, offsetY		(offsetY_)
+		, stripScale	(stripScale_)
 	{}
 };
 
@@ -1125,7 +1125,7 @@ struct PushConstants
 	float		scaleY;
 	float		offsetX;
 	float		offsetY;
-	float		fanScale;
+	float		stripScale;
 };
 
 void copy(vk::VkStencilOpState& dst, const StencilOpParams& src)
@@ -1271,7 +1271,7 @@ void ExtendedDynamicStateTest::initPrograms (vk::SourceCollections& programColle
 		<< "    float scaleY;\n"
 		<< "    float offsetX;\n"
 		<< "    float offsetY;\n"
-		<< "    float fanScale;\n"
+		<< "    float stripScale;\n"
 		<< "} pushConstants;\n"
 		;
 	const auto pushConstants = pushSource.str();
@@ -1314,17 +1314,17 @@ void ExtendedDynamicStateTest::initPrograms (vk::SourceCollections& programColle
 		<< "void main() {\n"
 		<< "${CALCULATIONS}"
 		<< "    gl_Position = vec4(vertexCoords.x * pushConstants.scaleX + pushConstants.offsetX, vertexCoords.y * pushConstants.scaleY + pushConstants.offsetY, pushConstants.depthValue, 1.0);\n"
-		<< "    vec2 fanOffset;\n"
+		<< "    vec2 stripOffset;\n"
 		<< "    switch (gl_VertexIndex) {\n"
-		<< "    case 0: fanOffset = vec2(0.0, 0.0); break;\n"
-		<< "    case 1: fanOffset = vec2(1.0, 0.0); break;\n"
-		<< "    case 2: fanOffset = vec2(1.0, -1.0); break;\n"
-		<< "    case 3: fanOffset = vec2(0.0, -1.0); break;\n"
-		<< "    case 4: fanOffset = vec2(-1.0, -1.0); break;\n"
-		<< "    case 5: fanOffset = vec2(-1.0, 0.0); break;\n"
-		<< "    default: fanOffset = vec2(-1000.0); break;\n"
+		<< "    case 0: stripOffset = vec2(0.0, 0.0); break;\n"
+		<< "    case 1: stripOffset = vec2(0.0, 1.0); break;\n"
+		<< "    case 2: stripOffset = vec2(1.0, 0.0); break;\n"
+		<< "    case 3: stripOffset = vec2(1.0, 1.0); break;\n"
+		<< "    case 4: stripOffset = vec2(2.0, 0.0); break;\n"
+		<< "    case 5: stripOffset = vec2(2.0, 1.0); break;\n"
+		<< "    default: stripOffset = vec2(-1000.0); break;\n"
 		<< "    }\n"
-		<< "    gl_Position.xy += pushConstants.fanScale * fanOffset;\n"
+		<< "    gl_Position.xy += pushConstants.stripScale * stripOffset;\n"
 		<< "}\n"
 		;
 
@@ -1498,43 +1498,43 @@ void copyAndFlush(const vk::DeviceInterface& vkd, vk::VkDevice device, vk::Buffe
 void setDynamicStates(const TestConfig& testConfig, const vk::DeviceInterface& vkd, vk::VkCommandBuffer cmdBuffer)
 {
 	if (testConfig.cullModeConfig.dynamicValue)
-		vkd.cmdSetCullModeEXT(cmdBuffer, testConfig.cullModeConfig.dynamicValue.get());
+		vkd.cmdSetCullMode(cmdBuffer, testConfig.cullModeConfig.dynamicValue.get());
 
 	if (testConfig.frontFaceConfig.dynamicValue)
-		vkd.cmdSetFrontFaceEXT(cmdBuffer, testConfig.frontFaceConfig.dynamicValue.get());
+		vkd.cmdSetFrontFace(cmdBuffer, testConfig.frontFaceConfig.dynamicValue.get());
 
 	if (testConfig.topologyConfig.dynamicValue)
-		vkd.cmdSetPrimitiveTopologyEXT(cmdBuffer, testConfig.topologyConfig.dynamicValue.get());
+		vkd.cmdSetPrimitiveTopology(cmdBuffer, testConfig.topologyConfig.dynamicValue.get());
 
 	if (testConfig.viewportConfig.dynamicValue)
 	{
 		const auto& viewports = testConfig.viewportConfig.dynamicValue.get();
-		vkd.cmdSetViewportWithCountEXT(cmdBuffer, static_cast<deUint32>(viewports.size()), viewports.data());
+		vkd.cmdSetViewportWithCount(cmdBuffer, static_cast<deUint32>(viewports.size()), viewports.data());
 	}
 
 	if (testConfig.scissorConfig.dynamicValue)
 	{
 		const auto& scissors = testConfig.scissorConfig.dynamicValue.get();
-		vkd.cmdSetScissorWithCountEXT(cmdBuffer, static_cast<deUint32>(scissors.size()), scissors.data());
+		vkd.cmdSetScissorWithCount(cmdBuffer, static_cast<deUint32>(scissors.size()), scissors.data());
 	}
 
 	if (testConfig.depthTestEnableConfig.dynamicValue)
-		vkd.cmdSetDepthTestEnableEXT(cmdBuffer, makeVkBool32(testConfig.depthTestEnableConfig.dynamicValue.get()));
+		vkd.cmdSetDepthTestEnable(cmdBuffer, makeVkBool32(testConfig.depthTestEnableConfig.dynamicValue.get()));
 
 	if (testConfig.depthWriteEnableConfig.dynamicValue)
-		vkd.cmdSetDepthWriteEnableEXT(cmdBuffer, makeVkBool32(testConfig.depthWriteEnableConfig.dynamicValue.get()));
+		vkd.cmdSetDepthWriteEnable(cmdBuffer, makeVkBool32(testConfig.depthWriteEnableConfig.dynamicValue.get()));
 
 	if (testConfig.depthCompareOpConfig.dynamicValue)
-		vkd.cmdSetDepthCompareOpEXT(cmdBuffer, testConfig.depthCompareOpConfig.dynamicValue.get());
+		vkd.cmdSetDepthCompareOp(cmdBuffer, testConfig.depthCompareOpConfig.dynamicValue.get());
 
 	if (testConfig.depthBoundsTestEnableConfig.dynamicValue)
-		vkd.cmdSetDepthBoundsTestEnableEXT(cmdBuffer, makeVkBool32(testConfig.depthBoundsTestEnableConfig.dynamicValue.get()));
+		vkd.cmdSetDepthBoundsTestEnable(cmdBuffer, makeVkBool32(testConfig.depthBoundsTestEnableConfig.dynamicValue.get()));
 
 	if (testConfig.stencilTestEnableConfig.dynamicValue)
-		vkd.cmdSetStencilTestEnableEXT(cmdBuffer, makeVkBool32(testConfig.stencilTestEnableConfig.dynamicValue.get()));
+		vkd.cmdSetStencilTestEnable(cmdBuffer, makeVkBool32(testConfig.stencilTestEnableConfig.dynamicValue.get()));
 
 	if (testConfig.depthBiasEnableConfig.dynamicValue)
-		vkd.cmdSetDepthBiasEnableEXT(cmdBuffer, makeVkBool32(testConfig.depthBiasEnableConfig.dynamicValue.get()));
+		vkd.cmdSetDepthBiasEnable(cmdBuffer, makeVkBool32(testConfig.depthBiasEnableConfig.dynamicValue.get()));
 
 	if (testConfig.depthBiasConfig.dynamicValue)
 	{
@@ -1543,10 +1543,10 @@ void setDynamicStates(const TestConfig& testConfig, const vk::DeviceInterface& v
 	}
 
 	if (testConfig.rastDiscardEnableConfig.dynamicValue)
-		vkd.cmdSetRasterizerDiscardEnableEXT(cmdBuffer, makeVkBool32(testConfig.rastDiscardEnableConfig.dynamicValue.get()));
+		vkd.cmdSetRasterizerDiscardEnable(cmdBuffer, makeVkBool32(testConfig.rastDiscardEnableConfig.dynamicValue.get()));
 
 	if (testConfig.primRestartEnableConfig.dynamicValue)
-		vkd.cmdSetPrimitiveRestartEnableEXT(cmdBuffer, makeVkBool32(testConfig.primRestartEnableConfig.dynamicValue.get()));
+		vkd.cmdSetPrimitiveRestartEnable(cmdBuffer, makeVkBool32(testConfig.primRestartEnableConfig.dynamicValue.get()));
 
 	if (testConfig.logicOpConfig.dynamicValue)
 		vkd.cmdSetLogicOpEXT(cmdBuffer, testConfig.logicOpConfig.dynamicValue.get());
@@ -1557,7 +1557,7 @@ void setDynamicStates(const TestConfig& testConfig, const vk::DeviceInterface& v
 	if (testConfig.stencilOpConfig.dynamicValue)
 	{
 		for (const auto& params : testConfig.stencilOpConfig.dynamicValue.get())
-			vkd.cmdSetStencilOpEXT(cmdBuffer, params.faceMask, params.failOp, params.passOp, params.depthFailOp, params.compareOp);
+			vkd.cmdSetStencilOp(cmdBuffer, params.faceMask, params.failOp, params.passOp, params.depthFailOp, params.compareOp);
 	}
 
 	if (testConfig.vertexGenerator.dynamicValue)
@@ -1608,7 +1608,7 @@ bool maybeBindVertexBufferDynStride(const TestConfig& testConfig, const vk::Devi
 		sizes.push_back		(vertBuffer.dataSize);
 	}
 
-	vkd.cmdBindVertexBuffers2EXT(cmdBuffer, 0u, static_cast<deUint32>(chosenBuffers.size()), buffers.data(), offsets.data(), sizes.data(), strides.data());
+	vkd.cmdBindVertexBuffers2(cmdBuffer, 0u, static_cast<deUint32>(chosenBuffers.size()), buffers.data(), offsets.data(), sizes.data(), strides.data());
 
 	return true;
 }
@@ -1837,13 +1837,18 @@ tcu::TestStatus ExtendedDynamicStateInstance::iterate (void)
 	if (topologyClass == TopologyClass::TRIANGLE)
 	{
 		DE_ASSERT(!vertices.empty());
-		rvertices.reserve(6u);
-                rvertices.push_back(vertices[1]);
-                rvertices.push_back(vertices[0]);
-                rvertices.push_back(vertices[3]);
-                rvertices.push_back(vertices[2]);
-                rvertices.push_back(vertices[5]);
-                rvertices.push_back(vertices[4]);
+		if (m_testConfig.singleVertex)
+			rvertices.push_back(vertices[0]);
+		else
+		{
+			rvertices.reserve(6u);
+			rvertices.push_back(vertices[1]);
+			rvertices.push_back(vertices[0]);
+			rvertices.push_back(vertices[3]);
+			rvertices.push_back(vertices[2]);
+			rvertices.push_back(vertices[5]);
+			rvertices.push_back(vertices[4]);
+		}
 	}
 
 	if (topologyClass != TopologyClass::TRIANGLE)
@@ -2380,14 +2385,14 @@ tcu::TestStatus ExtendedDynamicStateInstance::iterate (void)
 					// Push constants.
 					PushConstants pushConstants =
 					{
-						m_testConfig.meshParams[meshIdx].color,		//	tcu::Vec4	triangleColor;
-						m_testConfig.meshParams[meshIdx].depth,		//	float		meshDepth;
-						static_cast<deInt32>(viewportIdx),			//	deInt32		viewPortIndex;
-						m_testConfig.meshParams[meshIdx].scaleX,	//	float		scaleX;
-						m_testConfig.meshParams[meshIdx].scaleY,	//	float		scaleY;
-						m_testConfig.meshParams[meshIdx].offsetX,	//	float		offsetX;
-						m_testConfig.meshParams[meshIdx].offsetY,	//	float		offsetY;
-						m_testConfig.meshParams[meshIdx].fanScale,	//	float		fanScale;
+						m_testConfig.meshParams[meshIdx].color,			//	tcu::Vec4	triangleColor;
+						m_testConfig.meshParams[meshIdx].depth,			//	float		meshDepth;
+						static_cast<deInt32>(viewportIdx),				//	deInt32		viewPortIndex;
+						m_testConfig.meshParams[meshIdx].scaleX,		//	float		scaleX;
+						m_testConfig.meshParams[meshIdx].scaleY,		//	float		scaleY;
+						m_testConfig.meshParams[meshIdx].offsetX,		//	float		offsetX;
+						m_testConfig.meshParams[meshIdx].offsetY,		//	float		offsetY;
+						m_testConfig.meshParams[meshIdx].stripScale,	//	float		stripScale;
 					};
 					vkd.cmdPushConstants(cmdBuffer, pipelineLayout.get(), pushConstantStageFlags, 0u, static_cast<deUint32>(sizeof(pushConstants)), &pushConstants);
 
@@ -2899,13 +2904,17 @@ tcu::TestCaseGroup* createExtendedDynamicStateTests (tcu::TestContext& testCtx)
 			}
 
 			// Dynamic stride of 0
+			//
+			// The "two_draws" variants are invalid because the non-zero vertex stride will cause out-of-bounds access
+			// when drawing more than one vertex.
+			if (kOrdering != SequenceOrdering::TWO_DRAWS_STATIC && kOrdering != SequenceOrdering::TWO_DRAWS_DYNAMIC)
 			{
 				TestConfig config(kOrdering, getVertexWithExtraAttributesGenerator());
 				config.strideConfig.staticValue		= config.getActiveVertexGenerator()->getVertexDataStrides();
 				config.strideConfig.dynamicValue	= { 0 };
 				config.vertexDataOffset				= 4;
-				config.singleVertex                 = true;
-				config.singleVertexDrawCount        = 6;
+				config.singleVertex					= true;
+				config.singleVertexDrawCount		= 6;
 
 				// Make the mesh cover the top half only. If the implementation reads data outside the vertex data it should read the
 				// offscreen vertex and draw something in the bottom half.
@@ -2913,8 +2922,8 @@ tcu::TestCaseGroup* createExtendedDynamicStateTests (tcu::TestContext& testCtx)
 				config.meshParams[0].scaleY		= 0.5f;
 				config.meshParams[0].offsetY	= -0.5f;
 
-				// Use fan scale to synthesize a fan from a vertex attribute which remains constant over the draw call.
-				config.meshParams[0].fanScale = 1.0f;
+				// Use strip scale to synthesize a strip from a vertex attribute which remains constant over the draw call.
+				config.meshParams[0].stripScale = 1.0f;
 
 				orderingGroup->addChild(new ExtendedDynamicStateTest(testCtx, "zero_stride_with_offset", "Dynamically set zero stride using a nonzero vertex data offset", config));
 			}

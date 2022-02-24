@@ -37,7 +37,7 @@ struct traits<Homogeneous<MatrixType,Direction> >
 {
   typedef typename traits<MatrixType>::StorageKind StorageKind;
   typedef typename ref_selector<MatrixType>::type MatrixTypeNested;
-  typedef typename remove_reference<MatrixTypeNested>::type _MatrixTypeNested;
+  typedef typename remove_reference<MatrixTypeNested>::type MatrixTypeNested_;
   enum {
     RowsPlusOne = (MatrixType::RowsAtCompileTime != Dynamic) ?
                   int(MatrixType::RowsAtCompileTime) + 1 : Dynamic,
@@ -47,7 +47,7 @@ struct traits<Homogeneous<MatrixType,Direction> >
     ColsAtCompileTime = Direction==Horizontal ? ColsPlusOne : MatrixType::ColsAtCompileTime,
     MaxRowsAtCompileTime = RowsAtCompileTime,
     MaxColsAtCompileTime = ColsAtCompileTime,
-    TmpFlags = _MatrixTypeNested::Flags & HereditaryBits,
+    TmpFlags = MatrixTypeNested_::Flags & HereditaryBits,
     Flags = ColsAtCompileTime==1 ? (TmpFlags & ~RowMajorBit)
           : RowsAtCompileTime==1 ? (TmpFlags | RowMajorBit)
           : TmpFlags

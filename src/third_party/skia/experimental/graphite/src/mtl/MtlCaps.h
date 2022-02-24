@@ -42,6 +42,12 @@ public:
 
     bool isRenderable(const skgpu::TextureInfo&) const override;
 
+    void buildKeyForTexture(SkISize dimensions,
+                            const skgpu::TextureInfo&,
+                            ResourceType,
+                            Shareable,
+                            GraphiteResourceKey*) const override;
+
 private:
     void initGPUFamily(const id<MTLDevice>);
 
@@ -63,6 +69,8 @@ private:
     bool onIsTexturable(const skgpu::TextureInfo&) const override;
     bool isTexturable(MTLPixelFormat) const;
     bool isRenderable(MTLPixelFormat, uint32_t numSamples) const;
+
+    size_t getTransferBufferAlignment(size_t bytesPerPixel) const override;
 
     GPUFamily fGPUFamily;
     int fFamilyGroup;

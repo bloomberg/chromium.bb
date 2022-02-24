@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,6 @@ struct wrapped_inst_obj {
     bool direct_display_enabled;
     bool display_surf_counter_enabled;
 };
-
 
 struct wrapped_dev_obj {
     VkLayerDispatchTable *loader_disp;
@@ -175,8 +174,7 @@ VKAPI_ATTR VkResult VKAPI_CALL wrap_vkCreateInstance(const VkInstanceCreateInfo 
     for (uint32_t layer = 0; layer < pCreateInfo->enabledLayerCount; ++layer) {
         std::string layer_name = pCreateInfo->ppEnabledLayerNames[layer];
         std::transform(layer_name.begin(), layer_name.end(), layer_name.begin(), ::tolower);
-        if (layer_name.find("wrap") != std::string::npos &&
-            layer_name.find("obj") != std::string::npos) {
+        if (layer_name.find("wrap") != std::string::npos && layer_name.find("obj") != std::string::npos) {
             found = true;
             break;
         }
@@ -427,14 +425,25 @@ VKAPI_ATTR VkResult VKAPI_CALL wrap_vkEnumerateDeviceExtensionProperties(VkPhysi
                 ext_count = 0;
 #if TEST_LAYER_EXPORT_MAINT_1
                 if (ext_count < count) {
+#if defined(_WIN32)
+                    strncpy_s(pProperties[ext_count].extensionName, VK_MAX_EXTENSION_NAME_SIZE, VK_KHR_MAINTENANCE1_EXTENSION_NAME,
+                              strlen(VK_KHR_MAINTENANCE1_EXTENSION_NAME) + 1);
+#else
                     strcpy(pProperties[ext_count].extensionName, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+#endif
                     pProperties[ext_count].specVersion = 2;
                     ext_count++;
                 }
 #endif
 #if TEST_LAYER_EXPORT_PRESENT_IMAGE
                 if (ext_count < count) {
+#if defined(_WIN32)
+                    strncpy_s(pProperties[ext_count].extensionName, VK_MAX_EXTENSION_NAME_SIZE,
+                              VK_KHR_SHARED_PRESENTABLE_IMAGE_EXTENSION_NAME,
+                              strlen(VK_KHR_SHARED_PRESENTABLE_IMAGE_EXTENSION_NAME) + 1);
+#else
                     strcpy(pProperties[ext_count].extensionName, VK_KHR_SHARED_PRESENTABLE_IMAGE_EXTENSION_NAME);
+#endif
                     pProperties[ext_count].specVersion = 1;
                     ext_count++;
                 }
@@ -513,19 +522,28 @@ VKAPI_ATTR void VKAPI_CALL wrap_vkDestroyDevice(VkDevice device, const VkAllocat
 }
 
 // Fake instance extension support
-VKAPI_ATTR VkResult VKAPI_CALL wrap_vkReleaseDisplayEXT(
-    VkPhysicalDevice                            physicalDevice,
-    VkDisplayKHR                                display) { return VK_SUCCESS; }
+VKAPI_ATTR VkResult VKAPI_CALL wrap_vkReleaseDisplayEXT(VkPhysicalDevice physicalDevice, VkDisplayKHR display) {
+    return VK_SUCCESS;
+}
 
-VKAPI_ATTR VkResult VKAPI_CALL wrap_vkGetPhysicalDeviceSurfaceCapabilities2EXT(
-    VkPhysicalDevice                            physicalDevice,
-    VkSurfaceKHR                                surface,
-    VkSurfaceCapabilities2EXT*                  pSurfaceCapabilities) { return VK_SUCCESS; }
+VKAPI_ATTR VkResult VKAPI_CALL wrap_vkGetPhysicalDeviceSurfaceCapabilities2EXT(VkPhysicalDevice physicalDevice,
+                                                                               VkSurfaceKHR surface,
+                                                                               VkSurfaceCapabilities2EXT *pSurfaceCapabilities) {
+    if (nullptr != pSurfaceCapabilities) {
+        pSurfaceCapabilities->minImageCount = 7;
+        pSurfaceCapabilities->maxImageCount = 12;
+        pSurfaceCapabilities->maxImageArrayLayers = 365;
+    }
+    return VK_SUCCESS;
+}
 
 // Fake device extension support
 VKAPI_ATTR void VKAPI_CALL wrap_vkTrimCommandPoolKHR(VkDevice device, VkCommandPool commandPool, VkCommandPoolTrimFlags flags) {}
 
-VKAPI_ATTR VkResult VKAPI_CALL wrap_vkGetSwapchainStatusKHR(VkDevice device, VkSwapchainKHR swapchain) { return VK_SUCCESS; }
+// Return an odd error so we can verify that this actually got called
+VKAPI_ATTR VkResult VKAPI_CALL wrap_vkGetSwapchainStatusKHR(VkDevice device, VkSwapchainKHR swapchain) {
+    return VK_ERROR_NATIVE_WINDOW_IN_USE_KHR;
+}
 
 PFN_vkVoidFunction layer_intercept_device_proc(wrapped_dev_obj *dev, const char *name) {
     if (!name || name[0] != 'v' || name[1] != 'k') return NULL;

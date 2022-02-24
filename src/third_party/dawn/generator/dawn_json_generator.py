@@ -71,6 +71,9 @@ class Name:
     def namespace_case(self):
         return '::'.join(self.chunks)
 
+    def Dirs(self):
+        return '/'.join(self.chunks)
+
     def js_enum_case(self):
         result = self.chunks[0].lower()
         for chunk in self.chunks[1:]:
@@ -760,8 +763,8 @@ class MultiGeneratorFromDawnJSON(Generator):
 
     def add_commandline_arguments(self, parser):
         allowed_targets = [
-            'dawn_headers', 'dawncpp_headers', 'dawncpp', 'dawn_proc',
-            'mock_api', 'dawn_wire', "dawn_native_utils"
+            'dawn_headers', 'cpp_headers', 'cpp', 'proc', 'mock_api', 'wire',
+            'native_utils'
         ]
 
         parser.add_argument('--dawn-json',
@@ -799,26 +802,26 @@ class MultiGeneratorFromDawnJSON(Generator):
 
         api = metadata.api.lower()
         prefix = metadata.proc_table_prefix.lower()
-        if 'dawn_headers' in targets:
+        if 'headers' in targets:
             renders.append(
-                FileRender('api.h', 'src/include/dawn/' + api + '.h',
+                FileRender('api.h', 'include/dawn/' + api + '.h',
                            [RENDER_PARAMS_BASE, params_dawn]))
             renders.append(
                 FileRender('dawn_proc_table.h',
-                           'src/include/dawn/' + prefix + '_proc_table.h',
+                           'include/dawn/' + prefix + '_proc_table.h',
                            [RENDER_PARAMS_BASE, params_dawn]))
 
-        if 'dawncpp_headers' in targets:
+        if 'cpp_headers' in targets:
             renders.append(
-                FileRender('api_cpp.h', 'src/include/dawn/' + api + '_cpp.h',
+                FileRender('api_cpp.h', 'include/dawn/' + api + '_cpp.h',
                            [RENDER_PARAMS_BASE, params_dawn]))
 
             renders.append(
                 FileRender('api_cpp_print.h',
-                           'src/include/dawn/' + api + '_cpp_print.h',
+                           'include/dawn/' + api + '_cpp_print.h',
                            [RENDER_PARAMS_BASE, params_dawn]))
 
-        if 'dawn_proc' in targets:
+        if 'proc' in targets:
             renders.append(
                 FileRender('dawn_proc.c', 'src/dawn/' + prefix + '_proc.c',
                            [RENDER_PARAMS_BASE, params_dawn]))
@@ -829,11 +832,11 @@ class MultiGeneratorFromDawnJSON(Generator):
 
         if 'webgpu_dawn_native_proc' in targets:
             renders.append(
-                FileRender('dawn_native/api_dawn_native_proc.cpp',
-                           'src/dawn_native/webgpu_dawn_native_proc.cpp',
+                FileRender('dawn/native/api_dawn_native_proc.cpp',
+                           'src/dawn/native/webgpu_dawn_native_proc.cpp',
                            [RENDER_PARAMS_BASE, params_dawn]))
 
-        if 'dawncpp' in targets:
+        if 'cpp' in targets:
             renders.append(
                 FileRender('api_cpp.cpp', 'src/dawn/' + api + '_cpp.cpp',
                            [RENDER_PARAMS_BASE, params_dawn]))
@@ -846,8 +849,8 @@ class MultiGeneratorFromDawnJSON(Generator):
                            [RENDER_PARAMS_BASE, params_upstream]))
 
         if 'emscripten_bits' in targets:
-            params_emscripten = parse_json(
-                loaded_json, enabled_tags=['upstream', 'emscripten'])
+            params_emscripten = parse_json(loaded_json,
+                                           enabled_tags=['emscripten'])
             renders.append(
                 FileRender('api.h', 'emscripten-bits/' + api + '.h',
                            [RENDER_PARAMS_BASE, params_emscripten]))
@@ -879,7 +882,7 @@ class MultiGeneratorFromDawnJSON(Generator):
                 FileRender('mock_api.cpp', 'src/dawn/mock_' + api + '.cpp',
                            mock_params))
 
-        if 'dawn_native_utils' in targets:
+        if 'native_utils' in targets:
             frontend_params = [
                 RENDER_PARAMS_BASE,
                 params_dawn,
@@ -892,57 +895,57 @@ class MultiGeneratorFromDawnJSON(Generator):
             ]
 
             impl_dir = metadata.impl_dir + '/' if metadata.impl_dir else ''
-            native_dir = impl_dir + Name(metadata.native_namespace).snake_case()
+            native_dir = impl_dir + Name(metadata.native_namespace).Dirs()
             namespace = metadata.namespace
             renders.append(
-                FileRender('dawn_native/ValidationUtils.h',
+                FileRender('dawn/native/ValidationUtils.h',
                            'src/' + native_dir + '/ValidationUtils_autogen.h',
                            frontend_params))
             renders.append(
-                FileRender('dawn_native/ValidationUtils.cpp',
+                FileRender('dawn/native/ValidationUtils.cpp',
                            'src/' + native_dir + '/ValidationUtils_autogen.cpp',
                            frontend_params))
             renders.append(
-                FileRender('dawn_native/dawn_platform.h',
+                FileRender('dawn/native/dawn_platform.h',
                            'src/' + native_dir + '/' + prefix + '_platform_autogen.h',
                            frontend_params))
             renders.append(
-                FileRender('dawn_native/api_structs.h',
+                FileRender('dawn/native/api_structs.h',
                            'src/' + native_dir + '/' + namespace + '_structs_autogen.h',
                            frontend_params))
             renders.append(
-                FileRender('dawn_native/api_structs.cpp',
+                FileRender('dawn/native/api_structs.cpp',
                            'src/' + native_dir + '/' + namespace + '_structs_autogen.cpp',
                            frontend_params))
             renders.append(
-                FileRender('dawn_native/ProcTable.cpp',
+                FileRender('dawn/native/ProcTable.cpp',
                            'src/' + native_dir + '/ProcTable.cpp', frontend_params))
             renders.append(
-                FileRender('dawn_native/ChainUtils.h',
+                FileRender('dawn/native/ChainUtils.h',
                            'src/' + native_dir + '/ChainUtils_autogen.h',
                            frontend_params))
             renders.append(
-                FileRender('dawn_native/ChainUtils.cpp',
+                FileRender('dawn/native/ChainUtils.cpp',
                            'src/' + native_dir + '/ChainUtils_autogen.cpp',
                            frontend_params))
             renders.append(
-                FileRender('dawn_native/api_absl_format.h',
+                FileRender('dawn/native/api_absl_format.h',
                            'src/' + native_dir + '/' + api + '_absl_format_autogen.h',
                            frontend_params))
             renders.append(
-                FileRender('dawn_native/api_absl_format.cpp',
+                FileRender('dawn/native/api_absl_format.cpp',
                            'src/' + native_dir + '/' + api + '_absl_format_autogen.cpp',
                            frontend_params))
             renders.append(
-                FileRender('dawn_native/ObjectType.h',
+                FileRender('dawn/native/ObjectType.h',
                            'src/' + native_dir + '/ObjectType_autogen.h',
                            frontend_params))
             renders.append(
-                FileRender('dawn_native/ObjectType.cpp',
+                FileRender('dawn/native/ObjectType.cpp',
                            'src/' + native_dir + '/ObjectType_autogen.cpp',
                            frontend_params))
 
-        if 'dawn_wire' in targets:
+        if 'wire' in targets:
             params_dawn_wire = parse_json(loaded_json,
                                           enabled_tags=['dawn', 'deprecated'],
                                           disabled_tags=['native'])
@@ -957,51 +960,51 @@ class MultiGeneratorFromDawnJSON(Generator):
                 }, additional_params
             ]
             renders.append(
-                FileRender('dawn_wire/ObjectType.h',
-                           'src/dawn_wire/ObjectType_autogen.h', wire_params))
+                FileRender('dawn/wire/ObjectType.h',
+                           'src/dawn/wire/ObjectType_autogen.h', wire_params))
             renders.append(
-                FileRender('dawn_wire/WireCmd.h',
-                           'src/dawn_wire/WireCmd_autogen.h', wire_params))
+                FileRender('dawn/wire/WireCmd.h',
+                           'src/dawn/wire/WireCmd_autogen.h', wire_params))
             renders.append(
-                FileRender('dawn_wire/WireCmd.cpp',
-                           'src/dawn_wire/WireCmd_autogen.cpp', wire_params))
+                FileRender('dawn/wire/WireCmd.cpp',
+                           'src/dawn/wire/WireCmd_autogen.cpp', wire_params))
             renders.append(
-                FileRender('dawn_wire/client/ApiObjects.h',
-                           'src/dawn_wire/client/ApiObjects_autogen.h',
+                FileRender('dawn/wire/client/ApiObjects.h',
+                           'src/dawn/wire/client/ApiObjects_autogen.h',
                            wire_params))
             renders.append(
-                FileRender('dawn_wire/client/ApiProcs.cpp',
-                           'src/dawn_wire/client/ApiProcs_autogen.cpp',
+                FileRender('dawn/wire/client/ApiProcs.cpp',
+                           'src/dawn/wire/client/ApiProcs_autogen.cpp',
                            wire_params))
             renders.append(
-                FileRender('dawn_wire/client/ClientBase.h',
-                           'src/dawn_wire/client/ClientBase_autogen.h',
+                FileRender('dawn/wire/client/ClientBase.h',
+                           'src/dawn/wire/client/ClientBase_autogen.h',
                            wire_params))
             renders.append(
-                FileRender('dawn_wire/client/ClientHandlers.cpp',
-                           'src/dawn_wire/client/ClientHandlers_autogen.cpp',
+                FileRender('dawn/wire/client/ClientHandlers.cpp',
+                           'src/dawn/wire/client/ClientHandlers_autogen.cpp',
                            wire_params))
             renders.append(
                 FileRender(
-                    'dawn_wire/client/ClientPrototypes.inc',
-                    'src/dawn_wire/client/ClientPrototypes_autogen.inc',
+                    'dawn/wire/client/ClientPrototypes.inc',
+                    'src/dawn/wire/client/ClientPrototypes_autogen.inc',
                     wire_params))
             renders.append(
-                FileRender('dawn_wire/server/ServerBase.h',
-                           'src/dawn_wire/server/ServerBase_autogen.h',
+                FileRender('dawn/wire/server/ServerBase.h',
+                           'src/dawn/wire/server/ServerBase_autogen.h',
                            wire_params))
             renders.append(
-                FileRender('dawn_wire/server/ServerDoers.cpp',
-                           'src/dawn_wire/server/ServerDoers_autogen.cpp',
+                FileRender('dawn/wire/server/ServerDoers.cpp',
+                           'src/dawn/wire/server/ServerDoers_autogen.cpp',
                            wire_params))
             renders.append(
-                FileRender('dawn_wire/server/ServerHandlers.cpp',
-                           'src/dawn_wire/server/ServerHandlers_autogen.cpp',
+                FileRender('dawn/wire/server/ServerHandlers.cpp',
+                           'src/dawn/wire/server/ServerHandlers_autogen.cpp',
                            wire_params))
             renders.append(
                 FileRender(
-                    'dawn_wire/server/ServerPrototypes.inc',
-                    'src/dawn_wire/server/ServerPrototypes_autogen.inc',
+                    'dawn/wire/server/ServerPrototypes.inc',
+                    'src/dawn/wire/server/ServerPrototypes_autogen.inc',
                     wire_params))
 
         return renders

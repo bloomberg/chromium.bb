@@ -5,7 +5,7 @@ fn func(a: i32) -> i32 {
   return 0;
 }
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   return;
 }

@@ -17,6 +17,7 @@
       'android-arm-compile': 'angle_goma_android_arm_release_bot',
       'android-arm-dbg-compile': 'angle_goma_android_arm_debug_bot',
       'android-arm64-dbg-compile': 'angle_goma_android_arm64_debug_bot',
+      'android-arm64-exp-test': 'angle_goma_android_arm64_release_bot',
       'android-arm64-test': 'angle_goma_android_arm64_release_bot',
       'android-pixel4-perf': 'angle_goma_android_perf_bot',
       'linux-asan-test': 'angle_asan_bot',
@@ -100,7 +101,7 @@
       'gn_args': 'use_goma=true',
     },
     'non_clang': {
-      'gn_args': 'is_clang=false build_angle_deqp_tests=false',
+      'gn_args': 'is_clang=false',
     },
     'perf': {
       'gn_args': 'is_debug=false dcheck_always_on=false symbol_level=1',

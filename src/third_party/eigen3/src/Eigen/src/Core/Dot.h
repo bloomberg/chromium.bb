@@ -125,8 +125,8 @@ template<typename Derived>
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const typename MatrixBase<Derived>::PlainObject
 MatrixBase<Derived>::normalized() const
 {
-  typedef typename internal::nested_eval<Derived,2>::type _Nested;
-  _Nested n(derived());
+  typedef typename internal::nested_eval<Derived,2>::type Nested_;
+  Nested_ n(derived());
   RealScalar z = n.squaredNorm();
   // NOTE: after extensive benchmarking, this conditional does not impact performance, at least on recent x86 CPU
   if(z>RealScalar(0))
@@ -168,8 +168,8 @@ template<typename Derived>
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const typename MatrixBase<Derived>::PlainObject
 MatrixBase<Derived>::stableNormalized() const
 {
-  typedef typename internal::nested_eval<Derived,3>::type _Nested;
-  _Nested n(derived());
+  typedef typename internal::nested_eval<Derived,3>::type Nested_;
+  Nested_ n(derived());
   RealScalar w = n.cwiseAbs().maxCoeff();
   RealScalar z = (n/w).squaredNorm();
   if(z>RealScalar(0))

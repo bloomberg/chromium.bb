@@ -1012,6 +1012,11 @@ export namespace ProtocolMapping {
       paramsType: [Protocol.CSS.SetContainerQueryTextRequest]; returnType: Protocol.CSS.SetContainerQueryTextResponse;
     };
     /**
+     * Modifies the expression of a supports at-rule.
+     */
+    'CSS.setSupportsText':
+        {paramsType: [Protocol.CSS.SetSupportsTextRequest]; returnType: Protocol.CSS.SetSupportsTextResponse;};
+    /**
      * Modifies the rule selector.
      */
     'CSS.setRuleSelector':
@@ -1138,7 +1143,7 @@ export namespace ProtocolMapping {
     /**
      * Enables DOM agent for the given page.
      */
-    'DOM.enable': {paramsType: []; returnType: void;};
+    'DOM.enable': {paramsType: [Protocol.DOM.EnableRequest?]; returnType: void;};
     /**
      * Focuses the given element.
      */
@@ -3115,6 +3120,17 @@ export namespace ProtocolMapping {
      * unsubscribes current runtime agent from Runtime.bindingCalled notifications.
      */
     'Runtime.removeBinding': {paramsType: [Protocol.Runtime.RemoveBindingRequest]; returnType: void;};
+    /**
+     * This method tries to lookup and populate exception details for a
+     * JavaScript Error object.
+     * Note that the stackTrace portion of the resulting exceptionDetails will
+     * only be populated if the Runtime domain was enabled at the time when the
+     * Error was thrown.
+     */
+    'Runtime.getExceptionDetails': {
+      paramsType: [Protocol.Runtime.GetExceptionDetailsRequest];
+      returnType: Protocol.Runtime.GetExceptionDetailsResponse;
+    };
     /**
      * Returns supported domains.
      */

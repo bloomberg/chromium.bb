@@ -198,6 +198,7 @@ class FixedArray
 
   // Dispatched behavior.
   DECL_PRINTER(FixedArray)
+  DECL_VERIFIER(FixedArray)
 
   int AllocatedSize();
 
@@ -383,7 +384,7 @@ class WeakArrayList
   inline void CopyElements(Isolate* isolate, int dst_index, WeakArrayList src,
                            int src_index, int len, WriteBarrierMode mode);
 
-  V8_EXPORT_PRIVATE bool IsFull();
+  V8_EXPORT_PRIVATE bool IsFull() const;
 
   int AllocatedSize();
 
@@ -484,6 +485,8 @@ class ArrayList : public TorqueGeneratedArrayList<ArrayList, FixedArray> {
   static const int kLengthIndex = 0;
   static const int kFirstIndex = 1;
   STATIC_ASSERT(kHeaderFields == kFirstIndex);
+
+  DECL_VERIFIER(ArrayList)
 
  private:
   static Handle<ArrayList> EnsureSpace(Isolate* isolate,
@@ -592,6 +595,13 @@ class PodArray : public ByteArray {
   bool matches(const T* buffer, int length) {
     DCHECK_LE(length, this->length());
     return memcmp(GetDataStartAddress(), buffer, length * sizeof(T)) == 0;
+  }
+
+  bool matches(int offset, const T* buffer, int length) {
+    DCHECK_LE(offset, this->length());
+    DCHECK_LE(offset + length, this->length());
+    return memcmp(GetDataStartAddress() + sizeof(T) * offset, buffer,
+                  length * sizeof(T)) == 0;
   }
 
   T get(int index) {

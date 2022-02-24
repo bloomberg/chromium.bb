@@ -105,6 +105,7 @@ static const AVOption sdp_options[] = {
     { "custom_io", "use custom I/O", 0, AV_OPT_TYPE_CONST, {.i64 = RTSP_FLAG_CUSTOM_IO}, 0, 0, DEC, "rtsp_flags" },
     { "rtcp_to_source", "send RTCP packets to the source address of received packets", 0, AV_OPT_TYPE_CONST, {.i64 = RTSP_FLAG_RTCP_TO_SOURCE}, 0, 0, DEC, "rtsp_flags" },
     { "listen_timeout", "set maximum timeout (in seconds) to wait for incoming connections", OFFSET(stimeout), AV_OPT_TYPE_DURATION, {.i64 = READ_PACKET_TIMEOUT_S*1000000}, INT_MIN, INT64_MAX, DEC },
+    { "localaddr",          "local address",                                                 OFFSET(localaddr),AV_OPT_TYPE_STRING,   {.str = NULL}, 0, 0, DEC }, \
     RTSP_MEDIATYPE_OPTS("allowed_media_types", "set media types to accept from the server"),
     COMMON_OPTS(),
     { NULL },
@@ -113,6 +114,7 @@ static const AVOption sdp_options[] = {
 static const AVOption rtp_options[] = {
     RTSP_FLAG_OPTS("rtp_flags", "set RTP flags"),
     { "listen_timeout", "set maximum timeout (in seconds) to wait for incoming connections", OFFSET(stimeout), AV_OPT_TYPE_DURATION, {.i64 = READ_PACKET_TIMEOUT_S*1000000}, INT_MIN, INT64_MAX, DEC },
+    { "localaddr",          "local address",                                                 OFFSET(localaddr),AV_OPT_TYPE_STRING,   {.str = NULL}, 0, 0, DEC }, \
     RTSP_MEDIATYPE_OPTS("allowed_media_types", "set media types to accept from the server"),
     COMMON_OPTS(),
     { NULL },
@@ -125,6 +127,8 @@ static AVDictionary *map_to_opts(RTSPState *rt)
 
     av_dict_set_int(&opts, "buffer_size", rt->buffer_size, 0);
     av_dict_set_int(&opts, "pkt_size",    rt->pkt_size,    0);
+    if (rt->localaddr && rt->localaddr[0])
+        av_dict_set(&opts, "localaddr", rt->localaddr, 0);
 
     return opts;
 }
@@ -242,6 +246,7 @@ static void finalize_rtp_handler_init(AVFormatContext *s, RTSPStream *rtsp_st,
     }
 }
 
+#if CONFIG_RTSP_DEMUXER
 static int init_satip_stream(AVFormatContext *s)
 {
     RTSPState *rt = s->priv_data;
@@ -270,6 +275,7 @@ static int init_satip_stream(AVFormatContext *s)
     }
     return 0;
 }
+#endif
 
 /* parse the rtpmap description: <codec_name>/<clock_rate>[/<other params>] */
 static int sdp_parse_rtpmap(AVFormatContext *s,
@@ -383,10 +389,9 @@ static void copy_default_source_addrs(struct RTSPSource **addrs, int count,
     int i;
     for (i = 0; i < count; i++) {
         rtsp_src = addrs[i];
-        rtsp_src2 = av_malloc(sizeof(*rtsp_src2));
+        rtsp_src2 = av_memdup(rtsp_src, sizeof(*rtsp_src));
         if (!rtsp_src2)
             continue;
-        memcpy(rtsp_src2, rtsp_src, sizeof(*rtsp_src));
         dynarray_add(dest, dest_count, rtsp_src2);
     }
 }
@@ -1142,7 +1147,7 @@ void ff_rtsp_parse_line(AVFormatContext *s,
 }
 
 /* skip a RTP/TCP interleaved packet */
-void ff_rtsp_skip_packet(AVFormatContext *s)
+int ff_rtsp_skip_packet(AVFormatContext *s)
 {
     RTSPState *rt = s->priv_data;
     int ret, len, len1;
@@ -1150,7 +1155,7 @@ void ff_rtsp_skip_packet(AVFormatContext *s)
 
     ret = ffurl_read_complete(rt->rtsp_hd, buf, 3);
     if (ret != 3)
-        return;
+        return ret < 0 ? ret : AVERROR(EIO);
     len = AV_RB16(buf + 1);
 
     av_log(s, AV_LOG_TRACE, "skipping RTP packet len=%d\n", len);
@@ -1162,9 +1167,11 @@ void ff_rtsp_skip_packet(AVFormatContext *s)
             len1 = sizeof(buf);
         ret = ffurl_read_complete(rt->rtsp_hd, buf, len1);
         if (ret != len1)
-            return;
+            return ret < 0 ? ret : AVERROR(EIO);
         len -= len1;
     }
+
+    return 0;
 }
 
 int ff_rtsp_read_reply(AVFormatContext *s, RTSPMessageHeader *reply,
@@ -1175,8 +1182,8 @@ int ff_rtsp_read_reply(AVFormatContext *s, RTSPMessageHeader *reply,
     char buf[MAX_URL_SIZE], buf1[MAX_URL_SIZE], *q;
     unsigned char ch;
     const char *p;
-    int ret, content_length, line_count = 0, request = 0;
-    unsigned char *content = NULL;
+    int ret, content_length, line_count, request;
+    unsigned char *content;
 
 start:
     line_count = 0;
@@ -1192,14 +1199,17 @@ start:
             ret = ffurl_read_complete(rt->rtsp_hd, &ch, 1);
             av_log(s, AV_LOG_TRACE, "ret=%d c=%02x [%c]\n", ret, ch, ch);
             if (ret != 1)
-                return AVERROR_EOF;
+                return ret < 0 ? ret : AVERROR(EIO);
             if (ch == '\n')
                 break;
             if (ch == '$' && q == buf) {
                 if (return_on_interleaved_data) {
                     return 1;
-                } else
-                    ff_rtsp_skip_packet(s);
+                } else {
+                    ret = ff_rtsp_skip_packet(s);
+                    if (ret < 0)
+                        return ret;
+                }
             } else if (ch != '\r') {
                 if ((q - buf) < sizeof(buf) - 1)
                     *q++ = ch;
@@ -1242,8 +1252,10 @@ start:
         content = av_malloc(content_length + 1);
         if (!content)
             return AVERROR(ENOMEM);
-        if (ffurl_read_complete(rt->rtsp_hd, content, content_length) != content_length)
-            return AVERROR(EIO);
+        if ((ret = ffurl_read_complete(rt->rtsp_hd, content, content_length)) != content_length) {
+            av_freep(&content);
+            return ret < 0 ? ret : AVERROR(EIO);
+        }
         content[content_length] = '\0';
     }
     if (content_ptr)
@@ -1996,6 +2008,7 @@ redirect:
 #endif /* CONFIG_RTSP_DEMUXER || CONFIG_RTSP_MUXER */
 
 #if CONFIG_RTPDEC
+#if CONFIG_RTSP_DEMUXER
 static int parse_rtsp_message(AVFormatContext *s)
 {
     RTSPState *rt = s->priv_data;
@@ -2018,6 +2031,7 @@ static int parse_rtsp_message(AVFormatContext *s)
 
     return 0;
 }
+#endif
 
 static int udp_read_packet(AVFormatContext *s, RTSPStream **prtsp_st,
                            uint8_t *buf, int buf_size, int64_t wait_end)
@@ -2369,9 +2383,9 @@ static int sdp_read_header(AVFormatContext *s)
 {
     RTSPState *rt = s->priv_data;
     RTSPStream *rtsp_st;
-    int size, i, err;
-    char *content;
+    int i, err;
     char url[MAX_URL_SIZE];
+    AVBPrint bp;
 
     if (!ff_network_init())
         return AVERROR(EIO);
@@ -2382,22 +2396,15 @@ static int sdp_read_header(AVFormatContext *s)
         rt->lower_transport = RTSP_LOWER_TRANSPORT_CUSTOM;
 
     /* read the whole sdp file */
-    /* XXX: better loading */
-    content = av_malloc(SDP_MAX_SIZE);
-    if (!content) {
+    av_bprint_init(&bp, 0, AV_BPRINT_SIZE_UNLIMITED);
+    err = avio_read_to_bprint(s->pb, &bp, INT_MAX);
+    if (err < 0 ) {
         ff_network_close();
-        return AVERROR(ENOMEM);
+        av_bprint_finalize(&bp, NULL);
+        return err;
     }
-    size = avio_read(s->pb, content, SDP_MAX_SIZE - 1);
-    if (size <= 0) {
-        av_free(content);
-        ff_network_close();
-        return AVERROR_INVALIDDATA;
-    }
-    content[size] ='\0';
-
-    err = ff_sdp_parse(s, content);
-    av_freep(&content);
+    err = ff_sdp_parse(s, bp.str);
+    av_bprint_finalize(&bp, NULL);
     if (err) goto fail;
 
     /* open each RTP stream */
@@ -2407,6 +2414,8 @@ static int sdp_read_header(AVFormatContext *s)
 
         if (!(rt->rtsp_flags & RTSP_FLAG_CUSTOM_IO)) {
             AVDictionary *opts = map_to_opts(rt);
+            char buf[MAX_URL_SIZE];
+            const char *p;
 
             err = getnameinfo((struct sockaddr*) &rtsp_st->sdp_ip,
                               sizeof(rtsp_st->sdp_ip),
@@ -2424,6 +2433,11 @@ static int sdp_read_header(AVFormatContext *s)
                         rt->rtsp_flags & RTSP_FLAG_FILTER_SRC ? 1 : 0,
                         rt->rtsp_flags & RTSP_FLAG_RTCP_TO_SOURCE ? 1 : 0);
 
+            p = strchr(s->url, '?');
+            if (p && av_find_info_tag(buf, sizeof(buf), "localaddr", p))
+                av_strlcatf(url, sizeof(url), "&localaddr=%s", buf);
+            else if (rt->localaddr && rt->localaddr[0])
+                av_strlcatf(url, sizeof(url), "&localaddr=%s", rt->localaddr);
             append_source_addrs(url, sizeof(url), "sources",
                                 rtsp_st->nb_include_source_addrs,
                                 rtsp_st->include_source_addrs);

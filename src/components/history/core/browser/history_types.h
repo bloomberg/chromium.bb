@@ -817,21 +817,36 @@ struct ClusterVisit {
   // visit is to the containing cluster.
   float score = 0.0;
 
+  // Flagged as true if this cluster visit matches the user's search query.
+  // This value depends on the user's search query, and is not meant to be ever
+  // persisted. It's a UI-state-specific flag that's convenient to buffer here.
+  bool matches_search_query = false;
+
   // A list of visits that have been de-duplicated into this visit. The parent
   // visit is considered the best visit among all the duplicates, and the worse
   // visits are now contained here.
   std::vector<ClusterVisit> duplicate_visits;
 
+  // The site engagement score of the URL associated with this visit. This
+  // should not be used by the UI.
+  float engagement_score = 0.0;
+
+  // The visit URL modified for better dupe finding.  The result may not be
+  // navigable or even valid; it's only meant to be used for detecting
+  // duplicates. This is similar in intent to
+  // `AutocompleteMatch::stripped_destination_url`, but is not the same, as
+  // History Clusters and Omnibox have different deduping requirements.
+  GURL url_for_deduping;
+
+  // TODO(crbug/1296394): Remove the below fields once most clients have
+  // persisted search metadata.
+
   // The normalized URL for the visit (i.e. a SRP URL normalized based on the
   // user's default search provider).
   GURL normalized_url;
 
-  // Whether this visit contained a user-input search or query.
-  bool is_search_visit = false;
-
-  // The site engagement score of the URL associated with this visit. This
-  // should not be used by the UI.
-  float engagement_score = 0.0;
+  // The user-input search query if this visit is a search visit.
+  std::u16string search_terms;
 };
 
 // A cluster of `ClusterVisit`s with associated metadata (i.e. `keywords` and

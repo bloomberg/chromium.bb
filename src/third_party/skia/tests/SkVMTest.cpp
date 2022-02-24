@@ -2134,7 +2134,9 @@ DEF_TEST(SkVM_approx_math, r) {
 
     auto compare = [r](int N, const float values[], const float expected[]) {
         for (int i = 0; i < N; ++i) {
-            REPORTER_ASSERT(r, SkScalarNearlyEqual(values[i], expected[i], 0.001f));
+            REPORTER_ASSERT(r, (values[i] == expected[i]) ||
+                               SkScalarNearlyEqual(values[i], expected[i], 0.001f),
+                               "evaluated to %g, but expected %g", values[i], expected[i]);
         }
     };
 
@@ -2151,24 +2153,33 @@ DEF_TEST(SkVM_approx_math, r) {
 
     // pow2
     {
-        float values[] = {-2, -1, 0, 1, 2, 3};
+        float values[] = {-80, -5, -2, -1, 0, 1, 2, 3, 5, 160};
         constexpr int N = SK_ARRAY_COUNT(values);
         eval(N, values, [](skvm::Builder* b, skvm::F32 v) {
             return b->approx_pow2(v);
         });
-        const float expected[] = {0.25f, 0.5f, 1, 2, 4, 8};
+        const float expected[] = {0, 0.03125f, 0.25f, 0.5f, 1, 2, 4, 8, 32, INFINITY};
         compare(N, values, expected);
     }
-
-    // powf -- x^0.5
+    // powf -- 1^x
     {
-        float bases[] = {0, 1, 4, 9, 16};
-        constexpr int N = SK_ARRAY_COUNT(bases);
-        eval(N, bases, [](skvm::Builder* b, skvm::F32 base) {
-            return b->approx_powf(base, b->splat(0.5f));
+        float exps[] = {-2, -1, 0, 1, 2};
+        constexpr int N = SK_ARRAY_COUNT(exps);
+        eval(N, exps, [](skvm::Builder* b, skvm::F32 exp) {
+            return b->approx_powf(b->splat(1.0f), exp);
         });
-        const float expected[] = {0, 1, 2, 3, 4};
-        compare(N, bases, expected);
+        const float expected[] = {1, 1, 1, 1, 1};
+        compare(N, exps, expected);
+    }
+    // powf -- 2^x
+    {
+        float exps[] = {-80, -5, -2, -1, 0, 1, 2, 3, 5, 160};
+        constexpr int N = SK_ARRAY_COUNT(exps);
+        eval(N, exps, [](skvm::Builder* b, skvm::F32 exp) {
+            return b->approx_powf(2.0, exp);
+        });
+        const float expected[] = {0, 0.03125f, 0.25f, 0.5f, 1, 2, 4, 8, 32, INFINITY};
+        compare(N, exps, expected);
     }
     // powf -- 3^x
     {
@@ -2179,6 +2190,36 @@ DEF_TEST(SkVM_approx_math, r) {
         });
         const float expected[] = {1/9.0f, 1/3.0f, 1, 3, 9};
         compare(N, exps, expected);
+    }
+    // powf -- x^0.5
+    {
+        float bases[] = {0, 1, 4, 9, 16};
+        constexpr int N = SK_ARRAY_COUNT(bases);
+        eval(N, bases, [](skvm::Builder* b, skvm::F32 base) {
+            return b->approx_powf(base, b->splat(0.5f));
+        });
+        const float expected[] = {0, 1, 2, 3, 4};
+        compare(N, bases, expected);
+    }
+    // powf -- x^1
+    {
+        float bases[] = {0, 1, 2, 3, 4};
+        constexpr int N = SK_ARRAY_COUNT(bases);
+        eval(N, bases, [](skvm::Builder* b, skvm::F32 base) {
+            return b->approx_powf(base, b->splat(1.0f));
+        });
+        const float expected[] = {0, 1, 2, 3, 4};
+        compare(N, bases, expected);
+    }
+    // powf -- x^2
+    {
+        float bases[] = {0, 1, 2, 3, 4};
+        constexpr int N = SK_ARRAY_COUNT(bases);
+        eval(N, bases, [](skvm::Builder* b, skvm::F32 base) {
+            return b->approx_powf(base, b->splat(2.0f));
+        });
+        const float expected[] = {0, 1, 4, 9, 16};
+        compare(N, bases, expected);
     }
 
     auto test = [r](float arg, float expected, float tolerance, auto prog) {
@@ -2244,7 +2285,7 @@ DEF_TEST(SkVM_approx_math, r) {
                 return approx_tan(x - 3*P);
             });
         }
-        if (0) { SkDebugf("tan error %g\n", err); }
+        if ((false)) { SkDebugf("tan error %g\n", err); }
     }
 
     // asin, acos, atan
@@ -2259,7 +2300,7 @@ DEF_TEST(SkVM_approx_math, r) {
                 return approx_acos(x);
             });
         }
-        if (0) { SkDebugf("asin error %g\n", err); }
+        if ((false)) { SkDebugf("asin error %g\n", err); }
 
         err = 0;
         for (float x = -10; x <= 10; x += 1.0f/16) {
@@ -2267,7 +2308,7 @@ DEF_TEST(SkVM_approx_math, r) {
                 return approx_atan(x);
             });
         }
-        if (0) { SkDebugf("atan error %g\n", err); }
+        if ((false)) { SkDebugf("atan error %g\n", err); }
 
         for (float y = -3; y <= 3; y += 1) {
             for (float x = -3; x <= 3; x += 1) {
@@ -2276,7 +2317,7 @@ DEF_TEST(SkVM_approx_math, r) {
                 });
             }
         }
-        if (0) { SkDebugf("atan2 error %g\n", err); }
+        if ((false)) { SkDebugf("atan2 error %g\n", err); }
     }
 }
 
@@ -2812,7 +2853,7 @@ DEF_TEST(SkVM_Visualizer, r) {
     SkSL::Compiler compiler(&caps);
     SkSL::Program::Settings settings;
     auto program = compiler.convertProgram(SkSL::ProgramKind::kGeneric,
-                                           SkSL::String(src), settings);
+                                           std::string(src), settings);
     const SkSL::FunctionDefinition* main = SkSL::Program_GetFunction(*program, "main");
     SkSL::SkVMDebugTrace d;
     d.setSource(src);

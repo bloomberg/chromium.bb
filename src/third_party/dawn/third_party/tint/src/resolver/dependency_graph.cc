@@ -24,7 +24,7 @@
 #include "src/ast/fallthrough_statement.h"
 #include "src/ast/traverse_expressions.h"
 #include "src/scope_stack.h"
-#include "src/sem/intrinsic.h"
+#include "src/sem/builtin.h"
 #include "src/utils/defer.h"
 #include "src/utils/map.h"
 #include "src/utils/scoped_assignment.h"
@@ -154,7 +154,7 @@ class DependencyScanner {
     }
     if (auto* func = global->node->As<ast::Function>()) {
       Declare(func->symbol, func);
-      TraverseDecorations(func->decorations);
+      TraverseAttributes(func->attributes);
       TraverseFunction(func);
       return;
     }
@@ -297,7 +297,7 @@ class DependencyScanner {
           if (auto* ident = expr->As<ast::IdentifierExpression>()) {
             auto* node = scope_stack_.Get(ident->symbol);
             if (node == nullptr) {
-              if (!IsIntrinsic(ident->symbol)) {
+              if (!IsBuiltin(ident->symbol)) {
                 UnknownSymbol(ident->symbol, ident->source, "identifier");
               }
               return ast::TraverseAction::Descend;
@@ -313,7 +313,7 @@ class DependencyScanner {
           }
           if (auto* call = expr->As<ast::CallExpression>()) {
             if (call->target.name) {
-              if (!IsIntrinsic(call->target.name->symbol)) {
+              if (!IsBuiltin(call->target.name->symbol)) {
                 AddGlobalDependency(call->target.name,
                                     call->target.name->symbol, "function",
                                     "calls");
@@ -385,36 +385,35 @@ class DependencyScanner {
     UnhandledNode(diagnostics_, ty);
   }
 
-  /// Traverses the decoration list, performing symbol resolution and
+  /// Traverses the attribute list, performing symbol resolution and
   /// determining global dependencies.
-  void TraverseDecorations(const ast::DecorationList& decos) {
-    for (auto* deco : decos) {
-      TraverseDecoration(deco);
+  void TraverseAttributes(const ast::AttributeList& attrs) {
+    for (auto* attr : attrs) {
+      TraverseAttribute(attr);
     }
   }
 
-  /// Traverses the decoration, performing symbol resolution and determining
+  /// Traverses the attribute, performing symbol resolution and determining
   /// global dependencies.
-  void TraverseDecoration(const ast::Decoration* deco) {
-    if (auto* wg = deco->As<ast::WorkgroupDecoration>()) {
+  void TraverseAttribute(const ast::Attribute* attr) {
+    if (auto* wg = attr->As<ast::WorkgroupAttribute>()) {
       TraverseExpression(wg->x);
       TraverseExpression(wg->y);
       TraverseExpression(wg->z);
       return;
     }
-    if (deco->IsAnyOf<ast::BindingDecoration, ast::BuiltinDecoration,
-                      ast::GroupDecoration, ast::InternalDecoration,
-                      ast::InterpolateDecoration, ast::InvariantDecoration,
-                      ast::LocationDecoration, ast::OverrideDecoration,
-                      ast::StageDecoration, ast::StrideDecoration,
-                      ast::StructBlockDecoration,
-                      ast::StructMemberAlignDecoration,
-                      ast::StructMemberOffsetDecoration,
-                      ast::StructMemberSizeDecoration>()) {
+    if (attr->IsAnyOf<
+            ast::BindingAttribute, ast::BuiltinAttribute, ast::GroupAttribute,
+            ast::IdAttribute, ast::InternalAttribute, ast::InterpolateAttribute,
+            ast::InvariantAttribute, ast::LocationAttribute,
+            ast::StageAttribute, ast::StrideAttribute,
+            ast::StructBlockAttribute, ast::StructMemberAlignAttribute,
+            ast::StructMemberOffsetAttribute,
+            ast::StructMemberSizeAttribute>()) {
       return;
     }
 
-    UnhandledNode(diagnostics_, deco);
+    UnhandledNode(diagnostics_, attr);
   }
 
   /// Adds the dependency to the currently processed global
@@ -437,10 +436,10 @@ class DependencyScanner {
     }
   }
 
-  /// @returns true if `name` is the name of an intrinsic function
-  bool IsIntrinsic(Symbol name) const {
-    return sem::ParseIntrinsicType(symbols_.NameFor(name)) !=
-           sem::IntrinsicType::kNone;
+  /// @returns true if `name` is the name of a builtin function
+  bool IsBuiltin(Symbol name) const {
+    return sem::ParseBuiltinType(symbols_.NameFor(name)) !=
+           sem::BuiltinType::kNone;
   }
 
   /// Appends an error to the diagnostics that the given symbol cannot be
@@ -475,7 +474,7 @@ struct DependencyAnalysis {
   /// Performs global dependency analysis on the module, emitting any errors to
   /// #diagnostics.
   /// @returns true if analysis found no errors, otherwise false.
-  bool Run(const ast::Module& module, bool allow_out_of_order_decls) {
+  bool Run(const ast::Module& module) {
     // Collect all the named globals from the AST module
     GatherGlobals(module);
 
@@ -487,11 +486,6 @@ struct DependencyAnalysis {
 
     // Dump the dependency graph if TINT_DUMP_DEPENDENCY_GRAPH is non-zero
     DumpDependencyGraph();
-
-    if (!allow_out_of_order_decls) {
-      // Prevent out-of-order declarations.
-      ErrorOnOutOfOrderDeclarations();
-    }
 
     graph_.ordered_globals = std::move(sorted_);
 
@@ -669,36 +663,6 @@ struct DependencyAnalysis {
     return {};
   }
 
-  // TODO(crbug.com/tint/1266): Errors if there are any uses of globals before
-  // their declaration. Out-of-order declarations was added to the WGSL
-  // specification with https://github.com/gpuweb/gpuweb/pull/2244, but Mozilla
-  // have objections to this change so this feature is currently disabled via
-  // this function.
-  void ErrorOnOutOfOrderDeclarations() {
-    if (diagnostics_.contains_errors()) {
-      // Might have already errored about cyclic dependencies. No need to report
-      // out-of-order errors as well.
-      return;
-    }
-    std::unordered_set<const Global*> seen;
-    for (auto* global : declaration_order_) {
-      for (auto* dep : global->deps) {
-        if (!seen.count(dep)) {
-          auto info = DepInfoFor(global, dep);
-          auto name = NameOf(dep->node);
-          AddError(diagnostics_,
-                   KindOf(dep->node) + " '" + name +
-                       "' used before it has been declared",
-                   info.source);
-          AddNote(diagnostics_,
-                  KindOf(dep->node) + " '" + name + "' declared here",
-                  dep->node->source);
-        }
-      }
-      seen.emplace(global);
-    }
-  }
-
   /// CyclicDependencyFound() emits an error diagnostic for a cyclic dependency.
   /// @param root is the global that starts the cyclic dependency, which must be
   /// found in `stack`.
@@ -790,10 +754,9 @@ DependencyGraph::~DependencyGraph() = default;
 bool DependencyGraph::Build(const ast::Module& module,
                             const SymbolTable& symbols,
                             diag::List& diagnostics,
-                            DependencyGraph& output,
-                            bool allow_out_of_order_decls) {
+                            DependencyGraph& output) {
   DependencyAnalysis da{symbols, diagnostics, output};
-  return da.Run(module, allow_out_of_order_decls);
+  return da.Run(module);
 }
 
 }  // namespace resolver

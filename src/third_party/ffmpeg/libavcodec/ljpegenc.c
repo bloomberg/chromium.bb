@@ -238,7 +238,7 @@ static int ljpeg_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
     init_put_bits(&pb, pkt->data, pkt->size);
 
-    ff_mjpeg_encode_picture_header(avctx, &pb, &s->scantable,
+    ff_mjpeg_encode_picture_header(avctx, &pb, NULL, &s->scantable,
                                    s->pred, s->matrix, s->matrix);
 
     header_bits = put_bits_count(&pb);
@@ -293,12 +293,12 @@ static av_cold int ljpeg_encode_init(AVCodecContext *avctx)
 
     ff_mjpeg_build_huffman_codes(s->huff_size_dc_luminance,
                                  s->huff_code_dc_luminance,
-                                 avpriv_mjpeg_bits_dc_luminance,
-                                 avpriv_mjpeg_val_dc);
+                                 ff_mjpeg_bits_dc_luminance,
+                                 ff_mjpeg_val_dc);
     ff_mjpeg_build_huffman_codes(s->huff_size_dc_chrominance,
                                  s->huff_code_dc_chrominance,
-                                 avpriv_mjpeg_bits_dc_chrominance,
-                                 avpriv_mjpeg_val_dc);
+                                 ff_mjpeg_bits_dc_chrominance,
+                                 ff_mjpeg_val_dc);
 
     return 0;
 }

@@ -4,13 +4,18 @@
 
 #include "services/network/sct_auditing/sct_auditing_handler.h"
 
+#include <algorithm>
+
 #include "base/base64.h"
+#include "base/containers/cxx20_erase.h"
+#include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/rand_util.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
@@ -21,6 +26,7 @@
 #include "net/base/backoff_entry.h"
 #include "net/base/backoff_entry_serializer.h"
 #include "net/base/hash_value.h"
+#include "net/cert/merkle_tree_leaf.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
@@ -48,6 +54,7 @@ std::string LoadReports(const base::FilePath& path) {
 const char kReporterKeyKey[] = "reporter_key";
 const char kBackoffEntryKey[] = "backoff_entry";
 const char kReportKey[] = "report";
+const char kSCTHashdanceMetadataKey[] = "sct_metadata";
 
 }  // namespace
 
@@ -58,8 +65,8 @@ SCTAuditingHandler::SCTAuditingHandler(NetworkContext* context,
       pending_reporters_(cache_size),
       persistence_path_(persistence_path),
       foreground_runner_(base::SequencedTaskRunnerHandle::Get()) {
-  if (base::FeatureList::IsEnabled(
-          features::kSCTAuditingRetryAndPersistReports)) {
+  if (base::FeatureList::IsEnabled(features::kSCTAuditingRetryReports) &&
+      base::FeatureList::IsEnabled(features::kSCTAuditingPersistReports)) {
     // If no persistence path is set, only store pending reporters in memory.
     if (persistence_path_.empty()) {
       return;
@@ -89,6 +96,67 @@ SCTAuditingHandler::~SCTAuditingHandler() {
   }
 }
 
+void SCTAuditingHandler::MaybeEnqueueReport(
+    const net::HostPortPair& host_port_pair,
+    const net::X509Certificate* validated_certificate_chain,
+    const net::SignedCertificateTimestampAndStatusList&
+        signed_certificate_timestamps) {
+  if (mode_ == mojom::SCTAuditingMode::kDisabled) {
+    return;
+  }
+
+  // Only audit valid SCTs. This ensures that they come from a known log, have
+  // a valid signature, and thus are expected to be public certificates. If
+  // there are no valid SCTs, there's no need to report anything.
+  net::SignedCertificateTimestampAndStatusList validated_scts;
+  std::copy_if(
+      signed_certificate_timestamps.begin(),
+      signed_certificate_timestamps.end(), std::back_inserter(validated_scts),
+      [](const auto& sct) { return sct.status == net::ct::SCT_STATUS_OK; });
+  if (validated_scts.empty()) {
+    return;
+  }
+
+  absl::optional<SCTAuditingReporter::SCTHashdanceMetadata> sct_metadata;
+  if (mode_ == mojom::SCTAuditingMode::kHashdance) {
+    // Randomly select a single entry and calculate its leaf hash for the
+    // hashdance lookup query.
+    sct_metadata.emplace();
+    const net::ct::SignedCertificateTimestamp* sct =
+        validated_scts.at(base::RandInt(0, validated_scts.size() - 1))
+            .sct.get();
+    sct_metadata->issued = sct->timestamp;
+    net::ct::MerkleTreeLeaf tree_leaf;
+    bool result = net::ct::GetMerkleTreeLeaf(validated_certificate_chain, sct,
+                                             &tree_leaf);
+    DCHECK(result);
+    result = net::ct::HashMerkleTreeLeaf(tree_leaf, &sct_metadata->leaf_hash);
+    DCHECK(result);
+
+    // Find the corresponding log entry metadata.
+    const std::vector<mojom::CTLogInfoPtr>& logs =
+        owner_network_context_->network_service()->log_list();
+    auto log = std::find_if(logs.begin(), logs.end(), [&sct](const auto& log) {
+      return log->id == sct->log_id;
+    });
+    CHECK(log != logs.end());
+    sct_metadata->log_id = log->get()->id;
+    sct_metadata->log_mmd = log->get()->mmd;
+    sct_metadata->certificate_expiry =
+        validated_certificate_chain->valid_expiry();
+  }
+  absl::optional<SCTAuditingCache::ReportEntry> report =
+      owner_network_context_->network_service()
+          ->sct_auditing_cache()
+          ->MaybeGenerateReportEntry(
+              host_port_pair, validated_certificate_chain, validated_scts);
+  if (!report) {
+    return;
+  }
+  AddReporter(std::move(report->key), std::move(report->report),
+              std::move(sct_metadata));
+}
+
 bool SCTAuditingHandler::SerializeData(std::string* output) {
   DCHECK(foreground_runner_->RunsTasksInCurrentSequence());
 
@@ -100,6 +168,11 @@ bool SCTAuditingHandler::SerializeData(std::string* output) {
     base::Value report_entry(base::Value::Type::DICTIONARY);
 
     report_entry.SetStringKey(kReporterKeyKey, reporter_key.ToString());
+
+    if (reporter->sct_hashdance_metadata()) {
+      report_entry.SetKey(kSCTHashdanceMetadataKey,
+                          reporter->sct_hashdance_metadata()->ToValue());
+    }
 
     base::Value backoff_entry_value =
         net::BackoffEntrySerializer::SerializeToValue(
@@ -126,7 +199,7 @@ void SCTAuditingHandler::DeserializeData(const std::string& serialized) {
   }
 
   size_t num_reporters_deserialized = 0u;
-  for (const base::Value& sct_entry : value->GetList()) {
+  for (base::Value& sct_entry : value->GetListDeprecated()) {
     if (!sct_entry.is_dict()) {
       continue;
     }
@@ -134,6 +207,8 @@ void SCTAuditingHandler::DeserializeData(const std::string& serialized) {
     const std::string* reporter_key_string =
         sct_entry.FindStringKey(kReporterKeyKey);
     const std::string* report_string = sct_entry.FindStringKey(kReportKey);
+    const absl::optional<base::Value> sct_metadata_value =
+        sct_entry.ExtractKey(kSCTHashdanceMetadataKey);
     const base::Value* backoff_entry_value =
         sct_entry.FindKey(kBackoffEntryKey);
 
@@ -174,7 +249,17 @@ void SCTAuditingHandler::DeserializeData(const std::string& serialized) {
       continue;
     }
 
-    AddReporter(cache_key, std::move(audit_report), std::move(backoff_entry));
+    absl::optional<SCTAuditingReporter::SCTHashdanceMetadata> sct_metadata;
+    if (sct_metadata_value) {
+      sct_metadata = SCTAuditingReporter::SCTHashdanceMetadata::FromValue(
+          *sct_metadata_value);
+      if (!sct_metadata) {
+        continue;
+      }
+    }
+
+    AddReporter(cache_key, std::move(audit_report), std::move(sct_metadata),
+                std::move(backoff_entry));
     ++num_reporters_deserialized;
   }
   // TODO(crbug.com/1144205): Add metrics for number of reporters deserialized.
@@ -194,24 +279,33 @@ void SCTAuditingHandler::OnStartupFinished() {
 void SCTAuditingHandler::AddReporter(
     net::HashValue reporter_key,
     std::unique_ptr<sct_auditing::SCTClientReport> report,
+    absl::optional<SCTAuditingReporter::SCTHashdanceMetadata> sct_metadata,
     std::unique_ptr<net::BackoffEntry> backoff_entry) {
   DCHECK(foreground_runner_->RunsTasksInCurrentSequence());
-  if (!enabled_) {
+  if (mode_ == mojom::SCTAuditingMode::kDisabled) {
     return;
   }
 
-  // Get the ReportURI and traffic annotation as configured on the
-  // SCTAuditingCache.
-  auto report_uri = owner_network_context_->network_service()
-                        ->sct_auditing_cache()
-                        ->report_uri();
-  auto traffic_annotation = owner_network_context_->network_service()
-                                ->sct_auditing_cache()
-                                ->traffic_annotation();
+  // Get the URLs, traffic annotations, and timing parameters as configured on
+  // the SCTAuditingCache.
+  auto* sct_auditing_cache =
+      owner_network_context_->network_service()->sct_auditing_cache();
+  auto log_expected_ingestion_delay =
+      sct_auditing_cache->log_expected_ingestion_delay();
+  auto log_max_ingestion_random_delay =
+      sct_auditing_cache->log_max_ingestion_random_delay();
+  auto report_uri = sct_auditing_cache->report_uri();
+  auto hashdance_lookup_uri = sct_auditing_cache->hashdance_lookup_uri();
+  auto traffic_annotation = sct_auditing_cache->traffic_annotation();
+  auto hashdance_traffic_annotation =
+      sct_auditing_cache->hashdance_traffic_annotation();
 
   auto reporter = std::make_unique<SCTAuditingReporter>(
-      reporter_key, std::move(report), GetURLLoaderFactory(), report_uri,
-      traffic_annotation,
+      reporter_key, std::move(report),
+      mode_ == mojom::SCTAuditingMode::kHashdance, std::move(sct_metadata),
+      GetURLLoaderFactory(), log_expected_ingestion_delay,
+      log_max_ingestion_random_delay, report_uri, hashdance_lookup_uri,
+      traffic_annotation, hashdance_traffic_annotation,
       base::BindRepeating(&SCTAuditingHandler::OnReporterStateUpdated,
                           GetWeakPtr()),
       base::BindOnce(&SCTAuditingHandler::OnReporterFinished, GetWeakPtr()),
@@ -239,7 +333,7 @@ void SCTAuditingHandler::OnReportsLoadedFromDisk(
   DeserializeData(serialized);
 }
 
-// TODOO(crbug.com/1144205): This method should take a completion callback (for
+// TODO(crbug.com/1144205): This method should take a completion callback (for
 // callers like NetworkContext::ClearNetworkingHistoryBetween() that want to be
 // able to wait for the write completing), and pass it through to the `writer_`,
 // like TransportSecurityState does.
@@ -255,14 +349,14 @@ void SCTAuditingHandler::ClearPendingReports() {
   }
 }
 
-void SCTAuditingHandler::SetEnabled(bool enabled) {
-  enabled_ = enabled;
+void SCTAuditingHandler::SetMode(mojom::SCTAuditingMode mode) {
+  mode_ = mode;
 
   // High-water-mark metrics get logged hourly (rather than once-per-session at
   // shutdown, as Network Service shutdown is not consistent and non-browser
   // processes can fail to report metrics during shutdown). The timer should
   // only be running if SCT auditing is enabled.
-  if (enabled) {
+  if (mode != mojom::SCTAuditingMode::kDisabled) {
     histogram_timer_.Start(FROM_HERE, base::Hours(1), this,
                            &SCTAuditingHandler::ReportHWMMetrics);
   } else {
@@ -299,7 +393,7 @@ void SCTAuditingHandler::OnReporterFinished(net::HashValue reporter_key) {
 }
 
 void SCTAuditingHandler::ReportHWMMetrics() {
-  if (!enabled_) {
+  if (mode_ == mojom::SCTAuditingMode::kDisabled) {
     return;
   }
   base::UmaHistogramCounts1000("Security.SCTAuditing.OptIn.ReportersHWM",

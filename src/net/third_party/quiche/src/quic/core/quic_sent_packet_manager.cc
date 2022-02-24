@@ -87,7 +87,6 @@ QuicSentPacketManager::QuicSentPacketManager(
       pending_timer_transmission_count_(0),
       max_tail_loss_probes_(kDefaultMaxTailLossProbes),
       max_rto_packets_(kMaxRetransmissionsOnTimeout),
-      enable_half_rtt_tail_loss_probe_(false),
       using_pacing_(false),
       use_new_rto_(false),
       conservative_handshake_retransmits_(false),
@@ -209,12 +208,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
       QUIC_CODE_COUNT(two_aggressive_ptos);
       num_tlp_timeout_ptos_ = 2;
     }
-    if (GetQuicReloadableFlag(quic_deprecate_tlpr)) {
-      QUIC_RELOADABLE_FLAG_COUNT_N(quic_deprecate_tlpr, 2, 2);
-    }
-    if (config.HasClientSentConnectionOption(kPLE1, perspective) ||
-        (config.HasClientSentConnectionOption(kTLPR, perspective) &&
-         !GetQuicReloadableFlag(quic_deprecate_tlpr))) {
+    if (config.HasClientSentConnectionOption(kPLE1, perspective)) {
       first_pto_srtt_multiplier_ = 0.5;
     } else if (config.HasClientSentConnectionOption(kPLE2, perspective)) {
       first_pto_srtt_multiplier_ = 1.5;
@@ -304,17 +298,6 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   if (config.HasClientSentConnectionOption(k1RTO, perspective)) {
     max_rto_packets_ = 1;
   }
-  if (GetQuicReloadableFlag(quic_deprecate_tlpr)) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_deprecate_tlpr, 1, 2);
-  }
-  if (config.HasClientSentConnectionOption(kTLPR, perspective) &&
-      !GetQuicReloadableFlag(quic_deprecate_tlpr)) {
-    enable_half_rtt_tail_loss_probe_ = true;
-  }
-  if (config.HasClientRequestedIndependentOption(kTLPR, perspective) &&
-      !GetQuicReloadableFlag(quic_deprecate_tlpr)) {
-    enable_half_rtt_tail_loss_probe_ = true;
-  }
   if (config.HasClientSentConnectionOption(kNRTO, perspective)) {
     use_new_rto_ = true;
   }
@@ -351,6 +334,15 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
 
   if (network_change_visitor_ != nullptr) {
     network_change_visitor_->OnCongestionChange();
+  }
+
+  if (debug_delegate_ != nullptr) {
+    DebugDelegate::SendParameters parameters;
+    parameters.congestion_control_type =
+        send_algorithm_->GetCongestionControlType();
+    parameters.use_pacing = using_pacing_;
+    parameters.initial_congestion_window = initial_congestion_window_;
+    debug_delegate_->OnConfigProcessed(parameters);
   }
 }
 
@@ -392,6 +384,18 @@ void QuicSentPacketManager::ResumeConnectionState(
 
 void QuicSentPacketManager::AdjustNetworkParameters(
     const SendAlgorithmInterface::NetworkParams& params) {
+  if (params.burst_token != 0) {
+    if (using_pacing_) {
+      QUIC_RELOADABLE_FLAG_COUNT(quic_set_burst_token);
+      int old_burst_size = pacing_sender_.initial_burst_size();
+      pacing_sender_.SetBurstTokens(params.burst_token);
+      if (debug_delegate_ != nullptr) {
+        debug_delegate_->OnAdjustBurstSize(old_burst_size,
+                                           pacing_sender_.initial_burst_size());
+      }
+    }
+    return;
+  }
   const QuicBandwidth& bandwidth = params.bandwidth;
   const QuicTime::Delta& rtt = params.rtt;
   if (!rtt.IsZero()) {
@@ -1393,12 +1397,6 @@ const QuicTime::Delta QuicSentPacketManager::GetCryptoRetransmissionDelay()
 
 const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
   QuicTime::Delta srtt = rtt_stats_.SmoothedOrInitialRtt();
-  if (enable_half_rtt_tail_loss_probe_ && consecutive_tlp_count_ == 0u) {
-    if (unacked_packets().HasUnackedStreamData()) {
-      // Enable TLPR if there are pending data packets.
-      return std::max(min_tlp_timeout_, srtt * 0.5);
-    }
-  }
   if (!unacked_packets_.HasMultipleInFlightPackets()) {
     // This expression really should be using the delayed ack time, but in TCP
     // MinRTO was traditionally set to 2x the delayed ack timer and this
@@ -1443,10 +1441,6 @@ const QuicTime::Delta QuicSentPacketManager::GetProbeTimeoutDelay(
                pto_multiplier_without_rtt_samples_ * rtt_stats_.initial_rtt(),
                QuicTime::Delta::FromMilliseconds(kMinHandshakeTimeoutMs)) *
            (1 << consecutive_pto_count_);
-  }
-  if (enable_half_rtt_tail_loss_probe_ && consecutive_pto_count_ == 0 &&
-      handshake_finished_) {
-    return std::max(min_tlp_timeout_, rtt_stats_.smoothed_rtt() * 0.5);
   }
   const QuicTime::Delta rtt_var = use_standard_deviation_for_pto_
                                       ? rtt_stats_.GetStandardOrMeanDeviation()
@@ -1769,18 +1763,11 @@ QuicSentPacketManager::GetNConsecutiveRetransmissionTimeoutDelay(
       std::min(num_timeouts, static_cast<int>(max_tail_loss_probes_));
   num_timeouts -= num_tlps;
   if (num_tlps > 0) {
-    if (enable_half_rtt_tail_loss_probe_ &&
-        unacked_packets().HasUnackedStreamData()) {
-      total_delay = total_delay + std::max(min_tlp_timeout_, srtt * 0.5);
-      --num_tlps;
-    }
-    if (num_tlps > 0) {
-      const QuicTime::Delta tlp_delay =
-          std::max(2 * srtt, unacked_packets_.HasMultipleInFlightPackets()
-                                 ? min_tlp_timeout_
-                                 : (1.5 * srtt + (min_rto_timeout_ * 0.5)));
-      total_delay = total_delay + num_tlps * tlp_delay;
-    }
+    const QuicTime::Delta tlp_delay =
+        std::max(2 * srtt, unacked_packets_.HasMultipleInFlightPackets()
+                               ? min_tlp_timeout_
+                               : (1.5 * srtt + (min_rto_timeout_ * 0.5)));
+    total_delay = total_delay + num_tlps * tlp_delay;
   }
   if (num_timeouts == 0) {
     return total_delay;

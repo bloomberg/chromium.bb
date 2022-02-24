@@ -30,7 +30,6 @@
 #include "api/scoped_refptr.h"
 #include "modules/audio_processing/include/audio_processing_statistics.h"
 #include "rtc_base/arraysize.h"
-#include "rtc_base/constructor_magic.h"
 #include "rtc_base/ref_count.h"
 #include "rtc_base/system/file_wrapper.h"
 #include "rtc_base/system/rtc_export.h"
@@ -113,8 +112,6 @@ static constexpr int kClippedLevelMin = 70;
 // config.gain_controller2.enabled = true;
 //
 // config.high_pass_filter.enabled = true;
-//
-// config.voice_detection.enabled = true;
 //
 // apm->ApplyConfig(config)
 //
@@ -232,11 +229,6 @@ class RTC_EXPORT AudioProcessing : public rtc::RefCountInterface {
     struct TransientSuppression {
       bool enabled = false;
     } transient_suppression;
-
-    // Enables reporting of `voice_detected` in webrtc::AudioProcessingStats.
-    struct VoiceDetection {
-      bool enabled = false;
-    } voice_detection;
 
     // Enables automatic gain control (AGC) functionality.
     // The automatic gain control (AGC) component brings the signal to an
@@ -386,17 +378,6 @@ class RTC_EXPORT AudioProcessing : public rtc::RefCountInterface {
     std::string ToString() const;
   };
 
-  // TODO(mgraczyk): Remove once all methods that use ChannelLayout are gone.
-  enum ChannelLayout {
-    kMono,
-    // Left, right.
-    kStereo,
-    // Mono, keyboard, and mic.
-    kMonoAndKeyboard,
-    // Left, right, keyboard, and mic.
-    kStereoAndKeyboard
-  };
-
   // Specifies the properties of a setting to be passed to AudioProcessing at
   // runtime.
   class RuntimeSetting {
@@ -530,16 +511,6 @@ class RTC_EXPORT AudioProcessing : public rtc::RefCountInterface {
   // output layouts, but the output must have either one channel or the same
   // number of channels as the input.
   virtual int Initialize(const ProcessingConfig& processing_config) = 0;
-
-  // Initialize with unpacked parameters. See Initialize() above for details.
-  //
-  // TODO(mgraczyk): Remove once clients are updated to use the new interface.
-  virtual int Initialize(int capture_input_sample_rate_hz,
-                         int capture_output_sample_rate_hz,
-                         int render_sample_rate_hz,
-                         ChannelLayout capture_input_layout,
-                         ChannelLayout capture_output_layout,
-                         ChannelLayout render_input_layout) = 0;
 
   // TODO(peah): This method is a temporary solution used to take control
   // over the parameters in the audio processing module and is likely to change.
@@ -798,23 +769,10 @@ class RTC_EXPORT AudioProcessingBuilder {
 class StreamConfig {
  public:
   // sample_rate_hz: The sampling rate of the stream.
-  //
-  // num_channels: The number of audio channels in the stream, excluding the
-  //               keyboard channel if it is present. When passing a
-  //               StreamConfig with an array of arrays T*[N],
-  //
-  //                N == {num_channels + 1  if  has_keyboard
-  //                     {num_channels      if  !has_keyboard
-  //
-  // has_keyboard: True if the stream has a keyboard channel. When has_keyboard
-  //               is true, the last channel in any corresponding list of
-  //               channels is the keyboard channel.
-  StreamConfig(int sample_rate_hz = 0,
-               size_t num_channels = 0,
-               bool has_keyboard = false)
+  // num_channels: The number of audio channels in the stream.
+  StreamConfig(int sample_rate_hz = 0, size_t num_channels = 0)
       : sample_rate_hz_(sample_rate_hz),
         num_channels_(num_channels),
-        has_keyboard_(has_keyboard),
         num_frames_(calculate_frames(sample_rate_hz)) {}
 
   void set_sample_rate_hz(int value) {
@@ -822,22 +780,18 @@ class StreamConfig {
     num_frames_ = calculate_frames(value);
   }
   void set_num_channels(size_t value) { num_channels_ = value; }
-  void set_has_keyboard(bool value) { has_keyboard_ = value; }
 
   int sample_rate_hz() const { return sample_rate_hz_; }
 
-  // The number of channels in the stream, not including the keyboard channel if
-  // present.
+  // The number of channels in the stream.
   size_t num_channels() const { return num_channels_; }
 
-  bool has_keyboard() const { return has_keyboard_; }
   size_t num_frames() const { return num_frames_; }
   size_t num_samples() const { return num_channels_ * num_frames_; }
 
   bool operator==(const StreamConfig& other) const {
     return sample_rate_hz_ == other.sample_rate_hz_ &&
-           num_channels_ == other.num_channels_ &&
-           has_keyboard_ == other.has_keyboard_;
+           num_channels_ == other.num_channels_;
   }
 
   bool operator!=(const StreamConfig& other) const { return !(*this == other); }
@@ -850,7 +804,6 @@ class StreamConfig {
 
   int sample_rate_hz_;
   size_t num_channels_;
-  bool has_keyboard_;
   size_t num_frames_;
 };
 

@@ -13,13 +13,14 @@
 #include "experimental/graphite/include/TextureInfo.h"
 #include "experimental/graphite/src/Caps.h"
 #include "experimental/graphite/src/CommandBuffer.h"
-#include "experimental/graphite/src/ContextUtils.h"
+#include "experimental/graphite/src/GlobalCache.h"
 #include "experimental/graphite/src/Gpu.h"
 #include "experimental/graphite/src/GraphicsPipelineDesc.h"
 #include "experimental/graphite/src/Renderer.h"
+#include "experimental/graphite/src/ResourceProvider.h"
 #include "include/core/SkPathTypes.h"
-#include "include/private/SkShaderCodeDictionary.h"
 #include "src/core/SkKeyHelpers.h"
+#include "src/core/SkShaderCodeDictionary.h"
 
 #ifdef SK_METAL
 #include "experimental/graphite/src/mtl/MtlTrampoline.h"
@@ -29,24 +30,24 @@ namespace skgpu {
 
 Context::Context(sk_sp<Gpu> gpu, BackendApi backend)
         : fGpu(std::move(gpu))
-        , fBackend(backend)
-        , fShaderCodeDictionary(std::make_unique<SkShaderCodeDictionary>()) {
+        , fGlobalCache(sk_make_sp<GlobalCache>())
+        , fBackend(backend) {
 }
 Context::~Context() {}
 
 #ifdef SK_METAL
-sk_sp<Context> Context::MakeMetal(const mtl::BackendContext& backendContext) {
+std::unique_ptr<Context> Context::MakeMetal(const mtl::BackendContext& backendContext) {
     sk_sp<Gpu> gpu = mtl::Trampoline::MakeGpu(backendContext);
     if (!gpu) {
         return nullptr;
     }
 
-    return sk_sp<Context>(new Context(std::move(gpu), BackendApi::kMetal));
+    return std::unique_ptr<Context>(new Context(std::move(gpu), BackendApi::kMetal));
 }
 #endif
 
 std::unique_ptr<Recorder> Context::makeRecorder() {
-    return std::unique_ptr<Recorder>(new Recorder(sk_ref_sp(this)));
+    return std::unique_ptr<Recorder>(new Recorder(fGpu, fGlobalCache));
 }
 
 void Context::insertRecording(std::unique_ptr<Recording> recording) {
@@ -72,19 +73,21 @@ void Context::preCompile(const PaintCombo& paintCombo) {
             &Renderer::StencilAndFillPath(SkPathFillType::kInverseEvenOdd)
     };
 
+    SkShaderCodeDictionary* dict = fGlobalCache->shaderCodeDictionary();
+
     for (auto bm: paintCombo.fBlendModes) {
         for (auto& shaderCombo: paintCombo.fShaders) {
             for (auto shaderType: shaderCombo.fTypes) {
                 for (auto tm: shaderCombo.fTileModes) {
-                    SkPaintParamsKey key = CreateKey(SkBackend::kGraphite, shaderType, tm, bm);
+                    std::unique_ptr<SkPaintParamsKey> key = CreateKey(dict, SkBackend::kGraphite,
+                                                                      shaderType, tm, bm);
+                    auto entry = dict->findOrCreate(std::move(key));
 
                     GraphicsPipelineDesc desc;
 
                     for (const Renderer* r : kRenderers) {
                         for (auto&& s : r->steps()) {
                             if (s->performsShading()) {
-
-                                auto entry = fShaderCodeDictionary->findOrCreate(key);
                                 desc.setProgram(s, entry->uniqueID());
                             }
                             // TODO: Combine with renderpass description set to generate full

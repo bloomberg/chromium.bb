@@ -6,6 +6,7 @@
 
 #include "include/v8-cppgc.h"
 #include "src/base/logging.h"
+#include "src/common/allow-deprecated.h"
 #include "src/handles/global-handles.h"
 #include "src/heap/embedder-tracing-inl.h"
 #include "src/heap/gc-tracer.h"
@@ -43,7 +44,10 @@ CppHeap::GarbageCollectionFlags ConvertTraceFlags(
 
 void LocalEmbedderHeapTracer::PrepareForTrace(
     EmbedderHeapTracer::TraceFlags flags) {
-  if (cpp_heap_) cpp_heap()->InitializeTracing(ConvertTraceFlags(flags));
+  if (cpp_heap_)
+    cpp_heap()->InitializeTracing(
+        cppgc::internal::GarbageCollector::Config::CollectionType::kMajor,
+        ConvertTraceFlags(flags));
 }
 
 void LocalEmbedderHeapTracer::TracePrologue(
@@ -66,7 +70,8 @@ void LocalEmbedderHeapTracer::TraceEpilogue() {
       EmbedderHeapTracer::EmbedderStackState::kMayContainHeapPointers;
 
   if (cpp_heap_) {
-    cpp_heap()->TraceEpilogue();
+    cpp_heap()->TraceEpilogue(
+        cppgc::internal::GarbageCollector::Config::CollectionType::kMajor);
   } else {
     EmbedderHeapTracer::TraceSummary summary;
     remote_tracer_->TraceEpilogue(&summary);
@@ -216,10 +221,12 @@ bool DefaultEmbedderRootsHandler::IsRoot(
   return !tracer_ || tracer_->IsRootForNonTracingGC(handle);
 }
 
+START_ALLOW_USE_DEPRECATED()
 bool DefaultEmbedderRootsHandler::IsRoot(
     const v8::TracedGlobal<v8::Value>& handle) {
   return !tracer_ || tracer_->IsRootForNonTracingGC(handle);
 }
+END_ALLOW_USE_DEPRECATED()
 
 void DefaultEmbedderRootsHandler::ResetRoot(
     const v8::TracedReference<v8::Value>& handle) {

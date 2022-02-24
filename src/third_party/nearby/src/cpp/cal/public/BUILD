@@ -22,14 +22,13 @@ cc_library(
     hdrs = [
         "ble.h",
     ],
-    compatible_with = ["//buildenv/target:non_prod"],
     visibility = [
         "//googlemac/iPhone/Shared/Nearby/Connections:__subpackages__",
-        "//third_party/nearby/cpp:__subpackages__",
+        "//third_party/nearby:__subpackages__",
     ],
     deps = [
         "//third_party/nearby/cpp/cal/api:ble",
-        "//third_party/nearby/cpp/cal/base:types",
+        "//cpp/cal/base:types",
     ],
 )
 
@@ -42,9 +41,10 @@ cc_test(
     ],
     deps = [
         ":ble",
-        "//testing/base/public:gunit",
-        "//testing/base/public:gunit_main",
         "//third_party/nearby/cpp/cal/api:ble",
-        "//third_party/nearby/cpp/cal/base:types",
+        "//cpp/cal/base:types",
+        "@com_github_protobuf_matchers//protobuf-matchers",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )

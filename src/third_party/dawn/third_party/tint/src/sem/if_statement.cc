@@ -29,8 +29,12 @@ IfStatement::IfStatement(const ast::IfStatement* declaration,
 
 IfStatement::~IfStatement() = default;
 
+const ast::IfStatement* IfStatement::Declaration() const {
+  return static_cast<const ast::IfStatement*>(Base::Declaration());
+}
+
 ElseStatement::ElseStatement(const ast::ElseStatement* declaration,
-                             const CompoundStatement* parent,
+                             const IfStatement* parent,
                              const sem::Function* function)
     : Base(declaration, parent, function) {}
 

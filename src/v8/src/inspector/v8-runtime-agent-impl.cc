@@ -217,7 +217,7 @@ Response ensureContext(V8InspectorImpl* inspector, int contextGroupId,
     }
     *contextId = executionContextId.fromJust();
   } else if (uniqueContextId.isJust()) {
-    V8DebuggerId uniqueId(uniqueContextId.fromJust());
+    internal::V8DebuggerId uniqueId(uniqueContextId.fromJust());
     if (!uniqueId.isValid())
       return Response::InvalidParams("invalid uniqueContextId");
     int id = inspector->resolveUniqueContextId(uniqueId);
@@ -818,7 +818,7 @@ Response V8RuntimeAgentImpl::getExceptionDetails(
 
   const v8::Local<v8::Value> error = scope.object();
   if (!error->IsNativeError())
-    return Response::InvalidParams("errorObjectId is not a JS error object");
+    return Response::ServerError("errorObjectId is not a JS error object");
 
   const v8::Local<v8::Message> message =
       v8::debug::CreateMessageFromException(m_inspector->isolate(), error);

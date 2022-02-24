@@ -3835,6 +3835,39 @@ UNINITIALIZED_TEST(SnapshotAccessorDescriptors) {
   delete[] data1.data;
 }
 
+UNINITIALIZED_TEST(SnapshotObjectDefinePropertyWhenNewGlobalTemplate) {
+  const char* source1 =
+      "Object.defineProperty(this, 'property1', {\n"
+      "  value: 42,\n"
+      "  writable: false\n"
+      "});\n"
+      "var bValue = 38;\n"
+      "Object.defineProperty(this, 'property2', {\n"
+      "  get() { return bValue; },\n"
+      "  set(newValue) { bValue = newValue; }\n"
+      "});";
+  v8::StartupData data1 = CreateSnapshotDataBlob(source1);
+
+  v8::Isolate::CreateParams params1;
+  params1.snapshot_blob = &data1;
+  params1.array_buffer_allocator = CcTest::array_buffer_allocator();
+
+  v8::Isolate* isolate1 = v8::Isolate::New(params1);
+  {
+    v8::Isolate::Scope i_scope(isolate1);
+    v8::HandleScope h_scope(isolate1);
+    v8::Local<v8::ObjectTemplate> global_template =
+        v8::ObjectTemplate::New(isolate1);
+    v8::Local<v8::Context> context =
+        v8::Context::New(isolate1, nullptr, global_template);
+    v8::Context::Scope c_scope(context);
+    ExpectInt32("this.property1", 42);
+    ExpectInt32("this.property2", 38);
+  }
+  isolate1->Dispose();
+  delete[] data1.data;
+}
+
 UNINITIALIZED_TEST(SnapshotCreatorIncludeGlobalProxy) {
   DisableAlwaysOpt();
   DisableEmbeddedBlobRefcounting();
@@ -4150,6 +4183,590 @@ UNINITIALIZED_TEST(ReinitializeHashSeedRehashable) {
     CHECK(!i::Handle<i::JSObject>::cast(i_o)->HasFastProperties());
     ExpectInt32("a[2111]", 5);
     ExpectInt32("o.c", 3);
+  }
+  isolate->Dispose();
+  delete[] blob.data;
+  FreeCurrentEmbeddedBlob();
+}
+
+UNINITIALIZED_TEST(ClassFields) {
+  DisableAlwaysOpt();
+  i::FLAG_rehash_snapshot = true;
+  i::FLAG_hash_seed = 42;
+  i::FLAG_allow_natives_syntax = true;
+  DisableEmbeddedBlobRefcounting();
+  v8::StartupData blob;
+  {
+    v8::SnapshotCreator creator;
+    v8::Isolate* isolate = creator.GetIsolate();
+    {
+      v8::HandleScope handle_scope(isolate);
+      v8::Local<v8::Context> context = v8::Context::New(isolate);
+      v8::Context::Scope context_scope(context);
+      CompileRun(
+          "class ClassWithFieldInitializer {"
+          "  #field = 1;"
+          "  constructor(val) {"
+          "    this.#field = val;"
+          "  }"
+          "  get field() {"
+          "    return this.#field;"
+          "  }"
+          "}"
+          "class ClassWithDefaultConstructor {"
+          "  #field = 42;"
+          "  get field() {"
+          "    return this.#field;"
+          "  }"
+          "}"
+          "class ClassWithFieldDeclaration {"
+          "  #field;"
+          "  constructor(val) {"
+          "    this.#field = val;"
+          "  }"
+          "  get field() {"
+          "    return this.#field;"
+          "  }"
+          "}"
+          "class ClassWithPublicField {"
+          "  field = 1;"
+          "  constructor(val) {"
+          "    this.field = val;"
+          "  }"
+          "}"
+          "class ClassWithFunctionField {"
+          "  field = 123;"
+          "  func = () => { return this.field; }"
+          "}"
+          "class ClassWithThisInInitializer {"
+          "  #field = 123;"
+          "  field = this.#field;"
+          "}");
+      creator.SetDefaultContext(context);
+    }
+    blob =
+        creator.CreateBlob(v8::SnapshotCreator::FunctionCodeHandling::kClear);
+  }
+
+  v8::Isolate::CreateParams create_params;
+  create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
+  create_params.snapshot_blob = &blob;
+  v8::Isolate* isolate = v8::Isolate::New(create_params);
+  {
+    v8::Isolate::Scope isolate_scope(isolate);
+    v8::HandleScope handle_scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    CHECK(!context.IsEmpty());
+    v8::Context::Scope context_scope(context);
+    ExpectInt32("(new ClassWithFieldInitializer(123)).field", 123);
+    ExpectInt32("(new ClassWithDefaultConstructor()).field", 42);
+    ExpectInt32("(new ClassWithFieldDeclaration(123)).field", 123);
+    ExpectInt32("(new ClassWithPublicField(123)).field", 123);
+    ExpectInt32("(new ClassWithFunctionField()).func()", 123);
+    ExpectInt32("(new ClassWithThisInInitializer()).field", 123);
+  }
+  isolate->Dispose();
+  delete[] blob.data;
+  FreeCurrentEmbeddedBlob();
+}
+
+UNINITIALIZED_TEST(ClassFieldsReferencePrivateInInitializer) {
+  DisableAlwaysOpt();
+  i::FLAG_rehash_snapshot = true;
+  i::FLAG_hash_seed = 42;
+  i::FLAG_allow_natives_syntax = true;
+  DisableEmbeddedBlobRefcounting();
+  v8::StartupData blob;
+  {
+    v8::SnapshotCreator creator;
+    v8::Isolate* isolate = creator.GetIsolate();
+    {
+      v8::HandleScope handle_scope(isolate);
+      v8::Local<v8::Context> context = v8::Context::New(isolate);
+      v8::Context::Scope context_scope(context);
+      CompileRun(
+          "class A {"
+          "  #a = 42;"
+          "  a = this.#a;"
+          "}"
+          "let str;"
+          "class ClassWithEval {"
+          "  field = eval(str);"
+          "}"
+          "class ClassWithPrivateAndEval {"
+          "  #field = 42;"
+          "  field = eval(str);"
+          "}");
+      creator.SetDefaultContext(context);
+    }
+    blob =
+        creator.CreateBlob(v8::SnapshotCreator::FunctionCodeHandling::kClear);
+  }
+
+  v8::Isolate::CreateParams create_params;
+  create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
+  create_params.snapshot_blob = &blob;
+  v8::Isolate* isolate = v8::Isolate::New(create_params);
+  {
+    v8::Isolate::Scope isolate_scope(isolate);
+    v8::HandleScope handle_scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    CHECK(!context.IsEmpty());
+    v8::Context::Scope context_scope(context);
+    ExpectInt32("(new A()).a", 42);
+    v8::TryCatch try_catch(isolate);
+    CompileRun("str = 'this.#nonexistent'; (new ClassWithEval()).field");
+    CHECK(try_catch.HasCaught());
+    ExpectInt32("str = 'this.#field'; (new ClassWithPrivateAndEval()).field",
+                42);
+  }
+  isolate->Dispose();
+  delete[] blob.data;
+  FreeCurrentEmbeddedBlob();
+}
+
+UNINITIALIZED_TEST(ClassFieldsReferenceClassVariable) {
+  DisableAlwaysOpt();
+  i::FLAG_rehash_snapshot = true;
+  i::FLAG_hash_seed = 42;
+  i::FLAG_allow_natives_syntax = true;
+  DisableEmbeddedBlobRefcounting();
+  v8::StartupData blob;
+  {
+    v8::SnapshotCreator creator;
+    v8::Isolate* isolate = creator.GetIsolate();
+    {
+      v8::HandleScope handle_scope(isolate);
+      v8::Local<v8::Context> context = v8::Context::New(isolate);
+      v8::Context::Scope context_scope(context);
+      CompileRun(
+          "class PrivateFieldClass {"
+          "  #consturctor = PrivateFieldClass;"
+          "  func() {"
+          "    return this.#consturctor;"
+          "  }"
+          "}"
+          "class PublicFieldClass {"
+          "  ctor = PublicFieldClass;"
+          "  func() {"
+          "    return this.ctor;"
+          "  }"
+          "}");
+      creator.SetDefaultContext(context);
+    }
+    blob =
+        creator.CreateBlob(v8::SnapshotCreator::FunctionCodeHandling::kClear);
+  }
+
+  v8::Isolate::CreateParams create_params;
+  create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
+  create_params.snapshot_blob = &blob;
+  v8::Isolate* isolate = v8::Isolate::New(create_params);
+  {
+    v8::Isolate::Scope isolate_scope(isolate);
+    v8::HandleScope handle_scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    CHECK(!context.IsEmpty());
+    v8::Context::Scope context_scope(context);
+    ExpectTrue("new PrivateFieldClass().func() === PrivateFieldClass");
+    ExpectTrue("new PublicFieldClass().func() === PublicFieldClass");
+  }
+  isolate->Dispose();
+  delete[] blob.data;
+  FreeCurrentEmbeddedBlob();
+}
+
+UNINITIALIZED_TEST(ClassFieldsNested) {
+  DisableAlwaysOpt();
+  i::FLAG_rehash_snapshot = true;
+  i::FLAG_hash_seed = 42;
+  i::FLAG_allow_natives_syntax = true;
+  DisableEmbeddedBlobRefcounting();
+  v8::StartupData blob;
+  {
+    v8::SnapshotCreator creator;
+    v8::Isolate* isolate = creator.GetIsolate();
+    {
+      v8::HandleScope handle_scope(isolate);
+      v8::Local<v8::Context> context = v8::Context::New(isolate);
+      v8::Context::Scope context_scope(context);
+      CompileRun(
+          "class Outer {"
+          "  #odata = 42;"
+          "  #inner;"
+          "  static getInner() {"
+          "    class Inner {"
+          "      #idata = 42;"
+          "      #outer;"
+          "      constructor(outer) {"
+          "        this.#outer = outer;"
+          "        outer.#inner = this;"
+          "      }"
+          "      check() {"
+          "        return this.#idata === this.#outer.#odata &&"
+          "               this === this.#outer.#inner;"
+          "      }"
+          "    }"
+          "    return Inner;"
+          "  }"
+          "  check() {"
+          "    return this.#inner.check();"
+          "  }"
+          "}"
+          "const Inner = Outer.getInner();");
+      creator.SetDefaultContext(context);
+    }
+    blob =
+        creator.CreateBlob(v8::SnapshotCreator::FunctionCodeHandling::kClear);
+  }
+
+  v8::Isolate::CreateParams create_params;
+  create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
+  create_params.snapshot_blob = &blob;
+  v8::Isolate* isolate = v8::Isolate::New(create_params);
+  {
+    v8::Isolate::Scope isolate_scope(isolate);
+    v8::HandleScope handle_scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    CHECK(!context.IsEmpty());
+    v8::Context::Scope context_scope(context);
+    ExpectTrue("(new Inner(new Outer)).check()");
+  }
+  isolate->Dispose();
+  delete[] blob.data;
+  FreeCurrentEmbeddedBlob();
+}
+
+UNINITIALIZED_TEST(ClassPrivateMethods) {
+  DisableAlwaysOpt();
+  i::FLAG_rehash_snapshot = true;
+  i::FLAG_hash_seed = 42;
+  i::FLAG_allow_natives_syntax = true;
+  DisableEmbeddedBlobRefcounting();
+  v8::StartupData blob;
+  {
+    v8::SnapshotCreator creator;
+    v8::Isolate* isolate = creator.GetIsolate();
+    {
+      v8::HandleScope handle_scope(isolate);
+      v8::Local<v8::Context> context = v8::Context::New(isolate);
+      v8::Context::Scope context_scope(context);
+      CompileRun(
+          "class JustPrivateMethods {"
+          "  #method() { return this.val; }"
+          "  get #accessor() { return this.val; };"
+          "  set #accessor(val) { this.val = val; }"
+          "  method() { return this.#method(); } "
+          "  getter() { return this.#accessor; } "
+          "  setter(val) { this.#accessor = val } "
+          "}"
+          "class PrivateMethodsAndFields {"
+          "  #val = 1;"
+          "  #method() { return this.#val; }"
+          "  get #accessor() { return this.#val; };"
+          "  set #accessor(val) { this.#val = val; }"
+          "  method() { return this.#method(); } "
+          "  getter() { return this.#accessor; } "
+          "  setter(val) { this.#accessor = val } "
+          "}"
+          "class Nested {"
+          "  #val = 42;"
+          "  static #method(obj) { return obj.#val; }"
+          "  getInner() {"
+          "    class Inner {"
+          "      runEval(obj, str) {"
+          "        return eval(str);"
+          "      }"
+          "    }"
+          "    return Inner;"
+          "  }"
+          "}");
+      creator.SetDefaultContext(context);
+    }
+    blob =
+        creator.CreateBlob(v8::SnapshotCreator::FunctionCodeHandling::kClear);
+  }
+
+  v8::Isolate::CreateParams create_params;
+  create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
+  create_params.snapshot_blob = &blob;
+  v8::Isolate* isolate = v8::Isolate::New(create_params);
+  {
+    v8::Isolate::Scope isolate_scope(isolate);
+    v8::HandleScope handle_scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    CHECK(!context.IsEmpty());
+    v8::Context::Scope context_scope(context);
+    CompileRun("const a = new JustPrivateMethods(); a.setter(42);");
+    ExpectInt32("a.method()", 42);
+    ExpectInt32("a.getter()", 42);
+    CompileRun("const b = new PrivateMethodsAndFields(); b.setter(42);");
+    ExpectInt32("b.method()", 42);
+    ExpectInt32("b.getter()", 42);
+    CompileRun("const c = new (new Nested().getInner());");
+    ExpectInt32("c.runEval(new Nested(), 'Nested.#method(obj)')", 42);
+  }
+  isolate->Dispose();
+  delete[] blob.data;
+  FreeCurrentEmbeddedBlob();
+}
+
+UNINITIALIZED_TEST(ClassFieldsWithInheritance) {
+  DisableAlwaysOpt();
+  i::FLAG_rehash_snapshot = true;
+  i::FLAG_hash_seed = 42;
+  i::FLAG_allow_natives_syntax = true;
+  DisableEmbeddedBlobRefcounting();
+  v8::StartupData blob;
+  {
+    v8::SnapshotCreator creator;
+    v8::Isolate* isolate = creator.GetIsolate();
+    {
+      v8::HandleScope handle_scope(isolate);
+      v8::Local<v8::Context> context = v8::Context::New(isolate);
+      v8::Context::Scope context_scope(context);
+      CompileRun(
+          "class Base {"
+          "    #a = 'test';"
+          "    getA() { return this.#a; }"
+          "}"
+          "class Derived extends Base {"
+          "  #b = 1;"
+          "  constructor() {"
+          "      super();"
+          "      this.#b = this.getA();"
+          "  }"
+          "  check() {"
+          "    return this.#b === this.getA();"
+          "  }"
+          "}"
+          "class DerivedDefaultConstructor extends Base {"
+          "  #b = 1;"
+          "  check() {"
+          "    return this.#b === 1;"
+          "  }"
+          "}"
+          "class NestedSuper extends Base {"
+          "  #b = 1;"
+          "  constructor() {"
+          "    const t = () => {"
+          "      super();"
+          "    };"
+          "    t();"
+          "  }"
+          "  check() {"
+          "    return this.#b === 1;"
+          "  }"
+          "}"
+          "class EvaledSuper extends Base {"
+          "  #b = 1;"
+          "  constructor() {"
+          "    eval('super()');"
+          "  }"
+          "  check() {"
+          "    return this.#b === 1;"
+          "  }"
+          "}"
+          "class NestedEvaledSuper extends Base {"
+          "  #b = 1;"
+          "  constructor() {"
+          "    const t = () => {"
+          "      eval('super()');"
+          "    };"
+          "    t();"
+          "  }"
+          "  check() {"
+          "    return this.#b === 1;"
+          "  }"
+          "}");
+      creator.SetDefaultContext(context);
+    }
+    blob =
+        creator.CreateBlob(v8::SnapshotCreator::FunctionCodeHandling::kClear);
+  }
+
+  v8::Isolate::CreateParams create_params;
+  create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
+  create_params.snapshot_blob = &blob;
+  v8::Isolate* isolate = v8::Isolate::New(create_params);
+  {
+    v8::Isolate::Scope isolate_scope(isolate);
+    v8::HandleScope handle_scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    CHECK(!context.IsEmpty());
+    v8::Context::Scope context_scope(context);
+    ExpectBoolean("(new Derived()).check()", true);
+    ExpectBoolean("(new DerivedDefaultConstructor()).check()", true);
+    ExpectBoolean("(new NestedSuper()).check()", true);
+    ExpectBoolean("(new EvaledSuper()).check()", true);
+    ExpectBoolean("(new NestedEvaledSuper()).check()", true);
+  }
+  isolate->Dispose();
+  delete[] blob.data;
+  FreeCurrentEmbeddedBlob();
+}
+
+UNINITIALIZED_TEST(ClassFieldsRecalcPrivateNames) {
+  DisableAlwaysOpt();
+  i::FLAG_rehash_snapshot = true;
+  i::FLAG_hash_seed = 42;
+  i::FLAG_allow_natives_syntax = true;
+  DisableEmbeddedBlobRefcounting();
+  v8::StartupData blob;
+  {
+    v8::SnapshotCreator creator;
+    v8::Isolate* isolate = creator.GetIsolate();
+    {
+      v8::HandleScope handle_scope(isolate);
+      v8::Local<v8::Context> context = v8::Context::New(isolate);
+      v8::Context::Scope context_scope(context);
+      CompileRun(
+          "let heritageFn;"
+          "class Outer {"
+          "  #f = 'Outer.#f';"
+          "  static Inner = class Inner extends (heritageFn = function () {"
+          "               return class Nested {"
+          "                 exfil(obj) { return obj.#f; }"
+          "                 exfilEval(obj) { return eval('obj.#f'); }"
+          "               };"
+          "             }) {"
+          "               #f = 'Inner.#f';"
+          "             };"
+          "};");
+      creator.SetDefaultContext(context);
+    }
+    blob =
+        creator.CreateBlob(v8::SnapshotCreator::FunctionCodeHandling::kClear);
+  }
+
+  v8::Isolate::CreateParams create_params;
+  create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
+  create_params.snapshot_blob = &blob;
+  v8::Isolate* isolate = v8::Isolate::New(create_params);
+  {
+    v8::Isolate::Scope isolate_scope(isolate);
+    v8::HandleScope handle_scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    CHECK(!context.IsEmpty());
+    v8::Context::Scope context_scope(context);
+    CompileRun(
+        "const o = new Outer;"
+        "const c = new Outer.Inner;"
+        "const D = heritageFn();"
+        "const d = new D;"
+        "let error1;"
+        "let error2;");
+    ExpectString("d.exfil(o)", "Outer.#f");
+    ExpectString("d.exfilEval(o)", "Outer.#f");
+    CompileRun("try { d.exfil(c) } catch(e) { error1 = e; }");
+    ExpectBoolean("error1 instanceof TypeError", true);
+    CompileRun("try { d.exfilEval(c) } catch(e) { error2 = e; }");
+    ExpectBoolean("error2 instanceof TypeError", true);
+  }
+  isolate->Dispose();
+  delete[] blob.data;
+  FreeCurrentEmbeddedBlob();
+}
+
+UNINITIALIZED_TEST(ClassFieldsWithBindings) {
+  DisableAlwaysOpt();
+  i::FLAG_rehash_snapshot = true;
+  i::FLAG_hash_seed = 42;
+  i::FLAG_allow_natives_syntax = true;
+  DisableEmbeddedBlobRefcounting();
+  v8::StartupData blob;
+  {
+    v8::SnapshotCreator creator;
+    v8::Isolate* isolate = creator.GetIsolate();
+    {
+      v8::HandleScope handle_scope(isolate);
+      v8::Local<v8::Context> context = v8::Context::New(isolate);
+      v8::Context::Scope context_scope(context);
+      CompileRun(
+          "function testVarBinding() {"
+          "  function FuncWithVar() {"
+          "    this.getPrivate = () => 'test';"
+          "  }"
+          "  class Derived extends FuncWithVar {"
+          "    ['computed'] = FuncWithVar;"
+          "    #private = FuncWithVar;"
+          "    public = FuncWithVar;"
+          "    constructor() {"
+          "        super();"
+          "        this.#private = this.getPrivate();"
+          "    }"
+          "    check() {"
+          "      return this.#private === this.getPrivate() &&"
+          "             this.computed === FuncWithVar &&"
+          "             this.public === FuncWithVar;"
+          "    }"
+          "  }"
+          ""
+          "  return((new Derived()).check());"
+          "}"
+          "class ClassWithLet {"
+          "    #private = 'test';"
+          "    getPrivate() { return this.#private; }"
+          "}"
+          "function testLetBinding() {"
+          "  class Derived extends ClassWithLet {"
+          "    ['computed'] = ClassWithLet;"
+          "    #private = ClassWithLet;"
+          "    public = ClassWithLet;"
+          "    constructor() {"
+          "        super();"
+          "        this.#private = this.getPrivate();"
+          "    }"
+          "    check() {"
+          "      return this.#private === this.getPrivate() &&"
+          "             this.computed === ClassWithLet &&"
+          "             this.public === ClassWithLet;"
+          "    }"
+          "  }"
+          ""
+          "  return((new Derived()).check());"
+          "}"
+          "const ClassWithConst = class {"
+          "    #private = 'test';"
+          "    getPrivate() { return this.#private; }"
+          "};"
+          "function testConstBinding() {"
+          "  class Derived extends ClassWithConst {"
+          "    ['computed'] = ClassWithConst;"
+          "    #private = ClassWithConst;"
+          "    public = ClassWithConst;"
+          "    constructor() {"
+          "        super();"
+          "        this.#private = this.getPrivate();"
+          "    }"
+          "    check() {"
+          "      return this.#private === this.getPrivate() &&"
+          "             this.computed === ClassWithConst &&"
+          "             this.public === ClassWithConst;"
+          "    }"
+          "  }"
+          ""
+          "  return((new Derived()).check());"
+          "}");
+      creator.SetDefaultContext(context);
+    }
+    blob =
+        creator.CreateBlob(v8::SnapshotCreator::FunctionCodeHandling::kClear);
+  }
+
+  v8::Isolate::CreateParams create_params;
+  create_params.array_buffer_allocator = CcTest::array_buffer_allocator();
+  create_params.snapshot_blob = &blob;
+  v8::Isolate* isolate = v8::Isolate::New(create_params);
+  {
+    v8::Isolate::Scope isolate_scope(isolate);
+    v8::HandleScope handle_scope(isolate);
+    v8::Local<v8::Context> context = v8::Context::New(isolate);
+    CHECK(!context.IsEmpty());
+    v8::Context::Scope context_scope(context);
+    ExpectBoolean("testVarBinding()", true);
+    ExpectBoolean("testLetBinding()", true);
+    ExpectBoolean("testConstBinding()", true);
   }
   isolate->Dispose();
   delete[] blob.data;

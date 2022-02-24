@@ -8,7 +8,8 @@
 #ifndef skgpu_Resource_DEFINED
 #define skgpu_Resource_DEFINED
 
-#include "include/private/SkNoncopyable.h"
+#include "experimental/graphite/src/ResourceTypes.h"
+#include "include/core/SkTypes.h"
 
 #include <atomic>
 
@@ -17,14 +18,15 @@ namespace skgpu {
 class Gpu;
 
 /**
- * Base class for Resource. Provides the hooks for resources to interact with the cache.
- * Separated out as a base class to isolate the ref-cnting behavior and provide friendship without
- * exposing all of Resource.
- *
- * AFTER the ref count reaches zero DERIVED::notifyARefCntIsZero() will be called.
+ * Base class for objects that can be kept in the ResourceCache.
  */
-template <typename DERIVED> class ResourceRef : public SkNoncopyable {
+class Resource {
 public:
+    Resource(const Resource&) = delete;
+    Resource(Resource&&) = delete;
+    Resource& operator=(const Resource&) = delete;
+    Resource& operator=(Resource&&) = delete;
+
     // Adds a usage ref to the resource. Named ref so we can easily manage usage refs with sk_sp.
     void ref() const {
         // Only the cache should be able to add the first usage ref to a resource.
@@ -32,12 +34,6 @@ public:
         // No barrier required.
         (void)fUsageRefCnt.fetch_add(+1, std::memory_order_relaxed);
     }
-
-    // This enum is used to notify the ResourceCache which type of ref just dropped to zero.
-    enum class LastRemovedRef {
-        kUsageRef,
-        kCommandBufferRef,
-    };
 
     // Removes a usage ref from the resource
     void unref() const {
@@ -59,13 +55,32 @@ public:
         SkASSERT(this->hasCommandBufferRef());
         // A release here acts in place of all releases we "should" have been doing in ref().
         if (1 == fCommandBufferRefCnt.fetch_add(-1, std::memory_order_acq_rel)) {
-            this->notifyARefIsZero(LastRemovedRef::kCommandBufferUsage);
+            this->notifyARefIsZero(LastRemovedRef::kCommandBufferRef);
         }
     }
 
-protected:
-    ResourceRef() : fUsageRefCnt(1), fCommandBufferRefCnt(0) {}
+    /**
+     * Tests whether a object has been abandoned or released. All objects will be in this state
+     * after their creating Context is destroyed or abandoned.
+     *
+     * @return true if the object has been released or abandoned,
+     *         false otherwise.
+     */
+    bool wasDestroyed() const { return fGpu == nullptr; }
 
+    int* accessCacheIndex()  const { return &fCacheArrayIndex; }
+
+    uint32_t timestamp() const { return fTimestamp; }
+    void setTimestamp(uint32_t ts) { fTimestamp = ts; }
+
+protected:
+    Resource(const Gpu*);
+    virtual ~Resource();
+
+    /** Overridden to free GPU resources in the backend API. */
+    virtual void onFreeGpuData() = 0;
+
+private:
     bool hasUsageRef() const {
         if (0 == fUsageRefCnt.load(std::memory_order_acquire)) {
             // The acquire barrier is only really needed if we return true.  It
@@ -93,40 +108,7 @@ protected:
         (void)fUsageRefCnt.fetch_add(+1, std::memory_order_relaxed);
     }
 
-private:
-    void notifyARefIsZero(LastRemovedRef removedRef) const {
-        static_cast<const DERIVED*>(this)->notifyARefCntIsZero(removedRef);
-    }
-
-    mutable std::atomic<int32_t> fUsageRefCnt;
-    mutable std::atomic<int32_t> fCommandBufferRefCnt;
-};
-
-/**
- * Base class for objects that can be kept in the ResourceCache.
- */
-class Resource : public ResourceRef<Resource> {
-public:
-    /**
-     * Tests whether a object has been abandoned or released. All objects will be in this state
-     * after their creating Context is destroyed or abandoned.
-     *
-     * @return true if the object has been released or abandoned,
-     *         false otherwise.
-     */
-    bool wasDestroyed() const { return fGpu == nullptr; }
-
-protected:
-    Resource(const Gpu*);
-    virtual ~Resource();
-
-    /** Overridden to free GPU resources in the backend API. */
-    virtual void onFreeGpuData() = 0;
-
-private:
-    friend class ResourceRef<Resource>; // to access notifyARefCntIsZero.
-
-    void notifyARefCntIsZero(LastRemovedRef removedRef) const;
+    void notifyARefIsZero(LastRemovedRef removedRef) const;
 
     /**
      * Frees the object in the underlying 3D API.
@@ -136,6 +118,16 @@ private:
     // This is not ref'ed but abandon() or release() will be called before the Gpu object is
     // destroyed. Those calls set will this to nullptr.
     const Gpu* fGpu;
+
+    mutable std::atomic<int32_t> fUsageRefCnt;
+    mutable std::atomic<int32_t> fCommandBufferRefCnt;
+
+    // An index into a heap when this resource is purgeable or an array when not. This is maintained
+    // by the cache.
+    mutable int fCacheArrayIndex;
+    // This value reflects how recently this resource was accessed in the cache. This is maintained
+    // by the cache.
+    uint32_t fTimestamp;
 };
 
 } // namespace skgpu

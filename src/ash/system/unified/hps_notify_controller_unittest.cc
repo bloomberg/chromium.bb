@@ -100,7 +100,7 @@ class HpsNotifyControllerTestAbsent : public HpsNotifyControllerTestBase {
       : HpsNotifyControllerTestBase(
             /*service_available=*/true,
             /*service_state=*/false,
-            /*params=*/{{"filter_config_case", "1"}}) {}
+            /*params=*/{{"SnoopingProtection_filter_config_case", "1"}}) {}
 };
 
 // Test that icon is hidden by default.
@@ -222,7 +222,7 @@ class HpsNotifyControllerTestPresent : public HpsNotifyControllerTestBase {
       : HpsNotifyControllerTestBase(
             /*service_available=*/true,
             /*service_state=*/true,
-            /*params=*/{{"filter_config_case", "1"}}) {}
+            /*params=*/{{"SnoopingProtection_filter_config_case", "1"}}) {}
 };
 
 // Test that initial daemon state is considered.
@@ -335,6 +335,34 @@ TEST_F(HpsNotifyControllerTestPresent, ClearHpsState) {
   EXPECT_EQ(controller_->SnooperPresent(), false);
 }
 
+// Test that detection is started and stopped based on whether the device's
+// physical orientation is suitable for sensing.
+TEST_F(HpsNotifyControllerTestPresent, Orientation) {
+  SimulateLogin();
+  SetEnabledPref(true);
+  EXPECT_EQ(dbus_client_->enable_hps_notify_count(), 1);
+  EXPECT_EQ(dbus_client_->disable_hps_notify_count(), 1);
+  EXPECT_EQ(dbus_client_->hps_notify_count(), 1);
+  EXPECT_TRUE(controller_->SnooperPresent());
+
+  // When the orientation becomes unsuitable, we should disable the daemon.
+  controller_->OnOrientationChanged(/*suitable_for_hps=*/false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(dbus_client_->enable_hps_notify_count(), 1);
+  EXPECT_EQ(dbus_client_->disable_hps_notify_count(), 2);
+  EXPECT_EQ(dbus_client_->hps_notify_count(), 1);
+  EXPECT_FALSE(controller_->SnooperPresent());
+
+  // When the orientation becomes suitable again, we should re-enable the
+  // daemon.
+  controller_->OnOrientationChanged(/*suitable_for_hps=*/true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(dbus_client_->enable_hps_notify_count(), 2);
+  EXPECT_EQ(dbus_client_->disable_hps_notify_count(), 2);
+  EXPECT_EQ(dbus_client_->hps_notify_count(), 2);
+  EXPECT_TRUE(controller_->SnooperPresent());
+}
+
 // Fixture with the DBus service initially unavailable (using a minimal set of
 // valid params).
 class HpsNotifyControllerTestUnavailable : public HpsNotifyControllerTestBase {
@@ -343,7 +371,7 @@ class HpsNotifyControllerTestUnavailable : public HpsNotifyControllerTestBase {
       : HpsNotifyControllerTestBase(
             /*service_available=*/false,
             /*service_state=*/true,
-            /*params=*/{{"filter_config_case", "1"}}) {}
+            /*params=*/{{"SnoopingProtection_filter_config_case", "1"}}) {}
 };
 
 // Test that the controller waits for the DBus service to be available and
@@ -381,7 +409,7 @@ class HpsNotifyControllerTestBadParams : public HpsNotifyControllerTestBase {
       : HpsNotifyControllerTestBase(
             /*service_available=*/true,
             /*service_state=*/true,
-            /*params=*/{{"filter_config_case", "0"}}) {}
+            /*params=*/{{"SnoopingProtection_filter_config_case", "0"}}) {}
 };
 
 // Test that the controller gracefully handles invalid feature parameters.

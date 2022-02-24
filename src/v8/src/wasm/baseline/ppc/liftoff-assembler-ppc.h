@@ -300,10 +300,6 @@ void LiftoffAssembler::SpillInstance(Register instance) {
 
 void LiftoffAssembler::ResetOSRTarget() {}
 
-void LiftoffAssembler::FillInstanceInto(Register dst) {
-  LoadU64(dst, liftoff::GetInstanceOperand(), r0);
-}
-
 void LiftoffAssembler::LoadTaggedPointer(Register dst, Register src_addr,
                                          Register offset_reg,
                                          int32_t offset_imm,
@@ -815,7 +811,6 @@ void LiftoffAssembler::LoadCallerFrameSlot(LiftoffRegister dst,
     case kRef:
     case kRtt:
     case kOptRef:
-    case kRttWithDepth:
     case kI64: {
       LoadU64(dst.gp(), MemOperand(fp, offset), r0);
       break;
@@ -890,7 +885,6 @@ void LiftoffAssembler::LoadReturnStackSlot(LiftoffRegister dst, int offset,
     case kRef:
     case kRtt:
     case kOptRef:
-    case kRttWithDepth:
     case kI64: {
       LoadU64(dst.gp(), MemOperand(sp, offset), r0);
       break;
@@ -969,7 +963,6 @@ void LiftoffAssembler::Spill(int offset, LiftoffRegister reg, ValueKind kind) {
     case kOptRef:
     case kRef:
     case kRtt:
-    case kRttWithDepth:
       StoreU64(reg.gp(), liftoff::GetStackSlot(offset), r0);
       break;
     case kF32:
@@ -1018,7 +1011,6 @@ void LiftoffAssembler::Fill(LiftoffRegister reg, int offset, ValueKind kind) {
     case kRef:
     case kOptRef:
     case kRtt:
-    case kRttWithDepth:
       LoadU64(reg.gp(), liftoff::GetStackSlot(offset), r0);
       break;
     case kF32:
@@ -1120,7 +1112,7 @@ void LiftoffAssembler::FillStackSlotsWithZero(int start, int size) {
     LFR_TO_REG, LFR_TO_REG, USE, , void)                                     \
   V(i64_ctz, CountTrailingZerosU64, LiftoffRegister, LiftoffRegister,        \
     LFR_TO_REG, LFR_TO_REG, USE, , void)                                     \
-  V(u32_to_intptr, ZeroExtWord32, Register, Register, , , USE, , void)       \
+  V(u32_to_uintptr, ZeroExtWord32, Register, Register, , , USE, , void)      \
   V(i32_signextend_i8, extsb, Register, Register, , , USE, , void)           \
   V(i32_signextend_i16, extsh, Register, Register, , , USE, , void)          \
   V(i64_signextend_i8, extsb, LiftoffRegister, LiftoffRegister, LFR_TO_REG,  \
@@ -1602,7 +1594,6 @@ void LiftoffAssembler::emit_cond_jump(LiftoffCondition liftoff_cond,
       case kRef:
       case kOptRef:
       case kRtt:
-      case kRttWithDepth:
         DCHECK(liftoff_cond == kEqual || liftoff_cond == kUnequal);
         V8_FALLTHROUGH;
       case kI64:
@@ -2997,7 +2988,6 @@ void LiftoffAssembler::CallC(const ValueKindSig* sig,
       case kOptRef:
       case kRef:
       case kRtt:
-      case kRttWithDepth:
         LoadU64(result_reg->gp(), MemOperand(sp));
         break;
       case kF32:
@@ -3077,7 +3067,6 @@ void LiftoffStackSlots::Construct(int param_slots) {
           case kRef:
           case kOptRef:
           case kRtt:
-          case kRttWithDepth:
           case kI64: {
             asm_->AllocateStackSpace(stack_decrement - kSystemPointerSize);
             UseScratchRegisterScope temps(asm_);
@@ -3120,7 +3109,6 @@ void LiftoffStackSlots::Construct(int param_slots) {
           case kRef:
           case kOptRef:
           case kRtt:
-          case kRttWithDepth:
             asm_->push(src.reg().gp());
             break;
           case kF32:

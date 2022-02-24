@@ -54,6 +54,9 @@ extern "C" {
 #define MAX_ARF_LAYERS 6
 // #define STRICT_RC
 
+#define DEFAULT_KF_BOOST_RT 2300
+#define DEFAULT_GF_BOOST_RT 2000
+
 typedef struct {
   int resize_width;
   int resize_height;
@@ -179,6 +182,7 @@ typedef struct {
   int high_source_sad;
   uint64_t avg_source_sad;
   uint64_t prev_avg_source_sad;
+  uint64_t frame_source_sad;
 
   int avg_frame_bandwidth;  // Average frame size target for clip
   int min_frame_bandwidth;  // Minimum allocation used for any frame
@@ -204,8 +208,8 @@ typedef struct {
   /*!\cond */
 
   // rate control history for last frame(1) and the frame before(2).
-  // -1: undershot
-  //  1: overshoot
+  // -1: overshoot
+  //  1: undershoot
   //  0: not initialized.
   int rc_1_frame;
   int rc_2_frame;
@@ -221,6 +225,9 @@ typedef struct {
   /*!\cond */
   // Track amount of low motion in scene
   int avg_frame_low_motion;
+
+  // signals if number of blocks with motion is high
+  int high_num_blocks_with_motion;
 
   // For dynamic resize, 1 pass cbr.
   RESIZE_STATE resize_state;
@@ -540,8 +547,8 @@ int av1_rc_get_default_max_gf_interval(double framerate, int min_gf_interval);
 // Generally at the high level, the following flow is expected
 // to be enforced for rate control:
 // First call per frame, one of:
-//   av1_rc_get_first_pass_params()
-//   av1_rc_get_second_pass_params()
+//   av1_get_one_pass_rt_params()
+//   av1_get_second_pass_params()
 // depending on the usage to set the rate control encode parameters desired.
 //
 // Then, call encode_frame_to_data_rate() to perform the
@@ -550,7 +557,7 @@ int av1_rc_get_default_max_gf_interval(double framerate, int min_gf_interval);
 //   av1_rc_postencode_update_drop_frame()
 //
 // The majority of rate control parameters are only expected
-// to be set in the av1_rc_get_..._params() functions and
+// to be set in the av1_get_..._params() functions and
 // updated during the av1_rc_postencode_update...() functions.
 // The only exceptions are av1_rc_drop_frame() and
 // av1_rc_update_rate_correction_factors() functions.
@@ -573,16 +580,15 @@ void av1_rc_postencode_update_drop_frame(struct AV1_COMP *cpi);
  *
  * \ingroup rate_control
  * \param[in]   cpi                   Top level encoder instance structure
+ * \param[in]   is_encode_stage       Indicates if recode loop or post-encode
  * \param[in]   width                 Frame width
  * \param[in]   height                Frame height
  *
  * \return None but updates the relevant rate correction factor in cpi->rc
  */
 void av1_rc_update_rate_correction_factors(struct AV1_COMP *cpi,
-#if CONFIG_FRAME_PARALLEL_ENCODE
-                                           int is_encode_stage,
-#endif  // CONFIG_FRAME_PARALLEL_ENCODE
-                                           int width, int height);
+                                           int is_encode_stage, int width,
+                                           int height);
 /*!\cond */
 
 // Decide if we should drop this frame: For 1-pass CBR.
@@ -766,24 +772,6 @@ void av1_get_one_pass_rt_params(struct AV1_COMP *cpi,
  * \return q is returned, and updates are done to \c cpi->rc.
  */
 int av1_encodedframe_overshoot_cbr(struct AV1_COMP *cpi, int *q);
-
-#if !CONFIG_REALTIME_ONLY
-/*!\brief Compute the q_indices for the entire GOP.
- *
- * \param[in]       base_q_index      Base q index
- * \param[in]       qstep_ratio_list  Stores the qstep_ratio for each frame
- * \param[in]       bit_depth         Bit depth
- * \param[in]       gf_group          Pointer to the GOP
- * \param[out]      q_index_list      An array to store output gop q indices.
- *                                    the array size should be equal or
- *                                    greater than gf_group.size()
- */
-void av1_q_mode_compute_gop_q_indices(int base_q_index,
-                                      const double *qstep_ratio_list,
-                                      aom_bit_depth_t bit_depth,
-                                      const struct GF_GROUP *gf_group,
-                                      int *q_index_list);
-#endif  // !CONFIG_REALTIME_ONLY
 
 /*!\brief Compute the q_indices for a single frame.
  *

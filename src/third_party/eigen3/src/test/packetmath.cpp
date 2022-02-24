@@ -24,8 +24,28 @@ inline T REF_MUL(const T& a, const T& b) {
   return a * b;
 }
 template <typename T>
+inline T REF_MADD(const T& a, const T& b, const T& c) {
+  return a * b + c;
+}
+template <typename T>
+inline T REF_MSUB(const T& a, const T& b, const T& c) {
+  return a * b - c;
+}
+template <typename T>
+inline T REF_NMADD(const T& a, const T& b, const T& c) {
+  return (-a * b) + c;
+}
+template <typename T>
+inline T REF_NMSUB(const T& a, const T& b, const T& c) {
+  return (-a * b)  - c;
+}
+template <typename T>
 inline T REF_DIV(const T& a, const T& b) {
   return a / b;
+}
+template <typename T>
+inline T REF_RECIPROCAL(const T& a) {
+  return T(1) / a;
 }
 template <typename T>
 inline T REF_ABS_DIFF(const T& a, const T& b) {
@@ -44,6 +64,10 @@ inline bool REF_SUB(const bool& a, const bool& b) {
 template <>
 inline bool REF_MUL(const bool& a, const bool& b) {
   return a && b;
+}
+template <>
+inline bool REF_MADD(const bool& a, const bool& b, const bool& c) {
+  return (a && b) || c;
 }
 
 template <typename T>
@@ -464,8 +488,10 @@ void packetmath() {
   CHECK_CWISE2_IF(PacketTraits::HasMul, REF_MUL, internal::pmul);
   CHECK_CWISE2_IF(PacketTraits::HasDiv, REF_DIV, internal::pdiv);
 
-  if (PacketTraits::HasNegate) CHECK_CWISE1(internal::negate, internal::pnegate);
+  CHECK_CWISE1_IF(PacketTraits::HasNegate, internal::negate, internal::pnegate);
+  CHECK_CWISE1_IF(PacketTraits::HasReciprocal, REF_RECIPROCAL, internal::preciprocal);
   CHECK_CWISE1(numext::conj, internal::pconj);
+
 
   for (int offset = 0; offset < 3; ++offset) {
     for (int i = 0; i < PacketSize; ++i) ref[i] = data1[offset];
@@ -616,6 +642,12 @@ void packetmath() {
   }
   CHECK_CWISE1_IF(PacketTraits::HasSqrt, numext::sqrt, internal::psqrt);
   CHECK_CWISE1_IF(PacketTraits::HasRsqrt, numext::rsqrt, internal::prsqrt);
+  CHECK_CWISE3_IF(true, REF_MADD, internal::pmadd);
+  if (!std::is_same<Scalar, bool>::value && NumTraits<Scalar>::IsSigned) {
+    CHECK_CWISE3_IF(true, REF_MSUB, internal::pmsub);
+    CHECK_CWISE3_IF(true, REF_NMADD, internal::pnmadd);
+    CHECK_CWISE3_IF(true, REF_NMSUB, internal::pnmsub);
+  }
 }
 
 // Notice that this definition works for complex types as well.
@@ -890,8 +922,10 @@ void packetmath_real() {
         data1[0] = std::numeric_limits<Scalar>::denorm_min();
         data1[1] = -std::numeric_limits<Scalar>::denorm_min();
         h.store(data2, internal::plog(h.load(data1)));
-        // TODO(rmlarsen): Re-enable.
-        //        VERIFY_IS_EQUAL(std::log(std::numeric_limits<Scalar>::denorm_min()), data2[0]);
+        // TODO(rmlarsen): Re-enable for bfloat16.
+        if (!internal::is_same<Scalar, bfloat16>::value) {
+          VERIFY_IS_APPROX(std::log(std::numeric_limits<Scalar>::denorm_min()), data2[0]);
+        }
         VERIFY((numext::isnan)(data2[1]));
       }
 #endif
@@ -918,7 +952,7 @@ void packetmath_real() {
       if (std::numeric_limits<Scalar>::has_denorm == std::denorm_present) {
         data1[1] = -std::numeric_limits<Scalar>::denorm_min();
       } else {
-        data1[1] = -NumTraits<Scalar>::epsilon();
+        data1[1] = -((std::numeric_limits<Scalar>::min)());
       }
       h.store(data2, internal::psqrt(h.load(data1)));
       VERIFY((numext::isnan)(data2[0]));
@@ -972,6 +1006,23 @@ void packetmath_real() {
       h.store(data2, internal::pcos(h.load(data1)));
       VERIFY_IS_EQUAL(data2[0], Scalar(1));
     }
+  }
+  if (PacketTraits::HasReciprocal && PacketSize >= 2) {
+    test::packet_helper<PacketTraits::HasReciprocal, Packet> h;
+    const Scalar inf = NumTraits<Scalar>::infinity();
+    const Scalar zero = Scalar(0);
+    data1[0] = zero;
+    data1[1] = -zero;
+    h.store(data2, internal::preciprocal(h.load(data1)));
+    VERIFY_IS_EQUAL(data2[0], inf);
+    VERIFY_IS_EQUAL(data2[1], -inf);
+
+    data1[0] = inf;
+    data1[1] = -inf;
+    h.store(data2, internal::preciprocal(h.load(data1)));
+    VERIFY_IS_EQUAL(data2[0], zero);
+    VERIFY_IS_EQUAL(data2[1], -zero);
+
   }
 }
 

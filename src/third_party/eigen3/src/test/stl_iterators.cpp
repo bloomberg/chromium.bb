@@ -438,14 +438,14 @@ void test_stl_iterators(int rows=Rows, int cols=Cols)
     i = internal::random<Index>(0,A.rows()-1);
     A.setRandom();
     A.row(i).setZero();
-    VERIFY_IS_EQUAL( std::find_if(A.rowwise().begin(),  A.rowwise().end(),  [](typename ColMatrixType::RowXpr x) { return x.squaredNorm() == Scalar(0); })-A.rowwise().begin(),  i );
-    VERIFY_IS_EQUAL( std::find_if(A.rowwise().rbegin(), A.rowwise().rend(), [](typename ColMatrixType::RowXpr x) { return x.squaredNorm() == Scalar(0); })-A.rowwise().rbegin(), (A.rows()-1) - i );
+    VERIFY_IS_EQUAL(std::find_if(A.rowwise().begin(),  A.rowwise().end(),  [](typename ColMatrixType::RowXpr x) { return numext::is_exactly_zero(x.squaredNorm()); }) - A.rowwise().begin(), i );
+    VERIFY_IS_EQUAL(std::find_if(A.rowwise().rbegin(), A.rowwise().rend(), [](typename ColMatrixType::RowXpr x) { return numext::is_exactly_zero(x.squaredNorm()); }) - A.rowwise().rbegin(), (A.rows() - 1) - i );
 
     j = internal::random<Index>(0,A.cols()-1);
     A.setRandom();
     A.col(j).setZero();
-    VERIFY_IS_EQUAL( std::find_if(A.colwise().begin(),  A.colwise().end(),  [](typename ColMatrixType::ColXpr x) { return x.squaredNorm() == Scalar(0); })-A.colwise().begin(),  j );
-    VERIFY_IS_EQUAL( std::find_if(A.colwise().rbegin(), A.colwise().rend(), [](typename ColMatrixType::ColXpr x) { return x.squaredNorm() == Scalar(0); })-A.colwise().rbegin(), (A.cols()-1) - j );
+    VERIFY_IS_EQUAL(std::find_if(A.colwise().begin(),  A.colwise().end(),  [](typename ColMatrixType::ColXpr x) { return numext::is_exactly_zero(x.squaredNorm()); }) - A.colwise().begin(), j );
+    VERIFY_IS_EQUAL(std::find_if(A.colwise().rbegin(), A.colwise().rend(), [](typename ColMatrixType::ColXpr x) { return numext::is_exactly_zero(x.squaredNorm()); }) - A.colwise().rbegin(), (A.cols() - 1) - j );
   }
 
   {

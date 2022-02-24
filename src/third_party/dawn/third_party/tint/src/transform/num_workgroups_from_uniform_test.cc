@@ -26,8 +26,28 @@ namespace {
 
 using NumWorkgroupsFromUniformTest = TransformTest;
 
+TEST_F(NumWorkgroupsFromUniformTest, ShouldRunEmptyModule) {
+  auto* src = R"()";
+
+  EXPECT_FALSE(ShouldRun<NumWorkgroupsFromUniform>(src));
+}
+
+TEST_F(NumWorkgroupsFromUniformTest, ShouldRunHasNumWorkgroups) {
+  auto* src = R"(
+[[stage(compute), workgroup_size(1)]]
+fn main([[builtin(num_workgroups)]] num_wgs : vec3<u32>) {
+}
+)";
+
+  EXPECT_TRUE(ShouldRun<NumWorkgroupsFromUniform>(src));
+}
+
 TEST_F(NumWorkgroupsFromUniformTest, Error_MissingTransformData) {
-  auto* src = "";
+  auto* src = R"(
+[[stage(compute), workgroup_size(1)]]
+fn main([[builtin(num_workgroups)]] num_wgs : vec3<u32>) {
+}
+)";
 
   auto* expect =
       "error: missing transform data for "
@@ -38,19 +58,6 @@ TEST_F(NumWorkgroupsFromUniformTest, Error_MissingTransformData) {
       CanonicalizeEntryPointIO::ShaderStyle::kHlsl);
   auto got = Run<Unshadow, CanonicalizeEntryPointIO, NumWorkgroupsFromUniform>(
       src, data);
-
-  EXPECT_EQ(expect, str(got));
-}
-
-TEST_F(NumWorkgroupsFromUniformTest, Error_MissingCanonicalizeEntryPointIO) {
-  auto* src = "";
-
-  auto* expect =
-      "error: tint::transform::NumWorkgroupsFromUniform depends on "
-      "tint::transform::CanonicalizeEntryPointIO but the dependency was not "
-      "run";
-
-  auto got = Run<NumWorkgroupsFromUniform>(src);
 
   EXPECT_EQ(expect, str(got));
 }
@@ -139,6 +146,52 @@ fn main() {
   EXPECT_EQ(expect, str(got));
 }
 
+TEST_F(NumWorkgroupsFromUniformTest, StructOnlyMember_OutOfOrder) {
+  auto* src = R"(
+@stage(compute) @workgroup_size(1)
+fn main(in : Builtins) {
+  let groups_x = in.num_wgs.x;
+  let groups_y = in.num_wgs.y;
+  let groups_z = in.num_wgs.z;
+}
+
+struct Builtins {
+  @builtin(num_workgroups) num_wgs : vec3<u32>;
+};
+)";
+
+  auto* expect = R"(
+struct tint_symbol_2 {
+  num_workgroups : vec3<u32>;
+}
+
+@group(0) @binding(30) var<uniform> tint_symbol_3 : tint_symbol_2;
+
+fn main_inner(in : Builtins) {
+  let groups_x = in.num_wgs.x;
+  let groups_y = in.num_wgs.y;
+  let groups_z = in.num_wgs.z;
+}
+
+@stage(compute) @workgroup_size(1)
+fn main() {
+  main_inner(Builtins(tint_symbol_3.num_workgroups));
+}
+
+struct Builtins {
+  num_wgs : vec3<u32>;
+}
+)";
+
+  DataMap data;
+  data.Add<CanonicalizeEntryPointIO::Config>(
+      CanonicalizeEntryPointIO::ShaderStyle::kHlsl);
+  data.Add<NumWorkgroupsFromUniform::Config>(sem::BindingPoint{0, 30u});
+  auto got = Run<Unshadow, CanonicalizeEntryPointIO, NumWorkgroupsFromUniform>(
+      src, data);
+  EXPECT_EQ(expect, str(got));
+}
+
 TEST_F(NumWorkgroupsFromUniformTest, StructMultipleMembers) {
   auto* src = R"(
 struct Builtins {
@@ -184,6 +237,64 @@ fn main_inner(in : Builtins) {
 @stage(compute) @workgroup_size(1)
 fn main(tint_symbol : tint_symbol_1) {
   main_inner(Builtins(tint_symbol.gid, tint_symbol_3.num_workgroups, tint_symbol.wgid));
+}
+)";
+
+  DataMap data;
+  data.Add<CanonicalizeEntryPointIO::Config>(
+      CanonicalizeEntryPointIO::ShaderStyle::kHlsl);
+  data.Add<NumWorkgroupsFromUniform::Config>(sem::BindingPoint{0, 30u});
+  auto got = Run<Unshadow, CanonicalizeEntryPointIO, NumWorkgroupsFromUniform>(
+      src, data);
+  EXPECT_EQ(expect, str(got));
+}
+
+TEST_F(NumWorkgroupsFromUniformTest, StructMultipleMembers_OutOfOrder) {
+  auto* src = R"(
+@stage(compute) @workgroup_size(1)
+fn main(in : Builtins) {
+  let groups_x = in.num_wgs.x;
+  let groups_y = in.num_wgs.y;
+  let groups_z = in.num_wgs.z;
+}
+
+struct Builtins {
+  @builtin(global_invocation_id) gid : vec3<u32>;
+  @builtin(num_workgroups) num_wgs : vec3<u32>;
+  @builtin(workgroup_id) wgid : vec3<u32>;
+};
+
+)";
+
+  auto* expect = R"(
+struct tint_symbol_2 {
+  num_workgroups : vec3<u32>;
+}
+
+@group(0) @binding(30) var<uniform> tint_symbol_3 : tint_symbol_2;
+
+struct tint_symbol_1 {
+  @builtin(global_invocation_id)
+  gid : vec3<u32>;
+  @builtin(workgroup_id)
+  wgid : vec3<u32>;
+}
+
+fn main_inner(in : Builtins) {
+  let groups_x = in.num_wgs.x;
+  let groups_y = in.num_wgs.y;
+  let groups_z = in.num_wgs.z;
+}
+
+@stage(compute) @workgroup_size(1)
+fn main(tint_symbol : tint_symbol_1) {
+  main_inner(Builtins(tint_symbol.gid, tint_symbol_3.num_workgroups, tint_symbol.wgid));
+}
+
+struct Builtins {
+  gid : vec3<u32>;
+  num_wgs : vec3<u32>;
+  wgid : vec3<u32>;
 }
 )";
 

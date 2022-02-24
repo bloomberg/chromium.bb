@@ -1,6 +1,6 @@
 // This passes because variable `a` is redeclared in a sibling scope.
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   if (true) {
     var a : i32 = -1;

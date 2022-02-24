@@ -170,33 +170,14 @@ EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
 EIGEN_UNUSED
 Packet plog_impl_float(const Packet _x)
 {
-  Packet x = _x;
-
   const Packet cst_1              = pset1<Packet>(1.0f);
-  const Packet cst_neg_half       = pset1<Packet>(-0.5f);
-  // The smallest non denormalized float number.
-  const Packet cst_min_norm_pos   = pset1frombits<Packet>( 0x00800000u);
   const Packet cst_minus_inf      = pset1frombits<Packet>( 0xff800000u);
   const Packet cst_pos_inf        = pset1frombits<Packet>( 0x7f800000u);
 
-  // Polynomial coefficients.
   const Packet cst_cephes_SQRTHF = pset1<Packet>(0.707106781186547524f);
-  const Packet cst_cephes_log_p0 = pset1<Packet>(7.0376836292E-2f);
-  const Packet cst_cephes_log_p1 = pset1<Packet>(-1.1514610310E-1f);
-  const Packet cst_cephes_log_p2 = pset1<Packet>(1.1676998740E-1f);
-  const Packet cst_cephes_log_p3 = pset1<Packet>(-1.2420140846E-1f);
-  const Packet cst_cephes_log_p4 = pset1<Packet>(+1.4249322787E-1f);
-  const Packet cst_cephes_log_p5 = pset1<Packet>(-1.6668057665E-1f);
-  const Packet cst_cephes_log_p6 = pset1<Packet>(+2.0000714765E-1f);
-  const Packet cst_cephes_log_p7 = pset1<Packet>(-2.4999993993E-1f);
-  const Packet cst_cephes_log_p8 = pset1<Packet>(+3.3333331174E-1f);
-
-  // Truncate input values to the minimum positive normal.
-  x = pmax(x, cst_min_norm_pos);
-
-  Packet e;
+  Packet e, x;
   // extract significant in the range [0.5,1) and exponent
-  x = pfrexp(x,e);
+  x = pfrexp(_x,e);
 
   // part2: Shift the inputs from the range [0.5,1) to [sqrt(1/2),sqrt(2))
   // and shift by -1. The values are then centered around 0, which improves
@@ -211,24 +192,22 @@ Packet plog_impl_float(const Packet _x)
   e = psub(e, pand(cst_1, mask));
   x = padd(x, tmp);
 
-  Packet x2 = pmul(x, x);
-  Packet x3 = pmul(x2, x);
+  // Polynomial coefficients for rational (3,3) r(x) = p(x)/q(x)
+  // approximating log(1+x) on [sqrt(0.5)-1;sqrt(2)-1].
+  const Packet cst_p1 = pset1<Packet>(1.0000000190281136f);
+  const Packet cst_p2 = pset1<Packet>(1.0000000190281063f);
+  const Packet cst_p3 = pset1<Packet>(0.18256296349849254f);
+  const Packet cst_q1 = pset1<Packet>(1.4999999999999927f);
+  const Packet cst_q2 = pset1<Packet>(0.59923249590823520f);
+  const Packet cst_q3 = pset1<Packet>(0.049616247954120038f);
 
-  // Evaluate the polynomial approximant of degree 8 in three parts, probably
-  // to improve instruction-level parallelism.
-  Packet y, y1, y2;
-  y  = pmadd(cst_cephes_log_p0, x, cst_cephes_log_p1);
-  y1 = pmadd(cst_cephes_log_p3, x, cst_cephes_log_p4);
-  y2 = pmadd(cst_cephes_log_p6, x, cst_cephes_log_p7);
-  y  = pmadd(y, x, cst_cephes_log_p2);
-  y1 = pmadd(y1, x, cst_cephes_log_p5);
-  y2 = pmadd(y2, x, cst_cephes_log_p8);
-  y  = pmadd(y, x3, y1);
-  y  = pmadd(y, x3, y2);
-  y  = pmul(y, x3);
-
-  y = pmadd(cst_neg_half, x2, y);
-  x = padd(x, y);
+  Packet p = pmadd(x, cst_p3, cst_p2);
+  p = pmadd(x, p, cst_p1);
+  p = pmul(x, p);
+  Packet q = pmadd(x, cst_q3, cst_q2);
+  q = pmadd(x, q, cst_q1);
+  q = pmadd(x, q, cst_1);
+  x = pdiv(p, q);
 
   // Add the logarithm of the exponent back to the result of the interpolation.
   if (base2) {
@@ -284,8 +263,6 @@ Packet plog_impl_double(const Packet _x)
 
   const Packet cst_1              = pset1<Packet>(1.0);
   const Packet cst_neg_half       = pset1<Packet>(-0.5);
-  // The smallest non denormalized double.
-  const Packet cst_min_norm_pos   = pset1frombits<Packet>( static_cast<uint64_t>(0x0010000000000000ull));
   const Packet cst_minus_inf      = pset1frombits<Packet>( static_cast<uint64_t>(0xfff0000000000000ull));
   const Packet cst_pos_inf        = pset1frombits<Packet>( static_cast<uint64_t>(0x7ff0000000000000ull));
 
@@ -306,9 +283,6 @@ Packet plog_impl_double(const Packet _x)
   const Packet cst_cephes_log_q3 = pset1<Packet>(8.29875266912776603211E1);
   const Packet cst_cephes_log_q4 = pset1<Packet>(7.11544750618563894466E1);
   const Packet cst_cephes_log_q5 = pset1<Packet>(2.31251620126765340583E1);
-
-  // Truncate input values to the minimum positive normal.
-  x = pmax(x, cst_min_norm_pos);
 
   Packet e;
   // extract significant in the range [0.5,1) and exponent
@@ -435,24 +409,24 @@ Packet generic_expm1(const Packet& x)
 // Exponential function. Works by writing "x = m*log(2) + r" where
 // "m = floor(x/log(2)+1/2)" and "r" is the remainder. The result is then
 // "exp(x) = 2^m*exp(r)" where exp(r) is in the range [-1,1).
+// exp(r) is computed using a 6th order minimax polynomial approximation.
 template <typename Packet>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
 EIGEN_UNUSED
 Packet pexp_float(const Packet _x)
 {
   const Packet cst_zero   = pset1<Packet>(0.0f);
-  const Packet cst_1      = pset1<Packet>(1.0f);
+  const Packet cst_one    = pset1<Packet>(1.0f);
   const Packet cst_half   = pset1<Packet>(0.5f);
-  const Packet cst_exp_hi = pset1<Packet>( 88.723f);
-  const Packet cst_exp_lo = pset1<Packet>(-88.723f);
+  const Packet cst_exp_hi = pset1<Packet>(88.723f);
+  const Packet cst_exp_lo = pset1<Packet>(-104.f);
 
   const Packet cst_cephes_LOG2EF = pset1<Packet>(1.44269504088896341f);
-  const Packet cst_cephes_exp_p0 = pset1<Packet>(1.9875691500E-4f);
-  const Packet cst_cephes_exp_p1 = pset1<Packet>(1.3981999507E-3f);
-  const Packet cst_cephes_exp_p2 = pset1<Packet>(8.3334519073E-3f);
-  const Packet cst_cephes_exp_p3 = pset1<Packet>(4.1665795894E-2f);
-  const Packet cst_cephes_exp_p4 = pset1<Packet>(1.6666665459E-1f);
-  const Packet cst_cephes_exp_p5 = pset1<Packet>(5.0000001201E-1f);
+  const Packet cst_p2 = pset1<Packet>(0.49999988079071044921875f);
+  const Packet cst_p3 = pset1<Packet>(0.16666518151760101318359375f);
+  const Packet cst_p4 = pset1<Packet>(4.166965186595916748046875e-2f);
+  const Packet cst_p5 = pset1<Packet>(8.36894474923610687255859375e-3f);
+  const Packet cst_p6 = pset1<Packet>(1.37449637986719608306884765625e-3f);
 
   // Clamp x.
   Packet zero_mask = pcmp_lt(_x, cst_exp_lo);
@@ -470,18 +444,15 @@ Packet pexp_float(const Packet _x)
   Packet r = pmadd(m, cst_cephes_exp_C1, x);
   r = pmadd(m, cst_cephes_exp_C2, r);
 
-  Packet r2 = pmul(r, r);
-  Packet r3 = pmul(r2, r);
-
-  // Evaluate the polynomial approximant,improved by instruction-level parallelism.
-  Packet y, y1, y2;
-  y  = pmadd(cst_cephes_exp_p0, r, cst_cephes_exp_p1);
-  y1 = pmadd(cst_cephes_exp_p3, r, cst_cephes_exp_p4);
-  y2 = padd(r, cst_1);
-  y  = pmadd(y, r, cst_cephes_exp_p2);
-  y1 = pmadd(y1, r, cst_cephes_exp_p5);
-  y  = pmadd(y, r3, y1);
-  y  = pmadd(y, r2, y2);
+  // Evaluate the 6th order polynomial approximation to exp(r)
+  // with r in the interval [-ln(2)/2;ln(2)/2].
+  const Packet r2 = pmul(r, r);
+  Packet p_even = pmadd(r2, cst_p6, cst_p4);
+  const Packet p_odd = pmadd(r2, cst_p5, cst_p3);
+  p_even = pmadd(r2, p_even, cst_p2);
+  const Packet p_low = padd(r, cst_one);
+  Packet y = pmadd(r, p_odd, p_even);
+  y = pmadd(r2, y, p_low);
 
   // Return 2^m * exp(r).
   // TODO: replace pldexp with faster implementation since y in [-1, 1).
@@ -494,7 +465,7 @@ EIGEN_UNUSED
 Packet pexp_double(const Packet _x)
 {
   Packet x = _x;
-  const Packet cst_zero = pset1<Packet>(0.0f);
+  const Packet cst_zero = pset1<Packet>(0.0);
   const Packet cst_1 = pset1<Packet>(1.0);
   const Packet cst_2 = pset1<Packet>(2.0);
   const Packet cst_half = pset1<Packet>(0.5);

@@ -349,6 +349,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // The frame called |window.focus()|.
   virtual void DidCallFocus() {}
 
+  // Returns whether this delegate is an inner WebContents for a guest.
+  // TODO(https://crbug.com/1295431): Remove in favor of tracking pending guest
+  // initializations instead.
+  virtual bool IsInnerWebContentsForGuest();
+
   // Searches the WebContents for a focused frame, potentially in an inner
   // WebContents. If this WebContents has no focused frame, returns |nullptr|.
   // If there is no inner WebContents at the focused tree node, returns its
@@ -420,8 +425,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // The main frame document element is ready. This happens when the document
   // has finished parsing.
-  virtual void DocumentAvailableInMainFrame(
-      RenderFrameHost* render_frame_host) {}
+  virtual void PrimaryMainDocumentElementAvailable() {}
 
   // Reports that passive mixed content was found at the specified url.
   virtual void PassiveInsecureContentFound(const GURL& resource_url) {}

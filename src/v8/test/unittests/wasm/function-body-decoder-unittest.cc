@@ -86,24 +86,19 @@ class TestModuleBuilder {
     CHECK_LE(mod.globals.size(), kMaxByteSizedLeb128);
     return static_cast<byte>(mod.globals.size() - 1);
   }
-  byte AddSignature(const FunctionSig* sig) {
-    mod.add_signature(sig, kNoSuperType);
+  byte AddSignature(const FunctionSig* sig, uint32_t supertype = kNoSuperType) {
+    mod.add_signature(sig, supertype);
     CHECK_LE(mod.types.size(), kMaxByteSizedLeb128);
     return static_cast<byte>(mod.types.size() - 1);
   }
   byte AddFunction(const FunctionSig* sig, bool declared = true) {
     byte sig_index = AddSignature(sig);
-    mod.functions.push_back(
-        {sig,                                          // sig
-         static_cast<uint32_t>(mod.functions.size()),  // func_index
-         sig_index,                                    // sig_index
-         {0, 0},                                       // code
-         0,                                            // feedback slots
-         false,                                        // import
-         false,                                        // export
-         declared});                                   // declared
-    CHECK_LE(mod.functions.size(), kMaxByteSizedLeb128);
-    return static_cast<byte>(mod.functions.size() - 1);
+    return AddFunctionImpl(sig, sig_index, declared);
+  }
+  byte AddFunction(uint32_t sig_index, bool declared = true) {
+    DCHECK(mod.has_signature(sig_index));
+    return AddFunctionImpl(mod.types[sig_index].function_sig, sig_index,
+                           declared);
   }
   byte AddImport(const FunctionSig* sig) {
     byte result = AddFunction(sig);
@@ -136,13 +131,13 @@ class TestModuleBuilder {
       type_builder.AddField(field.first, field.second);
     }
     mod.add_struct_type(type_builder.Build(), supertype);
-    return static_cast<byte>(mod.type_kinds.size() - 1);
+    return static_cast<byte>(mod.types.size() - 1);
   }
 
   byte AddArray(ValueType type, bool mutability) {
     ArrayType* array = mod.signature_zone->New<ArrayType>(type, mutability);
     mod.add_array_type(array, kNoSuperType);
-    return static_cast<byte>(mod.type_kinds.size() - 1);
+    return static_cast<byte>(mod.types.size() - 1);
   }
 
   void InitializeMemory(MemoryType mem_type = kMemory32) {
@@ -181,6 +176,21 @@ class TestModuleBuilder {
   WasmModule* module() { return &mod; }
 
  private:
+  byte AddFunctionImpl(const FunctionSig* sig, uint32_t sig_index,
+                       bool declared) {
+    mod.functions.push_back(
+        {sig,                                          // sig
+         static_cast<uint32_t>(mod.functions.size()),  // func_index
+         sig_index,                                    // sig_index
+         {0, 0},                                       // code
+         0,                                            // feedback slots
+         false,                                        // import
+         false,                                        // export
+         declared});                                   // declared
+    CHECK_LE(mod.functions.size(), kMaxByteSizedLeb128);
+    return static_cast<byte>(mod.functions.size() - 1);
+  }
+
   AccountingAllocator allocator;
   WasmModule mod;
 };
@@ -1164,13 +1174,6 @@ TEST_F(FunctionBodyDecoderTest, UnreachableRefTypes) {
                                WASM_GC_OP(kExprRefCast), struct_index,
                                struct_index, kExprDrop});
 
-  ExpectValidates(sigs.v_v(),
-                  {WASM_UNREACHABLE, WASM_GC_OP(kExprRttSub), array_index,
-                   WASM_GC_OP(kExprRttSub), array_index, kExprDrop});
-  ExpectValidates(sigs.v_v(),
-                  {WASM_UNREACHABLE, WASM_GC_OP(kExprRttFreshSub), array_index,
-                   WASM_GC_OP(kExprRttFreshSub), array_index, kExprDrop});
-
   ExpectValidates(sigs.v_v(), {WASM_UNREACHABLE, kExprBrOnNull, 0, WASM_DROP});
 
   ExpectValidates(&sig_v_s, {WASM_UNREACHABLE, WASM_LOCAL_GET(0), kExprBrOnNull,
@@ -1958,21 +1961,23 @@ TEST_F(FunctionBodyDecoderTest, TablesWithFunctionSubtyping) {
   EXPERIMENTAL_FLAG_SCOPE(gc);
 
   byte empty_struct = builder.AddStruct({});
-  byte super_struct = builder.AddStruct({F(kWasmI32, false)});
-  byte sub_struct = builder.AddStruct({F(kWasmI32, false), F(kWasmF64, false)});
+  byte super_struct = builder.AddStruct({F(kWasmI32, false)}, empty_struct);
+  byte sub_struct =
+      builder.AddStruct({F(kWasmI32, false), F(kWasmF64, false)}, super_struct);
 
-  byte table_type = builder.AddSignature(
-      FunctionSig::Build(zone(), {ValueType::Ref(super_struct, kNullable)},
-                         {ValueType::Ref(sub_struct, kNullable)}));
   byte table_supertype = builder.AddSignature(
       FunctionSig::Build(zone(), {ValueType::Ref(empty_struct, kNullable)},
                          {ValueType::Ref(sub_struct, kNullable)}));
+  byte table_type = builder.AddSignature(
+      FunctionSig::Build(zone(), {ValueType::Ref(super_struct, kNullable)},
+                         {ValueType::Ref(sub_struct, kNullable)}),
+      table_supertype);
   auto function_sig =
       FunctionSig::Build(zone(), {ValueType::Ref(sub_struct, kNullable)},
                          {ValueType::Ref(super_struct, kNullable)});
-  byte function_type = builder.AddSignature(function_sig);
+  byte function_type = builder.AddSignature(function_sig, table_type);
 
-  byte function = builder.AddFunction(function_sig);
+  byte function = builder.AddFunction(function_type);
 
   byte table = builder.InitializeTable(ValueType::Ref(table_type, kNullable));
 
@@ -2677,10 +2682,11 @@ TEST_F(FunctionBodyDecoderTest, BrTableSubtyping) {
   WASM_FEATURE_SCOPE(typed_funcref);
   WASM_FEATURE_SCOPE(gc);
 
-  byte supertype1 = builder.AddStruct({F(kWasmI8, true), F(kWasmI16, false)});
-  byte supertype2 = builder.AddStruct({F(kWasmI8, true)});
+  byte supertype1 = builder.AddStruct({F(kWasmI8, true)});
+  byte supertype2 =
+      builder.AddStruct({F(kWasmI8, true), F(kWasmI16, false)}, supertype1);
   byte subtype = builder.AddStruct(
-      {F(kWasmI8, true), F(kWasmI16, false), F(kWasmI32, true)});
+      {F(kWasmI8, true), F(kWasmI16, false), F(kWasmI32, true)}, supertype2);
   ExpectValidates(
       sigs.v_v(),
       {WASM_BLOCK_R(wasm::ValueType::Ref(supertype1, kNonNullable),
@@ -3640,7 +3646,7 @@ TEST_F(FunctionBodyDecoderTest, NominalStructSubtyping) {
   WASM_FEATURE_SCOPE(typed_funcref);
   WASM_FEATURE_SCOPE(gc);
   byte structural_type = builder.AddStruct({F(kWasmI32, true)});
-  byte nominal_type = builder.AddStruct({F(kWasmI32, true)}, kGenericSuperType);
+  byte nominal_type = builder.AddStruct({F(kWasmI32, true)});
   AddLocals(optref(structural_type), 1);
   AddLocals(optref(nominal_type), 1);
   // Try to assign a nominally-typed value to a structurally-typed local.
@@ -3978,8 +3984,8 @@ TEST_F(FunctionBodyDecoderTest, GCStruct) {
                                           WASM_RTT_CANON(array_type_index)),
                  kExprDrop},
                 kAppendEnd,
-                "struct.new_with_rtt[1] expected rtt with depth for type 0, "
-                "found rtt.canon of type (rtt 0 1)");
+                "struct.new_with_rtt[1] expected type (rtt 0), found "
+                "rtt.canon of type (rtt 1)");
   // Out-of-bounds index.
   ExpectFailure(sigs.v_v(),
                 {WASM_STRUCT_NEW_WITH_RTT(42, WASM_I32V(0),
@@ -4117,8 +4123,8 @@ TEST_F(FunctionBodyDecoderTest, GCArray) {
                     array_type_index, WASM_REF_NULL(kFuncRefCode), WASM_I32V(5),
                     WASM_RTT_CANON(struct_type_index))},
                 kAppendEnd,
-                "array.new_with_rtt[2] expected rtt with depth for type 0, "
-                "found rtt.canon of type (rtt 0 1)");
+                "array.new_with_rtt[2] expected type (rtt 0), found "
+                "rtt.canon of type (rtt 1)");
   // Wrong type index.
   ExpectFailure(
       sigs.v_v(),
@@ -4318,103 +4324,9 @@ TEST_F(FunctionBodyDecoderTest, RttCanon) {
   uint8_t struct_type_index = builder.AddStruct({F(kWasmI64, true)});
 
   for (uint32_t type_index : {array_type_index, struct_type_index}) {
-    ValueType rtt1 = ValueType::Rtt(type_index, 0);
+    ValueType rtt1 = ValueType::Rtt(type_index);
     FunctionSig sig1(1, 0, &rtt1);
     ExpectValidates(&sig1, {WASM_RTT_CANON(type_index)});
-
-    // rtt.canon should fail for incorrect depth.
-    ValueType rtt2 = ValueType::Rtt(type_index, 1);
-    FunctionSig sig2(1, 0, &rtt2);
-    ExpectFailure(&sig2, {WASM_RTT_CANON(type_index)}, kAppendEnd,
-                  "type error in fallthru[0]");
-  }
-}
-
-TEST_F(FunctionBodyDecoderTest, RttSub) {
-  WASM_FEATURE_SCOPE(typed_funcref);
-  WASM_FEATURE_SCOPE(gc);
-
-  uint8_t array_type_index = builder.AddArray(kWasmI8, true);
-  uint8_t super_struct_type_index = builder.AddStruct({F(kWasmI16, true)});
-  uint8_t sub_struct_type_index =
-      builder.AddStruct({F(kWasmI16, true), F(kWasmI32, false)});
-
-  // Trivial type error.
-  ExpectFailure(
-      sigs.v_v(), {WASM_RTT_SUB(array_type_index, WASM_I32V(42)), kExprDrop},
-      kAppendEnd, "rtt.sub[0] expected rtt for a supertype of type 0");
-  ExpectFailure(
-      sigs.v_v(),
-      {WASM_RTT_FRESH_SUB(array_type_index, WASM_I32V(42)), kExprDrop},
-      kAppendEnd, "rtt.fresh_sub[0] expected rtt for a supertype of type 0");
-
-  {
-    ValueType type = ValueType::Rtt(array_type_index, 1);
-    FunctionSig sig(1, 0, &type);
-    // Can build an rtt.sub with self type for an array type.
-    ExpectValidates(&sig, {WASM_RTT_SUB(array_type_index,
-                                        WASM_RTT_CANON(array_type_index))});
-    ExpectValidates(&sig,
-                    {WASM_RTT_FRESH_SUB(array_type_index,
-                                        WASM_RTT_CANON(array_type_index))});
-    // Fails when argument to rtt.sub is not a supertype.
-    ExpectFailure(sigs.v_v(),
-                  {WASM_RTT_SUB(super_struct_type_index,
-                                WASM_RTT_CANON(array_type_index)),
-                   kExprDrop},
-                  kAppendEnd,
-                  "rtt.sub[0] expected rtt for a supertype of type 1");
-    ExpectFailure(sigs.v_v(),
-                  {WASM_RTT_FRESH_SUB(super_struct_type_index,
-                                      WASM_RTT_CANON(array_type_index)),
-                   kExprDrop},
-                  kAppendEnd,
-                  "rtt.fresh_sub[0] expected rtt for a supertype of type 1");
-  }
-
-  {
-    ValueType type = ValueType::Rtt(super_struct_type_index, 1);
-    FunctionSig sig(1, 0, &type);
-    // Can build an rtt.sub with self type for a struct type.
-    ExpectValidates(&sig,
-                    {WASM_RTT_SUB(super_struct_type_index,
-                                  WASM_RTT_CANON(super_struct_type_index))});
-    ExpectValidates(
-        &sig, {WASM_RTT_FRESH_SUB(super_struct_type_index,
-                                  WASM_RTT_CANON(super_struct_type_index))});
-    // Fails when argument to rtt.sub is not a supertype.
-    ExpectFailure(sigs.v_v(),
-                  {WASM_RTT_SUB(super_struct_type_index,
-                                WASM_RTT_CANON(array_type_index))},
-                  kAppendEnd,
-                  "rtt.sub[0] expected rtt for a supertype of type 1");
-    ExpectFailure(sigs.v_v(),
-                  {WASM_RTT_FRESH_SUB(super_struct_type_index,
-                                      WASM_RTT_CANON(array_type_index))},
-                  kAppendEnd,
-                  "rtt.fresh_sub[0] expected rtt for a supertype of type 1");
-    ExpectFailure(sigs.v_v(),
-                  {WASM_RTT_SUB(super_struct_type_index,
-                                WASM_RTT_CANON(sub_struct_type_index))},
-                  kAppendEnd,
-                  "rtt.sub[0] expected rtt for a supertype of type 1");
-    ExpectFailure(sigs.v_v(),
-                  {WASM_RTT_FRESH_SUB(super_struct_type_index,
-                                      WASM_RTT_CANON(sub_struct_type_index))},
-                  kAppendEnd,
-                  "rtt.fresh_sub[0] expected rtt for a supertype of type 1");
-  }
-
-  {
-    // Can build an rtt from a stuct supertype.
-    ValueType type = ValueType::Rtt(sub_struct_type_index, 1);
-    FunctionSig sig(1, 0, &type);
-    ExpectValidates(&sig,
-                    {WASM_RTT_SUB(sub_struct_type_index,
-                                  WASM_RTT_CANON(super_struct_type_index))});
-    ExpectValidates(
-        &sig, {WASM_RTT_FRESH_SUB(sub_struct_type_index,
-                                  WASM_RTT_CANON(super_struct_type_index))});
   }
 }
 
@@ -4516,7 +4428,8 @@ TEST_F(FunctionBodyDecoderTest, BrOnCastOrCastFail) {
   WASM_FEATURE_SCOPE(gc);
 
   byte super_struct = builder.AddStruct({F(kWasmI16, true)});
-  byte sub_struct = builder.AddStruct({F(kWasmI16, true), F(kWasmI32, false)});
+  byte sub_struct =
+      builder.AddStruct({F(kWasmI16, true), F(kWasmI32, false)}, super_struct);
 
   ValueType supertype = ValueType::Ref(super_struct, kNullable);
   ValueType subtype = ValueType::Ref(sub_struct, kNullable);

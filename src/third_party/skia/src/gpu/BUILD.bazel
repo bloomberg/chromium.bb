@@ -191,6 +191,7 @@ cc_library(
         "//src/gpu/tessellate/shaders:GrTessellationShader_src",
         "//src/gpu/text:GrAtlasManager_src",
         "//src/gpu/text:GrDistanceFieldAdjustTable_src",
+        "//src/gpu/text:GrGlyphVector_src",
         "//src/gpu/text:GrSDFMaskFilter_src",
         "//src/gpu/text:GrSDFTControl_src",
         "//src/gpu/text:GrSlug_src",
@@ -1674,6 +1675,7 @@ generated_cc_atom(
     srcs = ["GrMeshDrawTarget.cpp"],
     visibility = ["//:__subpackages__"],
     deps = [
+        ":BufferWriter_hdr",
         ":GrMeshDrawTarget_hdr",
         ":GrResourceProvider_hdr",
     ],
@@ -2101,7 +2103,7 @@ generated_cc_atom(
         "//include/gpu:GrDirectContext_hdr",
         "//include/gpu/vk:GrVkTypes_hdr",
         "//include/private:GrImageContext_hdr",
-        "//include/private:GrSingleOwner_hdr",
+        "//include/private:SingleOwner_hdr",
         "//include/private:SkImageInfoPriv_hdr",
         "//src/core:SkAutoPixmapStorage_hdr",
         "//src/core:SkCompressedDataUtils_hdr",
@@ -2407,7 +2409,7 @@ generated_cc_atom(
         ":GrTracing_hdr",
         ":SkGr_hdr",
         "//include/gpu:GrDirectContext_hdr",
-        "//include/private:GrSingleOwner_hdr",
+        "//include/private:SingleOwner_hdr",
         "//include/private:SkTo_hdr",
         "//include/utils:SkRandom_hdr",
         "//src/core:SkMessageBus_hdr",
@@ -2464,7 +2466,7 @@ generated_cc_atom(
         ":ResourceKey_hdr",
         ":SkGr_hdr",
         "//include/gpu:GrBackendSemaphore_hdr",
-        "//include/private:GrSingleOwner_hdr",
+        "//include/private:SingleOwner_hdr",
         "//src/core:SkConvertPixels_hdr",
         "//src/core:SkMathPriv_hdr",
         "//src/core:SkMipmap_hdr",
@@ -2611,6 +2613,7 @@ generated_cc_atom(
     deps = [
         "//include/core:SkString_hdr",
         "//include/private:GrTypesPriv_hdr",
+        "//src/core:SkSLTypeShared_hdr",
     ],
 )
 
@@ -3111,6 +3114,7 @@ generated_cc_atom(
         "//include/private:GrTypesPriv_hdr",
         "//include/private:SkTArray_hdr",
         "//src/core:SkAutoMalloc_hdr",
+        "//src/core:SkSLTypeShared_hdr",
         "//src/gpu/glsl:GrGLSLProgramDataManager_hdr",
     ],
 )
@@ -3140,6 +3144,8 @@ generated_cc_atom(
     deps = [
         "//include/core:SkScalar_hdr",
         "//include/core:SkTypes_hdr",
+        "//include/private:GrTypesPriv_hdr",
+        "//src/core:SkSLTypeShared_hdr",
     ],
 )
 

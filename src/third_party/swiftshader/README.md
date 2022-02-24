@@ -7,7 +7,7 @@ Introduction
 
 SwiftShader is a high-performance CPU-based implementation of the Vulkan graphics API<sup>1</sup><sup>2</sup>. Its goal is to provide hardware independence for advanced 3D graphics.
 
-> NOTE: SwiftShader's OpenGL ES implementation is no longer supported, and will be removed. Read more about our recommendation to use [ANGLE on top of SwiftShader Vulkan here](docs/ANGLE.md) (aka. "SwANGLE").
+> NOTE: SwiftShader's OpenGL ES implementation is no longer supported, and will be removed. The [ANGLE](http://angleproject.org/) project can be used to achieve a layered implementation of OpenGL ES (aka. "SwANGLE").
 
 Building
 --------
@@ -51,9 +51,9 @@ The canonical repository for SwiftShader is hosted at:
 https://swiftshader.googlesource.com/SwiftShader.
 
 All changes must be reviewed and approved in the [Gerrit](https://www.gerritcodereview.com/) review tool at:
-https://swiftshader-review.googlesource.com.
+https://swiftshader-review.googlesource.com. You must sign in to this site with a Google Account before changes can be uploaded.
 
-Authenticate your account here:
+Next, authenticate your account here:
 https://swiftshader-review.googlesource.com/new-password (use the same e-mail address as the one configured as the [Git commit author](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup#_your_identity)).
 
 All changes require a [Change-ID](https://gerrit-review.googlesource.com/Documentation/user-changeid.html) tag in the commit message. A [commit hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks) may be used to add this tag automatically, and can be found at:

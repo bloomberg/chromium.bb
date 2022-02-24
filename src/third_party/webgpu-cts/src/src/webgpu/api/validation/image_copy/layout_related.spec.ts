@@ -1,8 +1,15 @@
-export const description = '';
+export const description = `Validation tests for the linear data layout of linear data <-> texture copies
+
+TODO check if the tests need to be updated to support aspects of depth-stencil textures`;
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { assert } from '../../../../common/util/util.js';
-import { kTextureFormatInfo, kSizedTextureFormats } from '../../../capability_info.js';
+import {
+  kTextureFormatInfo,
+  kSizedTextureFormats,
+  textureDimensionAndFormatCompatible,
+  kTextureDimensions,
+} from '../../../capability_info.js';
 import { align } from '../../../util/math.js';
 import {
   bytesInACompleteRow,
@@ -21,22 +28,41 @@ import {
 export const g = makeTestGroup(ImageCopyTest);
 
 g.test('bound_on_rows_per_image')
+  .desc(
+    `
+Test that rowsPerImage must be at least the copy height (if defined).
+- for various copy methods
+- for all texture dimensions
+- for various values of rowsPerImage including undefined
+- for various copy heights
+- for various copy depths
+`
+  )
   .params(u =>
     u
       .combine('method', kImageCopyTypes)
+      .combineWithParams([
+        { dimension: '1d', size: [4, 1, 1] },
+        { dimension: '2d', size: [4, 4, 1] },
+        { dimension: '2d', size: [4, 4, 3] },
+        { dimension: '3d', size: [4, 4, 3] },
+      ] as const)
       .beginSubcases()
       .combine('rowsPerImage', [undefined, 0, 1, 2, 1024])
       .combine('copyHeightInBlocks', [0, 1, 2])
       .combine('copyDepth', [1, 3])
+      .unless(p => p.dimension === '1d' && p.copyHeightInBlocks !== 1)
+      .unless(p => p.copyDepth > p.size[2])
   )
   .fn(async t => {
-    const { rowsPerImage, copyHeightInBlocks, copyDepth, method } = t.params;
+    const { rowsPerImage, copyHeightInBlocks, copyDepth, dimension, size, method } = t.params;
 
     const format = 'rgba8unorm';
     const copyHeight = copyHeightInBlocks * kTextureFormatInfo[format].blockHeight;
 
     const texture = t.device.createTexture({
-      size: { width: 4, height: 4, depthOrArrayLayers: 3 },
+      size,
+      dimension,
       format,
       usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST,
     });
@@ -58,7 +84,12 @@ g.test('bound_on_rows_per_image')
   });
 
 g.test('copy_end_overflows_u64')
-  .desc(`Test what happens when offset+requiredBytesInCopy overflows GPUSize64.`)
+  .desc(
+    `
+Test an error is produced when offset+requiredBytesInCopy overflows GPUSize64.
+- for various copy methods
+`
+  )
   .params(u =>
     u
       .combine('method', kImageCopyTypes)
@@ -91,17 +122,23 @@ g.test('copy_end_overflows_u64')
 
 g.test('required_bytes_in_copy')
   .desc(
-    `Test that the min data size condition (requiredBytesInCopy) is checked correctly.
-
-  - Exact requiredBytesInCopy should succeed.
-  - requiredBytesInCopy - 1 should fail.
-  `
+    `
+Test the computation of requiredBytesInCopy by computing the minumum data size for the copy and checking success/error at the boundary.
+- for various copy methods
+- for all formats
+- for all dimensions
+- for various extra bytesPerRow/rowsPerIamge
+- for various copy sizes
+- for various offets in the linear data
+`
   )
   .params(u =>
     u
       .combine('method', kImageCopyTypes)
       .combine('format', kSizedTextureFormats)
       .filter(formatCopyableWithMethod)
+      .combine('dimension', kTextureDimensions)
+      .filter(({ dimension, format }) => textureDimensionAndFormatCompatible(dimension, format))
       .beginSubcases()
       .combineWithParams([
         { bytesPerRowPadding: 0, rowsPerImagePaddingInBlocks: 0 }, // no padding
@@ -131,6 +168,7 @@ g.test('required_bytes_in_copy')
           (copyWidthInBlocks > 0 && copyHeightInBlocks > 0 && copyDepth > 0)
         );
       })
+      .unless(p => p.dimension === '1d' && (p.copyHeightInBlocks > 1 || p.copyDepth > 1))
   )
   .fn(async t => {
     const {
@@ -141,6 +179,7 @@ g.test('required_bytes_in_copy')
       copyHeightInBlocks,
       copyDepth,
       format,
+      dimension,
       method,
     } = t.params;
     const info = kTextureFormatInfo[format];
@@ -162,7 +201,7 @@ g.test('required_bytes_in_copy')
     const layout = { offset, bytesPerRow, rowsPerImage };
     const minDataSize = dataBytesForCopyOrFail({ layout, format, copySize, method });
 
-    const texture = t.createAlignedTexture(format, copySize);
+    const texture = t.createAlignedTexture(format, copySize, undefined, dimension);
 
     t.testRun({ texture }, { offset, bytesPerRow, rowsPerImage }, copySize, {
       dataSize: minDataSize,
@@ -180,12 +219,22 @@ g.test('required_bytes_in_copy')
   });
 
 g.test('rows_per_image_alignment')
-  .desc(`rowsPerImage is measured in multiples of block height, so has no alignment constraints.`)
+  .desc(
+    `
+Test that rowsPerImage has no alignment constraints.
+- for various copy methods
+- for all sized format
+- for all dimensions
+- for various rowsPerImage
+`
+  )
   .params(u =>
     u
       .combine('method', kImageCopyTypes)
       .combine('format', kSizedTextureFormats)
       .filter(formatCopyableWithMethod)
+      .combine('dimension', kTextureDimensions)
+      .filter(({ dimension, format }) => textureDimensionAndFormatCompatible(dimension, format))
       .beginSubcases()
       .expand('rowsPerImage', texelBlockAlignmentTestExpanderForRowsPerImage)
       // Copy height is info.blockHeight, so rowsPerImage must be equal or greater than it.
@@ -212,13 +261,21 @@ g.test('rows_per_image_alignment')
 
 g.test('offset_alignment')
   .desc(
-    `If texture format is not depth/stencil format, offset should be aligned with texture block. If texture format is depth/stencil format, offset should be a multiple of 4.`
+    `
+Test the alignment requirement on the linear data offset (block size, or 4 for depth-stencil).
+- for various copy methods
+- for all sized formats
+- for all dimensions
+- for various linear data offsets
+`
   )
   .params(u =>
     u
       .combine('method', kImageCopyTypes)
       .combine('format', kSizedTextureFormats)
       .filter(formatCopyableWithMethod)
+      .combine('dimension', kTextureDimensions)
+      .filter(({ dimension, format }) => textureDimensionAndFormatCompatible(dimension, format))
       .beginSubcases()
       .expand('offset', texelBlockAlignmentTestExpanderForOffset)
   )
@@ -250,15 +307,28 @@ g.test('offset_alignment')
   });
 
 g.test('bound_on_bytes_per_row')
-  .desc(`For all formats, verify image copy validations w.r.t bytesPerRow.`)
+  .desc(
+    `
+Test that bytesPerRow, if specified must be big enough for a full copy row.
+- for various copy methods
+- for all sized formats
+- for all dimension
+- for various copy heights
+- for various copy depths
+- for various combinations of bytesPerRow and copy width.
+`
+  )
   .params(u =>
     u
       .combine('method', kImageCopyTypes)
       .combine('format', kSizedTextureFormats)
       .filter(formatCopyableWithMethod)
+      .combine('dimension', kTextureDimensions)
+      .filter(({ dimension, format }) => textureDimensionAndFormatCompatible(dimension, format))
       .beginSubcases()
       .combine('copyHeightInBlocks', [1, 2])
       .combine('copyDepth', [1, 2])
+      .unless(p => p.dimension === '1d' && (p.copyHeightInBlocks > 1 || p.copyDepth > 1))
       .expandWithParams(p => {
         const info = kTextureFormatInfo[p.format];
         // We currently have a built-in assumption that for all formats, 128 % bytesPerBlock === 0.
@@ -353,6 +423,12 @@ g.test('bound_on_bytes_per_row')
   });
 
 g.test('bound_on_offset')
+  .desc(
+    `
+Test that the offset cannot be larger than the linear data size (even for an empty copy).
+- for various offsets and data sizes
+`
+  )
   .params(u =>
     u
       .combine('method', kImageCopyTypes)

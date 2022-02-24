@@ -1,5 +1,4 @@
 #version 310 es
-precision mediump float;
 
 float[4] f1() {
   float tint_symbol_1[4] = float[4](0.0f, 0.0f, 0.0f, 0.0f);
@@ -16,15 +15,14 @@ float[2][3][4] f3() {
   return tint_symbol_3;
 }
 
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void tint_symbol() {
   float a1[4] = f1();
   float a2[3][4] = f2();
   float a3[2][3][4] = f3();
-  return;
 }
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void main() {
   tint_symbol();
+  return;
 }
-
-

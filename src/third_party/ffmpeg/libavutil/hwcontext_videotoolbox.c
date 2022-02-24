@@ -48,18 +48,64 @@ static const struct {
 #ifdef kCFCoreFoundationVersionNumber10_7
     { kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange,  false, AV_PIX_FMT_NV12 },
     { kCVPixelFormatType_420YpCbCr8BiPlanarFullRange,   true,  AV_PIX_FMT_NV12 },
+    { kCVPixelFormatType_4444AYpCbCr16,                 false, AV_PIX_FMT_AYUV64 },
 #endif
 #if HAVE_KCVPIXELFORMATTYPE_420YPCBCR10BIPLANARVIDEORANGE
     { kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange, false, AV_PIX_FMT_P010 },
     { kCVPixelFormatType_420YpCbCr10BiPlanarFullRange,  true,  AV_PIX_FMT_P010 },
 #endif
+#if HAVE_KCVPIXELFORMATTYPE_422YPCBCR8BIPLANARVIDEORANGE
+    { kCVPixelFormatType_422YpCbCr8BiPlanarVideoRange,  false, AV_PIX_FMT_NV16 },
+    { kCVPixelFormatType_422YpCbCr8BiPlanarFullRange,   true,  AV_PIX_FMT_NV16 },
+#endif
+#if HAVE_KCVPIXELFORMATTYPE_422YPCBCR10BIPLANARVIDEORANGE
+    { kCVPixelFormatType_422YpCbCr10BiPlanarVideoRange, false, AV_PIX_FMT_P210 },
+    { kCVPixelFormatType_422YpCbCr10BiPlanarFullRange,  true,  AV_PIX_FMT_P210 },
+#endif
+#if HAVE_KCVPIXELFORMATTYPE_422YPCBCR16BIPLANARVIDEORANGE
+    { kCVPixelFormatType_422YpCbCr16BiPlanarVideoRange, false, AV_PIX_FMT_P216 },
+#endif
+#if HAVE_KCVPIXELFORMATTYPE_444YPCBCR8BIPLANARVIDEORANGE
+    { kCVPixelFormatType_444YpCbCr8BiPlanarVideoRange,  false, AV_PIX_FMT_NV24 },
+    { kCVPixelFormatType_444YpCbCr8BiPlanarFullRange,   true,  AV_PIX_FMT_NV24 },
+#endif
+#if HAVE_KCVPIXELFORMATTYPE_444YPCBCR10BIPLANARVIDEORANGE
+    { kCVPixelFormatType_444YpCbCr10BiPlanarVideoRange, false, AV_PIX_FMT_P410 },
+    { kCVPixelFormatType_444YpCbCr10BiPlanarFullRange,  true,  AV_PIX_FMT_P410 },
+#endif
+#if HAVE_KCVPIXELFORMATTYPE_444YPCBCR16BIPLANARVIDEORANGE
+    { kCVPixelFormatType_444YpCbCr16BiPlanarVideoRange, false, AV_PIX_FMT_P416 },
+#endif
 };
 
 static const enum AVPixelFormat supported_formats[] = {
+#ifdef kCFCoreFoundationVersionNumber10_7
     AV_PIX_FMT_NV12,
+    AV_PIX_FMT_AYUV64,
+#endif
     AV_PIX_FMT_YUV420P,
     AV_PIX_FMT_UYVY422,
+#if HAVE_KCVPIXELFORMATTYPE_420YPCBCR10BIPLANARVIDEORANGE
     AV_PIX_FMT_P010,
+#endif
+#if HAVE_KCVPIXELFORMATTYPE_422YPCBCR8BIPLANARVIDEORANGE
+    AV_PIX_FMT_NV16,
+#endif
+#if HAVE_KCVPIXELFORMATTYPE_422YPCBCR10BIPLANARVIDEORANGE
+    AV_PIX_FMT_P210,
+#endif
+#if HAVE_KCVPIXELFORMATTYPE_422YPCBCR16BIPLANARVIDEORANGE
+    AV_PIX_FMT_P216,
+#endif
+#if HAVE_KCVPIXELFORMATTYPE_444YPCBCR8BIPLANARVIDEORANGE
+    AV_PIX_FMT_NV24,
+#endif
+#if HAVE_KCVPIXELFORMATTYPE_444YPCBCR10BIPLANARVIDEORANGE
+    AV_PIX_FMT_P410,
+#endif
+#if HAVE_KCVPIXELFORMATTYPE_444YPCBCR16BIPLANARVIDEORANGE
+    AV_PIX_FMT_P416,
+#endif
     AV_PIX_FMT_BGRA,
 };
 
@@ -272,7 +318,7 @@ static void vt_unmap(AVHWFramesContext *ctx, HWMapDescriptor *hwmap)
     CVPixelBufferUnlockBaseAddress(pixbuf, (uintptr_t)hwmap->priv);
 }
 
-static int vt_pixbuf_set_par(AVHWFramesContext *hwfc,
+static int vt_pixbuf_set_par(void *log_ctx,
                              CVPixelBufferRef pixbuf, const AVFrame *src)
 {
     CFMutableDictionaryRef par = NULL;
@@ -329,31 +375,30 @@ static int vt_pixbuf_set_par(AVHWFramesContext *hwfc,
     return 0;
 }
 
-static int vt_pixbuf_set_chromaloc(AVHWFramesContext *hwfc,
+CFStringRef av_map_videotoolbox_chroma_loc_from_av(enum AVChromaLocation loc)
+{
+    switch (loc) {
+    case AVCHROMA_LOC_LEFT:
+        return kCVImageBufferChromaLocation_Left;
+    case AVCHROMA_LOC_CENTER:
+        return kCVImageBufferChromaLocation_Center;
+    case AVCHROMA_LOC_TOP:
+        return kCVImageBufferChromaLocation_Top;
+    case AVCHROMA_LOC_BOTTOM:
+        return kCVImageBufferChromaLocation_Bottom;
+    case AVCHROMA_LOC_TOPLEFT:
+        return kCVImageBufferChromaLocation_TopLeft;
+    case AVCHROMA_LOC_BOTTOMLEFT:
+        return kCVImageBufferChromaLocation_BottomLeft;
+    default:
+        return NULL;
+    }
+}
+
+static int vt_pixbuf_set_chromaloc(void *log_ctx,
                                    CVPixelBufferRef pixbuf, const AVFrame *src)
 {
-    CFStringRef loc = NULL;
-
-    switch (src->chroma_location) {
-    case AVCHROMA_LOC_LEFT:
-        loc = kCVImageBufferChromaLocation_Left;
-        break;
-    case AVCHROMA_LOC_CENTER:
-        loc = kCVImageBufferChromaLocation_Center;
-        break;
-    case AVCHROMA_LOC_TOP:
-        loc = kCVImageBufferChromaLocation_Top;
-        break;
-    case AVCHROMA_LOC_BOTTOM:
-        loc = kCVImageBufferChromaLocation_Bottom;
-        break;
-    case AVCHROMA_LOC_TOPLEFT:
-        loc = kCVImageBufferChromaLocation_TopLeft;
-        break;
-    case AVCHROMA_LOC_BOTTOMLEFT:
-        loc = kCVImageBufferChromaLocation_BottomLeft;
-        break;
-    }
+    CFStringRef loc = av_map_videotoolbox_chroma_loc_from_av(src->chroma_location);
 
     if (loc) {
         CVBufferSetAttachment(
@@ -366,109 +411,127 @@ static int vt_pixbuf_set_chromaloc(AVHWFramesContext *hwfc,
     return 0;
 }
 
-static int vt_pixbuf_set_colorspace(AVHWFramesContext *hwfc,
+CFStringRef av_map_videotoolbox_color_matrix_from_av(enum AVColorSpace space)
+{
+    switch (space) {
+    case AVCOL_SPC_BT2020_CL:
+    case AVCOL_SPC_BT2020_NCL:
+#if HAVE_KCVIMAGEBUFFERYCBCRMATRIX_ITU_R_2020
+        if (__builtin_available(macOS 10.11, iOS 9, *))
+            return kCVImageBufferYCbCrMatrix_ITU_R_2020;
+#endif
+        return CFSTR("ITU_R_2020");
+    case AVCOL_SPC_BT470BG:
+    case AVCOL_SPC_SMPTE170M:
+        return kCVImageBufferYCbCrMatrix_ITU_R_601_4;
+    case AVCOL_SPC_BT709:
+        return kCVImageBufferYCbCrMatrix_ITU_R_709_2;
+    case AVCOL_SPC_SMPTE240M:
+        return kCVImageBufferYCbCrMatrix_SMPTE_240M_1995;
+    default:
+#if HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_ITU_R_2100_HLG
+        if (__builtin_available(macOS 10.13, iOS 11, tvOS 11, watchOS 4, *))
+            return CVYCbCrMatrixGetStringForIntegerCodePoint(space);
+#endif
+    case AVCOL_SPC_UNSPECIFIED:
+        return NULL;
+    }
+}
+
+CFStringRef av_map_videotoolbox_color_primaries_from_av(enum AVColorPrimaries pri)
+{
+    switch (pri) {
+    case AVCOL_PRI_BT2020:
+#if HAVE_KCVIMAGEBUFFERCOLORPRIMARIES_ITU_R_2020
+        if (__builtin_available(macOS 10.11, iOS 9, *))
+            return kCVImageBufferColorPrimaries_ITU_R_2020;
+#endif
+        return CFSTR("ITU_R_2020");
+    case AVCOL_PRI_BT709:
+        return kCVImageBufferColorPrimaries_ITU_R_709_2;
+    case AVCOL_PRI_SMPTE170M:
+        return kCVImageBufferColorPrimaries_SMPTE_C;
+    case AVCOL_PRI_BT470BG:
+        return kCVImageBufferColorPrimaries_EBU_3213;
+    default:
+#if HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_ITU_R_2100_HLG
+        if (__builtin_available(macOS 10.13, iOS 11, tvOS 11, watchOS 4, *))
+            return CVColorPrimariesGetStringForIntegerCodePoint(pri);
+#endif
+    case AVCOL_PRI_UNSPECIFIED:
+        return NULL;
+    }
+}
+
+CFStringRef av_map_videotoolbox_color_trc_from_av(enum AVColorTransferCharacteristic trc)
+{
+
+    switch (trc) {
+    case AVCOL_TRC_SMPTE2084:
+#if HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_SMPTE_ST_2084_PQ
+        if (__builtin_available(macOS 10.13, iOS 11, *))
+            return kCVImageBufferTransferFunction_SMPTE_ST_2084_PQ;
+#endif
+        return CFSTR("SMPTE_ST_2084_PQ");
+    case AVCOL_TRC_BT2020_10:
+    case AVCOL_TRC_BT2020_12:
+#if HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_ITU_R_2020
+        if (__builtin_available(macOS 10.11, iOS 9, *))
+            return kCVImageBufferTransferFunction_ITU_R_2020;
+#endif
+        return CFSTR("ITU_R_2020");
+    case AVCOL_TRC_BT709:
+        return kCVImageBufferTransferFunction_ITU_R_709_2;
+    case AVCOL_TRC_SMPTE240M:
+        return kCVImageBufferTransferFunction_SMPTE_240M_1995;
+    case AVCOL_TRC_SMPTE428:
+#if HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_SMPTE_ST_428_1
+        if (__builtin_available(macOS 10.12, iOS 10, *))
+            return kCVImageBufferTransferFunction_SMPTE_ST_428_1;
+#endif
+        return CFSTR("SMPTE_ST_428_1");
+    case AVCOL_TRC_ARIB_STD_B67:
+#if HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_ITU_R_2100_HLG
+        if (__builtin_available(macOS 10.13, iOS 11, *))
+            return kCVImageBufferTransferFunction_ITU_R_2100_HLG;
+#endif
+        return CFSTR("ITU_R_2100_HLG");
+    case AVCOL_TRC_GAMMA22:
+        return kCVImageBufferTransferFunction_UseGamma;
+    case AVCOL_TRC_GAMMA28:
+        return kCVImageBufferTransferFunction_UseGamma;
+    default:
+#if HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_ITU_R_2100_HLG
+        if (__builtin_available(macOS 10.13, iOS 11, tvOS 11, watchOS 4, *))
+            return CVTransferFunctionGetStringForIntegerCodePoint(trc);
+#endif
+    case AVCOL_TRC_UNSPECIFIED:
+        return NULL;
+    }
+}
+
+static int vt_pixbuf_set_colorspace(void *log_ctx,
                                     CVPixelBufferRef pixbuf, const AVFrame *src)
 {
     CFStringRef colormatrix = NULL, colorpri = NULL, colortrc = NULL;
     Float32 gamma = 0;
 
-    switch (src->colorspace) {
-    case AVCOL_SPC_BT2020_CL:
-    case AVCOL_SPC_BT2020_NCL:
-#if HAVE_KCVIMAGEBUFFERYCBCRMATRIX_ITU_R_2020
-        colormatrix = kCVImageBufferYCbCrMatrix_ITU_R_2020;
-#else
-        colormatrix = CFSTR("ITU_R_2020");
-#endif
-        break;
-    case AVCOL_SPC_BT470BG:
-    case AVCOL_SPC_SMPTE170M:
-        colormatrix = kCVImageBufferYCbCrMatrix_ITU_R_601_4;
-        break;
-    case AVCOL_SPC_BT709:
-        colormatrix = kCVImageBufferYCbCrMatrix_ITU_R_709_2;
-        break;
-    case AVCOL_SPC_SMPTE240M:
-        colormatrix = kCVImageBufferYCbCrMatrix_SMPTE_240M_1995;
-        break;
-    case AVCOL_SPC_UNSPECIFIED:
-        break;
-    default:
-        av_log(hwfc, AV_LOG_WARNING, "Color space %s is not supported.\n", av_color_space_name(src->colorspace));
-    }
+    colormatrix = av_map_videotoolbox_color_matrix_from_av(src->colorspace);
+    if (!colormatrix && src->colorspace != AVCOL_SPC_UNSPECIFIED)
+        av_log(log_ctx, AV_LOG_WARNING, "Color space %s is not supported.\n", av_color_space_name(src->colorspace));
 
-    switch (src->color_primaries) {
-    case AVCOL_PRI_BT2020:
-#if HAVE_KCVIMAGEBUFFERCOLORPRIMARIES_ITU_R_2020
-        colorpri = kCVImageBufferColorPrimaries_ITU_R_2020;
-#else
-        colorpri = CFSTR("ITU_R_2020");
-#endif
-        break;
-    case AVCOL_PRI_BT709:
-        colorpri = kCVImageBufferColorPrimaries_ITU_R_709_2;
-        break;
-    case AVCOL_PRI_SMPTE170M:
-        colorpri = kCVImageBufferColorPrimaries_SMPTE_C;
-        break;
-    case AVCOL_PRI_BT470BG:
-        colorpri = kCVImageBufferColorPrimaries_EBU_3213;
-        break;
-    case AVCOL_PRI_UNSPECIFIED:
-        break;
-    default:
-        av_log(hwfc, AV_LOG_WARNING, "Color primaries %s is not supported.\n", av_color_primaries_name(src->color_primaries));
-    }
+    colorpri = av_map_videotoolbox_color_primaries_from_av(src->color_primaries);
+    if (!colorpri && src->color_primaries != AVCOL_PRI_UNSPECIFIED)
+        av_log(log_ctx, AV_LOG_WARNING, "Color primaries %s is not supported.\n", av_color_primaries_name(src->color_primaries));
 
-    switch (src->color_trc) {
-    case AVCOL_TRC_SMPTE2084:
-#if HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_SMPTE_ST_2084_PQ
-        colortrc = kCVImageBufferTransferFunction_SMPTE_ST_2084_PQ;
-#else
-        colortrc = CFSTR("SMPTE_ST_2084_PQ");
-#endif
-        break;
-    case AVCOL_TRC_BT2020_10:
-    case AVCOL_TRC_BT2020_12:
-#if HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_ITU_R_2020
-        colortrc = kCVImageBufferTransferFunction_ITU_R_2020;
-#else
-        colortrc = CFSTR("ITU_R_2020");
-#endif
-        break;
-    case AVCOL_TRC_BT709:
-        colortrc = kCVImageBufferTransferFunction_ITU_R_709_2;
-        break;
-    case AVCOL_TRC_SMPTE240M:
-        colortrc = kCVImageBufferTransferFunction_SMPTE_240M_1995;
-        break;
-    case AVCOL_TRC_SMPTE428:
-#if HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_SMPTE_ST_428_1
-        colortrc = kCVImageBufferTransferFunction_SMPTE_ST_428_1;
-#else
-        colortrc = CFSTR("SMPTE_ST_428_1");
-#endif
-        break;
-    case AVCOL_TRC_ARIB_STD_B67:
-#if HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_ITU_R_2100_HLG
-        colortrc = kCVImageBufferTransferFunction_ITU_R_2100_HLG;
-#else
-        colortrc = CFSTR("ITU_R_2100_HLG");
-#endif
-        break;
-    case AVCOL_TRC_GAMMA22:
+    colortrc = av_map_videotoolbox_color_trc_from_av(src->color_trc);
+    if (!colortrc && src->color_trc != AVCOL_TRC_UNSPECIFIED)
+        av_log(log_ctx, AV_LOG_WARNING, "Color transfer function %s is not supported.\n", av_color_transfer_name(src->color_trc));
+
+    if (src->color_trc == AVCOL_TRC_GAMMA22)
         gamma = 2.2;
-        colortrc = kCVImageBufferTransferFunction_UseGamma;
-        break;
-    case AVCOL_TRC_GAMMA28:
+    else if (src->color_trc == AVCOL_TRC_GAMMA28)
         gamma = 2.8;
-        colortrc = kCVImageBufferTransferFunction_UseGamma;
-        break;
-    case AVCOL_TRC_UNSPECIFIED:
-        break;
-    default:
-        av_log(hwfc, AV_LOG_WARNING, "Color transfer function %s is not supported.\n", av_color_transfer_name(src->color_trc));
-    }
 
     if (colormatrix) {
         CVBufferSetAttachment(
@@ -504,20 +567,26 @@ static int vt_pixbuf_set_colorspace(AVHWFramesContext *hwfc,
     return 0;
 }
 
-static int vt_pixbuf_set_attachments(AVHWFramesContext *hwfc,
+static int vt_pixbuf_set_attachments(void *log_ctx,
                                      CVPixelBufferRef pixbuf, const AVFrame *src)
 {
     int ret;
-    ret = vt_pixbuf_set_par(hwfc, pixbuf, src);
+    ret = vt_pixbuf_set_par(log_ctx, pixbuf, src);
     if (ret < 0)
         return ret;
-    ret = vt_pixbuf_set_colorspace(hwfc, pixbuf, src);
+    ret = vt_pixbuf_set_colorspace(log_ctx, pixbuf, src);
     if (ret < 0)
         return ret;
-    ret = vt_pixbuf_set_chromaloc(hwfc, pixbuf, src);
+    ret = vt_pixbuf_set_chromaloc(log_ctx, pixbuf, src);
     if (ret < 0)
         return ret;
     return 0;
+}
+
+int av_vt_pixbuf_set_attachments(void *log_ctx,
+                                 CVPixelBufferRef pixbuf, const AVFrame *src)
+{
+    return vt_pixbuf_set_attachments(log_ctx, pixbuf, src);
 }
 
 static int vt_map_frame(AVHWFramesContext *ctx, AVFrame *dst, const AVFrame *src,
@@ -642,6 +711,30 @@ fail:
     return err;
 }
 
+static int vt_map_from(AVHWFramesContext *hwfc, AVFrame *dst,
+                       const AVFrame *src, int flags)
+{
+    int err;
+
+    if (dst->format == AV_PIX_FMT_NONE)
+        dst->format = hwfc->sw_format;
+    else if (dst->format != hwfc->sw_format)
+        return AVERROR(ENOSYS);
+
+    err = vt_map_frame(hwfc, dst, src, flags);
+    if (err)
+        return err;
+
+    dst->width  = src->width;
+    dst->height = src->height;
+
+    err = av_frame_copy_props(dst, src);
+    if (err)
+        return err;
+
+    return 0;
+}
+
 static int vt_device_create(AVHWDeviceContext *ctx, const char *device,
                             AVDictionary *opts, int flags)
 {
@@ -667,6 +760,7 @@ const HWContextType ff_hwcontext_type_videotoolbox = {
     .transfer_get_formats = vt_transfer_get_formats,
     .transfer_data_to     = vt_transfer_data_to,
     .transfer_data_from   = vt_transfer_data_from,
+    .map_from             = vt_map_from,
 
     .pix_fmts = (const enum AVPixelFormat[]){ AV_PIX_FMT_VIDEOTOOLBOX, AV_PIX_FMT_NONE },
 };

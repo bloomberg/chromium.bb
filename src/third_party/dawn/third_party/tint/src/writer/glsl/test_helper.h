@@ -22,7 +22,6 @@
 #include "gtest/gtest.h"
 #include "src/transform/glsl.h"
 #include "src/transform/manager.h"
-#include "src/transform/renamer.h"
 #include "src/writer/glsl/generator_impl.h"
 
 namespace tint {
@@ -39,14 +38,12 @@ class TestHelperBase : public BODY, public ProgramBuilder {
   /// Builds the program and returns a GeneratorImpl from the program.
   /// @note The generator is only built once. Multiple calls to Build() will
   /// return the same GeneratorImpl without rebuilding.
+  /// @param version the GLSL version
   /// @return the built generator
-  GeneratorImpl& Build() {
+  GeneratorImpl& Build(Version version = Version()) {
     if (gen_) {
       return *gen_;
     }
-    // Fake that the GLSL sanitizer has been applied, so that we can unit test
-    // the writer without it erroring.
-    SetTransformApplied<transform::Glsl>();
     [&]() {
       ASSERT_TRUE(IsValid()) << "Builder program is not valid\n"
                              << diag::Formatter().format(Diagnostics());
@@ -56,7 +53,7 @@ class TestHelperBase : public BODY, public ProgramBuilder {
       ASSERT_TRUE(program->IsValid())
           << diag::Formatter().format(program->Diagnostics());
     }();
-    gen_ = std::make_unique<GeneratorImpl>(program.get());
+    gen_ = std::make_unique<GeneratorImpl>(program.get(), version);
     return *gen_;
   }
 
@@ -64,8 +61,9 @@ class TestHelperBase : public BODY, public ProgramBuilder {
   /// and returns a GeneratorImpl from the sanitized program.
   /// @note The generator is only built once. Multiple calls to Build() will
   /// return the same GeneratorImpl without rebuilding.
+  /// @param version the GLSL version
   /// @return the built generator
-  GeneratorImpl& SanitizeAndBuild() {
+  GeneratorImpl& SanitizeAndBuild(Version version = Version()) {
     if (gen_) {
       return *gen_;
     }
@@ -82,9 +80,6 @@ class TestHelperBase : public BODY, public ProgramBuilder {
 
     transform::Manager transform_manager;
     transform::DataMap transform_data;
-    transform_data.Add<transform::Renamer::Config>(
-        transform::Renamer::Target::kGlslKeywords);
-    transform_manager.Add<tint::transform::Renamer>();
     transform_manager.Add<tint::transform::Glsl>();
     auto result = transform_manager.Run(program.get(), transform_data);
     [&]() {
@@ -92,7 +87,7 @@ class TestHelperBase : public BODY, public ProgramBuilder {
           << formatter.format(result.program.Diagnostics());
     }();
     *program = std::move(result.program);
-    gen_ = std::make_unique<GeneratorImpl>(program.get());
+    gen_ = std::make_unique<GeneratorImpl>(program.get(), version);
     return *gen_;
   }
 

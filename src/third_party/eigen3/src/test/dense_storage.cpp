@@ -20,6 +20,11 @@ static_assert(std::is_trivially_move_assignable<DenseStorageD3x3>::value, "Dense
 static_assert(std::is_trivially_copy_constructible<DenseStorageD3x3>::value, "DenseStorage not trivially_copy_constructible");
 static_assert(std::is_trivially_copy_assignable<DenseStorageD3x3>::value, "DenseStorage not trivially_copy_assignable");
 static_assert(std::is_trivially_copyable<DenseStorageD3x3>::value, "DenseStorage not trivially_copyable");
+#if EIGEN_COMP_HAS_P0848R3
+static_assert(std::is_trivially_copyable<Eigen::Matrix3d>::value, "Eigen::Matrix3d not trivially_copyable");
+static_assert(std::is_trivially_copyable<Eigen::Array33d>::value, "Eigen::Array33d not trivially_copyable");
+static_assert(!std::is_trivially_copyable<Eigen::Matrix3<AnnoyingScalar>>::value, "Eigen::Matrix3<AnnoyingScalar> is trivially_copyable");
+#endif
 #endif
 
 template <typename T, int Size, int Rows, int Cols>

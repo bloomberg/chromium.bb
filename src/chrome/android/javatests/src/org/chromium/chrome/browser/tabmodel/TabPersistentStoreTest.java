@@ -57,12 +57,13 @@ import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
-import org.chromium.chrome.browser.tab.state.LoadCallbackHelper;
 import org.chromium.chrome.browser.tab.state.PersistedTabDataConfiguration;
+import org.chromium.chrome.browser.tab.state.SerializedCriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabModelSelectorMetadata;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabRestoreDetails;
+import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabRestoreMethod;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.TabModelMetaDataInfo;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.TabStateInfo;
 import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
@@ -481,17 +482,34 @@ public class TabPersistentStoreTest {
 
     public void verifyIfTabIsSaved(int tabId, boolean isIncognito, boolean isNull)
             throws TimeoutException {
-        LoadCallbackHelper callbackHelper = new LoadCallbackHelper();
+        CPTDCallbackHelper callbackHelper = new CPTDCallbackHelper();
         int chCount = callbackHelper.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             CriticalPersistedTabData.restore(
                     tabId, isIncognito, (res) -> { callbackHelper.notifyCalled(res); });
         });
         callbackHelper.waitForCallback(chCount);
-        if (isNull) {
-            Assert.assertNull(callbackHelper.getRes());
-        } else {
-            Assert.assertNotNull(callbackHelper.getRes());
+        Assert.assertEquals(isNull, callbackHelper.getRes().isEmpty());
+    }
+
+    private static class CPTDCallbackHelper extends CallbackHelper {
+        private SerializedCriticalPersistedTabData mSerializedCriticalPersistedTabData;
+
+        /**
+         * Called when {@link SerializedCriticalPersistedTabData} is acquired
+         * @param res {@link SerializedCriticalPersistedTabData} acquired
+         */
+        public void notifyCalled(
+                SerializedCriticalPersistedTabData serializedCriticalPersistedTabData) {
+            mSerializedCriticalPersistedTabData = serializedCriticalPersistedTabData;
+            notifyCalled();
+        }
+
+        /**
+         * @return ByteBuffer acquired during callback
+         */
+        public SerializedCriticalPersistedTabData getRes() {
+            return mSerializedCriticalPersistedTabData;
         }
     }
 
@@ -916,6 +934,19 @@ public class TabPersistentStoreTest {
 
         // This method will check that the correct number of tabs are created.
         createAndRestoreRealTabModelImpls(info);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"TabPersistentStore"})
+    public void testTabRestoreMethodEnumValues() {
+        // These enums are recorded in the metrics and should not be changed.
+        Assert.assertEquals(0, TabRestoreMethod.TAB_STATE);
+        Assert.assertEquals(1, TabRestoreMethod.CRITICAL_PERSISTED_TAB_DATA);
+        Assert.assertEquals(2, TabRestoreMethod.CREATE_NEW_TAB);
+        Assert.assertEquals(3, TabRestoreMethod.FAILED_TO_RESTORE);
+        Assert.assertEquals(4, TabRestoreMethod.SKIPPED_NTP);
+        Assert.assertEquals(5, TabRestoreMethod.SKIPPED_EMPTY_URL);
     }
 
     private TestTabModelSelector createAndRestoreRealTabModelImpls(TabModelMetaDataInfo info)

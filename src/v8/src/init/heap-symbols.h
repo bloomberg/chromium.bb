@@ -78,6 +78,7 @@
   V(_, minusSign_string, "minusSign")                               \
   V(_, nan_string, "nan")                                           \
   V(_, narrowSymbol_string, "narrowSymbol")                         \
+  V(_, negative_string, "negative")                                 \
   V(_, never_string, "never")                                       \
   V(_, none_string, "none")                                         \
   V(_, notation_string, "notation")                                 \
@@ -168,6 +169,7 @@
   V(_, computed_string, "<computed>")                                 \
   V(_, configurable_string, "configurable")                           \
   V(_, conjunction_string, "conjunction")                             \
+  V(_, console_string, "console")                                     \
   V(_, constrain_string, "constrain")                                 \
   V(_, construct_string, "construct")                                 \
   V(_, constructor_string, "constructor")                             \
@@ -197,7 +199,7 @@
   V(_, dot_home_object_string, ".home_object")                        \
   V(_, dot_result_string, ".result")                                  \
   V(_, dot_repl_result_string, ".repl_result")                        \
-  V(_, dot_static_home_object_string, "._static_home_object")         \
+  V(_, dot_static_home_object_string, ".static_home_object")          \
   V(_, dot_string, ".")                                               \
   V(_, dot_switch_tag_string, ".switch_tag")                          \
   V(_, dotAll_string, "dotAll")                                       \
@@ -367,6 +369,7 @@
   V(_, set_string, "set")                                             \
   V(_, SetIterator_string, "Set Iterator")                            \
   V(_, setPrototypeOf_string, "setPrototypeOf")                       \
+  V(_, ShadowRealm_string, "ShadowRealm")                             \
   V(_, SharedArrayBuffer_string, "SharedArrayBuffer")                 \
   V(_, sign_string, "sign")                                           \
   V(_, smallestUnit_string, "smallestUnit")                           \
@@ -442,6 +445,7 @@
   V(_, promise_debug_message_symbol)           \
   V(_, promise_forwarding_handler_symbol)      \
   V(_, promise_handled_by_symbol)              \
+  V(_, promise_awaited_by_symbol)              \
   V(_, regexp_result_names_symbol)             \
   V(_, regexp_result_regexp_input_symbol)      \
   V(_, regexp_result_regexp_last_index_symbol) \
@@ -521,6 +525,7 @@
   F(MC_CLEAR_WEAK_COLLECTIONS)                       \
   F(MC_CLEAR_WEAK_LISTS)                             \
   F(MC_CLEAR_WEAK_REFERENCES)                        \
+  F(MC_SWEEP_EXTERNAL_POINTER_TABLE)                 \
   F(MC_COMPLETE_SWEEP_ARRAY_BUFFERS)                 \
   F(MC_COMPLETE_SWEEPING)                            \
   F(MC_EVACUATE_CANDIDATES)                          \

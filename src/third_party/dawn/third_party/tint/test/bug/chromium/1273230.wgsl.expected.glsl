@@ -1,25 +1,24 @@
-bug/chromium/1273230.wgsl:4:7 warning: use of deprecated intrinsic
+bug/chromium/1273230.wgsl:4:7 warning: use of deprecated builtin
   _ = isNormal(4.);
       ^^^^^^^^
 
-bug/chromium/1273230.wgsl:7:3 warning: use of deprecated intrinsic
+bug/chromium/1273230.wgsl:7:3 warning: use of deprecated builtin
   isNormal(vec4<f32>());
   ^^^^^^^^
 
-bug/chromium/1273230.wgsl:10:6 warning: use of deprecated intrinsic
+bug/chromium/1273230.wgsl:10:6 warning: use of deprecated builtin
      isNormal(0.);
      ^^^^^^^^
 
-bug/chromium/1273230.wgsl:11:9 warning: use of deprecated intrinsic
+bug/chromium/1273230.wgsl:11:9 warning: use of deprecated builtin
     _ = isNormal(4.);
         ^^^^^^^^
 
-bug/chromium/1273230.wgsl:12:9 warning: use of deprecated intrinsic
+bug/chromium/1273230.wgsl:12:9 warning: use of deprecated builtin
     _ = isNormal(2.);
         ^^^^^^^^
 
 #version 310 es
-precision mediump float;
 
 struct Uniforms {
   uint numTriangles;
@@ -29,6 +28,7 @@ struct Uniforms {
   vec3 bbMin;
   vec3 bbMax;
 };
+
 struct Dbg {
   uint offsetCounter;
   uint pad0;
@@ -44,7 +44,7 @@ struct Dbg {
   float value_f32_3;
 };
 
-layout (binding = 0) uniform Uniforms_1 {
+layout(binding = 0) uniform Uniforms_1 {
   uint numTriangles;
   uint gridSize;
   uint puuuuuuuuuuuuuuuuad1;
@@ -52,19 +52,20 @@ layout (binding = 0) uniform Uniforms_1 {
   vec3 bbMin;
   vec3 bbMax;
 } uniforms;
-layout (binding = 10) buffer U32s_1 {
+
+layout(binding = 10, std430) buffer U32s_1 {
   uint values[];
 } indices;
-layout (binding = 11) buffer F32s_1 {
+layout(binding = 11, std430) buffer F32s_1 {
   float values[];
 } positions;
-layout (binding = 20) buffer AU32s_1 {
+layout(binding = 20, std430) buffer AU32s_1 {
   uint values[];
 } counters;
-layout (binding = 21) buffer AI32s_1 {
+layout(binding = 21, std430) buffer AI32s_1 {
   int values[];
 } LUT;
-layout (binding = 50) buffer Dbg_1 {
+layout(binding = 50, std430) buffer Dbg_1 {
   uint offsetCounter;
   uint pad0;
   uint pad1;
@@ -78,7 +79,6 @@ layout (binding = 50) buffer Dbg_1 {
   float value_f32_2;
   float value_f32_3;
 } dbg;
-
 vec3 toVoxelPos(vec3 position) {
   vec3 bbMin = vec3(uniforms.bbMin.x, uniforms.bbMin.y, uniforms.bbMin.z);
   vec3 bbMax = vec3(uniforms.bbMax.x, uniforms.bbMax.y, uniforms.bbMax.z);
@@ -110,11 +110,7 @@ void doIgnore() {
   int g55 = atomicOr(LUT.values[0], 0);
 }
 
-struct tint_symbol_1 {
-  uvec3 GlobalInvocationID;
-};
-
-void main_count_inner(uvec3 GlobalInvocationID) {
+void main_count(uvec3 GlobalInvocationID) {
   uint triangleIndex = GlobalInvocationID.x;
   if ((triangleIndex >= uniforms.numTriangles)) {
     return;
@@ -133,14 +129,7 @@ void main_count_inner(uvec3 GlobalInvocationID) {
 }
 
 layout(local_size_x = 128, local_size_y = 1, local_size_z = 1) in;
-void main_count(tint_symbol_1 tint_symbol) {
-  main_count_inner(tint_symbol.GlobalInvocationID);
+void main() {
+  main_count(gl_GlobalInvocationID);
   return;
 }
-void main() {
-  tint_symbol_1 inputs;
-  inputs.GlobalInvocationID = gl_GlobalInvocationID;
-  main_count(inputs);
-}
-
-

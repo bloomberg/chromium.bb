@@ -97,7 +97,20 @@ PadArrayElements::PadArrayElements() = default;
 
 PadArrayElements::~PadArrayElements() = default;
 
-void PadArrayElements::Run(CloneContext& ctx, const DataMap&, DataMap&) {
+bool PadArrayElements::ShouldRun(const Program* program, const DataMap&) const {
+  for (auto* node : program->ASTNodes().Objects()) {
+    if (auto* var = node->As<ast::Type>()) {
+      if (auto* arr = program->Sem().Get<sem::Array>(var)) {
+        if (!arr->IsStrideImplicit()) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+void PadArrayElements::Run(CloneContext& ctx, const DataMap&, DataMap&) const {
   auto& sem = ctx.src->Sem();
 
   std::unordered_map<const sem::Array*, ArrayBuilder> padded_arrays;

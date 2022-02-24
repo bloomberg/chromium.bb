@@ -552,7 +552,7 @@ void ColPivHouseholderQR<MatrixType>::computeInPlace()
       // http://www.netlib.org/lapack/lawnspdf/lawn176.pdf
       // and used in LAPACK routines xGEQPF and xGEQP3.
       // See lines 278-297 in http://www.netlib.org/lapack/explore-html/dc/df4/sgeqpf_8f_source.html
-      if (m_colNormsUpdated.coeffRef(j) != RealScalar(0)) {
+      if (!numext::is_exactly_zero(m_colNormsUpdated.coeffRef(j))) {
         RealScalar temp = abs(m_qr.coeffRef(k, j)) / m_colNormsUpdated.coeffRef(j);
         temp = (RealScalar(1) + temp) * (RealScalar(1) - temp);
         temp = temp <  RealScalar(0) ? RealScalar(0) : temp;

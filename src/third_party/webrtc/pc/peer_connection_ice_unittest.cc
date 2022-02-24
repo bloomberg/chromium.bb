@@ -224,7 +224,7 @@ class PeerConnectionIceBaseTest : public ::testing::Test {
     for (const auto& transceiver : pc->GetTransceiversInternal()) {
       if (transceiver->media_type() == cricket::MEDIA_TYPE_AUDIO) {
         auto dtls_transport = pc->LookupDtlsTransportByMidInternal(
-            transceiver->internal()->channel()->content_name());
+            transceiver->internal()->channel()->mid());
         return dtls_transport->ice_transport()->internal()->GetIceRole();
       }
     }
@@ -800,7 +800,7 @@ TEST_P(PeerConnectionIceTest,
       std::move(jsep_candidate), [&operation_completed](RTCError result) {
         EXPECT_FALSE(result.ok());
         EXPECT_EQ(result.message(),
-                  std::string("Error processing ICE candidate"));
+                  std::string("The remote description was null"));
         operation_completed = true;
       });
   EXPECT_TRUE_WAIT(operation_completed, kWaitTimeout);

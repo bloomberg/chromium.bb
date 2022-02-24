@@ -91,6 +91,8 @@
 6373 : WebGLCompatibilityTest.DrawArraysBufferOutOfBoundsNonInstanced/* = FLAKY
 6180 : WebGLCompatibilityTest.DrawElementsBufferOutOfBoundsInVertexBuffer/* = FLAKY
 
+# Skipped in end2end tests
+6336 : GetImageTest.InconsistentTexture2D/* = NOT_RUN
 
 # ES3
 6180 : BlitFramebufferTest.BlitDepthStencilPixelByPixel/* = NOT_RUN
@@ -168,6 +170,9 @@
 6631 WIN : MultithreadingTestES3.MultithreadFenceTexImage/* = CRASH
 6631 : MultithreadingTest.MultiContextDrawWithSwapBuffers/* = CRASH
 
+# Marking this as NOT_RUN because we don't want it to run as it uses multiple contexts
+6752 : OcclusionQueriesNoSurfaceTestES3.SwitchingContextsWithQuery/* = NOT_RUN
+
 # ES3_1
 6180 : ProgramPipelineTest31.VerifyPpoLinkErrorSignalledCorrectly/* = FAIL
 
@@ -201,3 +206,17 @@
 6663 : Texture2DTest.UploadThenFSThenVSThenNewRPThenFS/*  = NOT_RUN
 
 6741 : VulkanImageTest.* = SKIP_FOR_CAPTURE
+
+6941 : Texture2DTestES3RobustInit.TextureCOMPRESSEDRGB8A1ETC2/* = NOT_RUN
+6941 : Texture2DTestES3RobustInit.TextureCOMPRESSEDSRGB8A1ETC2/* = NOT_RUN
+
+6926 : Texture2DTestES3.TextureRGBUpdateWithPBO/ES3_Vulkan* = NOT_RUN
+
+6875 : TransformFeedbackTest.SpanMultipleRenderPasses/* = NOT_RUN
+
+# Skip crashing tests after enabling ANGLE_texture_multisample
+3565 : TextureMultisampleTest.ResolveToDefaultFramebuffer/* = CRASH
+3565 : TextureMultisampleTest.GetTexLevelParameter/* = CRASH
+3565 : TextureMultisampleTest.MultisampleTargetFramebufferTexture2D/* = CRASH
+3565 : TextureMultisampleTest.SimpleTexelFetch/* = CRASH
+3565 : TextureMultisampleTest.ValidateTextureStorageMultisampleParameters/* = CRASH

@@ -176,7 +176,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="5170938038195470297">No se puede usar tu perfil porque se corresponde con una versión más reciente de Google Chrome.
 
 Puede que algunas funciones no estén disponibles. Especifica otro directorio de perfil o usa una versión más reciente de Chrome.</translation>
-<translation id="5193136243808726294">Google Chrome OS no puede abrir esta página.</translation>
 <translation id="521447420733633466">Si compartes un dispositivo, tus amigos y familiares pueden navegar de forma independiente y configurar Chrome a su gusto.</translation>
 <translation id="5251420635869119124">Los invitados pueden utilizar Chrome sin dejar nada atrás.</translation>
 <translation id="5334487786912937552">Chrome necesita el permiso de acceso al almacenamiento para descargar archivos</translation>
@@ -187,8 +186,6 @@ Puede que algunas funciones no estén disponibles. Especifica otro directorio de
 Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="556024056938947818">Google Chrome está intentando mostrar contraseñas.</translation>
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
-<translation id="5657226924540934362">Si no se muestra algún ajuste en esta página, consulta la <ph name="LINK_BEGIN" />
-      configuración de Chrome OS<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Es posible que <ph name="FILE_NAME" /> sea peligroso, por lo que Chrome lo ha bloqueado.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Tu administrador pide que reinicies Chrome para aplicar esta actualización}=1{Tu administrador pide que reinicies Chrome para aplicar esta actualización. La ventana de incógnito no se volverá a abrir.}other{Tu administrador pide que reinicies Chrome para aplicar esta actualización. Las # ventanas de incógnito no se volverán a abrir.}}</translation>
 <translation id="5686916850681061684">Personaliza y controla Google Chrome. Se requiere tu intervención. Haz clic aquí para obtener más información.</translation>

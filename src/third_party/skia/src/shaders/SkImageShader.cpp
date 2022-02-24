@@ -11,6 +11,7 @@
 #include "src/core/SkArenaAlloc.h"
 #include "src/core/SkColorSpacePriv.h"
 #include "src/core/SkColorSpaceXformSteps.h"
+#include "src/core/SkKeyHelpers.h"
 #include "src/core/SkMatrixPriv.h"
 #include "src/core/SkMatrixProvider.h"
 #include "src/core/SkMipmapAccessor.h"
@@ -372,6 +373,13 @@ std::unique_ptr<GrFragmentProcessor> SkImageShader::asFragmentProcessor(
 
 #endif
 
+void SkImageShader::addToKey(SkShaderCodeDictionary* dict,
+                             SkBackend backend,
+                             SkPaintParamsKeyBuilder* builder,
+                             SkUniformBlock* uniformBlock) const {
+    ImageShaderBlock::AddToKey(dict, backend, builder, uniformBlock, { fTileModeX, fTileModeY });
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #include "src/core/SkImagePriv.h"
 
@@ -552,6 +560,9 @@ bool SkImageShader::doStages(const SkStageRec& rec, TransformShader* updater) co
 
             case kGray_8_SkColorType:       p->append(SkRasterPipeline::gather_a8,      ctx);
                                             p->append(SkRasterPipeline::alpha_to_gray      ); break;
+
+            case kR8_unorm_SkColorType:     p->append(SkRasterPipeline::gather_a8,      ctx);
+                                            p->append(SkRasterPipeline::alpha_to_red       ); break;
 
             case kRGB_888x_SkColorType:     p->append(SkRasterPipeline::gather_8888,    ctx);
                                             p->append(SkRasterPipeline::force_opaque       ); break;

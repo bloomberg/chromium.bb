@@ -1,5 +1,4 @@
 #version 310 es
-precision mediump float;
 
 struct Uniforms {
   uint dstTextureFlipY;
@@ -9,12 +8,10 @@ struct Uniforms {
   uvec2 copySize;
 };
 
-uniform highp sampler2D src;
-uniform highp sampler2D dst;
-layout (binding = 2) buffer OutputBuf_1 {
+layout(binding = 2, std430) buffer OutputBuf_1 {
   uint result[];
 } tint_symbol;
-layout (binding = 3) uniform Uniforms_1 {
+layout(binding = 3) uniform Uniforms_1 {
   uint dstTextureFlipY;
   uint channelCount;
   uvec2 srcCopyOrigin;
@@ -26,13 +23,11 @@ bool aboutEqual(float value, float expect) {
   return (abs((value - expect)) < 0.001f);
 }
 
-struct tint_symbol_3 {
-  uvec3 GlobalInvocationID;
-};
-
-void tint_symbol_1_inner(uvec3 GlobalInvocationID) {
-  ivec2 srcSize = textureSize(src, 0);
-  ivec2 dstSize = textureSize(dst, 0);
+uniform highp sampler2D src_1;
+uniform highp sampler2D dst_1;
+void tint_symbol_1(uvec3 GlobalInvocationID) {
+  ivec2 srcSize = textureSize(src_1, 0);
+  ivec2 dstSize = textureSize(dst_1, 0);
   uvec2 dstTexCoord = uvec2(GlobalInvocationID.xy);
   vec4 nonCoveredColor = vec4(0.0f, 1.0f, 0.0f, 1.0f);
   bool success = true;
@@ -51,7 +46,7 @@ void tint_symbol_1_inner(uvec3 GlobalInvocationID) {
   if ((tint_tmp)) {
     bool tint_tmp_3 = success;
     if (tint_tmp_3) {
-      tint_tmp_3 = all(equal(texelFetch(dst, ivec2(dstTexCoord), 0), nonCoveredColor));
+      tint_tmp_3 = all(equal(texelFetch(dst_1, ivec2(dstTexCoord), 0), nonCoveredColor));
     }
     success = (tint_tmp_3);
   } else {
@@ -59,8 +54,8 @@ void tint_symbol_1_inner(uvec3 GlobalInvocationID) {
     if ((uniforms.dstTextureFlipY == 1u)) {
       srcTexCoord.y = ((uint(srcSize.y) - srcTexCoord.y) - 1u);
     }
-    vec4 srcColor = texelFetch(src, ivec2(srcTexCoord), 0);
-    vec4 dstColor = texelFetch(dst, ivec2(dstTexCoord), 0);
+    vec4 srcColor = texelFetch(src_1, ivec2(srcTexCoord), 0);
+    vec4 dstColor = texelFetch(dst_1, ivec2(dstTexCoord), 0);
     if ((uniforms.channelCount == 2u)) {
       bool tint_tmp_5 = success;
       if (tint_tmp_5) {
@@ -100,14 +95,7 @@ void tint_symbol_1_inner(uvec3 GlobalInvocationID) {
 }
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-void tint_symbol_1(tint_symbol_3 tint_symbol_2) {
-  tint_symbol_1_inner(tint_symbol_2.GlobalInvocationID);
+void main() {
+  tint_symbol_1(gl_GlobalInvocationID);
   return;
 }
-void main() {
-  tint_symbol_3 inputs;
-  inputs.GlobalInvocationID = gl_GlobalInvocationID;
-  tint_symbol_1(inputs);
-}
-
-

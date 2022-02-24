@@ -34,14 +34,13 @@ class MediaRouterBase : public MediaRouter {
   ~MediaRouterBase() override;
 
   // Must be called before invoking any other method.
-  void Initialize();
+  virtual void Initialize();
 
   // MediaRouter implementation.
   base::CallbackListSubscription AddPresentationConnectionStateChangedCallback(
       const MediaRoute::Id& route_id,
       const content::PresentationConnectionStateChangedCallback& callback)
       override;
-  void OnIncognitoProfileShutdown() override;
   IssueManager* GetIssueManager() final;
   std::vector<MediaRoute> GetCurrentRoutes() const override;
   std::unique_ptr<media::FlingingController> GetFlingingController(

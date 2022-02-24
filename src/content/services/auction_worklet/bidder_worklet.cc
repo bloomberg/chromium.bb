@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
+#include "content/services/auction_worklet/for_debugging_only_bindings.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 #include "content/services/auction_worklet/report_bindings.h"
 #include "content/services/auction_worklet/trusted_signals.h"
@@ -199,6 +200,7 @@ void BidderWorklet::GenerateBid(
     mojom::BidderWorkletNonSharedParamsPtr bidder_worklet_non_shared_params,
     const absl::optional<std::string>& auction_signals_json,
     const absl::optional<std::string>& per_buyer_signals_json,
+    const absl::optional<base::TimeDelta> per_buyer_timeout,
     const url::Origin& seller_origin,
     mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
     base::Time auction_start_time,
@@ -211,6 +213,7 @@ void BidderWorklet::GenerateBid(
       std::move(bidder_worklet_non_shared_params);
   generate_bid_task->auction_signals_json = auction_signals_json;
   generate_bid_task->per_buyer_signals_json = per_buyer_signals_json;
+  generate_bid_task->per_buyer_timeout = per_buyer_timeout;
   generate_bid_task->seller_origin = seller_origin;
   generate_bid_task->bidding_browser_signals =
       std::move(bidding_browser_signals);
@@ -247,6 +250,8 @@ void BidderWorklet::ReportWin(
     const GURL& browser_signal_render_url,
     double browser_signal_bid,
     const url::Origin& browser_signal_seller_origin,
+    uint32_t bidding_signals_data_version,
+    bool has_bidding_signals_data_version,
     ReportWinCallback report_win_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
 
@@ -259,6 +264,9 @@ void BidderWorklet::ReportWin(
   report_win_task->browser_signal_render_url = browser_signal_render_url;
   report_win_task->browser_signal_bid = browser_signal_bid;
   report_win_task->browser_signal_seller_origin = browser_signal_seller_origin;
+  if (has_bidding_signals_data_version)
+    report_win_task->bidding_signals_data_version =
+        bidding_signals_data_version;
   report_win_task->callback = std::move(report_win_callback);
 
   // If not yet ready, need to wait for load to complete.
@@ -269,7 +277,7 @@ void BidderWorklet::ReportWin(
 }
 
 void BidderWorklet::ConnectDevToolsAgent(
-    mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent) {
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
   v8_runner_->PostTask(
       FROM_HERE,
@@ -320,6 +328,7 @@ void BidderWorklet::V8State::ReportWin(
     const GURL& browser_signal_render_url,
     double browser_signal_bid,
     const url::Origin& browser_signal_seller_origin,
+    const absl::optional<uint32_t>& bidding_signals_data_version,
     ReportWinCallbackInternal callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
 
@@ -359,7 +368,10 @@ void BidderWorklet::V8State::ReportWin(
                                 browser_signal_render_url.spec()) ||
       !browser_signals_dict.Set("bid", browser_signal_bid) ||
       !browser_signals_dict.Set("seller",
-                                browser_signal_seller_origin.Serialize())) {
+                                browser_signal_seller_origin.Serialize()) ||
+      (bidding_signals_data_version.has_value() &&
+       !browser_signals_dict.Set("dataVersion",
+                                 bidding_signals_data_version.value()))) {
     PostReportWinCallbackToUserThread(std::move(callback),
                                       absl::nullopt /* report_url */,
                                       std::vector<std::string>() /* errors */);
@@ -374,7 +386,8 @@ void BidderWorklet::V8State::ReportWin(
       *debug_id_, "beforeBidderWorkletReportingStart");
   if (v8_helper_
           ->RunScript(context, worklet_script_.Get(isolate), debug_id_.get(),
-                      "reportWin", args, errors_out)
+                      "reportWin", args, /*script_timeout=*/absl::nullopt,
+                      errors_out)
           .IsEmpty()) {
     PostReportWinCallbackToUserThread(std::move(callback),
                                       absl::nullopt /* report_url */,
@@ -392,6 +405,7 @@ void BidderWorklet::V8State::GenerateBid(
     mojom::BidderWorkletNonSharedParamsPtr bidder_worklet_non_shared_params,
     const absl::optional<std::string>& auction_signals_json,
     const absl::optional<std::string>& per_buyer_signals_json,
+    const absl::optional<base::TimeDelta> per_buyer_timeout,
     const url::Origin& browser_signal_seller_origin,
     mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
     base::Time auction_start_time,
@@ -404,14 +418,18 @@ void BidderWorklet::V8State::GenerateBid(
     PostErrorBidCallbackToUserThread(std::move(callback));
     return;
   }
-
   base::TimeTicks start = base::TimeTicks::Now();
 
   AuctionV8Helper::FullIsolateScope isolate_scope(v8_helper_.get());
   v8::Isolate* isolate = v8_helper_->isolate();
+  v8::Local<v8::ObjectTemplate> global_template =
+      v8::ObjectTemplate::New(isolate);
+  ForDebuggingOnlyBindings for_debugging_only_bindings(v8_helper_.get(),
+                                                       global_template);
+
   // Short lived context, to avoid leaking data at global scope between either
   // repeated calls to this worklet, or to calls to any other worklet.
-  v8::Local<v8::Context> context = v8_helper_->CreateContext();
+  v8::Local<v8::Context> context = v8_helper_->CreateContext(global_template);
   v8::Context::Scope context_scope(context);
 
   std::vector<v8::Local<v8::Value>> args;
@@ -461,12 +479,15 @@ void BidderWorklet::V8State::GenerateBid(
   }
 
   v8::Local<v8::Value> trusted_signals;
+  absl::optional<uint32_t> bidding_signals_data_version;
   if (!trusted_bidding_signals_result) {
     trusted_signals = v8::Null(isolate);
   } else {
     trusted_signals = trusted_bidding_signals_result->GetBiddingSignals(
         v8_helper_.get(), context,
         *bidder_worklet_non_shared_params->trusted_bidding_signals_keys);
+    bidding_signals_data_version =
+        trusted_bidding_signals_result->GetDataVersion();
   }
   args.push_back(trusted_signals);
 
@@ -479,7 +500,10 @@ void BidderWorklet::V8State::GenerateBid(
       !browser_signals_dict.Set("joinCount",
                                 bidding_browser_signals->join_count) ||
       !browser_signals_dict.Set("bidCount",
-                                bidding_browser_signals->bid_count)) {
+                                bidding_browser_signals->bid_count) ||
+      (bidding_signals_data_version.has_value() &&
+       !browser_signals_dict.Set("dataVersion",
+                                 bidding_signals_data_version.value()))) {
     PostErrorBidCallbackToUserThread(std::move(callback));
     return;
   }
@@ -520,7 +544,8 @@ void BidderWorklet::V8State::GenerateBid(
       *debug_id_, "beforeBidderWorkletBiddingStart");
   if (!v8_helper_
            ->RunScript(context, worklet_script_.Get(isolate), debug_id_.get(),
-                       "generateBid", args, errors_out)
+                       "generateBid", args, std::move(per_buyer_timeout),
+                       errors_out)
            .ToLocal(&generate_bid_result)) {
     PostErrorBidCallbackToUserThread(std::move(callback),
                                      std::move(errors_out));
@@ -635,12 +660,15 @@ void BidderWorklet::V8State::GenerateBid(
                      mojom::BidderWorkletBid::New(
                          std::move(ad_json), bid, std::move(render_url),
                          std::move(ad_component_urls),
-                         base::TimeTicks::Now() - start /* bid_duration */),
+                         /*bid_duration=*/base::TimeTicks::Now() - start),
+                     bidding_signals_data_version,
+                     for_debugging_only_bindings.TakeLossReportUrl(),
+                     for_debugging_only_bindings.TakeWinReportUrl(),
                      std::move(errors_out)));
 }
 
 void BidderWorklet::V8State::ConnectDevToolsAgent(
-    mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent) {
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
   v8_helper_->ConnectDevToolsAgent(std::move(agent), user_thread_, *debug_id_);
 }
@@ -680,9 +708,13 @@ void BidderWorklet::V8State::PostErrorBidCallbackToUserThread(
     GenerateBidCallbackInternal callback,
     std::vector<std::string> error_msgs) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
-  user_thread_->PostTask(FROM_HERE, base::BindOnce(std::move(callback),
-                                                   mojom::BidderWorkletBidPtr(),
-                                                   std::move(error_msgs)));
+  user_thread_->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), mojom::BidderWorkletBidPtr(),
+                     /*bidding_signals_data_version=*/absl::nullopt,
+                     /*debug_loss_report_url=*/absl::nullopt,
+                     /*debug_win_report_url=*/absl::nullopt,
+                     std::move(error_msgs)));
 }
 
 void BidderWorklet::ResumeIfPaused() {
@@ -811,7 +843,7 @@ void BidderWorklet::GenerateBidIfReady(GenerateBidTaskList::iterator task) {
           std::move(task->bidder_worklet_non_shared_params),
           std::move(task->auction_signals_json),
           std::move(task->per_buyer_signals_json),
-          std::move(task->seller_origin),
+          std::move(task->per_buyer_timeout), std::move(task->seller_origin),
           std::move(task->bidding_browser_signals), task->auction_start_time,
           std::move(task->trusted_bidding_signals_result),
           base::BindOnce(&BidderWorklet::DeliverBidCallbackOnUserThread,
@@ -834,6 +866,7 @@ void BidderWorklet::RunReportWin(ReportWinTaskList::iterator task) {
           std::move(task->browser_signal_render_url),
           std::move(task->browser_signal_bid),
           std::move(task->browser_signal_seller_origin),
+          std::move(task->bidding_signals_data_version),
           base::BindOnce(&BidderWorklet::DeliverReportWinOnUserThread,
                          weak_ptr_factory_.GetWeakPtr(), task)));
 }
@@ -841,6 +874,9 @@ void BidderWorklet::RunReportWin(ReportWinTaskList::iterator task) {
 void BidderWorklet::DeliverBidCallbackOnUserThread(
     GenerateBidTaskList::iterator task,
     mojom::BidderWorkletBidPtr bid,
+    absl::optional<uint32_t> bidding_signals_data_version,
+    absl::optional<GURL> debug_loss_report_url,
+    absl::optional<GURL> debug_win_report_url,
     std::vector<std::string> error_msgs) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
 
@@ -850,7 +886,10 @@ void BidderWorklet::DeliverBidCallbackOnUserThread(
     error_msgs.emplace_back(
         std::move(task->trusted_bidding_signals_error_msg).value());
   }
-  std::move(task->callback).Run(std::move(bid), error_msgs);
+  std::move(task->callback)
+      .Run(std::move(bid), bidding_signals_data_version.value_or(0),
+           bidding_signals_data_version.has_value(), debug_loss_report_url,
+           debug_win_report_url, error_msgs);
   generate_bid_tasks_.erase(task);
 }
 

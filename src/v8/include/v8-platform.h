@@ -401,6 +401,8 @@ class PageAllocator {
     // this is used to set the MAP_JIT flag on Apple Silicon.
     // TODO(jkummerow): Remove this when Wasm has a platform-independent
     // w^x implementation.
+    // TODO(saelo): Remove this once all JIT pages are allocated through the
+    // VirtualAddressSpace API.
     kNoAccessWillJitLater
   };
 
@@ -510,8 +512,59 @@ class PageAllocator {
   virtual bool CanAllocateSharedPages() { return false; }
 };
 
+// Opaque type representing a handle to a shared memory region.
+using PlatformSharedMemoryHandle = intptr_t;
+static constexpr PlatformSharedMemoryHandle kInvalidSharedMemoryHandle = -1;
+
+// Conversion routines from the platform-dependent shared memory identifiers
+// into the opaque PlatformSharedMemoryHandle type. These use the underlying
+// types (e.g. unsigned int) instead of the typedef'd ones (e.g. mach_port_t)
+// to avoid pulling in large OS header files into this header file. Instead,
+// the users of these routines are expected to include the respecitve OS
+// headers in addition to this one.
+#if defined(V8_OS_MACOSX) && !defined(V8_OS_IOS)
+// Convert between a shared memory handle and a mach_port_t referencing a memory
+// entry object.
+inline PlatformSharedMemoryHandle SharedMemoryHandleFromMachMemoryEntry(
+    unsigned int port) {
+  return static_cast<PlatformSharedMemoryHandle>(port);
+}
+inline unsigned int MachMemoryEntryFromSharedMemoryHandle(
+    PlatformSharedMemoryHandle handle) {
+  return static_cast<unsigned int>(handle);
+}
+#elif defined(V8_OS_FUCHSIA)
+// Convert between a shared memory handle and a zx_handle_t to a VMO.
+inline PlatformSharedMemoryHandle SharedMemoryHandleFromVMO(uint32_t handle) {
+  return static_cast<PlatformSharedMemoryHandle>(handle);
+}
+inline uint32_t VMOFromSharedMemoryHandle(PlatformSharedMemoryHandle handle) {
+  return static_cast<uint32_t>(handle);
+}
+#elif defined(V8_OS_WIN)
+// Convert between a shared memory handle and a Windows HANDLE to a file mapping
+// object.
+inline PlatformSharedMemoryHandle SharedMemoryHandleFromFileMapping(
+    void* handle) {
+  return reinterpret_cast<PlatformSharedMemoryHandle>(handle);
+}
+inline void* FileMappingFromSharedMemoryHandle(
+    PlatformSharedMemoryHandle handle) {
+  return reinterpret_cast<void*>(handle);
+}
+#else
+// Convert between a shared memory handle and a file descriptor.
+inline PlatformSharedMemoryHandle SharedMemoryHandleFromFileDescriptor(int fd) {
+  return static_cast<PlatformSharedMemoryHandle>(fd);
+}
+inline int FileDescriptorFromSharedMemoryHandle(
+    PlatformSharedMemoryHandle handle) {
+  return static_cast<int>(handle);
+}
+#endif
+
 /**
- * Page permissions.
+ * Possible permissions for memory pages.
  */
 enum class PagePermissions {
   kNoAccess,
@@ -534,11 +587,13 @@ class VirtualAddressSpace {
   using Address = uintptr_t;
 
   VirtualAddressSpace(size_t page_size, size_t allocation_granularity,
-                      Address base, size_t size)
+                      Address base, size_t size,
+                      PagePermissions max_page_permissions)
       : page_size_(page_size),
         allocation_granularity_(allocation_granularity),
         base_(base),
-        size_(size) {}
+        size_(size),
+        max_page_permissions_(max_page_permissions) {}
 
   virtual ~VirtualAddressSpace() = default;
 
@@ -574,6 +629,14 @@ class VirtualAddressSpace {
    * \returns the size of this address space in bytes.
    */
   size_t size() const { return size_; }
+
+  /**
+   * The maximum page permissions that pages allocated inside this space can
+   * obtain.
+   *
+   * \returns the maximum page permissions.
+   */
+  PagePermissions max_page_permissions() const { return max_page_permissions_; }
 
   /**
    * Sets the random seed so that GetRandomPageAddress() will generate
@@ -681,6 +744,43 @@ class VirtualAddressSpace {
                                                      size_t size) = 0;
 
   /**
+   * Allocates shared memory pages with the given permissions.
+   *
+   * \param hint Placement hint. See AllocatePages.
+   *
+   * \param size The size of the allocation in bytes. Must be a multiple of the
+   * allocation_granularity().
+   *
+   * \param permissions The page permissions of the newly allocated pages.
+   *
+   * \param handle A platform-specific handle to a shared memory object. See
+   * the SharedMemoryHandleFromX routines above for ways to obtain these.
+   *
+   * \param offset The offset in the shared memory object at which the mapping
+   * should start. Must be a multiple of the allocation_granularity().
+   *
+   * \returns the start address of the allocated pages on success, zero on
+   * failure.
+   */
+  virtual V8_WARN_UNUSED_RESULT Address
+  AllocateSharedPages(Address hint, size_t size, PagePermissions permissions,
+                      PlatformSharedMemoryHandle handle, uint64_t offset) = 0;
+
+  /**
+   * Frees previously allocated shared pages.
+   *
+   * \param address The start address of the pages to free. This address must
+   * have been obtains from a call to AllocateSharedPages.
+   *
+   * \param size The size in bytes of the region to free. This must match the
+   * size passed to AllocateSharedPages when the pages were allocated.
+   *
+   * \returns true on success, false otherwise.
+   */
+  virtual V8_WARN_UNUSED_RESULT bool FreeSharedPages(Address address,
+                                                     size_t size) = 0;
+
+  /**
    * Whether this instance can allocate subspaces or not.
    *
    * \returns true if subspaces can be allocated, false if not.
@@ -703,14 +803,14 @@ class VirtualAddressSpace {
    * \param alignment The alignment of the subspace in bytes. Must be a multiple
    * of the allocation_granularity() and should be a power of two.
    *
-   * \param max_permissions The maximum permissions that pages allocated in the
-   * subspace can obtain.
+   * \param max_page_permissions The maximum permissions that pages allocated in
+   * the subspace can obtain.
    *
    * \returns a new subspace or nullptr on failure.
    */
   virtual std::unique_ptr<VirtualAddressSpace> AllocateSubspace(
       Address hint, size_t size, size_t alignment,
-      PagePermissions max_permissions) = 0;
+      PagePermissions max_page_permissions) = 0;
 
   //
   // TODO(v8) maybe refactor the methods below before stabilizing the API. For
@@ -750,6 +850,7 @@ class VirtualAddressSpace {
   const size_t allocation_granularity_;
   const Address base_;
   const size_t size_;
+  const PagePermissions max_page_permissions_;
 };
 
 /**

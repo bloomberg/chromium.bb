@@ -165,8 +165,8 @@ struct tuple_cat_impl<NTuples, TupleImpl<N1, Args1...>, TupleImpl<N2, Args2...>,
   // then recursively calls again.
   template<typename Tuple1, size_t... I1s, typename Tuple2, size_t... I2s, typename... MoreTuples>
   static EIGEN_CONSTEXPR EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-  ReturnType run(Tuple1&& tuple1, index_sequence<I1s...>,
-                 Tuple2&& tuple2, index_sequence<I2s...>,
+  ReturnType run(Tuple1&& tuple1, std::index_sequence<I1s...>,
+                 Tuple2&& tuple2, std::index_sequence<I2s...>,
                  MoreTuples&&... tuples) {
     return tuple_cat_impl<NTuples-1, MergedTupleType, Tuples...>::run(
         MergedTupleType(tuple_get_impl<I1s, Args1...>::run(std::forward<Tuple1>(tuple1))...,
@@ -178,8 +178,8 @@ struct tuple_cat_impl<NTuples, TupleImpl<N1, Args1...>, TupleImpl<N2, Args2...>,
   template<typename Tuple1, typename Tuple2, typename... MoreTuples>
   static EIGEN_CONSTEXPR EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
   ReturnType run(Tuple1&& tuple1, Tuple2&& tuple2, MoreTuples&&... tuples) {
-    return run(std::forward<Tuple1>(tuple1), make_index_sequence<N1>{},
-               std::forward<Tuple2>(tuple2), make_index_sequence<N2>{},
+    return run(std::forward<Tuple1>(tuple1), std::make_index_sequence<N1>{},
+               std::forward<Tuple2>(tuple2), std::make_index_sequence<N2>{},
                std::forward<MoreTuples>(tuples)...);
   }
 };

@@ -1,6 +1,6 @@
-/* Copyright (c) 2020-2021 The Khronos Group Inc.
- * Copyright (c) 2020-2021 Valve Corporation
- * Copyright (c) 2020-2021 LunarG, Inc.
+/* Copyright (c) 2020-2022 The Khronos Group Inc.
+ * Copyright (c) 2020-2022 Valve Corporation
+ * Copyright (c) 2020-2022 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -170,16 +170,34 @@ bool DebugPrintf::PreCallValidateCmdWaitEvents(VkCommandBuffer commandBuffer, ui
 
 bool DebugPrintf::PreCallValidateCmdWaitEvents2KHR(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent *pEvents,
                                                    const VkDependencyInfoKHR *pDependencyInfos) const {
-    VkPipelineStageFlags2KHR srcStageMask = 0;
+    VkPipelineStageFlags2KHR src_stage_mask = 0;
 
     for (uint32_t i = 0; i < eventCount; i++) {
         auto stage_masks = sync_utils::GetGlobalStageMasks(pDependencyInfos[i]);
-        srcStageMask = stage_masks.src;
+        src_stage_mask |= stage_masks.src;
     }
 
-    if (srcStageMask & VK_PIPELINE_STAGE_HOST_BIT) {
+    if (src_stage_mask & VK_PIPELINE_STAGE_HOST_BIT) {
         ReportSetupProblem(commandBuffer,
                            "CmdWaitEvents2KHR recorded with VK_PIPELINE_STAGE_HOST_BIT set. "
+                           "Debug Printf waits on queue completion. "
+                           "This wait could block the host's signaling of this event, resulting in deadlock.");
+    }
+    return false;
+}
+
+bool DebugPrintf::PreCallValidateCmdWaitEvents2(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent *pEvents,
+                                                   const VkDependencyInfo *pDependencyInfos) const {
+    VkPipelineStageFlags2 src_stage_mask = 0;
+
+    for (uint32_t i = 0; i < eventCount; i++) {
+        auto stage_masks = sync_utils::GetGlobalStageMasks(pDependencyInfos[i]);
+        src_stage_mask |= stage_masks.src;
+    }
+
+    if (src_stage_mask & VK_PIPELINE_STAGE_HOST_BIT) {
+        ReportSetupProblem(commandBuffer,
+                           "CmdWaitEvents2 recorded with VK_PIPELINE_STAGE_HOST_BIT set. "
                            "Debug Printf waits on queue completion. "
                            "This wait could block the host's signaling of this event, resulting in deadlock.");
     }
@@ -300,7 +318,7 @@ void DebugPrintf::PreCallRecordDestroyPipeline(VkDevice device, VkPipeline pipel
     ValidationStateTracker::PreCallRecordDestroyPipeline(device, pipeline, pAllocator);
 }
 // Call the SPIR-V Optimizer to run the instrumentation pass on the shader.
-bool DebugPrintf::InstrumentShader(const VkShaderModuleCreateInfo *pCreateInfo, std::vector<unsigned int> &new_pgm,
+bool DebugPrintf::InstrumentShader(const VkShaderModuleCreateInfo *pCreateInfo, std::vector<uint32_t> &new_pgm,
                                    uint32_t *unique_shader_id) {
     if (aborted) return false;
     if (pCreateInfo->pCode[0] != spv::MagicNumber) return false;
@@ -352,7 +370,7 @@ void DebugPrintf::PreCallRecordCreateShaderModule(VkDevice device, const VkShade
     bool pass = InstrumentShader(pCreateInfo, csm_state->instrumented_pgm, &csm_state->unique_shader_id);
     if (pass) {
         csm_state->instrumented_create_info.pCode = csm_state->instrumented_pgm.data();
-        csm_state->instrumented_create_info.codeSize = csm_state->instrumented_pgm.size() * sizeof(unsigned int);
+        csm_state->instrumented_create_info.codeSize = csm_state->instrumented_pgm.size() * sizeof(uint32_t);
     }
 }
 
@@ -458,11 +476,11 @@ std::vector<DPFSubstring> DebugPrintf::ParseFormatString(const std::string forma
     return parsed_strings;
 }
 
-std::string DebugPrintf::FindFormatString(std::vector<unsigned int> pgm, uint32_t string_id) {
+std::string DebugPrintf::FindFormatString(std::vector<uint32_t> pgm, uint32_t string_id) {
     std::string format_string;
-    SHADER_MODULE_STATE shader(pgm);
-    if (shader.words.size() > 0) {
-        for (const auto &insn : shader) {
+    SHADER_MODULE_STATE module_state(pgm);
+    if (module_state.words.size() > 0) {
+        for (const auto &insn : module_state) {
             if (insn.opcode() == spv::OpString) {
                 uint32_t offset = insn.offset();
                 if (pgm[offset + 1] == string_id) {
@@ -529,7 +547,7 @@ void DebugPrintf::AnalyzeAndGenerateMessages(VkCommandBuffer command_buffer, VkQ
         std::stringstream shader_message;
         VkShaderModule shader_module_handle = VK_NULL_HANDLE;
         VkPipeline pipeline_handle = VK_NULL_HANDLE;
-        std::vector<unsigned int> pgm;
+        std::vector<uint32_t> pgm;
 
         DPFOutputRecord *debug_record = reinterpret_cast<DPFOutputRecord *>(&debug_output_buffer[index]);
         // Lookup the VkShaderModule handle and SPIR-V code used to create the shader, using the unique shader ID value returned
@@ -688,10 +706,8 @@ void DebugPrintf::PostCallRecordQueueSubmit(VkQueue queue, uint32_t submitCount,
     }
 }
 
-void DebugPrintf::PostCallRecordQueueSubmit2KHR(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2KHR *pSubmits,
-                                                VkFence fence, VkResult result) {
-    ValidationStateTracker::PostCallRecordQueueSubmit2KHR(queue, submitCount, pSubmits, fence, result);
-
+void DebugPrintf::RecordQueueSubmit2(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2 *pSubmits, VkFence fence,
+                                     VkResult result) {
     if (aborted || (result != VK_SUCCESS)) return;
     bool buffers_present = false;
     // Don't QueueWaitIdle if there's nothing to process
@@ -708,11 +724,23 @@ void DebugPrintf::PostCallRecordQueueSubmit2KHR(VkQueue queue, uint32_t submitCo
     DispatchQueueWaitIdle(queue);
 
     for (uint32_t submit_idx = 0; submit_idx < submitCount; submit_idx++) {
-        const VkSubmitInfo2KHR *submit = &pSubmits[submit_idx];
+        const VkSubmitInfo2 *submit = &pSubmits[submit_idx];
         for (uint32_t i = 0; i < submit->commandBufferInfoCount; i++) {
             ProcessCommandBuffer(queue, submit->pCommandBufferInfos[i].commandBuffer);
         }
     }
+}
+
+void DebugPrintf::PostCallRecordQueueSubmit2KHR(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2KHR *pSubmits,
+                                                VkFence fence, VkResult result) {
+    ValidationStateTracker::PostCallRecordQueueSubmit2KHR(queue, submitCount, pSubmits, fence, result);
+    RecordQueueSubmit2(queue, submitCount, pSubmits, fence, result);
+}
+
+void DebugPrintf::PostCallRecordQueueSubmit2(VkQueue queue, uint32_t submitCount, const VkSubmitInfo2 *pSubmits, VkFence fence,
+                                             VkResult result) {
+    ValidationStateTracker::PostCallRecordQueueSubmit2(queue, submitCount, pSubmits, fence, result);
+    RecordQueueSubmit2(queue, submitCount, pSubmits, fence, result);
 }
 
 void DebugPrintf::PreCallRecordCmdDraw(VkCommandBuffer commandBuffer, uint32_t vertexCount, uint32_t instanceCount,

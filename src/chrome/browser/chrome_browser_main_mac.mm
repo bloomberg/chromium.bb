@@ -24,6 +24,7 @@
 #include "chrome/browser/buildflags.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/mac/developer_id_certificate_reauthorize.h"
 #include "chrome/browser/mac/install_from_dmg.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/mac/mac_startup_profiler.h"
@@ -121,6 +122,8 @@ void ChromeBrowserMainPartsMac::PreCreateMainMessageLoop() {
                         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME), false);
   [app_controller mainMenuCreated];
 #endif  // BUILDFLAG(ENABLE_CEF)
+
+  chrome::DeveloperIDCertificateReauthorizeInApp();
 
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);

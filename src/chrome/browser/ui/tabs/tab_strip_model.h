@@ -47,6 +47,16 @@ namespace content {
 class WebContents;
 }
 
+class TabGroupModelFactory {
+ public:
+  TabGroupModelFactory();
+  TabGroupModelFactory(const TabGroupModelFactory&) = delete;
+  TabGroupModelFactory& operator=(const TabGroupModelFactory&) = delete;
+
+  static TabGroupModelFactory* GetInstance();
+  std::unique_ptr<TabGroupModel> Create(TabGroupController* controller);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // TabStripModel
@@ -203,7 +213,12 @@ class TabStripModel : public TabGroupController {
 
   // Construct a TabStripModel with a delegate to help it do certain things
   // (see the TabStripModelDelegate documentation). |delegate| cannot be NULL.
-  explicit TabStripModel(TabStripModelDelegate* delegate, Profile* profile);
+  // the TabGroupModelFactory can be replaced with a nullptr to set the
+  // group_model to null in cases where groups are not supported.
+  explicit TabStripModel(TabStripModelDelegate* delegate,
+                         Profile* profile,
+                         TabGroupModelFactory* group_model_factory =
+                             TabGroupModelFactory::GetInstance());
 
   TabStripModel(const TabStripModel&) = delete;
   TabStripModel& operator=(const TabStripModel&) = delete;
@@ -532,6 +547,8 @@ class TabStripModel : public TabGroupController {
 
   TabGroupModel* group_model() const { return group_model_.get(); }
 
+  bool SupportsTabGroups() const { return group_model_.get() != nullptr; }
+
   // Returns true if one or more of the tabs pointed to by |indices| are
   // supported by read later.
   bool IsReadLaterSupportedForAny(const std::vector<int>& indices);
@@ -540,6 +557,7 @@ class TabStripModel : public TabGroupController {
   void AddToReadLater(const std::vector<int>& indices);
 
   // TabGroupController:
+  Profile* GetProfile() override;
   void CreateTabGroup(const tab_groups::TabGroupId& group) override;
   void OpenTabGroupEditor(const tab_groups::TabGroupId& group) override;
   void ChangeTabGroupContents(const tab_groups::TabGroupId& group) override;
@@ -827,7 +845,9 @@ class TabStripModel : public TabGroupController {
   // no tabs. Returns that group.
   absl::optional<tab_groups::TabGroupId> UngroupTab(int index);
 
-  // Helper function for MoveAndSetGroup. Adds the tab at |index| to |group|.
+  // Helper function for MoveAndSetGroup. Adds the tab at |index| to |group|,
+  // updates the group model, and notifies the observers if the group at that
+  // index would change.
   void GroupTab(int index, const tab_groups::TabGroupId& group);
 
   // Changes the pinned state of the tab at |index|.

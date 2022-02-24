@@ -30,7 +30,7 @@
 
 import {NodeURL} from './NodeURL.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
-import * as Protocol from '../../generated/protocol.js';
+import type * as Protocol from '../../generated/protocol.js';
 
 export const DevToolsStubErrorCode = -32015;
 // TODO(dgozman): we are not reporting generic errors in tests, but we should
@@ -147,14 +147,14 @@ export class InspectorBackend {
 
   registerEnum(type: QualifiedName, values: Object): void {
     const [domain, name] = splitQualifiedName(type);
-    // @ts-ignore Protocol global namespace pollution
-    if (!Protocol[domain]) {
-      // @ts-ignore Protocol global namespace pollution
-      Protocol[domain] = {};
+    // @ts-ignore globalThis global namespace pollution
+    if (!globalThis.Protocol[domain]) {
+      // @ts-ignore globalThis global namespace pollution
+      globalThis.Protocol[domain] = {};
     }
 
-    // @ts-ignore Protocol global namespace pollution
-    Protocol[domain][name] = values;
+    // @ts-ignore globalThis global namespace pollution
+    globalThis.Protocol[domain][name] = values;
     this.#initialized = true;
   }
 
@@ -648,6 +648,10 @@ export class TargetBase {
     return this.getAgent('EventBreakpoints');
   }
 
+  fetchAgent(): ProtocolProxyApi.FetchApi {
+    return this.getAgent('Fetch');
+  }
+
   heapProfilerAgent(): ProtocolProxyApi.HeapProfilerApi {
     return this.getAgent('HeapProfiler');
   }
@@ -802,6 +806,10 @@ export class TargetBase {
 
   registerDOMStorageDispatcher(dispatcher: ProtocolProxyApi.DOMStorageDispatcher): void {
     this.registerDispatcher('DOMStorage', dispatcher);
+  }
+
+  registerFetchDispatcher(dispatcher: ProtocolProxyApi.FetchDispatcher): void {
+    this.registerDispatcher('Fetch', dispatcher);
   }
 
   registerHeapProfilerDispatcher(dispatcher: ProtocolProxyApi.HeapProfilerDispatcher): void {

@@ -167,7 +167,10 @@ struct CBVertexBufferBindingInfo {
     std::vector<BufferBinding> vertex_buffer_bindings;
 };
 
-typedef layer_data::unordered_map<const IMAGE_STATE *, layer_data::optional<ImageSubresourceLayoutMap>> CommandBufferImageLayoutMap;
+typedef layer_data::unordered_map<const IMAGE_STATE *, std::shared_ptr<ImageSubresourceLayoutMap>> CommandBufferImageLayoutMap;
+
+typedef layer_data::unordered_map<const GlobalImageLayoutRangeMap *, std::shared_ptr<ImageSubresourceLayoutMap>>
+    CommandBufferAliasedLayoutMap;
 
 class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
   public:
@@ -192,6 +195,7 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     CBStatusFlags static_status;                       // All state bits provided by current graphics pipeline
                                                        // rather than dynamic state
     CBStatusFlags dynamic_status;                      // dynamic state set up in pipeline
+    std::string begin_rendering_func_name;
     // Currently storing "lastBound" objects on per-CB basis
     //  long-term may want to create caches of "lastBound" states and could have
     //  each individual CMD_NODE referencing its own "lastBound" state
@@ -271,6 +275,8 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     layer_data::unordered_set<QueryObject> startedQueries;
     layer_data::unordered_set<QueryObject> resetQueries;
     CommandBufferImageLayoutMap image_layout_map;
+    CommandBufferAliasedLayoutMap aliased_image_layout_map;  // storage for potentially aliased images
+
     CBVertexBufferBindingInfo current_vertex_buffer_binding_info;
     bool vertex_buffer_used;  // Track for perf warning to make sure any bound vtx buffer used
     VkCommandBuffer primaryCommandBuffer;
@@ -413,7 +419,7 @@ class CMD_BUFFER_STATE : public REFCOUNTED_NODE {
     void NextSubpass(CMD_TYPE cmd_type, VkSubpassContents contents);
     void EndRenderPass(CMD_TYPE cmd_type);
 
-    void BeginRendering(CMD_TYPE cmd_type, const VkRenderingInfoKHR *pRenderingInfo);
+    void BeginRendering(CMD_TYPE cmd_type, const VkRenderingInfo *pRenderingInfo);
 
     void ExecuteCommands(uint32_t commandBuffersCount, const VkCommandBuffer *pCommandBuffers);
 

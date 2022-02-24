@@ -177,7 +177,19 @@ def BuildFileList(override_dir, include_arm):
           dest = final_from[len(vs_path) + 1:]
           result.append((final_from, dest))
 
-  sdk_path = r'C:\Program Files (x86)\Windows Kits\10'
+  command = (r'reg query "HKLM\SOFTWARE\Microsoft\Windows Kits\Installed Roots"'
+             r' /v KitsRoot10')
+  marker = "    KitsRoot10    REG_SZ    "
+  sdk_path = None
+  output = subprocess.check_output(command, universal_newlines=True)
+  for line in output.splitlines():
+    if line.startswith(marker):
+      sdk_path = line[len(marker):]
+
+  # Strip off a trailing slash if present
+  if sdk_path.endswith(os.path.sep):
+    sdk_path = sdk_path[:len(os.path.sep)]
+
   debuggers_path = os.path.join(sdk_path, 'Debuggers')
   if not os.path.exists(debuggers_path):
     raise Exception('Packaging failed. Missing %s.' % (debuggers_path))

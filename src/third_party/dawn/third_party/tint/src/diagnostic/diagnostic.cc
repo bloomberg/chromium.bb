@@ -14,20 +14,29 @@
 
 #include "src/diagnostic/diagnostic.h"
 
+#include <unordered_map>
+
 #include "src/diagnostic/formatter.h"
 
 namespace tint {
 namespace diag {
 
+Diagnostic::Diagnostic() = default;
+Diagnostic::Diagnostic(const Diagnostic&) = default;
+Diagnostic::~Diagnostic() = default;
+Diagnostic& Diagnostic::operator=(const Diagnostic&) = default;
+
 List::List() = default;
 List::List(std::initializer_list<Diagnostic> list) : entries_(list) {}
-List::List(const List&) = default;
-List::List(List&&) = default;
+List::List(const List& rhs) = default;
+
+List::List(List&& rhs) = default;
 
 List::~List() = default;
 
-List& List::operator=(const List&) = default;
-List& List::operator=(List&&) = default;
+List& List::operator=(const List& rhs) = default;
+
+List& List::operator=(List&& rhs) = default;
 
 std::string List::str() const {
   diag::Formatter::Style style;

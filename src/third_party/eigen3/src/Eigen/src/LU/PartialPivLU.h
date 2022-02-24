@@ -378,7 +378,7 @@ struct partial_lu_impl
 
       row_transpositions[k] = PivIndex(row_of_biggest_in_col);
 
-      if(biggest_in_corner != Score(0))
+      if(!numext::is_exactly_zero(biggest_in_corner))
       {
         if(k != row_of_biggest_in_col)
         {
@@ -404,7 +404,7 @@ struct partial_lu_impl
     {
       Index k = endk;
       row_transpositions[k] = PivIndex(k);
-      if (Scoring()(lu(k, k)) == Score(0) && first_zero_pivot == -1)
+      if (numext::is_exactly_zero(Scoring()(lu(k, k))) && first_zero_pivot == -1)
         first_zero_pivot = k;
     }
 

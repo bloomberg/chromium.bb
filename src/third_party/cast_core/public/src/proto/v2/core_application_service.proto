@@ -33,33 +33,12 @@ service CoreApplicationService {
   // the gRPC status code.
   rpc GetConfig(GetConfigRequest) returns (GetConfigResponse);
 
-  // DEPRECATED
-  // Send a Cast V2 message to core application.
-  rpc SendCastMessage(cast.bindings.CastChannelMessage)
-      returns (cast.bindings.CastChannelResponse);
-
   // Notifies Cast Core on the application state changes. The callback must be
   // called by the Runtime whenever the internal state of the application
   // changes. Cast Core may discard any resources associated with the
   // application upon failures.
   rpc SetApplicationStatus(ApplicationStatusRequest)
       returns (ApplicationStatusResponse);
-
-  // DEPRECATED
-  // Posts messages between MessagePorts. MessagePorts are connected using other
-  // services (e.g. ApiBindings), then registered with the
-  // MessageConnectorService to communicate over IPC.
-  rpc PostMessage(cast.web.Message) returns (cast.web.MessagePortStatus);
-
-  // DEPRECATED
-  // Gets the list of bindings to early-inject into javascript at page load.
-  rpc GetAll(cast.bindings.GetAllRequest)
-      returns (cast.bindings.GetAllResponse);
-
-  // DEPRECATED
-  // Connects to a binding returned by GetAll.
-  rpc Connect(cast.bindings.ConnectRequest)
-      returns (cast.bindings.ConnectResponse);
 
   // GetWebUIResource request
   rpc GetWebUIResource(GetWebUIResourceRequest)

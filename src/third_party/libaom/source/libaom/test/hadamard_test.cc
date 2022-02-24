@@ -30,6 +30,33 @@ using HadamardLPFunc = void (*)(const int16_t *a, ptrdiff_t a_stride,
                                 int16_t *b);
 
 template <typename OutputType>
+void Hadamard4x4(const OutputType *a, OutputType *out) {
+  OutputType b[8];
+  for (int i = 0; i < 4; i += 2) {
+    b[i + 0] = (a[i * 4] + a[(i + 1) * 4]) >> 1;
+    b[i + 1] = (a[i * 4] - a[(i + 1) * 4]) >> 1;
+  }
+
+  out[0] = b[0] + b[2];
+  out[1] = b[1] + b[3];
+  out[2] = b[0] - b[2];
+  out[3] = b[1] - b[3];
+}
+
+template <typename OutputType>
+void ReferenceHadamard4x4(const int16_t *a, int a_stride, OutputType *b) {
+  OutputType input[16];
+  OutputType buf[16];
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      input[i * 4 + j] = static_cast<OutputType>(a[i * a_stride + j]);
+    }
+  }
+  for (int i = 0; i < 4; ++i) Hadamard4x4(input + i, buf + i * 4);
+  for (int i = 0; i < 4; ++i) Hadamard4x4(buf + i, b + i * 4);
+}
+
+template <typename OutputType>
 void HadamardLoop(const OutputType *a, OutputType *out) {
   OutputType b[8];
   for (int i = 0; i < 8; i += 2) {
@@ -128,12 +155,14 @@ void ReferenceHadamard32x32(const int16_t *a, int a_stride, OutputType *b) {
 
 template <typename OutputType>
 void ReferenceHadamard(const int16_t *a, int a_stride, OutputType *b, int bwh) {
-  if (bwh == 32)
+  if (bwh == 32) {
     ReferenceHadamard32x32(a, a_stride, b);
-  else if (bwh == 16)
+  } else if (bwh == 16) {
     ReferenceHadamard16x16(a, a_stride, b);
-  else if (bwh == 8) {
+  } else if (bwh == 8) {
     ReferenceHadamard8x8(a, a_stride, b);
+  } else if (bwh == 4) {
+    ReferenceHadamard4x4(a, a_stride, b);
   } else {
     GTEST_FAIL() << "Invalid Hadamard transform size " << bwh << std::endl;
   }
@@ -253,14 +282,16 @@ TEST_P(HadamardLowbdTest, DISABLED_SpeedTest) { SpeedTest(1000000); }
 
 INSTANTIATE_TEST_SUITE_P(
     C, HadamardLowbdTest,
-    ::testing::Values(HadamardFuncWithSize(&aom_hadamard_8x8_c, 8),
+    ::testing::Values(HadamardFuncWithSize(&aom_hadamard_4x4_c, 4),
+                      HadamardFuncWithSize(&aom_hadamard_8x8_c, 8),
                       HadamardFuncWithSize(&aom_hadamard_16x16_c, 16),
                       HadamardFuncWithSize(&aom_hadamard_32x32_c, 32)));
 
 #if HAVE_SSE2
 INSTANTIATE_TEST_SUITE_P(
     SSE2, HadamardLowbdTest,
-    ::testing::Values(HadamardFuncWithSize(&aom_hadamard_8x8_sse2, 8),
+    ::testing::Values(HadamardFuncWithSize(&aom_hadamard_4x4_sse2, 4),
+                      HadamardFuncWithSize(&aom_hadamard_8x8_sse2, 8),
                       HadamardFuncWithSize(&aom_hadamard_16x16_sse2, 16),
                       HadamardFuncWithSize(&aom_hadamard_32x32_sse2, 32)));
 #endif  // HAVE_SSE2

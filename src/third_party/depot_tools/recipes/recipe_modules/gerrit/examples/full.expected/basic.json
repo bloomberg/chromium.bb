@@ -187,7 +187,9 @@
       "--json_file",
       "/path/to/tmp/json",
       "-p",
-      "status=NEW"
+      "status=NEW",
+      "--cc",
+      "foo@example.com"
     ],
     "env": {
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"

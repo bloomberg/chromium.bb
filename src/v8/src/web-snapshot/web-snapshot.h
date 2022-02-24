@@ -160,11 +160,11 @@ class V8_EXPORT WebSnapshotSerializer
   void DiscoverClass(Handle<JSFunction> function);
   void DiscoverContextAndPrototype(Handle<JSFunction> function);
   void DiscoverContext(Handle<Context> context);
+  void DiscoverSource(Handle<JSFunction> function);
   void DiscoverArray(Handle<JSArray> array);
   void DiscoverObject(Handle<JSObject> object);
 
-  void SerializeSource(ValueSerializer* serializer,
-                       Handle<JSFunction> function);
+  void SerializeSource();
   void SerializeFunctionInfo(ValueSerializer* serializer,
                              Handle<JSFunction> function);
 
@@ -213,15 +213,26 @@ class V8_EXPORT WebSnapshotSerializer
   uint32_t export_count_ = 0;
 
   std::queue<Handle<Object>> discovery_queue_;
+
+  // For constructing the minimal, "compacted", source string to cover all
+  // function bodies.
+  Handle<String> full_source_;
+  uint32_t source_id_;
+  // Ordered set of (start, end) pairs of all functions we've discovered.
+  std::set<std::pair<int, int>> source_intervals_;
+  // Maps function positions in the real source code into the function positions
+  // in the constructed source code (which we'll include in the web snapshot).
+  std::unordered_map<int, int> source_offset_to_compacted_source_offset_;
 };
 
 class V8_EXPORT WebSnapshotDeserializer
     : public WebSnapshotSerializerDeserializer {
  public:
-  explicit WebSnapshotDeserializer(v8::Isolate* v8_isolate);
+  WebSnapshotDeserializer(v8::Isolate* v8_isolate, const uint8_t* data,
+                          size_t buffer_size);
+  WebSnapshotDeserializer(Isolate* isolate, Handle<Script> snapshot_as_script);
   ~WebSnapshotDeserializer();
-  bool UseWebSnapshot(const uint8_t* data, size_t buffer_size);
-  bool UseWebSnapshot(Handle<Script> snapshot_as_script);
+  bool Deserialize();
 
   // For inspecting the state after deserializing a snapshot.
   uint32_t string_count() const { return string_count_; }
@@ -232,8 +243,19 @@ class V8_EXPORT WebSnapshotDeserializer
   uint32_t array_count() const { return array_count_; }
   uint32_t object_count() const { return object_count_; }
 
+  static void UpdatePointersCallback(v8::Isolate* isolate, v8::GCType type,
+                                     v8::GCCallbackFlags flags,
+                                     void* deserializer) {
+    reinterpret_cast<WebSnapshotDeserializer*>(deserializer)->UpdatePointers();
+  }
+
+  void UpdatePointers();
+
  private:
-  bool Deserialize();
+  WebSnapshotDeserializer(Isolate* isolate, Handle<Object> script_name,
+                          base::Vector<const uint8_t> buffer);
+  base::Vector<const uint8_t> ExtractScriptBuffer(
+      Isolate* isolate, Handle<Script> snapshot_as_script);
   bool DeserializeSnapshot();
   bool DeserializeScript();
 
@@ -241,7 +263,7 @@ class V8_EXPORT WebSnapshotDeserializer
   WebSnapshotDeserializer& operator=(const WebSnapshotDeserializer&) = delete;
 
   void DeserializeStrings();
-  Handle<String> ReadString(bool internalize = false);
+  String ReadString(bool internalize = false);
   void DeserializeMaps();
   void DeserializeContexts();
   Handle<ScopeInfo> CreateScopeInfo(uint32_t variable_count, bool has_parent,
@@ -255,31 +277,47 @@ class V8_EXPORT WebSnapshotDeserializer
   void DeserializeArrays();
   void DeserializeObjects();
   void DeserializeExports();
-  void ReadValue(
-      Handle<Object>& value, Representation& representation,
-      Handle<Object> object_for_deferred_reference = Handle<Object>(),
+  Object ReadValue(
+      Handle<HeapObject> object_for_deferred_reference = Handle<HeapObject>(),
       uint32_t index_for_deferred_reference = 0);
   void ReadFunctionPrototype(Handle<JSFunction> function);
   bool SetFunctionPrototype(JSFunction function, JSReceiver prototype);
 
-  void AddDeferredReference(Handle<Object> container, uint32_t index,
-                            ValueType target_type,
-                            uint32_t target_object_index);
+  HeapObject AddDeferredReference(Handle<HeapObject> container, uint32_t index,
+                                  ValueType target_type,
+                                  uint32_t target_object_index);
   void ProcessDeferredReferences();
   // Not virtual, on purpose (because it doesn't need to be).
   void Throw(const char* message);
 
-  Handle<FixedArray> strings_;
-  Handle<FixedArray> maps_;
-  Handle<FixedArray> contexts_;
-  Handle<FixedArray> functions_;
-  Handle<FixedArray> classes_;
-  Handle<FixedArray> arrays_;
-  Handle<FixedArray> objects_;
+  Handle<FixedArray> strings_handle_;
+  FixedArray strings_;
+
+  Handle<FixedArray> maps_handle_;
+  FixedArray maps_;
+
+  Handle<FixedArray> contexts_handle_;
+  FixedArray contexts_;
+
+  Handle<FixedArray> functions_handle_;
+  FixedArray functions_;
+
+  Handle<FixedArray> classes_handle_;
+  FixedArray classes_;
+
+  Handle<FixedArray> arrays_handle_;
+  FixedArray arrays_;
+
+  Handle<FixedArray> objects_handle_;
+  FixedArray objects_;
+
   Handle<ArrayList> deferred_references_;
 
-  Handle<WeakFixedArray> shared_function_infos_;
+  Handle<WeakFixedArray> shared_function_infos_handle_;
+  WeakFixedArray shared_function_infos_;
+
   Handle<ObjectHashTable> shared_function_info_table_;
+
   Handle<Script> script_;
   Handle<Object> script_name_;
 
@@ -295,7 +333,7 @@ class V8_EXPORT WebSnapshotDeserializer
   uint32_t object_count_ = 0;
   uint32_t current_object_count_ = 0;
 
-  std::unique_ptr<ValueDeserializer> deserializer_;
+  ValueDeserializer deserializer_;
 
   bool deserialized_ = false;
 };

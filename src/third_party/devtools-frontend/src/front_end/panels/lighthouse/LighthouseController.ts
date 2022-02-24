@@ -105,6 +105,22 @@ const UIStrings = {
   */
   applyMobileEmulationDuring: 'Apply mobile emulation during auditing',
   /**
+   * @description ARIA label for a radio button input to select the Lighthouse mode.
+   */
+  lighthouseMode: 'Lighthouse mode',
+  /**
+   * @description Tooltip text of a radio button to select the Lighthouse mode.
+   */
+  runLighthouseInMode: 'Run Lighthouse in navigation, timespan, or snapshot mode',
+  /**
+   * @description Text for Lighthouse navigation mode.
+   */
+  navigation: 'Navigation',
+  /**
+   * @description Text for Lighthouse snapshot mode.
+   */
+  snapshot: 'Snapshot',
+  /**
   *@description Text for the mobile platform, as opposed to desktop
   */
   mobile: 'Mobile',
@@ -125,6 +141,14 @@ const UIStrings = {
   *@description Text of checkbox to reset storage features prior to running audits in Lighthouse
   */
   clearStorage: 'Clear storage',
+  /**
+   * @description Text of checkbox to use the legacy Lighthouse navigation mode
+   */
+  legacyNavigation: 'Legacy navigation',
+  /**
+   * @description Tooltip text that appears when hovering over the 'Legacy navigation' checkbox in the settings pane opened by clicking the setting cog in the start view of the audits panel
+   */
+  useLegacyNavigation: 'Audit the page using classic Lighthouse when in navigation mode.',
   /**
   * @description Tooltip text of checkbox to reset storage features prior to running audits in
   * Lighthouse. Resetting the storage clears/empties it to a neutral state.
@@ -277,7 +301,11 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
     return navigationEntry.url;
   }
 
-  getFlags(): {internalDisableDeviceScreenEmulation: boolean, emulatedFormFactor: (string|undefined)} {
+  getFlags(): {
+    internalDisableDeviceScreenEmulation: boolean,
+    emulatedFormFactor: (string|undefined),
+    legacyNavigation: boolean,
+  } {
     const flags = {
       // DevTools handles all the emulation. This tells Lighthouse to not bother with emulation.
       internalDisableDeviceScreenEmulation: true,
@@ -288,6 +316,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper<Eve
     return flags as {
       internalDisableDeviceScreenEmulation: boolean,
       emulatedFormFactor: (string | undefined),
+      legacyNavigation: boolean,
     };
   }
 
@@ -409,6 +438,20 @@ export const RuntimeSettings: RuntimeSetting[] = [
     learnMore: undefined,
   },
   {
+    setting: Common.Settings.Settings.instance().createSetting(
+        'lighthouse.mode', 'navigation', Common.Settings.SettingStorageType.Synced),
+    title: i18nLazyString(UIStrings.lighthouseMode),
+    description: i18nLazyString(UIStrings.runLighthouseInMode),
+    setFlags: (flags: Flags, value: string|boolean): void => {
+      flags.mode = value;
+    },
+    options: [
+      {label: i18nLazyString(UIStrings.navigation), value: 'navigation'},
+      {label: i18nLazyString(UIStrings.snapshot), value: 'snapshot'},
+    ],
+    learnMore: undefined,
+  },
+  {
     // This setting is disabled, but we keep it around to show in the UI.
     setting: Common.Settings.Settings.instance().createSetting(
         'lighthouse.throttling', true, Common.Settings.SettingStorageType.Synced),
@@ -429,6 +472,17 @@ export const RuntimeSettings: RuntimeSetting[] = [
     description: i18nLazyString(UIStrings.resetStorageLocalstorage),
     setFlags: (flags: Flags, value: string|boolean): void => {
       flags.disableStorageReset = !value;
+    },
+    options: undefined,
+    learnMore: undefined,
+  },
+  {
+    setting: Common.Settings.Settings.instance().createSetting(
+        'lighthouse.legacy_navigation', true, Common.Settings.SettingStorageType.Synced),
+    title: i18nLazyString(UIStrings.legacyNavigation),
+    description: i18nLazyString(UIStrings.useLegacyNavigation),
+    setFlags: (flags: Flags, value: string|boolean): void => {
+      flags.legacyNavigation = value;
     },
     options: undefined,
     learnMore: undefined,

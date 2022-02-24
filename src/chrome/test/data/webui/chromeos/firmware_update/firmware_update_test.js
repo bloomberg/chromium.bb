@@ -12,9 +12,10 @@ import {FirmwareUpdate, UpdateProviderInterface, UpdateState} from 'chrome://acc
 import {getUpdateProvider, setUpdateControllerForTesting, setUpdateProviderForTesting} from 'chrome://accessory-update/mojo_interface_provider.js';
 import {mojoString16ToString} from 'chrome://accessory-update/mojo_utils.js';
 import {UpdateCardElement} from 'chrome://accessory-update/update_card.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.js';
+import {eventToPromise, flushTasks} from '../../test_util.js';
 
 export function firmwareUpdateAppTest() {
   /** @type {?FirmwareUpdateAppElement} */
@@ -49,6 +50,28 @@ export function firmwareUpdateAppTest() {
     page = /** @type {!FirmwareUpdateAppElement} */ (
         document.createElement('firmware-update-app'));
     document.body.appendChild(page);
+  }
+
+  /** @return {!CrDialogElement} */
+  function getConfirmationDialog() {
+    return page.shadowRoot.querySelector('firmware-confirmation-dialog')
+        .shadowRoot.querySelector('#confirmationDialog');
+  }
+
+  /** @return {!Promise} */
+  function confirmUpdate() {
+    const confirmationDialog = getConfirmationDialog();
+    assertTrue(confirmationDialog.open);
+    confirmationDialog.querySelector('#nextButton').click();
+    return flushTasks();
+  }
+
+  /** @return {!Promise} */
+  function cancelUpdate() {
+    const confirmationDialog = getConfirmationDialog();
+    assertTrue(confirmationDialog.open);
+    confirmationDialog.querySelector('#cancelButton').click();
+    return flushTasks();
   }
 
   /** @return {!CrDialogElement} */
@@ -105,15 +128,34 @@ export function firmwareUpdateAppTest() {
     assertEquals(fake_provider, getUpdateProvider());
   });
 
+  test('OpenConfirmationDialog', async () => {
+    initializePage();
+    await flushTasks();
+    // Open dialog for first firmware update card.
+    const whenFired =
+        eventToPromise('cr-dialog-open', /** @type {!Element}*/ (page));
+    getUpdateCards()[0].shadowRoot.querySelector(`#updateButton`).click();
+    await flushTasks();
+    return whenFired
+        .then(() => {
+          assertTrue(getConfirmationDialog().open);
+          return cancelUpdate();
+        })
+        .then(() => assertFalse(!!getConfirmationDialog()));
+  });
+
   test('OpenUpdateDialog', async () => {
     initializePage();
     await flushTasks();
     // Open dialog for first firmware update card.
     getUpdateCards()[0].shadowRoot.querySelector(`#updateButton`).click();
-    // Process |OnStateChanged| and |OnProgressChanged| calls.
     await flushTasks();
+    const whenFired =
+        eventToPromise('cr-dialog-open', /** @type {!Element}*/ (page));
+    await confirmUpdate();
+    // Process |OnProgressChanged| call.
     await flushTasks();
-    assertTrue(getUpdateDialog().open);
+    return whenFired.then(() => assertTrue(getUpdateDialog().open));
   });
 
   test('SuccessfulUpdate', async () => {
@@ -121,23 +163,35 @@ export function firmwareUpdateAppTest() {
     await flushTasks();
     // Open dialog for firmware update.
     getUpdateCards()[1].shadowRoot.querySelector(`#updateButton`).click();
-    // Process |OnStateChanged| and |OnProgressChanged| calls.
     await flushTasks();
+    const whenFired =
+        eventToPromise('cr-dialog-open', /** @type {!Element}*/ (page));
+    await confirmUpdate();
+    // Process |OnProgressChanged| call.
     await flushTasks();
-    assertEquals(UpdateState.kUpdating, getUpdateState());
-    const fakeFirmwareUpdate = getFirmwareUpdateFromDialog();
-    assertEquals(
-        `Updating ${mojoString16ToString(fakeFirmwareUpdate.deviceName)}`,
-        getUpdateDialogTitle().innerText.trim());
-    // Allow firmware update to complete.
-    await controller.getUpdateCompletedPromiseForTesting();
-    await flushTasks();
-    assertEquals(UpdateState.kSuccess, getUpdateState());
-    assertTrue(getUpdateDialog().open);
-    assertEquals(
-        `Your ${
-            mojoString16ToString(fakeFirmwareUpdate.deviceName)} is up to date`,
-        getUpdateDialogTitle().innerText.trim());
+    return whenFired
+        .then(() => {
+          assertEquals(UpdateState.kUpdating, getUpdateState());
+          const fakeFirmwareUpdate = getFirmwareUpdateFromDialog();
+          assertEquals(
+              loadTimeData.getStringF(
+                  'updating',
+                  mojoString16ToString(fakeFirmwareUpdate.deviceName)),
+              getUpdateDialogTitle().innerText.trim());
+          // Allow firmware update to complete.
+          return controller.getUpdateCompletedPromiseForTesting();
+        })
+        .then(() => flushTasks())
+        .then(() => {
+          const fakeFirmwareUpdate = getFirmwareUpdateFromDialog();
+          assertEquals(UpdateState.kSuccess, getUpdateState());
+          assertTrue(getUpdateDialog().open);
+          assertEquals(
+              loadTimeData.getStringF(
+                  'deviceUpToDate',
+                  mojoString16ToString(fakeFirmwareUpdate.deviceName)),
+              getUpdateDialogTitle().innerText.trim());
+        });
   });
 
   test('UpdateFailed', async () => {
@@ -146,23 +200,34 @@ export function firmwareUpdateAppTest() {
     // Open dialog for firmware update. The third fake update in the list
     // will fail.
     getUpdateCards()[2].shadowRoot.querySelector(`#updateButton`).click();
-    // Process |OnStateChanged| and |OnProgressChanged| calls.
     await flushTasks();
+    const whenFired =
+        eventToPromise('cr-dialog-open', /** @type {!Element}*/ (page));
+    await confirmUpdate();
+    // Process |OnProgressChanged| call.
     await flushTasks();
-    assertEquals(UpdateState.kUpdating, getUpdateState());
-    const fakeFirmwareUpdate = getFirmwareUpdateFromDialog();
-    assertEquals(
-        `Updating ${mojoString16ToString(fakeFirmwareUpdate.deviceName)}`,
-        getUpdateDialogTitle().innerText.trim());
-    // Allow firmware update to complete.
-    await controller.getUpdateCompletedPromiseForTesting();
-    await flushTasks();
-    assertEquals(UpdateState.kFailed, getUpdateState());
-    assertTrue(getUpdateDialog().open);
-    assertEquals(
-        `Failed to update ${
-            mojoString16ToString(fakeFirmwareUpdate.deviceName)}`,
-        getUpdateDialogTitle().innerText.trim());
+    return whenFired
+        .then(() => {
+          assertEquals(UpdateState.kUpdating, getUpdateState());
+          const fakeFirmwareUpdate = getFirmwareUpdateFromDialog();
+          assertEquals(
+              loadTimeData.getStringF(
+                  'updating',
+                  mojoString16ToString(fakeFirmwareUpdate.deviceName)),
+              getUpdateDialogTitle().innerText.trim());
+          return controller.getUpdateCompletedPromiseForTesting();
+        })
+        .then(() => flushTasks())
+        .then(() => {
+          const fakeFirmwareUpdate = getFirmwareUpdateFromDialog();
+          assertEquals(UpdateState.kFailed, getUpdateState());
+          assertTrue(getUpdateDialog().open);
+          assertEquals(
+              loadTimeData.getStringF(
+                  'updateFailedTitleText',
+                  mojoString16ToString(fakeFirmwareUpdate.deviceName)),
+              getUpdateDialogTitle().innerText.trim());
+        });
   });
 
   test('InflightUpdate', async () => {
@@ -175,11 +240,13 @@ export function firmwareUpdateAppTest() {
     // Simulate InstallProgressChangedObserver being called.
     controller.beginUpdate();
     await flushTasks();
+    await flushTasks();
     // Check that the update dialog is now opened with an update.
     assertEquals(UpdateState.kUpdating, getUpdateState());
     const fakeUpdate = getFirmwareUpdateFromDialog();
     assertEquals(
-        `Updating ${mojoString16ToString(fakeUpdate.deviceName)}`,
+        loadTimeData.getStringF(
+            'updating', mojoString16ToString(fakeUpdate.deviceName)),
         getUpdateDialogTitle().innerText.trim());
     // Allow firmware update to complete.
     await controller.getUpdateCompletedPromiseForTesting();

@@ -502,27 +502,27 @@ static void init_intra_predictors_internal(void) {
   p[TX_4X4] = aom_##type##_predictor_4x4; \
   INIT_NO_4X4(p, type)
 
-  INIT_ALL_SIZES(pred[V_PRED], v);
-  INIT_ALL_SIZES(pred[H_PRED], h);
-  INIT_ALL_SIZES(pred[PAETH_PRED], paeth);
-  INIT_ALL_SIZES(pred[SMOOTH_PRED], smooth);
-  INIT_ALL_SIZES(pred[SMOOTH_V_PRED], smooth_v);
-  INIT_ALL_SIZES(pred[SMOOTH_H_PRED], smooth_h);
-  INIT_ALL_SIZES(dc_pred[0][0], dc_128);
-  INIT_ALL_SIZES(dc_pred[0][1], dc_top);
-  INIT_ALL_SIZES(dc_pred[1][0], dc_left);
-  INIT_ALL_SIZES(dc_pred[1][1], dc);
+  INIT_ALL_SIZES(pred[V_PRED], v)
+  INIT_ALL_SIZES(pred[H_PRED], h)
+  INIT_ALL_SIZES(pred[PAETH_PRED], paeth)
+  INIT_ALL_SIZES(pred[SMOOTH_PRED], smooth)
+  INIT_ALL_SIZES(pred[SMOOTH_V_PRED], smooth_v)
+  INIT_ALL_SIZES(pred[SMOOTH_H_PRED], smooth_h)
+  INIT_ALL_SIZES(dc_pred[0][0], dc_128)
+  INIT_ALL_SIZES(dc_pred[0][1], dc_top)
+  INIT_ALL_SIZES(dc_pred[1][0], dc_left)
+  INIT_ALL_SIZES(dc_pred[1][1], dc)
 #if CONFIG_AV1_HIGHBITDEPTH
-  INIT_ALL_SIZES(pred_high[V_PRED], highbd_v);
-  INIT_ALL_SIZES(pred_high[H_PRED], highbd_h);
-  INIT_ALL_SIZES(pred_high[PAETH_PRED], highbd_paeth);
-  INIT_ALL_SIZES(pred_high[SMOOTH_PRED], highbd_smooth);
-  INIT_ALL_SIZES(pred_high[SMOOTH_V_PRED], highbd_smooth_v);
-  INIT_ALL_SIZES(pred_high[SMOOTH_H_PRED], highbd_smooth_h);
-  INIT_ALL_SIZES(dc_pred_high[0][0], highbd_dc_128);
-  INIT_ALL_SIZES(dc_pred_high[0][1], highbd_dc_top);
-  INIT_ALL_SIZES(dc_pred_high[1][0], highbd_dc_left);
-  INIT_ALL_SIZES(dc_pred_high[1][1], highbd_dc);
+  INIT_ALL_SIZES(pred_high[V_PRED], highbd_v)
+  INIT_ALL_SIZES(pred_high[H_PRED], highbd_h)
+  INIT_ALL_SIZES(pred_high[PAETH_PRED], highbd_paeth)
+  INIT_ALL_SIZES(pred_high[SMOOTH_PRED], highbd_smooth)
+  INIT_ALL_SIZES(pred_high[SMOOTH_V_PRED], highbd_smooth_v)
+  INIT_ALL_SIZES(pred_high[SMOOTH_H_PRED], highbd_smooth_h)
+  INIT_ALL_SIZES(dc_pred_high[0][0], highbd_dc_128)
+  INIT_ALL_SIZES(dc_pred_high[0][1], highbd_dc_top)
+  INIT_ALL_SIZES(dc_pred_high[1][0], highbd_dc_left)
+  INIT_ALL_SIZES(dc_pred_high[1][1], highbd_dc)
 #endif
 #undef intra_pred_allsizes
 }

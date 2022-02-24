@@ -90,9 +90,9 @@ class RENDER_PASS_STATE : public BASE_NODE {
     };
     const bool use_dynamic_rendering;
     const bool use_dynamic_rendering_inherited;
-    const safe_VkRenderingInfoKHR dynamic_rendering_begin_rendering_info;
-    const safe_VkPipelineRenderingCreateInfoKHR dynamic_rendering_pipeline_create_info;
-    const safe_VkCommandBufferInheritanceRenderingInfoKHR inheritance_rendering_info;
+    const safe_VkRenderingInfo dynamic_rendering_begin_rendering_info;
+    const safe_VkPipelineRenderingCreateInfo dynamic_rendering_pipeline_create_info;
+    const safe_VkCommandBufferInheritanceRenderingInfo inheritance_rendering_info;
     const safe_VkRenderPassCreateInfo2 createInfo;
     using SubpassVec = std::vector<uint32_t>;
     using SelfDepVec = std::vector<SubpassVec>;
@@ -113,9 +113,9 @@ class RENDER_PASS_STATE : public BASE_NODE {
     RENDER_PASS_STATE(VkRenderPass rp, VkRenderPassCreateInfo2 const *pCreateInfo);
     RENDER_PASS_STATE(VkRenderPass rp, VkRenderPassCreateInfo const *pCreateInfo);
 
-    RENDER_PASS_STATE(VkPipelineRenderingCreateInfoKHR const *pPipelineRenderingCreateInfo);
-    RENDER_PASS_STATE(VkRenderingInfoKHR const *pRenderingInfo);
-    RENDER_PASS_STATE(VkCommandBufferInheritanceRenderingInfoKHR const *pInheritanceRenderingInfo);
+    RENDER_PASS_STATE(VkPipelineRenderingCreateInfo const *pPipelineRenderingCreateInfo);
+    RENDER_PASS_STATE(VkRenderingInfo const *pRenderingInfo);
+    RENDER_PASS_STATE(VkCommandBufferInheritanceRenderingInfo const *pInheritanceRenderingInfo);
 
     VkRenderPass renderPass() const { return handle_.Cast<VkRenderPass>(); }
 
