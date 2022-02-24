@@ -5,7 +5,7 @@
 
 load("//lib/builders.star", "goma", "os", "sheriff_rotations")
 load("//lib/branches.star", "branches")
-load("//lib/ci.star", "ci")
+load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
 load("//lib/consoles.star", "consoles")
 
 ci.defaults.set(
@@ -21,7 +21,10 @@ ci.defaults.set(
 
 consoles.console_view(
     name = "chromium",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    branch_selector = [
+        branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+        branches.FUCHSIA_LTS_MILESTONE,
+    ],
     include_experimental_builds = True,
     ordering = {
         "*type*": consoles.ordering(short_names = ["dbg", "rel", "off"]),
@@ -85,7 +88,7 @@ ci.builder(
 
 ci.builder(
     name = "fuchsia-official",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
     builderless = False,
     console_view_entry = [
         consoles.console_view_entry(
@@ -116,6 +119,9 @@ ci.builder(
     cores = 8,
     os = os.LINUX_BIONIC_REMOVE,
     tree_closing = True,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -139,6 +145,9 @@ ci.builder(
         },
     },
     tree_closing = True,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -342,7 +351,8 @@ ci.builder(
         short_name = "off",
     ),
     # TODO(crbug.com/1279290) builds with PGO change take long time.
-    execution_timeout = 30 * time.hour,
+    # Keep in sync with mac-official in try/chromium.star.
+    execution_timeout = 7 * time.hour,
     os = os.MAC_ANY,
 )
 

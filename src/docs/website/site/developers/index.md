@@ -175,10 +175,7 @@ See also: All [How-tos](/developers/how-tos).
 
 ### Sync
 
-*   [Sync overview](/developers/design-documents/sync)
-*   [Sync diagnostics](/developers/sync-diagnostics)
-*   [Syncable Service
-            API](/developers/design-documents/sync/syncable-service-api)
+*   [Sync](/developers/design-documents/sync)
 
 ### **Diagnostics**
 

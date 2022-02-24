@@ -1754,7 +1754,7 @@ int show_pix_fmts(void *optctx, const char *opt, const char *arg)
            "..H.. = Hardware accelerated format\n"
            "...P. = Paletted format\n"
            "....B = Bitstream format\n"
-           "FLAGS NAME            NB_COMPONENTS BITS_PER_PIXEL\n"
+           "FLAGS NAME            NB_COMPONENTS BITS_PER_PIXEL BIT_DEPTHS\n"
            "-----\n");
 
 #if !CONFIG_SWSCALE
@@ -1764,7 +1764,7 @@ int show_pix_fmts(void *optctx, const char *opt, const char *arg)
 
     while ((pix_desc = av_pix_fmt_desc_next(pix_desc))) {
         enum AVPixelFormat av_unused pix_fmt = av_pix_fmt_desc_get_id(pix_desc);
-        printf("%c%c%c%c%c %-16s       %d            %2d\n",
+        printf("%c%c%c%c%c %-16s       %d            %3d      %d",
                sws_isSupportedInput (pix_fmt)              ? 'I' : '.',
                sws_isSupportedOutput(pix_fmt)              ? 'O' : '.',
                pix_desc->flags & AV_PIX_FMT_FLAG_HWACCEL   ? 'H' : '.',
@@ -1772,7 +1772,12 @@ int show_pix_fmts(void *optctx, const char *opt, const char *arg)
                pix_desc->flags & AV_PIX_FMT_FLAG_BITSTREAM ? 'B' : '.',
                pix_desc->name,
                pix_desc->nb_components,
-               av_get_bits_per_pixel(pix_desc));
+               av_get_bits_per_pixel(pix_desc),
+               pix_desc->comp[0].depth);
+
+        for (unsigned i = 1; i < pix_desc->nb_components; i++)
+            printf("-%d", pix_desc->comp[i].depth);
+        printf("\n");
     }
     return 0;
 }
@@ -1812,6 +1817,16 @@ int show_sample_fmts(void *optctx, const char *opt, const char *arg)
     char fmt_str[128];
     for (i = -1; i < AV_SAMPLE_FMT_NB; i++)
         printf("%s\n", av_get_sample_fmt_string(fmt_str, sizeof(fmt_str), i));
+    return 0;
+}
+
+int show_dispositions(void *optctx, const char *opt, const char *arg)
+{
+    for (int i = 0; i < 32; i++) {
+        const char *str = av_disposition_to_string(1U << i);
+        if (str)
+            printf("%s\n", str);
+    }
     return 0;
 }
 
@@ -2106,7 +2121,7 @@ AVDictionary *filter_codec_opts(AVDictionary *opts, enum AVCodecID codec_id,
                                 AVFormatContext *s, AVStream *st, const AVCodec *codec)
 {
     AVDictionary    *ret = NULL;
-    AVDictionaryEntry *t = NULL;
+    const AVDictionaryEntry *t = NULL;
     int            flags = s->oformat ? AV_OPT_FLAG_ENCODING_PARAM
                                       : AV_OPT_FLAG_DECODING_PARAM;
     char          prefix = 0;
@@ -2172,7 +2187,7 @@ AVDictionary **setup_find_stream_info_opts(AVFormatContext *s,
     if (!opts) {
         av_log(NULL, AV_LOG_ERROR,
                "Could not alloc memory for stream options.\n");
-        return NULL;
+        exit_program(1);
     }
     for (i = 0; i < s->nb_streams; i++)
         opts[i] = filter_codec_opts(codec_opts, s->streams[i]->codecpar->codec_id,
@@ -2199,6 +2214,18 @@ void *grow_array(void *array, int elem_size, int *size, int new_size)
     return array;
 }
 
+void *allocate_array_elem(void *ptr, size_t elem_size, int *nb_elems)
+{
+    void *new_elem;
+
+    if (!(new_elem = av_mallocz(elem_size)) ||
+        av_dynarray_add_nofree(ptr, nb_elems, new_elem) < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Could not alloc buffer.\n");
+        exit_program(1);
+    }
+    return new_elem;
+}
+
 double get_rotation(int32_t *displaymatrix)
 {
     double theta = 0;
@@ -2217,9 +2244,29 @@ double get_rotation(int32_t *displaymatrix)
 }
 
 #if CONFIG_AVDEVICE
+static void print_device_list(const AVDeviceInfoList *device_list)
+{
+    // print devices
+    for (int i = 0; i < device_list->nb_devices; i++) {
+        const AVDeviceInfo *device = device_list->devices[i];
+        printf("%c %s [%s] (", device_list->default_device == i ? '*' : ' ',
+            device->device_name, device->device_description);
+        if (device->nb_media_types > 0) {
+            for (int j = 0; j < device->nb_media_types; ++j) {
+                const char* media_type = av_get_media_type_string(device->media_types[j]);
+                if (j > 0)
+                    printf(", ");
+                printf("%s", media_type ? media_type : "unknown");
+            }
+        } else {
+            printf("none");
+        }
+        printf(")\n");
+    }
+}
 static int print_device_sources(const AVInputFormat *fmt, AVDictionary *opts)
 {
-    int ret, i;
+    int ret;
     AVDeviceInfoList *device_list = NULL;
 
     if (!fmt || !fmt->priv_class  || !AV_IS_INPUT_DEVICE(fmt->priv_class->category))
@@ -2231,10 +2278,7 @@ static int print_device_sources(const AVInputFormat *fmt, AVDictionary *opts)
         goto fail;
     }
 
-    for (i = 0; i < device_list->nb_devices; i++) {
-        printf("%c %s [%s]\n", device_list->default_device == i ? '*' : ' ',
-               device_list->devices[i]->device_name, device_list->devices[i]->device_description);
-    }
+    print_device_list(device_list);
 
   fail:
     avdevice_free_list_devices(&device_list);
@@ -2243,7 +2287,7 @@ static int print_device_sources(const AVInputFormat *fmt, AVDictionary *opts)
 
 static int print_device_sinks(const AVOutputFormat *fmt, AVDictionary *opts)
 {
-    int ret, i;
+    int ret;
     AVDeviceInfoList *device_list = NULL;
 
     if (!fmt || !fmt->priv_class  || !AV_IS_OUTPUT_DEVICE(fmt->priv_class->category))
@@ -2255,10 +2299,7 @@ static int print_device_sinks(const AVOutputFormat *fmt, AVDictionary *opts)
         goto fail;
     }
 
-    for (i = 0; i < device_list->nb_devices; i++) {
-        printf("%c %s [%s]\n", device_list->default_device == i ? '*' : ' ',
-               device_list->devices[i]->device_name, device_list->devices[i]->device_description);
-    }
+    print_device_list(device_list);
 
   fail:
     avdevice_free_list_devices(&device_list);

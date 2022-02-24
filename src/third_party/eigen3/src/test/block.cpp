@@ -149,11 +149,11 @@ template<typename MatrixType> void block(const MatrixType& m)
   }
 
   // stress some basic stuffs with block matrices
-  VERIFY(numext::real(ones.col(c1).sum()) == RealScalar(rows));
-  VERIFY(numext::real(ones.row(r1).sum()) == RealScalar(cols));
+  VERIFY_IS_EQUAL(numext::real(ones.col(c1).sum()), RealScalar(rows));
+  VERIFY_IS_EQUAL(numext::real(ones.row(r1).sum()), RealScalar(cols));
 
-  VERIFY(numext::real(ones.col(c1).dot(ones.col(c2))) == RealScalar(rows));
-  VERIFY(numext::real(ones.row(r1).dot(ones.row(r2))) == RealScalar(cols));
+  VERIFY_IS_EQUAL(numext::real(ones.col(c1).dot(ones.col(c2))), RealScalar(rows));
+  VERIFY_IS_EQUAL(numext::real(ones.row(r1).dot(ones.row(r2))), RealScalar(cols));
   
   // check that linear acccessors works on blocks
   m1 = m1_copy;

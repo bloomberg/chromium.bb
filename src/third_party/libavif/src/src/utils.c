@@ -3,6 +3,7 @@
 
 #include "avif/internal.h"
 
+#include <assert.h>
 #include <math.h>
 #include <string.h>
 
@@ -78,7 +79,8 @@ uint64_t avifNTOH64(uint64_t l)
 
 AVIF_ARRAY_DECLARE(avifArrayInternal, uint8_t, ptr);
 
-void avifArrayCreate(void * arrayStruct, uint32_t elementSize, uint32_t initialCapacity)
+// On error, this function must set arr->ptr to NULL and both arr->count and arr->capacity to 0.
+avifBool avifArrayCreate(void * arrayStruct, uint32_t elementSize, uint32_t initialCapacity)
 {
     avifArrayInternal * arr = (avifArrayInternal *)arrayStruct;
     arr->elementSize = elementSize ? elementSize : 1;
@@ -86,7 +88,12 @@ void avifArrayCreate(void * arrayStruct, uint32_t elementSize, uint32_t initialC
     arr->capacity = initialCapacity;
     size_t byteCount = (size_t)arr->elementSize * arr->capacity;
     arr->ptr = (uint8_t *)avifAlloc(byteCount);
+    if (!arr->ptr) {
+        arr->capacity = 0;
+        return AVIF_FALSE;
+    }
     memset(arr->ptr, 0, byteCount);
+    return AVIF_TRUE;
 }
 
 uint32_t avifArrayPushIndex(void * arrayStruct)
@@ -109,7 +116,7 @@ void * avifArrayPushPtr(void * arrayStruct)
 {
     uint32_t index = avifArrayPushIndex(arrayStruct);
     avifArrayInternal * arr = (avifArrayInternal *)arrayStruct;
-    return &arr->ptr[index * arr->elementSize];
+    return &arr->ptr[index * (size_t)arr->elementSize];
 }
 
 void avifArrayPush(void * arrayStruct, void * element)
@@ -117,6 +124,14 @@ void avifArrayPush(void * arrayStruct, void * element)
     avifArrayInternal * arr = (avifArrayInternal *)arrayStruct;
     void * newElement = avifArrayPushPtr(arr);
     memcpy(newElement, element, arr->elementSize);
+}
+
+void avifArrayPop(void * arrayStruct)
+{
+    avifArrayInternal * arr = (avifArrayInternal *)arrayStruct;
+    assert(arr->count > 0);
+    --arr->count;
+    memset(&arr->ptr[arr->count * (size_t)arr->elementSize], 0, arr->elementSize);
 }
 
 void avifArrayDestroy(void * arrayStruct)

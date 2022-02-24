@@ -286,7 +286,7 @@ void av1_xform_dc_only(MACROBLOCK *x, int plane, int block,
 
 void av1_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
                      int blk_col, BLOCK_SIZE plane_bsize, TxfmParam *txfm_param,
-                     QUANT_PARAM *qparam) {
+                     const QUANT_PARAM *qparam) {
   av1_xform(x, plane, block, blk_row, blk_col, plane_bsize, txfm_param);
   av1_quant(x, plane, block, txfm_param, qparam);
 }
@@ -305,7 +305,7 @@ void av1_xform(MACROBLOCK *x, int plane, int block, int blk_row, int blk_col,
 }
 
 void av1_quant(MACROBLOCK *x, int plane, int block, TxfmParam *txfm_param,
-               QUANT_PARAM *qparam) {
+               const QUANT_PARAM *qparam) {
   const struct macroblock_plane *const p = &x->plane[plane];
   const SCAN_ORDER *const scan_order =
       get_scan(txfm_param->tx_size, txfm_param->tx_type);
@@ -402,8 +402,10 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   l = &args->tl[blk_row];
 
   TX_TYPE tx_type = DCT_DCT;
-  if (!is_blk_skip(x->txfm_search_info.blk_skip, plane,
-                   blk_row * bw + blk_col) &&
+  const int blk_skip_idx = cpi->sf.rt_sf.use_nonrd_pick_mode
+                               ? blk_row * bw / 4 + blk_col / 2
+                               : blk_row * bw + blk_col;
+  if (!is_blk_skip(x->txfm_search_info.blk_skip, plane, blk_skip_idx) &&
       !mbmi->skip_mode) {
     tx_type = av1_get_tx_type(xd, pd->plane_type, blk_row, blk_col, tx_size,
                               cm->features.reduced_tx_set_used);

@@ -283,6 +283,12 @@ class V8_EXPORT Isolate {
     int embedder_wrapper_object_index = -1;
 
     /**
+     * Callbacks to invoke in case of fatal or OOM errors.
+     */
+    FatalErrorCallback fatal_error_callback = nullptr;
+    OOMErrorCallback oom_error_callback = nullptr;
+
+    /**
      * The following parameter is experimental and may change significantly.
      * This is currently for internal testing.
      */
@@ -628,7 +634,7 @@ class V8_EXPORT Isolate {
    * This specifies the callback called by the upcoming dynamic
    * import() language feature to load modules.
    */
-  V8_DEPRECATE_SOON("Use HostImportModuleDynamicallyCallback")
+  V8_DEPRECATED("Use HostImportModuleDynamicallyCallback")
   void SetHostImportModuleDynamicallyCallback(
       HostImportModuleDynamicallyWithImportAssertionsCallback callback);
   void SetHostImportModuleDynamicallyCallback(
@@ -640,6 +646,13 @@ class V8_EXPORT Isolate {
    */
   void SetHostInitializeImportMetaObjectCallback(
       HostInitializeImportMetaObjectCallback callback);
+
+  /**
+   * This specifies the callback called by the upcoming ShadowRealm
+   * construction language feature to retrieve host created globals.
+   */
+  void SetHostCreateShadowRealmContextCallback(
+      HostCreateShadowRealmContextCallback callback);
 
   /**
    * This specifies the callback called when the stack property of Error

@@ -460,6 +460,8 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, Apr) {
   ExecuteExpectFloatNear("Apr(35000, 269.50, 360)", 0.08515404566f);
   ExecuteExpectFloatNear("Apr(210000 * 0.75, 850 + 110, 25 * 26)",
                          0.07161332404f);
+
+  ExecuteExpectError("Apr(2, 2, 2147483648)");
 }
 
 TEST_F(CFXJSE_FormCalcContextEmbedderTest, CTerm) {
@@ -479,6 +481,8 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, FV) {
 
   ExecuteExpectFloat("FV(400, 0.10 / 12, 30 * 12)", 904195.16991842445f);
   ExecuteExpectFloat("FV(1000, 0.075 / 4, 10 * 4)", 58791.96145535981f);
+
+  ExecuteExpectError("FV(2, 2, 2147483648)");
 }
 
 TEST_F(CFXJSE_FormCalcContextEmbedderTest, IPmt) {
@@ -501,10 +505,14 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, Pmt) {
   ASSERT_TRUE(OpenDocument("simple_xfa.pdf"));
 
   ExecuteExpectFloat("Pmt(25000, 0.085, 12)", 3403.82145169876f);
-#if 0
-  // TODO(thestig): Investigate this case.
+  ExecuteExpectFloat("Pmt(5000, 0.01, 1)", 5050);
+  ExecuteExpectFloat("Pmt(5000, 0.01, 1.5)", 5050);
+  ExecuteExpectFloat("Pmt(30000.00, .085 / 12, 12 * 12)", 333.01666929435f);
+  ExecuteExpectFloat("Pmt(10000, .08 / 12, 10)", 1037.03208935916f);
   ExecuteExpectFloat("Pmt(150000, 0.0475 / 12, 25 * 12)", 855.17604207164f);
-#endif
+
+  // https://crbug.com/1293179
+  ExecuteExpectError("Pmt(2, 2, 99999997952)");
 }
 
 TEST_F(CFXJSE_FormCalcContextEmbedderTest, PPmt) {
@@ -522,10 +530,10 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, PV) {
   ASSERT_TRUE(OpenDocument("simple_xfa.pdf"));
 
   ExecuteExpectFloat("PV(400, 0.10 / 12, 30 * 12)", 45580.32799074439f);
-#if 0
-  // TODO(thestig): Investigate this case.
-  ExecuteExpectFloat("PV(1000, 0.075 / 4, 10 * 4)", 58791.96145535981f);
-#endif
+  ExecuteExpectFloat("PV(1000, 0.075 / 4, 10 * 4)", 27964.88770467326f);
+
+  // https://crbug.com/1296840
+  ExecuteExpectError("PV(2, 2, 2147483648)");
 }
 
 TEST_F(CFXJSE_FormCalcContextEmbedderTest, Rate) {
@@ -533,6 +541,8 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, Rate) {
 
   ExecuteExpectFloatNear("Rate(12000, 8000, 5)", 0.0844717712f);
   ExecuteExpectFloatNear("Rate(10000, 0.25 * 5000, 4 * 12)", 0.04427378243f);
+
+  ExecuteExpectError("Rate(2, 2, 2147483648)");
 }
 
 TEST_F(CFXJSE_FormCalcContextEmbedderTest, Term) {
@@ -819,6 +829,7 @@ TEST_F(CFXJSE_FormCalcContextEmbedderTest, Str) {
   // Error cases.
   ExecuteExpectError("Str()");
   ExecuteExpectError("Str(1, 2, 3, 4)");
+  ExecuteExpectError("Str(42, 15654909)");
   ExecuteExpectNull("Str( $)");
 }
 

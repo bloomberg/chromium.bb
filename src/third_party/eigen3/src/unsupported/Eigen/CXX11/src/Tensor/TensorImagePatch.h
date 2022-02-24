@@ -38,7 +38,7 @@ struct traits<TensorImagePatchOp<Rows, Cols, XprType> > : public traits<XprType>
   typedef typename XprTraits::StorageKind StorageKind;
   typedef typename XprTraits::Index Index;
   typedef typename XprType::Nested Nested;
-  typedef typename remove_reference<Nested>::type _Nested;
+  typedef typename remove_reference<Nested>::type Nested_;
   static const int NumDimensions = XprTraits::NumDimensions + 1;
   static const int Layout = XprTraits::Layout;
   typedef typename XprTraits::PointerType PointerType;

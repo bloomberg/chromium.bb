@@ -47,11 +47,11 @@ public:
         }
     }
 
-    SkRuntimeShaderBuilder::BuilderUniform uniform(skstd::string_view name) {
+    SkRuntimeShaderBuilder::BuilderUniform uniform(std::string_view name) {
         return fBuilder->uniform(SkString(name).c_str());
     }
 
-    SkRuntimeShaderBuilder::BuilderChild child(skstd::string_view name) {
+    SkRuntimeShaderBuilder::BuilderChild child(std::string_view name) {
         return fBuilder->child(SkString(name).c_str());
     }
 
@@ -59,7 +59,7 @@ public:
 
     void test(GrColor TL, GrColor TR, GrColor BL, GrColor BR,
               PreTestFn preTestCallback = nullptr) {
-        auto shader = fBuilder->makeShader(nullptr, false);
+        auto shader = fBuilder->makeShader();
         if (!shader) {
             REPORT_FAILURE(fReporter, "shader", SkString("Effect didn't produce a shader"));
             return;
@@ -202,11 +202,11 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
     {
         class SimpleErrorReporter : public SkSL::ErrorReporter {
         public:
-            void handleError(skstd::string_view msg, SkSL::PositionInfo pos) override {
+            void handleError(std::string_view msg, SkSL::PositionInfo pos) override {
                 fMsg += msg;
             }
 
-            SkSL::String fMsg;
+            std::string fMsg;
         } errorReporter;
 
         // Test errors that occur while constructing DSL nodes

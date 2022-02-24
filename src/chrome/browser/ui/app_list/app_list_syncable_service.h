@@ -240,6 +240,9 @@ class AppListSyncableService : public syncer::SyncableService,
   // reorder::AppListReorderDelegate:
   void SetAppListPreferredOrder(ash::AppListSortOrder order) override;
   syncer::StringOrdinal CalculateGlobalFrontPosition() const override;
+  bool CalculateItemPositionInPermanentSortOrder(
+      const ash::AppListItemMetadata& metadata,
+      syncer::StringOrdinal* target_position) const override;
   ash::AppListSortOrder GetPermanentSortingOrder() const override;
 
  private:
@@ -396,7 +399,9 @@ class AppListSyncableService : public syncer::SyncableService,
   void MaybeAddOrUpdateCrostiniFolderSyncData();
 
   // Creates a folder if the parent folder is missing before adding `app_item`.
-  void MaybeCreateFolderBeforeAddingItem(ChromeAppListItem* app_item,
+  // Returns true if the folder already existed, or if it got created. Returns
+  // false if the method failed to ensure the folder existence.
+  bool MaybeCreateFolderBeforeAddingItem(ChromeAppListItem* app_item,
                                          const std::string& folder_id);
 
   Profile* profile_;

@@ -175,7 +175,6 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="5170938038195470297">Profili yt nuk mund të përdoret sepse është nga një version më i ri i Google Chrome.
 
 Disa funksione mund të mos ofrohen. Specifiko një direktori tjetër të profilit ose përdor një version më të ri të Chrome.</translation>
-<translation id="5193136243808726294">Sistemi operativ Google Chrome nuk mund ta hapë këtë faqe.</translation>
 <translation id="521447420733633466">Nëse e ndan një pajisje, miqtë dhe familja mund të shfletojnë veçmas dhe ta konfigurojnë Chrome pikërisht ashtu si dëshirojnë.</translation>
 <translation id="5251420635869119124">Vizitorët mund të përdorin Chrome pa lënë asgjë prapa.</translation>
 <translation id="5334487786912937552">Chrome ka nevojë për leje qasjeje te hapësira ruajtëse për të shkarkuar skedarë</translation>
@@ -186,8 +185,6 @@ Disa funksione mund të mos ofrohen. Specifiko një direktori tjetër të profil
 Google Chrome nuk është në gjendje të rikuperojë cilësimet e tua.</translation>
 <translation id="556024056938947818">Google Chrome po përpiqet të shfaqë fjalëkalimet.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5657226924540934362">Nëse cilësimi nuk shfaqet në këtë faqe, shiko te <ph name="LINK_BEGIN" />
-      cilësimet e sistemit operativ të Chrome<ph name="LINK_END" /></translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> mund të jetë i rrezikshëm, prandaj Chrome e ka bllokuar.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Administratori yt kërkon që të hapësh përsëri Chrome për të zbatuar këtë përditësim}=1{Administratori yt kërkon që të hapësh përsëri Chrome për të zbatuar këtë përditësim. Dritarja jote "e fshehtë" nuk do të rihapet.}other{Administratori yt kërkon që të hapësh përsëri Chrome për të zbatuar këtë përditësim. # dritaret e tua "të fshehta" nuk do të rihapen.}}</translation>
 <translation id="5686916850681061684">Personalizo dhe kontrollo Google Chrome. Diçka ka nevojë për vëmendjen tënde - kliko për detaje.</translation>

@@ -57,28 +57,26 @@ bool JSFunction::ChecksOptimizationMarker() {
 }
 
 bool JSFunction::IsMarkedForOptimization() {
-  return has_feedback_vector() && feedback_vector().optimization_marker() ==
-                                      OptimizationMarker::kCompileOptimized;
+  return has_feedback_vector() &&
+         feedback_vector().optimization_marker() ==
+             OptimizationMarker::kCompileTurbofan_NotConcurrent;
 }
 
 bool JSFunction::IsMarkedForConcurrentOptimization() {
   return has_feedback_vector() &&
          feedback_vector().optimization_marker() ==
-             OptimizationMarker::kCompileOptimizedConcurrent;
+             OptimizationMarker::kCompileTurbofan_Concurrent;
 }
 
 void JSFunction::SetInterruptBudget() {
-  if (!has_feedback_vector()) {
+  if (has_feedback_vector()) {
+    FeedbackVector::SetInterruptBudget(raw_feedback_cell());
+  } else {
     DCHECK(shared().is_compiled());
-    int budget = FLAG_budget_for_feedback_vector_allocation;
-    if (FLAG_feedback_allocation_on_bytecode_size) {
-      budget = shared().GetBytecodeArray(GetIsolate()).length() *
-               FLAG_scale_factor_for_feedback_allocation;
-    }
-    raw_feedback_cell().set_interrupt_budget(budget);
-    return;
+    raw_feedback_cell().set_interrupt_budget(
+        shared().GetBytecodeArray(GetIsolate()).length() *
+        FLAG_interrupt_budget_factor_for_feedback_allocation);
   }
-  FeedbackVector::SetInterruptBudget(raw_feedback_cell());
 }
 
 void JSFunction::MarkForOptimization(ConcurrencyMode mode) {
@@ -88,10 +86,9 @@ void JSFunction::MarkForOptimization(ConcurrencyMode mode) {
     mode = ConcurrencyMode::kNotConcurrent;
   }
 
-  DCHECK(!is_compiled() || ActiveTierIsIgnition() ||
-         ActiveTierIsMidtierTurboprop() || ActiveTierIsBaseline());
+  DCHECK(!is_compiled() || ActiveTierIsIgnition() || ActiveTierIsBaseline());
   DCHECK(!ActiveTierIsTurbofan());
-  DCHECK(shared().IsInterpreted());
+  DCHECK(shared().HasBytecodeArray());
   DCHECK(shared().allows_lazy_compilation() ||
          !shared().optimization_disabled());
 
@@ -111,9 +108,10 @@ void JSFunction::MarkForOptimization(ConcurrencyMode mode) {
     }
   }
 
-  SetOptimizationMarker(mode == ConcurrencyMode::kConcurrent
-                            ? OptimizationMarker::kCompileOptimizedConcurrent
-                            : OptimizationMarker::kCompileOptimized);
+  SetOptimizationMarker(
+      mode == ConcurrencyMode::kConcurrent
+          ? OptimizationMarker::kCompileTurbofan_Concurrent
+          : OptimizationMarker::kCompileTurbofan_NotConcurrent);
 }
 
 bool JSFunction::IsInOptimizationQueue() {
@@ -292,7 +290,7 @@ bool JSFunction::ShouldFlushBaselineCode(
   // SFI / FV to JSFunction but it is safe in practice.
   Object maybe_code = ACQUIRE_READ_FIELD(*this, kCodeOffset);
   if (!maybe_code.IsCodeT()) return false;
-  Code code = FromCodeT(CodeT::cast(maybe_code));
+  CodeT code = CodeT::cast(maybe_code);
   if (code.kind() != CodeKind::BASELINE) return false;
 
   SharedFunctionInfo shared = SharedFunctionInfo::cast(maybe_shared);

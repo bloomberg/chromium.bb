@@ -131,31 +131,6 @@ SkColor IncreaseLightness(SkColor color, double percent) {
   return color_utils::HSLToSkColor(result, SkColorGetA(color));
 }
 
-// For legacy reasons, the theme supplier requires the incognito variants of
-// color IDs.  This converts from normal to incognito IDs where they exist.
-int GetIncognitoId(int id) {
-  switch (id) {
-    case TP::COLOR_FRAME_ACTIVE:
-      return TP::COLOR_FRAME_ACTIVE_INCOGNITO;
-    case TP::COLOR_FRAME_INACTIVE:
-      return TP::COLOR_FRAME_INACTIVE_INCOGNITO;
-    case TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE:
-      return TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO;
-    case TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE:
-      return TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE_INCOGNITO;
-    case TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE:
-      return TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO;
-    case TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE:
-      return TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE_INCOGNITO;
-    case TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE:
-      return TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE;
-    case TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE:
-      return TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE;
-    default:
-      return id;
-  }
-}
-
 // Key for cache of separator colors; pair is <tab color, frame color>.
 using SeparatorColorKey = std::pair<SkColor, SkColor>;
 using SeparatorColorCache = std::map<SeparatorColorKey, SkColor>;
@@ -272,26 +247,18 @@ ThemeHelper::~ThemeHelper() {
 
 SkColor ThemeHelper::GetColor(int id,
                               bool incognito,
-                              const CustomThemeSupplier* theme_supplier,
-                              bool* has_custom_color) const {
+                              const CustomThemeSupplier* theme_supplier) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (has_custom_color)
-    *has_custom_color = false;
 
   const absl::optional<SkColor> omnibox_color =
-      GetOmniboxColor(id, incognito, theme_supplier, has_custom_color);
+      GetOmniboxColor(id, incognito, theme_supplier);
   if (omnibox_color.has_value())
     return omnibox_color.value();
 
-  if (theme_supplier &&
-      !ShouldIgnoreThemeSupplier(id, incognito, theme_supplier)) {
+  if (theme_supplier && !incognito) {
     SkColor color;
-    const int theme_supplier_id = incognito ? GetIncognitoId(id) : id;
-    if (theme_supplier->GetColor(theme_supplier_id, &color)) {
-      if (has_custom_color)
-        *has_custom_color = true;
+    if (theme_supplier->GetColor(id, &color))
       return color;
-    }
   }
 
   return GetDefaultColor(id, incognito, theme_supplier);
@@ -306,11 +273,7 @@ color_utils::HSL ThemeHelper::GetTint(
   if (theme_supplier && theme_supplier->GetTint(id, &hsl))
     return hsl;
 
-  // Incognito tints are ignored for custom themes so they apply atop a
-  // predictable state.
-  return TP::GetDefaultTint(id,
-                            incognito && UseIncognitoColor(id, theme_supplier),
-                            UseDarkModeColors(theme_supplier));
+  return TP::GetDefaultTint(id, incognito, UseDarkModeColors(theme_supplier));
 }
 
 gfx::ImageSkia* ThemeHelper::GetImageSkiaNamed(
@@ -358,18 +321,27 @@ SkColor ThemeHelper::GetDefaultColor(
                     incognito, theme_supplier);
   };
   switch (id) {
+    case TP::COLOR_BOOKMARK_BAR_BACKGROUND:
+      return GetColor(TP::COLOR_TOOLBAR, incognito, theme_supplier);
+    case TP::COLOR_BOOKMARK_FAVICON: {
+      SkColor color;
+      if (theme_supplier &&
+          theme_supplier->GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, &color)) {
+        return color;
+      } else {
+        return SK_ColorTRANSPARENT;
+      }
+    }
     case TP::COLOR_BOOKMARK_TEXT:
     case TP::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE:
     case TP::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE:
-      return GetColor(TP::COLOR_TOOLBAR_TEXT, incognito, theme_supplier,
-                      nullptr);
+      return GetColor(TP::COLOR_TOOLBAR_TEXT, incognito, theme_supplier);
     case TP::COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND:
-      return GetColor(TP::COLOR_DOWNLOAD_SHELF, incognito, theme_supplier,
-                      nullptr);
+      return GetColor(TP::COLOR_DOWNLOAD_SHELF, incognito, theme_supplier);
     case TP::COLOR_DOWNLOAD_SHELF_BUTTON_TEXT: {
       const SkColor download_shelf_color =
           GetColor(TP::COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND, incognito,
-                   theme_supplier, nullptr);
+                   theme_supplier);
       return color_utils::PickGoogleColor(
           gfx::kGoogleBlue500, download_shelf_color,
           color_utils::kMinimumReadableContrastRatio);
@@ -407,6 +379,7 @@ SkColor ThemeHelper::GetDefaultColor(
       return color_utils::HSLShift(get_frame_color(/*active=*/false),
                                    GetTint(ThemeProperties::TINT_BACKGROUND_TAB,
                                            incognito, theme_supplier));
+    case TP::COLOR_BOOKMARK_BUTTON_ICON:
     case TP::COLOR_TOOLBAR_BUTTON_ICON:
     case TP::COLOR_TOOLBAR_BUTTON_ICON_HOVERED:
     case TP::COLOR_TOOLBAR_BUTTON_ICON_PRESSED:
@@ -434,6 +407,7 @@ SkColor ThemeHelper::GetDefaultColor(
       GetSeparatorColorCache()[key] = separator_color;
       return separator_color;
     }
+    case TP::COLOR_BOOKMARK_SEPARATOR:
     case TP::COLOR_TOOLBAR_VERTICAL_SEPARATOR: {
       return SkColorSetA(
           GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, incognito, theme_supplier),
@@ -450,32 +424,6 @@ SkColor ThemeHelper::GetDefaultColor(
     case TP::COLOR_NTP_TEXT_LIGHT:
       return IncreaseLightness(
           GetColor(TP::COLOR_NTP_TEXT, incognito, theme_supplier), 0.40);
-    case TP::COLOR_TAB_THROBBER_SPINNING:
-    case TP::COLOR_TAB_THROBBER_WAITING: {
-      // Similar to the code in BrowserThemeProvider::HasCustomColor(), here we
-      // decide the toolbar button icon has a custom color if the theme supplier
-      // has explicitly specified it or a TINT_BUTTONS value. Unlike that code,
-      // this does not consider TINT_BUTTONS to have been customized just
-      // because it differs from {-1, -1, -1}. The effect is that for the
-      // default light/dark/incognito themes, or custom themes which use the
-      // default toolbar button colors, the default throbber colors will be
-      // used; otherwise the throbber will be colored to match the toolbar
-      // buttons to guarantee visibility.
-      bool has_custom_color = false;
-      const SkColor button_color =
-          GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, incognito, theme_supplier,
-                   &has_custom_color);
-      color_utils::HSL hsl;
-      return (has_custom_color ||
-              (theme_supplier &&
-               theme_supplier->GetTint(TP::TINT_BUTTONS, &hsl)))
-                 ? button_color
-                 : ui::GetAuraColor(
-                       id == TP::COLOR_TAB_THROBBER_SPINNING
-                           ? ui::NativeTheme::kColorId_ThrobberSpinningColor
-                           : ui::NativeTheme::kColorId_ThrobberWaitingColor,
-                       ui::NativeTheme::GetInstanceForNativeUi());
-    }
     case TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE:
     case TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE: {
       return GetColor(id == TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE
@@ -483,11 +431,32 @@ SkColor ThemeHelper::GetDefaultColor(
                           : TP::COLOR_FRAME_INACTIVE,
                       incognito, theme_supplier);
     }
+    case TP::COLOR_THUMBNAIL_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE: {
+      // TODO(crbug.com/1292546): Make into a recipe once we have Color
+      // Pipeline support for Theme Properties.
+      SkColor background_color =
+          GetColor(TP::COLOR_FRAME_ACTIVE, incognito, theme_supplier);
+      // TODO(crbug.com/1292546): : Use kColorAccent when porting to color
+      // pipeline.
+      SkColor active_tab_title_color = color_utils::IsDark(background_color)
+                                           ? gfx::kGoogleBlue300
+                                           : gfx::kGoogleBlue600;
+
+      // Check if the preferred light/dark color meets desired minimum contrast
+      // against the current background color and if not, adjust alpha.
+      color_utils::BlendResult blend_color_result =
+          color_utils::BlendForMinContrast(
+              active_tab_title_color, background_color, absl::nullopt,
+              color_utils::kMinimumVisibleContrastRatio);
+      return blend_color_result.color;
+    }
+    case TP::COLOR_THUMBNAIL_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE:
+      return color_utils::GetColorWithMaxContrast(GetDefaultColor(
+          TP::COLOR_THUMBNAIL_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE, incognito,
+          theme_supplier));
   }
 
-  return TP::GetDefaultColor(id,
-                             incognito && UseIncognitoColor(id, theme_supplier),
-                             UseDarkModeColors(theme_supplier));
+  return TP::GetDefaultColor(id, incognito, UseDarkModeColors(theme_supplier));
 }
 
 // static
@@ -528,36 +497,11 @@ SkColor ThemeHelper::GetSeparatorColor(SkColor tab_color, SkColor frame_color) {
 }
 
 // static
-bool ThemeHelper::UseIncognitoColor(int id,
-                                    const CustomThemeSupplier* theme_supplier) {
-  // Incognito is disabled for any non-ignored custom theme colors so they apply
-  // atop a predictable state.
-  return ShouldIgnoreThemeSupplier(id, true, theme_supplier) ||
-         (!IsCustomTheme(theme_supplier) &&
-          (!theme_supplier || theme_supplier->CanUseIncognitoColors()));
-}
-
-// static
 bool ThemeHelper::UseDarkModeColors(const CustomThemeSupplier* theme_supplier) {
   // Dark mode is disabled for custom themes so they apply atop a predictable
   // state.
   return !IsCustomTheme(theme_supplier) &&
          ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors();
-}
-
-// static
-bool ThemeHelper::ShouldIgnoreThemeSupplier(
-    int id,
-    bool incognito,
-    const CustomThemeSupplier* theme_supplier) {
-  if (incognito && base::FeatureList::IsEnabled(
-                       features::kIncognitoBrandConsistencyForDesktop)) {
-    return true;
-  }
-  // The incognito NTP uses the default background color instead of any theme
-  // background color, unless the theme also sets a custom background image.
-  return incognito && (id == TP::COLOR_NTP_BACKGROUND) &&
-         !HasCustomImage(IDR_THEME_NTP_BACKGROUND, theme_supplier);
 }
 
 gfx::Image ThemeHelper::GetImageNamed(
@@ -588,49 +532,30 @@ gfx::Image ThemeHelper::GetImageNamed(
 absl::optional<SkColor> ThemeHelper::GetOmniboxColor(
     int id,
     bool incognito,
-    const CustomThemeSupplier* theme_supplier,
-    bool* has_custom_color) const {
+    const CustomThemeSupplier* theme_supplier) const {
   // Avoid infinite loop caused by GetColor(TP::COLOR_TOOLBAR) call in
   // GetOmniboxColorImpl().
   if (id == TP::COLOR_TOOLBAR)
     return absl::nullopt;
 
-  const auto color = GetOmniboxColorImpl(id, incognito, theme_supplier);
-  if (!color)
-    return absl::nullopt;
-  if (has_custom_color)
-    *has_custom_color = color.value().custom;
-  return color.value().value;
-}
-
-absl::optional<ThemeHelper::OmniboxColor> ThemeHelper::GetOmniboxColorImpl(
-    int id,
-    bool incognito,
-    const CustomThemeSupplier* theme_supplier) const {
-  // Some utilities from color_utils are reimplemented throughout this function
-  // to plumb the custom bit through.
-  const auto get_resulting_paint_color = [&](OmniboxColor fg, OmniboxColor bg) {
-    return OmniboxColor{color_utils::GetResultingPaintColor(fg.value, bg.value),
-                        fg.custom || bg.custom};
-  };
-  const auto get_base_color = [&](int id) -> OmniboxColor {
+  const auto get_base_color = [&](int id) {
     SkColor color;
     if (theme_supplier && theme_supplier->GetColor(id, &color))
-      return {color, true};
-    return {GetDefaultColor(id, incognito, theme_supplier), false};
+      return color;
+    return GetDefaultColor(id, incognito, theme_supplier);
   };
 
   // Compute the two base colors, |bg| and |fg|.
-  OmniboxColor bg = get_resulting_paint_color(
+  SkColor bg = color_utils::GetResultingPaintColor(
       get_base_color(TP::COLOR_OMNIBOX_BACKGROUND),
-      {GetColor(TP::COLOR_TOOLBAR, incognito, nullptr), false});
+      GetColor(TP::COLOR_TOOLBAR, incognito, nullptr));
   // Returning early here avoids an infinite loop in computing |fg|, caused by
   // the default color for COLOR_OMNIBOX_TEXT being based on
   // COLOR_OMNIBOX_BACKGROUND.
   if (id == TP::COLOR_OMNIBOX_BACKGROUND)
     return bg;
-  OmniboxColor fg =
-      get_resulting_paint_color(get_base_color(TP::COLOR_OMNIBOX_TEXT), bg);
+  SkColor fg = color_utils::GetResultingPaintColor(
+      get_base_color(TP::COLOR_OMNIBOX_TEXT), bg);
 
   // Certain output cases are based on inverted bg/fg.
   const bool high_contrast =
@@ -642,71 +567,49 @@ absl::optional<ThemeHelper::OmniboxColor> ThemeHelper::GetOmniboxColorImpl(
                         id == TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED ||
                         id == TP::COLOR_OMNIBOX_RESULTS_ICON_SELECTED ||
                         id == TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED);
-  const auto get_color_with_max_contrast = [](OmniboxColor color) {
-    return OmniboxColor{color_utils::GetColorWithMaxContrast(color.value),
-                        color.custom};
-  };
   const auto blend_for_min_contrast =
-      [&](OmniboxColor fg, OmniboxColor bg,
-          absl::optional<OmniboxColor> hc_fg = absl::nullopt,
+      [&](SkColor fg, SkColor bg, absl::optional<SkColor> hc_fg = absl::nullopt,
           absl::optional<float> contrast_ratio = absl::nullopt) {
-        absl::optional<SkColor> hc_fg_arg;
-        bool custom = fg.custom || bg.custom;
-        if (hc_fg) {
-          hc_fg_arg = hc_fg.value().value;
-          custom |= hc_fg.value().custom;
-        }
         // If high contrast is on, increase the minimum contrast ratio.
         // TODO(pkasting): Ideally we could do this in the base
         // BlendForMinContrast() function.
         const float ratio = contrast_ratio.value_or(
             high_contrast ? 6.0f : color_utils::kMinimumReadableContrastRatio);
-        return OmniboxColor{color_utils::BlendForMinContrast(fg.value, bg.value,
-                                                             hc_fg_arg, ratio)
-                                .color,
-                            custom};
+        return color_utils::BlendForMinContrast(fg, bg, hc_fg, ratio).color;
       };
   if (invert) {
     // Given a color with some contrast against the opposite endpoint, returns a
     // color with that same contrast against the nearby endpoint.
-    auto invert_color = [&](OmniboxColor fg) {
-      const auto bg = get_color_with_max_contrast(fg);
-      const auto inverted_bg = get_color_with_max_contrast(bg);
-      const float contrast = color_utils::GetContrastRatio(fg.value, bg.value);
+    auto invert_color = [&](SkColor fg) {
+      const auto bg = color_utils::GetColorWithMaxContrast(fg);
+      const auto inverted_bg = color_utils::GetColorWithMaxContrast(bg);
+      const float contrast = color_utils::GetContrastRatio(fg, bg);
       return blend_for_min_contrast(fg, inverted_bg, absl::nullopt, contrast);
     };
     fg = invert_color(fg);
     bg = invert_color(bg);
   }
-  const bool dark = color_utils::IsDark(bg.value);
+  const bool dark = color_utils::IsDark(bg);
 
   // All remaining colors can be built atop the two base colors.
-  const auto derive_default_icon_color = [](OmniboxColor color) {
-    return OmniboxColor{color_utils::DeriveDefaultIconColor(color.value),
-                        color.custom};
-  };
-  const auto blend_toward_max_contrast = [](OmniboxColor color, SkAlpha alpha) {
-    return OmniboxColor{color_utils::BlendTowardMaxContrast(color.value, alpha),
-                        color.custom};
-  };
   const auto results_bg_color = [&]() {
-    return get_color_with_max_contrast(fg);
+    return color_utils::GetColorWithMaxContrast(fg);
   };
   const auto bg_hovered_color = [&]() {
-    return blend_toward_max_contrast(bg, 0x0A);
+    return color_utils::BlendTowardMaxContrast(bg, 0x0A);
   };
   const auto results_bg_hovered_color = [&]() {
-    return blend_toward_max_contrast(results_bg_color(), 0x1A);
+    return color_utils::BlendTowardMaxContrast(results_bg_color(), 0x1A);
   };
-  const auto url_color = [&](OmniboxColor bg) {
+  const auto url_color = [&](SkColor bg) {
     return blend_for_min_contrast(
-        {gfx::kGoogleBlue500, false}, bg,
-        {{dark ? gfx::kGoogleBlue050 : gfx::kGoogleBlue900, false}});
+        gfx::kGoogleBlue500, bg,
+        dark ? gfx::kGoogleBlue050 : gfx::kGoogleBlue900);
   };
   const auto results_bg_selected_color = [&]() {
-    return blend_toward_max_contrast(results_bg_color(), 0x1A);
+    return color_utils::BlendTowardMaxContrast(results_bg_color(), 0x1A);
   };
-  const auto blend_with_clamped_contrast = [&](OmniboxColor bg) {
+  const auto blend_with_clamped_contrast = [&](SkColor bg) {
     return blend_for_min_contrast(fg, fg, blend_for_min_contrast(bg, bg));
   };
   switch (id) {
@@ -720,9 +623,8 @@ absl::optional<ThemeHelper::OmniboxColor> ThemeHelper::GetOmniboxColorImpl(
     case TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED:
       return results_bg_selected_color();
     case TP::COLOR_OMNIBOX_BUBBLE_OUTLINE:
-      return {
-          {dark ? gfx::kGoogleGrey100 : SkColorSetA(gfx::kGoogleGrey900, 0x24),
-           false}};
+      return dark ? gfx::kGoogleGrey100
+                  : SkColorSetA(gfx::kGoogleGrey900, 0x24);
     case TP::COLOR_OMNIBOX_TEXT_DIMMED:
       return blend_with_clamped_contrast(bg_hovered_color());
     case TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED:
@@ -730,33 +632,31 @@ absl::optional<ThemeHelper::OmniboxColor> ThemeHelper::GetOmniboxColorImpl(
     case TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED:
       return blend_with_clamped_contrast(results_bg_selected_color());
     case TP::COLOR_OMNIBOX_RESULTS_ICON:
-      return blend_for_min_contrast(derive_default_icon_color(fg),
+      return blend_for_min_contrast(color_utils::DeriveDefaultIconColor(fg),
                                     results_bg_color());
     case TP::COLOR_OMNIBOX_RESULTS_ICON_SELECTED:
-      return blend_for_min_contrast(derive_default_icon_color(fg),
+      return blend_for_min_contrast(color_utils::DeriveDefaultIconColor(fg),
                                     results_bg_selected_color());
     case TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED:
       return results_bg_hovered_color();
     case TP::COLOR_OMNIBOX_BUBBLE_OUTLINE_EXPERIMENTAL_KEYWORD_MODE:
     case TP::COLOR_OMNIBOX_SELECTED_KEYWORD:
       if (dark)
-        return {{gfx::kGoogleGrey100, false}};
+        return gfx::kGoogleGrey100;
       [[fallthrough]];
     case TP::COLOR_OMNIBOX_RESULTS_URL:
       return url_color(results_bg_hovered_color());
     case TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED:
       return url_color(results_bg_selected_color());
     case TP::COLOR_OMNIBOX_RESULTS_BUTTON_BORDER:
-      return blend_toward_max_contrast(bg, gfx::kGoogleGreyAlpha400);
+      return color_utils::BlendTowardMaxContrast(bg, gfx::kGoogleGreyAlpha400);
     case TP::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT:
     case TP::COLOR_OMNIBOX_SECURITY_CHIP_SECURE:
       return blend_for_min_contrast(
-          {dark ? gfx::kGoogleGrey500 : gfx::kGoogleGrey700, false},
-          bg_hovered_color());
+          dark ? gfx::kGoogleGrey500 : gfx::kGoogleGrey700, bg_hovered_color());
     case TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS:
       return blend_for_min_contrast(
-          {dark ? gfx::kGoogleRed300 : gfx::kGoogleRed600, false},
-          bg_hovered_color());
+          dark ? gfx::kGoogleRed300 : gfx::kGoogleRed600, bg_hovered_color());
     default:
       return absl::nullopt;
   }
@@ -789,9 +689,8 @@ SkColor ThemeHelper::GetTabGroupColor(
     // To support custom themes, assume that the dark mode palette is more
     // appropriate for bookmark chips, tab group dialog bubble, and context sub
     // menu when the bookmark bar appears to be light text on dark bookmark bar.
-    bool has_custom_color = true;
-    use_dark_mode_colors = !color_utils::IsDark(GetColor(
-        TP::COLOR_BOOKMARK_TEXT, incognito, theme_supplier, &has_custom_color));
+    use_dark_mode_colors = !color_utils::IsDark(
+        GetColor(TP::COLOR_BOOKMARK_TEXT, incognito, theme_supplier));
   } else {
     use_dark_mode_colors = UseDarkModeColors(theme_supplier);
   }

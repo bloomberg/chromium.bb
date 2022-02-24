@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.tab.TabStateExtractor;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tab.state.FilePersistedTabDataStorage;
 import org.chromium.chrome.browser.tab.state.PersistedTabData;
+import org.chromium.chrome.browser.tab.state.SerializedCriticalPersistedTabData;
 import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.browser.tabpersistence.TabStateFileManager;
 import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
@@ -68,7 +69,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,6 +112,31 @@ public class TabPersistentStore {
         int NTP = 1;
         /** Active tab is anything other than NTP. */
         int OTHER = 2;
+    }
+
+    /**
+     * Values are recorded in metrics and should not be changed.
+     */
+    @IntDef({TabRestoreMethod.TAB_STATE, TabRestoreMethod.CRITICAL_PERSISTED_TAB_DATA,
+            TabRestoreMethod.CREATE_NEW_TAB, TabRestoreMethod.FAILED_TO_RESTORE,
+            TabRestoreMethod.SKIPPED_NTP, TabRestoreMethod.SKIPPED_EMPTY_URL,
+            TabRestoreMethod.NUM_ENTRIES})
+    @Retention(RetentionPolicy.SOURCE)
+    @VisibleForTesting
+    protected @interface TabRestoreMethod {
+        /** Tab restored using TabState. */
+        int TAB_STATE = 0;
+        /** Tab restored using CriticalPersistedTabData. */
+        int CRITICAL_PERSISTED_TAB_DATA = 1;
+        /** Tab restored by creating a new Tab from Tab metadata file. */
+        int CREATE_NEW_TAB = 2;
+        /** Failed to restore Tab using any of the above methods. */
+        int FAILED_TO_RESTORE = 3;
+        /** In some situations the NTP is skipped when we re-create the Tab as a fallback. */
+        int SKIPPED_NTP = 4;
+        /** The URL was empty so restoration was skipped. */
+        int SKIPPED_EMPTY_URL = 5;
+        int NUM_ENTRIES = 6;
     }
 
     public void onNativeLibraryReady() {
@@ -282,7 +307,7 @@ public class TabPersistentStore {
 
     AsyncTask<TabState> mPrefetchTabStateActiveTabTask;
 
-    AsyncTask<ByteBuffer> mPrefetchCriticalPersistedTabDataActiveTabTask;
+    AsyncTask<SerializedCriticalPersistedTabData> mPrefetchCriticalPersistedTabDataActiveTabTask;
 
     /**
      * Creates an instance of a TabPersistentStore.
@@ -608,7 +633,7 @@ public class TabPersistentStore {
             // If the CriticalPersistedTabData flag is on, we try to restore
             // CriticalPersistedTabData.
             @Nullable
-            ByteBuffer serializedCriticalPersistedTabData =
+            SerializedCriticalPersistedTabData serializedCriticalPersistedTabData =
                     maybeRestoreCriticalPersistedTabData(restoredTabId, tabToRestore);
             // If the CriticalPersistedTabData flag is off or we failed to read
             // CriticalPersistedTabData we fall back to TabState.
@@ -625,8 +650,9 @@ public class TabPersistentStore {
         }
     }
 
-    private @Nullable ByteBuffer maybeRestoreCriticalPersistedTabData(int restoredTabId,
-            TabRestoreDetails tabToRestore) throws InterruptedException, ExecutionException {
+    private @Nullable SerializedCriticalPersistedTabData maybeRestoreCriticalPersistedTabData(
+            int restoredTabId, TabRestoreDetails tabToRestore)
+            throws InterruptedException, ExecutionException {
         if (!isCriticalPersistedTabDataEnabled()) return null;
         // If Tab being restored is the active Tab and the CriticalPersistedTabData prefetch
         // was initiated, use the prefetch result.
@@ -642,7 +668,8 @@ public class TabPersistentStore {
         return CriticalPersistedTabData.restore(tabToRestore.id, isIncognito);
     }
 
-    private @Nullable TabState maybeRestoreTabState(ByteBuffer serializedCriticalPersistedTabData,
+    private @Nullable TabState maybeRestoreTabState(
+            SerializedCriticalPersistedTabData serializedCriticalPersistedTabData,
             int restoredTabId, TabRestoreDetails tabToRestore)
             throws InterruptedException, ExecutionException {
         // If CriticalPersistedTabData flag is on and CriticalPersistedTabData was retrieved, no
@@ -666,12 +693,14 @@ public class TabPersistentStore {
      *
      * @param tabToRestore Meta data about the tab to be restored.
      * @param tabState     The previously serialized state of the tab to be restored.
+     * @param serializedCriticalPersistedTabData serialized {@link CriticalPersistedTabData}
      * @param setAsActive  Whether the tab should be set as the active tab as part of the
      *                     restoration process.
      */
     @VisibleForTesting
     protected void restoreTab(TabRestoreDetails tabToRestore, TabState tabState,
-            ByteBuffer serializedCriticalPersistedTabData, boolean setAsActive) {
+            SerializedCriticalPersistedTabData serializedCriticalPersistedTabData,
+            boolean setAsActive) {
         // If we don't have enough information about the Tab, bail out.
         boolean isIncognito = isIncognitoTabBeingRestored(
                 tabToRestore, tabState, serializedCriticalPersistedTabData);
@@ -722,9 +751,18 @@ public class TabPersistentStore {
         }
 
         int tabId = tabToRestore.id;
-        if (tabState != null
-                || !CriticalPersistedTabData.isEmptySerialization(
-                        serializedCriticalPersistedTabData)) {
+        boolean useTabState = tabState != null;
+        boolean useCriticalPersistedTabData =
+                !CriticalPersistedTabData.isEmptySerialization(serializedCriticalPersistedTabData);
+        if (useTabState || useCriticalPersistedTabData) {
+            assert useTabState
+                    == !useCriticalPersistedTabData
+                : "Must only restore using TabState or CriticalPersistedTabData";
+            @TabRestoreMethod
+            int tabRestoreMethod = useTabState ? TabRestoreMethod.TAB_STATE
+                                               : TabRestoreMethod.CRITICAL_PERSISTED_TAB_DATA;
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Tabs.TabRestoreMethod", tabRestoreMethod, TabRestoreMethod.NUM_ENTRIES);
             mTabCreatorManager.getTabCreator(isIncognito)
                     .createFrozenTab(tabState, serializedCriticalPersistedTabData, tabToRestore.id,
                             isIncognito, restoredIndex);
@@ -732,9 +770,13 @@ public class TabPersistentStore {
             if (UrlUtilities.isNTPUrl(tabToRestore.url) && !setAsActive
                     && !tabToRestore.fromMerge) {
                 Log.i(TAG, "Skipping restore of non-selected NTP.");
+                RecordHistogram.recordEnumeratedHistogram("Tabs.TabRestoreMethod",
+                        TabRestoreMethod.SKIPPED_NTP, TabRestoreMethod.NUM_ENTRIES);
                 return;
             } else if (TextUtils.isEmpty(tabToRestore.url)) {
                 Log.i(TAG, "Skipping restore of empty Tabs.");
+                RecordHistogram.recordEnumeratedHistogram("Tabs.TabRestoreMethod",
+                        TabRestoreMethod.SKIPPED_EMPTY_URL, TabRestoreMethod.NUM_ENTRIES);
                 return;
             }
 
@@ -743,7 +785,14 @@ public class TabPersistentStore {
                                       .createNewTab(new LoadUrlParams(tabToRestore.url),
                                               TabLaunchType.FROM_RESTORE, null);
 
-            if (fallbackTab == null) return;
+            if (fallbackTab == null) {
+                RecordHistogram.recordEnumeratedHistogram("Tabs.TabRestoreMethod",
+                        TabRestoreMethod.FAILED_TO_RESTORE, TabRestoreMethod.NUM_ENTRIES);
+                return;
+            }
+
+            RecordHistogram.recordEnumeratedHistogram("Tabs.TabRestoreMethod",
+                    TabRestoreMethod.CREATE_NEW_TAB, TabRestoreMethod.NUM_ENTRIES);
 
             tabId = fallbackTab.getId();
             model.moveTab(tabId, restoredIndex);
@@ -759,7 +808,6 @@ public class TabPersistentStore {
 
             TabModelUtils.setIndex(model, TabModelUtils.getTabIndexById(model, tabId),
                     StartSurfaceUserData.getInstance().getUnusedTabRestoredAtStartup());
-            StartSurfaceUserData.getInstance().setLastVisitedTabAtStartupUrl(tabToRestore.url);
             boolean isIncognitoTabModelSelected = mTabModelSelector.isIncognitoSelected();
 
             // Setting the index will cause the tab's model to be selected. Set it back to the model
@@ -1640,7 +1688,7 @@ public class TabPersistentStore {
     }
 
     private void completeLoad(TabRestoreDetails tabToRestore, TabState tabState,
-            ByteBuffer serializedCriticalPersistedTabData) {
+            SerializedCriticalPersistedTabData serializedCriticalPersistedTabData) {
         boolean isIncognito = isIncognitoTabBeingRestored(
                 tabToRestore, tabState, serializedCriticalPersistedTabData);
         if (isIncognito) {
@@ -1692,7 +1740,7 @@ public class TabPersistentStore {
      * @return True if the tab is definitely Incognito, false if it's not or if it's undecideable.
      */
     private boolean isIncognitoTabBeingRestored(TabRestoreDetails tabDetails, TabState tabState,
-            ByteBuffer serializedCriticalPersistedTabData) {
+            SerializedCriticalPersistedTabData serializedCriticalPersistedTabData) {
         if (tabState != null) {
             Log.i(TAG, "#isIncognitoTabBeingRestored from tabState:  " + tabState.isIncognito());
             // The Tab's previous state was completely restored.
@@ -1753,14 +1801,14 @@ public class TabPersistentStore {
             // file.
             Boolean isIncognito = FilePersistedTabDataStorage.isIncognito(activeTabId);
             mPrefetchCriticalPersistedTabDataActiveTabTask =
-                    new BackgroundOnlyAsyncTask<ByteBuffer>() {
+                    new BackgroundOnlyAsyncTask<SerializedCriticalPersistedTabData>() {
                         @Override
-                        protected ByteBuffer doInBackground() {
+                        protected SerializedCriticalPersistedTabData doInBackground() {
                             if (isIncognito == null) {
                                 prefetchActiveTabTask(activeTabId, taskRunner);
                                 return null;
                             }
-                            ByteBuffer res =
+                            SerializedCriticalPersistedTabData res =
                                     CriticalPersistedTabData.restore(activeTabId, isIncognito);
                             if (CriticalPersistedTabData.isEmptySerialization(res)) {
                                 prefetchActiveTabTask(activeTabId, taskRunner);
@@ -1855,7 +1903,8 @@ public class TabPersistentStore {
     }
 
     @VisibleForTesting
-    public AsyncTask<ByteBuffer> getPrefetchCriticalPersistedTabDataActiveTabTaskForTesting() {
+    public AsyncTask<SerializedCriticalPersistedTabData>
+    getPrefetchCriticalPersistedTabDataActiveTabTaskForTesting() {
         return mPrefetchCriticalPersistedTabDataActiveTabTask;
     }
 }

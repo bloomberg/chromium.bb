@@ -59,8 +59,8 @@ class GsutilMock(object):
         if fn:
           fn()
         return code
-      else:
-        return 0
+
+      return 0
 
   def check_call(self, *args):
     with self.lock:
@@ -70,8 +70,8 @@ class GsutilMock(object):
         if fn:
           fn()
         return code, out, err
-      else:
-        return (0, '', '')
+
+      return (0, '', '')
 
   def check_call_with_retries(self, *args):
     return self.check_call(*args)

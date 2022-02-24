@@ -2,7 +2,6 @@
 precision mediump float;
 
 float v = 0.0f;
-
 void x(inout float p) {
   p = 0.0f;
 }
@@ -13,10 +12,9 @@ void g() {
 
 void f() {
   g();
-  return;
 }
+
 void main() {
   f();
+  return;
 }
-
-

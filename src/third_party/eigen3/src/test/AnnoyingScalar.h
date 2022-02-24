@@ -32,12 +32,12 @@ class AnnoyingScalar
 {
   public:
     AnnoyingScalar()                { init(); *v = 0;  }
-    AnnoyingScalar(long double _v)  { init(); *v = _v; }
-    AnnoyingScalar(double _v)       { init(); *v = _v; }
+    AnnoyingScalar(long double _v)  { init(); *v = static_cast<float>(_v); }
+    AnnoyingScalar(double _v)       { init(); *v = static_cast<float>(_v); }
     AnnoyingScalar(float _v)        { init(); *v = _v; }
-    AnnoyingScalar(int _v)          { init(); *v = _v; }
-    AnnoyingScalar(long _v)         { init(); *v = _v; }
-    AnnoyingScalar(long long _v)    { init(); *v = _v; }
+    AnnoyingScalar(int _v)          { init(); *v = static_cast<float>(_v); }
+    AnnoyingScalar(long _v)         { init(); *v = static_cast<float>(_v); }
+    AnnoyingScalar(long long _v)    { init(); *v = static_cast<float>(_v); }
     AnnoyingScalar(const AnnoyingScalar& other) { init(); *v = *(other.v); }
     ~AnnoyingScalar() {
       if(v!=&data)
@@ -81,8 +81,8 @@ class AnnoyingScalar
     AnnoyingScalar& operator/=(const AnnoyingScalar& other) { *v /= *other.v; return *this; }
     AnnoyingScalar& operator= (const AnnoyingScalar& other) { *v  = *other.v; return *this; }
 
-    bool operator==(const AnnoyingScalar& other) const { return *v == *other.v; }
-    bool operator!=(const AnnoyingScalar& other) const { return *v != *other.v; }
+    bool operator==(const AnnoyingScalar& other) const { return numext::equal_strict(*v, *other.v); }
+    bool operator!=(const AnnoyingScalar& other) const { return numext::not_equal_strict(*v, *other.v); }
     bool operator<=(const AnnoyingScalar& other) const { return *v <= *other.v; }
     bool operator< (const AnnoyingScalar& other) const { return *v <  *other.v; }
     bool operator>=(const AnnoyingScalar& other) const { return *v >= *other.v; }

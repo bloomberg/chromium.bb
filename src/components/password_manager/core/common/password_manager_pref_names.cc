@@ -49,6 +49,9 @@ const char kLastTimeObsoleteHttpCredentialsRemoved[] =
 const char kLastTimePasswordCheckCompleted[] =
     "profile.last_time_password_check_completed";
 
+const char kLastTimePasswordStoreMetricsReported[] =
+    "profile.last_time_password_store_metrics_reported";
+
 const char kSyncedLastTimePasswordCheckCompleted[] =
     "profile.credentials_last_password_checkup_time";
 
@@ -56,6 +59,9 @@ const char kPasswordHashDataList[] = "profile.password_hash_data_list";
 
 const char kPasswordLeakDetectionEnabled[] =
     "profile.password_manager_leak_detection";
+
+const char kPasswordDismissCompromisedAlertEnabled[] =
+    "profile.password_dismiss_compromised_alert";
 
 const char kProfileStoreDateLastUsedForFilling[] =
     "password_manager.profile_store_date_last_used_for_filling";

@@ -301,8 +301,8 @@ def rmtree(path):
       exitcode = subprocess.call(['cmd.exe', '/c', 'rd', '/q', '/s', path])
       if exitcode == 0:
         return
-      else:
-        print('rd exited with code %d' % exitcode, file=sys.stderr)
+
+      print('rd exited with code %d' % exitcode, file=sys.stderr)
       time.sleep(3)
     raise Exception('Failed to remove path %s' % path)
 
@@ -437,11 +437,12 @@ class Annotated(Wrapper):
       lf_loc = obj[0].find(b'\n')
       if cr_loc == lf_loc == -1:
         break
-      elif cr_loc == -1 or (lf_loc >= 0 and lf_loc < cr_loc):
+
+      if cr_loc == -1 or (0 <= lf_loc < cr_loc):
         line, remaining = obj[0].split(b'\n', 1)
         if line:
           self._wrapped_write(b'%d>%s\n' % (index, line))
-      elif lf_loc == -1 or (cr_loc >= 0 and cr_loc < lf_loc):
+      elif lf_loc == -1 or (0 <= cr_loc < lf_loc):
         line, remaining = obj[0].split(b'\r', 1)
         if line:
           self._wrapped_write(b'%d>%s\r' % (index, line))
@@ -750,12 +751,16 @@ def GetMacWinAixOrLinux():
   """Returns 'mac', 'win', or 'linux', matching the current platform."""
   if sys.platform.startswith(('cygwin', 'win')):
     return 'win'
-  elif sys.platform.startswith('linux'):
+
+  if sys.platform.startswith('linux'):
     return 'linux'
-  elif sys.platform == 'darwin':
+
+  if sys.platform == 'darwin':
     return 'mac'
-  elif sys.platform.startswith('aix'):
+
+  if sys.platform.startswith('aix'):
     return 'aix'
+
   raise Error('Unknown platform: ' + sys.platform)
 
 
@@ -806,7 +811,6 @@ class WorkItem(object):
   def run(self, work_queue):
     """work_queue is passed as keyword argument so it should be
     the last parameters of the function when you override it."""
-    pass
 
   @property
   def name(self):
@@ -1211,8 +1215,8 @@ def DefaultDeltaBaseCacheLimit():
   """
   if platform.architecture()[0].startswith('64'):
     return '2g'
-  else:
-    return '512m'
+
+  return '512m'
 
 
 def DefaultIndexPackConfig(url=''):
@@ -1259,13 +1263,15 @@ def freeze(obj):
   """
   if isinstance(obj, collections_abc.Mapping):
     return FrozenDict((freeze(k), freeze(v)) for k, v in obj.items())
-  elif isinstance(obj, (list, tuple)):
+
+  if isinstance(obj, (list, tuple)):
     return tuple(freeze(i) for i in obj)
-  elif isinstance(obj, set):
+
+  if isinstance(obj, set):
     return frozenset(freeze(i) for i in obj)
-  else:
-    hash(obj)
-    return obj
+
+  hash(obj)
+  return obj
 
 
 class FrozenDict(collections_abc.Mapping):

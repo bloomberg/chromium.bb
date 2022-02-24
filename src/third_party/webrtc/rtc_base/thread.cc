@@ -255,19 +255,11 @@ Thread* Thread::Current() {
   ThreadManager* manager = ThreadManager::Instance();
   Thread* thread = manager->CurrentThread();
 
-#ifndef NO_MAIN_THREAD_WRAPPING
-  // Only autowrap the thread which instantiated the ThreadManager.
-  if (!thread && manager->IsMainThread()) {
-    thread = new Thread(CreateDefaultSocketServer());
-    thread->WrapCurrentWithThreadManager(manager, true);
-  }
-#endif
-
   return thread;
 }
 
 #if defined(WEBRTC_POSIX)
-ThreadManager::ThreadManager() : main_thread_ref_(CurrentThreadRef()) {
+ThreadManager::ThreadManager() {
 #if defined(WEBRTC_MAC)
   InitCocoaMultiThreading();
 #endif
@@ -284,8 +276,7 @@ void ThreadManager::SetCurrentThreadInternal(Thread* thread) {
 #endif
 
 #if defined(WEBRTC_WIN)
-ThreadManager::ThreadManager()
-    : key_(TlsAlloc()), main_thread_ref_(CurrentThreadRef()) {}
+ThreadManager::ThreadManager() : key_(TlsAlloc()) {}
 
 Thread* ThreadManager::CurrentThread() {
   return static_cast<Thread*>(TlsGetValue(key_));
@@ -339,10 +330,6 @@ void ThreadManager::UnwrapCurrentThread() {
     t->UnwrapCurrent();
     delete t;
   }
-}
-
-bool ThreadManager::IsMainThread() {
-  return IsThreadRefEqual(CurrentThreadRef(), main_thread_ref_);
 }
 
 Thread::ScopedDisallowBlockingCalls::ScopedDisallowBlockingCalls()
@@ -1236,11 +1223,6 @@ AutoSocketServerThread::AutoSocketServerThread(SocketServer* ss)
 
 AutoSocketServerThread::~AutoSocketServerThread() {
   RTC_DCHECK(ThreadManager::Instance()->CurrentThread() == this);
-  // Some tests post destroy messages to this thread. To avoid memory
-  // leaks, we have to process those messages. In particular
-  // P2PTransportChannelPingTest, relying on the message posted in
-  // cricket::Connection::Destroy.
-  ProcessMessages(0);
   // Stop and destroy the thread before clearing it as the current thread.
   // Sometimes there are messages left in the Thread that will be
   // destroyed by DoDestroy, and sometimes the destructors of the message and/or

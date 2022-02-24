@@ -20,7 +20,7 @@
 #include "src/execution/frames-inl.h"
 #include "src/execution/isolate-inl.h"
 #include "src/execution/protectors-inl.h"
-#include "src/execution/runtime-profiler.h"
+#include "src/execution/tiering-manager.h"
 #include "src/heap/heap-inl.h"  // For ToBoolean. TODO(jkummerow): Drop.
 #include "src/heap/heap-write-barrier-inl.h"
 #include "src/ic/stub-cache.h"
@@ -206,25 +206,6 @@ RUNTIME_FUNCTION(Runtime_IsConcurrentRecompilationSupported) {
       isolate->concurrent_recompilation_enabled());
 }
 
-RUNTIME_FUNCTION(Runtime_DynamicCheckMapsEnabled) {
-  SealHandleScope shs(isolate);
-  DCHECK_EQ(0, args.length());
-  return isolate->heap()->ToBoolean(FLAG_turbo_dynamic_map_checks);
-}
-
-RUNTIME_FUNCTION(Runtime_IsTopTierTurboprop) {
-  SealHandleScope shs(isolate);
-  DCHECK_EQ(0, args.length());
-  return isolate->heap()->ToBoolean(FLAG_turboprop_as_toptier);
-}
-
-RUNTIME_FUNCTION(Runtime_IsMidTierTurboprop) {
-  SealHandleScope shs(isolate);
-  DCHECK_EQ(0, args.length());
-  return isolate->heap()->ToBoolean(FLAG_turboprop &&
-                                    !FLAG_turboprop_as_toptier);
-}
-
 RUNTIME_FUNCTION(Runtime_IsAtomicsWaitAllowed) {
   SealHandleScope shs(isolate);
   DCHECK_EQ(0, args.length());
@@ -321,8 +302,12 @@ Object OptimizeFunctionOnNextCall(RuntimeArguments& args, Isolate* isolate,
   // This function may not have been lazily compiled yet, even though its shared
   // function has.
   if (!function->is_compiled()) {
-    DCHECK(function->shared().IsInterpreted());
-    function->set_code(*BUILTIN_CODE(isolate, InterpreterEntryTrampoline));
+    DCHECK(function->shared().HasBytecodeArray());
+    CodeT codet = *BUILTIN_CODE(isolate, InterpreterEntryTrampoline);
+    if (function->shared().HasBaselineCode()) {
+      codet = function->shared().baseline_code(kAcquireLoad);
+    }
+    function->set_code(codet);
   }
 
   JSFunction::EnsureFeedbackVector(function, &is_compiled_scope);
@@ -394,12 +379,6 @@ RUNTIME_FUNCTION(Runtime_CompileBaseline) {
 RUNTIME_FUNCTION(Runtime_OptimizeFunctionOnNextCall) {
   HandleScope scope(isolate);
   return OptimizeFunctionOnNextCall(args, isolate, TierupKind::kTierupBytecode);
-}
-
-RUNTIME_FUNCTION(Runtime_TierupFunctionOnNextCall) {
-  HandleScope scope(isolate);
-  return OptimizeFunctionOnNextCall(args, isolate,
-                                    TierupKind::kTierupBytecodeOrMidTier);
 }
 
 RUNTIME_FUNCTION(Runtime_EnsureFeedbackVectorForFunction) {
@@ -539,7 +518,7 @@ RUNTIME_FUNCTION(Runtime_OptimizeOsr) {
 
   // Make the profiler arm all back edges in unoptimized code.
   if (it.frame()->is_unoptimized()) {
-    isolate->runtime_profiler()->AttemptOnStackReplacement(
+    isolate->tiering_manager()->AttemptOnStackReplacement(
         UnoptimizedFrame::cast(it.frame()),
         AbstractCode::kMaxLoopNestingMarker);
   }
@@ -795,7 +774,7 @@ void FillUpOneNewSpacePage(Isolate* isolate, Heap* heap) {
   // We cannot rely on `space->limit()` to point to the end of the current page
   // in the case where inline allocations are disabled, it actually points to
   // the current allocation pointer.
-  DCHECK_IMPLIES(space->heap()->inline_allocation_disabled(),
+  DCHECK_IMPLIES(!space->IsInlineAllocationEnabled(),
                  space->limit() == space->top());
   int space_remaining =
       static_cast<int>(space->to_space().page_high() - space->top());
@@ -1248,23 +1227,23 @@ RUNTIME_FUNCTION(Runtime_RegexpIsUnmodified) {
       RegExp::IsUnmodifiedRegExp(isolate, regexp));
 }
 
-#define ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(Name)      \
-  RUNTIME_FUNCTION(Runtime_Has##Name) {                 \
-    CONVERT_ARG_CHECKED(JSObject, obj, 0);              \
-    return isolate->heap()->ToBoolean(obj.Has##Name()); \
+#define ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(Name) \
+  RUNTIME_FUNCTION(Runtime_##Name) {               \
+    CONVERT_ARG_CHECKED(JSObject, obj, 0);         \
+    return isolate->heap()->ToBoolean(obj.Name()); \
   }
 
-ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(FastElements)
-ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(SmiElements)
-ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(ObjectElements)
-ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(SmiOrObjectElements)
-ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(DoubleElements)
-ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(HoleyElements)
-ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(DictionaryElements)
-ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(PackedElements)
-ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(SloppyArgumentsElements)
+ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(HasFastElements)
+ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(HasSmiElements)
+ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(HasObjectElements)
+ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(HasSmiOrObjectElements)
+ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(HasDoubleElements)
+ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(HasHoleyElements)
+ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(HasDictionaryElements)
+ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(HasPackedElements)
+ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(HasSloppyArgumentsElements)
 // Properties test sitting with elements tests - not fooling anyone.
-ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(FastProperties)
+ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION(HasFastProperties)
 
 #undef ELEMENTS_KIND_CHECK_RUNTIME_FUNCTION
 
@@ -1442,7 +1421,7 @@ RUNTIME_FUNCTION(Runtime_EnableCodeLoggingForTesting) {
     void CodeDisableOptEvent(Handle<AbstractCode> code,
                              Handle<SharedFunctionInfo> shared) final {}
     void CodeDeoptEvent(Handle<Code> code, DeoptimizeKind kind, Address pc,
-                        int fp_to_sp_delta, bool reuse_code) final {}
+                        int fp_to_sp_delta) final {}
     void CodeDependencyChangeEvent(Handle<Code> code,
                                    Handle<SharedFunctionInfo> shared,
                                    const char* reason) final {}
@@ -1483,6 +1462,28 @@ RUNTIME_FUNCTION(Runtime_BigIntMaxLengthBits) {
   HandleScope scope(isolate);
   DCHECK_EQ(0, args.length());
   return *isolate->factory()->NewNumber(BigInt::kMaxLengthBits);
+}
+
+RUNTIME_FUNCTION(Runtime_IsSameHeapObject) {
+  HandleScope scope(isolate);
+  DCHECK_EQ(2, args.length());
+  CONVERT_ARG_HANDLE_CHECKED(HeapObject, obj1, 0);
+  CONVERT_ARG_HANDLE_CHECKED(HeapObject, obj2, 1);
+  return isolate->heap()->ToBoolean(obj1->address() == obj2->address());
+}
+
+RUNTIME_FUNCTION(Runtime_IsSharedString) {
+  HandleScope scope(isolate);
+  DCHECK_EQ(1, args.length());
+  CONVERT_ARG_HANDLE_CHECKED(HeapObject, obj, 0);
+  return isolate->heap()->ToBoolean(obj->IsString() &&
+                                    Handle<String>::cast(obj)->IsShared());
+}
+
+RUNTIME_FUNCTION(Runtime_SharedGC) {
+  SealHandleScope scope(isolate);
+  isolate->heap()->CollectSharedGarbage(GarbageCollectionReason::kTesting);
+  return ReadOnlyRoots(isolate).undefined_value();
 }
 
 }  // namespace internal

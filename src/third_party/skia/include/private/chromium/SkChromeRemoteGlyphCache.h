@@ -15,8 +15,9 @@
 #include "include/core/SkRefCnt.h"
 #include "include/utils/SkNoDrawCanvas.h"
 
-class SkAutoDescriptor;
+class GrSlug;
 struct SkPackedGlyphID;
+class SkAutoDescriptor;
 class SkStrikeCache;
 class SkStrikeClientImpl;
 class SkStrikeServer;
@@ -93,7 +94,8 @@ public:
         kGlyphMetricsFallback = 4,
         kGlyphPathFallback    = 5,
 
-        kLast = kGlyphPath
+        kGlyphDrawable = 6,
+        kLast = kGlyphDrawable
     };
 
     // An interface to delete handles that may be pinned by the remote server.
@@ -133,11 +135,15 @@ public:
     // Returns false if the data is invalid.
     SK_SPI bool readStrikeData(const volatile void* memory, size_t memorySize);
 
+    // Given a descriptor re-write the Rec mapping the typefaceID from the renderer to the
+    // corresponding typefaceID on the GPU.
+    SK_SPI bool translateTypefaceID(SkAutoDescriptor* descriptor) const;
+
+    // Given a buffer, unflatten into a slug making sure to do the typefaceID translation from
+    // renderer to GPU. Returns nullptr if there was a problem.
+    sk_sp<GrSlug> makeSlugFromBuffer(SkReadBuffer& buffer) const;
+
 private:
     std::unique_ptr<SkStrikeClientImpl> fImpl;
 };
-
-// For exposure to fuzzing only.
-bool SkFuzzDeserializeSkDescriptor(sk_sp<SkData> bytes, SkAutoDescriptor* ad);
-
 #endif  // SkChromeRemoteGlyphCache_DEFINED

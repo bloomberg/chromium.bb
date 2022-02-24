@@ -67,7 +67,7 @@ public:
 #   endif
 #endif
 
-#define ASSERT_SINGLE_OWNER GR_ASSERT_SINGLE_OWNER(this->singleOwner())
+#define ASSERT_SINGLE_OWNER SKGPU_ASSERT_SINGLE_OWNER(this->singleOwner())
 
 GrDirectContext::DirectContextID GrDirectContext::DirectContextID::Next() {
     static std::atomic<uint32_t> nextID{1};
@@ -540,7 +540,7 @@ static bool update_texture_with_pixmaps(GrDirectContext* context,
         return false;
     }
 
-    GrSwizzle swizzle = context->priv().caps()->getReadSwizzle(format, ct);
+    skgpu::Swizzle swizzle = context->priv().caps()->getReadSwizzle(format, ct);
     GrSurfaceProxyView view(std::move(proxy), textureOrigin, swizzle);
     skgpu::SurfaceContext surfaceContext(context, std::move(view), src[0].info().colorInfo());
     SkAutoSTArray<15, GrCPixmap> tmpSrc(numLevels);
@@ -696,7 +696,7 @@ bool GrDirectContext::updateBackendTexture(const GrBackendTexture& backendTextur
         return false;
     }
 
-    GrSwizzle swizzle = this->caps()->getWriteSwizzle(format, grColorType);
+    skgpu::Swizzle swizzle = this->caps()->getWriteSwizzle(format, grColorType);
     SkColor4f swizzledColor = swizzle.applyTo(color);
 
     return fGpu->clearBackendTexture(backendTexture,

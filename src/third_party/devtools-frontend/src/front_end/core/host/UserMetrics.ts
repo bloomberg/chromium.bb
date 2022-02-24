@@ -584,7 +584,12 @@ export enum DevtoolsExperiments {
   'cssTypeComponentLength' = 52,
   'preciseChanges' = 53,
   'bfcacheDisplayTree' = 54,
-  'MaxValue' = 55,
+  'stylesPaneCSSChanges' = 55,
+  'headerOverrides' = 56,
+  'lighthousePanelFR' = 57,
+  'evaluateExpressionsWithSourceMaps' = 58,
+  // Increment this when new experiments are added.
+  'MaxValue' = 59,
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 

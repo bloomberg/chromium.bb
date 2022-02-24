@@ -1844,8 +1844,8 @@ int64_t TurboAssembler::CalculateTargetOffset(Address target,
     // Assembler::runtime_entry_at()).
     // Note, that builtin-to-builitin calls use different OFF_HEAP_TARGET mode
     // and therefore are encoded differently.
-    DCHECK_NE(options().code_range_start, 0);
-    offset -= static_cast<int64_t>(options().code_range_start);
+    DCHECK_NE(options().code_range_base, 0);
+    offset -= static_cast<int64_t>(options().code_range_base);
   } else {
     offset -= reinterpret_cast<int64_t>(pc);
   }
@@ -3109,6 +3109,7 @@ void TurboAssembler::LoadExternalPointerField(Register destination,
   DCHECK(!AreAliased(destination, isolate_root));
   ASM_CODE_COMMENT(this);
 #ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+  DCHECK_NE(kExternalPointerNullTag, tag);
   UseScratchRegisterScope temps(this);
   Register external_table = temps.AcquireX();
   if (isolate_root == no_reg) {
@@ -3119,12 +3120,14 @@ void TurboAssembler::LoadExternalPointerField(Register destination,
       MemOperand(isolate_root,
                  IsolateData::external_pointer_table_offset() +
                      Internals::kExternalPointerTableBufferOffset));
-  Ldr(destination, field_operand);
-  Ldr(destination,
-      MemOperand(external_table, destination, LSL, kSystemPointerSizeLog2));
-  if (tag != 0) {
-    And(destination, destination, Immediate(~tag));
-  }
+  Ldr(destination.W(), field_operand);
+  // MemOperand doesn't support LSR currently (only LSL), so here we do the
+  // offset computation separately first.
+  STATIC_ASSERT(kExternalPointerIndexShift > kSystemPointerSizeLog2);
+  int shift_amount = kExternalPointerIndexShift - kSystemPointerSizeLog2;
+  Mov(destination, Operand(destination, LSR, shift_amount));
+  Ldr(destination, MemOperand(external_table, destination));
+  And(destination, destination, Immediate(~tag));
 #else
   Ldr(destination, field_operand);
 #endif  // V8_SANDBOXED_EXTERNAL_POINTERS

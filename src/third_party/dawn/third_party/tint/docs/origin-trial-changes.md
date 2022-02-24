@@ -1,5 +1,18 @@
 # Tint changes during Origin Trial
 
+## Changes for M100
+
+### Breaking changes
+
+* The `@interpolate(flat)` attribute must now be specified on integral user-defined IO. [tint:1224](crbug.com/tint/1224)
+* The `ignore()` intrinsic has been removed. Use phoney-assignment instead: `ignore(expr);` -> `_ = expr;`.
+* `break` statements in `continuing` blocks are now correctly validated.
+
+### New Features
+
+* Module-scope declarations can now be declared in any order. [tint:1266](crbug.com/tint/1266)
+* The `override` keyword and `@id()` attribute for pipeline-overridable constants are now supported, replacing the `@override` attribute. [tint:1403](crbug.com/tint/1403)
+
 ## Changes for M99
 
 ### Breaking changes

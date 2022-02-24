@@ -2226,6 +2226,8 @@ EIGEN_STRONG_INLINE void gemm_complex(const DataMapper& res, const LhsScalar* bl
 #undef advanceCols
 #undef advanceRows
 
+#include "MatrixVectorProduct.h"
+
 /************************************
  * ppc64le template specializations *
  * **********************************/

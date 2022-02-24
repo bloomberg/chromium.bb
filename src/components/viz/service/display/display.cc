@@ -16,6 +16,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "cc/base/math_util.h"
 #include "cc/base/region.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
@@ -297,7 +298,7 @@ void Display::PresentationGroupTiming::OnSwap(gfx::SwapTimings timings,
                                               DisplaySchedulerBase* scheduler) {
   swap_timings_ = timings;
 
-  if (timings.swap_start.is_null())
+  if (timings.swap_start.is_null() || frame_time_.is_inf())
     return;
 
   auto frame_latency = timings.swap_start - frame_time_;
@@ -595,9 +596,18 @@ void Display::InitializeRenderer(bool enable_shared_images) {
       output_surface_->capabilities().only_invalidates_damage_rect &&
       !overlay_processor_->IsOverlaySupported();
 
+  SurfaceAggregator::ExtraPassForReadbackOption extra_pass_option =
+      SurfaceAggregator::ExtraPassForReadbackOption::kNone;
+  if (output_surface_->capabilities().root_is_vulkan_secondary_command_buffer) {
+    extra_pass_option =
+        base::FeatureList::IsEnabled(features::kWebViewVulkanIntermediateBuffer)
+            ? SurfaceAggregator::ExtraPassForReadbackOption::kAlwaysAddPass
+            : SurfaceAggregator::ExtraPassForReadbackOption::
+                  kAddPassForReadback;
+  }
   aggregator_ = std::make_unique<SurfaceAggregator>(
       surface_manager_, resource_provider_.get(), output_partial_list,
-      overlay_processor_->NeedsSurfaceDamageRectList());
+      overlay_processor_->NeedsSurfaceDamageRectList(), extra_pass_option);
 
   aggregator_->set_output_is_secure(output_is_secure_);
   aggregator_->SetDisplayColorSpaces(display_color_spaces_);
@@ -736,7 +746,6 @@ bool Display::DrawAndSwap(base::TimeTicks frame_time,
     // aggregated again so that the trail exists for a single frame.
     target_damage_bounding_rect.Union(
         renderer_->GetDelegatedInkTrailDamageRect());
-
     frame = aggregator_->Aggregate(
         current_surface_id_, expected_display_time, current_display_transform,
         target_damage_bounding_rect, ++swapped_trace_id_);
@@ -759,7 +768,8 @@ bool Display::DrawAndSwap(base::TimeTicks frame_time,
 
   if (frame.delegated_ink_metadata) {
     TRACE_EVENT_INSTANT1(
-        "viz", "Delegated Ink Metadata was aggregated for DrawAndSwap.",
+        "delegated_ink_trails",
+        "Delegated Ink Metadata was aggregated for DrawAndSwap.",
         TRACE_EVENT_SCOPE_THREAD, "ink metadata",
         frame.delegated_ink_metadata->ToString());
     renderer_->SetDelegatedInkMetadata(std::move(frame.delegated_ink_metadata));

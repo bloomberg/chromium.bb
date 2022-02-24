@@ -235,11 +235,16 @@ class WasmGraphBuildingInterface {
     BitVector* assigned = WasmDecoder<validate>::AnalyzeLoopAssignment(
         decoder, decoder->pc(), decoder->num_locals(), decoder->zone());
     if (decoder->failed()) return;
+    int instance_cache_index = decoder->num_locals();
+    // If the module has shared memory, the stack guard might reallocate the
+    // shared memory. We have to assume the instance cache will be updated.
+    if (decoder->module_->has_shared_memory) {
+      assigned->Add(instance_cache_index);
+    }
     DCHECK_NOT_NULL(assigned);
     decoder->control_at(0)->loop_assignments = assigned;
 
     // Only introduce phis for variables assigned in this loop.
-    int instance_cache_index = decoder->num_locals();
     for (int i = decoder->num_locals() - 1; i >= 0; i--) {
       if (!assigned->Contains(i)) continue;
       TFNode* inputs[] = {ssa_env_->locals[i], control()};
@@ -253,7 +258,10 @@ class WasmGraphBuildingInterface {
 
     // Now we setup a new environment for the inside of the loop.
     SetEnv(Split(decoder->zone(), ssa_env_));
-    builder_->StackCheck(decoder->position());
+    builder_->StackCheck(decoder->module_->has_shared_memory
+                             ? &ssa_env_->instance_cache
+                             : nullptr,
+                         decoder->position());
     ssa_env_->SetNotMerged();
 
     // Wrap input merge into phis.
@@ -1108,8 +1116,18 @@ class WasmGraphBuildingInterface {
     for (uint32_t i = 0; i < elements.size(); i++) {
       element_nodes[i] = elements[i].node;
     }
-    result->node = builder_->ArrayInit(imm.index, imm.array_type, rtt.node,
-                                       VectorOf(element_nodes));
+    result->node =
+        builder_->ArrayInit(imm.array_type, rtt.node, VectorOf(element_nodes));
+  }
+
+  void ArrayInitFromData(FullDecoder* decoder,
+                         const ArrayIndexImmediate<validate>& array_imm,
+                         const IndexImmediate<validate>& data_segment,
+                         const Value& offset, const Value& length,
+                         const Value& rtt, Value* result) {
+    result->node = builder_->ArrayInitFromData(
+        array_imm.array_type, data_segment.index, offset.node, length.node,
+        rtt.node, decoder->position());
   }
 
   void I31New(FullDecoder* decoder, const Value& input, Value* result) {
@@ -1128,11 +1146,6 @@ class WasmGraphBuildingInterface {
     result->node = builder_->RttCanon(type_index);
   }
 
-  void RttSub(FullDecoder* decoder, uint32_t type_index, const Value& parent,
-              Value* result, WasmRttSubMode mode) {
-    result->node = builder_->RttSub(type_index, parent.node, mode);
-  }
-
   using StaticKnowledge = compiler::WasmGraphBuilder::ObjectReferenceKnowledge;
 
   StaticKnowledge ComputeStaticKnowledge(ValueType object_type,
@@ -1143,10 +1156,13 @@ class WasmGraphBuildingInterface {
     DCHECK(object_type.is_object_reference());  // Checked by validation.
     // In the bottom case, the result is irrelevant.
     result.reference_kind =
-        rtt_type != kWasmBottom && module->has_signature(rtt_type.ref_index())
+        !rtt_type.is_bottom() && module->has_signature(rtt_type.ref_index())
             ? compiler::WasmGraphBuilder::kFunction
             : compiler::WasmGraphBuilder::kArrayOrStruct;
-    result.rtt_depth = rtt_type.has_depth() ? rtt_type.depth() : -1;
+    result.rtt_depth = rtt_type.is_bottom()
+                           ? 0 /* unused */
+                           : static_cast<uint8_t>(GetSubtypingDepth(
+                                 module, rtt_type.ref_index()));
     return result;
   }
 
@@ -1455,7 +1471,6 @@ class WasmGraphBuildingInterface {
       case kOptRef:
         return builder_->RefNull();
       case kRtt:
-      case kRttWithDepth:
       case kVoid:
       case kBottom:
       case kRef:
@@ -1721,9 +1736,11 @@ class WasmGraphBuildingInterface {
     for (size_t i = 0; i < return_count; ++i) {
       returns[i].node = return_nodes[i];
     }
-    // The invoked function could have used grow_memory, so we need to
-    // reload mem_size and mem_start.
-    LoadContextIntoSsa(ssa_env_);
+    if (decoder->module_->initial_pages != decoder->module_->maximum_pages) {
+      // The invoked function could have used grow_memory, so we need to
+      // reload mem_size and mem_start.
+      LoadContextIntoSsa(ssa_env_);
+    }
   }
 
   void DoReturnCall(FullDecoder* decoder, CallInfo call_info,

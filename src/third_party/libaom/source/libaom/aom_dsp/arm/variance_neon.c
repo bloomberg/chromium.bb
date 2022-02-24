@@ -565,7 +565,7 @@ static void variance_neon_w8x2(const uint8_t *a, int a_stride, const uint8_t *b,
 #endif
 }
 
-#define varianceNxM(n, m, shift)                                            \
+#define VARIANCE_NXM(n, m, shift)                                           \
   unsigned int aom_variance##n##x##m##_neon(const uint8_t *a, int a_stride, \
                                             const uint8_t *b, int b_stride, \
                                             unsigned int *sse) {            \
@@ -637,7 +637,7 @@ static void variance_neon_wide_block(const uint8_t *a, int a_stride,
   *sse = sq;
 }
 
-#define varianceNxM_wide(W, H)                                              \
+#define VARIANCE_NXM_WIDE(W, H)                                             \
   unsigned int aom_variance##W##x##H##_neon(const uint8_t *a, int a_stride, \
                                             const uint8_t *b, int b_stride, \
                                             uint32_t *sse) {                \
@@ -646,10 +646,10 @@ static void variance_neon_wide_block(const uint8_t *a, int a_stride,
     return *sse - (uint32_t)(((int64_t)sum * sum) / (W * H));               \
   }
 
-varianceNxM(4, 4, 4);
-varianceNxM(4, 8, 5);
-varianceNxM(8, 4, 5);
-varianceNxM(16, 32, 9);
-varianceNxM(32, 16, 9);
-varianceNxM_wide(128, 64);
-varianceNxM_wide(64, 128);
+VARIANCE_NXM(4, 4, 4)
+VARIANCE_NXM(4, 8, 5)
+VARIANCE_NXM(8, 4, 5)
+VARIANCE_NXM(16, 32, 9)
+VARIANCE_NXM(32, 16, 9)
+VARIANCE_NXM_WIDE(128, 64)
+VARIANCE_NXM_WIDE(64, 128)

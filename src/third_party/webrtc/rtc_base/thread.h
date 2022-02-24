@@ -141,8 +141,6 @@ class RTC_EXPORT ThreadManager {
   Thread* WrapCurrentThread();
   void UnwrapCurrentThread();
 
-  bool IsMainThread();
-
 #if RTC_DCHECK_IS_ON
   // Registers that a Send operation is to be performed between `source` and
   // `target`, while checking that this does not cause a send cycle that could
@@ -188,9 +186,6 @@ class RTC_EXPORT ThreadManager {
 #if defined(WEBRTC_WIN)
   const DWORD key_;
 #endif
-
-  // The thread to potentially autowrap.
-  const PlatformThreadRef main_thread_ref_;
 };
 
 // WARNING! SUBCLASSES MUST CALL Stop() IN THEIR DESTRUCTORS!  See ~Thread().
@@ -419,79 +414,6 @@ class RTC_LOCKABLE RTC_EXPORT Thread : public webrtc::TaskQueueBase {
   // If NDEBUG is defined and RTC_DCHECK_IS_ON is undefined always returns
   // true.
   bool IsInvokeToThreadAllowed(rtc::Thread* target);
-
-  // Posts a task to invoke the functor on `this` thread asynchronously, i.e.
-  // without blocking the thread that invoked PostTask(). Ownership of `functor`
-  // is passed and (usually, see below) destroyed on `this` thread after it is
-  // invoked.
-  // Requirements of FunctorT:
-  // - FunctorT is movable.
-  // - FunctorT implements "T operator()()" or "T operator()() const" for some T
-  //   (if T is not void, the return value is discarded on `this` thread).
-  // - FunctorT has a public destructor that can be invoked from `this` thread
-  //   after operation() has been invoked.
-  // - The functor must not cause the thread to quit before PostTask() is done.
-  //
-  // Destruction of the functor/task mimics what TaskQueue::PostTask does: If
-  // the task is run, it will be destroyed on `this` thread. However, if there
-  // are pending tasks by the time the Thread is destroyed, or a task is posted
-  // to a thread that is quitting, the task is destroyed immediately, on the
-  // calling thread. Destroying the Thread only blocks for any currently running
-  // task to complete. Note that TQ abstraction is even vaguer on how
-  // destruction happens in these cases, allowing destruction to happen
-  // asynchronously at a later time and on some arbitrary thread. So to ease
-  // migration, don't depend on Thread::PostTask destroying un-run tasks
-  // immediately.
-  //
-  // Example - Calling a class method:
-  // class Foo {
-  //  public:
-  //   void DoTheThing();
-  // };
-  // Foo foo;
-  // thread->PostTask(RTC_FROM_HERE, Bind(&Foo::DoTheThing, &foo));
-  //
-  // Example - Calling a lambda function:
-  // thread->PostTask(RTC_FROM_HERE,
-  //                  [&x, &y] { x.TrackComputations(y.Compute()); });
-  //
-  // TODO(https://crbug.com/webrtc/13582): Deprecate and remove in favor of the
-  // PostTask() method inherited from TaskQueueBase and template helpers defined
-  // here in rtc::Thread for performing webrtc::ToQueuedTask(). Migration is
-  // easy, just remove RTC_FROM_HERE like so:
-  //
-  // Before:
-  //   thread->PostTask(RTC_FROM_HERE, []() { printfln("wow"); });
-  // After:
-  //   thread->PostTask([]() { printfln("wow"); });
-  template <class FunctorT>
-  void DEPRECATED_PostTask(const Location& posted_from, FunctorT&& functor) {
-    Post(posted_from, GetPostTaskMessageHandler(), /*id=*/0,
-         new rtc_thread_internal::MessageWithFunctor<FunctorT>(
-             std::forward<FunctorT>(functor)));
-  }
-  template <class FunctorT>
-  ABSL_DEPRECATED("bugs.webrtc.org/13582")
-  void PostTask(const Location& posted_from, FunctorT&& functor) {
-    DEPRECATED_PostTask(posted_from, std::forward<FunctorT>(functor));
-  }
-  template <class FunctorT>
-  void DEPRECATED_PostDelayedTask(const Location& posted_from,
-                                  FunctorT&& functor,
-                                  uint32_t milliseconds) {
-    PostDelayed(posted_from, milliseconds, GetPostTaskMessageHandler(),
-                /*id=*/0,
-                new rtc_thread_internal::MessageWithFunctor<FunctorT>(
-                    std::forward<FunctorT>(functor)));
-  }
-  template <class FunctorT>
-  ABSL_DEPRECATED("bugs.webrtc.org/13582")
-  void PostDelayedTask(const Location& posted_from,
-                       FunctorT&& functor,
-                       uint32_t milliseconds) {
-    DEPRECATED_PostDelayedTask(posted_from, std::forward<FunctorT>(functor),
-                               milliseconds);
-  }
 
   // From TaskQueueBase
   void PostTask(std::unique_ptr<webrtc::QueuedTask> task) override;

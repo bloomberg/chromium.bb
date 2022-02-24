@@ -47,10 +47,13 @@ TEST_P(AV1SubtractBlockTest, SimpleSubtract) {
     const int block_height = block_size_high[bsize];
     int16_t *diff = reinterpret_cast<int16_t *>(
         aom_memalign(16, sizeof(*diff) * block_width * block_height * 2));
+    ASSERT_NE(diff, nullptr);
     uint8_t *pred = reinterpret_cast<uint8_t *>(
         aom_memalign(16, block_width * block_height * 2));
+    ASSERT_NE(pred, nullptr);
     uint8_t *src = reinterpret_cast<uint8_t *>(
         aom_memalign(16, block_width * block_height * 2));
+    ASSERT_NE(src, nullptr);
 
     for (int n = 0; n < 100; n++) {
       for (int r = 0; r < block_height; ++r) {
@@ -132,10 +135,13 @@ class AV1HBDSubtractBlockTest : public ::testing::TestWithParam<Params> {
     const size_t max_block_size = max_width * max_width;
     src_ = CONVERT_TO_BYTEPTR(reinterpret_cast<uint16_t *>(
         aom_memalign(16, max_block_size * sizeof(uint16_t))));
+    ASSERT_NE(src_, nullptr);
     pred_ = CONVERT_TO_BYTEPTR(reinterpret_cast<uint16_t *>(
         aom_memalign(16, max_block_size * sizeof(uint16_t))));
+    ASSERT_NE(pred_, nullptr);
     diff_ = reinterpret_cast<int16_t *>(
         aom_memalign(16, max_block_size * sizeof(int16_t)));
+    ASSERT_NE(diff_, nullptr);
   }
 
   virtual void TearDown() {

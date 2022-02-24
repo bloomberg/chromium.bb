@@ -159,6 +159,21 @@ T Object::Relaxed_ReadField(size_t offset) const {
       reinterpret_cast<AtomicT*>(field_address(offset))));
 }
 
+template <class T,
+          typename std::enable_if<(std::is_arithmetic<T>::value ||
+                                   std::is_enum<T>::value) &&
+                                      !std::is_floating_point<T>::value,
+                                  int>::type>
+void Object::Relaxed_WriteField(size_t offset, T value) {
+  // Pointer compression causes types larger than kTaggedSize to be
+  // unaligned. Atomic stores must be aligned.
+  DCHECK_IMPLIES(COMPRESS_POINTERS_BOOL, sizeof(T) <= kTaggedSize);
+  using AtomicT = typename base::AtomicTypeFromByteWidth<sizeof(T)>::type;
+  base::AsAtomicImpl<AtomicT>::Relaxed_Store(
+      reinterpret_cast<AtomicT*>(field_address(offset)),
+      static_cast<AtomicT>(value));
+}
+
 bool HeapObject::InSharedHeap() const {
   if (IsReadOnlyHeapObject(*this)) return V8_SHARED_RO_HEAP_BOOL;
   return InSharedWritableHeap();
@@ -288,9 +303,8 @@ bool Object::IsNumeric(PtrComprCageBase cage_base) const {
 }
 
 DEF_GETTER(HeapObject, IsArrayList, bool) {
-  ReadOnlyRoots roots = GetReadOnlyRoots(cage_base);
-  return *this == roots.empty_fixed_array() ||
-         map(cage_base) == roots.array_list_map();
+  return map(cage_base) ==
+         GetReadOnlyRoots(cage_base).unchecked_array_list_map();
 }
 
 DEF_GETTER(HeapObject, IsRegExpMatchInfo, bool) {
@@ -563,10 +577,11 @@ MaybeHandle<Object> Object::ToPropertyKey(Isolate* isolate,
 }
 
 // static
-MaybeHandle<Object> Object::ToPrimitive(Handle<Object> input,
+MaybeHandle<Object> Object::ToPrimitive(Isolate* isolate, Handle<Object> input,
                                         ToPrimitiveHint hint) {
   if (input->IsPrimitive()) return input;
-  return JSReceiver::ToPrimitive(Handle<JSReceiver>::cast(input), hint);
+  return JSReceiver::ToPrimitive(isolate, Handle<JSReceiver>::cast(input),
+                                 hint);
 }
 
 // static
@@ -661,8 +676,9 @@ void Object::WriteSandboxedPointerField(size_t offset, Isolate* isolate,
                                 PtrComprCageBase(isolate), value);
 }
 
-void Object::InitExternalPointerField(size_t offset, Isolate* isolate) {
-  i::InitExternalPointerField(field_address(offset), isolate);
+void Object::InitExternalPointerField(size_t offset, Isolate* isolate,
+                                      ExternalPointerTag tag) {
+  i::InitExternalPointerField(field_address(offset), isolate, tag);
 }
 
 void Object::InitExternalPointerField(size_t offset, Isolate* isolate,
@@ -690,6 +706,10 @@ MaybeObjectSlot HeapObject::RawMaybeWeakField(int byte_offset) const {
 
 CodeObjectSlot HeapObject::RawCodeField(int byte_offset) const {
   return CodeObjectSlot(field_address(byte_offset));
+}
+
+ExternalPointer_t HeapObject::RawExternalPointerField(int byte_offset) const {
+  return ReadRawExternalPointerField(field_address(byte_offset));
 }
 
 MapWord MapWord::FromMap(const Map map) {
@@ -722,7 +742,7 @@ HeapObject MapWord::ToForwardingAddress() {
   HeapObject obj = HeapObject::FromAddress(value_);
   // For objects allocated outside of the main pointer compression cage the
   // variant with explicit cage base must be used.
-  DCHECK_IMPLIES(V8_EXTERNAL_CODE_SPACE_BOOL, !obj.IsCode());
+  DCHECK_IMPLIES(V8_EXTERNAL_CODE_SPACE_BOOL, !IsCodeSpaceObject(obj));
   return obj;
 }
 
@@ -783,65 +803,70 @@ Map HeapObject::map(PtrComprCageBase cage_base) const {
 }
 
 void HeapObject::set_map(Map value) {
+  set_map<EmitWriteBarrier::kYes>(value, kRelaxedStore,
+                                  VerificationMode::kPotentialLayoutChange);
+}
+
+void HeapObject::set_map(Map value, ReleaseStoreTag tag) {
+  set_map<EmitWriteBarrier::kYes>(value, kReleaseStore,
+                                  VerificationMode::kPotentialLayoutChange);
+}
+
+void HeapObject::set_map_safe_transition(Map value) {
+  set_map<EmitWriteBarrier::kYes>(value, kRelaxedStore,
+                                  VerificationMode::kSafeMapTransition);
+}
+
+void HeapObject::set_map_safe_transition(Map value, ReleaseStoreTag tag) {
+  set_map<EmitWriteBarrier::kYes>(value, kReleaseStore,
+                                  VerificationMode::kSafeMapTransition);
+}
+
+// Unsafe accessor omitting write barrier.
+void HeapObject::set_map_no_write_barrier(Map value, RelaxedStoreTag tag) {
+  set_map<EmitWriteBarrier::kNo>(value, kRelaxedStore,
+                                 VerificationMode::kPotentialLayoutChange);
+}
+
+void HeapObject::set_map_no_write_barrier(Map value, ReleaseStoreTag tag) {
+  set_map<EmitWriteBarrier::kNo>(value, kReleaseStore,
+                                 VerificationMode::kPotentialLayoutChange);
+}
+
+template <HeapObject::EmitWriteBarrier emit_write_barrier, typename MemoryOrder>
+void HeapObject::set_map(Map value, MemoryOrder order, VerificationMode mode) {
 #if V8_ENABLE_WEBASSEMBLY
   // In {WasmGraphBuilder::SetMap} and {WasmGraphBuilder::LoadMap}, we treat
   // maps as immutable. Therefore we are not allowed to mutate them here.
   DCHECK(!value.IsWasmStructMap() && !value.IsWasmArrayMap());
 #endif
+  // Object layout changes are currently not supported on background threads.
+  // This method might change object layout and therefore can't be used on
+  // background threads.
+  DCHECK_IMPLIES(mode != VerificationMode::kSafeMapTransition,
+                 !LocalHeap::Current());
 #ifdef VERIFY_HEAP
   if (FLAG_verify_heap && !value.is_null()) {
-    GetHeapFromWritableObject(*this)->VerifyObjectLayoutChange(*this, value);
+    Heap* heap = GetHeapFromWritableObject(*this);
+    if (mode == VerificationMode::kSafeMapTransition) {
+      heap->VerifySafeMapTransition(*this, value);
+    } else {
+      DCHECK_EQ(mode, VerificationMode::kPotentialLayoutChange);
+      heap->VerifyObjectLayoutChange(*this, value);
+    }
   }
 #endif
-  set_map_word(MapWord::FromMap(value), kRelaxedStore);
+  set_map_word(MapWord::FromMap(value), order);
 #ifndef V8_DISABLE_WRITE_BARRIERS
   if (!value.is_null()) {
-    // TODO(1600) We are passing kNullAddress as a slot because maps can never
-    // be on an evacuation candidate.
-    WriteBarrier::Marking(*this, ObjectSlot(kNullAddress), value);
+    if (emit_write_barrier == EmitWriteBarrier::kYes) {
+      WriteBarrier::Marking(*this, map_slot(), value);
+    } else {
+      DCHECK_EQ(emit_write_barrier, EmitWriteBarrier::kNo);
+      SLOW_DCHECK(!WriteBarrier::IsRequired(*this, value));
+    }
   }
 #endif
-}
-
-DEF_ACQUIRE_GETTER(HeapObject, map, Map) {
-  return map_word(cage_base, kAcquireLoad).ToMap();
-}
-
-void HeapObject::set_map(Map value, ReleaseStoreTag tag) {
-#ifdef VERIFY_HEAP
-  if (FLAG_verify_heap && !value.is_null()) {
-    GetHeapFromWritableObject(*this)->VerifyObjectLayoutChange(*this, value);
-  }
-#endif
-  set_map_word(MapWord::FromMap(value), tag);
-#ifndef V8_DISABLE_WRITE_BARRIERS
-  if (!value.is_null()) {
-    // TODO(1600) We are passing kNullAddress as a slot because maps can never
-    // be on an evacuation candidate.
-    WriteBarrier::Marking(*this, ObjectSlot(kNullAddress), value);
-  }
-#endif
-}
-
-// Unsafe accessor omitting write barrier.
-void HeapObject::set_map_no_write_barrier(Map value, RelaxedStoreTag tag) {
-#ifdef VERIFY_HEAP
-  if (FLAG_verify_heap && !value.is_null()) {
-    GetHeapFromWritableObject(*this)->VerifyObjectLayoutChange(*this, value);
-  }
-#endif
-  set_map_word(MapWord::FromMap(value), tag);
-  SLOW_DCHECK(!WriteBarrier::IsRequired(*this, value));
-}
-
-void HeapObject::set_map_no_write_barrier(Map value, ReleaseStoreTag tag) {
-#ifdef VERIFY_HEAP
-  if (FLAG_verify_heap && !value.is_null()) {
-    GetHeapFromWritableObject(*this)->VerifyObjectLayoutChange(*this, value);
-  }
-#endif
-  set_map_word(MapWord::FromMap(value), tag);
-  SLOW_DCHECK(!WriteBarrier::IsRequired(*this, value));
 }
 
 void HeapObject::set_map_after_allocation(Map value, WriteBarrierMode mode) {
@@ -850,13 +875,15 @@ void HeapObject::set_map_after_allocation(Map value, WriteBarrierMode mode) {
 #ifndef V8_DISABLE_WRITE_BARRIERS
   if (mode != SKIP_WRITE_BARRIER) {
     DCHECK(!value.is_null());
-    // TODO(1600) We are passing kNullAddress as a slot because maps can never
-    // be on an evacuation candidate.
-    WriteBarrier::Marking(*this, ObjectSlot(kNullAddress), value);
+    WriteBarrier::Marking(*this, map_slot(), value);
   } else {
     SLOW_DCHECK(!WriteBarrier::IsRequired(*this, value));
   }
 #endif
+}
+
+DEF_ACQUIRE_GETTER(HeapObject, map, Map) {
+  return map_word(cage_base, kAcquireLoad).ToMap();
 }
 
 ObjectSlot HeapObject::map_slot() const {

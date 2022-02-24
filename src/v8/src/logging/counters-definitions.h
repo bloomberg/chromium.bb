@@ -110,7 +110,18 @@ namespace internal {
   HR(caged_memory_allocation_outcome, V8.CagedMemoryAllocationOutcome, 0, 2,   \
      3)                                                                        \
   /* number of times a cache event is triggered for a wasm module */           \
-  HR(wasm_cache_count, V8.WasmCacheCount, 0, 100, 101)
+  HR(wasm_cache_count, V8.WasmCacheCount, 0, 100, 101)                         \
+  SANDBOXED_HISTOGRAM_LIST(HR)
+
+#ifdef V8_SANDBOX_IS_AVAILABLE
+#define SANDBOXED_HISTOGRAM_LIST(HR)                                          \
+  /* Number of in-use external pointers in the external pointer table */      \
+  /* Counted after sweeping the table at the end of mark-compact GC */        \
+  HR(sandboxed_external_pointers_count, V8.SandboxedExternalPointersCount, 0, \
+     kMaxSandboxedExternalPointers, 101)
+#else
+#define SANDBOXED_HISTOGRAM_LIST(HR)
+#endif  // V8_SANDBOX_IS_AVAILABLE
 
 #define NESTED_TIMED_HISTOGRAM_LIST(HT)                                       \
   /* Timer histograms, not thread safe: HT(name, caption, max, unit) */       \
@@ -136,11 +147,6 @@ namespace internal {
   HT(compile_script, V8.CompileScriptMicroSeconds, 1000000, MICROSECOND)      \
   /* Time for lazily compiling Wasm functions. */                             \
   HT(wasm_lazy_compile_time, V8.WasmLazyCompileTimeMicroSeconds, 100000000,   \
-     MICROSECOND)                                                             \
-  /* Total time to decompress isolate snapshot. */                            \
-  HT(snapshot_decompress, V8.SnapshotDecompress, 10000000, MICROSECOND)       \
-  /* Time to decompress context snapshot. */                                  \
-  HT(context_snapshot_decompress, V8.ContextSnapshotDecompress, 10000000,     \
      MICROSECOND)                                                             \
   HT(wasm_compile_after_deserialize,                                          \
      V8.WasmCompileAfterDeserializeMilliSeconds, 1000000, MILLISECOND)
@@ -334,7 +340,6 @@ namespace internal {
   SC(sub_string_runtime, V8.SubStringRuntime)                                  \
   SC(regexp_entry_runtime, V8.RegExpEntryRuntime)                              \
   SC(stack_interrupts, V8.StackInterrupts)                                     \
-  SC(runtime_profiler_ticks, V8.RuntimeProfilerTicks)                          \
   SC(soft_deopts_executed, V8.SoftDeoptsExecuted)                              \
   SC(new_space_bytes_available, V8.MemoryNewSpaceBytesAvailable)               \
   SC(new_space_bytes_committed, V8.MemoryNewSpaceBytesCommitted)               \

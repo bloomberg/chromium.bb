@@ -634,21 +634,6 @@ inline void Code::set_is_promise_rejection(bool value) {
   container.set_kind_specific_flags(updated, kRelaxedStore);
 }
 
-inline bool Code::is_exception_caught() const {
-  DCHECK(kind() == CodeKind::BUILTIN);
-  int32_t flags =
-      code_data_container(kAcquireLoad).kind_specific_flags(kRelaxedLoad);
-  return IsExceptionCaughtField::decode(flags);
-}
-
-inline void Code::set_is_exception_caught(bool value) {
-  DCHECK(kind() == CodeKind::BUILTIN);
-  CodeDataContainer container = code_data_container(kAcquireLoad);
-  int32_t previous = container.kind_specific_flags(kRelaxedLoad);
-  int32_t updated = IsExceptionCaughtField::update(previous, value);
-  container.set_kind_specific_flags(updated, kRelaxedStore);
-}
-
 inline bool Code::is_off_heap_trampoline() const {
   const uint32_t flags = RELAXED_READ_UINT32_FIELD(*this, kFlagsOffset);
   return IsOffHeapTrampoline::decode(flags);
@@ -656,7 +641,6 @@ inline bool Code::is_off_heap_trampoline() const {
 
 inline HandlerTable::CatchPrediction Code::GetBuiltinCatchPrediction() {
   if (is_promise_rejection()) return HandlerTable::PROMISE;
-  if (is_exception_caught()) return HandlerTable::CAUGHT;
   return HandlerTable::UNCAUGHT;
 }
 
@@ -725,26 +709,6 @@ void CodeDataContainer::set_marked_for_deoptimization(bool flag) {
 
 void Code::set_marked_for_deoptimization(bool flag) {
   code_data_container(kAcquireLoad).set_marked_for_deoptimization(flag);
-}
-
-int Code::deoptimization_count() const {
-  DCHECK(CodeKindCanDeoptimize(kind()));
-  int32_t flags =
-      code_data_container(kAcquireLoad).kind_specific_flags(kRelaxedLoad);
-  int count = DeoptCountField::decode(flags);
-  DCHECK_GE(count, 0);
-  return count;
-}
-
-void Code::increment_deoptimization_count() {
-  DCHECK(CodeKindCanDeoptimize(kind()));
-  CodeDataContainer container = code_data_container(kAcquireLoad);
-  int32_t flags = container.kind_specific_flags(kRelaxedLoad);
-  int32_t count = DeoptCountField::decode(flags);
-  DCHECK_GE(count, 0);
-  CHECK_LE(count + 1, DeoptCountField::kMax);
-  int32_t updated = DeoptCountField::update(flags, count + 1);
-  container.set_kind_specific_flags(updated, kRelaxedStore);
 }
 
 bool Code::embedded_objects_cleared() const {
@@ -899,26 +863,25 @@ static_assert(!V8_EXTERNAL_CODE_SPACE_BOOL,
               "for big endian architectures");
 #endif
 
-DEF_GETTER(CodeDataContainer, raw_code, Object) {
+Object CodeDataContainer::raw_code() const {
+  PtrComprCageBase cage_base = code_cage_base();
+  return CodeDataContainer::raw_code(cage_base);
+}
+
+Object CodeDataContainer::raw_code(PtrComprCageBase cage_base) const {
   CHECK(V8_EXTERNAL_CODE_SPACE_BOOL);
-  // Given the fields layout we can write the Code reference as a full word
-  // (see the static asserts above).
-  Address* p = reinterpret_cast<Address*>(address() + kCodeOffset);
-  Object value = Object(*p);
+  Object value = TaggedField<Object, kCodeOffset>::load(cage_base, *this);
   return value;
 }
 
 void CodeDataContainer::set_raw_code(Object value, WriteBarrierMode mode) {
   CHECK(V8_EXTERNAL_CODE_SPACE_BOOL);
-  // Given the fields layout we can write the Code reference as a full word
-  // (see the static asserts above).
-  Address* p = reinterpret_cast<Address*>(address() + kCodeOffset);
-  *p = value.ptr();
+  TaggedField<Object, kCodeOffset>::store(*this, value);
   CONDITIONAL_WRITE_BARRIER(*this, kCodeOffset, value, mode);
 }
 
 Object CodeDataContainer::raw_code(RelaxedLoadTag tag) const {
-  PtrComprCageBase cage_base = code_cage_base();
+  PtrComprCageBase cage_base = code_cage_base(tag);
   return CodeDataContainer::raw_code(cage_base, tag);
 }
 
@@ -934,7 +897,7 @@ ACCESSORS(CodeDataContainer, next_code_link, Object, kNextCodeLinkOffset)
 
 PtrComprCageBase CodeDataContainer::code_cage_base() const {
 #ifdef V8_EXTERNAL_CODE_SPACE
-  CHECK(!V8_SANDBOXED_EXTERNAL_POINTERS_BOOL);
+  // TODO(v8:10391): consider protecting this value with the sandbox.
   Address code_cage_base_hi =
       ReadField<Tagged_t>(kCodeCageBaseUpper32BitsOffset);
   return PtrComprCageBase(code_cage_base_hi << 32);
@@ -945,7 +908,6 @@ PtrComprCageBase CodeDataContainer::code_cage_base() const {
 
 void CodeDataContainer::set_code_cage_base(Address code_cage_base) {
 #ifdef V8_EXTERNAL_CODE_SPACE
-  CHECK(!V8_SANDBOXED_EXTERNAL_POINTERS_BOOL);
   Tagged_t code_cage_base_hi = static_cast<Tagged_t>(code_cage_base >> 32);
   WriteField<Tagged_t>(kCodeCageBaseUpper32BitsOffset, code_cage_base_hi);
 #else
@@ -953,9 +915,31 @@ void CodeDataContainer::set_code_cage_base(Address code_cage_base) {
 #endif
 }
 
+PtrComprCageBase CodeDataContainer::code_cage_base(RelaxedLoadTag) const {
+#ifdef V8_EXTERNAL_CODE_SPACE
+  // TODO(v8:10391): consider protecting this value with the sandbox.
+  Address code_cage_base_hi =
+      Relaxed_ReadField<Tagged_t>(kCodeCageBaseUpper32BitsOffset);
+  return PtrComprCageBase(code_cage_base_hi << 32);
+#else
+  return GetPtrComprCageBase(*this);
+#endif
+}
+
+void CodeDataContainer::set_code_cage_base(Address code_cage_base,
+                                           RelaxedStoreTag) {
+#ifdef V8_EXTERNAL_CODE_SPACE
+  Tagged_t code_cage_base_hi = static_cast<Tagged_t>(code_cage_base >> 32);
+  Relaxed_WriteField<Tagged_t>(kCodeCageBaseUpper32BitsOffset,
+                               code_cage_base_hi);
+#else
+  UNREACHABLE();
+#endif
+}
+
 void CodeDataContainer::AllocateExternalPointerEntries(Isolate* isolate) {
   CHECK(V8_EXTERNAL_CODE_SPACE_BOOL);
-  InitExternalPointerField(kCodeEntryPointOffset, isolate);
+  InitExternalPointerField(kCodeEntryPointOffset, isolate, kCodeEntryPointTag);
 }
 
 Code CodeDataContainer::code() const {
@@ -968,7 +952,7 @@ Code CodeDataContainer::code(PtrComprCageBase cage_base) const {
 }
 
 Code CodeDataContainer::code(RelaxedLoadTag tag) const {
-  PtrComprCageBase cage_base = code_cage_base();
+  PtrComprCageBase cage_base = code_cage_base(tag);
   return CodeDataContainer::code(cage_base, tag);
 }
 
@@ -1020,7 +1004,7 @@ void CodeDataContainer::clear_padding() {
          kSize - kUnalignedSize);
 }
 
-INT_ACCESSORS(CodeDataContainer, flags, kFlagsOffset)
+RELAXED_UINT16_ACCESSORS(CodeDataContainer, flags, kFlagsOffset)
 
 // Ensure builtin_id field fits into int16_t, so that we can rely on sign
 // extension to convert int16_t{-1} to kNoBuiltinId.
@@ -1030,15 +1014,17 @@ STATIC_ASSERT(Builtins::kBuiltinCount < std::numeric_limits<int16_t>::max());
 
 void CodeDataContainer::initialize_flags(CodeKind kind, Builtin builtin_id) {
   CHECK(V8_EXTERNAL_CODE_SPACE_BOOL);
-  int value = KindField::encode(kind);
-  set_flags(value);
+  uint16_t value = KindField::encode(kind);
+  set_flags(value, kRelaxedStore);
 
   WriteField<int16_t>(kBuiltinIdOffset, static_cast<int16_t>(builtin_id));
 }
 
 #ifdef V8_EXTERNAL_CODE_SPACE
 
-CodeKind CodeDataContainer::kind() const { return KindField::decode(flags()); }
+CodeKind CodeDataContainer::kind() const {
+  return KindField::decode(flags(kRelaxedLoad));
+}
 
 Builtin CodeDataContainer::builtin_id() const {
   CHECK(V8_EXTERNAL_CODE_SPACE_BOOL);

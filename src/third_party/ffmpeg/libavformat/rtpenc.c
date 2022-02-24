@@ -84,6 +84,8 @@ static int is_supported(enum AVCodecID id)
     case AV_CODEC_ID_MJPEG:
     case AV_CODEC_ID_SPEEX:
     case AV_CODEC_ID_OPUS:
+    case AV_CODEC_ID_RAWVIDEO:
+    case AV_CODEC_ID_BITPACKED:
         return 1;
     default:
         return 0;
@@ -619,6 +621,15 @@ static int rtp_write_packet(AVFormatContext *s1, AVPacket *pkt)
     case AV_CODEC_ID_MJPEG:
         ff_rtp_send_jpeg(s1, pkt->data, size);
         break;
+    case AV_CODEC_ID_BITPACKED:
+    case AV_CODEC_ID_RAWVIDEO: {
+        int interlaced = st->codecpar->field_order != AV_FIELD_PROGRESSIVE;
+
+        ff_rtp_send_raw_rfc4175(s1, pkt->data, size, interlaced, 0);
+        if (interlaced)
+            ff_rtp_send_raw_rfc4175(s1, pkt->data, size, interlaced, 1);
+        break;
+        }
     case AV_CODEC_ID_OPUS:
         if (size > s->max_payload_size) {
             av_log(s1, AV_LOG_ERROR,

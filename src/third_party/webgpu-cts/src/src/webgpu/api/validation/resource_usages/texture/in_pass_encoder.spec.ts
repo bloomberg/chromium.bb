@@ -1022,7 +1022,9 @@ g.test('unused_bindings_in_pipeline')
       setPipeline,
       callDrawOrDispatch,
     } = t.params;
-    const view = t.createTexture({ usage: GPUTextureUsage.STORAGE_BINDING }).createView();
+    const view = t
+      .createTexture({ usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING })
+      .createView();
     const bindGroup0 = t.createBindGroup(0, view, 'sampled-texture', '2d', {
       format: 'rgba8unorm',
     });
@@ -1030,27 +1032,27 @@ g.test('unused_bindings_in_pipeline')
       format: 'rgba8unorm',
     });
 
-    const wgslVertex = `[[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+    const wgslVertex = `@stage(vertex) fn main() -> @builtin(position) vec4<f32> {
   return vec4<f32>();
 }`;
     const wgslFragment = pp`
       ${pp._if(useBindGroup0)}
-      [[group(0), binding(0)]] var image0 : texture_storage_2d<rgba8unorm, read>;
+      @group(0) @binding(0) var image0 : texture_storage_2d<rgba8unorm, write>;
       ${pp._endif}
       ${pp._if(useBindGroup1)}
-      [[group(1), binding(0)]] var image1 : texture_storage_2d<rgba8unorm, read>;
+      @group(1) @binding(0) var image1 : texture_storage_2d<rgba8unorm, write>;
       ${pp._endif}
-      [[stage(fragment)]] fn main() {}
+      @stage(fragment) fn main() {}
     `;
 
     const wgslCompute = pp`
       ${pp._if(useBindGroup0)}
-      [[group(0), binding(0)]] var image0 : texture_storage_2d<rgba8unorm, read>;
+      @group(0) @binding(0) var image0 : texture_storage_2d<rgba8unorm, write>;
       ${pp._endif}
       ${pp._if(useBindGroup1)}
-      [[group(1), binding(0)]] var image1 : texture_storage_2d<rgba8unorm, read>;
+      @group(1) @binding(0) var image1 : texture_storage_2d<rgba8unorm, write>;
       ${pp._endif}
-      [[stage(compute), workgroup_size(1)]] fn main() {}
+      @stage(compute) @workgroup_size(1) fn main() {}
     `;
 
     const pipeline = compute

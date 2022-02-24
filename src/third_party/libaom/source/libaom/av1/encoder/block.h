@@ -437,6 +437,12 @@ typedef struct {
    * Flag to enable/disable DC block prediction.
    */
   unsigned int predict_dc_level;
+
+  /*!
+   * Whether or not we should use the quantization matrix as weights for PSNR
+   * during RD search.
+   */
+  int use_qm_dist_metric;
 } TxfmSearchParams;
 
 /*!\cond */
@@ -747,7 +753,7 @@ typedef struct {
 
 /*!\cond */
 typedef enum {
-  kInvalid = 0,
+  kZeroSad = 0,
   kLowSad = 1,
   kMedSad = 2,
   kHighSad = 3
@@ -765,6 +771,12 @@ typedef struct {
   int8_t hist_bin_idx;
   bool is_dx_zero;
 } PixelLevelGradientInfo;
+
+// Structure to hold the variance and log(1 + variance) for 4x4 sub-blocks.
+typedef struct {
+  double log_var;
+  int var;
+} Block4x4VarInfo;
 
 /*!\endcond */
 
@@ -881,6 +893,12 @@ typedef struct macroblock {
    * block.
    */
   int rdmult;
+
+  // Intra only, per sb rd adjustment.
+  int intra_sb_rdmult_modifier;
+
+  //! Superblock level distortion propagation factor.
+  double rb;
 
   //! Energy in the current source coding block. Used to calculate \ref rdmult
   int mb_energy;
@@ -1188,6 +1206,16 @@ typedef struct macroblock {
    * partition is evaluated in the scheme.
    */
   int try_merge_partition;
+
+  /*! \brief Pointer to buffer which caches sub-block variances in a superblock.
+   *
+   *  Pointer to the array of structures to store source variance information of
+   *  each 4x4 sub-block in a superblock. Block4x4VarInfo structure is used to
+   *  store source variance and log of source variance of each 4x4 sub-block
+   *  which is retrieved in subsequent calls to log_sub_block_var() and
+   *  intra_rd_variance_factor() functions.
+   */
+  Block4x4VarInfo *src_var_info_of_4x4_sub_blocks;
 } MACROBLOCK;
 #undef SINGLE_REF_MODES
 

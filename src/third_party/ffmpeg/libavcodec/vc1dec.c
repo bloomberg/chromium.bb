@@ -862,7 +862,7 @@ static int vc1_decode_frame(AVCodecContext *avctx, void *data,
     s->current_picture.f->key_frame = s->pict_type == AV_PICTURE_TYPE_I;
 
     /* skip B-frames if we don't have reference frames */
-    if (!s->last_picture_ptr && (s->pict_type == AV_PICTURE_TYPE_B || s->droppable)) {
+    if (!s->last_picture_ptr && s->pict_type == AV_PICTURE_TYPE_B) {
         av_log(v->s.avctx, AV_LOG_DEBUG, "Skipping B frame without reference frames\n");
         goto end;
     }
@@ -870,13 +870,6 @@ static int vc1_decode_frame(AVCodecContext *avctx, void *data,
         (avctx->skip_frame >= AVDISCARD_NONKEY && s->pict_type != AV_PICTURE_TYPE_I) ||
          avctx->skip_frame >= AVDISCARD_ALL) {
         goto end;
-    }
-
-    if (s->next_p_frame_damaged) {
-        if (s->pict_type == AV_PICTURE_TYPE_B)
-            goto end;
-        else
-            s->next_p_frame_damaged = 0;
     }
 
     if ((ret = ff_mpv_frame_start(s, avctx)) < 0) {

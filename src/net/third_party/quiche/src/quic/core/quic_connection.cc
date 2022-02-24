@@ -505,8 +505,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
     if (!ValidateConfigConnectionIds(config)) {
       return;
     }
-    support_key_update_for_connection_ =
-        config.KeyUpdateSupportedForConnection();
+    support_key_update_for_connection_ = version().UsesTls();
     framer_.SetKeyUpdateSupportForConnection(
         support_key_update_for_connection_);
   } else {
@@ -641,7 +640,6 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   // 2) Client side's rollout can be protected by the same connection option.
   connection_migration_use_new_cid_ =
       validate_client_addresses_ &&
-      GetQuicReloadableFlag(quic_drop_unsent_path_response) &&
       GetQuicReloadableFlag(quic_connection_migration_use_new_cid_v2);
   if (config.HasReceivedMaxPacketSize()) {
     peer_max_packet_size_ = config.ReceivedMaxPacketSize();
@@ -1742,19 +1740,10 @@ bool QuicConnection::OnPathChallengeFrameInternal(
   // Queue or send PATH_RESPONSE. Send PATH_RESPONSE to the source address of
   // the current incoming packet, even if it's not the default path or the
   // alternative path.
-  const bool success = SendPathResponse(
-      frame.data_buffer, last_received_packet_info_.source_address,
-      current_effective_peer_address);
-  if (GetQuicReloadableFlag(quic_drop_unsent_path_response)) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_drop_unsent_path_response);
-  }
-  if (!success) {
+  if (!SendPathResponse(frame.data_buffer,
+                        last_received_packet_info_.source_address,
+                        current_effective_peer_address)) {
     QUIC_CODE_COUNT(quic_failed_to_send_path_response);
-    if (!GetQuicReloadableFlag(quic_drop_unsent_path_response)) {
-      // Queue the payloads to re-try later.
-      pending_path_challenge_payloads_.push_back(
-          {frame.data_buffer, last_received_packet_info_.source_address});
-    }
   }
   // TODO(b/150095588): change the stats to
   // num_valid_path_challenge_received.
@@ -2870,23 +2859,6 @@ void QuicConnection::OnCanWrite() {
     }
   }
 
-  // TODO(danzh) PATH_RESPONSE is of more interest to the peer than ACK,
-  // evaluate if it's worth to send them before sending ACKs.
-  while (!pending_path_challenge_payloads_.empty()) {
-    QUIC_RELOADABLE_FLAG_COUNT_N(quic_send_path_response2, 4, 5);
-    const PendingPathChallenge& pending_path_challenge =
-        pending_path_challenge_payloads_.front();
-    // Note connection_migration_use_cid_ will depends on
-    // quic_drop_unsent_path_response flag eventually, and hence the empty
-    // effective_peer_address here will not be used.
-    if (!SendPathResponse(pending_path_challenge.received_path_challenge,
-                          pending_path_challenge.peer_address,
-                          /*effective_peer_address=*/QuicSocketAddress())) {
-      break;
-    }
-    pending_path_challenge_payloads_.pop_front();
-  }
-
   // Sending queued packets may have caused the socket to become write blocked,
   // or the congestion manager to prohibit sending.
   if (!CanWrite(HAS_RETRANSMITTABLE_DATA)) {
@@ -3273,11 +3245,9 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
     return false;
   }
 
-  if (GetQuicReloadableFlag(quic_suppress_write_mid_packet_processing) &&
-      version().CanSendCoalescedPackets() &&
+  if (version().CanSendCoalescedPackets() &&
       framer_.HasEncrypterOfEncryptionLevel(ENCRYPTION_INITIAL) &&
       framer_.is_processing_packet()) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_suppress_write_mid_packet_processing);
     // While we still have initial keys, suppress sending in mid of packet
     // processing.
     // TODO(fayang): always suppress sending while in the mid of packet
@@ -3726,15 +3696,8 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
       return true;
     }
   }
-  if (GetQuicReloadableFlag(
-          quic_donot_rearm_pto_on_application_data_during_handshake)) {
-    QUIC_RELOADABLE_FLAG_COUNT(
-        quic_donot_rearm_pto_on_application_data_during_handshake);
-    if (ShouldSetRetransmissionAlarmOnPacketSent(in_flight,
-                                                 packet->encryption_level)) {
-      SetRetransmissionAlarm();
-    }
-  } else if (in_flight || !retransmission_alarm_->IsSet()) {
+  if (ShouldSetRetransmissionAlarmOnPacketSent(in_flight,
+                                               packet->encryption_level)) {
     SetRetransmissionAlarm();
   }
   SetPingAlarm();
@@ -6765,6 +6728,21 @@ void QuicConnection::RetirePeerIssuedConnectionIdsNoLongerOnPath() {
   }
 }
 
+void QuicConnection::RetirePeerIssuedConnectionIdsOnPathValidationFailure() {
+  // The alarm to retire connection IDs no longer on paths is scheduled at the
+  // end of writing and reading packet. On path validation failure, there could
+  // be no packet to write or read. Hence the retirement alarm for the
+  // connection ID associated with the failed path needs to be proactively
+  // scheduled here.
+  if (GetQuicReloadableFlag(
+          quic_retire_cid_on_reverse_path_validation_failure) ||
+      perspective_ == Perspective::IS_CLIENT) {
+    QUIC_RELOADABLE_FLAG_COUNT(
+        quic_retire_cid_on_reverse_path_validation_failure);
+    RetirePeerIssuedConnectionIdsNoLongerOnPath();
+  }
+}
+
 bool QuicConnection::MigratePath(const QuicSocketAddress& self_address,
                                  const QuicSocketAddress& peer_address,
                                  QuicPacketWriter* writer,
@@ -6816,12 +6794,7 @@ void QuicConnection::OnPathValidationFailureAtClient() {
     QUICHE_DCHECK(perspective_ == Perspective::IS_CLIENT);
     alternative_path_.Clear();
   }
-  // The alarm to retire connection IDs no longer on paths is scheduled at the
-  // end of writing and reading packet. On path validation failure, there could
-  // be no packet to write or read. Hence the retirement alarm for the
-  // connection ID associated with the failed path needs to be proactively
-  // scheduled here.
-  RetirePeerIssuedConnectionIdsNoLongerOnPath();
+  RetirePeerIssuedConnectionIdsOnPathValidationFailure();
 }
 
 QuicConnectionId QuicConnection::GetOneActiveServerConnectionId() const {
@@ -7075,6 +7048,7 @@ void QuicConnection::ReversePathValidationResultDelegate::
     QUIC_CODE_COUNT_N(quic_kick_off_client_address_validation, 6, 6);
     connection_->alternative_path_.Clear();
   }
+  connection_->RetirePeerIssuedConnectionIdsOnPathValidationFailure();
 }
 
 QuicConnection::ScopedRetransmissionTimeoutIndicator::

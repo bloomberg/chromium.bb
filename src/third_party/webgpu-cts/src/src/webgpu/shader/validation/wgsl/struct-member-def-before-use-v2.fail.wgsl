@@ -12,7 +12,7 @@ struct foo {
   x : goo;
 };
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   var f : foo;
   f.x.y.t = 2.0;

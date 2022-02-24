@@ -46,6 +46,7 @@ class AVxFrameParallelEncodeTest
     cfg_.rc_2pass_vbr_maxsection_pct = 2000;
     cfg_.rc_max_quantizer = 63;
     cfg_.rc_min_quantizer = 0;
+    cfg_.g_threads = 16;
   }
 
   virtual void BeginPassHook(unsigned int /*pass*/) {
@@ -57,6 +58,8 @@ class AVxFrameParallelEncodeTest
     if (encoder_initialized_) return;
     SetTileSize(encoder);
     encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);
+    encoder->Control(AV1E_SET_FP_MT, 1);
+    encoder->Control(AV1E_SET_FP_MT_UNIT_TEST, enable_actual_parallel_encode_);
     encoder->Control(AOME_SET_ENABLEAUTOALTREF, 1);
     encoder->Control(AOME_SET_ARNR_MAXFRAMES, 7);
     encoder->Control(AOME_SET_ARNR_STRENGTH, 5);
@@ -101,7 +104,7 @@ class AVxFrameParallelEncodeTest
      * in a parallel encode set, each frame gets 2 threads. In case of 3 frames
      * in a parallel encode set, threads are distributed as 2, 3 ,3.
      */
-    cfg_.g_threads = 8;
+    enable_actual_parallel_encode_ = 1;
     ASSERT_NO_FATAL_FAILURE(RunLoop(input_video));
     std::vector<size_t> enc_stream_fpmt_size;
     std::vector<std::string> enc_stream_fpmt;
@@ -114,12 +117,11 @@ class AVxFrameParallelEncodeTest
     md5_dec_.clear();
 
     /* This is the simulation of parallel encode of frames using single cpi.
-     * This mode is enabled in library by checking if threads = 2.
      * In simulation, it should be ensured to have no dependency across frames
      * (similar to parallel encode).
      * Each frame uses all the threads configured.
      */
-    cfg_.g_threads = 2;
+    enable_actual_parallel_encode_ = 0;
     ASSERT_NO_FATAL_FAILURE(RunLoop(input_video));
     std::vector<size_t> enc_stream_sim_size;
     std::vector<std::string> enc_stream_sim;
@@ -141,17 +143,29 @@ class AVxFrameParallelEncodeTest
   int set_cpu_used_;
   int tile_cols_;
   int tile_rows_;
+  int enable_actual_parallel_encode_;
   ::libaom_test::Decoder *decoder_;
   std::vector<size_t> size_enc_;
   std::vector<std::string> md5_enc_;
   std::vector<std::string> md5_dec_;
 };
 
-class AVxFrameParallelEncodeHDResTest : public AVxFrameParallelEncodeTest {};
+class AVxFrameParallelEncodeHDResTestLarge : public AVxFrameParallelEncodeTest {
+};
 
-TEST_P(AVxFrameParallelEncodeHDResTest, FrameParallelEncodeTest) {
+TEST_P(AVxFrameParallelEncodeHDResTestLarge, FrameParallelEncodeTest) {
   ::libaom_test::Y4mVideoSource video("niklas_1280_720_30.y4m", 0, 60);
   cfg_.rc_target_bitrate = 500;
+  DoTest(&video);
+}
+
+class AVxFrameParallelEncodeLowResTestLarge
+    : public AVxFrameParallelEncodeTest {};
+
+TEST_P(AVxFrameParallelEncodeLowResTestLarge, FrameParallelEncodeTest) {
+  ::libaom_test::YUVVideoSource video("hantro_collage_w352h288.yuv",
+                                      AOM_IMG_FMT_I420, 352, 288, 30, 1, 0, 60);
+  cfg_.rc_target_bitrate = 200;
   DoTest(&video);
 }
 
@@ -164,14 +178,18 @@ TEST_P(AVxFrameParallelEncodeLowResTest, FrameParallelEncodeTest) {
   DoTest(&video);
 }
 
-AV1_INSTANTIATE_TEST_SUITE(AVxFrameParallelEncodeHDResTest,
-                           ::testing::Values(2, 4, 6), ::testing::Values(0, 2),
+AV1_INSTANTIATE_TEST_SUITE(AVxFrameParallelEncodeHDResTestLarge,
+                           ::testing::Values(2, 3, 4, 5, 6),
+                           ::testing::Values(0, 1, 2), ::testing::Values(0, 1));
+
+AV1_INSTANTIATE_TEST_SUITE(AVxFrameParallelEncodeLowResTestLarge,
+                           ::testing::Values(2, 3), ::testing::Values(0, 1, 2),
                            ::testing::Values(0, 1));
 
 AV1_INSTANTIATE_TEST_SUITE(AVxFrameParallelEncodeLowResTest,
-                           ::testing::Values(1, 2), ::testing::Values(0),
+                           ::testing::Values(4, 5, 6), ::testing::Values(1),
                            ::testing::Values(0));
-#endif  // CONFIG_FRAME_PARALLEL_ENCODE  && CONFIG_FPMT_TEST &&
-        // !CONFIG_REALTIME_ONLY
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE &&
+        // CONFIG_FPMT_TEST && !CONFIG_REALTIME_ONLY
 
 }  // namespace

@@ -592,6 +592,14 @@ chrome.fileManagerPrivate.LinuxPackageInfo;
 
 /**
  * @typedef {{
+ * id: number,
+ * displayName: string,
+ * }}
+ */
+chrome.fileManagerPrivate.MountableGuest;
+
+/**
+ * @typedef {{
  * eventType: chrome.fileManagerPrivate.CrostiniEventType,
  * vmName: string,
  * entries: !Array<!Entry>,
@@ -888,14 +896,14 @@ chrome.fileManagerPrivate.removeMount = function(volumeId) {};
 chrome.fileManagerPrivate.getVolumeMetadataList = function(callback) {};
 
 /**
- * Returns the list of files which aren't allowed to be copied. If the source is
- * a directory, it will check all its files recursively. |entry| Entry of the
- * source entry to be copied. |parentEntry| Entry of the destination directory.
- * |callback| Result callback.
+ * Returns a list of files not allowed to be transferred. |entries| list of
+ * source entries to be transferred. If any of |entries| is a directory, it will
+ * check all its files recursively. |destinationEntry| Entry of the destination
+ * directory.
  * @param {!Array<!Entry>} entries
  * @param {!DirectoryEntry} destinationEntry
  * @param {!Array<!Entry>} callback Entries of the files not allowed to be
- *     copied.
+ *     transferred.
  */
 chrome.fileManagerPrivate.getDisallowedTransfers = function(
     entries, destinationEntry, callback) {};
@@ -1187,6 +1195,13 @@ chrome.fileManagerPrivate.getVolumeRoot = function(options, callback) {};
 chrome.fileManagerPrivate.mountCrostini = function(callback) {};
 
 /**
+ * Lists guests
+ * @param {function((!Array<!chrome.fileManagerPrivate.MountableGuest>))} callback
+ *     chrome.runtime.lastError will be set if there was an error.
+ */
+chrome.fileManagerPrivate.listMountableGuests = function(callback) {};
+
+/**
  * Shares paths with crostini container.
  * @param {string} vmName VM to share path with.
  * @param {!Array<!Entry>} entries Entries of the files and directories to
@@ -1375,6 +1390,13 @@ chrome.fileManagerPrivate.startIOTask = function(type, entries, params) {};
  */
 chrome.fileManagerPrivate.cancelIOTask = function (taskId) { };
 
+/**
+ * Returns color via `callback` for Files app foreground window frame.
+ * @param {function(string): void} callback |color| String containing the color
+ *     of the title bar.
+ */
+chrome.fileManagerPrivate.getFrameColor = function(callback) {};
+
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;
 
@@ -1414,7 +1436,8 @@ chrome.fileManagerPrivate.onCrostiniChanged;
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onTabletModeChanged;
 
-/**
- * @type {!ChromeEvent}
- */
+/** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onIOTaskProgressStatus;
+
+/** @type {!ChromeEvent} */
+chrome.fileManagerPrivate.onMountableGuestsChanged;

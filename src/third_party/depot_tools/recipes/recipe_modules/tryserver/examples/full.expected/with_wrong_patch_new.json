@@ -1,24 +1,6 @@
 [
   {
     "cmd": [
-      "git",
-      "-c",
-      "core.quotePath=false",
-      "diff",
-      "--cached",
-      "--name-only"
-    ],
-    "cwd": "[START_DIR]\\sub\\project",
-    "infra_step": true,
-    "name": "git diff to analyze patch",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@files@sub/project/foo.cc@@@",
-      "@@@STEP_LOG_END@files@@@",
-      "@@@SET_BUILD_PROPERTY@affected_files@{\"first_100\": [\"sub/project/foo.cc\"], \"total_count\": 1}@@@"
-    ]
-  },
-  {
-    "cmd": [
       "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]\\gerrit_client.py",

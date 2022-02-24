@@ -10,6 +10,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_frame_view_layout_linux.h"
 #include "chrome/browser/ui/views/frame/browser_frame_view_linux.h"
@@ -135,8 +136,11 @@ void BrowserDesktopWindowTreeHostLinux::TabDraggingKindChanged(
   }
 
   if (auto* wayland_extension = ui::GetWaylandExtension(*platform_window())) {
-    if (tab_drag_kind != TabDragKind::kNone)
-      wayland_extension->StartWindowDraggingSessionIfNeeded();
+    if (tab_drag_kind != TabDragKind::kNone) {
+      auto allow_system_drag = base::FeatureList::IsEnabled(
+          features::kAllowWindowDragUsingSystemDragDrop);
+      wayland_extension->StartWindowDraggingSessionIfNeeded(allow_system_drag);
+    }
   }
 }
 
@@ -160,8 +164,15 @@ void BrowserDesktopWindowTreeHostLinux::UpdateFrameHints() {
 
   if (SupportsClientFrameShadow()) {
     // Set the frame decoration insets.
+    // For a window in maximised or minimised state, insets should be zero, see
+    // https://crbug.com/1281211.  However, if we also set zero insets when the
+    // window is being initialised and has unknown state, it will be inflated on
+    // later steps.
+    // See https://crbug.com/1287212 for details.
+    const auto window_state = window->GetPlatformWindowState();
     const gfx::Insets insets =
-        (window->GetPlatformWindowState() == ui::PlatformWindowState::kNormal)
+        (window_state == ui::PlatformWindowState::kUnknown ||
+         window_state == ui::PlatformWindowState::kNormal)
             ? layout->MirroredFrameBorderInsets()
             : gfx::Insets();
     const gfx::Insets insets_px = gfx::ScaleToCeiledInsets(insets, scale);

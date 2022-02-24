@@ -106,11 +106,9 @@ EncoderStatus SetUpAomConfig(const VideoEncoder::Options& opts,
         break;
     }
   } else {
-    // Default that gives about 2mbps to HD video
     config.rc_end_usage = AOM_VBR;
-    config.rc_target_bitrate =
-        int{(opts.frame_size.GetCheckedArea() * 2)
-                .ValueOrDefault(std::numeric_limits<int>::max())};
+    config.rc_target_bitrate = GetDefaultVideoEncodeBitrate(
+        opts.frame_size, opts.framerate.value_or(30));
   }
 
   config.g_w = opts.frame_size.width();
@@ -317,14 +315,14 @@ void Av1VideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
     }
   }
 
-  const bool i420 = frame->format() == PIXEL_FORMAT_I420;
-  if (frame->visible_rect().size() != options_.frame_size || !i420) {
+  const bool is_yuv = IsYuvPlanar(frame->format());
+  if (frame->visible_rect().size() != options_.frame_size || !is_yuv) {
     auto resized_frame = frame_pool_.CreateFrame(
         PIXEL_FORMAT_I420, options_.frame_size, gfx::Rect(options_.frame_size),
         options_.frame_size, frame->timestamp());
 
     if (resized_frame) {
-      Status conv_status =
+      auto conv_status =
           ConvertAndScaleFrame(*frame, *resized_frame, resize_buf_);
       if (!conv_status.is_ok()) {
         std::move(done_cb).Run(
@@ -341,17 +339,33 @@ void Av1VideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
     frame = std::move(resized_frame);
   }
 
-  aom_image_t* image = aom_img_wrap(
-      &image_, AOM_IMG_FMT_I420, options_.frame_size.width(),
-      options_.frame_size.height(), 1, frame->data(VideoFrame::kYPlane));
+  aom_img_fmt fmt = frame->format() == PIXEL_FORMAT_NV12 ? AOM_IMG_FMT_NV12
+                                                         : AOM_IMG_FMT_I420;
+  aom_image_t* image = aom_img_wrap(&image_, fmt, options_.frame_size.width(),
+                                    options_.frame_size.height(), 1,
+                                    frame->data(VideoFrame::kYPlane));
   DCHECK_EQ(image, &image_);
 
-  image->planes[AOM_PLANE_Y] = frame->visible_data(VideoFrame::kYPlane);
-  image->planes[AOM_PLANE_U] = frame->visible_data(VideoFrame::kUPlane);
-  image->planes[AOM_PLANE_V] = frame->visible_data(VideoFrame::kVPlane);
-  image->stride[AOM_PLANE_Y] = frame->stride(VideoFrame::kYPlane);
-  image->stride[AOM_PLANE_U] = frame->stride(VideoFrame::kUPlane);
-  image->stride[AOM_PLANE_V] = frame->stride(VideoFrame::kVPlane);
+  switch (frame->format()) {
+    case PIXEL_FORMAT_I420:
+      image->planes[AOM_PLANE_Y] = frame->visible_data(VideoFrame::kYPlane);
+      image->planes[AOM_PLANE_U] = frame->visible_data(VideoFrame::kUPlane);
+      image->planes[AOM_PLANE_V] = frame->visible_data(VideoFrame::kVPlane);
+      image->stride[AOM_PLANE_Y] = frame->stride(VideoFrame::kYPlane);
+      image->stride[AOM_PLANE_U] = frame->stride(VideoFrame::kUPlane);
+      image->stride[AOM_PLANE_V] = frame->stride(VideoFrame::kVPlane);
+      break;
+    case PIXEL_FORMAT_NV12:
+      image->planes[AOM_PLANE_Y] = frame->visible_data(VideoFrame::kYPlane);
+      image->planes[AOM_PLANE_U] = frame->visible_data(VideoFrame::kUVPlane);
+      image->planes[AOM_PLANE_V] = nullptr;
+      image->stride[AOM_PLANE_Y] = frame->stride(VideoFrame::kYPlane);
+      image->stride[AOM_PLANE_U] = frame->stride(VideoFrame::kUVPlane);
+      image->stride[AOM_PLANE_V] = 0;
+      break;
+    default:
+      NOTREACHED();
+  }
 
   auto duration_us = GetFrameDuration(*frame).InMicroseconds();
   last_frame_timestamp_ = frame->timestamp();

@@ -97,11 +97,6 @@ message LoadApplicationResponse {
 message LaunchApplicationRequest {
   // CoreApplication service info.
   cast.common.ServiceInfo core_application_service_info = 1;
-  // DEPRECATED
-  string cast_session_id = 2 [deprecated = true];
-  // DEPRECATED
-  cast.common.ServiceInfo runtime_application_service_info = 3
-      [deprecated = true];
   // CastMedia service info for this application in CastCore.
   cast.common.ServiceInfo cast_media_service_info = 4;
 }

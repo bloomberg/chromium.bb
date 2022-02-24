@@ -57,9 +57,18 @@ FirstIndexOffset::Data::~Data() = default;
 FirstIndexOffset::FirstIndexOffset() = default;
 FirstIndexOffset::~FirstIndexOffset() = default;
 
+bool FirstIndexOffset::ShouldRun(const Program* program, const DataMap&) const {
+  for (auto* fn : program->AST().Functions()) {
+    if (fn->PipelineStage() == ast::PipelineStage::kVertex) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void FirstIndexOffset::Run(CloneContext& ctx,
                            const DataMap& inputs,
-                           DataMap& outputs) {
+                           DataMap& outputs) const {
   // Get the uniform buffer binding point
   uint32_t ub_binding = binding_;
   uint32_t ub_group = group_;
@@ -79,9 +88,9 @@ void FirstIndexOffset::Run(CloneContext& ctx,
   // parameters) or structure member accesses.
   for (auto* node : ctx.src->ASTNodes().Objects()) {
     if (auto* var = node->As<ast::Variable>()) {
-      for (auto* dec : var->decorations) {
-        if (auto* builtin_dec = dec->As<ast::BuiltinDecoration>()) {
-          ast::Builtin builtin = builtin_dec->builtin;
+      for (auto* attr : var->attributes) {
+        if (auto* builtin_attr = attr->As<ast::BuiltinAttribute>()) {
+          ast::Builtin builtin = builtin_attr->builtin;
           if (builtin == ast::Builtin::kVertexIndex) {
             auto* sem_var = ctx.src->Sem().Get(var);
             builtin_vars.emplace(sem_var, kFirstVertexName);
@@ -96,9 +105,9 @@ void FirstIndexOffset::Run(CloneContext& ctx,
       }
     }
     if (auto* member = node->As<ast::StructMember>()) {
-      for (auto* dec : member->decorations) {
-        if (auto* builtin_dec = dec->As<ast::BuiltinDecoration>()) {
-          ast::Builtin builtin = builtin_dec->builtin;
+      for (auto* attr : member->attributes) {
+        if (auto* builtin_attr = attr->As<ast::BuiltinAttribute>()) {
+          ast::Builtin builtin = builtin_attr->builtin;
           if (builtin == ast::Builtin::kVertexIndex) {
             auto* sem_mem = ctx.src->Sem().Get(member);
             builtin_members.emplace(sem_mem, kFirstVertexName);
@@ -138,9 +147,9 @@ void FirstIndexOffset::Run(CloneContext& ctx,
     Symbol buffer_name = ctx.dst->Sym();
     ctx.dst->Global(buffer_name, ctx.dst->ty.Of(struct_),
                     ast::StorageClass::kUniform, nullptr,
-                    ast::DecorationList{
-                        ctx.dst->create<ast::BindingDecoration>(ub_binding),
-                        ctx.dst->create<ast::GroupDecoration>(ub_group),
+                    ast::AttributeList{
+                        ctx.dst->create<ast::BindingAttribute>(ub_binding),
+                        ctx.dst->create<ast::GroupAttribute>(ub_group),
                     });
 
     // Fix up all references to the builtins with the offsets

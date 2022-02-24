@@ -42,12 +42,12 @@ class DerivativesTest extends GPUTest {
         module: this.device.createShaderModule({
           code: `
             struct Outputs {
-              [[builtin(position)]] Position : vec4<f32>;
-              [[location(0)]] fragUV : vec2<f32>;
+              @builtin(position) Position : vec4<f32>;
+              @location(0) fragUV : vec2<f32>;
             };
 
-            [[stage(vertex)]] fn main(
-              [[builtin(vertex_index)]] VertexIndex : u32) -> Outputs {
+            @stage(vertex) fn main(
+              @builtin(vertex_index) VertexIndex : u32) -> Outputs {
               // Full screen quad
               var position : array<vec3<f32>, 6> = array<vec3<f32>, 6>(
                 vec3<f32>(-1.0, 1.0, 0.0),
@@ -84,11 +84,11 @@ class DerivativesTest extends GPUTest {
             struct Uniforms {
               numIterations : i32;
             };
-            [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
+            @binding(0) @group(0) var<uniform> uniforms : Uniforms;
 
-            [[stage(fragment)]] fn main(
-              [[builtin(position)]] FragCoord : vec4<f32>,
-              [[location(0)]] fragUV: vec2<f32>) -> [[location(0)]] vec4<f32> {
+            @stage(fragment) fn main(
+              @builtin(position) FragCoord : vec4<f32>,
+              @location(0) fragUV: vec2<f32>) -> @location(0) vec4<f32> {
 
                 // Loop to exercise uniform control flow of gradient operations, to trip FXC's
                 // warning X3570: gradient instruction used in a loop with varying iteration, attempting to unroll the loop

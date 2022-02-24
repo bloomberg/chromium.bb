@@ -87,72 +87,114 @@ static const uint16_t av1_derived_chroma_intra_mode_used_flag[INTRA_MODES] = {
 DECLARE_ALIGNED(16, static const uint8_t, all_zeros[MAX_SB_SIZE]) = { 0 };
 DECLARE_ALIGNED(16, static const uint16_t,
                 highbd_all_zeros[MAX_SB_SIZE]) = { 0 };
+
+int av1_calc_normalized_variance(aom_variance_fn_t vf, const uint8_t *const buf,
+                                 const int stride, const int is_hbd) {
+  unsigned int sse;
+
+  if (is_hbd)
+    return vf(buf, stride, CONVERT_TO_BYTEPTR(highbd_all_zeros), 0, &sse);
+  else
+    return vf(buf, stride, all_zeros, 0, &sse);
+}
+
+// Computes average of log(1 + variance) across 4x4 sub-blocks for source and
+// reconstructed blocks.
+static void compute_avg_log_variance(const AV1_COMP *const cpi, MACROBLOCK *x,
+                                     const BLOCK_SIZE bs,
+                                     double *avg_log_src_variance,
+                                     double *avg_log_recon_variance) {
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const BLOCK_SIZE sb_size = cpi->common.seq_params->sb_size;
+  const int mi_row_in_sb = x->e_mbd.mi_row & (mi_size_high[sb_size] - 1);
+  const int mi_col_in_sb = x->e_mbd.mi_col & (mi_size_wide[sb_size] - 1);
+  const int right_overflow =
+      (xd->mb_to_right_edge < 0) ? ((-xd->mb_to_right_edge) >> 3) : 0;
+  const int bottom_overflow =
+      (xd->mb_to_bottom_edge < 0) ? ((-xd->mb_to_bottom_edge) >> 3) : 0;
+  const int bw = (MI_SIZE * mi_size_wide[bs] - right_overflow);
+  const int bh = (MI_SIZE * mi_size_high[bs] - bottom_overflow);
+  const int is_hbd = is_cur_buf_hbd(xd);
+
+  for (int i = 0; i < bh; i += MI_SIZE) {
+    const int r = mi_row_in_sb + (i >> MI_SIZE_LOG2);
+    for (int j = 0; j < bw; j += MI_SIZE) {
+      const int c = mi_col_in_sb + (j >> MI_SIZE_LOG2);
+      const int mi_offset = r * mi_size_wide[sb_size] + c;
+      Block4x4VarInfo *block_4x4_var_info =
+          &x->src_var_info_of_4x4_sub_blocks[mi_offset];
+      int src_var = block_4x4_var_info->var;
+      double log_src_var = block_4x4_var_info->log_var;
+      // Compute average of log(1 + variance) for the source block from 4x4
+      // sub-block variance values. Calculate and store 4x4 sub-block variance
+      // and log(1 + variance), if the values present in
+      // src_var_of_4x4_sub_blocks are invalid. Reuse the same if it is readily
+      // available with valid values.
+      if (src_var < 0) {
+        src_var = av1_calc_normalized_variance(
+            cpi->ppi->fn_ptr[BLOCK_4X4].vf,
+            x->plane[0].src.buf + i * x->plane[0].src.stride + j,
+            x->plane[0].src.stride, is_hbd);
+        block_4x4_var_info->var = src_var;
+        log_src_var = log(1.0 + src_var / 16.0);
+        block_4x4_var_info->log_var = log_src_var;
+      } else {
+        // When source variance is already calculated and available for
+        // retrieval, check if log(1 + variance) is also available. If it is
+        // available, then retrieve from buffer. Else, calculate the same and
+        // store to the buffer.
+        if (log_src_var < 0) {
+          log_src_var = log(1.0 + src_var / 16.0);
+          block_4x4_var_info->log_var = log_src_var;
+        }
+      }
+      *avg_log_src_variance += log_src_var;
+
+      const int recon_var = av1_calc_normalized_variance(
+          cpi->ppi->fn_ptr[BLOCK_4X4].vf,
+          xd->plane[0].dst.buf + i * xd->plane[0].dst.stride + j,
+          xd->plane[0].dst.stride, is_hbd);
+      *avg_log_recon_variance += log(1.0 + recon_var / 16.0);
+    }
+  }
+
+  const int blocks = (bw * bh) / 16;
+  *avg_log_src_variance /= (double)blocks;
+  *avg_log_recon_variance /= (double)blocks;
+}
+
 // Returns a factor to be applied to the RD value based on how well the
 // reconstructed block variance matches the source variance.
 static double intra_rd_variance_factor(const AV1_COMP *cpi, MACROBLOCK *x,
                                        BLOCK_SIZE bs) {
-  MACROBLOCKD *xd = &x->e_mbd;
+  double threshold = INTRA_RD_VAR_THRESH(cpi->oxcf.speed);
+  // For non-positive threshold values, the comparison of source and
+  // reconstructed variances with threshold evaluates to false
+  // (src_var < threshold/rec_var < threshold) as these metrics are greater than
+  // than 0. Hence further calculations are skipped.
+  if (threshold <= 0) return 1.0;
+
   double variance_rd_factor = 1.0;
-  double src_var = 0.0;
-  double rec_var = 0.0;
+  double avg_log_src_variance = 0.0;
+  double avg_log_recon_variance = 0.0;
   double var_diff = 0.0;
-  double threshold = 1.0 - (0.25 * cpi->oxcf.speed);
-  unsigned int sse;
-  int i, j;
-  int right_overflow =
-      (xd->mb_to_right_edge < 0) ? ((-xd->mb_to_right_edge) >> 3) : 0;
-  int bottom_overflow =
-      (xd->mb_to_bottom_edge < 0) ? ((-xd->mb_to_bottom_edge) >> 3) : 0;
 
-  const int bw = MI_SIZE * mi_size_wide[bs] - right_overflow;
-  const int bh = MI_SIZE * mi_size_high[bs] - bottom_overflow;
-  const int blocks = (bw * bh) / 16;
-
-  for (i = 0; i < bh; i += 4) {
-    for (j = 0; j < bw; j += 4) {
-      if (is_cur_buf_hbd(xd)) {
-        src_var +=
-            log(1.0 + cpi->ppi->fn_ptr[BLOCK_4X4].vf(
-                          x->plane[0].src.buf + i * x->plane[0].src.stride + j,
-                          x->plane[0].src.stride,
-                          CONVERT_TO_BYTEPTR(highbd_all_zeros), 0, &sse) /
-                          16.0);
-        rec_var += log(
-            1.0 + cpi->ppi->fn_ptr[BLOCK_4X4].vf(
-                      xd->plane[0].dst.buf + i * xd->plane[0].dst.stride + j,
-                      xd->plane[0].dst.stride,
-                      CONVERT_TO_BYTEPTR(highbd_all_zeros), 0, &sse) /
-                      16.0);
-      } else {
-        src_var +=
-            log(1.0 + cpi->ppi->fn_ptr[BLOCK_4X4].vf(
-                          x->plane[0].src.buf + i * x->plane[0].src.stride + j,
-                          x->plane[0].src.stride, all_zeros, 0, &sse) /
-                          16.0);
-        rec_var += log(
-            1.0 + cpi->ppi->fn_ptr[BLOCK_4X4].vf(
-                      xd->plane[0].dst.buf + i * xd->plane[0].dst.stride + j,
-                      xd->plane[0].dst.stride, all_zeros, 0, &sse) /
-                      16.0);
-      }
-    }
-  }
-  src_var /= (double)blocks;
-  rec_var /= (double)blocks;
+  compute_avg_log_variance(cpi, x, bs, &avg_log_src_variance,
+                           &avg_log_recon_variance);
 
   // Dont allow 0 to prevent / 0 below.
-  src_var += 0.000001;
-  rec_var += 0.000001;
+  avg_log_src_variance += 0.000001;
+  avg_log_recon_variance += 0.000001;
 
-  if (src_var >= rec_var) {
-    var_diff = (src_var - rec_var);
-    if ((var_diff > 0.5) && (rec_var < threshold)) {
-      variance_rd_factor = 1.0 + ((var_diff * 2) / src_var);
+  if (avg_log_src_variance >= avg_log_recon_variance) {
+    var_diff = (avg_log_src_variance - avg_log_recon_variance);
+    if ((var_diff > 0.5) && (avg_log_recon_variance < threshold)) {
+      variance_rd_factor = 1.0 + ((var_diff * 2) / avg_log_src_variance);
     }
   } else {
-    var_diff = (rec_var - src_var);
-    if ((var_diff > 0.5) && (src_var < threshold)) {
-      variance_rd_factor = 1.0 + (var_diff / (2 * src_var));
+    var_diff = (avg_log_recon_variance - avg_log_src_variance);
+    if ((var_diff > 0.5) && (avg_log_src_variance < threshold)) {
+      variance_rd_factor = 1.0 + (var_diff / (2 * avg_log_src_variance));
     }
   }
 
@@ -223,7 +265,7 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (tokenonly_rd_stats.rate == INT_MAX) continue;
     const int this_rate =
         tokenonly_rd_stats.rate +
-        intra_mode_info_cost_y(cpi, x, mbmi, bsize, mode_cost);
+        intra_mode_info_cost_y(cpi, x, mbmi, bsize, mode_cost, 0);
     this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
 
     // Visual quality adjustment based on recon vs source variance.
@@ -931,6 +973,67 @@ int av1_search_palette_mode(IntraModeSearchState *intra_search_state,
   return skippable;
 }
 
+void av1_search_palette_mode_luma(const AV1_COMP *cpi, MACROBLOCK *x,
+                                  BLOCK_SIZE bsize, unsigned int ref_frame_cost,
+                                  PICK_MODE_CONTEXT *ctx,
+                                  RD_STATS *this_rd_cost, int64_t best_rd) {
+  MB_MODE_INFO *const mbmi = x->e_mbd.mi[0];
+  PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  int64_t best_rd_palette = best_rd, this_rd;
+  uint8_t *const best_palette_color_map =
+      x->palette_buffer->best_palette_color_map;
+  uint8_t *const color_map = xd->plane[0].color_index_map;
+  MB_MODE_INFO best_mbmi_palette = *mbmi;
+  uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
+  uint8_t best_tx_type_map[MAX_MIB_SIZE * MAX_MIB_SIZE];
+  const ModeCosts *mode_costs = &x->mode_costs;
+  const int *const intra_mode_cost =
+      mode_costs->mbmode_cost[size_group_lookup[bsize]];
+  const int rows = block_size_high[bsize];
+  const int cols = block_size_wide[bsize];
+
+  mbmi->mode = DC_PRED;
+  mbmi->uv_mode = UV_DC_PRED;
+  mbmi->ref_frame[0] = INTRA_FRAME;
+  mbmi->ref_frame[1] = NONE_FRAME;
+  av1_zero(pmi->palette_size);
+
+  RD_STATS rd_stats_y;
+  av1_invalid_rd_stats(&rd_stats_y);
+  av1_rd_pick_palette_intra_sby(cpi, x, bsize, intra_mode_cost[DC_PRED],
+                                &best_mbmi_palette, best_palette_color_map,
+                                &best_rd_palette, &rd_stats_y.rate, NULL,
+                                &rd_stats_y.dist, &rd_stats_y.skip_txfm, NULL,
+                                ctx, best_blk_skip, best_tx_type_map);
+  if (rd_stats_y.rate == INT_MAX || pmi->palette_size[0] == 0) {
+    this_rd_cost->rdcost = INT64_MAX;
+    return;
+  }
+
+  memcpy(x->txfm_search_info.blk_skip, best_blk_skip,
+         sizeof(best_blk_skip[0]) * bsize_to_num_blk(bsize));
+  av1_copy_array(xd->tx_type_map, best_tx_type_map, ctx->num_4x4_blk);
+  memcpy(color_map, best_palette_color_map,
+         rows * cols * sizeof(best_palette_color_map[0]));
+
+  rd_stats_y.rate += ref_frame_cost;
+
+  if (rd_stats_y.skip_txfm) {
+    rd_stats_y.rate =
+        ref_frame_cost +
+        mode_costs->skip_txfm_cost[av1_get_skip_txfm_context(xd)][1];
+  } else {
+    rd_stats_y.rate +=
+        mode_costs->skip_txfm_cost[av1_get_skip_txfm_context(xd)][0];
+  }
+  this_rd = RDCOST(x->rdmult, rd_stats_y.rate, rd_stats_y.dist);
+  this_rd_cost->rate = rd_stats_y.rate;
+  this_rd_cost->dist = rd_stats_y.dist;
+  this_rd_cost->rdcost = this_rd;
+  this_rd_cost->skip_txfm = rd_stats_y.skip_txfm;
+}
+
 /*!\brief Get the intra prediction by searching through tx_type and tx_size.
  *
  * \ingroup intra_mode_search
@@ -963,7 +1066,7 @@ static AOM_INLINE int intra_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
   const int this_rate =
       rd_stats.rate +
-      intra_mode_info_cost_y(cpi, x, mbmi, bsize, bmode_costs[mbmi->mode]);
+      intra_mode_info_cost_y(cpi, x, mbmi, bsize, bmode_costs[mbmi->mode], 0);
   const int64_t this_rd = RDCOST(x->rdmult, this_rate, rd_stats.dist);
   if (this_rd < *best_rd) {
     *best_mbmi = *mbmi;
@@ -1016,7 +1119,7 @@ static INLINE void handle_filter_intra_mode(const AV1_COMP *cpi, MACROBLOCK *x,
     if (rd_stats_y_fi.rate == INT_MAX) continue;
     const int this_rate_tmp =
         rd_stats_y_fi.rate +
-        intra_mode_info_cost_y(cpi, x, mbmi, bsize, mode_cost);
+        intra_mode_info_cost_y(cpi, x, mbmi, bsize, mode_cost, 0);
     const int64_t this_rd_tmp =
         RDCOST(x->rdmult, this_rate_tmp, rd_stats_y_fi.dist);
 
@@ -1120,7 +1223,7 @@ int av1_handle_intra_y_mode(IntraModeSearchState *intra_search_state,
       mbmi->filter_intra_mode_info.use_filter_intra = 0;
       const int tmp_rate =
           rd_stats_y->rate +
-          intra_mode_info_cost_y(cpi, x, mbmi, bsize, mode_cost);
+          intra_mode_info_cost_y(cpi, x, mbmi, bsize, mode_cost, 0);
       best_rd_so_far = RDCOST(x->rdmult, tmp_rate, rd_stats_y->dist);
       try_filter_intra = (best_rd_so_far / 2) <= best_rd;
     } else if (intra_sf->skip_filter_intra_in_inter_frames >= 1) {
@@ -1137,7 +1240,7 @@ int av1_handle_intra_y_mode(IntraModeSearchState *intra_search_state,
 
   if (rd_stats_y->rate == INT_MAX) return 0;
 
-  *mode_cost_y = intra_mode_info_cost_y(cpi, x, mbmi, bsize, mode_cost);
+  *mode_cost_y = intra_mode_info_cost_y(cpi, x, mbmi, bsize, mode_cost, 0);
   const int rate_y = rd_stats_y->skip_txfm
                          ? mode_costs->skip_txfm_cost[skip_ctx][1]
                          : rd_stats_y->rate;
@@ -1350,7 +1453,7 @@ int64_t av1_rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
     this_rate =
         this_rd_stats.rate +
-        intra_mode_info_cost_y(cpi, x, mbmi, bsize, bmode_costs[mbmi->mode]);
+        intra_mode_info_cost_y(cpi, x, mbmi, bsize, bmode_costs[mbmi->mode], 0);
     this_rd = RDCOST(x->rdmult, this_rate, this_distortion);
 
     // Visual quality adjustment based on recon vs source variance.
@@ -1414,7 +1517,7 @@ int64_t av1_rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     for (int mode_idx = 0; mode_idx < x->winner_mode_count; mode_idx++) {
       *mbmi = x->winner_mode_stats[mode_idx].mbmi;
-      if (is_winner_mode_processing_enabled(cpi, mbmi, mbmi->mode)) {
+      if (is_winner_mode_processing_enabled(cpi, x, mbmi, mbmi->mode)) {
         // Restore color_map of palette mode before winner mode processing
         if (mbmi->palette_mode_info.palette_size[0] > 0) {
           uint8_t *color_map_src =
@@ -1446,7 +1549,7 @@ int64_t av1_rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     // If previous searches use only the default tx type/no R-D optimization of
     // quantized coeffs, do an extra search for the best tx type/better R-D
     // optimization of quantized coeffs
-    if (is_winner_mode_processing_enabled(cpi, mbmi, best_mbmi.mode)) {
+    if (is_winner_mode_processing_enabled(cpi, x, mbmi, best_mbmi.mode)) {
       // Set params for winner mode evaluation
       set_mode_eval_params(cpi, x, WINNER_MODE_EVAL);
       *mbmi = best_mbmi;

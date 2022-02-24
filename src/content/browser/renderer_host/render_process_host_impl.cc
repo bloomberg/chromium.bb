@@ -111,6 +111,7 @@
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/browser/renderer_host/plugin_registry_impl.h"
 #include "content/browser/renderer_host/recently_destroyed_hosts.h"
+#include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -1589,8 +1590,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           storage_partition_impl_->GetGeneratedCodeCacheContext()),
       channel_connected_(false),
       sent_render_process_ready_(false),
-      shutdown_exit_code_(-1),
-      instance_weak_factory_(absl::in_place, this) {
+      shutdown_exit_code_(-1) {
   CHECK(!browser_context->ShutdownStarted());
   TRACE_EVENT("shutdown", "RenderProcessHostImpl",
               ChromeTrackEvent::kRenderProcessHost, *this);
@@ -2083,8 +2083,7 @@ void RenderProcessHostImpl::CreateLockManager(
   storage_partition_impl_->GetQuotaManager()->proxy()->GetOrCreateBucket(
       storage_key, storage::kDefaultBucketName, GetUIThreadTaskRunner({}),
       base::BindOnce(&RenderProcessHostImpl::CreateLockManagerWithBucketInfo,
-                     instance_weak_factory_->GetWeakPtr(),
-                     std::move(receiver)));
+                     instance_weak_factory_.GetWeakPtr(), std::move(receiver)));
 }
 
 void RenderProcessHostImpl::CreateLockManagerWithBucketInfo(
@@ -2181,7 +2180,7 @@ void RenderProcessHostImpl::DelayProcessShutdown(
   GetUIThreadTaskRunner({})->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&RenderProcessHostImpl::CancelProcessShutdownDelay,
-                     weak_factory_.GetWeakPtr(), site_info),
+                     instance_weak_factory_.GetWeakPtr(), site_info),
       std::min(subframe_shutdown_timeout + unload_handler_timeout,
                kKeepAliveHandleFactoryTimeout));
 
@@ -2340,22 +2339,22 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       registry.get(),
       base::BindRepeating(
           &RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider,
-          weak_factory_.GetWeakPtr()));
+          instance_weak_factory_.GetWeakPtr()));
 
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::BindCompositingModeReporter,
-                          weak_factory_.GetWeakPtr()));
+                          instance_weak_factory_.GetWeakPtr()));
 
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::CreateDomStorageProvider,
-                          weak_factory_.GetWeakPtr()));
+                          instance_weak_factory_.GetWeakPtr()));
 
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::BindWebDatabaseHostImpl,
-                          weak_factory_.GetWeakPtr()));
+                          instance_weak_factory_.GetWeakPtr()));
 
   AddUIThreadInterface(
       registry.get(),
@@ -2374,7 +2373,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
               host->coordinator_connector_receiver_.Pause();
             }
           },
-          weak_factory_.GetWeakPtr()));
+          instance_weak_factory_.GetWeakPtr()));
 
   registry->AddInterface(
       base::BindRepeating(&MimeRegistryImpl::Create),
@@ -2398,13 +2397,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 #endif
 
 #if BUILDFLAG(IS_WIN)
-  scoped_refptr<base::SequencedTaskRunner> font_runner;
-  if (!base::FeatureList::IsEnabled(features::kDWriteFontProxyOnIO)) {
-    font_runner = base::ThreadPool::CreateSequencedTaskRunner(
-        {base::TaskPriority::USER_BLOCKING, base::MayBlock()});
-  }
-  registry->AddInterface(base::BindRepeating(&DWriteFontProxyImpl::Create),
-                         font_runner);
+  registry->AddInterface(
+      base::BindRepeating(&DWriteFontProxyImpl::Create),
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::TaskPriority::USER_BLOCKING, base::MayBlock()}));
 #endif
 
   file_system_manager_impl_.reset(new FileSystemManagerImpl(
@@ -2433,12 +2429,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::CreateCodeCacheHost,
-                          weak_factory_.GetWeakPtr()));
+                          instance_weak_factory_.GetWeakPtr()));
 
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::CreateMediaLogRecordHost,
-                          weak_factory_.GetWeakPtr()));
+                          instance_weak_factory_.GetWeakPtr()));
 
   AddUIThreadInterface(registry.get(),
                        base::BindRepeating(&FieldTrialRecorder::Create));
@@ -2466,7 +2462,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::BindPluginRegistry,
-                          weak_factory_.GetWeakPtr()));
+                          instance_weak_factory_.GetWeakPtr()));
 #else
   if (base::FeatureList::IsEnabled(
           features::kNavigationThreadingOptimizations)) {
@@ -2479,19 +2475,20 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   }
 #endif
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  registry->AddInterface(base::BindRepeating(&KeySystemSupportImpl::Create));
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_WIN)
+  registry->AddInterface(
+      base::BindRepeating(&KeySystemSupportImpl::BindReceiver));
+#endif
 
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::BindMediaInterfaceProxy,
-                          weak_factory_.GetWeakPtr()));
+                          instance_weak_factory_.GetWeakPtr()));
 
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::BindAecDumpManager,
-                          weak_factory_.GetWeakPtr()));
+                          instance_weak_factory_.GetWeakPtr()));
 
   // ---- Please do not register interfaces below this line ------
   //
@@ -2503,7 +2500,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   DCHECK(child_host_pending_receiver_);
   io_thread_host_impl_.emplace(
-      GetIOThreadTaskRunner({}), GetID(), instance_weak_factory_->GetWeakPtr(),
+      GetIOThreadTaskRunner({}), GetID(), instance_weak_factory_.GetWeakPtr(),
       std::move(registry), std::move(child_host_pending_receiver_));
 }
 
@@ -3166,7 +3163,12 @@ void RenderProcessHostImpl::NotifyRendererOfLockedStateUpdate() {
   GetRendererInterface()->SetIsCrossOriginIsolated(
       process_lock.GetWebExposedIsolationInfo().is_isolated());
 
+  bool direct_sockets_allowed_by_policy =
+      GetContentClient()->browser()->AreDirectSocketsAllowedByPolicy(
+          GetBrowserContext());
+
   GetRendererInterface()->SetIsDirectSocketEnabled(
+      direct_sockets_allowed_by_policy &&
       process_lock.GetWebExposedIsolationInfo().is_isolated_application());
 
   if (!process_lock.IsASiteOrOrigin())
@@ -3229,10 +3231,8 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(command_line,
                                                                 GetID());
 
-#if BUILDFLAG(IS_WIN)
   if (IsPdf())
     command_line->AppendSwitch(switches::kPdfRenderer);
-#endif
 
 #if BUILDFLAG(IS_WIN)
   command_line->AppendArg(switches::kPrefetchArgumentRenderer);
@@ -3796,6 +3796,14 @@ bool RenderProcessHostImpl::HasOnlyNonLiveRenderFrameHosts() {
     if (RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(rfh_id)) {
       found_rfh_count++;
       if (rfh->IsRenderFrameLive())
+        return false;
+
+      // If this process contains a frame from an inner WebContents, skip the
+      // process leak cleanup for now. Inner WebContents attachment can break
+      // if the process it starts with goes away before it attaches.
+      // TODO(https://crbug.com/1295431): Remove in favor of tracking pending
+      // guest initializations instead.
+      if (rfh->delegate()->IsInnerWebContentsForGuest())
         return false;
     }
   }
@@ -4781,7 +4789,7 @@ void RenderProcessHostImpl::ResetIPC() {
   for (auto receiver_id : dom_storage_receiver_ids_)
     storage_partition_impl_->UnbindDomStorage(receiver_id);
 
-  instance_weak_factory_.emplace(this);
+  instance_weak_factory_.InvalidateWeakPtrs();
 
   // If RenderProcessHostImpl is reused, the next renderer will send a new
   // request for CodeCacheHost.  Make sure that we clear the stale
@@ -5064,14 +5072,12 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   }
 
   // Pass bits of global renderer state to the renderer.
-  GetRendererInterface()->SetUserAgent(
+  GetRendererInterface()->InitializeRenderer(
       GetContentClient()->browser()->GetUserAgentBasedOnPolicy(
-          browser_context_));
-  GetRendererInterface()->SetReducedUserAgent(
-      GetContentClient()->browser()->GetReducedUserAgent());
-  GetRendererInterface()->SetUserAgentMetadata(
-      GetContentClient()->browser()->GetUserAgentMetadata());
-  GetRendererInterface()->SetCorsExemptHeaderList(
+          browser_context_),
+      GetContentClient()->browser()->GetFullUserAgent(),
+      GetContentClient()->browser()->GetReducedUserAgent(),
+      GetContentClient()->browser()->GetUserAgentMetadata(),
       storage_partition_impl_->cors_exempt_header_list());
   NotifyRendererOfLockedStateUpdate();
 
@@ -5114,7 +5120,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   tracing_registration_ = TracingServiceController::Get().RegisterClient(
       GetProcess().Pid(),
       base::BindRepeating(&RenderProcessHostImpl::BindTracedProcess,
-                          instance_weak_factory_->GetWeakPtr()));
+                          instance_weak_factory_.GetWeakPtr()));
 
 #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID)
   system_tracing_service_ = std::make_unique<tracing::SystemTracingService>();

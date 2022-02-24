@@ -140,12 +140,12 @@ export function run(
           module: t.device.createShaderModule({
             code: `
 struct VertexOutput {
-  [[builtin(position)]] Position : vec4<f32>;
-  [[location(0)]] fragUV : vec2<f32>;
+  @builtin(position) Position : vec4<f32>;
+  @location(0) fragUV : vec2<f32>;
 };
 
-[[stage(vertex)]]
-fn main([[builtin(vertex_index)]] VertexIndex : u32) -> VertexOutput {
+@stage(vertex)
+fn main(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
   var pos = array<vec2<f32>, 6>(
       vec2<f32>( 1.0,  1.0),
       vec2<f32>( 1.0, -1.0),
@@ -175,8 +175,8 @@ fn main([[builtin(vertex_index)]] VertexIndex : u32) -> VertexOutput {
           module: t.device.createShaderModule({
             // NOTE: "-srgb" cases haven't been tested (there aren't any .html files that use them).
             code: `
-[[group(0), binding(0)]] var mySampler: sampler;
-[[group(0), binding(1)]] var myTexture: texture_2d<f32>;
+@group(0) @binding(0) var mySampler: sampler;
+@group(0) @binding(1) var myTexture: texture_2d<f32>;
 
 fn gammaDecompress(n: f32) -> f32 {
   var r = n;
@@ -189,8 +189,8 @@ fn gammaDecompress(n: f32) -> f32 {
   return r;
 }
 
-[[stage(fragment)]]
-fn srgbMain([[location(0)]] fragUV: vec2<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn srgbMain(@location(0) fragUV: vec2<f32>) -> @location(0) vec4<f32> {
   var result = textureSample(myTexture, mySampler, fragUV);
   result.r = gammaDecompress(result.r);
   result.g = gammaDecompress(result.g);
@@ -198,8 +198,8 @@ fn srgbMain([[location(0)]] fragUV: vec2<f32>) -> [[location(0)]] vec4<f32> {
   return result;
 }
 
-[[stage(fragment)]]
-fn linearMain([[location(0)]] fragUV: vec2<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn linearMain(@location(0) fragUV: vec2<f32>) -> @location(0) vec4<f32> {
   return textureSample(myTexture, mySampler, fragUV);
 }
             `,
@@ -257,12 +257,12 @@ fn linearMain([[location(0)]] fragUV: vec2<f32>) -> [[location(0)]] vec4<f32> {
           module: t.device.createShaderModule({
             code: `
 struct VertexOutput {
-  [[builtin(position)]] Position : vec4<f32>;
-  [[location(0)]] fragColor : vec4<f32>;
+  @builtin(position) Position : vec4<f32>;
+  @location(0) fragColor : vec4<f32>;
 };
 
-[[stage(vertex)]]
-fn main([[builtin(vertex_index)]] VertexIndex : u32) -> VertexOutput {
+@stage(vertex)
+fn main(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
   var pos = array<vec2<f32>, 6>(
       vec2<f32>( 0.5,  0.5),
       vec2<f32>( 0.5, -0.5),
@@ -295,8 +295,8 @@ fn main([[builtin(vertex_index)]] VertexIndex : u32) -> VertexOutput {
         fragment: {
           module: t.device.createShaderModule({
             code: `
-[[stage(fragment)]]
-fn main([[location(0)]] fragColor: vec4<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@location(0) fragColor: vec4<f32>) -> @location(0) vec4<f32> {
   return fragColor;
 }
             `,
@@ -334,11 +334,11 @@ fn main([[location(0)]] fragColor: vec4<f32>) -> [[location(0)]] vec4<f32> {
           module: t.device.createShaderModule({
             code: `
 struct VertexOutput {
-  [[builtin(position)]] Position : vec4<f32>;
+  @builtin(position) Position : vec4<f32>;
 };
 
-[[stage(vertex)]]
-fn main([[builtin(vertex_index)]] VertexIndex : u32) -> VertexOutput {
+@stage(vertex)
+fn main(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
   var pos = array<vec2<f32>, 6>(
       vec2<f32>( 1.0,  1.0),
       vec2<f32>( 1.0, -1.0),
@@ -358,11 +358,11 @@ fn main([[builtin(vertex_index)]] VertexIndex : u32) -> VertexOutput {
         fragment: {
           module: t.device.createShaderModule({
             code: `
-[[group(0), binding(0)]] var mySampler: sampler;
-[[group(0), binding(1)]] var myTexture: texture_2d<f32>;
+@group(0) @binding(0) var mySampler: sampler;
+@group(0) @binding(1) var myTexture: texture_2d<f32>;
 
-[[stage(fragment)]]
-fn main([[builtin(position)]] fragcoord: vec4<f32>) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn main(@builtin(position) fragcoord: vec4<f32>) -> @location(0) vec4<f32> {
   var coord = vec2<u32>(floor(fragcoord.xy));
   var color = vec4<f32>(0.0, 0.0, 0.0, 1.0);
   if (coord.x == 0u) {

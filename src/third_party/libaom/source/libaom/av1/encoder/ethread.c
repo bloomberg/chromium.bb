@@ -316,18 +316,18 @@ static AOM_INLINE void switch_tile_and_get_next_job(
 
 #if CONFIG_REALTIME_ONLY
       int num_b_rows_in_tile =
-          av1_get_sb_rows_in_tile(cm, this_tile->tile_info);
+          av1_get_sb_rows_in_tile(cm, &this_tile->tile_info);
       int num_b_cols_in_tile =
-          av1_get_sb_cols_in_tile(cm, this_tile->tile_info);
+          av1_get_sb_cols_in_tile(cm, &this_tile->tile_info);
 #else
       int num_b_rows_in_tile =
           is_firstpass
-              ? av1_get_unit_rows_in_tile(this_tile->tile_info, fp_block_size)
-              : av1_get_sb_rows_in_tile(cm, this_tile->tile_info);
+              ? av1_get_unit_rows_in_tile(&this_tile->tile_info, fp_block_size)
+              : av1_get_sb_rows_in_tile(cm, &this_tile->tile_info);
       int num_b_cols_in_tile =
           is_firstpass
-              ? av1_get_unit_cols_in_tile(this_tile->tile_info, fp_block_size)
-              : av1_get_sb_cols_in_tile(cm, this_tile->tile_info);
+              ? av1_get_unit_cols_in_tile(&this_tile->tile_info, fp_block_size)
+              : av1_get_sb_cols_in_tile(cm, &this_tile->tile_info);
 #endif
       int theoretical_limit_on_threads =
           AOMMIN((num_b_cols_in_tile + 1) >> 1, num_b_rows_in_tile);
@@ -411,7 +411,7 @@ static int fp_enc_row_mt_worker_hook(void *arg1, void *unused) {
     ThreadData *td = thread_data->td;
 
     assert(current_mi_row != -1 &&
-           current_mi_row <= this_tile->tile_info.mi_row_end);
+           current_mi_row < this_tile->tile_info.mi_row_end);
 
     const int unit_height_log2 = mi_size_high_log2[fp_block_size];
     av1_first_pass_row(cpi, td, this_tile, current_mi_row >> unit_height_log2,
@@ -767,6 +767,18 @@ void av1_init_tile_thread_data(AV1_PRIMARY *ppi, int is_first_pass) {
                          plane_types * MAX_SB_SQUARE));
         }
 
+        if (is_src_var_for_4x4_sub_blocks_caching_enabled(ppi->cpi)) {
+          const BLOCK_SIZE sb_size = ppi->cpi->common.seq_params->sb_size;
+          const int mi_count_in_sb =
+              mi_size_wide[sb_size] * mi_size_high[sb_size];
+
+          AOM_CHECK_MEM_ERROR(
+              &ppi->error, thread_data->td->src_var_info_of_4x4_sub_blocks,
+              aom_malloc(
+                  sizeof(*thread_data->td->src_var_info_of_4x4_sub_blocks) *
+                  mi_count_in_sb));
+        }
+
         if (ppi->cpi->sf.part_sf.partition_search_type == VAR_BASED_PARTITION) {
           const int num_64x64_blocks =
               (ppi->seq_params.sb_size == BLOCK_64X64) ? 1 : 4;
@@ -866,6 +878,9 @@ static AOM_INLINE int is_fpmt_config(AV1_PRIMARY *ppi, AV1EncoderConfig *oxcf) {
   if (oxcf->max_threads < 2) {
     return 0;
   }
+  if (!oxcf->fp_mt) {
+    return 0;
+  }
 
   return 1;
 }
@@ -905,6 +920,17 @@ int av1_check_fpmt_config(AV1_PRIMARY *const ppi,
 // possible for each resolution.
 #define MAX_THREADS 100
 
+// Computes the max number of enc workers possible for each resolution.
+static AOM_INLINE int compute_max_num_enc_workers(
+    CommonModeInfoParams *const mi_params, int mib_size_log2) {
+  int num_sb_rows =
+      ALIGN_POWER_OF_TWO(mi_params->mi_rows, mib_size_log2) >> mib_size_log2;
+  int num_sb_cols =
+      ALIGN_POWER_OF_TWO(mi_params->mi_cols, mib_size_log2) >> mib_size_log2;
+
+  return AOMMIN((num_sb_cols + 1) >> 1, num_sb_rows);
+}
+
 // Computes the number of frame parallel(fp) contexts to be created
 // based on the number of max_enc_workers.
 int av1_compute_num_fp_contexts(AV1_PRIMARY *ppi, AV1EncoderConfig *oxcf) {
@@ -912,8 +938,8 @@ int av1_compute_num_fp_contexts(AV1_PRIMARY *ppi, AV1EncoderConfig *oxcf) {
   if (!av1_check_fpmt_config(ppi, oxcf)) {
     return 1;
   }
-  int max_num_enc_workers =
-      av1_compute_num_enc_workers(ppi->parallel_cpi[0], MAX_THREADS);
+  int max_num_enc_workers = compute_max_num_enc_workers(
+      &ppi->cpi->common.mi_params, ppi->cpi->common.seq_params->mib_size_log2);
   // Scaling factors and rounding factors used to tune worker_per_frame
   // computation.
   int rounding_factor[2] = { 2, 4 };
@@ -933,17 +959,19 @@ int av1_compute_num_fp_contexts(AV1_PRIMARY *ppi, AV1EncoderConfig *oxcf) {
                     scaling_factor[index]);
   int max_threads = oxcf->max_threads;
   int num_fp_contexts = max_threads / workers_per_frame;
+  // Based on empirical results, FPMT gains with multi-tile are significant when
+  // more parallel frames are available. Use FPMT with multi-tile encode only
+  // when sufficient threads are available for parallel encode of
+  // MAX_PARALLEL_FRAMES frames.
+  if (oxcf->tile_cfg.tile_columns > 0 || oxcf->tile_cfg.tile_rows > 0) {
+    if (num_fp_contexts < MAX_PARALLEL_FRAMES) num_fp_contexts = 1;
+  }
 
   num_fp_contexts = AOMMAX(1, AOMMIN(num_fp_contexts, MAX_PARALLEL_FRAMES));
   // Limit recalculated num_fp_contexts to ppi->num_fp_contexts.
   num_fp_contexts = (ppi->num_fp_contexts == 1)
                         ? num_fp_contexts
                         : AOMMIN(num_fp_contexts, ppi->num_fp_contexts);
-#if CONFIG_FPMT_TEST
-  // For the scope of these tests, ppi->num_fp_contexts are mandated to
-  // MAX_PARALLEL_FRAMES.
-  num_fp_contexts = MAX_PARALLEL_FRAMES;
-#endif
   if (num_fp_contexts > 1) {
     ppi->p_mt_info.num_mod_workers[MOD_FRAME_ENC] =
         AOMMIN(max_num_enc_workers * num_fp_contexts, oxcf->max_threads);
@@ -1188,10 +1216,10 @@ static AOM_INLINE void accumulate_counters_enc_workers(AV1_COMP *cpi,
       av1_accumulate_cyclic_refresh_counters(cpi->cyclic_refresh,
                                              &thread_data->td->mb);
     if (thread_data->td != &cpi->td) {
-      if (cpi->oxcf.cost_upd_freq.mv < COST_UPD_OFF) {
+      if (cpi->sf.inter_sf.mv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
         aom_free(thread_data->td->mb.mv_costs);
       }
-      if (cpi->oxcf.cost_upd_freq.dv < COST_UPD_OFF) {
+      if (cpi->sf.intra_sf.dv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
         aom_free(thread_data->td->mb.dv_costs);
       }
     }
@@ -1258,13 +1286,13 @@ static AOM_INLINE void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
               thread_data->td->hash_value_buffer[x][y];
         }
       }
-      if (cpi->oxcf.cost_upd_freq.mv < COST_UPD_OFF) {
+      if (cpi->sf.inter_sf.mv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
         CHECK_MEM_ERROR(cm, thread_data->td->mb.mv_costs,
                         (MvCosts *)aom_malloc(sizeof(MvCosts)));
         memcpy(thread_data->td->mb.mv_costs, cpi->td.mb.mv_costs,
                sizeof(MvCosts));
       }
-      if (cpi->oxcf.cost_upd_freq.dv < COST_UPD_OFF) {
+      if (cpi->sf.intra_sf.dv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
         CHECK_MEM_ERROR(cm, thread_data->td->mb.dv_costs,
                         (IntraBCMVCosts *)aom_malloc(sizeof(IntraBCMVCosts)));
         memcpy(thread_data->td->mb.dv_costs, cpi->td.mb.dv_costs,
@@ -1292,6 +1320,9 @@ static AOM_INLINE void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
       }
       thread_data->td->mb.pixel_gradient_info =
           thread_data->td->pixel_gradient_info;
+
+      thread_data->td->mb.src_var_info_of_4x4_sub_blocks =
+          thread_data->td->src_var_info_of_4x4_sub_blocks;
 
       thread_data->td->mb.e_mbd.tmp_conv_dst = thread_data->td->mb.tmp_conv_dst;
       for (int j = 0; j < 2; ++j) {
@@ -1333,13 +1364,13 @@ static AOM_INLINE void fp_prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
     // Before encoding a frame, copy the thread data from cpi.
     if (thread_data->td != &cpi->td) {
       thread_data->td->mb = cpi->td.mb;
-      if (cpi->oxcf.cost_upd_freq.mv < COST_UPD_OFF) {
+      if (cpi->sf.inter_sf.mv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
         CHECK_MEM_ERROR(cm, thread_data->td->mb.mv_costs,
                         (MvCosts *)aom_malloc(sizeof(MvCosts)));
         memcpy(thread_data->td->mb.mv_costs, cpi->td.mb.mv_costs,
                sizeof(MvCosts));
       }
-      if (cpi->oxcf.cost_upd_freq.dv < COST_UPD_OFF) {
+      if (cpi->sf.intra_sf.dv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
         CHECK_MEM_ERROR(cm, thread_data->td->mb.dv_costs,
                         (IntraBCMVCosts *)aom_malloc(sizeof(IntraBCMVCosts)));
         memcpy(thread_data->td->mb.dv_costs, cpi->td.mb.dv_costs,
@@ -1364,8 +1395,8 @@ static AOM_INLINE int compute_num_enc_row_mt_workers(AV1_COMMON *const cm,
   for (int row = 0; row < tile_rows; row++) {
     for (int col = 0; col < tile_cols; col++) {
       av1_tile_init(&tile_info, cm, row, col);
-      const int num_sb_rows_in_tile = av1_get_sb_rows_in_tile(cm, tile_info);
-      const int num_sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, tile_info);
+      const int num_sb_rows_in_tile = av1_get_sb_rows_in_tile(cm, &tile_info);
+      const int num_sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, &tile_info);
       total_num_threads_row_mt +=
           AOMMIN((num_sb_cols_in_tile + 1) >> 1, num_sb_rows_in_tile);
     }
@@ -1442,7 +1473,7 @@ static AOM_INLINE void compute_max_sb_rows_cols(AV1_COMP *cpi, int *max_sb_rows,
   for (int row = 0; row < tile_rows; row++) {
     for (int col = 0; col < tile_cols; col++) {
       const int tile_index = row * cm->tiles.cols + col;
-      TileInfo tile_info = cpi->tile_data[tile_index].tile_info;
+      const TileInfo *const tile_info = &cpi->tile_data[tile_index].tile_info;
       const int num_sb_rows_in_tile = av1_get_sb_rows_in_tile(cm, tile_info);
       const int num_sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, tile_info);
       *max_sb_rows = AOMMAX(*max_sb_rows, num_sb_rows_in_tile);
@@ -1466,9 +1497,9 @@ int av1_fp_compute_num_enc_workers(AV1_COMP *cpi) {
     for (int col = 0; col < tile_cols; col++) {
       av1_tile_init(&tile_info, cm, row, col);
       const int num_mb_rows_in_tile =
-          av1_get_unit_rows_in_tile(tile_info, cpi->fp_block_size);
+          av1_get_unit_rows_in_tile(&tile_info, cpi->fp_block_size);
       const int num_mb_cols_in_tile =
-          av1_get_unit_cols_in_tile(tile_info, cpi->fp_block_size);
+          av1_get_unit_cols_in_tile(&tile_info, cpi->fp_block_size);
       total_num_threads_row_mt +=
           AOMMIN((num_mb_cols_in_tile + 1) >> 1, num_mb_rows_in_tile);
     }
@@ -1487,7 +1518,7 @@ static AOM_INLINE int fp_compute_max_mb_rows(const AV1_COMMON *const cm,
   for (int row = 0; row < tile_rows; row++) {
     for (int col = 0; col < tile_cols; col++) {
       const int tile_index = row * cm->tiles.cols + col;
-      TileInfo tile_info = tile_data[tile_index].tile_info;
+      const TileInfo *const tile_info = &tile_data[tile_index].tile_info;
       const int num_mb_rows_in_tile =
           av1_get_unit_rows_in_tile(tile_info, fp_block_size);
       max_mb_rows = AOMMAX(max_mb_rows, num_mb_rows_in_tile);
@@ -1623,10 +1654,10 @@ void av1_fp_encode_tiles_row_mt(AV1_COMP *cpi) {
   for (int i = num_workers - 1; i >= 0; i--) {
     EncWorkerData *const thread_data = &cpi->mt_info.tile_thr_data[i];
     if (thread_data->td != &cpi->td) {
-      if (cpi->oxcf.cost_upd_freq.mv < COST_UPD_OFF) {
+      if (cpi->sf.inter_sf.mv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
         aom_free(thread_data->td->mb.mv_costs);
       }
-      if (cpi->oxcf.cost_upd_freq.dv < COST_UPD_OFF) {
+      if (cpi->sf.intra_sf.dv_cost_upd_level != INTERNAL_COST_UPD_OFF) {
         aom_free(thread_data->td->mb.dv_costs);
       }
     }

@@ -99,7 +99,6 @@ inline void Load(LiftoffAssembler* assm, LiftoffRegister dst, Operand src,
     case kOptRef:
     case kRef:
     case kRtt:
-    case kRttWithDepth:
       assm->movq(dst.gp(), src);
       break;
     case kF32:
@@ -128,7 +127,6 @@ inline void Store(LiftoffAssembler* assm, Operand dst, LiftoffRegister src,
     case kOptRef:
     case kRef:
     case kRtt:
-    case kRttWithDepth:
       assm->StoreTaggedField(dst, src.gp());
       break;
     case kF32:
@@ -373,10 +371,6 @@ void LiftoffAssembler::SpillInstance(Register instance) {
 
 void LiftoffAssembler::ResetOSRTarget() {
   movq(liftoff::GetOSRTargetSlot(), Immediate(0));
-}
-
-void LiftoffAssembler::FillInstanceInto(Register dst) {
-  movq(dst, liftoff::GetInstanceOperand());
 }
 
 void LiftoffAssembler::LoadTaggedPointer(Register dst, Register src_addr,
@@ -927,7 +921,6 @@ void LiftoffAssembler::Spill(int offset, LiftoffRegister reg, ValueKind kind) {
     case kOptRef:
     case kRef:
     case kRtt:
-    case kRttWithDepth:
       movq(dst, reg.gp());
       break;
     case kF32:
@@ -1474,7 +1467,7 @@ bool LiftoffAssembler::emit_i64_popcnt(LiftoffRegister dst,
   return true;
 }
 
-void LiftoffAssembler::emit_u32_to_intptr(Register dst, Register src) {
+void LiftoffAssembler::emit_u32_to_uintptr(Register dst, Register src) {
   movl(dst, src);
 }
 
@@ -2145,7 +2138,6 @@ void LiftoffAssembler::emit_cond_jump(LiftoffCondition liftoff_cond,
       case kRef:
       case kOptRef:
       case kRtt:
-      case kRttWithDepth:
         DCHECK(liftoff_cond == kEqual || liftoff_cond == kUnequal);
         V8_FALLTHROUGH;
       case kI64:

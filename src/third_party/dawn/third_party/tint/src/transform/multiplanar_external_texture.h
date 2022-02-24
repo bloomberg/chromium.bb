@@ -20,7 +20,7 @@
 
 #include "src/ast/struct_member.h"
 #include "src/sem/binding_point.h"
-#include "src/sem/intrinsic_type.h"
+#include "src/sem/builtin_type.h"
 #include "src/transform/transform.h"
 
 namespace tint {
@@ -76,6 +76,12 @@ class MultiplanarExternalTexture
   /// Destructor
   ~MultiplanarExternalTexture() override;
 
+  /// @param program the program to inspect
+  /// @param data optional extra transform-specific input data
+  /// @returns true if this transform should be run for the given program
+  bool ShouldRun(const Program* program,
+                 const DataMap& data = {}) const override;
+
  protected:
   struct State;
 
@@ -85,7 +91,9 @@ class MultiplanarExternalTexture
   /// ProgramBuilder
   /// @param inputs optional extra transform-specific input data
   /// @param outputs optional extra transform-specific output data
-  void Run(CloneContext& ctx, const DataMap& inputs, DataMap& outputs) override;
+  void Run(CloneContext& ctx,
+           const DataMap& inputs,
+           DataMap& outputs) const override;
 };
 
 }  // namespace transform

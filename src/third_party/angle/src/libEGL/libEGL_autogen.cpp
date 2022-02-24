@@ -22,17 +22,12 @@
 namespace
 {
 #if defined(ANGLE_USE_EGL_LOADER)
-bool gLoaded = false;
-
-std::unique_ptr<angle::Library> &EntryPointsLib()
-{
-    static angle::base::NoDestructor<std::unique_ptr<angle::Library>> sEntryPointsLib;
-    return *sEntryPointsLib;
-}
+bool gLoaded          = false;
+void *gEntryPointsLib = nullptr;
 
 angle::GenericProc KHRONOS_APIENTRY GlobalLoad(const char *symbol)
 {
-    return reinterpret_cast<angle::GenericProc>(EntryPointsLib()->getSymbol(symbol));
+    return reinterpret_cast<angle::GenericProc>(angle::GetLibrarySymbol(gEntryPointsLib, symbol));
 }
 
 void EnsureEGLLoaded()
@@ -43,16 +38,16 @@ void EnsureEGLLoaded()
     }
 
     std::string errorOut;
-    EntryPointsLib().reset(angle::OpenSharedLibraryAndGetError(
-        ANGLE_GLESV2_LIBRARY_NAME, angle::SearchType::ModuleDir, &errorOut));
-    angle::LoadEGL_EGL(GlobalLoad);
-    if (!EGL_GetPlatformDisplay)
+    gEntryPointsLib = OpenSystemLibraryAndGetError(ANGLE_GLESV2_LIBRARY_NAME,
+                                                   angle::SearchType::ModuleDir, &errorOut);
+    if (gEntryPointsLib)
     {
-        fprintf(stderr, "Error loading EGL entry points: %s\n", errorOut.c_str());
+        angle::LoadEGL_EGL(GlobalLoad);
+        gLoaded = true;
     }
     else
     {
-        gLoaded = true;
+        fprintf(stderr, "Error loading EGL entry points: %s\n", errorOut.c_str());
     }
 }
 #else
@@ -768,6 +763,16 @@ EGLBoolean EGLAPIENTRY eglUnlockSurfaceKHR(EGLDisplay dpy, EGLSurface surface)
 {
     EnsureEGLLoaded();
     return EGL_UnlockSurfaceKHR(dpy, surface);
+}
+
+// EGL_KHR_partial_update
+EGLBoolean EGLAPIENTRY eglSetDamageRegionKHR(EGLDisplay dpy,
+                                             EGLSurface surface,
+                                             EGLint *rects,
+                                             EGLint n_rects)
+{
+    EnsureEGLLoaded();
+    return EGL_SetDamageRegionKHR(dpy, surface, rects, n_rects);
 }
 
 // EGL_KHR_reusable_sync

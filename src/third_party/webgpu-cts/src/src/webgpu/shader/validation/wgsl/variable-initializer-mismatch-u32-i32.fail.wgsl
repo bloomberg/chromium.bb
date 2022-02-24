@@ -2,6 +2,6 @@
 
 var<private> f : u32  = 0;
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
 }

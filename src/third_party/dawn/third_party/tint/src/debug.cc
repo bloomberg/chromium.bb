@@ -14,6 +14,10 @@
 
 #include "src/debug.h"
 
+#include <memory>
+
+#include "src/utils/debugger.h"
+
 namespace tint {
 namespace {
 
@@ -32,12 +36,15 @@ InternalCompilerError::InternalCompilerError(const char* file,
     : file_(file), line_(line), system_(system), diagnostics_(diagnostics) {}
 
 InternalCompilerError::~InternalCompilerError() {
-  Source source{Source::Range{Source::Location{line_}}, file_};
-  diagnostics_.add_ice(system_, msg_.str(), source);
+  auto file = std::make_shared<Source::File>(file_, "");
+  Source source{Source::Range{{line_}}, file.get()};
+  diagnostics_.add_ice(system_, msg_.str(), source, std::move(file));
 
   if (ice_reporter) {
     ice_reporter(diagnostics_);
   }
+
+  debugger::Break();
 }
 
 }  // namespace tint

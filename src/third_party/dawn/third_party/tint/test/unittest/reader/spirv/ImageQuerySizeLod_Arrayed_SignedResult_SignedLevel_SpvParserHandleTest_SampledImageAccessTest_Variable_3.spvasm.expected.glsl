@@ -3,8 +3,7 @@ SKIP: FAILED
 #version 310 es
 precision mediump float;
 
-uniform highp samplerCubeArray x_20;
-
+uniform highp samplerCubeArray x_20_1;
 void main_1() {
   float f1 = 1.0f;
   vec2 vf12 = vec2(1.0f, 2.0f);
@@ -23,19 +22,18 @@ void main_1() {
   vec2 coords12 = vf12;
   vec3 coords123 = vf123;
   vec4 coords1234 = vf1234;
-  ivec3 x_99 = ivec3(textureSize(x_20, i1).xy, textureQueryLevels(x_20););
+  ivec3 x_99 = ivec3(textureSize(x_20_1, i1).xy, textureSize(x_20_1, 0).z);
   return;
 }
 
 void tint_symbol() {
   main_1();
-  return;
 }
+
 void main() {
   tint_symbol();
+  return;
 }
-
-
 Error parsing GLSL shader:
 ERROR: 0:4: 'samplerCubeArray' : Reserved word. 
 ERROR: 0:4: '' : compilation terminated 

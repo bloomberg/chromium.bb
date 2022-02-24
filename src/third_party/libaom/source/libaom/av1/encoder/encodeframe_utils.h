@@ -334,11 +334,16 @@ int av1_active_v_edge(const AV1_COMP *cpi, int mi_col, int mi_step);
 void av1_get_tpl_stats_sb(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
                           int mi_col, SuperBlockEnc *sb_enc);
 
-int av1_get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
+int av1_get_q_for_deltaq_objective(AV1_COMP *const cpi, ThreadData *td,
+                                   int64_t *delta_dist, BLOCK_SIZE bsize,
                                    int mi_row, int mi_col);
 
 int av1_get_q_for_hdr(AV1_COMP *const cpi, MACROBLOCK *const x,
                       BLOCK_SIZE bsize, int mi_row, int mi_col);
+
+int av1_get_cb_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
+                      const BLOCK_SIZE bsize, const int mi_row,
+                      const int mi_col);
 
 int av1_get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
                             const BLOCK_SIZE bsize, const int mi_row,
@@ -538,7 +543,7 @@ static AOM_INLINE void enforce_max_ref_frames(
       case LAST3_FRAME: *ref_frame_flags &= ~AOM_LAST3_FLAG; break;
       case LAST2_FRAME: *ref_frame_flags &= ~AOM_LAST2_FLAG; break;
       case ALTREF2_FRAME: *ref_frame_flags &= ~AOM_ALT2_FLAG; break;
-      case GOLDEN_FRAME: *ref_frame_flags &= ~AOM_GOLD_FLAG; break;
+      case BWDREF_FRAME: *ref_frame_flags &= ~AOM_GOLD_FLAG; break;
       default: assert(0);
     }
     --total_valid_refs;

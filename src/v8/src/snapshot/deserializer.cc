@@ -208,8 +208,8 @@ template <typename TSlot>
 int Deserializer<IsolateT>::WriteExternalPointer(TSlot dest, Address value,
                                                  ExternalPointerTag tag) {
   DCHECK(!next_reference_is_weak_);
+  DCHECK(IsAligned(kExternalPointerSize, TSlot::kSlotDataSize));
   InitExternalPointerField(dest.address(), main_thread_isolate(), value, tag);
-  STATIC_ASSERT(IsAligned(kExternalPointerSize, TSlot::kSlotDataSize));
   return (kExternalPointerSize / TSlot::kSlotDataSize);
 }
 
@@ -321,7 +321,8 @@ void Deserializer<IsolateT>::WeakenDescriptorArrays() {
   DisallowGarbageCollection no_gc;
   for (Handle<DescriptorArray> descriptor_array : new_descriptor_arrays_) {
     DCHECK(descriptor_array->IsStrongDescriptorArray());
-    descriptor_array->set_map(ReadOnlyRoots(isolate()).descriptor_array_map());
+    descriptor_array->set_map_safe_transition(
+        ReadOnlyRoots(isolate()).descriptor_array_map());
     WriteBarrier::Marking(*descriptor_array,
                           descriptor_array->number_of_descriptors());
   }
@@ -431,7 +432,6 @@ void Deserializer<IsolateT>::PostProcessNewObject(Handle<Map> map,
           isolate()->string_table()->LookupKey(isolate(), &key);
 
       if (*result != *string) {
-        DCHECK(!string->IsShared());
         string->MakeThin(isolate(), *result);
         // Mutate the given object handle so that the backreference entry is
         // also updated.

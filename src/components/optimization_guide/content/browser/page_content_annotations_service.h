@@ -76,6 +76,12 @@ struct HistoryVisit {
   };
 };
 
+// The information about a search visit to store in HistoryService.
+struct SearchMetadata {
+  GURL normalized_url;
+  std::u16string search_terms;
+};
+
 // A KeyedService that annotates page content.
 class PageContentAnnotationsService : public KeyedService,
                                       public EntityMetadataProvider {
@@ -93,30 +99,33 @@ class PageContentAnnotationsService : public KeyedService,
       const PageContentAnnotationsService&) = delete;
 
   // This is the main entry point for page content annotations by external
-  // callers.
+  // callers. Callers must call |RequestAndNotifyWhenModelAvailable| as close to
+  // session start as possible to allow time for the model file to be
+  // downloaded.
   void BatchAnnotate(BatchAnnotationCallback callback,
                      const std::vector<std::string>& inputs,
                      AnnotationType annotation_type);
 
-  // Overrides the PageContentAnnotator for testing. See
-  // test_page_content_annotator.h for an implementation designed for testing.
-  void OverridePageContentAnnotatorForTesting(PageContentAnnotator* annotator);
+  // Requests that the given model for |type| be loaded in the background and
+  // then runs |callback| with true when the model is ready to execute. If the
+  // model is ready now, the callback is run immediately. If the model file will
+  // never be available, the callback is run with false.
+  void RequestAndNotifyWhenModelAvailable(
+      AnnotationType type,
+      base::OnceCallback<void(bool)> callback);
 
   // Returns the model info for the given annotation type, if the model file is
   // available.
   absl::optional<ModelInfo> GetModelInfoForType(AnnotationType type) const;
 
-  // Runs |callback| with true when the model that powers |BatchAnnotate| for
-  // the given annotation type is ready to execute. If the model is ready now,
-  // the callback is run immediately. If the model file will never be available,
-  // the callback is run with false.
-  void NotifyWhenModelAvailable(AnnotationType type,
-                                base::OnceCallback<void(bool)> callback);
-
   // EntityMetadataProvider:
   void GetMetadataForEntityId(
       const std::string& entity_id,
       EntityMetadataRetrievedCallback callback) override;
+
+  // Overrides the PageContentAnnotator for testing. See
+  // test_page_content_annotator.h for an implementation designed for testing.
+  void OverridePageContentAnnotatorForTesting(PageContentAnnotator* annotator);
 
  private:
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
@@ -163,6 +172,10 @@ class PageContentAnnotationsService : public KeyedService,
   static HistoryVisit CreateHistoryVisitFromWebContents(
       content::WebContents* web_contents,
       int64_t navigation_id);
+
+  // Persist |search_metadata| for |visit| in |history_service_|.
+  virtual void PersistSearchMetadata(const HistoryVisit& visit,
+                                     const SearchMetadata& search_metadata);
 
   // Requests |search_result_extractor_client_| to extract related searches from
   // the Google SRP DOM associated with |web_contents|.
@@ -224,6 +237,11 @@ class PageContentAnnotationsService : public KeyedService,
   // requested for another annotation on the same visit.
   base::LRUCache<HistoryVisit, bool, HistoryVisit::Comp>
       last_annotated_history_visits_;
+
+  // A LRU cache of the annotation results for visits. If the text of the visit
+  // is in the cache, the cached model annotations will be used.
+  base::HashingLRUCache<std::string, history::VisitContentModelAnnotations>
+      annotated_text_cache_;
 
   // The set of visits to be annotated, this is added to by Annotate requests
   // from the web content observer. These will be annotated when the set is full

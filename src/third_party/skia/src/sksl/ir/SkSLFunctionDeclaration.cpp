@@ -7,19 +7,20 @@
 
 #include "src/sksl/ir/SkSLFunctionDeclaration.h"
 
+#include "include/private/SkStringView.h"
 #include "src/sksl/SkSLCompiler.h"
 #include "src/sksl/ir/SkSLUnresolvedFunction.h"
 
 namespace SkSL {
 
-static IntrinsicKind identify_intrinsic(skstd::string_view functionName) {
+static IntrinsicKind identify_intrinsic(std::string_view functionName) {
     #define SKSL_INTRINSIC(name) {#name, k_##name##_IntrinsicKind},
-    static const auto* kAllIntrinsics = new std::unordered_map<skstd::string_view, IntrinsicKind>{
+    static const auto* kAllIntrinsics = new std::unordered_map<std::string_view, IntrinsicKind>{
         SKSL_INTRINSIC_LIST
     };
     #undef SKSL_INTRINSIC
 
-    if (functionName.starts_with('$')) {
+    if (skstd::starts_with(functionName, '$')) {
         functionName.remove_prefix(1);
     }
 
@@ -289,7 +290,7 @@ static bool check_main_signature(const Context& context, int line, const Type& r
 static bool find_existing_declaration(const Context& context,
                                       SymbolTable& symbols,
                                       int line,
-                                      skstd::string_view name,
+                                      std::string_view name,
                                       std::vector<std::unique_ptr<Variable>>& parameters,
                                       const Type* returnType,
                                       const FunctionDeclaration** outExistingDecl) {
@@ -306,7 +307,7 @@ static bool find_existing_declaration(const Context& context,
                 functions.push_back(&entry->as<FunctionDeclaration>());
                 break;
             default:
-                errors.error(line, "symbol '" + name + "' was already defined");
+                errors.error(line, "symbol '" + std::string(name) + "' was already defined");
                 return false;
         }
         for (const FunctionDeclaration* other : functions) {
@@ -343,9 +344,8 @@ static bool find_existing_declaration(const Context& context,
             }
             for (size_t i = 0; i < parameters.size(); i++) {
                 if (parameters[i]->modifiers() != other->parameters()[i]->modifiers()) {
-                    errors.error(line,
-                                 "modifiers on parameter " + to_string((uint64_t)i + 1) +
-                                 " differ between declaration and definition");
+                    errors.error(line, "modifiers on parameter " + std::to_string(i + 1) +
+                                       " differ between declaration and definition");
                     return false;
                 }
             }
@@ -362,7 +362,7 @@ static bool find_existing_declaration(const Context& context,
 
 FunctionDeclaration::FunctionDeclaration(int line,
                                          const Modifiers* modifiers,
-                                         skstd::string_view name,
+                                         std::string_view name,
                                          std::vector<const Variable*> parameters,
                                          const Type* returnType,
                                          bool builtin)
@@ -380,7 +380,7 @@ const FunctionDeclaration* FunctionDeclaration::Convert(
         SymbolTable& symbols,
         int line,
         const Modifiers* modifiers,
-        skstd::string_view name,
+        std::string_view name,
         std::vector<std::unique_ptr<Variable>> parameters,
         const Type* returnType) {
     bool isMain = (name == "main");
@@ -407,24 +407,33 @@ const FunctionDeclaration* FunctionDeclaration::Convert(
     return symbols.add(std::move(result));
 }
 
-String FunctionDeclaration::mangledName() const {
+std::string FunctionDeclaration::mangledName() const {
     if ((this->isBuiltin() && !this->definition()) || this->isMain()) {
         // Builtins without a definition (like `sin` or `sqrt`) must use their real names.
-        return String(this->name());
+        return std::string(this->name());
+    }
+    // Built-in functions can have a $ prefix, which will fail to compile in GLSL/Metal. Remove the
+    // $ and add a unique mangling specifier, so user code can't conflict with the name.
+    std::string_view name = this->name();
+    const char* builtinMarker = "";
+    if (skstd::starts_with(name, '$')) {
+        name.remove_prefix(1);
+        builtinMarker = "Q";  // a unique, otherwise-unused mangle character
     }
     // GLSL forbids two underscores in a row; add an extra character if necessary to avoid this.
-    const char* splitter = this->name().ends_with("_") ? "x_" : "_";
+    const char* splitter = skstd::ends_with(name, '_') ? "x_" : "_";
     // Rename function to `funcname_returntypeparamtypes`.
-    String result = this->name() + splitter + this->returnType().abbreviatedName();
+    std::string result = std::string(name) + splitter + builtinMarker +
+                         this->returnType().abbreviatedName();
     for (const Variable* p : this->parameters()) {
         result += p->type().abbreviatedName();
     }
     return result;
 }
 
-String FunctionDeclaration::description() const {
-    String result = this->returnType().displayName() + " " + this->name() + "(";
-    String separator;
+std::string FunctionDeclaration::description() const {
+    std::string result = this->returnType().displayName() + " " + std::string(this->name()) + "(";
+    std::string separator;
     for (const Variable* p : this->parameters()) {
         result += separator;
         separator = ", ";

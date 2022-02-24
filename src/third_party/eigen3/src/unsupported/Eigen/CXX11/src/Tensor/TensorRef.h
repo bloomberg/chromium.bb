@@ -174,7 +174,7 @@ template<typename PlainObjectType> class TensorRef : public TensorBase<TensorRef
       unrefEvaluator();
     }
 
-    TensorRef(const TensorRef& other) : m_evaluator(other.m_evaluator) {
+    TensorRef(const TensorRef& other) : TensorBase<TensorRef<PlainObjectType> >(other), m_evaluator(other.m_evaluator) {
       eigen_assert(m_evaluator->refCount() > 0);
       m_evaluator->incrRefCount();
     }

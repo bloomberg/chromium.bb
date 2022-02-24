@@ -7,6 +7,6 @@ struct PositionBuffer {
 
 var<storage> s : PositionBuffer;
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
 }

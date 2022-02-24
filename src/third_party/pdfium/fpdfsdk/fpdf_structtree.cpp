@@ -80,6 +80,15 @@ FPDF_StructElement_GetAltText(FPDF_STRUCTELEMENT struct_element,
 }
 
 FPDF_EXPORT unsigned long FPDF_CALLCONV
+FPDF_StructElement_GetActualText(FPDF_STRUCTELEMENT struct_element,
+                                 void* buffer,
+                                 unsigned long buflen) {
+  CPDF_StructElement* elem =
+      CPDFStructElementFromFPDFStructElement(struct_element);
+  return elem ? WideStringToBuffer(elem->GetActualText(), buffer, buflen) : 0;
+}
+
+FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDF_StructElement_GetID(FPDF_STRUCTELEMENT struct_element,
                          void* buffer,
                          unsigned long buflen) {
@@ -102,6 +111,8 @@ FPDF_StructElement_GetLang(FPDF_STRUCTELEMENT struct_element,
   CPDF_StructElement* elem =
       CPDFStructElementFromFPDFStructElement(struct_element);
   const CPDF_Dictionary* dict = elem ? elem->GetDict() : nullptr;
+  if (!dict)
+    return 0;
   const CPDF_Object* obj = dict->GetObjectFor("Lang");
   if (!obj || !obj->IsString())
     return 0;
@@ -155,6 +166,18 @@ FPDF_StructElement_GetType(FPDF_STRUCTELEMENT struct_element,
 }
 
 FPDF_EXPORT unsigned long FPDF_CALLCONV
+FPDF_StructElement_GetObjType(FPDF_STRUCTELEMENT struct_element,
+                              void* buffer,
+                              unsigned long buflen) {
+  CPDF_StructElement* elem =
+      CPDFStructElementFromFPDFStructElement(struct_element);
+  return elem ? WideStringToBuffer(
+                    WideString::FromUTF8(elem->GetObjType().AsStringView()),
+                    buffer, buflen)
+              : 0;
+}
+
+FPDF_EXPORT unsigned long FPDF_CALLCONV
 FPDF_StructElement_GetTitle(FPDF_STRUCTELEMENT struct_element,
                             void* buffer,
                             unsigned long buflen) {
@@ -183,4 +206,15 @@ FPDF_StructElement_GetChildAtIndex(FPDF_STRUCTELEMENT struct_element,
     return nullptr;
 
   return FPDFStructElementFromCPDFStructElement(elem->GetKidIfElement(index));
+}
+
+FPDF_EXPORT FPDF_STRUCTELEMENT FPDF_CALLCONV
+FPDF_StructElement_GetParent(FPDF_STRUCTELEMENT struct_element) {
+  CPDF_StructElement* elem =
+      CPDFStructElementFromFPDFStructElement(struct_element);
+  CPDF_StructElement* parent = elem ? elem->GetParent() : nullptr;
+  if (!parent) {
+    return nullptr;
+  }
+  return FPDFStructElementFromCPDFStructElement(parent);
 }

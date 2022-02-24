@@ -134,6 +134,12 @@ config("icu_code") {
       "-Wno-implicit-int-float-conversion",
       "-Wno-conversion",
 
+      # Needed for C++20
+      "-Wno-ambiguous-reversed-operator",
+      "-Wno-rewrite-not-bool",
+      "-Wno-deprecated-anon-enum-enum-conversion",
+      "-Wno-deprecated-array-compare",
+
       # Used for conditional changes to the compilation process that
       # are only needed for the Fuchsia toolchain.
       "-DICU_IS_IN_FUCHSIA",
@@ -295,6 +301,10 @@ template("generate_icuuc") {
     defines = [ "U_COMMON_IMPLEMENTATION" ]
     deps = [ ":icudata" ]
 
+    if (is_chromeos) {
+      deps += [ ":icudata_hash" ]
+    }
+
     if (icu_use_data_file) {
       sources += [ "source/stubdata/stubdata.cpp" ]
     }
@@ -390,6 +400,11 @@ if (icu_use_data_file) {
   copy("extra_icudata") {
     sources = [ "//third_party/icu/android_small/icudtl_extra.dat" ]
     outputs = [ "$root_out_dir/icudtl_extra.dat" ]
+  }
+
+  copy("icudata_hash") {
+    sources = [ "//third_party/icu/chromeos/${data_bundle}.hash" ]
+    outputs = [ "$root_out_dir/${data_bundle}.hash" ]
   }
 } else {
   data_assembly = "$target_gen_dir/${data_bundle_prefix}_dat.S"

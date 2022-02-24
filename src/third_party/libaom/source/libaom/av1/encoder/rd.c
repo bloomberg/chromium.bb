@@ -10,6 +10,7 @@
  */
 
 #include <assert.h>
+#include <limits.h>
 #include <math.h>
 #include <stdio.h>
 
@@ -357,37 +358,37 @@ static const int rd_layer_depth_factor[7] = {
 // The function here is a first pass estimate based on data from
 // a previous Vizer run
 static double def_inter_rd_multiplier(int qindex) {
-  return 3.2 + (0.0035 * (double)qindex);
+  return 3.2 + (0.0015 * (double)qindex);
 }
 
 // Returns the default rd multiplier for ARF/Golden Frames for a given qindex.
 // The function here is a first pass estimate based on data from
 // a previous Vizer run
 static double def_arf_rd_multiplier(int qindex) {
-  return 3.25 + (0.0035 * (double)qindex);
+  return 3.25 + (0.0015 * (double)qindex);
 }
 
 // Returns the default rd multiplier for key frames for a given qindex.
 // The function here is a first pass estimate based on data from
 // a previous Vizer run
 static double def_kf_rd_multiplier(int qindex) {
-  return 3.3 + (0.0035 * (double)qindex);
+  return 3.3 + (0.0015 * (double)qindex);
 }
 
 int av1_compute_rd_mult_based_on_qindex(aom_bit_depth_t bit_depth,
                                         FRAME_UPDATE_TYPE update_type,
                                         int qindex) {
   const int q = av1_dc_quant_QTX(qindex, 0, bit_depth);
-  int rdmult = q * q;
+  int64_t rdmult = q * q;
   if (update_type == KF_UPDATE) {
-    double def_rd_q_mult = def_kf_rd_multiplier(qindex);
-    rdmult = (int)((double)rdmult * def_rd_q_mult);
+    double def_rd_q_mult = def_kf_rd_multiplier(q);
+    rdmult = (int64_t)((double)rdmult * def_rd_q_mult);
   } else if ((update_type == GF_UPDATE) || (update_type == ARF_UPDATE)) {
-    double def_rd_q_mult = def_arf_rd_multiplier(qindex);
-    rdmult = (int)((double)rdmult * def_rd_q_mult);
+    double def_rd_q_mult = def_arf_rd_multiplier(q);
+    rdmult = (int64_t)((double)rdmult * def_rd_q_mult);
   } else {
-    double def_rd_q_mult = def_inter_rd_multiplier(qindex);
-    rdmult = (int)((double)rdmult * def_rd_q_mult);
+    double def_rd_q_mult = def_inter_rd_multiplier(q);
+    rdmult = (int64_t)((double)rdmult * def_rd_q_mult);
   }
 
   switch (bit_depth) {
@@ -398,7 +399,7 @@ int av1_compute_rd_mult_based_on_qindex(aom_bit_depth_t bit_depth,
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
   }
-  return rdmult > 0 ? rdmult : 1;
+  return rdmult > 0 ? (int)AOMMIN(rdmult, INT_MAX) : 1;
 }
 
 int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
@@ -646,16 +647,59 @@ void av1_fill_dv_costs(const nmv_context *ndvc, IntraBCMVCosts *dv_costs) {
                            MV_SUBPEL_NONE);
 }
 
+// Populates speed features based on codec control settings (of type
+// COST_UPDATE_TYPE) and expected speed feature settings (of type
+// INTERNAL_COST_UPDATE_TYPE) by considering the least frequent cost update.
+// The populated/updated speed features are used for cost updates in the
+// encoder.
+// WARNING: Population of unified cost update frequency needs to be taken care
+// accordingly, in case of any modifications/additions to the enum
+// COST_UPDATE_TYPE/INTERNAL_COST_UPDATE_TYPE.
+static INLINE void populate_unified_cost_update_freq(
+    const CostUpdateFreq cost_upd_freq, SPEED_FEATURES *const sf) {
+  INTER_MODE_SPEED_FEATURES *const inter_sf = &sf->inter_sf;
+  // Mapping of entropy cost update frequency from the encoder's codec control
+  // settings of type COST_UPDATE_TYPE to speed features of type
+  // INTERNAL_COST_UPDATE_TYPE.
+  static const INTERNAL_COST_UPDATE_TYPE
+      map_cost_upd_to_internal_cost_upd[NUM_COST_UPDATE_TYPES] = {
+        INTERNAL_COST_UPD_SB, INTERNAL_COST_UPD_SBROW, INTERNAL_COST_UPD_TILE,
+        INTERNAL_COST_UPD_OFF
+      };
+
+  inter_sf->mv_cost_upd_level =
+      AOMMIN(inter_sf->mv_cost_upd_level,
+             map_cost_upd_to_internal_cost_upd[cost_upd_freq.mv]);
+  inter_sf->coeff_cost_upd_level =
+      AOMMIN(inter_sf->coeff_cost_upd_level,
+             map_cost_upd_to_internal_cost_upd[cost_upd_freq.coeff]);
+  inter_sf->mode_cost_upd_level =
+      AOMMIN(inter_sf->mode_cost_upd_level,
+             map_cost_upd_to_internal_cost_upd[cost_upd_freq.mode]);
+  sf->intra_sf.dv_cost_upd_level =
+      AOMMIN(sf->intra_sf.dv_cost_upd_level,
+             map_cost_upd_to_internal_cost_upd[cost_upd_freq.dv]);
+}
+
+// Checks if entropy costs should be initialized/updated at frame level or not.
+static INLINE int is_frame_level_cost_upd_freq_set(
+    const AV1_COMMON *const cm, const INTERNAL_COST_UPDATE_TYPE cost_upd_level,
+    const int use_nonrd_pick_mode, const int frames_since_key) {
+  const int fill_costs =
+      frame_is_intra_only(cm) ||
+      (use_nonrd_pick_mode ? frames_since_key < 2
+                           : (cm->current_frame.frame_number & 0x07) == 1);
+  return ((!use_nonrd_pick_mode && cost_upd_level != INTERNAL_COST_UPD_OFF) ||
+          cost_upd_level == INTERNAL_COST_UPD_TILE || fill_costs);
+}
+
 void av1_initialize_rd_consts(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &cpi->td.mb;
+  SPEED_FEATURES *const sf = &cpi->sf;
   RD_OPT *const rd = &cpi->rd;
-  MvCosts *mv_costs = x->mv_costs;
   int use_nonrd_pick_mode = cpi->sf.rt_sf.use_nonrd_pick_mode;
-  CostUpdateFreq cost_upd_freq = cpi->oxcf.cost_upd_freq;
-  int fill_costs =
-      frame_is_intra_only(cm) || (cm->current_frame.frame_number & 0x07) == 1;
-  int num_planes = av1_num_planes(cm);
+  int frames_since_key = cpi->rc.frames_since_key;
 
   rd->RDMULT = av1_compute_rd_mult(
       cpi, cm->quant_params.base_qindex + cm->quant_params.y_dc_delta_q);
@@ -673,19 +717,25 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 
   set_block_thresholds(cm, rd);
 
-  if ((!use_nonrd_pick_mode && cost_upd_freq.mv != COST_UPD_OFF) ||
-      cost_upd_freq.mv == COST_UPD_TILE || fill_costs)
+  populate_unified_cost_update_freq(cpi->oxcf.cost_upd_freq, sf);
+  const INTER_MODE_SPEED_FEATURES *const inter_sf = &cpi->sf.inter_sf;
+  // Frame level mv cost update
+  if (is_frame_level_cost_upd_freq_set(cm, inter_sf->mv_cost_upd_level,
+                                       use_nonrd_pick_mode, frames_since_key))
     av1_fill_mv_costs(&cm->fc->nmvc, cm->features.cur_frame_force_integer_mv,
-                      cm->features.allow_high_precision_mv, mv_costs);
+                      cm->features.allow_high_precision_mv, x->mv_costs);
 
-  if ((!use_nonrd_pick_mode && cost_upd_freq.coeff != COST_UPD_OFF) ||
-      cost_upd_freq.coeff == COST_UPD_TILE || fill_costs)
-    av1_fill_coeff_costs(&x->coeff_costs, cm->fc, num_planes);
+  // Frame level coefficient cost update
+  if (is_frame_level_cost_upd_freq_set(cm, inter_sf->coeff_cost_upd_level,
+                                       use_nonrd_pick_mode, frames_since_key))
+    av1_fill_coeff_costs(&x->coeff_costs, cm->fc, av1_num_planes(cm));
 
-  if ((!use_nonrd_pick_mode && cost_upd_freq.mode != COST_UPD_OFF) ||
-      cost_upd_freq.mode == COST_UPD_TILE || fill_costs)
+  // Frame level mode cost update
+  if (is_frame_level_cost_upd_freq_set(cm, inter_sf->mode_cost_upd_level,
+                                       use_nonrd_pick_mode, frames_since_key))
     av1_fill_mode_rates(cm, &x->mode_costs, cm->fc);
 
+  // Frame level dv cost update
   if (!use_nonrd_pick_mode && av1_allow_intrabc(cm) &&
       !is_stat_generation_stage(cpi)) {
     av1_fill_dv_costs(&cm->fc->ndvc, x->dv_costs);

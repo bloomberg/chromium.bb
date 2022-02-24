@@ -46,6 +46,12 @@
 #include "common/tools_common.h"
 #include "common/video_reader.h"
 
+enum {
+  YUV1D,  // 1D tile output for conformance test.
+  YUV,    // Tile output in YUV format.
+  NV12,   // Tile output in NV12 format.
+} UENUM1BYTE(OUTPUT_FORMAT);
+
 static const char *exec_name;
 
 void usage_exit(void) {
@@ -57,8 +63,8 @@ void usage_exit(void) {
 }
 
 // Output frame size
-const int output_frame_width = 512;
-const int output_frame_height = 512;
+static const int output_frame_width = 512;
+static const int output_frame_height = 512;
 
 static void aom_img_copy_tile(const aom_image_t *src, const aom_image_t *dst,
                               int dst_row_offset, int dst_col_offset) {
@@ -90,11 +96,11 @@ static void aom_img_copy_tile(const aom_image_t *src, const aom_image_t *dst,
   }
 }
 
-void decode_tile(aom_codec_ctx_t *codec, const unsigned char *frame,
-                 size_t frame_size, int tr, int tc, int ref_idx,
-                 aom_image_t *reference_images, aom_image_t *output,
-                 int *tile_idx, unsigned int *output_bit_depth,
-                 aom_image_t **img_ptr, int output_format) {
+static void decode_tile(aom_codec_ctx_t *codec, const unsigned char *frame,
+                        size_t frame_size, int tr, int tc, int ref_idx,
+                        aom_image_t *reference_images, aom_image_t *output,
+                        int *tile_idx, unsigned int *output_bit_depth,
+                        aom_image_t **img_ptr, int output_format) {
   AOM_CODEC_CONTROL_TYPECHECKED(codec, AV1_SET_TILE_MODE, 1);
   AOM_CODEC_CONTROL_TYPECHECKED(codec, AV1D_EXT_TILE_DEBUG, 1);
   AOM_CODEC_CONTROL_TYPECHECKED(codec, AV1_SET_DECODE_TILE_ROW, tr);

@@ -28,7 +28,6 @@ import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
  * the tablet.
  */
 public class LayoutManagerChromeTablet extends LayoutManagerChrome {
-
     private StripLayoutHelperManager mTabStripLayoutHelperManager;
 
     // Internal State
@@ -41,7 +40,6 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
      * @param contentContainer A {@link ViewGroup} for Android views to be bound to.
      * @param startSurface An interface to talk to the Grid Tab Switcher.
      * @param tabContentManagerSupplier Supplier of the {@link TabContentManager} instance.
-     * @param layerTitleCacheSupplier Supplier of the {@link LayerTitleCache}.
      * @param overviewModeBehaviorSupplier Supplier of the {@link OverviewModeBehavior}.
      * @param topUiThemeColorProvider {@link ThemeColorProvider} for top UI.
      */
@@ -59,7 +57,9 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
                 host.getContext(), this, mHost.getLayoutRenderHost(), () -> mLayerTitleCache);
         addSceneOverlay(mTabStripLayoutHelperManager);
 
-        setNextLayout(null);
+        addObserver(mTabStripLayoutHelperManager.getTabSwitcherObserver());
+
+        setNextLayout(null, true);
     }
 
     @Override
@@ -72,6 +72,7 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
         }
 
         if (mTabStripLayoutHelperManager != null) {
+            removeObserver(mTabStripLayoutHelperManager.getTabSwitcherObserver());
             mTabStripLayoutHelperManager.destroy();
             mTabStripLayoutHelperManager = null;
         }

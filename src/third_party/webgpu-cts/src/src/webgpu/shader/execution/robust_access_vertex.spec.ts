@@ -351,7 +351,7 @@ class F extends GPUTest {
       let currAttribute = 0;
       for (let i = 0; i < bufferCount; i++) {
         for (let j = 0; j < attributesPerBuffer; j++) {
-          layoutStr += `[[location(${currAttribute})]] a_${currAttribute} : ${typeInfo.wgslType};\n`;
+          layoutStr += `@location(${currAttribute}) a_${currAttribute} : ${typeInfo.wgslType};\n`;
           attributeNames.push(`a_${currAttribute}`);
           currAttribute++;
         }
@@ -370,10 +370,10 @@ class F extends GPUTest {
         ${typeInfo.validationFunc}
       }
 
-      [[stage(vertex)]] fn main(
-        [[builtin(vertex_index)]] VertexIndex : u32,
+      @stage(vertex) fn main(
+        @builtin(vertex_index) VertexIndex : u32,
         attributes : Attributes
-        ) -> [[builtin(position)]] vec4<f32> {
+        ) -> @builtin(position) vec4<f32> {
         var attributesInBounds = ${attributeNames
           .map(a => `validationFunc(attributes.${a})`)
           .join(' && ')};
@@ -434,7 +434,7 @@ class F extends GPUTest {
       fragment: {
         module: this.device.createShaderModule({
           code: `
-            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            @stage(fragment) fn main() -> @location(0) vec4<f32> {
               return vec4<f32>(1.0, 0.0, 0.0, 1.0);
             }`,
         }),

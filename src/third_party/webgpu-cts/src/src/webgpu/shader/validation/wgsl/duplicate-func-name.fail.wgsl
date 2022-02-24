@@ -8,7 +8,7 @@ fn my_func() {
   return;
 }
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   return;
 }

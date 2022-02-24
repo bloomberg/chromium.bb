@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <map>
 #include <string>
+#include <tuple>
 
 #include "base/allocator/allocator_shim_internals.h"
 #include "base/allocator/buildflags.h"
@@ -23,7 +24,6 @@
 #include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
-#include "base/ignore_result.h"
 #include "base/memory/nonscannable_memory.h"
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
@@ -362,16 +362,17 @@ void __real_free(void*);
 }  // extern "C"
 #endif
 
-void PartitionFree(const AllocatorDispatch*, void* address, void* context) {
+void PartitionFree(const AllocatorDispatch*, void* object, void* context) {
   ScopedDisallowAllocations guard{};
 #if BUILDFLAG(IS_APPLE)
+  // TODO(bartekn): Add MTE unmasking here (and below).
   if (UNLIKELY(!base::IsManagedByPartitionAlloc(
-                   reinterpret_cast<uintptr_t>(address)) &&
-               address)) {
+                   reinterpret_cast<uintptr_t>(object)) &&
+               object)) {
     // A memory region allocated by the system allocator is passed in this
     // function.  Forward the request to `free` which supports zone-
     // dispatching so that it appropriately selects the right zone.
-    return free(address);
+    return free(object);
   }
 #endif  // BUILDFLAG(IS_APPLE)
 
@@ -381,16 +382,16 @@ void PartitionFree(const AllocatorDispatch*, void* address, void* context) {
   // Android we have a PA_CHECK() rather than the branch here.
 #if BUILDFLAG(IS_ANDROID) && BUILDFLAG(IS_CHROMECAST)
   if (UNLIKELY(!base::IsManagedByPartitionAlloc(
-                   reinterpret_cast<uintptr_t>(address)) &&
-               address)) {
+                   reinterpret_cast<uintptr_t>(object)) &&
+               object)) {
     // A memory region allocated by the system allocator is passed in this
     // function.  Forward the request to `free()`, which is `__real_free()`
     // here.
-    return __real_free(address);
+    return __real_free(object);
   }
 #endif
 
-  base::ThreadSafePartitionRoot::FreeNoHooks(address);
+  base::ThreadSafePartitionRoot::FreeNoHooks(object);
 }
 
 #if BUILDFLAG(IS_APPLE)
@@ -437,6 +438,33 @@ size_t PartitionGetSizeEstimate(const AllocatorDispatch*,
   PA_DCHECK(size);
 #endif  // BUILDFLAG(IS_APPLE)
   return size;
+}
+
+unsigned PartitionBatchMalloc(const AllocatorDispatch*,
+                              size_t size,
+                              void** results,
+                              unsigned num_requested,
+                              void* context) {
+  // No real batching: we could only acquire the lock once for instance, keep it
+  // simple for now.
+  for (unsigned i = 0; i < num_requested; i++) {
+    // No need to check the results, we crash if it fails.
+    results[i] = PartitionMalloc(nullptr, size, nullptr);
+  }
+
+  // Either all succeeded, or we crashed.
+  return num_requested;
+}
+
+void PartitionBatchFree(const AllocatorDispatch*,
+                        void** to_be_freed,
+                        unsigned num_to_be_freed,
+                        void* context) {
+  // No real batching: we could only acquire the lock once for instance, keep it
+  // simple for now.
+  for (unsigned i = 0; i < num_to_be_freed; i++) {
+    PartitionFree(nullptr, to_be_freed[i], nullptr);
+  }
 }
 
 // static
@@ -489,7 +517,8 @@ alignas(base::ThreadSafePartitionRoot) uint8_t
 void ConfigurePartitions(
     EnableBrp enable_brp,
     SplitMainPartition split_main_partition,
-    UseDedicatedAlignedPartition use_dedicated_aligned_partition) {
+    UseDedicatedAlignedPartition use_dedicated_aligned_partition,
+    AlternateBucketDistribution use_alternate_bucket_distribution) {
   // BRP cannot be enabled without splitting the main partition. Furthermore, in
   // the "before allocation" mode, it can't be enabled without further splitting
   // out the aligned partition.
@@ -565,6 +594,11 @@ void ConfigurePartitions(
   // Purge memory, now that the traffic to the original partition is cut off.
   current_root->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans |
                             PartitionPurgeDiscardUnusedSystemPages);
+
+  if (!use_alternate_bucket_distribution) {
+    g_root.Get()->SwitchToDenserBucketDistribution();
+    g_aligned_root.Get()->SwitchToDenserBucketDistribution();
+  }
 }
 
 #if defined(PA_ALLOW_PCSCAN)
@@ -602,8 +636,8 @@ const AllocatorDispatch AllocatorDispatch::default_dispatch = {
     &base::internal::PartitionRealloc,   // realloc_function
     &base::internal::PartitionFree,      // free_function
     &base::internal::PartitionGetSizeEstimate,  // get_size_estimate_function
-    nullptr,                                    // batch_malloc_function
-    nullptr,                                    // batch_free_function
+    &base::internal::PartitionBatchMalloc,      // batch_malloc_function
+    &base::internal::PartitionBatchFree,        // batch_free_function
 #if BUILDFLAG(IS_APPLE)
     // On Apple OSes, free_definite_size() is always called from free(), since
     // get_size_estimate() is used to determine whether an allocation belongs to
@@ -696,7 +730,7 @@ void InitializeDefaultAllocatorPartitionRoot() {
   // internally, e.g. __builtin_available, and it's not easy to avoid it.
   // Thus, we initialize the PartitionRoot with using the system default
   // allocator before we intercept the system default allocator.
-  ignore_result(Allocator());
+  std::ignore = Allocator();
 }
 
 }  // namespace allocator

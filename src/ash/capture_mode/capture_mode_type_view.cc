@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/capture_mode/capture_mode_camera_controller.h"
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
@@ -28,23 +29,42 @@ constexpr int kBackgroundCornerRadius = 18;
 
 constexpr gfx::Insets kViewInsets{2};
 
+// If `projector_mode` is false, Creates and initializes the toggle button that
+// is used for switching to image capture as a child of the given
+// `capture_mode_type_view` and returns a pointer to it.
+// `on_image_toggle_method` is a pointer to a member function inside
+// `CaptureModeTypeView` which will be triggered when the image toggle button is
+// pressed. Returns nullptr if `projector_mode` is true.
+CaptureModeToggleButton* MaybeCreateImageToggleButton(
+    CaptureModeTypeView* capture_mode_type_view,
+    void (CaptureModeTypeView::*on_image_toggle_method)(),
+    bool projector_mode) {
+  if (projector_mode)
+    return nullptr;
+
+  CaptureModeToggleButton* image_toggle_button =
+      capture_mode_type_view->AddChildView(
+          std::make_unique<CaptureModeToggleButton>(
+              base::BindRepeating(on_image_toggle_method,
+                                  base::Unretained(capture_mode_type_view)),
+              kCaptureModeImageIcon));
+  image_toggle_button->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_ASH_SCREEN_CAPTURE_TOOLTIP_SCREENSHOT));
+  return image_toggle_button;
+}
+
 }  // namespace
 
 CaptureModeTypeView::CaptureModeTypeView(bool projector_mode)
-    : video_toggle_button_(
+    : image_toggle_button_(
+          MaybeCreateImageToggleButton(this,
+                                       &CaptureModeTypeView::OnImageToggle,
+                                       projector_mode)),
+      video_toggle_button_(
           AddChildView(std::make_unique<CaptureModeToggleButton>(
               base::BindRepeating(&CaptureModeTypeView::OnVideoToggle,
                                   base::Unretained(this)),
               kCaptureModeVideoIcon))) {
-  if (!projector_mode) {
-    image_toggle_button_ =
-        AddChildView(std::make_unique<CaptureModeToggleButton>(
-            base::BindRepeating(&CaptureModeTypeView::OnImageToggle,
-                                base::Unretained(this)),
-            kCaptureModeImageIcon));
-    image_toggle_button_->SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_ASH_SCREEN_CAPTURE_TOOLTIP_SCREENSHOT));
-  }
   auto* color_provider = AshColorProvider::Get();
   const SkColor bg_color = color_provider->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive);
@@ -72,15 +92,22 @@ CaptureModeTypeView::CaptureModeTypeView(bool projector_mode)
 CaptureModeTypeView::~CaptureModeTypeView() = default;
 
 void CaptureModeTypeView::OnCaptureTypeChanged(CaptureModeType new_type) {
-  DCHECK(!CaptureModeController::Get()->is_recording_in_progress() ||
-      new_type == CaptureModeType::kImage);
+  auto* controller = CaptureModeController::Get();
+  const bool is_video = new_type == CaptureModeType::kVideo;
 
-  video_toggle_button_->SetToggled(new_type == CaptureModeType::kVideo);
+  DCHECK(!controller->is_recording_in_progress() || !is_video);
+
+  video_toggle_button_->SetToggled(is_video);
   if (image_toggle_button_) {
-    image_toggle_button_->SetToggled(new_type == CaptureModeType::kImage);
+    image_toggle_button_->SetToggled(!is_video);
     DCHECK_NE(image_toggle_button_->GetToggled(),
               video_toggle_button_->GetToggled());
   }
+  // Set the value to true for `SetShouldShowPreview` when the capture mode
+  // session is started and switched to a video recording mode before recording
+  // starts. False when it is switched to image capture mode.
+  if (controller->camera_controller())
+    controller->camera_controller()->SetShouldShowPreview(is_video);
 }
 
 void CaptureModeTypeView::OnImageToggle() {

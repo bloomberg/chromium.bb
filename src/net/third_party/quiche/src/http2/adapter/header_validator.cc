@@ -1,5 +1,7 @@
 #include "http2/adapter/header_validator.h"
 
+#include <array>
+
 #include "absl/strings/escaping.h"
 #include "absl/strings/numbers.h"
 #include "common/platform/api/quiche_logging.h"
@@ -21,18 +23,82 @@ const absl::string_view kHttp2HeaderValueAllowedChars =
 
 const absl::string_view kHttp2StatusValueAllowedChars = "0123456789";
 
+const absl::string_view kValidAuthorityChars =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~%!$&'()["
+    "]*+,;=:";
+
+using CharMap = std::array<bool, 256>;
+
+CharMap BuildValidCharMap(absl::string_view valid_chars) {
+  CharMap map;
+  map.fill(false);
+  for (char c : valid_chars) {
+    // Cast to uint8_t, guaranteed to have 8 bits. A char may have more, leading
+    // to possible indices above 256.
+    map[static_cast<uint8_t>(c)] = true;
+  }
+  return map;
+}
+
+bool AllCharsInMap(absl::string_view str, const CharMap& map) {
+  for (char c : str) {
+    if (!map[static_cast<uint8_t>(c)]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// Returns whether `authority` contains only characters from the `host` ABNF
+// from RFC 3986 section 3.2.2.
+bool IsValidAuthority(absl::string_view authority) {
+  static const CharMap valid_chars = BuildValidCharMap(kValidAuthorityChars);
+  return AllCharsInMap(authority, valid_chars);
+}
+
+bool IsValidHeaderName(absl::string_view name) {
+  static const CharMap valid_chars =
+      BuildValidCharMap(kHttp2HeaderNameAllowedChars);
+  return AllCharsInMap(name, valid_chars);
+}
+
+bool IsValidHeaderValue(absl::string_view value) {
+  static const CharMap valid_chars =
+      BuildValidCharMap(kHttp2HeaderValueAllowedChars);
+  return AllCharsInMap(value, valid_chars);
+}
+
+bool IsValidStatus(absl::string_view status) {
+  static const CharMap valid_chars =
+      BuildValidCharMap(kHttp2StatusValueAllowedChars);
+  return AllCharsInMap(status, valid_chars);
+}
+
 bool ValidateRequestHeaders(const std::vector<std::string>& pseudo_headers,
-                            absl::string_view method, bool allow_connect) {
+                            absl::string_view method, absl::string_view path,
+                            bool allow_connect) {
   QUICHE_VLOG(2) << "Request pseudo-headers: ["
                  << absl::StrJoin(pseudo_headers, ", ")
                  << "], allow_connect: " << allow_connect
-                 << ", method: " << method;
+                 << ", method: " << method << ", path: " << path;
   if (allow_connect && method == "CONNECT") {
     static const std::vector<std::string>* kConnectHeaders =
         new std::vector<std::string>(
             {":authority", ":method", ":path", ":protocol", ":scheme"});
     return pseudo_headers == *kConnectHeaders;
   }
+
+  if (path.empty()) {
+    return false;
+  }
+  if (path == "*") {
+    if (method != "OPTIONS") {
+      return false;
+    }
+  } else if (path[0] != '/') {
+    return false;
+  }
+
   static const std::vector<std::string>* kRequiredHeaders =
       new std::vector<std::string>(
           {":authority", ":method", ":path", ":scheme"});
@@ -59,6 +125,7 @@ void HeaderValidator::StartHeaderBlock() {
   pseudo_headers_.clear();
   status_.clear();
   method_.clear();
+  path_.clear();
   content_length_.reset();
 }
 
@@ -74,23 +141,19 @@ HeaderValidator::HeaderStatus HeaderValidator::ValidateSingleHeader(
     return HEADER_FIELD_TOO_LONG;
   }
   const absl::string_view validated_key = key[0] == ':' ? key.substr(1) : key;
-  if (validated_key.find_first_not_of(kHttp2HeaderNameAllowedChars) !=
-      absl::string_view::npos) {
+  if (!IsValidHeaderName(validated_key)) {
     QUICHE_VLOG(2) << "invalid chars in header name: ["
                    << absl::CEscape(validated_key) << "]";
     return HEADER_FIELD_INVALID;
   }
-  if (value.find_first_not_of(kHttp2HeaderValueAllowedChars) !=
-      absl::string_view::npos) {
+  if (!IsValidHeaderValue(value)) {
     QUICHE_VLOG(2) << "invalid chars in header value: [" << absl::CEscape(value)
                    << "]";
     return HEADER_FIELD_INVALID;
   }
   if (key[0] == ':') {
     if (key == ":status") {
-      if (value.size() != 3 ||
-          value.find_first_not_of(kHttp2StatusValueAllowedChars) !=
-              absl::string_view::npos) {
+      if (value.size() != 3 || !IsValidStatus(value)) {
         QUICHE_VLOG(2) << "malformed status value: [" << absl::CEscape(value)
                        << "]";
         return HEADER_FIELD_INVALID;
@@ -102,6 +165,14 @@ HeaderValidator::HeaderStatus HeaderValidator::ValidateSingleHeader(
       status_ = std::string(value);
     } else if (key == ":method") {
       method_ = std::string(value);
+    } else if (key == ":authority" && !IsValidAuthority(value)) {
+      return HEADER_FIELD_INVALID;
+    } else if (key == ":path") {
+      if (value.empty()) {
+        // For now, reject an empty path regardless of scheme.
+        return HEADER_FIELD_INVALID;
+      }
+      path_ = std::string(value);
     }
     pseudo_headers_.push_back(std::string(key));
   } else if (key == "content-length") {
@@ -109,6 +180,8 @@ HeaderValidator::HeaderStatus HeaderValidator::ValidateSingleHeader(
     if (!success) {
       return HEADER_FIELD_INVALID;
     }
+  } else if (key == "te" && value != "trailers") {
+    return HEADER_FIELD_INVALID;
   }
   return HEADER_OK;
 }
@@ -119,7 +192,8 @@ bool HeaderValidator::FinishHeaderBlock(HeaderType type) {
   std::sort(pseudo_headers_.begin(), pseudo_headers_.end());
   switch (type) {
     case HeaderType::REQUEST:
-      return ValidateRequestHeaders(pseudo_headers_, method_, allow_connect_);
+      return ValidateRequestHeaders(pseudo_headers_, method_, path_,
+                                    allow_connect_);
     case HeaderType::REQUEST_TRAILER:
       return ValidateRequestTrailers(pseudo_headers_);
     case HeaderType::RESPONSE_100:
@@ -136,9 +210,12 @@ bool HeaderValidator::HandleContentLength(absl::string_view value) {
     return false;
   }
 
-  // TODO(diannahu): Do the same for 1xx responses.
   if (status_ == "204" && value != "0") {
     // There should be no body in a "204 No Content" response.
+    return false;
+  }
+  if (!status_.empty() && status_[0] == '1' && value != "0") {
+    // There should also be no body in a 1xx response.
     return false;
   }
 

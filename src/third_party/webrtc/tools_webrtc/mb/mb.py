@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
+
 # Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
 #
 # Use of this source code is governed by a BSD-style license
@@ -13,8 +14,6 @@ MB is a wrapper script for GN that can be used to generate build files
 for sets of canned configurations and analyze them.
 """
 
-from __future__ import print_function
-
 import argparse
 import ast
 import errno
@@ -28,10 +27,7 @@ import sys
 import subprocess
 import tempfile
 import traceback
-try:
-  from urllib2 import urlopen  # for Python2
-except ImportError:
-  from urllib.request import urlopen  # for Python3
+from urllib.request import urlopen
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 SRC_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
@@ -45,7 +41,7 @@ def main(args):
   return mbw.Main(args)
 
 
-class MetaBuildWrapper(object):
+class MetaBuildWrapper:
   def __init__(self):
     self.src_dir = SRC_DIR
     self.default_config = os.path.join(SCRIPT_DIR, 'mb_config.pyl')
@@ -280,7 +276,7 @@ class MetaBuildWrapper(object):
   def CmdExport(self):
     self.ReadConfigFile()
     obj = {}
-    for builder_group, builders in self.builder_groups.items():
+    for builder_group, builders in list(self.builder_groups.items()):
       obj[builder_group] = {}
       for builder in builders:
         config = self.builder_groups[builder_group][builder]
@@ -290,7 +286,7 @@ class MetaBuildWrapper(object):
         if isinstance(config, dict):
           args = {
               k: self.FlattenConfig(v)['gn_args']
-              for k, v in config.items()
+              for k, v in list(config.items())
           }
         elif config.startswith('//'):
           args = config
@@ -476,15 +472,15 @@ class MetaBuildWrapper(object):
     # Build a list of all of the configs referenced by builders.
     all_configs = {}
     for builder_group in self.builder_groups:
-      for config in self.builder_groups[builder_group].values():
+      for config in list(self.builder_groups[builder_group].values()):
         if isinstance(config, dict):
-          for c in config.values():
+          for c in list(config.values()):
             all_configs[c] = builder_group
         else:
           all_configs[config] = builder_group
 
     # Check that every referenced args file or config actually exists.
-    for config, loc in all_configs.items():
+    for config, loc in list(all_configs.items()):
       if config.startswith('//'):
         if not self.Exists(self.ToAbsPath(config)):
           errs.append('Unknown args file "%s" referenced from "%s".' %
@@ -500,7 +496,7 @@ class MetaBuildWrapper(object):
     # Figure out the whole list of mixins, and check that every mixin
     # listed by a config or another mixin actually exists.
     referenced_mixins = set()
-    for config, mixins in self.configs.items():
+    for config, mixins in list(self.configs.items()):
       for mixin in mixins:
         if not mixin in self.mixins:
           errs.append('Unknown mixin "%s" referenced by config "%s".' %
@@ -584,8 +580,8 @@ class MetaBuildWrapper(object):
     try:
       contents = ast.literal_eval(self.ReadFile(self.args.config_file))
     except SyntaxError as e:
-      raise MBErr('Failed to parse config file "%s": %s' %
-                  (self.args.config_file, e))
+      raise MBErr('Failed to parse config file "%s"' %
+                  self.args.config_file) from e
 
     self.configs = contents['configs']
     self.builder_groups = contents['builder_groups']
@@ -598,8 +594,7 @@ class MetaBuildWrapper(object):
     try:
       return ast.literal_eval(self.ReadFile(isolate_map))
     except SyntaxError as e:
-      raise MBErr('Failed to parse isolate map file "%s": %s' %
-                  (isolate_map, e))
+      raise MBErr('Failed to parse isolate map file "%s"' % isolate_map) from e
 
   def ConfigFromArgs(self):
     if self.args.config:
@@ -919,10 +914,10 @@ class MetaBuildWrapper(object):
 
     cmdline = []
     extra_files = [
-        '../../.vpython',
+        '../../.vpython3',
         '../../testing/test_env.py',
     ]
-    vpython_exe = 'vpython'
+    vpython_exe = 'vpython3'
 
     must_retry = False
     if test_type == 'script':
@@ -966,12 +961,10 @@ class MetaBuildWrapper(object):
         ]
         sep = '\\' if self.platform == 'win32' else '/'
         output_dir = '${ISOLATED_OUTDIR}' + sep + 'test_logs'
-        test_results = '${ISOLATED_OUTDIR}' + sep + 'gtest_output.json'
         timeout = isolate_map[target].get('timeout', 900)
         cmdline += [
             '../../tools_webrtc/gtest-parallel-wrapper.py',
             '--output_dir=%s' % output_dir,
-            '--dump_json_test_results=%s' % test_results,
             '--gtest_color=no',
             # We tell gtest-parallel to interrupt the test after 900
             # seconds, so it can exit cleanly and report results,
@@ -1155,7 +1148,7 @@ class MetaBuildWrapper(object):
                      json.dumps(obj, indent=2, sort_keys=True) + '\n',
                      force_verbose=force_verbose)
     except Exception as e:
-      raise MBErr('Error %s writing to the output path "%s"' % (e, path))
+      raise MBErr('Error writing to the output path "%s"' % path) from e
 
   def PrintCmd(self, cmd, env):
     if self.platform == 'win32':
@@ -1172,7 +1165,7 @@ class MetaBuildWrapper(object):
       self.Print('%s%s=%s' % (env_prefix, var, env_quoter(env[var])))
 
     if cmd[0] == self.executable:
-      cmd = ['python'] + cmd[1:]
+      cmd = ['vpython3'] + cmd[1:]
     self.Print(*[shell_quoter(arg) for arg in cmd])
 
   def PrintJSON(self, obj):

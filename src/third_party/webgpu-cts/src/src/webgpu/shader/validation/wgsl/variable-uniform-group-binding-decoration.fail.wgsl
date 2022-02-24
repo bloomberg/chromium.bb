@@ -7,6 +7,6 @@ struct Params {
 
 var<uniform> u : Params;
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
 }

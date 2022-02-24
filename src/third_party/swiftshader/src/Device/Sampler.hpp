@@ -19,27 +19,23 @@
 #include "System/Types.hpp"
 #include "Vulkan/VkFormat.hpp"
 
-namespace vk {
-class Image;
-}
-
 namespace sw {
 
 struct Mipmap
 {
 	const void *buffer;
 
-	short4 uHalf;
-	short4 vHalf;
-	short4 wHalf;
-	int4 width;
-	int4 height;
-	int4 depth;
+	ushort4 uHalf;
+	ushort4 vHalf;
+	ushort4 wHalf;
+	uint4 width;
+	uint4 height;
+	uint4 depth;
 	short4 onePitchP;
-	int4 pitchP;
-	int4 sliceP;
-	int4 samplePitchP;
-	int4 sampleMax;
+	uint4 pitchP;
+	uint4 sliceP;
+	uint4 samplePitchP;
+	uint4 sampleMax;
 };
 
 struct Texture

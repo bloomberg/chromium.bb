@@ -4,6 +4,7 @@ Tests for readback from WebGPU Canvas.
 
 import { makeTestGroup } from '../../../common/framework/test_group.js';
 import { assert, raceWithRejectOnTimeout, unreachable } from '../../../common/util/util.js';
+import { kCanvasTextureFormats } from '../../capability_info.js';
 import { GPUTest } from '../../gpu_test.js';
 import { checkElementsEqual } from '../../util/check_contents.js';
 import {
@@ -20,48 +21,25 @@ export const g = makeTestGroup(GPUTest);
 // green: top-right;
 // red: bottom-left;
 // yellow: bottom-right;
-const expect = new Uint8ClampedArray([
-  0x00,
-  0x00,
-  0xff,
-  0xff, // blue
-  0x00,
-  0xff,
-  0x00,
-  0xff, // green
-  0xff,
-  0x00,
-  0x00,
-  0xff, // red
-  0xff,
-  0xff,
-  0x00,
-  0xff, // yellow
+const expect = /* prettier-ignore */ new Uint8ClampedArray([
+  0x00, 0x00, 0xff, 0xff, // blue
+  0x00, 0xff, 0x00, 0xff, // green
+  0xff, 0x00, 0x00, 0xff, // red
+  0xff, 0xff, 0x00, 0xff, // yellow
 ]);
 
 // WebGL has opposite Y direction so we need to
 // flipY to get correct expects.
-const webglExpect = new Uint8ClampedArray([
-  0xff,
-  0x00,
-  0x00,
-  0xff, // red
-  0xff,
-  0xff,
-  0x00,
-  0xff, // yellow
-  0x00,
-  0x00,
-  0xff,
-  0xff, // blue
-  0x00,
-  0xff,
-  0x00,
-  0xff, // green
+const webglExpect = /* prettier-ignore */ new Uint8ClampedArray([
+  0xff, 0x00, 0x00, 0xff, // red
+  0xff, 0xff, 0x00, 0xff, // yellow
+  0x00, 0x00, 0xff, 0xff, // blue
+  0x00, 0xff, 0x00, 0xff, // green
 ]);
 
 async function initCanvasContent(
   t: GPUTest,
+  format: GPUTextureFormat,
   canvasType: canvasTypes
 ): Promise<HTMLCanvasElement | OffscreenCanvas> {
   const canvas = createCanvas(t, canvasType, 2, 2);
@@ -70,29 +48,39 @@ async function initCanvasContent(
 
   ctx.configure({
     device: t.device,
-    format: 'bgra8unorm',
-    usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC,
+    format,
+    usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST,
   });
 
-  const rows = 2;
-  const bytesPerRow = 256;
-  const buffer = t.device.createBuffer({
-    mappedAtCreation: true,
-    size: rows * bytesPerRow,
-    usage: GPUBufferUsage.COPY_SRC,
+  const canvasTexture = ctx.getCurrentTexture();
+  const tempTexture = t.device.createTexture({
+    size: { width: 1, height: 1, depthOrArrayLayers: 1 },
+    format,
+    usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
   });
-  const mapping = buffer.getMappedRange();
-  const data = new Uint8Array(mapping);
-  data.set(new Uint8Array([0xff, 0x00, 0x00, 0xff]), 0); // blue
-  data.set(new Uint8Array([0x00, 0xff, 0x00, 0xff]), 4); // green
-  data.set(new Uint8Array([0x00, 0x00, 0xff, 0xff]), 256 + 0); // red
-  data.set(new Uint8Array([0x00, 0xff, 0xff, 0xff]), 256 + 4); // yellow
-  buffer.unmap();
-
-  const texture = ctx.getCurrentTexture();
+  const tempTextureView = tempTexture.createView();
   const encoder = t.device.createCommandEncoder();
-  encoder.copyBufferToTexture({ buffer, bytesPerRow }, { texture }, [2, 2, 1]);
+
+  const clearOnePixel = (origin: GPUOrigin3D, color: GPUColor) => {
+    const pass = encoder.beginRenderPass({
+      colorAttachments: [{ view: tempTextureView, loadValue: color, storeOp: 'store' }],
+    });
+    pass.endPass();
+    encoder.copyTextureToTexture(
+      { texture: tempTexture },
+      { texture: canvasTexture, origin },
+      { width: 1, height: 1 }
+    );
+  };
+
+  clearOnePixel([0, 0], [0, 0, 1, 1]);
+  clearOnePixel([1, 0], [0, 1, 0, 1]);
+  clearOnePixel([0, 1], [1, 0, 0, 1]);
+  clearOnePixel([1, 1], [1, 1, 0, 1]);
+
   t.device.queue.submit([encoder.finish()]);
+  tempTexture.destroy();
+
   await t.device.queue.onSubmittedWorkDone();
 
   return canvas;
@@ -120,17 +108,18 @@ g.test('onscreenCanvas,snapshot')
   .desc(
     `
     Ensure snapshot of canvas with WebGPU context is correct
-     
+
     TODO: Snapshot canvas to jpeg, webp and other mime type and
           different quality. Maybe we should test them in reftest.
     `
   )
   .params(u =>
     u //
+      .combine('format', kCanvasTextureFormats)
       .combine('snapshotType', ['toDataURL', 'toBlob', 'imageBitmap'])
   )
   .fn(async t => {
-    const canvas = (await initCanvasContent(t, 'onscreen')) as HTMLCanvasElement;
+    const canvas = (await initCanvasContent(t, t.params.format, 'onscreen')) as HTMLCanvasElement;
 
     let snapshot: HTMLImageElement | ImageBitmap;
     switch (t.params.snapshotType) {
@@ -169,17 +158,22 @@ g.test('offscreenCanvas,snapshot')
   .desc(
     `
     Ensure snapshot of offscreenCanvas with WebGPU context is correct
-     
+
     TODO: Snapshot offscreenCanvas to jpeg, webp and other mime type and
           different quality. Maybe we should test them in reftest.
     `
   )
   .params(u =>
     u //
+      .combine('format', kCanvasTextureFormats)
       .combine('snapshotType', ['convertToBlob', 'transferToImageBitmap', 'imageBitmap'])
   )
   .fn(async t => {
-    const offscreenCanvas = (await initCanvasContent(t, 'offscreen')) as OffscreenCanvas;
+    const offscreenCanvas = (await initCanvasContent(
+      t,
+      t.params.format,
+      'offscreen'
+    )) as OffscreenCanvas;
 
     let snapshot: HTMLImageElement | ImageBitmap;
     switch (t.params.snapshotType) {
@@ -223,12 +217,13 @@ g.test('onscreenCanvas,uploadToWebGL')
   )
   .params(u =>
     u //
+      .combine('format', kCanvasTextureFormats)
       .combine('webgl', ['webgl', 'webgl2'])
       .combine('upload', ['texImage2D', 'texSubImage2D'])
   )
   .fn(async t => {
-    const { webgl, upload } = t.params;
-    const canvas = (await initCanvasContent(t, 'onscreen')) as HTMLCanvasElement;
+    const { format, webgl, upload } = t.params;
+    const canvas = (await initCanvasContent(t, format, 'onscreen')) as HTMLCanvasElement;
 
     const expectCanvas: HTMLCanvasElement = createOnscreenCanvas(t, canvas.width, canvas.height);
     const gl = expectCanvas.getContext(webgl) as WebGLRenderingContext | WebGL2RenderingContext;
@@ -282,13 +277,14 @@ g.test('drawTo2DCanvas')
   )
   .params(u =>
     u //
+      .combine('format', kCanvasTextureFormats)
       .combine('webgpuCanvasType', allCanvasTypes)
       .combine('canvas2DType', allCanvasTypes)
   )
   .fn(async t => {
-    const { webgpuCanvasType, canvas2DType } = t.params;
+    const { format, webgpuCanvasType, canvas2DType } = t.params;
 
-    const canvas = await initCanvasContent(t, webgpuCanvasType);
+    const canvas = await initCanvasContent(t, format, webgpuCanvasType);
 
     const expectCanvas = createCanvas(t, canvas2DType, canvas.width, canvas.height);
     const ctx = expectCanvas.getContext('2d');

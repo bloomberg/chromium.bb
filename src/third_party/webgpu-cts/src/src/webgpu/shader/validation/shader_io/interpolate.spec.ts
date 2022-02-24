@@ -10,15 +10,15 @@ export const g = makeTestGroup(ShaderValidationTest);
 // List of valid interpolation attributes.
 const kValidInterpolationAttributes = new Set([
   '',
-  '[[interpolate(flat)]]',
-  '[[interpolate(perspective)]]',
-  '[[interpolate(perspective, center)]]',
-  '[[interpolate(perspective, centroid)]]',
-  '[[interpolate(perspective, sample)]]',
-  '[[interpolate(linear)]]',
-  '[[interpolate(linear, center)]]',
-  '[[interpolate(linear, centroid)]]',
-  '[[interpolate(linear, sample)]]',
+  '@interpolate(flat)',
+  '@interpolate(perspective)',
+  '@interpolate(perspective, center)',
+  '@interpolate(perspective, centroid)',
+  '@interpolate(perspective, sample)',
+  '@interpolate(linear)',
+  '@interpolate(linear, center)',
+  '@interpolate(linear, centroid)',
+  '@interpolate(linear, sample)',
 ]);
 
 g.test('type_and_sampling')
@@ -39,14 +39,14 @@ g.test('type_and_sampling')
 
     let interpolate = '';
     if (t.params.type !== '' || t.params.sampling !== '') {
-      interpolate = '[[interpolate(';
+      interpolate = '@interpolate(';
       if (t.params.type !== '') {
         interpolate += `${t.params.type}, `;
       }
-      interpolate += `${t.params.sampling})]]`;
+      interpolate += `${t.params.sampling})`;
     }
     const code = generateShader({
-      attribute: '[[location(0)]]' + interpolate,
+      attribute: '@location(0)' + interpolate,
       type: 'f32',
       stage: t.params.stage,
       io: t.params.io,
@@ -61,7 +61,7 @@ g.test('require_location')
   .params(u =>
     u
       .combine('stage', ['vertex', 'fragment'] as const)
-      .combine('attribute', ['[[location(0)]]', '[[builtin(position)]]'] as const)
+      .combine('attribute', ['@location(0)', '@builtin(position)'] as const)
       .combine('use_struct', [true, false] as const)
       .beginSubcases()
   )
@@ -75,15 +75,37 @@ g.test('require_location')
     }
 
     const code = generateShader({
-      attribute: t.params.attribute + `[[interpolate(flat)]]`,
+      attribute: t.params.attribute + `@interpolate(flat)`,
       type: 'vec4<f32>',
       stage: t.params.stage,
       io: t.params.stage === 'fragment' ? 'in' : 'out',
       use_struct: t.params.use_struct,
     });
-    t.expectCompileResult(t.params.attribute === '[[location(0)]]', code);
+    t.expectCompileResult(t.params.attribute === '@location(0)', code);
   });
 
 g.test('integral_types')
-  .desc(`Test that the implementation requires [[interpolate(flat)]] for integral user-defined IO.`)
-  .unimplemented();
+  .desc(`Test that the implementation requires @interpolate(flat) for integral user-defined IO.`)
+  .params(u =>
+    u
+      .combine('stage', ['vertex', 'fragment'] as const)
+      .combine('type', ['i32', 'u32', 'vec2<i32>', 'vec4<u32>'] as const)
+      .combine('use_struct', [true, false] as const)
+      .combine('attribute', kValidInterpolationAttributes)
+      .beginSubcases()
+  )
+  .fn(t => {
+    if (t.params.stage === 'vertex' && t.params.use_struct === false) {
+      t.skip('vertex output must include a position builtin, so must use a struct');
+    }
+
+    const code = generateShader({
+      attribute: '@location(0)' + t.params.attribute,
+      type: t.params.type,
+      stage: t.params.stage,
+      io: t.params.stage === 'vertex' ? 'out' : 'in',
+      use_struct: t.params.use_struct,
+    });
+
+    t.expectCompileResult(t.params.attribute === '@interpolate(flat)', code);
+  });

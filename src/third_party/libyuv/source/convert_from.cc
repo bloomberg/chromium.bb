@@ -436,19 +436,19 @@ int I420ToYUY2(const uint8_t* src_y,
     }
   }
 #endif
-#if defined(HAS_I422TOYUY2ROW_MMI)
-  if (TestCpuFlag(kCpuHasMMI)) {
-    I422ToYUY2Row = I422ToYUY2Row_Any_MMI;
-    if (IS_ALIGNED(width, 8)) {
-      I422ToYUY2Row = I422ToYUY2Row_MMI;
-    }
-  }
-#endif
 #if defined(HAS_I422TOYUY2ROW_MSA)
   if (TestCpuFlag(kCpuHasMSA)) {
     I422ToYUY2Row = I422ToYUY2Row_Any_MSA;
     if (IS_ALIGNED(width, 32)) {
       I422ToYUY2Row = I422ToYUY2Row_MSA;
+    }
+  }
+#endif
+#if defined(HAS_I422TOYUY2ROW_LASX)
+  if (TestCpuFlag(kCpuHasLASX)) {
+    I422ToYUY2Row = I422ToYUY2Row_Any_LASX;
+    if (IS_ALIGNED(width, 32)) {
+      I422ToYUY2Row = I422ToYUY2Row_LASX;
     }
   }
 #endif
@@ -523,19 +523,19 @@ int I422ToUYVY(const uint8_t* src_y,
     }
   }
 #endif
-#if defined(HAS_I422TOUYVYROW_MMI)
-  if (TestCpuFlag(kCpuHasMMI)) {
-    I422ToUYVYRow = I422ToUYVYRow_Any_MMI;
-    if (IS_ALIGNED(width, 8)) {
-      I422ToUYVYRow = I422ToUYVYRow_MMI;
-    }
-  }
-#endif
 #if defined(HAS_I422TOUYVYROW_MSA)
   if (TestCpuFlag(kCpuHasMSA)) {
     I422ToUYVYRow = I422ToUYVYRow_Any_MSA;
     if (IS_ALIGNED(width, 32)) {
       I422ToUYVYRow = I422ToUYVYRow_MSA;
+    }
+  }
+#endif
+#if defined(HAS_I422TOUYVYROW_LASX)
+  if (TestCpuFlag(kCpuHasLASX)) {
+    I422ToUYVYRow = I422ToUYVYRow_Any_LASX;
+    if (IS_ALIGNED(width, 32)) {
+      I422ToUYVYRow = I422ToUYVYRow_LASX;
     }
   }
 #endif
@@ -598,19 +598,19 @@ int I420ToUYVY(const uint8_t* src_y,
     }
   }
 #endif
-#if defined(HAS_I422TOUYVYROW_MMI)
-  if (TestCpuFlag(kCpuHasMMI)) {
-    I422ToUYVYRow = I422ToUYVYRow_Any_MMI;
-    if (IS_ALIGNED(width, 8)) {
-      I422ToUYVYRow = I422ToUYVYRow_MMI;
-    }
-  }
-#endif
 #if defined(HAS_I422TOUYVYROW_MSA)
   if (TestCpuFlag(kCpuHasMSA)) {
     I422ToUYVYRow = I422ToUYVYRow_Any_MSA;
     if (IS_ALIGNED(width, 32)) {
       I422ToUYVYRow = I422ToUYVYRow_MSA;
+    }
+  }
+#endif
+#if defined(HAS_I422TOUYVYROW_LASX)
+  if (TestCpuFlag(kCpuHasLASX)) {
+    I422ToUYVYRow = I422ToUYVYRow_Any_LASX;
+    if (IS_ALIGNED(width, 32)) {
+      I422ToUYVYRow = I422ToUYVYRow_LASX;
     }
   }
 #endif

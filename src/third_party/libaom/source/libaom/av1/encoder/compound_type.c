@@ -354,6 +354,7 @@ static int64_t pick_interinter_seg(const AV1_COMP *const cpi,
   // try each mask type and its inverse
   for (cur_mask_type = 0; cur_mask_type < DIFFWTD_MASK_TYPES; cur_mask_type++) {
     // build mask and inverse
+#if CONFIG_AV1_HIGHBITDEPTH
     if (hbd)
       av1_build_compound_diffwtd_mask_highbd(
           tmp_mask[cur_mask_type], cur_mask_type, CONVERT_TO_BYTEPTR(p0), bw,
@@ -361,6 +362,11 @@ static int64_t pick_interinter_seg(const AV1_COMP *const cpi,
     else
       av1_build_compound_diffwtd_mask(tmp_mask[cur_mask_type], cur_mask_type,
                                       p0, bw, p1, bw, bh, bw);
+#else
+    (void)hbd;
+    av1_build_compound_diffwtd_mask(tmp_mask[cur_mask_type], cur_mask_type, p0,
+                                    bw, p1, bw, bh, bw);
+#endif  // CONFIG_AV1_HIGHBITDEPTH
 
     // compute rd for mask
     uint64_t sse = av1_wedge_sse_from_residuals(residual1, diff10,
@@ -1548,8 +1554,7 @@ int av1_compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
       }
 
       if (need_mask_search) {
-        if (save_mask_search_results(
-                this_mode, cpi->sf.inter_sf.reuse_mask_search_results))
+        if (save_mask_search_results(this_mode, 0))
           args->diffwtd_index = best_mask_index;
       } else {
         mbmi->interinter_comp.mask_type = args->diffwtd_index;

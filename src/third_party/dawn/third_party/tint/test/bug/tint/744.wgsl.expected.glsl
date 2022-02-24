@@ -1,5 +1,4 @@
 #version 310 es
-precision mediump float;
 
 struct Uniforms {
   uvec2 aShape;
@@ -7,26 +6,22 @@ struct Uniforms {
   uvec2 outShape;
 };
 
-layout (binding = 0) buffer Matrix_1 {
+layout(binding = 0, std430) buffer Matrix_1 {
   uint numbers[];
 } firstMatrix;
-layout (binding = 1) buffer Matrix_2 {
+layout(binding = 1, std430) buffer Matrix_2 {
   uint numbers[];
 } secondMatrix;
-layout (binding = 2) buffer Matrix_3 {
+layout(binding = 2, std430) buffer Matrix_3 {
   uint numbers[];
 } resultMatrix;
-layout (binding = 3) uniform Uniforms_1 {
+layout(binding = 3) uniform Uniforms_1 {
   uvec2 aShape;
   uvec2 bShape;
   uvec2 outShape;
 } uniforms;
 
-struct tint_symbol_2 {
-  uvec3 global_id;
-};
-
-void tint_symbol_inner(uvec3 global_id) {
+void tint_symbol(uvec3 global_id) {
   uvec2 resultCell = uvec2(global_id.y, global_id.x);
   uint dimInner = uniforms.aShape.y;
   uint dimOutter = uniforms.outShape.y;
@@ -43,14 +38,7 @@ void tint_symbol_inner(uvec3 global_id) {
 }
 
 layout(local_size_x = 2, local_size_y = 2, local_size_z = 1) in;
-void tint_symbol(tint_symbol_2 tint_symbol_1) {
-  tint_symbol_inner(tint_symbol_1.global_id);
+void main() {
+  tint_symbol(gl_GlobalInvocationID);
   return;
 }
-void main() {
-  tint_symbol_2 inputs;
-  inputs.global_id = gl_GlobalInvocationID;
-  tint_symbol(inputs);
-}
-
-

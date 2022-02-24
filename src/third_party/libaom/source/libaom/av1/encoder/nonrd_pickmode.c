@@ -34,6 +34,8 @@
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/reconinter_enc.h"
 #include "av1/encoder/var_based_part.h"
+#include "av1/encoder/palette.h"
+#include "av1/encoder/intra_mode_search.h"
 
 extern int g_pick_inter_mode_cnt;
 /*!\cond */
@@ -55,6 +57,8 @@ typedef struct {
   MOTION_MODE best_motion_mode;
   WarpedMotionParams wm_params;
   int num_proj_ref;
+  uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE / 4];
+  PALETTE_MODE_INFO pmi;
 } BEST_PICKMODE;
 
 typedef struct {
@@ -141,6 +145,8 @@ static INLINE void init_best_pickmode(BEST_PICKMODE *bp) {
   bp->best_motion_mode = SIMPLE_TRANSLATION;
   bp->num_proj_ref = 0;
   memset(&bp->wm_params, 0, sizeof(bp->wm_params));
+  memset(&bp->blk_skip, 0, sizeof(bp->blk_skip));
+  memset(&bp->pmi, 0, sizeof(bp->pmi));
 }
 
 static INLINE int subpel_select(AV1_COMP *cpi, BLOCK_SIZE bsize, int_mv *mv) {
@@ -763,6 +769,7 @@ static void block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
   const struct macroblockd_plane *pd = &xd->plane[0];
   struct macroblock_plane *const p = &x->plane[0];
   const int num_4x4_w = mi_size_wide[bsize];
+  const int num_8x8_w = num_4x4_w / 2;
   const int num_4x4_h = mi_size_high[bsize];
   const int step = 1 << (tx_size << 1);
   const int block_step = (1 << tx_size);
@@ -897,6 +904,8 @@ static void block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
         }
         assert(*eob <= 1024);
         *skippable &= (*eob == 0);
+        x->txfm_search_info.blk_skip[(r * num_8x8_w + c) / 2] =
+            (*eob == 0) ? 1 : 0;
         eob_cost += 1;
       }
       block += step;
@@ -1002,9 +1011,6 @@ static void store_coding_context(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx) {
   // restored if we decide to encode this way
   ctx->rd_stats.skip_txfm = txfm_info->skip_txfm;
 
-  memset(ctx->blk_skip, 0, sizeof(ctx->blk_skip[0]) * ctx->num_4x4_blk);
-  memset(ctx->tx_type_map, DCT_DCT,
-         sizeof(ctx->tx_type_map[0]) * ctx->num_4x4_blk);
   ctx->skippable = txfm_info->skip_txfm;
 #if CONFIG_INTERNAL_STATS
   ctx->best_mode_index = mode_index;
@@ -1761,12 +1767,16 @@ void av1_nonrd_pick_intra_mode(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_cost,
     if (this_rdc.rdcost < best_rdc.rdcost) {
       best_rdc = this_rdc;
       best_mode = this_mode;
+      if (!this_rdc.skip_txfm) {
+        memset(ctx->blk_skip, 0,
+               sizeof(x->txfm_search_info.blk_skip[0]) * ctx->num_4x4_blk);
+      }
     }
   }
 
   mi->mode = best_mode;
   // Keep DC for UV since mode test is based on Y channel only.
-  mi->uv_mode = DC_PRED;
+  mi->uv_mode = UV_DC_PRED;
   *rd_cost = best_rdc;
 
 #if CONFIG_INTERNAL_STATS
@@ -1800,12 +1810,17 @@ static AOM_INLINE void get_ref_frame_use_mask(AV1_COMP *cpi, MACROBLOCK *x,
   int use_golden_ref_frame = 1;
   int use_last_ref_frame = 1;
 
-  use_ref_frame[LAST_FRAME] = 1;
+  if (cpi->ppi->use_svc)
+    use_last_ref_frame =
+        cpi->ref_frame_flags & AOM_LAST_FLAG ? use_last_ref_frame : 0;
 
-  if (cpi->rc.frames_since_golden == 0 && gf_temporal_ref) {
+  // Only remove golden and altref reference below if last is a reference,
+  // which may not be the case for svc.
+  if (use_last_ref_frame && cpi->rc.frames_since_golden == 0 &&
+      gf_temporal_ref) {
     use_golden_ref_frame = 0;
   }
-  if (cpi->sf.rt_sf.short_circuit_low_temp_var &&
+  if (use_last_ref_frame && cpi->sf.rt_sf.short_circuit_low_temp_var &&
       x->nonrd_prune_ref_frame_search) {
     if (is_small_sb)
       *force_skip_low_temp_var = av1_get_force_skip_low_temp_var_small_sb(
@@ -1820,8 +1835,9 @@ static AOM_INLINE void get_ref_frame_use_mask(AV1_COMP *cpi, MACROBLOCK *x,
     }
   }
 
-  if (x->nonrd_prune_ref_frame_search > 2 ||
-      (x->nonrd_prune_ref_frame_search > 1 && bsize > BLOCK_64X64)) {
+  if (use_last_ref_frame &&
+      (x->nonrd_prune_ref_frame_search > 2 ||
+       (x->nonrd_prune_ref_frame_search > 1 && bsize > BLOCK_64X64))) {
     use_golden_ref_frame = 0;
     use_alt_ref_frame = 0;
   }
@@ -1837,15 +1853,14 @@ static AOM_INLINE void get_ref_frame_use_mask(AV1_COMP *cpi, MACROBLOCK *x,
   use_golden_ref_frame =
       cpi->ref_frame_flags & AOM_GOLD_FLAG ? use_golden_ref_frame : 0;
 
-  if (cpi->ppi->use_svc)
-    use_last_ref_frame =
-        cpi->ref_frame_flags & AOM_LAST_FLAG ? use_last_ref_frame : 0;
-
   use_ref_frame[ALTREF_FRAME] = use_alt_ref_frame;
   use_ref_frame[GOLDEN_FRAME] = use_golden_ref_frame;
   use_ref_frame[LAST_FRAME] = use_last_ref_frame;
-  if (!cpi->ppi->use_svc)
-    assert(use_last_ref_frame || use_golden_ref_frame || use_alt_ref_frame);
+  // For now keep this assert on, but we should remove it for svc mode,
+  // as the user may want to generate an intra-only frame (no inter-modes).
+  // Remove this assert in subsequent CL when nonrd_pickmode is tested for the
+  // case of intra-only frame (no references enabled).
+  assert(use_last_ref_frame || use_golden_ref_frame || use_alt_ref_frame);
 }
 
 /*!\brief Estimates best intra mode for inter mode search
@@ -1896,6 +1911,7 @@ static void estimate_intra_mode(
   const int *const rd_thresh_freq_fact = x->thresh_freq_fact[bsize];
   const int mi_row = xd->mi_row;
   const int mi_col = xd->mi_col;
+  const int num_8x8_blocks = mi_size_wide[bsize] * mi_size_high[bsize] / 4;
   struct macroblockd_plane *const pd = &xd->plane[0];
 
   const CommonQuantParams *quant_params = &cm->quant_params;
@@ -1949,9 +1965,11 @@ static void estimate_intra_mode(
     perform_intra_pred = 0;
   }
 
-  if (cpi->sf.rt_sf.skip_intra_pred_if_tx_skip && best_rdc->skip_txfm &&
-      best_pickmode->best_mode_initial_skip_flag) {
-    perform_intra_pred = 0;
+  if (best_rdc->skip_txfm && best_pickmode->best_mode_initial_skip_flag) {
+    if (cpi->sf.rt_sf.skip_intra_pred == 1 && best_pickmode->best_mode != NEWMV)
+      perform_intra_pred = 0;
+    else if (cpi->sf.rt_sf.skip_intra_pred == 2)
+      perform_intra_pred = 0;
   }
 
   if (!(best_rdc->rdcost == INT64_MAX ||
@@ -1966,6 +1984,10 @@ static void estimate_intra_mode(
       AOMMIN(max_txsize_lookup[bsize],
              tx_mode_to_biggest_tx_size[txfm_params->tx_mode_search_type]),
       TX_16X16);
+  if (cpi->oxcf.tune_cfg.content == AOM_CONTENT_SCREEN &&
+      cpi->rc.high_source_sad && x->source_variance > spatial_var_thresh &&
+      bsize <= BLOCK_16X16)
+    intra_tx_size = TX_4X4;
 
   PRED_BUFFER *const best_pred = best_pickmode->best_pred;
   if (reuse_prediction && best_pred != NULL) {
@@ -2044,6 +2066,10 @@ static void estimate_intra_mode(
       best_pickmode->best_tx_size = mi->tx_size;
       best_pickmode->best_ref_frame = INTRA_FRAME;
       best_pickmode->best_second_ref_frame = NONE;
+      if (!this_rdc.skip_txfm) {
+        memcpy(best_pickmode->blk_skip, x->txfm_search_info.blk_skip,
+               sizeof(x->txfm_search_info.blk_skip[0]) * num_8x8_blocks);
+      }
       mi->uv_mode = this_mode;
       mi->mv[0].as_int = INVALID_MV;
       mi->mv[1].as_int = INVALID_MV;
@@ -2271,6 +2297,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   // Use mode set that includes zeromv (via globalmv) for speed >= 9 for
   // content with low motion.
   int use_zeromv =
+      cpi->oxcf.tune_cfg.content == AOM_CONTENT_SCREEN ||
       ((cpi->oxcf.speed >= 9 && cpi->rc.avg_frame_low_motion > 70) ||
        cpi->sf.rt_sf.nonrd_agressive_skip);
   int skip_pred_mv = 0;
@@ -2287,6 +2314,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   const int bh = block_size_high[bsize];
   const int bw = block_size_wide[bsize];
   const int pixels_in_block = bh * bw;
+  const int num_8x8_blocks = ctx->num_4x4_blk / 4;
   struct buf_2d orig_dst = pd->dst;
   const CommonQuantParams *quant_params = &cm->quant_params;
   const TxfmSearchParams *txfm_params = &x->txfm_search_params;
@@ -2436,7 +2464,6 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       AOMMIN(max_txsize_lookup[bsize],
              tx_mode_to_biggest_tx_size[txfm_params->tx_mode_search_type]),
       TX_16X16);
-
   for (int idx = 0; idx < num_inter_modes + tot_num_comp_modes; ++idx) {
     const struct segmentation *const seg = &cm->seg;
 
@@ -2449,6 +2476,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     MB_MODE_INFO_EXT *const mbmi_ext = &x->mbmi_ext;
     RD_STATS nonskip_rdc;
     av1_invalid_rd_stats(&nonskip_rdc);
+    memset(txfm_info->blk_skip, 0,
+           sizeof(txfm_info->blk_skip[0]) * num_8x8_blocks);
 
     if (idx >= num_inter_modes) {
       int comp_index = idx - num_inter_modes;
@@ -2531,6 +2560,23 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME) &&
         get_segdata(seg, segment_id, SEG_LVL_REF_FRAME) != (int)ref_frame)
       continue;
+
+    // For screen content
+    if (cpi->oxcf.tune_cfg.content == AOM_CONTENT_SCREEN) {
+      // If source_sad is computed: skip non-zero motion
+      // check for stationary (super)blocks. Otherwise skip non-zero motion
+      // check for spatially flat blocks.
+      if (cpi->sf.rt_sf.source_metrics_sb_nonrd) {
+        if (frame_mv[this_mode][ref_frame].as_int != 0 &&
+            x->content_state_sb.source_sad == kZeroSad)
+          continue;
+      }
+
+      // Skip NEWMV search on scene cuts
+      if (cpi->rc.high_source_sad && this_mode == NEWMV &&
+          (x->source_variance < 100))
+        continue;
+    }
 
     if (skip_mode_by_bsize_and_ref_frame(
             this_mode, ref_frame, bsize, x->nonrd_prune_ref_frame_search,
@@ -2795,6 +2841,10 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       best_pickmode.best_mode_skip_txfm = this_rdc.skip_txfm;
       best_pickmode.best_mode_initial_skip_flag =
           (nonskip_rdc.rate == INT_MAX && this_rdc.skip_txfm);
+      if (!best_pickmode.best_mode_skip_txfm && !use_modeled_non_rd_cost) {
+        memcpy(best_pickmode.blk_skip, txfm_info->blk_skip,
+               sizeof(txfm_info->blk_skip[0]) * num_8x8_blocks);
+      }
 
       // This is needed for the compound modes.
       frame_mv_best[this_mode][ref_frame].as_int =
@@ -2845,11 +2895,46 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                       &orig_dst, tmp, &this_mode_pred, &best_rdc,
                       &best_pickmode);
 
+  int try_palette =
+      cpi->oxcf.tool_cfg.enable_palette &&
+      av1_allow_palette(cpi->common.features.allow_screen_content_tools,
+                        mi->bsize);
+  try_palette = try_palette && is_mode_intra(best_pickmode.best_mode) &&
+                best_pickmode.best_mode_skip_txfm != 1 &&
+                cpi->rc.high_source_sad;
+
+  if (try_palette) {
+    const unsigned int intra_ref_frame_cost = ref_costs_single[INTRA_FRAME];
+
+    av1_search_palette_mode_luma(cpi, x, bsize, intra_ref_frame_cost, ctx,
+                                 &this_rdc, best_rdc.rdcost);
+    if (this_rdc.rdcost < best_rdc.rdcost) {
+      best_pickmode.pmi = mi->palette_mode_info;
+      best_pickmode.best_mode = DC_PRED;
+      mi->mv[0].as_int = 0;
+      best_rdc.rate = this_rdc.rate;
+      best_rdc.dist = this_rdc.dist;
+      best_rdc.rdcost = this_rdc.rdcost;
+      memcpy(best_pickmode.blk_skip, txfm_info->blk_skip,
+             sizeof(txfm_info->blk_skip[0]) * ctx->num_4x4_blk);
+      av1_copy_array(ctx->tx_type_map, xd->tx_type_map, ctx->num_4x4_blk);
+    }
+  }
+
   pd->dst = orig_dst;
+  if (try_palette) mi->palette_mode_info = best_pickmode.pmi;
   mi->mode = best_pickmode.best_mode;
   mi->ref_frame[0] = best_pickmode.best_ref_frame;
   mi->ref_frame[1] = best_pickmode.best_second_ref_frame;
   txfm_info->skip_txfm = best_rdc.skip_txfm;
+  if (!txfm_info->skip_txfm) {
+    if (best_pickmode.best_mode >= INTRA_MODE_END)
+      memcpy(ctx->blk_skip, best_pickmode.blk_skip,
+             sizeof(best_pickmode.blk_skip[0]) * num_8x8_blocks);
+    else
+      memset(ctx->blk_skip, 0,
+             sizeof(best_pickmode.blk_skip[0]) * ctx->num_4x4_blk);
+  }
   if (has_second_ref(mi)) {
     mi->comp_group_idx = 0;
     mi->compound_idx = 1;

@@ -68,7 +68,16 @@ RemovePhonies::RemovePhonies() = default;
 
 RemovePhonies::~RemovePhonies() = default;
 
-void RemovePhonies::Run(CloneContext& ctx, const DataMap&, DataMap&) {
+bool RemovePhonies::ShouldRun(const Program* program, const DataMap&) const {
+  for (auto* node : program->ASTNodes().Objects()) {
+    if (node->Is<ast::PhonyExpression>()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void RemovePhonies::Run(CloneContext& ctx, const DataMap&, DataMap&) const {
   auto& sem = ctx.src->Sem();
 
   std::unordered_map<SinkSignature, Symbol, SinkSignature::Hasher> sinks;
@@ -80,12 +89,12 @@ void RemovePhonies::Run(CloneContext& ctx, const DataMap&, DataMap&) {
         if (!ast::TraverseExpressions(
                 stmt->rhs, ctx.dst->Diagnostics(),
                 [&](const ast::CallExpression* call) {
-                  // ast::CallExpression may map to a function or intrinsic call
+                  // ast::CallExpression may map to a function or builtin call
                   // (both may have side-effects), or a type constructor or
                   // type conversion (both do not have side effects).
                   if (sem.Get(call)
                           ->Target()
-                          ->IsAnyOf<sem::Function, sem::Intrinsic>()) {
+                          ->IsAnyOf<sem::Function, sem::Builtin>()) {
                     side_effects.push_back(call);
                     return ast::TraverseAction::Skip;
                   }
@@ -112,8 +121,8 @@ void RemovePhonies::Run(CloneContext& ctx, const DataMap&, DataMap&) {
         }
 
         // Phony assignment with multiple side effects.
-        // Generate a call to a dummy function with the side effects as
-        // arguments.
+        // Generate a call to a placeholder function with the side
+        // effects as arguments.
         ctx.Replace(stmt, [&, side_effects] {
           SinkSignature sig;
           for (auto* arg : side_effects) {

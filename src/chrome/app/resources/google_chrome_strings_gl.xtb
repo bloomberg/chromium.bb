@@ -175,7 +175,6 @@
 <translation id="5170938038195470297">Non se pode utilizar o teu perfil porque pertence a unha versión máis recente de Google Chrome.
 
 É posible que algunhas funcións non estean dispoñibles. Especifica un directorio de perfil diferente ou utiliza unha versión máis recente de Chrome.</translation>
-<translation id="5193136243808726294">Google Chrome OS non pode abrir esta páxina.</translation>
 <translation id="521447420733633466">Se compartes un dispositivo, as túas amizades e os membros da túa familia poden navegar cun perfil independente e configurar Chrome como prefiran</translation>
 <translation id="5251420635869119124">Os invitados poden utilizar Chrome sen perder información.</translation>
 <translation id="5334487786912937552">Chrome necesita permiso de acceso ao almacenamento para descargar ficheiros</translation>
@@ -186,8 +185,6 @@
 Google Chrome non pode recuperar a túa configuración.</translation>
 <translation id="556024056938947818">Google Chrome está intentando mostrar contrasinais.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5657226924540934362">Se non se mostra algunha opción de configuración nesta páxina, accede á <ph name="LINK_BEGIN" />
-      configuración de Chrome OS<ph name="LINK_END" /></translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> pode ser perigoso, así que Chrome bloqueouno.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{O teu administrador pídeche que reinicies Chrome para aplicar esta actualización}=1{O teu administrador pídeche que reinicies Chrome para aplicar esta actualización. A ventá do modo de incógnito non se volverá abrir.}other{O teu administrador pídeche que reinicies Chrome para aplicar esta actualización. As # ventás do modo de incógnito non se volverán abrir.}}</translation>
 <translation id="5686916850681061684">Personaliza e controla Google Chrome. Algo precisa a túa atención. Fai clic para obter información.</translation>

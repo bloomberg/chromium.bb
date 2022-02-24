@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "cc/base/math_util.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/aggregated_render_pass.h"
@@ -116,7 +117,9 @@ class DisplayTimeSource {
 
 class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
  public:
-  explicit SurfaceAggregatorTest(bool use_damage_rect)
+  explicit SurfaceAggregatorTest(
+      bool use_damage_rect,
+      SurfaceAggregator::ExtraPassForReadbackOption extra_pass_option)
       : root_sink_(std::make_unique<CompositorFrameSinkSupport>(
             &fake_client_,
             &manager_,
@@ -125,11 +128,15 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
         aggregator_(manager_.surface_manager(),
                     &resource_provider_,
                     use_damage_rect,
-                    true) {
+                    true,
+                    extra_pass_option) {
     manager_.surface_manager()->AddObserver(&observer_);
   }
 
-  SurfaceAggregatorTest() : SurfaceAggregatorTest(false) {}
+  SurfaceAggregatorTest()
+      : SurfaceAggregatorTest(
+            false,
+            SurfaceAggregator::ExtraPassForReadbackOption::kNone) {}
 
   void TearDown() override {
     observer_.Reset();
@@ -486,8 +493,10 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
 
 class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
  public:
-  explicit SurfaceAggregatorValidSurfaceTest(bool use_damage_rect)
-      : SurfaceAggregatorTest(use_damage_rect),
+  SurfaceAggregatorValidSurfaceTest(
+      bool use_damage_rect,
+      SurfaceAggregator::ExtraPassForReadbackOption extra_pass_option)
+      : SurfaceAggregatorTest(use_damage_rect, extra_pass_option),
         child_sink_(std::make_unique<CompositorFrameSinkSupport>(
             nullptr,
             &manager_,
@@ -496,6 +505,11 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
         root_surface_id_(kArbitraryRootFrameSinkId) {
     child_sink_->set_allow_copy_output_requests_for_testing();
   }
+
+  explicit SurfaceAggregatorValidSurfaceTest(bool use_damage_rect)
+      : SurfaceAggregatorValidSurfaceTest(
+            use_damage_rect,
+            SurfaceAggregator::ExtraPassForReadbackOption::kNone) {}
 
   SurfaceAggregatorValidSurfaceTest()
       : SurfaceAggregatorValidSurfaceTest(false) {}
@@ -5650,7 +5664,10 @@ TEST_F(SurfaceAggregatorPartialSwapTest, ExpandByTargetDamage) {
 
 class SurfaceAggregatorWithResourcesTest : public SurfaceAggregatorTest {
  public:
-  SurfaceAggregatorWithResourcesTest() : SurfaceAggregatorTest(false) {
+  SurfaceAggregatorWithResourcesTest()
+      : SurfaceAggregatorTest(
+            false,
+            SurfaceAggregator::ExtraPassForReadbackOption::kNone) {
     // BuildCompositorFrameWithResources() sets secure_output_only=true on
     // TextureDrawQuads so this will ensure they aren't dropped from the
     // AggregatedFrame.
@@ -5990,7 +6007,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
   display_color_spaces.SetOutputColorSpaceAndBufferFormat(
       gfx::ContentColorUsage::kWideColorGamut, false /* needs_alpha */,
       gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
-                      gfx::ColorSpace::TransferID::IEC61966_2_1),
+                      gfx::ColorSpace::TransferID::SRGB),
       gfx::BufferFormat::RGBA_8888);
   display_color_spaces.SetOutputColorSpaceAndBufferFormat(
       gfx::ContentColorUsage::kWideColorGamut, true /* needs_alpha */,
@@ -6075,7 +6092,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
   display_color_spaces.SetOutputColorSpaceAndBufferFormat(
       gfx::ContentColorUsage::kHDR, false /* needs_alpha */,
       gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
-                      gfx::ColorSpace::TransferID::IEC61966_2_1),
+                      gfx::ColorSpace::TransferID::SRGB),
       gfx::BufferFormat::BGRA_1010102);
   display_color_spaces.SetOutputColorSpaceAndBufferFormat(
       gfx::ContentColorUsage::kHDR, true /* needs_alpha */,
@@ -9107,7 +9124,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TransitionDirectiveFrameBehind) {
   {
     auto frame = BuildCompositorFrameWithResources({}, true, SurfaceId());
     frame.metadata.transition_directives.emplace_back(
-        1, CompositorFrameTransitionDirective::Type::kSave,
+        1, CompositorFrameTransitionDirective::Type::kSave, false,
         CompositorFrameTransitionDirective::Effect::kCoverLeft);
 
     root_sink_->SubmitCompositorFrame(local_surface_id, std::move(frame));
@@ -9122,7 +9139,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TransitionDirectiveFrameBehind) {
   {
     auto frame = BuildCompositorFrameWithResources({}, true, SurfaceId());
     frame.metadata.transition_directives.emplace_back(
-        2, CompositorFrameTransitionDirective::Type::kAnimate);
+        2, CompositorFrameTransitionDirective::Type::kAnimate, false);
     root_sink_->SubmitCompositorFrame(local_surface_id, std::move(frame));
   }
   AggregateFrame(surface_id);
@@ -9182,4 +9199,59 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TransitionDirectiveFrameBehind) {
 INSTANTIATE_TEST_SUITE_P(,
                          SurfaceAggregatorValidSurfaceWithMergingPassesTest,
                          testing::Bool());
+
+class SurfaceAggregatorVulkanSecondaryCB
+    : public SurfaceAggregatorValidSurfaceTest {
+ public:
+  SurfaceAggregatorVulkanSecondaryCB()
+      : SurfaceAggregatorValidSurfaceTest(
+            false,
+            SurfaceAggregator::ExtraPassForReadbackOption::
+                kAddPassForReadback) {}
+};
+
+TEST_F(SurfaceAggregatorVulkanSecondaryCB, AppendPassForFrameWithFilter) {
+  CompositorFrame frame =
+      CompositorFrameBuilder()
+          .AddRenderPass(
+              RenderPassBuilder(CompositorRenderPassId{1}, kSurfaceSize)
+                  .AddSolidColorQuad(gfx::Rect(5, 5), SK_ColorGREEN)
+                  .AddBackdropFilter(cc::FilterOperation::CreateBlurFilter(5)))
+          .AddRenderPass(
+              RenderPassBuilder(CompositorRenderPassId{2}, kSurfaceSize)
+                  .AddRenderPassQuad(gfx::Rect(kSurfaceSize),
+                                     CompositorRenderPassId{1}))
+          .Build();
+
+  root_sink_->SubmitCompositorFrame(root_surface_id_.local_surface_id(),
+                                    std::move(frame));
+
+  SurfaceId surface_id(root_sink_->frame_sink_id(),
+                       root_surface_id_.local_surface_id());
+  auto aggregated_frame = AggregateFrame(surface_id);
+  EXPECT_EQ(3u, aggregated_frame.render_pass_list.size());
+}
+
+TEST_F(SurfaceAggregatorVulkanSecondaryCB,
+       DoNotAppendPassForFrameWithoutReadback) {
+  CompositorFrame frame =
+      CompositorFrameBuilder()
+          .AddRenderPass(
+              RenderPassBuilder(CompositorRenderPassId{1}, kSurfaceSize)
+                  .AddSolidColorQuad(gfx::Rect(5, 5), SK_ColorGREEN))
+          .AddRenderPass(
+              RenderPassBuilder(CompositorRenderPassId{2}, kSurfaceSize)
+                  .AddRenderPassQuad(gfx::Rect(kSurfaceSize),
+                                     CompositorRenderPassId{1}))
+          .Build();
+
+  root_sink_->SubmitCompositorFrame(root_surface_id_.local_surface_id(),
+                                    std::move(frame));
+
+  SurfaceId surface_id(root_sink_->frame_sink_id(),
+                       root_surface_id_.local_surface_id());
+  auto aggregated_frame = AggregateFrame(surface_id);
+  EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
+}
+
 }  // namespace viz

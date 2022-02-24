@@ -19,7 +19,6 @@
 #include "include/core/SkTextBlob.h"
 #include "include/core/SkVertices.h"
 #include "include/effects/SkRuntimeEffect.h"
-#include "include/private/SkTOptional.h"
 #include "include/private/SkTo.h"
 #include "include/utils/SkNoDrawCanvas.h"
 #include "src/core/SkArenaAlloc.h"
@@ -50,6 +49,7 @@
 
 #include <memory>
 #include <new>
+#include <optional>
 
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrDirectContext.h"
@@ -328,6 +328,7 @@ public:
                 rawBounds = &fPaint.computeFastBounds(*rawBounds, &storage);
             }
 
+            canvas->fSaveCount += 1;
             (void)canvas->internalSaveLayer(SkCanvas::SaveLayerRec(rawBounds, &restorePaint),
                                             SkCanvas::kFullLayer_SaveLayerStrategy);
             fTempLayerForImageFilter = true;
@@ -341,6 +342,7 @@ public:
 
     ~AutoLayerForImageFilter() {
         if (fTempLayerForImageFilter) {
+            fCanvas->fSaveCount -= 1;
             fCanvas->internalRestore();
         }
         SkASSERT(fCanvas->getSaveCount() == fSaveCount);
@@ -356,7 +358,7 @@ private:
     SkDEBUGCODE(int fSaveCount;)
 };
 
-skstd::optional<AutoLayerForImageFilter> SkCanvas::aboutToDraw(
+std::optional<AutoLayerForImageFilter> SkCanvas::aboutToDraw(
     SkCanvas* canvas,
     const SkPaint& paint,
     const SkRect* rawBounds,
@@ -365,14 +367,14 @@ skstd::optional<AutoLayerForImageFilter> SkCanvas::aboutToDraw(
 {
     if (checkOverwrite == CheckForOverwrite::kYes) {
         if (!this->predrawNotify(rawBounds, &paint, overrideOpacity)) {
-            return skstd::nullopt;
+            return std::nullopt;
         }
     } else {
         if (!this->predrawNotify()) {
-            return skstd::nullopt;
+            return std::nullopt;
         }
     }
-    return skstd::optional<AutoLayerForImageFilter>(canvas, paint, rawBounds);
+    return std::optional<AutoLayerForImageFilter>(std::in_place, canvas, paint, rawBounds);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -763,7 +765,7 @@ static std::pair<skif::Mapping, skif::LayerSpace<SkIRect>> get_layer_mapping_and
         // When a filter is involved, the layer size may be larger than the default maxLayerDim due
         // to required inputs for filters (e.g. a displacement map with a large radius).
         if (layerBounds.width() > maxLayerDim || layerBounds.height() > maxLayerDim) {
-            skif::Mapping idealMapping(SkMatrix::I(), mapping.layerMatrix());
+            skif::Mapping idealMapping{mapping.layerMatrix()};
             auto idealLayerBounds = as_IFB(filter)->getInputBounds(idealMapping, targetOutput,
                                                                    contentBounds);
             maxLayerDim = std::max(std::max(idealLayerBounds.width(), idealLayerBounds.height()),
@@ -845,9 +847,15 @@ void SkCanvas::internalDrawDeviceWithFilter(SkBaseDevice* src,
     skif::LayerSpace<SkIRect> requiredInput;
     if (compat == DeviceCompatibleWithFilter::kYes) {
         // Just use the relative transform from src to dst and the src's whole image, since
-        // internalSaveLayer should have already determined what was necessary.
+        // internalSaveLayer should have already determined what was necessary. We explicitly
+        // construct the inverse (dst->src) to avoid the case where src's and dst's coord transforms
+        // were individually invertible by SkM44::invert() but their product is considered not
+        // invertible by SkMatrix::invert(). When this happens the matrices are already poorly
+        // conditioned so getRelativeTransform() gives us something reasonable.
         SkASSERT(scaleFactor == 1.0f);
-        mapping = skif::Mapping(src->getRelativeTransform(*dst), localToSrc);
+        mapping = skif::Mapping(src->getRelativeTransform(*dst),
+                                dst->getRelativeTransform(*src),
+                                localToSrc);
         requiredInput = skif::LayerSpace<SkIRect>(SkIRect::MakeSize(srcDims));
         SkASSERT(!requiredInput.isEmpty());
     } else {
@@ -1865,12 +1873,12 @@ void SkCanvas::drawImageLattice(const SkImage* image, const Lattice& lattice, co
         latticePlusBounds.fBounds = &bounds;
     }
 
+    SkPaint latticePaint = clean_paint_for_lattice(paint);
     if (SkLatticeIter::Valid(image->width(), image->height(), latticePlusBounds)) {
-        SkPaint latticePaint = clean_paint_for_lattice(paint);
         this->onDrawImageLattice2(image, latticePlusBounds, dst, filter, &latticePaint);
     } else {
         this->drawImageRect(image, SkRect::MakeIWH(image->width(), image->height()), dst,
-                            SkSamplingOptions(filter), paint, kStrict_SrcRectConstraint);
+                            SkSamplingOptions(filter), &latticePaint, kStrict_SrcRectConstraint);
     }
 }
 
@@ -2127,7 +2135,7 @@ void SkCanvas::onDrawPath(const SkPath& path, const SkPaint& paint) {
         return;
     }
 
-    auto layer = this->aboutToDraw(this, paint, &pathBounds);
+    auto layer = this->aboutToDraw(this, paint, path.isInverseFillType() ? nullptr : &pathBounds);
     if (layer) {
         this->topDevice()->drawPath(path, layer->paint());
     }
@@ -2211,7 +2219,13 @@ void SkCanvas::onDrawImage2(const SkImage* image, SkScalar x, SkScalar y,
             // pre-concat here.
             SkMatrix layerToDevice = device->localToDevice();
             layerToDevice.preTranslate(x, y);
-            skif::Mapping mapping(layerToDevice, SkMatrix::Translate(-x, -y));
+
+            SkMatrix deviceToLayer;
+            if (!layerToDevice.invert(&deviceToLayer)) {
+                return; // bad ctm, draw nothing
+            }
+
+            skif::Mapping mapping(layerToDevice, deviceToLayer, SkMatrix::Translate(-x, -y));
 
             if (this->predrawNotify()) {
                 device->drawFilteredImage(mapping, special.get(), filter.get(), sampling,realPaint);
@@ -2295,7 +2309,7 @@ void SkCanvas::onDrawGlyphRunList(const SkGlyphRunList& glyphRunList, const SkPa
     }
     auto layer = this->aboutToDraw(this, paint, &bounds);
     if (layer) {
-        this->topDevice()->drawGlyphRunList(glyphRunList, layer->paint());
+        this->topDevice()->drawGlyphRunList(this, glyphRunList, layer->paint());
     }
 }
 
@@ -2334,7 +2348,7 @@ void SkCanvas::doDrawSlug(GrSlug* slug) {
         return;
     }
 
-    this->topDevice()->drawSlug(slug);
+    this->topDevice()->drawSlug(this, slug);
 }
 #endif
 
@@ -2528,7 +2542,7 @@ void SkCanvas::onDrawDrawable(SkDrawable* dr, const SkMatrix* matrix) {
     // drawable bounds are no longer reliable (e.g. android displaylist)
     // so don't use them for quick-reject
     if (this->predrawNotify()) {
-        this->topDevice()->drawDrawable(dr, matrix, this);
+        this->topDevice()->drawDrawable(this, dr, matrix);
     }
 }
 

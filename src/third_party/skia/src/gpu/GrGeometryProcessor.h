@@ -13,7 +13,7 @@
 #include "src/gpu/GrProcessor.h"
 #include "src/gpu/GrShaderCaps.h"
 #include "src/gpu/GrShaderVar.h"
-#include "src/gpu/GrSwizzle.h"
+#include "src/gpu/Swizzle.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
@@ -72,41 +72,41 @@ public:
          */
         constexpr Attribute(const char* name,
                             GrVertexAttribType cpuType,
-                            GrSLType gpuType)
+                            SkSLType gpuType)
                 : fName(name), fCPUType(cpuType), fGPUType(gpuType) {
-            SkASSERT(name && gpuType != kVoid_GrSLType);
+            SkASSERT(name && gpuType != SkSLType::kVoid);
         }
         /**
          * Makes an attribute with an explicit offset.
          */
         constexpr Attribute(const char*        name,
                             GrVertexAttribType cpuType,
-                            GrSLType           gpuType,
+                            SkSLType           gpuType,
                             size_t             offset)
                 : fName(name), fCPUType(cpuType), fGPUType(gpuType), fOffset(SkToU32(offset)) {
             SkASSERT(AlignOffset(offset) == offset);
-            SkASSERT(name && gpuType != kVoid_GrSLType);
+            SkASSERT(name && gpuType != SkSLType::kVoid);
         }
         constexpr Attribute(const Attribute&) = default;
 
         Attribute& operator=(const Attribute&) = default;
 
-        constexpr bool isInitialized() const { return fGPUType != kVoid_GrSLType; }
+        constexpr bool isInitialized() const { return fGPUType != SkSLType::kVoid; }
 
         constexpr const char*           name() const { return fName; }
         constexpr GrVertexAttribType cpuType() const { return fCPUType; }
-        constexpr GrSLType           gpuType() const { return fGPUType; }
+        constexpr SkSLType           gpuType() const { return fGPUType; }
         /**
          * Returns the offset if attributes were specified with explicit offsets. Otherwise,
          * offsets (and total vertex stride) are implicitly determined from attribute order and
          * types.
          */
-        skstd::optional<size_t> offset() const {
+        std::optional<size_t> offset() const {
             if (fOffset != kImplicitOffset) {
                 SkASSERT(AlignOffset(fOffset) == fOffset);
                 return {fOffset};
             }
-            return skstd::nullopt;
+            return std::nullopt;
         }
 
         inline constexpr size_t size() const;
@@ -120,7 +120,7 @@ public:
 
         const char*        fName    = nullptr;
         GrVertexAttribType fCPUType = kFloat_GrVertexAttribType;
-        GrSLType           fGPUType = kVoid_GrSLType;
+        SkSLType           fGPUType = SkSLType::kVoid;
         uint32_t           fOffset  = kImplicitOffset;
     };
 
@@ -226,7 +226,7 @@ protected:
     static Attribute MakeColorAttribute(const char* name, bool wideColor) {
         return { name,
                  wideColor ? kFloat4_GrVertexAttribType : kUByte4_norm_GrVertexAttribType,
-                 kHalf4_GrSLType };
+                 SkSLType::kHalf4 };
     }
     void setVertexAttributes(const Attribute* attrs, int attrCount, size_t stride) {
         fVertexAttributes.initExplicit(attrs, attrCount, stride);
@@ -499,25 +499,25 @@ class GrGeometryProcessor::TextureSampler {
 public:
     TextureSampler() = default;
 
-    TextureSampler(GrSamplerState, const GrBackendFormat&, const GrSwizzle&);
+    TextureSampler(GrSamplerState, const GrBackendFormat&, const skgpu::Swizzle&);
 
     TextureSampler(const TextureSampler&) = delete;
     TextureSampler& operator=(const TextureSampler&) = delete;
 
-    void reset(GrSamplerState, const GrBackendFormat&, const GrSwizzle&);
+    void reset(GrSamplerState, const GrBackendFormat&, const skgpu::Swizzle&);
 
     const GrBackendFormat& backendFormat() const { return fBackendFormat; }
     GrTextureType textureType() const { return fBackendFormat.textureType(); }
 
     GrSamplerState samplerState() const { return fSamplerState; }
-    const GrSwizzle& swizzle() const { return fSwizzle; }
+    const skgpu::Swizzle& swizzle() const { return fSwizzle; }
 
     bool isInitialized() const { return fIsInitialized; }
 
 private:
     GrSamplerState  fSamplerState;
     GrBackendFormat fBackendFormat;
-    GrSwizzle       fSwizzle;
+    skgpu::Swizzle  fSwizzle;
     bool            fIsInitialized = false;
 };
 

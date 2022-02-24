@@ -41,13 +41,12 @@ class Simd128;
   V(I8, 0, I8, Int8, 'b', "i8")          \
   V(I16, 1, I16, Int16, 'h', "i16")
 
-#define FOREACH_VALUE_TYPE(V)                                               \
-  V(Void, -1, Void, None, 'v', "<void>")                                    \
-  FOREACH_NUMERIC_VALUE_TYPE(V)                                             \
-  V(Rtt, kTaggedSizeLog2, Rtt, TaggedPointer, 't', "rtt")                   \
-  V(RttWithDepth, kTaggedSizeLog2, RttWithDepth, TaggedPointer, 'k', "rtt") \
-  V(Ref, kTaggedSizeLog2, Ref, AnyTagged, 'r', "ref")                       \
-  V(OptRef, kTaggedSizeLog2, OptRef, AnyTagged, 'n', "ref null")            \
+#define FOREACH_VALUE_TYPE(V)                                    \
+  V(Void, -1, Void, None, 'v', "<void>")                         \
+  FOREACH_NUMERIC_VALUE_TYPE(V)                                  \
+  V(Rtt, kTaggedSizeLog2, Rtt, TaggedPointer, 't', "rtt")        \
+  V(Ref, kTaggedSizeLog2, Ref, AnyTagged, 'r', "ref")            \
+  V(OptRef, kTaggedSizeLog2, OptRef, AnyTagged, 'n', "ref null") \
   V(Bottom, -1, Void, None, '*', "<bot>")
 
 constexpr int kMaxValueTypeSize = 16;  // bytes
@@ -208,8 +207,7 @@ constexpr bool is_numeric(ValueKind kind) {
 }
 
 constexpr bool is_reference(ValueKind kind) {
-  return kind == kRef || kind == kOptRef || kind == kRtt ||
-         kind == kRttWithDepth;
+  return kind == kRef || kind == kOptRef || kind == kRtt;
 }
 
 constexpr bool is_object_reference(ValueKind kind) {
@@ -280,9 +278,7 @@ constexpr ValueKind unpacked(ValueKind kind) {
   return is_packed(kind) ? kI32 : kind;
 }
 
-constexpr bool is_rtt(ValueKind kind) {
-  return kind == kRtt || kind == kRttWithDepth;
-}
+constexpr bool is_rtt(ValueKind kind) { return kind == kRtt; }
 
 constexpr bool is_defaultable(ValueKind kind) {
   DCHECK(kind != kBottom && kind != kVoid);
@@ -319,14 +315,6 @@ class ValueType {
                      HeapTypeField::encode(type_index));
   }
 
-  static constexpr ValueType Rtt(uint32_t type_index,
-                                 uint8_t inheritance_depth) {
-    DCHECK(HeapType(type_index).is_index());
-    return ValueType(KindField::encode(kRttWithDepth) |
-                     HeapTypeField::encode(type_index) |
-                     DepthField::encode(inheritance_depth));
-  }
-
   // Useful when deserializing a type stored in a runtime object.
   static constexpr ValueType FromRawBitField(uint32_t bit_field) {
     return ValueType(bit_field);
@@ -349,7 +337,6 @@ class ValueType {
   }
 
   constexpr bool is_rtt() const { return wasm::is_rtt(kind()); }
-  constexpr bool has_depth() const { return kind() == kRttWithDepth; }
 
   constexpr bool has_index() const {
     return is_rtt() || (is_object_reference() && heap_type().is_index());
@@ -382,10 +369,6 @@ class ValueType {
   constexpr HeapType heap_type() const {
     DCHECK(is_object_reference());
     return HeapType(heap_representation());
-  }
-  constexpr uint8_t depth() const {
-    DCHECK(has_depth());
-    return DepthField::decode(bit_field_);
   }
   constexpr uint32_t ref_index() const {
     DCHECK(has_index());
@@ -488,8 +471,6 @@ class ValueType {
         return kVoidCode;
       case kRtt:
         return kRttCode;
-      case kRttWithDepth:
-        return kRttWithDepthCode;
 #define NUMERIC_TYPE_CASE(kind, ...) \
   case k##kind:                      \
     return k##kind##Code;
@@ -519,7 +500,7 @@ class ValueType {
     }
   }
 
-  static constexpr int kLastUsedBit = 30;
+  static constexpr int kLastUsedBit = 24;
 
   /****************************** Pretty-printing *****************************/
   constexpr char short_name() const { return wasm::short_name(kind()); }
@@ -536,10 +517,6 @@ class ValueType {
           buf << heap_type().name() << "ref";
         }
         break;
-      case kRttWithDepth:
-        buf << "(rtt " << static_cast<uint32_t>(depth()) << " " << ref_index()
-            << ")";
-        break;
       case kRtt:
         buf << "(rtt " << ref_index() << ")";
         break;
@@ -549,24 +526,23 @@ class ValueType {
     return buf.str();
   }
 
- private:
   // We only use 31 bits so ValueType fits in a Smi. This can be changed if
   // needed.
   static constexpr int kKindBits = 5;
   static constexpr int kHeapTypeBits = 20;
-  static constexpr int kDepthBits = 6;
+
+ private:
   STATIC_ASSERT(kV8MaxWasmTypes < (1u << kHeapTypeBits));
-  // Note: we currently conservatively allow only 5 bits, but have room to
-  // store 6, so we can raise the limit if needed.
-  STATIC_ASSERT(kV8MaxRttSubtypingDepth < (1u << kDepthBits));
+
+  // {hash_value} directly reads {bit_field_}.
+  friend size_t hash_value(ValueType type);
+
   using KindField = base::BitField<ValueKind, 0, kKindBits>;
   using HeapTypeField = KindField::Next<uint32_t, kHeapTypeBits>;
-  using DepthField = HeapTypeField::Next<uint8_t, kDepthBits>;
 
   // This is implemented defensively against field order changes.
-  STATIC_ASSERT(kLastUsedBit == std::max(KindField::kLastUsedBit,
-                                         std::max(HeapTypeField::kLastUsedBit,
-                                                  DepthField::kLastUsedBit)));
+  STATIC_ASSERT(kLastUsedBit ==
+                std::max(KindField::kLastUsedBit, HeapTypeField::kLastUsedBit));
 
   constexpr explicit ValueType(uint32_t bit_field) : bit_field_(bit_field) {}
 
@@ -581,7 +557,8 @@ static_assert(ValueType::kLastUsedBit < 8 * sizeof(ValueType) - kSmiTagSize,
               "ValueType has space to be encoded in a Smi");
 
 inline size_t hash_value(ValueType type) {
-  return static_cast<size_t>(type.kind());
+  // Just use the whole encoded bit field, similar to {operator==}.
+  return static_cast<size_t>(type.bit_field_);
 }
 
 // Output operator, useful for DCHECKS and others.
@@ -610,6 +587,9 @@ constexpr ValueType kWasmDataRef =
 constexpr ValueType kWasmArrayRef =
     ValueType::Ref(HeapType::kArray, kNonNullable);
 constexpr ValueType kWasmAnyRef = ValueType::Ref(HeapType::kAny, kNullable);
+
+// Constants used by the generic js-to-wasm wrapper.
+constexpr int kWasmValueKindBitsMask = (1u << ValueType::kKindBits) - 1;
 
 // This is used in wasm.tq.
 constexpr ValueType kWasmExternNonNullableRef =

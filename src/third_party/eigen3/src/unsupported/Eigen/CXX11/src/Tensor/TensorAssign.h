@@ -32,8 +32,8 @@ struct traits<TensorAssignOp<LhsXprType, RhsXprType> >
                                       typename traits<RhsXprType>::Index>::type Index;
   typedef typename LhsXprType::Nested LhsNested;
   typedef typename RhsXprType::Nested RhsNested;
-  typedef typename remove_reference<LhsNested>::type _LhsNested;
-  typedef typename remove_reference<RhsNested>::type _RhsNested;
+  typedef typename remove_reference<LhsNested>::type LhsNested_;
+  typedef typename remove_reference<RhsNested>::type RhsNested_;
   static const std::size_t NumDimensions = internal::traits<LhsXprType>::NumDimensions;
   static const int Layout = internal::traits<LhsXprType>::Layout;
   typedef typename traits<LhsXprType>::PointerType PointerType;

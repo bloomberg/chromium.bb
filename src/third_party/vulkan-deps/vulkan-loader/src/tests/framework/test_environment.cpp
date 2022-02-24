@@ -65,12 +65,34 @@ std::vector<VkPhysicalDevice> InstWrapper::GetPhysDevs(uint32_t phys_dev_count, 
     return physical_devices;
 }
 
+std::vector<VkPhysicalDevice> InstWrapper::GetPhysDevs(VkResult result_to_check) {
+    uint32_t physical_count = 0;
+    VkResult res = functions->vkEnumeratePhysicalDevices(inst, &physical_count, nullptr);
+    std::vector<VkPhysicalDevice> physical_devices;
+    physical_devices.resize(physical_count);
+    res = functions->vkEnumeratePhysicalDevices(inst, &physical_count, physical_devices.data());
+    EXPECT_EQ(result_to_check, res);
+    return physical_devices;
+}
+
 VkPhysicalDevice InstWrapper::GetPhysDev(VkResult result_to_check) {
     uint32_t physical_count = 1;
     VkPhysicalDevice physical_device = VK_NULL_HANDLE;
     VkResult res = this->functions->vkEnumeratePhysicalDevices(inst, &physical_count, &physical_device);
     EXPECT_EQ(result_to_check, res);
     return physical_device;
+}
+
+std::vector<VkExtensionProperties> EnumerateDeviceExtensions(InstWrapper const& inst, VkPhysicalDevice physical_device) {
+    uint32_t ext_count = 1;
+    VkResult res = inst.functions->vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &ext_count, nullptr);
+    EXPECT_EQ(VK_SUCCESS, res);
+    std::vector<VkExtensionProperties> extensions;
+    extensions.resize(ext_count);
+    res = inst.functions->vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &ext_count, extensions.data());
+    EXPECT_EQ(VK_SUCCESS, res);
+    extensions.resize(ext_count);
+    return extensions;
 }
 
 DeviceWrapper::DeviceWrapper(InstWrapper& inst_wrapper, VkAllocationCallbacks* callbacks) noexcept
@@ -117,7 +139,7 @@ void FillDebugUtilsCreateDetails(InstanceCreateInfo& create_info, DebugUtilsWrap
 PlatformShimWrapper::PlatformShimWrapper(DebugMode debug_mode) noexcept : debug_mode(debug_mode) {
 #if defined(WIN32) || defined(__APPLE__)
     shim_library = LibraryWrapper(SHIM_LIBRARY_NAME);
-    auto get_platform_shim_func = shim_library.get_symbol<PFN_get_platform_shim>(GET_PLATFORM_SHIM_STR);
+    PFN_get_platform_shim get_platform_shim_func = shim_library.get_symbol(GET_PLATFORM_SHIM_STR);
     assert(get_platform_shim_func != NULL && "Must be able to get \"platform_shim\"");
     platform_shim = get_platform_shim_func();
 #elif defined(__linux__) || defined(__FreeBSD__)
@@ -132,8 +154,8 @@ PlatformShimWrapper::~PlatformShimWrapper() noexcept { platform_shim->reset(debu
 
 TestICDHandle::TestICDHandle() noexcept {}
 TestICDHandle::TestICDHandle(fs::path const& icd_path) noexcept : icd_library(icd_path) {
-    proc_addr_get_test_icd = icd_library.get_symbol<GetNewTestICDFunc>(GET_TEST_ICD_FUNC_STR);
-    proc_addr_reset_icd = icd_library.get_symbol<GetNewTestICDFunc>(RESET_ICD_FUNC_STR);
+    proc_addr_get_test_icd = icd_library.get_symbol(GET_TEST_ICD_FUNC_STR);
+    proc_addr_reset_icd = icd_library.get_symbol(RESET_ICD_FUNC_STR);
 }
 TestICD& TestICDHandle::get_test_icd() noexcept {
     assert(proc_addr_get_test_icd != NULL && "symbol must be loaded before use");
@@ -147,8 +169,8 @@ fs::path TestICDHandle::get_icd_full_path() noexcept { return icd_library.lib_pa
 
 TestLayerHandle::TestLayerHandle() noexcept {}
 TestLayerHandle::TestLayerHandle(fs::path const& layer_path) noexcept : layer_library(layer_path) {
-    proc_addr_get_test_layer = layer_library.get_symbol<GetNewTestLayerFunc>(GET_TEST_LAYER_FUNC_STR);
-    proc_addr_reset_layer = layer_library.get_symbol<GetNewTestLayerFunc>(RESET_LAYER_FUNC_STR);
+    proc_addr_get_test_layer = layer_library.get_symbol(GET_TEST_LAYER_FUNC_STR);
+    proc_addr_reset_layer = layer_library.get_symbol(RESET_LAYER_FUNC_STR);
 }
 TestLayer& TestLayerHandle::get_test_layer() noexcept {
     assert(proc_addr_get_test_layer != NULL && "symbol must be loaded before use");
@@ -188,9 +210,11 @@ void FrameworkEnvironment::add_icd(TestICDDetails icd_details) noexcept {
     }
     std::string full_json_name = icd_details.json_name + "_" + std::to_string(cur_icd_index) + ".json";
 
-    auto driver_loc = icd_folder.write(full_json_name, ManifestICD{}
-                                                           .set_lib_path(fs::fixup_backslashes_in_path(icd_details.icd_path).str())
-                                                           .set_api_version(icd_details.api_version));
+    auto driver_loc =
+        icd_folder.write_manifest(full_json_name, ManifestICD{}
+                                                      .set_lib_path(fs::fixup_backslashes_in_path(icd_details.icd_path).str())
+                                                      .set_api_version(icd_details.api_version)
+                                                      .get_manifest_str());
 
     if (icd_details.use_env_var_icd_filenames) {
         if (!env_var_vk_icd_filenames.empty()) {
@@ -203,31 +227,35 @@ void FrameworkEnvironment::add_icd(TestICDDetails icd_details) noexcept {
     }
 }
 void FrameworkEnvironment::add_implicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept {
-    add_layer_impl(layer_manifest, json_name, implicit_layer_folder, ManifestCategory::implicit_layer);
+    add_layer_impl(TestLayerDetails{layer_manifest, json_name}, implicit_layer_folder, ManifestCategory::implicit_layer);
 }
 void FrameworkEnvironment::add_explicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept {
-    add_layer_impl(layer_manifest, json_name, explicit_layer_folder, ManifestCategory::explicit_layer);
+    add_layer_impl(TestLayerDetails{layer_manifest, json_name}, explicit_layer_folder, ManifestCategory::explicit_layer);
+}
+void FrameworkEnvironment::add_fake_implicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept {
+    TestLayerDetails fake_details{layer_manifest, json_name};
+    fake_details.is_fake = true;
+    add_layer_impl(fake_details, implicit_layer_folder, ManifestCategory::implicit_layer);
+}
+void FrameworkEnvironment::add_fake_explicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept {
+    TestLayerDetails fake_details{layer_manifest, json_name};
+    fake_details.is_fake = true;
+    add_layer_impl(fake_details, explicit_layer_folder, ManifestCategory::explicit_layer);
+}
+void FrameworkEnvironment::add_implicit_layer(TestLayerDetails layer_details) noexcept {
+    add_layer_impl(layer_details,
+                   layer_details.destination_folder == nullptr ? implicit_layer_folder : *layer_details.destination_folder,
+                   ManifestCategory::implicit_layer);
+}
+void FrameworkEnvironment::add_explicit_layer(TestLayerDetails layer_details) noexcept {
+    add_layer_impl(layer_details,
+                   layer_details.destination_folder == nullptr ? explicit_layer_folder : *layer_details.destination_folder,
+                   ManifestCategory::explicit_layer);
 }
 
-void FrameworkEnvironment::add_layer_impl(ManifestLayer& layer_manifest, const std::string& json_name,
-                                          fs::FolderManager& folder_manager, ManifestCategory category) {
-    // We have a special case for any of the wrap objects layers so get the string to the path
-    std::string wrap_layer = fs::fixup_backslashes_in_path(fs::path(TEST_LAYER_WRAP_OBJECTS)).str();
-
-    // Strip off ending
-#if defined(WIN32)
-    std::string library_extension = ".dll";
-#elif defined(__APPLE__)
-    std::string library_extension = ".dylib";
-#else
-    std::string library_extension = ".so";
-#endif
-    size_t index = 0;
-    index = wrap_layer.find(library_extension, index);
-    assert(index != std::string::npos);
-    wrap_layer.replace(index, library_extension.size(), "");
-
-    for (auto& layer : layer_manifest.layers) {
+void FrameworkEnvironment::add_layer_impl(TestLayerDetails layer_details, fs::FolderManager& folder_manager,
+                                          ManifestCategory category) {
+    for (auto& layer : layer_details.layer_manifest.layers) {
         size_t cur_layer_index = layers.size();
         if (!layer.lib_path.str().empty()) {
             std::string new_layer_name = layer.name + "_" + std::to_string(cur_layer_index) + "_" + layer.lib_path.filename().str();
@@ -236,16 +264,18 @@ void FrameworkEnvironment::add_layer_impl(ManifestLayer& layer_manifest, const s
 
             // Don't load the layer binary if using any of the wrap objects layers, since it doesn't export the same interface
             // functions
-            if (fs::fixup_backslashes_in_path(layer.lib_path).str().rfind(wrap_layer) != 0) {
+            if (!layer_details.is_fake &&
+                layer.lib_path.stem().str().find(fs::path(TEST_LAYER_WRAP_OBJECTS).stem().str()) == std::string::npos) {
                 layers.push_back(TestLayerHandle(new_layer_location));
                 layers.back().reset_layer();
             }
             layer.lib_path = new_layer_location;
         }
     }
-
-    auto layer_loc = folder_manager.write(json_name, layer_manifest);
-    platform_shim->add_manifest(category, layer_loc);
+    if (layer_details.add_to_regular_search_paths) {
+        auto layer_loc = folder_manager.write_manifest(layer_details.json_name, layer_details.layer_manifest.get_manifest_str());
+        platform_shim->add_manifest(category, layer_loc);
+    }
 }
 
 TestICD& FrameworkEnvironment::get_test_icd(int index) noexcept { return icds[index].get_test_icd(); }

@@ -23,6 +23,7 @@
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/gop_structure.h"
+#include "av1/encoder/pass2_strategy.h"
 
 #if CONFIG_FRAME_PARALLEL_ENCODE
 // This function sets gf_group->frame_parallel_level for LF_UPDATE frames based

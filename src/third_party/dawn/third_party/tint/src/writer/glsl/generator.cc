@@ -14,6 +14,8 @@
 
 #include "src/writer/glsl/generator.h"
 
+#include "src/transform/binding_remapper.h"
+#include "src/transform/combine_samplers.h"
 #include "src/transform/glsl.h"
 #include "src/writer/glsl/generator_impl.h"
 
@@ -21,17 +23,26 @@ namespace tint {
 namespace writer {
 namespace glsl {
 
+Options::Options() = default;
+Options::~Options() = default;
+Options::Options(const Options&) = default;
+
 Result::Result() = default;
 Result::~Result() = default;
 Result::Result(const Result&) = default;
 
 Result Generate(const Program* program,
-                const Options&,
+                const Options& options,
                 const std::string& entry_point) {
   Result result;
 
   // Run the GLSL sanitizer.
   transform::DataMap data;
+  data.Add<transform::BindingRemapper::Remappings>(options.binding_points,
+                                                   options.access_controls,
+                                                   options.allow_collisions);
+  data.Add<transform::CombineSamplers::BindingInfo>(
+      options.binding_map, options.placeholder_binding_point);
   data.Add<transform::Glsl::Config>(entry_point);
   transform::Glsl sanitizer;
   auto output = sanitizer.Run(program, data);
@@ -42,7 +53,7 @@ Result Generate(const Program* program,
   }
 
   // Generate the GLSL code.
-  auto impl = std::make_unique<GeneratorImpl>(&output.program);
+  auto impl = std::make_unique<GeneratorImpl>(&output.program, options.version);
   result.success = impl->Generate();
   result.error = impl->error();
   result.glsl = impl->result();

@@ -25,20 +25,20 @@ namespace Eigen {
   * For example, a hyperplane in a plane is a line; a hyperplane in 3-space is a plane.
   *
   * \tparam Scalar_ the scalar type, i.e., the type of the coefficients
-  * \tparam _AmbientDim the dimension of the ambient space, can be a compile time value or Dynamic.
-  *             Notice that the dimension of the hyperplane is _AmbientDim-1.
+  * \tparam AmbientDim_ the dimension of the ambient space, can be a compile time value or Dynamic.
+  *             Notice that the dimension of the hyperplane is AmbientDim_-1.
   *
   * This class represents an hyperplane as the zero set of the implicit equation
   * \f$ n \cdot x + d = 0 \f$ where \f$ n \f$ is a unit normal vector of the plane (linear part)
   * and \f$ d \f$ is the distance (offset) to the origin.
   */
-template <typename Scalar_, int _AmbientDim, int Options_>
+template <typename Scalar_, int AmbientDim_, int Options_>
 class Hyperplane
 {
 public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar_,_AmbientDim==Dynamic ? Dynamic : _AmbientDim+1)
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar_,AmbientDim_==Dynamic ? Dynamic : AmbientDim_+1)
   enum {
-    AmbientDimAtCompileTime = _AmbientDim,
+    AmbientDimAtCompileTime = AmbientDim_,
     Options = Options_
   };
   typedef Scalar_ Scalar;

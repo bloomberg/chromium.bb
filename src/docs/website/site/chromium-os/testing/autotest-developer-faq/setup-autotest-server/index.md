@@ -22,10 +22,10 @@ server hostname.
 You need to set up SSH for the apache user (www-data) in its home directory.
 Follow the directions for ssh key setup, using the directory /var/www/.ssh and
 make sure everything is owned by www-data with user only permissions:
-<https://sites.google.com/a/chromium.org/dev/chromium-os/testing/autotest-developer-faq/ssh-test-keys-setup>
+<https://www.chromium.org/chromium-os/testing/autotest-developer-faq/ssh-test-keys-setup>
 
 If you ran the setup script please proceed to the Autotest Server Usage Guide:
-<https://sites.google.com/a/chromium.org/dev/chromium-os/testing/autotest-developer-faq/autotest-server-usage>
+<https://www.chromium.org/chromium-os/testing/autotest-developer-faq/autotest-server-usage>
 
 You will want to re-run this script or the below steps for changes that are not
 easily testable in the production server. Generally this will not be needed for
@@ -232,4 +232,4 @@ setup_dev_autotest.sh.\*\*\***
 ## Using the Autotest Server
 
 Now that everything is setup, please proceed to the Autotest Server Usage Guide
-<https://sites.google.com/a/chromium.org/dev/chromium-os/testing/autotest-developer-faq/autotest-server-usage>
+<https://www.chromium.org/chromium-os/testing/autotest-developer-faq/autotest-server-usage>

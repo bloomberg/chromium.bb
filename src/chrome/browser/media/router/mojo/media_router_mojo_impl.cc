@@ -195,8 +195,8 @@ void MediaRouterMojoImpl::RouteResponseReceived(
     std::string error = base::StringPrintf(
         "Mismatch in OffTheRecord status: request = %d, response = %d",
         is_off_the_record, media_route->is_off_the_record());
-    result = RouteRequestResult::FromError(
-        error, RouteRequestResult::OFF_THE_RECORD_MISMATCH);
+    result = RouteRequestResult::FromError(error,
+                                           RouteRequestResult::ROUTE_NOT_FOUND);
   } else {
     result = RouteRequestResult::FromSuccess(*media_route, presentation_id);
     OnRouteAdded(provider_id, *media_route);
@@ -725,7 +725,7 @@ void MediaRouterMojoImpl::OnProviderConnectionError(
 
 void MediaRouterMojoImpl::GetLogger(
     mojo::PendingReceiver<mojom::Logger> receiver) {
-  logger_.Bind(std::move(receiver));
+  logger_.BindReceiver(std::move(receiver));
 }
 
 LoggerImpl* MediaRouterMojoImpl::GetLogger() {
@@ -911,8 +911,8 @@ void MediaRouterMojoImpl::CreateRouteWithSelectedDesktop(
     return;
   }
 
-  // TODO(jrw): This is kind of ridiculous.  The PendingStreamRequest struct
-  // only exists to store the arguments given to
+  // TODO(crbug.com/1291738): This is kind of ridiculous.  The
+  // PendingStreamRequest struct only exists to store the arguments given to
   // DesktopStreamsRegistry::RegisterStream() so they can later be passed back
   // to DesktopStreamsRegistry::RequestMediaForStreamId(), but the saved values
   // aren't actually needed in RequestMediaForStreamId() except to prove that

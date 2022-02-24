@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/protocol/session_specifics.pb.h"
-#include "components/sync_sessions/switches.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_session_tracker.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
@@ -43,12 +42,7 @@ bool IsSessionRestoreInProgress(SyncSessionsClient* sessions_client) {
 }
 
 bool IsWindowSyncable(const SyncedWindowDelegate& window_delegate) {
-  // TODO(crbug.com/1039234): remove the feature toggle once the logic is rolled
-  // out.
-  return window_delegate.ShouldSync() && window_delegate.HasWindow() &&
-         (window_delegate.GetTabCount() ||
-          base::FeatureList::IsEnabled(
-              switches::kSyncConsiderEmptyWindowsSyncable));
+  return window_delegate.ShouldSync() && window_delegate.HasWindow();
 }
 
 // On Android, it's possible to not have any tabbed windows when only custom
@@ -337,10 +331,13 @@ void LocalSessionEventHandlerImpl::OnLocalTabModified(
     return;
   }
 
-  sessions::SerializedNavigationEntry current;
-  modified_tab->GetSerializedNavigationAtIndex(
-      modified_tab->GetCurrentEntryIndex(), &current);
-  delegate_->TrackLocalNavigationId(current.timestamp(), current.unique_id());
+  // Don't track empty tabs.
+  if (modified_tab->GetEntryCount() != 0) {
+    sessions::SerializedNavigationEntry current;
+    modified_tab->GetSerializedNavigationAtIndex(
+        modified_tab->GetCurrentEntryIndex(), &current);
+    delegate_->TrackLocalNavigationId(current.timestamp(), current.unique_id());
+  }
 
   std::unique_ptr<WriteBatch> batch = delegate_->CreateLocalSessionWriteBatch();
   AssociateTab(modified_tab, batch.get());

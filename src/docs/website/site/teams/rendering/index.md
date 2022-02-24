@@ -143,8 +143,6 @@ Anders Hartvoll Ruud andruud - Google Oslo - Style, Houdini
 
 Chris Harrelson (lead) chrishtr - Google - San Francisco - All areas
 
-Christian Biesinger - cbiesinger - Google Madison - Layout
-
 David Baron - dbaron - Google Maryland (Remote) - Paint
 
 David Grogan - dgrogan Google San Francisco Layout, Tables, Flexbox
@@ -183,6 +181,8 @@ Rune Lillesveen (lead) futhark - Google Oslo - Style
 
 Stefan Zager szager - Google San Francisco - Paint
 
+Steinar H. Gunderson sesse - Google Oslo - Style
+
 Stephen Chenney schenney - Google Atlanta - Paint
 
 Vladimir Levin vmpstr - Google Waterloo - Async
@@ -192,8 +192,6 @@ Xianzhu Wang wangxianzhu - Google Mountain View - Paint
 Xiaocheng Hu xiaochengh - Google Mountain View - Style
 
 Yoshifumi Inoue yosin - Google Tokyo - Layout
-
-Yu Han yuzhehan - Google San Francisco - DOM
 
 ## Contributing
 

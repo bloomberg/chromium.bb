@@ -1,9 +1,9 @@
 #version 310 es
-precision mediump float;
 
 struct Inner {
   int x;
 };
+
 struct S {
   ivec3 a;
   int b;
@@ -19,7 +19,7 @@ struct S {
   Inner l[4];
 };
 
-layout (binding = 0) uniform S_1 {
+layout(binding = 0) uniform S_1 {
   ivec3 a;
   int b;
   uvec3 c;
@@ -34,7 +34,6 @@ layout (binding = 0) uniform S_1 {
   Inner l[4];
 } s;
 
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void tint_symbol() {
   ivec3 a = s.a;
   int b = s.b;
@@ -48,10 +47,10 @@ void tint_symbol() {
   mat3x2 j = s.j;
   Inner k = s.k;
   Inner l[4] = s.l;
-  return;
 }
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void main() {
   tint_symbol();
+  return;
 }
-
-

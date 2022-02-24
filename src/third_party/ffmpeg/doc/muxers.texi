@@ -799,6 +799,7 @@ were recently referenced in the playlist. Default value is 1, meaning segments o
 Set output format options using a :-separated list of key=value
 parameters. Values containing @code{:} special characters must be
 escaped.
+@code{hls_ts_options} is deprecated, use hls_segment_options instead of it..
 
 @item hls_start_number_source
 Start the playlist sequence number (@code{#EXT-X-MEDIA-SEQUENCE}) according to the specified source.
@@ -919,6 +920,10 @@ This example will create a directory hierarchy 2016/02/15 (if any of them do not
 produce the playlist, @file{out.m3u8}, and segment files:
 @file{2016/02/15/file-20160215-1455569023.ts}, @file{2016/02/15/file-20160215-1455569024.ts}, etc.
 
+@item hls_segment_options @var{options_list}
+Set output format options using a :-separated list of key=value
+parameters. Values containing @code{:} special characters must be
+escaped.
 
 @item hls_key_info_file @var{key_info_file}
 Use the information in @var{key_info_file} for segment encryption. The first
@@ -1562,6 +1567,15 @@ A safe size for most use cases should be about 50kB per hour of video.
 
 Note that cues are only written if the output is seekable and this option will
 have no effect if it is not.
+
+@item cues_to_front
+If set, the muxer will write the index at the beginning of the file
+by shifting the main data if necessary. This can be combined with
+reserve_index_space in which case the data is only shifted if
+the initially reserved space turns out to be insufficient.
+
+This option is ignored if the output is unseekable.
+
 @item default_mode
 This option controls how the FlagDefault of the output tracks will be set.
 It influences which tracks players should play by default. The default mode

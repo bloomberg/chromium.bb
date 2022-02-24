@@ -26,7 +26,7 @@
 
 // Version number for shader translation API.
 // It is incremented every time the API changes.
-#define ANGLE_SH_VERSION 269
+#define ANGLE_SH_VERSION 270
 
 enum ShShaderSpec
 {
@@ -415,6 +415,7 @@ struct ShBuiltInResources
     int OES_sample_variables;
     int EXT_clip_cull_distance;
     int EXT_primitive_bounding_box;
+    int OES_primitive_bounding_box;
     int ANGLE_base_vertex_base_instance_shader_builtin;
     int ANDROID_extension_pack_es31a;
 
@@ -824,8 +825,9 @@ enum class SpecializationConstantId : uint32_t
     SurfaceRotation     = 1,
     DrawableWidth       = 2,
     DrawableHeight      = 3,
+    Dither              = 4,
 
-    InvalidEnum = 4,
+    InvalidEnum = 5,
     EnumCount   = InvalidEnum,
 };
 
@@ -850,9 +852,19 @@ enum class SpecConstUsage : uint32_t
     YFlip               = 1,
     Rotation            = 2,
     DrawableSize        = 3,
+    Dither              = 4,
 
-    InvalidEnum = 4,
+    InvalidEnum = 5,
     EnumCount   = InvalidEnum,
+};
+
+enum ColorAttachmentDitherControl
+{
+    // See comments in ContextVk::updateDither and EmulateDithering.cpp
+    kDitherControlNoDither   = 0,
+    kDitherControlDither4444 = 1,
+    kDitherControlDither5551 = 2,
+    kDitherControlDither565  = 3,
 };
 
 // Interface block name containing the aggregate default uniforms
@@ -895,6 +907,9 @@ extern const char kCoverageMaskEnabledConstName[];
 
 // Specialization constant to emulate rasterizer discard.
 extern const char kRasterizerDiscardEnabledConstName[];
+
+// Specialization constant to enable depth write in fragment shaders.
+extern const char kDepthWriteEnabledConstName[];
 }  // namespace mtl
 
 // For backends that use glslang (the Vulkan shader compiler), i.e. Vulkan and Metal, call these to

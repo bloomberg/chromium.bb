@@ -80,6 +80,8 @@ class CodeDataContainer : public HeapObject {
   // the full value is not guaranteed.
   inline PtrComprCageBase code_cage_base() const;
   inline void set_code_cage_base(Address code_cage_base);
+  inline PtrComprCageBase code_cage_base(RelaxedLoadTag) const;
+  inline void set_code_cage_base(Address code_cage_base, RelaxedStoreTag);
 
   // Cached value of code().InstructionStart().
   // Available only when V8_EXTERNAL_CODE_SPACE is defined.
@@ -202,7 +204,7 @@ class CodeDataContainer : public HeapObject {
 
   // When V8_EXTERNAL_CODE_SPACE is enabled the flags field contains cached
   // values of some flags of the from the respective Code object.
-  DECL_INT_ACCESSORS(flags)
+  DECL_RELAXED_UINT16_ACCESSORS(flags)
 
   friend Factory;
   friend FactoryBase<Factory>;
@@ -460,13 +462,6 @@ class Code : public HeapObject {
   inline bool marked_for_deoptimization() const;
   inline void set_marked_for_deoptimization(bool flag);
 
-  // [deoptimization_count]: If CodeKindCanDeoptimize(kind). In turboprop we
-  // retain the deoptimized code on soft deopts for a certain number of soft
-  // deopts. This field keeps track of the number of deoptimizations we have
-  // seen so far.
-  inline int deoptimization_count() const;
-  inline void increment_deoptimization_count();
-
   // [embedded_objects_cleared]: If CodeKindIsOptimizedJSFunction(kind), tells
   // whether the embedded objects in the code marked for deoptimization were
   // cleared. Note that embedded_objects_cleared() implies
@@ -484,12 +479,6 @@ class Code : public HeapObject {
   // uncaught if both this and is_exception_caught is set.
   // Use GetBuiltinCatchPrediction to access this.
   inline void set_is_promise_rejection(bool flag);
-
-  // [is_exception_caught]: For kind BUILTIN tells whether the
-  // exception thrown by the code will be caught internally or
-  // uncaught if both this and is_promise_rejection is set.
-  // Use GetBuiltinCatchPrediction to access this.
-  inline void set_is_exception_caught(bool flag);
 
   // [is_off_heap_trampoline]: For kind BUILTIN tells whether
   // this is a trampoline to an off-heap builtin.
@@ -704,12 +693,10 @@ class Code : public HeapObject {
   V(EmbeddedObjectsClearedField, bool, 1, _)      \
   V(DeoptAlreadyCountedField, bool, 1, _)         \
   V(CanHaveWeakObjectsField, bool, 1, _)          \
-  V(IsPromiseRejectionField, bool, 1, _)          \
-  V(IsExceptionCaughtField, bool, 1, _)           \
-  V(DeoptCountField, int, 4, _)
+  V(IsPromiseRejectionField, bool, 1, _)
   DEFINE_BIT_FIELDS(CODE_KIND_SPECIFIC_FLAGS_BIT_FIELDS)
 #undef CODE_KIND_SPECIFIC_FLAGS_BIT_FIELDS
-  STATIC_ASSERT(CODE_KIND_SPECIFIC_FLAGS_BIT_FIELDS_Ranges::kBitsCount == 10);
+  STATIC_ASSERT(CODE_KIND_SPECIFIC_FLAGS_BIT_FIELDS_Ranges::kBitsCount == 5);
   STATIC_ASSERT(CODE_KIND_SPECIFIC_FLAGS_BIT_FIELDS_Ranges::kBitsCount <=
                 FIELD_SIZE(CodeDataContainer::kKindSpecificFlagsOffset) *
                     kBitsPerByte);
@@ -729,7 +716,6 @@ class Code : public HeapObject {
   inline CodeDataContainer GCSafeCodeDataContainer(AcquireLoadTag) const;
 
   bool is_promise_rejection() const;
-  bool is_exception_caught() const;
 
   enum BytecodeToPCPosition {
     kPcAtStartOfBytecode,

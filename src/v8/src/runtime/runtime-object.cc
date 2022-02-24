@@ -77,7 +77,7 @@ MaybeHandle<Object> Runtime::HasProperty(Isolate* isolate,
                              Object);
 
   // Lookup the {name} on {receiver}.
-  Maybe<bool> maybe = JSReceiver::HasProperty(receiver, name);
+  Maybe<bool> maybe = JSReceiver::HasProperty(isolate, receiver, name);
   if (maybe.IsNothing()) return MaybeHandle<Object>();
   return maybe.FromJust() ? ReadOnlyRoots(isolate).true_value_handle()
                           : ReadOnlyRoots(isolate).false_value_handle();
@@ -117,7 +117,7 @@ void GeneralizeAllTransitionsToFieldAsMutable(Isolate* isolate, Handle<Map> map,
   // Collect all outgoing field transitions.
   {
     DisallowGarbageCollection no_gc;
-    TransitionsAccessor transitions(isolate, *map, &no_gc);
+    TransitionsAccessor transitions(isolate, *map);
     transitions.ForEachTransitionTo(
         *name,
         [&](Map target) {
@@ -478,6 +478,43 @@ RUNTIME_FUNCTION(Runtime_AddDictionaryProperty) {
   return *value;
 }
 
+RUNTIME_FUNCTION(Runtime_AddPrivateBrand) {
+  HandleScope scope(isolate);
+  DCHECK_EQ(args.length(), 4);
+  CONVERT_ARG_HANDLE_CHECKED(JSReceiver, receiver, 0);
+  CONVERT_ARG_HANDLE_CHECKED(Symbol, brand, 1);
+  CONVERT_ARG_HANDLE_CHECKED(Context, context, 2);
+  CONVERT_ARG_HANDLE_CHECKED(Smi, depth_smi, 3);
+  DCHECK(brand->is_private_name());
+
+  LookupIterator it(isolate, receiver, brand, LookupIterator::OWN);
+
+  if (it.IsFound()) {
+    THROW_NEW_ERROR_RETURN_FAILURE(
+        isolate,
+        NewTypeError(MessageTemplate::kInvalidPrivateBrandReinitialization,
+                     brand));
+  }
+
+  PropertyAttributes attributes =
+      static_cast<PropertyAttributes>(DONT_ENUM | DONT_DELETE | READ_ONLY);
+
+  // Look for the context in |depth| in the context chain to store it
+  // in the instance with the brand variable as key, which is needed by
+  // the debugger for retrieving names of private methods.
+  int depth = depth_smi->value();
+  DCHECK_GE(depth, 0);
+  for (; depth > 0; depth--) {
+    context =
+        handle(Context::cast(context->get(Context::PREVIOUS_INDEX)), isolate);
+  }
+  DCHECK_EQ(context->scope_info().scope_type(), ScopeType::CLASS_SCOPE);
+  CHECK(Object::AddDataProperty(&it, context, attributes, Just(kDontThrow),
+                                StoreOrigin::kMaybeKeyed)
+            .FromJust());
+  return *receiver;
+}
+
 // ES6 section 19.1.2.2 Object.create ( O [ , Properties ] )
 // TODO(verwaest): Support the common cases with precached map directly in
 // an Object.create stub.
@@ -589,8 +626,9 @@ RUNTIME_FUNCTION(Runtime_InternalSetPrototype) {
   DCHECK_EQ(2, args.length());
   CONVERT_ARG_HANDLE_CHECKED(JSReceiver, obj, 0);
   CONVERT_ARG_HANDLE_CHECKED(Object, prototype, 1);
-  MAYBE_RETURN(JSReceiver::SetPrototype(obj, prototype, false, kThrowOnError),
-               ReadOnlyRoots(isolate).exception());
+  MAYBE_RETURN(
+      JSReceiver::SetPrototype(isolate, obj, prototype, false, kThrowOnError),
+      ReadOnlyRoots(isolate).exception());
   return *obj;
 }
 
@@ -715,8 +753,9 @@ RUNTIME_FUNCTION(Runtime_JSReceiverSetPrototypeOfThrow) {
   CONVERT_ARG_HANDLE_CHECKED(JSReceiver, object, 0);
   CONVERT_ARG_HANDLE_CHECKED(Object, proto, 1);
 
-  MAYBE_RETURN(JSReceiver::SetPrototype(object, proto, true, kThrowOnError),
-               ReadOnlyRoots(isolate).exception());
+  MAYBE_RETURN(
+      JSReceiver::SetPrototype(isolate, object, proto, true, kThrowOnError),
+      ReadOnlyRoots(isolate).exception());
 
   return *object;
 }
@@ -729,7 +768,7 @@ RUNTIME_FUNCTION(Runtime_JSReceiverSetPrototypeOfDontThrow) {
   CONVERT_ARG_HANDLE_CHECKED(Object, proto, 1);
 
   Maybe<bool> result =
-      JSReceiver::SetPrototype(object, proto, true, kDontThrow);
+      JSReceiver::SetPrototype(isolate, object, proto, true, kDontThrow);
   MAYBE_RETURN(result, ReadOnlyRoots(isolate).exception());
   return *isolate->factory()->ToBoolean(result.FromJust());
 }
@@ -967,7 +1006,7 @@ RUNTIME_FUNCTION(Runtime_HasProperty) {
                                      Object::ToName(isolate, key));
 
   // Lookup the {name} on {receiver}.
-  Maybe<bool> maybe = JSReceiver::HasProperty(receiver, name);
+  Maybe<bool> maybe = JSReceiver::HasProperty(isolate, receiver, name);
   if (maybe.IsNothing()) return ReadOnlyRoots(isolate).exception();
   return isolate->heap()->ToBoolean(maybe.FromJust());
 }
@@ -1156,7 +1195,7 @@ RUNTIME_FUNCTION(Runtime_CollectTypeProfile) {
   Handle<String> type = Object::TypeOf(isolate, value);
   if (value->IsJSReceiver()) {
     Handle<JSReceiver> object = Handle<JSReceiver>::cast(value);
-    type = JSReceiver::GetConstructorName(object);
+    type = JSReceiver::GetConstructorName(isolate, object);
   } else if (value->IsNull(isolate)) {
     // typeof(null) is object. But it's more user-friendly to annotate
     // null as type "null".

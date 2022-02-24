@@ -139,7 +139,7 @@ class SPQR : public SparseSolverBase<SPQR<MatrixType_> >
       {
         RealScalar max2Norm = 0.0;
         for (int j = 0; j < mat.cols(); j++) max2Norm = numext::maxi(max2Norm, mat.col(j).norm());
-        if(max2Norm==RealScalar(0))
+        if(numext::is_exactly_zero(max2Norm))
           max2Norm = RealScalar(1);
         pivotThreshold = 20 * (mat.rows() + mat.cols()) * max2Norm * NumTraits<RealScalar>::epsilon();
       }

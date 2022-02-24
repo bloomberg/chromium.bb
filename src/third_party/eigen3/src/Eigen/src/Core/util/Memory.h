@@ -296,7 +296,7 @@ template<typename T> EIGEN_DEVICE_FUNC inline void destruct_elements_of_array(T 
   */
 template<typename T> EIGEN_DEVICE_FUNC inline T* construct_elements_of_array(T *ptr, std::size_t size)
 {
-  std::size_t i;
+  std::size_t i=0;
   EIGEN_TRY
   {
       for (i = 0; i < size; ++i) ::new (ptr + i) T;
@@ -307,7 +307,6 @@ template<typename T> EIGEN_DEVICE_FUNC inline T* construct_elements_of_array(T *
     destruct_elements_of_array(ptr, i);
     EIGEN_THROW;
   }
-  return NULL;
 }
 
 /*****************************************************************************

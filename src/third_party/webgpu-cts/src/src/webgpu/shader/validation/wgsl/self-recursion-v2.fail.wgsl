@@ -16,7 +16,7 @@ fn a() -> i32 {
   return b();
 }
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   var v : i32 = a();
   return;

@@ -71,8 +71,7 @@ The following arguments are supported:
                         "h264main, "h264high", "vp8" and "vp9".
                         H264 Baseline is selected if unspecified.
   --num_temporal_layers the number of temporal layers of the encoded
-                        bitstream. Only used in --codec=vp9 and
-                        h264(baseline)|h264main|h264high currently.
+                        bitstream. A default value is 1.
   --num_spatial_layers  the number of spatial layers of the encoded
                         bitstream. Only used in --codec=vp9 currently.
                         Spatial SVC encoding is applied only in
@@ -271,7 +270,8 @@ class VideoEncoderTest : public ::testing::Test {
             config.output_profile, visible_rect, config.num_temporal_layers));
         break;
       case VideoCodec::kVP8:
-        bitstream_processors.emplace_back(new VP8Validator(visible_rect));
+        bitstream_processors.emplace_back(
+            new VP8Validator(visible_rect, config.num_temporal_layers));
         break;
       case VideoCodec::kVP9:
         bitstream_processors.emplace_back(new VP9Validator(
@@ -425,8 +425,6 @@ TEST_F(VideoEncoderTest, ForceKeyFrame) {
 
   // It is expected that our hw encoders don't produce key frames in a short
   // time span like a few hundred frames.
-  // TODO(hiroh): This might be wrong on some platforms. Needs to update.
-  // Encode the first frame, this should always be a keyframe.
   encoder->EncodeUntil(VideoEncoder::kBitstreamReady, 1u);
   EXPECT_TRUE(encoder->WaitUntilIdle());
   EXPECT_EQ(encoder->GetEventCount(VideoEncoder::kKeyFrame), 1u);
@@ -436,20 +434,11 @@ TEST_F(VideoEncoderTest, ForceKeyFrame) {
   // Check if there is no keyframe except the first frame.
   EXPECT_EQ(encoder->GetEventCount(VideoEncoder::kKeyFrame), 1u);
   encoder->ForceKeyFrame();
-  // Since kFrameReleased and kBitstreamReady events are asynchronous, the
-  // number of bitstreams being processed is unknown. We check keyframe request
-  // is applied by seeing if there is a keyframe in a few frames after
-  // requested. 10 is arbitrarily chosen.
-  constexpr size_t kKeyFrameRequestWindow = 10u;
-  encoder->EncodeUntil(VideoEncoder::kBitstreamReady,
-                       std::min(middle_frame + kKeyFrameRequestWindow,
-                                config.num_frames_to_encode));
-  EXPECT_TRUE(encoder->WaitUntilIdle());
-  EXPECT_EQ(encoder->GetEventCount(VideoEncoder::kKeyFrame), 2u);
 
   // Encode until the end of stream.
   encoder->Encode();
   EXPECT_TRUE(encoder->WaitForFlushDone());
+  // Check if there are two key frames, first frame and one on ForceKeyFrame().
   EXPECT_EQ(encoder->GetEventCount(VideoEncoder::kKeyFrame), 2u);
   EXPECT_EQ(encoder->GetFlushDoneCount(), 1u);
   EXPECT_EQ(encoder->GetFrameReleasedCount(), config.num_frames_to_encode);
@@ -767,7 +756,7 @@ TEST_F(VideoEncoderTest, DeactivateAndActivateSpatialLayers) {
       [](VideoBitrateAllocation bitrate_allocation,
          size_t deactivate_sid) -> VideoBitrateAllocation {
     for (size_t i = 0; i < VideoBitrateAllocation::kMaxTemporalLayers; ++i)
-      bitrate_allocation.SetBitrate(deactivate_sid, i, 0);
+      bitrate_allocation.SetBitrate(deactivate_sid, i, 0u);
     return bitrate_allocation;
   };
 

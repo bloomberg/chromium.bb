@@ -28,6 +28,37 @@
 namespace tint {
 namespace transform {
 
+/// @param program the program to get an output WGSL string from
+/// @returns the output program as a WGSL string, or an error string if the
+/// program is not valid.
+inline std::string str(const Program& program) {
+  diag::Formatter::Style style;
+  style.print_newline_at_end = false;
+
+  if (!program.IsValid()) {
+    return diag::Formatter(style).format(program.Diagnostics());
+  }
+
+  writer::wgsl::Options options;
+  auto result = writer::wgsl::Generate(&program, options);
+  if (!result.success) {
+    return "WGSL writer failed:\n" + result.error;
+  }
+
+  auto res = result.wgsl;
+  if (res.empty()) {
+    return res;
+  }
+  // The WGSL sometimes has two trailing newlines. Strip them
+  while (res.back() == '\n') {
+    res.pop_back();
+  }
+  if (res.empty()) {
+    return res;
+  }
+  return "\n" + res + "\n";
+}
+
 /// Helper class for testing transforms
 template <typename BASE>
 class TransformTestBase : public BASE {
@@ -81,35 +112,30 @@ class TransformTestBase : public BASE {
     return manager.Run(&program, data);
   }
 
+  /// @param program the input program
+  /// @param data the optional DataMap to pass to Transform::Run()
+  /// @return true if the transform should be run for the given input.
+  template <typename TRANSFORM>
+  bool ShouldRun(Program&& program, const DataMap& data = {}) {
+    EXPECT_TRUE(program.IsValid()) << program.Diagnostics().str();
+    return TRANSFORM().ShouldRun(&program, data);
+  }
+
+  /// @param in the input WGSL source
+  /// @param data the optional DataMap to pass to Transform::Run()
+  /// @return true if the transform should be run for the given input.
+  template <typename TRANSFORM>
+  bool ShouldRun(std::string in, const DataMap& data = {}) {
+    auto file = std::make_unique<Source::File>("test", in);
+    auto program = reader::wgsl::Parse(file.get());
+    return ShouldRun<TRANSFORM>(std::move(program), data);
+  }
+
   /// @param output the output of the transform
   /// @returns the output program as a WGSL string, or an error string if the
   /// program is not valid.
   std::string str(const Output& output) {
-    diag::Formatter::Style style;
-    style.print_newline_at_end = false;
-
-    if (!output.program.IsValid()) {
-      return diag::Formatter(style).format(output.program.Diagnostics());
-    }
-
-    writer::wgsl::Options options;
-    auto result = writer::wgsl::Generate(&output.program, options);
-    if (!result.success) {
-      return "WGSL writer failed:\n" + result.error;
-    }
-
-    auto res = result.wgsl;
-    if (res.empty()) {
-      return res;
-    }
-    // The WGSL sometimes has two trailing newlines. Strip them
-    while (res.back() == '\n') {
-      res.pop_back();
-    }
-    if (res.empty()) {
-      return res;
-    }
-    return "\n" + res + "\n";
+    return transform::str(output.program);
   }
 
  private:

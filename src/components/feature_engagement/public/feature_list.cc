@@ -58,6 +58,8 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHFeatureNotificationGuideIncognitoTabHelpBubbleFeature,
     &kIPHFeatureNotificationGuideVoiceSearchHelpBubbleFeature,
     &kIPHFeatureNotificationGuideNTPSuggestionCardHelpBubbleFeature,
+    &kIPHFeatureNotificationGuideIncognitoTabUsedFeature,
+    &kIPHFeatureNotificationGuideVoiceSearchUsedFeature,
     &kIPHFeedCardMenuFeature,
     &kIPHGenericAlwaysTriggerHelpUiFeature,
     &kIPHHomepagePromoCardFeature,
@@ -68,7 +70,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHKeyboardAccessoryPasswordFillingFeature,
     &kIPHKeyboardAccessoryPaymentFillingFeature,
     &kIPHKeyboardAccessoryPaymentOfferFeature,
-    &kIPHKeyboardAccessoryPaymentVirtualCardFeature,
+    &kIPHLowUserEngagementDetectorFeature,
     &kIPHMicToolbarFeature,
     &kIPHNewTabPageHomeButtonFeature,
     &kIPHPageInfoFeature,
@@ -116,6 +118,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHReadingListMessagesFeature,
     &kIPHBadgedTranslateManualTriggerFeature,
     &kIPHDiscoverFeedHeaderFeature,
+    &kIPHDefaultSiteViewFeature,
 #endif  // BUILDFLAG(IS_IOS)
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
@@ -123,6 +126,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHFocusHelpBubbleScreenReaderPromoFeature,
     &kIPHGMCCastStartStopFeature,
     &kIPHLiveCaptionFeature,
+    &kIPHTabAudioMutingFeature,
     &kIPHPasswordsAccountStorageFeature,
     &kIPHReadingListDiscoveryFeature,
     &kIPHReadingListEntryPointFeature,
@@ -137,6 +141,13 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHDesktopSharedHighlightingFeature,
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+    &kIPHAutofillVirtualCardSuggestionFeature,
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
+        // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) ||
+        // BUILDFLAG(IS_FUCHSIA)
 };
 }  // namespace
 

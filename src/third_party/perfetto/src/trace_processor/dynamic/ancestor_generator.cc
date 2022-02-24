@@ -111,7 +111,8 @@ util::Status AncestorGenerator::ValidateConstraints(
 
 std::unique_ptr<Table> AncestorGenerator::ComputeTable(
     const std::vector<Constraint>& cs,
-    const std::vector<Order>&) {
+    const std::vector<Order>&,
+    const BitVector&) {
   uint32_t column = GetConstraintColumnIndex(type_, context_);
   auto it = std::find_if(cs.begin(), cs.end(), [column](const Constraint& c) {
     return c.col_idx == column && c.op == FilterOp::kEq;
@@ -139,11 +140,11 @@ std::unique_ptr<Table> AncestorGenerator::ComputeTable(
           slice_table.FilterToRowMap({slice_table.stack_id().eq(start_id)});
 
       for (auto id_it = slice_ids.IterateRows(); id_it; id_it.Next()) {
-        auto slice_id = slice_table.id()[id_it.row()];
+        auto slice_id = slice_table.id()[id_it.index()];
 
         auto ancestors = GetAncestorSlices(slice_table, slice_id);
         for (auto row_it = ancestors->IterateRows(); row_it; row_it.Next()) {
-          result.Insert(row_it.row());
+          result.Insert(row_it.index());
         }
       }
 

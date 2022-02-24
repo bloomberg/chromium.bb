@@ -24,7 +24,7 @@ namespace {
 
 // Inherit from Transform so we have access to protected methods
 struct CreateASTTypeForTest : public testing::Test, public Transform {
-  Output Run(const Program*, const DataMap&) override { return {}; }
+  Output Run(const Program*, const DataMap&) const override { return {}; }
 
   const ast::Type* create(
       std::function<sem::Type*(ProgramBuilder&)> create_sem_type) {
@@ -82,7 +82,7 @@ TEST_F(CreateASTTypeForTest, ArrayImplicitStride) {
   });
   ASSERT_TRUE(arr->Is<ast::Array>());
   ASSERT_TRUE(arr->As<ast::Array>()->type->Is<ast::F32>());
-  ASSERT_EQ(arr->As<ast::Array>()->decorations.size(), 0u);
+  ASSERT_EQ(arr->As<ast::Array>()->attributes.size(), 0u);
 
   auto* size = arr->As<ast::Array>()->count->As<ast::IntLiteralExpression>();
   ASSERT_NE(size, nullptr);
@@ -95,14 +95,11 @@ TEST_F(CreateASTTypeForTest, ArrayNonImplicitStride) {
   });
   ASSERT_TRUE(arr->Is<ast::Array>());
   ASSERT_TRUE(arr->As<ast::Array>()->type->Is<ast::F32>());
-  ASSERT_EQ(arr->As<ast::Array>()->decorations.size(), 1u);
-  ASSERT_TRUE(
-      arr->As<ast::Array>()->decorations[0]->Is<ast::StrideDecoration>());
-  ASSERT_EQ(arr->As<ast::Array>()
-                ->decorations[0]
-                ->As<ast::StrideDecoration>()
-                ->stride,
-            64u);
+  ASSERT_EQ(arr->As<ast::Array>()->attributes.size(), 1u);
+  ASSERT_TRUE(arr->As<ast::Array>()->attributes[0]->Is<ast::StrideAttribute>());
+  ASSERT_EQ(
+      arr->As<ast::Array>()->attributes[0]->As<ast::StrideAttribute>()->stride,
+      64u);
 
   auto* size = arr->As<ast::Array>()->count->As<ast::IntLiteralExpression>();
   ASSERT_NE(size, nullptr);

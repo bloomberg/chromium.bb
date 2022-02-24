@@ -13,7 +13,7 @@ setlocal
 IF "%~nx0"=="update_depot_tools.bat" (
   COPY /Y "%~dp0update_depot_tools.bat" "%TEMP%\update_depot_tools_tmp.bat" >nul
   if errorlevel 1 goto :EOF
-  REM Use call/exit to avoid leaving an orphaned window title.
+  :: Use call/exit to avoid leaving an orphaned window title.
   call "%TEMP%\update_depot_tools_tmp.bat" "%~dp0" %*
   exit /b
 )

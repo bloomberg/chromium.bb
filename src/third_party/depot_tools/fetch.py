@@ -56,7 +56,6 @@ class Checkout(object):
 
   def exists(self):
     """Check does this checkout already exist on desired location"""
-    pass
 
   def init(self):
     pass
@@ -67,18 +66,18 @@ class Checkout(object):
       return ''
     if return_stdout:
       return subprocess.check_output(cmd, **kwargs).decode()
-    else:
-      try:
-        subprocess.check_call(cmd, **kwargs)
-      except subprocess.CalledProcessError as e:
-        # If the subprocess failed, it likely emitted its own distress message
-        # already - don't scroll that message off the screen with a stack trace
-        # from this program as well. Emit a terse message and bail out here;
-        # otherwise a later step will try doing more work and may hide the
-        # subprocess message.
-        print('Subprocess failed with return code %d.' % e.returncode)
-        sys.exit(e.returncode)
-      return ''
+
+    try:
+      subprocess.check_call(cmd, **kwargs)
+    except subprocess.CalledProcessError as e:
+      # If the subprocess failed, it likely emitted its own distress message
+      # already - don't scroll that message off the screen with a stack trace
+      # from this program as well. Emit a terse message and bail out here;
+      # otherwise a later step will try doing more work and may hide the
+      # subprocess message.
+      print('Subprocess failed with return code %d.' % e.returncode)
+      sys.exit(e.returncode)
+    return ''
 
 
 class GclientCheckout(Checkout):
@@ -94,7 +93,7 @@ class GclientCheckout(Checkout):
     try:
       gclient_root = self.run_gclient('root', return_stdout=True).strip()
       return (os.path.exists(os.path.join(gclient_root, '.gclient')) or
-              os.path.exists(os.path.join(os.getcwd(), self.root)))
+              os.path.exists(os.path.join(os.getcwd(), self.root, '.git')))
     except subprocess.CalledProcessError:
       pass
     return os.path.exists(os.path.join(os.getcwd(), self.root))

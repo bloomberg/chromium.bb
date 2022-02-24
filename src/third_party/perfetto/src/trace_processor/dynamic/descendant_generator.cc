@@ -96,7 +96,8 @@ util::Status DescendantGenerator::ValidateConstraints(
 
 std::unique_ptr<Table> DescendantGenerator::ComputeTable(
     const std::vector<Constraint>& cs,
-    const std::vector<Order>&) {
+    const std::vector<Order>&,
+    const BitVector&) {
   const auto& slices = context_->storage->slice_table();
 
   uint32_t column = GetConstraintColumnIndex(context_);
@@ -115,11 +116,11 @@ std::unique_ptr<Table> DescendantGenerator::ComputeTable(
       auto slice_ids = slices.FilterToRowMap({slices.stack_id().eq(start_id)});
 
       for (auto id_it = slice_ids.IterateRows(); id_it; id_it.Next()) {
-        auto slice_id = slices.id()[id_it.row()];
+        auto slice_id = slices.id()[id_it.index()];
 
         auto descendants = GetDescendantSlices(slices, slice_id);
         for (auto row_it = descendants->IterateRows(); row_it; row_it.Next()) {
-          result.Insert(row_it.row());
+          result.Insert(row_it.index());
         }
       }
 

@@ -1,9 +1,9 @@
 /*
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (c) 2015-2021 Google, Inc.
- * Modifications Copyright (C) 2020-2021 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (c) 2015-2022 Google, Inc.
+ * Modifications Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -334,8 +334,12 @@ TEST_F(VkLayerTest, ImagelessFramebufferRenderPassBeginImageViewMismatchTests) {
     renderPassAttachmentBeginInfo.pAttachments = &imageView2;
     framebufferAttachmentImageInfo.height = framebufferAttachmentImageInfo.height / 2;
     framebufferAttachmentImageInfo.width = framebufferAttachmentImageInfo.width / 2;
+    framebufferCreateInfo.height = framebufferCreateInfo.height / 2;
+    framebufferCreateInfo.width = framebufferCreateInfo.width / 2;
     vk::CreateFramebuffer(m_device->device(), &framebufferCreateInfo, nullptr, &framebuffer);
     renderPassBeginInfo.framebuffer = framebuffer;
+    renderPassBeginInfo.renderArea.extent.height = renderPassBeginInfo.renderArea.extent.height / 2;
+    renderPassBeginInfo.renderArea.extent.width = renderPassBeginInfo.renderArea.extent.width / 2;
     vk::BeginCommandBuffer(m_commandBuffer->handle(), &cmd_begin_info);
     m_errorMonitor->ExpectSuccess();
     vk::CmdBeginRenderPass(m_commandBuffer->handle(), &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -1520,11 +1524,10 @@ TEST_F(VkLayerTest, FramebufferAttachmentImageInfoPNext) {
     TEST_DESCRIPTION("Begin render pass with missing framebuffer attachment");
 
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (!DeviceExtensionSupported(VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME)) {
+    if (!AddRequiredDeviceExtensions(VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME)) {
         printf("%s test requires VK_KHR_imageless_framebuffer, not available.  Skipping.\n", kSkipPrefix);
         return;
     }
-    m_device_extension_names.push_back(VK_KHR_IMAGELESS_FRAMEBUFFER_EXTENSION_NAME);
     ASSERT_NO_FATAL_FAILURE(InitState());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
 
@@ -1650,6 +1653,8 @@ TEST_F(VkLayerTest, RenderPassCreateFragmentDensityMapReferenceToInvalidAttachme
     TEST_DESCRIPTION(
         "Test creating a framebuffer with fragment density map reference to an attachment with layer count different from 1");
 
+    SetTargetApiVersion(VK_API_VERSION_1_0);
+
     if (!InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
         return;
     }
@@ -1660,6 +1665,12 @@ TEST_F(VkLayerTest, RenderPassCreateFragmentDensityMapReferenceToInvalidAttachme
         printf("%s %s extension not supported skipped.\n", kSkipPrefix, VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME);
         return;
     }
+
+    if (DeviceValidationVersion() >= VK_API_VERSION_1_1) {
+        printf("%s Tests requires a Vulkan version prior to 1.1, skipping test\n", kSkipPrefix);
+        return;
+    }
+
     m_device_extension_names.push_back(VK_EXT_FRAGMENT_DENSITY_MAP_EXTENSION_NAME);
     VkPhysicalDeviceFragmentDensityMapFeaturesEXT fdm_features = LvlInitStruct<VkPhysicalDeviceFragmentDensityMapFeaturesEXT>();
     VkPhysicalDeviceFeatures2 features2 = LvlInitStruct<VkPhysicalDeviceFeatures2>(&fdm_features);

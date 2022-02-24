@@ -23,6 +23,7 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.app.omnibox.OmniboxPedalDelegateImpl;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.share.ShareDelegate;
@@ -158,11 +159,11 @@ public class ShareIntentTest {
                     mockActivity.getTabContentManagerSupplier(),
                     mockActivity.getOverviewModeBehaviorSupplier(),
                     mockActivity::getSnackbarManager, mockActivity.getActivityType(),
-                    mockActivity::isInOverviewMode, mockActivity::shouldShowOverviewPageOnStart,
-                    mockActivity::isWarmOnResume,
+                    mockActivity::isInOverviewMode, mockActivity::isWarmOnResume,
                     /* appMenuDelegate= */ mockActivity,
                     /* statusBarColorProvider= */ mockActivity,
-                    mockActivity.getIntentRequestTracker(), new OneshotSupplierImpl<>(), false);
+                    mockActivity.getIntentRequestTracker(), new OneshotSupplierImpl<>(),
+                    new OmniboxPedalDelegateImpl(mockActivity), false);
 
             ShareHelper.setLastShareComponentName(
                     null, new ComponentName("test.package", "test.activity"));

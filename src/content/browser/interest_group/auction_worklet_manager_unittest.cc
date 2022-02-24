@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "content/browser/interest_group/auction_process_manager.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
@@ -126,6 +127,7 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
           bidder_worklet_non_shared_params,
       const absl::optional<std::string>& auction_signals_json,
       const absl::optional<std::string>& per_buyer_signals_json,
+      const absl::optional<base::TimeDelta> per_buyer_timeout,
       const url::Origin& seller_origin,
       auction_worklet::mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
       base::Time auction_start_time,
@@ -148,12 +150,15 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
                  const GURL& browser_signal_render_url,
                  double browser_signal_bid,
                  const url::Origin& browser_signal_seller_origin,
+                 uint32_t browser_signal_data_version,
+                 bool browser_signal_has_data_version,
                  ReportWinCallback report_win_callback) override {
     NOTREACHED();
   }
 
   void ConnectDevToolsAgent(
-      mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent) override {
+      mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent)
+      override {
     ADD_FAILURE()
         << "ConnectDevToolsAgent should not be called on MockBidderWorklet";
   }
@@ -276,12 +281,15 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
                     const GURL& browser_signal_render_url,
                     double browser_signal_bid,
                     double browser_signal_desirability,
+                    uint32_t browser_signal_data_version,
+                    bool browser_signal_has_data_version,
                     ReportResultCallback report_result_callback) override {
     NOTREACHED();
   }
 
   void ConnectDevToolsAgent(
-      mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent) override {
+      mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent)
+      override {
     ADD_FAILURE()
         << "ConnectDevToolsAgent should not be called on MockSellerWorklet";
   }

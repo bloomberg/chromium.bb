@@ -309,7 +309,8 @@ static AV1LfMTInfo *get_lf_job_info(AV1LfSync *lf_sync) {
 static INLINE void thread_loop_filter_rows(
     const YV12_BUFFER_CONFIG *const frame_buffer, AV1_COMMON *const cm,
     struct macroblockd_plane *planes, MACROBLOCKD *xd, int mi_row, int plane,
-    int dir, int is_realtime, AV1LfSync *const lf_sync) {
+    int dir, int is_realtime, AV1LfSync *const lf_sync,
+    AV1_DEBLOCKING_PARAMETERS *params_buf, TX_SIZE *tx_buf) {
   const int sb_cols =
       ALIGN_POWER_OF_TWO(cm->mi_params.mi_cols, MAX_MIB_SIZE_LOG2) >>
       MAX_MIB_SIZE_LOG2;
@@ -324,13 +325,20 @@ static INLINE void thread_loop_filter_rows(
                            mi_row, mi_col, plane, plane + 1);
 #if CONFIG_AV1_HIGHBITDEPTH
       (void)is_realtime;
+      (void)params_buf;
+      (void)tx_buf;
       av1_filter_block_plane_vert(cm, xd, plane, &planes[plane], mi_row,
                                   mi_col);
 #else
       if (is_realtime) {
-        av1_filter_block_plane_vert_rt(cm, xd, plane, &planes[plane], mi_row,
-                                       mi_col);
-
+        if (plane == AOM_PLANE_Y) {
+          av1_filter_block_plane_vert_rt(cm, xd, plane, &planes[plane], mi_row,
+                                         mi_col, params_buf, tx_buf);
+        } else {
+          av1_filter_block_plane_vert_rt_chroma(cm, xd, plane, &planes[plane],
+                                                mi_row, mi_col, params_buf,
+                                                tx_buf);
+        }
       } else {
         av1_filter_block_plane_vert(cm, xd, plane, &planes[plane], mi_row,
                                     mi_col);
@@ -355,12 +363,20 @@ static INLINE void thread_loop_filter_rows(
                            mi_row, mi_col, plane, plane + 1);
 #if CONFIG_AV1_HIGHBITDEPTH
       (void)is_realtime;
+      (void)params_buf;
+      (void)tx_buf;
       av1_filter_block_plane_horz(cm, xd, plane, &planes[plane], mi_row,
                                   mi_col);
 #else
       if (is_realtime) {
-        av1_filter_block_plane_horz_rt(cm, xd, plane, &planes[plane], mi_row,
-                                       mi_col);
+        if (plane == AOM_PLANE_Y) {
+          av1_filter_block_plane_horz_rt(cm, xd, plane, &planes[plane], mi_row,
+                                         mi_col, params_buf, tx_buf);
+        } else {
+          av1_filter_block_plane_horz_rt_chroma(cm, xd, plane, &planes[plane],
+                                                mi_row, mi_col, params_buf,
+                                                tx_buf);
+        }
       } else {
         av1_filter_block_plane_horz(cm, xd, plane, &planes[plane], mi_row,
                                     mi_col);
@@ -376,11 +392,11 @@ static int loop_filter_row_worker(void *arg1, void *arg2) {
   LFWorkerData *const lf_data = (LFWorkerData *)arg2;
   AV1LfMTInfo *cur_job_info;
   while ((cur_job_info = get_lf_job_info(lf_sync)) != NULL) {
-    const int is_realtime = cur_job_info->is_realtime && !cur_job_info->plane;
+    const int is_realtime = cur_job_info->is_realtime;
     thread_loop_filter_rows(lf_data->frame_buffer, lf_data->cm, lf_data->planes,
                             lf_data->xd, cur_job_info->mi_row,
                             cur_job_info->plane, cur_job_info->dir, is_realtime,
-                            lf_sync);
+                            lf_sync, lf_data->params_buf, lf_data->tx_buf);
   }
   return 1;
 }
@@ -443,12 +459,16 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   // Filter top rows of all planes first, in case the output can be partially
   // reconstructed row by row.
   int mi_row, plane, dir;
+
+  AV1_DEBLOCKING_PARAMETERS params_buf[MAX_MIB_SIZE];
+  TX_SIZE tx_buf[MAX_MIB_SIZE];
   for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
     for (plane = 0; plane < 3; ++plane) {
       if (!planes_to_lf[plane]) continue;
       for (dir = 0; dir < 2; ++dir) {
         thread_loop_filter_rows(frame, cm, xd->plane, xd, mi_row, plane, dir,
-                                is_realtime && !plane, /*lf_sync=*/NULL);
+                                is_realtime, /*lf_sync=*/NULL, params_buf,
+                                tx_buf);
       }
     }
   }

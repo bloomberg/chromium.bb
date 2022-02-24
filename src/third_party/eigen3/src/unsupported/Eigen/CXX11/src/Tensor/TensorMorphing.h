@@ -30,7 +30,7 @@ struct traits<TensorReshapingOp<NewDimensions, XprType> > : public traits<XprTyp
   typedef typename XprTraits::StorageKind StorageKind;
   typedef typename XprTraits::Index Index;
   typedef typename XprType::Nested Nested;
-  typedef typename remove_reference<Nested>::type _Nested;
+  typedef typename remove_reference<Nested>::type Nested_;
   static const int NumDimensions = array_size<NewDimensions>::value;
   static const int Layout = XprTraits::Layout;
   typedef typename XprTraits::PointerType PointerType;
@@ -109,13 +109,9 @@ struct TensorEvaluator<const TensorReshapingOp<NewDimensions, ArgType>, Device>
 
   // clang-format off
   static const ReshapingKind kind =
-#if defined(EIGEN_HAS_INDEX_LIST)
         (NumOutputDims == 2 && internal::index_statically_eq<NewDimensions>(/*index=*/0, /*value=*/1)) ? OneByN
       : (NumOutputDims == 2 && internal::index_statically_eq<NewDimensions>(/*index=*/1, /*value=*/1)) ? NByOne
       : Runtime;
-#else
-        Runtime;
-#endif
   // clang-format on
 
   enum {
@@ -317,7 +313,7 @@ struct traits<TensorSlicingOp<StartIndices, Sizes, XprType> > : public traits<Xp
   typedef typename XprTraits::StorageKind StorageKind;
   typedef typename XprTraits::Index Index;
   typedef typename XprType::Nested Nested;
-  typedef typename remove_reference<Nested>::type _Nested;
+  typedef typename remove_reference<Nested>::type Nested_;
   static const int NumDimensions = array_size<StartIndices>::value;
   static const int Layout = XprTraits::Layout;
   typedef typename XprTraits::PointerType PointerType;
@@ -813,7 +809,7 @@ struct traits<TensorStridingSlicingOp<StartIndices, StopIndices, Strides, XprTyp
   typedef typename XprTraits::StorageKind StorageKind;
   typedef typename XprTraits::Index Index;
   typedef typename XprType::Nested Nested;
-  typedef typename remove_reference<Nested>::type _Nested;
+  typedef typename remove_reference<Nested>::type Nested_;
   static const int NumDimensions = array_size<StartIndices>::value;
   static const int Layout = XprTraits::Layout;
   typedef typename XprTraits::PointerType PointerType;

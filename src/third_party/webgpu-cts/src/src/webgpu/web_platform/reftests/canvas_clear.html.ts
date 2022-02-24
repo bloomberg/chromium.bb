@@ -1,27 +1,32 @@
 import { runRefTest } from './gpu_ref_test.js';
 
 runRefTest(async t => {
-  const canvas = document.getElementById('gpucanvas') as HTMLCanvasElement;
+  function draw(canvasId: string, format: GPUTextureFormat) {
+    const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
 
-  const ctx = (canvas.getContext('webgpu') as unknown) as GPUCanvasContext;
-  ctx.configure({
-    device: t.device,
-    format: 'bgra8unorm',
-  });
+    const ctx = (canvas.getContext('webgpu') as unknown) as GPUCanvasContext;
+    ctx.configure({
+      device: t.device,
+      format,
+    });
 
-  const colorAttachment = ctx.getCurrentTexture();
-  const colorAttachmentView = colorAttachment.createView();
+    const colorAttachment = ctx.getCurrentTexture();
+    const colorAttachmentView = colorAttachment.createView();
 
-  const encoder = t.device.createCommandEncoder();
-  const pass = encoder.beginRenderPass({
-    colorAttachments: [
-      {
-        view: colorAttachmentView,
-        loadValue: { r: 0.0, g: 1.0, b: 0.0, a: 1.0 },
-        storeOp: 'store',
-      },
-    ],
-  });
-  pass.endPass();
-  t.device.queue.submit([encoder.finish()]);
+    const encoder = t.device.createCommandEncoder();
+    const pass = encoder.beginRenderPass({
+      colorAttachments: [
+        {
+          view: colorAttachmentView,
+          loadValue: { r: 0.4, g: 1.0, b: 0.0, a: 1.0 },
+          storeOp: 'store',
+        },
+      ],
+    });
+    pass.endPass();
+    t.device.queue.submit([encoder.finish()]);
+  }
+
+  draw('cvs0', 'bgra8unorm');
+  draw('cvs1', 'rgba8unorm');
 });

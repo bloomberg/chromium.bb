@@ -26,6 +26,8 @@
  * https://developer.apple.com/library/ios/documentation/AudioVideo/Conceptual/HLS_Sample_Encryption
  */
 
+#include "libavutil/channel_layout.h"
+
 #include "hls_sample_encryption.h"
 
 #include "libavcodec/adts_header.h"
@@ -129,7 +131,7 @@ int ff_hls_senc_parse_audio_setup_info(AVStream *st, HLSAudioSetupInfo *info)
 
         st->codecpar->sample_rate = eac3_sample_rate_tab[fscod];
 
-        st->codecpar->channel_layout = avpriv_ac3_channel_layout_tab[acmod];
+        st->codecpar->channel_layout = ff_ac3_channel_layout_tab[acmod];
         if (lfeon)
             st->codecpar->channel_layout |= AV_CH_LOW_FREQUENCY;
 
@@ -268,7 +270,7 @@ static int get_next_adts_frame(CodecParserContext *ctx, AudioFrame *frame)
 
     /* Find next sync word 0xFFF */
     while (ctx->buf_ptr < ctx->buf_end - 1) {
-        if (*ctx->buf_ptr == 0xFF && *(ctx->buf_ptr + 1) & 0xF0 == 0xF0)
+        if (*ctx->buf_ptr == 0xFF && (*(ctx->buf_ptr + 1) & 0xF0) == 0xF0)
             break;
         ctx->buf_ptr++;
     }

@@ -659,7 +659,7 @@ TEST_P(PeerConnectionSignalingTest,
   // Process all currently pending messages by waiting for a posted task to run.
   bool checkpoint_reached = false;
   rtc::Thread::Current()->PostTask(
-      RTC_FROM_HERE, [&checkpoint_reached] { checkpoint_reached = true; });
+      [&checkpoint_reached] { checkpoint_reached = true; });
   EXPECT_TRUE_WAIT(checkpoint_reached, kWaitTimeout);
   // If resolving the observer was pending, it must now have been called.
   EXPECT_TRUE(observer->called());
@@ -1135,7 +1135,7 @@ TEST_F(PeerConnectionSignalingUnifiedPlanTest,
             // operation executed immediately.
             RTC_DCHECK(!pc->GetTransceivers()[0]->mid().has_value());
             pc->SetLocalDescription(
-                new rtc::RefCountedObject<MockSetSessionDescriptionObserver>(),
+                rtc::make_ref_counted<MockSetSessionDescriptionObserver>(),
                 desc);
             EXPECT_TRUE(pc->GetTransceivers()[0]->mid().has_value());
           });

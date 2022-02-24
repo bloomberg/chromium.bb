@@ -32,6 +32,7 @@ namespace wasm {
 class InterpretedFrame;
 class NativeModule;
 class WasmCode;
+struct WasmFunction;
 struct WasmGlobal;
 struct WasmModule;
 struct WasmTag;
@@ -202,12 +203,10 @@ class WasmTableObject
                                      uint32_t count);
 
   // TODO(wasm): Unify these three methods into one.
-  static void UpdateDispatchTables(Isolate* isolate,
-                                   Handle<WasmTableObject> table,
+  static void UpdateDispatchTables(Isolate* isolate, WasmTableObject table,
                                    int entry_index,
-                                   const wasm::FunctionSig* sig,
-                                   Handle<WasmInstanceObject> target_instance,
-                                   int target_func_index);
+                                   const wasm::WasmFunction* func,
+                                   WasmInstanceObject target_instance);
   static void UpdateDispatchTables(Isolate* isolate,
                                    Handle<WasmTableObject> table,
                                    int entry_index,
@@ -335,7 +334,7 @@ class V8_EXPORT_PRIVATE WasmInstanceObject : public JSObject {
   DECL_OPTIONAL_ACCESSORS(wasm_internal_functions, FixedArray)
   DECL_ACCESSORS(managed_object_maps, FixedArray)
   DECL_ACCESSORS(feedback_vectors, FixedArray)
-  DECL_PRIMITIVE_ACCESSORS(memory_start, byte*)
+  DECL_SANDBOXED_POINTER_ACCESSORS(memory_start, byte*)
   DECL_PRIMITIVE_ACCESSORS(memory_size, size_t)
   DECL_PRIMITIVE_ACCESSORS(isolate_root, Address)
   DECL_PRIMITIVE_ACCESSORS(stack_limit_address, Address)
@@ -632,6 +631,8 @@ class WasmJSFunction : public JSFunction {
   // that lifetime of the signature is hence directly coupled to the zone.
   const wasm::FunctionSig* GetSignature(Zone* zone);
   bool MatchesSignature(const wasm::FunctionSig* sig);
+  // Special typing rule for imports wrapped by a Suspender.
+  bool MatchesSignatureForSuspend(const wasm::FunctionSig* sig);
 
   DECL_CAST(WasmJSFunction)
   OBJECT_CONSTRUCTORS(WasmJSFunction, JSFunction);
@@ -782,6 +783,16 @@ class WasmCapiFunctionData
   TQ_OBJECT_CONSTRUCTORS(WasmCapiFunctionData)
 };
 
+class WasmOnFulfilledData
+    : public TorqueGeneratedWasmOnFulfilledData<WasmOnFulfilledData,
+                                                HeapObject> {
+ public:
+  using BodyDescriptor =
+      FlexibleBodyDescriptor<WasmOnFulfilledData::kStartOfStrongFieldsOffset>;
+  DECL_PRINTER(WasmOnFulfilledData)
+  TQ_OBJECT_CONSTRUCTORS(WasmOnFulfilledData)
+};
+
 class WasmScript : public AllStatic {
  public:
   // Position used for storing "on entry" breakpoints (a.k.a. instrumentation
@@ -800,7 +811,7 @@ class WasmScript : public AllStatic {
   // Set an "on entry" breakpoint (a.k.a. instrumentation breakpoint) inside
   // the given module. This will affect all live and future instances of the
   // module.
-  V8_EXPORT_PRIVATE static void SetBreakPointOnEntry(
+  V8_EXPORT_PRIVATE static void SetInstrumentationBreakpoint(
       Handle<Script>, Handle<BreakPoint> break_point);
 
   // Set a breakpoint on first breakable position of the given function index
@@ -967,12 +978,15 @@ class WasmArray : public TorqueGeneratedWasmArray<WasmArray, WasmObject> {
   inline uint32_t element_offset(uint32_t index);
   inline Address ElementAddress(uint32_t index);
 
-  static int MaxLength(const wasm::ArrayType* type) {
+  static int MaxLength(uint32_t element_size_bytes) {
     // The total object size must fit into a Smi, for filler objects. To make
     // the behavior of Wasm programs independent from the Smi configuration,
     // we hard-code the smaller of the two supported ranges.
-    int element_shift = type->element_type().element_size_log2();
-    return (SmiTagging<4>::kSmiMaxValue - kHeaderSize) >> element_shift;
+    return (SmiTagging<4>::kSmiMaxValue - kHeaderSize) / element_size_bytes;
+  }
+
+  static int MaxLength(const wasm::ArrayType* type) {
+    return MaxLength(type->element_type().element_size_bytes());
   }
 
   static inline void EncodeElementSizeInMap(int element_size, Map map);
@@ -992,8 +1006,8 @@ class WasmContinuationObject
  public:
   static Handle<WasmContinuationObject> New(
       Isolate* isolate, std::unique_ptr<wasm::StackMemory> stack);
-  static Handle<WasmContinuationObject> New(Isolate* isolate,
-                                            WasmContinuationObject parent);
+  static Handle<WasmContinuationObject> New(
+      Isolate* isolate, Handle<WasmContinuationObject> parent);
 
   DECL_PRINTER(WasmContinuationObject)
 
@@ -1002,7 +1016,7 @@ class WasmContinuationObject
  private:
   static Handle<WasmContinuationObject> New(
       Isolate* isolate, std::unique_ptr<wasm::StackMemory> stack,
-      HeapObject parent);
+      Handle<HeapObject> parent);
 
   TQ_OBJECT_CONSTRUCTORS(WasmContinuationObject)
 };
@@ -1029,9 +1043,6 @@ Handle<Map> CreateStructMap(Isolate* isolate, const WasmModule* module,
 Handle<Map> CreateArrayMap(Isolate* isolate, const WasmModule* module,
                            int array_index, MaybeHandle<Map> rtt_parent,
                            Handle<WasmInstanceObject> instance);
-Handle<Map> AllocateSubRtt(Isolate* isolate,
-                           Handle<WasmInstanceObject> instance, uint32_t type,
-                           Handle<Map> parent, WasmRttSubMode mode);
 
 bool TypecheckJSObject(Isolate* isolate, const WasmModule* module,
                        Handle<Object> value, ValueType expected,

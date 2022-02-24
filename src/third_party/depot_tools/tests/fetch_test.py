@@ -218,7 +218,7 @@ class TestCheckout(unittest.TestCase):
     exit_mock.assert_called_once()
 
   def test_run_return_as_value(self):
-    cmd = ['python', '-c', 'print("foo")']
+    cmd = [sys.executable, '-c', 'print("foo")']
 
     response = self.checkout.run(cmd, return_stdout=True)
     # we expect no response other than information about command
@@ -227,7 +227,7 @@ class TestCheckout(unittest.TestCase):
     self.assertEqual('foo', response.strip())
 
   def test_run_print_to_stdout(self):
-    cmd = ['python', '-c', 'print("foo")']
+    cmd = [sys.executable, '-c', 'print("foo")']
 
     # mocked version of sys.std* is not passed to subprocess, use temp files
     with self._temporary_file() as stdout:

@@ -95,6 +95,7 @@
 #include "api/jsep.h"
 #include "api/media_stream_interface.h"
 #include "api/media_types.h"
+#include "api/metronome/metronome.h"
 #include "api/neteq/neteq_factory.h"
 #include "api/network_state_predictor.h"
 #include "api/packet_socket_factory.h"
@@ -173,12 +174,6 @@ enum class SdpSemantics {
   kPlanB_DEPRECATED,
   kPlanB [[deprecated]] = kPlanB_DEPRECATED,
   kUnifiedPlan,
-  // The default SdpSemantics value is about to change to kUnifiedPlan. During a
-  // short transition period, kNotSpecified is used to ensure clients that don't
-  // set SdpSemantics are aware of the change by CHECK-crashing.
-  // TODO(https://crbug.com/webrtc/11121): When the default has changed to
-  // kUnifiedPlan, delete kNotSpecified.
-  kNotSpecified
 };
 
 class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
@@ -629,34 +624,26 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
     // cost.
     absl::optional<rtc::AdapterType> network_preference;
 
-    // Configure the SDP semantics used by this PeerConnection. Note that the
-    // WebRTC 1.0 specification requires kUnifiedPlan semantics. The
-    // RtpTransceiver API is only available with kUnifiedPlan semantics.
+    // Configure the SDP semantics used by this PeerConnection. By default, this
+    // is Unified Plan which is compliant to the WebRTC 1.0 specification. It is
+    // possible to overrwite this to the deprecated Plan B SDP format, but note
+    // that kPlanB will be deleted at some future date, see
+    // https://crbug.com/webrtc/13528.
     //
-    // kUnifiedPlan will cause PeerConnection to create offers and answers with
-    // multiple m= sections where each m= section maps to one RtpSender and one
-    // RtpReceiver (an RtpTransceiver), either both audio or both video. This
-    // will also cause PeerConnection to ignore all but the first a=ssrc lines
-    // that form a Plan B stream.
+    // kUnifiedPlan will cause the PeerConnection to create offers and answers
+    // with multiple m= sections where each m= section maps to one RtpSender and
+    // one RtpReceiver (an RtpTransceiver), either both audio or both video.
+    // This will also cause the PeerConnection to ignore all but the first
+    // a=ssrc lines that form a Plan B streams (if the PeerConnection is given
+    // Plan B SDP to process).
     //
-    // kPlanB will cause PeerConnection to create offers and answers with at
+    // kPlanB will cause the PeerConnection to create offers and answers with at
     // most one audio and one video m= section with multiple RtpSenders and
     // RtpReceivers specified as multiple a=ssrc lines within the section. This
     // will also cause PeerConnection to ignore all but the first m= section of
-    // the same media type.
-    //
-    // For users who have to interwork with legacy WebRTC implementations,
-    // it is possible to specify kPlanB until the code is finally removed
-    // (https://crbug.com/webrtc/13528).
-    //
-    // For all other users, specify kUnifiedPlan.
-    //
-    // The default SdpSemantics value is about to change to kUnifiedPlan. During
-    // a short transition period, kNotSpecified is used to ensure clients that
-    // don't set SdpSemantics are aware of the change by CHECK-crashing.
-    // TODO(https://crbug.com/webrtc/11121): When the default has changed to
-    // kUnifiedPlan, delete kNotSpecified.
-    SdpSemantics sdp_semantics = SdpSemantics::kNotSpecified;
+    // the same media type (if the PeerConnection is given Unified Plan SDP to
+    // process).
+    SdpSemantics sdp_semantics = SdpSemantics::kUnifiedPlan;
 
     // TODO(bugs.webrtc.org/9891) - Move to crypto_options or remove.
     // Actively reset the SRTP parameters whenever the DTLS transports
@@ -837,22 +824,6 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
       rtc::scoped_refptr<RtpSenderInterface> sender) {
     RTC_CHECK_NOTREACHED();
     return RTCError();
-  }
-
-  // Legacy API for removing a track from the PeerConnection.
-  // Returns true on success.
-  // TODO(bugs.webrtc.org/9534): Replace with signature that returns RTCError.
-  ABSL_DEPRECATED("Use RemoveTrackOrError")
-  virtual bool RemoveTrack(RtpSenderInterface* sender) {
-    return RemoveTrackOrError(rtc::scoped_refptr<RtpSenderInterface>(sender))
-        .ok();
-  }
-
-  // Old name for the new API. Will be removed when clients are updated.
-  ABSL_DEPRECATED("Use RemoveTrackOrError")
-  virtual RTCError RemoveTrackNew(
-      rtc::scoped_refptr<RtpSenderInterface> sender) {
-    return RemoveTrackOrError(sender);
   }
 
   // AddTransceiver creates a new RtpTransceiver and adds it to the set of
@@ -1449,6 +1420,7 @@ struct RTC_EXPORT PeerConnectionFactoryDependencies final {
   rtc::Thread* network_thread = nullptr;
   rtc::Thread* worker_thread = nullptr;
   rtc::Thread* signaling_thread = nullptr;
+  rtc::SocketFactory* socket_factory = nullptr;
   std::unique_ptr<TaskQueueFactory> task_queue_factory;
   std::unique_ptr<cricket::MediaEngineInterface> media_engine;
   std::unique_ptr<CallFactoryInterface> call_factory;
@@ -1466,6 +1438,7 @@ struct RTC_EXPORT PeerConnectionFactoryDependencies final {
   std::unique_ptr<WebRtcKeyValueConfig> trials;
   std::unique_ptr<RtpTransportControllerSendFactoryInterface>
       transport_controller_send_factory;
+  std::unique_ptr<Metronome> metronome;
 };
 
 // PeerConnectionFactoryInterface is the factory interface used for creating
@@ -1639,7 +1612,8 @@ inline constexpr absl::string_view PeerConnectionInterface::AsString(
     case SignalingState::kClosed:
       return "closed";
   }
-  RTC_CHECK_NOTREACHED();
+  // This cannot happen.
+  // Not using "RTC_CHECK_NOTREACHED()" because AsString() is constexpr.
   return "";
 }
 
@@ -1654,7 +1628,8 @@ inline constexpr absl::string_view PeerConnectionInterface::AsString(
     case IceGatheringState::kIceGatheringComplete:
       return "complete";
   }
-  RTC_CHECK_NOTREACHED();
+  // This cannot happen.
+  // Not using "RTC_CHECK_NOTREACHED()" because AsString() is constexpr.
   return "";
 }
 
@@ -1675,7 +1650,8 @@ inline constexpr absl::string_view PeerConnectionInterface::AsString(
     case PeerConnectionState::kClosed:
       return "closed";
   }
-  RTC_CHECK_NOTREACHED();
+  // This cannot happen.
+  // Not using "RTC_CHECK_NOTREACHED()" because AsString() is constexpr.
   return "";
 }
 
@@ -1697,10 +1673,12 @@ inline constexpr absl::string_view PeerConnectionInterface::AsString(
     case kIceConnectionClosed:
       return "closed";
     case kIceConnectionMax:
-      RTC_CHECK_NOTREACHED();
+      // This cannot happen.
+      // Not using "RTC_CHECK_NOTREACHED()" because AsString() is constexpr.
       return "";
   }
-  RTC_CHECK_NOTREACHED();
+  // This cannot happen.
+  // Not using "RTC_CHECK_NOTREACHED()" because AsString() is constexpr.
   return "";
 }
 

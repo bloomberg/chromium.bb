@@ -22,6 +22,24 @@ namespace {
 
 using LoopToForLoopTest = TransformTest;
 
+TEST_F(LoopToForLoopTest, ShouldRunEmptyModule) {
+  auto* src = R"()";
+
+  EXPECT_FALSE(ShouldRun<LoopToForLoop>(src));
+}
+
+TEST_F(LoopToForLoopTest, ShouldRunHasForLoop) {
+  auto* src = R"(
+fn f() {
+  loop {
+    break;
+  }
+}
+)";
+
+  EXPECT_TRUE(ShouldRun<LoopToForLoop>(src));
+}
+
 TEST_F(LoopToForLoopTest, EmptyModule) {
   auto* src = "";
   auto* expect = "";
@@ -41,7 +59,7 @@ fn f() {
       break;
     }
 
-    ignore(123);
+    _ = 123;
 
     continuing {
       i = i + 1;
@@ -55,7 +73,7 @@ fn f() {
   var i : i32;
   i = 0;
   for(; !((i > 15)); i = (i + 1)) {
-    ignore(123);
+    _ = 123;
   }
 }
 )";
@@ -76,7 +94,7 @@ fn f() {
       break;
     }
 
-    ignore(123);
+    _ = 123;
 
     continuing {
       i = i + 1;
@@ -90,7 +108,7 @@ fn f() {
   var i : i32;
   i = 0;
   for(; (i < 15); i = (i + 1)) {
-    ignore(123);
+    _ = 123;
   }
 }
 )";
@@ -117,8 +135,8 @@ fn f() {
           break;
         }
 
-        ignore(i);
-        ignore(j);
+        _ = i;
+        _ = j;
 
         continuing {
           j = (j + 1u);
@@ -142,8 +160,8 @@ fn f() {
     {
       var j : u32 = 0u;
       for(; !((j >= N)); j = (j + 1u)) {
-        ignore(i);
-        ignore(j);
+        _ = i;
+        _ = j;
       }
     }
   }
@@ -162,10 +180,10 @@ fn f() {
   i = 0;
   loop {
     if ((i < 15)) {
-      ignore(i);
+      _ = i;
       break;
     }
-    ignore(123);
+    _ = 123;
 
     continuing {
       i = (i + 1);
@@ -189,10 +207,10 @@ fn f() {
   loop {
     if ((i < 15)) {
     } else {
-      ignore(i);
+      _ = i;
       break;
     }
-    ignore(123);
+    _ = 123;
 
     continuing {
       i = (i + 1);
@@ -217,7 +235,7 @@ fn f() {
     if ((i < 15)) {
       break;
     }
-    ignore(123);
+    _ = 123;
 
     continuing {
       if (false) {
@@ -243,11 +261,11 @@ fn f() {
     if ((i < 15)) {
       break;
     }
-    ignore(123);
+    _ = 123;
 
     continuing {
       i = (i + 1);
-      ignore(i);
+      _ = i;
     }
   }
 }

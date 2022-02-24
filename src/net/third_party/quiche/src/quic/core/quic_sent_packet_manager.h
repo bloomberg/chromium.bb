@@ -52,6 +52,12 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // the packet manager or connection as a result of these callbacks.
   class QUIC_EXPORT_PRIVATE DebugDelegate {
    public:
+    struct QUIC_EXPORT_PRIVATE SendParameters {
+      CongestionControlType congestion_control_type;
+      bool use_pacing;
+      QuicPacketCount initial_congestion_window;
+    };
+
     virtual ~DebugDelegate() {}
 
     // Called when a spurious retransmission is detected.
@@ -80,7 +86,12 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
                                            QuicByteCount /*old_cwnd*/,
                                            QuicByteCount /*new_cwnd*/) {}
 
+    virtual void OnAdjustBurstSize(int /*old_burst_size*/,
+                                   int /*new_burst_size*/) {}
+
     virtual void OnOvershootingDetected() {}
+
+    virtual void OnConfigProcessed(const SendParameters& /*parameters*/) {}
   };
 
   // Interface which gets callbacks from the QuicSentPacketManager when
@@ -622,8 +633,6 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // Maximum number of packets to send upon RTO.
   QuicPacketCount max_rto_packets_;
   // If true, send the TLP at 0.5 RTT.
-  // TODO(renjietang): remove it once quic_deprecate_tlpr flag is deprecated.
-  bool enable_half_rtt_tail_loss_probe_;
   bool using_pacing_;
   // If true, use the new RTO with loss based CWND reduction instead of the send
   // algorithms's OnRetransmissionTimeout to reduce the congestion window.

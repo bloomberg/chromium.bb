@@ -56,6 +56,23 @@ function CreateGrowableSharedArrayBuffer(byteLength, maxByteLength) {
   return new SharedArrayBuffer(byteLength, {maxByteLength: maxByteLength});
 }
 
+function IsBigIntTypedArray(ta) {
+  return (ta instanceof BigInt64Array) || (ta instanceof BigUint64Array);
+}
+
+function AllBigIntMatchedCtorCombinations(test) {
+  for (let targetCtor of ctors) {
+    for (let sourceCtor of ctors) {
+      if (IsBigIntTypedArray(new targetCtor()) !=
+          IsBigIntTypedArray(new sourceCtor())) {
+        // Can't mix BigInt and non-BigInt types.
+        continue;
+      }
+      test(targetCtor, sourceCtor);
+    }
+  }
+}
+
 function ReadDataFromBuffer(ab, ctor) {
   let result = [];
   const ta = new ctor(ab, 0, ab.byteLength / ctor.BYTES_PER_ELEMENT);
@@ -170,6 +187,20 @@ function LastIndexOfHelper(array, n, fromIndex) {
     return array.lastIndexOf(n);
   }
   return array.lastIndexOf(n, fromIndex);
+}
+
+function SetHelper(target, source, offset) {
+  if (target instanceof BigInt64Array || target instanceof BigUint64Array) {
+    const bigIntSource = [];
+    for (s of source) {
+      bigIntSource.push(BigInt(s));
+    }
+    source = bigIntSource;
+  }
+  if (offset == undefined) {
+    return target.set(source);
+  }
+  return target.set(source, offset);
 }
 
 function testDataViewMethodsUpToSize(view, bufferSize) {

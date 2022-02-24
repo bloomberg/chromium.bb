@@ -65,15 +65,15 @@ struct transform_construct_from_matrix;
 
 template<typename TransformType> struct transform_take_affine_part;
 
-template<typename Scalar_, int Dim_, int _Mode, int Options_>
-struct traits<Transform<Scalar_,Dim_,_Mode,Options_> >
+template<typename Scalar_, int Dim_, int Mode_, int Options_>
+struct traits<Transform<Scalar_,Dim_,Mode_,Options_> >
 {
   typedef Scalar_ Scalar;
   typedef Eigen::Index StorageIndex;
   typedef Dense StorageKind;
   enum {
     Dim1 = Dim_==Dynamic ? Dim_ : Dim_ + 1,
-    RowsAtCompileTime = _Mode==Projective ? Dim1 : Dim_,
+    RowsAtCompileTime = Mode_==Projective ? Dim1 : Dim_,
     ColsAtCompileTime = Dim1,
     MaxRowsAtCompileTime = RowsAtCompileTime,
     MaxColsAtCompileTime = ColsAtCompileTime,
@@ -93,7 +93,7 @@ template<int Mode> struct transform_make_affine;
   *
   * \tparam Scalar_ the scalar type, i.e., the type of the coefficients
   * \tparam Dim_ the dimension of the space
-  * \tparam _Mode the type of the transformation. Can be:
+  * \tparam Mode_ the type of the transformation. Can be:
   *              - #Affine: the transformation is stored as a (Dim+1)^2 matrix,
   *                         where the last row is assumed to be [0 ... 0 1].
   *              - #AffineCompact: the transformation is stored as a (Dim)x(Dim+1) matrix.
@@ -202,13 +202,13 @@ template<int Mode> struct transform_make_affine;
   *
   * \sa class Matrix, class Quaternion
   */
-template<typename Scalar_, int Dim_, int _Mode, int Options_>
+template<typename Scalar_, int Dim_, int Mode_, int Options_>
 class Transform
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar_,Dim_==Dynamic ? Dynamic : (Dim_+1)*(Dim_+1))
   enum {
-    Mode = _Mode,
+    Mode = Mode_,
     Options = Options_,
     Dim = Dim_,     ///< space dimension in which the transformation holds
     HDim = Dim_+1,  ///< size of a respective homogeneous vector

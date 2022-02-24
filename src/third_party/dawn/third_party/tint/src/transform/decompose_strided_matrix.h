@@ -21,10 +21,13 @@ namespace tint {
 namespace transform {
 
 /// DecomposeStridedMatrix transforms replaces matrix members of storage or
-/// uniform buffer structures, that have a [[stride]] decoration, into an array
+/// uniform buffer structures, that have a [[stride]] attribute, into an array
 /// of N column vectors.
 /// This transform is used by the SPIR-V reader to handle the SPIR-V
-/// MatrixStride decoration.
+/// MatrixStride attribute.
+///
+/// @note Depends on the following transforms to have been run first:
+/// * SimplifyPointers
 class DecomposeStridedMatrix
     : public Castable<DecomposeStridedMatrix, Transform> {
  public:
@@ -35,8 +38,10 @@ class DecomposeStridedMatrix
   ~DecomposeStridedMatrix() override;
 
   /// @param program the program to inspect
+  /// @param data optional extra transform-specific input data
   /// @returns true if this transform should be run for the given program
-  static bool ShouldRun(const Program* program);
+  bool ShouldRun(const Program* program,
+                 const DataMap& data = {}) const override;
 
  protected:
   /// Runs the transform using the CloneContext built for transforming a
@@ -45,7 +50,9 @@ class DecomposeStridedMatrix
   /// ProgramBuilder
   /// @param inputs optional extra transform-specific input data
   /// @param outputs optional extra transform-specific output data
-  void Run(CloneContext& ctx, const DataMap& inputs, DataMap& outputs) override;
+  void Run(CloneContext& ctx,
+           const DataMap& inputs,
+           DataMap& outputs) const override;
 };
 
 }  // namespace transform

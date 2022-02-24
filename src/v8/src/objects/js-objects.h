@@ -86,12 +86,13 @@ class JSReceiver : public TorqueGeneratedJSReceiver<JSReceiver, HeapObject> {
 
   // ES6 section 7.1.1 ToPrimitive
   V8_WARN_UNUSED_RESULT static MaybeHandle<Object> ToPrimitive(
-      Handle<JSReceiver> receiver,
+      Isolate* isolate, Handle<JSReceiver> receiver,
       ToPrimitiveHint hint = ToPrimitiveHint::kDefault);
 
   // ES6 section 7.1.1.1 OrdinaryToPrimitive
   V8_WARN_UNUSED_RESULT static MaybeHandle<Object> OrdinaryToPrimitive(
-      Handle<JSReceiver> receiver, OrdinaryToPrimitiveHint hint);
+      Isolate* isolate, Handle<JSReceiver> receiver,
+      OrdinaryToPrimitiveHint hint);
 
   static MaybeHandle<NativeContext> GetFunctionRealm(
       Handle<JSReceiver> receiver);
@@ -119,14 +120,14 @@ class JSReceiver : public TorqueGeneratedJSReceiver<JSReceiver, HeapObject> {
   V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT static Maybe<bool> HasProperty(
       LookupIterator* it);
   V8_WARN_UNUSED_RESULT static inline Maybe<bool> HasProperty(
-      Handle<JSReceiver> object, Handle<Name> name);
+      Isolate* isolate, Handle<JSReceiver> object, Handle<Name> name);
   V8_WARN_UNUSED_RESULT static inline Maybe<bool> HasElement(
-      Handle<JSReceiver> object, uint32_t index);
+      Isolate* isolate, Handle<JSReceiver> object, uint32_t index);
 
   V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT static Maybe<bool> HasOwnProperty(
-      Handle<JSReceiver> object, Handle<Name> name);
+      Isolate* isolate, Handle<JSReceiver> object, Handle<Name> name);
   V8_WARN_UNUSED_RESULT static inline Maybe<bool> HasOwnProperty(
-      Handle<JSReceiver> object, uint32_t index);
+      Isolate* isolate, Handle<JSReceiver> object, uint32_t index);
 
   V8_WARN_UNUSED_RESULT static inline MaybeHandle<Object> GetProperty(
       Isolate* isolate, Handle<JSReceiver> receiver, const char* key);
@@ -227,13 +228,15 @@ class JSReceiver : public TorqueGeneratedJSReceiver<JSReceiver, HeapObject> {
 
   // Returns the constructor (the function that was used to instantiate the
   // object).
-  static MaybeHandle<JSFunction> GetConstructor(Handle<JSReceiver> receiver);
+  static MaybeHandle<JSFunction> GetConstructor(Isolate* isolate,
+                                                Handle<JSReceiver> receiver);
 
   // Returns the constructor name (the (possibly inferred) name of the function
   // that was used to instantiate the object), if any. If a FunctionTemplate is
   // used to instantiate the object, the class_name of the FunctionTemplate is
   // returned instead.
-  static Handle<String> GetConstructorName(Handle<JSReceiver> receiver);
+  static Handle<String> GetConstructorName(Isolate* isolate,
+                                           Handle<JSReceiver> receiver);
 
   V8_EXPORT_PRIVATE MaybeHandle<NativeContext> GetCreationContext();
 
@@ -254,8 +257,8 @@ class JSReceiver : public TorqueGeneratedJSReceiver<JSReceiver, HeapObject> {
 
   // Set the object's prototype (only JSReceiver and null are allowed values).
   V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT static Maybe<bool> SetPrototype(
-      Handle<JSReceiver> object, Handle<Object> value, bool from_javascript,
-      ShouldThrow should_throw);
+      Isolate* isolate, Handle<JSReceiver> object, Handle<Object> value,
+      bool from_javascript, ShouldThrow should_throw);
 
   inline static Handle<Object> GetDataProperty(Handle<JSReceiver> object,
                                                Handle<Name> name);
@@ -587,11 +590,11 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
 
   // Support functions for v8 api (needed for correct interceptor behavior).
   V8_WARN_UNUSED_RESULT static Maybe<bool> HasRealNamedProperty(
-      Handle<JSObject> object, Handle<Name> name);
+      Isolate* isolate, Handle<JSObject> object, Handle<Name> name);
   V8_WARN_UNUSED_RESULT static Maybe<bool> HasRealElementProperty(
-      Handle<JSObject> object, uint32_t index);
+      Isolate* isolate, Handle<JSObject> object, uint32_t index);
   V8_WARN_UNUSED_RESULT static Maybe<bool> HasRealNamedCallbackProperty(
-      Handle<JSObject> object, Handle<Name> name);
+      Isolate* isolate, Handle<JSObject> object, Handle<Name> name);
 
   // Get the header size for a JSObject.  Used to compute the index of
   // embedder fields as well as the number of embedder fields.
@@ -672,7 +675,8 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
                                                      Heap* heap);
 
   // Access fast-case object properties at index.
-  static Handle<Object> FastPropertyAt(Handle<JSObject> object,
+  static Handle<Object> FastPropertyAt(Isolate* isolate,
+                                       Handle<JSObject> object,
                                        Representation representation,
                                        FieldIndex index);
   inline Object RawFastPropertyAt(FieldIndex index) const;
@@ -702,8 +706,8 @@ class JSObject : public TorqueGeneratedJSObject<JSObject, JSReceiver> {
 
   // Set the object's prototype (only JSReceiver and null are allowed values).
   V8_WARN_UNUSED_RESULT static Maybe<bool> SetPrototype(
-      Handle<JSObject> object, Handle<Object> value, bool from_javascript,
-      ShouldThrow should_throw);
+      Isolate* isolate, Handle<JSObject> object, Handle<Object> value,
+      bool from_javascript, ShouldThrow should_throw);
 
   // Makes the object prototype immutable
   // Never called from JavaScript

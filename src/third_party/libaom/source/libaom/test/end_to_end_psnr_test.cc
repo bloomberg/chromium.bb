@@ -30,11 +30,11 @@ const int kBitrate = 500;
 const unsigned int kCqLevel = 18;
 // List of psnr thresholds for speed settings 0-8 and 4 encoding modes
 const double kPsnrThreshold[][4] = {
-  { 35.0, 44.4, 39.5, 41.9 }, { 35.0, 44.4, 39.5, 41.9 },
-  { 35.0, 44.4, 39.4, 41.9 }, { 35.0, 44.4, 39.1, 41.8 },
-  { 35.0, 44.4, 39.1, 41.8 }, { 35.0, 44.29, 38.7, 41.8 },
-  { 35.0, 44.3, 38.7, 41.3 }, { 35.0, 44.3, 38.7, 40.8 },
-  { 35.0, 44.3, 38.7, 40.8 }
+  { 34.9, 44.4, 39.5, 41.9 }, { 34.9, 44.4, 39.5, 41.9 },
+  { 34.9, 44.4, 39.4, 41.9 }, { 34.9, 44.4, 39.1, 41.8 },
+  { 34.9, 44.4, 39.1, 41.8 }, { 34.9, 44.29, 38.6, 41.8 },
+  { 34.9, 44.3, 38.6, 41.3 }, { 34.9, 44.3, 38.6, 40.8 },
+  { 34.9, 44.3, 38.6, 40.8 }
 };
 
 typedef struct {
@@ -75,14 +75,6 @@ const libaom_test::TestMode kEncodingModeVectors[] = {
 
 // Speed settings tested
 const int kCpuUsedVectors[] = { 1, 2, 3, 5, 6 };
-
-int is_extension_y4m(const char *filename) {
-  const char *dot = strrchr(filename, '.');
-  if (!dot || dot == filename)
-    return 0;
-  else
-    return !strcmp(dot, ".y4m");
-}
 
 class EndToEndTest
     : public ::libaom_test::CodecTestWith3Params<libaom_test::TestMode,

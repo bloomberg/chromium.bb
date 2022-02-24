@@ -2821,6 +2821,7 @@ static int64_t handle_inter_mode(
     save_mv[i][0].as_int = INVALID_MV;
     save_mv[i][1].as_int = INVALID_MV;
   }
+  args->start_mv_cnt = 0;
 
   // Main loop of this function. This will  iterate over all of the ref mvs
   // in the dynamic reference list and do the following:
@@ -3526,7 +3527,8 @@ static AOM_INLINE void refine_winner_mode_tx(
   int64_t best_rd;
   const int num_planes = av1_num_planes(cm);
 
-  if (!is_winner_mode_processing_enabled(cpi, best_mbmode, best_mbmode->mode))
+  if (!is_winner_mode_processing_enabled(cpi, x, best_mbmode,
+                                         best_mbmode->mode))
     return;
 
   // Set params for winner mode evaluation
@@ -3534,6 +3536,16 @@ static AOM_INLINE void refine_winner_mode_tx(
 
   // No best mode identified so far
   if (*best_mode_index == THR_INVALID) return;
+
+  int skip_winner_mode_eval =
+      cpi->sf.winner_mode_sf.disable_winner_mode_eval_for_txskip;
+  // Do not skip winner mode evaluation at low quantizers if normal mode's
+  // transform search was too aggressive.
+  if (cpi->sf.rd_sf.perform_coeff_opt >= 5 && x->qindex <= 70)
+    skip_winner_mode_eval = 0;
+
+  if (skip_winner_mode_eval && (best_mbmode->skip_txfm || rd_cost->skip_txfm))
+    return;
 
   best_rd = RDCOST(x->rdmult, rd_cost->rate, rd_cost->dist);
   for (int mode_idx = 0; mode_idx < winner_mode_count; mode_idx++) {
@@ -3550,7 +3562,7 @@ static AOM_INLINE void refine_winner_mode_tx(
 
     if (xd->lossless[winner_mbmi->segment_id] == 0 &&
         winner_mode_index != THR_INVALID &&
-        is_winner_mode_processing_enabled(cpi, winner_mbmi,
+        is_winner_mode_processing_enabled(cpi, x, winner_mbmi,
                                           winner_mbmi->mode)) {
       RD_STATS rd_stats = *winner_rd_stats;
       int skip_blk = 0;
@@ -5091,8 +5103,8 @@ static void tx_search_best_inter_candidates(
     // The bound on the no. of inter mode candidates, beyond which the
     // candidates are limited if a newmv mode got evaluated, is set as
     // max_allowed_cands + 1.
-    const int num_allowed_cands[4] = { INT_MAX, 10, 9, 6 };
-    assert(cpi->sf.inter_sf.limit_inter_mode_cands <= 3);
+    const int num_allowed_cands[5] = { INT_MAX, 10, 9, 6, 2 };
+    assert(cpi->sf.inter_sf.limit_inter_mode_cands <= 4);
     max_allowed_cands =
         num_allowed_cands[cpi->sf.inter_sf.limit_inter_mode_cands];
   }
@@ -5101,8 +5113,8 @@ static void tx_search_best_inter_candidates(
   if (cpi->sf.inter_sf.limit_txfm_eval_per_mode) {
     // Bound the no. of transform searches per prediction mode beyond a
     // threshold.
-    const int num_mode_thresh_ary[3] = { INT_MAX, 4, 3 };
-    assert(cpi->sf.inter_sf.limit_txfm_eval_per_mode <= 2);
+    const int num_mode_thresh_ary[4] = { INT_MAX, 4, 3, 0 };
+    assert(cpi->sf.inter_sf.limit_txfm_eval_per_mode <= 3);
     num_mode_thresh =
         num_mode_thresh_ary[cpi->sf.inter_sf.limit_txfm_eval_per_mode];
   }
@@ -5675,6 +5687,8 @@ void av1_rd_pick_inter_mode(struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
                                0,
                                interintra_modes,
                                { { { 0 }, { { 0 } }, { 0 }, 0, 0, 0, 0 } },
+                               { { 0, 0 } },
+                               0,
                                0,
                                -1,
                                -1,
@@ -5747,8 +5761,7 @@ void av1_rd_pick_inter_mode(struct AV1_COMP *cpi, struct TileDataEnc *tile_data,
   const int do_tx_search =
       !((cpi->sf.inter_sf.inter_mode_rd_model_estimation == 1 && md->ready) ||
         (cpi->sf.inter_sf.inter_mode_rd_model_estimation == 2 &&
-         num_pels_log2_lookup[bsize] > 8) ||
-        cpi->sf.rt_sf.force_tx_search_off);
+         num_pels_log2_lookup[bsize] > 8));
   InterModesInfo *inter_modes_info = x->inter_modes_info;
   inter_modes_info->num = 0;
 

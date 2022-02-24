@@ -25,6 +25,25 @@ public class ContentFeatureList {
         return ContentFeatureListImpl.isEnabled(featureName);
     }
 
+    /**
+     * Returns a field trial param as an int for the specified feature.
+     *
+     * @param featureName The name of the feature to retrieve a param for.
+     * @param paramName The name of the param for which to get as an integer.
+     * @param defaultValue The integer value to use if the param is not available.
+     * @return The parameter value as an int. Default value if the feature does not exist or the
+     *         specified parameter does not exist or its string value does not represent an int.
+     */
+    public static int getFieldTrialParamByFeatureAsInt(
+            String featureName, String paramName, int defaultValue) {
+        String testValue = FeatureList.getTestValueForFieldTrialParam(featureName, paramName);
+        if (testValue != null) return Integer.valueOf(testValue);
+        if (FeatureList.hasTestFeatures()) return defaultValue;
+        assert FeatureList.isInitialized();
+        return ContentFeatureListImpl.getFieldTrialParamByFeatureAsInt(
+                featureName, paramName, defaultValue);
+    }
+
     // Alphabetical:
     public static final String ACCESSIBILITY_PAGE_ZOOM = "AccessibilityPageZoom";
 
@@ -34,6 +53,8 @@ public class ContentFeatureList {
             "BackgroundMediaRendererHasModerateBinding";
 
     public static final String BINDING_MANAGEMENT_WAIVE_CPU = "BindingManagementWaiveCpu";
+
+    public static final String COMPUTE_AX_MODE = "ComputeAXMode";
 
     public static final String ON_DEMAND_ACCESSIBILITY_EVENTS = "OnDemandAccessibilityEvents";
 

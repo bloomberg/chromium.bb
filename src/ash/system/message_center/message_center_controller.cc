@@ -16,7 +16,6 @@
 #include "ash/system/message_center/arc_notification_manager_delegate_impl.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/fullscreen_notification_blocker.h"
-#include "ash/system/message_center/hps_notify_notification_blocker.h"
 #include "ash/system/message_center/inactive_user_notification_blocker.h"
 #include "ash/system/message_center/session_state_notification_blocker.h"
 #include "ash/system/phonehub/phone_hub_notification_controller.h"
@@ -92,12 +91,6 @@ MessageCenterController::MessageCenterController() {
   session_state_notification_blocker_ =
       std::make_unique<SessionStateNotificationBlocker>(MessageCenter::Get());
 
-  if (features::IsSnoopingProtectionEnabled()) {
-    hps_notify_notification_blocker_ =
-        std::make_unique<HpsNotifyNotificationBlocker>(
-            MessageCenter::Get(), Shell::Get()->hps_notify_controller());
-  }
-
   Shell::Get()->session_controller()->AddObserver(this);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -110,6 +103,12 @@ MessageCenterController::MessageCenterController() {
     phone_hub_notification_controller_ =
         std::make_unique<PhoneHubNotificationController>();
   }
+
+  // When adding other notification blockers, ensure that they are initialized
+  // before the shell's `HpsNotifyController`. The notification blocker that it
+  // adds during its construction must be the last blocker, since it observes
+  // the states of all the others.
+  DCHECK(!Shell::Get()->hps_notify_controller());
 
   // Set the system notification source display name ("Chrome OS" or "Chromium
   // OS").
@@ -124,7 +123,6 @@ MessageCenterController::~MessageCenterController() {
   // These members all depend on the MessageCenter instance, so must be
   // destroyed first.
   all_popup_blocker_.reset();
-  hps_notify_notification_blocker_.reset();
   session_state_notification_blocker_.reset();
   inactive_user_notification_blocker_.reset();
   fullscreen_notification_blocker_.reset();

@@ -16,14 +16,16 @@
 #include <algorithm>
 #include <memory>
 #include <set>
+#include <string>
+#include <type_traits>
 #include <utility>
 
 #include "absl/algorithm/container.h"
 #include "absl/strings/match.h"
+#include "absl/strings/string_view.h"
 #include "api/jsep_ice_candidate.h"
 #include "api/rtp_parameters.h"
 #include "api/rtp_transceiver_direction.h"
-#include "api/task_queue/queued_task.h"
 #include "api/transport/webrtc_key_value_config.h"
 #include "api/uma_metrics.h"
 #include "api/video/video_codec_constants.h"
@@ -31,6 +33,7 @@
 #include "call/packet_receiver.h"
 #include "media/base/media_channel.h"
 #include "media/base/media_config.h"
+#include "media/base/media_engine.h"
 #include "media/base/rid_description.h"
 #include "media/base/stream_params.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
@@ -44,7 +47,9 @@
 #include "pc/channel.h"
 #include "pc/ice_server_parsing.h"
 #include "pc/rtp_receiver.h"
+#include "pc/rtp_receiver_proxy.h"
 #include "pc/rtp_sender.h"
+#include "pc/rtp_sender_proxy.h"
 #include "pc/sctp_transport.h"
 #include "pc/simulcast_description.h"
 #include "pc/webrtc_session_description_factory.h"
@@ -53,6 +58,7 @@
 #include "rtc_base/location.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/net_helper.h"
+#include "rtc_base/network.h"
 #include "rtc_base/network_constants.h"
 #include "rtc_base/ref_counted_object.h"
 #include "rtc_base/socket_address.h"
@@ -418,19 +424,11 @@ RTCErrorOr<rtc::scoped_refptr<PeerConnection>> PeerConnection::Create(
     std::unique_ptr<Call> call,
     const PeerConnectionInterface::RTCConfiguration& configuration,
     PeerConnectionDependencies dependencies) {
-  // Prior to adding this CHECK, the default value was kPlanB. Because kPlanB is
-  // about to be deprecated in favor of the spec-compliant kUnifiedPlan, the
-  // default will soon change to kUnifiedPlan. This CHECK ensures that anybody
-  // implicitly relying on the default being kPlanB is made aware of the change.
-  // To avoid crashing, you can overwrite sdp_semantics to kPlanB for the old
-  // behavior, but you will need to migrate to kUnifiedPlan before kPlanB is
-  // removed.
-  // TODO(https://crbug.com/webrtc/11121): When the default is kUnifiedPlan,
-  // delete kNotSpecified.
   // TODO(https://crbug.com/webrtc/13528): Remove support for kPlanB.
-  RTC_CHECK(configuration.sdp_semantics != SdpSemantics::kNotSpecified)
-      << "Please specify sdp_semantics. The default is about to change to "
-      << "kUnifiedPlan.";
+  if (configuration.sdp_semantics == SdpSemantics::kPlanB_DEPRECATED) {
+    RTC_LOG(LS_WARNING)
+        << "PeerConnection constructed with legacy SDP semantics!";
+  }
 
   RTCError config_error = cricket::P2PTransportChannel::ValidateIceConfig(
       ParseIceConfig(configuration));
@@ -569,6 +567,7 @@ PeerConnection::~PeerConnection() {
 
   // port_allocator_ and transport_controller_ live on the network thread and
   // should be destroyed there.
+  transport_controller_copy_ = nullptr;
   network_thread()->Invoke<void>(RTC_FROM_HERE, [this] {
     RTC_DCHECK_RUN_ON(network_thread());
     TeardownDataChannelTransport_n();
@@ -617,28 +616,28 @@ RTCError PeerConnection::Initialize(
   }
 
   // Network thread initialization.
-  network_thread()->Invoke<void>(RTC_FROM_HERE, [this, &stun_servers,
-                                                 &turn_servers, &configuration,
-                                                 &dependencies] {
-    RTC_DCHECK_RUN_ON(network_thread());
-    network_thread_safety_ = PendingTaskSafetyFlag::Create();
-    InitializePortAllocatorResult pa_result =
-        InitializePortAllocator_n(stun_servers, turn_servers, configuration);
-    // Send information about IPv4/IPv6 status.
-    PeerConnectionAddressFamilyCounter address_family =
-        pa_result.enable_ipv6 ? kPeerConnection_IPv6 : kPeerConnection_IPv4;
-    RTC_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.IPMetrics", address_family,
-                              kPeerConnectionAddressFamilyCounter_Max);
-    InitializeTransportController_n(configuration, dependencies);
-  });
+  transport_controller_copy_ =
+      network_thread()->Invoke<JsepTransportController*>(RTC_FROM_HERE, [&] {
+        RTC_DCHECK_RUN_ON(network_thread());
+        network_thread_safety_ = PendingTaskSafetyFlag::Create();
+        InitializePortAllocatorResult pa_result = InitializePortAllocator_n(
+            stun_servers, turn_servers, configuration);
+        // Send information about IPv4/IPv6 status.
+        PeerConnectionAddressFamilyCounter address_family =
+            pa_result.enable_ipv6 ? kPeerConnection_IPv6 : kPeerConnection_IPv4;
+        RTC_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.IPMetrics",
+                                  address_family,
+                                  kPeerConnectionAddressFamilyCounter_Max);
+        return InitializeTransportController_n(configuration, dependencies);
+      });
 
   configuration_ = configuration;
 
   stats_ = std::make_unique<StatsCollector>(this);
   stats_collector_ = RTCStatsCollector::Create(this);
 
-  sdp_handler_ =
-      SdpOfferAnswerHandler::Create(this, configuration, dependencies);
+  sdp_handler_ = SdpOfferAnswerHandler::Create(this, configuration,
+                                               dependencies, context_);
 
   rtp_manager_ = std::make_unique<RtpTransmissionManager>(
       IsUnifiedPlan(), signaling_thread(), worker_thread(), channel_manager(),
@@ -676,7 +675,7 @@ RTCError PeerConnection::Initialize(
   return RTCError::OK();
 }
 
-void PeerConnection::InitializeTransportController_n(
+JsepTransportController* PeerConnection::InitializeTransportController_n(
     const RTCConfiguration& configuration,
     const PeerConnectionDependencies& dependencies) {
   JsepTransportController::Config config;
@@ -795,6 +794,7 @@ void PeerConnection::InitializeTransportController_n(
       });
 
   transport_controller_->SetIceConfig(ParseIceConfig(configuration));
+  return transport_controller_.get();
 }
 
 rtc::scoped_refptr<StreamCollectionInterface> PeerConnection::local_streams() {
@@ -916,9 +916,12 @@ PeerConnection::AddTransceiver(
 }
 
 RtpTransportInternal* PeerConnection::GetRtpTransport(const std::string& mid) {
+  // TODO(bugs.webrtc.org/9987): Avoid the thread jump.
+  // This might be done by caching the value on the signaling thread.
   RTC_DCHECK_RUN_ON(signaling_thread());
   return network_thread()->Invoke<RtpTransportInternal*>(
       RTC_FROM_HERE, [this, &mid] {
+        RTC_DCHECK_RUN_ON(network_thread());
         auto rtp_transport = transport_controller_->GetRtpTransport(mid);
         RTC_DCHECK(rtp_transport);
         return rtp_transport;
@@ -1171,6 +1174,9 @@ bool PeerConnection::GetStats(StatsObserver* observer,
   RTC_LOG_THREAD_BLOCK_COUNT();
 
   stats_->UpdateStats(level);
+
+  RTC_DCHECK_BLOCK_COUNT_NO_MORE_THAN(4);
+
   // The StatsCollector is used to tell if a track is valid because it may
   // remember tracks that the PeerConnection previously removed.
   if (track && !stats_->IsValidTrack(track->id())) {
@@ -1505,6 +1511,7 @@ RTCError PeerConnection::SetConfiguration(
           RTC_FROM_HERE,
           [this, needs_ice_restart, &ice_config, &stun_servers, &turn_servers,
            &modified_config, has_local_description] {
+            RTC_DCHECK_RUN_ON(network_thread());
             // As described in JSEP, calling setConfiguration with new ICE
             // servers or candidate policy must set a "needs-ice-restart" bit so
             // that the next offer triggers an ICE restart which will pick up
@@ -1527,9 +1534,12 @@ RTCError PeerConnection::SetConfiguration(
 
   if (configuration_.active_reset_srtp_params !=
       modified_config.active_reset_srtp_params) {
-    // TODO(tommi): move to the network thread - this hides an invoke.
-    transport_controller_->SetActiveResetSrtpParams(
-        modified_config.active_reset_srtp_params);
+    // TODO(tommi): merge invokes
+    network_thread()->Invoke<void>(RTC_FROM_HERE, [this, &modified_config] {
+      RTC_DCHECK_RUN_ON(network_thread());
+      transport_controller_->SetActiveResetSrtpParams(
+          modified_config.active_reset_srtp_params);
+    });
   }
 
   if (modified_config.allow_codec_switching.has_value()) {
@@ -1656,6 +1666,10 @@ void PeerConnection::AddAdaptationResource(
   call_->AddAdaptationResource(resource);
 }
 
+cricket::ChannelManager* PeerConnection::channel_manager() {
+  return context_->channel_manager();
+}
+
 bool PeerConnection::StartRtcEventLog(std::unique_ptr<RtcEventLogOutput> output,
                                       int64_t output_period_ms) {
   return worker_thread()->Invoke<bool>(
@@ -1688,7 +1702,13 @@ PeerConnection::LookupDtlsTransportByMid(const std::string& mid) {
 rtc::scoped_refptr<DtlsTransport>
 PeerConnection::LookupDtlsTransportByMidInternal(const std::string& mid) {
   RTC_DCHECK_RUN_ON(signaling_thread());
-  return transport_controller_->LookupDtlsTransportByMid(mid);
+  // TODO(bugs.webrtc.org/9987): Avoid the thread jump.
+  // This might be done by caching the value on the signaling thread.
+  return network_thread()->Invoke<rtc::scoped_refptr<DtlsTransport>>(
+      RTC_FROM_HERE, [this, mid]() {
+        RTC_DCHECK_RUN_ON(network_thread());
+        return transport_controller_->LookupDtlsTransportByMid(mid);
+      });
 }
 
 rtc::scoped_refptr<SctpTransportInterface> PeerConnection::GetSctpTransport()
@@ -1788,6 +1808,7 @@ void PeerConnection::Close() {
     // TODO(tommi): ^^ That's not exactly optimal since this is yet another
     // blocking hop to the network thread during Close(). Further still, the
     // voice/video/data channels will be cleared on the worker thread.
+    RTC_DCHECK_RUN_ON(network_thread());
     transport_controller_.reset();
     port_allocator_->DiscardCandidatePool();
     if (network_thread_safety_) {
@@ -2098,10 +2119,6 @@ bool PeerConnection::ReconfigurePortAllocator_n(
       stun_candidate_keepalive_interval);
 }
 
-cricket::ChannelManager* PeerConnection::channel_manager() const {
-  return context_->channel_manager();
-}
-
 bool PeerConnection::StartRtcEventLog_w(
     std::unique_ptr<RtcEventLogOutput> output,
     int64_t output_period_ms) {
@@ -2119,11 +2136,10 @@ void PeerConnection::StopRtcEventLog_w() {
   }
 }
 
-cricket::ChannelInterface* PeerConnection::GetChannel(
-    const std::string& content_name) {
+cricket::ChannelInterface* PeerConnection::GetChannel(const std::string& mid) {
   for (const auto& transceiver : rtp_manager()->transceivers()->UnsafeList()) {
     cricket::ChannelInterface* channel = transceiver->internal()->channel();
-    if (channel && channel->content_name() == content_name) {
+    if (channel && channel->mid() == mid) {
       return channel;
     }
   }
@@ -2146,13 +2162,26 @@ bool PeerConnection::GetSctpSslRole(rtc::SSLRole* role) {
 
   absl::optional<rtc::SSLRole> dtls_role;
   if (sctp_mid_s_) {
-    dtls_role = transport_controller_->GetDtlsRole(*sctp_mid_s_);
+    dtls_role = network_thread()->Invoke<absl::optional<rtc::SSLRole>>(
+        RTC_FROM_HERE, [this] {
+          RTC_DCHECK_RUN_ON(network_thread());
+          return transport_controller_->GetDtlsRole(*sctp_mid_n_);
+        });
     if (!dtls_role && sdp_handler_->is_caller().has_value()) {
+      // This works fine if we are the offerer, but can be a mistake if
+      // we are the answerer and the remote offer is ACTIVE. In that
+      // case, we will guess the role wrong.
+      // TODO(bugs.webrtc.org/13668): Check if this actually happens.
+      RTC_LOG(LS_ERROR)
+          << "Possible risk: DTLS role guesser is active, is_caller is "
+          << *sdp_handler_->is_caller();
       dtls_role =
           *sdp_handler_->is_caller() ? rtc::SSL_SERVER : rtc::SSL_CLIENT;
     }
-    *role = *dtls_role;
-    return true;
+    if (dtls_role) {
+      *role = *dtls_role;
+      return true;
+    }
   }
   return false;
 }
@@ -2167,7 +2196,11 @@ bool PeerConnection::GetSslRole(const std::string& content_name,
     return false;
   }
 
-  auto dtls_role = transport_controller_->GetDtlsRole(content_name);
+  auto dtls_role = network_thread()->Invoke<absl::optional<rtc::SSLRole>>(
+      RTC_FROM_HERE, [this, content_name]() {
+        RTC_DCHECK_RUN_ON(network_thread());
+        return transport_controller_->GetDtlsRole(content_name);
+      });
   if (dtls_role) {
     *role = *dtls_role;
     return true;
@@ -2198,7 +2231,7 @@ std::vector<DataChannelStats> PeerConnection::GetDataChannelStats() const {
 
 absl::optional<std::string> PeerConnection::sctp_transport_name() const {
   RTC_DCHECK_RUN_ON(signaling_thread());
-  if (sctp_mid_s_ && transport_controller_)
+  if (sctp_mid_s_ && transport_controller_copy_)
     return sctp_transport_name_s_;
   return absl::optional<std::string>();
 }
@@ -2864,7 +2897,7 @@ void PeerConnection::StartSctpTransport(int local_port,
       network_thread_safety_,
       [this, mid = *sctp_mid_s_, local_port, remote_port, max_message_size] {
         rtc::scoped_refptr<SctpTransport> sctp_transport =
-            transport_controller()->GetSctpTransport(mid);
+            transport_controller_n()->GetSctpTransport(mid);
         if (sctp_transport)
           sctp_transport->Start(local_port, remote_port, max_message_size);
       }));

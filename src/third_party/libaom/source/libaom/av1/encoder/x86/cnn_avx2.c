@@ -104,7 +104,7 @@ static INLINE void prepare_weights_for_5x5_convolve(
 // For each row, loads source pixels 0 to 7(load_src_0), 7 to 14(load_src_1) and
 // arranges them appropriately to process 3 blocks.
 #define PERFORM_CONVOLVE_FOR_3_5X5_BLOCKS()                            \
-  {                                                                    \
+  do {                                                                 \
     for (int row = 0; row < 5; row++) {                                \
       load_src_0 = _mm256_loadu_ps(input_ptr);                         \
       load_src_1 = _mm256_loadu_ps(input_ptr + 7);                     \
@@ -116,7 +116,7 @@ static INLINE void prepare_weights_for_5x5_convolve(
       accum_src_1 = _mm256_add_ps(load_src_1, accum_src_1);            \
       input_ptr += in_stride;                                          \
     }                                                                  \
-  }
+  } while (0)
 
 // Load masks needed for shuffling of output and weights.
 static INLINE void load_shuffle_masks_for_2x2_convolve(__m256i *output_mask,
@@ -151,7 +151,7 @@ static INLINE void prepare_weights_for_2x2_convolve(
 
 // Do convolution of one 5x5 block.
 #define PERFORM_CONVOLVE_FOR_1_5X5_BLOCK(w, accum0, in_stride)           \
-  {                                                                      \
+  do {                                                                   \
     __m128 load_src[5];                                                  \
     load_src[0] = _mm_loadu_ps(input_ptr);                               \
     last_column_sum += input_ptr[4] * weight[0][4];                      \
@@ -179,7 +179,7 @@ static INLINE void prepare_weights_for_2x2_convolve(
     load_src[3] = _mm_add_ps(load_src[3], load_src[4]);                  \
     load_src[1] = _mm_add_ps(load_src[1], load_src[3]);                  \
     accum0 = _mm_add_ps(accum0, load_src[1]);                            \
-  }
+  } while (0)
 
 // Do convolution on 8 horizontal 2x2 blocks.
 static INLINE void perform_convolve_for_8h_2x2_blocks(

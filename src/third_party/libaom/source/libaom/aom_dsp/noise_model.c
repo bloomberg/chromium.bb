@@ -41,8 +41,8 @@ static const int kMaxLag = 4;
     return block_mean / (max_w * max_h);                                    \
   }
 
-GET_BLOCK_MEAN(uint8_t, lowbd);
-GET_BLOCK_MEAN(uint16_t, highbd);
+GET_BLOCK_MEAN(uint8_t, lowbd)
+GET_BLOCK_MEAN(uint16_t, highbd)
 
 static INLINE double get_block_mean(const uint8_t *data, int w, int h,
                                     int stride, int x_o, int y_o,
@@ -75,8 +75,8 @@ static INLINE double get_block_mean(const uint8_t *data, int w, int h,
     return noise_var / (max_w * max_h) - noise_mean * noise_mean;        \
   }
 
-GET_NOISE_VAR(uint8_t, lowbd);
-GET_NOISE_VAR(uint16_t, highbd);
+GET_NOISE_VAR(uint8_t, lowbd)
+GET_NOISE_VAR(uint16_t, highbd)
 
 static INLINE double get_noise_var(const uint8_t *data, const uint8_t *denoised,
                                    int w, int h, int stride, int x_o, int y_o,
@@ -787,8 +787,8 @@ void aom_noise_model_free(aom_noise_model_t *model) {
     return val;                                                            \
   }
 
-EXTRACT_AR_ROW(uint8_t, lowbd);
-EXTRACT_AR_ROW(uint16_t, highbd);
+EXTRACT_AR_ROW(uint8_t, lowbd)
+EXTRACT_AR_ROW(uint16_t, highbd)
 
 static int add_block_observations(
     aom_noise_model_t *noise_model, int c, const uint8_t *const data,
@@ -1341,8 +1341,8 @@ static float *get_half_cos_window(int block_size) {
     }                                                                       \
   }
 
-DITHER_AND_QUANTIZE(uint8_t, lowbd);
-DITHER_AND_QUANTIZE(uint16_t, highbd);
+DITHER_AND_QUANTIZE(uint8_t, lowbd)
+DITHER_AND_QUANTIZE(uint16_t, highbd)
 
 int aom_wiener_denoise_2d(const uint8_t *const data[3], uint8_t *denoised[3],
                           int w, int h, int stride[3], int chroma_sub[2],

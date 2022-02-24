@@ -386,7 +386,7 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                        txb_eob_costs, txb_costs, tcoeff, qcoeff, dqcoeff,  \
                        levels, sharpness, iqmatrix);                       \
     }                                                                      \
-    break;
+    break
   switch (tx_class) {
     UPDATE_COEFF_EOB_CASE(TX_CLASS_2D);
     UPDATE_COEFF_EOB_CASE(TX_CLASS_HORIZ);
@@ -407,7 +407,7 @@ int av1_optimize_txb(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                           rdmult, shift, dequant, scan, txb_costs, tcoeff,     \
                           qcoeff, dqcoeff, levels, iqmatrix);                  \
     }                                                                          \
-    break;
+    break
   switch (tx_class) {
     UPDATE_COEFF_SIMPLE_CASE(TX_CLASS_2D);
     UPDATE_COEFF_SIMPLE_CASE(TX_CLASS_HORIZ);

@@ -13,8 +13,8 @@
 // limitations under the License.
 
 #include "src/ast/call_statement.h"
-#include "src/ast/stage_decoration.h"
-#include "src/ast/struct_block_decoration.h"
+#include "src/ast/stage_attribute.h"
+#include "src/ast/struct_block_attribute.h"
 #include "src/ast/variable_decl_statement.h"
 #include "src/writer/glsl/test_helper.h"
 
@@ -27,11 +27,11 @@ using GlslSanitizerTest = TestHelper;
 
 TEST_F(GlslSanitizerTest, Call_ArrayLength) {
   auto* s = Structure("my_struct", {Member(0, "a", ty.array<f32>(4))},
-                      {create<ast::StructBlockDecoration>()});
+                      {create<ast::StructBlockAttribute>()});
   Global("b", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
-         ast::DecorationList{
-             create<ast::BindingDecoration>(1),
-             create<ast::GroupDecoration>(2),
+         ast::AttributeList{
+             create<ast::BindingAttribute>(1),
+             create<ast::GroupAttribute>(2),
          });
 
   Func("a_func", ast::VariableList{}, ty.void_(),
@@ -39,7 +39,7 @@ TEST_F(GlslSanitizerTest, Call_ArrayLength) {
            Decl(Var("len", ty.u32(), ast::StorageClass::kNone,
                     Call("arrayLength", AddressOf(MemberAccessor("b", "a"))))),
        },
-       ast::DecorationList{
+       ast::AttributeList{
            Stage(ast::PipelineStage::kFragment),
        });
 
@@ -51,23 +51,17 @@ TEST_F(GlslSanitizerTest, Call_ArrayLength) {
   auto* expect = R"(#version 310 es
 precision mediump float;
 
-
-layout (binding = 1) buffer my_struct_1 {
+layout(binding = 1, std430) buffer my_struct_1 {
   float a[];
 } b;
-
 void a_func() {
-  uint tint_symbol_1 = 0u;
-  b.GetDimensions(tint_symbol_1);
-  uint tint_symbol_2 = ((tint_symbol_1 - 0u) / 4u);
-  uint len = tint_symbol_2;
-  return;
+  uint len = uint(b.a.length());
 }
+
 void main() {
   a_func();
+  return;
 }
-
-
 )";
   EXPECT_EQ(expect, got);
 }
@@ -78,11 +72,11 @@ TEST_F(GlslSanitizerTest, Call_ArrayLength_OtherMembersInStruct) {
                           Member(0, "z", ty.f32()),
                           Member(4, "a", ty.array<f32>(4)),
                       },
-                      {create<ast::StructBlockDecoration>()});
+                      {create<ast::StructBlockAttribute>()});
   Global("b", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
-         ast::DecorationList{
-             create<ast::BindingDecoration>(1),
-             create<ast::GroupDecoration>(2),
+         ast::AttributeList{
+             create<ast::BindingAttribute>(1),
+             create<ast::GroupAttribute>(2),
          });
 
   Func("a_func", ast::VariableList{}, ty.void_(),
@@ -90,7 +84,7 @@ TEST_F(GlslSanitizerTest, Call_ArrayLength_OtherMembersInStruct) {
            Decl(Var("len", ty.u32(), ast::StorageClass::kNone,
                     Call("arrayLength", AddressOf(MemberAccessor("b", "a"))))),
        },
-       ast::DecorationList{
+       ast::AttributeList{
            Stage(ast::PipelineStage::kFragment),
        });
 
@@ -102,24 +96,18 @@ TEST_F(GlslSanitizerTest, Call_ArrayLength_OtherMembersInStruct) {
   auto* expect = R"(#version 310 es
 precision mediump float;
 
-
-layout (binding = 1) buffer my_struct_1 {
+layout(binding = 1, std430) buffer my_struct_1 {
   float z;
   float a[];
 } b;
-
 void a_func() {
-  uint tint_symbol_1 = 0u;
-  b.GetDimensions(tint_symbol_1);
-  uint tint_symbol_2 = ((tint_symbol_1 - 4u) / 4u);
-  uint len = tint_symbol_2;
-  return;
+  uint len = uint(b.a.length());
 }
+
 void main() {
   a_func();
+  return;
 }
-
-
 )";
 
   EXPECT_EQ(expect, got);
@@ -127,11 +115,11 @@ void main() {
 
 TEST_F(GlslSanitizerTest, Call_ArrayLength_ViaLets) {
   auto* s = Structure("my_struct", {Member(0, "a", ty.array<f32>(4))},
-                      {create<ast::StructBlockDecoration>()});
+                      {create<ast::StructBlockAttribute>()});
   Global("b", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
-         ast::DecorationList{
-             create<ast::BindingDecoration>(1),
-             create<ast::GroupDecoration>(2),
+         ast::AttributeList{
+             create<ast::BindingAttribute>(1),
+             create<ast::GroupAttribute>(2),
          });
 
   auto* p = Const("p", nullptr, AddressOf("b"));
@@ -144,7 +132,7 @@ TEST_F(GlslSanitizerTest, Call_ArrayLength_ViaLets) {
            Decl(Var("len", ty.u32(), ast::StorageClass::kNone,
                     Call("arrayLength", p2))),
        },
-       ast::DecorationList{
+       ast::AttributeList{
            Stage(ast::PipelineStage::kFragment),
        });
 
@@ -156,23 +144,17 @@ TEST_F(GlslSanitizerTest, Call_ArrayLength_ViaLets) {
   auto* expect = R"(#version 310 es
 precision mediump float;
 
-
-layout (binding = 1) buffer my_struct_1 {
+layout(binding = 1, std430) buffer my_struct_1 {
   float a[];
 } b;
-
 void a_func() {
-  uint tint_symbol_1 = 0u;
-  b.GetDimensions(tint_symbol_1);
-  uint tint_symbol_2 = ((tint_symbol_1 - 0u) / 4u);
-  uint len = tint_symbol_2;
-  return;
+  uint len = uint(b.a.length());
 }
+
 void main() {
   a_func();
+  return;
 }
-
-
 )";
 
   EXPECT_EQ(expect, got);
@@ -202,13 +184,12 @@ precision mediump float;
 void tint_symbol() {
   int tint_symbol_1[4] = int[4](1, 2, 3, 4);
   int pos = tint_symbol_1[3];
-  return;
 }
+
 void main() {
   tint_symbol();
+  return;
 }
-
-
 )";
   EXPECT_EQ(expect, got);
 }
@@ -249,13 +230,12 @@ struct S {
 void tint_symbol() {
   S tint_symbol_1 = S(1, vec3(2.0f, 3.0f, 4.0f), 4);
   vec3 pos = tint_symbol_1.b;
-  return;
 }
+
 void main() {
   tint_symbol();
+  return;
 }
-
-
 )";
   EXPECT_EQ(expect, got);
 }
@@ -290,13 +270,12 @@ precision mediump float;
 void tint_symbol() {
   int v = 0;
   int x = v;
-  return;
 }
+
 void main() {
   tint_symbol();
+  return;
 }
-
-
 )";
   EXPECT_EQ(expect, got);
 }
@@ -343,13 +322,12 @@ precision mediump float;
 void tint_symbol() {
   mat4 a[4] = mat4[4](mat4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f), mat4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f), mat4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f), mat4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
   vec4 v = a[3][2];
-  return;
 }
+
 void main() {
   tint_symbol();
+  return;
 }
-
-
 )";
   EXPECT_EQ(expect, got);
 }

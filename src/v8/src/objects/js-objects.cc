@@ -52,6 +52,7 @@
 #include "src/objects/js-promise.h"
 #include "src/objects/js-regexp-inl.h"
 #include "src/objects/js-regexp-string-iterator.h"
+#include "src/objects/js-shadow-realms.h"
 #ifdef V8_INTL_SUPPORT
 #include "src/objects/js-relative-time-format.h"
 #include "src/objects/js-segment-iterator.h"
@@ -119,16 +120,15 @@ Maybe<bool> JSReceiver::HasProperty(LookupIterator* it) {
 }
 
 // static
-Maybe<bool> JSReceiver::HasOwnProperty(Handle<JSReceiver> object,
+Maybe<bool> JSReceiver::HasOwnProperty(Isolate* isolate,
+                                       Handle<JSReceiver> object,
                                        Handle<Name> name) {
   if (object->IsJSModuleNamespace()) {
     PropertyDescriptor desc;
-    return JSReceiver::GetOwnPropertyDescriptor(object->GetIsolate(), object,
-                                                name, &desc);
+    return JSReceiver::GetOwnPropertyDescriptor(isolate, object, name, &desc);
   }
 
   if (object->IsJSObject()) {  // Shortcut.
-    Isolate* isolate = object->GetIsolate();
     PropertyKey key(isolate, name);
     LookupIterator it(isolate, object, key, LookupIterator::OWN);
     return HasProperty(&it);
@@ -291,7 +291,8 @@ V8_WARN_UNUSED_RESULT Maybe<bool> FastAssign(
             Representation representation = details.representation();
             FieldIndex index = FieldIndex::ForPropertyIndex(
                 *map, details.field_index(), representation);
-            prop_value = JSObject::FastPropertyAt(from, representation, index);
+            prop_value =
+                JSObject::FastPropertyAt(isolate, from, representation, index);
           }
         } else {
           LookupIterator it(isolate, from, next_key,
@@ -499,9 +500,7 @@ String JSReceiver::class_name() {
 
 namespace {
 std::pair<MaybeHandle<JSFunction>, Handle<String>> GetConstructorHelper(
-    Handle<JSReceiver> receiver) {
-  Isolate* isolate = receiver->GetIsolate();
-
+    Isolate* isolate, Handle<JSReceiver> receiver) {
   // If the object was instantiated simply with base == new.target, the
   // constructor on the map provides the most accurate name.
   // Don't provide the info for prototypes, since their constructors are
@@ -571,13 +570,14 @@ std::pair<MaybeHandle<JSFunction>, Handle<String>> GetConstructorHelper(
 
 // static
 MaybeHandle<JSFunction> JSReceiver::GetConstructor(
-    Handle<JSReceiver> receiver) {
-  return GetConstructorHelper(receiver).first;
+    Isolate* isolate, Handle<JSReceiver> receiver) {
+  return GetConstructorHelper(isolate, receiver).first;
 }
 
 // static
-Handle<String> JSReceiver::GetConstructorName(Handle<JSReceiver> receiver) {
-  return GetConstructorHelper(receiver).second;
+Handle<String> JSReceiver::GetConstructorName(Isolate* isolate,
+                                              Handle<JSReceiver> receiver) {
+  return GetConstructorHelper(isolate, receiver).second;
 }
 
 MaybeHandle<NativeContext> JSReceiver::GetCreationContext() {
@@ -1921,9 +1921,9 @@ Maybe<bool> JSReceiver::IsExtensible(Handle<JSReceiver> object) {
 }
 
 // static
-MaybeHandle<Object> JSReceiver::ToPrimitive(Handle<JSReceiver> receiver,
+MaybeHandle<Object> JSReceiver::ToPrimitive(Isolate* isolate,
+                                            Handle<JSReceiver> receiver,
                                             ToPrimitiveHint hint) {
-  Isolate* const isolate = receiver->GetIsolate();
   Handle<Object> exotic_to_prim;
   ASSIGN_RETURN_ON_EXCEPTION(
       isolate, exotic_to_prim,
@@ -1942,15 +1942,16 @@ MaybeHandle<Object> JSReceiver::ToPrimitive(Handle<JSReceiver> receiver,
                     NewTypeError(MessageTemplate::kCannotConvertToPrimitive),
                     Object);
   }
-  return OrdinaryToPrimitive(receiver, (hint == ToPrimitiveHint::kString)
-                                           ? OrdinaryToPrimitiveHint::kString
-                                           : OrdinaryToPrimitiveHint::kNumber);
+  return OrdinaryToPrimitive(isolate, receiver,
+                             (hint == ToPrimitiveHint::kString)
+                                 ? OrdinaryToPrimitiveHint::kString
+                                 : OrdinaryToPrimitiveHint::kNumber);
 }
 
 // static
 MaybeHandle<Object> JSReceiver::OrdinaryToPrimitive(
-    Handle<JSReceiver> receiver, OrdinaryToPrimitiveHint hint) {
-  Isolate* const isolate = receiver->GetIsolate();
+    Isolate* isolate, Handle<JSReceiver> receiver,
+    OrdinaryToPrimitiveHint hint) {
   Handle<String> method_names[2];
   switch (hint) {
     case OrdinaryToPrimitiveHint::kNumber:
@@ -2042,8 +2043,8 @@ V8_WARN_UNUSED_RESULT Maybe<bool> FastGetOwnValuesOrEntries(
           Representation representation = details.representation();
           FieldIndex field_index = FieldIndex::ForPropertyIndex(
               *map, details.field_index(), representation);
-          prop_value =
-              JSObject::FastPropertyAt(object, representation, field_index);
+          prop_value = JSObject::FastPropertyAt(isolate, object, representation,
+                                                field_index);
         }
       } else {
         LookupIterator it(isolate, object, next_key,
@@ -2152,14 +2153,15 @@ MaybeHandle<FixedArray> JSReceiver::GetOwnEntries(Handle<JSReceiver> object,
                                try_fast_path, true);
 }
 
-Maybe<bool> JSReceiver::SetPrototype(Handle<JSReceiver> object,
+Maybe<bool> JSReceiver::SetPrototype(Isolate* isolate,
+                                     Handle<JSReceiver> object,
                                      Handle<Object> value, bool from_javascript,
                                      ShouldThrow should_throw) {
   if (object->IsJSProxy()) {
-    return JSProxy::SetPrototype(Handle<JSProxy>::cast(object), value,
+    return JSProxy::SetPrototype(isolate, Handle<JSProxy>::cast(object), value,
                                  from_javascript, should_throw);
   }
-  return JSObject::SetPrototype(Handle<JSObject>::cast(object), value,
+  return JSObject::SetPrototype(isolate, Handle<JSObject>::cast(object), value,
                                 from_javascript, should_throw);
 }
 
@@ -2334,6 +2336,8 @@ int JSObject::GetHeaderSize(InstanceType type,
       return JSObject::kHeaderSize;
     case JS_ERROR_TYPE:
       return JSObject::kHeaderSize;
+    case JS_SHADOW_REALM_TYPE:
+      return JSShadowRealm::kHeaderSize;
     case JS_STRING_ITERATOR_TYPE:
       return JSStringIterator::kHeaderSize;
     case JS_MODULE_NAMESPACE_TYPE:
@@ -3226,7 +3230,8 @@ void JSObject::MigrateToMap(Isolate* isolate, Handle<JSObject> object,
       old_map->set_owns_descriptors(false);
       DCHECK(old_map->is_abandoned_prototype_map());
       // Ensure that no transition was inserted for prototype migrations.
-      DCHECK_EQ(0, TransitionsAccessor(isolate, old_map).NumberOfTransitions());
+      DCHECK_EQ(0,
+                TransitionsAccessor(isolate, *old_map).NumberOfTransitions());
       DCHECK(new_map->GetBackPointer(isolate).IsUndefined(isolate));
       DCHECK(object->map(isolate) != *old_map);
     }
@@ -4198,10 +4203,10 @@ Maybe<bool> JSObject::PreventExtensionsWithTransition(
 
   Handle<Map> old_map(object->map(), isolate);
   old_map = Map::Update(isolate, old_map);
-  TransitionsAccessor transitions(isolate, old_map);
-  Map transition = transitions.SearchSpecial(*transition_marker);
-  if (!transition.is_null()) {
-    Handle<Map> transition_map(transition, isolate);
+  Handle<Map> transition_map;
+  MaybeHandle<Map> maybe_transition_map =
+      TransitionsAccessor::SearchSpecial(isolate, old_map, *transition_marker);
+  if (maybe_transition_map.ToHandle(&transition_map)) {
     DCHECK(transition_map->has_dictionary_elements() ||
            transition_map->has_typed_array_elements() ||
            transition_map->elements_kind() == SLOW_STRING_WRAPPER_ELEMENTS ||
@@ -4211,7 +4216,7 @@ Maybe<bool> JSObject::PreventExtensionsWithTransition(
       new_element_dictionary = CreateElementDictionary(isolate, object);
     }
     JSObject::MigrateToMap(isolate, object, transition_map);
-  } else if (transitions.CanHaveMoreTransitions()) {
+  } else if (TransitionsAccessor::CanHaveMoreTransitions(isolate, old_map)) {
     // Create a new descriptor array with the appropriate property attributes
     Handle<Map> new_map = Map::CopyForPreventExtensions(
         isolate, old_map, attrs, transition_marker, "CopyForPreventExtensions");
@@ -4298,10 +4303,10 @@ Maybe<bool> JSObject::PreventExtensionsWithTransition(
   return Just(true);
 }
 
-Handle<Object> JSObject::FastPropertyAt(Handle<JSObject> object,
+Handle<Object> JSObject::FastPropertyAt(Isolate* isolate,
+                                        Handle<JSObject> object,
                                         Representation representation,
                                         FieldIndex index) {
-  Isolate* isolate = object->GetIsolate();
   Handle<Object> raw_value(object->RawFastPropertyAt(index), isolate);
   return Object::WrapForRead(isolate, raw_value, representation);
 }
@@ -4843,11 +4848,9 @@ void JSObject::InvalidatePrototypeValidityCell(JSGlobalObject global) {
   InvalidateOnePrototypeValidityCellInternal(global.map());
 }
 
-Maybe<bool> JSObject::SetPrototype(Handle<JSObject> object,
+Maybe<bool> JSObject::SetPrototype(Isolate* isolate, Handle<JSObject> object,
                                    Handle<Object> value, bool from_javascript,
                                    ShouldThrow should_throw) {
-  Isolate* isolate = object->GetIsolate();
-
 #ifdef DEBUG
   int size = object->Size();
 #endif
@@ -5218,25 +5221,25 @@ MaybeHandle<Object> JSObject::GetPropertyWithInterceptor(LookupIterator* it,
   return GetPropertyWithInterceptorInternal(it, it->GetInterceptor(), done);
 }
 
-Maybe<bool> JSObject::HasRealNamedProperty(Handle<JSObject> object,
+Maybe<bool> JSObject::HasRealNamedProperty(Isolate* isolate,
+                                           Handle<JSObject> object,
                                            Handle<Name> name) {
-  Isolate* isolate = object->GetIsolate();
   PropertyKey key(isolate, name);
   LookupIterator it(isolate, object, key, LookupIterator::OWN_SKIP_INTERCEPTOR);
   return HasProperty(&it);
 }
 
-Maybe<bool> JSObject::HasRealElementProperty(Handle<JSObject> object,
+Maybe<bool> JSObject::HasRealElementProperty(Isolate* isolate,
+                                             Handle<JSObject> object,
                                              uint32_t index) {
-  Isolate* isolate = object->GetIsolate();
   LookupIterator it(isolate, object, index, object,
                     LookupIterator::OWN_SKIP_INTERCEPTOR);
   return HasProperty(&it);
 }
 
-Maybe<bool> JSObject::HasRealNamedCallbackProperty(Handle<JSObject> object,
+Maybe<bool> JSObject::HasRealNamedCallbackProperty(Isolate* isolate,
+                                                   Handle<JSObject> object,
                                                    Handle<Name> name) {
-  Isolate* isolate = object->GetIsolate();
   PropertyKey key(isolate, name);
   LookupIterator it(isolate, object, key, LookupIterator::OWN_SKIP_INTERCEPTOR);
   Maybe<PropertyAttributes> maybe_result = GetPropertyAttributes(&it);

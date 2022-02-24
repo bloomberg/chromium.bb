@@ -12,6 +12,7 @@
 #include "components/history_clusters/core/on_device_clustering_features.h"
 #include "components/optimization_guide/core/entity_metadata_provider.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/site_engagement/core/site_engagement_score_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,6 +22,27 @@ namespace {
 using ::testing::ElementsAre;
 using ::testing::FloatEq;
 using ::testing::UnorderedElementsAre;
+
+class TestSiteEngagementScoreProvider
+    : public site_engagement::SiteEngagementScoreProvider {
+ public:
+  TestSiteEngagementScoreProvider() = default;
+  ~TestSiteEngagementScoreProvider() = default;
+
+  double GetScore(const GURL& url) const override {
+    ++count_get_score_invocations_;
+    return 0;
+  }
+
+  double GetTotalEngagementPoints() const override { return 1; }
+
+  size_t count_get_score_invocations() const {
+    return count_get_score_invocations_;
+  }
+
+ private:
+  mutable size_t count_get_score_invocations_ = 0;
+};
 
 class TestEntityMetadataProvider
     : public optimization_guide::EntityMetadataProvider {
@@ -74,23 +96,26 @@ class OnDeviceClusteringWithoutContentBackendTest : public ::testing::Test {
          {"dedupe_similar_visits", "false"},
          {"min_page_topics_model_version_for_visibility", "125"},
          {"include_categories_in_keywords", "true"},
-         {"exclude_keywords_from_noisy_visits", "false"}});
+         {"exclude_keywords_from_noisy_visits", "false"},
+         {"split_clusters_at_search_visits", "false"}});
   }
 
   void SetUp() override {
     clustering_backend_ = std::make_unique<OnDeviceClusteringBackend>(
         /*template_url_service=*/nullptr, /*entity_metadata_provider=*/nullptr,
-        /*engagement_score_provider=*/nullptr);
+        &test_site_engagement_provider_);
   }
 
   void TearDown() override { clustering_backend_.reset(); }
 
   std::vector<history::Cluster> ClusterVisits(
+      ClusteringRequestSource clustering_request_source,
       const std::vector<history::AnnotatedVisit>& visits) {
     std::vector<history::Cluster> clusters;
 
     base::RunLoop run_loop;
     clustering_backend_->GetClusters(
+        clustering_request_source,
         base::BindOnce(
             [](base::RunLoop* run_loop,
                std::vector<history::Cluster>* out_clusters,
@@ -105,16 +130,22 @@ class OnDeviceClusteringWithoutContentBackendTest : public ::testing::Test {
     return clusters;
   }
 
+  size_t GetSiteEngagementGetScoreInvocationCount() const {
+    return test_site_engagement_provider_.count_get_score_invocations();
+  }
+
  protected:
   std::unique_ptr<OnDeviceClusteringBackend> clustering_backend_;
   base::test::TaskEnvironment task_environment_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  TestSiteEngagementScoreProvider test_site_engagement_provider_;
 };
 
 TEST_F(OnDeviceClusteringWithoutContentBackendTest, ClusterNoVisits) {
-  EXPECT_TRUE(ClusterVisits({}).empty());
+  EXPECT_TRUE(
+      ClusterVisits(ClusteringRequestSource::kJourneysPage, {}).empty());
 }
 
 TEST_F(OnDeviceClusteringWithoutContentBackendTest, ClusterOneVisit) {
@@ -125,7 +156,8 @@ TEST_F(OnDeviceClusteringWithoutContentBackendTest, ClusterOneVisit) {
       testing::CreateDefaultAnnotatedVisit(1, GURL("https://google.com/"));
   visits.push_back(visit);
 
-  std::vector<history::Cluster> result_clusters = ClusterVisits(visits);
+  std::vector<history::Cluster> result_clusters =
+      ClusterVisits(ClusteringRequestSource::kJourneysPage, visits);
   EXPECT_THAT(testing::ToVisitResults(result_clusters),
               ElementsAre(ElementsAre(testing::VisitResult(1, 1.0))));
 }
@@ -149,7 +181,8 @@ TEST_F(OnDeviceClusteringWithoutContentBackendTest,
   visit2.referring_visit_of_redirect_chain_start = 1;
   visits.push_back(visit2);
 
-  std::vector<history::Cluster> result_clusters = ClusterVisits(visits);
+  std::vector<history::Cluster> result_clusters =
+      ClusterVisits(ClusteringRequestSource::kJourneysPage, visits);
   EXPECT_THAT(testing::ToVisitResults(result_clusters),
               ElementsAre(ElementsAre(testing::VisitResult(1, 1.0),
                                       testing::VisitResult(2, 1.0))));
@@ -183,7 +216,8 @@ TEST_F(OnDeviceClusteringWithoutContentBackendTest,
   visit2.opener_visit_of_redirect_chain_start = 1;
   visits.push_back(visit2);
 
-  std::vector<history::Cluster> result_clusters = ClusterVisits(visits);
+  std::vector<history::Cluster> result_clusters =
+      ClusterVisits(ClusteringRequestSource::kJourneysPage, visits);
   EXPECT_THAT(testing::ToVisitResults(result_clusters),
               ElementsAre(ElementsAre(testing::VisitResult(1, 1.0),
                                       testing::VisitResult(2, 1.0))));
@@ -210,7 +244,8 @@ TEST_F(OnDeviceClusteringWithoutContentBackendTest, ClusterTwoVisitsTiedByURL) {
       testing::CreateDefaultAnnotatedVisit(2, GURL("https://google.com/"));
   visits.push_back(visit2);
 
-  std::vector<history::Cluster> result_clusters = ClusterVisits(visits);
+  std::vector<history::Cluster> result_clusters =
+      ClusterVisits(ClusteringRequestSource::kJourneysPage, visits);
   EXPECT_THAT(testing::ToVisitResults(result_clusters),
               ElementsAre(ElementsAre(testing::VisitResult(
                   2, 1.0, {testing::VisitResult(1, 0.0)}))));
@@ -236,7 +271,8 @@ TEST_F(OnDeviceClusteringWithoutContentBackendTest, DedupeClusters) {
       testing::CreateDefaultAnnotatedVisit(2, GURL("https://google.com/"));
   visits.push_back(visit2);
 
-  std::vector<history::Cluster> result_clusters = ClusterVisits(visits);
+  std::vector<history::Cluster> result_clusters =
+      ClusterVisits(ClusteringRequestSource::kJourneysPage, visits);
   EXPECT_THAT(testing::ToVisitResults(result_clusters),
               ElementsAre(ElementsAre(testing::VisitResult(
                   2, 1.0, {testing::VisitResult(1, 0.0)}))));
@@ -256,7 +292,8 @@ TEST_F(OnDeviceClusteringWithoutContentBackendTest,
   visit2.referring_visit_of_redirect_chain_start = 1;
   visits.push_back(visit2);
 
-  std::vector<history::Cluster> result_clusters = ClusterVisits(visits);
+  std::vector<history::Cluster> result_clusters =
+      ClusterVisits(ClusteringRequestSource::kJourneysPage, visits);
   EXPECT_THAT(testing::ToVisitResults(result_clusters),
               ElementsAre(ElementsAre(testing::VisitResult(1, 1.0),
                                       testing::VisitResult(2, 1.0))));
@@ -296,7 +333,8 @@ TEST_F(OnDeviceClusteringWithoutContentBackendTest, MultipleClusters) {
       testing::CreateDefaultAnnotatedVisit(3, GURL("https://whatever.com/"));
   visits.push_back(visit3);
 
-  std::vector<history::Cluster> result_clusters = ClusterVisits(visits);
+  std::vector<history::Cluster> result_clusters =
+      ClusterVisits(ClusteringRequestSource::kJourneysPage, visits);
   EXPECT_THAT(
       testing::ToVisitResults(result_clusters),
       ElementsAre(ElementsAre(testing::VisitResult(2, 1.0),
@@ -339,7 +377,8 @@ TEST_F(OnDeviceClusteringWithoutContentBackendTest,
   visit3.visit_row.visit_time = base::Time::Now() + base::Hours(2);
   visits.push_back(visit3);
 
-  std::vector<history::Cluster> result_clusters = ClusterVisits(visits);
+  std::vector<history::Cluster> result_clusters =
+      ClusterVisits(ClusteringRequestSource::kJourneysPage, visits);
   EXPECT_THAT(testing::ToVisitResults(result_clusters),
               ElementsAre(ElementsAre(testing::VisitResult(3, 1.0)),
                           ElementsAre(testing::VisitResult(2, 1.0),
@@ -412,7 +451,8 @@ TEST_F(OnDeviceClusteringWithContentBackendTest, ClusterOnContent) {
   visit5.referring_visit_of_redirect_chain_start = 6;
   visits.push_back(visit5);
 
-  std::vector<history::Cluster> result_clusters = ClusterVisits(visits);
+  std::vector<history::Cluster> result_clusters =
+      ClusterVisits(ClusteringRequestSource::kJourneysPage, visits);
   EXPECT_THAT(testing::ToVisitResults(result_clusters),
               ElementsAre(ElementsAre(
                   testing::VisitResult(2, 1.0),
@@ -460,7 +500,8 @@ TEST_F(OnDeviceClusteringWithContentBackendTest,
   visit5.content_annotations.model_annotations.entities = {{"irrelevant", 1}};
   visits.push_back(visit5);
 
-  std::vector<history::Cluster> result_clusters = ClusterVisits(visits);
+  std::vector<history::Cluster> result_clusters =
+      ClusterVisits(ClusteringRequestSource::kJourneysPage, visits);
   EXPECT_THAT(
       testing::ToVisitResults(result_clusters),
       ElementsAre(ElementsAre(testing::VisitResult(2, 1.0),
@@ -525,20 +566,25 @@ TEST_F(OnDeviceClusteringWithAllTheBackendsTest,
 
   history::AnnotatedVisit visit3 = testing::CreateDefaultAnnotatedVisit(
       3, GURL("http://non-default-engine.com/?q=nometadata#whatever"));
-  visit2.content_annotations.model_annotations.entities = {
+  visit3.content_annotations.model_annotations.entities = {
       history::VisitContentModelAnnotations::Category("nometadata", 30),
   };
+  visit3.content_annotations.search_terms = u"nometadata";
+  visit3.content_annotations.search_normalized_url =
+      GURL("http://non-default-engine.com/?q=nometadata");
   visit3.content_annotations.model_annotations.page_topics_model_version = 127;
   visit3.content_annotations.model_annotations.visibility_score = 0.5;
   visits.push_back(visit3);
 
-  std::vector<history::Cluster> result_clusters = ClusterVisits(visits);
+  std::vector<history::Cluster> result_clusters =
+      ClusterVisits(ClusteringRequestSource::kJourneysPage, visits);
   ASSERT_EQ(result_clusters.size(), 2u);
   EXPECT_THAT(
       testing::ToVisitResults(result_clusters),
-      ElementsAre(ElementsAre(testing::VisitResult(
-                      2, 1.0, {testing::VisitResult(1, 0.0, {}, true)}, true)),
-                  ElementsAre(testing::VisitResult(3, 1.0, {}, true))));
+      ElementsAre(
+          ElementsAre(testing::VisitResult(
+              2, 1.0, {testing::VisitResult(1, 0.0, {}, u"foo")}, u"foo")),
+          ElementsAre(testing::VisitResult(3, 1.0, {}, u"nometadata"))));
   // Make sure visits are normalized.
   history::Cluster cluster = result_clusters.at(0);
   ASSERT_EQ(cluster.visits.size(), 1u);
@@ -594,6 +640,167 @@ TEST_F(OnDeviceClusteringWithAllTheBackendsTest,
   histogram_tester.ExpectUniqueSample(
       "History.Clusters.Backend.BatchEntityLookupSize", 2, 1);
 }
+
+class EngagementCacheOnDeviceClusteringWithoutContentBackendTest
+    : public OnDeviceClusteringWithoutContentBackendTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  EngagementCacheOnDeviceClusteringWithoutContentBackendTest() {
+    const base::FieldTrialParams on_device_clustering_feature_parameters = {
+        {"content_clustering_enabled", "false"},
+        {"dedupe_similar_visits", "false"},
+        {"min_page_topics_model_version_for_visibility", "125"},
+        {"include_categories_in_keywords", "true"},
+        {"exclude_keywords_from_noisy_visits", "false"}};
+
+    if (GetParam()) {
+      scoped_feature_list_.InitWithFeaturesAndParameters(
+          {{features::kOnDeviceClustering,
+            on_device_clustering_feature_parameters},
+           {{features::kUseEngagementScoreCache}, {}}},
+          {});
+    } else {
+      scoped_feature_list_.InitWithFeaturesAndParameters(
+          {{features::kOnDeviceClustering,
+            on_device_clustering_feature_parameters}},
+          {features::kUseEngagementScoreCache});
+    }
+  }
+
+  bool IsCacheStoreFeatureEnabled() const { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_P(EngagementCacheOnDeviceClusteringWithoutContentBackendTest,
+       EngagementScoreCache) {
+  base::HistogramTester histogram_tester;
+  std::vector<history::AnnotatedVisit> visits;
+
+  // Add 2 different hosts to |visits|.
+  history::AnnotatedVisit visit1 =
+      testing::CreateDefaultAnnotatedVisit(1, GURL("https://github.com/"));
+  visits.push_back(visit1);
+
+  history::AnnotatedVisit visit2 =
+      testing::CreateDefaultAnnotatedVisit(2, GURL("https://github.com/"));
+  visits.push_back(visit2);
+
+  history::AnnotatedVisit visit3 =
+      testing::CreateDefaultAnnotatedVisit(4, GURL("https://github.com/"));
+  visits.push_back(visit3);
+
+  history::AnnotatedVisit visit4 =
+      testing::CreateDefaultAnnotatedVisit(10, GURL("https://github.com/"));
+  visits.push_back(visit4);
+
+  history::AnnotatedVisit visit5 =
+      testing::CreateDefaultAnnotatedVisit(3, GURL("https://github2.com/"));
+  visits.push_back(visit5);
+
+  std::vector<history::Cluster> result_clusters_1 =
+      ClusterVisits(ClusteringRequestSource::kJourneysPage, visits);
+  EXPECT_EQ(IsCacheStoreFeatureEnabled() ? 2u : 5u,
+            GetSiteEngagementGetScoreInvocationCount());
+
+  // No new queries should be issued when cache store is enabled.
+  std::vector<history::Cluster> result_clusters_2 =
+      ClusterVisits(ClusteringRequestSource::kJourneysPage, visits);
+  EXPECT_EQ(IsCacheStoreFeatureEnabled() ? 2u : 10u,
+            GetSiteEngagementGetScoreInvocationCount());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    EngagementCacheOnDeviceClusteringWithoutContentBackendTest,
+    ::testing::Bool());
+
+class BatchedClusteringTaskOnDeviceClusteringWithoutContentBackendTest
+    : public OnDeviceClusteringWithoutContentBackendTest,
+      public ::testing::WithParamInterface<
+          std::tuple<bool, ClusteringRequestSource>> {
+ public:
+  BatchedClusteringTaskOnDeviceClusteringWithoutContentBackendTest() {
+    const base::FieldTrialParams on_device_clustering_feature_parameters = {
+        {"content_clustering_enabled", "false"},
+        {"dedupe_similar_visits", "false"},
+        {"min_page_topics_model_version_for_visibility", "125"},
+        {"include_categories_in_keywords", "true"},
+        {"exclude_keywords_from_noisy_visits", "false"}};
+
+    base::test::ScopedFeatureList::FeatureAndParams on_device_clustering(
+        features::kOnDeviceClustering, on_device_clustering_feature_parameters);
+
+    // expected_size_of_batches is 1.
+    const base::FieldTrialParams batched_clustering_feature_parameters = {
+        {"clustering_task_batch_size", "1"}};
+    base::test::ScopedFeatureList::FeatureAndParams batched_clustering(
+        features::kSplitClusteringTasksToSmallerBatches,
+        batched_clustering_feature_parameters);
+
+    if (IsBatchingEnabled()) {
+      scoped_feature_list_.InitWithFeaturesAndParameters(
+          {{on_device_clustering, batched_clustering}}, {});
+    } else {
+      scoped_feature_list_.InitWithFeaturesAndParameters(
+          {{features::kOnDeviceClustering,
+            on_device_clustering_feature_parameters}},
+          {features::kSplitClusteringTasksToSmallerBatches});
+    }
+  }
+
+  bool IsBatchingEnabled() const { return std::get<0>(GetParam()); }
+
+  ClusteringRequestSource GetClusteringRequestSource() const {
+    return std::get<1>(GetParam());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_P(BatchedClusteringTaskOnDeviceClusteringWithoutContentBackendTest,
+       Baseline) {
+  base::HistogramTester histogram_tester;
+  std::vector<history::AnnotatedVisit> visits;
+
+  // Add 1000 visits to |visits|.
+  for (int i = 0; i < 1000; ++i) {
+    visits.push_back(testing::CreateDefaultAnnotatedVisit(
+        i + 1, GURL("https://github.com/")));
+  }
+
+  std::vector<history::Cluster> result_clusters_1 =
+      ClusterVisits(GetClusteringRequestSource(), visits);
+  EXPECT_EQ(1u, GetSiteEngagementGetScoreInvocationCount());
+
+  size_t expected_number_of_batches = 1;
+  size_t expected_size_of_batches = 1000;
+  if (IsBatchingEnabled() &&
+      GetClusteringRequestSource() ==
+          ClusteringRequestSource::kKeywordCacheGeneration) {
+    expected_number_of_batches = 1000;
+    expected_size_of_batches = 1;
+  }
+
+  histogram_tester.ExpectTotalCount(
+      "Journeys.PartialOnBatchEntityMetadataRetrieved.BatchSize",
+      expected_number_of_batches);
+  histogram_tester.ExpectUniqueSample(
+      "Journeys.PartialOnBatchEntityMetadataRetrieved.BatchSize",
+      expected_size_of_batches, expected_number_of_batches);
+}
+
+const bool kDirectExecutorEnabled[]{true, false};
+
+INSTANTIATE_TEST_SUITE_P(
+    BatchedClusteringTaskOnDeviceClusteringWithoutContentBackendTest,
+    BatchedClusteringTaskOnDeviceClusteringWithoutContentBackendTest,
+    ::testing::Combine(
+        ::testing::ValuesIn(kDirectExecutorEnabled),
+        ::testing::Values(ClusteringRequestSource::kJourneysPage,
+                          ClusteringRequestSource::kKeywordCacheGeneration)));
 
 }  // namespace
 }  // namespace history_clusters

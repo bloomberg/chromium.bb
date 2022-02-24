@@ -20,6 +20,7 @@
 
 #include "src/program_builder.h"
 #include "src/sem/call.h"
+#include "src/sem/function.h"
 #include "src/sem/variable.h"
 #include "src/transform/simplify_pointers.h"
 
@@ -33,7 +34,7 @@ namespace transform {
 ArrayLengthFromUniform::ArrayLengthFromUniform() = default;
 ArrayLengthFromUniform::~ArrayLengthFromUniform() = default;
 
-/// Iterate over all arrayLength() intrinsics that operate on
+/// Iterate over all arrayLength() builtins that operate on
 /// storage buffer variables.
 /// @param ctx the CloneContext.
 /// @param functor of type void(const ast::CallExpression*, const
@@ -45,7 +46,7 @@ template <typename F>
 static void IterateArrayLengthOnStorageVar(CloneContext& ctx, F&& functor) {
   auto& sem = ctx.src->Sem();
 
-  // Find all calls to the arrayLength() intrinsic.
+  // Find all calls to the arrayLength() builtin.
   for (auto* node : ctx.src->ASTNodes().Objects()) {
     auto* call_expr = node->As<ast::CallExpression>();
     if (!call_expr) {
@@ -53,8 +54,8 @@ static void IterateArrayLengthOnStorageVar(CloneContext& ctx, F&& functor) {
     }
 
     auto* call = sem.Get(call_expr);
-    auto* intrinsic = call->Target()->As<sem::Intrinsic>();
-    if (!intrinsic || intrinsic->Type() != sem::IntrinsicType::kArrayLength) {
+    auto* builtin = call->Target()->As<sem::Builtin>();
+    if (!builtin || builtin->Type() != sem::BuiltinType::kArrayLength) {
       continue;
     }
 
@@ -93,13 +94,23 @@ static void IterateArrayLengthOnStorageVar(CloneContext& ctx, F&& functor) {
   }
 }
 
+bool ArrayLengthFromUniform::ShouldRun(const Program* program,
+                                       const DataMap&) const {
+  for (auto* fn : program->AST().Functions()) {
+    if (auto* sem_fn = program->Sem().Get(fn)) {
+      for (auto* builtin : sem_fn->DirectlyCalledBuiltins()) {
+        if (builtin->Type() == sem::BuiltinType::kArrayLength) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
 void ArrayLengthFromUniform::Run(CloneContext& ctx,
                                  const DataMap& inputs,
-                                 DataMap& outputs) {
-  if (!Requires<SimplifyPointers>(ctx)) {
-    return;
-  }
-
+                                 DataMap& outputs) const {
   auto* cfg = inputs.Get<Config>();
   if (cfg == nullptr) {
     ctx.dst->Diagnostics().add_error(
@@ -143,10 +154,8 @@ void ArrayLengthFromUniform::Run(CloneContext& ctx,
       buffer_size_ubo = ctx.dst->Global(
           ctx.dst->Sym(), ctx.dst->ty.Of(buffer_size_struct),
           ast::StorageClass::kUniform,
-          ast::DecorationList{
-              ctx.dst->create<ast::GroupDecoration>(cfg->ubo_binding.group),
-              ctx.dst->create<ast::BindingDecoration>(
-                  cfg->ubo_binding.binding)});
+          ast::AttributeList{ctx.dst->GroupAndBinding(
+              cfg->ubo_binding.group, cfg->ubo_binding.binding)});
     }
     return buffer_size_ubo;
   };

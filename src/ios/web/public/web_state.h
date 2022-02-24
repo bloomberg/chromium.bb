@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_WEB_STATE_H_
 #define IOS_WEB_PUBLIC_WEB_STATE_H_
 
+#import <Foundation/Foundation.h>
+
 #include <stdint.h>
 
 #include <map>
@@ -50,14 +52,20 @@ namespace web {
 class BrowserState;
 struct FaviconStatus;
 class NavigationManager;
-enum class Permission;
-enum class PermissionState;
+enum Permission : NSUInteger;
+enum PermissionState : NSUInteger;
 class SessionCertificatePolicyCache;
 class WebFrame;
 class WebFramesManager;
 class WebStateDelegate;
 class WebStateObserver;
 class WebStatePolicyDecider;
+
+// Normally it would be a bug for multiple WebStates to be realized in quick
+// succession. However, there are some specific use cases where this is
+// expected. In these scenarios call IgnoreOverRealizationCheck() before
+// each expected -ForceRealized.
+void IgnoreOverRealizationCheck();
 
 // Core interface for interaction with the web.
 class WebState : public base::SupportsUserData {
@@ -74,6 +82,13 @@ class WebState : public base::SupportsUserData {
     // clicking a link with a blank target.  Used to determine whether the
     // WebState is allowed to be closed via window.close().
     bool created_with_opener;
+
+    // Value used to set the last time the WebState was made active; this
+    // is the value that will be returned by GetLastActiveTime(). If this
+    // is left default initialized, then the value will not be passed on
+    // to the WebState and GetLastActiveTime() will return the WebState's
+    // creation time.
+    base::Time last_active_time;
   };
 
   // Parameters for the OpenURL() method.
@@ -235,6 +250,10 @@ class WebState : public base::SupportsUserData {
   // visibilitychange event.
   virtual void DidRevealWebContent() = 0;
 
+  // Get the last time that the WebState was made active (either when it was
+  // created or shown with WasShown()).
+  virtual base::Time GetLastActiveTime() const = 0;
+
   // Must be called when the WebState becomes shown/hidden.
   virtual void WasShown() = 0;
   virtual void WasHidden() = 0;
@@ -347,6 +366,11 @@ class WebState : public base::SupportsUserData {
   virtual const FaviconStatus& GetFaviconStatus() const = 0;
   virtual void SetFaviconStatus(const FaviconStatus& favicon_status) = 0;
 
+  // Returns the number of items in the NavigationManager, excluding
+  // pending entries.
+  // TODO(crbug.com/533848): Update to return size_t.
+  virtual int GetNavigationItemCount() const = 0;
+
   // Gets the URL currently being displayed in the URL bar, if there is one.
   // This URL might be a pending navigation that hasn't committed yet, so it is
   // not guaranteed to match the current page in this WebState. A typical
@@ -450,6 +474,13 @@ class WebState : public base::SupportsUserData {
       API_AVAILABLE(ios(15.0)) = 0;
   virtual void SetStateForPermission(PermissionState state,
                                      Permission permission)
+      API_AVAILABLE(ios(15.0)) = 0;
+
+  // Gets a mapping of all available permissions and their states.
+  // Note that both key and value are in NSNumber format, and should be
+  // translated to NSUInteger and casted to web::Permission or
+  // web::PermissionState before use.
+  virtual NSDictionary<NSNumber*, NSNumber*>* GetStatesForAllPermissions() const
       API_AVAILABLE(ios(15.0)) = 0;
 
  protected:

@@ -218,7 +218,7 @@ std::string DisplayMtl::getVendorString()
     return GetVendorString(mMetalDeviceVendorId);
 }
 
-std::string DisplayMtl::getVersionString()
+std::string DisplayMtl::getVersionString(bool includeFullVersion)
 {
     ANGLE_MTL_OBJC_SCOPE
     {
@@ -1017,7 +1017,6 @@ void DisplayMtl::initializeTextureCaps() const
     mNativeExtensions.readDepthNV         = false;
     mNativeExtensions.readStencilNV       = false;
     mNativeExtensions.depthBufferFloat2NV = false;
-    mNativeExtensions.textureCompressionAstcLdrKHR &= supportsAppleGPUFamily(2);
 }
 
 void DisplayMtl::initializeLimitations()

@@ -40,7 +40,7 @@
     "@types/offscreencanvas": "^2019.6.2",
     "@types/serve-index": "^1.9.1",
     "@typescript-eslint/parser": "^4.22.0",
-    "@webgpu/types": "0.1.9",
+    "@webgpu/types": "0.1.11",
     "ansi-colors": "4.1.1",
     "babel-plugin-add-header-comment": "^1.0.3",
     "babel-plugin-const-enum": "^1.0.1",

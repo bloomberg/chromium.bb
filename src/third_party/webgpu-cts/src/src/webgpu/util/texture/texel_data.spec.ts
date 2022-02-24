@@ -53,14 +53,14 @@ function doTest(
   const { ReadbackTypedArray, shaderType } = getComponentReadbackTraits(getSingleDataType(format));
 
   const shader = `
-  [[group(0), binding(0)]] var tex : texture_2d<${shaderType}>;
+  @group(0) @binding(0) var tex : texture_2d<${shaderType}>;
 
   struct Output {
     ${rep.componentOrder.map(C => `result${C} : ${shaderType};`).join('\n')}
   };
-  [[group(0), binding(1)]] var<storage, read_write> output : Output;
+  @group(0) @binding(1) var<storage, read_write> output : Output;
 
-  [[stage(compute), workgroup_size(1)]]
+  @stage(compute) @workgroup_size(1)
   fn main() {
       var texel : vec4<${shaderType}> = textureLoad(tex, vec2<i32>(0, 0), 0);
       ${rep.componentOrder.map(C => `output.result${C} = texel.${C.toLowerCase()};`).join('\n')}

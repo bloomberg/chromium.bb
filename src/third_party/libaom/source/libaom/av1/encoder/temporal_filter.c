@@ -33,6 +33,7 @@
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/gop_structure.h"
 #include "av1/encoder/mcomp.h"
+#include "av1/encoder/pass2_strategy.h"
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/reconinter_enc.h"
 #include "av1/encoder/segmentation.h"
@@ -138,6 +139,7 @@ static void tf_motion_search(AV1_COMP *cpi, MACROBLOCK *mb,
   int_mv best_mv;  // Searched motion vector.
   int block_mse = INT_MAX;
   MV block_mv = kZeroMv;
+  const int q = av1_get_q(cpi);
 
   av1_make_default_fullpel_ms_params(&full_ms_params, cpi, mb, block_size,
                                      &baseline_mv, search_site_cfg,
@@ -145,6 +147,12 @@ static void tf_motion_search(AV1_COMP *cpi, MACROBLOCK *mb,
   av1_set_mv_search_method(&full_ms_params, search_site_cfg, search_method);
   full_ms_params.run_mesh_search = 1;
   full_ms_params.mv_cost_params.mv_cost_type = mv_cost_type;
+
+  if (cpi->sf.mv_sf.prune_mesh_search == PRUNE_MESH_SEARCH_LVL_1) {
+    // Enable prune_mesh_search based on q for PRUNE_MESH_SEARCH_LVL_1.
+    full_ms_params.prune_mesh_search = (q <= 20) ? 0 : 1;
+    full_ms_params.mesh_search_mv_diff_threshold = 2;
+  }
 
   av1_full_pixel_search(start_mv, &full_ms_params, step_param,
                         cond_cost_list(cpi, cost_list), &best_mv.as_fullmv,
@@ -198,6 +206,12 @@ static void tf_motion_search(AV1_COMP *cpi, MACROBLOCK *mb,
                                  search_method);
         full_ms_params.run_mesh_search = 1;
         full_ms_params.mv_cost_params.mv_cost_type = mv_cost_type;
+
+        if (cpi->sf.mv_sf.prune_mesh_search == PRUNE_MESH_SEARCH_LVL_1) {
+          // Enable prune_mesh_search based on q for PRUNE_MESH_SEARCH_LVL_1.
+          full_ms_params.prune_mesh_search = (q <= 20) ? 0 : 1;
+          full_ms_params.mesh_search_mv_diff_threshold = 2;
+        }
 
         av1_full_pixel_search(start_mv, &full_ms_params, step_param,
                               cond_cost_list(cpi, cost_list),
@@ -914,13 +928,6 @@ static void tf_do_filtering(AV1_COMP *cpi) {
   tf_restore_state(mbd, input_mb_mode_info, input_buffer, num_planes);
 }
 
-int av1_calc_arf_boost(const TWO_PASS *twopass,
-                       const TWO_PASS_FRAME *twopass_frame,
-                       const PRIMARY_RATE_CONTROL *p_rc, FRAME_INFO *frame_info,
-                       int offset, int f_frames, int b_frames,
-                       int *num_fpstats_used, int *num_fpstats_required,
-                       int project_gfu_boost);
-
 /*!\brief Setups the frame buffer for temporal filtering. This fuction
  * determines how many frames will be used for temporal filtering and then
  * groups them into a buffer. This function will also estimate the noise level
@@ -1033,6 +1040,11 @@ static void tf_setup_filtering_buffer(AV1_COMP *cpi,
 
     num_frames = AOMMIN(num_frames, gfu_boost / 150);
     num_frames += !(num_frames & 1);  // Make the number odd.
+
+    // Limit the number of frames if noise levels are low and high quantizers.
+    if (noise_levels[AOM_PLANE_Y] < 1.9 && cpi->ppi->p_rc.arf_q > 40)
+      num_frames = AOMMIN(num_frames, cpi->sf.hl_sf.num_frames_used_in_tf);
+
     // Only use 2 neighbours for the second ARF.
     if (update_type == INTNL_ARF_UPDATE) num_frames = AOMMIN(num_frames, 3);
     if (AOMMIN(max_after, max_before) >= num_frames / 2) {
@@ -1306,7 +1318,7 @@ void av1_tf_info_filtering(TEMPORAL_FILTER_INFO *tf_info, AV1_COMP *cpi,
   for (int gf_index = 0; gf_index < gf_group->size; ++gf_index) {
     int update_type = gf_group->update_type[gf_index];
     if (update_type == KF_UPDATE || update_type == ARF_UPDATE) {
-      int buf_idx = update_type == ARF_UPDATE;
+      int buf_idx = gf_group->frame_type[gf_index] == INTER_FRAME;
       int lookahead_idx = gf_group->arf_src_offset[gf_index] +
                           gf_group->cur_frame_idx[gf_index];
       // This function is designed to be called multiple times after

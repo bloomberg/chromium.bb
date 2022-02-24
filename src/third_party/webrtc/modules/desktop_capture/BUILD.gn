@@ -228,10 +228,6 @@ if (is_linux || is_chromeos) {
     pkg_config("egl") {
       packages = [ "egl" ]
     }
-    pkg_config("epoxy") {
-      packages = [ "epoxy" ]
-      ignore_libs = true
-    }
     pkg_config("libdrm") {
       packages = [ "libdrm" ]
       if (!rtc_link_pipewire) {
@@ -565,21 +561,29 @@ rtc_library("desktop_capture_generic") {
       "linux/wayland/base_capturer_pipewire.h",
       "linux/wayland/egl_dmabuf.cc",
       "linux/wayland/egl_dmabuf.h",
+      "linux/wayland/mouse_cursor_monitor_pipewire.cc",
+      "linux/wayland/mouse_cursor_monitor_pipewire.h",
+      "linux/wayland/scoped_glib.cc",
+      "linux/wayland/scoped_glib.h",
+      "linux/wayland/screencast_portal.cc",
+      "linux/wayland/screencast_portal.h",
+      "linux/wayland/shared_screencast_stream.cc",
+      "linux/wayland/shared_screencast_stream.h",
     ]
 
     configs += [
-      ":pipewire_config",
       ":gio",
       ":pipewire",
       ":gbm",
       ":egl",
-      ":epoxy",
       ":libdrm",
     ]
 
     if (!rtc_link_pipewire) {
       deps += [ ":pipewire_stubs" ]
     }
+
+    public_configs += [ ":pipewire_config" ]
 
     deps += [ "../../rtc_base:sanitizer" ]
   }

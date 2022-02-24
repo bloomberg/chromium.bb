@@ -2,7 +2,7 @@
 
 var<workgroup> w : vec3<i32> = vec3<i32>(0, 1, 0);
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
 }
 

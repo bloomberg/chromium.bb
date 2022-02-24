@@ -14,37 +14,15 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
+#include <vector>
 
+#include "absl/strings/string_view.h"
 #include "api/rtc_event_log/rtc_event.h"
 #include "api/units/timestamp.h"
+#include "logging/rtc_event_log/events/rtc_event_field_encoding_parser.h"
 
 namespace webrtc {
-
-class RtcEventBweUpdateLossBased final : public RtcEvent {
- public:
-  static constexpr Type kType = Type::BweUpdateLossBased;
-
-  RtcEventBweUpdateLossBased(int32_t bitrate_bps_,
-                             uint8_t fraction_loss_,
-                             int32_t total_packets_);
-  ~RtcEventBweUpdateLossBased() override;
-
-  Type GetType() const override { return kType; }
-  bool IsConfigEvent() const override { return false; }
-
-  std::unique_ptr<RtcEventBweUpdateLossBased> Copy() const;
-
-  int32_t bitrate_bps() const { return bitrate_bps_; }
-  uint8_t fraction_loss() const { return fraction_loss_; }
-  int32_t total_packets() const { return total_packets_; }
-
- private:
-  RtcEventBweUpdateLossBased(const RtcEventBweUpdateLossBased& other);
-
-  const int32_t bitrate_bps_;
-  const uint8_t fraction_loss_;
-  const int32_t total_packets_;
-};
 
 struct LoggedBweLossBasedUpdate {
   LoggedBweLossBasedUpdate() = default;
@@ -64,6 +42,45 @@ struct LoggedBweLossBasedUpdate {
   int32_t bitrate_bps;
   uint8_t fraction_lost;
   int32_t expected_packets;
+};
+
+class RtcEventBweUpdateLossBased final : public RtcEvent {
+ public:
+  static constexpr Type kType = Type::BweUpdateLossBased;
+
+  RtcEventBweUpdateLossBased(int32_t bitrate_bps_,
+                             uint8_t fraction_loss_,
+                             int32_t total_packets_);
+  ~RtcEventBweUpdateLossBased() override;
+
+  Type GetType() const override { return kType; }
+  bool IsConfigEvent() const override { return false; }
+
+  std::unique_ptr<RtcEventBweUpdateLossBased> Copy() const;
+
+  int32_t bitrate_bps() const { return bitrate_bps_; }
+  uint8_t fraction_loss() const { return fraction_loss_; }
+  int32_t total_packets() const { return total_packets_; }
+
+  static std::string Encode(rtc::ArrayView<const RtcEvent*> batch) {
+    // TODO(terelius): Implement
+    return "";
+  }
+
+  static RtcEventLogParseStatus Parse(
+      absl::string_view encoded_bytes,
+      bool batched,
+      std::vector<LoggedBweLossBasedUpdate>& output) {
+    // TODO(terelius): Implement
+    return RtcEventLogParseStatus::Error("Not Implemented", __FILE__, __LINE__);
+  }
+
+ private:
+  RtcEventBweUpdateLossBased(const RtcEventBweUpdateLossBased& other);
+
+  const int32_t bitrate_bps_;
+  const uint8_t fraction_loss_;
+  const int32_t total_packets_;
 };
 
 }  // namespace webrtc

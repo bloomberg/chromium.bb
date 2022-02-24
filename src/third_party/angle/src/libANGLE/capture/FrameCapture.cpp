@@ -1005,8 +1005,11 @@ void MaybeResetResources(ResourceIDType resourceIDType,
         }
         case ResourceIDType::Framebuffer:
         {
-            ResourceSet &newFramebuffers =
-                resourceTracker->getTrackedResource(ResourceIDType::Framebuffer).getNewResources();
+            TrackedResource &trackedFramebuffers =
+                resourceTracker->getTrackedResource(ResourceIDType::Framebuffer);
+            ResourceSet &newFramebuffers           = trackedFramebuffers.getNewResources();
+            ResourceCalls &framebufferRegenCalls   = trackedFramebuffers.getResourceRegenCalls();
+            ResourceCalls &framebufferRestoreCalls = trackedFramebuffers.getResourceRestoreCalls();
 
             // If we have any new framebuffers generated and not deleted during the run, delete them
             // now
@@ -1031,11 +1034,32 @@ void MaybeResetResources(ResourceIDType resourceIDType,
                     << ", deleteFramebuffers);\n";
             }
 
-            // TODO (http://anglebug.com/4599): Handle framebuffers that need regen
-            // This would only happen if a starting framebuffer was deleted during the run.
-            ASSERT(resourceTracker->getTrackedResource(ResourceIDType::Framebuffer)
-                       .getResourcesToRegen()
-                       .empty());
+            // If any of our starting framebuffers were deleted during the run, regen them
+            ResourceSet &framebuffersToRegen = trackedFramebuffers.getResourcesToRegen();
+            for (GLuint id : framebuffersToRegen)
+            {
+                // Emit their regen calls
+                for (CallCapture &call : framebufferRegenCalls[id])
+                {
+                    out << "    ";
+                    WriteCppReplayForCall(call, replayWriter, out, header, binaryData);
+                    out << ";\n";
+                }
+            }
+
+            // If any of our starting framebuffers were modified during the run, restore their
+            // contents
+            ResourceSet &framebuffersToRestore = trackedFramebuffers.getResourcesToRestore();
+            for (GLuint id : framebuffersToRestore)
+            {
+                // Emit their restore calls
+                for (CallCapture &call : framebufferRestoreCalls[id])
+                {
+                    out << "    ";
+                    WriteCppReplayForCall(call, replayWriter, out, header, binaryData);
+                    out << ";\n";
+                }
+            }
             break;
         }
         case ResourceIDType::Renderbuffer:
@@ -1455,6 +1479,9 @@ void CaptureUpdateResourceIDs(const CallCapture &call,
 
     const IDType *returnedIDs = reinterpret_cast<const IDType *>(param.data[0].data());
 
+    ResourceSet &startingSet =
+        resourceTracker->getTrackedResource(resourceIDType).getStartingResources();
+
     for (GLsizei idIndex = 0; idIndex < n; ++idIndex)
     {
         IDType id                = returnedIDs[idIndex];
@@ -1464,7 +1491,11 @@ void CaptureUpdateResourceIDs(const CallCapture &call,
         params.addValueParam("readBufferOffset", ParamType::TGLsizei, readBufferOffset);
         callsOut->emplace_back(updateFuncName, std::move(params));
 
-        resourceTracker->getTrackedResource(resourceIDType).getNewResources().insert(id.value);
+        // Add only if not in starting resources.
+        if (startingSet.find(id.value) == startingSet.end())
+        {
+            resourceTracker->getTrackedResource(resourceIDType).getNewResources().insert(id.value);
+        }
     }
 }
 
@@ -2553,8 +2584,6 @@ void CaptureBufferResetCalls(const gl::State &replayState,
 
     // Track this as a starting resource that may need to be restored.
     TrackedResource &trackedBuffers = resourceTracker->getTrackedResource(ResourceIDType::Buffer);
-    ResourceSet &startingBuffers    = trackedBuffers.getStartingResources();
-    startingBuffers.insert(bufferID);
 
     // Track calls to regenerate a given buffer
     ResourceCalls &bufferRegenCalls = trackedBuffers.getResourceRegenCalls();
@@ -2562,14 +2591,33 @@ void CaptureBufferResetCalls(const gl::State &replayState,
     Capture(&bufferRegenCalls[bufferID], CaptureGenBuffers(replayState, true, 1, id));
     MaybeCaptureUpdateResourceIDs(resourceTracker, &bufferRegenCalls[bufferID]);
 
+    // Call glBufferStorageEXT when regenerating immutable buffers,
+    // as we can't call glBufferData on restore.
+    if (buffer->isImmutable())
+    {
+        Capture(&bufferRegenCalls[bufferID],
+                CaptureBindBuffer(replayState, true, gl::BufferBinding::Array, *id));
+        Capture(
+            &bufferRegenCalls[bufferID],
+            CaptureBufferStorageEXT(replayState, true, gl::BufferBinding::Array,
+                                    static_cast<GLsizeiptr>(buffer->getSize()),
+                                    buffer->getMapPointer(), buffer->getStorageExtUsageFlags()));
+    }
+
     // Track calls to restore a given buffer's contents
     ResourceCalls &bufferRestoreCalls = trackedBuffers.getResourceRestoreCalls();
     Capture(&bufferRestoreCalls[bufferID],
             CaptureBindBuffer(replayState, true, gl::BufferBinding::Array, *id));
-    Capture(&bufferRestoreCalls[bufferID],
-            CaptureBufferData(replayState, true, gl::BufferBinding::Array,
-                              static_cast<GLsizeiptr>(buffer->getSize()), buffer->getMapPointer(),
-                              buffer->getUsage()));
+
+    // Mutable buffers will be restored here using glBufferData.
+    // Immutable buffers need to be restored below, after maping.
+    if (!buffer->isImmutable())
+    {
+        Capture(&bufferRestoreCalls[bufferID],
+                CaptureBufferData(replayState, true, gl::BufferBinding::Array,
+                                  static_cast<GLsizeiptr>(buffer->getSize()),
+                                  buffer->getMapPointer(), buffer->getUsage()));
+    }
 
     if (buffer->isMapped())
     {
@@ -2588,6 +2636,21 @@ void CaptureBufferResetCalls(const gl::State &replayState,
 
         // Track the bufferID that was just mapped
         bufferMapCalls[bufferID].back().params.setMappedBufferID(buffer->id());
+
+        // Restore immutable mapped buffers. Needs to happen after mapping.
+        if (buffer->isImmutable())
+        {
+            ParamBuffer dataParamBuffer;
+            dataParamBuffer.addValueParam("dest", ParamType::TGLuint, buffer->id().value);
+            ParamCapture captureData("source", ParamType::TvoidConstPointer);
+            CaptureMemory(buffer->getMapPointer(), static_cast<GLsizeiptr>(buffer->getSize()),
+                          &captureData);
+            dataParamBuffer.addParam(std::move(captureData));
+            dataParamBuffer.addValueParam<GLsizeiptr>("size", ParamType::TGLsizeiptr,
+                                                      static_cast<GLsizeiptr>(buffer->getSize()));
+            bufferMapCalls[bufferID].emplace_back("UpdateClientBufferData",
+                                                  std::move(dataParamBuffer));
+        }
     }
 
     // Track calls unmap a buffer that started as unmapped
@@ -2720,6 +2783,11 @@ void CaptureShareGroupMidExecutionSetup(const gl::Context *context,
 
         // Generate binding.
         cap(CaptureGenBuffers(replayState, true, 1, &id));
+
+        resourceTracker->getTrackedResource(ResourceIDType::Buffer)
+            .getStartingResources()
+            .insert(id.value);
+
         MaybeCaptureUpdateResourceIDs(resourceTracker, setupCalls);
 
         // Always use the array buffer binding point to upload data to keep things simple.
@@ -2759,7 +2827,7 @@ void CaptureShareGroupMidExecutionSetup(const gl::Context *context,
                 static_cast<GLsizeiptr>(buffer->getMapOffset()),
                 static_cast<GLsizeiptr>(buffer->getMapLength()),
                 (buffer->getAccessFlags() & GL_MAP_WRITE_BIT) != 0,
-                (buffer->getAccessFlags() & GL_MAP_COHERENT_BIT_EXT) != 0);
+                (buffer->getStorageExtUsageFlags() & GL_MAP_COHERENT_BIT_EXT) != 0);
         }
         else
         {
@@ -3074,6 +3142,11 @@ void CaptureShareGroupMidExecutionSetup(const gl::Context *context,
 
         // Generate renderbuffer id.
         cap(framebufferFuncs.genRenderbuffers(replayState, true, 1, &id));
+
+        resourceTracker->getTrackedResource(ResourceIDType::Renderbuffer)
+            .getStartingResources()
+            .insert(id.value);
+
         MaybeCaptureUpdateResourceIDs(resourceTracker, setupCalls);
         cap(framebufferFuncs.bindRenderbuffer(replayState, true, GL_RENDERBUFFER, id));
 
@@ -3316,6 +3389,11 @@ void CaptureMidExecutionSetup(const gl::Context *context,
         if (vertexArrayID.value != 0)
         {
             cap(CaptureGenVertexArrays(replayState, true, 1, &vertexArrayID));
+
+            resourceTracker->getTrackedResource(ResourceIDType::VertexArray)
+                .getStartingResources()
+                .insert(vertexArrayID.value);
+
             MaybeCaptureUpdateResourceIDs(resourceTracker, setupCalls);
         }
 
@@ -3459,14 +3537,38 @@ void CaptureMidExecutionSetup(const gl::Context *context,
             continue;
         }
 
-        cap(framebufferFuncs.genFramebuffers(replayState, true, 1, &id));
-        MaybeCaptureUpdateResourceIDs(resourceTracker, setupCalls);
-        cap(framebufferFuncs.bindFramebuffer(replayState, true, GL_FRAMEBUFFER, id));
-        currentDrawFramebuffer = currentReadFramebuffer = id;
+        // Track this as a starting resource that may need to be restored
+        TrackedResource &trackedFramebuffers =
+            resourceTracker->getTrackedResource(ResourceIDType::Framebuffer);
+        ResourceSet &startingFramebuffers = trackedFramebuffers.getStartingResources();
+        startingFramebuffers.insert(id.value);
 
-        resourceTracker->getTrackedResource(ResourceIDType::Framebuffer)
-            .getStartingResources()
-            .insert(id.value);
+        // Create two lists of calls for initial setup
+        ResourceCalls &framebufferRegenCalls = trackedFramebuffers.getResourceRegenCalls();
+        CallVector framebufferGenCalls({setupCalls, &framebufferRegenCalls[id.value]});
+
+        // For reset only, delete the framebuffer before genning.  This is okay even if the
+        // framebuffer has already been deleted.
+        Capture(&framebufferRegenCalls[id.value],
+                CaptureDeleteFramebuffers(replayState, true, 1, &id));
+
+        // Gen the framebuffer
+        for (std::vector<CallCapture> *calls : framebufferGenCalls)
+        {
+            Capture(calls, framebufferFuncs.genFramebuffers(replayState, true, 1, &id));
+            MaybeCaptureUpdateResourceIDs(resourceTracker, calls);
+        }
+
+        // Create two lists of calls for remaining setup calls.  One for setup, and one for restore
+        // during reset.
+        ResourceCalls &framebufferRestoreCalls = trackedFramebuffers.getResourceRestoreCalls();
+        CallVector framebufferSetupCalls({setupCalls, &framebufferRestoreCalls[id.value]});
+
+        for (std::vector<CallCapture> *calls : framebufferSetupCalls)
+        {
+            Capture(calls, framebufferFuncs.bindFramebuffer(replayState, true, GL_FRAMEBUFFER, id));
+        }
+        currentDrawFramebuffer = currentReadFramebuffer = id;
 
         // Color Attachments.
         for (const gl::FramebufferAttachment &colorAttachment : framebuffer->getColorAttachments())
@@ -3476,8 +3578,10 @@ void CaptureMidExecutionSetup(const gl::Context *context,
                 continue;
             }
 
-            CaptureFramebufferAttachment(setupCalls, replayState, framebufferFuncs,
-                                         colorAttachment);
+            for (std::vector<CallCapture> *calls : framebufferSetupCalls)
+            {
+                CaptureFramebufferAttachment(calls, replayState, framebufferFuncs, colorAttachment);
+            }
         }
 
         const gl::FramebufferAttachment *depthAttachment = framebuffer->getDepthAttachment();
@@ -3485,8 +3589,11 @@ void CaptureMidExecutionSetup(const gl::Context *context,
         {
             ASSERT(depthAttachment->getBinding() == GL_DEPTH_ATTACHMENT ||
                    depthAttachment->getBinding() == GL_DEPTH_STENCIL_ATTACHMENT);
-            CaptureFramebufferAttachment(setupCalls, replayState, framebufferFuncs,
-                                         *depthAttachment);
+            for (std::vector<CallCapture> *calls : framebufferSetupCalls)
+            {
+                CaptureFramebufferAttachment(calls, replayState, framebufferFuncs,
+                                             *depthAttachment);
+            }
         }
 
         const gl::FramebufferAttachment *stencilAttachment = framebuffer->getStencilAttachment();
@@ -3494,8 +3601,11 @@ void CaptureMidExecutionSetup(const gl::Context *context,
         {
             ASSERT(stencilAttachment->getBinding() == GL_STENCIL_ATTACHMENT ||
                    depthAttachment->getBinding() == GL_DEPTH_STENCIL_ATTACHMENT);
-            CaptureFramebufferAttachment(setupCalls, replayState, framebufferFuncs,
-                                         *stencilAttachment);
+            for (std::vector<CallCapture> *calls : framebufferSetupCalls)
+            {
+                CaptureFramebufferAttachment(calls, replayState, framebufferFuncs,
+                                             *stencilAttachment);
+            }
         }
 
         gl::FramebufferState defaultFramebufferState(
@@ -3507,8 +3617,12 @@ void CaptureMidExecutionSetup(const gl::Context *context,
 
         if (drawBufferStates != defaultDrawBufferStates)
         {
-            cap(CaptureDrawBuffers(replayState, true, static_cast<GLsizei>(drawBufferStates.size()),
-                                   drawBufferStates.data()));
+            for (std::vector<CallCapture> *calls : framebufferSetupCalls)
+            {
+                Capture(calls, CaptureDrawBuffers(replayState, true,
+                                                  static_cast<GLsizei>(drawBufferStates.size()),
+                                                  drawBufferStates.data()));
+            }
         }
     }
 
@@ -4366,6 +4480,7 @@ FrameCaptureShared::FrameCaptureShared()
       mMaxAccessedResourceIDs{},
       mCaptureTrigger(0),
       mCaptureActive(false),
+      mMidExecutionCaptureActive(false),
       mWindowSurfaceContextID({0})
 {
     reset();
@@ -5155,7 +5270,9 @@ void FrameCaptureShared::trackBufferMapping(CallCapture *call,
         call->params.setMappedBufferID(id);
 
         // Track coherent buffer
-        if (coherent)
+        // Check if capture is active to not initialize the coherent buffer tracker on the
+        // first coherent glMapBufferRange call.
+        if (coherent && (isCaptureActive() || mMidExecutionCaptureActive))
         {
             mCoherentBufferTracker.enable();
             uintptr_t data = reinterpret_cast<uintptr_t>(buffer->getMapPointer());
@@ -5806,12 +5923,10 @@ void FrameCaptureShared::maybeCapturePreCallUpdates(
             bool writable =
                 access == GL_WRITE_ONLY_OES || access == GL_WRITE_ONLY || access == GL_READ_WRITE;
 
-            bool coherent = access & GL_MAP_COHERENT_BIT_EXT;
-
             FrameCaptureShared *frameCaptureShared =
                 context->getShareGroup()->getFrameCaptureShared();
             frameCaptureShared->trackBufferMapping(&call, buffer->id(), buffer, offset, length,
-                                                   writable, coherent);
+                                                   writable, false);
             break;
         }
 
@@ -5889,6 +6004,25 @@ void FrameCaptureShared::maybeCapturePreCallUpdates(
         case EntryPoint::GLCopyBufferSubData:
         {
             maybeCaptureCoherentBuffers(context);
+            break;
+        }
+        case EntryPoint::GLDeleteFramebuffers:
+        case EntryPoint::GLDeleteFramebuffersOES:
+        {
+            // Look up how many framebuffers are being deleted
+            GLsizei n = call.params.getParam("n", ParamType::TGLsizei, 0).value.GLsizeiVal;
+
+            // Look up the pointer to list of framebuffers
+            const gl::FramebufferID *framebufferIDs =
+                call.params.getParam("framebuffersPacked", ParamType::TFramebufferIDConstPointer, 1)
+                    .value.FramebufferIDConstPointerVal;
+
+            // For each framebuffer listed for deletion
+            for (int32_t i = 0; i < n; ++i)
+            {
+                // If we're capturing, track what framebuffers have been deleted
+                handleDeletedResource(framebufferIDs[i]);
+            }
             break;
         }
         default:
@@ -6085,7 +6219,10 @@ void FrameCaptureShared::captureCall(const gl::Context *context,
 void FrameCaptureShared::maybeCapturePostCallUpdates(const gl::Context *context)
 {
     // Process resource ID updates.
-    MaybeCaptureUpdateResourceIDs(&mResourceTracker, &mFrameCalls);
+    if (isCaptureActive())
+    {
+        MaybeCaptureUpdateResourceIDs(&mResourceTracker, &mFrameCalls);
+    }
 
     CallCapture &lastCall = mFrameCalls.back();
     switch (lastCall.entryPoint)
@@ -6370,6 +6507,8 @@ void FrameCaptureShared::scanSetupCalls(const gl::Context *context,
 
 void FrameCaptureShared::runMidExecutionCapture(const gl::Context *mainContext)
 {
+    mMidExecutionCaptureActive = true;
+
     // Make sure all pending work for every Context in the share group has completed so all data
     // (buffers, textures, etc.) has been updated and no resources are in use.
     egl::ShareGroup *shareGroup = mainContext->getShareGroup();
@@ -6420,6 +6559,8 @@ void FrameCaptureShared::runMidExecutionCapture(const gl::Context *mainContext)
                 frameCapture->getSetupCalls(), &mBinaryData, mSerializeStateEnabled, *this);
         }
     }
+
+    mMidExecutionCaptureActive = false;
 }
 
 void FrameCaptureShared::onEndFrame(const gl::Context *context)
@@ -7067,9 +7208,18 @@ void FrameCaptureShared::writeMainContextCppReplay(const gl::Context *context,
         // it's resetting shared objects.
         for (ResourceIDType resourceType : AllEnums<ResourceIDType>())
         {
+            // Framebuffers must be done last so updated textures can be bound to them
+            if (resourceType == ResourceIDType::Framebuffer)
+            {
+                continue;
+            }
+
             MaybeResetResources(resourceType, mReplayWriter, bodyStream, headerStream,
                                 &mResourceTracker, &mBinaryData);
         }
+
+        MaybeResetResources(ResourceIDType::Framebuffer, mReplayWriter, bodyStream, headerStream,
+                            &mResourceTracker, &mBinaryData);
 
         // Reset opaque type objects that don't have IDs, so are not ResourceIDTypes.
         MaybeResetOpaqueTypeObjects(mReplayWriter, bodyStream, headerStream, &mResourceTracker,

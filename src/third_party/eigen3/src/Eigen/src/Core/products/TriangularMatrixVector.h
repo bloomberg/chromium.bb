@@ -211,7 +211,6 @@ template<int Mode> struct trmv_selector<Mode,ColMajor>
     typedef typename Lhs::Scalar      LhsScalar;
     typedef typename Rhs::Scalar      RhsScalar;
     typedef typename Dest::Scalar     ResScalar;
-    typedef typename Dest::RealScalar RealScalar;
     
     typedef internal::blas_traits<Lhs> LhsBlasTraits;
     typedef typename LhsBlasTraits::DirectLinearAccessType ActualLhsType;
@@ -237,7 +236,7 @@ template<int Mode> struct trmv_selector<Mode,ColMajor>
 
     gemv_static_vector_if<ResScalar,Dest::SizeAtCompileTime,Dest::MaxSizeAtCompileTime,MightCannotUseDest> static_dest;
 
-    bool alphaIsCompatible = (!ComplexByReal) || (numext::imag(actualAlpha)==RealScalar(0));
+    bool alphaIsCompatible = (!ComplexByReal) || numext::is_exactly_zero(numext::imag(actualAlpha));
     bool evalToDest = EvalToDestAtCompileTime && alphaIsCompatible;
 
     RhsScalar compatibleAlpha = get_factor<ResScalar,RhsScalar>::run(actualAlpha);
@@ -278,7 +277,7 @@ template<int Mode> struct trmv_selector<Mode,ColMajor>
         dest = MappedDest(actualDestPtr, dest.size());
     }
 
-    if ( ((Mode&UnitDiag)==UnitDiag) && (lhs_alpha!=LhsScalar(1)) )
+    if ( ((Mode&UnitDiag)==UnitDiag) && !numext::is_exactly_one(lhs_alpha) )
     {
       Index diagSize = (std::min)(lhs.rows(),lhs.cols());
       dest.head(diagSize) -= (lhs_alpha-LhsScalar(1))*rhs.head(diagSize);
@@ -337,7 +336,7 @@ template<int Mode> struct trmv_selector<Mode,RowMajor>
             dest.data(),dest.innerStride(),
             actualAlpha);
 
-    if ( ((Mode&UnitDiag)==UnitDiag) && (lhs_alpha!=LhsScalar(1)) )
+    if ( ((Mode&UnitDiag)==UnitDiag) && !numext::is_exactly_one(lhs_alpha) )
     {
       Index diagSize = (std::min)(lhs.rows(),lhs.cols());
       dest.head(diagSize) -= (lhs_alpha-LhsScalar(1))*rhs.head(diagSize);

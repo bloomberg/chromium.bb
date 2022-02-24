@@ -22,6 +22,7 @@
 #include "components/optimization_guide/content/mojom/page_text_service.mojom.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/core/optimization_guide_test_util.h"
 #include "components/optimization_guide/core/test_model_info_builder.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
@@ -141,6 +142,25 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceDisabledBrowserTest,
                          browser()->profile()));
 }
 
+class PageContentAnnotationsServiceValidationBrowserTest
+    : public InProcessBrowserTest {
+ public:
+  PageContentAnnotationsServiceValidationBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kOptimizationHints, features::kBatchAnnotationsValidation},
+        {features::kPageContentAnnotations});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceValidationBrowserTest,
+                       ValidationEnablesService) {
+  EXPECT_NE(nullptr, PageContentAnnotationsServiceFactory::GetForProfile(
+                         browser()->profile()));
+}
+
 class PageContentAnnotationsServiceBrowserTest : public InProcessBrowserTest {
  public:
   PageContentAnnotationsServiceBrowserTest() {
@@ -149,7 +169,8 @@ class PageContentAnnotationsServiceBrowserTest : public InProcessBrowserTest {
          {features::kPageContentAnnotations,
           {
               {"write_to_history_service", "true"},
-          }}},
+          }},
+         {features::kPageVisibilityPageContentAnnotations, {}}},
         /*disabled_features=*/{});
   }
   ~PageContentAnnotationsServiceBrowserTest() override = default;
@@ -451,7 +472,8 @@ class PageContentAnnotationsServiceNoHistoryTest
          {features::kPageContentAnnotations,
           {
               {"write_to_history_service", "false"},
-          }}},
+          }},
+         {features::kPageVisibilityPageContentAnnotations, {}}},
         /*disabled_features=*/{});
   }
   ~PageContentAnnotationsServiceNoHistoryTest() override = default;
@@ -485,6 +507,43 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceNoHistoryTest,
   EXPECT_FALSE(GetContentAnnotationsForURL(url).has_value());
 }
 
+IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceNoHistoryTest,
+                       ModelExecutesAndUsesCachedResult) {
+  {
+    base::HistogramTester histogram_tester;
+
+    GURL url(embedded_test_server()->GetURL("a.com", "/hello.html"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        "OptimizationGuide.PageContentAnnotationsService.ContentAnnotated", 1);
+
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.PageContentAnnotations.AnnotateVisitResultCached",
+        false, 1);
+  }
+  {
+    base::HistogramTester histogram_tester;
+    GURL url2(embedded_test_server()->GetURL("a.com", "/hello.html"));
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url2));
+
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        "OptimizationGuide.PageContentAnnotationsService.ContentAnnotated", 1);
+
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.PageContentAnnotationsService.ContentAnnotated",
+        true, 1);
+
+    base::RunLoop().RunUntilIdle();
+
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.PageContentAnnotations.AnnotateVisitResultCached",
+        true, 1);
+  }
+}
+
 class PageContentAnnotationsServiceBatchVisitTest
     : public PageContentAnnotationsServiceNoHistoryTest {
  public:
@@ -495,7 +554,9 @@ class PageContentAnnotationsServiceBatchVisitTest
           {
               {"write_to_history_service", "false"},
               {"annotate_visit_batch_size", "2"},
-          }}},
+              {"annotate_title_instead_of_page_content", "true"},
+          }},
+         {features::kPageVisibilityPageContentAnnotations, {}}},
         /*disabled_features=*/{});
   }
   ~PageContentAnnotationsServiceBatchVisitTest() override = default;
@@ -511,6 +572,10 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBatchVisitTest,
   GURL url(embedded_test_server()->GetURL("a.com", "/hello.html"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "PageContentAnnotations.AnnotateVisit.AnnotationRequested", 1);
+
   GURL url2(embedded_test_server()->GetURL("b.com", "/hello.html"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url2));
 
@@ -524,6 +589,11 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBatchVisitTest,
 
   base::RunLoop().RunUntilIdle();
 
+  // The cache is missed because we are batching requests. The cache check
+  // happens before adding a visit annotation request to the batch.
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PageContentAnnotations.AnnotateVisitResultCached",
+      false, 2);
   histogram_tester.ExpectUniqueSample(
       "PageContentAnnotations.AnnotateVisit.BatchAnnotationStarted", true, 1);
 
@@ -535,8 +605,42 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBatchVisitTest,
   EXPECT_FALSE(GetContentAnnotationsForURL(url).has_value());
 }
 
-IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBatchVisitTest,
-                       QueueFullAndVisitBatchActive) {
+class PageContentAnnotationsServiceBatchVisitNoAnnotateTest
+    : public PageContentAnnotationsServiceBatchVisitTest {
+ public:
+  PageContentAnnotationsServiceBatchVisitNoAnnotateTest() {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kOptimizationHints, {}},
+         {features::kPageContentAnnotations,
+          {
+              {"write_to_history_service", "false"},
+              {"annotate_visit_batch_size", "2"},
+              {"annotate_title_instead_of_page_content", "true"},
+          }},
+         {features::kPageVisibilityPageContentAnnotations, {}}},
+        /*disabled_features=*/{});
+  }
+  ~PageContentAnnotationsServiceBatchVisitNoAnnotateTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    // Note: the code after the early return this disables is well tested in
+    // other places.
+    cmd->AppendSwitch(
+        optimization_guide::switches::kStopHistoryVisitBatchAnnotateForTesting);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// TODO(crbug/1291486): Disabled due to flakiness on Mac and Windows.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#define MAYBE_QueueFullAndVisitBatchActive DISABLED_QueueFullAndVisitBatchActive
+#else
+#define MAYBE_QueueFullAndVisitBatchActive QueueFullAndVisitBatchActive
+#endif
+IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBatchVisitNoAnnotateTest,
+                       MAYBE_QueueFullAndVisitBatchActive) {
   base::HistogramTester histogram_tester;
   HistoryVisit history_visit(base::Time::Now(),
                              GURL("https://probablynotarealurl.com/"), 0);
@@ -564,6 +668,10 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBatchVisitTest,
       "PageContentAnnotations.AnnotateVisit.BatchAnnotationStarted", true, 1);
   histogram_tester.ExpectUniqueSample(
       "PageContentAnnotations.AnnotateVisit.QueueFullVisitDropped", true, 1);
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PageContentAnnotations.AnnotateVisitResultCached",
+      false, 4);
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PageContentAnnotationsService."
@@ -601,7 +709,8 @@ class PageContentAnnotationsServiceModelNotLoadedOnStartupTest
   PageContentAnnotationsServiceModelNotLoadedOnStartupTest() {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kOptimizationHints,
-                              features::kPageContentAnnotations},
+                              features::kPageContentAnnotations,
+                              features::kPageVisibilityPageContentAnnotations},
         /*disabled_features=*/{});
     set_load_model_on_startup(false);
   }

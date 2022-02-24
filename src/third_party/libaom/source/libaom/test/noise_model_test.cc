@@ -77,8 +77,16 @@ std::vector<float> get_noise_psd(double *noise, int width, int height,
   float *block =
       (float *)aom_memalign(32, block_size * block_size * sizeof(block));
   std::vector<float> psd(block_size * block_size);
+  if (block == nullptr) {
+    EXPECT_NE(block, nullptr);
+    return psd;
+  }
   int num_blocks = 0;
   struct aom_noise_tx_t *tx = aom_noise_tx_malloc(block_size);
+  if (tx == nullptr) {
+    EXPECT_NE(tx, nullptr);
+    return psd;
+  }
   for (int y = 0; y <= height - block_size; y += block_size / 2) {
     for (int x = 0; x <= width - block_size; x += block_size / 2) {
       for (int yy = 0; yy < block_size; ++yy) {
@@ -145,7 +153,7 @@ TEST(NoiseStrengthSolver, GetCenters256Bins) {
 TEST(NoiseStrengthSolver, ObserveIdentity) {
   const int num_bins = 256;
   aom_noise_strength_solver_t solver;
-  EXPECT_EQ(1, aom_noise_strength_solver_init(&solver, num_bins, 8));
+  ASSERT_EQ(1, aom_noise_strength_solver_init(&solver, num_bins, 8));
 
   // We have to add a big more strength to constraints at the boundary to
   // overcome any regularization.

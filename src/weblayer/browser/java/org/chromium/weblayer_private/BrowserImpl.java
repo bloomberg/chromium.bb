@@ -378,12 +378,6 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
             boolean newEnabled = getDarkThemeEnabled();
             changed = changed || oldEnabled != newEnabled;
         }
-        if (mFontScale != null) {
-            float oldFontScale = mFontScale;
-            mFontScale = null;
-            float newFontScale = getFontScale();
-            changed = changed || oldFontScale != newFontScale;
-        }
         if (changed) {
             BrowserImplJni.get().webPreferencesChanged(mNativeBrowser);
         }
@@ -411,16 +405,6 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
                     (uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
         }
         return mDarkThemeEnabled;
-    }
-
-    @CalledByNative
-    private float getFontScale() {
-        Context context = getContext();
-        if (context == null) return 1.0f;
-        if (mFontScale == null) {
-            mFontScale = context.getResources().getConfiguration().fontScale;
-        }
-        return mFontScale;
     }
 
     Context getEmbedderActivityContext() {
@@ -558,7 +542,12 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
 
     @Override
     public boolean isRestoringPreviousState() {
-        return BrowserImplJni.get().isRestoringPreviousState(mNativeBrowser);
+        // In the case of minimal restore, the C++ side will return true if actively restoring
+        // minimal state. By returning true if mMinimalPersistenceInfo is non-null,
+        // isRestoringPreviousState() will return true from the the time the fragment is created
+        // until start.
+        return mMinimalPersistenceInfo != null
+                || BrowserImplJni.get().isRestoringPreviousState(mNativeBrowser);
     }
 
     @CalledByNative
@@ -601,6 +590,11 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
             boolean setActiveResult = setActiveTab(createTab());
             assert setActiveResult;
         }
+        try {
+            onRestoreCompleted();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
     }
 
     public void onFragmentStart() {
@@ -630,7 +624,7 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
 
     public void onFragmentResume() {
         mFragmentResumed = true;
-        WebLayerAccessibilityUtil.get().onBrowserResumed();
+        WebLayerAccessibilityUtil.get().onBrowserResumed(mProfile);
         BrowserImplJni.get().onFragmentResume(mNativeBrowser);
     }
 

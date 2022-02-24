@@ -307,7 +307,7 @@ function runBatch(
   const source = `
 struct Parameters {
 ${parameterTypes
-  .map((ty, i) => `  [[size(${kValueStride})]] param${i} : ${storageType(ty)};`)
+  .map((ty, i) => `  @size(${kValueStride}) param${i} : ${storageType(ty)};`)
   .join('\n')}
 };
 
@@ -316,19 +316,19 @@ struct Inputs {
 };
 
 struct Outputs {
-  test : [[stride(${kValueStride})]] array<${storageType(returnType)}, ${cases.length}>;
+  test : @stride(${kValueStride}) array<${storageType(returnType)}, ${cases.length}>;
 };
 
 ${
   storageClass === 'uniform'
-    ? `[[group(0), binding(0)]] var<uniform> inputs : Inputs;`
-    : `[[group(0), binding(0)]] var<storage, ${
+    ? `@group(0) @binding(0) var<uniform> inputs : Inputs;`
+    : `@group(0) @binding(0) var<storage, ${
         storageClass === 'storage_r' ? 'read' : 'read_write'
       }> inputs : Inputs;`
 }
-[[group(0), binding(1)]] var<storage, write> outputs : Outputs;
+@group(0) @binding(1) var<storage, write> outputs : Outputs;
 
-[[stage(compute), workgroup_size(1)]]
+@stage(compute) @workgroup_size(1)
 fn main() {
   for(var i = 0; i < ${cases.length}; i = i + 1) {
     outputs.test[i] = ${expr};

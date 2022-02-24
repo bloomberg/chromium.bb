@@ -822,7 +822,10 @@ void aom_lpf_vertical_4_neon(uint8_t *src, int stride, const uint8_t *blimit,
 
 void aom_lpf_horizontal_14_neon(uint8_t *src, int stride, const uint8_t *blimit,
                                 const uint8_t *limit, const uint8_t *thresh) {
-  uint8x8_t p0q0, p1q1, p2q2, p3q3, p4q4, p5q5, UNINITIALIZED_IS_SAFE(p6q6);
+  uint8x8_t UNINITIALIZED_IS_SAFE(p0q0), UNINITIALIZED_IS_SAFE(p1q1),
+      UNINITIALIZED_IS_SAFE(p2q2), UNINITIALIZED_IS_SAFE(p3q3),
+      UNINITIALIZED_IS_SAFE(p4q4), UNINITIALIZED_IS_SAFE(p5q5),
+      UNINITIALIZED_IS_SAFE(p6q6);
 
   load_u8_4x1(src - 7 * stride, &p6q6, 0);
   load_u8_4x1(src - 6 * stride, &p5q5, 0);

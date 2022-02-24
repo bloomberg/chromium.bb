@@ -32,9 +32,25 @@ VectorizeScalarMatrixConstructors::VectorizeScalarMatrixConstructors() =
 VectorizeScalarMatrixConstructors::~VectorizeScalarMatrixConstructors() =
     default;
 
+bool VectorizeScalarMatrixConstructors::ShouldRun(const Program* program,
+                                                  const DataMap&) const {
+  for (auto* node : program->ASTNodes().Objects()) {
+    if (auto* call = program->Sem().Get<sem::Call>(node)) {
+      if (call->Target()->Is<sem::TypeConstructor>() &&
+          call->Type()->Is<sem::Matrix>()) {
+        auto& args = call->Arguments();
+        if (args.size() > 0 && args[0]->Type()->is_scalar()) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
 void VectorizeScalarMatrixConstructors::Run(CloneContext& ctx,
                                             const DataMap&,
-                                            DataMap&) {
+                                            DataMap&) const {
   ctx.ReplaceAll(
       [&](const ast::CallExpression* expr) -> const ast::CallExpression* {
         auto* call = ctx.src->Sem().Get(expr);

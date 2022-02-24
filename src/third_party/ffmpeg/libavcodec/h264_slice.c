@@ -811,6 +811,10 @@ static enum AVPixelFormat get_pixel_format(H264Context *h, int force_callback)
             *fmt++ = AV_PIX_FMT_YUV420P9;
         break;
     case 10:
+#if CONFIG_H264_VIDEOTOOLBOX_HWACCEL
+        if (h->avctx->colorspace != AVCOL_SPC_RGB)
+            *fmt++ = AV_PIX_FMT_VIDEOTOOLBOX;
+#endif
         if (CHROMA444(h)) {
             if (h->avctx->colorspace == AVCOL_SPC_RGB) {
                 *fmt++ = AV_PIX_FMT_GBRP10;
@@ -850,6 +854,10 @@ static enum AVPixelFormat get_pixel_format(H264Context *h, int force_callback)
 #if CONFIG_H264_NVDEC_HWACCEL
         *fmt++ = AV_PIX_FMT_CUDA;
 #endif
+#if CONFIG_H264_VIDEOTOOLBOX_HWACCEL
+        if (h->avctx->colorspace != AVCOL_SPC_RGB)
+            *fmt++ = AV_PIX_FMT_VIDEOTOOLBOX;
+#endif
         if (CHROMA444(h)) {
             if (h->avctx->colorspace == AVCOL_SPC_RGB)
                 *fmt++ = AV_PIX_FMT_GBRP;
@@ -872,9 +880,6 @@ static enum AVPixelFormat get_pixel_format(H264Context *h, int force_callback)
 #endif
 #if CONFIG_H264_VAAPI_HWACCEL
             *fmt++ = AV_PIX_FMT_VAAPI;
-#endif
-#if CONFIG_H264_VIDEOTOOLBOX_HWACCEL
-            *fmt++ = AV_PIX_FMT_VIDEOTOOLBOX;
 #endif
             if (h->avctx->codec->pix_fmts)
                 choices = h->avctx->codec->pix_fmts;
@@ -993,7 +998,7 @@ static int h264_slice_header_init(H264Context *h)
                     sps->chroma_format_idc);
     ff_h264chroma_init(&h->h264chroma, sps->bit_depth_chroma);
     ff_h264qpel_init(&h->h264qpel, sps->bit_depth_luma);
-    ff_h264_pred_init(&h->hpc, h->avctx->codec_id, sps->bit_depth_luma,
+    ff_h264_pred_init(&h->hpc, AV_CODEC_ID_H264, sps->bit_depth_luma,
                       sps->chroma_format_idc);
     ff_videodsp_init(&h->vdsp, sps->bit_depth_luma);
 
@@ -1300,6 +1305,15 @@ static int h264_export_frame_props(H264Context *h)
                                                            AV_FRAME_DATA_DISPLAYMATRIX,
                                                            sizeof(int32_t) * 9);
         if (rotation) {
+            /* av_display_rotation_set() expects the angle in the clockwise
+             * direction, hence the first minus.
+             * The below code applies the flips after the rotation, yet
+             * the H.2645 specs require flipping to be applied first.
+             * Because of R O(phi) = O(-phi) R (where R is flipping around
+             * an arbitatry axis and O(phi) is the proper rotation by phi)
+             * we can create display matrices as desired by negating
+             * the degree once for every flip applied. */
+            angle = -angle * (1 - 2 * !!o->hflip) * (1 - 2 * !!o->vflip);
             av_display_rotation_set((int32_t *)rotation->data, angle);
             av_display_matrix_flip((int32_t *)rotation->data,
                                    o->hflip, o->vflip);
@@ -2154,9 +2168,9 @@ static int h264_slice_init(H264Context *h, H264SliceContext *sl,
 
     if (h->avctx->debug & FF_DEBUG_PICT_INFO) {
         av_log(h->avctx, AV_LOG_DEBUG,
-               "slice:%d %s mb:%d %c%s%s frame:%d poc:%d/%d ref:%d/%d qp:%d loop:%d:%d:%d weight:%d%s %s\n",
+               "slice:%d %c mb:%d %c%s%s frame:%d poc:%d/%d ref:%d/%d qp:%d loop:%d:%d:%d weight:%d%s %s\n",
                sl->slice_num,
-               (h->picture_structure == PICT_FRAME ? "F" : h->picture_structure == PICT_TOP_FIELD ? "T" : "B"),
+               (h->picture_structure == PICT_FRAME ? 'F' : h->picture_structure == PICT_TOP_FIELD ? 'T' : 'B'),
                sl->mb_y * h->mb_width + sl->mb_x,
                av_get_picture_type_char(sl->slice_type),
                sl->slice_type_fixed ? " fix" : "",

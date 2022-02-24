@@ -20,14 +20,16 @@ namespace content {
 // no such requirements appear.
 // See https://fetch.spec.whatwg.org/#forbidden-header-name
 const char kSecFedCmCsrfHeader[] = "Sec-FedCM-CSRF";
+const char kSecFedCmCsrfHeaderValue[] = "?1";
 
-IdentityRequestAccount::IdentityRequestAccount(const std::string& account_id,
-                                               const std::string& email,
-                                               const std::string& name,
-                                               const std::string& given_name,
-                                               const GURL& picture,
-                                               LoginState login_state)
-    : account_id{account_id},
+IdentityRequestAccount::IdentityRequestAccount(
+    const std::string& id,
+    const std::string& email,
+    const std::string& name,
+    const std::string& given_name,
+    const GURL& picture,
+    absl::optional<LoginState> login_state)
+    : id{id},
       email{email},
       name{name},
       given_name{given_name},
@@ -62,6 +64,18 @@ void IdentityRequestDialogController::ShowInitialPermissionDialog(
     PermissionDialogMode mode,
     InitialApprovalCallback approval_callback) {
   std::move(approval_callback).Run(UserApproval::kDenied);
+}
+
+void IdentityRequestDialogController::ShowAccountsDialog(
+    content::WebContents* rp_web_contents,
+    content::WebContents* idp_web_contents,
+    const GURL& idp_signin_url,
+    base::span<const IdentityRequestAccount> accounts,
+    const IdentityProviderMetadata& idp_metadata,
+    const ClientIdData& client_id_data,
+    IdentityRequestAccount::SignInMode sign_in_mode,
+    AccountSelectionCallback on_selected) {
+  std::move(on_selected).Run(/*account_id=*/"", /*is_sign_in=*/false);
 }
 
 void IdentityRequestDialogController::ShowIdProviderWindow(

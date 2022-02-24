@@ -23,12 +23,6 @@
 namespace quic {
 namespace {
 
-// Constructs a version label from the 4 bytes such that the on-the-wire
-// order will be: d, c, b, a.
-QuicVersionLabel MakeVersionLabel(char a, char b, char c, char d) {
-  return MakeQuicTag(d, c, b, a);
-}
-
 QuicVersionLabel CreateRandomVersionLabelForNegotiation() {
   QuicVersionLabel result;
   if (!GetQuicFlag(FLAGS_quic_disable_version_negotiation_grease_randomness)) {
@@ -42,11 +36,13 @@ QuicVersionLabel CreateRandomVersionLabelForNegotiation() {
 }
 
 void SetVersionFlag(const ParsedQuicVersion& version, bool should_enable) {
-  static_assert(SupportedVersions().size() == 5u,
+  static_assert(SupportedVersions().size() == 6u,
                 "Supported versions out of sync");
   const bool enable = should_enable;
   const bool disable = !should_enable;
-  if (version == ParsedQuicVersion::RFCv1()) {
+  if (version == ParsedQuicVersion::V2Draft01()) {
+    SetQuicReloadableFlag(quic_enable_version_2_draft_01, enable);
+  } else if (version == ParsedQuicVersion::RFCv1()) {
     SetQuicReloadableFlag(quic_disable_version_rfcv1, disable);
   } else if (version == ParsedQuicVersion::Draft29()) {
     SetQuicReloadableFlag(quic_disable_version_draft_29, disable);
@@ -182,6 +178,16 @@ bool ParsedQuicVersion::UsesQuicCrypto() const {
   return handshake_protocol == PROTOCOL_QUIC_CRYPTO;
 }
 
+bool ParsedQuicVersion::UsesV2PacketTypes() const {
+  QUICHE_DCHECK(IsKnown());
+  return transport_version == QUIC_VERSION_IETF_2_DRAFT_01;
+}
+
+bool ParsedQuicVersion::AlpnDeferToRFCv1() const {
+  QUICHE_DCHECK(IsKnown());
+  return transport_version == QUIC_VERSION_IETF_2_DRAFT_01;
+}
+
 bool VersionHasLengthPrefixedConnectionIds(
     QuicTransportVersion transport_version) {
   QUICHE_DCHECK(transport_version != QUIC_VERSION_UNSUPPORTED);
@@ -200,6 +206,10 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
+QuicVersionLabel MakeVersionLabel(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
+  return MakeQuicTag(d, c, b, a);
+}
+
 std::ostream& operator<<(std::ostream& os,
                          const QuicVersionLabelVector& version_labels) {
   os << QuicVersionLabelVectorToString(version_labels);
@@ -213,9 +223,11 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 QuicVersionLabel CreateQuicVersionLabel(ParsedQuicVersion parsed_version) {
-  static_assert(SupportedVersions().size() == 5u,
+  static_assert(SupportedVersions().size() == 6u,
                 "Supported versions out of sync");
-  if (parsed_version == ParsedQuicVersion::RFCv1()) {
+  if (parsed_version == ParsedQuicVersion::V2Draft01()) {
+    return MakeVersionLabel(0x70, 0x9a, 0x50, 0xc4);
+  } else if (parsed_version == ParsedQuicVersion::RFCv1()) {
     return MakeVersionLabel(0x00, 0x00, 0x00, 0x01);
   } else if (parsed_version == ParsedQuicVersion::Draft29()) {
     return MakeVersionLabel(0xff, 0x00, 0x00, 29);
@@ -333,8 +345,24 @@ ParsedQuicVersion ParseQuicVersionString(absl::string_view version_string) {
   if (version_string.empty()) {
     return UnsupportedQuicVersion();
   }
-  int quic_version_number = 0;
   const ParsedQuicVersionVector supported_versions = AllSupportedVersions();
+  for (const ParsedQuicVersion& version : supported_versions) {
+    if (version_string == ParsedQuicVersionToString(version) ||
+        (version_string == AlpnForVersion(version) &&
+         !version.AlpnDeferToRFCv1()) ||
+        (version.handshake_protocol == PROTOCOL_QUIC_CRYPTO &&
+         version_string == QuicVersionToString(version.transport_version))) {
+      return version;
+    }
+  }
+  for (const ParsedQuicVersion& version : supported_versions) {
+    if (version.UsesHttp3() &&
+        version_string ==
+            QuicVersionLabelToString(CreateQuicVersionLabel(version))) {
+      return version;
+    }
+  }
+  int quic_version_number = 0;
   if (absl::SimpleAtoi(version_string, &quic_version_number) &&
       quic_version_number > 0) {
     QuicTransportVersion transport_version =
@@ -348,21 +376,6 @@ ParsedQuicVersion ParseQuicVersionString(absl::string_view version_string) {
       return version;
     }
     return UnsupportedQuicVersion();
-  }
-  for (const ParsedQuicVersion& version : supported_versions) {
-    if (version_string == ParsedQuicVersionToString(version) ||
-        version_string == AlpnForVersion(version) ||
-        (version.handshake_protocol == PROTOCOL_QUIC_CRYPTO &&
-         version_string == QuicVersionToString(version.transport_version))) {
-      return version;
-    }
-  }
-  for (const ParsedQuicVersion& version : supported_versions) {
-    if (version.UsesHttp3() &&
-        version_string ==
-            QuicVersionLabelToString(CreateQuicVersionLabel(version))) {
-      return version;
-    }
   }
   // Reading from the client so this should not be considered an ERROR.
   QUIC_DLOG(INFO) << "Unsupported QUIC version string: \"" << version_string
@@ -411,10 +424,16 @@ ParsedQuicVersionVector CurrentSupportedVersions() {
 
 ParsedQuicVersionVector FilterSupportedVersions(
     ParsedQuicVersionVector versions) {
+  static_assert(SupportedVersions().size() == 6u,
+                "Supported versions out of sync");
   ParsedQuicVersionVector filtered_versions;
   filtered_versions.reserve(versions.size());
   for (const ParsedQuicVersion& version : versions) {
-    if (version == ParsedQuicVersion::RFCv1()) {
+    if (version == ParsedQuicVersion::V2Draft01()) {
+      if (GetQuicReloadableFlag(quic_enable_version_2_draft_01)) {
+        filtered_versions.push_back(version);
+      }
+    } else if (version == ParsedQuicVersion::RFCv1()) {
       if (!GetQuicReloadableFlag(quic_disable_version_rfcv1)) {
         filtered_versions.push_back(version);
       }
@@ -444,8 +463,7 @@ ParsedQuicVersionVector FilterSupportedVersions(
 }
 
 ParsedQuicVersionVector ParsedVersionOfIndex(
-    const ParsedQuicVersionVector& versions,
-    int index) {
+    const ParsedQuicVersionVector& versions, int index) {
   ParsedQuicVersionVector version;
   int version_count = versions.size();
   if (index >= 0 && index < version_count) {
@@ -460,9 +478,20 @@ std::string QuicVersionLabelToString(QuicVersionLabel version_label) {
   return QuicTagToString(quiche::QuicheEndian::HostToNet32(version_label));
 }
 
+ParsedQuicVersion ParseQuicVersionLabelString(
+    absl::string_view version_label_string) {
+  const ParsedQuicVersionVector supported_versions = AllSupportedVersions();
+  for (const ParsedQuicVersion& version : supported_versions) {
+    if (version_label_string ==
+        QuicVersionLabelToString(CreateQuicVersionLabel(version))) {
+      return version;
+    }
+  }
+  return UnsupportedQuicVersion();
+}
+
 std::string QuicVersionLabelVectorToString(
-    const QuicVersionLabelVector& version_labels,
-    const std::string& separator,
+    const QuicVersionLabelVector& version_labels, const std::string& separator,
     size_t skip_after_nth_version) {
   std::string result;
   for (size_t i = 0; i < version_labels.size(); ++i) {
@@ -490,6 +519,7 @@ std::string QuicVersionToString(QuicTransportVersion transport_version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_50);
     RETURN_STRING_LITERAL(QUIC_VERSION_IETF_DRAFT_29);
     RETURN_STRING_LITERAL(QUIC_VERSION_IETF_RFC_V1);
+    RETURN_STRING_LITERAL(QUIC_VERSION_IETF_2_DRAFT_01);
     RETURN_STRING_LITERAL(QUIC_VERSION_UNSUPPORTED);
     RETURN_STRING_LITERAL(QUIC_VERSION_RESERVED_FOR_NEGOTIATION);
   }
@@ -508,10 +538,13 @@ std::string HandshakeProtocolToString(HandshakeProtocol handshake_protocol) {
 }
 
 std::string ParsedQuicVersionToString(ParsedQuicVersion version) {
-  static_assert(SupportedVersions().size() == 5u,
+  static_assert(SupportedVersions().size() == 6u,
                 "Supported versions out of sync");
   if (version == UnsupportedQuicVersion()) {
     return "0";
+  } else if (version == ParsedQuicVersion::V2Draft01()) {
+    QUICHE_DCHECK(version.UsesHttp3());
+    return "v2draft01";
   } else if (version == ParsedQuicVersion::RFCv1()) {
     QUICHE_DCHECK(version.UsesHttp3());
     return "RFCv1";
@@ -536,8 +569,7 @@ std::string QuicTransportVersionVectorToString(
 }
 
 std::string ParsedQuicVersionVectorToString(
-    const ParsedQuicVersionVector& versions,
-    const std::string& separator,
+    const ParsedQuicVersionVector& versions, const std::string& separator,
     size_t skip_after_nth_version) {
   std::string result;
   for (size_t i = 0; i < versions.size(); ++i) {
@@ -604,7 +636,9 @@ ParsedQuicVersion LegacyVersionForEncapsulation() {
 }
 
 std::string AlpnForVersion(ParsedQuicVersion parsed_version) {
-  if (parsed_version == ParsedQuicVersion::RFCv1()) {
+  if (parsed_version == ParsedQuicVersion::V2Draft01()) {
+    return "h3";
+  } else if (parsed_version == ParsedQuicVersion::RFCv1()) {
     return "h3";
   } else if (parsed_version == ParsedQuicVersion::Draft29()) {
     return "h3-29";

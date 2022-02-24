@@ -8,15 +8,16 @@
 #ifndef SKSL_DSLPARSER
 #define SKSL_DSLPARSER
 
-#include <memory>
-#include <unordered_map>
-#include "include/core/SkStringView.h"
 #include "include/private/SkSLProgramKind.h"
-#include "include/private/SkTOptional.h"
 #include "include/sksl/DSL.h"
 #include "include/sksl/DSLSymbols.h"
 #include "src/sksl/SkSLLexer.h"
 #include "src/sksl/ir/SkSLProgram.h"
+
+#include <memory>
+#include <optional>
+#include <string_view>
+#include <unordered_map>
 
 namespace SkSL {
 
@@ -45,13 +46,13 @@ public:
     };
 
     DSLParser(Compiler* compiler, const ProgramSettings& settings, ProgramKind kind,
-              String text);
+              std::string text);
 
     std::unique_ptr<Program> program();
 
     SkSL::LoadedModule moduleInheritingFrom(SkSL::ParsedModule baseModule);
 
-    skstd::string_view text(Token token);
+    std::string_view text(Token token);
 
     PositionInfo position(Token token);
 
@@ -105,7 +106,7 @@ private:
      * Returns true if the read token was as expected, false otherwise.
      */
     bool expect(Token::Kind kind, const char* expected, Token* result = nullptr);
-    bool expect(Token::Kind kind, String expected, Token* result = nullptr);
+    bool expect(Token::Kind kind, std::string expected, Token* result = nullptr);
 
     /**
      * Behaves like expect(TK_IDENTIFIER), but also verifies that identifier is not a type.
@@ -115,8 +116,8 @@ private:
      */
     bool expectIdentifier(Token* result);
 
-    void error(Token token, String msg);
-    void error(int line, String msg);
+    void error(Token token, std::string msg);
+    void error(int line, std::string msg);
 
     // these functions parse individual grammar rules from the current parse position; you probably
     // don't need to call any of these outside of the parser. The function declarations in the .cpp
@@ -147,7 +148,7 @@ private:
 
     dsl::DSLStatement varDeclarations();
 
-    skstd::optional<dsl::DSLType> structDeclaration();
+    std::optional<dsl::DSLType> structDeclaration();
 
     SkTArray<dsl::DSLGlobalVar> structVarDeclaration(const dsl::DSLModifiers& modifiers);
 
@@ -156,16 +157,16 @@ private:
     bool parseInitializer(int line, dsl::DSLExpression* initializer);
 
     void globalVarDeclarationEnd(PositionInfo position, const dsl::DSLModifiers& mods,
-            dsl::DSLType baseType, skstd::string_view name);
+            dsl::DSLType baseType, std::string_view name);
 
     dsl::DSLStatement localVarDeclarationEnd(PositionInfo position, const dsl::DSLModifiers& mods,
-            dsl::DSLType baseType, skstd::string_view name);
+            dsl::DSLType baseType, std::string_view name);
 
-    skstd::optional<dsl::DSLWrapper<dsl::DSLParameter>> parameter(size_t paramIndex);
+    std::optional<dsl::DSLWrapper<dsl::DSLParameter>> parameter(size_t paramIndex);
 
     int layoutInt();
 
-    skstd::string_view layoutIdentifier();
+    std::string_view layoutIdentifier();
 
     dsl::DSLLayout layout();
 
@@ -173,7 +174,7 @@ private:
 
     dsl::DSLStatement statement();
 
-    skstd::optional<dsl::DSLType> type(dsl::DSLModifiers* modifiers);
+    std::optional<dsl::DSLType> type(dsl::DSLModifiers* modifiers);
 
     bool interfaceBlock(const dsl::DSLModifiers& mods);
 
@@ -185,7 +186,7 @@ private:
 
     dsl::DSLStatement forStatement();
 
-    skstd::optional<dsl::DSLCase> switchCase();
+    std::optional<dsl::DSLCase> switchCase();
 
     dsl::DSLStatement switchStatement();
 
@@ -197,7 +198,7 @@ private:
 
     dsl::DSLStatement discardStatement();
 
-    skstd::optional<dsl::DSLBlock> block();
+    std::optional<dsl::DSLBlock> block();
 
     dsl::DSLStatement expressionStatement();
 
@@ -233,7 +234,7 @@ private:
 
     dsl::DSLExpression postfixExpression();
 
-    dsl::DSLExpression swizzle(int line, dsl::DSLExpression base, skstd::string_view swizzleMask);
+    dsl::DSLExpression swizzle(int line, dsl::DSLExpression base, std::string_view swizzleMask);
 
     dsl::DSLExpression call(int line, dsl::DSLExpression base, ExpressionArray args);
 
@@ -247,7 +248,7 @@ private:
 
     bool boolLiteral(bool* dest);
 
-    bool identifier(skstd::string_view* dest);
+    bool identifier(std::string_view* dest);
 
     class Checkpoint {
     public:
@@ -283,8 +284,8 @@ private:
     private:
         class ForwardingErrorReporter : public ErrorReporter {
         public:
-            void handleError(skstd::string_view msg, PositionInfo pos) override {
-                fErrors.push_back({String(msg), pos});
+            void handleError(std::string_view msg, PositionInfo pos) override {
+                fErrors.push_back({std::string(msg), pos});
             }
 
             void forwardErrors() {
@@ -295,7 +296,7 @@ private:
 
         private:
             struct Error {
-                String fMsg;
+                std::string fMsg;
                 PositionInfo fPos;
             };
 
@@ -317,14 +318,14 @@ private:
         bool fOldEncounteredFatalError;
     };
 
-    static std::unordered_map<skstd::string_view, LayoutToken>* layoutTokens;
+    static std::unordered_map<std::string_view, LayoutToken>* layoutTokens;
 
     Compiler& fCompiler;
     ProgramSettings fSettings;
     ErrorReporter* fErrorReporter;
     bool fEncounteredFatalError;
     ProgramKind fKind;
-    std::unique_ptr<String> fText;
+    std::unique_ptr<std::string> fText;
     Lexer fLexer;
     // current parse depth, used to enforce a recursion limit to try to keep us from overflowing the
     // stack on pathological inputs

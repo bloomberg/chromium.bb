@@ -159,13 +159,21 @@ bool IsLacrosEnabled();
 // As above, but takes a channel. Exposed for testing.
 bool IsLacrosEnabled(version_info::Channel channel);
 
+// Represents whether the function is being called before the Policy is
+// initialized or not.
+enum class PolicyInitState {
+  kBeforeInit,
+  kAfterInit,
+};
+
 // Similar to `IsLacrosEnabled()` but does not check if profile migration has
 // been completed. This is to be used inside `BrowserDataMigrator`. Unlike
 // `IsLacrosEnabled()` it can be called before the primary user profile is
 // created.
 // TODO(crbug.com/1265800): Refactor `IsLacrosEnabled()` and
 // `IsLacrosEnabledForMigration()` to reduce duplicated code.
-bool IsLacrosEnabledForMigration(const user_manager::User* user);
+bool IsLacrosEnabledForMigration(const user_manager::User* user,
+                                 PolicyInitState policy_init_state);
 
 // Returns true if |chromeos::features::kLacrosSupport| flag is allowed.
 bool IsLacrosSupportFlagAllowed(version_info::Channel channel);
@@ -198,6 +206,13 @@ bool IsLacrosPrimaryBrowserAllowed(version_info::Channel channel);
 
 // Returns true if |chromeos::features::kLacrosPrimary| flag is allowed.
 bool IsLacrosPrimaryFlagAllowed(version_info::Channel channel);
+
+// Returns true if the lacros can be used as a only browser
+// for the current session.
+bool IsLacrosOnlyBrowserAllowed(version_info::Channel channel);
+
+// Returns true if |chromeos::features::kLacrosOnly| flag is allowed.
+bool IsLacrosOnlyFlagAllowed(version_info::Channel channel);
 
 // Returns true if Lacros is allowed to launch and show a window. This can
 // return false if the user is using multi-signin, which is mutually exclusive

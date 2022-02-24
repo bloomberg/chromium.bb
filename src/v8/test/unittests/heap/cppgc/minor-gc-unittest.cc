@@ -4,7 +4,11 @@
 
 #if defined(CPPGC_YOUNG_GENERATION)
 
+#include <initializer_list>
+#include <vector>
+
 #include "include/cppgc/allocation.h"
+#include "include/cppgc/explicit-management.h"
 #include "include/cppgc/heap-consistency.h"
 #include "include/cppgc/internal/caged-heap-local-data.h"
 #include "include/cppgc/persistent.h"
@@ -17,6 +21,88 @@ namespace cppgc {
 namespace internal {
 
 namespace {
+
+bool IsHeapObjectYoung(void* obj) {
+  return HeapObjectHeader::FromObject(obj).IsYoung();
+}
+
+bool IsHeapObjectOld(void* obj) { return !IsHeapObjectYoung(obj); }
+
+struct ExpectRememberedSlotsAdded final {
+  ExpectRememberedSlotsAdded(
+      cppgc::Heap* heap,
+      std::initializer_list<void*> slots_expected_to_be_remembered)
+      : remembered_slots_(Heap::From(heap)->remembered_slots()),
+        slots_expected_to_be_remembered_(slots_expected_to_be_remembered),
+        initial_number_of_slots_(remembered_slots_.size()) {
+    // Check that the remembered set doesn't contain specified slots.
+    EXPECT_FALSE(std::includes(remembered_slots_.begin(),
+                               remembered_slots_.end(),
+                               slots_expected_to_be_remembered_.begin(),
+                               slots_expected_to_be_remembered_.end()));
+  }
+
+  ~ExpectRememberedSlotsAdded() {
+    const size_t current_number_of_slots = remembered_slots_.size();
+    EXPECT_EQ(
+        initial_number_of_slots_ + slots_expected_to_be_remembered_.size(),
+        current_number_of_slots);
+    EXPECT_TRUE(std::includes(remembered_slots_.begin(),
+                              remembered_slots_.end(),
+                              slots_expected_to_be_remembered_.begin(),
+                              slots_expected_to_be_remembered_.end()));
+  }
+
+ private:
+  std::set<void*>& remembered_slots_;
+  std::set<void*> slots_expected_to_be_remembered_;
+  const size_t initial_number_of_slots_ = 0;
+};
+
+struct ExpectRememberedSlotsRemoved final {
+  ExpectRememberedSlotsRemoved(
+      cppgc::Heap* heap,
+      std::initializer_list<void*> slots_expected_to_be_removed)
+      : remembered_slots_(Heap::From(heap)->remembered_slots()),
+        slots_expected_to_be_removed_(slots_expected_to_be_removed),
+        initial_number_of_slots_(remembered_slots_.size()) {
+    DCHECK_GE(initial_number_of_slots_, slots_expected_to_be_removed_.size());
+    // Check that the remembered set does contain specified slots to be removed.
+    EXPECT_TRUE(std::includes(remembered_slots_.begin(),
+                              remembered_slots_.end(),
+                              slots_expected_to_be_removed_.begin(),
+                              slots_expected_to_be_removed_.end()));
+  }
+
+  ~ExpectRememberedSlotsRemoved() {
+    const size_t current_number_of_slots = remembered_slots_.size();
+    EXPECT_EQ(initial_number_of_slots_ - slots_expected_to_be_removed_.size(),
+              current_number_of_slots);
+    EXPECT_FALSE(std::includes(remembered_slots_.begin(),
+                               remembered_slots_.end(),
+                               slots_expected_to_be_removed_.begin(),
+                               slots_expected_to_be_removed_.end()));
+  }
+
+ private:
+  std::set<void*>& remembered_slots_;
+  std::set<void*> slots_expected_to_be_removed_;
+  const size_t initial_number_of_slots_ = 0;
+};
+
+struct ExpectNoRememberedSlotsAdded final {
+  explicit ExpectNoRememberedSlotsAdded(cppgc::Heap* heap)
+      : remembered_slots_(Heap::From(heap)->remembered_slots()),
+        initial_remembered_slots_(remembered_slots_) {}
+
+  ~ExpectNoRememberedSlotsAdded() {
+    EXPECT_EQ(initial_remembered_slots_, remembered_slots_);
+  }
+
+ private:
+  std::set<void*>& remembered_slots_;
+  std::set<void*> initial_remembered_slots_;
+};
 
 class SimpleGCedBase : public GarbageCollected<SimpleGCedBase> {
  public:
@@ -32,7 +118,7 @@ class SimpleGCedBase : public GarbageCollected<SimpleGCedBase> {
 size_t SimpleGCedBase::destructed_objects;
 
 template <size_t Size>
-class SimpleGCed final : public SimpleGCedBase {
+class SimpleGCed : public SimpleGCedBase {
   char array[Size];
 };
 
@@ -65,6 +151,7 @@ class MinorGCTest : public testing::TestWithHeap {
     Heap::From(GetHeap())->CollectGarbage(
         Heap::Config::MinorPreciseAtomicConfig());
   }
+
   void CollectMajor() {
     Heap::From(GetHeap())->CollectGarbage(Heap::Config::PreciseAtomicConfig());
   }
@@ -75,6 +162,13 @@ class MinorGCTestForType : public MinorGCTest {
  public:
   using Type = SmallOrLarge;
 };
+
+template <typename... Args>
+void RunMinorGCAndExpectObjectsPromoted(MinorGCTest& test, Args*... args) {
+  ([args] { EXPECT_TRUE(IsHeapObjectYoung(args)); }(), ...);
+  test.CollectMinor();
+  ([args] { EXPECT_TRUE(IsHeapObjectOld(args)); }(), ...);
+}
 
 }  // namespace
 
@@ -226,17 +320,206 @@ TYPED_TEST(MinorGCTestForType, OmitGenerationalBarrierForSentinels) {
   TestFixture::CollectMinor();
   EXPECT_FALSE(HeapObjectHeader::FromObject(old.Get()).IsYoung());
 
-  const auto& set = Heap::From(this->GetHeap())->remembered_slots();
+  {
+    ExpectNoRememberedSlotsAdded _(this->GetHeap());
+    // Try issuing generational barrier for nullptr.
+    old->next = static_cast<Type*>(nullptr);
+  }
+  {
+    ExpectNoRememberedSlotsAdded _(this->GetHeap());
+    // Try issuing generational barrier for sentinel.
+    old->next = static_cast<Type*>(kSentinelPointer);
+  }
+}
+
+template <typename From, typename To>
+void TestRememberedSetInvalidation(MinorGCTest& test) {
+  Persistent<From> old = MakeGarbageCollected<From>(test.GetAllocationHandle());
+
+  test.CollectMinor();
+
+  auto* young = MakeGarbageCollected<To>(test.GetAllocationHandle());
+
+  {
+    ExpectRememberedSlotsAdded _(test.GetHeap(),
+                                 {old->next.GetSlotForTesting()});
+    // Issue the generational barrier.
+    old->next = young;
+  }
+
+  {
+    ExpectRememberedSlotsRemoved _(test.GetHeap(),
+                                   {old->next.GetSlotForTesting()});
+    // Release the persistent and free the old object.
+    auto* old_raw = old.Release();
+    subtle::FreeUnreferencedObject(test.GetHeapHandle(), *old_raw);
+  }
+
+  // Visiting remembered slots must not fail.
+  test.CollectMinor();
+}
+
+TYPED_TEST(MinorGCTestForType, RememberedSetInvalidationOnPromptlyFree) {
+  using Type1 = typename TestFixture::Type;
+  using Type2 = typename OtherType<Type1>::Type;
+  TestRememberedSetInvalidation<Type1, Type1>(*this);
+  TestRememberedSetInvalidation<Type1, Type2>(*this);
+}
+
+TEST_F(MinorGCTest, RememberedSetInvalidationOnShrink) {
+  using Member = Member<Small>;
+
+  static constexpr size_t kTrailingMembers = 64;
+  static constexpr size_t kBytesToAllocate = kTrailingMembers * sizeof(Member);
+
+  static constexpr size_t kFirstMemberToInvalidate = kTrailingMembers / 2;
+  static constexpr size_t kLastMemberToInvalidate = kTrailingMembers;
+
+  // Create an object with additional kBytesToAllocate bytes.
+  Persistent<Small> old = MakeGarbageCollected<Small>(
+      this->GetAllocationHandle(), AdditionalBytes(kBytesToAllocate));
+
+  auto get_member = [&old](size_t i) -> Member& {
+    return *reinterpret_cast<Member*>(reinterpret_cast<uint8_t*>(old.Get()) +
+                                      sizeof(Small) + i * sizeof(Member));
+  };
+
+  CollectMinor();
+
+  auto* young = MakeGarbageCollected<Small>(GetAllocationHandle());
+
+  const auto& set = Heap::From(GetHeap())->remembered_slots();
   const size_t set_size_before_barrier = set.size();
 
-  // Try issuing generational barrier for nullptr.
-  old->next = static_cast<Type*>(nullptr);
+  // Issue the generational barriers.
+  for (size_t i = kFirstMemberToInvalidate; i < kLastMemberToInvalidate; ++i) {
+    // Construct the member.
+    new (&get_member(i)) Member;
+    // Issue the barrier.
+    get_member(i) = young;
+  }
+
+  // Check that barriers hit (kLastMemberToInvalidate -
+  // kFirstMemberToInvalidate) times.
+  EXPECT_EQ(set_size_before_barrier +
+                (kLastMemberToInvalidate - kFirstMemberToInvalidate),
+            set.size());
+
+  // Shrink the buffer for old object.
+  subtle::Resize(*old, AdditionalBytes(kBytesToAllocate / 2));
+
+  // Check that the reference was invalidated.
   EXPECT_EQ(set_size_before_barrier, set.size());
 
-  // Try issuing generational barrier for sentinel.
-  old->next = static_cast<Type*>(kSentinelPointer);
-  EXPECT_EQ(set_size_before_barrier, set.size());
+  // Visiting remembered slots must not fail.
+  CollectMinor();
 }
+
+namespace {
+
+template <typename Value>
+struct InlinedObject {
+  struct Inner {
+    Inner() = default;
+    explicit Inner(AllocationHandle& handle)
+        : ref(MakeGarbageCollected<Value>(handle)) {}
+
+    void Trace(Visitor* v) const { v->Trace(ref); }
+
+    double d = -1.;
+    Member<Value> ref;
+  };
+
+  InlinedObject() = default;
+  explicit InlinedObject(AllocationHandle& handle)
+      : ref(MakeGarbageCollected<Value>(handle)), inner(handle) {}
+
+  void Trace(cppgc::Visitor* v) const {
+    v->Trace(ref);
+    v->Trace(inner);
+  }
+
+  int a_ = -1;
+  Member<Value> ref;
+  Inner inner;
+};
+
+template <typename Value>
+class GCedWithInlinedArray
+    : public GarbageCollected<GCedWithInlinedArray<Value>> {
+ public:
+  static constexpr size_t kNumObjects = 16;
+
+  GCedWithInlinedArray(HeapHandle& heap_handle, AllocationHandle& alloc_handle)
+      : heap_handle_(heap_handle), alloc_handle_(alloc_handle) {}
+
+  using WriteBarrierParams = subtle::HeapConsistency::WriteBarrierParams;
+  using HeapConsistency = subtle::HeapConsistency;
+
+  void SetInPlaceRange(size_t from, size_t to) {
+    DCHECK_GT(to, from);
+    DCHECK_GT(kNumObjects, from);
+
+    for (; from != to; ++from)
+      new (&objects[from]) InlinedObject<Value>(alloc_handle_);
+
+    GenerationalBarrierForSourceObject(&objects[from]);
+  }
+
+  void Trace(cppgc::Visitor* v) const {
+    for (const auto& object : objects) v->Trace(object);
+  }
+
+  InlinedObject<Value> objects[kNumObjects];
+
+ private:
+  void GenerationalBarrierForSourceObject(void* object) {
+    DCHECK(object);
+    WriteBarrierParams params;
+    const auto barrier_type = HeapConsistency::GetWriteBarrierType(
+        object, params, [this]() -> HeapHandle& { return heap_handle_; });
+    EXPECT_EQ(HeapConsistency::WriteBarrierType::kGenerational, barrier_type);
+    HeapConsistency::GenerationalBarrierForSourceObject(params, object);
+  }
+
+  HeapHandle& heap_handle_;
+  AllocationHandle& alloc_handle_;
+};
+
+}  // namespace
+
+TYPED_TEST(MinorGCTestForType, GenerationalBarrierDeferredTracing) {
+  using Type = typename TestFixture::Type;
+
+  Persistent<GCedWithInlinedArray<Type>> array =
+      MakeGarbageCollected<GCedWithInlinedArray<Type>>(
+          this->GetAllocationHandle(), this->GetHeapHandle(),
+          this->GetAllocationHandle());
+
+  this->CollectMinor();
+
+  EXPECT_TRUE(IsHeapObjectOld(array.Get()));
+
+  const auto& remembered_objects =
+      Heap::From(this->GetHeap())->remembered_source_objects();
+  {
+    ExpectNoRememberedSlotsAdded _(this->GetHeap());
+    EXPECT_EQ(0u, remembered_objects.count(
+                      &HeapObjectHeader::FromObject(array->objects)));
+
+    array->SetInPlaceRange(2, 4);
+
+    EXPECT_EQ(1u, remembered_objects.count(
+                      &HeapObjectHeader::FromObject(array->objects)));
+  }
+
+  RunMinorGCAndExpectObjectsPromoted(
+      *this, array->objects[2].ref.Get(), array->objects[2].inner.ref.Get(),
+      array->objects[3].ref.Get(), array->objects[3].inner.ref.Get());
+
+  EXPECT_EQ(0u, remembered_objects.size());
+}
+
 }  // namespace internal
 }  // namespace cppgc
 

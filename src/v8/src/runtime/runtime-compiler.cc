@@ -29,18 +29,16 @@ namespace internal {
 
 namespace {
 
-Object CompileOptimized(Isolate* isolate, Handle<JSFunction> function,
-                        ConcurrencyMode mode) {
+Object CompileTurbofan(Isolate* isolate, Handle<JSFunction> function,
+                       ConcurrencyMode mode) {
   StackLimitCheck check(isolate);
-  if (check.JsHasOverflowed(kStackSpaceRequiredForCompilation * KB)) {
-    return isolate->StackOverflow();
-  }
+  // Concurrent optimization runs on another thread, thus no additional gap.
+  const int stack_gap = mode == ConcurrencyMode::kConcurrent
+                            ? 0
+                            : kStackSpaceRequiredForCompilation * KB;
+  if (check.JsHasOverflowed(stack_gap)) return isolate->StackOverflow();
 
-  // Compile for the next tier.
-  if (!Compiler::CompileOptimized(isolate, function, mode,
-                                  function->NextTier())) {
-    return ReadOnlyRoots(isolate).exception();
-  }
+  Compiler::CompileOptimized(isolate, function, mode, function->NextTier());
 
   // As a post-condition of CompileOptimized, the function *must* be compiled,
   // i.e. the installed Code object must not be the CompileLazy builtin.
@@ -94,38 +92,18 @@ RUNTIME_FUNCTION(Runtime_InstallBaselineCode) {
   return baseline_code;
 }
 
-RUNTIME_FUNCTION(Runtime_CompileOptimized_Concurrent) {
+RUNTIME_FUNCTION(Runtime_CompileTurbofan_Concurrent) {
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
   CONVERT_ARG_HANDLE_CHECKED(JSFunction, function, 0);
-  return CompileOptimized(isolate, function, ConcurrencyMode::kConcurrent);
+  return CompileTurbofan(isolate, function, ConcurrencyMode::kConcurrent);
 }
 
-RUNTIME_FUNCTION(Runtime_CompileOptimized_NotConcurrent) {
+RUNTIME_FUNCTION(Runtime_CompileTurbofan_NotConcurrent) {
   HandleScope scope(isolate);
   DCHECK_EQ(1, args.length());
   CONVERT_ARG_HANDLE_CHECKED(JSFunction, function, 0);
-  return CompileOptimized(isolate, function, ConcurrencyMode::kNotConcurrent);
-}
-
-RUNTIME_FUNCTION(Runtime_FunctionFirstExecution) {
-  HandleScope scope(isolate);
-  StackLimitCheck check(isolate);
-  DCHECK_EQ(1, args.length());
-
-  CONVERT_ARG_HANDLE_CHECKED(JSFunction, function, 0);
-  DCHECK_EQ(function->feedback_vector().optimization_marker(),
-            OptimizationMarker::kLogFirstExecution);
-  DCHECK(FLAG_log_function_events);
-  Handle<SharedFunctionInfo> sfi(function->shared(), isolate);
-  Handle<String> name = SharedFunctionInfo::DebugName(sfi);
-  LOG(isolate,
-      FunctionEvent("first-execution", Script::cast(sfi->script()).id(), 0,
-                    sfi->StartPosition(), sfi->EndPosition(), *name));
-  function->feedback_vector().ClearOptimizationMarker();
-  // Return the code to continue execution, we don't care at this point whether
-  // this is for lazy compilation or has been eagerly complied.
-  return function->code();
+  return CompileTurbofan(isolate, function, ConcurrencyMode::kNotConcurrent);
 }
 
 RUNTIME_FUNCTION(Runtime_HealOptimizedCodeSlot) {
@@ -136,8 +114,7 @@ RUNTIME_FUNCTION(Runtime_HealOptimizedCodeSlot) {
   DCHECK(function->shared().is_compiled());
 
   function->feedback_vector().EvictOptimizedCodeMarkedForDeoptimization(
-      function->raw_feedback_cell(), function->shared(),
-      "Runtime_HealOptimizedCodeSlot");
+      function->shared(), "Runtime_HealOptimizedCodeSlot");
   return function->code();
 }
 
@@ -193,7 +170,6 @@ RUNTIME_FUNCTION(Runtime_NotifyDeoptimized) {
   // code object from deoptimizer.
   Handle<Code> optimized_code = deoptimizer->compiled_code();
   DeoptimizeKind type = deoptimizer->deopt_kind();
-  bool should_reuse_code = deoptimizer->should_reuse_code();
 
   // TODO(turbofan): We currently need the native context to materialize
   // the arguments object, but only to get to its map.
@@ -207,11 +183,6 @@ RUNTIME_FUNCTION(Runtime_NotifyDeoptimized) {
   JavaScriptFrameIterator top_it(isolate);
   JavaScriptFrame* top_frame = top_it.frame();
   isolate->set_context(Context::cast(top_frame->context()));
-
-  if (should_reuse_code) {
-    optimized_code->increment_deoptimization_count();
-    return ReadOnlyRoots(isolate).undefined_value();
-  }
 
   // Invalidate the underlying optimized code on eager and soft deopts.
   if (type == DeoptimizeKind::kEager || type == DeoptimizeKind::kSoft) {
@@ -370,7 +341,8 @@ RUNTIME_FUNCTION(Runtime_CompileForOnStackReplacement) {
           function->PrintName(scope.file());
           PrintF(scope.file(), " for non-concurrent optimization]\n");
         }
-        function->SetOptimizationMarker(OptimizationMarker::kCompileOptimized);
+        function->SetOptimizationMarker(
+            OptimizationMarker::kCompileTurbofan_NotConcurrent);
       }
       return *result;
     }

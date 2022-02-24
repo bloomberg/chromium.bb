@@ -10,6 +10,12 @@ namespace test {
 
 using ::testing::Optional;
 
+using Header = std::pair<absl::string_view, absl::string_view>;
+constexpr Header kSampleRequestPseudoheaders[] = {{":authority", "www.foo.com"},
+                                                  {":method", "GET"},
+                                                  {":path", "/foo"},
+                                                  {":scheme", "https"}};
+
 TEST(HeaderValidatorTest, HeaderNameEmpty) {
   HeaderValidator v;
   HeaderValidator::HeaderStatus status = v.ValidateSingleHeader("", "value");
@@ -109,16 +115,48 @@ TEST(HeaderValidatorTest, StatusHasInvalidChar) {
   }
 }
 
+TEST(HeaderValidatorTest, AuthorityHasInvalidChar) {
+  HeaderValidator v;
+  v.StartHeaderBlock();
+
+  // These characters should be allowed. (Not exhaustive.)
+  for (const absl::string_view c : {"1", "-", "!", ":", "+", "=", ","}) {
+    HeaderValidator::HeaderStatus status = v.ValidateSingleHeader(
+        ":authority", absl::StrCat("ho", c, "st.example.com"));
+    EXPECT_EQ(HeaderValidator::HEADER_OK, status);
+  }
+  // These should not.
+  for (const absl::string_view c : {"\r", "\n", "|", "\\", "`"}) {
+    HeaderValidator::HeaderStatus status = v.ValidateSingleHeader(
+        ":authority", absl::StrCat("ho", c, "st.example.com"));
+    EXPECT_EQ(HeaderValidator::HEADER_FIELD_INVALID, status);
+  }
+
+  // IPv4 example
+  HeaderValidator::HeaderStatus status =
+      v.ValidateSingleHeader(":authority", "123.45.67.89");
+  EXPECT_EQ(HeaderValidator::HEADER_OK, status);
+
+  // IPv6 examples
+  status = v.ValidateSingleHeader(":authority",
+                                  "2001:0db8:85a3:0000:0000:8a2e:0370:7334");
+  EXPECT_EQ(HeaderValidator::HEADER_OK, status);
+  status = v.ValidateSingleHeader(":authority", "[::1]:80");
+  EXPECT_EQ(HeaderValidator::HEADER_OK, status);
+
+  // Empty field
+  status = v.ValidateSingleHeader(":authority", "");
+  EXPECT_EQ(HeaderValidator::HEADER_OK, status);
+}
+
 TEST(HeaderValidatorTest, RequestPseudoHeaders) {
   HeaderValidator v;
-  const absl::string_view headers[] = {":authority", ":method", ":path",
-                                       ":scheme"};
-  for (absl::string_view to_skip : headers) {
+  for (Header to_skip : kSampleRequestPseudoheaders) {
     v.StartHeaderBlock();
-    for (absl::string_view to_add : headers) {
+    for (Header to_add : kSampleRequestPseudoheaders) {
       if (to_add != to_skip) {
         EXPECT_EQ(HeaderValidator::HEADER_OK,
-                  v.ValidateSingleHeader(to_add, "foo"));
+                  v.ValidateSingleHeader(to_add.first, to_add.second));
       }
     }
     // When any pseudo-header is missing, final validation will fail.
@@ -127,31 +165,31 @@ TEST(HeaderValidatorTest, RequestPseudoHeaders) {
 
   // When all pseudo-headers are present, final validation will succeed.
   v.StartHeaderBlock();
-  for (absl::string_view to_add : headers) {
+  for (Header to_add : kSampleRequestPseudoheaders) {
     EXPECT_EQ(HeaderValidator::HEADER_OK,
-              v.ValidateSingleHeader(to_add, "foo"));
+              v.ValidateSingleHeader(to_add.first, to_add.second));
   }
   EXPECT_TRUE(v.FinishHeaderBlock(HeaderType::REQUEST));
 
   // When an extra pseudo-header is present, final validation will fail.
   v.StartHeaderBlock();
-  for (absl::string_view to_add : headers) {
+  for (Header to_add : kSampleRequestPseudoheaders) {
     EXPECT_EQ(HeaderValidator::HEADER_OK,
-              v.ValidateSingleHeader(to_add, "foo"));
+              v.ValidateSingleHeader(to_add.first, to_add.second));
   }
   EXPECT_EQ(HeaderValidator::HEADER_OK,
             v.ValidateSingleHeader(":extra", "blah"));
   EXPECT_FALSE(v.FinishHeaderBlock(HeaderType::REQUEST));
 
   // When a required pseudo-header is repeated, final validation will fail.
-  for (absl::string_view to_repeat : headers) {
+  for (Header to_repeat : kSampleRequestPseudoheaders) {
     v.StartHeaderBlock();
-    for (absl::string_view to_add : headers) {
+    for (Header to_add : kSampleRequestPseudoheaders) {
       EXPECT_EQ(HeaderValidator::HEADER_OK,
-                v.ValidateSingleHeader(to_add, "foo"));
+                v.ValidateSingleHeader(to_add.first, to_add.second));
       if (to_add == to_repeat) {
         EXPECT_EQ(HeaderValidator::HEADER_OK,
-                  v.ValidateSingleHeader(to_add, "foo"));
+                  v.ValidateSingleHeader(to_add.first, to_add.second));
       }
     }
     EXPECT_FALSE(v.FinishHeaderBlock(HeaderType::REQUEST));
@@ -160,12 +198,10 @@ TEST(HeaderValidatorTest, RequestPseudoHeaders) {
 
 TEST(HeaderValidatorTest, WebsocketPseudoHeaders) {
   HeaderValidator v;
-  const absl::string_view headers[] = {":authority", ":method", ":path",
-                                       ":scheme"};
   v.StartHeaderBlock();
-  for (absl::string_view to_add : headers) {
+  for (Header to_add : kSampleRequestPseudoheaders) {
     EXPECT_EQ(HeaderValidator::HEADER_OK,
-              v.ValidateSingleHeader(to_add, "foo"));
+              v.ValidateSingleHeader(to_add.first, to_add.second));
   }
   EXPECT_EQ(HeaderValidator::HEADER_OK,
             v.ValidateSingleHeader(":protocol", "websocket"));
@@ -177,30 +213,93 @@ TEST(HeaderValidatorTest, WebsocketPseudoHeaders) {
   v.AllowConnect();
 
   v.StartHeaderBlock();
-  for (absl::string_view to_add : headers) {
+  for (Header to_add : kSampleRequestPseudoheaders) {
     EXPECT_EQ(HeaderValidator::HEADER_OK,
-              v.ValidateSingleHeader(to_add, "foo"));
+              v.ValidateSingleHeader(to_add.first, to_add.second));
   }
   EXPECT_EQ(HeaderValidator::HEADER_OK,
             v.ValidateSingleHeader(":protocol", "websocket"));
-  // The method is "foo", not "CONNECT", so `:protocol` is still treated as an
-  // extra pseudo-header.
+  // The method is not "CONNECT", so `:protocol` is still treated as an extra
+  // pseudo-header.
   EXPECT_FALSE(v.FinishHeaderBlock(HeaderType::REQUEST));
 
   v.StartHeaderBlock();
-  for (absl::string_view to_add : headers) {
-    if (to_add == ":method") {
+  for (Header to_add : kSampleRequestPseudoheaders) {
+    if (to_add.first == ":method") {
       EXPECT_EQ(HeaderValidator::HEADER_OK,
-                v.ValidateSingleHeader(to_add, "CONNECT"));
+                v.ValidateSingleHeader(to_add.first, "CONNECT"));
     } else {
       EXPECT_EQ(HeaderValidator::HEADER_OK,
-                v.ValidateSingleHeader(to_add, "foo"));
+                v.ValidateSingleHeader(to_add.first, to_add.second));
     }
   }
   EXPECT_EQ(HeaderValidator::HEADER_OK,
             v.ValidateSingleHeader(":protocol", "websocket"));
   // After allowing the method, `:protocol` is acepted for CONNECT requests.
   EXPECT_TRUE(v.FinishHeaderBlock(HeaderType::REQUEST));
+}
+
+TEST(HeaderValidatorTest, AsteriskPathPseudoHeader) {
+  HeaderValidator v;
+
+  // An asterisk :path should not be allowed for non-OPTIONS requests.
+  v.StartHeaderBlock();
+  for (Header to_add : kSampleRequestPseudoheaders) {
+    if (to_add.first == ":path") {
+      EXPECT_EQ(HeaderValidator::HEADER_OK,
+                v.ValidateSingleHeader(to_add.first, "*"));
+    } else {
+      EXPECT_EQ(HeaderValidator::HEADER_OK,
+                v.ValidateSingleHeader(to_add.first, to_add.second));
+    }
+  }
+  EXPECT_FALSE(v.FinishHeaderBlock(HeaderType::REQUEST));
+
+  // An asterisk :path should be allowed for OPTIONS requests.
+  v.StartHeaderBlock();
+  for (Header to_add : kSampleRequestPseudoheaders) {
+    if (to_add.first == ":path") {
+      EXPECT_EQ(HeaderValidator::HEADER_OK,
+                v.ValidateSingleHeader(to_add.first, "*"));
+    } else if (to_add.first == ":method") {
+      EXPECT_EQ(HeaderValidator::HEADER_OK,
+                v.ValidateSingleHeader(to_add.first, "OPTIONS"));
+    } else {
+      EXPECT_EQ(HeaderValidator::HEADER_OK,
+                v.ValidateSingleHeader(to_add.first, to_add.second));
+    }
+  }
+  EXPECT_TRUE(v.FinishHeaderBlock(HeaderType::REQUEST));
+}
+
+TEST(HeaderValidatorTest, InvalidPathPseudoHeader) {
+  HeaderValidator v;
+
+  // An empty path should fail on single header validation and finish.
+  v.StartHeaderBlock();
+  for (Header to_add : kSampleRequestPseudoheaders) {
+    if (to_add.first == ":path") {
+      EXPECT_EQ(HeaderValidator::HEADER_FIELD_INVALID,
+                v.ValidateSingleHeader(to_add.first, ""));
+    } else {
+      EXPECT_EQ(HeaderValidator::HEADER_OK,
+                v.ValidateSingleHeader(to_add.first, to_add.second));
+    }
+  }
+  EXPECT_FALSE(v.FinishHeaderBlock(HeaderType::REQUEST));
+
+  // A path that does not start with a slash should fail on finish.
+  v.StartHeaderBlock();
+  for (Header to_add : kSampleRequestPseudoheaders) {
+    if (to_add.first == ":path") {
+      EXPECT_EQ(HeaderValidator::HEADER_OK,
+                v.ValidateSingleHeader(to_add.first, "shawarma"));
+    } else {
+      EXPECT_EQ(HeaderValidator::HEADER_OK,
+                v.ValidateSingleHeader(to_add.first, to_add.second));
+    }
+  }
+  EXPECT_FALSE(v.FinishHeaderBlock(HeaderType::REQUEST));
 }
 
 TEST(HeaderValidatorTest, ResponsePseudoHeaders) {
@@ -273,6 +372,42 @@ TEST(HeaderValidatorTest, Response204WithContentLength) {
             v.ValidateSingleHeader("content-length", "1"));
 }
 
+TEST(HeaderValidatorTest, Response100) {
+  HeaderValidator v;
+
+  v.StartHeaderBlock();
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader(":status", "100"));
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader("x-content", "is not present"));
+  EXPECT_TRUE(v.FinishHeaderBlock(HeaderType::RESPONSE));
+}
+
+TEST(HeaderValidatorTest, Response100WithContentLengthZero) {
+  HeaderValidator v;
+
+  v.StartHeaderBlock();
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader(":status", "100"));
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader("x-content", "is not present"));
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader("content-length", "0"));
+  EXPECT_TRUE(v.FinishHeaderBlock(HeaderType::RESPONSE));
+}
+
+TEST(HeaderValidatorTest, Response100WithContentLength) {
+  HeaderValidator v;
+
+  v.StartHeaderBlock();
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader(":status", "100"));
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader("x-content", "is not present"));
+  EXPECT_EQ(HeaderValidator::HEADER_FIELD_INVALID,
+            v.ValidateSingleHeader("content-length", "1"));
+}
+
 TEST(HeaderValidatorTest, ResponseTrailerPseudoHeaders) {
   HeaderValidator v;
 
@@ -323,6 +458,18 @@ TEST(HeaderValidatorTest, InvalidContentLength) {
   EXPECT_EQ(HeaderValidator::HEADER_OK,
             v.ValidateSingleHeader("content-length", "42"));
   EXPECT_THAT(v.content_length(), Optional(42));
+}
+
+TEST(HeaderValidatorTest, TeHeader) {
+  HeaderValidator v;
+
+  v.StartHeaderBlock();
+  EXPECT_EQ(HeaderValidator::HEADER_OK,
+            v.ValidateSingleHeader("te", "trailers"));
+
+  v.StartHeaderBlock();
+  EXPECT_EQ(HeaderValidator::HEADER_FIELD_INVALID,
+            v.ValidateSingleHeader("te", "trailers, deflate"));
 }
 
 }  // namespace test

@@ -288,7 +288,7 @@ class V8_EXPORT_PRIVATE NativeModuleSerializer {
  private:
   size_t MeasureCode(const WasmCode*) const;
   void WriteHeader(Writer*, size_t total_code_size);
-  bool WriteCode(const WasmCode*, Writer*);
+  void WriteCode(const WasmCode*, Writer*);
 
   const NativeModule* const native_module_;
   const base::Vector<WasmCode* const> code_table_;
@@ -332,11 +332,12 @@ void NativeModuleSerializer::WriteHeader(Writer* writer,
   writer->Write(total_code_size);
 }
 
-bool NativeModuleSerializer::WriteCode(const WasmCode* code, Writer* writer) {
+void NativeModuleSerializer::WriteCode(const WasmCode* code, Writer* writer) {
   if (code == nullptr) {
     writer->Write(kLazyFunction);
-    return true;
+    return;
   }
+
   DCHECK_EQ(WasmCode::kWasmFunction, code->kind());
   // Only serialize TurboFan code, as Liftoff code can contain breakpoints or
   // non-relocatable constants.
@@ -353,8 +354,9 @@ bool NativeModuleSerializer::WriteCode(const WasmCode* code, Writer* writer) {
     writer->Write(budget == static_cast<uint32_t>(FLAG_wasm_tiering_budget)
                       ? kLazyFunction
                       : kLiftoffFunction);
-    return true;
+    return;
   }
+
   ++num_turbofan_functions_;
   writer->Write(kTurboFanFunction);
   // Write the size of the entire code section, followed by the code header.
@@ -445,7 +447,6 @@ bool NativeModuleSerializer::WriteCode(const WasmCode* code, Writer* writer) {
     memcpy(serialized_code_start, code_start, code_size);
   }
   total_written_code_ += code_size;
-  return true;
 }
 
 bool NativeModuleSerializer::Write(Writer* writer) {
@@ -462,7 +463,7 @@ bool NativeModuleSerializer::Write(Writer* writer) {
   WriteHeader(writer, total_code_size);
 
   for (WasmCode* code : code_table_) {
-    if (!WriteCode(code, writer)) return false;
+    WriteCode(code, writer);
   }
   // If not a single function was written, serialization was not successful.
   if (num_turbofan_functions_ == 0) return false;
@@ -873,10 +874,13 @@ MaybeHandle<WasmModuleObject> DeserializeNativeModule(
   auto shared_native_module = wasm_engine->MaybeGetNativeModule(
       module->origin, owned_wire_bytes.as_vector(), isolate);
   if (shared_native_module == nullptr) {
-    const bool kIncludeLiftoff = false;
+    DynamicTiering dynamic_tiering = isolate->IsWasmDynamicTieringEnabled()
+                                         ? DynamicTiering::kEnabled
+                                         : DynamicTiering::kDisabled;
+    const bool kIncludeLiftoff = dynamic_tiering == DynamicTiering::kDisabled;
     size_t code_size_estimate =
-        wasm::WasmCodeManager::EstimateNativeModuleCodeSize(module.get(),
-                                                            kIncludeLiftoff);
+        wasm::WasmCodeManager::EstimateNativeModuleCodeSize(
+            module.get(), kIncludeLiftoff, dynamic_tiering);
     shared_native_module = wasm_engine->NewNativeModule(
         isolate, enabled_features, std::move(module), code_size_estimate);
     // We have to assign a compilation ID here, as it is required for a

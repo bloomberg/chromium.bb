@@ -113,16 +113,35 @@
 6533 ANDROID : dEQP-EGL.functional.native_coord_mapping.native_window.* = SKIP
 
 // Android Vulkan
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.api.create_image_gles2_android_native_rgb8 = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles2_android_native_rgb8_read_pixels = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles2_android_native_rgb8_texture = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles3_android_native_array_rgb565_texture_array = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles3_android_native_array_rgb8_texture_array = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles3_android_native_array_rgba8_texture_array = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.modify.android_native_rgb8_renderbuffer_clear_color = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.modify.android_native_rgb8_tex_subimage_rgb8 = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.render_multiple_contexts.gles2_android_native_rgb8_read_pixels = SKIP
-6277 ANDROID VULKAN : dEQP-EGL.functional.image.render_multiple_contexts.gles2_android_native_rgb8_texture = SKIP
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.api.create_image_gles2_android_native_rgb8 = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles2_android_native_rgb8_read_pixels = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles2_android_native_rgb8_texture = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles3_android_native_array_rgb565_texture_array = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles3_android_native_array_rgb8_texture_array = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles3_android_native_array_rgba8_texture_array = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.modify.android_native_rgb8_renderbuffer_clear_color = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.modify.android_native_rgb8_tex_subimage_rgb8 = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.render_multiple_contexts.gles2_android_native_rgb8_read_pixels = FAIL
+6277 ANDROID VULKAN : dEQP-EGL.functional.image.render_multiple_contexts.gles2_android_native_rgb8_texture = FAIL
+
+// Pixel 4 Vulkan
+6953 PIXEL4ORXL VULKAN : dEQP-EGL.functional.buffer_age.no_preserve.*.odd_clear_render_even_clear = FAIL
+6953 PIXEL4ORXL VULKAN : dEQP-EGL.functional.buffer_age.no_preserve.*.odd_clear_render_even_clear_render = FAIL
+6953 PIXEL4ORXL VULKAN : dEQP-EGL.functional.buffer_age.no_preserve.*.odd_clear_render_even_render = FAIL
+6953 PIXEL4ORXL VULKAN : dEQP-EGL.functional.buffer_age.no_preserve.*.odd_clear_render_even_render_render = FAIL
+6953 PIXEL4ORXL VULKAN : dEQP-EGL.functional.buffer_age.no_preserve.*.odd_render_clear_even_clear = FAIL
+6953 PIXEL4ORXL VULKAN : dEQP-EGL.functional.buffer_age.no_preserve.*.odd_render_clear_even_clear_render = FAIL
+6953 PIXEL4ORXL VULKAN : dEQP-EGL.functional.buffer_age.no_preserve.*.odd_render_clear_even_render = FAIL
+6953 PIXEL4ORXL VULKAN : dEQP-EGL.functional.buffer_age.no_preserve.*.odd_render_clear_even_render_render = FAIL
+6953 PIXEL4ORXL VULKAN : dEQP-EGL.functional.buffer_age.no_preserve.*.odd_render_even_clear = FAIL
+6953 PIXEL4ORXL VULKAN : dEQP-EGL.functional.buffer_age.no_preserve.*.odd_render_even_none = FAIL
+6953 PIXEL4ORXL VULKAN : dEQP-EGL.functional.buffer_age.no_preserve.*.odd_render_render_even_none = FAIL
+6953 PIXEL4ORXL VULKAN : dEQP-EGL.functional.buffer_age.no_preserve.*.odd_render_render_even_render = FAIL
+6953 PIXEL4ORXL VULKAN : dEQP-EGL.functional.buffer_age.no_preserve.*.odd_render_render_even_render_render = FAIL
+
+// Pixel 6 Vulkan
+6900 PIXEL6 VULKAN : dEQP-EGL.functional.get_proc_address.extension.egl_ext_image_dma_buf_import_modifiers = FAIL
+6899 PIXEL6 VULKAN : dEQP-EGL.functional.query_context.*.rgb888_window = FAIL
 
 // Robustness failures on multiple platforms
 6707 NVIDIA : dEQP-EGL.functional.robustness.reset_context.shaders.out_of_bounds.reset_status.reads.uniform_block.compute = SKIP

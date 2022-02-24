@@ -21,10 +21,13 @@ namespace tint {
 
 // Forward declarations
 namespace ast {
+class Array;
 class CallExpression;
 class Expression;
+class ElseStatement;
 class ForLoopStatement;
 class Function;
+class IfStatement;
 class MemberAccessorExpression;
 class Node;
 class Statement;
@@ -40,8 +43,10 @@ namespace sem {
 class Array;
 class Call;
 class Expression;
+class ElseStatement;
 class ForLoopStatement;
 class Function;
+class IfStatement;
 class MemberAccessorExpression;
 class Node;
 class Statement;
@@ -56,10 +61,13 @@ class Variable;
 /// rules will be used to infer the return type based on the argument type.
 struct TypeMappings {
   //! @cond Doxygen_Suppress
+  Array* operator()(ast::Array*);
   Call* operator()(ast::CallExpression*);
   Expression* operator()(ast::Expression*);
+  ElseStatement* operator()(ast::ElseStatement*);
   ForLoopStatement* operator()(ast::ForLoopStatement*);
   Function* operator()(ast::Function*);
+  IfStatement* operator()(ast::IfStatement*);
   MemberAccessorExpression* operator()(ast::MemberAccessorExpression*);
   Node* operator()(ast::Node*);
   Statement* operator()(ast::Statement*);

@@ -41,6 +41,8 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.continuous_search.ContinuousSearchContainerCoordinator;
 import org.chromium.chrome.browser.continuous_search.ContinuousSearchContainerCoordinator.HeightObserver;
+import org.chromium.chrome.browser.feature_guide.notifications.FeatureNotificationUtils;
+import org.chromium.chrome.browser.feature_guide.notifications.FeatureType;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedFollowIntroController;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -68,8 +70,10 @@ import org.chromium.chrome.browser.ntp.NewTabPageUtils;
 import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorControllerV2;
 import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorInProductHelpController;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxPedalDelegate;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxDialogController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.read_later.ReadLaterIPHController;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
@@ -233,8 +237,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
      * @param snackbarManagerSupplier Supplies the {@link SnackbarManager}.
      * @param activityType The {@link ActivityType} for the activity.
      * @param isInOverviewModeSupplier Supplies whether the app is in overview mode.
-     * @param shouldShowOverviewPageOnStartSupplier Supplies whether the overview page should be
-     *         shown on start.
      * @param isWarmOnResumeSupplier Supplies whether the app was warm on resume.
      * @param appMenuDelegate The app menu delegate.
      * @param statusBarColorProvider Provides the status bar color.
@@ -276,7 +278,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             @NonNull OneshotSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
             @NonNull Supplier<SnackbarManager> snackbarManagerSupplier,
             @ActivityType int activityType, @NonNull Supplier<Boolean> isInOverviewModeSupplier,
-            @NonNull Supplier<Boolean> shouldShowOverviewPageOnStartSupplier,
             @NonNull Supplier<Boolean> isWarmOnResumeSupplier,
             @NonNull AppMenuDelegate appMenuDelegate,
             @NonNull StatusBarColorProvider statusBarColorProvider,
@@ -286,6 +287,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             @NonNull Supplier<InsetObserverView> insetObserverViewSupplier,
             @NonNull Function<Tab, Boolean> backButtonShouldCloseTabFn,
             OneshotSupplier<TabReparentingController> tabReparentingControllerSupplier,
+            @NonNull OmniboxPedalDelegate omniboxPedalDelegate,
             boolean initializeUiWithIncognitoColors) {
         super(activity, onOmniboxFocusChangedListener, shareDelegateSupplier, tabProvider,
                 profileSupplier, bookmarkBridgeSupplier, contextualSearchManagerSupplier,
@@ -297,10 +299,9 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 supportsFindInPage, tabCreatorManagerSupplier, fullscreenManager,
                 compositorViewHolderSupplier, tabContentManagerSupplier,
                 overviewModeBehaviorSupplier, snackbarManagerSupplier, activityType,
-                isInOverviewModeSupplier, shouldShowOverviewPageOnStartSupplier,
-                isWarmOnResumeSupplier, appMenuDelegate, statusBarColorProvider,
-                intentRequestTracker, tabReparentingControllerSupplier,
-                initializeUiWithIncognitoColors);
+                isInOverviewModeSupplier, isWarmOnResumeSupplier, appMenuDelegate,
+                statusBarColorProvider, intentRequestTracker, tabReparentingControllerSupplier,
+                omniboxPedalDelegate, initializeUiWithIncognitoColors);
         mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
         mControlContainerHeightResource = controlContainerHeightResource;
         mInsetObserverViewSupplier = insetObserverViewSupplier;
@@ -320,6 +321,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
 
     @Override
     public void onDestroy() {
+        FeatureNotificationUtils.unregisterIPHCallback(FeatureType.DEFAULT_BROWSER);
+
         if (mSystemUiCoordinator != null) mSystemUiCoordinator.destroy();
         if (mEmptyBackgroundViewWrapper != null) mEmptyBackgroundViewWrapper.destroy();
 
@@ -602,7 +605,27 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 mToolbarManager.getMenuButtonView(), mToolbarManager.getSecurityIconView());
         mReadLaterIPHController = new ReadLaterIPHController(mActivity,
                 getToolbarManager().getMenuButtonView(), mAppMenuCoordinator.getAppMenuHandler());
-        boolean didTriggerPromo = triggerPromo(intentWithEffect);
+
+        boolean didTriggerPromo = false;
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_3)) {
+            didTriggerPromo = PrivacySandboxDialogController.maybeLaunchPrivacySandboxDialog(
+                    mActivity, new SettingsLauncherImpl(),
+                    mTabModelSelectorSupplier.get().isIncognitoSelected());
+        }
+
+        if (!didTriggerPromo) {
+            didTriggerPromo = FeatureNotificationUtils.willShowIPH(FeatureType.DEFAULT_BROWSER);
+            FeatureNotificationUtils.registerIPHCallback(FeatureType.DEFAULT_BROWSER, () -> {
+                DefaultBrowserPromoUtils.prepareLaunchPromoIfNeeded(
+                        mActivity, mWindowAndroid, true /* ignoreMaxCount */);
+            });
+        }
+
+        if (!didTriggerPromo) {
+            didTriggerPromo = triggerPromo(intentWithEffect);
+        }
+
         if (!didTriggerPromo) {
             mToolbarButtonInProductHelpController.showColdStartIPH();
             mReadLaterIPHController.showColdStartIPH();
@@ -900,7 +923,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                     SyncConsentActivityLauncherImpl.get(), VersionInfo.getProductMajorVersion())) {
             return true;
         }
-        if (DefaultBrowserPromoUtils.prepareLaunchPromoIfNeeded(mActivity, mWindowAndroid)) {
+        if (DefaultBrowserPromoUtils.prepareLaunchPromoIfNeeded(
+                    mActivity, mWindowAndroid, false /* ignoreMaxCount */)) {
             return true;
         }
         if (AppLanguagePromoDialog.maybeShowPrompt(mActivity, mModalDialogManagerSupplier,

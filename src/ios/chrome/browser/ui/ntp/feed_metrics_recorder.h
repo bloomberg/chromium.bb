@@ -16,9 +16,11 @@ enum class BrokenNTPHierarchyRelationship {
   kDiscoverFeedParent = 2,
   kDiscoverFeedWrapperParent = 3,
   kContentSuggestionsReset = 4,
+  kFeedHeaderParent = 5,
+  kContentSuggestionsHeaderParent = 6,
 
   // Change this to match max value.
-  kMaxValue = 4,
+  kMaxValue = 6,
 };
 
 // Records different metrics for the NTP feeds.

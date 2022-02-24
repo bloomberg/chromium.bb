@@ -11,6 +11,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/proto/price_tracking.pb.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
@@ -28,7 +29,6 @@
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
-#import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #include "testing/platform_test.h"
@@ -107,12 +107,7 @@ class ShoppingPersistedDataTabHelperTest : public PlatformTest {
     auth_service_ = static_cast<AuthenticationServiceFake*>(
         AuthenticationServiceFactory::GetInstance()->GetForBrowserState(
             browser_state_.get()));
-    auth_service_->SignIn(fake_identity_);
-    auto navigation_manager = std::make_unique<web::FakeNavigationManager>();
-    navigation_item_ = web::NavigationItem::Create();
-    navigation_item_->SetTimestamp(base::Time::Now());
-    navigation_manager->SetLastCommittedItem(navigation_item_.get());
-    web_state_.SetNavigationManager(std::move(navigation_manager));
+    auth_service_->SignIn(fake_identity_, nil);
   }
 
   void MockOptimizationGuideResponse(
@@ -129,7 +124,7 @@ class ShoppingPersistedDataTabHelperTest : public PlatformTest {
         {{optimization_guide::features::kOptimizationHints, {}},
          {optimization_guide::features::kOptimizationGuideMetadataValidation,
           {}},
-         {kCommercePriceTracking,
+         {commerce::kCommercePriceTracking,
           {{kPriceTrackingWithOptimizationGuideParam, "true"}}}},
         {});
 
@@ -186,7 +181,6 @@ class ShoppingPersistedDataTabHelperTest : public PlatformTest {
   base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histogram_tester_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
-  std::unique_ptr<web::NavigationItem> navigation_item_;
   web::FakeWebState web_state_;
   web::FakeNavigationContext context_;
   FakeChromeIdentity* fake_identity_ = nullptr;

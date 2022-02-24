@@ -58,10 +58,17 @@ void WasmFunctionBuilder::EmitI32V(int32_t val) { body_.write_i32v(val); }
 
 void WasmFunctionBuilder::EmitU32V(uint32_t val) { body_.write_u32v(val); }
 
-void WasmFunctionBuilder::SetSignature(FunctionSig* sig) {
+void WasmFunctionBuilder::SetSignature(const FunctionSig* sig) {
   DCHECK(!locals_.has_sig());
   locals_.set_sig(sig);
   signature_index_ = builder_->AddSignature(sig);
+}
+
+void WasmFunctionBuilder::SetSignature(uint32_t sig_index) {
+  DCHECK(!locals_.has_sig());
+  DCHECK_EQ(builder_->types_[sig_index].kind, TypeDefinition::kFunction);
+  signature_index_ = sig_index;
+  locals_.set_sig(builder_->types_[sig_index].function_sig);
 }
 
 uint32_t WasmFunctionBuilder::AddLocal(ValueType type) {
@@ -127,7 +134,6 @@ void WriteValueType(ZoneBuffer* buffer, const ValueType& type) {
     buffer->write_i32v(type.heap_type().code());
   }
   if (type.is_rtt()) {
-    if (type.has_depth()) buffer->write_u32v(type.depth());
     buffer->write_u32v(type.ref_index());
   }
 }
@@ -274,10 +280,16 @@ WasmModuleBuilder::WasmModuleBuilder(Zone* zone)
       has_max_memory_size_(false),
       has_shared_memory_(false) {}
 
-WasmFunctionBuilder* WasmModuleBuilder::AddFunction(FunctionSig* sig) {
+WasmFunctionBuilder* WasmModuleBuilder::AddFunction(const FunctionSig* sig) {
   functions_.push_back(zone_->New<WasmFunctionBuilder>(this));
   // Add the signature if one was provided here.
   if (sig) functions_.back()->SetSignature(sig);
+  return functions_.back();
+}
+
+WasmFunctionBuilder* WasmModuleBuilder::AddFunction(uint32_t sig_index) {
+  functions_.push_back(zone_->New<WasmFunctionBuilder>(this));
+  functions_.back()->SetSignature(sig_index);
   return functions_.back();
 }
 
@@ -290,21 +302,22 @@ void WasmModuleBuilder::AddDataSegment(const byte* data, uint32_t size,
   }
 }
 
-uint32_t WasmModuleBuilder::ForceAddSignature(FunctionSig* sig,
+uint32_t WasmModuleBuilder::ForceAddSignature(const FunctionSig* sig,
                                               uint32_t supertype) {
   uint32_t index = static_cast<uint32_t>(types_.size());
   signature_map_.emplace(*sig, index);
-  types_.push_back(Type(sig, supertype));
+  types_.emplace_back(sig, supertype);
   return index;
 }
 
-uint32_t WasmModuleBuilder::AddSignature(FunctionSig* sig, uint32_t supertype) {
+uint32_t WasmModuleBuilder::AddSignature(const FunctionSig* sig,
+                                         uint32_t supertype) {
   auto sig_entry = signature_map_.find(*sig);
   if (sig_entry != signature_map_.end()) return sig_entry->second;
   return ForceAddSignature(sig, supertype);
 }
 
-uint32_t WasmModuleBuilder::AddException(FunctionSig* type) {
+uint32_t WasmModuleBuilder::AddException(const FunctionSig* type) {
   DCHECK_EQ(0, type->return_count());
   int type_index = AddSignature(type);
   uint32_t except_index = static_cast<uint32_t>(exceptions_.size());
@@ -315,19 +328,15 @@ uint32_t WasmModuleBuilder::AddException(FunctionSig* type) {
 uint32_t WasmModuleBuilder::AddStructType(StructType* type,
                                           uint32_t supertype) {
   uint32_t index = static_cast<uint32_t>(types_.size());
-  types_.push_back(Type(type, supertype));
+  types_.emplace_back(type, supertype);
   return index;
 }
 
 uint32_t WasmModuleBuilder::AddArrayType(ArrayType* type, uint32_t supertype) {
   uint32_t index = static_cast<uint32_t>(types_.size());
-  types_.push_back(Type(type, supertype));
+  types_.emplace_back(type, supertype);
   return index;
 }
-
-// static
-const uint32_t WasmModuleBuilder::kNullIndex =
-    std::numeric_limits<uint32_t>::max();
 
 uint32_t WasmModuleBuilder::IncreaseTableMinSize(uint32_t table_index,
                                                  uint32_t count) {
@@ -510,7 +519,6 @@ void WriteInitializerExpressionWithEnd(ZoneBuffer* buffer,
         case kBottom:
         case kRef:
         case kRtt:
-        case kRttWithDepth:
           UNREACHABLE();
       }
       break;
@@ -567,19 +575,6 @@ void WriteInitializerExpressionWithEnd(ZoneBuffer* buffer,
       buffer->write_u8(static_cast<uint8_t>(kExprRttCanon));
       buffer->write_i32v(static_cast<int32_t>(init.immediate().index));
       break;
-    case WasmInitExpr::kRttSub:
-    case WasmInitExpr::kRttFreshSub:
-      // The operand to rtt.sub must be emitted first.
-      WriteInitializerExpressionWithEnd(buffer, (*init.operands())[0],
-                                        kWasmBottom);
-      STATIC_ASSERT((kExprRttSub >> 8) == kGCPrefix);
-      STATIC_ASSERT((kExprRttFreshSub >> 8) == kGCPrefix);
-      buffer->write_u8(kGCPrefix);
-      buffer->write_u8(static_cast<uint8_t>(init.kind() == WasmInitExpr::kRttSub
-                                                ? kExprRttSub
-                                                : kExprRttFreshSub));
-      buffer->write_i32v(static_cast<int32_t>(init.immediate().index));
-      break;
   }
 }
 
@@ -600,13 +595,17 @@ void WasmModuleBuilder::WriteTo(ZoneBuffer* buffer) const {
     size_t start = EmitSection(kTypeSectionCode, buffer);
     buffer->write_size(types_.size());
 
-    for (const Type& type : types_) {
-      bool has_super = type.supertype != kNoSuperType;
+    // TODO(7748): Add support for recursive groups.
+    for (const TypeDefinition& type : types_) {
+      if (type.supertype != kNoSuperType) {
+        buffer->write_u8(kWasmSubtypeCode);
+        buffer->write_u8(1);  // The supertype count is always 1.
+        buffer->write_u32v(type.supertype);
+      }
       switch (type.kind) {
-        case Type::kFunctionSig: {
-          FunctionSig* sig = type.sig;
-          buffer->write_u8(has_super ? kWasmFunctionSubtypeCode
-                                     : kWasmFunctionTypeCode);
+        case TypeDefinition::kFunction: {
+          const FunctionSig* sig = type.function_sig;
+          buffer->write_u8(kWasmFunctionTypeCode);
           buffer->write_size(sig->parameter_count());
           for (auto param : sig->parameters()) {
             WriteValueType(buffer, param);
@@ -615,40 +614,23 @@ void WasmModuleBuilder::WriteTo(ZoneBuffer* buffer) const {
           for (auto ret : sig->returns()) {
             WriteValueType(buffer, ret);
           }
-          if (type.supertype == kGenericSuperType) {
-            buffer->write_u8(kFuncRefCode);
-          } else if (has_super) {
-            buffer->write_i32v(type.supertype);
-          }
           break;
         }
-        case Type::kStructType: {
-          StructType* struct_type = type.struct_type;
-          buffer->write_u8(has_super ? kWasmStructSubtypeCode
-                                     : kWasmStructTypeCode);
+        case TypeDefinition::kStruct: {
+          const StructType* struct_type = type.struct_type;
+          buffer->write_u8(kWasmStructTypeCode);
           buffer->write_size(struct_type->field_count());
           for (uint32_t i = 0; i < struct_type->field_count(); i++) {
             WriteValueType(buffer, struct_type->field(i));
             buffer->write_u8(struct_type->mutability(i) ? 1 : 0);
           }
-          if (type.supertype == kGenericSuperType) {
-            buffer->write_u8(kDataRefCode);
-          } else if (has_super) {
-            buffer->write_i32v(type.supertype);
-          }
           break;
         }
-        case Type::kArrayType: {
-          ArrayType* array_type = type.array_type;
-          buffer->write_u8(has_super ? kWasmArraySubtypeCode
-                                     : kWasmArrayTypeCode);
+        case TypeDefinition::kArray: {
+          const ArrayType* array_type = type.array_type;
+          buffer->write_u8(kWasmArrayTypeCode);
           WriteValueType(buffer, array_type->element_type());
           buffer->write_u8(array_type->mutability() ? 1 : 0);
-          if (type.supertype == kGenericSuperType) {
-            buffer->write_u8(kDataRefCode);
-          } else if (has_super) {
-            buffer->write_i32v(type.supertype);
-          }
           break;
         }
       }

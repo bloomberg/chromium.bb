@@ -161,7 +161,7 @@ ProgramPipeline::ProgramPipeline(rx::GLImplFactory *factory, ProgramPipelineID h
 
 ProgramPipeline::~ProgramPipeline()
 {
-    mProgramPipelineImpl.release();
+    mProgramPipelineImpl.reset(nullptr);
 }
 
 void ProgramPipeline::onDestroy(const Context *context)
@@ -367,6 +367,20 @@ void ProgramPipeline::updateFragmentInoutRange()
     mState.mExecutable->mFragmentInoutRange     = fragmentExecutable.mFragmentInoutRange;
 }
 
+void ProgramPipeline::updateUsesEarlyFragmentTestsOptimization()
+{
+    Program *fragmentProgram = getShaderProgram(gl::ShaderType::Fragment);
+
+    if (!fragmentProgram)
+    {
+        return;
+    }
+
+    const ProgramExecutable &fragmentExecutable = fragmentProgram->getExecutable();
+    mState.mExecutable->mUsesEarlyFragmentTestsOptimization =
+        fragmentExecutable.mUsesEarlyFragmentTestsOptimization;
+}
+
 void ProgramPipeline::updateLinkedVaryings()
 {
     // Need to check all of the shader stages, not just linked, so we handle Compute correctly.
@@ -394,44 +408,6 @@ void ProgramPipeline::updateLinkedVaryings()
     }
 }
 
-void ProgramPipeline::updateHasBooleans()
-{
-    // Need to check all of the shader stages, not just linked, so we handle Compute correctly.
-    for (const gl::ShaderType shaderType : gl::AllShaderTypes())
-    {
-        const Program *shaderProgram = getShaderProgram(shaderType);
-        if (shaderProgram)
-        {
-            const ProgramExecutable &executable = shaderProgram->getExecutable();
-
-            if (executable.hasUniformBuffers())
-            {
-                mState.mExecutable->mPipelineHasUniformBuffers = true;
-            }
-            if (executable.hasStorageBuffers())
-            {
-                mState.mExecutable->mPipelineHasStorageBuffers = true;
-            }
-            if (executable.hasAtomicCounterBuffers())
-            {
-                mState.mExecutable->mPipelineHasAtomicCounterBuffers = true;
-            }
-            if (executable.hasDefaultUniforms())
-            {
-                mState.mExecutable->mPipelineHasDefaultUniforms = true;
-            }
-            if (executable.hasTextures())
-            {
-                mState.mExecutable->mPipelineHasTextures = true;
-            }
-            if (executable.hasImages())
-            {
-                mState.mExecutable->mPipelineHasImages = true;
-            }
-        }
-    }
-}
-
 void ProgramPipeline::updateExecutable()
 {
     // Vertex Shader ProgramExecutable properties
@@ -448,13 +424,11 @@ void ProgramPipeline::updateExecutable()
 
     // Fragment Shader ProgramExecutable properties
     updateFragmentInoutRange();
+    updateUsesEarlyFragmentTestsOptimization();
 
     // All Shader ProgramExecutable properties
     mState.updateExecutableTextures();
     updateLinkedVaryings();
-
-    // Must be last, since it queries things updated by earlier functions
-    updateHasBooleans();
 }
 
 // The attached shaders are checked for linking errors by matching up their variables.
@@ -486,14 +460,6 @@ angle::Result ProgramPipeline::link(const Context *context)
         }
     }
 
-    ProgramAliasedBindings noBindings;
-    GLuint combinedImageUniforms = 0;
-    if (!mState.mExecutable->linkUniforms(context, shaderUniforms, infoLog, noBindings,
-                                          &combinedImageUniforms, nullptr, nullptr))
-    {
-        return angle::Result::Stop;
-    }
-
     if (mState.mExecutable->hasLinkedShaderStage(gl::ShaderType::Vertex))
     {
         if (!linkVaryings(infoLog))
@@ -509,8 +475,9 @@ angle::Result ProgramPipeline::link(const Context *context)
         Program *fragmentShaderProgram = getShaderProgram(ShaderType::Fragment);
         if (fragmentShaderProgram)
         {
-            // We should also be validating SSBOs.
-            const int combinedShaderStorageBlocks       = 0;
+            // We should also be validating SSBO and image uniform counts.
+            const GLuint combinedImageUniforms          = 0;
+            const GLuint combinedShaderStorageBlocks    = 0;
             const ProgramExecutable &fragmentExecutable = fragmentShaderProgram->getExecutable();
             if (!mState.mExecutable->linkValidateOutputVariables(
                     context->getCaps(), context->getExtensions(), context->getClientVersion(),
@@ -554,11 +521,17 @@ angle::Result ProgramPipeline::link(const Context *context)
         }
     }
 
-    // Merge UBOs, SSBOs, and atomic counters into the pipeline.
+    // Merge uniforms.
+    mState.mExecutable->copyUniformsFromProgramMap(mState.mPrograms);
+
+    // Merge shader buffers (UBOs, SSBOs, and atomic counter buffers) into the executable.
+    // Also copy over image and sampler bindings.
     for (ShaderType shaderType : mState.mExecutable->getLinkedShaderStages())
     {
         const ProgramState &programState = mState.mPrograms[shaderType]->getState();
         mState.mExecutable->copyShaderBuffersFromProgram(programState);
+        mState.mExecutable->copySamplerBindingsFromProgram(programState);
+        mState.mExecutable->copyImageBindingsFromProgram(programState);
     }
 
     if (mState.mExecutable->hasLinkedShaderStage(gl::ShaderType::Vertex) ||
@@ -697,7 +670,17 @@ void ProgramPipeline::onSubjectStateChange(angle::SubjectIndex index, angle::Sub
             onStateChange(angle::SubjectMessage::ProgramRelinked);
             break;
         case angle::SubjectMessage::SamplerUniformsUpdated:
-            mState.mExecutable->resetCachedValidateSamplersResult();
+            mState.mExecutable->clearSamplerBindings();
+            for (ShaderType shaderType : mState.mExecutable->getLinkedShaderStages())
+            {
+                const ProgramState &programState = mState.mPrograms[shaderType]->getState();
+                mState.mExecutable->copySamplerBindingsFromProgram(programState);
+            }
+            mState.mExecutable->mActiveSamplerRefCounts.fill(0);
+            mState.updateExecutableTextures();
+            break;
+        case angle::SubjectMessage::ProgramUniformUpdated:
+            mProgramPipelineImpl->onProgramUniformUpdate(static_cast<ShaderType>(index));
             break;
         default:
             UNREACHABLE();

@@ -27,16 +27,16 @@ namespace Eigen {
  * It stores the set of roots as a vector of complexes.
  *
  */
-template< typename Scalar_, int _Deg >
+template< typename Scalar_, int Deg_ >
 class PolynomialSolverBase
 {
   public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar_,_Deg==Dynamic ? Dynamic : _Deg)
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar_,Deg_==Dynamic ? Dynamic : Deg_)
 
     typedef Scalar_                             Scalar;
     typedef typename NumTraits<Scalar>::Real    RealScalar;
     typedef std::complex<RealScalar>            RootType;
-    typedef Matrix<RootType,_Deg,1>             RootsType;
+    typedef Matrix<RootType,Deg_,1>             RootsType;
 
     typedef DenseIndex Index;
 
@@ -309,8 +309,8 @@ class PolynomialSolverBase
   * Computes the complex roots of a real polynomial.
   *
   * \param Scalar_ the scalar type, i.e., the type of the polynomial coefficients
-  * \param _Deg the degree of the polynomial, can be a compile time value or Dynamic.
-  *             Notice that the number of polynomial coefficients is _Deg+1.
+  * \param Deg_ the degree of the polynomial, can be a compile time value or Dynamic.
+  *             Notice that the number of polynomial coefficients is Deg_+1.
   *
   * This class implements a polynomial solver and provides convenient methods such as
   * - real roots,
@@ -329,16 +329,16 @@ class PolynomialSolverBase
   * However, almost always, correct accuracy is reached even in these cases for 64bit
   * (double) floating types and small polynomial degree (<20).
   */
-template<typename Scalar_, int _Deg>
-class PolynomialSolver : public PolynomialSolverBase<Scalar_,_Deg>
+template<typename Scalar_, int Deg_>
+class PolynomialSolver : public PolynomialSolverBase<Scalar_,Deg_>
 {
   public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar_,_Deg==Dynamic ? Dynamic : _Deg)
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(Scalar_,Deg_==Dynamic ? Dynamic : Deg_)
 
-    typedef PolynomialSolverBase<Scalar_,_Deg>    PS_Base;
+    typedef PolynomialSolverBase<Scalar_,Deg_>    PS_Base;
     EIGEN_POLYNOMIAL_SOLVER_BASE_INHERITED_TYPES( PS_Base )
 
-    typedef Matrix<Scalar,_Deg,_Deg>                 CompanionMatrixType;
+    typedef Matrix<Scalar,Deg_,Deg_>                 CompanionMatrixType;
     typedef typename internal::conditional<NumTraits<Scalar>::IsComplex,
                                           ComplexEigenSolver<CompanionMatrixType>,
                                           EigenSolver<CompanionMatrixType> >::type EigenSolverType;
@@ -353,7 +353,7 @@ class PolynomialSolver : public PolynomialSolverBase<Scalar_,_Deg>
       eigen_assert( poly.size() > 1 );
       if(poly.size() >  2 )
       {
-        internal::companion<Scalar,_Deg> companion( poly );
+        internal::companion<Scalar,Deg_> companion( poly );
         companion.balance();
         m_eigenSolver.compute( companion.denseMatrix() );
         m_roots = m_eigenSolver.eigenvalues();

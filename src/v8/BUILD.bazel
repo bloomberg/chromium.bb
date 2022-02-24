@@ -53,7 +53,6 @@ load(":bazel/v8-non-pointer-compression.bzl", "v8_binary_non_pointer_compression
 # v8_can_use_fpu_instructions
 # v8_use_mips_abi_hardfloat
 # v8_enable_gdbjit
-# v8_enable_minor_mc
 # v8_check_header_includes
 # v8_enable_shared_ro_heap
 # v8_enable_lazy_source_positions
@@ -106,6 +105,8 @@ v8_flag(name = "v8_enable_disassembler")
 
 v8_flag(name = "v8_enable_handle_zapping")
 
+v8_flag(name = "v8_enable_runtime_call_stats")
+
 v8_flag(name = "v8_enable_hugepage")
 
 v8_flag(name = "v8_enable_fast_mksnapshot")
@@ -119,11 +120,6 @@ v8_flag(name = "v8_enable_future")
 
 v8_flag(
     name = "v8_enable_lazy_source_positions",
-    default = True,
-)
-
-v8_flag(
-    name = "v8_enable_minor_mc",
     default = True,
 )
 
@@ -259,9 +255,9 @@ v8_config(
         "v8_enable_hugepage": "ENABLE_HUGEPAGE",
         "v8_enable_future": "V8_ENABLE_FUTURE",
         "v8_enable_lazy_source_positions": "V8_ENABLE_LAZY_SOURCE_POSITIONS",
-        "v8_enable_minor_mc": "ENABLE_MINOR_MC",
         "v8_enable_object_print": "OBJECT_PRINT",
         "v8_enable_slow_dchecks": "ENABLE_SLOW_DCHECKS",
+        "v8_enable_runtime_call_stats": "V8_RUNTIME_CALL_STATS",
         "v8_enable_snapshot_native_code_counters": "V8_SNAPSHOT_NATIVE_CODE_COUNTERS",
         "v8_enable_trace_maps": "V8_TRACE_MAPS",
         "v8_enable_v8_checks": "V8_ENABLE_CHECKS",
@@ -642,6 +638,7 @@ filegroup(
         "@v8//bazel/config:is_macos": [
             "src/base/debug/stack_trace_posix.cc",
             "src/base/platform/platform-macos.cc",
+            "src/base/platform/platform-xnu.cc",
         ],
         "@v8//bazel/config:is_windows": [
             "src/base/win32-headers.h",
@@ -857,6 +854,7 @@ filegroup(
         "src/objects/js-proxy.tq",
         "src/objects/js-regexp-string-iterator.tq",
         "src/objects/js-regexp.tq",
+        "src/objects/js-shadow-realms.tq",
         "src/objects/js-temporal-objects.tq",
         "src/objects/js-weak-refs.tq",
         "src/objects/literal-objects.tq",
@@ -922,6 +920,8 @@ filegroup(
 filegroup(
     name = "torque_base_files",
     srcs = [
+        "src/numbers/integer-literal-inl.h",
+        "src/numbers/integer-literal.h",
         "src/torque/ast.h",
         "src/torque/cc-generator.cc",
         "src/torque/cc-generator.h",
@@ -1051,6 +1051,7 @@ filegroup(
         "src/builtins/builtins-promise.h",
         "src/builtins/builtins-reflect.cc",
         "src/builtins/builtins-regexp.cc",
+        "src/builtins/builtins-shadow-realms.cc",
         "src/builtins/builtins-sharedarraybuffer.cc",
         "src/builtins/builtins-string.cc",
         "src/builtins/builtins-symbol.cc",
@@ -1140,6 +1141,7 @@ filegroup(
         "src/codegen/unoptimized-compilation-info.h",
         "src/common/assert-scope.cc",
         "src/common/assert-scope.h",
+        "src/common/allow-deprecated.h",
         "src/common/checks.h",
         "src/common/high-allocation-throughput-scope.h",
         "src/common/message-template.h",
@@ -1245,8 +1247,6 @@ filegroup(
         "src/execution/protectors-inl.h",
         "src/execution/protectors.cc",
         "src/execution/protectors.h",
-        "src/execution/runtime-profiler.cc",
-        "src/execution/runtime-profiler.h",
         "src/execution/shared-mutex-guard-if-off-thread.h",
         "src/execution/simulator-base.cc",
         "src/execution/simulator-base.h",
@@ -1257,6 +1257,8 @@ filegroup(
         "src/execution/thread-id.h",
         "src/execution/thread-local-top.cc",
         "src/execution/thread-local-top.h",
+        "src/execution/tiering-manager.cc",
+        "src/execution/tiering-manager.h",
         "src/execution/v8threads.cc",
         "src/execution/v8threads.h",
         "src/execution/vm-state-inl.h",
@@ -1291,6 +1293,7 @@ filegroup(
         "src/handles/persistent-handles.h",
         "src/heap/allocation-observer.cc",
         "src/heap/allocation-observer.h",
+        "src/heap/allocation-result.h",
         "src/heap/allocation-stats.h",
         "src/heap/array-buffer-sweeper.cc",
         "src/heap/array-buffer-sweeper.h",
@@ -1367,8 +1370,8 @@ filegroup(
         "src/heap/large-spaces.h",
         "src/heap/linear-allocation-area.h",
         "src/heap/list.h",
-        "src/heap/local-allocator-inl.h",
-        "src/heap/local-allocator.h",
+        "src/heap/evacuation-allocator-inl.h",
+        "src/heap/evacuation-allocator.h",
         "src/heap/local-factory.cc",
         "src/heap/local-factory.h",
         "src/heap/local-factory-inl.h",
@@ -1639,6 +1642,8 @@ filegroup(
         "src/objects/js-regexp-string-iterator.h",
         "src/objects/js-regexp.cc",
         "src/objects/js-regexp.h",
+        "src/objects/js-shadow-realms.h",
+        "src/objects/js-shadow-realms-inl.h",
         "src/objects/js-temporal-objects.h",
         "src/objects/js-temporal-objects-inl.h",
         "src/objects/js-temporal-objects.cc",
@@ -1923,6 +1928,7 @@ filegroup(
         "src/sandbox/external-pointer-inl.h",
         "src/sandbox/external-pointer.h",
         "src/sandbox/external-pointer-table.cc",
+        "src/sandbox/external-pointer-table-inl.h",
         "src/sandbox/external-pointer-table.h",
         "src/sandbox/sandbox.cc",
         "src/sandbox/sandbox.h",
@@ -2014,8 +2020,8 @@ filegroup(
         "src/tracing/traced-value.h",
         "src/tracing/tracing-category-observer.cc",
         "src/tracing/tracing-category-observer.h",
-        "src/trap-handler/handler-inside.cc",
         "src/trap-handler/handler-inside-posix.h",
+        "src/trap-handler/handler-inside.cc",
         "src/trap-handler/handler-outside.cc",
         "src/trap-handler/handler-shared.cc",
         "src/trap-handler/trap-handler-internal.h",
@@ -2296,7 +2302,7 @@ filegroup(
         ],
     }) + select({
         # Only for x64 builds and for arm64 with x64 host simulator.
-        "@v8//bazel/config:is_posix_x64": [
+        "@v8//bazel/config:is_non_android_posix_x64": [
             "src/trap-handler/handler-inside-posix.cc",
             "src/trap-handler/handler-outside-posix.cc",
         ],
@@ -2310,8 +2316,8 @@ filegroup(
     }) + select({
         "@v8//bazel/config:is_windows": [
             "src/trap-handler/handler-inside-win.cc",
-            "src/trap-handler/handler-outside-win.cc",
             "src/trap-handler/handler-inside-win.h",
+            "src/trap-handler/handler-outside-win.cc",
         ],
         "//conditions:default": [],
     }) + select({
@@ -2797,6 +2803,8 @@ filegroup(
         "src/interpreter/interpreter-generator.h",
         "src/interpreter/interpreter-intrinsics-generator.cc",
         "src/interpreter/interpreter-intrinsics-generator.h",
+        "src/numbers/integer-literal-inl.h",
+        "src/numbers/integer-literal.h",
     ] + select({
         "@v8//bazel/config:v8_target_ia32": ["src/builtins/ia32/builtins-ia32.cc"],
         "@v8//bazel/config:v8_target_x64": ["src/builtins/x64/builtins-x64.cc"],
@@ -3071,7 +3079,6 @@ filegroup(
         "third_party/inspector_protocol/crdtp/protocol_core.h",
         "third_party/inspector_protocol/crdtp/serializable.cc",
         "third_party/inspector_protocol/crdtp/serializable.h",
-        "third_party/inspector_protocol/crdtp/serializer_traits.h",
         "third_party/inspector_protocol/crdtp/span.cc",
         "third_party/inspector_protocol/crdtp/span.h",
         "third_party/inspector_protocol/crdtp/status.cc",

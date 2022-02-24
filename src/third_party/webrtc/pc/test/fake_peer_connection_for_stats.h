@@ -152,6 +152,12 @@ class FakePeerConnectionForStats : public FakePeerConnectionBase {
         local_streams_(StreamCollection::Create()),
         remote_streams_(StreamCollection::Create()) {}
 
+  ~FakePeerConnectionForStats() {
+    for (auto transceiver : transceivers_) {
+      transceiver->internal()->SetChannel(nullptr, nullptr);
+    }
+  }
+
   rtc::scoped_refptr<StreamCollection> mutable_local_streams() {
     return local_streams_;
   }
@@ -197,7 +203,8 @@ class FakePeerConnectionForStats : public FakePeerConnectionBase {
 
   FakeVoiceMediaChannelForStats* AddVoiceChannel(
       const std::string& mid,
-      const std::string& transport_name) {
+      const std::string& transport_name,
+      cricket::VoiceMediaInfo initial_stats = cricket::VoiceMediaInfo()) {
     RTC_DCHECK(!voice_channel_);
     auto voice_media_channel =
         std::make_unique<FakeVoiceMediaChannelForStats>(network_thread_);
@@ -205,17 +212,20 @@ class FakePeerConnectionForStats : public FakePeerConnectionBase {
     voice_channel_ = std::make_unique<VoiceChannelForTesting>(
         worker_thread_, network_thread_, signaling_thread_,
         std::move(voice_media_channel), mid, kDefaultSrtpRequired,
-        webrtc::CryptoOptions(), &ssrc_generator_, transport_name);
+        webrtc::CryptoOptions(), &channel_manager_.ssrc_generator(),
+        transport_name);
     GetOrCreateFirstTransceiverOfType(cricket::MEDIA_TYPE_AUDIO)
         ->internal()
         ->SetChannel(voice_channel_.get(),
                      [](const std::string&) { return nullptr; });
+    voice_media_channel_ptr->SetStats(initial_stats);
     return voice_media_channel_ptr;
   }
 
   FakeVideoMediaChannelForStats* AddVideoChannel(
       const std::string& mid,
-      const std::string& transport_name) {
+      const std::string& transport_name,
+      cricket::VideoMediaInfo initial_stats = cricket::VideoMediaInfo()) {
     RTC_DCHECK(!video_channel_);
     auto video_media_channel =
         std::make_unique<FakeVideoMediaChannelForStats>(network_thread_);
@@ -223,11 +233,13 @@ class FakePeerConnectionForStats : public FakePeerConnectionBase {
     video_channel_ = std::make_unique<VideoChannelForTesting>(
         worker_thread_, network_thread_, signaling_thread_,
         std::move(video_media_channel), mid, kDefaultSrtpRequired,
-        webrtc::CryptoOptions(), &ssrc_generator_, transport_name);
+        webrtc::CryptoOptions(), &channel_manager_.ssrc_generator(),
+        transport_name);
     GetOrCreateFirstTransceiverOfType(cricket::MEDIA_TYPE_VIDEO)
         ->internal()
         ->SetChannel(video_channel_.get(),
                      [](const std::string&) { return nullptr; });
+    video_media_channel_ptr->SetStats(initial_stats);
     return video_media_channel_ptr;
   }
 
@@ -394,21 +406,26 @@ class FakePeerConnectionForStats : public FakePeerConnectionBase {
       }
     }
     auto transceiver = RtpTransceiverProxyWithInternal<RtpTransceiver>::Create(
-        signaling_thread_,
-        new RtpTransceiver(media_type, channel_manager_.get()));
+        signaling_thread_, new RtpTransceiver(media_type, &channel_manager_));
     transceivers_.push_back(transceiver);
     return transceiver;
   }
+
+  class TestChannelManager : public cricket::ChannelManager {
+   public:
+    TestChannelManager(rtc::Thread* worker, rtc::Thread* network)
+        : cricket::ChannelManager(nullptr, true, worker, network) {}
+
+    // Override DestroyChannel so that calls from the transceiver won't go to
+    // the default ChannelManager implementation.
+    void DestroyChannel(cricket::ChannelInterface*) override {}
+  };
 
   rtc::Thread* const network_thread_;
   rtc::Thread* const worker_thread_;
   rtc::Thread* const signaling_thread_;
 
-  std::unique_ptr<cricket::ChannelManager> channel_manager_ =
-      cricket::ChannelManager::Create(nullptr /* MediaEngineInterface */,
-                                      true,
-                                      worker_thread_,
-                                      network_thread_);
+  TestChannelManager channel_manager_{worker_thread_, network_thread_};
 
   rtc::scoped_refptr<StreamCollection> local_streams_;
   rtc::scoped_refptr<StreamCollection> remote_streams_;
@@ -432,8 +449,6 @@ class FakePeerConnectionForStats : public FakePeerConnectionBase {
       local_certificates_by_transport_;
   std::map<std::string, std::unique_ptr<rtc::SSLCertChain>>
       remote_cert_chains_by_transport_;
-
-  rtc::UniqueRandomIdGenerator ssrc_generator_;
 };
 
 }  // namespace webrtc

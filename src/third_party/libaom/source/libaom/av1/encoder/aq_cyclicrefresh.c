@@ -25,6 +25,7 @@ CYCLIC_REFRESH *av1_cyclic_refresh_alloc(int mi_rows, int mi_cols) {
   if (cr == NULL) return NULL;
 
   cr->map = aom_calloc(mi_rows * mi_cols, sizeof(*cr->map));
+  cr->counter_encode_maxq_scene_change = 0;
   if (cr->map == NULL) {
     av1_cyclic_refresh_free(cr);
     return NULL;
@@ -159,35 +160,31 @@ void av1_cyclic_reset_segment_skip(const AV1_COMP *cpi, MACROBLOCK *const x,
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  int sh = cpi->cyclic_refresh->skip_over4x4 ? 2 : 1;
   const int prev_segment_id = mbmi->segment_id;
-  mbmi->segment_id = av1_get_spatial_seg_pred(cm, xd, &cdf_num);
-  if (prev_segment_id != mbmi->segment_id) {
-    CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
-    const int bw = mi_size_wide[bsize];
-    const int bh = mi_size_high[bsize];
-    const int xmis = AOMMIN(cm->mi_params.mi_cols - mi_col, bw);
-    const int ymis = AOMMIN(cm->mi_params.mi_rows - mi_row, bh);
-    const int block_index = mi_row * cm->mi_params.mi_cols + mi_col;
-    for (int mi_y = 0; mi_y < ymis; mi_y += sh) {
-      for (int mi_x = 0; mi_x < xmis; mi_x += sh) {
-        const int map_offset =
-            block_index + mi_y * cm->mi_params.mi_cols + mi_x;
-        cr->map[map_offset] = 0;
-        cpi->enc_seg.map[map_offset] = mbmi->segment_id;
-        cm->cur_frame->seg_map[map_offset] = mbmi->segment_id;
+  CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
+  const int bw = mi_size_wide[bsize];
+  const int bh = mi_size_high[bsize];
+  const int xmis = AOMMIN(cm->mi_params.mi_cols - mi_col, bw);
+  const int ymis = AOMMIN(cm->mi_params.mi_rows - mi_row, bh);
+  if (!cr->skip_over4x4) {
+    mbmi->segment_id = av1_get_spatial_seg_pred(cm, xd, &cdf_num);
+    if (prev_segment_id != mbmi->segment_id) {
+      const int block_index = mi_row * cm->mi_params.mi_cols + mi_col;
+      for (int mi_y = 0; mi_y < ymis; mi_y++) {
+        for (int mi_x = 0; mi_x < xmis; mi_x++) {
+          const int map_offset =
+              block_index + mi_y * cm->mi_params.mi_cols + mi_x;
+          cr->map[map_offset] = 0;
+          cpi->enc_seg.map[map_offset] = mbmi->segment_id;
+          cm->cur_frame->seg_map[map_offset] = mbmi->segment_id;
+        }
       }
     }
-    if (cyclic_refresh_segment_id(prev_segment_id) == CR_SEGMENT_ID_BOOST1)
-      x->actual_num_seg1_blocks -= xmis * ymis;
-    else if (cyclic_refresh_segment_id(prev_segment_id) == CR_SEGMENT_ID_BOOST2)
-      x->actual_num_seg2_blocks -= xmis * ymis;
-    if (cyclic_refresh_segment_id(mbmi->segment_id) == CR_SEGMENT_ID_BOOST1)
-      x->actual_num_seg1_blocks += xmis * ymis;
-    else if (cyclic_refresh_segment_id(mbmi->segment_id) ==
-             CR_SEGMENT_ID_BOOST2)
-      x->actual_num_seg2_blocks += xmis * ymis;
   }
+  if (cyclic_refresh_segment_id(prev_segment_id) == CR_SEGMENT_ID_BOOST1)
+    x->actual_num_seg1_blocks -= xmis * ymis;
+  else if (cyclic_refresh_segment_id(prev_segment_id) == CR_SEGMENT_ID_BOOST2)
+    x->actual_num_seg2_blocks -= xmis * ymis;
 }
 
 void av1_cyclic_refresh_update_segment(const AV1_COMP *cpi, MACROBLOCK *const x,
@@ -406,7 +403,12 @@ void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
   double weight_segment_target = 0;
   double weight_segment = 0;
   int qp_thresh = AOMMIN(20, rc->best_quality << 1);
+  if (cpi->oxcf.tune_cfg.content == AOM_CONTENT_SCREEN)
+    qp_thresh = AOMMIN(35, rc->best_quality << 1);
   int qp_max_thresh = 118 * MAXQ >> 7;
+  const int scene_change_detected =
+      cpi->rc.high_source_sad ||
+      (cpi->ppi->use_svc && cpi->svc.high_source_sad_superframe);
   // Although this segment feature for RTC is only used for
   // blocks >= 8X8, for more efficient coding of the seg map
   // cur_frame->seg_map needs to set at 4x4 along with the
@@ -418,23 +420,30 @@ void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
   cr->skip_over4x4 = (cpi->oxcf.speed > 9) ? 1 : 0;
   cr->apply_cyclic_refresh = 1;
   if (frame_is_intra_only(cm) || is_lossless_requested(&cpi->oxcf.rc_cfg) ||
-      cpi->svc.temporal_layer_id > 0 ||
+      scene_change_detected || cpi->svc.temporal_layer_id > 0 ||
       p_rc->avg_frame_qindex[INTER_FRAME] < qp_thresh ||
       (cpi->svc.number_spatial_layers > 1 &&
        cpi->svc.layer_context[cpi->svc.temporal_layer_id].is_key_frame) ||
       (rc->frames_since_key > 20 &&
        p_rc->avg_frame_qindex[INTER_FRAME] > qp_max_thresh) ||
-      (rc->avg_frame_low_motion && rc->avg_frame_low_motion < 45 &&
+      (rc->avg_frame_low_motion && rc->avg_frame_low_motion < 30 &&
        rc->frames_since_key > 40)) {
     cr->apply_cyclic_refresh = 0;
     return;
   }
   cr->percent_refresh = 10;
-  if (cpi->svc.number_temporal_layers > 2) cr->percent_refresh = 15;
+  // Increase the amount of refresh for #temporal_layers > 2, and for some
+  // frames after scene change that is encoded at high Q.
+  if (cpi->svc.number_temporal_layers > 2)
+    cr->percent_refresh = 15;
+  else if (cpi->oxcf.tune_cfg.content == AOM_CONTENT_SCREEN &&
+           cr->counter_encode_maxq_scene_change < 20)
+    cr->percent_refresh = 15;
   cr->max_qdelta_perc = 60;
   cr->time_for_refresh = 0;
   cr->motion_thresh = 32;
-  cr->rate_boost_fac = 15;
+  cr->rate_boost_fac =
+      (cpi->oxcf.tune_cfg.content == AOM_CONTENT_SCREEN) ? 10 : 15;
   // Use larger delta-qp (increase rate_ratio_qdelta) for first few (~4)
   // periods of the refresh cycle, after a key frame.
   // Account for larger interval on base layer for temporal layers.
@@ -451,8 +460,8 @@ void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
       cr->motion_thresh = 16;
       cr->rate_boost_fac = 13;
     } else {
-      cr->max_qdelta_perc = 70;
-      cr->rate_ratio_qdelta = AOMMAX(cr->rate_ratio_qdelta, 2.5);
+      cr->max_qdelta_perc = 50;
+      cr->rate_ratio_qdelta = AOMMAX(cr->rate_ratio_qdelta, 2.0);
     }
   }
   if (cpi->oxcf.rc_cfg.mode == AOM_VBR) {
@@ -495,7 +504,10 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
   const RATE_CONTROL *const rc = &cpi->rc;
   CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
   struct segmentation *const seg = &cm->seg;
-  int resolution_change =
+  const int scene_change_detected =
+      cpi->rc.high_source_sad ||
+      (cpi->ppi->use_svc && cpi->svc.high_source_sad_superframe);
+  const int resolution_change =
       cm->prev_frame && (cm->width != cm->prev_frame->width ||
                          cm->height != cm->prev_frame->height);
   if (resolution_change) av1_cyclic_refresh_reset_resize(cpi);
@@ -504,11 +516,13 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
     unsigned char *const seg_map = cpi->enc_seg.map;
     memset(seg_map, 0, cm->mi_params.mi_rows * cm->mi_params.mi_cols);
     av1_disable_segmentation(&cm->seg);
-    if (cm->current_frame.frame_type == KEY_FRAME) {
+    if (cm->current_frame.frame_type == KEY_FRAME || scene_change_detected) {
       cr->sb_index = 0;
+      cr->counter_encode_maxq_scene_change = 0;
     }
     return;
   } else {
+    cr->counter_encode_maxq_scene_change++;
     const double q = av1_convert_qindex_to_q(cm->quant_params.base_qindex,
                                              cm->seq_params->bit_depth);
     // Set rate threshold to some multiple (set to 2 for now) of the target
@@ -518,7 +532,12 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
     // q will not exceed 457, so (q * q) is within 32bit; see:
     // av1_convert_qindex_to_q(), av1_ac_quant(), ac_qlookup*[].
     cr->thresh_dist_sb = ((int64_t)(q * q)) << 2;
-
+    // For low-resoln or lower speeds, the rate/dist thresholds need to be
+    // tuned/updated.
+    if (cpi->oxcf.speed <= 7 || (cm->width * cm->height < 640 * 360)) {
+      cr->thresh_dist_sb = 0;
+      cr->thresh_rate_sb = INT64_MAX;
+    }
     // Set up segmentation.
     // Clear down the segment map.
     av1_enable_segmentation(&cm->seg);
@@ -577,4 +596,5 @@ void av1_cyclic_refresh_reset_resize(AV1_COMP *const cpi) {
   cr->sb_index = 0;
   cpi->refresh_frame.golden_frame = true;
   cr->apply_cyclic_refresh = 0;
+  cr->counter_encode_maxq_scene_change = 0;
 }

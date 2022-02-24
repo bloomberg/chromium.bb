@@ -221,13 +221,17 @@ typedef enum {
 /*!\endcond */
 
 /*!\enum COST_UPDATE_TYPE
- * \brief This enum controls how often the entropy costs should be updated.
+ * \brief    This enum controls how often the entropy costs should be updated.
+ * \warning  In case of any modifications/additions done to the enum
+ * COST_UPDATE_TYPE, the enum INTERNAL_COST_UPDATE_TYPE needs to be updated as
+ * well.
  */
 typedef enum {
-  COST_UPD_SB,    /*!< Update every sb. */
-  COST_UPD_SBROW, /*!< Update every sb rows inside a tile. */
-  COST_UPD_TILE,  /*!< Update every tile. */
-  COST_UPD_OFF,   /*!< Turn off cost updates. */
+  COST_UPD_SB,           /*!< Update every sb. */
+  COST_UPD_SBROW,        /*!< Update every sb rows inside a tile. */
+  COST_UPD_TILE,         /*!< Update every tile. */
+  COST_UPD_OFF,          /*!< Turn off cost updates. */
+  NUM_COST_UPDATE_TYPES, /*!< Number of cost update types. */
 } COST_UPDATE_TYPE;
 
 /*!\enum LOOPFILTER_CONTROL
@@ -757,6 +761,8 @@ typedef struct {
   aom_tune_content content;
   // Indicates the film grain parameters.
   int film_grain_test_vector;
+  // Indicates the in-block distortion metric to use.
+  aom_dist_metric dist_metric;
 } TuneCfg;
 
 typedef struct {
@@ -773,10 +779,6 @@ typedef struct {
 } InputCfg;
 
 typedef struct {
-  // List of QP offsets for: keyframe, ALTREF, and 3 levels of internal ARFs.
-  // If any of these values are negative, fixed offsets are disabled.
-  // Uses internal q range.
-  double fixed_qp_offsets[FIXED_QP_OFFSET_COUNT];
   // If true, encoder will use fixed QP offsets, that are either:
   // - Given by the user, and stored in 'fixed_qp_offsets' array, OR
   // - Picked automatically from cq_level.
@@ -1048,6 +1050,9 @@ typedef struct AV1EncoderConfig {
   // Indicates if row-based multi-threading should be enabled or not.
   bool row_mt;
 
+  // Indicates if frame parallel multi-threading should be enabled or not.
+  bool fp_mt;
+
   // Indicates if 16bit frame buffers are to be used i.e., the content is >
   // 8-bit.
   bool use_highbitdepth;
@@ -1060,6 +1065,9 @@ typedef struct AV1EncoderConfig {
   // The path for partition stats reading and writing, used in the experiment
   // CONFIG_PARTITION_SEARCH_ORDER.
   const char *partition_info_path;
+
+  // Exit the encoder when it fails to encode to a given level.
+  int strict_level_conformance;
   /*!\endcond */
 } AV1EncoderConfig;
 
@@ -1432,6 +1440,12 @@ typedef struct ThreadData {
   // pixel in a superblock. The buffer constitutes of MAX_SB_SQUARE pixel level
   // structures for each of the plane types (PLANE_TYPE_Y and PLANE_TYPE_UV).
   PixelLevelGradientInfo *pixel_gradient_info;
+  // Pointer to the array of structures to store source variance information of
+  // each 4x4 sub-block in a superblock. Block4x4VarInfo structure is used to
+  // store source variance and log of source variance of each 4x4 sub-block
+  // which is retrieved in subsequent calls to log_sub_block_var() and
+  // intra_rd_variance_factor() functions.
+  Block4x4VarInfo *src_var_info_of_4x4_sub_blocks;
 } ThreadData;
 
 struct EncWorkerData;
@@ -1767,6 +1781,7 @@ enum {
 
   rd_pick_partition_time,
   rd_use_partition_time,
+  choose_var_based_partitioning_time,
   av1_prune_partitions_time,
   none_partition_search_time,
   split_partition_search_time,
@@ -1790,6 +1805,13 @@ enum {
   compound_type_rd_time,
   interpolation_filter_search_time,
   motion_mode_rd_time,
+
+  nonrd_use_partition_time,
+  pick_sb_modes_nonrd_time,
+  hybrid_intra_mode_search_time,
+  nonrd_pick_inter_mode_sb_time,
+  encode_b_nonrd_time,
+
   kTimingComponents,
 } UENUM1BYTE(TIMING_COMPONENT);
 
@@ -1819,6 +1841,8 @@ static INLINE char const *get_component_name(int index) {
 
     case rd_pick_partition_time: return "rd_pick_partition_time";
     case rd_use_partition_time: return "rd_use_partition_time";
+    case choose_var_based_partitioning_time:
+      return "choose_var_based_partitioning_time";
     case av1_prune_partitions_time: return "av1_prune_partitions_time";
     case none_partition_search_time: return "none_partition_search_time";
     case split_partition_search_time: return "split_partition_search_time";
@@ -1848,6 +1872,13 @@ static INLINE char const *get_component_name(int index) {
     case interpolation_filter_search_time:
       return "interpolation_filter_search_time";
     case motion_mode_rd_time: return "motion_mode_rd_time";
+
+    case nonrd_use_partition_time: return "nonrd_use_partition_time";
+    case pick_sb_modes_nonrd_time: return "pick_sb_modes_nonrd_time";
+    case hybrid_intra_mode_search_time: return "hybrid_intra_mode_search_time";
+    case nonrd_pick_inter_mode_sb_time: return "nonrd_pick_inter_mode_sb_time";
+    case encode_b_nonrd_time: return "encode_b_nonrd_time";
+
     default: assert(0);
   }
   return "error";
@@ -2063,7 +2094,7 @@ typedef struct {
 
   /*!
    * Threshold to approximate pixel domain distortion with transform domain
-   * distortion. This is only used if use_txform_domain_distortion is on.
+   * distortion. This is only used if use_transform_domain_distortion is on.
    * Corresponds to enable_winner_mode_for_use_tx_domain_dist speed feature.
    */
   unsigned int tx_domain_dist_threshold[MODE_EVAL_TYPES];
@@ -2544,16 +2575,6 @@ typedef struct AV1_PRIMARY {
   aom_variance_fn_ptr_t fn_ptr[BLOCK_SIZES_ALL];
 
   /*!
-   * Scaling factors used in the RD multiplier modulation.
-   * TODO(sdeng): consider merge the following arrays.
-   * tpl_rdmult_scaling_factors is a temporary buffer used to store the
-   * intermediate scaling factors which are used in the calculation of
-   * tpl_sb_rdmult_scaling_factors. tpl_rdmult_scaling_factors[i] stores the
-   * intermediate scaling factor of the ith 16 x 16 block in raster scan order.
-   */
-  double *tpl_rdmult_scaling_factors;
-
-  /*!
    * tpl_sb_rdmult_scaling_factors[i] stores the RD multiplier scaling factor of
    * the ith 16 x 16 block in raster scan order.
    */
@@ -2746,6 +2767,16 @@ typedef struct AV1_COMP {
    * Skip tpl setup when tpl data from gop length decision can be reused.
    */
   int skip_tpl_setup_stats;
+
+  /*!
+   * Scaling factors used in the RD multiplier modulation.
+   * TODO(sdeng): consider merge the following arrays.
+   * tpl_rdmult_scaling_factors is a temporary buffer used to store the
+   * intermediate scaling factors which are used in the calculation of
+   * tpl_sb_rdmult_scaling_factors. tpl_rdmult_scaling_factors[i] stores the
+   * intermediate scaling factor of the ith 16 x 16 block in raster scan order.
+   */
+  double *tpl_rdmult_scaling_factors;
 
   /*!
    * Temporal filter context.
@@ -3502,6 +3533,8 @@ int av1_set_size_literal(AV1_COMP *cpi, int width, int height);
 
 void av1_set_frame_size(AV1_COMP *cpi, int width, int height);
 
+void av1_set_mv_search_params(AV1_COMP *cpi);
+
 int av1_set_active_map(AV1_COMP *cpi, unsigned char *map, int rows, int cols);
 
 int av1_get_active_map(AV1_COMP *cpi, unsigned char *map, int rows, int cols);
@@ -3674,10 +3707,10 @@ static INLINE void alloc_frame_mvs(AV1_COMMON *const cm, RefCntBuffer *buf) {
 
 // Get the allocated token size for a tile. It does the same calculation as in
 // the frame token allocation.
-static INLINE unsigned int allocated_tokens(TileInfo tile, int sb_size_log2,
-                                            int num_planes) {
-  int tile_mb_rows = (tile.mi_row_end - tile.mi_row_start + 2) >> 2;
-  int tile_mb_cols = (tile.mi_col_end - tile.mi_col_start + 2) >> 2;
+static INLINE unsigned int allocated_tokens(const TileInfo *tile,
+                                            int sb_size_log2, int num_planes) {
+  int tile_mb_rows = (tile->mi_row_end - tile->mi_row_start + 2) >> 2;
+  int tile_mb_cols = (tile->mi_col_end - tile->mi_col_start + 2) >> 2;
 
   return get_token_alloc(tile_mb_rows, tile_mb_cols, sb_size_log2, num_planes);
 }
@@ -3876,7 +3909,7 @@ static const MV_REFERENCE_FRAME disable_order[] = {
   LAST3_FRAME,
   LAST2_FRAME,
   ALTREF2_FRAME,
-  GOLDEN_FRAME,
+  BWDREF_FRAME,
 };
 
 static const MV_REFERENCE_FRAME
@@ -3905,7 +3938,11 @@ static INLINE int get_ref_frame_flags(const SPEED_FEATURES *const sf,
             ? (1 + sf->rt_sf.use_nonrd_altref_frame)
             : i;
     for (int j = 0; j < index; ++j) {
-      if (this_ref == ref_frames[j]) {
+      // If this_ref has appeared before (same as the reference corresponding
+      // to lower index j), remove it as a reference only if that reference
+      // (for index j) is actually used as a reference.
+      if (this_ref == ref_frames[j] &&
+          (flags & (1 << (ref_frame_priority_order[j] - 1)))) {
         flags &= ~(1 << (ref_frame_priority_order[i] - 1));
         break;
       }

@@ -27,22 +27,11 @@ option optimize_for = LITE_RUNTIME;
 // This service is implemented by the Runtime and represents services
 // specific to a Cast application.
 service RuntimeApplicationService {
-  // DEPRECATED
-  // Sends a Cast message to the runtime.
-  rpc SendCastMessage(cast.bindings.CastChannelMessage)
-      returns (cast.bindings.CastChannelResponse);
-
   // Set the URL rewrite rules that the Runtime will use to contact the MSP
   // This is called when the rewrite rules are changed
   // A non streaming API for simplicity
   rpc SetUrlRewriteRules(SetUrlRewriteRulesRequest)
       returns (SetUrlRewriteRulesResponse);
-
-  // DEPRECATED
-  // "MessageConnectorService" provides the transport for MessagePorts.
-  // MessagePorts are connected using other services (e.g. ApiBindings), then
-  // registered with the MessageConnectorService to communicate over IPC
-  rpc PostMessage(cast.web.Message) returns (cast.web.MessagePortStatus);
 }
 
 // Request to set the URL rewrite rules on the runtime application.

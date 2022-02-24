@@ -173,6 +173,8 @@ for instructions.`
 #include "base/debug/stack_trace.h"
 ...
 base::debug::StackTrace().Print();
+// or
+LOG(ERROR) << base::debug::StackTrace();
 ```
 
 and run Chrome with `--no-sandbox` command line option.

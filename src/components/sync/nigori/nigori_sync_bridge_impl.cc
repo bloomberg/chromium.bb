@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "components/os_crypt/os_crypt.h"
@@ -416,11 +417,12 @@ PassphraseType NigoriSyncBridgeImpl::GetPassphraseType() {
 }
 
 void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
-    const std::string& passphrase) {
+    const std::string& passphrase,
+    const KeyDerivationParams& key_derivation_params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  QueuePendingLocalCommit(
-      PendingLocalNigoriCommit::ForSetCustomPassphrase(passphrase));
+  QueuePendingLocalCommit(PendingLocalNigoriCommit::ForSetCustomPassphrase(
+      passphrase, key_derivation_params));
 }
 
 void NigoriSyncBridgeImpl::SetExplicitPassphraseDecryptionKey(

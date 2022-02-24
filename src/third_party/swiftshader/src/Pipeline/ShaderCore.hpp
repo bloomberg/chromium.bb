@@ -183,6 +183,28 @@ struct Element<UInt>
 
 }  // namespace SIMD
 
+// Vulkan 'SPIR-V Extended Instructions for GLSL' (GLSL.std.450) compliant transcendental functions
+Float4 Sin(RValue<Float4> x);
+Float4 Cos(RValue<Float4> x);
+Float4 Tan(RValue<Float4> x);
+RValue<Float4> Asin(RValue<Float4> x, bool relaxedPrecision);
+RValue<Float4> Acos(RValue<Float4> x, bool relaxedPrecision);
+Float4 Atan(RValue<Float4> x);
+Float4 Atan2(RValue<Float4> y, RValue<Float4> x);
+Float4 Exp2(RValue<Float4> x);
+Float4 Log2(RValue<Float4> x);
+Float4 Exp(RValue<Float4> x);
+Float4 Log(RValue<Float4> x);
+Float4 Pow(RValue<Float4> x, RValue<Float4> y);
+Float4 Sinh(RValue<Float4> x);
+Float4 Cosh(RValue<Float4> x);
+Float4 Tanh(RValue<Float4> x);
+Float4 Asinh(RValue<Float4> x);
+Float4 Acosh(RValue<Float4> x);
+Float4 Atanh(RValue<Float4> x);
+
+// Legacy transcendental functions
+// TODO(b/169755552): Consolidate with the functions above
 Float4 exponential2(RValue<Float4> x, bool pp = false);
 Float4 logarithm2(RValue<Float4> x, bool pp = false);
 Float4 exponential(RValue<Float4> x, bool pp = false);
@@ -191,11 +213,6 @@ Float4 power(RValue<Float4> x, RValue<Float4> y, bool pp = false);
 Float4 reciprocal(RValue<Float4> x, bool pp = false, bool exactAtPow2 = false);
 Float4 reciprocalSquareRoot(RValue<Float4> x, bool abs, bool pp = false);
 Float4 modulo(RValue<Float4> x, RValue<Float4> y);
-Float4 sine_pi(RValue<Float4> x, bool pp = false);    // limited to [-pi, pi] range
-Float4 cosine_pi(RValue<Float4> x, bool pp = false);  // limited to [-pi, pi] range
-Float4 sine(RValue<Float4> x, bool pp = false);
-Float4 cosine(RValue<Float4> x, bool pp = false);
-Float4 tangent(RValue<Float4> x, bool pp = false);
 Float4 arccos(RValue<Float4> x, bool pp = false);
 Float4 arcsin(RValue<Float4> x, bool pp = false);
 Float4 arctan(RValue<Float4> x, bool pp = false);

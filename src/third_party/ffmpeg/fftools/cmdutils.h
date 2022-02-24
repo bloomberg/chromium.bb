@@ -238,6 +238,7 @@ void show_help_options(const OptionDef *options, const char *msg, int req_flags,
     { "pix_fmts",    OPT_EXIT,             { .func_arg = show_pix_fmts },    "show available pixel formats" },          \
     { "layouts",     OPT_EXIT,             { .func_arg = show_layouts },     "show standard channel layouts" },         \
     { "sample_fmts", OPT_EXIT,             { .func_arg = show_sample_fmts }, "show available audio sample formats" },   \
+    { "dispositions", OPT_EXIT,            { .func_arg = show_dispositions}, "show available stream dispositions" },    \
     { "colors",      OPT_EXIT,             { .func_arg = show_colors },      "show available color names" },            \
     { "loglevel",    HAS_ARG,              { .func_arg = opt_loglevel },     "set logging level", "loglevel" },         \
     { "v",           HAS_ARG,              { .func_arg = opt_loglevel },     "set logging level", "loglevel" },         \
@@ -429,8 +430,8 @@ AVDictionary *filter_codec_opts(AVDictionary *opts, enum AVCodecID codec_id,
  * Each dictionary will contain the options from codec_opts which can
  * be applied to the corresponding stream codec context.
  *
- * @return pointer to the created array of dictionaries, NULL if it
- * cannot be created
+ * @return pointer to the created array of dictionaries.
+ * Calls exit() on failure.
  */
 AVDictionary **setup_find_stream_info_opts(AVFormatContext *s,
                                            AVDictionary *codec_opts);
@@ -578,6 +579,11 @@ int show_layouts(void *optctx, const char *opt, const char *arg);
 int show_sample_fmts(void *optctx, const char *opt, const char *arg);
 
 /**
+ * Print a listing containing all supported stream dispositions.
+ */
+int show_dispositions(void *optctx, const char *opt, const char *arg);
+
+/**
  * Print a listing containing all the color names and values recognized
  * by the program.
  */
@@ -622,10 +628,27 @@ FILE *get_preset_file(char *filename, size_t filename_size,
  */
 void *grow_array(void *array, int elem_size, int *size, int new_size);
 
+/**
+ * Atomically add a new element to an array of pointers, i.e. allocate
+ * a new entry, reallocate the array of pointers and make the new last
+ * member of this array point to the newly allocated buffer.
+ * Calls exit() on failure.
+ *
+ * @param array     array of pointers to reallocate
+ * @param elem_size size of the new element to allocate
+ * @param nb_elems  pointer to the number of elements of the array array;
+ *                  *nb_elems will be incremented by one by this function.
+ * @return pointer to the newly allocated entry
+ */
+void *allocate_array_elem(void *array, size_t elem_size, int *nb_elems);
+
 #define media_type_string av_get_media_type_string
 
 #define GROW_ARRAY(array, nb_elems)\
     array = grow_array(array, sizeof(*array), &nb_elems, nb_elems + 1)
+
+#define ALLOC_ARRAY_ELEM(array, nb_elems)\
+    allocate_array_elem(&array, sizeof(*array[0]), &nb_elems)
 
 #define GET_PIX_FMT_NAME(pix_fmt)\
     const char *name = av_get_pix_fmt_name(pix_fmt);

@@ -230,12 +230,15 @@ static av_cold int libdav1d_init(AVCodecContext *c)
     s.frame_size_limit = c->max_pixels;
     if (dav1d->apply_grain >= 0)
         s.apply_grain = dav1d->apply_grain;
-    else if (c->export_side_data & AV_CODEC_EXPORT_DATA_FILM_GRAIN)
-        s.apply_grain = 0;
+    else
+        s.apply_grain = !(c->export_side_data & AV_CODEC_EXPORT_DATA_FILM_GRAIN);
 
     s.all_layers = dav1d->all_layers;
     if (dav1d->operating_point >= 0)
         s.operating_point = dav1d->operating_point;
+#if FF_DAV1D_VERSION_AT_LEAST(6,2)
+    s.strict_std_compliance = c->strict_std_compliance > 0;
+#endif
 
 #if FF_DAV1D_VERSION_AT_LEAST(6,0)
     if (dav1d->frame_threads || dav1d->tile_threads)

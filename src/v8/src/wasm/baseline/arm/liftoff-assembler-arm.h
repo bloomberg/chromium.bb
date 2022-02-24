@@ -310,7 +310,6 @@ inline void Store(LiftoffAssembler* assm, LiftoffRegister src, MemOperand dst,
     case kOptRef:
     case kRef:
     case kRtt:
-    case kRttWithDepth:
       assm->str(src.gp(), dst);
       break;
     case kI64:
@@ -345,7 +344,6 @@ inline void Load(LiftoffAssembler* assm, LiftoffRegister dst, MemOperand src,
     case kOptRef:
     case kRef:
     case kRtt:
-    case kRttWithDepth:
       assm->ldr(dst.gp(), src);
       break;
     case kI64:
@@ -637,10 +635,6 @@ void LiftoffAssembler::SpillInstance(Register instance) {
 }
 
 void LiftoffAssembler::ResetOSRTarget() {}
-
-void LiftoffAssembler::FillInstanceInto(Register dst) {
-  ldr(dst, liftoff::GetInstanceOperand());
-}
 
 namespace liftoff {
 #define __ lasm->
@@ -1974,10 +1968,6 @@ void LiftoffAssembler::emit_f64_min(DoubleRegister dst, DoubleRegister lhs,
 void LiftoffAssembler::emit_f64_max(DoubleRegister dst, DoubleRegister lhs,
                                     DoubleRegister rhs) {
   liftoff::EmitFloatMinOrMax(this, dst, lhs, rhs, liftoff::MinOrMax::kMax);
-}
-
-void LiftoffAssembler::emit_u32_to_intptr(Register dst, Register src) {
-  // This is a nop on arm.
 }
 
 void LiftoffAssembler::emit_f32_copysign(DoubleRegister dst, DoubleRegister lhs,

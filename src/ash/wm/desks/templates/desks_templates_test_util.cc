@@ -14,6 +14,8 @@
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_test_util.h"
+#include "ui/views/animation/bounds_animator.h"
+#include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -29,6 +31,40 @@ OverviewGrid* GetPrimaryOverviewGrid() {
                                 Shell::GetPrimaryRootWindow())
                           : nullptr;
 }
+
+// `BoundsAnimatorWaiter` observes the `BoundsAnimator` and waits for the
+// template grid items animations to finish.
+class BoundsAnimatorWaiter : public views::BoundsAnimatorObserver {
+ public:
+  explicit BoundsAnimatorWaiter(views::BoundsAnimator& animator)
+      : animator_(animator) {
+    animator_.AddObserver(this);
+  }
+
+  BoundsAnimatorWaiter(const BoundsAnimatorWaiter&) = delete;
+  BoundsAnimatorWaiter& operator=(const BoundsAnimatorWaiter&) = delete;
+
+  ~BoundsAnimatorWaiter() override { animator_.RemoveObserver(this); }
+
+  void Wait() {
+    if (!animator_.IsAnimating())
+      return;
+
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+  }
+
+ private:
+  // views::BoundsAnimatorObserver:
+  void OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) override {}
+  void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override {
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  views::BoundsAnimator& animator_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+};
 
 }  // namespace
 
@@ -47,12 +83,16 @@ void DesksTemplatesPresenterTestApi::SetOnUpdateUiClosure(
 }
 
 DesksTemplatesGridViewTestApi::DesksTemplatesGridViewTestApi(
-    const DesksTemplatesGridView* grid_view)
+    DesksTemplatesGridView* grid_view)
     : grid_view_(grid_view) {
   DCHECK(grid_view_);
 }
 
 DesksTemplatesGridViewTestApi::~DesksTemplatesGridViewTestApi() = default;
+
+void DesksTemplatesGridViewTestApi::WaitForItemMoveAnimationDone() {
+  BoundsAnimatorWaiter(grid_view_->bounds_animator_).Wait();
+}
 
 DesksTemplatesItemViewTestApi::DesksTemplatesItemViewTestApi(
     const DesksTemplatesItemView* item_view)
@@ -80,14 +120,6 @@ DesksTemplatesIconViewTestApi::DesksTemplatesIconViewTestApi(
 
 DesksTemplatesIconViewTestApi::~DesksTemplatesIconViewTestApi() = default;
 
-DesksTemplatesNameViewTestApi::DesksTemplatesNameViewTestApi(
-    const DesksTemplatesNameView* desks_templates_name_view)
-    : desks_templates_name_view_(desks_templates_name_view) {
-  DCHECK(desks_templates_name_view_);
-}
-
-DesksTemplatesNameViewTestApi::~DesksTemplatesNameViewTestApi() = default;
-
 DesksTemplatesItemView* GetItemViewFromTemplatesGrid(int grid_item_index) {
   const auto* overview_grid = GetPrimaryOverviewGrid();
   if (!overview_grid)
@@ -101,7 +133,7 @@ DesksTemplatesItemView* GetItemViewFromTemplatesGrid(int grid_item_index) {
   DCHECK(templates_grid_view);
 
   std::vector<DesksTemplatesItemView*> grid_items =
-      DesksTemplatesGridViewTestApi(templates_grid_view).grid_items();
+      templates_grid_view->grid_items();
   DesksTemplatesItemView* item_view = grid_items.at(grid_item_index);
   DCHECK(item_view);
   return item_view;

@@ -8,6 +8,9 @@ CHROMIUM_REPO_URL = "https://chromium.googlesource.com/chromium/src"
 MAC_VERSION = "Mac-11"
 REF = "refs/heads/main"
 
+# Use LUCI Scheduler BBv2 names and add Scheduler realms configs.
+lucicfg.enable_experiment("crbug.com/1182002")
+
 luci.project(
     name = "openscreen",
     milo = "luci-milo.appspot.com",
@@ -180,6 +183,7 @@ def builder(builder_type, name, properties, os, cpu):
             use_python3 = True
         elif "runhooks" in properties:
             recipe_id = "run_presubmit"
+            use_python3 = True
 
     caches = []
     if os == MAC_VERSION:

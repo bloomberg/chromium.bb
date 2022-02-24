@@ -47,6 +47,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/app_constants/constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_update.h"
@@ -138,7 +139,7 @@ void SetAppIsDefaultForTest(Profile* profile, const std::string& id) {
 }
 
 bool IsUnRemovableDefaultApp(const std::string& id) {
-  return id == extension_misc::kChromeAppId ||
+  return id == app_constants::kChromeAppId ||
          id == extensions::kWebStoreAppId ||
          id == file_manager::kFileManagerAppId;
 }
@@ -765,8 +766,14 @@ void AppListSyncableService::AddItem(
       MaybeAddOrUpdateCrostiniFolderSyncData();
 
     // Create a folder if `app_item`'s parent folder does not exist.
-    if (!folder_id.empty())
-      MaybeCreateFolderBeforeAddingItem(app_item.get(), folder_id);
+    if (!folder_id.empty()) {
+      const bool folder_exists =
+          MaybeCreateFolderBeforeAddingItem(app_item.get(), folder_id);
+      // If `MaybeCreateFolderBeforeAddingItem()` failed to create the folder,
+      // move the app to the root app item list.
+      if (!folder_exists)
+        folder_id.clear();
+    }
 
     model_updater_->AddAppItemToFolder(std::move(app_item), folder_id,
                                        is_item_new);
@@ -1316,10 +1323,9 @@ void AppListSyncableService::SetAppListPreferredOrder(
   profile_->GetPrefs()->SetInteger(prefs::kAppListPreferredOrder,
                                    static_cast<int>(order));
 
-  // TODO(andrewxu): Return early for color sort because color info on sync
-  // items is not yet well implemented.
   if (order == ash::AppListSortOrder::kCustom ||
-      order == ash::AppListSortOrder::kColor) {
+      (order == ash::AppListSortOrder::kColor &&
+       !ash::features::IsLauncherItemColorSyncEnabled())) {
     return;
   }
 
@@ -1355,6 +1361,16 @@ void AppListSyncableService::SetAppListPreferredOrder(
 syncer::StringOrdinal AppListSyncableService::CalculateGlobalFrontPosition()
     const {
   return reorder::CalculateFrontPosition(sync_items_);
+}
+
+bool AppListSyncableService::CalculateItemPositionInPermanentSortOrder(
+    const ash::AppListItemMetadata& metadata,
+    syncer::StringOrdinal* target_position) const {
+  // TODO(https://crbug.com/1260877): ideally we would not have to create a
+  // one-off vector of items using `GetItems()`.
+  return reorder::CalculateItemPositionInOrder(
+      GetPermanentSortingOrder(), metadata, model_updater_->GetItems(),
+      &sync_items_, target_position);
 }
 
 ash::AppListSortOrder AppListSyncableService::GetPermanentSortingOrder() const {
@@ -1736,9 +1752,9 @@ bool AppListSyncableService::UpdateSyncItemFromAppItem(
     changed = true;
   }
 
-  if (ash::features::IsLauncherItemColorSyncEnabled()) {
-    changed =
-        SetIconColorIfChanged(app_item->icon_color(), &sync_item->item_color);
+  if (ash::features::IsLauncherItemColorSyncEnabled() &&
+      SetIconColorIfChanged(app_item->icon_color(), &sync_item->item_color)) {
+    changed = true;
   }
 
   if (sync_item->is_persistent_folder != app_item->is_persistent()) {
@@ -1770,21 +1786,15 @@ void AppListSyncableService::InitNewItemPosition(ChromeAppListItem* new_item) {
   // The target position of `new_item`.
   syncer::StringOrdinal position;
 
-  ash::AppListSortOrder order = GetPermanentSortingOrder();
-
-  // TODO(https://crbug.com/1260877): ideally we would not have to create a
-  // one-off vector of items using `GetItems()`.
-  bool is_successful = reorder::CalculateNewItemPosition(
-      order, *new_item, model_updater_->GetItems(), &sync_items_, &position);
+  bool is_successful = CalculateItemPositionInPermanentSortOrder(
+      new_item->metadata(), &position);
 
   // If `new_item` cannot be placed following the specified order, `new_item`
   // should be placed at front. Also reset the sorting order.
   if (!is_successful) {
     DCHECK(!position.IsValid());
     position = CalculateGlobalFrontPosition();
-    profile()->GetPrefs()->SetInteger(
-        prefs::kAppListPreferredOrder,
-        static_cast<int>(ash::AppListSortOrder::kCustom));
+    SetAppListPreferredOrder(ash::AppListSortOrder::kCustom);
   }
 
   DCHECK(position.IsValid());
@@ -1858,7 +1868,7 @@ void AppListSyncableService::MaybeAddOrUpdateCrostiniFolderSyncData() {
     CreateSyncItemFromAppItem(&crostini_folder);
 }
 
-void AppListSyncableService::MaybeCreateFolderBeforeAddingItem(
+bool AppListSyncableService::MaybeCreateFolderBeforeAddingItem(
     ChromeAppListItem* app_item,
     const std::string& folder_id) {
   DCHECK(!folder_id.empty());
@@ -1868,7 +1878,7 @@ void AppListSyncableService::MaybeCreateFolderBeforeAddingItem(
     // TODO(https://crbug.com/1259459): delete this code block if the sync item
     // indexed by `folder_id` always exists.
     app_item->SetChromeFolderId("");
-    return;
+    return false;
   }
 
   ChromeAppListItem* folder_item = model_updater_->FindItem(folder_id);
@@ -1876,7 +1886,7 @@ void AppListSyncableService::MaybeCreateFolderBeforeAddingItem(
 
   // The folder item specified by `folder_id` already exists. Nothing to do.
   if (folder_item)
-    return;
+    return true;
 
   auto new_folder_item = std::make_unique<ChromeAppListItem>(
       profile_, folder_id, model_updater_.get());
@@ -1885,6 +1895,7 @@ void AppListSyncableService::MaybeCreateFolderBeforeAddingItem(
   if (IsSystemCreatedSyncFolder(*folder_sync_item))
     new_folder_item->SetIsPersistent(true);
   model_updater_->AddItem(std::move(new_folder_item));
+  return true;
 }
 
 }  // namespace app_list

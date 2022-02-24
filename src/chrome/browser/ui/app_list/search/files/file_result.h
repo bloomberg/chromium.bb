@@ -22,12 +22,15 @@ class ThumbnailLoader;
 
 namespace app_list {
 
+// TODO(crbug.com/1258415): We should split this into four subclasses:
+// {drive,local} {zero-state,search}.
 class FileResult : public ChromeSearchResult {
  public:
   enum class Type { kFile, kDirectory, kSharedDirectory };
 
   FileResult(const std::string& schema,
              const base::FilePath& filepath,
+             const absl::optional<std::u16string>& details,
              ResultType result_type,
              DisplayType display_type,
              float relevance,
@@ -41,6 +44,7 @@ class FileResult : public ChromeSearchResult {
 
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
+  absl::optional<std::string> DriveId() const override;
 
   // Calculates file's match relevance score. Will return a default score if the
   // query is missing or the filename is empty.
@@ -53,14 +57,29 @@ class FileResult : public ChromeSearchResult {
   // the thumbnail.
   void RequestThumbnail(ash::ThumbnailLoader* thumbnail_loader);
 
+  // Asynchronously sets the details string for this result to a Drive-esque
+  // justification string, eg. "You opened yesterday".
+  void SetDetailsToJustificationString();
+
+  void set_drive_id(const absl::optional<std::string>& drive_id) {
+    drive_id_ = drive_id;
+  }
+
  private:
   // Callback for the result of MaybeRequestThumbnail's call to the
   // ThumbnailLoader.
   void OnThumbnailLoaded(const SkBitmap* bitmap, base::File::Error error);
 
+  // Callback for the result of SetDetailsToJustificationString to
+  // GetJustificationStringAsync.
+  void OnJustificationStringReturned(
+      absl::optional<std::u16string> justification);
+
   const base::FilePath filepath_;
   const Type type_;
   Profile* const profile_;
+
+  absl::optional<std::string> drive_id_;
 
   base::WeakPtrFactory<FileResult> weak_factory_{this};
 };

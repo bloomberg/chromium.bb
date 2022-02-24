@@ -74,7 +74,7 @@
 #include "src/gpu/v1/PathRenderer.h"
 
 #define ASSERT_OWNED_RESOURCE(R) SkASSERT(!(R) || (R)->getContext() == this->drawingManager()->getContext())
-#define ASSERT_SINGLE_OWNER        GR_ASSERT_SINGLE_OWNER(this->singleOwner())
+#define ASSERT_SINGLE_OWNER        SKGPU_ASSERT_SINGLE_OWNER(this->singleOwner())
 #define RETURN_IF_ABANDONED        if (fContext->abandoned()) { return; }
 #define RETURN_FALSE_IF_ABANDONED  if (fContext->abandoned()) { return false; }
 
@@ -137,8 +137,8 @@ std::unique_ptr<SurfaceDrawContext> SurfaceDrawContext::Make(GrRecordingContext*
     }
 
     const GrBackendFormat& format = proxy->backendFormat();
-    GrSwizzle readSwizzle = rContext->priv().caps()->getReadSwizzle(format, colorType);
-    GrSwizzle writeSwizzle = rContext->priv().caps()->getWriteSwizzle(format, colorType);
+    skgpu::Swizzle readSwizzle = rContext->priv().caps()->getReadSwizzle(format, colorType);
+    skgpu::Swizzle writeSwizzle = rContext->priv().caps()->getWriteSwizzle(format, colorType);
 
     GrSurfaceProxyView readView (          proxy,  origin, readSwizzle);
     GrSurfaceProxyView writeView(std::move(proxy), origin, writeSwizzle);
@@ -161,8 +161,8 @@ std::unique_ptr<SurfaceDrawContext> SurfaceDrawContext::Make(
         int sampleCnt,
         GrMipmapped mipMapped,
         GrProtected isProtected,
-        GrSwizzle readSwizzle,
-        GrSwizzle writeSwizzle,
+        skgpu::Swizzle readSwizzle,
+        skgpu::Swizzle writeSwizzle,
         GrSurfaceOrigin origin,
         SkBudgeted budgeted,
         const SkSurfaceProps& surfaceProps) {
@@ -326,7 +326,8 @@ void SurfaceDrawContext::willReplaceOpsTask(OpsTask* prevTask, OpsTask* nextTask
 #endif
 }
 
-void SurfaceDrawContext::drawGlyphRunListNoCache(const GrClip* clip,
+void SurfaceDrawContext::drawGlyphRunListNoCache(SkCanvas* canvas,
+                                                 const GrClip* clip,
                                                  const SkMatrixProvider& viewMatrix,
                                                  const SkGlyphRunList& glyphRunList,
                                                  const SkPaint& paint) {
@@ -337,20 +338,21 @@ void SurfaceDrawContext::drawGlyphRunListNoCache(const GrClip* clip,
     drawMatrix.preTranslate(drawOrigin.x(), drawOrigin.y());
     GrSubRunAllocator* const alloc = this->subRunAlloc();
 
-    GrSubRunNoCachePainter painter{this, alloc, clip, viewMatrix, glyphRunList, paint};
+    GrSubRunNoCachePainter painter{canvas, this, alloc, clip, viewMatrix, glyphRunList, paint};
     for (auto& glyphRun : glyphRunList) {
         // Make and add the text ops.
-        fGlyphPainter.processGlyphRun(glyphRun,
+        fGlyphPainter.processGlyphRun(&painter,
+                                      glyphRun,
                                       drawMatrix,
                                       paint,
-                                      control,
-                                      &painter);
+                                      control);
     }
 }
 
 // choose to use the GrTextBlob cache or not.
 bool gGrDrawTextNoCache = false;
-void SurfaceDrawContext::drawGlyphRunList(const GrClip* clip,
+void SurfaceDrawContext::drawGlyphRunList(SkCanvas* canvas,
+                                          const GrClip* clip,
                                           const SkMatrixProvider& viewMatrix,
                                           const SkGlyphRunList& glyphRunList,
                                           const SkPaint& paint) {
@@ -370,10 +372,10 @@ void SurfaceDrawContext::drawGlyphRunList(const GrClip* clip,
         // If the glyphRunList does not have an associated text blob, then it was created by one of
         // the direct draw APIs (drawGlyphs, etc.). There is no need to create a GrTextBlob just
         // build the sub run directly and place it in the op.
-        this->drawGlyphRunListNoCache(clip, viewMatrix, glyphRunList, paint);
+        this->drawGlyphRunListNoCache(canvas, clip, viewMatrix, glyphRunList, paint);
     } else {
         GrTextBlobRedrawCoordinator* textBlobCache = fContext->priv().getTextBlobCache();
-        textBlobCache->drawGlyphRunList(clip, viewMatrix, glyphRunList, paint, this);
+        textBlobCache->drawGlyphRunList(canvas, clip, viewMatrix, glyphRunList, paint, this);
     }
 }
 
@@ -1685,17 +1687,41 @@ void SurfaceDrawContext::drawStrokedLine(const GrClip* clip,
     parallel *= halfWidth;
 
     SkVector ortho = { parallel.fY, -parallel.fX };
-    if (SkPaint::kButt_Cap == stroke.getCap()) {
-        // No extra extension for butt caps
-        parallel = {0.f, 0.f};
+    SkPoint p0 = points[0], p1 = points[1];
+    if (stroke.getCap() == SkPaint::kSquare_Cap) {
+        // Extra extension for square caps
+        p0 -= parallel;
+        p1 += parallel;
     }
+
+    // If we are using dmsaa or reduced shader mode then attempt to draw with FillRRectOp.
+    if (this->caps()->drawInstancedSupport() &&
+        (this->alwaysAntialias() ||
+         (fContext->priv().caps()->reducedShaderMode() && aa == GrAA::kYes))) {
+        SkMatrix localMatrix = SkMatrix::MakeAll(p1.fX - p0.fX, ortho.fX, p0.fX,
+                                                 p1.fY - p0.fY, ortho.fY, p0.fY,
+                                                 0, 0, 1);
+        if (auto op = FillRRectOp::Make(fContext,
+                                        this->arenaAlloc(),
+                                        std::move(paint),
+                                        SkMatrix::Concat(viewMatrix, localMatrix),
+                                        SkRRect::MakeRect({0,-1,1,1}),
+                                        localMatrix,
+                                        GrAA::kYes)) {
+            this->addDrawOp(clip, std::move(op));
+            return;
+        }
+    }
+
     // Order is TL, TR, BR, BL where arbitrarily "down" is p0 to p1 and "right" is positive
-    SkPoint corners[4] = { points[0] - ortho - parallel,
-                           points[0] + ortho - parallel,
-                           points[1] + ortho + parallel,
-                           points[1] - ortho + parallel };
+    SkPoint corners[4] = { p0 - ortho,
+                           p0 + ortho,
+                           p1 + ortho,
+                           p1 - ortho };
 
     GrQuadAAFlags edgeAA = (aa == GrAA::kYes) ? GrQuadAAFlags::kAll : GrQuadAAFlags::kNone;
+
+    assert_alive(paint);
     this->fillQuadWithEdgeAA(clip, std::move(paint), aa, edgeAA, viewMatrix, corners, nullptr);
 }
 

@@ -41,6 +41,7 @@ def IsGoogler():
   """Check whether this user is Googler or not."""
   p = subprocess.run('goma_auth info',
                      stdout=subprocess.PIPE,
+                     stderr=subprocess.PIPE,
                      universal_newlines=True,
                      shell=True)
   if p.returncode != 0:

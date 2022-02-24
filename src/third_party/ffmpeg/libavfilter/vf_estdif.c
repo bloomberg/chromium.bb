@@ -35,6 +35,9 @@ typedef struct ESTDIFContext {
     int deint;            ///< which frames to deinterlace
     int rslope;           ///< best edge slope search radius
     int redge;            ///< best edge match search radius
+    float ecost;          ///< edge cost for edge matching
+    float mcost;          ///< middle cost for edge matching
+    float dcost;          ///< distance cost for edge matching
     int interp;           ///< type of interpolation
     int linesize[4];      ///< bytes of pixel data per line for each plane
     int planewidth[4];    ///< width of each plane
@@ -42,7 +45,7 @@ typedef struct ESTDIFContext {
     int field;            ///< which field are we on, 0 or 1
     int eof;
     int depth;
-    int half;
+    int max;
     int nb_planes;
     int nb_threads;
     int64_t pts;
@@ -52,7 +55,7 @@ typedef struct ESTDIFContext {
                         const uint8_t *prev_line,  const uint8_t *next_line,
                         const uint8_t *prev2_line, const uint8_t *next2_line,
                         const uint8_t *prev3_line, const uint8_t *next3_line,
-                        int x, int width, int rslope, int redge, unsigned half,
+                        int x, int width, int rslope, int redge,
                         int depth, int *K);
 
     unsigned (*mid_8[3])(const uint8_t *const prev,
@@ -92,6 +95,9 @@ static const AVOption estdif_options[] = {
     CONST("interlaced", "only deinterlace frames marked as interlaced", 1, "deint"),
     { "rslope", "specify the search radius for edge slope tracing", OFFSET(rslope), AV_OPT_TYPE_INT, {.i64=1}, 1, MAX_R, FLAGS, },
     { "redge",  "specify the search radius for best edge matching", OFFSET(redge),  AV_OPT_TYPE_INT, {.i64=2}, 0, MAX_R, FLAGS, },
+    { "ecost",  "specify the edge cost for edge matching",          OFFSET(ecost),  AV_OPT_TYPE_FLOAT,{.dbl=0.03125},0,1,FLAGS, },
+    { "mcost",  "specify the middle cost for edge matching",        OFFSET(mcost),  AV_OPT_TYPE_FLOAT,{.dbl=0.5}, 0, 1,  FLAGS, },
+    { "dcost",  "specify the distance cost for edge matching",      OFFSET(dcost),  AV_OPT_TYPE_FLOAT,{.dbl=0.5}, 0, 1,  FLAGS, },
     { "interp", "specify the type of interpolation",                OFFSET(interp), AV_OPT_TYPE_INT, {.i64=1}, 0, 2,     FLAGS, "interp" },
     CONST("2p", "two-point interpolation",  0, "interp"),
     CONST("4p", "four-point interpolation", 1, "interp"),
@@ -215,10 +221,9 @@ MID6(uint16_t, 16)
 #define DIFF(type, ss)                                         \
 static unsigned diff_##ss(const type *const prev,              \
                           const type *const next,              \
-                          int end, int x, int k, int j)        \
+                          int x, int y)                        \
 {                                                              \
-    return FFABS(prev[av_clip(x + k + j, 0, end)] -            \
-                 next[av_clip(x - k + j, 0, end)]);            \
+    return FFABS(prev[x] -  next[y]);                          \
 }
 
 DIFF(uint8_t, 8)
@@ -239,7 +244,7 @@ static unsigned cost_##ss(const type *const prev,              \
 COST(uint8_t, 8)
 COST(uint16_t, 16)
 
-#define INTERPOLATE(type, atype, max, ss)                                      \
+#define INTERPOLATE(type, atype, amax, ss)                                     \
 static void interpolate_##ss(ESTDIFContext *s, uint8_t *ddst,                  \
                              const uint8_t *const pprev_line,                  \
                              const uint8_t *const nnext_line,                  \
@@ -248,7 +253,7 @@ static void interpolate_##ss(ESTDIFContext *s, uint8_t *ddst,                  \
                              const uint8_t *const pprev3_line,                 \
                              const uint8_t *const nnext3_line,                 \
                              int x, int width, int rslope,                     \
-                             int redge, unsigned h, int depth,                 \
+                             int redge, int depth,                             \
                              int *K)                                           \
 {                                                                              \
     type *dst = (type *)ddst;                                                  \
@@ -259,24 +264,28 @@ static void interpolate_##ss(ESTDIFContext *s, uint8_t *ddst,                  \
     const type *const next2_line = (const type *const)nnext2_line;             \
     const type *const next3_line = (const type *const)nnext3_line;             \
     const int interp = s->interp;                                              \
+    const int ecost = s->ecost * 32.f;                                         \
+    const int dcost = s->dcost * s->max;                                       \
     const int end = width - 1;                                                 \
-    const atype f = redge + 2;                                                 \
+    const atype mcost = s->mcost * s->redge * 4.f;                             \
     atype sd[S], sD[S], di = 0;                                                \
-    atype dmin = max;                                                          \
+    atype dmin = amax;                                                         \
     int k = *K;                                                                \
                                                                                \
     for (int i = -rslope; i <= rslope && abs(k) > rslope; i++) {               \
         atype sum = 0;                                                         \
                                                                                \
         for (int j = -redge; j <= redge; j++) {                                \
-            sum += diff_##ss(prev_line,  next_line,  end, x, i, j);            \
-            sum += diff_##ss(prev2_line, prev_line,  end, x, i, j);            \
-            sum += diff_##ss(next_line,  next2_line, end, x, i, j);            \
+            const int xx = av_clip(x + i + j, 0, end);                         \
+            const int yy = av_clip(x - i + j, 0, end);                         \
+            sum += diff_##ss(prev_line,  next_line,  xx, yy);                  \
+            sum += diff_##ss(prev2_line, prev_line,  xx, yy);                  \
+            sum += diff_##ss(next_line,  next2_line, xx, yy);                  \
         }                                                                      \
                                                                                \
-        sD[i + rslope]  =     sum;                                             \
-        sD[i + rslope] += f * cost_##ss(prev_line,  next_line,  end, x, i);    \
-        sD[i + rslope] += h * abs(i);                                          \
+        sD[i + rslope]  = ecost * sum;                                         \
+        sD[i + rslope] += mcost * cost_##ss(prev_line,  next_line,  end, x, i);\
+        sD[i + rslope] += dcost * abs(i);                                      \
                                                                                \
         dmin = FFMIN(sD[i + rslope], dmin);                                    \
     }                                                                          \
@@ -285,14 +294,16 @@ static void interpolate_##ss(ESTDIFContext *s, uint8_t *ddst,                  \
         atype sum = 0;                                                         \
                                                                                \
         for (int j = -redge; j <= redge; j++) {                                \
-            sum += diff_##ss(prev_line,  next_line,  end, x, k + i, j);        \
-            sum += diff_##ss(prev2_line, prev_line,  end, x, k + i, j);        \
-            sum += diff_##ss(next_line,  next2_line, end, x, k + i, j);        \
+            const int xx = av_clip(x + k + i + j, 0, end);                     \
+            const int yy = av_clip(x - k - i + j, 0, end);                     \
+            sum += diff_##ss(prev_line,  next_line,  xx, yy);                  \
+            sum += diff_##ss(prev2_line, prev_line,  xx, yy);                  \
+            sum += diff_##ss(next_line,  next2_line, xx, yy);                  \
         }                                                                      \
                                                                                \
-        sd[i + rslope]  =     sum;                                             \
-        sd[i + rslope] += f * cost_##ss(prev_line, next_line, end, x, k + i);  \
-        sd[i + rslope] += h * abs(k + i);                                      \
+        sd[i + rslope]  = ecost * sum;                                         \
+        sd[i + rslope] += mcost * cost_##ss(prev_line, next_line, end, x, k+i);\
+        sd[i + rslope] += dcost * abs(k + i);                                  \
                                                                                \
         dmin = FFMIN(sd[i + rslope], dmin);                                    \
     }                                                                          \
@@ -332,7 +343,6 @@ static int deinterlace_slice(AVFilterContext *ctx, void *arg,
     AVFrame *in = td->in;
     const int rslope = s->rslope;
     const int redge = s->redge;
-    const int half = s->half;
     const int depth = s->depth;
     const int interlaced = in->interlaced_frame;
     const int tff = (s->field == (s->parity == -1 ? interlaced ? in->top_field_first : 1 :
@@ -411,7 +421,7 @@ static int deinterlace_slice(AVFilterContext *ctx, void *arg,
                                prev_line, next_line,
                                prev2_line, next2_line,
                                prev3_line, next3_line,
-                               x, width, rslope, redge, half, depth, &k);
+                               x, width, rslope, redge, depth, &k);
             }
 
             out_line += 2 * dst_linesize;
@@ -475,7 +485,7 @@ static int config_input(AVFilterLink *inlink)
     s->mid_16[0] = mid2_16;
     s->mid_16[1] = mid4_16;
     s->mid_16[2] = mid6_16;
-    s->half = 1 << (s->depth - 1);
+    s->max = (1 << (s->depth)) - 1;
 
     return 0;
 }

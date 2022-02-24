@@ -8,8 +8,8 @@
 // Public License v. 2.0. If a copy of the MPL was not distributed
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EIGEN_COMPLEX32_ALTIVEC_H
-#define EIGEN_COMPLEX32_ALTIVEC_H
+#ifndef EIGEN_COMPLEX32_ZVECTOR_H
+#define EIGEN_COMPLEX32_ZVECTOR_H
 
 #include "../../InternalHeaderCheck.h"
 
@@ -425,4 +425,4 @@ template<> EIGEN_STRONG_INLINE Packet2cf pblend(const Selector<2>& ifPacket, con
 
 } // end namespace Eigen
 
-#endif // EIGEN_COMPLEX32_ALTIVEC_H
+#endif // EIGEN_COMPLEX32_ZVECTOR_H

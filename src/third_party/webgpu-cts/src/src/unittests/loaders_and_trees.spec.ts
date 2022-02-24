@@ -44,13 +44,13 @@ const specsData: { [k: string]: SpecFile } = {
       g.test('hello').fn(() => {});
       g.test('bonjour').fn(() => {});
       g.test('hola')
-        .desc('TODO')
+        .desc('TODO TODO')
         .fn(() => {});
       return g;
     })(),
   },
   'suite1/bar/biz.spec.js': {
-    description: 'desc 1f TODO',
+    description: 'desc 1f TODO TODO',
     g: makeTestGroupForUnitTesting(UnitTest), // file with no tests
   },
   'suite1/bar/buzz/buzz.spec.js': {
@@ -648,7 +648,7 @@ async function testIterateCollapsed(
   t: LoadingTest,
   alwaysExpandThroughLevel: ExpandThroughLevel,
   expectations: string[],
-  expectedResult: 'throws' | string[] | [string, boolean | undefined][],
+  expectedResult: 'throws' | string[] | [string, number | undefined][],
   includeEmptySubtrees = false
 ) {
   t.debug(`expandThrough=${alwaysExpandThroughLevel} expectations=${expectations}`);
@@ -666,8 +666,8 @@ async function testIterateCollapsed(
     alwaysExpandThroughLevel,
   });
   const testingTODOs = expectedResult.length > 0 && expectedResult[0] instanceof Array;
-  const actual = Array.from(actualIter, ({ query, subtreeHasTODOs }) =>
-    testingTODOs ? [query.toString(), subtreeHasTODOs] : query.toString()
+  const actual = Array.from(actualIter, ({ query, subtreeCounts }) =>
+    testingTODOs ? [query.toString(), subtreeCounts?.nodesWithTODO] : query.toString()
   );
   if (!objectEquals(actual, expectedResult)) {
     t.fail(
@@ -690,9 +690,9 @@ g.test('iterateCollapsed').fn(async t => {
     1,
     [],
     [
-      ['suite1:foo:*', true], // to-do propagated up from foo:hola
-      ['suite1:bar,buzz,buzz:*', true], // to-do in file description
-      ['suite1:baz:*', false],
+      ['suite1:foo:*', 1], // to-do propagated up from foo:hola
+      ['suite1:bar,buzz,buzz:*', 1], // to-do in file description
+      ['suite1:baz:*', 0],
     ]
   );
   await testIterateCollapsed(
@@ -700,12 +700,12 @@ g.test('iterateCollapsed').fn(async t => {
     2,
     [],
     [
-      ['suite1:foo:hello:*', false],
-      ['suite1:foo:bonjour:*', false],
-      ['suite1:foo:hola:*', true], // to-do in test description
-      ['suite1:bar,buzz,buzz:zap:*', false],
-      ['suite1:baz:wye:*', false],
-      ['suite1:baz:zed:*', false],
+      ['suite1:foo:hello:*', 0],
+      ['suite1:foo:bonjour:*', 0],
+      ['suite1:foo:hola:*', 1], // to-do in test description
+      ['suite1:bar,buzz,buzz:zap:*', 0],
+      ['suite1:baz:wye:*', 0],
+      ['suite1:baz:zed:*', 0],
     ]
   );
   await testIterateCollapsed(

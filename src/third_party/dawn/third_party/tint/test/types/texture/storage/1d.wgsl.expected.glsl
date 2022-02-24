@@ -1,37 +1,35 @@
 SKIP: FAILED
 
 #version 310 es
-precision mediump float;
 
-uniform highp writeonly image1D t_rgba8unorm;
-uniform highp writeonly image1D t_rgba8snorm;
-uniform highp writeonly uimage1D t_rgba8uint;
-uniform highp writeonly iimage1D t_rgba8sint;
-uniform highp writeonly uimage1D t_rgba16uint;
-uniform highp writeonly iimage1D t_rgba16sint;
-uniform highp writeonly image1D t_rgba16float;
-uniform highp writeonly uimage1D t_r32uint;
-uniform highp writeonly iimage1D t_r32sint;
-uniform highp writeonly image1D t_r32float;
-uniform highp writeonly uimage1D t_rg32uint;
-uniform highp writeonly iimage1D t_rg32sint;
-uniform highp writeonly image1D t_rg32float;
-uniform highp writeonly uimage1D t_rgba32uint;
-uniform highp writeonly iimage1D t_rgba32sint;
-uniform highp writeonly image1D t_rgba32float;
+layout(rgba8) uniform highp writeonly image1D t_rgba8unorm;
+layout(rgba8_snorm) uniform highp writeonly image1D t_rgba8snorm;
+layout(rgba8ui) uniform highp writeonly uimage1D t_rgba8uint;
+layout(rgba8i) uniform highp writeonly iimage1D t_rgba8sint;
+layout(rgba16ui) uniform highp writeonly uimage1D t_rgba16uint;
+layout(rgba16i) uniform highp writeonly iimage1D t_rgba16sint;
+layout(rgba16f) uniform highp writeonly image1D t_rgba16float;
+layout(r32ui) uniform highp writeonly uimage1D t_r32uint;
+layout(r32i) uniform highp writeonly iimage1D t_r32sint;
+layout(r32f) uniform highp writeonly image1D t_r32float;
+layout(rg32ui) uniform highp writeonly uimage1D t_rg32uint;
+layout(rg32i) uniform highp writeonly iimage1D t_rg32sint;
+layout(rg32f) uniform highp writeonly image1D t_rg32float;
+layout(rgba32ui) uniform highp writeonly uimage1D t_rgba32uint;
+layout(rgba32i) uniform highp writeonly iimage1D t_rgba32sint;
+layout(rgba32f) uniform highp writeonly image1D t_rgba32float;
+void tint_symbol() {
+}
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-void tint_symbol() {
-  return;
-}
 void main() {
   tint_symbol();
+  return;
 }
-
-
 Error parsing GLSL shader:
-ERROR: 0:4: 'image1D' : Reserved word. 
-ERROR: 0:4: '' : compilation terminated 
+ERROR: 0:3: 'image1D' : Reserved word. 
+WARNING: 0:3: 'layout' : useless application of layout qualifier 
+ERROR: 0:3: '' : compilation terminated 
 ERROR: 2 compilation errors.  No code generated.
 
 

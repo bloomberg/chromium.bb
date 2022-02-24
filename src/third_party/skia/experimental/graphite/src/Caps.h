@@ -20,6 +20,7 @@ struct ShaderCaps;
 namespace skgpu {
 
 class GraphicsPipelineDesc;
+class GraphiteResourceKey;
 struct RenderPassDesc;
 class TextureInfo;
 
@@ -52,9 +53,21 @@ public:
 
     int maxTextureSize() const { return fMaxTextureSize; }
 
+    virtual void buildKeyForTexture(SkISize dimensions,
+                                    const TextureInfo&,
+                                    ResourceType,
+                                    Shareable,
+                                    GraphiteResourceKey*) const = 0;
+
     // Returns the required alignment in bytes for the offset into a uniform buffer when binding it
     // to a draw.
     size_t requiredUniformBufferAlignment() const { return fRequiredUniformBufferAlignment; }
+
+    // Returns the alignment in bytes for the offset into a Buffer when using it
+    // to transfer to or from a Texture with the given bytes per pixel.
+    virtual size_t getTransferBufferAlignment(size_t bytesPerPixel) const = 0;
+
+    bool clampToBorderSupport() const { return fClampToBorderSupport; }
 
 protected:
     Caps();
@@ -63,6 +76,8 @@ protected:
     size_t fRequiredUniformBufferAlignment = 0;
 
     std::unique_ptr<SkSL::ShaderCaps> fShaderCaps;
+
+    bool fClampToBorderSupport = true;
 
 private:
     virtual bool onIsTexturable(const TextureInfo&) const = 0;

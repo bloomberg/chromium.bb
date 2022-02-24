@@ -147,6 +147,7 @@ class Y4mVideoWriteTest : public Y4mVideoSourceTest {
     char buf[Y4M_BUFFER_SIZE] = { 0 };
     const struct AvxRational framerate = { y4m_.fps_n, y4m_.fps_d };
     tmpfile_ = new libaom_test::TempOutFile;
+    ASSERT_TRUE(tmpfile_ != NULL);
     ASSERT_TRUE(tmpfile_->file() != NULL);
     y4m_write_file_header(buf, sizeof(buf), kWidth, kHeight, &framerate,
                           img()->monochrome, img()->csp, y4m_.aom_fmt,

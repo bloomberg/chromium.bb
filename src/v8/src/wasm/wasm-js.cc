@@ -673,9 +673,9 @@ bool TransferPrototype(i::Isolate* isolate, i::Handle<i::JSObject> destination,
       i::JSObject::GetPrototype(isolate, source);
   i::Handle<i::HeapObject> prototype;
   if (maybe_prototype.ToHandle(&prototype)) {
-    Maybe<bool> result = i::JSObject::SetPrototype(destination, prototype,
-                                                   /*from_javascript=*/false,
-                                                   internal::kThrowOnError);
+    Maybe<bool> result = i::JSObject::SetPrototype(
+        isolate, destination, prototype,
+        /*from_javascript=*/false, internal::kThrowOnError);
     if (!result.FromJust()) {
       DCHECK(isolate->has_pending_exception());
       return false;
@@ -1536,7 +1536,6 @@ void WebAssemblyGlobal(const v8::FunctionCallbackInfo<v8::Value>& args) {
       break;
     }
     case i::wasm::kRtt:
-    case i::wasm::kRttWithDepth:
       // TODO(7748): Implement.
       UNIMPLEMENTED();
     case i::wasm::kI8:
@@ -1731,7 +1730,6 @@ void EncodeExceptionValues(v8::Isolate* isolate,
         }
         break;
       case i::wasm::kRtt:
-      case i::wasm::kRttWithDepth:
       case i::wasm::kI8:
       case i::wasm::kI16:
       case i::wasm::kVoid:
@@ -1914,7 +1912,23 @@ void WebAssemblyFunctionType(const v8::FunctionCallbackInfo<v8::Value>& args) {
   i::Zone zone(i_isolate->allocator(), ZONE_NAME);
   i::Handle<i::Object> arg0 = Utils::OpenHandle(*args[0]);
   if (i::WasmExportedFunction::IsWasmExportedFunction(*arg0)) {
-    sig = i::Handle<i::WasmExportedFunction>::cast(arg0)->sig();
+    auto wasm_exported_function =
+        i::Handle<i::WasmExportedFunction>::cast(arg0);
+    auto sfi = handle(wasm_exported_function->shared(), i_isolate);
+    i::Handle<i::WasmExportedFunctionData> data =
+        handle(sfi->wasm_exported_function_data(), i_isolate);
+    sig = wasm_exported_function->sig();
+    if (!data->suspender().IsUndefined()) {
+      // If this export is wrapped by a Suspender, the function returns a
+      // promise as an externref instead of the original return type.
+      size_t param_count = sig->parameter_count();
+      i::wasm::FunctionSig::Builder builder(&zone, 1, param_count);
+      for (size_t i = 0; i < param_count; ++i) {
+        builder.AddParam(sig->GetParam(0));
+      }
+      builder.AddReturn(i::wasm::kWasmExternRef);
+      sig = builder.Build();
+    }
   } else if (i::WasmJSFunction::IsWasmJSFunction(*arg0)) {
     sig = i::Handle<i::WasmJSFunction>::cast(arg0)->GetSignature(&zone);
   } else {
@@ -2283,7 +2297,6 @@ void WebAssemblyExceptionGetArg(
         }
         break;
       case i::wasm::kRtt:
-      case i::wasm::kRttWithDepth:
       case i::wasm::kI8:
       case i::wasm::kI16:
       case i::wasm::kVoid:
@@ -2345,7 +2358,6 @@ void WebAssemblyExceptionGetArg(
       }
       break;
     case i::wasm::kRtt:
-    case i::wasm::kRttWithDepth:
     case i::wasm::kI8:
     case i::wasm::kI16:
     case i::wasm::kVoid:
@@ -2437,7 +2449,6 @@ void WebAssemblyGlobalGetValueCommon(
       }
       break;
     case i::wasm::kRtt:
-    case i::wasm::kRttWithDepth:
       UNIMPLEMENTED();  // TODO(7748): Implement.
     case i::wasm::kI8:
     case i::wasm::kI16:
@@ -2532,7 +2543,6 @@ void WebAssemblyGlobalSetValue(
       }
       break;
     case i::wasm::kRtt:
-    case i::wasm::kRttWithDepth:
       // TODO(7748): Implement.
       UNIMPLEMENTED();
     case i::wasm::kI8:
@@ -2577,6 +2587,10 @@ void WebAssemblySuspenderReturnPromiseOnSuspend(
     thrower.TypeError("Argument 0 must be a wasm function");
   }
   i::WasmExportedFunctionData data = sfi.wasm_exported_function_data();
+  if (data.sig()->return_count() != 1) {
+    thrower.TypeError(
+        "Expected a WebAssembly.Function with exactly one return type");
+  }
   int index = data.function_index();
   i::Handle<i::WasmInstanceObject> instance(
       i::WasmInstanceObject::cast(data.internal().ref()), i_isolate);
@@ -2618,6 +2632,11 @@ void WebAssemblySuspenderSuspendOnReturnedPromise(
     return;
   }
   sig = i::Handle<i::WasmJSFunction>::cast(arg0)->GetSignature(&zone);
+  if (sig->return_count() != 1 ||
+      sig->GetReturn(0) != i::wasm::kWasmExternRef) {
+    thrower.TypeError(
+        "Expected a WebAssembly.Function with return type externref");
+  }
 
   auto callable = handle(
       i::Handle<i::WasmJSFunction>::cast(arg0)->GetCallable(), i_isolate);
@@ -2937,7 +2956,7 @@ void WasmJs::Install(Isolate* isolate, bool exposed_on_global_object) {
     Handle<Map> function_map = isolate->factory()->CreateSloppyFunctionMap(
         FUNCTION_WITHOUT_PROTOTYPE, MaybeHandle<JSFunction>());
     CHECK(JSObject::SetPrototype(
-              function_proto,
+              isolate, function_proto,
               handle(context->function_function().prototype(), isolate), false,
               kDontThrow)
               .FromJust());
@@ -2995,7 +3014,8 @@ void WasmJs::InstallConditionalFeatures(Isolate* isolate,
     Handle<JSObject> webassembly = Handle<JSObject>::cast(webassembly_obj);
     // Setup Exception
     Handle<String> tag_name = v8_str(isolate, "Tag");
-    if (JSObject::HasOwnProperty(webassembly, tag_name).FromMaybe(true)) {
+    if (JSObject::HasOwnProperty(isolate, webassembly, tag_name)
+            .FromMaybe(true)) {
       // The {Exception} constructor already exists, there is nothing more to
       // do.
       return;

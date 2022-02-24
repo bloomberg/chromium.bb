@@ -48,22 +48,26 @@ class WebTransport::Stream final {
     explicit StreamVisitor(Stream* stream)
         : stream_(stream->weak_factory_.GetWeakPtr()) {}
     ~StreamVisitor() override {
-      if (stream_) {
-        if (stream_->incoming_) {
-          stream_->writable_watcher_.Cancel();
-          stream_->writable_.reset();
-          stream_->transport_->client_->OnIncomingStreamClosed(
-              stream_->id_,
-              /*fin_received=*/false);
-          stream_->incoming_ = nullptr;
-        }
-        if (stream_->outgoing_) {
-          stream_->readable_watcher_.Cancel();
-          stream_->readable_.reset();
-          stream_->outgoing_ = nullptr;
-        }
-        stream_->MayDisposeLater();
+      Stream* stream = stream_.get();
+      if (!stream) {
+        return;
       }
+      if (stream->incoming_) {
+        stream->writable_watcher_.Cancel();
+        stream->writable_.reset();
+        if (stream->transport_->client_) {
+          stream->transport_->client_->OnIncomingStreamClosed(
+              stream->id_,
+              /*fin_received=*/false);
+        }
+        stream->incoming_ = nullptr;
+      }
+      if (stream->outgoing_) {
+        stream->readable_watcher_.Cancel();
+        stream->readable_.reset();
+        stream->outgoing_ = nullptr;
+      }
+      stream->MayDisposeLater();
     }
 
     // Visitor implementation:
@@ -502,7 +506,7 @@ void WebTransport::StopSending(uint32_t stream, uint8_t code) {
 
 void WebTransport::SetOutgoingDatagramExpirationDuration(
     base::TimeDelta duration) {
-  if (torn_down_) {
+  if (torn_down_ || closing_) {
     return;
   }
 
@@ -511,7 +515,7 @@ void WebTransport::SetOutgoingDatagramExpirationDuration(
 }
 
 void WebTransport::Close(mojom::WebTransportCloseInfoPtr close_info) {
-  if (torn_down_) {
+  if (torn_down_ || closing_) {
     return;
   }
   closing_ = true;
@@ -542,7 +546,7 @@ void WebTransport::Close(mojom::WebTransportCloseInfoPtr close_info) {
 
 void WebTransport::OnConnected(
     scoped_refptr<net::HttpResponseHeaders> response_headers) {
-  if (torn_down_) {
+  if (torn_down_ || closing_) {
     return;
   }
 
@@ -561,7 +565,7 @@ void WebTransport::OnConnected(
 }
 
 void WebTransport::OnConnectionFailed(const net::WebTransportError& error) {
-  if (torn_down_) {
+  if (torn_down_ || closing_) {
     return;
   }
 
@@ -610,6 +614,10 @@ void WebTransport::OnError(const net::WebTransportError& error) {
 }
 
 void WebTransport::OnIncomingBidirectionalStreamAvailable() {
+  if (torn_down_ || closing_) {
+    return;
+  }
+
   DCHECK(!handshake_client_);
   DCHECK(client_);
 
@@ -652,6 +660,10 @@ void WebTransport::OnIncomingBidirectionalStreamAvailable() {
 }
 
 void WebTransport::OnIncomingUnidirectionalStreamAvailable() {
+  if (torn_down_ || closing_) {
+    return;
+  }
+
   DCHECK(!handshake_client_);
   DCHECK(client_);
 
@@ -686,7 +698,7 @@ void WebTransport::OnIncomingUnidirectionalStreamAvailable() {
 }
 
 void WebTransport::OnDatagramReceived(base::StringPiece datagram) {
-  if (torn_down_) {
+  if (torn_down_ || closing_) {
     return;
   }
 

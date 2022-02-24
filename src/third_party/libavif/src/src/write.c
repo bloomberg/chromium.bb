@@ -46,8 +46,14 @@ avifCodecEncodeOutput * avifCodecEncodeOutputCreate(void)
 {
     avifCodecEncodeOutput * encodeOutput = (avifCodecEncodeOutput *)avifAlloc(sizeof(avifCodecEncodeOutput));
     memset(encodeOutput, 0, sizeof(avifCodecEncodeOutput));
-    avifArrayCreate(&encodeOutput->samples, sizeof(avifEncodeSample), 1);
+    if (!avifArrayCreate(&encodeOutput->samples, sizeof(avifEncodeSample), 1)) {
+        goto error;
+    }
     return encodeOutput;
+
+error:
+    avifCodecEncodeOutputDestroy(encodeOutput);
+    return NULL;
 }
 
 void avifCodecEncodeOutputAddSample(avifCodecEncodeOutput * encodeOutput, const uint8_t * data, size_t len, avifBool sync)
@@ -122,14 +128,24 @@ typedef struct avifEncoderData
     avifBool alphaPresent;
 } avifEncoderData;
 
+static void avifEncoderDataDestroy(avifEncoderData * data);
+
 static avifEncoderData * avifEncoderDataCreate()
 {
     avifEncoderData * data = (avifEncoderData *)avifAlloc(sizeof(avifEncoderData));
     memset(data, 0, sizeof(avifEncoderData));
     data->imageMetadata = avifImageCreateEmpty();
-    avifArrayCreate(&data->items, sizeof(avifEncoderItem), 8);
-    avifArrayCreate(&data->frames, sizeof(avifEncoderFrame), 1);
+    if (!avifArrayCreate(&data->items, sizeof(avifEncoderItem), 8)) {
+        goto error;
+    }
+    if (!avifArrayCreate(&data->frames, sizeof(avifEncoderFrame), 1)) {
+        goto error;
+    }
     return data;
+
+error:
+    avifEncoderDataDestroy(data);
+    return NULL;
 }
 
 static avifEncoderItem * avifEncoderDataCreateItem(avifEncoderData * data, const char * type, const char * infeName, size_t infeNameSize, uint32_t cellIndex)
@@ -142,8 +158,16 @@ static avifEncoderItem * avifEncoderDataCreateItem(avifEncoderData * data, const
     item->infeNameSize = infeNameSize;
     item->encodeOutput = avifCodecEncodeOutputCreate();
     item->cellIndex = cellIndex;
-    avifArrayCreate(&item->mdatFixups, sizeof(avifOffsetFixup), 4);
+    if (!avifArrayCreate(&item->mdatFixups, sizeof(avifOffsetFixup), 4)) {
+        goto error;
+    }
     return item;
+
+error:
+    avifCodecEncodeOutputDestroy(item->encodeOutput);
+    --data->lastItemID;
+    avifArrayPop(&data->items);
+    return NULL;
 }
 
 static avifEncoderItem * avifEncoderDataFindItemByID(avifEncoderData * data, uint16_t id)
@@ -199,13 +223,21 @@ typedef struct avifItemPropertyDedup
     uint8_t nextIndex; // 1-indexed, incremented every time another unique property is finished
 } avifItemPropertyDedup;
 
+static void avifItemPropertyDedupDestroy(avifItemPropertyDedup * dedup);
+
 static avifItemPropertyDedup * avifItemPropertyDedupCreate(void)
 {
     avifItemPropertyDedup * dedup = (avifItemPropertyDedup *)avifAlloc(sizeof(avifItemPropertyDedup));
     memset(dedup, 0, sizeof(avifItemPropertyDedup));
-    avifArrayCreate(&dedup->properties, sizeof(avifItemProperty), 8);
+    if (!avifArrayCreate(&dedup->properties, sizeof(avifItemProperty), 8)) {
+        goto error;
+    }
     avifRWDataRealloc(&dedup->buffer, 2048); // This will resize automatically (if necessary)
     return dedup;
+
+error:
+    avifItemPropertyDedupDestroy(dedup);
+    return NULL;
 }
 
 static void avifItemPropertyDedupDestroy(avifItemPropertyDedup * dedup)
@@ -535,15 +567,28 @@ static avifResult avifEncoderAddImageInternal(avifEncoder * encoder,
         return AVIF_RESULT_NO_CONTENT;
     }
 
-    if ((cellCount > 1) && ((firstCell->width < 64) || (firstCell->height < 64))) {
+    if ((cellCount > 1) && !avifAreGridDimensionsValid(firstCell->yuvFormat,
+                                                       gridCols * firstCell->width,
+                                                       gridRows * firstCell->height,
+                                                       firstCell->width,
+                                                       firstCell->height,
+                                                       &encoder->diag)) {
         return AVIF_RESULT_INVALID_IMAGE_GRID;
     }
 
     for (uint32_t cellIndex = 0; cellIndex < cellCount; ++cellIndex) {
         const avifImage * cellImage = cellImages[cellIndex];
-        if ((cellImage->depth != firstCell->depth) || (cellImage->width != firstCell->width) ||
-            (cellImage->height != firstCell->height) || (!!cellImage->alphaPlane != !!firstCell->alphaPlane) ||
-            (cellImage->alphaPremultiplied != firstCell->alphaPremultiplied)) {
+        // HEIF (ISO 23008-12:2017), Section 6.6.2.3.1:
+        //   All input images shall have exactly the same width and height; call those tile_width and tile_height.
+        // MIAF (ISO 23000-22:2019), Section 7.3.11.4.1:
+        //   All input images of a grid image item shall use the same coding format, chroma sampling format, and the
+        //   same decoder configuration (see 7.3.6.2).
+        if ((cellImage->width != firstCell->width) || (cellImage->height != firstCell->height) ||
+            (cellImage->depth != firstCell->depth) || (cellImage->yuvFormat != firstCell->yuvFormat) ||
+            (cellImage->yuvRange != firstCell->yuvRange) || (cellImage->colorPrimaries != firstCell->colorPrimaries) ||
+            (cellImage->transferCharacteristics != firstCell->transferCharacteristics) ||
+            (cellImage->matrixCoefficients != firstCell->matrixCoefficients) || (cellImage->alphaRange != firstCell->alphaRange) ||
+            (!!cellImage->alphaPlane != !!firstCell->alphaPlane) || (cellImage->alphaPremultiplied != firstCell->alphaPremultiplied)) {
             return AVIF_RESULT_INVALID_IMAGE_GRID;
         }
 

@@ -374,7 +374,7 @@ TEST_F(UiControllerTest, UserDataFormContactInfo) {
   contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_FULL, u"Joe Doe");
   contact_profile.SetRawInfo(autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
                              u"+1 23 456 789 01");
-  ui_controller_->SetContactInfo(
+  ui_controller_->HandleContactInfoChange(
       std::make_unique<autofill::AutofillProfile>(contact_profile), UNKNOWN);
 
   EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
@@ -387,34 +387,18 @@ TEST_F(UiControllerTest, UserDataFormContactInfo) {
 }
 
 TEST_F(UiControllerTest, UserDataFormCreditCard) {
-  auto options = std::make_unique<FakeCollectUserDataOptions>();
+  testing::InSequence seq;
 
+  auto options = std::make_unique<FakeCollectUserDataOptions>();
   options->request_payment_method = true;
   options->billing_address_name = "billing_address";
-  testing::InSequence seq;
+
   EXPECT_CALL(mock_execution_delegate_,
               NotifyUserDataChange(UserData::FieldChange::ALL));
   ui_controller_->SetCollectUserDataOptions(options.get());
   EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
                                   Property(&UserAction::enabled, Eq(false)))));
   ui_controller_->OnUserDataChanged(user_data_, UserData::FieldChange::ALL);
-
-  // Credit card without billing address is invalid.
-  auto credit_card = std::make_unique<autofill::CreditCard>(
-      base::GenerateGUID(), "https://www.example.com");
-  autofill::test::SetCreditCardInfo(credit_card.get(), "Marion Mitchell",
-                                    "4111 1111 1111 1111", "01", "2020",
-                                    /* billing_address_id = */ "");
-  EXPECT_CALL(mock_execution_delegate_,
-              NotifyUserDataChange(UserData::FieldChange::CARD));
-  EXPECT_CALL(mock_execution_delegate_,
-              NotifyUserDataChange(UserData::FieldChange::BILLING_ADDRESS));
-  ui_controller_->SetCreditCard(
-      std::make_unique<autofill::CreditCard>(*credit_card),
-      /* billing_profile =*/nullptr, UNKNOWN);
-  EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
-                                  Property(&UserAction::enabled, Eq(false)))));
-  ui_controller_->OnUserDataChanged(user_data_, UserData::FieldChange::CARD);
 
   // Credit card with valid billing address is ok.
   auto billing_address = std::make_unique<autofill::AutofillProfile>(
@@ -423,12 +407,16 @@ TEST_F(UiControllerTest, UserDataFormCreditCard) {
                                  "Morrison", "marion@me.xyz", "Fox",
                                  "123 Zoo St.", "unit 5", "Hollywood", "CA",
                                  "91601", "US", "16505678910");
-  credit_card->set_billing_address_id(billing_address->guid());
-  EXPECT_CALL(mock_execution_delegate_,
-              NotifyUserDataChange(UserData::FieldChange::CARD));
+  auto credit_card = std::make_unique<autofill::CreditCard>(
+      base::GenerateGUID(), "https://www.example.com");
+  autofill::test::SetCreditCardInfo(credit_card.get(), "Marion Mitchell",
+                                    "4111 1111 1111 1111", "01", "2020",
+                                    billing_address->guid());
   EXPECT_CALL(mock_execution_delegate_,
               NotifyUserDataChange(UserData::FieldChange::BILLING_ADDRESS));
-  ui_controller_->SetCreditCard(
+  EXPECT_CALL(mock_execution_delegate_,
+              NotifyUserDataChange(UserData::FieldChange::CARD));
+  ui_controller_->HandleCreditCardChange(
       std::make_unique<autofill::CreditCard>(*credit_card),
       std::make_unique<autofill::AutofillProfile>(*billing_address), UNKNOWN);
 
@@ -440,6 +428,22 @@ TEST_F(UiControllerTest, UserDataFormCreditCard) {
   EXPECT_THAT(
       user_data_.selected_address("billing_address")->Compare(*billing_address),
       Eq(0));
+
+  // Credit card without billing address is invalid.
+  credit_card->set_billing_address_id("");
+  EXPECT_CALL(mock_execution_delegate_,
+              NotifyUserDataChange(UserData::FieldChange::BILLING_ADDRESS));
+  EXPECT_CALL(mock_execution_delegate_,
+              NotifyUserDataChange(UserData::FieldChange::CARD));
+  ui_controller_->HandleCreditCardChange(
+      std::make_unique<autofill::CreditCard>(*credit_card),
+      /* billing_profile= */ nullptr, UNKNOWN);
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
+                                  Property(&UserAction::enabled, Eq(false)))));
+  ui_controller_->OnUserDataChanged(user_data_, UserData::FieldChange::CARD);
+
+  EXPECT_THAT(user_data_.selected_card()->Compare(*credit_card), Eq(0));
+  EXPECT_THAT(user_data_.selected_address("billing_address"), Eq(nullptr));
 }
 
 TEST_F(UiControllerTest, UserDataChangesByOutOfLoopWrite) {
@@ -470,7 +474,7 @@ TEST_F(UiControllerTest, UserDataChangesByOutOfLoopWrite) {
   contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_FULL, u"Joe Doe");
   contact_profile.SetRawInfo(autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
                              u"+1 23 456 789 01");
-  ui_controller_->SetContactInfo(
+  ui_controller_->HandleContactInfoChange(
       std::make_unique<autofill::AutofillProfile>(contact_profile), UNKNOWN);
 
   EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
@@ -490,7 +494,7 @@ TEST_F(UiControllerTest, UserDataChangesByOutOfLoopWrite) {
                                     UserData::FieldChange::CONTACT_PROFILE);
 }
 
-TEST_F(UiControllerTest, UserDataFormReload) {
+TEST_F(UiControllerTest, UserDataFormReloadFromContactChange) {
   auto options = std::make_unique<FakeCollectUserDataOptions>();
   base::MockCallback<base::OnceCallback<void(UserData*)>> reload_callback;
   options->reload_data_callback = reload_callback.Get();
@@ -498,14 +502,72 @@ TEST_F(UiControllerTest, UserDataFormReload) {
       base::RepeatingCallback<void(UserDataEventField, UserDataEventType)>>
       change_callback;
   options->selected_user_data_changed_callback = change_callback.Get();
+  options->use_gms_core_edit_dialogs = true;
 
   ui_controller_->SetCollectUserDataOptions(options.get());
 
   EXPECT_CALL(change_callback, Run(UserDataEventField::CONTACT_EVENT,
                                    UserDataEventType::ENTRY_CREATED));
   EXPECT_CALL(reload_callback, Run);
-  ui_controller_->ReloadUserData(UserDataEventField::CONTACT_EVENT,
-                                 UserDataEventType::ENTRY_CREATED);
+  ui_controller_->HandleContactInfoChange(nullptr,
+                                          UserDataEventType::ENTRY_CREATED);
+}
+
+TEST_F(UiControllerTest, UserDataFormReloadFromPhoneNumberChange) {
+  auto options = std::make_unique<FakeCollectUserDataOptions>();
+  base::MockCallback<base::OnceCallback<void(UserData*)>> reload_callback;
+  options->reload_data_callback = reload_callback.Get();
+  base::MockCallback<
+      base::RepeatingCallback<void(UserDataEventField, UserDataEventType)>>
+      change_callback;
+  options->selected_user_data_changed_callback = change_callback.Get();
+  options->use_gms_core_edit_dialogs = true;
+
+  ui_controller_->SetCollectUserDataOptions(options.get());
+
+  EXPECT_CALL(change_callback, Run(UserDataEventField::CONTACT_EVENT,
+                                   UserDataEventType::ENTRY_CREATED));
+  EXPECT_CALL(reload_callback, Run);
+  ui_controller_->HandlePhoneNumberChange(nullptr,
+                                          UserDataEventType::ENTRY_CREATED);
+}
+
+TEST_F(UiControllerTest, UserDataFormReloadFromShippingAddressChange) {
+  auto options = std::make_unique<FakeCollectUserDataOptions>();
+  base::MockCallback<base::OnceCallback<void(UserData*)>> reload_callback;
+  options->reload_data_callback = reload_callback.Get();
+  base::MockCallback<
+      base::RepeatingCallback<void(UserDataEventField, UserDataEventType)>>
+      change_callback;
+  options->selected_user_data_changed_callback = change_callback.Get();
+  options->use_gms_core_edit_dialogs = true;
+
+  ui_controller_->SetCollectUserDataOptions(options.get());
+
+  EXPECT_CALL(change_callback, Run(UserDataEventField::SHIPPING_EVENT,
+                                   UserDataEventType::ENTRY_CREATED));
+  EXPECT_CALL(reload_callback, Run);
+  ui_controller_->HandleShippingAddressChange(nullptr,
+                                              UserDataEventType::ENTRY_CREATED);
+}
+
+TEST_F(UiControllerTest, UserDataFormReloadFromCreditCardChange) {
+  auto options = std::make_unique<FakeCollectUserDataOptions>();
+  base::MockCallback<base::OnceCallback<void(UserData*)>> reload_callback;
+  options->reload_data_callback = reload_callback.Get();
+  base::MockCallback<
+      base::RepeatingCallback<void(UserDataEventField, UserDataEventType)>>
+      change_callback;
+  options->selected_user_data_changed_callback = change_callback.Get();
+  options->use_gms_core_edit_dialogs = true;
+
+  ui_controller_->SetCollectUserDataOptions(options.get());
+
+  EXPECT_CALL(change_callback, Run(UserDataEventField::CREDIT_CARD_EVENT,
+                                   UserDataEventType::ENTRY_CREATED));
+  EXPECT_CALL(reload_callback, Run);
+  ui_controller_->HandleCreditCardChange(nullptr, nullptr,
+                                         UserDataEventType::ENTRY_CREATED);
 }
 
 TEST_F(UiControllerTest, SetTermsAndConditions) {
@@ -580,7 +642,7 @@ TEST_F(UiControllerTest, SetShippingAddress) {
                                  "91601", "US", "16505678910");
   EXPECT_CALL(mock_execution_delegate_,
               NotifyUserDataChange(UserData::FieldChange::SHIPPING_ADDRESS));
-  ui_controller_->SetShippingAddress(
+  ui_controller_->HandleShippingAddressChange(
       std::make_unique<autofill::AutofillProfile>(*shipping_address), UNKNOWN);
 
   EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(

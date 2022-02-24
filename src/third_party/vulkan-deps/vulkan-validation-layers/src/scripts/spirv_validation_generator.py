@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -i
 #
-# Copyright (c) 2020-2021 The Khronos Group Inc.
+# Copyright (c) 2020-2022 The Khronos Group Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -107,6 +107,7 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
             {'vulkan' : 'VkPhysicalDeviceFeatures', 'layer' : 'core'},
             {'vulkan' : 'VkPhysicalDeviceVulkan11Features', 'layer' : 'core11'},
             {'vulkan' : 'VkPhysicalDeviceVulkan12Features', 'layer' : 'core12'},
+            {'vulkan' : 'VkPhysicalDeviceVulkan13Features', 'layer' : 'core13'},
             {'vulkan' : 'VkPhysicalDeviceTransformFeedbackFeaturesEXT', 'layer' : 'transform_feedback_features'},
             {'vulkan' : 'VkPhysicalDeviceCooperativeMatrixFeaturesNV', 'layer' : 'cooperative_matrix_features'},
             {'vulkan' : 'VkPhysicalDeviceComputeShaderDerivativesFeaturesNV', 'layer' : 'compute_shader_derivatives_features'},
@@ -155,6 +156,9 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
             "VkPhysicalDeviceBufferDeviceAddressFeatures",
             "VkPhysicalDeviceShaderAtomicInt64Features",
             "VkPhysicalDeviceVulkanMemoryModelFeatures",
+            # 1.3
+            "VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures",
+            "VkPhysicalDeviceShaderIntegerDotProductFeatures",
         ]
 
         # Properties are harder to handle genearted without generating a template for every property struct type
@@ -179,7 +183,7 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
         copyright += '\n'
         copyright += '/***************************************************************************\n'
         copyright += ' *\n'
-        copyright += ' * Copyright (c) 2020-2021 The Khronos Group Inc.\n'
+        copyright += ' * Copyright (c) 2020-2022 The Khronos Group Inc.\n'
         copyright += ' *\n'
         copyright += ' * Licensed under the Apache License, Version 2.0 (the "License");\n'
         copyright += ' * you may not use this file except in compliance with the License.\n'
@@ -381,7 +385,7 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
     # The main function to validate all the extensions and capabilities
     def validateFunction(self):
         output = '''
-bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(SHADER_MODULE_STATE const *src, spirv_inst_iter& insn) const {
+bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(spirv_inst_iter& insn) const {
     bool skip = false;
 
     if (insn.opcode() == spv::OpCapability) {

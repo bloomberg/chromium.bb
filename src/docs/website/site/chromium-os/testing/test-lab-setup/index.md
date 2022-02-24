@@ -27,7 +27,7 @@ In order to run the automated tests against your device you need to ensure it is
 running a Test Image and you have password-less SSH Access.
 
 Please follow:
-<https://sites.google.com/a/chromium.org/dev/chromium-os/testing/autotest-developer-faq/ssh-test-keys-setup>
+<https://www.chromium.org/chromium-os/testing/autotest-developer-faq/ssh-test-keys-setup>
 
 ## Setting up an Autotest Server and Web Frontend
 
@@ -46,7 +46,7 @@ your server, please go to <http://localhost> to verify.
 
 Now that you have set up the Autotest Server, you need to import your tests, add
 test hosts and launch the scheduler. Please refer to
-<https://sites.google.com/a/chromium.org/dev/chromium-os/testing/autotest-developer-faq/autotest-server-usage>
+<https://www.chromium.org/chromium-os/testing/autotest-developer-faq/autotest-server-usage>
 for more information.
 
 **Note: At this point you can run tests through the Web Interface. However you
@@ -107,4 +107,4 @@ Now that everything is configured please refer to the Test Suite Documentation
 on how to the "lab" you just set up. You will likely want to pay attention to
 the sections involving test_that and run_suite.py
 
-<https://sites.google.com/a/chromium.org/dev/chromium-os/testing/test-suites>
+<https://www.chromium.org/chromium-os/testing/test-suites>

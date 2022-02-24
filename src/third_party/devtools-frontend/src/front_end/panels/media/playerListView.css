@@ -42,6 +42,9 @@ li.storage-group-list-item::before {
 
 .player-entry-frame-title {
   height: 26px;
+  width: 125px;
+  min-width: 125px;
+  text-overflow: elipsis;
   padding: 0 10px;
   border-right: 1px solid var(--color-details-hairline);
   overflow: hidden;
@@ -58,7 +61,6 @@ li.storage-group-list-item::before {
 }
 
 .player-entry-row:hover {
-  cursor: pointer;
   background: var(--color-background-hover-overlay);
 }
 

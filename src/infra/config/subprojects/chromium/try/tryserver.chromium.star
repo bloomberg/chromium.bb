@@ -22,7 +22,10 @@ try_.defaults.set(
 
 consoles.list_view(
     name = "tryserver.chromium",
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    branch_selector = [
+        branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+        branches.FUCHSIA_LTS_MILESTONE,
+    ],
 )
 
 try_.builder(
@@ -32,7 +35,7 @@ try_.builder(
 
 try_.builder(
     name = "fuchsia-official",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
 )
 
 try_.builder(
@@ -44,7 +47,9 @@ try_.builder(
     name = "mac-official",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     cores = None,
-    execution_timeout = 30 * time.hour,
+    # TODO(crbug.com/1279290) builds with PGO change take long time.
+    # Keep in sync with mac-official in ci/chromium.star.
+    execution_timeout = 7 * time.hour,
     os = os.MAC_ANY,
 )
 

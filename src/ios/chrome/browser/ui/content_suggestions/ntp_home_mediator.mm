@@ -24,7 +24,6 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
-#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
@@ -34,7 +33,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_alert_factory.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizer.h"
@@ -47,6 +45,7 @@
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_wrapper_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
+#import "ios/chrome/browser/ui/ntp/logo_vendor.h"
 #include "ios/chrome/browser/ui/ntp/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view_controller.h"
@@ -58,6 +57,8 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/discover_feed/discover_feed_provider.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/navigation/referrer.h"
@@ -100,7 +101,6 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
 }
 
 @property(nonatomic, assign) ChromeAccountManagerService* accountManagerService;
-@property(nonatomic, strong) AlertCoordinator* alertCoordinator;
 // TemplateURL used to get the search engine.
 @property(nonatomic, assign) TemplateURLService* templateURLService;
 // Authentication Service to get the current user's avatar.
@@ -209,6 +209,9 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
   }
   _webState = webState;
   self.NTPMetrics.webState = webState;
+  if (IsSingleNtpEnabled()) {
+    [self.logoVendor setWebState:webState];
+  }
   if (_webState && _webStateObserver) {
     if (IsSingleNtpEnabled()) {
       [self setContentOffsetForWebState:webState];
@@ -284,37 +287,6 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
   UrlLoadParams params = UrlLoadParams::InCurrentTab(mostVisitedItem.URL);
   params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   _URLLoader->Load(params);
-}
-
-- (void)displayContextMenuForMostVisitedItem:(CollectionViewItem*)item
-                                     atPoint:(CGPoint)touchLocation
-                                 atIndexPath:(NSIndexPath*)indexPath {
-  DCHECK(_browser);
-  // No context menu for action buttons.
-  if ([item isKindOfClass:[ContentSuggestionsMostVisitedActionItem class]]) {
-    return;
-  }
-
-  // Unfocus the omnibox as the omnibox can disappear when choosing some
-  // options. See crbug.com/928237.
-  [self.dispatcher cancelOmniboxEdit];
-
-  ContentSuggestionsMostVisitedItem* mostVisitedItem =
-      base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
-  self.alertCoordinator = [ContentSuggestionsAlertFactory
-      alertCoordinatorForMostVisitedItem:mostVisitedItem
-                        onViewController:self.suggestionsViewController
-                             withBrowser:self.browser
-                                 atPoint:touchLocation
-                             atIndexPath:indexPath
-                          commandHandler:self];
-
-  [self.alertCoordinator start];
-}
-
-- (void)dismissModals {
-  [self.alertCoordinator stop];
-  self.alertCoordinator = nil;
 }
 
 // TODO(crbug.com/761096) : Promo handling should be tested.
@@ -448,10 +420,6 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
 }
 
 #pragma mark - ContentSuggestionsHeaderViewControllerDelegate
-
-- (BOOL)isContextMenuVisible {
-  return self.alertCoordinator.isVisible;
-}
 
 - (BOOL)isScrolledToMinimumHeight {
   return [self.ntpViewController isScrolledToMinimumHeight];
@@ -639,6 +607,13 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
   } else if (IsSingleNtpEnabled()) {
     // Remove this if NTPs are ever scoped back to the WebState.
     [self.ntpViewController setContentOffsetToTop];
+    // Refresh NTP content if there is is no saved scrolled state or when a new
+    // NTP is opened. Since the same NTP is being shared across tabs, this
+    // ensures that new content is being fetched.
+    [self.suggestionsMediator refreshMostVisitedTiles];
+    ios::GetChromeBrowserProvider()
+        .GetDiscoverFeedProvider()
+        ->RefreshFeedIfNeeded();
   }
 }
 

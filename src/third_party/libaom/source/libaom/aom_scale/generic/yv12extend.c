@@ -31,7 +31,7 @@ static void extend_plane(uint8_t *const src, int src_stride, int width,
   uint8_t *src_ptr1 = src;
   uint8_t *src_ptr2 = src + width - 1;
   uint8_t *dst_ptr1 = src - extend_left;
-  uint8_t *dst_ptr2 = src + width;
+  uint8_t *dst_ptr2 = src_ptr2 + 1;
 
   for (i = 0; i < height; ++i) {
     memset(dst_ptr1, src_ptr1[0], extend_left);
@@ -46,18 +46,19 @@ static void extend_plane(uint8_t *const src, int src_stride, int width,
    * borders
    */
   src_ptr1 = src - extend_left;
-  src_ptr2 = src + src_stride * (height - 1) - extend_left;
-  dst_ptr1 = src + src_stride * -extend_top - extend_left;
-  dst_ptr2 = src + src_stride * height - extend_left;
+  dst_ptr1 = src_ptr1 + src_stride * -extend_top;
 
   for (i = 0; i < extend_top; ++i) {
     memcpy(dst_ptr1, src_ptr1, linesize);
     dst_ptr1 += src_stride;
   }
 
+  src_ptr2 = src_ptr1 + src_stride * (height - 1);
+  dst_ptr2 = src_ptr2;
+
   for (i = 0; i < extend_bottom; ++i) {
-    memcpy(dst_ptr2, src_ptr2, linesize);
     dst_ptr2 += src_stride;
+    memcpy(dst_ptr2, src_ptr2, linesize);
   }
 }
 
@@ -74,7 +75,7 @@ static void extend_plane_high(uint8_t *const src8, int src_stride, int width,
   uint16_t *src_ptr1 = src;
   uint16_t *src_ptr2 = src + width - 1;
   uint16_t *dst_ptr1 = src - extend_left;
-  uint16_t *dst_ptr2 = src + width;
+  uint16_t *dst_ptr2 = src_ptr2 + 1;
 
   for (i = 0; i < height; ++i) {
     aom_memset16(dst_ptr1, src_ptr1[0], extend_left);
@@ -89,18 +90,19 @@ static void extend_plane_high(uint8_t *const src8, int src_stride, int width,
    * borders
    */
   src_ptr1 = src - extend_left;
-  src_ptr2 = src + src_stride * (height - 1) - extend_left;
-  dst_ptr1 = src + src_stride * -extend_top - extend_left;
-  dst_ptr2 = src + src_stride * height - extend_left;
+  dst_ptr1 = src_ptr1 + src_stride * -extend_top;
 
   for (i = 0; i < extend_top; ++i) {
     memcpy(dst_ptr1, src_ptr1, linesize * sizeof(uint16_t));
     dst_ptr1 += src_stride;
   }
 
+  src_ptr2 = src_ptr1 + src_stride * (height - 1);
+  dst_ptr2 = src_ptr2;
+
   for (i = 0; i < extend_bottom; ++i) {
-    memcpy(dst_ptr2, src_ptr2, linesize * sizeof(uint16_t));
     dst_ptr2 += src_stride;
+    memcpy(dst_ptr2, src_ptr2, linesize * sizeof(uint16_t));
   }
 }
 #endif  // CONFIG_AV1_HIGHBITDEPTH

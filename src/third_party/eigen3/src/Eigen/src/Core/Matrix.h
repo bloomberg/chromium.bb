@@ -52,6 +52,14 @@ public:
     Alignment = actual_alignment
   };
 };
+
+template<typename Scalar_, int Rows_, int Cols_, int Options_, int MaxRows_, int MaxCols_>
+struct has_trivially_copyable_storage<Matrix<Scalar_, Rows_, Cols_, Options_, MaxRows_, MaxCols_> >
+{
+  // Must be identical to the type of PlainObjectBase::m_storage.
+  typedef DenseStorage<Scalar_, internal::size_at_compile_time<MaxRows_, MaxCols_>::ret, Rows_, Cols_, Options_> Storage;
+  static const bool value = std::is_trivially_copyable<Storage>::value;
+};
 }
 
 /** \class Matrix
@@ -210,6 +218,12 @@ class Matrix
       return Base::_set(other);
     }
 
+#if EIGEN_COMP_HAS_P0848R3
+    EIGEN_DEVICE_FUNC
+    EIGEN_STRONG_INLINE Matrix& operator=(
+        const Matrix& other) requires internal::has_trivially_copyable_storage<Matrix>::value = default;
+#endif
+
     /** \internal
       * \brief Copies the value of the expression \a other into \c *this with automatic resizing.
       *
@@ -278,6 +292,13 @@ class Matrix
       Base::operator=(std::move(other));
       return *this;
     }
+
+#if EIGEN_COMP_HAS_P0848R3
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Matrix(Matrix&& other) EIGEN_NOEXCEPT
+        requires internal::has_trivially_copyable_storage<Matrix>::value = default;
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Matrix& operator=(Matrix&& other) EIGEN_NOEXCEPT
+        requires internal::has_trivially_copyable_storage<Matrix>::value = default;
+#endif
 
     /** \copydoc PlainObjectBase(const Scalar&, const Scalar&, const Scalar&,  const Scalar&, const ArgTypes&... args)
      *
@@ -403,6 +424,12 @@ class Matrix
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE Matrix(const Matrix& other) : Base(other)
     { }
+
+#if EIGEN_COMP_HAS_P0848R3
+    EIGEN_DEVICE_FUNC
+    EIGEN_STRONG_INLINE Matrix(const Matrix& other) requires internal::has_trivially_copyable_storage<Matrix>::value =
+        default;
+#endif
 
     /** \brief Copy constructor for generic expressions.
       * \sa MatrixBase::operator=(const EigenBase<OtherDerived>&)

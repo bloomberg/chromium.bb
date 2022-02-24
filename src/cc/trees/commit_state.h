@@ -32,6 +32,7 @@
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/viewport_property_ids.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
+#include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/delegated_ink_metadata.h"
 #include "ui/gfx/display_color_spaces.h"
@@ -104,6 +105,8 @@ struct CC_EXPORT CommitState {
   SkColor background_color = SK_ColorWHITE;
   ViewportPropertyIds viewport_property_ids;
   viz::LocalSurfaceId local_surface_id_from_parent;
+  gpu::MemoryAllocation::PriorityCutoff priority_cutoff =
+      gpu::MemoryAllocation::PriorityCutoff::CUTOFF_ALLOW_EVERYTHING;
 
   // -------------------------------------------------------------------------
   // Take/reset: these values are reset on the LayerTreeHost between commits.
@@ -145,22 +148,23 @@ struct CC_EXPORT CommitState {
   std::vector<std::unique_ptr<SwapPromise>> swap_promises;
   std::vector<UIResourceRequest> ui_resource_request_queue;
   base::flat_map<UIResourceId, gfx::Size> ui_resource_sizes;
+  PropertyTreesChangeState property_trees_change_state;
+  base::flat_set<Layer*> layers_that_should_push_properties;
 };
 
 struct CC_EXPORT ThreadUnsafeCommitState {
-  explicit ThreadUnsafeCommitState(MutatorHost* mh);
+  ThreadUnsafeCommitState(MutatorHost* mh,
+                          const ProtectedSequenceSynchronizer& synchronizer);
   ~ThreadUnsafeCommitState();
 
   // TODO(szager/vmpstr): These methods are to support range-based 'for' loops,
   // which is weird because ThreadUnsafeCommitState is not a collection or
   // container. We should do something more sensible and less weird.
-  LayerListIterator begin() const {
-    return LayerListIterator(root_layer.get());
+  LayerListConstIterator begin() const {
+    return LayerListConstIterator(root_layer.get());
   }
-  LayerListIterator end() const { return LayerListIterator(nullptr); }
+  LayerListConstIterator end() const { return LayerListConstIterator(nullptr); }
 
-  // Set of layers that need to push properties.
-  base::flat_set<Layer*> layers_that_should_push_properties;
   MutatorHost* mutator_host;
   PropertyTrees property_trees;
   scoped_refptr<Layer> root_layer;

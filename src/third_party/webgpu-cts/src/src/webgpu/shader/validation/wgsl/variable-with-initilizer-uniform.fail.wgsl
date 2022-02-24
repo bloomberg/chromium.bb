@@ -4,9 +4,9 @@ struct Params {
   count: i32;
 };
 
-[[group(0), binding(0)]]
+@group(0) @binding(0)
 var<uniform> u : Params = Params(1);
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
 }

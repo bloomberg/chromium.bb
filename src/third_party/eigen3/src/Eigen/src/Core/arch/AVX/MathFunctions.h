@@ -101,17 +101,22 @@ pexp<Packet4d>(const Packet4d& _x) {
 template <>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED
 Packet8f psqrt<Packet8f>(const Packet8f& _x) {
-  Packet8f minus_half_x = pmul(_x, pset1<Packet8f>(-0.5f));
-  Packet8f denormal_mask = pandnot(
-      pcmp_lt(_x, pset1<Packet8f>((std::numeric_limits<float>::min)())),
-      pcmp_lt(_x, pzero(_x)));
+  const Packet8f minus_half_x = pmul(_x, pset1<Packet8f>(-0.5f));
+  const Packet8f negative_mask = pcmp_lt(_x, pzero(_x));
+  const Packet8f denormal_mask =
+      pandnot(pcmp_lt(_x, pset1<Packet8f>((std::numeric_limits<float>::min)())),
+              negative_mask);
 
   // Compute approximate reciprocal sqrt.
-  Packet8f x = _mm256_rsqrt_ps(_x);
+  Packet8f rs = _mm256_rsqrt_ps(_x);
+  // Flush negative arguments to zero. This is a workaround which ensures
+  // that sqrt of a negative denormal returns -NaN, despite _mm256_rsqrt_ps
+  // returning -Inf for such values.
+  const Packet8f x_flushed = pandnot(_x, negative_mask);
   // Do a single step of Newton's iteration.
-  x = pmul(x, pmadd(minus_half_x, pmul(x,x), pset1<Packet8f>(1.5f)));
+  rs = pmul(rs, pmadd(minus_half_x, pmul(rs,rs), pset1<Packet8f>(1.5f)));
   // Flush results for denormals to zero.
-  return pandnot(pmul(_x,x), denormal_mask);
+  return pandnot(pmul(x_flushed, rs), denormal_mask);
 }
 
 #else
@@ -131,10 +136,10 @@ Packet4d psqrt<Packet4d>(const Packet4d& _x) {
 #if EIGEN_FAST_MATH
 template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED
 Packet8f prsqrt<Packet8f>(const Packet8f& _x) {
-  _EIGEN_DECLARE_CONST_Packet8f_FROM_INT(inf, 0x7f800000);
-  _EIGEN_DECLARE_CONST_Packet8f(one_point_five, 1.5f);
-  _EIGEN_DECLARE_CONST_Packet8f(minus_half, -0.5f);
-  _EIGEN_DECLARE_CONST_Packet8f_FROM_INT(flt_min, 0x00800000);
+  EIGEN_DECLARE_CONST_Packet8f_FROM_INT(inf, 0x7f800000);
+  EIGEN_DECLARE_CONST_Packet8f(one_point_five, 1.5f);
+  EIGEN_DECLARE_CONST_Packet8f(minus_half, -0.5f);
+  EIGEN_DECLARE_CONST_Packet8f_FROM_INT(flt_min, 0x00800000);
 
   Packet8f neg_half = pmul(_x, p8f_minus_half);
 
@@ -161,19 +166,12 @@ Packet8f prsqrt<Packet8f>(const Packet8f& _x) {
   return pselect<Packet8f>(not_normal_finite_mask, y_approx, y_newton);
 }
 
-#else
-template <> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED
-Packet8f prsqrt<Packet8f>(const Packet8f& _x) {
-  _EIGEN_DECLARE_CONST_Packet8f(one, 1.0f);
-  return _mm256_div_ps(p8f_one, _mm256_sqrt_ps(_x));
+template<> EIGEN_STRONG_INLINE Packet8f preciprocal<Packet8f>(const Packet8f& a) {
+  return generic_reciprocal_newton_step<Packet8f, /*Steps=*/1>::run(a, _mm256_rcp_ps(a));
 }
+
 #endif
 
-template <> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED
-Packet4d prsqrt<Packet4d>(const Packet4d& _x) {
-  _EIGEN_DECLARE_CONST_Packet4d(one, 1.0);
-  return _mm256_div_pd(p4d_one, _mm256_sqrt_pd(_x));
-}
 
 F16_PACKET_FUNCTION(Packet8f, Packet8h, psin)
 F16_PACKET_FUNCTION(Packet8f, Packet8h, pcos)
@@ -185,6 +183,7 @@ F16_PACKET_FUNCTION(Packet8f, Packet8h, pexp)
 F16_PACKET_FUNCTION(Packet8f, Packet8h, ptanh)
 F16_PACKET_FUNCTION(Packet8f, Packet8h, psqrt)
 F16_PACKET_FUNCTION(Packet8f, Packet8h, prsqrt)
+F16_PACKET_FUNCTION(Packet8f, Packet8h, preciprocal)
 
 template <>
 EIGEN_STRONG_INLINE Packet8h pfrexp(const Packet8h& a, Packet8h& exponent) {
@@ -209,6 +208,7 @@ BF16_PACKET_FUNCTION(Packet8f, Packet8bf, pexp)
 BF16_PACKET_FUNCTION(Packet8f, Packet8bf, ptanh)
 BF16_PACKET_FUNCTION(Packet8f, Packet8bf, psqrt)
 BF16_PACKET_FUNCTION(Packet8f, Packet8bf, prsqrt)
+BF16_PACKET_FUNCTION(Packet8f, Packet8bf, preciprocal)
 
 template <>
 EIGEN_STRONG_INLINE Packet8bf pfrexp(const Packet8bf& a, Packet8bf& exponent) {

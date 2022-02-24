@@ -1530,6 +1530,8 @@ class StatelessValidation : public ValidationObject {
 
     bool manual_PreCallValidateCmdCopyBuffer2KHR(VkCommandBuffer commandBuffer, const VkCopyBufferInfo2KHR *pCopyBufferInfo) const;
 
+    bool manual_PreCallValidateCmdCopyBuffer2(VkCommandBuffer commandBuffer, const VkCopyBufferInfo2 *pCopyBufferInfo) const;
+
     bool manual_PreCallValidateCmdUpdateBuffer(VkCommandBuffer commandBuffer, VkBuffer dstBuffer, VkDeviceSize dstOffset,
                                                VkDeviceSize dataSize, const void *pData) const;
 
@@ -1738,15 +1740,28 @@ class StatelessValidation : public ValidationObject {
     bool manual_PreCallValidateGetDeviceAccelerationStructureCompatibilityKHR(
         VkDevice device, const VkAccelerationStructureVersionInfoKHR *pVersionInfo,
         VkAccelerationStructureCompatibilityKHR *pCompatibility) const;
-
+    bool ValidateCmdSetViewportWithCount(VkCommandBuffer commandBuffer, uint32_t viewportCount, const VkViewport *pViewports,
+                                         bool is_ext) const;
     bool manual_PreCallValidateCmdSetViewportWithCountEXT(VkCommandBuffer commandBuffer, uint32_t viewportCount,
                                                           const VkViewport *pViewports) const;
+    bool manual_PreCallValidateCmdSetViewportWithCount(VkCommandBuffer commandBuffer, uint32_t viewportCount,
+                                                       const VkViewport *pViewports) const;
+
+    bool ValidateCmdSetScissorWithCount(VkCommandBuffer commandBuffer, uint32_t scissorCount, const VkRect2D *pScissors,
+                                        bool is_ext) const;
     bool manual_PreCallValidateCmdSetScissorWithCountEXT(VkCommandBuffer commandBuffer, uint32_t scissorCount,
                                                          const VkRect2D *pScissors) const;
+    bool manual_PreCallValidateCmdSetScissorWithCount(VkCommandBuffer commandBuffer, uint32_t scissorCount,
+                                                      const VkRect2D *pScissors) const;
+    bool ValidateCmdBindVertexBuffers2(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount,
+                                       const VkBuffer *pBuffers, const VkDeviceSize *pOffsets, const VkDeviceSize *pSizes,
+                                       const VkDeviceSize *pStrides, bool is_2ext) const;
     bool manual_PreCallValidateCmdBindVertexBuffers2EXT(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount,
                                                         const VkBuffer *pBuffers, const VkDeviceSize *pOffsets,
                                                         const VkDeviceSize *pSizes, const VkDeviceSize *pStrides) const;
-
+    bool manual_PreCallValidateCmdBindVertexBuffers2(VkCommandBuffer commandBuffer, uint32_t firstBinding, uint32_t bindingCount,
+                                                     const VkBuffer *pBuffers, const VkDeviceSize *pOffsets,
+                                                     const VkDeviceSize *pSizes, const VkDeviceSize *pStrides) const;
     bool ValidateAccelerationStructureBuildGeometryInfoKHR(const VkAccelerationStructureBuildGeometryInfoKHR *pInfos,
                                                            uint32_t infoCount, const char *api_name) const;
     bool manual_PreCallValidateCmdBuildAccelerationStructuresKHR(
@@ -1762,10 +1777,6 @@ class StatelessValidation : public ValidationObject {
                                                                      const VkAccelerationStructureBuildGeometryInfoKHR *pBuildInfo,
                                                                      const uint32_t *pMaxPrimitiveCounts,
                                                                      VkAccelerationStructureBuildSizesInfoKHR *pSizeInfo) const;
-
-    bool manual_PreCallValidateCreatePrivateDataSlotEXT(VkDevice device, const VkPrivateDataSlotCreateInfoEXT *pCreateInfo,
-                                                        const VkAllocationCallbacks *pAllocator,
-                                                        VkPrivateDataSlotEXT *pPrivateDataSlot) const;
 
     bool manual_PreCallValidateCmdSetVertexInputEXT(
         VkCommandBuffer commandBuffer, uint32_t vertexBindingDescriptionCount,

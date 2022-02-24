@@ -220,6 +220,8 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterDoublePref(prefs::kLastTimeObsoleteHttpCredentialsRemoved,
                                0.0);
   registry->RegisterDoublePref(prefs::kLastTimePasswordCheckCompleted, 0.0);
+  registry->RegisterDoublePref(prefs::kLastTimePasswordStoreMetricsReported,
+                               0.0);
   registry->RegisterTimePref(
       prefs::kSyncedLastTimePasswordCheckCompleted, base::Time(),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
@@ -240,6 +242,9 @@ void PasswordManager::RegisterProfilePrefs(
                              PrefRegistry::NO_REGISTRATION_FLAGS);
   registry->RegisterBooleanPref(
       prefs::kPasswordLeakDetectionEnabled, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kPasswordDismissCompromisedAlertEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #if BUILDFLAG(IS_ANDROID)
   registry->RegisterIntegerPref(
@@ -970,7 +975,8 @@ void PasswordManager::OnLoginSuccessful() {
   if (!HasMutedCredentials(
           submitted_manager->GetInsecureCredentials(),
           submitted_manager->GetSubmittedForm()->username_value)) {
-    leak_delegate_.StartLeakCheck(submitted_manager->GetPendingCredentials());
+    leak_delegate_.StartLeakCheck(submitted_manager->GetPendingCredentials(),
+                                  submitted_form->IsLikelySignupForm());
   }
 
   auto submission_event =

@@ -311,9 +311,17 @@ enum {
  * more flexibility in update frequency. This enum is separate from \ref
  * COST_UPDATE_TYPE because although \ref COST_UPDATE_TYPE is not exposed, its
  * values are public so it cannot be modified without breaking public API.
+ * Due to the use of AOMMIN() in populate_unified_cost_update_freq() to
+ * compute the unified cost update frequencies (out of COST_UPDATE_TYPE and
+ * INTERNAL_COST_UPDATE_TYPE), the values of this enum type must be listed in
+ * the order of increasing frequencies.
+ *
+ * \warning  In case of any updates/modifications to the enum COST_UPDATE_TYPE,
+ * update the enum INTERNAL_COST_UPDATE_TYPE as well.
  */
 typedef enum {
   INTERNAL_COST_UPD_OFF,       /*!< Turn off cost updates. */
+  INTERNAL_COST_UPD_TILE,      /*!< Update every tile. */
   INTERNAL_COST_UPD_SBROW_SET, /*!< Update every row_set of height 256 pixs. */
   INTERNAL_COST_UPD_SBROW,     /*!< Update every sb rows inside a tile. */
   INTERNAL_COST_UPD_SB,        /*!< Update every sb. */
@@ -341,6 +349,15 @@ typedef enum {
   TOTAL_AGG_LVLS = TOTAL_SIMPLE_AGG_LVLS +
                    TOTAL_QINDEX_BASED_AGG_LVLS, /*!< Total number of levels. */
 } SIMPLE_MOTION_SEARCH_PRUNE_LEVEL;
+
+/*!\enum PRUNE_MESH_SEARCH_LEVEL
+ * \brief This enumeration defines a variety of mesh search prune levels.
+ */
+typedef enum {
+  PRUNE_MESH_SEARCH_DISABLED = 0, /*!< Prune mesh search level 0. */
+  PRUNE_MESH_SEARCH_LVL_1 = 1,    /*!< Prune mesh search level 1. */
+  PRUNE_MESH_SEARCH_LVL_2 = 2,    /*!< Prune mesh search level 2. */
+} PRUNE_MESH_SEARCH_LEVEL;
 
 /*!
  * \brief Sequence/frame level speed vs quality features
@@ -391,6 +408,12 @@ typedef struct HIGH_LEVEL_SPEED_FEATURES {
    * Enable/disable second_alt_ref temporal filtering.
    */
   int second_alt_ref_filtering;
+
+  /*!
+   * Number of frames to be used in temporal filtering controlled based on noise
+   * levels and arf-q.
+   */
+  int num_frames_used_in_tf;
 } HIGH_LEVEL_SPEED_FEATURES;
 
 /*!
@@ -720,7 +743,7 @@ typedef struct MV_SPEED_FEATURES {
   int reduce_search_range;
 
   // Prune mesh search.
-  int prune_mesh_search;
+  PRUNE_MESH_SEARCH_LEVEL prune_mesh_search;
 
   // Use the rd cost around the best FULLPEL_MV to speed up subpel search
   int use_fullpel_costlist;
@@ -745,6 +768,9 @@ typedef struct MV_SPEED_FEATURES {
   // 1: use var as the metric
   // 2: disable second MV
   int disable_second_mv;
+
+  // Skips full pixel search based on start mv of prior ref_mv_idx.
+  int skip_fullpel_search_using_startmv;
 } MV_SPEED_FEATURES;
 
 typedef struct INTER_MODE_SPEED_FEATURES {
@@ -1193,6 +1219,14 @@ typedef struct WINNER_MODE_SPEED_FEATURES {
   // performs it during winner mode processing by \ref
   // tx_search_best_inter_candidates.
   int winner_mode_ifs;
+
+  // Flag used to enable the pruning of winner mode processing for blocks with
+  // low source variance.
+  int prune_winner_mode_processing_using_src_var;
+
+  // If on, disables transform refinement for winner mode if the normal mode
+  // evaluation resulted in transform skip.
+  int disable_winner_mode_eval_for_txskip;
 } WINNER_MODE_SPEED_FEATURES;
 
 typedef struct LOOP_FILTER_SPEED_FEATURES {
@@ -1238,14 +1272,21 @@ typedef struct LOOP_FILTER_SPEED_FEATURES {
 
   // Disable loop restoration filter
   int disable_lr_filter;
+
+  // Whether to downsample the rows in computation of wiener stats.
+  int use_downsampled_wiener_stats;
 } LOOP_FILTER_SPEED_FEATURES;
 
 typedef struct REAL_TIME_SPEED_FEATURES {
   // check intra prediction for non-RD mode.
   int check_intra_pred_nonrd;
 
-  // skip checking intra prediction if TX is skipped
-  int skip_intra_pred_if_tx_skip;
+  // Skip checking intra prediction.
+  // 0 - don't skip
+  // 1 - skip if TX is skipped and best mode is not NEWMV
+  // 2 - skip if TX is skipped
+  // Skipping aggressiveness increases from level 1 to 2.
+  int skip_intra_pred;
 
   // Perform coarse ME before calculating variance in variance-based partition
   int estimate_motion_for_var_based_partition;
@@ -1298,9 +1339,6 @@ typedef struct REAL_TIME_SPEED_FEATURES {
 
   // Number of best inter modes to search transform. INT_MAX - search all.
   int num_inter_modes_for_tx_search;
-
-  // Forces TX search off for RDCost calulation.
-  int force_tx_search_off;
 
   // Use interpolation filter search in non-RD mode decision.
   int use_nonrd_filter_search;
@@ -1384,6 +1422,9 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // based partitioning. The minimum values should be 7 to avoid left shifting
   // by a negative number.
   int var_part_split_threshold_shift;
+
+  // Enable GF refresh based on Q value.
+  int gf_refresh_based_on_qp;
 } REAL_TIME_SPEED_FEATURES;
 
 /*!\endcond */

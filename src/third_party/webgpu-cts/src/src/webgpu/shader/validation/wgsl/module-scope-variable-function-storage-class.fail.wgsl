@@ -2,6 +2,6 @@
 
 var<function> f : vec2<f32>;
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
 }

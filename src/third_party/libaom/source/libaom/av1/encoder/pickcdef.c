@@ -61,9 +61,11 @@ static INLINE void get_cdef_filter_strengths(CDEF_PICK_METHOD pick_method,
 // Store CDEF filter strength calculated from strength index for given search
 // method
 #define STORE_CDEF_FILTER_STRENGTH(cdef_strength, pick_method, strength_idx) \
-  get_cdef_filter_strengths((pick_method), &pri_strength, &sec_strength,     \
-                            (strength_idx));                                 \
-  cdef_strength = pri_strength * CDEF_SEC_STRENGTHS + sec_strength;
+  do {                                                                       \
+    get_cdef_filter_strengths((pick_method), &pri_strength, &sec_strength,   \
+                              (strength_idx));                               \
+    cdef_strength = pri_strength * CDEF_SEC_STRENGTHS + sec_strength;        \
+  } while (0)
 
 /* Search for the best strength to add as an option, knowing we
    already selected nb_strengths options. */

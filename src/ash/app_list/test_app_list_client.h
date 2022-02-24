@@ -33,7 +33,6 @@ class TestAppListClient : public AppListClient {
   void StartSearch(const std::u16string& trimmed_query) override;
   void OpenSearchResult(int profile_id,
                         const std::string& result_id,
-                        AppListSearchResultType result_type,
                         int event_flags,
                         AppListLaunchedFrom launched_from,
                         AppListLaunchType launch_type,
@@ -48,7 +47,8 @@ class TestAppListClient : public AppListClient {
   void ViewShown(int64_t display_id) override {}
   void ActivateItem(int profile_id,
                     const std::string& id,
-                    int event_flags) override;
+                    int event_flags,
+                    ash::AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(int profile_id,
                            const std::string& id,
                            bool add_sort_options,
@@ -66,6 +66,7 @@ class TestAppListClient : public AppListClient {
       int position_index) override {}
   AppListNotifier* GetNotifier() override;
   void LoadIcon(int profile_id, const std::string& app_id) override {}
+  ash::AppListSortOrder GetPermanentSortingOrder() const override;
 
   int start_zero_state_search_count() const {
     return start_zero_state_search_count_;

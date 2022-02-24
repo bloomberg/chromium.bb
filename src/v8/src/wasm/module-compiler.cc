@@ -1882,9 +1882,12 @@ std::shared_ptr<NativeModule> CompileToNativeModule(
 
   // Create a new {NativeModule} first.
   const bool include_liftoff = module->origin == kWasmOrigin && FLAG_liftoff;
+  DynamicTiering dynamic_tiering = isolate->IsWasmDynamicTieringEnabled()
+                                       ? DynamicTiering::kEnabled
+                                       : DynamicTiering::kDisabled;
   size_t code_size_estimate =
-      wasm::WasmCodeManager::EstimateNativeModuleCodeSize(module.get(),
-                                                          include_liftoff);
+      wasm::WasmCodeManager::EstimateNativeModuleCodeSize(
+          module.get(), include_liftoff, dynamic_tiering);
   native_module =
       engine->NewNativeModule(isolate, enabled, module, code_size_estimate);
   native_module->SetWireBytes(std::move(wire_bytes_copy));
@@ -1955,6 +1958,9 @@ AsyncCompileJob::AsyncCompileJob(
     : isolate_(isolate),
       api_method_name_(api_method_name),
       enabled_features_(enabled),
+      dynamic_tiering_(isolate_->IsWasmDynamicTieringEnabled()
+                           ? DynamicTiering::kEnabled
+                           : DynamicTiering::kDisabled),
       wasm_lazy_compilation_(FLAG_wasm_lazy_compilation),
       start_time_(base::TimeTicks::Now()),
       bytes_copy_(std::move(bytes_copy)),
@@ -2489,8 +2495,8 @@ class AsyncCompileJob::DecodeModule : public AsyncCompileJob::CompileStep {
       std::shared_ptr<WasmModule> module = std::move(result).value();
       const bool include_liftoff = FLAG_liftoff;
       size_t code_size_estimate =
-          wasm::WasmCodeManager::EstimateNativeModuleCodeSize(module.get(),
-                                                              include_liftoff);
+          wasm::WasmCodeManager::EstimateNativeModuleCodeSize(
+              module.get(), include_liftoff, job->dynamic_tiering_);
       job->DoSync<PrepareAndStartCompile>(std::move(module), true,
                                           code_size_estimate);
     }
@@ -2791,7 +2797,7 @@ bool AsyncStreamingProcessor::ProcessCodeSectionHeader(
   size_t code_size_estimate =
       wasm::WasmCodeManager::EstimateNativeModuleCodeSize(
           num_functions, num_imported_functions, code_section_length,
-          include_liftoff);
+          include_liftoff, job_->dynamic_tiering_);
   job_->DoImmediately<AsyncCompileJob::PrepareAndStartCompile>(
       decoder_.shared_module(), false, code_size_estimate);
 
@@ -2894,7 +2900,7 @@ void AsyncStreamingProcessor::OnFinishedStream(
     const bool include_liftoff = FLAG_liftoff;
     size_t code_size_estimate =
         wasm::WasmCodeManager::EstimateNativeModuleCodeSize(
-            result.value().get(), include_liftoff);
+            result.value().get(), include_liftoff, job_->dynamic_tiering_);
     job_->DoSync<AsyncCompileJob::PrepareAndStartCompile>(
         std::move(result).value(), true, code_size_estimate);
     return;
@@ -2951,30 +2957,13 @@ void AsyncStreamingProcessor::OnAbort() {
   job_->Abort();
 }
 
-namespace {
-class DeserializationTimeScope {
- public:
-  explicit DeserializationTimeScope(TimedHistogram* counter)
-      : counter_(counter), start_(base::TimeTicks::Now()) {}
-
-  ~DeserializationTimeScope() {
-    base::TimeDelta duration = base::TimeTicks::Now() - start_;
-    int duration_usecs = static_cast<int>(duration.InMilliseconds());
-    counter_->AddSample(duration_usecs);
-  }
-
- private:
-  TimedHistogram* counter_;
-  base::TimeTicks start_;
-};
-}  // namespace
-
 bool AsyncStreamingProcessor::Deserialize(
     base::Vector<const uint8_t> module_bytes,
     base::Vector<const uint8_t> wire_bytes) {
   TRACE_EVENT0("v8.wasm", "wasm.Deserialize");
-  DeserializationTimeScope time_scope(
-      job_->isolate()->counters()->wasm_deserialization_time());
+  TimedHistogramScope time_scope(
+      job_->isolate()->counters()->wasm_deserialization_time(),
+      job_->isolate());
   // DeserializeNativeModule and FinishCompile assume that they are executed in
   // a HandleScope, and that a context is set on the isolate.
   HandleScope scope(job_->isolate_);
@@ -3213,6 +3202,10 @@ void CompilationStateImpl::InitializeCompilationProgressAfterDeserialization(
   auto* module = native_module_->module();
   auto enabled_features = native_module_->enabled_features();
   const bool lazy_module = IsLazyModule(module);
+  base::Optional<CodeSpaceWriteScope> lazy_code_space_write_scope;
+  if (lazy_module || !lazy_functions.empty()) {
+    lazy_code_space_write_scope.emplace(native_module_);
+  }
   {
     base::MutexGuard guard(&callbacks_mutex_);
     DCHECK(compilation_progress_.empty());

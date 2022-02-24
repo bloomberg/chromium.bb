@@ -388,9 +388,6 @@ chromium-os/developer-guide/chromium-os-sandboxing/mount_event_propagation.png
 chromium-os/developer-guide/TrackerName.png
 chromium-os/chromiumos-design-docs/keyboard-controlled-reset-circuit/KbdReset.png
 chromium-os/chromiumos-design-docs/filesystem-autoupdate/ChromeOSFilesystemAutoupdate.png
-chromium-os/chromiumos-design-docs/disk-format/kernel2.png
-chromium-os/chromiumos-design-docs/disk-format/layout.png
-chromium-os/chromiumos-design-docs/disk-format/flow.png
 chromium-os/chromiumos-design-docs/ec-3po/EC-3PO- The EC console interpreter (1).png
 chromium-os/chromiumos-design-docs/ec-3po/EC-3PO- The EC console interpreter.png
 chromium-os/chromiumos-design-docs/boot-design/boot_design_diagram.png
@@ -1073,7 +1070,6 @@ developers/design-documents/sync/unified-sync-and-storage-overview/sGBklpDhSmt-d
 developers/design-documents/sync/unified-sync-and-storage-overview/syHRLLSqHvALzjSchvniqSw.png
 developers/design-documents/sync/unified-sync-and-storage-overview/sSbkKodQc5-RbyCqTGkUCzw.png
 developers/design-documents/sync/unified-sync-and-storage-overview/sK5QS5Ee9i0OE2L4RIHredA.png
-developers/design-documents/sync/syncable-service-api/SyncAPI.pdf
 developers/design-documents/pepper-plugin-implementation/pepper_design.png
 developers/design-documents/pepper-plugin-implementation/Pepper design.ai
 developers/design-documents/accessibility/properties.png

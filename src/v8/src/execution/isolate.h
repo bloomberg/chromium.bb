@@ -121,7 +121,7 @@ class PersistentHandlesList;
 class ReadOnlyArtifacts;
 class RegExpStack;
 class RootVisitor;
-class RuntimeProfiler;
+class TieringManager;
 class SetupIsolateDelegate;
 class Simulator;
 class SnapshotData;
@@ -855,7 +855,7 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
 
   // Push and pop a promise and the current try-catch handler.
   void PushPromise(Handle<JSObject> promise);
-  void PopPromise();
+  bool PopPromise();
 
   // Return the relevant Promise that a throw/rejection pertains to, based
   // on the contents of the Promise stack
@@ -1095,7 +1095,7 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   const std::shared_ptr<metrics::Recorder>& metrics_recorder() {
     return metrics_recorder_;
   }
-  RuntimeProfiler* runtime_profiler() { return runtime_profiler_; }
+  TieringManager* tiering_manager() { return tiering_manager_; }
   CompilationCache* compilation_cache() { return compilation_cache_; }
   Logger* logger() {
     // Call InitializeLoggingAndCounters() if logging is needed before
@@ -1484,6 +1484,13 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
 
   int id() const { return id_; }
 
+  bool was_locker_ever_used() const {
+    return was_locker_ever_used_.load(std::memory_order_relaxed);
+  }
+  void set_was_locker_ever_used() {
+    was_locker_ever_used_.store(true, std::memory_order_relaxed);
+  }
+
   CompilationStatistics* GetTurboStatistics();
   CodeTracer* GetCodeTracer();
 
@@ -1745,6 +1752,10 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
       HostInitializeImportMetaObjectCallback callback);
   MaybeHandle<JSObject> RunHostInitializeImportMetaObjectCallback(
       Handle<SourceTextModule> module);
+
+  void SetHostCreateShadowRealmContextCallback(
+      HostCreateShadowRealmContextCallback callback);
+  MaybeHandle<NativeContext> RunHostCreateShadowRealmContextCallback();
 
   void RegisterEmbeddedFileWriter(EmbeddedFileWriterInterface* writer) {
     embedded_file_writer_ = writer;
@@ -2056,10 +2067,11 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
   const int id_;
   EntryStackItem* entry_stack_ = nullptr;
   int stack_trace_nesting_level_ = 0;
+  std::atomic<bool> was_locker_ever_used_{false};
   StringStream* incomplete_message_ = nullptr;
   Address isolate_addresses_[kIsolateAddressCount + 1] = {};
   Bootstrapper* bootstrapper_ = nullptr;
-  RuntimeProfiler* runtime_profiler_ = nullptr;
+  TieringManager* tiering_manager_ = nullptr;
   CompilationCache* compilation_cache_ = nullptr;
   std::shared_ptr<Counters> async_counters_;
   base::RecursiveMutex break_access_;
@@ -2129,6 +2141,9 @@ class V8_EXPORT_PRIVATE Isolate final : private HiddenFactory {
 
   HostInitializeImportMetaObjectCallback
       host_initialize_import_meta_object_callback_ = nullptr;
+  HostCreateShadowRealmContextCallback
+      host_create_shadow_realm_context_callback_ = nullptr;
+
   base::Mutex rail_mutex_;
   double load_start_time_ms_ = 0;
 

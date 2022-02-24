@@ -15,6 +15,7 @@
 #ifndef SRC_DIAGNOSTIC_DIAGNOSTIC_H_
 #define SRC_DIAGNOSTIC_DIAGNOSTIC_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -54,6 +55,17 @@ enum class System {
 /// message.
 class Diagnostic {
  public:
+  /// Constructor
+  Diagnostic();
+  /// Copy constructor
+  Diagnostic(const Diagnostic&);
+  /// Destructor
+  ~Diagnostic();
+
+  /// Copy assignment operator
+  /// @return this diagnostic
+  Diagnostic& operator=(const Diagnostic&);
+
   /// severity is the severity of the diagnostic message.
   Severity severity = Severity::Error;
   /// source is the location of the diagnostic.
@@ -65,6 +77,10 @@ class Diagnostic {
   /// code is the error code, for example a validation error might have the code
   /// `"v-0001"`.
   const char* code = nullptr;
+  /// A shared pointer to a Source::File. Only used if the diagnostic Source
+  /// points to a file that was created specifically for this diagnostic
+  /// (usually an ICE).
+  std::shared_ptr<Source::File> owned_file = nullptr;
 };
 
 /// List is a container of Diagnostic messages.
@@ -87,6 +103,8 @@ class List {
   /// Move constructor. Moves the diagnostics from `list` into this list.
   /// @param list the list of diagnostics to move into this list.
   List(List&& list);
+
+  /// Destructor
   ~List();
 
   /// Assignment operator. Copies the diagnostics from `list` into this list.
@@ -194,14 +212,17 @@ class List {
   /// @param system the system raising the error message
   /// @param err_msg the error message
   /// @param source the source of the internal compiler error
+  /// @param file the Source::File owned by this diagnostic
   void add_ice(System system,
                const std::string& err_msg,
-               const Source& source) {
+               const Source& source,
+               std::shared_ptr<Source::File> file) {
     diag::Diagnostic ice{};
     ice.severity = diag::Severity::InternalCompilerError;
     ice.system = system;
     ice.source = source;
     ice.message = err_msg;
+    ice.owned_file = std::move(file);
     add(std::move(ice));
   }
 

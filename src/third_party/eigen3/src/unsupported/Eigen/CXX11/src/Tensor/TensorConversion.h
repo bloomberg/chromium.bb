@@ -30,7 +30,7 @@ struct traits<TensorConversionOp<TargetType, XprType> >
   typedef typename traits<XprType>::StorageKind StorageKind;
   typedef typename traits<XprType>::Index Index;
   typedef typename XprType::Nested Nested;
-  typedef typename remove_reference<Nested>::type _Nested;
+  typedef typename remove_reference<Nested>::type Nested_;
   static const int NumDimensions = traits<XprType>::NumDimensions;
   static const int Layout = traits<XprType>::Layout;
   enum { Flags = 0 };

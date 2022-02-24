@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './elements/viewer-error-dialog.js';
 // <if expr="enable_ink">
 import './elements/viewer-ink-host.js';
 // </if>
 import './elements/viewer-password-dialog.js';
+import './elements/viewer-pdf-sidenav.js';
 import './elements/viewer-properties-dialog.js';
+import './elements/viewer-toolbar.js';
 import './elements/shared-vars.js';
 import './pdf_viewer_shared_style.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
@@ -811,6 +814,10 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       case 'setIsSelecting':
         this.viewportScroller.setEnableScrolling(
             /** @type {{ isSelecting: boolean }} */ (data).isSelecting);
+        return;
+      case 'setSmoothScrolling':
+        this.viewport.setSmoothScrolling(
+            /** @type {{ smoothScrolling: boolean }} */ (data).smoothScrolling);
         return;
       case 'formFocusChange':
         this.isFormFieldFocused_ =

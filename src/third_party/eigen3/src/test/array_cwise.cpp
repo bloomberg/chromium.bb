@@ -451,7 +451,7 @@ template<typename ArrayType> void array_real(const ArrayType& m)
   const RealScalar tiny = sqrt(std::numeric_limits<RealScalar>::epsilon());
   s1 += Scalar(tiny);
   m1 += ArrayType::Constant(rows,cols,Scalar(tiny));
-  VERIFY_IS_APPROX(s1/m1, s1 * m1.inverse());
+  VERIFY_IS_CWISE_APPROX(s1/m1, s1 * m1.inverse());
 
   // check inplace transpose
   m3 = m1;

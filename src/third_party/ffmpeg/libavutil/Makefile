@@ -195,6 +195,7 @@ OBJS += $(COMPAT_OBJS:%=../compat/%)
 # Windows resource file
 SLIBOBJS-$(HAVE_GNU_WINDRES)            += avutilres.o
 
+SKIPHEADERS                            += objc.h
 SKIPHEADERS-$(HAVE_CUDA_H)             += hwcontext_cuda.h
 SKIPHEADERS-$(CONFIG_CUDA)             += hwcontext_cuda_internal.h     \
                                           cuda_check.h
@@ -205,7 +206,9 @@ SKIPHEADERS-$(CONFIG_OPENCL)           += hwcontext_opencl.h
 SKIPHEADERS-$(CONFIG_VAAPI)            += hwcontext_vaapi.h
 SKIPHEADERS-$(CONFIG_VIDEOTOOLBOX)     += hwcontext_videotoolbox.h
 SKIPHEADERS-$(CONFIG_VDPAU)            += hwcontext_vdpau.h
-SKIPHEADERS-$(CONFIG_VULKAN)           += hwcontext_vulkan.h
+SKIPHEADERS-$(CONFIG_VULKAN)           += hwcontext_vulkan.h vulkan.h   \
+                                          vulkan_functions.h            \
+                                          vulkan_loader.h
 
 TESTPROGS = adler32                                                     \
             aes                                                         \

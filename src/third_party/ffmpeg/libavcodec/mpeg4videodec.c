@@ -32,6 +32,7 @@
 #include "mpegvideo.h"
 #include "mpegvideodata.h"
 #include "mpeg4video.h"
+#include "mpeg4videodata.h"
 #include "h263.h"
 #include "profiles.h"
 #include "thread.h"
@@ -53,6 +54,8 @@ static VLC mb_type_b_vlc;
 static VLC studio_intra_tab[12];
 static VLC studio_luma_dc;
 static VLC studio_chroma_dc;
+
+static const uint8_t mpeg4_block_count[4] = { 0, 6, 8, 12 };
 
 static const int mb_type_b_map[4] = {
     MB_TYPE_DIRECT2 | MB_TYPE_L0L1,
@@ -2842,7 +2845,8 @@ int ff_mpeg4_workaround_bugs(AVCodecContext *avctx)
     return 0;
 }
 
-static int decode_vop_header(Mpeg4DecContext *ctx, GetBitContext *gb)
+static int decode_vop_header(Mpeg4DecContext *ctx, GetBitContext *gb,
+                             int parse_only)
 {
     MpegEncContext *s = &ctx->m;
     int time_incr, time_increment;
@@ -3016,6 +3020,12 @@ static int decode_vop_header(Mpeg4DecContext *ctx, GetBitContext *gb)
         ff_init_scantable(s->idsp.idct_permutation, &s->intra_v_scantable, ff_alternate_vertical_scan);
     }
 
+    /* Skip at this point when only parsing since the remaining
+     * data is not useful for a parser and requires the
+     * sprite_trajectory VLC to be initialized. */
+    if (parse_only)
+        goto end;
+
     if (s->pict_type == AV_PICTURE_TYPE_S) {
         if((ctx->vol_sprite_usage == STATIC_SPRITE ||
             ctx->vol_sprite_usage == GMC_SPRITE)) {
@@ -3064,11 +3074,11 @@ static int decode_vop_header(Mpeg4DecContext *ctx, GetBitContext *gb)
 
         if (s->avctx->debug & FF_DEBUG_PICT_INFO) {
             av_log(s->avctx, AV_LOG_DEBUG,
-                   "qp:%d fc:%d,%d %s size:%d pro:%d alt:%d top:%d %spel part:%d resync:%d w:%d a:%d rnd:%d vot:%d%s dc:%d ce:%d/%d/%d time:%"PRId64" tincr:%d\n",
+                   "qp:%d fc:%d,%d %c size:%d pro:%d alt:%d top:%d %cpel part:%d resync:%d w:%d a:%d rnd:%d vot:%d%s dc:%d ce:%d/%d/%d time:%"PRId64" tincr:%d\n",
                    s->qscale, s->f_code, s->b_code,
-                   s->pict_type == AV_PICTURE_TYPE_I ? "I" : (s->pict_type == AV_PICTURE_TYPE_P ? "P" : (s->pict_type == AV_PICTURE_TYPE_B ? "B" : "S")),
+                   s->pict_type == AV_PICTURE_TYPE_I ? 'I' : (s->pict_type == AV_PICTURE_TYPE_P ? 'P' : (s->pict_type == AV_PICTURE_TYPE_B ? 'B' : 'S')),
                    gb->size_in_bits,s->progressive_sequence, s->alternate_scan,
-                   s->top_field_first, s->quarter_sample ? "q" : "h",
+                   s->top_field_first, s->quarter_sample ? 'q' : 'h',
                    s->data_partitioning, ctx->resync_marker,
                    ctx->num_sprite_warping_points, s->sprite_warping_accuracy,
                    1 - s->no_rounding, s->vo_type,
@@ -3093,6 +3103,8 @@ static int decode_vop_header(Mpeg4DecContext *ctx, GetBitContext *gb)
             skip_bits(gb, 2);  // ref_select_code
         }
     }
+
+end:
     /* detect buggy encoders which don't set the low_delay flag
      * (divx4/xvid/opendivx). Note we cannot detect divx5 without B-frames
      * easily (although it's buggy too) */
@@ -3212,11 +3224,14 @@ static int decode_studiovisualobject(Mpeg4DecContext *ctx, GetBitContext *gb)
  * Decode MPEG-4 headers.
  *
  * @param  header If set the absence of a VOP is not treated as error; otherwise, it is treated as such.
+ * @param  parse_only If set, things only relevant to a decoder may be skipped;
+ *                    furthermore, the VLC tables may be uninitialized.
  * @return <0 if an error occurred
  *         FRAME_SKIPPED if a not coded VOP is found
  *         0 else
  */
-int ff_mpeg4_decode_picture_header(Mpeg4DecContext *ctx, GetBitContext *gb, int header)
+int ff_mpeg4_decode_picture_header(Mpeg4DecContext *ctx, GetBitContext *gb,
+                                   int header, int parse_only)
 {
     MpegEncContext *s = &ctx->m;
     unsigned startcode, v;
@@ -3259,62 +3274,63 @@ int ff_mpeg4_decode_picture_header(Mpeg4DecContext *ctx, GetBitContext *gb, int 
             continue;  // no startcode
 
         if (s->avctx->debug & FF_DEBUG_STARTCODE) {
-            av_log(s->avctx, AV_LOG_DEBUG, "startcode: %3X ", startcode);
+            const char *name;
             if (startcode <= 0x11F)
-                av_log(s->avctx, AV_LOG_DEBUG, "Video Object Start");
+                name = "Video Object Start";
             else if (startcode <= 0x12F)
-                av_log(s->avctx, AV_LOG_DEBUG, "Video Object Layer Start");
+                name = "Video Object Layer Start";
             else if (startcode <= 0x13F)
-                av_log(s->avctx, AV_LOG_DEBUG, "Reserved");
+                name = "Reserved";
             else if (startcode <= 0x15F)
-                av_log(s->avctx, AV_LOG_DEBUG, "FGS bp start");
+                name = "FGS bp start";
             else if (startcode <= 0x1AF)
-                av_log(s->avctx, AV_LOG_DEBUG, "Reserved");
+                name = "Reserved";
             else if (startcode == 0x1B0)
-                av_log(s->avctx, AV_LOG_DEBUG, "Visual Object Seq Start");
+                name = "Visual Object Seq Start";
             else if (startcode == 0x1B1)
-                av_log(s->avctx, AV_LOG_DEBUG, "Visual Object Seq End");
+                name = "Visual Object Seq End";
             else if (startcode == 0x1B2)
-                av_log(s->avctx, AV_LOG_DEBUG, "User Data");
+                name = "User Data";
             else if (startcode == 0x1B3)
-                av_log(s->avctx, AV_LOG_DEBUG, "Group of VOP start");
+                name = "Group of VOP start";
             else if (startcode == 0x1B4)
-                av_log(s->avctx, AV_LOG_DEBUG, "Video Session Error");
+                name = "Video Session Error";
             else if (startcode == 0x1B5)
-                av_log(s->avctx, AV_LOG_DEBUG, "Visual Object Start");
+                name = "Visual Object Start";
             else if (startcode == 0x1B6)
-                av_log(s->avctx, AV_LOG_DEBUG, "Video Object Plane start");
+                name = "Video Object Plane start";
             else if (startcode == 0x1B7)
-                av_log(s->avctx, AV_LOG_DEBUG, "slice start");
+                name = "slice start";
             else if (startcode == 0x1B8)
-                av_log(s->avctx, AV_LOG_DEBUG, "extension start");
+                name = "extension start";
             else if (startcode == 0x1B9)
-                av_log(s->avctx, AV_LOG_DEBUG, "fgs start");
+                name = "fgs start";
             else if (startcode == 0x1BA)
-                av_log(s->avctx, AV_LOG_DEBUG, "FBA Object start");
+                name = "FBA Object start";
             else if (startcode == 0x1BB)
-                av_log(s->avctx, AV_LOG_DEBUG, "FBA Object Plane start");
+                name = "FBA Object Plane start";
             else if (startcode == 0x1BC)
-                av_log(s->avctx, AV_LOG_DEBUG, "Mesh Object start");
+                name = "Mesh Object start";
             else if (startcode == 0x1BD)
-                av_log(s->avctx, AV_LOG_DEBUG, "Mesh Object Plane start");
+                name = "Mesh Object Plane start";
             else if (startcode == 0x1BE)
-                av_log(s->avctx, AV_LOG_DEBUG, "Still Texture Object start");
+                name = "Still Texture Object start";
             else if (startcode == 0x1BF)
-                av_log(s->avctx, AV_LOG_DEBUG, "Texture Spatial Layer start");
+                name = "Texture Spatial Layer start";
             else if (startcode == 0x1C0)
-                av_log(s->avctx, AV_LOG_DEBUG, "Texture SNR Layer start");
+                name = "Texture SNR Layer start";
             else if (startcode == 0x1C1)
-                av_log(s->avctx, AV_LOG_DEBUG, "Texture Tile start");
+                name = "Texture Tile start";
             else if (startcode == 0x1C2)
-                av_log(s->avctx, AV_LOG_DEBUG, "Texture Shape Layer start");
+                name = "Texture Shape Layer start";
             else if (startcode == 0x1C3)
-                av_log(s->avctx, AV_LOG_DEBUG, "stuffing start");
+                name = "stuffing start";
             else if (startcode <= 0x1C5)
-                av_log(s->avctx, AV_LOG_DEBUG, "reserved");
+                name = "Reserved";
             else if (startcode <= 0x1FF)
-                av_log(s->avctx, AV_LOG_DEBUG, "System start");
-            av_log(s->avctx, AV_LOG_DEBUG, " at %d\n", get_bits_count(gb));
+                name = "System start";
+            av_log(s->avctx, AV_LOG_DEBUG, "startcode: %3X %s at %d\n",
+                   startcode, name, get_bits_count(gb));
         }
 
         if (startcode >= 0x120 && startcode <= 0x12F) {
@@ -3369,35 +3385,7 @@ end:
         }
         return decode_studio_vop_header(ctx, gb);
     } else
-        return decode_vop_header(ctx, gb);
-}
-
-av_cold void ff_mpeg4videodec_static_init(void) {
-    static int done = 0;
-
-    if (!done) {
-        static uint8_t mpeg4_rvlc_rl_tables[2][2][2 * MAX_RUN + MAX_LEVEL + 3];
-
-        ff_mpeg4_init_rl_intra();
-        ff_rl_init(&ff_rvlc_rl_inter, mpeg4_rvlc_rl_tables[0]);
-        ff_rl_init(&ff_rvlc_rl_intra, mpeg4_rvlc_rl_tables[1]);
-        INIT_FIRST_VLC_RL(ff_mpeg4_rl_intra, 554);
-        INIT_VLC_RL(ff_rvlc_rl_inter, 1072);
-        INIT_FIRST_VLC_RL(ff_rvlc_rl_intra, 1072);
-        INIT_VLC_STATIC(&dc_lum, DC_VLC_BITS, 10 /* 13 */,
-                        &ff_mpeg4_DCtab_lum[0][1], 2, 1,
-                        &ff_mpeg4_DCtab_lum[0][0], 2, 1, 512);
-        INIT_VLC_STATIC(&dc_chrom, DC_VLC_BITS, 10 /* 13 */,
-                        &ff_mpeg4_DCtab_chrom[0][1], 2, 1,
-                        &ff_mpeg4_DCtab_chrom[0][0], 2, 1, 512);
-        INIT_VLC_STATIC_FROM_LENGTHS(&sprite_trajectory, SPRITE_TRAJ_VLC_BITS, 15,
-                                     ff_sprite_trajectory_lens, 1,
-                                     NULL, 0, 0, 0, 0, 128);
-        INIT_VLC_STATIC(&mb_type_b_vlc, MB_TYPE_B_VLC_BITS, 4,
-                        &ff_mb_type_b_tab[0][1], 2, 1,
-                        &ff_mb_type_b_tab[0][0], 2, 1, 16);
-        done = 1;
-    }
+        return decode_vop_header(ctx, gb, parse_only);
 }
 
 int ff_mpeg4_frame_end(AVCodecContext *avctx, const uint8_t *buf, int buf_size)
@@ -3511,6 +3499,8 @@ static int mpeg4_update_thread_context_for_user(AVCodecContext *dst,
 
 static av_cold void mpeg4_init_static(void)
 {
+    static uint8_t mpeg4_rvlc_rl_tables[2][2][2 * MAX_RUN + MAX_LEVEL + 3];
+
     INIT_VLC_STATIC_FROM_LENGTHS(&studio_luma_dc, STUDIO_INTRA_BITS, 19,
                                  &ff_mpeg4_studio_dc_luma[0][1], 2,
                                  &ff_mpeg4_studio_dc_luma[0][0], 2, 1,
@@ -3533,7 +3523,25 @@ static av_cold void mpeg4_init_static(void)
                                  0, INIT_VLC_STATIC_OVERLONG, NULL);
         offset += studio_intra_tab[i].table_size;
     }
-    ff_mpeg4videodec_static_init();
+
+    ff_mpeg4_init_rl_intra();
+    ff_rl_init(&ff_rvlc_rl_inter, mpeg4_rvlc_rl_tables[0]);
+    ff_rl_init(&ff_rvlc_rl_intra, mpeg4_rvlc_rl_tables[1]);
+    INIT_FIRST_VLC_RL(ff_mpeg4_rl_intra, 554);
+    INIT_VLC_RL(ff_rvlc_rl_inter, 1072);
+    INIT_FIRST_VLC_RL(ff_rvlc_rl_intra, 1072);
+    INIT_VLC_STATIC(&dc_lum, DC_VLC_BITS, 10 /* 13 */,
+                    &ff_mpeg4_DCtab_lum[0][1], 2, 1,
+                    &ff_mpeg4_DCtab_lum[0][0], 2, 1, 512);
+    INIT_VLC_STATIC(&dc_chrom, DC_VLC_BITS, 10 /* 13 */,
+                    &ff_mpeg4_DCtab_chrom[0][1], 2, 1,
+                    &ff_mpeg4_DCtab_chrom[0][0], 2, 1, 512);
+    INIT_VLC_STATIC_FROM_LENGTHS(&sprite_trajectory, SPRITE_TRAJ_VLC_BITS, 15,
+                                 ff_sprite_trajectory_lens, 1,
+                                 NULL, 0, 0, 0, 0, 128);
+    INIT_VLC_STATIC(&mb_type_b_vlc, MB_TYPE_B_VLC_BITS, 4,
+                    &ff_mb_type_b_tab[0][1], 2, 1,
+                    &ff_mb_type_b_tab[0][0], 2, 1, 16);
 }
 
 static av_cold int decode_init(AVCodecContext *avctx)

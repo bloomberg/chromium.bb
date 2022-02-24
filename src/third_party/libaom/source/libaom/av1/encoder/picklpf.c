@@ -262,14 +262,19 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     lf->filter_level_v = clamp(filt_guess, min_filter_level, max_filter_level);
     if (cpi->oxcf.algo_cfg.loopfilter_control == LOOPFILTER_SELECTIVELY &&
         !frame_is_intra_only(cm)) {
-      const int num4x4 = (cm->width >> 2) * (cm->height >> 2);
-      const int newmv_thresh = 7;
-      const int distance_since_key_thresh = 5;
-      if ((cpi->td.rd_counts.newmv_or_intra_blocks * 100 / num4x4) <
-              newmv_thresh &&
-          cpi->rc.frames_since_key > distance_since_key_thresh) {
+      if (cpi->oxcf.tune_cfg.content == AOM_CONTENT_SCREEN) {
         lf->filter_level[0] = 0;
         lf->filter_level[1] = 0;
+      } else {
+        const int num4x4 = (cm->width >> 2) * (cm->height >> 2);
+        const int newmv_thresh = 7;
+        const int distance_since_key_thresh = 5;
+        if ((cpi->td.rd_counts.newmv_or_intra_blocks * 100 / num4x4) <
+                newmv_thresh &&
+            cpi->rc.frames_since_key > distance_since_key_thresh) {
+          lf->filter_level[0] = 0;
+          lf->filter_level[1] = 0;
+        }
       }
     }
   } else {

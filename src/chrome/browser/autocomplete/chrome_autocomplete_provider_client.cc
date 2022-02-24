@@ -392,11 +392,7 @@ const TabMatcher& ChromeAutocompleteProviderClient::GetTabMatcher() const {
 }
 
 bool ChromeAutocompleteProviderClient::IsIncognitoModeAvailable() const {
-  if (profile_->IsGuestSession()) {
-    return false;
-  }
-  return IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
-         IncognitoModePrefs::Availability::kDisabled;
+  return IncognitoModePrefs::IsIncognitoAllowed(profile_);
 }
 
 bool ChromeAutocompleteProviderClient::IsSharingHubAvailable() const {
@@ -405,6 +401,11 @@ bool ChromeAutocompleteProviderClient::IsSharingHubAvailable() const {
 #else
   return false;
 #endif
+}
+
+base::WeakPtr<AutocompleteProviderClient>
+ChromeAutocompleteProviderClient::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void ChromeAutocompleteProviderClient::OnAutocompleteControllerResultReady(

@@ -3,17 +3,19 @@
 // found in the LICENSE file.
 
 import type * as Common from '../../core/common/common.js';
+import type * as Platform from '../../core/platform/platform.js';
 
 import type {ContentProvider, DeferredContent, SearchMatch} from './ContentProvider.js';
 import {performSearchInContent} from './TextUtils.js';
 
 export class StaticContentProvider implements ContentProvider {
-  private readonly contentURLInternal: string;
+  private readonly contentURLInternal: Platform.DevToolsPath.UrlString;
   private readonly contentTypeInternal: Common.ResourceType.ResourceType;
   private readonly lazyContent: () => Promise<DeferredContent>;
 
   constructor(
-      contentURL: string, contentType: Common.ResourceType.ResourceType, lazyContent: () => Promise<DeferredContent>) {
+      contentURL: Platform.DevToolsPath.UrlString, contentType: Common.ResourceType.ResourceType,
+      lazyContent: () => Promise<DeferredContent>) {
     this.contentURLInternal = contentURL;
     this.contentTypeInternal = contentType;
     this.lazyContent = lazyContent;
@@ -25,11 +27,11 @@ export class StaticContentProvider implements ContentProvider {
       content: string,
       isEncoded: boolean,
     }> => Promise.resolve({content, isEncoded: false});
-    return new StaticContentProvider(contentURL, contentType, lazyContent);
+    // TODO(crbug.com/1253323): Cast to UrlString will be removed when migration to branded types is complete.
+    return new StaticContentProvider(contentURL as Platform.DevToolsPath.UrlString, contentType, lazyContent);
   }
 
-  // TODO(crbug.com/1253323): Cast to PawPathString will be removed when migration to branded types is complete.
-  contentURL(): string {
+  contentURL(): Platform.DevToolsPath.UrlString {
     return this.contentURLInternal;
   }
 

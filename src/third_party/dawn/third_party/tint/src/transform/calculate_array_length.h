@@ -17,7 +17,7 @@
 
 #include <string>
 
-#include "src/ast/internal_decoration.h"
+#include "src/ast/internal_attribute.h"
 #include "src/transform/transform.h"
 
 namespace tint {
@@ -29,12 +29,15 @@ namespace transform {
 
 /// CalculateArrayLength is a transform used to replace calls to arrayLength()
 /// with a value calculated from the size of the storage buffer.
+///
+/// @note Depends on the following transforms to have been run first:
+/// * SimplifyPointers
 class CalculateArrayLength : public Castable<CalculateArrayLength, Transform> {
  public:
-  /// BufferSizeIntrinsic is an InternalDecoration that's applied to intrinsic
+  /// BufferSizeIntrinsic is an InternalAttribute that's applied to intrinsic
   /// functions used to obtain the runtime size of a storage buffer.
   class BufferSizeIntrinsic
-      : public Castable<BufferSizeIntrinsic, ast::InternalDecoration> {
+      : public Castable<BufferSizeIntrinsic, ast::InternalAttribute> {
    public:
     /// Constructor
     /// @param program_id the identifier of the program that owns this node
@@ -56,6 +59,12 @@ class CalculateArrayLength : public Castable<CalculateArrayLength, Transform> {
   /// Destructor
   ~CalculateArrayLength() override;
 
+  /// @param program the program to inspect
+  /// @param data optional extra transform-specific input data
+  /// @returns true if this transform should be run for the given program
+  bool ShouldRun(const Program* program,
+                 const DataMap& data = {}) const override;
+
  protected:
   /// Runs the transform using the CloneContext built for transforming a
   /// program. Run() is responsible for calling Clone() on the CloneContext.
@@ -63,7 +72,9 @@ class CalculateArrayLength : public Castable<CalculateArrayLength, Transform> {
   /// ProgramBuilder
   /// @param inputs optional extra transform-specific input data
   /// @param outputs optional extra transform-specific output data
-  void Run(CloneContext& ctx, const DataMap& inputs, DataMap& outputs) override;
+  void Run(CloneContext& ctx,
+           const DataMap& inputs,
+           DataMap& outputs) const override;
 };
 
 }  // namespace transform

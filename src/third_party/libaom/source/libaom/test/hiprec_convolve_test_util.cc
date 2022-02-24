@@ -11,6 +11,9 @@
 
 #include "test/hiprec_convolve_test_util.h"
 
+#include <memory>
+#include <new>
+
 #include "av1/common/restoration.h"
 
 using std::make_tuple;
@@ -94,15 +97,18 @@ void AV1HiprecConvolveTest::RunCheckOutput(hiprec_convolve_func test_impl) {
   int i, j, k, m;
   const ConvolveParams conv_params = get_conv_params_wiener(8);
 
-  uint8_t *input_ = new uint8_t[h * w];
-  uint8_t *input = input_;
+  std::unique_ptr<uint8_t[]> input_(new (std::nothrow) uint8_t[h * w]);
+  ASSERT_NE(input_, nullptr);
+  uint8_t *input = input_.get();
 
   // The AVX2 convolve functions always write rows with widths that are
   // multiples of 16. So to avoid a buffer overflow, we may need to pad
   // rows to a multiple of 16.
   int output_n = ALIGN_POWER_OF_TWO(out_w, 4) * out_h;
-  uint8_t *output = new uint8_t[output_n];
-  uint8_t *output2 = new uint8_t[output_n];
+  std::unique_ptr<uint8_t[]> output(new (std::nothrow) uint8_t[output_n]);
+  ASSERT_NE(output, nullptr);
+  std::unique_ptr<uint8_t[]> output2(new (std::nothrow) uint8_t[output_n]);
+  ASSERT_NE(output2, nullptr);
 
   // Generate random filter kernels
   DECLARE_ALIGNED(16, InterpKernel, hkernel);
@@ -116,11 +122,11 @@ void AV1HiprecConvolveTest::RunCheckOutput(hiprec_convolve_func test_impl) {
       // Choose random locations within the source block
       int offset_r = 3 + rnd_.PseudoUniform(h - out_h - 7);
       int offset_c = 3 + rnd_.PseudoUniform(w - out_w - 7);
-      av1_wiener_convolve_add_src_c(input + offset_r * w + offset_c, w, output,
-                                    out_w, hkernel, 16, vkernel, 16, out_w,
-                                    out_h, &conv_params);
-      test_impl(input + offset_r * w + offset_c, w, output2, out_w, hkernel, 16,
-                vkernel, 16, out_w, out_h, &conv_params);
+      av1_wiener_convolve_add_src_c(input + offset_r * w + offset_c, w,
+                                    output.get(), out_w, hkernel, 16, vkernel,
+                                    16, out_w, out_h, &conv_params);
+      test_impl(input + offset_r * w + offset_c, w, output2.get(), out_w,
+                hkernel, 16, vkernel, 16, out_w, out_h, &conv_params);
 
       for (j = 0; j < out_w * out_h; ++j)
         ASSERT_EQ(output[j], output2[j])
@@ -128,9 +134,6 @@ void AV1HiprecConvolveTest::RunCheckOutput(hiprec_convolve_func test_impl) {
             << (j / out_w) << ") on iteration " << i;
     }
   }
-  delete[] input_;
-  delete[] output;
-  delete[] output2;
 }
 
 void AV1HiprecConvolveTest::RunSpeedTest(hiprec_convolve_func test_impl) {
@@ -140,15 +143,18 @@ void AV1HiprecConvolveTest::RunSpeedTest(hiprec_convolve_func test_impl) {
   int i, j, k;
   const ConvolveParams conv_params = get_conv_params_wiener(8);
 
-  uint8_t *input_ = new uint8_t[h * w];
-  uint8_t *input = input_;
+  std::unique_ptr<uint8_t[]> input_(new (std::nothrow) uint8_t[h * w]);
+  ASSERT_NE(input_, nullptr);
+  uint8_t *input = input_.get();
 
   // The AVX2 convolve functions always write rows with widths that are
   // multiples of 16. So to avoid a buffer overflow, we may need to pad
   // rows to a multiple of 16.
   int output_n = ALIGN_POWER_OF_TWO(out_w, 4) * out_h;
-  uint8_t *output = new uint8_t[output_n];
-  uint8_t *output2 = new uint8_t[output_n];
+  std::unique_ptr<uint8_t[]> output(new (std::nothrow) uint8_t[output_n]);
+  ASSERT_NE(output, nullptr);
+  std::unique_ptr<uint8_t[]> output2(new (std::nothrow) uint8_t[output_n]);
+  ASSERT_NE(output2, nullptr);
 
   // Generate random filter kernels
   DECLARE_ALIGNED(16, InterpKernel, hkernel);
@@ -164,7 +170,7 @@ void AV1HiprecConvolveTest::RunSpeedTest(hiprec_convolve_func test_impl) {
   for (i = 0; i < num_iters; ++i) {
     for (j = 3; j < h - out_h - 4; j++) {
       for (k = 3; k < w - out_w - 4; k++) {
-        av1_wiener_convolve_add_src_c(input + j * w + k, w, output, out_w,
+        av1_wiener_convolve_add_src_c(input + j * w + k, w, output.get(), out_w,
                                       hkernel, 16, vkernel, 16, out_w, out_h,
                                       &conv_params);
       }
@@ -178,8 +184,8 @@ void AV1HiprecConvolveTest::RunSpeedTest(hiprec_convolve_func test_impl) {
   for (i = 0; i < num_iters; ++i) {
     for (j = 3; j < h - out_h - 4; j++) {
       for (k = 3; k < w - out_w - 4; k++) {
-        test_impl(input + j * w + k, w, output2, out_w, hkernel, 16, vkernel,
-                  16, out_w, out_h, &conv_params);
+        test_impl(input + j * w + k, w, output2.get(), out_w, hkernel, 16,
+                  vkernel, 16, out_w, out_h, &conv_params);
       }
     }
   }
@@ -193,10 +199,6 @@ void AV1HiprecConvolveTest::RunSpeedTest(hiprec_convolve_func test_impl) {
       << "Error: AV1HiprecConvolveTest.SpeedTest, SIMD slower than C.\n"
       << "C time: " << ref_time << " us\n"
       << "SIMD time: " << tst_time << " us\n";
-
-  delete[] input_;
-  delete[] output;
-  delete[] output2;
 }
 }  // namespace AV1HiprecConvolve
 
@@ -231,14 +233,17 @@ void AV1HighbdHiprecConvolveTest::RunCheckOutput(
   int i, j;
   const ConvolveParams conv_params = get_conv_params_wiener(bd);
 
-  uint16_t *input = new uint16_t[h * w];
+  std::unique_ptr<uint16_t[]> input(new (std::nothrow) uint16_t[h * w]);
+  ASSERT_NE(input, nullptr);
 
   // The AVX2 convolve functions always write rows with widths that are
   // multiples of 16. So to avoid a buffer overflow, we may need to pad
   // rows to a multiple of 16.
   int output_n = ALIGN_POWER_OF_TWO(out_w, 4) * out_h;
-  uint16_t *output = new uint16_t[output_n];
-  uint16_t *output2 = new uint16_t[output_n];
+  std::unique_ptr<uint16_t[]> output(new (std::nothrow) uint16_t[output_n]);
+  ASSERT_NE(output, nullptr);
+  std::unique_ptr<uint16_t[]> output2(new (std::nothrow) uint16_t[output_n]);
+  ASSERT_NE(output2, nullptr);
 
   // Generate random filter kernels
   DECLARE_ALIGNED(16, InterpKernel, hkernel);
@@ -247,9 +252,9 @@ void AV1HighbdHiprecConvolveTest::RunCheckOutput(
   for (i = 0; i < h; ++i)
     for (j = 0; j < w; ++j) input[i * w + j] = rnd_.Rand16() & ((1 << bd) - 1);
 
-  uint8_t *input_ptr = CONVERT_TO_BYTEPTR(input);
-  uint8_t *output_ptr = CONVERT_TO_BYTEPTR(output);
-  uint8_t *output2_ptr = CONVERT_TO_BYTEPTR(output2);
+  uint8_t *input_ptr = CONVERT_TO_BYTEPTR(input.get());
+  uint8_t *output_ptr = CONVERT_TO_BYTEPTR(output.get());
+  uint8_t *output2_ptr = CONVERT_TO_BYTEPTR(output2.get());
   for (int kernel_type = 0; kernel_type < 3; kernel_type++) {
     generate_kernels(&rnd_, hkernel, vkernel, kernel_type);
     for (i = 0; i < num_iters; ++i) {
@@ -268,9 +273,6 @@ void AV1HighbdHiprecConvolveTest::RunCheckOutput(
             << (j / out_w) << ") on iteration " << i;
     }
   }
-  delete[] input;
-  delete[] output;
-  delete[] output2;
 }
 
 void AV1HighbdHiprecConvolveTest::RunSpeedTest(
@@ -282,14 +284,17 @@ void AV1HighbdHiprecConvolveTest::RunSpeedTest(
   int i, j, k;
   const ConvolveParams conv_params = get_conv_params_wiener(bd);
 
-  uint16_t *input = new uint16_t[h * w];
+  std::unique_ptr<uint16_t[]> input(new (std::nothrow) uint16_t[h * w]);
+  ASSERT_NE(input, nullptr);
 
   // The AVX2 convolve functions always write rows with widths that are
   // multiples of 16. So to avoid a buffer overflow, we may need to pad
   // rows to a multiple of 16.
   int output_n = ALIGN_POWER_OF_TWO(out_w, 4) * out_h;
-  uint16_t *output = new uint16_t[output_n];
-  uint16_t *output2 = new uint16_t[output_n];
+  std::unique_ptr<uint16_t[]> output(new (std::nothrow) uint16_t[output_n]);
+  ASSERT_NE(output, nullptr);
+  std::unique_ptr<uint16_t[]> output2(new (std::nothrow) uint16_t[output_n]);
+  ASSERT_NE(output2, nullptr);
 
   // Generate random filter kernels
   DECLARE_ALIGNED(16, InterpKernel, hkernel);
@@ -300,9 +305,9 @@ void AV1HighbdHiprecConvolveTest::RunSpeedTest(
   for (i = 0; i < h; ++i)
     for (j = 0; j < w; ++j) input[i * w + j] = rnd_.Rand16() & ((1 << bd) - 1);
 
-  uint8_t *input_ptr = CONVERT_TO_BYTEPTR(input);
-  uint8_t *output_ptr = CONVERT_TO_BYTEPTR(output);
-  uint8_t *output2_ptr = CONVERT_TO_BYTEPTR(output2);
+  uint8_t *input_ptr = CONVERT_TO_BYTEPTR(input.get());
+  uint8_t *output_ptr = CONVERT_TO_BYTEPTR(output.get());
+  uint8_t *output2_ptr = CONVERT_TO_BYTEPTR(output2.get());
 
   aom_usec_timer ref_timer;
   aom_usec_timer_start(&ref_timer);
@@ -338,10 +343,6 @@ void AV1HighbdHiprecConvolveTest::RunSpeedTest(
       << "Error: AV1HighbdHiprecConvolveTest.SpeedTest, SIMD slower than C.\n"
       << "C time: " << ref_time << " us\n"
       << "SIMD time: " << tst_time << " us\n";
-
-  delete[] input;
-  delete[] output;
-  delete[] output2;
 }
 }  // namespace AV1HighbdHiprecConvolve
 #endif  // CONFIG_AV1_HIGHBITDEPTH

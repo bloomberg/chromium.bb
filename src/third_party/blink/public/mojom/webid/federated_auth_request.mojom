@@ -10,30 +10,22 @@ import "url/mojom/url.mojom";
 //
 // Proposal: https://github.com/WICG/WebID
 
+// Represents the fetch result from a federated authentication request. It is
+// used to determine whether a JavaScript exception should be thrown, and what
+// the error message of such exception should say. This enum is a subset of
+// FederatedAuthRequestResult in
+// third_party/blink/public/mojom/devtools/inspector_issue.mojom.
 enum RequestIdTokenStatus {
   kSuccess,
   kApprovalDeclined,
   kErrorTooManyRequests,
-  kErrorFetchingWellKnownHttpNotFound,
-  kErrorFetchingWellKnownNoResponse,
-  kErrorFetchingWellKnownInvalidResponse,
-  kErrorFetchingClientIdMetadataHttpNotFound,
-  kErrorFetchingClientIdMetadataNoResponse,
-  kErrorFetchingClientIdMetadataInvalidResponse,
-  kErrorFetchingAccountsHttpNotFound,
-  kErrorFetchingAccountsNoResponse,
-  kErrorFetchingAccountsInvalidResponse,
-  kErrorFetchingIdTokenHttpNotFound,
-  kErrorFetchingIdTokenNoResponse,
-  kErrorFetchingIdTokenInvalidResponse,
-  kErrorFetchingIdTokenInvalidRequest,
   kErrorFetchingSignin,
   kErrorInvalidSigninResponse,
   kErrorCanceled,
   kError,
 };
 
-enum LogoutStatus {
+enum LogoutRpsStatus {
   kSuccess,
   kErrorTooManyRequests,
   kError,
@@ -50,7 +42,7 @@ enum RequestMode {
 };
 
 // The details of a single logout request from an identity provider.
-struct LogoutRequest {
+struct LogoutRpsRequest {
   // URL to which the request will be sent. The origin is validated to
   // have an associated active session.
   url.mojom.Url url;
@@ -88,5 +80,5 @@ interface FederatedAuthRequest {
 
   // Contact the list of Relying Party logout endpoints and account IDs to
   // attempt to initiate user logout.
-  Logout(array<LogoutRequest> rp_logout_requests) => (LogoutStatus status);
+  LogoutRps(array<LogoutRpsRequest> rp_logout_requests) => (LogoutRpsStatus status);
 };
