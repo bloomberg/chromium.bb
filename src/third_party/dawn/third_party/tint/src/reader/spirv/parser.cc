@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "src/reader/spirv/parser_impl.h"
+#include "src/transform/decompose_strided_array.h"
 #include "src/transform/decompose_strided_matrix.h"
 #include "src/transform/manager.h"
 #include "src/transform/remove_unreachable_statements.h"
@@ -50,18 +51,13 @@ Program Parse(const std::vector<uint32_t>& input) {
     return program;
   }
 
-  // If the generated program contains matrices with a custom MatrixStride
-  // attribute then we need to decompose these into an array of vectors
-  if (transform::DecomposeStridedMatrix::ShouldRun(&program)) {
-    transform::Manager manager;
-    manager.Add<transform::Unshadow>();
-    manager.Add<transform::SimplifyPointers>();
-    manager.Add<transform::DecomposeStridedMatrix>();
-    manager.Add<transform::RemoveUnreachableStatements>();
-    return manager.Run(&program).program;
-  }
-
-  return program;
+  transform::Manager manager;
+  manager.Add<transform::Unshadow>();
+  manager.Add<transform::SimplifyPointers>();
+  manager.Add<transform::DecomposeStridedMatrix>();
+  manager.Add<transform::DecomposeStridedArray>();
+  manager.Add<transform::RemoveUnreachableStatements>();
+  return manager.Run(&program).program;
 }
 
 }  // namespace spirv

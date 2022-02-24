@@ -468,6 +468,12 @@ class Texture2DTestES3 : public Texture2DTest
     }
 };
 
+class Texture2DTestES3RobustInit : public Texture2DTestES3
+{
+  protected:
+    Texture2DTestES3RobustInit() : Texture2DTestES3() { setRobustResourceInit(true); }
+};
+
 class Texture2DBaseMaxTestES3 : public ANGLETest
 {
   protected:
@@ -6040,6 +6046,36 @@ TEST_P(Texture2DTestES3, TextureCOMPRESSEDSRGB8ETC2ImplicitAlpha1)
     EXPECT_PIXEL_ALPHA_EQ(0, 0, 255);
 }
 
+// ETC2 punchthrough alpha formats must be initialized to opaque black when emulated
+// http://anglebug.com/6936
+TEST_P(Texture2DTestES3RobustInit, TextureCOMPRESSEDRGB8A1ETC2)
+{
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, mTexture2D);
+    glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2, 1, 1, 0,
+                           8, nullptr);
+    EXPECT_GL_NO_ERROR();
+
+    drawQuad(mProgram, "position", 0.5f);
+
+    EXPECT_PIXEL_ALPHA_EQ(0, 0, 255);
+}
+
+// ETC2 punchthrough alpha formats must be initialized to opaque black when emulated
+// http://anglebug.com/6936
+TEST_P(Texture2DTestES3RobustInit, TextureCOMPRESSEDSRGB8A1ETC2)
+{
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, mTexture2D);
+    glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2, 1, 1, 0,
+                           8, nullptr);
+    EXPECT_GL_NO_ERROR();
+
+    drawQuad(mProgram, "position", 0.5f);
+
+    EXPECT_PIXEL_ALPHA_EQ(0, 0, 255);
+}
+
 // Test that compressed textures ignore the pixel unpack state.
 // (https://crbug.org/1267496)
 TEST_P(Texture2DTestES3, PixelUnpackStateTexImage)
@@ -6073,6 +6109,36 @@ TEST_P(Texture2DTestES3, PixelUnpackStateTexSubImage)
     glCompressedTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 8, 8, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, 64,
                               data);
     EXPECT_GL_NO_ERROR();
+}
+
+// Test for http://anglebug.com/6926.
+TEST_P(Texture2DTestES3, TextureRGBUpdateWithPBO)
+{
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Texture2D(), essl1_shaders::fs::Texture2D());
+
+    glViewport(0, 0, 16, 16);
+
+    GLTexture tex1;
+    std::vector<GLColor> texDataRed(16u * 16u, GLColor::red);
+    std::vector<GLColor> texDataGreen(16u * 16u, GLColor::green);
+
+    glBindTexture(GL_TEXTURE_2D, tex1);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB8, 16, 16);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 16, 16, GL_RGB, GL_UNSIGNED_BYTE, texDataRed.data());
+    ASSERT_GL_NO_ERROR();
+
+    GLBuffer pbo;
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, 3 * 16 * 16, texDataGreen.data(), GL_STATIC_DRAW);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 16, 16, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    ASSERT_GL_NO_ERROR();
+
+    drawQuad(program, essl1_shaders::PositionAttrib(), 0.0f);
+    ASSERT_GL_NO_ERROR();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    EXPECT_PIXEL_COLOR_EQ(4, 4, GLColor::green);
 }
 
 // Copied from Texture2DTest::TexStorage
@@ -9447,6 +9513,12 @@ TEST_P(Texture2DTestES3, NonZeroBaseEmulatedClear)
     // Tests behavior of the Vulkan backend with emulated formats.
     ANGLE_SKIP_TEST_IF(!IsVulkan());
 
+    // This test assumes GL_RGB is always emulated, which overrides the WithAllocateNonZeroMemory
+    // memory feature, clearing the memory to zero. However, if the format is *not* emulated and the
+    // feature WithAllocateNonZeroMemory is enabled, the texture memory will contain non-zero
+    // memory, which means the color is not black (causing the test to fail).
+    ANGLE_SKIP_TEST_IF(isAllocateNonZeroMemoryEnabled());
+
     setUpProgram();
 
     glActiveTexture(GL_TEXTURE0);
@@ -10430,6 +10502,9 @@ ANGLE_INSTANTIATE_TEST_ES2(SamplerArrayAsFunctionParameterTest);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DTestES3);
 ANGLE_INSTANTIATE_TEST_ES3_AND(Texture2DTestES3, WithAllocateNonZeroMemory(ES3_VULKAN()));
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DTestES3RobustInit);
+ANGLE_INSTANTIATE_TEST_ES3(Texture2DTestES3RobustInit);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DTestES31PPO);
 ANGLE_INSTANTIATE_TEST_ES31(Texture2DTestES31PPO);

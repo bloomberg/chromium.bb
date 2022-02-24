@@ -390,7 +390,7 @@ void test_mixing_types()
   typedef Matrix<Cplx,Dynamic,Dynamic> DenseMatCplx;
 
   Index n = internal::random<Index>(1,100);
-  double density = (std::max)(8./(n*n), 0.2);
+  double density = (std::max)(8./static_cast<double>(n*n), 0.2);
 
   SpMatReal sR1(n,n);
   SpMatCplx sC1(n,n), sC2(n,n), sC3(n,n);

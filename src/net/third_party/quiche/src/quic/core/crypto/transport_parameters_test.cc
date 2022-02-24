@@ -37,7 +37,6 @@ const uint64_t kFakeInitialRoundTripTime = 53;
 const uint8_t kFakePreferredStatelessResetTokenData[16] = {
     0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
     0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F};
-const bool kFakeKeyUpdateNotYetSupported = true;
 
 const auto kCustomParameter1 =
     static_cast<TransportParameters::TransportParameterId>(0xffcd);
@@ -126,10 +125,6 @@ TransportParameters::VersionInformation CreateFakeVersionInformation() {
 QuicTagVector CreateFakeGoogleConnectionOptions() {
   return {kALPN, MakeQuicTag('E', 'F', 'G', 0x00),
           MakeQuicTag('H', 'I', 'J', 0xff)};
-}
-
-std::string CreateFakeUserAgentId() {
-  return "FakeUAID";
 }
 
 void RemoveGreaseParameters(TransportParameters* params) {
@@ -291,8 +286,6 @@ TEST_P(TransportParametersTest, CopyConstructor) {
   orig_params.retry_source_connection_id = CreateFakeRetrySourceConnectionId();
   orig_params.initial_round_trip_time_us.set_value(kFakeInitialRoundTripTime);
   orig_params.google_connection_options = CreateFakeGoogleConnectionOptions();
-  orig_params.user_agent_id = CreateFakeUserAgentId();
-  orig_params.key_update_not_yet_supported = kFakeKeyUpdateNotYetSupported;
   orig_params.custom_parameters[kCustomParameter1] = kCustomParameter1Value;
   orig_params.custom_parameters[kCustomParameter2] = kCustomParameter2Value;
 
@@ -329,12 +322,6 @@ TEST_P(TransportParametersTest, RoundTripClient) {
       CreateFakeInitialSourceConnectionId();
   orig_params.initial_round_trip_time_us.set_value(kFakeInitialRoundTripTime);
   orig_params.google_connection_options = CreateFakeGoogleConnectionOptions();
-  if (!GetQuicReloadableFlag(quic_ignore_user_agent_transport_parameter)) {
-    orig_params.user_agent_id = CreateFakeUserAgentId();
-  }
-  if (!GetQuicReloadableFlag(quic_ignore_key_update_not_yet_supported)) {
-    orig_params.key_update_not_yet_supported = kFakeKeyUpdateNotYetSupported;
-  }
   orig_params.custom_parameters[kCustomParameter1] = kCustomParameter1Value;
   orig_params.custom_parameters[kCustomParameter2] = kCustomParameter2Value;
 
@@ -578,13 +565,6 @@ TEST_P(TransportParametersTest, ParseClientParams) {
       'A', 'L', 'P', 'N',  // value
       'E', 'F', 'G', 0x00,
       'H', 'I', 'J', 0xff,
-      // user_agent_id
-      0x71, 0x29,  // parameter id
-      0x08,  // length
-      'F', 'a', 'k', 'e', 'U', 'A', 'I', 'D',  // value
-      // key_update_not_yet_supported
-      0x71, 0x2B,  // parameter id
-      0x00,  // length
       // Google version extension
       0x80, 0x00, 0x47, 0x52,  // parameter id
       0x04,  // length
@@ -649,15 +629,6 @@ TEST_P(TransportParametersTest, ParseClientParams) {
   ASSERT_TRUE(new_params.google_connection_options.has_value());
   EXPECT_EQ(CreateFakeGoogleConnectionOptions(),
             new_params.google_connection_options.value());
-  if (!GetQuicReloadableFlag(quic_ignore_user_agent_transport_parameter)) {
-    ASSERT_TRUE(new_params.user_agent_id.has_value());
-    EXPECT_EQ(CreateFakeUserAgentId(), new_params.user_agent_id.value());
-  } else {
-    EXPECT_FALSE(new_params.user_agent_id.has_value());
-  }
-  if (!GetQuicReloadableFlag(quic_ignore_key_update_not_yet_supported)) {
-    EXPECT_TRUE(new_params.key_update_not_yet_supported);
-  }
 }
 
 TEST_P(TransportParametersTest,
@@ -844,9 +815,6 @@ TEST_P(TransportParametersTest, ParseServerParams) {
       'A', 'L', 'P', 'N',  // value
       'E', 'F', 'G', 0x00,
       'H', 'I', 'J', 0xff,
-      // key_update_not_yet_supported
-      0x71, 0x2B,  // parameter id
-      0x00,  // length
       // Google version extension
       0x80, 0x00, 0x47, 0x52,  // parameter id
       0x0d,  // length
@@ -933,10 +901,6 @@ TEST_P(TransportParametersTest, ParseServerParams) {
   ASSERT_TRUE(new_params.google_connection_options.has_value());
   EXPECT_EQ(CreateFakeGoogleConnectionOptions(),
             new_params.google_connection_options.value());
-  EXPECT_FALSE(new_params.user_agent_id.has_value());
-  if (!GetQuicReloadableFlag(quic_ignore_key_update_not_yet_supported)) {
-    EXPECT_TRUE(new_params.key_update_not_yet_supported);
-  }
 }
 
 TEST_P(TransportParametersTest, ParseServerParametersRepeated) {
@@ -1054,8 +1018,6 @@ TEST_P(TransportParametersTest, SerializationOrderIsRandom) {
       CreateFakeInitialSourceConnectionId();
   orig_params.initial_round_trip_time_us.set_value(kFakeInitialRoundTripTime);
   orig_params.google_connection_options = CreateFakeGoogleConnectionOptions();
-  orig_params.user_agent_id = CreateFakeUserAgentId();
-  orig_params.key_update_not_yet_supported = kFakeKeyUpdateNotYetSupported;
   orig_params.custom_parameters[kCustomParameter1] = kCustomParameter1Value;
   orig_params.custom_parameters[kCustomParameter2] = kCustomParameter2Value;
 

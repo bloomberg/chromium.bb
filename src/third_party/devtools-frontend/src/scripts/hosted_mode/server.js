@@ -172,6 +172,24 @@ async function requestHandler(request, response) {
         headers.set('Content-Type', inferredContentType);
       }
     }
+    if (!headers.get('Cache-Control')) {
+      // Lets reduce Disk I/O by allowing clients to cache resources.
+      // This is fine to do given that test invocations run against fresh Chrome profiles.
+      headers.set('Cache-Control', 'max-age=3600');
+    }
+    if (!headers.get('Access-Control-Allow-Origin')) {
+      // The DevTools frontend in hosted-mode uses regular fetch to get source maps etc.
+      // Disable CORS only for the DevTools frontend, not for resource/target pages.
+      // Since Chrome will cache resources, we have to indicate that CORS can still vary
+      // based on the origin that made the request. E.g. the target page loads a script first
+      // but then DevTools also wants to load it. In the former, we disallow cross-origin requests by default,
+      // while for the latter we allow it.
+      const requestedByDevTools = request.headers.origin?.includes('devtools-frontend.test');
+      if (requestedByDevTools) {
+        headers.set('Access-Control-Allow-Origin', request.headers.origin);
+      }
+      headers.set('Vary', 'Origin');
+    }
     headers.forEach((value, header) => {
       response.setHeader(header, value);
     });

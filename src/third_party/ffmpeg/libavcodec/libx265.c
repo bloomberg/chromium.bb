@@ -54,6 +54,7 @@ typedef struct libx265Context {
 
     void *sei_data;
     int sei_data_size;
+    int udu_sei;
 
     /**
      * If the encoder does not support ROI then warn the first time we
@@ -543,30 +544,32 @@ static int libx265_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
             memcpy(x265pic.userData, &pic->reordered_opaque, sizeof(pic->reordered_opaque));
         }
 
-        for (i = 0; i < pic->nb_side_data; i++) {
-            AVFrameSideData *side_data = pic->side_data[i];
-            void *tmp;
-            x265_sei_payload *sei_payload;
+        if (ctx->udu_sei) {
+            for (i = 0; i < pic->nb_side_data; i++) {
+                AVFrameSideData *side_data = pic->side_data[i];
+                void *tmp;
+                x265_sei_payload *sei_payload;
 
-            if (side_data->type != AV_FRAME_DATA_SEI_UNREGISTERED)
-                continue;
+                if (side_data->type != AV_FRAME_DATA_SEI_UNREGISTERED)
+                    continue;
 
-            tmp = av_fast_realloc(ctx->sei_data,
-                                  &ctx->sei_data_size,
-                                  (sei->numPayloads + 1) * sizeof(*sei_payload));
-            if (!tmp) {
-                av_freep(&x265pic.userData);
-                av_freep(&x265pic.quantOffsets);
-                return AVERROR(ENOMEM);
+                tmp = av_fast_realloc(ctx->sei_data,
+                        &ctx->sei_data_size,
+                        (sei->numPayloads + 1) * sizeof(*sei_payload));
+                if (!tmp) {
+                    av_freep(&x265pic.userData);
+                    av_freep(&x265pic.quantOffsets);
+                    return AVERROR(ENOMEM);
+                }
+                ctx->sei_data = tmp;
+                sei->payloads = ctx->sei_data;
+                sei_payload = &sei->payloads[sei->numPayloads];
+                sei_payload->payload = side_data->data;
+                sei_payload->payloadSize = side_data->size;
+                /* Equal to libx265 USER_DATA_UNREGISTERED */
+                sei_payload->payloadType = SEI_TYPE_USER_DATA_UNREGISTERED;
+                sei->numPayloads++;
             }
-            ctx->sei_data = tmp;
-            sei->payloads = ctx->sei_data;
-            sei_payload = &sei->payloads[sei->numPayloads];
-            sei_payload->payload = side_data->data;
-            sei_payload->payloadSize = side_data->size;
-            /* Equal to libx265 USER_DATA_UNREGISTERED */
-            sei_payload->payloadType = SEI_TYPE_USER_DATA_UNREGISTERED;
-            sei->numPayloads++;
         }
     }
 
@@ -708,6 +711,7 @@ static const AVOption options[] = {
     { "preset",      "set the x265 preset",                                                         OFFSET(preset),    AV_OPT_TYPE_STRING, { 0 }, 0, 0, VE },
     { "tune",        "set the x265 tune parameter",                                                 OFFSET(tune),      AV_OPT_TYPE_STRING, { 0 }, 0, 0, VE },
     { "profile",     "set the x265 profile",                                                        OFFSET(profile),   AV_OPT_TYPE_STRING, { 0 }, 0, 0, VE },
+    { "udu_sei",      "Use user data unregistered SEI if available",                                OFFSET(udu_sei),   AV_OPT_TYPE_BOOL,   { .i64 = 0 }, 0, 1, VE },
     { "x265-params", "set the x265 configuration using a :-separated list of key=value parameters", OFFSET(x265_opts), AV_OPT_TYPE_DICT,   { 0 }, 0, 0, VE },
     { NULL }
 };

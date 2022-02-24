@@ -175,7 +175,6 @@
 <translation id="5170938038195470297">መገለጫዎ የአዲስ Google Chrome ስሪት አካል ስለሆነ መጠቀም አይቻልም።
 
 አንዳንድ ባሕሪያት ላይገኙ ይችላሉ። እባክዎ የተለየ የመገለጫ አቃፊ ይግለጹ ወይም አዲሱን የChrome ስሪት ይጠቀሙ።</translation>
-<translation id="5193136243808726294">Google Chrome OS ይህን ገጽ መክፈት አይችልም።</translation>
 <translation id="521447420733633466">መሣሪያ የሚያጋሩ ከሆኑ ጓደኛዎች እና ቤተሰብ ተለይተው ሊያስሱ እና Chromeን በሚፈልጉበት መንገድ ማዋቀር ይችላሉ</translation>
 <translation id="5251420635869119124">እንግዳዎች ምንም ነገር ሳይተዉ Chromeን መጠቀም ይችላሉ።</translation>
 <translation id="5334487786912937552">Chrome ፋይሎችን ለማውረድ የማከማቻ መዳረሻ ፈቃድ ያስፈልገዋል</translation>
@@ -186,8 +185,6 @@
 Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translation>
 <translation id="556024056938947818">Google Chrome የይለፍ ቃላትን ለማሳየት እየሞከረ ነው።</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5657226924540934362">በዚህ ገጽ ላይ አንድ ቅንብር ካልታየ በእርስዎ <ph name="LINK_BEGIN" />
-      የ Chrome OS ቅንብሮች<ph name="LINK_END" /> ውስጥ ይመልከቱ</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> አደገኛ ሊሆን ስለሚችል Chrome አግዶታል።</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{ይህን ዝማኔ ለመተግበር አስተዳዳሪዎ Chromeን ዳግም እንዲያስጀምሩት ይጠይቀዎታል}=1{ይህን ዝማኔ ለመተግበር አስተዳዳሪዎ Chromeን ዳግም እንዲያስጀምሩት ይጠይቀዎታል። የእርስዎ ማንነት የማያሳውቅ መስኮት ዳግም አይከፈትም}one{ይህን ዝማኔ ለመተግበር አስተዳዳሪዎ Chromeን ዳግም እንዲያስጀምሩት ይጠይቀዎታል። የእርስዎ # ማንነት የማያሳውቁ መስኮቶች ዳግም አይከፈቱም}other{ይህን ዝማኔ ለመተግበር አስተዳዳሪዎ Chromeን ዳግም እንዲያስጀምሩት ይጠይቀዎታል። የእርስዎ # ማንነት የማያሳውቁ መስኮቶች ዳግም አይከፈቱም}}</translation>
 <translation id="5686916850681061684">Google Chromeን ያብጁ እና ይቆጣጠሩ። የሆነ ነገር ትኩረትዎ ያስፈልገዋል - ለዝርዝሮች ጠቅ ያድርጉ።</translation>

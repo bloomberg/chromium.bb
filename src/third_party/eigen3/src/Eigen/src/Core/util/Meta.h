@@ -212,35 +212,43 @@ template<typename T, std::size_t N> struct array_size<std::array<T,N> > {
   enum { value = N };
 };
 
+
 /** \internal
-  * Analogue of the std::size free function.
-  * It returns the size of the container or view \a x of type \c T
+  * Analogue of the std::ssize free function.
+  * It returns the signed size of the container or view \a x of type \c T
   *
   * It currently supports:
   *  - any types T defining a member T::size() const
   *  - plain C arrays as T[N]
   *
+  * For C++20, this function just forwards to `std::ssize`, or any ADL discoverable `ssize` function.
   */
-template<typename T>
-EIGEN_CONSTEXPR Index size(const T& x) { return x.size(); }
+#if EIGEN_COMP_CXXVER < 20  || EIGEN_GNUC_AT_MOST(9,4)
+template <typename T>
+EIGEN_CONSTEXPR auto index_list_size(const T& x) {
+  using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(x.size())>>;
+  return static_cast<R>(x.size());
+}
 
-template<typename T,std::size_t N>
-EIGEN_CONSTEXPR Index size(const T (&) [N]) { return N; }
+template<typename T, std::ptrdiff_t N>
+EIGEN_CONSTEXPR std::ptrdiff_t index_list_size(const T (&)[N]) { return N; }
+#else
+template <typename T>
+EIGEN_CONSTEXPR auto index_list_size(T&& x) {
+  using std::ssize;
+  return ssize(std::forward<T>(x));
+}
+#endif // EIGEN_COMP_CXXVER
 
 /** \internal
   * Convenient struct to get the result type of a nullary, unary, binary, or
   * ternary functor.
-  * 
-  * Pre C++11:
-  * Supports both a Func::result_type member and templated
-  * Func::result<Func(ArgTypes...)>::type member.
-  * 
-  * If none of these members is provided, then the type of the first
-  * argument is returned.
-  * 
-  * Post C++11:
+  *
+  * Pre C++17:
   * This uses std::result_of. However, note the `type` member removes
   * const and converts references/pointers to their corresponding value type.
+  *
+  * Post C++17: Uses std::invoke_result
   */
 #if EIGEN_HAS_STD_INVOKE_RESULT
 template<typename T> struct result_of;
@@ -250,179 +258,34 @@ struct result_of<F(ArgTypes...)> {
   typedef typename std::invoke_result<F, ArgTypes...>::type type1;
   typedef typename remove_all<type1>::type type;
 };
-#elif EIGEN_HAS_STD_RESULT_OF
-template<typename T> struct result_of {
-  typedef typename std::result_of<T>::type type1;
-  typedef typename remove_all<type1>::type type;
-};
-#else
-template<typename T> struct result_of { };
 
-struct has_none {int a[1];};
-struct has_std_result_type {int a[2];};
-struct has_tr1_result {int a[3];};
-
-template<typename Func, int SizeOf>
-struct nullary_result_of_select {};
-
-template<typename Func>
-struct nullary_result_of_select<Func, sizeof(has_std_result_type)> {typedef typename Func::result_type type;};
-
-template<typename Func>
-struct nullary_result_of_select<Func, sizeof(has_tr1_result)> {typedef typename Func::template result<Func()>::type type;};
-
-template<typename Func>
-struct result_of<Func()> {
-    template<typename T>
-    static has_std_result_type    testFunctor(T const *, typename T::result_type const * = 0);
-    template<typename T>
-    static has_tr1_result         testFunctor(T const *, typename T::template result<T()>::type const * = 0);
-    static has_none               testFunctor(...);
-
-    // note that the following indirection is needed for gcc-3.3
-    enum {FunctorType = sizeof(testFunctor(static_cast<Func*>(0)))};
-    typedef typename nullary_result_of_select<Func, FunctorType>::type type;
-};
-
-template<typename Func, typename ArgType, int SizeOf=sizeof(has_none)>
-struct unary_result_of_select {typedef typename internal::remove_all<ArgType>::type type;};
-
-template<typename Func, typename ArgType>
-struct unary_result_of_select<Func, ArgType, sizeof(has_std_result_type)> {typedef typename Func::result_type type;};
-
-template<typename Func, typename ArgType>
-struct unary_result_of_select<Func, ArgType, sizeof(has_tr1_result)> {typedef typename Func::template result<Func(ArgType)>::type type;};
-
-template<typename Func, typename ArgType>
-struct result_of<Func(ArgType)> {
-    template<typename T>
-    static has_std_result_type    testFunctor(T const *, typename T::result_type const * = 0);
-    template<typename T>
-    static has_tr1_result         testFunctor(T const *, typename T::template result<T(ArgType)>::type const * = 0);
-    static has_none               testFunctor(...);
-
-    // note that the following indirection is needed for gcc-3.3
-    enum {FunctorType = sizeof(testFunctor(static_cast<Func*>(0)))};
-    typedef typename unary_result_of_select<Func, ArgType, FunctorType>::type type;
-};
-
-template<typename Func, typename ArgType0, typename ArgType1, int SizeOf=sizeof(has_none)>
-struct binary_result_of_select {typedef typename internal::remove_all<ArgType0>::type type;};
-
-template<typename Func, typename ArgType0, typename ArgType1>
-struct binary_result_of_select<Func, ArgType0, ArgType1, sizeof(has_std_result_type)>
-{typedef typename Func::result_type type;};
-
-template<typename Func, typename ArgType0, typename ArgType1>
-struct binary_result_of_select<Func, ArgType0, ArgType1, sizeof(has_tr1_result)>
-{typedef typename Func::template result<Func(ArgType0,ArgType1)>::type type;};
-
-template<typename Func, typename ArgType0, typename ArgType1>
-struct result_of<Func(ArgType0,ArgType1)> {
-    template<typename T>
-    static has_std_result_type    testFunctor(T const *, typename T::result_type const * = 0);
-    template<typename T>
-    static has_tr1_result         testFunctor(T const *, typename T::template result<T(ArgType0,ArgType1)>::type const * = 0);
-    static has_none               testFunctor(...);
-
-    // note that the following indirection is needed for gcc-3.3
-    enum {FunctorType = sizeof(testFunctor(static_cast<Func*>(0)))};
-    typedef typename binary_result_of_select<Func, ArgType0, ArgType1, FunctorType>::type type;
-};
-
-template<typename Func, typename ArgType0, typename ArgType1, typename ArgType2, int SizeOf=sizeof(has_none)>
-struct ternary_result_of_select {typedef typename internal::remove_all<ArgType0>::type type;};
-
-template<typename Func, typename ArgType0, typename ArgType1, typename ArgType2>
-struct ternary_result_of_select<Func, ArgType0, ArgType1, ArgType2, sizeof(has_std_result_type)>
-{typedef typename Func::result_type type;};
-
-template<typename Func, typename ArgType0, typename ArgType1, typename ArgType2>
-struct ternary_result_of_select<Func, ArgType0, ArgType1, ArgType2, sizeof(has_tr1_result)>
-{typedef typename Func::template result<Func(ArgType0,ArgType1,ArgType2)>::type type;};
-
-template<typename Func, typename ArgType0, typename ArgType1, typename ArgType2>
-struct result_of<Func(ArgType0,ArgType1,ArgType2)> {
-    template<typename T>
-    static has_std_result_type    testFunctor(T const *, typename T::result_type const * = 0);
-    template<typename T>
-    static has_tr1_result         testFunctor(T const *, typename T::template result<T(ArgType0,ArgType1,ArgType2)>::type const * = 0);
-    static has_none               testFunctor(...);
-
-    // note that the following indirection is needed for gcc-3.3
-    enum {FunctorType = sizeof(testFunctor(static_cast<Func*>(0)))};
-    typedef typename ternary_result_of_select<Func, ArgType0, ArgType1, ArgType2, FunctorType>::type type;
-};
-
-#endif
-
-#if EIGEN_HAS_STD_INVOKE_RESULT
 template<typename F, typename... ArgTypes>
 struct invoke_result {
   typedef typename std::invoke_result<F, ArgTypes...>::type type1;
   typedef typename remove_all<type1>::type type;
 };
 #else
-template<typename F, typename... ArgTypes>
-struct invoke_result {
-  typedef typename result_of<F(ArgTypes...)>::type type1;
+template<typename T> struct result_of {
+  typedef typename std::result_of<T>::type type1;
   typedef typename remove_all<type1>::type type;
 };
-#endif
 
-// C++14 integer/index_sequence.
-#if defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304L
-
-using std::integer_sequence;
-using std::make_integer_sequence;
-
-using std::index_sequence;
-using std::make_index_sequence;
-
-#else 
-
-template <typename T, T... Ints>
-struct integer_sequence {
-  static EIGEN_CONSTEXPR size_t size() EIGEN_NOEXCEPT { return sizeof...(Ints); }
+template<typename F, typename... ArgTypes>
+struct invoke_result {
+    typedef typename result_of<F(ArgTypes...)>::type type1;
+    typedef typename remove_all<type1>::type type;
 };
-
-template <typename T, typename Sequence, T N>
-struct append_integer;
-
-template<typename T, T... Ints, T N>
-struct append_integer<T, integer_sequence<T, Ints...>, N> {
-  using type = integer_sequence<T, Ints..., N>;
-};
-
-template<typename T, size_t N>
-struct generate_integer_sequence {
-  using type = typename append_integer<T, typename generate_integer_sequence<T, N-1>::type, N-1>::type;
-};
-
-template<typename T>
-struct generate_integer_sequence<T, 0> {
-  using type = integer_sequence<T>;
-};
-
-template <typename T, size_t N>
-using make_integer_sequence = typename generate_integer_sequence<T, N>::type;
-
-template<size_t... Ints>
-using index_sequence = integer_sequence<size_t, Ints...>;
-
-template<size_t N>
-using make_index_sequence = make_integer_sequence<size_t, N>;
-
 #endif
 
 // Reduces a sequence of bools to true if all are true, false otherwise.
 template<bool... values>
-using reduce_all = std::is_same<integer_sequence<bool, values..., true>, integer_sequence<bool, true, values...> >;
+using reduce_all = std::is_same<std::integer_sequence<bool, values..., true>,
+    std::integer_sequence<bool, true, values...> >;
 
 // Reduces a sequence of bools to true if any are true, false if all false.
 template<bool... values>
 using reduce_any = std::integral_constant<bool,
-    !std::is_same<integer_sequence<bool, values..., false>, integer_sequence<bool, false, values...> >::value>;
+    !std::is_same<std::integer_sequence<bool, values..., false>, std::integer_sequence<bool, false, values...> >::value>;
 
 struct meta_yes { char a[1]; };
 struct meta_no  { char a[2]; };
@@ -534,6 +397,8 @@ struct aligned_storage {
 
 } // end namespace internal
 
+template<typename T> struct NumTraits;
+
 namespace numext {
 
 #if defined(EIGEN_GPU_COMPILE_PHASE)
@@ -565,6 +430,20 @@ bool equal_strict(const float& x,const float& y) { return std::equal_to<float>()
 template<> EIGEN_STRONG_INLINE EIGEN_DEVICE_FUNC
 bool equal_strict(const double& x,const double& y) { return std::equal_to<double>()(x,y); }
 #endif
+
+/**
+ * \internal Performs an exact comparison of x to zero, e.g. to decide whether a term can be ignored.
+ * Use this to to bypass -Wfloat-equal warnings when exact zero is what needs to be tested.
+*/
+template<typename X> EIGEN_STRONG_INLINE EIGEN_DEVICE_FUNC
+bool is_exactly_zero(const X& x) { return equal_strict(x, typename NumTraits<X>::Literal{0}); }
+
+/**
+ * \internal Performs an exact comparison of x to one, e.g. to decide whether a factor needs to be multiplied.
+ * Use this to to bypass -Wfloat-equal warnings when exact one is what needs to be tested.
+*/
+template<typename X> EIGEN_STRONG_INLINE EIGEN_DEVICE_FUNC
+bool is_exactly_one(const X& x) { return equal_strict(x, typename NumTraits<X>::Literal{1}); }
 
 template<typename X, typename Y> EIGEN_STRONG_INLINE EIGEN_DEVICE_FUNC
 bool not_equal_strict(const X& x,const Y& y) { return x != y; }
@@ -646,7 +525,7 @@ inline constexpr int max_size_prefer_dynamic(A a, B b) {
 
 /// \internal Calculate logical XOR at compile time
 inline constexpr bool logical_xor(bool a, bool b) {
-  return (a || b) && !(a && b);
+  return a != b;
 }
 
 /// \internal Calculate logical IMPLIES at compile time

@@ -57,6 +57,7 @@
   --color-accent-red: rgb(217 48 37);
   --color-red: rgb(238 68 47);
   --color-accent-green: rgb(24 128 56);
+  --color-accent-green-background: rgb(24 128 56 / 10%);
   --color-green: rgb(99 172 190);
   --color-link: var(--color-primary);
   --color-syntax-1: rgb(200 0 0);
@@ -219,6 +220,7 @@
   --color-accent-red: rgb(242 139 130);
   --color-red: rgb(237 78 76);
   --color-accent-green: rgb(129 201 149);
+  --color-accent-green-background: rgb(129 201 149 / 20%);
   --color-link: var(--color-primary);
   --color-syntax-1: rgb(53 212 199);
   --color-syntax-2: rgb(93 176 215);
@@ -258,14 +260,14 @@
   --color-error-background: hsl(0deg 100% 8%);
   --color-checkbox-accent-color: rgb(255 165 0);
   /* Colors for styling inputs */
-  --color-input-outline: rgb(189 193 198);
+  --color-input-outline: rgb(60 64 67);
   --color-input-outline-active: rgb(138 180 248);
   --color-input-outline-error: rgb(242 139 130);
   --color-input-outline-disabled: rgba(189 193 198 / 20%);
   --color-input-text-disabled: rgba(128 134 139 / 70%);
   /* Colors for styling buttons */
   --color-button-outline-focus: rgb(138 180 248 / 75%);
-  --color-button-primary-background-hovering: rgb(174 203 250 / 100%);
+  --color-button-primary-background-hovering: rgb(128 167 229 / 100%);
   --color-button-primary-background-pressed: rgb(210 227 252 / 100%);
   --color-button-primary-text: rgb(0 0 0);
   --color-button-secondary-background-hovering: rgb(138 180 248 / 15%);

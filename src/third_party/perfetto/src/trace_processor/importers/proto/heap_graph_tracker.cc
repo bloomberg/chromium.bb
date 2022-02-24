@@ -643,39 +643,33 @@ void HeapGraphTracker::FinalizeProfile(uint32_t seq_id) {
     base::StringView normalized_type =
         NormalizeTypeName(context_->storage->GetString(interned_type.name));
 
-    // Annoyingly, some apps have a relative path to base.apk. We take this to
-    // mean the main package, so we treat it as if the location was unknown.
-    bool is_base_apk = false;
+    base::Optional<StringPool::Id> class_package;
     if (location_name) {
-      base::StringView base_apk("base.apk");
-      is_base_apk = context_->storage->GetString(*location_name)
-                        .substr(0, base_apk.size()) == base_apk;
-    }
-
-    if (location_name && !is_base_apk) {
       base::Optional<std::string> package_name =
           PackageFromLocation(context_->storage.get(),
                               context_->storage->GetString(*location_name));
       if (package_name) {
-        class_to_rows_[std::make_pair(
-                           context_->storage->InternString(
-                               base::StringView(*package_name)),
-                           context_->storage->InternString(normalized_type))]
-            .emplace_back(type_id);
+        class_package =
+            context_->storage->InternString(base::StringView(*package_name));
       }
-    } else {
-      // TODO(b/153552977): Remove this workaround.
-      // For profiles collected for old versions of perfetto_hprof, we do not
-      // have any location information. We store them using the nullopt
-      // location, and assume they are all part of the main APK.
-      //
-      // This is to keep ingestion of old profiles working (especially
-      // important for the UI).
-      class_to_rows_[std::make_pair(
-                         base::nullopt,
-                         context_->storage->InternString(normalized_type))]
-          .emplace_back(type_id);
     }
+    if (!class_package) {
+      auto app_id = context_->storage->process_table()
+                        .android_appid()[sequence_state.current_upid];
+      if (app_id) {
+        auto pkg_row =
+            context_->storage->package_list_table().uid().IndexOf(*app_id);
+        if (pkg_row) {
+          class_package =
+              context_->storage->package_list_table().package_name()[*pkg_row];
+        }
+      }
+    }
+
+    class_to_rows_[std::make_pair(
+                       class_package,
+                       context_->storage->InternString(normalized_type))]
+        .emplace_back(type_id);
   }
 
   if (!sequence_state.deferred_size_objects_for_type_.empty() ||
@@ -758,14 +752,14 @@ void HeapGraphTracker::PopulateNativeSize(const SequenceState& seq) {
       class_tbl.FilterToRowMap({class_tbl.name().eq("sun.misc.Cleaner")});
   for (auto class_it = cleaner_classes.IterateRows(); class_it;
        class_it.Next()) {
-    auto class_id = class_tbl.id()[class_it.row()];
+    auto class_id = class_tbl.id()[class_it.index()];
     auto cleaner_objs = objects_tbl.FilterToRowMap(
         {objects_tbl.type_id().eq(class_id.value),
          objects_tbl.upid().eq(seq.current_upid),
          objects_tbl.graph_sample_ts().eq(seq.current_ts)});
     for (auto obj_it = cleaner_objs.IterateRows(); obj_it; obj_it.Next()) {
       tables::HeapGraphObjectTable::Id cleaner_obj_id =
-          objects_tbl.id()[obj_it.row()];
+          objects_tbl.id()[obj_it.index()];
       base::Optional<tables::HeapGraphObjectTable::Id> referent_id =
           GetReferenceByFieldName(cleaner_obj_id, referent_str_id_);
       base::Optional<tables::HeapGraphObjectTable::Id> thunk_id =
@@ -1057,7 +1051,7 @@ HeapGraphTracker::BuildFlamegraph(const int64_t current_ts,
   return tbl;
 }
 
-void HeapGraphTracker::NotifyEndOfFile() {
+void HeapGraphTracker::FinalizeAllProfiles() {
   if (!sequence_state_.empty()) {
     context_->storage->IncrementStats(stats::heap_graph_non_finalized_graph);
     // There might still be valuable data even though the trace is truncated.

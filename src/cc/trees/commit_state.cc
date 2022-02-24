@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/trees/commit_state.h"
+#include "components/viz/common/frame_sinks/copy_output_request.h"
 
 namespace cc {
 
@@ -37,7 +38,8 @@ CommitState::CommitState(const CommitState& prev)
       overscroll_behavior(prev.overscroll_behavior),
       background_color(prev.background_color),
       viewport_property_ids(prev.viewport_property_ids),
-      local_surface_id_from_parent(prev.local_surface_id_from_parent) {
+      local_surface_id_from_parent(prev.local_surface_id_from_parent),
+      priority_cutoff(prev.priority_cutoff) {
   memcpy(event_listener_properties, prev.event_listener_properties,
          sizeof(event_listener_properties));
 }
@@ -56,8 +58,10 @@ EventListenerProperties CommitState::GetEventListenerProperties(
   return event_listener_properties[static_cast<size_t>(listener_class)];
 }
 
-ThreadUnsafeCommitState::ThreadUnsafeCommitState(MutatorHost* mh)
-    : mutator_host(mh) {}
+ThreadUnsafeCommitState::ThreadUnsafeCommitState(
+    MutatorHost* mh,
+    const ProtectedSequenceSynchronizer& synchronizer)
+    : mutator_host(mh), property_trees(synchronizer) {}
 
 ThreadUnsafeCommitState::~ThreadUnsafeCommitState() = default;
 

@@ -35,7 +35,7 @@ void GrStrokeTessellationShader::InstancedImpl::onEmitCode(EmitArgs& args, GrGPA
         // [PARAMETRIC_PRECISION, NUM_RADIAL_SEGMENTS_PER_RADIAN, JOIN_TYPE, STROKE_RADIUS]
         const char* tessArgsName;
         fTessControlArgsUniform = args.fUniformHandler->addUniform(
-                nullptr, kVertex_GrShaderFlag, kFloat4_GrSLType, "tessControlArgs",
+                nullptr, kVertex_GrShaderFlag, SkSLType::kFloat4, "tessControlArgs",
                 &tessArgsName);
         args.fVertBuilder->codeAppendf(R"(
         float PARAMETRIC_PRECISION = %s.x;
@@ -45,7 +45,7 @@ void GrStrokeTessellationShader::InstancedImpl::onEmitCode(EmitArgs& args, GrGPA
     } else {
         const char* parametricPrecisionName;
         fTessControlArgsUniform = args.fUniformHandler->addUniform(
-                nullptr, kVertex_GrShaderFlag, kFloat_GrSLType, "parametricPrecision",
+                nullptr, kVertex_GrShaderFlag, SkSLType::kFloat, "parametricPrecision",
                 &parametricPrecisionName);
         args.fVertBuilder->codeAppendf(R"(
         float PARAMETRIC_PRECISION = %s;
@@ -57,7 +57,7 @@ void GrStrokeTessellationShader::InstancedImpl::onEmitCode(EmitArgs& args, GrGPA
 
     if (shader.hasDynamicColor()) {
         // Create a varying for color to get passed in through.
-        GrGLSLVarying dynamicColor{kHalf4_GrSLType};
+        GrGLSLVarying dynamicColor{SkSLType::kHalf4};
         args.fVaryingHandler->addVarying("dynamicColor", &dynamicColor);
         args.fVertBuilder->codeAppendf("%s = dynamicColorAttr;", dynamicColor.vsOut());
         fDynamicColorName = dynamicColor.fsIn();
@@ -70,7 +70,7 @@ void GrStrokeTessellationShader::InstancedImpl::onEmitCode(EmitArgs& args, GrGPA
         SkASSERT(shader.mode() == GrStrokeTessellationShader::Mode::kFixedCount);
         const char* edgeCountName;
         fEdgeCountUniform = args.fUniformHandler->addUniform(
-                nullptr, kVertex_GrShaderFlag, kFloat_GrSLType, "edgeCount", &edgeCountName);
+                nullptr, kVertex_GrShaderFlag, SkSLType::kFloat, "edgeCount", &edgeCountName);
         args.fVertBuilder->codeAppendf(R"(
         float NUM_TOTAL_EDGES = %s;)", edgeCountName);
     }
@@ -78,10 +78,10 @@ void GrStrokeTessellationShader::InstancedImpl::onEmitCode(EmitArgs& args, GrGPA
     // View matrix uniforms.
     const char* translateName, *affineMatrixName;
     fAffineMatrixUniform = args.fUniformHandler->addUniform(nullptr, kVertex_GrShaderFlag,
-                                                            kFloat4_GrSLType, "affineMatrix",
+                                                            SkSLType::kFloat4, "affineMatrix",
                                                             &affineMatrixName);
     fTranslateUniform = args.fUniformHandler->addUniform(nullptr, kVertex_GrShaderFlag,
-                                                         kFloat2_GrSLType, "translate",
+                                                         SkSLType::kFloat2, "translate",
                                                          &translateName);
     args.fVertBuilder->codeAppendf("float2x2 AFFINE_MATRIX = float2x2(%s);\n", affineMatrixName);
     args.fVertBuilder->codeAppendf("float2 TRANSLATE = %s;\n", translateName);
@@ -123,10 +123,6 @@ void GrStrokeTessellationShader::InstancedImpl::onEmitCode(EmitArgs& args, GrGPA
                                                     float2x2(1));
     } else {
         numParametricSegments = wangs_formula_conic(PARAMETRIC_PRECISION, p0, p1, p2, w);
-    }
-    if (p0 == p1 && p2 == p3) {
-        // This is how we describe lines, but Wang's formula does not return 1 in this case.
-        numParametricSegments = 1;
     }
 
     // Find the starting and ending tangents.

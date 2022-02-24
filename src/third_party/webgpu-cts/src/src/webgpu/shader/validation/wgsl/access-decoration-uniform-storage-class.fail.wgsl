@@ -2,12 +2,12 @@
 // 'particles', which is in the 'uniform' storage class.
 
 struct Particles {
-  particles : [[stride(16)]] array<f32, 4>;
+  particles : @stride(16) array<f32, 4>;
 };
 
-[[group(0), binding(0)]] var<uniform, read_write> particles : Particles;
+@group(0) @binding(0) var<uniform, read_write> particles : Particles;
 
-[[stage(vertex)]]
-fn main() -> [[builtin(position)]] vec4<f32> {
+@stage(vertex)
+fn main() -> @builtin(position) vec4<f32> {
   return vec4<f32>();
 }

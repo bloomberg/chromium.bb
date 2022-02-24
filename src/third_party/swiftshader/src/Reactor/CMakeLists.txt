@@ -22,13 +22,9 @@ set(REACTOR_SRC_FILES
     Assert.hpp
     Debug.cpp
     Debug.hpp
-    EmulatedIntrinsics.cpp
-    EmulatedIntrinsics.hpp
     ExecutableMemory.cpp
     ExecutableMemory.hpp
     Nucleus.hpp
-    OptimalIntrinsics.cpp
-    OptimalIntrinsics.hpp
     Pragma.cpp
     Pragma.hpp
     PragmaInternals.hpp

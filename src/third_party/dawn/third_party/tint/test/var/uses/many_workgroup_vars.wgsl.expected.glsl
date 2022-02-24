@@ -1,5 +1,4 @@
 #version 310 es
-precision mediump float;
 
 shared mat2 m00;
 shared mat2 m01;
@@ -101,12 +100,7 @@ shared mat2 m96;
 shared mat2 m97;
 shared mat2 m98;
 shared mat2 m99;
-
-struct tint_symbol_2 {
-  uint idx;
-};
-
-void tint_symbol_inner(uint idx) {
+void tint_symbol(uint idx) {
   {
     m00 = mat2(0.0f, 0.0f, 0.0f, 0.0f);
     m01 = mat2(0.0f, 0.0f, 0.0f, 0.0f);
@@ -209,7 +203,7 @@ void tint_symbol_inner(uint idx) {
     m98 = mat2(0.0f, 0.0f, 0.0f, 0.0f);
     m99 = mat2(0.0f, 0.0f, 0.0f, 0.0f);
   }
-  memoryBarrierShared();
+  barrier();
   m00[0][0] = 1.0f;
   m01[0][0] = 1.0f;
   m02[0][0] = 1.0f;
@@ -313,14 +307,7 @@ void tint_symbol_inner(uint idx) {
 }
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-void tint_symbol(tint_symbol_2 tint_symbol_1) {
-  tint_symbol_inner(tint_symbol_1.idx);
+void main() {
+  tint_symbol(gl_LocalInvocationIndex);
   return;
 }
-void main() {
-  tint_symbol_2 inputs;
-  inputs.idx = uint(gl_LocalInvocationIndex);
-  tint_symbol(inputs);
-}
-
-

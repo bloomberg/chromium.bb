@@ -32,13 +32,9 @@ dawn_is_winuwp = is_win && target_os == "winuwp"
 declare_args() {
   dawn_use_angle = true
 
-  # Enables usage of swiftshader on the Vulkan backend.
-  # Note that this will only work in standalone and in projects that set the
-  # dawn_swiftshader_dir variable in build_overrides/dawn.gni
-  # Because of how the Vulkan loader works, setting this makes Dawn only able
-  # to find the Swiftshader ICD and not the others.
-  # Enabled by default when fuzzing.
-  dawn_use_swiftshader = build_with_chromium && use_fuzzing_engine
+  # Enables SwiftShader as the fallback adapter. Requires dawn_swiftshader_dir
+  # to be set to take effect.
+  dawn_use_swiftshader = true
 }
 
 declare_args() {
@@ -62,25 +58,18 @@ declare_args() {
 
   # Enables the compilation of Dawn's OpenGL backend
   # (best effort, non-conformant)
-  dawn_enable_desktop_gl = !build_with_chromium && (is_linux && !is_chromeos)
+  dawn_enable_desktop_gl = is_linux && !is_chromeos
 
   # Enables the compilation of Dawn's OpenGLES backend
   # (WebGPU/Compat subset)
   # Disables OpenGLES when compiling for UWP, since UWP only supports d3d
-  dawn_enable_opengles = !build_with_chromium && ((is_linux && !is_chromeos) ||
-                                                  (is_win && !dawn_is_winuwp))
+  dawn_enable_opengles =
+      (is_linux && !is_chromeos) || (is_win && !dawn_is_winuwp)
 
   # Enables the compilation of Dawn's Vulkan backend
   # Disables vulkan when compiling for UWP, since UWP only supports d3d
   dawn_enable_vulkan = is_linux || is_chromeos || (is_win && !dawn_is_winuwp) ||
                        is_fuchsia || is_android || dawn_use_swiftshader
-
-  # Enable use of reflection compiler in spirv-cross. This is needed
-  # if performing reflection on systems that the platform language
-  # shader is SPIR-V, since there isn't an instance of the
-  # GLSL/HLSL/MSL compiler. This implicitly pulls in the GLSL
-  # compiler, since it is a sub-class of it.
-  dawn_enable_cross_reflection = false
 
   # Enables error injection for faking failures to native API calls
   dawn_enable_error_injection =
@@ -107,7 +96,3 @@ dawn_supports_glfw_for_windowing =
 
 # Much of the GL backend code is shared, so define a convenience var.
 dawn_enable_opengl = dawn_enable_opengles || dawn_enable_desktop_gl
-
-# The GL backends are the last to use SPIRV-Cross, so only compile it in
-# if they are enabled.
-dawn_use_spirv_cross = dawn_enable_opengl

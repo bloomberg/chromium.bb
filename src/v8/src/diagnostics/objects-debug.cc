@@ -54,6 +54,7 @@
 #endif  // V8_INTL_SUPPORT
 #include "src/objects/js-regexp-inl.h"
 #include "src/objects/js-regexp-string-iterator-inl.h"
+#include "src/objects/js-shadow-realms-inl.h"
 #ifdef V8_INTL_SUPPORT
 #include "src/objects/js-relative-time-format-inl.h"
 #include "src/objects/js-segment-iterator-inl.h"
@@ -519,11 +520,9 @@ void Map::MapVerify(Isolate* isolate) {
     }
   }
   SLOW_DCHECK(instance_descriptors(isolate).IsSortedNoDuplicates());
-  DisallowGarbageCollection no_gc;
+  SLOW_DCHECK(TransitionsAccessor(isolate, *this).IsSortedNoDuplicates());
   SLOW_DCHECK(
-      TransitionsAccessor(isolate, *this, &no_gc).IsSortedNoDuplicates());
-  SLOW_DCHECK(TransitionsAccessor(isolate, *this, &no_gc)
-                  .IsConsistentWithBackPointers());
+      TransitionsAccessor(isolate, *this).IsConsistentWithBackPointers());
   // Only JSFunction maps have has_prototype_slot() bit set and constructible
   // JSFunction objects must have prototype slot.
   CHECK_IMPLIES(has_prototype_slot(),
@@ -571,10 +570,31 @@ void EmbedderDataArray::EmbedderDataArrayVerify(Isolate* isolate) {
   }
 }
 
+void FixedArray::FixedArrayVerify(Isolate* isolate) {
+  TorqueGeneratedClassVerifiers::FixedArrayVerify(*this, isolate);
+  if (*this == ReadOnlyRoots(isolate).empty_fixed_array()) {
+    CHECK_EQ(length(), 0);
+    CHECK_EQ(map(), ReadOnlyRoots(isolate).fixed_array_map());
+  } else if (IsArrayList()) {
+    ArrayList::cast(*this).ArrayListVerify(isolate);
+  }
+}
+
 void WeakFixedArray::WeakFixedArrayVerify(Isolate* isolate) {
   TorqueGeneratedClassVerifiers::WeakFixedArrayVerify(*this, isolate);
   for (int i = 0; i < length(); i++) {
     MaybeObject::VerifyMaybeObjectPointer(isolate, Get(i));
+  }
+}
+
+void ArrayList::ArrayListVerify(Isolate* isolate) {
+  // Avoid calling the torque-generated ArrayListVerify to prevent an endlessly
+  // recursion verification.
+  CHECK(IsArrayList());
+  CHECK_LE(ArrayList::kLengthIndex, length());
+  CHECK_LE(0, Length());
+  if (Length() == 0 && length() == ArrayList::kLengthIndex) {
+    CHECK_EQ(*this, ReadOnlyRoots(isolate).empty_array_list());
   }
 }
 
@@ -892,7 +912,8 @@ void SharedFunctionInfo::SharedFunctionInfoVerify(ReadOnlyRoots roots) {
 
 #if V8_ENABLE_WEBASSEMBLY
   bool is_wasm = HasWasmExportedFunctionData() || HasAsmWasmData() ||
-                 HasWasmJSFunctionData() || HasWasmCapiFunctionData();
+                 HasWasmJSFunctionData() || HasWasmCapiFunctionData() ||
+                 HasWasmOnFulfilledData();
 #else
   bool is_wasm = false;
 #endif  // V8_ENABLE_WEBASSEMBLY
@@ -1020,8 +1041,33 @@ void CodeDataContainer::CodeDataContainerVerify(Isolate* isolate) {
       CHECK_EQ(code().kind(), kind());
       CHECK_EQ(code().builtin_id(), builtin_id());
 #endif  // V8_EXTERNAL_CODE_SPACE
-      CHECK_EQ(code().InstructionStart(), code_entry_point());
       CHECK_EQ(code().code_data_container(kAcquireLoad), *this);
+
+      // Ensure the cached code entry point corresponds to the Code object
+      // associated with this CodeDataContainer.
+#ifdef V8_COMPRESS_POINTERS_IN_SHARED_CAGE
+      if (V8_SHORT_BUILTIN_CALLS_BOOL) {
+        if (code().InstructionStart() == code_entry_point()) {
+          // Most common case, all good.
+        } else {
+          // When shared pointer compression cage is enabled and it has the
+          // embedded code blob copy then the Code::InstructionStart() might
+          // return address of the remapped builtin regardless of whether the
+          // builtins copy exsisted when the code_entry_point value was cached
+          // in the CodeDataContainer (see Code::OffHeapInstructionStart()).
+          // So, do a reverse Code object lookup via code_entry_point value to
+          // ensure it corresponds to the same Code object associated with this
+          // CodeDataContainer.
+          Code the_code = isolate->heap()->GcSafeFindCodeForInnerPointer(
+              code_entry_point());
+          CHECK_EQ(the_code, code());
+        }
+      } else {
+        CHECK_EQ(code().InstructionStart(), code_entry_point());
+      }
+#else
+      CHECK_EQ(code().InstructionStart(), code_entry_point());
+#endif  // V8_COMPRESS_POINTERS_IN_SHARED_CAGE
     }
   }
 }
@@ -1133,6 +1179,8 @@ void JSMapIterator::JSMapIteratorVerify(Isolate* isolate) {
   CHECK(table().IsOrderedHashMap());
   CHECK(index().IsSmi());
 }
+
+USE_TORQUE_VERIFIER(JSShadowRealm)
 
 void WeakCell::WeakCellVerify(Isolate* isolate) {
   CHECK(IsWeakCell());

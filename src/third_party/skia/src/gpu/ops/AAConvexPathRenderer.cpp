@@ -71,6 +71,9 @@ bool center_of_mass(const SegmentArray& segments, SkPoint* c) {
     SkScalar area = 0;
     SkPoint center = {0, 0};
     int count = segments.count();
+    if (count <= 0) {
+        return false;
+    }
     SkPoint p0 = {0, 0};
     if (count > 2) {
         // We translate the polygon so that the first point is at the origin.
@@ -574,10 +577,10 @@ private:
             : INHERITED(kQuadEdgeEffect_ClassID)
             , fLocalMatrix(localMatrix)
             , fUsesLocalCoords(usesLocalCoords) {
-        fInPosition = {"inPosition", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
+        fInPosition = {"inPosition", kFloat2_GrVertexAttribType, SkSLType::kFloat2};
         fInColor = MakeColorAttribute("inColor", wideColor);
         // GL on iOS 14 needs more precision for the quadedge attributes
-        fInQuadEdge = {"inQuadEdge", kFloat4_GrVertexAttribType, kFloat4_GrSLType};
+        fInQuadEdge = {"inQuadEdge", kFloat4_GrVertexAttribType, SkSLType::kFloat4};
         this->setVertexAttributesWithImplicitOffsets(&fInPosition, 3);
     }
 
@@ -617,7 +620,7 @@ std::unique_ptr<GrGeometryProcessor::ProgramImpl> QuadEdgeEffect::makeProgramImp
 
             // GL on iOS 14 needs more precision for the quadedge attributes
             // We might as well enable it everywhere
-            GrGLSLVarying v(kFloat4_GrSLType);
+            GrGLSLVarying v(SkSLType::kFloat4);
             varyingHandler->addVarying("QuadEdge", &v);
             vertBuilder->codeAppendf("%s = %s;", v.vsOut(), qe.fInQuadEdge.name());
 
@@ -803,10 +806,10 @@ private:
             sk_sp<const GrBuffer> vertexBuffer;
             int firstVertex;
 
-            VertexWriter verts{target->makeVertexSpace(kVertexStride,
-                                                       vertexCount,
-                                                       &vertexBuffer,
-                                                       &firstVertex)};
+            VertexWriter verts = target->makeVertexWriter(kVertexStride,
+                                                          vertexCount,
+                                                          &vertexBuffer,
+                                                          &firstVertex);
 
             if (!verts) {
                 SkDebugf("Could not allocate vertices\n");

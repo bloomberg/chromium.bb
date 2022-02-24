@@ -47,11 +47,11 @@ export class ProgrammableStateTest extends GPUTest {
             value : i32;
           };
 
-          [[group(${groups.a}), binding(0)]] var<storage> a : Data;
-          [[group(${groups.b}), binding(0)]] var<storage> b : Data;
-          [[group(${groups.out}), binding(0)]] var<storage, read_write> out : Data;
+          @group(${groups.a}) @binding(0) var<storage> a : Data;
+          @group(${groups.b}) @binding(0) var<storage> b : Data;
+          @group(${groups.out}) @binding(0) var<storage, read_write> out : Data;
 
-          [[stage(compute), workgroup_size(1)]] fn main() {
+          @stage(compute) @workgroup_size(1) fn main() {
             out.value = ${algorithm};
             return;
           }
@@ -73,7 +73,7 @@ export class ProgrammableStateTest extends GPUTest {
       case 'render bundle': {
         const wgslShaders = {
           vertex: `
-            [[stage(vertex)]] fn vert_main() -> [[builtin(position)]] vec4<f32> {
+            @stage(vertex) fn vert_main() -> @builtin(position) vec4<f32> {
               return vec4<f32>(0.5, 0.5, 0.0, 1.0);
             }
           `,
@@ -83,11 +83,11 @@ export class ProgrammableStateTest extends GPUTest {
               value : i32;
             };
 
-            [[group(${groups.a}), binding(0)]] var<storage> a : Data;
-            [[group(${groups.b}), binding(0)]] var<storage> b : Data;
-            [[group(${groups.out}), binding(0)]] var<storage, read_write> out : Data;
+            @group(${groups.a}) @binding(0) var<storage> a : Data;
+            @group(${groups.b}) @binding(0) var<storage> b : Data;
+            @group(${groups.out}) @binding(0) var<storage, read_write> out : Data;
 
-            [[stage(fragment)]] fn frag_main() -> [[location(0)]] vec4<f32> {
+            @stage(fragment) fn frag_main() -> @location(0) vec4<f32> {
               out.value = ${algorithm};
               return vec4<f32>(1.0, 0.0, 0.0, 1.0);
             }

@@ -10,7 +10,7 @@ title: Cluster Telemetry
 
 **Cluster Telemetry 101**
 
-[Telemetry](https://github.com/catapult-project/catapult/tree/master/telemetry)
+[Telemetry](https://github.com/catapult-project/catapult/tree/HEAD/telemetry)
 is Chrome's performance testing framework, using it you can perform arbitrary
 actions on a set of web pages and report metrics about it.
 
@@ -21,7 +21,7 @@ Developers can use the framework to:
 
 *   Measure the performance of multi-repo patches against the top subset
             of the internet on Android devices, bare-metal linux machines, and
-            windows GCE instances using the [perf
+            GCE instances using the [perf
             page](https://ct.skia.org/chromium_perf/).
 *   Gather metrics for analysis or for reports against 100k web pages on
             CT's VM farm (linux and windows) using the [analysis

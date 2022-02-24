@@ -84,12 +84,12 @@ void GatherCustomStrideMatrixMembers(const Program* program, F&& callback) {
         if (!matrix) {
           continue;
         }
-        auto* deco = ast::GetDecoration<ast::StrideDecoration>(
-            member->Declaration()->decorations);
-        if (!deco) {
+        auto* attr = ast::GetAttribute<ast::StrideAttribute>(
+            member->Declaration()->attributes);
+        if (!attr) {
           continue;
         }
-        uint32_t stride = deco->stride;
+        uint32_t stride = attr->stride;
         if (matrix->ColumnStride() == stride) {
           continue;
         }
@@ -107,7 +107,8 @@ DecomposeStridedMatrix::DecomposeStridedMatrix() = default;
 
 DecomposeStridedMatrix::~DecomposeStridedMatrix() = default;
 
-bool DecomposeStridedMatrix::ShouldRun(const Program* program) {
+bool DecomposeStridedMatrix::ShouldRun(const Program* program,
+                                       const DataMap&) const {
   bool should_run = false;
   GatherCustomStrideMatrixMembers(
       program, [&](const sem::StructMember*, sem::Matrix*, uint32_t) {
@@ -117,11 +118,9 @@ bool DecomposeStridedMatrix::ShouldRun(const Program* program) {
   return should_run;
 }
 
-void DecomposeStridedMatrix::Run(CloneContext& ctx, const DataMap&, DataMap&) {
-  if (!Requires<SimplifyPointers>(ctx)) {
-    return;
-  }
-
+void DecomposeStridedMatrix::Run(CloneContext& ctx,
+                                 const DataMap&,
+                                 DataMap&) const {
   // Scan the program for all storage and uniform structure matrix members with
   // a custom stride attribute. Replace these matrices with an equivalent array,
   // and populate the `decomposed` map with the members that have been replaced.

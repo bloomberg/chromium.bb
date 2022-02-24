@@ -1,7 +1,7 @@
 {
   "$build/chromium_tests": {
     "project_trigger_overrides": {
-      "chromium": "chromium-m99"
+      "chromium": "chromium-m100"
     }
   },
   "$build/chromium_tests_builder_config": {
@@ -12,7 +12,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "chromeos-amd64-generic-rel",
-              "project": "chromium-m99"
+              "project": "chromium-m100"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-chromiumos-archive",
@@ -45,7 +45,7 @@
         {
           "bucket": "ci",
           "builder": "chromeos-amd64-generic-rel",
-          "project": "chromium-m99"
+          "project": "chromium-m100"
         }
       ],
       "mirroring_builder_group_and_names": [

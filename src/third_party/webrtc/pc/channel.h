@@ -105,7 +105,7 @@ class BaseChannel : public ChannelInterface,
               rtc::Thread* network_thread,
               rtc::Thread* signaling_thread,
               std::unique_ptr<MediaChannel> media_channel,
-              const std::string& content_name,
+              const std::string& mid,
               bool srtp_required,
               webrtc::CryptoOptions crypto_options,
               rtc::UniqueRandomIdGenerator* ssrc_generator);
@@ -113,9 +113,7 @@ class BaseChannel : public ChannelInterface,
 
   rtc::Thread* worker_thread() const { return worker_thread_; }
   rtc::Thread* network_thread() const { return network_thread_; }
-  const std::string& content_name() const override {
-    return demuxer_criteria_.mid();
-  }
+  const std::string& mid() const override { return demuxer_criteria_.mid(); }
   // TODO(deadbeef): This is redundant; remove this.
   absl::string_view transport_name() const override {
     RTC_DCHECK_RUN_ON(network_thread());
@@ -297,10 +295,13 @@ class BaseChannel : public ChannelInterface,
   // function simply returns. If either of these is set, the function updates
   // the transport with either or both of the demuxer criteria and the supplied
   // rtp header extensions.
-  void MaybeUpdateDemuxerAndRtpExtensions_w(
+  // Returns `true` if either an update wasn't needed or one was successfully
+  // applied. If the return value is `false`, then updating the demuxer criteria
+  // failed, which needs to be treated as an error.
+  bool MaybeUpdateDemuxerAndRtpExtensions_w(
       bool update_demuxer,
-      absl::optional<RtpHeaderExtensions> extensions)
-      RTC_RUN_ON(worker_thread());
+      absl::optional<RtpHeaderExtensions> extensions,
+      std::string& error_desc) RTC_RUN_ON(worker_thread());
 
   bool RegisterRtpDemuxerSink_w() RTC_RUN_ON(worker_thread());
 
@@ -374,7 +375,7 @@ class VoiceChannel : public BaseChannel {
                rtc::Thread* network_thread,
                rtc::Thread* signaling_thread,
                std::unique_ptr<VoiceMediaChannel> channel,
-               const std::string& content_name,
+               const std::string& mid,
                bool srtp_required,
                webrtc::CryptoOptions crypto_options,
                rtc::UniqueRandomIdGenerator* ssrc_generator);
@@ -416,7 +417,7 @@ class VideoChannel : public BaseChannel {
                rtc::Thread* network_thread,
                rtc::Thread* signaling_thread,
                std::unique_ptr<VideoMediaChannel> media_channel,
-               const std::string& content_name,
+               const std::string& mid,
                bool srtp_required,
                webrtc::CryptoOptions crypto_options,
                rtc::UniqueRandomIdGenerator* ssrc_generator);

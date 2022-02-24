@@ -169,7 +169,6 @@
 <translation id="5139423532931106058">自訂 Chrome 設定檔</translation>
 <translation id="5163087008893166964">歡迎使用 Chrome；新的瀏覽器視窗已開啟</translation>
 <translation id="5170938038195470297">由於你的設定檔是來自較新版本的 Google Chrome，所以系統無法使用該檔案。這表示你可能無法使用部分功能。請指定另一個設定檔目錄，或使用較新版本的 Google Chrome。</translation>
-<translation id="5193136243808726294">Google Chrome 作業系統無法開啟這個網頁。</translation>
 <translation id="521447420733633466">如果你與親朋好友共用裝置，人人皆可享有獨立的瀏覽空間，依照自己的偏好設定 Chrome</translation>
 <translation id="5251420635869119124">以訪客身分使用 Chrome 不會留下任何記錄。</translation>
 <translation id="5334487786912937552">Chrome 需要儲存空間存取權才能下載檔案</translation>
@@ -180,8 +179,6 @@
 Google Chrome 無法復原你的設定。</translation>
 <translation id="556024056938947818">Google Chrome 即將顯示密碼。</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5657226924540934362">如果這個頁面上未顯示你的設定，請檢查 <ph name="LINK_BEGIN" />
-      Chrome 作業系統設定<ph name="LINK_END" /></translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> 可能不安全，因此遭到 Chrome 封鎖。</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{系統管理員要求你重新啟動 Chrome，以套用這項更新}=1{系統管理員要求你重新啟動 Chrome，以套用這項更新。你的無痕式視窗不會重新開啟。}other{系統管理員要求你重新啟動 Chrome，以套用這項更新。你的 # 個無痕式視窗不會重新開啟。}}</translation>
 <translation id="5686916850681061684">自訂及管理 Google Chrome。重要注意事項 - 按這裡瞭解詳情。</translation>

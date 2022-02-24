@@ -213,13 +213,13 @@ struct general_product_to_triangular_selector<MatrixType,ProductType,UpLo,true>
     typedef typename internal::remove_all<typename ProductType::LhsNested>::type Lhs;
     typedef internal::blas_traits<Lhs> LhsBlasTraits;
     typedef typename LhsBlasTraits::DirectLinearAccessType ActualLhs;
-    typedef typename internal::remove_all<ActualLhs>::type _ActualLhs;
+    typedef typename internal::remove_all<ActualLhs>::type ActualLhs_;
     typename internal::add_const_on_value_type<ActualLhs>::type actualLhs = LhsBlasTraits::extract(prod.lhs());
     
     typedef typename internal::remove_all<typename ProductType::RhsNested>::type Rhs;
     typedef internal::blas_traits<Rhs> RhsBlasTraits;
     typedef typename RhsBlasTraits::DirectLinearAccessType ActualRhs;
-    typedef typename internal::remove_all<ActualRhs>::type _ActualRhs;
+    typedef typename internal::remove_all<ActualRhs>::type ActualRhs_;
     typename internal::add_const_on_value_type<ActualRhs>::type actualRhs = RhsBlasTraits::extract(prod.rhs());
 
     Scalar actualAlpha = alpha * LhsBlasTraits::extractScalarFactor(prod.lhs().derived()) * RhsBlasTraits::extractScalarFactor(prod.rhs().derived());
@@ -229,19 +229,19 @@ struct general_product_to_triangular_selector<MatrixType,ProductType,UpLo,true>
 
     enum {
       StorageOrder = (internal::traits<MatrixType>::Flags&RowMajorBit) ? RowMajor : ColMajor,
-      UseLhsDirectly = _ActualLhs::InnerStrideAtCompileTime==1,
-      UseRhsDirectly = _ActualRhs::InnerStrideAtCompileTime==1
+      UseLhsDirectly = ActualLhs_::InnerStrideAtCompileTime==1,
+      UseRhsDirectly = ActualRhs_::InnerStrideAtCompileTime==1
     };
     
     internal::gemv_static_vector_if<Scalar,Lhs::SizeAtCompileTime,Lhs::MaxSizeAtCompileTime,!UseLhsDirectly> static_lhs;
     ei_declare_aligned_stack_constructed_variable(Scalar, actualLhsPtr, actualLhs.size(),
       (UseLhsDirectly ? const_cast<Scalar*>(actualLhs.data()) : static_lhs.data()));
-    if(!UseLhsDirectly) Map<typename _ActualLhs::PlainObject>(actualLhsPtr, actualLhs.size()) = actualLhs;
+    if(!UseLhsDirectly) Map<typename ActualLhs_::PlainObject>(actualLhsPtr, actualLhs.size()) = actualLhs;
     
     internal::gemv_static_vector_if<Scalar,Rhs::SizeAtCompileTime,Rhs::MaxSizeAtCompileTime,!UseRhsDirectly> static_rhs;
     ei_declare_aligned_stack_constructed_variable(Scalar, actualRhsPtr, actualRhs.size(),
       (UseRhsDirectly ? const_cast<Scalar*>(actualRhs.data()) : static_rhs.data()));
-    if(!UseRhsDirectly) Map<typename _ActualRhs::PlainObject>(actualRhsPtr, actualRhs.size()) = actualRhs;
+    if(!UseRhsDirectly) Map<typename ActualRhs_::PlainObject>(actualRhsPtr, actualRhs.size()) = actualRhs;
     
     
     selfadjoint_rank1_update<Scalar,Index,StorageOrder,UpLo,
@@ -259,13 +259,13 @@ struct general_product_to_triangular_selector<MatrixType,ProductType,UpLo,false>
     typedef typename internal::remove_all<typename ProductType::LhsNested>::type Lhs;
     typedef internal::blas_traits<Lhs> LhsBlasTraits;
     typedef typename LhsBlasTraits::DirectLinearAccessType ActualLhs;
-    typedef typename internal::remove_all<ActualLhs>::type _ActualLhs;
+    typedef typename internal::remove_all<ActualLhs>::type ActualLhs_;
     typename internal::add_const_on_value_type<ActualLhs>::type actualLhs = LhsBlasTraits::extract(prod.lhs());
     
     typedef typename internal::remove_all<typename ProductType::RhsNested>::type Rhs;
     typedef internal::blas_traits<Rhs> RhsBlasTraits;
     typedef typename RhsBlasTraits::DirectLinearAccessType ActualRhs;
-    typedef typename internal::remove_all<ActualRhs>::type _ActualRhs;
+    typedef typename internal::remove_all<ActualRhs>::type ActualRhs_;
     typename internal::add_const_on_value_type<ActualRhs>::type actualRhs = RhsBlasTraits::extract(prod.rhs());
 
     typename ProductType::Scalar actualAlpha = alpha * LhsBlasTraits::extractScalarFactor(prod.lhs().derived()) * RhsBlasTraits::extractScalarFactor(prod.rhs().derived());
@@ -275,8 +275,8 @@ struct general_product_to_triangular_selector<MatrixType,ProductType,UpLo,false>
 
     enum {
       IsRowMajor = (internal::traits<MatrixType>::Flags&RowMajorBit) ? 1 : 0,
-      LhsIsRowMajor = _ActualLhs::Flags&RowMajorBit ? 1 : 0,
-      RhsIsRowMajor = _ActualRhs::Flags&RowMajorBit ? 1 : 0,
+      LhsIsRowMajor = ActualLhs_::Flags&RowMajorBit ? 1 : 0,
+      RhsIsRowMajor = ActualRhs_::Flags&RowMajorBit ? 1 : 0,
       SkipDiag = (UpLo&(UnitDiag|ZeroDiag))!=0
     };
 
@@ -286,7 +286,7 @@ struct general_product_to_triangular_selector<MatrixType,ProductType,UpLo,false>
     Index depth = actualLhs.cols();
 
     typedef internal::gemm_blocking_space<IsRowMajor ? RowMajor : ColMajor,typename Lhs::Scalar,typename Rhs::Scalar,
-          MatrixType::MaxColsAtCompileTime, MatrixType::MaxColsAtCompileTime, _ActualRhs::MaxColsAtCompileTime> BlockingType;
+          MatrixType::MaxColsAtCompileTime, MatrixType::MaxColsAtCompileTime, ActualRhs_::MaxColsAtCompileTime> BlockingType;
 
     BlockingType blocking(size, size, depth, 1, false);
 

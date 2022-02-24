@@ -80,16 +80,19 @@
   "automationInternal": {
     "internal": true,
     "dependencies": ["manifest:automation"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": true
   },
   "automation": {
     "dependencies": ["manifest:automation"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": true
   },
   "automation.languageAnnotationForStringAttribute": {
     "command_line_switch": "enable-experimental-accessibility-chromevox-sub-node-language-switching",
     "channel": "dev",
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": true
   },
   "bluetooth": [{
     "dependencies": ["manifest:bluetooth"],
@@ -254,9 +257,6 @@
     "contexts": ["blessed_extension", "unblessed_extension", "content_script",
                  "lock_screen_extension"]
   },
-  "i18n.getMessage": {
-    "disallow_for_service_workers": true
-  },
   "idle": {
     "dependencies": ["permission:idle"],
     "contexts": ["blessed_extension"]
@@ -327,6 +327,7 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://bookmarks/*",
+      "chrome://bookmarks-side-panel.top-chrome/*",
       "chrome://download-shelf.top-chrome/*",
       "chrome://eche-app/*",
       "chrome://extensions/*",
@@ -341,7 +342,8 @@
       "chrome://sync-confirmation/*",
       "chrome://tab-search.top-chrome/*",
       "chrome://tab-strip.top-chrome/*",
-      "chrome://welcome/*"
+      "chrome://welcome/*",
+      "chrome://app-settings/*"
     ]
   }, {
     "channel": "stable",
@@ -487,7 +489,7 @@
     ],
     "matches": ["<all_urls>"]
   },{
-    "channel": "dev",
+    "channel": "stable",
     "contexts": ["webui_untrusted"],
     "matches": [
       // Allow only terminal_ssh.html in Terminal System Web App.
@@ -557,7 +559,7 @@
       "chrome://file-manager/*"
     ]
   },{
-    "channel": "dev",
+    "channel": "stable",
     "contexts": ["webui_untrusted"],
     "matches": [
       // Allow only terminal_ssh.html in Terminal System Web App.

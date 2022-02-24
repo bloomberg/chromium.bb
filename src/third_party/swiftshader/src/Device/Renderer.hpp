@@ -15,7 +15,6 @@
 #ifndef sw_Renderer_hpp
 #define sw_Renderer_hpp
 
-#include "Blitter.hpp"
 #include "PixelProcessor.hpp"
 #include "Primitive.hpp"
 #include "SetupProcessor.hpp"
@@ -28,9 +27,6 @@
 #include "marl/ticket.h"
 
 #include <atomic>
-#include <list>
-#include <mutex>
-#include <thread>
 
 namespace vk {
 
@@ -210,7 +206,7 @@ public:
 	bool hasOcclusionQuery() const { return occlusionQuery != nullptr; }
 
 	void draw(const vk::GraphicsPipeline *pipeline, const vk::DynamicState &dynamicState, unsigned int count, int baseVertex,
-	          CountedEvent *events, int instanceID, int viewID, void *indexBuffer, const VkExtent3D &framebufferExtent,
+	          CountedEvent *events, int instanceID, int viewID, void *indexBuffer, const VkRect2D &renderArea,
 	          vk::Pipeline::PushConstantStorage const &pushConstants, bool update = true);
 
 	void addQuery(vk::Query *query);

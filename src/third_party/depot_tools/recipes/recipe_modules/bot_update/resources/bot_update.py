@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -231,7 +231,7 @@ def call(*args, **kwargs):  # pragma: no cover
       if not buf:
         break
       if hanging_cr:
-        buf = '\r' + buf
+        buf = b'\r' + buf
       hanging_cr = buf.endswith(b'\r')
       if hanging_cr:
         buf = buf[:-1]
@@ -923,8 +923,6 @@ def parse_args():
 
   parse.add_option('--experiments',
                    help='Comma separated list of experiments to enable')
-  parse.add_option('--root', dest='patch_root',
-                   help='DEPRECATED: Use --patch_root.')
   parse.add_option('--patch_root', help='Directory to patch on top of.')
   parse.add_option('--patch_ref', dest='patch_refs', action='append', default=[],
                    help='Git repository & ref to apply, as REPO@REF.')
@@ -955,9 +953,6 @@ def parse_args():
             'solution revision passed in already exists in the current '
             'git cache.'))
 
-  # TODO(machenbach): Remove the flag when all uses have been removed.
-  parse.add_option('--output_manifest', action='store_true',
-                   help=('Deprecated.'))
   parse.add_option('--clobber', action='store_true',
                    help='Delete checkout first, always')
   parse.add_option('--output_json',

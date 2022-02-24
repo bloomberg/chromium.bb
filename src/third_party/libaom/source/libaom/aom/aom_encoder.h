@@ -878,28 +878,6 @@ typedef struct aom_codec_enc_cfg {
    */
   unsigned int use_fixed_qp_offsets;
 
-/*!\brief Number of fixed QP offsets
- *
- * This defines the number of elements in the fixed_qp_offsets array.
- */
-#define FIXED_QP_OFFSET_COUNT 5
-
-  /*!\brief Array of fixed QP offsets
-   *
-   * This array specifies fixed QP offsets (range: 0 to 63) for frames at
-   * different levels of the pyramid. It is a comma-separated list of 5 values:
-   * - QP offset for keyframe
-   * - QP offset for ALTREF frame
-   * - QP offset for 1st level internal ARF
-   * - QP offset for 2nd level internal ARF
-   * - QP offset for 3rd level internal ARF
-   * Notes:
-   * - QP offset for leaf level frames is not explicitly specified. These frames
-   *   use the worst quality allowed (--cq-level).
-   * - This option is only relevant for --end-usage=q.
-   */
-  int fixed_qp_offsets[FIXED_QP_OFFSET_COUNT];
-
   /*!\brief Options defined per config file
    *
    */

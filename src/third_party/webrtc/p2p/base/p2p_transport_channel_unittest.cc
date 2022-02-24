@@ -483,6 +483,9 @@ class P2PTransportChannelTestBase : public ::testing::Test,
     ep2_.cd1_.ch_.reset();
     ep1_.cd2_.ch_.reset();
     ep2_.cd2_.ch_.reset();
+    // Process pending tasks that need to run for cleanup purposes such as
+    // pending deletion of Connection objects (see Connection::Destroy).
+    rtc::Thread::Current()->ProcessMessages(0);
   }
   P2PTransportChannel* ep1_ch1() { return ep1_.cd1_.ch_.get(); }
   P2PTransportChannel* ep1_ch2() { return ep1_.cd2_.ch_.get(); }
@@ -2464,10 +2467,12 @@ class P2PTransportChannelMultihomedTest : public P2PTransportChannelTestBase {
 
   void DestroyAllButBestConnection(P2PTransportChannel* channel) {
     const Connection* selected_connection = channel->selected_connection();
-    for (Connection* conn : channel->connections()) {
-      if (conn != selected_connection) {
-        conn->Destroy();
-      }
+    // Copy the list of connections since the original will be modified.
+    rtc::ArrayView<Connection*> view = channel->connections();
+    std::vector<Connection*> connections(view.begin(), view.end());
+    for (Connection* conn : connections) {
+      if (conn != selected_connection)
+        channel->RemoveConnectionForTest(conn);
     }
   }
 };
@@ -3829,7 +3834,7 @@ TEST_F(P2PTransportChannelPingTest, ConnectionResurrection) {
   // Wait for conn2 to be selected.
   EXPECT_EQ_WAIT(conn2, ch.selected_connection(), kMediumTimeout);
   // Destroy the connection to test SignalUnknownAddress.
-  conn1->Destroy();
+  ch.RemoveConnectionForTest(conn1);
   EXPECT_TRUE_WAIT(GetConnectionTo(&ch, "1.1.1.1", 1) == nullptr,
                    kMediumTimeout);
 

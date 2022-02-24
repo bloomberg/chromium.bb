@@ -223,94 +223,27 @@ void CreateMapForType(Isolate* isolate, const WasmModule* module,
   // map for that supertype is created first, so that the supertypes list
   // that's cached on every RTT can be set up correctly.
   uint32_t supertype = module->supertype(type_index);
-  if (supertype != kNoSuperType && supertype != kGenericSuperType) {
+  if (supertype != kNoSuperType) {
     // This recursion is safe, because kV8MaxRttSubtypingDepth limits the
     // number of recursive steps, so we won't overflow the stack.
     CreateMapForType(isolate, module, supertype, instance, maps);
     rtt_parent = handle(Map::cast(maps->get(supertype)), isolate);
   }
   Handle<Map> map;
-  switch (module->type_kinds[type_index]) {
-    case kWasmStructTypeCode:
+  switch (module->types[type_index].kind) {
+    case TypeDefinition::kStruct:
       map = CreateStructMap(isolate, module, type_index, rtt_parent, instance);
       break;
-    case kWasmArrayTypeCode:
+    case TypeDefinition::kArray:
       map = CreateArrayMap(isolate, module, type_index, rtt_parent, instance);
       break;
-    case kWasmFunctionTypeCode:
+    case TypeDefinition::kFunction:
       // TODO(7748): Create funcref RTTs lazily?
       // TODO(7748): Canonicalize function maps (cross-module)?
       map = CreateFuncRefMap(isolate, module, rtt_parent, instance);
       break;
   }
   maps->set(type_index, *map);
-}
-
-namespace {
-
-// TODO(7748): Consider storing this array in Maps'
-// "transitions_or_prototype_info" slot.
-// Also consider being more memory-efficient, e.g. use inline storage for
-// single entries, and/or adapt the growth strategy.
-class RttSubtypes : public ArrayList {
- public:
-  static Handle<ArrayList> Insert(Isolate* isolate, Handle<ArrayList> array,
-                                  uint32_t type_index, Handle<Map> sub_rtt) {
-    Handle<Smi> key = handle(Smi::FromInt(type_index), isolate);
-    return Add(isolate, array, key, sub_rtt);
-  }
-
-  static Map SearchSubtype(Handle<ArrayList> array, uint32_t type_index) {
-    // Linear search for now.
-    // TODO(7748): Consider keeping the array sorted and using binary search
-    // here, if empirical data indicates that that would be worthwhile.
-    int count = array->Length();
-    for (int i = 0; i < count; i += 2) {
-      if (Smi::cast(array->Get(i)).value() == static_cast<int>(type_index)) {
-        return Map::cast(array->Get(i + 1));
-      }
-    }
-    return {};
-  }
-};
-
-}  // namespace
-
-Handle<Map> AllocateSubRtt(Isolate* isolate,
-                           Handle<WasmInstanceObject> instance, uint32_t type,
-                           Handle<Map> parent, WasmRttSubMode mode) {
-  DCHECK(parent->IsWasmStructMap() || parent->IsWasmArrayMap() ||
-         parent->IsWasmInternalFunctionMap());
-
-  const wasm::WasmModule* module = instance->module();
-  if (module->has_signature(type)) {
-    // Function references are implicitly allocated with their canonical rtt,
-    // and type checks against sub-rtts will always fail. Therefore, we simply
-    // create a fresh function map here.
-    return CreateFuncRefMap(isolate, module, Handle<Map>(), instance);
-  }
-  // If canonicalization is requested, check for an existing RTT first.
-  Handle<ArrayList> cache;
-  if (mode == WasmRttSubMode::kCanonicalize) {
-    cache = handle(parent->wasm_type_info().subtypes(), isolate);
-    Map maybe_cached = RttSubtypes::SearchSubtype(cache, type);
-    if (!maybe_cached.is_null()) return handle(maybe_cached, isolate);
-  }
-
-  // Allocate a fresh RTT otherwise.
-  Handle<Map> rtt;
-  if (module->has_struct(type)) {
-    rtt = wasm::CreateStructMap(isolate, module, type, parent, instance);
-  } else {
-    DCHECK(module->has_array(type));
-    rtt = wasm::CreateArrayMap(isolate, module, type, parent, instance);
-  }
-
-  if (mode == WasmRttSubMode::kCanonicalize) {
-    cache = RttSubtypes::Insert(isolate, cache, type, rtt);
-    parent->wasm_type_info().set_subtypes(*cache);
-  }
-  return rtt;
 }
 
 // A helper class to simplify instantiating a module from a module object.
@@ -711,8 +644,8 @@ MaybeHandle<WasmInstanceObject> InstanceBuilder::Build() {
   //--------------------------------------------------------------------------
   if (enabled_.has_gc()) {
     Handle<FixedArray> maps = isolate_->factory()->NewFixedArray(
-        static_cast<int>(module_->type_kinds.size()));
-    for (uint32_t index = 0; index < module_->type_kinds.size(); index++) {
+        static_cast<int>(module_->types.size()));
+    for (uint32_t index = 0; index < module_->types.size(); index++) {
       CreateMapForType(isolate_, module_, index, instance, maps);
     }
     instance->set_managed_object_maps(*maps);
@@ -936,9 +869,10 @@ bool HasDefaultToNumberBehaviour(Isolate* isolate,
   return true;
 }
 
-V8_INLINE WasmValue
-EvaluateInitExpression(Zone* zone, ConstantExpression expr, ValueType expected,
-                       Isolate* isolate, Handle<WasmInstanceObject> instance) {
+V8_INLINE WasmValue EvaluateInitExpression(Zone* zone, ConstantExpression expr,
+                                           ValueType expected, Isolate* isolate,
+                                           Handle<WasmInstanceObject> instance,
+                                           ErrorThrower* thrower) {
   switch (expr.kind()) {
     case ConstantExpression::kEmpty:
       UNREACHABLE();
@@ -975,6 +909,11 @@ EvaluateInitExpression(Zone* zone, ConstantExpression expr, ValueType expected,
                   body, instance->module(), isolate, instance);
 
       decoder.DecodeFunctionBody();
+
+      if (decoder.interface().runtime_error()) {
+        thrower->RuntimeError("%s", decoder.interface().runtime_error_msg());
+        return {};
+      }
 
       return decoder.interface().result();
     }
@@ -1042,17 +981,20 @@ void InstanceBuilder::LoadDataSegments(Handle<WasmInstanceObject> instance) {
     if (module_->is_memory64) {
       uint64_t dest_offset_64 =
           EvaluateInitExpression(&init_expr_zone_, segment.dest_addr, kWasmI64,
-                                 isolate_, instance)
+                                 isolate_, instance, thrower_)
               .to_u64();
+      if (thrower_->error()) return;
       // Clamp to {std::numeric_limits<size_t>::max()}, which is always an
       // invalid offset.
       DCHECK_GT(std::numeric_limits<size_t>::max(), instance->memory_size());
       dest_offset = static_cast<size_t>(std::min(
           dest_offset_64, uint64_t{std::numeric_limits<size_t>::max()}));
     } else {
-      dest_offset = EvaluateInitExpression(&init_expr_zone_, segment.dest_addr,
-                                           kWasmI32, isolate_, instance)
-                        .to_u32();
+      dest_offset =
+          EvaluateInitExpression(&init_expr_zone_, segment.dest_addr, kWasmI32,
+                                 isolate_, instance, thrower_)
+              .to_u32();
+      if (thrower_->error()) return;
     }
 
     if (!base::IsInBounds<size_t>(dest_offset, size, instance->memory_size())) {
@@ -1193,6 +1135,19 @@ bool InstanceBuilder::ProcessImportedFunction(
       ImportedFunctionEntry entry(instance, func_index);
       // We re-use the SetWasmToJs infrastructure because it passes the
       // callable to the wrapper, which we need to get the function data.
+      entry.SetWasmToJs(isolate_, js_receiver, wasm_code,
+                        isolate_->factory()->undefined_value());
+      break;
+    }
+    case compiler::WasmImportCallKind::kWasmToJSFastApi: {
+      NativeModule* native_module = instance->module_object().native_module();
+      DCHECK(js_receiver->IsJSFunction());
+      Handle<JSFunction> function = Handle<JSFunction>::cast(js_receiver);
+
+      WasmCodeRefScope code_ref_scope;
+      WasmCode* wasm_code = compiler::CompileWasmJSFastCallWrapper(
+          native_module, expected_sig, function);
+      ImportedFunctionEntry entry(instance, func_index);
       entry.SetWasmToJs(isolate_, js_receiver, wasm_code,
                         isolate_->factory()->undefined_value());
       break;
@@ -1466,7 +1421,6 @@ bool InstanceBuilder::ProcessImportedWasmGlobalObject(
       value = WasmValue(global_object->GetF64());
       break;
     case kRtt:
-    case kRttWithDepth:
     case kRef:
     case kOptRef:
       value = WasmValue(global_object->GetRef(), global_object->type());
@@ -1611,7 +1565,8 @@ void InstanceBuilder::CompileImportWrappers(
     compiler::WasmImportCallKind kind = resolved.kind;
     if (kind == compiler::WasmImportCallKind::kWasmToWasm ||
         kind == compiler::WasmImportCallKind::kLinkError ||
-        kind == compiler::WasmImportCallKind::kWasmToCapi) {
+        kind == compiler::WasmImportCallKind::kWasmToCapi ||
+        kind == compiler::WasmImportCallKind::kWasmToJSFastApi) {
       continue;
     }
 
@@ -1735,8 +1690,10 @@ void InstanceBuilder::InitGlobals(Handle<WasmInstanceObject> instance) {
     // Happens with imported globals.
     if (!global.init.is_set()) continue;
 
-    WasmValue value = EvaluateInitExpression(&init_expr_zone_, global.init,
-                                             global.type, isolate_, instance);
+    WasmValue value =
+        EvaluateInitExpression(&init_expr_zone_, global.init, global.type,
+                               isolate_, instance, thrower_);
+    if (thrower_->error()) return;
 
     if (global.type.is_reference()) {
       tagged_globals_->set(global.offset, *value.to_ref());
@@ -1965,8 +1922,8 @@ V8_INLINE void SetFunctionTablePlaceholder(Isolate* isolate,
     table_object->entries().set(entry_index,
                                 *wasm_internal_function.ToHandleChecked());
   }
-  WasmTableObject::UpdateDispatchTables(isolate, table_object, entry_index,
-                                        function->sig, instance, func_index);
+  WasmTableObject::UpdateDispatchTables(isolate, *table_object, entry_index,
+                                        function, *instance);
 }
 
 V8_INLINE void SetFunctionTableNullEntry(Isolate* isolate,
@@ -2000,13 +1957,14 @@ void InstanceBuilder::InitializeNonDefaultableTables(
           SetFunctionTableNullEntry(isolate_, table_object, entry_index);
         }
       } else {
-        Handle<Object> value =
+        WasmValue value =
             EvaluateInitExpression(&init_expr_zone_, table.initial_value,
-                                   table.type, isolate_, instance)
-                .to_ref();
+                                   table.type, isolate_, instance, thrower_);
+        if (thrower_->error()) return;
         for (uint32_t entry_index = 0; entry_index < table.initial_size;
              entry_index++) {
-          WasmTableObject::Set(isolate_, table_object, entry_index, value);
+          WasmTableObject::Set(isolate_, table_object, entry_index,
+                               value.to_ref());
         }
       }
   }
@@ -2036,6 +1994,8 @@ bool LoadElemSegmentImpl(Zone* zone, Isolate* isolate,
   bool is_function_table =
       IsSubtypeOf(table_object->type(), kWasmFuncRef, instance->module());
 
+  ErrorThrower thrower(isolate, "LoadElemSegment");
+
   for (size_t i = 0; i < count; ++i) {
     ConstantExpression entry = elem_segment.entries[src + i];
     int entry_index = static_cast<int>(dst + i);
@@ -2046,11 +2006,10 @@ bool LoadElemSegmentImpl(Zone* zone, Isolate* isolate,
                entry.kind() == ConstantExpression::kRefNull) {
       SetFunctionTableNullEntry(isolate, table_object, entry_index);
     } else {
-      Handle<Object> value =
-          EvaluateInitExpression(zone, entry, elem_segment.type, isolate,
-                                 instance)
-              .to_ref();
-      WasmTableObject::Set(isolate, table_object, entry_index, value);
+      WasmValue value = EvaluateInitExpression(zone, entry, elem_segment.type,
+                                               isolate, instance, &thrower);
+      if (thrower.error()) return false;
+      WasmTableObject::Set(isolate, table_object, entry_index, value.to_ref());
     }
   }
   return true;
@@ -2065,9 +2024,11 @@ void InstanceBuilder::LoadTableSegments(Handle<WasmInstanceObject> instance) {
     if (elem_segment.status != WasmElemSegment::kStatusActive) continue;
 
     uint32_t table_index = elem_segment.table_index;
-    uint32_t dst = EvaluateInitExpression(&init_expr_zone_, elem_segment.offset,
-                                          kWasmI32, isolate_, instance)
-                       .to_u32();
+    uint32_t dst =
+        EvaluateInitExpression(&init_expr_zone_, elem_segment.offset, kWasmI32,
+                               isolate_, instance, thrower_)
+            .to_u32();
+    if (thrower_->error()) return;
     uint32_t src = 0;
     size_t count = elem_segment.entries.size();
 

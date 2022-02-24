@@ -24,9 +24,11 @@ __author__ = 'scherkus@chromium.org (Andrew Scherkus)'
 
 import collections
 import copy
+import credits_updater
 import datetime
 import fnmatch
-import credits_updater
+import functools
+import hashlib
 import itertools
 import optparse
 import os
@@ -96,11 +98,7 @@ def CleanObjectFiles(object_files):
     object_files: List of object files that needs cleaning.
   """
   cleaning_list = [
-      'libavcodec/inverse.o',  # Includes libavutil/inverse.c
       'libavcodec/file_open.o',  # Includes libavutil/file_open.c
-      'libavcodec/log2_tab.o',  # Includes libavutil/log2_tab.c
-      'libavformat/golomb_tab.o',  # Includes libavcodec/golomb.c
-      'libavformat/log2_tab.o',  # Includes libavutil/log2_tab.c
       'libavformat/file_open.o',  # Includes libavutil/file_open.c
 
       # These codecs are not supported by Chromium and allowing ogg to parse
@@ -614,6 +612,15 @@ def ParseOptions():
 
   return options, args
 
+def SourceSetCompare(x, y):
+  if len(x.sources) != len(y.sources):
+    return len(x.sources) - len(y.sources)
+  if len(x.conditions) != len(y.conditions):
+    return len(x.conditions) - len(y.conditions)
+  if len(str(x.conditions)) != len(str(y.conditions)):
+    return len(str(x.conditions)) - len(str(y.conditions))
+  return (int(hashlib.md5(str(x).encode('utf-8')).hexdigest(), 16) -
+      int(hashlib.md5(str(y).encode('utf-8')).hexdigest(), 16))
 
 def WriteGn(fd, disjoint_sets):
   fd.write(COPYRIGHT)
@@ -622,7 +629,6 @@ def WriteGn(fd, disjoint_sets):
   # Generate conditional stanza for each disjoint source set.
   for s in reversed(disjoint_sets):
     fd.write(s.GenerateGnStanza())
-
 
 # Lists of files that are exempt from searching in GetIncludedSources.
 IGNORED_INCLUDE_FILES = [
@@ -687,11 +693,12 @@ LICENSE_EXCEPTIONS = [
 ]
 
 # Regex to find lines matching #include "some_dir\some_file.h".
-INCLUDE_REGEX = re.compile('#\s*include\s+"([^"]+)"')
+# Also works for assembly files that use %include.
+INCLUDE_REGEX = re.compile('[#%]\s*include\s+"([^"]+)"')
 
 # Regex to find whacky includes that we might be overlooking (e.g. using macros
 # or defines).
-EXOTIC_INCLUDE_REGEX = re.compile('#\s*include\s+[^"<\s].+')
+EXOTIC_INCLUDE_REGEX = re.compile('[#%]\s*include\s+[^"<\s].+')
 
 # Prefix added to renamed files as part of
 RENAME_PREFIX = 'autorename'
@@ -865,7 +872,7 @@ def FixObjectBasenameCollisions(disjoint_sets,
     # Track needed adjustments to change when we're done with each SourceSet.
     renames = set()
 
-    for source_path in source_set.sources:
+    for source_path in sorted(source_set.sources):
       folder, filename = os.path.split(source_path)
       basename, _ = os.path.splitext(filename)
 
@@ -969,6 +976,11 @@ def main():
     exit('ERROR: failed to find any source sets. ' +
          'Are build_dir (%s) and/or source_dir (%s) options correct?' %
          (options.build_dir, options.source_dir))
+
+  # Sort sets prior to further processing (e.g. FixObjectBasenameCollisions) and
+  # printing to make order deterministic between runs.
+  sets = sorted(sets,
+                key=functools.cmp_to_key(SourceSetCompare));
 
   all_renames, old_renames_to_delete = FixObjectBasenameCollisions(
                                          sets,

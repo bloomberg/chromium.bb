@@ -203,24 +203,18 @@ class FeedbackVector
  public:
   NEVER_READ_ONLY_SPACE
   DEFINE_TORQUE_GENERATED_FEEDBACK_VECTOR_FLAGS()
-  STATIC_ASSERT(OptimizationMarker::kLastOptimizationMarker <
+  STATIC_ASSERT(OptimizationMarker::kLastOptimizationMarker <=
                 OptimizationMarkerBits::kMax);
-  STATIC_ASSERT(OptimizationTier::kLastOptimizationTier <
-                OptimizationTierBits::kMax);
 
   static const bool kFeedbackVectorMaybeOptimizedCodeIsStoreRelease = true;
   using TorqueGeneratedFeedbackVector<FeedbackVector,
                                       HeapObject>::maybe_optimized_code;
   DECL_RELEASE_ACQUIRE_WEAK_ACCESSORS(maybe_optimized_code)
 
-  static constexpr uint32_t kHasCompileOptimizedOrLogFirstExecutionMarker =
+  static constexpr uint32_t kHasCompileOptimizedMarker =
       kNoneOrInOptimizationQueueMask << OptimizationMarkerBits::kShift;
-  static constexpr uint32_t kHasNoTopTierCodeOrCompileOptimizedMarkerMask =
-      kNoneOrMidTierMask << OptimizationTierBits::kShift |
-      kHasCompileOptimizedOrLogFirstExecutionMarker;
   static constexpr uint32_t kHasOptimizedCodeOrCompileOptimizedMarkerMask =
-      OptimizationTierBits::kMask |
-      kHasCompileOptimizedOrLogFirstExecutionMarker;
+      MaybeHasOptimizedCodeBit::kMask | kHasCompileOptimizedMarker;
 
   inline bool is_empty() const;
 
@@ -237,18 +231,22 @@ class FeedbackVector
   inline void clear_invocation_count(RelaxedStoreTag tag);
 
   inline CodeT optimized_code() const;
+  // Whether maybe_optimized_code contains a cached Code object.
   inline bool has_optimized_code() const;
+  // Similar to above, but represented internally as a bit that can be
+  // efficiently checked by generated code. May lag behind the actual state of
+  // the world, thus 'maybe'.
+  inline bool maybe_has_optimized_code() const;
+  inline void set_maybe_has_optimized_code(bool value);
+
   inline bool has_optimization_marker() const;
   inline OptimizationMarker optimization_marker() const;
-  inline OptimizationTier optimization_tier() const;
-  void ClearOptimizedCode(FeedbackCell feedback_cell);
-  void EvictOptimizedCodeMarkedForDeoptimization(FeedbackCell feedback_cell,
-                                                 SharedFunctionInfo shared,
+  void EvictOptimizedCodeMarkedForDeoptimization(SharedFunctionInfo shared,
                                                  const char* reason);
   static void SetOptimizedCode(Handle<FeedbackVector> vector,
-                               Handle<CodeT> code, FeedbackCell feedback_cell);
+                               Handle<CodeT> code);
+  void ClearOptimizedCode();
   void SetOptimizationMarker(OptimizationMarker marker);
-  void ClearOptimizationTier(FeedbackCell feedback_cell);
   void InitializeOptimizationState();
 
   // Clears the optimization marker in the feedback vector.

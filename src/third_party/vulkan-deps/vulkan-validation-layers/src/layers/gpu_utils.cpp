@@ -1,6 +1,6 @@
-/* Copyright (c) 2020-2021 The Khronos Group Inc.
- * Copyright (c) 2020-2021 Valve Corporation
- * Copyright (c) 2020-2021 LunarG, Inc.
+/* Copyright (c) 2020-2022 The Khronos Group Inc.
+ * Copyright (c) 2020-2022 Valve Corporation
+ * Copyright (c) 2020-2022 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -391,8 +391,9 @@ void UtilGenerateCommonMessage(const debug_report_data *report_data, const VkCom
 
 // Read the contents of the SPIR-V OpSource instruction and any following continuation instructions.
 // Split the single string into a vector of strings, one for each line, for easier processing.
-void ReadOpSource(const SHADER_MODULE_STATE &shader, const uint32_t reported_file_id, std::vector<std::string> &opsource_lines) {
-    for (auto insn : shader) {
+void ReadOpSource(const SHADER_MODULE_STATE &module_state, const uint32_t reported_file_id,
+                  std::vector<std::string> &opsource_lines) {
+    for (auto insn : module_state) {
         if ((insn.opcode() == spv::OpSource) && (insn.len() >= 5) && (insn.word(3) == reported_file_id)) {
             std::istringstream in_stream;
             std::string cur_line;
@@ -488,7 +489,7 @@ bool GetLineAndFilename(const std::string string, uint32_t *linenumber, std::str
 
 // Extract the filename, line number, and column number from the correct OpLine and build a message string from it.
 // Scan the source (from OpSource) to find the line of source at the reported line number and place it in another message string.
-void UtilGenerateSourceMessages(const std::vector<unsigned int> &pgm, const uint32_t *debug_record, bool from_printf,
+void UtilGenerateSourceMessages(const std::vector<uint32_t> &pgm, const uint32_t *debug_record, bool from_printf,
                                 std::string &filename_msg, std::string &source_msg) {
     using namespace spvtools;
     std::ostringstream filename_stream;

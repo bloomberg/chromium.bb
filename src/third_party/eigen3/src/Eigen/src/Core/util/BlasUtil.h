@@ -87,7 +87,7 @@ public:
     eigen_assert(incr==1);
   }
 
-  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void prefetch(int i) const {
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void prefetch(Index i) const {
     internal::prefetch(&operator()(i));
   }
 
@@ -98,6 +98,11 @@ public:
   template<typename PacketType>
   EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE PacketType loadPacket(Index i) const {
     return ploadt<PacketType, AlignmentType>(m_data + i);
+  }
+
+  template<typename PacketType, int AlignmentT>
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE PacketType load(Index i) const {
+    return ploadt<PacketType, AlignmentT>(m_data + i);
   }
 
   template<typename PacketType>
@@ -189,6 +194,9 @@ public:
     return VectorMapper(&operator()(i, j));
   }
 
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void prefetch(Index i, Index j) const {
+    internal::prefetch(&operator()(i, j));
+  }
 
   EIGEN_DEVICE_FUNC
   EIGEN_ALWAYS_INLINE Scalar& operator()(Index i, Index j) const {
@@ -282,6 +290,10 @@ public:
 
   EIGEN_DEVICE_FUNC  EIGEN_ALWAYS_INLINE LinearMapper getLinearMapper(Index i, Index j) const {
     return LinearMapper(&operator()(i, j), m_incr.value());
+  }
+
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void prefetch(Index i, Index j) const {
+    internal::prefetch(&operator()(i, j));
   }
 
   EIGEN_DEVICE_FUNC
@@ -405,7 +417,7 @@ template<typename XprType> struct blas_traits
 {
   typedef typename traits<XprType>::Scalar Scalar;
   typedef const XprType& ExtractType;
-  typedef XprType _ExtractType;
+  typedef XprType ExtractType_;
   enum {
     IsComplex = NumTraits<Scalar>::IsComplex,
     IsTransposed = false,
@@ -418,7 +430,7 @@ template<typename XprType> struct blas_traits
   };
   typedef typename conditional<bool(HasUsableDirectAccess),
     ExtractType,
-    typename _ExtractType::PlainObject
+    typename ExtractType_::PlainObject
     >::type DirectLinearAccessType;
   static inline EIGEN_DEVICE_FUNC ExtractType extract(const XprType& x) { return x; }
   static inline EIGEN_DEVICE_FUNC const Scalar extractScalarFactor(const XprType&) { return Scalar(1); }
@@ -500,8 +512,8 @@ struct blas_traits<Transpose<NestedXpr> >
   typedef typename NestedXpr::Scalar Scalar;
   typedef blas_traits<NestedXpr> Base;
   typedef Transpose<NestedXpr> XprType;
-  typedef Transpose<const typename Base::_ExtractType>  ExtractType; // const to get rid of a compile error; anyway blas traits are only used on the RHS
-  typedef Transpose<const typename Base::_ExtractType> _ExtractType;
+  typedef Transpose<const typename Base::ExtractType_>  ExtractType; // const to get rid of a compile error; anyway blas traits are only used on the RHS
+  typedef Transpose<const typename Base::ExtractType_> ExtractType_;
   typedef typename conditional<bool(Base::HasUsableDirectAccess),
     ExtractType,
     typename ExtractType::PlainObject

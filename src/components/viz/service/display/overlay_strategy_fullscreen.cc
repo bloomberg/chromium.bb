@@ -67,7 +67,7 @@ bool OverlayStrategyFullscreen::Attempt(
   candidate.plane_z_order = 0;
   OverlayCandidateList new_candidate_list;
   new_candidate_list.push_back(candidate);
-  capability_checker_->CheckOverlaySupport(primary_plane, &new_candidate_list);
+  capability_checker_->CheckOverlaySupport(nullptr, &new_candidate_list);
   if (!new_candidate_list.front().overlay_handled)
     return false;
 
@@ -87,7 +87,7 @@ void OverlayStrategyFullscreen::ProposePrioritized(
     AggregatedRenderPassList* render_pass_list,
     SurfaceDamageRectList* surface_damage_rect_list,
     const PrimaryPlane* primary_plane,
-    OverlayProposedCandidateList* candidates,
+    std::vector<OverlayProposedCandidate>* candidates,
     std::vector<gfx::Rect>* content_bounds) {
   auto* render_pass = render_pass_list->back().get();
   QuadList* quad_list = &render_pass->quad_list;
@@ -141,7 +141,7 @@ bool OverlayStrategyFullscreen::AttemptPrioritized(
 
   OverlayCandidateList new_candidate_list;
   new_candidate_list.push_back(proposed_candidate.candidate);
-  capability_checker_->CheckOverlaySupport(primary_plane, &new_candidate_list);
+  capability_checker_->CheckOverlaySupport(nullptr, &new_candidate_list);
   if (!new_candidate_list.front().overlay_handled)
     return false;
 

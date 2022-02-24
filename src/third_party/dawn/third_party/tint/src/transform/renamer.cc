@@ -1252,12 +1252,12 @@ Renamer::Config::~Config() = default;
 Renamer::Renamer() = default;
 Renamer::~Renamer() = default;
 
-Output Renamer::Run(const Program* in, const DataMap& inputs) {
+Output Renamer::Run(const Program* in, const DataMap& inputs) const {
   ProgramBuilder out;
   // Disable auto-cloning of symbols, since we want to rename them.
   CloneContext ctx(&out, in, false);
 
-  // Swizzles, intrinsic calls and builtin structure members need to keep their
+  // Swizzles, builtin calls and builtin structure members need to keep their
   // symbols preserved.
   std::unordered_set<const ast::IdentifierExpression*> preserve;
   for (auto* node : in->ASTNodes().Objects()) {
@@ -1284,7 +1284,7 @@ Output Renamer::Run(const Program* in, const DataMap& inputs) {
             << "CallExpression has no semantic info";
         continue;
       }
-      if (sem->Target()->Is<sem::Intrinsic>()) {
+      if (sem->Target()->Is<sem::Builtin>()) {
         preserve.emplace(call->target.name);
       }
     }

@@ -80,6 +80,9 @@ namespace transform {
 ///   return wrapper_result;
 /// }
 /// ```
+///
+/// @note Depends on the following transforms to have been run first:
+/// * Unshadow
 class CanonicalizeEntryPointIO
     : public Castable<CanonicalizeEntryPointIO, Transform> {
  public:
@@ -87,6 +90,8 @@ class CanonicalizeEntryPointIO
   enum class ShaderStyle {
     /// Target SPIR-V (using global variables).
     kSpirv,
+    /// Target GLSL (using global variables).
+    kGlsl,
     /// Target MSL (using non-struct function parameters for builtins).
     kMsl,
     /// Target HLSL (using structures for all IO).
@@ -131,7 +136,9 @@ class CanonicalizeEntryPointIO
   /// ProgramBuilder
   /// @param inputs optional extra transform-specific input data
   /// @param outputs optional extra transform-specific output data
-  void Run(CloneContext& ctx, const DataMap& inputs, DataMap& outputs) override;
+  void Run(CloneContext& ctx,
+           const DataMap& inputs,
+           DataMap& outputs) const override;
 
   struct State;
 };

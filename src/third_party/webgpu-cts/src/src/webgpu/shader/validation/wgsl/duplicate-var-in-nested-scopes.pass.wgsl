@@ -1,6 +1,6 @@
 // This passes because inter-scope shadowing is supported
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   var a : u32 = 1u;
   if (true) {

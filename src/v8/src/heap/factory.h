@@ -613,16 +613,22 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
       int parameter_count, Handle<PodArray<wasm::ValueType>> serialized_sig,
       Handle<CodeT> wrapper_code, Handle<Map> rtt,
       Handle<HeapObject> suspender);
+  Handle<WasmOnFulfilledData> NewWasmOnFulfilledData(
+      Handle<WasmSuspenderObject> suspender);
   Handle<WasmStruct> NewWasmStruct(const wasm::StructType* type,
                                    wasm::WasmValue* args, Handle<Map> map);
-  Handle<WasmArray> NewWasmArray(const wasm::ArrayType* type,
-                                 const std::vector<wasm::WasmValue>& elements,
-                                 Handle<Map> map);
+  Handle<WasmArray> NewWasmArrayFromElements(
+      const wasm::ArrayType* type, const std::vector<wasm::WasmValue>& elements,
+      Handle<Map> map);
+  Handle<WasmArray> NewWasmArrayFromMemory(uint32_t length, Handle<Map> map,
+                                           Address source);
 
   Handle<SharedFunctionInfo> NewSharedFunctionInfoForWasmExportedFunction(
       Handle<String> name, Handle<WasmExportedFunctionData> data);
   Handle<SharedFunctionInfo> NewSharedFunctionInfoForWasmJSFunction(
       Handle<String> name, Handle<WasmJSFunctionData> data);
+  Handle<SharedFunctionInfo> NewSharedFunctionInfoForWasmOnFulfilled(
+      Handle<WasmOnFulfilledData> data);
   Handle<SharedFunctionInfo> NewSharedFunctionInfoForWasmCapiFunction(
       Handle<WasmCapiFunctionData> data);
 #endif  // V8_ENABLE_WEBASSEMBLY
@@ -1015,7 +1021,7 @@ class V8_EXPORT_PRIVATE Factory : public FactoryBase<Factory> {
 
   // This is the real Isolate that will be used for allocating and accessing
   // external pointer entries when V8_SANDBOXED_EXTERNAL_POINTERS is enabled.
-  Isolate* isolate_for_heap_sandbox() const {
+  Isolate* isolate_for_sandbox() const {
 #ifdef V8_SANDBOXED_EXTERNAL_POINTERS
     return isolate();
 #else

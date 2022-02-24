@@ -3,10 +3,16 @@ SKIP: FAILED
 #version 310 es
 precision mediump float;
 
+layout(location = 1) in vec2 vMainuv_param_1;
+layout(location = 0) in vec4 v_output1_param_1;
+layout(location = 3) in vec2 v_uv_param_1;
+layout(location = 2) in vec4 v_output2_param_1;
+layout(location = 0) out vec4 glFragColor_1_1;
 struct lightingInfo {
   vec3 diffuse;
   vec3 specular;
 };
+
 struct LeftOver {
   mat4 u_World;
   mat4 u_ViewProjection;
@@ -18,6 +24,7 @@ struct LeftOver {
   uint padding_1;
   vec2 tangentSpaceParameter0;
 };
+
 struct Light0 {
   vec4 vLightData;
   vec4 vLightDiffuse;
@@ -30,10 +37,8 @@ struct Light0 {
 
 float u_Float = 0.0f;
 vec3 u_Color = vec3(0.0f, 0.0f, 0.0f);
-uniform highp sampler2D TextureSamplerTexture;
-
 vec2 vMainuv = vec2(0.0f, 0.0f);
-layout (binding = 6) uniform LeftOver_1 {
+layout(binding = 6) uniform LeftOver_1 {
   mat4 u_World;
   mat4 u_ViewProjection;
   float u_bumpStrength;
@@ -44,13 +49,12 @@ layout (binding = 6) uniform LeftOver_1 {
   uint padding_1;
   vec2 tangentSpaceParameter0;
 } x_269;
+
 vec4 v_output1 = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 bool tint_symbol = false;
 vec2 v_uv = vec2(0.0f, 0.0f);
 vec4 v_output2 = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-uniform highp sampler2D TextureSampler1Texture;
-
-layout (binding = 5) uniform Light0_1 {
+layout(binding = 5) uniform Light0_1 {
   vec4 vLightData;
   vec4 vLightDiffuse;
   vec4 vLightSpecular;
@@ -59,8 +63,8 @@ layout (binding = 5) uniform Light0_1 {
   vec4 shadowsInfo;
   vec2 depthValues;
 } light0;
-vec4 glFragColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
+vec4 glFragColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 mat3 cotangent_frame_vf3_vf3_vf2_vf2_(inout vec3 normal_1, inout vec3 p, inout vec2 uv, inout vec2 tangentSpaceParams) {
   vec3 dp1 = vec3(0.0f, 0.0f, 0.0f);
   vec3 dp2 = vec3(0.0f, 0.0f, 0.0f);
@@ -178,6 +182,9 @@ lightingInfo computeHemisphericLighting_vf3_vf3_vf4_vf3_vf3_vf3_f1_(inout vec3 v
   return result;
 }
 
+uniform highp sampler2D TextureSamplerTexture_TextureSamplerSampler;
+uniform highp sampler2D TextureSampler1Texture_TextureSampler1Sampler;
+
 void main_1() {
   vec4 tempTextureRead = vec4(0.0f, 0.0f, 0.0f, 0.0f);
   vec3 rgb = vec3(0.0f, 0.0f, 0.0f);
@@ -234,7 +241,7 @@ void main_1() {
   vec3 output3 = vec3(0.0f, 0.0f, 0.0f);
   u_Float = 100.0f;
   u_Color = vec3(0.5f, 0.5f, 0.5f);
-  vec4 x_262 = texture(TextureSamplerTexture, vMainuv);
+  vec4 x_262 = texture(TextureSamplerTexture_TextureSamplerSampler, vMainuv);
   tempTextureRead = x_262;
   vec4 x_264 = tempTextureRead;
   float x_273 = x_269.textureInfoName;
@@ -282,7 +289,7 @@ void main_1() {
   i = 0;
   {
     for(; (i < 15); i = (i + 1)) {
-      vec4 x_397 = texture(TextureSamplerTexture, (v_uv + vCurrOffset));
+      vec4 x_397 = texture(TextureSamplerTexture_TextureSamplerSampler, (v_uv + vCurrOffset));
       currSampledHeight = x_397.w;
       if ((currSampledHeight > currRayHeight)) {
         delta1 = (currSampledHeight - currRayHeight);
@@ -300,7 +307,7 @@ void main_1() {
   }
   parallaxOcclusion_0 = vCurrOffset;
   uvOffset = parallaxOcclusion_0;
-  vec4 x_452 = texture(TextureSamplerTexture, (v_uv + uvOffset));
+  vec4 x_452 = texture(TextureSamplerTexture_TextureSamplerSampler, (v_uv + uvOffset));
   float x_454 = x_269.u_bumpStrength;
   param_8 = TBN;
   param_9 = vec3(x_452.x, x_452.y, x_452.z);
@@ -308,7 +315,7 @@ void main_1() {
   vec3 x_461 = perturbNormal_mf33_vf3_f1_(param_8, param_9, param_10);
   output4 = vec4(x_461.x, x_461.y, x_461.z, output4.w);
   output6 = (v_uv + uvOffset);
-  vec4 x_475 = texture(TextureSampler1Texture, output6);
+  vec4 x_475 = texture(TextureSampler1Texture_TextureSampler1Sampler, output6);
   tempTextureRead1 = x_475;
   vec4 x_477 = tempTextureRead1;
   rgb1 = vec3(x_477.x, x_477.y, x_477.z);
@@ -350,56 +357,27 @@ void main_1() {
 struct main_out {
   vec4 glFragColor_1;
 };
-struct tint_symbol_4 {
-  vec4 v_output1_param;
-  vec2 vMainuv_param;
-  vec4 v_output2_param;
-  vec2 v_uv_param;
-  bool tint_symbol_2;
-};
-struct tint_symbol_5 {
-  vec4 glFragColor_1;
-};
 
-main_out tint_symbol_1_inner(vec2 vMainuv_param, vec4 v_output1_param, bool tint_symbol_2, vec2 v_uv_param, vec4 v_output2_param) {
+main_out tint_symbol_1(vec2 vMainuv_param, vec4 v_output1_param, bool tint_symbol_2, vec2 v_uv_param, vec4 v_output2_param) {
   vMainuv = vMainuv_param;
   v_output1 = v_output1_param;
   tint_symbol = tint_symbol_2;
   v_uv = v_uv_param;
   v_output2 = v_output2_param;
   main_1();
-  main_out tint_symbol_6 = main_out(glFragColor);
-  return tint_symbol_6;
+  main_out tint_symbol_3 = main_out(glFragColor);
+  return tint_symbol_3;
 }
 
-tint_symbol_5 tint_symbol_1(tint_symbol_4 tint_symbol_3) {
-  main_out inner_result = tint_symbol_1_inner(tint_symbol_3.vMainuv_param, tint_symbol_3.v_output1_param, tint_symbol_3.tint_symbol_2, tint_symbol_3.v_uv_param, tint_symbol_3.v_output2_param);
-  tint_symbol_5 wrapper_result = tint_symbol_5(vec4(0.0f, 0.0f, 0.0f, 0.0f));
-  wrapper_result.glFragColor_1 = inner_result.glFragColor_1;
-  return wrapper_result;
-}
-in vec4 v_output1_param;
-in vec2 vMainuv_param;
-in vec4 v_output2_param;
-in vec2 v_uv_param;
-out vec4 glFragColor_1;
 void main() {
-  tint_symbol_4 inputs;
-  inputs.v_output1_param = v_output1_param;
-  inputs.vMainuv_param = vMainuv_param;
-  inputs.v_output2_param = v_output2_param;
-  inputs.v_uv_param = v_uv_param;
-  inputs.tint_symbol_2 = gl_FrontFacing;
-  tint_symbol_5 outputs;
-  outputs = tint_symbol_1(inputs);
-  glFragColor_1 = outputs.glFragColor_1;
+  main_out inner_result = tint_symbol_1(vMainuv_param_1, v_output1_param_1, gl_FrontFacing, v_uv_param_1, v_output2_param_1);
+  glFragColor_1_1 = inner_result.glFragColor_1;
+  return;
 }
-
-
 Error parsing GLSL shader:
-ERROR: 0:73: 'ddx' : no matching overloaded function found 
-ERROR: 0:73: 'assign' :  cannot convert from ' const float' to ' temp mediump 3-component vector of float'
-ERROR: 0:73: '' : compilation terminated 
+ERROR: 0:77: 'ddx' : no matching overloaded function found 
+ERROR: 0:77: 'assign' :  cannot convert from ' const float' to ' temp mediump 3-component vector of float'
+ERROR: 0:77: '' : compilation terminated 
 ERROR: 3 compilation errors.  No code generated.
 
 

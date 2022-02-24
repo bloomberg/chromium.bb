@@ -32,6 +32,7 @@
 #include "compiler/translator/tree_ops/RewriteStructSamplers.h"
 #include "compiler/translator/tree_ops/SeparateStructFromUniformDeclarations.h"
 #include "compiler/translator/tree_ops/vulkan/DeclarePerVertexBlocks.h"
+#include "compiler/translator/tree_ops/vulkan/EmulateDithering.h"
 #include "compiler/translator/tree_ops/vulkan/EmulateFragColorData.h"
 #include "compiler/translator/tree_ops/vulkan/FlagSamplersWithTexelFetch.h"
 #include "compiler/translator/tree_ops/vulkan/ReplaceForShaderFramebufferFetch.h"
@@ -205,7 +206,7 @@ ANGLE_NO_DISCARD bool RotateAndFlipBuiltinVariable(TCompiler *compiler,
     // Create a symbol reference to our new variable that will hold the modified builtin.
     TType *type = new TType(builtin->getType());
     type->setQualifier(EvqGlobal);
-    type->setPrimarySize(static_cast<unsigned char>(builtin->getType().getNominalSize()));
+    type->setPrimarySize(builtin->getType().getNominalSize());
     TVariable *replacementVar =
         new TVariable(symbolTable, flippedVariableName, type, SymbolType::AngleInternal);
     DeclareGlobalVariable(root, replacementVar);
@@ -277,30 +278,55 @@ ANGLE_NO_DISCARD bool ReplaceGLDepthRangeWithDriverUniform(TCompiler *compiler,
 // variable.
 ANGLE_NO_DISCARD bool ReplaceGLBoundingBoxWithGlobal(TCompiler *compiler,
                                                      TIntermBlock *root,
-                                                     TSymbolTable *symbolTable)
+                                                     TSymbolTable *symbolTable,
+                                                     int shaderVersion)
 {
-    // Create a symbol reference to "gl_BoundingBoxEXT"
-    const TVariable *builtinBoundingBoxVar = static_cast<const TVariable *>(
-        symbolTable->findBuiltIn(ImmutableString("gl_BoundingBoxEXT"), 310));
+    // Declare the replacement bounding box variable type
+    TType *emulatedBoundingBoxDeclType = new TType(EbtFloat, EbpHigh, EvqGlobal, 4);
+    emulatedBoundingBoxDeclType->makeArray(2u);
 
+    TVariable *ANGLEBoundingBoxVar = new TVariable(
+        symbolTable->nextUniqueId(), ImmutableString("ANGLEBoundingBox"), SymbolType::AngleInternal,
+        TExtension::EXT_primitive_bounding_box, emulatedBoundingBoxDeclType);
+
+    DeclareGlobalVariable(root, ANGLEBoundingBoxVar);
+
+    const TVariable *builtinBoundingBoxVar;
+    bool replacementResult = true;
+
+    // Create a symbol reference to "gl_BoundingBoxEXT"
+    builtinBoundingBoxVar = static_cast<const TVariable *>(
+        symbolTable->findBuiltIn(ImmutableString("gl_BoundingBoxEXT"), shaderVersion));
     if (builtinBoundingBoxVar != nullptr)
     {
-        // Declare the replacement bounding box variable type
-        TType *emulatedBoundingBoxDeclType = new TType(builtinBoundingBoxVar->getType());
-        emulatedBoundingBoxDeclType->setQualifier(EvqGlobal);
-
-        TVariable *ANGLEBoundingBoxVar =
-            new TVariable(symbolTable->nextUniqueId(), ImmutableString("ANGLEBoundingBox"),
-                          SymbolType::AngleInternal, TExtension::EXT_primitive_bounding_box,
-                          emulatedBoundingBoxDeclType);
-
-        DeclareGlobalVariable(root, ANGLEBoundingBoxVar);
-
         // Use the replacement variable instead of builtin gl_BoundingBoxEXT everywhere.
-        return ReplaceVariable(compiler, root, builtinBoundingBoxVar, ANGLEBoundingBoxVar);
+        replacementResult &=
+            ReplaceVariable(compiler, root, builtinBoundingBoxVar, ANGLEBoundingBoxVar);
     }
 
-    return true;
+    // Create a symbol reference to "gl_BoundingBoxOES"
+    builtinBoundingBoxVar = static_cast<const TVariable *>(
+        symbolTable->findBuiltIn(ImmutableString("gl_BoundingBoxOES"), shaderVersion));
+    if (builtinBoundingBoxVar != nullptr)
+    {
+        // Use the replacement variable instead of builtin gl_BoundingBoxOES everywhere.
+        replacementResult &=
+            ReplaceVariable(compiler, root, builtinBoundingBoxVar, ANGLEBoundingBoxVar);
+    }
+
+    if (shaderVersion >= 320)
+    {
+        // Create a symbol reference to "gl_BoundingBox"
+        builtinBoundingBoxVar = static_cast<const TVariable *>(
+            symbolTable->findBuiltIn(ImmutableString("gl_BoundingBox"), shaderVersion));
+        if (builtinBoundingBoxVar != nullptr)
+        {
+            // Use the replacement variable instead of builtin gl_BoundingBox everywhere.
+            replacementResult &=
+                ReplaceVariable(compiler, root, builtinBoundingBoxVar, ANGLEBoundingBoxVar);
+        }
+    }
+    return replacementResult;
 }
 
 TVariable *AddANGLEPositionVaryingDeclaration(TIntermBlock *root,
@@ -783,6 +809,14 @@ ANGLE_NO_DISCARD bool AddBresenhamEmulationFS(TCompiler *compiler,
 
     return compiler->validateAST(root);
 }
+
+bool HasFramebufferFetch(const TExtensionBehavior &extBehavior)
+{
+    return IsExtensionEnabled(extBehavior, TExtension::EXT_shader_framebuffer_fetch) ||
+           IsExtensionEnabled(extBehavior, TExtension::EXT_shader_framebuffer_fetch_non_coherent) ||
+           IsExtensionEnabled(extBehavior, TExtension::ARM_shader_framebuffer_fetch) ||
+           IsExtensionEnabled(extBehavior, TExtension::NV_shader_framebuffer_fetch);
+}
 }  // anonymous namespace
 
 TranslatorVulkan::TranslatorVulkan(sh::GLenum type, ShShaderSpec spec)
@@ -1016,7 +1050,6 @@ bool TranslatorVulkan::translateImpl(TInfoSinkBase &sink,
             bool usesPointCoord    = false;
             bool usesFragCoord     = false;
             bool usesSampleMaskIn  = false;
-            bool usesLastFragData  = false;
             bool useSamplePosition = false;
 
             // Search for the gl_PointCoord usage, if its used, we need to flip the y coordinate.
@@ -1050,12 +1083,6 @@ bool TranslatorVulkan::translateImpl(TInfoSinkBase &sink,
                     usesFragCoord = true;
                     break;
                 }
-
-                if (inputVarying.name == "gl_LastFragData")
-                {
-                    usesLastFragData = true;
-                    break;
-                }
             }
 
             if ((compileOptions & SH_ADD_BRESENHAM_LINE_RASTER_EMULATION) != 0)
@@ -1078,12 +1105,6 @@ bool TranslatorVulkan::translateImpl(TInfoSinkBase &sink,
                     hasGLSampleMask = true;
                     continue;
                 }
-            }
-
-            // Emulate gl_FragColor and gl_FragData with normal output variables.
-            if (!EmulateFragColorData(this, root, &getSymbolTable()))
-            {
-                return false;
             }
 
             if (usesPointCoord)
@@ -1129,9 +1150,12 @@ bool TranslatorVulkan::translateImpl(TInfoSinkBase &sink,
                         fragRotation = driverUniforms->getFragRotationMatrixRef();
                     }
                 }
+
+                const TVariable *samplePositionBuiltin =
+                    static_cast<const TVariable *>(getSymbolTable().findBuiltIn(
+                        ImmutableString("gl_SamplePosition"), getShaderVersion()));
                 if (!RotateAndFlipBuiltinVariable(this, root, GetMainSequence(root), flipXY,
-                                                  &getSymbolTable(),
-                                                  BuiltInVariable::gl_SamplePosition(),
+                                                  &getSymbolTable(), samplePositionBuiltin,
                                                   kFlippedPointCoordName, pivot, fragRotation))
                 {
                     return false;
@@ -1147,12 +1171,26 @@ bool TranslatorVulkan::translateImpl(TInfoSinkBase &sink,
                 }
             }
 
-            if (usesLastFragData && !ReplaceLastFragData(this, root, &getSymbolTable(), &mUniforms))
+            if (HasFramebufferFetch(getExtensionBehavior()))
             {
-                return false;
+                if (getShaderVersion() == 100)
+                {
+                    if (!ReplaceLastFragData(this, root, &getSymbolTable(), &mUniforms))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (!ReplaceInOutVariables(this, root, &getSymbolTable(), &mUniforms))
+                    {
+                        return false;
+                    }
+                }
             }
 
-            if (!ReplaceInOutVariables(this, root, &getSymbolTable(), &mUniforms))
+            // Emulate gl_FragColor and gl_FragData with normal output variables.
+            if (!EmulateFragColorData(this, root, &getSymbolTable()))
             {
                 return false;
             }
@@ -1192,6 +1230,11 @@ bool TranslatorVulkan::translateImpl(TInfoSinkBase &sink,
                 {
                     return false;
                 }
+            }
+
+            if (!EmulateDithering(this, root, &getSymbolTable(), specConst, driverUniforms))
+            {
+                return false;
             }
 
             EmitEarlyFragmentTestsGLSL(*this, sink);
@@ -1244,7 +1287,7 @@ bool TranslatorVulkan::translateImpl(TInfoSinkBase &sink,
 
         case gl::ShaderType::TessControl:
         {
-            if (!ReplaceGLBoundingBoxWithGlobal(this, root, &getSymbolTable()))
+            if (!ReplaceGLBoundingBoxWithGlobal(this, root, &getSymbolTable(), getShaderVersion()))
             {
                 return false;
             }

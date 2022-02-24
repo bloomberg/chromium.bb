@@ -56,7 +56,7 @@ import type {Chrome} from '../../../extension-api/ExtensionAPI.js'; // eslint-di
 import {format} from './ConsoleFormat.js';
 import type {ConsoleViewportElement} from './ConsoleViewport.js';
 import consoleViewStyles from './consoleView.css.js';
-import {parseSourcePositionsFromErrorStack} from './ErrorStackParser.js';
+import {augmentErrorStackWithScriptIds, parseSourcePositionsFromErrorStack} from './ErrorStackParser.js';
 
 const UIStrings = {
   /**
@@ -236,6 +236,9 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
   private requestResolver: Logs.RequestResolver.RequestResolver;
   private issueResolver: IssuesManager.IssueResolver.IssueResolver;
 
+  /** Formatting Error#stack is asynchronous. Allow tests to wait for the result */
+  #formatErrorStackPromiseForTest = Promise.resolve();
+
   constructor(
       consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier,
       requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver,
@@ -305,6 +308,10 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
 
   consoleMessage(): SDK.ConsoleModel.ConsoleMessage {
     return this.message;
+  }
+
+  formatErrorStackPromiseForTest(): Promise<void> {
+    return this.#formatErrorStackPromiseForTest;
   }
 
   protected buildMessage(): HTMLElement {
@@ -541,8 +548,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
       return null;
     }
     return this.linkifier.linkifyScriptLocation(
-        runtimeModel.target(), /* scriptId */ null, url, lineNumber,
-        {columnNumber, className: undefined, tabStop: undefined, inlineFrameIndex: 0});
+        runtimeModel.target(), /* scriptId */ null, url, lineNumber, {columnNumber, inlineFrameIndex: 0});
   }
 
   private linkifyStackTraceTopFrame(stackTrace: Protocol.Runtime.StackTrace): HTMLElement|null {
@@ -560,8 +566,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
       return null;
     }
     return this.linkifier.linkifyScriptLocation(
-        runtimeModel.target(), scriptId, url, lineNumber,
-        {columnNumber, className: undefined, tabStop: undefined, inlineFrameIndex: 0});
+        runtimeModel.target(), scriptId, url, lineNumber, {columnNumber, inlineFrameIndex: 0});
   }
 
   private format(rawParameters: (string|SDK.RemoteObject.RemoteObject|Protocol.Runtime.RemoteObject|undefined)[]):
@@ -816,9 +821,26 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
 
   private formatParameterAsError(output: SDK.RemoteObject.RemoteObject): HTMLElement {
     const result = document.createElement('span');
-    const errorSpan = this.tryFormatAsError(output.description || '');
-    result.appendChild(errorSpan ? errorSpan : this.linkifyStringAsFragment(output.description || ''));
+    const errorStack = output.description || '';
+
+    // Combine the ExceptionDetails for this error object with the parsed Error#stack.
+    // The Exceptiondetails include script IDs for stack frames, which allows more accurate
+    // linking.
+    this.#formatErrorStackPromiseForTest = this.retrieveExceptionDetails(output).then(exceptionDetails => {
+      const errorSpan = this.tryFormatAsError(errorStack, exceptionDetails);
+      result.appendChild(errorSpan ?? this.linkifyStringAsFragment(errorStack));
+    });
+
     return result;
+  }
+
+  private async retrieveExceptionDetails(errorObject: SDK.RemoteObject.RemoteObject):
+      Promise<Protocol.Runtime.ExceptionDetails|undefined> {
+    const runtimeModel = this.message.runtimeModel();
+    if (runtimeModel && errorObject.objectId) {
+      return runtimeModel.getExceptionDetails(errorObject.objectId);
+    }
+    return undefined;
   }
 
   private formatAsArrayEntry(output: SDK.RemoteObject.RemoteObject): HTMLElement {
@@ -1411,8 +1433,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
       const formattedLine = document.createElement('span');
       formattedLine.appendChild(this.linkifyStringAsFragment(`${prefix} ${name} (`));
       const scriptLocationLink = this.linkifier.linkifyScriptLocation(
-          debuggerModel.target(), null, url, lineNumber,
-          {columnNumber, className: undefined, tabStop: undefined, inlineFrameIndex: f});
+          debuggerModel.target(), null, url, lineNumber, {columnNumber, inlineFrameIndex: f});
       scriptLocationLink.tabIndex = -1;
       this.selectableChildren.push({element: scriptLocationLink, forceSelect: (): void => scriptLocationLink.focus()});
       formattedLine.appendChild(scriptLocationLink);
@@ -1422,7 +1443,31 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
     return true;
   }
 
-  private tryFormatAsError(string: string): HTMLElement|null {
+  private createScriptLocationLinkForSyntaxError(
+      debuggerModel: SDK.DebuggerModel.DebuggerModel, exceptionDetails: Protocol.Runtime.ExceptionDetails): HTMLElement
+      |undefined {
+    const {scriptId, lineNumber, columnNumber} = exceptionDetails;
+    if (!scriptId) {
+      return;
+    }
+
+    // SyntaxErrors might not populate the URL field. Try to resolve it via scriptId.
+    const url = exceptionDetails.url || debuggerModel.scriptForId(scriptId)?.sourceURL;
+    if (!url) {
+      return;
+    }
+
+    const scriptLocationLink = this.linkifier.linkifyScriptLocation(
+        debuggerModel.target(), exceptionDetails.scriptId || null, url, lineNumber, {
+          columnNumber,
+          inlineFrameIndex: 0,
+          showColumnNumber: true,
+        });
+    scriptLocationLink.tabIndex = -1;
+    return scriptLocationLink;
+  }
+
+  private tryFormatAsError(string: string, exceptionDetails?: Protocol.Runtime.ExceptionDetails): HTMLElement|null {
     const runtimeModel = this.message.runtimeModel();
     if (!runtimeModel) {
       return null;
@@ -1432,26 +1477,39 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
     if (!linkInfos?.length) {
       return null;
     }
+    if (exceptionDetails?.stackTrace) {
+      augmentErrorStackWithScriptIds(linkInfos, exceptionDetails.stackTrace);
+    }
 
     const debuggerModel = runtimeModel.debuggerModel();
     const formattedResult = document.createElement('span');
     for (let i = 0; i < linkInfos.length; ++i) {
       const newline = i < linkInfos.length - 1 ? '\n' : '';
       const {line, link} = linkInfos[i];
+      // Syntax errors don't have a stack frame that points to the source position
+      // where the error occurred. We use the source location from the
+      // exceptionDetails and append it to the end of the message instead.
+      if (!link && exceptionDetails && line.startsWith('SyntaxError')) {
+        formattedResult.appendChild(this.linkifyStringAsFragment(line));
+        const maybeScriptLocation = this.createScriptLocationLinkForSyntaxError(debuggerModel, exceptionDetails);
+        if (maybeScriptLocation) {
+          formattedResult.append(' (at ');
+          formattedResult.appendChild(maybeScriptLocation);
+          formattedResult.append(')');
+        }
+        formattedResult.append(newline);
+        continue;
+      }
       if (!link) {
         formattedResult.appendChild(this.linkifyStringAsFragment(`${line}${newline}`));
         continue;
       }
       const formattedLine = document.createElement('span');
-      const prefix = line.substring(0, link.positionLeft);
-      const suffix = `${line.substring(link.positionRight)}${newline}`;
-
-      formattedLine.appendChild(this.linkifyStringAsFragment(prefix));
-      const scriptLocationLink =
-          this.linkifier.linkifyScriptLocation(debuggerModel.target(), null, link.url, link.lineNumber, {
+      const suffix = `${link.suffix}${newline}`;
+      formattedLine.appendChild(this.linkifyStringAsFragment(link.prefix));
+      const scriptLocationLink = this.linkifier.linkifyScriptLocation(
+          debuggerModel.target(), link.scriptId || null, link.url, link.lineNumber, {
             columnNumber: link.columnNumber,
-            className: undefined,
-            tabStop: undefined,
             inlineFrameIndex: 0,
             showColumnNumber: true,
           });
@@ -1465,7 +1523,7 @@ export class ConsoleViewMessage implements ConsoleViewportElement {
         continue;
       }
 
-      const prefixWithoutFunction = prefix.substring(0, prefix.lastIndexOf(' ', prefix.length - 3));
+      const prefixWithoutFunction = link.prefix.substring(0, link.prefix.lastIndexOf(' ', link.prefix.length - 3));
 
       // If we were able to parse the function name from the stack trace line, try to replace it with an expansion of
       // any inline frames.

@@ -83,7 +83,6 @@ generated_cc_atom(
     visibility = ["//:__subpackages__"],
     deps = [
         "//include/private:SkMalloc_hdr",
-        "//include/private:SkTOptional_hdr",
         "//include/private:SkTemplates_hdr",
         "//src/core:SkMathPriv_hdr",
     ],
@@ -480,6 +479,7 @@ generated_cc_atom(
         "//include/private:SkTArray_hdr",
         "//include/private:SkTemplates_hdr",
         "//src/core:SkPointPriv_hdr",
+        "//src/core:SkRectPriv_hdr",
         "//src/core:SkTDPQueue_hdr",
         "//src/core:SkTInternalLList_hdr",
     ],
@@ -511,6 +511,7 @@ generated_cc_atom(
         "//src/core:SkDrawShadowInfo_hdr",
         "//src/core:SkGeometry_hdr",
         "//src/core:SkPointPriv_hdr",
+        "//src/core:SkRectPriv_hdr",
         "//src/gpu/geometry:GrPathUtils_hdr",
     ],
 )

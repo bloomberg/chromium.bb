@@ -33,8 +33,10 @@ class PipelineLayout;
 
 struct VertexInputBinding
 {
-	Buffer *buffer;
-	VkDeviceSize offset;
+	Buffer *buffer = nullptr;
+	VkDeviceSize offset = 0;
+	VkDeviceSize size = 0;
+	VkDeviceSize stride = 0;
 };
 
 struct IndexBuffer
@@ -75,6 +77,7 @@ struct Inputs
 	void bindVertexInputs(int firstInstance);
 	void setVertexInputBinding(const VertexInputBinding vertexInputBindings[]);
 	void advanceInstanceAttributes();
+	VkDeviceSize getVertexStride(uint32_t i, bool dynamicVertexStride) const;
 
 private:
 	VertexInputBinding vertexInputBindings[MAX_VERTEX_INPUT_BINDINGS] = {};
@@ -127,9 +130,24 @@ struct DynamicState
 	float minDepthBounds = 0.0f;
 	float maxDepthBounds = 0.0f;
 
-	uint32_t compareMask[2] = { 0 };
-	uint32_t writeMask[2] = { 0 };
-	uint32_t reference[2] = { 0 };
+	VkCullModeFlags cullMode = VK_CULL_MODE_NONE;
+	VkBool32 depthBoundsTestEnable = VK_FALSE;
+	VkCompareOp depthCompareOp = VK_COMPARE_OP_NEVER;
+	VkBool32 depthTestEnable = VK_FALSE;
+	VkBool32 depthWriteEnable = VK_FALSE;
+	VkFrontFace frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	VkPrimitiveTopology primitiveTopology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+	uint32_t scissorCount = 0;
+	VkRect2D scissors[vk::MAX_VIEWPORTS] = {};
+	VkStencilFaceFlags faceMask = (VkStencilFaceFlags)0;
+	VkStencilOpState frontStencil = {};
+	VkStencilOpState backStencil = {};
+	VkBool32 stencilTestEnable = VK_FALSE;
+	uint32_t viewportCount = 0;
+	VkRect2D viewports[vk::MAX_VIEWPORTS] = {};
+	VkBool32 rasterizerDiscardEnable = VK_FALSE;
+	VkBool32 depthBiasEnable = VK_FALSE;
+	VkBool32 primitiveRestartEnable = VK_FALSE;
 };
 
 struct GraphicsState
@@ -153,9 +171,9 @@ struct GraphicsState
 	inline VkPolygonMode getPolygonMode() const { return polygonMode; }
 	inline VkLineRasterizationModeEXT getLineRasterizationMode() const { return lineRasterizationMode; }
 
-	inline float getConstantDepthBias() const { return constantDepthBias; }
-	inline float getSlopeDepthBias() const { return slopeDepthBias; }
-	inline float getDepthBiasClamp() const { return depthBiasClamp; }
+	inline float getConstantDepthBias() const { return depthBiasEnable ? constantDepthBias : 0; }
+	inline float getSlopeDepthBias() const { return depthBiasEnable ? slopeDepthBias : 0; }
+	inline float getDepthBiasClamp() const { return depthBiasEnable ? depthBiasClamp : 0; }
 	inline float getMinDepthBounds() const { return minDepthBounds; }
 	inline float getMaxDepthBounds() const { return maxDepthBounds; }
 	inline bool hasDepthRangeUnrestricted() const { return depthRangeUnrestricted; }
@@ -191,8 +209,39 @@ struct GraphicsState
 	bool stencilActive(const Attachments &attachments) const;
 	bool depthBoundsTestActive(const Attachments &attachments) const;
 
+	inline bool hasDynamicVertexStride() const { return dynamicStateFlags.dynamicVertexInputBindingStride; }
+	inline bool hasDynamicTopology() const { return dynamicStateFlags.dynamicPrimitiveTopology; }
+
 private:
-	inline bool hasDynamicState(VkDynamicState dynamicState) const { return (dynamicStateFlags & (1 << dynamicState)) != 0; }
+	struct DynamicStateFlags
+	{
+		bool dynamicViewport : 1;
+		bool dynamicScissor : 1;
+		bool dynamicLineWidth : 1;
+		bool dynamicDepthBias : 1;
+		bool dynamicBlendConstants : 1;
+		bool dynamicDepthBounds : 1;
+		bool dynamicStencilCompareMask : 1;
+		bool dynamicStencilWriteMask : 1;
+		bool dynamicStencilReference : 1;
+		bool dynamicCullMode : 1;
+		bool dynamicFrontFace : 1;
+		bool dynamicPrimitiveTopology : 1;
+		bool dynamicViewportWithCount : 1;
+		bool dynamicScissorWithCount : 1;
+		bool dynamicVertexInputBindingStride : 1;
+		bool dynamicDepthTestEnable : 1;
+		bool dynamicDepthWriteEnable : 1;
+		bool dynamicDepthCompareOp : 1;
+		bool dynamicDepthBoundsTestEnable : 1;
+		bool dynamicStencilTestEnable : 1;
+		bool dynamicStencilOp : 1;
+		bool dynamicRasterizerDiscardEnable : 1;
+		bool dynamicDepthBiasEnable : 1;
+		bool dynamicPrimitiveRestartEnable : 1;
+	};
+
+	static DynamicStateFlags ParseDynamicStateFlags(const VkPipelineDynamicStateCreateInfo *dynamicStateCreateInfo);
 
 	VkBlendFactor blendFactor(VkBlendOp blendOperation, VkBlendFactor blendFactor) const;
 	VkBlendOp blendOperation(VkBlendOp blendOperation, VkBlendFactor sourceBlendFactor, VkBlendFactor destBlendFactor, vk::Format format) const;
@@ -202,7 +251,7 @@ private:
 
 	const PipelineLayout *pipelineLayout = nullptr;
 	const bool robustBufferAccess = false;
-	uint32_t dynamicStateFlags = 0;
+	const DynamicStateFlags dynamicStateFlags = {};
 	VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 
 	VkProvokingVertexModeEXT provokingVertexMode = VK_PROVOKING_VERTEX_MODE_FIRST_VERTEX_EXT;
@@ -217,6 +266,7 @@ private:
 	VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
 	VkLineRasterizationModeEXT lineRasterizationMode = VK_LINE_RASTERIZATION_MODE_DEFAULT_EXT;
 
+	bool depthBiasEnable = false;
 	float constantDepthBias = 0.0f;
 	float slopeDepthBias = 0.0f;
 	float depthBiasClamp = 0.0f;

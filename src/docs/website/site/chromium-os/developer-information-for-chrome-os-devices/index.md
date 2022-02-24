@@ -305,7 +305,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2010-12-05</td>
     <td>Google</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/cr-48-chrome-notebook-developer-information">Cr-48</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/cr-48-chrome-notebook-developer-information">Cr-48</a></td>
     <td>Mario</td>
     <td>x86-mario</td>
     <td></td>
@@ -322,7 +322,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2011-05-30</td>
     <td>Samsung</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/samsung-series-5-chromebook">Samsung Series 5 Chromebook</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/samsung-series-5-chromebook">Samsung Series 5 Chromebook</a></td>
     <td>Alex</td>
     <td>x86-alex & x86-alex_he</td>
     <td></td>
@@ -339,7 +339,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2011-06-30</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/acer-ac700-chromebook">Acer AC700 Chromebook</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/acer-ac700-chromebook">Acer AC700 Chromebook</a></td>
     <td>ZGB</td>
     <td>x86-zgb & x86-zgb_he</td>
     <td></td>
@@ -356,7 +356,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2012-04-29</td>
     <td>Samsung</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/samsung-sandy-bridge">Samsung Chromebook Series 5 550</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/samsung-sandy-bridge">Samsung Chromebook Series 5 550</a></td>
     <td>Lumpy</td>
     <td>lumpy</td>
     <td></td>
@@ -373,7 +373,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2012-07-01</td>
     <td>Samsung</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/samsung-sandy-bridge">Samsung Chromebox Series 3</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/samsung-sandy-bridge">Samsung Chromebox Series 3</a></td>
     <td>Stumpy</td>
     <td>stumpy</td>
     <td></td>
@@ -390,7 +390,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2012-10-14</td>
     <td>Samsung</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/samsung-arm-chromebook">Samsung Chromebook</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/samsung-arm-chromebook">Samsung Chromebook</a></td>
     <td>Snow</td>
     <td>daisy</td>
     <td>daisy</td>
@@ -407,7 +407,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2012-10-30</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/acer-c7-chromebook">Acer C7 Chromebook</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/acer-c7-chromebook">Acer C7 Chromebook</a></td>
     <td>Parrot</td>
     <td>parrot_ivb</td>
     <td>parrot</td>
@@ -424,7 +424,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2012-10-30</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/acer-c7-chromebook">Acer C7 Chromebook</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/acer-c7-chromebook">Acer C7 Chromebook</a></td>
     <td>Parrot</td>
     <td>parrot</td>
     <td></td>
@@ -441,7 +441,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2012-12-30</td>
     <td>Lenovo</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/lenovo-thinkpad-x131e-chromebook">Lenovo Thinkpad X131e Chromebook</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/lenovo-thinkpad-x131e-chromebook">Lenovo Thinkpad X131e Chromebook</a></td>
     <td>Stout</td>
     <td>stout</td>
     <td></td>
@@ -458,7 +458,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2013-01-30</td>
     <td>Google</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/chromebook-pixel">Google Chromebook Pixel</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/chromebook-pixel">Google Chromebook Pixel</a></td>
     <td>Link</td>
     <td>link</td>
     <td></td>
@@ -475,7 +475,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2013-01-30</td>
     <td>HP</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/hp-pavilion-14-chromebook">HP Pavilion Chromebook 14</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/hp-pavilion-14-chromebook">HP Pavilion Chromebook 14</a></td>
     <td>Butterfly</td>
     <td>butterfly</td>
     <td></td>
@@ -492,7 +492,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2013-09-12</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/acer-c720-chromebook">Acer C720/C70P/C740 Chromebook</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/acer-c720-chromebook">Acer C720/C70P/C740 Chromebook</a></td>
     <td>Peppy & Pepto</td>
     <td>peppy</td>
     <td>slippy</td>
@@ -509,7 +509,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2013-09-29</td>
     <td>HP</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/hp-chromebook-11">HP Chromebook 11 G1</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/hp-chromebook-11">HP Chromebook 11 G1</a></td>
     <td>Spring</td>
     <td>daisy_spring</td>
     <td>snow</td>
@@ -526,7 +526,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2013-09-29</td>
     <td>HP</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/hp-chromebook-14">HP Chromebook 14</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/hp-chromebook-14">HP Chromebook 14</a></td>
     <td>Falco</td>
     <td>falco & falco_li</td>
     <td>slippy</td>
@@ -543,7 +543,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-01-15</td>
     <td>Dell</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/dell-chromebook-11">Dell Chromebook 11</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/dell-chromebook-11">Dell Chromebook 11</a></td>
     <td>Wolf</td>
     <td>wolf</td>
     <td>slippy</td>
@@ -560,7 +560,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-01-30</td>
     <td>Toshiba</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/toshiba-cb30-chromebook">Toshiba Chromebook</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/toshiba-cb30-chromebook">Toshiba Chromebook</a></td>
     <td>Leon</td>
     <td>leon</td>
     <td>slippy</td>
@@ -577,7 +577,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-03-13</td>
     <td>ASUS</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/asus-chromebox">ASUS Chromebox CN60</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/asus-chromebox">ASUS Chromebox CN60</a></td>
     <td>Panther</td>
     <td>panther</td>
     <td>beltino</td>
@@ -594,7 +594,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-05-04</td>
     <td>Samsung</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/samsung-chromebook-2">Samsung Chromebook 2 11"</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/samsung-chromebook-2">Samsung Chromebook 2 11"</a></td>
     <td>Pit</td>
     <td>peach_pit</td>
     <td>peach</td>
@@ -611,7 +611,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-05-18</td>
     <td>LG</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/lg-chromebase-22cv241-w">LG Chromebase 22CV241 &amp; 22CB25S</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/lg-chromebase-22cv241-w">LG Chromebase 22CV241 &amp; 22CB25S</a></td>
     <td>Monroe</td>
     <td>monroe</td>
     <td>beltino</td>
@@ -628,7 +628,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-05-18</td>
     <td>Samsung</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/samsung-chromebook-2">Samsung Chromebook 2 13"</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/samsung-chromebook-2">Samsung Chromebook 2 13"</a></td>
     <td>Pi</td>
     <td>peach_pi</td>
     <td>peach</td>
@@ -645,7 +645,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-05-25</td>
     <td>HP</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/hp-chromebook-11">HP Chromebook 11 G2</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/hp-chromebook-11">HP Chromebook 11 G2</a></td>
     <td>Skate</td>
     <td>daisy_skate</td>
     <td>snow</td>
@@ -662,7 +662,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-05-29</td>
     <td>Lenovo</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/lenovo-chromebook-n20">Lenovo N20 Chromebook</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/lenovo-chromebook-n20">Lenovo N20 Chromebook</a></td>
     <td>Clapper</td>
     <td>clapper</td>
     <td>rambi</td>
@@ -679,7 +679,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-05-31</td>
     <td>ASUS</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebook C200</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebook C200</a></td>
     <td>Squawks</td>
     <td>squawks</td>
     <td>rambi</td>
@@ -696,7 +696,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-06-05</td>
     <td>Lenovo</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Lenovo ThinkPad 11e Chromebook</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Lenovo ThinkPad 11e Chromebook</a></td>
     <td>Glimmer</td>
     <td>glimmer</td>
     <td>rambi</td>
@@ -747,7 +747,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-06-21</td>
     <td>HP</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/hp-chromebox">HP Chromebox G1</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/hp-chromebox">HP Chromebox G1</a></td>
     <td>Zako</td>
     <td>zako</td>
     <td>beltino</td>
@@ -764,7 +764,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-08-20</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebox</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebox</a></td>
     <td>McCloud</td>
     <td>mccloud</td>
     <td>beltino</td>
@@ -781,7 +781,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-08-30</td>
     <td>ASUS</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebook C300</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebook C300</a></td>
     <td>Quawks</td>
     <td>quawks</td>
     <td>rambi</td>
@@ -798,7 +798,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-08-31</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebook 11 (C730 / C730E / C735)</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebook 11 (C730 / C730E / C735)</a></td>
     <td>Gnawty</td>
     <td>gnawty</td>
     <td>rambi</td>
@@ -815,7 +815,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-09-01</td>
     <td>HP</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebook 11 G3 / G4 / G4 EE</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebook 11 G3 / G4 / G4 EE</a></td>
     <td>Kip</td>
     <td>kip</td>
     <td>rambi</td>
@@ -832,7 +832,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-09-02</td>
     <td>Toshiba</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Toshiba Chromebook 2</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Toshiba Chromebook 2</a></td>
     <td>Swanky</td>
     <td>swanky</td>
     <td>rambi</td>
@@ -849,7 +849,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-09-07</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/acer-cb5-311-chromebook-13">Acer Chromebook 13 (CB5-311)</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/acer-cb5-311-chromebook-13">Acer Chromebook 13 (CB5-311)</a></td>
     <td>Big</td>
     <td>nyan_big</td>
     <td>nyan</td>
@@ -866,7 +866,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-09-13</td>
     <td>Dell</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Dell Chromebox</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Dell Chromebox</a></td>
     <td>Tricky</td>
     <td>tricky</td>
     <td>beltino</td>
@@ -883,7 +883,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-10-13</td>
     <td>Samsung</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Samsung Chromebook 2 11 - XE500C12</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Samsung Chromebook 2 11 - XE500C12</a></td>
     <td>Winky</td>
     <td>winky</td>
     <td>rambi</td>
@@ -900,7 +900,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2014-10-18</td>
     <td>HP</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebook 14 G3</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebook 14 G3</a></td>
     <td>Blaze</td>
     <td>nyan_blaze</td>
     <td>nyan</td>
@@ -917,7 +917,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-02-28</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/acer-c670-chromebook">Acer C670 Chromebook 11</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/acer-c670-chromebook">Acer C670 Chromebook 11</a></td>
     <td>Paine</td>
     <td>auron_paine</td>
     <td>auron</td>
@@ -934,7 +934,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-02-28</td>
     <td>Dell</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Dell Chromebook 11 (3120)</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Dell Chromebook 11 (3120)</a></td>
     <td>Candy</td>
     <td>candy</td>
     <td>rambi</td>
@@ -951,7 +951,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-03-11</td>
     <td>Google</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/chromebook-pixel-2015">Google Chromebook Pixel (2015)</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/chromebook-pixel-2015">Google Chromebook Pixel (2015)</a></td>
     <td>Samus</td>
     <td>samus</td>
     <td></td>
@@ -968,7 +968,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-04-23</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebook 15.6" (CB3-531)</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebook 15.6" (CB3-531)</a></td>
     <td>Banjo</td>
     <td>banjo</td>
     <td>rambi</td>
@@ -1019,7 +1019,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-04-30</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/acer-c910-chromebook">Acer Chromebook 15</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/acer-c910-chromebook">Acer Chromebook 15</a></td>
     <td>Yuna</td>
     <td>auron_yuna</td>
     <td>auron</td>
@@ -1053,7 +1053,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-05-01</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebox CXI2</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebox CXI2</a></td>
     <td>Rikku</td>
     <td>rikku</td>
     <td>jecht</td>
@@ -1070,7 +1070,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-05-01</td>
     <td>ASUS</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebook C201</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebook C201</a></td>
     <td>Speedy</td>
     <td>veyron_speedy</td>
     <td>veyron_pinky</td>
@@ -1087,7 +1087,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-06-02</td>
     <td>Lenovo</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Lenovo ThinkCentre Chromebox</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Lenovo ThinkCentre Chromebox</a></td>
     <td>Tidus</td>
     <td>tidus</td>
     <td>jecht</td>
@@ -1104,7 +1104,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-07-01</td>
     <td>ASUS</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebook Flip C100PA</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebook Flip C100PA</a></td>
     <td>Minnie</td>
     <td>veyron_minnie</td>
     <td>veyron_pinky</td>
@@ -1121,7 +1121,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-08-01</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebase</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebase</a></td>
     <td>Kitty</td>
     <td>nyan_kitty</td>
     <td>nyan</td>
@@ -1138,7 +1138,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-08-03</td>
     <td>ASUS</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebox CN62</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebox CN62</a></td>
     <td>Guado</td>
     <td>guado</td>
     <td>jecht</td>
@@ -1155,7 +1155,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-08-13</td>
     <td>Dell</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Dell Chromebook 13 7310</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Dell Chromebook 13 7310</a></td>
     <td>Lulu</td>
     <td>lulu</td>
     <td>auron</td>
@@ -1172,7 +1172,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-09-01</td>
     <td>AOpen</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">AOpen Chromebox Commercial</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">AOpen Chromebox Commercial</a></td>
     <td>Ninja</td>
     <td>ninja</td>
     <td>rambi</td>
@@ -1189,7 +1189,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-09-02</td>
     <td>AOpen</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">AOpen Chromebase Commercial</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">AOpen Chromebase Commercial</a></td>
     <td>Sumo</td>
     <td>sumo</td>
     <td>rambi</td>
@@ -1206,7 +1206,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-09-04</td>
     <td>Lenovo</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Lenovo 100S Chromebook</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Lenovo 100S Chromebook</a></td>
     <td>Orco</td>
     <td>orco</td>
     <td>rambi</td>
@@ -1223,7 +1223,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-09-22</td>
     <td>Toshiba</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Toshiba Chromebook 2 (2015 Edition)</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Toshiba Chromebook 2 (2015 Edition)</a></td>
     <td>Gandof</td>
     <td>gandof</td>
     <td>auron</td>
@@ -1240,7 +1240,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-11-02</td>
     <td>ASUS</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Asus Chromebit CS10</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Asus Chromebit CS10</a></td>
     <td>Mickey</td>
     <td>veyron_mickey</td>
     <td>veyron_pinky</td>
@@ -1274,7 +1274,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-12-01</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebook R11</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebook R11</a></td>
     <td>Cyan</td>
     <td>cyan</td>
     <td>strago</td>
@@ -1291,7 +1291,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2015-12-22</td>
     <td>Samsung</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Samsung Chromebook 3</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Samsung Chromebook 3</a></td>
     <td>Celes</td>
     <td>celes</td>
     <td>strago</td>
@@ -1308,7 +1308,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2016-02-29</td>
     <td>ASUS</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebook C202SA/C300SA</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebook C202SA/C300SA</a></td>
     <td>Terra</td>
     <td>terra</td>
     <td>strago</td>
@@ -1325,7 +1325,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2016-03-07</td>
     <td>Lenovo</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">ThinkPad 11e Chromebook 3rd</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">ThinkPad 11e Chromebook 3rd</a></td>
     <td>Ultima</td>
     <td>ultima</td>
     <td>strago</td>
@@ -1342,7 +1342,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2016-03-29</td>
     <td>Acer</td>
-    <td><a href="./developer-information-for-chrome-os-devices/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Chromebook 14 (CB3-431)</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Chromebook 14 (CB3-431)</a></td>
     <td>Edgar</td>
     <td>edgar</td>
     <td>strago</td>
@@ -1359,7 +1359,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2016-04-01</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebase 24</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebase 24</a></td>
     <td>Buddy</td>
     <td>buddy</td>
     <td>auron</td>
@@ -1376,7 +1376,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2016-05-05</td>
     <td>HP</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebook 13 G1</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebook 13 G1</a></td>
     <td>Chell</td>
     <td>chell</td>
     <td>glados</td>
@@ -1393,7 +1393,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2016-05-27</td>
     <td>Lenovo</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Thinkpad 13 Chromebook</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Thinkpad 13 Chromebook</a></td>
     <td>Sentry</td>
     <td>sentry</td>
     <td>kunimitsu</td>
@@ -1410,7 +1410,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2016-05-31</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Chromebook 14 for work (CP5-471)</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Chromebook 14 for work (CP5-471)</a></td>
     <td>Lars</td>
     <td>lars</td>
     <td>kunimitsu</td>
@@ -1427,7 +1427,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2016-07-08</td>
     <td>HP</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebook 11 G5</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebook 11 G5</a></td>
     <td>Setzer</td>
     <td>setzer</td>
     <td>strago</td>
@@ -1444,7 +1444,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2016-08-01</td>
     <td>Lenovo</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/lenovo-chromebook-11">Lenovo Chromebook 11</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/lenovo-chromebook-11">Lenovo Chromebook 11</a></td>
     <td>Reks</td>
     <td>reks</td>
     <td>strago</td>
@@ -1495,7 +1495,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2016-08-12</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Acer 15.6" Chromebook</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Acer 15.6" Chromebook</a></td>
     <td>Banon</td>
     <td>banon</td>
     <td>strago</td>
@@ -1512,7 +1512,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2016-09-06</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebook R13</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebook R13</a></td>
     <td>Elm</td>
     <td>elm</td>
     <td>oak</td>
@@ -1529,7 +1529,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2017-01-05</td>
     <td>ASUS</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebook Flip C302</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebook Flip C302</a></td>
     <td>Cave</td>
     <td>cave</td>
     <td>glados</td>
@@ -1546,7 +1546,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2017-02-07</td>
     <td>Dell</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Dell Chromebook 13 3380</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Dell Chromebook 13 3380</a></td>
     <td>Asuka</td>
     <td>asuka</td>
     <td>kunimitsu</td>
@@ -1563,7 +1563,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2017-02-07</td>
     <td>Dell</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Chromebook 11 Model 3180</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Chromebook 11 Model 3180</a></td>
     <td>Kefka</td>
     <td>kefka</td>
     <td>strago</td>
@@ -1580,7 +1580,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2017-02-12</td>
     <td>Samsung</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Samsung Chromebook Plus</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Samsung Chromebook Plus</a></td>
     <td>Kevin</td>
     <td>kevin</td>
     <td>gru</td>
@@ -1648,7 +1648,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2017-04-24</td>
     <td>Lenovo</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Lenovo Thinkpad 11e Chromebook / Lenovo Thinkpad Yoga 11e Chromebook</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Lenovo Thinkpad 11e Chromebook / Lenovo Thinkpad Yoga 11e Chromebook</a></td>
     <td>Pyro</td>
     <td>pyro</td>
     <td>reef</td>
@@ -1665,7 +1665,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2017-04-24</td>
     <td>HP</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebook x360 11 G1 EE</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebook x360 11 G1 EE</a></td>
     <td>Snappy</td>
     <td>snappy</td>
     <td>reef</td>
@@ -1682,7 +1682,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2017-05-25</td>
     <td>Samsung</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Samsung Chromebook Pro</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Samsung Chromebook Pro</a></td>
     <td>Caroline</td>
     <td>caroline</td>
     <td>glados</td>
@@ -1699,7 +1699,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2017-06-30</td>
     <td>Acer</td>
-    <td><a href="http://www.chromium.org/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebook  Spin 11 R751T</a></td>
+    <td><a href="http://www.chromium.org/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebook  Spin 11 R751T</a></td>
     <td>Electro</td>
     <td>reef</td>
     <td>reef</td>
@@ -1716,7 +1716,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2017-08-10</td>
     <td>Poin2</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Poin2 Chromebook 14</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Poin2 Chromebook 14</a></td>
     <td>Birch</td>
     <td>hana</td>
     <td>oak</td>
@@ -1750,7 +1750,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2017-09-08</td>
     <td>Acer</td>
-    <td><a href="http://www.chromium.org/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Chromebook 15 CB515-1HT/1H</a></td>
+    <td><a href="http://www.chromium.org/chromium-os/developer-information-for-chrome-os-devices/generic">Chromebook 15 CB515-1HT/1H</a></td>
     <td>Sand</td>
     <td>sand</td>
     <td>reef</td>
@@ -1767,7 +1767,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2017-10-31</td>
     <td>Google</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Pixelbook</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Pixelbook</a></td>
     <td>Eve</td>
     <td>eve</td>
     <td>eve</td>
@@ -1784,7 +1784,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2017-11-15</td>
     <td>Poin2</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Poin2 Chromebook 11C</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Poin2 Chromebook 11C</a></td>
     <td>Hanawl</td>
     <td>hana</td>
     <td>oak</td>
@@ -1903,7 +1903,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2018-05-18</td>
     <td>HP</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebox G2</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebox G2</a></td>
     <td>Kench</td>
     <td>fizz</td>
     <td>fizz</td>
@@ -1920,7 +1920,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2018-06-01</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebox CXI3</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebox CXI3</a></td>
     <td>Sion</td>
     <td>fizz</td>
     <td>fizz</td>
@@ -1937,7 +1937,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2018-06-01</td>
     <td>HP</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebook x2</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebook x2</a></td>
     <td>Soraka</td>
     <td>soraka</td>
     <td>poppy</td>
@@ -1954,7 +1954,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2018-06-01</td>
     <td>ASUS</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebox 3</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebox 3</a></td>
     <td>Teemo</td>
     <td>fizz</td>
     <td>fizz</td>
@@ -1988,7 +1988,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2018-06-01</td>
     <td>Viewsonic</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">ViewSonic NMP660 Chromebox</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">ViewSonic NMP660 Chromebox</a></td>
     <td>Wukong</td>
     <td>fizz</td>
     <td>fizz</td>
@@ -2005,7 +2005,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2018-06-14</td>
     <td>Samsung</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Samsung Chromebook Plus (V2)</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Samsung Chromebook Plus (V2)</a></td>
     <td>Nautilus</td>
     <td>nautilus</td>
     <td>poppy</td>
@@ -2107,7 +2107,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2018-08-31</td>
     <td>Lenovo</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Lenovo Chromebook C330</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Lenovo Chromebook C330</a></td>
     <td>maple</td>
     <td>hana</td>
     <td>oak</td>
@@ -2141,7 +2141,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2018-09-17</td>
     <td>Lenovo</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Lenovo Chromebook S330</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Lenovo Chromebook S330</a></td>
     <td>maple14</td>
     <td>hana</td>
     <td>oak</td>
@@ -2192,7 +2192,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2018-10-26</td>
     <td>Acer</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebook 13 / Spin 13</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebook 13 / Spin 13</a></td>
     <td>Akali / Akali360</td>
     <td>nami</td>
     <td>nami</td>
@@ -2209,7 +2209,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2018-10-26</td>
     <td>Dell</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Dell Inspiron 14 2-in-1 Model 7486</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Dell Inspiron 14 2-in-1 Model 7486</a></td>
     <td>vayne</td>
     <td>vayne</td>
     <td>nami</td>
@@ -2226,7 +2226,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2018-10-26</td>
     <td>Lenovo</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Yoga Chromebook C630</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Yoga Chromebook C630</a></td>
     <td>pantheon</td>
     <td>pantheon</td>
     <td>nami</td>
@@ -2260,7 +2260,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2018-11-26</td>
     <td>Google</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Google Pixel Slate</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">Google Pixel Slate</a></td>
     <td>Nocturne</td>
     <td>nocturne</td>
     <td>poppy</td>
@@ -2311,7 +2311,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2019-01-16</td>
     <td>PCmerge</td>
-    <td><a href="/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">PCmerge Chromebook AL116</a></td>
+    <td><a href="/chromium-os/developer-information-for-chrome-os-devices/generic">PCmerge Chromebook AL116</a></td>
     <td>Whitetip</td>
     <td>coral</td>
     <td>coral</td>
@@ -3195,7 +3195,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2020-10-23</td>
     <td>HP</td>
-    <td><a href="http://www.chromium.org/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebox G3</a></td>
+    <td><a href="http://www.chromium.org/chromium-os/developer-information-for-chrome-os-devices/generic">HP Chromebox G3</a></td>
     <td>Noibat</td>
     <td>Puff</td>
     <td>Puff</td>
@@ -3212,7 +3212,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2020-10-29</td>
     <td>ASUS</td>
-    <td><a href="http://www.chromium.org/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebox 4</a></td>
+    <td><a href="http://www.chromium.org/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebox 4</a></td>
     <td>Duffy</td>
     <td>Puff</td>
     <td>Puff</td>
@@ -3229,7 +3229,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2020-10-29</td>
     <td>Acer</td>
-    <td><a href="http://www.chromium.org/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebox CXI4</a></td>
+    <td><a href="http://www.chromium.org/chromium-os/developer-information-for-chrome-os-devices/generic">Acer Chromebox CXI4</a></td>
     <td>Kaisa</td>
     <td>Puff</td>
     <td>Puff</td>
@@ -3246,7 +3246,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2020-11-13</td>
     <td>ASUS</td>
-    <td><a href="http://www.chromium.org/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Fanless Chromebox</a></td>
+    <td><a href="http://www.chromium.org/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Fanless Chromebox</a></td>
     <td>Faffy</td>
     <td>Puff</td>
     <td>Puff</td>
@@ -3705,7 +3705,7 @@ These are your standard Chromebook/Chromebox/etc devices.
   <tr>
     <td>2021-08-23</td>
     <td>ASUS</td>
-    <td><a href="http://www.chromium.org/a/chromium.org/dev/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebook Flip CM1</a></td>
+    <td><a href="http://www.chromium.org/chromium-os/developer-information-for-chrome-os-devices/generic">ASUS Chromebook Flip CM1</a></td>
     <td>Jelboz360</td>
     <td>zork</td>
     <td>dalboz</td>
@@ -3820,5 +3820,22 @@ These are your standard Chromebook/Chromebox/etc devices.
     <td>June 2029</td>
     <td></td>
     <td>Yes</td>
+  </tr>
+  <tr>
+    <td>2021-12-31</td>
+    <td>Acer</td>
+    <td><a href="https://www.acer.com/ac/en/US/content/series/acerchromebook311">Acer Chromebook Spin 311</a></td>
+    <td>Pico</td>
+    <td>Jacuzzi</td>
+    <td>Jacuzzi</td>
+    <td>arm</td>
+    <td>4.19</td>
+    <td>arm</td>
+    <td>MT8183</td>
+    <td>Chromebook</td>
+    <td>M96</td>
+    <td></td>
+    <td></td>
+    <td></td>
   </tr>
 </table>

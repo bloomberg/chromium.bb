@@ -939,40 +939,77 @@ static AOM_INLINE void search_sgrproj(const RestorationTileLimits *limits,
   if (cost_sgr < cost_none) rsc->sgrproj = rusi->sgrproj;
 }
 
-void av1_compute_stats_c(int wiener_win, const uint8_t *dgd, const uint8_t *src,
-                         int h_start, int h_end, int v_start, int v_end,
-                         int dgd_stride, int src_stride, int64_t *M,
-                         int64_t *H) {
-  int i, j, k, l;
+void acc_stat_one_line(const uint8_t *dgd, const uint8_t *src, int dgd_stride,
+                       int h_start, int h_end, uint8_t avg,
+                       const int wiener_halfwin, const int wiener_win2,
+                       int32_t *M_int32, int32_t *H_int32, int count) {
+  int j, k, l;
   int16_t Y[WIENER_WIN2];
-  const int wiener_win2 = wiener_win * wiener_win;
-  const int wiener_halfwin = (wiener_win >> 1);
-  uint8_t avg = find_average(dgd, h_start, h_end, v_start, v_end, dgd_stride);
 
-  memset(M, 0, sizeof(*M) * wiener_win2);
-  memset(H, 0, sizeof(*H) * wiener_win2 * wiener_win2);
-  for (i = v_start; i < v_end; i++) {
-    for (j = h_start; j < h_end; j++) {
-      const int16_t X = (int16_t)src[i * src_stride + j] - (int16_t)avg;
-      int idx = 0;
-      for (k = -wiener_halfwin; k <= wiener_halfwin; k++) {
-        for (l = -wiener_halfwin; l <= wiener_halfwin; l++) {
-          Y[idx] = (int16_t)dgd[(i + l) * dgd_stride + (j + k)] - (int16_t)avg;
-          idx++;
-        }
+  for (j = h_start; j < h_end; j++) {
+    const int16_t X = (int16_t)src[j] - (int16_t)avg;
+    int idx = 0;
+    for (k = -wiener_halfwin; k <= wiener_halfwin; k++) {
+      for (l = -wiener_halfwin; l <= wiener_halfwin; l++) {
+        Y[idx] =
+            (int16_t)dgd[(count + l) * dgd_stride + (j + k)] - (int16_t)avg;
+        idx++;
       }
-      assert(idx == wiener_win2);
-      for (k = 0; k < wiener_win2; ++k) {
-        M[k] += (int32_t)Y[k] * X;
-        for (l = k; l < wiener_win2; ++l) {
-          // H is a symmetric matrix, so we only need to fill out the upper
-          // triangle here. We can copy it down to the lower triangle outside
-          // the (i, j) loops.
-          H[k * wiener_win2 + l] += (int32_t)Y[k] * Y[l];
-        }
+    }
+    assert(idx == wiener_win2);
+    for (k = 0; k < wiener_win2; ++k) {
+      M_int32[k] += (int32_t)Y[k] * X;
+      for (l = k; l < wiener_win2; ++l) {
+        // H is a symmetric matrix, so we only need to fill out the upper
+        // triangle here. We can copy it down to the lower triangle outside
+        // the (i, j) loops.
+        H_int32[k * wiener_win2 + l] += (int32_t)Y[k] * Y[l];
       }
     }
   }
+}
+
+void av1_compute_stats_c(int wiener_win, const uint8_t *dgd, const uint8_t *src,
+                         int h_start, int h_end, int v_start, int v_end,
+                         int dgd_stride, int src_stride, int64_t *M, int64_t *H,
+                         int use_downsampled_wiener_stats) {
+  int i, k, l;
+  const int wiener_win2 = wiener_win * wiener_win;
+  const int wiener_halfwin = (wiener_win >> 1);
+  uint8_t avg = find_average(dgd, h_start, h_end, v_start, v_end, dgd_stride);
+  int32_t M_row[WIENER_WIN2] = { 0 };
+  int32_t H_row[WIENER_WIN2 * WIENER_WIN2] = { 0 };
+  int downsample_factor =
+      use_downsampled_wiener_stats ? WIENER_STATS_DOWNSAMPLE_FACTOR : 1;
+
+  memset(M, 0, sizeof(*M) * wiener_win2);
+  memset(H, 0, sizeof(*H) * wiener_win2 * wiener_win2);
+
+  for (i = v_start; i < v_end; i = i + downsample_factor) {
+    if (use_downsampled_wiener_stats &&
+        (v_end - i < WIENER_STATS_DOWNSAMPLE_FACTOR)) {
+      downsample_factor = v_end - i;
+    }
+
+    memset(M_row, 0, sizeof(int32_t) * WIENER_WIN2);
+    memset(H_row, 0, sizeof(int32_t) * WIENER_WIN2 * WIENER_WIN2);
+    acc_stat_one_line(dgd, src + i * src_stride, dgd_stride, h_start, h_end,
+                      avg, wiener_halfwin, wiener_win2, M_row, H_row, i);
+
+    for (k = 0; k < wiener_win2; ++k) {
+      // Scale M matrix based on the downsampling factor
+      M[k] += ((int64_t)M_row[k] * downsample_factor);
+      for (l = k; l < wiener_win2; ++l) {
+        // H is a symmetric matrix, so we only need to fill out the upper
+        // triangle here. We can copy it down to the lower triangle outside
+        // the (i, j) loops.
+        // Scale H Matrix based on the downsampling factor
+        H[k * wiener_win2 + l] +=
+            ((int64_t)H_row[k * wiener_win2 + l] * downsample_factor);
+      }
+    }
+  }
+
   for (k = 0; k < wiener_win2; ++k) {
     for (l = k + 1; l < wiener_win2; ++l) {
       H[l * wiener_win2 + k] = H[k * wiener_win2 + l];
@@ -1506,6 +1543,8 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
 #if CONFIG_AV1_HIGHBITDEPTH
   const AV1_COMMON *const cm = rsc->cm;
   if (cm->seq_params->use_highbitdepth) {
+    // TODO(any) : Add support for use_downsampled_wiener_stats SF in HBD
+    // functions
     av1_compute_stats_highbd(reduced_wiener_win, rsc->dgd_buffer,
                              rsc->src_buffer, limits->h_start, limits->h_end,
                              limits->v_start, limits->v_end, rsc->dgd_stride,
@@ -1513,12 +1552,14 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
   } else {
     av1_compute_stats(reduced_wiener_win, rsc->dgd_buffer, rsc->src_buffer,
                       limits->h_start, limits->h_end, limits->v_start,
-                      limits->v_end, rsc->dgd_stride, rsc->src_stride, M, H);
+                      limits->v_end, rsc->dgd_stride, rsc->src_stride, M, H,
+                      rsc->lpf_sf->use_downsampled_wiener_stats);
   }
 #else
   av1_compute_stats(reduced_wiener_win, rsc->dgd_buffer, rsc->src_buffer,
                     limits->h_start, limits->h_end, limits->v_start,
-                    limits->v_end, rsc->dgd_stride, rsc->src_stride, M, H);
+                    limits->v_end, rsc->dgd_stride, rsc->src_stride, M, H,
+                    rsc->lpf_sf->use_downsampled_wiener_stats);
 #endif
 
   wiener_decompose_sep_sym(reduced_wiener_win, M, H, vfilter, hfilter);

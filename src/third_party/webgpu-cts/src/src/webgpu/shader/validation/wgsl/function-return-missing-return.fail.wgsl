@@ -5,7 +5,7 @@ fn func() -> i32 {
   var a : i32 = 0;
 }
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   func();
 }

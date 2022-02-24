@@ -1,29 +1,35 @@
 SKIP: FAILED
 
+vk-gl-cts/graphicsfuzz/unreachable-barrier-in-loops/0-opt.wgsl:9:15 warning: use of deprecated language feature: the @stride attribute is deprecated; use a larger type if necessary
+type RTArr = @stride(4) array<i32>;
+              ^^^^^^
+
 #version 310 es
-precision mediump float;
 
 struct buf1 {
   vec2 injectionSwitch;
 };
+
 struct buf2 {
   vec2 resolution;
 };
+
 struct doesNotMatter {
   int x_compute_data[];
 };
 
 uvec3 tint_symbol = uvec3(0u, 0u, 0u);
-layout (binding = 1) uniform buf1_1 {
+layout(binding = 1) uniform buf1_1 {
   vec2 injectionSwitch;
 } x_10;
-layout (binding = 2) uniform buf2_1 {
+
+layout(binding = 2) uniform buf2_1 {
   vec2 resolution;
 } x_13;
-layout (binding = 0) buffer doesNotMatter_1 {
+
+layout(binding = 0, std430) buffer doesNotMatter_1 {
   int x_compute_data[];
 } x_15;
-
 void main_1() {
   float A[1] = float[1](0.0f);
   int i = 0;
@@ -67,7 +73,7 @@ void main_1() {
           float x_118 = x_10.injectionSwitch.x;
           float x_120 = x_10.injectionSwitch.y;
           if ((x_118 > x_120)) {
-            memoryBarrierShared();
+            barrier();
           }
         }
       }
@@ -111,30 +117,19 @@ void main_1() {
   return;
 }
 
-struct tint_symbol_4 {
-  uvec3 tint_symbol_2;
-};
-
-void tint_symbol_1_inner(uvec3 tint_symbol_2) {
+void tint_symbol_1(uvec3 tint_symbol_2) {
   tint_symbol = tint_symbol_2;
   main_1();
 }
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-void tint_symbol_1(tint_symbol_4 tint_symbol_3) {
-  tint_symbol_1_inner(tint_symbol_3.tint_symbol_2);
+void main() {
+  tint_symbol_1(gl_GlobalInvocationID);
   return;
 }
-void main() {
-  tint_symbol_4 inputs;
-  inputs.tint_symbol_2 = gl_GlobalInvocationID;
-  tint_symbol_1(inputs);
-}
-
-
 Error parsing GLSL shader:
-ERROR: 0:11: '' : array size required 
-ERROR: 0:12: '' : compilation terminated 
+ERROR: 0:12: '' : array size required 
+ERROR: 0:13: '' : compilation terminated 
 ERROR: 2 compilation errors.  No code generated.
 
 

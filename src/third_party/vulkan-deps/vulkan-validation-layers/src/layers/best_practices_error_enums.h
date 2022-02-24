@@ -1,8 +1,8 @@
-/* Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
- * Copyright (C) 2015-2021 Google Inc.
- * Modifications Copyright (C) 2020 Advanced Micro Devices, Inc. All rights reserved.
+/* Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
+ * Copyright (C) 2015-2022 Google Inc.
+ * Modifications Copyright (C) 2020-2022 Advanced Micro Devices, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,6 +118,8 @@ static const char DECORATE_UNUSED *kVUID_BestPractices_SuboptimalSwapchainImageC
     "UNASSIGNED-BestPractices-vkCreateSwapchainKHR-suboptimal-swapchain-image-count";
 static const char DECORATE_UNUSED *kVUID_BestPractices_Swapchain_InvalidCount = "UNASSIGNED-BestPractices-SwapchainInvalidCount";
 static const char DECORATE_UNUSED *kVUID_BestPractices_DepthBiasNoAttachment = "UNASSIGNED-BestPractices-DepthBiasNoAttachment";
+static const char DECORATE_UNUSED *kVUID_BestPractices_SpirvDeprecated_WorkgroupSize =
+    "UNASSIGNED-BestPractices-SpirvDeprecated_WorkgroupSize";
 
 // Arm-specific best practice
 static const char DECORATE_UNUSED *kVUID_BestPractices_AllocateDescriptorSets_SuboptimalReuse =
@@ -149,6 +151,8 @@ static const char DECORATE_UNUSED *kVUID_BestPractices_CmdResolveImage_Resolving
     "UNASSIGNED-BestPractices-vkCmdResolveImage-resolving-image";
 static const char DECORATE_UNUSED *kVUID_BestPractices_CmdResolveImage2KHR_ResolvingImage =
     "UNASSIGNED-BestPractices-vkCmdResolveImage2KHR-resolving-image";
+static const char DECORATE_UNUSED *kVUID_BestPractices_CmdResolveImage2_ResolvingImage =
+    "UNASSIGNED-BestPractices-vkCmdResolveImage2-resolving-image";
 static const char DECORATE_UNUSED *kVUID_BestPractices_CmdDrawIndexed_ManySmallIndexedDrawcalls =
     "UNASSIGNED-BestPractices-vkCmdDrawIndexed-many-small-indexed-drawcalls";
 static const char DECORATE_UNUSED *kVUID_BestPractices_CmdDrawIndexed_SparseIndexBuffer =

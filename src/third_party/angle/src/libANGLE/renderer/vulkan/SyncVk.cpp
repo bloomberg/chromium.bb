@@ -279,7 +279,7 @@ angle::Result SyncHelperNativeFence::clientWait(Context *context,
     }
 
     VkResult status = VK_SUCCESS;
-    if (mUse.valid())
+    if (mUse.getSerial().valid())
     {
         // We have a valid serial to wait on
         ANGLE_TRY(
@@ -318,9 +318,6 @@ angle::Result SyncHelperNativeFence::serverWait(ContextVk *contextVk)
     importFdInfo.fd                         = dup(mNativeFenceFd);
     ANGLE_VK_TRY(contextVk, waitSemaphore.get().importFd(device, importFdInfo));
 
-    // Flush current work, block after current pending commands.
-    ANGLE_TRY(contextVk->flushImpl(nullptr, RenderPassClosureReason::SyncObjectServerWait));
-
     // Add semaphore to next submit job.
     contextVk->addWaitSemaphore(waitSemaphore.get().getHandle(),
                                 VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
@@ -331,7 +328,7 @@ angle::Result SyncHelperNativeFence::serverWait(ContextVk *contextVk)
 angle::Result SyncHelperNativeFence::getStatus(Context *context, bool *signaled) const
 {
     // We've got a serial, check if the serial is still in use
-    if (mUse.valid())
+    if (mUse.getSerial().valid())
     {
         *signaled = !isCurrentlyInUse(context->getRenderer()->getLastCompletedQueueSerial());
         return angle::Result::Continue;

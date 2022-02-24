@@ -30,16 +30,16 @@ export function generateShader({
     code += `  ${attribute} value : ${type};\n`;
     if (stage === 'vertex' && io === 'out' && !attribute.includes('builtin(position)')) {
       // Add position builtin for vertex outputs.
-      code += `  [[builtin(position)]] position : vec4<f32>;\n`;
+      code += `  @builtin(position) position : vec4<f32>;\n`;
     }
     code += '};\n\n';
   }
 
   if (stage !== '') {
     // Generate the entry point attributes.
-    code += `[[stage(${stage})]]`;
+    code += `@stage(${stage})`;
     if (stage === 'compute') {
-      code += ' [[workgroup_size(1)]]';
+      code += ' @workgroup_size(1)';
     }
   }
 
@@ -56,7 +56,7 @@ export function generateShader({
 
     // Vertex shaders must always return `builtin(position)`.
     if (stage === 'vertex') {
-      retType = `-> [[builtin(position)]] vec4<f32>`;
+      retType = `-> @builtin(position) vec4<f32>`;
       retVal = `return vec4<f32>();`;
     }
   } else if (io === 'out') {

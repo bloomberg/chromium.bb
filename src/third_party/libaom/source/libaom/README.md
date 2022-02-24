@@ -46,7 +46,8 @@ README.md                {#LREADME}
 
 ### Prerequisites {#prerequisites}
 
- 1. [CMake](https://cmake.org) version 3.6 or higher.
+ 1. [CMake](https://cmake.org). See CMakeLists.txt for the minimum version
+    required.
  2. [Git](https://git-scm.com/).
  3. [Perl](https://www.perl.org/).
  4. For x86 targets, [yasm](http://yasm.tortall.net/), which is preferred, or a
@@ -527,7 +528,7 @@ We are using the Google C Coding Style defined by the
 
 The coding style used by this project is enforced with clang-format using the
 configuration contained in the
-[.clang-format](https://chromium.googlesource.com/webm/aom/+/master/.clang-format)
+[.clang-format](https://chromium.googlesource.com/webm/aom/+/main/.clang-format)
 file in the root of the repository.
 
 You can download clang-format using your system's package manager, or directly
@@ -614,7 +615,7 @@ for more information.
 The command line to upload your patch looks like this:
 
 ~~~
-    $ git push https://aomedia-review.googlesource.com/aom HEAD:refs/for/master
+    $ git push https://aomedia-review.googlesource.com/aom HEAD:refs/for/main
 ~~~
 
 ### Incorporating reviewer comments {#incorporating-reviewer-comments}

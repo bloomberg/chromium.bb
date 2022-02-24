@@ -91,9 +91,3 @@ href="mailto:blinkon@chromium.org">blinkon@chromium.org</a> asap.</td></td>
 
 </tr>
 </table>
-
-[Sign
-in](https://accounts.google.com/ServiceLogin?continue=https://sites.google.com/a/chromium.org/dev/events/blinkon-15&service=jotspot)|[Recent
-Site Activity](/system/app/pages/recentChanges)|[Report
-Abuse](/system/app/pages/reportAbuse)|Print Page|Powered By **[Google
-Sites](http://sites.google.com/site)**

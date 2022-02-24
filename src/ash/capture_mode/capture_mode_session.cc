@@ -10,6 +10,7 @@
 #include "ash/accessibility/magnifier/magnifier_glass.h"
 #include "ash/capture_mode/capture_label_view.h"
 #include "ash/capture_mode/capture_mode_bar_view.h"
+#include "ash/capture_mode/capture_mode_camera_controller.h"
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_menu_group.h"
@@ -608,10 +609,17 @@ void CaptureModeSession::Shutdown() {
   }
   UpdateAutoclickMenuBoundsIfNeeded();
 
-  // Stopping the session for any reason other than starting video recording
-  // means a cancellation to an ongoing projector session (if any).
-  if (is_in_projector_mode_ && !is_stopping_to_start_video_recording_)
-    ProjectorControllerImpl::Get()->OnRecordingStartAborted();
+  if (!is_stopping_to_start_video_recording_) {
+    // Stopping the session for any reason other than starting video recording
+    // means a cancellation to an ongoing projector session (if any).
+    if (is_in_projector_mode_)
+      ProjectorControllerImpl::Get()->OnRecordingStartAborted();
+
+    // Kill the camera preview when the capture mode session ends without
+    // starting any recording.
+    if (controller_->camera_controller())
+      controller_->camera_controller()->SetShouldShowPreview(false);
+  }
 }
 
 aura::Window* CaptureModeSession::GetSelectedWindow() const {
@@ -642,6 +650,10 @@ void CaptureModeSession::OnCaptureSourceChanged(CaptureModeSource new_source) {
 
   capture_mode_util::TriggerAccessibilityAlert(
       GetMessageIdForCaptureSource(new_source, /*for_toggle_alert=*/true));
+
+  auto* camera_controller = controller_->camera_controller();
+  if (camera_controller)
+    camera_controller->MaybeReparentPreviewWidget();
 }
 
 void CaptureModeSession::OnCaptureTypeChanged(CaptureModeType new_type) {
@@ -795,8 +807,7 @@ void CaptureModeSession::OnCaptureFolderMayHaveChanged() {
 
   DCHECK(capture_mode_settings_view_);
   capture_mode_settings_view_->OnCaptureFolderMayHaveChanged();
-  capture_mode_settings_widget_->SetBounds(CaptureModeSettingsView::GetBounds(
-      capture_mode_bar_view_, capture_mode_settings_view_));
+  MaybeUpdateSettingsBounds();
 }
 
 void CaptureModeSession::OnDefaultCaptureFolderSelectionChanged() {
@@ -805,6 +816,48 @@ void CaptureModeSession::OnDefaultCaptureFolderSelectionChanged() {
 
   DCHECK(capture_mode_settings_view_);
   capture_mode_settings_view_->OnDefaultCaptureFolderSelectionChanged();
+}
+
+aura::Window* CaptureModeSession::GetCameraPreviewParentWindow() const {
+  auto* controller = CaptureModeController::Get();
+  DCHECK(!controller->is_recording_in_progress());
+  auto* overlay_container =
+      current_root_->GetChildById(kShellWindowId_OverlayContainer);
+  auto* unparented_container =
+      current_root_->GetChildById(kShellWindowId_UnparentedContainer);
+
+  switch (controller->source()) {
+    case CaptureModeSource::kFullscreen:
+      return overlay_container;
+    case CaptureModeSource::kRegion:
+      return controller_->user_capture_region().IsEmpty() ? unparented_container
+                                                          : overlay_container;
+    case CaptureModeSource::kWindow:
+      aura::Window* selected_window = GetSelectedWindow();
+      return selected_window ? selected_window : unparented_container;
+  }
+}
+
+gfx::Rect CaptureModeSession::GetCameraPreviewConfineBounds() const {
+  auto* controller = CaptureModeController::Get();
+  DCHECK(!controller->is_recording_in_progress());
+  switch (controller->source()) {
+    case CaptureModeSource::kFullscreen: {
+      auto* parent = GetCameraPreviewParentWindow();
+      DCHECK(parent);
+      return parent->GetBoundsInScreen();
+    }
+    case CaptureModeSource::kWindow: {
+      aura::Window* selected_window = GetSelectedWindow();
+      return selected_window ? gfx::Rect(selected_window->bounds().size())
+                             : gfx::Rect();
+    }
+    case CaptureModeSource::kRegion: {
+      gfx::Rect capture_region = controller->user_capture_region();
+      wm::ConvertRectToScreen(current_root_, &capture_region);
+      return capture_region;
+    }
+  }
 }
 
 void CaptureModeSession::OnPaintLayer(const ui::PaintContext& context) {
@@ -965,7 +1018,12 @@ void CaptureModeSession::OnDisplayMetricsChanged(
   DCHECK_EQ(parent->layer(), layer()->parent());
   layer()->SetBounds(parent->bounds());
 
+  // We need to update the capture bar bounds first and then settings bounds.
+  // The sequence matters here since settings bounds depend on capture bar
+  // bounds.
   RefreshBarWidgetBounds();
+  MaybeUpdateSettingsBounds();
+
   if (capture_label_widget_)
     UpdateCaptureLabelWidget(CaptureLabelAnimation::kNone);
   layer()->SchedulePaint(layer()->bounds());
@@ -1088,6 +1146,13 @@ void CaptureModeSession::HighlightWindowForTab(aura::Window* window) {
   capture_window_observer_->SetSelectedWindow(window);
 }
 
+void CaptureModeSession::MaybeUpdateSettingsBounds() {
+  if (!capture_mode_settings_widget_)
+    return;
+  capture_mode_settings_widget_->SetBounds(CaptureModeSettingsView::GetBounds(
+      capture_mode_bar_view_, capture_mode_settings_view_));
+}
+
 std::vector<views::Widget*> CaptureModeSession::GetAvailableWidgets() {
   std::vector<views::Widget*> result;
   DCHECK(capture_mode_bar_widget_);
@@ -1167,7 +1232,7 @@ void CaptureModeSession::MaybeCreateUserNudge() {
   if (is_in_projector_mode_)
     return;
 
-  if (!controller_->CanShowFolderSelectionNudge())
+  if (!controller_->CanShowUserNudge())
     return;
 
   user_nudge_controller_ = std::make_unique<UserNudgeController>(
@@ -2117,6 +2182,10 @@ void CaptureModeSession::MaybeChangeRoot(aura::Window* new_root) {
   UpdateCaptureRegion(gfx::Rect(), /*is_resizing=*/false, /*by_user=*/false);
 
   UpdateRootWindowDimmers();
+
+  auto* camera_controller = controller_->camera_controller();
+  if (camera_controller)
+    camera_controller->MaybeReparentPreviewWidget();
 }
 
 void CaptureModeSession::UpdateRootWindowDimmers() {

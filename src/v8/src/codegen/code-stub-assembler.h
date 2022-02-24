@@ -13,6 +13,7 @@
 #include "src/common/globals.h"
 #include "src/common/message-template.h"
 #include "src/compiler/code-assembler.h"
+#include "src/numbers/integer-literal.h"
 #include "src/objects/arguments.h"
 #include "src/objects/bigint.h"
 #include "src/objects/cell.h"
@@ -616,6 +617,7 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   SMI_ARITHMETIC_BINOP(SmiSub, IntPtrSub, Int32Sub)
   SMI_ARITHMETIC_BINOP(SmiAnd, WordAnd, Word32And)
   SMI_ARITHMETIC_BINOP(SmiOr, WordOr, Word32Or)
+  SMI_ARITHMETIC_BINOP(SmiXor, WordXor, Word32Xor)
 #undef SMI_ARITHMETIC_BINOP
 
   TNode<IntPtrT> TryIntPtrAdd(TNode<IntPtrT> a, TNode<IntPtrT> b,
@@ -629,28 +631,44 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   TNode<Smi> TrySmiAbs(TNode<Smi> a, Label* if_overflow);
 
   TNode<Smi> SmiShl(TNode<Smi> a, int shift) {
-    return BitcastWordToTaggedSigned(
+    TNode<Smi> result = BitcastWordToTaggedSigned(
         WordShl(BitcastTaggedToWordForTagAndSmiBits(a), shift));
+    // Smi shift have different result to int32 shift when the inputs are not
+    // strictly limited. The CSA_DCHECK is to ensure valid inputs.
+    CSA_DCHECK(
+        this, TaggedEqual(result, BitwiseOp(SmiToInt32(a), Int32Constant(shift),
+                                            Operation::kShiftLeft)));
+    return result;
   }
 
   TNode<Smi> SmiShr(TNode<Smi> a, int shift) {
+    TNode<Smi> result;
     if (kTaggedSize == kInt64Size) {
-      return BitcastWordToTaggedSigned(
+      result = BitcastWordToTaggedSigned(
           WordAnd(WordShr(BitcastTaggedToWordForTagAndSmiBits(a), shift),
                   BitcastTaggedToWordForTagAndSmiBits(SmiConstant(-1))));
     } else {
       // For pointer compressed Smis, we want to make sure that we truncate to
       // int32 before shifting, to avoid the values of the top 32-bits from
       // leaking into the sign bit of the smi.
-      return BitcastWordToTaggedSigned(WordAnd(
+      result = BitcastWordToTaggedSigned(WordAnd(
           ChangeInt32ToIntPtr(Word32Shr(
               TruncateWordToInt32(BitcastTaggedToWordForTagAndSmiBits(a)),
               shift)),
           BitcastTaggedToWordForTagAndSmiBits(SmiConstant(-1))));
     }
+    // Smi shift have different result to int32 shift when the inputs are not
+    // strictly limited. The CSA_DCHECK is to ensure valid inputs.
+    CSA_DCHECK(
+        this, TaggedEqual(result, BitwiseOp(SmiToInt32(a), Int32Constant(shift),
+                                            Operation::kShiftRightLogical)));
+    return result;
   }
 
   TNode<Smi> SmiSar(TNode<Smi> a, int shift) {
+    // The number of shift bits is |shift % 64| for 64-bits value and |shift %
+    // 32| for 32-bits value. The DCHECK is to ensure valid inputs.
+    DCHECK_LT(shift, 32);
     if (kTaggedSize == kInt64Size) {
       return BitcastWordToTaggedSigned(
           WordAnd(WordSar(BitcastTaggedToWordForTagAndSmiBits(a), shift),
@@ -752,6 +770,8 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
 
   TNode<Number> BitwiseOp(TNode<Word32T> left32, TNode<Word32T> right32,
                           Operation bitwise_op);
+  TNode<Number> BitwiseSmiOp(TNode<Smi> left32, TNode<Smi> right32,
+                             Operation bitwise_op);
 
   // Allocate an object of the given size.
   TNode<HeapObject> AllocateInNewSpace(
@@ -1074,8 +1094,10 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   // ExternalPointerT-related functionality.
   //
 
-  TNode<ExternalPointerT> ChangeUint32ToExternalPointer(TNode<Uint32T> value);
-  TNode<Uint32T> ChangeExternalPointerToUint32(TNode<ExternalPointerT> value);
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+  TNode<ExternalPointerT> ChangeIndexToExternalPointer(TNode<Uint32T> index);
+  TNode<Uint32T> ChangeExternalPointerToIndex(TNode<ExternalPointerT> pointer);
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
 
   // Initialize an external pointer field in an object.
   void InitializeExternalPointerField(TNode<HeapObject> object, int offset) {
@@ -2367,6 +2389,10 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
                                           Label* if_bigint,
                                           TVariable<BigInt>* var_maybe_bigint,
                                           TVariable<Smi>* var_feedback);
+  void TaggedPointerToWord32OrBigIntWithFeedback(
+      TNode<Context> context, TNode<HeapObject> pointer, Label* if_number,
+      TVariable<Word32T>* var_word32, Label* if_bigint,
+      TVariable<BigInt>* var_maybe_bigint, TVariable<Smi>* var_feedback);
 
   TNode<Int32T> TruncateNumberToWord32(TNode<Number> value);
   // Truncate the floating point value of a HeapNumber to an Int32.
@@ -2382,6 +2408,7 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   TNode<Number> ChangeFloat32ToTagged(TNode<Float32T> value);
   TNode<Number> ChangeFloat64ToTagged(TNode<Float64T> value);
   TNode<Number> ChangeInt32ToTagged(TNode<Int32T> value);
+  TNode<Number> ChangeInt32ToTaggedNoOverflow(TNode<Int32T> value);
   TNode<Number> ChangeUint32ToTagged(TNode<Uint32T> value);
   TNode<Number> ChangeUintPtrToTagged(TNode<UintPtrT> value);
   TNode<Uint32T> ChangeNumberToUint32(TNode<Number> value);
@@ -2851,7 +2878,7 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
     return Word32Equal(Word32And(word32, const_mask), const_mask);
   }
 
-  // Returns true if the bit field |BitField| in |word32| is equal to a given.
+  // Returns true if the bit field |BitField| in |word32| is equal to a given
   // constant |value|. Avoids a shift compared to using DecodeWord32.
   template <typename BitField>
   TNode<BoolT> IsEqualInWord32(TNode<Word32T> word32,
@@ -2859,6 +2886,14 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
     TNode<Word32T> masked_word32 =
         Word32And(word32, Int32Constant(BitField::kMask));
     return Word32Equal(masked_word32, Int32Constant(BitField::encode(value)));
+  }
+
+  // Returns true if the bit field |BitField| in |word32| is not equal to a
+  // given constant |value|. Avoids a shift compared to using DecodeWord32.
+  template <typename BitField>
+  TNode<BoolT> IsNotEqualInWord32(TNode<Word32T> word32,
+                                  typename BitField::FieldType value) {
+    return Word32BinaryNot(IsEqualInWord32<BitField>(word32, value));
   }
 
   // Returns true if any of the |T|'s bits in given |word| are set.
@@ -2998,6 +3033,9 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
 
   // Calculate a valid size for the a hash table.
   TNode<IntPtrT> HashTableComputeCapacity(TNode<IntPtrT> at_least_space_for);
+
+  TNode<IntPtrT> NameToIndexHashTableLookup(TNode<NameToIndexHashTable> table,
+                                            TNode<Name> name, Label* not_found);
 
   template <class Dictionary>
   TNode<Smi> GetNumberOfElements(TNode<Dictionary> dictionary);
@@ -3631,6 +3669,10 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   TNode<BoolT> IsJSArrayBufferViewDetachedOrOutOfBoundsBoolean(
       TNode<JSArrayBufferView> array_buffer_view);
 
+  void CheckJSTypedArrayIndex(TNode<UintPtrT> index,
+                              TNode<JSTypedArray> typed_array,
+                              Label* detached_or_out_of_bounds);
+
   TNode<IntPtrT> RabGsabElementsKindToElementByteSize(
       TNode<Int32T> elementsKind);
   TNode<RawPtrT> LoadJSTypedArrayDataPtr(TNode<JSTypedArray> typed_array);
@@ -3743,6 +3785,45 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
   }
 
   bool ConstexprBoolNot(bool value) { return !value; }
+  int31_t ConstexprIntegerLiteralToInt31(const IntegerLiteral& i) {
+    return int31_t(i.To<int32_t>());
+  }
+  int32_t ConstexprIntegerLiteralToInt32(const IntegerLiteral& i) {
+    return i.To<int32_t>();
+  }
+  uint32_t ConstexprIntegerLiteralToUint32(const IntegerLiteral& i) {
+    return i.To<uint32_t>();
+  }
+  int8_t ConstexprIntegerLiteralToInt8(const IntegerLiteral& i) {
+    return i.To<int8_t>();
+  }
+  uint8_t ConstexprIntegerLiteralToUint8(const IntegerLiteral& i) {
+    return i.To<uint8_t>();
+  }
+  uint64_t ConstexprIntegerLiteralToUint64(const IntegerLiteral& i) {
+    return i.To<uint64_t>();
+  }
+  intptr_t ConstexprIntegerLiteralToIntptr(const IntegerLiteral& i) {
+    return i.To<intptr_t>();
+  }
+  uintptr_t ConstexprIntegerLiteralToUintptr(const IntegerLiteral& i) {
+    return i.To<uintptr_t>();
+  }
+  double ConstexprIntegerLiteralToFloat64(const IntegerLiteral& i) {
+    int64_t i_value = i.To<int64_t>();
+    double d_value = static_cast<double>(i_value);
+    CHECK_EQ(i_value, static_cast<int64_t>(d_value));
+    return d_value;
+  }
+  bool ConstexprIntegerLiteralEqual(IntegerLiteral lhs, IntegerLiteral rhs) {
+    return lhs == rhs;
+  }
+  IntegerLiteral ConstexprIntegerLiteralAdd(const IntegerLiteral& lhs,
+                                            const IntegerLiteral& rhs);
+  IntegerLiteral ConstexprIntegerLiteralLeftShift(const IntegerLiteral& lhs,
+                                                  const IntegerLiteral& rhs);
+  IntegerLiteral ConstexprIntegerLiteralBitwiseOr(const IntegerLiteral& lhs,
+                                                  const IntegerLiteral& rhs);
 
   bool ConstexprInt31Equal(int31_t a, int31_t b) { return a == b; }
   bool ConstexprInt31NotEqual(int31_t a, int31_t b) { return a != b; }
@@ -4061,10 +4142,12 @@ class V8_EXPORT_PRIVATE CodeStubAssembler
                        TVariable<Numeric>* var_numeric,
                        TVariable<Smi>* var_feedback);
 
+  enum IsKnownTaggedPointer { kNo, kYes };
   template <Object::Conversion conversion>
   void TaggedToWord32OrBigIntImpl(TNode<Context> context, TNode<Object> value,
                                   Label* if_number,
                                   TVariable<Word32T>* var_word32,
+                                  IsKnownTaggedPointer is_known_tagged_pointer,
                                   Label* if_bigint = nullptr,
                                   TVariable<BigInt>* var_maybe_bigint = nullptr,
                                   TVariable<Smi>* var_feedback = nullptr);

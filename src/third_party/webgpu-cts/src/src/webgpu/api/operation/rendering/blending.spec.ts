@@ -9,34 +9,11 @@ TODO:
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { assert, unreachable } from '../../../../common/util/util.js';
+import { kBlendFactors, kBlendOperations } from '../../../capability_info.js';
 import { GPUTest } from '../../../gpu_test.js';
 import { float32ToFloat16Bits } from '../../../util/conversion.js';
 
 export const g = makeTestGroup(GPUTest);
-
-const kBlendFactors: GPUBlendFactor[] = [
-  'zero',
-  'one',
-  'src',
-  'one-minus-src',
-  'src-alpha',
-  'one-minus-src-alpha',
-  'dst',
-  'one-minus-dst',
-  'dst-alpha',
-  'one-minus-dst-alpha',
-  'src-alpha-saturated',
-  'constant',
-  'one-minus-constant',
-];
-
-const kBlendOperations: GPUBlendOperation[] = [
-  'add', //
-  'subtract',
-  'reverse-subtract',
-  'min',
-  'max',
-];
 
 function mapColor(
   col: GPUColorDict,
@@ -133,6 +110,12 @@ g.test('GPUBlendComponent')
       .combine('srcFactor', kBlendFactors)
       .combine('dstFactor', kBlendFactors)
       .combine('operation', kBlendOperations)
+      .filter(t => {
+        if (t.operation === 'min' || t.operation === 'max') {
+          return t.srcFactor === 'one' && t.dstFactor === 'one';
+        }
+        return true;
+      })
       .beginSubcases()
       .combine('srcColor', [{ r: 0.11, g: 0.61, b: 0.81, a: 0.44 }])
       .combine('dstColor', [
@@ -199,9 +182,9 @@ g.test('GPUBlendComponent')
 struct Uniform {
   color: vec4<f32>;
 };
-[[group(0), binding(0)]] var<uniform> u : Uniform;
+@group(0) @binding(0) var<uniform> u : Uniform;
 
-[[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+@stage(fragment) fn main() -> @location(0) vec4<f32> {
   return u.color;
 }
           `,
@@ -211,7 +194,7 @@ struct Uniform {
       vertex: {
         module: t.device.createShaderModule({
           code: `
-[[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+@stage(vertex) fn main() -> @builtin(position) vec4<f32> {
     return vec4<f32>(0.0, 0.0, 0.0, 1.0);
 }
           `,

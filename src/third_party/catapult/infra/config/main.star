@@ -9,11 +9,10 @@ After modifying this file execute it ('./main.star') to regenerate the configs.
 This is also enforced by PRESUBMIT.py script.
 """
 
-lucicfg.check_version("1.24.2", "Please update depot_tools")
+lucicfg.check_version("1.30.9", "Please update depot_tools")
 
-# Enable LUCI Realms support.
-lucicfg.enable_experiment("crbug.com/1085650")
-luci.builder.defaults.experiments.set({"luci.use_realms": 100})
+# Use LUCI Scheduler BBv2 names and add Scheduler realms configs.
+lucicfg.enable_experiment("crbug.com/1182002")
 
 lucicfg.config(
     config_dir = "generated",
@@ -146,11 +145,14 @@ def try_builder(
     executable = luci.recipe(
         name = "catapult",
         cipd_package = "infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build",
+        use_bbagent = True,
     )
     if is_presubmit:
         executable = luci.recipe(
             name = "run_presubmit",
             cipd_package = "infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build",
+            use_bbagent = True,
+            use_python3 = True,
         )
         props["repo_name"] = "catapult"
     if is_dashboard:
@@ -165,6 +167,7 @@ def try_builder(
         execution_timeout = 2 * time.hour,
         service_account = "catapult-try-builder@chops-service-accounts.iam.gserviceaccount.com",
         properties = props,
+        experiments = {"luci.recipes.use_python3": 20},
     )
 
     verifier_kwargs = {}

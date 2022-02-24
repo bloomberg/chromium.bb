@@ -212,22 +212,24 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   using MetadataSequence = std::vector<std::unique_ptr<MetadataSource>>;
 
   struct QUICHE_EXPORT_PRIVATE StreamState {
-    StreamState(int32_t stream_receive_window,
+    StreamState(int32_t stream_receive_window, int32_t stream_send_window,
                 WindowManager::WindowUpdateListener listener)
-        : window_manager(stream_receive_window, std::move(listener)) {}
+        : window_manager(stream_receive_window, std::move(listener)),
+          send_window(stream_send_window) {}
 
     WindowManager window_manager;
     std::unique_ptr<DataFrameSource> outbound_body;
     MetadataSequence outbound_metadata;
     std::unique_ptr<spdy::SpdyHeaderBlock> trailers;
     void* user_data = nullptr;
-    int32_t send_window = kInitialFlowControlWindowSize;
+    int32_t send_window;
     absl::optional<HeaderType> received_header_type;
     absl::optional<size_t> remaining_content_length;
     bool half_closed_local = false;
     bool half_closed_remote = false;
     // Indicates that `outbound_body` temporarily cannot produce data.
     bool data_deferred = false;
+    bool can_receive_body = true;
   };
   using StreamStateMap = absl::flat_hash_map<Http2StreamId, StreamState>;
 
@@ -258,7 +260,7 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
     void OnHeader(absl::string_view key, absl::string_view value) override;
     void OnHeaderBlockEnd(size_t /* uncompressed_header_bytes */,
                           size_t /* compressed_header_bytes */) override;
-    absl::string_view status_header() {
+    absl::string_view status_header() const {
       QUICHE_DCHECK(type_ == HeaderType::RESPONSE ||
                     type_ == HeaderType::RESPONSE_100);
       return validator_.status_header();
@@ -270,6 +272,7 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
     void SetMaxFieldSize(uint32_t field_size) {
       validator_.SetMaxFieldSize(field_size);
     }
+    bool CanReceiveBody() const;
 
    private:
     OgHttp2Session& session_;
@@ -295,6 +298,9 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   // Prepares and returns a SETTINGS frame with the given `settings`.
   std::unique_ptr<spdy::SpdySettingsIR> PrepareSettingsFrame(
       absl::Span<const Http2Setting> settings);
+
+  // Updates internal state to match the SETTINGS advertised to the peer.
+  void HandleOutboundSettings(const spdy::SpdySettingsIR& settings_frame);
 
   void SendWindowUpdate(Http2StreamId stream_id, size_t update_delta);
 
@@ -395,6 +401,8 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
 
   void HandleContentLengthError(Http2StreamId stream_id);
 
+  void UpdateInitialWindowSize(uint32_t new_value);
+
   // Receives events when inbound frames are parsed.
   Http2VisitorInterface& visitor_;
 
@@ -470,7 +478,9 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   size_t metadata_length_ = 0;
   int32_t connection_send_window_ = kInitialFlowControlWindowSize;
   // The initial flow control receive window size for any newly created streams.
-  int32_t stream_receive_window_limit_ = kInitialFlowControlWindowSize;
+  int32_t initial_stream_receive_window_ = kInitialFlowControlWindowSize;
+  // The initial flow control send window size for any newly created streams.
+  int32_t initial_stream_send_window_ = kInitialFlowControlWindowSize;
   uint32_t max_frame_payload_ = 16384u;
   // The maximum number of concurrent streams that this connection can open to
   // its peer and allow from its peer, respectively. Although the initial value

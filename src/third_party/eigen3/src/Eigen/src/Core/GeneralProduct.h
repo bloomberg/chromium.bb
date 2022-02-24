@@ -52,17 +52,17 @@ template<int Size, int MaxSize> struct product_size_category
 
 template<typename Lhs, typename Rhs> struct product_type
 {
-  typedef typename remove_all<Lhs>::type _Lhs;
-  typedef typename remove_all<Rhs>::type _Rhs;
+  typedef typename remove_all<Lhs>::type Lhs_;
+  typedef typename remove_all<Rhs>::type Rhs_;
   enum {
-    MaxRows = traits<_Lhs>::MaxRowsAtCompileTime,
-    Rows    = traits<_Lhs>::RowsAtCompileTime,
-    MaxCols = traits<_Rhs>::MaxColsAtCompileTime,
-    Cols    = traits<_Rhs>::ColsAtCompileTime,
-    MaxDepth = min_size_prefer_fixed(traits<_Lhs>::MaxColsAtCompileTime,
-                                     traits<_Rhs>::MaxRowsAtCompileTime),
-    Depth = min_size_prefer_fixed(traits<_Lhs>::ColsAtCompileTime,
-                                  traits<_Rhs>::RowsAtCompileTime)
+    MaxRows = traits<Lhs_>::MaxRowsAtCompileTime,
+    Rows    = traits<Lhs_>::RowsAtCompileTime,
+    MaxCols = traits<Rhs_>::MaxColsAtCompileTime,
+    Cols    = traits<Rhs_>::ColsAtCompileTime,
+    MaxDepth = min_size_prefer_fixed(traits<Lhs_>::MaxColsAtCompileTime,
+                                     traits<Rhs_>::MaxRowsAtCompileTime),
+    Depth = min_size_prefer_fixed(traits<Lhs_>::ColsAtCompileTime,
+                                  traits<Rhs_>::RowsAtCompileTime)
   };
 
   // the splitting into different lines of code here, introducing the _select enums and the typedef below,
@@ -219,7 +219,6 @@ template<> struct gemv_dense_selector<OnTheRight,ColMajor,true>
     typedef typename Lhs::Scalar   LhsScalar;
     typedef typename Rhs::Scalar   RhsScalar;
     typedef typename Dest::Scalar  ResScalar;
-    typedef typename Dest::RealScalar  RealScalar;
     
     typedef internal::blas_traits<Lhs> LhsBlasTraits;
     typedef typename LhsBlasTraits::DirectLinearAccessType ActualLhsType;
@@ -264,7 +263,7 @@ template<> struct gemv_dense_selector<OnTheRight,ColMajor,true>
     {
       gemv_static_vector_if<ResScalar,ActualDest::SizeAtCompileTime,ActualDest::MaxSizeAtCompileTime,MightCannotUseDest> static_dest;
 
-      const bool alphaIsCompatible = (!ComplexByReal) || (numext::imag(actualAlpha)==RealScalar(0));
+      const bool alphaIsCompatible = (!ComplexByReal) || (numext::is_exactly_zero(numext::imag(actualAlpha)));
       const bool evalToDest = EvalToDestAtCompileTime && alphaIsCompatible;
 
       ei_declare_aligned_stack_constructed_variable(ResScalar,actualDestPtr,dest.size(),

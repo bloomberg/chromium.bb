@@ -173,7 +173,6 @@
 <translation id="5170938038195470297">Profilingizdan foydalanib bo‘lmaydi, chunki u yanada yangiroq Google Chrome versiyasiga ta’luqli.
 
 Ba’zi imkoniyatlar ishlamasligi mumkin. Profilni saqlash uchun boshqa jild tanlang yoki yangiroq Google Chrome versiyasini o‘rnating.</translation>
-<translation id="5193136243808726294">Google Chrome OS bu sahifani ocha olmadi.</translation>
 <translation id="521447420733633466">Agar qurilmadan yaqinlaringiz va doʻstlaringiz ham foydalansa, ular Chrome brauzerini oʻzlari xohlagancha sozlab olishlari mumkin.</translation>
 <translation id="5251420635869119124">Agar tashrif buyurgan saytlaringiz haqidagi ma’lumotlar saqlanmasligini xohlasangiz, Chrome mehmon rejimidan foydalaning.</translation>
 <translation id="5334487786912937552">Chrome bu fayllarni yuklab olishi uchun xotiraga saqlash ruxsati kerak</translation>
@@ -184,8 +183,6 @@ Ba’zi imkoniyatlar ishlamasligi mumkin. Profilni saqlash uchun boshqa jild tan
 Google Chrome sozlamalaringizni qaytadan tiklay olmadi.</translation>
 <translation id="556024056938947818">Kirtilgan parollar Google Chrome‘da ko‘rsatiladi.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5657226924540934362">Agar sozlama bu sahifada chiqmasa, <ph name="LINK_BEGIN" />
-      Chrome OS sozlamalarini<ph name="LINK_END" /> tekshiring.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> zararli bo‘lishi mumkin, shuning uchun u Chrome tomonidan bloklandi.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Administrator yangilishlarni oʻrnatish uchun Chrome brauzerini qayta ishga tushirishni soʻramoqda}=1{Administrator yangilishlarni oʻrnatish uchun Chrome brauzerini qayta ishga tushirishni soʻramoqda Inkognito oynalar qayta ochilmaydi.}other{Administrator yangilishlarni oʻrnatish uchun Chrome brauzerini qayta ishga tushirishni soʻramoqda # ta inkognito oyna qayta ochilmaydi.}}</translation>
 <translation id="5686916850681061684">Google Chrome brauzerini sozlash va boshqarish. Diqqat qaratishingiz zarur. Batafsil axborot olish uchun bu yerga bosing.</translation>

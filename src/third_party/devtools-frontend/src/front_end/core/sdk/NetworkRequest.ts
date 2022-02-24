@@ -204,7 +204,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<EventType
     TextUtils.ContentProvider.ContentProvider {
   #requestIdInternal: string;
   #backendRequestIdInternal?: Protocol.Network.RequestId;
-  readonly #documentURLInternal: string;
+  readonly #documentURLInternal: Platform.DevToolsPath.UrlString;
   readonly #frameIdInternal: Protocol.Page.FrameId|null;
   readonly #loaderIdInternal: Protocol.Network.LoaderId|null;
   readonly #initiatorInternal: Protocol.Network.Initiator|null|undefined;
@@ -257,7 +257,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<EventType
   #includedRequestCookiesInternal: Cookie[];
   #blockedResponseCookiesInternal: BlockedSetCookieWithReason[];
   localizedFailDescription: string|null;
-  #urlInternal!: string;
+  #urlInternal!: Platform.DevToolsPath.UrlString;
   #responseReceivedTimeInternal!: number;
   #transferSizeInternal!: number;
   #finishedInternal!: boolean;
@@ -290,11 +290,12 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<EventType
   #parsedQueryParameters?: NameValue[];
   #contentDataProvider?: (() => Promise<ContentData>);
   #isSameSiteInternal: boolean|null;
+  #wasIntercepted: boolean;
 
   private constructor(
-      requestId: string, backendRequestId: Protocol.Network.RequestId|undefined, url: string, documentURL: string,
-      frameId: Protocol.Page.FrameId|null, loaderId: Protocol.Network.LoaderId|null,
-      initiator: Protocol.Network.Initiator|null) {
+      requestId: string, backendRequestId: Protocol.Network.RequestId|undefined, url: Platform.DevToolsPath.UrlString,
+      documentURL: Platform.DevToolsPath.UrlString, frameId: Protocol.Page.FrameId|null,
+      loaderId: Protocol.Network.LoaderId|null, initiator: Protocol.Network.Initiator|null) {
     super();
 
     this.#requestIdInternal = requestId;
@@ -363,23 +364,28 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<EventType
 
     this.localizedFailDescription = null;
     this.#isSameSiteInternal = null;
+
+    this.#wasIntercepted = false;
   }
 
   static create(
-      backendRequestId: Protocol.Network.RequestId, url: string, documentURL: string,
-      frameId: Protocol.Page.FrameId|null, loaderId: Protocol.Network.LoaderId|null,
-      initiator: Protocol.Network.Initiator|null): NetworkRequest {
+      backendRequestId: Protocol.Network.RequestId, url: Platform.DevToolsPath.UrlString,
+      documentURL: Platform.DevToolsPath.UrlString, frameId: Protocol.Page.FrameId|null,
+      loaderId: Protocol.Network.LoaderId|null, initiator: Protocol.Network.Initiator|null): NetworkRequest {
     return new NetworkRequest(backendRequestId, backendRequestId, url, documentURL, frameId, loaderId, initiator);
   }
 
   static createForWebSocket(
-      backendRequestId: Protocol.Network.RequestId, requestURL: string,
+      backendRequestId: Protocol.Network.RequestId, requestURL: Platform.DevToolsPath.UrlString,
       initiator?: Protocol.Network.Initiator): NetworkRequest {
-    return new NetworkRequest(backendRequestId, backendRequestId, requestURL, '', null, null, initiator || null);
+    return new NetworkRequest(
+        backendRequestId, backendRequestId, requestURL, '' as Platform.DevToolsPath.UrlString, null, null,
+        initiator || null);
   }
 
   static createWithoutBackendRequest(
-      requestId: string, url: string, documentURL: string, initiator: Protocol.Network.Initiator|null): NetworkRequest {
+      requestId: string, url: Platform.DevToolsPath.UrlString, documentURL: Platform.DevToolsPath.UrlString,
+      initiator: Protocol.Network.Initiator|null): NetworkRequest {
     return new NetworkRequest(requestId, undefined, url, documentURL, null, null, initiator);
   }
 
@@ -403,7 +409,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<EventType
     return this.#backendRequestIdInternal;
   }
 
-  url(): string {
+  url(): Platform.DevToolsPath.UrlString {
     return this.#urlInternal;
   }
 
@@ -411,7 +417,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<EventType
     return this.#urlInternal.startsWith('blob:');
   }
 
-  setUrl(x: string): void {
+  setUrl(x: Platform.DevToolsPath.UrlString): void {
     if (this.#urlInternal === x) {
       return;
     }
@@ -424,7 +430,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<EventType
     this.#pathInternal = undefined;
   }
 
-  get documentURL(): string {
+  get documentURL(): Platform.DevToolsPath.UrlString {
     return this.#documentURLInternal;
   }
 
@@ -964,6 +970,14 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<EventType
     return this.#responseHeaderValues[headerName];
   }
 
+  wasIntercepted(): boolean {
+    return this.#wasIntercepted;
+  }
+
+  setWasIntercepted(wasIntercepted: boolean): void {
+    this.#wasIntercepted = wasIntercepted;
+  }
+
   get responseCookies(): Cookie[] {
     if (!this.#responseCookiesInternal) {
       this.#responseCookiesInternal =
@@ -1175,8 +1189,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<EventType
     this.#contentDataProvider = dataProvider;
   }
 
-  // TODO(crbug.com/1253323): Cast to RawPathString will be removed when migration to branded types is complete.
-  contentURL(): string {
+  contentURL(): Platform.DevToolsPath.UrlString {
     return this.#urlInternal;
   }
 

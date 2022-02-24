@@ -1,5 +1,4 @@
 #version 310 es
-precision mediump float;
 
 struct Uniforms {
   uint dstTextureFlipY;
@@ -8,12 +7,10 @@ struct Uniforms {
   uint channelCount;
 };
 
-uniform highp sampler2D src;
-uniform highp sampler2D dst;
-layout (binding = 2) buffer OutputBuf_1 {
+layout(binding = 2, std430) buffer OutputBuf_1 {
   uint result[];
 } tint_symbol;
-layout (binding = 3) uniform Uniforms_1 {
+layout(binding = 3) uniform Uniforms_1 {
   uint dstTextureFlipY;
   uint isFloat16;
   uint isRGB10A2Unorm;
@@ -24,19 +21,17 @@ uint ConvertToFp16FloatValue(float fp32) {
   return 1u;
 }
 
-struct tint_symbol_3 {
-  uvec3 GlobalInvocationID;
-};
-
-void tint_symbol_1_inner(uvec3 GlobalInvocationID) {
-  ivec2 size = textureSize(src, 0);
+uniform highp sampler2D src_1;
+uniform highp sampler2D dst_1;
+void tint_symbol_1(uvec3 GlobalInvocationID) {
+  ivec2 size = textureSize(src_1, 0);
   ivec2 dstTexCoord = ivec2(GlobalInvocationID.xy);
   ivec2 srcTexCoord = dstTexCoord;
   if ((uniforms.dstTextureFlipY == 1u)) {
     srcTexCoord.y = ((size.y - dstTexCoord.y) - 1);
   }
-  vec4 srcColor = texelFetch(src, srcTexCoord, 0);
-  vec4 dstColor = texelFetch(dst, dstTexCoord, 0);
+  vec4 srcColor = texelFetch(src_1, srcTexCoord, 0);
+  vec4 dstColor = texelFetch(dst_1, dstTexCoord, 0);
   bool success = true;
   uvec4 srcColorBits = uvec4(0u, 0u, 0u, 0u);
   uvec4 dstColorBits = uvec4(dstColor);
@@ -59,14 +54,7 @@ void tint_symbol_1_inner(uvec3 GlobalInvocationID) {
 }
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-void tint_symbol_1(tint_symbol_3 tint_symbol_2) {
-  tint_symbol_1_inner(tint_symbol_2.GlobalInvocationID);
+void main() {
+  tint_symbol_1(gl_GlobalInvocationID);
   return;
 }
-void main() {
-  tint_symbol_3 inputs;
-  inputs.GlobalInvocationID = gl_GlobalInvocationID;
-  tint_symbol_1(inputs);
-}
-
-

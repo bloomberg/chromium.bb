@@ -34,6 +34,7 @@ LICENSES = [
     "ISC",
     "MPL-2.0",
     "Python-2.0",
+    "W3C",
 ]
 
 # List all DEPS here.
@@ -54,6 +55,7 @@ DEPS = {
     "@types/mocha": "9.0.0",
     "@types/rimraf": "3.0.2",
     "@types/sinon": "10.0.6",
+    "@types/webidl2": "23.13.6",
     "@typescript-eslint/parser": "5.9.0",
     "@typescript-eslint/eslint-plugin": "5.9.0",
     "@web/rollup-plugin-import-meta-assets": "1.0.7",
@@ -61,6 +63,9 @@ DEPS = {
     "chokidar": "3.5.2",
     "clean-css": "5.2.2",
     "convert-source-map": "1.8.0",
+
+    # This should be match with esbuild in DEPS.
+    "esbuild": "0.14.13",
     "escodegen": "2.0.0",
     "eslint": "8.6.0",
     "eslint-plugin-import": "2.25.4",
@@ -96,7 +101,14 @@ DEPS = {
     "typescript": "4.5.4",
     "ws": "8.4.0",
     "yargs": "17.3.1",
+    "glob": "7.1.7",
+    "webidl2": "24.2.0",
 }
+
+ADDITIONAL_NPM_ARGS = [
+    # This is to avoid downloading esbuild-* package.
+    '--omit', 'optional', '--ignore-scripts'
+]
 
 def load_json_file(location):
     # By default, json load uses a standard Python dictionary, which is not ordered.
@@ -180,7 +192,11 @@ def install_missing_deps():
 
             # Now install.
             if len(new_deps) > 0:
-                cmd = ['npm', 'install', '--save-dev']
+                cmd = [
+                    'npm',
+                    'install',
+                    '--save-dev',
+                ] + ADDITIONAL_NPM_ARGS
                 cmd.extend(new_deps)
                 return exec_command(cmd)
 
@@ -289,13 +305,19 @@ def run_npm_command(npm_command_args=None):
     # However, when we are analyzing the installed NPM dependencies, we don't need to run
     # the installation process again.
     if not runs_analysis_command:
-        if exec_command(['npm', 'ci']):
+        if exec_command([
+                'npm',
+                'ci',
+        ] + ADDITIONAL_NPM_ARGS):
             return True
 
         # To minimize disk usage for Chrome DevTools node_modules, always try to dedupe dependencies.
         # We need to perform this every time, as the order of dependencies added could lead to a
         # non-optimal dependency tree, resulting in unnecessary disk usage.
-        if exec_command(['npm', 'dedupe']):
+        if exec_command([
+                'npm',
+                'dedupe',
+        ] + ADDITIONAL_NPM_ARGS):
             return True
 
     if run_custom_command:

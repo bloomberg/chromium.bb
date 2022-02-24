@@ -16,19 +16,19 @@ class F extends ValidationTest {
     let code;
     switch (shaderStage) {
       case 'compute': {
-        code = `[[stage(compute), workgroup_size(1)]] fn ${entryPoint}() {}`;
+        code = `@stage(compute) @workgroup_size(1) fn ${entryPoint}() {}`;
         break;
       }
       case 'vertex': {
         code = `
-        [[stage(vertex)]] fn ${entryPoint}() -> [[builtin(position)]] vec4<f32> {
+        @stage(vertex) fn ${entryPoint}() -> @builtin(position) vec4<f32> {
           return vec4<f32>(0.0, 0.0, 0.0, 1.0);
         }`;
         break;
       }
       case 'fragment': {
         code = `
-        [[stage(fragment)]] fn ${entryPoint}() -> [[location(0)]] vec4<i32> {
+        @stage(fragment) fn ${entryPoint}() -> @location(0) vec4<i32> {
           return vec4<i32>(0, 1, 0, 1);
         }`;
         break;
@@ -211,7 +211,7 @@ g.test('shader_module,device_mismatch')
       await t.selectMismatchedDeviceOrSkipTestCase(undefined);
     }
 
-    const code = '[[stage(compute), workgroup_size(1)]] fn main() {}';
+    const code = '@stage(compute) @workgroup_size(1) fn main() {}';
     const module = mismatched
       ? t.mismatchedDevice.createShaderModule({ code })
       : t.device.createShaderModule({ code });

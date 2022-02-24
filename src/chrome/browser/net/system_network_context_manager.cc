@@ -126,6 +126,13 @@ network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams(
   auth_dynamic_params->allowed_schemes =
       base::SplitString(local_state->GetString(prefs::kAuthSchemes), ",",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  for (const base::Value& item :
+       local_state->GetList(prefs::kAllHttpAuthSchemesAllowedForOrigins)
+           ->GetListDeprecated()) {
+    auth_dynamic_params->patterns_allowed_to_use_all_schemes.push_back(
+        item.GetString());
+  }
   auth_dynamic_params->server_allowlist =
       local_state->GetString(prefs::kAuthServerAllowlist);
   auth_dynamic_params->delegate_allowlist =
@@ -337,8 +344,7 @@ void SystemNetworkContextManager::DeleteInstance() {
 SystemNetworkContextManager::SystemNetworkContextManager(
     PrefService* local_state)
     : local_state_(local_state),
-      ssl_config_service_manager_(
-          SSLConfigServiceManager::CreateDefaultManager(local_state_)),
+      ssl_config_service_manager_(local_state_),
       proxy_config_monitor_(local_state_),
       stub_resolver_config_reader_(local_state_) {
 #if !BUILDFLAG(IS_ANDROID)
@@ -367,6 +373,8 @@ SystemNetworkContextManager::SystemNetworkContextManager(
   pref_change_registrar_.Add(prefs::kEnableAuthNegotiatePort,
                              auth_pref_callback);
   pref_change_registrar_.Add(prefs::kBasicAuthOverHttpEnabled,
+                             auth_pref_callback);
+  pref_change_registrar_.Add(prefs::kAllHttpAuthSchemesAllowedForOrigins,
                              auth_pref_callback);
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
@@ -421,6 +429,8 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
         // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Dynamic auth params.
+  registry->RegisterListPref(prefs::kAllHttpAuthSchemesAllowedForOrigins,
+                             base::Value(base::Value::Type::LIST));
   registry->RegisterBooleanPref(prefs::kDisableAuthNegotiateCnameLookup, false);
   registry->RegisterBooleanPref(prefs::kEnableAuthNegotiatePort, false);
   registry->RegisterBooleanPref(prefs::kBasicAuthOverHttpEnabled, true);
@@ -514,25 +524,26 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   if (IsCertificateTransparencyEnabled()) {
     std::vector<std::string> operated_by_google_logs =
         certificate_transparency::GetLogsOperatedByGoogle();
-    std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs =
+    std::vector<std::pair<std::string, base::Time>> disqualified_logs =
         certificate_transparency::GetDisqualifiedLogs();
     std::vector<network::mojom::CTLogInfoPtr> log_list_mojo;
     for (const auto& ct_log : certificate_transparency::GetKnownLogs()) {
       network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
       log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
+      log_info->id = crypto::SHA256HashString(log_info->public_key);
       log_info->name = ct_log.log_name;
       log_info->current_operator = ct_log.current_operator;
 
-      std::string log_id = crypto::SHA256HashString(log_info->public_key);
       log_info->operated_by_google =
           std::binary_search(std::begin(operated_by_google_logs),
-                             std::end(operated_by_google_logs), log_id);
+                             std::end(operated_by_google_logs), log_info->id);
       auto it = std::lower_bound(
-          std::begin(disqualified_logs), std::end(disqualified_logs), log_id,
+          std::begin(disqualified_logs), std::end(disqualified_logs),
+          log_info->id,
           [](const auto& disqualified_log, const std::string& log_id) {
             return disqualified_log.first < log_id;
           });
-      if (it != std::end(disqualified_logs) && it->first == log_id) {
+      if (it != std::end(disqualified_logs) && it->first == log_info->id) {
         log_info->disqualified_at = it->second;
       }
 
@@ -609,8 +620,7 @@ void SystemNetworkContextManager::DisableQuic() {
 
 void SystemNetworkContextManager::AddSSLConfigToNetworkContextParams(
     network::mojom::NetworkContextParams* network_context_params) {
-  ssl_config_service_manager_->AddToNetworkContextParams(
-      network_context_params);
+  ssl_config_service_manager_.AddToNetworkContextParams(network_context_params);
 }
 
 void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
@@ -745,7 +755,7 @@ bool SystemNetworkContextManager::IsNetworkSandboxEnabled() {
 }
 
 void SystemNetworkContextManager::FlushSSLConfigManagerForTesting() {
-  ssl_config_service_manager_->FlushForTesting();
+  ssl_config_service_manager_.FlushForTesting();
 }
 
 void SystemNetworkContextManager::FlushProxyConfigMonitorForTesting() {

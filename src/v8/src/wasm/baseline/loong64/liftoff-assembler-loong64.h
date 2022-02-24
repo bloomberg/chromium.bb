@@ -106,7 +106,6 @@ inline void Load(LiftoffAssembler* assm, LiftoffRegister dst, MemOperand src,
     case kRef:
     case kOptRef:
     case kRtt:
-    case kRttWithDepth:
       assm->Ld_d(dst.gp(), src);
       break;
     case kF32:
@@ -134,7 +133,6 @@ inline void Store(LiftoffAssembler* assm, Register base, int32_t offset,
     case kOptRef:
     case kRef:
     case kRtt:
-    case kRttWithDepth:
       assm->St_d(src.gp(), dst);
       break;
     case kF32:
@@ -365,10 +363,6 @@ void LiftoffAssembler::SpillInstance(Register instance) {
 }
 
 void LiftoffAssembler::ResetOSRTarget() {}
-
-void LiftoffAssembler::FillInstanceInto(Register dst) {
-  Ld_d(dst, liftoff::GetInstanceOperand());
-}
 
 void LiftoffAssembler::LoadTaggedPointer(Register dst, Register src_addr,
                                          Register offset_reg,
@@ -623,7 +617,6 @@ void LiftoffAssembler::Spill(int offset, LiftoffRegister reg, ValueKind kind) {
     case kRef:
     case kOptRef:
     case kRtt:
-    case kRttWithDepth:
       St_d(reg.gp(), dst);
       break;
     case kF32:
@@ -676,7 +669,6 @@ void LiftoffAssembler::Fill(LiftoffRegister reg, int offset, ValueKind kind) {
     case kOptRef:
     // TODO(LOONG_dev): LOONG64 Check, MIPS64 dosn't need, ARM64/LOONG64 need?
     case kRtt:
-    case kRttWithDepth:
       Ld_d(reg.gp(), src);
       break;
     case kF32:
@@ -949,7 +941,7 @@ I64_SHIFTOP_I(shr, srl_d, srli_d)
 #undef I64_SHIFTOP
 #undef I64_SHIFTOP_I
 
-void LiftoffAssembler::emit_u32_to_intptr(Register dst, Register src) {
+void LiftoffAssembler::emit_u32_to_uintptr(Register dst, Register src) {
   bstrpick_d(dst, src, 31, 0);
 }
 

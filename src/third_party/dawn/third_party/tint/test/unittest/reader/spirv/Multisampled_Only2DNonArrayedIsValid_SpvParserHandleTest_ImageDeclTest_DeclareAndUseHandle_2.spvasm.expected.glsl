@@ -3,8 +3,7 @@ SKIP: FAILED
 #version 310 es
 precision mediump float;
 
-uniform highp sampler2DMS x_20;
-
+uniform highp sampler2DMS x_20_1;
 void main_1() {
   float float_var = 0.0f;
   int i1 = 1;
@@ -19,23 +18,22 @@ void main_1() {
   vec2 vf12 = vec2(1.0f, 2.0f);
   vec3 vf123 = vec3(1.0f, 2.0f, 3.0f);
   vec4 vf1234 = vec4(1.0f, 2.0f, 3.0f, 4.0f);
-  uint x_71 = uint(textureSamples(x_20););
+  uint x_71 = uint(textureSamples(x_20_1););
   uint x_1000 = 0u;
   return;
 }
 
 void tint_symbol() {
   main_1();
-  return;
 }
+
 void main() {
   tint_symbol();
+  return;
 }
-
-
 Error parsing GLSL shader:
-ERROR: 0:20: 'textureSamples' : no matching overloaded function found 
-ERROR: 0:20: '' : compilation terminated 
+ERROR: 0:19: 'textureSamples' : no matching overloaded function found 
+ERROR: 0:19: '' : compilation terminated 
 ERROR: 2 compilation errors.  No code generated.
 
 

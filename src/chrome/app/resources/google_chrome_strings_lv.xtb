@@ -173,7 +173,6 @@
 <translation id="5170938038195470297">Jūsu profilu nevar lietot, jo tas ir veidots ar jaunāku Google Chrome versiju.
 
 Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai lietojiet jaunāku Chrome versiju.</translation>
-<translation id="5193136243808726294">Problēma ar lapas atvēršanu pārlūkā Google Chrome OS.</translation>
 <translation id="521447420733633466">Ja jūsu ierīci izmanto arī jūsu draugi un ģimenes locekļi, viņi var iestatīt pārlūku Chrome atbilstoši savām vēlmēm un pārlūkot saturu atsevišķos profilos.</translation>
 <translation id="5251420635869119124">Viesi var izmantot pārlūku Chrome, neatstājot nekādas pēdas.</translation>
 <translation id="5334487786912937552">Pārlūkam Chrome ir nepieciešama atļauja piekļūt krātuvei, lai varētu lejupielādēt failus.</translation>
@@ -182,8 +181,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="5430073640787465221">Jūsu preferenču fails ir bojāts vai nederīgs. Google Chrome nespēj atkopt jūsu iestatījumus.</translation>
 <translation id="556024056938947818">Google Chrome mēģina rādīt paroles.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS ienākošā datplūsma)</translation>
-<translation id="5657226924540934362">Ja šajā lapā iestatījums nav pieejams, skatiet to sadaļā <ph name="LINK_BEGIN" />
-      Chrome OS iestatījumi<ph name="LINK_END" />.</translation>
 <translation id="565744775970812598">Fails <ph name="FILE_NAME" /> var būt bīstams, tādēļ Chrome to bloķēja.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Lai lietotu šo atjauninājumu, administrators lūdz restartēt pārlūku Chrome.}=1{Lai lietotu šo atjauninājumu, administrators lūdz restartēt pārlūku Chrome. Jūsu inkognito režīma logs netiks atkārtoti atvērts.}zero{Lai lietotu šo atjauninājumu, administrators lūdz restartēt pārlūku Chrome. # jūsu inkognito režīma logi netiks atkārtoti atvērti.}one{Lai lietotu šo atjauninājumu, administrators lūdz restartēt pārlūku Chrome. # jūsu inkognito režīma logs netiks atkārtoti atvērts.}other{Lai lietotu šo atjauninājumu, administrators lūdz restartēt pārlūku Chrome. # jūsu inkognito režīma logi netiks atkārtoti atvērti.}}</translation>
 <translation id="5686916850681061684">Pielāgojiet un kontrolējiet pārlūkprogrammu Google Chrome. Ir nepieciešama jūsu uzmanība. Noklikšķiniet, lai skatītu plašāku informāciju.</translation>

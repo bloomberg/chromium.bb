@@ -54,7 +54,7 @@ g.test('stage_inout')
   )
   .fn(t => {
     const code = generateShader({
-      attribute: '[[location(0)]]',
+      attribute: '@location(0)',
       type: 'f32',
       stage: t.params.target_stage,
       io: t.params.target_io,
@@ -88,7 +88,7 @@ g.test('type')
     }
 
     code += generateShader({
-      attribute: '[[location(0)]]',
+      attribute: '@location(0) @interpolate(flat)',
       type: t.params.type,
       stage: 'fragment',
       io: 'in',
@@ -112,7 +112,7 @@ g.test('nesting')
 
     // Generate a struct that contains a valid type.
     code += 'struct Inner {\n';
-    code += `  [[location(0)]] value : f32;\n`;
+    code += `  @location(0) value : f32;\n`;
     code += '};\n\n';
     code += 'struct Outer {\n';
     code += `  inner : Inner;\n`;
@@ -134,7 +134,7 @@ g.test('duplicates')
   .desc(`Test that duplicated user-defined IO attributes are validated.`)
   .params(u =>
     u
-      // Place two [[location(0)]] attributes onto the entry point function.
+      // Place two @location(0) attributes onto the entry point function.
       // The function:
       // - has two non-struct parameters (`p1` and `p2`)
       // - has two struct parameters each with two members (`s1{a,b}` and `s2{a,b}`)
@@ -155,20 +155,20 @@ g.test('duplicates')
     const rb = t.params.second === 'rb' ? '0' : '2';
     const code = `
     struct S1 {
-      [[location(${s1a})]] a : f32;
-      [[location(${s1b})]] b : f32;
+      @location(${s1a}) a : f32;
+      @location(${s1b}) b : f32;
     };
     struct S2 {
-      [[location(${s2a})]] a : f32;
-      [[location(${s2b})]] b : f32;
+      @location(${s2a}) a : f32;
+      @location(${s2b}) b : f32;
     };
     struct R {
-      [[location(${ra})]] a : f32;
-      [[location(${rb})]] b : f32;
+      @location(${ra}) a : f32;
+      @location(${rb}) b : f32;
     };
-    [[stage(fragment)]]
-    fn main([[location(${p1})]] p1 : f32,
-            [[location(${p2})]] p2 : f32,
+    @stage(fragment)
+    fn main(@location(${p1}) p1 : f32,
+            @location(${p2}) p2 : f32,
             s1 : S1,
             s2 : S2,
             ) -> R {
@@ -176,7 +176,7 @@ g.test('duplicates')
     }
     `;
 
-    // The test should fail if both [[location(0)]] attributes are on the input parameters or
+    // The test should fail if both @location(0) attributes are on the input parameters or
     // structures, or it they are both on the output struct. Otherwise it should pass.
     const firstIsRet = t.params.first === 'ra';
     const secondIsRet = t.params.second === 'rb';

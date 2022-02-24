@@ -35,6 +35,13 @@ try_.builder(
 try_.builder(
     name = "win-asan",
     goma_jobs = goma.jobs.J150,
+    execution_timeout = 5 * time.hour,
+)
+
+try_.builder(
+    name = "win10-clang-tidy-rel",
+    executable = "recipe:tricium_clang_tidy_wrapper",
+    goma_jobs = goma.jobs.J150,
 )
 
 try_.builder(
@@ -194,14 +201,4 @@ try_.gpu.optional_tests_builder(
             ".+/[+]/ui/gl/.+",
         ],
     ),
-)
-
-# RTS builders
-
-try_.builder(
-    name = "win10_chromium_x64_rel_ng_rts",
-    goma_jobs = goma.jobs.J150,
-    use_clang_coverage = True,
-    builderless = False,
-    cores = 16,
 )

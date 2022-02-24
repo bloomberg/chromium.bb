@@ -8,28 +8,39 @@
 #ifndef skgpu_Recorder_DEFINED
 #define skgpu_Recorder_DEFINED
 
-#include "experimental/graphite/src/TaskGraph.h"
 #include "include/core/SkRefCnt.h"
+#include "include/private/SingleOwner.h"
+
+#include <vector>
 
 namespace skgpu {
 
-class Context;
+class Caps;
 class Device;
 class DrawBufferManager;
+class GlobalCache;
+class Gpu;
+class RecorderPriv;
 class Recording;
+class ResourceProvider;
+class Task;
+class TaskGraph;
 class UniformCache;
 
 class Recorder final {
 public:
+    Recorder(const Recorder&) = delete;
+    Recorder(Recorder&&) = delete;
+    Recorder& operator=(const Recorder&) = delete;
+    Recorder& operator=(Recorder&&) = delete;
+
     ~Recorder();
 
-    void add(sk_sp<Task>);
-
-    Context* context() const;
-    UniformCache* uniformCache();
-    DrawBufferManager* drawBufferManager();
-
     std::unique_ptr<Recording> snap();
+
+    // Provides access to functions that aren't part of the public API.
+    RecorderPriv priv();
+    const RecorderPriv priv() const;  // NOLINT(readability-const-return-type)
 
 #if GR_TEST_UTILS
     bool deviceIsRegistered(Device*);
@@ -38,8 +49,11 @@ public:
 private:
     friend class Context; // For ctor
     friend class Device; // For registering and deregistering Devices;
+    friend class RecorderPriv; // for ctor and hidden methods
 
-    Recorder(sk_sp<Context>);
+    Recorder(sk_sp<Gpu>, sk_sp<GlobalCache>);
+
+    SingleOwner* singleOwner() const { return &fSingleOwner; }
 
     // We keep track of all Devices that are connected to a Recorder. This allows the client to
     // safely delete an SkSurface or a Recorder in any order. If the client deletes the Recorder
@@ -61,11 +75,18 @@ private:
     void registerDevice(Device*);
     void deregisterDevice(const Device*);
 
-    sk_sp<Context> fContext;
-    TaskGraph fGraph;
+    sk_sp<Gpu> fGpu;
+    std::unique_ptr<ResourceProvider> fResourceProvider;
+
+    std::unique_ptr<TaskGraph> fGraph;
     std::unique_ptr<UniformCache> fUniformCache;
     std::unique_ptr<DrawBufferManager> fDrawBufferManager;
     std::vector<Device*> fTrackedDevices;
+
+    // In debug builds we guard against improper thread handling
+    // This guard is passed to the ResourceCache.
+    // TODO: Should we also pass this to Device, DrawContext, and similar classes?
+    mutable SingleOwner fSingleOwner;
 };
 
 } // namespace skgpu

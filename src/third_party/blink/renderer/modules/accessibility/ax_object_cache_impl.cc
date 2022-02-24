@@ -348,8 +348,9 @@ bool IsShadowContentRelevantForAccessibility(const Node* node) {
 
   // Outside of AXMenuList descendants, all other non-slot user agent shadow
   // nodes are relevant.
-  const HTMLSlotElement* slot_element = DynamicTo<HTMLSlotElement>(node);
-  if (!slot_element || !slot_element->SupportsAssignment())
+  const HTMLSlotElement* slot_element =
+      ToHTMLSlotElementIfSupportsAssignmentOrNull(node);
+  if (!slot_element)
     return true;
 
   // Slots are relevant if they have content.
@@ -412,8 +413,10 @@ bool IsLayoutObjectRelevantForAccessibility(const LayoutObject& layout_object) {
   if (node->IsPseudoElement())
     return AXObjectCacheImpl::IsRelevantPseudoElement(*node);
 
-  if (const HTMLSlotElement* slot = DynamicTo<HTMLSlotElement>(node))
+  if (const HTMLSlotElement* slot =
+          ToHTMLSlotElementIfSupportsAssignmentOrNull(node)) {
     return AXObjectCacheImpl::IsRelevantSlotElement(*slot);
+  }
 
   // <optgroup> is irrelevant inside of a <select> menulist.
   if (auto* opt_group = DynamicTo<HTMLOptGroupElement>(node)) {
@@ -507,8 +510,10 @@ bool IsNodeRelevantForAccessibility(const Node* node,
   if (node->IsPseudoElement())
     return AXObjectCacheImpl::IsRelevantPseudoElement(*node);
 
-  if (const HTMLSlotElement* slot = DynamicTo<HTMLSlotElement>(node))
+  if (const HTMLSlotElement* slot =
+          ToHTMLSlotElementIfSupportsAssignmentOrNull(node)) {
     return AXObjectCacheImpl::IsRelevantSlotElement(*slot);
+  }
 
   // <optgroup> is irrelevant inside of a <select> menulist.
   if (auto* opt_group = DynamicTo<HTMLOptGroupElement>(node)) {
@@ -602,10 +607,8 @@ AXObjectCacheImpl::~AXObjectCacheImpl() {
 }
 
 void AXObjectCacheImpl::Dispose() {
-#if DCHECK_IS_ON()
   DCHECK(!has_been_disposed_) << "Something is wrong, trying to dispose twice.";
   has_been_disposed_ = true;
-#endif
 
   for (auto& entry : objects_) {
     AXObject* obj = entry.value;
@@ -640,8 +643,11 @@ Node* AXObjectCacheImpl::FocusedElement() {
     focused_node = document_;
 
   // See if there's a page popup, for example a calendar picker.
-  Element* adjusted_focused_element = document_->AdjustedFocusedElement();
-  if (auto* input = DynamicTo<HTMLInputElement>(adjusted_focused_element)) {
+  auto* input = DynamicTo<HTMLInputElement>(focused_node);
+  if (!input && focused_node->IsInUserAgentShadowRoot()) {
+    input = DynamicTo<HTMLInputElement>(focused_node->OwnerShadowHost());
+  }
+  if (input) {
     if (AXObject* ax_popup = input->PopupRootAXObject()) {
       if (Element* focused_element_in_popup =
               ax_popup->GetDocument()->FocusedElement())
@@ -1023,8 +1029,10 @@ bool AXObjectCacheImpl::IsRelevantSlotElement(const HTMLSlotElement& slot) {
   // TODO(accessibility): There should be a better way to accomplish this.
   // Could a new function be added to the slot element?
   const Node* parent = LayoutTreeBuilderTraversal::Parent(slot);
-  if (const HTMLSlotElement* parent_slot = DynamicTo<HTMLSlotElement>(parent))
+  if (const HTMLSlotElement* parent_slot =
+          ToHTMLSlotElementIfSupportsAssignmentOrNull(parent)) {
     return AXObjectCacheImpl::IsRelevantSlotElement(*parent_slot);
+  }
 
   if (parent && parent->GetLayoutObject())
     return true;
@@ -3407,8 +3415,12 @@ void AXObjectCacheImpl::MarkAXObjectDirtyWithCleanLayoutHelper(AXObject* obj,
 
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(
       obj->GetDocument()->AXObjectCacheOwner().GetFrame());
-  if (webframe && webframe->Client())
-    webframe->Client()->MarkWebAXObjectDirty(WebAXObject(obj), subtree);
+  if (webframe && webframe->Client()) {
+    webframe->Client()->MarkWebAXObjectDirty(WebAXObject(obj), subtree,
+                                             active_event_from_,
+                                             active_event_from_action_);
+  }
+
   obj->UpdateCachedAttributeValuesIfNeeded(true);
   for (auto agent : agents_)
     agent->AXObjectModified(obj, subtree);
@@ -3464,7 +3476,7 @@ AXObject* AXObjectCacheImpl::GetSerializationTarget(AXObject* obj) {
   // TODO(accessibility): The relevance check probably applies to all nodes
   // not just slot elements.
   if (const HTMLSlotElement* slot =
-          DynamicTo<HTMLSlotElement>(obj->GetNode())) {
+          ToHTMLSlotElementIfSupportsAssignmentOrNull(obj->GetNode())) {
     if (!AXObjectCacheImpl::IsRelevantSlotElement(*slot))
       return nullptr;
   }
@@ -3487,7 +3499,7 @@ AXObject* AXObjectCacheImpl::GetSerializationTarget(AXObject* obj) {
 }
 
 AXObject* AXObjectCacheImpl::RestoreParentOrPrune(AXObject* child) {
-  AXObject* parent = child->ComputeParent();
+  AXObject* parent = child->ComputeParentOrNull();
   if (parent)
     child->SetParent(parent);
   else  // If no parent is possible, the child is no longer part of the tree.
@@ -3756,6 +3768,11 @@ void AXObjectCacheImpl::DidHideMenuListPopupWithCleanLayout(Node* menu_list) {
   auto* ax_object = DynamicTo<AXMenuList>(Get(menu_list));
   if (ax_object)
     ax_object->DidHidePopup();
+}
+
+void AXObjectCacheImpl::HandleLoadStart(Document* document) {
+  SCOPED_DISALLOW_LIFECYCLE_TRANSITION(*document);
+  MarkAXObjectDirty(Get(document));
 }
 
 void AXObjectCacheImpl::HandleLoadComplete(Document* document) {

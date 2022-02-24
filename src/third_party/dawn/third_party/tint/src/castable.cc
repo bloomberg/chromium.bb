@@ -22,15 +22,8 @@ template <>
 const TypeInfo detail::TypeInfoOf<CastableBase>::info{
     nullptr,
     "CastableBase",
+    tint::TypeInfo::HashCodeOf<CastableBase>(),
+    tint::TypeInfo::FullHashCodeOf<CastableBase>(),
 };
-
-bool TypeInfo::Is(const TypeInfo& typeinfo) const {
-  for (auto* ti = this; ti != nullptr; ti = ti->base) {
-    if (ti == &typeinfo) {
-      return true;
-    }
-  }
-  return false;
-}
 
 }  // namespace tint

@@ -11,6 +11,7 @@
 #include "src/core/SkTraceEvent.h"
 
 #include "experimental/graphite/src/Buffer.h"
+#include "experimental/graphite/src/Sampler.h"
 #include "experimental/graphite/src/Texture.h"
 #include "experimental/graphite/src/TextureProxy.h"
 
@@ -100,12 +101,20 @@ void CommandBuffer::bindDrawBuffers(BindBufferInfo vertices,
     this->bindIndexBuffer(sk_ref_sp(indices.fBuffer), indices.fOffset);
 }
 
-static bool check_max_blit_width(int widthInPixels) {
-    if (widthInPixels > 32767) {
-        SkASSERT(false); // surfaces should not be this wide anyway
-        return false;
+void CommandBuffer::bindTextures(const TextureBindEntry* entries, int count) {
+    this->onBindTextures(entries, count);
+    for (int i = 0; i < count; ++i) {
+        SkASSERT(entries[i].fTexture);
+        this->trackResource(entries[i].fTexture);
     }
-    return true;
+}
+
+void CommandBuffer::bindSamplers(const SamplerBindEntry* entries, int count) {
+    this->onBindSamplers(entries, count);
+    for (int i = 0; i < count; ++i) {
+        SkASSERT(entries[i].fSampler);
+        this->trackResource(entries[i].fSampler);
+    }
 }
 
 bool CommandBuffer::copyTextureToBuffer(sk_sp<skgpu::Texture> texture,
@@ -113,9 +122,8 @@ bool CommandBuffer::copyTextureToBuffer(sk_sp<skgpu::Texture> texture,
                                         sk_sp<skgpu::Buffer> buffer,
                                         size_t bufferOffset,
                                         size_t bufferRowBytes) {
-    if (!check_max_blit_width(srcRect.width())) {
-        return false;
-    }
+    SkASSERT(texture);
+    SkASSERT(buffer);
 
     if (!this->onCopyTextureToBuffer(texture.get(), srcRect, buffer.get(), bufferOffset,
                                      bufferRowBytes)) {
@@ -124,6 +132,26 @@ bool CommandBuffer::copyTextureToBuffer(sk_sp<skgpu::Texture> texture,
 
     this->trackResource(std::move(texture));
     this->trackResource(std::move(buffer));
+
+    SkDEBUGCODE(fHasWork = true;)
+
+    return true;
+}
+
+bool CommandBuffer::copyBufferToTexture(sk_sp<skgpu::Buffer> buffer,
+                                        sk_sp<skgpu::Texture> texture,
+                                        const BufferTextureCopyData* copyData,
+                                        int count) {
+    SkASSERT(buffer);
+    SkASSERT(texture);
+    SkASSERT(count > 0 && copyData);
+
+    if (!this->onCopyBufferToTexture(buffer.get(), texture.get(), copyData, count)) {
+        return false;
+    }
+
+    this->trackResource(std::move(buffer));
+    this->trackResource(std::move(texture));
 
     SkDEBUGCODE(fHasWork = true;)
 

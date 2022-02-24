@@ -39,6 +39,9 @@ namespace transform {
 /// ```
 /// The binding group and number used for this uniform buffer is provided via
 /// the `Config` transform input.
+///
+/// @note Depends on the following transforms to have been run first:
+/// * CanonicalizeEntryPointIO
 class NumWorkgroupsFromUniform
     : public Castable<NumWorkgroupsFromUniform, Transform> {
  public:
@@ -63,6 +66,12 @@ class NumWorkgroupsFromUniform
     sem::BindingPoint ubo_binding;
   };
 
+  /// @param program the program to inspect
+  /// @param data optional extra transform-specific input data
+  /// @returns true if this transform should be run for the given program
+  bool ShouldRun(const Program* program,
+                 const DataMap& data = {}) const override;
+
  protected:
   /// Runs the transform using the CloneContext built for transforming a
   /// program. Run() is responsible for calling Clone() on the CloneContext.
@@ -70,7 +79,9 @@ class NumWorkgroupsFromUniform
   /// ProgramBuilder
   /// @param inputs optional extra transform-specific input data
   /// @param outputs optional extra transform-specific output data
-  void Run(CloneContext& ctx, const DataMap& inputs, DataMap& outputs) override;
+  void Run(CloneContext& ctx,
+           const DataMap& inputs,
+           DataMap& outputs) const override;
 };
 
 }  // namespace transform

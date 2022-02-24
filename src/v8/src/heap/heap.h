@@ -26,6 +26,7 @@
 #include "src/common/assert-scope.h"
 #include "src/common/globals.h"
 #include "src/heap/allocation-observer.h"
+#include "src/heap/allocation-result.h"
 #include "src/init/heap-symbols.h"
 #include "src/objects/allocation-site.h"
 #include "src/objects/fixed-array.h"
@@ -213,44 +214,6 @@ class StrongRootsEntry final {
   friend class Heap;
 };
 
-class AllocationResult {
- public:
-  static inline AllocationResult Retry(AllocationSpace space) {
-    return AllocationResult(space);
-  }
-
-  // Implicit constructor from Object.
-  AllocationResult(Object object)  // NOLINT
-      : object_(object) {
-    // AllocationResults can't return Smis, which are used to represent
-    // failure and the space to retry in.
-    CHECK(!object.IsSmi());
-  }
-
-  AllocationResult() : object_(Smi::FromInt(NEW_SPACE)) {}
-
-  inline bool IsRetry() { return object_.IsSmi(); }
-  inline HeapObject ToObjectChecked();
-  inline HeapObject ToObject();
-  inline Address ToAddress();
-  inline AllocationSpace RetrySpace();
-
-  template <typename T>
-  bool To(T* obj) {
-    if (IsRetry()) return false;
-    *obj = T::cast(object_);
-    return true;
-  }
-
- private:
-  explicit AllocationResult(AllocationSpace space)
-      : object_(Smi::FromInt(static_cast<int>(space))) {}
-
-  Object object_;
-};
-
-STATIC_ASSERT(sizeof(AllocationResult) == kSystemPointerSize);
-
 #ifdef DEBUG
 struct CommentStatistic {
   const char* comment;
@@ -269,8 +232,6 @@ struct CommentStatistic {
 using EphemeronRememberedSet =
     std::unordered_map<EphemeronHashTable, std::unordered_set<int>,
                        Object::Hasher>;
-
-using CollectionEpoch = uint32_t;
 
 class Heap {
  public:
@@ -485,12 +446,8 @@ class Heap {
   }
 
   static inline GarbageCollector YoungGenerationCollector() {
-#if ENABLE_MINOR_MC
     return (FLAG_minor_mc) ? GarbageCollector::MINOR_MARK_COMPACTOR
                            : GarbageCollector::SCAVENGER;
-#else
-    return GarbageCollector::SCAVENGER;
-#endif  // ENABLE_MINOR_MC
   }
 
   static inline const char* CollectorName(GarbageCollector collector) {
@@ -549,8 +506,6 @@ class Heap {
   void NotifyBootstrapComplete();
 
   void NotifyOldGenerationExpansion(AllocationSpace space, MemoryChunk* chunk);
-
-  void UpdateCurrentEpoch(GarbageCollector collector);
 
   inline Address* NewSpaceAllocationTopAddress();
   inline Address* NewSpaceAllocationLimitAddress();
@@ -651,9 +606,6 @@ class Heap {
   bool AllowedToBeMigrated(Map map, HeapObject object, AllocationSpace dest);
 
   void CheckHandleCount();
-
-  // Number of "runtime allocations" done so far.
-  uint32_t allocations_count() { return allocations_count_; }
 
   // Print short heap statistics.
   void PrintShortHeapStatistics();
@@ -805,12 +757,6 @@ class Heap {
   V8_EXPORT_PRIVATE void AddRetainedMap(Handle<NativeContext> context,
                                         Handle<Map> map);
 
-  // This event is triggered after successful allocation of a new object made
-  // by runtime. Allocations of target space for object evacuation do not
-  // trigger the event. In order to track ALL allocations one must turn off
-  // FLAG_inline_new.
-  inline void OnAllocationEvent(HeapObject object, int size_in_bytes);
-
   // This event is triggered after object is moved to a new place.
   void OnMoveEvent(HeapObject target, HeapObject source, int size_in_bytes);
 
@@ -924,16 +870,21 @@ class Heap {
   }
 
   MinorMarkCompactCollector* minor_mark_compact_collector() {
-    return minor_mark_compact_collector_;
+    return minor_mark_compact_collector_.get();
   }
 
   ArrayBufferSweeper* array_buffer_sweeper() {
     return array_buffer_sweeper_.get();
   }
 
+  // The potentially overreserved address space region reserved by the code
+  // range if it exists or empty region otherwise.
   const base::AddressRegion& code_region();
 
   CodeRange* code_range() { return code_range_.get(); }
+
+  // The base of the code range if it exists or null address.
+  inline Address code_range_base();
 
   LocalHeap* main_thread_local_heap() { return main_thread_local_heap_; }
 
@@ -1005,9 +956,6 @@ class Heap {
   // ===========================================================================
   // Inline allocation. ========================================================
   // ===========================================================================
-
-  // Indicates whether inline bump-pointer allocation has been disabled.
-  bool inline_allocation_disabled() { return inline_allocation_disabled_; }
 
   // Switch whether inline bump-pointer allocation should be used.
   V8_EXPORT_PRIVATE void EnableInlineAllocation();
@@ -1170,6 +1118,9 @@ class Heap {
   // - or it was communicated to GC using NotifyObjectLayoutChange.
   V8_EXPORT_PRIVATE void VerifyObjectLayoutChange(HeapObject object,
                                                   Map new_map);
+  // Checks that this is a safe map transition.
+  V8_EXPORT_PRIVATE void VerifySafeMapTransition(HeapObject object,
+                                                 Map new_map);
 #endif
 
   // ===========================================================================
@@ -1672,16 +1623,13 @@ class Heap {
 
   static Isolate* GetIsolateFromWritableObject(HeapObject object);
 
-  CollectionEpoch epoch_young() { return epoch_young_; }
-  CollectionEpoch epoch_full() { return epoch_full_; }
-
-  void UpdateEpochFull();
-
   // Ensure that we have swept all spaces in such a way that we can iterate
   // over all objects.
   void MakeHeapIterable();
 
  private:
+  class AllocationTrackerForDebugging;
+
   using ExternalStringTableUpdaterCallback = String (*)(Heap* heap,
                                                         FullObjectSlot pointer);
 
@@ -1816,7 +1764,8 @@ class Heap {
   // Performs garbage collection in a safepoint.
   // Returns the number of freed global handles.
   size_t PerformGarbageCollection(
-      GarbageCollector collector,
+      GarbageCollector collector, GarbageCollectionReason gc_reason,
+      const char* collector_reason,
       const GCCallbackFlags gc_callback_flags = kNoGCCallbackFlags);
 
   // Performs garbage collection in the shared heap.
@@ -1893,9 +1842,6 @@ class Heap {
                                 double deadline_in_ms);
 
   int NextAllocationTimeout(int current_timeout = 0);
-  inline void UpdateAllocationsHash(HeapObject object);
-  inline void UpdateAllocationsHash(uint32_t value);
-  void PrintAllocationsHash();
 
   void PrintMaxMarkingLimitReached();
   void PrintMaxNewSpaceSizeReached();
@@ -1952,7 +1898,8 @@ class Heap {
 
   // Code that should be run before and after each GC.  Includes some
   // reporting/verification activities when compiled with DEBUG set.
-  void GarbageCollectionPrologue();
+  void GarbageCollectionPrologue(GarbageCollectionReason gc_reason,
+                                 const v8::GCCallbackFlags gc_callback_flags);
   void GarbageCollectionPrologueInSafepoint();
   void GarbageCollectionEpilogue(GarbageCollector collector);
   void GarbageCollectionEpilogueInSafepoint(GarbageCollector collector);
@@ -2102,19 +2049,26 @@ class Heap {
   // hardware and OS allow.  This is the single choke-point for allocations
   // performed by the runtime and should not be bypassed (to extend this to
   // inlined allocations, use the Heap::DisableInlineAllocation() support).
-  V8_WARN_UNUSED_RESULT inline AllocationResult AllocateRaw(
-      int size_in_bytes, AllocationType allocation,
-      AllocationOrigin origin = AllocationOrigin::kRuntime,
-      AllocationAlignment alignment = kTaggedAligned);
+  V8_WARN_UNUSED_RESULT V8_INLINE AllocationResult
+  AllocateRaw(int size_in_bytes, AllocationType allocation,
+              AllocationOrigin origin = AllocationOrigin::kRuntime,
+              AllocationAlignment alignment = kTaggedAligned);
+
+  // Allocates an uninitialized large object. Used as dispatch by
+  // `AllocateRaw()` for large objects. Do not call this from anywhere else.
+  V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT AllocationResult
+  AllocateRawLargeInternal(int size_in_bytes, AllocationType allocation,
+                           AllocationOrigin origin = AllocationOrigin::kRuntime,
+                           AllocationAlignment alignment = kTaggedAligned);
 
   // This method will try to allocate objects quickly (AllocationType::kYoung)
   // otherwise it falls back to a slower path indicated by the mode.
   enum AllocationRetryMode { kLightRetry, kRetryOrFail };
   template <AllocationRetryMode mode>
-  V8_WARN_UNUSED_RESULT inline HeapObject AllocateRawWith(
-      int size, AllocationType allocation,
-      AllocationOrigin origin = AllocationOrigin::kRuntime,
-      AllocationAlignment alignment = kTaggedAligned);
+  V8_WARN_UNUSED_RESULT V8_INLINE HeapObject
+  AllocateRawWith(int size, AllocationType allocation,
+                  AllocationOrigin origin = AllocationOrigin::kRuntime,
+                  AllocationAlignment alignment = kTaggedAligned);
 
   // Call AllocateRawWith with kRetryOrFail. Matches the method in LocalHeap.
   V8_WARN_UNUSED_RESULT inline Address AllocateRawOrFail(
@@ -2183,6 +2137,8 @@ class Heap {
   AllocationType allocation_type_for_in_place_internalizable_strings() const {
     return allocation_type_for_in_place_internalizable_strings_;
   }
+
+  bool IsStressingScavenge();
 
   ExternalMemoryAccounting external_memory_;
 
@@ -2281,12 +2237,6 @@ class Heap {
   // Returns the amount of external memory registered since last global gc.
   V8_EXPORT_PRIVATE uint64_t AllocatedExternalMemorySinceMarkCompact();
 
-  // How many "runtime allocations" happened.
-  uint32_t allocations_count_ = 0;
-
-  // Running hash over allocations performed.
-  uint32_t raw_allocations_hash_ = 0;
-
   // Starts marking when stress_marking_percentage_% of the marking start limit
   // is reached.
   std::atomic<int> stress_marking_percentage_{0};
@@ -2325,10 +2275,6 @@ class Heap {
   // generation and on every allocation in large object space.
   std::atomic<size_t> old_generation_allocation_limit_{0};
   size_t global_allocation_limit_ = 0;
-
-  // Indicates that inline bump-pointer allocation has been globally disabled
-  // for all spaces. This is used to disable allocations in generated code.
-  bool inline_allocation_disabled_ = false;
 
   // Weak list heads, threaded through the objects.
   // List heads are initialized lazily and contain the undefined_value at start.
@@ -2374,7 +2320,7 @@ class Heap {
 
   std::unique_ptr<GCTracer> tracer_;
   std::unique_ptr<MarkCompactCollector> mark_compact_collector_;
-  MinorMarkCompactCollector* minor_mark_compact_collector_ = nullptr;
+  std::unique_ptr<MinorMarkCompactCollector> minor_mark_compact_collector_;
   std::unique_ptr<ScavengerCollector> scavenger_collector_;
   std::unique_ptr<ArrayBufferSweeper> array_buffer_sweeper_;
 
@@ -2391,6 +2337,8 @@ class Heap {
   std::unique_ptr<AllocationObserver> stress_concurrent_allocation_observer_;
   std::unique_ptr<LocalEmbedderHeapTracer> local_embedder_heap_tracer_;
   std::unique_ptr<MarkingBarrier> marking_barrier_;
+  std::unique_ptr<AllocationTrackerForDebugging>
+      allocation_tracker_for_debugging_;
 
   // This object controls virtual space reserved for code on the V8 heap. This
   // is only valid for 64-bit architectures where kRequiresCodeRange.
@@ -2513,11 +2461,6 @@ class Heap {
   bool is_finalization_registry_cleanup_task_posted_ = false;
 
   std::unique_ptr<third_party_heap::Heap> tp_heap_;
-
-  // We need two epochs, since there can be scavenges during incremental
-  // marking.
-  CollectionEpoch epoch_young_ = 0;
-  CollectionEpoch epoch_full_ = 0;
 
   // Classes in "heap" can be friends.
   friend class AlwaysAllocateScope;

@@ -19,22 +19,22 @@ namespace internal {
 // Disable the code for older versions of gcc that don't support many of the required avx512 instrinsics.
 #if EIGEN_GNUC_AT_LEAST(5, 3) || EIGEN_COMP_CLANG  || EIGEN_COMP_MSVC >= 1923
 
-#define _EIGEN_DECLARE_CONST_Packet16f(NAME, X) \
+#define EIGEN_DECLARE_CONST_Packet16f(NAME, X) \
   const Packet16f p16f_##NAME = pset1<Packet16f>(X)
 
-#define _EIGEN_DECLARE_CONST_Packet16f_FROM_INT(NAME, X) \
+#define EIGEN_DECLARE_CONST_Packet16f_FROM_INT(NAME, X) \
   const Packet16f p16f_##NAME =  preinterpret<Packet16f,Packet16i>(pset1<Packet16i>(X))
 
-#define _EIGEN_DECLARE_CONST_Packet8d(NAME, X) \
+#define EIGEN_DECLARE_CONST_Packet8d(NAME, X) \
   const Packet8d p8d_##NAME = pset1<Packet8d>(X)
 
-#define _EIGEN_DECLARE_CONST_Packet8d_FROM_INT64(NAME, X) \
+#define EIGEN_DECLARE_CONST_Packet8d_FROM_INT64(NAME, X) \
   const Packet8d p8d_##NAME = _mm512_castsi512_pd(_mm512_set1_epi64(X))
 
-#define _EIGEN_DECLARE_CONST_Packet16bf(NAME, X) \
+#define EIGEN_DECLARE_CONST_Packet16bf(NAME, X) \
   const Packet16bf p16bf_##NAME = pset1<Packet16bf>(X)
 
-#define _EIGEN_DECLARE_CONST_Packet16bf_FROM_INT(NAME, X) \
+#define EIGEN_DECLARE_CONST_Packet16bf_FROM_INT(NAME, X) \
   const Packet16bf p16bf_##NAME =  preinterpret<Packet16bf,Packet16i>(pset1<Packet16i>(X))
 
 template <>
@@ -73,21 +73,21 @@ BF16_PACKET_FUNCTION(Packet16f, Packet16bf, plog2)
 template <>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED Packet16f
 pexp<Packet16f>(const Packet16f& _x) {
-  _EIGEN_DECLARE_CONST_Packet16f(1, 1.0f);
-  _EIGEN_DECLARE_CONST_Packet16f(half, 0.5f);
-  _EIGEN_DECLARE_CONST_Packet16f(127, 127.0f);
+  EIGEN_DECLARE_CONST_Packet16f(1, 1.0f);
+  EIGEN_DECLARE_CONST_Packet16f(half, 0.5f);
+  EIGEN_DECLARE_CONST_Packet16f(127, 127.0f);
 
-  _EIGEN_DECLARE_CONST_Packet16f(exp_hi, 88.3762626647950f);
-  _EIGEN_DECLARE_CONST_Packet16f(exp_lo, -88.3762626647949f);
+  EIGEN_DECLARE_CONST_Packet16f(exp_hi, 88.3762626647950f);
+  EIGEN_DECLARE_CONST_Packet16f(exp_lo, -88.3762626647949f);
 
-  _EIGEN_DECLARE_CONST_Packet16f(cephes_LOG2EF, 1.44269504088896341f);
+  EIGEN_DECLARE_CONST_Packet16f(cephes_LOG2EF, 1.44269504088896341f);
 
-  _EIGEN_DECLARE_CONST_Packet16f(cephes_exp_p0, 1.9875691500E-4f);
-  _EIGEN_DECLARE_CONST_Packet16f(cephes_exp_p1, 1.3981999507E-3f);
-  _EIGEN_DECLARE_CONST_Packet16f(cephes_exp_p2, 8.3334519073E-3f);
-  _EIGEN_DECLARE_CONST_Packet16f(cephes_exp_p3, 4.1665795894E-2f);
-  _EIGEN_DECLARE_CONST_Packet16f(cephes_exp_p4, 1.6666665459E-1f);
-  _EIGEN_DECLARE_CONST_Packet16f(cephes_exp_p5, 5.0000001201E-1f);
+  EIGEN_DECLARE_CONST_Packet16f(cephes_exp_p0, 1.9875691500E-4f);
+  EIGEN_DECLARE_CONST_Packet16f(cephes_exp_p1, 1.3981999507E-3f);
+  EIGEN_DECLARE_CONST_Packet16f(cephes_exp_p2, 8.3334519073E-3f);
+  EIGEN_DECLARE_CONST_Packet16f(cephes_exp_p3, 4.1665795894E-2f);
+  EIGEN_DECLARE_CONST_Packet16f(cephes_exp_p4, 1.6666665459E-1f);
+  EIGEN_DECLARE_CONST_Packet16f(cephes_exp_p5, 5.0000001201E-1f);
 
   // Clamp x.
   Packet16f x = pmax(pmin(_x, p16f_exp_hi), p16f_exp_lo);
@@ -98,7 +98,7 @@ pexp<Packet16f>(const Packet16f& _x) {
 
   // Get r = x - m*ln(2). Note that we can do this without losing more than one
   // ulp precision due to the FMA instruction.
-  _EIGEN_DECLARE_CONST_Packet16f(nln2, -0.6931471805599453f);
+  EIGEN_DECLARE_CONST_Packet16f(nln2, -0.6931471805599453f);
   Packet16f r = _mm512_fmadd_ps(m, p16f_nln2, x);
   Packet16f r2 = pmul(r, r);
   Packet16f r3 = pmul(r2, r);
@@ -227,9 +227,9 @@ EIGEN_STRONG_INLINE Packet16f prsqrt<Packet16f>(const Packet16f& x) {
 template <>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED Packet16f
 prsqrt<Packet16f>(const Packet16f& _x) {
-  _EIGEN_DECLARE_CONST_Packet16f_FROM_INT(inf, 0x7f800000);
-  _EIGEN_DECLARE_CONST_Packet16f(one_point_five, 1.5f);
-  _EIGEN_DECLARE_CONST_Packet16f(minus_half, -0.5f);
+  EIGEN_DECLARE_CONST_Packet16f_FROM_INT(inf, 0x7f800000);
+  EIGEN_DECLARE_CONST_Packet16f(one_point_five, 1.5f);
+  EIGEN_DECLARE_CONST_Packet16f(minus_half, -0.5f);
 
   Packet16f neg_half = pmul(_x, p16f_minus_half);
 
@@ -253,13 +253,6 @@ prsqrt<Packet16f>(const Packet16f& _x) {
   // return rsqrt(+inf) = 0, rsqrt(x) = NaN if x < 0, and rsqrt(0) = +inf.
   return _mm512_mask_blend_ps(not_finite_pos_mask, y_newton, y_approx);
 }
-#else
-
-template <>
-EIGEN_STRONG_INLINE Packet16f prsqrt<Packet16f>(const Packet16f& x) {
-  _EIGEN_DECLARE_CONST_Packet16f(one, 1.0f);
-  return _mm512_div_ps(p16f_one, _mm512_sqrt_ps(x));
-}
 #endif
 
 F16_PACKET_FUNCTION(Packet16f, Packet16h, prsqrt)
@@ -270,9 +263,9 @@ BF16_PACKET_FUNCTION(Packet16f, Packet16bf, prsqrt)
 template <>
 EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED Packet8d
 prsqrt<Packet8d>(const Packet8d& _x) {
-  _EIGEN_DECLARE_CONST_Packet8d(one_point_five, 1.5);
-  _EIGEN_DECLARE_CONST_Packet8d(minus_half, -0.5);
-  _EIGEN_DECLARE_CONST_Packet8d_FROM_INT64(inf, 0x7ff0000000000000LL);
+  EIGEN_DECLARE_CONST_Packet8d(one_point_five, 1.5);
+  EIGEN_DECLARE_CONST_Packet8d(minus_half, -0.5);
+  EIGEN_DECLARE_CONST_Packet8d_FROM_INT64(inf, 0x7ff0000000000000LL);
 
   Packet8d neg_half = pmul(_x, p8d_minus_half);
 
@@ -304,12 +297,17 @@ prsqrt<Packet8d>(const Packet8d& _x) {
   // return rsqrt(+inf) = 0, rsqrt(x) = NaN if x < 0, and rsqrt(0) = +inf.
   return _mm512_mask_blend_pd(not_finite_pos_mask, y_newton, y_approx);
 }
+
+template<> EIGEN_STRONG_INLINE Packet16f preciprocal<Packet16f>(const Packet16f& a) {
+#ifdef EIGEN_VECTORIZE_AVX512ER
+  return _mm512_rcp28_ps(a));
 #else
-template <>
-EIGEN_STRONG_INLINE Packet8d prsqrt<Packet8d>(const Packet8d& x) {
-  _EIGEN_DECLARE_CONST_Packet8d(one, 1.0f);
-  return _mm512_div_pd(p8d_one, _mm512_sqrt_pd(x));
+  return generic_reciprocal_newton_step<Packet16f, /*Steps=*/1>::run(a, _mm512_rcp14_ps(a));
+#endif
 }
+
+F16_PACKET_FUNCTION(Packet16f, Packet16h, preciprocal)
+BF16_PACKET_FUNCTION(Packet16f, Packet16bf, preciprocal)
 #endif
 
 template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED

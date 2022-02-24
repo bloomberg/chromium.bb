@@ -19,6 +19,7 @@
 #include "experimental/graphite/src/DrawList.h"
 #include "experimental/graphite/src/Gpu.h"
 #include "experimental/graphite/src/Log.h"
+#include "experimental/graphite/src/RecorderPriv.h"
 #include "experimental/graphite/src/ResourceProvider.h"
 #include "experimental/graphite/src/Texture.h"
 #include "experimental/graphite/src/TextureProxy.h"
@@ -46,7 +47,7 @@ namespace {
 static const SkStrokeRec kFillStyle(SkStrokeRec::kFill_InitStyle);
 
 bool paint_depends_on_dst(const PaintParams& paintParams) {
-    skstd::optional<SkBlendMode> bm = paintParams.asBlendMode();
+    std::optional<SkBlendMode> bm = paintParams.asBlendMode();
     if (!bm.has_value()) {
         return true;
     }
@@ -121,9 +122,10 @@ sk_sp<Device> Device::Make(Recorder* recorder, const SkImageInfo& ii) {
     if (!recorder) {
         return nullptr;
     }
-    const Gpu* gpu = recorder->context()->priv().gpu();
-    auto textureInfo = gpu->caps()->getDefaultSampledTextureInfo(ii.colorType(), /*levelCount=*/1,
-                                                                 Protected::kNo, Renderable::kYes);
+    auto textureInfo = recorder->priv().caps()->getDefaultSampledTextureInfo(ii.colorType(),
+                                                                             /*levelCount=*/1,
+                                                                             Protected::kNo,
+                                                                             Renderable::kYes);
     sk_sp<TextureProxy> target(new TextureProxy(ii.dimensions(), textureInfo));
     return Make(recorder,
                 std::move(target),
@@ -191,16 +193,20 @@ bool Device::onReadPixels(const SkPixmap& pm, int x, int y) {
     return false;
 }
 
-bool Device::readPixels(Context* context, const SkPixmap& pm, int x, int y) {
+bool Device::readPixels(Context* context,
+                        Recorder* recorder,
+                        const SkPixmap& pm,
+                        int x,
+                        int y) {
     // TODO: Support more formats that we can read back into
     if (pm.colorType() != kRGBA_8888_SkColorType) {
         return false;
     }
 
-    auto resourceProvider = context->priv().resourceProvider();
+    ResourceProvider* resourceProvider = recorder->priv().resourceProvider();
 
     TextureProxy* srcProxy = fDC->target();
-    if(!srcProxy->instantiate(resourceProvider)) {
+    if (!srcProxy->instantiate(resourceProvider)) {
         return false;
     }
     sk_sp<Texture> srcTexture = srcProxy->refTexture();
@@ -227,7 +233,7 @@ bool Device::readPixels(Context* context, const SkPixmap& pm, int x, int y) {
     }
 
     this->flushPendingWorkToRecorder();
-    fRecorder->add(std::move(task));
+    fRecorder->priv().add(std::move(task));
 
     // TODO: Can snapping ever fail?
     context->insertRecording(fRecorder->snap());
@@ -238,6 +244,12 @@ bool Device::readPixels(Context* context, const SkPixmap& pm, int x, int y) {
     memcpy(pm.writable_addr(), mappedMemory, size);
 
     return true;
+}
+
+bool Device::onWritePixels(const SkPixmap& pm, int x, int y) {
+    this->flushPendingWorkToRecorder();
+
+    return fDC->writePixels(fRecorder, pm, {x, y});
 }
 
 SkIRect Device::onDevClipBounds() const {
@@ -463,11 +475,16 @@ void Device::flushPendingWorkToRecorder() {
     // TODO: we may need to further split this function up since device->device drawList and
     // DrawPass stealing will need to share some of the same logic w/o becoming a Task.
 
+    auto uploadTask = fDC->snapUploadTask(fRecorder);
+    if (uploadTask) {
+        fRecorder->priv().add(std::move(uploadTask));
+    }
+
     // TODO: iterate the clip stack and issue a depth-only draw for every clip element that has
     // a non-empty usage bounds, using that bounds as the scissor.
     auto drawTask = fDC->snapRenderPassTask(fRecorder, fColorDepthBoundsManager.get());
     if (drawTask) {
-        fRecorder->add(std::move(drawTask));
+        fRecorder->priv().add(std::move(drawTask));
     }
 
     // Reset accumulated state tracking since everything that it referred to has been moved into

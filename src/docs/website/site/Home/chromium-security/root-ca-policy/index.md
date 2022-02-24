@@ -105,30 +105,11 @@ supports, in order to minimize compatibility issues.
 For the inclusion of new CA certificates, priority is given to CAs in the
 following order, in order to minimize disruption or risks to Chrome users:
 
-    CAs that are widely trusted, and which are replacing older certificates with
-    certificates and key material created within the past five years, and have
-    an unbroken sequence of annual audits where these certificates and key
-    material are explicitly listed in scope.
-
-    CAs whose certificates and certificate hierarchy are only used to issue TLS
-    server certificates, and do not issue other forms of certificates.
-
-    CAs that have undergone a widely-recognized public discussion process
-    regarding their CP, CPS, audits, and practices. At this time, the only
-    discussion process recognized as acceptable is the discussion process
-    operated by Mozilla on behalf of the open-source community at
-    [mozilla.dev.security.policy](https://www.mozilla.org/en-US/about/forums/#dev-security-policy).
-
-    CAs that maintain sole control over all CA key material within their CA
-    certificate hierarchy, and include their entire certificate hierarchy within
-    a single audit scope.
-
-    CAs that have been annually audited according to both of the “WebTrust
-    Principles and Criteria for Certification Authorities” and the “WebTrust
-    Principles and Criteria for Certification Authorities - SSL Baseline With
-    Network Security”. Other audit criteria may be accepted on a discretionary
-    basis, but Chrome will prioritize audits conducted according to both of
-    these criteria.
+- CAs that are widely trusted, and which are replacing older certificates with certificates and key material created within the past five years, and have an unbroken sequence of annual audits where these certificates and key material are explicitly listed in scope.
+- CAs whose certificates and certificate hierarchy are only used to issue TLS server certificates, and do not issue other forms of certificates.
+- CAs that have undergone a widely-recognized public discussion process regarding their CP, CPS, audits, and practices. At this time, the only discussion process recognized as acceptable is the discussion process operated by Mozilla on behalf of the open-source community at [mozilla.dev.security.policy](https://www.mozilla.org/en-US/about/forums/#dev-security-policy).
+- CAs that maintain sole control over all CA key material within their CA certificate hierarchy, and include their entire certificate hierarchy within a single audit scope.
+- CAs that have been annually audited according to both of the “WebTrust Principles and Criteria for Certification Authorities” and the “WebTrust Principles and Criteria for Certification Authorities - SSL Baseline With Network Security”. Other audit criteria may be accepted on a discretionary basis, but Chrome will prioritize audits conducted according to both of these criteria.
 
 Certification Authorities that do not meet all of the above criteria will be
 dealt with on a case-by-case basis. Note that the above requirements are

@@ -87,7 +87,7 @@ To convert a .pdb file to a .sym file:
 2.  Download
             [dump_syms.exe](http://google-breakpad.googlecode.com/svn/trunk/src/tools/windows/binaries/dump_syms.exe).
 3.  Run: dump_syms foo.pdb &gt; foo.sym
-    *   If no error messages, then you are done.
+    *   If no error messages, then go to the last step
     *   If you get: CoCreateInstance CLSID_DiaSource failed (msdia80.dll
                 unregistered?), go to step 4.
 4.  Get a copy of msdia80.dll and put it in c:\\Program Files\\Common
@@ -96,6 +96,22 @@ To convert a .pdb file to a .sym file:
             Files\\Microsoft Shared\\VC\\msdia80.dll.
     *   On success, retry step 3.
     *   If you get error 0x80004005, you did not run as Administrator.
+6.  Create a symbol-server directory layout
+    1.  Find the GUID/age descriptor (printed on the "No symbols" line
+                if symbols can't be found)
+    2.  Create a directory of the form symbols/foo.pdb/GUIDandAge,
+                similar to symbol-server layout, and put foo.sym in that
+                directory. Note that the directory name is foo.pdb but the file
+                name is foo.sym. For instance:
+        *   0x7ff77ead0000 - 0x7ff77eb6efff main.exe ??? (main)
+                    (WARNING: No symbols, main.pdb,
+                    B7B61AB08C8345248B45D99552B0100C1)
+        *   mkdir -p symbols/main.pdb/B7B61AB08C8345248B45D99552B0100C1
+        *   cp main.sym
+                    symbols/main.pdb/B7B61AB08C8345248B45D99552B0100C1
+    3.  Run minidump_stackwalk on Linux specifying the crash dump and
+                the symbols directory:
+        *   minidump_stackwalk foo.dmp symbols
 
 ### Decoding Mac crash dumps
 

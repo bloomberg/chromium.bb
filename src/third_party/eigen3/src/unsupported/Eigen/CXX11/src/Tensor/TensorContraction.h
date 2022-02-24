@@ -36,8 +36,8 @@ struct traits<TensorContractionOp<Dimensions, LhsXprType, RhsXprType, OutputKern
                                       typename traits<RhsXprType>::Index>::type Index;
   typedef typename LhsXprType::Nested LhsNested;
   typedef typename RhsXprType::Nested RhsNested;
-  typedef typename remove_reference<LhsNested>::type _LhsNested;
-  typedef typename remove_reference<RhsNested>::type _RhsNested;
+  typedef typename remove_reference<LhsNested>::type LhsNested_;
+  typedef typename remove_reference<RhsNested>::type RhsNested_;
 
   // From NumDims below.
   static const int NumDimensions = traits<LhsXprType>::NumDimensions + traits<RhsXprType>::NumDimensions - 2 * array_size<Dimensions>::value;

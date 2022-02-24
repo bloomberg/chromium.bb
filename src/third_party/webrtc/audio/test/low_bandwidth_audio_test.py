@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 # Copyright (c) 2017 The WebRTC project authors. All Rights Reserved.
 #
 # Use of this source code is governed by a BSD-style license
@@ -179,6 +179,7 @@ def _RunPesq(executable_path,
   # 'path/to', PESQ crashes.
   out = subprocess.check_output(_LogCommand(command),
                                 cwd=directory,
+                                universal_newlines=True,
                                 stderr=subprocess.STDOUT)
 
   # Find the scores in stdout of PESQ.
@@ -198,6 +199,7 @@ def _RunPolqa(executable_path, reference_file, degraded_file):
       degraded_file
   ]
   process = subprocess.Popen(_LogCommand(command),
+                             universal_newlines=True,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
   out, err = process.communicate()
@@ -267,7 +269,9 @@ def _ConfigurePythonPath(args):
 
 
 def main():
-  logging.basicConfig(level=logging.INFO)
+  logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s',
+                      level=logging.INFO,
+                      datefmt='%Y-%m-%d %H:%M:%S')
   logging.info('Invoked with %s', str(sys.argv))
 
   args = _ParseArgs()
@@ -292,6 +296,9 @@ def main():
   else:
     test_command = [os.path.join(args.build_dir, 'low_bandwidth_audio_test')]
 
+  if args.isolated_script_test_output:
+    test_command += ['--gtest_output=json:' + args.isolated_script_test_output]
+
   analyzers = [Analyzer('pesq', _RunPesq, pesq_path, 16000)]
   # Check if POLQA can run at all, or skip the 48 kHz tests entirely.
   example_path = os.path.join(SRC_DIR, 'resources', 'voice_engine',
@@ -306,6 +313,7 @@ def main():
         '--sample_rate_hz=%d' % analyzer.sample_rate_hz,
         '--test_case_prefix=%s' % analyzer.name,
     ] + args.extra_test_args),
+                                    universal_newlines=True,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
     perf_results_file = None
@@ -331,13 +339,13 @@ def main():
 
         analyzer_results = analyzer.func(analyzer.executable, reference_file,
                                          degraded_file)
-        for metric, (value, units) in analyzer_results.items():
+        for metric, (value, units) in list(analyzer_results.items()):
           hist = histograms.CreateHistogram(metric, units, [value])
           user_story = generic_set.GenericSet([test_name])
           hist.diagnostics[reserved_infos.STORIES.name] = user_story
 
           # Output human readable results.
-          print 'RESULT %s: %s= %s %s' % (metric, test_name, value, units)
+          print('RESULT %s: %s= %s %s' % (metric, test_name, value, units))
 
         if args.remove:
           os.remove(reference_file)
@@ -357,10 +365,6 @@ def main():
   if args.isolated_script_test_perf_output:
     with open(args.isolated_script_test_perf_output, 'wb') as f:
       f.write(histograms.AsProto().SerializeToString())
-
-  if args.isolated_script_test_output:
-    with open(args.isolated_script_test_output, 'w') as f:
-      json.dump({"version": 3}, f)
 
   return test_process.wait()
 

@@ -847,17 +847,27 @@ namespace skvm {
     }
 
     F32 Builder::approx_pow2(F32 x) {
+        constexpr float kInfinityBits = 0x7f800000;
+
         F32 f = fract(x);
         F32 approx = add(x,         121.274057500f);
             approx = sub(approx, mul( 1.490129070f, f));
             approx = add(approx, div(27.728023300f, sub(4.84252568f, f)));
+            approx = mul(1.0f * (1<<23), approx);
+            approx = clamp(approx, 0, kInfinityBits);  // guard against underflow/overflow
 
-        return pun_to_F32(round(mul(1.0f * (1<<23), approx)));
+        return pun_to_F32(round(approx));
     }
 
     F32 Builder::approx_powf(F32 x, F32 y) {
         // TODO: assert this instead?  Sometimes x is very slightly negative.  See skia:10210.
         x = max(0.0f, x);
+
+        if (this->isImm(x.id, 1.0f)) { return x; }                    // 1^y is one
+        if (this->isImm(x.id, 2.0f)) { return this->approx_pow2(y); } // 2^y is pow2(y)
+        if (this->isImm(y.id, 0.5f)) { return this->sqrt(x); }        // x^0.5 is sqrt(x)
+        if (this->isImm(y.id, 1.0f)) { return x; }                    // x^1 is x
+        if (this->isImm(y.id, 2.0f)) { return x * x; }                // x^2 is x*x
 
         auto is_x = bit_or(eq(x, 0.0f),
                            eq(x, 1.0f));
@@ -1193,8 +1203,9 @@ namespace skvm {
             case kA16_float_SkColorType:    return {FLOAT,  0, 0,0,16, 0, 0,0,0};
             case kR16G16_float_SkColorType: return {FLOAT, 16,16,0, 0, 0,16,0,0};
 
-            case kAlpha_8_SkColorType: return {UNORM, 0,0,0,8, 0,0,0,0};
-            case kGray_8_SkColorType:  return {UNORM, 8,8,8,0, 0,0,0,0};  // Subtle.
+            case kAlpha_8_SkColorType:  return {UNORM, 0,0,0,8, 0,0,0,0};
+            case kGray_8_SkColorType:   return {UNORM, 8,8,8,0, 0,0,0,0};  // Subtle.
+            case kR8_unorm_SkColorType: return {UNORM, 8,0,0,0, 0,0,0,0};
 
             case kRGB_565_SkColorType:   return {UNORM, 5,6,5,0, 11,5,0,0};  // (BGR)
             case kARGB_4444_SkColorType: return {UNORM, 4,4,4,4, 12,8,4,0};  // (ABGR)

@@ -31,7 +31,9 @@ SingleEntryPoint::SingleEntryPoint() = default;
 
 SingleEntryPoint::~SingleEntryPoint() = default;
 
-void SingleEntryPoint::Run(CloneContext& ctx, const DataMap& inputs, DataMap&) {
+void SingleEntryPoint::Run(CloneContext& ctx,
+                           const DataMap& inputs,
+                           DataMap&) const {
   auto* cfg = inputs.Get<Config>();
   if (cfg == nullptr) {
     ctx.dst->Diagnostics().add_error(
@@ -75,19 +77,15 @@ void SingleEntryPoint::Run(CloneContext& ctx, const DataMap& inputs, DataMap&) {
       ctx.dst->AST().AddTypeDecl(ctx.Clone(ty));
     } else if (auto* var = decl->As<ast::Variable>()) {
       if (referenced_vars.count(var)) {
-        if (var->is_const) {
-          if (auto* deco = ast::GetDecoration<ast::OverrideDecoration>(
-                  var->decorations)) {
-            // It is an overridable constant
-            if (!deco->has_value) {
-              // If the decoration doesn't have numeric ID specified explicitly
-              // Make their ids explicitly assigned in the decoration so that
-              // they won't be affected by other stripped away constants
-              auto* global = sem.Get(var)->As<sem::GlobalVariable>();
-              const auto* new_deco =
-                  ctx.dst->Override(deco->source, global->ConstantId());
-              ctx.Replace(deco, new_deco);
-            }
+        if (var->is_overridable) {
+          // It is an overridable constant
+          if (!ast::HasAttribute<ast::IdAttribute>(var->attributes)) {
+            // If the constant doesn't already have an @id() attribute, add one
+            // so that its allocated ID so that it won't be affected by other
+            // stripped away constants
+            auto* global = sem.Get(var)->As<sem::GlobalVariable>();
+            const auto* id = ctx.dst->Id(global->ConstantId());
+            ctx.InsertFront(var->attributes, id);
           }
         }
         ctx.dst->AST().AddGlobalVariable(ctx.Clone(var));
@@ -105,11 +103,6 @@ void SingleEntryPoint::Run(CloneContext& ctx, const DataMap& inputs, DataMap&) {
 
   // Clone the entry point.
   ctx.dst->AST().AddFunction(ctx.Clone(entry_point));
-
-  // Retain the list of applied transforms.
-  // We need to do this manually since we are not going to use the top-level
-  // ctx.Clone() function.
-  ctx.dst->SetTransformApplied(ctx.src->TransformsApplied());
 }
 
 SingleEntryPoint::Config::Config(std::string entry_point)

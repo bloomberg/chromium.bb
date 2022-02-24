@@ -67,7 +67,7 @@ var (
 	globalRuleCounter  = 0
 )
 
-// Holds all the information about a wgsl rule
+// Holds all the information about a WGSL rule
 type rule struct {
 	Number      int    // The index of this obj in an array of 'rules'
 	Section     int    // The section this rule belongs to
@@ -75,7 +75,7 @@ type rule struct {
 	URL         string // The section's URL of this rule
 	Description string // The rule's description
 	TestName    string // The suggested test name to use when writing CTS
-	Keyword     string // The keyword eg. MUST, ALGORITHM, ..., ie. Indicating why the rule is added
+	Keyword     string // The keyword e.g. MUST, ALGORITHM, ..., i.e. Indicating why the rule is added
 	Desc        []string
 	Sha         string
 }
@@ -127,6 +127,10 @@ if file extension is 'tsv' the output format will be a tab separated file
 if file extension is 'json' the output format will be json
 if omitted, a human readable version of the rules is written to stdout`)
 
+	testNameFilter := flag.String("test-name-filter", "",
+		`if provided will be used to filter reported rules based on if their name
+contains the provided string`)
+
 	flag.Parse()
 
 	args := flag.Args()
@@ -149,10 +153,13 @@ if omitted, a human readable version of the rules is written to stdout`)
 	rules := parser.rules
 
 	if *ctsDir != "" {
-		getUnimplementedTestPlan(*parser, *ctsDir)
+		err := getUnimplementedTestPlan(*parser, *ctsDir)
+		if err != nil {
+			return err
+		}
 	}
 
-	txt, tsv := concatRules(rules)
+	txt, tsv := concatRules(rules, *testNameFilter)
 	// if no output then write rules to stdout
 	if *output == "" {
 		fmt.Println(txt)
@@ -175,7 +182,7 @@ if omitted, a human readable version of the rules is written to stdout`)
 
 // getSectionRange scans all the rules and returns the rule index interval of a given section.
 // The sections range is the interval: rules[start:end].
-// example: section = [x, y, z] ie. x.y.z(.w)* it returns (start = min(w),end = max(w))
+// example: section = [x, y, z] i.e. x.y.z(.w)* it returns (start = min(w),end = max(w))
 // if there are no rules extracted from x.y.z it returns (-1, -1)
 func getSectionRange(rules []rule, s []int) (start, end int, err error) {
 	start = -1
@@ -222,7 +229,7 @@ func getSectionRange(rules []rule, s []int) (start, end int, err error) {
 	return start, end, nil
 }
 
-// parseSection return the numbers for any dot-seprated string of numbers
+// parseSection return the numbers for any dot-separated string of numbers
 // example: x.y.z.w returns [x, y, z, w]
 // returns an error if the string does not match "^\d(.\d)*$"
 func parseSection(in string) ([]int, error) {
@@ -238,13 +245,20 @@ func parseSection(in string) ([]int, error) {
 	return out, nil
 }
 
-// concatRules concatnate rule slice to and makes two string output
-// txt is a human readable string
-// tsv is a tab saparated string
-func concatRules(rules []rule) (string, string) {
+// concatRules concatenate rules slice to make two string outputs;
+//   txt, a human-readable string
+//   tsv, a tab separated string
+// If testNameFilter is a non-empty string, then only rules whose TestName
+// contains the string are included
+func concatRules(rules []rule, testNameFilter string) (string, string) {
 	txtLines := []string{}
 	tsvLines := []string{"Number\tUniqueId\tSection\tURL\tDescription\tProposed Test Name\tkeyword"}
+
 	for _, r := range rules {
+		if testNameFilter != "" && !strings.Contains(r.TestName, testNameFilter) {
+			continue
+		}
+
 		txtLines = append(txtLines, strings.Join([]string{
 			"Rule Number " + strconv.Itoa(r.Number) + ":",
 			"Unique Id: " + r.Sha,
@@ -365,7 +379,7 @@ func parseSpec(args []string) (*html.Node, error) {
 
 // containsKeyword returns (true, 'kw'), if input string 'data' contains an
 // element of the string list, otherwise it returns (false, "")
-// search is not case sensitive
+// search is not case-sensitive
 func containsKeyword(data string, list []string) (bool, string) {
 	for _, kw := range list {
 		if strings.Contains(
@@ -378,7 +392,7 @@ func containsKeyword(data string, list []string) (bool, string) {
 	return false, ""
 }
 
-// parser holds the information extracted from the spec
+// Parser holds the information extracted from the spec
 // TODO(sarahM0): https://bugs.c/tint/1149/ clean up the vars holding section information
 type Parser struct {
 	rules                      []rule // a slice to store the rules extracted from the spec
@@ -398,9 +412,9 @@ func (p *Parser) getRules(node *html.Node) error {
 	section, subSection, err := getSectionInfo(node)
 
 	if err != nil {
-		//skip this node and move on to its children
+		// skip this node and move on to its children
 	} else {
-		// Do not generate rules for introdoctory sections
+		// Do not generate rules for introductory sections
 		if section > 2 {
 			// Check if this node is visited before. This is necessary since
 			// sometimes to create rule description we visit siblings or children
@@ -435,7 +449,7 @@ func (p *Parser) getRules(node *html.Node) error {
 	return nil
 }
 
-// gatherKeyworkRules scans the HTML node data, adds a new rules if it contains one
+// gatherKeywordRules scans the HTML node data, adds a new rules if it contains one
 // of the keywords
 func (p *Parser) getKeywordRule(node *html.Node, section int, subSection string) error {
 	if node.Type != html.TextNode {
@@ -503,7 +517,7 @@ func getNodeData(node *html.Node) string {
 
 // getAlgorithmRules scans the HTML node for blocks that
 // contain an 'algorithm' class, populating the rule slice.
-// ie. <tr algorithm=...> and <p algorithm=...>
+// i.e. <tr algorithm=...> and <p algorithm=...>
 func (p *Parser) getAlgorithmRule(node *html.Node, section int, subSection string) error {
 	if !hasClass(node, "algorithm") {
 		return nil
@@ -783,7 +797,7 @@ func printNodeText(node *html.Node, sb *strings.Builder) {
 }
 
 // getNodeAttrValue scans attributes of 'node' and returns the value of attribute 'key'
-// or an empty string if 'node' doesn't have attribute 'key'
+// or an empty string if 'node' doesn't have an attribute 'key'
 func getNodeAttrValue(node *html.Node, key string) string {
 	for _, attr := range node.Attr {
 		if attr.Key == key {

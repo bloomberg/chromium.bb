@@ -1556,7 +1556,8 @@ class RaggedTensor(composite_tensor.CompositeTensor,
                                f"{old_row_length} vs. {size}.")
         partition._uniform_row_length = ops.convert_to_tensor(size, dtype)
         if partition._nrows is None:
-          partition._nrows = array_ops.size(partition._row_splits) - 1
+          partition._nrows = array_ops.size(
+              partition._row_splits, out_type=dtype) - 1
 
     # Inner dimensions
     flat_shape = tensor_shape.as_shape([None] + shape[self.ragged_rank + 1:])
@@ -2103,7 +2104,8 @@ class RaggedTensor(composite_tensor.CompositeTensor,
     # rank=row.rank+1.
     #
     # Manually set dtype as numpy now complains when given ragged rows.
-    dtype = np.object if any(len(row) != len(rows[0]) for row in rows) else None
+    has_variable_length_rows = any(len(row) != len(rows[0]) for row in rows)
+    dtype = np.object_ if has_variable_length_rows else None
     return np.array(rows, dtype=dtype)
 
   def to_list(self):

@@ -44,18 +44,18 @@ function runShaderTest(
     struct Constants {
       zero: u32;
     };
-    [[group(1), binding(0)]] var<uniform> constants: Constants;
+    @group(1) @binding(0) var<uniform> constants: Constants;
 
     struct Result {
       value: u32;
     };
-    [[group(1), binding(1)]] var<storage, write> result: Result;
+    @group(1) @binding(1) var<storage, write> result: Result;
 
     ${testSource}
 
-    [[stage(compute), workgroup_size(1)]]
+    @stage(compute) @workgroup_size(1)
     fn main() {
-      ignore(constants.zero); // Ensure constants buffer is statically-accessed
+      _ = constants.zero; // Ensure constants buffer is statically-accessed
       result.value = runTest();
     }`;
 
@@ -214,7 +214,7 @@ g.test('linear_memory')
           struct TestData {
             data: ${type};
           };
-          [[group(0), binding(0)]] var<${qualifiers}> s: TestData;`;
+          @group(0) @binding(0) var<${qualifiers}> s: TestData;`;
 
           testGroupBGLEntires.push({
             binding: 0,

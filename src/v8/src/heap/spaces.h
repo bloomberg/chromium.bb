@@ -195,8 +195,6 @@ class V8_EXPORT_PRIVATE Space : public BaseSpace {
 #endif
 
  protected:
-  int allocation_observers_paused_depth_ = 0;
-
   AllocationCounter allocation_counter_;
 
   // The List manages the pages that belong to the given space.
@@ -476,6 +474,7 @@ class SpaceWithLinearArea : public Space {
                                                    size_t allocation_size);
 
   void MarkLabStartInitialized();
+  virtual void FreeLinearAllocationArea() = 0;
 
   // When allocation observers are active we may use a lower limit to allow the
   // observers to 'interrupt' earlier than the natural limit. Given a linear
@@ -486,13 +485,17 @@ class SpaceWithLinearArea : public Space {
   V8_EXPORT_PRIVATE virtual void UpdateInlineAllocationLimit(
       size_t min_size) = 0;
 
-  V8_EXPORT_PRIVATE void UpdateAllocationOrigins(AllocationOrigin origin);
+  void DisableInlineAllocation();
+  void EnableInlineAllocation();
+  bool IsInlineAllocationEnabled() const { return use_lab_; }
 
   void PrintAllocationsOrigins();
 
  protected:
-  // TODO(ofrobots): make these private after refactoring is complete.
+  V8_EXPORT_PRIVATE void UpdateAllocationOrigins(AllocationOrigin origin);
+
   LinearAllocationArea* const allocation_info_;
+  bool use_lab_ = true;
 
   size_t allocations_origins_[static_cast<int>(
       AllocationOrigin::kNumberOfAllocationOrigins)] = {0};

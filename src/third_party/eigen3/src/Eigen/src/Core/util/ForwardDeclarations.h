@@ -42,6 +42,11 @@ template<typename T> struct evaluator_traits;
 
 template< typename T> struct evaluator;
 
+template<typename T> struct has_trivially_copyable_storage
+{
+  static const bool value = false;
+};
+
 } // end namespace internal
 
 template<typename T> struct NumTraits;
@@ -78,7 +83,6 @@ template<typename MatrixType> class Transpose;
 template<typename MatrixType> class Conjugate;
 template<typename NullaryOp, typename MatrixType>         class CwiseNullaryOp;
 template<typename UnaryOp,   typename MatrixType>         class CwiseUnaryOp;
-template<typename ViewOp,    typename MatrixType>         class CwiseUnaryView;
 template<typename BinaryOp,  typename Lhs, typename Rhs>  class CwiseBinaryOp;
 template<typename TernaryOp, typename Arg1, typename Arg2, typename Arg3>  class CwiseTernaryOp;
 template<typename Decomposition, typename Rhstype>        class Solve;
@@ -87,7 +91,7 @@ template<typename XprType>                                class Inverse;
 template<typename Lhs, typename Rhs, int Option = DefaultProduct> class Product;
 
 template<typename Derived> class DiagonalBase;
-template<typename _DiagonalVectorType> class DiagonalWrapper;
+template<typename DiagonalVectorType_> class DiagonalWrapper;
 template<typename Scalar_, int SizeAtCompileTime, int MaxSizeAtCompileTime=SizeAtCompileTime> class DiagonalMatrix;
 template<typename MatrixType, typename DiagonalType, int ProductOrder> class DiagonalProduct;
 template<typename MatrixType, int Index = 0> class Diagonal;
@@ -108,6 +112,7 @@ template<typename MatrixType, int MapOptions=Unaligned, typename StrideType = St
 template<typename Derived> class RefBase;
 template<typename PlainObjectType, int Options = 0,
          typename StrideType = typename internal::conditional<PlainObjectType::IsVectorAtCompileTime,InnerStride<1>,OuterStride<> >::type > class Ref;
+template<typename ViewOp,    typename MatrixType, typename StrideType = Stride<0,0>>         class CwiseUnaryView;
 
 template<typename Derived> class TriangularBase;
 template<typename MatrixType, unsigned int Mode> class TriangularView;
@@ -272,8 +277,8 @@ template<typename Scalar,int Dim> class Translation;
 template<typename Scalar,int Dim> class AlignedBox;
 template<typename Scalar, int Options = AutoAlign> class Quaternion;
 template<typename Scalar,int Dim,int Mode,int Options_=AutoAlign> class Transform;
-template <typename Scalar_, int _AmbientDim, int Options=AutoAlign> class ParametrizedLine;
-template <typename Scalar_, int _AmbientDim, int Options=AutoAlign> class Hyperplane;
+template <typename Scalar_, int AmbientDim_, int Options=AutoAlign> class ParametrizedLine;
+template <typename Scalar_, int AmbientDim_, int Options=AutoAlign> class Hyperplane;
 template<typename Scalar> class UniformScaling;
 template<typename MatrixType,int Direction> class Homogeneous;
 

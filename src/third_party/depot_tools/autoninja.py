@@ -51,7 +51,7 @@ for index, arg in enumerate(input_args[1:]):
   elif arg.startswith('-C'):
     # Support -Cout/Default
     output_dir = arg[2:]
-  elif arg == '-o' or arg == '--offline':
+  elif arg in ('-o', '--offline'):
     offline = True
   elif arg == '-h':
     print('autoninja: Use -o/--offline to temporary disable goma.',
@@ -59,7 +59,7 @@ for index, arg in enumerate(input_args[1:]):
     print(file=sys.stderr)
 
 # Strip -o/--offline so ninja doesn't see them.
-input_args = [ arg for arg in input_args if arg != '-o' and arg != '--offline']
+input_args = [ arg for arg in input_args if arg not in ('-o', '--offline')]
 
 use_goma = False
 use_remoteexec = False

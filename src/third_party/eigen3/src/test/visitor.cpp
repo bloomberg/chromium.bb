@@ -21,7 +21,7 @@ template<typename MatrixType> void matrixVisitor(const MatrixType& p)
   m = MatrixType::Random(rows, cols);
   for(Index i = 0; i < m.size(); i++)
     for(Index i2 = 0; i2 < i; i2++)
-      while(m(i) == m(i2)) // yes, ==
+      while(numext::equal_strict(m(i), m(i2))) // yes, strict equality
         m(i) = internal::random<Scalar>();
   
   Scalar minc = Scalar(1000), maxc = Scalar(-1000);

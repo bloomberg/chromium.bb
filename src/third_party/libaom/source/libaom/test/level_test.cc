@@ -149,6 +149,17 @@ TEST_P(LevelTest, TestTargetLevel0) {
   }
 }
 
+TEST_P(LevelTest, TestTargetLevelRecode) {
+  if (cpu_used_ == 4 && encoding_mode_ == ::libaom_test::kTwoPassGood) {
+    libaom_test::I420VideoSource video("rand_noise_w1280h720.yuv", 1280, 720,
+                                       25, 1, 0, 10);
+    const int target_level = 0005;
+    target_level_ = target_level;
+    cfg_.rc_target_bitrate = 5000;
+    ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+  }
+}
+
 AV1_INSTANTIATE_TEST_SUITE(LevelTest,
                            ::testing::Values(::libaom_test::kTwoPassGood,
                                              ::libaom_test::kOnePassGood),

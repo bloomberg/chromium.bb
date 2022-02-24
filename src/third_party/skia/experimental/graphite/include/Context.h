@@ -13,15 +13,15 @@
 #include "include/core/SkRefCnt.h"
 #include "include/core/SkShader.h"
 #include "include/core/SkTileMode.h"
+#include "include/private/SkNoncopyable.h"
 
 #include "experimental/graphite/include/GraphiteTypes.h"
-
-class SkShaderCodeDictionary;
 
 namespace skgpu {
 
 class BackendTexture;
 class ContextPriv;
+class GlobalCache;
 class Gpu;
 class Recorder;
 class Recording;
@@ -53,12 +53,17 @@ struct PaintCombo {
     std::vector<SkBlendMode> fBlendModes;
 };
 
-class Context final : public SkRefCnt {
+class Context final {
 public:
-    ~Context() override;
+    Context(const Context&) = delete;
+    Context(Context&&) = delete;
+    Context& operator=(const Context&) = delete;
+    Context& operator=(Context&&) = delete;
+
+    ~Context();
 
 #ifdef SK_METAL
-    static sk_sp<Context> MakeMetal(const skgpu::mtl::BackendContext&);
+    static std::unique_ptr<Context> MakeMetal(const skgpu::mtl::BackendContext&);
 #endif
 
     BackendApi backend() const { return fBackend; }
@@ -103,8 +108,8 @@ private:
 
     std::vector<std::unique_ptr<Recording>> fRecordings;
     sk_sp<Gpu> fGpu;
+    sk_sp<GlobalCache> fGlobalCache;
     BackendApi fBackend;
-    std::unique_ptr<SkShaderCodeDictionary> fShaderCodeDictionary;
 };
 
 } // namespace skgpu

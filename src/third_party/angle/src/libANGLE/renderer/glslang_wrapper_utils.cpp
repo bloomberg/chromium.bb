@@ -18,6 +18,7 @@
 #include "common/utilities.h"
 #include "libANGLE/Caps.h"
 #include "libANGLE/ProgramLinkedResources.h"
+#include "libANGLE/renderer/ShaderInterfaceVariableInfoMap.h"
 #include "libANGLE/trace.h"
 
 namespace spirv = angle::spirv;
@@ -134,7 +135,13 @@ ShaderInterfaceVariableInfo *AddLocationInfo(ShaderInterfaceVariableInfoMap *inf
 
     ASSERT(info.descriptorSet == ShaderInterfaceVariableInfo::kInvalid);
     ASSERT(info.binding == ShaderInterfaceVariableInfo::kInvalid);
-    ASSERT(info.location == ShaderInterfaceVariableInfo::kInvalid);
+    if (info.location != ShaderInterfaceVariableInfo::kInvalid)
+    {
+        // TODO: Correctly support in and out interface variables with identical name.
+        // anglebug.com/4524
+        ASSERT(info.location == location);
+        ASSERT(info.component == component);
+    }
     ASSERT(info.component == ShaderInterfaceVariableInfo::kInvalid);
 
     info.location  = location;
@@ -1115,11 +1122,14 @@ class SpirvIDDiscoverer final : angle::NonCopyable
 
     // gl_PerVertex is unique in that it's the only builtin of struct type.  This struct is pruned
     // by removing trailing inactive members.  We therefore need to keep track of what's its type id
-    // as well as which is the last active member.  Note that intermediate stages, i.e. geometry and
-    // tessellation have two gl_PerVertex declarations, one for input and one for output.
+    // as well as which is the last active member. In the case of gl_PerVertex being used in an
+    // array, we also need to keep track of the array's id. Note that intermediate stages, i.e.
+    // geometry and tessellation have two gl_PerVertex declarations, one for input and one for
+    // output.
     struct PerVertexData
     {
         spirv::IdRef typeId;
+        spirv::IdRef arrayId;
         uint32_t maxActiveMember;
     };
     PerVertexData mOutputPerVertex;
@@ -1246,6 +1256,16 @@ void SpirvIDDiscoverer::visitTypeArray(spirv::IdResult id,
                                        spirv::IdRef length)
 {
     visitTypeHelper(id, elementType);
+    // In the case of a gl_PerVertex block being used in an array (gl_in/gl_out), save the id of the
+    // array
+    if (elementType == mOutputPerVertex.typeId)
+    {
+        mOutputPerVertex.arrayId = id;
+    }
+    else if (elementType == mInputPerVertex.typeId)
+    {
+        mInputPerVertex.arrayId = id;
+    }
 }
 
 void SpirvIDDiscoverer::visitTypeFloat(spirv::IdResult id, spirv::LiteralInteger width)
@@ -1286,19 +1306,25 @@ void SpirvIDDiscoverer::visitTypePointer(spirv::IdResult id,
 {
     visitTypeHelper(id, typeId);
 
+    // Check if the type is a gl_PerVertex block or an array of gl_PerVertex blocks
+    bool isOutputPerVertex =
+        (typeId == mOutputPerVertex.typeId || typeId == mOutputPerVertex.arrayId);
+    bool isInputPerVertex = (typeId == mInputPerVertex.typeId || typeId == mInputPerVertex.arrayId);
+
     // Verify that the ids associated with input and output gl_PerVertex are correct.
-    if (typeId == mOutputPerVertex.typeId || typeId == mInputPerVertex.typeId)
+    if (isOutputPerVertex || isInputPerVertex)
     {
         // If assumption about the first gl_PerVertex encountered being Output is wrong, swap the
         // two ids.
-        if ((typeId == mOutputPerVertex.typeId && storageClass == spv::StorageClassInput) ||
-            (typeId == mInputPerVertex.typeId && storageClass == spv::StorageClassOutput))
+        if ((isOutputPerVertex && storageClass == spv::StorageClassInput) ||
+            (isInputPerVertex && storageClass == spv::StorageClassOutput))
         {
             std::swap(mOutputPerVertex.typeId, mInputPerVertex.typeId);
+            std::swap(mOutputPerVertex.arrayId, mInputPerVertex.arrayId);
         }
 
-        // Remember type pointer of output gl_PerVertex for gl_Position transformations.
-        if (storageClass == spv::StorageClassOutput)
+        // Remember type pointer of output gl_PerVertex for gl_Position transformations
+        if (typeId == mOutputPerVertex.typeId)
         {
             mOutputPerVertexTypePointerId = id;
         }
@@ -4682,72 +4708,6 @@ UniformBindingInfo::UniformBindingInfo(uint32_t bindingIndex,
 {}
 
 UniformBindingInfo::UniformBindingInfo() {}
-
-// ShaderInterfaceVariableInfo implementation.
-ShaderInterfaceVariableInfo::ShaderInterfaceVariableInfo() {}
-
-// ShaderInterfaceVariableInfoMap implementation.
-ShaderInterfaceVariableInfoMap::ShaderInterfaceVariableInfoMap() = default;
-
-ShaderInterfaceVariableInfoMap::~ShaderInterfaceVariableInfoMap() = default;
-
-void ShaderInterfaceVariableInfoMap::clear()
-{
-    for (VariableNameToInfoMap &shaderMap : mData)
-    {
-        shaderMap.clear();
-    }
-}
-
-bool ShaderInterfaceVariableInfoMap::contains(gl::ShaderType shaderType,
-                                              const std::string &variableName) const
-{
-    return mData[shaderType].find(variableName) != mData[shaderType].end();
-}
-
-const ShaderInterfaceVariableInfo &ShaderInterfaceVariableInfoMap::get(
-    gl::ShaderType shaderType,
-    const std::string &variableName) const
-{
-    auto it = mData[shaderType].find(variableName);
-    ASSERT(it != mData[shaderType].end());
-    return it->second;
-}
-
-ShaderInterfaceVariableInfo &ShaderInterfaceVariableInfoMap::get(gl::ShaderType shaderType,
-                                                                 const std::string &variableName)
-{
-    auto it = mData[shaderType].find(variableName);
-    ASSERT(it != mData[shaderType].end());
-    return it->second;
-}
-
-void ShaderInterfaceVariableInfoMap::markAsDuplicate(gl::ShaderType shaderType,
-                                                     const std::string &variableName)
-{
-    ASSERT(contains(shaderType, variableName));
-    mData[shaderType][variableName].isDuplicate = true;
-}
-
-ShaderInterfaceVariableInfo &ShaderInterfaceVariableInfoMap::add(gl::ShaderType shaderType,
-                                                                 const std::string &variableName)
-{
-    ASSERT(!contains(shaderType, variableName));
-    return mData[shaderType][variableName];
-}
-
-ShaderInterfaceVariableInfo &ShaderInterfaceVariableInfoMap::addOrGet(
-    gl::ShaderType shaderType,
-    const std::string &variableName)
-{
-    return mData[shaderType][variableName];
-}
-
-ShaderInterfaceVariableInfoMap::Iterator ShaderInterfaceVariableInfoMap::getIterator(
-    gl::ShaderType shaderType) const
-{
-    return Iterator(mData[shaderType].begin(), mData[shaderType].end());
-}
 
 // Strip indices from the name.  If there are non-zero indices, return false to indicate that this
 // image uniform doesn't require set/binding.  That is done on index 0.

@@ -31,6 +31,7 @@ from third_party import colorama
 
 if sys.version_info.major == 2:
   # On Python 3, BrokenPipeError is raised instead.
+  # pylint:disable=redefined-builtin
   BrokenPipeError = IOError
 
 
@@ -68,7 +69,7 @@ def _print_help(outbuf):
 
 
 def _color_branch(branch, all_branches, all_tags, current):
-  if branch == current or branch == 'HEAD -> ' + current:
+  if branch in (current, 'HEAD -> ' + current):
     color = CYAN
     current = None
   elif branch in all_branches:

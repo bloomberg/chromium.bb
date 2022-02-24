@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env vpython3
+
 # Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
 #
 # Use of this source code is governed by a BSD-style license
@@ -11,10 +12,7 @@
 
 import ast
 import json
-try:
-  from StringIO import StringIO  # for Python2
-except ImportError:
-  from io import StringIO  # for Python3
+from io import StringIO  # for Python3
 import os
 import re
 import sys
@@ -35,14 +33,14 @@ class FakeMBW(mb.MetaBuildWrapper):
       self.default_isolate_map = ('c:\\fake_src\\testing\\buildbot\\'
                                   'gn_isolate_map.pyl')
       self.platform = 'win32'
-      self.executable = 'c:\\python\\python.exe'
+      self.executable = 'c:\\python\\vpython3.exe'
       self.sep = '\\'
       self.cwd = 'c:\\fake_src\\out\\Default'
     else:
       self.src_dir = '/fake_src'
       self.default_config = '/fake_src/tools_webrtc/mb/mb_config.pyl'
       self.default_isolate_map = '/fake_src/testing/buildbot/gn_isolate_map.pyl'
-      self.executable = '/usr/bin/python'
+      self.executable = '/usr/bin/vpython3'
       self.platform = 'linux2'
       self.sep = '/'
       self.cwd = '/fake_src/out/Default'
@@ -197,7 +195,7 @@ class UnitTest(unittest.TestCase):
         mbw.ToAbsPath('//build/args/bots/fake_group/fake_args_bot.gn'),
         'is_debug = false\n')
     if files:
-      for path, contents in files.items():
+      for path, contents in list(files.items()):
         mbw.files[path] = contents
     return mbw
 
@@ -350,10 +348,10 @@ class UnitTest(unittest.TestCase):
     files = isolate_file_contents['variables']['files']
     command = isolate_file_contents['variables']['command']
 
-    self.assertEqual(files, ['../../.vpython', '../../testing/test_env.py',
+    self.assertEqual(files, ['../../.vpython3', '../../testing/test_env.py',
                              'base_unittests'])
     self.assertEqual(command, [
-        'vpython',
+        'vpython3',
         '../../build/android/test_wrapper/logdog_wrapper.py',
         '--target',
         'base_unittests',
@@ -389,10 +387,10 @@ class UnitTest(unittest.TestCase):
     files = isolate_file_contents['variables']['files']
     command = isolate_file_contents['variables']['command']
 
-    self.assertEqual(files, ['../../.vpython', '../../testing/test_env.py',
+    self.assertEqual(files, ['../../.vpython3', '../../testing/test_env.py',
                              'base_unittests'])
     self.assertEqual(command, [
-        'vpython',
+        'vpython3',
         '../../build/android/test_wrapper/logdog_wrapper.py',
         '--target',
         'base_unittests',
@@ -430,7 +428,7 @@ class UnitTest(unittest.TestCase):
     command = isolate_file_contents['variables']['command']
 
     self.assertEqual(files, [
-        '../../.vpython',
+        '../../.vpython3',
         '../../testing/test_env.py',
         '../../third_party/gtest-parallel/gtest-parallel',
         '../../third_party/gtest-parallel/gtest_parallel.py',
@@ -438,11 +436,10 @@ class UnitTest(unittest.TestCase):
         'base_unittests',
     ])
     self.assertEqual(command, [
-        'vpython',
+        'vpython3',
         '../../testing/test_env.py',
         '../../tools_webrtc/gtest-parallel-wrapper.py',
         '--output_dir=${ISOLATED_OUTDIR}/test_logs',
-        '--dump_json_test_results=${ISOLATED_OUTDIR}/gtest_output.json',
         '--gtest_color=no',
         '--timeout=500',
         '--workers=1',
@@ -483,11 +480,11 @@ class UnitTest(unittest.TestCase):
     command = isolate_file_contents['variables']['command']
 
     self.assertEqual(files, [
-        '../../.vpython', '../../testing/test_env.py',
+        '../../.vpython3', '../../testing/test_env.py',
         'base_unittests', 'base_unittests_script.py',
     ])
     self.assertEqual(command, [
-        'vpython',
+        'vpython3',
         '../../base/base_unittests_script.py',
     ])
 
@@ -517,15 +514,15 @@ class UnitTest(unittest.TestCase):
     command = isolate_file_contents['variables']['command']
 
     self.assertEqual(files, [
-        '../../.vpython',
+        '../../.vpython3',
         '../../testing/test_env.py',
         '../../tools_webrtc/flags_compatibility.py',
         'base_unittests',
     ])
     self.assertEqual(command, [
-        'vpython',
+        'vpython3',
         '../../tools_webrtc/flags_compatibility.py',
-        'vpython',
+        'vpython3',
         '../../testing/test_env.py',
         './base_unittests',
         '--asan=0',
@@ -560,7 +557,7 @@ class UnitTest(unittest.TestCase):
     command = isolate_file_contents['variables']['command']
 
     self.assertEqual(files, [
-        '../../.vpython',
+        '../../.vpython3',
         '../../testing/test_env.py',
         '../../third_party/gtest-parallel/gtest-parallel',
         '../../third_party/gtest-parallel/gtest_parallel.py',
@@ -568,11 +565,10 @@ class UnitTest(unittest.TestCase):
         'base_unittests',
     ])
     self.assertEqual(command, [
-        'vpython',
+        'vpython3',
         '../../testing/test_env.py',
         '../../tools_webrtc/gtest-parallel-wrapper.py',
         '--output_dir=${ISOLATED_OUTDIR}/test_logs',
-        '--dump_json_test_results=${ISOLATED_OUTDIR}/gtest_output.json',
         '--gtest_color=no',
         '--timeout=900',
         '--workers=1',
@@ -611,7 +607,7 @@ class UnitTest(unittest.TestCase):
     command = isolate_file_contents['variables']['command']
 
     self.assertEqual(files, [
-        '../../.vpython',
+        '../../.vpython3',
         '../../testing/test_env.py',
         '../../testing/xvfb.py',
         '../../third_party/gtest-parallel/gtest-parallel',
@@ -621,11 +617,10 @@ class UnitTest(unittest.TestCase):
         'some_resource_file',
     ])
     self.assertEqual(command, [
-        'vpython',
+        'vpython3',
         '../../testing/xvfb.py',
         '../../tools_webrtc/gtest-parallel-wrapper.py',
         '--output_dir=${ISOLATED_OUTDIR}/test_logs',
-        '--dump_json_test_results=${ISOLATED_OUTDIR}/gtest_output.json',
         '--gtest_color=no',
         '--timeout=900',
         '--retry_failed=3',
@@ -665,7 +660,7 @@ class UnitTest(unittest.TestCase):
     command = isolate_file_contents['variables']['command']
 
     self.assertEqual(files, [
-        '../../.vpython',
+        '../../.vpython3',
         '../../testing/test_env.py',
         '../../third_party/gtest-parallel/gtest-parallel',
         '../../third_party/gtest-parallel/gtest_parallel.py',
@@ -674,11 +669,10 @@ class UnitTest(unittest.TestCase):
         'unittests.exe',
     ])
     self.assertEqual(command, [
-        'vpython',
+        'vpython3',
         '../../testing/test_env.py',
         '../../tools_webrtc/gtest-parallel-wrapper.py',
         '--output_dir=${ISOLATED_OUTDIR}\\test_logs',
-        '--dump_json_test_results=${ISOLATED_OUTDIR}\\gtest_output.json',
         '--gtest_color=no',
         '--timeout=900',
         '--retry_failed=3',
@@ -715,7 +709,7 @@ class UnitTest(unittest.TestCase):
     command = isolate_file_contents['variables']['command']
 
     self.assertEqual(files, [
-        '../../.vpython',
+        '../../.vpython3',
         '../../testing/test_env.py',
         '../../third_party/gtest-parallel/gtest-parallel',
         '../../third_party/gtest-parallel/gtest_parallel.py',
@@ -723,11 +717,10 @@ class UnitTest(unittest.TestCase):
         'base_unittests',
     ])
     self.assertEqual(command, [
-        'vpython',
+        'vpython3',
         '../../testing/test_env.py',
         '../../tools_webrtc/gtest-parallel-wrapper.py',
         '--output_dir=${ISOLATED_OUTDIR}/test_logs',
-        '--dump_json_test_results=${ISOLATED_OUTDIR}/gtest_output.json',
         '--gtest_color=no',
         '--timeout=900',
         '--retry_failed=3',
@@ -766,7 +759,7 @@ class UnitTest(unittest.TestCase):
     command = isolate_file_contents['variables']['command']
 
     self.assertEqual(files, [
-        '../../.vpython',
+        '../../.vpython3',
         '../../testing/test_env.py',
         '../../third_party/gtest-parallel/gtest-parallel',
         '../../third_party/gtest-parallel/gtest_parallel.py',
@@ -776,13 +769,12 @@ class UnitTest(unittest.TestCase):
         'some_resource_file',
     ])
     self.assertEqual(command, [
-        'vpython',
+        'vpython3',
         '../../tools_webrtc/ensure_webcam_is_running.py',
-        'vpython',
+        'vpython3',
         '../../testing/test_env.py',
         '../../tools_webrtc/gtest-parallel-wrapper.py',
         '--output_dir=${ISOLATED_OUTDIR}/test_logs',
-        '--dump_json_test_results=${ISOLATED_OUTDIR}/gtest_output.json',
         '--gtest_color=no',
         '--timeout=900',
         '--retry_failed=3',
@@ -846,8 +838,8 @@ class UnitTest(unittest.TestCase):
         '/fake_src/out/Default/base_unittests.archive.json':
         ("{\"base_unittests\":\"fake_hash\"}"),
         '/fake_src/third_party/depot_tools/cipd_manifest.txt':
-        ("# vpython\n"
-         "/some/vpython/pkg  git_revision:deadbeef\n"),
+        ("# vpython3\n"
+         "/some/vpython3/pkg  git_revision:deadbeef\n"),
     }
     task_json = json.dumps({'tasks': [{'task_id': '00000'}]})
     collect_json = json.dumps({'00000': {'results': {}}})

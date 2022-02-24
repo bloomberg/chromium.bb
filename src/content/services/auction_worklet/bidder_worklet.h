@@ -21,6 +21,7 @@
 #include "content/services/auction_worklet/trusted_signals.h"
 #include "content/services/auction_worklet/trusted_signals_request_manager.h"
 #include "content/services/auction_worklet/worklet_loader.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
@@ -65,7 +66,7 @@ class BidderWorklet : public mojom::BidderWorklet {
   // invoked asynchronously, once a bid has been generated or a fatal error has
   // occurred.
   //
-  // Data is cached and will be reused ReportWin().
+  // Data is cached and will be reused by ReportWin().
   BidderWorklet(scoped_refptr<AuctionV8Helper> v8_helper,
                 bool pause_for_debugger_on_start,
                 mojo::PendingRemote<network::mojom::URLLoaderFactory>
@@ -94,6 +95,7 @@ class BidderWorklet : public mojom::BidderWorklet {
       mojom::BidderWorkletNonSharedParamsPtr bidder_worklet_non_shared_params,
       const absl::optional<std::string>& auction_signals_json,
       const absl::optional<std::string>& per_buyer_signals_json,
+      const absl::optional<base::TimeDelta> per_buyer_timeout,
       const url::Origin& seller_origin,
       mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
       base::Time auction_start_time,
@@ -106,9 +108,12 @@ class BidderWorklet : public mojom::BidderWorklet {
                  const GURL& browser_signal_render_url,
                  double browser_signal_bid,
                  const url::Origin& browser_signal_seller_origin,
+                 uint32_t bidding_signals_data_version,
+                 bool has_bidding_signals_data_version,
                  ReportWinCallback report_win_callback) override;
   void ConnectDevToolsAgent(
-      mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent) override;
+      mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent)
+      override;
 
  private:
   struct GenerateBidTask {
@@ -118,6 +123,7 @@ class BidderWorklet : public mojom::BidderWorklet {
     mojom::BidderWorkletNonSharedParamsPtr bidder_worklet_non_shared_params;
     absl::optional<std::string> auction_signals_json;
     absl::optional<std::string> per_buyer_signals_json;
+    absl::optional<base::TimeDelta> per_buyer_timeout;
     url::Origin seller_origin;
     mojom::BiddingBrowserSignalsPtr bidding_browser_signals;
     base::Time auction_start_time;
@@ -148,6 +154,7 @@ class BidderWorklet : public mojom::BidderWorklet {
     GURL browser_signal_render_url;
     double browser_signal_bid;
     url::Origin browser_signal_seller_origin;
+    absl::optional<uint32_t> bidding_signals_data_version;
 
     ReportWinCallback callback;
   };
@@ -170,9 +177,12 @@ class BidderWorklet : public mojom::BidderWorklet {
     // These match the mojom GenerateBidCallback / ReportWinCallback functions,
     // except the errors vectors are passed by value. They're callbacks that
     // must be invoked on the main sequence, and passed to the V8State.
-    using GenerateBidCallbackInternal =
-        base::OnceCallback<void(mojom::BidderWorkletBidPtr bid,
-                                std::vector<std::string> error_msgs)>;
+    using GenerateBidCallbackInternal = base::OnceCallback<void(
+        mojom::BidderWorkletBidPtr bid,
+        absl::optional<uint32_t> bidding_signals_data_version,
+        absl::optional<GURL> debug_loss_report_url,
+        absl::optional<GURL> debug_win_report_url,
+        std::vector<std::string> error_msgs)>;
     using ReportWinCallbackInternal =
         base::OnceCallback<void(absl::optional<GURL> report_url,
                                 std::vector<std::string> errors)>;
@@ -184,12 +194,14 @@ class BidderWorklet : public mojom::BidderWorklet {
                    const GURL& browser_signal_render_url,
                    double browser_signal_bid,
                    const url::Origin& browser_signal_seller_origin,
+                   const absl::optional<uint32_t>& bidding_signals_data_version,
                    ReportWinCallbackInternal callback);
 
     void GenerateBid(
         mojom::BidderWorkletNonSharedParamsPtr bidder_worklet_non_shared_params,
         const absl::optional<std::string>& auction_signals_json,
         const absl::optional<std::string>& per_buyer_signals_json,
+        const absl::optional<base::TimeDelta> per_buyer_timeout,
         const url::Origin& browser_signal_seller_origin,
         mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
         base::Time auction_start_time,
@@ -197,7 +209,7 @@ class BidderWorklet : public mojom::BidderWorklet {
         GenerateBidCallbackInternal callback);
 
     void ConnectDevToolsAgent(
-        mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent);
+        mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent);
 
    private:
     friend class base::DeleteHelper<V8State>;
@@ -209,6 +221,7 @@ class BidderWorklet : public mojom::BidderWorklet {
         ReportWinCallbackInternal callback,
         const absl::optional<GURL>& report_url,
         std::vector<std::string> errors);
+
     void PostErrorBidCallbackToUserThread(
         GenerateBidCallbackInternal callback,
         std::vector<std::string> error_msgs = std::vector<std::string>());
@@ -263,9 +276,13 @@ class BidderWorklet : public mojom::BidderWorklet {
 
   // Invokes the `callback` of `task` with the provided values, and removes
   // `task` from `generate_bid_tasks_`.
-  void DeliverBidCallbackOnUserThread(GenerateBidTaskList::iterator task,
-                                      mojom::BidderWorkletBidPtr bid,
-                                      std::vector<std::string> error_msgs);
+  void DeliverBidCallbackOnUserThread(
+      GenerateBidTaskList::iterator task,
+      mojom::BidderWorkletBidPtr bid,
+      absl::optional<uint32_t> bidding_signals_data_version,
+      absl::optional<GURL> debug_loss_report_url,
+      absl::optional<GURL> debug_win_report_url,
+      std::vector<std::string> error_msgs);
 
   // Invokes the `callback` of `task` with the provided values, and removes
   // `task` from `report_win_tasks_`.

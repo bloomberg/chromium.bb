@@ -73,7 +73,7 @@ function checkForUnmatchedSubtreesAndDoneness(
     alwaysExpandThroughLevel,
   })) {
     subtreeCount++;
-    const subtreeDone = !subtree.subtreeHasTODOs;
+    const subtreeDone = !subtree.subtreeCounts?.nodesWithTODO;
 
     let subtreeMatched = false;
     for (const q of matchQueries) {

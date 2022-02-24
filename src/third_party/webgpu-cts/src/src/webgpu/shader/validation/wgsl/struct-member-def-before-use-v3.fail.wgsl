@@ -12,7 +12,7 @@ fn Foo() -> goo {
   return a;
 }
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   var r : i32 = Foo().s.z;
   return;

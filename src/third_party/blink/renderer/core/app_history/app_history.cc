@@ -48,34 +48,33 @@ class NavigateReaction final : public ScriptFunction::Callable {
   static void React(ScriptState* script_state,
                     ScriptPromise promise,
                     AppHistoryApiNavigation* navigation,
-                    AppHistoryTransition* transition,
                     AbortSignal* signal,
+                    bool should_reset_focus,
                     ReactType react_type) {
     promise.Then(MakeGarbageCollected<ScriptFunction>(
                      script_state, MakeGarbageCollected<NavigateReaction>(
-                                       navigation, transition, signal,
+                                       navigation, signal, should_reset_focus,
                                        ResolveType::kFulfill, react_type)),
                  MakeGarbageCollected<ScriptFunction>(
                      script_state, MakeGarbageCollected<NavigateReaction>(
-                                       navigation, transition, signal,
+                                       navigation, signal, should_reset_focus,
                                        ResolveType::kReject, react_type)));
   }
 
   NavigateReaction(AppHistoryApiNavigation* navigation,
-                   AppHistoryTransition* transition,
                    AbortSignal* signal,
+                   bool should_reset_focus,
                    ResolveType resolve_type,
                    ReactType react_type)
       : navigation_(navigation),
-        transition_(transition),
         signal_(signal),
+        should_reset_focus_(should_reset_focus),
         resolve_type_(resolve_type),
         react_type_(react_type) {}
 
   void Trace(Visitor* visitor) const final {
     ScriptFunction::Callable::Trace(visitor);
     visitor->Trace(navigation_);
-    visitor->Trace(transition_);
     visitor->Trace(signal_);
   }
 
@@ -88,18 +87,20 @@ class NavigateReaction final : public ScriptFunction::Callable {
 
     AppHistory* app_history = AppHistory::appHistory(*window);
     app_history->ongoing_navigation_signal_ = nullptr;
+
     if (resolve_type_ == ResolveType::kFulfill) {
-      if (navigation_) {
-        navigation_->ResolveFinishedPromise();
-      }
-      app_history->DispatchEvent(
-          *Event::Create(event_type_names::kNavigatesuccess));
+      app_history->ResolvePromisesAndFireNavigateSuccessEvent(navigation_);
     } else {
-      app_history->RejectPromiseAndFireNavigateErrorEvent(navigation_, value);
+      app_history->RejectPromisesAndFireNavigateErrorEvent(navigation_, value);
     }
 
-    if (app_history->transition() == transition_) {
-      app_history->transition_ = nullptr;
+    if (should_reset_focus_) {
+      auto* document = app_history->GetSupplementable()->document();
+      if (Element* focus_delegate = document->GetAutofocusDelegate()) {
+        focus_delegate->focus();
+      } else {
+        document->ClearFocusedElement();
+      }
     }
 
     if (react_type_ == ReactType::kTransitionWhile && window->GetFrame()) {
@@ -114,8 +115,8 @@ class NavigateReaction final : public ScriptFunction::Callable {
 
  private:
   Member<AppHistoryApiNavigation> navigation_;
-  Member<AppHistoryTransition> transition_;
   Member<AbortSignal> signal_;
+  bool should_reset_focus_;
   ResolveType resolve_type_;
   ReactType react_type_;
 };
@@ -259,6 +260,7 @@ void AppHistory::CloneFromPrevious(AppHistory& previous) {
     // It's possible that |old_item| is indirectly holding a reference to
     // the old Document. Also, it has a bunch of state we don't need for a
     // non-current entry. Clone a subset of its state to a |new_item|.
+    // NOTE: values copied here should also be copied in GetEntryForRestore().
     HistoryItem* old_item = previous.entries_[i]->GetItem();
     HistoryItem* new_item = MakeGarbageCollected<HistoryItem>();
     new_item->SetItemSequenceNumber(old_item->ItemSequenceNumber());
@@ -313,12 +315,6 @@ void AppHistory::UpdateForNavigation(HistoryItem& item, WebFrameLoadType type) {
     keys_to_indices_.insert(entries_[current_index_]->key(), current_index_);
   }
 
-  auto* init = AppHistoryCurrentChangeEventInit::Create();
-  init->setNavigationType(DetermineNavigationType(type));
-  init->setFrom(old_current);
-  DispatchEvent(*AppHistoryCurrentChangeEvent::Create(
-      event_type_names::kCurrentchange, init));
-
   // It's important to do this before firing dispose events, since dispose
   // events could start another navigation or otherwise mess with
   // ongoing_navigation_.
@@ -327,9 +323,82 @@ void AppHistory::UpdateForNavigation(HistoryItem& item, WebFrameLoadType type) {
         entries_[current_index_]);
   }
 
+  auto* init = AppHistoryCurrentChangeEventInit::Create();
+  init->setNavigationType(DetermineNavigationType(type));
+  init->setFrom(old_current);
+  DispatchEvent(*AppHistoryCurrentChangeEvent::Create(
+      event_type_names::kCurrentchange, init));
+
   for (const auto& disposed_entry : disposed_entries) {
     disposed_entry->DispatchEvent(*Event::Create(event_type_names::kDispose));
   }
+}
+
+AppHistoryEntry* AppHistory::GetEntryForRestore(
+    const mojom::blink::AppHistoryEntryPtr& entry) {
+  const auto& it = keys_to_indices_.find(entry->key);
+  if (it != keys_to_indices_.end()) {
+    AppHistoryEntry* existing_entry = entries_[it->value];
+    if (existing_entry->id() == entry->id)
+      return existing_entry;
+  }
+  // NOTE: values copied here should also be copied in CloneFromPrevious().
+  // TODO(japhet): Figure out if there's a way to better share logic with
+  // CloneFromPrevious().
+  HistoryItem* item = MakeGarbageCollected<HistoryItem>();
+  item->SetItemSequenceNumber(entry->item_sequence_number);
+  item->SetDocumentSequenceNumber(entry->document_sequence_number);
+  item->SetURLString(entry->url);
+  item->SetAppHistoryKey(entry->key);
+  item->SetAppHistoryId(entry->id);
+  item->SetAppHistoryState(SerializedScriptValue::Create(entry->state));
+  return MakeGarbageCollected<AppHistoryEntry>(GetSupplementable(), item);
+}
+
+// static
+void FireDisposeEventsAsync(
+    HeapVector<Member<AppHistoryEntry>>* disposed_entries) {
+  for (const auto& entry : *disposed_entries) {
+    entry->DispatchEvent(*Event::Create(event_type_names::kDispose));
+  }
+}
+
+void AppHistory::SetEntriesForRestore(
+    const mojom::blink::AppHistoryEntryArraysPtr& entry_arrays) {
+  // If this window HasEntriesAndEventsDisabled(), we shouldn't attempt to
+  // restore anything.
+  if (HasEntriesAndEventsDisabled())
+    return;
+
+  HeapVector<Member<AppHistoryEntry>> new_entries;
+  new_entries.ReserveCapacity(
+      base::checked_cast<wtf_size_t>(entry_arrays->back_entries.size() +
+                                     entry_arrays->forward_entries.size() + 1));
+  for (const auto& item : entry_arrays->back_entries)
+    new_entries.emplace_back(GetEntryForRestore(item));
+  new_entries.emplace_back(current());
+  for (const auto& item : entry_arrays->forward_entries)
+    new_entries.emplace_back(GetEntryForRestore(item));
+
+  new_entries.swap(entries_);
+  current_index_ =
+      base::checked_cast<wtf_size_t>(entry_arrays->back_entries.size());
+  keys_to_indices_.clear();
+  PopulateKeySet();
+
+  // |new_entries| now contains the previous entries_. Find the ones that are no
+  // longer in entries_ so they can be disposed.
+  HeapVector<Member<AppHistoryEntry>>* disposed_entries =
+      MakeGarbageCollected<HeapVector<Member<AppHistoryEntry>>>();
+  for (const auto& entry : new_entries) {
+    const auto& it = keys_to_indices_.find(entry->key());
+    if (it == keys_to_indices_.end() || entries_[it->value] != entry)
+      disposed_entries->push_back(entry);
+  }
+  GetSupplementable()
+      ->GetTaskRunner(TaskType::kInternalDefault)
+      ->PostTask(FROM_HERE, WTF::Bind(&FireDisposeEventsAsync,
+                                      WrapPersistent(disposed_entries)));
 }
 
 AppHistoryEntry* AppHistory::current() const {
@@ -604,7 +673,10 @@ AppHistory::DispatchResult AppHistory::DispatchNavigateEvent(
 
   if (HasEntriesAndEventsDisabled()) {
     if (ongoing_navigation_) {
-      CleanupApiNavigation(*ongoing_navigation_);
+      // The spec only does the equivalent of CleanupApiNavigation() + resetting
+      // the state, but we need to detach promise resolvers for this case since
+      // we will never resolve the finished/committed promises.
+      ongoing_navigation_->CleanupForCrossDocument();
     }
     return DispatchResult::kContinue;
   }
@@ -680,8 +752,8 @@ AppHistory::DispatchResult AppHistory::DispatchNavigateEvent(
 
   auto promise_list = navigate_event->GetNavigationActionPromisesList();
   if (!promise_list.IsEmpty()) {
-    transition_ =
-        MakeGarbageCollected<AppHistoryTransition>(navigation_type, current());
+    transition_ = MakeGarbageCollected<AppHistoryTransition>(
+        script_state, navigation_type, current());
     // In order to handle fragment cases (especially browser-initiated ones)
     // correctly, we need state that only DocumentLoader holds. Defer to
     // DocumentLoader to run the url and history update steps for the fragment
@@ -699,9 +771,25 @@ AppHistory::DispatchResult AppHistory::DispatchNavigateEvent(
     NavigateReaction::ReactType react_type =
         promise_list.IsEmpty() ? NavigateReaction::ReactType::kImmediate
                                : NavigateReaction::ReactType::kTransitionWhile;
+
+    // There is a subtle timing difference between the fast-path for zero
+    // promises and the path for 1+ promises, in both spec and implementation.
+    // In most uses of ScriptPromise::All / the Web IDL spec's "wait for all",
+    // this does not matter. However for us there are so many events and promise
+    // handlers firing around the same time (navigatesuccess, committed promise,
+    // finished promise, ...) that the difference is pretty easily observable by
+    // web developers and web platform tests. So, let's make sure we always go
+    // down the 1+ promises path.
+    const HeapVector<ScriptPromise>& tweaked_promise_list =
+        promise_list.IsEmpty()
+            ? HeapVector<ScriptPromise>(
+                  {ScriptPromise::CastUndefined(script_state)})
+            : promise_list;
+
     NavigateReaction::React(
-        script_state, ScriptPromise::All(script_state, promise_list),
-        ongoing_navigation_, transition_, navigate_event->signal(), react_type);
+        script_state, ScriptPromise::All(script_state, tweaked_promise_list),
+        ongoing_navigation_, navigate_event->signal(),
+        navigate_event->ShouldResetFocus(), react_type);
   } else if (ongoing_navigation_) {
     // The spec assumes it's ok to leave a promise permanently unresolved, but
     // ScriptPromiseResolver requires either resolution or explicit detach.
@@ -740,12 +828,9 @@ void AppHistory::InformAboutCanceledNavigation() {
   }
 }
 
-void AppHistory::RejectPromiseAndFireNavigateErrorEvent(
+void AppHistory::RejectPromisesAndFireNavigateErrorEvent(
     AppHistoryApiNavigation* navigation,
     ScriptValue value) {
-  if (navigation)
-    navigation->RejectFinishedPromise(value);
-
   auto* isolate = GetSupplementable()->GetIsolate();
   v8::Local<v8::Message> message =
       v8::Exception::CreateMessage(isolate, value.V8Value());
@@ -756,6 +841,27 @@ void AppHistory::RejectPromiseAndFireNavigateErrorEvent(
       &DOMWrapperWorld::MainWorld());
   event->SetType(event_type_names::kNavigateerror);
   DispatchEvent(*event);
+
+  if (navigation)
+    navigation->RejectFinishedPromise(value);
+
+  if (transition_) {
+    transition_->RejectFinishedPromise(value);
+    transition_ = nullptr;
+  }
+}
+
+void AppHistory::ResolvePromisesAndFireNavigateSuccessEvent(
+    AppHistoryApiNavigation* navigation) {
+  DispatchEvent(*Event::Create(event_type_names::kNavigatesuccess));
+
+  if (navigation)
+    navigation->ResolveFinishedPromise();
+
+  if (transition_) {
+    transition_->ResolveFinishedPromise();
+    transition_ = nullptr;
+  }
 }
 
 void AppHistory::CleanupApiNavigation(AppHistoryApiNavigation& navigation) {
@@ -775,17 +881,18 @@ void AppHistory::FinalizeWithAbortedNavigationError(
     ongoing_navigate_event_->preventDefault();
     ongoing_navigate_event_ = nullptr;
   }
+
+  ScriptValue error = ScriptValue::From(
+      script_state,
+      MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
+                                         "Navigation was aborted"));
+
   if (ongoing_navigation_signal_) {
-    ongoing_navigation_signal_->SignalAbort(script_state);
+    ongoing_navigation_signal_->SignalAbort(script_state, error);
     ongoing_navigation_signal_ = nullptr;
   }
 
-  RejectPromiseAndFireNavigateErrorEvent(
-      navigation,
-      ScriptValue::From(script_state, MakeGarbageCollected<DOMException>(
-                                          DOMExceptionCode::kAbortError,
-                                          "Navigation was aborted")));
-  transition_ = nullptr;
+  RejectPromisesAndFireNavigateErrorEvent(navigation, error);
 }
 
 int AppHistory::GetIndexFor(AppHistoryEntry* entry) {

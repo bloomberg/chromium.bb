@@ -14,10 +14,6 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-config("threading_chromium_config") {
-  defines = [ "NO_MAIN_THREAD_WRAPPING" ]
-}
-
 if (!rtc_build_ssl) {
   config("external_ssl_library") {
     assert(rtc_ssl_root != "",
@@ -192,7 +188,6 @@ rtc_library("rtc_base_approved") {
 rtc_source_set("macromagic") {
   sources = [
     "arraysize.h",
-    "constructor_magic.h",
     "format_macros.h",
     "thread_annotations.h",
   ]
@@ -289,6 +284,10 @@ rtc_library("rtc_event") {
   }
 }
 
+config("chromium_logging_config") {
+  defines = [ "LOGGING_INSIDE_WEBRTC" ]
+}
+
 rtc_library("logging") {
   visibility = [ "*" ]
   libs = []
@@ -313,6 +312,13 @@ rtc_library("logging") {
       "../../webrtc_overrides/rtc_base/logging.cc",
       "../../webrtc_overrides/rtc_base/logging.h",
     ]
+
+    # This macro needs to be both present in all WebRTC targets (see its
+    # definition in //BUILD.gn but also propagated to all the targets
+    # depending on the Chromium component defined in
+    # //third_party/webrtc_overrides:webrtc_component. This public_config
+    # allows GN to propagate the macro accordingly.
+    public_configs = [ ":chromium_logging_config" ]
   } else {
     sources = [
       "logging.cc",
@@ -769,10 +775,6 @@ rtc_source_set("socket_server") {
 rtc_library("threading") {
   visibility = [ "*" ]
 
-  if (build_with_chromium) {
-    public_configs = [ ":threading_chromium_config" ]
-  }
-
   sources = [
     "async_resolver.cc",
     "async_resolver.h",
@@ -886,6 +888,7 @@ if (is_android) {
       "log",
       "GLESv2",
     ]
+    absl_deps = [ "//third_party/abseil-cpp/absl/cleanup" ]
   }
 }
 

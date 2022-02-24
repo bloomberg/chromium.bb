@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython3
 
 # Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
 #
@@ -53,7 +53,7 @@ For example:
 
 Will be converted into:
 
-  python gtest-parallel \
+  vpython3 gtest-parallel \
       --shard_index 0 \
       --shard_count 1 \
       --output_dir=SOME_OUTPUT_DIR \
@@ -82,8 +82,8 @@ Args = collections.namedtuple(
     ['gtest_parallel_args', 'test_env', 'output_dir', 'test_artifacts_dir'])
 
 
-def _CatFiles(file_list, output_file):
-  with open(output_file, 'w') as output_file:
+def _CatFiles(file_list, output_file_destination):
+  with open(output_file_destination, 'w') as output_file:
     for filename in file_list:
       with open(filename) as input_file:
         output_file.write(input_file.read())
@@ -100,7 +100,7 @@ def _ParseWorkersOption(workers):
   return max(result, 1)  # Sanitize when using e.g. '0.5x'.
 
 
-class ReconstructibleArgumentGroup(object):
+class ReconstructibleArgumentGroup:
   """An argument group that can be converted back into a command line.
 
   This acts like ArgumentParser.add_argument_group, but names of arguments added
@@ -135,9 +135,11 @@ def ParseArgs(argv=None):
   # These options will be passed unchanged to gtest-parallel.
   gtest_group.AddArgument('-d', '--output_dir')
   gtest_group.AddArgument('-r', '--repeat')
-  # TODO(webrtc:13556): use isolated-script-test-output argument instead
-  # of dump_json_test_results as it was done prior to chromium:1051927.
-  gtest_group.AddArgument('--dump_json_test_results')
+  # --isolated-script-test-output is used to upload results to the flakiness
+  # dashboard. This translation is made because gtest-parallel expects the flag
+  # to be called --dump_json_test_results instead.
+  gtest_group.AddArgument('--isolated-script-test-output',
+                          dest='dump_json_test_results')
   gtest_group.AddArgument('--retry_failed')
   gtest_group.AddArgument('--gtest_color')
   gtest_group.AddArgument('--gtest_filter')
@@ -154,7 +156,7 @@ def ParseArgs(argv=None):
   parser.add_argument('--store-test-artifacts', action='store_true')
 
   # No-sandbox is a Chromium-specific flag, ignore it.
-  # TODO(oprypin): Remove (bugs.webrtc.org/8115)
+  # TODO(bugs.webrtc.org/8115): Remove workaround when fixed.
   parser.add_argument('--no-sandbox',
                       action='store_true',
                       help=argparse.SUPPRESS)
@@ -171,7 +173,7 @@ def ParseArgs(argv=None):
   }
   args_to_pass = []
   for arg in unrecognized_args:
-    if any(arg.startswith(k) for k in webrtc_flags_to_change.keys()):
+    if any(arg.startswith(k) for k in list(webrtc_flags_to_change.keys())):
       arg_split = arg.split('=')
       args_to_pass.append(webrtc_flags_to_change[arg_split[0]] + '=' +
                           arg_split[1])
@@ -226,7 +228,7 @@ def main():
   if test_artifacts_dir and not os.path.isdir(test_artifacts_dir):
     os.makedirs(test_artifacts_dir)
 
-  print 'gtest-parallel-wrapper: Executing command %s' % ' '.join(command)
+  print('gtest-parallel-wrapper: Executing command %s' % ' '.join(command))
   sys.stdout.flush()
 
   exit_code = subprocess.call(command, env=test_env, cwd=os.getcwd())

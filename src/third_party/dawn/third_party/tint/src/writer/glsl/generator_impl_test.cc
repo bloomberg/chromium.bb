@@ -21,65 +21,78 @@ namespace {
 
 using GlslGeneratorImplTest = TestHelper;
 
-TEST_F(GlslGeneratorImplTest, ErrorIfSanitizerNotRun) {
-  auto program = std::make_unique<Program>(std::move(*this));
-  GeneratorImpl gen(program.get());
-  EXPECT_FALSE(gen.Generate());
-  EXPECT_EQ(
-      gen.error(),
-      "error: GLSL writer requires the transform::Glsl sanitizer to have been "
-      "applied to the input program");
-}
-
 TEST_F(GlslGeneratorImplTest, Generate) {
   Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
-       ast::DecorationList{});
+       ast::AttributeList{});
 
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(#version 310 es
-precision mediump float;
 
 void my_func() {
 }
+
 )");
 }
 
-struct GlslBuiltinData {
-  ast::Builtin builtin;
-  const char* attribute_name;
-};
-inline std::ostream& operator<<(std::ostream& out, GlslBuiltinData data) {
-  out << data.builtin;
-  return out;
-}
-using GlslBuiltinConversionTest = TestParamHelper<GlslBuiltinData>;
-TEST_P(GlslBuiltinConversionTest, Emit) {
-  auto params = GetParam();
-  GeneratorImpl& gen = Build();
+TEST_F(GlslGeneratorImplTest, GenerateDesktop) {
+  Func("my_func", ast::VariableList{}, ty.void_(), ast::StatementList{},
+       ast::AttributeList{});
 
-  EXPECT_EQ(gen.builtin_to_string(params.builtin, ast::PipelineStage::kVertex),
-            std::string(params.attribute_name));
+  GeneratorImpl& gen = Build(Version(Version::Standard::kDesktop, 4, 4));
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(#version 440
+
+void my_func() {
 }
-INSTANTIATE_TEST_SUITE_P(
-    GlslGeneratorImplTest,
-    GlslBuiltinConversionTest,
-    testing::Values(
-        GlslBuiltinData{ast::Builtin::kPosition, "gl_Position"},
-        GlslBuiltinData{ast::Builtin::kVertexIndex, "gl_VertexID"},
-        GlslBuiltinData{ast::Builtin::kInstanceIndex, "gl_InstanceID"},
-        GlslBuiltinData{ast::Builtin::kFrontFacing, "gl_FrontFacing"},
-        GlslBuiltinData{ast::Builtin::kFragDepth, "gl_FragDepth"},
-        GlslBuiltinData{ast::Builtin::kLocalInvocationId,
-                        "gl_LocalInvocationID"},
-        GlslBuiltinData{ast::Builtin::kLocalInvocationIndex,
-                        "gl_LocalInvocationIndex"},
-        GlslBuiltinData{ast::Builtin::kGlobalInvocationId,
-                        "gl_GlobalInvocationID"},
-        GlslBuiltinData{ast::Builtin::kWorkgroupId, "gl_WorkGroupID"},
-        GlslBuiltinData{ast::Builtin::kSampleIndex, "gl_SampleID"},
-        GlslBuiltinData{ast::Builtin::kSampleMask, "gl_SampleMask"}));
+
+)");
+}
+
+TEST_F(GlslGeneratorImplTest, GenerateSampleIndexES) {
+  Global(
+      "gl_SampleID", ty.i32(),
+      ast::AttributeList{Builtin(ast::Builtin::kSampleIndex),
+                         Disable(ast::DisabledValidation::kIgnoreStorageClass)},
+      ast::StorageClass::kInput);
+  Func("my_func", {}, ty.i32(),
+       ast::StatementList{Return(Expr("gl_SampleID"))});
+
+  GeneratorImpl& gen = Build(Version(Version::Standard::kES, 3, 1));
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(#version 310 es
+#extension GL_OES_sample_variables : require
+
+int my_func() {
+  return gl_SampleID;
+}
+
+)");
+}
+
+TEST_F(GlslGeneratorImplTest, GenerateSampleIndexDesktop) {
+  Global(
+      "gl_SampleID", ty.i32(),
+      ast::AttributeList{Builtin(ast::Builtin::kSampleIndex),
+                         Disable(ast::DisabledValidation::kIgnoreStorageClass)},
+      ast::StorageClass::kInput);
+  Func("my_func", {}, ty.i32(),
+       ast::StatementList{Return(Expr("gl_SampleID"))});
+
+  GeneratorImpl& gen = Build(Version(Version::Standard::kDesktop, 4, 4));
+
+  ASSERT_TRUE(gen.Generate()) << gen.error();
+  EXPECT_EQ(gen.result(), R"(#version 440
+
+int my_func() {
+  return gl_SampleID;
+}
+
+)");
+}
 
 }  // namespace
 }  // namespace glsl

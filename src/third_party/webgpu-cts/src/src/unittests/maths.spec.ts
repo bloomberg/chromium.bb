@@ -4,18 +4,19 @@ Util math unit tests.
 
 import { makeTestGroup } from '../common/framework/test_group.js';
 import { kBit } from '../webgpu/shader/execution/builtin/builtin.js';
-import { f32, f32Bits, Scalar } from '../webgpu/util/conversion.js';
-import { correctlyRounded, diffULP, nextAfter } from '../webgpu/util/math.js';
+import { f32, f32Bits, Scalar, u32 } from '../webgpu/util/conversion.js';
+import {
+  biasedRange,
+  correctlyRounded,
+  diffULP,
+  lerp,
+  linearRange,
+  nextAfter,
+} from '../webgpu/util/math.js';
 
 import { UnitTest } from './unit_test.js';
 
 export const g = makeTestGroup(UnitTest);
-
-interface DiffULPCase {
-  a: number;
-  b: number;
-  ulp: number;
-}
 
 /** Converts a 32-bit hex values to a 32-bit float value */
 function hexToF32(hex: number): number {
@@ -29,6 +30,27 @@ function hexToFloat64(h32: number, l32: number): number {
   u32Arr[1] = h32;
   const f64Arr = new Float64Array(u32Arr.buffer);
   return f64Arr[0];
+}
+
+/**
+ * @returns true if arrays are equal, doing element-wise comparison as needed, and considering NaNs to be equal.
+ *
+ * Depends on the correctness of diffULP, which is tested in this file.
+ **/
+function compareArrayOfNumbers(got: Array<number>, expect: Array<number>): boolean {
+  return (
+    got.length === expect.length &&
+    got.every((value, index) => {
+      const expected = expect[index];
+      return 1 >= diffULP(value, expected) || Number.isNaN(value && Number.isNaN(expected));
+    })
+  );
+}
+
+interface DiffULPCase {
+  a: number;
+  b: number;
+  ulp: number;
 }
 
 g.test('test,math,diffULP')
@@ -840,5 +862,207 @@ g.test('test,math,correctlyRoundedFlushToZeroOnly')
     t.expect(
       got === is_correct,
       `correctlyRounded(${test_val}, ${target}) returned ${got}. Expected ${is_correct}`
+    );
+  });
+
+interface lerpCase {
+  min: number;
+  max: number;
+  t: number;
+  result: number;
+}
+
+g.test('test,math,lerp')
+  .paramsSimple<lerpCase>([
+    // Infinite cases
+    { min: 0.0, max: Number.POSITIVE_INFINITY, t: 0.5, result: Number.NaN },
+    { min: Number.NEGATIVE_INFINITY, max: 1.0, t: 0.5, result: Number.NaN },
+    { min: Number.NEGATIVE_INFINITY, max: Number.POSITIVE_INFINITY, t: 0.5, result: Number.NaN },
+    { min: 0.0, max: 1.0, t: Number.NEGATIVE_INFINITY, result: Number.NaN },
+    { min: 0.0, max: 1.0, t: Number.POSITIVE_INFINITY, result: Number.NaN },
+
+    // [0.0, 1.0] cases
+    { min: 0.0, max: 1.0, t: -1.0, result: -1.0 },
+    { min: 0.0, max: 1.0, t: 0.0, result: 0.0 },
+    { min: 0.0, max: 1.0, t: 0.1, result: 0.1 },
+    { min: 0.0, max: 1.0, t: 0.01, result: 0.01 },
+    { min: 0.0, max: 1.0, t: 0.001, result: 0.001 },
+    { min: 0.0, max: 1.0, t: 0.25, result: 0.25 },
+    { min: 0.0, max: 1.0, t: 0.5, result: 0.5 },
+    { min: 0.0, max: 1.0, t: 0.9, result: 0.9 },
+    { min: 0.0, max: 1.0, t: 0.99, result: 0.99 },
+    { min: 0.0, max: 1.0, t: 0.999, result: 0.999 },
+    { min: 0.0, max: 1.0, t: 1.0, result: 1.0 },
+    { min: 0.0, max: 1.0, t: 2.0, result: 2.0 },
+
+    // [0.0, 10.0] cases
+    { min: 0.0, max: 10.0, t: -1.0, result: -10.0 },
+    { min: 0.0, max: 10.0, t: 0.0, result: 0.0 },
+    { min: 0.0, max: 10.0, t: 0.1, result: 1.0 },
+    { min: 0.0, max: 10.0, t: 0.01, result: 0.1 },
+    { min: 0.0, max: 10.0, t: 0.001, result: 0.01 },
+    { min: 0.0, max: 10.0, t: 0.25, result: 2.5 },
+    { min: 0.0, max: 10.0, t: 0.5, result: 5.0 },
+    { min: 0.0, max: 10.0, t: 0.9, result: 9.0 },
+    { min: 0.0, max: 10.0, t: 0.99, result: 9.9 },
+    { min: 0.0, max: 10.0, t: 0.999, result: 9.99 },
+    { min: 0.0, max: 10.0, t: 1.0, result: 10.0 },
+    { min: 0.0, max: 10.0, t: 2.0, result: 20.0 },
+
+    // [2.0, 10.0] cases
+    { min: 2.0, max: 10.0, t: -1.0, result: -6.0 },
+    { min: 2.0, max: 10.0, t: 0.0, result: 2.0 },
+    { min: 2.0, max: 10.0, t: 0.1, result: 2.8 },
+    { min: 2.0, max: 10.0, t: 0.01, result: 2.08 },
+    { min: 2.0, max: 10.0, t: 0.001, result: 2.008 },
+    { min: 2.0, max: 10.0, t: 0.25, result: 4.0 },
+    { min: 2.0, max: 10.0, t: 0.5, result: 6.0 },
+    { min: 2.0, max: 10.0, t: 0.9, result: 9.2 },
+    { min: 2.0, max: 10.0, t: 0.99, result: 9.92 },
+    { min: 2.0, max: 10.0, t: 0.999, result: 9.992 },
+    { min: 2.0, max: 10.0, t: 1.0, result: 10.0 },
+    { min: 2.0, max: 10.0, t: 2.0, result: 18.0 },
+
+    // [-1.0, 1.0] cases
+    { min: -1.0, max: 1.0, t: -2.0, result: -5.0 },
+    { min: -1.0, max: 1.0, t: 0.0, result: -1.0 },
+    { min: -1.0, max: 1.0, t: 0.1, result: -0.8 },
+    { min: -1.0, max: 1.0, t: 0.01, result: -0.98 },
+    { min: -1.0, max: 1.0, t: 0.001, result: -0.998 },
+    { min: -1.0, max: 1.0, t: 0.25, result: -0.5 },
+    { min: -1.0, max: 1.0, t: 0.5, result: 0.0 },
+    { min: -1.0, max: 1.0, t: 0.9, result: 0.8 },
+    { min: -1.0, max: 1.0, t: 0.99, result: 0.98 },
+    { min: -1.0, max: 1.0, t: 0.999, result: 0.998 },
+    { min: -1.0, max: 1.0, t: 1.0, result: 1.0 },
+    { min: -1.0, max: 1.0, t: 2.0, result: 3.0 },
+
+    // [-1.0, 0.0] cases
+    { min: -1.0, max: 0.0, t: -1.0, result: -2.0 },
+    { min: -1.0, max: 0.0, t: 0.0, result: -1.0 },
+    { min: -1.0, max: 0.0, t: 0.1, result: -0.9 },
+    { min: -1.0, max: 0.0, t: 0.01, result: -0.99 },
+    { min: -1.0, max: 0.0, t: 0.001, result: -0.999 },
+    { min: -1.0, max: 0.0, t: 0.25, result: -0.75 },
+    { min: -1.0, max: 0.0, t: 0.5, result: -0.5 },
+    { min: -1.0, max: 0.0, t: 0.9, result: -0.1 },
+    { min: -1.0, max: 0.0, t: 0.99, result: -0.01 },
+    { min: -1.0, max: 0.0, t: 0.999, result: -0.001 },
+    { min: -1.0, max: 0.0, t: 1.0, result: 0.0 },
+    { min: -1.0, max: 0.0, t: 2.0, result: 1.0 },
+
+    // [0.0, -1.0] cases
+    { min: 0.0, max: -1.0, t: -1.0, result: 1.0 },
+    { min: 0.0, max: -1.0, t: 0.0, result: 0.0 },
+    { min: 0.0, max: -1.0, t: 0.1, result: -0.1 },
+    { min: 0.0, max: -1.0, t: 0.01, result: -0.01 },
+    { min: 0.0, max: -1.0, t: 0.001, result: -0.001 },
+    { min: 0.0, max: -1.0, t: 0.25, result: -0.25 },
+    { min: 0.0, max: -1.0, t: 0.5, result: -0.5 },
+    { min: 0.0, max: -1.0, t: 0.9, result: -0.9 },
+    { min: 0.0, max: -1.0, t: 0.99, result: -0.99 },
+    { min: 0.0, max: -1.0, t: 0.999, result: -0.999 },
+    { min: 0.0, max: -1.0, t: 1.0, result: -1.0 },
+    { min: 0.0, max: -1.0, t: 2.0, result: -2.0 },
+  ])
+  .fn(test => {
+    const min = test.params.min;
+    const max = test.params.max;
+    const t = test.params.t;
+    const got = lerp(min, max, t);
+    const expect = test.params.result;
+
+    test.expect(
+      1 >= diffULP(got, expect) || (Number.isNaN(got) && Number.isNaN(expect)),
+      `lerp(${min}, ${max}, ${t}) returned ${got}. Expected ${expect}`
+    );
+  });
+
+interface rangeCase {
+  min: Scalar;
+  max: Scalar;
+  num_steps: Scalar;
+  result: Array<number>;
+}
+
+g.test('test,math,linearRange')
+  .paramsSimple<rangeCase>([
+    // prettier-ignore
+    { min: f32(0.0), max: f32(Number.POSITIVE_INFINITY), num_steps: u32(10), result: new Array<number>(10).fill(Number.NaN) },
+    // prettier-ignore
+    { min: f32(Number.NEGATIVE_INFINITY), max: f32(1.0), num_steps: u32(10), result: new Array<number>(10).fill(Number.NaN) },
+    // prettier-ignore
+    { min: f32(Number.NEGATIVE_INFINITY), max: f32(Number.POSITIVE_INFINITY), num_steps: u32(10), result: new Array<number>(10).fill(Number.NaN) },
+    // prettier-ignore
+    { min: f32(0.0), max: f32(0.0), num_steps: u32(10), result: new Array<number>(10).fill(0.0) },
+    // prettier-ignore
+    { min: f32(10.0), max: f32(10.0), num_steps: u32(10), result: new Array<number>(10).fill(10.0) },
+    { min: f32(0.0), max: f32(10.0), num_steps: u32(1), result: [0.0] },
+    // prettier-ignore
+    { min: f32(0.0), max: f32(10.0), num_steps: u32(11), result: [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0] },
+    // prettier-ignore
+    { min: f32(0.0), max: f32(1000.0), num_steps: u32(11), result: [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0] },
+    // prettier-ignore
+    { min: f32(1.0), max: f32(5.0), num_steps: u32(5), result: [1.0, 2.0, 3.0, 4.0, 5.0] },
+    // prettier-ignore
+    { min: f32(0.0), max: f32(1.0), num_steps: u32(11), result: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0] },
+    // prettier-ignore
+    { min: f32(0.0), max: f32(1.0), num_steps: u32(5), result: [0.0, 0.25, 0.5, 0.75, 1.0] },
+    // prettier-ignore
+    { min: f32(-1.0), max: f32(1.0), num_steps: u32(11), result: [-1.0, -0.8, -0.6, -0.4, -0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0] },
+    // prettier-ignore
+    { min: f32(-1.0), max: f32(0), num_steps: u32(11), result: [-1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0] },
+  ])
+  .fn(test => {
+    const min = test.params.min;
+    const max = test.params.max;
+    const num_steps = test.params.num_steps;
+    const got = linearRange(min, max, num_steps);
+    const expect = test.params.result;
+
+    test.expect(
+      compareArrayOfNumbers(got, expect),
+      `linearRange(${min}, ${max}, ${num_steps}) returned ${got}. Expected ${expect}`
+    );
+  });
+
+g.test('test,math,biasedRange')
+  .paramsSimple<rangeCase>([
+    // prettier-ignore
+    { min: f32(0.0), max: f32(Number.POSITIVE_INFINITY), num_steps: u32(10), result: new Array<number>(10).fill(Number.NaN) },
+    // prettier-ignore
+    { min: f32(Number.NEGATIVE_INFINITY), max: f32(1.0), num_steps: u32(10), result: new Array<number>(10).fill(Number.NaN) },
+    // prettier-ignore
+    { min: f32(Number.NEGATIVE_INFINITY), max: f32(Number.POSITIVE_INFINITY), num_steps: u32(10), result: new Array<number>(10).fill(Number.NaN) },
+    // prettier-ignore
+    { min: f32(0.0), max: f32(0.0), num_steps: u32(10), result: new Array<number>(10).fill(0.0) },
+    // prettier-ignore
+    { min: f32(10.0), max: f32(10.0), num_steps: u32(10), result: new Array<number>(10).fill(10.0) },
+    { min: f32(0.0), max: f32(10.0), num_steps: u32(1), result: [0.0] },
+    // prettier-ignore
+    { min: f32(0.0), max: f32(10.0), num_steps: u32(11), result: [0, 0.1, 0.4, 0.9, 1.6,2.5,3.6,4.9,6.4,8.1,10] },
+    // prettier-ignore
+    { min: f32(0.0), max: f32(1000.0), num_steps: u32(11), result: [0.0, 10.0, 40.0, 90.0, 160.0, 250.0, 360.0, 490.0, 640.0, 810.0, 1000.0] },
+    // prettier-ignore
+    { min: f32(1.0), max: f32(5.0), num_steps: u32(5), result: [1.0, 1.25, 2.0, 3.25, 5.0] },
+    // prettier-ignore
+    { min: f32(0.0), max: f32(1.0), num_steps: u32(11), result: [0, 0.01, 0.04, 0.09, 0.16, 0.25 , 0.36, 0.49, 0.64, 0.81, 1.0] },
+    // prettier-ignore
+    { min: f32(0.0), max: f32(1.0), num_steps: u32(5), result: [0.0, 0.0625, 0.25, 0.5625, 1.0] },
+    // prettier-ignore
+    { min: f32(-1.0), max: f32(1.0), num_steps: u32(11), result: [-1.0, -0.98, -0.92, -0.82, -0.68, -0.5, -0.28 ,-0.02, 0.28, 0.62, 1.0] },
+    // prettier-ignore
+    { min: f32(-1.0), max: f32(0), num_steps: u32(11), result: [-1.0 , -0.99, -0.96, -0.91, -0.84, -0.75, -0.64, -0.51, -0.36, -0.19, 0.0] },
+  ])
+  .fn(test => {
+    const min = test.params.min;
+    const max = test.params.max;
+    const num_steps = test.params.num_steps;
+    const got = biasedRange(min, max, num_steps);
+    const expect = test.params.result;
+
+    test.expect(
+      compareArrayOfNumbers(got, expect),
+      `biasedRange(${min}, ${max}, ${num_steps}) returned ${got}. Expected ${expect}`
     );
   });

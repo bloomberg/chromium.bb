@@ -2056,7 +2056,11 @@ angle::Result FramebufferVk::getFramebuffer(ContextVk *contextVk,
     // If we've a Framebuffer provided by a Surface (default FBO/backbuffer), query it.
     if (mBackbuffer)
     {
-        return mBackbuffer->getCurrentFramebuffer(contextVk, *compatibleRenderPass, framebufferOut);
+        return mBackbuffer->getCurrentFramebuffer(contextVk,
+                                                  mRenderPassDesc.getFramebufferFetchMode()
+                                                      ? FramebufferFetchMode::Enabled
+                                                      : FramebufferFetchMode::Disabled,
+                                                  *compatibleRenderPass, framebufferOut);
     }
 
     // Gather VkImageViews over all FBO attachments, also size of attached region.
@@ -2381,10 +2385,12 @@ angle::Result FramebufferVk::clearWithCommand(ContextVk *contextVk,
         updateRenderPassReadOnlyDepthMode(contextVk, renderpassCommands);
     }
 
+    const uint32_t layerCount = mState.isMultiview() ? 1 : mCurrentFramebufferDesc.getLayerCount();
+
     VkClearRect rect                                     = {};
     rect.rect.extent.width                               = scissoredRenderArea.width;
     rect.rect.extent.height                              = scissoredRenderArea.height;
-    rect.layerCount                                      = mCurrentFramebufferDesc.getLayerCount();
+    rect.layerCount                                      = layerCount;
     vk::RenderPassCommandBuffer *renderPassCommandBuffer = &renderpassCommands->getCommandBuffer();
 
     renderPassCommandBuffer->clearAttachments(static_cast<uint32_t>(attachments.size()),

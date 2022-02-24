@@ -45,11 +45,14 @@ class Serializer<T, typename std::enable_if<
   
   /**
    * Serializes a value to a byte buffer.
-   * \param dest the destination buffer.
-   * \param T the value to serialize.
+   * \param dest the destination buffer; if this is nullptr, does nothing.
+   * \param end the end of the destination buffer.
+   * \param value the value to serialize.
    * \return the next memory address past the end of the serialized data.
    */
-  EIGEN_DEVICE_FUNC uint8_t* serialize(uint8_t* dest, const T& value) {
+  EIGEN_DEVICE_FUNC uint8_t* serialize(uint8_t* dest, uint8_t* end, const T& value) {
+    if (EIGEN_PREDICT_FALSE(dest == nullptr)) return nullptr;
+    if (EIGEN_PREDICT_FALSE(dest + sizeof(value) > end)) return nullptr;
     EIGEN_USING_STD(memcpy)
     memcpy(dest, &value, sizeof(value));
     return dest + sizeof(value);
@@ -57,11 +60,14 @@ class Serializer<T, typename std::enable_if<
   
   /**
    * Deserializes a value from a byte buffer.
-   * \param src the source buffer.
+   * \param src the source buffer; if this is nullptr, does nothing.
+   * \param end the end of the source buffer.
    * \param value the value to populate.
-   * \return the next unprocessed memory address.
+   * \return the next unprocessed memory address; nullptr if parsing errors are detected.
    */
-  EIGEN_DEVICE_FUNC uint8_t* deserialize(uint8_t* src, T& value) const {
+  EIGEN_DEVICE_FUNC const uint8_t* deserialize(const uint8_t* src, const uint8_t* end, T& value) const {
+    if (EIGEN_PREDICT_FALSE(src == nullptr)) return nullptr;
+    if (EIGEN_PREDICT_FALSE(src + sizeof(value) > end)) return nullptr;
     EIGEN_USING_STD(memcpy)
     memcpy(&value, src, sizeof(value));
     return src + sizeof(value);
@@ -84,7 +90,9 @@ class Serializer<DenseBase<Derived>, void> {
     return sizeof(Header) + sizeof(Scalar) * value.size();
   }
   
-  EIGEN_DEVICE_FUNC uint8_t* serialize(uint8_t* dest, const Derived& value) {
+  EIGEN_DEVICE_FUNC uint8_t* serialize(uint8_t* dest, uint8_t* end, const Derived& value) {
+    if (EIGEN_PREDICT_FALSE(dest == nullptr)) return nullptr;
+    if (EIGEN_PREDICT_FALSE(dest + size(value) > end)) return nullptr;
     const size_t header_bytes = sizeof(Header);
     const size_t data_bytes = sizeof(Scalar) * value.size();
     Header header = {value.rows(), value.cols()};
@@ -95,14 +103,17 @@ class Serializer<DenseBase<Derived>, void> {
     return dest + data_bytes;
   }
   
-  EIGEN_DEVICE_FUNC uint8_t* deserialize(uint8_t* src, Derived& value) const {
+  EIGEN_DEVICE_FUNC const uint8_t* deserialize(const uint8_t* src, const uint8_t* end, Derived& value) const {
+    if (EIGEN_PREDICT_FALSE(src == nullptr)) return nullptr;
+    if (EIGEN_PREDICT_FALSE(src + sizeof(Header) > end)) return nullptr;
     const size_t header_bytes = sizeof(Header);
     Header header;
     EIGEN_USING_STD(memcpy)
     memcpy(&header, src, header_bytes);
     src += header_bytes;
-    value.resize(header.rows, header.cols);
     const size_t data_bytes = sizeof(Scalar) * header.rows * header.cols;
+    if (EIGEN_PREDICT_FALSE(src + data_bytes > end)) return nullptr;
+    value.resize(header.rows, header.cols);
     memcpy(value.data(), src, data_bytes);
     return src + data_bytes;
   }
@@ -134,17 +145,17 @@ struct serialize_impl<N, T1, Ts...> {
   }
   
   static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-  uint8_t* serialize(uint8_t* dest, const T1& value, const Ts&... args) {
+  uint8_t* serialize(uint8_t* dest, uint8_t* end, const T1& value, const Ts&... args) {
     Serializer serializer;
-    dest = serializer.serialize(dest, value);
-    return serialize_impl<N-1, Ts...>::serialize(dest, args...);
+    dest = serializer.serialize(dest, end, value);
+    return serialize_impl<N-1, Ts...>::serialize(dest, end, args...);
   }
   
   static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-  uint8_t* deserialize(uint8_t* src, T1& value, Ts&... args) {
+  const uint8_t* deserialize(const uint8_t* src, const uint8_t* end, T1& value, Ts&... args) {
     Serializer serializer;
-    src = serializer.deserialize(src, value);
-    return serialize_impl<N-1, Ts...>::deserialize(src, args...);
+    src = serializer.deserialize(src, end, value);
+    return serialize_impl<N-1, Ts...>::deserialize(src, end, args...);
   }
 };
 
@@ -155,10 +166,10 @@ struct serialize_impl<0> {
   size_t serialize_size() { return 0; }
   
   static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-  uint8_t* serialize(uint8_t* dest) { return dest; }
+  uint8_t* serialize(uint8_t* dest, uint8_t* /*end*/) { return dest; }
   
   static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-  uint8_t* deserialize(uint8_t* src) { return src; }
+  const uint8_t* deserialize(const uint8_t* src, const uint8_t* /*end*/) { return src; }
 };
 
 }  // namespace internal
@@ -179,27 +190,29 @@ size_t serialize_size(const Args&... args) {
 /**
  * Serialize a set of values to the byte buffer.
  * 
- * \param dest output byte buffer.
+ * \param dest output byte buffer; if this is nullptr, does nothing.
+ * \param end the end of the output byte buffer.
  * \param args ... arguments to serialize in sequence.
  * \return the next address after all serialized values.
  */
 template<typename... Args>
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-uint8_t* serialize(uint8_t* dest, const Args&... args) {
-  return internal::serialize_impl<sizeof...(args), Args...>::serialize(dest, args...);
+uint8_t* serialize(uint8_t* dest, uint8_t* end, const Args&... args) {
+  return internal::serialize_impl<sizeof...(args), Args...>::serialize(dest, end, args...);
 }
 
 /**
  * Deserialize a set of values from the byte buffer.
  * 
- * \param src input byte buffer.
+ * \param src input byte buffer; if this is nullptr, does nothing.
+ * \param end the end of input byte buffer.
  * \param args ... arguments to deserialize in sequence.
- * \return the next address after all parsed values.
+ * \return the next address after all parsed values; nullptr if parsing errors are detected.
  */
 template<typename... Args>
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-uint8_t* deserialize(uint8_t* src, Args&... args) {
-  return internal::serialize_impl<sizeof...(args), Args...>::deserialize(src, args...);
+const uint8_t* deserialize(const uint8_t* src, const uint8_t* end, Args&... args) {
+  return internal::serialize_impl<sizeof...(args), Args...>::deserialize(src, end, args...);
 }
 
 }  // namespace Eigen

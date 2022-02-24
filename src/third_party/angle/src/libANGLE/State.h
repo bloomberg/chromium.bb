@@ -80,6 +80,7 @@ class ActiveTexturesCache final : angle::NonCopyable
     void set(size_t textureIndex, Texture *texture);
     void reset(size_t textureIndex);
     bool empty() const;
+    size_t size() const { return mTextures.size(); }
 
   private:
     ActiveTextureArray<Texture *> mTextures;
@@ -112,6 +113,7 @@ class State : angle::NonCopyable
     EGLenum getClientType() const { return mClientType; }
     EGLenum getContextPriority() const { return mContextPriority; }
     bool hasProtectedContent() const { return mHasProtectedContent; }
+    bool isDebugContext() const { return mIsDebugContext; }
     GLint getClientMajorVersion() const { return mClientVersion.major; }
     GLint getClientMinorVersion() const { return mClientVersion.minor; }
     const Version &getClientVersion() const { return mClientVersion; }
@@ -974,6 +976,7 @@ class State : angle::NonCopyable
     EGLenum mClientType;
     EGLenum mContextPriority;
     bool mHasProtectedContent;
+    bool mIsDebugContext;
     Version mClientVersion;
 
     // Caps to use for validation

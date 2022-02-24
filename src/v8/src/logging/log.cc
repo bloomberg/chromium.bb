@@ -21,7 +21,6 @@
 #include "src/deoptimizer/deoptimizer.h"
 #include "src/diagnostics/perf-jit.h"
 #include "src/execution/isolate.h"
-#include "src/execution/runtime-profiler.h"
 #include "src/execution/v8threads.h"
 #include "src/execution/vm-state-inl.h"
 #include "src/handles/global-handles.h"
@@ -944,7 +943,7 @@ class Ticker : public sampler::Sampler {
   void SampleStack(const v8::RegisterState& state) override {
     if (!profiler_) return;
     Isolate* isolate = reinterpret_cast<Isolate*>(this->isolate());
-    if (v8::Locker::WasEverUsed() &&
+    if (isolate->was_locker_ever_used() &&
         (!isolate->thread_manager()->IsLockedByThread(
              perThreadData_->thread_id()) ||
          perThreadData_->thread_state() != nullptr))
@@ -1394,7 +1393,7 @@ void Logger::FeedbackVectorEvent(FeedbackVector vector, AbstractCode code) {
       << vector.length();
   msg << kNext << reinterpret_cast<void*>(code.InstructionStart());
   msg << kNext << vector.optimization_marker();
-  msg << kNext << vector.optimization_tier();
+  msg << kNext << vector.maybe_has_optimized_code();
   msg << kNext << vector.invocation_count();
   msg << kNext << vector.profiler_ticks() << kNext;
 
@@ -1540,11 +1539,10 @@ void Logger::ProcessDeoptEvent(Handle<Code> code, SourcePosition position,
 }
 
 void Logger::CodeDeoptEvent(Handle<Code> code, DeoptimizeKind kind, Address pc,
-                            int fp_to_sp_delta, bool reuse_code) {
+                            int fp_to_sp_delta) {
   if (!is_logging() || !FLAG_log_deopt) return;
   Deoptimizer::DeoptInfo info = Deoptimizer::GetDeoptInfo(*code, pc);
-  ProcessDeoptEvent(code, info.position,
-                    Deoptimizer::MessageFor(kind, reuse_code),
+  ProcessDeoptEvent(code, info.position, Deoptimizer::MessageFor(kind),
                     DeoptimizeReasonToString(info.deopt_reason));
 }
 
@@ -1882,7 +1880,7 @@ EnumerateCompiledFunctions(Heap* heap) {
        obj = iterator.Next()) {
     if (obj.IsSharedFunctionInfo()) {
       SharedFunctionInfo sfi = SharedFunctionInfo::cast(obj);
-      if (sfi.is_compiled() && !sfi.IsInterpreted()) {
+      if (sfi.is_compiled() && !sfi.HasBytecodeArray()) {
         compiled_funcs.emplace_back(
             handle(sfi, isolate),
             handle(AbstractCode::cast(sfi.abstract_code(isolate)), isolate));
@@ -2154,8 +2152,6 @@ void ExistingCodeLogger::LogCodeObject(Object object) {
     case CodeKind::INTERPRETED_FUNCTION:
     case CodeKind::TURBOFAN:
     case CodeKind::BASELINE:
-    case CodeKind::TURBOPROP:
-      return;  // We log this later using LogCompiledFunctions.
     case CodeKind::BYTECODE_HANDLER:
       return;  // We log it later by walking the dispatch table.
     case CodeKind::FOR_TESTING:

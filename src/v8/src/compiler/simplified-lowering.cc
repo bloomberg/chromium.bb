@@ -1074,7 +1074,6 @@ class RepresentationSelector {
     } else if (type.Is(Type::BigInt()) && use.IsUsedAsWord64()) {
       return MachineRepresentation::kWord64;
     } else if (type.Is(Type::ExternalPointer()) ||
-               type.Is(Type::SandboxedExternalPointer()) ||
                type.Is(Type::SandboxedPointer())) {
       return MachineType::PointerRepresentation();
     }
@@ -3074,22 +3073,6 @@ class RepresentationSelector {
       case IrOpcode::kTypeOf: {
         return VisitUnop<T>(node, UseInfo::AnyTagged(),
                             MachineRepresentation::kTaggedPointer);
-      }
-      case IrOpcode::kTierUpCheck: {
-        ProcessInput<T>(node, 0, UseInfo::AnyTagged());
-        ProcessInput<T>(node, 1, UseInfo::AnyTagged());
-        ProcessInput<T>(node, 2, UseInfo::AnyTagged());
-        ProcessInput<T>(node, 3, UseInfo::TruncatingWord32());
-        ProcessInput<T>(node, 4, UseInfo::AnyTagged());
-        ProcessRemainingInputs<T>(node, 5);
-        SetOutput<T>(node, MachineRepresentation::kNone);
-        return;
-      }
-      case IrOpcode::kUpdateInterruptBudget: {
-        ProcessInput<T>(node, 0, UseInfo::AnyTagged());
-        ProcessRemainingInputs<T>(node, 1);
-        SetOutput<T>(node, MachineRepresentation::kNone);
-        return;
       }
       case IrOpcode::kNewConsString: {
         ProcessInput<T>(node, 0, UseInfo::TruncatingWord32());  // length

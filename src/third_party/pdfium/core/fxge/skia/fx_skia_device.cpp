@@ -5,6 +5,7 @@
 #include "core/fxge/skia/fx_skia_device.h"
 
 #include <limits.h>
+#include <math.h>
 
 #include <algorithm>
 #include <utility>
@@ -24,6 +25,7 @@
 #include "core/fxcrt/cfx_bitstream.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/stl_util.h"
 #include "core/fxge/cfx_defaultrenderdevice.h"
 #include "core/fxge/cfx_font.h"
 #include "core/fxge/cfx_graphstatedata.h"
@@ -660,12 +662,26 @@ bool Upsample(const RetainPtr<CFX_DIBBase>& pSource,
     case 1: {
       dst8Storage.reset(FX_Alloc2D(uint8_t, width, height));
       uint8_t* dst8Pixels = dst8Storage.get();
+      // By default, the two colors for grayscale are 0xFF and 0x00 unless they
+      // are specified in the palette.
+      uint8_t color1 = 0x00;
+      uint8_t color2 = 0xFF;
+      if (pSource->GetFormat() == FXDIB_Format::k1bppRgb &&
+          pSource->HasPalette()) {
+        color1 = FXARGB_R(pSource->GetPaletteArgb(0));
+        color2 = FXARGB_R(pSource->GetPaletteArgb(1));
+        DCHECK_EQ(color1, FXARGB_G(pSource->GetPaletteArgb(0)));
+        DCHECK_EQ(color1, FXARGB_B(pSource->GetPaletteArgb(0)));
+        DCHECK_EQ(color2, FXARGB_G(pSource->GetPaletteArgb(1)));
+        DCHECK_EQ(color2, FXARGB_B(pSource->GetPaletteArgb(1)));
+      }
+
       for (int y = 0; y < height; ++y) {
         const uint8_t* srcRow =
             static_cast<const uint8_t*>(buffer) + y * rowBytes;
         uint8_t* dstRow = dst8Pixels + y * width;
         for (int x = 0; x < width; ++x)
-          dstRow[x] = srcRow[x >> 3] & (1 << (~x & 0x07)) ? 0xFF : 0x00;
+          dstRow[x] = srcRow[x >> 3] & (1 << (~x & 0x07)) ? color2 : color1;
       }
       buffer = dst8Storage.get();
       rowBytes = width;
@@ -1701,15 +1717,15 @@ void CFX_SkiaDeviceDriver::PreMultiply() {
 }
 
 bool CFX_SkiaDeviceDriver::DrawDeviceText(
-    int nChars,
-    const TextCharPos* pCharPos,
+    pdfium::span<const TextCharPos> pCharPos,
     CFX_Font* pFont,
     const CFX_Matrix& mtObject2Device,
     float font_size,
     uint32_t color,
     const CFX_TextRenderOptions& options) {
-  if (m_pCache->DrawText(nChars, pCharPos, pFont, mtObject2Device, font_size,
-                         color, options)) {
+  int nChars = fxcrt::CollectionSize<int>(pCharPos);
+  if (m_pCache->DrawText(nChars, pCharPos.data(), pFont, mtObject2Device,
+                         font_size, color, options)) {
     return true;
   }
   sk_sp<SkTypeface> typeface(SkSafeRef(pFont->GetDeviceCache()));
@@ -2555,9 +2571,15 @@ bool CFX_SkiaDeviceDriver::StartDIBits(
         for (int x = 0; x < m_pBitmap->GetWidth(); ++x) {
           SkPoint src = {x + 0.5f, y + 0.5f};
           inv.mapPoints(&src, 1);
-          // TODO(caryclark) Why does the matrix map require clamping?
-          src.fX = pdfium::clamp(src.fX, 0.5f, width - 0.5f);
-          src.fY = pdfium::clamp(src.fY, 0.5f, height - 0.5f);
+          // SkMatrix::mapPoints() can sometimes output NaN values or values
+          // outside the boundary of the `skBitmap`. Therefore clamping these
+          // values is necessary before getting color information within the
+          // `skBitmap`.
+          src.fX =
+              isnan(src.fX) ? 0.5f : pdfium::clamp(src.fX, 0.5f, width - 0.5f);
+          src.fY =
+              isnan(src.fY) ? 0.5f : pdfium::clamp(src.fY, 0.5f, height - 0.5f);
+
           m_pBitmap->SetPixel(x, y, skBitmap.getColor(src.fX, src.fY));
         }
       }

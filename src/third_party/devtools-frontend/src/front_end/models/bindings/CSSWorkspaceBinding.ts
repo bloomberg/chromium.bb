@@ -100,8 +100,7 @@ export class CSSWorkspaceBinding implements SDK.TargetManager.SDKModelObserver<S
     return locationPromise;
   }
 
-  propertyUILocation(cssProperty: SDK.CSSProperty.CSSProperty, forName: boolean): Workspace.UISourceCode.UILocation
-      |null {
+  propertyRawLocation(cssProperty: SDK.CSSProperty.CSSProperty, forName: boolean): SDK.CSSModel.CSSLocation|null {
     const style = cssProperty.ownerStyle;
     if (!style || style.type !== SDK.CSSStyleDeclaration.Type.Regular || !style.styleSheetId) {
       return null;
@@ -118,8 +117,16 @@ export class CSSWorkspaceBinding implements SDK.TargetManager.SDKModelObserver<S
 
     const lineNumber = range.startLine;
     const columnNumber = range.startColumn;
-    const rawLocation = new SDK.CSSModel.CSSLocation(
+    return new SDK.CSSModel.CSSLocation(
         header, header.lineNumberInSource(lineNumber), header.columnNumberInSource(lineNumber, columnNumber));
+  }
+
+  propertyUILocation(cssProperty: SDK.CSSProperty.CSSProperty, forName: boolean): Workspace.UISourceCode.UILocation
+      |null {
+    const rawLocation = this.propertyRawLocation(cssProperty, forName);
+    if (!rawLocation) {
+      return null;
+    }
     return this.rawLocationToUILocation(rawLocation);
   }
 

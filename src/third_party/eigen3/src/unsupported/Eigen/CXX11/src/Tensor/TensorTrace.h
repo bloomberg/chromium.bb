@@ -32,7 +32,7 @@ struct traits<TensorTraceOp<Dims, XprType> > : public traits<XprType>
   typedef typename XprTraits::StorageKind StorageKind;
   typedef typename XprTraits::Index Index;
   typedef typename XprType::Nested Nested;
-  typedef typename remove_reference<Nested>::type _Nested;
+  typedef typename remove_reference<Nested>::type Nested_;
   static const int NumDimensions = XprTraits::NumDimensions - array_size<Dims>::value;
   static const int Layout = XprTraits::Layout;
 };

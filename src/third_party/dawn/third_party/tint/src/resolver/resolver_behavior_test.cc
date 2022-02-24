@@ -18,6 +18,7 @@
 #include "src/resolver/resolver_test_helper.h"
 #include "src/sem/expression.h"
 #include "src/sem/for_loop_statement.h"
+#include "src/sem/if_statement.h"
 
 namespace tint {
 namespace resolver {
@@ -466,8 +467,8 @@ TEST_F(ResolverBehaviorTest, StmtLoopEmpty_ContEmpty_NoExit) {
   EXPECT_EQ(r()->error(), "12:34 error: loop does not exit");
 }
 
-TEST_F(ResolverBehaviorTest, StmtLoopEmpty_ContBreak) {
-  auto* stmt = Loop(Block(), Block(Break()));
+TEST_F(ResolverBehaviorTest, StmtLoopEmpty_ContIfTrueBreak) {
+  auto* stmt = Loop(Block(), Block(If(true, Block(Break()))));
   WrapInFunction(stmt);
 
   ASSERT_TRUE(r()->Resolve()) << r()->error();

@@ -22,7 +22,7 @@
 // The following includes of STL headers have to be done _before_ the
 // definition of macros min() and max().  The reason is that many STL
 // implementations will not work properly as the min and max symbols collide
-// with the STL functions std:min() and std::max().  The STL headers may check
+// with the STL functions std::min() and std::max().  The STL headers may check
 // for the macro definition of min/max and issue a warning or undefine the
 // macros.
 //
@@ -420,7 +420,8 @@ template<> inline long double test_precision<std::complex<long double> >() { ret
   inline bool test_isApprox(TYPE a, TYPE b)                               \
   { return internal::isApprox(a, b, test_precision<TYPE>()); }            \
   inline bool test_isCwiseApprox(TYPE a, TYPE b, bool exact)              \
-  { return a == b || ((numext::isnan)(a) && (numext::isnan)(b)) ||        \
+  { return numext::equal_strict(a, b) ||                                  \
+      ((numext::isnan)(a) && (numext::isnan)(b)) ||                       \
       (!exact && internal::isApprox(a, b, test_precision<TYPE>())); }     \
   inline bool test_isMuchSmallerThan(TYPE a, TYPE b)                      \
   { return internal::isMuchSmallerThan(a, b, test_precision<TYPE>()); }   \
@@ -664,7 +665,7 @@ bool test_isCwiseApprox(const DenseBase<Derived1>& m1,
 template<typename T, typename U>
 bool test_is_equal(const T& actual, const U& expected, bool expect_equal)
 {
-    if ((actual==expected) == expect_equal)
+    if (numext::equal_strict(actual, expected) == expect_equal)
         return true;
     // false:
     std::cerr

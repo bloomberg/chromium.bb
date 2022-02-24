@@ -111,20 +111,12 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
    public:
     explicit DetachLayoutTreeScope(StyleEngine& engine)
-        : engine_(engine)
-#if DCHECK_IS_ON()
-          ,
-          in_detach_scope_(&engine.in_detach_scope_, true)
-#endif  // DCHECK_IS_ON()
-    {
-    }
+        : engine_(engine), in_detach_scope_(&engine.in_detach_scope_, true) {}
     ~DetachLayoutTreeScope() { engine_.MarkForLayoutTreeChangesAfterDetach(); }
 
    private:
     StyleEngine& engine_;
-#if DCHECK_IS_ON()
     base::AutoReset<bool> in_detach_scope_;
-#endif  // DCHECK_IS_ON()
   };
 
   // There are a few instances where we are marking nodes style dirty from
@@ -296,8 +288,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   }
   // Push all pending invalidations on the document.
   void InvalidateStyle();
-  bool MediaQueryAffectedByViewportChange();
-  bool MediaQueryAffectedByDeviceChange();
   bool HasViewportDependentMediaQueries() {
     DCHECK(global_rule_set_);
     UpdateActiveStyle();
@@ -318,6 +308,19 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   };
 
   bool InApplyAnimationUpdate() const { return in_apply_animation_update_; }
+
+  class InEnsureComputedStyleScope {
+    STACK_ALLOCATED();
+
+   public:
+    explicit InEnsureComputedStyleScope(StyleEngine& engine)
+        : auto_reset_(&engine.in_ensure_computed_style_, true) {}
+
+   private:
+    base::AutoReset<bool> auto_reset_;
+  };
+
+  bool InEnsureComputedStyle() const { return in_ensure_computed_style_; }
 
   void UpdateStyleInvalidationRoot(ContainerNode* ancestor, Node* dirty_node);
   void UpdateStyleRecalcRoot(ContainerNode* ancestor, Node* dirty_node);
@@ -398,6 +401,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void PseudoElementRemoved(Element& originating_element) {
     layout_tree_rebuild_root_.SubtreeModified(originating_element);
   }
+  // Do necessary invalidations, which are not covered by a style recalc, for a
+  // body element which changed between being the document.body element and not.
+  void FirstBodyElementChanged(HTMLBodyElement&);
 
   unsigned StyleForElementCount() const { return style_for_element_count_; }
   void IncStyleForElementCount() { style_for_element_count_++; }
@@ -431,6 +437,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void MarkAllElementsForStyleRecalc(const StyleChangeReasonForTracing& reason);
   void MarkViewportStyleDirty();
   bool IsViewportStyleDirty() const { return viewport_style_dirty_; }
+
+  void MarkViewportUnitDirty(ViewportUnitFlag);
+  void InvalidateViewportUnitStylesIfNeeded();
 
   void MarkFontsNeedUpdate();
   void InvalidateStyleAndLayoutForFontUpdates();
@@ -481,7 +490,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void UpdateStyleAndLayoutTreeForContainer(Element& container,
                                             const LogicalSize&,
                                             LogicalAxes contained_axes);
-  void RecalcStyleForContainerDescendantsInLegacyLayoutTree(Element& container);
+  void RecalcStyleForNonLayoutNGContainerDescendants(Element& container);
   void RecalcStyle();
 
   void ClearEnsuredDescendantStyles(Element& element);
@@ -493,20 +502,30 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool InContainerQueryStyleRecalc() const {
     return in_container_query_style_recalc_;
   }
+  // If we are in a container query style recalc, return the container element,
+  // otherwise return nullptr.
+  Element* GetContainerForContainerStyleRecalc() const {
+    // The To<Element>() should not fail because the style_recalc_root_ is set
+    // to the container element when doing a container query style recalc.
+    if (InContainerQueryStyleRecalc())
+      return To<Element>(style_recalc_root_.GetRootNode());
+    return nullptr;
+  }
   void SkipStyleRecalcForContainer() { skipped_container_recalc_ = true; }
   void ChangeRenderingForHTMLSelect(HTMLSelectElement& select);
   void DetachedFromParent(LayoutObject* parent) {
     // This method will be called for every LayoutObject while detaching a
     // subtree. Since the trees are detached bottom up, the last parent passed
     // in will be the parent of one of the roots being detached.
-    if (in_dom_removal_) {
 #if DCHECK_IS_ON()
-      DCHECK(in_detach_scope_)
-          << "A DetachLayoutTreeScope must wrap a DOMRemovalScope to handle "
-             "and reset parent_for_detached_subtree_";
+    DCHECK(!in_dom_removal_ || in_detach_scope_)
+        << "A DOMRemovalScope must use a DetachLayoutTreeScope to handle "
+           "whitespace and list-item corrections in "
+           "MarkForLayoutTreeChangesAfterLayout when LayoutObjects are "
+           "detached";
 #endif  // DCHECK_IS_ON()
+    if (in_detach_scope_)
       parent_for_detached_subtree_ = parent;
-    }
   }
 
   void SetColorSchemeFromMeta(const CSSValue* color_scheme);
@@ -634,11 +653,14 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void AddScrollTimelineRulesFromSheets(AtRuleCascadeMap&,
                                         const ActiveStyleSheetVector&,
                                         bool is_user_style);
+  void AddFontPaletteValuesRulesFromSheets(
+      const ActiveStyleSheetVector& sheets);
 
   // Returns true if any @font-face rules are added.
   bool AddUserFontFaceRules(const RuleSet&);
   void AddUserKeyframeRules(const RuleSet&);
   void AddUserKeyframeStyle(StyleRuleKeyframes*);
+  void AddFontPaletteValuesRules(const RuleSet& rule_set);
   void AddPropertyRules(AtRuleCascadeMap&, const RuleSet&, bool is_user_style);
   void AddScrollTimelineRules(AtRuleCascadeMap&,
                               const RuleSet&,
@@ -672,6 +694,12 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // Separate path for layout tree rebuild for html fieldset as a size query
   // container.
   void RebuildFieldSetContainer(HTMLFieldSetElement& fieldset);
+
+  // Walk-up to invalidate elements affected by :has() state change
+  void InvalidateAncestorsAffectedByHasInternal(Element*,
+                                                bool for_pseudo_change);
+  void InvalidateAncestorsAffectedByHas(Element*);
+  void InvalidateAncestorsAffectedByHasForPseudoChange(Element*);
 
   Member<Document> document_;
 
@@ -728,10 +756,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool in_layout_tree_rebuild_{false};
   bool in_container_query_style_recalc_{false};
   bool in_dom_removal_{false};
-#if DCHECK_IS_ON()
   bool in_detach_scope_{false};
-#endif  // DCHECK_IS_ON()
   bool in_apply_animation_update_{false};
+  bool in_ensure_computed_style_{false};
   bool viewport_style_dirty_{false};
   bool fonts_need_update_{false};
   bool counter_styles_need_update_{false};
@@ -745,6 +772,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // Set to true if we allow marking for reattachment from layout tree rebuild.
   // AllowMarkStyleDirtyFromRecalcScope.
   bool allow_mark_for_reattach_from_rebuild_layout_tree_{false};
+
+  // See enum ViewportUnitFlag.
+  unsigned viewport_unit_dirty_flags_{0};
 
   VisionDeficiency vision_deficiency_{VisionDeficiency::kNoVisionDeficiency};
   Member<ReferenceFilterOperation> vision_deficiency_filter_;
@@ -787,6 +817,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   using KeyframesRuleMap =
       HeapHashMap<AtomicString, Member<StyleRuleKeyframes>>;
   KeyframesRuleMap keyframes_rule_map_;
+
+  using FontPaletteValuesRuleMap =
+      HeapHashMap<AtomicString, Member<StyleRuleFontPaletteValues>>;
+  FontPaletteValuesRuleMap font_palette_values_rule_map_;
 
   Member<CounterStyleMap> user_counter_style_map_;
 

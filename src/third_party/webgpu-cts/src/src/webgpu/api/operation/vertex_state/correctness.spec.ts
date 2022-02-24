@@ -126,9 +126,9 @@ class VertexStateTest extends GPUTest {
           storageType = 'storage, read';
         }
 
-        vsInputs += `  [[location(${i})]] attrib${i} : ${shaderType};\n`;
+        vsInputs += `  @location(${i}) attrib${i} : ${shaderType};\n`;
         vsBindings += `struct S${i} { data : array<vec4<${a.shaderBaseType}>, ${maxCount}>; };\n`;
-        vsBindings += `[[group(0), binding(${i})]] var<${storageType}> providedData${i} : S${i};\n`;
+        vsBindings += `@group(0) @binding(${i}) var<${storageType}> providedData${i} : S${i};\n`;
 
         // Generate the all the checks for the attributes.
         for (let component = 0; component < shaderComponentCount; component++) {
@@ -157,8 +157,8 @@ class VertexStateTest extends GPUTest {
     return `
 struct Inputs {
 ${vsInputs}
-  [[builtin(vertex_index)]] vertexIndex: u32;
-  [[builtin(instance_index)]] instanceIndex: u32;
+  @builtin(vertex_index) vertexIndex: u32;
+  @builtin(instance_index) instanceIndex: u32;
 };
 
 ${vsBindings}
@@ -194,11 +194,11 @@ ${vsChecks}
 }
 
 struct VSOutputs {
-  [[location(0), interpolate(flat)]] result : i32;
-  [[builtin(position)]] position : vec4<f32>;
+  @location(0) @interpolate(flat) result : i32;
+  @builtin(position) position : vec4<f32>;
 };
 
-[[stage(vertex)]] fn vsMain(input : Inputs) -> VSOutputs {
+@stage(vertex) fn vsMain(input : Inputs) -> VSOutputs {
   doTest(input);
 
   // Place that point at pixel (vertexIndex, instanceIndex) in a framebuffer of size
@@ -213,8 +213,8 @@ struct VSOutputs {
   return output;
 }
 
-[[stage(fragment)]] fn fsMain([[location(0), interpolate(flat)]] result : i32)
-  -> [[location(0)]] i32 {
+@stage(fragment) fn fsMain(@location(0) @interpolate(flat) result : i32)
+  -> @location(0) i32 {
   return result;
 }
     `;

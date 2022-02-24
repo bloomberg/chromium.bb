@@ -29,8 +29,8 @@ template<int Alignment,typename VectorType> void map_class_vector(const VectorTy
     map = v;
     for(int i = 0; i < size; ++i)
     {
-      VERIFY(array[3*i] == v[i]);
-      VERIFY(map[i] == v[i]);
+      VERIFY_IS_EQUAL(array[3*i], v[i]);
+      VERIFY_IS_EQUAL(map[i], v[i]);
     }
   }
 
@@ -39,8 +39,8 @@ template<int Alignment,typename VectorType> void map_class_vector(const VectorTy
     map = v;
     for(int i = 0; i < size; ++i)
     {
-      VERIFY(array[2*i] == v[i]);
-      VERIFY(map[i] == v[i]);
+      VERIFY_IS_EQUAL(array[2*i], v[i]);
+      VERIFY_IS_EQUAL(map[i], v[i]);
     }
   }
 
@@ -84,8 +84,8 @@ template<int Alignment,typename MatrixType> void map_class_matrix(const MatrixTy
     for(int i = 0; i < m.outerSize(); ++i)
       for(int j = 0; j < m.innerSize(); ++j)
       {
-        VERIFY(array[map.outerStride()*i+j] == m.coeffByOuterInner(i,j));
-        VERIFY(map.coeffByOuterInner(i,j) == m.coeffByOuterInner(i,j));
+        VERIFY_IS_EQUAL(array[map.outerStride()*i+j], m.coeffByOuterInner(i,j));
+        VERIFY_IS_EQUAL(map.coeffByOuterInner(i,j), m.coeffByOuterInner(i,j));
       }
     VERIFY_IS_APPROX(s1*map,s1*m);
     map *= s1;
@@ -111,8 +111,8 @@ template<int Alignment,typename MatrixType> void map_class_matrix(const MatrixTy
     for(int i = 0; i < m.outerSize(); ++i)
       for(int j = 0; j < m.innerSize(); ++j)
       {
-        VERIFY(array[map.outerStride()*i+j] == m.coeffByOuterInner(i,j));
-        VERIFY(map.coeffByOuterInner(i,j) == m.coeffByOuterInner(i,j));
+        VERIFY_IS_EQUAL(array[map.outerStride()*i+j], m.coeffByOuterInner(i,j));
+        VERIFY_IS_EQUAL(map.coeffByOuterInner(i,j), m.coeffByOuterInner(i,j));
       }
     VERIFY_IS_APPROX(s1*map,s1*m);
     map *= s1;
@@ -133,8 +133,8 @@ template<int Alignment,typename MatrixType> void map_class_matrix(const MatrixTy
     for(int i = 0; i < m.outerSize(); ++i)
       for(int j = 0; j < m.innerSize(); ++j)
       {
-        VERIFY(array[map.outerStride()*i+map.innerStride()*j] == m.coeffByOuterInner(i,j));
-        VERIFY(map.coeffByOuterInner(i,j) == m.coeffByOuterInner(i,j));
+        VERIFY_IS_EQUAL(array[map.outerStride()*i+map.innerStride()*j], m.coeffByOuterInner(i,j));
+        VERIFY_IS_EQUAL(map.coeffByOuterInner(i,j), m.coeffByOuterInner(i,j));
       }
     VERIFY_IS_APPROX(s1*map,s1*m);
     map *= s1;
@@ -154,8 +154,8 @@ template<int Alignment,typename MatrixType> void map_class_matrix(const MatrixTy
     for(int i = 0; i < m.outerSize(); ++i)
       for(int j = 0; j < m.innerSize(); ++j)
       {
-        VERIFY(array[map.innerSize()*i*2+j*2] == m.coeffByOuterInner(i,j));
-        VERIFY(map.coeffByOuterInner(i,j) == m.coeffByOuterInner(i,j));
+        VERIFY_IS_EQUAL(array[map.innerSize()*i*2+j*2], m.coeffByOuterInner(i,j));
+        VERIFY_IS_EQUAL(map.coeffByOuterInner(i,j), m.coeffByOuterInner(i,j));
       }
     VERIFY_IS_APPROX(s1*map,s1*m);
     map *= s1;

@@ -162,38 +162,69 @@ export class ParsedURL {
     return new URL('/' + partiallyEncoded, 'file:///').pathname.substr(1) as Platform.DevToolsPath.EncodedPathString;
   }
 
+  /**
+   * @param name Must not be encoded
+   */
+  static encodedFromParentPathAndName(parentPath: Platform.DevToolsPath.EncodedPathString, name: string):
+      Platform.DevToolsPath.EncodedPathString {
+    return ParsedURL.concatenate(parentPath, '/', encodeURIComponent(name));
+  }
+
+  /**
+   * @param name Must not be encoded
+   */
+  static urlFromParentUrlAndName(parentUrl: Platform.DevToolsPath.UrlString, name: string):
+      Platform.DevToolsPath.UrlString {
+    return ParsedURL.concatenate(parentUrl, '/', encodeURIComponent(name));
+  }
+
   static encodedPathToRawPathString(encPath: Platform.DevToolsPath.EncodedPathString):
       Platform.DevToolsPath.RawPathString {
     return decodeURIComponent(encPath) as Platform.DevToolsPath.RawPathString;
   }
 
   static rawPathToUrlString(fileSystemPath: Platform.DevToolsPath.RawPathString): Platform.DevToolsPath.UrlString {
-    let rawPath: string = fileSystemPath;
-    rawPath = rawPath.replace(/\\/g, '/');
-    if (!rawPath.startsWith('file://')) {
-      if (rawPath.startsWith('/')) {
-        rawPath = 'file://' + rawPath;
+    let preEncodedPath: string = ParsedURL.preEncodeSpecialCharactersInPath(
+        fileSystemPath.replace(/\\/g, '/') as Platform.DevToolsPath.RawPathString);
+    preEncodedPath = preEncodedPath.replace(/\\/g, '/');
+    if (!preEncodedPath.startsWith('file://')) {
+      if (preEncodedPath.startsWith('/')) {
+        preEncodedPath = 'file://' + preEncodedPath;
       } else {
-        rawPath = 'file:///' + rawPath;
+        preEncodedPath = 'file:///' + preEncodedPath;
       }
     }
-    return rawPath as Platform.DevToolsPath.UrlString;
+    return new URL(preEncodedPath).toString() as Platform.DevToolsPath.UrlString;
   }
 
-  static relativePathToUrlString(relativePath: string, baseURL: Platform.DevToolsPath.UrlString):
-      Platform.DevToolsPath.UrlString {
+  static relativePathToUrlString(
+      relativePath: Platform.DevToolsPath.RawPathString,
+      baseURL: Platform.DevToolsPath.UrlString): Platform.DevToolsPath.UrlString {
     const preEncodedPath: string = ParsedURL.preEncodeSpecialCharactersInPath(
         relativePath.replace(/\\/g, '/') as Platform.DevToolsPath.RawPathString);
     return new URL(preEncodedPath, baseURL).toString() as Platform.DevToolsPath.UrlString;
   }
 
-  static capFilePrefix(fileURL: Platform.DevToolsPath.UrlString, isWindows?: boolean):
+  static urlToRawPathString(fileURL: Platform.DevToolsPath.UrlString, isWindows?: boolean):
       Platform.DevToolsPath.RawPathString {
     console.assert(fileURL.startsWith('file://'), 'This must be a file URL.');
+    const decodedFileURL = decodeURIComponent(fileURL);
     if (isWindows) {
-      return fileURL.substr('file:///'.length).replace(/\//g, '\\') as Platform.DevToolsPath.RawPathString;
+      return decodedFileURL.substr('file:///'.length).replace(/\//g, '\\') as Platform.DevToolsPath.RawPathString;
     }
-    return fileURL.substr('file://'.length) as Platform.DevToolsPath.RawPathString;
+    return decodedFileURL.substr('file://'.length) as Platform.DevToolsPath.RawPathString;
+  }
+
+  static substr<DevToolsPathType extends Platform.DevToolsPath.UrlString|Platform.DevToolsPath.RawPathString|
+                                         Platform.DevToolsPath.EncodedPathString>(
+      devToolsPath: DevToolsPathType, from: number, length?: number): DevToolsPathType {
+    return devToolsPath.substr(from, length) as DevToolsPathType;
+  }
+
+  static concatenate<DevToolsPathType extends Platform.DevToolsPath.UrlString|Platform.DevToolsPath
+                                                  .RawPathString|Platform.DevToolsPath.EncodedPathString>(
+      devToolsPath: DevToolsPathType, ...appendage: string[]): DevToolsPathType {
+    return devToolsPath.concat(...appendage) as DevToolsPathType;
   }
 
   static urlWithoutHash(url: string): string {
@@ -231,9 +262,9 @@ export class ParsedURL {
     return ParsedURL.urlRegexInstance;
   }
 
-  static extractPath(url: string): string {
+  static extractPath(url: string): Platform.DevToolsPath.EncodedPathString {
     const parsedURL = this.fromString(url);
-    return parsedURL ? parsedURL.path : '';
+    return (parsedURL ? parsedURL.path : '') as Platform.DevToolsPath.EncodedPathString;
   }
 
   static extractOrigin(url: string): string {

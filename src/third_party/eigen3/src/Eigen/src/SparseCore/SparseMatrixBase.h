@@ -105,7 +105,7 @@ template<typename Derived> class SparseMatrixBase
                              : int(IsRowMajor) ? int(ColsAtCompileTime) : int(RowsAtCompileTime),
 
       #ifndef EIGEN_PARSED_BY_DOXYGEN
-      _HasDirectAccess = (int(Flags)&DirectAccessBit) ? 1 : 0 // workaround sunCC
+      HasDirectAccess_ = (int(Flags)&DirectAccessBit) ? 1 : 0 // workaround sunCC
       #endif
     };
 
@@ -131,7 +131,7 @@ template<typename Derived> class SparseMatrixBase
 
     /** \internal the return type of coeff()
       */
-    typedef typename internal::conditional<_HasDirectAccess, const Scalar&, Scalar>::type CoeffReturnType;
+    typedef typename internal::conditional<HasDirectAccess_, const Scalar&, Scalar>::type CoeffReturnType;
 
     /** \internal Represents a matrix with all coefficients equal to one another*/
     typedef CwiseNullaryOp<internal::scalar_constant_op<Scalar>,Matrix<Scalar,Dynamic,Dynamic> > ConstantReturnType;

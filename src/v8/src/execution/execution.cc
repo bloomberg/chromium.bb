@@ -211,7 +211,7 @@ MaybeHandle<Context> NewScriptContext(Isolate* isolate,
     Handle<String> name(it->name(), isolate);
     VariableMode mode = scope_info->ContextLocalMode(it->index());
     VariableLookupResult lookup;
-    if (ScriptContextTable::Lookup(isolate, *script_context, *name, &lookup)) {
+    if (script_context->Lookup(name, &lookup)) {
       if (IsLexicalVariableMode(mode) || IsLexicalVariableMode(lookup.mode)) {
         Handle<Context> context = ScriptContextTable::GetContext(
             isolate, script_context, lookup.context_index);
@@ -263,9 +263,12 @@ MaybeHandle<Context> NewScriptContext(Isolate* isolate,
       isolate->factory()->NewScriptContext(native_context, scope_info);
 
   result->Initialize(isolate);
-
+  // In REPL mode, we are allowed to add/modify let/const variables.
+  // We use the previous defined script context for those.
+  const bool ignore_duplicates = scope_info->IsReplModeScope();
   Handle<ScriptContextTable> new_script_context_table =
-      ScriptContextTable::Extend(script_context, result);
+      ScriptContextTable::Extend(isolate, script_context, result,
+                                 ignore_duplicates);
   native_context->synchronized_set_script_context_table(
       *new_script_context_table);
   return result;

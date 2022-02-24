@@ -4,7 +4,8 @@ Execution Tests for the 'cos' builtin function
 
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../gpu_test.js';
-import { f32, TypeF32 } from '../../../util/conversion.js';
+import { f32, TypeF32, u32 } from '../../../util/conversion.js';
+import { linearRange } from '../../../util/math.js';
 
 import { absThreshold, Case, Config, run } from './builtin.js';
 
@@ -30,12 +31,13 @@ TODO(#792): Decide what the ground-truth is for these tests. [1]
       .combine('vectorize', [undefined, 2, 3, 4] as const)
   )
   .fn(async t => {
-    const cases = new Array<Case>(1000);
-    for (let i = 0; i < cases.length; i++) {
-      // [1]: Need to decide what the ground-truth is.
-      const angle = -Math.PI + (2.0 * Math.PI * i) / (cases.length - 1);
-      cases[i] = { input: f32(angle), expected: f32(Math.cos(angle)) };
-    }
+    // [1]: Need to decide what the ground-truth is.
+    const truthFunc = (x: number): Case => {
+      return { input: f32(x), expected: f32(Math.cos(x)) };
+    };
+
+    // Spec defines accuracy on [-π, π]
+    const cases = linearRange(f32(-Math.PI), f32(Math.PI), u32(1000)).map(x => truthFunc(x));
 
     const cfg: Config = t.params;
     cfg.cmpFloats = absThreshold(2 ** -11);

@@ -274,6 +274,12 @@ class TestChannel : public sigslot::has_slots<> {
         [this](PortInterface* port) { OnSrcPortDestroyed(port); });
   }
 
+  ~TestChannel() {
+    if (conn_) {
+      conn_->SignalDestroyed.disconnect(this);
+    }
+  }
+
   int complete_count() { return complete_count_; }
   Connection* conn() { return conn_; }
   const SocketAddress& remote_address() { return remote_address_; }
@@ -284,7 +290,6 @@ class TestChannel : public sigslot::has_slots<> {
     conn_ = port_->CreateConnection(remote_candidate, Port::ORIGIN_MESSAGE);
     IceMode remote_ice_mode =
         (ice_mode_ == ICEMODE_FULL) ? ICEMODE_LITE : ICEMODE_FULL;
-    conn_->set_remote_ice_mode(remote_ice_mode);
     conn_->set_use_candidate_attr(remote_ice_mode == ICEMODE_FULL);
     conn_->SignalStateChange.connect(this,
                                      &TestChannel::OnConnectionStateChange);
@@ -312,7 +317,9 @@ class TestChannel : public sigslot::has_slots<> {
   void Ping(int64_t now) { conn_->Ping(now); }
   void Stop() {
     if (conn_) {
+      conn_->SignalDestroyed.disconnect(this);
       conn_->Destroy();
+      conn_ = nullptr;
     }
   }
 
@@ -407,6 +414,13 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
         password_(rtc::CreateRandomString(ICE_PWD_LENGTH)),
         role_conflict_(false),
         ports_destroyed_(0) {}
+
+  ~PortTest() {
+    // Workaround for tests that trigger async destruction of objects that we
+    // need to give an opportunity here to run, before proceeding with other
+    // teardown.
+    rtc::Thread::Current()->ProcessMessages(0);
+  }
 
  protected:
   std::string password() { return password_; }

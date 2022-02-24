@@ -170,7 +170,6 @@
 <translation id="5139423532931106058">Muokkaa Chrome-profiiliasi</translation>
 <translation id="5163087008893166964">Tervetuloa Chromeen, uusi selainikkuna avattu</translation>
 <translation id="5170938038195470297">Profiiliasi ei voi käyttää, koska se on peräisin uudemmasta Google Chromen versiosta. Kaikkia toimintoja ei välttämättä voi käyttää. Määritä toinen profiilihakemisto tai käytä uudempaa Chromen versiota.</translation>
-<translation id="5193136243808726294">Google Chrome ‑käyttöjärjestelmä ei voi avata tätä sivua.</translation>
 <translation id="521447420733633466">Jos käytät jaettua laitetta, kaverisi ja perheenjäsenesi voivat selata verkkoa erillään ja räätälöidä Chromesta juuri itselleen sopivan</translation>
 <translation id="5251420635869119124">Vierailijat voivat käyttää Chromea jälkiä jättämättä.</translation>
 <translation id="5334487786912937552">Chrome tarvitsee tallennustilan pääsyoikeudet tiedostojen lataamiseen</translation>
@@ -179,8 +178,6 @@
 <translation id="5430073640787465221">Asetustiedostosi on virheellinen. Google Chrome ei voi palauttaa asetuksiasi.</translation>
 <translation id="556024056938947818">Google Chrome yrittää näyttää salasanoja.</translation>
 <translation id="5566025111015594046">Google Chrome (saapuva mDNS)</translation>
-<translation id="5657226924540934362">Jos asetus ei näy tällä sivulla, siirry <ph name="LINK_BEGIN" />
-    Chrome-käyttöjärjestelmän asetuksiin<ph name="LINK_END" />.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> voi olla vaarallinen, joten Chrome on estänyt sen.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Ylläpitäjä pyytää Chromen uudelleenkäynnistystä, jotta tämä päivitys voidaan ottaa käyttöön.}=1{Ylläpitäjä pyytää Chromen uudelleenkäynnistystä, jotta tämä päivitys voidaan ottaa käyttöön. Incognito-ikkunaasi ei avata uudelleen.}other{Ylläpitäjä pyytää Chromen uudelleenkäynnistystä, jotta tämä päivitys voidaan ottaa käyttöön. # incognito-ikkunaasi ei avata uudelleen.}}</translation>
 <translation id="5686916850681061684">Yksilöi ja ylläpidä Google Chromea. Toimenpiteitä vaaditaan. Katso lisätiedot klikkaamalla.</translation>

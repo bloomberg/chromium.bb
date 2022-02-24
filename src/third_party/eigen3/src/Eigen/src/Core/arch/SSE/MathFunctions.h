@@ -75,8 +75,6 @@ Packet4f pcos<Packet4f>(const Packet4f& _x)
   return pcos_float(_x);
 }
 
-#if EIGEN_FAST_MATH
-
 // Functions for sqrt.
 // The EIGEN_FAST_MATH version uses the _mm_rsqrt_ps approximation and one step
 // of Newton's method, at a cost of 1-2 bits of precision as opposed to the
@@ -85,11 +83,13 @@ Packet4f pcos<Packet4f>(const Packet4f& _x)
 // it can be inlined and pipelined with other computations, further reducing its
 // effective latency. This is similar to Quake3's fast inverse square root.
 // For detail see here: http://www.beyond3d.com/content/articles/8/
-template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED
+#if EIGEN_FAST_MATH
+template<>
+EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED
 Packet4f psqrt<Packet4f>(const Packet4f& _x)
 {
-  Packet4f minus_half_x = pmul(_x, pset1<Packet4f>(-0.5f));
-  Packet4f denormal_mask = pandnot(
+  const Packet4f minus_half_x = pmul(_x, pset1<Packet4f>(-0.5f));
+  const Packet4f denormal_mask = pandnot(
       pcmp_lt(_x, pset1<Packet4f>((std::numeric_limits<float>::min)())),
       pcmp_lt(_x, pzero(_x)));
 
@@ -118,10 +118,10 @@ Packet16b psqrt<Packet16b>(const Packet16b& x) { return x; }
 
 template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED
 Packet4f prsqrt<Packet4f>(const Packet4f& _x) {
-  _EIGEN_DECLARE_CONST_Packet4f(one_point_five, 1.5f);
-  _EIGEN_DECLARE_CONST_Packet4f(minus_half, -0.5f);
-  _EIGEN_DECLARE_CONST_Packet4f_FROM_INT(inf, 0x7f800000u);
-  _EIGEN_DECLARE_CONST_Packet4f_FROM_INT(flt_min, 0x00800000u);
+  EIGEN_DECLARE_CONST_Packet4f(one_point_five, 1.5f);
+  EIGEN_DECLARE_CONST_Packet4f(minus_half, -0.5f);
+  EIGEN_DECLARE_CONST_Packet4f_FROM_INT(inf, 0x7f800000u);
+  EIGEN_DECLARE_CONST_Packet4f_FROM_INT(flt_min, 0x00800000u);
 
   Packet4f neg_half = pmul(_x, p4f_minus_half);
 
@@ -148,20 +148,18 @@ Packet4f prsqrt<Packet4f>(const Packet4f& _x) {
   return pselect<Packet4f>(not_normal_finite_mask, y_approx, y_newton);
 }
 
-#else
-
-template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED
-Packet4f prsqrt<Packet4f>(const Packet4f& x) {
-  // Unfortunately we can't use the much faster mm_rsqrt_ps since it only provides an approximation.
-  return _mm_div_ps(pset1<Packet4f>(1.0f), _mm_sqrt_ps(x));
+#ifdef EIGEN_VECTORIZE_FMA
+// Trying to speed up reciprocal using Newton-Raphson is counterproductive
+// unless FMA is available. Without FMA pdiv(pset1<Packet>(Scalar(1),a) is
+// 30% faster.
+template<> EIGEN_STRONG_INLINE Packet4f preciprocal<Packet4f>(const Packet4f& a) {
+  return generic_reciprocal_newton_step<Packet4f, /*Steps=*/1>::run(a, _mm_rcp_ps(a));
 }
+#endif
 
 #endif
 
-template<> EIGEN_DEFINE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS EIGEN_UNUSED
-Packet2d prsqrt<Packet2d>(const Packet2d& x) {
-  return _mm_div_pd(pset1<Packet2d>(1.0), _mm_sqrt_pd(x));
-}
+
 
 // Hyperbolic Tangent function.
 template <>

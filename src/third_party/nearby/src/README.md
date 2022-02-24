@@ -27,7 +27,7 @@ git submodule update --init --recursive
 
 # Building Nearby, Unit Testing and Sample Apps
 We support multiple platforms including Linux, iOS & Windows. The ultimate goal
-is to build from source. The offical build system we support is
+is to build from source (coming soon!). The offical build system we support is
 [bazel] (https://bazel.build). Before that is accomplished, we provide
 precompiled libraries as stop-gap solutions. See the following pages for
 platform specific instructions.
@@ -35,4 +35,4 @@ platform specific instructions.
 * [iOS](https://github.com/google/nearby/blob/master/docs/ios_build.md)
 
 
-**Last Updated:** Dec 2021
+**Last Updated:** Feb 2022

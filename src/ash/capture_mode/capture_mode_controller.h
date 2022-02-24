@@ -39,6 +39,7 @@ class SequencedTaskRunner;
 
 namespace ash {
 
+class CaptureModeCameraController;
 class CaptureModeSession;
 
 // Defines a callback type that will be invoked when an attempt to delete the
@@ -56,6 +57,7 @@ using OnFileDeletedCallback =
 // recorded.
 class ASH_EXPORT CaptureModeController
     : public recording::mojom::RecordingServiceClient,
+      public recording::mojom::DriveFsQuotaDelegate,
       public SessionObserver,
       public chromeos::PowerManagerClient::Observer {
  public:
@@ -80,6 +82,9 @@ class ASH_EXPORT CaptureModeController
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
+  CaptureModeCameraController* camera_controller() {
+    return camera_controller_.get();
+  }
   CaptureModeType type() const { return type_; }
   CaptureModeSource source() const { return source_; }
   CaptureModeSession* capture_mode_session() const {
@@ -119,13 +124,13 @@ class ASH_EXPORT CaptureModeController
   void SetUserCaptureRegion(const gfx::Rect& region, bool by_user);
 
   // Returns true if we can show a user nudge animation and a toast message to
-  // alert the user about the new settings to customize the save folder path.
-  bool CanShowFolderSelectionNudge() const;
+  // alert users any available new features.
+  bool CanShowUserNudge() const;
 
-  // Disables showing the folder selection nudge from now on. Calling the above
-  // CanShowFolderSelectionNudge() will return false for the current active user
-  // going forward.
-  void DisableFolderSelectionNudgeForever();
+  // Disables showing the user nudge from now on. Calling the above
+  // CanShowUserNudge() will return false for the current active user going
+  // forward.
+  void DisableUserNudgeForever();
 
   // Sets whether the currently logged in user selected to use the default
   // "Downloads" folder as the current save location, even while they already
@@ -202,9 +207,27 @@ class ASH_EXPORT CaptureModeController
   // path, false otherwise.
   bool IsAndroidFilesPath(const base::FilePath& path) const;
 
+  // Returns true if the given `path` is the same as the Linux Files path, false
+  // otherwise.
+  bool IsLinuxFilesPath(const base::FilePath& path) const;
+
+  // Returns the current parent window for
+  // `CaptureModeCameraController::camera_preview_widget_`.
+  aura::Window* GetCameraPreviewParentWindow() const;
+
+  // Returns the camera preview's confine bounds, which actually indicates the
+  // bounds of the surface that will be recorded. The bounds is in screen
+  // coordinate when capture source is `kFullscreen` or 'kRegion', but in
+  // window's coordinate when it is 'kWindow' type.
+  gfx::Rect GetCameraPreviewConfineBounds() const;
+
   // recording::mojom::RecordingServiceClient:
   void OnRecordingEnded(recording::mojom::RecordingStatus status,
                         const gfx::ImageSkia& thumbnail) override;
+
+  // recording::mojom::DriveFsQuotaDelegate:
+  void GetDriveFsFreeSpaceBytes(
+      GetDriveFsFreeSpaceBytesCallback callback) override;
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
@@ -435,6 +458,10 @@ class ASH_EXPORT CaptureModeController
 
   std::unique_ptr<CaptureModeDelegate> delegate_;
 
+  // Controls the selfie camera feature of capture mode. This is only available
+  // when the feature `kCaptureModeSelfieCamera` is enabled.
+  std::unique_ptr<CaptureModeCameraController> camera_controller_;
+
   CaptureModeType type_ = CaptureModeType::kImage;
   CaptureModeSource source_ = CaptureModeSource::kRegion;
 
@@ -443,7 +470,9 @@ class ASH_EXPORT CaptureModeController
 
   mojo::Remote<recording::mojom::RecordingService> recording_service_remote_;
   mojo::Receiver<recording::mojom::RecordingServiceClient>
-      recording_service_client_receiver_;
+      recording_service_client_receiver_{this};
+  mojo::Receiver<recording::mojom::DriveFsQuotaDelegate>
+      drive_fs_quota_delegate_receiver_{this};
 
   // This is the file path of the video file currently being recorded. It is
   // empty when no video recording is in progress or when no video is being

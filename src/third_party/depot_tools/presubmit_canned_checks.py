@@ -70,9 +70,9 @@ def CheckChangeHasBugField(input_api, output_api):
               'Buganizer bugs should be prefixed with b:, not b/.')
       ]
     return []
-  else:
-    return [output_api.PresubmitNotifyResult(
-        'If this change has an associated bug, add Bug: [bug number].')]
+
+  return [output_api.PresubmitNotifyResult(
+      'If this change has an associated bug, add Bug: [bug number].')]
 
 def CheckChangeHasNoUnwantedTags(input_api, output_api):
   UNWANTED_TAGS = {
@@ -94,12 +94,13 @@ def CheckChangeHasNoUnwantedTags(input_api, output_api):
 def CheckDoNotSubmitInDescription(input_api, output_api):
   """Checks that the user didn't add 'DO NOT ''SUBMIT' to the CL description.
   """
-  keyword = 'DO NOT ''SUBMIT'
+  # Keyword is concatenated to avoid presubmit check rejecting the CL.
+  keyword = 'DO NOT ' + 'SUBMIT'
   if keyword in input_api.change.DescriptionText():
     return [output_api.PresubmitError(
         keyword + ' is present in the changelist description.')]
-  else:
-    return []
+
+  return []
 
 
 def CheckChangeHasDescription(input_api, output_api):
@@ -108,8 +109,8 @@ def CheckChangeHasDescription(input_api, output_api):
   if text.strip() == '':
     if input_api.is_committing:
       return [output_api.PresubmitError('Add a description to the CL.')]
-    else:
-      return [output_api.PresubmitNotifyResult('Add a description to the CL.')]
+
+    return [output_api.PresubmitNotifyResult('Add a description to the CL.')]
   return []
 
 
@@ -188,7 +189,9 @@ def CheckDoNotSubmitInFiles(input_api, output_api):
   """Checks that the user didn't add 'DO NOT ''SUBMIT' to any files."""
   # We want to check every text file, not just source files.
   file_filter = lambda x : x
-  keyword = 'DO NOT ''SUBMIT'
+
+  # Keyword is concatenated to avoid presubmit check rejecting the CL.
+  keyword = 'DO NOT ' + 'SUBMIT'
   def DoNotSubmitRule(extension, line):
     try:
       return keyword not in line
@@ -315,7 +318,7 @@ def CheckGenderNeutral(input_api, output_api, source_file_filter=None):
       if gendered_re.search(line):
         errors.append('%s (%d): %s' % (f.LocalPath(), line_num, line))
 
-  if len(errors):
+  if errors:
     return [output_api.PresubmitPromptWarning('Found a gendered pronoun in:',
                                               long_text='\n'.join(errors))]
   return []
@@ -526,7 +529,7 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
     """True iff the pylint directive starting at line[pos] is global."""
     # Any character before |pos| that is not whitespace or '#' indidcates
     # this is a local directive.
-    return not any([c not in " \t#" for c in line[:pos]])
+    return not any(c not in " \t#" for c in line[:pos])
 
   def check_python_long_lines(affected_files, error_formatter):
     errors = []
@@ -583,8 +586,8 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
   if errors:
     msg = 'Found lines longer than %s characters (first 5 shown).' % maxlen
     return [output_api.PresubmitPromptWarning(msg, items=errors[:5])]
-  else:
-    return []
+
+  return []
 
 
 def CheckLicense(input_api, output_api, license_re=None, project_name=None,
@@ -960,7 +963,7 @@ def GetPylint(input_api,
   extra_paths_list = extra_paths_list or []
 
   assert version in ('1.5', '2.6', '2.7'), \
-      'Unsupported pylint version: ' + version
+      'Unsupported pylint version: %s' % version
   python2 = (version == '1.5')
 
   if input_api.is_committing:
@@ -1069,11 +1072,10 @@ def GetPylint(input_api,
         GetPylintCmd(files, ["--disable=cyclic-import"], True),
         GetPylintCmd(files, ["--disable=all", "--enable=cyclic-import"], False)
       ]
-    else:
-      return [ GetPylintCmd(files, [], True) ]
 
-  else:
-    return map(lambda x: GetPylintCmd([x], [], 1), files)
+    return [ GetPylintCmd(files, [], True) ]
+
+  return map(lambda x: GetPylintCmd([x], [], 1), files)
 
 
 def RunPylint(input_api, *args, **kwargs):
@@ -1090,11 +1092,11 @@ def CheckDirMetadataFormat(input_api, output_api, dirmd_bin=None):
   # complete.
   file_filter = lambda f: (
       input_api.basename(f.LocalPath()) in ('DIR_METADATA', 'OWNERS'))
-  affected_files = set([
+  affected_files = {
       f.AbsoluteLocalPath()
       for f in input_api.change.AffectedFiles(
           include_deletes=False, file_filter=file_filter)
-  ])
+  }
   if not affected_files:
     return []
 
@@ -1145,11 +1147,11 @@ def CheckOwnersDirMetadataExclusive(input_api, output_api):
       input_api.re.MULTILINE)
   file_filter = (
       lambda f: input_api.basename(f.LocalPath()) in ('OWNERS', 'DIR_METADATA'))
-  affected_dirs = set([
+  affected_dirs = {
       input_api.os_path.dirname(f.AbsoluteLocalPath())
       for f in input_api.change.AffectedFiles(
           include_deletes=False, file_filter=file_filter)
-  ])
+  }
 
   errors = []
   for path in affected_dirs:
@@ -1173,11 +1175,11 @@ def CheckOwnersDirMetadataExclusive(input_api, output_api):
 def CheckOwnersFormat(input_api, output_api):
   if input_api.gerrit and input_api.gerrit.IsCodeOwnersEnabledOnRepo():
     return []
-  affected_files = set([
+  affected_files = {
       f.LocalPath()
       for f in input_api.change.AffectedFiles()
       if 'OWNERS' in f.LocalPath() and f.Action() != 'D'
-  ])
+  }
   if not affected_files:
     return []
   try:
@@ -1202,8 +1204,9 @@ def CheckOwners(
   if input_api.gerrit and input_api.gerrit.IsCodeOwnersEnabledOnRepo():
     return []
 
-  affected_files = set([f.LocalPath() for f in
-      input_api.change.AffectedFiles(file_filter=source_file_filter)])
+  affected_files = {f.LocalPath() for f in 
+                    input_api.change.AffectedFiles(
+                        file_filter=source_file_filter)}
   owner_email, reviewers = GetCodereviewOwnerAndReviewers(
       input_api, approval_needed=input_api.is_committing)
 
@@ -1735,7 +1738,7 @@ def CheckChangedLUCIConfigs(input_api, output_api):
       sev = msg['severity']
       if sev == 'WARNING':
         out_f = output_api.PresubmitPromptWarning
-      elif sev == 'ERROR' or sev == 'CRITICAL':
+      elif sev in ('ERROR', 'CRITICAL'):
         out_f = output_api.PresubmitError
       else:
         out_f = output_api.PresubmitNotifyResult

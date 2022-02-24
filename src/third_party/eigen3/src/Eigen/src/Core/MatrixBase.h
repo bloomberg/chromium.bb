@@ -140,6 +140,11 @@ template<typename Derived> class MatrixBase
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     Derived& operator=(const MatrixBase& other);
 
+#if EIGEN_COMP_HAS_P0848R3
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE MatrixBase& operator=(
+        const MatrixBase& other) requires internal::has_trivially_copyable_storage<Derived>::value = default;
+#endif
+
     // We cannot inherit here via Base::operator= since it is causing
     // trouble with MSVC.
 

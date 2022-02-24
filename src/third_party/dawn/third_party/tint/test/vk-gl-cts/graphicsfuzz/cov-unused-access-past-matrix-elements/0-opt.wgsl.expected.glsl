@@ -1,29 +1,42 @@
 SKIP: FAILED
 
+vk-gl-cts/graphicsfuzz/cov-unused-access-past-matrix-elements/0-opt.wgsl:1:13 warning: use of deprecated language feature: the @stride attribute is deprecated; use a larger type if necessary
+type Arr = @stride(16) array<f32, 3>;
+            ^^^^^^
+
+vk-gl-cts/graphicsfuzz/cov-unused-access-past-matrix-elements/0-opt.wgsl:7:15 warning: use of deprecated language feature: the @stride attribute is deprecated; use a larger type if necessary
+type Arr_1 = @stride(16) array<i32, 4>;
+              ^^^^^^
+
 #version 310 es
 precision mediump float;
 
+layout(location = 0) out vec4 x_GLF_color_1_1;
 struct tint_padded_array_element {
   float el;
 };
+
 struct buf1 {
   tint_padded_array_element x_GLF_uniform_float_values[3];
 };
+
 struct tint_padded_array_element_1 {
   int el;
 };
+
 struct buf0 {
   tint_padded_array_element_1 x_GLF_uniform_int_values[4];
 };
 
-layout (binding = 1) uniform buf1_1 {
+layout(binding = 1) uniform buf1_1 {
   tint_padded_array_element x_GLF_uniform_float_values[3];
 } x_6;
-layout (binding = 0) uniform buf0_1 {
+
+layout(binding = 0) uniform buf0_1 {
   tint_padded_array_element_1 x_GLF_uniform_int_values[4];
 } x_8;
-vec4 x_GLF_color = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
+vec4 x_GLF_color = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 void main_1() {
   mat4x3 m43 = mat4x3(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
   tint_padded_array_element sums[3] = tint_padded_array_element[3](tint_padded_array_element(0.0f), tint_padded_array_element(0.0f), tint_padded_array_element(0.0f));
@@ -40,8 +53,8 @@ void main_1() {
   float x_58 = x_6.x_GLF_uniform_float_values[0].el;
   float x_60 = x_6.x_GLF_uniform_float_values[0].el;
   float x_62 = x_6.x_GLF_uniform_float_values[0].el;
-  tint_padded_array_element tint_symbol_2[3] = tint_padded_array_element[3](tint_padded_array_element(x_58), tint_padded_array_element(x_60), tint_padded_array_element(x_62));
-  sums = tint_symbol_2;
+  tint_padded_array_element tint_symbol_1[3] = tint_padded_array_element[3](tint_padded_array_element(x_58), tint_padded_array_element(x_60), tint_padded_array_element(x_62));
+  sums = tint_symbol_1;
   int x_65 = x_8.x_GLF_uniform_int_values[0].el;
   i = x_65;
   x_67_phi = x_65;
@@ -94,34 +107,22 @@ void main_1() {
 struct main_out {
   vec4 x_GLF_color_1;
 };
-struct tint_symbol_1 {
-  vec4 x_GLF_color_1;
-};
 
-main_out tint_symbol_inner() {
+main_out tint_symbol() {
   main_1();
-  main_out tint_symbol_3 = main_out(x_GLF_color);
-  return tint_symbol_3;
+  main_out tint_symbol_2 = main_out(x_GLF_color);
+  return tint_symbol_2;
 }
 
-tint_symbol_1 tint_symbol() {
-  main_out inner_result = tint_symbol_inner();
-  tint_symbol_1 wrapper_result = tint_symbol_1(vec4(0.0f, 0.0f, 0.0f, 0.0f));
-  wrapper_result.x_GLF_color_1 = inner_result.x_GLF_color_1;
-  return wrapper_result;
-}
-out vec4 x_GLF_color_1;
 void main() {
-  tint_symbol_1 outputs;
-  outputs = tint_symbol();
-  x_GLF_color_1 = outputs.x_GLF_color_1;
+  main_out inner_result = tint_symbol();
+  x_GLF_color_1_1 = inner_result.x_GLF_color_1;
+  return;
 }
-
-
 Error parsing GLSL shader:
-ERROR: 0:69: '[' :  matrix index out of range '4'
-ERROR: 0:69: '=' :  cannot convert from ' temp mediump 3-component vector of float' to ' temp mediump float'
-ERROR: 0:69: '' : compilation terminated 
+ERROR: 0:74: '[' :  matrix index out of range '4'
+ERROR: 0:74: '=' :  cannot convert from ' temp mediump 3-component vector of float' to ' temp mediump float'
+ERROR: 0:74: '' : compilation terminated 
 ERROR: 3 compilation errors.  No code generated.
 
 

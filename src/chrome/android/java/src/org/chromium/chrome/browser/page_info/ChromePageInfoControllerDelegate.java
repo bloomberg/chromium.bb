@@ -32,13 +32,16 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils.OfflinePageLoadUrlDelegate;
 import org.chromium.chrome.browser.omnibox.ChromeAutocompleteSchemeClassifier;
 import org.chromium.chrome.browser.paint_preview.TabbedPaintPreview;
+import org.chromium.chrome.browser.privacy_sandbox.AdPersonalizationFragment;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.site_settings.ChromeSiteSettingsDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsDelegate;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
@@ -46,6 +49,7 @@ import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.page_info.PageInfoAdPersonalizationController;
 import org.chromium.components.page_info.PageInfoControllerDelegate;
 import org.chromium.components.page_info.PageInfoFeatures;
 import org.chromium.components.page_info.PageInfoMainController;
@@ -219,9 +223,23 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
     }
 
     @Override
+    public void showAdPersonalizationSettings() {
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(mContext, AdPersonalizationFragment.class);
+    }
+
+    @Override
     public Collection<PageInfoSubpageController> createAdditionalRowViews(
             PageInfoMainController mainController, ViewGroup rowWrapper) {
         Collection<PageInfoSubpageController> controllers = new ArrayList<>();
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_3)) {
+            final PageInfoRowView adPersonalizationRow =
+                    new PageInfoRowView(rowWrapper.getContext(), null);
+            adPersonalizationRow.setId(PageInfoAdPersonalizationController.ROW_ID);
+            rowWrapper.addView(adPersonalizationRow);
+            controllers.add(new PageInfoAdPersonalizationController(
+                    mainController, adPersonalizationRow, this));
+        }
         if (PageInfoFeatures.PAGE_INFO_HISTORY.isEnabled()) {
             final Tab tab = TabUtils.fromWebContents(mWebContents);
             final PageInfoRowView historyRow = new PageInfoRowView(rowWrapper.getContext(), null);

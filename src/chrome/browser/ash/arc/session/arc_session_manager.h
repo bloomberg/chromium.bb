@@ -32,9 +32,13 @@ class Profile;
 
 namespace arc {
 
-constexpr const char kGeneratedPropertyFilesPath[] = "/run/arc/host_generated";
-constexpr const char kGeneratedPropertyFilesPathVm[] =
-    "/run/arcvm/host_generated";
+// The file exists only when ARC container is in use.
+constexpr const char kGeneratedBuildPropertyFilePath[] =
+    "/run/arc/host_generated/build.prop";
+
+// The file exists only when ARCVM is in use.
+constexpr const char kGeneratedCombinedPropertyFilePathVm[] =
+    "/run/arcvm/host_generated/combined.prop";
 
 class ArcAndroidManagementChecker;
 class ArcDataRemover;
@@ -288,7 +292,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   // Invoking StartArc() only for testing, e.g., to emulate accepting Terms of
   // Service then passing Android management check successfully.
-  void StartArcForTesting() { StartArc(); }
+  void StartArcForTesting();
 
   // Invokes OnTermsOfServiceNegotiated as if negotiation is done for testing.
   void OnTermsOfServiceNegotiatedForTesting(bool accepted) {

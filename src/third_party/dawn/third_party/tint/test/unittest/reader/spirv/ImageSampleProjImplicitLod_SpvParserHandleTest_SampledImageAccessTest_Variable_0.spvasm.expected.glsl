@@ -3,8 +3,7 @@ SKIP: FAILED
 #version 310 es
 precision mediump float;
 
-
-uniform highp sampler1D x_20;
+uniform highp sampler1D x_20_x_10;
 
 void main_1() {
   float f1 = 1.0f;
@@ -24,22 +23,21 @@ void main_1() {
   vec2 coords12 = vf12;
   vec3 coords123 = vf123;
   vec4 coords1234 = vf1234;
-  vec4 x_79 = texture(x_20, (coords12.x / coords12.y));
+  vec4 x_79 = texture(x_20_x_10, (coords12.x / coords12.y));
   return;
 }
 
 void tint_symbol() {
   main_1();
-  return;
 }
+
 void main() {
   tint_symbol();
+  return;
 }
-
-
 Error parsing GLSL shader:
-ERROR: 0:5: 'sampler1D' : Reserved word. 
-ERROR: 0:5: '' : compilation terminated 
+ERROR: 0:4: 'sampler1D' : Reserved word. 
+ERROR: 0:4: '' : compilation terminated 
 ERROR: 2 compilation errors.  No code generated.
 
 

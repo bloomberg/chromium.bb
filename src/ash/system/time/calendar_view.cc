@@ -3,14 +3,19 @@
 // found in the LICENSE file.
 
 #include "ash/system/time/calendar_view.h"
+#include <memory>
 
 #include "ash/public/cpp/ash_typography.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/time/calendar_event_list_view.h"
+#include "ash/system/time/calendar_metrics.h"
 #include "ash/system/time/calendar_month_view.h"
 #include "ash/system/time/calendar_utils.h"
+#include "ash/system/time/calendar_view_controller.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/bind.h"
@@ -21,13 +26,17 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/table_layout.h"
 #include "ui/views/view.h"
@@ -61,6 +70,14 @@ constexpr base::TimeDelta kScrollingSettledTimeout = base::Milliseconds(100);
 constexpr base::TimeDelta kDelayVisibilityAnimationDuration =
     base::Milliseconds(200);
 
+// Duration of events moving animation.
+constexpr base::TimeDelta kAnimationDurationForEventsMoving =
+    base::Milliseconds(400);
+
+// Duration of closing events panel animation.
+constexpr base::TimeDelta kAnimationDurationForClosingEvents =
+    base::Milliseconds(200);
+
 // The cool-down time for enabling animation.
 constexpr base::TimeDelta kAnimationDisablingTimeout = base::Milliseconds(500);
 
@@ -69,6 +86,43 @@ constexpr int kDefaultWeekTitles[] = {
     IDS_ASH_CALENDAR_SUN, IDS_ASH_CALENDAR_MON, IDS_ASH_CALENDAR_TUE,
     IDS_ASH_CALENDAR_WED, IDS_ASH_CALENDAR_THU, IDS_ASH_CALENDAR_FRI,
     IDS_ASH_CALENDAR_SAT};
+
+constexpr char kMonthViewScrollOneMonthAnimationHistogram[] =
+    "Ash.CalendarView.ScrollOneMonth.MonthView.AnimationSmoothness";
+
+constexpr char kLabelViewScrollOneMonthAnimationHistogram[] =
+    "Ash.CalendarView.ScrollOneMonth.LabelView.AnimationSmoothness";
+
+constexpr char kHeaderViewScrollOneMonthAnimationHistogram[] =
+    "Ash.CalendarView.ScrollOneMonth.HeaderView.AnimationSmoothness";
+
+constexpr char kContentViewResetToTodayAnimationHistogram[] =
+    "Ash.CalendarView.ResetToToday.ContentView.AnimationSmoothness";
+
+constexpr char kHeaderViewResetToTodayAnimationHistogram[] =
+    "Ash.CalendarView.ResetToToday.HeaderView.AnimationSmoothness";
+
+constexpr char kContentViewFadeInCurrentMonthAnimationHistogram[] =
+    "Ash.CalendarView.FadeInCurrentMonth.ContentView.AnimationSmoothness";
+
+constexpr char kHeaderViewFadeInCurrentMonthAnimationHistogram[] =
+    "Ash.CalendarView.FadeInCurrentMonth.HeaderView.AnimationSmoothness";
+
+constexpr char kOnMonthChangedAnimationHistogram[] =
+    "Ash.CalendarView.OnMonthChanged.AnimationSmoothness";
+
+constexpr char kCloseEventListAnimationHistogram[] =
+    "Ash.CalendarView.CloseEventList.AnimationSmoothness";
+
+constexpr char kMonthViewOpenEventListAnimationHistogram[] =
+    "Ash.CalendarView.OpenEventList.MonthView.AnimationSmoothness";
+
+constexpr char kLabelViewOpenEventListAnimationHistogram[] =
+    "Ash.CalendarView.OpenEventList.LabelView.AnimationSmoothness";
+
+constexpr char kEventListViewOpenEventListAnimationHistogram[] =
+    "Ash.CalendarView.OpenEventList.EventListView.AnimationSmoothness";
+
 // The overridden `Label` view used in `CalendarView`.
 class CalendarLabel : public views::Label {
  public:
@@ -104,7 +158,8 @@ class MonthHeaderView : public views::View {
           gfx::Insets(calendar_utils::kDateVerticalPadding, 0))));
       label->SetElideBehavior(gfx::NO_ELIDE);
       label->SetSubpixelRenderingEnabled(false);
-      label->SetTextContext(CONTEXT_CALENDAR_DATE);
+      label->SetFontList(
+          views::style::GetFont(CONTEXT_CALENDAR_DATE, STYLE_EMPHASIZED));
 
       AddChildView(std::move(label));
     }
@@ -114,6 +169,12 @@ class MonthHeaderView : public views::View {
   MonthHeaderView& operator=(const MonthHeaderView& other) = delete;
   ~MonthHeaderView() override = default;
 };
+
+// Resets the `view`'s opacity and position.
+void ResetLayer(views::View* view) {
+  view->layer()->SetOpacity(1.0f);
+  view->layer()->SetTransform(gfx::Transform());
+}
 
 }  // namespace
 
@@ -145,9 +206,9 @@ class CalendarView::MonthHeaderLabelView : public views::View {
 
     month_label_->SetText(month_name_);
     SetupLabel(month_label_);
-    month_label_->SetBorder(views::CreateEmptyBorder(
-        kLabelVerticalPadding, calendar_utils::kDateHorizontalPadding,
-        kLabelVerticalPadding, 0));
+    month_label_->SetBorder(views::CreateEmptyBorder(kLabelVerticalPadding,
+                                                     kContentHorizontalPadding,
+                                                     kLabelVerticalPadding, 0));
   }
   MonthHeaderLabelView(const MonthHeaderLabelView&) = delete;
   MonthHeaderLabelView& operator=(const MonthHeaderLabelView&) = delete;
@@ -176,6 +237,66 @@ class CalendarView::MonthHeaderLabelView : public views::View {
   // The month label in the view.
   views::Label* const month_label_ = nullptr;
 };
+
+CalendarView::ScrollContentsView::ScrollContentsView(
+    CalendarViewController* controller)
+    : controller_(controller),
+      stylus_event_handler_(this),
+      current_month_(controller_->GetOnScreenMonthName()) {}
+
+void CalendarView::ScrollContentsView::OnMonthChanged() {
+  current_month_ = controller_->GetOnScreenMonthName();
+}
+
+void CalendarView::ScrollContentsView::OnEvent(ui::Event* event) {
+  views::View::OnEvent(event);
+
+  if (controller_->GetOnScreenMonthName() == current_month_)
+    return;
+  OnMonthChanged();
+
+  if (event->IsMouseWheelEvent()) {
+    calendar_metrics::RecordScrollSource(
+        calendar_metrics::CalendarViewScrollSource::kByMouseWheel);
+  }
+
+  if (event->IsScrollGestureEvent()) {
+    calendar_metrics::RecordScrollSource(
+        calendar_metrics::CalendarViewScrollSource::kByGesture);
+  }
+
+  if (event->IsFlingScrollEvent()) {
+    calendar_metrics::RecordScrollSource(
+        calendar_metrics::CalendarViewScrollSource::kByFling);
+  }
+}
+
+void CalendarView::ScrollContentsView::OnStylusEvent(
+    const ui::TouchEvent& event) {
+  if (controller_->GetOnScreenMonthName() == current_month_)
+    return;
+  OnMonthChanged();
+
+  calendar_metrics::RecordScrollSource(
+      calendar_metrics::CalendarViewScrollSource::kByStylus);
+}
+
+CalendarView::ScrollContentsView::StylusEventHandler::StylusEventHandler(
+    ScrollContentsView* content_view)
+    : content_view_(content_view) {
+  Shell::Get()->AddPreTargetHandler(this);
+}
+
+CalendarView::ScrollContentsView::StylusEventHandler::~StylusEventHandler() {
+  Shell::Get()->RemovePreTargetHandler(this);
+}
+
+void CalendarView::ScrollContentsView::StylusEventHandler::OnTouchEvent(
+    ui::TouchEvent* event) {
+  if (event->pointer_details().pointer_type == ui::EventPointerType::kPen) {
+    content_view_->OnStylusEvent(*event);
+  }
+}
 
 CalendarHeaderView::CalendarHeaderView(const std::u16string& month,
                                        const std::u16string& year)
@@ -245,34 +366,47 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
                 calendar_view->set_should_months_animate(true);
               },
               base::Unretained(this))) {
+  SetFocusBehavior(FocusBehavior::ALWAYS);
+  GetViewAccessibility().OverrideName(GetClassName());
+
   CreateTitleRow(IDS_ASH_CALENDAR_TITLE);
 
   // Add the header.
   header_ = new CalendarHeaderView(
       calendar_view_controller_->GetOnScreenMonthName(),
-      base::TimeFormatWithPattern(calendar_view_controller_->current_date(),
-                                  "YYYY"));
+      base::TimeFormatWithPattern(
+          calendar_view_controller_->currently_shown_date(), "YYYY"));
 
   TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
-  tri_view->SetBorder(views::CreateEmptyBorder(kLabelVerticalPadding,
-                                               kContentHorizontalPadding, 0,
-                                               kContentHorizontalPadding));
+  tri_view->SetBorder(views::CreateEmptyBorder(
+      kLabelVerticalPadding, kContentHorizontalPadding, 0,
+      kContentHorizontalPadding - calendar_utils::kColumnSetPadding));
   tri_view->AddView(TriView::Container::START, header_);
 
-  down_button_ = new IconButton(
-      base::BindRepeating(&CalendarView::ScrollOneMonthWithAnimation,
-                          base::Unretained(this), /*is_scrolling_up=*/false),
+  auto* button_container = new views::View();
+  views::BoxLayout* button_container_layout =
+      button_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal));
+  button_container_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kEnd);
+  // Aligns button with the calendar dates in the `TableLayout`.
+  button_container_layout->set_between_child_spacing(
+      calendar_utils::kDateHorizontalPadding +
+      calendar_utils::kColumnSetPadding);
+
+  down_button_ = button_container->AddChildView(std::make_unique<IconButton>(
+      base::BindRepeating(&CalendarView::OnMonthArrowButtonActivated,
+                          base::Unretained(this), /*up=*/false),
       IconButton::Type::kSmallFloating, &vector_icons::kCaretDownIcon,
-      IDS_ASH_CALENDAR_DOWN_BUTTON_ACCESSIBLE_DESCRIPTION);
-  up_button_ = new IconButton(
-      base::BindRepeating(&CalendarView::ScrollOneMonthWithAnimation,
-                          base::Unretained(this), /*is_scrolling_up=*/true),
+      IDS_ASH_CALENDAR_DOWN_BUTTON_ACCESSIBLE_DESCRIPTION));
+
+  up_button_ = button_container->AddChildView(std::make_unique<IconButton>(
+      base::BindRepeating(&CalendarView::OnMonthArrowButtonActivated,
+                          base::Unretained(this), /*up=*/true),
       IconButton::Type::kSmallFloating, &vector_icons::kCaretUpIcon,
-      IDS_ASH_CALENDAR_UP_BUTTON_ACCESSIBLE_DESCRIPTION);
+      IDS_ASH_CALENDAR_UP_BUTTON_ACCESSIBLE_DESCRIPTION));
 
-  tri_view->AddView(TriView::Container::END, down_button_);
-  tri_view->AddView(TriView::Container::END, up_button_);
-
+  tri_view->AddView(TriView::Container::END, button_container);
   AddChildView(tri_view);
 
   // Add month header.
@@ -289,17 +423,13 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
   scroll_view_->SetDrawOverflowIndicator(false);
   scroll_view_->SetVerticalScrollBarMode(
       views::ScrollView::ScrollBarMode::kHiddenButEnabled);
-  scroll_view_->GetViewAccessibility().OverrideRole(ax::mojom::Role::kGroup);
-  scroll_view_->GetViewAccessibility().OverrideName(l10n_util::GetStringFUTF16(
-      IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION,
-      base::TimeFormatWithPattern(calendar_view_controller_->current_date(),
-                                  "MMMM yyyy")));
-  scroll_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
+  scroll_view_->SetFocusBehavior(FocusBehavior::NEVER);
   on_contents_scrolled_subscription_ =
       scroll_view_->AddContentsScrolledCallback(base::BindRepeating(
           &CalendarView::OnContentsScrolled, base::Unretained(this)));
 
-  content_view_ = scroll_view_->SetContents(std::make_unique<views::View>());
+  content_view_ = scroll_view_->SetContents(
+      std::make_unique<ScrollContentsView>(calendar_view_controller_.get()));
   content_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
   content_view_->SetBorder(views::CreateEmptyBorder(
@@ -311,10 +441,13 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
 
   SetMonthViews();
 
+  scoped_calendar_model_observer_.Observe(
+      Shell::Get()->system_tray_model()->calendar_model());
   scoped_calendar_view_controller_observer_.Observe(
       calendar_view_controller_.get());
   scoped_view_observer_.AddObservation(scroll_view_);
   scoped_view_observer_.AddObservation(content_view_);
+  scoped_view_observer_.AddObservation(this);
 }
 
 CalendarView::~CalendarView() {
@@ -322,8 +455,10 @@ CalendarView::~CalendarView() {
   // dependency from `CalendarViewController`, since these views are destructed
   // after the controller.
   content_view_->RemoveAllChildViews();
-  if (event_list_container_)
-    event_list_container_->RemoveAllChildViews();
+  if (event_list_view_) {
+    RemoveChildViewT(event_list_view_);
+    event_list_view_ = nullptr;
+  }
 }
 
 void CalendarView::Init() {
@@ -335,10 +470,11 @@ void CalendarView::CreateExtraTitleRowButtons() {
   tri_view()->SetContainerVisible(TriView::Container::END, /*visible=*/true);
 
   reset_to_today_button_ = CreateInfoButton(
-      base::BindRepeating(&CalendarView::ResetToToday, base::Unretained(this)),
+      base::BindRepeating(&CalendarView::ResetToTodayWithAnimation,
+                          base::Unretained(this)),
       IDS_ASH_CALENDAR_INFO_BUTTON_ACCESSIBLE_DESCRIPTION);
   reset_to_today_button_->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_ASH_CALENDA_TODAY_BUTTON_TOOLTIP));
+      l10n_util::GetStringUTF16(IDS_ASH_CALENDAR_TODAY_BUTTON_TOOLTIP));
   tri_view()->AddView(TriView::Container::END, reset_to_today_button_);
 
   DCHECK(!settings_button_);
@@ -357,7 +493,7 @@ views::Button* CalendarView::CreateInfoButton(
     int info_accessible_name_id) {
   auto* button =
       new PillButton(std::move(callback),
-                     l10n_util::GetStringUTF16(IDS_ASH_CALENDA_INFO_BUTTON),
+                     l10n_util::GetStringUTF16(IDS_ASH_CALENDAR_INFO_BUTTON),
                      PillButton::Type::kIconless, /*icon=*/nullptr);
   button->SetAccessibleName(l10n_util::GetStringFUTF16(
       IDS_ASH_CALENDAR_INFO_BUTTON_ACCESSIBLE_DESCRIPTION,
@@ -405,11 +541,76 @@ int CalendarView::PositionOfSelectedDate() const {
          next_label_->GetPreferredSize().height() + row_height;
 }
 
-void CalendarView::ResetToToday() {
-  if (event_list_container_)
-    return;
+void CalendarView::SetHeaderAndContentViewOpacity(float opacity) {
+  header_->layer()->SetOpacity(opacity);
+  content_view_->layer()->SetOpacity(opacity);
+}
 
-  calendar_view_controller_->UpdateMonth(base::Time::Now());
+void CalendarView::SetShouldMonthsAnimateAndScrollEnabled(bool enabled) {
+  set_should_months_animate(enabled);
+  is_resetting_scroll_ = !enabled;
+  scroll_view_->SetVerticalScrollBarMode(
+      enabled ? views::ScrollView::ScrollBarMode::kHiddenButEnabled
+              : views::ScrollView::ScrollBarMode::kDisabled);
+}
+
+void CalendarView::ResetToTodayWithAnimation() {
+  if (!should_months_animate_)
+    return;
+  SetShouldMonthsAnimateAndScrollEnabled(/*enabled=*/false);
+
+  content_view_->SetPaintToLayer();
+  content_view_->layer()->SetFillsBoundsOpaquely(false);
+
+  auto content_reporter = calendar_metrics::CreateAnimationReporter(
+      content_view_, kContentViewResetToTodayAnimationHistogram);
+  auto header_reporter = calendar_metrics::CreateAnimationReporter(
+      header_, kHeaderViewResetToTodayAnimationHistogram);
+
+  // Fades out on-screen month. When animation ends sets date to today by
+  // calling `ResetToToday` and fades in updated views after.
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .OnEnded(base::BindOnce(
+          [](base::WeakPtr<CalendarView> calendar_view) {
+            if (!calendar_view)
+              return;
+            calendar_view->SetShouldMonthsAnimateAndScrollEnabled(
+                /*enabled=*/true);
+            calendar_view->ResetToToday();
+            calendar_view->FadeInCurrentMonth();
+          },
+          weak_factory_.GetWeakPtr()))
+      .OnAborted(base::BindOnce(
+          [](base::WeakPtr<CalendarView> calendar_view) {
+            if (!calendar_view)
+              return;
+            calendar_view->SetShouldMonthsAnimateAndScrollEnabled(
+                /*enabled=*/true);
+            calendar_view->ResetToToday();
+            calendar_view->FadeInCurrentMonth();
+          },
+          weak_factory_.GetWeakPtr()))
+      .Once()
+      .SetDuration(calendar_utils::kResetToTodayFadeAnimationDuration)
+      .SetOpacity(header_, 0.0f)
+      .SetOpacity(content_view_, 0.0f);
+}
+
+void CalendarView::ResetToToday() {
+  if (event_list_view_) {
+    scroll_view_->SetVerticalScrollBarMode(
+        views::ScrollView::ScrollBarMode::kHiddenButEnabled);
+    set_should_months_animate(false);
+  }
+
+  // Updates month to today's date without animating header.
+  {
+    base::AutoReset<bool> is_updating_month(&should_header_animate_, false);
+    calendar_view_controller_->UpdateMonth(base::Time::Now());
+  }
+
   content_view_->RemoveChildViewT(previous_label_);
   content_view_->RemoveChildViewT(previous_month_);
   content_view_->RemoveChildViewT(current_label_);
@@ -431,13 +632,59 @@ void CalendarView::ResetToToday() {
   SetMonthViews();
   ScrollToToday();
   MaybeResetContentViewFocusBehavior();
+
+  if (event_list_view_) {
+    scroll_view_->SetVerticalScrollBarMode(
+        views::ScrollView::ScrollBarMode::kDisabled);
+    months_animation_restart_timer_.Reset();
+  }
+}
+
+void CalendarView::FadeInCurrentMonth() {
+  if (!should_months_animate_)
+    return;
+  SetShouldMonthsAnimateAndScrollEnabled(/*enabled=*/false);
+
+  content_view_->SetPaintToLayer();
+  content_view_->layer()->SetFillsBoundsOpaquely(false);
+  SetHeaderAndContentViewOpacity(/*opacity=*/0.0f);
+
+  auto content_reporter = calendar_metrics::CreateAnimationReporter(
+      content_view_, kContentViewFadeInCurrentMonthAnimationHistogram);
+  auto header_reporter = calendar_metrics::CreateAnimationReporter(
+      header_, kHeaderViewFadeInCurrentMonthAnimationHistogram);
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .OnEnded(base::BindOnce(
+          [](base::WeakPtr<CalendarView> calendar_view) {
+            if (!calendar_view)
+              return;
+            calendar_view->SetShouldMonthsAnimateAndScrollEnabled(
+                /*enabled=*/true);
+          },
+          weak_factory_.GetWeakPtr()))
+      .OnAborted(base::BindOnce(
+          [](base::WeakPtr<CalendarView> calendar_view) {
+            if (!calendar_view)
+              return;
+            calendar_view->SetShouldMonthsAnimateAndScrollEnabled(
+                /*enabled=*/true);
+            calendar_view->SetHeaderAndContentViewOpacity(/*opacity=*/1.0f);
+          },
+          weak_factory_.GetWeakPtr()))
+      .Once()
+      .SetDuration(calendar_utils::kResetToTodayFadeAnimationDuration)
+      .SetOpacity(header_, 1.0f)
+      .SetOpacity(content_view_, 1.0f);
 }
 
 void CalendarView::UpdateHeaders() {
   header_->UpdateHeaders(
       calendar_view_controller_->GetOnScreenMonthName(),
-      base::TimeFormatWithPattern(calendar_view_controller_->current_date(),
-                                  "YYYY"));
+      base::TimeFormatWithPattern(
+          calendar_view_controller_->currently_shown_date(), "YYYY"));
 }
 
 void CalendarView::RestoreHeadersStatus() {
@@ -449,26 +696,20 @@ void CalendarView::RestoreHeadersStatus() {
     header_animation_restart_timer_.Reset();
 }
 
-void CalendarView::RestoreMonthStatus(bool is_scrolling_up) {
+void CalendarView::RestoreMonthStatus() {
   current_month_->layer()->GetAnimator()->StopAnimating();
-  current_month_->layer()->SetOpacity(1.0f);
-  current_month_->layer()->SetTransform(gfx::Transform());
+  current_label_->layer()->GetAnimator()->StopAnimating();
+  previous_month_->layer()->GetAnimator()->StopAnimating();
+  previous_label_->layer()->GetAnimator()->StopAnimating();
+  next_label_->layer()->GetAnimator()->StopAnimating();
+  next_month_->layer()->GetAnimator()->StopAnimating();
+  ResetLayer(current_month_);
+  ResetLayer(current_label_);
+  ResetLayer(previous_label_);
+  ResetLayer(previous_month_);
+  ResetLayer(next_label_);
+  ResetLayer(next_month_);
 
-  if (is_scrolling_up) {
-    current_label_->layer()->GetAnimator()->StopAnimating();
-    previous_month_->layer()->GetAnimator()->StopAnimating();
-    current_label_->layer()->SetOpacity(1.0f);
-    current_label_->layer()->SetTransform(gfx::Transform());
-    previous_month_->layer()->SetOpacity(1.0f);
-    previous_month_->layer()->SetTransform(gfx::Transform());
-  } else {
-    next_label_->layer()->GetAnimator()->StopAnimating();
-    next_month_->layer()->GetAnimator()->StopAnimating();
-    next_label_->layer()->SetOpacity(1.0f);
-    next_label_->layer()->SetTransform(gfx::Transform());
-    next_month_->layer()->SetOpacity(1.0f);
-    next_month_->layer()->SetTransform(gfx::Transform());
-  }
   if (!should_months_animate_)
     months_animation_restart_timer_.Reset();
 }
@@ -487,8 +728,10 @@ void CalendarView::ScrollToToday() {
           calendar_view_controller_->GetTodayRowBottomHeight() >
       scroll_view_->GetVisibleRect().bottom()) {
     base::AutoReset<bool> is_resetting_scrolling(&is_resetting_scroll_, true);
-    scroll_view_->ScrollToPosition(scroll_view_->vertical_scroll_bar(),
-                                   PositionOfToday());
+    scroll_view_->ScrollToPosition(
+        scroll_view_->vertical_scroll_bar(),
+        PositionOfToday() +
+            (event_list_view_ ? calendar_utils::kDateVerticalPadding : 0));
   }
 }
 
@@ -511,11 +754,6 @@ void CalendarView::MaybeResetContentViewFocusBehavior() {
   }
 
   content_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
-
-  // Also disable the focus behavior of the `event_list_container_`, since now
-  // the focusing ring is out of the date cells.
-  if (event_list_container_)
-    event_list_container_->SetFocusBehavior(FocusBehavior::NEVER);
 }
 
 void CalendarView::OnViewBoundsChanged(views::View* observed_view) {
@@ -535,6 +773,12 @@ void CalendarView::OnViewBoundsChanged(views::View* observed_view) {
 }
 
 void CalendarView::OnViewFocused(View* observed_view) {
+  if (observed_view == this) {
+    content_view_->RequestFocus();
+    SetFocusBehavior(FocusBehavior::NEVER);
+    return;
+  }
+
   if (observed_view != content_view_ || IsDateCellViewFocused())
     return;
 
@@ -545,18 +789,17 @@ void CalendarView::OnViewFocused(View* observed_view) {
 
   // If the event list is showing, focus on the first cell in the current row or
   // today's cell if today is in this row.
-  if (event_list_container_) {
+  if (event_list_view_) {
     focus_manager->SetFocusedView(
         current_month_->focused_cells()[calendar_view_controller_
                                             ->GetExpandedRowIndex()]);
     AdjustDateCellVoxBounds();
 
     content_view_->SetFocusBehavior(FocusBehavior::NEVER);
-    event_list_container_->SetFocusBehavior(FocusBehavior::ALWAYS);
     return;
   }
 
-  // When focusing on the `content_view_`, we decide which is the to-be-focued
+  // When focusing on the `content_view_`, we decide which is the to-be-focused
   // cell based on the current position.
   const int position = scroll_view_->GetVisibleRect().y();
   const int row_height = calendar_view_controller_->row_height();
@@ -564,18 +807,21 @@ void CalendarView::OnViewFocused(View* observed_view) {
   // At least one row of the current month is visible on the screen. The
   // to-be-focused cell should be the first non-grayed date cell that is
   // visible, or today's cell if today is in the current month and visible.
-  if (position < (next_label_->y() - row_height)) {
+  if (position < (next_label_->y() - row_height - kMonthVerticalPadding -
+                  kLabelVerticalPadding)) {
     int row_index = 0;
     const int today_index = calendar_view_controller_->today_row() - 1;
     while (position > (PositionOfCurrentMonth() + row_index * row_height))
       ++row_index;
 
+    CalendarDateCellView* focused_cell;
     if (current_month_->has_today() && row_index <= today_index) {
-      focus_manager->SetFocusedView(
-          current_month_->focused_cells()[today_index]);
+      focused_cell = current_month_->focused_cells()[today_index];
     } else {
-      focus_manager->SetFocusedView(current_month_->focused_cells()[row_index]);
+      focused_cell = current_month_->focused_cells()[row_index];
     }
+    focused_cell->SetFirstOnFocusedAccessibilityLabel();
+    focus_manager->SetFocusedView(focused_cell);
   } else {
     // If there's no visible row of the current month on the screen, focus on
     // the first visible non-grayed-out date of the next month.
@@ -621,12 +867,13 @@ void CalendarView::OnMonthChanged(const base::Time::Exploded current_month) {
 
   const int header_height = header_->GetPreferredSize().height();
   gfx::Vector2dF moving_location = gfx::Vector2dF(
-      0, calendar_view_controller_->was_on_later_month() ? -header_height / 2
-                                                         : header_height / 2);
-  gfx::Transform initial_state = gfx::TransformAboutPivot(
-      header_->GetLocalBounds().CenterPoint(), gfx::Transform());
+      0, is_scrolling_up_ ? -header_height / 2 : header_height / 2);
+  gfx::Transform initial_state;
   initial_state.Translate(moving_location);
   set_should_header_animate(false);
+
+  auto header_reporter = calendar_metrics::CreateAnimationReporter(
+      header_, kOnMonthChangedAnimationHistogram);
 
   views::AnimationBuilder()
       .SetPreemptionStrategy(
@@ -656,7 +903,7 @@ void CalendarView::OnMonthChanged(const base::Time::Exploded current_month) {
       .SetDuration(kDelayVisibilityAnimationDuration)
       .Then()
       .SetDuration(calendar_utils::kAnimationDurationForVisibility)
-      .SetOpacity(header_, 1.0);
+      .SetOpacity(header_, 1.0f);
 }
 
 void CalendarView::OnEventsFetched(
@@ -669,71 +916,148 @@ void CalendarView::OnEventsFetched(
 }
 
 void CalendarView::OpenEventList() {
-  if (event_list_container_)
+  // Don't show the the `event_list_` view for unlogged in users.
+  if (!calendar_utils::IsActiveUser())
     return;
 
-  // Updates `scroll_view_`'s accessible name with the selected date.
-  absl::optional<base::Time::Exploded> selected_date =
-      calendar_view_controller_->selected_date();
-  DCHECK(selected_date.has_value());
-  base::Time unexploded_selected_date;
-  bool result = base::Time::FromLocalExploded(selected_date.value(),
-                                              &unexploded_selected_date);
-  DCHECK(result);
-  scroll_view_->GetViewAccessibility().OverrideName(l10n_util::GetStringFUTF16(
-      IDS_ASH_CALENDAR_CONTENT_ACCESSIBLE_DESCRIPTION,
-      base::TimeFormatWithPattern(calendar_view_controller_->current_date(),
-                                  "MMMM yyyy"),
-      base::TimeFormatWithPattern(unexploded_selected_date, "MMMMdyyyy")));
-  scroll_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
-                                         /*send_native_event=*/true);
+  // If the event list is already open or the months are moving/animation,
+  // do nothing.
+  if (event_list_view_ || is_calendar_view_scrolling_)
+    return;
 
-  scroll_view_->SetVerticalScrollBarMode(
-      views::ScrollView::ScrollBarMode::kHiddenButEnabled);
-
-  if (!calendar_view_controller_->IsSelectedDateInCurrentMonth())
-    ScrollDownOneMonth();
-  base::AutoReset<bool> is_resetting_scrolling(&is_resetting_scroll_, true);
-  scroll_view_->ScrollToPosition(scroll_view_->vertical_scroll_bar(),
-                                 PositionOfSelectedDate());
-
-  scroll_view_->ClipHeightTo(0, kExpandedCalendarViewHeightScale *
-                                    calendar_view_controller_->row_height());
   scroll_view_->SetVerticalScrollBarMode(
       views::ScrollView::ScrollBarMode::kDisabled);
 
-  // The event list is in a container, which will be used for escaping the
-  // focusing from the date cells.
-  event_list_container_ = AddChildView(std::make_unique<views::View>());
-  event_list_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
-  event_list_container_->GetViewAccessibility().OverrideName(GetClassName());
-  event_list_container_->SetFocusBehavior(
-      IsDateCellViewFocused() ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
-
-  event_list_ = event_list_container_->AddChildView(
+  // Updates `scroll_view_`'s accessible name with the selected date.
+  absl::optional<base::Time> selected_date =
+      calendar_view_controller_->selected_date();
+  scroll_view_->GetViewAccessibility().OverrideName(l10n_util::GetStringFUTF16(
+      IDS_ASH_CALENDAR_CONTENT_ACCESSIBLE_DESCRIPTION,
+      base::TimeFormatWithPattern(
+          calendar_view_controller_->currently_shown_date(), "MMMM yyyy"),
+      base::TimeFormatWithPattern(selected_date.value(), "MMMMdyyyy")));
+  scroll_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
+                                         /*send_native_event=*/true);
+  event_list_view_ = AddChildView(
       std::make_unique<CalendarEventListView>(calendar_view_controller_.get()));
-  event_list_->GetViewAccessibility().OverrideName(GetClassName());
-  event_list_->GetViewAccessibility().OverrideRole(ax::mojom::Role::kGroup);
-  event_list_->SetFocusBehavior(FocusBehavior::ALWAYS);
-  calendar_view_controller_->OnEventListOpened();
+  event_list_view_->SetFocusBehavior(FocusBehavior::NEVER);
+  event_list_view_->SetBounds(
+      scroll_view_->GetVisibleRect().x(),
+      scroll_view_->GetVisibleRect().bottom(),
+      scroll_view_->GetVisibleRect().width(),
+      calendar_view_controller_->expanded_area_available_height());
+
+  if (!should_months_animate_) {
+    OnOpenEventListAnimationComplete();
+    return;
+  }
+
+  set_should_months_animate(false);
+  gfx::Vector2dF moving_up_location = gfx::Vector2dF(
+      0, -PositionOfSelectedDate() + scroll_view_->GetVisibleRect().y());
+
+  gfx::Transform month_moving;
+  month_moving.Translate(moving_up_location);
+
+  gfx::Transform list_view_moving;
+  list_view_moving.Translate(gfx::Vector2dF(
+      0, -event_list_view_->GetBoundsInScreen().y() +
+             scroll_view_->GetBoundsInScreen().bottom() -
+             calendar_view_controller_->expanded_area_available_height()));
+
+  // Tracks animation smoothness. For now, we only track animation smoothness
+  // for 1 month and 1 label since all 2 month views and 2 label views are
+  // similar and perform the same animation. If this is not the case in the
+  // future, we should add additional metrics for the rest.
+  auto month_reporter = calendar_metrics::CreateAnimationReporter(
+      current_month_, kMonthViewOpenEventListAnimationHistogram);
+  auto label_reporter = calendar_metrics::CreateAnimationReporter(
+      current_label_, kLabelViewOpenEventListAnimationHistogram);
+  auto event_list_reporter = calendar_metrics::CreateAnimationReporter(
+      event_list_view_, kEventListViewOpenEventListAnimationHistogram);
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .OnEnded(base::BindOnce(
+          [](base::WeakPtr<CalendarView> calendar_view) {
+            if (!calendar_view)
+              return;
+            calendar_view->OnOpenEventListAnimationComplete();
+          },
+          weak_factory_.GetWeakPtr()))
+      .OnAborted(base::BindOnce(
+          [](base::WeakPtr<CalendarView> calendar_view) {
+            if (!calendar_view)
+              return;
+            calendar_view->OnOpenEventListAnimationComplete();
+          },
+          weak_factory_.GetWeakPtr()))
+      .Once()
+      .SetDuration(calendar_utils::kAnimationDurationForMoving)
+      .SetTransform(current_month_, month_moving, gfx::Tween::EASE_OUT_2)
+      .SetTransform(current_label_, month_moving, gfx::Tween::EASE_OUT_2)
+      .SetTransform(next_label_, month_moving, gfx::Tween::EASE_OUT_2)
+      .SetTransform(next_month_, month_moving, gfx::Tween::EASE_OUT_2)
+      .At(base::Milliseconds(0))
+      .SetDuration(kAnimationDurationForEventsMoving)
+      .SetTransform(event_list_view_, std::move(list_view_moving),
+                    gfx::Tween::EASE_OUT_2);
 }
 
 void CalendarView::CloseEventList() {
   // Updates `scroll_view_`'s accessible name without the selected date.
   scroll_view_->GetViewAccessibility().OverrideName(l10n_util::GetStringFUTF16(
       IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION,
-      base::TimeFormatWithPattern(calendar_view_controller_->current_date(),
-                                  "MMMM yyyy")));
+      base::TimeFormatWithPattern(
+          calendar_view_controller_->currently_shown_date(), "MMMM yyyy")));
   scroll_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
                                          /*send_native_event=*/true);
   scroll_view_->ClipHeightTo(0, INT_MAX);
   scroll_view_->SetVerticalScrollBarMode(
       views::ScrollView::ScrollBarMode::kHiddenButEnabled);
-  RemoveChildViewT(event_list_container_);
-  event_list_container_ = nullptr;
-  event_list_ = nullptr;
-  calendar_view_controller_->OnEventListClosed();
+
+  // The position of the `event_list_view_` is on the most top the calendar view
+  // after the height of the `scroll_view_` is set to max. This init set it to
+  // the correct position.
+  const int init_position =
+      event_list_view_->GetBoundsInScreen().y() - GetBoundsInScreen().y();
+  gfx::Transform list_view_moving_init;
+  list_view_moving_init.Translate(0, init_position);
+
+  // Then based on the `event_list_view_`'s position, move it
+  // out of the visible view.
+  gfx::Transform list_view_moving;
+  list_view_moving.Translate(gfx::Vector2dF(
+      0, calendar_view_controller_->expanded_area_available_height() +
+             init_position));
+
+  auto event_list_reporter = calendar_metrics::CreateAnimationReporter(
+      event_list_view_, kCloseEventListAnimationHistogram);
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .OnEnded(base::BindOnce(
+          [](base::WeakPtr<CalendarView> calendar_view) {
+            if (!calendar_view)
+              return;
+            calendar_view->OnCloseEventListAnimationComplete();
+          },
+          weak_factory_.GetWeakPtr()))
+      .OnAborted(base::BindOnce(
+          [](base::WeakPtr<CalendarView> calendar_view) {
+            if (!calendar_view)
+              return;
+            calendar_view->OnCloseEventListAnimationComplete();
+          },
+          weak_factory_.GetWeakPtr()))
+      .Once()
+      .SetTransform(event_list_view_, std::move(list_view_moving_init))
+      .Then()
+      .SetDuration(kAnimationDurationForClosingEvents)
+      .SetTransform(event_list_view_, std::move(list_view_moving),
+                    gfx::Tween::FAST_OUT_SLOW_IN);
 }
 
 void CalendarView::ScrollUpOneMonth() {
@@ -803,49 +1127,46 @@ void CalendarView::ScrollDownOneMonth() {
   MaybeResetContentViewFocusBehavior();
 }
 
-void CalendarView::ScrollUpOneMonthAndAutoScroll() {
+void CalendarView::ScrollOneMonthAndAutoScroll(bool scroll_up) {
   if (is_resetting_scroll_)
     return;
 
   base::AutoReset<bool> is_resetting_scrolling(&is_resetting_scroll_, true);
-  RestoreMonthStatus(/*is_scrolling_up=*/true);
-  ScrollUpOneMonth();
+  RestoreMonthStatus();
+  if (scroll_up)
+    ScrollUpOneMonth();
+  else
+    ScrollDownOneMonth();
   scroll_view_->ScrollToPosition(scroll_view_->vertical_scroll_bar(),
                                  PositionOfCurrentMonth());
 }
 
-void CalendarView::ScrollDownOneMonthAndAutoScroll() {
+void CalendarView::ScrollOneMonthWithAnimation(bool scroll_up) {
+  is_scrolling_up_ = scroll_up;
   if (is_resetting_scroll_)
     return;
 
-  base::AutoReset<bool> is_resetting_scrolling(&is_resetting_scroll_, true);
-  RestoreMonthStatus(/*is_scrolling_up=*/false);
-  ScrollDownOneMonth();
-  scroll_view_->ScrollToPosition(scroll_view_->vertical_scroll_bar(),
-                                 PositionOfCurrentMonth());
-}
-
-void CalendarView::ScrollOneMonthWithAnimation(bool is_scrolling_up) {
-  if (is_resetting_scroll_)
-    return;
-
-  if (event_list_container_) {
-    ScrollOneRowWithAnimation(is_scrolling_up);
+  if (event_list_view_) {
+    // If it is animating to open this `event_list_view_`, disable the up/down
+    // buttons.
+    if (!should_months_animate_ || !should_header_animate_)
+      return;
+    ScrollOneRowWithAnimation(scroll_up);
     return;
   }
 
   // If there's already an existing animation, restores each layer's visibility
   // and position.
-  if (!should_months_animate_) {
-    if (is_scrolling_up) {
-      ScrollUpOneMonthAndAutoScroll();
-      return;
-    }
-    ScrollDownOneMonthAndAutoScroll();
+  if (!should_months_animate_ || !should_header_animate_) {
+    RestoreHeadersStatus();
+    set_should_months_animate(false);
+    set_should_header_animate(false);
+    ScrollOneMonthAndAutoScroll(scroll_up);
     return;
   }
 
   set_should_months_animate(false);
+  set_should_header_animate(false);
   gfx::Vector2dF moving_up_location = gfx::Vector2dF(
       0, previous_month_->GetPreferredSize().height() +
              current_label_->GetPreferredSize().height() +
@@ -855,64 +1176,52 @@ void CalendarView::ScrollOneMonthWithAnimation(bool is_scrolling_up) {
              next_label_->GetPreferredSize().height() +
              (scroll_view_->GetVisibleRect().y() - current_month_->y()));
 
-  gfx::Transform current_month_moving = gfx::TransformAboutPivot(
-      current_month_->GetLocalBounds().CenterPoint(), gfx::Transform());
-  current_month_moving.Translate(is_scrolling_up ? moving_up_location
-                                                 : moving_down_location);
-  gfx::Transform current_label_moving = gfx::TransformAboutPivot(
-      current_label_->GetLocalBounds().CenterPoint(), gfx::Transform());
-  current_label_moving.Translate(moving_up_location);
-  gfx::Transform previous_month_moving = gfx::TransformAboutPivot(
-      previous_month_->GetLocalBounds().CenterPoint(), gfx::Transform());
-  previous_month_moving.Translate(moving_up_location);
-
-  gfx::Transform next_label_moving = gfx::TransformAboutPivot(
-      next_label_->GetLocalBounds().CenterPoint(), gfx::Transform());
-  next_label_moving.Translate(moving_down_location);
-  gfx::Transform next_month_moving = gfx::TransformAboutPivot(
-      next_month_->GetLocalBounds().CenterPoint(), gfx::Transform());
-  next_month_moving.Translate(moving_down_location);
+  gfx::Transform month_moving;
+  month_moving.Translate(scroll_up ? moving_up_location : moving_down_location);
 
   const int header_height = header_->GetPreferredSize().height();
-  const gfx::Vector2dF moving_location = gfx::Vector2dF(
-      0, calendar_view_controller_->was_on_later_month() ? header_height / 2
-                                                         : -header_height / 2);
-  gfx::Transform header_moving = gfx::TransformAboutPivot(
-      header_->GetLocalBounds().CenterPoint(), gfx::Transform());
-  header_moving.Translate(moving_location);
+  const gfx::Vector2dF header_moving_location = gfx::Vector2dF(
+      0, is_scrolling_up_ ? header_height / 2 : -header_height / 2);
+  gfx::Transform header_moving;
+  header_moving.Translate(header_moving_location);
+
+  // Tracks animation smoothness. For now, we only track animation smoothness
+  // for 1 month and 1 label since all 3 month views and 3 label views are
+  // similar and perform the same animation. If this is not the case in the
+  // future, we should add additional metrics for the rest.
+  auto month_reporter = calendar_metrics::CreateAnimationReporter(
+      current_month_, kMonthViewScrollOneMonthAnimationHistogram);
+  auto label_reporter = calendar_metrics::CreateAnimationReporter(
+      current_label_, kLabelViewScrollOneMonthAnimationHistogram);
+  auto header_reporter = calendar_metrics::CreateAnimationReporter(
+      header_, kHeaderViewScrollOneMonthAnimationHistogram);
 
   views::AnimationBuilder()
       .SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
       .OnEnded(base::BindOnce(
-          [](base::WeakPtr<CalendarView> calendar_view, bool is_scrolling_up) {
+          [](base::WeakPtr<CalendarView> calendar_view, bool scroll_up) {
             if (!calendar_view)
               return;
-            calendar_view->set_should_months_animate(true);
-            is_scrolling_up ? calendar_view->ScrollUpOneMonthAndAutoScroll()
-                            : calendar_view->ScrollDownOneMonthAndAutoScroll();
+            calendar_view->set_should_header_animate(true);
+            calendar_view->ScrollOneMonthAndAutoScroll(scroll_up);
           },
-          weak_factory_.GetWeakPtr(), is_scrolling_up))
+          weak_factory_.GetWeakPtr(), scroll_up))
       .OnAborted(base::BindOnce(
-          [](base::WeakPtr<CalendarView> calendar_view, bool is_scrolling_up) {
+          [](base::WeakPtr<CalendarView> calendar_view, bool scroll_up) {
             if (!calendar_view)
               return;
-            is_scrolling_up ? calendar_view->ScrollUpOneMonthAndAutoScroll()
-                            : calendar_view->ScrollDownOneMonthAndAutoScroll();
+            calendar_view->ScrollOneMonthAndAutoScroll(scroll_up);
           },
-          weak_factory_.GetWeakPtr(), is_scrolling_up))
+          weak_factory_.GetWeakPtr(), scroll_up))
       .Once()
       .SetDuration(calendar_utils::kAnimationDurationForMoving * 2)
-      .SetTransform(current_month_, std::move(current_month_moving),
-                    gfx::Tween::EASE_OUT_2)
-      .SetTransform(
-          is_scrolling_up ? current_label_ : next_label_,
-          std::move(is_scrolling_up ? current_label_moving : next_label_moving),
-          gfx::Tween::EASE_OUT_2)
-      .SetTransform(is_scrolling_up ? previous_month_ : next_month_,
-                    std::move(is_scrolling_up ? previous_month_moving
-                                              : next_month_moving),
-                    gfx::Tween::EASE_OUT_2)
+      .SetTransform(current_month_, month_moving, gfx::Tween::EASE_OUT_2)
+      .SetTransform(current_label_, month_moving, gfx::Tween::EASE_OUT_2)
+      .SetTransform(previous_month_, month_moving, gfx::Tween::EASE_OUT_2)
+      .SetTransform(previous_label_, month_moving, gfx::Tween::EASE_OUT_2)
+      .SetTransform(next_month_, month_moving, gfx::Tween::EASE_OUT_2)
+      .SetTransform(next_label_, month_moving, gfx::Tween::EASE_OUT_2)
       .At(calendar_utils::kAnimationDurationForMoving)
       .SetDuration(calendar_utils::kAnimationDurationForMoving)
       .SetTransform(header_, std::move(header_moving), gfx::Tween::EASE_OUT_2)
@@ -920,18 +1229,18 @@ void CalendarView::ScrollOneMonthWithAnimation(bool is_scrolling_up) {
       .SetDuration(kDelayVisibilityAnimationDuration)
       .Then()
       .SetDuration(calendar_utils::kAnimationDurationForVisibility)
-      .SetOpacity(header_, 0.0);
+      .SetOpacity(header_, 0.0f);
 }
 
-void CalendarView::ScrollOneRowWithAnimation(bool is_scrolling_up) {
+void CalendarView::ScrollOneRowWithAnimation(bool scroll_up) {
+  is_scrolling_up_ = scroll_up;
   scroll_view_->SetVerticalScrollBarMode(
       views::ScrollView::ScrollBarMode::kHiddenButEnabled);
   base::AutoReset<bool> is_resetting_scrolling(&is_resetting_scroll_, true);
 
   // Scrolls to the last row of the previous month if it's currently on the
   // first row and scrolling up.
-  if (is_scrolling_up &&
-      calendar_view_controller_->GetExpandedRowIndex() == 0) {
+  if (scroll_up && calendar_view_controller_->GetExpandedRowIndex() == 0) {
     ScrollUpOneMonth();
     calendar_view_controller_->set_expanded_row_index(
         current_month_->last_row_index());
@@ -947,8 +1256,8 @@ void CalendarView::ScrollOneRowWithAnimation(bool is_scrolling_up) {
 
   // Scrolls to the first row of the next month if it's currently on the
   // last row and scrolling down.
-  if (!is_scrolling_up && calendar_view_controller_->GetExpandedRowIndex() ==
-                              current_month_->last_row_index()) {
+  if (!scroll_up && calendar_view_controller_->GetExpandedRowIndex() ==
+                        current_month_->last_row_index()) {
     ScrollDownOneMonth();
     calendar_view_controller_->set_expanded_row_index(0);
     scroll_view_->ScrollToPosition(
@@ -960,8 +1269,7 @@ void CalendarView::ScrollOneRowWithAnimation(bool is_scrolling_up) {
   }
 
   calendar_view_controller_->set_expanded_row_index(
-      calendar_view_controller_->GetExpandedRowIndex() +
-      (is_scrolling_up ? -1 : 1));
+      calendar_view_controller_->GetExpandedRowIndex() + (scroll_up ? -1 : 1));
   const int row_height = calendar_view_controller_->GetExpandedRowIndex() *
                          calendar_view_controller_->row_height();
   scroll_view_->ScrollToPosition(scroll_view_->vertical_scroll_bar(),
@@ -973,7 +1281,7 @@ void CalendarView::ScrollOneRowWithAnimation(bool is_scrolling_up) {
 }
 
 void CalendarView::OnEvent(ui::Event* event) {
-  if (!event->IsKeyEvent() || !IsDateCellViewFocused()) {
+  if (!event->IsKeyEvent()) {
     TrayDetailedView::OnEvent(event);
     return;
   }
@@ -982,19 +1290,34 @@ void CalendarView::OnEvent(ui::Event* event) {
   auto key_code = key_event->key_code();
   auto* focus_manager = GetFocusManager();
 
+  bool is_tab_key_pressed =
+      key_event->type() == ui::EventType::ET_KEY_PRESSED &&
+      views::FocusManager::IsTabTraversalKeyEvent(*key_event);
+
+  if (is_tab_key_pressed) {
+    RecordCalendarKeyboardNavigation(
+        calendar_metrics::CalendarKeyboardNavigationSource::kTab);
+  }
+
+  if (!IsDateCellViewFocused()) {
+    TrayDetailedView::OnEvent(event);
+    return;
+  }
+
   // When tab key is pressed, stops focusing on any `CalendarDateCellView` and
   // goes to the next focusable button in the header.
-  if (key_event->type() == ui::EventType::ET_KEY_PRESSED &&
-      views::FocusManager::IsTabTraversalKeyEvent(*key_event)) {
-    // Set focus on `scroll_view_`/`event_list_` or null pointer to escape the
-    // focusing on the date cell.
+  if (is_tab_key_pressed) {
+    // Set focus on `up_button_`/`event_list_view_` or null
+    // pointer to escape the focusing on the date cell.
     if (key_event->IsShiftDown()) {
-      scroll_view_->RequestFocus();
-    } else if (event_list_container_) {
-      event_list_container_->RequestFocus();
-      event_list_container_->SetFocusBehavior(FocusBehavior::NEVER);
+      up_button_->RequestFocus();
+    } else if (event_list_view_) {
+      // Moves focusing ring to the close button of the event list.
+      event_list_view_->RequestFocus();
+      focus_manager->AdvanceFocus(/*reverse=*/false);
     } else {
-      focus_manager->SetFocusedView(nullptr);
+      scroll_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
+      scroll_view_->RequestFocus();
     }
 
     current_month_->DisableFocus();
@@ -1003,6 +1326,13 @@ void CalendarView::OnEvent(ui::Event* event) {
 
     TrayDetailedView::OnEvent(event);
 
+    // Should move the focus to the next widget, so `AdvanceFocus` from the last
+    // view.
+    if (!key_event->IsShiftDown() && !event_list_view_) {
+      focus_manager->AdvanceFocus(/*reverse=*/false);
+      scroll_view_->SetFocusBehavior(FocusBehavior::NEVER);
+    }
+    event->StopPropagation();
     content_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
     return;
   }
@@ -1017,6 +1347,9 @@ void CalendarView::OnEvent(ui::Event* event) {
   switch (key_code) {
     case ui::VKEY_UP:
     case ui::VKEY_DOWN: {
+      RecordCalendarKeyboardNavigation(
+          calendar_metrics::CalendarKeyboardNavigationSource::kArrowKeys);
+
       auto* current_focusable_view = focus_manager->GetFocusedView();
       // Enable the scroll bar mode, in case it is disabled when the event list
       // is showing.
@@ -1075,7 +1408,7 @@ void CalendarView::OnEvent(ui::Event* event) {
       focus_manager->SetFocusedView(current_focusable_view);
       // After focusing on the new cell the view should have scrolled already
       // if needed, disable the scroll bar mode if the even list is showing.
-      if (event_list_container_)
+      if (event_list_view_)
         scroll_view_->SetVerticalScrollBarMode(
             views::ScrollView::ScrollBarMode::kDisabled);
       const int current_height =
@@ -1089,6 +1422,9 @@ void CalendarView::OnEvent(ui::Event* event) {
     }
     case ui::VKEY_LEFT:
     case ui::VKEY_RIGHT: {
+      RecordCalendarKeyboardNavigation(
+          calendar_metrics::CalendarKeyboardNavigationSource::kArrowKeys);
+
       // Enable the scroll bar mode, in case it is disabled when the event list
       // is showing.
       scroll_view_->SetVerticalScrollBarMode(
@@ -1098,7 +1434,7 @@ void CalendarView::OnEvent(ui::Event* event) {
       focus_manager->AdvanceFocus(/*reverse=*/is_reverse);
       // After focusing on the new cell the view should have scrolled already
       // if needed, disable the scroll bar mode if the even list is showing.
-      if (event_list_container_)
+      if (event_list_view_)
         scroll_view_->SetVerticalScrollBarMode(
             views::ScrollView::ScrollBarMode::kDisabled);
 
@@ -1121,6 +1457,8 @@ void CalendarView::OnScrollingSettledTimerFired() {
 }
 
 void CalendarView::OnContentsScrolled() {
+  base::AutoReset<bool> set_is_scrolling(&is_calendar_view_scrolling_, true);
+
   // The scroll position is reset because it's adjusting the position when
   // adding or removing views from the `scroll_view_`. It should scroll to the
   // position we want, so we don't need to check the visible area position.
@@ -1141,6 +1479,13 @@ void CalendarView::OnContentsScrolled() {
   }
 }
 
+void CalendarView::OnMonthArrowButtonActivated(bool up,
+                                               const ui::Event& event) {
+  calendar_metrics::RecordMonthArrowButtonActivated(up, event);
+  ScrollOneMonthWithAnimation(up);
+  content_view_->OnMonthChanged();
+}
+
 void CalendarView::AdjustDateCellVoxBounds() {
   auto* focused_view = GetFocusManager()->GetFocusedView();
   DCHECK_EQ(focused_view->GetClassName(), CalendarDateCellView::kViewClassName);
@@ -1152,6 +1497,45 @@ void CalendarView::AdjustDateCellVoxBounds() {
   focused_view->GetViewAccessibility().OverrideBounds(
       gfx::RectF(bounds.x(), bounds.y() + scroll_view_->GetVisibleRect().y(),
                  bounds.width(), bounds.height()));
+}
+
+void CalendarView::OnOpenEventListAnimationComplete() {
+  scroll_view_->SetVerticalScrollBarMode(
+      views::ScrollView::ScrollBarMode::kHiddenButEnabled);
+  // Scrolls to the next month if the selected date is in the `next_month_`, so
+  // that the `current_month_`is updated to the next month.
+  if (!calendar_view_controller_->IsSelectedDateInCurrentMonth())
+    ScrollDownOneMonth();
+  base::AutoReset<bool> is_resetting_scrolling(&is_resetting_scroll_, true);
+  RestoreMonthStatus();
+  scroll_view_->ScrollToPosition(scroll_view_->vertical_scroll_bar(),
+                                 PositionOfSelectedDate());
+  scroll_view_->ClipHeightTo(0, kExpandedCalendarViewHeightScale *
+                                    calendar_view_controller_->row_height());
+  event_list_view_->SetTransform(gfx::Transform());
+  if (!should_months_animate_)
+    months_animation_restart_timer_.Reset();
+  scroll_view_->SetVerticalScrollBarMode(
+      views::ScrollView::ScrollBarMode::kDisabled);
+  calendar_view_controller_->OnEventListOpened();
+
+  // Moves focusing ring to the close button of the event list if it's opened
+  // from the date cell view focus.
+  if (IsDateCellViewFocused()) {
+    auto* focus_manager = GetFocusManager();
+    event_list_view_->RequestFocus();
+    focus_manager->AdvanceFocus(/*reverse=*/false);
+    current_month_->DisableFocus();
+    previous_month_->DisableFocus();
+    next_month_->DisableFocus();
+    content_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
+  }
+}
+
+void CalendarView::OnCloseEventListAnimationComplete() {
+  RemoveChildViewT(event_list_view_);
+  event_list_view_ = nullptr;
+  calendar_view_controller_->OnEventListClosed();
 }
 
 BEGIN_METADATA(CalendarView, views::View)

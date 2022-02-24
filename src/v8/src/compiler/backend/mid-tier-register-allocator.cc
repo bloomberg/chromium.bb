@@ -1001,7 +1001,7 @@ void RegisterState::Register::CommitAtMerge() {
   --num_commits_required_;
   // We should still have commits required that will be resolved in the merge
   // block.
-  CHECK_GT(num_commits_required_, 0);
+  DCHECK_GT(num_commits_required_, 0);
 }
 
 void RegisterState::Register::Commit(AllocatedOperand allocated_op,
@@ -1068,7 +1068,7 @@ void RegisterState::Register::Spill(AllocatedOperand allocated_op,
   bool is_shared = is_shared_;
   Reset();
   is_shared_ = is_shared;
-  CHECK_IMPLIES(is_shared_, was_spilled_while_shared());
+  DCHECK_IMPLIES(is_shared_, was_spilled_while_shared());
 }
 
 void RegisterState::Register::SpillPhiGapMove(
@@ -1424,7 +1424,8 @@ class SinglePassRegisterAllocator final {
 
   // Spill a register in a previously processed successor block when merging
   // state into the current block.
-  void SpillRegisterAtMerge(RegisterState* reg_state, RegisterIndex reg);
+  void SpillRegisterAtMerge(RegisterState* reg_state, RegisterIndex reg,
+                            MachineRepresentation rep);
 
   // Introduce a gap move to move |virtual_register| from reg |from| to reg |to|
   // on entry to a |successor| block.
@@ -1815,7 +1816,7 @@ void SinglePassRegisterAllocator::MergeStateFrom(
             // then spill this register in the sucessor block to avoid
             // invalidating the 1:1 vreg<->reg mapping.
             // TODO(rmcilroy): Add a gap move to avoid spilling.
-            SpillRegisterAtMerge(successor_registers, reg);
+            SpillRegisterAtMerge(successor_registers, reg, rep);
             continue;
           }
           // Register is free in our current register state, so merge the
@@ -1841,7 +1842,7 @@ void SinglePassRegisterAllocator::MergeStateFrom(
           // Spill the |new_reg| in the successor block to be able to use it
           // for this gap move. It would be spilled anyway since it contains
           // a different virtual register than the merge block.
-          SpillRegisterAtMerge(successor_registers, new_reg);
+          SpillRegisterAtMerge(successor_registers, new_reg, rep);
         }
 
         if (new_reg.is_valid()) {
@@ -1849,7 +1850,7 @@ void SinglePassRegisterAllocator::MergeStateFrom(
                               successor_registers);
           processed_regs.Add(new_reg, rep);
         } else {
-          SpillRegisterAtMerge(successor_registers, reg);
+          SpillRegisterAtMerge(successor_registers, reg, rep);
         }
       }
     }
@@ -1869,8 +1870,8 @@ RegisterBitVector SinglePassRegisterAllocator::GetAllocatedRegBitVector(
   return allocated_regs;
 }
 
-void SinglePassRegisterAllocator::SpillRegisterAtMerge(RegisterState* reg_state,
-                                                       RegisterIndex reg) {
+void SinglePassRegisterAllocator::SpillRegisterAtMerge(
+    RegisterState* reg_state, RegisterIndex reg, MachineRepresentation rep) {
   DCHECK_NE(reg_state, register_state_);
   if (reg_state->IsAllocated(reg)) {
     int virtual_register = reg_state->VirtualRegisterForRegister(reg);
@@ -1878,6 +1879,44 @@ void SinglePassRegisterAllocator::SpillRegisterAtMerge(RegisterState* reg_state,
         data_->VirtualRegisterDataFor(virtual_register);
     AllocatedOperand allocated = AllocatedOperandForReg(reg, vreg_data.rep());
     reg_state->Spill(reg, allocated, current_block_, data_);
+  }
+  // Also spill the "simd sibling" register if we want to use {reg} for SIMD.
+  if (!kSimpleFPAliasing && rep == MachineRepresentation::kSimd128) {
+    RegisterIndex sibling = simdSibling(reg);
+    if (reg_state->IsAllocated(sibling)) {
+      int virtual_register = reg_state->VirtualRegisterForRegister(sibling);
+      VirtualRegisterData& vreg_data =
+          data_->VirtualRegisterDataFor(virtual_register);
+      AllocatedOperand allocated =
+          AllocatedOperandForReg(sibling, vreg_data.rep());
+      reg_state->Spill(sibling, allocated, current_block_, data_);
+    }
+  }
+  // Similarly, spill the whole SIMD register if we want to use a part of it.
+  if (!kSimpleFPAliasing && (rep == MachineRepresentation::kFloat64 ||
+                             rep == MachineRepresentation::kFloat32)) {
+    int simd_reg_code;
+    CHECK_EQ(1, data_->config()->GetAliases(rep, ToRegCode(reg, rep),
+                                            MachineRepresentation::kSimd128,
+                                            &simd_reg_code));
+    // Sanity check: The SIMD register code should be the shifted {reg_code}.
+    DCHECK_EQ(simd_reg_code,
+              ToRegCode(reg, rep) >>
+                  (rep == MachineRepresentation::kFloat64 ? 1 : 2));
+    RegisterIndex simd_reg =
+        FromRegCode(simd_reg_code, MachineRepresentation::kSimd128);
+    DCHECK(!simd_reg.is_valid() || simd_reg == reg ||
+           simdSibling(simd_reg) == reg);
+    if (simd_reg.is_valid() && reg_state->IsAllocated(simd_reg)) {
+      int virtual_register = reg_state->VirtualRegisterForRegister(simd_reg);
+      VirtualRegisterData& vreg_data =
+          data_->VirtualRegisterDataFor(virtual_register);
+      if (vreg_data.rep() == MachineRepresentation::kSimd128) {
+        AllocatedOperand allocated =
+            AllocatedOperandForReg(simd_reg, vreg_data.rep());
+        reg_state->Spill(simd_reg, allocated, current_block_, data_);
+      }
+    }
   }
 }
 
@@ -1911,31 +1950,31 @@ void SinglePassRegisterAllocator::UpdateVirtualRegisterState() {
 
 void SinglePassRegisterAllocator::CheckConsistency() {
 #ifdef DEBUG
-  for (int virtual_register = 0;
-       virtual_register < data_->code()->VirtualRegisterCount();
-       virtual_register++) {
-    RegisterIndex reg = RegisterForVirtualRegister(virtual_register);
+  int virtual_register = -1;
+  for (RegisterIndex reg : virtual_register_to_reg_) {
+    ++virtual_register;
     if (!reg.is_valid()) continue;
-    CHECK_NOT_NULL(register_state_);
+    DCHECK_NOT_NULL(register_state_);
     // The register must be set to allocated.
-    CHECK(register_state_->IsAllocated(reg));
+    DCHECK(register_state_->IsAllocated(reg));
     // reg <-> vreg linking is consistent.
-    CHECK_EQ(virtual_register, VirtualRegisterForRegister(reg));
+    DCHECK_EQ(virtual_register, VirtualRegisterForRegister(reg));
   }
+  DCHECK_EQ(data_->code()->VirtualRegisterCount() - 1, virtual_register);
 
   RegisterBitVector used_registers;
   for (RegisterIndex reg : *register_state_) {
     if (!register_state_->IsAllocated(reg)) continue;
     int virtual_register = VirtualRegisterForRegister(reg);
     // reg <-> vreg linking is consistent.
-    CHECK_EQ(reg, RegisterForVirtualRegister(virtual_register));
+    DCHECK_EQ(reg, RegisterForVirtualRegister(virtual_register));
     MachineRepresentation rep = VirtualRegisterDataFor(virtual_register).rep();
     // Allocated registers do not overlap.
-    CHECK(!used_registers.Contains(reg, rep));
+    DCHECK(!used_registers.Contains(reg, rep));
     used_registers.Add(reg, rep);
   }
   // The {allocated_registers_bits_} bitvector is accurate.
-  CHECK_EQ(used_registers, allocated_registers_bits_);
+  DCHECK_EQ(used_registers, allocated_registers_bits_);
 #endif
 }
 
@@ -3201,10 +3240,8 @@ void MidTierRegisterAllocator::UpdateSpillRangesForLoops() {
           data_->GetBlock(last_loop_block)->last_instruction_index();
       // Extend spill range for all spilled values that are live on entry to the
       // loop header.
-      BitVector::Iterator iterator(&data_->spilled_virtual_registers());
-      for (; !iterator.Done(); iterator.Advance()) {
-        const VirtualRegisterData& vreg_data =
-            VirtualRegisterDataFor(iterator.Current());
+      for (int vreg : data_->spilled_virtual_registers()) {
+        const VirtualRegisterData& vreg_data = VirtualRegisterDataFor(vreg);
         if (vreg_data.HasSpillRange() &&
             vreg_data.spill_range()->IsLiveAt(block->first_instruction_index(),
                                               block)) {
@@ -3346,10 +3383,8 @@ void MidTierSpillSlotAllocator::Allocate(
 
 void AllocateSpillSlots(MidTierRegisterAllocationData* data) {
   ZoneVector<VirtualRegisterData*> spilled(data->allocation_zone());
-  BitVector::Iterator iterator(&data->spilled_virtual_registers());
-  for (; !iterator.Done(); iterator.Advance()) {
-    VirtualRegisterData& vreg_data =
-        data->VirtualRegisterDataFor(iterator.Current());
+  for (int vreg : data->spilled_virtual_registers()) {
+    VirtualRegisterData& vreg_data = data->VirtualRegisterDataFor(vreg);
     if (vreg_data.HasPendingSpillOperand()) {
       spilled.push_back(&vreg_data);
     }
@@ -3413,10 +3448,8 @@ void MidTierReferenceMapPopulator::RecordReferences(
 
 void PopulateReferenceMaps(MidTierRegisterAllocationData* data) {
   MidTierReferenceMapPopulator populator(data);
-  BitVector::Iterator iterator(&data->spilled_virtual_registers());
-  for (; !iterator.Done(); iterator.Advance()) {
-    populator.RecordReferences(
-        data->VirtualRegisterDataFor(iterator.Current()));
+  for (int vreg : data->spilled_virtual_registers()) {
+    populator.RecordReferences(data->VirtualRegisterDataFor(vreg));
   }
 }
 

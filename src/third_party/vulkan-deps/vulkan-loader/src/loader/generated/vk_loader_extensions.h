@@ -2,9 +2,9 @@
 // See loader_extension_generator.py for modifications
 
 /*
- * Copyright (c) 2015-2021 The Khronos Group Inc.
- * Copyright (c) 2015-2021 Valve Corporation
- * Copyright (c) 2015-2021 LunarG, Inc.
+ * Copyright (c) 2015-2022 The Khronos Group Inc.
+ * Copyright (c) 2015-2022 Valve Corporation
+ * Copyright (c) 2015-2022 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -200,6 +200,10 @@ VKAPI_ATTR void VKAPI_CALL terminator_GetPhysicalDeviceExternalSemaphoreProperti
     VkPhysicalDevice                            physicalDevice,
     const VkPhysicalDeviceExternalSemaphoreInfo* pExternalSemaphoreInfo,
     VkExternalSemaphoreProperties*              pExternalSemaphoreProperties);
+VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceToolProperties(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t*                                   pToolCount,
+    VkPhysicalDeviceToolProperties*             pToolProperties);
 
 // ICD function pointer dispatch table
 struct loader_icd_term_dispatch {
@@ -234,6 +238,9 @@ struct loader_icd_term_dispatch {
     PFN_vkGetPhysicalDeviceExternalBufferProperties GetPhysicalDeviceExternalBufferProperties;
     PFN_vkGetPhysicalDeviceExternalFenceProperties GetPhysicalDeviceExternalFenceProperties;
     PFN_vkGetPhysicalDeviceExternalSemaphoreProperties GetPhysicalDeviceExternalSemaphoreProperties;
+
+    // ---- Core 1_3 commands
+    PFN_vkGetPhysicalDeviceToolProperties GetPhysicalDeviceToolProperties;
 
     // ---- VK_KHR_surface extension commands
     PFN_vkDestroySurfaceKHR DestroySurfaceKHR;
@@ -475,7 +482,6 @@ union loader_instance_extension_enables {
         uint8_t khr_external_fence_capabilities : 1;
         uint8_t ext_debug_report : 1;
         uint8_t nv_external_memory_capabilities : 1;
-        uint8_t nn_vi_surface : 1;
         uint8_t ext_direct_mode_display : 1;
         uint8_t ext_acquire_xlib_display : 1;
         uint8_t ext_display_surface_counter : 1;

@@ -7,6 +7,7 @@
 
 #include "src/sksl/ir/SkSLType.h"
 
+#include "include/private/SkStringView.h"
 #include "src/sksl/SkSLConstantFolder.h"
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/SkSLProgramSettings.h"
@@ -18,13 +19,16 @@
 #include "src/sksl/ir/SkSLSymbolTable.h"
 #include "src/sksl/ir/SkSLType.h"
 
+#include <optional>
+#include <string_view>
+
 namespace SkSL {
 
 static constexpr int kMaxStructDepth = 8;
 
 class AliasType final : public Type {
 public:
-    AliasType(skstd::string_view name, const Type& targetType)
+    AliasType(std::string_view name, const Type& targetType)
         : INHERITED(name, targetType.abbreviatedName(), targetType.typeKind())
         , fTargetType(targetType) {}
 
@@ -118,7 +122,7 @@ class ArrayType final : public Type {
 public:
     inline static constexpr TypeKind kTypeKind = TypeKind::kArray;
 
-    ArrayType(skstd::string_view name, const char* abbrev, const Type& componentType, int count)
+    ArrayType(std::string_view name, const char* abbrev, const Type& componentType, int count)
         : INHERITED(name, abbrev, kTypeKind)
         , fComponentType(componentType)
         , fCount(count) {
@@ -223,6 +227,10 @@ public:
         return true;
     }
 
+    bool isPrivate() const override {
+        return true;
+    }
+
     size_t slotCount() const override {
         return 1;
     }
@@ -239,7 +247,7 @@ class ScalarType final : public Type {
 public:
     inline static constexpr TypeKind kTypeKind = TypeKind::kScalar;
 
-    ScalarType(skstd::string_view name, const char* abbrev, NumberKind numberKind, int8_t priority,
+    ScalarType(std::string_view name, const char* abbrev, NumberKind numberKind, int8_t priority,
                int8_t bitWidth)
         : INHERITED(name, abbrev, kTypeKind)
         , fNumberKind(numberKind)
@@ -290,7 +298,7 @@ class MatrixType final : public Type {
 public:
     inline static constexpr TypeKind kTypeKind = TypeKind::kMatrix;
 
-    MatrixType(skstd::string_view name, const char* abbrev, const Type& componentType,
+    MatrixType(std::string_view name, const char* abbrev, const Type& componentType,
                int8_t columns, int8_t rows)
         : INHERITED(name, abbrev, kTypeKind)
         , fComponentType(componentType.as<ScalarType>())
@@ -421,7 +429,7 @@ class StructType final : public Type {
 public:
     inline static constexpr TypeKind kTypeKind = TypeKind::kStruct;
 
-    StructType(int line, skstd::string_view name, std::vector<Field> fields, bool interfaceBlock)
+    StructType(int line, std::string_view name, std::vector<Field> fields, bool interfaceBlock)
         : INHERITED(std::move(name), "S", kTypeKind, line)
         , fFields(std::move(fields))
         , fInterfaceBlock(interfaceBlock) {}
@@ -469,7 +477,7 @@ class VectorType final : public Type {
 public:
     inline static constexpr TypeKind kTypeKind = TypeKind::kVector;
 
-    VectorType(skstd::string_view name, const char* abbrev, const Type& componentType,
+    VectorType(std::string_view name, const char* abbrev, const Type& componentType,
                int8_t columns)
         : INHERITED(name, abbrev, kTypeKind)
         , fComponentType(componentType.as<ScalarType>())
@@ -512,16 +520,16 @@ private:
     int8_t fColumns;
 };
 
-String Type::getArrayName(int arraySize) const {
-    skstd::string_view name = this->name();
+std::string Type::getArrayName(int arraySize) const {
+    std::string_view name = this->name();
     return String::printf("%.*s[%d]", (int)name.size(), name.data(), arraySize);
 }
 
-std::unique_ptr<Type> Type::MakeAliasType(skstd::string_view name, const Type& targetType) {
+std::unique_ptr<Type> Type::MakeAliasType(std::string_view name, const Type& targetType) {
     return std::make_unique<AliasType>(std::move(name), targetType);
 }
 
-std::unique_ptr<Type> Type::MakeArrayType(skstd::string_view name, const Type& componentType,
+std::unique_ptr<Type> Type::MakeArrayType(std::string_view name, const Type& componentType,
                                           int columns) {
     return std::make_unique<ArrayType>(std::move(name), componentType.abbreviatedName(),
                                        componentType, columns);
@@ -536,7 +544,7 @@ std::unique_ptr<Type> Type::MakeLiteralType(const char* name, const Type& scalar
     return std::make_unique<LiteralType>(name, scalarType, priority);
 }
 
-std::unique_ptr<Type> Type::MakeMatrixType(skstd::string_view name, const char* abbrev,
+std::unique_ptr<Type> Type::MakeMatrixType(std::string_view name, const char* abbrev,
                                            const Type& componentType, int columns, int8_t rows) {
     return std::make_unique<MatrixType>(name, abbrev, componentType, columns, rows);
 }
@@ -550,14 +558,14 @@ std::unique_ptr<Type> Type::MakeSpecialType(const char* name, const char* abbrev
     return std::unique_ptr<Type>(new Type(name, abbrev, typeKind));
 }
 
-std::unique_ptr<Type> Type::MakeScalarType(skstd::string_view name, const char* abbrev,
+std::unique_ptr<Type> Type::MakeScalarType(std::string_view name, const char* abbrev,
                                            Type::NumberKind numberKind, int8_t priority,
                                            int8_t bitWidth) {
     return std::make_unique<ScalarType>(name, abbrev, numberKind, priority, bitWidth);
 
 }
 
-std::unique_ptr<Type> Type::MakeStructType(int line, skstd::string_view name,
+std::unique_ptr<Type> Type::MakeStructType(int line, std::string_view name,
                                            std::vector<Field> fields, bool interfaceBlock) {
     return std::make_unique<StructType>(line, name, std::move(fields), interfaceBlock);
 }
@@ -569,7 +577,7 @@ std::unique_ptr<Type> Type::MakeTextureType(const char* name, SpvDim_ dimensions
                                          isMultisampled, isSampled);
 }
 
-std::unique_ptr<Type> Type::MakeVectorType(skstd::string_view name, const char* abbrev,
+std::unique_ptr<Type> Type::MakeVectorType(std::string_view name, const char* abbrev,
                                            const Type& componentType, int columns) {
     return std::make_unique<VectorType>(name, abbrev, componentType, columns);
 }
@@ -836,7 +844,7 @@ const Type* Type::clone(SymbolTable* symbolTable) const {
             return symbolTable->addArrayDimension(&this->componentType(), this->columns());
         }
         case TypeKind::kStruct: {
-            const String* name = symbolTable->takeOwnershipOfString(String(this->name()));
+            const std::string* name = symbolTable->takeOwnershipOfString(std::string(this->name()));
             return symbolTable->add(Type::MakeStructType(
                     this->fLine, *name, this->fields(), this->isInterfaceBlock()));
         }
@@ -874,6 +882,10 @@ std::unique_ptr<Expression> Type::coerceExpression(std::unique_ptr<Expression> e
     }
     context.fErrors->error(line, "cannot construct '" + this->displayName() + "'");
     return nullptr;
+}
+
+bool Type::isPrivate() const {
+    return skstd::starts_with(this->name(), '$');
 }
 
 bool Type::isOrContainsArray() const {
@@ -923,7 +935,7 @@ bool Type::checkForOutOfRangeLiteral(const Context& context, const Expression& e
             // Iterate over every constant subexpression in the value.
             int numSlots = valueExpr->type().slotCount();
             for (int slot = 0; slot < numSlots; ++slot) {
-                skstd::optional<double> slotVal = valueExpr->getConstantValue(slot);
+                std::optional<double> slotVal = valueExpr->getConstantValue(slot);
                 // Check for Literal values that are out of range for the base type.
                 if (slotVal.has_value() &&
                     baseType.checkForOutOfRangeLiteral(context, *slotVal, valueExpr->fLine)) {
@@ -942,9 +954,11 @@ bool Type::checkForOutOfRangeLiteral(const Context& context, double value, int l
     if (this->isInteger()) {
         if (value < this->minimumValue() || value > this->maximumValue()) {
             // We found a value that can't fit in the type. Flag it as an error.
-            context.fErrors->error(line, String("integer is out of range for type '") +
-                                         this->displayName().c_str() +
-                                         "': " + to_string((SKSL_INT)value));
+            context.fErrors->error(
+                    line,
+                    SkSL::String::printf("integer is out of range for type '%s': %.0f",
+                                         this->displayName().c_str(),
+                                         std::floor(value)));
             return true;
         }
     }
@@ -965,7 +979,7 @@ SKSL_INT Type::convertArraySize(const Context& context, std::unique_ptr<Expressi
         return 0;
     }
     if (this->isOpaque()) {
-        context.fErrors->error(size->fLine, "opaque type '" + this->name() +
+        context.fErrors->error(size->fLine, "opaque type '" + std::string(this->name()) +
                                             "' may not be used in an array");
         return 0;
     }

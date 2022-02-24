@@ -300,18 +300,7 @@ v8::Local<v8::Context> AuctionV8Helper::CreateContext(
       v8::Context::New(isolate(), nullptr /* extensions */, global_template);
   auto result =
       context->Global()->Delete(context, CreateStringFromLiteral("Date"));
-
-  v8::Local<v8::ObjectTemplate> console_emulation =
-      console_.GetConsoleTemplate();
-  v8::Local<v8::Object> console_obj;
-  if (console_emulation->NewInstance(context).ToLocal(&console_obj)) {
-    result = context->Global()->Set(context, CreateStringFromLiteral("console"),
-                                    console_obj);
-    DCHECK(!result.IsNothing());
-  } else {
-    DCHECK(false);
-  }
-
+  DCHECK(!result.IsNothing());
   return context;
 }
 
@@ -483,13 +472,13 @@ v8::MaybeLocal<v8::Value> AuctionV8Helper::RunScript(
     const DebugId* debug_id,
     base::StringPiece function_name,
     base::span<v8::Local<v8::Value>> args,
+    absl::optional<base::TimeDelta> script_timeout,
     std::vector<std::string>& error_out) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(isolate(), context->GetIsolate());
 
   std::string script_name = FormatScriptName(script);
   DebugContextScope maybe_debug(inspector(), context, debug_id, script_name);
-  ScopedConsoleTarget direct_console(this, script_name, &error_out);
 
   v8::Local<v8::String> v8_function_name;
   if (!CreateUtf8String(function_name).ToLocal(&v8_function_name))
@@ -499,7 +488,8 @@ v8::MaybeLocal<v8::Value> AuctionV8Helper::RunScript(
 
   // Run script.
   v8::TryCatch try_catch(isolate());
-  ScriptTimeoutHelper timeout_helper(this, timer_task_runner_, script_timeout_);
+  ScriptTimeoutHelper timeout_helper(this, timer_task_runner_,
+                                     script_timeout.value_or(script_timeout_));
   auto result = local_script->Run(context);
 
   if (try_catch.HasTerminated()) {
@@ -634,7 +624,7 @@ void AuctionV8Helper::ResumeAllForTesting() {
 }
 
 void AuctionV8Helper::ConnectDevToolsAgent(
-    mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent,
+    mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent,
     scoped_refptr<base::SequencedTaskRunner> mojo_sequence,
     const DebugId& debug_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -678,22 +668,6 @@ AuctionV8Helper::GetTimeoutTimerRunnerForTesting() {
 std::string AuctionV8Helper::FormatScriptName(
     v8::Local<v8::UnboundScript> script) {
   return FormatValue(isolate(), script->GetScriptName());
-}
-
-AuctionV8Helper::ScopedConsoleTarget::ScopedConsoleTarget(
-    AuctionV8Helper* owner,
-    const std::string& console_script_name,
-    std::vector<std::string>* out)
-    : owner_(owner) {
-  DCHECK(!owner_->console_buffer_);
-  DCHECK(owner_->console_script_name_.empty());
-  owner_->console_buffer_ = out;
-  owner_->console_script_name_ = console_script_name;
-}
-
-AuctionV8Helper::ScopedConsoleTarget::~ScopedConsoleTarget() {
-  owner_->console_buffer_ = nullptr;
-  owner_->console_script_name_ = std::string();
 }
 
 AuctionV8Helper::AuctionV8Helper(

@@ -230,8 +230,8 @@ JsonParser<Char>::JsonParser(Isolate* isolate, Handle<String> source)
     chars_may_relocate_ = false;
   } else {
     DisallowGarbageCollection no_gc;
-    isolate->heap()->AddGCEpilogueCallback(UpdatePointersCallback,
-                                           v8::kGCTypeAll, this);
+    isolate->main_thread_local_heap()->AddGCEpilogueCallback(
+        UpdatePointersCallback, this);
     chars_ = SeqString::cast(*source_).GetChars(no_gc);
     chars_may_relocate_ = true;
   }
@@ -317,7 +317,8 @@ JsonParser<Char>::~JsonParser() {
     // Check that the string shape hasn't changed. Otherwise our GC hooks are
     // broken.
     SeqString::cast(*source_);
-    isolate()->heap()->RemoveGCEpilogueCallback(UpdatePointersCallback, this);
+    isolate()->main_thread_local_heap()->RemoveGCEpilogueCallback(
+        UpdatePointersCallback, this);
   }
 }
 
@@ -485,14 +486,13 @@ Handle<Object> JsonParser<Char>::BuildJsonObject(
                      descriptor_index)),
                  isolate_);
     } else {
-      DisallowGarbageCollection no_gc;
-      TransitionsAccessor transitions(isolate(), *map, &no_gc);
+      TransitionsAccessor transitions(isolate(), *map);
       expected = transitions.ExpectedTransitionKey();
       if (!expected.is_null()) {
         // Directly read out the target while reading out the key, otherwise it
         // might die while building the string below.
-        target = TransitionsAccessor(isolate(), *map, &no_gc)
-                     .ExpectedTransitionTarget();
+        target =
+            TransitionsAccessor(isolate(), *map).ExpectedTransitionTarget();
       }
     }
 
@@ -504,7 +504,7 @@ Handle<Object> JsonParser<Char>::BuildJsonObject(
         map = ParentOfDescriptorOwner(isolate_, map, feedback, descriptor);
         feedback_descriptors = 0;
       }
-      if (!TransitionsAccessor(isolate(), map)
+      if (!TransitionsAccessor(isolate(), *map)
                .FindTransitionToField(key)
                .ToHandle(&target)) {
         break;

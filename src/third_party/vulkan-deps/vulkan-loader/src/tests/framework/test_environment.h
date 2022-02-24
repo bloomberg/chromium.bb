@@ -136,8 +136,14 @@ struct InstWrapper {
     operator VkInstance() { return inst; }
     VulkanFunctions* operator->() { return functions; }
 
+    FromVoidStarFunc load(const char* func_name) {
+        return FromVoidStarFunc(functions->vkGetInstanceProcAddr(inst, func_name));
+    }
+
     // Enumerate physical devices using googletest to assert if it succeeded
-    std::vector<VkPhysicalDevice> GetPhysDevs(uint32_t phys_dev_count, VkResult result_to_check = VK_SUCCESS);
+    std::vector<VkPhysicalDevice> GetPhysDevs(VkResult result_to_check = VK_SUCCESS);  // query all physical devices
+    std::vector<VkPhysicalDevice> GetPhysDevs(uint32_t phys_dev_count,
+                                              VkResult result_to_check = VK_SUCCESS);  // query only phys_dev_count devices
     // Enumerate a single physical device using googletest to assert if it succeeded
     VkPhysicalDevice GetPhysDev(VkResult result_to_check = VK_SUCCESS);
 
@@ -146,6 +152,8 @@ struct InstWrapper {
     VkAllocationCallbacks* callbacks = nullptr;
     InstanceCreateInfo create_info{};
 };
+
+std::vector<VkExtensionProperties> EnumerateDeviceExtensions(InstWrapper const& inst, VkPhysicalDevice physical_device);
 
 struct DeviceWrapper {
     DeviceWrapper(InstWrapper& inst_wrapper, VkAllocationCallbacks* callbacks = nullptr) noexcept;
@@ -164,6 +172,10 @@ struct DeviceWrapper {
     // Convenience
     operator VkDevice() { return dev; }
     VulkanFunctions* operator->() { return functions; }
+
+    FromVoidStarFunc load(const char* func_name) {
+        return FromVoidStarFunc(functions->vkGetDeviceProcAddr(dev, func_name));
+    }
 
     VulkanFunctions* functions = nullptr;
     VkDevice dev = VK_NULL_HANDLE;
@@ -290,13 +302,23 @@ struct TestLayerHandle {
 };
 
 struct TestICDDetails {
-    TestICDDetails(fs::path icd_path, uint32_t api_version = VK_MAKE_VERSION(1, 0, 0)) noexcept
+    TestICDDetails(fs::path icd_path, uint32_t api_version = VK_API_VERSION_1_0) noexcept
         : icd_path(icd_path), api_version(api_version) {}
     BUILDER_VALUE(TestICDDetails, fs::path, icd_path, {});
-    BUILDER_VALUE(TestICDDetails, uint32_t, api_version, VK_MAKE_VERSION(1, 0, 0));
+    BUILDER_VALUE(TestICDDetails, uint32_t, api_version, VK_API_VERSION_1_0);
     BUILDER_VALUE(TestICDDetails, std::string, json_name, "test_icd");
     BUILDER_VALUE(TestICDDetails, bool, use_env_var_icd_filenames, false);
     BUILDER_VALUE(TestICDDetails, bool, is_fake, false);
+};
+
+struct TestLayerDetails {
+    TestLayerDetails(ManifestLayer layer_manifest, const std::string& json_name) noexcept
+        : layer_manifest(layer_manifest), json_name(json_name) {}
+    BUILDER_VALUE(TestLayerDetails, ManifestLayer, layer_manifest, {});
+    BUILDER_VALUE(TestLayerDetails, std::string, json_name, "test_layer");
+    BUILDER_VALUE(TestLayerDetails, fs::FolderManager*, destination_folder, nullptr);
+    BUILDER_VALUE(TestLayerDetails, bool, add_to_regular_search_paths, true);
+    BUILDER_VALUE(TestLayerDetails, bool, is_fake, false);
 };
 
 struct FrameworkEnvironment {
@@ -304,7 +326,11 @@ struct FrameworkEnvironment {
 
     void add_icd(TestICDDetails icd_details) noexcept;
     void add_implicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept;
+    void add_implicit_layer(TestLayerDetails layer_details) noexcept;
     void add_explicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept;
+    void add_explicit_layer(TestLayerDetails layer_details) noexcept;
+    void add_fake_implicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept;
+    void add_fake_explicit_layer(ManifestLayer layer_manifest, const std::string& json_name) noexcept;
 
     TestICD& get_test_icd(int index = 0) noexcept;
     TestICD& reset_icd(int index = 0) noexcept;
@@ -328,6 +354,5 @@ struct FrameworkEnvironment {
     std::string env_var_vk_icd_filenames;
 
    private:
-    void add_layer_impl(ManifestLayer& layer_manifest, const std::string& json_name, fs::FolderManager& folder_manager,
-                        ManifestCategory category);
+    void add_layer_impl(TestLayerDetails layer_details, fs::FolderManager& folder_manager, ManifestCategory category);
 };

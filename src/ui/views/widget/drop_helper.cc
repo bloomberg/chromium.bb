@@ -101,7 +101,10 @@ DragOperation DropHelper::OnDrop(const OSExchangeData& data,
   View::ConvertPointToTarget(root_view, drop_view, &view_location);
   ui::DropTargetEvent drop_event(data, gfx::PointF(view_location),
                                  gfx::PointF(view_location), drag_operation);
-  return drop_view->OnPerformDrop(drop_event);
+  auto output_drag_op = ui::mojom::DragOperation::kNone;
+  auto drop_cb = drop_view->GetDropCallback(drop_event);
+  std::move(drop_cb).Run(drop_event, output_drag_op);
+  return output_drag_op;
 }
 
 DropHelper::DropCallback DropHelper::GetDropCallback(
@@ -125,14 +128,19 @@ DropHelper::DropCallback DropHelper::GetDropCallback(
                                  gfx::PointF(view_location), drag_operation);
 
   auto drop_view_cb = drop_view->GetDropCallback(drop_event);
+  if (!drop_view_cb)
+    return base::NullCallback();
+
   return base::BindOnce(
-      [](View::DropCallback drop_cb, const ui::DropTargetEvent& event,
+      [](const ui::DropTargetEvent& drop_event, View::DropCallback drop_cb,
          std::unique_ptr<ui::OSExchangeData> data,
          ui::mojom::DragOperation& output_drag_op) {
-        if (drop_cb)
-          std::move(drop_cb).Run(event, output_drag_op);
+        // Bind the drop_event here instead of using the one that the callback
+        // is invoked with as that event is in window coordinates and callbacks
+        // expect View coordinates.
+        std::move(drop_cb).Run(drop_event, output_drag_op);
       },
-      std::move(drop_view_cb));
+      drop_event, std::move(drop_view_cb));
 }
 
 View* DropHelper::CalculateTargetView(const gfx::Point& root_view_location,

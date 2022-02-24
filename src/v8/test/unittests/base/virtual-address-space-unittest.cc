@@ -98,12 +98,79 @@ void TestParentSpaceCannotAllocateInChildSpace(v8::VirtualAddressSpace* parent,
   }
 }
 
+void TestSharedPageAllocation(v8::VirtualAddressSpace* space) {
+  const size_t size = 2 * space->allocation_granularity();
+
+  PlatformSharedMemoryHandle handle =
+      OS::CreateSharedMemoryHandleForTesting(size);
+  if (handle == kInvalidSharedMemoryHandle) return;
+
+  Address mapping1 =
+      space->AllocateSharedPages(VirtualAddressSpace::kNoHint, size,
+                                 PagePermissions::kReadWrite, handle, 0);
+  ASSERT_NE(kNullAddress, mapping1);
+  Address mapping2 =
+      space->AllocateSharedPages(VirtualAddressSpace::kNoHint, size,
+                                 PagePermissions::kReadWrite, handle, 0);
+  ASSERT_NE(kNullAddress, mapping2);
+  ASSERT_NE(mapping1, mapping2);
+
+  int value = 0x42;
+  EXPECT_EQ(0, *reinterpret_cast<int*>(mapping2));
+  *reinterpret_cast<int*>(mapping1) = value;
+  EXPECT_EQ(value, *reinterpret_cast<int*>(mapping2));
+
+  EXPECT_TRUE(space->FreeSharedPages(mapping1, size));
+  EXPECT_TRUE(space->FreeSharedPages(mapping2, size));
+
+  OS::DestroySharedMemoryHandle(handle);
+}
+
+TEST(VirtualAddressSpaceTest, TestPagePermissionSubsets) {
+  const PagePermissions kNoAccess = PagePermissions::kNoAccess;
+  const PagePermissions kRead = PagePermissions::kRead;
+  const PagePermissions kReadWrite = PagePermissions::kReadWrite;
+  const PagePermissions kReadWriteExecute = PagePermissions::kReadWriteExecute;
+  const PagePermissions kReadExecute = PagePermissions::kReadExecute;
+
+  EXPECT_TRUE(IsSubset(kNoAccess, kNoAccess));
+  EXPECT_FALSE(IsSubset(kRead, kNoAccess));
+  EXPECT_FALSE(IsSubset(kReadWrite, kNoAccess));
+  EXPECT_FALSE(IsSubset(kReadWriteExecute, kNoAccess));
+  EXPECT_FALSE(IsSubset(kReadExecute, kNoAccess));
+
+  EXPECT_TRUE(IsSubset(kNoAccess, kRead));
+  EXPECT_TRUE(IsSubset(kRead, kRead));
+  EXPECT_FALSE(IsSubset(kReadWrite, kRead));
+  EXPECT_FALSE(IsSubset(kReadWriteExecute, kRead));
+  EXPECT_FALSE(IsSubset(kReadExecute, kRead));
+
+  EXPECT_TRUE(IsSubset(kNoAccess, kReadWrite));
+  EXPECT_TRUE(IsSubset(kRead, kReadWrite));
+  EXPECT_TRUE(IsSubset(kReadWrite, kReadWrite));
+  EXPECT_FALSE(IsSubset(kReadWriteExecute, kReadWrite));
+  EXPECT_FALSE(IsSubset(kReadExecute, kReadWrite));
+
+  EXPECT_TRUE(IsSubset(kNoAccess, kReadWriteExecute));
+  EXPECT_TRUE(IsSubset(kRead, kReadWriteExecute));
+  EXPECT_TRUE(IsSubset(kReadWrite, kReadWriteExecute));
+  EXPECT_TRUE(IsSubset(kReadWriteExecute, kReadWriteExecute));
+  EXPECT_TRUE(IsSubset(kReadExecute, kReadWriteExecute));
+
+  EXPECT_TRUE(IsSubset(kNoAccess, kReadExecute));
+  EXPECT_TRUE(IsSubset(kRead, kReadExecute));
+  EXPECT_FALSE(IsSubset(kReadWrite, kReadExecute));
+  EXPECT_FALSE(IsSubset(kReadWriteExecute, kReadExecute));
+  EXPECT_TRUE(IsSubset(kReadExecute, kReadExecute));
+}
+
 TEST(VirtualAddressSpaceTest, TestRootSpace) {
   VirtualAddressSpace rootspace;
 
   TestRandomPageAddressGeneration(&rootspace);
   TestBasicPageAllocation(&rootspace);
   TestPageAllocationAlignment(&rootspace);
+  TestSharedPageAllocation(&rootspace);
 }
 
 TEST(VirtualAddressSpaceTest, TestSubspace) {
@@ -114,32 +181,36 @@ TEST(VirtualAddressSpaceTest, TestSubspace) {
 
   if (!rootspace.CanAllocateSubspaces()) return;
   size_t subspace_alignment = rootspace.allocation_granularity();
-  auto subspace = rootspace.AllocateSubspace(
-      VirtualAddressSpace::kNoHint, kSubspaceSize, subspace_alignment,
-      PagePermissions::kReadWriteExecute);
+  auto subspace = rootspace.AllocateSubspace(VirtualAddressSpace::kNoHint,
+                                             kSubspaceSize, subspace_alignment,
+                                             PagePermissions::kReadWrite);
   ASSERT_TRUE(subspace);
   EXPECT_NE(kNullAddress, subspace->base());
   EXPECT_EQ(kSubspaceSize, subspace->size());
+  EXPECT_EQ(PagePermissions::kReadWrite, subspace->max_page_permissions());
 
   TestRandomPageAddressGeneration(subspace.get());
   TestBasicPageAllocation(subspace.get());
   TestPageAllocationAlignment(subspace.get());
   TestParentSpaceCannotAllocateInChildSpace(&rootspace, subspace.get());
+  TestSharedPageAllocation(subspace.get());
 
   // Test sub-subspaces
   if (!subspace->CanAllocateSubspaces()) return;
   size_t subsubspace_alignment = subspace->allocation_granularity();
   auto subsubspace = subspace->AllocateSubspace(
       VirtualAddressSpace::kNoHint, kSubSubspaceSize, subsubspace_alignment,
-      PagePermissions::kReadWriteExecute);
+      PagePermissions::kReadWrite);
   ASSERT_TRUE(subsubspace);
   EXPECT_NE(kNullAddress, subsubspace->base());
   EXPECT_EQ(kSubSubspaceSize, subsubspace->size());
+  EXPECT_EQ(PagePermissions::kReadWrite, subsubspace->max_page_permissions());
 
   TestRandomPageAddressGeneration(subsubspace.get());
   TestBasicPageAllocation(subsubspace.get());
   TestPageAllocationAlignment(subsubspace.get());
   TestParentSpaceCannotAllocateInChildSpace(subspace.get(), subsubspace.get());
+  TestSharedPageAllocation(subsubspace.get());
 }
 
 TEST(VirtualAddressSpaceTest, TestEmulatedSubspace) {
@@ -180,12 +251,14 @@ TEST(VirtualAddressSpaceTest, TestEmulatedSubspace) {
                                           kSubspaceMappedSize, kSubspaceSize);
   EXPECT_EQ(reservation, subspace.base());
   EXPECT_EQ(kSubspaceSize, subspace.size());
+  EXPECT_EQ(rootspace.max_page_permissions(), subspace.max_page_permissions());
 
   TestRandomPageAddressGeneration(&subspace);
   TestBasicPageAllocation(&subspace);
   TestPageAllocationAlignment(&subspace);
   // An emulated subspace does *not* guarantee that the parent space cannot
   // allocate pages in it, so no TestParentSpaceCannotAllocateInChildSpace.
+  TestSharedPageAllocation(&subspace);
 }
 
 }  // namespace base

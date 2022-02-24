@@ -601,13 +601,12 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE T generic_ndtri_lt_exp_neg_two(
     ScalarType(6.79019408009981274425e-9)
   };
   const T eight = pset1<T>(ScalarType(8.0));
-  const T one = pset1<T>(ScalarType(1));
   const T neg_two = pset1<T>(ScalarType(-2));
   T x, x0, x1, z;
 
   x = psqrt(pmul(neg_two, plog(b)));
   x0 = psub(x, pdiv(plog(x), x));
-  z = pdiv(one, x);
+  z = preciprocal(x);
   x1 = pmul(
       z, pselect(
           pcmp_lt(x, eight),

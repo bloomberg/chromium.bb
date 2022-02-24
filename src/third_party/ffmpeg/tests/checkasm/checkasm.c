@@ -183,6 +183,7 @@ static const struct {
     #endif
 #endif
 #if CONFIG_SWSCALE
+    { "sw_gbrp", checkasm_check_sw_gbrp },
     { "sw_rgb", checkasm_check_sw_rgb },
     { "sw_scale", checkasm_check_sw_scale },
 #endif
@@ -236,6 +237,9 @@ static const struct {
     { "FMA4",     "fma4",     AV_CPU_FLAG_FMA4 },
     { "AVX2",     "avx2",     AV_CPU_FLAG_AVX2 },
     { "AVX-512",  "avx512",   AV_CPU_FLAG_AVX512 },
+#elif ARCH_LOONGARCH
+    { "LSX",      "lsx",      AV_CPU_FLAG_LSX },
+    { "LASX",     "lasx",     AV_CPU_FLAG_LASX },
 #endif
     { NULL }
 };

@@ -894,22 +894,16 @@ static void MaybeOptimizeCode(MacroAssembler* masm,
   ASM_CODE_COMMENT(masm);
   DCHECK(!AreAliased(edx, edi, optimization_marker));
 
-  // TODO(v8:8394): The logging of first execution will break if
-  // feedback vectors are not allocated. We need to find a different way of
-  // logging these events if required.
+  TailCallRuntimeIfMarkerEquals(
+      masm, optimization_marker,
+      OptimizationMarker::kCompileTurbofan_NotConcurrent,
+      Runtime::kCompileTurbofan_NotConcurrent);
   TailCallRuntimeIfMarkerEquals(masm, optimization_marker,
-                                OptimizationMarker::kLogFirstExecution,
-                                Runtime::kFunctionFirstExecution);
-  TailCallRuntimeIfMarkerEquals(masm, optimization_marker,
-                                OptimizationMarker::kCompileOptimized,
-                                Runtime::kCompileOptimized_NotConcurrent);
-  TailCallRuntimeIfMarkerEquals(masm, optimization_marker,
-                                OptimizationMarker::kCompileOptimizedConcurrent,
-                                Runtime::kCompileOptimized_Concurrent);
+                                OptimizationMarker::kCompileTurbofan_Concurrent,
+                                Runtime::kCompileTurbofan_Concurrent);
 
-  // Marker should be one of LogFirstExecution / CompileOptimized /
-  // CompileOptimizedConcurrent. InOptimizationQueue and None shouldn't reach
-  // here.
+  // Marker should be one of CompileOptimized / CompileOptimizedConcurrent.
+  // InOptimizationQueue and None shouldn't reach here.
   if (FLAG_debug_code) {
     __ int3();
   }
@@ -1030,9 +1024,8 @@ static void MaybeOptimizeCodeOrTailCallOptimizedCodeSlot(
   ASM_CODE_COMMENT(masm);
   Label maybe_has_optimized_code;
   // Check if optimized code is available
-  __ test(
-      optimization_state,
-      Immediate(FeedbackVector::kHasCompileOptimizedOrLogFirstExecutionMarker));
+  __ test(optimization_state,
+          Immediate(FeedbackVector::kHasCompileOptimizedMarker));
   __ j(zero, &maybe_has_optimized_code);
 
   Register optimization_marker = optimization_state;
@@ -2403,11 +2396,7 @@ void Builtins::Generate_CallFunction(MacroAssembler* masm,
   StackArgumentsAccessor args(eax);
   __ AssertCallableFunction(edi, edx);
 
-  Label class_constructor;
   __ mov(edx, FieldOperand(edi, JSFunction::kSharedFunctionInfoOffset));
-  __ test(FieldOperand(edx, SharedFunctionInfo::kFlagsOffset),
-          Immediate(SharedFunctionInfo::IsClassConstructorBit::kMask));
-  __ j(not_zero, &class_constructor);
 
   // Enter the context of the function; ToObject has to run in the function
   // context, and we also need to take the global proxy from the function
@@ -2488,14 +2477,6 @@ void Builtins::Generate_CallFunction(MacroAssembler* masm,
   __ movzx_w(
       ecx, FieldOperand(edx, SharedFunctionInfo::kFormalParameterCountOffset));
   __ InvokeFunctionCode(edi, no_reg, ecx, eax, InvokeType::kJump);
-
-  // The function is a "classConstructor", need to raise an exception.
-  __ bind(&class_constructor);
-  {
-    FrameScope frame(masm, StackFrame::INTERNAL);
-    __ push(edi);
-    __ CallRuntime(Runtime::kThrowConstructorNonCallableError);
-  }
 }
 
 namespace {
@@ -2981,6 +2962,11 @@ void Builtins::Generate_WasmReturnPromiseOnSuspend(MacroAssembler* masm) {
 }
 
 void Builtins::Generate_WasmSuspend(MacroAssembler* masm) {
+  // TODO(v8:12191): Implement for this platform.
+  __ Trap();
+}
+
+void Builtins::Generate_WasmResume(MacroAssembler* masm) {
   // TODO(v8:12191): Implement for this platform.
   __ Trap();
 }

@@ -160,17 +160,20 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     case AV_CODEC_ID_DIRAC:       maxpixels  /= 8192;  break;
     case AV_CODEC_ID_DST:         maxsamples /= 1<<20; break;
     case AV_CODEC_ID_DVB_SUBTITLE: av_dict_set_int(&opts, "compute_clut", -2, 0); break;
+    case AV_CODEC_ID_DXA:         maxpixels  /= 32;    break;
     case AV_CODEC_ID_DXV:         maxpixels  /= 32;    break;
     case AV_CODEC_ID_FFWAVESYNTH: maxsamples /= 16384; break;
     case AV_CODEC_ID_FLAC:        maxsamples /= 1024;  break;
     case AV_CODEC_ID_FLV1:        maxpixels  /= 1024;  break;
     case AV_CODEC_ID_G2M:         maxpixels  /= 1024;  break;
+    case AV_CODEC_ID_GEM:         maxpixels  /= 512;   break;
     case AV_CODEC_ID_GDV:         maxpixels  /= 512;   break;
     case AV_CODEC_ID_GIF:         maxpixels  /= 16;    break;
     case AV_CODEC_ID_H264:        maxpixels  /= 256;   break;
     case AV_CODEC_ID_HAP:         maxpixels  /= 128;   break;
     case AV_CODEC_ID_HEVC:        maxpixels  /= 16384; break;
     case AV_CODEC_ID_HNM4_VIDEO:  maxpixels  /= 128;   break;
+    case AV_CODEC_ID_HQ_HQA:      maxpixels  /= 128;   break;
     case AV_CODEC_ID_IFF_ILBM:    maxpixels  /= 128;   break;
     case AV_CODEC_ID_INDEO4:      maxpixels  /= 128;   break;
     case AV_CODEC_ID_INTERPLAY_ACM: maxsamples /= 16384;  break;
@@ -190,6 +193,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     case AV_CODEC_ID_APNG:        maxpixels  /= 128;   break;
     case AV_CODEC_ID_QTRLE:       maxpixels  /= 16;    break;
     case AV_CODEC_ID_PAF_VIDEO:   maxpixels  /= 16;    break;
+    case AV_CODEC_ID_PRORES:      maxpixels  /= 256;   break;
     case AV_CODEC_ID_RASC:        maxpixels  /= 16;    break;
     case AV_CODEC_ID_SANM:        maxpixels  /= 16;    break;
     case AV_CODEC_ID_SCPR:        maxpixels  /= 32;    break;
@@ -392,8 +396,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
               decode_more = ret >= 0;
               if(!decode_more) {
                     ec_pixels += (ctx->width + 32LL) * (ctx->height + 32LL);
-                    if (it > 20 || ec_pixels > 4 * ctx->max_pixels)
+                    if (it > 20 || ec_pixels > 4 * ctx->max_pixels) {
                         ctx->error_concealment = 0;
+                        ctx->debug &= ~(FF_DEBUG_SKIP | FF_DEBUG_QP | FF_DEBUG_MB_TYPE);
+                    }
                     if (ec_pixels > maxpixels)
                         goto maximums_reached;
               }
@@ -406,8 +412,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
             int ret = decode_handler(ctx, frame, &got_frame, avpkt);
 
             ec_pixels += (ctx->width + 32LL) * (ctx->height + 32LL);
-            if (it > 20 || ec_pixels > 4 * ctx->max_pixels)
+            if (it > 20 || ec_pixels > 4 * ctx->max_pixels) {
                 ctx->error_concealment = 0;
+                ctx->debug &= ~(FF_DEBUG_SKIP | FF_DEBUG_QP | FF_DEBUG_MB_TYPE);
+            }
             if (ec_pixels > maxpixels)
                 goto maximums_reached;
 

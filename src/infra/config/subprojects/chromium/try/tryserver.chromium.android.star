@@ -40,7 +40,7 @@ try_.orchestrator_builder(
     main_list_view = "try",
     # TODO(crbug.com/1137474): Fully enable once it works fine
     tryjob = try_.job(
-        experiment_percentage = 5,
+        experiment_percentage = 10,
     ),
 )
 
@@ -61,6 +61,12 @@ try_.builder(
 
 try_.builder(
     name = "android-bfcache-rel",
+)
+
+try_.builder(
+    name = "android-clang-tidy-rel",
+    executable = "recipe:tricium_clang_tidy_wrapper",
+    goma_jobs = goma.jobs.J150,
 )
 
 try_.builder(
@@ -193,22 +199,6 @@ try_.compilator_builder(
     main_list_view = "try",
 )
 
-try_.builder(
-    name = "android-marshmallow-arm64-rel-rts",
-    builderless = not settings.is_main,
-    cores = 32 if settings.is_main else 16,
-    goma_jobs = goma.jobs.J300,
-    main_list_view = "try",
-    ssd = True,
-    use_java_coverage = True,
-    coverage_test_types = ["unit", "overall"],
-    tryjob = try_.job(
-        experiment_percentage = 5,
-    ),
-    # TODO(crbug/1202741)
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
-)
-
 try_.orchestrator_builder(
     name = "android-marshmallow-x86-rel",
     compilator = "android-marshmallow-x86-rel-compilator",
@@ -293,20 +283,6 @@ try_.compilator_builder(
 )
 
 try_.builder(
-    name = "android-pie-arm64-rel-rts",
-    builderless = not settings.is_main,
-    cores = 16,
-    goma_jobs = goma.jobs.J300,
-    ssd = True,
-    main_list_view = "try",
-    tryjob = try_.job(
-        experiment_percentage = 5,
-    ),
-    # TODO(crbug/1202741)
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
-)
-
-try_.builder(
     name = "android-pie-x86-rel",
     goma_jobs = goma.jobs.J150,
 )
@@ -329,7 +305,7 @@ try_.builder(
 )
 
 try_.builder(
-    name = "android-web-platform-pie-x86-fyi-rel",
+    name = "android-chrome-pie-x86-wpt-fyi-rel",
 )
 
 try_.builder(
@@ -387,11 +363,6 @@ try_.builder(
 
 try_.builder(
     name = "android_blink_rel",
-)
-
-try_.builder(
-    name = "android_cfi_rel_ng",
-    cores = 32,
 )
 
 try_.builder(
@@ -516,18 +487,4 @@ try_.gpu.optional_tests_builder(
             ".+/[+]/ui/gl/.+",
         ],
     ),
-)
-
-# RTS builders
-
-try_.builder(
-    name = "android-marshmallow-x86-rel-rts",
-    goma_jobs = goma.jobs.J300,
-    builderless = False,
-    cores = 16,
-    tryjob = try_.job(
-        experiment_percentage = 5,
-    ),
-    ssd = True,
-    os = os.LINUX_XENIAL_OR_BIONIC_REMOVE,
 )

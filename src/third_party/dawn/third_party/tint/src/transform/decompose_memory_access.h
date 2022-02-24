@@ -17,7 +17,7 @@
 
 #include <string>
 
-#include "src/ast/internal_decoration.h"
+#include "src/ast/internal_attribute.h"
 #include "src/transform/transform.h"
 
 namespace tint {
@@ -33,11 +33,11 @@ namespace transform {
 class DecomposeMemoryAccess
     : public Castable<DecomposeMemoryAccess, Transform> {
  public:
-  /// Intrinsic is an InternalDecoration that's used to decorate a stub function
+  /// Intrinsic is an InternalAttribute that's used to decorate a stub function
   /// so that the HLSL transforms this into calls to
   /// `[RW]ByteAddressBuffer.Load[N]()` or `[RW]ByteAddressBuffer.Store[N]()`,
   /// with a possible cast.
-  class Intrinsic : public Castable<Intrinsic, ast::InternalDecoration> {
+  class Intrinsic : public Castable<Intrinsic, ast::InternalAttribute> {
    public:
     /// Intrinsic op
     enum class Op {
@@ -81,7 +81,7 @@ class DecomposeMemoryAccess
     /// Destructor
     ~Intrinsic() override;
 
-    /// @return a short description of the internal decoration which will be
+    /// @return a short description of the internal attribute which will be
     /// displayed as `@internal(<name>)`
     std::string InternalName() const override;
 
@@ -105,6 +105,12 @@ class DecomposeMemoryAccess
   /// Destructor
   ~DecomposeMemoryAccess() override;
 
+  /// @param program the program to inspect
+  /// @param data optional extra transform-specific input data
+  /// @returns true if this transform should be run for the given program
+  bool ShouldRun(const Program* program,
+                 const DataMap& data = {}) const override;
+
  protected:
   /// Runs the transform using the CloneContext built for transforming a
   /// program. Run() is responsible for calling Clone() on the CloneContext.
@@ -112,7 +118,9 @@ class DecomposeMemoryAccess
   /// ProgramBuilder
   /// @param inputs optional extra transform-specific input data
   /// @param outputs optional extra transform-specific output data
-  void Run(CloneContext& ctx, const DataMap& inputs, DataMap& outputs) override;
+  void Run(CloneContext& ctx,
+           const DataMap& inputs,
+           DataMap& outputs) const override;
 
   struct State;
 };

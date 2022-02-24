@@ -109,9 +109,9 @@ Platform specific build notes:
       - Copy chromium/scripts/cygwin-wrapper to /usr/local/bin
 
 Resulting binaries will be placed in:
-  build.TARGET_ARCH.TARGET_OS/Chrome/out/
-  build.TARGET_ARCH.TARGET_OS/ChromeOS/out/
-  build.TARGET_ARCH.TARGET_OS/Chromium/out/
+  build.TARGET_ARCH.TARGET_OS/Chrome/
+  build.TARGET_ARCH.TARGET_OS/ChromeOS/
+  build.TARGET_ARCH.TARGET_OS/Chromium/
   """
 
 
@@ -479,7 +479,7 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
     return
 
   shutil.rmtree(config_dir, ignore_errors=True)
-  os.makedirs(os.path.join(config_dir, 'out'))
+  os.makedirs(config_dir)
 
   PrintAndCheckCall(
       [os.path.join(FFMPEG_DIR, 'configure')] + configure_flags, cwd=config_dir)
@@ -564,16 +564,8 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
 
   if target_os in (host_os, host_os + '-noasm', 'android',
                    'win', 'mac') and not config_only:
-    libraries = [
-        os.path.join('libavcodec', GetDsoName(target_os, 'avcodec', 59)),
-        os.path.join('libavformat', GetDsoName(target_os, 'avformat', 59)),
-        os.path.join('libavutil', GetDsoName(target_os, 'avutil', 57)),
-    ]
     PrintAndCheckCall(
-        ['make', '-j%d' % parallel_jobs] + libraries, cwd=config_dir)
-    for lib in libraries:
-      shutil.copy(
-          os.path.join(config_dir, lib), os.path.join(config_dir, 'out'))
+        ['make', '-j%d' % parallel_jobs], cwd=config_dir)
   elif config_only:
     print('Skipping build step as requested.')
   else:

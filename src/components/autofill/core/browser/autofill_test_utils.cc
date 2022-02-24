@@ -62,8 +62,6 @@ namespace test {
 
 namespace {
 
-const int kValidityStateBitfield = 1984;
-
 std::string GetRandomCardNumber() {
   const size_t length = 16;
   std::string value;
@@ -447,8 +445,6 @@ AutofillProfile GetServerProfile() {
   profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY, u"Santa Clara");
 
   profile.set_language_code("en");
-  profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
-  profile.set_is_client_validity_states_updated(true);
   profile.set_use_count(7);
   profile.set_use_date(base::Time::FromTimeT(54321));
 
@@ -469,8 +465,6 @@ AutofillProfile GetServerProfile2() {
   profile.SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY, u"Santa Monica");
 
   profile.set_language_code("en");
-  profile.SetClientValidityFromBitfieldValue(kValidityStateBitfield);
-  profile.set_is_client_validity_states_updated(true);
   profile.set_use_count(14);
   profile.set_use_date(base::Time::FromTimeT(98765));
 
@@ -526,6 +520,24 @@ CreditCard GetMaskedServerCard() {
                           NextYear().c_str(), "1");
   credit_card.SetNetworkForMaskedCard(kMasterCard);
   credit_card.set_instrument_id(1);
+  return credit_card;
+}
+
+CreditCard GetMaskedServerCardWithLegacyId() {
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
+                          "2109" /* Mastercard */, NextMonth().c_str(),
+                          NextYear().c_str(), "1");
+  credit_card.SetNetworkForMaskedCard(kMasterCard);
+  return credit_card;
+}
+
+CreditCard GetMaskedServerCardWithNonLegacyId() {
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, 1);
+  test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
+                          "2109" /* Mastercard */, NextMonth().c_str(),
+                          NextYear().c_str(), "1");
+  credit_card.SetNetworkForMaskedCard(kMasterCard);
   return credit_card;
 }
 

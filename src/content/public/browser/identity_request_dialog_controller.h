@@ -20,6 +20,7 @@ namespace content {
 class WebContents;
 
 extern const char CONTENT_EXPORT kSecFedCmCsrfHeader[];
+extern const char CONTENT_EXPORT kSecFedCmCsrfHeaderValue[];
 
 // Represents a federated user account which is used when displaying an account
 // selector.
@@ -46,25 +47,25 @@ struct CONTENT_EXPORT IdentityRequestAccount {
     kAuto,
   };
 
-  IdentityRequestAccount(const std::string& account_id,
-                         const std::string& email,
-                         const std::string& name,
-                         const std::string& given_name,
-                         const GURL& picture,
-                         LoginState login_state = LoginState::kSignUp);
+  IdentityRequestAccount(
+      const std::string& id,
+      const std::string& email,
+      const std::string& name,
+      const std::string& given_name,
+      const GURL& picture,
+      absl::optional<LoginState> login_state = absl::nullopt);
   IdentityRequestAccount(const IdentityRequestAccount&);
   ~IdentityRequestAccount();
 
-  std::string account_id;
+  std::string id;
   std::string email;
   std::string name;
   std::string given_name;
   GURL picture;
 
-  // The account login state. Unlike the other fields this one is not populated
-  // by the IDP but instead by the browser based on its stored permission
-  // grants.
-  LoginState login_state;
+  // The account login state. Unlike the other fields this one can be populated
+  // either by the IDP or by the browser based on its stored permission grants.
+  absl::optional<LoginState> login_state;
 };
 
 struct ClientIdData {
@@ -82,6 +83,7 @@ struct CONTENT_EXPORT IdentityProviderMetadata {
   absl::optional<SkColor> brand_text_color;
   absl::optional<SkColor> brand_background_color;
   SkBitmap brand_icon;
+  GURL brand_icon_url;
 };
 
 // IdentityRequestDialogController is in interface for control of the UI
@@ -152,7 +154,7 @@ class CONTENT_EXPORT IdentityRequestDialogController {
       const IdentityProviderMetadata& idp_metadata,
       const ClientIdData& client_id_data,
       IdentityRequestAccount::SignInMode sign_in_mode,
-      AccountSelectionCallback on_selected) {}
+      AccountSelectionCallback on_selected);
 
   // Shows the identity provider sign-in page at the given URL using the
   // |idp_web_contents| inside a modal window. The |on_closed| callback is

@@ -1,4 +1,4 @@
-// Copyright 2021 The Tint Authors.
+// Copyright 2022 The Tint Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,13 +17,10 @@
 
 #include "src/transform/transform.h"
 
-namespace tint {
-namespace transform {
+namespace tint::transform {
 
 /// A transform that hoists the array and structure initializers to a constant
-/// variable, declared just before the statement of usage. This transform may
-/// also decompose for-loops into loops so that let declarations can be emitted
-/// before loop condition expressions and/or continuing statements.
+/// variable, declared just before the statement of usage.
 /// @see crbug.com/tint/406
 class PromoteInitializersToConstVar
     : public Castable<PromoteInitializersToConstVar, Transform> {
@@ -41,10 +38,11 @@ class PromoteInitializersToConstVar
   /// ProgramBuilder
   /// @param inputs optional extra transform-specific input data
   /// @param outputs optional extra transform-specific output data
-  void Run(CloneContext& ctx, const DataMap& inputs, DataMap& outputs) override;
+  void Run(CloneContext& ctx,
+           const DataMap& inputs,
+           DataMap& outputs) const override;
 };
 
-}  // namespace transform
-}  // namespace tint
+}  // namespace tint::transform
 
 #endif  // SRC_TRANSFORM_PROMOTE_INITIALIZERS_TO_CONST_VAR_H_

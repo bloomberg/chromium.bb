@@ -48,7 +48,6 @@ class MockPeerConnectionInterface
               (rtc::scoped_refptr<MediaStreamTrackInterface>,
                const std::vector<std::string>&),
               (override));
-  MOCK_METHOD(bool, RemoveTrack, (RtpSenderInterface*), (override));
   MOCK_METHOD(RTCError,
               RemoveTrackOrError,
               (rtc::scoped_refptr<RtpSenderInterface>),
@@ -77,15 +76,15 @@ class MockPeerConnectionInterface
   MOCK_METHOD(std::vector<rtc::scoped_refptr<RtpSenderInterface>>,
               GetSenders,
               (),
-              (const override));
+              (const, override));
   MOCK_METHOD(std::vector<rtc::scoped_refptr<RtpReceiverInterface>>,
               GetReceivers,
               (),
-              (const override));
+              (const, override));
   MOCK_METHOD(std::vector<rtc::scoped_refptr<RtpTransceiverInterface>>,
               GetTransceivers,
               (),
-              (const override));
+              (const, override));
   MOCK_METHOD(bool,
               GetStats,
               (StatsObserver*, MediaStreamTrackInterface*, StatsOutputLevel),
@@ -105,7 +104,7 @@ class MockPeerConnectionInterface
   MOCK_METHOD(rtc::scoped_refptr<SctpTransportInterface>,
               GetSctpTransport,
               (),
-              (const override));
+              (const, override));
   MOCK_METHOD(RTCErrorOr<rtc::scoped_refptr<DataChannelInterface>>,
               CreateDataChannelOrError,
               (const std::string&, const DataChannelInit*),
@@ -113,27 +112,27 @@ class MockPeerConnectionInterface
   MOCK_METHOD(const SessionDescriptionInterface*,
               local_description,
               (),
-              (const override));
+              (const, override));
   MOCK_METHOD(const SessionDescriptionInterface*,
               remote_description,
               (),
-              (const override));
+              (const, override));
   MOCK_METHOD(const SessionDescriptionInterface*,
               current_local_description,
               (),
-              (const override));
+              (const, override));
   MOCK_METHOD(const SessionDescriptionInterface*,
               current_remote_description,
               (),
-              (const override));
+              (const, override));
   MOCK_METHOD(const SessionDescriptionInterface*,
               pending_local_description,
               (),
-              (const override));
+              (const, override));
   MOCK_METHOD(const SessionDescriptionInterface*,
               pending_remote_description,
               (),
-              (const override));
+              (const, override));
   MOCK_METHOD(void, RestartIce, (), (override));
   MOCK_METHOD(void,
               CreateOffer,

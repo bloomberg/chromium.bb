@@ -4,7 +4,7 @@
 
 """Top-level presubmit script for the Git repo backing chromium.org.
 
-See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
+See http://www.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into depot_tools.
 """
 

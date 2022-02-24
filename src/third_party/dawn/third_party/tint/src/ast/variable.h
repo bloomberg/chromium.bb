@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "src/ast/access.h"
-#include "src/ast/decoration.h"
+#include "src/ast/attribute.h"
 #include "src/ast/expression.h"
 #include "src/ast/storage_class.h"
 
@@ -27,27 +27,28 @@ namespace tint {
 namespace ast {
 
 // Forward declarations
-class BindingDecoration;
-class GroupDecoration;
-class LocationDecoration;
+class BindingAttribute;
+class GroupAttribute;
+class LocationAttribute;
 class Type;
 
-/// VariableBindingPoint holds a group and binding decoration.
+/// VariableBindingPoint holds a group and binding attribute.
 struct VariableBindingPoint {
-  /// The `[[group]]` part of the binding point
-  const GroupDecoration* group = nullptr;
-  /// The `[[binding]]` part of the binding point
-  const BindingDecoration* binding = nullptr;
+  /// The `@group` part of the binding point
+  const GroupAttribute* group = nullptr;
+  /// The `@binding` part of the binding point
+  const BindingAttribute* binding = nullptr;
 
   /// @returns true if the BindingPoint has a valid group and binding
-  /// decoration.
+  /// attribute.
   inline operator bool() const { return group && binding; }
 };
 
 /// A Variable statement.
 ///
-/// An instance of this class represents one of three constructs in WGSL: "var"
-/// declaration, "let" declaration, or formal parameter to a function.
+/// An instance of this class represents one of four constructs in WGSL: "var"
+/// declaration, "let" declaration, "override" declaration, or formal parameter
+/// to a function.
 ///
 /// 1. A "var" declaration is a name for typed storage.  Examples:
 ///
@@ -65,7 +66,14 @@ struct VariableBindingPoint {
 ///
 ///       let twice_depth : i32 = width + width;  // Must have initializer
 ///
-/// 3. A formal parameter to a function is a name for a typed value to
+/// 3. An "override" declaration is a name for a pipeline-overridable constant.
+/// Examples:
+///
+///       override radius : i32 = 2;       // Can be overridden by name.
+///       @id(5) override width : i32 = 2; // Can be overridden by ID.
+///       override scale : f32;            // No default - must be overridden.
+///
+/// 4. A formal parameter to a function is a name for a typed value to
 ///    be passed into a function.  Example:
 ///
 ///       fn twice(a: i32) -> i32 {  // "a:i32" is the formal parameter
@@ -84,13 +92,21 @@ struct VariableBindingPoint {
 ///
 /// This class uses the term "type" to refer to:
 ///     the value type of a "let",
+///     the value type of an "override",
 ///     the value type of the formal parameter,
 ///     or the store type of the "var".
 //
 /// Setting is_const:
 ///   - "var" gets false
 ///   - "let" gets true
+///   - "override" gets true
 ///   - formal parameter gets true
+///
+/// Setting is_overrideable:
+///   - "var" gets false
+///   - "let" gets false
+///   - "override" gets true
+///   - formal parameter gets false
 ///
 /// Setting storage class:
 ///   - "var" is StorageClass::kNone when using the
@@ -107,8 +123,9 @@ class Variable : public Castable<Variable, Node> {
   /// @param declared_access the declared access control
   /// @param type the declared variable type
   /// @param is_const true if the variable is const
+  /// @param is_overridable true if the variable is pipeline-overridable
   /// @param constructor the constructor expression
-  /// @param decorations the variable decorations
+  /// @param attributes the variable attributes
   Variable(ProgramID program_id,
            const Source& source,
            const Symbol& sym,
@@ -116,8 +133,9 @@ class Variable : public Castable<Variable, Node> {
            Access declared_access,
            const ast::Type* type,
            bool is_const,
+           bool is_overridable,
            const Expression* constructor,
-           DecorationList decorations);
+           AttributeList attributes);
   /// Move constructor
   Variable(Variable&&);
 
@@ -143,11 +161,14 @@ class Variable : public Castable<Variable, Node> {
   /// True if this is a constant, false otherwise
   const bool is_const;
 
+  /// True if this is a pipeline-overridable constant, false otherwise
+  const bool is_overridable;
+
   /// The constructor expression or nullptr if none set
   const Expression* const constructor;
 
-  /// The decorations attached to this variable
-  const DecorationList decorations;
+  /// The attributes attached to this variable
+  const AttributeList attributes;
 
   /// The declared storage class
   const StorageClass declared_storage_class;

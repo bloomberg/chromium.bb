@@ -78,13 +78,6 @@ enum VideoFileType {
   FILE_TYPE_WEBM
 };
 
-// Used in lightfield example.
-enum {
-  YUV1D,  // 1D tile output for conformance test.
-  YUV,    // Tile output in YUV format.
-  NV12,   // Tile output in NV12 format.
-} UENUM1BYTE(OUTPUT_FORMAT);
-
 // The fourcc for large_scale_tile encoding is "LSTC".
 #define LST_FOURCC 0x4354534c
 

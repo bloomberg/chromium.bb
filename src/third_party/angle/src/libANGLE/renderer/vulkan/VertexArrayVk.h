@@ -19,6 +19,12 @@ namespace rx
 class BufferVk;
 struct ConversionBuffer;
 
+enum class BufferBindingDirty
+{
+    No,
+    Yes,
+};
+
 class VertexArrayVk : public VertexArrayImpl
 {
   public:
@@ -34,11 +40,7 @@ class VertexArrayVk : public VertexArrayImpl
 
     angle::Result updateActiveAttribInfo(ContextVk *contextVk);
 
-    angle::Result updateDefaultAttrib(ContextVk *contextVk,
-                                      size_t attribIndex,
-                                      VkBuffer bufferHandle,
-                                      vk::BufferHelper *buffer,
-                                      uint32_t offset);
+    angle::Result updateDefaultAttrib(ContextVk *contextVk, size_t attribIndex);
 
     angle::Result updateStreamedAttribs(const gl::Context *context,
                                         GLint firstVertex,
@@ -94,7 +96,8 @@ class VertexArrayVk : public VertexArrayImpl
     angle::Result convertIndexBufferCPU(ContextVk *contextVk,
                                         gl::DrawElementsType indexType,
                                         size_t indexCount,
-                                        const void *sourcePointer);
+                                        const void *sourcePointer,
+                                        BufferBindingDirty *bufferBindingDirty);
 
     const gl::AttributesMask &getStreamingVertexAttribsMask() const
     {
@@ -137,7 +140,9 @@ class VertexArrayVk : public VertexArrayImpl
     gl::AttributesMask mCurrentArrayBufferCompressed;
     vk::BufferHelper *mCurrentElementArrayBuffer;
 
-    gl::AttribArray<vk::BufferHelper> mStreamedVertexData;
+    // Cached element array buffers for improving performance.
+    vk::BufferHelperPointerVector mCachedStreamIndexBuffers;
+
     vk::BufferHelper mStreamedIndexData;
     vk::BufferHelper mTranslatedByteIndexData;
     vk::BufferHelper mTranslatedByteIndirectData;

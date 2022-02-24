@@ -147,22 +147,6 @@ static void ScaleUVDown2(int src_width,
     }
   }
 #endif
-#if defined(HAS_SCALEUVROWDOWN2_MMI)
-  if (TestCpuFlag(kCpuHasMMI)) {
-    ScaleUVRowDown2 =
-        filtering == kFilterNone
-            ? ScaleUVRowDown2_Any_MMI
-            : (filtering == kFilterLinear ? ScaleUVRowDown2Linear_Any_MMI
-                                          : ScaleUVRowDown2Box_Any_MMI);
-    if (IS_ALIGNED(dst_width, 2)) {
-      ScaleUVRowDown2 =
-          filtering == kFilterNone
-              ? ScaleUVRowDown2_MMI
-              : (filtering == kFilterLinear ? ScaleUVRowDown2Linear_MMI
-                                            : ScaleUVRowDown2Box_MMI);
-    }
-  }
-#endif
 #if defined(HAS_SCALEUVROWDOWN2_MSA)
   if (TestCpuFlag(kCpuHasMSA)) {
     ScaleUVRowDown2 =
@@ -316,16 +300,6 @@ static void ScaleUVDownEven(int src_width,
     }
   }
 #endif
-#if defined(HAS_SCALEUVROWDOWNEVEN_MMI)
-  if (TestCpuFlag(kCpuHasMMI)) {
-    ScaleUVRowDownEven =
-        filtering ? ScaleUVRowDownEvenBox_Any_MMI : ScaleUVRowDownEven_Any_MMI;
-    if (IS_ALIGNED(dst_width, 2)) {
-      ScaleUVRowDownEven =
-          filtering ? ScaleUVRowDownEvenBox_MMI : ScaleUVRowDownEven_MMI;
-    }
-  }
-#endif
 #if defined(HAS_SCALEUVROWDOWNEVEN_MSA)
   if (TestCpuFlag(kCpuHasMSA)) {
     ScaleUVRowDownEven =
@@ -412,6 +386,14 @@ static void ScaleUVBilinearDown(int src_width,
     InterpolateRow = InterpolateRow_Any_MSA;
     if (IS_ALIGNED(clip_src_width, 32)) {
       InterpolateRow = InterpolateRow_MSA;
+    }
+  }
+#endif
+#if defined(HAS_INTERPOLATEROW_LSX)
+  if (TestCpuFlag(kCpuHasLSX)) {
+    InterpolateRow = InterpolateRow_Any_LSX;
+    if (IS_ALIGNED(clip_src_width, 32)) {
+      InterpolateRow = InterpolateRow_LSX;
     }
   }
 #endif
@@ -513,19 +495,19 @@ static void ScaleUVBilinearUp(int src_width,
     }
   }
 #endif
-#if defined(HAS_INTERPOLATEROW_MMI)
-  if (TestCpuFlag(kCpuHasMMI)) {
-    InterpolateRow = InterpolateRow_Any_MMI;
-    if (IS_ALIGNED(dst_width, 4)) {
-      InterpolateRow = InterpolateRow_MMI;
-    }
-  }
-#endif
 #if defined(HAS_INTERPOLATEROW_MSA)
   if (TestCpuFlag(kCpuHasMSA)) {
     InterpolateRow = InterpolateRow_Any_MSA;
     if (IS_ALIGNED(dst_width, 16)) {
       InterpolateRow = InterpolateRow_MSA;
+    }
+  }
+#endif
+#if defined(HAS_INTERPOLATEROW_LSX)
+  if (TestCpuFlag(kCpuHasLSX)) {
+    InterpolateRow = InterpolateRow_Any_LSX;
+    if (IS_ALIGNED(dst_width, 16)) {
+      InterpolateRow = InterpolateRow_LSX;
     }
   }
 #endif
@@ -566,14 +548,6 @@ static void ScaleUVBilinearUp(int src_width,
     }
   }
 #endif
-#if defined(HAS_SCALEUVCOLS_MMI)
-  if (!filtering && TestCpuFlag(kCpuHasMMI)) {
-    ScaleUVFilterCols = ScaleUVCols_Any_MMI;
-    if (IS_ALIGNED(dst_width, 1)) {
-      ScaleUVFilterCols = ScaleUVCols_MMI;
-    }
-  }
-#endif
 #if defined(HAS_SCALEUVCOLS_MSA)
   if (!filtering && TestCpuFlag(kCpuHasMSA)) {
     ScaleUVFilterCols = ScaleUVCols_Any_MSA;
@@ -587,11 +561,6 @@ static void ScaleUVBilinearUp(int src_width,
 #if defined(HAS_SCALEUVCOLSUP2_SSSE3)
     if (TestCpuFlag(kCpuHasSSSE3) && IS_ALIGNED(dst_width, 8)) {
       ScaleUVFilterCols = ScaleUVColsUp2_SSSE3;
-    }
-#endif
-#if defined(HAS_SCALEUVCOLSUP2_MMI)
-    if (TestCpuFlag(kCpuHasMMI) && IS_ALIGNED(dst_width, 4)) {
-      ScaleUVFilterCols = ScaleUVColsUp2_MMI;
     }
 #endif
   }
@@ -898,14 +867,6 @@ static void ScaleUVSimple(int src_width,
     }
   }
 #endif
-#if defined(HAS_SCALEUVCOLS_MMI)
-  if (TestCpuFlag(kCpuHasMMI)) {
-    ScaleUVCols = ScaleUVCols_Any_MMI;
-    if (IS_ALIGNED(dst_width, 1)) {
-      ScaleUVCols = ScaleUVCols_MMI;
-    }
-  }
-#endif
 #if defined(HAS_SCALEUVCOLS_MSA)
   if (TestCpuFlag(kCpuHasMSA)) {
     ScaleUVCols = ScaleUVCols_Any_MSA;
@@ -919,11 +880,6 @@ static void ScaleUVSimple(int src_width,
 #if defined(HAS_SCALEUVCOLSUP2_SSSE3)
     if (TestCpuFlag(kCpuHasSSSE3) && IS_ALIGNED(dst_width, 8)) {
       ScaleUVCols = ScaleUVColsUp2_SSSE3;
-    }
-#endif
-#if defined(HAS_SCALEUVCOLSUP2_MMI)
-    if (TestCpuFlag(kCpuHasMMI) && IS_ALIGNED(dst_width, 4)) {
-      ScaleUVCols = ScaleUVColsUp2_MMI;
     }
 #endif
   }

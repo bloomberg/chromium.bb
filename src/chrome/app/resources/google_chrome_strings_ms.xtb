@@ -170,7 +170,6 @@
 <translation id="5139423532931106058">Sesuaikan profil Chrome anda</translation>
 <translation id="5163087008893166964">Selamat datang ke Chrome; tetingkap penyemak imbas baharu dibuka</translation>
 <translation id="5170938038195470297">Profil anda tidak boleh digunakan kerana ia adalah dari versi Google Chrome yang lebih baharu. Beberapa ciri mungkin tidak tersedia. Sila tetapkan direktori profil lain atau gunakan versi Chrome yang lebih baharu.</translation>
-<translation id="5193136243808726294">OS Google Chrome tidak boleh membuka halaman ini.</translation>
 <translation id="521447420733633466">Jika anda berkongsi peranti, rakan dan keluarga boleh menyemak imbas secara terpisah dan menyediakan Chrome sebagaimana yang mereka ingini</translation>
 <translation id="5251420635869119124">Tetamu boleh menggunakan Chrome tanpa meninggalkan apa-apa.</translation>
 <translation id="5334487786912937552">Chrome memerlukan kebenaran akses storan untuk memuat turun fail</translation>
@@ -179,8 +178,6 @@
 <translation id="5430073640787465221">Fail pilihan anda rosak atau tidak sah. Google Chrome tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="556024056938947818">Google Chrome sedang cuba memaparkan kata laluan.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5657226924540934362">Jika tetapan tidak ditunjukkan pada halaman ini, lihat dalam <ph name="LINK_BEGIN" />
-tetapan OS Chrome<ph name="LINK_END" /> anda</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> mungkin berbahaya, jadi Chrome telah menyekat fail itu.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Pentadbir anda meminta anda melancarkan semula Chrome untuk menggunakan kemas kini ini}=1{Pentadbir anda meminta anda melancarkan semula Chrome untuk menggunakan kemas kini ini. Tetingkap Inkognito anda tidak dapat dibuka semula.}other{Pentadbir anda meminta anda melancarkan semula Chrome untuk menggunakan kemas kini ini. # tetingkap Inkognito anda tidak dapat dibuka semula.}}</translation>
 <translation id="5686916850681061684">Sesuaikan dan kawal Google Chrome. Perhatian anda diperlukan - klik untuk mendapatkan butiran.</translation>

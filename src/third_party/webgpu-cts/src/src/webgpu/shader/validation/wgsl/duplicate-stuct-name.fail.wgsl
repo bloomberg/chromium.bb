@@ -8,7 +8,7 @@ struct foo {
   b : f32;
 };
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   return;
 }

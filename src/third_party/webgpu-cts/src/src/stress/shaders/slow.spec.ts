@@ -16,9 +16,9 @@ g.test('compute')
     const module = t.device.createShaderModule({
       code: `
         struct Buffer { data: array<u32>; };
-        [[group(0), binding(0)]] var<storage, read_write> buffer: Buffer;
-        [[stage(compute), workgroup_size(1)]] fn main(
-            [[builtin(global_invocation_id)]] id: vec3<u32>) {
+        @group(0) @binding(0) var<storage, read_write> buffer: Buffer;
+        @stage(compute) @workgroup_size(1) fn main(
+            @builtin(global_invocation_id) id: vec3<u32>) {
           loop {
             if (buffer.data[id.x] == 1000000u) {
               break;
@@ -49,8 +49,8 @@ g.test('vertex')
     const module = t.device.createShaderModule({
       code: `
         struct Data { counter: u32; increment: u32; };
-        [[group(0), binding(0)]] var<uniform> data: Data;
-        [[stage(vertex)]] fn vmain() -> [[builtin(position)]] vec4<f32> {
+        @group(0) @binding(0) var<uniform> data: Data;
+        @stage(vertex) fn vmain() -> @builtin(position) vec4<f32> {
           var counter: u32 = data.counter;
           loop {
             counter = counter + data.increment;
@@ -60,7 +60,7 @@ g.test('vertex')
           }
           return vec4<f32>(1.0, 1.0, 0.0, f32(counter));
         }
-        [[stage(fragment)]] fn fmain() -> [[location(0)]] vec4<f32> {
+        @stage(fragment) fn fmain() -> @location(0) vec4<f32> {
           return vec4<f32>(1.0, 1.0, 0.0, 1.0);
         }
       `,
@@ -121,11 +121,11 @@ g.test('fragment')
     const module = t.device.createShaderModule({
       code: `
         struct Data { counter: u32; increment: u32; };
-        [[group(0), binding(0)]] var<uniform> data: Data;
-        [[stage(vertex)]] fn vmain() -> [[builtin(position)]] vec4<f32> {
+        @group(0) @binding(0) var<uniform> data: Data;
+        @stage(vertex) fn vmain() -> @builtin(position) vec4<f32> {
           return vec4<f32>(0.0, 0.0, 0.0, 1.0);
         }
-        [[stage(fragment)]] fn fmain() -> [[location(0)]] vec4<f32> {
+        @stage(fragment) fn fmain() -> @location(0) vec4<f32> {
           var counter: u32 = data.counter;
           loop {
             counter = counter + data.increment;

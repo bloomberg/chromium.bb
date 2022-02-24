@@ -13,10 +13,10 @@
 // limitations under the License.
 
 #include "gmock/gmock.h"
-#include "src/ast/stage_decoration.h"
-#include "src/ast/struct_block_decoration.h"
+#include "src/ast/stage_attribute.h"
+#include "src/ast/struct_block_attribute.h"
 #include "src/ast/variable_decl_statement.h"
-#include "src/ast/workgroup_decoration.h"
+#include "src/ast/workgroup_attribute.h"
 #include "src/writer/glsl/test_helper.h"
 
 using ::testing::HasSubstr;
@@ -40,11 +40,11 @@ TEST_F(GlslGeneratorImplTest_Function, Emit_Function) {
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(  #version 310 es
-  precision mediump float;
 
   void my_func() {
     return;
   }
+
 )");
 }
 
@@ -77,16 +77,16 @@ TEST_F(GlslGeneratorImplTest_Function, Emit_Function_WithParams) {
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(  #version 310 es
-  precision mediump float;
 
   void my_func(float a, int b) {
     return;
   }
+
 )");
 }
 
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_EntryPoint_NoReturn_Void) {
+       Emit_Attribute_EntryPoint_NoReturn_Void) {
   Func("func", ast::VariableList{}, ty.void_(), {/* no explicit return */},
        {
            Stage(ast::PipelineStage::kFragment),
@@ -101,11 +101,6 @@ precision mediump float;
 void func() {
   return;
 }
-void main() {
-  func();
-}
-
-
 )");
 }
 
@@ -126,7 +121,7 @@ TEST_F(GlslGeneratorImplTest_Function, PtrParameter) {
 }
 
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_EntryPoint_WithInOutVars) {
+       Emit_Attribute_EntryPoint_WithInOutVars) {
   // fn frag_main(@location(0) foo : f32) -> @location(1) f32 {
   //   return foo;
   // }
@@ -140,39 +135,22 @@ TEST_F(GlslGeneratorImplTest_Function,
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
-struct tint_symbol_1 {
-  float foo;
-};
-struct tint_symbol_2 {
-  float value;
-};
-
-float frag_main_inner(float foo) {
+layout(location = 0) in float foo_1;
+layout(location = 1) out float value;
+float frag_main(float foo) {
   return foo;
 }
 
-tint_symbol_2 frag_main(tint_symbol_1 tint_symbol) {
-  float inner_result = frag_main_inner(tint_symbol.foo);
-  tint_symbol_2 wrapper_result = tint_symbol_2(0.0f);
-  wrapper_result.value = inner_result;
-  return wrapper_result;
-}
-in float foo;
-out float value;
 void main() {
-  tint_symbol_1 inputs;
-  inputs.foo = foo;
-  tint_symbol_2 outputs;
-  outputs = frag_main(inputs);
-  value = outputs.value;
+  float inner_result = frag_main(foo_1);
+  value = inner_result;
+  return;
 }
-
-
 )");
 }
 
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_EntryPoint_WithInOut_Builtins) {
+       Emit_Attribute_EntryPoint_WithInOut_Builtins) {
   // fn frag_main(@position(0) coord : vec4<f32>) -> @frag_depth f32 {
   //   return coord.x;
   // }
@@ -189,37 +167,20 @@ TEST_F(GlslGeneratorImplTest_Function,
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
-struct tint_symbol_1 {
-  vec4 coord;
-};
-struct tint_symbol_2 {
-  float value;
-};
-
-float frag_main_inner(vec4 coord) {
+float frag_main(vec4 coord) {
   return coord.x;
 }
 
-tint_symbol_2 frag_main(tint_symbol_1 tint_symbol) {
-  float inner_result = frag_main_inner(tint_symbol.coord);
-  tint_symbol_2 wrapper_result = tint_symbol_2(0.0f);
-  wrapper_result.value = inner_result;
-  return wrapper_result;
-}
 void main() {
-  tint_symbol_1 inputs;
-  inputs.coord = gl_FragCoord;
-  tint_symbol_2 outputs;
-  outputs = frag_main(inputs);
-  gl_FragDepth = outputs.value;
+  float inner_result = frag_main(gl_FragCoord);
+  gl_FragDepth = inner_result;
+  return;
 }
-
-
 )");
 }
 
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_EntryPoint_SharedStruct_DifferentStages) {
+       Emit_Attribute_EntryPoint_SharedStruct_DifferentStages) {
   // struct Interface {
   //   @builtin(position) pos : vec4<f32>;
   //   @location(1) col1 : f32;
@@ -260,77 +221,47 @@ TEST_F(GlslGeneratorImplTest_Function,
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
+layout(location = 1) out float col1_1;
+layout(location = 2) out float col2_1;
+layout(location = 1) in float col1_2;
+layout(location = 2) in float col2_2;
 struct Interface {
   vec4 pos;
   float col1;
   float col2;
 };
-struct tint_symbol {
-  float col1;
-  float col2;
-  vec4 pos;
-};
 
-Interface vert_main_inner() {
-  Interface tint_symbol_3 = Interface(vec4(0.0f, 0.0f, 0.0f, 0.0f), 0.5f, 0.25f);
-  return tint_symbol_3;
+Interface vert_main() {
+  Interface tint_symbol = Interface(vec4(0.0f, 0.0f, 0.0f, 0.0f), 0.5f, 0.25f);
+  return tint_symbol;
 }
 
-tint_symbol vert_main() {
-  Interface inner_result = vert_main_inner();
-  tint_symbol wrapper_result = tint_symbol(0.0f, 0.0f, vec4(0.0f, 0.0f, 0.0f, 0.0f));
-  wrapper_result.pos = inner_result.pos;
-  wrapper_result.col1 = inner_result.col1;
-  wrapper_result.col2 = inner_result.col2;
-  return wrapper_result;
-}
-out float col1;
-out float col2;
 void main() {
-  tint_symbol outputs;
-  outputs = vert_main();
-  col1 = outputs.col1;
-  col2 = outputs.col2;
-  gl_Position = outputs.pos;
-  gl_Position.y = -gl_Position.y;
+  Interface inner_result = vert_main();
+  gl_Position = inner_result.pos;
+  col1_1 = inner_result.col1;
+  col2_1 = inner_result.col2;
+  gl_Position.y = -(gl_Position.y);
+  gl_Position.z = ((2.0f * gl_Position.z) - gl_Position.w);
+  return;
 }
-
-
-
-struct tint_symbol_2 {
-  float col1;
-  float col2;
-  vec4 pos;
-};
-
-void frag_main_inner(Interface inputs) {
+void frag_main(Interface inputs) {
   float r = inputs.col1;
   float g = inputs.col2;
   vec4 p = inputs.pos;
 }
 
-void frag_main(tint_symbol_2 tint_symbol_1) {
-  Interface tint_symbol_4 = Interface(tint_symbol_1.pos, tint_symbol_1.col1, tint_symbol_1.col2);
-  frag_main_inner(tint_symbol_4);
+void main_1() {
+  Interface tint_symbol_1 = Interface(gl_FragCoord, col1_2, col2_2);
+  frag_main(tint_symbol_1);
   return;
 }
-in float col1;
-in float col2;
-void main() {
-  tint_symbol_2 inputs;
-  inputs.col1 = col1;
-  inputs.col2 = col2;
-  inputs.pos = gl_FragCoord;
-  frag_main(inputs);
-}
-
-
 )");
 }
 
 #if 0
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_EntryPoint_SharedStruct_HelperFunction) {
+       Emit_Attribute_EntryPoint_SharedStruct_HelperFunction) {
   // struct VertexOutput {
   //   @builtin(position) pos : vec4<f32>;
   // };
@@ -397,14 +328,13 @@ tint_symbol_2 vert_main2() {
 }
 #endif
 
-TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_EntryPoint_With_Uniform) {
+TEST_F(GlslGeneratorImplTest_Function, Emit_Attribute_EntryPoint_With_Uniform) {
   auto* ubo_ty = Structure("UBO", {Member("coord", ty.vec4<f32>())},
-                           {create<ast::StructBlockDecoration>()});
+                           {create<ast::StructBlockAttribute>()});
   auto* ubo = Global("ubo", ty.Of(ubo_ty), ast::StorageClass::kUniform,
-                     ast::DecorationList{
-                         create<ast::BindingDecoration>(0),
-                         create<ast::GroupDecoration>(1),
+                     ast::AttributeList{
+                         create<ast::BindingAttribute>(0),
+                         create<ast::GroupAttribute>(1),
                      });
 
   Func("sub_func",
@@ -438,7 +368,7 @@ struct UBO {
   vec4 coord;
 };
 
-layout (binding = 0) uniform UBO_1 {
+layout(binding = 0) uniform UBO_1 {
   vec4 coord;
 } ubo;
 
@@ -450,23 +380,18 @@ void frag_main() {
   float v = sub_func(1.0f);
   return;
 }
-void main() {
-  frag_main();
-}
-
-
 )");
 }
 
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_EntryPoint_With_UniformStruct) {
+       Emit_Attribute_EntryPoint_With_UniformStruct) {
   auto* s = Structure("Uniforms", {Member("coord", ty.vec4<f32>())},
-                      {create<ast::StructBlockDecoration>()});
+                      {create<ast::StructBlockAttribute>()});
 
   Global("uniforms", ty.Of(s), ast::StorageClass::kUniform,
-         ast::DecorationList{
-             create<ast::BindingDecoration>(0),
-             create<ast::GroupDecoration>(1),
+         ast::AttributeList{
+             create<ast::BindingAttribute>(0),
+             create<ast::GroupAttribute>(1),
          });
 
   auto* var = Var("v", ty.f32(), ast::StorageClass::kNone,
@@ -491,7 +416,7 @@ struct Uniforms {
   vec4 coord;
 };
 
-layout (binding = 0) uniform Uniforms_1 {
+layout(binding = 0) uniform Uniforms_1 {
   vec4 coord;
 } uniforms;
 
@@ -499,28 +424,23 @@ void frag_main() {
   float v = uniforms.coord.x;
   return;
 }
-void main() {
-  frag_main();
-}
-
-
 )");
 }
 
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_EntryPoint_With_RW_StorageBuffer_Read) {
+       Emit_Attribute_EntryPoint_With_RW_StorageBuffer_Read) {
   auto* s = Structure("Data",
                       {
                           Member("a", ty.i32()),
                           Member("b", ty.f32()),
                       },
-                      {create<ast::StructBlockDecoration>()});
+                      {create<ast::StructBlockAttribute>()});
 
   Global("coord", ty.Of(s), ast::StorageClass::kStorage,
          ast::Access::kReadWrite,
-         ast::DecorationList{
-             create<ast::BindingDecoration>(0),
-             create<ast::GroupDecoration>(1),
+         ast::AttributeList{
+             create<ast::BindingAttribute>(0),
+             create<ast::GroupAttribute>(1),
          });
 
   auto* var = Var("v", ty.f32(), ast::StorageClass::kNone,
@@ -546,36 +466,35 @@ struct Data {
   float b;
 };
 
-layout (binding = 0) buffer Data_1 {
+layout(binding = 0, std430) buffer Data_1 {
   int a;
   float b;
 } coord;
-
 void frag_main() {
   float v = coord.b;
   return;
 }
+
 void main() {
   frag_main();
+  return;
 }
-
-
 )");
 }
 
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_EntryPoint_With_RO_StorageBuffer_Read) {
+       Emit_Attribute_EntryPoint_With_RO_StorageBuffer_Read) {
   auto* s = Structure("Data",
                       {
                           Member("a", ty.i32()),
                           Member("b", ty.f32()),
                       },
-                      {create<ast::StructBlockDecoration>()});
+                      {create<ast::StructBlockAttribute>()});
 
   Global("coord", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kRead,
-         ast::DecorationList{
-             create<ast::BindingDecoration>(0),
-             create<ast::GroupDecoration>(1),
+         ast::AttributeList{
+             create<ast::BindingAttribute>(0),
+             create<ast::GroupAttribute>(1),
          });
 
   auto* var = Var("v", ty.f32(), ast::StorageClass::kNone,
@@ -602,36 +521,35 @@ struct Data {
   float b;
 };
 
-layout (binding = 0) buffer Data_1 {
+layout(binding = 0, std430) buffer Data_1 {
   int a;
   float b;
 } coord;
-
 void frag_main() {
   float v = coord.b;
   return;
 }
+
 void main() {
   frag_main();
+  return;
 }
-
-
 )");
 }
 
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_EntryPoint_With_WO_StorageBuffer_Store) {
+       Emit_Attribute_EntryPoint_With_WO_StorageBuffer_Store) {
   auto* s = Structure("Data",
                       {
                           Member("a", ty.i32()),
                           Member("b", ty.f32()),
                       },
-                      {create<ast::StructBlockDecoration>()});
+                      {create<ast::StructBlockAttribute>()});
 
   Global("coord", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kWrite,
-         ast::DecorationList{
-             create<ast::BindingDecoration>(0),
-             create<ast::GroupDecoration>(1),
+         ast::AttributeList{
+             create<ast::BindingAttribute>(0),
+             create<ast::GroupAttribute>(1),
          });
 
   Func("frag_main", ast::VariableList{}, ty.void_(),
@@ -654,37 +572,36 @@ struct Data {
   float b;
 };
 
-layout (binding = 0) buffer Data_1 {
+layout(binding = 0, std430) buffer Data_1 {
   int a;
   float b;
 } coord;
-
 void frag_main() {
   coord.b = 2.0f;
   return;
 }
+
 void main() {
   frag_main();
+  return;
 }
-
-
 )");
 }
 
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_EntryPoint_With_StorageBuffer_Store) {
+       Emit_Attribute_EntryPoint_With_StorageBuffer_Store) {
   auto* s = Structure("Data",
                       {
                           Member("a", ty.i32()),
                           Member("b", ty.f32()),
                       },
-                      {create<ast::StructBlockDecoration>()});
+                      {create<ast::StructBlockAttribute>()});
 
   Global("coord", ty.Of(s), ast::StorageClass::kStorage,
          ast::Access::kReadWrite,
-         ast::DecorationList{
-             create<ast::BindingDecoration>(0),
-             create<ast::GroupDecoration>(1),
+         ast::AttributeList{
+             create<ast::BindingAttribute>(0),
+             create<ast::GroupAttribute>(1),
          });
 
   Func("frag_main", ast::VariableList{}, ty.void_(),
@@ -707,31 +624,30 @@ struct Data {
   float b;
 };
 
-layout (binding = 0) buffer Data_1 {
+layout(binding = 0, std430) buffer Data_1 {
   int a;
   float b;
 } coord;
-
 void frag_main() {
   coord.b = 2.0f;
   return;
 }
+
 void main() {
   frag_main();
+  return;
 }
-
-
 )");
 }
 
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_Called_By_EntryPoint_With_Uniform) {
+       Emit_Attribute_Called_By_EntryPoint_With_Uniform) {
   auto* s = Structure("S", {Member("x", ty.f32())},
-                      {create<ast::StructBlockDecoration>()});
+                      {create<ast::StructBlockAttribute>()});
   Global("coord", ty.Of(s), ast::StorageClass::kUniform,
-         ast::DecorationList{
-             create<ast::BindingDecoration>(0),
-             create<ast::GroupDecoration>(1),
+         ast::AttributeList{
+             create<ast::BindingAttribute>(0),
+             create<ast::GroupAttribute>(1),
          });
 
   Func("sub_func", ast::VariableList{Param("param", ty.f32())}, ty.f32(),
@@ -761,7 +677,7 @@ struct S {
   float x;
 };
 
-layout (binding = 0) uniform S_1 {
+layout(binding = 0) uniform S_1 {
   float x;
 } coord;
 
@@ -773,23 +689,18 @@ void frag_main() {
   float v = sub_func(1.0f);
   return;
 }
-void main() {
-  frag_main();
-}
-
-
 )");
 }
 
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_Called_By_EntryPoint_With_StorageBuffer) {
+       Emit_Attribute_Called_By_EntryPoint_With_StorageBuffer) {
   auto* s = Structure("S", {Member("x", ty.f32())},
-                      {create<ast::StructBlockDecoration>()});
+                      {create<ast::StructBlockAttribute>()});
   Global("coord", ty.Of(s), ast::StorageClass::kStorage,
          ast::Access::kReadWrite,
-         ast::DecorationList{
-             create<ast::BindingDecoration>(0),
-             create<ast::GroupDecoration>(1),
+         ast::AttributeList{
+             create<ast::BindingAttribute>(0),
+             create<ast::GroupAttribute>(1),
          });
 
   Func("sub_func", ast::VariableList{Param("param", ty.f32())}, ty.f32(),
@@ -820,10 +731,9 @@ struct S {
   float x;
 };
 
-layout (binding = 0) buffer S_1 {
+layout(binding = 0, std430) buffer S_1 {
   float x;
 } coord;
-
 float sub_func(float param) {
   return coord.x;
 }
@@ -832,16 +742,16 @@ void frag_main() {
   float v = sub_func(1.0f);
   return;
 }
+
 void main() {
   frag_main();
+  return;
 }
-
-
 )");
 }
 
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_EntryPoint_WithNameCollision) {
+       Emit_Attribute_EntryPoint_WithNameCollision) {
   Func("centroid", ast::VariableList{}, ty.void_(), {},
        {
            Stage(ast::PipelineStage::kFragment),
@@ -854,17 +764,16 @@ TEST_F(GlslGeneratorImplTest_Function,
 precision mediump float;
 
 void tint_symbol() {
-  return;
 }
+
 void main() {
   tint_symbol();
+  return;
 }
-
-
 )");
 }
 
-TEST_F(GlslGeneratorImplTest_Function, Emit_Decoration_EntryPoint_Compute) {
+TEST_F(GlslGeneratorImplTest_Function, Emit_Attribute_EntryPoint_Compute) {
   Func("main", ast::VariableList{}, ty.void_(),
        {
            Return(),
@@ -875,22 +784,16 @@ TEST_F(GlslGeneratorImplTest_Function, Emit_Decoration_EntryPoint_Compute) {
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(#version 310 es
-precision mediump float;
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void main() {
   return;
 }
-void main() {
-  main();
-}
-
-
 )");
 }
 
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_EntryPoint_Compute_WithWorkgroup_Literal) {
+       Emit_Attribute_EntryPoint_Compute_WithWorkgroup_Literal) {
   Func("main", ast::VariableList{}, ty.void_(), {},
        {
            Stage(ast::PipelineStage::kCompute),
@@ -901,22 +804,16 @@ TEST_F(GlslGeneratorImplTest_Function,
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(#version 310 es
-precision mediump float;
 
 layout(local_size_x = 2, local_size_y = 4, local_size_z = 6) in;
 void main() {
   return;
 }
-void main() {
-  main();
-}
-
-
 )");
 }
 
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_EntryPoint_Compute_WithWorkgroup_Const) {
+       Emit_Attribute_EntryPoint_Compute_WithWorkgroup_Const) {
   GlobalConst("width", ty.i32(), Construct(ty.i32(), 2));
   GlobalConst("height", ty.i32(), Construct(ty.i32(), 3));
   GlobalConst("depth", ty.i32(), Construct(ty.i32(), 4));
@@ -930,29 +827,22 @@ TEST_F(GlslGeneratorImplTest_Function,
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(#version 310 es
-precision mediump float;
 
 const int width = int(2);
 const int height = int(3);
 const int depth = int(4);
-
 layout(local_size_x = 2, local_size_y = 3, local_size_z = 4) in;
 void main() {
   return;
 }
-void main() {
-  main();
-}
-
-
 )");
 }
 
 TEST_F(GlslGeneratorImplTest_Function,
-       Emit_Decoration_EntryPoint_Compute_WithWorkgroup_OverridableConst) {
-  GlobalConst("width", ty.i32(), Construct(ty.i32(), 2), {Override(7u)});
-  GlobalConst("height", ty.i32(), Construct(ty.i32(), 3), {Override(8u)});
-  GlobalConst("depth", ty.i32(), Construct(ty.i32(), 4), {Override(9u)});
+       Emit_Attribute_EntryPoint_Compute_WithWorkgroup_OverridableConst) {
+  Override("width", ty.i32(), Construct(ty.i32(), 2), {Id(7u)});
+  Override("height", ty.i32(), Construct(ty.i32(), 3), {Id(8u)});
+  Override("depth", ty.i32(), Construct(ty.i32(), 4), {Id(9u)});
   Func("main", ast::VariableList{}, ty.void_(), {},
        {
            Stage(ast::PipelineStage::kCompute),
@@ -963,7 +853,6 @@ TEST_F(GlslGeneratorImplTest_Function,
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(#version 310 es
-precision mediump float;
 
 #ifndef WGSL_SPEC_CONSTANT_7
 #define WGSL_SPEC_CONSTANT_7 int(2)
@@ -977,16 +866,10 @@ const int height = WGSL_SPEC_CONSTANT_8;
 #define WGSL_SPEC_CONSTANT_9 int(4)
 #endif
 const int depth = WGSL_SPEC_CONSTANT_9;
-
 layout(local_size_x = WGSL_SPEC_CONSTANT_7, local_size_y = WGSL_SPEC_CONSTANT_8, local_size_z = WGSL_SPEC_CONSTANT_9) in;
 void main() {
   return;
 }
-void main() {
-  main();
-}
-
-
 )");
 }
 
@@ -1000,11 +883,11 @@ TEST_F(GlslGeneratorImplTest_Function, Emit_Function_WithArrayParams) {
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(#version 310 es
-precision mediump float;
 
 void my_func(float a[5]) {
   return;
 }
+
 )");
 }
 
@@ -1018,11 +901,11 @@ TEST_F(GlslGeneratorImplTest_Function, Emit_Function_WithArrayReturn) {
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(#version 310 es
-precision mediump float;
 
 float[5] my_func() {
   return float[5](0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 }
+
 )");
 }
 
@@ -1047,12 +930,12 @@ TEST_F(GlslGeneratorImplTest_Function,
   // }
 
   auto* s = Structure("Data", {Member("d", ty.f32())},
-                      {create<ast::StructBlockDecoration>()});
+                      {create<ast::StructBlockAttribute>()});
 
   Global("data", ty.Of(s), ast::StorageClass::kStorage, ast::Access::kReadWrite,
-         ast::DecorationList{
-             create<ast::BindingDecoration>(0),
-             create<ast::GroupDecoration>(0),
+         ast::AttributeList{
+             create<ast::BindingAttribute>(0),
+             create<ast::GroupAttribute>(0),
          });
 
   {
@@ -1083,37 +966,34 @@ TEST_F(GlslGeneratorImplTest_Function,
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
   EXPECT_EQ(gen.result(), R"(#version 310 es
-precision mediump float;
 
 struct Data {
   float d;
 };
 
-layout (binding = 0) buffer Data_1 {
+layout(binding = 0, std430) buffer Data_1 {
   float d;
 } data;
-
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void a() {
   float v = data.d;
   return;
 }
-void main() {
-  a();
-}
-
-
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+void main() {
+  a();
+  return;
+}
 void b() {
   float v = data.d;
   return;
 }
-void main() {
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+void main_1() {
   b();
+  return;
 }
-
-
 )");
 }
 

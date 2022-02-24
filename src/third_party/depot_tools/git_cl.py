@@ -638,7 +638,7 @@ def _FindYapfConfigFile(fpath, yapf_config_cache, top_dir=None):
     yapf_file = os.path.join(fpath, YAPF_CONFIG_FILENAME)
     if os.path.isfile(yapf_file):
       ret = yapf_file
-    elif fpath == top_dir or parent_dir == fpath:
+    elif fpath in (top_dir, parent_dir):
       # If we're at the top level directory, or if we're at root
       # there is no provided style.
       ret = None
@@ -1409,8 +1409,11 @@ class Changelist(object):
     with gclient_utils.temporary_file() as description_file:
       gclient_utils.FileWrite(description_file, description)
       args.extend(['--description_file', description_file])
-      p = subprocess2.Popen(['vpython', PRESUBMIT_SUPPORT] + args)
-      p.wait()
+      p_py2 = subprocess2.Popen(['vpython', PRESUBMIT_SUPPORT] + args)
+      p_py3 = subprocess2.Popen(['vpython3', PRESUBMIT_SUPPORT] + args +
+                                ['--use-python3'])
+      p_py2.wait()
+      p_py3.wait()
 
   def _GetDescriptionForUpload(self, options, git_diff_args, files):
     # Get description message for upload.
@@ -1720,18 +1723,18 @@ class Changelist(object):
       if not force:
         confirm_or_exit('If you know what you are doing', action='continue')
       return
-    else:
-      missing = (
-          ([] if gerrit_auth else [self._gerrit_host]) +
-          ([] if git_auth else [git_host]))
-      DieWithError('Credentials for the following hosts are required:\n'
-                   '  %s\n'
-                   'These are read from %s (or legacy %s)\n'
-                   '%s' % (
-                     '\n  '.join(missing),
-                     cookie_auth.get_gitcookies_path(),
-                     cookie_auth.get_netrc_path(),
-                     cookie_auth.get_new_password_message(git_host)))
+
+    missing = (
+        ([] if gerrit_auth else [self._gerrit_host]) +
+        ([] if git_auth else [git_host]))
+    DieWithError('Credentials for the following hosts are required:\n'
+                 '  %s\n'
+                 'These are read from %s (or legacy %s)\n'
+                 '%s' % (
+                   '\n  '.join(missing),
+                   cookie_auth.get_gitcookies_path(),
+                   cookie_auth.get_netrc_path(),
+                   cookie_auth.get_new_password_message(git_host)))
 
   def EnsureCanUploadPatchset(self, force):
     if not self.GetIssue():
@@ -1820,9 +1823,9 @@ class Changelist(object):
       if m.get('author', {}).get('_account_id') == owner:
         # Most recent message was by owner.
         return 'waiting'
-      else:
-        # Some reply from non-owner.
-        return 'reply'
+
+      # Some reply from non-owner.
+      return 'reply'
 
     # Somehow there are no messages even though there are reviewers.
     return 'unsent'
@@ -1845,9 +1848,9 @@ class Changelist(object):
 
     data = self._GetChangeDetail(['ALL_REVISIONS'])
     patchset = data['revisions'][data['current_revision']]['_number']
-    dry_run = set([int(m['_revision_number'])
-        for m in data.get('messages', [])
-        if m.get('tag', '').endswith('dry-run')])
+    dry_run = {int(m['_revision_number'])
+               for m in data.get('messages', [])
+               if m.get('tag', '').endswith('dry-run')}
 
     for revision_info in sorted(data.get('revisions', {}).values(),
         key=lambda c: c['_number'], reverse=True):
@@ -2289,6 +2292,17 @@ class Changelist(object):
             'git cl upload -o uploadvalidator~skip\n\n'
             'If git-cl is not working correctly, file a bug under the '
             'Infra>SDK component.')
+      if 'git push -o nokeycheck' in str(e.stdout):
+        raise GitPushError(
+            'Failed to create a change, very likely due to a private key being '
+            'detected. Please examine output above for the reason of the '
+            'failure.\n'
+            'If this is a false positive, you can try to bypass private key '
+            'detection by using push option '
+            '-o nokeycheck, e.g.:\n'
+            'git cl upload -o nokeycheck\n\n'
+            'If git-cl is not working correctly, file a bug under the '
+            'Infra>SDK component.')
 
       raise GitPushError(
           'Failed to create a change. Please examine output above for the '
@@ -2634,8 +2648,8 @@ class Changelist(object):
     if git_footers.get_footer_change_id(new_log_desc):
       print('git-cl: Added Change-Id to commit message.')
       return new_log_desc
-    else:
-      DieWithError('ERROR: Gerrit commit-msg hook not installed.')
+
+    DieWithError('ERROR: Gerrit commit-msg hook not installed.')
 
   def CannotTriggerTryJobReason(self):
     try:
@@ -3341,10 +3355,10 @@ def CMDbaseurl(parser, args):
     print('Current base-url:')
     return RunGit(['config', 'branch.%s.base-url' % branch],
                   error_ok=False).strip()
-  else:
-    print('Setting base-url to %s' % args[0])
-    return RunGit(['config', 'branch.%s.base-url' % branch, args[0]],
-                  error_ok=False).strip()
+
+  print('Setting base-url to %s' % args[0])
+  return RunGit(['config', 'branch.%s.base-url' % branch, args[0]],
+                error_ok=False).strip()
 
 
 def color_for_status(status):
@@ -3605,13 +3619,15 @@ def CMDarchive(parser, args):
   if options.dry_run:
     print('\nNo changes were made (dry run).\n')
     return 0
-  elif any(branch == current_branch for branch, _ in proposal):
+
+  if any(branch == current_branch for branch, _ in proposal):
     print('You are currently on a branch \'%s\' which is associated with a '
           'closed codereview issue, so archive cannot proceed. Please '
           'checkout another branch and run this command again.' %
           current_branch)
     return 1
-  elif not options.force:
+
+  if not options.force:
     answer = gclient_utils.AskForData('\nProceed with deletion (Y/n)? ').lower()
     if answer not in ('y', ''):
       print('Aborted.')
@@ -4148,7 +4164,9 @@ def GetTargetRef(remote, remote_branch, target_branch):
       if not match:
         # This is a branch path but not one we recognize; use as-is.
         remote_branch = target_branch
+  # pylint: disable=consider-using-get
   elif remote_branch in REFS_THAT_ALIAS_TO_OTHER_REFS:
+    # pylint: enable=consider-using-get
     # Handle the refs that need to land in different refs.
     remote_branch = REFS_THAT_ALIAS_TO_OTHER_REFS[remote_branch]
 
@@ -4565,8 +4583,10 @@ def GetTreeStatus(url=None):
     status = str(urllib.request.urlopen(url).read().lower())
     if status.find('closed') != -1 or status == '0':
       return 'closed'
-    elif status.find('open') != -1 or status == '1':
+
+    if status.find('open') != -1 or status == '1':
       return 'open'
+
     return 'unknown'
   return 'unset'
 
@@ -5102,8 +5122,8 @@ def _RunRustFmt(opts, rust_diff_files, top_dir, upstream_commit):
 
   if opts.presubmit and rustfmt_exitcode != 0:
     return 2
-  else:
-    return 0
+
+  return 0
 
 
 def MatchingFileType(file_name, extensions):

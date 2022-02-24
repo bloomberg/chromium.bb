@@ -843,6 +843,102 @@ Compute derivative/integral of audio stream.
 
 Applying both filters one after another produces original audio.
 
+@section adynamicequalizer
+
+Apply dynamic equalization to input audio stream.
+
+A description of the accepted options follows.
+
+@table @option
+@item threshold
+Set the detection threshold used to trigger equalization.
+Threshold detection is using bandpass filter.
+Default value is 0. Allowed range is from 0 to 100.
+
+@item dfrequency
+Set the detection frequency in Hz used for bandpass filter used to trigger equalization.
+Default value is 1000 Hz. Allowed range is between 2 and 1000000 Hz.
+
+@item dqfactor
+Set the detection resonance factor for bandpass filter used to trigger equalization.
+Default value is 1. Allowed range is from 0.001 to 1000.
+
+@item tfrequency
+Set the target frequency of equalization filter.
+Default value is 1000 Hz. Allowed range is between 2 and 1000000 Hz.
+
+@item tqfactor
+Set the target resonance factor for target equalization filter.
+Default value is 1. Allowed range is from 0.001 to 1000.
+
+@item attack
+Set the amount of milliseconds the signal from detection has to rise above
+the detection threshold before equalization starts.
+Default is 20. Allowed range is between 1 and 2000.
+
+@item release
+Set the amount of milliseconds the signal from detection has to fall below the
+detection threshold before equalization ends.
+Default is 200. Allowed range is between 1 and 2000.
+
+@item knee
+Curve the sharp knee around the detection threshold to calculate
+equalization gain more softly.
+Default is 1. Allowed range is between 0 and 8.
+
+@item ratio
+Set the ratio by which the equalization gain is raised.
+Default is 1. Allowed range is between 1 and 20.
+
+@item makeup
+Set the makeup offset in dB by which the equalization gain is raised.
+Default is 0. Allowed range is between 0 and 30.
+
+@item range
+Set the max allowed cut/boost amount in dB. Default is 0.
+Allowed range is from 0 to 200.
+
+@item slew
+Set the slew factor. Default is 1. Allowed range is from 1 to 200.
+
+@item mode
+Set the mode of filter operation, can be one of the following:
+
+@table @samp
+@item listen
+Output only isolated bandpass signal.
+@item cut
+Cut frequencies above detection threshold.
+@item boost
+Boost frequencies bellow detection threshold.
+@end table
+Default mode is @samp{cut}.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
+@section adynamicsmooth
+
+Apply dynamic smoothing to input audio stream.
+
+A description of the accepted options follows.
+
+@table @option
+@item sensitivity
+Set an amount of sensitivity to frequency fluctations. Default is 2.
+Allowed range is from 0 to 1e+06.
+
+@item basefreq
+Set a base frequency for smoothing. Default value is 22050.
+Allowed range is from 2 to 1e+06.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
 @section aecho
 
 Apply echoing to the input audio.
@@ -1885,6 +1981,7 @@ Set transform type of IIR filter.
 @item dii
 @item tdii
 @item latt
+@item svf
 @end table
 
 @item precision, r
@@ -2204,8 +2301,8 @@ Set smooth factor. Default value is @var{11}. Allowed range is from @var{1} to @
 
 This filter supports the all above options as @ref{commands}.
 
-@section anlms
-Apply Normalized Least-Mean-Squares algorithm to the first audio stream using the second audio stream.
+@section anlmf, anlms
+Apply Normalized Least-Mean-(Squares|Fourth) algorithm to the first audio stream using the second audio stream.
 
 This adaptive filter is used to mimic a desired filter by finding the filter coefficients that
 relate to producing the least mean square of the error signal (difference between the desired,
@@ -2291,12 +2388,12 @@ with @option{pad_len}.
 @item pad_dur
 Specify the duration of samples of silence to add. See
 @ref{time duration syntax,,the Time duration section in the ffmpeg-utils(1) manual,ffmpeg-utils}
-for the accepted syntax. Used only if set to non-zero value.
+for the accepted syntax. Used only if set to non-negative value.
 
 @item whole_dur
 Specify the minimum total duration in the output audio stream. See
 @ref{time duration syntax,,the Time duration section in the ffmpeg-utils(1) manual,ffmpeg-utils}
-for the accepted syntax. Used only if set to non-zero value. If the value is longer than
+for the accepted syntax. Used only if set to non-negative value. If the value is longer than
 the input audio length, silence is added to the end, until the value is reached.
 This option is mutually exclusive with @option{pad_dur}
 @end table
@@ -2304,6 +2401,9 @@ This option is mutually exclusive with @option{pad_dur}
 If neither the @option{pad_len} nor the @option{whole_len} nor @option{pad_dur}
 nor @option{whole_dur} option is set, the filter will add silence to the end of
 the input stream indefinitely.
+
+Note that for ffmpeg 4.4 and earlier a zero @option{pad_dur} or
+@option{whole_dur} also caused the filter to add silence indefinitely.
 
 @subsection Examples
 
@@ -2691,6 +2791,69 @@ Set oversampling factor.
 
 This filter supports the all above options as @ref{commands}.
 
+@section aspectralstats
+
+Display frequency domain statistical information about the audio channels.
+Statistics are calculated and stored as metadata for each audio channel and for each audio frame.
+
+It accepts the following option:
+@table @option
+@item win_size
+Set the window length in samples. Default value is 2048.
+Allowed range is from 32 to 65536.
+
+@item win_func
+Set window function.
+
+It accepts the following values:
+@table @samp
+@item rect
+@item bartlett
+@item hann, hanning
+@item hamming
+@item blackman
+@item welch
+@item flattop
+@item bharris
+@item bnuttall
+@item bhann
+@item sine
+@item nuttall
+@item lanczos
+@item gauss
+@item tukey
+@item dolph
+@item cauchy
+@item parzen
+@item poisson
+@item bohman
+@end table
+Default is @code{hann}.
+
+@item overlap
+Set window overlap. Allowed range is from @code{0}
+to @code{1}. Default value is @code{0.5}.
+
+@end table
+
+A list of each metadata key follows:
+
+@table @option
+@item mean
+@item variance
+@item centroid
+@item spread
+@item skewness
+@item kurtosis
+@item entropy
+@item flatness
+@item crest
+@item flux
+@item slope
+@item decrease
+@item rolloff
+@end table
+
 @section asr
 Automatic Speech Recognition
 
@@ -2799,16 +2962,17 @@ this @code{lavfi.astats.Overall.Peak_count}.
 For description what each key means read below.
 
 @item reset
-Set number of frame after which stats are going to be recalculated.
+Set the number of frames over which cumulative stats are calculated before
+being reset
 Default is disabled.
 
 @item measure_perchannel
-Select the entries which need to be measured per channel. The metadata keys can
+Select the parameters which are measured per channel. The metadata keys can
 be used as flags, default is @option{all} which measures everything.
 @option{none} disables all per channel measurement.
 
 @item measure_overall
-Select the entries which need to be measured overall. The metadata keys can
+Select the parameters which are measured overall. The metadata keys can
 be used as flags, default is @option{all} which measures everything.
 @option{none} disables all overall measurement.
 
@@ -3246,6 +3410,7 @@ Set transform type of IIR filter.
 @item dii
 @item tdii
 @item latt
+@item svf
 @end table
 
 @item precision, r
@@ -3333,6 +3498,7 @@ Set transform type of IIR filter.
 @item dii
 @item tdii
 @item latt
+@item svf
 @end table
 
 @item precision, r
@@ -3430,6 +3596,7 @@ Set transform type of IIR filter.
 @item dii
 @item tdii
 @item latt
+@item svf
 @end table
 
 @item precision, r
@@ -3512,6 +3679,7 @@ Set transform type of IIR filter.
 @item dii
 @item tdii
 @item latt
+@item svf
 @end table
 
 @item precision, r
@@ -4262,6 +4430,7 @@ Set transform type of IIR filter.
 @item dii
 @item tdii
 @item latt
+@item svf
 @end table
 
 @item precision, r
@@ -4763,6 +4932,7 @@ Set transform type of IIR filter.
 @item dii
 @item tdii
 @item latt
+@item svf
 @end table
 
 @item precision, r
@@ -5113,6 +5283,7 @@ Set transform type of IIR filter.
 @item dii
 @item tdii
 @item latt
+@item svf
 @end table
 
 @item precision, r
@@ -6337,6 +6508,7 @@ Set transform type of IIR filter.
 @item dii
 @item tdii
 @item latt
+@item svf
 @end table
 
 @item precision, r
@@ -8493,25 +8665,31 @@ This filter supports the all above options as @ref{commands}.
 
 @section colorkey
 RGB colorspace color keying.
+This filter operates on 8-bit RGB format frames by setting the alpha component of each pixel
+which falls within the similarity radius of the key color to 0. The alpha value for pixels outside
+the similarity radius depends on the value of the blend option.
 
 The filter accepts the following options:
 
 @table @option
 @item color
-The color which will be replaced with transparency.
+Set the color for which alpha will be set to 0 (full transparency).
+See @ref{color syntax,,"Color" section in the ffmpeg-utils manual,ffmpeg-utils}.
+Default is @code{black}.
 
 @item similarity
-Similarity percentage with the key color.
-
-0.01 matches only the exact key color, while 1.0 matches everything.
+Set the radius from the key color within which other colors also have full transparency.
+The computed distance is related to the unit fractional distance in 3D space between the RGB values
+of the key color and the pixel's color. Range is 0.01 to 1.0. 0.01 matches within a very small radius
+around the exact key color, while 1.0 matches everything.
+Default is @code{0.01}.
 
 @item blend
-Blend percentage.
-
-0.0 makes pixels either fully transparent, or not transparent at all.
-
-Higher values result in semi-transparent pixels, with a higher transparency
-the more similar the pixels color is to the key color.
+Set how the alpha value for pixels that fall outside the similarity radius is computed.
+0.0 makes pixels either fully transparent or fully opaque.
+Higher values result in semi-transparent pixels, with greater transparency
+the more similar the pixel color is to the key color.
+Range is 0.0 to 1.0. Default is @code{0.0}.
 @end table
 
 @subsection Examples
@@ -11710,6 +11888,18 @@ Allowed range is from 1 to 15.
 @item redge
 Specify the search radius for best edge matching. Default value is 2.
 Allowed range is from 0 to 15.
+
+@item ecost
+Specify the edge cost for edge matching. Default value is 0.03125.
+Allowed range is from 0 to 1.
+
+@item mcost
+Specify the middle cost for edge matching. Default value is 0.5.
+Allowed range is from 0 to 1.
+
+@item dcost
+Specify the distance cost for edge matching. Default value is 0.5.
+Allowed range is from 0 to 1.
 
 @item interp
 Specify the interpolation used. Default is 4-point interpolation. It accepts one
@@ -21793,6 +21983,11 @@ Set if input video is transposed. Boolean value, by default disabled.
 @item out_trans
 Set if output video needs to be transposed. Boolean value, by default disabled.
 
+@item h_offset
+@item v_offset
+Set output horizontal/vertical off-axis offset. Default is set to 0.
+Allowed range is from -1 to 1.
+
 @item alpha_mask
 Build mask in alpha plane for all unmapped pixels by marking them fully transparent. Boolean value, by default disabled.
 
@@ -22871,6 +23066,7 @@ Default transition effect is fade.
 
 @item duration
 Set cross fade duration in seconds.
+Range is 0 to 60 seconds.
 Default duration is 1 second.
 
 @item offset
@@ -24602,6 +24798,57 @@ To enable compilation of these filters you need to configure FFmpeg with
 
 To use vaapi filters, you need to setup the vaapi device correctly. For more information, please read @url{https://trac.ffmpeg.org/wiki/Hardware/VAAPI}
 
+@section overlay_vaapi
+
+Overlay one video on the top of another.
+
+It takes two inputs and has one output. The first input is the "main" video on which the second input is overlaid.
+This filter requires same memory layout for all the inputs. So, format conversion may be needed.
+
+The filter accepts the following options:
+
+@table @option
+
+@item x
+Set the x coordinate of the overlaid video on the main video.
+Default value is @code{0}.
+
+@item y
+Set the y coordinate of the overlaid video on the main video.
+Default value is @code{0}.
+
+@item w
+Set the width of the overlaid video on the main video.
+Default value is the width of input overlay video.
+
+@item h
+Set the height of the overlaid video on the main video.
+Default value is the height of input overlay video.
+
+@item alpha
+Set blocking detection thresholds. Allowed range is 0.0 to 1.0, it
+requires an input video with alpha channel.
+Default value is @code{0.0}.
+
+@end table
+
+@subsection Examples
+
+@itemize
+@item
+Overlay an image LOGO at the top-left corner of the INPUT video. Both inputs for this filter are yuv420p format.
+@example
+-i INPUT -i LOGO -filter_complex "[0:v]hwupload[a], [1:v]format=yuv420p, hwupload[b], [a][b]overlay_vaapi" OUTPUT
+@end example
+@item
+Overlay an image LOGO at the offset (200, 100) from the top-left corner of the INPUT video.
+The inputs have same memory layout for color channels, the overlay has additional alpha plane, like INPUT is yuv420p, and the LOGO is yuva420p.
+@example
+-i INPUT -i LOGO -filter_complex "[0:v]hwupload[a], [1:v]format=yuva420p, hwupload[b], [a][b]overlay_vaapi=x=200:y=100:w=400:h=300:alpha=1.0, hwdownload, format=nv12" OUTPUT
+@end example
+
+@end itemize
+
 @section tonemap_vaapi
 
 Perform HDR(High Dynamic Range) to SDR(Standard Dynamic Range) conversion with tone-mapping.
@@ -25231,6 +25478,7 @@ ffplay -f lavfi life=s=300x200:mold=10:r=60:ratio=0.1:death_color=#C83232:life_c
 @anchor{allrgb}
 @anchor{allyuv}
 @anchor{color}
+@anchor{colorspectrum}
 @anchor{haldclutsrc}
 @anchor{nullsrc}
 @anchor{pal75bars}
@@ -25241,13 +25489,15 @@ ffplay -f lavfi life=s=300x200:mold=10:r=60:ratio=0.1:death_color=#C83232:life_c
 @anchor{testsrc}
 @anchor{testsrc2}
 @anchor{yuvtestsrc}
-@section allrgb, allyuv, color, haldclutsrc, nullsrc, pal75bars, pal100bars, rgbtestsrc, smptebars, smptehdbars, testsrc, testsrc2, yuvtestsrc
+@section allrgb, allyuv, color, colorspectrum, haldclutsrc, nullsrc, pal75bars, pal100bars, rgbtestsrc, smptebars, smptehdbars, testsrc, testsrc2, yuvtestsrc
 
 The @code{allrgb} source returns frames of size 4096x4096 of all rgb colors.
 
 The @code{allyuv} source returns frames of size 4096x4096 of all yuv colors.
 
 The @code{color} source provides an uniformly colored input.
+
+The @code{colorspectrum} source provides a color spectrum input.
 
 The @code{haldclutsrc} source provides an identity Hald CLUT. See also
 @ref{haldclut} filter.
@@ -25340,6 +25590,16 @@ Set the number of decimals to show in the timestamp, only available in the
 The displayed timestamp value will correspond to the original
 timestamp value multiplied by the power of 10 of the specified
 value. Default value is 0.
+
+@item type
+Set the type of the color spectrum, only available in the
+@code{colorspectrum} source. Can be one of the following:
+
+@table @samp
+@item black
+@item white
+@item all
+@end table
 @end table
 
 @subsection Examples
@@ -28344,6 +28604,18 @@ changed, so it will generate non monotonically increasing timestamps.
 Specifies the time difference between frames above which the point is
 considered a timestamp discontinuity which is removed by adjusting the later
 timestamps.
+
+@item dec_threads
+Specifies the number of threads for decoding
+
+@item format_opts
+Specify format options for the opened file. Format options can be specified
+as a list of @var{key}=@var{value} pairs separated by ':'. The following example
+shows how to add protocol_whitelist and protocol_blacklist options:
+@example
+ffplay -f lavfi
+"movie=filename='1.sdp':format_opts='protocol_whitelist=file,rtp,udp\:protocol_blacklist=http'"
+@end example
 @end table
 
 It allows overlaying a second video on top of the main input of

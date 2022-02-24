@@ -353,7 +353,7 @@ namespace internal {
   T(InvalidCountValue, "Invalid count value")                                  \
   T(InvalidDataViewAccessorOffset,                                             \
     "Offset is outside the bounds of the DataView")                            \
-  T(InvalidDataViewLength, "Invalid DataView length")                          \
+  T(InvalidDataViewLength, "Invalid DataView length %")                        \
   T(InvalidOffset, "Start offset % is outside the bounds of the buffer")       \
   T(InvalidHint, "Invalid hint: %")                                            \
   T(InvalidIndex, "Invalid value: not (convertible to) a safe integer")        \
@@ -590,7 +590,7 @@ namespace internal {
   T(WasmTrapFuncSigMismatch, "null function or function signature mismatch")   \
   T(WasmTrapMultiReturnLengthMismatch, "multi-return length mismatch")         \
   T(WasmTrapJSTypeError, "type incompatibility when transforming from/to JS")  \
-  T(WasmTrapDataSegmentDropped, "data segment has been dropped")               \
+  T(WasmTrapDataSegmentOutOfBounds, "data segment out of bounds")              \
   T(WasmTrapElemSegmentDropped, "element segment has been dropped")            \
   T(WasmTrapRethrowNull, "rethrowing null value")                              \
   T(WasmTrapNullDereference, "dereferencing a null pointer")                   \

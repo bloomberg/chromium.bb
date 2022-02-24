@@ -112,11 +112,6 @@ if(CONFIG_REALTIME_ONLY)
                    "${AOM_ROOT}/test/sharpness_test.cc")
 endif()
 
-if(CONFIG_AV1_TEMPORAL_DENOISING AND (HAVE_SSE2 OR HAVE_NEON))
-  list(APPEND AOM_UNIT_TEST_ENCODER_SOURCES
-              "${AOM_ROOT}/test/av1_temporal_denoiser_test.cc")
-endif()
-
 if(NOT CONFIG_REALTIME_ONLY)
   list(APPEND AOM_DECODE_PERF_TEST_SOURCES
               "${AOM_ROOT}/test/decode_perf_test.cc")
@@ -128,6 +123,7 @@ list(APPEND AOM_TEST_INTRA_PRED_SPEED_SOURCES "${AOM_GEN_SRC_DIR}/usage_exit.c"
 
 if(NOT BUILD_SHARED_LIBS)
   list(APPEND AOM_UNIT_TEST_COMMON_SOURCES
+              "${AOM_ROOT}/test/aom_mem_test.cc"
               "${AOM_ROOT}/test/av1_common_int_test.cc"
               "${AOM_ROOT}/test/cdef_test.cc"
               "${AOM_ROOT}/test/cfl_test.cc"
@@ -164,7 +160,6 @@ if(NOT BUILD_SHARED_LIBS)
                 "${AOM_ROOT}/test/error_resilience_test.cc"
                 "${AOM_ROOT}/test/ethread_test.cc"
                 "${AOM_ROOT}/test/film_grain_table_test.cc"
-                "${AOM_ROOT}/test/frame_parallel_enc_test.cc"
                 "${AOM_ROOT}/test/kf_test.cc"
                 "${AOM_ROOT}/test/lossless_test.cc"
                 "${AOM_ROOT}/test/quant_test.cc"
@@ -206,6 +201,13 @@ if(NOT BUILD_SHARED_LIBS)
   if(HAVE_NEON)
     list(APPEND AOM_UNIT_TEST_COMMON_SOURCES
                 "${AOM_ROOT}/test/simd_neon_test.cc")
+  endif()
+
+  if(CONFIG_FRAME_PARALLEL_ENCODE
+     AND CONFIG_FPMT_TEST
+     AND (NOT CONFIG_REALTIME_ONLY))
+    list(APPEND AOM_UNIT_TEST_COMMON_SOURCES
+                "${AOM_ROOT}/test/frame_parallel_enc_test.cc")
   endif()
 
   list(APPEND AOM_UNIT_TEST_COMMON_INTRIN_SSE2
@@ -260,6 +262,7 @@ if(NOT BUILD_SHARED_LIBS)
               "${AOM_ROOT}/test/comp_mask_variance_test.cc"
               "${AOM_ROOT}/test/encodemb_test.cc"
               "${AOM_ROOT}/test/encodetxb_test.cc"
+              "${AOM_ROOT}/test/end_to_end_qmpsnr_test.cc"
               "${AOM_ROOT}/test/end_to_end_ssim_test.cc"
               "${AOM_ROOT}/test/error_block_test.cc"
               "${AOM_ROOT}/test/fft_test.cc"
@@ -292,6 +295,7 @@ if(NOT BUILD_SHARED_LIBS)
 
   if(CONFIG_REALTIME_ONLY)
     list(REMOVE_ITEM AOM_UNIT_TEST_ENCODER_SOURCES
+                     "${AOM_ROOT}/test/end_to_end_qmpsnr_test.cc"
                      "${AOM_ROOT}/test/end_to_end_ssim_test.cc"
                      "${AOM_ROOT}/test/firstpass_test.cc"
                      "${AOM_ROOT}/test/frame_error_test.cc"
@@ -303,6 +307,11 @@ if(NOT BUILD_SHARED_LIBS)
                      "${AOM_ROOT}/test/warp_filter_test_util.cc"
                      "${AOM_ROOT}/test/warp_filter_test_util.h"
                      "${AOM_ROOT}/test/wiener_test.cc")
+  endif()
+
+  if(CONFIG_AV1_TEMPORAL_DENOISING AND (HAVE_SSE2 OR HAVE_NEON))
+    list(APPEND AOM_UNIT_TEST_ENCODER_SOURCES
+                "${AOM_ROOT}/test/av1_temporal_denoiser_test.cc")
   endif()
 
   if((HAVE_SSE4_1 OR HAVE_NEON))
@@ -337,6 +346,21 @@ if(NOT BUILD_SHARED_LIBS)
     list(APPEND AOM_UNIT_TEST_ENCODER_SOURCES "${AOM_ROOT}/test/hash_test.cc")
   endif()
 
+endif()
+
+if(CONFIG_AV1_ENCODER AND ENABLE_TESTS)
+  list(APPEND AOM_RC_INTERFACE_SOURCES
+              "${AOM_ROOT}/test/encode_test_driver.cc"
+              "${AOM_ROOT}/test/encode_test_driver.h"
+              "${AOM_ROOT}/test/decode_test_driver.cc"
+              "${AOM_ROOT}/test/decode_test_driver.h"
+              "${AOM_ROOT}/test/codec_factory.h"
+              "${AOM_ROOT}/test/test_aom_rc_interface.cc"
+              "${AOM_ROOT}/test/ratectrl_rtc_test.cc"
+              "${AOM_ROOT}/common/y4minput.c"
+              "${AOM_ROOT}/common/y4minput.h"
+              "${AOM_ROOT}/test/y4m_video_source.h"
+              "${AOM_ROOT}/test/yuv_video_source.h")
 endif()
 
 if(ENABLE_TESTS)
@@ -559,5 +583,18 @@ function(setup_aom_test_targets)
     endforeach()
   endforeach()
 
+  # Set up test for rc interface
+  if(CONFIG_AV1_RC_RTC
+     AND CONFIG_AV1_ENCODER
+     AND ENABLE_TESTS
+     AND CONFIG_WEBM_IO
+     AND NOT BUILD_SHARED_LIBS)
+    add_executable(test_aom_rc_interface ${AOM_RC_INTERFACE_SOURCES})
+    target_link_libraries(test_aom_rc_interface ${AOM_LIB_LINK_TYPE} aom
+                          aom_av1_rc aom_gtest webm)
+    set_property(TARGET test_aom_rc_interface
+                 PROPERTY FOLDER ${AOM_IDE_TEST_FOLDER})
+    list(APPEND AOM_APP_TARGETS test_aom_rc_interface)
+  endif()
   set(AOM_APP_TARGETS ${AOM_APP_TARGETS} PARENT_SCOPE)
 endfunction()

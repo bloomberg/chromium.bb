@@ -12,10 +12,6 @@
 
 #include "./InternalHeaderCheck.h"
 
-#if EIGEN_HAS_CONSTEXPR
-
-#define EIGEN_HAS_INDEX_LIST
-
 namespace Eigen {
 
 /** \internal
@@ -608,81 +604,6 @@ struct index_pair_second_statically_eq_impl<const IndexPairList<FirstType, Other
 
 }  // end namespace internal
 }  // end namespace Eigen
-
-#else
-
-namespace Eigen {
-namespace internal {
-
-template <typename T>
-struct index_known_statically_impl {
-  static EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE bool run(const Index) {
-    return false;
-  }
-};
-
-template <typename T>
-struct all_indices_known_statically_impl {
-  static EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE bool run() {
-    return false;
-  }
-};
-
-template <typename T>
-struct indices_statically_known_to_increase_impl {
-  static EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE bool run() {
-    return false;
-  }
-};
-
-template <typename T>
-struct index_statically_eq_impl {
-  static EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE bool run(Index, Index) {
-    return false;
-  }
-};
-
-template <typename T>
-struct index_statically_ne_impl {
-  static EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE bool run(Index, Index) {
-    return false;
-  }
-};
-
-template <typename T>
-struct index_statically_gt_impl {
-  static EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE bool run(Index, Index) {
-    return false;
-  }
-};
-
-template <typename T>
-struct index_statically_lt_impl {
-  static EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE bool run(Index, Index) {
-    return false;
-  }
-};
-
-template <typename Tx>
-struct index_pair_first_statically_eq_impl {
-  static EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE bool run(Index, Index) {
-    return false;
-  }
-};
-
-template <typename Tx>
-struct index_pair_second_statically_eq_impl {
-  static EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE bool run(Index, Index) {
-    return false;
-  }
-};
-
-
-
-}  // end namespace internal
-}  // end namespace Eigen
-
-#endif
 
 
 namespace Eigen {

@@ -4,7 +4,7 @@ struct Foo {
   a : array<f32>;
 };
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   return;
 }

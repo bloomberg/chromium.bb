@@ -29,7 +29,7 @@ struct traits<TensorCustomUnaryOp<CustomUnaryFunc, XprType> >
   typedef typename XprType::StorageKind StorageKind;
   typedef typename XprType::Index Index;
   typedef typename XprType::Nested Nested;
-  typedef typename remove_reference<Nested>::type _Nested;
+  typedef typename remove_reference<Nested>::type Nested_;
   static const int NumDimensions = traits<XprType>::NumDimensions;
   static const int Layout = traits<XprType>::Layout;
   typedef typename traits<XprType>::PointerType PointerType;
@@ -193,8 +193,8 @@ struct traits<TensorCustomBinaryOp<CustomBinaryFunc, LhsXprType, RhsXprType> >
                                       typename traits<RhsXprType>::Index>::type Index;
   typedef typename LhsXprType::Nested LhsNested;
   typedef typename RhsXprType::Nested RhsNested;
-  typedef typename remove_reference<LhsNested>::type _LhsNested;
-  typedef typename remove_reference<RhsNested>::type _RhsNested;
+  typedef typename remove_reference<LhsNested>::type LhsNested_;
+  typedef typename remove_reference<RhsNested>::type RhsNested_;
   static const int NumDimensions = traits<LhsXprType>::NumDimensions;
   static const int Layout = traits<LhsXprType>::Layout;
   typedef typename conditional<Pointer_type_promotion<typename LhsXprType::Scalar, Scalar>::val,

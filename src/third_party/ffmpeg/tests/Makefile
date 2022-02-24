@@ -1,3 +1,4 @@
+
 THREADS = 1
 VREF = tests/vsynth1/00.pgm
 AREF = tests/data/asynth1.sw
@@ -10,8 +11,7 @@ FFMPEG=ffmpeg$(PROGSSUF)$(EXESUF)
 $(AREF): CMP=
 
 APITESTSDIR := tests/api
-DNNTESTSDIR := tests/dnn
-FATE_OUTDIRS = tests/data tests/data/fate tests/data/filtergraphs tests/data/lavf tests/data/lavf-fate tests/data/pixfmt tests/vsynth1 $(APITESTSDIR) $(DNNTESTSDIR)
+FATE_OUTDIRS = tests/data tests/data/fate tests/data/filtergraphs tests/data/lavf tests/data/lavf-fate tests/data/pixfmt tests/vsynth1 $(APITESTSDIR)
 OUTDIRS += $(FATE_OUTDIRS)
 
 $(VREF): tests/videogen$(HOSTEXESUF) | tests/vsynth1
@@ -40,7 +40,7 @@ tests/test_copy.ffmeta: tests/data
 	$(M)cp -f $(SRC_PATH)/tests/test.ffmeta tests/test_copy.ffmeta
 
 tests/data/ffprobe-test.nut: ffmpeg$(PROGSSUF)$(EXESUF) tests/test_copy.ffmeta
-	$(M)$(TARGET_EXEC) $(TARGET_PATH)/$< \
+	$(M)$(TARGET_EXEC) $(TARGET_PATH)/$< -nostdin \
         -f lavfi -i "aevalsrc=sin(400*PI*2*t):d=0.125[out0]; testsrc=d=0.125[out1]; testsrc=s=100x100:d=0.125[out2]" \
         -f ffmetadata -i $(TARGET_PATH)/tests/test_copy.ffmeta \
         -flags +bitexact -fflags +bitexact -map 0:0 -map 0:1 -map 0:2 -map_metadata 1 \
@@ -96,7 +96,6 @@ CONFIG_LARGE_TESTS:=
 endif
 
 include $(SRC_PATH)/$(APITESTSDIR)/Makefile
-include $(SRC_PATH)/$(DNNTESTSDIR)/Makefile
 
 include $(SRC_PATH)/tests/fate/acodec.mak
 include $(SRC_PATH)/tests/fate/vcodec.mak

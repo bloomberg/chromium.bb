@@ -814,11 +814,27 @@ static avifTile * avifDecoderDataCreateTile(avifDecoderData * data, uint32_t wid
 {
     avifTile * tile = (avifTile *)avifArrayPushPtr(&data->tiles);
     tile->image = avifImageCreateEmpty();
+    if (!tile->image) {
+        goto error;
+    }
     tile->input = avifCodecDecodeInputCreate();
+    if (!tile->input) {
+        goto error;
+    }
     tile->width = width;
     tile->height = height;
     tile->operatingPoint = operatingPoint;
     return tile;
+
+error:
+    if (tile->input) {
+        avifCodecDecodeInputDestroy(tile->input);
+    }
+    if (tile->image) {
+        avifImageDestroy(tile->image);
+    }
+    avifArrayPop(&data->tiles);
+    return NULL;
 }
 
 static avifTrack * avifDecoderDataCreateTrack(avifDecoderData * data)
@@ -1211,6 +1227,9 @@ static avifBool avifDecoderGenerateImageGridTiles(avifDecoder * decoder, avifIma
             }
 
             avifTile * tile = avifDecoderDataCreateTile(decoder->data, item->width, item->height, avifDecoderItemOperatingPoint(item));
+            if (!tile) {
+                return AVIF_FALSE;
+            }
             if (!avifCodecDecodeInputFillFromDecoderItem(tile->input,
                                                          item,
                                                          decoder->allowProgressive,
@@ -1295,37 +1314,17 @@ static avifBool avifDecoderDataFillImageGrid(avifDecoderData * data,
                               "Grid image tiles in the rightmost column and bottommost row do not overlap the reconstructed image grid canvas. See MIAF (ISO/IEC 23000-22:2019), Section 7.3.11.4.2, Figure 2");
         return AVIF_FALSE;
     }
-    // Check the restrictions in MIAF (ISO/IEC 23000-22:2019), Section 7.3.11.4.2.
-    //
-    // The tile_width shall be greater than or equal to 64, and the tile_height shall be greater than or equal to 64.
-    if ((firstTile->image->width < 64) || (firstTile->image->height < 64)) {
-        avifDiagnosticsPrintf(data->diag,
-                              "Grid image tiles are smaller than 64x64 (%ux%u). See MIAF (ISO/IEC 23000-22:2019), Section 7.3.11.4.2",
-                              firstTile->image->width,
-                              firstTile->image->height);
-        return AVIF_FALSE;
+
+    if (alpha) {
+        assert(firstTile->image->yuvFormat == AVIF_PIXEL_FORMAT_YUV400);
     }
-    if (!alpha) {
-        if ((firstTile->image->yuvFormat == AVIF_PIXEL_FORMAT_YUV422) || (firstTile->image->yuvFormat == AVIF_PIXEL_FORMAT_YUV420)) {
-            // The horizontal tile offsets and widths, and the output width, shall be even numbers.
-            if (((firstTile->image->width & 1) != 0) || ((grid->outputWidth & 1) != 0)) {
-                avifDiagnosticsPrintf(data->diag,
-                                      "Grid image horizontal tile offsets and widths [%u], and the output width [%u], shall be even numbers.",
-                                      firstTile->image->width,
-                                      grid->outputWidth);
-                return AVIF_FALSE;
-            }
-        }
-        if (firstTile->image->yuvFormat == AVIF_PIXEL_FORMAT_YUV420) {
-            // The vertical tile offsets and heights, and the output height, shall be even numbers.
-            if (((firstTile->image->height & 1) != 0) || ((grid->outputHeight & 1) != 0)) {
-                avifDiagnosticsPrintf(data->diag,
-                                      "Grid image vertical tile offsets and heights [%u], and the output height [%u], shall be even numbers.",
-                                      firstTile->image->height,
-                                      grid->outputHeight);
-                return AVIF_FALSE;
-            }
-        }
+    if (!avifAreGridDimensionsValid(firstTile->image->yuvFormat,
+                                    grid->outputWidth,
+                                    grid->outputHeight,
+                                    firstTile->image->width,
+                                    firstTile->image->height,
+                                    data->diag)) {
+        return AVIF_FALSE;
     }
 
     // Lazily populate dstImage with the new frame's properties. If we're decoding alpha,
@@ -3295,6 +3294,9 @@ avifResult avifDecoderReset(avifDecoder * decoder)
         }
 
         avifTile * colorTile = avifDecoderDataCreateTile(data, colorTrack->width, colorTrack->height, 0); // No way to set operating point via tracks
+        if (!colorTile) {
+            return AVIF_RESULT_OUT_OF_MEMORY;
+        }
         if (!avifCodecDecodeInputFillFromSampleTable(colorTile->input,
                                                      colorTrack->sampleTable,
                                                      decoder->imageCountLimit,
@@ -3306,6 +3308,9 @@ avifResult avifDecoderReset(avifDecoder * decoder)
 
         if (alphaTrack) {
             avifTile * alphaTile = avifDecoderDataCreateTile(data, alphaTrack->width, alphaTrack->height, 0); // No way to set operating point via tracks
+            if (!alphaTile) {
+                return AVIF_RESULT_OUT_OF_MEMORY;
+            }
             if (!avifCodecDecodeInputFillFromSampleTable(alphaTile->input,
                                                          alphaTrack->sampleTable,
                                                          decoder->imageCountLimit,
@@ -3458,13 +3463,16 @@ avifResult avifDecoderReset(avifDecoder * decoder)
 
             avifTile * colorTile =
                 avifDecoderDataCreateTile(data, colorItem->width, colorItem->height, avifDecoderItemOperatingPoint(colorItem));
+            if (!colorTile) {
+                return AVIF_RESULT_OUT_OF_MEMORY;
+            }
             if (!avifCodecDecodeInputFillFromDecoderItem(colorTile->input,
                                                          colorItem,
                                                          decoder->allowProgressive,
                                                          decoder->imageCountLimit,
                                                          decoder->io->sizeHint,
                                                          &decoder->diag)) {
-                return AVIF_FALSE;
+                return AVIF_RESULT_BMFF_PARSE_FAILED;
             }
             data->colorTileCount = 1;
 
@@ -3497,13 +3505,16 @@ avifResult avifDecoderReset(avifDecoder * decoder)
 
                 avifTile * alphaTile =
                     avifDecoderDataCreateTile(data, alphaItem->width, alphaItem->height, avifDecoderItemOperatingPoint(alphaItem));
+                if (!alphaTile) {
+                    return AVIF_RESULT_OUT_OF_MEMORY;
+                }
                 if (!avifCodecDecodeInputFillFromDecoderItem(alphaTile->input,
                                                              alphaItem,
                                                              decoder->allowProgressive,
                                                              decoder->imageCountLimit,
                                                              decoder->io->sizeHint,
                                                              &decoder->diag)) {
-                    return AVIF_FALSE;
+                    return AVIF_RESULT_BMFF_PARSE_FAILED;
                 }
                 alphaTile->input->alpha = AVIF_TRUE;
                 data->alphaTileCount = 1;

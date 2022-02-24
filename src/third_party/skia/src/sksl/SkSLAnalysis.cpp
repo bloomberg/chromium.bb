@@ -160,6 +160,31 @@ public:
     using INHERITED = ProgramVisitor;
 };
 
+class ReturnsNonOpaqueColorVisitor : public ProgramVisitor {
+public:
+    ReturnsNonOpaqueColorVisitor() {}
+
+    bool visitStatement(const Statement& s) override {
+        if (s.is<ReturnStatement>()) {
+            const Expression* e = s.as<ReturnStatement>().expression().get();
+            bool knownOpaque = e && e->type().slotCount() == 4 &&
+                               ConstantFolder::GetConstantValueForVariable(*e)
+                                               ->getConstantValue(/*n=*/3)
+                                               .value_or(0) == 1;
+            return !knownOpaque;
+        }
+        return INHERITED::visitStatement(s);
+    }
+
+    bool visitExpression(const Expression& e) override {
+        // No need to recurse into expressions, these can never contain return statements
+        return false;
+    }
+
+    using INHERITED = ProgramVisitor;
+    using INHERITED::visitProgramElement;
+};
+
 // Visitor that counts the number of nodes visited
 class NodeCountVisitor : public ProgramVisitor {
 public:
@@ -224,7 +249,7 @@ private:
 class TrivialErrorReporter : public ErrorReporter {
 public:
     ~TrivialErrorReporter() override { this->reportPendingErrors({}); }
-    void handleError(skstd::string_view, PositionInfo) override {}
+    void handleError(std::string_view, PositionInfo) override {}
 };
 
 // This isn't actually using ProgramVisitor, because it only considers a subset of the fields for
@@ -249,8 +274,8 @@ public:
                 VariableReference& varRef = expr.as<VariableReference>();
                 const Variable* var = varRef.variable();
                 if (var->modifiers().fFlags & (Modifiers::kConst_Flag | Modifiers::kUniform_Flag)) {
-                    fErrors->error(expr.fLine,
-                                   "cannot modify immutable variable '" + var->name() + "'");
+                    fErrors->error(expr.fLine, "cannot modify immutable variable '" +
+                                               std::string(var->name()) + "'");
                 } else {
                     SkASSERT(fAssignedVar == nullptr);
                     fAssignedVar = &varRef;
@@ -346,6 +371,11 @@ bool Analysis::CallsColorTransformIntrinsics(const Program& program) {
     return false;
 }
 
+bool Analysis::ReturnsOpaqueColor(const FunctionDefinition& function) {
+    ReturnsNonOpaqueColorVisitor visitor;
+    return !visitor.visitProgramElement(function);
+}
+
 bool Analysis::DetectVarDeclarationWithoutScope(const Statement& stmt, ErrorReporter* errors) {
     // A variable declaration can create either a lone VarDeclaration or an unscoped Block
     // containing multiple VarDeclaration statements. We need to detect either case.
@@ -373,7 +403,8 @@ bool Analysis::DetectVarDeclarationWithoutScope(const Statement& stmt, ErrorRepo
     // Report an error.
     SkASSERT(var);
     if (errors) {
-        errors->error(stmt.fLine, "variable '" + var->name() + "' must be created in a scope");
+        errors->error(stmt.fLine, "variable '" + std::string(var->name()) +
+                                  "' must be created in a scope");
     }
     return true;
 }
@@ -528,90 +559,6 @@ private:
 void Analysis::ValidateIndexingForES2(const ProgramElement& pe, ErrorReporter& errors) {
     ES2IndexingVisitor visitor(errors);
     visitor.visitProgramElement(pe);
-}
-
-void Analysis::VerifyStaticTestsAndExpressions(const Program& program) {
-    class TestsAndExpressions : public ProgramVisitor {
-    public:
-        TestsAndExpressions(const Context& ctx) : fContext(ctx) {}
-
-        bool visitProgramElement(const ProgramElement& pe) override {
-            if (pe.kind() == ProgramElement::Kind::kGlobalVar) {
-                const VarDeclaration& decl =
-                        pe.as<GlobalVarDeclaration>().declaration()->as<VarDeclaration>();
-
-                size_t prevSlotsUsed = fGlobalSlotsUsed;
-                fGlobalSlotsUsed = SkSafeMath::Add(fGlobalSlotsUsed, decl.var().type().slotCount());
-                // To avoid overzealous error reporting, only trigger the error at the first
-                // place where the global limit is exceeded.
-                if (prevSlotsUsed < kVariableSlotLimit && fGlobalSlotsUsed >= kVariableSlotLimit) {
-                    fContext.fErrors->error(pe.fLine, "global variable '" + decl.var().name() +
-                                                      "' exceeds the size limit");
-                }
-            }
-            return INHERITED::visitProgramElement(pe);
-        }
-
-        bool visitStatement(const Statement& stmt) override {
-            if (!fContext.fConfig->fSettings.fPermitInvalidStaticTests) {
-                switch (stmt.kind()) {
-                    case Statement::Kind::kIf:
-                        if (stmt.as<IfStatement>().isStatic()) {
-                            fContext.fErrors->error(stmt.fLine, "static if has non-static test");
-                        }
-                        break;
-
-                    case Statement::Kind::kSwitch:
-                        if (stmt.as<SwitchStatement>().isStatic()) {
-                            fContext.fErrors->error(stmt.fLine,
-                                                    "static switch has non-static test");
-                        }
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-            return INHERITED::visitStatement(stmt);
-        }
-
-        bool visitExpression(const Expression& expr) override {
-            switch (expr.kind()) {
-                case Expression::Kind::kFunctionCall: {
-                    const FunctionDeclaration& decl = expr.as<FunctionCall>().function();
-                    if (!decl.isBuiltin() && !decl.definition()) {
-                        fContext.fErrors->error(expr.fLine, "function '" + decl.description() +
-                                                            "' is not defined");
-                    }
-                    break;
-                }
-                case Expression::Kind::kExternalFunctionReference:
-                case Expression::Kind::kFunctionReference:
-                case Expression::Kind::kMethodReference:
-                case Expression::Kind::kTypeReference:
-                    SkDEBUGFAIL("invalid reference-expr, should have been reported by coerce()");
-                    fContext.fErrors->error(expr.fLine, "invalid expression");
-                    break;
-                default:
-                    if (expr.type().matches(*fContext.fTypes.fInvalid)) {
-                        fContext.fErrors->error(expr.fLine, "invalid expression");
-                    }
-                    break;
-            }
-            return INHERITED::visitExpression(expr);
-        }
-
-    private:
-        using INHERITED = ProgramVisitor;
-        size_t fGlobalSlotsUsed = 0;
-        const Context& fContext;
-    };
-
-    // Check all of the program's owned elements. (Built-in elements are assumed to be valid.)
-    TestsAndExpressions visitor{*program.fContext};
-    for (const std::unique_ptr<ProgramElement>& element : program.fOwnedElements) {
-        visitor.visitProgramElement(*element);
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

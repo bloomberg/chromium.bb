@@ -1,7 +1,6 @@
 #include "http2/adapter/oghttp2_session.h"
 
 #include <cstdint>
-#include <tuple>
 #include <utility>
 
 #include "absl/memory/memory.h"
@@ -235,7 +234,7 @@ Http2VisitorInterface::OnHeaderResult InterpretHeaderStatus(
     case HeaderValidator::HEADER_FIELD_INVALID:
       return Http2VisitorInterface::HEADER_FIELD_INVALID;
     case HeaderValidator::HEADER_FIELD_TOO_LONG:
-      return Http2VisitorInterface::HEADER_COMPRESSION_ERROR;
+      return Http2VisitorInterface::HEADER_RST_STREAM;
   }
   return Http2VisitorInterface::HEADER_CONNECTION_ERROR;
 }
@@ -283,6 +282,23 @@ void OgHttp2Session::PassthroughHeadersHandler::OnHeaderBlockEnd(
     session_.OnHeaderStatus(stream_id_, result_);
   }
   frame_contains_fin_ = false;
+}
+
+// TODO(diannahu): Add checks for other response codes and request methods.
+bool OgHttp2Session::PassthroughHeadersHandler::CanReceiveBody() const {
+  switch (header_type()) {
+    case HeaderType::REQUEST_TRAILER:
+    case HeaderType::RESPONSE_TRAILER:
+    case HeaderType::RESPONSE_100:
+      return false;
+    case HeaderType::RESPONSE:
+      // 304 responses should not have a body:
+      // https://httpwg.org/specs/rfc7230.html#rfc.section.3.3.2
+      return status_header() != "304";
+    case HeaderType::REQUEST:
+      return true;
+  }
+  return true;
 }
 
 // A visitor that extracts an int64_t from each type of a ProcessBytesResult.
@@ -774,9 +790,7 @@ OgHttp2Session::SendResult OgHttp2Session::WriteForStream(
                 static_cast<int32_t>(max_frame_payload_)});
   while (connection_can_write == SendResult::SEND_OK && available_window > 0 &&
          state.outbound_body != nullptr && !state.data_deferred) {
-    int64_t length;
-    bool end_data;
-    std::tie(length, end_data) =
+    auto [length, end_data] =
         state.outbound_body->SelectPayloadLength(available_window);
     QUICHE_VLOG(2) << "WriteForStream | length: " << length
                    << " end_data: " << end_data
@@ -868,9 +882,7 @@ OgHttp2Session::SendResult OgHttp2Session::SendMetadata(
   while (!sequence.empty()) {
     MetadataSource& source = *sequence.front();
 
-    int64_t written;
-    bool end_metadata;
-    std::tie(written, end_metadata) =
+    auto [written, end_metadata] =
         source.Pack(payload_buffer.get(), max_payload_size);
     if (written < 0) {
       // Did not touch the connection, so perhaps writes are still possible.
@@ -973,7 +985,9 @@ void OgHttp2Session::SubmitMetadata(Http2StreamId stream_id,
 }
 
 void OgHttp2Session::SubmitSettings(absl::Span<const Http2Setting> settings) {
-  EnqueueFrame(PrepareSettingsFrame(settings));
+  auto frame = PrepareSettingsFrame(settings);
+  HandleOutboundSettings(*frame);
+  EnqueueFrame(std::move(frame));
 }
 
 void OgHttp2Session::OnError(SpdyFramerError error,
@@ -1019,6 +1033,12 @@ void OgHttp2Session::OnDataFrameHeader(spdy::SpdyStreamId stream_id,
   if (!result) {
     fatal_visitor_callback_failure_ = true;
     decoder_.StopProcessing();
+  }
+
+  if (!iter->second.can_receive_body && length > 0) {
+    EnqueueFrame(absl::make_unique<spdy::SpdyRstStreamIR>(
+        stream_id, spdy::ERROR_CODE_PROTOCOL_ERROR));
+    return;
   }
 
   // Validate against the content-length if it exists.
@@ -1083,8 +1103,12 @@ void OgHttp2Session::OnStreamEnd(spdy::SpdyStreamId stream_id) {
 
 void OgHttp2Session::OnStreamPadLength(spdy::SpdyStreamId stream_id,
                                        size_t value) {
+  bool result = visitor_.OnDataPaddingLength(stream_id, 1 + value);
+  if (!result) {
+    fatal_visitor_callback_failure_ = true;
+    decoder_.StopProcessing();
+  }
   MarkDataBuffered(stream_id, 1 + value);
-  // TODO(181586191): Pass padding to the visitor?
 }
 
 void OgHttp2Session::OnStreamPadding(spdy::SpdyStreamId /*stream_id*/, size_t
@@ -1096,7 +1120,7 @@ void OgHttp2Session::OnStreamPadding(spdy::SpdyStreamId /*stream_id*/, size_t
 spdy::SpdyHeadersHandlerInterface* OgHttp2Session::OnHeaderFrameStart(
     spdy::SpdyStreamId stream_id) {
   auto it = stream_map_.find(stream_id);
-  if (it != stream_map_.end()) {
+  if (it != stream_map_.end() && !streams_reset_.contains(stream_id)) {
     headers_handler_.set_stream_id(stream_id);
     headers_handler_.set_header_type(
         NextHeaderType(it->second.received_header_type));
@@ -1114,17 +1138,16 @@ void OgHttp2Session::OnHeaderFrameEnd(spdy::SpdyStreamId stream_id) {
         headers_handler_.status_header()[0] == '1') {
       // If response headers carried a 1xx response code, final response headers
       // should still be forthcoming.
-      it->second.received_header_type = HeaderType::RESPONSE_100;
-    } else {
-      it->second.received_header_type = headers_handler_.header_type();
+      headers_handler_.set_header_type(HeaderType::RESPONSE_100);
     }
-    if (headers_handler_.header_type() == HeaderType::REQUEST ||
-        (headers_handler_.header_type() == HeaderType::RESPONSE &&
-         headers_handler_.status_header() != "304")) {
-      // 304 response content-length values should be ignored:
-      // https://httpwg.org/specs/rfc7230.html#rfc.section.3.3.2
+    it->second.received_header_type = headers_handler_.header_type();
+
+    // Track the content-length if the headers indicate that a body can follow.
+    it->second.can_receive_body = headers_handler_.CanReceiveBody();
+    if (it->second.can_receive_body) {
       it->second.remaining_content_length = headers_handler_.content_length();
     }
+
     headers_handler_.set_stream_id(0);
   }
 }
@@ -1159,28 +1182,50 @@ void OgHttp2Session::OnSettings() {
 }
 
 void OgHttp2Session::OnSetting(spdy::SpdySettingsId id, uint32_t value) {
-  visitor_.OnSetting({id, value});
-  if (id == kMetadataExtensionId) {
-    peer_supports_metadata_ = (value != 0);
-  } else if (id == MAX_FRAME_SIZE) {
-    max_frame_payload_ = value;
-  } else if (id == MAX_CONCURRENT_STREAMS) {
-    max_outbound_concurrent_streams_ = value;
-  } else if (id == HEADER_TABLE_SIZE) {
-    value = std::min(value, HpackCapacityBound(options_));
-    if (value < framer_.GetHpackEncoder()->CurrentHeaderTableSizeSetting()) {
-      // Safe to apply a smaller table capacity immediately.
-      QUICHE_VLOG(2) << TracePerspectiveAsString(options_.perspective)
-                     << " applying encoder table capacity " << value;
-      framer_.GetHpackEncoder()->ApplyHeaderTableSizeSetting(value);
-    } else {
-      QUICHE_VLOG(2)
-          << TracePerspectiveAsString(options_.perspective)
-          << " NOT applying encoder table capacity until writing ack: "
-          << value;
-      encoder_header_table_capacity_when_acking_ = value;
-    }
+  switch (id) {
+    case MAX_FRAME_SIZE:
+      max_frame_payload_ = value;
+      break;
+    case MAX_CONCURRENT_STREAMS:
+      max_outbound_concurrent_streams_ = value;
+      break;
+    case HEADER_TABLE_SIZE:
+      value = std::min(value, HpackCapacityBound(options_));
+      if (value < framer_.GetHpackEncoder()->CurrentHeaderTableSizeSetting()) {
+        // Safe to apply a smaller table capacity immediately.
+        QUICHE_VLOG(2) << TracePerspectiveAsString(options_.perspective)
+                       << " applying encoder table capacity " << value;
+        framer_.GetHpackEncoder()->ApplyHeaderTableSizeSetting(value);
+      } else {
+        QUICHE_VLOG(2)
+            << TracePerspectiveAsString(options_.perspective)
+            << " NOT applying encoder table capacity until writing ack: "
+            << value;
+        encoder_header_table_capacity_when_acking_ = value;
+      }
+      break;
+    case INITIAL_WINDOW_SIZE:
+      if (value > spdy::kSpdyMaximumWindowSize) {
+        visitor_.OnInvalidFrame(
+            0, Http2VisitorInterface::InvalidFrameError::kFlowControl);
+        // The specification says this is a connection-level flow control error.
+        LatchErrorAndNotify(
+            Http2ErrorCode::FLOW_CONTROL_ERROR,
+            Http2VisitorInterface::ConnectionError::kFlowControlError);
+        return;
+      } else {
+        UpdateInitialWindowSize(value);
+      }
+      break;
+    default:
+      // TODO(bnc): See if C++17 inline constants are allowed in QUICHE.
+      if (id == kMetadataExtensionId) {
+        peer_supports_metadata_ = (value != 0);
+      } else {
+        QUICHE_VLOG(1) << "Unimplemented SETTING id: " << id;
+      }
   }
+  visitor_.OnSetting({id, value});
 }
 
 void OgHttp2Session::OnSettingsEnd() {
@@ -1438,7 +1483,9 @@ void OgHttp2Session::MaybeSetupPreface() {
     }
     // First frame must be a non-ack SETTINGS.
     if (frames_.empty() || !IsNonAckSettings(*frames_.front())) {
-      frames_.push_front(PrepareSettingsFrame(GetInitialSettings()));
+      auto frame = PrepareSettingsFrame(GetInitialSettings());
+      HandleOutboundSettings(*frame);
+      frames_.push_front(std::move(frame));
     }
     queued_preface_ = true;
   }
@@ -1467,32 +1514,60 @@ std::unique_ptr<SpdySettingsIR> OgHttp2Session::PrepareSettingsFrame(
   auto settings_ir = absl::make_unique<SpdySettingsIR>();
   for (const Http2Setting& setting : settings) {
     settings_ir->AddSetting(setting.id, setting.value);
+  }
+  return settings_ir;
+}
 
-    if (setting.id == Http2KnownSettingsId::MAX_CONCURRENT_STREAMS) {
-      pending_max_inbound_concurrent_streams_ = setting.value;
-    }
-    if (setting.id == ENABLE_CONNECT_PROTOCOL && setting.value == 1u &&
-        IsServerSession()) {
-      // Allow extended CONNECT semantics even before SETTINGS are acked, to
-      // make things easier for clients.
-      headers_handler_.AllowConnect();
+void OgHttp2Session::HandleOutboundSettings(
+    const spdy::SpdySettingsIR& settings_frame) {
+  for (const auto& [id, value] : settings_frame.values()) {
+    switch (static_cast<Http2KnownSettingsId>(id)) {
+      case MAX_CONCURRENT_STREAMS:
+        pending_max_inbound_concurrent_streams_ = value;
+        break;
+      case ENABLE_CONNECT_PROTOCOL:
+        if (value == 1u && IsServerSession()) {
+          // Allow extended CONNECT semantics even before SETTINGS are acked, to
+          // make things easier for clients.
+          headers_handler_.AllowConnect();
+        }
+        break;
+      case HEADER_TABLE_SIZE:
+      case ENABLE_PUSH:
+      case INITIAL_WINDOW_SIZE:
+      case MAX_FRAME_SIZE:
+      case MAX_HEADER_LIST_SIZE:
+        QUICHE_VLOG(2)
+            << "Not adjusting internal state for outbound setting with id "
+            << id;
+        break;
     }
   }
 
   // Copy the (small) map of settings we are about to send so that we can set
   // values in the SETTINGS ack callback.
   settings_ack_callbacks_.push_back(
-      [this, settings_map = settings_ir->values()]() {
-        for (const auto id_and_value : settings_map) {
-          if (id_and_value.first == spdy::SETTINGS_MAX_CONCURRENT_STREAMS) {
-            max_inbound_concurrent_streams_ = id_and_value.second;
-          } else if (id_and_value.first == spdy::SETTINGS_HEADER_TABLE_SIZE) {
-            decoder_.GetHpackDecoder()->ApplyHeaderTableSizeSetting(
-                id_and_value.second);
+      [this, settings_map = settings_frame.values()]() {
+        for (const auto& [id, value] : settings_map) {
+          switch (static_cast<Http2KnownSettingsId>(id)) {
+            case MAX_CONCURRENT_STREAMS:
+              max_inbound_concurrent_streams_ = value;
+              break;
+            case HEADER_TABLE_SIZE:
+              decoder_.GetHpackDecoder()->ApplyHeaderTableSizeSetting(value);
+              break;
+            case ENABLE_PUSH:
+            case INITIAL_WINDOW_SIZE:
+            case MAX_FRAME_SIZE:
+            case MAX_HEADER_LIST_SIZE:
+            case ENABLE_CONNECT_PROTOCOL:
+              QUICHE_VLOG(2)
+                  << "No action required in ack for outbound setting with id "
+                  << id;
+              break;
           }
         }
       });
-  return settings_ir;
 }
 
 void OgHttp2Session::SendWindowUpdate(Http2StreamId stream_id,
@@ -1534,8 +1609,7 @@ void OgHttp2Session::MaybeFinWithRstStream(StreamStateMap::iterator iter) {
 
 void OgHttp2Session::MarkDataBuffered(Http2StreamId stream_id, size_t bytes) {
   connection_window_manager_.MarkDataBuffered(bytes);
-  auto it = stream_map_.find(stream_id);
-  if (it != stream_map_.end()) {
+  if (auto it = stream_map_.find(stream_id); it != stream_map_.end()) {
     it->second.window_manager.MarkDataBuffered(bytes);
   }
 }
@@ -1546,11 +1620,9 @@ OgHttp2Session::StreamStateMap::iterator OgHttp2Session::CreateStream(
       [this, stream_id](size_t window_update_delta) {
         SendWindowUpdate(stream_id, window_update_delta);
       };
-  absl::flat_hash_map<Http2StreamId, StreamState>::iterator iter;
-  bool inserted;
-  std::tie(iter, inserted) = stream_map_.try_emplace(
-      stream_id,
-      StreamState(stream_receive_window_limit_, std::move(listener)));
+  auto [iter, inserted] = stream_map_.try_emplace(
+      stream_id, StreamState(initial_stream_receive_window_,
+                             initial_stream_send_window_, std::move(listener)));
   if (inserted) {
     // Add the stream to the write scheduler.
     const WriteScheduler::StreamPrecedenceType precedence(3);
@@ -1708,6 +1780,25 @@ void OgHttp2Session::DecrementQueuedFrameCount(uint32_t stream_id,
 void OgHttp2Session::HandleContentLengthError(Http2StreamId stream_id) {
   EnqueueFrame(absl::make_unique<spdy::SpdyRstStreamIR>(
       stream_id, spdy::ERROR_CODE_PROTOCOL_ERROR));
+}
+
+void OgHttp2Session::UpdateInitialWindowSize(uint32_t new_value) {
+  const int32_t delta =
+      static_cast<int32_t>(new_value) - initial_stream_send_window_;
+  initial_stream_send_window_ = new_value;
+  for (auto& [stream_id, stream_state] : stream_map_) {
+    const int64_t current_window_size = stream_state.send_window;
+    const int64_t new_window_size = current_window_size + delta;
+    if (new_window_size > spdy::kSpdyMaximumWindowSize) {
+      EnqueueFrame(absl::make_unique<spdy::SpdyRstStreamIR>(
+          stream_id, spdy::ERROR_CODE_FLOW_CONTROL_ERROR));
+    } else {
+      stream_state.send_window += delta;
+    }
+    if (current_window_size <= 0 && new_window_size > 0) {
+      write_scheduler_.MarkStreamReady(stream_id, false);
+    }
+  }
 }
 
 }  // namespace adapter

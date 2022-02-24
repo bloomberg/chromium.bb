@@ -62,7 +62,7 @@ g.test('initializer_type')
     const { variableOrConstant, lhsType, rhsType } = t.params;
 
     const code = `
-      [[stage(fragment)]]
+      @stage(fragment)
       fn main() {
         ${variableOrConstant} a : ${lhsType} = ${rhsType}();
       }
@@ -105,20 +105,20 @@ g.test('io_shareable_type')
     if (`${storageClass}` === 'in') {
       code = `
         struct MyInputs {
-          [[location(0)]] a : ${type};
+          @location(0) @interpolate(flat) a : ${type};
         };
 
-        [[stage(fragment)]]
+        @stage(fragment)
         fn main(inputs : MyInputs) {
         }
       `;
     } else if (`${storageClass}` === 'out') {
       code = `
         struct MyOutputs {
-          [[location(0)]] a : ${type};
+          @location(0) a : ${type};
         };
 
-        [[stage(fragment)]]
+        @stage(fragment)
         fn main() -> MyOutputs {
           return MyOutputs();
         }
@@ -127,7 +127,7 @@ g.test('io_shareable_type')
       code = `
       var<${storageClass}> a : ${type} = ${type}();
 
-      [[stage(fragment)]]
+      @stage(fragment)
       fn main() {
       }
       `;

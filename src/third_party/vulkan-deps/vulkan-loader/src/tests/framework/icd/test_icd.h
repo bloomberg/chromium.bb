@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021 The Khronos Group Inc.
- * Copyright (c) 2021 Valve Corporation
- * Copyright (c) 2021 LunarG, Inc.
+ * Copyright (c) 2021-2022 The Khronos Group Inc.
+ * Copyright (c) 2021-2022 Valve Corporation
+ * Copyright (c) 2021-2022 LunarG, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and/or associated documentation files (the "Materials"), to
@@ -66,7 +66,7 @@ struct TestICD {
     BUILDER_VALUE(TestICD, bool, enable_icd_wsi, false);
     UsingICDProvidedWSI is_using_icd_wsi = UsingICDProvidedWSI::not_using;
 
-    BUILDER_VALUE(TestICD, uint32_t, icd_api_version, VK_MAKE_VERSION(1, 0, 0))
+    BUILDER_VALUE(TestICD, uint32_t, icd_api_version, VK_API_VERSION_1_0)
     BUILDER_VECTOR(TestICD, LayerDefinition, instance_layers, instance_layer)
     BUILDER_VECTOR(TestICD, Extension, instance_extensions, instance_extension)
 
@@ -87,10 +87,12 @@ struct TestICD {
     BUILDER_VECTOR(TestICD, VulkanFunction, custom_physical_device_functions, custom_physical_device_function)
 
     // Must explicitely state support for the tooling info extension, that way we can control if vkGetInstanceProcAddr returns a
-    // function pointer for vkGetPhysicalDeviceToolPropertiesEXT
-    BUILDER_VALUE(TestICD, bool, supports_tooling_info_ext, false)
+    // function pointer for vkGetPhysicalDeviceToolPropertiesEXT or vkGetPhysicalDeviceToolProperties (core version)
+    BUILDER_VALUE(TestICD, bool, supports_tooling_info_ext, false);
+    BUILDER_VALUE(TestICD, bool, supports_tooling_info_core, false);
     // List of tooling properties that this driver 'supports'
     std::vector<VkPhysicalDeviceToolPropertiesEXT> tooling_properties;
+    std::vector<DispatchableHandle<VkCommandBuffer>> allocated_command_buffers;
 
     PhysicalDevice& GetPhysDevice(VkPhysicalDevice physicalDevice) {
         for (auto& phys_dev : physical_devices) {

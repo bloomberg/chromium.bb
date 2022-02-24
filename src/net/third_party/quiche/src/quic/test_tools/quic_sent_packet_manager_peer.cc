@@ -27,12 +27,6 @@ void QuicSentPacketManagerPeer::SetMaxTailLossProbes(
 }
 
 // static
-bool QuicSentPacketManagerPeer::GetEnableHalfRttTailLossProbe(
-    QuicSentPacketManager* sent_packet_manager) {
-  return sent_packet_manager->enable_half_rtt_tail_loss_probe_;
-}
-
-// static
 bool QuicSentPacketManagerPeer::GetUseNewRto(
     QuicSentPacketManager* sent_packet_manager) {
   return sent_packet_manager->use_new_rto_;
@@ -177,6 +171,12 @@ void QuicSentPacketManagerPeer::DisablePacerBursts(
     QuicSentPacketManager* sent_packet_manager) {
   sent_packet_manager->pacing_sender_.burst_tokens_ = 0;
   sent_packet_manager->pacing_sender_.initial_burst_size_ = 0;
+}
+
+// static
+int QuicSentPacketManagerPeer::GetPacerInitialBurstSize(
+    QuicSentPacketManager* sent_packet_manager) {
+  return sent_packet_manager->pacing_sender_.initial_burst_size_;
 }
 
 // static

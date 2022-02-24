@@ -24,7 +24,6 @@ Page* SemiSpace::InitializePage(MemoryChunk* chunk) {
   Page* page = static_cast<Page*>(chunk);
   page->SetYoungGenerationPageFlags(heap()->incremental_marking()->IsMarking());
   page->list_node().Initialize();
-#ifdef ENABLE_MINOR_MC
   if (FLAG_minor_mc) {
     page->AllocateYoungGenerationBitmap();
     heap()
@@ -32,7 +31,6 @@ Page* SemiSpace::InitializePage(MemoryChunk* chunk) {
         ->non_atomic_marking_state()
         ->ClearLiveness(page);
   }
-#endif  // ENABLE_MINOR_MC
   page->InitializationMemoryFence();
   return page;
 }
@@ -621,13 +619,13 @@ AllocationResult NewSpace::AllocateRawUnaligned(int size_in_bytes,
                                                 AllocationOrigin origin) {
   DCHECK(!FLAG_enable_third_party_heap);
   if (!EnsureAllocation(size_in_bytes, kTaggedAligned)) {
-    return AllocationResult::Retry(NEW_SPACE);
+    return AllocationResult::Failure(NEW_SPACE);
   }
 
   DCHECK_EQ(allocation_info_->start(), allocation_info_->top());
 
   AllocationResult result = AllocateFastUnaligned(size_in_bytes, origin);
-  DCHECK(!result.IsRetry());
+  DCHECK(!result.IsFailure());
 
   InvokeAllocationObservers(result.ToAddress(), size_in_bytes, size_in_bytes,
                             size_in_bytes);
@@ -640,7 +638,7 @@ AllocationResult NewSpace::AllocateRawAligned(int size_in_bytes,
                                               AllocationOrigin origin) {
   DCHECK(!FLAG_enable_third_party_heap);
   if (!EnsureAllocation(size_in_bytes, alignment)) {
-    return AllocationResult::Retry(NEW_SPACE);
+    return AllocationResult::Failure(NEW_SPACE);
   }
 
   DCHECK_EQ(allocation_info_->start(), allocation_info_->top());
@@ -649,7 +647,7 @@ AllocationResult NewSpace::AllocateRawAligned(int size_in_bytes,
 
   AllocationResult result = AllocateFastAligned(
       size_in_bytes, &aligned_size_in_bytes, alignment, origin);
-  DCHECK(!result.IsRetry());
+  DCHECK(!result.IsFailure());
 
   InvokeAllocationObservers(result.ToAddress(), size_in_bytes,
                             aligned_size_in_bytes, aligned_size_in_bytes);
@@ -704,6 +702,11 @@ void NewSpace::Verify(Isolate* isolate) {
     external_space_bytes[static_cast<ExternalBackingStoreType>(i)] = 0;
   }
 
+  CHECK(!Page::FromAllocationAreaAddress(current)->IsFlagSet(
+      Page::PAGE_NEW_OLD_PROMOTION));
+  CHECK(!Page::FromAllocationAreaAddress(current)->IsFlagSet(
+      Page::PAGE_NEW_NEW_PROMOTION));
+
   PtrComprCageBase cage_base(isolate);
   while (current != top()) {
     if (!Page::IsAlignedToPageSize(current)) {
@@ -742,6 +745,8 @@ void NewSpace::Verify(Isolate* isolate) {
     } else {
       // At end of page, switch to next page.
       Page* page = Page::FromAllocationAreaAddress(current)->next_page();
+      CHECK(!page->IsFlagSet(Page::PAGE_NEW_OLD_PROMOTION));
+      CHECK(!page->IsFlagSet(Page::PAGE_NEW_NEW_PROMOTION));
       current = page->area_start();
     }
   }

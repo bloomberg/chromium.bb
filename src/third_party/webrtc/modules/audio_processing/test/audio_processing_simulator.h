@@ -38,7 +38,7 @@ struct Int16Frame {
     samples_per_channel =
         rtc::CheckedDivExact(sample_rate_hz, kChunksPerSecond);
     this->num_channels = num_channels;
-    config = StreamConfig(sample_rate_hz, num_channels, /*has_keyboard=*/false);
+    config = StreamConfig(sample_rate_hz, num_channels);
     data.resize(num_channels * samples_per_channel);
   }
 
@@ -105,7 +105,6 @@ struct SimulationSettings {
   absl::optional<bool> use_ns;
   absl::optional<int> use_ts;
   absl::optional<bool> use_analog_agc;
-  absl::optional<bool> use_vad;
   absl::optional<bool> use_all;
   absl::optional<bool> analog_agc_disable_digital_adaptive;
   absl::optional<int> agc_mode;

@@ -136,7 +136,6 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
   }
   void SetServerApplicationStateForResumption(
       std::unique_ptr<ApplicationState> /*application_state*/) override {}
-  bool KeyUpdateSupportedLocally() const override { return true; }
   std::unique_ptr<QuicDecrypter> AdvanceKeysAndCreateCurrentOneRttDecrypter()
       override {
     return nullptr;
@@ -3422,6 +3421,32 @@ TEST_P(QuicSpdyStreamTest, GetMaxDatagramSize) {
       stream_->GetMaxDatagramSize(/*context_id=*/1);
   EXPECT_GT(size, 512u);
   EXPECT_EQ(size - 1, size_with_context);
+}
+
+TEST_P(QuicSpdyStreamTest,
+       QUIC_TEST_DISABLED_IN_CHROME(HeadersAccumulatorNullptr)) {
+  if (!UsesHttp3()) {
+    return;
+  }
+
+  Initialize(kShouldProcessData);
+
+  // Creates QpackDecodedHeadersAccumulator in
+  // `qpack_decoded_headers_accumulator_`.
+  std::string headers = HeadersFrame({std::make_pair("foo", "bar")});
+  stream_->OnStreamFrame(QuicStreamFrame(stream_->id(), false, 0, headers));
+
+  // Resets `qpack_decoded_headers_accumulator_`.
+  stream_->OnHeadersDecoded({}, false);
+
+  // This private method should never be called when
+  // `qpack_decoded_headers_accumulator_` is nullptr.  The number 1 identifies
+  // the site where `qpack_decoded_headers_accumulator_` was last reset.
+  EXPECT_CALL(*connection_, CloseConnection(_, _, _));
+  bool result = true;
+  EXPECT_QUIC_BUG(result = QuicSpdyStreamPeer::OnHeadersFrameEnd(stream_),
+                  "b215142466_OnHeadersFrameEnd.: 1$");
+  EXPECT_FALSE(result);
 }
 
 }  // namespace

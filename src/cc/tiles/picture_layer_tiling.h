@@ -235,6 +235,25 @@ class CC_EXPORT PictureLayerTiling {
                          soon_border_rect, eventually_rect, Occlusion());
   }
 
+  using TileMap =
+      std::unordered_map<TileMapKey, std::unique_ptr<Tile>, TileMapKeyHash>;
+
+  // Iterates over the tiles of a PictureLayerTiling. Order of iteration is not
+  // defined.
+  class CC_EXPORT TileIterator {
+   public:
+    explicit TileIterator(PictureLayerTiling* tiling);
+    ~TileIterator();
+
+    Tile* GetCurrent();
+    void Next();
+    bool AtEnd() const;
+
+   private:
+    PictureLayerTiling* tiling_;
+    PictureLayerTiling::TileMap::iterator iter_;
+  };
+
   // Iterate over all tiles to fill content_rect.  Even if tiles are invalid
   // (i.e. no valid resource) this tiling should still iterate over them.
   // The union of all geometry_rect calls for each element iterated over should
@@ -310,9 +329,11 @@ class CC_EXPORT PictureLayerTiling {
  protected:
   friend class CoverageIterator;
   friend class PrioritizedTile;
+  friend class TileIterator;
   friend class TilingSetRasterQueueAll;
   friend class TilingSetRasterQueueRequired;
   friend class TilingSetEvictionQueue;
+  friend class TilesWithResourceIterator;
 
   // PENDING VISIBLE RECT refers to the visible rect that will become current
   // upon activation (ie, the pending tree's visible rect). Tiles in this
@@ -394,9 +415,6 @@ class CC_EXPORT PictureLayerTiling {
     return tree_ == ACTIVE_TREE && resolution_ == HIGH_RESOLUTION &&
            is_visible(tile) && !IsTileOccludedOnCurrentTree(tile);
   }
-
-  using TileMap =
-      std::unordered_map<TileMapKey, std::unique_ptr<Tile>, TileMapKeyHash>;
 
   void SetLiveTilesRect(const gfx::Rect& live_tiles_rect);
   void VerifyLiveTilesRect() const;

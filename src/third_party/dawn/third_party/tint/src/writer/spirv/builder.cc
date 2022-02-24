@@ -20,17 +20,18 @@
 #include "spirv/unified1/GLSL.std.450.h"
 #include "src/ast/call_statement.h"
 #include "src/ast/fallthrough_statement.h"
-#include "src/ast/internal_decoration.h"
-#include "src/ast/override_decoration.h"
+#include "src/ast/id_attribute.h"
+#include "src/ast/internal_attribute.h"
 #include "src/ast/traverse_expressions.h"
 #include "src/sem/array.h"
 #include "src/sem/atomic_type.h"
+#include "src/sem/builtin.h"
 #include "src/sem/call.h"
 #include "src/sem/depth_multisampled_texture_type.h"
 #include "src/sem/depth_texture_type.h"
 #include "src/sem/function.h"
-#include "src/sem/intrinsic.h"
 #include "src/sem/member_accessor_expression.h"
+#include "src/sem/module.h"
 #include "src/sem/multisampled_texture_type.h"
 #include "src/sem/reference_type.h"
 #include "src/sem/sampled_texture_type.h"
@@ -41,7 +42,7 @@
 #include "src/sem/variable.h"
 #include "src/sem/vector_type.h"
 #include "src/transform/add_empty_entry_point.h"
-#include "src/transform/add_spirv_block_decoration.h"
+#include "src/transform/add_spirv_block_attribute.h"
 #include "src/transform/canonicalize_entry_point_io.h"
 #include "src/transform/external_texture_transform.h"
 #include "src/transform/fold_constants.h"
@@ -62,7 +63,7 @@ namespace writer {
 namespace spirv {
 namespace {
 
-using IntrinsicType = sem::IntrinsicType;
+using BuiltinType = sem::BuiltinType;
 
 const char kGLSLstd450[] = "GLSL.std.450";
 
@@ -109,131 +110,131 @@ const sem::Matrix* GetNestedMatrixType(const sem::Type* type) {
   return type->As<sem::Matrix>();
 }
 
-uint32_t intrinsic_to_glsl_method(const sem::Intrinsic* intrinsic) {
-  switch (intrinsic->Type()) {
-    case IntrinsicType::kAcos:
+uint32_t builtin_to_glsl_method(const sem::Builtin* builtin) {
+  switch (builtin->Type()) {
+    case BuiltinType::kAcos:
       return GLSLstd450Acos;
-    case IntrinsicType::kAsin:
+    case BuiltinType::kAsin:
       return GLSLstd450Asin;
-    case IntrinsicType::kAtan:
+    case BuiltinType::kAtan:
       return GLSLstd450Atan;
-    case IntrinsicType::kAtan2:
+    case BuiltinType::kAtan2:
       return GLSLstd450Atan2;
-    case IntrinsicType::kCeil:
+    case BuiltinType::kCeil:
       return GLSLstd450Ceil;
-    case IntrinsicType::kClamp:
-      if (intrinsic->ReturnType()->is_float_scalar_or_vector()) {
+    case BuiltinType::kClamp:
+      if (builtin->ReturnType()->is_float_scalar_or_vector()) {
         return GLSLstd450NClamp;
-      } else if (intrinsic->ReturnType()->is_unsigned_scalar_or_vector()) {
+      } else if (builtin->ReturnType()->is_unsigned_scalar_or_vector()) {
         return GLSLstd450UClamp;
       } else {
         return GLSLstd450SClamp;
       }
-    case IntrinsicType::kCos:
+    case BuiltinType::kCos:
       return GLSLstd450Cos;
-    case IntrinsicType::kCosh:
+    case BuiltinType::kCosh:
       return GLSLstd450Cosh;
-    case IntrinsicType::kCross:
+    case BuiltinType::kCross:
       return GLSLstd450Cross;
-    case IntrinsicType::kDegrees:
+    case BuiltinType::kDegrees:
       return GLSLstd450Degrees;
-    case IntrinsicType::kDeterminant:
+    case BuiltinType::kDeterminant:
       return GLSLstd450Determinant;
-    case IntrinsicType::kDistance:
+    case BuiltinType::kDistance:
       return GLSLstd450Distance;
-    case IntrinsicType::kExp:
+    case BuiltinType::kExp:
       return GLSLstd450Exp;
-    case IntrinsicType::kExp2:
+    case BuiltinType::kExp2:
       return GLSLstd450Exp2;
-    case IntrinsicType::kFaceForward:
+    case BuiltinType::kFaceForward:
       return GLSLstd450FaceForward;
-    case IntrinsicType::kFloor:
+    case BuiltinType::kFloor:
       return GLSLstd450Floor;
-    case IntrinsicType::kFma:
+    case BuiltinType::kFma:
       return GLSLstd450Fma;
-    case IntrinsicType::kFract:
+    case BuiltinType::kFract:
       return GLSLstd450Fract;
-    case IntrinsicType::kFrexp:
+    case BuiltinType::kFrexp:
       return GLSLstd450FrexpStruct;
-    case IntrinsicType::kInverseSqrt:
+    case BuiltinType::kInverseSqrt:
       return GLSLstd450InverseSqrt;
-    case IntrinsicType::kLdexp:
+    case BuiltinType::kLdexp:
       return GLSLstd450Ldexp;
-    case IntrinsicType::kLength:
+    case BuiltinType::kLength:
       return GLSLstd450Length;
-    case IntrinsicType::kLog:
+    case BuiltinType::kLog:
       return GLSLstd450Log;
-    case IntrinsicType::kLog2:
+    case BuiltinType::kLog2:
       return GLSLstd450Log2;
-    case IntrinsicType::kMax:
-      if (intrinsic->ReturnType()->is_float_scalar_or_vector()) {
+    case BuiltinType::kMax:
+      if (builtin->ReturnType()->is_float_scalar_or_vector()) {
         return GLSLstd450NMax;
-      } else if (intrinsic->ReturnType()->is_unsigned_scalar_or_vector()) {
+      } else if (builtin->ReturnType()->is_unsigned_scalar_or_vector()) {
         return GLSLstd450UMax;
       } else {
         return GLSLstd450SMax;
       }
-    case IntrinsicType::kMin:
-      if (intrinsic->ReturnType()->is_float_scalar_or_vector()) {
+    case BuiltinType::kMin:
+      if (builtin->ReturnType()->is_float_scalar_or_vector()) {
         return GLSLstd450NMin;
-      } else if (intrinsic->ReturnType()->is_unsigned_scalar_or_vector()) {
+      } else if (builtin->ReturnType()->is_unsigned_scalar_or_vector()) {
         return GLSLstd450UMin;
       } else {
         return GLSLstd450SMin;
       }
-    case IntrinsicType::kMix:
+    case BuiltinType::kMix:
       return GLSLstd450FMix;
-    case IntrinsicType::kModf:
+    case BuiltinType::kModf:
       return GLSLstd450ModfStruct;
-    case IntrinsicType::kNormalize:
+    case BuiltinType::kNormalize:
       return GLSLstd450Normalize;
-    case IntrinsicType::kPack4x8snorm:
+    case BuiltinType::kPack4x8snorm:
       return GLSLstd450PackSnorm4x8;
-    case IntrinsicType::kPack4x8unorm:
+    case BuiltinType::kPack4x8unorm:
       return GLSLstd450PackUnorm4x8;
-    case IntrinsicType::kPack2x16snorm:
+    case BuiltinType::kPack2x16snorm:
       return GLSLstd450PackSnorm2x16;
-    case IntrinsicType::kPack2x16unorm:
+    case BuiltinType::kPack2x16unorm:
       return GLSLstd450PackUnorm2x16;
-    case IntrinsicType::kPack2x16float:
+    case BuiltinType::kPack2x16float:
       return GLSLstd450PackHalf2x16;
-    case IntrinsicType::kPow:
+    case BuiltinType::kPow:
       return GLSLstd450Pow;
-    case IntrinsicType::kRadians:
+    case BuiltinType::kRadians:
       return GLSLstd450Radians;
-    case IntrinsicType::kReflect:
+    case BuiltinType::kReflect:
       return GLSLstd450Reflect;
-    case IntrinsicType::kRefract:
+    case BuiltinType::kRefract:
       return GLSLstd450Refract;
-    case IntrinsicType::kRound:
+    case BuiltinType::kRound:
       return GLSLstd450RoundEven;
-    case IntrinsicType::kSign:
+    case BuiltinType::kSign:
       return GLSLstd450FSign;
-    case IntrinsicType::kSin:
+    case BuiltinType::kSin:
       return GLSLstd450Sin;
-    case IntrinsicType::kSinh:
+    case BuiltinType::kSinh:
       return GLSLstd450Sinh;
-    case IntrinsicType::kSmoothStep:
+    case BuiltinType::kSmoothStep:
       return GLSLstd450SmoothStep;
-    case IntrinsicType::kSqrt:
+    case BuiltinType::kSqrt:
       return GLSLstd450Sqrt;
-    case IntrinsicType::kStep:
+    case BuiltinType::kStep:
       return GLSLstd450Step;
-    case IntrinsicType::kTan:
+    case BuiltinType::kTan:
       return GLSLstd450Tan;
-    case IntrinsicType::kTanh:
+    case BuiltinType::kTanh:
       return GLSLstd450Tanh;
-    case IntrinsicType::kTrunc:
+    case BuiltinType::kTrunc:
       return GLSLstd450Trunc;
-    case IntrinsicType::kUnpack4x8snorm:
+    case BuiltinType::kUnpack4x8snorm:
       return GLSLstd450UnpackSnorm4x8;
-    case IntrinsicType::kUnpack4x8unorm:
+    case BuiltinType::kUnpack4x8unorm:
       return GLSLstd450UnpackUnorm4x8;
-    case IntrinsicType::kUnpack2x16snorm:
+    case BuiltinType::kUnpack2x16snorm:
       return GLSLstd450UnpackSnorm2x16;
-    case IntrinsicType::kUnpack2x16unorm:
+    case BuiltinType::kUnpack2x16unorm:
       return GLSLstd450UnpackUnorm2x16;
-    case IntrinsicType::kUnpack2x16float:
+    case BuiltinType::kUnpack2x16float:
       return GLSLstd450UnpackHalf2x16;
     default:
       break;
@@ -270,7 +271,7 @@ SanitizedResult Sanitize(const Program* in,
                                             // ZeroInitWorkgroupMemory
   manager.Add<transform::CanonicalizeEntryPointIO>();
   manager.Add<transform::AddEmptyEntryPoint>();
-  manager.Add<transform::AddSpirvBlockDecoration>();
+  manager.Add<transform::AddSpirvBlockAttribute>();
   manager.Add<transform::VarForDynamicIndex>();
 
   data.Add<transform::CanonicalizeEntryPointIO::Config>(
@@ -305,9 +306,12 @@ bool Builder::Build() {
     }
   }
 
-  for (auto* func : builder_.AST().Functions()) {
-    if (!GenerateFunction(func)) {
-      return false;
+  auto* mod = builder_.Sem().Module();
+  for (auto* decl : mod->DependencyOrderedDeclarations()) {
+    if (auto* func = decl->As<ast::Function>()) {
+      if (!GenerateFunction(func)) {
+        return false;
+      }
     }
   }
 
@@ -557,33 +561,37 @@ bool Builder::GenerateExecutionModes(const ast::Function* func, uint32_t id) {
 }
 
 uint32_t Builder::GenerateExpression(const ast::Expression* expr) {
-  if (auto* a = expr->As<ast::IndexAccessorExpression>()) {
-    return GenerateAccessorExpression(a);
-  }
-  if (auto* b = expr->As<ast::BinaryExpression>()) {
-    return GenerateBinaryExpression(b);
-  }
-  if (auto* b = expr->As<ast::BitcastExpression>()) {
-    return GenerateBitcastExpression(b);
-  }
-  if (auto* c = expr->As<ast::CallExpression>()) {
-    return GenerateCallExpression(c);
-  }
-  if (auto* i = expr->As<ast::IdentifierExpression>()) {
-    return GenerateIdentifierExpression(i);
-  }
-  if (auto* l = expr->As<ast::LiteralExpression>()) {
-    return GenerateLiteralIfNeeded(nullptr, l);
-  }
-  if (auto* m = expr->As<ast::MemberAccessorExpression>()) {
-    return GenerateAccessorExpression(m);
-  }
-  if (auto* u = expr->As<ast::UnaryOpExpression>()) {
-    return GenerateUnaryOpExpression(u);
-  }
-
-  error_ = "unknown expression type: " + std::string(expr->TypeInfo().name);
-  return 0;
+  return Switch(
+      expr,
+      [&](const ast::IndexAccessorExpression* a) {  //
+        return GenerateAccessorExpression(a);
+      },
+      [&](const ast::BinaryExpression* b) {  //
+        return GenerateBinaryExpression(b);
+      },
+      [&](const ast::BitcastExpression* b) {  //
+        return GenerateBitcastExpression(b);
+      },
+      [&](const ast::CallExpression* c) {  //
+        return GenerateCallExpression(c);
+      },
+      [&](const ast::IdentifierExpression* i) {  //
+        return GenerateIdentifierExpression(i);
+      },
+      [&](const ast::LiteralExpression* l) {  //
+        return GenerateLiteralIfNeeded(nullptr, l);
+      },
+      [&](const ast::MemberAccessorExpression* m) {  //
+        return GenerateAccessorExpression(m);
+      },
+      [&](const ast::UnaryOpExpression* u) {  //
+        return GenerateUnaryOpExpression(u);
+      },
+      [&](Default) -> uint32_t {
+        error_ =
+            "unknown expression type: " + std::string(expr->TypeInfo().name);
+        return 0;
+      });
 }
 
 bool Builder::GenerateFunction(const ast::Function* func_ast) {
@@ -762,9 +770,8 @@ bool Builder::GenerateGlobalVariable(const ast::Variable* var) {
 
   if (var->is_const) {
     if (!var->constructor) {
-      // Constants must have an initializer unless they have an override
-      // decoration.
-      if (!ast::HasDecoration<ast::OverrideDecoration>(var->decorations)) {
+      // Constants must have an initializer unless they are overridable.
+      if (!var->is_overridable) {
         error_ = "missing constructor for constant";
         return false;
       }
@@ -857,34 +864,57 @@ bool Builder::GenerateGlobalVariable(const ast::Variable* var) {
 
   push_type(spv::Op::OpVariable, std::move(ops));
 
-  for (auto* deco : var->decorations) {
-    if (auto* builtin = deco->As<ast::BuiltinDecoration>()) {
-      push_annot(spv::Op::OpDecorate,
-                 {Operand::Int(var_id), Operand::Int(SpvDecorationBuiltIn),
-                  Operand::Int(
-                      ConvertBuiltin(builtin->builtin, sem->StorageClass()))});
-    } else if (auto* location = deco->As<ast::LocationDecoration>()) {
-      push_annot(spv::Op::OpDecorate,
-                 {Operand::Int(var_id), Operand::Int(SpvDecorationLocation),
-                  Operand::Int(location->value)});
-    } else if (auto* interpolate = deco->As<ast::InterpolateDecoration>()) {
-      AddInterpolationDecorations(var_id, interpolate->type,
-                                  interpolate->sampling);
-    } else if (deco->Is<ast::InvariantDecoration>()) {
-      push_annot(spv::Op::OpDecorate,
-                 {Operand::Int(var_id), Operand::Int(SpvDecorationInvariant)});
-    } else if (auto* binding = deco->As<ast::BindingDecoration>()) {
-      push_annot(spv::Op::OpDecorate,
-                 {Operand::Int(var_id), Operand::Int(SpvDecorationBinding),
-                  Operand::Int(binding->value)});
-    } else if (auto* group = deco->As<ast::GroupDecoration>()) {
-      push_annot(spv::Op::OpDecorate, {Operand::Int(var_id),
-                                       Operand::Int(SpvDecorationDescriptorSet),
-                                       Operand::Int(group->value)});
-    } else if (deco->Is<ast::OverrideDecoration>()) {
-      // Spec constants are handled elsewhere
-    } else if (!deco->Is<ast::InternalDecoration>()) {
-      error_ = "unknown decoration";
+  for (auto* attr : var->attributes) {
+    bool ok = Switch(
+        attr,
+        [&](const ast::BuiltinAttribute* builtin) {
+          push_annot(spv::Op::OpDecorate,
+                     {Operand::Int(var_id), Operand::Int(SpvDecorationBuiltIn),
+                      Operand::Int(ConvertBuiltin(builtin->builtin,
+                                                  sem->StorageClass()))});
+          return true;
+        },
+        [&](const ast::LocationAttribute* location) {
+          push_annot(spv::Op::OpDecorate,
+                     {Operand::Int(var_id), Operand::Int(SpvDecorationLocation),
+                      Operand::Int(location->value)});
+          return true;
+        },
+        [&](const ast::InterpolateAttribute* interpolate) {
+          AddInterpolationDecorations(var_id, interpolate->type,
+                                      interpolate->sampling);
+          return true;
+        },
+        [&](const ast::InvariantAttribute*) {
+          push_annot(
+              spv::Op::OpDecorate,
+              {Operand::Int(var_id), Operand::Int(SpvDecorationInvariant)});
+          return true;
+        },
+        [&](const ast::BindingAttribute* binding) {
+          push_annot(spv::Op::OpDecorate,
+                     {Operand::Int(var_id), Operand::Int(SpvDecorationBinding),
+                      Operand::Int(binding->value)});
+          return true;
+        },
+        [&](const ast::GroupAttribute* group) {
+          push_annot(
+              spv::Op::OpDecorate,
+              {Operand::Int(var_id), Operand::Int(SpvDecorationDescriptorSet),
+               Operand::Int(group->value)});
+          return true;
+        },
+        [&](const ast::IdAttribute*) {
+          return true;  // Spec constants are handled elsewhere
+        },
+        [&](const ast::InternalAttribute*) {
+          return true;  // ignored
+        },
+        [&](Default) {
+          error_ = "unknown attribute";
+          return false;
+        });
+    if (!ok) {
       return false;
     }
   }
@@ -1120,19 +1150,21 @@ uint32_t Builder::GenerateAccessorExpression(const ast::Expression* expr) {
   // promoted to storage with the VarForDynamicIndex transform.
 
   for (auto* accessor : accessors) {
-    if (auto* array = accessor->As<ast::IndexAccessorExpression>()) {
-      if (!GenerateIndexAccessor(array, &info)) {
-        return 0;
-      }
-    } else if (auto* member = accessor->As<ast::MemberAccessorExpression>()) {
-      if (!GenerateMemberAccessor(member, &info)) {
-        return 0;
-      }
-
-    } else {
-      error_ =
-          "invalid accessor in list: " + std::string(accessor->TypeInfo().name);
-      return 0;
+    bool ok = Switch(
+        accessor,
+        [&](const ast::IndexAccessorExpression* array) {
+          return GenerateIndexAccessor(array, &info);
+        },
+        [&](const ast::MemberAccessorExpression* member) {
+          return GenerateMemberAccessor(member, &info);
+        },
+        [&](Default) {
+          error_ = "invalid accessor in list: " +
+                   std::string(accessor->TypeInfo().name);
+          return false;
+        });
+    if (!ok) {
+      return false;
     }
   }
 
@@ -1650,21 +1682,28 @@ uint32_t Builder::GenerateLiteralIfNeeded(const ast::Variable* var,
     constant.constant_id = global->ConstantId();
   }
 
-  if (auto* l = lit->As<ast::BoolLiteralExpression>()) {
-    constant.kind = ScalarConstant::Kind::kBool;
-    constant.value.b = l->value;
-  } else if (auto* sl = lit->As<ast::SintLiteralExpression>()) {
-    constant.kind = ScalarConstant::Kind::kI32;
-    constant.value.i32 = sl->value;
-  } else if (auto* ul = lit->As<ast::UintLiteralExpression>()) {
-    constant.kind = ScalarConstant::Kind::kU32;
-    constant.value.u32 = ul->value;
-  } else if (auto* fl = lit->As<ast::FloatLiteralExpression>()) {
-    constant.kind = ScalarConstant::Kind::kF32;
-    constant.value.f32 = fl->value;
-  } else {
-    error_ = "unknown literal type";
-    return 0;
+  Switch(
+      lit,
+      [&](const ast::BoolLiteralExpression* l) {
+        constant.kind = ScalarConstant::Kind::kBool;
+        constant.value.b = l->value;
+      },
+      [&](const ast::SintLiteralExpression* sl) {
+        constant.kind = ScalarConstant::Kind::kI32;
+        constant.value.i32 = sl->value;
+      },
+      [&](const ast::UintLiteralExpression* ul) {
+        constant.kind = ScalarConstant::Kind::kU32;
+        constant.value.u32 = ul->value;
+      },
+      [&](const ast::FloatLiteralExpression* fl) {
+        constant.kind = ScalarConstant::Kind::kF32;
+        constant.value.f32 = fl->value;
+      },
+      [&](Default) { error_ = "unknown literal type"; });
+
+  if (!error_.empty()) {
+    return false;
   }
 
   return GenerateConstantIfNeeded(constant);
@@ -2206,19 +2245,25 @@ bool Builder::GenerateBlockStatementWithoutScoping(
 uint32_t Builder::GenerateCallExpression(const ast::CallExpression* expr) {
   auto* call = builder_.Sem().Get(expr);
   auto* target = call->Target();
-
-  if (auto* func = target->As<sem::Function>()) {
-    return GenerateFunctionCall(call, func);
-  }
-  if (auto* intrinsic = target->As<sem::Intrinsic>()) {
-    return GenerateIntrinsicCall(call, intrinsic);
-  }
-  if (target->IsAnyOf<sem::TypeConversion, sem::TypeConstructor>()) {
-    return GenerateTypeConstructorOrConversion(call, nullptr);
-  }
-  TINT_ICE(Writer, builder_.Diagnostics())
-      << "unhandled call target: " << target->TypeInfo().name;
-  return false;
+  return Switch(
+      target,
+      [&](const sem::Function* func) {
+        return GenerateFunctionCall(call, func);
+      },
+      [&](const sem::Builtin* builtin) {
+        return GenerateBuiltinCall(call, builtin);
+      },
+      [&](const sem::TypeConversion*) {
+        return GenerateTypeConstructorOrConversion(call, nullptr);
+      },
+      [&](const sem::TypeConstructor*) {
+        return GenerateTypeConstructorOrConversion(call, nullptr);
+      },
+      [&](Default) -> uint32_t {
+        TINT_ICE(Writer, builder_.Diagnostics())
+            << "unhandled call target: " << target->TypeInfo().name;
+        return 0;
+      });
 }
 
 uint32_t Builder::GenerateFunctionCall(const sem::Call* call,
@@ -2261,42 +2306,42 @@ uint32_t Builder::GenerateFunctionCall(const sem::Call* call,
   return result_id;
 }
 
-uint32_t Builder::GenerateIntrinsicCall(const sem::Call* call,
-                                        const sem::Intrinsic* intrinsic) {
+uint32_t Builder::GenerateBuiltinCall(const sem::Call* call,
+                                      const sem::Builtin* builtin) {
   auto result = result_op();
   auto result_id = result.to_i();
 
-  auto result_type_id = GenerateTypeIfNeeded(intrinsic->ReturnType());
+  auto result_type_id = GenerateTypeIfNeeded(builtin->ReturnType());
   if (result_type_id == 0) {
     return 0;
   }
 
-  if (intrinsic->IsFineDerivative() || intrinsic->IsCoarseDerivative()) {
+  if (builtin->IsFineDerivative() || builtin->IsCoarseDerivative()) {
     push_capability(SpvCapabilityDerivativeControl);
   }
 
-  if (intrinsic->IsImageQuery()) {
+  if (builtin->IsImageQuery()) {
     push_capability(SpvCapabilityImageQuery);
   }
 
-  if (intrinsic->IsTexture()) {
-    if (!GenerateTextureIntrinsic(call, intrinsic, Operand::Int(result_type_id),
-                                  result)) {
+  if (builtin->IsTexture()) {
+    if (!GenerateTextureBuiltin(call, builtin, Operand::Int(result_type_id),
+                                result)) {
       return 0;
     }
     return result_id;
   }
 
-  if (intrinsic->IsBarrier()) {
-    if (!GenerateControlBarrierIntrinsic(intrinsic)) {
+  if (builtin->IsBarrier()) {
+    if (!GenerateControlBarrierBuiltin(builtin)) {
       return 0;
     }
     return result_id;
   }
 
-  if (intrinsic->IsAtomic()) {
-    if (!GenerateAtomicIntrinsic(call, intrinsic, Operand::Int(result_type_id),
-                                 result)) {
+  if (builtin->IsAtomic()) {
+    if (!GenerateAtomicBuiltin(call, builtin, Operand::Int(result_type_id),
+                               result)) {
       return 0;
     }
     return result_id;
@@ -2307,7 +2352,7 @@ uint32_t Builder::GenerateIntrinsicCall(const sem::Call* call,
   auto get_arg_as_value_id = [&](size_t i,
                                  bool generate_load = true) -> uint32_t {
     auto* arg = call->Arguments()[i];
-    auto* param = intrinsic->Parameters()[i];
+    auto* param = builtin->Parameters()[i];
     auto val_id = GenerateExpression(arg->Declaration());
     if (val_id == 0) {
       return 0;
@@ -2331,22 +2376,22 @@ uint32_t Builder::GenerateIntrinsicCall(const sem::Call* call,
     op = spv::Op::OpExtInst;
   };
 
-  switch (intrinsic->Type()) {
-    case IntrinsicType::kAny:
-      if (intrinsic->Parameters()[0]->Type()->Is<sem::Bool>()) {
+  switch (builtin->Type()) {
+    case BuiltinType::kAny:
+      if (builtin->Parameters()[0]->Type()->Is<sem::Bool>()) {
         // any(v: bool) just resolves to v.
         return get_arg_as_value_id(0);
       }
       op = spv::Op::OpAny;
       break;
-    case IntrinsicType::kAll:
-      if (intrinsic->Parameters()[0]->Type()->Is<sem::Bool>()) {
+    case BuiltinType::kAll:
+      if (builtin->Parameters()[0]->Type()->Is<sem::Bool>()) {
         // all(v: bool) just resolves to v.
         return get_arg_as_value_id(0);
       }
       op = spv::Op::OpAll;
       break;
-    case IntrinsicType::kArrayLength: {
+    case BuiltinType::kArrayLength: {
       auto* address_of =
           call->Arguments()[0]->Declaration()->As<ast::UnaryOpExpression>();
       if (!address_of || address_of->op != ast::UnaryOp::kAddressOf) {
@@ -2385,12 +2430,12 @@ uint32_t Builder::GenerateIntrinsicCall(const sem::Call* call,
       }
       return result_id;
     }
-    case IntrinsicType::kCountOneBits:
+    case BuiltinType::kCountOneBits:
       op = spv::Op::OpBitCount;
       break;
-    case IntrinsicType::kDot: {
+    case BuiltinType::kDot: {
       op = spv::Op::OpDot;
-      auto* vec_ty = intrinsic->Parameters()[0]->Type()->As<sem::Vector>();
+      auto* vec_ty = builtin->Parameters()[0]->Type()->As<sem::Vector>();
       if (vec_ty->type()->is_integer_scalar()) {
         // TODO(crbug.com/tint/1267): OpDot requires floating-point types, but
         // WGSL also supports integer types. SPV_KHR_integer_dot_product adds
@@ -2430,48 +2475,40 @@ uint32_t Builder::GenerateIntrinsicCall(const sem::Call* call,
       }
       break;
     }
-    case IntrinsicType::kDpdx:
+    case BuiltinType::kDpdx:
       op = spv::Op::OpDPdx;
       break;
-    case IntrinsicType::kDpdxCoarse:
+    case BuiltinType::kDpdxCoarse:
       op = spv::Op::OpDPdxCoarse;
       break;
-    case IntrinsicType::kDpdxFine:
+    case BuiltinType::kDpdxFine:
       op = spv::Op::OpDPdxFine;
       break;
-    case IntrinsicType::kDpdy:
+    case BuiltinType::kDpdy:
       op = spv::Op::OpDPdy;
       break;
-    case IntrinsicType::kDpdyCoarse:
+    case BuiltinType::kDpdyCoarse:
       op = spv::Op::OpDPdyCoarse;
       break;
-    case IntrinsicType::kDpdyFine:
+    case BuiltinType::kDpdyFine:
       op = spv::Op::OpDPdyFine;
       break;
-    case IntrinsicType::kFwidth:
+    case BuiltinType::kFwidth:
       op = spv::Op::OpFwidth;
       break;
-    case IntrinsicType::kFwidthCoarse:
+    case BuiltinType::kFwidthCoarse:
       op = spv::Op::OpFwidthCoarse;
       break;
-    case IntrinsicType::kFwidthFine:
+    case BuiltinType::kFwidthFine:
       op = spv::Op::OpFwidthFine;
       break;
-    case IntrinsicType::kIgnore:  // [DEPRECATED]
-      // Evaluate the single argument, return the non-zero result_id which isn't
-      // associated with any op (ignore returns void, so this cannot be used in
-      // an expression).
-      if (!get_arg_as_value_id(0, false)) {
-        return 0;
-      }
-      return result_id;
-    case IntrinsicType::kIsInf:
+    case BuiltinType::kIsInf:
       op = spv::Op::OpIsInf;
       break;
-    case IntrinsicType::kIsNan:
+    case BuiltinType::kIsNan:
       op = spv::Op::OpIsNan;
       break;
-    case IntrinsicType::kIsFinite: {
+    case BuiltinType::kIsFinite: {
       // Implemented as:   not(IsInf or IsNan)
       auto val_id = get_arg_as_value_id(0);
       if (!val_id) {
@@ -2497,7 +2534,7 @@ uint32_t Builder::GenerateIntrinsicCall(const sem::Call* call,
       }
       return 0;
     }
-    case IntrinsicType::kIsNormal: {
+    case BuiltinType::kIsNormal: {
       // A normal number is finite, non-zero, and not subnormal.
       // Its exponent is neither of the extreme possible values.
       // Implemented as:
@@ -2525,7 +2562,7 @@ uint32_t Builder::GenerateIntrinsicCall(const sem::Call* call,
           GenerateConstantIfNeeded(ScalarConstant::U32(kMinNormalExponent));
       auto max_exponent_id =
           GenerateConstantIfNeeded(ScalarConstant::U32(kMaxNormalExponent));
-      if (auto* fvec_ty = intrinsic->ReturnType()->As<sem::Vector>()) {
+      if (auto* fvec_ty = builtin->ReturnType()->As<sem::Vector>()) {
         // In the vector case, update the unsigned type to a vector type of the
         // same size, and create vector constants by replicating the scalars.
         // I expect backend compilers to fold these into unique constants, so
@@ -2575,7 +2612,7 @@ uint32_t Builder::GenerateIntrinsicCall(const sem::Call* call,
       }
       return 0;
     }
-    case IntrinsicType::kMix: {
+    case BuiltinType::kMix: {
       auto std450 = Operand::Int(GetGLSLstd450Import());
 
       auto a_id = get_arg_as_value_id(0);
@@ -2587,10 +2624,9 @@ uint32_t Builder::GenerateIntrinsicCall(const sem::Call* call,
 
       // If the interpolant is scalar but the objects are vectors, we need to
       // splat the interpolant into a vector of the same size.
-      auto* result_vector_type = intrinsic->ReturnType()->As<sem::Vector>();
-      if (result_vector_type &&
-          intrinsic->Parameters()[2]->Type()->is_scalar()) {
-        f_id = GenerateSplat(f_id, intrinsic->Parameters()[0]->Type());
+      auto* result_vector_type = builtin->ReturnType()->As<sem::Vector>();
+      if (result_vector_type && builtin->Parameters()[2]->Type()->is_scalar()) {
+        f_id = GenerateSplat(f_id, builtin->Parameters()[0]->Type());
         if (f_id == 0) {
           return 0;
         }
@@ -2604,10 +2640,10 @@ uint32_t Builder::GenerateIntrinsicCall(const sem::Call* call,
       }
       return result_id;
     }
-    case IntrinsicType::kReverseBits:
+    case BuiltinType::kReverseBits:
       op = spv::Op::OpBitReverse;
       break;
-    case IntrinsicType::kSelect: {
+    case BuiltinType::kSelect: {
       // Note: Argument order is different in WGSL and SPIR-V
       auto cond_id = get_arg_as_value_id(2);
       auto true_id = get_arg_as_value_id(1);
@@ -2619,9 +2655,8 @@ uint32_t Builder::GenerateIntrinsicCall(const sem::Call* call,
       // If the condition is scalar but the objects are vectors, we need to
       // splat the condition into a vector of the same size.
       // TODO(jrprice): If we're targeting SPIR-V 1.4, we don't need to do this.
-      auto* result_vector_type = intrinsic->ReturnType()->As<sem::Vector>();
-      if (result_vector_type &&
-          intrinsic->Parameters()[2]->Type()->is_scalar()) {
+      auto* result_vector_type = builtin->ReturnType()->As<sem::Vector>();
+      if (result_vector_type && builtin->Parameters()[2]->Type()->is_scalar()) {
         auto* bool_vec_ty = builder_.create<sem::Vector>(
             builder_.create<sem::Bool>(), result_vector_type->Width());
         if (!GenerateTypeIfNeeded(bool_vec_ty)) {
@@ -2641,25 +2676,25 @@ uint32_t Builder::GenerateIntrinsicCall(const sem::Call* call,
       }
       return result_id;
     }
-    case IntrinsicType::kTranspose:
+    case BuiltinType::kTranspose:
       op = spv::Op::OpTranspose;
       break;
-    case IntrinsicType::kAbs:
-      if (intrinsic->ReturnType()->is_unsigned_scalar_or_vector()) {
+    case BuiltinType::kAbs:
+      if (builtin->ReturnType()->is_unsigned_scalar_or_vector()) {
         // abs() only operates on *signed* integers.
         // This is a no-op for unsigned integers.
         return get_arg_as_value_id(0);
       }
-      if (intrinsic->ReturnType()->is_float_scalar_or_vector()) {
+      if (builtin->ReturnType()->is_float_scalar_or_vector()) {
         glsl_std450(GLSLstd450FAbs);
       } else {
         glsl_std450(GLSLstd450SAbs);
       }
       break;
     default: {
-      auto inst_id = intrinsic_to_glsl_method(intrinsic);
+      auto inst_id = builtin_to_glsl_method(builtin);
       if (inst_id == 0) {
-        error_ = "unknown method " + std::string(intrinsic->str());
+        error_ = "unknown method " + std::string(builtin->str());
         return 0;
       }
       glsl_std450(inst_id);
@@ -2668,8 +2703,7 @@ uint32_t Builder::GenerateIntrinsicCall(const sem::Call* call,
   }
 
   if (op == spv::Op::OpNop) {
-    error_ =
-        "unable to determine operator for: " + std::string(intrinsic->str());
+    error_ = "unable to determine operator for: " + std::string(builtin->str());
     return 0;
   }
 
@@ -2688,13 +2722,13 @@ uint32_t Builder::GenerateIntrinsicCall(const sem::Call* call,
   return result_id;
 }
 
-bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
-                                       const sem::Intrinsic* intrinsic,
-                                       Operand result_type,
-                                       Operand result_id) {
+bool Builder::GenerateTextureBuiltin(const sem::Call* call,
+                                     const sem::Builtin* builtin,
+                                     Operand result_type,
+                                     Operand result_id) {
   using Usage = sem::ParameterUsage;
 
-  auto& signature = intrinsic->Signature();
+  auto& signature = builtin->Signature();
   auto& arguments = call->Arguments();
 
   // Generates the given expression, returning the operand ID
@@ -2728,7 +2762,7 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
 
   auto op = spv::Op::OpNop;
 
-  // Custom function to call after the texture-intrinsic op has been generated.
+  // Custom function to call after the texture-builtin op has been generated.
   std::function<bool()> post_emission = [] { return true; };
 
   // Populate the spirv_params with common parameters
@@ -2853,8 +2887,8 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
     return append_coords_to_spirv_params();
   };
 
-  switch (intrinsic->Type()) {
-    case IntrinsicType::kTextureDimensions: {
+  switch (builtin->Type()) {
+    case BuiltinType::kTextureDimensions: {
       // Number of returned elements from OpImageQuerySize[Lod] may not match
       // those of textureDimensions().
       // This might be due to an extra vector scalar describing the number of
@@ -2901,7 +2935,7 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
       }
       break;
     }
-    case IntrinsicType::kTextureNumLayers: {
+    case BuiltinType::kTextureNumLayers: {
       uint32_t spirv_dims = 0;
       switch (texture_type->dim()) {
         default:
@@ -2933,19 +2967,19 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
       }
       break;
     }
-    case IntrinsicType::kTextureNumLevels: {
+    case BuiltinType::kTextureNumLevels: {
       op = spv::Op::OpImageQueryLevels;
       append_result_type_and_id_to_spirv_params();
       spirv_params.emplace_back(gen_arg(Usage::kTexture));
       break;
     }
-    case IntrinsicType::kTextureNumSamples: {
+    case BuiltinType::kTextureNumSamples: {
       op = spv::Op::OpImageQuerySamples;
       append_result_type_and_id_to_spirv_params();
       spirv_params.emplace_back(gen_arg(Usage::kTexture));
       break;
     }
-    case IntrinsicType::kTextureLoad: {
+    case BuiltinType::kTextureLoad: {
       op = texture_type->Is<sem::StorageTexture>() ? spv::Op::OpImageRead
                                                    : spv::Op::OpImageFetch;
       append_result_type_and_id_to_spirv_params_for_read();
@@ -2966,7 +3000,7 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
 
       break;
     }
-    case IntrinsicType::kTextureStore: {
+    case BuiltinType::kTextureStore: {
       op = spv::Op::OpImageWrite;
       spirv_params.emplace_back(gen_arg(Usage::kTexture));
       if (!append_coords_to_spirv_params()) {
@@ -2975,7 +3009,7 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
       spirv_params.emplace_back(gen_arg(Usage::kValue));
       break;
     }
-    case IntrinsicType::kTextureGather: {
+    case BuiltinType::kTextureGather: {
       op = spv::Op::OpImageGather;
       append_result_type_and_id_to_spirv_params();
       if (!append_image_and_coords_to_spirv_params()) {
@@ -2989,7 +3023,7 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
       }
       break;
     }
-    case IntrinsicType::kTextureGatherCompare: {
+    case BuiltinType::kTextureGatherCompare: {
       op = spv::Op::OpImageDrefGather;
       append_result_type_and_id_to_spirv_params();
       if (!append_image_and_coords_to_spirv_params()) {
@@ -2998,7 +3032,7 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
       spirv_params.emplace_back(gen_arg(Usage::kDepthRef));
       break;
     }
-    case IntrinsicType::kTextureSample: {
+    case BuiltinType::kTextureSample: {
       op = spv::Op::OpImageSampleImplicitLod;
       append_result_type_and_id_to_spirv_params_for_read();
       if (!append_image_and_coords_to_spirv_params()) {
@@ -3006,7 +3040,7 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
       }
       break;
     }
-    case IntrinsicType::kTextureSampleBias: {
+    case BuiltinType::kTextureSampleBias: {
       op = spv::Op::OpImageSampleImplicitLod;
       append_result_type_and_id_to_spirv_params_for_read();
       if (!append_image_and_coords_to_spirv_params()) {
@@ -3016,7 +3050,7 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
           ImageOperand{SpvImageOperandsBiasMask, gen_arg(Usage::kBias)});
       break;
     }
-    case IntrinsicType::kTextureSampleLevel: {
+    case BuiltinType::kTextureSampleLevel: {
       op = spv::Op::OpImageSampleExplicitLod;
       append_result_type_and_id_to_spirv_params_for_read();
       if (!append_image_and_coords_to_spirv_params()) {
@@ -3042,7 +3076,7 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
       image_operands.emplace_back(ImageOperand{SpvImageOperandsLodMask, level});
       break;
     }
-    case IntrinsicType::kTextureSampleGrad: {
+    case BuiltinType::kTextureSampleGrad: {
       op = spv::Op::OpImageSampleExplicitLod;
       append_result_type_and_id_to_spirv_params_for_read();
       if (!append_image_and_coords_to_spirv_params()) {
@@ -3054,7 +3088,7 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
           ImageOperand{SpvImageOperandsGradMask, gen_arg(Usage::kDdy)});
       break;
     }
-    case IntrinsicType::kTextureSampleCompare: {
+    case BuiltinType::kTextureSampleCompare: {
       op = spv::Op::OpImageSampleDrefImplicitLod;
       append_result_type_and_id_to_spirv_params();
       if (!append_image_and_coords_to_spirv_params()) {
@@ -3063,7 +3097,7 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
       spirv_params.emplace_back(gen_arg(Usage::kDepthRef));
       break;
     }
-    case IntrinsicType::kTextureSampleCompareLevel: {
+    case BuiltinType::kTextureSampleCompareLevel: {
       op = spv::Op::OpImageSampleDrefExplicitLod;
       append_result_type_and_id_to_spirv_params();
       if (!append_image_and_coords_to_spirv_params()) {
@@ -3101,8 +3135,7 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
   }
 
   if (op == spv::Op::OpNop) {
-    error_ =
-        "unable to determine operator for: " + std::string(intrinsic->str());
+    error_ = "unable to determine operator for: " + std::string(builtin->str());
     return false;
   }
 
@@ -3113,7 +3146,7 @@ bool Builder::GenerateTextureIntrinsic(const sem::Call* call,
   return post_emission();
 }
 
-bool Builder::GenerateControlBarrierIntrinsic(const sem::Intrinsic* intrinsic) {
+bool Builder::GenerateControlBarrierBuiltin(const sem::Builtin* builtin) {
   auto const op = spv::Op::OpControlBarrier;
   uint32_t execution = 0;
   uint32_t memory = 0;
@@ -3121,21 +3154,21 @@ bool Builder::GenerateControlBarrierIntrinsic(const sem::Intrinsic* intrinsic) {
 
   // TODO(crbug.com/tint/661): Combine sequential barriers to a single
   // instruction.
-  if (intrinsic->Type() == sem::IntrinsicType::kWorkgroupBarrier) {
+  if (builtin->Type() == sem::BuiltinType::kWorkgroupBarrier) {
     execution = static_cast<uint32_t>(spv::Scope::Workgroup);
     memory = static_cast<uint32_t>(spv::Scope::Workgroup);
     semantics =
         static_cast<uint32_t>(spv::MemorySemanticsMask::AcquireRelease) |
         static_cast<uint32_t>(spv::MemorySemanticsMask::WorkgroupMemory);
-  } else if (intrinsic->Type() == sem::IntrinsicType::kStorageBarrier) {
+  } else if (builtin->Type() == sem::BuiltinType::kStorageBarrier) {
     execution = static_cast<uint32_t>(spv::Scope::Workgroup);
     memory = static_cast<uint32_t>(spv::Scope::Workgroup);
     semantics =
         static_cast<uint32_t>(spv::MemorySemanticsMask::AcquireRelease) |
         static_cast<uint32_t>(spv::MemorySemanticsMask::UniformMemory);
   } else {
-    error_ = "unexpected barrier intrinsic type ";
-    error_ += sem::str(intrinsic->Type());
+    error_ = "unexpected barrier builtin type ";
+    error_ += sem::str(builtin->Type());
     return false;
   }
 
@@ -3153,20 +3186,20 @@ bool Builder::GenerateControlBarrierIntrinsic(const sem::Intrinsic* intrinsic) {
                                 });
 }
 
-bool Builder::GenerateAtomicIntrinsic(const sem::Call* call,
-                                      const sem::Intrinsic* intrinsic,
-                                      Operand result_type,
-                                      Operand result_id) {
+bool Builder::GenerateAtomicBuiltin(const sem::Call* call,
+                                    const sem::Builtin* builtin,
+                                    Operand result_type,
+                                    Operand result_id) {
   auto is_value_signed = [&] {
-    return intrinsic->Parameters()[1]->Type()->Is<sem::I32>();
+    return builtin->Parameters()[1]->Type()->Is<sem::I32>();
   };
 
   auto storage_class =
-      intrinsic->Parameters()[0]->Type()->As<sem::Pointer>()->StorageClass();
+      builtin->Parameters()[0]->Type()->As<sem::Pointer>()->StorageClass();
 
   uint32_t memory_id = 0;
   switch (
-      intrinsic->Parameters()[0]->Type()->As<sem::Pointer>()->StorageClass()) {
+      builtin->Parameters()[0]->Type()->As<sem::Pointer>()->StorageClass()) {
     case ast::StorageClass::kWorkgroup:
       memory_id = GenerateConstantIfNeeded(
           ScalarConstant::U32(static_cast<uint32_t>(spv::Scope::Workgroup)));
@@ -3208,8 +3241,8 @@ bool Builder::GenerateAtomicIntrinsic(const sem::Call* call,
   Operand memory = Operand::Int(memory_id);
   Operand semantics = Operand::Int(semantics_id);
 
-  switch (intrinsic->Type()) {
-    case sem::IntrinsicType::kAtomicLoad:
+  switch (builtin->Type()) {
+    case sem::BuiltinType::kAtomicLoad:
       return push_function_inst(spv::Op::OpAtomicLoad, {
                                                            result_type,
                                                            result_id,
@@ -3217,14 +3250,14 @@ bool Builder::GenerateAtomicIntrinsic(const sem::Call* call,
                                                            memory,
                                                            semantics,
                                                        });
-    case sem::IntrinsicType::kAtomicStore:
+    case sem::BuiltinType::kAtomicStore:
       return push_function_inst(spv::Op::OpAtomicStore, {
                                                             pointer,
                                                             memory,
                                                             semantics,
                                                             value,
                                                         });
-    case sem::IntrinsicType::kAtomicAdd:
+    case sem::BuiltinType::kAtomicAdd:
       return push_function_inst(spv::Op::OpAtomicIAdd, {
                                                            result_type,
                                                            result_id,
@@ -3233,7 +3266,7 @@ bool Builder::GenerateAtomicIntrinsic(const sem::Call* call,
                                                            semantics,
                                                            value,
                                                        });
-    case sem::IntrinsicType::kAtomicSub:
+    case sem::BuiltinType::kAtomicSub:
       return push_function_inst(spv::Op::OpAtomicISub, {
                                                            result_type,
                                                            result_id,
@@ -3242,7 +3275,7 @@ bool Builder::GenerateAtomicIntrinsic(const sem::Call* call,
                                                            semantics,
                                                            value,
                                                        });
-    case sem::IntrinsicType::kAtomicMax:
+    case sem::BuiltinType::kAtomicMax:
       return push_function_inst(
           is_value_signed() ? spv::Op::OpAtomicSMax : spv::Op::OpAtomicUMax,
           {
@@ -3253,7 +3286,7 @@ bool Builder::GenerateAtomicIntrinsic(const sem::Call* call,
               semantics,
               value,
           });
-    case sem::IntrinsicType::kAtomicMin:
+    case sem::BuiltinType::kAtomicMin:
       return push_function_inst(
           is_value_signed() ? spv::Op::OpAtomicSMin : spv::Op::OpAtomicUMin,
           {
@@ -3264,7 +3297,7 @@ bool Builder::GenerateAtomicIntrinsic(const sem::Call* call,
               semantics,
               value,
           });
-    case sem::IntrinsicType::kAtomicAnd:
+    case sem::BuiltinType::kAtomicAnd:
       return push_function_inst(spv::Op::OpAtomicAnd, {
                                                           result_type,
                                                           result_id,
@@ -3273,7 +3306,7 @@ bool Builder::GenerateAtomicIntrinsic(const sem::Call* call,
                                                           semantics,
                                                           value,
                                                       });
-    case sem::IntrinsicType::kAtomicOr:
+    case sem::BuiltinType::kAtomicOr:
       return push_function_inst(spv::Op::OpAtomicOr, {
                                                          result_type,
                                                          result_id,
@@ -3282,7 +3315,7 @@ bool Builder::GenerateAtomicIntrinsic(const sem::Call* call,
                                                          semantics,
                                                          value,
                                                      });
-    case sem::IntrinsicType::kAtomicXor:
+    case sem::BuiltinType::kAtomicXor:
       return push_function_inst(spv::Op::OpAtomicXor, {
                                                           result_type,
                                                           result_id,
@@ -3291,7 +3324,7 @@ bool Builder::GenerateAtomicIntrinsic(const sem::Call* call,
                                                           semantics,
                                                           value,
                                                       });
-    case sem::IntrinsicType::kAtomicExchange:
+    case sem::BuiltinType::kAtomicExchange:
       return push_function_inst(spv::Op::OpAtomicExchange, {
                                                                result_type,
                                                                result_id,
@@ -3300,7 +3333,7 @@ bool Builder::GenerateAtomicIntrinsic(const sem::Call* call,
                                                                semantics,
                                                                value,
                                                            });
-    case sem::IntrinsicType::kAtomicCompareExchangeWeak: {
+    case sem::BuiltinType::kAtomicCompareExchangeWeak: {
       auto comparator = GenerateExpression(call->Arguments()[1]->Declaration());
       if (comparator == 0) {
         return false;
@@ -3388,7 +3421,7 @@ bool Builder::GenerateAtomicIntrinsic(const sem::Call* call,
     }
     default:
       TINT_UNREACHABLE(Writer, builder_.Diagnostics())
-          << "unhandled atomic intrinsic " << intrinsic->Type();
+          << "unhandled atomic builtin " << builtin->Type();
       return false;
   }
 }
@@ -3799,46 +3832,49 @@ bool Builder::GenerateLoopStatement(const ast::LoopStatement* stmt) {
 }
 
 bool Builder::GenerateStatement(const ast::Statement* stmt) {
-  if (auto* a = stmt->As<ast::AssignmentStatement>()) {
-    return GenerateAssignStatement(a);
-  }
-  if (auto* b = stmt->As<ast::BlockStatement>()) {
-    return GenerateBlockStatement(b);
-  }
-  if (auto* b = stmt->As<ast::BreakStatement>()) {
-    return GenerateBreakStatement(b);
-  }
-  if (auto* c = stmt->As<ast::CallStatement>()) {
-    return GenerateCallExpression(c->expr) != 0;
-  }
-  if (auto* c = stmt->As<ast::ContinueStatement>()) {
-    return GenerateContinueStatement(c);
-  }
-  if (auto* d = stmt->As<ast::DiscardStatement>()) {
-    return GenerateDiscardStatement(d);
-  }
-  if (stmt->Is<ast::FallthroughStatement>()) {
-    // Do nothing here, the fallthrough gets handled by the switch code.
-    return true;
-  }
-  if (auto* i = stmt->As<ast::IfStatement>()) {
-    return GenerateIfStatement(i);
-  }
-  if (auto* l = stmt->As<ast::LoopStatement>()) {
-    return GenerateLoopStatement(l);
-  }
-  if (auto* r = stmt->As<ast::ReturnStatement>()) {
-    return GenerateReturnStatement(r);
-  }
-  if (auto* s = stmt->As<ast::SwitchStatement>()) {
-    return GenerateSwitchStatement(s);
-  }
-  if (auto* v = stmt->As<ast::VariableDeclStatement>()) {
-    return GenerateVariableDeclStatement(v);
-  }
-
-  error_ = "Unknown statement: " + std::string(stmt->TypeInfo().name);
-  return false;
+  return Switch(
+      stmt,
+      [&](const ast::AssignmentStatement* a) {
+        return GenerateAssignStatement(a);
+      },
+      [&](const ast::BlockStatement* b) {  //
+        return GenerateBlockStatement(b);
+      },
+      [&](const ast::BreakStatement* b) {  //
+        return GenerateBreakStatement(b);
+      },
+      [&](const ast::CallStatement* c) {
+        return GenerateCallExpression(c->expr) != 0;
+      },
+      [&](const ast::ContinueStatement* c) {
+        return GenerateContinueStatement(c);
+      },
+      [&](const ast::DiscardStatement* d) {
+        return GenerateDiscardStatement(d);
+      },
+      [&](const ast::FallthroughStatement*) {
+        // Do nothing here, the fallthrough gets handled by the switch code.
+        return true;
+      },
+      [&](const ast::IfStatement* i) {  //
+        return GenerateIfStatement(i);
+      },
+      [&](const ast::LoopStatement* l) {  //
+        return GenerateLoopStatement(l);
+      },
+      [&](const ast::ReturnStatement* r) {  //
+        return GenerateReturnStatement(r);
+      },
+      [&](const ast::SwitchStatement* s) {  //
+        return GenerateSwitchStatement(s);
+      },
+      [&](const ast::VariableDeclStatement* v) {
+        return GenerateVariableDeclStatement(v);
+      },
+      [&](Default) {
+        error_ = "Unknown statement: " + std::string(stmt->TypeInfo().name);
+        return false;
+      });
 }
 
 bool Builder::GenerateVariableDeclStatement(
@@ -3881,78 +3917,91 @@ uint32_t Builder::GenerateTypeIfNeeded(const sem::Type* type) {
   return utils::GetOrCreate(type_name_to_id_, type_name, [&]() -> uint32_t {
     auto result = result_op();
     auto id = result.to_i();
-    if (auto* arr = type->As<sem::Array>()) {
-      if (!GenerateArrayType(arr, result)) {
-        return 0;
-      }
-    } else if (type->Is<sem::Bool>()) {
-      push_type(spv::Op::OpTypeBool, {result});
-    } else if (type->Is<sem::F32>()) {
-      push_type(spv::Op::OpTypeFloat, {result, Operand::Int(32)});
-    } else if (type->Is<sem::I32>()) {
-      push_type(spv::Op::OpTypeInt,
-                {result, Operand::Int(32), Operand::Int(1)});
-    } else if (auto* mat = type->As<sem::Matrix>()) {
-      if (!GenerateMatrixType(mat, result)) {
-        return 0;
-      }
-    } else if (auto* ptr = type->As<sem::Pointer>()) {
-      if (!GeneratePointerType(ptr, result)) {
-        return 0;
-      }
-    } else if (auto* ref = type->As<sem::Reference>()) {
-      if (!GenerateReferenceType(ref, result)) {
-        return 0;
-      }
-    } else if (auto* str = type->As<sem::Struct>()) {
-      if (!GenerateStructType(str, result)) {
-        return 0;
-      }
-    } else if (type->Is<sem::U32>()) {
-      push_type(spv::Op::OpTypeInt,
-                {result, Operand::Int(32), Operand::Int(0)});
-    } else if (auto* vec = type->As<sem::Vector>()) {
-      if (!GenerateVectorType(vec, result)) {
-        return 0;
-      }
-    } else if (type->Is<sem::Void>()) {
-      push_type(spv::Op::OpTypeVoid, {result});
-    } else if (auto* tex = type->As<sem::Texture>()) {
-      if (!GenerateTextureType(tex, result)) {
-        return 0;
-      }
+    bool ok = Switch(
+        type,
+        [&](const sem::Array* arr) {  //
+          return GenerateArrayType(arr, result);
+        },
+        [&](const sem::Bool*) {
+          push_type(spv::Op::OpTypeBool, {result});
+          return true;
+        },
+        [&](const sem::F32*) {
+          push_type(spv::Op::OpTypeFloat, {result, Operand::Int(32)});
+          return true;
+        },
+        [&](const sem::I32*) {
+          push_type(spv::Op::OpTypeInt,
+                    {result, Operand::Int(32), Operand::Int(1)});
+          return true;
+        },
+        [&](const sem::Matrix* mat) {  //
+          return GenerateMatrixType(mat, result);
+        },
+        [&](const sem::Pointer* ptr) {  //
+          return GeneratePointerType(ptr, result);
+        },
+        [&](const sem::Reference* ref) {  //
+          return GenerateReferenceType(ref, result);
+        },
+        [&](const sem::Struct* str) {  //
+          return GenerateStructType(str, result);
+        },
+        [&](const sem::U32*) {
+          push_type(spv::Op::OpTypeInt,
+                    {result, Operand::Int(32), Operand::Int(0)});
+          return true;
+        },
+        [&](const sem::Vector* vec) {  //
+          return GenerateVectorType(vec, result);
+        },
+        [&](const sem::Void*) {
+          push_type(spv::Op::OpTypeVoid, {result});
+          return true;
+        },
+        [&](const sem::StorageTexture* tex) {
+          if (!GenerateTextureType(tex, result)) {
+            return false;
+          }
 
-      if (auto* st = tex->As<sem::StorageTexture>()) {
-        // Register all three access types of StorageTexture names. In SPIR-V,
-        // we must output a single type, while the variable is annotated with
-        // the access type. Doing this ensures we de-dupe.
-        type_name_to_id_[builder_
-                             .create<sem::StorageTexture>(
-                                 st->dim(), st->texel_format(),
-                                 ast::Access::kRead, st->type())
-                             ->type_name()] = id;
-        type_name_to_id_[builder_
-                             .create<sem::StorageTexture>(
-                                 st->dim(), st->texel_format(),
-                                 ast::Access::kWrite, st->type())
-                             ->type_name()] = id;
-        type_name_to_id_[builder_
-                             .create<sem::StorageTexture>(
-                                 st->dim(), st->texel_format(),
-                                 ast::Access::kReadWrite, st->type())
-                             ->type_name()] = id;
-      }
+          // Register all three access types of StorageTexture names. In
+          // SPIR-V, we must output a single type, while the variable is
+          // annotated with the access type. Doing this ensures we de-dupe.
+          type_name_to_id_[builder_
+                               .create<sem::StorageTexture>(
+                                   tex->dim(), tex->texel_format(),
+                                   ast::Access::kRead, tex->type())
+                               ->type_name()] = id;
+          type_name_to_id_[builder_
+                               .create<sem::StorageTexture>(
+                                   tex->dim(), tex->texel_format(),
+                                   ast::Access::kWrite, tex->type())
+                               ->type_name()] = id;
+          type_name_to_id_[builder_
+                               .create<sem::StorageTexture>(
+                                   tex->dim(), tex->texel_format(),
+                                   ast::Access::kReadWrite, tex->type())
+                               ->type_name()] = id;
+          return true;
+        },
+        [&](const sem::Texture* tex) {
+          return GenerateTextureType(tex, result);
+        },
+        [&](const sem::Sampler*) {
+          push_type(spv::Op::OpTypeSampler, {result});
 
-    } else if (type->Is<sem::Sampler>()) {
-      push_type(spv::Op::OpTypeSampler, {result});
+          // Register both of the sampler type names. In SPIR-V they're the same
+          // sampler type, so we need to match that when we do the dedup check.
+          type_name_to_id_["__sampler_sampler"] = id;
+          type_name_to_id_["__sampler_comparison"] = id;
+          return true;
+        },
+        [&](Default) {
+          error_ = "unable to convert type: " + type->type_name();
+          return false;
+        });
 
-      // Register both of the sampler type names. In SPIR-V they're the same
-      // sampler type, so we need to match that when we do the dedup check.
-      type_name_to_id_["__sampler_sampler"] = id;
-      type_name_to_id_["__sampler_comparison"] = id;
-
-    } else {
-      error_ = "unable to convert type: " + type->type_name();
+    if (!ok) {
       return 0;
     }
 
@@ -4004,22 +4053,31 @@ bool Builder::GenerateTextureType(const sem::Texture* texture,
   }
 
   if (dim == ast::TextureDimension::kCubeArray) {
-    if (texture->Is<sem::SampledTexture>() ||
-        texture->Is<sem::DepthTexture>()) {
+    if (texture->IsAnyOf<sem::SampledTexture, sem::DepthTexture>()) {
       push_capability(SpvCapabilitySampledCubeArray);
     }
   }
 
-  uint32_t type_id = 0u;
-  if (texture->IsAnyOf<sem::DepthTexture, sem::DepthMultisampledTexture>()) {
-    type_id = GenerateTypeIfNeeded(builder_.create<sem::F32>());
-  } else if (auto* s = texture->As<sem::SampledTexture>()) {
-    type_id = GenerateTypeIfNeeded(s->type());
-  } else if (auto* ms = texture->As<sem::MultisampledTexture>()) {
-    type_id = GenerateTypeIfNeeded(ms->type());
-  } else if (auto* st = texture->As<sem::StorageTexture>()) {
-    type_id = GenerateTypeIfNeeded(st->type());
-  }
+  uint32_t type_id = Switch(
+      texture,
+      [&](const sem::DepthTexture*) {
+        return GenerateTypeIfNeeded(builder_.create<sem::F32>());
+      },
+      [&](const sem::DepthMultisampledTexture*) {
+        return GenerateTypeIfNeeded(builder_.create<sem::F32>());
+      },
+      [&](const sem::SampledTexture* t) {
+        return GenerateTypeIfNeeded(t->type());
+      },
+      [&](const sem::MultisampledTexture* t) {
+        return GenerateTypeIfNeeded(t->type());
+      },
+      [&](const sem::StorageTexture* t) {
+        return GenerateTypeIfNeeded(t->type());
+      },
+      [&](Default) -> uint32_t {  //
+        return 0u;
+      });
   if (type_id == 0u) {
     return false;
   }
@@ -4129,9 +4187,9 @@ bool Builder::GenerateStructType(const sem::Struct* struct_type,
   ops.push_back(result);
 
   auto* decl = struct_type->Declaration();
-  if (decl && ast::HasDecoration<
-                  transform::AddSpirvBlockDecoration::SpirvBlockDecoration>(
-                  decl->decorations)) {
+  if (decl &&
+      ast::HasAttribute<transform::AddSpirvBlockAttribute::SpirvBlockAttribute>(
+          decl->attributes)) {
     push_annot(spv::Op::OpDecorate,
                {Operand::Int(struct_id), Operand::Int(SpvDecorationBlock)});
   }
@@ -4216,8 +4274,6 @@ SpvStorageClass Builder::ConvertStorageClass(ast::StorageClass klass) const {
       return SpvStorageClassUniformConstant;
     case ast::StorageClass::kStorage:
       return SpvStorageClassStorageBuffer;
-    case ast::StorageClass::kImage:
-      return SpvStorageClassImage;
     case ast::StorageClass::kPrivate:
       return SpvStorageClassPrivate;
     case ast::StorageClass::kFunction:

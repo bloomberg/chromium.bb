@@ -23,7 +23,7 @@ struct traits<TensorScanOp<Op, XprType> >
   typedef traits<XprType> XprTraits;
   typedef typename XprTraits::StorageKind StorageKind;
   typedef typename XprType::Nested Nested;
-  typedef typename remove_reference<Nested>::type _Nested;
+  typedef typename remove_reference<Nested>::type Nested_;
   static const int NumDimensions = XprTraits::NumDimensions;
   static const int Layout = XprTraits::Layout;
   typedef typename XprTraits::PointerType PointerType;

@@ -140,7 +140,7 @@ class RendererVk : angle::NonCopyable
 
     std::string getVendorString() const;
     std::string getRendererDescription() const;
-    std::string getVersionString() const;
+    std::string getVersionString(bool includeFullVersion) const;
 
     gl::Version getMaxSupportedESVersion() const;
     gl::Version getMaxConformantESVersion() const;
@@ -313,9 +313,16 @@ class RendererVk : angle::NonCopyable
             if (!garbage.destroyIfComplete(this, getLastCompletedQueueSerial()))
             {
                 std::lock_guard<std::mutex> lock(mGarbageMutex);
-                mSharedGarbage.push_back(std::move(garbage));
+                mSharedGarbage.push(std::move(garbage));
             }
         }
+    }
+
+    void collectSuballocationGarbage(vk::SharedResourceUse &&use,
+                                     vk::BufferSuballocation &&suballocation)
+    {
+        std::lock_guard<std::mutex> lock(mGarbageMutex);
+        mSuballocationGarbage.emplace(std::move(use), std::move(suballocation));
     }
 
     angle::Result getPipelineCache(vk::PipelineCache **pipelineCache);
@@ -327,6 +334,9 @@ class RendererVk : angle::NonCopyable
 
     void onNewValidationMessage(const std::string &message);
     std::string getAndClearLastValidationMessage(uint32_t *countSinceLastClear);
+
+    void onFramebufferFetchUsed();
+    bool isFramebufferFetchUsed() const { return mIsFramebufferFetchUsed; }
 
     uint64_t getMaxFenceWaitTimeNs() const;
 
@@ -507,6 +517,11 @@ class RendererVk : angle::NonCopyable
     }
     size_t getVertexConversionBufferAlignment() const { return mVertexConversionBufferAlignment; }
 
+    uint32_t getDeviceLocalMemoryTypeIndex() const
+    {
+        return mDeviceLocalVertexConversionBufferMemoryTypeIndex;
+    }
+
   private:
     angle::Result initializeDevice(DisplayVk *displayVk, uint32_t queueFamilyIndex);
     void ensureCapsInitialized() const;
@@ -514,6 +529,7 @@ class RendererVk : angle::NonCopyable
     void queryDeviceExtensionFeatures(const vk::ExtensionNameList &deviceExtensionNames);
 
     void initFeatures(DisplayVk *display, const vk::ExtensionNameList &extensions);
+    void appBasedFeatureOverrides(DisplayVk *display, const vk::ExtensionNameList &extensions);
     angle::Result initPipelineCache(DisplayVk *display,
                                     vk::PipelineCache *pipelineCache,
                                     bool *success);
@@ -528,7 +544,7 @@ class RendererVk : angle::NonCopyable
 
     egl::Display *mDisplay;
 
-    std::unique_ptr<angle::Library> mLibVulkanLibrary;
+    void *mLibVulkanLibrary;
 
     mutable bool mCapsInitialized;
     mutable gl::Caps mNativeCaps;
@@ -560,6 +576,7 @@ class RendererVk : angle::NonCopyable
     VkPhysicalDeviceTransformFeedbackFeaturesEXT mTransformFeedbackFeatures;
     VkPhysicalDeviceIndexTypeUint8FeaturesEXT mIndexTypeUint8Features;
     VkPhysicalDeviceSubgroupProperties mSubgroupProperties;
+    VkPhysicalDeviceShaderSubgroupExtendedTypesFeaturesKHR mSubgroupExtendedTypesFeatures;
     VkPhysicalDeviceDeviceMemoryReportFeaturesEXT mMemoryReportFeatures;
     VkDeviceDeviceMemoryReportCreateInfoEXT mMemoryReportCallback;
     VkPhysicalDeviceExternalMemoryHostPropertiesEXT mExternalMemoryHostProperties;
@@ -575,6 +592,7 @@ class RendererVk : angle::NonCopyable
     VkPhysicalDeviceProtectedMemoryFeatures mProtectedMemoryFeatures;
     VkPhysicalDeviceProtectedMemoryProperties mProtectedMemoryProperties;
     VkPhysicalDeviceHostQueryResetFeaturesEXT mHostQueryResetFeatures;
+    VkPhysicalDeviceDepthClipControlFeaturesEXT mDepthClipControlFeatures;
     VkExternalFenceProperties mExternalFenceProperties;
     VkExternalSemaphoreProperties mExternalSemaphoreProperties;
     VkPhysicalDeviceSamplerYcbcrConversionFeatures mSamplerYcbcrConversionFeatures;
@@ -592,6 +610,7 @@ class RendererVk : angle::NonCopyable
 
     std::mutex mGarbageMutex;
     vk::SharedGarbageList mSharedGarbage;
+    vk::SharedBufferSuballocationGarbageList mSuballocationGarbage;
 
     vk::MemoryProperties mMemoryProperties;
     vk::FormatTable mFormatTable;
@@ -619,6 +638,10 @@ class RendererVk : angle::NonCopyable
     // Latest validation data for debug overlay.
     std::string mLastValidationMessage;
     uint32_t mValidationMessageCount;
+
+    // Whether framebuffer fetch has been used, for the purposes of more accurate syncval error
+    // filtering.
+    bool mIsFramebufferFetchUsed;
 
     DebugAnnotatorVk mAnnotator;
 

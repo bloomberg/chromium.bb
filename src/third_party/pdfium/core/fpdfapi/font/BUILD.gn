@@ -40,17 +40,20 @@ source_set("font") {
     "cpdf_type3font.cpp",
     "cpdf_type3font.h",
   ]
-  configs += [ "../../../:pdfium_strict_config" ]
+  configs += [
+    "../../../:pdfium_strict_config",
+    "../../../:pdfium_noshorten_config",
+  ]
   deps = [
     "../../fxcrt",
     "../../fxge",
     "../cmaps",
     "../parser",
   ]
+  visibility = [ "../../../*" ]
   if (is_mac) {
     frameworks = [ "CoreFoundation.framework" ]
   }
-  visibility = [ "../../../*" ]
 }
 
 pdfium_unittest_source_set("unittests") {

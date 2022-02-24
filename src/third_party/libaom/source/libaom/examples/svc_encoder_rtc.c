@@ -110,7 +110,7 @@ static const arg_def_t *svc_args[] = {
   &error_resilient_arg, &output_obu_arg, NULL
 };
 
-#define zero(Dest) memset(&(Dest), 0, sizeof(Dest));
+#define zero(Dest) memset(&(Dest), 0, sizeof(Dest))
 
 static const char *exec_name;
 

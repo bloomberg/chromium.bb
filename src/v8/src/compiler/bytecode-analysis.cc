@@ -4,6 +4,8 @@
 
 #include "src/compiler/bytecode-analysis.h"
 
+#include <utility>
+
 #include "src/compiler/bytecode-liveness-map.h"
 #include "src/interpreter/bytecode-array-iterator.h"
 #include "src/interpreter/bytecode-array-random-iterator.h"
@@ -15,8 +17,11 @@ namespace internal {
 namespace compiler {
 
 using interpreter::Bytecode;
+using interpreter::BytecodeOperands;
 using interpreter::Bytecodes;
+using interpreter::ImplicitRegisterUse;
 using interpreter::OperandType;
+using interpreter::Register;
 
 BytecodeLoopAssignments::BytecodeLoopAssignments(int parameter_count,
                                                  int register_count, Zone* zone)
@@ -92,17 +97,103 @@ BytecodeAnalysis::BytecodeAnalysis(Handle<BytecodeArray> bytecode_array,
       end_to_header_(zone),
       header_to_info_(zone),
       osr_entry_point_(-1) {
-  if (analyze_liveness) liveness_map_.emplace(bytecode_array->length(), zone);
   Analyze();
 }
 
 namespace {
 
-void UpdateInLiveness(Bytecode bytecode, BytecodeLivenessState* in_liveness,
-                      const interpreter::BytecodeArrayIterator& iterator) {
-  int num_operands = Bytecodes::NumberOfOperands(bytecode);
-  const OperandType* operand_types = Bytecodes::GetOperandTypes(bytecode);
+template <Bytecode bytecode, OperandType operand_type, size_t i>
+void UpdateInLivenessForOutOperand(
+    BytecodeLivenessState* in_liveness,
+    const interpreter::BytecodeArrayIterator& iterator) {
+  switch (operand_type) {
+    case OperandType::kRegOut: {
+      Register r = iterator.GetRegisterOperand(i);
+      if (!r.is_parameter()) {
+        in_liveness->MarkRegisterDead(r.index());
+      }
+      break;
+    }
+    case OperandType::kRegOutList: {
+      Register r = iterator.GetRegisterOperand(i);
+      uint32_t reg_count = iterator.GetRegisterCountOperand(i + 1);
+      if (!r.is_parameter()) {
+        for (uint32_t j = 0; j < reg_count; ++j) {
+          DCHECK(!Register(r.index() + j).is_parameter());
+          in_liveness->MarkRegisterDead(r.index() + j);
+        }
+      }
+      break;
+    }
+    case OperandType::kRegOutPair: {
+      Register r = iterator.GetRegisterOperand(i);
+      if (!r.is_parameter()) {
+        DCHECK(!Register(r.index() + 1).is_parameter());
+        in_liveness->MarkRegisterDead(r.index());
+        in_liveness->MarkRegisterDead(r.index() + 1);
+      }
+      break;
+    }
+    case OperandType::kRegOutTriple: {
+      Register r = iterator.GetRegisterOperand(i);
+      if (!r.is_parameter()) {
+        DCHECK(!Register(r.index() + 1).is_parameter());
+        DCHECK(!Register(r.index() + 2).is_parameter());
+        in_liveness->MarkRegisterDead(r.index());
+        in_liveness->MarkRegisterDead(r.index() + 1);
+        in_liveness->MarkRegisterDead(r.index() + 2);
+      }
+      break;
+    }
+    default:
+      DCHECK(!Bytecodes::IsRegisterOutputOperandType(operand_type));
+      break;
+  }
+}
 
+template <Bytecode bytecode, OperandType operand_type, size_t i>
+void UpdateInLivenessForInOperand(
+    BytecodeLivenessState* in_liveness,
+    const interpreter::BytecodeArrayIterator& iterator) {
+  switch (operand_type) {
+    case OperandType::kReg: {
+      Register r = iterator.GetRegisterOperand(i);
+      if (!r.is_parameter()) {
+        in_liveness->MarkRegisterLive(r.index());
+      }
+      break;
+    }
+    case OperandType::kRegPair: {
+      Register r = iterator.GetRegisterOperand(i);
+      if (!r.is_parameter()) {
+        DCHECK(!Register(r.index() + 1).is_parameter());
+        in_liveness->MarkRegisterLive(r.index());
+        in_liveness->MarkRegisterLive(r.index() + 1);
+      }
+      break;
+    }
+    case OperandType::kRegList: {
+      Register r = iterator.GetRegisterOperand(i);
+      uint32_t reg_count = iterator.GetRegisterCountOperand(i + 1);
+      if (!r.is_parameter()) {
+        for (uint32_t j = 0; j < reg_count; ++j) {
+          DCHECK(!interpreter::Register(r.index() + j).is_parameter());
+          in_liveness->MarkRegisterLive(r.index() + j);
+        }
+      }
+      break;
+    }
+    default:
+      DCHECK(!Bytecodes::IsRegisterInputOperandType(operand_type));
+      break;
+  }
+}
+
+template <Bytecode bytecode, ImplicitRegisterUse implicit_register_use,
+          OperandType... operand_types, size_t... operand_index>
+void UpdateInLiveness(BytecodeLivenessState* in_liveness,
+                      const interpreter::BytecodeArrayIterator& iterator,
+                      std::index_sequence<operand_index...>) {
   // Special case Suspend and Resume to just pass through liveness.
   if (bytecode == Bytecode::kSuspendGenerator) {
     // The generator object has to be live.
@@ -118,96 +209,43 @@ void UpdateInLiveness(Bytecode bytecode, BytecodeLivenessState* in_liveness,
     return;
   }
 
-  if (Bytecodes::WritesAccumulator(bytecode)) {
+  if (BytecodeOperands::WritesAccumulator(implicit_register_use)) {
     in_liveness->MarkAccumulatorDead();
   }
-  for (int i = 0; i < num_operands; ++i) {
-    switch (operand_types[i]) {
-      case OperandType::kRegOut: {
-        interpreter::Register r = iterator.GetRegisterOperand(i);
-        if (!r.is_parameter()) {
-          in_liveness->MarkRegisterDead(r.index());
-        }
-        break;
-      }
-      case OperandType::kRegOutList: {
-        interpreter::Register r = iterator.GetRegisterOperand(i++);
-        uint32_t reg_count = iterator.GetRegisterCountOperand(i);
-        if (!r.is_parameter()) {
-          for (uint32_t j = 0; j < reg_count; ++j) {
-            DCHECK(!interpreter::Register(r.index() + j).is_parameter());
-            in_liveness->MarkRegisterDead(r.index() + j);
-          }
-        }
-        break;
-      }
-      case OperandType::kRegOutPair: {
-        interpreter::Register r = iterator.GetRegisterOperand(i);
-        if (!r.is_parameter()) {
-          DCHECK(!interpreter::Register(r.index() + 1).is_parameter());
-          in_liveness->MarkRegisterDead(r.index());
-          in_liveness->MarkRegisterDead(r.index() + 1);
-        }
-        break;
-      }
-      case OperandType::kRegOutTriple: {
-        interpreter::Register r = iterator.GetRegisterOperand(i);
-        if (!r.is_parameter()) {
-          DCHECK(!interpreter::Register(r.index() + 1).is_parameter());
-          DCHECK(!interpreter::Register(r.index() + 2).is_parameter());
-          in_liveness->MarkRegisterDead(r.index());
-          in_liveness->MarkRegisterDead(r.index() + 1);
-          in_liveness->MarkRegisterDead(r.index() + 2);
-        }
-        break;
-      }
-      default:
-        DCHECK(!Bytecodes::IsRegisterOutputOperandType(operand_types[i]));
-        break;
-    }
-  }
+  ITERATE_PACK(
+      UpdateInLivenessForOutOperand<bytecode, operand_types, operand_index>(
+          in_liveness, iterator));
 
   if (Bytecodes::WritesImplicitRegister(bytecode)) {
-    in_liveness->MarkRegisterDead(
-        interpreter::Register::FromShortStar(bytecode).index());
+    in_liveness->MarkRegisterDead(Register::FromShortStar(bytecode).index());
   }
 
-  if (Bytecodes::ReadsAccumulator(bytecode)) {
+  if (BytecodeOperands::ReadsAccumulator(implicit_register_use)) {
     in_liveness->MarkAccumulatorLive();
   }
-  for (int i = 0; i < num_operands; ++i) {
-    switch (operand_types[i]) {
-      case OperandType::kReg: {
-        interpreter::Register r = iterator.GetRegisterOperand(i);
-        if (!r.is_parameter()) {
-          in_liveness->MarkRegisterLive(r.index());
-        }
-        break;
-      }
-      case OperandType::kRegPair: {
-        interpreter::Register r = iterator.GetRegisterOperand(i);
-        if (!r.is_parameter()) {
-          DCHECK(!interpreter::Register(r.index() + 1).is_parameter());
-          in_liveness->MarkRegisterLive(r.index());
-          in_liveness->MarkRegisterLive(r.index() + 1);
-        }
-        break;
-      }
-      case OperandType::kRegList: {
-        interpreter::Register r = iterator.GetRegisterOperand(i++);
-        uint32_t reg_count = iterator.GetRegisterCountOperand(i);
-        if (!r.is_parameter()) {
-          for (uint32_t j = 0; j < reg_count; ++j) {
-            DCHECK(!interpreter::Register(r.index() + j).is_parameter());
-            in_liveness->MarkRegisterLive(r.index() + j);
-          }
-        }
-        break;
-      }
-      default:
-        DCHECK(!Bytecodes::IsRegisterInputOperandType(operand_types[i]));
-        break;
-    }
+  ITERATE_PACK(
+      UpdateInLivenessForInOperand<bytecode, operand_types, operand_index>(
+          in_liveness, iterator));
+}
+
+template <Bytecode bytecode, ImplicitRegisterUse implicit_register_use,
+          OperandType... operand_types>
+void UpdateInLiveness(BytecodeLivenessState* in_liveness,
+                      const interpreter::BytecodeArrayIterator& iterator) {
+  UpdateInLiveness<bytecode, implicit_register_use, operand_types...>(
+      in_liveness, iterator,
+      std::make_index_sequence<sizeof...(operand_types)>());
+}
+
+void UpdateInLiveness(Bytecode bytecode, BytecodeLivenessState* in_liveness,
+                      const interpreter::BytecodeArrayIterator& iterator) {
+  switch (bytecode) {
+#define BYTECODE_UPDATE_IN_LIVENESS(Name, ...)                           \
+  case Bytecode::k##Name:                                                \
+    return UpdateInLiveness<Bytecode::k##Name, __VA_ARGS__>(in_liveness, \
+                                                            iterator);
+    BYTECODE_LIST(BYTECODE_UPDATE_IN_LIVENESS)
+#undef BYTECODE_UPDATE_IN_LIVENESS
   }
 }
 
@@ -229,8 +267,8 @@ void EnsureOutLivenessIsNotAlias(
   }
 }
 
-template <bool IsFirstUpdate = false>
-void UpdateOutLiveness(Bytecode bytecode, BytecodeLiveness& liveness,
+template <bool IsFirstUpdate, Bytecode bytecode>
+void UpdateOutLiveness(BytecodeLiveness& liveness,
                        BytecodeLivenessState* next_bytecode_in_liveness,
                        const interpreter::BytecodeArrayIterator& iterator,
                        Handle<BytecodeArray> bytecode_array,
@@ -254,7 +292,9 @@ void UpdateOutLiveness(Bytecode bytecode, BytecodeLiveness& liveness,
   // Update from next bytecode (unless there isn't one or this is an
   // unconditional jump).
   if (next_bytecode_in_liveness != nullptr &&
-      !Bytecodes::IsUnconditionalJump(bytecode)) {
+      !Bytecodes::IsUnconditionalJump(bytecode) &&
+      !Bytecodes::Returns(bytecode) &&
+      !Bytecodes::UnconditionallyThrows(bytecode)) {
     if (IsFirstUpdate) {
       // On first update, we can assume that this out-liveness is the same as
       // the next liveness, and can directly alias it -- we'll allocate a new
@@ -321,14 +361,33 @@ void UpdateOutLiveness(Bytecode bytecode, BytecodeLiveness& liveness,
 }
 
 template <bool IsFirstUpdate = false>
-void UpdateLiveness(Bytecode bytecode, BytecodeLiveness& liveness,
+void UpdateOutLiveness(Bytecode bytecode, BytecodeLiveness& liveness,
+                       BytecodeLivenessState* next_bytecode_in_liveness,
+                       const interpreter::BytecodeArrayIterator& iterator,
+                       Handle<BytecodeArray> bytecode_array,
+                       const BytecodeLivenessMap& liveness_map, Zone* zone) {
+  switch (bytecode) {
+#define BYTECODE_UPDATE_OUT_LIVENESS(Name, ...)                        \
+  case Bytecode::k##Name:                                              \
+    return UpdateOutLiveness<IsFirstUpdate, Bytecode::k##Name>(        \
+        liveness, next_bytecode_in_liveness, iterator, bytecode_array, \
+        liveness_map, zone);
+    BYTECODE_LIST(BYTECODE_UPDATE_OUT_LIVENESS)
+#undef BYTECODE_UPDATE_OUT_LIVENESS
+  }
+}
+
+template <bool IsFirstUpdate, Bytecode bytecode,
+          ImplicitRegisterUse implicit_register_use,
+          OperandType... operand_types>
+void UpdateLiveness(BytecodeLiveness& liveness,
                     BytecodeLivenessState** next_bytecode_in_liveness,
                     const interpreter::BytecodeArrayIterator& iterator,
                     Handle<BytecodeArray> bytecode_array,
                     const BytecodeLivenessMap& liveness_map, Zone* zone) {
-  UpdateOutLiveness<IsFirstUpdate>(bytecode, liveness,
-                                   *next_bytecode_in_liveness, iterator,
-                                   bytecode_array, liveness_map, zone);
+  UpdateOutLiveness<IsFirstUpdate, bytecode>(
+      liveness, *next_bytecode_in_liveness, iterator, bytecode_array,
+      liveness_map, zone);
   if (IsFirstUpdate) {
     // On the first update, allocate the in-liveness as a copy of the
     // out-liveness.
@@ -340,9 +399,27 @@ void UpdateLiveness(Bytecode bytecode, BytecodeLiveness& liveness,
     // opportunistically terminate early.
     liveness.in->CopyFrom(*liveness.out);
   }
-  UpdateInLiveness(bytecode, liveness.in, iterator);
+  UpdateInLiveness<bytecode, implicit_register_use, operand_types...>(
+      liveness.in, iterator);
 
   *next_bytecode_in_liveness = liveness.in;
+}
+
+template <bool IsFirstUpdate = false>
+void UpdateLiveness(Bytecode bytecode, BytecodeLiveness& liveness,
+                    BytecodeLivenessState** next_bytecode_in_liveness,
+                    const interpreter::BytecodeArrayIterator& iterator,
+                    Handle<BytecodeArray> bytecode_array,
+                    const BytecodeLivenessMap& liveness_map, Zone* zone) {
+  switch (bytecode) {
+#define BYTECODE_UPDATE_LIVENESS(Name, ...)                               \
+  case Bytecode::k##Name:                                                 \
+    return UpdateLiveness<IsFirstUpdate, Bytecode::k##Name, __VA_ARGS__>( \
+        liveness, next_bytecode_in_liveness, iterator, bytecode_array,    \
+        liveness_map, zone);
+    BYTECODE_LIST(BYTECODE_UPDATE_LIVENESS)
+#undef BYTECODE_UPDATE_LIVENESS
+  }
 }
 
 void UpdateAssignments(Bytecode bytecode, BytecodeLoopAssignments* assignments,
@@ -392,6 +469,12 @@ void BytecodeAnalysis::Analyze() {
   DCHECK_EQ(osr_loop_end_offset < 0, osr_bailout_id_.IsNone());
 
   interpreter::BytecodeArrayRandomIterator iterator(bytecode_array(), zone());
+
+  bytecode_count_ = iterator.size();
+  if (analyze_liveness_) {
+    liveness_map_.emplace(bytecode_array()->length(), zone());
+  }
+
   for (iterator.GoToEnd(); iterator.IsValid(); --iterator) {
     Bytecode bytecode = iterator.current_bytecode();
     int current_offset = iterator.current_offset();
@@ -710,21 +793,12 @@ std::ostream& BytecodeAnalysis::PrintLivenessTo(std::ostream& os) const {
   for (; !iterator.done(); iterator.Advance()) {
     int current_offset = iterator.current_offset();
 
-    const BitVector& in_liveness =
-        GetInLivenessFor(current_offset)->bit_vector();
-    const BitVector& out_liveness =
-        GetOutLivenessFor(current_offset)->bit_vector();
+    const BytecodeLivenessState* in_liveness = GetInLivenessFor(current_offset);
+    const BytecodeLivenessState* out_liveness =
+        GetOutLivenessFor(current_offset);
 
-    for (int i = 0; i < in_liveness.length(); ++i) {
-      os << (in_liveness.Contains(i) ? "L" : ".");
-    }
-    os << " -> ";
-
-    for (int i = 0; i < out_liveness.length(); ++i) {
-      os << (out_liveness.Contains(i) ? "L" : ".");
-    }
-
-    os << " | " << current_offset << ": ";
+    os << ToString(*in_liveness) << " -> " << ToString(*out_liveness) << " | "
+       << current_offset << ": ";
     iterator.PrintTo(os) << std::endl;
   }
 
@@ -977,22 +1051,16 @@ bool BytecodeAnalysis::LivenessIsValid() {
     interpreter::BytecodeArrayIterator forward_iterator(bytecode_array());
     for (; !forward_iterator.done(); forward_iterator.Advance()) {
       int current_offset = forward_iterator.current_offset();
-      const BitVector& in_liveness =
-          GetInLivenessFor(current_offset)->bit_vector();
-      const BitVector& out_liveness =
-          GetOutLivenessFor(current_offset)->bit_vector();
+      const BytecodeLivenessState* in_liveness =
+          GetInLivenessFor(current_offset);
+      const BytecodeLivenessState* out_liveness =
+          GetOutLivenessFor(current_offset);
 
-      for (int i = 0; i < in_liveness.length(); ++i) {
-        of << (in_liveness.Contains(i) ? 'L' : '.');
-      }
+      std::string in_liveness_str = ToString(*in_liveness);
+      std::string out_liveness_str = ToString(*out_liveness);
 
-      of << " | ";
-
-      for (int i = 0; i < out_liveness.length(); ++i) {
-        of << (out_liveness.Contains(i) ? 'L' : '.');
-      }
-
-      of << " : " << current_offset << " : ";
+      of << in_liveness_str << " | " << out_liveness_str << " : "
+         << current_offset << " : ";
 
       // Draw loop back edges by indentin everything between loop headers and
       // jump loop instructions.
@@ -1016,21 +1084,10 @@ bool BytecodeAnalysis::LivenessIsValid() {
 
       if (current_offset == invalid_offset) {
         // Underline the invalid liveness.
-        if (which_invalid == 0) {
-          for (int i = 0; i < in_liveness.length(); ++i) {
-            of << '^';
-          }
-          for (int i = 0; i < out_liveness.length() + 3; ++i) {
-            of << ' ';
-          }
-        } else {
-          for (int i = 0; i < in_liveness.length() + 3; ++i) {
-            of << ' ';
-          }
-          for (int i = 0; i < out_liveness.length(); ++i) {
-            of << '^';
-          }
-        }
+        char in_underline = which_invalid == 0 ? '^' : ' ';
+        char out_underline = which_invalid == 0 ? ' ' : '^';
+        of << std::string(in_liveness_str.size(), in_underline) << "   "
+           << std::string(out_liveness_str.size(), out_underline);
 
         // Make sure to draw the loop indentation marks on this additional line.
         of << " : " << current_offset << " : ";
@@ -1042,19 +1099,11 @@ bool BytecodeAnalysis::LivenessIsValid() {
 
         // Print the invalid liveness.
         if (which_invalid == 0) {
-          for (int i = 0; i < in_liveness.length(); ++i) {
-            of << (invalid_liveness.bit_vector().Contains(i) ? 'L' : '.');
-          }
-          for (int i = 0; i < out_liveness.length() + 3; ++i) {
-            of << ' ';
-          }
+          of << ToString(invalid_liveness) << "   "
+             << std::string(out_liveness_str.size(), ' ');
         } else {
-          for (int i = 0; i < in_liveness.length() + 3; ++i) {
-            of << ' ';
-          }
-          for (int i = 0; i < out_liveness.length(); ++i) {
-            of << (invalid_liveness.bit_vector().Contains(i) ? 'L' : '.');
-          }
+          of << std::string(in_liveness_str.size(), ' ') << "   "
+             << ToString(invalid_liveness);
         }
 
         // Make sure to draw the loop indentation marks on this additional line.

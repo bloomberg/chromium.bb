@@ -28,6 +28,7 @@
 #include "libavutil/bprint.h"
 #include "libavutil/dict.h"
 #include "libavutil/internal.h"
+#include "libavutil/intmath.h"
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/pixfmt.h"
@@ -245,7 +246,6 @@ int avformat_queue_attached_pictures(AVFormatContext *s)
             }
 
             ret = avpriv_packet_list_put(&si->raw_packet_buffer,
-                                         &si->raw_packet_buffer_end,
                                      &s->streams[i]->attached_pic,
                                      av_packet_ref, 0);
             if (ret < 0)
@@ -306,11 +306,11 @@ int ff_is_intra_only(enum AVCodecID id)
 void ff_flush_packet_queue(AVFormatContext *s)
 {
     FFFormatContext *const si = ffformatcontext(s);
-    avpriv_packet_list_free(&si->parse_queue,       &si->parse_queue_end);
-    avpriv_packet_list_free(&si->packet_buffer,     &si->packet_buffer_end);
-    avpriv_packet_list_free(&si->raw_packet_buffer, &si->raw_packet_buffer_end);
+    avpriv_packet_list_free(&si->parse_queue);
+    avpriv_packet_list_free(&si->packet_buffer);
+    avpriv_packet_list_free(&si->raw_packet_buffer);
 
-    si->raw_packet_buffer_remaining_size = RAW_PACKET_BUFFER_SIZE;
+    si->raw_packet_buffer_size = 0;
 }
 
 int av_find_default_stream_index(AVFormatContext *s)
@@ -367,7 +367,7 @@ enum AVCodecID ff_codec_get_id(const AVCodecTag *tags, unsigned int tag)
         if (tag == tags[i].tag)
             return tags[i].id;
     for (int i = 0; tags[i].id != AV_CODEC_ID_NONE; i++)
-        if (avpriv_toupper4(tag) == avpriv_toupper4(tags[i].tag))
+        if (ff_toupper4(tag) == ff_toupper4(tags[i].tag))
             return tags[i].id;
     return AV_CODEC_ID_NONE;
 }
@@ -611,6 +611,15 @@ int ff_stream_encode_params_copy(AVStream *dst, const AVStream *src)
     if (ret < 0)
         return ret;
 
+    ret = ff_stream_side_data_copy(dst, src);
+    if (ret < 0)
+        return ret;
+
+    return 0;
+}
+
+int ff_stream_side_data_copy(AVStream *dst, const AVStream *src)
+{
     /* Free existing side data*/
     for (int i = 0; i < dst->nb_side_data; i++)
         av_free(dst->side_data[i].data);
@@ -728,6 +737,41 @@ void avformat_free_context(AVFormatContext *s)
     av_free(s);
 }
 
+static const AVOption stream_options[] = {
+    { "disposition", NULL, offsetof(AVStream, disposition), AV_OPT_TYPE_FLAGS, { .i64 = 0 },
+        .flags = AV_OPT_FLAG_ENCODING_PARAM, .unit = "disposition" },
+        { "default",            .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_DEFAULT           },    .unit = "disposition" },
+        { "dub",                .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_DUB               },    .unit = "disposition" },
+        { "original",           .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_ORIGINAL          },    .unit = "disposition" },
+        { "comment",            .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_COMMENT           },    .unit = "disposition" },
+        { "lyrics",             .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_LYRICS            },    .unit = "disposition" },
+        { "karaoke",            .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_KARAOKE           },    .unit = "disposition" },
+        { "forced",             .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_FORCED            },    .unit = "disposition" },
+        { "hearing_impaired",   .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_HEARING_IMPAIRED  },    .unit = "disposition" },
+        { "visual_impaired",    .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_VISUAL_IMPAIRED   },    .unit = "disposition" },
+        { "clean_effects",      .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_CLEAN_EFFECTS     },    .unit = "disposition" },
+        { "attached_pic",       .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_ATTACHED_PIC      },    .unit = "disposition" },
+        { "timed_thumbnails",   .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_TIMED_THUMBNAILS  },    .unit = "disposition" },
+        { "captions",           .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_CAPTIONS          },    .unit = "disposition" },
+        { "descriptions",       .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_DESCRIPTIONS      },    .unit = "disposition" },
+        { "metadata",           .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_METADATA          },    .unit = "disposition" },
+        { "dependent",          .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_DEPENDENT         },    .unit = "disposition" },
+        { "still_image",        .type = AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_STILL_IMAGE       },    .unit = "disposition" },
+    { NULL }
+};
+
+static const AVClass stream_class = {
+    .class_name     = "AVStream",
+    .item_name      = av_default_item_name,
+    .version        = LIBAVUTIL_VERSION_INT,
+    .option         = stream_options,
+};
+
+const AVClass *av_stream_get_class(void)
+{
+    return &stream_class;
+}
+
 AVStream *avformat_new_stream(AVFormatContext *s, const AVCodec *c)
 {
     FFFormatContext *const si = ffformatcontext(s);
@@ -751,6 +795,10 @@ AVStream *avformat_new_stream(AVFormatContext *s, const AVCodec *c)
     if (!sti)
         return NULL;
     st = &sti->pub;
+
+#if FF_API_AVSTREAM_CLASS
+    st->av_class = &stream_class;
+#endif
 
     st->codecpar = avcodec_parameters_alloc();
     if (!st->codecpar)
@@ -1118,6 +1166,7 @@ char *ff_data_to_hex(char *buff, const uint8_t *src, int s, int lowercase)
         buff[i * 2]     = hex_table[src[i] >> 4];
         buff[i * 2 + 1] = hex_table[src[i] & 0xF];
     }
+    buff[2 * s] = '\0';
 
     return buff;
 }
@@ -1230,7 +1279,7 @@ void ff_parse_key_value(const char *str, ff_parse_key_val_cb callback_get_buf,
     }
 }
 
-int ff_find_stream_index(AVFormatContext *s, int id)
+int ff_find_stream_index(const AVFormatContext *s, int id)
 {
     for (unsigned i = 0; i < s->nb_streams; i++)
         if (s->streams[i]->id == id)
@@ -1373,8 +1422,9 @@ AVRational av_guess_frame_rate(AVFormatContext *format, AVStream *st, AVFrame *f
  *         0  if st is NOT a matching stream
  *         >0 if st is a matching stream
  */
-static int match_stream_specifier(AVFormatContext *s, AVStream *st,
-                                  const char *spec, const char **indexptr, AVProgram **p)
+static int match_stream_specifier(const AVFormatContext *s, const AVStream *st,
+                                  const char *spec, const char **indexptr,
+                                  const AVProgram **p)
 {
     int match = 1;                      /* Stores if the specifier matches so far. */
     while (*spec) {
@@ -1441,32 +1491,32 @@ static int match_stream_specifier(AVFormatContext *s, AVStream *st,
                 return AVERROR(EINVAL);
             return match && (stream_id == st->id);
         } else if (*spec == 'm' && *(spec + 1) == ':') {
-            AVDictionaryEntry *tag;
+            const AVDictionaryEntry *tag;
             char *key, *val;
             int ret;
 
             if (match) {
-               spec += 2;
-               val = strchr(spec, ':');
+                spec += 2;
+                val = strchr(spec, ':');
 
-               key = val ? av_strndup(spec, val - spec) : av_strdup(spec);
-               if (!key)
-                   return AVERROR(ENOMEM);
+                key = val ? av_strndup(spec, val - spec) : av_strdup(spec);
+                if (!key)
+                    return AVERROR(ENOMEM);
 
-               tag = av_dict_get(st->metadata, key, NULL, 0);
-               if (tag) {
-                   if (!val || !strcmp(tag->value, val + 1))
-                       ret = 1;
-                   else
-                       ret = 0;
-               } else
-                   ret = 0;
+                tag = av_dict_get(st->metadata, key, NULL, 0);
+                if (tag) {
+                    if (!val || !strcmp(tag->value, val + 1))
+                        ret = 1;
+                    else
+                        ret = 0;
+                } else
+                    ret = 0;
 
-               av_freep(&key);
+                av_freep(&key);
             }
             return match && ret;
         } else if (*spec == 'u' && *(spec + 1) == '\0') {
-            AVCodecParameters *par = st->codecpar;
+            const AVCodecParameters *par = st->codecpar;
             int val;
             switch (par->codec_type) {
             case AVMEDIA_TYPE_AUDIO:
@@ -1502,7 +1552,7 @@ int avformat_match_stream_specifier(AVFormatContext *s, AVStream *st,
     int ret, index;
     char *endptr;
     const char *indexptr = NULL;
-    AVProgram *p = NULL;
+    const AVProgram *p = NULL;
     int nb_streams;
 
     ret = match_stream_specifier(s, st, spec, &indexptr, &p);
@@ -1525,7 +1575,7 @@ int avformat_match_stream_specifier(AVFormatContext *s, AVStream *st,
     /* If we requested a matching stream index, we have to ensure st is that. */
     nb_streams = p ? p->nb_stream_indexes : s->nb_streams;
     for (int i = 0; i < nb_streams && index >= 0; i++) {
-        AVStream *candidate = p ? s->streams[p->stream_index[i]] : s->streams[i];
+        const AVStream *candidate = s->streams[p ? p->stream_index[i] : i];
         ret = match_stream_specifier(s, candidate, spec, NULL, NULL);
         if (ret < 0)
             goto error;
@@ -1767,13 +1817,7 @@ int ff_stream_add_bitstream_filter(AVStream *st, const char *name, const char *a
     }
 
     if (args && bsfc->filter->priv_class) {
-        const AVOption *opt = av_opt_next(bsfc->priv_data, NULL);
-        const char * shorthand[2] = {NULL};
-
-        if (opt)
-            shorthand[0] = opt->name;
-
-        if ((ret = av_opt_set_from_string(bsfc->priv_data, args, shorthand, "=", ":")) < 0) {
+        if ((ret = av_set_options_string(bsfc->priv_data, args, "=", ":")) < 0) {
             av_bsf_free(&bsfc);
             return ret;
         }
@@ -1802,11 +1846,22 @@ int ff_format_output_open(AVFormatContext *s, const char *url, AVDictionary **op
     return 0;
 }
 
-void ff_format_io_close(AVFormatContext *s, AVIOContext **pb)
+void ff_format_io_close_default(AVFormatContext *s, AVIOContext *pb)
 {
-    if (*pb)
-        s->io_close(s, *pb);
+    avio_close(pb);
+}
+
+int ff_format_io_close(AVFormatContext *s, AVIOContext **pb)
+{
+    int ret = 0;
+    if (*pb) {
+        if (s->io_close == ff_format_io_close_default || s->io_close == NULL)
+            ret = s->io_close2(s, *pb);
+        else
+            s->io_close(s, *pb);
+    }
     *pb = NULL;
+    return ret;
 }
 
 int ff_is_http_proto(const char *filename) {
@@ -1956,4 +2011,89 @@ void ff_format_set_url(AVFormatContext *s, char *url)
     av_assert0(url);
     av_freep(&s->url);
     s->url = url;
+}
+
+static int option_is_disposition(const AVOption *opt)
+{
+    return opt->type == AV_OPT_TYPE_CONST &&
+           opt->unit && !strcmp(opt->unit, "disposition");
+}
+
+int av_disposition_from_string(const char *disp)
+{
+    for (const AVOption *opt = stream_options; opt->name; opt++)
+        if (option_is_disposition(opt) && !strcmp(disp, opt->name))
+            return opt->default_val.i64;
+    return AVERROR(EINVAL);
+}
+
+const char *av_disposition_to_string(int disposition)
+{
+    int val;
+
+    if (disposition <= 0)
+        return NULL;
+
+    val = 1 << ff_ctz(disposition);
+    for (const AVOption *opt = stream_options; opt->name; opt++)
+        if (option_is_disposition(opt) && opt->default_val.i64 == val)
+            return opt->name;
+
+    return NULL;
+}
+
+int ff_format_shift_data(AVFormatContext *s, int64_t read_start, int shift_size)
+{
+    int ret;
+    int64_t pos, pos_end;
+    uint8_t *buf, *read_buf[2];
+    int read_buf_id = 0;
+    int read_size[2];
+    AVIOContext *read_pb;
+
+    buf = av_malloc_array(shift_size, 2);
+    if (!buf)
+        return AVERROR(ENOMEM);
+    read_buf[0] = buf;
+    read_buf[1] = buf + shift_size;
+
+    /* Shift the data: the AVIO context of the output can only be used for
+     * writing, so we re-open the same output, but for reading. It also avoids
+     * a read/seek/write/seek back and forth. */
+    avio_flush(s->pb);
+    ret = s->io_open(s, &read_pb, s->url, AVIO_FLAG_READ, NULL);
+    if (ret < 0) {
+        av_log(s, AV_LOG_ERROR, "Unable to re-open %s output file for shifting data\n", s->url);
+        goto end;
+    }
+
+    /* mark the end of the shift to up to the last data we wrote, and get ready
+     * for writing */
+    pos_end = avio_tell(s->pb);
+    avio_seek(s->pb, read_start + shift_size, SEEK_SET);
+
+    avio_seek(read_pb, read_start, SEEK_SET);
+    pos = avio_tell(read_pb);
+
+#define READ_BLOCK do {                                                             \
+    read_size[read_buf_id] = avio_read(read_pb, read_buf[read_buf_id], shift_size);  \
+    read_buf_id ^= 1;                                                               \
+} while (0)
+
+    /* shift data by chunk of at most shift_size */
+    READ_BLOCK;
+    do {
+        int n;
+        READ_BLOCK;
+        n = read_size[read_buf_id];
+        if (n <= 0)
+            break;
+        avio_write(s->pb, read_buf[read_buf_id], n);
+        pos += n;
+    } while (pos < pos_end);
+    ret = ff_format_io_close(s, &read_pb);
+
+end:
+    av_free(buf);
+    return ret;
 }

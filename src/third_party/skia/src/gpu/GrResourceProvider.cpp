@@ -8,7 +8,7 @@
 #include "src/gpu/GrResourceProvider.h"
 
 #include "include/gpu/GrBackendSemaphore.h"
-#include "include/private/GrSingleOwner.h"
+#include "include/private/SingleOwner.h"
 #include "src/core/SkConvertPixels.h"
 #include "src/core/SkMathPriv.h"
 #include "src/core/SkMipmap.h"
@@ -29,9 +29,11 @@
 
 const int GrResourceProvider::kMinScratchTextureSize = 16;
 
-#define ASSERT_SINGLE_OWNER GR_ASSERT_SINGLE_OWNER(fSingleOwner)
+#define ASSERT_SINGLE_OWNER SKGPU_ASSERT_SINGLE_OWNER(fSingleOwner)
 
-GrResourceProvider::GrResourceProvider(GrGpu* gpu, GrResourceCache* cache, GrSingleOwner* owner)
+GrResourceProvider::GrResourceProvider(GrGpu* gpu,
+                                       GrResourceCache* cache,
+                                       skgpu::SingleOwner* owner)
         : fCache(cache)
         , fGpu(gpu)
 #ifdef SK_DEBUG
@@ -437,11 +439,11 @@ sk_sp<const GrGpuBuffer> GrResourceProvider::findOrMakeStaticBuffer(
         buffer->resourcePriv().setUniqueKey(uniqueKey);
 
         // Map the buffer. Use a staging buffer on the heap if mapping isn't supported.
-        skgpu::VertexWriter vertexWriter = buffer->map();
+        skgpu::VertexWriter vertexWriter = {buffer->map(), size};
         SkAutoTMalloc<char> stagingBuffer;
         if (!vertexWriter) {
             SkASSERT(!buffer->isMapped());
-            vertexWriter = stagingBuffer.reset(size);
+            vertexWriter = {stagingBuffer.reset(size), size};
         }
 
         initializeBufferFn(std::move(vertexWriter), size);

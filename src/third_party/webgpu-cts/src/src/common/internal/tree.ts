@@ -47,7 +47,7 @@ interface TestTreeNodeBase<T extends TestQuery> {
    * one (e.g. s:f:* relative to s:f,*), but something that is readable.
    */
   readonly readableRelativeName: string;
-  subtreeHasTODOs?: boolean;
+  subtreeCounts?: { tests: number; nodesWithTODO: number };
 }
 
 export interface TestSubtree<T extends TestQuery = TestQuery> extends TestTreeNodeBase<T> {
@@ -59,7 +59,7 @@ export interface TestSubtree<T extends TestQuery = TestQuery> extends TestTreeNo
 
 export interface TestTreeLeaf extends TestTreeNodeBase<TestQuerySingleCase> {
   readonly run: RunFn;
-  subtreeHasTODOs?: undefined;
+  subtreeCounts?: undefined;
 }
 
 export type TestTreeNode = TestSubtree | TestTreeLeaf;
@@ -89,7 +89,7 @@ export class TestTree {
 
   constructor(forQuery: TestQuery, root: TestSubtree) {
     this.forQuery = forQuery;
-    TestTree.propagateTODOs(root);
+    TestTree.propagateCounts(root);
     this.root = root;
     assert(
       root.query.level === 1 && root.query.depthInLevel === 0,
@@ -182,22 +182,33 @@ export class TestTree {
     }
   }
 
-  /** Propagate the "subtreeHasTODOs" state upward from leaves to parent nodes. */
-  static propagateTODOs(subtree: TestSubtree): boolean {
-    subtree.subtreeHasTODOs ||= false;
+  /** Propagate the subtreeTODOs/subtreeTests state upward from leaves to parent nodes. */
+  static propagateCounts(subtree: TestSubtree): { tests: number; nodesWithTODO: number } {
+    subtree.subtreeCounts ??= { tests: 0, nodesWithTODO: 0 };
     for (const [, child] of subtree.children) {
       if ('children' in child) {
-        const childHasTODOs = TestTree.propagateTODOs(child);
-        subtree.subtreeHasTODOs ||= childHasTODOs;
+        const counts = TestTree.propagateCounts(child);
+        subtree.subtreeCounts.tests += counts.tests;
+        subtree.subtreeCounts.nodesWithTODO += counts.nodesWithTODO;
       }
     }
-    return subtree.subtreeHasTODOs;
+    return subtree.subtreeCounts;
+  }
+
+  /** Displays counts in the format `(Nodes with TODOs) / (Total test count)`. */
+  static countsToString(tree: TestTreeNode): string {
+    if (tree.subtreeCounts) {
+      return `${tree.subtreeCounts.nodesWithTODO} / ${tree.subtreeCounts.tests}`;
+    } else {
+      return '';
+    }
   }
 
   static subtreeToString(name: string, tree: TestTreeNode, indent: string): string {
     const collapsible = 'run' in tree ? '>' : tree.collapsible ? '+' : '-';
-    const todo = tree.subtreeHasTODOs === undefined ? '' : tree.subtreeHasTODOs ? ' TODO' : ' DONE';
-    let s = indent + `${collapsible}${todo} ${JSON.stringify(name)} => ${tree.query}`;
+    let s =
+      indent +
+      `${collapsible} ${TestTree.countsToString(tree)} ${JSON.stringify(name)} => ${tree.query}`;
     if ('children' in tree) {
       if (tree.description !== undefined) {
         s += `\n${indent}  | ${JSON.stringify(tree.description)}`;
@@ -244,7 +255,7 @@ export async function loadTreeForQuery(
   for (const entry of specs) {
     if (entry.file.length === 0 && 'readme' in entry) {
       // Suite-level readme.
-      setSubtreeDescription(subtreeL0, entry.readme.trim());
+      setSubtreeDescriptionAndCountTODOs(subtreeL0, entry.readme);
       continue;
     }
 
@@ -269,7 +280,7 @@ export async function loadTreeForQuery(
         entry.file,
         isCollapsible
       );
-      setSubtreeDescription(readmeSubtree, entry.readme.trim());
+      setSubtreeDescriptionAndCountTODOs(readmeSubtree, entry.readme);
       continue;
     }
     // Entry is a spec file.
@@ -281,7 +292,7 @@ export async function loadTreeForQuery(
       entry.file,
       isCollapsible
     );
-    setSubtreeDescription(subtreeL1, spec.description.trim());
+    setSubtreeDescriptionAndCountTODOs(subtreeL1, spec.description);
 
     let groupHasTests = false;
     for (const t of spec.g.iterate()) {
@@ -302,7 +313,9 @@ export async function loadTreeForQuery(
         t.testCreationStack,
         isCollapsible
       );
-      if (t.description) setSubtreeDescription(subtreeL2, t.description.trim());
+      // This is 1 test. Set tests=1 then count TODOs.
+      subtreeL2.subtreeCounts ??= { tests: 1, nodesWithTODO: 0 };
+      if (t.description) setSubtreeDescriptionAndCountTODOs(subtreeL2, t.description);
 
       // MAINTENANCE_TODO: If tree generation gets too slow, avoid actually iterating the cases in a
       // file if there's no need to (based on the subqueriesToExpand).
@@ -322,7 +335,7 @@ export async function loadTreeForQuery(
         foundCase = true;
       }
     }
-    if (!groupHasTests && !subtreeL1.subtreeHasTODOs) {
+    if (!groupHasTests && !subtreeL1.subtreeCounts) {
       throw new StacklessError(
         `${subtreeL1.query} has no tests - it must have "TODO" in its description`
       );
@@ -338,16 +351,20 @@ export async function loadTreeForQuery(
       );
     }
   }
-  assert(foundCase, 'Query does not match any cases');
+  assert(foundCase, `Query \`${queryToLoad.toString()}\` does not match any cases`);
 
   return new TestTree(queryToLoad, subtreeL0);
 }
 
-function setSubtreeDescription(subtree: TestSubtree<TestQueryMultiFile>, description: string) {
+function setSubtreeDescriptionAndCountTODOs(
+  subtree: TestSubtree<TestQueryMultiFile>,
+  description: string
+) {
   assert(subtree.description === undefined);
-  subtree.description = description;
+  subtree.description = description.trim();
+  subtree.subtreeCounts ??= { tests: 0, nodesWithTODO: 0 };
   if (subtree.description.indexOf('TODO') !== -1) {
-    subtree.subtreeHasTODOs = true;
+    subtree.subtreeCounts.nodesWithTODO++;
   }
 }
 

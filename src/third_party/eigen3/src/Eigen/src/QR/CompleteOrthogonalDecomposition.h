@@ -32,7 +32,7 @@ struct traits<CompleteOrthogonalDecomposition<MatrixType_> >
   *
   * \brief Complete orthogonal decomposition (COD) of a matrix.
   *
-  * \param MatrixType the type of the matrix of which we are computing the COD.
+  * \tparam MatrixType_ the type of the matrix of which we are computing the COD.
   *
   * This class performs a rank-revealing complete orthogonal decomposition of a
   * matrix  \b A into matrices \b P, \b Q, \b T, and \b Z such that

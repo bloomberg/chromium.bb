@@ -40,7 +40,7 @@
 #include "common_video/include/video_frame_buffer.h"
 #include "media/base/video_adapter.h"
 #include "media/engine/webrtc_video_engine.h"
-#include "modules/video_coding/codecs/av1/libaom_av1_encoder.h"
+#include "modules/video_coding/codecs/av1/libaom_av1_encoder_supported.h"
 #include "modules/video_coding/codecs/h264/include/h264.h"
 #include "modules/video_coding/codecs/multiplex/include/multiplex_encoder_adapter.h"
 #include "modules/video_coding/codecs/vp8/include/vp8.h"
@@ -7465,10 +7465,10 @@ TEST_F(VideoStreamEncoderTest, EncoderRatesPropagatedOnReconfigure) {
 
 struct MockEncoderSwitchRequestCallback : public EncoderSwitchRequestCallback {
   MOCK_METHOD(void, RequestEncoderFallback, (), (override));
-  MOCK_METHOD(void, RequestEncoderSwitch, (const Config& conf), (override));
   MOCK_METHOD(void,
               RequestEncoderSwitch,
-              (const webrtc::SdpVideoFormat& format),
+              (const webrtc::SdpVideoFormat& format,
+               bool allow_default_fallback),
               (override));
 };
 
@@ -7482,14 +7482,14 @@ TEST_F(VideoStreamEncoderTest, EncoderSelectorCurrentEncoderIsSignaled) {
   // Reset encoder for new configuration to take effect.
   ConfigureEncoder(video_encoder_config_.Copy());
 
-  EXPECT_CALL(encoder_selector, OnCurrentEncoder(_));
+  EXPECT_CALL(encoder_selector, OnCurrentEncoder);
 
   video_source_.IncomingCapturedFrame(
       CreateFrame(kDontCare, kDontCare, kDontCare));
   AdvanceTime(TimeDelta::Zero());
   video_stream_encoder_->Stop();
 
-  // The encoders produces by the VideoEncoderProxyFactory have a pointer back
+  // The encoders produced by the VideoEncoderProxyFactory have a pointer back
   // to it's factory, so in order for the encoder instance in the
   // `video_stream_encoder_` to be destroyed before the `encoder_factory` we
   // reset the `video_stream_encoder_` here.
@@ -7510,11 +7510,11 @@ TEST_F(VideoStreamEncoderTest, EncoderSelectorBitrateSwitch) {
   // Reset encoder for new configuration to take effect.
   ConfigureEncoder(video_encoder_config_.Copy());
 
-  ON_CALL(encoder_selector, OnAvailableBitrate(_))
+  ON_CALL(encoder_selector, OnAvailableBitrate)
       .WillByDefault(Return(SdpVideoFormat("AV1")));
   EXPECT_CALL(switch_callback,
-              RequestEncoderSwitch(Matcher<const SdpVideoFormat&>(
-                  Field(&SdpVideoFormat::name, "AV1"))));
+              RequestEncoderSwitch(Field(&SdpVideoFormat::name, "AV1"),
+                                   /*allow_default_fallback=*/false));
 
   video_stream_encoder_->OnBitrateUpdatedAndWaitForManagedResources(
       /*target_bitrate=*/DataRate::KilobitsPerSec(50),
@@ -7556,18 +7556,16 @@ TEST_F(VideoStreamEncoderTest, EncoderSelectorBrokenEncoderSwitch) {
       /*round_trip_time_ms=*/0,
       /*cwnd_reduce_ratio=*/0);
 
-  ON_CALL(video_encoder, Encode(_, _))
+  ON_CALL(video_encoder, Encode)
       .WillByDefault(Return(WEBRTC_VIDEO_CODEC_ENCODER_FAILURE));
-  ON_CALL(encoder_selector, OnEncoderBroken())
+  ON_CALL(encoder_selector, OnEncoderBroken)
       .WillByDefault(Return(SdpVideoFormat("AV2")));
 
   rtc::Event encode_attempted;
   EXPECT_CALL(switch_callback,
-              RequestEncoderSwitch(Matcher<const SdpVideoFormat&>(_)))
-      .WillOnce([&encode_attempted](const SdpVideoFormat& format) {
-        EXPECT_EQ(format.name, "AV2");
-        encode_attempted.Set();
-      });
+              RequestEncoderSwitch(Field(&SdpVideoFormat::name, "AV2"),
+                                   /*allow_default_fallback=*/true))
+      .WillOnce([&encode_attempted]() { encode_attempted.Set(); });
 
   video_source_.IncomingCapturedFrame(CreateFrame(1, kDontCare, kDontCare));
   encode_attempted.Wait(3000);
@@ -7576,7 +7574,93 @@ TEST_F(VideoStreamEncoderTest, EncoderSelectorBrokenEncoderSwitch) {
 
   video_stream_encoder_->Stop();
 
-  // The encoders produces by the VideoEncoderProxyFactory have a pointer back
+  // The encoders produced by the VideoEncoderProxyFactory have a pointer back
+  // to it's factory, so in order for the encoder instance in the
+  // `video_stream_encoder_` to be destroyed before the `encoder_factory` we
+  // reset the `video_stream_encoder_` here.
+  video_stream_encoder_.reset();
+}
+
+TEST_F(VideoStreamEncoderTest, SwitchEncoderOnInitFailureWithEncoderSelector) {
+  NiceMock<MockVideoEncoder> video_encoder;
+  NiceMock<MockEncoderSelector> encoder_selector;
+  StrictMock<MockEncoderSwitchRequestCallback> switch_callback;
+  video_send_config_.encoder_settings.encoder_switch_request_callback =
+      &switch_callback;
+  auto encoder_factory = std::make_unique<test::VideoEncoderProxyFactory>(
+      &video_encoder, &encoder_selector);
+  video_send_config_.encoder_settings.encoder_factory = encoder_factory.get();
+
+  // Reset encoder for new configuration to take effect.
+  ConfigureEncoder(video_encoder_config_.Copy());
+
+  video_stream_encoder_->OnBitrateUpdatedAndWaitForManagedResources(
+      kTargetBitrate, kTargetBitrate, kTargetBitrate, /*fraction_lost=*/0,
+      /*round_trip_time_ms=*/0,
+      /*cwnd_reduce_ratio=*/0);
+  ASSERT_EQ(0, sink_.number_of_reconfigurations());
+
+  ON_CALL(video_encoder, InitEncode(_, _))
+      .WillByDefault(Return(WEBRTC_VIDEO_CODEC_ENCODER_FAILURE));
+  ON_CALL(encoder_selector, OnEncoderBroken)
+      .WillByDefault(Return(SdpVideoFormat("AV2")));
+
+  rtc::Event encode_attempted;
+  EXPECT_CALL(switch_callback,
+              RequestEncoderSwitch(Field(&SdpVideoFormat::name, "AV2"),
+                                   /*allow_default_fallback=*/true))
+      .WillOnce([&encode_attempted]() { encode_attempted.Set(); });
+
+  video_source_.IncomingCapturedFrame(CreateFrame(1, nullptr));
+  encode_attempted.Wait(3000);
+
+  AdvanceTime(TimeDelta::Zero());
+
+  video_stream_encoder_->Stop();
+
+  // The encoders produced by the VideoEncoderProxyFactory have a pointer back
+  // to it's factory, so in order for the encoder instance in the
+  // `video_stream_encoder_` to be destroyed before the `encoder_factory` we
+  // reset the `video_stream_encoder_` here.
+  video_stream_encoder_.reset();
+}
+
+TEST_F(VideoStreamEncoderTest,
+       SwitchEncoderOnInitFailureWithoutEncoderSelector) {
+  NiceMock<MockVideoEncoder> video_encoder;
+  StrictMock<MockEncoderSwitchRequestCallback> switch_callback;
+  video_send_config_.encoder_settings.encoder_switch_request_callback =
+      &switch_callback;
+  auto encoder_factory = std::make_unique<test::VideoEncoderProxyFactory>(
+      &video_encoder, /*encoder_selector=*/nullptr);
+  video_send_config_.encoder_settings.encoder_factory = encoder_factory.get();
+
+  // Reset encoder for new configuration to take effect.
+  ConfigureEncoder(video_encoder_config_.Copy());
+
+  video_stream_encoder_->OnBitrateUpdatedAndWaitForManagedResources(
+      kTargetBitrate, kTargetBitrate, kTargetBitrate, /*fraction_lost=*/0,
+      /*round_trip_time_ms=*/0,
+      /*cwnd_reduce_ratio=*/0);
+  ASSERT_EQ(0, sink_.number_of_reconfigurations());
+
+  ON_CALL(video_encoder, InitEncode(_, _))
+      .WillByDefault(Return(WEBRTC_VIDEO_CODEC_ENCODER_FAILURE));
+
+  rtc::Event encode_attempted;
+  EXPECT_CALL(switch_callback,
+              RequestEncoderSwitch(Field(&SdpVideoFormat::name, "VP8"),
+                                   /*allow_default_fallback=*/true))
+      .WillOnce([&encode_attempted]() { encode_attempted.Set(); });
+
+  video_source_.IncomingCapturedFrame(CreateFrame(1, nullptr));
+  encode_attempted.Wait(3000);
+
+  AdvanceTime(TimeDelta::Zero());
+
+  video_stream_encoder_->Stop();
+
+  // The encoders produced by the VideoEncoderProxyFactory have a pointer back
   // to it's factory, so in order for the encoder instance in the
   // `video_stream_encoder_` to be destroyed before the `encoder_factory` we
   // reset the `video_stream_encoder_` here.
@@ -8355,7 +8439,7 @@ class VideoStreamEncoderWithRealEncoderTest
         encoder = VP9Encoder::Create();
         break;
       case kVideoCodecAV1:
-        encoder = CreateLibaomAv1Encoder();
+        encoder = CreateLibaomAv1EncoderIfSupported();
         break;
       case kVideoCodecH264:
         encoder =
@@ -8777,6 +8861,58 @@ TEST_F(ReconfigureEncoderTest, ReconfiguredIfScalabilityModeChanges) {
   config2.scalability_mode = "L1T2";
 
   RunTest({config1, config2}, /*expected_num_init_encode=*/2);
+}
+
+// Simple test that just creates and then immediately destroys an encoder.
+// The purpose of the test is to make sure that nothing bad happens if the
+// initialization step on the encoder queue, doesn't run.
+TEST(VideoStreamEncoderSimpleTest, CreateDestroy) {
+  class SuperLazyTaskQueue : public webrtc::TaskQueueBase {
+   public:
+    SuperLazyTaskQueue() = default;
+    ~SuperLazyTaskQueue() override = default;
+
+   private:
+    void Delete() override { delete this; }
+    void PostTask(std::unique_ptr<QueuedTask> task) override {
+      // meh.
+    }
+    void PostDelayedTask(std::unique_ptr<QueuedTask> task,
+                         uint32_t milliseconds) override {
+      ASSERT_TRUE(false);
+    }
+  };
+
+  // Lots of boiler plate.
+  GlobalSimulatedTimeController time_controller(Timestamp::Millis(0));
+  auto stats_proxy = std::make_unique<MockableSendStatisticsProxy>(
+      time_controller.GetClock(), VideoSendStream::Config(nullptr),
+      webrtc::VideoEncoderConfig::ContentType::kRealtimeVideo);
+  SimpleVideoStreamEncoderFactory::MockFakeEncoder mock_fake_encoder(
+      time_controller.GetClock());
+  test::VideoEncoderProxyFactory encoder_factory(&mock_fake_encoder);
+  std::unique_ptr<VideoBitrateAllocatorFactory> bitrate_allocator_factory =
+      CreateBuiltinVideoBitrateAllocatorFactory();
+  VideoStreamEncoderSettings encoder_settings{
+      VideoEncoder::Capabilities(/*loss_notification=*/false)};
+  encoder_settings.encoder_factory = &encoder_factory;
+  encoder_settings.bitrate_allocator_factory = bitrate_allocator_factory.get();
+
+  auto adapter = std::make_unique<MockFrameCadenceAdapter>();
+  EXPECT_CALL((*adapter.get()), Initialize).WillOnce(Return());
+
+  std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>
+      encoder_queue(new SuperLazyTaskQueue());
+
+  // Construct a VideoStreamEncoder instance and let it go out of scope without
+  // doing anything else (including calling Stop()). This should be fine since
+  // the posted init task will simply be deleted.
+  auto encoder = std::make_unique<VideoStreamEncoder>(
+      time_controller.GetClock(), 1, stats_proxy.get(), encoder_settings,
+      std::make_unique<CpuOveruseDetectorProxy>(stats_proxy.get()),
+      std::move(adapter), std::move(encoder_queue),
+      VideoStreamEncoder::BitrateAllocationCallbackType::
+          kVideoBitrateAllocation);
 }
 
 TEST(VideoStreamEncoderFrameCadenceTest, ActivatesFrameCadenceOnContentType) {

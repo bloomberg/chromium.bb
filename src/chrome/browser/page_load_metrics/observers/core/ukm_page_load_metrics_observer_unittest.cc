@@ -1044,45 +1044,7 @@ TEST_F(UkmPageLoadMetricsObserverTest,
   TestLCP(990, LargestContentTextOrImage::kImage, false /* test_main_frame */);
 }
 
-TEST_F(UkmPageLoadMetricsObserverTest,
-       NormalizedUserInteractionLatenciesWithoutAllLatencies) {
-  NavigateAndCommit(GURL(kTestUrl1));
-
-  page_load_metrics::mojom::InputTiming input_timing;
-  input_timing.num_interactions = 3;
-  input_timing.max_event_durations =
-      UserInteractionLatencies::NewWorstInteractionLatency(
-          base::Milliseconds(120));
-  input_timing.total_event_durations =
-      UserInteractionLatencies::NewWorstInteractionLatency(
-          base::Milliseconds(140));
-
-  tester()->SimulateInputTimingUpdate(input_timing);
-  DeleteContents();
-
-  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
-      tester()->test_ukm_recorder().GetMergedEntriesByName(
-          PageLoad::kEntryName);
-  EXPECT_EQ(1ul, merged_entries.size());
-
-  for (const auto& kv : merged_entries) {
-    tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
-                                                          GURL(kTestUrl1));
-    tester()->test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(),
-        PageLoad::
-            kInteractiveTiming_WorstUserInteractionLatency_MaxEventDurationName,
-        120);
-    tester()->test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(),
-        PageLoad::
-            kInteractiveTiming_WorstUserInteractionLatency_TotalEventDurationName,
-        140);
-  }
-}
-
-TEST_F(UkmPageLoadMetricsObserverTest,
-       NormalizedUserInteractionLatenciesWithAllLatencies) {
+TEST_F(UkmPageLoadMetricsObserverTest, NormalizedUserInteractionLatencies) {
   // Flip the flag.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
@@ -2373,6 +2335,26 @@ TEST_F(UkmPageLoadMetricsObserverTest, DurationSinceLastVisitSeconds) {
   tester()->test_ukm_recorder().ExpectEntryMetric(
       entry, PageLoad::kDurationSinceLastVisitSecondsName,
       base::Days(30).InSeconds());
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest, NavigationTimestamp) {
+  base::Time::Exploded exploded;
+  base::Time::Now().LocalExplode(&exploded);
+  NavigateAndCommit(GURL(kTestUrl1));
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  // Verify UKM records for page load timestamp.
+  const auto& ukm_recorder = tester()->test_ukm_recorder();
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      ukm_recorder.GetMergedEntriesByName(PageLoad::kEntryName);
+  EXPECT_EQ(1ul, merged_entries.size());
+  const ukm::mojom::UkmEntry* entry = merged_entries.begin()->second.get();
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      entry, PageLoad::kHourOfDayName, exploded.hour);
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      entry, PageLoad::kDayOfWeekName, exploded.day_of_week);
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest,

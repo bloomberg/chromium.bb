@@ -116,7 +116,7 @@ struct sparse_solve_triangular_selector<Lhs,Rhs,Mode,Lower,ColMajor>
       for(Index i=0; i<lhs.cols(); ++i)
       {
         Scalar& tmp = other.coeffRef(i,col);
-        if (tmp!=Scalar(0)) // optimization when other is actually sparse
+        if (!numext::is_exactly_zero(tmp)) // optimization when other is actually sparse
         {
           LhsIterator it(lhsEval, i);
           while(it && it.index()<i)
@@ -151,7 +151,7 @@ struct sparse_solve_triangular_selector<Lhs,Rhs,Mode,Upper,ColMajor>
       for(Index i=lhs.cols()-1; i>=0; --i)
       {
         Scalar& tmp = other.coeffRef(i,col);
-        if (tmp!=Scalar(0)) // optimization when other is actually sparse
+        if (!numext::is_exactly_zero(tmp)) // optimization when other is actually sparse
         {
           if(!(Mode & UnitDiag))
           {
@@ -241,7 +241,7 @@ struct sparse_solve_triangular_sparse_selector<Lhs,Rhs,Mode,UpLo,ColMajor>
       {
         tempVector.restart();
         Scalar& ci = tempVector.coeffRef(i);
-        if (ci!=Scalar(0))
+        if (!numext::is_exactly_zero(ci))
         {
           // find
           typename Lhs::InnerIterator it(lhs, i);

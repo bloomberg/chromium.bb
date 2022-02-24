@@ -57,7 +57,6 @@ Symbol CloneContext::Clone(Symbol s) {
 
 void CloneContext::Clone() {
   dst->AST().Copy(this, &src->AST());
-  dst->SetTransformApplied(src->TransformsApplied());
 }
 
 ast::FunctionList CloneContext::Clone(const ast::FunctionList& v) {
@@ -84,7 +83,7 @@ const tint::Cloneable* CloneContext::CloneCloneable(const Cloneable* object) {
   // Attempt to clone using the registered replacer functions.
   auto& typeinfo = object->TypeInfo();
   for (auto& transform : transforms_) {
-    if (typeinfo.Is(*transform.typeinfo)) {
+    if (typeinfo.Is(transform.typeinfo)) {
       if (auto* transformed = transform.function(object)) {
         return transformed;
       }

@@ -300,7 +300,6 @@ std::unique_ptr<TestPeer> TestPeerFactory::CreateTestPeer(
     std::unique_ptr<PeerConfigurerImpl> configurer,
     std::unique_ptr<MockPeerConnectionObserver> observer,
     absl::optional<RemotePeerAudioConfig> remote_audio_config,
-    double bitrate_multiplier,
     absl::optional<PeerConnectionE2EQualityTestFixture::EchoEmulationConfig>
         echo_emulation_config) {
   std::unique_ptr<InjectableComponents> components =
@@ -326,7 +325,7 @@ std::unique_ptr<TestPeer> TestPeerFactory::CreateTestPeer(
           params->audio_config, remote_audio_config, echo_emulation_config,
           components->pcf_dependencies->task_queue_factory.get());
   WrapVideoEncoderFactory(
-      params->name.value(), bitrate_multiplier,
+      params->name.value(), params->video_encoder_bitrate_multiplier,
       CalculateRequiredSpatialIndexPerStream(params->video_configs),
       components->pcf_dependencies.get(), video_analyzer_helper_);
   WrapVideoDecoderFactory(params->name.value(),

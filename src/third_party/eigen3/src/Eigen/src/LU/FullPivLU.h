@@ -519,7 +519,7 @@ void FullPivLU<MatrixType>::computeInPlace()
     row_of_biggest_in_corner += k; // correct the values! since they were computed in the corner,
     col_of_biggest_in_corner += k; // need to add k to them.
 
-    if(biggest_in_corner==Score(0))
+    if(numext::is_exactly_zero(biggest_in_corner))
     {
       // before exiting, make sure to initialize the still uninitialized transpositions
       // in a sane state without destroying what we already have.

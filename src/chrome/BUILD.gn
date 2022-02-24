@@ -457,6 +457,9 @@ if (is_win) {
     } else {
       args += [ "--keystone=0" ]
     }
+    if (enable_chromium_updater) {
+      args += [ "--privileged_helper_id=$privileged_helper_name" ]
+    }
   }
 
   mac_app_bundle("chrome_app") {
@@ -506,6 +509,10 @@ if (is_win) {
       # for runtime_deps at create_bundle nodes (https://crbug.com/1010347).
       data_deps = [ ":chrome_framework" ]
     }
+
+    if (enable_chromium_updater) {
+      deps += [ ":chromium_updater_privileged_helper" ]
+    }
   }
 
   if (verify_dynamic_libraries) {
@@ -534,7 +541,7 @@ if (is_win) {
 
     outputs = []
 
-    foreach(locale, locales) {
+    foreach(locale, platform_pak_locales) {
       if (is_chrome_branded) {
         _strings_file = "google_chrome_strings"
       } else {
@@ -562,7 +569,7 @@ if (is_win) {
           rebase_path("$target_gen_dir/app_infoplist_strings", root_build_dir),
           "-t",
           "main",
-        ] + locales
+        ] + platform_pak_locales
 
     if (is_chrome_branded) {
       deps = [ "//chrome/app:google_chrome_strings" ]
@@ -627,6 +634,17 @@ if (is_win) {
       # this dependency directly copies the file into the framework's
       # resources directory.
       public_deps += [ ":chrome_framework_widevine_signature" ]
+    }
+  }
+
+  if (enable_chromium_updater) {
+    bundle_data("chromium_updater_privileged_helper") {
+      sources = [ "$root_out_dir/$privileged_helper_name" ]
+      outputs = [
+        "{{bundle_contents_dir}}/Library/LaunchServices/{{source_file_part}}",
+      ]
+
+      public_deps = [ "//chrome/updater/mac:privileged_helper" ]
     }
   }
 
@@ -1884,11 +1902,18 @@ if (is_linux || is_chromeos) {
   # Copies some scripts and resources that are used for desktop integration.
   copy("xdg_mime") {
     sources = [
-      "//chrome/app/theme/$branding_path_component/product_logo_48.png",
       "//chrome/tools/build/linux/chrome-wrapper",
       "//third_party/xdg-utils/scripts/xdg-mime",
       "//third_party/xdg-utils/scripts/xdg-settings",
     ]
+    if (is_linux) {
+      sources +=
+          [ "//chrome/app/theme/$branding_path_component/product_logo_48.png" ]
+    } else {
+      sources += [
+        "//chrome/app/theme/$branding_path_component/linux/product_logo_48.png",
+      ]
+    }
     outputs = [ "$root_out_dir/{{source_file_part}}" ]
   }
 }

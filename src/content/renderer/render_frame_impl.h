@@ -38,6 +38,7 @@
 #include "content/common/render_accessibility.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/web_ui.mojom.h"
+#include "content/public/common/alternative_error_page_override_info.mojom.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/widget_type.h"
@@ -456,6 +457,7 @@ class CONTENT_EXPORT RenderFrameImpl
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories,
       blink::mojom::PolicyContainerPtr policy_container,
+      mojom::AlternativeErrorPageOverrideInfoPtr alternative_error_page_info,
       mojom::NavigationClient::CommitFailedNavigationCallback
           per_navigation_mojo_interface_callback);
 
@@ -610,10 +612,10 @@ class CONTENT_EXPORT RenderFrameImpl
   bool AllowContentInitiatedDataUrlNavigations(
       const blink::WebURL& url) override;
   void PostAccessibilityEvent(const ui::AXEvent& event) override;
-  void MarkWebAXObjectDirty(
-      const blink::WebAXObject& obj,
-      bool subtree,
-      ax::mojom::Action event_from_action = ax::mojom::Action::kNone) override;
+  void MarkWebAXObjectDirty(const blink::WebAXObject& obj,
+                            bool subtree,
+                            ax::mojom::EventFrom event_from,
+                            ax::mojom::Action event_from_action) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       blink::WebSetSinkIdCompleteCallback callback) override;
@@ -634,7 +636,10 @@ class CONTENT_EXPORT RenderFrameImpl
       const base::UnguessableToken& session_id,
       const media::AudioParameters& params,
       bool automatic_gain_control,
-      uint32_t shared_memory_count) override;
+      uint32_t shared_memory_count,
+      blink::CrossVariantMojoReceiver<
+          media::mojom::AudioProcessorControlsInterfaceBase> controls_receiver,
+      const media::AudioProcessingSettings& settings) override;
   void AssociateInputAndOutputForAec(
       const base::UnguessableToken& input_stream_id,
       const std::string& output_device_id) override;

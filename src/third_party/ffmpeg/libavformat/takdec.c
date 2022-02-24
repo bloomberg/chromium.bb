@@ -109,7 +109,7 @@ static int tak_read_header(AVFormatContext *s)
             break;
         case TAK_METADATA_MD5: {
             uint8_t md5[16];
-            int i;
+            char md5_hex[2 * sizeof(md5) + 1];
 
             if (size != 19)
                 return AVERROR_INVALIDDATA;
@@ -121,10 +121,8 @@ static int tak_read_header(AVFormatContext *s)
                     return AVERROR_INVALIDDATA;
             }
 
-            av_log(s, AV_LOG_VERBOSE, "MD5=");
-            for (i = 0; i < 16; i++)
-                av_log(s, AV_LOG_VERBOSE, "%02x", md5[i]);
-            av_log(s, AV_LOG_VERBOSE, "\n");
+            ff_data_to_hex(md5_hex, md5, sizeof(md5), 1);
+            av_log(s, AV_LOG_VERBOSE, "MD5=%s\n", md5_hex);
             break;
         }
         case TAK_METADATA_END: {
@@ -173,9 +171,8 @@ static int tak_read_header(AVFormatContext *s)
                               get_bits(&gb, TAK_LAST_FRAME_SIZE_BITS);
             av_freep(&buffer);
         } else if (type == TAK_METADATA_ENCODER) {
-            init_get_bits8(&gb, buffer, size - 3);
             av_log(s, AV_LOG_VERBOSE, "encoder version: %0X\n",
-                   get_bits_long(&gb, TAK_ENCODER_VERSION_BITS));
+                   AV_RL24(buffer));
             av_freep(&buffer);
         }
     }

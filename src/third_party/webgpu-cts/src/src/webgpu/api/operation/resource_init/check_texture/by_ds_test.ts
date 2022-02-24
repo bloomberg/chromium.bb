@@ -6,9 +6,9 @@ import { CheckContents } from '../texture_zero.spec.js';
 function makeFullscreenVertexModule(device: GPUDevice) {
   return device.createShaderModule({
     code: `
-    [[stage(vertex)]]
-    fn main([[builtin(vertex_index)]] VertexIndex : u32)
-         -> [[builtin(position)]] vec4<f32> {
+    @stage(vertex)
+    fn main(@builtin(vertex_index) VertexIndex : u32)
+         -> @builtin(position) vec4<f32> {
       var pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
         vec2<f32>(-1.0, -3.0),
         vec2<f32>( 3.0,  1.0),
@@ -35,11 +35,11 @@ function getDepthTestEqualPipeline(
       module: t.device.createShaderModule({
         code: `
         struct Outputs {
-          [[builtin(frag_depth)]] FragDepth : f32;
-          [[location(0)]] outSuccess : f32;
+          @builtin(frag_depth) FragDepth : f32;
+          @location(0) outSuccess : f32;
         };
 
-        [[stage(fragment)]]
+        @stage(fragment)
         fn main() -> Outputs {
           var output : Outputs;
           output.FragDepth = f32(${expected});
@@ -73,8 +73,8 @@ function getStencilTestEqualPipeline(
       entryPoint: 'main',
       module: t.device.createShaderModule({
         code: `
-        [[stage(fragment)]]
-        fn main() -> [[location(0)]] f32 {
+        @stage(fragment)
+        fn main() -> @location(0) f32 {
           return 1.0;
         }
         `,

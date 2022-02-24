@@ -120,7 +120,7 @@ static void EnqueueTickSampleEvent(ProfilerEventsProcessor* proc,
     sample.stack[1] = reinterpret_cast<void*>(frame3);
     sample.frames_count = 2;
   }
-  sample.timestamp = base::TimeTicks::HighResolutionNow();
+  sample.timestamp = base::TimeTicks::Now();
   proc->AddSample(sample);
 }
 
@@ -424,7 +424,7 @@ TEST(Issue1398) {
   for (unsigned i = 0; i < sample.frames_count; ++i) {
     sample.stack[i] = reinterpret_cast<void*>(code->InstructionStart());
   }
-  sample.timestamp = base::TimeTicks::HighResolutionNow();
+  sample.timestamp = base::TimeTicks::Now();
   processor->AddSample(sample);
 
   processor->StopSynchronously();
@@ -4332,7 +4332,7 @@ struct FastApiReceiver {
     // TODO(mslekova): The fallback is not used by the test. Replace this
     // with a CHECK.
     if (!IsValidUnwrapObject(*receiver)) {
-      options.fallback = 1;
+      options.fallback = true;
       return;
     }
     FastApiReceiver* receiver_ptr =
@@ -4383,7 +4383,6 @@ TEST(FastApiCPUProfiler) {
 #if !defined(V8_LITE_MODE) && !defined(USE_SIMULATOR)
   // None of the following configurations include JSCallReducer.
   if (i::FLAG_jitless) return;
-  if (i::FLAG_turboprop) return;
 
   FLAG_SCOPE(opt);
   FLAG_SCOPE(turbo_fast_api_calls);

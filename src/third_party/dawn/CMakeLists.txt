@@ -38,7 +38,7 @@ endif()
 set(DAWN_BUILD_GEN_DIR "${Dawn_BINARY_DIR}/gen")
 set(DAWN_GENERATOR_DIR "${Dawn_SOURCE_DIR}/generator")
 set(DAWN_SRC_DIR "${Dawn_SOURCE_DIR}/src")
-set(DAWN_INCLUDE_DIR "${DAWN_SRC_DIR}/include")
+set(DAWN_INCLUDE_DIR "${Dawn_SOURCE_DIR}/include")
 set(DAWN_TEMPLATE_DIR "${DAWN_GENERATOR_DIR}/templates")
 
 set(DAWN_DUMMY_FILE "${DAWN_SRC_DIR}/Dummy.cpp")
@@ -78,7 +78,7 @@ set(ENABLE_OPENGLES OFF)
 set(ENABLE_DESKTOP_GL OFF)
 set(ENABLE_VULKAN OFF)
 set(USE_X11 OFF)
-set(BUILD_EXAMPLE OFF)
+set(BUILD_SAMPLES OFF)
 if (WIN32)
     set(ENABLE_D3D12 ON)
     if (NOT WINDOWS_STORE)
@@ -102,7 +102,7 @@ endif()
 
 # Current examples are depend on GLFW
 if (DAWN_SUPPORTS_GLFW_FOR_WINDOWING)
-    set(BUILD_EXAMPLE ON)
+    set(BUILD_SAMPLES ON)
 endif()
 
 option_if_not_defined(DAWN_ENABLE_D3D12 "Enable compilation of the D3D12 backend" ${ENABLE_D3D12})
@@ -114,7 +114,7 @@ option_if_not_defined(DAWN_ENABLE_VULKAN "Enable compilation of the Vulkan backe
 option_if_not_defined(DAWN_ALWAYS_ASSERT "Enable assertions on all build types" OFF)
 option_if_not_defined(DAWN_USE_X11 "Enable support for X11 surface" ${USE_X11})
 
-option_if_not_defined(DAWN_BUILD_EXAMPLES "Enables building Dawn's exmaples" ${BUILD_EXAMPLE})
+option_if_not_defined(DAWN_BUILD_SAMPLES "Enables building Dawn's samples" ${BUILD_SAMPLES})
 option_if_not_defined(DAWN_BUILD_NODE_BINDINGS "Enables building Dawn's NodeJS bindings" OFF)
 
 option_if_not_defined(DAWN_ENABLE_PIC "Build with Position-Independent-Code enabled" OFF)
@@ -127,7 +127,6 @@ set(ABSL_PROPAGATE_CXX_STD ON)
 set_if_not_defined(DAWN_ABSEIL_DIR "${DAWN_THIRD_PARTY_DIR}/abseil-cpp" "Directory in which to find Abseil")
 set_if_not_defined(DAWN_GLFW_DIR "${DAWN_THIRD_PARTY_DIR}/glfw" "Directory in which to find GLFW")
 set_if_not_defined(DAWN_JINJA2_DIR "${DAWN_THIRD_PARTY_DIR}/jinja2" "Directory in which to find Jinja2")
-set_if_not_defined(DAWN_SPIRV_CROSS_DIR "${DAWN_THIRD_PARTY_DIR}/vulkan-deps/spirv-cross/src" "Directory in which to find SPIRV-Cross")
 set_if_not_defined(DAWN_SPIRV_HEADERS_DIR "${DAWN_THIRD_PARTY_DIR}/vulkan-deps/spirv-headers/src" "Directory in which to find SPIRV-Headers")
 set_if_not_defined(DAWN_SPIRV_TOOLS_DIR "${DAWN_THIRD_PARTY_DIR}/vulkan-deps/spirv-tools/src" "Directory in which to find SPIRV-Tools")
 set_if_not_defined(DAWN_TINT_DIR "${DAWN_THIRD_PARTY_DIR}/tint" "Directory in which to find Tint")
@@ -143,12 +142,6 @@ if (${DAWN_ENABLE_DESKTOP_GL} OR ${DAWN_ENABLE_OPENGLES})
     set(DAWN_ENABLE_OPENGL ON)
 endif()
 
-# OpenGL backend requires SPIRV-Cross
-set(DAWN_REQUIRES_SPIRV_CROSS OFF)
-if (DAWN_ENABLE_OPENGL)
-    set(DAWN_REQUIRES_SPIRV_CROSS ON)
-endif()
-
 if(DAWN_ENABLE_PIC)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
@@ -160,8 +153,8 @@ endif()
 # The public config contains only the include paths for the Dawn headers.
 add_library(dawn_public_config INTERFACE)
 target_include_directories(dawn_public_config INTERFACE
-    "${DAWN_SRC_DIR}/include"
-    "${DAWN_BUILD_GEN_DIR}/src/include"
+    "${DAWN_INCLUDE_DIR}"
+    "${DAWN_BUILD_GEN_DIR}/include"
 )
 
 # The internal config conatins additional path but includes the dawn_public_config include paths
@@ -211,39 +204,15 @@ set(CMAKE_CXX_STANDARD "17")
 ################################################################################
 
 add_subdirectory(third_party)
-add_subdirectory(src/common)
 add_subdirectory(generator)
 add_subdirectory(src/dawn)
-add_subdirectory(src/dawn_platform)
-add_subdirectory(src/dawn_native)
-add_subdirectory(src/dawn_wire)
-# TODO(dawn:269): Remove once the implementation-based swapchains are removed.
-add_subdirectory(src/utils)
 
-if (DAWN_BUILD_EXAMPLES)
+################################################################################
+# Samples
+################################################################################
+
+if (DAWN_BUILD_SAMPLES)
     #TODO(dawn:269): Add this once implementation-based swapchains are removed.
     #add_subdirectory(src/utils)
-    add_subdirectory(examples)
-endif()
-
-if (DAWN_BUILD_NODE_BINDINGS)
-    set(NODE_BINDING_DEPS
-        ${NODE_ADDON_API_DIR}
-        ${NODE_API_HEADERS_DIR}
-        ${WEBGPU_IDL_PATH}
-    )
-    foreach(DEP ${NODE_BINDING_DEPS})
-        if (NOT EXISTS ${DEP})
-            message(FATAL_ERROR
-                "DAWN_BUILD_NODE_BINDINGS requires missing dependency '${DEP}'\n"
-                "Please follow the 'Fetch dependencies' instructions at:\n"
-                "./src/dawn_node/README.md"
-            )
-        endif()
-    endforeach()
-    if (NOT CMAKE_POSITION_INDEPENDENT_CODE)
-        message(FATAL_ERROR "DAWN_BUILD_NODE_BINDINGS requires building with DAWN_ENABLE_PIC")
-    endif()
-
-    add_subdirectory(src/dawn_node)
+    add_subdirectory(samples/dawn)
 endif()

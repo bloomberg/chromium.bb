@@ -53,6 +53,7 @@ class CNNTest : public ::testing::Test {
 
     float *output_ =
         (float *)aom_malloc(sizeof(*output_) * out_size * out_channels);
+    ASSERT_NE(output_, nullptr);
     float *output[CNN_MAX_CHANNELS] = { nullptr };
     for (int channel = 0; channel < out_channels; ++channel) {
       output[channel] = output_ + (channel * out_size);
@@ -81,6 +82,9 @@ class CNNTest : public ::testing::Test {
     int *out_widths = (int *)aom_calloc(num_outputs, sizeof(*out_widths));
     int *out_heights = (int *)aom_calloc(num_outputs, sizeof(*out_heights));
     int *not_used = (int *)aom_calloc(num_outputs, sizeof(*not_used));
+    ASSERT_NE(out_widths, nullptr);
+    ASSERT_NE(out_heights, nullptr);
+    ASSERT_NE(not_used, nullptr);
 
     av1_find_cnn_output_size(image_width, image_height, cnn_config, out_widths,
                              out_heights, not_used);
@@ -2485,6 +2489,7 @@ TEST_F(CNNTest, TestMultiOutput) {
   float *const output_ = (float *)aom_malloc(
       sizeof(*output_) *
       (output_sizes[0] + output_sizes[1] + output_sizes[2] + output_sizes[3]));
+  ASSERT_NE(output_, nullptr);
   float *output[CNN_MAX_CHANNELS] = { nullptr };
   int ch_ite = 0;
   float *output_ite = output_;
@@ -2538,6 +2543,7 @@ class CNNConvolveTest : public ::testing::TestWithParam<CNNConvolveTestFuncs> {
           (float *)aom_malloc(sizeof(*input_data) * in_size *
                               cnn_config->layer_config[layer].in_channels);
       float *temp_ptr = input_data;
+      ASSERT_NE(temp_ptr, nullptr);
       for (int i = 0; i < cnn_config->layer_config[layer].in_channels; ++i) {
         input[i] = temp_ptr;
         for (int j = 0; j < in_size; j++) {
@@ -2548,9 +2554,11 @@ class CNNConvolveTest : public ::testing::TestWithParam<CNNConvolveTestFuncs> {
       float *out_data_ref = (float *)aom_calloc(
           sizeof(*out_data_ref),
           out_size * cnn_config->layer_config[layer].out_channels);
+      ASSERT_NE(out_data_ref, nullptr);
       float *out_data_mod = (float *)aom_calloc(
           sizeof(*out_data_mod),
           out_size * cnn_config->layer_config[layer].out_channels);
+      ASSERT_NE(out_data_mod, nullptr);
       float *temp_ptr1 = out_data_ref;
       float *temp_ptr2 = out_data_mod;
       for (int i = 0; i < cnn_config->layer_config[layer].out_channels; ++i) {

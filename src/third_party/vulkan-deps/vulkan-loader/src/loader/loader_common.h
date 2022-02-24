@@ -104,12 +104,30 @@ struct loader_override_expiration {
     uint8_t minute;
 };
 
+// This structure is used to store the json file version in a more manageable way.
+typedef struct {
+    uint16_t major;
+    uint16_t minor;
+    uint16_t patch;
+} loader_api_version;
+
+// Enumeration used to clearly identify reason for library load failure.
+enum loader_layer_library_status {
+    LOADER_LAYER_LIB_NOT_LOADED = 0,
+
+    LOADER_LAYER_LIB_SUCCESS_LOADED = 1,
+
+    LOADER_LAYER_LIB_ERROR_WRONG_BIT_TYPE = 20,
+    LOADER_LAYER_LIB_ERROR_FAILED_TO_LOAD = 21,
+};
+
 struct loader_layer_properties {
     VkLayerProperties info;
     enum layer_type_flags type_flags;
     uint32_t interface_version;  // PFN_vkNegotiateLoaderLayerInterfaceVersion
     char manifest_file_name[MAX_STRING_SIZE];
     char lib_name[MAX_STRING_SIZE];
+    enum loader_layer_library_status lib_status;
     loader_platform_dl_handle lib_handle;
     struct loader_layer_functions functions;
     struct loader_extension_list instance_extension_list;
@@ -253,8 +271,6 @@ struct loader_instance {
     // device stored internal to the public structures.
     uint32_t phys_dev_group_count_term;
     struct VkPhysicalDeviceGroupProperties **phys_dev_groups_term;
-    uint32_t phys_dev_group_count_tramp;
-    struct VkPhysicalDeviceGroupProperties **phys_dev_groups_tramp;
 
     struct loader_instance *next;
 
@@ -330,6 +346,9 @@ struct loader_instance {
 #endif
 #ifdef VK_USE_PLATFORM_SCREEN_QNX
     bool wsi_screen_surface_enabled;
+#endif
+#ifdef VK_USE_PLATFORM_VI_NN
+    bool wsi_vi_surface_enabled;
 #endif
     bool wsi_display_enabled;
     bool wsi_display_props2_enabled;
@@ -425,12 +444,6 @@ struct loader_scanned_icd {
 #endif
 };
 
-struct loader_phys_dev_per_icd {
-    uint32_t count;
-    VkPhysicalDevice *phys_devs;
-    struct loader_icd_term *this_icd_term;
-};
-
 enum loader_data_files_type {
     LOADER_DATA_FILE_MANIFEST_ICD = 0,
     LOADER_DATA_FILE_MANIFEST_LAYER,
@@ -443,7 +456,7 @@ struct loader_data_files {
     char **filename_list;
 };
 
-struct LoaderSortedPhysicalDevice {
+struct loader_phys_dev_per_icd {
     uint32_t device_count;
     VkPhysicalDevice *physical_devices;
     uint32_t icd_index;

@@ -201,12 +201,23 @@ bool CallbackVisitor::OnEndHeadersForStream(Http2StreamId /*stream_id*/) {
   return true;
 }
 
+bool CallbackVisitor::OnDataPaddingLength(Http2StreamId /*stream_id*/,
+                                          size_t padding_length) {
+  QUICHE_DCHECK_GE(remaining_data_, padding_length);
+  current_frame_.data.padlen = padding_length;
+  remaining_data_ -= padding_length;
+  if (remaining_data_ == 0 && callbacks_->on_frame_recv_callback != nullptr) {
+    const int result = callbacks_->on_frame_recv_callback(
+        nullptr, &current_frame_, user_data_);
+    return result == 0;
+  }
+  return true;
+}
+
 bool CallbackVisitor::OnBeginDataForStream(Http2StreamId /*stream_id*/,
                                            size_t payload_length) {
-  // TODO(b/181586191): Interpret padding, subtract padding from
-  // |remaining_data_|.
   remaining_data_ = payload_length;
-  if (remaining_data_ == 0 && callbacks_->on_frame_recv_callback) {
+  if (remaining_data_ == 0 && callbacks_->on_frame_recv_callback != nullptr) {
     const int result = callbacks_->on_frame_recv_callback(
         nullptr, &current_frame_, user_data_);
     return result == 0;
@@ -251,6 +262,7 @@ void CallbackVisitor::OnCloseStream(Http2StreamId stream_id,
     callbacks_->on_stream_close_callback(
         nullptr, stream_id, static_cast<uint32_t>(error_code), user_data_);
   }
+  stream_map_.erase(stream_id);
 }
 
 void CallbackVisitor::OnPriorityForStream(Http2StreamId /*stream_id*/,

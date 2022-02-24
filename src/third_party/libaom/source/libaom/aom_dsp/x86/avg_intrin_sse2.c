@@ -139,6 +139,48 @@ unsigned int aom_avg_4x4_sse2(const uint8_t *s, int p) {
   return (avg + 8) >> 4;
 }
 
+static INLINE void hadamard_col4_sse2(__m128i *in, int iter) {
+  const __m128i a0 = in[0];
+  const __m128i a1 = in[1];
+  const __m128i a2 = in[2];
+  const __m128i a3 = in[3];
+  const __m128i b0 = _mm_srai_epi16(_mm_add_epi16(a0, a1), 1);
+  const __m128i b1 = _mm_srai_epi16(_mm_sub_epi16(a0, a1), 1);
+  const __m128i b2 = _mm_srai_epi16(_mm_add_epi16(a2, a3), 1);
+  const __m128i b3 = _mm_srai_epi16(_mm_sub_epi16(a2, a3), 1);
+  in[0] = _mm_add_epi16(b0, b2);
+  in[1] = _mm_add_epi16(b1, b3);
+  in[2] = _mm_sub_epi16(b0, b2);
+  in[3] = _mm_sub_epi16(b1, b3);
+
+  if (iter == 0) {
+    const __m128i ba = _mm_unpacklo_epi16(in[0], in[1]);
+    const __m128i dc = _mm_unpacklo_epi16(in[2], in[3]);
+    const __m128i dcba_lo = _mm_unpacklo_epi32(ba, dc);
+    const __m128i dcba_hi = _mm_unpackhi_epi32(ba, dc);
+    in[0] = dcba_lo;
+    in[1] = _mm_srli_si128(dcba_lo, 8);
+    in[2] = dcba_hi;
+    in[3] = _mm_srli_si128(dcba_hi, 8);
+  }
+}
+
+void aom_hadamard_4x4_sse2(const int16_t *src_diff, ptrdiff_t src_stride,
+                           tran_low_t *coeff) {
+  __m128i src[4];
+  src[0] = _mm_loadl_epi64((const __m128i *)src_diff);
+  src[1] = _mm_loadl_epi64((const __m128i *)(src_diff += src_stride));
+  src[2] = _mm_loadl_epi64((const __m128i *)(src_diff += src_stride));
+  src[3] = _mm_loadl_epi64((const __m128i *)(src_diff += src_stride));
+
+  hadamard_col4_sse2(src, 0);
+  hadamard_col4_sse2(src, 1);
+
+  store_tran_low(_mm_unpacklo_epi64(src[0], src[1]), coeff);
+  coeff += 8;
+  store_tran_low(_mm_unpacklo_epi64(src[2], src[3]), coeff);
+}
+
 static INLINE void hadamard_col8_sse2(__m128i *in, int iter) {
   __m128i a0 = in[0];
   __m128i a1 = in[1];
@@ -516,7 +558,7 @@ int aom_satd_lp_sse2(const int16_t *coeff, int length) {
   return _mm_cvtsi128_si32(accum);
 }
 
-void aom_int_pro_row_sse2(int16_t *hbuf, const uint8_t *ref,
+void aom_int_pro_row_sse2(int16_t hbuf[16], const uint8_t *ref,
                           const int ref_stride, const int height) {
   int idx = 1;
   __m128i zero = _mm_setzero_si128();

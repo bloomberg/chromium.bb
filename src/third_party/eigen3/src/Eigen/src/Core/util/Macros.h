@@ -87,11 +87,18 @@
   #define EIGEN_COMP_LLVM 0
 #endif
 
-/// \internal EIGEN_COMP_ICC set to __INTEL_COMPILER if the compiler is Intel compiler, 0 otherwise
+/// \internal EIGEN_COMP_ICC set to __INTEL_COMPILER if the compiler is Intel icc compiler, 0 otherwise
 #if defined(__INTEL_COMPILER)
   #define EIGEN_COMP_ICC __INTEL_COMPILER
 #else
   #define EIGEN_COMP_ICC 0
+#endif
+
+/// \internal EIGEN_COMP_CLANGICC set to __INTEL_CLANG_COMPILER if the compiler is Intel icx compiler, 0 otherwise
+#if defined(__INTEL_CLANG_COMPILER)
+  #define EIGEN_COMP_CLANGICC __INTEL_CLANG_COMPILER
+#else
+  #define EIGEN_COMP_CLANGICC 0
 #endif
 
 /// \internal EIGEN_COMP_MINGW set to 1 if the compiler is mingw
@@ -193,9 +200,45 @@
   #define EIGEN_COMP_EMSCRIPTEN 0
 #endif
 
+/// \internal EIGEN_COMP_FCC set to FCC version if the compiler is Fujitsu Compiler (traditional mode)
+/// \note The Fujitsu C/C++ compiler uses the traditional mode based
+/// on EDG g++ 6.1 by default or if envoked with the -Nnoclang flag
+#if defined(__FUJITSU)
+  #define EIGEN_COMP_FCC (__FCC_major__*100+__FCC_minor__*10+__FCC_patchlevel__)
+#else
+  #define EIGEN_COMP_FCC 0
+#endif
+
+/// \internal EIGEN_COMP_CLANGFCC set to FCC version if the compiler is Fujitsu Compiler (Clang mode)
+/// \note The Fujitsu C/C++ compiler uses the non-traditional mode
+/// based on Clang 7.1.0 if envoked with the -Nclang flag
+#if defined(__CLANG_FUJITSU)
+  #define EIGEN_COMP_CLANGFCC (__FCC_major__*100+__FCC_minor__*10+__FCC_patchlevel__)
+#else
+  #define EIGEN_COMP_CLANGFCC 0
+#endif
+
+/// \internal EIGEN_COMP_CPE set to CPE version if the compiler is HPE Cray Compiler (GCC based)
+/// \note This is the SVE-enabled C/C++ compiler from the HPE Cray
+/// Programming Environment (CPE) based on Cray GCC 8.1
+#if defined(_CRAYC) && !defined(__clang__)
+  #define EIGEN_COMP_CPE (_RELEASE_MAJOR*100+_RELEASE_MINOR*10+_RELEASE_PATCHLEVEL)
+#else
+  #define EIGEN_COMP_CPE 0
+#endif
+
+/// \internal EIGEN_COMP_CLANGCPE set to CPE version if the compiler is HPE Cray Compiler (Clang based)
+/// \note This is the C/C++ compiler from the HPE Cray Programming
+/// Environment (CPE) based on Cray Clang 11.0 without SVE-support
+#if defined(_CRAYC) && defined(__clang__)
+  #define EIGEN_COMP_CLANGCPE (_RELEASE_MAJOR*100+_RELEASE_MINOR*10+_RELEASE_PATCHLEVEL)
+#else
+  #define EIGEN_COMP_CLANGCPE 0
+#endif
+
 
 /// \internal EIGEN_GNUC_STRICT set to 1 if the compiler is really GCC and not a compatible compiler (e.g., ICC, clang, mingw, etc.)
-#if EIGEN_COMP_GNUC && !(EIGEN_COMP_CLANG || EIGEN_COMP_ICC || EIGEN_COMP_MINGW || EIGEN_COMP_PGI || EIGEN_COMP_IBM || EIGEN_COMP_ARM || EIGEN_COMP_EMSCRIPTEN)
+#if EIGEN_COMP_GNUC && !(EIGEN_COMP_CLANG || EIGEN_COMP_ICC || EIGEN_COMP_CLANGICC || EIGEN_COMP_MINGW || EIGEN_COMP_PGI || EIGEN_COMP_IBM || EIGEN_COMP_ARM || EIGEN_COMP_EMSCRIPTEN || EIGEN_COMP_FCC || EIGEN_COMP_CLANGFCC || EIGEN_COMP_CPE || EIGEN_COMP_CLANGCPE)
   #define EIGEN_COMP_GNUC_STRICT 1
 #else
   #define EIGEN_COMP_GNUC_STRICT 0
@@ -638,16 +681,6 @@
 #endif
 #endif
 
-// Does the compiler support result_of?
-// result_of was deprecated in c++17 and removed in c++ 20
-#ifndef EIGEN_HAS_STD_RESULT_OF
-#if EIGEN_COMP_CXXVER < 17
-#define EIGEN_HAS_STD_RESULT_OF 1
-#else
-#define EIGEN_HAS_STD_RESULT_OF 0
-#endif
-#endif
-
 // Does the compiler support std::hash?
 #ifndef EIGEN_HAS_STD_HASH
 // The std::hash struct is defined in C++11 but is not labelled as a __device__
@@ -667,28 +700,7 @@
 #endif
 #endif
 
-// Does the compiler fully support const expressions? (as in c++14)
-#ifndef EIGEN_HAS_CONSTEXPR
-  #if defined(EIGEN_CUDACC)
-  // Const expressions are supported provided that c++11 is enabled and we're using either clang or nvcc 7.5 or above
-    #if (EIGEN_COMP_CLANG || EIGEN_COMP_NVCC >= 70500)
-      #define EIGEN_HAS_CONSTEXPR 1
-    #endif
-  #else
-    #define EIGEN_HAS_CONSTEXPR 1
-  #endif
-
-  #ifndef EIGEN_HAS_CONSTEXPR
-    #define EIGEN_HAS_CONSTEXPR 0
-  #endif
-
-#endif // EIGEN_HAS_CONSTEXPR
-
-#if EIGEN_HAS_CONSTEXPR
 #define EIGEN_CONSTEXPR constexpr
-#else
-#define EIGEN_CONSTEXPR
-#endif
 
 // Does the compiler support C++11 math?
 // Let's be conservative and enable the default C++11 implementation only if we are sure it exists
@@ -717,7 +729,7 @@
 #endif
 #endif
 
-#if defined(EIGEN_CUDACC) && EIGEN_HAS_CONSTEXPR
+#if defined(EIGEN_CUDACC)
   // While available already with c++11, this is useful mostly starting with c++14 and relaxed constexpr rules
   #if defined(__NVCC__)
     // nvcc considers constexpr functions as __host__ __device__ with the option --expt-relaxed-constexpr
@@ -959,11 +971,17 @@ namespace Eigen {
       // General, Altivec, VSX.
       #define EIGEN_OPTIMIZATION_BARRIER(X)  __asm__  ("" : "+r,v,wa" (X));
     #elif EIGEN_ARCH_ARM_OR_ARM64
-      // General, NEON.
-      // Clang doesn't like "r",
-      //    error: non-trivial scalar-to-vector conversion, possible invalid
-      //           constraint for vector typ
-      #define EIGEN_OPTIMIZATION_BARRIER(X)  __asm__  ("" : "+g,w" (X));
+      #ifdef __ARM_FP
+        // General, VFP or NEON.
+        // Clang doesn't like "r",
+        //    error: non-trivial scalar-to-vector conversion, possible invalid
+        //           constraint for vector typ
+        #define EIGEN_OPTIMIZATION_BARRIER(X)  __asm__  ("" : "+g,w" (X));
+      #else
+        // Arm without VFP or NEON.
+        // "w" constraint will not compile.
+        #define EIGEN_OPTIMIZATION_BARRIER(X)  __asm__  ("" : "+g" (X));
+      #endif
     #elif EIGEN_ARCH_i386_OR_x86_64
       // General, SSE.
       #define EIGEN_OPTIMIZATION_BARRIER(X)  __asm__  ("" : "+g,x" (X));
@@ -1041,6 +1059,16 @@ namespace Eigen {
     }
 #endif
 
+/**
+ * \internal
+ * \brief Macro for conditionally trivial special member functions for supporting trivially copyable types.
+ * This feature is officially known as C++20's P0848R3 and is enabled on supported compilers.
+ */
+#if (EIGEN_COMP_CXXVER >= 20) && (EIGEN_COMP_GNUC_STRICT || EIGEN_COMP_MSVC_STRICT)
+#define EIGEN_COMP_HAS_P0848R3 1
+#else
+#define EIGEN_COMP_HAS_P0848R3 0
+#endif
 
 /**
  * \internal

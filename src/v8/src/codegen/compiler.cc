@@ -34,7 +34,6 @@
 #include "src/execution/isolate-inl.h"
 #include "src/execution/isolate.h"
 #include "src/execution/local-isolate.h"
-#include "src/execution/runtime-profiler.h"
 #include "src/execution/vm-state-inl.h"
 #include "src/handles/handles.h"
 #include "src/handles/maybe-handles.h"
@@ -254,9 +253,6 @@ void Compiler::LogFunctionCompilation(Isolate* isolate,
       break;
     case CodeKind::BASELINE:
       name = "baseline";
-      break;
-    case CodeKind::TURBOPROP:
-      name = "turboprop";
       break;
     case CodeKind::TURBOFAN:
       name = "optimize";
@@ -846,8 +842,7 @@ V8_WARN_UNUSED_RESULT MaybeHandle<CodeT> GetCodeFromOptimizedCodeCache(
   if (osr_offset.IsNone() && function->has_feedback_vector()) {
     FeedbackVector feedback_vector = function->feedback_vector();
     feedback_vector.EvictOptimizedCodeMarkedForDeoptimization(
-        function->raw_feedback_cell(), function->shared(),
-        "GetCodeFromOptimizedCodeCache");
+        function->shared(), "GetCodeFromOptimizedCodeCache");
     code = feedback_vector.optimized_code();
   } else if (!osr_offset.IsNone()) {
     code = function->context()
@@ -898,8 +893,7 @@ void InsertCodeIntoOptimizedCodeCache(
   if (compilation_info->osr_offset().IsNone()) {
     Handle<FeedbackVector> vector =
         handle(function->feedback_vector(), isolate);
-    FeedbackVector::SetOptimizedCode(vector, code,
-                                     function->raw_feedback_cell());
+    FeedbackVector::SetOptimizedCode(vector, code);
   } else {
     DCHECK(CodeKindCanOSR(kind));
     OSROptimizedCodeCache::AddOptimizedCode(native_context, shared, code,
@@ -1011,24 +1005,7 @@ bool GetOptimizedCodeLater(std::unique_ptr<OptimizedCompilationJob> job,
 // optimization job has been started (but not finished).
 Handle<CodeT> ContinuationForConcurrentOptimization(
     Isolate* isolate, Handle<JSFunction> function) {
-  Handle<Code> cached_code;
-  if (FLAG_turboprop && function->HasAvailableOptimizedCode()) {
-    DCHECK(!FLAG_turboprop_as_toptier);
-    DCHECK(function->NextTier() == CodeKind::TURBOFAN);
-    // It is possible that we have marked a closure for TurboFan optimization
-    // but the marker is processed by another closure that doesn't have
-    // optimized code yet. So heal the closure here and return the optimized
-    // code.
-    if (!function->HasAttachedOptimizedCode()) {
-      DCHECK(function->feedback_vector().has_optimized_code());
-      // Release store isn't required here because it was done on store
-      // into the feedback vector.
-      STATIC_ASSERT(
-          FeedbackVector::kFeedbackVectorMaybeOptimizedCodeIsStoreRelease);
-      function->set_code(function->feedback_vector().optimized_code());
-    }
-    return handle(function->code(), isolate);
-  } else if (function->shared().HasBaselineCode()) {
+  if (function->shared().HasBaselineCode()) {
     CodeT baseline_code = function->shared().baseline_code(kAcquireLoad);
     function->set_code(baseline_code);
     return handle(baseline_code, isolate);
@@ -2101,7 +2078,7 @@ bool Compiler::FinalizeBackgroundCompileTask(BackgroundCompileTask* task,
 }
 
 // static
-bool Compiler::CompileOptimized(Isolate* isolate, Handle<JSFunction> function,
+void Compiler::CompileOptimized(Isolate* isolate, Handle<JSFunction> function,
                                 ConcurrencyMode mode, CodeKind code_kind) {
   DCHECK(CodeKindIsOptimizedJSFunction(code_kind));
   DCHECK(AllowCompilation::IsAllowed(isolate));
@@ -2121,7 +2098,7 @@ bool Compiler::CompileOptimized(Isolate* isolate, Handle<JSFunction> function,
     // optimizing.
     DCHECK(!isolate->has_pending_exception());
     DCHECK(function->shared().is_compiled());
-    DCHECK(function->shared().IsInterpreted());
+    DCHECK(function->shared().HasBytecodeArray());
     code = ContinuationForConcurrentOptimization(isolate, function);
   }
 
@@ -2137,7 +2114,6 @@ bool Compiler::CompileOptimized(Isolate* isolate, Handle<JSFunction> function,
                  function->ChecksOptimizationMarker());
   DCHECK_IMPLIES(function->IsInOptimizationQueue(),
                  mode == ConcurrencyMode::kConcurrent);
-  return true;
 }
 
 // static
@@ -2745,7 +2721,7 @@ bool CompilationExceptionIsRangeError(Isolate* isolate, Handle<Object> obj) {
   if (!obj->IsJSError(isolate)) return false;
   Handle<JSReceiver> js_obj = Handle<JSReceiver>::cast(obj);
   Handle<JSReceiver> constructor;
-  if (!JSReceiver::GetConstructor(js_obj).ToHandle(&constructor)) {
+  if (!JSReceiver::GetConstructor(isolate, js_obj).ToHandle(&constructor)) {
     return false;
   }
   return *constructor == *isolate->range_error_function();
@@ -3314,8 +3290,7 @@ void Compiler::PostInstantiation(Handle<JSFunction> function) {
       // deoptimized the code on the feedback vector. So check for any
       // deoptimized code just before installing it on the funciton.
       function->feedback_vector().EvictOptimizedCodeMarkedForDeoptimization(
-          function->raw_feedback_cell(), *shared,
-          "new function from shared function info");
+          *shared, "new function from shared function info");
       CodeT code = function->feedback_vector().optimized_code();
       if (!code.is_null()) {
         // Caching of optimized code enabled and optimized code found.

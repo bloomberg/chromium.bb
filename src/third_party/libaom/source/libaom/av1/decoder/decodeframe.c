@@ -2578,18 +2578,19 @@ static INLINE void sync_write(AV1DecRowMTSync *const dec_row_mt_sync, int r,
 }
 
 static AOM_INLINE void decode_tile_sb_row(AV1Decoder *pbi, ThreadData *const td,
-                                          TileInfo tile_info,
+                                          const TileInfo *tile_info,
                                           const int mi_row) {
   AV1_COMMON *const cm = &pbi->common;
   const int num_planes = av1_num_planes(cm);
-  TileDataDec *const tile_data =
-      pbi->tile_data + tile_info.tile_row * cm->tiles.cols + tile_info.tile_col;
+  TileDataDec *const tile_data = pbi->tile_data +
+                                 tile_info->tile_row * cm->tiles.cols +
+                                 tile_info->tile_col;
   const int sb_cols_in_tile = av1_get_sb_cols_in_tile(cm, tile_info);
   const int sb_row_in_tile =
-      (mi_row - tile_info.mi_row_start) >> cm->seq_params->mib_size_log2;
+      (mi_row - tile_info->mi_row_start) >> cm->seq_params->mib_size_log2;
   int sb_col_in_tile = 0;
 
-  for (int mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
+  for (int mi_col = tile_info->mi_col_start; mi_col < tile_info->mi_col_end;
        mi_col += cm->seq_params->mib_size, sb_col_in_tile++) {
     set_cb_buffer(pbi, &td->dcb, pbi->cb_buffer_base, num_planes, mi_row,
                   mi_col);
@@ -2941,7 +2942,7 @@ static int tile_worker_hook(void *arg1, void *arg2) {
 }
 
 static INLINE int get_max_row_mt_workers_per_tile(AV1_COMMON *cm,
-                                                  TileInfo tile) {
+                                                  const TileInfo *tile) {
   // NOTE: Currently value of max workers is calculated based
   // on the parse and decode time. As per the theoretical estimate
   // when percentage of parse time is equal to percentage of decode
@@ -2971,7 +2972,6 @@ static int get_next_job_info(AV1Decoder *const pbi,
   TileDataDec *tile_data;
   AV1DecRowMTSync *dec_row_mt_sync;
   AV1DecRowMTInfo *frame_row_mt_info = &pbi->frame_row_mt_info;
-  TileInfo tile_info;
   const int tile_rows_start = frame_row_mt_info->tile_rows_start;
   const int tile_rows_end = frame_row_mt_info->tile_rows_end;
   const int tile_cols_start = frame_row_mt_info->tile_cols_start;
@@ -3035,7 +3035,7 @@ static int get_next_job_info(AV1Decoder *const pbi,
         if (num_threads_working == min_threads_working &&
             num_mis_to_decode > max_mis_to_decode &&
             num_threads_working <
-                get_max_row_mt_workers_per_tile(cm, tile_data->tile_info)) {
+                get_max_row_mt_workers_per_tile(cm, &tile_data->tile_info)) {
           max_mis_to_decode = num_mis_to_decode;
           tile_row = tile_row_idx;
           tile_col = tile_col_idx;
@@ -3047,13 +3047,12 @@ static int get_next_job_info(AV1Decoder *const pbi,
   if (tile_row == -1 || tile_col == -1) return 0;
 
   tile_data = pbi->tile_data + tile_row * cm->tiles.cols + tile_col;
-  tile_info = tile_data->tile_info;
   dec_row_mt_sync = &tile_data->dec_row_mt_sync;
 
   next_job_info->tile_row = tile_row;
   next_job_info->tile_col = tile_col;
-  next_job_info->mi_row =
-      dec_row_mt_sync->mi_rows_decode_started + tile_info.mi_row_start;
+  next_job_info->mi_row = dec_row_mt_sync->mi_rows_decode_started +
+                          tile_data->tile_info.mi_row_start;
 
   dec_row_mt_sync->num_threads_working++;
   dec_row_mt_sync->mi_rows_decode_started += sb_mi_size;
@@ -3098,21 +3097,21 @@ static AOM_INLINE void parse_tile_row_mt(AV1Decoder *pbi, ThreadData *const td,
   AV1_COMMON *const cm = &pbi->common;
   const int sb_mi_size = mi_size_wide[cm->seq_params->sb_size];
   const int num_planes = av1_num_planes(cm);
-  TileInfo tile_info = tile_data->tile_info;
-  int tile_row = tile_info.tile_row;
+  const TileInfo *const tile_info = &tile_data->tile_info;
+  int tile_row = tile_info->tile_row;
   DecoderCodingBlock *const dcb = &td->dcb;
   MACROBLOCKD *const xd = &dcb->xd;
 
-  av1_zero_above_context(cm, xd, tile_info.mi_col_start, tile_info.mi_col_end,
+  av1_zero_above_context(cm, xd, tile_info->mi_col_start, tile_info->mi_col_end,
                          tile_row);
   av1_reset_loop_filter_delta(xd, num_planes);
   av1_reset_loop_restoration(xd, num_planes);
 
-  for (int mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
+  for (int mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
        mi_row += cm->seq_params->mib_size) {
     av1_zero_left_context(xd);
 
-    for (int mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
+    for (int mi_col = tile_info->mi_col_start; mi_col < tile_info->mi_col_end;
          mi_col += cm->seq_params->mib_size) {
       set_cb_buffer(pbi, dcb, pbi->cb_buffer_base, num_planes, mi_row, mi_col);
 
@@ -3235,13 +3234,12 @@ static int row_mt_worker_hook(void *arg1, void *arg2) {
     TileDataDec *tile_data =
         pbi->tile_data + tile_row * cm->tiles.cols + tile_col;
     AV1DecRowMTSync *dec_row_mt_sync = &tile_data->dec_row_mt_sync;
-    TileInfo tile_info = tile_data->tile_info;
 
     av1_tile_init(&td->dcb.xd.tile, cm, tile_row, tile_col);
     av1_init_macroblockd(cm, &td->dcb.xd);
     td->dcb.xd.error_info = &thread_data->error_info;
 
-    decode_tile_sb_row(pbi, td, tile_info, mi_row);
+    decode_tile_sb_row(pbi, td, &tile_data->tile_info, mi_row);
 
 #if CONFIG_MULTITHREAD
     pthread_mutex_lock(pbi->row_mt_mutex_);
@@ -3635,16 +3633,16 @@ static AOM_INLINE void row_mt_frame_init(AV1Decoder *pbi, int tile_rows_start,
 
       TileDataDec *const tile_data =
           pbi->tile_data + tile_row * cm->tiles.cols + tile_col;
-      TileInfo tile_info = tile_data->tile_info;
+      const TileInfo *const tile_info = &tile_data->tile_info;
 
       tile_data->dec_row_mt_sync.mi_rows_parse_done = 0;
       tile_data->dec_row_mt_sync.mi_rows_decode_started = 0;
       tile_data->dec_row_mt_sync.num_threads_working = 0;
       tile_data->dec_row_mt_sync.mi_rows =
-          ALIGN_POWER_OF_TWO(tile_info.mi_row_end - tile_info.mi_row_start,
+          ALIGN_POWER_OF_TWO(tile_info->mi_row_end - tile_info->mi_row_start,
                              cm->seq_params->mib_size_log2);
       tile_data->dec_row_mt_sync.mi_cols =
-          ALIGN_POWER_OF_TWO(tile_info.mi_col_end - tile_info.mi_col_start,
+          ALIGN_POWER_OF_TWO(tile_info->mi_col_end - tile_info->mi_col_start,
                              cm->seq_params->mib_size_log2);
 
       frame_row_mt_info->mi_rows_to_decode +=
@@ -3760,8 +3758,8 @@ static const uint8_t *decode_tiles_row_mt(AV1Decoder *pbi, const uint8_t *data,
       av1_tile_init(&tile_data->tile_info, cm, row, col);
 
       max_sb_rows = AOMMAX(max_sb_rows,
-                           av1_get_sb_rows_in_tile(cm, tile_data->tile_info));
-      num_workers += get_max_row_mt_workers_per_tile(cm, tile_data->tile_info);
+                           av1_get_sb_rows_in_tile(cm, &tile_data->tile_info));
+      num_workers += get_max_row_mt_workers_per_tile(cm, &tile_data->tile_info);
     }
   }
   num_workers = AOMMIN(num_workers, max_threads);

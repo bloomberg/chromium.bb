@@ -3,6 +3,13 @@ SKIP: FAILED
 #version 310 es
 precision mediump float;
 
+layout(location = 2) in vec2 tUV_param_1;
+layout(location = 5) in vec2 tileID_1_param_1;
+layout(location = 4) in vec2 levelUnits_param_1;
+layout(location = 3) in vec2 stageUnits_1_param_1;
+layout(location = 0) in vec3 vPosition_param_1;
+layout(location = 1) in vec2 vUV_param_1;
+layout(location = 0) out vec4 glFragColor_1_1;
 struct LeftOver {
   float time;
   uint padding;
@@ -15,7 +22,7 @@ struct LeftOver {
   vec3 colorMul;
 };
 
-layout (binding = 9) uniform LeftOver_1 {
+layout(binding = 9) uniform LeftOver_1 {
   float time;
   uint padding;
   mat4 worldViewProjection;
@@ -26,35 +33,32 @@ layout (binding = 9) uniform LeftOver_1 {
   float spriteCount;
   vec3 colorMul;
 } x_20;
-uniform highp sampler2D frameMapTexture;
 
 vec2 tUV = vec2(0.0f, 0.0f);
-uniform highp sampler2D tileMapsTexture0;
-
-uniform highp sampler2D tileMapsTexture1;
-uniform highp sampler2D animationMapTexture;
-
 float mt = 0.0f;
-uniform highp sampler2D spriteSheetTexture;
-
 vec4 glFragColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 vec2 tileID_1 = vec2(0.0f, 0.0f);
 vec2 levelUnits = vec2(0.0f, 0.0f);
 vec2 stageUnits_1 = vec2(0.0f, 0.0f);
 vec3 vPosition = vec3(0.0f, 0.0f, 0.0f);
 vec2 vUV = vec2(0.0f, 0.0f);
+uniform highp sampler2D frameMapTexture_frameMapSampler;
 
 mat4 getFrameData_f1_(inout float frameID) {
   float fX = 0.0f;
   float x_15 = frameID;
   float x_25 = x_20.spriteCount;
   fX = (x_15 / x_25);
-  vec4 x_40 = texture(frameMapTexture, vec2(fX, 0.0f), 0.0f);
-  vec4 x_47 = texture(frameMapTexture, vec2(fX, 0.25f), 0.0f);
-  vec4 x_54 = texture(frameMapTexture, vec2(fX, 0.5f), 0.0f);
+  vec4 x_40 = texture(frameMapTexture_frameMapSampler, vec2(fX, 0.0f), 0.0f);
+  vec4 x_47 = texture(frameMapTexture_frameMapSampler, vec2(fX, 0.25f), 0.0f);
+  vec4 x_54 = texture(frameMapTexture_frameMapSampler, vec2(fX, 0.5f), 0.0f);
   return mat4(vec4(x_40.x, x_40.y, x_40.z, x_40.w), vec4(x_47.x, x_47.y, x_47.z, x_47.w), vec4(x_54.x, x_54.y, x_54.z, x_54.w), vec4(vec4(0.0f, 0.0f, 0.0f, 0.0f).x, vec4(0.0f, 0.0f, 0.0f, 0.0f).y, vec4(0.0f, 0.0f, 0.0f, 0.0f).z, vec4(0.0f, 0.0f, 0.0f, 0.0f).w));
 }
 
+uniform highp sampler2D tileMapsTexture1_tileMapsSampler;
+uniform highp sampler2D tileMapsTexture0_tileMapsSampler;
+uniform highp sampler2D animationMapTexture_animationMapSampler;
+uniform highp sampler2D spriteSheetTexture_spriteSheetSampler;
 void main_1() {
   vec4 color = vec4(0.0f, 0.0f, 0.0f, 0.0f);
   vec2 tileUV = vec2(0.0f, 0.0f);
@@ -92,14 +96,14 @@ void main_1() {
         case 1: {
           vec2 x_150 = tileID;
           vec2 x_154 = x_20.stageSize;
-          vec4 x_156 = texture(tileMapsTexture1, ((x_150 + vec2(0.5f, 0.5f)) / x_154), 0.0f);
+          vec4 x_156 = texture(tileMapsTexture1_tileMapsSampler, ((x_150 + vec2(0.5f, 0.5f)) / x_154), 0.0f);
           frameID_1 = x_156.x;
           break;
         }
         case 0: {
           vec2 x_136 = tileID;
           vec2 x_140 = x_20.stageSize;
-          vec4 x_142 = texture(tileMapsTexture0, ((x_136 + vec2(0.5f, 0.5f)) / x_140), 0.0f);
+          vec4 x_142 = texture(tileMapsTexture0_tileMapsSampler, ((x_136 + vec2(0.5f, 0.5f)) / x_140), 0.0f);
           frameID_1 = x_142.x;
           break;
         }
@@ -109,7 +113,7 @@ void main_1() {
       }
       float x_166 = frameID_1;
       float x_169 = x_20.spriteCount;
-      vec4 x_172 = texture(animationMapTexture, vec2(((x_166 + 0.5f) / x_169), 0.0f), 0.0f);
+      vec4 x_172 = texture(animationMapTexture_animationMapSampler, vec2(((x_166 + 0.5f) / x_169), 0.0f), 0.0f);
       animationData = x_172;
       float x_174 = animationData.y;
       if ((x_174 > 0.0f)) {
@@ -127,7 +131,7 @@ void main_1() {
             }
             float x_208 = frameID_1;
             float x_211 = x_20.spriteCount;
-            vec4 x_217 = texture(animationMapTexture, vec2(((x_208 + 0.5f) / x_211), (0.125f * f)), 0.0f);
+            vec4 x_217 = texture(animationMapTexture_animationMapSampler, vec2(((x_208 + 0.5f) / x_211), (0.125f * f)), 0.0f);
             animationData = x_217;
           }
         }
@@ -149,10 +153,10 @@ void main_1() {
         tileUV = vec2(x_252.y, x_252.x);
       }
       if ((i == 0)) {
-        vec4 x_268 = texture(spriteSheetTexture, ((tileUV * frameSize) + offset_1));
+        vec4 x_268 = texture(spriteSheetTexture_spriteSheetSampler, ((tileUV * frameSize) + offset_1));
         color = x_268;
       } else {
-        vec4 x_279 = texture(spriteSheetTexture, ((tileUV * frameSize) + offset_1));
+        vec4 x_279 = texture(spriteSheetTexture_spriteSheetSampler, ((tileUV * frameSize) + offset_1));
         nc = x_279;
         float x_283 = color.w;
         float x_285 = nc.w;
@@ -177,19 +181,8 @@ void main_1() {
 struct main_out {
   vec4 glFragColor_1;
 };
-struct tint_symbol_2 {
-  vec3 vPosition_param;
-  vec2 vUV_param;
-  vec2 tUV_param;
-  vec2 stageUnits_1_param;
-  vec2 levelUnits_param;
-  vec2 tileID_1_param;
-};
-struct tint_symbol_3 {
-  vec4 glFragColor_1;
-};
 
-main_out tint_symbol_inner(vec2 tUV_param, vec2 tileID_1_param, vec2 levelUnits_param, vec2 stageUnits_1_param, vec3 vPosition_param, vec2 vUV_param) {
+main_out tint_symbol(vec2 tUV_param, vec2 tileID_1_param, vec2 levelUnits_param, vec2 stageUnits_1_param, vec3 vPosition_param, vec2 vUV_param) {
   tUV = tUV_param;
   tileID_1 = tileID_1_param;
   levelUnits = levelUnits_param;
@@ -197,41 +190,19 @@ main_out tint_symbol_inner(vec2 tUV_param, vec2 tileID_1_param, vec2 levelUnits_
   vPosition = vPosition_param;
   vUV = vUV_param;
   main_1();
-  main_out tint_symbol_4 = main_out(glFragColor);
-  return tint_symbol_4;
+  main_out tint_symbol_1 = main_out(glFragColor);
+  return tint_symbol_1;
 }
 
-tint_symbol_3 tint_symbol(tint_symbol_2 tint_symbol_1) {
-  main_out inner_result = tint_symbol_inner(tint_symbol_1.tUV_param, tint_symbol_1.tileID_1_param, tint_symbol_1.levelUnits_param, tint_symbol_1.stageUnits_1_param, tint_symbol_1.vPosition_param, tint_symbol_1.vUV_param);
-  tint_symbol_3 wrapper_result = tint_symbol_3(vec4(0.0f, 0.0f, 0.0f, 0.0f));
-  wrapper_result.glFragColor_1 = inner_result.glFragColor_1;
-  return wrapper_result;
-}
-in vec3 vPosition_param;
-in vec2 vUV_param;
-in vec2 tUV_param;
-in vec2 stageUnits_1_param;
-in vec2 levelUnits_param;
-in vec2 tileID_1_param;
-out vec4 glFragColor_1;
 void main() {
-  tint_symbol_2 inputs;
-  inputs.vPosition_param = vPosition_param;
-  inputs.vUV_param = vUV_param;
-  inputs.tUV_param = tUV_param;
-  inputs.stageUnits_1_param = stageUnits_1_param;
-  inputs.levelUnits_param = levelUnits_param;
-  inputs.tileID_1_param = tileID_1_param;
-  tint_symbol_3 outputs;
-  outputs = tint_symbol(inputs);
-  glFragColor_1 = outputs.glFragColor_1;
+  main_out inner_result = tint_symbol(tUV_param_1, tileID_1_param_1, levelUnits_param_1, stageUnits_1_param_1, vPosition_param_1, vUV_param_1);
+  glFragColor_1_1 = inner_result.glFragColor_1;
+  return;
 }
-
-
 Error parsing GLSL shader:
-ERROR: 0:76: 'frac' : no matching overloaded function found 
-ERROR: 0:76: 'assign' :  cannot convert from ' const float' to ' temp mediump 2-component vector of float'
-ERROR: 0:76: '' : compilation terminated 
+ERROR: 0:80: 'frac' : no matching overloaded function found 
+ERROR: 0:80: 'assign' :  cannot convert from ' const float' to ' temp mediump 2-component vector of float'
+ERROR: 0:80: '' : compilation terminated 
 ERROR: 3 compilation errors.  No code generated.
 
 

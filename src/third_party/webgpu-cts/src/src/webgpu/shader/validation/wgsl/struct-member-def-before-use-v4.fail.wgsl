@@ -6,7 +6,7 @@ struct foo {
   a : array<f32>;
 };
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   var f : foo;
   f.c = 2;

@@ -22,7 +22,7 @@
 
 #include "src/ast/assignment_statement.h"
 #include "src/ast/call_statement.h"
-#include "src/ast/disable_validation_decoration.h"
+#include "src/ast/disable_validation_attribute.h"
 #include "src/ast/type_name.h"
 #include "src/ast/unary_op.h"
 #include "src/block_allocator.h"
@@ -115,7 +115,7 @@ struct LoadStoreKey {
 struct AtomicKey {
   sem::Type const* buf_ty = nullptr;  // buffer type
   sem::Type const* el_ty = nullptr;   // element type
-  sem::IntrinsicType const op;        // atomic op
+  sem::BuiltinType const op;          // atomic op
   bool operator==(const AtomicKey& rhs) const {
     return buf_ty == rhs.buf_ty && el_ty == rhs.el_ty && op == rhs.op;
   }
@@ -191,7 +191,7 @@ bool IntrinsicDataTypeFor(const sem::Type* ty,
   return false;
 }
 
-/// @returns a DecomposeMemoryAccess::Intrinsic decoration that can be applied
+/// @returns a DecomposeMemoryAccess::Intrinsic attribute that can be applied
 /// to a stub function to load the type `ty`.
 DecomposeMemoryAccess::Intrinsic* IntrinsicLoadFor(
     ProgramBuilder* builder,
@@ -206,7 +206,7 @@ DecomposeMemoryAccess::Intrinsic* IntrinsicLoadFor(
       type);
 }
 
-/// @returns a DecomposeMemoryAccess::Intrinsic decoration that can be applied
+/// @returns a DecomposeMemoryAccess::Intrinsic attribute that can be applied
 /// to a stub function to store the type `ty`.
 DecomposeMemoryAccess::Intrinsic* IntrinsicStoreFor(
     ProgramBuilder* builder,
@@ -221,44 +221,44 @@ DecomposeMemoryAccess::Intrinsic* IntrinsicStoreFor(
       storage_class, type);
 }
 
-/// @returns a DecomposeMemoryAccess::Intrinsic decoration that can be applied
+/// @returns a DecomposeMemoryAccess::Intrinsic attribute that can be applied
 /// to a stub function for the atomic op and the type `ty`.
 DecomposeMemoryAccess::Intrinsic* IntrinsicAtomicFor(ProgramBuilder* builder,
-                                                     sem::IntrinsicType ity,
+                                                     sem::BuiltinType ity,
                                                      const sem::Type* ty) {
   auto op = DecomposeMemoryAccess::Intrinsic::Op::kAtomicLoad;
   switch (ity) {
-    case sem::IntrinsicType::kAtomicLoad:
+    case sem::BuiltinType::kAtomicLoad:
       op = DecomposeMemoryAccess::Intrinsic::Op::kAtomicLoad;
       break;
-    case sem::IntrinsicType::kAtomicStore:
+    case sem::BuiltinType::kAtomicStore:
       op = DecomposeMemoryAccess::Intrinsic::Op::kAtomicStore;
       break;
-    case sem::IntrinsicType::kAtomicAdd:
+    case sem::BuiltinType::kAtomicAdd:
       op = DecomposeMemoryAccess::Intrinsic::Op::kAtomicAdd;
       break;
-    case sem::IntrinsicType::kAtomicSub:
+    case sem::BuiltinType::kAtomicSub:
       op = DecomposeMemoryAccess::Intrinsic::Op::kAtomicSub;
       break;
-    case sem::IntrinsicType::kAtomicMax:
+    case sem::BuiltinType::kAtomicMax:
       op = DecomposeMemoryAccess::Intrinsic::Op::kAtomicMax;
       break;
-    case sem::IntrinsicType::kAtomicMin:
+    case sem::BuiltinType::kAtomicMin:
       op = DecomposeMemoryAccess::Intrinsic::Op::kAtomicMin;
       break;
-    case sem::IntrinsicType::kAtomicAnd:
+    case sem::BuiltinType::kAtomicAnd:
       op = DecomposeMemoryAccess::Intrinsic::Op::kAtomicAnd;
       break;
-    case sem::IntrinsicType::kAtomicOr:
+    case sem::BuiltinType::kAtomicOr:
       op = DecomposeMemoryAccess::Intrinsic::Op::kAtomicOr;
       break;
-    case sem::IntrinsicType::kAtomicXor:
+    case sem::BuiltinType::kAtomicXor:
       op = DecomposeMemoryAccess::Intrinsic::Op::kAtomicXor;
       break;
-    case sem::IntrinsicType::kAtomicExchange:
+    case sem::BuiltinType::kAtomicExchange:
       op = DecomposeMemoryAccess::Intrinsic::Op::kAtomicExchange;
       break;
-    case sem::IntrinsicType::kAtomicCompareExchangeWeak:
+    case sem::BuiltinType::kAtomicCompareExchangeWeak:
       op = DecomposeMemoryAccess::Intrinsic::Op::kAtomicCompareExchangeWeak;
       break;
     default:
@@ -286,8 +286,8 @@ struct BufferAccess {
 
 /// Store describes a single storage or uniform buffer write
 struct Store {
-  ast::AssignmentStatement* assignment;  // The AST assignment statement
-  BufferAccess target;                   // The target for the write
+  const ast::AssignmentStatement* assignment;  // The AST assignment statement
+  BufferAccess target;                         // The target for the write
 };
 
 }  // namespace
@@ -457,8 +457,8 @@ struct DecomposeMemoryAccess::State {
               // array.
               b.create<ast::Variable>(b.Sym("buffer"), storage_class,
                                       var_user->Variable()->Access(),
-                                      buf_ast_ty, true, nullptr,
-                                      ast::DecorationList{disable_validation}),
+                                      buf_ast_ty, true, false, nullptr,
+                                      ast::AttributeList{disable_validation}),
               b.Param("offset", b.ty.u32()),
           };
 
@@ -469,11 +469,11 @@ struct DecomposeMemoryAccess::State {
             auto* el_ast_ty = CreateASTTypeFor(ctx, el_ty);
             auto* func = b.create<ast::Function>(
                 name, params, el_ast_ty, nullptr,
-                ast::DecorationList{
+                ast::AttributeList{
                     intrinsic,
                     b.Disable(ast::DisabledValidation::kFunctionHasNoBody),
                 },
-                ast::DecorationList{});
+                ast::AttributeList{});
             b.AST().AddFunction(func);
           } else if (auto* arr_ty = el_ty->As<sem::Array>()) {
             // fn load_func(buf : buf_ty, offset : u32) -> array<T, N> {
@@ -556,8 +556,8 @@ struct DecomposeMemoryAccess::State {
 
               b.create<ast::Variable>(b.Sym("buffer"), storage_class,
                                       var_user->Variable()->Access(),
-                                      buf_ast_ty, true, nullptr,
-                                      ast::DecorationList{disable_validation}),
+                                      buf_ast_ty, true, false, nullptr,
+                                      ast::AttributeList{disable_validation}),
               b.Param("offset", b.ty.u32()),
               b.Param("value", el_ast_ty),
           };
@@ -568,11 +568,11 @@ struct DecomposeMemoryAccess::State {
                   IntrinsicStoreFor(ctx.dst, storage_class, el_ty)) {
             auto* func = b.create<ast::Function>(
                 name, params, b.ty.void_(), nullptr,
-                ast::DecorationList{
+                ast::AttributeList{
                     intrinsic,
                     b.Disable(ast::DisabledValidation::kFunctionHasNoBody),
                 },
-                ast::DecorationList{});
+                ast::AttributeList{});
             b.AST().AddFunction(func);
           } else {
             ast::StatementList body;
@@ -641,7 +641,7 @@ struct DecomposeMemoryAccess::State {
   /// @return the name of the function that performs the load
   Symbol AtomicFunc(const sem::Type* buf_ty,
                     const sem::Type* el_ty,
-                    const sem::Intrinsic* intrinsic,
+                    const sem::Builtin* intrinsic,
                     const sem::VariableUser* var_user) {
     auto op = intrinsic->Type();
     return utils::GetOrCreate(atomic_funcs, AtomicKey{buf_ty, el_ty, op}, [&] {
@@ -656,8 +656,8 @@ struct DecomposeMemoryAccess::State {
           // order for HLSL to emit this as a ByteAddressBuffer.
           b.create<ast::Variable>(b.Sym("buffer"), ast::StorageClass::kStorage,
                                   var_user->Variable()->Access(), buf_ast_ty,
-                                  true, nullptr,
-                                  ast::DecorationList{disable_validation}),
+                                  true, false, nullptr,
+                                  ast::AttributeList{disable_validation}),
           b.Param("offset", b.ty.u32()),
       };
 
@@ -678,11 +678,11 @@ struct DecomposeMemoryAccess::State {
       auto* ret_ty = CreateASTTypeFor(ctx, intrinsic->ReturnType());
       auto* func = b.create<ast::Function>(
           b.Sym(), params, ret_ty, nullptr,
-          ast::DecorationList{
+          ast::AttributeList{
               atomic,
               b.Disable(ast::DisabledValidation::kFunctionHasNoBody),
           },
-          ast::DecorationList{});
+          ast::AttributeList{});
 
       b.AST().AddFunction(func);
       return func->symbol;
@@ -790,7 +790,22 @@ const DecomposeMemoryAccess::Intrinsic* DecomposeMemoryAccess::Intrinsic::Clone(
 DecomposeMemoryAccess::DecomposeMemoryAccess() = default;
 DecomposeMemoryAccess::~DecomposeMemoryAccess() = default;
 
-void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
+bool DecomposeMemoryAccess::ShouldRun(const Program* program,
+                                      const DataMap&) const {
+  for (auto* decl : program->AST().GlobalDeclarations()) {
+    if (auto* var = program->Sem().Get<sem::Variable>(decl)) {
+      if (var->StorageClass() == ast::StorageClass::kStorage ||
+          var->StorageClass() == ast::StorageClass::kUniform) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+void DecomposeMemoryAccess::Run(CloneContext& ctx,
+                                const DataMap&,
+                                DataMap&) const {
   auto& sem = ctx.src->Sem();
 
   State state(ctx);
@@ -906,28 +921,15 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
 
     if (auto* call_expr = node->As<ast::CallExpression>()) {
       auto* call = sem.Get(call_expr);
-      if (auto* intrinsic = call->Target()->As<sem::Intrinsic>()) {
-        if (intrinsic->Type() == sem::IntrinsicType::kIgnore) {  // [DEPRECATED]
-          // ignore(X)
-          // If X is an memory access, don't transform it into a load, as it
-          // may refer to a structure holding a runtime array, which cannot be
-          // loaded. Instead replace X with the underlying storage / uniform
-          // buffer variable.
-          if (auto access = state.TakeAccess(call_expr->args[0])) {
-            ctx.Replace(call_expr->args[0], [=, &ctx] {
-              return ctx.CloneWithoutTransform(access.var->Declaration());
-            });
-          }
-          continue;
-        }
-        if (intrinsic->Type() == sem::IntrinsicType::kArrayLength) {
+      if (auto* builtin = call->Target()->As<sem::Builtin>()) {
+        if (builtin->Type() == sem::BuiltinType::kArrayLength) {
           // arrayLength(X)
-          // Don't convert X into a load, this intrinsic actually requires the
+          // Don't convert X into a load, this builtin actually requires the
           // real pointer.
           state.TakeAccess(call_expr->args[0]);
           continue;
         }
-        if (intrinsic->IsAtomic()) {
+        if (builtin->IsAtomic()) {
           if (auto access = state.TakeAccess(call_expr->args[0])) {
             // atomic___(X)
             ctx.Replace(call_expr, [=, &ctx, &state] {
@@ -935,9 +937,8 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
               auto* offset = access.offset->Build(ctx);
               auto* buf_ty = access.var->Type()->UnwrapRef();
               auto* el_ty = access.type->UnwrapRef()->As<sem::Atomic>()->Type();
-              Symbol func =
-                  state.AtomicFunc(buf_ty, el_ty, intrinsic,
-                                   access.var->As<sem::VariableUser>());
+              Symbol func = state.AtomicFunc(
+                  buf_ty, el_ty, builtin, access.var->As<sem::VariableUser>());
 
               ast::ExpressionList args{ctx.Clone(buf), offset};
               for (size_t i = 1; i < call_expr->args.size(); i++) {

@@ -1,6 +1,6 @@
 // v-0008: line 6: switch statement must have exactly one default clause
 
-[[stage(fragment)]]
+@stage(fragment)
 fn main() {
   var a: i32 = 2;
   switch (a) {

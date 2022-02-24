@@ -35,6 +35,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/app_constants/constants.h"
 #include "components/crx_file/id_util.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/model/sync_error_factory.h"
@@ -1030,12 +1031,15 @@ TEST_F(AppListSyncableServiceTest,
       std::make_unique<syncer::SyncErrorFactoryMock>());
   content::RunAllTasksUntilIdle();
 
+  const bool productivity_launcher =
+      ash::features::IsProductivityLauncherEnabled();
   // After the initial sync data is merged, the single item folder is expected
-  // to be cleaned up.
-  ASSERT_FALSE(GetSyncItem(kFolderId1));
+  // to be cleaned up when productivity launcher is disabled.
+  ASSERT_EQ(productivity_launcher, !!GetSyncItem(kFolderId1));
   // The child item in the folder should be moved to the top level.
   ASSERT_TRUE(GetSyncItem(kChildItemId1));
-  EXPECT_EQ("", GetSyncItem(kChildItemId1)->parent_id);
+  EXPECT_EQ(productivity_launcher ? kFolderId1 : "",
+            GetSyncItem(kChildItemId1)->parent_id);
   EXPECT_TRUE(
       GetSyncItem(kChildItemId1)
           ->item_ordinal.GreaterThan(GetSyncItem(kTopItem)->item_ordinal));
@@ -1106,11 +1110,16 @@ TEST_F(AppListSyncableServiceTest, UpdateSyncItemRemoveLastItemFromFolder) {
   // Move the child_item_1 out of the folder.
   model_updater->SetItemFolderId(child_item_1->id(), "");
 
-  // Verify both child item are moved out of the folder.
+  // Verify both child item are moved out of the folder if productivity launcher
+  // is disabled. With productivity launcher enabled, single-item folder should
+  // stay around.
+  const bool productivity_launcher =
+      ash::features::IsProductivityLauncherEnabled();
   ASSERT_TRUE(GetSyncItem(kChildItemId1));
   EXPECT_EQ("", GetSyncItem(kChildItemId1)->parent_id);
   ASSERT_TRUE(GetSyncItem(kChildItemId2));
-  EXPECT_EQ("", GetSyncItem(kChildItemId2)->parent_id);
+  EXPECT_EQ(productivity_launcher ? kFolderId : "",
+            GetSyncItem(kChildItemId2)->parent_id);
   EXPECT_EQ("", model_updater->FindItem(kChildItemId1)->folder_id());
 
   // Install the second child app.
@@ -1123,7 +1132,7 @@ TEST_F(AppListSyncableServiceTest, UpdateSyncItemRemoveLastItemFromFolder) {
   // and it is not in any folder.
   ChromeAppListItem* child_item_2 = model_updater->FindItem(kChildItemId2);
   ASSERT_TRUE(child_item_2);
-  EXPECT_EQ("", child_item_2->folder_id());
+  EXPECT_EQ(productivity_launcher ? kFolderId : "", child_item_2->folder_id());
 }
 
 TEST_F(AppListSyncableServiceTest, AddPageBreakItems) {
@@ -1377,11 +1386,19 @@ TEST_F(AppListSyncableServiceTest, PageBreakWithOverflowItem) {
   // A1 A2 [page break 1]
   // B1 B2 B3 [page break 2]
   // C1 [page break 3]
+  // For productivity launcher, page breaks are ignored.
+  const bool productivity_launcher =
+      ash::features::IsProductivityLauncherEnabled();
   auto ordered_items = GetOrderedItemIdsFromModelUpdater();
-  EXPECT_THAT(
-      ordered_items,
-      ElementsAre(kItemIdA1, kItemIdA2, kPageBreakItemId1, kItemIdB1, kItemIdB2,
-                  kItemIdB3, kPageBreakItemId2, kItemIdC1, kPageBreakItemId3));
+  if (productivity_launcher) {
+    EXPECT_THAT(ordered_items, ElementsAre(kItemIdA1, kItemIdA2, kItemIdB1,
+                                           kItemIdB2, kItemIdB3, kItemIdC1));
+  } else {
+    EXPECT_THAT(ordered_items,
+                ElementsAre(kItemIdA1, kItemIdA2, kPageBreakItemId1, kItemIdB1,
+                            kItemIdB2, kItemIdB3, kPageBreakItemId2, kItemIdC1,
+                            kPageBreakItemId3));
+  }
 
   // On device 1, move A1 from page 1 to page 2 and insert it between B1 and B2.
   // Device 2 should get the following 3 sync changes from device 1:
@@ -1392,14 +1409,14 @@ TEST_F(AppListSyncableServiceTest, PageBreakWithOverflowItem) {
   // Sync change for removing the previous page break after B3.
   AppListModelUpdater* model_updater = GetModelUpdater();
   ChromeAppListItem* app_item_B1 = model_updater->FindItem(kItemIdB1);
-  ChromeAppListItem* pagebreak_2 = model_updater->FindItem(kPageBreakItemId2);
   ChromeAppListItem* app_item_B2 = model_updater->FindItem(kItemIdB2);
   ChromeAppListItem* app_item_B3 = model_updater->FindItem(kItemIdB3);
   change_list.push_back(syncer::SyncChange(
       FROM_HERE, syncer::SyncChange::ACTION_DELETE,
       CreateAppRemoteData(
           kPageBreakItemId2, "page_break_item2_name", "" /* parent_id */,
-          pagebreak_2->position().ToDebugString(), "pinordinal")));
+          GetSyncItem(kPageBreakItemId2)->item_ordinal.ToDebugString(),
+          "pinordinal")));
   // Sync change for adding a new page break after B2.
   const std::string kNewPageBreakItemId = GenerateId("new_page_break_item_id");
   change_list.push_back(syncer::SyncChange(
@@ -1435,11 +1452,18 @@ TEST_F(AppListSyncableServiceTest, PageBreakWithOverflowItem) {
   // A2 [pagebreak 1]
   // B1 A1 B2 [new pagebreak]
   // B3 C1 [pagebreak 3]
+  // For productivity launcher page breaks are ignored.
   auto ordered_items_after_sync = GetOrderedItemIdsFromModelUpdater();
-  EXPECT_THAT(ordered_items_after_sync,
-              ElementsAre(kItemIdA2, kPageBreakItemId1, kItemIdB1, kItemIdA1,
-                          kItemIdB2, kNewPageBreakItemId, kItemIdB3, kItemIdC1,
-                          kPageBreakItemId3));
+  if (productivity_launcher) {
+    EXPECT_THAT(ordered_items_after_sync,
+                ElementsAre(kItemIdA2, kItemIdB1, kItemIdA1, kItemIdB2,
+                            kItemIdB3, kItemIdC1));
+  } else {
+    EXPECT_THAT(ordered_items_after_sync,
+                ElementsAre(kItemIdA2, kPageBreakItemId1, kItemIdB1, kItemIdA1,
+                            kItemIdB2, kNewPageBreakItemId, kItemIdB3,
+                            kItemIdC1, kPageBreakItemId3));
+  }
 }
 
 TEST_F(AppListSyncableServiceTest, FirstAvailablePosition) {
@@ -1473,8 +1497,15 @@ TEST_F(AppListSyncableServiceTest, FirstAvailablePosition) {
   ItemTestApi(page_break_item.get()).SetPosition(page_break_position);
   page_break_item->SetIsPageBreak(true);
   model_updater->AddItem((std::move(page_break_item)));
-  EXPECT_TRUE(last_app_position.CreateBetween(page_break_position)
-                  .Equals(model_updater->GetFirstAvailablePosition()));
+  // For productivity launcher, page breaks are ignored by app list model
+  // updater.
+  if (ash::features::IsProductivityLauncherEnabled()) {
+    EXPECT_TRUE(last_app_position.CreateAfter().Equals(
+        model_updater->GetFirstAvailablePosition()));
+  } else {
+    EXPECT_TRUE(last_app_position.CreateBetween(page_break_position)
+                    .Equals(model_updater->GetFirstAvailablePosition()));
+  }
 
   // Fill up the first page.
   std::unique_ptr<ChromeAppListItem> app_item =
@@ -1482,11 +1513,19 @@ TEST_F(AppListSyncableServiceTest, FirstAvailablePosition) {
           profile_.get(),
           GenerateId("item_id" + base::NumberToString(max_items_in_first_page)),
           model_updater);
-  ItemTestApi(app_item.get())
-      .SetPosition(last_app_position.CreateBetween(page_break_position));
+  const syncer::StringOrdinal new_item_position =
+      last_app_position.CreateBetween(page_break_position);
+  ItemTestApi(app_item.get()).SetPosition(new_item_position);
   model_updater->AddItem(std::move(app_item));
-  EXPECT_TRUE(page_break_position.CreateAfter().Equals(
-      model_updater->GetFirstAvailablePosition()));
+  // For productivity launcher, page breaks are ignored by app list model
+  // updater.
+  if (ash::features::IsProductivityLauncherEnabled()) {
+    EXPECT_TRUE(new_item_position.CreateAfter().Equals(
+        model_updater->GetFirstAvailablePosition()));
+  } else {
+    EXPECT_TRUE(page_break_position.CreateAfter().Equals(
+        model_updater->GetFirstAvailablePosition()));
+  }
 }
 
 // Test that installing an app between two items with the same position will put
@@ -1535,7 +1574,7 @@ TEST_F(AppListSyncableServiceTest, TransferItem) {
 
   // Chrome is an existing app to transfer attributes to.
   scoped_refptr<extensions::Extension> chrome =
-      MakeApp(kSomeAppName, extension_misc::kChromeAppId,
+      MakeApp(kSomeAppName, app_constants::kChromeAppId,
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
   InstallExtension(chrome.get());
 
@@ -1555,9 +1594,9 @@ TEST_F(AppListSyncableServiceTest, TransferItem) {
   ASSERT_TRUE(webstore_sync_item);
 
   const app_list::AppListSyncableService::SyncItem* chrome_sync_item =
-      GetSyncItem(extension_misc::kChromeAppId);
+      GetSyncItem(app_constants::kChromeAppId);
   const ChromeAppListItem* chrome_item =
-      model_updater->FindItem(extension_misc::kChromeAppId);
+      model_updater->FindItem(app_constants::kChromeAppId);
   ASSERT_TRUE(chrome_item);
   ASSERT_TRUE(chrome_sync_item);
 
@@ -1578,7 +1617,7 @@ TEST_F(AppListSyncableServiceTest, TransferItem) {
 
   // Perform attributes transfer to existing Chrome app.
   EXPECT_TRUE(app_list_syncable_service()->TransferItemAttributes(
-      extensions::kWebStoreAppId, extension_misc::kChromeAppId));
+      extensions::kWebStoreAppId, app_constants::kChromeAppId));
   // Perform attributes transfer to the future Youtube app.
   EXPECT_TRUE(app_list_syncable_service()->TransferItemAttributes(
       extensions::kWebStoreAppId, extension_misc::kYoutubeAppId));
@@ -2954,12 +2993,12 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
   app_list_syncable_service()->SetAppListPreferredOrder(
       ash::AppListSortOrder::kNameReverseAlphabetical);
 
-  // Folders should be in front of apps.
-  EXPECT_EQ(GetOrderedItemIdsFromSyncableService(),
-            std::vector<std::string>({kFolderId2, kFolderId1, kChildItemId2_3,
-                                      kChildItemId2_2, kChildItemId2_1,
-                                      kChildItemId1_2, kChildItemId1_1,
-                                      kItemId2, kItemId1}));
+  // Folders should be sorted alphabetically with apps.
+  EXPECT_EQ(
+      GetOrderedItemIdsFromSyncableService(),
+      std::vector<std::string>(
+          {kChildItemId2_3, kChildItemId2_2, kChildItemId2_1, kFolderId2,
+           kChildItemId1_2, kChildItemId1_1, kFolderId1, kItemId2, kItemId1}));
 }
 
 // Verifies that sorting app items with the alphabetical order should work as
@@ -3261,12 +3300,13 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
   // Install a new app.
   const std::string kNewAppId = CreateNextAppId(GenerateId("app_id"));
   scoped_refptr<extensions::Extension> app =
-      MakeApp("B", kNewAppId, extensions::Extension::NO_FLAGS);
+      MakeApp("G", kNewAppId, extensions::Extension::NO_FLAGS);
   InstallExtension(app.get());
 
-  // Verify that the app is placed after folders.
+  // Verify that the app is placed alphabetically - note that empty folder name
+  // is treated as "Unnamed".
   EXPECT_EQ(GetOrderedNamesFromSyncableService(),
-            std::vector<std::string>({"Folder1", "Folder2", "", "B"}));
+            std::vector<std::string>({"Folder1", "Folder2", "G", ""}));
 
   // Verify that the entropy is zero.
   EXPECT_TRUE(cc::MathUtil::IsWithinEpsilon(
@@ -3276,18 +3316,18 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
   // Install the second app.
   const std::string kNewAppId2 = CreateNextAppId(GenerateId("app_id2"));
   scoped_refptr<extensions::Extension> app2 =
-      MakeApp("C", kNewAppId2, extensions::Extension::NO_FLAGS);
+      MakeApp("c", kNewAppId2, extensions::Extension::NO_FLAGS);
   InstallExtension(app2.get());
 
-  // Verify that the app is placed after folders.
+  // Verify that the app is placed alphabetically again.
   EXPECT_EQ(GetOrderedNamesFromSyncableService(),
-            std::vector<std::string>({"Folder1", "Folder2", "", "B", "C"}));
+            std::vector<std::string>({"c", "Folder1", "Folder2", "G", ""}));
 
   // Change folders' names so that folders are out of order.
   ChangeItemName(kFolderItemId1, "Folder2");
   ChangeItemName(kFolderItemId2, "Folder1");
   EXPECT_EQ(GetOrderedNamesFromSyncableService(),
-            std::vector<std::string>({"Folder2", "Folder1", "", "B", "C"}));
+            std::vector<std::string>({"c", "Folder2", "Folder1", "G", ""}));
 
   // There is one folder item out of order so the entropy should be 1/5 = 0.2.
   EXPECT_TRUE(cc::MathUtil::IsWithinEpsilon(
@@ -3297,21 +3337,21 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
   // Install the third app. Verify the item order after installation.
   const std::string kNewAppId3 = CreateNextAppId(GenerateId("app_id3"));
   scoped_refptr<extensions::Extension> app3 =
-      MakeApp("D", kNewAppId3, extensions::Extension::NO_FLAGS);
+      MakeApp("Fs", kNewAppId3, extensions::Extension::NO_FLAGS);
   InstallExtension(app3.get());
   EXPECT_EQ(
       GetOrderedNamesFromSyncableService(),
-      std::vector<std::string>({"Folder2", "Folder1", "", "B", "C", "D"}));
+      std::vector<std::string>({"c", "Folder2", "Folder1", "Fs", "G", ""}));
 
-  // Install the forth app. Verify that the new item is inserted between a
-  // folder and an app.
+  // Install the forth app. Verify that the new item is inserted in alphabetical
+  // order.
   const std::string kNewAppId4 = CreateNextAppId(GenerateId("app_id4"));
   scoped_refptr<extensions::Extension> app4 =
-      MakeApp("A", kNewAppId4, extensions::Extension::NO_FLAGS);
+      MakeApp("z", kNewAppId4, extensions::Extension::NO_FLAGS);
   InstallExtension(app4.get());
-  EXPECT_EQ(
-      GetOrderedNamesFromSyncableService(),
-      std::vector<std::string>({"Folder2", "Folder1", "", "A", "B", "C", "D"}));
+  EXPECT_EQ(GetOrderedNamesFromSyncableService(),
+            std::vector<std::string>(
+                {"c", "Folder2", "Folder1", "Fs", "G", "", "z"}));
 }
 
 // Verifies that the new app's position maintains the launcher sort order among

@@ -269,6 +269,12 @@ Trial.
 Please note that Origin Trials are not exempt from requiring cross-functional
 approvals from the Chrome launch review process.
 
+Depending on your feature and your experimentation goals, running an experiment
+via Finch on a percentage of the stable or beta populations may be useful
+([example](https://groups.google.com/a/chromium.org/g/blink-api-owners-discuss/c/WoQvWPCxKdU/m/e93bxrzwAQAJ)).
+In these cases, an Intent to Experiment explaining why this non-typical path is
+requested and the corresponding LGTM(s) are still required before proceeding.
+
 #### Step 6: Prepare to Ship
 
 At this point, if you are a Googler you should get a final spec review from your

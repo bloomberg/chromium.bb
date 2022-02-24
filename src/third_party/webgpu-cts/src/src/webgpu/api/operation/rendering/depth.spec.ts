@@ -83,8 +83,8 @@ g.test('depth_compare_func')
       vertex: {
         module: t.device.createShaderModule({
           code: `
-            [[stage(vertex)]] fn main(
-              [[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+            @stage(vertex) fn main(
+              @builtin(vertex_index) VertexIndex : u32) -> @builtin(position) vec4<f32> {
               return vec4<f32>(0.5, 0.5, 0.5, 1.0);
             }
             `,
@@ -94,7 +94,7 @@ g.test('depth_compare_func')
       fragment: {
         module: t.device.createShaderModule({
           code: `
-            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            @stage(fragment) fn main() -> @location(0) vec4<f32> {
               return vec4<f32>(1.0, 1.0, 1.0, 1.0);
             }
             `,
@@ -171,13 +171,13 @@ g.test('reverse_depth')
         module: t.device.createShaderModule({
           code: `
             struct Output {
-              [[builtin(position)]] Position : vec4<f32>;
-              [[location(0)]] color : vec4<f32>;
+              @builtin(position) Position : vec4<f32>;
+              @location(0) color : vec4<f32>;
             };
 
-            [[stage(vertex)]] fn main(
-              [[builtin(vertex_index)]] VertexIndex : u32,
-              [[builtin(instance_index)]] InstanceIndex : u32) -> Output {
+            @stage(vertex) fn main(
+              @builtin(vertex_index) VertexIndex : u32,
+              @builtin(instance_index) InstanceIndex : u32) -> Output {
               // TODO: remove workaround for Tint unary array access broke
               var zv : array<vec2<f32>, 4> = array<vec2<f32>, 4>(
                   vec2<f32>(0.2, 0.2),
@@ -204,9 +204,9 @@ g.test('reverse_depth')
       fragment: {
         module: t.device.createShaderModule({
           code: `
-            [[stage(fragment)]] fn main(
-              [[location(0)]] color : vec4<f32>
-              ) -> [[location(0)]] vec4<f32> {
+            @stage(fragment) fn main(
+              @location(0) color : vec4<f32>
+              ) -> @location(0) vec4<f32> {
               return color;
             }
             `,

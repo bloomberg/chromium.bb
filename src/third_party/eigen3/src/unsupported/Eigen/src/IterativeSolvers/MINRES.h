@@ -10,8 +10,8 @@
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-#ifndef EIGEN_MINRES_H_
-#define EIGEN_MINRES_H_
+#ifndef EIGEN_MINRES_H
+#define EIGEN_MINRES_H
 
 
 #include "./InternalHeaderCheck.h"

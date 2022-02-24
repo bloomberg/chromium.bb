@@ -20,14 +20,17 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/base_lock_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/confirm_password_change_handler.h"
+#include "chrome/browser/ui/webui/chromeos/in_session_password_change/lock_screen_captive_portal_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/lock_screen_network_dialog.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/aura/window.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace chromeos {
@@ -43,7 +46,50 @@ InSessionPasswordSyncManager* GetInSessionPasswordSyncManager() {
   return InSessionPasswordSyncManagerFactory::GetForProfile(profile);
 }
 
+bool IsDialogLoaded(bool is_loaded,
+                    base::OnceClosure& on_loaded_callback,
+                    base::OnceClosure callback) {
+  if (is_loaded)
+    return true;
+  DCHECK(!on_loaded_callback);
+  on_loaded_callback = std::move(callback);
+  return false;
+}
+
+void OnDialogLoaded(bool& is_loaded, base::OnceClosure& on_loaded_callback) {
+  if (is_loaded)
+    return;
+  is_loaded = true;
+  if (on_loaded_callback) {
+    std::move(on_loaded_callback).Run();
+  }
+}
+
 }  // namespace
+
+// Cleans up the delegate for a WebContentsModalDialogManager on destruction, or
+// on WebContents destruction, whichever comes first.
+class LockScreenStartReauthDialog::ModalDialogManagerCleanup
+    : public content::WebContentsObserver {
+ public:
+  // This constructor automatically observes |web_contents| for its lifetime.
+  explicit ModalDialogManagerCleanup(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  ModalDialogManagerCleanup(const ModalDialogManagerCleanup&) = delete;
+  ModalDialogManagerCleanup& operator=(const ModalDialogManagerCleanup&) =
+      delete;
+  ~ModalDialogManagerCleanup() override { ResetDelegate(); }
+
+  // content::WebContentsObserver:
+  void WebContentsDestroyed() override { ResetDelegate(); }
+
+  void ResetDelegate() {
+    if (!web_contents())
+      return;
+    web_modal::WebContentsModalDialogManager::FromWebContents(web_contents())
+        ->SetDelegate(nullptr);
+  }
+};
 
 // static
 gfx::Size LockScreenStartReauthDialog::CalculateLockScreenReauthDialogSize(
@@ -76,10 +122,14 @@ void LockScreenStartReauthDialog::OnProfileCreated(
     profile_ = profile;
     g_dialog->ShowSystemDialogForBrowserContext(
         profile->GetPrimaryOTRProfile(/*create_if_needed=*/true));
-    // Show network screen if needed.
-    // TODO(mslus): Handle other states in NetworkStateInformer properly.
-    if (network_state_informer_->state() == NetworkStateInformer::OFFLINE) {
+    const NetworkStateInformer::State state = network_state_informer_->state();
+    // Show network or captive portal screen if needed.
+    // TODO(crbug.com/1237407): Handle other states in NetworkStateInformer
+    // properly.
+    if (state == NetworkStateInformer::OFFLINE) {
       ShowLockScreenNetworkDialog();
+    } else if (state == NetworkStateInformer::CAPTIVE_PORTAL) {
+      ShowLockScreenCaptivePortalDialog();
     }
   } else if (status != Profile::CREATE_STATUS_CREATED) {
     // TODO(mohammedabdon): Create some generic way to show an error on the lock
@@ -92,16 +142,6 @@ void LockScreenStartReauthDialog::Dismiss() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (g_dialog)
     g_dialog->Close();
-}
-
-void LockScreenStartReauthDialog::OnDialogClosed(
-    const std::string& json_retval) {
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
-  auto* password_sync_manager =
-      InSessionPasswordSyncManagerFactory::GetForProfile(profile);
-  password_sync_manager->ResetDialog();
 }
 
 bool LockScreenStartReauthDialog::IsRunning() {
@@ -125,9 +165,36 @@ void LockScreenStartReauthDialog::DeleteLockScreenNetworkDialog() {
   }
 }
 
+void LockScreenStartReauthDialog::OnDialogShown(content::WebUI* webui) {
+  BaseLockDialog::OnDialogShown(webui);
+
+  web_modal::WebContentsModalDialogManager::CreateForWebContents(
+      webui->GetWebContents());
+  web_modal::WebContentsModalDialogManager::FromWebContents(
+      webui->GetWebContents())
+      ->SetDelegate(this);
+  modal_dialog_manager_cleanup_ =
+      std::make_unique<ModalDialogManagerCleanup>(webui->GetWebContents());
+}
+
+void LockScreenStartReauthDialog::OnDialogClosed(
+    const std::string& json_retval) {
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
+  auto* password_sync_manager =
+      InSessionPasswordSyncManagerFactory::GetForProfile(profile);
+  password_sync_manager->ResetDialog();
+}
+
 void LockScreenStartReauthDialog::DismissLockScreenNetworkDialog() {
   if (lock_screen_network_dialog_)
     lock_screen_network_dialog_->Dismiss();
+}
+
+void LockScreenStartReauthDialog::DismissLockScreenCaptivePortalDialog() {
+  if (captive_portal_dialog_)
+    captive_portal_dialog_->Dismiss();
 }
 
 void LockScreenStartReauthDialog::ShowLockScreenNetworkDialog() {
@@ -142,22 +209,36 @@ void LockScreenStartReauthDialog::ShowLockScreenNetworkDialog() {
   lock_screen_network_dialog_->Show(profile_);
 }
 
+void LockScreenStartReauthDialog::ShowLockScreenCaptivePortalDialog() {
+  if (!captive_portal_dialog_) {
+    captive_portal_dialog_ = std::make_unique<LockScreenCaptivePortalDialog>();
+    OnCaptivePortalDialogReadyForTesting();
+  }
+  captive_portal_dialog_->Show(*profile_);
+}
+
 bool LockScreenStartReauthDialog::IsNetworkDialogLoadedForTesting(
     base::OnceClosure callback) {
-  if (is_network_dialog_loaded_for_testing_)
-    return true;
-  DCHECK(!on_network_dialog_loaded_callback_for_testing_);
-  on_network_dialog_loaded_callback_for_testing_ = std::move(callback);
-  return false;
+  return IsDialogLoaded(is_network_dialog_loaded_for_testing_,
+                        on_network_dialog_loaded_callback_for_testing_,
+                        std::move(callback));
+}
+
+bool LockScreenStartReauthDialog::IsCaptivePortalDialogLoadedForTesting(
+    base::OnceClosure callback) {
+  return IsDialogLoaded(is_captive_portal_dialog_loaded_for_testing_,
+                        on_captive_portal_dialog_loaded_callback_for_testing_,
+                        std::move(callback));
 }
 
 void LockScreenStartReauthDialog::OnNetworkDialogReadyForTesting() {
-  if (is_network_dialog_loaded_for_testing_)
-    return;
-  is_network_dialog_loaded_for_testing_ = true;
-  if (on_network_dialog_loaded_callback_for_testing_) {
-    std::move(on_network_dialog_loaded_callback_for_testing_).Run();
-  }
+  OnDialogLoaded(is_network_dialog_loaded_for_testing_,
+                 on_network_dialog_loaded_callback_for_testing_);
+}
+
+void LockScreenStartReauthDialog::OnCaptivePortalDialogReadyForTesting() {
+  OnDialogLoaded(is_captive_portal_dialog_loaded_for_testing_,
+                 on_captive_portal_dialog_loaded_callback_for_testing_);
 }
 
 LockScreenStartReauthDialog::LockScreenStartReauthDialog()
@@ -179,16 +260,52 @@ LockScreenStartReauthDialog::~LockScreenStartReauthDialog() {
 
 void LockScreenStartReauthDialog::UpdateState(
     NetworkError::ErrorReason reason) {
-  const bool is_offline =
-      NetworkStateInformer::OFFLINE == network_state_informer_->state();
-  if (is_offline) {
+  const NetworkStateInformer::State state = network_state_informer_->state();
+
+  if (state == NetworkStateInformer::OFFLINE) {
     ShowLockScreenNetworkDialog();
+  } else if (state == NetworkStateInformer::CAPTIVE_PORTAL) {
+    ShowLockScreenCaptivePortalDialog();
   } else {
+    DismissLockScreenCaptivePortalDialog();
     if (is_network_dialog_visible_ && lock_screen_network_dialog_) {
       is_network_dialog_visible_ = false;
       lock_screen_network_dialog_->Close();
     }
   }
+}
+
+web_modal::WebContentsModalDialogHost*
+LockScreenStartReauthDialog::GetWebContentsModalDialogHost() {
+  return this;
+}
+
+gfx::Size LockScreenStartReauthDialog::GetMaximumDialogSize() {
+  gfx::Size size;
+  GetDialogSize(&size);
+  return size;
+}
+
+gfx::NativeView LockScreenStartReauthDialog::GetHostView() const {
+  return dialog_window();
+}
+
+gfx::Point LockScreenStartReauthDialog::GetDialogPosition(
+    const gfx::Size& size) {
+  gfx::Size host_size = GetHostView()->bounds().size();
+
+  // Show all sub-dialogs at center-top.
+  return gfx::Point(std::max(0, (host_size.width() - size.width()) / 2), 0);
+}
+
+void LockScreenStartReauthDialog::AddObserver(
+    web_modal::ModalDialogHostObserver* observer) {
+  modal_dialog_host_observer_list_.AddObserver(observer);
+}
+
+void LockScreenStartReauthDialog::RemoveObserver(
+    web_modal::ModalDialogHostObserver* observer) {
+  modal_dialog_host_observer_list_.RemoveObserver(observer);
 }
 
 }  // namespace chromeos

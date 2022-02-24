@@ -13,21 +13,31 @@
 namespace borealis {
 
 BorealisWaylandInterface::BorealisWaylandInterface(Profile* profile)
-    : profile_(profile), capabilities_(nullptr) {
-  (void)profile_;
-}
+    : profile_(profile) {}
 
 BorealisWaylandInterface::~BorealisWaylandInterface() {
-  if (capabilities_ && !server_path_.empty())
-    exo::WaylandServerController::Get()->DeleteServer(server_path_);
+  if (capabilities_ && !server_path_.empty()) {
+    exo::WaylandServerController* controller =
+        exo::WaylandServerController::Get();
+    // Exo's destructor can run before borealis'. When that happens exo is
+    // deleting the server itself and we don't need to. See crbug.com/1295392.
+    if (controller)
+      controller->DeleteServer(server_path_);
+  }
 }
 
-void BorealisWaylandInterface::GetWaylandServer(
-    base::OnceCallback<void(BorealisCapabilities*, const base::FilePath&)>
-        callback) {
+void BorealisWaylandInterface::GetWaylandServer(CapabilityCallback callback) {
   // The custom wayland server will be mandatory for borealis going forward, so
   // it is a good place to guard against unauthorized launches.
-  if (!BorealisService::GetForProfile(profile_)->Features().IsAllowed()) {
+  BorealisService::GetForProfile(profile_)->Features().IsAllowed(
+      base::BindOnce(&BorealisWaylandInterface::OnAllowednessChecked,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void BorealisWaylandInterface::OnAllowednessChecked(
+    CapabilityCallback callback,
+    BorealisFeatures::AllowStatus allowed) {
+  if (allowed != BorealisFeatures::AllowStatus::kAllowed) {
     std::move(callback).Run(nullptr, {});
     return;
   }
@@ -53,8 +63,7 @@ void BorealisWaylandInterface::GetWaylandServer(
 }
 
 void BorealisWaylandInterface::OnWaylandServerCreated(
-    base::OnceCallback<void(BorealisCapabilities*, const base::FilePath&)>
-        callback,
+    CapabilityCallback callback,
     bool success,
     const base::FilePath& server_path) {
   if (!success) {

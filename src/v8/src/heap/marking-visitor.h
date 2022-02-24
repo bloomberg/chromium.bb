@@ -25,6 +25,11 @@ struct EphemeronMarking {
 template <typename ConcreteState, AccessMode access_mode>
 class MarkingStateBase {
  public:
+  // Declares that this marking state is not collecting retainers, so the
+  // marking visitor may update the heap state to store information about
+  // progress, and may avoid fully visiting an object if it is safe to do so.
+  static constexpr bool kCollectRetainers = false;
+
   explicit MarkingStateBase(PtrComprCageBase cage_base)
 #if V8_COMPRESS_POINTERS
       : cage_base_(cage_base)
@@ -102,6 +107,15 @@ class MarkingStateBase {
     static_cast<ConcreteState*>(this)->SetLiveBytes(chunk, 0);
   }
 
+  void AddStrongReferenceForReferenceSummarizer(HeapObject host,
+                                                HeapObject obj) {
+    // This is not a reference summarizer, so there is nothing to do here.
+  }
+
+  void AddWeakReferenceForReferenceSummarizer(HeapObject host, HeapObject obj) {
+    // This is not a reference summarizer, so there is nothing to do here.
+  }
+
  private:
 #if V8_COMPRESS_POINTERS
   const PtrComprCageBase cage_base_;
@@ -140,7 +154,13 @@ class MarkingVisitorBase : public HeapVisitor<int, ConcreteVisitor> {
         code_flush_mode_(code_flush_mode),
         is_embedder_tracing_enabled_(is_embedder_tracing_enabled),
         should_keep_ages_unchanged_(should_keep_ages_unchanged),
-        is_shared_heap_(heap->IsShared()) {}
+        is_shared_heap_(heap->IsShared())
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+        ,
+        external_pointer_table_(&heap->isolate()->external_pointer_table())
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
+  {
+  }
 
   V8_INLINE int VisitBytecodeArray(Map map, BytecodeArray object);
   V8_INLINE int VisitDescriptorArray(Map map, DescriptorArray object);
@@ -160,10 +180,9 @@ class MarkingVisitorBase : public HeapVisitor<int, ConcreteVisitor> {
 
   // ObjectVisitor overrides.
   void VisitMapPointer(HeapObject host) final {
-    // Note that we are skipping the recording the slot because map objects
-    // can't move, so this is safe (see ProcessStrongHeapObject for comparison)
-    MarkObject(host, HeapObject::cast(
-                         host.map(ObjectVisitorWithCageBases::cage_base())));
+    Map map = host.map(ObjectVisitorWithCageBases::cage_base());
+    MarkObject(host, map);
+    concrete_visitor()->RecordSlot(host, host.map_slot(), map);
   }
   V8_INLINE void VisitPointer(HeapObject host, ObjectSlot p) final {
     VisitPointersImpl(host, p, p + 1);
@@ -188,6 +207,27 @@ class MarkingVisitorBase : public HeapVisitor<int, ConcreteVisitor> {
                                ObjectSlot end) final {
     // Weak list pointers should be ignored during marking. The lists are
     // reconstructed after GC.
+  }
+
+  V8_INLINE void VisitExternalPointer(HeapObject host,
+                                      ExternalPointer_t ptr) final {
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+    uint32_t index = ptr >> kExternalPointerIndexShift;
+    external_pointer_table_->Mark(index);
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
+  }
+
+  V8_INLINE void VisitEmbedderDataSlot(HeapObject host,
+                                       EmbedderDataSlot slot) final {
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+    // When sandboxed external pointers are enabled, EmbedderDataSlots may
+    // contain an external pointer, which must be marked as alive.
+    uint32_t maybe_index = base::Relaxed_Load(reinterpret_cast<base::Atomic32*>(
+        slot.address() + EmbedderDataSlot::kRawPayloadOffset));
+    if (external_pointer_table_->IsValidIndex(maybe_index)) {
+      external_pointer_table_->Mark(maybe_index);
+    }
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
   }
 
  protected:
@@ -232,6 +272,23 @@ class MarkingVisitorBase : public HeapVisitor<int, ConcreteVisitor> {
   // Marks the object grey and pushes it on the marking work list.
   V8_INLINE void MarkObject(HeapObject host, HeapObject obj);
 
+  V8_INLINE void AddStrongReferenceForReferenceSummarizer(HeapObject host,
+                                                          HeapObject obj) {
+    concrete_visitor()
+        ->marking_state()
+        ->AddStrongReferenceForReferenceSummarizer(host, obj);
+  }
+
+  V8_INLINE void AddWeakReferenceForReferenceSummarizer(HeapObject host,
+                                                        HeapObject obj) {
+    concrete_visitor()->marking_state()->AddWeakReferenceForReferenceSummarizer(
+        host, obj);
+  }
+
+  constexpr bool CanUpdateValuesInHeap() {
+    return !MarkingState::kCollectRetainers;
+  }
+
   MarkingWorklists::Local* const local_marking_worklists_;
   WeakObjects::Local* const local_weak_objects_;
   Heap* const heap_;
@@ -240,6 +297,9 @@ class MarkingVisitorBase : public HeapVisitor<int, ConcreteVisitor> {
   const bool is_embedder_tracing_enabled_;
   const bool should_keep_ages_unchanged_;
   const bool is_shared_heap_;
+#ifdef V8_SANDBOXED_EXTERNAL_POINTERS
+  ExternalPointerTable* const external_pointer_table_;
+#endif  // V8_SANDBOXED_EXTERNAL_POINTERS
 };
 
 }  // namespace internal

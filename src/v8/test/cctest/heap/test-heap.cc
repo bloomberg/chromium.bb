@@ -337,7 +337,8 @@ TEST(HeapObjects) {
   Handle<String> object_string = Handle<String>::cast(factory->Object_string());
   Handle<JSGlobalObject> global(CcTest::i_isolate()->context().global_object(),
                                 isolate);
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(global, object_string));
+  CHECK(Just(true) ==
+        JSReceiver::HasOwnProperty(isolate, global, object_string));
 
   // Check ToString for oddballs
   ReadOnlyRoots roots(heap);
@@ -406,7 +407,7 @@ TEST(GarbageCollection) {
   CcTest::CollectGarbage(NEW_SPACE);
 
   // Function should be alive.
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(global, name));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, global, name));
   // Check function is retained.
   Handle<Object> func_value =
       Object::GetProperty(isolate, global, name).ToHandleChecked();
@@ -424,7 +425,7 @@ TEST(GarbageCollection) {
   // After gc, it should survive.
   CcTest::CollectGarbage(NEW_SPACE);
 
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(global, obj_name));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, global, obj_name));
   Handle<Object> obj =
       Object::GetProperty(isolate, global, obj_name).ToHandleChecked();
   CHECK(obj->IsJSObject());
@@ -800,60 +801,60 @@ TEST(ObjectProperties) {
   Handle<Smi> two(Smi::FromInt(2), isolate);
 
   // check for empty
-  CHECK(Just(false) == JSReceiver::HasOwnProperty(obj, first));
+  CHECK(Just(false) == JSReceiver::HasOwnProperty(isolate, obj, first));
 
   // add first
   Object::SetProperty(isolate, obj, first, one).Check();
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, first));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, first));
 
   // delete first
   CHECK(Just(true) ==
         JSReceiver::DeleteProperty(obj, first, LanguageMode::kSloppy));
-  CHECK(Just(false) == JSReceiver::HasOwnProperty(obj, first));
+  CHECK(Just(false) == JSReceiver::HasOwnProperty(isolate, obj, first));
 
   // add first and then second
   Object::SetProperty(isolate, obj, first, one).Check();
   Object::SetProperty(isolate, obj, second, two).Check();
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, first));
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, second));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, first));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, second));
 
   // delete first and then second
   CHECK(Just(true) ==
         JSReceiver::DeleteProperty(obj, first, LanguageMode::kSloppy));
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, second));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, second));
   CHECK(Just(true) ==
         JSReceiver::DeleteProperty(obj, second, LanguageMode::kSloppy));
-  CHECK(Just(false) == JSReceiver::HasOwnProperty(obj, first));
-  CHECK(Just(false) == JSReceiver::HasOwnProperty(obj, second));
+  CHECK(Just(false) == JSReceiver::HasOwnProperty(isolate, obj, first));
+  CHECK(Just(false) == JSReceiver::HasOwnProperty(isolate, obj, second));
 
   // add first and then second
   Object::SetProperty(isolate, obj, first, one).Check();
   Object::SetProperty(isolate, obj, second, two).Check();
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, first));
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, second));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, first));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, second));
 
   // delete second and then first
   CHECK(Just(true) ==
         JSReceiver::DeleteProperty(obj, second, LanguageMode::kSloppy));
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, first));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, first));
   CHECK(Just(true) ==
         JSReceiver::DeleteProperty(obj, first, LanguageMode::kSloppy));
-  CHECK(Just(false) == JSReceiver::HasOwnProperty(obj, first));
-  CHECK(Just(false) == JSReceiver::HasOwnProperty(obj, second));
+  CHECK(Just(false) == JSReceiver::HasOwnProperty(isolate, obj, first));
+  CHECK(Just(false) == JSReceiver::HasOwnProperty(isolate, obj, second));
 
   // check string and internalized string match
   const char* string1 = "fisk";
   Handle<String> s1 = factory->NewStringFromAsciiChecked(string1);
   Object::SetProperty(isolate, obj, s1, one).Check();
   Handle<String> s1_string = factory->InternalizeUtf8String(string1);
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, s1_string));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, s1_string));
 
   // check internalized string and string match
   const char* string2 = "fugl";
   Handle<String> s2_string = factory->InternalizeUtf8String(string2);
   Object::SetProperty(isolate, obj, s2_string, one).Check();
   Handle<String> s2 = factory->NewStringFromAsciiChecked(string2);
-  CHECK(Just(true) == JSReceiver::HasOwnProperty(obj, s2));
+  CHECK(Just(true) == JSReceiver::HasOwnProperty(isolate, obj, s2));
 }
 
 
@@ -1268,65 +1269,6 @@ UNINITIALIZED_TEST(Regress10843) {
     CHECK(callback_was_invoked);
   }
   isolate->Dispose();
-}
-
-// Tests that spill slots from optimized code don't have weak pointers.
-TEST(Regress10774) {
-  if (FLAG_single_generation) return;
-  i::FLAG_allow_natives_syntax = true;
-  i::FLAG_turboprop = true;
-  i::FLAG_turbo_dynamic_map_checks = true;
-#ifdef VERIFY_HEAP
-  i::FLAG_verify_heap = true;
-#endif
-
-  ManualGCScope manual_gc_scope;
-  CcTest::InitializeVM();
-  v8::Isolate* isolate = CcTest::isolate();
-  Isolate* i_isolate = CcTest::i_isolate();
-  Factory* factory = i_isolate->factory();
-  Heap* heap = i_isolate->heap();
-
-  {
-    v8::HandleScope scope(isolate);
-    // We want to generate optimized code with dynamic map check operator that
-    // migrates deprecated maps. To force this, we want the IC state to be
-    // monomorphic and the map in the feedback should be a migration target.
-    const char* source =
-        "function f(o) {"
-        "  return o.b;"
-        "}"
-        "var o = {a:10, b:20};"
-        "var o1 = {a:10, b:20};"
-        "var o2 = {a:10, b:20};"
-        "%PrepareFunctionForOptimization(f);"
-        "f(o);"
-        "o1.b = 10.23;"  // Deprecate O's map.
-        "f(o1);"         // Install new map in IC
-        "f(o);"          // Mark o's map as migration target
-        "%OptimizeFunctionOnNextCall(f);"
-        "f(o);";
-    CompileRun(source);
-
-    Handle<String> foo_name = factory->InternalizeUtf8String("f");
-    Handle<Object> func_value =
-        Object::GetProperty(i_isolate, i_isolate->global_object(), foo_name)
-            .ToHandleChecked();
-    CHECK(func_value->IsJSFunction());
-    Handle<JSFunction> fun = Handle<JSFunction>::cast(func_value);
-
-    Handle<String> obj_name = factory->InternalizeUtf8String("o2");
-    Handle<Object> obj_value =
-        Object::GetProperty(i_isolate, i_isolate->global_object(), obj_name)
-            .ToHandleChecked();
-
-    heap::SimulateFullSpace(heap->new_space());
-
-    Handle<JSObject> global(i_isolate->context().global_object(), i_isolate);
-    // O2 still has the deprecated map and the optimized code should migrate O2
-    // successfully. This shouldn't crash.
-    Execution::Call(i_isolate, fun, global, 1, &obj_value).ToHandleChecked();
-  }
 }
 
 #ifndef V8_LITE_MODE
@@ -1889,7 +1831,7 @@ TEST(TestAlignedOverAllocation) {
   heap::AbandonCurrentlyFreeMemory(heap->old_space());
   // Allocate a dummy object to properly set up the linear allocation info.
   AllocationResult dummy = heap->old_space()->AllocateRawUnaligned(kTaggedSize);
-  CHECK(!dummy.IsRetry());
+  CHECK(!dummy.IsFailure());
   heap->CreateFillerObjectAt(dummy.ToObjectChecked().address(), kTaggedSize,
                              ClearRecordedSlots::kNo);
 
@@ -2453,7 +2395,7 @@ TEST(IdleNotificationFinishMarking) {
   // The next idle notification has to finish incremental marking.
   const double kLongIdleTime = 1000.0;
   CcTest::isolate()->IdleNotificationDeadline(
-      (v8::base::TimeTicks::HighResolutionNow().ToInternalValue() /
+      (v8::base::TimeTicks::Now().ToInternalValue() /
        static_cast<double>(v8::base::Time::kMicrosecondsPerSecond)) +
       kLongIdleTime);
   CHECK_EQ(CcTest::heap()->gc_count(), initial_gc_count + 1);
@@ -2938,8 +2880,7 @@ TEST(OptimizedAllocationArrayLiterals) {
 }
 
 static int CountMapTransitions(i::Isolate* isolate, Map map) {
-  DisallowGarbageCollection no_gc;
-  return TransitionsAccessor(isolate, map, &no_gc).NumberOfTransitions();
+  return TransitionsAccessor(isolate, map).NumberOfTransitions();
 }
 
 
@@ -5445,7 +5386,7 @@ AllocationResult HeapTester::AllocateByteArrayForTest(
                                   SKIP_WRITE_BARRIER);
   ByteArray::cast(result).set_length(length);
   ByteArray::cast(result).clear_padding();
-  return result;
+  return AllocationResult::FromObject(result);
 }
 
 bool HeapTester::CodeEnsureLinearAllocationArea(Heap* heap, int size_in_bytes) {
@@ -6068,7 +6009,6 @@ TEST(Regress618958) {
 
 TEST(YoungGenerationLargeObjectAllocationScavenge) {
   if (FLAG_minor_mc) return;
-  if (!FLAG_young_generation_large_objects) return;
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
   Heap* heap = CcTest::heap();
@@ -6098,7 +6038,6 @@ TEST(YoungGenerationLargeObjectAllocationScavenge) {
 
 TEST(YoungGenerationLargeObjectAllocationMarkCompact) {
   if (FLAG_minor_mc) return;
-  if (!FLAG_young_generation_large_objects) return;
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
   Heap* heap = CcTest::heap();
@@ -6128,7 +6067,6 @@ TEST(YoungGenerationLargeObjectAllocationMarkCompact) {
 
 TEST(YoungGenerationLargeObjectAllocationReleaseScavenger) {
   if (FLAG_minor_mc) return;
-  if (!FLAG_young_generation_large_objects) return;
   CcTest::InitializeVM();
   v8::HandleScope scope(CcTest::isolate());
   Heap* heap = CcTest::heap();
@@ -6450,9 +6388,13 @@ HEAP_TEST(Regress670675) {
   if (collector->sweeping_in_progress()) {
     collector->EnsureSweepingCompleted();
   }
+  heap->tracer()->StopCycleIfSweeping();
   i::IncrementalMarking* marking = CcTest::heap()->incremental_marking();
   if (marking->IsStopped()) {
     SafepointScope safepoint_scope(heap);
+    heap->tracer()->StartCycle(
+        GarbageCollector::MARK_COMPACTOR, GarbageCollectionReason::kTesting,
+        "collector cctest", GCTracer::MarkingType::kIncremental);
     marking->Start(i::GarbageCollectionReason::kTesting);
   }
   size_t array_length = 128 * KB;
@@ -7063,6 +7005,9 @@ TEST(Regress978156) {
   i::IncrementalMarking* marking = heap->incremental_marking();
   if (marking->IsStopped()) {
     SafepointScope scope(heap);
+    heap->tracer()->StartCycle(
+        GarbageCollector::MARK_COMPACTOR, GarbageCollectionReason::kTesting,
+        "collector cctest", GCTracer::MarkingType::kIncremental);
     marking->Start(i::GarbageCollectionReason::kTesting);
   }
   IncrementalMarking::MarkingState* marking_state = marking->marking_state();

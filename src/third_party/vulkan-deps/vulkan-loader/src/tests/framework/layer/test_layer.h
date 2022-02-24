@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2021 The Khronos Group Inc.
- * Copyright (c) 2021 Valve Corporation
- * Copyright (c) 2021 LunarG, Inc.
+ * Copyright (c) 2021-2022 The Khronos Group Inc.
+ * Copyright (c) 2021-2022 Valve Corporation
+ * Copyright (c) 2021-2022 LunarG, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and/or associated documentation files (the "Materials"), to
@@ -90,12 +90,14 @@ using FP_layer_callback = VkResult (*)(TestLayer& layer, void* data);
 
 struct TestLayer {
     fs::path manifest_file_path;
-    uint32_t manifest_version = VK_MAKE_VERSION(1, 1, 2);
+    uint32_t manifest_version = VK_MAKE_API_VERSION(0, 1, 1, 2);
 
     BUILDER_VALUE(TestLayer, bool, is_meta_layer, false)
 
-    BUILDER_VALUE(TestLayer, std::string, unique_name, {})
-    BUILDER_VALUE(TestLayer, uint32_t, api_version, VK_MAKE_VERSION(1, 0, 0))
+    BUILDER_VALUE(TestLayer, uint32_t, api_version, VK_API_VERSION_1_0)
+    BUILDER_VALUE(TestLayer, uint32_t, reported_layer_props, 1)
+    BUILDER_VALUE(TestLayer, uint32_t, reported_extension_props, 1)
+    BUILDER_VALUE(TestLayer, uint32_t, reported_instance_version, VK_API_VERSION_1_0)
     BUILDER_VALUE(TestLayer, uint32_t, implementation_version, 2)
     BUILDER_VALUE(TestLayer, uint32_t, min_implementation_version, 0)
     BUILDER_VALUE(TestLayer, std::string, description, {})
@@ -117,7 +119,20 @@ struct TestLayer {
     // Called in vkCreateDevice after calling down the chain & returning
     BUILDER_VALUE(TestLayer, std::function<VkResult(TestLayer& layer)>, create_device_callback, {})
 
+    // Physical device modifier test flags and members.  This data is primarily used to test adding, removing and
+    // re-ordering physical device data in a layer.
+    BUILDER_VALUE(TestLayer, bool, add_phys_devs, false)
+    BUILDER_VALUE(TestLayer, bool, remove_phys_devs, false)
+    BUILDER_VALUE(TestLayer, bool, reorder_phys_devs, false)
+    BUILDER_VECTOR(TestLayer, VkPhysicalDevice, complete_physical_devices, complete_physical_device)
+    BUILDER_VECTOR(TestLayer, VkPhysicalDevice, removed_physical_devices, removed_physical_device)
+    BUILDER_VECTOR(TestLayer, VkPhysicalDevice, added_physical_devices, added_physical_device)
+    BUILDER_VECTOR(TestLayer, VkPhysicalDeviceGroupProperties, complete_physical_device_groups, complete_physical_device_group)
+    BUILDER_VECTOR(TestLayer, VkPhysicalDeviceGroupProperties, removed_physical_device_groups, removed_physical_device_group)
+    BUILDER_VECTOR(TestLayer, VkPhysicalDeviceGroupProperties, added_physical_device_groups, added_physical_device_group)
+
     PFN_vkGetInstanceProcAddr next_vkGetInstanceProcAddr = VK_NULL_HANDLE;
+    PFN_GetPhysicalDeviceProcAddr next_GetPhysicalDeviceProcAddr = VK_NULL_HANDLE;
     PFN_vkGetDeviceProcAddr next_vkGetDeviceProcAddr = VK_NULL_HANDLE;
 
     VkInstance instance_handle;

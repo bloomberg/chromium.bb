@@ -12,8 +12,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace base {
-namespace internal {
+namespace partition_alloc::internal {
 
 #if defined(PA_HAS_64_BITS_POINTERS)
 
@@ -30,9 +29,9 @@ class PartitionAllocAddressPoolManagerTest : public testing::Test {
 
   void SetUp() override {
     manager_ = std::make_unique<AddressPoolManagerForTesting>();
-    base_address_ =
-        AllocPages(kPoolSize, kSuperPageSize, base::PageInaccessible,
-                   PageTag::kPartitionAlloc);
+    base_address_ = AllocPages(kPoolSize, kSuperPageSize,
+                               PageAccessibilityConfiguration::kInaccessible,
+                               PageTag::kPartitionAlloc);
     ASSERT_TRUE(base_address_);
     pool_ = manager_->Add(base_address_, kPoolSize);
   }
@@ -46,7 +45,7 @@ class PartitionAllocAddressPoolManagerTest : public testing::Test {
   AddressPoolManager* GetAddressPoolManager() { return manager_.get(); }
 
   static constexpr size_t kPoolSize = kPoolMaxSize;
-  static constexpr size_t kPageCnt = kPoolMaxSize / kSuperPageSize;
+  static constexpr size_t kPageCnt = kPoolSize / kSuperPageSize;
 
   std::unique_ptr<AddressPoolManagerForTesting> manager_;
   uintptr_t base_address_;
@@ -195,8 +194,9 @@ TEST_F(PartitionAllocAddressPoolManagerTest, DecommittedDataIsErased) {
   uintptr_t address =
       GetAddressPoolManager()->Reserve(pool_, 0, kSuperPageSize);
   ASSERT_TRUE(address);
-  RecommitSystemPages(address, kSuperPageSize, PageReadWrite,
-                      PageUpdatePermissions);
+  RecommitSystemPages(address, kSuperPageSize,
+                      PageAccessibilityConfiguration::kReadWrite,
+                      PageAccessibilityDisposition::kRequireUpdate);
 
   memset(reinterpret_cast<void*>(address), 42, kSuperPageSize);
   GetAddressPoolManager()->UnreserveAndDecommit(pool_, address, kSuperPageSize);
@@ -204,8 +204,9 @@ TEST_F(PartitionAllocAddressPoolManagerTest, DecommittedDataIsErased) {
   uintptr_t address2 =
       GetAddressPoolManager()->Reserve(pool_, 0, kSuperPageSize);
   ASSERT_EQ(address, address2);
-  RecommitSystemPages(address2, kSuperPageSize, PageReadWrite,
-                      PageUpdatePermissions);
+  RecommitSystemPages(address2, kSuperPageSize,
+                      PageAccessibilityConfiguration::kReadWrite,
+                      PageAccessibilityDisposition::kRequireUpdate);
 
   uint32_t sum = 0;
   for (size_t i = 0; i < kSuperPageSize; i++) {
@@ -238,7 +239,7 @@ TEST(PartitionAllocAddressPoolManagerTest, IsManagedByRegularPool) {
   for (size_t i = 0; i < kAllocCount; ++i) {
     uintptr_t address = addrs[i];
     size_t num_pages =
-        bits::AlignUp(
+        base::bits::AlignUp(
             kNumPages[i] *
                 AddressPoolManagerBitmap::kBytesPer1BitOfRegularPoolBitmap,
             kSuperPageSize) /
@@ -319,5 +320,4 @@ TEST(PartitionAllocAddressPoolManagerTest, IsManagedByBRPPool) {
 
 #endif  // defined(PA_HAS_64_BITS_POINTERS)
 
-}  // namespace internal
-}  // namespace base
+}  // namespace partition_alloc::internal

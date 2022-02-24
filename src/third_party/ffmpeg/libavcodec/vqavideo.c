@@ -608,13 +608,14 @@ static int vqa_decode_frame_pal8(VqaContext *s, AVFrame *frame)
         if (s->partial_countdown <= 0) {
             bytestream2_init(&s->gb, s->next_codebook_buffer, s->next_codebook_buffer_index);
             /* decompress codebook */
-            if ((res = decode_format80(s, s->next_codebook_buffer_index,
-                                       s->codebook, s->codebook_size, 0)) < 0)
-                return res;
+            res = decode_format80(s, s->next_codebook_buffer_index,
+                                  s->codebook, s->codebook_size, 0);
 
             /* reset accounting */
             s->next_codebook_buffer_index = 0;
             s->partial_countdown = s->partial_count;
+            if (res < 0)
+                return res;
         }
     }
 
@@ -633,7 +634,7 @@ static int vqa_decode_frame_hicolor(VqaContext *s, AVFrame *frame)
     int vptr_chunk = -1;
     int vprz_chunk = -1;
 
-    const unsigned char *stream;
+    GetByteContext gb_stream;
 
     while (bytestream2_get_bytes_left(&s->gb) >= 8) {
         chunk_type = bytestream2_get_be32u(&s->gb);
@@ -692,11 +693,6 @@ static int vqa_decode_frame_hicolor(VqaContext *s, AVFrame *frame)
         bytestream2_get_buffer(&s->gb, s->codebook, chunk_size);
     }
 
-    if (vprz_chunk == -1 && vptr_chunk == -1) {
-        av_log(s->avctx, AV_LOG_ERROR, "frame has no block data\n");
-        return AVERROR_INVALIDDATA;
-    }
-
     /* decode the frame */
 
     if (vptr_chunk != -1) {
@@ -716,13 +712,13 @@ static int vqa_decode_frame_hicolor(VqaContext *s, AVFrame *frame)
         if ((res = decode_format80(s, chunk_size, s->decode_buffer, s->decode_buffer_size, 0)) < 0)
             return res;
     } else {
-        av_log(s->avctx, AV_LOG_ERROR, "expected either VPTR or VPRZ chunk\n");
+        av_log(s->avctx, AV_LOG_ERROR, "frame has no block data\n");
         return AVERROR_INVALIDDATA;
     }
 
     /* now uncompress the per-row RLE of the decode buffer and draw the blocks in framebuffer */
 
-    stream = (unsigned char*)s->decode_buffer;
+    bytestream2_init(&gb_stream, s->decode_buffer, s->decode_buffer_size);
 
     for (int y_pos = 0; y_pos < s->height; y_pos += s->vector_height) {
         int x_pos = 0;
@@ -730,8 +726,13 @@ static int vqa_decode_frame_hicolor(VqaContext *s, AVFrame *frame)
         while (x_pos < s->width) {
             int vector_index = 0;
             int count = 0;
-            uint16_t code = bytestream_get_le16(&stream);
+            uint16_t code;
             int type;
+
+            if (bytestream2_get_bytes_left(&gb_stream) < 2)
+                return AVERROR_INVALIDDATA;
+
+            code = bytestream2_get_le16(&gb_stream);
 
             type = code >> 13;
             code &= 0x1fff;
@@ -747,7 +748,7 @@ static int vqa_decode_frame_hicolor(VqaContext *s, AVFrame *frame)
                 count = 1;
             } else if (type < 7) {
                 vector_index = code;
-                count = *stream++;
+                count = bytestream2_get_byte(&gb_stream);
             } else {
                 av_log(s->avctx, AV_LOG_ERROR, " unknown type in VPTR chunk (%d)\n",type);
                 return AVERROR_INVALIDDATA;
@@ -776,7 +777,7 @@ static int vqa_decode_frame_hicolor(VqaContext *s, AVFrame *frame)
 
                 /* we might want to read the next block index from stream */
                 if ((type == 2) && count > 0) {
-                    vector_index = bytestream_get_byte(&stream);
+                    vector_index = bytestream2_get_byte(&gb_stream);
                 }
 
                 x_pos += 4;

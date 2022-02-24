@@ -136,6 +136,15 @@ class Inspector {
       const std::string& entry_point);
 
   /// @param entry_point name of the entry point to get information about.
+  /// @param placeholder the sampler binding point to use for texture-only
+  /// access (e.g., textureLoad)
+  /// @returns vector of all of the sampler/texture sampling pairs that are used
+  /// by that entry point.
+  std::vector<sem::SamplerTexturePair> GetSamplerTextureUses(
+      const std::string& entry_point,
+      const sem::BindingPoint& placeholder);
+
+  /// @param entry_point name of the entry point to get information about.
   /// @returns the total size in bytes of all Workgroup storage-class storage
   /// referenced transitively by the entry point.
   uint32_t GetWorkgroupStorageSize(const std::string& entry_point);
@@ -158,19 +167,19 @@ class Inspector {
   /// Otherwise, add the variable unless it is a builtin.
   /// @param name the name of the variable being added
   /// @param type the type of the variable
-  /// @param decorations the variable decorations
+  /// @param attributes the variable attributes
   /// @param variables the list to add the variables to
   void AddEntryPointInOutVariables(std::string name,
                                    const sem::Type* type,
-                                   const ast::DecorationList& decorations,
+                                   const ast::AttributeList& attributes,
                                    std::vector<StageVariable>& variables) const;
 
   /// Recursively determine if the type contains builtin.
-  /// If `type` is a struct, recurse into members to check for the decoration.
-  /// Otherwise, check `decorations` for the decoration.
+  /// If `type` is a struct, recurse into members to check for the attribute.
+  /// Otherwise, check `attributes` for the attribute.
   bool ContainsBuiltin(ast::Builtin builtin,
                        const sem::Type* type,
-                       const ast::DecorationList& decorations) const;
+                       const ast::AttributeList& attributes) const;
 
   /// Gathers all the texture resource bindings of the given type for the given
   /// entry point.
@@ -181,7 +190,7 @@ class Inspector {
   /// @returns vector of all of the bindings for depth textures.
   std::vector<ResourceBinding> GetTextureResourceBindings(
       const std::string& entry_point,
-      const tint::TypeInfo& texture_type,
+      const tint::TypeInfo* texture_type,
       ResourceBinding::ResourceType resource_type);
 
   /// @param entry_point name of the entry point to get information about.

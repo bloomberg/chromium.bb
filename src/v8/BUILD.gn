@@ -83,7 +83,7 @@ declare_args() {
   v8_enable_hugepage = false
 
   # Sets -dENABLE_HANDLE_ZAPPING.
-  v8_enable_handle_zapping = is_debug
+  v8_enable_handle_zapping = !is_on_release_branch || is_debug
 
   # Enable slow dchecks.
   v8_enable_slow_dchecks = false
@@ -225,9 +225,6 @@ declare_args() {
                       (is_linux || is_chromeos || is_mac)) ||
                      (v8_current_cpu == "ppc64" && (is_linux || is_chromeos))
 
-  # Enable minor mark compact.
-  v8_enable_minor_mc = true
-
   # Check that each header can be included in isolation (requires also
   # setting the "check_v8_header_includes" gclient variable to run a
   # specific hook).
@@ -281,9 +278,6 @@ declare_args() {
   # ARM64.
   v8_control_flow_integrity = false
 
-  # Enable object names in cppgc for debug purposes.
-  cppgc_enable_object_names = false
-
   # Enable heap reservation of size 4GB. Only possible for 64bit archs.
   cppgc_enable_caged_heap =
       v8_current_cpu == "x64" || v8_current_cpu == "arm64" ||
@@ -294,9 +288,6 @@ declare_args() {
 
   # Enable allocations during prefinalizer invocations.
   cppgc_allow_allocations_in_prefinalizers = false
-
-  # Enable young generation in cppgc.
-  cppgc_enable_young_generation = false
 
   # Enable V8 zone compression experimental feature.
   # Sets -DV8_COMPRESS_ZONES.
@@ -345,6 +336,9 @@ declare_args() {
   # When it's disabled, the --turbo-allocation-folding runtime flag will be ignored.
   v8_enable_allocation_folding = true
 
+  # Enable runtime verification of heap snapshots produced for devtools.
+  v8_enable_heap_snapshot_verify = ""
+
   # Enable global allocation site tracking.
   v8_allocation_site_tracking = true
 
@@ -357,6 +351,13 @@ declare_args() {
   # Change code emission and runtime features to be CET shadow-stack compliant
   # (incomplete and experimental).
   v8_enable_cet_shadow_stack = false
+
+  # Get VMEX priviledge at startup.
+  # It allows to run V8 without "deprecated-ambient-replace-as-executable".
+  # Sets -DV8_USE_VMEX_RESOURCE.
+  # TODO(victorgomes): Remove this flag once Chormium no longer needs
+  # the deprecated feature.
+  v8_fuchsia_use_vmex_resource = is_fuchsia && !build_with_chromium
 }
 
 # Derived defaults.
@@ -380,6 +381,10 @@ if (v8_enable_test_features == "") {
 }
 if (v8_enable_v8_checks == "") {
   v8_enable_v8_checks = v8_enable_debugging_features
+}
+if (v8_enable_heap_snapshot_verify == "") {
+  v8_enable_heap_snapshot_verify =
+      v8_enable_debugging_features || dcheck_always_on
 }
 if (v8_enable_snapshot_code_comments) {
   assert(v8_code_comments == true || v8_code_comments == "",
@@ -412,7 +417,13 @@ if (v8_enable_short_builtin_calls == "") {
       v8_current_cpu == "x64" || (!is_android && v8_current_cpu == "arm64")
 }
 if (v8_enable_external_code_space == "") {
-  v8_enable_external_code_space = false
+  # Can't use !is_android here, because Torque toolchain is affected by
+  # the value of this flag but actually runs on the host side.
+  v8_enable_external_code_space =
+      v8_enable_pointer_compression &&
+      (v8_current_cpu == "x64" ||
+       (target_os != "android" && target_os != "fuchsia" &&
+        v8_current_cpu == "arm64"))
 }
 if (v8_enable_single_generation == "") {
   v8_enable_single_generation = v8_disable_write_barriers
@@ -450,6 +461,7 @@ if (v8_multi_arch_build &&
     "clang_x64_pointer_compression") {
   v8_enable_pointer_compression = !v8_enable_pointer_compression
   v8_enable_pointer_compression_shared_cage = v8_enable_pointer_compression
+  v8_enable_external_code_space = v8_enable_pointer_compression
 }
 
 # Check if it is a Chromium build and activate PAC/BTI if needed.
@@ -474,7 +486,8 @@ if (v8_enable_shared_ro_heap == "") {
 }
 
 # Enable the v8 sandbox on 64-bit Chromium builds.
-if (build_with_chromium && v8_enable_pointer_compression_shared_cage) {
+if (build_with_chromium && v8_enable_pointer_compression_shared_cage &&
+    v8_enable_external_code_space) {
   v8_enable_sandbox = true
 }
 
@@ -508,17 +521,16 @@ assert(!v8_enable_external_code_space || v8_enable_pointer_compression,
        "External code space feature requires pointer compression")
 
 assert(!v8_enable_sandbox || v8_enable_pointer_compression_shared_cage,
-       "Sandbox requires the shared pointer compression cage")
+       "The sandbox requires the shared pointer compression cage")
+
+assert(!v8_enable_sandbox || v8_enable_external_code_space,
+       "The sandbox requires the external code space")
 
 assert(!v8_enable_sandboxed_pointers || v8_enable_sandbox,
        "Sandboxed pointers require the sandbox")
 
 assert(!v8_enable_sandboxed_external_pointers || v8_enable_sandbox,
        "Sandboxed external pointers require the sandbox")
-
-assert(
-    !v8_enable_sandboxed_external_pointers || !v8_enable_external_code_space,
-    "Sandboxed external pointers are not compatible with external code space YET")
 
 assert(
     !v8_enable_pointer_compression_shared_cage || v8_enable_pointer_compression,
@@ -547,6 +559,10 @@ if (v8_enable_single_generation == true) {
 
 assert(!v8_enable_conservative_stack_scanning || v8_enable_single_generation,
        "Conservative stack scanning requires single generation")
+
+if (v8_fuchsia_use_vmex_resource) {
+  assert(target_os == "fuchsia", "VMEX resource only available on Fuchsia")
+}
 
 v8_random_seed = "314159265"
 v8_toolset_for_shell = "host"
@@ -843,9 +859,6 @@ config("features") {
   if (v8_enable_hugepage) {
     defines += [ "ENABLE_HUGEPAGE" ]
   }
-  if (v8_enable_minor_mc) {
-    defines += [ "ENABLE_MINOR_MC" ]
-  }
   if (v8_enable_object_print) {
     defines += [ "OBJECT_PRINT" ]
   }
@@ -880,6 +893,9 @@ config("features") {
   }
   if (v8_enable_debug_code) {
     defines += [ "V8_ENABLE_DEBUG_CODE" ]
+  }
+  if (v8_enable_heap_snapshot_verify) {
+    defines += [ "V8_ENABLE_HEAP_SNAPSHOT_VERIFY" ]
   }
   if (v8_enable_snapshot_native_code_counters) {
     defines += [ "V8_SNAPSHOT_NATIVE_CODE_COUNTERS" ]
@@ -974,6 +990,9 @@ config("features") {
   if (v8_advanced_bigint_algorithms) {
     defines += [ "V8_ADVANCED_BIGINT_ALGORITHMS" ]
   }
+  if (v8_fuchsia_use_vmex_resource) {
+    defines += [ "V8_USE_VMEX_RESOURCE" ]
+  }
 }
 
 config("toolchain") {
@@ -1004,7 +1023,7 @@ config("toolchain") {
       ]
     }
 
-    # TODO(jochen): Add support for arm_test_noprobe.
+    # TODO(infra): Add support for arm_test_noprobe.
 
     if (current_cpu != "arm") {
       # These defines ares used for the ARM simulator.
@@ -1072,7 +1091,7 @@ config("toolchain") {
       defines += [ "FPU_MODE_FP32" ]
     }
 
-    # TODO(jochen): Add support for mips_arch_variant rx and loongson.
+    # TODO(infra): Add support for mips_arch_variant rx and loongson.
   }
 
   if (v8_current_cpu == "mips64el" || v8_current_cpu == "mips64") {
@@ -1200,8 +1219,8 @@ config("toolchain") {
     defines += [ "V8_TARGET_OS_WIN" ]
   }
 
-  # TODO(jochen): Support v8_enable_prof on Windows.
-  # TODO(jochen): Add support for compiling with simulators.
+  # TODO(infra): Support v8_enable_prof on Windows.
+  # TODO(infra): Add support for compiling with simulators.
 
   if (v8_enable_debugging_features) {
     if ((is_linux || is_chromeos) && v8_enable_backtrace) {
@@ -1759,6 +1778,7 @@ torque_files = [
   "src/objects/js-proxy.tq",
   "src/objects/js-regexp-string-iterator.tq",
   "src/objects/js-regexp.tq",
+  "src/objects/js-shadow-realms.tq",
   "src/objects/js-temporal-objects.tq",
   "src/objects/js-weak-refs.tq",
   "src/objects/literal-objects.tq",
@@ -2215,6 +2235,7 @@ action("v8_dump_build_config") {
     "v8_enable_pointer_compression_shared_cage=" +
         "$v8_enable_pointer_compression_shared_cage",
     "v8_enable_sandbox=$v8_enable_sandbox",
+    "v8_enable_shared_ro_heap=$v8_enable_shared_ro_heap",
     "v8_enable_third_party_heap=$v8_enable_third_party_heap",
     "v8_enable_webassembly=$v8_enable_webassembly",
     "v8_dict_property_const_tracking=$v8_dict_property_const_tracking",
@@ -2365,6 +2386,8 @@ v8_source_set("v8_initializers") {
     "src/interpreter/interpreter-generator.h",
     "src/interpreter/interpreter-intrinsics-generator.cc",
     "src/interpreter/interpreter-intrinsics-generator.h",
+    "src/numbers/integer-literal-inl.h",
+    "src/numbers/integer-literal.h",
   ]
 
   if (v8_enable_webassembly) {
@@ -2712,6 +2735,7 @@ v8_header_set("v8_internal_headers") {
     "src/codegen/tnode.h",
     "src/codegen/turbo-assembler.h",
     "src/codegen/unoptimized-compilation-info.h",
+    "src/common/allow-deprecated.h",
     "src/common/assert-scope.h",
     "src/common/checks.h",
     "src/common/high-allocation-throughput-scope.h",
@@ -2898,13 +2922,13 @@ v8_header_set("v8_internal_headers") {
     "src/execution/pointer-authentication.h",
     "src/execution/protectors-inl.h",
     "src/execution/protectors.h",
-    "src/execution/runtime-profiler.h",
     "src/execution/shared-mutex-guard-if-off-thread.h",
     "src/execution/simulator-base.h",
     "src/execution/simulator.h",
     "src/execution/stack-guard.h",
     "src/execution/thread-id.h",
     "src/execution/thread-local-top.h",
+    "src/execution/tiering-manager.h",
     "src/execution/v8threads.h",
     "src/execution/vm-state-inl.h",
     "src/execution/vm-state.h",
@@ -2924,6 +2948,7 @@ v8_header_set("v8_internal_headers") {
     "src/handles/maybe-handles.h",
     "src/handles/persistent-handles.h",
     "src/heap/allocation-observer.h",
+    "src/heap/allocation-result.h",
     "src/heap/allocation-stats.h",
     "src/heap/array-buffer-sweeper.h",
     "src/heap/barrier.h",
@@ -2946,6 +2971,8 @@ v8_header_set("v8_internal_headers") {
     "src/heap/cppgc-js/unified-heap-marking-visitor.h",
     "src/heap/embedder-tracing-inl.h",
     "src/heap/embedder-tracing.h",
+    "src/heap/evacuation-allocator-inl.h",
+    "src/heap/evacuation-allocator.h",
     "src/heap/factory-base-inl.h",
     "src/heap/factory-base.h",
     "src/heap/factory-inl.h",
@@ -2970,8 +2997,6 @@ v8_header_set("v8_internal_headers") {
     "src/heap/large-spaces.h",
     "src/heap/linear-allocation-area.h",
     "src/heap/list.h",
-    "src/heap/local-allocator-inl.h",
-    "src/heap/local-allocator.h",
     "src/heap/local-factory-inl.h",
     "src/heap/local-factory.h",
     "src/heap/local-heap-inl.h",
@@ -3163,6 +3188,8 @@ v8_header_set("v8_internal_headers") {
     "src/objects/js-regexp.h",
     "src/objects/js-segments-inl.h",
     "src/objects/js-segments.h",
+    "src/objects/js-shadow-realms-inl.h",
+    "src/objects/js-shadow-realms.h",
     "src/objects/js-temporal-objects-inl.h",
     "src/objects/js-temporal-objects.h",
     "src/objects/js-weak-refs-inl.h",
@@ -3337,6 +3364,7 @@ v8_header_set("v8_internal_headers") {
     "src/runtime/runtime-utils.h",
     "src/runtime/runtime.h",
     "src/sandbox/external-pointer-inl.h",
+    "src/sandbox/external-pointer-table-inl.h",
     "src/sandbox/external-pointer-table.h",
     "src/sandbox/external-pointer.h",
     "src/sandbox/sandbox.h",
@@ -3549,6 +3577,10 @@ v8_header_set("v8_internal_headers") {
       "src/debug/wasm/gdb-server/transport.h",
       "src/debug/wasm/gdb-server/wasm-module-debug.h",
     ]
+  }
+
+  if (v8_enable_heap_snapshot_verify) {
+    sources += [ "src/heap/reference-summarizer.h" ]
   }
 
   if (v8_current_cpu == "x86") {
@@ -4029,6 +4061,7 @@ v8_source_set("v8_base_without_compiler") {
     "src/builtins/builtins-object.cc",
     "src/builtins/builtins-reflect.cc",
     "src/builtins/builtins-regexp.cc",
+    "src/builtins/builtins-shadow-realms.cc",
     "src/builtins/builtins-sharedarraybuffer.cc",
     "src/builtins/builtins-string.cc",
     "src/builtins/builtins-symbol.cc",
@@ -4110,11 +4143,11 @@ v8_source_set("v8_base_without_compiler") {
     "src/execution/messages.cc",
     "src/execution/microtask-queue.cc",
     "src/execution/protectors.cc",
-    "src/execution/runtime-profiler.cc",
     "src/execution/simulator-base.cc",
     "src/execution/stack-guard.cc",
     "src/execution/thread-id.cc",
     "src/execution/thread-local-top.cc",
+    "src/execution/tiering-manager.cc",
     "src/execution/v8threads.cc",
     "src/extensions/cputracemark-extension.cc",
     "src/extensions/externalize-string-extension.cc",
@@ -4491,6 +4524,10 @@ v8_source_set("v8_base_without_compiler") {
     ]
   }
 
+  if (v8_enable_heap_snapshot_verify) {
+    sources += [ "src/heap/reference-summarizer.cc" ]
+  }
+
   if (v8_current_cpu == "x86") {
     sources += [  ### gcmole(arch:ia32) ###
       "src/codegen/ia32/assembler-ia32.cc",
@@ -4853,6 +4890,8 @@ v8_source_set("torque_base") {
   visibility = [ ":*" ]  # Only targets in this file can depend on this.
 
   sources = [
+    "src/numbers/integer-literal-inl.h",
+    "src/numbers/integer-literal.h",
     "src/torque/ast.h",
     "src/torque/cc-generator.cc",
     "src/torque/cc-generator.h",
@@ -5144,6 +5183,7 @@ v8_component("v8_libbase") {
         sources += [
           "src/base/debug/stack_trace_posix.cc",
           "src/base/platform/platform-macos.cc",
+          "src/base/platform/platform-xnu.cc",
         ]
       } else {
         sources += [
@@ -5162,14 +5202,24 @@ v8_component("v8_libbase") {
       "src/base/debug/stack_trace_fuchsia.cc",
       "src/base/platform/platform-fuchsia.cc",
     ]
-    deps += [ "//third_party/fuchsia-sdk/sdk/pkg/zx" ]
-  } else if (is_mac || is_ios) {
+    deps += [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.kernel",
+      "//third_party/fuchsia-sdk/sdk/pkg/fdio",
+      "//third_party/fuchsia-sdk/sdk/pkg/zx",
+    ]
+  } else if (is_mac) {
     sources += [
       "src/base/debug/stack_trace_posix.cc",
       "src/base/platform/platform-macos.cc",
+      "src/base/platform/platform-xnu.cc",
+    ]
+  } else if (is_ios) {
+    sources += [
+      "src/base/debug/stack_trace_posix.cc",
+      "src/base/platform/platform-xnu.cc",
     ]
   } else if (is_win) {
-    # TODO(jochen): Add support for cygwin.
+    # TODO(infra): Add support for cygwin.
     sources += [
       "src/base/debug/stack_trace_win.cc",
       "src/base/platform/platform-win32.cc",
@@ -5218,7 +5268,7 @@ v8_component("v8_libbase") {
         [ "//build/config/clang:llvm-symbolizer_data($host_toolchain)" ]
   }
 
-  # TODO(jochen): Add support for qnx, freebsd, openbsd, netbsd, and solaris.
+  # TODO(infra): Add support for qnx, freebsd, openbsd, netbsd, and solaris.
 }
 
 v8_component("v8_libplatform") {
@@ -5885,6 +5935,7 @@ group("v8_clusterfuzz") {
   deps = [
     ":d8",
     ":v8_simple_inspector_fuzzer",
+    "tools/clusterfuzz/trials:v8_clusterfuzz_resources",
   ]
 
   if (v8_multi_arch_build) {
@@ -5893,7 +5944,7 @@ group("v8_clusterfuzz") {
       ":d8(//build/toolchain/linux:clang_x64_v8_arm64)",
       ":d8(//build/toolchain/linux:clang_x86)",
       ":d8(//build/toolchain/linux:clang_x86_v8_arm)",
-      ":d8(tools/clusterfuzz/toolchain:clang_x64_pointer_compression)",
+      ":d8(tools/clusterfuzz/foozzie/toolchain:clang_x64_pointer_compression)",
     ]
   }
 }
@@ -6109,7 +6160,7 @@ v8_executable("d8") {
   }
 
   if (v8_correctness_fuzzer) {
-    deps += [ "tools/clusterfuzz:v8_correctness_fuzzer_resources" ]
+    deps += [ "tools/clusterfuzz/foozzie:v8_correctness_fuzzer_resources" ]
   }
 
   defines = []

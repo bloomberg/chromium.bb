@@ -270,8 +270,12 @@ if(INSTRUMENT_OPTICK)
 endif()
 
 if(BUILD_LAYERS)
-    find_package(SPIRV-Tools REQUIRED CONFIG)
-    find_package(SPIRV-Tools-opt REQUIRED CONFIG)
+    if (NOT TARGET SPIRV-Tools)
+        find_package(SPIRV-Tools REQUIRED CONFIG)
+    endif()
+    if (NOT TARGET SPIRV-Tools-opt)
+        find_package(SPIRV-Tools-opt REQUIRED CONFIG)
+    endif()
     AddVkLayer(khronos_validation "${KHRONOS_LAYER_COMPILE_DEFINITIONS}"
         ${CHASSIS_LIBRARY_FILES}
         ${CORE_VALIDATION_LIBRARY_FILES}
@@ -305,7 +309,13 @@ if(BUILD_LAYERS)
     if (USE_ROBIN_HOOD_HASHING)
         target_include_directories(VkLayer_khronos_validation PRIVATE ${ROBIN_HOOD_HASHING_INCLUDE_DIR})
     endif()
-    target_link_libraries(VkLayer_khronos_validation PRIVATE SPIRV-Headers::SPIRV-Headers SPIRV-Tools-static SPIRV-Tools-opt)
+    if (SPIRV_HEADERS_INCLUDE_DIR STREQUAL "")
+        target_link_libraries(VkLayer_khronos_validation PRIVATE SPIRV-Headers::SPIRV-Headers)
+    else()
+        target_include_directories(VkLayer_khronos_validation PRIVATE ${SPIRV_HEADERS_INCLUDE_DIR})
+    endif()
+
+    target_link_libraries(VkLayer_khronos_validation PRIVATE SPIRV-Tools-static SPIRV-Tools-opt)
 
 
     # The output file needs Unix "/" separators or Windows "\" separators On top of that, Windows separators actually need to be doubled
@@ -321,7 +331,7 @@ if(BUILD_LAYERS)
     # TARGET_FILE_DIR, specifically)
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generator.cmake" "configure_file(\"\${INPUT_FILE}\" \"\${OUTPUT_FILE}\" @ONLY)")
     foreach(TARGET_NAME ${TARGET_NAMES})
-        set(CONFIG_DEFINES -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in" -DVK_VERSION=1.2.${vk_header_version})
+        set(CONFIG_DEFINES -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in" -DVK_VERSION=1.3.${vk_header_version})
         # If this json file is not a metalayer, get the needed properties from that target
         if(TARGET ${TARGET_NAME})
             set(CONFIG_DEFINES
@@ -346,7 +356,7 @@ if(BUILD_LAYERS)
             set(INSTALL_DEFINES
                 -DINPUT_FILE="${CMAKE_CURRENT_SOURCE_DIR}/json/${TARGET_NAME}.json.in"
                 -DOUTPUT_FILE="${CMAKE_CURRENT_BINARY_DIR}/staging-json/${TARGET_NAME}.json"
-                -DVK_VERSION=1.2.${vk_header_version})
+                -DVK_VERSION=1.3.${vk_header_version})
             # If this json file is not a metalayer, get the needed properties from that target
             if(TARGET ${TARGET_NAME})
                 set(INSTALL_DEFINES ${INSTALL_DEFINES} -DRELATIVE_LAYER_BINARY="$<TARGET_FILE_NAME:${TARGET_NAME}>")

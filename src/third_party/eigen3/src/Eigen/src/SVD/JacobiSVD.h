@@ -377,7 +377,7 @@ struct svd_precondition_2x2_block_to_be_real<MatrixType, QRPreconditioner, true>
     const RealScalar considerAsZero = (std::numeric_limits<RealScalar>::min)();
     const RealScalar precision = NumTraits<Scalar>::epsilon();
 
-    if(n==0)
+    if(numext::is_exactly_zero(n))
     {
       // make sure first column is zero
       work_matrix.coeffRef(p,p) = work_matrix.coeffRef(q,p) = Scalar(0);
@@ -684,7 +684,7 @@ JacobiSVD<MatrixType, QRPreconditioner>::compute(const MatrixType& matrix, unsig
     m_info = InvalidInput;
     return *this;
   }
-  if(scale==RealScalar(0)) scale = RealScalar(1);
+  if(numext::is_exactly_zero(scale)) scale = RealScalar(1);
   
   /*** step 1. The R-SVD step: we use a QR decomposition to reduce to the case of a square matrix */
 
@@ -777,7 +777,7 @@ JacobiSVD<MatrixType, QRPreconditioner>::compute(const MatrixType& matrix, unsig
   {
     Index pos;
     RealScalar maxRemainingSingularValue = m_singularValues.tail(m_diagSize-i).maxCoeff(&pos);
-    if(maxRemainingSingularValue == RealScalar(0))
+    if(numext::is_exactly_zero(maxRemainingSingularValue))
     {
       m_nonzeroSingularValues = i;
       break;

@@ -186,7 +186,7 @@ static void getPhysicalDevicePipelineCreationCacheControlFeatures(T *features)
 }
 
 template<typename T>
-static void getPhysicalDeviceImageRobustnessFeaturesEXT(T *features)
+static void getPhysicalDeviceImageRobustnessFeatures(T *features)
 {
 	features->robustImageAccess = VK_TRUE;
 }
@@ -343,10 +343,26 @@ static void getPhysicalDeviceBlendOperationAdvancedFeaturesExt(VkPhysicalDeviceB
 	features->advancedBlendCoherentOperations = VK_FALSE;
 }
 
+static void getPhysicalDeviceExtendedDynamicStateFeaturesExt(VkPhysicalDeviceExtendedDynamicStateFeaturesEXT *features)
+{
+	features->extendedDynamicState = VK_TRUE;
+}
+
+static void getPhysicalDeviceSubgroupSizeControlFeatures(VkPhysicalDeviceSubgroupSizeControlFeatures *features)
+{
+	features->subgroupSizeControl = VK_TRUE;
+	features->computeFullSubgroups = VK_TRUE;
+}
+
 static void getPhysicalDevice4444FormatsFeaturesExt(VkPhysicalDevice4444FormatsFeaturesEXT *features)
 {
 	features->formatA4R4G4B4 = VK_TRUE;
 	features->formatA4B4G4R4 = VK_TRUE;
+}
+
+static void getPhysicalDeviceSynchronization2Features(VkPhysicalDeviceSynchronization2Features *features)
+{
+	features->synchronization2 = VK_TRUE;
 }
 
 void PhysicalDevice::getFeatures2(VkPhysicalDeviceFeatures2 *features) const
@@ -355,8 +371,7 @@ void PhysicalDevice::getFeatures2(VkPhysicalDeviceFeatures2 *features) const
 	VkBaseOutStructure *curExtension = reinterpret_cast<VkBaseOutStructure *>(features->pNext);
 	while(curExtension != nullptr)
 	{
-		// Need to switch on an integer since Provoking Vertex isn't a part of the Vulkan spec.
-		switch((int)curExtension->sType)
+		switch(curExtension->sType)
 		{
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES:
 			getPhysicalDeviceVulkan11Features(reinterpret_cast<VkPhysicalDeviceVulkan11Features *>(curExtension));
@@ -385,11 +400,11 @@ void PhysicalDevice::getFeatures2(VkPhysicalDeviceFeatures2 *features) const
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES:
 			getPhysicalDeviceHostQueryResetFeatures(reinterpret_cast<VkPhysicalDeviceHostQueryResetFeatures *>(curExtension));
 			break;
-		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES_EXT:
-			getPhysicalDevicePipelineCreationCacheControlFeatures(reinterpret_cast<VkPhysicalDevicePipelineCreationCacheControlFeaturesEXT *>(curExtension));
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES:
+			getPhysicalDevicePipelineCreationCacheControlFeatures(reinterpret_cast<VkPhysicalDevicePipelineCreationCacheControlFeatures *>(curExtension));
 			break;
-		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT:
-			getPhysicalDeviceImageRobustnessFeaturesEXT(reinterpret_cast<VkPhysicalDeviceImageRobustnessFeaturesEXT *>(curExtension));
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES:
+			getPhysicalDeviceImageRobustnessFeatures(reinterpret_cast<VkPhysicalDeviceImageRobustnessFeatures *>(curExtension));
 			break;
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT:
 			getPhysicalDeviceLineRasterizationFeaturesEXT(reinterpret_cast<VkPhysicalDeviceLineRasterizationFeaturesEXT *>(curExtension));
@@ -447,8 +462,18 @@ void PhysicalDevice::getFeatures2(VkPhysicalDeviceFeatures2 *features) const
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BLEND_OPERATION_ADVANCED_FEATURES_EXT:
 			getPhysicalDeviceBlendOperationAdvancedFeaturesExt(reinterpret_cast<VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT *>(curExtension));
 			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT:
+			getPhysicalDeviceExtendedDynamicStateFeaturesExt(reinterpret_cast<VkPhysicalDeviceExtendedDynamicStateFeaturesEXT *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_SIZE_CONTROL_FEATURES:
+			getPhysicalDeviceSubgroupSizeControlFeatures(reinterpret_cast<VkPhysicalDeviceSubgroupSizeControlFeatures *>(curExtension));
+			break;
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_4444_FORMATS_FEATURES_EXT:
 			getPhysicalDevice4444FormatsFeaturesExt(reinterpret_cast<struct VkPhysicalDevice4444FormatsFeaturesEXT *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES:
+			getPhysicalDeviceSynchronization2Features(reinterpret_cast<struct VkPhysicalDeviceSynchronization2Features *>(curExtension));
+			break;
 		// Unsupported extensions, but used by dEQP
 		// TODO(b/176893525): This may not be legal.
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT:
@@ -529,7 +554,7 @@ const VkPhysicalDeviceLimits &PhysicalDevice::getLimits()
 		28,                                          // maxFragmentCombinedOutputResources
 		32768,                                       // maxComputeSharedMemorySize
 		{ 65535, 65535, 65535 },                     // maxComputeWorkGroupCount[3]
-		256,                                         // maxComputeWorkGroupInvocations
+		vk::MAX_COMPUTE_WORKGROUP_INVOCATIONS,       // maxComputeWorkGroupInvocations
 		{ 256, 256, 64 },                            // maxComputeWorkGroupSize[3]
 		vk::SUBPIXEL_PRECISION_BITS,                 // subPixelPrecisionBits
 		4,                                           // subTexelPrecisionBits
@@ -538,7 +563,7 @@ const VkPhysicalDeviceLimits &PhysicalDevice::getLimits()
 		UINT32_MAX,                                  // maxDrawIndirectCount
 		vk::MAX_SAMPLER_LOD_BIAS,                    // maxSamplerLodBias
 		16,                                          // maxSamplerAnisotropy
-		16,                                          // maxViewports
+		MAX_VIEWPORTS,                               // maxViewports
 		{ sw::MAX_VIEWPORT_DIM,
 		  sw::MAX_VIEWPORT_DIM },  // maxViewportDimensions[2]
 		{ -2 * sw::MAX_VIEWPORT_DIM,
@@ -606,7 +631,7 @@ const VkPhysicalDeviceProperties &PhysicalDevice::getProperties() const
 
 		// Append Reactor JIT backend name and version
 		snprintf(properties.deviceName, VK_MAX_PHYSICAL_DEVICE_NAME_SIZE,
-		         "%s (%s)", SWIFTSHADER_DEVICE_NAME, rr::BackendName().c_str());
+		         "%s (%s)", SWIFTSHADER_DEVICE_NAME, rr::Caps::backendName().c_str());
 
 		return properties;
 	};
@@ -1054,6 +1079,25 @@ void PhysicalDevice::getProperties(VkPhysicalDeviceBlendOperationAdvancedPropert
 	properties->advancedBlendAllOperations = VK_FALSE;
 }
 
+void PhysicalDevice::getProperties(VkPhysicalDeviceSubgroupSizeControlProperties *properties) const
+{
+	VkPhysicalDeviceSubgroupProperties subgroupProperties = {};
+	getProperties(&subgroupProperties);
+	properties->minSubgroupSize = subgroupProperties.subgroupSize;
+	properties->maxSubgroupSize = subgroupProperties.subgroupSize;
+	properties->maxComputeWorkgroupSubgroups = vk::MAX_COMPUTE_WORKGROUP_INVOCATIONS /
+	                                           properties->minSubgroupSize;
+	properties->requiredSubgroupSizeStages = subgroupProperties.supportedStages;
+}
+
+void PhysicalDevice::getProperties(VkPhysicalDeviceTexelBufferAlignmentProperties *properties) const
+{
+	properties->storageTexelBufferOffsetAlignmentBytes = vk::MIN_TEXEL_BUFFER_OFFSET_ALIGNMENT;
+	properties->storageTexelBufferOffsetSingleTexelAlignment = VK_FALSE;
+	properties->uniformTexelBufferOffsetAlignmentBytes = vk::MIN_TEXEL_BUFFER_OFFSET_ALIGNMENT;
+	properties->uniformTexelBufferOffsetSingleTexelAlignment = VK_FALSE;
+}
+
 template<typename T>
 static void getSamplerFilterMinmaxProperties(T *properties)
 {
@@ -1227,11 +1271,27 @@ bool PhysicalDevice::hasExtendedFeatures(const VkPhysicalDeviceBlendOperationAdv
 
 	return CheckFeature(requested, supported, advancedBlendCoherentOperations);
 }
+
+bool PhysicalDevice::hasExtendedFeatures(const VkPhysicalDeviceExtendedDynamicStateFeaturesEXT *requested) const
+{
+	auto supported = getSupportedFeatures(requested);
+
+	return CheckFeature(requested, supported, extendedDynamicState);
+}
+
+bool PhysicalDevice::hasExtendedFeatures(const VkPhysicalDeviceSubgroupSizeControlFeatures *requested) const
+{
+	auto supported = getSupportedFeatures(requested);
+
+	return CheckFeature(requested, supported, subgroupSizeControl) &&
+	       CheckFeature(requested, supported, computeFullSubgroups);
+}
+
 #undef CheckFeature
 
 void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFormatProperties)
 {
-	VkFormatProperties3KHR formatProperties3 = {};
+	VkFormatProperties3 formatProperties3 = {};
 	GetFormatProperties(format, &formatProperties3);
 
 	// VkFormatFeatureFlags2KHR is a 64-bit extension of the 32-bit VkFormatFeatureFlags,
@@ -1241,7 +1301,7 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFor
 	pFormatProperties->bufferFeatures = static_cast<VkFormatFeatureFlags>(formatProperties3.bufferFeatures);
 }
 
-void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties3KHR *pFormatProperties)
+void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties3 *pFormatProperties)
 {
 	pFormatProperties->linearTilingFeatures = 0;   // Unsupported format
 	pFormatProperties->optimalTilingFeatures = 0;  // Unsupported format

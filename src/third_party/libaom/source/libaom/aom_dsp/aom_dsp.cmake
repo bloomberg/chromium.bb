@@ -47,8 +47,7 @@ list(APPEND AOM_DSP_COMMON_SOURCES
             "${AOM_ROOT}/aom_dsp/simd/v64_intrinsics_c.h"
             "${AOM_ROOT}/aom_dsp/subtract.c"
             "${AOM_ROOT}/aom_dsp/txfm_common.h"
-            "${AOM_ROOT}/aom_dsp/x86/convolve_common_intrin.h"
-            "${AOM_ROOT}/aom_dsp/avg.c")
+            "${AOM_ROOT}/aom_dsp/x86/convolve_common_intrin.h")
 
 list(APPEND AOM_DSP_COMMON_ASM_SSE2
             "${AOM_ROOT}/aom_dsp/x86/aom_high_subpixel_8t_sse2.asm"
@@ -77,7 +76,6 @@ list(APPEND AOM_DSP_COMMON_INTRIN_SSE2
             "${AOM_ROOT}/aom_dsp/x86/transpose_sse2.h"
             "${AOM_ROOT}/aom_dsp/x86/txfm_common_sse2.h"
             "${AOM_ROOT}/aom_dsp/x86/sum_squares_sse2.h"
-            "${AOM_ROOT}/aom_dsp/x86/avg_intrin_sse2.c"
             "${AOM_ROOT}/aom_dsp/x86/bitdepth_conversion_sse2.h")
 
 if(NOT CONFIG_AV1_HIGHBITDEPTH)
@@ -105,7 +103,9 @@ list(APPEND AOM_DSP_COMMON_INTRIN_SSE4_1
             "${AOM_ROOT}/aom_dsp/x86/blend_mask_sse4.h"
             "${AOM_ROOT}/aom_dsp/x86/blend_a64_hmask_sse4.c"
             "${AOM_ROOT}/aom_dsp/x86/blend_a64_mask_sse4.c"
-            "${AOM_ROOT}/aom_dsp/x86/blend_a64_vmask_sse4.c")
+            "${AOM_ROOT}/aom_dsp/x86/blend_a64_vmask_sse4.c"
+            "${AOM_ROOT}/aom_dsp/x86/intrapred_sse4.c"
+            "${AOM_ROOT}/aom_dsp/x86/intrapred_utils.h")
 
 list(APPEND AOM_DSP_COMMON_INTRIN_AVX2
             "${AOM_ROOT}/aom_dsp/x86/aom_convolve_copy_avx2.c"
@@ -118,7 +118,6 @@ list(APPEND AOM_DSP_COMMON_INTRIN_AVX2
             "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_avx2.c"
             "${AOM_ROOT}/aom_dsp/x86/intrapred_avx2.c"
             "${AOM_ROOT}/aom_dsp/x86/blend_a64_mask_avx2.c"
-            "${AOM_ROOT}/aom_dsp/x86/avg_intrin_avx2.c"
             "${AOM_ROOT}/aom_dsp/x86/bitdepth_conversion_avx2.h")
 
 if(NOT CONFIG_AV1_HIGHBITDEPTH)
@@ -169,6 +168,7 @@ endif()
 
 if(CONFIG_AV1_ENCODER)
   list(APPEND AOM_DSP_ENCODER_SOURCES
+              "${AOM_ROOT}/aom_dsp/avg.c"
               "${AOM_ROOT}/aom_dsp/binary_codes_writer.c"
               "${AOM_ROOT}/aom_dsp/binary_codes_writer.h"
               "${AOM_ROOT}/aom_dsp/bitwriter.c"
@@ -210,6 +210,7 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/x86/ssim_sse2_x86_64.asm")
 
   list(APPEND AOM_DSP_ENCODER_INTRIN_SSE2
+              "${AOM_ROOT}/aom_dsp/x86/avg_intrin_sse2.c"
               "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_impl_sse2.h"
               "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_sse2.c"
               "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_sse2.h"
@@ -224,6 +225,12 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/x86/sum_squares_sse2.c"
               "${AOM_ROOT}/aom_dsp/x86/variance_sse2.c")
   if(NOT CONFIG_AV1_HIGHBITDEPTH)
+    list(
+      REMOVE_ITEM AOM_DSP_ENCODER_ASM_SSE2
+                  "${AOM_ROOT}/aom_dsp/x86/highbd_sad4d_sse2.asm"
+                  "${AOM_ROOT}/aom_dsp/x86/highbd_sad_sse2.asm"
+                  "${AOM_ROOT}/aom_dsp/x86/highbd_subpel_variance_impl_sse2.asm"
+                  "${AOM_ROOT}/aom_dsp/x86/highbd_variance_impl_sse2.asm")
     list(REMOVE_ITEM AOM_DSP_ENCODER_INTRIN_SSE2
                      "${AOM_ROOT}/aom_dsp/x86/highbd_adaptive_quantize_sse2.c"
                      "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_sse2.c"
@@ -239,6 +246,7 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/x86/quantize_ssse3_x86_64.asm")
 
   list(APPEND AOM_DSP_ENCODER_INTRIN_AVX2
+              "${AOM_ROOT}/aom_dsp/x86/avg_intrin_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/masked_sad_intrin_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/subtract_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_avx2.c"
@@ -246,7 +254,7 @@ if(CONFIG_AV1_ENCODER)
               "${AOM_ROOT}/aom_dsp/x86/highbd_adaptive_quantize_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/sad4d_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/sad_avx2.c"
-              "${AOM_ROOT}/aom_dsp/x86/sad_highbd_avx2.c"
+              "${AOM_ROOT}/aom_dsp/x86/highbd_sad_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/sad_impl_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/variance_avx2.c"
               "${AOM_ROOT}/aom_dsp/x86/highbd_variance_avx2.c"

@@ -129,7 +129,7 @@ export class ImageCopyTest extends ValidationTest {
       method: ImageCopyType;
       dataSize: number;
       success: boolean;
-      /** If submit is true, the validaton error is expected to come from the submit and encoding
+      /** If submit is true, the validation error is expected to come from the submit and encoding
        * should succeed. */
       submit?: boolean;
     }

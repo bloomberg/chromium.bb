@@ -578,6 +578,10 @@ void TurboAssembler::Move(DoubleRegister dst, DoubleRegister src) {
   }
 }
 
+void TurboAssembler::Move(Register dst, const MemOperand& src) {
+  LoadU64(dst, src);
+}
+
 // Wrapper around Assembler::mvc (SS-a format)
 void TurboAssembler::MoveChar(const MemOperand& opnd1, const MemOperand& opnd2,
                               const Operand& length) {
@@ -891,6 +895,16 @@ void TurboAssembler::DecompressAnyTagged(Register destination,
   agr(destination, kRootRegister);
   RecordComment("]");
 }
+
+void TurboAssembler::LoadTaggedSignedField(Register destination,
+                                           MemOperand field_operand) {
+  if (COMPRESS_POINTERS_BOOL) {
+    DecompressTaggedSigned(destination, field_operand);
+  } else {
+    LoadU64(destination, field_operand);
+  }
+}
+
 void MacroAssembler::RecordWriteField(Register object, int offset,
                                       Register value, Register slot_address,
                                       LinkRegisterStatus lr_status,
@@ -1090,6 +1104,7 @@ void MacroAssembler::RecordWrite(Register object, Register slot_address,
 }
 
 void TurboAssembler::PushCommonFrame(Register marker_reg) {
+  ASM_CODE_COMMENT(this);
   int fp_delta = 0;
   CleanseP(r14);
   if (marker_reg.is_valid()) {
@@ -1443,6 +1458,7 @@ void TurboAssembler::DropArgumentsAndPushNewReceiver(Register argc,
 
 void TurboAssembler::EnterFrame(StackFrame::Type type,
                                 bool load_constant_pool_pointer_reg) {
+  ASM_CODE_COMMENT(this);
   // We create a stack frame with:
   //    Return Addr <-- old sp
   //    Old FP      <-- new fp
@@ -1450,14 +1466,19 @@ void TurboAssembler::EnterFrame(StackFrame::Type type,
   //    type
   //    CodeObject  <-- new sp
 
-  mov(ip, Operand(StackFrame::TypeToMarker(type)));
-  PushCommonFrame(ip);
+  Register scratch = no_reg;
+  if (!StackFrame::IsJavaScript(type)) {
+    scratch = ip;
+    mov(scratch, Operand(StackFrame::TypeToMarker(type)));
+  }
+  PushCommonFrame(scratch);
 #if V8_ENABLE_WEBASSEMBLY
   if (type == StackFrame::WASM) Push(kWasmInstanceRegister);
 #endif  // V8_ENABLE_WEBASSEMBLY
 }
 
 int TurboAssembler::LeaveFrame(StackFrame::Type type, int stack_adjustment) {
+  ASM_CODE_COMMENT(this);
   // Drop the execution stack down to the frame pointer and restore
   // the caller frame pointer, return address and constant pool pointer.
   LoadU64(r14, MemOperand(fp, StandardFrameConstants::kCallerPCOffset));
@@ -2917,6 +2938,25 @@ void TurboAssembler::AddU32(Register dst, const Operand& imm) {
 // Add Logical Pointer Size (Register dst = Register dst + Immediate opnd)
 void TurboAssembler::AddU64(Register dst, const Operand& imm) {
   algfi(dst, imm);
+}
+
+void TurboAssembler::AddU64(Register dst, Register src1, Register src2) {
+  if (dst != src2 && dst != src1) {
+    if (CpuFeatures::IsSupported(DISTINCT_OPS)) {
+      algrk(dst, src1, src2);
+    } else {
+      lgr(dst, src1);
+      algr(dst, src2);
+    }
+  } else if (dst != src2) {
+    // dst == src1
+    DCHECK(dst == src1);
+    algr(dst, src2);
+  } else {
+    // dst == src2
+    DCHECK(dst == src2);
+    algr(dst, src1);
+  }
 }
 
 // Add Logical 32-bit (Register-Memory)
@@ -4732,6 +4772,19 @@ void TurboAssembler::CallBuiltinByIndex(Register builtin_index) {
   Call(builtin_index);
 }
 
+void TurboAssembler::LoadEntryFromBuiltin(Builtin builtin,
+                                          Register destination) {
+  ASM_CODE_COMMENT(this);
+  LoadU64(destination, EntryFromBuiltinAsOperand(builtin));
+}
+
+MemOperand TurboAssembler::EntryFromBuiltinAsOperand(Builtin builtin) {
+  ASM_CODE_COMMENT(this);
+  DCHECK(root_array_available());
+  return MemOperand(kRootRegister,
+                    IsolateData::BuiltinEntrySlotOffset(builtin));
+}
+
 void TurboAssembler::LoadCodeObjectEntry(Register destination,
                                          Register code_object) {
   // Code objects are called differently depending on whether we are generating
@@ -5224,29 +5277,59 @@ void TurboAssembler::I8x16ReplaceLane(Simd128Register dst, Simd128Register src1,
   vlvg(dst, src2, MemOperand(r0, 15 - imm_lane_idx), Condition(0));
 }
 
-#define SIMD_UNOP_LIST_VRR_A(V)    \
-  V(F64x2Abs, vfpso, 2, 0, 3)      \
-  V(F64x2Neg, vfpso, 0, 0, 3)      \
-  V(F64x2Sqrt, vfsq, 0, 0, 3)      \
-  V(F64x2Ceil, vfi, 6, 0, 3)       \
-  V(F64x2Floor, vfi, 7, 0, 3)      \
-  V(F64x2Trunc, vfi, 5, 0, 3)      \
-  V(F64x2NearestInt, vfi, 4, 0, 3) \
-  V(F32x4Abs, vfpso, 2, 0, 2)      \
-  V(F32x4Neg, vfpso, 0, 0, 2)      \
-  V(F32x4Sqrt, vfsq, 0, 0, 2)      \
-  V(F32x4Ceil, vfi, 6, 0, 2)       \
-  V(F32x4Floor, vfi, 7, 0, 2)      \
-  V(F32x4Trunc, vfi, 5, 0, 2)      \
-  V(F32x4NearestInt, vfi, 4, 0, 2) \
-  V(I64x2Abs, vlp, 0, 0, 3)        \
-  V(I32x4Abs, vlp, 0, 0, 2)        \
-  V(I16x8Abs, vlp, 0, 0, 1)        \
-  V(I8x16Abs, vlp, 0, 0, 0)        \
-  V(I64x2Neg, vlc, 0, 0, 3)        \
-  V(I32x4Neg, vlc, 0, 0, 2)        \
-  V(I16x8Neg, vlc, 0, 0, 1)        \
-  V(I8x16Neg, vlc, 0, 0, 0)
+void TurboAssembler::S128Not(Simd128Register dst, Simd128Register src) {
+  vno(dst, src, src, Condition(0), Condition(0), Condition(0));
+}
+
+void TurboAssembler::S128Zero(Simd128Register dst, Simd128Register src) {
+  vx(dst, src, src, Condition(0), Condition(0), Condition(0));
+}
+
+void TurboAssembler::S128AllOnes(Simd128Register dst, Simd128Register src) {
+  vceq(dst, src, src, Condition(0), Condition(3));
+}
+
+void TurboAssembler::S128Select(Simd128Register dst, Simd128Register src1,
+                                Simd128Register src2, Simd128Register mask) {
+  vsel(dst, src1, src2, mask, Condition(0), Condition(0));
+}
+
+#define SIMD_UNOP_LIST_VRR_A(V)             \
+  V(F64x2Abs, vfpso, 2, 0, 3)               \
+  V(F64x2Neg, vfpso, 0, 0, 3)               \
+  V(F64x2Sqrt, vfsq, 0, 0, 3)               \
+  V(F64x2Ceil, vfi, 6, 0, 3)                \
+  V(F64x2Floor, vfi, 7, 0, 3)               \
+  V(F64x2Trunc, vfi, 5, 0, 3)               \
+  V(F64x2NearestInt, vfi, 4, 0, 3)          \
+  V(F32x4Abs, vfpso, 2, 0, 2)               \
+  V(F32x4Neg, vfpso, 0, 0, 2)               \
+  V(F32x4Sqrt, vfsq, 0, 0, 2)               \
+  V(F32x4Ceil, vfi, 6, 0, 2)                \
+  V(F32x4Floor, vfi, 7, 0, 2)               \
+  V(F32x4Trunc, vfi, 5, 0, 2)               \
+  V(F32x4NearestInt, vfi, 4, 0, 2)          \
+  V(I64x2Abs, vlp, 0, 0, 3)                 \
+  V(I64x2Neg, vlc, 0, 0, 3)                 \
+  V(I64x2SConvertI32x4Low, vupl, 0, 0, 2)   \
+  V(I64x2SConvertI32x4High, vuph, 0, 0, 2)  \
+  V(I64x2UConvertI32x4Low, vupll, 0, 0, 2)  \
+  V(I64x2UConvertI32x4High, vuplh, 0, 0, 2) \
+  V(I32x4Abs, vlp, 0, 0, 2)                 \
+  V(I32x4Neg, vlc, 0, 0, 2)                 \
+  V(I32x4SConvertI16x8Low, vupl, 0, 0, 1)   \
+  V(I32x4SConvertI16x8High, vuph, 0, 0, 1)  \
+  V(I32x4UConvertI16x8Low, vupll, 0, 0, 1)  \
+  V(I32x4UConvertI16x8High, vuplh, 0, 0, 1) \
+  V(I16x8Abs, vlp, 0, 0, 1)                 \
+  V(I16x8Neg, vlc, 0, 0, 1)                 \
+  V(I16x8SConvertI8x16Low, vupl, 0, 0, 0)   \
+  V(I16x8SConvertI8x16High, vuph, 0, 0, 0)  \
+  V(I16x8UConvertI8x16Low, vupll, 0, 0, 0)  \
+  V(I16x8UConvertI8x16High, vuplh, 0, 0, 0) \
+  V(I8x16Abs, vlp, 0, 0, 0)                 \
+  V(I8x16Neg, vlc, 0, 0, 0)                 \
+  V(I8x16Popcnt, vpopct, 0, 0, 0)
 
 #define EMIT_SIMD_UNOP_VRR_A(name, op, c1, c2, c3)                      \
   void TurboAssembler::name(Simd128Register dst, Simd128Register src) { \
@@ -5278,43 +5361,53 @@ SIMD_BINOP_LIST_VRR_B(EMIT_SIMD_BINOP_VRR_B)
 #undef EMIT_SIMD_BINOP_VRR_B
 #undef SIMD_BINOP_LIST_VRR_B
 
-#define SIMD_BINOP_LIST_VRR_C(V) \
-  V(F64x2Add, vfa, 0, 0, 3)      \
-  V(F64x2Sub, vfs, 0, 0, 3)      \
-  V(F64x2Mul, vfm, 0, 0, 3)      \
-  V(F64x2Div, vfd, 0, 0, 3)      \
-  V(F64x2Min, vfmin, 1, 0, 3)    \
-  V(F64x2Max, vfmax, 1, 0, 3)    \
-  V(F64x2Eq, vfce, 0, 0, 3)      \
-  V(F32x4Add, vfa, 0, 0, 2)      \
-  V(F32x4Sub, vfs, 0, 0, 2)      \
-  V(F32x4Mul, vfm, 0, 0, 2)      \
-  V(F32x4Div, vfd, 0, 0, 2)      \
-  V(F32x4Min, vfmin, 1, 0, 2)    \
-  V(F32x4Max, vfmax, 1, 0, 2)    \
-  V(F32x4Eq, vfce, 0, 0, 2)      \
-  V(I64x2Add, va, 0, 0, 3)       \
-  V(I64x2Sub, vs, 0, 0, 3)       \
-  V(I32x4Add, va, 0, 0, 2)       \
-  V(I32x4Sub, vs, 0, 0, 2)       \
-  V(I32x4Mul, vml, 0, 0, 2)      \
-  V(I32x4MinS, vmn, 0, 0, 2)     \
-  V(I32x4MinU, vmnl, 0, 0, 2)    \
-  V(I32x4MaxS, vmx, 0, 0, 2)     \
-  V(I32x4MaxU, vmxl, 0, 0, 2)    \
-  V(I16x8Add, va, 0, 0, 1)       \
-  V(I16x8Sub, vs, 0, 0, 1)       \
-  V(I16x8Mul, vml, 0, 0, 1)      \
-  V(I16x8MinS, vmn, 0, 0, 1)     \
-  V(I16x8MinU, vmnl, 0, 0, 1)    \
-  V(I16x8MaxS, vmx, 0, 0, 1)     \
-  V(I16x8MaxU, vmxl, 0, 0, 1)    \
-  V(I8x16Add, va, 0, 0, 0)       \
-  V(I8x16Sub, vs, 0, 0, 0)       \
-  V(I8x16MinS, vmn, 0, 0, 0)     \
-  V(I8x16MinU, vmnl, 0, 0, 0)    \
-  V(I8x16MaxS, vmx, 0, 0, 0)     \
-  V(I8x16MaxU, vmxl, 0, 0, 0)
+#define SIMD_BINOP_LIST_VRR_C(V)           \
+  V(F64x2Add, vfa, 0, 0, 3)                \
+  V(F64x2Sub, vfs, 0, 0, 3)                \
+  V(F64x2Mul, vfm, 0, 0, 3)                \
+  V(F64x2Div, vfd, 0, 0, 3)                \
+  V(F64x2Min, vfmin, 1, 0, 3)              \
+  V(F64x2Max, vfmax, 1, 0, 3)              \
+  V(F64x2Eq, vfce, 0, 0, 3)                \
+  V(F64x2Pmin, vfmin, 3, 0, 3)             \
+  V(F64x2Pmax, vfmax, 3, 0, 3)             \
+  V(F32x4Add, vfa, 0, 0, 2)                \
+  V(F32x4Sub, vfs, 0, 0, 2)                \
+  V(F32x4Mul, vfm, 0, 0, 2)                \
+  V(F32x4Div, vfd, 0, 0, 2)                \
+  V(F32x4Min, vfmin, 1, 0, 2)              \
+  V(F32x4Max, vfmax, 1, 0, 2)              \
+  V(F32x4Eq, vfce, 0, 0, 2)                \
+  V(F32x4Pmin, vfmin, 3, 0, 2)             \
+  V(F32x4Pmax, vfmax, 3, 0, 2)             \
+  V(I64x2Add, va, 0, 0, 3)                 \
+  V(I64x2Sub, vs, 0, 0, 3)                 \
+  V(I32x4Add, va, 0, 0, 2)                 \
+  V(I32x4Sub, vs, 0, 0, 2)                 \
+  V(I32x4Mul, vml, 0, 0, 2)                \
+  V(I32x4MinS, vmn, 0, 0, 2)               \
+  V(I32x4MinU, vmnl, 0, 0, 2)              \
+  V(I32x4MaxS, vmx, 0, 0, 2)               \
+  V(I32x4MaxU, vmxl, 0, 0, 2)              \
+  V(I16x8Add, va, 0, 0, 1)                 \
+  V(I16x8Sub, vs, 0, 0, 1)                 \
+  V(I16x8Mul, vml, 0, 0, 1)                \
+  V(I16x8MinS, vmn, 0, 0, 1)               \
+  V(I16x8MinU, vmnl, 0, 0, 1)              \
+  V(I16x8MaxS, vmx, 0, 0, 1)               \
+  V(I16x8MaxU, vmxl, 0, 0, 1)              \
+  V(I16x8RoundingAverageU, vavgl, 0, 0, 1) \
+  V(I8x16Add, va, 0, 0, 0)                 \
+  V(I8x16Sub, vs, 0, 0, 0)                 \
+  V(I8x16MinS, vmn, 0, 0, 0)               \
+  V(I8x16MinU, vmnl, 0, 0, 0)              \
+  V(I8x16MaxS, vmx, 0, 0, 0)               \
+  V(I8x16MaxU, vmxl, 0, 0, 0)              \
+  V(I8x16RoundingAverageU, vavgl, 0, 0, 0) \
+  V(S128And, vn, 0, 0, 0)                  \
+  V(S128Or, vo, 0, 0, 0)                   \
+  V(S128Xor, vx, 0, 0, 0)                  \
+  V(S128AndNot, vnc, 0, 0, 0)
 
 #define EMIT_SIMD_BINOP_VRR_C(name, op, c1, c2, c3)                    \
   void TurboAssembler::name(Simd128Register dst, Simd128Register src1, \
@@ -5355,6 +5448,68 @@ SIMD_BINOP_LIST_VRR_C(EMIT_SIMD_BINOP_VRR_C)
 SIMD_SHIFT_LIST(EMIT_SIMD_SHIFT)
 #undef EMIT_SIMD_SHIFT
 #undef SIMD_SHIFT_LIST
+
+#define SIMD_EXT_MUL_LIST(V)                    \
+  V(I64x2ExtMulLowI32x4S, vme, vmo, vmrl, 2)    \
+  V(I64x2ExtMulHighI32x4S, vme, vmo, vmrh, 2)   \
+  V(I64x2ExtMulLowI32x4U, vmle, vmlo, vmrl, 2)  \
+  V(I64x2ExtMulHighI32x4U, vmle, vmlo, vmrh, 2) \
+  V(I32x4ExtMulLowI16x8S, vme, vmo, vmrl, 1)    \
+  V(I32x4ExtMulHighI16x8S, vme, vmo, vmrh, 1)   \
+  V(I32x4ExtMulLowI16x8U, vmle, vmlo, vmrl, 1)  \
+  V(I32x4ExtMulHighI16x8U, vmle, vmlo, vmrh, 1) \
+  V(I16x8ExtMulLowI8x16S, vme, vmo, vmrl, 0)    \
+  V(I16x8ExtMulHighI8x16S, vme, vmo, vmrh, 0)   \
+  V(I16x8ExtMulLowI8x16U, vmle, vmlo, vmrl, 0)  \
+  V(I16x8ExtMulHighI8x16U, vmle, vmlo, vmrh, 0)
+
+#define EMIT_SIMD_EXT_MUL(name, mul_even, mul_odd, merge, mode)                \
+  void TurboAssembler::name(Simd128Register dst, Simd128Register src1,         \
+                            Simd128Register src2, Simd128Register scratch) {   \
+    mul_even(scratch, src1, src2, Condition(0), Condition(0),                  \
+             Condition(mode));                                                 \
+    mul_odd(dst, src1, src2, Condition(0), Condition(0), Condition(mode));     \
+    merge(dst, scratch, dst, Condition(0), Condition(0), Condition(mode + 1)); \
+  }
+SIMD_EXT_MUL_LIST(EMIT_SIMD_EXT_MUL)
+#undef EMIT_SIMD_EXT_MUL
+#undef SIMD_EXT_MUL_LIST
+
+#define SIMD_ALL_TRUE_LIST(V) \
+  V(I64x2AllTrue, 3)          \
+  V(I32x4AllTrue, 2)          \
+  V(I16x8AllTrue, 1)          \
+  V(I8x16AllTrue, 0)
+
+#define EMIT_SIMD_ALL_TRUE(name, mode)                                     \
+  void TurboAssembler::name(Register dst, Simd128Register src,             \
+                            Register scratch1, Simd128Register scratch2) { \
+    mov(scratch1, Operand(1));                                             \
+    xgr(dst, dst);                                                         \
+    vx(scratch2, scratch2, scratch2, Condition(0), Condition(0),           \
+       Condition(2));                                                      \
+    vceq(scratch2, src, scratch2, Condition(0), Condition(mode));          \
+    vtm(scratch2, scratch2, Condition(0), Condition(0), Condition(0));     \
+    locgr(Condition(8), dst, scratch1);                                    \
+  }
+SIMD_ALL_TRUE_LIST(EMIT_SIMD_ALL_TRUE)
+#undef EMIT_SIMD_ALL_TRUE
+#undef SIMD_ALL_TRUE_LIST
+
+#define SIMD_QFM_LIST(V) \
+  V(F64x2Qfma, vfma, 3)  \
+  V(F64x2Qfms, vfnms, 3) \
+  V(F32x4Qfma, vfma, 2)  \
+  V(F32x4Qfms, vfnms, 2)
+
+#define EMIT_SIMD_QFM(name, op, c1)                                       \
+  void TurboAssembler::name(Simd128Register dst, Simd128Register src1,    \
+                            Simd128Register src2, Simd128Register src3) { \
+    op(dst, src2, src3, src1, Condition(c1), Condition(0));               \
+  }
+SIMD_QFM_LIST(EMIT_SIMD_QFM)
+#undef EMIT_SIMD_QFM
+#undef SIMD_QFM_LIST
 
 void TurboAssembler::I64x2Mul(Simd128Register dst, Simd128Register src1,
                               Simd128Register src2) {
@@ -5474,6 +5629,414 @@ void TurboAssembler::I8x16GeU(Simd128Register dst, Simd128Register src1,
   vchl(dst, src1, src2, Condition(0), Condition(0));
   vo(dst, dst, kScratchDoubleReg, Condition(0), Condition(0), Condition(0));
 }
+
+void TurboAssembler::I64x2BitMask(Register dst, Simd128Register src,
+                                  Register scratch1, Simd128Register scratch2) {
+  mov(scratch1, Operand(0x8080808080800040));
+  vlvg(scratch2, scratch1, MemOperand(r0, 1), Condition(3));
+  vbperm(scratch2, src, scratch2, Condition(0), Condition(0), Condition(0));
+  vlgv(dst, scratch2, MemOperand(r0, 7), Condition(0));
+}
+
+void TurboAssembler::I32x4BitMask(Register dst, Simd128Register src,
+                                  Register scratch1, Simd128Register scratch2) {
+  mov(scratch1, Operand(0x8080808000204060));
+  vlvg(scratch2, scratch1, MemOperand(r0, 1), Condition(3));
+  vbperm(scratch2, src, scratch2, Condition(0), Condition(0), Condition(0));
+  vlgv(dst, scratch2, MemOperand(r0, 7), Condition(0));
+}
+
+void TurboAssembler::I16x8BitMask(Register dst, Simd128Register src,
+                                  Register scratch1, Simd128Register scratch2) {
+  mov(scratch1, Operand(0x10203040506070));
+  vlvg(scratch2, scratch1, MemOperand(r0, 1), Condition(3));
+  vbperm(scratch2, src, scratch2, Condition(0), Condition(0), Condition(0));
+  vlgv(dst, scratch2, MemOperand(r0, 7), Condition(0));
+}
+
+void TurboAssembler::F64x2ConvertLowI32x4S(Simd128Register dst,
+                                           Simd128Register src) {
+  vupl(dst, src, Condition(0), Condition(0), Condition(2));
+  vcdg(dst, dst, Condition(4), Condition(0), Condition(3));
+}
+
+void TurboAssembler::F64x2ConvertLowI32x4U(Simd128Register dst,
+                                           Simd128Register src) {
+  vupll(dst, src, Condition(0), Condition(0), Condition(2));
+  vcdlg(dst, dst, Condition(4), Condition(0), Condition(3));
+}
+
+void TurboAssembler::I8x16BitMask(Register dst, Simd128Register src,
+                                  Register scratch1, Register scratch2,
+                                  Simd128Register scratch3) {
+  mov(scratch1, Operand(0x4048505860687078));
+  mov(scratch2, Operand(0x8101820283038));
+  vlvgp(scratch3, scratch2, scratch1);
+  vbperm(scratch3, src, scratch3, Condition(0), Condition(0), Condition(0));
+  vlgv(dst, scratch3, MemOperand(r0, 3), Condition(1));
+}
+
+void TurboAssembler::V128AnyTrue(Register dst, Simd128Register src,
+                                 Register scratch) {
+  mov(dst, Operand(1));
+  xgr(scratch, scratch);
+  vtm(src, src, Condition(0), Condition(0), Condition(0));
+  locgr(Condition(8), dst, scratch);
+}
+
+#define CONVERT_FLOAT_TO_INT32(convert, dst, src, scratch1, scratch2) \
+  for (int index = 0; index < 4; index++) {                           \
+    vlgv(scratch2, src, MemOperand(r0, index), Condition(2));         \
+    MovIntToFloat(scratch1, scratch2);                                \
+    convert(scratch2, scratch1, kRoundToZero);                        \
+    vlvg(dst, scratch2, MemOperand(r0, index), Condition(2));         \
+  }
+void TurboAssembler::I32x4SConvertF32x4(Simd128Register dst,
+                                        Simd128Register src,
+                                        Simd128Register scratch1,
+                                        Register scratch2) {
+  // NaN to 0.
+  vfce(scratch1, src, src, Condition(0), Condition(0), Condition(2));
+  vn(dst, src, scratch1, Condition(0), Condition(0), Condition(0));
+  if (CpuFeatures::IsSupported(VECTOR_ENHANCE_FACILITY_2)) {
+    vcgd(dst, dst, Condition(5), Condition(0), Condition(2));
+  } else {
+    CONVERT_FLOAT_TO_INT32(ConvertFloat32ToInt32, dst, dst, scratch1, scratch2)
+  }
+}
+
+void TurboAssembler::I32x4UConvertF32x4(Simd128Register dst,
+                                        Simd128Register src,
+                                        Simd128Register scratch1,
+                                        Register scratch2) {
+  // vclgd or ConvertFloat32ToUnsignedInt32 will convert NaN to 0, negative to 0
+  // automatically.
+  if (CpuFeatures::IsSupported(VECTOR_ENHANCE_FACILITY_2)) {
+    vclgd(dst, src, Condition(5), Condition(0), Condition(2));
+  } else {
+    CONVERT_FLOAT_TO_INT32(ConvertFloat32ToUnsignedInt32, dst, src, scratch1,
+                           scratch2)
+  }
+}
+#undef CONVERT_FLOAT_TO_INT32
+
+#define CONVERT_INT32_TO_FLOAT(convert, dst, src, scratch1, scratch2) \
+  for (int index = 0; index < 4; index++) {                           \
+    vlgv(scratch2, src, MemOperand(r0, index), Condition(2));         \
+    convert(scratch1, scratch2);                                      \
+    MovFloatToInt(scratch2, scratch1);                                \
+    vlvg(dst, scratch2, MemOperand(r0, index), Condition(2));         \
+  }
+void TurboAssembler::F32x4SConvertI32x4(Simd128Register dst,
+                                        Simd128Register src,
+                                        Simd128Register scratch1,
+                                        Register scratch2) {
+  if (CpuFeatures::IsSupported(VECTOR_ENHANCE_FACILITY_2)) {
+    vcdg(dst, src, Condition(4), Condition(0), Condition(2));
+  } else {
+    CONVERT_INT32_TO_FLOAT(ConvertIntToFloat, dst, src, scratch1, scratch2)
+  }
+}
+void TurboAssembler::F32x4UConvertI32x4(Simd128Register dst,
+                                        Simd128Register src,
+                                        Simd128Register scratch1,
+                                        Register scratch2) {
+  if (CpuFeatures::IsSupported(VECTOR_ENHANCE_FACILITY_2)) {
+    vcdlg(dst, src, Condition(4), Condition(0), Condition(2));
+  } else {
+    CONVERT_INT32_TO_FLOAT(ConvertUnsignedIntToFloat, dst, src, scratch1,
+                           scratch2)
+  }
+}
+#undef CONVERT_INT32_TO_FLOAT
+
+void TurboAssembler::I16x8SConvertI32x4(Simd128Register dst,
+                                        Simd128Register src1,
+                                        Simd128Register src2) {
+  vpks(dst, src2, src1, Condition(0), Condition(2));
+}
+
+void TurboAssembler::I8x16SConvertI16x8(Simd128Register dst,
+                                        Simd128Register src1,
+                                        Simd128Register src2) {
+  vpks(dst, src2, src1, Condition(0), Condition(1));
+}
+
+#define VECTOR_PACK_UNSIGNED(dst, src1, src2, scratch, mode)       \
+  vx(kDoubleRegZero, kDoubleRegZero, kDoubleRegZero, Condition(0), \
+     Condition(0), Condition(mode));                               \
+  vmx(scratch, src1, kDoubleRegZero, Condition(0), Condition(0),   \
+      Condition(mode));                                            \
+  vmx(dst, src2, kDoubleRegZero, Condition(0), Condition(0), Condition(mode));
+void TurboAssembler::I16x8UConvertI32x4(Simd128Register dst,
+                                        Simd128Register src1,
+                                        Simd128Register src2,
+                                        Simd128Register scratch) {
+  // treat inputs as signed, and saturate to unsigned (negative to 0).
+  VECTOR_PACK_UNSIGNED(dst, src1, src2, scratch, 2)
+  vpkls(dst, dst, scratch, Condition(0), Condition(2));
+}
+
+void TurboAssembler::I8x16UConvertI16x8(Simd128Register dst,
+                                        Simd128Register src1,
+                                        Simd128Register src2,
+                                        Simd128Register scratch) {
+  // treat inputs as signed, and saturate to unsigned (negative to 0).
+  VECTOR_PACK_UNSIGNED(dst, src1, src2, scratch, 1)
+  vpkls(dst, dst, scratch, Condition(0), Condition(1));
+}
+#undef VECTOR_PACK_UNSIGNED
+
+#define BINOP_EXTRACT(dst, src1, src2, scratch1, scratch2, op, extract_high, \
+                      extract_low, mode)                                     \
+  DCHECK(dst != scratch1 && dst != scratch2);                                \
+  DCHECK(dst != src1 && dst != src2);                                        \
+  extract_high(scratch1, src1, Condition(0), Condition(0), Condition(mode)); \
+  extract_high(scratch2, src2, Condition(0), Condition(0), Condition(mode)); \
+  op(dst, scratch1, scratch2, Condition(0), Condition(0),                    \
+     Condition(mode + 1));                                                   \
+  extract_low(scratch1, src1, Condition(0), Condition(0), Condition(mode));  \
+  extract_low(scratch2, src2, Condition(0), Condition(0), Condition(mode));  \
+  op(scratch1, scratch1, scratch2, Condition(0), Condition(0),               \
+     Condition(mode + 1));
+void TurboAssembler::I16x8AddSatS(Simd128Register dst, Simd128Register src1,
+                                  Simd128Register src2,
+                                  Simd128Register scratch1,
+                                  Simd128Register scratch2) {
+  BINOP_EXTRACT(dst, src1, src2, scratch1, scratch2, va, vuph, vupl, 1)
+  vpks(dst, dst, scratch1, Condition(0), Condition(2));
+}
+
+void TurboAssembler::I16x8SubSatS(Simd128Register dst, Simd128Register src1,
+                                  Simd128Register src2,
+                                  Simd128Register scratch1,
+                                  Simd128Register scratch2) {
+  BINOP_EXTRACT(dst, src1, src2, scratch1, scratch2, vs, vuph, vupl, 1)
+  vpks(dst, dst, scratch1, Condition(0), Condition(2));
+}
+
+void TurboAssembler::I16x8AddSatU(Simd128Register dst, Simd128Register src1,
+                                  Simd128Register src2,
+                                  Simd128Register scratch1,
+                                  Simd128Register scratch2) {
+  BINOP_EXTRACT(dst, src1, src2, scratch1, scratch2, va, vuplh, vupll, 1)
+  vpkls(dst, dst, scratch1, Condition(0), Condition(2));
+}
+
+void TurboAssembler::I16x8SubSatU(Simd128Register dst, Simd128Register src1,
+                                  Simd128Register src2,
+                                  Simd128Register scratch1,
+                                  Simd128Register scratch2) {
+  BINOP_EXTRACT(dst, src1, src2, scratch1, scratch2, vs, vuplh, vupll, 1)
+  // negative intermediate values to 0.
+  vx(kDoubleRegZero, kDoubleRegZero, kDoubleRegZero, Condition(0), Condition(0),
+     Condition(0));
+  vmx(dst, kDoubleRegZero, dst, Condition(0), Condition(0), Condition(2));
+  vmx(scratch1, kDoubleRegZero, scratch1, Condition(0), Condition(0),
+      Condition(2));
+  vpkls(dst, dst, scratch1, Condition(0), Condition(2));
+}
+
+void TurboAssembler::I8x16AddSatS(Simd128Register dst, Simd128Register src1,
+                                  Simd128Register src2,
+                                  Simd128Register scratch1,
+                                  Simd128Register scratch2) {
+  BINOP_EXTRACT(dst, src1, src2, scratch1, scratch2, va, vuph, vupl, 0)
+  vpks(dst, dst, scratch1, Condition(0), Condition(1));
+}
+
+void TurboAssembler::I8x16SubSatS(Simd128Register dst, Simd128Register src1,
+                                  Simd128Register src2,
+                                  Simd128Register scratch1,
+                                  Simd128Register scratch2) {
+  BINOP_EXTRACT(dst, src1, src2, scratch1, scratch2, vs, vuph, vupl, 0)
+  vpks(dst, dst, scratch1, Condition(0), Condition(1));
+}
+
+void TurboAssembler::I8x16AddSatU(Simd128Register dst, Simd128Register src1,
+                                  Simd128Register src2,
+                                  Simd128Register scratch1,
+                                  Simd128Register scratch2) {
+  BINOP_EXTRACT(dst, src1, src2, scratch1, scratch2, va, vuplh, vupll, 0)
+  vpkls(dst, dst, scratch1, Condition(0), Condition(1));
+}
+
+void TurboAssembler::I8x16SubSatU(Simd128Register dst, Simd128Register src1,
+                                  Simd128Register src2,
+                                  Simd128Register scratch1,
+                                  Simd128Register scratch2) {
+  BINOP_EXTRACT(dst, src1, src2, scratch1, scratch2, vs, vuplh, vupll, 0)
+  // negative intermediate values to 0.
+  vx(kDoubleRegZero, kDoubleRegZero, kDoubleRegZero, Condition(0), Condition(0),
+     Condition(0));
+  vmx(dst, kDoubleRegZero, dst, Condition(0), Condition(0), Condition(1));
+  vmx(scratch1, kDoubleRegZero, scratch1, Condition(0), Condition(0),
+      Condition(1));
+  vpkls(dst, dst, scratch1, Condition(0), Condition(1));
+}
+#undef BINOP_EXTRACT
+
+void TurboAssembler::F64x2PromoteLowF32x4(Simd128Register dst,
+                                          Simd128Register src,
+                                          Simd128Register scratch1,
+                                          Register scratch2, Register scratch3,
+                                          Register scratch4) {
+  Register holder = scratch3;
+  for (int index = 0; index < 2; ++index) {
+    vlgv(scratch2, src, MemOperand(scratch2, index + 2), Condition(2));
+    MovIntToFloat(scratch1, scratch2);
+    ldebr(scratch1, scratch1);
+    MovDoubleToInt64(holder, scratch1);
+    holder = scratch4;
+  }
+  vlvgp(dst, scratch3, scratch4);
+}
+
+void TurboAssembler::F32x4DemoteF64x2Zero(Simd128Register dst,
+                                          Simd128Register src,
+                                          Simd128Register scratch1,
+                                          Register scratch2, Register scratch3,
+                                          Register scratch4) {
+  Register holder = scratch3;
+  for (int index = 0; index < 2; ++index) {
+    vlgv(scratch2, src, MemOperand(r0, index), Condition(3));
+    MovInt64ToDouble(scratch1, scratch2);
+    ledbr(scratch1, scratch1);
+    MovFloatToInt(holder, scratch1);
+    holder = scratch4;
+  }
+  vx(dst, dst, dst, Condition(0), Condition(0), Condition(2));
+  vlvg(dst, scratch3, MemOperand(r0, 2), Condition(2));
+  vlvg(dst, scratch4, MemOperand(r0, 3), Condition(2));
+}
+
+#define EXT_ADD_PAIRWISE(dst, src, scratch1, scratch2, lane_size, mul_even, \
+                         mul_odd)                                           \
+  CHECK_NE(src, scratch2);                                                  \
+  vrepi(scratch2, Operand(1), Condition(lane_size));                        \
+  mul_even(scratch1, src, scratch2, Condition(0), Condition(0),             \
+           Condition(lane_size));                                           \
+  mul_odd(scratch2, src, scratch2, Condition(0), Condition(0),              \
+          Condition(lane_size));                                            \
+  va(dst, scratch1, scratch2, Condition(0), Condition(0),                   \
+     Condition(lane_size + 1));
+void TurboAssembler::I32x4ExtAddPairwiseI16x8S(Simd128Register dst,
+                                               Simd128Register src,
+                                               Simd128Register scratch1,
+                                               Simd128Register scratch2) {
+  EXT_ADD_PAIRWISE(dst, src, scratch1, scratch2, 1, vme, vmo)
+}
+
+void TurboAssembler::I32x4ExtAddPairwiseI16x8U(Simd128Register dst,
+                                               Simd128Register src,
+                                               Simd128Register scratch,
+                                               Simd128Register scratch2) {
+  vx(scratch, scratch, scratch, Condition(0), Condition(0), Condition(3));
+  vsum(dst, src, scratch, Condition(0), Condition(0), Condition(1));
+}
+
+void TurboAssembler::I16x8ExtAddPairwiseI8x16S(Simd128Register dst,
+                                               Simd128Register src,
+                                               Simd128Register scratch1,
+                                               Simd128Register scratch2) {
+  EXT_ADD_PAIRWISE(dst, src, scratch1, scratch2, 0, vme, vmo)
+}
+
+void TurboAssembler::I16x8ExtAddPairwiseI8x16U(Simd128Register dst,
+                                               Simd128Register src,
+                                               Simd128Register scratch1,
+                                               Simd128Register scratch2) {
+  EXT_ADD_PAIRWISE(dst, src, scratch1, scratch2, 0, vmle, vmlo)
+}
+#undef EXT_ADD_PAIRWISE
+
+void TurboAssembler::I32x4TruncSatF64x2SZero(Simd128Register dst,
+                                             Simd128Register src,
+                                             Simd128Register scratch) {
+  // NaN to 0.
+  vlr(scratch, src, Condition(0), Condition(0), Condition(0));
+  vfce(scratch, scratch, scratch, Condition(0), Condition(0), Condition(3));
+  vn(scratch, src, scratch, Condition(0), Condition(0), Condition(0));
+  vcgd(scratch, scratch, Condition(5), Condition(0), Condition(3));
+  vx(dst, dst, dst, Condition(0), Condition(0), Condition(2));
+  vpks(dst, dst, scratch, Condition(0), Condition(3));
+}
+
+void TurboAssembler::I32x4TruncSatF64x2UZero(Simd128Register dst,
+                                             Simd128Register src,
+                                             Simd128Register scratch) {
+  vclgd(scratch, src, Condition(5), Condition(0), Condition(3));
+  vx(dst, dst, dst, Condition(0), Condition(0), Condition(2));
+  vpkls(dst, dst, scratch, Condition(0), Condition(3));
+}
+
+void TurboAssembler::S128Const(Simd128Register dst, uint64_t high, uint64_t low,
+                               Register scratch1, Register scratch2) {
+  mov(scratch1, Operand(low));
+  mov(scratch2, Operand(high));
+  vlvgp(dst, scratch2, scratch1);
+}
+
+void TurboAssembler::I8x16Swizzle(Simd128Register dst, Simd128Register src1,
+                                  Simd128Register src2,
+                                  Simd128Register scratch1,
+                                  Simd128Register scratch2) {
+  DCHECK_NE(src1, scratch2);
+  // Saturate the indices to 5 bits. Input indices more than 31 should
+  // return 0.
+  vrepi(scratch1, Operand(31), Condition(0));
+  vmnl(scratch2, src2, scratch1, Condition(0), Condition(0), Condition(0));
+  // Input needs to be reversed.
+  vlgv(r0, src1, MemOperand(r0, 0), Condition(3));
+  vlgv(r1, src1, MemOperand(r0, 1), Condition(3));
+  lrvgr(r0, r0);
+  lrvgr(r1, r1);
+  vlvgp(dst, r1, r0);
+  // Clear scratch.
+  vx(scratch1, scratch1, scratch1, Condition(0), Condition(0), Condition(0));
+  vperm(dst, dst, scratch1, scratch2, Condition(0), Condition(0));
+}
+
+void TurboAssembler::I8x16Shuffle(Simd128Register dst, Simd128Register src1,
+                                  Simd128Register src2, uint64_t high,
+                                  uint64_t low, Register scratch1,
+                                  Register scratch2, Simd128Register scratch3) {
+  mov(scratch1, Operand(low));
+  mov(scratch2, Operand(high));
+  vlvgp(kScratchDoubleReg, scratch2, scratch1);
+  vperm(dst, src1, src2, scratch3, Condition(0), Condition(0));
+}
+
+void TurboAssembler::I32x4DotI16x8S(Simd128Register dst, Simd128Register src1,
+                                    Simd128Register src2,
+                                    Simd128Register scratch) {
+  vme(scratch, src1, src2, Condition(0), Condition(0), Condition(1));
+  vmo(dst, src1, src2, Condition(0), Condition(0), Condition(1));
+  va(dst, scratch, dst, Condition(0), Condition(0), Condition(2));
+}
+
+#define Q15_MUL_ROAUND(accumulator, src1, src2, const_val, scratch, unpack) \
+  unpack(scratch, src1, Condition(0), Condition(0), Condition(1));          \
+  unpack(accumulator, src2, Condition(0), Condition(0), Condition(1));      \
+  vml(accumulator, scratch, accumulator, Condition(0), Condition(0),        \
+      Condition(2));                                                        \
+  va(accumulator, accumulator, const_val, Condition(0), Condition(0),       \
+     Condition(2));                                                         \
+  vrepi(scratch, Operand(15), Condition(2));                                \
+  vesrav(accumulator, accumulator, scratch, Condition(0), Condition(0),     \
+         Condition(2));
+void TurboAssembler::I16x8Q15MulRSatS(Simd128Register dst, Simd128Register src1,
+                                      Simd128Register src2,
+                                      Simd128Register scratch1,
+                                      Simd128Register scratch2,
+                                      Simd128Register scratch3) {
+  DCHECK(!AreAliased(src1, src2, scratch1, scratch2, scratch3));
+  vrepi(scratch1, Operand(0x4000), Condition(2));
+  Q15_MUL_ROAUND(scratch2, src1, src2, scratch1, scratch3, vupl)
+  Q15_MUL_ROAUND(dst, src1, src2, scratch1, scratch3, vuph)
+  vpks(dst, dst, scratch2, Condition(0), Condition(2));
+}
+#undef Q15_MUL_ROAUND
 
 // Vector LE Load and Transform instructions.
 #ifdef V8_TARGET_BIG_ENDIAN
