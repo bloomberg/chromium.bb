@@ -145,6 +145,7 @@ WebViewImpl::~WebViewImpl()
     }
 
     if (d_widget) {
+        d_widget->setDelegate(0);
         d_widget->destroy();
     }
 }
@@ -234,9 +235,6 @@ void WebViewImpl::destroy()
     d_browserContext->decrementWebViewCount();
 
     Observe(0);  // stop observing the WebContents
-    if (d_widget) {
-        d_widget->setDelegate(nullptr);
-    }
     d_webContents.reset();
     d_wasDestroyed = true;
     if (d_isReadyForDelete) {
@@ -855,7 +853,6 @@ void WebViewImpl::OnNCDragEnd()
 aura::Window *WebViewImpl::GetDefaultActivationWindow()
 {
     DCHECK(Statics::isInBrowserMainThread());
-    DCHECK(!d_wasDestroyed);
     content::RenderWidgetHostView *rwhv = d_webContents->GetRenderWidgetHostView();
     if (rwhv) {
         return rwhv->GetNativeView();
