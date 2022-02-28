@@ -8,7 +8,7 @@
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
-#include "ash/login/ui/public_account_warning_dialog.h"
+#include "ash/login/ui/public_account_monitoring_info_dialog.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -20,6 +20,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/test/combobox_test_api.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -45,6 +46,12 @@ constexpr char kKeyboardNameForItem2[] = "keyboard2";
 class LoginExpandedPublicAccountViewTest
     : public LoginTestBase,
       public ::testing::WithParamInterface<const char*> {
+ public:
+  LoginExpandedPublicAccountViewTest(
+      const LoginExpandedPublicAccountViewTest&) = delete;
+  LoginExpandedPublicAccountViewTest& operator=(
+      const LoginExpandedPublicAccountViewTest&) = delete;
+
  protected:
   LoginExpandedPublicAccountViewTest() = default;
   ~LoginExpandedPublicAccountViewTest() override = default;
@@ -121,9 +128,6 @@ class LoginExpandedPublicAccountViewTest
   views::View* container_ = nullptr;
   LoginExpandedPublicAccountView* public_account_ = nullptr;
   views::View* other_view_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LoginExpandedPublicAccountViewTest);
 };
 
 }  // namespace
@@ -156,10 +160,10 @@ TEST_P(LoginExpandedPublicAccountViewTest, ToggleAdvancedView) {
   EXPECT_EQ(public_account_->height(), kBubbleTotalHeightDp);
 }
 
-// Verifies warning dialog shows up correctly.
-TEST_P(LoginExpandedPublicAccountViewTest, ShowWarningDialog) {
+// Verifies learn more dialog shows up correctly.
+TEST_P(LoginExpandedPublicAccountViewTest, ShowLearnMoreDialog) {
   LoginExpandedPublicAccountView::TestApi test_api(public_account_);
-  EXPECT_EQ(test_api.warning_dialog(), nullptr);
+  EXPECT_EQ(test_api.learn_more_dialog(), nullptr);
 
   // Tap on the learn more link.
   const auto& children = test_api.learn_more_label()->children();
@@ -167,21 +171,21 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowWarningDialog) {
                                      &views::View::GetClassName);
   DCHECK(it != children.cend());
   TapOnView(*it);
-  ASSERT_NE(test_api.warning_dialog(), nullptr);
-  EXPECT_TRUE(test_api.warning_dialog()->GetVisible());
+  ASSERT_NE(test_api.learn_more_dialog(), nullptr);
+  EXPECT_TRUE(test_api.learn_more_dialog()->GetVisible());
 
-  // When warning dialog is shown, tap outside of public account expanded view
-  // should not hide it.
+  // When learn more dialog is shown, tap outside of public account expanded
+  // view should not hide it.
   TapOnView(other_view_);
   EXPECT_TRUE(public_account_->GetVisible());
-  ASSERT_NE(test_api.warning_dialog(), nullptr);
-  EXPECT_TRUE(test_api.warning_dialog()->GetVisible());
+  ASSERT_NE(test_api.learn_more_dialog(), nullptr);
+  EXPECT_TRUE(test_api.learn_more_dialog()->GetVisible());
 
-  // If the warning dialog is shown, escape key should close the waring dialog,
-  // but not the public account view.
+  // If the learn more dialog is shown, escape key should close the learn more
+  // dialog, but not the public account view.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_ESCAPE, 0);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(test_api.warning_dialog(), nullptr);
+  EXPECT_EQ(test_api.learn_more_dialog(), nullptr);
   EXPECT_TRUE(public_account_->GetVisible());
 
   // Press escape again should hide the public account expanded view.
@@ -200,16 +204,18 @@ TEST_P(LoginExpandedPublicAccountViewTest, LaunchPublicSession) {
   LoginExpandedPublicAccountView::TestApi test_api(public_account_);
 
   // Verify the language and keyboard information is populated correctly.
-  std::string selected_language = test_api.selected_language_item().value;
-  std::string selected_keyboard = test_api.selected_keyboard_item().value;
-  EXPECT_EQ(selected_language, kEnglishLanguageCode);
-  EXPECT_EQ(selected_keyboard, kKeyboardIdForItem2);
+  std::string selected_language_item_value =
+      test_api.selected_language_item_value();
+  EXPECT_EQ(selected_language_item_value, kEnglishLanguageCode);
+  std::string selected_keyboard_item_value =
+      test_api.selected_keyboard_item_value();
+  EXPECT_EQ(selected_keyboard_item_value, kKeyboardIdForItem2);
 
-  // Expect LanuchPublicSession mojo call when the submit button is clicked.
+  // Expect LaunchPublicSession mojo call when the submit button is clicked.
   auto client = std::make_unique<MockLoginScreenClient>();
-  EXPECT_CALL(*client,
-              LaunchPublicSession(user_.basic_user_info.account_id,
-                                  selected_language, selected_keyboard));
+  EXPECT_CALL(*client, LaunchPublicSession(user_.basic_user_info.account_id,
+                                           selected_language_item_value,
+                                           selected_keyboard_item_value));
 
   // Click on the submit button.
   TapOnView(test_api.submit_button());
@@ -227,33 +233,41 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
   public_account_->UpdateForUser(user_);
   EXPECT_TRUE(test_api.advanced_view()->GetVisible());
 
-  // Tap on language selection button should bring up the language menu.
-  TapOnView(test_api.language_selection_button());
-  EXPECT_TRUE(test_api.language_menu_view()->GetVisible());
+  // Open language menu.
+  PublicAccountMenuView* language_menu_view = test_api.language_menu_view();
+  EXPECT_FALSE(language_menu_view->IsMenuRunning());
+  TapOnView(language_menu_view);
+  EXPECT_TRUE(language_menu_view->IsMenuRunning());
 
-  // First language item is selected, and selected item should have focus.
-  EXPECT_EQ(test_api.selected_language_item().value, kEnglishLanguageCode);
-  LoginMenuView::TestApi language_test_api(test_api.language_menu_view());
-  ASSERT_EQ(2u, language_test_api.contents()->children().size());
-  EXPECT_TRUE(language_test_api.contents()->children()[0]->HasFocus());
+  // First language item is selected.
+  EXPECT_EQ(test_api.selected_language_item_value(), kEnglishLanguageCode);
+  ASSERT_EQ(2, language_menu_view->GetRowCount());
+  EXPECT_EQ(0, language_menu_view->GetSelectedRow());
 
-  // Select language item should close the language menu.
+  // Once the menu is open, the focus is set on the entire view.
+  // The first key press will set the focus on the language item, the second
+  // press will select it and should close the language menu.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
-  EXPECT_FALSE(test_api.language_menu_view()->GetVisible());
-
-  // Tap on keyboard selection button should bring up the keyboard menu.
-  TapOnView(test_api.keyboard_selection_button());
-  EXPECT_TRUE(test_api.keyboard_menu_view()->GetVisible());
-
-  // Second keyboard item is selected, and selected item should have focus.
-  EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem2);
-  LoginMenuView::TestApi keyboard_test_api(test_api.keyboard_menu_view());
-  ASSERT_EQ(2u, keyboard_test_api.contents()->children().size());
-  EXPECT_TRUE(keyboard_test_api.contents()->children()[1]->HasFocus());
-
-  // Select keyboard item should close the keyboard menu.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
-  EXPECT_FALSE(test_api.keyboard_menu_view()->GetVisible());
+  EXPECT_FALSE(language_menu_view->IsMenuRunning());
+
+  // Open keyboard menu.
+  PublicAccountMenuView* keyboard_menu_view = test_api.keyboard_menu_view();
+  EXPECT_FALSE(keyboard_menu_view->IsMenuRunning());
+  TapOnView(keyboard_menu_view);
+  EXPECT_TRUE(keyboard_menu_view->IsMenuRunning());
+
+  // Second keyboard item is selected.
+  EXPECT_EQ(test_api.selected_keyboard_item_value(), kKeyboardIdForItem2);
+  ASSERT_EQ(2, keyboard_menu_view->GetRowCount());
+  EXPECT_EQ(1, keyboard_menu_view->GetSelectedRow());
+
+  // Once the menu is open, the focus is set on the entire view.
+  // The first key press will set the focus on the keyboard item, the second
+  // press will select it and should close the keyboard menu.
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  EXPECT_FALSE(keyboard_menu_view->IsMenuRunning());
 }
 
 TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
@@ -262,41 +276,48 @@ TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
   public_account_->UpdateForUser(user_);
   EXPECT_TRUE(test_api.advanced_view()->GetVisible());
 
-  // Try to change language selection.
   // Open language menu.
-  TapOnView(test_api.language_selection_button());
-  EXPECT_TRUE(test_api.language_menu_view()->GetVisible());
+  PublicAccountMenuView* language_menu_view = test_api.language_menu_view();
+  EXPECT_FALSE(language_menu_view->IsMenuRunning());
+  TapOnView(language_menu_view);
+  EXPECT_TRUE(language_menu_view->IsMenuRunning());
 
   // Select second language item:
-  // 1. Language menu will be closed automatically.
-  // 2. Selected language item will change.
-  // 3. Expect RequestPublicSessionKeyboardLayouts mojo call with the selected
+  // 1. Selected language will change.
+  // 2. Expect RequestPublicSessionKeyboardLayouts mojo call with the selected
   // language item.
   auto client = std::make_unique<MockLoginScreenClient>();
   EXPECT_CALL(*client,
               RequestPublicSessionKeyboardLayouts(
                   user_.basic_user_info.account_id, kFrenchLanguageCode));
 
-  EXPECT_EQ(test_api.selected_language_item().value, kEnglishLanguageCode);
-  LoginMenuView::TestApi language_test_api(test_api.language_menu_view());
-  TapOnView(language_test_api.contents()->children()[1]);
-  EXPECT_FALSE(test_api.language_menu_view()->GetVisible());
-  EXPECT_EQ(test_api.selected_language_item().value, kFrenchLanguageCode);
+  EXPECT_EQ(test_api.selected_language_item_value(), kEnglishLanguageCode);
+  std::unique_ptr<views::test::ComboboxTestApi> language_test_api =
+      std::make_unique<views::test::ComboboxTestApi>(language_menu_view);
+  // Note that we do not need to open the menu to make this test API call.
+  language_test_api->PerformActionAt(1);
+  EXPECT_EQ(test_api.selected_language_item_value(), kFrenchLanguageCode);
   base::RunLoop().RunUntilIdle();
 
-  // Try to change keyboard selection.
+  PublicAccountMenuView* keyboard_menu_view = test_api.keyboard_menu_view();
+  // Close language menu.
+  // `PerformActionAt` does not close the menu automatically, make a click
+  // outside of language menu boundaries to close the menu.
+  EXPECT_TRUE(language_menu_view->IsMenuRunning());
+  TapOnView(keyboard_menu_view);
+  EXPECT_FALSE(language_menu_view->IsMenuRunning());
   // Open keyboard menu.
-  TapOnView(test_api.keyboard_selection_button());
-  EXPECT_TRUE(test_api.keyboard_menu_view()->GetVisible());
+  EXPECT_FALSE(keyboard_menu_view->IsMenuRunning());
+  TapOnView(keyboard_menu_view);
+  EXPECT_TRUE(keyboard_menu_view->IsMenuRunning());
 
-  // Select first keyboard item:
-  // 1. Keyboard menu will be closed automatically.
-  // 2. Selected keyboard item will change.
-  EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem2);
-  LoginMenuView::TestApi keyboard_test_api(test_api.keyboard_menu_view());
-  TapOnView(keyboard_test_api.contents()->children()[0]);
-  EXPECT_FALSE(test_api.keyboard_menu_view()->GetVisible());
-  EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem1);
+  // Select first keyboard item, selected keyboard will change.
+  EXPECT_EQ(test_api.selected_keyboard_item_value(), kKeyboardIdForItem2);
+  std::unique_ptr<views::test::ComboboxTestApi> keyboard_test_api =
+      std::make_unique<views::test::ComboboxTestApi>(
+          test_api.keyboard_menu_view());
+  keyboard_test_api->PerformActionAt(0);
+  EXPECT_EQ(test_api.selected_keyboard_item_value(), kKeyboardIdForItem1);
 }
 
 TEST_P(LoginExpandedPublicAccountViewTest, ChangeWarningLabel) {

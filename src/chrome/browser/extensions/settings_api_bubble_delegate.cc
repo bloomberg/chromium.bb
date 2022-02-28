@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/exit_type_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
@@ -50,7 +51,7 @@ bool SettingsApiBubbleDelegate::ShouldIncludeExtension(
   // If the browser is showing the 'Chrome crashed' infobar, it won't be showing
   // the startup pages, so there's no point in showing the bubble now.
   if (type_ == BUBBLE_TYPE_STARTUP_PAGES &&
-      profile()->GetLastSessionExitType() == Profile::EXIT_CRASHED)
+      ExitTypeService::GetLastSessionExitType(profile()) == ExitType::kCrashed)
     return false;
 
   if (HasBubbleInfoBeenAcknowledged(extension->id()))
@@ -233,33 +234,6 @@ bool SettingsApiBubbleDelegate::ShouldShowExtensionList() const {
 
 bool SettingsApiBubbleDelegate::ShouldLimitToEnabledExtensions() const {
   return true;
-}
-
-void SettingsApiBubbleDelegate::LogExtensionCount(size_t count) {
-}
-
-void SettingsApiBubbleDelegate::LogAction(
-    ExtensionMessageBubbleController::BubbleAction action) {
-  switch (type_) {
-    case BUBBLE_TYPE_HOME_PAGE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ExtensionOverrideBubble.SettingsApiUserSelectionHomePage",
-          action,
-          ExtensionMessageBubbleController::ACTION_BOUNDARY);
-      break;
-    case BUBBLE_TYPE_STARTUP_PAGES:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ExtensionOverrideBubble.SettingsApiUserSelectionStartupPage",
-          action,
-          ExtensionMessageBubbleController::ACTION_BOUNDARY);
-      break;
-    case BUBBLE_TYPE_SEARCH_ENGINE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ExtensionOverrideBubble.SettingsApiUserSelectionSearchEngine",
-          action,
-          ExtensionMessageBubbleController::ACTION_BOUNDARY);
-      break;
-  }
 }
 
 const char* SettingsApiBubbleDelegate::GetKey() const {

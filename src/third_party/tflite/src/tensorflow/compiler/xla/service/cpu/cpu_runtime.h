@@ -49,13 +49,15 @@ extern const char* const kEigenMatMulF64SymbolName;
 extern const char* const kEigenMatMulC64SymbolName;
 extern const char* const kEigenMatMulC128SymbolName;
 extern const char* const kEigenMatMulS32SymbolName;
-extern const char* const kMKLConvF32SymbolName;
+extern const char* const kMKLConv2DF32SymbolName;
 extern const char* const kMKLMatMulF32SymbolName;
 extern const char* const kMKLMatMulF64SymbolName;
 extern const char* const kMKLSingleThreadedMatMulF32SymbolName;
 extern const char* const kMKLSingleThreadedMatMulF64SymbolName;
-extern const char* const kEigenConvF16SymbolName;
-extern const char* const kEigenConvF32SymbolName;
+extern const char* const kEigenConv2DF16SymbolName;
+extern const char* const kEigenConv2DF32SymbolName;
+extern const char* const kEigenConv3DF16SymbolName;
+extern const char* const kEigenConv3DF32SymbolName;
 extern const char* const kEigenFftSymbolName;
 extern const char* const kEigenSingleThreadedFftSymbolName;
 extern const char* const kEigenSingleThreadedMatMulF16SymbolName;
@@ -64,19 +66,25 @@ extern const char* const kEigenSingleThreadedMatMulF64SymbolName;
 extern const char* const kEigenSingleThreadedMatMulC64SymbolName;
 extern const char* const kEigenSingleThreadedMatMulC128SymbolName;
 extern const char* const kEigenSingleThreadedMatMulS32SymbolName;
-extern const char* const kEigenSingleThreadedConvF16SymbolName;
-extern const char* const kEigenSingleThreadedConvF32SymbolName;
+extern const char* const kEigenSingleThreadedConv2DF16SymbolName;
+extern const char* const kEigenSingleThreadedConv2DF32SymbolName;
+extern const char* const kEigenSingleThreadedConv3DF16SymbolName;
+extern const char* const kEigenSingleThreadedConv3DF32SymbolName;
 extern const char* const kAcquireInfeedBufferForDequeueSymbolName;
 extern const char* const kReleaseInfeedBufferAfterDequeueSymbolName;
 extern const char* const kAcquireOutfeedBufferForPopulationSymbolName;
 extern const char* const kReleaseOutfeedBufferAfterPopulationSymbolName;
 extern const char* const kParallelForkJoinSymbolName;
+extern const char* const kPrintfToStderrSymbolName;
+extern const char* const kStatusIsSuccessSymbolName;
 extern const char* const kKeyValueSortSymbolName;
+extern const char* const kTopKF32SymbolName;
 extern const char* const kAllReduceSymbolName;
 extern const char* const kCollectivePermuteSymbolName;
 extern const char* const kReplicaIdSymbolName;
 extern const char* const kTracingStartSymbolName;
 extern const char* const kTracingEndSymbolName;
+extern const char* const kAllToAllSymbolName;
 
 // All symbol names for XLA CPU runtime functions need to start with this
 // prefix.
@@ -92,12 +100,13 @@ XfeedManager* GetXfeedManager(int device_ordinal);
 
 extern "C" {
 
-extern xla::int64 __xla_cpu_runtime_TracingStart(
+extern int __xla_cpu_runtime_PrintfToStderr(const char* format, ...);
+
+extern int64_t __xla_cpu_runtime_TracingStart(
     const void* /* xla::ExecutableRunOptions* */ run_options_ptr,
     const char* name);
 extern void __xla_cpu_runtime_TracingEnd(
-    const void* /* xla::ExecutableRunOptions* */ run_options_ptr,
-    xla::int64 id);
+    const void* /* xla::ExecutableRunOptions* */ run_options_ptr, int64_t id);
 
 // Some things common to all of the runtime entry points below:
 //
@@ -164,22 +173,28 @@ extern void __xla_cpu_runtime_ReleaseOutfeedBufferAfterPopulation(
 // Perform all reduce on a CPU.
 //
 // participating_replicas: array of replica IDs participating in the reduction,
-// cf. GetParticipatingReplicas.
+// cf. GetParticipatingIDs.
 // channel_id_present, op_id: whether op_id is a channel ID or a module ID.
 // reduction_kind: operator used for a reduction, cf. ReductionKind.
 // shape_ptr: shape of all input/output buffers.
 extern void __xla_cpu_runtime_AllReduce(
     const xla::ExecutableRunOptions* run_options,
     const void* replica_groups_str, xla::int32 replica_groups_str_size,
-    xla::int32 channel_id_present, xla::int64 op_id, xla::int32 reduction_kind,
+    xla::int32 channel_id_present, int64_t op_id, xla::int32 reduction_kind,
     const void* shape_ptr, xla::int32 shape_length, xla::int32 num_buffers,
     void** input_buffers, void** output_buffers);
 
 extern void __xla_cpu_runtime_CollectivePermute(
     const xla::ExecutableRunOptions* run_options, xla::int32 channel_id_present,
-    xla::int64 op_id, xla::int32 byte_size, void* input_buffer,
+    int64_t op_id, xla::int32 byte_size, void* input_buffer,
     void* output_buffer, const void* source_target_pairs,
     xla::int32 source_target_pairs_size);
+
+extern void __xla_cpu_runtime_AllToAll(
+    const xla::ExecutableRunOptions* run_options, xla::int32 channel_id_present,
+    int64_t op_id, const void* replica_groups_str,
+    xla::int32 replica_groups_str_size, xla::int32 num_buffers,
+    int64_t buffer_size, void** source_buffers, void** destination_buffers);
 
 // Write the replica ID into the output buffer.
 extern void __xla_cpu_runtime_ReplicaId(

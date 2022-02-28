@@ -22,7 +22,7 @@
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/network_util.h"
-#include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/onc/network_onc_utils.h"
 #include "chromeos/network/shill_property_util.h"
 #include "chromeos/network/tether_constants.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -95,6 +95,8 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &activation_state_);
   } else if (key == shill::kRoamingStateProperty) {
     return GetStringValue(key, value, &roaming_);
+  } else if (key == shill::kCellularAllowRoamingProperty) {
+    return GetBooleanValue(key, value, &allow_roaming_);
   } else if (key == shill::kPaymentPortalProperty) {
     if (!value.is_dict())
       return false;
@@ -147,17 +149,17 @@ bool NetworkState::PropertyChanged(const std::string& key,
   } else if (key == shill::kEidProperty) {
     return GetStringValue(key, value, &eid_);
   } else if (key == shill::kProxyConfigProperty) {
-    std::string proxy_config_str;
-    if (!value.GetAsString(&proxy_config_str)) {
+    const std::string* proxy_config_str = value.GetIfString();
+    if (!proxy_config_str) {
       NET_LOG(ERROR) << "Failed to parse " << path() << "." << key;
       return false;
     }
 
-    if (proxy_config_str.empty()) {
+    if ((*proxy_config_str).empty()) {
       proxy_config_ = base::Value();
       return true;
     }
-    base::Value proxy_config = onc::ReadDictionaryFromJson(proxy_config_str);
+    base::Value proxy_config = onc::ReadDictionaryFromJson(*proxy_config_str);
     if (!proxy_config.is_dict()) {
       NET_LOG(ERROR) << "Failed to parse " << path() << "." << key;
       proxy_config_ = base::Value();

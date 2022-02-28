@@ -7,18 +7,26 @@
 
 #include <memory>
 
+#include "include/v8-callbacks.h"
+#include "include/v8-debug.h"
+#include "include/v8-embedder-heap.h"
+#include "include/v8-local-handle.h"
+#include "include/v8-memory-span.h"
+#include "include/v8-promise.h"
+#include "include/v8-script.h"
 #include "include/v8-util.h"
-#include "include/v8.h"
-#include "src/base/platform/time.h"
+#include "src/base/enum-set.h"
+#include "src/base/vector.h"
 #include "src/common/globals.h"
 #include "src/debug/interface-types.h"
-#include "src/utils/vector.h"
 
 namespace v8_inspector {
 class V8Inspector;
 }  // namespace v8_inspector
 
 namespace v8 {
+
+class Platform;
 
 namespace internal {
 struct CoverageBlock;
@@ -40,13 +48,6 @@ int GetContextId(Local<Context> context);
 
 void SetInspector(Isolate* isolate, v8_inspector::V8Inspector*);
 v8_inspector::V8Inspector* GetInspector(Isolate* isolate);
-
-// Returns the debug name for the function, which is supposed to be used
-// by the debugger and the developer tools. This can thus be different from
-// the name returned by the StackFrame::GetFunctionName() method. For example,
-// in case of WebAssembly, the debug name is WAT-compatible and thus always
-// preceeded by a dollar ('$').
-Local<String> GetFunctionDebugName(Local<StackFrame> frame);
 
 // Returns a debug string representation of the function.
 Local<String> GetFunctionDescription(Local<Function> function);
@@ -107,14 +108,29 @@ void SetBreakPointsActive(Isolate* isolate, bool is_active);
 
 enum StepAction {
   StepOut = 0,   // Step out of the current function.
-  StepNext = 1,  // Step to the next statement in the current function.
-  StepIn = 2     // Step into new functions invoked or the next statement
+  StepOver = 1,  // Step to the next statement in the current function.
+  StepInto = 2   // Step into new functions invoked or the next statement
                  // in the current function.
 };
 
+// Record the reason for why the debugger breaks.
+enum class BreakReason : uint8_t {
+  kAlreadyPaused,
+  kStep,
+  kAsyncStep,
+  kException,
+  kAssert,
+  kDebuggerStatement,
+  kOOM,
+  kScheduled,
+  kAgent
+};
+typedef base::EnumSet<BreakReason> BreakReasons;
+
 void PrepareStep(Isolate* isolate, StepAction action);
 void ClearStepping(Isolate* isolate);
-V8_EXPORT_PRIVATE void BreakRightNow(Isolate* isolate);
+V8_EXPORT_PRIVATE void BreakRightNow(
+    Isolate* isolate, base::EnumSet<BreakReason> break_reason = {});
 
 // Use `SetTerminateOnResume` to indicate that an TerminateExecution interrupt
 // should be set shortly before resuming, i.e. shortly before returning into
@@ -221,7 +237,8 @@ class DebugDelegate {
   // debug::Script::SetBreakpoint API.
   virtual void BreakProgramRequested(
       v8::Local<v8::Context> paused_context,
-      const std::vector<debug::BreakpointId>& inspector_break_points_hit) {}
+      const std::vector<debug::BreakpointId>& inspector_break_points_hit,
+      base::EnumSet<BreakReason> break_reasons = {}) {}
   virtual void ExceptionThrown(v8::Local<v8::Context> paused_context,
                                v8::Local<v8::Value> exception,
                                v8::Local<v8::Value> promise, bool is_uncaught,
@@ -252,7 +269,8 @@ class AsyncEventDelegate {
                                   bool is_blackboxed) = 0;
 };
 
-void SetAsyncEventDelegate(Isolate* isolate, AsyncEventDelegate* delegate);
+V8_EXPORT_PRIVATE void SetAsyncEventDelegate(Isolate* isolate,
+                                             AsyncEventDelegate* delegate);
 
 void ResetBlackboxedStateCache(Isolate* isolate,
                                v8::Local<debug::Script> script);
@@ -265,9 +283,6 @@ Local<Function> GetBuiltin(Isolate* isolate, Builtin builtin);
 
 V8_EXPORT_PRIVATE void SetConsoleDelegate(Isolate* isolate,
                                           ConsoleDelegate* delegate);
-
-V8_DEPRECATED("See http://crbug.com/v8/10566.")
-int GetStackFrameId(v8::Local<v8::StackFrame> frame);
 
 v8::Local<v8::StackTrace> GetDetailedStackTrace(Isolate* isolate,
                                                 v8::Local<v8::Object> error);
@@ -515,10 +530,10 @@ enum class NativeAccessorType {
 
 int64_t GetNextRandomInt64(v8::Isolate* isolate);
 
-using RuntimeCallCounterCallback =
-    std::function<void(const char* name, int64_t count, base::TimeDelta time)>;
-void EnumerateRuntimeCallCounters(v8::Isolate* isolate,
-                                  RuntimeCallCounterCallback callback);
+MaybeLocal<Value> CallFunctionOn(Local<Context> context,
+                                 Local<Function> function, Local<Value> recv,
+                                 int argc, Local<Value> argv[],
+                                 bool throw_on_side_effect);
 
 enum class EvaluateGlobalMode {
   kDefault,
@@ -563,17 +578,17 @@ class V8_NODISCARD DisableBreakScope {
   std::unique_ptr<i::DisableBreak> scope_;
 };
 
-class WeakMap : public v8::Object {
+class EphemeronTable : public v8::Object {
  public:
-  WeakMap() = delete;
+  EphemeronTable() = delete;
   V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT v8::MaybeLocal<v8::Value> Get(
-      v8::Local<v8::Context> context, v8::Local<v8::Value> key);
-  V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT v8::MaybeLocal<WeakMap> Set(
-      v8::Local<v8::Context> context, v8::Local<v8::Value> key,
+      v8::Isolate* isolate, v8::Local<v8::Value> key);
+  V8_EXPORT_PRIVATE V8_WARN_UNUSED_RESULT v8::Local<EphemeronTable> Set(
+      v8::Isolate* isolate, v8::Local<v8::Value> key,
       v8::Local<v8::Value> value);
 
-  V8_EXPORT_PRIVATE static Local<WeakMap> New(v8::Isolate* isolate);
-  V8_INLINE static WeakMap* Cast(Value* obj);
+  V8_EXPORT_PRIVATE static Local<EphemeronTable> New(v8::Isolate* isolate);
+  V8_INLINE static EphemeronTable* Cast(Value* obj);
 };
 
 /**
@@ -607,12 +622,13 @@ struct PropertyDescriptor {
   v8::Local<v8::Value> set;
 };
 
-class PropertyIterator {
+class V8_EXPORT_PRIVATE PropertyIterator {
  public:
   // Creating a PropertyIterator can potentially throw an exception.
   // The returned std::unique_ptr is empty iff that happens.
   V8_WARN_UNUSED_RESULT static std::unique_ptr<PropertyIterator> Create(
-      v8::Local<v8::Context> context, v8::Local<v8::Object> object);
+      v8::Local<v8::Context> context, v8::Local<v8::Object> object,
+      bool skip_indices = false);
 
   virtual ~PropertyIterator() = default;
 
@@ -660,6 +676,8 @@ AccessorPair* AccessorPair::Cast(v8::Value* value) {
 }
 
 MaybeLocal<Message> GetMessageFromPromise(Local<Promise> promise);
+
+bool isExperimentalAsyncStackTaggingApiEnabled();
 
 }  // namespace debug
 }  // namespace v8

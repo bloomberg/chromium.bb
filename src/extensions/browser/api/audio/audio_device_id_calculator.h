@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 
 namespace content {
 class BrowserContext;
@@ -27,6 +27,10 @@ namespace extensions {
 class AudioDeviceIdCalculator {
  public:
   explicit AudioDeviceIdCalculator(content::BrowserContext* context);
+
+  AudioDeviceIdCalculator(const AudioDeviceIdCalculator&) = delete;
+  AudioDeviceIdCalculator& operator=(const AudioDeviceIdCalculator&) = delete;
+
   virtual ~AudioDeviceIdCalculator();
 
   // Gets audio API stable device ID for the audio device whose stable device ID
@@ -45,14 +49,12 @@ class AudioDeviceIdCalculator {
   std::string GenerateNewStableDeviceId(
       const std::string& audio_service_stable_id);
 
-  content::BrowserContext* context_;
+  raw_ptr<content::BrowserContext> context_;
 
   // Maps a stable device ID as exposed by audio service to the associated
   // stable device ID that should be exposed to apps via chrome.audio API.
   std::map<std::string, std::string> stable_id_map_;
   bool stable_id_map_loaded_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioDeviceIdCalculator);
 };
 
 }  // namespace extensions

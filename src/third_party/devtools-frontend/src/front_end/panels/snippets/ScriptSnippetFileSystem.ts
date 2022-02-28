@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -39,38 +37,39 @@ function unescapeSnippetName(name: string): string {
 }
 
 export class SnippetFileSystem extends Persistence.PlatformFileSystem.PlatformFileSystem {
-  _lastSnippetIdentifierSetting: Common.Settings.Setting<number>;
-  _snippetsSetting: Common.Settings.Setting<Snippet[]>;
+  private readonly lastSnippetIdentifierSetting: Common.Settings.Setting<number>;
+  private readonly snippetsSetting: Common.Settings.Setting<Snippet[]>;
   constructor() {
+    // TODO(crbug.com/1253323): Cast to UrlString will be removed when migration to branded types is complete.
     super('snippet://', 'snippets');
-    this._lastSnippetIdentifierSetting =
+    this.lastSnippetIdentifierSetting =
         Common.Settings.Settings.instance().createSetting('scriptSnippets_lastIdentifier', 0);
-    this._snippetsSetting = Common.Settings.Settings.instance().createSetting('scriptSnippets', []);
+    this.snippetsSetting = Common.Settings.Settings.instance().createSetting('scriptSnippets', []);
   }
 
   initialFilePaths(): string[] {
-    const savedSnippets: Snippet[] = this._snippetsSetting.get();
+    const savedSnippets: Snippet[] = this.snippetsSetting.get();
     return savedSnippets.map(snippet => escapeSnippetName(snippet.name));
   }
 
   async createFile(_path: string, _name: string|null): Promise<string|null> {
-    const nextId = this._lastSnippetIdentifierSetting.get() + 1;
-    this._lastSnippetIdentifierSetting.set(nextId);
+    const nextId = this.lastSnippetIdentifierSetting.get() + 1;
+    this.lastSnippetIdentifierSetting.set(nextId);
 
     const snippetName = i18nString(UIStrings.scriptSnippet, {PH1: nextId});
-    const snippets = this._snippetsSetting.get();
+    const snippets = this.snippetsSetting.get();
     snippets.push({name: snippetName, content: ''});
-    this._snippetsSetting.set(snippets);
+    this.snippetsSetting.set(snippets);
 
     return escapeSnippetName(snippetName);
   }
 
   async deleteFile(path: string): Promise<boolean> {
     const name = unescapeSnippetName(path.substring(1));
-    const allSnippets: Snippet[] = this._snippetsSetting.get();
+    const allSnippets: Snippet[] = this.snippetsSetting.get();
     const snippets = allSnippets.filter(snippet => snippet.name !== name);
     if (allSnippets.length !== snippets.length) {
-      this._snippetsSetting.set(snippets);
+      this.snippetsSetting.set(snippets);
       return true;
     }
     return false;
@@ -78,7 +77,7 @@ export class SnippetFileSystem extends Persistence.PlatformFileSystem.PlatformFi
 
   async requestFileContent(path: string): Promise<TextUtils.ContentProvider.DeferredContent> {
     const name = unescapeSnippetName(path.substring(1));
-    const snippets: Snippet[] = this._snippetsSetting.get();
+    const snippets: Snippet[] = this.snippetsSetting.get();
     const snippet = snippets.find(snippet => snippet.name === name);
     if (snippet) {
       return {content: snippet.content, isEncoded: false};
@@ -88,11 +87,11 @@ export class SnippetFileSystem extends Persistence.PlatformFileSystem.PlatformFi
 
   async setFileContent(path: string, content: string, _isBase64: boolean): Promise<boolean> {
     const name = unescapeSnippetName(path.substring(1));
-    const snippets: Snippet[] = this._snippetsSetting.get();
+    const snippets: Snippet[] = this.snippetsSetting.get();
     const snippet = snippets.find(snippet => snippet.name === name);
     if (snippet) {
       snippet.content = content;
-      this._snippetsSetting.set(snippets);
+      this.snippetsSetting.set(snippets);
       return true;
     }
     return false;
@@ -100,7 +99,7 @@ export class SnippetFileSystem extends Persistence.PlatformFileSystem.PlatformFi
 
   renameFile(path: string, newName: string, callback: (arg0: boolean, arg1?: string|undefined) => void): void {
     const name = unescapeSnippetName(path.substring(1));
-    const snippets: Snippet[] = this._snippetsSetting.get();
+    const snippets: Snippet[] = this.snippetsSetting.get();
     const snippet = snippets.find(snippet => snippet.name === name);
     newName = newName.trim();
     if (!snippet || newName.length === 0 || snippets.find(snippet => snippet.name === newName)) {
@@ -108,13 +107,13 @@ export class SnippetFileSystem extends Persistence.PlatformFileSystem.PlatformFi
       return;
     }
     snippet.name = newName;
-    this._snippetsSetting.set(snippets);
+    this.snippetsSetting.set(snippets);
     callback(true, newName);
   }
 
   async searchInPath(query: string, _progress: Common.Progress.Progress): Promise<string[]> {
     const re = new RegExp(Platform.StringUtilities.escapeForRegExp(query), 'i');
-    const allSnippets: Snippet[] = this._snippetsSetting.get();
+    const allSnippets: Snippet[] = this.snippetsSetting.get();
     const matchedSnippets = allSnippets.filter(snippet => snippet.content.match(re));
     return matchedSnippets.map(snippet => `snippet:///${escapeSnippetName(snippet.name)}`);
   }
@@ -180,10 +179,15 @@ export async function evaluateScriptSnippet(uiSourceCode: Workspace.UISourceCode
     return;
   }
   const scriptId = scripts[scripts.length - 1].scriptId;
+  const details = {
+    type: SDK.ConsoleModel.FrontendMessageType.Result,
+    url,
+    parameters: [result.object],
+    executionContextId: executionContext.id,
+    scriptId,
+  };
   SDK.ConsoleModel.ConsoleModel.instance().addMessage(new SDK.ConsoleModel.ConsoleMessage(
-      runtimeModel, Protocol.Log.LogEntrySource.Javascript, Protocol.Log.LogEntryLevel.Info, '',
-      SDK.ConsoleModel.FrontendMessageType.Result, url, undefined, undefined, [result.object], undefined, undefined,
-      executionContext.id, scriptId));
+      runtimeModel, Protocol.Log.LogEntrySource.Javascript, Protocol.Log.LogEntryLevel.Info, '', details));
 }
 
 export function isSnippetsUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode): boolean {

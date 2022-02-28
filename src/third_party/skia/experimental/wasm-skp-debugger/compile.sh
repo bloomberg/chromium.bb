@@ -25,7 +25,7 @@ EMAR=`which emar`
 if [[ $@ == *debug* ]]; then
   echo "Building a Debug build"
   EXTRA_CFLAGS="\"-DSK_DEBUG\","
-  RELEASE_CONF="-O0 --js-opts 0 -s DEMANGLE_SUPPORT=1 -s ASSERTIONS=1 -s GL_ASSERTIONS=1 -g4 \
+  RELEASE_CONF="-O0 --js-opts 0 -s DEMANGLE_SUPPORT=1 -s ASSERTIONS=1 -s GL_ASSERTIONS=1 -g3 \
                 --source-map-base /node_modules/debugger/bin/ -DSK_DEBUG"
   BUILD_DIR=${BUILD_DIR:="out/debugger_wasm_debug"}
 else
@@ -48,9 +48,7 @@ python tools/embed_resources.py \
     --output $BASE_DIR/fonts/NotoMono-Regular.ttf.cpp \
     --align 4
 
-GN_GPU="skia_enable_gpu=true skia_gl_standard = \"webgl\""
-GN_GPU_FLAGS="\"-DSK_DISABLE_LEGACY_SHADERCONTEXT\","
-WASM_GPU="-lEGL -lGL -lGLESv2 -DSK_SUPPORT_GPU=1 -DSK_GL \
+WASM_GPU="-lEGL -lGL -lGLESv2 -DSK_SUPPORT_GPU=1 -DSK_GL -DSK_ENABLE_DUMP_GPU \
           -DSK_DISABLE_LEGACY_SHADERCONTEXT --pre-js $BASE_DIR/cpu.js --pre-js $BASE_DIR/gpu.js"
 
 # Turn off exiting while we check for ninja (which may not be on PATH)
@@ -73,9 +71,9 @@ echo "Compiling bitcode"
   ar=\"${EMAR}\" \
   extra_cflags_cc=[\"-frtti\"] \
   extra_cflags=[\"-s\", \"MAIN_MODULE=1\",
-    \"-DSKNX_NO_SIMD\", \"-DSK_DISABLE_AAA\", \"-DSK_DISABLE_NEW_GR_CLIP_STACK\",
+    \"-DSKNX_NO_SIMD\", \"-DSK_DISABLE_AAA\",
     \"-DSK_FORCE_8_BYTE_ALIGNMENT\",
-    ${GN_GPU_FLAGS}
+    \"-DSK_ENABLE_DUMP_GPU\", \"-DSK_DISABLE_LEGACY_SHADERCONTEXT\",
     ${EXTRA_CFLAGS}
   ] \
   is_debug=false \
@@ -86,7 +84,7 @@ echo "Compiling bitcode"
   \
   skia_use_angle=false \
   skia_use_dng_sdk=false \
-  skia_use_egl=true \
+  skia_use_webgl=true \
   skia_use_expat=false \
   skia_use_fontconfig=false \
   skia_use_freetype=true \
@@ -107,11 +105,10 @@ echo "Compiling bitcode"
   skia_use_system_zlib=false\
   skia_use_vulkan=false \
   skia_use_zlib=true \
-  ${GN_GPU} \
+  skia_enable_gpu=true \
+  skia_gl_standard=\"webgl\" \
   skia_enable_tools=false \
   skia_enable_skshaper=false \
-  skia_enable_ccpr=false \
-  skia_enable_nga=false \
   skia_enable_fontmgr_custom_directory=false \
   skia_enable_fontmgr_custom_embedded=true \
   skia_enable_fontmgr_custom_empty=false \

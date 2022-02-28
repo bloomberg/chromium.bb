@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2017 The PDFium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -60,7 +60,7 @@ COVERAGE_TESTS = {
 }
 
 
-class CoverageExecutor(object):
+class CoverageExecutor:
 
   def __init__(self, parser, args):
     """Initialize executor based on the current script environment
@@ -276,7 +276,7 @@ class CoverageExecutor(object):
       print('Failed to successfully build binaries')
       return False
 
-    for name in self.coverage_tests.keys():
+    for name in self.coverage_tests:
       if not self.generate_coverage(name, self.coverage_tests[name]):
         print('Failed to successfully generate coverage data')
         return False

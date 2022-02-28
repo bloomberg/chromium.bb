@@ -24,9 +24,9 @@ namespace ast {
 class BreakStatement : public Castable<BreakStatement, Statement> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the break statement source
-  BreakStatement(ProgramID program_id, const Source& source);
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
+  BreakStatement(ProgramID pid, const Source& src);
   /// Move constructor
   BreakStatement(BreakStatement&&);
   ~BreakStatement() override;
@@ -35,18 +35,7 @@ class BreakStatement : public Castable<BreakStatement, Statement> {
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  BreakStatement* Clone(CloneContext* ctx) const override;
-
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
-
- private:
-  BreakStatement(const BreakStatement&) = delete;
+  const BreakStatement* Clone(CloneContext* ctx) const override;
 };
 
 }  // namespace ast

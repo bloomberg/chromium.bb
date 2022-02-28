@@ -15,6 +15,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/common/chrome_features.h"
 #include "components/crash/content/browser/error_reporting/mock_crash_endpoint.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/browser_test.h"
@@ -39,6 +41,11 @@ constexpr const char* kTestExtensionId = "jjeoclcdfjddkdjokiejckgcildcflpp";
 class CrashReportPrivateApiTest : public ExtensionApiTest {
  public:
   CrashReportPrivateApiTest() = default;
+
+  CrashReportPrivateApiTest(const CrashReportPrivateApiTest&) = delete;
+  CrashReportPrivateApiTest& operator=(const CrashReportPrivateApiTest&) =
+      delete;
+
   ~CrashReportPrivateApiTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -87,9 +94,6 @@ class CrashReportPrivateApiTest : public ExtensionApiTest {
   const Extension* extension_;
   std::unique_ptr<MockCrashEndpoint> crash_endpoint_;
   std::unique_ptr<ScopedMockChromeJsErrorReportProcessor> processor_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CrashReportPrivateApiTest);
 };
 
 IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, Basic) {
@@ -130,6 +134,7 @@ IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, ExtraParamsAndStackTrace) {
         version: "1.0.0.0",
         lineNumber: 123,
         columnNumber: 456,
+        debugId: "2751679EE:233977D75E03BAC9DA/255DD0",
         stackTrace: "   at <anonymous>:1:1",
       },
       () => window.domAutomationController.send(""));
@@ -146,6 +151,7 @@ IN_PROC_BROWSER_TEST_F(CrashReportPrivateApiTest, ExtraParamsAndStackTrace) {
           {"app_locale=en-US&browser=Chrome&browser_process_uptime_ms="
            "\\d+&browser_"
            "version=1.2.3.4&channel=Stable&column=456&"
+           "debug_id=2751679EE%3A233977D75E03BAC9DA%2F255DD0&"
            "error_message=hi&full_url=http%3A%2F%2Fwww.test.com%2Ffoo"
            "&line=123&num-experiments=1&os=ChromeOS"
            "&prod=Chrome%2520\\(Chrome%2520OS\\)&renderer_process_"
@@ -308,6 +314,10 @@ using CrashReportPrivateCalledFromSwaTest = SystemWebAppIntegrationTest;
 // window.
 IN_PROC_BROWSER_TEST_P(CrashReportPrivateCalledFromSwaTest,
                        CalledFromWebContentsInWebAppWindow) {
+  if (web_app::IsWebAppsCrosapiEnabled()) {
+    // TODO(crbug.com/1234938): Support Crosapi (web apps running in Lacros).
+    return;
+  }
   WaitForTestSystemAppInstall();
   // Set up test server to listen to handle crash reports & serve fake web app
   // content. Note: Creating a |MockCrashEndpoint| starts the server.

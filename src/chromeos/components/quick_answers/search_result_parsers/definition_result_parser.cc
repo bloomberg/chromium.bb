@@ -9,12 +9,15 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/components/quick_answers/utils/quick_answers_utils.h"
+#include "url/gurl.h"
 
-namespace chromeos {
+namespace ash {
 namespace quick_answers {
 namespace {
 
 using base::Value;
+
+constexpr char kHttpsPrefix[] = "https:";
 
 constexpr char kQueryTermPath[] = "dictionaryResult.queryTerm";
 constexpr char kDictionaryEntriesPath[] = "dictionaryResult.entries";
@@ -23,6 +26,7 @@ constexpr char kSensesKey[] = "senses";
 constexpr char kDefinitionPathUnderSense[] = "definition.text";
 constexpr char kPhoneticsKey[] = "phonetics";
 constexpr char kPhoneticsTextKey[] = "text";
+constexpr char kPhoneticsAudioKey[] = "oxfordAudio";
 
 }  // namespace
 
@@ -41,7 +45,7 @@ bool DefinitionResultParser::Parse(const Value* result,
     LOG(ERROR) << "Fail in extracting definition";
     return false;
   }
-  const std::string* phonetics = ExtractPhonetics(first_entry);
+  const std::string* phonetics = ExtractPhoneticsText(first_entry);
 
   const std::string* query_term = result->FindStringPath(kQueryTermPath);
   if (!query_term) {
@@ -58,10 +62,11 @@ bool DefinitionResultParser::Parse(const Value* result,
       std::make_unique<QuickAnswerText>(secondary_answer));
   quick_answer->first_answer_row.push_back(
       std::make_unique<QuickAnswerResultText>(*definition));
+  quick_answer->phonetics_audio = ExtractPhoneticsAudio(first_entry);
   return true;
 }
 
-const std::string* DefinitionResultParser::ExtractDefinition(
+const Value* DefinitionResultParser::ExtractFirstSenseFamily(
     const base::Value* definition_entry) {
   const Value* first_sense_family =
       GetFirstListElement(*definition_entry, kSenseFamiliesKey);
@@ -69,6 +74,32 @@ const std::string* DefinitionResultParser::ExtractDefinition(
     LOG(ERROR) << "Can't find a sense family.";
     return nullptr;
   }
+
+  return first_sense_family;
+}
+
+const Value* DefinitionResultParser::ExtractFirstPhonetics(
+    const base::Value* definition_entry) {
+  const Value* first_phonetics =
+      GetFirstListElement(*definition_entry, kPhoneticsKey);
+  if (first_phonetics)
+    return first_phonetics;
+
+  // It is is possible to have phonetics per sense family in case of heteronyms
+  // such as "arithmetic".
+  const Value* sense_family = ExtractFirstSenseFamily(definition_entry);
+  if (sense_family)
+    return GetFirstListElement(*sense_family, kPhoneticsKey);
+
+  LOG(ERROR) << "Can't find a phonetics.";
+  return nullptr;
+}
+
+const std::string* DefinitionResultParser::ExtractDefinition(
+    const base::Value* definition_entry) {
+  const Value* first_sense_family = ExtractFirstSenseFamily(definition_entry);
+  if (!first_sense_family)
+    return nullptr;
 
   const Value* first_sense =
       GetFirstListElement(*first_sense_family, kSensesKey);
@@ -80,17 +111,27 @@ const std::string* DefinitionResultParser::ExtractDefinition(
   return first_sense->FindStringPath(kDefinitionPathUnderSense);
 }
 
-const std::string* DefinitionResultParser::ExtractPhonetics(
+const std::string* DefinitionResultParser::ExtractPhoneticsText(
     const base::Value* definition_entry) {
-  const Value* first_phonetics =
-      GetFirstListElement(*definition_entry, kPhoneticsKey);
-  if (!first_phonetics) {
-    LOG(WARNING) << "Can't find a phonetics.";
+  const Value* first_phonetics = ExtractFirstPhonetics(definition_entry);
+  if (!first_phonetics)
     return nullptr;
-  }
 
   return first_phonetics->FindStringPath(kPhoneticsTextKey);
 }
 
+GURL DefinitionResultParser::ExtractPhoneticsAudio(
+    const base::Value* definition_entry) {
+  const Value* first_phonetics = ExtractFirstPhonetics(definition_entry);
+  // Sometimes the phonetics has no audio URL.
+  if (!first_phonetics ||
+      !first_phonetics->FindStringPath(kPhoneticsAudioKey)) {
+    return GURL();
+  }
+
+  return GURL(kHttpsPrefix +
+              *first_phonetics->FindStringPath(kPhoneticsAudioKey));
+}
+
 }  // namespace quick_answers
-}  // namespace chromeos
+}  // namespace ash

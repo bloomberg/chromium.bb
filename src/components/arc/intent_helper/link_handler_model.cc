@@ -6,15 +6,15 @@
 
 #include <utility>
 
+#include "ash/components/arc/metrics/arc_metrics_constants.h"
+#include "ash/components/arc/metrics/arc_metrics_service.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_service_manager.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/metrics/arc_metrics_constants.h"
-#include "components/arc/metrics/arc_metrics_service.h"
-#include "components/arc/session/arc_bridge_service.h"
 #include "components/google/core/common/google_util.h"
 #include "url/url_util.h"
 
@@ -155,7 +155,8 @@ void LinkHandlerModel::NotifyObserver(
     if (it != icons_.end())
       icon = it->second.icon16;
     // Use the handler's index as an ID.
-    LinkHandlerInfo handler = {base::UTF8ToUTF16(handlers_[i]->name), icon, i};
+    LinkHandlerInfo handler = {base::UTF8ToUTF16(handlers_[i]->name), icon,
+                               static_cast<uint32_t>(i)};
     handlers.push_back(handler);
   }
   for (auto& observer : observer_list_)

@@ -35,6 +35,9 @@ class CONTENT_EXPORT DevToolsAgentHostClient {
   // manipulate browser altogether.
   virtual bool MayAttachToBrowser();
 
+  // Returns true if the client is allowed to send input events to the browser.
+  virtual bool MaySendInputEventsToBrowser();
+
   // Returns true if the client is allowed to read local files over the
   // protocol. Example would be exposing file content to the page under debug.
   virtual bool MayReadLocalFiles();
@@ -42,6 +45,12 @@ class CONTENT_EXPORT DevToolsAgentHostClient {
   // Returns true if the client is allowed to write local files over the
   // protocol. Example would be manipulating a deault downloads path.
   virtual bool MayWriteLocalFiles();
+
+  // Returns true if the client is allowed to perform operations
+  // they may potentially be used to gain privileges, e.g. providing
+  // JS compilation cache entries. This should only be true for clients
+  // that are already privileged, such as local automation clients.
+  virtual bool AllowUnsafeOperations();
 
   // Determines protocol message format.
   virtual bool UsesBinaryProtocol();

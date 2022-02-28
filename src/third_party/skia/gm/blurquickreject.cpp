@@ -9,7 +9,6 @@
 #include "include/core/SkBlurTypes.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkColor.h"
-#include "include/core/SkFilterQuality.h"
 #include "include/core/SkMaskFilter.h"
 #include "include/core/SkPaint.h"
 #include "include/core/SkRect.h"
@@ -81,8 +80,8 @@ protected:
     }
 
 private:
-    static constexpr int kWidth = 300;
-    static constexpr int kHeight = 300;
+    inline static constexpr int kWidth = 300;
+    inline static constexpr int kHeight = 300;
 
     using INHERITED = GM;
 };

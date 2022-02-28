@@ -5,7 +5,6 @@
 #ifndef WEBLAYER_RENDERER_CONTENT_RENDERER_CLIENT_IMPL_H_
 #define WEBLAYER_RENDERER_CONTENT_RENDERER_CLIENT_IMPL_H_
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
@@ -26,12 +25,17 @@ class WebLayerRenderThreadObserver;
 class ContentRendererClientImpl : public content::ContentRendererClient {
  public:
   ContentRendererClientImpl();
+
+  ContentRendererClientImpl(const ContentRendererClientImpl&) = delete;
+  ContentRendererClientImpl& operator=(const ContentRendererClientImpl&) =
+      delete;
+
   ~ContentRendererClientImpl() override;
 
   // content::ContentRendererClient:
   void RenderThreadStarted() override;
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
-  void RenderViewCreated(content::RenderView* render_view) override;
+  void WebViewCreated(blink::WebView* web_view) override;
   SkBitmap* GetSadPluginBitmap() override;
   SkBitmap* GetSadWebViewBitmap() override;
   void PrepareErrorPage(content::RenderFrame* render_frame,
@@ -64,8 +68,6 @@ class ContentRendererClientImpl : public content::ContentRendererClient {
 
   scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy>
       browser_interface_broker_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentRendererClientImpl);
 };
 
 }  // namespace weblayer

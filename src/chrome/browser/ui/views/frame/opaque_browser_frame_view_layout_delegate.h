@@ -10,6 +10,7 @@
 
 namespace gfx {
 class Size;
+class Rect;
 }
 
 // Delegate interface to control layout decisions without having to depend on
@@ -77,8 +78,17 @@ class OpaqueBrowserFrameViewLayoutDelegate {
   // Indicates the type of the frame buttons.
   virtual FrameButtonStyle GetFrameButtonStyle() const;
 
+  virtual void UpdateWindowControlsOverlay(
+      const gfx::Rect& bounding_rect) const = 0;
+
+  // Returns true if the system compositor supports translucent windows.
+  virtual bool IsTranslucentWindowOpacitySupported() const = 0;
+
+  // Returns true if a client-side shadow should be drawn for restored windows.
+  virtual bool ShouldDrawRestoredFrameShadow() const = 0;
+
  protected:
-  virtual ~OpaqueBrowserFrameViewLayoutDelegate() {}
+  virtual ~OpaqueBrowserFrameViewLayoutDelegate() = default;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_LAYOUT_DELEGATE_H_

@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,6 +44,11 @@ const char16_t kText[] = u"Some random text to be copied.";
 class SharedClipboardContextMenuObserverTest : public testing::Test {
  public:
   SharedClipboardContextMenuObserverTest() = default;
+
+  SharedClipboardContextMenuObserverTest(
+      const SharedClipboardContextMenuObserverTest&) = delete;
+  SharedClipboardContextMenuObserverTest& operator=(
+      const SharedClipboardContextMenuObserverTest&) = delete;
 
   ~SharedClipboardContextMenuObserverTest() override = default;
 
@@ -92,8 +96,6 @@ class SharedClipboardContextMenuObserverTest : public testing::Test {
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<SharedClipboardContextMenuObserver> observer_;
   SharingMessage sharing_message;
-
-  DISALLOW_COPY_AND_ASSIGN(SharedClipboardContextMenuObserverTest);
 };
 
 }  // namespace
@@ -132,12 +134,10 @@ TEST_F(SharedClipboardContextMenuObserverTest, SingleDevice_ShowMenu) {
             item.command_id);
 
   // Emulate click on the device.
-  EXPECT_CALL(
-      *service(),
-      SendMessageToDevice(
-          Property(&syncer::DeviceInfo::guid, guid),
-          Eq(base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get())),
-          ProtoEquals(sharing_message), _))
+  EXPECT_CALL(*service(),
+              SendMessageToDevice(Property(&syncer::DeviceInfo::guid, guid),
+                                  Eq(kSharingMessageTTL),
+                                  ProtoEquals(sharing_message), _))
       .Times(1);
   menu_.ExecuteCommand(
       IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE, 0);
@@ -171,12 +171,10 @@ TEST_F(SharedClipboardContextMenuObserverTest, MultipleDevices_ShowMenu) {
   // assigned.
   for (int i = 0; i < kMaxDevicesShown; i++) {
     if (i < device_count) {
-      EXPECT_CALL(
-          *service(),
-          SendMessageToDevice(
-              Property(&syncer::DeviceInfo::guid, guids[i]),
-              Eq(base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get())),
-              ProtoEquals(sharing_message), _))
+      EXPECT_CALL(*service(),
+                  SendMessageToDevice(
+                      Property(&syncer::DeviceInfo::guid, guids[i]),
+                      Eq(kSharingMessageTTL), ProtoEquals(sharing_message), _))
           .Times(1);
     } else {
       EXPECT_CALL(*service(), SendMessageToDevice(_, _, _, _)).Times(0);
@@ -215,12 +213,10 @@ TEST_F(SharedClipboardContextMenuObserverTest,
   // range too.
   for (int i = 0; i < device_count; i++) {
     if (i < kMaxDevicesShown) {
-      EXPECT_CALL(
-          *service(),
-          SendMessageToDevice(
-              Property(&syncer::DeviceInfo::guid, guids[i]),
-              Eq(base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get())),
-              ProtoEquals(sharing_message), _))
+      EXPECT_CALL(*service(),
+                  SendMessageToDevice(
+                      Property(&syncer::DeviceInfo::guid, guids[i]),
+                      Eq(kSharingMessageTTL), ProtoEquals(sharing_message), _))
           .Times(1);
     } else {
       EXPECT_CALL(*service(), SendMessageToDevice(_, _, _, _)).Times(0);

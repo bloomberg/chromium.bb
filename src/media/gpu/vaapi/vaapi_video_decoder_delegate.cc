@@ -17,13 +17,16 @@
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/components/cdm_factory_daemon/chromeos_cdm_factory.h"
+// gn check does not account for BUILDFLAG(), so including these headers will
+// make gn check fail for builds other than ash-chrome. See gn help nogncheck
+// for more information.
+#include "chromeos/components/cdm_factory_daemon/chromeos_cdm_context.h"  // nogncheck
+#include "chromeos/components/cdm_factory_daemon/chromeos_cdm_factory.h"  // nogncheck
 
 namespace {
 // During playback of protected content, we need to request the keys at an
 // interval no greater than this. This allows updating of key usage data.
-constexpr base::TimeDelta kKeyRetrievalMaxPeriod =
-    base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kKeyRetrievalMaxPeriod = base::Minutes(1);
 // This increments the lower 64 bit counter of an 128 bit IV.
 void ctr128_inc64(uint8_t* counter) {
   uint32_t n = 16;
@@ -50,7 +53,6 @@ VaapiVideoDecoderDelegate::VaapiVideoDecoderDelegate(
           std::move(on_protected_session_update_cb)),
       encryption_scheme_(encryption_scheme),
       protected_session_state_(ProtectedSessionState::kNotCreated),
-      scaled_surface_id_(VA_INVALID_ID),
       performing_recovery_(false) {
   DCHECK(vaapi_wrapper_);
   DCHECK(vaapi_dec_);
@@ -59,8 +61,8 @@ VaapiVideoDecoderDelegate::VaapiVideoDecoderDelegate(
   if (cdm_context)
     chromeos_cdm_context_ = cdm_context->GetChromeOsCdmContext();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  memset(&src_region_, 0, sizeof(src_region_));
-  memset(&dst_region_, 0, sizeof(dst_region_));
+  transcryption_ = cdm_context && VaapiWrapper::GetImplementationType() ==
+                                      VAImplementation::kMesaGallium;
 }
 
 VaapiVideoDecoderDelegate::~VaapiVideoDecoderDelegate() {
@@ -102,7 +104,8 @@ bool VaapiVideoDecoderDelegate::SetDecryptConfig(
   // TODO(jkardatzke): Handle changing encryption modes midstream, the latest
   // OEMCrypto spec allows this, although we won't hit it in reality for now.
   // Check to make sure they are compatible.
-  if (decrypt_config->encryption_scheme() != encryption_scheme_) {
+  if (!transcryption_ &&
+      decrypt_config->encryption_scheme() != encryption_scheme_) {
     LOG(ERROR) << "Cannot change encryption modes midstream";
     return false;
   }
@@ -142,7 +145,8 @@ VaapiVideoDecoderDelegate::SetupDecryptDecode(
 
   DCHECK_EQ(protected_session_state_, ProtectedSessionState::kCreated);
 
-  if (encryption_scheme_ == EncryptionScheme::kCenc) {
+  const bool ctr = (encryption_scheme_ == EncryptionScheme::kCenc);
+  if (ctr) {
     crypto_params->encryption_type = full_sample
                                          ? VA_ENCRYPTION_TYPE_FULLSAMPLE_CTR
                                          : VA_ENCRYPTION_TYPE_SUBSAMPLE_CTR;
@@ -211,38 +215,26 @@ VaapiVideoDecoderDelegate::SetupDecryptDecode(
 
   crypto_params->num_segments += subsamples.size();
   if (decrypt_config_->HasPattern()) {
-    if (subsamples.size() != 1) {
-      LOG(ERROR) << "Need single subsample for encryption pattern";
-      protected_session_state_ = ProtectedSessionState::kFailed;
-      return protected_session_state_;
-    }
     crypto_params->blocks_stripe_encrypted =
         decrypt_config_->encryption_pattern()->crypt_byte_block();
     crypto_params->blocks_stripe_clear =
         decrypt_config_->encryption_pattern()->skip_byte_block();
+  }
+  size_t total_cypher_size = 0;
+  std::vector<uint8_t> iv(DecryptConfig::kDecryptionKeySize);
+  iv.assign(decrypt_config_->iv().begin(), decrypt_config_->iv().end());
+  for (const auto& entry : subsamples) {
     VAEncryptionSegmentInfo segment_info = {};
     segment_info.segment_start_offset = offset;
-    segment_info.init_byte_length = subsamples[0].clear_bytes;
-    segment_info.segment_length =
-        subsamples[0].clear_bytes + subsamples[0].cypher_bytes;
-    memcpy(segment_info.aes_cbc_iv_or_ctr, decrypt_config_->iv().data(),
+    segment_info.segment_length = entry.clear_bytes + entry.cypher_bytes;
+    memcpy(segment_info.aes_cbc_iv_or_ctr, iv.data(),
            DecryptConfig::kDecryptionKeySize);
-    segments->emplace_back(std::move(segment_info));
-  } else {
-    size_t total_cypher_size = 0;
-    std::vector<uint8_t> iv(DecryptConfig::kDecryptionKeySize);
-    iv.assign(decrypt_config_->iv().begin(), decrypt_config_->iv().end());
-    for (const auto& entry : subsamples) {
-      VAEncryptionSegmentInfo segment_info = {};
-      segment_info.segment_start_offset = offset;
-      segment_info.segment_length = entry.clear_bytes + entry.cypher_bytes;
+    if (ctr) {
       size_t partial_block_size =
           (DecryptConfig::kDecryptionKeySize -
            (total_cypher_size % DecryptConfig::kDecryptionKeySize)) %
           DecryptConfig::kDecryptionKeySize;
       segment_info.partial_aes_block_size = partial_block_size;
-      memcpy(segment_info.aes_cbc_iv_or_ctr, iv.data(),
-             DecryptConfig::kDecryptionKeySize);
       if (entry.cypher_bytes > partial_block_size) {
         // If we are finishing a block, increment the counter.
         if (partial_block_size)
@@ -255,10 +247,10 @@ VaapiVideoDecoderDelegate::SetupDecryptDecode(
           ctr128_inc64(iv.data());
       }
       total_cypher_size += entry.cypher_bytes;
-      segment_info.init_byte_length = entry.clear_bytes;
-      offset += entry.clear_bytes + entry.cypher_bytes;
-      segments->emplace_back(std::move(segment_info));
     }
+    segment_info.init_byte_length = entry.clear_bytes;
+    offset += entry.clear_bytes + entry.cypher_bytes;
+    segments->emplace_back(std::move(segment_info));
   }
   memcpy(crypto_params->wrapped_decrypt_blob,
          hw_key_data_map_[decrypt_config_->key_id()].data(),
@@ -287,38 +279,9 @@ void VaapiVideoDecoderDelegate::ProtectedDecodedSucceeded() {
   performing_recovery_ = false;
 }
 
-bool VaapiVideoDecoderDelegate::FillDecodeScalingIfNeeded(
-    const gfx::Rect& decode_visible_rect,
-    VASurfaceID decode_surface_id,
-    scoped_refptr<VASurface> output_surface,
-    VAProcPipelineParameterBuffer* proc_buffer) {
-  if (!vaapi_dec_->IsScalingDecode())
-    return false;
-
-  // Submit the buffer for the inline decode scaling.
-  memset(proc_buffer, 0, sizeof(*proc_buffer));
-  src_region_.x = base::checked_cast<int16_t>(decode_visible_rect.x());
-  src_region_.y = base::checked_cast<int16_t>(decode_visible_rect.y());
-  src_region_.width = base::checked_cast<uint16_t>(decode_visible_rect.width());
-  src_region_.height =
-      base::checked_cast<uint16_t>(decode_visible_rect.height());
-
-  gfx::Rect scaled_visible_rect = vaapi_dec_->GetOutputVisibleRect(
-      decode_visible_rect, output_surface->size());
-  dst_region_.x = base::checked_cast<int16_t>(scaled_visible_rect.x());
-  dst_region_.y = base::checked_cast<int16_t>(scaled_visible_rect.y());
-  dst_region_.width = base::checked_cast<uint16_t>(scaled_visible_rect.width());
-  dst_region_.height =
-      base::checked_cast<uint16_t>(scaled_visible_rect.height());
-
-  proc_buffer->surface_region = &src_region_;
-  proc_buffer->output_region = &dst_region_;
-
-  scaled_surface_id_ = output_surface->id();
-  proc_buffer->additional_outputs = &scaled_surface_id_;
-  proc_buffer->num_additional_outputs = 1;
-  proc_buffer->surface = decode_surface_id;
-  return true;
+std::string VaapiVideoDecoderDelegate::GetDecryptKeyId() const {
+  DCHECK(decrypt_config_);
+  return decrypt_config_->key_id();
 }
 
 void VaapiVideoDecoderDelegate::OnGetHwConfigData(

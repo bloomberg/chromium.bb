@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for bucketize_op."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow.compiler.tests import xla_test
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import errors_impl
@@ -64,13 +60,13 @@ class BucketizationOpTest(xla_test.XLATestCase):
       p = array_ops.placeholder(dtypes.int32)
       with self.test_scope():
         op = math_ops._bucketize(p, boundaries=[0, 8, 3, 11])
-      with self.assertRaisesRegexp(errors_impl.InvalidArgumentError,
-                                   "Expected sorted boundaries"):
+      with self.assertRaisesRegex(errors_impl.InvalidArgumentError,
+                                  "Expected sorted boundaries"):
         sess.run(op, {p: [-5, 0]})
 
   def testBoundariesNotList(self):
     with self.session():
-      with self.assertRaisesRegexp(TypeError, "Expected list.*"):
+      with self.assertRaisesRegex(TypeError, "Expected list.*"):
         p = array_ops.placeholder(dtypes.int32)
         with self.test_scope():
           math_ops._bucketize(p, boundaries=0)

@@ -6,17 +6,26 @@
 
 #import <Cocoa/Cocoa.h>
 
+// Include Carbon to use the keycode names in Carbon's Event.h
+#include <Carbon/Carbon.h>
+
 #include "chrome/browser/ui/views/eye_dropper/eye_dropper_view.h"
 #include "content/public/browser/render_frame_host.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/base/ui_base_features.h"
 
 EyeDropperViewMac::EyeDropperViewMac(content::EyeDropperListener* listener)
-    : listener_(listener) {
+    : listener_(listener), weak_ptr_factory_(this) {
   if (!listener_)
     return;
   if (@available(macOS 10.15, *)) {
     color_sampler_.reset([[NSColorSampler alloc] init]);
+    // Used to ensure that EyeDropperViewMac is still alive when the handler is
+    // called.
+    base::WeakPtr<EyeDropperViewMac> weak_this = weak_ptr_factory_.GetWeakPtr();
     [color_sampler_ showSamplerWithSelectionHandler:^(NSColor* selectedColor) {
+      if (!weak_this)
+        return;
       if (!selectedColor) {
         listener_->ColorSelectionCanceled();
       } else {
@@ -29,7 +38,8 @@ EyeDropperViewMac::EyeDropperViewMac(content::EyeDropperListener* listener)
 EyeDropperViewMac::~EyeDropperViewMac() {}
 
 EyeDropperView::PreEventDispatchHandler::PreEventDispatchHandler(
-    EyeDropperView* view)
+    EyeDropperView* view,
+    gfx::NativeView parent)
     : view_(view) {
   // Ensure that this handler is called before color popup handler.
   clickEventTap_ = [NSEvent
@@ -39,6 +49,11 @@ EyeDropperView::PreEventDispatchHandler::PreEventDispatchHandler(
                                      if (eventType == NSLeftMouseDown ||
                                          eventType == NSRightMouseDown) {
                                        view_->OnColorSelected();
+                                       return nil;
+                                     } else if (eventType ==
+                                                    NSEventTypeKeyDown &&
+                                                [event keyCode] == kVK_Escape) {
+                                       view_->OnColorSelectionCanceled();
                                        return nil;
                                      }
 
@@ -108,6 +123,10 @@ float EyeDropperView::GetDiameter() const {
 std::unique_ptr<content::EyeDropper> ShowEyeDropper(
     content::RenderFrameHost* frame,
     content::EyeDropperListener* listener) {
+  if (!features::IsEyeDropperEnabled()) {
+    return nullptr;
+  }
+
   if (@available(macOS 10.15, *)) {
     return std::make_unique<EyeDropperViewMac>(listener);
   }

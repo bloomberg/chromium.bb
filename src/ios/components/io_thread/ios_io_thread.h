@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/prefs/pref_member.h"
@@ -121,6 +120,10 @@ class IOSIOThread : public web::WebThreadDelegate {
 
   // |net_log| must either outlive the IOSIOThread or be NULL.
   IOSIOThread(PrefService* local_state, net::NetLog* net_log);
+
+  IOSIOThread(const IOSIOThread&) = delete;
+  IOSIOThread& operator=(const IOSIOThread&) = delete;
+
   ~IOSIOThread() override;
 
   // Can only be called on the IO thread.
@@ -144,7 +147,7 @@ class IOSIOThread : public web::WebThreadDelegate {
   // called on the IO thread.
   void ClearHostCache();
 
-  const net::HttpNetworkSession::Params& NetworkSessionParams() const;
+  const net::HttpNetworkSessionParams& NetworkSessionParams() const;
 
  protected:
   // A string describing the current application version. For example: "stable"
@@ -176,7 +179,7 @@ class IOSIOThread : public web::WebThreadDelegate {
 
   static net::URLRequestContext* ConstructSystemRequestContext(
       Globals* globals,
-      const net::HttpNetworkSession::Params& params,
+      const net::HttpNetworkSessionParams& params,
       net::NetLog* net_log);
 
   // The NetLog is owned by the application context, to allow logging from other
@@ -193,7 +196,7 @@ class IOSIOThread : public web::WebThreadDelegate {
 
   Globals* globals_;
 
-  net::HttpNetworkSession::Params params_;
+  net::HttpNetworkSessionParams params_;
 
   // Observer that logs network changes to the NetLog.
   std::unique_ptr<net::LoggingNetworkChangeObserver> network_change_observer_;
@@ -208,8 +211,6 @@ class IOSIOThread : public web::WebThreadDelegate {
       system_url_request_context_getter_;
 
   base::WeakPtrFactory<IOSIOThread> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(IOSIOThread);
 };
 
 }  // namespace io_thread

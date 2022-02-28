@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/win/conflicts/module_info_util.h"
 #include "content/public/common/process_type.h"
@@ -26,6 +25,8 @@ struct ModuleInfoKey {
 
   // Less-than operator allowing this object to be used in std::map.
   bool operator<(const ModuleInfoKey& mi) const;
+  // Allows comparing keys in DCHECKs.
+  bool operator==(const ModuleInfoKey& mi) const;
 
   // Full path to the module on disk. Part of the key for a ModuleInfo.
   base::FilePath module_path;

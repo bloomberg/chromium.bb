@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 
 #include "base/check.h"
@@ -47,7 +48,7 @@ class ExtensionPermissionUpdater : public ExtensionRegistryObserver {
   }
 
  private:
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   bool enabled_;
 
   base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
@@ -61,8 +62,8 @@ IN_PROC_BROWSER_TEST_F(NotificationPermissionContextApiTest, Granted) {
   // report permission status when permission has been granted.
   ExtensionPermissionUpdater updater(profile(), /* enabled= */ true);
 
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "notifications/permissions_test", .custom_arg = "granted"}))
+  ASSERT_TRUE(RunExtensionTest("notifications/permissions_test",
+                               {.custom_arg = "granted"}))
       << message_;
 }
 
@@ -71,8 +72,8 @@ IN_PROC_BROWSER_TEST_F(NotificationPermissionContextApiTest, Denied) {
   // report permission status when permission has been denied.
   ExtensionPermissionUpdater updater(profile(), /* enabled= */ false);
 
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "notifications/permissions_test", .custom_arg = "denied"}))
+  ASSERT_TRUE(RunExtensionTest("notifications/permissions_test",
+                               {.custom_arg = "denied"}))
       << message_;
 }
 

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "remoting/protocol/authenticator.h"
 
@@ -89,6 +88,10 @@ class NegotiatingAuthenticatorBase : public Authenticator {
     THIRD_PARTY_SPAKE2_CURVE25519,
   };
 
+  NegotiatingAuthenticatorBase(const NegotiatingAuthenticatorBase&) = delete;
+  NegotiatingAuthenticatorBase& operator=(const NegotiatingAuthenticatorBase&) =
+      delete;
+
   ~NegotiatingAuthenticatorBase() override;
 
   // Authenticator interface.
@@ -138,9 +141,6 @@ class NegotiatingAuthenticatorBase : public Authenticator {
   std::unique_ptr<Authenticator> current_authenticator_;
   State state_;
   RejectionReason rejection_reason_ = INVALID_CREDENTIALS;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NegotiatingAuthenticatorBase);
 };
 
 }  // namespace protocol

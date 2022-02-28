@@ -16,21 +16,30 @@
 #define DAWNNATIVE_DEVICE_H_
 
 #include "dawn_native/Commands.h"
+#include "dawn_native/ComputePipeline.h"
 #include "dawn_native/Error.h"
-#include "dawn_native/Extensions.h"
+#include "dawn_native/Features.h"
 #include "dawn_native/Format.h"
 #include "dawn_native/Forward.h"
+#include "dawn_native/Limits.h"
 #include "dawn_native/ObjectBase.h"
+#include "dawn_native/ObjectType_autogen.h"
+#include "dawn_native/StagingBuffer.h"
 #include "dawn_native/Toggles.h"
 
 #include "dawn_native/DawnNative.h"
 #include "dawn_native/dawn_platform.h"
 
-#include <memory>
+#include <mutex>
 #include <utility>
+
+namespace dawn_platform {
+    class WorkerTaskPool;
+}  // namespace dawn_platform
 
 namespace dawn_native {
     class AdapterBase;
+    class AsyncTaskManager;
     class AttachmentState;
     class AttachmentStateBlueprint;
     class BindGroupLayoutBase;
@@ -41,12 +50,13 @@ namespace dawn_native {
     class OwnedCompilationMessages;
     class PersistentCache;
     class StagingBufferBase;
+    struct CallbackTask;
     struct InternalPipelineStore;
     struct ShaderModuleParseResult;
 
     class DeviceBase : public RefCounted {
       public:
-        DeviceBase(AdapterBase* adapter, const DeviceDescriptor* descriptor);
+        DeviceBase(AdapterBase* adapter, const DawnDeviceDescriptor* descriptor);
         virtual ~DeviceBase();
 
         void HandleError(InternalErrorType type, const char* message);
@@ -69,7 +79,51 @@ namespace dawn_native {
             return false;
         }
 
-        MaybeError ValidateObject(const ObjectBase* object) const;
+        template <typename... Args>
+        bool ConsumedError(MaybeError maybeError, const char* formatStr, const Args&... args) {
+            if (DAWN_UNLIKELY(maybeError.IsError())) {
+                std::unique_ptr<ErrorData> error = maybeError.AcquireError();
+                if (error->GetType() == InternalErrorType::Validation) {
+                    std::string out;
+                    absl::UntypedFormatSpec format(formatStr);
+                    if (absl::FormatUntyped(&out, format, {absl::FormatArg(args)...})) {
+                        error->AppendContext(std::move(out));
+                    } else {
+                        error->AppendContext(
+                            absl::StrFormat("[Failed to format error: \"%s\"]", formatStr));
+                    }
+                }
+                ConsumeError(std::move(error));
+                return true;
+            }
+            return false;
+        }
+
+        template <typename T, typename... Args>
+        bool ConsumedError(ResultOrError<T> resultOrError,
+                           T* result,
+                           const char* formatStr,
+                           const Args&... args) {
+            if (DAWN_UNLIKELY(resultOrError.IsError())) {
+                std::unique_ptr<ErrorData> error = resultOrError.AcquireError();
+                if (error->GetType() == InternalErrorType::Validation) {
+                    std::string out;
+                    absl::UntypedFormatSpec format(formatStr);
+                    if (absl::FormatUntyped(&out, format, {absl::FormatArg(args)...})) {
+                        error->AppendContext(std::move(out));
+                    } else {
+                        error->AppendContext(
+                            absl::StrFormat("[Failed to format error: \"%s\"]", formatStr));
+                    }
+                }
+                ConsumeError(std::move(error));
+                return true;
+            }
+            *result = resultOrError.AcquireSuccess();
+            return false;
+        }
+
+        MaybeError ValidateObject(const ApiObjectBase* object) const;
 
         AdapterBase* GetAdapter() const;
         dawn_platform::Platform* GetPlatform() const;
@@ -108,7 +162,8 @@ namespace dawn_native {
         // instead of a backend Foo object. If the blueprint doesn't match an object in the
         // cache, then the descriptor is used to make a new object.
         ResultOrError<Ref<BindGroupLayoutBase>> GetOrCreateBindGroupLayout(
-            const BindGroupLayoutDescriptor* descriptor);
+            const BindGroupLayoutDescriptor* descriptor,
+            PipelineCompatibilityToken pipelineCompatibilityToken = PipelineCompatibilityToken(0));
         void UncacheBindGroupLayout(BindGroupLayoutBase* obj);
 
         BindGroupLayoutBase* GetEmptyBindGroupLayout();
@@ -119,8 +174,6 @@ namespace dawn_native {
             const PipelineLayoutDescriptor* descriptor);
         void UncachePipelineLayout(PipelineLayoutBase* obj);
 
-        ResultOrError<Ref<RenderPipelineBase>> GetOrCreateRenderPipeline(
-            const RenderPipelineDescriptor2* descriptor);
         void UncacheRenderPipeline(RenderPipelineBase* obj);
 
         ResultOrError<Ref<SamplerBase>> GetOrCreateSampler(const SamplerDescriptor* descriptor);
@@ -128,22 +181,22 @@ namespace dawn_native {
 
         ResultOrError<Ref<ShaderModuleBase>> GetOrCreateShaderModule(
             const ShaderModuleDescriptor* descriptor,
-            ShaderModuleParseResult* parseResult);
+            ShaderModuleParseResult* parseResult,
+            OwnedCompilationMessages* compilationMessages);
         void UncacheShaderModule(ShaderModuleBase* obj);
 
         Ref<AttachmentState> GetOrCreateAttachmentState(AttachmentStateBlueprint* blueprint);
         Ref<AttachmentState> GetOrCreateAttachmentState(
             const RenderBundleEncoderDescriptor* descriptor);
         Ref<AttachmentState> GetOrCreateAttachmentState(const RenderPipelineDescriptor* descriptor);
-        Ref<AttachmentState> GetOrCreateAttachmentState(
-            const RenderPipelineDescriptor2* descriptor);
         Ref<AttachmentState> GetOrCreateAttachmentState(const RenderPassDescriptor* descriptor);
         void UncacheAttachmentState(AttachmentState* obj);
 
         // Object creation methods that be used in a reentrant manner.
         ResultOrError<Ref<BindGroupBase>> CreateBindGroup(const BindGroupDescriptor* descriptor);
         ResultOrError<Ref<BindGroupLayoutBase>> CreateBindGroupLayout(
-            const BindGroupLayoutDescriptor* descriptor);
+            const BindGroupLayoutDescriptor* descriptor,
+            bool allowInternalBinding = false);
         ResultOrError<Ref<BufferBase>> CreateBuffer(const BufferDescriptor* descriptor);
         ResultOrError<Ref<ComputePipelineBase>> CreateComputePipeline(
             const ComputePipelineDescriptor* descriptor);
@@ -159,11 +212,14 @@ namespace dawn_native {
         ResultOrError<Ref<RenderBundleEncoder>> CreateRenderBundleEncoder(
             const RenderBundleEncoderDescriptor* descriptor);
         ResultOrError<Ref<RenderPipelineBase>> CreateRenderPipeline(
-            const RenderPipelineDescriptor2* descriptor);
+            const RenderPipelineDescriptor* descriptor);
+        MaybeError CreateRenderPipelineAsync(const RenderPipelineDescriptor* descriptor,
+                                             WGPUCreateRenderPipelineAsyncCallback callback,
+                                             void* userdata);
         ResultOrError<Ref<SamplerBase>> CreateSampler(const SamplerDescriptor* descriptor);
         ResultOrError<Ref<ShaderModuleBase>> CreateShaderModule(
             const ShaderModuleDescriptor* descriptor,
-            ShaderModuleParseResult* parseResult = nullptr);
+            OwnedCompilationMessages* compilationMessages = nullptr);
         ResultOrError<Ref<SwapChainBase>> CreateSwapChain(Surface* surface,
                                                           const SwapChainDescriptor* descriptor);
         ResultOrError<Ref<TextureBase>> CreateTexture(const TextureDescriptor* descriptor);
@@ -182,13 +238,12 @@ namespace dawn_native {
         void APICreateComputePipelineAsync(const ComputePipelineDescriptor* descriptor,
                                            WGPUCreateComputePipelineAsyncCallback callback,
                                            void* userdata);
-        void APICreateRenderPipelineAsync(const RenderPipelineDescriptor2* descriptor,
+        void APICreateRenderPipelineAsync(const RenderPipelineDescriptor* descriptor,
                                           WGPUCreateRenderPipelineAsyncCallback callback,
                                           void* userdata);
         RenderBundleEncoder* APICreateRenderBundleEncoder(
             const RenderBundleEncoderDescriptor* descriptor);
         RenderPipelineBase* APICreateRenderPipeline(const RenderPipelineDescriptor* descriptor);
-        RenderPipelineBase* APICreateRenderPipeline2(const RenderPipelineDescriptor2* descriptor);
         ExternalTextureBase* APICreateExternalTexture(const ExternalTextureDescriptor* descriptor);
         SamplerBase* APICreateSampler(const SamplerDescriptor* descriptor);
         ShaderModuleBase* APICreateShaderModule(const ShaderModuleDescriptor* descriptor);
@@ -202,11 +257,13 @@ namespace dawn_native {
 
         QueueBase* APIGetQueue();
 
+        bool APIGetLimits(SupportedLimits* limits);
         void APIInjectError(wgpu::ErrorType type, const char* message);
         bool APITick();
 
         void APISetDeviceLostCallback(wgpu::DeviceLostCallback callback, void* userdata);
         void APISetUncapturedErrorCallback(wgpu::ErrorCallback callback, void* userdata);
+        void APISetLoggingCallback(wgpu::LoggingCallback callback, void* userdata);
         void APIPushErrorScope(wgpu::ErrorFilter filter);
         bool APIPopErrorScope(wgpu::ErrorCallback callback, void* userdata);
 
@@ -240,18 +297,22 @@ namespace dawn_native {
         //     Disconnected)
         //   - Disconnected: there is no longer work happening on the GPU timeline and the CPU data
         //     structures can be safely destroyed without additional synchronization.
+        //   - Destroyed: the device is disconnected and resources have been reclaimed.
         enum class State {
             BeingCreated,
             Alive,
             BeingDisconnected,
             Disconnected,
+            Destroyed,
         };
         State GetState() const;
         bool IsLost() const;
+        void TrackObject(ApiObjectBase* object);
+        std::mutex* GetObjectListMutex(ObjectType type);
 
-        std::vector<const char*> GetEnabledExtensions() const;
+        std::vector<const char*> GetEnabledFeatures() const;
         std::vector<const char*> GetTogglesUsed() const;
-        bool IsExtensionEnabled(Extension extension) const;
+        bool IsFeatureEnabled(Feature feature) const;
         bool IsToggleEnabled(Toggle toggle) const;
         bool IsValidationEnabled() const;
         bool IsRobustnessEnabled() const;
@@ -259,6 +320,8 @@ namespace dawn_native {
         void IncrementLazyClearCountForTesting();
         size_t GetDeprecationWarningCountForTesting();
         void EmitDeprecationWarning(const char* warning);
+        void EmitLog(const char* message);
+        void EmitLog(WGPULoggingType loggingType, const char* message);
         void APILoseForTesting();
         QueueBase* GetQueue() const;
 
@@ -275,17 +338,47 @@ namespace dawn_native {
 
         MaybeError Tick();
 
+        // TODO(crbug.com/dawn/839): Organize the below backend-specific parameters into the struct
+        // BackendMetadata that we can query from the device.
         virtual uint32_t GetOptimalBytesPerRowAlignment() const = 0;
         virtual uint64_t GetOptimalBufferToTextureCopyOffsetAlignment() const = 0;
 
         virtual float GetTimestampPeriodInNS() const = 0;
 
+        virtual bool ShouldDuplicateNumWorkgroupsForDispatchIndirect(
+            ComputePipelineBase* computePipeline) const;
+
+        const CombinedLimits& GetLimits() const;
+
+        AsyncTaskManager* GetAsyncTaskManager() const;
+        CallbackTaskManager* GetCallbackTaskManager() const;
+        dawn_platform::WorkerTaskPool* GetWorkerTaskPool() const;
+
+        void AddComputePipelineAsyncCallbackTask(Ref<ComputePipelineBase> pipeline,
+                                                 std::string errorMessage,
+                                                 WGPUCreateComputePipelineAsyncCallback callback,
+                                                 void* userdata);
+        void AddRenderPipelineAsyncCallbackTask(Ref<RenderPipelineBase> pipeline,
+                                                std::string errorMessage,
+                                                WGPUCreateRenderPipelineAsyncCallback callback,
+                                                void* userdata);
+
+        PipelineCompatibilityToken GetNextPipelineCompatibilityToken();
+
+        const std::string& GetLabel() const;
+        void APISetLabel(const char* label);
+        void APIDestroy();
+
       protected:
+        // Constructor used only for mocking and testing.
+        DeviceBase();
+
         void SetToggle(Toggle toggle, bool isEnabled);
         void ForceSetToggle(Toggle toggle, bool isEnabled);
 
         MaybeError Initialize(QueueBase* defaultQueue);
-        void ShutDownBase();
+        void DestroyObjects();
+        void Destroy();
 
         // Incrememt mLastSubmittedSerial when we submit the next serial
         void IncrementLastSubmittedCommandSerial();
@@ -294,17 +387,14 @@ namespace dawn_native {
         virtual ResultOrError<Ref<BindGroupBase>> CreateBindGroupImpl(
             const BindGroupDescriptor* descriptor) = 0;
         virtual ResultOrError<Ref<BindGroupLayoutBase>> CreateBindGroupLayoutImpl(
-            const BindGroupLayoutDescriptor* descriptor) = 0;
+            const BindGroupLayoutDescriptor* descriptor,
+            PipelineCompatibilityToken pipelineCompatibilityToken) = 0;
         virtual ResultOrError<Ref<BufferBase>> CreateBufferImpl(
             const BufferDescriptor* descriptor) = 0;
-        virtual ResultOrError<Ref<ComputePipelineBase>> CreateComputePipelineImpl(
-            const ComputePipelineDescriptor* descriptor) = 0;
         virtual ResultOrError<Ref<PipelineLayoutBase>> CreatePipelineLayoutImpl(
             const PipelineLayoutDescriptor* descriptor) = 0;
         virtual ResultOrError<Ref<QuerySetBase>> CreateQuerySetImpl(
             const QuerySetDescriptor* descriptor) = 0;
-        virtual ResultOrError<Ref<RenderPipelineBase>> CreateRenderPipelineImpl(
-            const RenderPipelineDescriptor2* descriptor) = 0;
         virtual ResultOrError<Ref<SamplerBase>> CreateSamplerImpl(
             const SamplerDescriptor* descriptor) = 0;
         virtual ResultOrError<Ref<ShaderModuleBase>> CreateShaderModuleImpl(
@@ -322,25 +412,36 @@ namespace dawn_native {
         virtual ResultOrError<Ref<TextureViewBase>> CreateTextureViewImpl(
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) = 0;
+        virtual Ref<ComputePipelineBase> CreateUninitializedComputePipelineImpl(
+            const ComputePipelineDescriptor* descriptor) = 0;
+        virtual Ref<RenderPipelineBase> CreateUninitializedRenderPipelineImpl(
+            const RenderPipelineDescriptor* descriptor) = 0;
+        virtual void SetLabelImpl();
 
         virtual MaybeError TickImpl() = 0;
+        void FlushCallbackTaskQueue();
 
         ResultOrError<Ref<BindGroupLayoutBase>> CreateEmptyBindGroupLayout();
 
-        ResultOrError<Ref<PipelineLayoutBase>> ValidateAndGetComputePipelineDescriptorWithDefaults(
-            const ComputePipelineDescriptor& descriptor,
-            ComputePipelineDescriptor* outDescriptor);
-        std::pair<Ref<ComputePipelineBase>, size_t> GetCachedComputePipeline(
-            const ComputePipelineDescriptor* descriptor);
-        Ref<ComputePipelineBase> AddOrGetCachedPipeline(Ref<ComputePipelineBase> computePipeline,
-                                                        size_t blueprintHash);
-        void CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
-                                            size_t blueprintHash,
-                                            WGPUCreateComputePipelineAsyncCallback callback,
-                                            void* userdata);
+        Ref<ComputePipelineBase> GetCachedComputePipeline(
+            ComputePipelineBase* uninitializedComputePipeline);
+        Ref<RenderPipelineBase> GetCachedRenderPipeline(
+            RenderPipelineBase* uninitializedRenderPipeline);
+        Ref<ComputePipelineBase> AddOrGetCachedComputePipeline(
+            Ref<ComputePipelineBase> computePipeline);
+        Ref<RenderPipelineBase> AddOrGetCachedRenderPipeline(
+            Ref<RenderPipelineBase> renderPipeline);
+        virtual void InitializeComputePipelineAsyncImpl(
+            Ref<ComputePipelineBase> computePipeline,
+            WGPUCreateComputePipelineAsyncCallback callback,
+            void* userdata);
+        virtual void InitializeRenderPipelineAsyncImpl(
+            Ref<RenderPipelineBase> renderPipeline,
+            WGPUCreateRenderPipelineAsyncCallback callback,
+            void* userdata);
 
-        void ApplyToggleOverrides(const DeviceDescriptor* deviceDescriptor);
-        void ApplyExtensions(const DeviceDescriptor* deviceDescriptor);
+        void ApplyToggleOverrides(const DawnDeviceDescriptor* deviceDescriptor);
+        void ApplyFeatures(const DawnDeviceDescriptor* deviceDescriptor);
 
         void SetDefaultToggles();
 
@@ -367,9 +468,9 @@ namespace dawn_native {
         ExecutionSerial mLastSubmittedSerial = ExecutionSerial(0);
         ExecutionSerial mFutureSerial = ExecutionSerial(0);
 
-        // ShutDownImpl is used to clean up and release resources used by device, does not wait for
+        // DestroyImpl is used to clean up and release resources used by device, does not wait for
         // GPU or check errors.
-        virtual void ShutDownImpl() = 0;
+        virtual void DestroyImpl() = 0;
 
         // WaitForIdleForDestruction waits for GPU to finish, checks errors and gets ready for
         // destruction. This is only used when properly destructing the device. For a real
@@ -379,6 +480,9 @@ namespace dawn_native {
 
         wgpu::ErrorCallback mUncapturedErrorCallback = nullptr;
         void* mUncapturedErrorUserdata = nullptr;
+
+        wgpu::LoggingCallback mLoggingCallback = nullptr;
+        void* mLoggingUserdata = nullptr;
 
         wgpu::DeviceLostCallback mDeviceLostCallback = nullptr;
         void* mDeviceLostUserdata = nullptr;
@@ -400,7 +504,7 @@ namespace dawn_native {
         Ref<BindGroupLayoutBase> mEmptyBindGroupLayout;
 
         std::unique_ptr<DynamicUploader> mDynamicUploader;
-        std::unique_ptr<CallbackTaskManager> mCallbackTaskManager;
+        std::unique_ptr<AsyncTaskManager> mAsyncTaskManager;
         Ref<QueueBase> mQueue;
 
         struct DeprecationWarnings;
@@ -408,17 +512,31 @@ namespace dawn_native {
 
         State mState = State::BeingCreated;
 
+        // Encompasses the mutex and the actual list that contains all live objects "owned" by the
+        // device.
+        struct ApiObjectList {
+            std::mutex mutex;
+            LinkedList<ApiObjectBase> objects;
+        };
+        PerObjectType<ApiObjectList> mObjectLists;
+
         FormatTable mFormatTable;
 
         TogglesSet mEnabledToggles;
         TogglesSet mOverridenToggles;
         size_t mLazyClearCountForTesting = 0;
+        std::atomic_uint64_t mNextPipelineCompatibilityToken;
 
-        ExtensionsSet mEnabledExtensions;
+        CombinedLimits mLimits;
+        FeaturesSet mEnabledFeatures;
 
         std::unique_ptr<InternalPipelineStore> mInternalPipelineStore;
 
         std::unique_ptr<PersistentCache> mPersistentCache;
+
+        std::unique_ptr<CallbackTaskManager> mCallbackTaskManager;
+        std::unique_ptr<dawn_platform::WorkerTaskPool> mWorkerTaskPool;
+        std::string mLabel;
     };
 
 }  // namespace dawn_native

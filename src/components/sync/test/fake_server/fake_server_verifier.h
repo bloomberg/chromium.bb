@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,6 +27,10 @@ class FakeServerVerifier {
   // Creates a FakeServerVerifier for |fake_server|. This class does not take
   // ownership of |fake_server|.
   explicit FakeServerVerifier(FakeServer* fake_server);
+
+  FakeServerVerifier(const FakeServerVerifier&) = delete;
+  FakeServerVerifier& operator=(const FakeServerVerifier&) = delete;
+
   virtual ~FakeServerVerifier();
 
   // Returns a successful result if there are |expected_count| entities with the
@@ -50,9 +54,7 @@ class FakeServerVerifier {
       const SessionsHierarchy& expected_sessions);
 
  private:
-  FakeServer* const fake_server_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeServerVerifier);
+  const raw_ptr<FakeServer> fake_server_;
 };
 
 }  // namespace fake_server

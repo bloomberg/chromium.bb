@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "build/chromeos_buildflags.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
@@ -85,6 +84,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicClient
       absl::optional<device::BluetoothGattService::GattErrorCode> error_code,
       const std::vector<uint8_t>& value)>;
 
+  BluetoothGattCharacteristicClient(const BluetoothGattCharacteristicClient&) =
+      delete;
+  BluetoothGattCharacteristicClient& operator=(
+      const BluetoothGattCharacteristicClient&) = delete;
+
   ~BluetoothGattCharacteristicClient() override;
 
   // Adds and removes observers for events on all remote GATT characteristics.
@@ -128,7 +132,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicClient
   // Starts a notification session from this characteristic with object path
   // |object_path| if it supports value notifications or indications. Invokes
   // |callback| on success and |error_callback| on failure.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   virtual void StartNotify(
       const dbus::ObjectPath& object_path,
       device::BluetoothGattCharacteristic::NotificationType notification_type,
@@ -138,7 +142,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicClient
   virtual void StartNotify(const dbus::ObjectPath& object_path,
                            base::OnceClosure callback,
                            ErrorCallback error_callback) = 0;
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // Cancels any previous StartNotify transaction for characteristic with
   // object path |object_path|. Invokes |callback| on success and
@@ -156,9 +160,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicClient
 
  protected:
   BluetoothGattCharacteristicClient();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothGattCharacteristicClient);
 };
 
 }  // namespace bluez

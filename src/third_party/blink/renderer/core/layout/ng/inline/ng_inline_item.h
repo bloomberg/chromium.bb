@@ -32,6 +32,7 @@ class CORE_EXPORT NGInlineItem {
     kText,
     kControl,
     kAtomicInline,
+    kBlockInInline,
     kOpenTag,
     kCloseTag,
     kFloating,
@@ -84,6 +85,8 @@ class CORE_EXPORT NGInlineItem {
   const ShapeResult* TextShapeResult() const { return shape_result_.get(); }
 
   // If this item is "empty" for the purpose of empty block calculation.
+  // Note: for block-in-inlines, this can't be determined until this is laid
+  // out. This function always return |false| for the case.
   bool IsEmptyItem() const { return is_empty_item_; }
   void SetIsEmptyItem(bool value) { is_empty_item_ = value; }
 
@@ -98,13 +101,13 @@ class CORE_EXPORT NGInlineItem {
   // optimization if this is false.
   bool ShouldCreateBoxFragment() const {
     if (Type() == kOpenTag || Type() == kCloseTag)
-      return To<LayoutInline>(layout_object_)->ShouldCreateBoxFragment();
+      return To<LayoutInline>(layout_object_.Get())->ShouldCreateBoxFragment();
     DCHECK_EQ(Type(), kAtomicInline);
     return false;
   }
   void SetShouldCreateBoxFragment() {
     DCHECK(Type() == kOpenTag || Type() == kCloseTag);
-    To<LayoutInline>(layout_object_)->SetShouldCreateBoxFragment();
+    To<LayoutInline>(layout_object_.Get())->SetShouldCreateBoxFragment();
   }
 
   unsigned StartOffset() const { return start_offset_; }
@@ -131,6 +134,9 @@ class CORE_EXPORT NGInlineItem {
   }
   bool IsRubyRun() const {
     return GetLayoutObject() && GetLayoutObject()->IsRubyRun();
+  }
+  bool IsTextCombine() const {
+    return GetLayoutObject() && GetLayoutObject()->IsLayoutNGTextCombine();
   }
 
   void SetOffset(unsigned start, unsigned end) {
@@ -169,24 +175,26 @@ class CORE_EXPORT NGInlineItem {
     // Use the |ComputedStyle| in |LayoutObject|, because not all style changes
     // re-run |CollectInlines()|.
     DCHECK(layout_object_);
-    NGStyleVariant variant = StyleVariant();
-    if (variant == NGStyleVariant::kStandard)
-      return layout_object_->Style();
-    DCHECK_EQ(variant, NGStyleVariant::kFirstLine);
-    return layout_object_->FirstLineStyle();
+    return &layout_object_->EffectiveStyle(StyleVariant());
   }
 
   // Returns a screen-size font for SVG text.
   // Returns Style()->GetFont() otherwise.
-  const Font& FontWithSVGScaling() const;
+  const Font& FontWithSvgScaling() const;
 
   // Get or set the whitespace collapse type at the end of this item.
   NGCollapseType EndCollapseType() const {
     return static_cast<NGCollapseType>(end_collapse_type_);
   }
   void SetEndCollapseType(NGCollapseType type) {
-    DCHECK(Type() == NGInlineItem::kText || type == kOpaqueToCollapsing ||
-           (Type() == NGInlineItem::kControl && type == kCollapsible));
+    // |kText| can set any types.
+    DCHECK(Type() == NGInlineItem::kText ||
+           // |kControl| and |kBlockInInline| are always |kCollapsible|.
+           ((Type() == NGInlineItem::kControl ||
+             Type() == NGInlineItem::kBlockInInline) &&
+            type == kCollapsible) ||
+           // Other types are |kOpaqueToCollapsing|.
+           type == kOpaqueToCollapsing);
     end_collapse_type_ = type;
   }
   bool IsCollapsibleSpaceOnly() const {
@@ -210,12 +218,12 @@ class CORE_EXPORT NGInlineItem {
     is_end_collapsible_newline_ = is_newline;
   }
 
-  static void Split(Vector<NGInlineItem>&, unsigned index, unsigned offset);
+  static void Split(HeapVector<NGInlineItem>&, unsigned index, unsigned offset);
 
   // RunSegmenter properties.
   unsigned SegmentData() const { return segment_data_; }
   static void SetSegmentData(const RunSegmenter::RunSegmenterRange& range,
-                             Vector<NGInlineItem>* items);
+                             HeapVector<NGInlineItem>* items);
 
   RunSegmenter::RunSegmenterRange CreateRunSegmenterRange() const {
     return NGInlineItemSegment::UnpackSegmentData(start_offset_, end_offset_,
@@ -233,7 +241,7 @@ class CORE_EXPORT NGInlineItem {
       shape_result_ = nullptr;
     bidi_level_ = level;
   }
-  static unsigned SetBidiLevel(Vector<NGInlineItem>&,
+  static unsigned SetBidiLevel(HeapVector<NGInlineItem>&,
                                unsigned index,
                                unsigned end_offset,
                                UBiDiLevel);
@@ -243,13 +251,15 @@ class CORE_EXPORT NGInlineItem {
 
   String ToString() const;
 
+  void Trace(Visitor* visitor) const;
+
  private:
   void ComputeBoxProperties();
 
   unsigned start_offset_;
   unsigned end_offset_;
   scoped_refptr<const ShapeResult> shape_result_;
-  LayoutObject* layout_object_;
+  Member<LayoutObject> layout_object_;
 
   NGInlineItemType type_;
   unsigned text_type_ : 3;          // NGTextType
@@ -277,5 +287,7 @@ inline void NGInlineItem::AssertEndOffset(unsigned offset) const {
 }
 
 }  // namespace blink
+
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::NGInlineItem)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_ITEM_H_

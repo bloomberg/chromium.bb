@@ -6,7 +6,8 @@
 #define UI_EVENTS_EVENT_DISPATCHER_H_
 
 #include "base/auto_reset.h"
-#include "base/macros.h"
+#include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
@@ -28,6 +29,10 @@ struct EventDispatchDetails {
 class EVENTS_EXPORT EventDispatcherDelegate {
  public:
   EventDispatcherDelegate();
+
+  EventDispatcherDelegate(const EventDispatcherDelegate&) = delete;
+  EventDispatcherDelegate& operator=(const EventDispatcherDelegate&) = delete;
+
   virtual ~EventDispatcherDelegate();
 
   // Returns whether an event can still be dispatched to a target. (e.g. during
@@ -64,15 +69,17 @@ class EVENTS_EXPORT EventDispatcherDelegate {
   EventDispatchDetails DispatchEventToTarget(EventTarget* target,
                                              Event* event) WARN_UNUSED_RESULT;
 
-  EventDispatcher* dispatcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventDispatcherDelegate);
+  raw_ptr<EventDispatcher> dispatcher_;
 };
 
 // Dispatches events to appropriate targets.
 class EVENTS_EXPORT EventDispatcher {
  public:
   explicit EventDispatcher(EventDispatcherDelegate* delegate);
+
+  EventDispatcher(const EventDispatcher&) = delete;
+  EventDispatcher& operator=(const EventDispatcher&) = delete;
+
   virtual ~EventDispatcher();
 
   void ProcessEvent(EventTarget* target, Event* event);
@@ -93,13 +100,11 @@ class EVENTS_EXPORT EventDispatcher {
   // dispatching the event to the event handler.
   void DispatchEvent(EventHandler* handler, Event* event);
 
-  EventDispatcherDelegate* delegate_;
+  raw_ptr<EventDispatcherDelegate> delegate_;
 
   Event* current_event_ = nullptr;
 
   EventHandlerList handler_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };
 
 }  // namespace ui

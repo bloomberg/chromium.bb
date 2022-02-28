@@ -11,7 +11,6 @@
 
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/protocol/sync.pb.h"
 
 namespace sync_pb {
 class CommitMessage;
@@ -30,6 +29,7 @@ void AddExtensionsActivityToMessage(
 // Fills the config_params field of |message|.
 void AddClientConfigParamsToMessage(
     ModelTypeSet enabled_types,
+    bool proxy_tabs_datatype_enabled,
     bool cookie_jar_mismatch,
     bool single_client,
     const std::vector<std::string>& fcm_registration_tokens,

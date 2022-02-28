@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
@@ -38,6 +38,7 @@ interface IDirect3DSurface9;
 
 namespace gl {
 class GLContext;
+class GLImageDXGI;
 }
 
 namespace gpu {
@@ -96,6 +97,11 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
       const gpu::GpuDriverBugWorkarounds& workarounds,
       const gpu::GpuPreferences& gpu_preferences,
       MediaLog* media_log);
+
+  DXVAVideoDecodeAccelerator(const DXVAVideoDecodeAccelerator&) = delete;
+  DXVAVideoDecodeAccelerator& operator=(const DXVAVideoDecodeAccelerator&) =
+      delete;
+
   ~DXVAVideoDecodeAccelerator() override;
 
   // VideoDecodeAccelerator implementation.
@@ -410,6 +416,13 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // |num_picture_buffers_requested_|.
   void DisableSharedTextureSupport();
 
+  // Creates ScopedSharedImages for the provided PictureBuffer. If the buffer
+  // has a GLImageDXGI this function will create SharedImageBackingD3D using the
+  // DX11 texture. Otherwise it will create thin SharedImageBackingGLImage
+  // wrappers around the existing textures in |picture_buffer|.
+  std::vector<scoped_refptr<Picture::ScopedSharedImage>>
+  GetSharedImagesFromPictureBuffer(DXVAPictureBuffer* picture_buffer);
+
   uint32_t GetTextureTarget() const;
 
   PictureBufferMechanism GetPictureBufferMechanism() const;
@@ -417,7 +430,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   ID3D11Device* D3D11Device() const;
 
   // To expose client callbacks from VideoDecodeAccelerator.
-  VideoDecodeAccelerator::Client* client_;
+  raw_ptr<VideoDecodeAccelerator::Client> client_;
 
   Microsoft::WRL::ComPtr<IMFTransform> decoder_;
 
@@ -533,7 +546,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   BindGLImageCallback bind_image_cb_;
 
   // This may be null, e.g. when not using MojoVideoDecoder.
-  MediaLog* const media_log_;
+  const raw_ptr<MediaLog> media_log_;
 
   // Which codec we are decoding with hardware acceleration.
   VideoCodec codec_;
@@ -644,8 +657,6 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
 
   // Function pointer for the MFCreateDXGIDeviceManager API.
   static CreateDXGIDeviceManager create_dxgi_device_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(DXVAVideoDecodeAccelerator);
 };
 
 }  // namespace media

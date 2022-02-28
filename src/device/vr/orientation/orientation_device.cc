@@ -5,7 +5,9 @@
 #include <math.h>
 
 #include "base/bind.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/numerics/math_constants.h"
 #include "base/time/time.h"
 #include "device/vr/orientation/orientation_device.h"
@@ -37,6 +39,17 @@ display::Display::Rotation GetRotation() {
   return screen->GetPrimaryDisplay().rotation();
 }
 
+const std::vector<mojom::XRSessionFeature>& GetSupportedFeatures() {
+  static base::NoDestructor<std::vector<mojom::XRSessionFeature>>
+      kSupportedFeatures{{
+    mojom::XRSessionFeature::REF_SPACE_VIEWER,
+    mojom::XRSessionFeature::REF_SPACE_LOCAL,
+    mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR,
+  }};
+
+  return *kSupportedFeatures;
+}
+
 }  // namespace
 
 VROrientationDevice::VROrientationDevice(mojom::SensorProvider* sensor_provider,
@@ -49,6 +62,8 @@ VROrientationDevice::VROrientationDevice(mojom::SensorProvider* sensor_provider,
                                             base::Unretained(this)));
 
   SetVRDisplayInfo(mojom::VRDisplayInfo::New());
+
+  SetSupportedFeatures(GetSupportedFeatures());
 }
 
 VROrientationDevice::~VROrientationDevice() {
@@ -203,7 +218,7 @@ void VROrientationDevice::GetInlineFrameData(
   pose->orientation = latest_pose_;
 
   mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
-  frame_data->pose = std::move(pose);
+  frame_data->mojo_from_viewer = std::move(pose);
 
   std::move(callback).Run(std::move(frame_data));
 }

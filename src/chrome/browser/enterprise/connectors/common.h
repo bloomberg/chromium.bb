@@ -12,6 +12,7 @@
 
 #include "base/supports_user_data.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
+#include "content/public/browser/download_manager_delegate.h"
 #include "url/gurl.h"
 
 namespace enterprise_connectors {
@@ -32,6 +33,7 @@ constexpr char kKeyBlockUnsupportedFileTypes[] = "block_unsupported_file_types";
 constexpr char kKeyMinimumDataSize[] = "minimum_data_size";
 constexpr char kKeyEnabledEventNames[] = "enabled_event_names";
 constexpr char kKeyCustomMessages[] = "custom_messages";
+constexpr char kKeyCustomMessagesTag[] = "tag";
 constexpr char kKeyCustomMessagesMessage[] = "message";
 constexpr char kKeyCustomMessagesLearnMoreUrl[] = "learn_more_url";
 constexpr char kKeyMimeTypes[] = "mime_types";
@@ -56,6 +58,13 @@ enum class BlockUntilVerdict {
   BLOCK = 1,
 };
 
+// A struct representing a custom message and associated "learn more" URL. These
+// are scoped to a tag.
+struct CustomMessageData {
+  std::u16string message;
+  GURL learn_more_url;
+};
+
 // Structs representing settings to be used for an analysis or a report. These
 // settings should only be kept and considered valid for the specific
 // analysis/report they were obtained for.
@@ -71,8 +80,7 @@ struct AnalysisSettings {
   bool block_password_protected_files = false;
   bool block_large_files = false;
   bool block_unsupported_file_types = false;
-  std::u16string custom_message_text;
-  GURL custom_message_learn_more_url;
+  std::map<std::string, CustomMessageData> custom_message_data;
 
   // Minimum text size for BulkDataEntry scans. 0 means no minimum.
   size_t minimum_data_size = 100;
@@ -125,6 +133,8 @@ struct FileSystemSettings {
   std::vector<std::string> scopes;
   size_t max_direct_size;
   std::set<std::string> mime_types;
+  // Indicates whether `mime_types` is to be used for enabling or disabling.
+  bool enable_with_mime_types;
 };
 
 // Returns the pref path corresponding to a connector.
@@ -134,21 +144,62 @@ const char* ConnectorPref(FileSystemConnector connector);
 const char* ConnectorScopePref(AnalysisConnector connector);
 const char* ConnectorScopePref(ReportingConnector connector);
 
-// Returns the highest precedence action in the given parameters.
+// Returns the highest precedence action in the given parameters. Writes the tag
+// field of the result containing the highest precedence action into |tag|.
 TriggeredRule::Action GetHighestPrecedenceAction(
-    const ContentAnalysisResponse& response);
+    const ContentAnalysisResponse& response,
+    std::string* tag);
 TriggeredRule::Action GetHighestPrecedenceAction(
     const TriggeredRule::Action& action_1,
     const TriggeredRule::Action& action_2);
 
-// User data class to persist ContentAnalysisResponses in base::SupportsUserData
-// objects.
+// Struct used to persist metadata about a file in base::SupportsUserData
+// through ScanResult.
+struct FileMetadata {
+  FileMetadata(
+      const std::string& filename,
+      const std::string& sha256,
+      const std::string& mime_type,
+      int64_t size,
+      const ContentAnalysisResponse& scan_response = ContentAnalysisResponse());
+  FileMetadata(FileMetadata&&);
+  FileMetadata(const FileMetadata&);
+  FileMetadata& operator=(const FileMetadata&);
+  ~FileMetadata();
+
+  std::string filename;
+  std::string sha256;
+  std::string mime_type;
+  int64_t size;
+  ContentAnalysisResponse scan_response;
+};
+
+// User data class to persist scanning results for multiple files corresponding
+// to a single base::SupportsUserData object.
 struct ScanResult : public base::SupportsUserData::Data {
-  explicit ScanResult(const ContentAnalysisResponse& response);
+  explicit ScanResult(FileMetadata metadata);
   ~ScanResult() override;
   static const char kKey[];
-  ContentAnalysisResponse response;
+
+  std::vector<FileMetadata> file_metadata;
 };
+
+// User data to persist a save package's final callback allowing/denying
+// completion. This is used since the callback can be called either when
+// scanning completes on a block/allow verdict, when the user cancels the scan,
+// or when the user bypasses scanning.
+struct SavePackageScanningData : public base::SupportsUserData::Data {
+  explicit SavePackageScanningData(
+      content::SavePackageAllowedCallback callback);
+  ~SavePackageScanningData() override;
+  static const char kKey[];
+
+  content::SavePackageAllowedCallback callback;
+};
+
+// Checks `item` for a SavePackageScanningData, and run it's callback with
+// `allowed` if there is one.
+void RunSavePackageScanningCallback(download::DownloadItem* item, bool allowed);
 
 // Checks if |response| contains a negative malware verdict.
 bool ContainsMalwareVerdict(const ContentAnalysisResponse& response);

@@ -1,7 +1,12 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-'use strict';
+
+import {addEntries, ENTRIES, RootPath, sendTestMessage, TestEntryInfo} from '../test_util.js';
+import {testcase} from '../testcase.js';
+
+import {IGNORE_APP_ERRORS, isSinglePartitionFormat, openNewWindow, remoteCall, setupAndWaitUntilReady} from './background.js';
+import {BASIC_DRIVE_ENTRY_SET, BASIC_FAKE_ENTRY_SET, BASIC_LOCAL_ENTRY_SET, COMPUTERS_ENTRY_SET} from './test_data.js';
 
 /**
  * Checks if the files initially added by the C++ side are displayed, and
@@ -11,12 +16,11 @@
  * @param {Array<TestEntryInfo>} defaultEntries Default file entries.
  */
 async function fileDisplay(path, defaultEntries) {
-  const defaultList = TestEntryInfo.getExpectedRows(defaultEntries).sort();
-
   // Open Files app on the given |path| with default file entries.
   const appId = await setupAndWaitUntilReady(path);
 
   // Verify the default file list is present in |result|.
+  const defaultList = TestEntryInfo.getExpectedRows(defaultEntries).sort();
   await remoteCall.waitForFiles(appId, defaultList);
 
   // Add new file entries.
@@ -54,6 +58,35 @@ testcase.fileDisplayLaunchOnLocalFolder = async () => {
   // Check: The current directory is MyFiles/Downloads/photos.
   await remoteCall.waitUntilCurrentDirectoryIsChanged(
       appId, '/My files/Downloads/photos');
+
+  // The API used to launch the Files app does not set the IN_TEST flag to true:
+  // error when attempting to retrieve Web Store access token.
+  return IGNORE_APP_ERRORS;
+};
+
+/**
+ * Tests opening the files app navigating to a local folder. Uses
+ * platform_util::OpenItem, a call to an API distinct from the one commonly used
+ * in other tests for the same operation.
+ */
+testcase.fileDisplayLaunchOnLocalFile = async () => {
+  // Add a file to Downloads.
+  await addEntries(['local'], [ENTRIES.hello, ENTRIES.world]);
+
+  // Open Files app on the Downloads directory selecting the target file.
+  await sendTestMessage(
+      {name: 'showItemInFolder', localPath: 'Downloads/hello.txt'});
+
+  // Wait for app window to open.
+  const appId = await remoteCall.waitForWindow('files#');
+
+  // Check: The current directory is MyFiles/Downloads.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(
+      appId, '/My files/Downloads');
+
+  // Check: The target file is selected.
+  await remoteCall.waitForElement(
+      appId, '#file-list [file-name="hello.txt"][selected]');
 
   // The API used to launch the Files app does not set the IN_TEST flag to true:
   // error when attempting to retrieve Web Store access token.
@@ -108,7 +141,7 @@ testcase.fileDisplayDriveOffline = async () => {
   chrome.test.assertEq(0, elements[0].text.indexOf('hello.txt'));
 
   // Check: hello.txt must have 'offline' CSS render style (opacity).
-  chrome.test.assertEq('0.4', elements[0].styles.opacity);
+  chrome.test.assertEq('0.38', elements[0].styles.opacity);
 
   // Retrieve file entries that are 'available offline' (not dimmed).
   const availableEntry = '#file-list .table-row:not(.dim-offline)';
@@ -135,12 +168,9 @@ testcase.fileDisplayDriveOffline = async () => {
 
 /**
  * Tests file display rendering in online Google Drive.
+ * @param {string} appId the id for the window to check the file display.
  */
-testcase.fileDisplayDriveOnline = async () => {
-  // Open Files app on Drive.
-  const appId =
-      await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
-
+async function checkDriveOnlineDisplay(appId) {
   // Retrieve all file list row entries.
   const fileEntry = '#file-list .table-row';
   const elements = await remoteCall.callRemoteTestUtil(
@@ -151,6 +181,35 @@ testcase.fileDisplayDriveOnline = async () => {
   for (let i = 0; i < elements.length; ++i) {
     chrome.test.assertEq('1', elements[i].styles.opacity);
   }
+}
+
+/**
+ * Tests file display rendering in online Google Drive.
+ */
+testcase.fileDisplayDriveOnline = async () => {
+  // Open Files app on Drive.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
+
+  await checkDriveOnlineDisplay(appId);
+};
+
+/**
+ * Tests file display rendering in online Google Drive when opening via OpenItem
+ * function.
+ */
+testcase.fileDisplayDriveOnlineNewWindow = async () => {
+  // Open Files app on the Drive directory.
+  await addEntries(['drive'], BASIC_DRIVE_ENTRY_SET);
+  await sendTestMessage({name: 'launchAppOnDrive'});
+
+  // Wait for app window to open.
+  const appId = await remoteCall.waitForWindow('files#');
+
+  // Wait for Files app to finish loading.
+  await remoteCall.waitFor('isFileManagerLoaded', appId, true);
+
+  await checkDriveOnlineDisplay(appId);
 };
 
 /**
@@ -398,8 +457,7 @@ async function searchDownloads(searchTerm, expectedResults) {
       'fakeEvent', appId, ['#search-box cr-input', 'focus']));
 
   // Input a text.
-  await remoteCall.callRemoteTestUtil(
-      'inputText', appId, ['#search-box cr-input', searchTerm]);
+  await remoteCall.inputText(appId, '#search-box cr-input', searchTerm);
 
   // Notify the element of the input.
   chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
@@ -438,15 +496,13 @@ testcase.fileSearchNotFound = async () => {
       'fakeEvent', appId, ['#search-box cr-input', 'focus']));
 
   // Input a text.
-  await remoteCall.callRemoteTestUtil(
-      'inputText', appId, ['#search-box cr-input', searchTerm]);
+  await remoteCall.inputText(appId, '#search-box cr-input', searchTerm);
 
   // Notify the element of the input.
   await remoteCall.callRemoteTestUtil(
       'fakeEvent', appId, ['#search-box cr-input', 'input']);
-  const element =
-      await remoteCall.waitForElement(appId, ['#empty-folder-label b']);
-  chrome.test.assertEq(element.text, '\"' + searchTerm + '\"');
+
+  await remoteCall.waitForFiles(appId, []);
 };
 
 /**
@@ -455,13 +511,12 @@ testcase.fileSearchNotFound = async () => {
  */
 testcase.fileDisplayWithoutDownloadsVolume = async () => {
   // Ensure no volumes are mounted.
-  chrome.test.assertEq(
-      0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
+  chrome.test.assertEq('0', await sendTestMessage({name: 'getVolumesCount'}));
 
   // Mount Drive.
   await sendTestMessage({name: 'mountDrive'});
 
-  await remoteCall.waitFor('getVolumesCount', null, (count) => count === 1, []);
+  await remoteCall.waitForVolumesCount(1);
 
   // Open Files app without specifying the initial directory/root.
   const appId = await openNewWindow(null, null);
@@ -476,8 +531,7 @@ testcase.fileDisplayWithoutDownloadsVolume = async () => {
  */
 testcase.fileDisplayWithoutVolumes = async () => {
   // Ensure no volumes are mounted.
-  chrome.test.assertEq(
-      0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
+  chrome.test.assertEq('0', await sendTestMessage({name: 'getVolumesCount'}));
 
   // Open Files app without specifying the initial directory/root.
   const appId = await openNewWindow(null, null);
@@ -494,8 +548,7 @@ testcase.fileDisplayWithoutVolumes = async () => {
  */
 testcase.fileDisplayWithoutVolumesThenMountDownloads = async () => {
   // Ensure no volumes are mounted.
-  chrome.test.assertEq(
-      0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
+  chrome.test.assertEq('0', await sendTestMessage({name: 'getVolumesCount'}));
 
   // Open Files app without specifying the initial directory/root.
   const appId = await openNewWindow(null, null);
@@ -531,8 +584,7 @@ testcase.fileDisplayWithoutVolumesThenMountDownloads = async () => {
  */
 testcase.fileDisplayWithoutVolumesThenMountDrive = async () => {
   // Ensure no volumes are mounted.
-  chrome.test.assertEq(
-      0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
+  chrome.test.assertEq('0', await sendTestMessage({name: 'getVolumesCount'}));
 
   // Open Files app without specifying the initial directory/root.
   const appId = await openNewWindow(null, null);
@@ -567,14 +619,13 @@ testcase.fileDisplayWithoutVolumesThenMountDrive = async () => {
  */
 testcase.fileDisplayWithoutDrive = async () => {
   // Ensure no volumes are mounted.
-  chrome.test.assertEq(
-      0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
+  chrome.test.assertEq('0', await sendTestMessage({name: 'getVolumesCount'}));
 
   // Mount Downloads.
   await sendTestMessage({name: 'mountDownloads'});
 
   // Wait until downloads is re-added
-  await remoteCall.waitFor('getVolumesCount', null, (count) => count === 1, []);
+  await remoteCall.waitForVolumesCount(1);
 
   // Open the files app.
   const appId = await setupAndWaitUntilReady(
@@ -603,8 +654,7 @@ testcase.fileDisplayWithoutDrive = async () => {
  */
 testcase.fileDisplayWithoutDriveThenDisable = async () => {
   // Ensure no volumes are mounted.
-  chrome.test.assertEq(
-      0, await remoteCall.callRemoteTestUtil('getVolumesCount', null, []));
+  chrome.test.assertEq('0', await sendTestMessage({name: 'getVolumesCount'}));
 
   // Mount Downloads.
   await sendTestMessage({name: 'mountDownloads'});
@@ -613,7 +663,7 @@ testcase.fileDisplayWithoutDriveThenDisable = async () => {
   await addEntries(['local'], [ENTRIES.newlyAdded]);
 
   // Wait until it mounts.
-  await remoteCall.waitFor('getVolumesCount', null, (count) => count === 1, []);
+  await remoteCall.waitForVolumesCount(1);
 
   // Open Files app without specifying the initial directory/root.
   const appId = await openNewWindow(null, null);
@@ -652,6 +702,47 @@ testcase.fileDisplayWithoutDriveThenDisable = async () => {
 
   // Wait for the fake drive to reappear.
   await remoteCall.waitForElement(appId, ['[root-type-icon=\'drive\']']);
+};
+
+/**
+ * Tests that mounting a hidden Volume does not mount the volume in file
+ * manager.
+ */
+testcase.fileDisplayWithHiddenVolume = async () => {
+  const initialVolumeCount = await sendTestMessage({name: 'getVolumesCount'});
+
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.beautiful], []);
+
+  // Get the directory tree elements.
+  const dirTreeQuery = ['#directory-tree [dir-type]'];
+  const elementsBefore = await remoteCall.callRemoteTestUtil(
+      'queryAllElements', appId, dirTreeQuery);
+  const visibleElementsBefore = [];
+  for (const element of elementsBefore) {
+    if (!element.hidden) {  // Ignore hidden elements.
+      visibleElementsBefore.push(element.attributes['entry-label']);
+    }
+  }
+
+  // Mount a hidden volume.
+  await sendTestMessage({name: 'mountHidden'});
+
+  const elementsAfter = await remoteCall.callRemoteTestUtil(
+      'queryAllElements', appId, dirTreeQuery);
+  const visibleElementsAfter = [];
+  for (const element of elementsAfter) {
+    if (!element.hidden) {  // Ignore hidden elements.
+      visibleElementsAfter.push(element.attributes['entry-label']);
+    }
+  }
+
+  // The directory tree should NOT display the hidden volume.
+  chrome.test.assertEq(elementsBefore, elementsAfter);
+
+  // The hidden volume should not be counted in the number of volumes.
+  chrome.test.assertEq(
+      initialVolumeCount, await sendTestMessage({name: 'getVolumesCount'}));
 };
 
 /**

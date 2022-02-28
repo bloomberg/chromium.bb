@@ -6,11 +6,11 @@
 
 #include <utility>
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/focus_cycler.h"
 #include "ash/login/security_token_request_controller.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/child_accounts/parent_access_controller.h"
 #include "ash/public/cpp/login_screen_client.h"
 #include "ash/public/cpp/toast_data.h"
@@ -120,7 +120,7 @@ void LoginScreenController::AuthenticateUserWithPasswordOrPin(
           base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
                          weak_factory_.GetWeakPtr(), std::move(callback),
                          false),
-          base::TimeDelta::FromSeconds(1));
+          base::Seconds(1));
       return;
   }
 
@@ -222,6 +222,12 @@ void LoginScreenController::LoginAsGuest() {
   client_->LoginAsGuest();
 }
 
+void LoginScreenController::ShowGuestTosScreen() {
+  if (!client_)
+    return;
+  client_->ShowGuestTosScreen();
+}
+
 void LoginScreenController::OnMaxIncorrectPasswordAttempted(
     const AccountId& account_id) {
   if (!client_)
@@ -239,6 +245,12 @@ void LoginScreenController::ShowGaiaSignin(const AccountId& prefilled_account) {
   if (!client_)
     return;
   client_->ShowGaiaSignin(prefilled_account);
+}
+
+void LoginScreenController::ShowOsInstallScreen() {
+  if (!client_)
+    return;
+  client_->ShowOsInstallScreen();
 }
 
 void LoginScreenController::OnRemoveUserWarningShown() {
@@ -430,9 +442,8 @@ void LoginScreenController::ShowAccountAccessHelpApp(
   client_->ShowAccountAccessHelpApp(parent_window);
 }
 
-void LoginScreenController::ShowParentAccessHelpApp(
-    gfx::NativeWindow parent_window) {
-  client_->ShowParentAccessHelpApp(parent_window);
+void LoginScreenController::ShowParentAccessHelpApp() {
+  client_->ShowParentAccessHelpApp();
 }
 
 void LoginScreenController::ShowLockScreenNotificationSettings() {

@@ -12,12 +12,12 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/android/webapk/webapk_icon_hasher.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
-#include "chrome/browser/android/webapk/webapk_types.h"
+#include "components/webapps/browser/android/webapk/webapk_icon_hasher.h"
+#include "components/webapps/browser/android/webapk/webapk_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
@@ -29,6 +29,7 @@ class FilePath;
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }  // namespace content
 
 namespace network {
@@ -57,12 +58,16 @@ class WebApkInstaller {
  public:
   using FinishCallback = WebApkInstallService::FinishCallback;
 
+  WebApkInstaller(const WebApkInstaller&) = delete;
+  WebApkInstaller& operator=(const WebApkInstaller&) = delete;
+
   virtual ~WebApkInstaller();
 
   // Creates a self-owned WebApkInstaller instance and talks to the Chrome
   // WebAPK server to generate a WebAPK on the server and locally requests the
   // APK to be installed. Calls |callback| once the install completed or failed.
   static void InstallAsync(content::BrowserContext* context,
+                           content::WebContents* web_contents,
                            const webapps::ShortcutInfo& shortcut_info,
                            const SkBitmap& primary_icon,
                            bool is_primary_icon_maskable,
@@ -79,6 +84,7 @@ class WebApkInstaller {
   // Calls the private function |InstallAsync| for testing.
   // Should be used only for testing.
   static void InstallAsyncForTesting(WebApkInstaller* installer,
+                                     content::WebContents* web_contents,
                                      const webapps::ShortcutInfo& shortcut_info,
                                      const SkBitmap& primary_icon,
                                      bool is_primary_icon_maskable,
@@ -115,8 +121,10 @@ class WebApkInstaller {
       const SkBitmap& splash_icon,
       const std::string& package_name,
       const std::string& version,
-      std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash,
+      std::map<std::string, webapps::WebApkIconHasher::Icon>
+          icon_url_to_murmur2_hash,
       bool is_manifest_stale,
+      bool is_app_identity_update_supported,
       base::OnceCallback<void(std::unique_ptr<std::string>)> callback);
 
   // Builds the WebAPK proto for an update or an install request and stores it
@@ -130,9 +138,11 @@ class WebApkInstaller {
       const SkBitmap& splash_icon,
       const std::string& package_name,
       const std::string& version,
-      std::map<std::string, WebApkIconHasher::Icon> icon_url_to_murmur2_hash,
+      std::map<std::string, webapps::WebApkIconHasher::Icon>
+          icon_url_to_murmur2_hash,
       bool is_manifest_stale,
-      std::vector<WebApkUpdateReason> update_reasons,
+      bool is_app_identity_update_supported,
+      std::vector<webapps::WebApkUpdateReason> update_reasons,
       base::OnceCallback<void(bool)> callback);
 
  protected:
@@ -162,7 +172,8 @@ class WebApkInstaller {
   // Talks to the Chrome WebAPK server to generate a WebAPK on the server and to
   // Google Play to install the downloaded WebAPK. Calls |callback| once the
   // install completed or failed.
-  void InstallAsync(const webapps::ShortcutInfo& shortcut_info,
+  void InstallAsync(content::WebContents* web_contents,
+                    const webapps::ShortcutInfo& shortcut_info,
                     const SkBitmap& primary_icon,
                     bool is_primary_icon_maskable,
                     FinishCallback finish_callback);
@@ -187,7 +198,8 @@ class WebApkInstaller {
 
   // Called with the computed Murmur2 hash for the icons.
   void OnGotIconMurmur2Hashes(
-      absl::optional<std::map<std::string, WebApkIconHasher::Icon>> hashes);
+      absl::optional<std::map<std::string, webapps::WebApkIconHasher::Icon>>
+          hashes);
 
   // Sends a request to WebAPK server to create/update WebAPK. During a
   // successful request the WebAPK server responds with a token to send to
@@ -197,7 +209,9 @@ class WebApkInstaller {
   // Returns the WebAPK server URL based on the command line.
   GURL GetServerUrl();
 
-  content::BrowserContext* browser_context_;
+  raw_ptr<content::BrowserContext> browser_context_;
+
+  base::WeakPtr<content::WebContents> web_contents_;
 
   // Sends HTTP request to WebAPK server.
   std::unique_ptr<network::SimpleURLLoader> loader_;
@@ -243,8 +257,6 @@ class WebApkInstaller {
 
   // Used to get |weak_ptr_|.
   base::WeakPtrFactory<WebApkInstaller> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WebApkInstaller);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_INSTALLER_H_

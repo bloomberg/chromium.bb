@@ -5,8 +5,6 @@
 #ifndef IOS_WEB_PUBLIC_DOWNLOAD_DOWNLOAD_TASK_OBSERVER_H_
 #define IOS_WEB_PUBLIC_DOWNLOAD_DOWNLOAD_TASK_OBSERVER_H_
 
-#include "base/macros.h"
-
 namespace web {
 
 class DownloadTask;
@@ -28,10 +26,11 @@ class DownloadTaskObserver {
   virtual void OnDownloadDestroyed(DownloadTask* task) {}
 
   DownloadTaskObserver() = default;
-  virtual ~DownloadTaskObserver() = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DownloadTaskObserver);
+  DownloadTaskObserver(const DownloadTaskObserver&) = delete;
+  DownloadTaskObserver& operator=(const DownloadTaskObserver&) = delete;
+
+  virtual ~DownloadTaskObserver() = default;
 };
 
 }  // namespace web

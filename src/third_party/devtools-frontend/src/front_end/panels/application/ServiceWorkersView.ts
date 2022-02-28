@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -11,9 +9,13 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+
+import serviceWorkersViewStyles from './serviceWorkersView.css.js';
+import serviceWorkerUpdateCycleViewStyles from './serviceWorkerUpdateCycleView.css.js';
+
 import type * as Protocol from '../../generated/protocol.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
-import * as Network from '../network/network.js';
+import * as NetworkForward from '../../panels/network/forward/forward.js';
 
 import {ServiceWorkerUpdateCycleView} from './ServiceWorkerUpdateCycleView.js';
 
@@ -52,8 +54,9 @@ const UIStrings = {
   */
   networkRequests: 'Network requests',
   /**
-  *@description Text in Service Workers View of the Application panel
-  */
+   * @description Label for a button in the Service Workers View of the Application panel.
+   * Imperative noun. Clicking the button will refresh the list of service worker registrations.
+   */
   update: 'Update',
   /**
   *@description Text in Service Workers View of the Application panel
@@ -167,6 +170,10 @@ const UIStrings = {
   * the focus is moved to the service worker's client page.
   */
   focus: 'focus',
+  /**
+  *@description Link to view all the Service Workers that have been registered.
+  */
+  seeAllRegistrations: 'See all registrations',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/ServiceWorkersView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -176,35 +183,36 @@ export const setThrottleDisabledForDebugging = (enable: boolean): void => {
 };
 
 export class ServiceWorkersView extends UI.Widget.VBox implements
-    SDK.SDKModel.SDKModelObserver<SDK.ServiceWorkerManager.ServiceWorkerManager> {
-  _currentWorkersView: UI.ReportView.ReportView;
-  _toolbar: UI.Toolbar.Toolbar;
-  _sections: Map<SDK.ServiceWorkerManager.ServiceWorkerRegistration, Section>;
-  _manager: SDK.ServiceWorkerManager.ServiceWorkerManager|null;
-  _securityOriginManager: SDK.SecurityOriginManager.SecurityOriginManager|null;
-  _sectionToRegistration: WeakMap<UI.ReportView.Section, SDK.ServiceWorkerManager.ServiceWorkerRegistration>;
-  _eventListeners: Map<SDK.ServiceWorkerManager.ServiceWorkerManager, Common.EventTarget.EventDescriptor[]>;
+    SDK.TargetManager.SDKModelObserver<SDK.ServiceWorkerManager.ServiceWorkerManager> {
+  private currentWorkersView: UI.ReportView.ReportView;
+  private readonly toolbar: UI.Toolbar.Toolbar;
+  private readonly sections: Map<SDK.ServiceWorkerManager.ServiceWorkerRegistration, Section>;
+  private manager: SDK.ServiceWorkerManager.ServiceWorkerManager|null;
+  private securityOriginManager: SDK.SecurityOriginManager.SecurityOriginManager|null;
+  private readonly sectionToRegistration:
+      WeakMap<UI.ReportView.Section, SDK.ServiceWorkerManager.ServiceWorkerRegistration>;
+  private readonly eventListeners:
+      Map<SDK.ServiceWorkerManager.ServiceWorkerManager, Common.EventTarget.EventDescriptor[]>;
 
   constructor() {
     super(true);
-    this.registerRequiredCSS('panels/application/serviceWorkersView.css', {enableLegacyPatching: false});
 
     // TODO(crbug.com/1156978): Replace UI.ReportView.ReportView with ReportView.ts web component.
-    this._currentWorkersView = new UI.ReportView.ReportView(i18n.i18n.lockedString('Service Workers'));
-    this._currentWorkersView.setBodyScrollable(false);
+    this.currentWorkersView = new UI.ReportView.ReportView(i18n.i18n.lockedString('Service Workers'));
+    this.currentWorkersView.setBodyScrollable(false);
     this.contentElement.classList.add('service-worker-list');
-    this._currentWorkersView.show(this.contentElement);
-    this._currentWorkersView.element.classList.add('service-workers-this-origin');
+    this.currentWorkersView.show(this.contentElement);
+    this.currentWorkersView.element.classList.add('service-workers-this-origin');
 
-    this._toolbar = this._currentWorkersView.createToolbar();
-    this._toolbar.makeWrappable(true /* growVertically */);
+    this.toolbar = this.currentWorkersView.createToolbar();
+    this.toolbar.makeWrappable(true /* growVertically */);
 
-    this._sections = new Map();
+    this.sections = new Map();
 
-    this._manager = null;
-    this._securityOriginManager = null;
+    this.manager = null;
+    this.securityOriginManager = null;
 
-    this._sectionToRegistration = new WeakMap();
+    this.sectionToRegistration = new WeakMap();
 
     const othersDiv = this.contentElement.createChild('div', 'service-workers-other-origin');
     // TODO(crbug.com/1156978): Replace UI.ReportView.ReportView with ReportView.ts web component.
@@ -215,41 +223,42 @@ export class ServiceWorkersView extends UI.Widget.VBox implements
     const othersSectionRow = othersSection.appendRow();
     const seeOthers =
         UI.Fragment
-            .html`<a class="devtools-link" role="link" tabindex="0" href="chrome://serviceworker-internals" target="_blank" style="display: inline; cursor: pointer;">See all registrations</a>`;
+            .html`<a class="devtools-link" role="link" tabindex="0" href="chrome://serviceworker-internals" target="_blank" style="display: inline; cursor: pointer;">${
+                i18nString(UIStrings.seeAllRegistrations)}</a>`;
     self.onInvokeElement(seeOthers, event => {
-      const mainTarget = SDK.SDKModel.TargetManager.instance().mainTarget();
+      const mainTarget = SDK.TargetManager.TargetManager.instance().mainTarget();
       mainTarget && mainTarget.targetAgent().invoke_createTarget({url: 'chrome://serviceworker-internals?devtools'});
       event.consume(true);
     });
     othersSectionRow.appendChild(seeOthers);
 
-    this._toolbar.appendToolbarItem(
+    this.toolbar.appendToolbarItem(
         MobileThrottling.ThrottlingManager.throttlingManager().createOfflineToolbarCheckbox());
     const updateOnReloadSetting =
         Common.Settings.Settings.instance().createSetting('serviceWorkerUpdateOnReload', false);
     updateOnReloadSetting.setTitle(i18nString(UIStrings.updateOnReload));
     const forceUpdate =
         new UI.Toolbar.ToolbarSettingCheckbox(updateOnReloadSetting, i18nString(UIStrings.onPageReloadForceTheService));
-    this._toolbar.appendToolbarItem(forceUpdate);
+    this.toolbar.appendToolbarItem(forceUpdate);
     const bypassServiceWorkerSetting = Common.Settings.Settings.instance().createSetting('bypassServiceWorker', false);
     bypassServiceWorkerSetting.setTitle(i18nString(UIStrings.bypassForNetwork));
     const fallbackToNetwork = new UI.Toolbar.ToolbarSettingCheckbox(
         bypassServiceWorkerSetting, i18nString(UIStrings.bypassTheServiceWorkerAndLoad));
-    this._toolbar.appendToolbarItem(fallbackToNetwork);
+    this.toolbar.appendToolbarItem(fallbackToNetwork);
 
-    this._eventListeners = new Map();
-    SDK.SDKModel.TargetManager.instance().observeModels(SDK.ServiceWorkerManager.ServiceWorkerManager, this);
-    this._updateListVisibility();
+    this.eventListeners = new Map();
+    SDK.TargetManager.TargetManager.instance().observeModels(SDK.ServiceWorkerManager.ServiceWorkerManager, this);
+    this.updateListVisibility();
 
     const drawerChangeHandler = (event: Event): void => {
       // @ts-ignore: No support for custom event listener
       const isDrawerOpen = event.detail && event.detail.isDrawerOpen;
-      if (this._manager && !isDrawerOpen) {
-        const {serviceWorkerNetworkRequestsPanelStatus: {isOpen, openedAt}} = this._manager;
+      if (this.manager && !isDrawerOpen) {
+        const {serviceWorkerNetworkRequestsPanelStatus: {isOpen, openedAt}} = this.manager;
         if (isOpen) {
           const networkLocation = UI.ViewManager.ViewManager.instance().locationNameForViewId('network');
           UI.ViewManager.ViewManager.instance().showViewInLocation('network', networkLocation, false);
-          Network.NetworkPanel.NetworkPanel.revealAndFilter([]);
+          Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([]));
 
           const currentTime = Date.now();
           const timeDifference = currentTime - openedAt;
@@ -257,7 +266,7 @@ export class ServiceWorkersView extends UI.Widget.VBox implements
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.ServiceWorkerNetworkRequestClosedQuickly);
           }
 
-          this._manager.serviceWorkerNetworkRequestsPanelStatus = {
+          this.manager.serviceWorkerNetworkRequestsPanelStatus = {
             isOpen: false,
             openedAt: 0,
           };
@@ -268,42 +277,42 @@ export class ServiceWorkersView extends UI.Widget.VBox implements
   }
 
   modelAdded(serviceWorkerManager: SDK.ServiceWorkerManager.ServiceWorkerManager): void {
-    if (this._manager) {
+    if (this.manager) {
       return;
     }
-    this._manager = serviceWorkerManager;
-    this._securityOriginManager =
+    this.manager = serviceWorkerManager;
+    this.securityOriginManager =
         (serviceWorkerManager.target().model(SDK.SecurityOriginManager.SecurityOriginManager) as
          SDK.SecurityOriginManager.SecurityOriginManager);
 
-    for (const registration of this._manager.registrations().values()) {
-      this._updateRegistration(registration);
+    for (const registration of this.manager.registrations().values()) {
+      this.updateRegistration(registration);
     }
 
-    this._eventListeners.set(serviceWorkerManager, [
-      this._manager.addEventListener(
-          SDK.ServiceWorkerManager.Events.RegistrationUpdated, this._registrationUpdated, this),
-      this._manager.addEventListener(
-          SDK.ServiceWorkerManager.Events.RegistrationDeleted, this._registrationDeleted, this),
-      this._securityOriginManager.addEventListener(
-          SDK.SecurityOriginManager.Events.SecurityOriginAdded, this._updateSectionVisibility, this),
-      this._securityOriginManager.addEventListener(
-          SDK.SecurityOriginManager.Events.SecurityOriginRemoved, this._updateSectionVisibility, this),
+    this.eventListeners.set(serviceWorkerManager, [
+      this.manager.addEventListener(
+          SDK.ServiceWorkerManager.Events.RegistrationUpdated, this.registrationUpdated, this),
+      this.manager.addEventListener(
+          SDK.ServiceWorkerManager.Events.RegistrationDeleted, this.registrationDeleted, this),
+      this.securityOriginManager.addEventListener(
+          SDK.SecurityOriginManager.Events.SecurityOriginAdded, this.updateSectionVisibility, this),
+      this.securityOriginManager.addEventListener(
+          SDK.SecurityOriginManager.Events.SecurityOriginRemoved, this.updateSectionVisibility, this),
     ]);
   }
 
   modelRemoved(serviceWorkerManager: SDK.ServiceWorkerManager.ServiceWorkerManager): void {
-    if (!this._manager || this._manager !== serviceWorkerManager) {
+    if (!this.manager || this.manager !== serviceWorkerManager) {
       return;
     }
 
-    Common.EventTarget.EventTarget.removeEventListeners(this._eventListeners.get(serviceWorkerManager) || []);
-    this._eventListeners.delete(serviceWorkerManager);
-    this._manager = null;
-    this._securityOriginManager = null;
+    Common.EventTarget.removeEventListeners(this.eventListeners.get(serviceWorkerManager) || []);
+    this.eventListeners.delete(serviceWorkerManager);
+    this.manager = null;
+    this.securityOriginManager = null;
   }
 
-  _getTimeStamp(registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration): number {
+  private getTimeStamp(registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration): number {
     const versions = registration.versionsByMode();
 
     let timestamp: number|undefined = 0;
@@ -326,58 +335,58 @@ export class ServiceWorkersView extends UI.Widget.VBox implements
     return timestamp || 0;
   }
 
-  _updateSectionVisibility(): void {
+  private updateSectionVisibility(): void {
     let hasThis = false;
     const movedSections = [];
-    for (const section of this._sections.values()) {
-      const expectedView = this._getReportViewForOrigin(section._registration.securityOrigin);
-      hasThis = hasThis || expectedView === this._currentWorkersView;
-      if (section._section.parentWidget() !== expectedView) {
+    for (const section of this.sections.values()) {
+      const expectedView = this.getReportViewForOrigin(section.registration.securityOrigin);
+      hasThis = hasThis || expectedView === this.currentWorkersView;
+      if (section.section.parentWidget() !== expectedView) {
         movedSections.push(section);
       }
     }
 
     for (const section of movedSections) {
-      const registration = section._registration;
-      this._removeRegistrationFromList(registration);
-      this._updateRegistration(registration, true);
+      const registration = section.registration;
+      this.removeRegistrationFromList(registration);
+      this.updateRegistration(registration, true);
     }
 
-    this._currentWorkersView.sortSections((aSection, bSection) => {
-      const aRegistration = this._sectionToRegistration.get(aSection);
-      const bRegistration = this._sectionToRegistration.get(bSection);
-      const aTimestamp = aRegistration ? this._getTimeStamp(aRegistration) : 0;
-      const bTimestamp = bRegistration ? this._getTimeStamp(bRegistration) : 0;
+    this.currentWorkersView.sortSections((aSection, bSection) => {
+      const aRegistration = this.sectionToRegistration.get(aSection);
+      const bRegistration = this.sectionToRegistration.get(bSection);
+      const aTimestamp = aRegistration ? this.getTimeStamp(aRegistration) : 0;
+      const bTimestamp = bRegistration ? this.getTimeStamp(bRegistration) : 0;
       // the newest (largest timestamp value) should be the first
       return bTimestamp - aTimestamp;
     });
 
-    for (const section of this._sections.values()) {
-      if (section._section.parentWidget() === this._currentWorkersView ||
-          this._isRegistrationVisible(section._registration)) {
-        section._section.showWidget();
+    for (const section of this.sections.values()) {
+      if (section.section.parentWidget() === this.currentWorkersView ||
+          this.isRegistrationVisible(section.registration)) {
+        section.section.showWidget();
       } else {
-        section._section.hideWidget();
+        section.section.hideWidget();
       }
     }
     this.contentElement.classList.toggle('service-worker-has-current', Boolean(hasThis));
-    this._updateListVisibility();
+    this.updateListVisibility();
   }
 
-  _registrationUpdated(event: Common.EventTarget.EventTargetEvent): void {
-    const registration = (event.data as SDK.ServiceWorkerManager.ServiceWorkerRegistration);
-    this._updateRegistration(registration);
-    this._gcRegistrations();
+  private registrationUpdated(
+      event: Common.EventTarget.EventTargetEvent<SDK.ServiceWorkerManager.ServiceWorkerRegistration>): void {
+    this.updateRegistration(event.data);
+    this.gcRegistrations();
   }
 
-  _gcRegistrations(): void {
-    if (!this._manager || !this._securityOriginManager) {
+  private gcRegistrations(): void {
+    if (!this.manager || !this.securityOriginManager) {
       return;
     }
     let hasNonDeletedRegistrations = false;
-    const securityOrigins = new Set<string>(this._securityOriginManager.securityOrigins());
-    for (const registration of this._manager.registrations().values()) {
-      if (!securityOrigins.has(registration.securityOrigin) && !this._isRegistrationVisible(registration)) {
+    const securityOrigins = new Set<string>(this.securityOriginManager.securityOrigins());
+    for (const registration of this.manager.registrations().values()) {
+      if (!securityOrigins.has(registration.securityOrigin) && !this.isRegistrationVisible(registration)) {
         continue;
       }
       if (!registration.canBeRemoved()) {
@@ -390,146 +399,153 @@ export class ServiceWorkersView extends UI.Widget.VBox implements
       return;
     }
 
-    for (const registration of this._manager.registrations().values()) {
-      const visible = securityOrigins.has(registration.securityOrigin) || this._isRegistrationVisible(registration);
+    for (const registration of this.manager.registrations().values()) {
+      const visible = securityOrigins.has(registration.securityOrigin) || this.isRegistrationVisible(registration);
       if (!visible && registration.canBeRemoved()) {
-        this._removeRegistrationFromList(registration);
+        this.removeRegistrationFromList(registration);
       }
     }
   }
 
-  _getReportViewForOrigin(origin: string): UI.ReportView.ReportView|null {
-    if (this._securityOriginManager &&
-        (this._securityOriginManager.securityOrigins().includes(origin) ||
-         this._securityOriginManager.unreachableMainSecurityOrigin() === origin)) {
-      return this._currentWorkersView;
+  private getReportViewForOrigin(origin: string): UI.ReportView.ReportView|null {
+    if (this.securityOriginManager &&
+        (this.securityOriginManager.securityOrigins().includes(origin) ||
+         this.securityOriginManager.unreachableMainSecurityOrigin() === origin)) {
+      return this.currentWorkersView;
     }
     return null;
   }
 
-  _updateRegistration(registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration, skipUpdate?: boolean): void {
-    let section = this._sections.get(registration);
+  private updateRegistration(registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration, skipUpdate?: boolean):
+      void {
+    let section = this.sections.get(registration);
     if (!section) {
       const title = registration.scopeURL;
-      const reportView = this._getReportViewForOrigin(registration.securityOrigin);
+      const reportView = this.getReportViewForOrigin(registration.securityOrigin);
       if (!reportView) {
         return;
       }
       const uiSection = reportView.appendSection(title);
       uiSection.setUiGroupTitle(i18nString(UIStrings.serviceWorkerForS, {PH1: title}));
-      this._sectionToRegistration.set(uiSection, registration);
-      section = new Section((this._manager as SDK.ServiceWorkerManager.ServiceWorkerManager), uiSection, registration);
-      this._sections.set(registration, section);
+      this.sectionToRegistration.set(uiSection, registration);
+      section = new Section((this.manager as SDK.ServiceWorkerManager.ServiceWorkerManager), uiSection, registration);
+      this.sections.set(registration, section);
     }
     if (skipUpdate) {
       return;
     }
-    this._updateSectionVisibility();
-    section._scheduleUpdate();
+    this.updateSectionVisibility();
+    section.scheduleUpdate();
   }
 
-  _registrationDeleted(event: Common.EventTarget.EventTargetEvent): void {
-    const registration = (event.data as SDK.ServiceWorkerManager.ServiceWorkerRegistration);
-    this._removeRegistrationFromList(registration);
+  private registrationDeleted(
+      event: Common.EventTarget.EventTargetEvent<SDK.ServiceWorkerManager.ServiceWorkerRegistration>): void {
+    this.removeRegistrationFromList(event.data);
   }
 
-  _removeRegistrationFromList(registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration): void {
-    const section = this._sections.get(registration);
+  private removeRegistrationFromList(registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration): void {
+    const section = this.sections.get(registration);
     if (section) {
-      section._section.detach();
+      section.section.detach();
     }
-    this._sections.delete(registration);
-    this._updateSectionVisibility();
+    this.sections.delete(registration);
+    this.updateSectionVisibility();
   }
 
-  _isRegistrationVisible(registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration): boolean {
+  private isRegistrationVisible(registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration): boolean {
     if (!registration.scopeURL) {
       return true;
     }
     return false;
   }
 
-  _updateListVisibility(): void {
-    this.contentElement.classList.toggle('service-worker-list-empty', this._sections.size === 0);
+  private updateListVisibility(): void {
+    this.contentElement.classList.toggle('service-worker-list-empty', this.sections.size === 0);
+  }
+  wasShown(): void {
+    super.wasShown();
+    this.registerCSSFiles([
+      serviceWorkersViewStyles,
+    ]);
   }
 }
 
 export class Section {
-  _manager: SDK.ServiceWorkerManager.ServiceWorkerManager;
-  _section: UI.ReportView.Section;
-  _registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration;
-  _fingerprint: symbol|null;
-  _pushNotificationDataSetting: Common.Settings.Setting<string>;
-  _syncTagNameSetting: Common.Settings.Setting<string>;
-  _periodicSyncTagNameSetting: Common.Settings.Setting<string>;
-  _toolbar: UI.Toolbar.Toolbar;
-  _updateCycleView: ServiceWorkerUpdateCycleView;
-  _networkRequests: UI.Toolbar.ToolbarButton;
-  _updateButton: UI.Toolbar.ToolbarButton;
-  _deleteButton: UI.Toolbar.ToolbarButton;
-  _sourceField: Element;
-  _statusField: Element;
-  _clientsField: Element;
-  _linkifier: Components.Linkifier.Linkifier;
-  _clientInfoCache: Map<string, Protocol.Target.TargetInfo>;
-  _throttler: Common.Throttler.Throttler;
-  _updateCycleField?: Element;
+  private manager: SDK.ServiceWorkerManager.ServiceWorkerManager;
+  section: UI.ReportView.Section;
+  registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration;
+  private fingerprint: symbol|null;
+  private readonly pushNotificationDataSetting: Common.Settings.Setting<string>;
+  private readonly syncTagNameSetting: Common.Settings.Setting<string>;
+  private readonly periodicSyncTagNameSetting: Common.Settings.Setting<string>;
+  private readonly toolbar: UI.Toolbar.Toolbar;
+  private readonly updateCycleView: ServiceWorkerUpdateCycleView;
+  private readonly networkRequests: UI.Toolbar.ToolbarButton;
+  private readonly updateButton: UI.Toolbar.ToolbarButton;
+  private readonly deleteButton: UI.Toolbar.ToolbarButton;
+  private sourceField: Element;
+  private readonly statusField: Element;
+  private readonly clientsField: Element;
+  private readonly linkifier: Components.Linkifier.Linkifier;
+  private readonly clientInfoCache: Map<string, Protocol.Target.TargetInfo>;
+  private readonly throttler: Common.Throttler.Throttler;
+  private updateCycleField?: Element;
 
   constructor(
       manager: SDK.ServiceWorkerManager.ServiceWorkerManager, section: UI.ReportView.Section,
       registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration) {
-    this._manager = manager;
-    this._section = section;
-    this._registration = registration;
-    this._fingerprint = null;
-    this._pushNotificationDataSetting = Common.Settings.Settings.instance().createLocalSetting(
+    this.manager = manager;
+    this.section = section;
+    this.registration = registration;
+    this.fingerprint = null;
+    this.pushNotificationDataSetting = Common.Settings.Settings.instance().createLocalSetting(
         'pushData', i18nString(UIStrings.testPushMessageFromDevtools));
-    this._syncTagNameSetting =
+    this.syncTagNameSetting =
         Common.Settings.Settings.instance().createLocalSetting('syncTagName', 'test-tag-from-devtools');
-    this._periodicSyncTagNameSetting =
+    this.periodicSyncTagNameSetting =
         Common.Settings.Settings.instance().createLocalSetting('periodicSyncTagName', 'test-tag-from-devtools');
 
-    this._toolbar = section.createToolbar();
-    this._toolbar.renderAsLinks();
+    this.toolbar = section.createToolbar();
+    this.toolbar.renderAsLinks();
 
-    this._updateCycleView = new ServiceWorkerUpdateCycleView(registration);
-    this._networkRequests = new UI.Toolbar.ToolbarButton(
+    this.updateCycleView = new ServiceWorkerUpdateCycleView(registration);
+    this.networkRequests = new UI.Toolbar.ToolbarButton(
         i18nString(UIStrings.networkRequests), undefined, i18nString(UIStrings.networkRequests));
-    this._networkRequests.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._networkRequestsClicked, this);
-    this._toolbar.appendToolbarItem(this._networkRequests);
-    this._updateButton =
+    this.networkRequests.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.networkRequestsClicked, this);
+    this.toolbar.appendToolbarItem(this.networkRequests);
+    this.updateButton =
         new UI.Toolbar.ToolbarButton(i18nString(UIStrings.update), undefined, i18nString(UIStrings.update));
-    this._updateButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._updateButtonClicked, this);
-    this._toolbar.appendToolbarItem(this._updateButton);
-    this._deleteButton = new UI.Toolbar.ToolbarButton(
+    this.updateButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.updateButtonClicked, this);
+    this.toolbar.appendToolbarItem(this.updateButton);
+    this.deleteButton = new UI.Toolbar.ToolbarButton(
         i18nString(UIStrings.unregisterServiceWorker), undefined, i18nString(UIStrings.unregister));
-    this._deleteButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this._unregisterButtonClicked, this);
-    this._toolbar.appendToolbarItem(this._deleteButton);
+    this.deleteButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.unregisterButtonClicked, this);
+    this.toolbar.appendToolbarItem(this.deleteButton);
 
     // Preserve the order.
-    this._sourceField = this._wrapWidget(this._section.appendField(i18nString(UIStrings.source)));
-    this._statusField = this._wrapWidget(this._section.appendField(i18nString(UIStrings.status)));
-    this._clientsField = this._wrapWidget(this._section.appendField(i18nString(UIStrings.clients)));
-    this._createSyncNotificationField(
-        i18nString(UIStrings.pushString), this._pushNotificationDataSetting.get(), i18nString(UIStrings.pushData),
-        this._push.bind(this));
-    this._createSyncNotificationField(
-        i18nString(UIStrings.syncString), this._syncTagNameSetting.get(), i18nString(UIStrings.syncTag),
-        this._sync.bind(this));
-    this._createSyncNotificationField(
-        i18nString(UIStrings.periodicSync), this._periodicSyncTagNameSetting.get(),
-        i18nString(UIStrings.periodicSyncTag), tag => this._periodicSync(tag));
-    this._createUpdateCycleField();
+    this.sourceField = this.wrapWidget(this.section.appendField(i18nString(UIStrings.source)));
+    this.statusField = this.wrapWidget(this.section.appendField(i18nString(UIStrings.status)));
+    this.clientsField = this.wrapWidget(this.section.appendField(i18nString(UIStrings.clients)));
+    this.createSyncNotificationField(
+        i18nString(UIStrings.pushString), this.pushNotificationDataSetting.get(), i18nString(UIStrings.pushData),
+        this.push.bind(this));
+    this.createSyncNotificationField(
+        i18nString(UIStrings.syncString), this.syncTagNameSetting.get(), i18nString(UIStrings.syncTag),
+        this.sync.bind(this));
+    this.createSyncNotificationField(
+        i18nString(UIStrings.periodicSync), this.periodicSyncTagNameSetting.get(),
+        i18nString(UIStrings.periodicSyncTag), tag => this.periodicSync(tag));
+    this.createUpdateCycleField();
 
-    this._linkifier = new Components.Linkifier.Linkifier();
-    this._clientInfoCache = new Map();
-    this._throttler = new Common.Throttler.Throttler(500);
+    this.linkifier = new Components.Linkifier.Linkifier();
+    this.clientInfoCache = new Map();
+    this.throttler = new Common.Throttler.Throttler(500);
   }
 
-  _createSyncNotificationField(
+  private createSyncNotificationField(
       label: string, initialValue: string, placeholder: string, callback: (arg0: string) => void): void {
     const form =
-        this._wrapWidget(this._section.appendField(label)).createChild('form', 'service-worker-editor-with-button');
+        this.wrapWidget(this.section.appendField(label)).createChild('form', 'service-worker-editor-with-button');
     const editor = UI.UIUtils.createInput('source-code service-worker-notification-editor');
     form.appendChild(editor);
     const button = UI.UIUtils.createTextButton(label);
@@ -546,23 +562,23 @@ export class Section {
     });
   }
 
-  _scheduleUpdate(): void {
+  scheduleUpdate(): void {
     if (throttleDisabledForDebugging) {
-      this._update();
+      this.update();
       return;
     }
-    this._throttler.schedule(this._update.bind(this));
+    this.throttler.schedule(this.update.bind(this));
   }
 
-  _targetForVersionId(versionId: string): SDK.SDKModel.Target|null {
-    const version = this._manager.findVersion(versionId);
+  private targetForVersionId(versionId: string): SDK.Target.Target|null {
+    const version = this.manager.findVersion(versionId);
     if (!version || !version.targetId) {
       return null;
     }
-    return SDK.SDKModel.TargetManager.instance().targetById(version.targetId);
+    return SDK.TargetManager.TargetManager.instance().targetById(version.targetId);
   }
 
-  _addVersion(versionsStack: Element, icon: string, label: string): Element {
+  private addVersion(versionsStack: Element, icon: string, label: string): Element {
     const installingEntry = versionsStack.createChild('div', 'service-worker-version');
     installingEntry.createChild('div', icon);
     const statusString = installingEntry.createChild('span', 'service-worker-version-string');
@@ -571,127 +587,128 @@ export class Section {
     return installingEntry;
   }
 
-  _updateClientsField(version: SDK.ServiceWorkerManager.ServiceWorkerVersion): void {
-    this._clientsField.removeChildren();
-    this._section.setFieldVisible(i18nString(UIStrings.clients), Boolean(version.controlledClients.length));
+  private updateClientsField(version: SDK.ServiceWorkerManager.ServiceWorkerVersion): void {
+    this.clientsField.removeChildren();
+    this.section.setFieldVisible(i18nString(UIStrings.clients), Boolean(version.controlledClients.length));
     for (const client of version.controlledClients) {
-      const clientLabelText = this._clientsField.createChild('div', 'service-worker-client');
-      if (this._clientInfoCache.has(client)) {
-        this._updateClientInfo(clientLabelText, (this._clientInfoCache.get(client) as Protocol.Target.TargetInfo));
+      const clientLabelText = this.clientsField.createChild('div', 'service-worker-client');
+      const info = this.clientInfoCache.get(client);
+      if (info) {
+        this.updateClientInfo(clientLabelText, info);
       }
-      this._manager.target()
+      this.manager.target()
           .targetAgent()
           .invoke_getTargetInfo({targetId: client})
-          .then(this._onClientInfo.bind(this, clientLabelText));
+          .then(this.onClientInfo.bind(this, clientLabelText));
     }
   }
 
-  _updateSourceField(version: SDK.ServiceWorkerManager.ServiceWorkerVersion): void {
-    this._sourceField.removeChildren();
+  private updateSourceField(version: SDK.ServiceWorkerManager.ServiceWorkerVersion): void {
+    this.sourceField.removeChildren();
     const fileName = Common.ParsedURL.ParsedURL.extractName(version.scriptURL);
-    const name = this._sourceField.createChild('div', 'report-field-value-filename');
+    const name = this.sourceField.createChild('div', 'report-field-value-filename');
     const link = Components.Linkifier.Linkifier.linkifyURL(
         version.scriptURL, ({text: fileName} as Components.Linkifier.LinkifyURLOptions));
     link.tabIndex = 0;
     name.appendChild(link);
-    if (this._registration.errors.length) {
-      const errorsLabel = UI.UIUtils.createIconLabel(String(this._registration.errors.length), 'smallicon-error');
+    if (this.registration.errors.length) {
+      const errorsLabel = UI.UIUtils.createIconLabel(String(this.registration.errors.length), 'smallicon-error');
       errorsLabel.classList.add('devtools-link', 'link');
       errorsLabel.tabIndex = 0;
       UI.ARIAUtils.setAccessibleName(
-          errorsLabel, i18nString(UIStrings.sRegistrationErrors, {PH1: this._registration.errors.length}));
+          errorsLabel, i18nString(UIStrings.sRegistrationErrors, {PH1: this.registration.errors.length}));
       self.onInvokeElement(errorsLabel, () => Common.Console.Console.instance().show());
       name.appendChild(errorsLabel);
     }
     if (version.scriptResponseTime !== undefined) {
-      this._sourceField.createChild('div', 'report-field-value-subtitle').textContent =
+      this.sourceField.createChild('div', 'report-field-value-subtitle').textContent =
           i18nString(UIStrings.receivedS, {PH1: new Date(version.scriptResponseTime * 1000).toLocaleString()});
     }
   }
 
-  _update(): Promise<void> {
-    const fingerprint = this._registration.fingerprint();
-    if (fingerprint === this._fingerprint) {
+  private update(): Promise<void> {
+    const fingerprint = this.registration.fingerprint();
+    if (fingerprint === this.fingerprint) {
       return Promise.resolve();
     }
-    this._fingerprint = fingerprint;
+    this.fingerprint = fingerprint;
 
-    this._toolbar.setEnabled(!this._registration.isDeleted);
+    this.toolbar.setEnabled(!this.registration.isDeleted);
 
-    const versions = this._registration.versionsByMode();
-    const scopeURL = this._registration.scopeURL;
-    const title = this._registration.isDeleted ? i18nString(UIStrings.sDeleted, {PH1: scopeURL}) : scopeURL;
-    this._section.setTitle(title);
+    const versions = this.registration.versionsByMode();
+    const scopeURL = this.registration.scopeURL;
+    const title = this.registration.isDeleted ? i18nString(UIStrings.sDeleted, {PH1: scopeURL}) : scopeURL;
+    this.section.setTitle(title);
 
     const active = versions.get(SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Active);
     const waiting = versions.get(SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Waiting);
     const installing = versions.get(SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Installing);
     const redundant = versions.get(SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Redundant);
 
-    this._statusField.removeChildren();
-    const versionsStack = this._statusField.createChild('div', 'service-worker-version-stack');
+    this.statusField.removeChildren();
+    const versionsStack = this.statusField.createChild('div', 'service-worker-version-stack');
     versionsStack.createChild('div', 'service-worker-version-stack-bar');
 
     if (active) {
-      this._updateSourceField(active);
+      this.updateSourceField(active);
       const localizedRunningStatus =
           SDK.ServiceWorkerManager.ServiceWorkerVersion.RunningStatus[active.currentState.runningStatus]();
       // TODO(l10n): Don't concatenate strings here.
-      const activeEntry = this._addVersion(
+      const activeEntry = this.addVersion(
           versionsStack, 'service-worker-active-circle',
           i18nString(UIStrings.sActivatedAndIsS, {PH1: active.id, PH2: localizedRunningStatus}));
 
       if (active.isRunning() || active.isStarting()) {
-        this._createLink(activeEntry, i18nString(UIStrings.stopString), this._stopButtonClicked.bind(this, active.id));
-        if (!this._targetForVersionId(active.id)) {
-          this._createLink(
-              activeEntry, i18nString(UIStrings.inspect), this._inspectButtonClicked.bind(this, active.id));
+        this.createLink(activeEntry, i18nString(UIStrings.stopString), this.stopButtonClicked.bind(this, active.id));
+        if (!this.targetForVersionId(active.id)) {
+          this.createLink(activeEntry, i18nString(UIStrings.inspect), this.inspectButtonClicked.bind(this, active.id));
         }
       } else if (active.isStartable()) {
-        this._createLink(activeEntry, i18nString(UIStrings.startString), this._startButtonClicked.bind(this));
+        this.createLink(activeEntry, i18nString(UIStrings.startString), this.startButtonClicked.bind(this));
       }
-      this._updateClientsField(active);
+      this.updateClientsField(active);
     } else if (redundant) {
-      this._updateSourceField(redundant);
-      this._addVersion(
+      this.updateSourceField(redundant);
+      this.addVersion(
           versionsStack, 'service-worker-redundant-circle', i18nString(UIStrings.sIsRedundant, {PH1: redundant.id}));
-      this._updateClientsField(redundant);
+      this.updateClientsField(redundant);
     }
 
     if (waiting) {
-      const waitingEntry = this._addVersion(
+      const waitingEntry = this.addVersion(
           versionsStack, 'service-worker-waiting-circle', i18nString(UIStrings.sWaitingToActivate, {PH1: waiting.id}));
-      this._createLink(waitingEntry, i18n.i18n.lockedString('skipWaiting'), this._skipButtonClicked.bind(this));
+      this.createLink(waitingEntry, i18n.i18n.lockedString('skipWaiting'), this.skipButtonClicked.bind(this));
       if (waiting.scriptResponseTime !== undefined) {
         waitingEntry.createChild('div', 'service-worker-subtitle').textContent =
             i18nString(UIStrings.receivedS, {PH1: new Date(waiting.scriptResponseTime * 1000).toLocaleString()});
       }
-      if (!this._targetForVersionId(waiting.id) && (waiting.isRunning() || waiting.isStarting())) {
-        this._createLink(
-            waitingEntry, i18nString(UIStrings.inspect), this._inspectButtonClicked.bind(this, waiting.id));
+      if (!this.targetForVersionId(waiting.id) && (waiting.isRunning() || waiting.isStarting())) {
+        this.createLink(waitingEntry, i18nString(UIStrings.inspect), this.inspectButtonClicked.bind(this, waiting.id));
       }
     }
     if (installing) {
-      const installingEntry = this._addVersion(
+      const installingEntry = this.addVersion(
           versionsStack, 'service-worker-installing-circle',
           i18nString(UIStrings.sTryingToInstall, {PH1: installing.id}));
       if (installing.scriptResponseTime !== undefined) {
-        installingEntry.createChild('div', 'service-worker-subtitle').textContent =
-            i18nString('Received %s', new Date(installing.scriptResponseTime * 1000).toLocaleString());
+        installingEntry.createChild('div', 'service-worker-subtitle').textContent = i18nString(UIStrings.receivedS, {
+          PH1: new Date(installing.scriptResponseTime * 1000).toLocaleString(),
+        });
       }
-      if (!this._targetForVersionId(installing.id) && (installing.isRunning() || installing.isStarting())) {
-        this._createLink(
-            installingEntry, i18nString(UIStrings.inspect), this._inspectButtonClicked.bind(this, installing.id));
+      if (!this.targetForVersionId(installing.id) && (installing.isRunning() || installing.isStarting())) {
+        this.createLink(
+            installingEntry, i18nString(UIStrings.inspect), this.inspectButtonClicked.bind(this, installing.id));
       }
     }
 
-    this._updateCycleView.refresh();
+    this.updateCycleView.refresh();
 
     return Promise.resolve();
   }
 
-  _createLink(parent: Element, title: string, listener: () => void, className?: string, useCapture?: boolean): Element {
-    const button = (document.createElement('button') as HTMLElement);
+  private createLink(parent: Element, title: string, listener: () => void, className?: string, useCapture?: boolean):
+      Element {
+    const button = document.createElement('button');
     if (className) {
       button.className = className;
     }
@@ -703,30 +720,30 @@ export class Section {
     return button;
   }
 
-  _unregisterButtonClicked(_event: Common.EventTarget.EventTargetEvent): void {
-    this._manager.deleteRegistration(this._registration.id);
+  private unregisterButtonClicked(): void {
+    this.manager.deleteRegistration(this.registration.id);
   }
 
-  _createUpdateCycleField(): void {
-    this._updateCycleField = this._wrapWidget(this._section.appendField(i18nString(UIStrings.updateCycle)));
-    this._updateCycleField.appendChild(this._updateCycleView.tableElement);
+  private createUpdateCycleField(): void {
+    this.updateCycleField = this.wrapWidget(this.section.appendField(i18nString(UIStrings.updateCycle)));
+    this.updateCycleField.appendChild(this.updateCycleView.tableElement);
   }
 
-  _updateButtonClicked(_event: Common.EventTarget.EventTargetEvent): void {
-    this._manager.updateRegistration(this._registration.id);
+  private updateButtonClicked(): void {
+    this.manager.updateRegistration(this.registration.id);
   }
 
-  _networkRequestsClicked(_event: Common.EventTarget.EventTargetEvent): void {
+  private networkRequestsClicked(): void {
     const applicationTabLocation = UI.ViewManager.ViewManager.instance().locationNameForViewId('resources');
     const networkTabLocation = applicationTabLocation === 'drawer-view' ? 'panel' : 'drawer-view';
     UI.ViewManager.ViewManager.instance().showViewInLocation('network', networkTabLocation);
 
-    Network.NetworkPanel.NetworkPanel.revealAndFilter([
+    Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
       {
-        filterType: Network.NetworkLogView.FilterType.Is,
-        filterValue: Network.NetworkLogView.IsFilterType.ServiceWorkerIntercepted,
+        filterType: NetworkForward.UIFilter.FilterType.Is,
+        filterValue: NetworkForward.UIFilter.IsFilterType.ServiceWorkerIntercepted,
       },
-    ]);
+    ]));
 
     const requests = Logs.NetworkLog.NetworkLog.instance().requests();
     let lastRequest: SDK.NetworkRequest.NetworkRequest|null = null;
@@ -742,42 +759,43 @@ export class Section {
       }
     }
     if (lastRequest) {
-      Network.NetworkPanel.NetworkPanel.selectAndShowRequest(
-          lastRequest, Network.NetworkItemView.Tabs.Timing, {clearFilter: false});
+      const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(
+          lastRequest, NetworkForward.UIRequestLocation.UIRequestTabs.Timing, {clearFilter: false});
+      Common.Revealer.reveal(requestLocation);
     }
 
-    this._manager.serviceWorkerNetworkRequestsPanelStatus = {
+    this.manager.serviceWorkerNetworkRequestsPanelStatus = {
       isOpen: true,
       openedAt: Date.now(),
     };
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.ServiceWorkerNetworkRequestClicked);
   }
 
-  _push(data: string): void {
-    this._pushNotificationDataSetting.set(data);
-    this._manager.deliverPushMessage(this._registration.id, data);
+  private push(data: string): void {
+    this.pushNotificationDataSetting.set(data);
+    this.manager.deliverPushMessage(this.registration.id, data);
   }
 
-  _sync(tag: string): void {
-    this._syncTagNameSetting.set(tag);
-    this._manager.dispatchSyncEvent(this._registration.id, tag, true);
+  private sync(tag: string): void {
+    this.syncTagNameSetting.set(tag);
+    this.manager.dispatchSyncEvent(this.registration.id, tag, true);
   }
 
-  _periodicSync(tag: string): void {
-    this._periodicSyncTagNameSetting.set(tag);
-    this._manager.dispatchPeriodicSyncEvent(this._registration.id, tag);
+  private periodicSync(tag: string): void {
+    this.periodicSyncTagNameSetting.set(tag);
+    this.manager.dispatchPeriodicSyncEvent(this.registration.id, tag);
   }
 
-  _onClientInfo(element: Element, targetInfoResponse: Protocol.Target.GetTargetInfoResponse): void {
+  private onClientInfo(element: Element, targetInfoResponse: Protocol.Target.GetTargetInfoResponse): void {
     const targetInfo = targetInfoResponse.targetInfo;
     if (!targetInfo) {
       return;
     }
-    this._clientInfoCache.set(targetInfo.targetId, targetInfo);
-    this._updateClientInfo(element, targetInfo);
+    this.clientInfoCache.set(targetInfo.targetId, targetInfo);
+    this.updateClientInfo(element, targetInfo);
   }
 
-  _updateClientInfo(element: Element, targetInfo: Protocol.Target.TargetInfo): void {
+  private updateClientInfo(element: Element, targetInfo: Protocol.Target.TargetInfo): void {
     if (targetInfo.type !== 'page' && targetInfo.type === 'iframe') {
       const clientString = element.createChild('span', 'service-worker-client-string');
       UI.UIUtils.createTextChild(clientString, i18nString(UIStrings.workerS, {PH1: targetInfo.url}));
@@ -786,35 +804,41 @@ export class Section {
     element.removeChildren();
     const clientString = element.createChild('span', 'service-worker-client-string');
     UI.UIUtils.createTextChild(clientString, targetInfo.url);
-    this._createLink(
-        element, i18nString(UIStrings.focus), this._activateTarget.bind(this, targetInfo.targetId),
+    this.createLink(
+        element, i18nString(UIStrings.focus), this.activateTarget.bind(this, targetInfo.targetId),
         'service-worker-client-focus-link');
   }
 
-  _activateTarget(targetId: string): void {
-    this._manager.target().targetAgent().invoke_activateTarget({targetId});
+  private activateTarget(targetId: Protocol.Target.TargetID): void {
+    this.manager.target().targetAgent().invoke_activateTarget({targetId});
   }
 
-  _startButtonClicked(): void {
-    this._manager.startWorker(this._registration.scopeURL);
+  private startButtonClicked(): void {
+    this.manager.startWorker(this.registration.scopeURL);
   }
 
-  _skipButtonClicked(): void {
-    this._manager.skipWaiting(this._registration.scopeURL);
+  private skipButtonClicked(): void {
+    this.manager.skipWaiting(this.registration.scopeURL);
   }
 
-  _stopButtonClicked(versionId: string): void {
-    this._manager.stopWorker(versionId);
+  private stopButtonClicked(versionId: string): void {
+    this.manager.stopWorker(versionId);
   }
 
-  _inspectButtonClicked(versionId: string): void {
-    this._manager.inspectWorker(versionId);
+  private inspectButtonClicked(versionId: string): void {
+    this.manager.inspectWorker(versionId);
   }
 
-  _wrapWidget(container: Element): Element {
-    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
-        container, {cssFile: undefined, enableLegacyPatching: true, delegatesFocus: undefined});
-    UI.Utils.appendStyle(shadowRoot, 'panels/application/serviceWorkersView.css', {enableLegacyPatching: false});
+  private wrapWidget(container: Element): Element {
+    const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(container, {
+      cssFile: [
+        serviceWorkersViewStyles,
+        /* These styles are for the timing table in serviceWorkerUpdateCycleView but this is the widget that it is rendered
+           * inside so we are registering the files here. */
+        serviceWorkerUpdateCycleViewStyles,
+      ],
+      delegatesFocus: undefined,
+    });
     const contentElement = document.createElement('div');
     shadowRoot.appendChild(contentElement);
     return contentElement;

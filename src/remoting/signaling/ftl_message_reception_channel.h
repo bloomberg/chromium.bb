@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -22,11 +22,15 @@ namespace remoting {
 // Handles the lifetime and validity of the messaging stream used for FTL.
 class FtlMessageReceptionChannel final : public MessageReceptionChannel {
  public:
-  static constexpr base::TimeDelta kPongTimeout =
-      base::TimeDelta::FromSeconds(15);
+  static constexpr base::TimeDelta kPongTimeout = base::Seconds(15);
 
   // |signaling_tracker| is nullable.
   explicit FtlMessageReceptionChannel(SignalingTracker* signaling_tracker);
+
+  FtlMessageReceptionChannel(const FtlMessageReceptionChannel&) = delete;
+  FtlMessageReceptionChannel& operator=(const FtlMessageReceptionChannel&) =
+      delete;
+
   ~FtlMessageReceptionChannel() override;
 
   // MessageReceptionChannel implementations.
@@ -76,10 +80,9 @@ class FtlMessageReceptionChannel final : public MessageReceptionChannel {
   net::BackoffEntry reconnect_retry_backoff_;
   base::OneShotTimer reconnect_retry_timer_;
   std::unique_ptr<base::DelayTimer> stream_pong_timer_;
-  SignalingTracker* signaling_tracker_;  // nullable.
+  raw_ptr<SignalingTracker> signaling_tracker_;  // nullable.
 
   base::WeakPtrFactory<FtlMessageReceptionChannel> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(FtlMessageReceptionChannel);
 };
 
 }  // namespace remoting

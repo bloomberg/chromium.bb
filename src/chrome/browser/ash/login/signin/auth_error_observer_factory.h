@@ -5,14 +5,12 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_SIGNIN_AUTH_ERROR_OBSERVER_FACTORY_H_
 #define CHROME_BROWSER_ASH_LOGIN_SIGNIN_AUTH_ERROR_OBSERVER_FACTORY_H_
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class Profile;
 
-namespace chromeos {
-
+namespace ash {
 class AuthErrorObserver;
 
 // Singleton that owns all AuthErrorObserver and associates them with
@@ -27,6 +25,9 @@ class AuthErrorObserverFactory : public BrowserContextKeyedServiceFactory {
   // Returns an instance of the AuthErrorObserverFactory singleton.
   static AuthErrorObserverFactory* GetInstance();
 
+  AuthErrorObserverFactory(const AuthErrorObserverFactory&) = delete;
+  AuthErrorObserverFactory& operator=(const AuthErrorObserverFactory&) = delete;
+
  private:
   friend struct base::DefaultSingletonTraits<AuthErrorObserverFactory>;
 
@@ -36,10 +37,8 @@ class AuthErrorObserverFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory implementation.
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(AuthErrorObserverFactory);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SIGNIN_AUTH_ERROR_OBSERVER_FACTORY_H_

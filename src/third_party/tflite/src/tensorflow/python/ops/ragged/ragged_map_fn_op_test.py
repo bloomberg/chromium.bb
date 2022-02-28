@@ -13,17 +13,15 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for ragged_map_ops.map_fn."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 import numpy as np
 
 from tensorflow.python.framework import dtypes
+from tensorflow.python.framework import errors
 from tensorflow.python.framework import sparse_tensor
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
+from tensorflow.python.ops import map_fn as map_fn_lib
 from tensorflow.python.ops import math_ops as mo
 from tensorflow.python.ops import string_ops
 from tensorflow.python.ops.ragged import ragged_factory_ops
@@ -150,6 +148,21 @@ class RaggedMapOpTest(test_util.TensorFlowTestCase,
           result_dtype=ragged_tensor.RaggedTensorType(
               dtype=dtypes.int64, ragged_rank=4),
       ),
+      # [d1] -> [d1, (d2), (d3)]
+      dict(
+          fn=ragged_math_ops.range,
+          elems=np.array([1, 2, 3], np.int64),
+          expected_output=[[[0]], [[0, 1]], [[0, 1, 2]]],
+          result_dtype=ragged_tensor.RaggedTensorType(
+              dtype=dtypes.int64, ragged_rank=2)),
+      # [0] -> [0, (d2), (d3)]  (github issue #36232)
+      dict(
+          fn=ragged_math_ops.range,
+          elems=np.zeros([0], np.int64),
+          expected_output=[],
+          expected_ragged_rank=2,
+          result_dtype=ragged_tensor.RaggedTensorType(
+              dtype=dtypes.int64, ragged_rank=2)),
   ])
 
   def testRaggedMap(
@@ -263,7 +276,7 @@ class RaggedMapOpTest(test_util.TensorFlowTestCase,
   def testMismatchRaggedRank(self):
     elems = ragged_factory_ops.constant([[[1, 2, 3]], [[4, 5], [6, 7]]])
     fn = lambda x: ragged_math_ops.reduce_sum(x, axis=0)
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         ValueError, r'(?s)Expected `fn` to return.*But it returned.*'):
       _ = ragged_map_ops.map_fn(
           fn,
@@ -274,7 +287,7 @@ class RaggedMapOpTest(test_util.TensorFlowTestCase,
   def testMismatchRaggedRank2(self):
     elems = ragged_factory_ops.constant([[1, 2, 3], [4, 5], [6, 7]])
     fn = lambda x: ragged_tensor.RaggedTensor.from_row_starts(x, [0])
-    with self.assertRaisesRegexp(
+    with self.assertRaisesRegex(
         ValueError, r'(?s)Expected `fn` to return.*But it returned.*'):
       _ = ragged_map_ops.map_fn(
           fn,
@@ -293,6 +306,27 @@ class RaggedMapOpTest(test_util.TensorFlowTestCase,
         lambda x: x, t2,
     )
     self.assertAllEqual(id_t2, [[0, 5], [0, 4]])
+
+  def testRaggedMapWithIncorrectFnOutputSignature(self):
+    x = ragged_factory_ops.constant([[1, 2, 3, 4], [1]])
+    with self.assertRaisesRegex(errors.InvalidArgumentError,
+                                'All flat_values must have compatible shapes'):
+      y = map_fn_lib.map_fn(lambda r: map_fn_lib.map_fn(lambda y: r, r), x)
+      self.evaluate(y)
+
+  def testNestedRaggedMapWithFnOutputSignature(self):
+    ragged1d = ragged_tensor.RaggedTensorSpec([None], dtypes.int32)
+    ragged2d = ragged_tensor.RaggedTensorSpec([None, None], dtypes.int32)
+
+    x = ragged_factory_ops.constant([[1, 2, 3, 4], [1]])
+    # pylint: disable=g-long-lambda
+    y = map_fn_lib.map_fn(
+        lambda r: map_fn_lib.map_fn(
+            lambda y: r, r, fn_output_signature=ragged1d),
+        x,
+        fn_output_signature=ragged2d)
+    expected = [[[1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4]], [[1]]]
+    self.assertAllEqual(y, expected)
 
 
 if __name__ == '__main__':

@@ -7,11 +7,12 @@
 
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_server.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -80,6 +81,10 @@ class BluetoothDevice final
 
   Bluetooth* GetBluetooth() { return bluetooth_; }
 
+  const mojom::blink::WebBluetoothDevicePtr& GetDevice() const {
+    return device_;
+  }
+
   // Interface required by Garbage Collection:
   void Trace(Visitor*) const override;
 
@@ -87,7 +92,7 @@ class BluetoothDevice final
   ScriptPromise watchAdvertisements(ScriptState*,
                                     const WatchAdvertisementsOptions*,
                                     ExceptionState&);
-  String id() { return device_->id; }
+  String id() { return device_->id.DeviceIdInBase64().c_str(); }
   String name() { return device_->name; }
   BluetoothRemoteGATTServer* gatt() { return gatt_; }
   bool watchingAdvertisements() { return client_receiver_.is_bound(); }

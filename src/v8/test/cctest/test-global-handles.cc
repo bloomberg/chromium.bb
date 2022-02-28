@@ -25,6 +25,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "include/v8-function.h"
+#include "include/v8-locker.h"
 #include "src/api/api-inl.h"
 #include "src/execution/isolate.h"
 #include "src/handles/global-handles.h"
@@ -502,7 +504,7 @@ TEST(FinalizerOnUnmodifiedJSApiObjectDoesNotCrash) {
                     v8::WeakCallbackType::kFinalizer);
   fp.flag = false;
   {
-    v8::HandleScope scope(isolate);
+    v8::HandleScope inner_scope(isolate);
     v8::Local<v8::Object> tmp = v8::Local<v8::Object>::New(isolate, fp.handle);
     USE(tmp);
     InvokeScavenge();

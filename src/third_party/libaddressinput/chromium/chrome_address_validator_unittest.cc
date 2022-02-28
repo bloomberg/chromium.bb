@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
@@ -55,6 +54,10 @@ using ::i18n::addressinput::USES_P_O_BOX;
 
 // This class should always succeed in getting the rules.
 class AddressValidatorTest : public testing::Test, LoadRulesListener {
+ public:
+  AddressValidatorTest(const AddressValidatorTest&) = delete;
+  AddressValidatorTest& operator=(const AddressValidatorTest&) = delete;
+
  protected:
   AddressValidatorTest()
       : validator_(new AddressValidator(
@@ -85,13 +88,16 @@ class AddressValidatorTest : public testing::Test, LoadRulesListener {
   }
 
   AddressValidator::Status expected_status_ = AddressValidator::SUCCESS;
-
-  DISALLOW_COPY_AND_ASSIGN(AddressValidatorTest);
 };
 
 // Use this test fixture if you're going to use a region with a large set of
 // validation rules. All rules should be loaded in SetUpTestCase().
 class LargeAddressValidatorTest : public testing::Test {
+ public:
+  LargeAddressValidatorTest(const LargeAddressValidatorTest&) = delete;
+  LargeAddressValidatorTest& operator=(const LargeAddressValidatorTest&) =
+      delete;
+
  protected:
   LargeAddressValidatorTest() {}
   virtual ~LargeAddressValidatorTest() {}
@@ -112,9 +118,6 @@ class LargeAddressValidatorTest : public testing::Test {
 
   // Owned shared instance of validator with large sets validation rules.
   static AddressValidator* validator_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LargeAddressValidatorTest);
 };
 
 AddressValidator* LargeAddressValidatorTest::validator_ = NULL;
@@ -838,6 +841,11 @@ TEST_F(AddressValidatorTest,
 // Use this test fixture for configuring the number of failed attempts to load
 // rules.
 class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
+ public:
+  FailingAddressValidatorTest(const FailingAddressValidatorTest&) = delete;
+  FailingAddressValidatorTest& operator=(const FailingAddressValidatorTest&) =
+      delete;
+
  protected:
   // A validator that retries loading rules without delay.
   class TestAddressValidator : public AddressValidator {
@@ -850,15 +858,15 @@ class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
                            std::move(storage),
                            load_rules_listener) {}
 
+    TestAddressValidator(const TestAddressValidator&) = delete;
+    TestAddressValidator& operator=(const TestAddressValidator&) = delete;
+
     virtual ~TestAddressValidator() {}
 
    protected:
     base::TimeDelta GetBaseRetryPeriod() const override {
-      return base::TimeDelta::FromSeconds(0);
+      return base::Seconds(0);
     }
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(TestAddressValidator);
   };
 
   // A source that always fails |failures_number| times before downloading
@@ -867,6 +875,10 @@ class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
    public:
     FailingSource()
         : failures_number_(0), attempts_number_(0), actual_source_(true) {}
+
+    FailingSource(const FailingSource&) = delete;
+    FailingSource& operator=(const FailingSource&) = delete;
+
     virtual ~FailingSource() {}
 
     // Sets the number of times to fail before downloading data.
@@ -897,8 +909,6 @@ class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
 
     // The source to use for successful downloads.
     TestdataSource actual_source_;
-
-    DISALLOW_COPY_AND_ASSIGN(FailingSource);
   };
 
   FailingAddressValidatorTest()
@@ -923,8 +933,6 @@ class FailingAddressValidatorTest : public testing::Test, LoadRulesListener {
   }
 
   base::test::TaskEnvironment task_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(FailingAddressValidatorTest);
 };
 
 // The validator will attempt to load rules at most 8 times.

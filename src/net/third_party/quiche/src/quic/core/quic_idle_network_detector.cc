@@ -5,15 +5,17 @@
 #include "quic/core/quic_idle_network_detector.h"
 
 #include "quic/core/quic_constants.h"
+#include "quic/platform/api/quic_flag_utils.h"
 
 namespace quic {
 
 namespace {
 
-class AlarmDelegate : public QuicAlarm::Delegate {
+class AlarmDelegate : public QuicAlarm::DelegateWithContext {
  public:
-  explicit AlarmDelegate(QuicIdleNetworkDetector* detector)
-      : detector_(detector) {}
+  explicit AlarmDelegate(QuicIdleNetworkDetector* detector,
+                         QuicConnectionContext* context)
+      : QuicAlarm::DelegateWithContext(context), detector_(detector) {}
   AlarmDelegate(const AlarmDelegate&) = delete;
   AlarmDelegate& operator=(const AlarmDelegate&) = delete;
 
@@ -26,18 +28,16 @@ class AlarmDelegate : public QuicAlarm::Delegate {
 }  // namespace
 
 QuicIdleNetworkDetector::QuicIdleNetworkDetector(
-    Delegate* delegate,
-    QuicTime now,
-    QuicConnectionArena* arena,
-    QuicAlarmFactory* alarm_factory)
+    Delegate* delegate, QuicTime now, QuicConnectionArena* arena,
+    QuicAlarmFactory* alarm_factory, QuicConnectionContext* context)
     : delegate_(delegate),
       start_time_(now),
       handshake_timeout_(QuicTime::Delta::Infinite()),
       time_of_last_received_packet_(now),
       time_of_first_packet_sent_after_receiving_(QuicTime::Zero()),
       idle_network_timeout_(QuicTime::Delta::Infinite()),
-      alarm_(
-          alarm_factory->CreateAlarm(arena->New<AlarmDelegate>(this), arena)) {}
+      alarm_(alarm_factory->CreateAlarm(
+          arena->New<AlarmDelegate>(this, context), arena)) {}
 
 void QuicIdleNetworkDetector::OnAlarm() {
   if (handshake_timeout_.IsInfinite()) {
@@ -66,9 +66,10 @@ void QuicIdleNetworkDetector::SetTimeouts(
 }
 
 void QuicIdleNetworkDetector::StopDetection() {
-  alarm_->Cancel();
+  alarm_->PermanentCancel();
   handshake_timeout_ = QuicTime::Delta::Infinite();
   idle_network_timeout_ = QuicTime::Delta::Infinite();
+  stopped_ = true;
 }
 
 void QuicIdleNetworkDetector::OnPacketSent(QuicTime now,
@@ -94,6 +95,14 @@ void QuicIdleNetworkDetector::OnPacketReceived(QuicTime now) {
 }
 
 void QuicIdleNetworkDetector::SetAlarm() {
+  if (stopped_) {
+    // TODO(wub): If this QUIC_BUG fires, it indicates a problem in the
+    // QuicConnection, which somehow called this function while disconnected.
+    // That problem needs to be fixed.
+    QUIC_BUG(quic_idle_detector_set_alarm_after_stopped)
+        << "SetAlarm called after stopped";
+    return;
+  }
   // Set alarm to the nearer deadline.
   QuicTime new_deadline = QuicTime::Zero();
   if (!handshake_timeout_.IsInfinite()) {

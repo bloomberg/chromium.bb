@@ -164,6 +164,8 @@ void BytecodeArrayWriter::BindLabel(BytecodeLabel* label) {
 void BytecodeArrayWriter::BindLoopHeader(BytecodeLoopHeader* loop_header) {
   size_t current_offset = bytecodes()->size();
   loop_header->bind_to(current_offset);
+  // Don't start a basic block when the entire loop is dead.
+  if (exit_seen_in_block_) return;
   StartBasicBlock();
 }
 
@@ -291,7 +293,6 @@ void BytecodeArrayWriter::EmitBytecode(const BytecodeNode* const node) {
     switch (operand_sizes[i]) {
       case OperandSize::kNone:
         UNREACHABLE();
-        break;
       case OperandSize::kByte:
         bytecodes()->push_back(static_cast<uint8_t>(operands[i]));
         break;

@@ -6,9 +6,7 @@
 #define SERVICES_AUDIO_SERVICE_H_
 
 #include <memory>
-#include <string>
 
-#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "media/mojo/mojom/audio_stream_factory.mojom.h"
@@ -69,6 +67,10 @@ class Service final : public mojom::AudioService {
   Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
           bool enable_remote_client_support,
           mojo::PendingReceiver<mojom::AudioService> receiver);
+
+  Service(const Service&) = delete;
+  Service& operator=(const Service&) = delete;
+
   ~Service() final;
 
   // Returns a DeferredSequencedTaskRunner to be used to run the audio service
@@ -124,8 +126,6 @@ class Service final : public mojom::AudioService {
   std::unique_ptr<DeviceNotifier> device_notifier_;
   std::unique_ptr<LogFactoryManager> log_factory_manager_;
   std::unique_ptr<ServiceMetrics> metrics_;
-
-  DISALLOW_COPY_AND_ASSIGN(Service);
 };
 
 }  // namespace audio

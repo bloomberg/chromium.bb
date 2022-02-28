@@ -8,14 +8,12 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -28,7 +26,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -84,99 +82,50 @@ namespace {
 // User data key for caching if bfcache is disabled.
 const char kIsBFCacheDisabledKey[] = "extensions.backforward.browsercontext";
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class ExtensionPermissionsOnLoad {
-  kTotal,
-  kContentScriptAccess,
-  kPageAccess,
-  kWebNavigation,
-  kWebRequest,
-  kDeclarativeNetRequest,
-  kHistory,
-  kMaxValue = kHistory
-};
-
-void RecordPermission(ExtensionPermissionsOnLoad permission) {
-  UMA_HISTOGRAM_ENUMERATION("Extensions.Navigation.Permissions", permission);
-}
-
-// Record permissions for features that may be influence by BFCache shipping.
-// Details in
-// https://docs.google.com/document/d/11rdAEFyS1DEky_LRE_SfthHZHZa2DtC156U-ZK1zyQk/edit#heading=h.h3agt9njihgd
-void RecordExtensionPermissionsPerNavigation(
-    const ExtensionSet& enabled_extensions,
-    content::BrowserContext* context,
-    int tab_id,
-    const GURL& url) {
-  // This is just the set of permissions we want to look for.
-  const std::pair<mojom::APIPermissionID, ExtensionPermissionsOnLoad>
-      kPermissions[] = {{mojom::APIPermissionID::kWebNavigation,
-                         ExtensionPermissionsOnLoad::kWebNavigation},
-                        {mojom::APIPermissionID::kHistory,
-                         ExtensionPermissionsOnLoad::kHistory},
-                        {mojom::APIPermissionID::kWebRequest,
-                         ExtensionPermissionsOnLoad::kWebRequest},
-                        {mojom::APIPermissionID::kWebRequestBlocking,
-                         ExtensionPermissionsOnLoad::kWebRequest},
-                        {mojom::APIPermissionID::kDeclarativeNetRequest,
-                         ExtensionPermissionsOnLoad::kDeclarativeNetRequest}};
-
-  // We put the values into a set so we only will count them once for a set of
-  // extensions per navigation.
-  std::set<ExtensionPermissionsOnLoad> permissions_discovered;
-
-  for (const auto& extension : enabled_extensions) {
-    if (util::IsExtensionVisibleToContext(*extension, context)) {
-      // Determine if the extension can access the page.
-      if (extension->permissions_data()->GetContentScriptAccess(
-              url, tab_id, nullptr) == PermissionsData::PageAccess::kAllowed) {
-        permissions_discovered.insert(
-            ExtensionPermissionsOnLoad::kContentScriptAccess);
-      }
-      if (extension->permissions_data()->GetPageAccess(url, tab_id, nullptr) ==
-          PermissionsData::PageAccess::kAllowed) {
-        permissions_discovered.insert(ExtensionPermissionsOnLoad::kPageAccess);
-      }
-
-      for (auto permission : kPermissions) {
-        if (extension->permissions_data()->HasAPIPermission(permission.first)) {
-          permissions_discovered.insert(permission.second);
-        }
-      }
-    }
-  }
-
-  for (auto permission : permissions_discovered) {
-    RecordPermission(permission);
-  }
-  // kTotal is used as the total navigations denominator.
-  RecordPermission(ExtensionPermissionsOnLoad::kTotal);
-}
-
 bool AreAllExtensionsAllowedForBFCache() {
   // If back forward cache is disabled, indicate we accept everything.
   if (!content::BackForwardCache::IsBackForwardCacheFeatureEnabled())
     return true;
 
   static base::FeatureParam<bool> all_extensions_allowed(
-      &features::kBackForwardCache, "all_extensions_allowed", false);
+      &features::kBackForwardCache, "all_extensions_allowed", true);
   return all_extensions_allowed.Get();
+}
+
+std::string BlockedExtensionListForBFCache() {
+  // If back forward cache is disabled, indicate nothing is blocked.
+  if (!content::BackForwardCache::IsBackForwardCacheFeatureEnabled())
+    return std::string();
+
+  static base::FeatureParam<std::string> extensions_blocked(
+      &features::kBackForwardCache, "blocked_extensions", "");
+  return extensions_blocked.Get();
 }
 
 void DisableBackForwardCacheIfNecessary(
     const ExtensionSet& enabled_extensions,
     content::BrowserContext* context,
     content::NavigationHandle* navigation_handle) {
-  // If we allow all extensions for bfcache then just return.
-  if (AreAllExtensionsAllowedForBFCache())
+  bool all_allowed = AreAllExtensionsAllowedForBFCache();
+  std::string blocked_extensions = BlockedExtensionListForBFCache();
+
+  // If we allow all extensions for bfcache and there aren't any blocked, then
+  // just return.
+  if (all_allowed && blocked_extensions.empty())
     return;
+
+  // We shouldn't have blocked extensions if `all_allowed` is false.
+  DCHECK(blocked_extensions.empty() || all_allowed);
 
   bool disable_bfcache = false;
   // If the user data exists we know we are disabled.
   if (context->GetUserData(kIsBFCacheDisabledKey)) {
     disable_bfcache = true;
   } else {
+    std::vector<std::string> blocked_extensions_list =
+        base::SplitString(blocked_extensions, ",", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+
     // Compute whether we need to disable it.
     for (const auto& extension : enabled_extensions) {
       // Skip component extensions, apps, themes, shared modules and the google
@@ -188,6 +137,13 @@ void DisableBackForwardCacheIfNecessary(
         continue;
       }
       if (util::IsExtensionVisibleToContext(*extension, context)) {
+        // If we are allowing all extensions with a block filter set, and this
+        // extension is not in it then continue.
+        if (all_allowed &&
+            !base::Contains(blocked_extensions_list, extension->id())) {
+          continue;
+        }
+
         VLOG(1) << "Disabled bfcache due to " << extension->short_name() << ","
                 << extension->id();
         if (!disable_bfcache) {
@@ -222,6 +178,7 @@ TabHelper::~TabHelper() = default;
 
 TabHelper::TabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<TabHelper>(*web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       extension_app_(nullptr),
       script_executor_(new ScriptExecutor(web_contents)),
@@ -230,9 +187,6 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   // The ActiveTabPermissionManager requires a session ID; ensure this
   // WebContents has one.
   CreateSessionServiceTabHelper(web_contents);
-  // We need an ExtensionWebContentsObserver, so make sure one exists (this is
-  // a no-op if one already does).
-  ChromeExtensionWebContentsObserver::CreateForWebContents(web_contents);
   // The Unretained() is safe because ForEachFrame() is synchronous.
   web_contents->ForEachFrame(
       base::BindRepeating(&TabHelper::SetTabId, base::Unretained(this)));
@@ -338,7 +292,11 @@ void TabHelper::RenderFrameCreated(content::RenderFrameHost* host) {
 
 void TabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->HasCommitted() || !navigation_handle->IsInMainFrame())
+  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
+  // frames. This caller was converted automatically to the primary main frame
+  // to preserve its semantics. Follow up to confirm correctness.
+  if (!navigation_handle->HasCommitted() ||
+      !navigation_handle->IsInPrimaryMainFrame())
     return;
 
   InvokeForContentRulesRegistries(
@@ -350,16 +308,11 @@ void TabHelper::DidFinishNavigation(
   ExtensionRegistry* registry = ExtensionRegistry::Get(context);
   const ExtensionSet& enabled_extensions = registry->enabled_extensions();
 
-  RecordExtensionPermissionsPerNavigation(
-      enabled_extensions, context,
-      sessions::SessionTabHelper::IdForTab(web_contents()).id(),
-      navigation_handle->GetURL());
-
   DisableBackForwardCacheIfNecessary(enabled_extensions, context,
                                      navigation_handle);
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  if (browser && browser->deprecated_is_app()) {
+  if (browser && (browser->is_type_app() || browser->is_type_app_popup())) {
     const Extension* extension = registry->GetExtensionById(
         web_app::GetAppIdFromApplicationName(browser->app_name()),
         ExtensionRegistry::EVERYTHING);
@@ -479,12 +432,14 @@ void TabHelper::SetTabId(content::RenderFrameHost* render_frame_host) {
   // We should wait for RenderFrameCreated() to happen, to avoid sending this
   // message twice.
   if (render_frame_host->IsRenderFrameCreated()) {
+    SessionID id = sessions::SessionTabHelper::IdForTab(web_contents());
+    CHECK(id.is_valid());
     ExtensionWebContentsObserver::GetForWebContents(web_contents())
         ->GetLocalFrame(render_frame_host)
-        ->SetTabId(sessions::SessionTabHelper::IdForTab(web_contents()).id());
+        ->SetTabId(id.id());
   }
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(TabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabHelper);
 
 }  // namespace extensions

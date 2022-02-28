@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry.h"
@@ -30,6 +31,10 @@ class PrefDelegateImpl
       : pref_service_(pref_service), path_(net::nqe::kNetworkQualities) {
     DCHECK(pref_service_);
   }
+
+  PrefDelegateImpl(const PrefDelegateImpl&) = delete;
+  PrefDelegateImpl& operator=(const PrefDelegateImpl&) = delete;
+
   ~PrefDelegateImpl() override {}
 
   void SetDictionaryValue(const base::DictionaryValue& value) override {
@@ -45,14 +50,12 @@ class PrefDelegateImpl
   }
 
  private:
-  PrefService* pref_service_;
+  raw_ptr<PrefService> pref_service_;
 
   // |path_| is the location of the network quality estimator prefs.
   const std::string path_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(PrefDelegateImpl);
 };
 
 // Returns true if |pref_service| has been initialized.
