@@ -18,7 +18,6 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/global_routing_id.h"
 
@@ -40,6 +39,9 @@ class WebViewRendererState {
     WebViewInfo(const WebViewInfo& other);
     ~WebViewInfo();
   };
+
+  WebViewRendererState(const WebViewRendererState&) = delete;
+  WebViewRendererState& operator=(const WebViewRendererState&) = delete;
 
   static WebViewRendererState* GetInstance();
 
@@ -104,8 +106,6 @@ class WebViewRendererState {
   mutable base::Lock web_view_info_map_lock_;
   WebViewPartitionIDMap web_view_partition_id_map_;
   mutable base::Lock web_view_partition_id_map_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewRendererState);
 };
 
 }  // namespace extensions

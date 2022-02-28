@@ -177,6 +177,8 @@ wstring UTF8ToWideString(const char* str) {
   return wstr;
 }
 
+string ToString(const char* str) { return string((str == NULL) ? "" : str); }
+
 void OutputEBMLHeader(const mkvparser::EBMLHeader& ebml, FILE* o,
                       Indent* indent) {
   fprintf(o, "EBML Header:\n");
@@ -241,11 +243,11 @@ bool OutputSeekHead(const mkvparser::Segment& segment, const Options& options,
     fprintf(o, "\n");
 
     indent->Adjust(libwebm::kIncreaseIndent);
-    const char* const entry_indent = indent->indent_str().c_str();
+    std::string entry_indent = indent->indent_str();
     // TODO(jzern): 1) known ids could be stringified. 2) ids could be
     // reencoded to EBML for ease of lookup.
-    fprintf(o, "%sSeek ID       : %llx\n", entry_indent, entry->id);
-    fprintf(o, "%sSeek position : %lld\n", entry_indent, entry->pos);
+    fprintf(o, "%sSeek ID       : %llx\n", entry_indent.c_str(), entry->id);
+    fprintf(o, "%sSeek position : %lld\n", entry_indent.c_str(), entry->pos);
     indent->Adjust(libwebm::kDecreaseIndent);
   }
 
@@ -376,7 +378,7 @@ bool OutputTracks(const mkvparser::Segment& segment, const Options& options,
               static_cast<int>(private_size));
 
       if (track_type == mkvparser::Track::kVideo) {
-        const std::string codec_id = track->GetCodecId();
+        const std::string codec_id = ToString(track->GetCodecId());
         const std::string v_vp9 = "V_VP9";
         if (codec_id == v_vp9) {
           libwebm::Vp9CodecFeatures features;
@@ -475,7 +477,7 @@ bool OutputTracks(const mkvparser::Segment& segment, const Options& options,
 
     if (track_type == mkvparser::Track::kVideo) {
       const mkvparser::VideoTrack* const video_track =
-          static_cast<const mkvparser::VideoTrack* const>(track);
+          static_cast<const mkvparser::VideoTrack*>(track);
       const int64_t width = video_track->GetWidth();
       const int64_t height = video_track->GetHeight();
       const int64_t display_width = video_track->GetDisplayWidth();
@@ -639,7 +641,7 @@ bool OutputTracks(const mkvparser::Segment& segment, const Options& options,
       }
     } else if (track_type == mkvparser::Track::kAudio) {
       const mkvparser::AudioTrack* const audio_track =
-          static_cast<const mkvparser::AudioTrack* const>(track);
+          static_cast<const mkvparser::AudioTrack*>(track);
       const int64_t channels = audio_track->GetChannels();
       const int64_t bit_depth = audio_track->GetBitDepth();
       const uint64_t codec_delay = audio_track->GetCodecDelay();
@@ -709,7 +711,7 @@ void PrintVP9Info(const uint8_t* data, int size, FILE* o, int64_t time_ns,
 
   do {
     const size_t frame_length = (count > 0) ? sizes[i] : size;
-    if (frame_length > std::numeric_limits<int>::max() ||
+    if (frame_length > static_cast<size_t>(std::numeric_limits<int>::max()) ||
         static_cast<int>(frame_length) > size) {
       fprintf(o, " invalid VP9 frame size (%u)\n",
               static_cast<uint32_t>(frame_length));
@@ -724,6 +726,7 @@ void PrintVP9Info(const uint8_t* data, int size, FILE* o, int64_t time_ns,
     const int key = parser->key();
     const int altref_frame = parser->altref();
     const int error_resilient_mode = parser->error_resilient_mode();
+    const int row_tiles = parser->row_tiles();
     const int column_tiles = parser->column_tiles();
     const int frame_parallel_mode = parser->frame_parallel_mode();
 
@@ -754,12 +757,19 @@ void PrintVP9Info(const uint8_t* data, int size, FILE* o, int64_t time_ns,
       fprintf(o, " packed [%d]: {", i);
     }
 
-    fprintf(o, " key:%d v:%d altref:%d errm:%d ct:%d fpm:%d", key, version,
-            altref_frame, error_resilient_mode, column_tiles,
-            frame_parallel_mode);
+    fprintf(o, " key:%d v:%d altref:%d errm:%d rt:%d ct:%d fpm:%d", key,
+            version, altref_frame, error_resilient_mode, row_tiles,
+            column_tiles, frame_parallel_mode);
 
-    if (key && size > 4) {
-      fprintf(o, " cs:%d", parser->color_space());
+    if (key) {
+      if (size > 4) {
+        fprintf(o, " cs:%d", parser->color_space());
+      }
+      if (parser->display_width() != parser->width() ||
+          parser->display_height() != parser->height()) {
+        fprintf(o, " dw:%d dh:%d", parser->display_width(),
+                parser->display_height());
+      }
     }
 
     if (count > 0) {
@@ -1018,7 +1028,7 @@ bool OutputCluster(const mkvparser::Cluster& cluster,
                 data += frame_offset;
                 frame_size -= frame_offset;
 
-                const string codec_id = track->GetCodecId();
+                const string codec_id = ToString(track->GetCodecId());
                 if (codec_id == "V_VP8") {
                   PrintVP8Info(data, frame_size, o);
                 } else if (codec_id == "V_VP9") {

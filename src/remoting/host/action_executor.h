@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
-
 namespace remoting {
 
 namespace protocol {
@@ -17,6 +15,9 @@ class ActionRequest;
 
 class ActionExecutor {
  public:
+  ActionExecutor(const ActionExecutor&) = delete;
+  ActionExecutor& operator=(const ActionExecutor&) = delete;
+
   virtual ~ActionExecutor();
 
   // Creates an action executor for the current platform / host architecture.
@@ -28,9 +29,6 @@ class ActionExecutor {
 
  protected:
   ActionExecutor();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ActionExecutor);
 };
 
 }  // namespace remoting

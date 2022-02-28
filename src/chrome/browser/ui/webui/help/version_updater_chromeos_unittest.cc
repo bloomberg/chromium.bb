@@ -8,15 +8,14 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/network/network_handler_test_helper.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
@@ -44,6 +43,10 @@ void CheckNotification(VersionUpdater::Status /* status */,
 }  // namespace
 
 class VersionUpdaterCrosTest : public ::testing::Test {
+ public:
+  VersionUpdaterCrosTest(const VersionUpdaterCrosTest&) = delete;
+  VersionUpdaterCrosTest& operator=(const VersionUpdaterCrosTest&) = delete;
+
  protected:
   VersionUpdaterCrosTest()
       : version_updater_(VersionUpdater::Create(nullptr)),
@@ -106,8 +109,6 @@ class VersionUpdaterCrosTest : public ::testing::Test {
   MockUserManager* mock_user_manager_;  // Not owned.
   user_manager::ScopedUserManager user_manager_enabler_;
   ScopedCrosSettingsTestHelper cros_settings_test_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(VersionUpdaterCrosTest);
 };
 
 // The test checks following behaviour:

@@ -47,18 +47,16 @@ bool BrandcodedDefaultSettings::GetHomepage(std::string* homepage) const {
          !homepage->empty();
 }
 
-bool BrandcodedDefaultSettings::GetHomepageIsNewTab(
-    bool* homepage_is_ntp) const {
-  return master_dictionary_ &&
-         master_dictionary_->GetBoolean(prefs::kHomePageIsNewTabPage,
-                                        homepage_is_ntp);
+absl::optional<bool> BrandcodedDefaultSettings::GetHomepageIsNewTab() const {
+  return master_dictionary_
+             ? master_dictionary_->FindBoolPath(prefs::kHomePageIsNewTabPage)
+             : absl::nullopt;
 }
 
-bool BrandcodedDefaultSettings::GetShowHomeButton(
-    bool* show_home_button) const {
-  return master_dictionary_ &&
-         master_dictionary_->GetBoolean(prefs::kShowHomeButton,
-                                        show_home_button);
+absl::optional<bool> BrandcodedDefaultSettings::GetShowHomeButton() const {
+  return master_dictionary_
+             ? master_dictionary_->FindBoolPath(prefs::kShowHomeButton)
+             : absl::nullopt;
 }
 
 bool BrandcodedDefaultSettings::GetExtensions(
@@ -92,11 +90,10 @@ BrandcodedDefaultSettings::GetUrlsToRestoreOnStartup() const {
 
 std::unique_ptr<base::ListValue> BrandcodedDefaultSettings::ExtractList(
     const char* pref_name) const {
-  const base::ListValue* value = NULL;
-  if (master_dictionary_ &&
-      master_dictionary_->GetList(pref_name, &value) &&
-      !value->empty()) {
-    return std::unique_ptr<base::ListValue>(value->DeepCopy());
+  const base::ListValue* value = nullptr;
+  if (master_dictionary_ && master_dictionary_->GetList(pref_name, &value) &&
+      !value->GetList().empty()) {
+    return value->CreateDeepCopy();
   }
   return nullptr;
 }

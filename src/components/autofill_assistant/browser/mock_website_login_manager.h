@@ -6,7 +6,6 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_WEBSITE_LOGIN_MANAGER_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "components/autofill_assistant/browser/website_login_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -16,60 +15,69 @@ namespace autofill_assistant {
 class MockWebsiteLoginManager : public WebsiteLoginManager {
  public:
   MockWebsiteLoginManager();
+
+  MockWebsiteLoginManager(const MockWebsiteLoginManager&) = delete;
+  MockWebsiteLoginManager& operator=(const MockWebsiteLoginManager&) = delete;
+
   ~MockWebsiteLoginManager() override;
 
-  void GetLoginsForUrl(
-      const GURL& url,
-      base::OnceCallback<void(std::vector<Login>)> callback) override {
-    OnGetLoginsForUrl(url, callback);
-  }
+  MOCK_METHOD(void,
+              GetLoginsForUrl,
+              (const GURL& url,
+               base::OnceCallback<void(std::vector<Login>)> callback),
+              (override));
 
-  MOCK_METHOD2(OnGetLoginsForUrl,
-               void(const GURL& domain,
-                    base::OnceCallback<void(std::vector<Login>)>&));
+  MOCK_METHOD(void,
+              GetPasswordForLogin,
+              (const Login& login,
+               base::OnceCallback<void(bool, std::string)> callback),
+              (override));
 
-  void GetPasswordForLogin(
-      const Login& login,
-      base::OnceCallback<void(bool, std::string)> callback) override {
-    OnGetPasswordForLogin(login, callback);
-  }
+  MOCK_METHOD(void,
+              DeletePasswordForLogin,
+              (const Login& login, base::OnceCallback<void(bool)> callback),
+              (override));
 
-  MOCK_METHOD2(OnGetPasswordForLogin,
-               void(const Login& login,
-                    base::OnceCallback<void(bool, std::string)>&));
+  MOCK_METHOD(void,
+              EditPasswordForLogin,
+              (const Login& login,
+               const std::string& new_password,
+               base::OnceCallback<void(bool)> callback),
+              (override));
 
-  std::string GeneratePassword(autofill::FormSignature form_signature,
-                               autofill::FieldSignature field_signature,
-                               uint64_t max_length) override {
-    return GetGeneratedPassword();
-  }
+  MOCK_METHOD(absl::optional<std::string>,
+              GeneratePassword,
+              (autofill::FormSignature form_signature,
+               autofill::FieldSignature field_signature,
+               uint64_t max_length),
+              (override));
 
-  MOCK_METHOD0(GetGeneratedPassword, std::string());
+  MOCK_METHOD(void,
+              PresaveGeneratedPassword,
+              (const Login& login,
+               const std::string& password,
+               const autofill::FormData& form_data,
+               base::OnceCallback<void()> callback),
+              (override));
 
-  void PresaveGeneratedPassword(const Login& login,
-                                const std::string& password,
-                                const autofill::FormData& form_data,
-                                base::OnceCallback<void()> callback) override {
-    OnPresaveGeneratedPassword(login, password, form_data, callback);
-  }
+  MOCK_METHOD(void,
+              GetGetLastTimePasswordUsed,
+              (const Login& login,
+               base::OnceCallback<void(absl::optional<base::Time>)> callback),
+              (override));
 
-  MOCK_METHOD4(OnPresaveGeneratedPassword,
-               void(const Login& login,
-                    const std::string& password,
-                    const autofill::FormData& form_data,
-                    base::OnceCallback<void()>&));
+  MOCK_METHOD2(OnDeletePasswordForLogin,
+               void(const Login& login, base::OnceCallback<void(bool)>&));
 
-  bool ReadyToCommitGeneratedPassword() override {
-    return OnReadyToCommitGeneratedPassword();
-  }
+  MOCK_METHOD(bool, ReadyToCommitGeneratedPassword, (), (override));
 
-  MOCK_METHOD0(OnReadyToCommitGeneratedPassword, bool());
+  MOCK_METHOD(void, CommitGeneratedPassword, (), (override));
 
-  void CommitGeneratedPassword() override { OnCommitGeneratedPassword(); }
+  MOCK_METHOD(void, ResetPendingCredentials, (), (override));
 
-  MOCK_METHOD0(OnCommitGeneratedPassword, void());
+  MOCK_METHOD(bool, ReadyToCommitSubmittedPassword, (), (override));
 
-  DISALLOW_COPY_AND_ASSIGN(MockWebsiteLoginManager);
+  MOCK_METHOD(bool, SaveSubmittedPassword, (), (override));
 };
 
 }  // namespace autofill_assistant

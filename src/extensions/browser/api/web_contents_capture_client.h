@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_API_WEB_CONTENTS_CAPTURE_CLIENT_H_
 #define EXTENSIONS_BROWSER_API_WEB_CONTENTS_CAPTURE_CLIENT_H_
 
-#include "base/macros.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/extension_types.h"
 
@@ -22,6 +21,9 @@ namespace extensions {
 class WebContentsCaptureClient {
  public:
   WebContentsCaptureClient() {}
+
+  WebContentsCaptureClient(const WebContentsCaptureClient&) = delete;
+  WebContentsCaptureClient& operator=(const WebContentsCaptureClient&) = delete;
 
  protected:
   virtual ~WebContentsCaptureClient() {}
@@ -58,8 +60,6 @@ class WebContentsCaptureClient {
 
   // Quality setting to use when encoding jpegs.  Set in RunAsync().
   int image_quality_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsCaptureClient);
 };
 
 }  // namespace extensions

@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 
 namespace chromecast {
@@ -20,6 +19,10 @@ class FrameGeneratorForTest;
 class MockFrameProvider : public CodedFrameProvider {
  public:
   MockFrameProvider();
+
+  MockFrameProvider(const MockFrameProvider&) = delete;
+  MockFrameProvider& operator=(const MockFrameProvider&) = delete;
+
   ~MockFrameProvider() override;
 
   void Configure(const std::vector<bool>& delayed_task_pattern,
@@ -45,8 +48,6 @@ class MockFrameProvider : public CodedFrameProvider {
   bool delay_flush_;
 
   std::unique_ptr<FrameGeneratorForTest> frame_generator_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockFrameProvider);
 };
 
 }  // namespace media

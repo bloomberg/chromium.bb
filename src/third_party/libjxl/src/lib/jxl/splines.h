@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_JXL_SPLINES_H_
 #define LIB_JXL_SPLINES_H_
@@ -88,6 +79,20 @@ class QuantizedSpline {
   int sigma_dct_[32] = {};
 };
 
+// A single "drawable unit" of a spline, i.e. a line of the region in which we
+// render each Gaussian. The structure doesn't actually depend on the exact
+// row, which allows reuse for different y values (which are tracked
+// separately).
+struct SplineSegment {
+  ssize_t xbegin, xend;
+  float center_x, center_y;
+  float maximum_distance;
+  float sigma;
+  float inv_sigma;
+  float sigma_over_4_times_intensity;
+  float color[3];
+};
+
 class Splines {
  public:
   Splines() = default;
@@ -100,11 +105,13 @@ class Splines {
 
   bool HasAny() const { return !splines_.empty(); }
 
+  void Clear();
+
   Status Decode(BitReader* br, size_t num_pixels);
 
-  Status AddTo(Image3F* opsin, const Rect& opsin_rect, const Rect& image_rect,
-               const ColorCorrelationMap& cmap) const;
-  Status SubtractFrom(Image3F* opsin, const ColorCorrelationMap& cmap) const;
+  void AddTo(Image3F* opsin, const Rect& opsin_rect,
+             const Rect& image_rect) const;
+  void SubtractFrom(Image3F* opsin) const;
 
   const std::vector<QuantizedSpline>& QuantizedSplines() const {
     return splines_;
@@ -115,10 +122,13 @@ class Splines {
 
   int32_t GetQuantizationAdjustment() const { return quantization_adjustment_; }
 
+  Status InitializeDrawCache(size_t image_xsize, size_t image_ysize,
+                             const ColorCorrelationMap& cmap);
+
  private:
   template <bool>
-  Status Apply(Image3F* opsin, const Rect& opsin_rect, const Rect& image_rect,
-               const ColorCorrelationMap& cmap) const;
+  void Apply(Image3F* opsin, const Rect& opsin_rect,
+             const Rect& image_rect) const;
 
   // If positive, quantization weights are multiplied by 1 + this/8, which
   // increases precision. If negative, they are divided by 1 - this/8. If 0,
@@ -126,6 +136,9 @@ class Splines {
   int32_t quantization_adjustment_ = 0;
   std::vector<QuantizedSpline> splines_;
   std::vector<Spline::Point> starting_points_;
+  std::vector<SplineSegment> segments_;
+  std::vector<size_t> segment_indices_;
+  std::vector<size_t> segment_y_start_;
 };
 
 }  // namespace jxl

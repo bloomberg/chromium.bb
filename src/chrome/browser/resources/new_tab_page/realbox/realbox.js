@@ -218,10 +218,12 @@ class RealboxElement extends mixinBehaviors
     super.connectedCallback();
     this.autocompleteResultChangedListenerId_ =
         this.callbackRouter_.autocompleteResultChanged.addListener(
-            this.onAutocompleteResultChanged_.bind(this));
+            (result) => this.onAutocompleteResultChanged_(result));
     this.autocompleteMatchImageAvailableListenerId_ =
         this.callbackRouter_.autocompleteMatchImageAvailable.addListener(
-            this.onAutocompleteMatchImageAvailable_.bind(this));
+            (matchIndex, url, dataUrl) =>
+                this.onAutocompleteMatchImageAvailable_(
+                    matchIndex, url, dataUrl));
   }
 
   /** @override */
@@ -364,7 +366,8 @@ class RealboxElement extends mixinBehaviors
           'text/plain', this.selectedMatch_.destinationUrl.url);
       e.preventDefault();
       if (e.type === 'cut') {
-        this.$.input.value = '';
+        this.updateInput_({text: '', inline: ''});
+        this.clearAutocompleteMatches_();
       }
     }
   }

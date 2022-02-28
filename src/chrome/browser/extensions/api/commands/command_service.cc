@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/commands/commands.h"
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
@@ -313,15 +314,14 @@ Command CommandService::FindCommandByName(const std::string& extension_id,
     std::string shortcut = it.key();
     if (!IsForCurrentPlatform(shortcut))
       continue;
-    bool global = false;
-    item->GetBoolean(kGlobal, &global);
+    absl::optional<bool> global = item->FindBoolKey(kGlobal);
 
     std::vector<base::StringPiece> tokens = base::SplitStringPiece(
         shortcut, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     CHECK(tokens.size() >= 2);
 
     return Command(command_name, std::u16string(), std::string(tokens[1]),
-                   global);
+                   global.value_or(false));
   }
 
   return Command();
@@ -584,17 +584,17 @@ void CommandService::RemoveDefunctExtensionSuggestedCommandPrefs(
         if (!browser_action_command ||
             browser_action_command->accelerator().key_code() ==
                 ui::VKEY_UNKNOWN) {
-          suggested_key_prefs->Remove(it.key(), NULL);
+          suggested_key_prefs->RemoveKey(it.key());
         }
       } else if (it.key() == manifest_values::kPageActionCommandEvent) {
         if (!CommandsInfo::GetPageActionCommand(extension))
-          suggested_key_prefs->Remove(it.key(), NULL);
+          suggested_key_prefs->RemoveKey(it.key());
       } else if (it.key() == manifest_values::kActionCommandEvent) {
         if (!CommandsInfo::GetActionCommand(extension))
-          suggested_key_prefs->Remove(it.key(), nullptr);
+          suggested_key_prefs->RemoveKey(it.key());
       } else if (named_commands) {
         if (named_commands->find(it.key()) == named_commands->end())
-          suggested_key_prefs->Remove(it.key(), NULL);
+          suggested_key_prefs->RemoveKey(it.key());
       }
     }
 
@@ -608,7 +608,7 @@ bool CommandService::IsCommandShortcutUserModified(
     const std::string& command_name) {
   // Get the previous suggested key, if any.
   ui::Accelerator suggested_key;
-  bool suggested_key_was_assigned = false;
+  absl::optional<bool> suggested_key_was_assigned;
   ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
   const base::DictionaryValue* commands_prefs = NULL;
   const base::DictionaryValue* suggested_key_prefs = NULL;
@@ -622,16 +622,16 @@ bool CommandService::IsCommandShortcutUserModified(
                                                    command_name);
     }
 
-    suggested_key_prefs->GetBoolean(kSuggestedKeyWasAssigned,
-                                    &suggested_key_was_assigned);
+    suggested_key_was_assigned =
+        suggested_key_prefs->FindBoolKey(kSuggestedKeyWasAssigned);
   }
 
   // Get the active shortcut from the prefs, if any.
   Command active_command = FindCommandByName(extension->id(), command_name);
 
-  return suggested_key_was_assigned ?
-      active_command.accelerator() != suggested_key :
-      active_command.accelerator().key_code() != ui::VKEY_UNKNOWN;
+  return suggested_key_was_assigned.value_or(false)
+             ? active_command.accelerator() != suggested_key
+             : active_command.accelerator().key_code() != ui::VKEY_UNKNOWN;
 }
 
 void CommandService::RemoveKeybindingPrefs(const std::string& extension_id,
@@ -671,7 +671,7 @@ void CommandService::RemoveKeybindingPrefs(const std::string& extension_id,
   for (KeysToRemove::const_iterator it = keys_to_remove.begin();
        it != keys_to_remove.end(); ++it) {
     std::string key = *it;
-    bindings->Remove(key, NULL);
+    bindings->RemoveKey(key);
   }
 
   for (const Command& removed_command : removed_commands) {

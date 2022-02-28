@@ -5,6 +5,7 @@
 
 # Recipe which runs the Skia infra tests.
 
+PYTHON_VERSION_COMPATIBILITY = "PY3"
 
 DEPS = [
   'infra',
@@ -37,7 +38,7 @@ def RunSteps(api):
   # Merge the default environment with the Go environment.
   env = {}
   env.update(api.infra.go_env)
-  for k, v in api.vars.default_env.iteritems():
+  for k, v in api.vars.default_env.items():
     # The PATH variable gets merged; all others get replaced.
     if k == 'PATH':
       # This works because the value for PATH in go_env and default_env includes
@@ -66,7 +67,7 @@ def RunSteps(api):
 def GenTests(api):
   yield (
       api.test('infra_tests') +
-      api.properties(buildername='Housekeeper-PerCommit-InfraTests_Win',
+      api.properties(buildername='Housekeeper-PerCommit-InfraTests_Linux',
                      repository='https://skia.googlesource.com/skia.git',
                      path_config='kitchen',
                      swarm_out_dir='[SWARM_OUT_DIR]')

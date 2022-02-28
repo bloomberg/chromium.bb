@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/software_feature.h"
@@ -162,7 +161,7 @@ void CryptAuthDeviceActivityGetterImpl::OnGetDevicesActivityStatusSuccess(
         std::move(device_activity_status.connectivity_status()),
         base::Time::FromTimeT(
             device_activity_status.last_update_time().seconds()) +
-            base::TimeDelta::FromNanoseconds(
+            base::Nanoseconds(
                 device_activity_status.last_update_time().nanos())));
   }
 

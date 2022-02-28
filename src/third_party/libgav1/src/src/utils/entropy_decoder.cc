@@ -60,7 +60,8 @@ uint32_t ScaleCdf(uint32_t values_in_range_shifted, const uint16_t* const cdf,
          (kMinimumProbabilityPerSymbol * (symbol_count - index));
 }
 
-void UpdateCdf(uint16_t* const cdf, const int symbol_count, const int symbol) {
+void UpdateCdf(uint16_t* LIBGAV1_RESTRICT const cdf, const int symbol_count,
+               const int symbol) {
   const uint16_t count = cdf[symbol_count];
   // rate is computed in the spec as:
   //  3 + ( cdf[N] > 15 ) + ( cdf[N] > 31 ) + Min(FloorLog2(N), 2)
@@ -168,7 +169,7 @@ void UpdateCdf(uint16_t* const cdf, const int symbol_count, const int symbol) {
 //    the cdf array. Since an invalid CDF value is written into cdf[7], the
 //    count in cdf[7] needs to be fixed up after the vectorized code.
 
-void UpdateCdf5(uint16_t* const cdf, const int symbol) {
+void UpdateCdf5(uint16_t* LIBGAV1_RESTRICT const cdf, const int symbol) {
   uint16x4_t cdf_vec = vld1_u16(cdf);
   const uint16_t count = cdf[5];
   const int rate = (count >> 4) + 5;
@@ -195,7 +196,7 @@ void UpdateCdf5(uint16_t* const cdf, const int symbol) {
 // This version works for |symbol_count| = 7, 8, or 9.
 // See UpdateCdf5 for implementation details.
 template <int symbol_count>
-void UpdateCdf7To9(uint16_t* const cdf, const int symbol) {
+void UpdateCdf7To9(uint16_t* LIBGAV1_RESTRICT const cdf, const int symbol) {
   static_assert(symbol_count >= 7 && symbol_count <= 9, "");
   uint16x8_t cdf_vec = vld1q_u16(cdf);
   const uint16_t count = cdf[symbol_count];
@@ -229,7 +230,7 @@ void UpdateCdf9(uint16_t* const cdf, const int symbol) {
 }
 
 // See UpdateCdf5 for implementation details.
-void UpdateCdf11(uint16_t* const cdf, const int symbol) {
+void UpdateCdf11(uint16_t* LIBGAV1_RESTRICT const cdf, const int symbol) {
   uint16x8_t cdf_vec = vld1q_u16(cdf + 2);
   const uint16_t count = cdf[11];
   cdf[11] = count + static_cast<uint16_t>(count < 32);
@@ -266,7 +267,7 @@ void UpdateCdf11(uint16_t* const cdf, const int symbol) {
 }
 
 // See UpdateCdf5 for implementation details.
-void UpdateCdf13(uint16_t* const cdf, const int symbol) {
+void UpdateCdf13(uint16_t* LIBGAV1_RESTRICT const cdf, const int symbol) {
   uint16x8_t cdf_vec0 = vld1q_u16(cdf);
   uint16x8_t cdf_vec1 = vld1q_u16(cdf + 4);
   const uint16_t count = cdf[13];
@@ -299,7 +300,7 @@ void UpdateCdf13(uint16_t* const cdf, const int symbol) {
 }
 
 // See UpdateCdf5 for implementation details.
-void UpdateCdf16(uint16_t* const cdf, const int symbol) {
+void UpdateCdf16(uint16_t* LIBGAV1_RESTRICT const cdf, const int symbol) {
   uint16x8_t cdf_vec = vld1q_u16(cdf);
   const uint16_t count = cdf[16];
   const int rate = (count >> 4) + 5;
@@ -351,7 +352,7 @@ inline void StoreUnaligned16(void* a, const __m128i v) {
   _mm_storeu_si128(static_cast<__m128i*>(a), v);
 }
 
-void UpdateCdf5(uint16_t* const cdf, const int symbol) {
+void UpdateCdf5(uint16_t* LIBGAV1_RESTRICT const cdf, const int symbol) {
   __m128i cdf_vec = LoadLo8(cdf);
   const uint16_t count = cdf[5];
   const int rate = (count >> 4) + 5;
@@ -379,7 +380,7 @@ void UpdateCdf5(uint16_t* const cdf, const int symbol) {
 // This version works for |symbol_count| = 7, 8, or 9.
 // See UpdateCdf5 for implementation details.
 template <int symbol_count>
-void UpdateCdf7To9(uint16_t* const cdf, const int symbol) {
+void UpdateCdf7To9(uint16_t* LIBGAV1_RESTRICT const cdf, const int symbol) {
   static_assert(symbol_count >= 7 && symbol_count <= 9, "");
   __m128i cdf_vec = LoadUnaligned16(cdf);
   const uint16_t count = cdf[symbol_count];
@@ -412,7 +413,7 @@ void UpdateCdf9(uint16_t* const cdf, const int symbol) {
 }
 
 // See UpdateCdf5 for implementation details.
-void UpdateCdf11(uint16_t* const cdf, const int symbol) {
+void UpdateCdf11(uint16_t* LIBGAV1_RESTRICT const cdf, const int symbol) {
   __m128i cdf_vec = LoadUnaligned16(cdf + 2);
   const uint16_t count = cdf[11];
   cdf[11] = count + static_cast<uint16_t>(count < 32);
@@ -447,7 +448,7 @@ void UpdateCdf11(uint16_t* const cdf, const int symbol) {
 }
 
 // See UpdateCdf5 for implementation details.
-void UpdateCdf13(uint16_t* const cdf, const int symbol) {
+void UpdateCdf13(uint16_t* LIBGAV1_RESTRICT const cdf, const int symbol) {
   __m128i cdf_vec0 = LoadLo8(cdf);
   __m128i cdf_vec1 = LoadUnaligned16(cdf + 4);
   const uint16_t count = cdf[13];
@@ -478,7 +479,7 @@ void UpdateCdf13(uint16_t* const cdf, const int symbol) {
   cdf[13] = count + static_cast<uint16_t>(count < 32);
 }
 
-void UpdateCdf16(uint16_t* const cdf, const int symbol) {
+void UpdateCdf16(uint16_t* LIBGAV1_RESTRICT const cdf, const int symbol) {
   __m128i cdf_vec0 = LoadUnaligned16(cdf);
   const uint16_t count = cdf[16];
   const int rate = (count >> 4) + 5;
@@ -543,8 +544,8 @@ void UpdateCdf16(uint16_t* const cdf, const int symbol) {
 #endif  // LIBGAV1_ENTROPY_DECODER_ENABLE_SSE2
 #endif  // LIBGAV1_ENTROPY_DECODER_ENABLE_NEON
 
-inline DaalaBitReader::WindowSize HostToBigEndian(
-    const DaalaBitReader::WindowSize x) {
+inline EntropyDecoder::WindowSize HostToBigEndian(
+    const EntropyDecoder::WindowSize x) {
   static_assert(sizeof(x) == 4 || sizeof(x) == 8, "");
 #if defined(__GNUC__)
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
@@ -554,7 +555,7 @@ inline DaalaBitReader::WindowSize HostToBigEndian(
 #endif
 #elif defined(_WIN32)
   // Note Windows targets are assumed to be little endian.
-  return static_cast<DaalaBitReader::WindowSize>(
+  return static_cast<EntropyDecoder::WindowSize>(
       (sizeof(x) == 8) ? _byteswap_uint64(static_cast<unsigned __int64>(x))
                        : _byteswap_ulong(static_cast<unsigned long>(x)));
 #else
@@ -565,10 +566,10 @@ inline DaalaBitReader::WindowSize HostToBigEndian(
 }  // namespace
 
 #if !LIBGAV1_CXX17
-constexpr int DaalaBitReader::kWindowSize;  // static.
+constexpr int EntropyDecoder::kWindowSize;  // static.
 #endif
 
-DaalaBitReader::DaalaBitReader(const uint8_t* data, size_t size,
+EntropyDecoder::EntropyDecoder(const uint8_t* data, size_t size,
                                bool allow_update_cdf)
     : data_(data),
       data_end_(data + size),
@@ -607,7 +608,7 @@ DaalaBitReader::DaalaBitReader(const uint8_t* data, size_t size,
 //   * The probability is fixed at half. So some multiplications can be replaced
 //     with bit operations.
 //   * Symbol count is fixed at 2.
-int DaalaBitReader::ReadBit() {
+int EntropyDecoder::ReadBit() {
   const uint32_t curr =
       ((values_in_range_ & kReadBitMask) >> 1) + kMinimumProbabilityPerSymbol;
   const auto symbol_value = static_cast<uint16_t>(window_diff_ >> bits_);
@@ -623,7 +624,7 @@ int DaalaBitReader::ReadBit() {
   return bit;
 }
 
-int64_t DaalaBitReader::ReadLiteral(int num_bits) {
+int64_t EntropyDecoder::ReadLiteral(int num_bits) {
   assert(num_bits <= 32);
   assert(num_bits > 0);
   uint32_t literal = 0;
@@ -643,7 +644,8 @@ int64_t DaalaBitReader::ReadLiteral(int num_bits) {
   return literal;
 }
 
-int DaalaBitReader::ReadSymbol(uint16_t* const cdf, int symbol_count) {
+int EntropyDecoder::ReadSymbol(uint16_t* LIBGAV1_RESTRICT const cdf,
+                               int symbol_count) {
   const int symbol = ReadSymbolImpl(cdf, symbol_count);
   if (allow_update_cdf_) {
     UpdateCdf(cdf, symbol_count, symbol);
@@ -651,7 +653,7 @@ int DaalaBitReader::ReadSymbol(uint16_t* const cdf, int symbol_count) {
   return symbol;
 }
 
-bool DaalaBitReader::ReadSymbol(uint16_t* cdf) {
+bool EntropyDecoder::ReadSymbol(uint16_t* LIBGAV1_RESTRICT cdf) {
   assert(cdf[1] == 0);
   const bool symbol = ReadSymbolImpl(cdf[0]) != 0;
   if (allow_update_cdf_) {
@@ -681,12 +683,12 @@ bool DaalaBitReader::ReadSymbol(uint16_t* cdf) {
   return symbol;
 }
 
-bool DaalaBitReader::ReadSymbolWithoutCdfUpdate(uint16_t cdf) {
+bool EntropyDecoder::ReadSymbolWithoutCdfUpdate(uint16_t cdf) {
   return ReadSymbolImpl(cdf) != 0;
 }
 
 template <int symbol_count>
-int DaalaBitReader::ReadSymbol(uint16_t* const cdf) {
+int EntropyDecoder::ReadSymbol(uint16_t* LIBGAV1_RESTRICT const cdf) {
   static_assert(symbol_count >= 3 && symbol_count <= 16, "");
   if (symbol_count == 3 || symbol_count == 4) {
     return ReadSymbol3Or4(cdf, symbol_count);
@@ -721,7 +723,7 @@ int DaalaBitReader::ReadSymbol(uint16_t* const cdf) {
   return symbol;
 }
 
-int DaalaBitReader::ReadSymbolImpl(const uint16_t* const cdf,
+int EntropyDecoder::ReadSymbolImpl(const uint16_t* LIBGAV1_RESTRICT const cdf,
                                    int symbol_count) {
   assert(cdf[symbol_count - 1] == 0);
   --symbol_count;
@@ -744,8 +746,8 @@ int DaalaBitReader::ReadSymbolImpl(const uint16_t* const cdf,
   return symbol;
 }
 
-int DaalaBitReader::ReadSymbolImplBinarySearch(const uint16_t* const cdf,
-                                               int symbol_count) {
+int EntropyDecoder::ReadSymbolImplBinarySearch(
+    const uint16_t* LIBGAV1_RESTRICT const cdf, int symbol_count) {
   assert(cdf[symbol_count - 1] == 0);
   assert(symbol_count > 1 && symbol_count <= 16);
   --symbol_count;
@@ -787,7 +789,7 @@ int DaalaBitReader::ReadSymbolImplBinarySearch(const uint16_t* const cdf,
   return low;
 }
 
-int DaalaBitReader::ReadSymbolImpl(uint16_t cdf) {
+int EntropyDecoder::ReadSymbolImpl(uint16_t cdf) {
   const auto symbol_value = static_cast<uint16_t>(window_diff_ >> bits_);
   const uint32_t curr =
       (((values_in_range_ >> 8) * (cdf >> kCdfPrecision)) >> 1) +
@@ -805,7 +807,7 @@ int DaalaBitReader::ReadSymbolImpl(uint16_t cdf) {
 
 // Equivalent to ReadSymbol(cdf, [3,4]), with the ReadSymbolImpl and UpdateCdf
 // calls inlined.
-int DaalaBitReader::ReadSymbol3Or4(uint16_t* const cdf,
+int EntropyDecoder::ReadSymbol3Or4(uint16_t* LIBGAV1_RESTRICT const cdf,
                                    const int symbol_count) {
   assert(cdf[symbol_count - 1] == 0);
   uint32_t curr = values_in_range_;
@@ -970,7 +972,8 @@ found:
   return symbol;
 }
 
-int DaalaBitReader::ReadSymbolImpl8(const uint16_t* const cdf) {
+int EntropyDecoder::ReadSymbolImpl8(
+    const uint16_t* LIBGAV1_RESTRICT const cdf) {
   assert(cdf[7] == 0);
   uint32_t curr = values_in_range_;
   uint32_t prev;
@@ -1033,7 +1036,7 @@ found:
   return symbol;
 }
 
-void DaalaBitReader::PopulateBits() {
+void EntropyDecoder::PopulateBits() {
   constexpr int kMaxCachedBits = kWindowSize - 16;
 #if defined(__aarch64__)
   // Fast path: read eight bytes and add the first six bytes to window_diff_.
@@ -1092,7 +1095,7 @@ void DaalaBitReader::PopulateBits() {
   window_diff_ = window_diff;
 }
 
-void DaalaBitReader::NormalizeRange() {
+void EntropyDecoder::NormalizeRange() {
   const int bits_used = 15 ^ FloorLog2(values_in_range_);
   bits_ -= bits_used;
   values_in_range_ <<= bits_used;
@@ -1100,18 +1103,18 @@ void DaalaBitReader::NormalizeRange() {
 }
 
 // Explicit instantiations.
-template int DaalaBitReader::ReadSymbol<3>(uint16_t* cdf);
-template int DaalaBitReader::ReadSymbol<4>(uint16_t* cdf);
-template int DaalaBitReader::ReadSymbol<5>(uint16_t* cdf);
-template int DaalaBitReader::ReadSymbol<6>(uint16_t* cdf);
-template int DaalaBitReader::ReadSymbol<7>(uint16_t* cdf);
-template int DaalaBitReader::ReadSymbol<8>(uint16_t* cdf);
-template int DaalaBitReader::ReadSymbol<9>(uint16_t* cdf);
-template int DaalaBitReader::ReadSymbol<10>(uint16_t* cdf);
-template int DaalaBitReader::ReadSymbol<11>(uint16_t* cdf);
-template int DaalaBitReader::ReadSymbol<12>(uint16_t* cdf);
-template int DaalaBitReader::ReadSymbol<13>(uint16_t* cdf);
-template int DaalaBitReader::ReadSymbol<14>(uint16_t* cdf);
-template int DaalaBitReader::ReadSymbol<16>(uint16_t* cdf);
+template int EntropyDecoder::ReadSymbol<3>(uint16_t* cdf);
+template int EntropyDecoder::ReadSymbol<4>(uint16_t* cdf);
+template int EntropyDecoder::ReadSymbol<5>(uint16_t* cdf);
+template int EntropyDecoder::ReadSymbol<6>(uint16_t* cdf);
+template int EntropyDecoder::ReadSymbol<7>(uint16_t* cdf);
+template int EntropyDecoder::ReadSymbol<8>(uint16_t* cdf);
+template int EntropyDecoder::ReadSymbol<9>(uint16_t* cdf);
+template int EntropyDecoder::ReadSymbol<10>(uint16_t* cdf);
+template int EntropyDecoder::ReadSymbol<11>(uint16_t* cdf);
+template int EntropyDecoder::ReadSymbol<12>(uint16_t* cdf);
+template int EntropyDecoder::ReadSymbol<13>(uint16_t* cdf);
+template int EntropyDecoder::ReadSymbol<14>(uint16_t* cdf);
+template int EntropyDecoder::ReadSymbol<16>(uint16_t* cdf);
 
 }  // namespace libgav1

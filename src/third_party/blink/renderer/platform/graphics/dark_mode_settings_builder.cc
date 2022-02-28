@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings_builder.h"
 
+#include <string>
+#include <unordered_map>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -11,8 +14,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/forcedark/forcedark_switches.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
-
-#include <string>
 
 namespace blink {
 
@@ -22,12 +23,10 @@ namespace {
 const constexpr DarkModeInversionAlgorithm kDefaultDarkModeInversionAlgorithm =
     DarkModeInversionAlgorithm::kInvertLightnessLAB;
 const constexpr DarkModeImagePolicy kDefaultDarkModeImagePolicy =
-    DarkModeImagePolicy::kFilterNone;
+    DarkModeImagePolicy::kFilterSmart;
 const constexpr int kDefaultTextBrightnessThreshold = 150;
 const constexpr int kDefaultBackgroundBrightnessThreshold = 205;
-const constexpr bool kDefaultDarkModeIsGrayscale = false;
 const constexpr float kDefaultDarkModeContrastPercent = 0.0f;
-const constexpr float kDefaultDarkModeImageGrayscalePercent = 0.0f;
 
 typedef std::unordered_map<std::string, std::string> SwitchParams;
 
@@ -154,20 +153,14 @@ DarkModeSettings BuildDarkModeSettings() {
   settings.image_policy = Clamp<DarkModeImagePolicy>(
       GetImagePolicy(switch_params), DarkModeImagePolicy::kFirst,
       DarkModeImagePolicy::kLast);
-  settings.text_brightness_threshold =
+  settings.foreground_brightness_threshold =
       Clamp<int>(GetTextBrightnessThreshold(switch_params), 0, 255);
   settings.background_brightness_threshold =
       Clamp<int>(GetBackgroundBrightnessThreshold(switch_params), 0, 255);
-  settings.grayscale = GetIntegerSwitchParamValue<bool>(
-      switch_params, "IsGrayScale", kDefaultDarkModeIsGrayscale);
   settings.contrast =
       Clamp<float>(GetFloatSwitchParamValue(switch_params, "ContrastPercent",
                                             kDefaultDarkModeContrastPercent),
                    -1.0f, 1.0f);
-  settings.image_grayscale_percent = Clamp<float>(
-      GetFloatSwitchParamValue(switch_params, "ImageGrayScalePercent",
-                               kDefaultDarkModeImageGrayscalePercent),
-      0.0f, 1.0f);
 
   settings.increase_text_contrast = GetIncreaseTextContrast(switch_params);
 

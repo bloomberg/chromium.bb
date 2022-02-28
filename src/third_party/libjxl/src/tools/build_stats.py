@@ -1,17 +1,8 @@
 #!/usr/bin/env python3
-# Copyright (c) the JPEG XL Project
+# Copyright (c) the JPEG XL Project Authors. All rights reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
 
 
 """build_stats.py: Gather statistics about sizes of dependencies.
@@ -32,6 +23,7 @@ import os
 import re
 import struct
 import subprocess
+import sys
 import tempfile
 
 # Ignore functions with stack size smaller than this value.
@@ -381,6 +373,17 @@ def SizeStats(args):
     with open(args.save, 'w') as f:
       json.dump(stats, f)
 
+  # Check the maximum stack size.
+  exit_code = 0
+  if args.max_stack:
+    for name, size in tgt_stack_sizes.items():
+      if size > args.max_stack:
+        print('Error: %s exceeds stack limit: %d vs %d' % (
+                  name, size, args.max_stack),
+              file=sys.stderr)
+        exit_code = 1
+
+  return exit_code
 
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
@@ -397,8 +400,12 @@ def main():
   parser.add_argument('--binutils', default='',
                       help='prefix path to binutils tools, such as '
                            'aarch64-linux-gnu-')
+  parser.add_argument('--max-stack', default=None, type=int,
+                      help=('Maximum static stack size of a function. If a '
+                            'static stack is larger it will exit with an error '
+                            'code.'))
   args = parser.parse_args()
-  SizeStats(args)
+  sys.exit(SizeStats(args))
 
 
 if __name__ == '__main__':

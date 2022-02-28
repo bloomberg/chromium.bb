@@ -32,6 +32,12 @@ public enum DataType {
   /** Strings. */
   STRING(5),
 
+  /** Bool. */
+  BOOL(6),
+
+  /** 16-bit signed integer. */
+  INT16(7),
+
   /** 8-bit signed integer. */
   INT8(9);
 
@@ -45,14 +51,18 @@ public enum DataType {
   public int byteSize() {
     switch (this) {
       case FLOAT32:
-        return 4;
       case INT32:
         return 4;
+      case INT16:
+        return 2;
       case INT8:
       case UINT8:
         return 1;
       case INT64:
         return 8;
+      case BOOL:
+        // Boolean size is JVM-dependent.
+        return -1;
       case STRING:
         return -1;
     }
@@ -73,11 +83,7 @@ public enum DataType {
       }
     }
     throw new IllegalArgumentException(
-        "DataType error: DataType "
-            + c
-            + " is not recognized in Java (version "
-            + TensorFlowLite.runtimeVersion()
-            + ")");
+        "DataType error: DataType " + c + " is not recognized in Java.");
   }
 
   /** Gets string names of the data type. */
@@ -87,11 +93,15 @@ public enum DataType {
         return "float";
       case INT32:
         return "int";
+      case INT16:
+        return "short";
       case INT8:
       case UINT8:
         return "byte";
       case INT64:
         return "long";
+      case BOOL:
+        return "bool";
       case STRING:
         return "string";
     }

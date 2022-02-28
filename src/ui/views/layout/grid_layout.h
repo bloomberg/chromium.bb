@@ -12,10 +12,15 @@
 #include <vector>
 
 #include "base/check.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/layout/layout_manager.h"
 
+// DEPRECATED - Prefer other solutions as follows:
+// * For true table- and grid-like layouts, use TableLayout.
+// * For aligning a few objects and other cases, use nested FlexLayouts and/or
+//   BoxLayouts.
+//
 // GridLayout is a LayoutManager that positions child Views in a grid. You
 // define the structure of the Grid first, then add the Views.
 // The following creates a trivial grid with two columns separated by
@@ -27,8 +32,7 @@
 //                          // resized.
 //                    1.0,  // This column has a resize weight of 1.
 //                    ColumnSize::kUsePreferred, // Use the preferred size of
-//                    the
-//                                          // view.
+//                                               // the view.
 //                    0,   // Ignored for kUsePref.
 //                    0);  // A minimum width of 0.
 // columns->AddPaddingColumn(kFixedSize, // The padding column is not resizable.
@@ -115,6 +119,10 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   };
 
   GridLayout();
+
+  GridLayout(const GridLayout&) = delete;
+  GridLayout& operator=(const GridLayout&) = delete;
+
   ~GridLayout() override;
 
   // See class description for what this does.
@@ -225,9 +233,9 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
                           int height,
                           gfx::Size* pref) const;
 
-  // Calculates the master columns of all the column sets. See Column for
-  // a description of what a master column is.
-  void CalculateMasterColumnsIfNecessary() const;
+  // Calculates the primary columns of all the column sets. See Column for
+  // a description of what a primary column is.
+  void CalculatePrimaryColumnsIfNecessary() const;
 
   // These are called internally from AddView<T>.
   void AddViewImpl(std::unique_ptr<View> view, int col_span, int row_span);
@@ -265,10 +273,10 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   ColumnSet* GetLastValidColumnSet();
 
   // The View this is installed on.
-  View* host_ = nullptr;
+  raw_ptr<View> host_ = nullptr;
 
-  // Whether or not we've calculated the master/linked columns.
-  mutable bool calculated_master_columns_ = false;
+  // Whether or not we've calculated the primary/linked columns.
+  mutable bool calculated_primary_columns_ = false;
 
   // Used to verify a view isn't added with a row span that expands into
   // another column structure.
@@ -281,7 +289,7 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   int next_column_ = 0;
 
   // Column set for the current row. This is null for padding rows.
-  ColumnSet* current_row_col_set_ = nullptr;
+  raw_ptr<ColumnSet> current_row_col_set_ = nullptr;
 
   // Set to true when adding a View.
   bool adding_view_ = false;
@@ -299,8 +307,6 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   gfx::Size minimum_size_;
 
   bool honors_min_width_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(GridLayout);
 };
 
 // ColumnSet is used to define a set of columns. GridLayout may have any
@@ -308,6 +314,9 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
 // use the AddColumnSet method of GridLayout.
 class VIEWS_EXPORT ColumnSet {
  public:
+  ColumnSet(const ColumnSet&) = delete;
+  ColumnSet& operator=(const ColumnSet&) = delete;
+
   ~ColumnSet();
 
   // Adds a column for padding. When adding views, padding columns are
@@ -368,8 +377,8 @@ class VIEWS_EXPORT ColumnSet {
   void AddViewState(ViewState* view_state);
 
   // Set description of these.
-  void CalculateMasterColumns();
-  void AccumulateMasterColumns();
+  void CalculatePrimaryColumns();
+  void AccumulatePrimaryColumns();
 
   // Sets the size of each linked column to be the same.
   void UnifyLinkedColumnSizes();
@@ -427,15 +436,13 @@ class VIEWS_EXPORT ColumnSet {
   // order.
   std::vector<ViewState*> view_states_;
 
-  // The master column of those columns that are linked. See Column
-  // for a description of what the master column is.
-  std::vector<Column*> master_columns_;
+  // The primary column of those columns that are linked. See Column
+  // for a description of what the primary column is.
+  std::vector<Column*> primary_columns_;
 
 #if DCHECK_IS_ON()
   SizeCalculationType last_calculation_type_ = SizeCalculationType::kPreferred;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(ColumnSet);
 };
 
 }  // namespace views

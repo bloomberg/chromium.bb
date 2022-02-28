@@ -11,6 +11,7 @@ namespace compiler {
 
 // ARM-specific opcodes that specify which assembly sequence to emit.
 // Most opcodes specify a single instruction.
+
 #define TARGET_ARCH_OPCODE_LIST(V) \
   V(ArmAdd)                        \
   V(ArmAnd)                        \
@@ -113,6 +114,7 @@ namespace compiler {
   V(ArmVld1S128)                   \
   V(ArmVst1S128)                   \
   V(ArmVcnt)                       \
+  V(ArmVpadal)                     \
   V(ArmVpaddl)                     \
   V(ArmFloat32Max)                 \
   V(ArmFloat64Max)                 \

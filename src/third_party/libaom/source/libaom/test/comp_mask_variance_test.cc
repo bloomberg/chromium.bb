@@ -23,8 +23,8 @@
 #include "aom_ports/aom_timer.h"
 #include "aom_ports/mem.h"
 #include "av1/common/reconinter.h"
+#include "av1/encoder/reconinter_enc.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -102,7 +102,6 @@ void AV1CompMaskVarianceTest::TearDown() {
   aom_free(comp_pred2_);
   aom_free(pred_);
   aom_free(ref_buffer_);
-  libaom_test::ClearSystemState();
 }
 
 void AV1CompMaskVarianceTest::RunCheckOutput(comp_mask_pred_func test_impl,
@@ -344,7 +343,6 @@ void AV1HighbdCompMaskVarianceTest::TearDown() {
   aom_free(comp_pred2_);
   aom_free(pred_);
   aom_free(ref_buffer_);
-  libaom_test::ClearSystemState();
 }
 
 void AV1HighbdCompMaskVarianceTest::RunCheckOutput(

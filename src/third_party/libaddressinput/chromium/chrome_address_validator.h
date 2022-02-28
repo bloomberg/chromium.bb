@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
@@ -80,6 +79,9 @@ class AddressValidator {
   AddressValidator(std::unique_ptr<::i18n::addressinput::Source> source,
                    std::unique_ptr<::i18n::addressinput::Storage> storage,
                    LoadRulesListener* load_rules_listener);
+
+  AddressValidator(const AddressValidator&) = delete;
+  AddressValidator& operator=(const AddressValidator&) = delete;
 
   virtual ~AddressValidator();
 
@@ -208,8 +210,6 @@ class AddressValidator {
   // any WeakPtrs to AddressValidator are invalidated before its members
   // variable's destructors are executed, rendering them invalid.
   base::WeakPtrFactory<AddressValidator> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AddressValidator);
 };
 
 }  // namespace autofill

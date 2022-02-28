@@ -11,7 +11,7 @@ crbug.com/901056 virtual/plz-dedicated-worker/external/wpt/service-workers/servi
 #
 # These timeouts are generally because of prefetching errors.
 ### http/tests/loading/sxg/
-crbug.com/901056 http/tests/loading/sxg/sxg-subresource-origin-trial.https.html [ Timeout Failure ]
+crbug.com/901056 http/tests/loading/sxg/sxg-subresource-origin-trial.https.html [ Failure Timeout ]
 
 ### http/tests/inspector-protocol/issues/
 crbug.com/901056 http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-oopif.js [ Timeout ]
@@ -39,8 +39,6 @@ crbug.com/901056 virtual/plz-dedicated-worker/external/wpt/resource-timing/neste
 #
 # Text failures
 #
-### fast/block/float
-crbug.com/901056 fast/block/float/4145535Crash.html [ Failure Pass ]
 
 ### http/tests/devtools/console
 # An extra "VM" is printed in front of the page name.
@@ -49,12 +47,6 @@ crbug.com/901056 http/tests/devtools/console/console-uncaught-exception.js [ Fai
 ### http/tests/devtools/oopif
 # A message comes up in the log as "PROMISE FAILURE: Error: Can't reveal null" (investigation needed)
 crbug.com/901056 http/tests/devtools/oopif/oopif-presentation-console-messages.js [ Failure ]
-
-### http/tests/loading/appcache-delay/
-# New failure (investigation required)
-crbug.com/901056 http/tests/loading/appcache-delay/appcache-loads-subresource.html [ Failure ]
-# Still fails, but for a different reason
-crbug.com/901056 http/tests/loading/appcache-delay/link_header_preload_on_commit.php [ Failure ]
 
 ### http/tests/misc/
 crbug.com/901056 http/tests/misc/image-blocked-src-change.html [ Failure ]
@@ -68,22 +60,16 @@ crbug.com/901056 http/tests/security/contentSecurityPolicy/nonces/scriptnonce-re
 # Probably a viewport sizing issue (investigation needed).
 crbug.com/901056 paint/invalidation/overflow/resize-child-within-overflow.html [ Failure ]
 
-### virtual/conditional-appcache-delay/http/tests/loading/appcache-delay/
-# WontFix (AppCache will be removed at some point.)
-crbug.com/901056 virtual/conditional-appcache-delay/http/tests/loading/appcache-delay/appcache-loads-subresource.html [ Failure ]
-crbug.com/901056 virtual/conditional-appcache-delay/http/tests/loading/appcache-delay/preload-does-not-jump-the-queue.html [ Failure ]
-
-
 ### These are ok, and just need to be rebaselined once the flag is enabled. The path
 ### names here are > 200 characters, so they can't be landed.
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-insert-before-expected.txt [ Pass Failure ]
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-in-sync-event-expected.txt [ Pass Failure ]
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-networkState-expected.txt [ Pass Failure ]
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-load-expected.txt [ Pass Failure ]
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-pause-expected.txt [ Pass Failure ]
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-play-expected.txt [ Pass Failure ]
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-remove-src-expected.txt [ Pass Failure ]
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-remove-source-expected.txt [ Pass Failure ]
-external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-remove-src-expected.txt [ Pass Failure ]
-external/wpt/html/webappapis/scripting/processing-model-2/unhandled-promise-rejections/promise-rejection-event-during-parse-expected.txt [ Pass Failure ]
-virtual/v8-off-thread-finalization/external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/029-expected.txt [ Pass Failure ]
+external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-insert-before-expected.txt [ Failure Pass ]
+external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-in-sync-event-expected.txt [ Failure Pass ]
+external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-networkState-expected.txt [ Failure Pass ]
+external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-load-expected.txt [ Failure Pass ]
+external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-pause-expected.txt [ Failure Pass ]
+external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-play-expected.txt [ Failure Pass ]
+external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-remove-src-expected.txt [ Failure Pass ]
+external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-remove-source-expected.txt [ Failure Pass ]
+external/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-remove-src-expected.txt [ Failure Pass ]
+external/wpt/html/webappapis/scripting/processing-model-2/unhandled-promise-rejections/promise-rejection-event-during-parse-expected.txt [ Failure Pass ]
+virtual/v8-off-thread-finalization/external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/029-expected.txt [ Failure Pass ]

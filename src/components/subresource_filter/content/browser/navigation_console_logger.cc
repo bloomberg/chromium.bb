@@ -5,6 +5,7 @@
 #include "components/subresource_filter/content/browser/navigation_console_logger.h"
 
 #include "base/memory/ptr_util.h"
+#include "content/public/browser/navigating_frame_type.h"
 #include "content/public/browser/navigation_handle.h"
 
 namespace subresource_filter {
@@ -15,6 +16,12 @@ void NavigationConsoleLogger::LogMessageOnCommit(
     blink::mojom::ConsoleMessageLevel level,
     const std::string& message) {
   DCHECK(handle->IsInMainFrame());
+  if (handle->GetNavigatingFrameType() ==
+      content::NavigatingFrameType::kFencedFrameRoot) {
+    // TODO(crbug.com/1263541): Replace it with DCHECK once fenced frames use
+    // the embedder's ContentSubresourceFilterThrottleManager.
+    return;
+  }
   if (handle->HasCommitted() && !handle->IsErrorPage()) {
     handle->GetRenderFrameHost()->AddMessageToConsole(level, message);
   } else {
@@ -27,21 +34,16 @@ void NavigationConsoleLogger::LogMessageOnCommit(
 NavigationConsoleLogger* NavigationConsoleLogger::CreateIfNeededForNavigation(
     content::NavigationHandle* handle) {
   DCHECK(handle->IsInMainFrame());
-  content::WebContents* contents = handle->GetWebContents();
-  auto* logger = FromWebContents(contents);
-  if (!logger) {
-    auto new_logger = base::WrapUnique(new NavigationConsoleLogger(handle));
-    logger = new_logger.get();
-    contents->SetUserData(UserDataKey(), std::move(new_logger));
-  }
-  return logger;
+  DCHECK_NE(handle->GetNavigatingFrameType(),
+            content::NavigatingFrameType::kFencedFrameRoot);
+  return GetOrCreateForNavigationHandle(*handle);
 }
 
 NavigationConsoleLogger::~NavigationConsoleLogger() = default;
 
 NavigationConsoleLogger::NavigationConsoleLogger(
-    content::NavigationHandle* handle)
-    : content::WebContentsObserver(handle->GetWebContents()), handle_(handle) {}
+    content::NavigationHandle& handle)
+    : content::WebContentsObserver(handle.GetWebContents()), handle_(&handle) {}
 
 void NavigationConsoleLogger::DidFinishNavigation(
     content::NavigationHandle* handle) {
@@ -56,9 +58,9 @@ void NavigationConsoleLogger::DidFinishNavigation(
     }
   }
   // Deletes |this|.
-  web_contents()->RemoveUserData(UserDataKey());
+  DeleteForNavigationHandle(*handle);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(NavigationConsoleLogger)
+NAVIGATION_HANDLE_USER_DATA_KEY_IMPL(NavigationConsoleLogger);
 
 }  // namespace subresource_filter

@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "ipc/ipc_param_traits.h"
@@ -25,6 +24,10 @@ class NativeStructTest : public BindingsTestBase,
                          public test::NativeTypeTester {
  public:
   NativeStructTest() : receiver_(this, remote_.BindNewPipeAndPassReceiver()) {}
+
+  NativeStructTest(const NativeStructTest&) = delete;
+  NativeStructTest& operator=(const NativeStructTest&) = delete;
+
   ~NativeStructTest() override = default;
 
   test::NativeTypeTester* remote() { return remote_.get(); }
@@ -44,8 +47,6 @@ class NativeStructTest : public BindingsTestBase,
 
   Remote<test::NativeTypeTester> remote_;
   Receiver<test::NativeTypeTester> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeStructTest);
 };
 
 TEST_P(NativeStructTest, NativeStruct) {

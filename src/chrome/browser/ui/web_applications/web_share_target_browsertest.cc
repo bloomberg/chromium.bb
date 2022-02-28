@@ -18,8 +18,8 @@
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
-#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
 #include "chrome/browser/chromeos/fileapi/recent_model.h"
 #include "chrome/browser/sharesheet/sharesheet_service.h"
@@ -27,8 +27,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/services/app_service/public/cpp/share_target.h"
 #include "content/public/browser/web_contents.h"
@@ -42,7 +42,7 @@
 
 namespace {
 
-apps::AppServiceProxyChromeOs* GetAppServiceProxy(Profile* profile) {
+apps::AppServiceProxy* GetAppServiceProxy(Profile* profile) {
   DCHECK(
       apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile));
   return apps::AppServiceProxyFactory::GetForProfile(profile);
@@ -100,10 +100,10 @@ class WebShareTargetBrowserTest : public WebAppControllerBrowserTest {
                                             const GURL& expected_url) {
     apps::AppLaunchParams params = apps::CreateAppLaunchParamsForIntent(
         app_id,
-        /*event_flags=*/0, apps::mojom::AppLaunchSource::kSourceAppLauncher,
+        /*event_flags=*/0, apps::mojom::LaunchSource::kFromSharesheet,
         display::kDefaultDisplayId,
-        apps::mojom::LaunchContainer::kLaunchContainerWindow,
-        std::move(intent));
+        apps::mojom::LaunchContainer::kLaunchContainerWindow, std::move(intent),
+        profile());
 
     ui_test_utils::UrlLoadObserver url_observer(
         expected_url, content::NotificationService::AllSources());
@@ -119,7 +119,7 @@ class WebShareTargetBrowserTest : public WebAppControllerBrowserTest {
 
   std::string ExecuteShare(const std::string& script) {
     const GURL url = embedded_test_server()->GetURL("/webshare/index.html");
-    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
     content::WebContents* const contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     return content::EvalJs(contents, script).ExtractString();
@@ -274,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(WebShareTargetBrowserTest, PostLink) {
       embedded_test_server()->GetURL("/web_share_target/poster.html");
   const AppId app_id = web_app::InstallWebAppFromManifest(browser(), app_url);
   const apps::ShareTarget* share_target =
-      WebAppProvider::Get(browser()->profile())
+      WebAppProvider::GetForTest(browser()->profile())
           ->registrar()
           .GetAppShareTarget(app_id);
   EXPECT_EQ(share_target->method, apps::ShareTarget::Method::kPost);
@@ -307,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(WebShareTargetBrowserTest, GetLink) {
       embedded_test_server()->GetURL("/web_share_target/gatherer.html");
   const AppId app_id = web_app::InstallWebAppFromManifest(browser(), app_url);
   const apps::ShareTarget* share_target =
-      WebAppProvider::Get(browser()->profile())
+      WebAppProvider::GetForTest(browser()->profile())
           ->registrar()
           .GetAppShareTarget(app_id);
   EXPECT_EQ(share_target->method, apps::ShareTarget::Method::kGet);
@@ -368,6 +368,31 @@ IN_PROC_BROWSER_TEST_F(WebShareTargetBrowserTest, ShareToChartsWebApp) {
   web_contents = ShareToTarget("share_url()");
   EXPECT_EQ("https://example.com/", ReadTextContent(web_contents, "link"));
   EXPECT_EQ(NumRecentFiles(web_contents), 0U);
+}
+
+IN_PROC_BROWSER_TEST_F(WebShareTargetBrowserTest, ShareImage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL app_url =
+      embedded_test_server()->GetURL("/web_share_target/multimedia.html");
+  const AppId app_id = web_app::InstallWebAppFromManifest(browser(), app_url);
+  sharesheet::SharesheetService::SetSelectedAppForTesting(
+      base::UTF8ToUTF16(app_id));
+
+  content::WebContents* web_contents = ShareToTarget("share_single_file()");
+  EXPECT_EQ(std::string(12, '*'), ReadTextContent(web_contents, "image"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebShareTargetBrowserTest, ShareMultimedia) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL app_url =
+      embedded_test_server()->GetURL("/web_share_target/multimedia.html");
+  const AppId app_id = web_app::InstallWebAppFromManifest(browser(), app_url);
+  sharesheet::SharesheetService::SetSelectedAppForTesting(
+      base::UTF8ToUTF16(app_id));
+
+  content::WebContents* web_contents = ShareToTarget("share_multiple_files()");
+  EXPECT_EQ(std::string(345, '*'), ReadTextContent(web_contents, "audio"));
+  EXPECT_EQ(std::string(67890, '*'), ReadTextContent(web_contents, "video"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebShareTargetBrowserTest, ShareToPartialWild) {

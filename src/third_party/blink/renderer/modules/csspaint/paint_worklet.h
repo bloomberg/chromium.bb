@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/workers/worklet.h"
 #include "third_party/blink/renderer/modules/csspaint/document_paint_definition.h"
@@ -33,13 +32,17 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   static PaintWorklet* From(LocalDOMWindow&);
 
   explicit PaintWorklet(LocalDOMWindow&);
+
+  PaintWorklet(const PaintWorklet&) = delete;
+  PaintWorklet& operator=(const PaintWorklet&) = delete;
+
   ~PaintWorklet() override;
 
   void AddPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);
   // The |container_size| is without subpixel snapping.
   scoped_refptr<Image> Paint(const String& name,
                              const ImageResourceObserver&,
-                             const FloatSize& container_size,
+                             const gfx::SizeF& container_size,
                              const CSSStyleValueVector*,
                              float device_scale_factor);
 
@@ -145,8 +148,6 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   // tests may be testing the functionality of the APIs when the paint worklet
   // is off the main thread.
   bool is_paint_off_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintWorklet);
 };
 
 }  // namespace blink

@@ -21,6 +21,7 @@
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -54,12 +55,16 @@ constexpr char kValidFailureTokenResponse[] = R"(
 
 class MockOAuth2AccessTokenConsumer : public OAuth2AccessTokenConsumer {
  public:
-  MockOAuth2AccessTokenConsumer() {}
-  ~MockOAuth2AccessTokenConsumer() override {}
+  MockOAuth2AccessTokenConsumer() = default;
+  ~MockOAuth2AccessTokenConsumer() override = default;
 
   MOCK_METHOD1(OnGetTokenSuccess,
                void(const OAuth2AccessTokenConsumer::TokenResponse&));
   MOCK_METHOD1(OnGetTokenFailure, void(const GoogleServiceAuthError& error));
+
+  std::string GetConsumerName() const override {
+    return "oauth2_access_token_fetcher_impl_unittest";
+  }
 };
 
 class URLLoaderFactoryInterceptor {

@@ -3,7 +3,6 @@ This test (crudely) documents Blink's web-exposed CSS properties.  All changes t
 
 accentColor
 additiveSymbols
-advanceOverride
 alignContent
 alignItems
 alignSelf
@@ -19,6 +18,7 @@ animationName
 animationPlayState
 animationTimeline
 animationTimingFunction
+appRegion
 appearance
 ascentOverride
 aspectRatio
@@ -130,7 +130,14 @@ columnSpan
 columnWidth
 columns
 contain
+containIntrinsicBlockSize
+containIntrinsicHeight
+containIntrinsicInlineSize
 containIntrinsicSize
+containIntrinsicWidth
+container
+containerName
+containerType
 content
 contentVisibility
 counterIncrement
@@ -173,6 +180,10 @@ fontSize
 fontSizeAdjust
 fontStretch
 fontStyle
+fontSynthesis
+fontSynthesisSmallCaps
+fontSynthesisStyle
+fontSynthesisWeight
 fontVariant
 fontVariantCaps
 fontVariantEastAsian
@@ -410,7 +421,6 @@ textSizeAdjust
 textTransform
 textUnderlineOffset
 textUnderlinePosition
-timeRange
 top
 touchAction
 transform

@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
@@ -50,7 +49,15 @@ class ContentSettingsStore
         bool incognito) = 0;
   };
 
+  static constexpr char kContentSettingKey[] = "setting";
+  static constexpr char kContentSettingsTypeKey[] = "type";
+  static constexpr char kPrimaryPatternKey[] = "primaryPattern";
+  static constexpr char kSecondaryPatternKey[] = "secondaryPattern";
+
   ContentSettingsStore();
+
+  ContentSettingsStore(const ContentSettingsStore&) = delete;
+  ContentSettingsStore& operator=(const ContentSettingsStore&) = delete;
 
   // //////////////////////////////////////////////////////////////////////////
 
@@ -148,8 +155,6 @@ class ContentSettingsStore
   base::ObserverList<Observer, false>::Unchecked observers_;
 
   mutable base::Lock lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingsStore);
 };
 
 }  // namespace extensions

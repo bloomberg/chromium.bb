@@ -78,7 +78,7 @@ public class NavigationSheetTest {
         public TestNavigationEntry(int index, GURL url, GURL virtualUrl, GURL originalUrl,
                 String title, Bitmap favicon, int transition, long timestamp) {
             super(index, url, virtualUrl, originalUrl, /*referrerUrl=*/null, title, favicon,
-                    transition, timestamp);
+                    transition, timestamp, /* isInitialEntry=*/false);
         }
     }
 
@@ -128,7 +128,7 @@ public class NavigationSheetTest {
                         GURL.emptyGURL(),
                         mActivityTestRule.getActivity().getResources().getString(
                                 R.string.show_full_history),
-                        null, 0, 0));
+                        null, 0, 0, /* isInitialEntry=*/false));
             }
             return history;
         }
@@ -193,6 +193,21 @@ public class NavigationSheetTest {
 
         // Wait for the long press timeout to trigger and show the navigation popup.
         CriteriaHelper.pollUiThread(() -> getNavigationSheet() != null);
+    }
+
+    @Test
+    @MediumTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    public void testLongPressBackAfterActivityDestroy() {
+        KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
+        ChromeTabbedActivity activity = mActivityTestRule.getActivity();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            activity.onKeyDown(KeyEvent.KEYCODE_BACK, event);
+            // Simulate the Activity destruction after a runnable to display navigation
+            // sheet gets delay-posted.
+            activity.getRootUiCoordinatorForTesting().destroyActivityForTesting();
+        });
+        // Test should finish without crash.
     }
 
     @Test

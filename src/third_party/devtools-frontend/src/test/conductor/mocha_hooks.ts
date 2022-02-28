@@ -18,10 +18,9 @@ import {startServer, stopServer} from './test_server.js';
 
 process.on('SIGINT', postFileTeardown);
 
-// TODO (jacktfranklin): remove fallback to process.env once test runner config migration is done: crbug.com/1186163
-const TEST_SERVER_TYPE = getTestRunnerConfigSetting('test-server-type', process.env.TEST_SERVER_TYPE);
+const TEST_SERVER_TYPE = getTestRunnerConfigSetting<string>('test-server-type', 'hosted-mode');
 
-if (TEST_SERVER_TYPE !== 'hosted-mode' && TEST_SERVER_TYPE !== 'component-docs') {
+if (TEST_SERVER_TYPE !== 'hosted-mode' && TEST_SERVER_TYPE !== 'component-docs' && TEST_SERVER_TYPE !== 'none') {
   throw new Error(`Invalid test server type: ${TEST_SERVER_TYPE}`);
 }
 
@@ -45,6 +44,9 @@ export async function mochaGlobalSetup(this: Mocha.Suite) {
   // Start the test server in the 'main' process. In parallel mode, we
   // share one server between all parallel runners. The parallel runners are all
   // in different processes, so we pass the port number as an environment var.
+  if (DERIVED_SERVER_TYPE === 'none') {
+    return;
+  }
   process.env.testServerPort = String(await startServer(DERIVED_SERVER_TYPE));
   console.log(`Started ${DERIVED_SERVER_TYPE} server on port ${process.env.testServerPort}`);
 }
@@ -73,7 +75,7 @@ export const mochaHooks = {
 
     // Pause when running interactively in debug mode. This is mututally
     // exclusive with parallel mode.
-    if (process.env['DEBUG']) {
+    if (process.env['DEBUG_TEST']) {
       console.log('Running in debug mode.');
       console.log(' - Press enter to run the test suite.');
       console.log(' - Press ctrl + c to quit.');
@@ -114,11 +116,9 @@ export const mochaHooks = {
       coverageMap: remappedCoverageMap,
       defaultSummarizer: 'nested',
     });
-    // The types in @types/istanbul-lib-report are incorrectly typing `create`
-    // to return a Visitor instead of a ReportBase.
-    (reports.create('html') as unknown as report.ReportBase).execute(context);
-    (reports.create('json') as unknown as report.ReportBase).execute(context);
-    (reports.create('json-summary') as unknown as report.ReportBase).execute(context);
+    reports.create('html').execute(context);
+    reports.create('json').execute(context);
+    reports.create('json-summary').execute(context);
   },
   // In both modes, run before each test.
   beforeEach: async function(this: Mocha.Suite) {

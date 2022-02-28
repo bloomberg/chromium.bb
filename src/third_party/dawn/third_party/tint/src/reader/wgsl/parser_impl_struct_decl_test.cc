@@ -36,10 +36,10 @@ struct S {
   EXPECT_FALSE(s.errored);
   EXPECT_TRUE(s.matched);
   ASSERT_NE(s.value, nullptr);
-  ASSERT_EQ(s->name(), p->builder().Symbols().Register("S"));
-  ASSERT_EQ(s->members().size(), 2u);
-  EXPECT_EQ(s->members()[0]->symbol(), p->builder().Symbols().Register("a"));
-  EXPECT_EQ(s->members()[1]->symbol(), p->builder().Symbols().Register("b"));
+  ASSERT_EQ(s->name, p->builder().Symbols().Register("S"));
+  ASSERT_EQ(s->members.size(), 2u);
+  EXPECT_EQ(s->members[0]->symbol, p->builder().Symbols().Register("a"));
+  EXPECT_EQ(s->members[1]->symbol, p->builder().Symbols().Register("b"));
 }
 
 TEST_F(ParserImplTest, StructDecl_ParsesWithDecoration) {
@@ -58,12 +58,12 @@ TEST_F(ParserImplTest, StructDecl_ParsesWithDecoration) {
   EXPECT_FALSE(s.errored);
   EXPECT_TRUE(s.matched);
   ASSERT_NE(s.value, nullptr);
-  ASSERT_EQ(s->name(), p->builder().Symbols().Register("B"));
-  ASSERT_EQ(s->members().size(), 2u);
-  EXPECT_EQ(s->members()[0]->symbol(), p->builder().Symbols().Register("a"));
-  EXPECT_EQ(s->members()[1]->symbol(), p->builder().Symbols().Register("b"));
-  ASSERT_EQ(s->decorations().size(), 1u);
-  EXPECT_TRUE(s->decorations()[0]->Is<ast::StructBlockDecoration>());
+  ASSERT_EQ(s->name, p->builder().Symbols().Register("B"));
+  ASSERT_EQ(s->members.size(), 2u);
+  EXPECT_EQ(s->members[0]->symbol, p->builder().Symbols().Register("a"));
+  EXPECT_EQ(s->members[1]->symbol, p->builder().Symbols().Register("b"));
+  ASSERT_EQ(s->decorations.size(), 1u);
+  EXPECT_TRUE(s->decorations[0]->Is<ast::StructBlockDecoration>());
 }
 
 TEST_F(ParserImplTest, StructDecl_ParsesWithMultipleDecoration) {
@@ -83,13 +83,13 @@ TEST_F(ParserImplTest, StructDecl_ParsesWithMultipleDecoration) {
   EXPECT_FALSE(s.errored);
   EXPECT_TRUE(s.matched);
   ASSERT_NE(s.value, nullptr);
-  ASSERT_EQ(s->name(), p->builder().Symbols().Register("S"));
-  ASSERT_EQ(s->members().size(), 2u);
-  EXPECT_EQ(s->members()[0]->symbol(), p->builder().Symbols().Register("a"));
-  EXPECT_EQ(s->members()[1]->symbol(), p->builder().Symbols().Register("b"));
-  ASSERT_EQ(s->decorations().size(), 2u);
-  EXPECT_TRUE(s->decorations()[0]->Is<ast::StructBlockDecoration>());
-  EXPECT_TRUE(s->decorations()[1]->Is<ast::StructBlockDecoration>());
+  ASSERT_EQ(s->name, p->builder().Symbols().Register("S"));
+  ASSERT_EQ(s->members.size(), 2u);
+  EXPECT_EQ(s->members[0]->symbol, p->builder().Symbols().Register("a"));
+  EXPECT_EQ(s->members[1]->symbol, p->builder().Symbols().Register("b"));
+  ASSERT_EQ(s->decorations.size(), 2u);
+  EXPECT_TRUE(s->decorations[0]->Is<ast::StructBlockDecoration>());
+  EXPECT_TRUE(s->decorations[1]->Is<ast::StructBlockDecoration>());
 }
 
 TEST_F(ParserImplTest, StructDecl_EmptyMembers) {
@@ -104,7 +104,7 @@ TEST_F(ParserImplTest, StructDecl_EmptyMembers) {
   EXPECT_FALSE(s.errored);
   EXPECT_TRUE(s.matched);
   ASSERT_NE(s.value, nullptr);
-  ASSERT_EQ(s->members().size(), 0u);
+  ASSERT_EQ(s->members.size(), 0u);
 }
 
 TEST_F(ParserImplTest, StructDecl_MissingIdent) {
@@ -137,22 +137,6 @@ TEST_F(ParserImplTest, StructDecl_MissingBracketLeft) {
 
   EXPECT_TRUE(p->has_error());
   EXPECT_EQ(p->error(), "1:10: expected '{' for struct declaration");
-}
-
-TEST_F(ParserImplTest, StructDecl_InvalidStructBody) {
-  auto p = parser("struct S { a : B; }");
-  auto decos = p->decoration_list();
-  EXPECT_FALSE(decos.errored);
-  EXPECT_FALSE(decos.matched);
-  ASSERT_EQ(decos.value.size(), 0u);
-
-  auto s = p->struct_decl(decos.value);
-  EXPECT_TRUE(s.errored);
-  EXPECT_FALSE(s.matched);
-  EXPECT_EQ(s.value, nullptr);
-
-  EXPECT_TRUE(p->has_error());
-  EXPECT_EQ(p->error(), "1:16: unknown constructed type 'B'");
 }
 
 TEST_F(ParserImplTest, StructDecl_InvalidDecorationDecl) {

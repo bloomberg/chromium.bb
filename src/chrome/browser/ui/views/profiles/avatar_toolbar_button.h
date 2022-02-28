@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_AVATAR_TOOLBAR_BUTTON_H_
 
 #include "base/feature_list.h"
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
@@ -29,8 +31,8 @@ class AvatarToolbarButton : public ToolbarButton,
     kGuestSession,
     kAnimatedUserIdentity,
     kSyncPaused,
+    // An error in sync-the-feature or sync-the-transport.
     kSyncError,
-    kPasswordsOnlySyncError,
     kNormal
   };
 
@@ -74,16 +76,14 @@ class AvatarToolbarButton : public ToolbarButton,
   // Can be used in tests to reduce or remove the delay before showing the IPH.
   static void SetIPHMinDelayAfterCreationForTesting(base::TimeDelta delay);
 
- protected:
-  // ToolbarButton:
-  void NotifyClick(const ui::Event& event) override;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(AvatarToolbarButtonTest,
                            HighlightMeetsMinimumContrast);
 
   // ui::PropertyHandler:
   void AfterPropertyChange(const void* key, int64_t old_value) override;
+
+  void ButtonPressed();
 
   std::u16string GetAvatarTooltipText() const;
   ui::ImageModel GetAvatarIcon(ButtonState state,
@@ -98,8 +98,8 @@ class AvatarToolbarButton : public ToolbarButton,
 
   std::unique_ptr<AvatarToolbarButtonDelegate> delegate_;
 
-  Browser* const browser_;
-  ToolbarIconContainerView* const parent_;
+  const raw_ptr<Browser> browser_;
+  const raw_ptr<ToolbarIconContainerView> parent_;
 
   // Time when this object was created.
   const base::TimeTicks creation_time_;
@@ -108,7 +108,7 @@ class AvatarToolbarButton : public ToolbarButton,
   // separate animation.
   static base::TimeDelta g_iph_min_delay_after_creation;
 
-  FeaturePromoControllerViews* const feature_promo_controller_;
+  const raw_ptr<FeaturePromoControllerViews> feature_promo_controller_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 

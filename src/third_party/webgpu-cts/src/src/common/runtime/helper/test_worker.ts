@@ -1,7 +1,7 @@
-import { LogMessageWithStack } from '../../framework/logging/log_message.js';
-import { TransferredTestCaseResult, LiveTestCaseResult } from '../../framework/logging/result.js';
-import { TestCaseRecorder } from '../../framework/logging/test_case_recorder.js';
-import { TestQueryWithExpectation } from '../../framework/query/query.js';
+import { LogMessageWithStack } from '../../internal/logging/log_message.js';
+import { TransferredTestCaseResult, LiveTestCaseResult } from '../../internal/logging/result.js';
+import { TestCaseRecorder } from '../../internal/logging/test_case_recorder.js';
+import { TestQueryWithExpectation } from '../../internal/query/query.js';
 
 export class TestWorker {
   private readonly debug: boolean;

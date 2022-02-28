@@ -80,18 +80,6 @@ bool ProfilerGroup::CanProfile(LocalDOMWindow* local_window,
     return false;
   }
 
-  // Bypass COOP/COEP checks when the |--disable-web-security| flag is present.
-  auto* local_frame = local_window->GetFrame();
-  DCHECK(local_frame);
-  if (local_frame->GetSettings()->GetWebSecurityEnabled() &&
-      !local_window->CrossOriginIsolatedCapability()) {
-    if (exception_state) {
-      exception_state->ThrowSecurityError(
-          "performance.profile() requires COOP+COEP (web.dev/coop-coep)");
-    }
-    return false;
-  }
-
   return true;
 }
 
@@ -115,7 +103,7 @@ ProfilerGroup* ProfilerGroup::From(v8::Isolate* isolate) {
 }
 
 base::TimeDelta ProfilerGroup::GetBaseSampleInterval() {
-  return base::TimeDelta::FromMilliseconds(kBaseSampleIntervalMs);
+  return base::Milliseconds(kBaseSampleIntervalMs);
 }
 
 ProfilerGroup::ProfilerGroup(v8::Isolate* isolate)
@@ -164,7 +152,7 @@ Profiler* ProfilerGroup::CreateProfiler(ScriptState* script_state,
   DCHECK(init_options.hasSampleInterval());
 
   const base::TimeDelta sample_interval =
-      base::TimeDelta::FromMillisecondsD(init_options.sampleInterval());
+      base::Milliseconds(init_options.sampleInterval());
   const int64_t sample_interval_us = sample_interval.InMicroseconds();
 
   if (sample_interval_us < 0 ||
@@ -182,9 +170,7 @@ Profiler* ProfilerGroup::CreateProfiler(ScriptState* script_state,
   String profiler_id = NextProfilerId();
 
   v8::CpuProfilingOptions options(
-      v8::kLeafNodeLineNumbers,
-      init_options.hasMaxBufferSize() ? init_options.maxBufferSize()
-                                      : v8::CpuProfilingOptions::kNoSampleLimit,
+      v8::kLeafNodeLineNumbers, init_options.maxBufferSize(),
       static_cast<int>(sample_interval_us), script_state->GetContext());
 
   v8::CpuProfilingStatus status = cpu_profiler_->StartProfiling(

@@ -5,7 +5,10 @@
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_default_account/consistency_default_account_view_controller.h"
 
 #import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_layout_delegate.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/views/identity_button_control.h"
+#import "ios/chrome/browser/ui/authentication/views/identity_view.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/button_util.h"
@@ -23,14 +26,8 @@ namespace {
 
 // Margins for |self.contentView| (top, bottom, leading and trailing).
 constexpr CGFloat kContentMargin = 16.;
-// Avatar height and width.
-constexpr CGFloat kAvatarSize = 30.;
 // Space between elements in |self.contentView|.
 constexpr CGFloat kContentSpacing = 16.;
-// Constants for IdentityButtonControl.
-constexpr CGFloat kMinimumTopMargin = 10.;
-constexpr CGFloat kMinimumBottomMargin = 8.;
-constexpr CGFloat kTitleSubtitleMargin = 0.;
 
 }
 
@@ -83,6 +80,11 @@ constexpr CGFloat kTitleSubtitleMargin = 0.;
 
 #pragma mark - UIViewController
 
+- (void)viewWillAppear:(BOOL)animated {
+  self.identityButtonControl.backgroundColor =
+      [UIColor colorNamed:kGroupedSecondaryBackgroundColor];
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
   // Set the navigation title in the left bar button item to have left
@@ -92,22 +94,28 @@ constexpr CGFloat kTitleSubtitleMargin = 0.;
   titleLabel.text =
       l10n_util::GetNSString(IDS_IOS_CONSISTENCY_PROMO_DEFAULT_ACCOUNT_TITLE);
   titleLabel.textAlignment = NSTextAlignmentLeft;
+  titleLabel.adjustsFontSizeToFitWidth = YES;
+  titleLabel.minimumScaleFactor = 0.1;
   UIBarButtonItem* leftItem =
       [[UIBarButtonItem alloc] initWithCustomView:titleLabel];
   self.navigationItem.leftBarButtonItem = leftItem;
+
   // Set the skip button in the right bar button item.
-  UIBarButtonItem* anotherButton = [[UIBarButtonItem alloc]
+  UIBarButtonItem* skipButton = [[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_CONSISTENCY_PROMO_SKIP)
               style:UIBarButtonItemStylePlain
              target:self
              action:@selector(skipButtonAction:)];
-  self.navigationItem.rightBarButtonItem = anotherButton;
+  skipButton.accessibilityIdentifier =
+      kWebSigninSkipButtonAccessibilityIdentifier;
+  self.navigationItem.rightBarButtonItem = skipButton;
   // Replace the controller view by the scroll view.
   UIScrollView* scrollView = [[UIScrollView alloc] init];
   scrollView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:scrollView];
   [NSLayoutConstraint activateConstraints:@[
-    [scrollView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+    [scrollView.topAnchor
+        constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
     [scrollView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
     [scrollView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
     [scrollView.trailingAnchor
@@ -139,8 +147,14 @@ constexpr CGFloat kTitleSubtitleMargin = 0.;
   ]];
   // Add the label.
   UILabel* label = [[UILabel alloc] init];
-  label.text =
-      l10n_util::GetNSString(IDS_IOS_CONSISTENCY_PROMO_DEFAULT_ACCOUNT_LABEL);
+  if (self.enterpriseSignInRestrictions & kEnterpriseRestrictAccounts) {
+    label.text = l10n_util::GetNSString(
+        IDS_IOS_CONSISTENCY_PROMO_DEFAULT_ACCOUNT_RESTRICTIONS_LABEL);
+  } else {
+    label.text =
+        l10n_util::GetNSString(IDS_IOS_CONSISTENCY_PROMO_DEFAULT_ACCOUNT_LABEL);
+  }
+
   label.textColor = [UIColor colorNamed:kGrey700Color];
   label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
   label.numberOfLines = 0;
@@ -150,17 +164,8 @@ constexpr CGFloat kTitleSubtitleMargin = 0.;
   // Add IdentityButtonControl for the default identity.
   self.identityButtonControl =
       [[IdentityButtonControl alloc] initWithFrame:CGRectZero];
-  self.identityButtonControl.backgroundColor =
-      [UIColor colorNamed:kGroupedSecondaryBackgroundColor];
   self.identityButtonControl.arrowDirection = IdentityButtonControlArrowRight;
-  self.identityButtonControl.avatarSize = kAvatarSize;
-  self.identityButtonControl.minimumTopMargin = kMinimumTopMargin;
-  self.identityButtonControl.minimumBottomMargin = kMinimumBottomMargin;
-  self.identityButtonControl.titleSubtitleMargin = kTitleSubtitleMargin;
-  self.identityButtonControl.titleFont =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  self.identityButtonControl.subtitleFont =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+  self.identityButtonControl.identityViewStyle = IdentityViewStyleConsistency;
   [self.identityButtonControl addTarget:self
                                  action:@selector(identityButtonControlAction:
                                                                      forEvent:)
@@ -168,12 +173,13 @@ constexpr CGFloat kTitleSubtitleMargin = 0.;
   [self.contentView addArrangedSubview:self.identityButtonControl];
   [NSLayoutConstraint activateConstraints:@[
     [self.identityButtonControl.widthAnchor
-        constraintEqualToAnchor:self.contentView.widthAnchor
-                       constant:0]
+        constraintEqualToAnchor:self.contentView.widthAnchor]
   ]];
   // Add primary button.
   self.continueAsButton =
       PrimaryActionButton(/* pointer_interaction_enabled */ YES);
+  self.continueAsButton.accessibilityIdentifier =
+      kWebSigninContinueAsButtonAccessibilityIdentifier;
   self.continueAsButton.translatesAutoresizingMaskIntoConstraints = NO;
   [self.continueAsButton addTarget:self
                             action:@selector(signInWithDefaultIdentityAction:)
@@ -181,8 +187,7 @@ constexpr CGFloat kTitleSubtitleMargin = 0.;
   [self.contentView addArrangedSubview:self.continueAsButton];
   [NSLayoutConstraint activateConstraints:@[
     [self.continueAsButton.widthAnchor
-        constraintEqualToAnchor:self.contentView.widthAnchor
-                       constant:0]
+        constraintEqualToAnchor:self.contentView.widthAnchor]
   ]];
   // Adjust the identity button control rounded corners to the same value than
   // the "continue as" button.
@@ -210,7 +215,7 @@ constexpr CGFloat kTitleSubtitleMargin = 0.;
       consistencyDefaultAccountViewControllerContinueWithSelectedIdentity:self];
 }
 
-#pragma mark - ChildBottomSheetViewController
+#pragma mark - ChildConsistencySheetViewController
 
 - (CGFloat)layoutFittingHeightForWidth:(CGFloat)width {
   CGFloat contentViewWidth = width - self.view.safeAreaInsets.left -
@@ -221,12 +226,19 @@ constexpr CGFloat kTitleSubtitleMargin = 0.;
         systemLayoutSizeFittingSize:size
       withHorizontalFittingPriority:UILayoutPriorityRequired
             verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+  CGFloat safeAreaInsetsHeight = 0;
+  switch (self.layoutDelegate.displayStyle) {
+    case ConsistencySheetDisplayStyleBottom:
+      safeAreaInsetsHeight =
+          self.navigationController.view.window.safeAreaInsets.bottom;
+      break;
+    case ConsistencySheetDisplayStyleCentered:
+      break;
+  }
   // Safe area insets needs to be based on the window since the |self.view|
   // might not be part of the window hierarchy when the animation is configured.
-  return size.height +
-         self.navigationController.navigationBar.frame.size.height +
-         self.navigationController.view.window.safeAreaInsets.bottom +
-         kContentMargin * 2;
+  return self.navigationController.navigationBar.frame.size.height +
+         kContentMargin + size.height + kContentMargin + safeAreaInsetsHeight;
 }
 
 #pragma mark - ConsistencyDefaultAccountConsumer

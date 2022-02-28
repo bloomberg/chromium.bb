@@ -18,7 +18,8 @@
 #include "dawn_native/DawnNative.h"
 
 #include "dawn_native/Error.h"
-#include "dawn_native/Extensions.h"
+#include "dawn_native/Features.h"
+#include "dawn_native/Limits.h"
 #include "dawn_native/dawn_platform.h"
 
 #include <string>
@@ -32,35 +33,58 @@ namespace dawn_native {
         AdapterBase(InstanceBase* instance, wgpu::BackendType backend);
         virtual ~AdapterBase() = default;
 
+        MaybeError Initialize();
+
         wgpu::BackendType GetBackendType() const;
         wgpu::AdapterType GetAdapterType() const;
         const std::string& GetDriverDescription() const;
         const PCIInfo& GetPCIInfo() const;
         InstanceBase* GetInstance() const;
 
-        DeviceBase* CreateDevice(const DeviceDescriptor* descriptor = nullptr);
+        DeviceBase* CreateDevice(const DawnDeviceDescriptor* descriptor = nullptr);
+
+        void RequestDevice(const DawnDeviceDescriptor* descriptor,
+                           WGPURequestDeviceCallback callback,
+                           void* userdata);
 
         void ResetInternalDeviceForTesting();
 
-        ExtensionsSet GetSupportedExtensions() const;
-        bool SupportsAllRequestedExtensions(
-            const std::vector<const char*>& requestedExtensions) const;
+        FeaturesSet GetSupportedFeatures() const;
+        bool SupportsAllRequestedFeatures(const std::vector<const char*>& requestedFeatures) const;
         WGPUDeviceProperties GetAdapterProperties() const;
+
+        bool GetLimits(SupportedLimits* limits) const;
+
+        void SetUseTieredLimits(bool useTieredLimits);
+
+        virtual bool SupportsExternalImages() const = 0;
 
       protected:
         PCIInfo mPCIInfo = {};
         wgpu::AdapterType mAdapterType = wgpu::AdapterType::Unknown;
         std::string mDriverDescription;
-        ExtensionsSet mSupportedExtensions;
+        FeaturesSet mSupportedFeatures;
 
       private:
-        virtual ResultOrError<DeviceBase*> CreateDeviceImpl(const DeviceDescriptor* descriptor) = 0;
+        virtual ResultOrError<DeviceBase*> CreateDeviceImpl(
+            const DawnDeviceDescriptor* descriptor) = 0;
 
-        MaybeError CreateDeviceInternal(DeviceBase** result, const DeviceDescriptor* descriptor);
+        virtual MaybeError InitializeImpl() = 0;
+
+        // Check base WebGPU features and discover supported featurees.
+        virtual MaybeError InitializeSupportedFeaturesImpl() = 0;
+
+        // Check base WebGPU limits and populate supported limits.
+        virtual MaybeError InitializeSupportedLimitsImpl(CombinedLimits* limits) = 0;
+
+        MaybeError CreateDeviceInternal(DeviceBase** result,
+                                        const DawnDeviceDescriptor* descriptor);
 
         virtual MaybeError ResetInternalDeviceForTestingImpl();
         InstanceBase* mInstance = nullptr;
         wgpu::BackendType mBackend;
+        CombinedLimits mLimits;
+        bool mUseTieredLimits = false;
     };
 
 }  // namespace dawn_native

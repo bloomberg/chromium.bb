@@ -7,9 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "content/common/frame.mojom-forward.h"
-#include "content/common/navigation_params.mojom-forward.h"
 #include "content/renderer/render_frame_impl.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -17,6 +15,7 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom.h"
+#include "third_party/blink/public/mojom/navigation/navigation_params.mojom-forward.h"
 
 namespace content {
 
@@ -27,6 +26,10 @@ class TestRenderFrame : public RenderFrameImpl {
  public:
   static RenderFrameImpl* CreateTestRenderFrame(
       RenderFrameImpl::CreateParams params);
+
+  TestRenderFrame(const TestRenderFrame&) = delete;
+  TestRenderFrame& operator=(const TestRenderFrame&) = delete;
+
   ~TestRenderFrame() override;
 
   // Overrides the content in the next navigation originating from the frame.
@@ -35,12 +38,12 @@ class TestRenderFrame : public RenderFrameImpl {
   void SetHTMLOverrideForNextNavigation(const std::string& html);
 
   void Navigate(network::mojom::URLResponseHeadPtr head,
-                mojom::CommonNavigationParamsPtr common_params,
-                mojom::CommitNavigationParamsPtr commit_params);
-  void Navigate(mojom::CommonNavigationParamsPtr common_params,
-                mojom::CommitNavigationParamsPtr commit_params);
-  void NavigateWithError(mojom::CommonNavigationParamsPtr common_params,
-                         mojom::CommitNavigationParamsPtr request_params,
+                blink::mojom::CommonNavigationParamsPtr common_params,
+                blink::mojom::CommitNavigationParamsPtr commit_params);
+  void Navigate(blink::mojom::CommonNavigationParamsPtr common_params,
+                blink::mojom::CommitNavigationParamsPtr commit_params);
+  void NavigateWithError(blink::mojom::CommonNavigationParamsPtr common_params,
+                         blink::mojom::CommitNavigationParamsPtr request_params,
                          int error_code,
                          const net::ResolveErrorInfo& resolve_error_info,
                          const absl::optional<std::string>& error_page_content);
@@ -78,8 +81,6 @@ class TestRenderFrame : public RenderFrameImpl {
   absl::optional<std::string> next_navigation_html_override_;
 
   mojo::AssociatedRemote<mojom::NavigationClient> mock_navigation_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRenderFrame);
 };
 
 }  // namespace content

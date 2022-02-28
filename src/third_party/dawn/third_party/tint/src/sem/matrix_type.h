@@ -31,20 +31,20 @@ class Matrix : public Castable<Matrix, Type> {
   /// Constructor
   /// @param column_type the type of a column of the matrix
   /// @param columns the number of columns in the matrix
-  Matrix(Vector* column_type, uint32_t columns);
+  Matrix(const Vector* column_type, uint32_t columns);
   /// Move constructor
   Matrix(Matrix&&);
   ~Matrix() override;
 
   /// @returns the type of the matrix
-  Type* type() const { return subtype_; }
+  const Type* type() const { return subtype_; }
   /// @returns the number of rows in the matrix
   uint32_t rows() const { return rows_; }
   /// @returns the number of columns in the matrix
   uint32_t columns() const { return columns_; }
 
   /// @returns the column-vector type of the matrix
-  Vector* ColumnType() const { return column_type_; }
+  const Vector* ColumnType() const { return column_type_; }
 
   /// @returns the name for this type
   std::string type_name() const override;
@@ -54,11 +54,25 @@ class Matrix : public Castable<Matrix, Type> {
   /// declared in WGSL.
   std::string FriendlyName(const SymbolTable& symbols) const override;
 
+  /// @returns true if constructible as per
+  /// https://gpuweb.github.io/gpuweb/wgsl/#constructible-types
+  bool IsConstructible() const override;
+
+  /// @returns the size in bytes of the type. This may include tail padding.
+  uint32_t Size() const override;
+
+  /// @returns the alignment in bytes of the type. This may include tail
+  /// padding.
+  uint32_t Align() const override;
+
+  /// @returns the number of bytes between columns of the matrix
+  uint32_t ColumnStride() const;
+
  private:
-  Type* const subtype_;
-  Vector* const column_type_;
-  uint32_t const rows_;
-  uint32_t const columns_;
+  const Type* const subtype_;
+  const Vector* const column_type_;
+  const uint32_t rows_;
+  const uint32_t columns_;
 };
 
 }  // namespace sem

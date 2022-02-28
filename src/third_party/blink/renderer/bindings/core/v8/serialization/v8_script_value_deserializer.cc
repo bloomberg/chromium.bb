@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/mojo/mojo_handle.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
@@ -38,10 +39,9 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
-#include "third_party/skia/include/core/SkFilterQuality.h"
 
 namespace blink {
 
@@ -189,12 +189,10 @@ v8::Local<v8::Value> V8ScriptValueDeserializer::Deserialize() {
 }
 
 void V8ScriptValueDeserializer::Transfer() {
-  if (TransferableStreamsEnabled()) {
-    // TODO(ricea): Make ExtendableMessageEvent store an
-    // UnpackedSerializedScriptValue like MessageEvent does, and then this
-    // special case won't be necessary.
-    streams_ = std::move(serialized_script_value_->GetStreams());
-  }
+  // TODO(ricea): Make ExtendableMessageEvent store an
+  // UnpackedSerializedScriptValue like MessageEvent does, and then this
+  // special case won't be necessary.
+  streams_ = std::move(serialized_script_value_->GetStreams());
 
   // There's nothing else to transfer if the deserializer was not given an
   // unpacked value.
@@ -551,14 +549,12 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       canvas->SetPlaceholderCanvasId(canvas_id);
       canvas->SetFrameSinkId(client_id, sink_id);
       if (filter_quality == 0)
-        canvas->SetFilterQuality(kNone_SkFilterQuality);
+        canvas->SetFilterQuality(cc::PaintFlags::FilterQuality::kNone);
       else
-        canvas->SetFilterQuality(kLow_SkFilterQuality);
+        canvas->SetFilterQuality(cc::PaintFlags::FilterQuality::kLow);
       return canvas;
     }
     case kReadableStreamTransferTag: {
-      if (!TransferableStreamsEnabled())
-        return nullptr;
       uint32_t index = 0;
       if (!ReadUint32(&index) || index >= streams_.size()) {
         return nullptr;
@@ -569,8 +565,6 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           std::move(streams_[index].readable_optimizer), exception_state);
     }
     case kWritableStreamTransferTag: {
-      if (!TransferableStreamsEnabled())
-        return nullptr;
       uint32_t index = 0;
       if (!ReadUint32(&index) || index >= streams_.size()) {
         return nullptr;
@@ -581,8 +575,6 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           std::move(streams_[index].writable_optimizer), exception_state);
     }
     case kTransformStreamTransferTag: {
-      if (!TransferableStreamsEnabled())
-        return nullptr;
       uint32_t index = 0;
       if (!ReadUint32(&index) ||
           index == std::numeric_limits<decltype(index)>::max() ||
@@ -755,13 +747,19 @@ V8ScriptValueDeserializer::GetWasmModuleFromId(v8::Isolate* isolate,
     ExecutionContext* execution_context = ExecutionContext::From(script_state_);
     DCHECK(serialized_script_value_->origin());
     UseCounter::Count(execution_context, WebFeature::kWasmModuleSharing);
+    const v8::CompiledWasmModule& wasm_module =
+        serialized_script_value_->WasmModules()[id];
     if (!serialized_script_value_->origin()->IsSameOriginWith(
             execution_context->GetSecurityOrigin())) {
       UseCounter::Count(execution_context,
                         WebFeature::kCrossOriginWasmModuleSharing);
+      AuditsIssue::ReportCrossOriginWasmModuleSharingIssue(
+          execution_context, wasm_module.source_url(),
+          serialized_script_value_->origin()->ToString(),
+          execution_context->GetSecurityOrigin()->ToString(),
+          true /* is_warning */);
     }
-    return v8::WasmModuleObject::FromCompiledModule(
-        isolate, serialized_script_value_->WasmModules()[id]);
+    return v8::WasmModuleObject::FromCompiledModule(isolate, wasm_module);
   }
   CHECK(serialized_script_value_->WasmModules().IsEmpty());
   return v8::MaybeLocal<v8::WasmModuleObject>();
@@ -792,11 +790,6 @@ V8ScriptValueDeserializer::GetSharedArrayBufferFromId(v8::Isolate* isolate,
   // a process boundary.
   CHECK(shared_array_buffers_contents.IsEmpty());
   return v8::MaybeLocal<v8::SharedArrayBuffer>();
-}
-
-bool V8ScriptValueDeserializer::TransferableStreamsEnabled() const {
-  return RuntimeEnabledFeatures::TransferableStreamsEnabled(
-      ExecutionContext::From(script_state_));
 }
 
 }  // namespace blink

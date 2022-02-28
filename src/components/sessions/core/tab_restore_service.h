@@ -63,6 +63,9 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   };
 
   struct SESSIONS_EXPORT Entry {
+    Entry(const Entry&) = delete;
+    Entry& operator=(const Entry&) = delete;
+
     virtual ~Entry();
 
     // Unique id for this entry. The id is guaranteed to be unique for a
@@ -77,14 +80,14 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
     // creation.
     base::Time timestamp;
 
+    // Used for storing arbitrary key/value pairs.
+    std::map<std::string, std::string> extra_data;
+
     // Estimates memory usage. By default returns 0.
     virtual size_t EstimateMemoryUsage() const;
 
    protected:
     explicit Entry(Type type);
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Entry);
   };
 
   // Represents a previously open tab.

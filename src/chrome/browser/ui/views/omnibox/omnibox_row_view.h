@@ -7,11 +7,11 @@
 
 #include <string>
 
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
-class OmniboxPopupModel;
+class OmniboxEditModel;
 class OmniboxResultView;
 class PrefService;
 
@@ -26,7 +26,7 @@ class OmniboxRowView : public views::View {
  public:
   METADATA_HEADER(OmniboxRowView);
   OmniboxRowView(size_t line,
-                 OmniboxPopupModel* popup_model,
+                 OmniboxEditModel* model,
                  std::unique_ptr<OmniboxResultView> result_view,
                  PrefService* pref_service);
 
@@ -55,20 +55,20 @@ class OmniboxRowView : public views::View {
   // Line number of this row.
   const size_t line_;
 
-  // Non-owning pointer to the backing popup model.
-  OmniboxPopupModel* const popup_model_;
+  // Non-owning pointer to the backing model.
+  const raw_ptr<OmniboxEditModel> model_;
 
   // Non-owning pointer to the header view for this row. This is initially
   // nullptr, and lazily created when a header is first set for this row.
   // Lazily creating these speeds up browser startup: https://crbug.com/1021323
-  HeaderView* header_view_ = nullptr;
+  raw_ptr<HeaderView> header_view_ = nullptr;
 
   // Non-owning pointer to the result view for this row. This is never nullptr.
-  OmniboxResultView* result_view_;
+  raw_ptr<OmniboxResultView> result_view_;
 
   // Non-owning pointer to the preference service used for toggling headers.
   // May be nullptr in tests.
-  PrefService* const pref_service_;
+  const raw_ptr<PrefService> pref_service_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_ROW_VIEW_H_

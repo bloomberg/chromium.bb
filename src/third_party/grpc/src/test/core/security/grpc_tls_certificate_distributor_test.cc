@@ -16,16 +16,17 @@
 
 #include "src/core/lib/security/credentials/tls/grpc_tls_certificate_distributor.h"
 
-#include <gmock/gmock.h>
-#include <grpc/support/alloc.h>
-#include <grpc/support/log.h>
-#include <grpc/support/string_util.h>
-#include <gtest/gtest.h>
-
 #include <deque>
 #include <list>
 #include <string>
 #include <thread>
+
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+
+#include <grpc/support/alloc.h>
+#include <grpc/support/log.h>
+#include <grpc/support/string_util.h>
 
 #include "src/core/lib/slice/slice_internal.h"
 #include "test/core/util/test_config.h"
@@ -129,25 +130,20 @@ class GrpcTlsCertificateDistributorTest : public ::testing::Test {
                                              std::move(updated_identity));
     }
 
-    void OnError(grpc_error* root_cert_error,
-                 grpc_error* identity_cert_error) override {
+    void OnError(grpc_error_handle root_cert_error,
+                 grpc_error_handle identity_cert_error) override {
       GPR_ASSERT(root_cert_error != GRPC_ERROR_NONE ||
                  identity_cert_error != GRPC_ERROR_NONE);
       std::string root_error_str;
       std::string identity_error_str;
       if (root_cert_error != GRPC_ERROR_NONE) {
-        grpc_slice root_error_slice;
         GPR_ASSERT(grpc_error_get_str(
-            root_cert_error, GRPC_ERROR_STR_DESCRIPTION, &root_error_slice));
-        root_error_str = std::string(StringViewFromSlice(root_error_slice));
+            root_cert_error, GRPC_ERROR_STR_DESCRIPTION, &root_error_str));
       }
       if (identity_cert_error != GRPC_ERROR_NONE) {
-        grpc_slice identity_error_slice;
         GPR_ASSERT(grpc_error_get_str(identity_cert_error,
                                       GRPC_ERROR_STR_DESCRIPTION,
-                                      &identity_error_slice));
-        identity_error_str =
-            std::string(StringViewFromSlice(identity_error_slice));
+                                      &identity_error_str));
       }
       state_->error_queue.emplace_back(std::move(root_error_str),
                                        std::move(identity_error_str));

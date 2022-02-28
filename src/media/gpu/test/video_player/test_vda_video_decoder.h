@@ -8,10 +8,8 @@
 #include <stdint.h>
 #include <map>
 #include <memory>
-#include <string>
 
-#include "base/containers/mru_cache.h"
-#include "base/macros.h"
+#include "base/containers/lru_cache.h"
 #include "base/sequence_checker.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "media/base/video_decoder.h"
@@ -33,14 +31,17 @@ class FrameRenderer;
 class TestVDAVideoDecoder : public media::VideoDecoder,
                             public VideoDecodeAccelerator::Client {
  public:
-  // Constructor for the TestVDAVideoDecoder. The |allocation_mode| specifies
-  // whether allocating video frames will be done by the TestVDAVideoDecoder, or
-  // delegated to the underlying VDA.
-  TestVDAVideoDecoder(AllocationMode allocation_mode,
-                      bool use_vd_vda,
+  using OnProvidePictureBuffersCB = base::RepeatingCallback<bool(void)>;
+  // Constructor for the TestVDAVideoDecoder.
+  TestVDAVideoDecoder(bool use_vd_vda,
+                      OnProvidePictureBuffersCB on_provide_picture_buffers_cb,
                       const gfx::ColorSpace& target_color_space,
                       FrameRenderer* const frame_renderer,
-                      gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
+                      gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+                      bool linear_output = false);
+
+  TestVDAVideoDecoder(const TestVDAVideoDecoder&) = delete;
+  TestVDAVideoDecoder& operator=(const TestVDAVideoDecoder&) = delete;
 
   ~TestVDAVideoDecoder() override;
 
@@ -102,11 +103,12 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   // Called when the decoder finished resetting.
   base::OnceClosure reset_cb_;
 
-  // Video decode accelerator output mode.
-  const VideoDecodeAccelerator::Config::OutputMode output_mode_;
-
   // Whether VdVideoDecodeAccelerator is used.
   bool use_vd_vda_;
+
+  // Called when the decoder requests buffers for decoding onto. The callback
+  // returns true if the request should be completed.
+  OnProvidePictureBuffersCB on_provide_picture_buffers_cb_;
 
   // Output color space, used as hint to decoder to avoid conversions.
   const gfx::ColorSpace target_color_space_;
@@ -117,6 +119,9 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
   // Owned by VideoDecoderClient.
   gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
+  // Whether the decoder output buffers should be allocated with a linear
+  // layout.
+  const bool linear_output_;
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
   // Map of video frames the decoder uses as output, keyed on picture buffer id.
@@ -124,7 +129,7 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
   // Map of video frame decoded callbacks, keyed on bitstream buffer id.
   std::map<int32_t, DecodeCB> decode_cbs_;
   // Records the time at which each bitstream buffer decode operation started.
-  base::MRUCache<int32_t, base::TimeDelta> decode_start_timestamps_;
+  base::LRUCache<int32_t, base::TimeDelta> decode_start_timestamps_;
 
   int32_t next_bitstream_buffer_id_ = 0;
   int32_t next_picture_buffer_id_ = 0;
@@ -137,8 +142,6 @@ class TestVDAVideoDecoder : public media::VideoDecoder,
 
   base::WeakPtr<TestVDAVideoDecoder> weak_this_;
   base::WeakPtrFactory<TestVDAVideoDecoder> weak_this_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TestVDAVideoDecoder);
 };
 
 }  // namespace test

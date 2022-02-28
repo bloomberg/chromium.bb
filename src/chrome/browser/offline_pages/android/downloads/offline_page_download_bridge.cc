@@ -15,10 +15,14 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/android/chrome_jni_headers/OfflinePageDownloadBridge_jni.h"
 #include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/download/android/download_controller_base.h"
+#include "chrome/browser/download/android/download_dialog_utils.h"
+#include "chrome/browser/download/android/duplicate_download_dialog_bridge.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/offline_pages/android/downloads/offline_page_infobar_delegate.h"
@@ -71,6 +75,11 @@ namespace android {
 
 namespace {
 
+void OnDuplicateDialogConfirmed(base::OnceClosure callback, bool accepted) {
+  if (accepted)
+    std::move(callback).Run();
+}
+
 void OnShareInfoRetrieved(std::unique_ptr<OfflinePageShareHelper>,
                           ShareCallback share_callback,
                           ShareResult result,
@@ -98,14 +107,12 @@ class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
       const OfflineItem& item,
       int64_t offline_id,
       const offline_items_collection::OpenParams& open_params) override;
-  bool MaybeSuppressNotification(const std::string& origin,
-                                 const ClientId& id) override;
   void GetShareInfoForItem(const ContentId& id,
                            ShareCallback share_callback) override;
 
  private:
   // Not owned, cached service pointer.
-  OfflinePageModel* model_;
+  raw_ptr<OfflinePageModel> model_;
 };
 
 DownloadUIAdapterDelegate::DownloadUIAdapterDelegate(OfflinePageModel* model)
@@ -129,18 +136,6 @@ void DownloadUIAdapterDelegate::OpenItem(
       static_cast<int>(open_params.launch_location),
       open_params.open_in_incognito,
       offline_pages::ShouldOfflinePagesInDownloadHomeOpenInCct());
-}
-
-bool DownloadUIAdapterDelegate::MaybeSuppressNotification(
-    const std::string& origin,
-    const ClientId& id) {
-  // Do not suppress notification if chrome.
-  if (origin == "" || !IsOfflinePagesSuppressNotificationsEnabled())
-    return false;
-  JNIEnv* env = AttachCurrentThread();
-  return Java_OfflinePageDownloadBridge_maybeSuppressNotification(
-      env, ConvertUTF8ToJavaString(env, origin),
-      ConvertUTF8ToJavaString(env, id.id));
 }
 
 void DownloadUIAdapterDelegate::GetShareInfoForItem(
@@ -243,10 +238,18 @@ void DuplicateCheckDone(const GURL& url,
 
   bool duplicate_request_exists =
       result == OfflinePageUtils::DuplicateCheckResult::DUPLICATE_REQUEST_FOUND;
-  OfflinePageInfoBarDelegate::Create(
-      base::BindOnce(&SavePageIfNotNavigatedAway, url, original_url, j_tab_ref,
-                     origin),
-      url, duplicate_request_exists, web_contents);
+  base::OnceClosure callback = base::BindOnce(&SavePageIfNotNavigatedAway, url,
+                                              original_url, j_tab_ref, origin);
+  if (base::FeatureList::IsEnabled(
+          chrome::android::kEnableDuplicateDownloadDialog)) {
+    DuplicateDownloadDialogBridge::GetInstance()->Show(
+        url.spec(), DownloadDialogUtils::GetDisplayURLForPageURL(url),
+        -1 /*total_bytes*/, duplicate_request_exists, web_contents,
+        base::BindOnce(&OnDuplicateDialogConfirmed, std::move(callback)));
+  } else {
+    OfflinePageInfoBarDelegate::Create(std::move(callback), url,
+                                       duplicate_request_exists, web_contents);
+  }
 }
 
 

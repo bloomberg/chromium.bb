@@ -24,7 +24,7 @@ limitations under the License.
 // layouts compared to Path::kNeon; but within each, different tunings
 // will share that same layout.
 //
-// # Tuning is for now only based on 1 bit: OutOfOrder / InOrder
+// # Tuning is for now only based on 1 bit: Generic / A55ish
 //
 // In practice, each of our asm code paths only needs one bit information to
 // decide on tuning: whether the CPU is out-of-order or in-order.
@@ -37,54 +37,15 @@ limitations under the License.
 //
 // Because having tuned code paths is a compromise of efficiency gains
 // versus implementation effort and code size, we are happy to stop at just this
-// single bit of information, OutOfOrder/InOrder, at least in the current CPU
+// single bit of information, Generic / A55ish, at least in the current CPU
 // landscape. This could change in the future.
-//
-// # Implementation notes and alternatives.
-//
-// The current implementation uses a nano-benchmark, see tune.cc.
-// That is why it's quite expensive, making caching /
-// statefulness necessary (see TuningResolver class comment).
-//
-// An interesting alternative, which was explained to us by Marat Dukhan
-// (maratek@) after this was implemented, would be to use the
-// getcpu(2) system call on Linux. This returns a
-// numeric CPU identifier that could be mapped to a OutOfOrder/InOrder
-// classification given additional information about the CPU.  Such
-// additional information could be obtained by the cpuinfo library,
-//   https://github.com/pytorch/cpuinfo
-// which obtains this information mainly from parsing /proc/cpuinfo.
-// Pros:
-//   * Would remove the need for the relatively expensive nano-benchmark
-//     (dozens of microseconds, which have to be reevaluated again several
-//     times per second).
-//   * Would conceivably be more reliable.
-// Cons:
-//   * Linux-specific.
-//   * Modest binary size increase (Marat mentioned the cpuinfo lib is 20k).
-//   * Won't support exactly 100% of devices (nonstandard /proc/cpuinfo etc).
-//
-// We could also have both:
-//  * Maybe by trying getcpu first if supported, then falling back to a
-//    nano-benchmark.
-//  * Maybe using getcpu in conjunction with the nano-benchmark to cache
-//    per-CPU-id nano-benchmark results.
 #ifndef RUY_RUY_TUNE_H_
 #define RUY_RUY_TUNE_H_
 
+#include "ruy/cpuinfo.h"
 #include "ruy/opt_set.h"
 #include "ruy/platform.h"
 #include "ruy/time.h"
-
-// Tuning only implemented on NEON_64 at the moment (see assembly code
-// in the nano-benchmark) and not on Apple (some Apple CPUs produce incorrect
-// results on in-order-tuned kernels combining ARM and NEON load instructions
-// and NEON `ins` instructions).
-//
-// When tuning is not implemented, we simply always use Tuning::kOutOfOrder.
-#if RUY_OPT(TUNING) && RUY_PLATFORM_NEON_64 && !RUY_PLATFORM_APPLE
-#define RUY_IMPLEMENT_TUNING
-#endif
 
 namespace ruy {
 
@@ -93,10 +54,28 @@ enum class Tuning {
   // user-visible parts (see Context). It's meant to be resolved to an
   // actual tuning at some point by means of TuningResolver.
   kAuto,
-  // Target an out-order CPU. Example: ARM Cortex-A75.
-  kOutOfOrder,
-  // Target an in-order CPU. Example: ARM Cortex-A55.
-  kInOrder
+  // Use code not tuned for any particular CPU, typically performing well
+  // on out-of-order cores that don't require as much tuning.
+  kGeneric,
+  // Use code tuned for "Cortex-A55-ish" CPUs, by which we mean mostly:
+  // A53, A55r0 (pre-dotprod), A55r1 (with dotprod). These CPUs have in common
+  // that they are in-order CPU cores with largely similar requirements of code
+  // tuning. The most important such requirement is to use only 64-bit loads
+  // to maximize dual-issuing.
+  //
+  // A55r1 differs from A55r0 and A53 in that it dual-issues 64-bit NEON loads
+  // whereas A55r0 and A53 require using non-NEON ARM 64-bit loads together with
+  // INS instructions to insert 64bit lanes into NEON registers. However, since
+  // A55r1 supports dotprod unlike A55r0 and A53, they are not using the same
+  // kernels in practice anyway, so there was no need to distinguish them with
+  // separate Tuning values.
+  kA55ish,
+  // Use code tuned for Cortex-X1 CPUs. Currently, the driver to distinguish
+  // this CPU is the get maximum performance on the dotprod kernels, where we
+  // attain high performance simply by avoiding any manual loop unrolling. As a
+  // purely performance oriented microarchitecture, there will likely be
+  // additional reasons to distinguish the X1 from other CPUs.
+  kX1
 };
 
 // Why a TuningResolver class?
@@ -104,7 +83,7 @@ enum class Tuning {
 // Ideally, this Library would offer a single function,
 //   Tuning GetCurrentCPUTuning();
 //
-// However, determining information about the current CPU is not necessarily,
+// However, determining information about the current CPU is not necessarily
 // cheap, so we currently cache that and only invalidate/reevaluate after
 // a fixed amount of time. This need to store state is why this library
 // has to expose a class, TuningResolver, not just a function.
@@ -117,32 +96,14 @@ class TuningResolver {
   void SetTuning(Tuning tuning) { unresolved_tuning_ = tuning; }
 
   // Get an actual tuning --- that is the function that this class wanted to be.
-  Tuning Resolve();
+  Tuning Resolve(CpuInfo* cpuinfo);
 
  private:
   TuningResolver(const TuningResolver&) = delete;
 
-  // TuningTool is a demo/tool used to tweak the tuning implementation to
-  // specific devices. It needs to access some finer granularity information
-  // than just the Tuning returned by Resolve. Nothing else should need
-  // access to that.
-  friend class TuneTool;
-  // Actually runs a nano-benchmark, producing a real number called 'ratio'
-  // whose meaning is generally opaque / implementation defined. Typically,
-  // this would be the ratio between the latencies of two different
-  // pieces of asm code differing only by the ordering of instructions,
-  // revealing whether the CPU cares about such ordering details.
-  // An implementation may just return a dummy value if it is not based on
-  // such nanobenchmarking / ratio evaluation.
-  float EvalRatio();
-  // Empirically determined threshold on ratio values delineating
-  // out-of-order (ratios closer to 1) from in-order (ratios farther from 1).
-  // An implementation may just return a dummy value if it is not based on
-  // such nanobenchmarking / ratio evaluation.
-  float ThresholdRatio();
   // Perform the tuning resolution now. That may typically use EvalRatio and
   // ThresholdRatio, but an implementation may use a different approach instead.
-  Tuning ResolveNow();
+  Tuning ResolveNow(CpuInfo* cpuinfo);
 
   // The tuning as specified by the user, before actual resolution happens
   // i.e. before querying any specifics of the current CPU.

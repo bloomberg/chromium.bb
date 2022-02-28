@@ -9,9 +9,8 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
@@ -51,6 +50,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // TODO(http://crbug.com/1100034) prefer SetImageModel over SetImage().
   void SetImage(ButtonState for_state, const gfx::ImageSkia& image);
   void SetImageModel(ButtonState for_state, const ui::ImageModel& image_model);
+  bool HasImage(ButtonState for_state) const;
 
   // Gets or sets the text shown on the button.
   const std::u16string& GetText() const;
@@ -211,13 +211,13 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   void FlipCanvasOnPaintForRTLUIChanged();
 
   // The image and label shown in the button.
-  ImageView* image_;
-  internal::LabelButtonLabel* label_;
+  raw_ptr<ImageView> image_;
+  raw_ptr<internal::LabelButtonLabel> label_;
 
   // A separate view is necessary to hold the ink drop layer so that it can
   // be stacked below |image_| and on top of |label_|, without resorting to
   // drawing |label_| on a layer (which can mess with subpixel anti-aliasing).
-  InkDropContainerView* ink_drop_container_;
+  raw_ptr<InkDropContainerView> ink_drop_container_;
 
   // The cached font lists in the normal and default button style. The latter
   // may be bold.
@@ -276,6 +276,7 @@ VIEW_BUILDER_PROPERTY(std::u16string, Text)
 VIEW_BUILDER_PROPERTY(gfx::HorizontalAlignment, HorizontalAlignment)
 VIEW_BUILDER_PROPERTY(gfx::Size, MinSize)
 VIEW_BUILDER_PROPERTY(gfx::Size, MaxSize)
+VIEW_BUILDER_PROPERTY(absl::optional<SkColor>, EnabledTextColors)
 VIEW_BUILDER_PROPERTY(bool, IsDefault)
 VIEW_BUILDER_PROPERTY(int, ImageLabelSpacing)
 VIEW_BUILDER_PROPERTY(bool, ImageCentered)

@@ -46,8 +46,10 @@ class PLATFORM_EXPORT FrameWidgetInputHandlerImpl
       base::WeakPtr<WidgetBase> widget,
       base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
           frame_widget_input_handler,
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       scoped_refptr<MainThreadEventQueue> input_event_queue);
+  FrameWidgetInputHandlerImpl(const FrameWidgetInputHandlerImpl&) = delete;
+  FrameWidgetInputHandlerImpl& operator=(const FrameWidgetInputHandlerImpl&) =
+      delete;
   ~FrameWidgetInputHandlerImpl() override;
 
   void AddImeTextSpansToExistingText(
@@ -81,7 +83,10 @@ class PLATFORM_EXPORT FrameWidgetInputHandlerImpl
   void CollapseSelection() override;
   void SelectRange(const gfx::Point& base, const gfx::Point& extent) override;
 #if defined(OS_ANDROID)
-  void SelectWordAroundCaret(SelectWordAroundCaretCallback callback) override;
+  void SelectAroundCaret(mojom::blink::SelectionGranularity granularity,
+                         bool should_show_handle,
+                         bool should_show_context_menu,
+                         SelectAroundCaretCallback callback) override;
 #endif  // defined(OS_ANDROID)
   void AdjustSelectionByCharacterOffset(
       int32_t start,
@@ -122,15 +127,14 @@ class PLATFORM_EXPORT FrameWidgetInputHandlerImpl
       const char* command,
       UpdateState state);
 
+  bool ThreadedCompositingEnabled() { return input_event_queue_ != nullptr; }
+
   // These should only be accessed on the main thread.
   base::WeakPtr<WidgetBase> widget_;
   base::WeakPtr<mojom::blink::FrameWidgetInputHandler>
       main_thread_frame_widget_input_handler_;
 
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameWidgetInputHandlerImpl);
 };
 
 }  // namespace blink

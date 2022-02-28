@@ -11,7 +11,7 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -54,6 +54,9 @@ namespace android_webview {
 class AwAutofillClient : public autofill::AutofillClient,
                          public content::WebContentsUserData<AwAutofillClient> {
  public:
+  AwAutofillClient(const AwAutofillClient&) = delete;
+  AwAutofillClient& operator=(const AwAutofillClient&) = delete;
+
   ~AwAutofillClient() override;
 
   void SetSaveFormData(bool enabled);
@@ -149,8 +152,8 @@ class AwAutofillClient : public autofill::AutofillClient,
       bool is_rtl,
       const std::vector<autofill::Suggestion>& suggestions);
 
-  // The web_contents associated with this delegate.
-  content::WebContents* web_contents_;
+  content::WebContents& GetWebContents() const;
+
   bool save_form_data_ = false;
   JavaObjectWeakGlobalRef java_ref_;
 
@@ -160,13 +163,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   std::vector<autofill::Suggestion> suggestions_;
   base::WeakPtr<autofill::AutofillPopupDelegate> delegate_;
 
-  // Tracks whether the autocomplete enabled metric has already been logged for
-  // this client.
-  bool autocomplete_uma_recorded_ = false;
-
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(AwAutofillClient);
 };
 
 }  // namespace android_webview

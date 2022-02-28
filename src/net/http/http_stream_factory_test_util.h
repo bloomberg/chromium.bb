@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "net/http/http_stream.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_stream_factory_job.h"
@@ -16,6 +17,7 @@
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/socket/next_proto.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "url/scheme_host_port.h"
 
 using testing::_;
 using testing::Invoke;
@@ -44,6 +46,10 @@ class HttpStreamFactoryPeer {
 class MockHttpStreamRequestDelegate : public HttpStreamRequest::Delegate {
  public:
   MockHttpStreamRequestDelegate();
+
+  MockHttpStreamRequestDelegate(const MockHttpStreamRequestDelegate&) = delete;
+  MockHttpStreamRequestDelegate& operator=(
+      const MockHttpStreamRequestDelegate&) = delete;
 
   ~MockHttpStreamRequestDelegate() override;
 
@@ -94,9 +100,6 @@ class MockHttpStreamRequestDelegate : public HttpStreamRequest::Delegate {
                     SSLCertRequestInfo* cert_info));
 
   MOCK_METHOD0(OnQuicBroken, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockHttpStreamRequestDelegate);
 };
 
 class MockHttpStreamFactoryJob : public HttpStreamFactory::Job {
@@ -109,7 +112,7 @@ class MockHttpStreamFactoryJob : public HttpStreamFactory::Job {
                            ProxyInfo proxy_info,
                            const SSLConfig& server_ssl_config,
                            const SSLConfig& proxy_ssl_config,
-                           HostPortPair destination,
+                           url::SchemeHostPort destination,
                            GURL origin_url,
                            NextProto alternative_protocol,
                            quic::ParsedQuicVersion quic_version,
@@ -139,7 +142,7 @@ class TestJobFactory : public HttpStreamFactory::JobFactory {
       const ProxyInfo& proxy_info,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
-      HostPortPair destination,
+      url::SchemeHostPort destination,
       GURL origin_url,
       bool is_websocket,
       bool enable_ip_based_pooling,
@@ -154,7 +157,7 @@ class TestJobFactory : public HttpStreamFactory::JobFactory {
       const ProxyInfo& proxy_info,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
-      HostPortPair destination,
+      url::SchemeHostPort destination,
       GURL origin_url,
       NextProto alternative_protocol,
       quic::ParsedQuicVersion quic_version,
@@ -171,8 +174,8 @@ class TestJobFactory : public HttpStreamFactory::JobFactory {
   }
 
  private:
-  MockHttpStreamFactoryJob* main_job_;
-  MockHttpStreamFactoryJob* alternative_job_;
+  raw_ptr<MockHttpStreamFactoryJob> main_job_;
+  raw_ptr<MockHttpStreamFactoryJob> alternative_job_;
   bool override_main_job_url_;
   GURL main_job_alternative_url_;
 };

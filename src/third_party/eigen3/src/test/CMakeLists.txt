@@ -5,18 +5,13 @@ if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/split_test_helper.h)
 endif()
 
 # check if we have a Fortran compiler
-include("../cmake/language_support.cmake")
-
-workaround_9220(Fortran EIGEN_Fortran_COMPILER_WORKS)
-
-if(EIGEN_Fortran_COMPILER_WORKS)
-  enable_language(Fortran OPTIONAL)
-  if(NOT CMAKE_Fortran_COMPILER)
-    set(EIGEN_Fortran_COMPILER_WORKS OFF)
-  endif()
-endif()
-
-if(NOT EIGEN_Fortran_COMPILER_WORKS)
+include(CheckLanguage)
+check_language(Fortran)
+if(CMAKE_Fortran_COMPILER)
+  enable_language(Fortran)
+  set(EIGEN_Fortran_COMPILER_WORKS ON)
+else()
+  set(EIGEN_Fortran_COMPILER_WORKS OFF)
   # search for a default Lapack library to complete Eigen's one
   find_package(LAPACK QUIET)
 endif()
@@ -46,26 +41,26 @@ endif()
 
 set(SPARSE_LIBS " ")
 
-find_package(Cholmod)
+find_package(CHOLMOD)
 if(CHOLMOD_FOUND)
   add_definitions("-DEIGEN_CHOLMOD_SUPPORT")
   include_directories(${CHOLMOD_INCLUDES})
   set(SPARSE_LIBS ${SPARSE_LIBS} ${CHOLMOD_LIBRARIES} ${EIGEN_BLAS_LIBRARIES} ${EIGEN_LAPACK_LIBRARIES})
   set(CHOLMOD_ALL_LIBS  ${CHOLMOD_LIBRARIES} ${EIGEN_BLAS_LIBRARIES} ${EIGEN_LAPACK_LIBRARIES})
-  ei_add_property(EIGEN_TESTED_BACKENDS "Cholmod, ")
+  ei_add_property(EIGEN_TESTED_BACKENDS "CHOLMOD, ")
 else()
-  ei_add_property(EIGEN_MISSING_BACKENDS "Cholmod, ")
+  ei_add_property(EIGEN_MISSING_BACKENDS "CHOLMOD, ")
 endif()
 
-find_package(Umfpack)
+find_package(UMFPACK)
 if(UMFPACK_FOUND)
   add_definitions("-DEIGEN_UMFPACK_SUPPORT")
   include_directories(${UMFPACK_INCLUDES})
   set(SPARSE_LIBS ${SPARSE_LIBS} ${UMFPACK_LIBRARIES} ${EIGEN_BLAS_LIBRARIES})
   set(UMFPACK_ALL_LIBS ${UMFPACK_LIBRARIES} ${EIGEN_BLAS_LIBRARIES})
-  ei_add_property(EIGEN_TESTED_BACKENDS "UmfPack, ")
+  ei_add_property(EIGEN_TESTED_BACKENDS "UMFPACK, ")
 else()
-  ei_add_property(EIGEN_MISSING_BACKENDS "UmfPack, ")
+  ei_add_property(EIGEN_MISSING_BACKENDS "UMFPACK, ")
 endif()
 
 find_package(KLU)
@@ -80,7 +75,7 @@ else()
 endif()
 
 find_package(SuperLU 4.0)
-if(SUPERLU_FOUND)
+if(SuperLU_FOUND)
   add_definitions("-DEIGEN_SUPERLU_SUPPORT")
   include_directories(${SUPERLU_INCLUDES})
   set(SPARSE_LIBS ${SPARSE_LIBS} ${SUPERLU_LIBRARIES} ${EIGEN_BLAS_LIBRARIES})
@@ -169,7 +164,6 @@ ei_add_test(nullary)
 ei_add_test(mixingtypes)
 ei_add_test(io)
 ei_add_test(packetmath "-DEIGEN_FAST_MATH=1")
-ei_add_test(unalignedassert)
 ei_add_test(vectorization_logic)
 ei_add_test(basicstuff)
 ei_add_test(constructor)
@@ -291,10 +285,11 @@ ei_add_test(array_of_string)
 ei_add_test(num_dimensions)
 ei_add_test(stl_iterators)
 ei_add_test(blasutil)
-if(EIGEN_TEST_CXX11)
-  ei_add_test(initializer_list_construction)
-  ei_add_test(diagonal_matrix_variadic_ctor)
-endif()
+ei_add_test(random_matrix)
+ei_add_test(initializer_list_construction)
+ei_add_test(diagonal_matrix_variadic_ctor)
+ei_add_test(serializer)
+ei_add_test(tuple_test)
 
 add_executable(bug1213 bug1213.cpp bug1213_main.cpp)
 
@@ -389,29 +384,48 @@ if(EIGEN_TEST_CUDA_CLANG AND NOT CMAKE_CXX_COMPILER MATCHES "clang")
   message(WARNING "EIGEN_TEST_CUDA_CLANG is set, but CMAKE_CXX_COMPILER does not appear to be clang.")
 endif()
 
-if(EIGEN_TEST_CUDA)
+find_package(CUDA 9.0)
+if(CUDA_FOUND AND EIGEN_TEST_CUDA)
+  # Make sure to compile without the -pedantic, -Wundef, -Wnon-virtual-dtor
+  # and -fno-check-new flags since they trigger thousands of compilation warnings
+  # in the CUDA runtime
+  string(REPLACE "-pedantic" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  string(REPLACE "-Wundef" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  string(REPLACE "-Wnon-virtual-dtor" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  string(REPLACE "-fno-check-new" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")  
 
-find_package(CUDA 5.0)
-if(CUDA_FOUND)
-  
-  set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") 
-    set(CUDA_NVCC_FLAGS "-ccbin ${CMAKE_C_COMPILER}" CACHE STRING "nvcc flags" FORCE)
-  endif()
   if(EIGEN_TEST_CUDA_CLANG)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     string(APPEND CMAKE_CXX_FLAGS " --cuda-path=${CUDA_TOOLKIT_ROOT_DIR}")
     foreach(GPU IN LISTS EIGEN_CUDA_COMPUTE_ARCH)
       string(APPEND CMAKE_CXX_FLAGS " --cuda-gpu-arch=sm_${GPU}")
     endforeach()
+    string(APPEND CMAKE_CXX_FLAGS " ${EIGEN_CUDA_CXX_FLAGS}")
+  else()
+    set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+    set(NVCC_ARCH_FLAGS)
+    # Define an -arch=sm_<arch>, otherwise if GPU does not exactly match one of
+    # those in the arch list for -gencode, the kernels will fail to run with
+    #    cudaErrorNoKernelImageForDevice
+    # This can happen with newer cards (e.g. sm_75) and compiling with older
+    # versions of nvcc (e.g. 9.2) that do not support their specific arch.
+    list(LENGTH EIGEN_CUDA_COMPUTE_ARCH EIGEN_CUDA_COMPUTE_ARCH_SIZE)
+    if(EIGEN_CUDA_COMPUTE_ARCH_SIZE)
+      list(GET EIGEN_CUDA_COMPUTE_ARCH 0 EIGEN_CUDA_COMPUTE_DEFAULT)
+      set(NVCC_ARCH_FLAGS " -arch=sm_${EIGEN_CUDA_COMPUTE_DEFAULT}")
+    endif()
+    foreach(ARCH IN LISTS EIGEN_CUDA_COMPUTE_ARCH)
+      string(APPEND NVCC_ARCH_FLAGS " -gencode arch=compute_${ARCH},code=sm_${ARCH}")
+    endforeach()
+    set(CUDA_NVCC_FLAGS  "--expt-relaxed-constexpr -Xcudafe \"--display_error_number\" ${NVCC_ARCH_FLAGS} ${CUDA_NVCC_FLAGS} ${EIGEN_CUDA_CXX_FLAGS}")
+    cuda_include_directories("${CMAKE_CURRENT_BINARY_DIR}" "${CUDA_TOOLKIT_ROOT_DIR}/include")
   endif()
+  
   set(EIGEN_ADD_TEST_FILENAME_EXTENSION  "cu")
   
+  ei_add_test(gpu_example)
   ei_add_test(gpu_basic)
   
   unset(EIGEN_ADD_TEST_FILENAME_EXTENSION)
-
-endif()
 
 endif()
 
@@ -431,15 +445,16 @@ if (EIGEN_TEST_HIP)
 
       execute_process(COMMAND ${HIP_PATH}/bin/hipconfig --platform OUTPUT_VARIABLE HIP_PLATFORM)
 
-      if (${HIP_PLATFORM} STREQUAL "hcc")
+      if ((${HIP_PLATFORM} STREQUAL "hcc") OR (${HIP_PLATFORM} STREQUAL "amd"))
 
 	include_directories(${HIP_PATH}/include)
 
 	set(EIGEN_ADD_TEST_FILENAME_EXTENSION  "cu")
 	ei_add_test(gpu_basic)
+  ei_add_test(gpu_example)
 	unset(EIGEN_ADD_TEST_FILENAME_EXTENSION)
 	
-      elseif (${HIP_PLATFORM} STREQUAL "nvcc")
+      elseif ((${HIP_PLATFORM} STREQUAL "nvcc") OR (${HIP_PLATFORM} STREQUAL "nvidia"))
 	message(FATAL_ERROR "HIP_PLATFORM = nvcc is not supported within Eigen")
       else ()
 	message(FATAL_ERROR "Unknown HIP_PLATFORM = ${HIP_PLATFORM}")
@@ -450,7 +465,11 @@ if (EIGEN_TEST_HIP)
   endif()
 endif()
 
-option(EIGEN_TEST_BUILD_DOCUMENTATION "Test building the doxygen documentation" OFF)
+cmake_dependent_option(EIGEN_TEST_BUILD_DOCUMENTATION "Test building the doxygen documentation" OFF "EIGEN_BUILD_DOC" OFF)
 if(EIGEN_TEST_BUILD_DOCUMENTATION)
   add_dependencies(buildtests doc)
 endif()
+
+# Register all smoke tests
+include("EigenSmokeTestList")
+ei_add_smoke_tests("${ei_smoke_test_list}")

@@ -110,7 +110,7 @@ static int FUNC(profile_tier_level)(CodedBitstreamContext *ctx, RWContext *rw,
         if (profile_compatible(4) || profile_compatible(5) ||
             profile_compatible(6) || profile_compatible(7) ||
             profile_compatible(8) || profile_compatible(9) ||
-            profile_compatible(10)) {
+            profile_compatible(10) || profile_compatible(11)) {
             flag(general_max_12bit_constraint_flag);
             flag(general_max_10bit_constraint_flag);
             flag(general_max_8bit_constraint_flag);
@@ -122,7 +122,7 @@ static int FUNC(profile_tier_level)(CodedBitstreamContext *ctx, RWContext *rw,
             flag(general_lower_bit_rate_constraint_flag);
 
             if (profile_compatible(5) || profile_compatible(9) ||
-                profile_compatible(10)) {
+                profile_compatible(10) || profile_compatible(11)) {
                 flag(general_max_14bit_constraint_flag);
                 fixed(24, general_reserved_zero_33bits, 0);
                 fixed( 9, general_reserved_zero_33bits, 0);
@@ -142,7 +142,8 @@ static int FUNC(profile_tier_level)(CodedBitstreamContext *ctx, RWContext *rw,
 
         if (profile_compatible(1) || profile_compatible(2) ||
             profile_compatible(3) || profile_compatible(4) ||
-            profile_compatible(5) || profile_compatible(9)) {
+            profile_compatible(5) || profile_compatible(9) ||
+            profile_compatible(11)) {
             flag(general_inbld_flag);
         } else {
             fixed(1, general_reserved_zero_bit, 0);
@@ -181,7 +182,7 @@ static int FUNC(profile_tier_level)(CodedBitstreamContext *ctx, RWContext *rw,
             if (profile_compatible(4) || profile_compatible(5) ||
                 profile_compatible(6) || profile_compatible(7) ||
                 profile_compatible(8) || profile_compatible(9) ||
-                profile_compatible(10)) {
+                profile_compatible(10) || profile_compatible(11)) {
                 flags(sub_layer_max_12bit_constraint_flag[i],        1, i);
                 flags(sub_layer_max_10bit_constraint_flag[i],        1, i);
                 flags(sub_layer_max_8bit_constraint_flag[i],         1, i);
@@ -192,7 +193,8 @@ static int FUNC(profile_tier_level)(CodedBitstreamContext *ctx, RWContext *rw,
                 flags(sub_layer_one_picture_only_constraint_flag[i], 1, i);
                 flags(sub_layer_lower_bit_rate_constraint_flag[i],   1, i);
 
-                if (profile_compatible(5)) {
+                if (profile_compatible(5) || profile_compatible(9) ||
+                    profile_compatible(10) || profile_compatible(11)) {
                     flags(sub_layer_max_14bit_constraint_flag[i], 1, i);
                     fixed(24, sub_layer_reserved_zero_33bits, 0);
                     fixed( 9, sub_layer_reserved_zero_33bits, 0);
@@ -212,7 +214,8 @@ static int FUNC(profile_tier_level)(CodedBitstreamContext *ctx, RWContext *rw,
 
             if (profile_compatible(1) || profile_compatible(2) ||
                 profile_compatible(3) || profile_compatible(4) ||
-                profile_compatible(5) || profile_compatible(9)) {
+                profile_compatible(5) || profile_compatible(9) ||
+                profile_compatible(11)) {
                 flags(sub_layer_inbld_flag[i], 1, i);
             } else {
                 fixed(1, sub_layer_reserved_zero_bit, 0);
@@ -728,7 +731,7 @@ static int FUNC(sps_scc_extension)(CodedBitstreamContext *ctx, RWContext *rw,
 
         flag(sps_palette_predictor_initializer_present_flag);
         if (current->sps_palette_predictor_initializer_present_flag) {
-            ue(sps_num_palette_predictor_initializer_minus1, 0, 128);
+            ue(sps_num_palette_predictor_initializer_minus1, 0, 127);
             for (comp = 0; comp < (current->chroma_format_idc ? 3 : 1); comp++) {
                 int bit_depth = comp == 0 ? current->bit_depth_luma_minus8 + 8
                                           : current->bit_depth_chroma_minus8 + 8;
@@ -1369,6 +1372,7 @@ static int FUNC(slice_segment_header)(CodedBitstreamContext *ctx, RWContext *rw,
         if (current->nal_unit_header.nal_unit_type != HEVC_NAL_IDR_W_RADL &&
             current->nal_unit_header.nal_unit_type != HEVC_NAL_IDR_N_LP) {
             const H265RawSTRefPicSet *rps;
+            int dpb_slots_remaining;
 
             ub(sps->log2_max_pic_order_cnt_lsb_minus4 + 4, slice_pic_order_cnt_lsb);
 
@@ -1387,6 +1391,22 @@ static int FUNC(slice_segment_header)(CodedBitstreamContext *ctx, RWContext *rw,
                 rps = &sps->st_ref_pic_set[0];
             }
 
+            dpb_slots_remaining = HEVC_MAX_DPB_SIZE - 1 -
+                rps->num_negative_pics - rps->num_positive_pics;
+            if (pps->pps_curr_pic_ref_enabled_flag &&
+                (sps->sample_adaptive_offset_enabled_flag ||
+                 !pps->pps_deblocking_filter_disabled_flag ||
+                 pps->deblocking_filter_override_enabled_flag)) {
+                // This picture will occupy two DPB slots.
+                if (dpb_slots_remaining == 0) {
+                    av_log(ctx->log_ctx, AV_LOG_ERROR, "Invalid stream: "
+                           "short-term ref pic set contains too many pictures "
+                           "to use with current picture reference enabled.\n");
+                    return AVERROR_INVALIDDATA;
+                }
+                --dpb_slots_remaining;
+            }
+
             num_pic_total_curr = 0;
             for (i = 0; i < rps->num_negative_pics; i++)
                 if (rps->used_by_curr_pic_s0_flag[i])
@@ -1399,13 +1419,15 @@ static int FUNC(slice_segment_header)(CodedBitstreamContext *ctx, RWContext *rw,
                 unsigned int idx_size;
 
                 if (sps->num_long_term_ref_pics_sps > 0) {
-                    ue(num_long_term_sps, 0, sps->num_long_term_ref_pics_sps);
+                    ue(num_long_term_sps, 0, FFMIN(sps->num_long_term_ref_pics_sps,
+                                                   dpb_slots_remaining));
                     idx_size = av_log2(sps->num_long_term_ref_pics_sps - 1) + 1;
+                    dpb_slots_remaining -= current->num_long_term_sps;
                 } else {
                     infer(num_long_term_sps, 0);
                     idx_size = 0;
                 }
-                ue(num_long_term_pics, 0, HEVC_MAX_REFS - current->num_long_term_sps);
+                ue(num_long_term_pics, 0, dpb_slots_remaining);
 
                 for (i = 0; i < current->num_long_term_sps +
                                 current->num_long_term_pics; i++) {
@@ -1821,6 +1843,71 @@ static int FUNC(sei_recovery_point)
 
     flag(exact_match_flag);
     flag(broken_link_flag);
+
+    return 0;
+}
+
+static int FUNC(film_grain_characteristics)(CodedBitstreamContext *ctx, RWContext *rw,
+                                            H265RawFilmGrainCharacteristics *current,
+                                            SEIMessageState *state)
+{
+    CodedBitstreamH265Context *h265 = ctx->priv_data;
+    const H265RawSPS *sps = h265->active_sps;
+    int err, c, i, j;
+
+    HEADER("Film Grain Characteristics");
+
+    flag(film_grain_characteristics_cancel_flag);
+    if (!current->film_grain_characteristics_cancel_flag) {
+        int filmGrainBitDepth[3];
+
+        u(2, film_grain_model_id, 0, 1);
+        flag(separate_colour_description_present_flag);
+        if (current->separate_colour_description_present_flag) {
+            ub(3, film_grain_bit_depth_luma_minus8);
+            ub(3, film_grain_bit_depth_chroma_minus8);
+            flag(film_grain_full_range_flag);
+            ub(8, film_grain_colour_primaries);
+            ub(8, film_grain_transfer_characteristics);
+            ub(8, film_grain_matrix_coeffs);
+        } else {
+            if (!sps) {
+                av_log(ctx->log_ctx, AV_LOG_ERROR,
+                       "No active SPS for film_grain_characteristics.\n");
+                return AVERROR_INVALIDDATA;
+            }
+            infer(film_grain_bit_depth_luma_minus8, sps->bit_depth_luma_minus8);
+            infer(film_grain_bit_depth_chroma_minus8, sps->bit_depth_chroma_minus8);
+            infer(film_grain_full_range_flag, sps->vui.video_full_range_flag);
+            infer(film_grain_colour_primaries, sps->vui.colour_primaries);
+            infer(film_grain_transfer_characteristics, sps->vui.transfer_characteristics);
+            infer(film_grain_matrix_coeffs, sps->vui.matrix_coefficients);
+        }
+
+        filmGrainBitDepth[0] = current->film_grain_bit_depth_luma_minus8 + 8;
+        filmGrainBitDepth[1] =
+        filmGrainBitDepth[2] = current->film_grain_bit_depth_chroma_minus8 + 8;
+
+        u(2, blending_mode_id, 0, 1);
+        ub(4, log2_scale_factor);
+        for (c = 0; c < 3; c++)
+            flags(comp_model_present_flag[c], 1, c);
+        for (c = 0; c < 3; c++) {
+            if (current->comp_model_present_flag[c]) {
+                ubs(8, num_intensity_intervals_minus1[c], 1, c);
+                us(3, num_model_values_minus1[c], 0, 5, 1, c);
+                for (i = 0; i <= current->num_intensity_intervals_minus1[c]; i++) {
+                    ubs(8, intensity_interval_lower_bound[c][i], 2, c, i);
+                    ubs(8, intensity_interval_upper_bound[c][i], 2, c, i);
+                    for (j = 0; j <= current->num_model_values_minus1[c]; j++)
+                        ses(comp_model_value[c][i][j],      0 - current->film_grain_model_id * (1 << (filmGrainBitDepth[c] - 1)),
+                            ((1 << filmGrainBitDepth[c]) - 1) - current->film_grain_model_id * (1 << (filmGrainBitDepth[c] - 1)),
+                            3, c, i, j);
+                }
+            }
+        }
+        flag(film_grain_characteristics_persistence_flag);
+    }
 
     return 0;
 }

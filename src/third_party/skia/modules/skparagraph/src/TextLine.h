@@ -33,6 +33,7 @@ public:
       size_t size;
       SkScalar fTextShift; // Shifts the text inside the run so it's placed at the right position
       SkRect clip;
+      SkScalar fExcludedTrailingSpaces;
       bool clippingNeeded;
     };
 
@@ -47,22 +48,24 @@ public:
              SkVector offset,
              SkVector advance,
              BlockRange blocks,
+             TextRange textExcludingSpaces,
              TextRange text,
-             TextRange textWithSpaces,
+             TextRange textIncludingNewlines,
              ClusterRange clusters,
              ClusterRange clustersWithGhosts,
              SkScalar widthWithSpaces,
              InternalLineMetrics sizes);
 
-    TextRange trimmedText() const { return fTextRange; }
-    TextRange textWithSpaces() const { return fTextWithWhitespacesRange; }
+    TextRange trimmedText() const { return fTextExcludingSpaces; }
+    TextRange textWithNewlines() const { return fTextIncludingNewlines; }
+    TextRange text() const { return fText; }
     ClusterRange clusters() const { return fClusterRange; }
     ClusterRange clustersWithSpaces() { return fGhostClusterRange; }
     Run* ellipsis() const { return fEllipsis.get(); }
     InternalLineMetrics sizes() const { return fSizes; }
-    bool empty() const { return fTextRange.empty(); }
+    bool empty() const { return fTextExcludingSpaces.empty(); }
 
-    SkScalar spacesWidth() { return fWidthWithSpaces - width(); }
+    SkScalar spacesWidth() const { return fWidthWithSpaces - width(); }
     SkScalar height() const { return fAdvance.fY; }
     SkScalar width() const {
         return fAdvance.fX + (fEllipsis != nullptr ? fEllipsis->fAdvance.fX : 0);
@@ -132,8 +135,9 @@ private:
 
     ParagraphImpl* fOwner;
     BlockRange fBlockRange;
-    TextRange fTextRange;
-    TextRange fTextWithWhitespacesRange;
+    TextRange fTextExcludingSpaces;
+    TextRange fText;
+    TextRange fTextIncludingNewlines;
     ClusterRange fClusterRange;
     ClusterRange fGhostClusterRange;
     // Avoid the malloc/free in the common case of one run per line

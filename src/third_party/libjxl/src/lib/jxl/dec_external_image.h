@@ -1,16 +1,7 @@
-// Copyright (c) the JPEG XL Project
+// Copyright (c) the JPEG XL Project Authors. All rights reserved.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 
 #ifndef LIB_JXL_DEC_EXTERNAL_IMAGE_H_
 #define LIB_JXL_DEC_EXTERNAL_IMAGE_H_
@@ -49,6 +40,22 @@ Status ConvertToExternal(const jxl::ImageBundle& ib, size_t bits_per_sample,
                          size_t out_size, JxlImageOutCallback out_callback,
                          void* out_opaque, jxl::Orientation undo_orientation);
 
+// Converts single-channel image to interleaved void* pixel buffer with the
+// given format, with a single channel.
+// bits_per_sample: must be 8, 16 or 32, and must be 32 if float_out
+// is true. 1 and 32 int are not yet implemented.
+// This supports the features needed for the C API to get extra channels.
+// stride_out is output scanline size in bytes, must be >=
+// output_xsize * output_bytes_per_pixel.
+// undo_orientation is an EXIF orientation to undo. Depending on the
+// orientation, the output xsize and ysize are swapped compared to input
+// xsize and ysize.
+Status ConvertToExternal(const jxl::ImageF& channel, size_t bits_per_sample,
+                         bool float_out, JxlEndianness endianness,
+                         size_t stride_out, jxl::ThreadPool* thread_pool,
+                         void* out_image, size_t out_size,
+                         JxlImageOutCallback out_callback, void* out_opaque,
+                         jxl::Orientation undo_orientation);
 }  // namespace jxl
 
 #endif  // LIB_JXL_DEC_EXTERNAL_IMAGE_H_

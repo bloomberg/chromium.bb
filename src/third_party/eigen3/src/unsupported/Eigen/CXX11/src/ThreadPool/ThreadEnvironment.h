@@ -10,6 +10,8 @@
 #ifndef EIGEN_CXX11_THREADPOOL_THREAD_ENVIRONMENT_H
 #define EIGEN_CXX11_THREADPOOL_THREAD_ENVIRONMENT_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 struct StlThreadEnvironment {

@@ -5,6 +5,7 @@
 #include "ui/accessibility/ax_tree_manager_map.h"
 
 #include "base/containers/contains.h"
+#include "base/no_destructor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ui {
@@ -41,25 +42,22 @@ AXTreeManager* AXTreeManagerMap::GetManager(AXTreeID tree_id) {
 
 AXTreeManager* AXTreeManagerMap::GetManagerForChildTree(
     const AXNode& parent_node) {
-  if (!parent_node.data().HasStringAttribute(
+  if (!parent_node.HasStringAttribute(
           ax::mojom::StringAttribute::kChildTreeId)) {
     return nullptr;
   }
 
-  AXTreeID child_tree_id =
-      AXTreeID::FromString(parent_node.data().GetStringAttribute(
-          ax::mojom::StringAttribute::kChildTreeId));
+  AXTreeID child_tree_id = AXTreeID::FromString(
+      parent_node.GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
   AXTreeManager* child_tree_manager =
       AXTreeManagerMap::GetInstance().GetManager(child_tree_id);
 
   // Some platforms do not use AXTreeManagers, so child trees don't exist in
   // the browser process.
-  if (!child_tree_manager)
-    return nullptr;
-
-  DCHECK(child_tree_manager->GetParentNodeFromParentTreeAsAXNode()->id() ==
-         parent_node.id());
-
+  DCHECK(!child_tree_manager ||
+         !child_tree_manager->GetParentNodeFromParentTreeAsAXNode() ||
+         child_tree_manager->GetParentNodeFromParentTreeAsAXNode()->id() ==
+             parent_node.id());
   return child_tree_manager;
 }
 

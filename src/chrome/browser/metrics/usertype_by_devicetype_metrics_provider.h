@@ -12,6 +12,8 @@
 #include "components/session_manager/core/session_manager_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+class Profile;
+
 class UserTypeByDeviceTypeMetricsProvider
     : public metrics::MetricsProvider,
       public session_manager::SessionManagerObserver {
@@ -37,6 +39,10 @@ class UserTypeByDeviceTypeMetricsProvider
     kNonProfit = 3,
     // Primary profile is for a user belonging to an enterprise organization.
     kEnterprise = 4,
+    // Primary profile is for a kiosk app.
+    // This value is not present in MetricsLogSegment and must not collide with
+    // any values found there.
+    kKioskApp = 65534,
     // Primary profile is for a managed guest session.
     // This value is not present in MetricsLogSegment and must not collide with
     // any values found there.
@@ -55,6 +61,9 @@ class UserTypeByDeviceTypeMetricsProvider
 
   // session_manager::SessionManagerObserver:
   void OnUserSessionStarted(bool is_primary_user) override;
+
+  // Returns user's segment for metrics logging.
+  static UserSegment GetUserSegment(Profile* profile);
 
   static const char* GetHistogramNameForTesting();
 

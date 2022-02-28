@@ -7,10 +7,9 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -112,6 +111,10 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
    public:
     explicit TestApi(DisplayConfigurator* configurator)
         : configurator_(configurator) {}
+
+    TestApi(const TestApi&) = delete;
+    TestApi& operator=(const TestApi&) = delete;
+
     ~TestApi() {}
 
     // If |configure_timer_| is started, stops the timer, runs
@@ -124,8 +127,6 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
 
    private:
     DisplayConfigurator* configurator_;  // not owned
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
   // Flags that can be passed to SetDisplayPower().
@@ -162,6 +163,10 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
       const gfx::Size& size);
 
   DisplayConfigurator();
+
+  DisplayConfigurator(const DisplayConfigurator&) = delete;
+  DisplayConfigurator& operator=(const DisplayConfigurator&) = delete;
+
   ~DisplayConfigurator() override;
 
   MultipleDisplayState display_state() const { return current_display_state_; }
@@ -268,7 +273,11 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
 
   // Enable/disable the privacy screen on display with |display_id|.
   // For this to succeed, privacy screen must be supported by the display.
-  void SetPrivacyScreen(int64_t display_id, bool enabled);
+  // After privacy screen is set, |callback| is called with the outcome
+  // (success/failure) of the operation.
+  void SetPrivacyScreen(int64_t display_id,
+                        bool enabled,
+                        ConfigurationCallback callback);
 
   // Returns the requested power state if set or the default power state.
   chromeos::DisplayPowerState GetRequestedPowerState() const;
@@ -434,8 +443,6 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
 
   // This must be the last variable.
   base::WeakPtrFactory<DisplayConfigurator> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayConfigurator);
 };
 
 }  // namespace display

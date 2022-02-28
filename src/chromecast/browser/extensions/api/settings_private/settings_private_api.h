@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_BROWSER_EXTENSIONS_API_SETTINGS_PRIVATE_SETTINGS_PRIVATE_API_H_
 #define CHROMECAST_BROWSER_EXTENSIONS_API_SETTINGS_PRIVATE_SETTINGS_PRIVATE_API_H_
 
-#include "base/macros.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
@@ -15,6 +14,12 @@ namespace cast {
 class SettingsPrivateSetPrefFunction : public ExtensionFunction {
  public:
   SettingsPrivateSetPrefFunction() {}
+
+  SettingsPrivateSetPrefFunction(const SettingsPrivateSetPrefFunction&) =
+      delete;
+  SettingsPrivateSetPrefFunction& operator=(
+      const SettingsPrivateSetPrefFunction&) = delete;
+
   DECLARE_EXTENSION_FUNCTION("settingsPrivate.setPref", SETTINGSPRIVATE_SETPREF)
 
  protected:
@@ -22,14 +27,18 @@ class SettingsPrivateSetPrefFunction : public ExtensionFunction {
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
-
-  DISALLOW_COPY_AND_ASSIGN(SettingsPrivateSetPrefFunction);
 };
 
 // Implements the chrome.settingsPrivate.getAllPrefs method.
 class SettingsPrivateGetAllPrefsFunction : public ExtensionFunction {
  public:
   SettingsPrivateGetAllPrefsFunction() {}
+
+  SettingsPrivateGetAllPrefsFunction(
+      const SettingsPrivateGetAllPrefsFunction&) = delete;
+  SettingsPrivateGetAllPrefsFunction& operator=(
+      const SettingsPrivateGetAllPrefsFunction&) = delete;
+
   DECLARE_EXTENSION_FUNCTION("settingsPrivate.getAllPrefs",
                              SETTINGSPRIVATE_GETALLPREFS)
 
@@ -38,14 +47,18 @@ class SettingsPrivateGetAllPrefsFunction : public ExtensionFunction {
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
-
-  DISALLOW_COPY_AND_ASSIGN(SettingsPrivateGetAllPrefsFunction);
 };
 
 // Implements the chrome.settingsPrivate.getPref method.
 class SettingsPrivateGetPrefFunction : public ExtensionFunction {
  public:
   SettingsPrivateGetPrefFunction() {}
+
+  SettingsPrivateGetPrefFunction(const SettingsPrivateGetPrefFunction&) =
+      delete;
+  SettingsPrivateGetPrefFunction& operator=(
+      const SettingsPrivateGetPrefFunction&) = delete;
+
   DECLARE_EXTENSION_FUNCTION("settingsPrivate.getPref", SETTINGSPRIVATE_GETPREF)
 
  protected:
@@ -53,14 +66,18 @@ class SettingsPrivateGetPrefFunction : public ExtensionFunction {
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
-
-  DISALLOW_COPY_AND_ASSIGN(SettingsPrivateGetPrefFunction);
 };
 
 // Implements the chrome.settingsPrivate.getDefaultZoom method.
 class SettingsPrivateGetDefaultZoomFunction : public ExtensionFunction {
  public:
   SettingsPrivateGetDefaultZoomFunction() {}
+
+  SettingsPrivateGetDefaultZoomFunction(
+      const SettingsPrivateGetDefaultZoomFunction&) = delete;
+  SettingsPrivateGetDefaultZoomFunction& operator=(
+      const SettingsPrivateGetDefaultZoomFunction&) = delete;
+
   DECLARE_EXTENSION_FUNCTION("settingsPrivate.getDefaultZoom",
                              SETTINGSPRIVATE_GETDEFAULTZOOMFUNCTION)
 
@@ -69,14 +86,18 @@ class SettingsPrivateGetDefaultZoomFunction : public ExtensionFunction {
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
-
-  DISALLOW_COPY_AND_ASSIGN(SettingsPrivateGetDefaultZoomFunction);
 };
 
 // Implements the chrome.settingsPrivate.setDefaultZoom method.
 class SettingsPrivateSetDefaultZoomFunction : public ExtensionFunction {
  public:
   SettingsPrivateSetDefaultZoomFunction() {}
+
+  SettingsPrivateSetDefaultZoomFunction(
+      const SettingsPrivateSetDefaultZoomFunction&) = delete;
+  SettingsPrivateSetDefaultZoomFunction& operator=(
+      const SettingsPrivateSetDefaultZoomFunction&) = delete;
+
   DECLARE_EXTENSION_FUNCTION("settingsPrivate.setDefaultZoom",
                              SETTINGSPRIVATE_SETDEFAULTZOOMFUNCTION)
 
@@ -85,8 +106,6 @@ class SettingsPrivateSetDefaultZoomFunction : public ExtensionFunction {
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
-
-  DISALLOW_COPY_AND_ASSIGN(SettingsPrivateSetDefaultZoomFunction);
 };
 
 }  // namespace cast

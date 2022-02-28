@@ -124,7 +124,7 @@ static void dxva2_pool_release_dummy(void *opaque, uint8_t *data)
     // released in dxva2_frames_uninit()
 }
 
-static AVBufferRef *dxva2_pool_alloc(void *opaque, buffer_size_t size)
+static AVBufferRef *dxva2_pool_alloc(void *opaque, size_t size)
 {
     AVHWFramesContext      *ctx = (AVHWFramesContext*)opaque;
     DXVA2FramesContext       *s = ctx->internal->priv;
@@ -179,8 +179,8 @@ static int dxva2_init_pool(AVHWFramesContext *ctx)
         return AVERROR(EINVAL);
     }
 
-    s->surfaces_internal = av_mallocz_array(ctx->initial_pool_size,
-                                            sizeof(*s->surfaces_internal));
+    s->surfaces_internal = av_calloc(ctx->initial_pool_size,
+                                     sizeof(*s->surfaces_internal));
     if (!s->surfaces_internal)
         return AVERROR(ENOMEM);
 

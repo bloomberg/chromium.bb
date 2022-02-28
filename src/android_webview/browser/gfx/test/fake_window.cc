@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "android_webview/browser/gfx/test/fake_window.h"
+#include "base/memory/raw_ptr.h"
 
 #include "android_webview/browser/gfx/browser_view_renderer.h"
 #include "android_webview/browser/gfx/child_frame.h"
@@ -42,7 +43,7 @@ class FakeWindow::ScopedMakeCurrent {
   }
 
  private:
-  FakeWindow* view_root_;
+  raw_ptr<FakeWindow> view_root_;
 };
 
 FakeWindow::FakeWindow(BrowserViewRenderer* view,
@@ -126,7 +127,7 @@ void FakeWindow::OnDrawHardware() {
   DCHECK(on_draw_hardware_pending_);
   on_draw_hardware_pending_ = false;
 
-  view_->PrepareToDraw(gfx::Vector2d(), location_);
+  view_->PrepareToDraw(gfx::Point(), location_);
   hooks_->WillOnDraw();
   bool success = view_->OnDrawHardware();
   hooks_->DidOnDraw(success);
@@ -280,7 +281,7 @@ void FakeFunctor::ReleaseOnRT(base::OnceClosure callback) {
     RenderThreadManager::InsideHardwareReleaseReset release_reset(
         render_thread_manager_.get());
     render_thread_manager_->DestroyHardwareRendererOnRT(
-        false /* save_restore */);
+        false /* save_restore */, false /* abandon_context */);
   }
   render_thread_manager_.reset();
   std::move(callback).Run();
@@ -301,7 +302,9 @@ void FakeFunctor::ReleaseOnUIWithInvoke() {
 void FakeFunctor::Invoke(WindowHooks* hooks) {
   DCHECK(render_thread_manager_);
   hooks->WillProcessOnRT();
-  render_thread_manager_->DestroyHardwareRendererOnRT(false /* save_restore */);
+  bool abandon_context = true;  // For test coverage.
+  render_thread_manager_->DestroyHardwareRendererOnRT(false /* save_restore */,
+                                                      abandon_context);
   hooks->DidProcessOnRT();
 }
 

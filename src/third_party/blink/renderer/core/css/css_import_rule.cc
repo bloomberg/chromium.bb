@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/style_rule_import.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -55,6 +55,16 @@ String CSSImportRule::cssText() const {
   result.Append(import_rule_->Href());
   result.Append("\")");
 
+  if (import_rule_->IsLayered()) {
+    result.Append(" layer");
+    String layer_name = layerName();
+    if (layer_name.length()) {
+      result.Append("(");
+      result.Append(layer_name);
+      result.Append(")");
+    }
+  }
+
   if (import_rule_->MediaQueries()) {
     String media_text = import_rule_->MediaQueries()->MediaText();
     if (!media_text.IsEmpty()) {
@@ -64,7 +74,7 @@ String CSSImportRule::cssText() const {
   }
   result.Append(';');
 
-  return result.ToString();
+  return result.ReleaseString();
 }
 
 CSSStyleSheet* CSSImportRule::styleSheet() const {
@@ -77,6 +87,12 @@ CSSStyleSheet* CSSImportRule::styleSheet() const {
     style_sheet_cssom_wrapper_ = MakeGarbageCollected<CSSStyleSheet>(
         import_rule_->GetStyleSheet(), const_cast<CSSImportRule*>(this));
   return style_sheet_cssom_wrapper_.Get();
+}
+
+String CSSImportRule::layerName() const {
+  if (!import_rule_->IsLayered())
+    return g_null_atom;
+  return import_rule_->GetLayerNameAsString();
 }
 
 void CSSImportRule::Reattach(StyleRuleBase*) {

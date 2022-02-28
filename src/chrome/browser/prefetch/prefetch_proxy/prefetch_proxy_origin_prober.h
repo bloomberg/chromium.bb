@@ -6,13 +6,14 @@
 #define CHROME_BROWSER_PREFETCH_PREFETCH_PROXY_PREFETCH_PROXY_ORIGIN_PROBER_H_
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_probe_result.h"
 #include "net/base/address_list.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-class AvailabilityProber;
+class PrefetchProxyCanaryChecker;
 class Profile;
 
 // This class handles all probing and canary checks for the prefetch proxy
@@ -30,6 +31,9 @@ class PrefetchProxyOriginProber {
   explicit PrefetchProxyOriginProber(Profile* profile);
   ~PrefetchProxyOriginProber();
 
+  // Run canary checks if they are not already cached.
+  void RunCanaryChecksIfNeeded() const;
+
   // Returns true if a probe needs to be done before using prefetched resources.
   bool ShouldProbeOrigins() const;
 
@@ -37,12 +41,13 @@ class PrefetchProxyOriginProber {
   void SetProbeURLOverrideDelegateOverrideForTesting(
       ProbeURLOverrideDelegate* delegate);
 
+  // Tells whether a DNS canary check has completed, either in success or
+  // failure. Used for testing.
+  bool IsDNSCanaryCheckCompleteForTesting() const;
+
   // Tells whether a TLS canary check has completed, either in success or
   // failure. Used for testing.
   bool IsTLSCanaryCheckCompleteForTesting() const;
-
-  // Tells whether a DNS canary check is active. Used for testing.
-  bool IsDNSCanaryCheckActiveForTesting() const;
 
   // Starts a probe to |url| and calls |callback| with an
   // |PrefetchProxyProbeResult| to indicate success.
@@ -51,8 +56,6 @@ class PrefetchProxyOriginProber {
   void Probe(const GURL& url, OnProbeResultCallback callback);
 
  private:
-  void OnTLSCanaryCheckComplete(bool success);
-
   void DNSProbe(const GURL& url, OnProbeResultCallback callback);
   void HTTPProbe(const GURL& url, OnProbeResultCallback callback);
   void TLSProbe(const GURL& url, OnProbeResultCallback callback);
@@ -81,16 +84,16 @@ class PrefetchProxyOriginProber {
       const absl::optional<net::AddressList>& resolved_addresses);
 
   // The current profile, not owned.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // Used for testing to change the url passed to |Probe|. Must outlive |this|.
-  ProbeURLOverrideDelegate* override_delegate_ = nullptr;
+  raw_ptr<ProbeURLOverrideDelegate> override_delegate_ = nullptr;
 
   // The TLS canary url checker.
-  std::unique_ptr<AvailabilityProber> tls_canary_check_;
+  std::unique_ptr<PrefetchProxyCanaryChecker> tls_canary_check_;
 
   // The DNS canary url checker.
-  std::unique_ptr<AvailabilityProber> dns_canary_check_;
+  std::unique_ptr<PrefetchProxyCanaryChecker> dns_canary_check_;
 
   base::WeakPtrFactory<PrefetchProxyOriginProber> weak_factory_{this};
 };

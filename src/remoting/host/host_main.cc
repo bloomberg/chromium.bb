@@ -20,12 +20,12 @@
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
 #include "remoting/base/breakpad.h"
+#include "remoting/base/logging.h"
+#include "remoting/host/base/host_exit_codes.h"
+#include "remoting/host/base/switches.h"
 #include "remoting/host/evaluate_capability.h"
-#include "remoting/host/host_exit_codes.h"
-#include "remoting/host/logging.h"
 #include "remoting/host/resources.h"
 #include "remoting/host/setup/me2me_native_messaging_host.h"
-#include "remoting/host/switches.h"
 #include "remoting/host/usage_stats_consent.h"
 
 #if defined(OS_APPLE)
@@ -33,6 +33,8 @@
 #endif  // defined(OS_APPLE)
 
 #if defined(OS_WIN)
+#include <windows.h>
+
 #include <commctrl.h>
 #include <shellapi.h>
 #endif  // defined(OS_WIN)
@@ -46,6 +48,7 @@ int DaemonProcessMain();
 int DesktopProcessMain();
 int FileChooserMain();
 int RdpDesktopSessionMain();
+int UrlForwarderConfiguratorMain();
 #endif  // defined(OS_WIN)
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 int XSessionChooserMain();
@@ -146,6 +149,8 @@ MainRoutineFn SelectMainRoutine(const std::string& process_type) {
     main_routine = &FileChooserMain;
   } else if (process_type == kProcessTypeRdpDesktopSession) {
     main_routine = &RdpDesktopSessionMain;
+  } else if (process_type == kProcessTypeUrlForwarderConfigurator) {
+    main_routine = &UrlForwarderConfiguratorMain;
 #endif  // defined(OS_WIN)
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   } else if (process_type == kProcessTypeXSessionChooser) {
@@ -252,9 +257,3 @@ int HostMain(int argc, char** argv) {
 }
 
 }  // namespace remoting
-
-#if !defined(OS_WIN)
-int main(int argc, char** argv) {
-  return remoting::HostMain(argc, argv);
-}
-#endif  // !defined(OS_WIN)

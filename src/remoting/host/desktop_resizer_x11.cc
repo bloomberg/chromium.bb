@@ -4,12 +4,12 @@
 
 #include "remoting/host/desktop_resizer_x11.h"
 
-#include <string.h>
+#include <memory>
+#include <string>
 
 #include "base/command_line.h"
-#include "base/macros.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
-#include "base/numerics/ranges.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/linux/x11_util.h"
 #include "ui/gfx/x/future.h"
@@ -145,12 +145,12 @@ std::list<ScreenResolution> DesktopResizerX11::GetSupportedResolutions(
   if (exact_resize_) {
     // Clamp the specified size to something valid for the X server.
     if (auto response = randr_->GetScreenSizeRange({root_}).Sync()) {
-      int width = base::ClampToRange(
-          static_cast<uint16_t>(preferred.dimensions().width()),
-          response->min_width, response->max_width);
-      int height = base::ClampToRange(
-          static_cast<uint16_t>(preferred.dimensions().height()),
-          response->min_height, response->max_height);
+      int width =
+          base::clamp(static_cast<uint16_t>(preferred.dimensions().width()),
+                      response->min_width, response->max_width);
+      int height =
+          base::clamp(static_cast<uint16_t>(preferred.dimensions().height()),
+                      response->min_height, response->max_height);
       // Additionally impose a minimum size of 640x480, since anything smaller
       // doesn't seem very useful.
       ScreenResolution actual(
@@ -211,16 +211,17 @@ void DesktopResizerX11::SetResolutionNewMode(
            << "x" << resolution.dimensions().height();
 
   // TODO(lambroslambrou): Use the DPI from client size information.
-  int width_mm =
+  uint32_t width_mm =
       PixelsToMillimeters(resolution.dimensions().width(), kDefaultDPI);
-  int height_mm =
+  uint32_t height_mm =
       PixelsToMillimeters(resolution.dimensions().height(), kDefaultDPI);
   CreateMode(kTempModeName, resolution.dimensions().width(),
              resolution.dimensions().height());
   SwitchToMode(nullptr);
-  randr_->SetScreenSize({root_, resolution.dimensions().width(),
-                         resolution.dimensions().height(), width_mm,
-                         height_mm});
+  randr_->SetScreenSize(
+      {root_, static_cast<uint16_t>(resolution.dimensions().width()),
+       static_cast<uint16_t>(resolution.dimensions().height()), width_mm,
+       height_mm});
   SwitchToMode(kTempModeName);
   DeleteMode(kModeName);
   CreateMode(kModeName, resolution.dimensions().width(),
@@ -241,7 +242,7 @@ void DesktopResizerX11::SetResolutionExistingMode(
             .window = root_,
             .timestamp = x11::Time::CurrentTime,
             .config_timestamp = config->config_timestamp,
-            .sizeID = i,
+            .sizeID = static_cast<uint16_t>(i),
             .rotation = current_rotation,
             .rate = 0,
         });
@@ -297,6 +298,11 @@ void DesktopResizerX11::SwitchToMode(const char* name) {
       .rotation = x11::RandR::Rotation::Rotate_0,
       .outputs = outputs,
   });
+}
+
+// static
+std::unique_ptr<DesktopResizer> DesktopResizer::Create() {
+  return std::make_unique<DesktopResizerX11>();
 }
 
 }  // namespace remoting

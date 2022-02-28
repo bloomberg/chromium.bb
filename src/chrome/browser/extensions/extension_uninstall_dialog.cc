@@ -77,7 +77,7 @@ ExtensionUninstallDialog::ExtensionUninstallDialog(
   DCHECK(delegate_);
   if (parent)
     parent_window_tracker_ = NativeWindowTracker::Create(parent);
-  profile_observation_.Observe(profile_);
+  profile_observation_.Observe(profile_.get());
 }
 
 ExtensionUninstallDialog::~ExtensionUninstallDialog() = default;
@@ -149,6 +149,7 @@ void ExtensionUninstallDialog::OnIconUpdated(ChromeAppIcon* icon) {
       Show();
       break;
     case ScopedTestDialogAutoConfirm::ACCEPT_AND_OPTION:
+    case ScopedTestDialogAutoConfirm::ACCEPT_AND_REMEMBER_OPTION:
       OnDialogClosed(CLOSE_ACTION_UNINSTALL_AND_CHECKBOX_CHECKED);
       break;
     case ScopedTestDialogAutoConfirm::ACCEPT:
@@ -223,12 +224,7 @@ void ExtensionUninstallDialog::OnDialogClosed(CloseAction action) {
   // closed.
   registry_observation_.Reset();
 
-  // We don't want to artificially weight any of the options, so only record if
-  // a checkbox was shown.
-  if (show_report_abuse_checkbox_) {
-    UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallDialogAction", action,
-                              CLOSE_ACTION_LAST);
-  } else if (show_remove_data_checkbox_) {
+  if (show_remove_data_checkbox_) {
     // TODO(crbug.com/1065748): Delete Webapp recording in extensions dialog.
     UMA_HISTOGRAM_ENUMERATION("Webapp.UninstallDialogAction", action,
                               CLOSE_ACTION_LAST);

@@ -3,38 +3,25 @@
 // found in the LICENSE file.
 
 import 'chrome://new-tab-page/lazy_load.js';
+
 import {NewTabPageProxy} from 'chrome://new-tab-page/new_tab_page.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {installMock} from 'chrome://test/new_tab_page/test_support.js';
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.js';
 
 suite('NewTabPageCustomizeShortcutsTest', () => {
   /** @type {!CustomizeShortcutsElement} */
   let customizeShortcuts;
 
-  /**
-   * @implements {newTabPage.mojom.PageHandlerRemote}
-   * @extends {TestBrowserProxy}
-   */
+  /** @type {!TestBrowserProxy} */
   let handler;
-
-  /** @type {newTabPage.mojom.PageHandlerRemote} */
-  let callbackRouterRemote;
 
   setup(() => {
     PolymerTest.clearBody();
 
-    handler = TestBrowserProxy.fromClass(newTabPage.mojom.PageHandlerRemote);
-    const callbackRouter = new newTabPage.mojom.PageCallbackRouter();
-    handler.setResultFor('addMostVisitedTile', Promise.resolve({
-      success: true,
-    }));
-    handler.setResultFor('updateMostVisitedTile', Promise.resolve({
-      success: true,
-    }));
-    NewTabPageProxy.setInstance(handler, callbackRouter);
-    callbackRouterRemote = callbackRouter.$.bindNewPipeAndPassRemote();
-
-    customizeShortcuts = document.createElement('ntp-customize-shortcuts');
-    document.body.appendChild(customizeShortcuts);
+    handler = installMock(
+        newTabPage.mojom.PageHandlerRemote,
+        mock => NewTabPageProxy.setInstance(
+            mock, new newTabPage.mojom.PageCallbackRouter()));
   });
 
   /**
@@ -43,13 +30,14 @@ suite('NewTabPageCustomizeShortcutsTest', () => {
    * @return {!Promise}
    * @private
    */
-  async function setInitialSettings(customLinksEnabled, visible) {
-    callbackRouterRemote.setMostVisitedInfo({
-      customLinksEnabled: customLinksEnabled,
-      tiles: [],
-      visible: visible,
-    });
-    await callbackRouterRemote.$.flushForTesting();
+  async function setInitialSettings(customLinksEnabled, shortcutsVisible) {
+    handler.setResultFor('getMostVisitedSettings', Promise.resolve({
+      customLinksEnabled,
+      shortcutsVisible,
+    }));
+    customizeShortcuts = document.createElement('ntp-customize-shortcuts');
+    document.body.appendChild(customizeShortcuts);
+    await handler.whenCalled('getMostVisitedSettings');
   }
 
   /**
@@ -97,7 +85,9 @@ suite('NewTabPageCustomizeShortcutsTest', () => {
         /* hidden= */ true);
   }
 
-  test('selections are mutually exclusive', () => {
+  test('selections are mutually exclusive', async () => {
+    await setInitialSettings(
+        /* customLinksEnabled= */ true, /* shortcutsVisible= */ false);
     assertIsSelected(false, customizeShortcuts.$.optionCustomLinks);
     customizeShortcuts.$.optionCustomLinksButton.click();
     assertCustomLinksEnabled();
@@ -111,8 +101,7 @@ suite('NewTabPageCustomizeShortcutsTest', () => {
 
   test('enable custom links calls setMostVisitedSettings', async () => {
     await setInitialSettings(
-        /* customLinksEnabled= */ false,
-        /* visible= */ false);
+        /* customLinksEnabled= */ false, /* shortcutsVisible= */ false);
     assertHidden();
     customizeShortcuts.$.optionCustomLinksButton.click();
     const setSettingsCalled = handler.whenCalled('setMostVisitedSettings');
@@ -124,8 +113,7 @@ suite('NewTabPageCustomizeShortcutsTest', () => {
 
   test('use most-visited calls setMostVisitedSettings', async () => {
     await setInitialSettings(
-        /* customLinksEnabled= */ true,
-        /* visible= */ false);
+        /* customLinksEnabled= */ true, /* shortcutsVisible= */ false);
     assertHidden();
     customizeShortcuts.$.optionMostVisitedButton.click();
     const setSettingsCalled = handler.whenCalled('setMostVisitedSettings');
@@ -137,8 +125,7 @@ suite('NewTabPageCustomizeShortcutsTest', () => {
 
   test('toggle hide calls setMostVisitedSettings', async () => {
     await setInitialSettings(
-        /* customLinksEnabled= */ true,
-        /* visible= */ true);
+        /* customLinksEnabled= */ true, /* shortcutsVisible= */ true);
     assertCustomLinksEnabled();
     customizeShortcuts.$.hideToggle.click();
     const setSettingsCalled = handler.whenCalled('setMostVisitedSettings');
