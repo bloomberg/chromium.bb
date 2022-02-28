@@ -12,10 +12,10 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -50,6 +50,10 @@
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_surface_test_support.h"
+
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
 
 namespace gpu {
 namespace {
@@ -324,6 +328,10 @@ class CommandBufferSetup {
     auto* command_line = base::CommandLine::ForCurrentProcess();
     ALLOW_UNUSED_LOCAL(command_line);
 
+#if defined(USE_OZONE)
+    ui::OzonePlatform::InitializeForGPU(ui::OzonePlatform::InitParams());
+#endif
+
 #if defined(GPU_FUZZER_USE_ANGLE)
     command_line->AppendSwitchASCII(switches::kUseGL,
                                     gl::kGLImplementationANGLEName);
@@ -409,7 +417,8 @@ class CommandBufferSetup {
         gpu_preferences_, config_.workarounds, gpu_feature_info,
         context_state_.get(), &mailbox_manager_, shared_image_manager_.get(),
         nullptr /* image_factory */, nullptr /* memory_tracker */,
-        false /* enable_wrapped_sk_image */);
+        false /* enable_wrapped_sk_image */,
+        false /* is_for_display_compositor */);
     for (uint32_t usage = SHARED_IMAGE_USAGE_GLES2;
          usage <= SHARED_IMAGE_USAGE_RGB_EMULATION; usage <<= 1) {
       Mailbox::Name name;

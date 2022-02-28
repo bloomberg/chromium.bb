@@ -58,30 +58,42 @@ class CONTENT_EXPORT WebRTCInternals : public PeerConnectionTrackerHostObserver,
   ~WebRTCInternals() override;
 
   // PeerConnectionTrackerHostObserver implementation.
-  void OnPeerConnectionAdded(GlobalFrameRoutingId frame_id,
+  void OnPeerConnectionAdded(GlobalRenderFrameHostId frame_id,
                              int lid,
                              base::ProcessId pid,
                              const std::string& url,
                              const std::string& rtc_configuration,
                              const std::string& constraints) override;
-  void OnPeerConnectionRemoved(GlobalFrameRoutingId frame_id, int lid) override;
-  void OnPeerConnectionUpdated(GlobalFrameRoutingId frame_id,
+  void OnPeerConnectionRemoved(GlobalRenderFrameHostId frame_id,
+                               int lid) override;
+  void OnPeerConnectionUpdated(GlobalRenderFrameHostId frame_id,
                                int lid,
                                const std::string& type,
                                const std::string& value) override;
-  void OnAddStandardStats(GlobalFrameRoutingId frame_id,
+  void OnAddStandardStats(GlobalRenderFrameHostId frame_id,
                           int lid,
                           base::Value value) override;
-  void OnAddLegacyStats(GlobalFrameRoutingId frame_id,
+  void OnAddLegacyStats(GlobalRenderFrameHostId frame_id,
                         int lid,
                         base::Value value) override;
-  void OnGetUserMedia(GlobalFrameRoutingId frame_id,
+  void OnGetUserMedia(GlobalRenderFrameHostId frame_id,
                       base::ProcessId pid,
-                      const std::string& origin,
+                      int request_id,
                       bool audio,
                       bool video,
                       const std::string& audio_constraints,
                       const std::string& video_constraints) override;
+  void OnGetUserMediaSuccess(GlobalRenderFrameHostId frame_id,
+                             base::ProcessId pid,
+                             int request_id,
+                             const std::string& stream_id,
+                             const std::string& audio_track_info,
+                             const std::string& video_track_info) override;
+  void OnGetUserMediaFailure(GlobalRenderFrameHostId frame_id,
+                             base::ProcessId pid,
+                             int request_id,
+                             const std::string& error,
+                             const std::string& error_message) override;
 
   // Methods for adding or removing WebRTCInternalsUIObserver.
   void AddObserver(WebRTCInternalsUIObserver* observer);
@@ -134,8 +146,7 @@ class CONTENT_EXPORT WebRTCInternals : public PeerConnectionTrackerHostObserver,
 
   static WebRTCInternals* g_webrtc_internals;
 
-  void SendUpdate(const std::string& event_name,
-                  std::unique_ptr<base::Value> event_data);
+  void SendUpdate(const std::string& event_name, base::Value event_data);
 
   // RenderProcessHostObserver implementation.
   void RenderProcessExited(RenderProcessHost* host,
@@ -156,10 +167,10 @@ class CONTENT_EXPORT WebRTCInternals : public PeerConnectionTrackerHostObserver,
 
   // Updates the number of open PeerConnections. Called when a PeerConnection
   // is stopped or removed.
-  void MaybeClosePeerConnection(base::DictionaryValue* record);
+  void MaybeClosePeerConnection(base::Value* record);
 
-  void MaybeMarkPeerConnectionAsConnected(base::DictionaryValue* record);
-  void MaybeMarkPeerConnectionAsNotConnected(base::DictionaryValue* record);
+  void MaybeMarkPeerConnectionAsConnected(base::Value* record);
+  void MaybeMarkPeerConnectionAsNotConnected(base::Value* record);
 
   // Called whenever a PeerConnection is created or stopped in order to
   // request/cancel a wake lock on suspending the current application for power
@@ -174,9 +185,11 @@ class CONTENT_EXPORT WebRTCInternals : public PeerConnectionTrackerHostObserver,
   // notifications.
   void ProcessPendingUpdates();
 
-  base::DictionaryValue* FindRecord(GlobalFrameRoutingId frame_id,
-                                    int lid,
-                                    size_t* index = nullptr);
+  // Returns an iterator for peer_connection_data_.GetList (an end() iterator
+  // if not found).
+  base::CheckedContiguousIterator<base::Value> FindRecord(
+      GlobalRenderFrameHostId frame_id,
+      int lid);
 
   base::ObserverList<WebRTCInternalsUIObserver>::Unchecked observers_;
 
@@ -199,13 +212,18 @@ class CONTENT_EXPORT WebRTCInternals : public PeerConnectionTrackerHostObserver,
   // are strings representing the event.
   base::ListValue peer_connection_data_;
 
-  // A list of getUserMedia requests. Each item is a DictionaryValue that
-  // contains these fields:
+  // A list of getUserMedia requests or updates.
+  // Each item is a DictionaryValue that contains some of these fields
+  // depending on the type:
   // "rid" -- the renderer id.
-  // "pid" -- proceddId of the renderer.
+  // "pid" -- OS process id of the renderer that creates the PeerConnection.
   // "origin" -- the security origin of the request.
   // "audio" -- the serialized audio constraints if audio is requested.
   // "video" -- the serialized video constraints if video is requested.
+  // "timestamp" -- time of the request
+  // "stream_id" -- the resulting stream id.
+  // "audio_track_info" -- the serialized audio track (track id and label).
+  // "video_track_info" -- the serialized video track (track id and label).
   base::ListValue get_user_media_requests_;
 
   // For managing select file dialog.
@@ -248,9 +266,12 @@ class CONTENT_EXPORT WebRTCInternals : public PeerConnectionTrackerHostObserver,
   // thread.
   class PendingUpdate {
    public:
-    PendingUpdate(const std::string& event_name,
-                  std::unique_ptr<base::Value> event_data);
+    PendingUpdate(const std::string& event_name, base::Value event_data);
     PendingUpdate(PendingUpdate&& other);
+
+    PendingUpdate(const PendingUpdate&) = delete;
+    PendingUpdate& operator=(const PendingUpdate&) = delete;
+
     ~PendingUpdate();
 
     const std::string& event_name() const;
@@ -259,8 +280,7 @@ class CONTENT_EXPORT WebRTCInternals : public PeerConnectionTrackerHostObserver,
    private:
     base::ThreadChecker thread_checker_;
     const std::string event_name_;
-    std::unique_ptr<base::Value> event_data_;
-    DISALLOW_COPY_AND_ASSIGN(PendingUpdate);
+    base::Value event_data_;
   };
 
   base::queue<PendingUpdate> pending_updates_;

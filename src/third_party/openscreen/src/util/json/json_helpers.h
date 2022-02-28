@@ -24,53 +24,7 @@
 namespace openscreen {
 namespace json {
 
-// TODO(jophba): remove these methods after refactoring offer messaging.
-inline Error CreateParseError(const std::string& type) {
-  return Error(Error::Code::kJsonParseError, "Failed to parse " + type);
-}
-
-inline Error CreateParameterError(const std::string& type) {
-  return Error(Error::Code::kParameterInvalid, "Invalid parameter: " + type);
-}
-
-inline ErrorOr<bool> ParseBool(const Json::Value& parent,
-                               const std::string& field) {
-  const Json::Value& value = parent[field];
-  if (!value.isBool()) {
-    return CreateParseError("bool field " + field);
-  }
-  return value.asBool();
-}
-
-inline ErrorOr<int> ParseInt(const Json::Value& parent,
-                             const std::string& field) {
-  const Json::Value& value = parent[field];
-  if (!value.isInt()) {
-    return CreateParseError("integer field: " + field);
-  }
-  return value.asInt();
-}
-
-inline ErrorOr<uint32_t> ParseUint(const Json::Value& parent,
-                                   const std::string& field) {
-  const Json::Value& value = parent[field];
-  if (!value.isUInt()) {
-    return CreateParseError("unsigned integer field: " + field);
-  }
-  return value.asUInt();
-}
-
-inline ErrorOr<std::string> ParseString(const Json::Value& parent,
-                                        const std::string& field) {
-  const Json::Value& value = parent[field];
-  if (!value.isString()) {
-    return CreateParseError("string field: " + field);
-  }
-  return value.asString();
-}
-
-// TODO(jophba): offer messaging should use these methods instead.
-inline bool ParseBool(const Json::Value& value, bool* out) {
+inline bool TryParseBool(const Json::Value& value, bool* out) {
   if (!value.isBool()) {
     return false;
   }
@@ -81,9 +35,9 @@ inline bool ParseBool(const Json::Value& value, bool* out) {
 // A general note about parsing primitives. "Validation" in this context
 // generally means ensuring that the values are non-negative, excepting doubles
 // which may be negative in some cases.
-inline bool ParseAndValidateDouble(const Json::Value& value,
-                                   double* out,
-                                   bool allow_negative = false) {
+inline bool TryParseDouble(const Json::Value& value,
+                           double* out,
+                           bool allow_negative = false) {
   if (!value.isDouble()) {
     return false;
   }
@@ -98,7 +52,7 @@ inline bool ParseAndValidateDouble(const Json::Value& value,
   return true;
 }
 
-inline bool ParseAndValidateInt(const Json::Value& value, int* out) {
+inline bool TryParseInt(const Json::Value& value, int* out) {
   if (!value.isInt()) {
     return false;
   }
@@ -110,7 +64,7 @@ inline bool ParseAndValidateInt(const Json::Value& value, int* out) {
   return true;
 }
 
-inline bool ParseAndValidateUint(const Json::Value& value, uint32_t* out) {
+inline bool TryParseUint(const Json::Value& value, uint32_t* out) {
   if (!value.isUInt()) {
     return false;
   }
@@ -118,7 +72,7 @@ inline bool ParseAndValidateUint(const Json::Value& value, uint32_t* out) {
   return true;
 }
 
-inline bool ParseAndValidateString(const Json::Value& value, std::string* out) {
+inline bool TryParseString(const Json::Value& value, std::string* out) {
   if (!value.isString()) {
     return false;
   }
@@ -129,8 +83,8 @@ inline bool ParseAndValidateString(const Json::Value& value, std::string* out) {
 // We want to be more robust when we parse fractions then just
 // allowing strings, this will parse numeral values such as
 // value: 50 as well as value: "50" and value: "100/2".
-inline bool ParseAndValidateSimpleFraction(const Json::Value& value,
-                                           SimpleFraction* out) {
+inline bool TryParseSimpleFraction(const Json::Value& value,
+                                   SimpleFraction* out) {
   if (value.isInt()) {
     int parsed = value.asInt();
     if (parsed < 0) {
@@ -156,10 +110,9 @@ inline bool ParseAndValidateSimpleFraction(const Json::Value& value,
   return false;
 }
 
-inline bool ParseAndValidateMilliseconds(const Json::Value& value,
-                                         milliseconds* out) {
+inline bool TryParseMilliseconds(const Json::Value& value, milliseconds* out) {
   int out_ms;
-  if (!ParseAndValidateInt(value, &out_ms) || out_ms < 0) {
+  if (!TryParseInt(value, &out_ms) || out_ms < 0) {
     return false;
   }
   *out = milliseconds(out_ms);
@@ -172,9 +125,9 @@ using Parser = std::function<bool(const Json::Value&, T*)>;
 // NOTE: array parsing methods reset the output vector to an empty vector in
 // any error case. This is especially useful for optional arrays.
 template <typename T>
-bool ParseAndValidateArray(const Json::Value& value,
-                           Parser<T> parser,
-                           std::vector<T>* out) {
+bool TryParseArray(const Json::Value& value,
+                   Parser<T> parser,
+                   std::vector<T>* out) {
   out->clear();
   if (!value.isArray() || value.empty()) {
     return false;
@@ -193,19 +146,18 @@ bool ParseAndValidateArray(const Json::Value& value,
   return true;
 }
 
-inline bool ParseAndValidateIntArray(const Json::Value& value,
-                                     std::vector<int>* out) {
-  return ParseAndValidateArray<int>(value, ParseAndValidateInt, out);
+inline bool TryParseIntArray(const Json::Value& value, std::vector<int>* out) {
+  return TryParseArray<int>(value, TryParseInt, out);
 }
 
-inline bool ParseAndValidateUintArray(const Json::Value& value,
-                                      std::vector<uint32_t>* out) {
-  return ParseAndValidateArray<uint32_t>(value, ParseAndValidateUint, out);
+inline bool TryParseUintArray(const Json::Value& value,
+                              std::vector<uint32_t>* out) {
+  return TryParseArray<uint32_t>(value, TryParseUint, out);
 }
 
-inline bool ParseAndValidateStringArray(const Json::Value& value,
-                                        std::vector<std::string>* out) {
-  return ParseAndValidateArray<std::string>(value, ParseAndValidateString, out);
+inline bool TryParseStringArray(const Json::Value& value,
+                                std::vector<std::string>* out) {
+  return TryParseArray<std::string>(value, TryParseString, out);
 }
 
 }  // namespace json

@@ -106,6 +106,19 @@ bool IsSceneStartupEnabled() {
   _window.reset();
 }
 
+- (UIWindow*)window {
+  // Required for backwards compatibility with ScopedKeyWindow.
+  // Note that from iOS 15 the concept of key window is deprecated.
+  NSArray<UIWindow*>* windows = [UIApplication sharedApplication].windows;
+  for (UIWindow* window in windows) {
+    if (window.isKeyWindow)
+      return window;
+  }
+  // Returns a weak pointer to _window, ChromeUnitTestSceneDelegate retains
+  // ownership of the object.
+  return _window.get();
+}
+
 @end
 
 @implementation ChromeUnitTestDelegate
@@ -119,7 +132,10 @@ bool IsSceneStartupEnabled() {
   // calls override this behavior by ensuring that the software keyboard is
   // always shown.
   [[UIKeyboardImpl sharedInstance] setAutomaticMinimizationEnabled:NO];
-  [[UIKeyboardImpl sharedInstance] setSoftwareKeyboardShownByTouch:YES];
+  if (@available(iOS 15, *)) {
+  } else {
+    [[UIKeyboardImpl sharedInstance] setSoftwareKeyboardShownByTouch:YES];
+  }
 #endif  // TARGET_IPHONE_SIMULATOR
 
   if (!IsSceneStartupEnabled()) {

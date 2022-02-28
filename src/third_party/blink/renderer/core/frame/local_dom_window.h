@@ -43,20 +43,24 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/use_counter_impl.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/prefinalizer.h"
+#include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
-class ApplicationCache;
 class BarProp;
 class CSSStyleDeclaration;
 class CustomElementRegistry;
+class DedicatedWorker;
 class Document;
 class DocumentInit;
 class DOMSelection;
@@ -107,6 +111,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
                                         const AtomicString&) = 0;
     virtual void DidRemoveAllEventListeners(LocalDOMWindow*) = 0;
   };
+  class CORE_EXPORT UserActivationObserver : public GarbageCollectedMixin {
+   public:
+    virtual void DidReceiveUserActivation() = 0;
+  };
 
   static LocalDOMWindow* From(const ScriptState*);
 
@@ -154,7 +162,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   String UserAgent() const final;
   UserAgentMetadata GetUserAgentMetadata() const final;
   HttpsState GetHttpsState() const final;
-  ResourceFetcher* Fetcher() const final;
+  ResourceFetcher* Fetcher() final;
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
   void ExceptionThrown(ErrorEvent*) final;
   void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) final;
@@ -180,6 +188,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
       // If source_file is set to empty string,
       // current JS file would be used as source_file instead.
       const String& source_file = g_empty_string) const final;
+  void SetIsInBackForwardCache(bool) final;
 
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
 
@@ -192,7 +201,12 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   // Count |feature| only when this window is associated with a cross-site
   // iframe. A "site" is a scheme and registrable domain.
-  void CountUseOnlyInCrossSiteIframe(mojom::blink::WebFeature feature);
+  void CountUseOnlyInCrossSiteIframe(mojom::blink::WebFeature feature) override;
+
+  // Count permissions policy feature usage through use counter.
+  void CountPermissionsPolicyUsage(
+      mojom::blink::PermissionsPolicyFeature feature,
+      UseCounterImpl::PermissionsPolicyUsageType type);
 
   Document* InstallNewDocument(const DocumentInit&);
 
@@ -230,8 +244,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   DOMVisualViewport* visualViewport();
 
-  HeapVector<Member<DOMRect>> getWindowSegments() const;
-
   const AtomicString& name() const;
   void setName(const AtomicString&);
 
@@ -249,8 +261,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   // WebKit extensions
   double devicePixelRatio() const;
-
-  ApplicationCache* applicationCache();
 
   // This is the interface orientation in degrees. Some examples are:
   //  0 is straight up; -90 is when the device is rotated 90 clockwise;
@@ -341,6 +351,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(orientationchange, kOrientationchange)
 
   void RegisterEventListenerObserver(EventListenerObserver*);
+  void RegisterUserActivationObserver(UserActivationObserver*);
 
   void FrameDestroyed();
   void Reset();
@@ -405,10 +416,11 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // Returns true if this window is cross-site to the main frame. Defaults to
   // false in a detached window.
   // Note: This uses an outdated definition of "site" which only includes the
-  // registrable domain and not the scheme. For recording metrics in 3rd party
-  // contexts, prefer CountUseOnlyInCrossSiteIframe() which uses HTML's
-  // definition of "site" as a registrable domain and scheme.
+  // registrable domain and not the scheme. IsCrossSiteSubframeIncludingScheme()
+  // uses HTML's definition of "site" as a registrable domain and scheme.
   bool IsCrossSiteSubframe() const;
+
+  bool IsCrossSiteSubframeIncludingScheme() const;
 
   void DispatchPersistedPageshowEvent(base::TimeTicks navigation_start);
 
@@ -431,6 +443,23 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   ukm::UkmRecorder* UkmRecorder() override;
   ukm::SourceId UkmSourceID() const override;
 
+  const BlinkStorageKey& GetStorageKey() const { return storage_key_; }
+  void SetStorageKey(const BlinkStorageKey& storage_key);
+
+  void DidReceiveUserActivation();
+
+  // Called when a network request buffered an additional `num_bytes` while this
+  // frame is in back-forward cache.
+  void DidBufferLoadWhileInBackForwardCache(size_t num_bytes);
+
+  // Adds a DedicatedWorker. This is called when a DedicatedWorker is created in
+  // this ExecutionContext.
+  void AddDedicatedWorker(DedicatedWorker* dedicated_worker);
+
+  // Removes a DedicatedWorker This is called when a DedicatedWorker is
+  // destroyed in this ExecutionContext.
+  void RemoveDedicatedWorker(DedicatedWorker* dedicated_worker);
+
  protected:
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,
@@ -439,11 +468,11 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
                             const RegisteredEventListener&) override;
 
   // Protected DOMWindow overrides.
-  void SchedulePostMessage(MessageEvent*,
-                           scoped_refptr<const SecurityOrigin> target,
-                           LocalDOMWindow* source) override;
+  void SchedulePostMessage(PostedMessage*) override;
 
  private:
+  class NetworkStateObserver;
+
   // Intentionally private to prevent redundant checks when the type is
   // already LocalDOMWindow.
   bool IsLocalDOMWindow() const override { return true; }
@@ -456,13 +485,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void DispatchLoadEvent();
 
   // Return the viewport size including scrollbars.
-  IntSize GetViewportSize() const;
-
-  // Count feature disabled by Permissions Policy through use counter.
-  // The method is marked const as its caller |ReportPermissionsPolicyViolation|
-  // is marked const.
-  void CountPermissionsPolicyViolation(
-      mojom::blink::PermissionsPolicyFeature feature) const;
+  gfx::Size GetViewportSize() const;
 
   Member<ScriptController> script_controller_;
 
@@ -494,11 +517,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   Vector<String> origin_policy_ids_;
 
-  mutable Member<ApplicationCache> application_cache_;
-
   scoped_refptr<SerializedScriptValue> pending_state_object_;
 
   HeapHashSet<WeakMember<EventListenerObserver>> event_listener_observers_;
+  HeapHashSet<WeakMember<UserActivationObserver>> user_activation_observers_;
 
   // https://dom.spec.whatwg.org/#window-current-event
   // We represent the "undefined" value as nullptr.
@@ -548,6 +570,20 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // this UKM is logged.
   // TODO(crbug.com/1112491): Remove when no longer needed.
   Deque<ukm::SourceId> post_message_ukm_recorded_source_ids_;
+
+  // The storage key for this LocalDomWindow.
+  BlinkStorageKey storage_key_;
+
+  // Fire "online" and "offline" events.
+  Member<NetworkStateObserver> network_state_observer_;
+
+  // The total bytes buffered by all network requests in this frame while frozen
+  // due to back-forward cache. This number gets reset when the frame gets out
+  // of the back-forward cache.
+  size_t total_bytes_buffered_while_in_back_forward_cache_ = 0;
+
+  // The set of DedicatedWorkers that are created in this ExecutionContext.
+  HeapHashSet<Member<DedicatedWorker>> dedicated_workers_;
 };
 
 template <>

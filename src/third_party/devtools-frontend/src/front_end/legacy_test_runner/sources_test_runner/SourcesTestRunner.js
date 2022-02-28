@@ -12,7 +12,7 @@ self.SourcesTestRunner = self.SourcesTestRunner || {};
  * @param {boolean=} dumpIcons
  */
 SourcesTestRunner.dumpNavigatorView = function(navigatorView, dumpIcons) {
-  dumpNavigatorTreeOutline(navigatorView._scriptsTree);
+  dumpNavigatorTreeOutline(navigatorView.scriptsTree);
 
   /**
    * @param {string} prefix
@@ -20,17 +20,17 @@ SourcesTestRunner.dumpNavigatorView = function(navigatorView, dumpIcons) {
    */
   function dumpNavigatorTreeElement(prefix, treeElement) {
     let titleText = '';
-    if (treeElement._leadingIconsElement && dumpIcons) {
-      let icons = treeElement._leadingIconsElement.querySelectorAll('[is=ui-icon]');
+    if (treeElement.leadingIconsElement && dumpIcons) {
+      let icons = treeElement.leadingIconsElement.querySelectorAll('[is=ui-icon]');
       icons = Array.prototype.slice.call(icons);
-      const iconTypes = icons.map(icon => icon._iconType);
+      const iconTypes = icons.map(icon => icon.iconType);
       if (iconTypes.length) {
         titleText = titleText + '[' + iconTypes.join(', ') + '] ';
       }
     }
     titleText += treeElement.title;
-    if (treeElement._nodeType === Sources.NavigatorView.Types.FileSystem ||
-        treeElement._nodeType === Sources.NavigatorView.Types.FileSystemFolder) {
+    if (treeElement.nodeType === Sources.NavigatorView.Types.FileSystem ||
+        treeElement.nodeType === Sources.NavigatorView.Types.FileSystemFolder) {
       const hasMappedFiles = treeElement.listItemElement.classList.contains('has-mapped-files');
       if (!hasMappedFiles) {
         titleText += ' [dimmed]';
@@ -69,10 +69,10 @@ SourcesTestRunner.dumpNavigatorViewInAllModes = function(view) {
  */
 SourcesTestRunner.dumpNavigatorViewInMode = function(view, mode) {
   TestRunner.addResult(view instanceof Sources.NetworkNavigatorView ? 'Sources:' : 'Content Scripts:');
-  view._groupByFrame = mode.includes('frame');
-  view._groupByDomain = mode.includes('domain');
-  view._groupByFolder = mode.includes('folder');
-  view._resetForTest();
+  view.groupByFrame = mode.includes('frame');
+  view.groupByDomain = mode.includes('domain');
+  view.groupByFolder = mode.includes('folder');
+  view.resetForTest();
   TestRunner.addResult('-------- Setting mode: [' + mode + ']');
   SourcesTestRunner.dumpNavigatorView(view);
 };
@@ -135,7 +135,7 @@ SourcesTestRunner.dumpSwatchPositions = function(sourceFrame, bookmarkType) {
 
   for (let i = 0; i < markers.length; i++) {
     const position = markers[i].position();
-    const swatch = markers[i]._marker.widgetNode.firstChild;
+    const swatch = markers[i].marker.widgetNode.firstChild;
     let text = swatch.textContent;
     if (swatch.localName === 'devtools-color-swatch') {
       text = swatch.color.asString(swatch.format);

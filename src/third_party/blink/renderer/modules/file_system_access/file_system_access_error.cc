@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 namespace file_system_access_error {
@@ -40,6 +40,10 @@ void ResolveOrReject(ScriptPromiseResolver* resolver,
     case mojom::blink::FileSystemAccessStatus::kPermissionDenied:
       resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
           isolate, DOMExceptionCode::kNotAllowedError, message));
+      break;
+    case mojom::blink::FileSystemAccessStatus::kNoModificationAllowedError:
+      resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+          isolate, DOMExceptionCode::kNoModificationAllowedError, message));
       break;
     case mojom::blink::FileSystemAccessStatus::kSecurityError:
       resolver->Reject(V8ThrowDOMException::CreateOrEmpty(

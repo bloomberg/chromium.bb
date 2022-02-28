@@ -5,8 +5,7 @@
 #ifndef UI_AURA_TEST_TEST_CURSOR_CLIENT_H_
 #define UI_AURA_TEST_TEST_CURSOR_CLIENT_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/client/cursor_client.h"
 
@@ -21,6 +20,10 @@ namespace test {
 class TestCursorClient : public aura::client::CursorClient {
  public:
   explicit TestCursorClient(aura::Window* root_window);
+
+  TestCursorClient(const TestCursorClient&) = delete;
+  TestCursorClient& operator=(const TestCursorClient&) = delete;
+
   ~TestCursorClient() override;
 
   // Used to track the number of times SetCursor() was called.
@@ -60,9 +63,7 @@ class TestCursorClient : public aura::client::CursorClient {
   int cursor_lock_count_;
   int calls_to_set_cursor_;
   base::ObserverList<aura::client::CursorClientObserver>::Unchecked observers_;
-  aura::Window* root_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCursorClient);
+  raw_ptr<aura::Window> root_window_;
 };
 
 }  // namespace test

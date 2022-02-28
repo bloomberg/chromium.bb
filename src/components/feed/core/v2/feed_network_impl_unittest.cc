@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/test/bind.h"
@@ -24,12 +25,14 @@
 #include "components/feed/core/v2/test/callback_receiver.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/variations/scoped_variations_ids_provider.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,7 +44,6 @@
 namespace feed {
 namespace {
 
-using base::TimeDelta;
 using testing::ElementsAre;
 using QueryRequestResult = FeedNetwork::QueryRequestResult;
 
@@ -83,13 +85,14 @@ class TestDelegate : public FeedNetworkImpl::Delegate {
         .gaia;
   }
 
-  signin::IdentityTestEnvironment* identity_test_env_;
+  raw_ptr<signin::IdentityTestEnvironment> identity_test_env_;
 };
 
 class FeedNetworkTest : public testing::Test {
  public:
   FeedNetworkTest() {
-    identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
+    identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com",
+                                                   signin::ConsentLevel::kSync);
     identity_test_env_.SetAutomaticIssueOfAccessTokens(true);
   }
   FeedNetworkTest(FeedNetworkTest&) = delete;
@@ -211,6 +214,8 @@ class FeedNetworkTest : public testing::Test {
  private:
   signin::IdentityTestEnvironment identity_test_env_;
   TestDelegate delegate_{&identity_test_env_};
+  variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
+      variations::VariationsIdsProvider::Mode::kUseSignedInState};
   std::unique_ptr<FeedNetwork> feed_network_;
   network::TestURLLoaderFactory test_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
@@ -351,14 +356,13 @@ TEST_F(FeedNetworkTest, RequestTimeout) {
   feed_network()->SendQueryRequest(NetworkRequestType::kFeedQuery,
                                    GetTestFeedRequest(), gaia(),
                                    receiver.Bind());
-  task_environment_.FastForwardBy(TimeDelta::FromSeconds(30));
+  task_environment_.FastForwardBy(base::Seconds(30));
 
   ASSERT_TRUE(receiver.GetResult());
   const QueryRequestResult& result = *receiver.GetResult();
   EXPECT_EQ(net::ERR_TIMED_OUT, result.response_info.status_code);
   histogram_tester.ExpectTimeBucketCount(
-      "ContentSuggestions.Feed.Network.Duration", TimeDelta::FromSeconds(30),
-      1);
+      "ContentSuggestions.Feed.Network.Duration", base::Seconds(30), 1);
 }
 
 TEST_F(FeedNetworkTest, ParallelRequests) {
@@ -451,7 +455,7 @@ TEST_F(FeedNetworkTest, ShouldIncludeAPIKeyForNoSignedInUser) {
 TEST_F(FeedNetworkTest, TestDurationHistogram) {
   base::HistogramTester histogram_tester;
   CallbackReceiver<QueryRequestResult> receiver;
-  const TimeDelta kDuration = TimeDelta::FromMilliseconds(12345);
+  const base::TimeDelta kDuration = base::Milliseconds(12345);
 
   feed_network()->SendQueryRequest(NetworkRequestType::kFeedQuery,
                                    GetTestFeedRequest(), gaia(),

@@ -13,6 +13,7 @@
 #include "quic/core/http/web_transport_http3.h"
 #include "quic/core/quic_alarm.h"
 #include "quic/platform/api/quic_logging.h"
+#include "common/quiche_text_utils.h"
 #include "spdy/core/spdy_protocol.h"
 
 using spdy::SpdyHeaderBlock;
@@ -31,9 +32,8 @@ QuicSpdyClientStream::QuicSpdyClientStream(QuicStreamId id,
       has_preliminary_headers_(false) {}
 
 QuicSpdyClientStream::QuicSpdyClientStream(PendingStream* pending,
-                                           QuicSpdyClientSession* session,
-                                           StreamType type)
-    : QuicSpdyStream(pending, session, type),
+                                           QuicSpdyClientSession* session)
+    : QuicSpdyStream(pending, session),
       content_length_(-1),
       response_code_(0),
       header_bytes_read_(0),
@@ -51,6 +51,12 @@ void QuicSpdyClientStream::OnInitialHeadersComplete(
 
   QUICHE_DCHECK(headers_decompressed());
   header_bytes_read_ += frame_len;
+  if (rst_sent()) {
+    // QuicSpdyStream::OnInitialHeadersComplete already rejected invalid
+    // response header.
+    return;
+  }
+
   if (!SpdyUtils::CopyAndValidateHeaders(header_list, &content_length_,
                                          &response_headers_)) {
     QUIC_DLOG(ERROR) << "Failed to parse header list: "
@@ -62,8 +68,13 @@ void QuicSpdyClientStream::OnInitialHeadersComplete(
   if (web_transport() != nullptr) {
     web_transport()->HeadersReceived(response_headers_);
     if (!web_transport()->ready()) {
-      // Rejected due to status not being 200, or other reason.
-      WriteOrBufferData("", /*fin=*/true, nullptr);
+      // The request was rejected by WebTransport, typically due to not having a
+      // 2xx status.  The reason we're using Reset() here rather than closing
+      // cleanly is that even if the server attempts to send us any form of body
+      // with a 4xx request, we've already set up the capsule parser, and we
+      // don't have any way to process anything from the response body in
+      // question.
+      Reset(QUIC_STREAM_CANCELLED);
       return;
     }
   }
@@ -182,6 +193,27 @@ size_t QuicSpdyClientStream::SendRequest(SpdyHeaderBlock headers,
   }
 
   return bytes_sent;
+}
+
+bool QuicSpdyClientStream::AreHeadersValid(
+    const QuicHeaderList& header_list) const {
+  if (!GetQuicReloadableFlag(quic_verify_request_headers_2)) {
+    return true;
+  }
+  if (!QuicSpdyStream::AreHeadersValid(header_list)) {
+    return false;
+  }
+  // Verify the presence of :status header.
+  bool saw_status = false;
+  for (const std::pair<std::string, std::string>& pair : header_list) {
+    if (pair.first == ":status") {
+      saw_status = true;
+    } else if (absl::StrContains(pair.first, ":")) {
+      QUIC_DLOG(ERROR) << "Unexpected ':' in header " << pair.first << ".";
+      return false;
+    }
+  }
+  return saw_status;
 }
 
 }  // namespace quic

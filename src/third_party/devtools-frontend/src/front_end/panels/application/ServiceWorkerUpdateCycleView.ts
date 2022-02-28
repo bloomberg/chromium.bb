@@ -133,7 +133,6 @@ export class ServiceWorkerUpdateCycleView {
 
   private createTimingTable(): void {
     this.tableElement.classList.add('service-worker-update-timing-table');
-    UI.Utils.appendStyle(this.tableElement, 'panels/application/serviceWorkerUpdateCycleView.css');
     const timeRanges = this.calculateServiceWorkerUpdateRanges();
     this.updateTimingTable(timeRanges);
   }
@@ -340,7 +339,6 @@ export class ServiceWorkerUpdateCycleView {
     this.focusRow(this.rows[this.selectedRowIndex]);
   }
 
-
   private onClick(event: Event, startRow: Element, endRow: Element): void {
     const tr = event.target as Element;
     if (!tr) {
@@ -363,7 +361,6 @@ export const enum ServiceWorkerUpdateNames {
   Wait = 'Wait',
   Activate = 'Activate',
 }
-
 
 export interface ServiceWorkerUpdateRange {
   id: string;

@@ -19,6 +19,7 @@ class ScrollbarLayerBase;
 
 namespace blink {
 
+class DisplayItemClient;
 class GraphicsContext;
 class TransformPaintPropertyNode;
 
@@ -30,12 +31,15 @@ class TransformPaintPropertyNode;
 // cc scrollbar layer.
 class PLATFORM_EXPORT ScrollbarDisplayItem final : public DisplayItem {
  public:
-  ScrollbarDisplayItem(const DisplayItemClient&,
+  ScrollbarDisplayItem(DisplayItemClientId,
                        Type,
                        scoped_refptr<cc::Scrollbar>,
-                       const IntRect& visual_rect,
+                       const gfx::Rect& visual_rect,
                        const TransformPaintPropertyNode* scroll_translation,
-                       CompositorElementId element_id);
+                       CompositorElementId element_id,
+                       RasterEffectOutset outset,
+                       PaintInvalidationReason paint_invalidation_reason =
+                           PaintInvalidationReason::kJustCreated);
 
   const TransformPaintPropertyNode* ScrollTranslation() const {
     DCHECK(!IsTombstone());
@@ -61,7 +65,7 @@ class PLATFORM_EXPORT ScrollbarDisplayItem final : public DisplayItem {
                      const DisplayItemClient&,
                      DisplayItem::Type,
                      scoped_refptr<cc::Scrollbar>,
-                     const IntRect& visual_rect,
+                     const gfx::Rect& visual_rect,
                      const TransformPaintPropertyNode* scroll_translation,
                      CompositorElementId element_id);
 

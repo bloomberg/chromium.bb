@@ -11,7 +11,6 @@
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/gfx/image/image_skia.h"
@@ -37,8 +36,12 @@ struct ASH_EXPORT PhotoWithDetails {
   gfx::ImageSkia photo;
   gfx::ImageSkia related_photo;
   std::string details;
+  std::string related_details;
   // Hash of this image data. Used for de-duping images.
   std::string hash;
+  // Whether the image is portrait or not.
+  bool is_portrait = false;
+  ::ambient::TopicType topic_type = ::ambient::TopicType::kOther;
 };
 
 // Stores necessary information fetched from the backdrop server to render

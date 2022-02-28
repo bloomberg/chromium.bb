@@ -7,8 +7,8 @@
 #import <UIKit/UIKit.h>
 
 #include "base/check.h"
+#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
-#include "base/numerics/ranges.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
@@ -283,7 +284,15 @@ CGFloat ToolbarHeight() {
   CGFloat maxScaleOffset = self.frame.size.height - ToolbarHeight() -
                            ntp_header::kFakeOmniboxScrolledToTopMargin -
                            safeAreaInsets.top;
-
+  // If the Shrunk logo for the Start Surface is being shown, the searchField
+  // expansion should start later so that its background does not cut off the
+  // logo. This mainly impacts notched devices that have a large top Safe Area
+  // inset. Instead of ensuring the expansion finishes by the time the omnibox
+  // reaches the bottom of the toolbar, wait until the logo is in the safe area
+  // before expanding so it is out of view.
+  if (ShouldShrinkLogoForStartSurface()) {
+    maxScaleOffset += safeAreaInsets.top;
+  }
   // If it is not in SplitMode the search field should scroll under the toolbar.
   if (!IsSplitToolbarMode(self)) {
     maxScaleOffset += ToolbarHeight();
@@ -295,7 +304,7 @@ CGFloat ToolbarHeight() {
   CGFloat percent = 0;
   if (offset && offset > startScaleOffset) {
     CGFloat animatingOffset = offset - startScaleOffset;
-    percent = base::ClampToRange<CGFloat>(
+    percent = base::clamp<CGFloat>(
         animatingOffset / ntp_header::kAnimationDistance, 0, 1);
   }
   return percent;

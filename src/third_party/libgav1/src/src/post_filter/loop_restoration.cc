@@ -101,6 +101,8 @@ void PostFilter::ApplyLoopRestorationForOneSuperBlockRow(const int row4x4_start,
   assert(row4x4_start >= 0);
   assert(DoRestoration());
   int plane = kPlaneY;
+  const int upscaled_width = frame_header_.upscaled_width;
+  const int height = frame_header_.height;
   do {
     if (loop_restoration_.type[plane] == kLoopRestorationTypeNone) {
       continue;
@@ -108,9 +110,9 @@ void PostFilter::ApplyLoopRestorationForOneSuperBlockRow(const int row4x4_start,
     const ptrdiff_t stride = frame_buffer_.stride(plane) / sizeof(Pixel);
     const int unit_height_offset =
         kRestorationUnitOffset >> subsampling_y_[plane];
-    const int plane_height = SubsampledValue(height_, subsampling_y_[plane]);
+    const int plane_height = SubsampledValue(height, subsampling_y_[plane]);
     const int plane_width =
-        SubsampledValue(upscaled_width_, subsampling_x_[plane]);
+        SubsampledValue(upscaled_width, subsampling_x_[plane]);
     const int plane_unit_size = 1 << loop_restoration_.unit_size_log2[plane];
     const int plane_process_unit_height =
         kRestorationUnitHeight >> subsampling_y_[plane];

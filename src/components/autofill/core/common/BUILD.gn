@@ -55,15 +55,18 @@ static_library("common") {
     "unique_ids.h",
   ]
 
-  public_deps = [ ":features" ]
-
-  deps = [
+  public_deps = [
+    ":features",
     "//base",
     "//base:i18n",
-    "//build:chromeos_buildflags",
 
     # Note: Can't use mojom:mojo_types here, as that already depends on :common.
     "//components/autofill/core/common/mojom:mojo_types_shared",
+    "//third_party/abseil-cpp:absl",
+  ]
+
+  deps = [
+    "//build:chromeos_buildflags",
     "//components/pref_registry",
     "//components/prefs",
     "//components/variations",
@@ -73,8 +76,6 @@ static_library("common") {
     "//ui/gfx/geometry",
     "//url",
   ]
-
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
 component("features") {
@@ -85,7 +86,10 @@ component("features") {
     "autofill_features.h",
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//build:chromeos_buildflags",
+  ]
 }
 
 source_set("unit_tests") {

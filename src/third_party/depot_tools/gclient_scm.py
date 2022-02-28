@@ -12,6 +12,7 @@ import errno
 import json
 import logging
 import os
+import platform
 import posixpath
 import re
 import sys
@@ -29,12 +30,6 @@ import git_cache
 import scm
 import shutil
 import subprocess2
-
-
-THIS_FILE_PATH = os.path.abspath(__file__)
-
-GSUTIL_DEFAULT_PATH = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), 'gsutil.py')
 
 
 class NoUsableRevError(gclient_utils.Error):
@@ -252,7 +247,7 @@ class GitWrapper(SCMWrapper):
   def diff(self, options, _args, _file_list):
     _, revision = gclient_utils.SplitUrlRevision(self.url)
     if not revision:
-      revision = 'refs/remotes/%s/master' % self.remote
+      revision = 'refs/remotes/%s/main' % self.remote
     self._Run(['-c', 'core.quotePath=false', 'diff', revision], options)
 
   def pack(self, _options, _args, _file_list):
@@ -395,6 +390,9 @@ class GitWrapper(SCMWrapper):
       self.Print('Trying the corresponding remote ref for %r: %r\n' % (
           target_rev, remote_ref))
       if scm.GIT.IsValidRevision(self.checkout_path, remote_ref):
+        # refs/remotes may need to be updated to cleanly cherry-pick changes.
+        # See https://crbug.com/1255178.
+        self._Capture(['fetch', '--no-tags', self.remote, target_rev])
         target_rev = remote_ref
     elif not scm.GIT.IsValidRevision(self.checkout_path, target_rev):
       # Fetch |target_rev| if it's not already available.
@@ -491,7 +489,7 @@ class GitWrapper(SCMWrapper):
     if revision.startswith('origin/'):
       revision = 'refs/remotes/' + revision
 
-    if managed:
+    if managed and platform.system() == 'Windows':
       self._DisableHooks()
 
     printed_path = False
@@ -866,7 +864,7 @@ class GitWrapper(SCMWrapper):
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
-    default_rev = "refs/heads/master"
+    default_rev = "refs/heads/main"
     if options.upstream:
       if self._GetCurrentBranch():
         upstream_branch = scm.GIT.GetUpstreamBranch(self.checkout_path)

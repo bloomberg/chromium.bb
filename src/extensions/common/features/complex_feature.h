@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/manifest.h"
@@ -26,6 +25,10 @@ class ComplexFeature : public Feature {
  public:
   // Takes ownership of Feature*s contained in |features|.
   explicit ComplexFeature(std::vector<Feature*>* features);
+
+  ComplexFeature(const ComplexFeature&) = delete;
+  ComplexFeature& operator=(const ComplexFeature&) = delete;
+
   ~ComplexFeature() override;
 
   // extensions::Feature:
@@ -51,8 +54,6 @@ class ComplexFeature : public Feature {
 
   using FeatureList = std::vector<std::unique_ptr<Feature>>;
   FeatureList features_;
-
-  DISALLOW_COPY_AND_ASSIGN(ComplexFeature);
 };
 
 }  // namespace extensions

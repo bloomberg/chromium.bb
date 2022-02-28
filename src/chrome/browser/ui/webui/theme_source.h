@@ -7,10 +7,9 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "content/public/browser/url_data_source.h"
 
 class Profile;
@@ -19,6 +18,10 @@ class ThemeSource : public content::URLDataSource {
  public:
   explicit ThemeSource(Profile* profile);
   ThemeSource(Profile* profile, bool serve_untrusted);
+
+  ThemeSource(const ThemeSource&) = delete;
+  ThemeSource& operator=(const ThemeSource&) = delete;
+
   ~ThemeSource() override;
 
   // content::URLDataSource implementation.
@@ -51,12 +54,10 @@ class ThemeSource : public content::URLDataSource {
                       float scale);
 
   // The profile this object was initialized with.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // Whether this source services chrome-unstrusted://theme.
   bool serve_untrusted_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThemeSource);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_THEME_SOURCE_H_

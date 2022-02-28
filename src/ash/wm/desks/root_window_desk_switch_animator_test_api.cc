@@ -29,7 +29,7 @@ RootWindowDeskSwitchAnimatorTestApi::GetScreenshotLayerOfDeskWithIndex(
   auto screenshot_layers = animator_->screenshot_layers_;
 
   DCHECK_GE(desk_index, 0);
-  DCHECK_LT(desk_index, int{screenshot_layers.size()});
+  DCHECK_LT(desk_index, static_cast<int>(screenshot_layers.size()));
 
   ui::Layer* layer = screenshot_layers[desk_index];
   DCHECK(layer);
@@ -38,6 +38,12 @@ RootWindowDeskSwitchAnimatorTestApi::GetScreenshotLayerOfDeskWithIndex(
 
 int RootWindowDeskSwitchAnimatorTestApi::GetEndingDeskIndex() const {
   return animator_->ending_desk_index_;
+}
+
+void RootWindowDeskSwitchAnimatorTestApi::SetOnStartingScreenshotTakenCallback(
+    base::OnceClosure callback) {
+  animator_->on_starting_screenshot_taken_callback_for_testing_ =
+      std::move(callback);
 }
 
 void RootWindowDeskSwitchAnimatorTestApi::SetOnEndingScreenshotTakenCallback(

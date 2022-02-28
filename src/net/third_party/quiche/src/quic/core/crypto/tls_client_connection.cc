@@ -6,16 +6,20 @@
 
 namespace quic {
 
-TlsClientConnection::TlsClientConnection(SSL_CTX* ssl_ctx, Delegate* delegate)
-    : TlsConnection(ssl_ctx, delegate->ConnectionDelegate()),
+TlsClientConnection::TlsClientConnection(SSL_CTX* ssl_ctx,
+                                         Delegate* delegate,
+                                         QuicSSLConfig ssl_config)
+    : TlsConnection(ssl_ctx,
+                    delegate->ConnectionDelegate(),
+                    std::move(ssl_config)),
       delegate_(delegate) {}
 
 // static
 bssl::UniquePtr<SSL_CTX> TlsClientConnection::CreateSslCtx(
     bool enable_early_data) {
-  bssl::UniquePtr<SSL_CTX> ssl_ctx =
-      TlsConnection::CreateSslCtx(SSL_VERIFY_PEER);
+  bssl::UniquePtr<SSL_CTX> ssl_ctx = TlsConnection::CreateSslCtx();
   // Configure certificate verification.
+  SSL_CTX_set_custom_verify(ssl_ctx.get(), SSL_VERIFY_PEER, &VerifyCallback);
   int reverify_on_resume_enabled = 1;
   SSL_CTX_set_reverify_on_resume(ssl_ctx.get(), reverify_on_resume_enabled);
 
@@ -24,8 +28,16 @@ bssl::UniquePtr<SSL_CTX> TlsClientConnection::CreateSslCtx(
       ssl_ctx.get(), SSL_SESS_CACHE_CLIENT | SSL_SESS_CACHE_NO_INTERNAL);
   SSL_CTX_sess_set_new_cb(ssl_ctx.get(), NewSessionCallback);
 
+  // TODO(wub): Always enable early data on the SSL_CTX, but allow it to be
+  // overridden on the SSL object, via QuicSSLConfig.
   SSL_CTX_set_early_data_enabled(ssl_ctx.get(), enable_early_data);
   return ssl_ctx;
+}
+
+void TlsClientConnection::SetCertChain(
+    const std::vector<CRYPTO_BUFFER*>& cert_chain, EVP_PKEY* privkey) {
+  SSL_set_chain_and_key(ssl(), cert_chain.data(), cert_chain.size(), privkey,
+                        /*privkey_method=*/nullptr);
 }
 
 // static

@@ -11,7 +11,6 @@
 
 #include "ash/components/audio/audio_devices_pref_handler.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 
 namespace ash {
 
@@ -29,6 +28,10 @@ class COMPONENT_EXPORT(ASH_COMPONENTS_AUDIO) AudioDevicesPrefHandlerStub
   using AudioDeviceStateMap = std::map<uint64_t, DeviceState>;
 
   AudioDevicesPrefHandlerStub();
+
+  AudioDevicesPrefHandlerStub(const AudioDevicesPrefHandlerStub&) = delete;
+  AudioDevicesPrefHandlerStub& operator=(const AudioDevicesPrefHandlerStub&) =
+      delete;
 
   // AudioDevicesPrefHandler:
   double GetOutputVolumeValue(const AudioDevice* device) override;
@@ -57,9 +60,7 @@ class COMPONENT_EXPORT(ASH_COMPONENTS_AUDIO) AudioDevicesPrefHandlerStub
   AudioDeviceVolumeGain audio_device_volume_gain_map_;
   AudioDeviceStateMap audio_device_state_map_;
 
-  bool noise_cancellation_state_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioDevicesPrefHandlerStub);
+  bool noise_cancellation_state_ = true;
 };
 
 }  // namespace ash

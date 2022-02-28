@@ -7,14 +7,12 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_screen.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -24,7 +22,6 @@
 #include "chrome/browser/ash/login/ui/web_contents_forced_title.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/renderer_preferences_util.h"
@@ -39,7 +36,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/session_manager/core/session_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -59,12 +55,13 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
-using content::NativeWebKeyboardEvent;
-using content::RenderViewHost;
-using content::WebContents;
-using web_modal::WebContentsModalDialogManager;
-
+namespace ash {
 namespace {
+
+using ::content::NativeWebKeyboardEvent;
+using ::content::RenderViewHost;
+using ::content::WebContents;
+using ::web_modal::WebContentsModalDialogManager;
 
 // A class to change arrow key traversal behavior when it's alive.
 class ScopedArrowKeyTraversal {
@@ -75,6 +72,10 @@ class ScopedArrowKeyTraversal {
     views::FocusManager::set_arrow_key_traversal_enabled(
         new_arrow_key_tranversal_enabled);
   }
+
+  ScopedArrowKeyTraversal(const ScopedArrowKeyTraversal&) = delete;
+  ScopedArrowKeyTraversal& operator=(const ScopedArrowKeyTraversal&) = delete;
+
   ~ScopedArrowKeyTraversal() {
     views::FocusManager::set_arrow_key_traversal_enabled(
         previous_arrow_key_traversal_enabled_);
@@ -82,12 +83,9 @@ class ScopedArrowKeyTraversal {
 
  private:
   const bool previous_arrow_key_traversal_enabled_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedArrowKeyTraversal);
 };
 
 }  // namespace
-
-namespace chromeos {
 
 // WebUILoginView public: ------------------------------------------------------
 
@@ -96,25 +94,23 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings,
     : settings_(settings), controller_(controller) {
   ChromeKeyboardControllerClient::Get()->AddObserver(this);
 
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 
-  for (size_t i = 0; i < ash::kLoginAcceleratorDataLength; ++i) {
-    ui::Accelerator accelerator(ash::kLoginAcceleratorData[i].keycode,
-                                ash::kLoginAcceleratorData[i].modifiers);
+  session_observation_.Observe(session_manager::SessionManager::Get());
+
+  for (size_t i = 0; i < kLoginAcceleratorDataLength; ++i) {
+    ui::Accelerator accelerator(kLoginAcceleratorData[i].keycode,
+                                kLoginAcceleratorData[i].modifiers);
     // Show reset conflicts with rotate screen when --ash-dev-shortcuts is
     // passed. Favor --ash-dev-shortcuts since that is explicitly added.
-    if (ash::kLoginAcceleratorData[i].action ==
-            ash::LoginAcceleratorAction::kEnableConsumerKiosk &&
+    if (kLoginAcceleratorData[i].action ==
+            LoginAcceleratorAction::kEnableConsumerKiosk &&
         !KioskAppManager::IsConsumerKioskEnabled()) {
       continue;
     }
 
-    accel_map_[accelerator] = ash::kLoginAcceleratorData[i].action;
+    accel_map_[accelerator] = kLoginAcceleratorData[i].action;
   }
 
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i) {
@@ -169,8 +165,6 @@ void WebUILoginView::InitializeWebView(views::WebView* web_view,
 
   extensions::SetViewType(web_contents,
                           extensions::mojom::ViewType::kComponent);
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      web_contents);
   blink::RendererPreferences* prefs = web_contents->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(
       prefs, ProfileHelper::GetSigninProfile());
@@ -306,29 +300,26 @@ void WebUILoginView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 void WebUILoginView::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE:
-    case chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN: {
-      OnLoginPromptVisible();
-      registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                        content::NotificationService::AllSources());
-      registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
-                        content::NotificationService::AllSources());
-      break;
-    }
-    case chrome::NOTIFICATION_APP_TERMINATING: {
-      // In some tests, WebUILoginView remains after LoginScreenClientImpl gets
-      // deleted on shutdown. It should unregister itself before the deletion
-      // happens.
-      if (observing_system_tray_focus_) {
-        LoginScreenClientImpl::Get()->RemoveSystemTrayObserver(this);
-        observing_system_tray_focus_ = false;
-      }
-      break;
-    }
-    default:
-      NOTREACHED() << "Unexpected notification " << type;
+  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type)
+      << "Unexpected notification " << type;
+
+  // In some tests, WebUILoginView remains after LoginScreenClientImpl gets
+  // deleted on shutdown. It should unregister itself before the deletion
+  // happens.
+  if (observing_system_tray_focus_) {
+    LoginScreenClientImpl::Get()->RemoveSystemTrayObserver(this);
+    observing_system_tray_focus_ = false;
   }
+}
+
+void WebUILoginView::OnNetworkErrorScreenShown() {
+  OnLoginPromptVisible();
+  session_observation_.Reset();
+}
+
+void WebUILoginView::OnLoginOrLockScreenVisible() {
+  OnLoginPromptVisible();
+  session_observation_.Reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -345,7 +336,7 @@ void WebUILoginView::OnKeyboardVisibilityChanged(bool visible) {
 // WebUILoginView private: -----------------------------------------------------
 
 bool WebUILoginView::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
+    content::RenderFrameHost& render_frame_host,
     const content::ContextMenuParams& params) {
 #ifndef NDEBUG
   // Do not show the context menu.
@@ -379,7 +370,7 @@ bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
   // FocusLoginShelf focuses either system tray or login shelf buttons.
   // Only do this if the login shelf is enabled.
   if (shelf_enabled_)
-    ash::LoginScreen::Get()->FocusLoginShelf(reverse);
+    LoginScreen::Get()->FocusLoginShelf(reverse);
   return shelf_enabled_;
 }
 
@@ -441,4 +432,4 @@ void WebUILoginView::OnLoginPromptVisible() {
 BEGIN_METADATA(WebUILoginView, views::View)
 END_METADATA
 
-}  // namespace chromeos
+}  // namespace ash

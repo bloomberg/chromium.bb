@@ -79,6 +79,8 @@ class FastSourceLineResolver : public SourceLineResolverBase {
   // SourceLineResolverBase.
   struct Line;
   struct Function;
+  struct Inline;
+  struct InlineOrigin;
   struct PublicSymbol;
   class Module;
 

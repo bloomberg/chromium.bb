@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/ui/media_router/ui_media_sink.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -37,6 +38,7 @@ class CastDialogSinkButton : public HoverButton {
   void RequestFocus() override;
   void OnFocus() override;
   void OnBlur() override;
+  void OnThemeChanged() override;
 
   const UIMediaSink& sink() const { return sink_; }
 
@@ -56,6 +58,7 @@ class CastDialogSinkButton : public HoverButton {
                            SetStatusLabelForDialSinks);
 
   void OnEnabledChanged();
+  void UpdateTitleTextStyle();
 
   const UIMediaSink sink_;
   absl::optional<std::u16string> saved_status_text_;

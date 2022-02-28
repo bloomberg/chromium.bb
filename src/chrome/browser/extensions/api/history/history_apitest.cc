@@ -44,22 +44,21 @@ class HistoryApiTest : public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(HistoryApiTest, MiscSearch) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "history/regular", .page_url = "misc_search.html"}))
+  ASSERT_TRUE(
+      RunExtensionTest("history/regular", {.page_url = "misc_search.html"}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(HistoryApiTest, TimedSearch) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "history/regular", .page_url = "timed_search.html"}))
+  ASSERT_TRUE(
+      RunExtensionTest("history/regular", {.page_url = "timed_search.html"}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(HistoryApiTest, Delete) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(
-      RunExtensionTest({.name = "history/regular", .page_url = "delete.html"}))
+  ASSERT_TRUE(RunExtensionTest("history/regular", {.page_url = "delete.html"}))
       << message_;
 }
 
@@ -67,22 +66,22 @@ IN_PROC_BROWSER_TEST_F(HistoryApiTest, DeleteProhibited) {
   browser()->profile()->GetPrefs()->
       SetBoolean(prefs::kAllowDeletingBrowserHistory, false);
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "history/regular", .page_url = "delete_prohibited.html"}))
+  ASSERT_TRUE(RunExtensionTest("history/regular",
+                               {.page_url = "delete_prohibited.html"}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(HistoryApiTest, GetVisits) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "history/regular", .page_url = "get_visits.html"}))
+  ASSERT_TRUE(
+      RunExtensionTest("history/regular", {.page_url = "get_visits.html"}))
       << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(HistoryApiTest, SearchAfterAdd) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "history/regular", .page_url = "search_after_add.html"}))
+  ASSERT_TRUE(RunExtensionTest("history/regular",
+                               {.page_url = "search_after_add.html"}))
       << message_;
 }
 
@@ -133,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(HistoryApiTest, Incognito) {
       embedded_test_server()->GetURL("www.b.com", "/simple.html");
   content::TestNavigationObserver incognito_observer(
       incognito_browser->tab_strip_model()->GetActiveWebContents());
-  ui_test_utils::NavigateToURL(incognito_browser, b_com);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(incognito_browser, b_com));
   EXPECT_TRUE(incognito_observer.last_navigation_succeeded());
 
   // Check history in regular mode is not modified by incognito navigation.
@@ -148,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(HistoryApiTest, Incognito) {
   // Perform navigation in regular mode.
   content::TestNavigationObserver regular_observer(
       browser()->tab_strip_model()->GetActiveWebContents());
-  ui_test_utils::NavigateToURL(browser(), b_com);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), b_com));
   EXPECT_TRUE(regular_observer.last_navigation_succeeded());
 
   // Check history in regular mode is modified by navigation.

@@ -46,6 +46,8 @@ class DeskAnimationObserver : public DesksController::Observer {
     std::move(on_desk_animation_complete_).Run();
     delete this;
   }
+  void OnDeskNameChanged(const Desk* desk,
+                         const std::u16string& new_name) override {}
 
  private:
   base::OnceClosure on_desk_animation_complete_;
@@ -122,6 +124,8 @@ class ChainedDeskAnimationObserver : public ui::LayerAnimationObserver,
     std::move(on_desk_animation_complete_).Run();
     delete this;
   }
+  void OnDeskNameChanged(const Desk* desk,
+                         const std::u16string& new_name) override {}
 
  private:
   const bool going_left_;
@@ -140,7 +144,9 @@ bool AutotestDesksApi::CreateNewDesk() {
   if (!DesksController::Get()->CanCreateDesks())
     return false;
 
-  DesksController::Get()->NewDesk(DesksCreationRemovalSource::kButton);
+  // Use |kKeyboard| as a source instead of |kButton| so the new desk's name is
+  // set to default.
+  DesksController::Get()->NewDesk(DesksCreationRemovalSource::kKeyboard);
   return true;
 }
 
@@ -152,7 +158,7 @@ bool AutotestDesksApi::ActivateDeskAtIndex(int index,
     return false;
 
   auto* controller = DesksController::Get();
-  if (index >= int{controller->desks().size()})
+  if (index >= static_cast<int>(controller->desks().size()))
     return false;
 
   const Desk* target_desk = controller->desks()[index].get();
@@ -186,7 +192,7 @@ bool AutotestDesksApi::ActivateAdjacentDesksToTargetIndex(
     return false;
 
   auto* controller = DesksController::Get();
-  if (index >= int{controller->desks().size()})
+  if (index >= static_cast<int>(controller->desks().size()))
     return false;
 
   const Desk* target_desk = controller->desks()[index].get();

@@ -128,6 +128,8 @@ class JSSpeculativeBinopBuilder final {
         }
       case IrOpcode::kJSMultiply:
         return simplified()->SpeculativeNumberMultiply(hint);
+      case IrOpcode::kJSExponentiate:
+        return simplified()->SpeculativeNumberPow(hint);
       case IrOpcode::kJSDivide:
         return simplified()->SpeculativeNumberDivide(hint);
       case IrOpcode::kJSModulus:
@@ -151,6 +153,7 @@ class JSSpeculativeBinopBuilder final {
   }
 
   const Operator* SpeculativeBigIntOp(BigIntOperationHint hint) {
+    DCHECK(jsgraph()->machine()->Is64());
     switch (op_->opcode()) {
       case IrOpcode::kJSAdd:
         return simplified()->SpeculativeBigIntAdd(hint);
@@ -204,6 +207,7 @@ class JSSpeculativeBinopBuilder final {
   }
 
   Node* TryBuildBigIntBinop() {
+    DCHECK(jsgraph()->machine()->Is64());
     BigIntOperationHint hint;
     if (GetBinaryBigIntOperationHint(&hint)) {
       const Operator* op = SpeculativeBigIntOp(hint);
@@ -319,10 +323,12 @@ JSTypeHintLowering::LoweringResult JSTypeHintLowering::ReduceUnaryOperation(
           jsgraph()->SmiConstant(-1), effect, control, slot);
       node = b.TryBuildNumberBinop();
       if (!node) {
-        if (GetBinaryOperationHint(slot) == BinaryOperationHint::kBigInt) {
-          const Operator* op = jsgraph()->simplified()->SpeculativeBigIntNegate(
-              BigIntOperationHint::kBigInt);
-          node = jsgraph()->graph()->NewNode(op, operand, effect, control);
+        if (jsgraph()->machine()->Is64()) {
+          if (GetBinaryOperationHint(slot) == BinaryOperationHint::kBigInt) {
+            op = jsgraph()->simplified()->SpeculativeBigIntNegate(
+                BigIntOperationHint::kBigInt);
+            node = jsgraph()->graph()->NewNode(op, operand, effect, control);
+          }
         }
       }
       break;
@@ -388,7 +394,8 @@ JSTypeHintLowering::LoweringResult JSTypeHintLowering::ReduceBinaryOperation(
     case IrOpcode::kJSSubtract:
     case IrOpcode::kJSMultiply:
     case IrOpcode::kJSDivide:
-    case IrOpcode::kJSModulus: {
+    case IrOpcode::kJSModulus:
+    case IrOpcode::kJSExponentiate: {
       if (Node* node = TryBuildSoftDeopt(
               slot, effect, control,
               DeoptimizeReason::kInsufficientTypeFeedbackForBinaryOperation)) {
@@ -400,19 +407,12 @@ JSTypeHintLowering::LoweringResult JSTypeHintLowering::ReduceBinaryOperation(
       }
       if (op->opcode() == IrOpcode::kJSAdd ||
           op->opcode() == IrOpcode::kJSSubtract) {
-        if (Node* node = b.TryBuildBigIntBinop()) {
-          return LoweringResult::SideEffectFree(node, node, control);
+        if (jsgraph()->machine()->Is64()) {
+          if (Node* node = b.TryBuildBigIntBinop()) {
+            return LoweringResult::SideEffectFree(node, node, control);
+          }
         }
       }
-      break;
-    }
-    case IrOpcode::kJSExponentiate: {
-      if (Node* node = TryBuildSoftDeopt(
-              slot, effect, control,
-              DeoptimizeReason::kInsufficientTypeFeedbackForBinaryOperation)) {
-        return LoweringResult::Exit(node);
-      }
-      // TODO(neis): Introduce a SpeculativeNumberPow operator?
       break;
     }
     default:
@@ -552,7 +552,8 @@ JSTypeHintLowering::ReduceStoreKeyedOperation(const Operator* op, Node* obj,
                                               FeedbackSlot slot) const {
   DCHECK(op->opcode() == IrOpcode::kJSStoreProperty ||
          op->opcode() == IrOpcode::kJSStoreInArrayLiteral ||
-         op->opcode() == IrOpcode::kJSStoreDataPropertyInLiteral);
+         op->opcode() == IrOpcode::kJSStoreDataPropertyInLiteral ||
+         op->opcode() == IrOpcode::kJSDefineProperty);
   if (Node* node = TryBuildSoftDeopt(
           slot, effect, control,
           DeoptimizeReason::kInsufficientTypeFeedbackForGenericKeyedAccess)) {
@@ -567,13 +568,6 @@ Node* JSTypeHintLowering::TryBuildSoftDeopt(FeedbackSlot slot, Node* effect,
   if (!(flags() & kBailoutOnUninitialized)) return nullptr;
 
   FeedbackSource source(feedback_vector(), slot);
-  // TODO(mythria): Think of adding flags to specify if we need a soft deopt for
-  // calls instead of using broker()->is_turboprop() here.
-  if (broker()->is_turboprop() &&
-      broker()->GetFeedbackSlotKind(source) == FeedbackSlotKind::kCall) {
-    return nullptr;
-  }
-
   if (!broker()->FeedbackIsInsufficient(source)) return nullptr;
 
   Node* deoptimize = jsgraph()->graph()->NewNode(

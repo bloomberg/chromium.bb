@@ -13,9 +13,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/protocol/errors.h"
 
@@ -80,6 +79,9 @@ class SessionWatcher : public base::RefCountedThreadSafe<SessionWatcher> {
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control);
 
+  SessionWatcher(const SessionWatcher&) = delete;
+  SessionWatcher& operator=(const SessionWatcher&) = delete;
+
   void Start();
   void Stop();
 
@@ -115,8 +117,6 @@ class SessionWatcher : public base::RefCountedThreadSafe<SessionWatcher> {
   base::WeakPtr<ClientSessionControl> client_session_control_;
 
   EventHandlerRef event_handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(SessionWatcher);
 };
 
 SessionWatcher::SessionWatcher(
@@ -290,6 +290,10 @@ class CurtainModeMac : public CurtainMode {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control);
+
+  CurtainModeMac(const CurtainModeMac&) = delete;
+  CurtainModeMac& operator=(const CurtainModeMac&) = delete;
+
   ~CurtainModeMac() override;
 
   // Overriden from CurtainMode.
@@ -297,8 +301,6 @@ class CurtainModeMac : public CurtainMode {
 
  private:
   scoped_refptr<SessionWatcher> session_watcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(CurtainModeMac);
 };
 
 CurtainModeMac::CurtainModeMac(

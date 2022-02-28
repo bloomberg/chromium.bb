@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/cancelable_callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -41,9 +42,11 @@ class SubKeyRequest : public SubKeyRequester::Request {
         on_timeout_(base::BindOnce(&SubKeyRequest::OnRulesLoaded,
                                    base::Unretained(this))) {
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, on_timeout_.callback(),
-        base::TimeDelta::FromSeconds(timeout_seconds));
+        FROM_HERE, on_timeout_.callback(), base::Seconds(timeout_seconds));
   }
+
+  SubKeyRequest(const SubKeyRequest&) = delete;
+  SubKeyRequest& operator=(const SubKeyRequest&) = delete;
 
   ~SubKeyRequest() override { on_timeout_.Cancel(); }
 
@@ -69,14 +72,12 @@ class SubKeyRequest : public SubKeyRequester::Request {
   std::string region_code_;
   std::string language_;
   // Not owned. Never null. Outlive this object.
-  AddressValidator* address_validator_;
+  raw_ptr<AddressValidator> address_validator_;
 
   SubKeyReceiverCallback on_subkeys_received_;
 
   bool has_responded_;
   base::CancelableOnceClosure on_timeout_;
-
-  DISALLOW_COPY_AND_ASSIGN(SubKeyRequest);
 };
 
 }  // namespace

@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/observer_list.h"
 #include "content/public/renderer/render_thread_observer.h"
@@ -46,6 +45,9 @@ class UserScriptSetManager {
   };
 
   UserScriptSetManager();
+
+  UserScriptSetManager(const UserScriptSetManager&) = delete;
+  UserScriptSetManager& operator=(const UserScriptSetManager&) = delete;
 
   ~UserScriptSetManager();
 
@@ -102,8 +104,6 @@ class UserScriptSetManager {
 
   // The associated observers.
   base::ObserverList<Observer>::Unchecked observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserScriptSetManager);
 };
 
 }  // namespace extensions

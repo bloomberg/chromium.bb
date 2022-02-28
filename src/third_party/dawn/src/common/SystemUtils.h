@@ -20,9 +20,18 @@
 #include <string>
 
 const char* GetPathSeparator();
-std::string GetEnvironmentVar(const char* variableName);
+// Returns a pair of the environment variable's value, and a boolean indicating whether the variable
+// was present.
+std::pair<std::string, bool> GetEnvironmentVar(const char* variableName);
 bool SetEnvironmentVar(const char* variableName, const char* value);
+// Directories are always returned with a trailing path separator.
 std::string GetExecutableDirectory();
+std::string GetModuleDirectory();
+
+#ifdef DAWN_PLATFORM_MACOS
+void GetMacOSVersion(int32_t* majorVersion, int32_t* minorVersion = nullptr);
+bool IsMacOSVersionAtLeast(uint32_t majorVersion, uint32_t minorVersion = 0);
+#endif
 
 class ScopedEnvironmentVar {
   public:
@@ -37,7 +46,7 @@ class ScopedEnvironmentVar {
 
   private:
     std::string mName;
-    std::string mOriginalValue;
+    std::pair<std::string, bool> mOriginalValue;
     bool mIsSet = false;
 };
 

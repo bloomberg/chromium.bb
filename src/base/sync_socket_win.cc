@@ -7,9 +7,9 @@
 #include <limits.h>
 #include <stddef.h>
 
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/scoped_handle.h"
 
@@ -136,8 +136,7 @@ size_t CancelableFileOperation(Function operation,
   TimeTicks current_time, finish_time;
   if (timeout_in_ms != INFINITE) {
     current_time = TimeTicks::Now();
-    finish_time =
-        current_time + base::TimeDelta::FromMilliseconds(timeout_in_ms);
+    finish_time = current_time + base::Milliseconds(timeout_in_ms);
   }
 
   size_t count = 0;

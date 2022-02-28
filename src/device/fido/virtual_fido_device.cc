@@ -9,9 +9,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/cxx20_erase.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
@@ -82,7 +82,7 @@ class EVPBackedPrivateKey : public VirtualFidoDevice::PrivateKey {
     crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
     bssl::UniquePtr<EVP_PKEY_CTX> gen_ctx(
-        EVP_PKEY_CTX_new_id(type, /*engine=*/nullptr));
+        EVP_PKEY_CTX_new_id(type, /*e=*/nullptr));
     EVP_PKEY* pkey_ptr = nullptr;
     CHECK(EVP_PKEY_keygen_init(gen_ctx.get()) &&
           config_key_gen(gen_ctx.get()) &&
@@ -106,7 +106,7 @@ class EVPBackedPrivateKey : public VirtualFidoDevice::PrivateKey {
     const EVP_MD* digest =
         EVP_PKEY_id(pkey_.get()) == EVP_PKEY_ED25519 ? nullptr : EVP_sha256();
     CHECK(EVP_DigestSignInit(md_ctx.get(), /*pctx=*/nullptr, digest,
-                             /*engine=*/nullptr, pkey_.get()) &&
+                             /*e=*/nullptr, pkey_.get()) &&
           EVP_DigestSign(md_ctx.get(), ret.data(), &sig_len, msg.data(),
                          msg.size()) &&
           sig_len <= ret.size());
@@ -507,7 +507,7 @@ bool VirtualFidoDevice::Sign(crypto::ECPrivateKey* private_key,
                              base::span<const uint8_t> sign_buffer,
                              std::vector<uint8_t>* signature) {
   auto signer = crypto::ECSignatureCreator::Create(private_key);
-  return signer->Sign(sign_buffer.data(), sign_buffer.size(), signature);
+  return signer->Sign(sign_buffer, signature);
 }
 
 absl::optional<std::vector<uint8_t>>
@@ -540,10 +540,11 @@ VirtualFidoDevice::GenerateAttestationCertificate(
       break;
   }
   const uint8_t kTransportTypesContents[] = {
-      3,                            // BIT STRING
-      2,                            // two bytes long
-      8 - transport_bit - 1,        // trailing bits unused
-      0b10000000 >> transport_bit,  // transport
+      3,                                            // BIT STRING
+      2,                                            // two bytes long
+      static_cast<uint8_t>(8 - transport_bit - 1),  // trailing bits unused
+      static_cast<uint8_t>(0b10000000 >> transport_bit),
+      // transport
   };
 
   // https://www.w3.org/TR/webauthn/#sctn-packed-attestation-cert-requirements
@@ -563,8 +564,7 @@ VirtualFidoDevice::GenerateAttestationCertificate(
 
   // https://w3c.github.io/webauthn/#sctn-packed-attestation-cert-requirements
   // Make the certificate expire about 20 years from now.
-  base::Time expiry_date =
-      base::Time::Now() + base::TimeDelta::FromDays(365 * 20);
+  base::Time expiry_date = base::Time::Now() + base::Days(365 * 20);
   std::string attestation_cert;
   if (!net::x509_util::CreateSelfSignedCert(
           attestation_private_key->key(), net::x509_util::DIGEST_SHA256,

@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <utility>
 
-#include "base/macros.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace mojo {
@@ -36,6 +35,10 @@ class AssociatedInterfacePtrInfo {
   AssociatedInterfacePtrInfo(ScopedInterfaceEndpointHandle handle,
                              uint32_t version)
       : handle_(std::move(handle)), version_(version) {}
+
+  AssociatedInterfacePtrInfo(const AssociatedInterfacePtrInfo&) = delete;
+  AssociatedInterfacePtrInfo& operator=(const AssociatedInterfacePtrInfo&) =
+      delete;
 
   ~AssociatedInterfacePtrInfo() {}
 
@@ -76,8 +79,6 @@ class AssociatedInterfacePtrInfo {
  private:
   ScopedInterfaceEndpointHandle handle_;
   uint32_t version_;
-
-  DISALLOW_COPY_AND_ASSIGN(AssociatedInterfacePtrInfo);
 };
 
 }  // namespace mojo

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -85,6 +84,9 @@ std::string GetParentDeviceName(udev_device* device, const char* subsystem) {
 class InputServiceLinuxImpl : public InputServiceLinux,
                               public DeviceMonitorLinux::Observer {
  public:
+  InputServiceLinuxImpl(const InputServiceLinuxImpl&) = delete;
+  InputServiceLinuxImpl& operator=(const InputServiceLinuxImpl&) = delete;
+
   // Implements DeviceMonitorLinux::Observer:
   void OnDeviceAdded(udev_device* device) override;
   void OnDeviceRemoved(udev_device* device) override;
@@ -97,8 +99,6 @@ class InputServiceLinuxImpl : public InputServiceLinux,
 
   base::ScopedObservation<DeviceMonitorLinux, DeviceMonitorLinux::Observer>
       observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(InputServiceLinuxImpl);
 };
 
 InputServiceLinuxImpl::InputServiceLinuxImpl() {

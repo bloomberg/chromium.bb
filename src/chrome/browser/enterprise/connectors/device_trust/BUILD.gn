@@ -2,40 +2,35 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/protobuf/proto_library.gni")
+source_set("features") {
+  sources = [ "device_trust_features.cc" ]
 
-proto_library("keystore_proto") {
-  proto_in_dir =
-      "//chrome/browser/enterprise/connectors/device_trust/attestation_protos"
-  proto_out_dir = "chrome/browser/enterprise/connectors/device_trust/"
-  sources = [ "${proto_in_dir}/device_trust_keystore.proto" ]
-  generate_python = false
+  public = [ "device_trust_features.h" ]
+
+  public_deps = [ "//base" ]
 }
 
-proto_library("attestation_ca_proto") {
-  proto_in_dir =
-      "//chrome/browser/enterprise/connectors/device_trust/attestation_protos"
-  proto_out_dir = "chrome/browser/enterprise/connectors/device_trust/"
-  sources = [ "${proto_in_dir}/device_trust_attestation_ca.proto" ]
-  generate_python = false
-}
-
-proto_library("interface_proto") {
-  proto_in_dir =
-      "//chrome/browser/enterprise/connectors/device_trust/attestation_protos"
-  proto_out_dir = "chrome/browser/enterprise/connectors/device_trust/"
-  sources = [ "${proto_in_dir}/device_trust_interface.proto" ]
-  deps = [
-    ":attestation_ca_proto",
-    ":keystore_proto",
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "fake_device_trust_connector_service.cc",
+    "mock_device_trust_service.cc",
   ]
-  generate_python = false
-}
 
-proto_library("google_key_proto") {
-  proto_in_dir =
-      "//chrome/browser/enterprise/connectors/device_trust/attestation_protos"
-  proto_out_dir = "chrome/browser/enterprise/connectors/device_trust/"
-  sources = [ "${proto_in_dir}/device_trust_google_key.proto" ]
-  generate_python = false
+  public = [
+    "fake_device_trust_connector_service.h",
+    "mock_device_trust_service.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//chrome/browser",
+    "//testing/gmock",
+  ]
+
+  deps = [
+    "//components/pref_registry",
+    "//components/prefs:test_support",
+    "//components/sync_preferences:test_support",
+  ]
 }

@@ -9,7 +9,9 @@
 
 #include "base/allocator/allocator_shim.h"
 #include "base/debug/alias.h"
+#include "base/memory/raw_ptr.h"
 #include "base/rand_util.h"
+#include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
 #include "build/build_config.h"
@@ -68,7 +70,7 @@ class SamplesCollector : public PoissonAllocationSampler::SamplesObserver {
 
  private:
   size_t watch_size_;
-  void* sample_address_ = nullptr;
+  raw_ptr<void> sample_address_ = nullptr;
 };
 
 TEST_F(SamplingHeapProfilerTest, SampleObserver) {
@@ -273,7 +275,7 @@ class StartStopThread : public SimpleThread {
   }
 
  private:
-  WaitableEvent* event_;
+  raw_ptr<WaitableEvent> event_;
 };
 
 TEST_F(SamplingHeapProfilerTest, StartStop) {
@@ -289,13 +291,7 @@ TEST_F(SamplingHeapProfilerTest, StartStop) {
   EXPECT_EQ(0, GetRunningSessionsCount());
 }
 
-// TODO(crbug.com/1116543): When this was part of StartStop, the whole test was
-// flaky on Mac. If StartStop continues to flake, the problem is probably in
-// PoissonAllocationSampler::InstallAllocatorHooksOnce, which runs on the first
-// call to SamplingHeapProfiler::Start. Otherwise, try re-enabling this part
-// too to see if it's still flaky; if so, the problem is probably due to
-// `thread` and the main thread both calling RunStartStopLoop and contending
-// over some shared resource.
+// TODO(crbug.com/1116543): Test is crashing on Mac.
 #if defined(OS_MAC)
 #define MAYBE_ConcurrentStartStop DISABLED_ConcurrentStartStop
 #else
@@ -310,6 +306,51 @@ TEST_F(SamplingHeapProfilerTest, MAYBE_ConcurrentStartStop) {
   RunStartStopLoop(profiler);
   thread.Join();
   EXPECT_EQ(0, GetRunningSessionsCount());
+}
+
+TEST_F(SamplingHeapProfilerTest, HookedAllocatorMuted) {
+  EXPECT_FALSE(PoissonAllocationSampler::AreHookedSamplesMuted());
+
+  auto* sampler = PoissonAllocationSampler::Get();
+  sampler->SuppressRandomnessForTest(true);
+  sampler->SetSamplingInterval(1024);
+
+  {
+    PoissonAllocationSampler::ScopedMuteHookedSamplesForTesting mute_hooks;
+    EXPECT_TRUE(PoissonAllocationSampler::AreHookedSamplesMuted());
+
+    SamplesCollector collector(10000);
+
+    // A ScopedMuteHookedSamplesForTesting exists so hooked allocations should
+    // be ignored.
+    sampler->AddSamplesObserver(&collector);
+    void* volatile p = malloc(10000);
+    free(p);
+    sampler->RemoveSamplesObserver(&collector);
+    EXPECT_FALSE(collector.sample_added);
+    EXPECT_FALSE(collector.sample_removed);
+
+    // Manual allocations should be captured.
+    sampler->AddSamplesObserver(&collector);
+    void* const kAddress = reinterpret_cast<void*>(0x1234);
+    sampler->RecordAlloc(kAddress, 10000,
+                         PoissonAllocationSampler::kManualForTesting, nullptr);
+    sampler->RecordFree(kAddress);
+    sampler->RemoveSamplesObserver(&collector);
+    EXPECT_TRUE(collector.sample_added);
+    EXPECT_TRUE(collector.sample_removed);
+  }
+
+  EXPECT_FALSE(PoissonAllocationSampler::AreHookedSamplesMuted());
+
+  // Hooked allocations should be captured again.
+  SamplesCollector collector(10000);
+  sampler->AddSamplesObserver(&collector);
+  void* volatile p = malloc(10000);
+  free(p);
+  sampler->RemoveSamplesObserver(&collector);
+  EXPECT_TRUE(collector.sample_added);
+  EXPECT_TRUE(collector.sample_removed);
 }
 
 }  // namespace base

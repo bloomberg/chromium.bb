@@ -13,11 +13,12 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "extensions/renderer/native_handler.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/script_injection_callback.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-object.h"
+#include "v8/include/v8-persistent-handle.h"
 
 namespace extensions {
 
@@ -60,15 +61,22 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   class NativesEnabledScope {
    public:
     explicit NativesEnabledScope(ModuleSystem* module_system);
+
+    NativesEnabledScope(const NativesEnabledScope&) = delete;
+    NativesEnabledScope& operator=(const NativesEnabledScope&) = delete;
+
     ~NativesEnabledScope();
 
    private:
     ModuleSystem* module_system_;
-    DISALLOW_COPY_AND_ASSIGN(NativesEnabledScope);
   };
 
   // |source_map| is a weak pointer.
   ModuleSystem(ScriptContext* context, const SourceMap* source_map);
+
+  ModuleSystem(const ModuleSystem&) = delete;
+  ModuleSystem& operator=(const ModuleSystem&) = delete;
+
   ~ModuleSystem() override;
 
   // ObjectBackedNativeHandler:
@@ -267,8 +275,6 @@ class ModuleSystem : public ObjectBackedNativeHandler {
 
   // The set of modules that we've attempted to load.
   std::set<std::string> loaded_modules_;
-
-  DISALLOW_COPY_AND_ASSIGN(ModuleSystem);
 };
 
 }  // namespace extensions

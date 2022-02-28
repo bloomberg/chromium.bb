@@ -18,15 +18,15 @@
 #include "Debug.hpp"
 #include "Print.hpp"
 
-#include <algorithm>
-#include <cmath>
-
 #if defined(_WIN32)
 #	ifndef WIN32_LEAN_AND_MEAN
 #		define WIN32_LEAN_AND_MEAN
 #	endif
 #	include <windows.h>
 #endif
+
+#include <algorithm>
+#include <cmath>
 
 // Define REACTOR_MATERIALIZE_LVALUES_ON_DEFINITION to non-zero to ensure all
 // variables have a stack location obtained throuch alloca().
@@ -36,12 +36,8 @@
 
 namespace rr {
 
-const Config::Edit Config::Edit::None = {};
-
 Config Config::Edit::apply(const Config &cfg) const
 {
-	if(this == &None) { return cfg; }
-
 	auto level = optLevelChanged ? optLevel : cfg.optimization.getLevel();
 	auto passes = cfg.optimization.getPasses();
 	apply(optPassEdits, passes);

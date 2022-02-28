@@ -86,51 +86,80 @@ path. Add it with -I<path> to the command line
 # define V8_OS_ANDROID 1
 # define V8_OS_LINUX 1
 # define V8_OS_POSIX 1
+# define V8_OS_STRING "android"
+
 #elif defined(__APPLE__)
 # define V8_OS_BSD 1
 # define V8_OS_MACOSX 1
 # define V8_OS_POSIX 1
 # if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 #  define V8_OS_IOS 1
+#  define V8_OS_STRING "ios"
+# else
+#  define V8_OS_STRING "macos"
 # endif  // defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+
 #elif defined(__CYGWIN__)
 # define V8_OS_CYGWIN 1
 # define V8_OS_POSIX 1
+# define V8_OS_STRING "cygwin"
+
 #elif defined(__linux__)
 # define V8_OS_LINUX 1
 # define V8_OS_POSIX 1
+# define V8_OS_STRING "linux"
+
 #elif defined(__sun)
 # define V8_OS_POSIX 1
 # define V8_OS_SOLARIS 1
+# define V8_OS_STRING "sun"
+
 #elif defined(STARBOARD)
 # define V8_OS_STARBOARD 1
+# define V8_OS_STRING "starboard"
+
 #elif defined(_AIX)
-#define V8_OS_POSIX 1
-#define V8_OS_AIX 1
+# define V8_OS_POSIX 1
+# define V8_OS_AIX 1
+# define V8_OS_STRING "aix"
+
 #elif defined(__FreeBSD__)
 # define V8_OS_BSD 1
 # define V8_OS_FREEBSD 1
 # define V8_OS_POSIX 1
+# define V8_OS_STRING "freebsd"
+
 #elif defined(__Fuchsia__)
 # define V8_OS_FUCHSIA 1
 # define V8_OS_POSIX 1
+# define V8_OS_STRING "fuchsia"
+
 #elif defined(__DragonFly__)
 # define V8_OS_BSD 1
 # define V8_OS_DRAGONFLYBSD 1
 # define V8_OS_POSIX 1
+# define V8_OS_STRING "dragonflybsd"
+
 #elif defined(__NetBSD__)
 # define V8_OS_BSD 1
 # define V8_OS_NETBSD 1
 # define V8_OS_POSIX 1
+# define V8_OS_STRING "netbsd"
+
 #elif defined(__OpenBSD__)
 # define V8_OS_BSD 1
 # define V8_OS_OPENBSD 1
 # define V8_OS_POSIX 1
+# define V8_OS_STRING "openbsd"
+
 #elif defined(__QNXNTO__)
 # define V8_OS_POSIX 1
 # define V8_OS_QNX 1
+# define V8_OS_STRING "qnx"
+
 #elif defined(_WIN32)
 # define V8_OS_WIN 1
+# define V8_OS_STRING "windows"
 #endif
 
 // -----------------------------------------------------------------------------
@@ -195,6 +224,22 @@ path. Add it with -I<path> to the command line
 
 #endif  // V8_HAVE_TARGET_OS
 
+#if defined(V8_TARGET_OS_ANDROID)
+# define V8_TARGET_OS_STRING "android"
+#elif defined(V8_TARGET_OS_FUCHSIA)
+# define V8_TARGET_OS_STRING "fuchsia"
+#elif defined(V8_TARGET_OS_IOS)
+# define V8_TARGET_OS_STRING "ios"
+#elif defined(V8_TARGET_OS_LINUX)
+# define V8_TARGET_OS_STRING "linux"
+#elif defined(V8_TARGET_OS_MACOSX)
+# define V8_TARGET_OS_STRING "macos"
+#elif defined(V8_TARGET_OS_WINDOWS)
+# define V8_TARGET_OS_STRING "windows"
+#else
+# define V8_TARGET_OS_STRING "unknown"
+#endif
+
 // -----------------------------------------------------------------------------
 // C library detection
 //
@@ -248,6 +293,8 @@ path. Add it with -I<path> to the command line
 //  V8_HAS_ATTRIBUTE_WARN_UNUSED_RESULT - __attribute__((warn_unused_result))
 //                                        supported
 //  V8_HAS_CPP_ATTRIBUTE_NODISCARD      - [[nodiscard]] supported
+//  V8_HAS_CPP_ATTRIBUTE_NO_UNIQUE_ADDRESS
+//                                      - [[no_unique_address]] supported
 //  V8_HAS_BUILTIN_BSWAP16              - __builtin_bswap16() supported
 //  V8_HAS_BUILTIN_BSWAP32              - __builtin_bswap32() supported
 //  V8_HAS_BUILTIN_BSWAP64              - __builtin_bswap64() supported
@@ -292,6 +339,8 @@ path. Add it with -I<path> to the command line
     (__has_attribute(warn_unused_result))
 
 # define V8_HAS_CPP_ATTRIBUTE_NODISCARD (V8_HAS_CPP_ATTRIBUTE(nodiscard))
+# define V8_HAS_CPP_ATTRIBUTE_NO_UNIQUE_ADDRESS \
+    (V8_HAS_CPP_ATTRIBUTE(no_unique_address))
 
 # define V8_HAS_BUILTIN_ASSUME_ALIGNED (__has_builtin(__builtin_assume_aligned))
 # define V8_HAS_BUILTIN_BSWAP16 (__has_builtin(__builtin_bswap16))
@@ -462,6 +511,27 @@ path. Add it with -I<path> to the command line
 #define V8_NODISCARD /* NOT SUPPORTED */
 #endif
 
+// The no_unique_address attribute allows tail padding in a non-static data
+// member to overlap other members of the enclosing class (and in the special
+// case when the type is empty, permits it to fully overlap other members). The
+// field is laid out as if a base class were encountered at the corresponding
+// point within the class (except that it does not share a vptr with the
+// enclosing object).
+//
+// Apply to a data member like:
+//
+//   class Foo {
+//    V8_NO_UNIQUE_ADDRESS Bar bar_;
+//   };
+//
+// [[no_unique_address]] comes in C++20 but supported in clang with
+// -std >= c++11.
+#if V8_HAS_CPP_ATTRIBUTE_NO_UNIQUE_ADDRESS
+#define V8_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#else
+#define V8_NO_UNIQUE_ADDRESS /* NOT SUPPORTED */
+#endif
+
 // Helper macro to define no_sanitize attributes only with clang.
 #if defined(__clang__) && defined(__has_attribute)
 #if __has_attribute(no_sanitize)
@@ -507,6 +577,26 @@ V8 shared library set USING_V8_SHARED.
 #endif
 
 #endif  // V8_OS_WIN
+
+// The virtual memory cage is available (i.e. defined) when pointer compression
+// is enabled, but it is only used when V8_VIRTUAL_MEMORY_CAGE is enabled as
+// well. This allows better test coverage of the cage.
+#if defined(V8_COMPRESS_POINTERS)
+#define V8_VIRTUAL_MEMORY_CAGE_IS_AVAILABLE
+#endif
+
+// CagedPointers are currently only used if the heap sandbox is enabled.
+// In the future, they will be enabled when the virtual memory cage is enabled.
+#if defined(V8_HEAP_SANDBOX)
+#define V8_CAGED_POINTERS
+#endif
+
+// From C++17 onwards, static constexpr member variables are defined to be
+// "inline", and adding a separate definition for them can trigger deprecation
+// warnings. For C++14 and below, however, these definitions are required.
+#if __cplusplus < 201703L && (!defined(_MSVC_LANG) || _MSVC_LANG < 201703L)
+#define V8_STATIC_CONSTEXPR_VARIABLES_NEED_DEFINITIONS
+#endif
 
 // clang-format on
 

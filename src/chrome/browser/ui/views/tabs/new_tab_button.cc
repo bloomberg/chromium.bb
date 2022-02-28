@@ -22,6 +22,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/theme_provider.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -66,9 +67,9 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, PressedCallback callback)
   ink_drop_container_ =
       AddChildView(std::make_unique<views::InkDropContainerView>());
 
-  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
-  ink_drop()->SetHighlightOpacity(0.16f);
-  ink_drop()->SetVisibleOpacity(0.14f);
+  views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
+  views::InkDrop::Get(this)->SetHighlightOpacity(0.16f);
+  views::InkDrop::Get(this)->SetVisibleOpacity(0.14f);
 
   SetInstallFocusRingOnFocus(true);
   views::HighlightPathGenerator::Install(
@@ -78,6 +79,10 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, PressedCallback callback)
 }
 
 NewTabButton::~NewTabButton() {
+  // TODO(pbos): Revisit explicit removal of InkDrop for classes that override
+  // Add/RemoveLayerBeneathView(). This is done so that the InkDrop doesn't
+  // access the non-override versions in ~View.
+  views::InkDrop::Remove(this);
 }
 
 void NewTabButton::FrameColorsChanged() {
@@ -86,7 +91,7 @@ void NewTabButton::FrameColorsChanged() {
 }
 
 void NewTabButton::AnimateToStateForTesting(views::InkDropState state) {
-  ink_drop()->GetInkDrop()->AnimateToState(state);
+  views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(state);
 }
 
 void NewTabButton::AddLayerBeneathView(ui::Layer* new_layer) {
@@ -138,7 +143,7 @@ void NewTabButton::OnGestureEvent(ui::GestureEvent* event) {
 
 void NewTabButton::NotifyClick(const ui::Event& event) {
   ImageButton::NotifyClick(event);
-  ink_drop()->GetInkDrop()->AnimateToState(
+  views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
       views::InkDropState::ACTION_TRIGGERED);
 }
 
@@ -265,7 +270,7 @@ SkPath NewTabButton::GetBorderPath(const gfx::Point& origin,
 }
 
 void NewTabButton::UpdateInkDropBaseColor() {
-  ink_drop()->SetBaseColor(
+  views::InkDrop::Get(this)->SetBaseColor(
       color_utils::GetColorWithMaxContrast(GetButtonFillColor()));
 }
 

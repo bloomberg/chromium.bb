@@ -7,19 +7,29 @@
 #include <jni.h>
 #include <cstdint>
 
-#include "android_webview/browser/metrics/aw_stability_metrics_provider.h"
 #include "android_webview/browser_jni_headers/AwMetricsServiceClient_jni.h"
+#include "android_webview/common/aw_features.h"
+#include "android_webview/common/metrics/app_package_name_logging_rule.h"
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
+#include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/no_destructor.h"
+#include "base/time/time.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/android/channel_getter.h"
 
 namespace android_webview {
+
+namespace prefs {
+const char kMetricsAppPackageNameLoggingRule[] =
+    "aw_metrics_app_package_name_logging_rule";
+}  // namespace prefs
 
 namespace {
 
@@ -58,6 +68,7 @@ AwMetricsServiceClient* AwMetricsServiceClient::GetInstance() {
   return g_aw_metrics_service_client;
 }
 
+// static
 void AwMetricsServiceClient::SetInstance(
     std::unique_ptr<AwMetricsServiceClient> aw_metrics_service_client) {
   DCHECK(!g_aw_metrics_service_client);
@@ -68,9 +79,16 @@ void AwMetricsServiceClient::SetInstance(
 
 AwMetricsServiceClient::AwMetricsServiceClient(
     std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)) {}
+    : time_created_(base::Time::Now()), delegate_(std::move(delegate)) {}
 
 AwMetricsServiceClient::~AwMetricsServiceClient() = default;
+
+void AwMetricsServiceClient::Initialize(PrefService* pref_service) {
+  // Pass an empty file path since the path is for the Extended Variations Safe
+  // Mode experiment and Android WebView is excluded from this experiment.
+  AndroidMetricsServiceClient::Initialize(/*user_data_dir=*/base::FilePath(),
+                                          pref_service);
+}
 
 int32_t AwMetricsServiceClient::GetProduct() {
   return metrics::ChromeUserMetricsExtension::ANDROID_WEBVIEW;
@@ -85,6 +103,89 @@ int AwMetricsServiceClient::GetSampleRatePerMille() const {
     return kStableSampledInRatePerMille;
   }
   return kBetaDevCanarySampledInRatePerMille;
+}
+
+std::string AwMetricsServiceClient::GetAppPackageNameIfLoggable() {
+  if (!base::FeatureList::IsEnabled(
+          android_webview::features::kWebViewAppsPackageNamesAllowlist)) {
+    // Revert to the default implementation.
+    return ::metrics::AndroidMetricsServiceClient::
+        GetAppPackageNameIfLoggable();
+  }
+  AndroidMetricsServiceClient::InstallerPackageType installer_type =
+      GetInstallerPackageType();
+  // Always record the app package name of system apps even if it's not in the
+  // allowlist.
+  if (installer_type == InstallerPackageType::SYSTEM_APP ||
+      (installer_type == InstallerPackageType::GOOGLE_PLAY_STORE &&
+       ShouldRecordPackageName())) {
+    return GetAppPackageName();
+  }
+  return std::string();
+}
+
+bool AwMetricsServiceClient::ShouldRecordPackageName() {
+  if (!base::FeatureList::IsEnabled(
+          android_webview::features::kWebViewAppsPackageNamesAllowlist)) {
+    // Revert to the default implementation of using a random sample to decide
+    // whether to record the app package name or not.
+    return ::metrics::AndroidMetricsServiceClient::ShouldRecordPackageName();
+  }
+
+  base::UmaHistogramEnumeration(
+      "Android.WebView.Metrics.PackagesAllowList.RecordStatus",
+      package_name_record_status_);
+  return cached_package_name_record_.has_value() &&
+         cached_package_name_record_.value().IsAppPackageNameAllowed();
+}
+
+void AwMetricsServiceClient::SetAppPackageNameLoggingRule(
+    absl::optional<AppPackageNameLoggingRule> record) {
+  absl::optional<AppPackageNameLoggingRule> cached_record =
+      GetCachedAppPackageNameLoggingRule();
+  if (!record.has_value()) {
+    package_name_record_status_ =
+        cached_record.has_value()
+            ? AppPackageNameLoggingRuleStatus::kNewVersionFailedUseCache
+            : AppPackageNameLoggingRuleStatus::kNewVersionFailedNoCache;
+    return;
+  }
+
+  if (cached_record.has_value() &&
+      record.value().IsSameAs(cached_package_name_record_.value())) {
+    package_name_record_status_ =
+        AppPackageNameLoggingRuleStatus::kSameVersionAsCache;
+    return;
+  }
+
+  PrefService* local_state = pref_service();
+  DCHECK(local_state);
+  local_state->Set(prefs::kMetricsAppPackageNameLoggingRule,
+                   record.value().ToDictionary());
+  cached_package_name_record_ = record;
+  package_name_record_status_ =
+      AppPackageNameLoggingRuleStatus::kNewVersionLoaded;
+
+  UmaHistogramTimes(
+      "Android.WebView.Metrics.PackagesAllowList.ResultReceivingDelay",
+      base::Time::Now() - time_created_);
+}
+
+absl::optional<AppPackageNameLoggingRule>
+AwMetricsServiceClient::GetCachedAppPackageNameLoggingRule() {
+  if (cached_package_name_record_.has_value()) {
+    return cached_package_name_record_;
+  }
+
+  PrefService* local_state = pref_service();
+  DCHECK(local_state);
+  cached_package_name_record_ = AppPackageNameLoggingRule::FromDictionary(
+      *(local_state->Get(prefs::kMetricsAppPackageNameLoggingRule)));
+  if (cached_package_name_record_.has_value()) {
+    package_name_record_status_ =
+        AppPackageNameLoggingRuleStatus::kNotLoadedUseCache;
+  }
+  return cached_package_name_record_;
 }
 
 void AwMetricsServiceClient::OnMetricsStart() {
@@ -128,10 +229,15 @@ void AwMetricsServiceClient::OnAppStateChanged(
 
 void AwMetricsServiceClient::RegisterAdditionalMetricsProviders(
     metrics::MetricsService* service) {
-  service->RegisterMetricsProvider(
-      std::make_unique<android_webview::AwStabilityMetricsProvider>(
-          pref_service()));
   delegate_->RegisterAdditionalMetricsProviders(service);
+}
+
+// static
+void AwMetricsServiceClient::RegisterMetricsPrefs(
+    PrefRegistrySimple* registry) {
+  RegisterPrefs(registry);
+  registry->RegisterDictionaryPref(prefs::kMetricsAppPackageNameLoggingRule,
+                                   base::Value(base::Value::Type::DICTIONARY));
 }
 
 // static
@@ -155,7 +261,7 @@ void JNI_AwMetricsServiceClient_SetUploadIntervalForTesting(
     JNIEnv* env,
     jlong upload_interval_ms) {
   AwMetricsServiceClient::GetInstance()->SetUploadIntervalForTesting(
-      base::TimeDelta::FromMilliseconds(upload_interval_ms));
+      base::Milliseconds(upload_interval_ms));
 }
 
 // static
@@ -166,6 +272,17 @@ void JNI_AwMetricsServiceClient_SetOnFinalMetricsCollectedListenerForTesting(
       ->SetOnFinalMetricsCollectedListenerForTesting(base::BindRepeating(
           base::android::RunRunnableAndroid,
           base::android::ScopedJavaGlobalRef<jobject>(listener)));
+}
+
+// static
+void JNI_AwMetricsServiceClient_SetAppPackageNameLoggingRuleForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& version,
+    jlong expiry_date_ms) {
+  AwMetricsServiceClient::GetInstance()->SetAppPackageNameLoggingRule(
+      AppPackageNameLoggingRule(
+          base::Version(base::android::ConvertJavaStringToUTF8(env, version)),
+          base::Time::UnixEpoch() + base::Milliseconds(expiry_date_ms)));
 }
 
 }  // namespace android_webview

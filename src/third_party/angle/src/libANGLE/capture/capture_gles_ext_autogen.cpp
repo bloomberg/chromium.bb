@@ -437,6 +437,35 @@ CallCapture CaptureGetTexImageANGLE(const State &glState,
     return CallCapture(angle::EntryPoint::GLGetTexImageANGLE, std::move(paramBuffer));
 }
 
+CallCapture CaptureGetCompressedTexImageANGLE(const State &glState,
+                                              bool isCallValid,
+                                              TextureTarget targetPacked,
+                                              GLint level,
+                                              void *pixels)
+{
+    ParamBuffer paramBuffer;
+
+    paramBuffer.addValueParam("targetPacked", ParamType::TTextureTarget, targetPacked);
+    paramBuffer.addValueParam("level", ParamType::TGLint, level);
+
+    if (isCallValid)
+    {
+        ParamCapture pixelsParam("pixels", ParamType::TvoidPointer);
+        InitParamValue(ParamType::TvoidPointer, pixels, &pixelsParam.value);
+        CaptureGetCompressedTexImageANGLE_pixels(glState, isCallValid, targetPacked, level, pixels,
+                                                 &pixelsParam);
+        paramBuffer.addParam(std::move(pixelsParam));
+    }
+    else
+    {
+        ParamCapture pixelsParam("pixels", ParamType::TvoidPointer);
+        InitParamValue(ParamType::TvoidPointer, static_cast<void *>(nullptr), &pixelsParam.value);
+        paramBuffer.addParam(std::move(pixelsParam));
+    }
+
+    return CallCapture(angle::EntryPoint::GLGetCompressedTexImageANGLE, std::move(paramBuffer));
+}
+
 CallCapture CaptureGetRenderbufferImageANGLE(const State &glState,
                                              bool isCallValid,
                                              GLenum target,
@@ -606,7 +635,8 @@ CallCapture CaptureTexStorageMemFlags2DANGLE(const State &glState,
                                              MemoryObjectID memoryPacked,
                                              GLuint64 offset,
                                              GLbitfield createFlags,
-                                             GLbitfield usageFlags)
+                                             GLbitfield usageFlags,
+                                             const void *imageCreateInfoPNext)
 {
     ParamBuffer paramBuffer;
 
@@ -623,6 +653,26 @@ CallCapture CaptureTexStorageMemFlags2DANGLE(const State &glState,
     paramBuffer.addEnumParam("usageFlags", GLenumGroup::DefaultGroup, ParamType::TGLbitfield,
                              usageFlags);
 
+    if (isCallValid)
+    {
+        ParamCapture imageCreateInfoPNextParam("imageCreateInfoPNext",
+                                               ParamType::TvoidConstPointer);
+        InitParamValue(ParamType::TvoidConstPointer, imageCreateInfoPNext,
+                       &imageCreateInfoPNextParam.value);
+        CaptureTexStorageMemFlags2DANGLE_imageCreateInfoPNext(
+            glState, isCallValid, targetPacked, levels, internalFormat, width, height, memoryPacked,
+            offset, createFlags, usageFlags, imageCreateInfoPNext, &imageCreateInfoPNextParam);
+        paramBuffer.addParam(std::move(imageCreateInfoPNextParam));
+    }
+    else
+    {
+        ParamCapture imageCreateInfoPNextParam("imageCreateInfoPNext",
+                                               ParamType::TvoidConstPointer);
+        InitParamValue(ParamType::TvoidConstPointer, static_cast<const void *>(nullptr),
+                       &imageCreateInfoPNextParam.value);
+        paramBuffer.addParam(std::move(imageCreateInfoPNextParam));
+    }
+
     return CallCapture(angle::EntryPoint::GLTexStorageMemFlags2DANGLE, std::move(paramBuffer));
 }
 
@@ -637,7 +687,8 @@ CallCapture CaptureTexStorageMemFlags2DMultisampleANGLE(const State &glState,
                                                         MemoryObjectID memoryPacked,
                                                         GLuint64 offset,
                                                         GLbitfield createFlags,
-                                                        GLbitfield usageFlags)
+                                                        GLbitfield usageFlags,
+                                                        const void *imageCreateInfoPNext)
 {
     ParamBuffer paramBuffer;
 
@@ -654,6 +705,27 @@ CallCapture CaptureTexStorageMemFlags2DMultisampleANGLE(const State &glState,
                              createFlags);
     paramBuffer.addEnumParam("usageFlags", GLenumGroup::DefaultGroup, ParamType::TGLbitfield,
                              usageFlags);
+
+    if (isCallValid)
+    {
+        ParamCapture imageCreateInfoPNextParam("imageCreateInfoPNext",
+                                               ParamType::TvoidConstPointer);
+        InitParamValue(ParamType::TvoidConstPointer, imageCreateInfoPNext,
+                       &imageCreateInfoPNextParam.value);
+        CaptureTexStorageMemFlags2DMultisampleANGLE_imageCreateInfoPNext(
+            glState, isCallValid, targetPacked, samples, internalFormat, width, height,
+            fixedSampleLocations, memoryPacked, offset, createFlags, usageFlags,
+            imageCreateInfoPNext, &imageCreateInfoPNextParam);
+        paramBuffer.addParam(std::move(imageCreateInfoPNextParam));
+    }
+    else
+    {
+        ParamCapture imageCreateInfoPNextParam("imageCreateInfoPNext",
+                                               ParamType::TvoidConstPointer);
+        InitParamValue(ParamType::TvoidConstPointer, static_cast<const void *>(nullptr),
+                       &imageCreateInfoPNextParam.value);
+        paramBuffer.addParam(std::move(imageCreateInfoPNextParam));
+    }
 
     return CallCapture(angle::EntryPoint::GLTexStorageMemFlags2DMultisampleANGLE,
                        std::move(paramBuffer));
@@ -670,7 +742,8 @@ CallCapture CaptureTexStorageMemFlags3DANGLE(const State &glState,
                                              MemoryObjectID memoryPacked,
                                              GLuint64 offset,
                                              GLbitfield createFlags,
-                                             GLbitfield usageFlags)
+                                             GLbitfield usageFlags,
+                                             const void *imageCreateInfoPNext)
 {
     ParamBuffer paramBuffer;
 
@@ -688,6 +761,27 @@ CallCapture CaptureTexStorageMemFlags3DANGLE(const State &glState,
     paramBuffer.addEnumParam("usageFlags", GLenumGroup::DefaultGroup, ParamType::TGLbitfield,
                              usageFlags);
 
+    if (isCallValid)
+    {
+        ParamCapture imageCreateInfoPNextParam("imageCreateInfoPNext",
+                                               ParamType::TvoidConstPointer);
+        InitParamValue(ParamType::TvoidConstPointer, imageCreateInfoPNext,
+                       &imageCreateInfoPNextParam.value);
+        CaptureTexStorageMemFlags3DANGLE_imageCreateInfoPNext(
+            glState, isCallValid, targetPacked, levels, internalFormat, width, height, depth,
+            memoryPacked, offset, createFlags, usageFlags, imageCreateInfoPNext,
+            &imageCreateInfoPNextParam);
+        paramBuffer.addParam(std::move(imageCreateInfoPNextParam));
+    }
+    else
+    {
+        ParamCapture imageCreateInfoPNextParam("imageCreateInfoPNext",
+                                               ParamType::TvoidConstPointer);
+        InitParamValue(ParamType::TvoidConstPointer, static_cast<const void *>(nullptr),
+                       &imageCreateInfoPNextParam.value);
+        paramBuffer.addParam(std::move(imageCreateInfoPNextParam));
+    }
+
     return CallCapture(angle::EntryPoint::GLTexStorageMemFlags3DANGLE, std::move(paramBuffer));
 }
 
@@ -703,7 +797,8 @@ CallCapture CaptureTexStorageMemFlags3DMultisampleANGLE(const State &glState,
                                                         MemoryObjectID memoryPacked,
                                                         GLuint64 offset,
                                                         GLbitfield createFlags,
-                                                        GLbitfield usageFlags)
+                                                        GLbitfield usageFlags,
+                                                        const void *imageCreateInfoPNext)
 {
     ParamBuffer paramBuffer;
 
@@ -721,6 +816,27 @@ CallCapture CaptureTexStorageMemFlags3DMultisampleANGLE(const State &glState,
                              createFlags);
     paramBuffer.addEnumParam("usageFlags", GLenumGroup::DefaultGroup, ParamType::TGLbitfield,
                              usageFlags);
+
+    if (isCallValid)
+    {
+        ParamCapture imageCreateInfoPNextParam("imageCreateInfoPNext",
+                                               ParamType::TvoidConstPointer);
+        InitParamValue(ParamType::TvoidConstPointer, imageCreateInfoPNext,
+                       &imageCreateInfoPNextParam.value);
+        CaptureTexStorageMemFlags3DMultisampleANGLE_imageCreateInfoPNext(
+            glState, isCallValid, targetPacked, samples, internalFormat, width, height, depth,
+            fixedSampleLocations, memoryPacked, offset, createFlags, usageFlags,
+            imageCreateInfoPNext, &imageCreateInfoPNextParam);
+        paramBuffer.addParam(std::move(imageCreateInfoPNextParam));
+    }
+    else
+    {
+        ParamCapture imageCreateInfoPNextParam("imageCreateInfoPNext",
+                                               ParamType::TvoidConstPointer);
+        InitParamValue(ParamType::TvoidConstPointer, static_cast<const void *>(nullptr),
+                       &imageCreateInfoPNextParam.value);
+        paramBuffer.addParam(std::move(imageCreateInfoPNextParam));
+    }
 
     return CallCapture(angle::EntryPoint::GLTexStorageMemFlags3DMultisampleANGLE,
                        std::move(paramBuffer));
@@ -4275,6 +4391,98 @@ CallCapture CaptureGetTranslatedShaderSourceANGLE(const State &glState,
     return CallCapture(angle::EntryPoint::GLGetTranslatedShaderSourceANGLE, std::move(paramBuffer));
 }
 
+CallCapture CaptureAcquireTexturesANGLE(const State &glState,
+                                        bool isCallValid,
+                                        GLuint numTextures,
+                                        const TextureID *texturesPacked,
+                                        const GLenum *layouts)
+{
+    ParamBuffer paramBuffer;
+
+    paramBuffer.addValueParam("numTextures", ParamType::TGLuint, numTextures);
+
+    if (isCallValid)
+    {
+        ParamCapture texturesPackedParam("texturesPacked", ParamType::TTextureIDConstPointer);
+        InitParamValue(ParamType::TTextureIDConstPointer, texturesPacked,
+                       &texturesPackedParam.value);
+        CaptureAcquireTexturesANGLE_texturesPacked(glState, isCallValid, numTextures,
+                                                   texturesPacked, layouts, &texturesPackedParam);
+        paramBuffer.addParam(std::move(texturesPackedParam));
+    }
+    else
+    {
+        ParamCapture texturesPackedParam("texturesPacked", ParamType::TTextureIDConstPointer);
+        InitParamValue(ParamType::TTextureIDConstPointer, static_cast<const TextureID *>(nullptr),
+                       &texturesPackedParam.value);
+        paramBuffer.addParam(std::move(texturesPackedParam));
+    }
+
+    if (isCallValid)
+    {
+        ParamCapture layoutsParam("layouts", ParamType::TGLenumConstPointer);
+        InitParamValue(ParamType::TGLenumConstPointer, layouts, &layoutsParam.value);
+        CaptureAcquireTexturesANGLE_layouts(glState, isCallValid, numTextures, texturesPacked,
+                                            layouts, &layoutsParam);
+        paramBuffer.addParam(std::move(layoutsParam));
+    }
+    else
+    {
+        ParamCapture layoutsParam("layouts", ParamType::TGLenumConstPointer);
+        InitParamValue(ParamType::TGLenumConstPointer, static_cast<const GLenum *>(nullptr),
+                       &layoutsParam.value);
+        paramBuffer.addParam(std::move(layoutsParam));
+    }
+
+    return CallCapture(angle::EntryPoint::GLAcquireTexturesANGLE, std::move(paramBuffer));
+}
+
+CallCapture CaptureReleaseTexturesANGLE(const State &glState,
+                                        bool isCallValid,
+                                        GLuint numTextures,
+                                        const TextureID *texturesPacked,
+                                        GLenum *layouts)
+{
+    ParamBuffer paramBuffer;
+
+    paramBuffer.addValueParam("numTextures", ParamType::TGLuint, numTextures);
+
+    if (isCallValid)
+    {
+        ParamCapture texturesPackedParam("texturesPacked", ParamType::TTextureIDConstPointer);
+        InitParamValue(ParamType::TTextureIDConstPointer, texturesPacked,
+                       &texturesPackedParam.value);
+        CaptureReleaseTexturesANGLE_texturesPacked(glState, isCallValid, numTextures,
+                                                   texturesPacked, layouts, &texturesPackedParam);
+        paramBuffer.addParam(std::move(texturesPackedParam));
+    }
+    else
+    {
+        ParamCapture texturesPackedParam("texturesPacked", ParamType::TTextureIDConstPointer);
+        InitParamValue(ParamType::TTextureIDConstPointer, static_cast<const TextureID *>(nullptr),
+                       &texturesPackedParam.value);
+        paramBuffer.addParam(std::move(texturesPackedParam));
+    }
+
+    if (isCallValid)
+    {
+        ParamCapture layoutsParam("layouts", ParamType::TGLenumPointer);
+        InitParamValue(ParamType::TGLenumPointer, layouts, &layoutsParam.value);
+        CaptureReleaseTexturesANGLE_layouts(glState, isCallValid, numTextures, texturesPacked,
+                                            layouts, &layoutsParam);
+        paramBuffer.addParam(std::move(layoutsParam));
+    }
+    else
+    {
+        ParamCapture layoutsParam("layouts", ParamType::TGLenumPointer);
+        InitParamValue(ParamType::TGLenumPointer, static_cast<GLenum *>(nullptr),
+                       &layoutsParam.value);
+        paramBuffer.addParam(std::move(layoutsParam));
+    }
+
+    return CallCapture(angle::EntryPoint::GLReleaseTexturesANGLE, std::move(paramBuffer));
+}
+
 CallCapture CaptureBindUniformLocationCHROMIUM(const State &glState,
                                                bool isCallValid,
                                                ShaderProgramID programPacked,
@@ -4411,6 +4619,67 @@ CallCapture CaptureLoseContextCHROMIUM(const State &glState,
     paramBuffer.addValueParam("otherPacked", ParamType::TGraphicsResetStatus, otherPacked);
 
     return CallCapture(angle::EntryPoint::GLLoseContextCHROMIUM, std::move(paramBuffer));
+}
+
+CallCapture CaptureEGLImageTargetTexStorageEXT(const State &glState,
+                                               bool isCallValid,
+                                               GLenum target,
+                                               GLeglImageOES image,
+                                               const GLint *attrib_list)
+{
+    ParamBuffer paramBuffer;
+
+    paramBuffer.addEnumParam("target", GLenumGroup::DefaultGroup, ParamType::TGLenum, target);
+    paramBuffer.addValueParam("image", ParamType::TGLeglImageOES, image);
+
+    if (isCallValid)
+    {
+        ParamCapture attrib_listParam("attrib_list", ParamType::TGLintConstPointer);
+        InitParamValue(ParamType::TGLintConstPointer, attrib_list, &attrib_listParam.value);
+        CaptureEGLImageTargetTexStorageEXT_attrib_list(glState, isCallValid, target, image,
+                                                       attrib_list, &attrib_listParam);
+        paramBuffer.addParam(std::move(attrib_listParam));
+    }
+    else
+    {
+        ParamCapture attrib_listParam("attrib_list", ParamType::TGLintConstPointer);
+        InitParamValue(ParamType::TGLintConstPointer, static_cast<const GLint *>(nullptr),
+                       &attrib_listParam.value);
+        paramBuffer.addParam(std::move(attrib_listParam));
+    }
+
+    return CallCapture(angle::EntryPoint::GLEGLImageTargetTexStorageEXT, std::move(paramBuffer));
+}
+
+CallCapture CaptureEGLImageTargetTextureStorageEXT(const State &glState,
+                                                   bool isCallValid,
+                                                   GLuint texture,
+                                                   GLeglImageOES image,
+                                                   const GLint *attrib_list)
+{
+    ParamBuffer paramBuffer;
+
+    paramBuffer.addValueParam("texture", ParamType::TGLuint, texture);
+    paramBuffer.addValueParam("image", ParamType::TGLeglImageOES, image);
+
+    if (isCallValid)
+    {
+        ParamCapture attrib_listParam("attrib_list", ParamType::TGLintConstPointer);
+        InitParamValue(ParamType::TGLintConstPointer, attrib_list, &attrib_listParam.value);
+        CaptureEGLImageTargetTextureStorageEXT_attrib_list(glState, isCallValid, texture, image,
+                                                           attrib_list, &attrib_listParam);
+        paramBuffer.addParam(std::move(attrib_listParam));
+    }
+    else
+    {
+        ParamCapture attrib_listParam("attrib_list", ParamType::TGLintConstPointer);
+        InitParamValue(ParamType::TGLintConstPointer, static_cast<const GLint *>(nullptr),
+                       &attrib_listParam.value);
+        paramBuffer.addParam(std::move(attrib_listParam));
+    }
+
+    return CallCapture(angle::EntryPoint::GLEGLImageTargetTextureStorageEXT,
+                       std::move(paramBuffer));
 }
 
 CallCapture CaptureBindFragDataLocationEXT(const State &glState,
@@ -5913,6 +6182,74 @@ CallCapture CaptureImportMemoryFdEXT(const State &glState,
     paramBuffer.addValueParam("fd", ParamType::TGLint, fd);
 
     return CallCapture(angle::EntryPoint::GLImportMemoryFdEXT, std::move(paramBuffer));
+}
+
+CallCapture CaptureMultiDrawArraysIndirectEXT(const State &glState,
+                                              bool isCallValid,
+                                              GLenum mode,
+                                              const void *indirect,
+                                              GLsizei drawcount,
+                                              GLsizei stride)
+{
+    ParamBuffer paramBuffer;
+
+    paramBuffer.addEnumParam("mode", GLenumGroup::PrimitiveType, ParamType::TGLenum, mode);
+
+    if (isCallValid)
+    {
+        ParamCapture indirectParam("indirect", ParamType::TvoidConstPointer);
+        InitParamValue(ParamType::TvoidConstPointer, indirect, &indirectParam.value);
+        CaptureMultiDrawArraysIndirectEXT_indirect(glState, isCallValid, mode, indirect, drawcount,
+                                                   stride, &indirectParam);
+        paramBuffer.addParam(std::move(indirectParam));
+    }
+    else
+    {
+        ParamCapture indirectParam("indirect", ParamType::TvoidConstPointer);
+        InitParamValue(ParamType::TvoidConstPointer, static_cast<const void *>(nullptr),
+                       &indirectParam.value);
+        paramBuffer.addParam(std::move(indirectParam));
+    }
+
+    paramBuffer.addValueParam("drawcount", ParamType::TGLsizei, drawcount);
+    paramBuffer.addValueParam("stride", ParamType::TGLsizei, stride);
+
+    return CallCapture(angle::EntryPoint::GLMultiDrawArraysIndirectEXT, std::move(paramBuffer));
+}
+
+CallCapture CaptureMultiDrawElementsIndirectEXT(const State &glState,
+                                                bool isCallValid,
+                                                GLenum mode,
+                                                GLenum type,
+                                                const void *indirect,
+                                                GLsizei drawcount,
+                                                GLsizei stride)
+{
+    ParamBuffer paramBuffer;
+
+    paramBuffer.addEnumParam("mode", GLenumGroup::PrimitiveType, ParamType::TGLenum, mode);
+    paramBuffer.addEnumParam("type", GLenumGroup::DrawElementsType, ParamType::TGLenum, type);
+
+    if (isCallValid)
+    {
+        ParamCapture indirectParam("indirect", ParamType::TvoidConstPointer);
+        InitParamValue(ParamType::TvoidConstPointer, indirect, &indirectParam.value);
+        CaptureMultiDrawElementsIndirectEXT_indirect(glState, isCallValid, mode, type, indirect,
+                                                     drawcount, stride, &indirectParam);
+        paramBuffer.addParam(std::move(indirectParam));
+    }
+    else
+    {
+        ParamCapture indirectParam("indirect", ParamType::TvoidConstPointer);
+        InitParamValue(ParamType::TvoidConstPointer, static_cast<const void *>(nullptr),
+                       &indirectParam.value);
+        paramBuffer.addParam(std::move(indirectParam));
+    }
+
+    paramBuffer.addValueParam("drawcount", ParamType::TGLsizei, drawcount);
+    paramBuffer.addValueParam("stride", ParamType::TGLsizei, stride);
+
+    return CallCapture(angle::EntryPoint::GLMultiDrawElementsIndirectEXT, std::move(paramBuffer));
 }
 
 CallCapture CaptureFramebufferTexture2DMultisampleEXT(const State &glState,
@@ -9369,6 +9706,24 @@ CallCapture CaptureRenderbufferStorageOES(const State &glState,
     paramBuffer.addValueParam("height", ParamType::TGLsizei, height);
 
     return CallCapture(angle::EntryPoint::GLRenderbufferStorageOES, std::move(paramBuffer));
+}
+
+CallCapture CaptureFramebufferTextureOES(const State &glState,
+                                         bool isCallValid,
+                                         GLenum target,
+                                         GLenum attachment,
+                                         TextureID texturePacked,
+                                         GLint level)
+{
+    ParamBuffer paramBuffer;
+
+    paramBuffer.addEnumParam("target", GLenumGroup::FramebufferTarget, ParamType::TGLenum, target);
+    paramBuffer.addEnumParam("attachment", GLenumGroup::FramebufferAttachment, ParamType::TGLenum,
+                             attachment);
+    paramBuffer.addValueParam("texturePacked", ParamType::TTextureID, texturePacked);
+    paramBuffer.addValueParam("level", ParamType::TGLint, level);
+
+    return CallCapture(angle::EntryPoint::GLFramebufferTextureOES, std::move(paramBuffer));
 }
 
 CallCapture CaptureGetProgramBinaryOES(const State &glState,

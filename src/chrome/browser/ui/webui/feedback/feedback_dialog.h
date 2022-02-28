@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
+#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "extensions/common/api/feedback_private.h"
 #include "ui/views/widget/widget.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -31,6 +33,7 @@ class FeedbackDialog : public ui::WebDialogDelegate {
 
  private:
   explicit FeedbackDialog(
+      Profile* profile,
       const extensions::api::feedback_private::FeedbackInfo& info);
 
   // Overrides from ui::WebDialogDelegate
@@ -56,8 +59,12 @@ class FeedbackDialog : public ui::WebDialogDelegate {
   std::unique_ptr<base::DictionaryValue> feedback_info_;
   extensions::api::feedback_private::FeedbackFlow feedback_flow_;
   // Widget for the Feedback WebUI.
-  views::Widget* widget_;
+  raw_ptr<views::Widget> widget_;
   static FeedbackDialog* current_instance_;
+
+  // Prevent Profile destruction until the dialog is closed, to prevent a
+  // dangling RenderProcessHost crash.
+  ScopedProfileKeepAlive profile_keep_alive_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_FEEDBACK_FEEDBACK_DIALOG_H_

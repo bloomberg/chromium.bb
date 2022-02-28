@@ -8,10 +8,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
@@ -60,8 +60,7 @@ base::Time StringToTime(const std::string& time) {
     return base::Time();
   }
 
-  return base::Time::UnixEpoch() +
-         base::TimeDelta::FromSeconds(seconds_from_epoch);
+  return base::Time::UnixEpoch() + base::Seconds(seconds_from_epoch);
 }
 
 // Convert a history file's timestamp, which is the number of seconds since
@@ -139,7 +138,7 @@ bool WebRtcEventLogHistoryFileWriter::Init() {
 
   // Attempt to create the file.
   constexpr int file_flags = base::File::FLAG_CREATE | base::File::FLAG_WRITE |
-                             base::File::FLAG_EXCLUSIVE_WRITE;
+                             base::File::FLAG_WIN_EXCLUSIVE_WRITE;
   file_.Initialize(path_, file_flags);
   if (!file_.IsValid() || !file_.created()) {
     LOG(WARNING) << "Couldn't create history file.";

@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 // Not defined on AIX by default.
 #if defined(OS_AIX)
@@ -225,8 +226,7 @@ TimeDelta ClockTicksToTimeDelta(int clock_ticks) {
   // It may be the case that this value is always 100.
   static const int kHertz = sysconf(_SC_CLK_TCK);
 
-  return TimeDelta::FromMicroseconds(
-      Time::kMicrosecondsPerSecond * clock_ticks / kHertz);
+  return Microseconds(Time::kMicrosecondsPerSecond * clock_ticks / kHertz);
 }
 
 }  // namespace internal

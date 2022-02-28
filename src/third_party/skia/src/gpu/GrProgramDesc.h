@@ -18,7 +18,6 @@
 class GrCaps;
 class GrProgramInfo;
 class GrRenderTarget;
-class GrShaderCaps;
 
 class GrProcessorKeyBuilder {
 public:
@@ -106,6 +105,7 @@ private:
 class GrProgramDesc {
 public:
     GrProgramDesc(const GrProgramDesc& other) = default;
+    GrProgramDesc& operator=(const GrProgramDesc &other) = default;
 
     bool isValid() const { return !fKey.empty(); }
     void reset() { *this = GrProgramDesc{}; }

@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_VIZ_HOST_GPU_CLIENT_H_
 #define COMPONENTS_VIZ_HOST_GPU_CLIENT_H_
 
+#include <map>
 #include <memory>
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "base/process/process_handle.h"
 #include "build/chromeos_buildflags.h"
 #include "components/viz/host/gpu_client_delegate.h"
 #include "components/viz/host/gpu_host_impl.h"
@@ -31,12 +33,19 @@ class VIZ_HOST_EXPORT GpuClient : public mojom::GpuMemoryBufferFactory,
             uint64_t client_tracing_id,
             scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
+  GpuClient(const GpuClient&) = delete;
+  GpuClient& operator=(const GpuClient&) = delete;
+
   ~GpuClient() override;
 
   // This needs to be run on the thread associated with |task_runner_|.
   void Add(mojo::PendingReceiver<mojom::Gpu> receiver);
 
   void PreEstablishGpuChannel();
+
+  // Sets the PID of the client that will use this channel once the PID is
+  // known.
+  void SetClientPid(base::ProcessId client_pid);
 
   void SetConnectionErrorHandler(
       ConnectionErrorHandlerClosure connection_error_handler);
@@ -82,13 +91,20 @@ class VIZ_HOST_EXPORT GpuClient : public mojom::GpuMemoryBufferFactory,
                              const gpu::GPUInfo& gpu_info,
                              const gpu::GpuFeatureInfo& gpu_feature_info,
                              GpuHostImpl::EstablishChannelStatus status);
-  void OnCreateGpuMemoryBuffer(CreateGpuMemoryBufferCallback callback,
+  void OnCreateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                gfx::GpuMemoryBufferHandle handle);
   void ClearCallback();
 
   std::unique_ptr<GpuClientDelegate> delegate_;
   const int client_id_;
   const uint64_t client_tracing_id_;
+
+  // Note that this map is placed before the ReceiverSet below, because pending
+  // response callbacks cannot be destroyed while their originating connection
+  // is still active.
+  std::map<gfx::GpuMemoryBufferId, CreateGpuMemoryBufferCallback>
+      pending_create_callbacks_;
+
   mojo::ReceiverSet<mojom::GpuMemoryBufferFactory>
       gpu_memory_buffer_factory_receivers_;
   mojo::ReceiverSet<mojom::Gpu> gpu_receivers_;
@@ -103,8 +119,6 @@ class VIZ_HOST_EXPORT GpuClient : public mojom::GpuMemoryBufferFactory,
   // this thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<GpuClient> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GpuClient);
 };
 
 }  // namespace viz

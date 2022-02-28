@@ -32,6 +32,12 @@ class FrameForTest {
   FrameForTest& operator=(FrameForTest&&);
   ~FrameForTest();
 
+  // Initializes navigation_listener() with the specified |flags|. Called in the
+  // constructor with empty flags, but tests can call it again to re-initialize
+  // with a different set of |flags|.
+  void CreateAndAttachNavigationListener(
+      fuchsia::web::NavigationEventListenerFlags flags);
+
   // Returns a new NavigationController for each call, which ensures that any
   // calls made to |frame()| will have been processed before navigation
   // controller requests.
@@ -40,15 +46,23 @@ class FrameForTest {
   // Returns the fuchsia.web.FramePtr owned by this instance.
   fuchsia::web::FramePtr& ptr() { return frame_; }
 
+  // Provide member-dereference operator to improve test readability by letting
+  // Frame calls be expressed directly on |this|, rather than via |ptr()|.
+  fuchsia::web::Frame* operator->() { return frame_.get(); }
+
+  fuchsia::web::Frame* get() { return frame_.get(); }
+
   // May be called only on non-default-initialized instances, i.e. those
   // returned directly, or via move-assignment, from Create().
   TestNavigationListener& navigation_listener() {
     return *navigation_listener_;
   }
+  fidl::Binding<fuchsia::web::NavigationEventListener>&
+  navigation_listener_binding() {
+    return *navigation_listener_binding_;
+  }
 
  private:
-  void CreateAndAttachNavigationListener();
-
   fuchsia::web::FramePtr frame_;
   std::unique_ptr<TestNavigationListener> navigation_listener_;
   std::unique_ptr<fidl::Binding<fuchsia::web::NavigationEventListener>>

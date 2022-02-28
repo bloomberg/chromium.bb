@@ -4,7 +4,7 @@
 
 #include <wrl.h>
 
-#include "base/stl_util.h"
+#include "base/cxx17_backports.h"
 #include "device/vr/openxr/openxr_util.h"
 #include "device/vr/openxr/test/openxr_negotiate.h"
 #include "device/vr/openxr/test/openxr_test_helper.h"
@@ -497,7 +497,7 @@ XrResult xrEnumerateSwapchainImages(XrSwapchain swapchain,
   return XR_SUCCESS;
 }
 
-XrResult xrGetD3D11GraphicsRequirementsKHR(
+__stdcall XrResult xrGetD3D11GraphicsRequirementsKHR(
     XrInstance instance,
     XrSystemId system_id,
     XrGraphicsRequirementsD3D11KHR* graphics_requirements) {

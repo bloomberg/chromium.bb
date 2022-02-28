@@ -10,7 +10,6 @@
 #include "base/callback_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
@@ -72,12 +71,6 @@ void DialMediaRouteProvider::Init(
 
   message_sender_ =
       std::make_unique<BufferedMessageSender>(media_router_.get());
-
-  // TODO(crbug.com/816702): This needs to be set properly according to sinks
-  // discovered.
-  media_router_->OnSinkAvailabilityUpdated(
-      MediaRouteProviderId::DIAL,
-      mojom::MediaRouter::SinkAvailability::PER_SOURCE);
 }
 
 DialMediaRouteProvider::~DialMediaRouteProvider() {
@@ -172,21 +165,6 @@ void DialMediaRouteProvider::JoinRoute(const std::string& media_source,
                             "DIAL activity not found",
                             RouteRequestResult::ROUTE_NOT_FOUND);
   }
-}
-
-void DialMediaRouteProvider::ConnectRouteByRouteId(
-    const std::string& media_source,
-    const std::string& route_id,
-    const std::string& presentation_id,
-    const url::Origin& origin,
-    int32_t tab_id,
-    base::TimeDelta timeout,
-    bool incognito,
-    ConnectRouteByRouteIdCallback callback) {
-  NOTIMPLEMENTED();
-  std::move(callback).Run(
-      absl::nullopt, nullptr, std::string("Not implemented"),
-      RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
 }
 
 void DialMediaRouteProvider::TerminateRoute(const std::string& route_id,
@@ -536,7 +514,8 @@ void DialMediaRouteProvider::NotifyAllOnRoutesUpdated() {
 void DialMediaRouteProvider::NotifyOnRoutesUpdated(
     const MediaSource::Id& source_id,
     const std::vector<MediaRoute>& routes) {
-  media_router_->OnRoutesUpdated(MediaRouteProviderId::DIAL, routes, source_id,
+  media_router_->OnRoutesUpdated(mojom::MediaRouteProviderId::DIAL, routes,
+                                 source_id,
                                  /* joinable_route_ids */ {});
 }
 
@@ -685,8 +664,8 @@ void DialMediaRouteProvider::NotifyOnSinksReceived(
     const MediaSource::Id& source_id,
     const std::vector<MediaSinkInternal>& sinks,
     const std::vector<url::Origin>& origins) {
-  media_router_->OnSinksReceived(MediaRouteProviderId::DIAL, source_id, sinks,
-                                 origins);
+  media_router_->OnSinksReceived(mojom::MediaRouteProviderId::DIAL, source_id,
+                                 sinks, origins);
 }
 
 std::vector<url::Origin> DialMediaRouteProvider::GetOrigins(
@@ -695,7 +674,10 @@ std::vector<url::Origin> DialMediaRouteProvider::GetOrigins(
       base::flat_map<std::string, std::vector<url::Origin>>>
       origin_allowlist(
           {{"YouTube",
-            {CreateOrigin("https://tv.youtube.com"),
+            {CreateOrigin("https://music.youtube.com/"),
+             CreateOrigin("https://music-green-qa.youtube.com/"),
+             CreateOrigin("https://music-release-qa.youtube.com/"),
+             CreateOrigin("https://tv.youtube.com"),
              CreateOrigin("https://tv-green-qa.youtube.com"),
              CreateOrigin("https://tv-release-qa.youtube.com"),
              CreateOrigin("https://web-green-qa.youtube.com"),

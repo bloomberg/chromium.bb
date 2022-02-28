@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/search_box/search_box_view_delegate.h"
-#include "base/macros.h"
 #include "base/timer/timer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -24,16 +23,22 @@ class TabbedPane;
 class Widget;
 }  // namespace views
 
+namespace ash {
+enum class ShortcutCategory;
+}  // namespace ash
+
 namespace keyboard_shortcut_viewer {
 
 class KeyboardShortcutItemView;
 class KSVSearchBoxView;
-enum class ShortcutCategory;
 
 // The UI container for Ash and Chrome keyboard shortcuts.
 class KeyboardShortcutView : public views::WidgetDelegateView,
                              public ash::SearchBoxViewDelegate {
  public:
+  KeyboardShortcutView(const KeyboardShortcutView&) = delete;
+  KeyboardShortcutView& operator=(const KeyboardShortcutView&) = delete;
+
   ~KeyboardShortcutView() override;
 
   // Toggle the Keyboard Shortcut Viewer window.
@@ -45,7 +50,6 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
 
   // views::View:
   const char* GetClassName() const override;
-  ax::mojom::Role GetAccessibleWindowRole() override;
   std::u16string GetAccessibleWindowTitle() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void Layout() override;
@@ -56,8 +60,10 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   void QueryChanged(ash::SearchBoxViewBase* sender) override;
   void AssistantButtonPressed() override {}
   void BackButtonPressed() override;
+  void CloseButtonPressed() override;
   void ActiveChanged(ash::SearchBoxViewBase* sender) override;
-  void SearchBoxFocusChanged(ash::SearchBoxViewBase* sender) override {}
+  void OnSearchBoxKeyEvent(ui::KeyEvent* event) override {}
+  bool CanSelectSearchResults() override;
 
  private:
   friend class KeyboardShortcutViewTest;
@@ -71,7 +77,7 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   // If |initial_category| has value, we will initialize the specified category,
   // otherwise all the categories will be intialized.
   void InitCategoriesTabbedPane(
-      absl::optional<ShortcutCategory> initial_category);
+      absl::optional<ash::ShortcutCategory> initial_category);
 
   // Update views' layout based on search box status.
   void UpdateViewsLayout(bool is_search_box_active);
@@ -96,9 +102,8 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   // The container for KeyboardShortcutItemViews matching a user's query.
   views::View* search_results_container_ = nullptr;
 
-  // SearchBoxViewBase is a WidgetDelegateView, which owns itself and cannot be
-  // deleted from the views hierarchy automatically.
-  std::unique_ptr<KSVSearchBoxView> search_box_view_;
+  // Owned by views hierarchy.
+  KSVSearchBoxView* search_box_view_ = nullptr;
 
   // Contains all the shortcut item views from all categories. This list is also
   // used for searching. The views are not owned by the Views hierarchy to avoid
@@ -131,8 +136,6 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   bool did_first_paint_ = false;
 
   base::WeakPtrFactory<KeyboardShortcutView> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(KeyboardShortcutView);
 };
 
 }  // namespace keyboard_shortcut_viewer

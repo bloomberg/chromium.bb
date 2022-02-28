@@ -177,6 +177,52 @@ TEST_P(AtomicCounterBufferTest31, AtomicCounterRead)
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::white);
 }
 
+// Test a bug in vulkan back-end where recreating the atomic counter storage should trigger state
+// update in the context
+TEST_P(AtomicCounterBufferTest31, DependentAtomicCounterBufferChange)
+{
+    // Skipping test while we work on enabling atomic counter buffer support in th D3D renderer.
+    // http://anglebug.com/1729
+    ANGLE_SKIP_TEST_IF(IsD3D11());
+
+    constexpr char kFS[] =
+        "#version 310 es\n"
+        "precision highp float;\n"
+        "layout(binding = 0, offset = 4) uniform atomic_uint ac;\n"
+        "out highp vec4 my_color;\n"
+        "void main()\n"
+        "{\n"
+        "    my_color = vec4(0.0);\n"
+        "    uint a1 = atomicCounter(ac);\n"
+        "    if (a1 == 3u) my_color = vec4(1.0);\n"
+        "    if (a1 == 19u) my_color = vec4(1.0, 0.0, 0.0, 1.0);\n"
+        "}\n";
+
+    ANGLE_GL_PROGRAM(program, essl31_shaders::vs::Simple(), kFS);
+
+    glUseProgram(program.get());
+
+    // The initial value of counter 'ac' is 3u.
+    unsigned int bufferDataLeft[3] = {11u, 3u, 1u};
+    GLBuffer atomicCounterBuffer;
+    glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicCounterBuffer);
+    glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(bufferDataLeft), bufferDataLeft, GL_STATIC_DRAW);
+
+    glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomicCounterBuffer);
+    // Draw left quad
+    glViewport(0, 0, getWindowWidth() / 2, getWindowHeight());
+    drawQuad(program.get(), essl31_shaders::PositionAttrib(), 0.0f);
+    // Draw right quad
+    unsigned int bufferDataRight[3] = {11u, 19u, 1u};
+    glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(bufferDataRight), bufferDataRight,
+                 GL_STATIC_DRAW);
+    glViewport(getWindowWidth() / 2, 0, getWindowWidth() / 2, getWindowHeight());
+    drawQuad(program.get(), essl31_shaders::PositionAttrib(), 0.0f);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::white);
+    EXPECT_PIXEL_COLOR_EQ(getWindowWidth() / 2, 0, GLColor::red);
+}
+
 // Updating atomic counter buffer's offsets was optimized based on a count of valid bindings.
 // This test will fail if there are bugs in how we count valid bindings.
 TEST_P(AtomicCounterBufferTest31, AtomicCounterBufferRangeRead)
@@ -587,25 +633,9 @@ TEST_P(AtomicCounterBufferTest31, AtomicCounterMemoryBarrier)
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
 }
 
-// TODO(syoussefi): re-enable tests on Vulkan once http://anglebug.com/3738 is resolved.  The issue
-// is with WGL where if a Vulkan test is run first in the shard, it causes crashes when an OpenGL
-// test is run afterwards.  AtomicCounter* tests are alphabetically first, and having them not run
-// on Vulkan makes every shard our bots currently make do have at least some OpenGL test run before
-// any Vulkan test. When these tests can be enabled on Vulkan, can replace the current macros with
-// the updated macros below that include Vulkan:
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AtomicCounterBufferTest);
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(AtomicCounterBufferTest31);
-#if !defined(ANGLE_PLATFORM_WINDOWS)
 ANGLE_INSTANTIATE_TEST_ES3_AND_ES31(AtomicCounterBufferTest);
 ANGLE_INSTANTIATE_TEST_ES31(AtomicCounterBufferTest31);
-#else
-ANGLE_INSTANTIATE_TEST(AtomicCounterBufferTest,
-                       ES3_OPENGL(),
-                       ES3_OPENGLES(),
-                       ES31_OPENGL(),
-                       ES31_OPENGLES(),
-                       ES31_D3D11());
-ANGLE_INSTANTIATE_TEST(AtomicCounterBufferTest31, ES31_OPENGL(), ES31_OPENGLES(), ES31_D3D11());
-#endif
 
 }  // namespace

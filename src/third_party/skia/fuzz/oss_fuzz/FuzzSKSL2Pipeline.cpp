@@ -14,7 +14,7 @@
 #include "fuzz/Fuzz.h"
 
 bool FuzzSKSL2Pipeline(sk_sp<SkData> bytes) {
-    sk_sp<GrShaderCaps> caps = SkSL::ShaderCapsFactory::Default();
+    std::unique_ptr<SkSL::ShaderCaps> caps = SkSL::ShaderCapsFactory::Default();
     SkSL::Compiler compiler(caps.get());
     SkSL::Program::Settings settings;
     std::unique_ptr<SkSL::Program> program = compiler.convertProgram(
@@ -30,28 +30,29 @@ bool FuzzSKSL2Pipeline(sk_sp<SkData> bytes) {
         using String = SkSL::String;
 
         String declareUniform(const SkSL::VarDeclaration* decl) override {
-            return decl->var().name();
+            return String(decl->var().name());
         }
 
         void defineFunction(const char* /*decl*/, const char* /*body*/, bool /*isMain*/) override {}
+        void declareFunction(const char* /*decl*/) override {}
         void defineStruct(const char* /*definition*/) override {}
         void declareGlobal(const char* /*declaration*/) override {}
 
-        String sampleChild(int index, String coords, String color) override {
-            String result = "sample(" + SkSL::to_string(index);
-            if (!coords.empty()) {
-                result += ", " + coords;
-            }
-            if (!color.empty()) {
-                result += ", " + color;
-            }
-            result += ")";
-            return result;
+        String sampleShader(int index, String coords) override {
+            return "child_" + SkSL::to_string(index) + ".eval(" + coords + ")";
+        }
+
+        String sampleColorFilter(int index, String color) override {
+            return "child_" + SkSL::to_string(index) + ".eval(" + color + ")";
+        }
+
+        String sampleBlender(int index, String src, String dst) override {
+            return "child_" + SkSL::to_string(index) + ".eval(" + src + ", " + dst + ")";
         }
     };
 
     Callbacks callbacks;
-    SkSL::PipelineStage::ConvertProgram(*program, "coords", "inColor", &callbacks);
+    SkSL::PipelineStage::ConvertProgram(*program, "coords", "inColor", "half4(1)", &callbacks);
     return true;
 }
 

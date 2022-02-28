@@ -18,7 +18,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
-#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_service.h"
 #include "content/public/test/browser_test.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -35,7 +35,7 @@ const char* kLacrosPageTitleHTMLFormat =
     "<body>This page has a title.</body></html>";
 
 mojo::Remote<crosapi::mojom::SnapshotCapturer> GetWindowCapturer() {
-  auto* lacros_chrome_service = chromeos::LacrosChromeServiceImpl::Get();
+  auto* lacros_chrome_service = chromeos::LacrosService::Get();
 
   mojo::PendingRemote<crosapi::mojom::ScreenManager> pending_screen_manager;
   lacros_chrome_service->BindScreenManagerReceiver(
@@ -82,8 +82,7 @@ uint64_t WaitForWindow(std::string title) {
   // When the browser test start, there is no guarantee that the window is
   // open from ash's perspective.
   base::RepeatingTimer timer;
-  timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(1),
-              std::move(look_for_window));
+  timer.Start(FROM_HERE, base::Milliseconds(1), std::move(look_for_window));
   run_loop.Run();
 
   return window_id;
@@ -99,7 +98,7 @@ uint64_t WaitForLacrosToBeAvailableInAsh(Browser* browser) {
   std::string html =
       base::StringPrintf(kLacrosPageTitleHTMLFormat, title.c_str());
   GURL url(std::string("data:text/html,") + html);
-  ui_test_utils::NavigateToURL(browser, url);
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser, url));
 
   return WaitForWindow(std::move(title));
 }
@@ -118,7 +117,7 @@ class ScreenManagerLacrosBrowserTest : public InProcessBrowserTest {
   ~ScreenManagerLacrosBrowserTest() override = default;
 
   void BindScreenManager() {
-    auto* lacros_chrome_service = chromeos::LacrosChromeServiceImpl::Get();
+    auto* lacros_chrome_service = chromeos::LacrosService::Get();
     ASSERT_TRUE(lacros_chrome_service);
 
     mojo::PendingRemote<crosapi::mojom::ScreenManager> pending_screen_manager;

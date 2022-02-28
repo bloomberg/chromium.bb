@@ -290,6 +290,7 @@ found in the LICENSE file.
             <paper-checkbox name="experimental_execution_engine">
               Use experimental execution engine.
             </paper-checkbox>
+            <paper-input name="batch_id" value="{{batch_id}}" label="Batch ID"></paper-input>
           </form>
         </iron-form>
       </div>
@@ -320,6 +321,7 @@ found in the LICENSE file.
           type: String,
           value: 'chromium'
         },
+        batch_id: String,
         bug_id: String,
         chart: String,
         commitsList: Object,
@@ -451,6 +453,7 @@ found in the LICENSE file.
         if (job === null) {
           return;
         }
+        this.batch_id = job.batch_id
         this.bug_id = job.bug_id;
         this.project = job.arguments.project;
         this.patch = job.arguments.patch;
@@ -588,9 +591,42 @@ found in the LICENSE file.
         if (configuration.toLowerCase().includes('eve')) {
           return 'performance_test_suite_eve';
         }
+        if (configuration.toLowerCase().includes('web_engine')) {
+          return 'performance_web_engine_test_suite';
+        }
         if (benchmark.startsWith('xr')) {
           return 'vr_perf_tests';
         }
+        if (configuration === 'android-pixel2-perf-calibration') {
+          return 'performance_test_suite_android_clank_monochrome_64_32_bundle';
+        } else if (configuration === 'android-nexus5x-perf-fyi') {
+          return 'performance_test_suite_android_clank_chrome';
+        } else if (configuration === 'android-pixel2-perf-fyi') {
+          return 'performance_test_suite_android_clank_chrome';
+        } else if (configuration === 'android-pixel2-perf-aab-fyi') {
+          return 'performance_test_suite_android_clank_monochrome_bundle';
+        } else if (configuration === 'android-go-perf') {
+          return 'performance_test_suite_android_clank_chrome';
+        } else if (configuration === 'Android Nexus5 Perf') {
+          return 'performance_test_suite_android_chrome';
+        } else if (configuration === 'android-pixel2-perf') {
+          return 'performance_test_suite_android_clank_monochrome_64_32_bundle';
+        } else if (configuration === 'android-pixel2_weblayer-perf') {
+          return 'performance_weblayer_test_suite';
+        } else if (configuration === 'android-pixel4-perf') {
+          return 'performance_test_suite_android_clank_trichrome_bundle';
+        } else if (configuration === 'android-pixel4_weblayer-perf') {
+          return 'performance_weblayer_test_suite';
+        } else if (configuration === 'android-pixel4a_power-perf') {
+          return 'performance_test_suite_android_clank_chrome';
+        } else if (configuration.toLowerCase().includes('android')) {
+          throw Error(
+              'Given Android configuration ' + configuration + ' does not ' +
+              'have an isolate mapped to it');
+        } else if (configuration === 'fuchsia-perf-fyi') {
+          return 'performance_web_engine_test_suite';
+        }
+
         return 'performance_test_suite';
       }
     });

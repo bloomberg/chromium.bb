@@ -50,15 +50,15 @@ enum {
     ARG_FRAME_TIMES,
     ARG_REALTIME,
     ARG_REALTIME_CACHE,
-    ARG_FRAME_THREADS,
-    ARG_TILE_THREADS,
-    ARG_POSTFILTER_THREADS,
+    ARG_THREADS,
+    ARG_FRAME_DELAY,
     ARG_VERIFY,
     ARG_FILM_GRAIN,
     ARG_OPPOINT,
     ARG_ALL_LAYERS,
     ARG_SIZE_LIMIT,
     ARG_CPU_MASK,
+    ARG_NEG_STRIDE,
 };
 
 static const struct option long_opts[] = {
@@ -73,15 +73,15 @@ static const struct option long_opts[] = {
     { "skip",           1, NULL, 's' },
     { "realtime",       2, NULL, ARG_REALTIME },
     { "realtimecache",  1, NULL, ARG_REALTIME_CACHE },
-    { "framethreads",   1, NULL, ARG_FRAME_THREADS },
-    { "tilethreads",    1, NULL, ARG_TILE_THREADS },
-    { "pfthreads",      1, NULL, ARG_POSTFILTER_THREADS },
+    { "threads",        1, NULL, ARG_THREADS },
+    { "framedelay",     1, NULL, ARG_FRAME_DELAY },
     { "verify",         1, NULL, ARG_VERIFY },
     { "filmgrain",      1, NULL, ARG_FILM_GRAIN },
     { "oppoint",        1, NULL, ARG_OPPOINT },
     { "alllayers",      1, NULL, ARG_ALL_LAYERS },
     { "sizelimit",      1, NULL, ARG_SIZE_LIMIT },
     { "cpumask",        1, NULL, ARG_CPU_MASK },
+    { "negstride",      0, NULL, ARG_NEG_STRIDE },
     { NULL,             0, NULL, 0 },
 };
 
@@ -124,15 +124,17 @@ static void usage(const char *const app, const char *const reason, ...) {
             " --realtime [$fract]:  limit framerate, optional argument to override input framerate\n"
             " --realtimecache $num: set the size of the cache in realtime mode (default: 0)\n"
             " --version/-v:         print version and exit\n"
-            " --framethreads $num:  number of frame threads (default: 1)\n"
-            " --tilethreads $num:   number of tile threads (default: 1)\n"
-            " --pfthreads $num:     number of postfilter threads (default: 1)\n"
+            " --threads $num:       number of threads (default: 0)\n"
+            " --framedelay $num:    maximum frame delay, capped at $threads (default: 0);\n"
+            "                       set to 1 for low-latency decoding\n"
             " --filmgrain $num:     enable film grain application (default: 1, except if muxer is md5 or xxh3)\n"
             " --oppoint $num:       select an operating point of a scalable AV1 bitstream (0 - 31)\n"
             " --alllayers $num:     output all spatial layers of a scalable AV1 bitstream (default: 1)\n"
             " --sizelimit $num:     stop decoding if the frame size exceeds the specified limit\n"
             " --verify $md5:        verify decoded md5. implies --muxer md5, no output\n"
-            " --cpumask $mask:      restrict permitted CPU instruction sets (0" ALLOWED_CPU_MASKS "; default: -1)\n");
+            " --cpumask $mask:      restrict permitted CPU instruction sets (0" ALLOWED_CPU_MASKS "; default: -1)\n"
+            " --negstride:          use negative picture strides\n"
+            "                       this is mostly meant as a developer option\n");
     exit(1);
 }
 
@@ -299,17 +301,13 @@ void parse(const int argc, char *const *const argv,
             cli_settings->realtime_cache =
                 parse_unsigned(optarg, ARG_REALTIME_CACHE, argv[0]);
             break;
-        case ARG_FRAME_THREADS:
-            lib_settings->n_frame_threads =
-                parse_unsigned(optarg, ARG_FRAME_THREADS, argv[0]);
+        case ARG_FRAME_DELAY:
+            lib_settings->max_frame_delay =
+                parse_unsigned(optarg, ARG_FRAME_DELAY, argv[0]);
             break;
-        case ARG_TILE_THREADS:
-            lib_settings->n_tile_threads =
-                parse_unsigned(optarg, ARG_TILE_THREADS, argv[0]);
-            break;
-        case ARG_POSTFILTER_THREADS:
-            lib_settings->n_postfilter_threads =
-                parse_unsigned(optarg, ARG_POSTFILTER_THREADS, argv[0]);
+        case ARG_THREADS:
+            lib_settings->n_threads =
+                parse_unsigned(optarg, ARG_THREADS, argv[0]);
             break;
         case ARG_VERIFY:
             cli_settings->verify = optarg;
@@ -343,6 +341,9 @@ void parse(const int argc, char *const *const argv,
         case ARG_CPU_MASK:
             dav1d_set_cpu_flags_mask(parse_enum(optarg, cpu_mask_tbl, ARRAY_SIZE(cpu_mask_tbl),
                                                 ARG_CPU_MASK, argv[0]));
+            break;
+        case ARG_NEG_STRIDE:
+            cli_settings->neg_stride = 1;
             break;
         default:
             usage(argv[0], NULL);

@@ -7,10 +7,11 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/circular_deque.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner_helpers.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/sequenced_task_runner_helpers.h"
+#include "base/task/single_thread_task_runner.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/demuxer.h"
 #include "media/base/demuxer_stream.h"
@@ -24,6 +25,12 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
+namespace openscreen {
+namespace cast {
+class RpcMessenger;
+}
+}  // namespace openscreen
+
 namespace media {
 
 class MojoDecoderBufferReader;
@@ -31,7 +38,6 @@ class MojoDecoderBufferReader;
 namespace remoting {
 
 class ReceiverController;
-class RpcBroker;
 
 // The media stream provider for Media Remoting receiver.
 class StreamProvider final : public Demuxer {
@@ -76,9 +82,9 @@ class StreamProvider final : public Demuxer {
         std::unique_ptr<MediaStream, std::function<void(MediaStream*)>>;
 
     // MediaStream should be created on the main thread to be able to get unique
-    // handle ID from |rpc_broker_|.
+    // handle ID from |rpc_messenger_|.
     static void CreateOnMainThread(
-        RpcBroker* rpc_broker,
+        openscreen::cast::RpcMessenger* rpc_messenger,
         Type type,
         int32_t handle,
         const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
@@ -89,7 +95,7 @@ class StreamProvider final : public Demuxer {
     static void DestructionHelper(MediaStream* stream);
 
     MediaStream(
-        RpcBroker* rpc_broker,
+        openscreen::cast::RpcMessenger* rpc_messenger,
         Type type,
         int32_t remote_handle,
         const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner);
@@ -166,7 +172,7 @@ class StreamProvider final : public Demuxer {
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
 
-    RpcBroker* const rpc_broker_;  // Outlives this class.
+    const raw_ptr<openscreen::cast::RpcMessenger> rpc_messenger_;
     const Type type_;
     const int remote_handle_;
     const int rpc_handle_;
@@ -242,8 +248,8 @@ class StreamProvider final : public Demuxer {
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
-  ReceiverController* const receiver_controller_;  // Outlives this class
-  RpcBroker* const rpc_broker_;                    // Outlives this class
+  const raw_ptr<ReceiverController> receiver_controller_;
+  const raw_ptr<openscreen::cast::RpcMessenger> rpc_messenger_;
   MediaStream::UniquePtr audio_stream_;
   MediaStream::UniquePtr video_stream_;
   bool has_audio_{false};

@@ -144,9 +144,27 @@ void HighlighterView::Animate(const gfx::PointF& pivot,
                               base::OnceClosure done) {
   animation_timer_ = std::make_unique<base::OneShotTimer>();
   animation_timer_->Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(kStrokeFadeoutDelayMs),
+      FROM_HERE, base::Milliseconds(kStrokeFadeoutDelayMs),
       base::BindOnce(&HighlighterView::FadeOut, base::Unretained(this), pivot,
                      gesture_type, std::move(done)));
+}
+
+void HighlighterView::UndoLastStroke() {
+  if (points_.IsEmpty())
+    return;
+
+  // Previous prediction needs to be erased.
+  if (!predicted_points_.IsEmpty()) {
+    highlighter_damage_rect_.Union(
+        InflateDamageRect(predicted_points_.GetBoundingBox()));
+    predicted_points_.Clear();
+  }
+
+  const gfx::Rect bounding_box = points_.UndoLastStroke();
+  // Ensure deleting the points also erases them by expanding the damage
+  // rectangle.
+  highlighter_damage_rect_.Union(InflateDamageRect(bounding_box));
+  ScheduleUpdateBuffer();
 }
 
 void HighlighterView::FadeOut(const gfx::PointF& pivot,
@@ -154,8 +172,7 @@ void HighlighterView::FadeOut(const gfx::PointF& pivot,
                               base::OnceClosure done) {
   ui::Layer* layer = GetWidget()->GetLayer();
 
-  base::TimeDelta duration =
-      base::TimeDelta::FromMilliseconds(kStrokeFadeoutDurationMs);
+  base::TimeDelta duration = base::Milliseconds(kStrokeFadeoutDurationMs);
 
   {
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
@@ -167,8 +184,7 @@ void HighlighterView::FadeOut(const gfx::PointF& pivot,
 
   if (gesture_type != HighlighterGestureType::kHorizontalStroke) {
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-    settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kStrokeScaleDurationMs));
+    settings.SetTransitionDuration(base::Milliseconds(kStrokeScaleDurationMs));
     settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
 
     const float scale = gesture_type == HighlighterGestureType::kClosedShape

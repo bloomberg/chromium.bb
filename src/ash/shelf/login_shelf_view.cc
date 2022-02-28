@@ -9,14 +9,14 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/focus_cycler.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/lock_screen_action/lock_screen_action_background_state.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/lock_screen.h"
-#include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/login_accelerators.h"
-#include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
@@ -28,6 +28,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/default_color_constants.h"
 #include "ash/style/default_colors.h"
+#include "ash/style/style_util.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -58,11 +59,13 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_types.h"
@@ -91,6 +94,8 @@ constexpr LoginShelfView::ButtonId kButtonIds[] = {
     LoginShelfView::kBrowseAsGuest,
     LoginShelfView::kAddUser,
     LoginShelfView::kEnterpriseEnrollment,
+    LoginShelfView::kSignIn,
+    LoginShelfView::kOsInstall,
 };
 
 // The color of the button text and icon in light mode. This is
@@ -150,6 +155,10 @@ LoginMetricsRecorder::ShelfButtonClickTarget GetUserClickTarget(int button_id) {
     case LoginShelfView::kEnterpriseEnrollment:
       return LoginMetricsRecorder::ShelfButtonClickTarget::
           kEnterpriseEnrollmentButton;
+    case LoginShelfView::kSignIn:
+      return LoginMetricsRecorder::ShelfButtonClickTarget::kSignIn;
+    case LoginShelfView::kOsInstall:
+      return LoginMetricsRecorder::ShelfButtonClickTarget::kOsInstallButton;
   }
   return LoginMetricsRecorder::ShelfButtonClickTarget::kTargetCount;
 }
@@ -210,22 +219,26 @@ class LoginShelfButton : public views::LabelButton {
         icon_(icon) {
     SetAccessibleName(GetText());
     AshColorProvider* color_provider = AshColorProvider::Get();
-    color_provider->DecoratePillButton(this, &icon);
+    const SkColor enabled_text_color = color_provider->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kButtonLabelColor);
+    SetEnabledTextColors(enabled_text_color);
+    SetTextColor(views::Button::STATE_DISABLED,
+                 AshColorProvider::GetDisabledColor(enabled_text_color));
 
     SetFocusBehavior(FocusBehavior::ALWAYS);
+    set_suppress_default_focus_handling();
     SetInstallFocusRingOnFocus(true);
     views::InstallRoundRectHighlightPathGenerator(
         this, GetButtonInsets(), ShelfConfig::Get()->control_border_radius());
-    focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
+    views::FocusRing::Get(this)->SetColor(
+        ShelfConfig::Get()->shelf_focus_border_color());
     SetFocusPainter(nullptr);
-    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+    views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
     SetHasInkDropActionOnClick(true);
-    AshColorProvider::RippleAttributes ripple_attributes =
-        color_provider->GetRippleAttributes();
-    ink_drop()->SetBaseColor(ripple_attributes.base_color);
-    ink_drop()->SetVisibleOpacity(ripple_attributes.inkdrop_opacity);
+    StyleUtil::ConfigureInkDropAttributes(
+        this, StyleUtil::kBaseColor | StyleUtil::kInkDropOpacity);
     views::InkDrop::UseInkDropWithoutAutoHighlight(
-        ink_drop(), /*highlight_on_hover=*/false);
+        views::InkDrop::Get(this), /*highlight_on_hover=*/false);
 
     // Layer rendering is required when the shelf background is visible, which
     // happens when the wallpaper is not blurred.
@@ -239,6 +252,9 @@ class LoginShelfButton : public views::LabelButton {
     label()->SetFontList(views::Label::GetDefaultFontList().Derive(
         1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
   }
+
+  LoginShelfButton(const LoginShelfButton&) = delete;
+  LoginShelfButton& operator=(const LoginShelfButton&) = delete;
 
   ~LoginShelfButton() override = default;
 
@@ -282,13 +298,12 @@ class LoginShelfButton : public views::LabelButton {
  private:
   const int text_resource_id_;
   const gfx::VectorIcon& icon_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoginShelfButton);
 };
 
 bool ShutdownButtonHidden(OobeDialogState state) {
   return state == OobeDialogState::MIGRATION ||
          state == OobeDialogState::ENROLLMENT ||
+         state == OobeDialogState::ENROLLMENT_CANCEL_ENABLED ||
          state == OobeDialogState::ONBOARDING ||
          state == OobeDialogState::KIOSK_LAUNCH ||
          state == OobeDialogState::PASSWORD_CHANGED;
@@ -310,20 +325,20 @@ class KioskAppsButton : public views::MenuButton,
                    l10n_util::GetStringUTF16(IDS_ASH_SHELF_APPS_BUTTON)),
         ui::SimpleMenuModel(this) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
+    set_suppress_default_focus_handling();
     SetInstallFocusRingOnFocus(true);
     views::InstallRoundRectHighlightPathGenerator(
         this, GetButtonInsets(), ShelfConfig::Get()->control_border_radius());
-    focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
+    views::FocusRing::Get(this)->SetColor(
+        ShelfConfig::Get()->shelf_focus_border_color());
     SetFocusPainter(nullptr);
-    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+    views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
     SetHasInkDropActionOnClick(true);
     views::InkDrop::UseInkDropWithoutAutoHighlight(
-        ink_drop(), /*highlight_on_hover=*/false);
+        views::InkDrop::Get(this), /*highlight_on_hover=*/false);
 
-    const AshColorProvider::RippleAttributes ripple_attributes =
-        AshColorProvider::Get()->GetRippleAttributes();
-    ink_drop()->SetBaseColor(ripple_attributes.base_color);
-    ink_drop()->SetVisibleOpacity(ripple_attributes.inkdrop_opacity);
+    StyleUtil::ConfigureInkDropAttributes(
+        this, StyleUtil::kBaseColor | StyleUtil::kInkDropOpacity);
 
     // Layer rendering is required when the shelf background is visible, which
     // happens when the wallpaper is not blurred.
@@ -336,6 +351,9 @@ class KioskAppsButton : public views::MenuButton,
     label()->SetFontList(views::Label::GetDefaultFontList().Derive(
         1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
   }
+
+  KioskAppsButton(const KioskAppsButton&) = delete;
+  KioskAppsButton& operator=(const KioskAppsButton&) = delete;
 
   bool LaunchAppForTesting(const std::string& app_id) {
     for (size_t i = 0; i < kiosk_apps_.size(); ++i) {
@@ -434,8 +452,6 @@ class KioskAppsButton : public views::MenuButton,
   std::vector<KioskAppMenuEntry> kiosk_apps_;
 
   bool is_launch_enabled_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(KioskAppsButton);
 };
 
 // Class that temporarily disables Guest login buttin on shelf.
@@ -537,11 +553,19 @@ LoginShelfView::LoginShelfView(
                  },
                  this),
              IDS_ASH_SHELF_CANCEL_BUTTON, kShelfCancelButtonIcon);
-  add_button(kBrowseAsGuest,
-             base::BindRepeating(
-                 &LoginScreenController::LoginAsGuest,
-                 base::Unretained(Shell::Get()->login_screen_controller())),
-             IDS_ASH_BROWSE_AS_GUEST_BUTTON, kShelfBrowseAsGuestButtonIcon);
+  if (chromeos::features::IsOobeConsolidatedConsentEnabled()) {
+    add_button(kBrowseAsGuest,
+               base::BindRepeating(
+                   &LoginScreenController::ShowGuestTosScreen,
+                   base::Unretained(Shell::Get()->login_screen_controller())),
+               IDS_ASH_BROWSE_AS_GUEST_BUTTON, kShelfBrowseAsGuestButtonIcon);
+  } else {
+    add_button(kBrowseAsGuest,
+               base::BindRepeating(
+                   &LoginScreenController::LoginAsGuest,
+                   base::Unretained(Shell::Get()->login_screen_controller())),
+               IDS_ASH_BROWSE_AS_GUEST_BUTTON, kShelfBrowseAsGuestButtonIcon);
+  }
   add_button(kAddUser,
              base::BindRepeating(
                  &LoginScreenController::ShowGaiaSignin,
@@ -563,6 +587,17 @@ LoginShelfView::LoginShelfView(
                  base::Unretained(Shell::Get()->login_screen_controller()),
                  ash::LoginAcceleratorAction::kStartEnrollment),
              IDS_ASH_ENTERPRISE_ENROLLMENT_BUTTON, chromeos::kEnterpriseIcon);
+  add_button(kSignIn,
+             base::BindRepeating(
+                 &LoginScreenController::HandleAccelerator,
+                 base::Unretained(Shell::Get()->login_screen_controller()),
+                 ash::LoginAcceleratorAction::kCancelScreenAction),
+             IDS_ASH_SHELF_SIGNIN_BUTTON, kShelfAddPersonButtonIcon);
+  add_button(kOsInstall,
+             base::BindRepeating(
+                 &LoginScreenController::ShowOsInstallScreen,
+                 base::Unretained(Shell::Get()->login_screen_controller())),
+             IDS_ASH_SHELF_OS_INSTALL_BUTTON, kShelfOsInstallButtonIcon);
 
   // Adds observers for states that affect the visibility of different buttons.
   tray_action_observation_.Observe(Shell::Get()->tray_action());
@@ -817,6 +852,7 @@ void LoginShelfView::UpdateUi() {
   GetViewByID(kBrowseAsGuest)->SetVisible(ShouldShowGuestButton());
   GetViewByID(kEnterpriseEnrollment)
       ->SetVisible(ShouldShowEnterpriseEnrollmentButton());
+  GetViewByID(kSignIn)->SetVisible(ShouldShowSignInButton());
 
   // Show add user button when it's in login screen and Oobe UI dialog is not
   // visible. The button should not appear if the device is not connected to a
@@ -824,6 +860,8 @@ void LoginShelfView::UpdateUi() {
   GetViewByID(kAddUser)->SetVisible(!dialog_visible && is_login_primary);
   kiosk_apps_button_->SetVisible(kiosk_apps_button_->HasApps() &&
                                  ShouldShowAppsButton());
+
+  GetViewByID(kOsInstall)->SetVisible(ShouldShowOsInstallButton());
 
   // If there is no visible (and thus focusable) buttons, we shouldn't focus
   // LoginShelfView. We update it here, so we don't need to check visibility
@@ -854,6 +892,8 @@ void LoginShelfView::UpdateButtonsColors() {
   static_cast<LoginShelfButton*>(GetViewByID(kAddUser))->UpdateButtonColors();
   static_cast<LoginShelfButton*>(GetViewByID(kEnterpriseEnrollment))
       ->UpdateButtonColors();
+  static_cast<LoginShelfButton*>(GetViewByID(kSignIn))->UpdateButtonColors();
+  static_cast<LoginShelfButton*>(GetViewByID(kOsInstall))->UpdateButtonColors();
   kiosk_apps_button_->UpdateButtonColors();
 }
 
@@ -923,12 +963,38 @@ bool LoginShelfView::ShouldShowEnterpriseEnrollmentButton() const {
          dialog_state_ == OobeDialogState::USER_CREATION;
 }
 
+bool LoginShelfView::ShouldShowSignInButton() const {
+  const SessionState session_state =
+      Shell::Get()->session_controller()->GetSessionState();
+  return session_state == SessionState::OOBE &&
+         dialog_state_ == OobeDialogState::ENROLLMENT_CANCEL_ENABLED;
+}
+
 bool LoginShelfView::ShouldShowAppsButton() const {
   if (!ShouldShowGuestAndAppsButtons())
     return false;
 
   const SessionState session_state =
       Shell::Get()->session_controller()->GetSessionState();
+  if (session_state != SessionState::LOGIN_PRIMARY)
+    return false;
+
+  return true;
+}
+
+bool LoginShelfView::ShouldShowOsInstallButton() const {
+  if (!switches::IsOsInstallAllowed())
+    return false;
+
+  if (!ShouldShowGuestAndAppsButtons())
+    return false;
+
+  const SessionState session_state =
+      Shell::Get()->session_controller()->GetSessionState();
+
+  if (session_state == SessionState::OOBE)
+    return is_first_signin_step_;
+
   if (session_state != SessionState::LOGIN_PRIMARY)
     return false;
 

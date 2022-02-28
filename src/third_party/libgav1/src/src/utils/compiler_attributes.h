@@ -165,7 +165,7 @@
 //     int p1_ LIBGAV1_GUARDED_BY(mu_);
 //     ...
 //   };
-// TODO(b/132506370): this can be reenabled after a local MutexLock
+// TODO(b/133245043): this can be reenabled after a local MutexLock
 // implementation is added with proper thread annotations.
 #if 0  // LIBGAV1_HAS_ATTRIBUTE(guarded_by)
 #define LIBGAV1_GUARDED_BY(x) __attribute__((guarded_by(x)))

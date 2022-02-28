@@ -31,19 +31,25 @@ ParallelLoopEmitter::ParallelLoopEmitter(
 
 std::vector<llvm_ir::IrArray::Index>
 ParallelLoopEmitter::EmitIndexAndSetExitBasicBlock(absl::string_view loop_name,
-                                                   llvm::Type* index_type) {
+                                                   llvm::Type* index_type,
+                                                   llvm::Value* base_index) {
   CHECK_NE(index_type, nullptr);
+
+  CHECK_EQ(base_index, nullptr)
+      << "XLA CPU implementation of"
+      << " ParallelLoopEmitter::EmitIndexAndSetExitBasicBlock doesn't support"
+      << " base_index, but it was requested.";
 
   CHECK(!shape_.IsTuple());
   CHECK(!ShapeUtil::IsScalar(shape_));
 
   llvm_ir::ForLoopNest loop_nest(loop_name, b_);
-  const int64 num_dims = shape_.dimensions_size();
+  const int64_t num_dims = shape_.dimensions_size();
   std::vector<llvm::Value*> array_multi_index(num_dims);
 
   // Add loops from outer-most to inner-most dimensions.
   for (int i = LayoutUtil::MinorToMajor(shape_).size() - 1; i >= 0; --i) {
-    const int64 dimension = LayoutUtil::Minor(shape_.layout(), i);
+    const int64_t dimension = LayoutUtil::Minor(shape_.layout(), i);
     const int bounds_index = num_dims - 1 - i;
     if (bounds_index < dynamic_loop_bounds_->size()) {
       // Emit dynamic loop bounds for this dimension. Dynamic loop bounds

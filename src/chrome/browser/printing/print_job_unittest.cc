@@ -9,16 +9,19 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job_worker.h"
 #include "chrome/browser/printing/printer_query.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/test/browser_task_environment.h"
+#include "printing/mojom/print.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace printing {
@@ -41,9 +44,12 @@ class TestQuery : public PrinterQuery {
 
   void GetSettingsDone(base::OnceClosure callback,
                        std::unique_ptr<PrintSettings> new_settings,
-                       PrintingContext::Result result) override {
+                       mojom::ResultCode result) override {
     FAIL();
   }
+
+  TestQuery(const TestQuery&) = delete;
+  TestQuery& operator=(const TestQuery&) = delete;
 
   ~TestQuery() override {}
 
@@ -62,9 +68,6 @@ class TestQuery : public PrinterQuery {
 
     return std::move(worker);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestQuery);
 };
 
 class TestPrintJob : public PrintJob {
@@ -73,7 +76,7 @@ class TestPrintJob : public PrintJob {
   }
  private:
   ~TestPrintJob() override { *check_ = true; }
-  volatile bool* check_;
+  raw_ptr<volatile bool> check_;
 };
 
 class TestPrintNotificationObserver : public content::NotificationObserver {

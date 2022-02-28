@@ -208,15 +208,6 @@ public interface TabObserver {
     // WebContentsObserver methods ---------------------------------------------------------
 
     /**
-     * Called when an error occurs while loading a page and/or the page fails to load.
-     * @param tab               The notifying {@link Tab}.
-     * @param isMainFrame       Whether failed load happened for the main frame.
-     * @param errorCode         Code for the occurring error.
-     * @param failingUrl        The url that was loading when the error occurred.
-     */
-    void onDidFailLoad(Tab tab, boolean isMainFrame, int errorCode, GURL failingUrl);
-
-    /**
      * Called when a navigation is started in the WebContents.
      * @param tab The notifying {@link Tab}.
      * @param navigationHandle Pointer to a NavigationHandle representing the navigation.
@@ -331,9 +322,9 @@ public interface TabObserver {
     void onContentViewScrollingStateChanged(boolean scrolling);
 
     /**
-     * Called when the Tab is scrolling.
+     * Called when the Tab stops scrolling.
      * @param verticalScrollDelta The delta between the vertical offsets when the scroll started and
-     *         currently. It is negative when scrolling down and positive when scrolling up.
+     *         currently. It is negative when the tab scrolled down and positive when scrolled up.
      */
-    void onContentViewScrollOffsetChanged(int verticalScrollDelta);
+    void onContentViewScrollingEnded(int verticalScrollDelta);
 }

@@ -38,11 +38,6 @@ enum LoadStartType {
   kNavigationWithinSameDocument
 };
 
-enum SameDocumentNavigationSource {
-  kSameDocumentNavigationDefault,
-  kSameDocumentNavigationHistoryApi,
-};
-
 enum class SavePreviousDocumentResources {
   kNever,
   kUntilOnDOMContentLoaded,
@@ -58,6 +53,7 @@ enum SinglePageAppNavigationType {
   kSPANavTypeHistoryPushStateOrReplaceState = 0,
   kSPANavTypeSameDocumentBackwardOrForward = 1,
   kSPANavTypeOtherFragmentNavigation = 2,
+  kSPANavTypeAppHistoryTransitionWhile = 3,
   kSPANavTypeCount
 };
 

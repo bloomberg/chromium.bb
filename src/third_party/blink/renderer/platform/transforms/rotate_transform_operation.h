@@ -58,9 +58,9 @@ class PLATFORM_EXPORT RotateTransformOperation : public TransformOperation {
     return *this == static_cast<const TransformOperation&>(other);
   }
 
-  double X() const { return rotation_.axis.X(); }
-  double Y() const { return rotation_.axis.Y(); }
-  double Z() const { return rotation_.axis.Z(); }
+  double X() const { return rotation_.axis.x(); }
+  double Y() const { return rotation_.axis.y(); }
+  double Z() const { return rotation_.axis.z(); }
   double Angle() const { return rotation_.angle; }
   const FloatPoint3D& Axis() const { return rotation_.axis; }
 
@@ -74,7 +74,7 @@ class PLATFORM_EXPORT RotateTransformOperation : public TransformOperation {
   OperationType PrimitiveType() const override { return kRotate3D; }
 
   void Apply(TransformationMatrix& transform,
-             const FloatSize& /*borderBoxSize*/) const override {
+             const gfx::SizeF& /*borderBoxSize*/) const override {
     transform.Rotate3d(rotation_);
   }
 
@@ -124,7 +124,7 @@ class PLATFORM_EXPORT RotateAroundOriginTransformOperation final
         new RotateAroundOriginTransformOperation(angle, origin_x, origin_y));
   }
 
-  void Apply(TransformationMatrix&, const FloatSize&) const override;
+  void Apply(TransformationMatrix&, const gfx::SizeF&) const override;
 
   static bool IsMatchingOperationType(OperationType type) {
     return type == kRotateAroundOrigin;

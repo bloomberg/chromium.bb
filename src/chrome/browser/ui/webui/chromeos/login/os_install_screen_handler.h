@@ -6,14 +6,18 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_OS_INSTALL_SCREEN_HANDLER_H_
 
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chromeos/dbus/os_install/os_install_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
+namespace ash {
+class OsInstallScreen;
+}
 
 namespace login {
 class LocalizedValuesBuilder;
 }  // namespace login
 
 namespace chromeos {
-
-class OsInstallScreen;
 class JSCallsContainer;
 
 // Interface for dependency injection between OsInstallScreen and its
@@ -28,10 +32,15 @@ class OsInstallScreenView {
   virtual void Show() = 0;
 
   // Binds |screen| to the view.
-  virtual void Bind(OsInstallScreen* screen) = 0;
+  virtual void Bind(ash::OsInstallScreen* screen) = 0;
 
   // Unbinds the screen from the view.
   virtual void Unbind() = 0;
+
+  virtual void ShowStep(const char* step) = 0;
+  virtual void SetStatus(OsInstallClient::Status status) = 0;
+  virtual void SetServiceLogs(const std::string& service_log) = 0;
+  virtual void UpdateCountdownStringWithTime(base::TimeDelta time_left) = 0;
 };
 
 class OsInstallScreenHandler : public BaseScreenHandler,
@@ -49,16 +58,28 @@ class OsInstallScreenHandler : public BaseScreenHandler,
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
-  void RegisterMessages() override;
 
   // OsInstallScreenView:
   void Show() override;
-  void Bind(OsInstallScreen* screen) override;
+  void Bind(ash::OsInstallScreen* screen) override;
   void Unbind() override;
+  void ShowStep(const char* step) override;
+  void SetStatus(OsInstallClient::Status status) override;
+  void SetServiceLogs(const std::string& service_log) override;
+  void UpdateCountdownStringWithTime(base::TimeDelta time_left) override;
 
-  OsInstallScreen* screen_ = nullptr;
+  ash::OsInstallScreen* screen_ = nullptr;
+
+  base::WeakPtrFactory<OsInstallScreenHandler> weak_factory_{this};
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::OsInstallScreenHandler;
+using ::chromeos::OsInstallScreenView;
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_OS_INSTALL_SCREEN_HANDLER_H_

@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 // Flags: --experimental-wasm-eh
-load('test/mjsunit/wasm/wasm-module-builder.js')
+d8.file.execute('test/mjsunit/wasm/wasm-module-builder.js')
 let obj = {};
 let proxy = new Proxy(obj, {});
 let builder = new WasmModuleBuilder();
 builder.addType(kSig_v_v);
 let imports = builder.addImport("m","f", kSig_v_v);
-let exception = builder.addException(kSig_v_v);
+let exception = builder.addTag(kSig_v_v);
 builder.addFunction("foo", kSig_v_v)
     .addBody([
         kExprTry,

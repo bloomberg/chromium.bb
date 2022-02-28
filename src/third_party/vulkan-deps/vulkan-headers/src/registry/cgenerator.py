@@ -188,7 +188,7 @@ class COutputGenerator(OutputGenerator):
         OutputGenerator.beginFeature(self, interface, emit)
         # C-specific
         # Accumulate includes, defines, types, enums, function pointer typedefs,
-        # end function prototypes separately for this feature. They're only
+        # end function prototypes separately for this feature. They are only
         # printed in endFeature().
         self.sections = {section: [] for section in self.ALL_SECTIONS}
         self.feature_not_empty = False
@@ -267,7 +267,7 @@ class COutputGenerator(OutputGenerator):
             else:
                 # Replace <apientry /> tags with an APIENTRY-style string
                 # (from self.genOpts). Copy other text through unchanged.
-                # If the resulting text is an empty string, don't emit it.
+                # If the resulting text is an empty string, do not emit it.
                 body = noneStr(typeElem.text)
                 for elem in typeElem:
                     if elem.tag == 'apientry':
@@ -306,8 +306,8 @@ class COutputGenerator(OutputGenerator):
 
     def typeMayAlias(self, typeName):
         if not self.may_alias:
-            # First time we've asked if a type may alias.
-            # So, let's populate the set of all names of types that may.
+            # First time we have asked if a type may alias.
+            # So, populate the set of all names of types that may.
 
             # Everyone with an explicit mayalias="true"
             self.may_alias = set(typeName
@@ -391,45 +391,12 @@ class COutputGenerator(OutputGenerator):
             self.appendSection(section, "\n" + body)
 
     def genEnum(self, enuminfo, name, alias):
-        """Generate enumerants.
+        """Generate the C declaration for a constant (a single <enum> value)."""
 
-        <enum> tags may specify their values in several ways, but are usually
-        just integers."""
         OutputGenerator.genEnum(self, enuminfo, name, alias)
-        (_, strVal) = self.enumToValue(enuminfo.elem, False)
 
-        if self.misracppstyle() and enuminfo.elem.get('type') and not alias:
-            # Generate e.g.: static constexpr uint32_t x = ~static_cast<uint32_t>(1U);
-            # This appeases MISRA "underlying type" rules.
-            typeStr = enuminfo.elem.get('type');
-            invert = '~' in strVal
-            number = strVal.strip("()~UL")
-            if typeStr != "float":
-                number += 'U'
-            strVal = "~" if invert else ""
-            strVal += "static_cast<" + typeStr + ">(" + number + ")"
-            body = 'static constexpr ' + typeStr.ljust(9) + name.ljust(33) + ' {' + strVal + '};'
-            self.appendSection('enum', body)
-        elif enuminfo.elem.get('type') and not alias:
-            # Generate e.g.: #define x (~0ULL)
-            typeStr = enuminfo.elem.get('type');
-            invert = '~' in strVal
-            paren = '(' in strVal
-            number = strVal.strip("()~UL")
-            if typeStr != "float":
-                if typeStr == "uint64_t":
-                    number += 'ULL'
-                else:
-                    number += 'U'
-            strVal = "~" if invert else ""
-            strVal += number
-            if paren:
-                strVal = "(" + strVal + ")";
-            body = '#define ' + name.ljust(33) + ' ' + strVal;
-            self.appendSection('enum', body)
-        else:
-            body = '#define ' + name.ljust(33) + ' ' + strVal
-            self.appendSection('enum', body)
+        body = self.buildConstantCDecl(enuminfo, name, alias)
+        self.appendSection('enum', body)
 
     def genCmd(self, cmdinfo, name, alias):
         "Command generation"

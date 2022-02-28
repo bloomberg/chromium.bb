@@ -66,6 +66,9 @@ class TabActivityWatcher::WebContentsData
       public content::WebContentsUserData<WebContentsData>,
       public content::RenderWidgetHost::InputEventObserver {
  public:
+  WebContentsData(const WebContentsData&) = delete;
+  WebContentsData& operator=(const WebContentsData&) = delete;
+
   ~WebContentsData() override = default;
 
   // Calculates the tab reactivation score for a background tab. Returns nullopt
@@ -194,7 +197,8 @@ class TabActivityWatcher::WebContentsData
   };
 
   explicit WebContentsData(content::WebContents* web_contents)
-      : WebContentsObserver(web_contents) {
+      : WebContentsObserver(web_contents),
+        content::WebContentsUserData<WebContentsData>(*web_contents) {
     DCHECK(!web_contents->GetBrowserContext()->IsOffTheRecord());
     web_contents->GetMainFrame()
         ->GetRenderViewHost()
@@ -266,7 +270,7 @@ class TabActivityWatcher::WebContentsData
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
     if (!navigation_handle->HasCommitted() ||
-        !navigation_handle->IsInMainFrame() ||
+        !navigation_handle->IsInPrimaryMainFrame() ||
         navigation_handle->IsSameDocument()) {
       return;
     }
@@ -399,11 +403,6 @@ class TabActivityWatcher::WebContentsData
 
   // Collect current ForegroundedOrClosedMetrics and send to ukm.
   void LogForegroundedOrClosedMetrics(bool is_foregrounded) {
-    // If background time logging is disabled, then we only log the case where
-    // the label_id_ != 0 (a feature is logged and a label has not been logged).
-    if (DisableBackgroundLogWithTabRanker() && label_id_ == 0)
-      return;
-
     TabMetricsLogger::ForegroundedOrClosedMetrics metrics;
     metrics.is_foregrounded = is_foregrounded;
     metrics.is_discarded = discarded_since_backgrounded_;
@@ -484,11 +483,9 @@ class TabActivityWatcher::WebContentsData
   FrecencyScore frecency_score_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(TabActivityWatcher::WebContentsData)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabActivityWatcher::WebContentsData);
 
 TabActivityWatcher::TabActivityWatcher()
     : tab_metrics_logger_(std::make_unique<TabMetricsLogger>()),
