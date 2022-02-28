@@ -4,7 +4,33 @@
 
 import("../../../scripts/build/ninja/devtools_entrypoint.gni")
 import("../../../scripts/build/ninja/devtools_module.gni")
+import("../../../scripts/build/ninja/generate_css.gni")
 import("../visibility.gni")
+
+generate_css("css_files") {
+  sources = [
+    "binaryResourceView.css",
+    "blockedURLsPane.css",
+    "eventSourceMessagesView.css",
+    "networkConfigView.css",
+    "networkLogView.css",
+    "networkManageCustomHeadersView.css",
+    "networkPanel.css",
+    "networkTimingTable.css",
+    "networkWaterfallColumn.css",
+    "requestCookiesView.css",
+    "requestHTMLView.css",
+    "requestHeadersTree.css",
+    "requestHeadersView.css",
+    "requestInitiatorView.css",
+    "requestInitiatorViewTree.css",
+    "requestPayloadTree.css",
+    "requestPayloadView.css",
+    "signedExchangeInfoTree.css",
+    "signedExchangeInfoView.css",
+    "webSocketFrameView.css",
+  ]
+}
 
 devtools_module("network") {
   sources = [
@@ -27,6 +53,7 @@ devtools_module("network") {
     "RequestHTMLView.ts",
     "RequestHeadersView.ts",
     "RequestInitiatorView.ts",
+    "RequestPayloadView.ts",
     "RequestPreviewView.ts",
     "RequestResponseView.ts",
     "RequestTimingView.ts",
@@ -50,8 +77,10 @@ devtools_module("network") {
     "../../panels/elements:bundle",
     "../../panels/mobile_throttling:bundle",
     "../../panels/search:bundle",
+    "../../panels/utils:bundle",
     "../../third_party/chromium/client-variations:bundle",
     "../../ui/components/expandable_list:bundle",
+    "../../ui/components/icon_button:bundle",
     "../../ui/legacy:bundle",
     "../../ui/legacy/components/cookie_table:bundle",
     "../../ui/legacy/components/data_grid:bundle",
@@ -60,24 +89,30 @@ devtools_module("network") {
     "../../ui/legacy/components/source_frame:bundle",
     "../../ui/legacy/components/utils:bundle",
     "../../ui/legacy/theme_support:bundle",
+    "../../ui/lit-html:bundle",
+    "../settings/emulation/components:bundle",
     "./components:bundle",
+    "./forward:bundle",
   ]
 }
 
 devtools_entrypoint("bundle") {
   entrypoint = "network.ts"
 
-  deps = [ ":network" ]
+  deps = [
+    ":css_files",
+    ":network",
+    "../../ui/legacy/components/object_ui:css_files",
+  ]
 
   visibility = [
     ":*",
     "../../../test/unittests/front_end/entrypoints/missing_entrypoints/*",
     "../../entrypoints/*",
+    "../../ui/components/request_link_icon/*",
 
     # TODO(crbug.com/1202788): Remove invalid dependents
     "../application/*",
-    "../issues/*",
-    "../security/*",
   ]
 
   visibility += devtools_panels_visibility
@@ -98,6 +133,7 @@ devtools_entrypoint("meta") {
     ":bundle",
     "../../core/root:bundle",
     "../../ui/legacy:bundle",
+    "./forward:bundle",
   ]
 
   visibility = [ "../../entrypoints/*" ]

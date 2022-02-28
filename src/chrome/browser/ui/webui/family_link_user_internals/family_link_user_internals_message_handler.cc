@@ -8,11 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
@@ -25,6 +21,7 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/common/channel_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/tribool.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -128,19 +125,19 @@ FamilyLinkUserInternalsMessageHandler::
 void FamilyLinkUserInternalsMessageHandler::RegisterMessages() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "registerForEvents",
       base::BindRepeating(
           &FamilyLinkUserInternalsMessageHandler::HandleRegisterForEvents,
           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "getBasicInfo",
       base::BindRepeating(
           &FamilyLinkUserInternalsMessageHandler::HandleGetBasicInfo,
           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback(
       "tryURL",
       base::BindRepeating(&FamilyLinkUserInternalsMessageHandler::HandleTryURL,
                           base::Unretained(this)));
@@ -164,7 +161,7 @@ FamilyLinkUserInternalsMessageHandler::GetSupervisedUserService() {
 
 void FamilyLinkUserInternalsMessageHandler::HandleRegisterForEvents(
     const base::ListValue* args) {
-  DCHECK(args->empty());
+  DCHECK(args->GetList().empty());
   AllowJavascript();
   if (scoped_observation_.IsObserving())
     return;
@@ -179,11 +176,11 @@ void FamilyLinkUserInternalsMessageHandler::HandleGetBasicInfo(
 
 void FamilyLinkUserInternalsMessageHandler::HandleTryURL(
     const base::ListValue* args) {
-  DCHECK_EQ(2u, args->GetSize());
-  std::string callback_id;
-  std::string url_str;
-  if (!args->GetString(0, &callback_id) || !args->GetString(1, &url_str))
+  DCHECK_EQ(2u, args->GetList().size());
+  if (!args->GetList()[0].is_string() || !args->GetList()[1].is_string())
     return;
+  const std::string& callback_id = args->GetList()[0].GetString();
+  const std::string& url_str = args->GetList()[1].GetString();
 
   GURL url = url_formatter::FixupURL(url_str, std::string());
   if (!url.is_valid())
@@ -199,31 +196,29 @@ void FamilyLinkUserInternalsMessageHandler::HandleTryURL(
             web_contents->GetOutermostWebContents());
   }
 
-  std::map<std::string, std::u16string> allowlists =
-      filter->GetMatchingAllowlistTitles(url);
   filter->GetFilteringBehaviorForURLWithAsyncChecks(
       url,
       base::BindOnce(&FamilyLinkUserInternalsMessageHandler::OnTryURLResult,
-                     weak_factory_.GetWeakPtr(), allowlists, callback_id),
+                     weak_factory_.GetWeakPtr(), callback_id),
       skip_manual_parent_filter);
 }
 
 void FamilyLinkUserInternalsMessageHandler::SendBasicInfo() {
-  std::unique_ptr<base::ListValue> section_list(new base::ListValue);
+  base::ListValue section_list;
 
-  base::ListValue* section_general = AddSection(section_list.get(), "General");
+  base::ListValue* section_general = AddSection(&section_list, "General");
   AddSectionEntry(section_general, "Child detection enabled",
                   ChildAccountService::IsChildAccountDetectionEnabled());
 
   Profile* profile = Profile::FromWebUI(web_ui());
 
-  base::ListValue* section_profile = AddSection(section_list.get(), "Profile");
+  base::ListValue* section_profile = AddSection(&section_list, "Profile");
   AddSectionEntry(section_profile, "Account", profile->GetProfileUserName());
   AddSectionEntry(section_profile, "Child", profile->IsChild());
 
   SupervisedUserURLFilter* filter = GetSupervisedUserService()->GetURLFilter();
 
-  base::ListValue* section_filter = AddSection(section_list.get(), "Filter");
+  base::ListValue* section_filter = AddSection(&section_list, "Filter");
   AddSectionEntry(section_filter, "Denylist active", filter->HasDenylist());
   AddSectionEntry(section_filter, "Online checks active",
                   filter->HasAsyncURLChecker());
@@ -239,7 +234,7 @@ void FamilyLinkUserInternalsMessageHandler::SendBasicInfo() {
          identity_manager
              ->GetExtendedAccountInfoForAccountsWithRefreshToken()) {
       base::ListValue* section_user = AddSection(
-          section_list.get(), "User Information for " + account.full_name);
+          &section_list, "User Information for " + account.full_name);
       AddSectionEntry(section_user, "Account id",
                       account.account_id.ToString());
       AddSectionEntry(section_user, "Gaia", account.gaia);
@@ -247,13 +242,14 @@ void FamilyLinkUserInternalsMessageHandler::SendBasicInfo() {
       AddSectionEntry(section_user, "Given name", account.given_name);
       AddSectionEntry(section_user, "Hosted domain", account.hosted_domain);
       AddSectionEntry(section_user, "Locale", account.locale);
-      AddSectionEntry(section_user, "Is child", account.is_child_account);
+      AddSectionEntry(section_user, "Is child",
+                      TriboolToString(account.is_child_account));
       AddSectionEntry(section_user, "Is valid", account.IsValid());
     }
   }
 
   base::DictionaryValue result;
-  result.Set("sections", std::move(section_list));
+  result.SetKey("sections", std::move(section_list));
   FireWebUIListener("basic-info-received", result);
 
   // Trigger retrieval of the user settings
@@ -273,24 +269,15 @@ void FamilyLinkUserInternalsMessageHandler::SendFamilyLinkUserSettings(
 }
 
 void FamilyLinkUserInternalsMessageHandler::OnTryURLResult(
-    const std::map<std::string, std::u16string>& allowlists,
     const std::string& callback_id,
     SupervisedUserURLFilter::FilteringBehavior behavior,
     supervised_user_error_page::FilteringBehaviorReason reason,
     bool uncertain) {
-  std::vector<std::string> allowlists_list;
-  for (const auto& allowlist : allowlists) {
-    allowlists_list.push_back(
-        base::StringPrintf("%s: %s", allowlist.first.c_str(),
-                           base::UTF16ToUTF8(allowlist.second).c_str()));
-  }
-  std::string allowlists_str = base::JoinString(allowlists_list, "; ");
   base::DictionaryValue result;
   result.SetString("allowResult",
                    FilteringBehaviorToString(behavior, uncertain));
   result.SetBoolean("manual", reason == supervised_user_error_page::MANUAL &&
                                   behavior == SupervisedUserURLFilter::ALLOW);
-  result.SetString("allowlists", allowlists_str);
   ResolveJavascriptCallback(base::Value(callback_id), result);
 }
 

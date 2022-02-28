@@ -24,7 +24,7 @@
 #include "quic/platform/api/quic_flag_utils.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
-#include "quic/platform/api/quic_map_util.h"
+#include "common/print_elements.h"
 
 namespace quic {
 
@@ -117,7 +117,8 @@ QuicSentPacketManager::QuicSentPacketManager(
       use_standard_deviation_for_pto_(false),
       pto_multiplier_without_rtt_samples_(3),
       num_ptos_for_path_degrading_(0),
-      ignore_pings_(false) {
+      ignore_pings_(false),
+      ignore_ack_delay_(false) {
   SetSendAlgorithm(congestion_control_type);
   if (pto_enabled_) {
     QUIC_RELOADABLE_FLAG_COUNT_N(quic_default_on_pto, 1, 2);
@@ -158,7 +159,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     }
   }
   if (config.HasClientSentConnectionOption(kMAD0, perspective)) {
-    rtt_stats_.set_ignore_max_ack_delay(true);
+    ignore_ack_delay_ = true;
   }
   if (config.HasClientSentConnectionOption(kMAD2, perspective)) {
     // Set the minimum to the alarm granularity.
@@ -208,8 +209,12 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
       QUIC_CODE_COUNT(two_aggressive_ptos);
       num_tlp_timeout_ptos_ = 2;
     }
+    if (GetQuicReloadableFlag(quic_deprecate_tlpr)) {
+      QUIC_RELOADABLE_FLAG_COUNT_N(quic_deprecate_tlpr, 2, 2);
+    }
     if (config.HasClientSentConnectionOption(kPLE1, perspective) ||
-        config.HasClientSentConnectionOption(kTLPR, perspective)) {
+        (config.HasClientSentConnectionOption(kTLPR, perspective) &&
+         !GetQuicReloadableFlag(quic_deprecate_tlpr))) {
       first_pto_srtt_multiplier_ = 0.5;
     } else if (config.HasClientSentConnectionOption(kPLE2, perspective)) {
       first_pto_srtt_multiplier_ = 1.5;
@@ -220,6 +225,9 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     if (config.HasClientSentConnectionOption(kPSDA, perspective)) {
       use_standard_deviation_for_pto_ = true;
       rtt_stats_.EnableStandardDeviationCalculation();
+    }
+    if (config.HasClientRequestedIndependentOption(kPDP1, perspective)) {
+      num_ptos_for_path_degrading_ = 1;
     }
     if (config.HasClientRequestedIndependentOption(kPDP2, perspective)) {
       num_ptos_for_path_degrading_ = 2;
@@ -256,18 +264,22 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   // Initial window.
   if (GetQuicReloadableFlag(quic_unified_iw_options)) {
     if (config.HasClientRequestedIndependentOption(kIW03, perspective)) {
+      QUIC_RELOADABLE_FLAG_COUNT_N(quic_unified_iw_options, 1, 4);
       initial_congestion_window_ = 3;
       send_algorithm_->SetInitialCongestionWindowInPackets(3);
     }
     if (config.HasClientRequestedIndependentOption(kIW10, perspective)) {
+      QUIC_RELOADABLE_FLAG_COUNT_N(quic_unified_iw_options, 2, 4);
       initial_congestion_window_ = 10;
       send_algorithm_->SetInitialCongestionWindowInPackets(10);
     }
     if (config.HasClientRequestedIndependentOption(kIW20, perspective)) {
+      QUIC_RELOADABLE_FLAG_COUNT_N(quic_unified_iw_options, 3, 4);
       initial_congestion_window_ = 20;
       send_algorithm_->SetInitialCongestionWindowInPackets(20);
     }
     if (config.HasClientRequestedIndependentOption(kIW50, perspective)) {
+      QUIC_RELOADABLE_FLAG_COUNT_N(quic_unified_iw_options, 4, 4);
       initial_congestion_window_ = 50;
       send_algorithm_->SetInitialCongestionWindowInPackets(50);
     }
@@ -292,10 +304,15 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   if (config.HasClientSentConnectionOption(k1RTO, perspective)) {
     max_rto_packets_ = 1;
   }
-  if (config.HasClientSentConnectionOption(kTLPR, perspective)) {
+  if (GetQuicReloadableFlag(quic_deprecate_tlpr)) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_deprecate_tlpr, 1, 2);
+  }
+  if (config.HasClientSentConnectionOption(kTLPR, perspective) &&
+      !GetQuicReloadableFlag(quic_deprecate_tlpr)) {
     enable_half_rtt_tail_loss_probe_ = true;
   }
-  if (config.HasClientRequestedIndependentOption(kTLPR, perspective)) {
+  if (config.HasClientRequestedIndependentOption(kTLPR, perspective) &&
+      !GetQuicReloadableFlag(quic_deprecate_tlpr)) {
     enable_half_rtt_tail_loss_probe_ = true;
   }
   if (config.HasClientSentConnectionOption(kNRTO, perspective)) {
@@ -1526,8 +1543,18 @@ void QuicSentPacketManager::OnAckFrameStart(QuicPacketNumber largest_acked,
                                             QuicTime ack_receive_time) {
   QUICHE_DCHECK(packets_acked_.empty());
   QUICHE_DCHECK_LE(largest_acked, unacked_packets_.largest_sent_packet());
-  if (ack_delay_time > peer_max_ack_delay()) {
-    ack_delay_time = peer_max_ack_delay();
+  if (GetQuicReloadableFlag(quic_ignore_peer_max_ack_delay_during_handshake) &&
+      supports_multiple_packet_number_spaces() && !handshake_finished_) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_ignore_peer_max_ack_delay_during_handshake);
+    // Ignore peer_max_ack_delay and use received ack_delay during
+    // handshake.
+  } else {
+    if (ack_delay_time > peer_max_ack_delay()) {
+      ack_delay_time = peer_max_ack_delay();
+    }
+    if (ignore_ack_delay_) {
+      ack_delay_time = QuicTime::Delta::Zero();
+    }
   }
   rtt_updated_ =
       MaybeUpdateRTT(largest_acked, ack_delay_time, ack_receive_time);
@@ -1601,7 +1628,7 @@ AckResult QuicSentPacketManager::OnAckFrameEnd(
             << acked_packet.packet_number
             << ", last_ack_frame_: " << last_ack_frame_
             << ", least_unacked: " << unacked_packets_.GetLeastUnacked()
-            << ", packets_acked_: " << packets_acked_;
+            << ", packets_acked_: " << quiche::PrintElements(packets_acked_);
       } else {
         QUIC_PEER_BUG(quic_peer_bug_10750_6)
             << "Received " << ack_decrypted_level

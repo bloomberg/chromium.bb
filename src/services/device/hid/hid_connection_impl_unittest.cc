@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -38,7 +39,9 @@ const uint64_t kMaxReportSizeBytes = 10;
 class FakeHidConnection : public HidConnection {
  public:
   explicit FakeHidConnection(scoped_refptr<HidDeviceInfo> device)
-      : HidConnection(device, /*allow_protected_reports=*/false) {}
+      : HidConnection(device,
+                      /*allow_protected_reports=*/false,
+                      /*allow_fido_reports=*/false) {}
   FakeHidConnection(const FakeHidConnection&) = delete;
   FakeHidConnection& operator=(const FakeHidConnection&) = delete;
 
@@ -103,6 +106,8 @@ class TestHidConnectionClient : public mojom::HidConnectionClient {
 class TestIoCallback {
  public:
   TestIoCallback() = default;
+  TestIoCallback(const TestIoCallback&) = delete;
+  TestIoCallback& operator=(const TestIoCallback&) = delete;
   ~TestIoCallback() = default;
 
   void SetReadResult(bool result,
@@ -153,6 +158,8 @@ class TestIoCallback {
 class HidConnectionImplTest : public DeviceServiceTestBase {
  public:
   HidConnectionImplTest() = default;
+  HidConnectionImplTest(HidConnectionImplTest&) = delete;
+  HidConnectionImplTest& operator=(HidConnectionImplTest&) = delete;
 
  protected:
   void SetUp() override {
@@ -195,7 +202,8 @@ class HidConnectionImplTest : public DeviceServiceTestBase {
   }
 
   mojo::PendingRemote<mojom::HidConnection> hid_connection_;
-  HidConnectionImpl* hid_connection_impl_;  // Owned by |hid_connection_|.
+  raw_ptr<HidConnectionImpl>
+      hid_connection_impl_;  // Owned by |hid_connection_|.
   scoped_refptr<FakeHidConnection> fake_connection_;
   std::unique_ptr<TestHidConnectionClient> connection_client_;
 };

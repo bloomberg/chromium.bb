@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/text_input_manager.h"
@@ -21,6 +21,11 @@ class RenderWidgetHostImpl;
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
  public:
   MockRenderWidgetHostDelegate();
+
+  MockRenderWidgetHostDelegate(const MockRenderWidgetHostDelegate&) = delete;
+  MockRenderWidgetHostDelegate& operator=(const MockRenderWidgetHostDelegate&) =
+      delete;
+
   ~MockRenderWidgetHostDelegate() override;
 
   const NativeWebKeyboardEvent* last_event() const { return last_event_.get(); }
@@ -63,17 +68,15 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
  private:
   std::unique_ptr<NativeWebKeyboardEvent> last_event_;
-  RenderWidgetHostImpl* rwh_ = nullptr;
+  raw_ptr<RenderWidgetHostImpl> rwh_ = nullptr;
   std::unique_ptr<RenderWidgetHostInputEventRouter> rwh_input_event_router_;
   bool is_fullscreen_ = false;
   TextInputManager text_input_manager_;
-  RenderWidgetHostImpl* focused_widget_ = nullptr;
+  raw_ptr<RenderWidgetHostImpl> focused_widget_ = nullptr;
   KeyboardEventProcessingResult pre_handle_keyboard_event_result_ =
       KeyboardEventProcessingResult::NOT_HANDLED;
   StubRenderViewHostDelegateView rvh_delegate_view_;
   bool should_ignore_input_events_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHostDelegate);
 };
 
 }  // namespace content

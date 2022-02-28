@@ -243,6 +243,10 @@ extern PFN_vkCreateDisplayPlaneSurfaceKHR vkCreateDisplayPlaneSurfaceKHR;
 // VK_KHR_display_swapchain
 extern PFN_vkCreateSharedSwapchainsKHR vkCreateSharedSwapchainsKHR;
 
+// VK_KHR_dynamic_rendering
+extern PFN_vkCmdBeginRenderingKHR vkCmdBeginRenderingKHR;
+extern PFN_vkCmdEndRenderingKHR vkCmdEndRenderingKHR;
+
 // VK_KHR_get_physical_device_properties2
 extern PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR;
 extern PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR;
@@ -348,6 +352,9 @@ extern PFN_vkSignalSemaphoreKHR vkSignalSemaphoreKHR;
 extern PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR vkGetPhysicalDeviceFragmentShadingRatesKHR;
 extern PFN_vkCmdSetFragmentShadingRateKHR vkCmdSetFragmentShadingRateKHR;
 
+// VK_KHR_present_wait
+extern PFN_vkWaitForPresentKHR vkWaitForPresentKHR;
+
 // VK_KHR_buffer_device_address
 extern PFN_vkGetBufferDeviceAddressKHR vkGetBufferDeviceAddressKHR;
 extern PFN_vkGetBufferOpaqueCaptureAddressKHR vkGetBufferOpaqueCaptureAddressKHR;
@@ -382,6 +389,11 @@ extern PFN_vkCmdCopyBufferToImage2KHR vkCmdCopyBufferToImage2KHR;
 extern PFN_vkCmdCopyImageToBuffer2KHR vkCmdCopyImageToBuffer2KHR;
 extern PFN_vkCmdBlitImage2KHR vkCmdBlitImage2KHR;
 extern PFN_vkCmdResolveImage2KHR vkCmdResolveImage2KHR;
+
+// VK_KHR_maintenance4
+extern PFN_vkGetDeviceBufferMemoryRequirementsKHR vkGetDeviceBufferMemoryRequirementsKHR;
+extern PFN_vkGetDeviceImageMemoryRequirementsKHR vkGetDeviceImageMemoryRequirementsKHR;
+extern PFN_vkGetDeviceImageSparseMemoryRequirementsKHR vkGetDeviceImageSparseMemoryRequirementsKHR;
 
 // VK_KHR_acceleration_structure
 extern PFN_vkCreateAccelerationStructureKHR vkCreateAccelerationStructureKHR;

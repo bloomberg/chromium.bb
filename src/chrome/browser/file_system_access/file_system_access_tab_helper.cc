@@ -13,7 +13,7 @@ FileSystemAccessTabHelper::~FileSystemAccessTabHelper() = default;
 void FileSystemAccessTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation) {
   // We only care about top-level navigations that actually committed.
-  if (!navigation->IsInMainFrame() || !navigation->HasCommitted())
+  if (!navigation->IsInPrimaryMainFrame() || !navigation->HasCommitted())
     return;
 
   auto src_origin = url::Origin::Create(navigation->GetPreviousMainFrameURL());
@@ -32,7 +32,7 @@ void FileSystemAccessTabHelper::DidFinishNavigation(
 }
 
 void FileSystemAccessTabHelper::WebContentsDestroyed() {
-  auto src_origin = url::Origin::Create(web_contents()->GetLastCommittedURL());
+  auto src_origin = web_contents()->GetMainFrame()->GetLastCommittedOrigin();
 
   // Navigated away from |src_origin|, tell permission context to check if
   // permissions need to be revoked.
@@ -45,6 +45,7 @@ void FileSystemAccessTabHelper::WebContentsDestroyed() {
 
 FileSystemAccessTabHelper::FileSystemAccessTabHelper(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<FileSystemAccessTabHelper>(*web_contents) {}
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(FileSystemAccessTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(FileSystemAccessTabHelper);

@@ -28,10 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Settings from '../components/settings/settings.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
 import {InspectorView} from './InspectorView.js';
@@ -74,12 +73,14 @@ export const createSettingCheckbox = function(
 const createSettingSelect = function(
     name: string, options: Common.Settings.SimpleSettingOption[], requiresReload: boolean|null,
     setting: Common.Settings.Setting<unknown>, subtitle?: string): Element {
-  const settingSelectElement = document.createElement('p');
+  const container = document.createElement('div');
+  const settingSelectElement = container.createChild('p');
+  settingSelectElement.classList.add('settings-select');
   const label = settingSelectElement.createChild('label');
   const select = (settingSelectElement.createChild('select', 'chrome-select') as HTMLSelectElement);
   label.textContent = name;
   if (subtitle) {
-    settingSelectElement.classList.add('chrome-select-label');
+    container.classList.add('chrome-select-label');
     label.createChild('p').textContent = subtitle;
   }
   ARIAUtils.bindLabelToControl(label, select);
@@ -92,7 +93,7 @@ const createSettingSelect = function(
 
   let reloadWarning: HTMLElement|(Element | null) = (null as Element | null);
   if (requiresReload) {
-    reloadWarning = settingSelectElement.createChild('span', 'reload-warning hidden');
+    reloadWarning = container.createChild('span', 'reload-warning hidden');
     reloadWarning.textContent = i18nString(UIStrings.srequiresReload);
     ARIAUtils.markAsAlert(reloadWarning);
   }
@@ -100,7 +101,7 @@ const createSettingSelect = function(
   setting.addChangeListener(settingChanged);
   settingChanged();
   select.addEventListener('change', selectChanged, false);
-  return settingSelectElement;
+  return container;
 
   function settingChanged(): void {
     const newValue = setting.get();
@@ -153,8 +154,11 @@ export const createControlForSetting = function(setting: Common.Settings.Setting
     null {
       const uiTitle = setting.title();
       switch (setting.type()) {
-        case Common.Settings.SettingType.BOOLEAN:
-          return createSettingCheckbox(uiTitle, (setting as Common.Settings.Setting<boolean>));
+        case Common.Settings.SettingType.BOOLEAN: {
+          const component = new Settings.SettingCheckbox.SettingCheckbox();
+          component.data = {setting: setting as Common.Settings.Setting<boolean>};
+          return component;
+        }
         case Common.Settings.SettingType.ENUM:
           if (Array.isArray(setting.options())) {
             return createSettingSelect(uiTitle, setting.options(), setting.reloadRequired(), setting, subtitle);

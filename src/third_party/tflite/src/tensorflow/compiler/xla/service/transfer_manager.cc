@@ -39,9 +39,10 @@ namespace xla {
     TransferManager::platform_transfer_manager_mutex_(
         tensorflow::LINKER_INITIALIZED);
 
-/* static */ std::map<se::Platform::Id, TransferManager::State>*
+/* static */ absl::flat_hash_map<se::Platform::Id, TransferManager::State>*
 TransferManager::GetPlatformTransferManagers() {
-  static auto* r = new std::map<se::Platform::Id, TransferManager::State>;
+  static auto* r =
+      new absl::flat_hash_map<se::Platform::Id, TransferManager::State>;
   return r;
 }
 
@@ -169,8 +170,7 @@ Status TransferManager::TransferArrayToDeviceAsync(
         "%d < %d",
         dest.size(), GetByteSizeRequirement(on_device_shape));
   }
-  ShapedBuffer shaped_buffer(/*on_host_shape=*/literal.shape(), on_device_shape,
-                             stream->parent()->platform(),
+  ShapedBuffer shaped_buffer(on_device_shape,
                              stream->parent()->device_ordinal());
   shaped_buffer.set_buffer(dest, /*index=*/{});
   return TransferLiteralToDevice(stream, literal, shaped_buffer,
@@ -194,9 +194,7 @@ void TransferManager::TransferArrayFromDevice(
                            "%d < %d",
                            source.size(), GetByteSizeRequirement(shape)));
   }
-  ShapedBuffer shaped_buffer(/*on_host_shape=*/shape, shape,
-                             stream->parent()->platform(),
-                             stream->parent()->device_ordinal());
+  ShapedBuffer shaped_buffer(shape, stream->parent()->device_ordinal());
   shaped_buffer.set_buffer(source, /*index=*/{});
   return TransferLiteralFromDevice(stream, shaped_buffer, literal,
                                    std::move(done), transfer_metadata);
@@ -204,11 +202,9 @@ void TransferManager::TransferArrayFromDevice(
 
 Status TransferManager::ReadDynamicShapes(se::Stream* stream,
                                           ShapedBuffer* device_buffer,
-                                          Shape* host_shape,
                                           Shape* device_shape) {
   DCHECK(device_shape->is_dynamic());
   Shape original_device_shape = *device_shape;
-  Shape original_host_shape = *host_shape;
   TF_RETURN_IF_ERROR(stream->BlockHostUntilDone());
 
   TF_ASSIGN_OR_RETURN(auto compiler,
@@ -220,8 +216,6 @@ Status TransferManager::ReadDynamicShapes(se::Stream* stream,
         if (buffer_shape.IsTuple()) {
           return Status::OK();
         }
-        Shape& host_sub_shape =
-            *ShapeUtil::GetMutableSubshape(host_shape, index);
         Shape& device_sub_shape =
             *ShapeUtil::GetMutableSubshape(device_shape, index);
         if (device_sub_shape.is_static()) {
@@ -231,8 +225,8 @@ Status TransferManager::ReadDynamicShapes(se::Stream* stream,
         // Read the dynamic shape metadata from the device stream.
         auto shape_size_fn = compiler->ShapeSizeBytesFunction();
         Shape buffer_shape_static = ShapeUtil::MakeStaticShape(buffer_shape);
-        const int64 offset = shape_size_fn(buffer_shape_static);
-        int64 metadata_size = shape_size_fn(buffer_shape) - offset;
+        const int64_t offset = shape_size_fn(buffer_shape_static);
+        int64_t metadata_size = shape_size_fn(buffer_shape) - offset;
         if (metadata_size == 0) {
           return InvalidArgument("Dynamic shape metadata size should not be 0");
         }
@@ -247,19 +241,15 @@ Status TransferManager::ReadDynamicShapes(se::Stream* stream,
                 metadata_buffer));
 
         // Update shape size from metadata.
-        for (int64 i = 0; i < metadata.element_count(); ++i) {
-          host_sub_shape.mutable_dimensions()[i] = metadata.Get<int32>({i});
+        for (int64_t i = 0; i < metadata.element_count(); ++i) {
           device_sub_shape.mutable_dimensions()[i] = metadata.Get<int32>({i});
         }
         return Status::OK();
       }));
-  host_shape->clear_dynamic_dimensions();
   device_shape->clear_dynamic_dimensions();
 
   TF_RET_CHECK(ShapeUtil::DynamicShapeIsCompatible(*device_shape,
                                                    original_device_shape));
-  TF_RET_CHECK(
-      ShapeUtil::DynamicShapeIsCompatible(*host_shape, original_host_shape));
   return Status::OK();
 }
 
@@ -316,7 +306,7 @@ Status TransferManager::WriteTupleIndexTablesAsync(
 
           std::vector<se::DeviceMemoryBase> elements;
           ShapeIndex element_index = index;
-          for (int64 i = 0; i < ShapeUtil::TupleElementCount(device_subshape);
+          for (int64_t i = 0; i < ShapeUtil::TupleElementCount(device_subshape);
                ++i) {
             element_index.push_back(i);
             elements.push_back(device_buffer.buffer(element_index));
@@ -341,7 +331,7 @@ Status TransferManager::WriteRootTupleIndexTable(
                device_memory.size());
 
   std::vector<se::DeviceMemoryBase> elements;
-  for (int64 i = 0;
+  for (int64_t i = 0;
        i < ShapeUtil::TupleElementCount(device_buffer.on_device_shape()); ++i) {
     elements.push_back(device_buffer.buffer({i}));
   }
@@ -361,7 +351,7 @@ Status TransferManager::WriteRootTupleIndexTable(
                device_memory.size());
 
   std::vector<se::DeviceMemoryBase> elements;
-  for (int64 i = 0; i < ShapeUtil::TupleElementCount(buffer_tree.shape());
+  for (int64_t i = 0; i < ShapeUtil::TupleElementCount(buffer_tree.shape());
        ++i) {
     elements.push_back(buffer_tree.element({i}).AsDeviceMemoryBase());
   }
@@ -370,7 +360,7 @@ Status TransferManager::WriteRootTupleIndexTable(
 }
 
 Status TransferManager::TransferBufferFromDevice(
-    se::Stream* stream, const se::DeviceMemoryBase& source, int64 size,
+    se::Stream* stream, const se::DeviceMemoryBase& source, int64_t size,
     void* destination) {
   if (source.size() < size) {
     return FailedPrecondition(
@@ -383,7 +373,7 @@ Status TransferManager::TransferBufferFromDevice(
 }
 
 Status TransferManager::TransferBufferToDevice(
-    se::Stream* stream, int64 size, const void* source,
+    se::Stream* stream, int64_t size, const void* source,
     se::DeviceMemoryBase* destination) {
   if (destination->size() < size) {
     return FailedPrecondition(
@@ -397,17 +387,19 @@ Status TransferManager::TransferBufferToDevice(
 
 StatusOr<ScopedShapedBuffer> TransferManager::AllocateScopedShapedBuffer(
     const Shape& on_host_shape, se::DeviceMemoryAllocator* allocator,
-    int device_ordinal) {
+    int device_ordinal, DeviceShapeRepresentationFn shape_representation_fn) {
   if (!LayoutUtil::HasLayout(on_host_shape)) {
     return InvalidArgument("Shape must have a layout: %s",
                            ShapeUtil::HumanStringWithLayout(on_host_shape));
   }
   TF_RETURN_IF_ERROR(ShapeUtil::ValidateShape(on_host_shape));
-  Shape on_device_shape = HostShapeToDeviceShape(on_host_shape);
+  Shape on_device_shape = (shape_representation_fn == nullptr)
+                              ? HostShapeToDeviceShape(on_host_shape)
+                              : shape_representation_fn(on_host_shape);
   TF_RET_CHECK(LayoutUtil::HasLayout(on_device_shape));
 
-  ScopedShapedBuffer shaped_buffer(on_host_shape, std::move(on_device_shape),
-                                   allocator, device_ordinal);
+  ScopedShapedBuffer shaped_buffer(std::move(on_device_shape), allocator,
+                                   device_ordinal);
 
   // Allocate an appropriate sized buffer for each element in the shape
   // including the tuple pointer arrays.

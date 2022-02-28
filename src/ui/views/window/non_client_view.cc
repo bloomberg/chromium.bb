@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/cxx20_erase.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/hit_test.h"
@@ -32,47 +33,43 @@ bool NonClientFrameView::ShouldPaintAsActive() const {
 }
 
 int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
-                                               int top_resize_border_height,
-                                               int resize_border_thickness,
+                                               const gfx::Insets& resize_border,
                                                int top_resize_corner_height,
                                                int resize_corner_width,
                                                bool can_resize) {
-  // Tricky: In XP, native behavior is to return HTTOPLEFT and HTTOPRIGHT for
-  // a |resize_corner_size|-length strip of both the side and top borders, but
-  // only to return HTBOTTOMLEFT/HTBOTTOMRIGHT along the bottom border + corner
-  // (not the side border).  Vista goes further and doesn't return these on any
-  // of the side borders.  We allow callers to match either behavior.
+  bool point_in_top = point.y() < resize_border.top();
+  bool point_in_bottom = point.y() >= height() - resize_border.bottom();
+  bool point_in_left = point.x() < resize_border.left();
+  bool point_in_right = point.x() >= width() - resize_border.right();
+
+  if (!point_in_left && !point_in_right && !point_in_top && !point_in_bottom)
+    return HTNOWHERE;
+
+  point_in_top |= point.y() < top_resize_corner_height;
+  point_in_left |= point.x() < resize_corner_width;
+  point_in_right |= point.x() >= width() - resize_corner_width;
+
   int component;
-  if (point.x() < resize_border_thickness) {
-    if (point.y() < top_resize_corner_height)
+  if (point_in_top) {
+    if (point_in_left)
       component = HTTOPLEFT;
-    else if (point.y() >= (height() - resize_border_thickness))
-      component = HTBOTTOMLEFT;
-    else
-      component = HTLEFT;
-  } else if (point.x() >= (width() - resize_border_thickness)) {
-    if (point.y() < top_resize_corner_height)
-      component = HTTOPRIGHT;
-    else if (point.y() >= (height() - resize_border_thickness))
-      component = HTBOTTOMRIGHT;
-    else
-      component = HTRIGHT;
-  } else if (point.y() < top_resize_border_height) {
-    if (point.x() < resize_corner_width)
-      component = HTTOPLEFT;
-    else if (point.x() >= (width() - resize_corner_width))
+    else if (point_in_right)
       component = HTTOPRIGHT;
     else
       component = HTTOP;
-  } else if (point.y() >= (height() - resize_border_thickness)) {
-    if (point.x() < resize_corner_width)
+  } else if (point_in_bottom) {
+    if (point_in_left)
       component = HTBOTTOMLEFT;
-    else if (point.x() >= (width() - resize_corner_width))
+    else if (point_in_right)
       component = HTBOTTOMRIGHT;
     else
       component = HTBOTTOM;
+  } else if (point_in_left) {
+    component = HTLEFT;
+  } else if (point_in_right) {
+    component = HTRIGHT;
   } else {
-    return HTNOWHERE;
+    NOTREACHED();
   }
 
   // If the window can't be resized, there are no resize boundaries, just
@@ -129,6 +126,23 @@ void NonClientFrameView::Layout() {
     client_view->SetClipPath(client_clip);
 }
 
+View::Views NonClientFrameView::GetChildrenInZOrder() {
+  View::Views paint_order = View::GetChildrenInZOrder();
+  views::ClientView* client_view =
+      GetWidget() ? GetWidget()->client_view() : nullptr;
+
+  // Move the client view to the beginning of the Z-order to ensure that the
+  // other children of the frame view draw on top of it.
+  if (client_view && base::Erase(paint_order, client_view))
+    paint_order.insert(paint_order.begin(), client_view);
+
+  return paint_order;
+}
+
+void NonClientFrameView::InsertClientView(ClientView* client_view) {
+  AddChildView(client_view);
+}
+
 NonClientFrameView::NonClientFrameView() {
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
@@ -162,7 +176,7 @@ void NonClientView::SetFrameView(
   frame_view_ = std::move(frame_view);
   if (parent()) {
     AddChildViewAt(frame_view_.get(), 0);
-    frame_view_->AddChildViewAt(client_view_, 0);
+    frame_view_->InsertClientView(client_view_);
   }
 
   if (old_frame_view)
@@ -178,7 +192,7 @@ void NonClientView::SetOverlayView(View* view) {
 
   overlay_view_ = view;
   if (parent())
-    AddChildView(overlay_view_);
+    AddChildView(overlay_view_.get());
 }
 
 CloseRequestResult NonClientView::OnWindowCloseRequested() {
@@ -293,9 +307,9 @@ void NonClientView::ViewHierarchyChanged(
   // constructor.
   if (details.is_add && GetWidget() && details.child == this) {
     AddChildViewAt(frame_view_.get(), 0);
-    frame_view_->AddChildViewAt(client_view_, 0);
+    frame_view_->InsertClientView(client_view_);
     if (overlay_view_)
-      AddChildView(overlay_view_);
+      AddChildView(overlay_view_.get());
   }
 }
 

@@ -20,8 +20,8 @@ import android.media.AudioRecordingConfiguration;
 import android.media.MediaRecorder.AudioSource;
 import android.os.Build;
 import android.os.Process;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import java.lang.System;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -237,7 +237,7 @@ class WebRtcAudioRecord {
 
   // Returns true if verifyAudioConfig() succeeds. This value is set after a specific delay when
   // startRecording() has been called. Hence, should preferably be called in combination with
-  // stopRecording() to ensure that it has been set properly. |isAudioConfigVerified| is
+  // stopRecording() to ensure that it has been set properly. `isAudioConfigVerified` is
   // enabled in WebRtcAudioRecord to ensure that the returned value is valid.
   @CalledByNative
   boolean isAudioSourceMatchingRecordingSession() {
@@ -491,7 +491,7 @@ class WebRtcAudioRecord {
       long nativeAudioRecordJni, ByteBuffer byteBuffer);
   private native void nativeDataIsRecorded(long nativeAudioRecordJni, int bytes);
 
-  // Sets all recorded samples to zero if |mute| is true, i.e., ensures that
+  // Sets all recorded samples to zero if `mute` is true, i.e., ensures that
   // the microphone is muted.
   public void setMicrophoneMute(boolean mute) {
     Logging.w(TAG, "setMicrophoneMute(" + mute + ")");

@@ -5,7 +5,11 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTIONS_STATUS_SERVICE_IMPL_H_
 #define COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTIONS_STATUS_SERVICE_IMPL_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -21,6 +25,10 @@ class RemoteSuggestionsStatusServiceImpl
       bool is_signed_in,
       PrefService* pref_service,
       const std::vector<std::string>& additional_toggle_prefs);
+  RemoteSuggestionsStatusServiceImpl(
+      const RemoteSuggestionsStatusServiceImpl&) = delete;
+  RemoteSuggestionsStatusServiceImpl& operator=(
+      const RemoteSuggestionsStatusServiceImpl&) = delete;
 
   ~RemoteSuggestionsStatusServiceImpl() override;
 
@@ -55,11 +63,9 @@ class RemoteSuggestionsStatusServiceImpl
   // disabled on the next startup of browser, provided that the list is still
   // hidden then.
   bool list_visible_during_session_;
-  PrefService* pref_service_;
+  raw_ptr<PrefService> pref_service_;
 
   PrefChangeRegistrar pref_change_registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsStatusServiceImpl);
 };
 
 }  // namespace ntp_snippets

@@ -38,7 +38,7 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_node.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-forward.h"
 
 namespace blink {
 
@@ -162,6 +162,10 @@ class BLINK_EXPORT WebFrame {
   // the given node is not a frame, iframe or if the frame is empty.
   static WebFrame* FromFrameOwnerElement(const WebNode&);
 
+  // Whether the owner element of this frame is in the document tree or the
+  // shadow tree, per https://w3c.github.io/webcomponents/spec/shadow/.
+  mojom::TreeScopeType GetTreeScopeType() const { return scope_; }
+
   // This identifier represents the stable identifier between a
   // LocalFrame  <--> RenderFrameHostImpl or a
   // RemoteFrame <--> RenderFrameProxyHost in the browser process.
@@ -170,8 +174,6 @@ class BLINK_EXPORT WebFrame {
 #if INSIDE_BLINK
   static WebFrame* FromCoreFrame(Frame*);
   static Frame* ToCoreFrame(const WebFrame&);
-
-  bool InShadowTree() const { return scope_ == mojom::TreeScopeType::kShadow; }
 #endif
 
  protected:

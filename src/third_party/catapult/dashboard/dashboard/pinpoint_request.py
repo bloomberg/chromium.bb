@@ -129,7 +129,7 @@ def ResolveToGitHash(commit_position, suite, crrev=None):
       project, repo = 'chromium', 'chromium/src'
     result = crrev.GetNumbering(
         number=commit_position,
-        numbering_identifier='refs/heads/master',
+        numbering_identifier='refs/heads/main',
         numbering_type='COMMIT_POSITION',
         project=project,
         repo=repo)
@@ -166,6 +166,39 @@ def GetIsolateTarget(bot_name, suite):
   # performance_test_suites are device type specific.
   if 'eve' in bot_name.lower():
     return 'performance_test_suite_eve'
+
+  # WebEngine tests are specific to Fuchsia devices only.
+  if 'fuchsia-perf' in bot_name.lower():
+    return 'performance_web_engine_test_suite'
+
+  # Each Android binary has its own target, and different bots use different
+  # binaries. Mapping based off of Chromium's
+  # //tools/perf/core/perf_data_generator.py
+  if bot_name == 'android-pixel2-perf-calibration':
+    return 'performance_test_suite_android_clank_monochrome_64_32_bundle'
+  elif bot_name == 'android-nexus5x-perf-fyi':
+    return 'performance_test_suite_android_clank_chrome'
+  elif bot_name == 'android-pixel2-perf-fyi':
+    return 'performance_test_suite_android_clank_chrome'
+  elif bot_name == 'android-pixel2-perf-aab-fyi':
+    return 'performance_test_suite_android_clank_monochrome_bundle'
+  elif bot_name == 'android-go-perf':
+    return 'performance_test_suite_android_clank_chrome'
+  elif bot_name == 'Android Nexus5 Perf':
+    return 'performance_test_suite_android_chrome'
+  elif bot_name == 'android-pixel2-perf':
+    return 'performance_test_suite_android_clank_monochrome_64_32_bundle'
+  elif bot_name == 'android-pixel2_weblayer-perf':
+    return 'performance_weblayer_test_suite'
+  elif bot_name == 'android-pixel4-perf':
+    return 'performance_test_suite_android_clank_trichrome_bundle'
+  elif bot_name == 'android-pixel4_weblayer-perf':
+    return 'performance_weblayer_test_suite'
+  elif bot_name == 'android-pixel4a_power-perf':
+    return 'performance_test_suite_android_clank_chrome'
+  elif 'android' in bot_name.lower():
+    raise InvalidParamsError(
+        'Given Android bot %s does not have an isolate mapped to it' % bot_name)
 
   return 'performance_test_suite'
 

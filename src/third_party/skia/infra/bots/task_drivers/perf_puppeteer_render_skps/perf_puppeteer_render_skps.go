@@ -147,6 +147,10 @@ var cpuSkiplist = []string{
 	"desk_micrographygirlsvg.skp",
 	// Started timing out the week of Mar 25 2021 on CPU.
 	"desk_motionmarkpaths.skp",
+	// Started timing out the week of July 26 2021 on CPU.
+	"desk_motionmarksuits.skp",
+	// Started timing out on Nov 3, 2021 on CPU.
+	"desk_motionmarkleaves.skp",
 }
 var gpuSkiplist = []string{}
 

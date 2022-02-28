@@ -35,12 +35,13 @@
 
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
-import type * as SDK from '../../../../core/sdk/sdk.js'; // eslint-disable-line no-unused-vars
+import type * as SDK from '../../../../core/sdk/sdk.js';
 import * as Bindings from '../../../../models/bindings/bindings.js';
 import type * as Protocol from '../../../../generated/protocol.js';
 import * as UI from '../../legacy.js';
 
 import {Linkifier} from './Linkifier.js';
+import jsUtilsStyles from './jsUtils.css.js';
 
 const UIStrings = {
   /**
@@ -87,7 +88,7 @@ function populateContextMenu(link: Element, event: Event): void {
 
 export function buildStackTraceRows(
     stackTrace: Protocol.Runtime.StackTrace,
-    target: SDK.SDKModel.Target|null,
+    target: SDK.Target.Target|null,
     linkifier: Linkifier,
     tabStops: boolean|undefined,
     updateCallback?: (arg0: (StackTraceRegularRow|StackTraceAsyncRow)[]) => void,
@@ -101,11 +102,13 @@ export function buildStackTraceRows(
         () => throttler.schedule(async () => updateHiddenRows(updateCallback, stackTraceRows)));
   }
 
-  function buildStackTraceRowsHelper(stackTrace: Protocol.Runtime.StackTrace, asyncFlag: boolean): void {
+  function buildStackTraceRowsHelper(
+      stackTrace: Protocol.Runtime.StackTrace,
+      previousCallFrames: Protocol.Runtime.CallFrame[]|undefined = undefined): void {
     let asyncRow: StackTraceAsyncRow|null = null;
-    if (asyncFlag) {
+    if (previousCallFrames) {
       asyncRow = {
-        asyncDescription: UI.UIUtils.asyncStackTraceLabel(stackTrace.description),
+        asyncDescription: UI.UIUtils.asyncStackTraceLabel(stackTrace.description, previousCallFrames),
         ignoreListHide: false,
         rowCountHide: false,
       };
@@ -140,18 +143,18 @@ export function buildStackTraceRows(
       }
       stackTraceRows.push({functionName, link, ignoreListHide, rowCountHide});
     }
-    if (asyncFlag && asyncRow && hiddenCallFrames > 0 && hiddenCallFrames === stackTrace.callFrames.length) {
+    if (asyncRow && hiddenCallFrames > 0 && hiddenCallFrames === stackTrace.callFrames.length) {
       stackTraceRows[1].rowCountHide ? asyncRow.rowCountHide = true : asyncRow.ignoreListHide = true;
     }
   }
 
-  buildStackTraceRowsHelper(stackTrace, false);
-  let asyncStackTrace = stackTrace.parent;
-  while (asyncStackTrace) {
+  buildStackTraceRowsHelper(stackTrace);
+  let previousCallFrames = stackTrace.callFrames;
+  for (let asyncStackTrace = stackTrace.parent; asyncStackTrace; asyncStackTrace = asyncStackTrace.parent) {
     if (asyncStackTrace.callFrames.length) {
-      buildStackTraceRowsHelper(asyncStackTrace, true);
+      buildStackTraceRowsHelper(asyncStackTrace, previousCallFrames);
     }
-    asyncStackTrace = asyncStackTrace.parent;
+    previousCallFrames = asyncStackTrace.callFrames;
   }
   return stackTraceRows;
 }
@@ -193,7 +196,7 @@ function updateHiddenRows(
 }
 
 export function buildStackTracePreviewContents(
-    target: SDK.SDKModel.Target|null, linkifier: Linkifier, options: Options = {
+    target: SDK.Target.Target|null, linkifier: Linkifier, options: Options = {
       stackTrace: undefined,
       tabStops: undefined,
     }): {element: HTMLElement, links: HTMLElement[]} {
@@ -201,9 +204,8 @@ export function buildStackTracePreviewContents(
   const element = document.createElement('span');
   element.classList.add('monospace');
   element.style.display = 'inline-block';
-  const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(
-      element,
-      {cssFile: 'ui/legacy/components/utils/jsUtils.css', enableLegacyPatching: false, delegatesFocus: undefined});
+  const shadowRoot =
+      UI.Utils.createShadowRootWithCoreStyles(element, {cssFile: [jsUtilsStyles], delegatesFocus: undefined});
   const contentElement = shadowRoot.createChild('table', 'stack-preview-container');
   if (!stackTrace) {
     return {element, links: []};

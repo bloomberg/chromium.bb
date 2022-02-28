@@ -6,6 +6,10 @@
 
 #include <utility>
 
+#include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/guid.h"
@@ -20,17 +24,13 @@
 #include "chrome/browser/ash/arc/enterprise/cert_store/cert_store_service.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/platform_keys/key_permissions/extension_key_permissions_service.h"
+#include "chrome/browser/platform_keys/extension_key_permissions_service.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/network/onc/onc_utils.h"
-#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/arc_prefs.h"
-#include "components/arc/enterprise/arc_data_snapshotd_manager.h"
-#include "components/arc/session/arc_bridge_service.h"
+#include "chromeos/network/onc/network_onc_utils.h"
 #include "components/onc/onc_constants.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -312,7 +312,7 @@ std::string GetFilteredJSONPolicies(policy::PolicyService* const policy_service,
     filtered_policies.SetBoolKey(ArcPolicyBridge::kResetAndroidIdEnabled, true);
   }
 
-  if (profile->IsSupervised() &&
+  if (profile->IsChild() &&
       chromeos::ProfileHelper::Get()->IsPrimaryProfile(profile)) {
     // Adds "playStoreMode" policy. The policy value is used to restrict the
     // user from being able to toggle between different accounts in ARC++.
@@ -387,22 +387,21 @@ std::string GetFilteredJSONPolicies(policy::PolicyService* const policy_service,
 void UpdateFirstComplianceSinceSignInTiming(
     const base::TimeDelta& elapsed_time) {
   UMA_HISTOGRAM_CUSTOM_TIMES("Arc.FirstComplianceReportTime.SinceSignIn",
-                             elapsed_time, base::TimeDelta::FromSeconds(1),
-                             base::TimeDelta::FromMinutes(10), 50);
+                             elapsed_time, base::Seconds(1), base::Minutes(10),
+                             50);
 }
 
 void UpdateFirstComplianceSinceStartupTiming(
     const base::TimeDelta& elapsed_time) {
   UMA_HISTOGRAM_CUSTOM_TIMES("Arc.FirstComplianceReportTime.SinceStartup",
-                             elapsed_time, base::TimeDelta::FromSeconds(1),
-                             base::TimeDelta::FromMinutes(10), 50);
+                             elapsed_time, base::Seconds(1), base::Minutes(10),
+                             50);
 }
 
 void UpdateComplianceSinceUpdateTiming(const base::TimeDelta& elapsed_time) {
   UMA_HISTOGRAM_CUSTOM_TIMES("Arc.ComplianceReportSinceUpdateNotificationTime",
-                             elapsed_time,
-                             base::TimeDelta::FromMilliseconds(100),
-                             base::TimeDelta::FromMinutes(10), 50);
+                             elapsed_time, base::Milliseconds(100),
+                             base::Minutes(10), 50);
 }
 
 // Returns the SHA-256 hash of the JSON dump of the ARC policies, in the textual
@@ -674,9 +673,8 @@ void ArcPolicyBridge::UpdateComplianceReportMetrics(
     const base::DictionaryValue* report) {
   JSONStringValueSerializer serializer(&arc_policy_compliance_report_);
   serializer.Serialize(*report);
-  bool is_arc_plus_plus_report_successful = false;
-  report->GetBoolean("isArcPlusPlusReportSuccessful",
-                     &is_arc_plus_plus_report_successful);
+  bool is_arc_plus_plus_report_successful =
+      report->FindBoolKey("isArcPlusPlusReportSuccessful").value_or(false);
   std::string reported_policies_hash;
   report->GetString("policyHash", &reported_policies_hash);
   if (!is_arc_plus_plus_report_successful || reported_policies_hash.empty())

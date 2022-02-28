@@ -36,8 +36,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, EventsAreUnregistered) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
 
   constexpr char test_extension_name[] = "events_are_unregistered";
-  ASSERT_TRUE(
-      RunExtensionTest({.name = test_extension_name, .page_url = "page1.html"}))
+  ASSERT_TRUE(RunExtensionTest(test_extension_name, {.page_url = "page1.html"}))
       << message_;
 
   // Find the extension we just installed by looking for the path.
@@ -75,8 +74,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, EventsAreUnregistered) {
 // Test that listeners for webview-related events are not stored (even for lazy
 // contexts). See crbug.com/736381.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebViewEventRegistration) {
-  ASSERT_TRUE(RunExtensionTest(
-      {.name = "events/webview_events", .launch_as_platform_app = true}))
+  ASSERT_TRUE(RunExtensionTest("events/webview_events",
+                               {.launch_as_platform_app = true}))
       << message_;
   EventRouter* event_router = EventRouter::Get(profile());
   // We should not register lazy listeners for any webview-related events.
@@ -111,6 +110,9 @@ class EventsApiTest : public ExtensionApiTest {
  public:
   EventsApiTest() {}
 
+  EventsApiTest(const EventsApiTest&) = delete;
+  EventsApiTest& operator=(const EventsApiTest&) = delete;
+
  protected:
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
@@ -140,8 +142,6 @@ class EventsApiTest : public ExtensionApiTest {
 
  private:
   base::ScopedTempDir scoped_temp_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventsApiTest);
 };
 
 // Tests that updating an extension sends runtime.onInstalled event to the
@@ -264,6 +264,10 @@ class ChromeUpdatesEventsApiTest : public EventsApiTest,
     ChromeExtensionsBrowserClient::set_did_chrome_update_for_testing(true);
   }
 
+  ChromeUpdatesEventsApiTest(const ChromeUpdatesEventsApiTest&) = delete;
+  ChromeUpdatesEventsApiTest& operator=(const ChromeUpdatesEventsApiTest&) =
+      delete;
+
   void SetUpOnMainThread() override {
     EventsApiTest::SetUpOnMainThread();
     ProcessManager* process_manager = ProcessManager::Get(profile());
@@ -294,8 +298,6 @@ class ChromeUpdatesEventsApiTest : public EventsApiTest,
 
  private:
   std::set<std::string> observed_extension_names_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeUpdatesEventsApiTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeUpdatesEventsApiTest, PRE_ChromeUpdates) {

@@ -12,8 +12,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
-#include "base/observer_list.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -134,10 +132,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
     // The MTU used in ATT communication with the remote device. Read-only.
     dbus::Property<uint16_t> mtu;
 
-    // Whether some services of the device are blocked by policy. The policy can
-    // be set by org.bluez.AdminPolicy1.SetServiceAllowList. Read-only.
-    dbus::Property<bool> is_blocked_by_policy;
-
     // The EIR advertised by the remote device. Read-only.
     dbus::Property<std::vector<uint8_t>> eir;
 
@@ -176,6 +170,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
     virtual void DevicePropertyChanged(const dbus::ObjectPath& object_path,
                                        const std::string& property_name) {}
   };
+
+  BluetoothDeviceClient(const BluetoothDeviceClient&) = delete;
+  BluetoothDeviceClient& operator=(const BluetoothDeviceClient&) = delete;
 
   ~BluetoothDeviceClient() override;
 
@@ -297,9 +294,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
 
  protected:
   BluetoothDeviceClient();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceClient);
 };
 
 }  // namespace bluez

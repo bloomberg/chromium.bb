@@ -5,28 +5,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_FORWARD_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_FORWARD_H_
 
-#include "third_party/blink/renderer/platform/wtf/buildflags.h"
-
-#if BUILDFLAG(USE_V8_OILPAN)
-
 namespace cppgc {
+class LivenessBroker;
 class Visitor;
 }
 
 namespace blink {
 
+using LivenessBroker = cppgc::LivenessBroker;
 using Visitor = cppgc::Visitor;
 
 }  // namespace blink
-
-#else  // !USE_V8_OILPAN
-
-namespace blink {
-
-class Visitor;
-
-}  // namespace blink
-
-#endif  // !USE_V8_OILPAN
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_FORWARD_H_

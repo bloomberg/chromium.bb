@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <memory>
 
+#include "ash/test/ash_test_suite.h"
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -53,25 +54,7 @@ void ServerEnvironment::SetUpOnUIThread(base::WaitableEvent* event) {
   // it'll pass regardless of the system language.
   base::i18n::SetICUDefaultLocale("en_US");
 
-  // Load ash test resources and en-US strings; not 'common' (Chrome)
-  // resources.
-  base::FilePath path;
-  base::PathService::Get(base::DIR_MODULE, &path);
-  base::FilePath ash_test_strings =
-      path.Append(FILE_PATH_LITERAL("ash_test_strings.pak"));
-  ui::ResourceBundle::InitSharedInstanceWithPakPath(ash_test_strings);
-  if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_100P)) {
-    base::FilePath ash_test_resources_100 =
-        path.AppendASCII("ash_test_resources_100_percent.pak");
-    ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        ash_test_resources_100, ui::SCALE_FACTOR_100P);
-  }
-  if (ui::ResourceBundle::IsScaleFactorSupported(ui::SCALE_FACTOR_200P)) {
-    base::FilePath ash_test_resources_200 =
-        path.Append(FILE_PATH_LITERAL("ash_test_resources_200_percent.pak"));
-    ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        ash_test_resources_200, ui::SCALE_FACTOR_200P);
-  }
+  ash::AshTestSuite::LoadTestResources();
 
   env_ = aura::Env::CreateInstance();
   WaylandClientTestHelper::SetUpOnUIThread(event);

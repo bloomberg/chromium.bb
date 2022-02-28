@@ -15,12 +15,10 @@
 #include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_observer.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_layout_manager_observer.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
-#include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_observer.h"
@@ -47,7 +45,7 @@ class ASH_EXPORT AppListPresenterImpl
       public ui::ImplicitAnimationObserver,
       public views::WidgetObserver,
       public display::DisplayObserver,
-      public ShelfObserver {
+      public ShelfLayoutManagerObserver {
  public:
   static constexpr std::array<int, 7> kIdsOfContainersThatWontHideAppList = {
       kShellWindowId_AppListContainer,
@@ -66,6 +64,10 @@ class ASH_EXPORT AppListPresenterImpl
 
   // |controller| must outlive |this|.
   explicit AppListPresenterImpl(AppListControllerImpl* controller);
+
+  AppListPresenterImpl(const AppListPresenterImpl&) = delete;
+  AppListPresenterImpl& operator=(const AppListPresenterImpl&) = delete;
+
   ~AppListPresenterImpl() override;
 
   // Returns app list window or nullptr if it is not visible.
@@ -80,7 +82,8 @@ class ASH_EXPORT AppListPresenterImpl
   // AppListShowSources: kSearchKey, kShelfButton, or kSwipeFromShelf.
   void Show(AppListViewState preferred_state,
             int64_t display_id,
-            base::TimeTicks event_time_stamp);
+            base::TimeTicks event_time_stamp,
+            absl::optional<AppListShowSource> show_source);
 
   // Hide the open app list window. This may leave the view open but hidden.
   // If |event_time_stamp| is not 0, it means |Dismiss()| was triggered by
@@ -191,9 +194,10 @@ class ASH_EXPORT AppListPresenterImpl
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
-  // ShelfObserver overrides:
-  void OnBackgroundTypeChanged(ShelfBackgroundType background_type,
-                               AnimationChangeType change_type) override;
+  // ShelfLayoutManagerObserver overrides:
+  void WillDeleteShelfLayoutManager() override;
+  void OnBackgroundUpdated(ShelfBackgroundType background_type,
+                           AnimationChangeType change_type) override;
 
   // Registers a callback that is run when the next frame successfully makes it
   // to the screen.
@@ -211,12 +215,11 @@ class ASH_EXPORT AppListPresenterImpl
   std::unique_ptr<AppListPresenterEventFilter> event_filter_;
 
   // An observer that notifies AppListView when the display has changed.
-  base::ScopedObservation<display::Screen, display::DisplayObserver>
-      display_observation_{this};
+  display::ScopedDisplayObserver display_observer_{this};
 
   // An observer that notifies AppListView when the shelf state has changed.
-  base::ScopedMultiSourceObservation<Shelf, ShelfObserver> shelf_observation_{
-      this};
+  base::ScopedObservation<ShelfLayoutManager, ShelfLayoutManagerObserver>
+      shelf_observer_{this};
 
   // The target visibility of the AppListView, true if the target visibility is
   // shown.
@@ -232,7 +235,9 @@ class ASH_EXPORT AppListPresenterImpl
   // Cached bounds of |view_| for snapping back animation after over-scroll.
   gfx::Rect view_bounds_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppListPresenterImpl);
+  // Data we need to store for metrics.
+  absl::optional<base::Time> last_open_time_;
+  absl::optional<AppListShowSource> last_open_source_;
 };
 
 }  // namespace ash

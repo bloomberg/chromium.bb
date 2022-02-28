@@ -30,7 +30,7 @@ using base::SysUTF8ToNSString;
 // Interface to communicate with the XPC Updater Service.
 @interface CRUUpdateServiceProxyImpl : NSObject <CRUUpdateServicing>
 
-- (instancetype)initPrivileged;
+- (instancetype)initWithScope:(updater::UpdaterScope)scope;
 
 @end
 
@@ -38,18 +38,22 @@ using base::SysUTF8ToNSString;
   base::scoped_nsobject<NSXPCConnection> _updateCheckXPCConnection;
 }
 
-- (instancetype)init {
-  return [self initWithConnectionOptions:0];
+- (instancetype)initWithScope:(updater::UpdaterScope)scope {
+  switch (scope) {
+    case updater::UpdaterScope::kUser:
+      return [self initWithConnectionOptions:0 withScope:scope];
+    case updater::UpdaterScope::kSystem:
+      return [self initWithConnectionOptions:NSXPCConnectionPrivileged
+                                   withScope:scope];
+  }
+  return nil;
 }
 
-- (instancetype)initPrivileged {
-  return [self initWithConnectionOptions:NSXPCConnectionPrivileged];
-}
-
-- (instancetype)initWithConnectionOptions:(NSXPCConnectionOptions)options {
+- (instancetype)initWithConnectionOptions:(NSXPCConnectionOptions)options
+                                withScope:(updater::UpdaterScope)scope {
   if ((self = [super init])) {
     _updateCheckXPCConnection.reset([[NSXPCConnection alloc]
-        initWithMachServiceName:updater::GetUpdateServiceMachName().get()
+        initWithMachServiceName:updater::GetUpdateServiceMachName(scope).get()
                         options:options]);
 
     _updateCheckXPCConnection.get().remoteObjectInterface =
@@ -87,7 +91,8 @@ using base::SysUTF8ToNSString;
 
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
                           brandCode:(NSString* _Nullable)brandCode
-                                tag:(NSString* _Nullable)tag
+                          brandPath:(NSString* _Nullable)brandPath
+                                tag:(NSString* _Nullable)ap
                             version:(NSString* _Nullable)version
                existenceCheckerPath:(NSString* _Nullable)existenceCheckerPath
                               reply:(void (^_Nonnull)(int rc))reply {
@@ -101,10 +106,22 @@ using base::SysUTF8ToNSString;
       remoteObjectProxyWithErrorHandler:errorHandler]
       registerForUpdatesWithAppId:appId
                         brandCode:brandCode
-                              tag:tag
+                        brandPath:brandPath
+                              tag:ap
                           version:version
              existenceCheckerPath:existenceCheckerPath
                             reply:reply];
+}
+
+- (void)getAppStatesWithReply:(void (^_Nonnull)(CRUAppStatesWrapper*))reply {
+  auto errorHandler = ^(NSError* xpcError) {
+    LOG(ERROR) << "XPC connection failed: "
+               << base::SysNSStringToUTF8([xpcError description]);
+    reply(nil);
+  };
+
+  [[_updateCheckXPCConnection remoteObjectProxyWithErrorHandler:errorHandler]
+      getAppStatesWithReply:reply];
 }
 
 - (void)runPeriodicTasksWithReply:(void (^)(void))reply {
@@ -134,6 +151,8 @@ using base::SysUTF8ToNSString;
 
 - (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
                        priority:(CRUPriorityWrapper* _Nonnull)priority
+        policySameVersionUpdate:
+            (CRUPolicySameVersionUpdateWrapper* _Nonnull)policySameVersionUpdate
                     updateState:
                         (id<CRUUpdateStateObserving> _Nonnull)updateState
                           reply:(void (^_Nonnull)(int rc))reply {
@@ -146,6 +165,7 @@ using base::SysUTF8ToNSString;
   [[_updateCheckXPCConnection remoteObjectProxyWithErrorHandler:errorHandler]
       checkForUpdateWithAppID:appID
                      priority:priority
+      policySameVersionUpdate:policySameVersionUpdate
                   updateState:updateState
                         reply:reply];
 }
@@ -154,15 +174,13 @@ using base::SysUTF8ToNSString;
 
 namespace updater {
 
+scoped_refptr<UpdateService> CreateUpdateServiceProxy(
+    UpdaterScope updater_scope) {
+  return base::MakeRefCounted<UpdateServiceProxy>(updater_scope);
+}
+
 UpdateServiceProxy::UpdateServiceProxy(UpdaterScope scope) {
-  switch (scope) {
-    case UpdaterScope::kSystem:
-      client_.reset([[CRUUpdateServiceProxyImpl alloc] initPrivileged]);
-      break;
-    case UpdaterScope::kUser:
-      client_.reset([[CRUUpdateServiceProxyImpl alloc] init]);
-      break;
-  }
+  client_.reset([[CRUUpdateServiceProxyImpl alloc] initWithScope:scope]);
   callback_runner_ = base::SequencedTaskRunnerHandle::Get();
 }
 
@@ -197,12 +215,28 @@ void UpdateServiceProxy::RegisterApp(
   [client_
       registerForUpdatesWithAppId:SysUTF8ToNSString(request.app_id)
                         brandCode:SysUTF8ToNSString(request.brand_code)
-                              tag:SysUTF8ToNSString(request.tag)
+                        brandPath:base::mac::FilePathToNSString(
+                                      request.brand_path)
+                              tag:SysUTF8ToNSString(request.ap)
                           version:SysUTF8ToNSString(request.version.GetString())
-             existenceCheckerPath:SysUTF8ToNSString(
-                                      request.existence_checker_path
-                                          .AsUTF8Unsafe())
+             existenceCheckerPath:base::mac::FilePathToNSString(
+                                      request.existence_checker_path)
                             reply:reply];
+}
+
+void UpdateServiceProxy::GetAppStates(
+    base::OnceCallback<void(
+        const std::vector<updater::UpdateService::AppState>&)> callback) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  __block base::OnceCallback<void(
+      const std::vector<updater::UpdateService::AppState>&)>
+      block_callback = std::move(callback);
+
+  auto reply = ^(CRUAppStatesWrapper* wrapper) {
+    callback_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(block_callback), wrapper.states));
+  };
+  [client_ getAppStatesWithReply:reply];
 }
 
 void UpdateServiceProxy::RunPeriodicTasks(base::OnceClosure callback) {
@@ -234,10 +268,12 @@ void UpdateServiceProxy::UpdateAll(StateChangeCallback state_update,
   [client_ checkForUpdatesWithUpdateState:stateObserver.get() reply:reply];
 }
 
-void UpdateServiceProxy::Update(const std::string& app_id,
-                                UpdateService::Priority priority,
-                                StateChangeCallback state_update,
-                                Callback callback) {
+void UpdateServiceProxy::Update(
+    const std::string& app_id,
+    UpdateService::Priority priority,
+    PolicySameVersionUpdate policy_same_version_update,
+    StateChangeCallback state_update,
+    Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   __block base::OnceCallback<void(UpdateService::Result)> block_callback =
@@ -250,6 +286,9 @@ void UpdateServiceProxy::Update(const std::string& app_id,
 
   base::scoped_nsobject<CRUPriorityWrapper> priorityWrapper(
       [[CRUPriorityWrapper alloc] initWithPriority:priority]);
+  base::scoped_nsobject<CRUPolicySameVersionUpdateWrapper>
+      policySameVersionUpdateWrapper([[CRUPolicySameVersionUpdateWrapper alloc]
+          initWithPolicySameVersionUpdate:policy_same_version_update]);
   base::scoped_nsprotocol<id<CRUUpdateStateObserving>> stateObserver(
       [[CRUUpdateStateObserver alloc]
           initWithRepeatingCallback:state_update
@@ -257,6 +296,7 @@ void UpdateServiceProxy::Update(const std::string& app_id,
 
   [client_ checkForUpdateWithAppID:SysUTF8ToNSString(app_id)
                           priority:priorityWrapper.get()
+           policySameVersionUpdate:policySameVersionUpdateWrapper.get()
                        updateState:stateObserver.get()
                              reply:reply];
 }

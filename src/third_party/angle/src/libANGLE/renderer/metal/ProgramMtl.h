@@ -1,3 +1,4 @@
+
 //
 // Copyright 2019 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -20,12 +21,14 @@
 #include "libANGLE/renderer/glslang_wrapper_utils.h"
 #include "libANGLE/renderer/metal/mtl_buffer_pool.h"
 #include "libANGLE/renderer/metal/mtl_command_buffer.h"
-#include "libANGLE/renderer/metal/mtl_glslang_utils.h"
+#include "libANGLE/renderer/metal/mtl_common.h"
+#include "libANGLE/renderer/metal/mtl_glslang_mtl_utils.h"
 #include "libANGLE/renderer/metal/mtl_resources.h"
 #include "libANGLE/renderer/metal/mtl_state_cache.h"
 
 namespace rx
 {
+#define SHADER_ENTRY_NAME @"main0"
 class ContextMtl;
 
 struct ProgramArgumentBufferEncoderMtl
@@ -134,6 +137,12 @@ class ProgramMtl : public ProgramImpl, public mtl::RenderPipelineCacheSpecialize
     bool hasSpecializedShader(gl::ShaderType shaderType,
                               const mtl::RenderPipelineDesc &renderPipelineDesc) override;
 
+    angle::Result createMslShaderLib(
+        mtl::Context *context,
+        gl::ShaderType shaderType,
+        gl::InfoLog &infoLog,
+        mtl::TranslatedShaderInfo *translatedMslInfo,
+        NSDictionary<NSString *, NSObject *> *subtitutionDictionary = @{});
     // Calls this before drawing, changedPipelineDesc is passed when vertex attributes desc and/or
     // shader program changed.
     angle::Result setupDraw(const gl::Context *glContext,
@@ -142,6 +151,18 @@ class ProgramMtl : public ProgramImpl, public mtl::RenderPipelineCacheSpecialize
                             bool pipelineDescChanged,
                             bool forceTexturesSetting,
                             bool uniformBuffersDirty);
+
+    std::string getTranslatedShaderSource(const gl::ShaderType shaderType) const
+    {
+        return mMslShaderTranslateInfo[shaderType].metalShaderSource;
+    }
+
+    mtl::TranslatedShaderInfo getTranslatedShaderInfo(const gl::ShaderType shaderType) const
+    {
+        return mMslShaderTranslateInfo[shaderType];
+    }
+
+    bool hasFlatAttribute() const { return mProgramHasFlatAttributes; }
 
   private:
     template <int cols, int rows>
@@ -156,6 +177,11 @@ class ProgramMtl : public ProgramImpl, public mtl::RenderPipelineCacheSpecialize
     void setUniformImpl(GLint location, GLsizei count, const T *v, GLenum entryPointType);
 
     angle::Result initDefaultUniformBlocks(const gl::Context *glContext);
+    angle::Result resizeDefaultUniformBlocksMemory(const gl::Context *glContext,
+                                                   const gl::ShaderMap<size_t> &requiredBufferSize);
+    void saveDefaultUniformBlocksInfo(gl::BinaryOutputStream *stream);
+    angle::Result loadDefaultUniformBlocksInfo(const gl::Context *glContext,
+                                               gl::BinaryInputStream *stream);
 
     angle::Result commitUniforms(ContextMtl *context, mtl::RenderCommandEncoder *cmdEncoder);
     angle::Result updateTextures(const gl::Context *glContext,
@@ -165,6 +191,9 @@ class ProgramMtl : public ProgramImpl, public mtl::RenderPipelineCacheSpecialize
     angle::Result updateUniformBuffers(ContextMtl *context,
                                        mtl::RenderCommandEncoder *cmdEncoder,
                                        const mtl::RenderPipelineDesc &pipelineDesc);
+    angle::Result updateXfbBuffers(ContextMtl *context,
+                                   mtl::RenderCommandEncoder *cmdEncoder,
+                                   const mtl::RenderPipelineDesc &pipelineDesc);
     angle::Result legalizeUniformBufferOffsets(ContextMtl *context,
                                                const std::vector<gl::InterfaceBlock> &blocks);
     angle::Result bindUniformBuffersToDiscreteSlots(ContextMtl *context,
@@ -177,21 +206,37 @@ class ProgramMtl : public ProgramImpl, public mtl::RenderPipelineCacheSpecialize
         const std::vector<gl::InterfaceBlock> &blocks,
         gl::ShaderType shaderType);
 
-    angle::Result updateXfbBuffers(ContextMtl *context,
-                                   mtl::RenderCommandEncoder *cmdEncoder,
-                                   const mtl::RenderPipelineDesc &pipelineDesc);
-
     void reset(ContextMtl *context);
+
+    void saveTranslatedShaders(gl::BinaryOutputStream *stream);
+    void loadTranslatedShaders(gl::BinaryInputStream *stream);
+
+    void saveShaderInternalInfo(gl::BinaryOutputStream *stream);
+    void loadShaderInternalInfo(gl::BinaryInputStream *stream);
+
+    void linkUpdateHasFlatAttributes();
+
+#if ANGLE_ENABLE_METAL_SPIRV
+
+    angle::Result linkImplSpirv(const gl::Context *glContext,
+                                const gl::ProgramLinkedResources &resources,
+                                gl::InfoLog &infoLog);
+#endif
+
+    angle::Result linkImplDirect(const gl::Context *glContext,
+                                 const gl::ProgramLinkedResources &resources,
+                                 gl::InfoLog &infoLog);
 
     void linkResources(const gl::ProgramLinkedResources &resources);
     angle::Result linkImpl(const gl::Context *glContext,
                            const gl::ProgramLinkedResources &resources,
                            gl::InfoLog &infoLog);
 
-    angle::Result createMslShaderLib(mtl::Context *context,
-                                     gl::ShaderType shaderType,
-                                     gl::InfoLog &infoLog,
-                                     mtl::TranslatedShaderInfo *translatedMslInfo);
+    angle::Result linkTranslatedShaders(const gl::Context *glContext,
+                                        gl::BinaryInputStream *stream,
+                                        gl::InfoLog &infoLog);
+
+    mtl::BufferPool *getBufferPool(ContextMtl *context);
 
     // State for the default uniform blocks.
     struct DefaultUniformBlock final : private angle::NonCopyable
@@ -207,6 +252,7 @@ class ProgramMtl : public ProgramImpl, public mtl::RenderPipelineCacheSpecialize
         std::vector<sh::BlockMemberInfo> uniformLayout;
     };
 
+    bool mProgramHasFlatAttributes;
     gl::ShaderBitSet mDefaultUniformBlocksDirty;
     gl::ShaderBitSet mSamplerBindingsDirty;
     gl::ShaderMap<DefaultUniformBlock> mDefaultUniformBlocks;
@@ -230,6 +276,7 @@ class ProgramMtl : public ProgramImpl, public mtl::RenderPipelineCacheSpecialize
     // Cached references of current shader variants.
     gl::ShaderMap<ProgramShaderObjVariantMtl *> mCurrentShaderVariants;
 
+    ShaderInterfaceVariableInfoMap mVariableInfoMap;
     // Scratch data:
     // Legalized buffers and their offsets. For example, uniform buffer's offset=1 is not a valid
     // offset, it will be converted to legal offset and the result is stored in this array.
@@ -238,7 +285,10 @@ class ProgramMtl : public ProgramImpl, public mtl::RenderPipelineCacheSpecialize
     // into an argument buffer.
     std::vector<uint32_t> mArgumentBufferRenderStageUsages;
 
+    uint32_t mShadowCompareModes[mtl::kMaxShaderSamplers];
+
     mtl::RenderPipelineCache mMetalRenderPipelineCache;
+    mtl::BufferPool *mAuxBufferPool;
 };
 
 }  // namespace rx

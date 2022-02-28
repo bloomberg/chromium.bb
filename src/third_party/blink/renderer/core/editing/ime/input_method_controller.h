@@ -27,7 +27,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_IME_INPUT_METHOD_CONTROLLER_H_
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -62,6 +61,8 @@ class CORE_EXPORT InputMethodController final
   };
 
   explicit InputMethodController(LocalDOMWindow&, LocalFrame&);
+  InputMethodController(const InputMethodController&) = delete;
+  InputMethodController& operator=(const InputMethodController&) = delete;
   ~InputMethodController() override;
   void Trace(Visitor*) const override;
 
@@ -113,6 +114,7 @@ class CORE_EXPORT InputMethodController final
   void DeleteSurroundingText(int before, int after);
   void DeleteSurroundingTextInCodePoints(int before, int after);
 
+  void DidChangeVisibility(const LayoutObject& layout_object);
   void DidLayoutSubtree(const LayoutObject& layout_object);
   void DidUpdateLayout(const LayoutObject& layout_object);
   void LayoutObjectWillBeDestroyed(const LayoutObject& layout_object);
@@ -258,8 +260,6 @@ class CORE_EXPORT InputMethodController final
                            InputModeOfFocusedElement);
   FRIEND_TEST_ALL_PREFIXES(InputMethodControllerTest,
                            VirtualKeyboardPolicyOfFocusedElement);
-
-  DISALLOW_COPY_AND_ASSIGN(InputMethodController);
 };
 
 }  // namespace blink

@@ -9,6 +9,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include <windows.h>
+
+// To avoid conflicts with the macro from the Windows SDK...
+#undef FindWindow
+
 namespace base {
 
 namespace {

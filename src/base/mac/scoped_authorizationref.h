@@ -9,7 +9,6 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 
 // ScopedAuthorizationRef maintains ownership of an AuthorizationRef.  It is
 // patterned after the unique_ptr interface.
@@ -22,6 +21,9 @@ class BASE_EXPORT ScopedAuthorizationRef {
   explicit ScopedAuthorizationRef(AuthorizationRef authorization = NULL)
       : authorization_(authorization) {
   }
+
+  ScopedAuthorizationRef(const ScopedAuthorizationRef&) = delete;
+  ScopedAuthorizationRef& operator=(const ScopedAuthorizationRef&) = delete;
 
   ~ScopedAuthorizationRef() {
     if (authorization_) {
@@ -80,8 +82,6 @@ class BASE_EXPORT ScopedAuthorizationRef {
   void FreeInternal();
 
   AuthorizationRef authorization_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedAuthorizationRef);
 };
 
 }  // namespace mac

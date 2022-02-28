@@ -9,17 +9,15 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/arc/mojom/auth.mojom.h"
+#include "ash/components/arc/session/connection_observer.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
-#include "components/arc/mojom/auth.mojom.h"
-#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -58,6 +56,10 @@ class ArcAuthService : public KeyedService,
 
   ArcAuthService(content::BrowserContext* profile,
                  ArcBridgeService* bridge_service);
+
+  ArcAuthService(const ArcAuthService&) = delete;
+  ArcAuthService& operator=(const ArcAuthService&) = delete;
+
   ~ArcAuthService() override;
 
   // Gets the list of Google accounts currently stored in ARC. This is used by
@@ -79,6 +81,8 @@ class ArcAuthService : public KeyedService,
                              mojom::ArcSignInAccountPtr account) override;
   void ReportMetrics(mojom::MetricsType metrics_type, int32_t value) override;
   void ReportAccountCheckStatus(mojom::AccountCheckStatus status) override;
+  void ReportAccountReauthReason(mojom::ReauthReason reason) override;
+  void ReportAndroidIdSource(mojom::AndroidIdSource source) override;
   void ReportManagementChangeStatus(
       mojom::ManagementChangeStatus status) override;
   void RequestPrimaryAccountInfo(
@@ -200,8 +204,6 @@ class ArcAuthService : public KeyedService,
   GetGoogleAccountsInArcCallback pending_get_arc_accounts_callback_;
 
   base::WeakPtrFactory<ArcAuthService> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ArcAuthService);
 };
 
 }  // namespace arc

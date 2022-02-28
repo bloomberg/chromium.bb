@@ -31,7 +31,7 @@ class _ColorFormatter(logging.Formatter):
 
   def __init__(self, wrapped_formatter=None):
     """Wraps a |logging.Formatter| and adds color."""
-    super(_ColorFormatter, self).__init__(self)
+    super().__init__()
     self._wrapped_formatter = wrapped_formatter or logging.Formatter()
 
   #override
@@ -63,24 +63,27 @@ class ColorStreamHandler(logging.StreamHandler):
 
   """
   def __init__(self, force_color=False):
-    super(ColorStreamHandler, self).__init__()
+    super().__init__()
     self.force_color = force_color
     self.setFormatter(logging.Formatter())
 
   @property
   def is_tty(self):
-    isatty = getattr(self.stream, 'isatty', None)
-    return isatty and isatty()
+    try:
+      isatty = getattr(self.stream, 'isatty')
+    except AttributeError:
+      return False
+    return isatty()
 
   #override
-  def setFormatter(self, formatter):
+  def setFormatter(self, fmt):
     if self.force_color or self.is_tty:
-      formatter = _ColorFormatter(formatter)
-    super(ColorStreamHandler, self).setFormatter(formatter)
+      fmt = _ColorFormatter(fmt)
+    super().setFormatter(fmt)
 
   @staticmethod
   def MakeDefault(force_color=False):
-     """
+    """
      Replaces the default logging handlers with a coloring handler. To use
      a colorizing handler at the same time as others, either register them
      after this call, or add the ColorStreamHandler on the logger using
@@ -89,9 +92,9 @@ class ColorStreamHandler(logging.StreamHandler):
      Args:
        force_color: Set to True to bypass the tty check and always colorize.
      """
-     # If the existing handlers aren't removed, messages are duplicated
-     logging.getLogger().handlers = []
-     logging.getLogger().addHandler(ColorStreamHandler(force_color))
+    # If the existing handlers aren't removed, messages are duplicated
+    logging.getLogger().handlers = []
+    logging.getLogger().addHandler(ColorStreamHandler(force_color))
 
 
 @contextlib.contextmanager
@@ -110,7 +113,7 @@ def OverrideColor(level, color):
   try:
     yield
   finally:
-    for formatter, prev_color in prev_colors.iteritems():
+    for formatter, prev_color in prev_colors.items():
       formatter.color_map[level] = prev_color
 
 

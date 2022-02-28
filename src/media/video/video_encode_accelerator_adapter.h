@@ -9,8 +9,8 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/circular_deque.h"
-#include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/unsafe_shared_memory_pool.h"
 #include "base/synchronization/lock.h"
@@ -18,6 +18,7 @@
 #include "media/base/video_encoder.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -88,6 +89,7 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
 
     StatusCB done_callback;
     base::TimeDelta timestamp;
+    gfx::ColorSpace color_space;
   };
 
   void FlushCompleted(bool success);
@@ -120,7 +122,7 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
   size_t input_buffer_size_;
 
   std::unique_ptr<VideoEncodeAccelerator> accelerator_;
-  GpuVideoAcceleratorFactories* gpu_factories_;
+  raw_ptr<GpuVideoAcceleratorFactories> gpu_factories_;
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
   // If |h264_converter_| is null, we output in annexb format. Otherwise, we
@@ -131,6 +133,9 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
   // These are encodes that have been sent to the accelerator but have not yet
   // had their encoded data returned via BitstreamBufferReady().
   base::circular_deque<std::unique_ptr<PendingOp>> active_encodes_;
+
+  // Color space associated w/ the last frame sent to accelerator for encoding.
+  gfx::ColorSpace last_frame_color_space_;
 
   std::unique_ptr<PendingOp> pending_flush_;
 
@@ -147,14 +152,6 @@ class MEDIA_EXPORT VideoEncodeAcceleratorAdapter
   // True if underlying instance of VEA can handle GPU backed frames with a
   // size different from what VEA was configured for.
   bool gpu_resize_supported_ = false;
-
-  struct PendingEncode {
-    PendingEncode();
-    ~PendingEncode();
-    StatusCB done_callback;
-    scoped_refptr<VideoFrame> frame;
-    bool key_frame;
-  };
 
   // These are encodes that have not been sent to the accelerator.
   std::vector<std::unique_ptr<PendingEncode>> pending_encodes_;

@@ -47,8 +47,8 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/file_manager/app_id.h"
 #endif
 
 namespace extensions {
@@ -76,16 +76,6 @@ std::string ReloadExtensionIfEnabled(const std::string& extension_id,
 }
 
 }  // namespace
-
-bool IsExtensionSiteWithIsolatedStorage(const GURL& site_url,
-                                        content::BrowserContext* context) {
-  if (!site_url.SchemeIs(extensions::kExtensionScheme))
-    return false;
-
-  // The host in an extension site URL is the extension_id.
-  DCHECK(site_url.has_host());
-  return HasIsolatedStorage(site_url.host(), context);
-}
 
 bool HasIsolatedStorage(const std::string& extension_id,
                         content::BrowserContext* context) {

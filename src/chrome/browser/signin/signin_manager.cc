@@ -4,16 +4,21 @@
 
 #include "chrome/browser/signin/signin_manager.h"
 
+#include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 
-SigninManager::SigninManager(signin::IdentityManager* identity_manager)
-    : identity_manager_(identity_manager) {
-  if (identity_manager_->AreRefreshTokensLoaded()) {
-    UpdateUnconsentedPrimaryAccount();
-  }
+SigninManager::SigninManager(PrefService* prefs,
+                             signin::IdentityManager* identity_manager)
+    : prefs_(prefs), identity_manager_(identity_manager) {
+  signin_allowed_.Init(
+      prefs::kSigninAllowed, prefs_,
+      base::BindRepeating(&SigninManager::OnSigninAllowedPrefChanged,
+                          base::Unretained(this)));
 
+  UpdateUnconsentedPrimaryAccount();
   identity_manager_->AddObserver(this);
 }
 
@@ -22,6 +27,11 @@ SigninManager::~SigninManager() {
 }
 
 void SigninManager::UpdateUnconsentedPrimaryAccount() {
+  // Only update the unconsented primary account only after accounts are loaded.
+  if (!identity_manager_->AreRefreshTokensLoaded()) {
+    return;
+  }
+
   absl::optional<CoreAccountInfo> account =
       ComputeUnconsentedPrimaryAccountInfo();
 
@@ -45,11 +55,23 @@ void SigninManager::UpdateUnconsentedPrimaryAccount() {
 
 absl::optional<CoreAccountInfo>
 SigninManager::ComputeUnconsentedPrimaryAccountInfo() const {
+  DCHECK(identity_manager_->AreRefreshTokensLoaded());
+
   // UPA is equal to the primary account with sync consent if it exists.
   if (identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
     return identity_manager_->GetPrimaryAccountInfo(
         signin::ConsentLevel::kSync);
   }
+
+  // Clearing the primary sync account when sign-in is not allowed is handled
+  // by PrimaryAccountPolicyManager. That flow is extremely hard to follow
+  // especially for the case when the user is syncing with a managed account
+  // as in that case the whole profile needs to be deleted.
+  //
+  // It was considered simpler to keep the logic to update the unconsented
+  // primary account in a single place.
+  if (!signin_allowed_.GetValue())
+    return absl::nullopt;
 
   signin::AccountsInCookieJarInfo cookie_info =
       identity_manager_->GetAccountsInCookieJar();
@@ -57,10 +79,8 @@ SigninManager::ComputeUnconsentedPrimaryAccountInfo() const {
   std::vector<gaia::ListedAccount> cookie_accounts =
       cookie_info.signed_in_accounts;
 
-  bool are_refresh_tokens_loaded = identity_manager_->AreRefreshTokensLoaded();
-
   // Fresh cookies and loaded tokens are needed to compute the UPA.
-  if (are_refresh_tokens_loaded && cookie_info.accounts_are_fresh) {
+  if (cookie_info.accounts_are_fresh) {
     // Cookies are fresh and tokens are loaded, UPA is the first account
     // in cookies if it exists and has a refresh token.
     if (cookie_accounts.empty()) {
@@ -68,18 +88,18 @@ SigninManager::ComputeUnconsentedPrimaryAccountInfo() const {
       return absl::nullopt;
     }
 
-    absl::optional<AccountInfo> account_info =
-        identity_manager_
-            ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-                cookie_accounts[0].id);
+    AccountInfo account_info =
+        identity_manager_->FindExtendedAccountInfoByAccountId(
+            cookie_accounts[0].id);
 
     // Verify the first account in cookies has a refresh token that is valid.
     bool error_state =
-        !account_info.has_value() ||
+        account_info.IsEmpty() ||
         identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
-            account_info->account_id);
+            account_info.account_id);
 
-    return error_state ? absl::nullopt : account_info;
+    return error_state ? absl::nullopt
+                       : absl::make_optional<CoreAccountInfo>(account_info);
   }
 
   if (!identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin))
@@ -91,17 +111,9 @@ SigninManager::ComputeUnconsentedPrimaryAccountInfo() const {
   CoreAccountId current_account =
       identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
 
-  if (are_refresh_tokens_loaded &&
-      !identity_manager_->HasAccountWithRefreshToken(current_account)) {
+  if (!identity_manager_->HasAccountWithRefreshToken(current_account)) {
     // Tokens are loaded, but the current UPA doesn't have a refresh token.
     // Clear the current UPA.
-    return absl::nullopt;
-  }
-
-  if (!are_refresh_tokens_loaded &&
-      unconsented_primary_account_revoked_during_load_) {
-    // Tokens are not loaded, but the current UPA's refresh token has been
-    // revoked. Clear the current UPA.
     return absl::nullopt;
   }
 
@@ -148,12 +160,6 @@ void SigninManager::OnRefreshTokenUpdatedForAccount(
 
 void SigninManager::OnRefreshTokenRemovedForAccount(
     const CoreAccountId& account_id) {
-  if (!identity_manager_->AreRefreshTokensLoaded() &&
-      identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin) &&
-      account_id == identity_manager_->GetPrimaryAccountId(
-                        signin::ConsentLevel::kSignin)) {
-    unconsented_primary_account_revoked_during_load_ = true;
-  }
   UpdateUnconsentedPrimaryAccount();
 }
 
@@ -187,4 +193,8 @@ void SigninManager::OnErrorStateOfRefreshTokenUpdatedForAccount(
 
   if (should_update)
     UpdateUnconsentedPrimaryAccount();
+}
+
+void SigninManager::OnSigninAllowedPrefChanged() {
+  UpdateUnconsentedPrimaryAccount();
 }

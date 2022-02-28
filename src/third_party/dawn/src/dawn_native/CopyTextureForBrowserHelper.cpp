@@ -27,38 +27,42 @@
 #include "dawn_native/RenderPipeline.h"
 #include "dawn_native/Sampler.h"
 #include "dawn_native/Texture.h"
+#include "dawn_native/ValidationUtils_autogen.h"
+#include "dawn_native/utils/WGPUHelpers.h"
 
 #include <unordered_set>
 
 namespace dawn_native {
     namespace {
-        // TODO(shaobo.yan@intel.com) : Support premultiplay-alpha
-        static const char sCopyTextureForBrowserVertex[] = R"(
-            [[block]] struct Uniforms {
-                u_scale : vec2<f32>;
-                u_offset : vec2<f32>;
-            };
-            [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
 
-            const texcoord : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
-                vec2<f32>(-0.5, 0.0),
-                vec2<f32>( 1.5, 0.0),
-                vec2<f32>( 0.5, 2.0));
+        static const char sCopyTextureForBrowserShader[] = R"(
+            [[block]] struct Uniforms {
+                u_scale: vec2<f32>;
+                u_offset: vec2<f32>;
+                u_alphaOp: u32;
+            };
+
+            [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
 
             struct VertexOutputs {
                 [[location(0)]] texcoords : vec2<f32>;
                 [[builtin(position)]] position : vec4<f32>;
             };
 
-            [[stage(vertex)]] fn main(
+            [[stage(vertex)]] fn vs_main(
                 [[builtin(vertex_index)]] VertexIndex : u32
             ) -> VertexOutputs {
+                var texcoord = array<vec2<f32>, 3>(
+                    vec2<f32>(-0.5, 0.0),
+                    vec2<f32>( 1.5, 0.0),
+                    vec2<f32>( 0.5, 2.0));
+
                 var output : VertexOutputs;
                 output.position = vec4<f32>((texcoord[VertexIndex] * 2.0 - vec2<f32>(1.0, 1.0)), 0.0, 1.0);
 
                 // Y component of scale is calculated by the copySizeHeight / textureHeight. Only
                 // flipY case can get negative number.
-                var flipY : bool = uniforms.u_scale.y < 0.0;
+                var flipY = uniforms.u_scale.y < 0.0;
 
                 // Texture coordinate takes top-left as origin point. We need to map the
                 // texture to triangle carefully.
@@ -78,30 +82,63 @@ namespace dawn_native {
 
                 return output;
             }
-        )";
 
-        static const char sCopyTextureForBrowserFragment[] = R"(
             [[binding(1), group(0)]] var mySampler: sampler;
             [[binding(2), group(0)]] var myTexture: texture_2d<f32>;
 
-            [[stage(fragment)]] fn main(
+            [[stage(fragment)]] fn fs_main(
                 [[location(0)]] texcoord : vec2<f32>
             ) -> [[location(0)]] vec4<f32> {
                 // Clamp the texcoord and discard the out-of-bound pixels.
-                var clampedTexcoord : vec2<f32> =
+                var clampedTexcoord =
                     clamp(texcoord, vec2<f32>(0.0, 0.0), vec2<f32>(1.0, 1.0));
                 if (!all(clampedTexcoord == texcoord)) {
                     discard;
                 }
 
-                var srcColor : vec4<f32> = textureSample(myTexture, mySampler, texcoord);
                 // Swizzling of texture formats when sampling / rendering is handled by the
                 // hardware so we don't need special logic in this shader. This is covered by tests.
+                var srcColor = textureSample(myTexture, mySampler, texcoord);
+
+                // Handle alpha. Alpha here helps on the source content and dst content have
+                // different alpha config. There are three possible ops: DontChange, Premultiply
+                // and Unpremultiply.
+                // TODO(crbug.com/1217153): if wgsl support `constexpr` and allow it
+                // to be case selector, Replace 0u/1u/2u with a constexpr variable with
+                // meaningful name.
+                switch(uniforms.u_alphaOp) {
+                    case 0u: { // AlphaOp: DontChange
+                        break;
+                    }
+                    case 1u: { // AlphaOp: Premultiply
+                        srcColor = vec4<f32>(srcColor.rgb * srcColor.a, srcColor.a);
+                        break;
+                    }
+                    case 2u: { // AlphaOp: Unpremultiply
+                        if (srcColor.a != 0.0) {
+                            srcColor = vec4<f32>(srcColor.rgb / srcColor.a, srcColor.a);
+                        }
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+
                 return srcColor;
             }
         )";
 
-        // TODO(shaobo.yan@intel.com): Expand copyTextureForBrowser to support any
+        struct Uniform {
+            float scaleX;
+            float scaleY;
+            float offsetX;
+            float offsetY;
+            wgpu::AlphaOp alphaOp;
+        };
+        static_assert(sizeof(Uniform) == 20, "");
+
+        // TODO(crbug.com/dawn/856): Expand copyTextureForBrowser to support any
         // non-depth, non-stencil, non-compressed texture format pair copy. Now this API
         // supports CopyImageBitmapToTexture normal format pairs.
         MaybeError ValidateCopyTextureFormatConversion(const wgpu::TextureFormat srcFormat,
@@ -111,56 +148,26 @@ namespace dawn_native {
                 case wgpu::TextureFormat::RGBA8Unorm:
                     break;
                 default:
-                    return DAWN_VALIDATION_ERROR(
-                        "Unsupported src texture format for CopyTextureForBrowser.");
+                    return DAWN_FORMAT_VALIDATION_ERROR(
+                        "Source texture format (%s) is not supported.", srcFormat);
             }
 
             switch (dstFormat) {
+                case wgpu::TextureFormat::R8Unorm:
+                case wgpu::TextureFormat::R16Float:
+                case wgpu::TextureFormat::R32Float:
+                case wgpu::TextureFormat::RG8Unorm:
+                case wgpu::TextureFormat::RG16Float:
+                case wgpu::TextureFormat::RG32Float:
                 case wgpu::TextureFormat::RGBA8Unorm:
                 case wgpu::TextureFormat::BGRA8Unorm:
-                case wgpu::TextureFormat::RGBA32Float:
-                case wgpu::TextureFormat::RG8Unorm:
-                case wgpu::TextureFormat::RGBA16Float:
-                case wgpu::TextureFormat::RG16Float:
                 case wgpu::TextureFormat::RGB10A2Unorm:
+                case wgpu::TextureFormat::RGBA16Float:
+                case wgpu::TextureFormat::RGBA32Float:
                     break;
                 default:
-                    return DAWN_VALIDATION_ERROR(
-                        "Unsupported dst texture format for CopyTextureForBrowser.");
-            }
-
-            return {};
-        }
-
-        MaybeError ValidateCopyTextureForBrowserOptions(
-            const CopyTextureForBrowserOptions* options) {
-            if (options->nextInChain != nullptr) {
-                return DAWN_VALIDATION_ERROR(
-                    "CopyTextureForBrowserOptions: nextInChain must be nullptr");
-            }
-
-            return {};
-        }
-
-        MaybeError ValidateSourceOriginAndCopyExtent(const ImageCopyTexture source,
-                                                     const Extent3D copySize) {
-            if (source.origin.z > 0) {
-                return DAWN_VALIDATION_ERROR("Source origin cannot have non-zero z value");
-            }
-
-            if (copySize.depthOrArrayLayers > 1) {
-                return DAWN_VALIDATION_ERROR("Cannot copy to multiple slices");
-            }
-
-            return {};
-        }
-
-        MaybeError ValidateSourceAndDestinationTextureSampleCount(
-            const ImageCopyTexture source,
-            const ImageCopyTexture destination) {
-            if (source.texture->GetSampleCount() > 1 || destination.texture->GetSampleCount() > 1) {
-                return DAWN_VALIDATION_ERROR(
-                    "Source and destiantion textures cannot be multisampled");
+                    return DAWN_FORMAT_VALIDATION_ERROR(
+                        "Destination texture format (%s) is not supported.", dstFormat);
             }
 
             return {};
@@ -182,46 +189,30 @@ namespace dawn_native {
 
             if (GetCachedPipeline(store, dstFormat) == nullptr) {
                 // Create vertex shader module if not cached before.
-                if (store->copyTextureForBrowserVS == nullptr) {
-                    ShaderModuleDescriptor descriptor;
-                    ShaderModuleWGSLDescriptor wgslDesc;
-                    wgslDesc.source = sCopyTextureForBrowserVertex;
-                    descriptor.nextInChain = reinterpret_cast<ChainedStruct*>(&wgslDesc);
-
-                    DAWN_TRY_ASSIGN(store->copyTextureForBrowserVS,
-                                    device->CreateShaderModule(&descriptor));
+                if (store->copyTextureForBrowser == nullptr) {
+                    DAWN_TRY_ASSIGN(
+                        store->copyTextureForBrowser,
+                        utils::CreateShaderModule(device, sCopyTextureForBrowserShader));
                 }
 
-                ShaderModuleBase* vertexModule = store->copyTextureForBrowserVS.Get();
-
-                // Create fragment shader module if not cached before.
-                if (store->copyTextureForBrowserFS == nullptr) {
-                    ShaderModuleDescriptor descriptor;
-                    ShaderModuleWGSLDescriptor wgslDesc;
-                    wgslDesc.source = sCopyTextureForBrowserFragment;
-                    descriptor.nextInChain = reinterpret_cast<ChainedStruct*>(&wgslDesc);
-                    DAWN_TRY_ASSIGN(store->copyTextureForBrowserFS,
-                                    device->CreateShaderModule(&descriptor));
-                }
-
-                ShaderModuleBase* fragmentModule = store->copyTextureForBrowserFS.Get();
+                ShaderModuleBase* shaderModule = store->copyTextureForBrowser.Get();
 
                 // Prepare vertex stage.
                 VertexState vertex = {};
-                vertex.module = vertexModule;
-                vertex.entryPoint = "main";
+                vertex.module = shaderModule;
+                vertex.entryPoint = "vs_main";
 
                 // Prepare frgament stage.
                 FragmentState fragment = {};
-                fragment.module = fragmentModule;
-                fragment.entryPoint = "main";
+                fragment.module = shaderModule;
+                fragment.entryPoint = "fs_main";
 
                 // Prepare color state.
                 ColorTargetState target = {};
                 target.format = dstFormat;
 
                 // Create RenderPipeline.
-                RenderPipelineDescriptor2 renderPipelineDesc = {};
+                RenderPipelineDescriptor renderPipelineDesc = {};
 
                 // Generate the layout based on shader modules.
                 renderPipelineDesc.layout = nullptr;
@@ -252,18 +243,31 @@ namespace dawn_native {
         DAWN_TRY(device->ValidateObject(source->texture));
         DAWN_TRY(device->ValidateObject(destination->texture));
 
-        DAWN_TRY(ValidateImageCopyTexture(device, *source, *copySize));
-        DAWN_TRY(ValidateImageCopyTexture(device, *destination, *copySize));
+        DAWN_TRY_CONTEXT(ValidateImageCopyTexture(device, *source, *copySize),
+                         "validating the ImageCopyTexture for the source");
+        DAWN_TRY_CONTEXT(ValidateImageCopyTexture(device, *destination, *copySize),
+                         "validating the ImageCopyTexture for the destination");
 
-        DAWN_TRY(ValidateSourceOriginAndCopyExtent(*source, *copySize));
-        DAWN_TRY(ValidateCopyTextureForBrowserRestrictions(*source, *destination, *copySize));
-        DAWN_TRY(ValidateSourceAndDestinationTextureSampleCount(*source, *destination));
+        DAWN_TRY_CONTEXT(ValidateTextureCopyRange(device, *source, *copySize),
+                         "validating that the copy fits in the source");
+        DAWN_TRY_CONTEXT(ValidateTextureCopyRange(device, *destination, *copySize),
+                         "validating that the copy fits in the destination");
 
-        DAWN_TRY(ValidateTextureCopyRange(device, *source, *copySize));
-        DAWN_TRY(ValidateTextureCopyRange(device, *destination, *copySize));
+        DAWN_TRY(ValidateTextureToTextureCopyCommonRestrictions(*source, *destination, *copySize));
+
+        DAWN_INVALID_IF(source->origin.z > 0, "Source has a non-zero z origin (%u).",
+                        source->origin.z);
+        DAWN_INVALID_IF(copySize->depthOrArrayLayers > 1,
+                        "Copy is for more than one array layer (%u)", copySize->depthOrArrayLayers);
+
+        DAWN_INVALID_IF(
+            source->texture->GetSampleCount() > 1 || destination->texture->GetSampleCount() > 1,
+            "The source texture sample count (%u) or the destination texture sample count (%u) is "
+            "not 1.",
+            source->texture->GetSampleCount(), destination->texture->GetSampleCount());
 
         DAWN_TRY(ValidateCanUseAs(source->texture, wgpu::TextureUsage::CopySrc));
-        DAWN_TRY(ValidateCanUseAs(source->texture, wgpu::TextureUsage::Sampled));
+        DAWN_TRY(ValidateCanUseAs(source->texture, wgpu::TextureUsage::TextureBinding));
 
         DAWN_TRY(ValidateCanUseAs(destination->texture, wgpu::TextureUsage::CopyDst));
         DAWN_TRY(ValidateCanUseAs(destination->texture, wgpu::TextureUsage::RenderAttachment));
@@ -271,7 +275,8 @@ namespace dawn_native {
         DAWN_TRY(ValidateCopyTextureFormatConversion(source->texture->GetFormat().format,
                                                      destination->texture->GetFormat().format));
 
-        DAWN_TRY(ValidateCopyTextureForBrowserOptions(options));
+        DAWN_INVALID_IF(options->nextInChain != nullptr, "nextInChain must be nullptr");
+        DAWN_TRY(ValidateAlphaOp(options->alphaOp));
 
         return {};
     }
@@ -281,7 +286,7 @@ namespace dawn_native {
                                        const ImageCopyTexture* destination,
                                        const Extent3D* copySize,
                                        const CopyTextureForBrowserOptions* options) {
-        // TODO(shaobo.yan@intel.com): In D3D12 and Vulkan, compatible texture format can directly
+        // TODO(crbug.com/dawn/856): In D3D12 and Vulkan, compatible texture format can directly
         // copy to each other. This can be a potential fast path.
 
         // Noop copy
@@ -297,39 +302,33 @@ namespace dawn_native {
         Ref<BindGroupLayoutBase> layout;
         DAWN_TRY_ASSIGN(layout, pipeline->GetBindGroupLayout(0));
 
-        // Prepare bind group descriptor
-        BindGroupEntry bindGroupEntries[3] = {};
-        BindGroupDescriptor bgDesc = {};
-        bgDesc.layout = layout.Get();
-        bgDesc.entryCount = 3;
-        bgDesc.entries = bindGroupEntries;
-
         Extent3D srcTextureSize = source->texture->GetSize();
 
         // Prepare binding 0 resource: uniform buffer.
-        float uniformData[] = {
+        Uniform uniformData = {
             copySize->width / static_cast<float>(srcTextureSize.width),
             copySize->height / static_cast<float>(srcTextureSize.height),  // scale
             source->origin.x / static_cast<float>(srcTextureSize.width),
-            source->origin.y / static_cast<float>(srcTextureSize.height)  // offset
+            source->origin.y / static_cast<float>(srcTextureSize.height),  // offset
+            wgpu::AlphaOp::DontChange  // alphaOp default value: DontChange
         };
 
         // Handle flipY. FlipY here means we flip the source texture firstly and then
         // do copy. This helps on the case which source texture is flipped and the copy
         // need to unpack the flip.
-        if (options && options->flipY) {
-            uniformData[1] *= -1.0;
-            uniformData[3] += copySize->height / static_cast<float>(srcTextureSize.height);
+        if (options->flipY) {
+            uniformData.scaleY *= -1.0;
+            uniformData.offsetY += copySize->height / static_cast<float>(srcTextureSize.height);
         }
 
-        BufferDescriptor uniformDesc = {};
-        uniformDesc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform;
-        uniformDesc.size = sizeof(uniformData);
-        Ref<BufferBase> uniformBuffer;
-        DAWN_TRY_ASSIGN(uniformBuffer, device->CreateBuffer(&uniformDesc));
+        // Set alpha op.
+        uniformData.alphaOp = options->alphaOp;
 
-        DAWN_TRY(device->GetQueue()->WriteBuffer(uniformBuffer.Get(), 0, uniformData,
-                                                 sizeof(uniformData)));
+        Ref<BufferBase> uniformBuffer;
+        DAWN_TRY_ASSIGN(
+            uniformBuffer,
+            utils::CreateBufferFromData(
+                device, wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform, {uniformData}));
 
         // Prepare binding 1 resource: sampler
         // Use default configuration, filterMode set to Nearest for min and mag.
@@ -346,18 +345,11 @@ namespace dawn_native {
         DAWN_TRY_ASSIGN(srcTextureView,
                         device->CreateTextureView(source->texture, &srcTextureViewDesc));
 
-        // Set bind group entries.
-        bindGroupEntries[0].binding = 0;
-        bindGroupEntries[0].buffer = uniformBuffer.Get();
-        bindGroupEntries[0].size = sizeof(uniformData);
-        bindGroupEntries[1].binding = 1;
-        bindGroupEntries[1].sampler = sampler.Get();
-        bindGroupEntries[2].binding = 2;
-        bindGroupEntries[2].textureView = srcTextureView.Get();
-
         // Create bind group after all binding entries are set.
         Ref<BindGroupBase> bindGroup;
-        DAWN_TRY_ASSIGN(bindGroup, device->CreateBindGroup(&bgDesc));
+        DAWN_TRY_ASSIGN(bindGroup, utils::MakeBindGroup(
+                                       device, layout,
+                                       {{0, uniformBuffer}, {1, sampler}, {2, srcTextureView}}));
 
         // Create command encoder.
         CommandEncoderDescriptor encoderDesc = {};
@@ -375,7 +367,7 @@ namespace dawn_native {
                         device->CreateTextureView(destination->texture, &dstTextureViewDesc));
 
         // Prepare render pass color attachment descriptor.
-        RenderPassColorAttachmentDescriptor colorAttachmentDesc;
+        RenderPassColorAttachment colorAttachmentDesc;
 
         colorAttachmentDesc.view = dstView.Get();
         colorAttachmentDesc.loadOp = wgpu::LoadOp::Load;

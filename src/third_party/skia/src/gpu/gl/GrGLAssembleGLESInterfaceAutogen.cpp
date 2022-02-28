@@ -193,6 +193,9 @@ sk_sp<const GrGLInterface> GrGLMakeAssembledGLESInterface(void *ctx, GrGLGetProc
     } else if (extensions.has("GL_EXT_draw_instanced")) {
         GET_PROC_SUFFIX(DrawArraysInstanced, EXT);
         GET_PROC_SUFFIX(DrawElementsInstanced, EXT);
+    } else if (extensions.has("GL_ANGLE_instanced_arrays")) {
+        GET_PROC_SUFFIX(DrawArraysInstanced, ANGLE);
+        GET_PROC_SUFFIX(DrawElementsInstanced, ANGLE);
     }
 
     if (extensions.has("GL_EXT_base_instance")) {
@@ -274,6 +277,8 @@ sk_sp<const GrGLInterface> GrGLMakeAssembledGLESInterface(void *ctx, GrGLGetProc
         GET_PROC(VertexAttribDivisor);
     } else if (extensions.has("GL_EXT_instanced_arrays")) {
         GET_PROC_SUFFIX(VertexAttribDivisor, EXT);
+    } else if (extensions.has("GL_ANGLE_instanced_arrays")) {
+        GET_PROC_SUFFIX(VertexAttribDivisor, ANGLE);
     }
 
     if (glVer >= GR_GL_VER(3,0)) {
@@ -296,6 +301,8 @@ sk_sp<const GrGLInterface> GrGLMakeAssembledGLESInterface(void *ctx, GrGLGetProc
 
     if (glVer >= GR_GL_VER(3,0)) {
         GET_PROC(BlitFramebuffer);
+    } else if (extensions.has("GL_NV_framebuffer_blit")) {
+        GET_PROC_SUFFIX(BlitFramebuffer, NV);
     } else if (extensions.has("GL_CHROMIUM_framebuffer_multisample")) {
         GET_PROC_SUFFIX(BlitFramebuffer, CHROMIUM);
     } else if (extensions.has("GL_ANGLE_framebuffer_blit")) {

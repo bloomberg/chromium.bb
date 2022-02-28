@@ -9,17 +9,19 @@
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/location.h"
-#include "base/macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/memory/raw_ptr.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_stats.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_request_utils.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace content {
@@ -51,6 +53,9 @@ class DragDownloadFile::DragDownloadFileUI
     // May be called on any thread.
     // Do not call weak_ptr_factory_.GetWeakPtr() outside the UI thread.
   }
+
+  DragDownloadFileUI(const DragDownloadFileUI&) = delete;
+  DragDownloadFileUI& operator=(const DragDownloadFileUI&) = delete;
 
   void InitiateDownload(base::File file,
                         const base::FilePath& file_path) {
@@ -172,12 +177,10 @@ class DragDownloadFile::DragDownloadFileUI
   std::string referrer_encoding_;
   int render_process_id_;
   int render_frame_id_;
-  download::DownloadItem* download_item_ = nullptr;
+  raw_ptr<download::DownloadItem> download_item_ = nullptr;
 
   // Only used in the callback from DownloadManager::DownloadUrl().
   base::WeakPtrFactory<DragDownloadFileUI> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DragDownloadFileUI);
 };
 
 DragDownloadFile::DragDownloadFile(const base::FilePath& file_path,

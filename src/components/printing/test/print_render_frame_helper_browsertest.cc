@@ -11,8 +11,9 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -122,7 +123,8 @@ void CreatePrintSettingsDictionary(base::DictionaryValue* dict) {
   dict->SetBoolean(kSettingLandscape, false);
   dict->SetBoolean(kSettingCollate, false);
   dict->SetInteger(kSettingColor, static_cast<int>(mojom::ColorModel::kGray));
-  dict->SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kPdf));
+  dict->SetInteger(kSettingPrinterType,
+                   static_cast<int>(mojom::PrinterType::kPdf));
   dict->SetInteger(kSettingDuplexMode,
                    static_cast<int>(mojom::DuplexMode::kSimplex));
   dict->SetInteger(kSettingCopies, 1);
@@ -134,7 +136,6 @@ void CreatePrintSettingsDictionary(base::DictionaryValue* dict) {
                    static_cast<int>(mojom::MarginType::kDefaultMargins));
   dict->SetBoolean(kSettingPreviewModifiable, true);
   dict->SetBoolean(kSettingPreviewIsFromArc, false);
-  dict->SetBoolean(kSettingPreviewIsPdf, false);
   dict->SetBoolean(kSettingHeaderFooterEnabled, false);
   dict->SetBoolean(kSettingShouldPrintBackgrounds, false);
   dict->SetBoolean(kSettingShouldPrintSelectionOnly, false);
@@ -475,9 +476,9 @@ class TestPrintManagerHost
   uint32_t number_pages_ = 0;
   bool is_setup_scripted_print_preview_ = false;
   bool is_printed_ = false;
-  MockPrinter* printer_;
+  raw_ptr<MockPrinter> printer_;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  FakePrintPreviewUI* preview_ui_;
+  raw_ptr<FakePrintPreviewUI> preview_ui_;
 #endif
   base::OnceClosure quit_closure_;
   // True to simulate user clicking print. False to cancel.
@@ -1129,7 +1130,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kLocal));
+  dict.SetInteger(kSettingPrinterType,
+                  static_cast<int>(mojom::PrinterType::kLocal));
   OnPrintPreview(dict);
 
   EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
@@ -1153,7 +1155,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kLocal));
+  dict.SetInteger(kSettingPrinterType,
+                  static_cast<int>(mojom::PrinterType::kLocal));
   dict.SetInteger(kSettingMarginsType,
                   static_cast<int>(mojom::MarginType::kNoMargins));
   OnPrintPreview(dict);
@@ -1306,7 +1309,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kLocal));
+  dict.SetInteger(kSettingPrinterType,
+                  static_cast<int>(mojom::PrinterType::kLocal));
   OnPrintPreview(dict);
 
   EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
@@ -1366,7 +1370,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewCenterToFitPage) {
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kLocal));
+  dict.SetInteger(kSettingPrinterType,
+                  static_cast<int>(mojom::PrinterType::kLocal));
   OnPrintPreview(dict);
 
   EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
@@ -1400,7 +1405,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewShrinkToFitPage) {
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kLocal));
+  dict.SetInteger(kSettingPrinterType,
+                  static_cast<int>(mojom::PrinterType::kLocal));
   OnPrintPreview(dict);
 
   EXPECT_EQ(0u, preview_ui()->print_preview_pages_remaining());
@@ -1424,7 +1430,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
-  dict.SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kLocal));
+  dict.SetInteger(kSettingPrinterType,
+                  static_cast<int>(mojom::PrinterType::kLocal));
   dict.SetInteger(kSettingMarginsType,
                   static_cast<int>(mojom::MarginType::kNoMargins));
   OnPrintPreview(dict);

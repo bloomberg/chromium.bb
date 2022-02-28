@@ -5,10 +5,12 @@
 #include "chrome/browser/page_load_metrics/observers/android_page_load_metrics_observer.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
 #include "net/base/ip_endpoint.h"
@@ -118,7 +120,7 @@ class AndroidPageLoadMetricsObserverTest
     observer_ptr_ =
         new TestAndroidPageLoadMetricsObserver(&mock_network_quality_tracker_);
     observer_ = base::WrapUnique<page_load_metrics::PageLoadMetricsObserver>(
-        observer_ptr_);
+        observer_ptr_.get());
   }
 
   TestAndroidPageLoadMetricsObserver* observer() const { return observer_ptr_; }
@@ -133,10 +135,10 @@ class AndroidPageLoadMetricsObserverTest
         .WillRepeatedly(Return(net::EFFECTIVE_CONNECTION_TYPE_3G));
     EXPECT_CALL(mock_network_quality_tracker(), GetHttpRTT())
         .Times(AnyNumber())
-        .WillRepeatedly(Return(base::TimeDelta::FromMilliseconds(3)));
+        .WillRepeatedly(Return(base::Milliseconds(3)));
     EXPECT_CALL(mock_network_quality_tracker(), GetTransportRTT())
         .Times(AnyNumber())
-        .WillRepeatedly(Return(base::TimeDelta::FromMilliseconds(4)));
+        .WillRepeatedly(Return(base::Milliseconds(4)));
   }
 
   MockNetworkQualityTracker& mock_network_quality_tracker() {
@@ -150,7 +152,7 @@ class AndroidPageLoadMetricsObserverTest
 
  private:
   std::unique_ptr<page_load_metrics::PageLoadMetricsObserver> observer_;
-  TestAndroidPageLoadMetricsObserver* observer_ptr_;
+  raw_ptr<TestAndroidPageLoadMetricsObserver> observer_ptr_;
   MockNetworkQualityTracker mock_network_quality_tracker_;
   base::TimeTicks navigation_start_;
 };
@@ -198,7 +200,6 @@ TEST_F(AndroidPageLoadMetricsObserverTest, LoadTimingInfo) {
       url::Origin::Create(GURL("https://ignored.com")), net::IPEndPoint(),
       frame_tree_node_id, false, /* cached */
       10 * 1024 /* size */, 0 /* original_network_content_length */,
-      nullptr /* data_reduction_proxy_data */,
       network::mojom::RequestDestination::kDocument, 0,
       std::move(load_timing_info));
   tester()->SimulateLoadedResource(info,
@@ -214,11 +215,9 @@ TEST_F(AndroidPageLoadMetricsObserverTest, LoadEvents) {
   // Note this navigation start does not effect the start that is reported to
   // us.
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.document_timing->load_event_start =
-      base::TimeDelta::FromMilliseconds(30);
-  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(20);
-  timing.paint_timing->first_contentful_paint =
-      base::TimeDelta::FromMilliseconds(20);
+  timing.document_timing->load_event_start = base::Milliseconds(30);
+  timing.parse_timing->parse_start = base::Milliseconds(20);
+  timing.paint_timing->first_contentful_paint = base::Milliseconds(20);
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("https://www.example.com"));
   tester()->SimulateTimingUpdate(timing);

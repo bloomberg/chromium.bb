@@ -9,9 +9,8 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/host/host_status_observer.h"
@@ -35,6 +34,9 @@ class CertificateWatcher : public remoting::HostStatusObserver {
   CertificateWatcher(
       const base::RepeatingClosure& restart_action,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+
+  CertificateWatcher(const CertificateWatcher&) = delete;
+  CertificateWatcher& operator=(const CertificateWatcher&) = delete;
 
   // The message loop of io_task_runner MUST be running after the destructor is
   // called, otherwise there will be memory leaks.
@@ -95,8 +97,6 @@ class CertificateWatcher : public remoting::HostStatusObserver {
   base::TimeDelta delay_;
 
   base::WeakPtrFactory<CertificateWatcher> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CertificateWatcher);
 };
 
 }  // namespace remoting

@@ -722,7 +722,7 @@ CppType* MakeCppType(CppSymbolTable* table,
         cpp_type->discriminated_union.members.push_back(member);
       }
       return cpp_type;
-    } break;
+    }
     case CddlType::Which::kTaggedType: {
       cpp_type = GetCppType(table, name);
       cpp_type->which = CppType::Which::kTaggedType;

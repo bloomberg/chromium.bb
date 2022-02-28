@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -27,7 +26,15 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
  public:
   using TView = NetworkScreenView;
 
-  enum class Result { CONNECTED, OFFLINE_DEMO_SETUP, BACK };
+  enum class Result {
+    CONNECTED_REGULAR,
+    CONNECTED_DEMO,
+    OFFLINE_DEMO_SETUP,
+    BACK_REGULAR,
+    BACK_DEMO,
+    BACK_OS_INSTALL,
+    NOT_APPLICABLE
+  };
 
   static std::string GetResultString(Result result);
 
@@ -35,6 +42,10 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
 
   NetworkScreen(NetworkScreenView* view,
                 const ScreenExitCallback& exit_callback);
+
+  NetworkScreen(const NetworkScreen&) = delete;
+  NetworkScreen& operator=(const NetworkScreen&) = delete;
+
   ~NetworkScreen() override;
 
   // Called when `view` has been destroyed. If this instance is destroyed before
@@ -59,6 +70,7 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenUnitTest, ContinuesOnlyOnce);
 
   // BaseScreen:
+  bool MaybeSkip(WizardContext* context) override;
   void ShowImpl() override;
   void HideImpl() override;
   void OnUserAction(const std::string& action_id) override;
@@ -83,7 +95,7 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   void UnsubscribeNetworkNotification();
 
   // Notifies wizard on successful connection.
-  inline void NotifyOnConnection() { exit_callback_.Run(Result::CONNECTED); }
+  void NotifyOnConnection();
 
   // Called by `connection_timer_` when connection to the network timed out.
   void OnConnectionTimeout();
@@ -125,6 +137,9 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   // Indicates that we should proceed with OOBE as soon as we are connected.
   bool continue_pressed_ = false;
 
+  // Indicates whether screen has been shown already or not.
+  bool first_time_shown_ = true;
+
   // Timer for connection timeout.
   base::OneShotTimer connection_timer_;
 
@@ -133,8 +148,6 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
   base::WeakPtrFactory<NetworkScreen> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkScreen);
 };
 
 }  // namespace ash
@@ -143,6 +156,12 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
 // source migration is finished.
 namespace chromeos {
 using ::ash::NetworkScreen;
+}
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::NetworkScreen;
 }
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_SCREENS_NETWORK_SCREEN_H_

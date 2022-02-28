@@ -15,7 +15,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
@@ -29,7 +29,10 @@
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_server_socket.h"
 #include "net/ssl/ssl_server_config.h"
+#include "net/test/embedded_test_server/http_connection.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace net {
 
@@ -41,6 +44,7 @@ namespace test_server {
 class EmbeddedTestServerConnectionListener;
 class HttpConnection;
 class HttpResponse;
+class HttpResponseDelegate;
 struct HttpRequest;
 
 class EmbeddedTestServer;
@@ -296,6 +300,12 @@ class EmbeddedTestServer {
     // non-empty, the policies will be added to the leaf cert and the
     // intermediate cert (if an intermediate is configured).
     std::vector<std::string> policy_oids;
+
+    // A list of DNS names to include in the leaf subjectAltName extension.
+    std::vector<std::string> dns_names;
+
+    // A list of IP addresses to include in the leaf subjectAltName extension.
+    std::vector<net::IPAddress> ip_addresses;
   };
 
   typedef base::RepeatingCallback<std::unique_ptr<HttpResponse>(
@@ -316,8 +326,24 @@ class EmbeddedTestServer {
   // in any process where CertVerifiers are expected to accept the
   // EmbeddedTestServer's certs.
   EmbeddedTestServer();
-  explicit EmbeddedTestServer(Type type);
+  explicit EmbeddedTestServer(
+      Type type,
+      HttpConnection::Protocol protocol = HttpConnection::Protocol::kHttp1);
   ~EmbeddedTestServer();
+
+  //  Send a request to the server to be handled. If a response is created,
+  //  SendResponseBytes() should be called on the provided HttpConnection.
+  void HandleRequest(base::WeakPtr<HttpResponseDelegate> connection,
+                     std::unique_ptr<HttpRequest> request);
+
+  // Notify the server that a connection is no longer usable and is safe to
+  // destroy. For H/1 connections, this means a single request/response
+  // interaction, as keep-alive connections are not supported. If the
+  // connection listener is present and the socket is still connected, the
+  // listener will be notified.
+  void RemoveConnection(
+      HttpConnection* connection,
+      EmbeddedTestServerConnectionListener* listener = nullptr);
 
   // Registers the EmbeddedTestServer's certs for the current process. See
   // constructor documentation for more information.
@@ -381,6 +407,12 @@ class EmbeddedTestServer {
   // resolved to 127.0.0.1.
   GURL GetURL(const std::string& hostname,
               const std::string& relative_url) const;
+
+  // Convenience function equivalent to calling url::Origin::Create(base_url()).
+  // Will use the GetURL() variant that takes a hostname as the base URL, if
+  // `hostname` is non-null.
+  url::Origin GetOrigin(
+      const absl::optional<std::string>& hostname = absl::nullopt) const;
 
   // Returns the address list needed to connect to the server.
   bool GetAddressList(AddressList* address_list) const WARN_UNUSED_RESULT;
@@ -455,6 +487,19 @@ class EmbeddedTestServer {
   bool FlushAllSocketsAndConnectionsOnUIThread();
   void FlushAllSocketsAndConnections();
 
+  // Adds an origin/accept_ch pair to add to an ACCEPT_CH HTTP/2 frame. If any
+  // pairs have been added, the ALPS TLS extension will be populated, which
+  // will act as though an ACCEPT_CH frame was sent by the server before the
+  // first frame is sent by a client. For more information, see
+  // draft-vvv-tls-alps-01 and section 4.1 (HTTP/2 ACCEPT_CH Frame) of
+  // draft-davidben-http-client-hint-reliability
+  //
+  // Only valid before Start() or ResetSSLServerConfig(). Only valid when
+  // constructed with PROTOCOL_HTTP2. For the default host, use an empty
+  // string.
+  void SetAlpsAcceptCH(const std::string& hostname,
+                       const std::string& accept_ch);
+
  private:
   // Returns the file name of the certificate the server is using. The test
   // certificates can be found in net/data/ssl/certificates/.
@@ -474,10 +519,12 @@ class EmbeddedTestServer {
                                 const SSLServerConfig& ssl_config);
 
   // Upgrade the TCP connection to one over SSL.
-  std::unique_ptr<StreamSocket> DoSSLUpgrade(
+  std::unique_ptr<SSLServerSocket> DoSSLUpgrade(
       std::unique_ptr<StreamSocket> connection);
   // Handles async callback when the SSL handshake has been completed.
-  void OnHandshakeDone(HttpConnection* connection, int rv);
+  void OnHandshakeDone(HttpConnection* http_connection, int rv);
+  // Begins new connection if handshake resulted in a connection
+  void HandleHandshakeResults();
 
   // Begins accepting new client connections.
   void DoAcceptLoop();
@@ -486,29 +533,14 @@ class EmbeddedTestServer {
   void OnAcceptCompleted(int rv);
   // Adds the new |socket| to the list of clients and begins the reading
   // data.
-  void HandleAcceptResult(std::unique_ptr<StreamSocket> socket);
+  void HandleAcceptResult(std::unique_ptr<StreamSocket> socket_ptr);
 
-  // Attempts to read data from the |connection|'s socket.
-  void ReadData(HttpConnection* connection);
+  // Create a connection with a socket, add it to the map, and return pointers
+  // to both.
+  HttpConnection* AddConnection(std::unique_ptr<StreamSocket> socket_ptr);
+
   // Handles async callback when new data has been read from the |connection|.
   void OnReadCompleted(HttpConnection* connection, int rv);
-  // Parses the data read from the |connection| and returns true if the entire
-  // request has been received.
-  bool HandleReadResult(HttpConnection* connection, int rv);
-
-  // Called when |connection| is finished writing the response and the socket
-  // can be closed, allowing for |connnection_listener_| to take it if the
-  // socket is still open.
-  void OnResponseCompleted(HttpConnection* connection,
-                           std::unique_ptr<HttpResponse> response);
-
-  // Closes and removes the connection upon error or completion.
-  void DidClose(HttpConnection* connection);
-
-  // Handles a request when it is parsed. It passes the request to registered
-  // request handlers and sends a http response.
-  void HandleRequest(HttpConnection* connection,
-                     std::unique_ptr<HttpRequest> request);
 
   // Returns true if the current |cert_| configuration uses a static
   // pre-generated cert loaded from the filesystem.
@@ -526,8 +558,6 @@ class EmbeddedTestServer {
   // share the same cache
   bool InitializeSSLServerContext() WARN_UNUSED_RESULT;
 
-  HttpConnection* FindConnection(StreamSocket* socket);
-
   // Posts a task to the |io_thread_| and waits for a reply.
   bool PostTaskToIOThreadAndWait(base::OnceClosure closure) WARN_UNUSED_RESULT;
 
@@ -537,18 +567,19 @@ class EmbeddedTestServer {
       WARN_UNUSED_RESULT;
 
   const bool is_using_ssl_;
+  const HttpConnection::Protocol protocol_;
 
   std::unique_ptr<base::Thread> io_thread_;
 
   std::unique_ptr<TCPServerSocket> listen_socket_;
   std::unique_ptr<StreamSocket> accepted_socket_;
 
-  EmbeddedTestServerConnectionListener* connection_listener_;
+  raw_ptr<EmbeddedTestServerConnectionListener> connection_listener_;
   uint16_t port_;
   GURL base_url_;
   IPEndPoint local_endpoint_;
 
-  std::map<StreamSocket*, std::unique_ptr<HttpConnection>> connections_;
+  std::map<const StreamSocket*, std::unique_ptr<HttpConnection>> connections_;
 
   // Vector of registered and default request handlers and monitors.
   std::vector<HandleRequestCallback> request_handlers_;
@@ -562,6 +593,7 @@ class EmbeddedTestServer {
   ServerCertificateConfig cert_config_;
   scoped_refptr<X509Certificate> x509_cert_;
   bssl::UniquePtr<EVP_PKEY> private_key_;
+  base::flat_map<std::string, std::string> alps_accept_ch_;
   std::unique_ptr<SSLServerContext> context_;
 
   // HTTP server that handles AIA URLs that are embedded in this test server's
@@ -569,8 +601,6 @@ class EmbeddedTestServer {
   std::unique_ptr<EmbeddedTestServer> aia_http_server_;
 
   base::WeakPtrFactory<EmbeddedTestServer> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(EmbeddedTestServer);
 };
 
 }  // namespace test_server

@@ -6,8 +6,9 @@
 #include <cstring>
 #include <memory>
 
+#include "ash/components/settings/cros_settings_names.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -27,7 +28,6 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/remove_user_delegate.h"
@@ -36,6 +36,8 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_task_environment.h"
+#include "extensions/common/features/feature_session_type.h"
+#include "extensions/common/mojom/feature_session_type.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,7 +78,10 @@ class MockRemoveUserManager : public ChromeUserManagerImpl {
 
 class UserManagerTest : public testing::Test {
  public:
-  UserManagerTest() {}
+  UserManagerTest() {
+    session_type_ = extensions::ScopedCurrentFeatureSessionType(
+        extensions::GetCurrentFeatureSessionType());
+  }
 
  protected:
   void SetUp() override {
@@ -180,6 +185,18 @@ class UserManagerTest : public testing::Test {
       AccountId::FromUserEmailGaiaId("user1@invalid.domain", "9012345678");
 
  protected:
+  // The call chain
+  // - `ProfileRequiresPolicyUnknown`
+  // - `UserManagerBase::UserLoggedIn()`
+  // - `ChromeUserManagerImpl::NotifyOnLogin()`
+  // - `UserSessionManager::InitNonKioskExtensionFeaturesSessionType()`
+  // calls
+  // `extensions::SetCurrentFeatureSessionType(FeatureSessionType::kRegular)`
+  //
+  // |session_type_| is used to capture the original session type during |SetUp|
+  // and set it back to what it was during |TearDown|.
+  std::unique_ptr<base::AutoReset<extensions::mojom::FeatureSessionType>>
+      session_type_;
   std::unique_ptr<WallpaperControllerClientImpl> wallpaper_controller_client_;
   TestWallpaperController test_wallpaper_controller_;
 
@@ -222,7 +239,9 @@ TEST_F(UserManagerTest, RemoveUser) {
   ASSERT_EQ(2U, user_manager->GetUsers().size());
 
   // Removing logged-in account is unacceptable.
-  user_manager->RemoveUser(account_id0_at_invalid_domain_, nullptr);
+  user_manager->RemoveUser(account_id0_at_invalid_domain_,
+                           user_manager::UserRemovalReason::UNKNOWN,
+                           /*delegate=*/nullptr);
   EXPECT_EQ(2U, user_manager->GetUsers().size());
 
   // Recreate the user manager to log out all accounts.
@@ -233,13 +252,16 @@ TEST_F(UserManagerTest, RemoveUser) {
   // Removing non-owner account is acceptable.
   EXPECT_CALL(*user_manager, AsyncRemoveCryptohome(testing::_)).Times(1);
   UnittestRemoveUserDelegate delegate(account_id0_at_invalid_domain_);
-  user_manager->RemoveUser(account_id0_at_invalid_domain_, &delegate);
+  user_manager->RemoveUser(account_id0_at_invalid_domain_,
+                           user_manager::UserRemovalReason::UNKNOWN, &delegate);
   EXPECT_TRUE(delegate.HasBeforeUserRemoved());
   EXPECT_TRUE(delegate.HasUserRemoved());
   EXPECT_EQ(1U, user_manager->GetUsers().size());
 
   // Removing owner account is unacceptable.
-  user_manager->RemoveUser(owner_account_id_at_invalid_domain_, nullptr);
+  user_manager->RemoveUser(owner_account_id_at_invalid_domain_,
+                           user_manager::UserRemovalReason::UNKNOWN,
+                           /*delegate=*/nullptr);
   EXPECT_EQ(1U, user_manager->GetUsers().size());
 }
 

@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
@@ -24,18 +24,16 @@
 #include "net/socket/connect_job.h"
 #include "net/socket/socket_tag.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "url/scheme_host_port.h"
 
 namespace base {
 class Value;
-namespace trace_event {
-class ProcessMemoryDump;
-}
 }  // namespace base
 
 namespace net {
 
 class ClientSocketHandle;
-struct CommonConnectJobParams;
+class ConnectJobFactory;
 class HttpAuthController;
 class HttpResponseInfo;
 class NetLogWithSource;
@@ -97,21 +95,12 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
       base::OnceClosure restart_with_auth_callback)>
       ProxyAuthCallback;
 
-  enum class SocketType {
-    kHttp,
-
-    // This is a connection that uses an SSL connection to the final
-    // destination, though not necessarily to the proxy, if there is one.
-    kSsl,
-  };
-
   // Group ID for a socket request. Requests with the same group ID are
   // considered indistinguishable.
   class NET_EXPORT GroupId {
    public:
     GroupId();
-    GroupId(const HostPortPair& destination,
-            SocketType socket_type,
+    GroupId(url::SchemeHostPort destination,
             PrivacyMode privacy_mode,
             NetworkIsolationKey network_isolation_key,
             SecureDnsPolicy secure_dns_policy);
@@ -122,9 +111,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
     GroupId& operator=(const GroupId& group_id);
     GroupId& operator=(GroupId&& group_id);
 
-    const HostPortPair& destination() const { return destination_; }
-
-    SocketType socket_type() const { return socket_type_; }
+    const url::SchemeHostPort& destination() const { return destination_; }
 
     PrivacyMode privacy_mode() const { return privacy_mode_; }
 
@@ -138,26 +125,22 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
     std::string ToString() const;
 
     bool operator==(const GroupId& other) const {
-      return std::tie(destination_, socket_type_, privacy_mode_,
-                      network_isolation_key_, secure_dns_policy_) ==
-             std::tie(other.destination_, other.socket_type_,
-                      other.privacy_mode_, other.network_isolation_key_,
-                      other.secure_dns_policy_);
+      return std::tie(destination_, privacy_mode_, network_isolation_key_,
+                      secure_dns_policy_) ==
+             std::tie(other.destination_, other.privacy_mode_,
+                      other.network_isolation_key_, other.secure_dns_policy_);
     }
 
     bool operator<(const GroupId& other) const {
-      return std::tie(destination_, socket_type_, privacy_mode_,
-                      network_isolation_key_, secure_dns_policy_) <
-             std::tie(other.destination_, other.socket_type_,
-                      other.privacy_mode_, other.network_isolation_key_,
-                      other.secure_dns_policy_);
+      return std::tie(destination_, privacy_mode_, network_isolation_key_,
+                      secure_dns_policy_) <
+             std::tie(other.destination_, other.privacy_mode_,
+                      other.network_isolation_key_, other.secure_dns_policy_);
     }
 
    private:
-    // The host and port of the final destination (not the proxy).
-    HostPortPair destination_;
-
-    SocketType socket_type_;
+    // The endpoint of the final destination (not the proxy).
+    url::SchemeHostPort destination_;
 
     // If this request is for a privacy mode / uncredentialed connection.
     PrivacyMode privacy_mode_;
@@ -185,6 +168,9 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
     SocketParams(std::unique_ptr<SSLConfig> ssl_config_for_origin,
                  std::unique_ptr<SSLConfig> ssl_config_for_proxy);
 
+    SocketParams(const SocketParams&) = delete;
+    SocketParams& operator=(const SocketParams&) = delete;
+
     // Creates a  SocketParams object with none of the fields populated. This
     // works for the HTTP case only.
     static scoped_refptr<SocketParams> CreateForHttpForTesting();
@@ -203,9 +189,10 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
 
     std::unique_ptr<SSLConfig> ssl_config_for_origin_;
     std::unique_ptr<SSLConfig> ssl_config_for_proxy_;
-
-    DISALLOW_COPY_AND_ASSIGN(SocketParams);
   };
+
+  ClientSocketPool(const ClientSocketPool&) = delete;
+  ClientSocketPool& operator=(const ClientSocketPool&) = delete;
 
   ~ClientSocketPool() override;
 
@@ -342,12 +329,6 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   virtual base::Value GetInfoAsValue(const std::string& name,
                                      const std::string& type) const = 0;
 
-  // Dumps memory allocation stats. |parent_dump_absolute_name| is the name
-  // used by the parent MemoryAllocatorDump in the memory dump hierarchy.
-  virtual void DumpMemoryStats(
-      base::trace_event::ProcessMemoryDump* pmd,
-      const std::string& parent_dump_absolute_name) const = 0;
-
   // Returns the maximum amount of time to wait before retrying a connect.
   static const int kMaxConnectRetryIntervalMs = 250;
 
@@ -355,7 +336,9 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   static void set_used_idle_socket_timeout(base::TimeDelta timeout);
 
  protected:
-  ClientSocketPool();
+  ClientSocketPool(bool is_for_websockets,
+                   const CommonConnectJobParams* common_connect_job_params,
+                   std::unique_ptr<ConnectJobFactory> connect_job_factory);
 
   void NetLogTcpClientSocketPoolRequestedSocket(const NetLogWithSource& net_log,
                                                 const GroupId& group_id);
@@ -363,19 +346,19 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // Utility method to log a GroupId with a NetLog event.
   static base::Value NetLogGroupIdParams(const GroupId& group_id);
 
-  static std::unique_ptr<ConnectJob> CreateConnectJob(
+  std::unique_ptr<ConnectJob> CreateConnectJob(
       GroupId group_id,
       scoped_refptr<SocketParams> socket_params,
       const ProxyServer& proxy_server,
       const absl::optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
-      bool is_for_websockets,
-      const CommonConnectJobParams* common_connect_job_params,
       RequestPriority request_priority,
       SocketTag socket_tag,
       ConnectJob::Delegate* delegate);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ClientSocketPool);
+  const bool is_for_websockets_;
+  const raw_ptr<const CommonConnectJobParams> common_connect_job_params_;
+  const std::unique_ptr<ConnectJobFactory> connect_job_factory_;
 };
 
 }  // namespace net

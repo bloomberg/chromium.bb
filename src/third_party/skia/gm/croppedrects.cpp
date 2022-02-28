@@ -8,7 +8,6 @@
 #include "gm/gm.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkColor.h"
-#include "include/core/SkFilterQuality.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkPaint.h"
 #include "include/core/SkPath.h"
@@ -25,7 +24,7 @@ namespace skiagm {
 constexpr SkRect kSrcImageClip{75, 75, 275, 275};
 
 /*
- * The purpose of this test is to exercise all three codepaths in GrSurfaceDrawContext
+ * The purpose of this test is to exercise all three codepaths in skgpu::v1::SurfaceDrawContext
  * (drawFilledRect, fillRectToRect, fillRectWithLocalMatrix) that pre-crop filled rects based on the
  * clip.
  *
@@ -63,7 +62,7 @@ private:
         canvas->clear(SK_ColorWHITE);
 
         {
-            // GrSurfaceDrawContext::drawFilledRect.
+            // skgpu::v1::SurfaceDrawContext::drawFilledRect.
             SkAutoCanvasRestore acr(canvas, true);
             SkPaint paint;
             paint.setShader(fSrcImageShader);
@@ -72,7 +71,7 @@ private:
         }
 
         {
-            // GrSurfaceDrawContext::fillRectToRect.
+            // skgpu::v1::SurfaceDrawContext::fillRectToRect.
             SkAutoCanvasRestore acr(canvas, true);
             SkRect drawRect = SkRect::MakeXYWH(350, 100, 100, 300);
             canvas->clipRect(drawRect);
@@ -85,7 +84,7 @@ private:
         }
 
         {
-            // GrSurfaceDrawContext::fillRectWithLocalMatrix.
+            // skgpu::v1::SurfaceDrawContext::fillRectWithLocalMatrix.
             SkAutoCanvasRestore acr(canvas, true);
             SkPath path = SkPath::Line(
                    {kSrcImageClip.fLeft - kSrcImageClip.width(), kSrcImageClip.centerY()},

@@ -11,7 +11,6 @@
 #include <sys/sysctl.h>
 #include <string>
 
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -55,7 +54,6 @@ namespace web {
 std::string GetUserAgentTypeDescription(UserAgentType type) {
   switch (type) {
     case UserAgentType::AUTOMATIC:
-      DCHECK(features::UseWebClientDefaultUserAgent());
       return std::string(kUserAgentTypeAutomaticDescription);
     case UserAgentType::NONE:
       return std::string(kUserAgentTypeNoneDescription);

@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_KIOSK_ENABLE_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_KIOSK_ENABLE_SCREEN_HANDLER_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -37,6 +35,10 @@ class KioskEnableScreenHandler : public KioskEnableScreenView,
   using TView = KioskEnableScreenView;
 
   explicit KioskEnableScreenHandler(JSCallsContainer* js_calls_container);
+
+  KioskEnableScreenHandler(const KioskEnableScreenHandler&) = delete;
+  KioskEnableScreenHandler& operator=(const KioskEnableScreenHandler&) = delete;
+
   ~KioskEnableScreenHandler() override;
 
   // KioskEnableScreenView:
@@ -54,8 +56,6 @@ class KioskEnableScreenHandler : public KioskEnableScreenView,
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(KioskEnableScreenHandler);
 };
 
 }  // namespace chromeos
@@ -63,6 +63,7 @@ class KioskEnableScreenHandler : public KioskEnableScreenView,
 // TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
 // source migration is finished.
 namespace ash {
+using ::chromeos::KioskEnableScreenHandler;
 using ::chromeos::KioskEnableScreenView;
 }
 

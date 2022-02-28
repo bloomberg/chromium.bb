@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -28,6 +28,10 @@ class SynchronousCompositor;
 
 class SynchronousCompositorClient {
  public:
+  SynchronousCompositorClient(const SynchronousCompositorClient&) = delete;
+  SynchronousCompositorClient& operator=(const SynchronousCompositorClient&) =
+      delete;
+
   // Indication to the client that |compositor| is now initialized on the
   // compositor thread, and open for business. |process_id| and |routing_id|
   // belong to the RVH that owns the compositor.
@@ -42,8 +46,8 @@ class SynchronousCompositorClient {
                                     const viz::FrameSinkId& id) = 0;
 
   virtual void UpdateRootLayerState(SynchronousCompositor* compositor,
-                                    const gfx::Vector2dF& total_scroll_offset,
-                                    const gfx::Vector2dF& max_scroll_offset,
+                                    const gfx::PointF& total_scroll_offset,
+                                    const gfx::PointF& max_scroll_offset,
                                     const gfx::SizeF& scrollable_size,
                                     float page_scale_factor,
                                     float min_page_scale_factor,
@@ -69,9 +73,6 @@ class SynchronousCompositorClient {
  protected:
   SynchronousCompositorClient() {}
   virtual ~SynchronousCompositorClient() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorClient);
 };
 
 }  // namespace content
