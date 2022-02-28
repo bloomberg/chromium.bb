@@ -20,6 +20,7 @@
 <translation id="1774152462503052664">백그라운드에서 Chromium을 실행</translation>
 <translation id="1779356040007214683">Google에서는 Chromium의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />에 표시되지 않고 사용자 모르게 추가되었을 수 있는 일부 확장 프로그램의 사용을 중지했습니다.</translation>
 <translation id="1808667845054772817">Chromium 재설치</translation>
+<translation id="185970820835152459">로그인된 Google 계정을 관리할 수 있습니다. Google 계정은 Chromium 브라우저, Play 스토어, Gmail 등에서 사용됩니다. 가족 구성원 등 다른 사람을 위해 계정을 추가하고 싶다면 대신 <ph name="DEVICE_TYPE" />에 새 사용자를 추가하세요. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="1881322772814446296">관리 계정으로 로그인하고 Chromium 프로필에 대한 관리자 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정 등 Chromium 데이터가 <ph name="USER_NAME" /> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. 기존 Chromium 데이터를 유지하려면 새 프로필을 만드는 방법이 있습니다. <ph name="LEARN_MORE" /></translation>
 <translation id="1911763535808217981">이 기능을 사용 중지하면 Chromium에 로그인하지 않고도 Gmail 등의 Google 사이트에 로그인할 수 있습니다.</translation>
 <translation id="1929939181775079593">Chromium이 응답하지 않습니다. 다시 시작하시겠습니까?</translation>
@@ -27,34 +28,39 @@
 <translation id="1981611865800294956">다시 실행하여 Chromium OS 업데이트</translation>
 <translation id="2008474315282236005">항목 1개가 기기에서 삭제됩니다. 나중에 데이터를 가져오려면 Chromium에 <ph name="USER_EMAIL" />(으)로 로그인하세요.</translation>
 <translation id="2020032459870799438">다른 암호가 정보 유출 및 다른 보안 문제로부터 안전한지 확인하려면 <ph name="BEGIN_LINK" />Chromium에 로그인<ph name="END_LINK" />하세요.</translation>
+<translation id="2049376729098081731">보다 맞춤설정된 Google 서비스 환경을 사용하기 위해 Chromium 방문 기록을 포함할지 선택하세요.</translation>
 <translation id="2174178932569897599">Chromium 맞춤설정</translation>
 <translation id="2185166961232948079">Chromium - 네트워크 로그인 - <ph name="PAGE_TITLE" /></translation>
 <translation id="2241627712206172106">컴퓨터를 공유하는 경우 친구와 가족이 개별적으로 탐색하고 원하는 대로 Chromium을 설정할 수 있습니다.</translation>
 <translation id="2294245788148774212">선택사항: 진단 및 사용 데이터를 Google에 자동으로 전송하여 Chromium OS의 기능 및 성능 개선에 참여합니다.</translation>
+<translation id="2313870531055795960">Chromium에 저장된 안전하지 않은 사이트 목록을 사용하여 URL을 검사합니다. 사이트에서 사용자의 비밀번호를 도용하려고 하거나 사용자가 유해한 파일을 다운로드하는 경우, Chromium에서 페이지 콘텐츠 일부를 비롯한 URL을 세이프 브라우징 서비스에 보낼 수 있습니다.</translation>
 <translation id="2343156876103232566">여기에서 Android 휴대전화로 번호를 전송하려면 두 기기 모두에서 Chromium에 로그인하세요.</translation>
 <translation id="2347108572062610441">Chromium을 시작하면 표시되는 페이지가 이 확장 프로그램으로 인해 변경되었습니다.</translation>
+<translation id="2359808026110333948">계속</translation>
 <translation id="2396765026452590966">Chromium을 시작하면 표시되는 페이지가 '<ph name="EXTENSION_NAME" />' 확장 프로그램으로 인해 변경되었습니다.</translation>
+<translation id="2401032172288869980">Chromium에서 사이트에 대한 카메라 및 마이크 권한이 필요합니다.</translation>
 <translation id="2483889755041906834">Chromium에서</translation>
 <translation id="2485422356828889247">제거</translation>
+<translation id="251127392410688874">Chromium이 어떻게 오픈 웹의 장점을 유지하면서 크로스 사이트 추적으로부터 사용자를 보호할 계획인지 알아보세요.</translation>
 <translation id="2535480412977113886">계정의 로그인 세부정보가 오래되어 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="2560420686485554789">파일을 다운로드하려면 Chromium에 저장소 액세스 권한이 있어야 합니다</translation>
 <translation id="2572494885440352020">Chromium 도우미</translation>
-<translation id="2577788541081224677">모든 기기에서 Chromium 계정 정보에 액세스하려면 로그인하여 동기화하세요.</translation>
-<translation id="2580426763510374355">Chromium OS 설치</translation>
 <translation id="2583187216237139145">북마크, 방문 기록, 비밀번호, 기타 설정 생성 등 이 프로필을 사용하는 동안 생성된 모든 Chromium 데이터는 직장 프로필 관리자가 삭제할 수 있습니다. <ph name="LEARN_MORE" /></translation>
 <translation id="2587578672395088481">업데이트를 적용하려면 Chromium OS를 다시 시작해야 합니다.</translation>
+<translation id="2614883797045469742">사용자 대부분에게는 기본 설정이 적합하지만 사용자는 자신의 Chromium 이용 방식에 따라 설정을 맞춤설정할 수 있습니다</translation>
 <translation id="2648074677641340862">설치 중 운영체제 오류가 발생했습니다. Chromium을 다시 다운로드하세요.</translation>
 <translation id="2661879430930417727">기기를 공유하는 경우 친구와 가족이 개별적으로 탐색하고 원하는 대로 Chromium을 설정할 수 있습니다.</translation>
 <translation id="2711502716910134313">Chromium 탭</translation>
 <translation id="2718390899429598676">보안 강화를 위해 Chromium에서 사용자 데이터를 암호화합니다.</translation>
 <translation id="2770231113462710648">다음으로 기본 브라우저 변경:</translation>
 <translation id="2799223571221894425">다시 시작</translation>
-<translation id="2816712596130903444">Chromium 프로필을 분리하시겠습니까?</translation>
 <translation id="2837693172913560447"><ph name="USER_EMAIL_ADDRESS" />님을 위한 새 Chromium 프로필이 생성됩니다.</translation>
 <translation id="2847479871509788944">Chromium에서 제거...</translation>
+<translation id="2850691299438350830">로그인 상태일 때 Chromium에서 사용자를 보호하고 기타 Google 앱에서 사용자의 보안을 강화하는 데 사용될 수 있습니다.</translation>
 <translation id="2885378588091291677">작업 관리자</translation>
 <translation id="2910007522516064972">Chromium 정보</translation>
 <translation id="2977470724722393594">Chromium이 최신 버전임</translation>
+<translation id="2977506796191543575">사이트에서 사용자의 비밀번호를 도용하려고 하거나 사용자가 유해한 파일을 다운로드하는 경우, Chromium에서 페이지 콘텐츠 일부를 비롯한 URL을 세이프 브라우징 서비스에 보낼 수 있습니다.</translation>
 <translation id="2983934633046890458">Chromium에서 비밀번호를 수정하려고 합니다.</translation>
 <translation id="3032706164202344641">Chromium에서 비밀번호를 확인할 수 없습니다. 나중에 다시 시도하세요.</translation>
 <translation id="3032787606318309379">Chromium에 추가하는 중...</translation>
@@ -73,6 +79,7 @@
 <translation id="328888136576916638">Google API 키가 누락되었습니다. Chromium의 일부 기능이 사용 중지됩니다.</translation>
 <translation id="3296368748942286671">Chromium 종료 후에도 백그라운드 앱을 계속 실행</translation>
 <translation id="331951419404882060">로그인 중 오류가 발생하여 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>
+<translation id="3349211344363550267">Chromium은 이 파일을 다운로드하거나 열지 않을 것을 권장합니다.</translation>
 <translation id="3350761136195634146">이 계정을 사용하는 Chromium 프로필이 이미 존재합니다.</translation>
 <translation id="3406848076815591792">기존 Chromium 프로필로 전환하시겠습니까?</translation>
 <translation id="3430503420100763906">Chromium 프로필을 사용하면 모든 Chromium 데이터를 분리할 수 있습니다. 친구와 가족을 위한 프로필을 만들거나 업무용과 개인용 프로필을 구분하세요.</translation>
@@ -86,7 +93,6 @@
 <translation id="3651803019964686660"><ph name="ORIGIN" />에서 Android 휴대전화로 번호를 전송하려면 두 기기 모두에서 Chromium에 로그인하세요.</translation>
 <translation id="3685209450716071127">Chromium에서 비밀번호를 확인할 수 없습니다. 인터넷 연결 상태를 확인하세요.</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{관리자가 이 업데이트를 적용하려면 사용자가 Chromium을 다시 시작하도록 설정했습니다.}=1{관리자가 이 업데이트를 적용하려면 사용자가 Chromium을 다시 시작하도록 설정했습니다. 시크릿 창이 다시 열리지 않습니다.}other{관리자가 이 업데이트를 적용하려면 사용자가 Chromium을 다시 시작하도록 설정했습니다. 시크릿 창 #개가 다시 열리지 않습니다.}}</translation>
-<translation id="371088601698879021">Chromium OS를 재부팅할 때마다 사용자에게 묻지 않고도 앱 및 페이지를 복원하도록 설정하세요.</translation>
 <translation id="3713809861844741608">새 Chromium 탭에서 링크 열기(&amp;T)</translation>
 <translation id="3728336900324680424">Chromium에서 내 드라이브에 액세스하여 주소 표시줄에 추천 검색어를 표시합니다.</translation>
 <translation id="378917192836375108">Chromium을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
@@ -107,7 +113,7 @@
 <translation id="4407044323746248786">Chromium을 종료하시겠습니까?</translation>
 <translation id="4415566066719264597">백그라운드에서 Chromium을 실행</translation>
 <translation id="4423735387467980091">Chromium 맞춤설정 및 제어</translation>
-<translation id="4491398312037323794">이 페이지에서는 로그인된 Google 계정을 관리할 수 있습니다. Gmail, Drive, YouTube 등의 서비스와 Chromium 브라우저, Play 스토어 앱에서 계정을 사용할 수 있습니다. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
+<translation id="4427306783828095590">향상된 보호 기능이 피싱 및 멀웨어를 더욱 효과적으로 차단합니다.</translation>
 <translation id="452711251841752011">Chromium에 오신 것을 환영합니다. 새 브라우저 창이 열렸습니다</translation>
 <translation id="4544142686420020088">문제가 발생하여 Chromium을 업데이트할 수 없습니다. <ph name="BEGIN_LINK" />Chromium 업데이트 문제 및 업데이트 실패 문제 해결하기<ph name="END_LINK" /></translation>
 <translation id="454579500955453258">새 Chromium 프로필로 계속하시겠습니까?</translation>
@@ -134,12 +140,10 @@
 <translation id="5386450000063123300">Chromium 업데이트 중(<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="538767207339317086">Chromium 로그인 허용</translation>
 <translation id="5398878173008909840">Chromium의 새 버전이 출시되었습니다.</translation>
-<translation id="5416696090975899932">기본 제공되는 PDF 뷰어가 없으면 Chromium에서 인쇄 미리보기를 표시할 수 없습니다.</translation>
 <translation id="5427571867875391349">Chromium을 기본 브라우저로 설정</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium 베타</translation>
 <translation id="5479196819031988440">Chromium OS에서 이 페이지를 열 수 없음</translation>
 <translation id="5480860683791598150">이 사이트와 위치를 공유하려면 Chromium에 내 위치 액세스 권한이 있어야 합니다</translation>
-<translation id="5481338274774984070">Chromium은 이 파일을 다운로드하거나 열지 않을 것을 권장합니다.</translation>
 <translation id="549669000822060376">Chromium에서 최신 시스템 업데이트를 설치하는 동안 잠시 기다려 주세요.</translation>
 <translation id="5496810170689441661">Chromium에서 비밀번호를 수정하려고 합니다. 허용하려면 Windows 비밀번호를 입력하세요.</translation>
 <translation id="5527463683072221100">Chromium에서 PDF 열기</translation>
@@ -150,6 +154,7 @@
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5854740544000584380"><ph name="BEGIN_LINK_LINUX_OSS" />Linux 개발 환경<ph name="END_LINK_LINUX_OSS" />과 마찬가지로, Chromium OS는 추가 <ph name="BEGIN_LINK_CROS_OSS" />오픈소스 소프트웨어<ph name="END_LINK_CROS_OSS" />를 사용하여 개발되었습니다.</translation>
 <translation id="5862307444128926510">Chromium에 오신 것을 환영합니다.</translation>
+<translation id="5883558403894052917">Chromium에서 다음 항목에 멀웨어가 포함된 것을 발견했습니다.</translation>
 <translation id="5895138241574237353">다시 시작</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - 네트워크 로그인</translation>
 <translation id="5987687638152509985">동기화를 시작하려면 Chromium을 업데이트하세요.</translation>
@@ -167,6 +172,8 @@
 <translation id="6183079672144801177"><ph name="TARGET_DEVICE_NAME" />에서 Chromium에 로그인되어 있는지 확인한 다음 다시 전송해 보세요.</translation>
 <translation id="6212496753309875659">컴퓨터에 이미 최신 버전의 Chromium이 있습니다. 소프트웨어가 작동하지 않으면 Chromium의 설치를 제거한 뒤 다시 시도하세요.</translation>
 <translation id="6219195342503754812">{0,plural, =0{곧 Chromium이 다시 시작됩니다}=1{1초 후 Chromium이 다시 시작됩니다}other{#초 후 Chromium이 다시 시작됩니다}}</translation>
+<translation id="6241367896540709610">파일을 다운로드하려면 Chromium에 저장소 액세스 권한이 필요합니다.</translation>
+<translation id="6245734527075554892">Chromium에 저장된 안전하지 않은 사이트 목록을 사용하여 URL을 검사합니다.</translation>
 <translation id="6248213926982192922">Chromium을 기본 브라우저로 설정</translation>
 <translation id="6266342355635466082">Chromium에서 업데이트를 확인할 수 없습니다. 인터넷 연결 상태를 확인하세요.</translation>
 <translation id="6268381023930128611">Chromium에서 로그아웃</translation>
@@ -187,17 +194,19 @@
 <translation id="6570579332384693436">맞춤법 오류를 수정하기 위해 Chromium에서 사용자가 입력하는 텍스트를 Google로 전송합니다.</translation>
 <translation id="6598877126913850652">Chromium 알림 설정으로 이동</translation>
 <translation id="6613594504749178791">변경사항은 다음에 Chromium을 다시 시작할 때 적용됩니다.</translation>
+<translation id="665732753414869868">Chromium에서 주변의 3D 지도를 만들려면 카메라 권한이 필요합니다.</translation>
 <translation id="6676384891291319759">인터넷 연결</translation>
+<translation id="6709350901466051922">Chromium에서 사이트에 대한 마이크 권한이 필요합니다.</translation>
 <translation id="6717134281241384636">Chromium의 최신 버전을 사용하기 때문에 프로필을 사용할 수 없습니다.
 
 일부 기능을 사용할 수 없습니다. 다른 프로필 디렉터리를 지정하거나 Chromium의 새로운 버전을 사용하시기 바랍니다.</translation>
-<translation id="6734080038664603509">Chromium 업데이트</translation>
 <translation id="6734291798041940871">모든 사용자가 사용할 수 있도록 컴퓨터에 Chromium이 이미 설치되어 있습니다.</translation>
 <translation id="673636774878526923">모든 기기에서 Chromium 계정 정보에 액세스하려면 로그인한 후 동기화를 사용 설정하세요.</translation>
 <translation id="6774082503108938489">부모님이 Chromium의 ‘사이트, 앱, 확장 프로그램에 대한 권한’을 사용 중지하셨습니다. 이 <ph name="EXTENSION_TYPE_PARAMETER" /> 사용은 허용되지 않습니다.</translation>
 <translation id="6847869444787758381">비밀번호가 유출되면 Chromium에서 알려줍니다.</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay(Chromium에 복사됨)</translation>
+<translation id="6873893289264747459">Chromium에서 "<ph name="EXTENSION_NAME" />"에 멀웨어가 포함된 것을 발견했습니다.</translation>
 <translation id="6893813176749746474">Chromium이 업데이트되었지만, 최소 30일 동안 사용하지 않았습니다.</translation>
 <translation id="691026815377248078">페어링을 계속하려면 Chromium에서 블루투스 액세스 권한이
 필요합니다. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
@@ -206,10 +215,12 @@
 <translation id="6990124437352146030">이 사이트에서 마이크에 액세스하려면 Chromium에 권한이 필요합니다</translation>
 <translation id="705851970750939768">Chromium 업데이트</translation>
 <translation id="7067091210845072982">이미지에 유용한 설명이 없으면 Chromium에서 자동으로 설명을 제공하려고 시도합니다. 설명을 생성하기 위해 이미지가 Google로 전송됩니다.</translation>
+<translation id="7147279922647361552">Chromium의 가장 중요한 개인 정보 보호 옵션 일부 맞춤설정</translation>
+<translation id="718435575166326686">Chromium에서 사이트에 대한 카메라 권한이 필요합니다.</translation>
 <translation id="7196312274710523067">Chromium을 실행할 수 없습니다. 다시 시도해 보세요.</translation>
 <translation id="7197677400338048821">Chromium에서 비밀번호를 확인할 수 없습니다. 24시간 후 다시 시도해 보세요.</translation>
+<translation id="7218568399872925918">내가 방문한 사이트에서는 Chromium을 종료할 때까지 내 정보를 기억합니다.</translation>
 <translation id="7223968959479464213">작업 관리자 - Chromium</translation>
-<translation id="731644333568559921">Chrome OS 업데이트</translation>
 <translation id="731795002583552498">Chromium 업데이트 중</translation>
 <translation id="7318036098707714271">환경설정 파일이 손상되었거나 잘못되었습니다.
 
@@ -218,6 +229,7 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7339898014177206373">새 창</translation>
 <translation id="734373864078049451">웹, 북마크 및 기타 Chromium 콘텐츠가 여기에 저장됩니다.</translation>
 <translation id="7349591376906416160">시스템 관리자가 <ph name="TARGET_URL_HOSTNAME" /> 액세스를 위해 <ph name="ALTERNATIVE_BROWSER_NAME" />을(를) 열도록 Chromium을 구성했습니다.</translation>
+<translation id="7398989605938454041">Chromium 프로필을 사용하면 모든 Chromium 데이터를 분리할 수 있습니다. 업무용 데이터와 개인용 데이터를 더 쉽게 분리해 보세요.</translation>
 <translation id="7448255348454382571">Chromium OS 다시 시작</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> - 개발자용 Chromium</translation>
 <translation id="7451052299415159299">이 사이트에서 카메라에 액세스하려면 Chromium에 권한이 필요합니다</translation>
@@ -227,6 +239,7 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7561906087460245826">Chromium(<ph name="URL" />)에서도 데이터 삭제</translation>
 <translation id="7585853947355360626">페이지에 표시되지 않는 설정이 있다면 <ph name="LINK_BEGIN" />
       Chromium OS 설정<ph name="LINK_END" />을 확인해 보세요.</translation>
+<translation id="7597596667193879455">계정에서 향상된 세이프 브라우징을 사용 설정했습니다. Chromium에서도 사용하세요.</translation>
 <translation id="761356813943268536">Chromium이 카메라와 마이크를 사용 중입니다.</translation>
 <translation id="7617377681829253106">더욱 업그레이드된 Chromium</translation>
 <translation id="7686590090926151193">Chromium이 기본 브라우저로 설정되어 있지 않습니다</translation>
@@ -238,11 +251,12 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7828947555739565424">이 계정을 사용하는 Chromium 프로필이 기기에 이미 존재합니다</translation>
 <translation id="7857220146454061152">향후 Chromium 업데이트를 받으려면 OS X 10.11 이상이 필요합니다. 이 컴퓨터에서는 OS X 10.10을 사용하고 있습니다.</translation>
 <translation id="7867198900892795913">Chromium을 최신 버전으로 업데이트하지 못했기 때문에 새로운 기능과 보안 수정 사항이 적용되지 않았습니다.</translation>
+<translation id="788352880609666695">이 Chromium 프로필에서는 다음 계정을 사용할 수 있습니다</translation>
 <translation id="7898472181347242998">기기가 최신 버전인지 확인하려면 <ph name="LINK_BEGIN" />Chromium OS 설정<ph name="LINK_END" />으로 이동하세요.</translation>
-<translation id="7907774600618164274">Chromium OS가 제대로 종료되지 않았습니다.</translation>
 <translation id="7937630085815544518"><ph name="USER_EMAIL_ADDRESS" />(으)로 Chromium에 로그인되어 있습니다. 같은 계정으로 다시 로그인해 주세요.</translation>
 <translation id="7975919845073681630">Chromium의 보조 설치이며 기본 브라우저로 설정할 수 없습니다.</translation>
 <translation id="8013436988911883588">Chromium에 액세스 권한을 부여하면 웹사이트에서 액세스 권한을 요청할 수 있게 됩니다.</translation>
+<translation id="8105840573057009683">Chromium에서 사이트에 대한 위치 정보 액세스 권한이 필요합니다.</translation>
 <translation id="81770708095080097">이 파일은 위험하므로 Chromium에서 차단했습니다.</translation>
 <translation id="8248265253516264921">이미지에 유용한 설명이 없으면 Chromium에서 자동으로 설명을 제공하려고 시도합니다. 설명을 생성하기 위해 이미지가 Google로 전송됩니다. 이 기능은 언제든지 설정에서 사용 중지할 수 있습니다.</translation>
 <translation id="8266560134891435528">로그인되어 있지 않으므로 Chromium에서 비밀번호를 확인할 수 없습니다.</translation>
@@ -250,6 +264,7 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8290862415967981663">이 파일은 위험할 수 있으므로 Chromium에서 차단했습니다.</translation>
 <translation id="8330519371938183845">로그인하여 모든 기기에서 Chromium을 동기화하고 맞춤설정하세요.</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" />에서 이전에 Chromium을 사용한 적이 있음</translation>
+<translation id="8357820681460164151">모든 기기에서 Chromium 브라우저 데이터에 액세스하려면 로그인한 후 동기화를 사용 설정하세요</translation>
 <translation id="8417404458978023919">{0,plural, =1{1일 이내로 Chromium을 다시 시작해 주세요}other{#일 이내로 Chromium을 다시 시작해 주세요}}</translation>
 <translation id="8453117565092476964">설치 프로그램 아카이브가 손상되었거나 잘못되었습니다. Chromium을 다시 다운로드하세요.</translation>
 <translation id="8493179195440786826">Chromium이 이전 버전임</translation>
@@ -261,6 +276,8 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8621669128220841554">알 수 없는 오류로 인해 설치에 실패했습니다. Chromium을 다시 다운로드하세요.</translation>
 <translation id="8697124171261953979">또한 Chromium을 시작하거나 검색주소창에서 검색할 때 표시되는 페이지를 설정합니다.</translation>
 <translation id="8704119203788522458">나만의 Chromium</translation>
+<translation id="8713679423359107094">모든 Chromium 창을 닫으면 쿠키와 사이트 데이터가 자동으로 삭제됩니다.</translation>
+<translation id="8796443464227412154">Chromium을 종료하면 <ph name="BEGIN_BOLD" />대부분의 사이트에서 로그아웃<ph name="END_BOLD" />됩니다. 동기화를 사용 중지하면 <ph name="BEGIN_BOLD" />Google 서비스 및 Chromium에서도 로그아웃<ph name="END_BOLD" />됩니다.</translation>
 <translation id="8796602469536043152">이 사이트에서 카메라와 마이크에 액세스하려면 Chromium에 권한이 필요합니다</translation>
 <translation id="8803635938069941624">Chromium OS 용어</translation>
 <translation id="8821041990367117597">계정의 로그인 세부정보가 오래되어 Chromium에서 데이터를 동기화하지 못했습니다.</translation>
@@ -272,7 +289,6 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8974095189086268230">Chrome OS는 추가 <ph name="BEGIN_LINK_CROS_OSS" />오픈소스 소프트웨어<ph name="END_LINK_CROS_OSS" />를 사용했습니다.</translation>
 <translation id="8986207147630327271">직장 프로필을 이 브라우저에 추가하고 직장 프로필 제어 권한을 관리자에게 부여합니다.</translation>
 <translation id="9019929317751753759">Google에서는 Chromium의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />에 표시되지 않고 사용자가 모르게 추가되었을 수 있는 다음 확장 프로그램의 사용을 중지했습니다.</translation>
-<translation id="9047197236183657400">계정을 새 Chromium 프로필로 이동하시겠습니까?</translation>
 <translation id="9089354809943900324">Chromium이 이전 버전임</translation>
 <translation id="9093206154853821181">{0,plural, =1{1시간 후 Chromium이 다시 시작됩니다}other{#시간 후 Chromium이 다시 시작됩니다}}</translation>
 <translation id="91086099826398415">새 Chromium 탭에서 링크 열기(&amp;T)</translation>
@@ -283,5 +299,6 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="9214764063801632699">Chromium OS 시스템</translation>
 <translation id="93478295209880648">Windows XP 또는 Windows Vista에서 더 이상 Chromium을 지원하지 않으므로 Chromium이 올바르게 작동하지 않을 수 있습니다</translation>
 <translation id="965162752251293939">Chromium 사용자 선택</translation>
+<translation id="967427899662692980">Chromium의 가장 강력한 보안 기능을 이용하세요</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 </translationbundle>

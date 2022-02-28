@@ -20,7 +20,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -28,17 +28,18 @@
 #include "chromeos/services/assistant/assistant_interaction_logger.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
-#include "chromeos/services/assistant/public/cpp/assistant_client.h"
+#include "chromeos/services/assistant/public/cpp/assistant_browser_delegate.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/cpp/device_actions.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/service_context.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
-#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/scope_set.h"
 #include "components/user_manager/known_user.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -48,14 +49,11 @@ namespace assistant {
 
 namespace {
 
-constexpr char kScopeAuthGcm[] = "https://www.googleapis.com/auth/gcm";
 constexpr char kScopeAssistant[] =
     "https://www.googleapis.com/auth/assistant-sdk-prototype";
 
-constexpr base::TimeDelta kMinTokenRefreshDelay =
-    base::TimeDelta::FromMilliseconds(1000);
-constexpr base::TimeDelta kMaxTokenRefreshDelay =
-    base::TimeDelta::FromMilliseconds(60 * 1000);
+constexpr base::TimeDelta kMinTokenRefreshDelay = base::Milliseconds(1000);
+constexpr base::TimeDelta kMaxTokenRefreshDelay = base::Milliseconds(60 * 1000);
 
 // Testing override for the URI used to contact the s3 server.
 const char* g_s3_server_uri_override = nullptr;
@@ -130,6 +128,10 @@ class ScopedAshSessionObserver {
 class Service::Context : public ServiceContext {
  public:
   explicit Context(Service* parent) : parent_(parent) {}
+
+  Context(const Context&) = delete;
+  Context& operator=(const Context&) = delete;
+
   ~Context() override = default;
 
   // ServiceContext:
@@ -176,8 +178,6 @@ class Service::Context : public ServiceContext {
 
  private:
   Service* const parent_;  // |this| is owned by |parent_|.
-
-  DISALLOW_COPY_AND_ASSIGN(Context);
 };
 
 Service::Service(std::unique_ptr<network::PendingSharedURLLoaderFactory>
@@ -191,7 +191,7 @@ Service::Service(std::unique_ptr<network::PendingSharedURLLoaderFactory>
   DCHECK(identity_manager_);
   chromeos::PowerManagerClient* power_manager_client =
       context_->power_manager_client();
-  power_manager_observer_.Add(power_manager_client);
+  power_manager_observation_.Observe(power_manager_client);
   power_manager_client->RequestStatusUpdate();
 }
 
@@ -265,7 +265,7 @@ void Service::OnSessionActivated(bool activated) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   session_active_ = activated;
 
-  AssistantClient::Get()->OnAssistantStatusChanged(
+  AssistantBrowserDelegate::Get()->OnAssistantStatusChanged(
       ToAssistantStatus(assistant_manager_service_->GetState()));
   UpdateListeningState();
 }
@@ -332,7 +332,7 @@ void Service::OnStateChanged(AssistantManagerService::State new_state) {
   if (new_state == AssistantManagerService::State::RUNNING)
     DVLOG(1) << "Assistant is running";
 
-  AssistantClient::Get()->OnAssistantStatusChanged(
+  AssistantBrowserDelegate::Get()->OnAssistantStatusChanged(
       ToAssistantStatus(new_state));
   UpdateListeningState();
 }
@@ -433,7 +433,7 @@ void Service::RequestAccessToken() {
 
   signin::ScopeSet scopes;
   scopes.insert(kScopeAssistant);
-  scopes.insert(kScopeAuthGcm);
+  scopes.insert(GaiaConstants::kGCMGroupServerOAuth2Scope);
 
   access_token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
       account_info.account_id, "cros_assistant", scopes,
@@ -525,7 +525,8 @@ void Service::StopAssistantManagerService() {
 
   assistant_manager_service_->Stop();
   weak_ptr_factory_.InvalidateWeakPtrs();
-  AssistantClient::Get()->OnAssistantStatusChanged(AssistantStatus::NOT_READY);
+  AssistantBrowserDelegate::Get()->OnAssistantStatusChanged(
+      AssistantStatus::NOT_READY);
 }
 
 void Service::AddAshSessionObserver() {

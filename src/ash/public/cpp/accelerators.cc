@@ -5,8 +5,8 @@
 #include "ash/public/cpp/accelerators.h"
 
 #include "base/callback.h"
+#include "base/cxx17_backports.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 
 namespace ash {
 
@@ -33,6 +33,10 @@ const AcceleratorData kAcceleratorData[] = {
      TOGGLE_APP_LIST_FULLSCREEN},
     {true, ui::VKEY_WLAN, ui::EF_NONE, TOGGLE_WIFI},
     {true, ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::EF_NONE, PRIVACY_SCREEN_TOGGLE},
+    {true, ui::VKEY_MICROPHONE_MUTE_TOGGLE, ui::EF_NONE,
+     MICROPHONE_MUTE_TOGGLE},
+    {true, ui::VKEY_KBD_BACKLIGHT_TOGGLE, ui::EF_NONE,
+     KEYBOARD_BACKLIGHT_TOGGLE},
     {true, ui::VKEY_KBD_BRIGHTNESS_DOWN, ui::EF_NONE, KEYBOARD_BRIGHTNESS_DOWN},
     {true, ui::VKEY_KBD_BRIGHTNESS_UP, ui::EF_NONE, KEYBOARD_BRIGHTNESS_UP},
     // Maximize button.
@@ -149,7 +153,7 @@ const AcceleratorData kAcceleratorData[] = {
     // key opens quick settings.
     {true, ui::VKEY_SETTINGS, ui::EF_NONE, TOGGLE_SYSTEM_TRAY_BUBBLE},
     {true, ui::VKEY_K, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
-     SHOW_IME_MENU_BUBBLE},
+     TOGGLE_IME_MENU_BUBBLE},
     {true, ui::VKEY_1, ui::EF_ALT_DOWN, LAUNCH_APP_0},
     {true, ui::VKEY_2, ui::EF_ALT_DOWN, LAUNCH_APP_1},
     {true, ui::VKEY_3, ui::EF_ALT_DOWN, LAUNCH_APP_2},
@@ -164,6 +168,7 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_OEM_4, ui::EF_ALT_DOWN, WINDOW_CYCLE_SNAP_LEFT},
     {true, ui::VKEY_OEM_6, ui::EF_ALT_DOWN, WINDOW_CYCLE_SNAP_RIGHT},
     {true, ui::VKEY_OEM_MINUS, ui::EF_ALT_DOWN, WINDOW_MINIMIZE},
+    {true, ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN, TOGGLE_FLOATING},
     {true, ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN, TOGGLE_MAXIMIZED},
     {true, ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN, FOCUS_NEXT_PANE},
     {true, ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN, FOCUS_PREVIOUS_PANE},
@@ -215,11 +220,13 @@ const AcceleratorData kAcceleratorData[] = {
      DESKS_MOVE_ACTIVE_ITEM_LEFT},
     {true, ui::VKEY_OEM_6, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
      DESKS_MOVE_ACTIVE_ITEM_RIGHT},
-    // TODO(afakhry): Implement activating and moving windows to a desk by
-    // its index directly.
+    // TODO(afakhry): Implement moving windows to a desk by its index directly.
 
-    // TODO(yusukes): Handle VKEY_MEDIA_STOP, and
-    // VKEY_MEDIA_LAUNCH_MAIL.
+    // TODO(yusukes): Handle VKEY_MEDIA_STOP, and VKEY_MEDIA_LAUNCH_MAIL.
+
+    // ARC-specific shortcut.
+    {true, ui::VKEY_C, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
+     TOGGLE_RESIZE_LOCK_MENU},
 };
 
 const size_t kAcceleratorDataLength = base::size(kAcceleratorData);
@@ -303,6 +310,33 @@ const AcceleratorData kEnableWithPositionalAcceleratorsData[] = {
 const size_t kEnableWithPositionalAcceleratorsDataLength =
     base::size(kEnableWithPositionalAcceleratorsData);
 
+const AcceleratorData
+    kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorData[] = {
+        // Indexed-desk activation:
+        {true, ui::VKEY_1, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_0},
+        {true, ui::VKEY_2, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_1},
+        {true, ui::VKEY_3, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_2},
+        {true, ui::VKEY_4, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_3},
+        {true, ui::VKEY_5, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_4},
+        {true, ui::VKEY_6, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_5},
+        {true, ui::VKEY_7, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_6},
+        {true, ui::VKEY_8, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_7},
+        // Toggle assign to all desks:
+        {true, ui::VKEY_A, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_TOGGLE_ASSIGN_TO_ALL_DESKS},
+};
+
+const size_t kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorDataLength =
+    base::size(kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorData);
+
 // static
 AcceleratorController* AcceleratorController::Get() {
   return g_instance;
@@ -321,14 +355,30 @@ void AcceleratorController::PlayVolumeAdjustmentSound() {
     GetVolumeAdjustmentCallback()->Run();
 }
 
+void AcceleratorController::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AcceleratorController::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 AcceleratorController::AcceleratorController() {
   DCHECK_EQ(nullptr, g_instance);
   g_instance = this;
 }
 
 AcceleratorController::~AcceleratorController() {
+  for (auto& obs : observers_)
+    obs.OnAcceleratorControllerWillBeDestroyed(this);
+
   DCHECK_EQ(this, g_instance);
   g_instance = nullptr;
+}
+
+void AcceleratorController::NotifyActionPerformed(AcceleratorAction action) {
+  for (Observer& observer : observers_)
+    observer.OnActionPerformed(action);
 }
 
 }  // namespace ash

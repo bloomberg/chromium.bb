@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_tab_helper.h"
 
-#include "chrome/browser/chromeos/policy/dlp/dlp_content_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_content_observer.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -12,12 +14,39 @@
 
 namespace policy {
 
+namespace {
+bool g_ignore_rules_manager_for_testing_ = false;
+}
+
+// static
+void DlpContentTabHelper::MaybeCreateForWebContents(
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  // Do not observe incognito windows.
+  if (web_contents->GetBrowserContext()->IsOffTheRecord()) {
+    return;
+  }
+  // Do not observe non-managed users.
+  if (!g_ignore_rules_manager_for_testing_ &&
+      !DlpRulesManagerFactory::GetForPrimaryProfile()) {
+    return;
+  }
+  DlpContentTabHelper::CreateForWebContents(web_contents);
+}
+
+// static
+DlpContentTabHelper::ScopedIgnoreDlpRulesManager
+DlpContentTabHelper::IgnoreDlpRulesManagerForTesting() {
+  return ScopedIgnoreDlpRulesManager(&g_ignore_rules_manager_for_testing_,
+                                     true);
+}
+
 DlpContentTabHelper::~DlpContentTabHelper() = default;
 
 void DlpContentTabHelper::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   const DlpContentRestrictionSet restriction_set =
-      DlpContentManager::Get()->GetRestrictionSetForURL(
+      DlpContentRestrictionSet::GetForURL(
           render_frame_host->GetLastCommittedURL());
   if (!restriction_set.IsEmpty())
     AddFrame(render_frame_host, restriction_set);
@@ -33,7 +62,7 @@ void DlpContentTabHelper::RenderFrameHostStateChanged(
     content::RenderFrameHost::LifecycleState old_state,
     content::RenderFrameHost::LifecycleState new_state) {
   const DlpContentRestrictionSet restriction_set =
-      DlpContentManager::Get()->GetRestrictionSetForURL(
+      DlpContentRestrictionSet::GetForURL(
           render_frame_host->GetLastCommittedURL());
 
   using LifecycleState = content::RenderFrameHost::LifecycleState;
@@ -52,8 +81,7 @@ void DlpContentTabHelper::DidFinishNavigation(
   if (!navigation_handle->HasCommitted() || navigation_handle->IsErrorPage())
     return;
   const DlpContentRestrictionSet restriction_set =
-      DlpContentManager::Get()->GetRestrictionSetForURL(
-          navigation_handle->GetURL());
+      DlpContentRestrictionSet::GetForURL(navigation_handle->GetURL());
   if (restriction_set.IsEmpty()) {
     RemoveFrame(navigation_handle->GetRenderFrameHost());
   } else {
@@ -62,18 +90,19 @@ void DlpContentTabHelper::DidFinishNavigation(
 }
 
 void DlpContentTabHelper::WebContentsDestroyed() {
-  DlpContentManager::Get()->OnWebContentsDestroyed(web_contents());
+  DlpContentObserver::Get()->OnWebContentsDestroyed(web_contents());
 }
 
 void DlpContentTabHelper::OnVisibilityChanged(content::Visibility visibility) {
-  // DlpContentManager tracks visibility only for confidential WebContents.
+  // DlpContentObserver tracks visibility only for confidential WebContents.
   if (GetRestrictionSet().IsEmpty())
     return;
-  DlpContentManager::Get()->OnVisibilityChanged(web_contents());
+  DlpContentObserver::Get()->OnVisibilityChanged(web_contents());
 }
 
 DlpContentTabHelper::DlpContentTabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsUserData<DlpContentTabHelper>(*web_contents),
+      content::WebContentsObserver(web_contents) {}
 
 DlpContentRestrictionSet DlpContentTabHelper::GetRestrictionSet() const {
   DlpContentRestrictionSet set;
@@ -89,8 +118,8 @@ void DlpContentTabHelper::AddFrame(content::RenderFrameHost* render_frame_host,
   confidential_frames_[render_frame_host] = restrictions;
   const DlpContentRestrictionSet new_restriction_set = GetRestrictionSet();
   if (new_restriction_set != old_restriction_set) {
-    DlpContentManager::Get()->OnConfidentialityChanged(web_contents(),
-                                                       new_restriction_set);
+    DlpContentObserver::Get()->OnConfidentialityChanged(web_contents(),
+                                                        new_restriction_set);
   }
 }
 
@@ -100,11 +129,11 @@ void DlpContentTabHelper::RemoveFrame(
   confidential_frames_.erase(render_frame_host);
   const DlpContentRestrictionSet new_restriction_set = GetRestrictionSet();
   if (old_restriction_set != new_restriction_set) {
-    DlpContentManager::Get()->OnConfidentialityChanged(web_contents(),
-                                                       new_restriction_set);
+    DlpContentObserver::Get()->OnConfidentialityChanged(web_contents(),
+                                                        new_restriction_set);
   }
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(DlpContentTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(DlpContentTabHelper);
 
 }  // namespace policy

@@ -11,7 +11,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "courgette/courgette.h"
 #include "courgette/image_utils.h"
 #include "courgette/instruction_utils.h"
@@ -44,6 +43,10 @@ class SourceStreamSet;
 class EncodedProgram {
  public:
   EncodedProgram();
+
+  EncodedProgram(const EncodedProgram&) = delete;
+  EncodedProgram& operator=(const EncodedProgram&) = delete;
+
   ~EncodedProgram();
 
   // Generating an EncodedProgram:
@@ -138,8 +141,6 @@ class EncodedProgram {
   // Table of the addresses containing abs32 relocations; computed during
   // assembly, used to generate base relocation table.
   UInt32Vector abs32_relocs_;
-
-  DISALLOW_COPY_AND_ASSIGN(EncodedProgram);
 };
 
 // Deserializes program from a stream set to |*output|. Returns C_OK if

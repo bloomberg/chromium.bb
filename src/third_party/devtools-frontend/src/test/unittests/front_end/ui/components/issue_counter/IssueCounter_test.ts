@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertNotNull} from '../../../../../../front_end/core/platform/platform.js';
-import type * as IssuesManager from '../../../../../../front_end/models/issues_manager/issues_manager.js';
+import {assertNotNullOrUndefined} from '../../../../../../front_end/core/platform/platform.js';
+import * as IssuesManager from '../../../../../../front_end/models/issues_manager/issues_manager.js';
 import * as IconButton from '../../../../../../front_end/ui/components/icon_button/icon_button.js';
 import * as IssueCounter from '../../../../../../front_end/ui/components/issue_counter/issue_counter.js';
 import {assertElement, assertElements, assertShadowRoot, renderElementIntoDOM} from '../../../helpers/DOMHelpers.js';
@@ -25,7 +25,7 @@ export const extractIconGroups =
       const iconButton = shadowRoot.querySelector('icon-button');
       assertElement(iconButton, IconButton.IconButton.IconButton);
       const iconButtonShadowRoot = iconButton.shadowRoot;
-      assertNotNull(iconButtonShadowRoot);
+      assertNotNullOrUndefined(iconButtonShadowRoot);
       const icons = iconButtonShadowRoot.querySelectorAll('.status-icon');
       assertElements(icons, IconButton.Icon.Icon);
       const labels = iconButtonShadowRoot.querySelectorAll('.icon-button-title');
@@ -33,10 +33,22 @@ export const extractIconGroups =
       assert(icons.length === labels.length, 'Expected icons and labels to appear in pairs');
       const iconGroups = [];
       for (let i = 0; i < icons.length; ++i) {
-        iconGroups.push({iconData: icons[i].data, label: labels[i].textContent});
+        const labelElement = labels[i];
+        const label = window.getComputedStyle(labelElement).display === 'none' ? null : labelElement.textContent;
+        iconGroups.push({iconData: icons[i].data, label});
       }
       return iconGroups;
     };
+
+export const extractButton = (shadowRoot: ShadowRoot): HTMLButtonElement => {
+  const iconButton = shadowRoot.querySelector('icon-button');
+  assertElement(iconButton, IconButton.IconButton.IconButton);
+  const iconButtonShadowRoot = iconButton.shadowRoot;
+  assertNotNullOrUndefined(iconButtonShadowRoot);
+  const button = iconButtonShadowRoot.querySelector('button');
+  assertElement(button, HTMLButtonElement);
+  return button;
+};
 
 describe('IssueCounter', () => {
   describe('with omitting zero-count issue kinds', () => {
@@ -78,6 +90,47 @@ describe('IssueCounter', () => {
         const iconNames = icons.map(c => 'iconName' in c.iconData ? c.iconData.iconName : undefined);
         assert.deepEqual(iconNames, ['issue-cross-icon', 'issue-exclamation-icon', 'issue-text-icon']);
       }
+    });
+
+    it('updates correctly through setter', () => {
+      const issuesManager = new MockIssuesManager([]);
+      const {component, shadowRoot} = renderIssueCounter({
+        issuesManager: issuesManager as unknown as IssuesManager.IssuesManager.IssuesManager,
+        throttlerTimeout: 0,
+      });
+
+      {
+        const icons = extractIconGroups(shadowRoot);
+        assert.strictEqual(icons.length, 2);
+        assert.deepEqual(icons.map(c => c.label), ['2', '1']);
+        const iconNames = icons.map(c => 'iconName' in c.iconData ? c.iconData.iconName : undefined);
+        assert.deepEqual(iconNames, ['issue-cross-icon', 'issue-exclamation-icon']);
+      }
+
+      component.data = {...component.data, displayMode: IssueCounter.IssueCounter.DisplayMode.OnlyMostImportant};
+
+      {
+        const icons = extractIconGroups(shadowRoot);
+        assert.strictEqual(icons.length, 1);
+        assert.deepEqual(icons.map(c => c.label), ['2']);
+        const iconNames = icons.map(c => 'iconName' in c.iconData ? c.iconData.iconName : undefined);
+        assert.deepEqual(iconNames, ['issue-cross-icon']);
+      }
+    });
+
+    it('Aria label is added correctly', () => {
+      const expectedAccessibleName = 'Accessible Name';
+      const issuesManager = new MockIssuesManager([]);
+      const {shadowRoot} = renderIssueCounter({
+        issuesManager: issuesManager as unknown as IssuesManager.IssuesManager.IssuesManager,
+        throttlerTimeout: 0,
+        accessibleName: expectedAccessibleName,
+      });
+
+      const button = extractButton(shadowRoot);
+      const accessibleName = button.getAttribute('aria-label');
+
+      assert.strictEqual(accessibleName, expectedAccessibleName);
     });
   });
 
@@ -122,6 +175,43 @@ describe('IssueCounter', () => {
         const iconNames = icons.map(c => 'iconName' in c.iconData ? c.iconData.iconName : undefined);
         assert.deepEqual(iconNames, ['issue-cross-icon', 'issue-exclamation-icon', 'issue-text-icon']);
       }
+    });
+  });
+
+  describe('in compact mode', () => {
+    it('renders correctly', () => {
+      const issuesManager = new MockIssuesManager([]);
+      const {shadowRoot} = renderIssueCounter({
+        issuesManager: issuesManager as unknown as IssuesManager.IssuesManager.IssuesManager,
+        throttlerTimeout: 0,
+        compact: true,
+      });
+
+      const icons = extractIconGroups(shadowRoot);
+      assert.strictEqual(icons.length, 1);
+      assert.deepEqual(icons.map(c => c.label), [null]);
+      const iconNames = icons.map(c => 'iconName' in c.iconData ? c.iconData.iconName : undefined);
+      assert.deepEqual(iconNames, ['issue-cross-icon']);
+    });
+
+    it('renders correctly with only improvement issues', () => {
+      const issuesManager = new MockIssuesManager([]);
+      issuesManager.setNumberOfIssues(new Map([
+        [IssuesManager.Issue.IssueKind.Improvement, 3],
+        [IssuesManager.Issue.IssueKind.BreakingChange, 0],
+        [IssuesManager.Issue.IssueKind.PageError, 0],
+      ]));
+      const {shadowRoot} = renderIssueCounter({
+        issuesManager: issuesManager as unknown as IssuesManager.IssuesManager.IssuesManager,
+        throttlerTimeout: 0,
+        compact: true,
+      });
+
+      const icons = extractIconGroups(shadowRoot);
+      assert.strictEqual(icons.length, 1);
+      assert.deepEqual(icons.map(c => c.label), [null]);
+      const iconNames = icons.map(c => 'iconName' in c.iconData ? c.iconData.iconName : undefined);
+      assert.deepEqual(iconNames, ['issue-text-icon']);
     });
   });
 });

@@ -70,6 +70,10 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
 
   void OnCanCreateNewOutgoingStream(bool unidirectional) override;
 
+  bool ShouldNegotiateDatagramContexts() override {
+    return quic_simple_server_backend_->UsesDatagramContexts();
+  }
+
  protected:
   // QuicSession methods:
   QuicSpdyStream* CreateIncomingStream(QuicStreamId id) override;
@@ -96,9 +100,11 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
   bool ShouldNegotiateWebTransport() override {
     return quic_simple_server_backend_->SupportsWebTransport();
   }
-  bool ShouldNegotiateHttp3Datagram() override {
-    return QuicServerSessionBase::ShouldNegotiateHttp3Datagram() ||
-           ShouldNegotiateWebTransport();
+  HttpDatagramSupport LocalHttpDatagramSupport() override {
+    if (ShouldNegotiateWebTransport()) {
+      return HttpDatagramSupport::kDraft00And04;
+    }
+    return QuicServerSessionBase::LocalHttpDatagramSupport();
   }
 
  private:

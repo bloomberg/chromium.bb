@@ -99,12 +99,23 @@ base::Optional<std::string> PackageFromLocation(TraceStorage* storage,
     return "com.google.android.as";
   }
 
+  if (location.find("DeviceIntelligenceNetworkPrebuilt") !=
+          base::StringView::npos) {
+    return "com.google.android.as.oss";
+  }
+
+  if (location.find("SettingsIntelligenceGooglePrebuilt") !=
+          base::StringView::npos) {
+    return "com.google.android.settings.intelligence";
+  }
+
   base::StringView gm("/product/app/PrebuiltGmail/PrebuiltGmail.apk");
   if (location.size() >= gm.size() && location.substr(0, gm.size()) == gm) {
     return "com.google.android.gm";
   }
 
-  if (location.find("PrebuiltGmsCore") != std::string::npos) {
+  if (location.find("PrebuiltGmsCore") != std::string::npos ||
+      location.find("com.google.android.gms") != std::string::npos) {
     return "com.google.android.gms";
   }
 

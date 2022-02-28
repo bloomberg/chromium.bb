@@ -14,6 +14,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/permissions/android/android_permission_util.h"
 #include "components/permissions/permission_request_id.h"
+#include "components/permissions/permission_util.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -41,7 +42,8 @@ bool GeolocationPermissionContextDelegateAndroid::DecidePermission(
         base::BindOnce(
             &permissions::GeolocationPermissionContext::NotifyPermissionSet,
             context->GetWeakPtr(), id, requesting_origin,
-            web_contents->GetLastCommittedURL().GetOrigin(),
+            permissions::PermissionUtil::GetLastCommittedOriginAsURL(
+                web_contents),
             std::move(*callback), false /* persist */);
     InstalledWebappBridge::DecidePermission(requesting_origin,
                                             std::move(permission_callback));
@@ -91,10 +93,10 @@ void GeolocationPermissionContextDelegateAndroid::FinishNotifyPermissionSet(
 
   // If this is the default search origin, and the DSE Geolocation setting is
   // being used, potentially show the disclosure.
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      id.render_process_id(), id.render_frame_id());
   content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(
-          content::RenderFrameHost::FromID(id.render_process_id(),
-                                           id.render_frame_id()));
+      content::WebContents::FromRenderFrameHost(rfh);
   if (!web_contents)
     return;
 
@@ -103,5 +105,5 @@ void GeolocationPermissionContextDelegateAndroid::FinishNotifyPermissionSet(
 
   // The tab helper can be null in tests.
   if (disclosure_helper)
-    disclosure_helper->MaybeShowDisclosureForAPIAccess(requesting_origin);
+    disclosure_helper->MaybeShowDisclosureForAPIAccess(rfh, requesting_origin);
 }

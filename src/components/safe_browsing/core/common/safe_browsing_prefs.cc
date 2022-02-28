@@ -8,11 +8,11 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/core/common/thread_utils.h"
-#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
@@ -105,25 +105,36 @@ const char kAdvancedProtectionAllowed[] =
 const char kSafeBrowsingMetricsLastLogTime[] =
     "safebrowsing.metrics_last_log_time";
 const char kSafeBrowsingEventTimestamps[] = "safebrowsing.event_timestamps";
+const char kAccountTailoredSecurityUpdateTimestamp[] =
+    "safebrowsing.aesb_update_time_windows_epoch_micros";
+const char kAccountTailoredSecurityShownNotification[] =
+    "safebrowsing.aesb_shown_notification";
+const char kEnhancedProtectionEnabledViaTailoredSecurity[] =
+    "safebrowsing.esb_enabled_via_tailored_security";
+
 }  // namespace prefs
 
 namespace safe_browsing {
 
 SafeBrowsingState GetSafeBrowsingState(const PrefService& prefs) {
   if (IsEnhancedProtectionEnabled(prefs)) {
-    return ENHANCED_PROTECTION;
+    return SafeBrowsingState::ENHANCED_PROTECTION;
   } else if (prefs.GetBoolean(prefs::kSafeBrowsingEnabled)) {
-    return STANDARD_PROTECTION;
+    return SafeBrowsingState::STANDARD_PROTECTION;
   } else {
-    return NO_SAFE_BROWSING;
+    return SafeBrowsingState::NO_SAFE_BROWSING;
   }
 }
 
-void SetSafeBrowsingState(PrefService* prefs, SafeBrowsingState state) {
-  if (state == ENHANCED_PROTECTION) {
+void SetSafeBrowsingState(PrefService* prefs,
+                          SafeBrowsingState state,
+                          bool is_esb_enabled_in_sync) {
+  if (state == SafeBrowsingState::ENHANCED_PROTECTION) {
     SetEnhancedProtectionPref(prefs, true);
     SetStandardProtectionPref(prefs, true);
-  } else if (state == STANDARD_PROTECTION) {
+    prefs->SetBoolean(prefs::kEnhancedProtectionEnabledViaTailoredSecurity,
+                      is_esb_enabled_in_sync);
+  } else if (state == SafeBrowsingState::STANDARD_PROTECTION) {
     SetEnhancedProtectionPref(prefs, false);
     SetStandardProtectionPref(prefs, true);
   } else {
@@ -176,11 +187,6 @@ void RecordExtendedReportingMetrics(const PrefService& prefs) {
   // happening for this user.
   UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.Pref.Extended",
                         IsExtendedReportingEnabled(prefs));
-
-  // Track whether this user has ever seen a security interstitial.
-  UMA_HISTOGRAM_BOOLEAN(
-      "SafeBrowsing.Pref.SawInterstitial",
-      prefs.GetBoolean(prefs::kSafeBrowsingSawInterstitialScoutReporting));
 }
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
@@ -217,6 +223,13 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       prefs::kSafeBrowsingEnterpriseRealTimeUrlCheckScope, 0);
   registry->RegisterInt64Pref(prefs::kSafeBrowsingMetricsLastLogTime, 0);
   registry->RegisterDictionaryPref(prefs::kSafeBrowsingEventTimestamps);
+  registry->RegisterTimePref(
+      prefs::kAccountTailoredSecurityUpdateTimestamp, base::Time(),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kAccountTailoredSecurityShownNotification, false);
+  registry->RegisterBooleanPref(
+      prefs::kEnhancedProtectionEnabledViaTailoredSecurity, false);
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -273,6 +286,38 @@ base::ListValue GetSafeBrowsingPreferencesList(PrefService* prefs) {
   return preferences_list;
 }
 
+base::ListValue GetSafeBrowsingPoliciesList(PrefService* prefs) {
+  base::ListValue preferences_list;
+  const base::ListValue* allowlist_domains =
+      prefs->GetList(prefs::kSafeBrowsingAllowlistDomains);
+  std::vector<std::string> domain_list;
+  CanonicalizeDomainList(*allowlist_domains, &domain_list);
+  std::string domains;
+  for (const auto& domain : domain_list) {
+    domains = domains + " " + domain;
+  }
+  preferences_list.Append(base::Value(domains));
+  preferences_list.Append(base::Value(prefs::kSafeBrowsingAllowlistDomains));
+  preferences_list.Append(base::Value(
+      prefs->GetString(prefs::kPasswordProtectionChangePasswordURL)));
+  preferences_list.Append(
+      base::Value(prefs::kPasswordProtectionChangePasswordURL));
+  preferences_list.Append(base::Value(base::NumberToString(
+      prefs->GetInteger(prefs::kPasswordProtectionWarningTrigger))));
+  preferences_list.Append(
+      base::Value(prefs::kPasswordProtectionWarningTrigger));
+
+  std::vector<GURL> login_urls_list;
+  GetPasswordProtectionLoginURLsPref(*prefs, &login_urls_list);
+  std::string login_urls;
+  for (const auto& login_url : login_urls_list) {
+    login_urls = login_urls + " " + login_url.spec();
+  }
+  preferences_list.Append(base::Value(login_urls));
+  preferences_list.Append(base::Value(prefs::kPasswordProtectionLoginURLs));
+  return preferences_list;
+}
+
 void GetSafeBrowsingAllowlistDomainsPref(
     const PrefService& prefs,
     std::vector<std::string>* out_canonicalized_domain_list) {
@@ -296,21 +341,7 @@ void CanonicalizeDomainList(
   }
 }
 
-bool IsURLAllowlistedByPolicy(const GURL& url,
-                              StringListPrefMember* pref_member) {
-  DCHECK(CurrentlyOnThread(ThreadID::IO));
-  if (!pref_member)
-    return false;
-
-  std::vector<std::string> sb_allowlist_domains = pref_member->GetValue();
-  return std::find_if(sb_allowlist_domains.begin(), sb_allowlist_domains.end(),
-                      [&url](const std::string& domain) {
-                        return url.DomainIs(domain);
-                      }) != sb_allowlist_domains.end();
-}
-
 bool IsURLAllowlistedByPolicy(const GURL& url, const PrefService& pref) {
-  DCHECK(CurrentlyOnThread(ThreadID::UI));
   if (!pref.HasPrefPath(prefs::kSafeBrowsingAllowlistDomains))
     return false;
   const base::ListValue* allowlist =

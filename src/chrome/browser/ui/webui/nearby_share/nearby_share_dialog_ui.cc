@@ -19,12 +19,14 @@
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/nearby_share/shared_resources.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
+#include "chrome/browser/ui/webui/sanitized_image_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/nearby_share_dialog_resources.h"
 #include "chrome/grit/nearby_share_dialog_resources_map.h"
 #include "chrome/grit/theme_resources.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -36,6 +38,16 @@
 
 namespace nearby_share {
 
+// Keep in sync with //chrome/browser/resources/nearby_share/shared/types.js
+enum class CloseReason {
+  kUnknown = 0,
+  kTransferStarted = 1,
+  kTransferSucceeded = 2,
+  kCancelled = 3,
+  kRejected = 4,
+  kMax = kRejected
+};
+
 NearbyShareDialogUI::NearbyShareDialogUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true) {
   Profile* profile = Profile::FromWebUI(web_ui);
@@ -46,6 +58,9 @@ NearbyShareDialogUI::NearbyShareDialogUI(content::WebUI* web_ui)
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUINearbyShareHost);
+
+  content::URLDataSource::Add(profile,
+                              std::make_unique<SanitizedImageSource>(profile));
 
   webui::SetupWebUIDataSource(html_source,
                               base::make_span(kNearbyShareDialogResources,
@@ -63,7 +78,8 @@ NearbyShareDialogUI::NearbyShareDialogUI(content::WebUI* web_ui)
   RegisterNearbySharedStrings(html_source);
   html_source->UseStringsJs();
 
-  web_ui->RegisterMessageCallback(
+  // Register callback to handle "cancel-button-event" from nearby_*.html files.
+  web_ui->RegisterDeprecatedMessageCallback(
       "close", base::BindRepeating(&NearbyShareDialogUI::HandleClose,
                                    base::Unretained(this)));
 
@@ -113,13 +129,33 @@ void NearbyShareDialogUI::BindInterface(
 }
 
 void NearbyShareDialogUI::HandleClose(const base::ListValue* args) {
-  if (sharesheet_controller_) {
-    sharesheet_controller_->CloseSharesheet();
+  if (!sharesheet_controller_)
+    return;
 
-    // We need to clear out the controller here to protect against calling
-    // CloseShareSheet() more than once, which will cause a crash.
-    sharesheet_controller_ = nullptr;
+  base::Value::ConstListView args_list = args->GetList();
+  CHECK_EQ(1u, args_list.size());
+  CHECK_GE(args_list[0].GetInt(), 0u);
+  CHECK_LE(args_list[0].GetInt(), static_cast<int>(CloseReason::kMax));
+  CloseReason reason = static_cast<CloseReason>(args_list[0].GetInt());
+
+  sharesheet::SharesheetResult sharesheet_result;
+  switch (reason) {
+    case CloseReason::kTransferStarted:
+    case CloseReason::kTransferSucceeded:
+      sharesheet_result = sharesheet::SharesheetResult::kSuccess;
+      break;
+    case CloseReason::kUnknown:
+    case CloseReason::kCancelled:
+    case CloseReason::kRejected:
+      sharesheet_result = sharesheet::SharesheetResult::kCancel;
+      break;
   }
+
+  sharesheet_controller_->CloseBubble(sharesheet_result);
+
+  // We need to clear out the controller here to protect against calling
+  // CloseBubble() more than once, which will cause a crash.
+  sharesheet_controller_ = nullptr;
 }
 
 void NearbyShareDialogUI::SetAttachmentFromQueryParameter(const GURL& url) {

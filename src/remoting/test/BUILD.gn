@@ -49,6 +49,7 @@ static_library("test_support") {
     "//mojo/core/embedder",
     "//net",
     "//remoting/base",
+    "//remoting/base:logging",
     "//remoting/client",
     "//remoting/client/audio",
     "//remoting/codec:decoder",
@@ -70,7 +71,6 @@ static_library("test_support") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/webrtc_overrides:webrtc_component",
   ]
 }
 
@@ -101,10 +101,13 @@ if (enable_remoting_host && !is_android && !is_chromeos_ash &&
       ]
       deps = [
         ":test_support",
+        "//extensions/browser/api/messaging:native_messaging",
         "//mojo/core/embedder",
         "//remoting/base",
         "//remoting/base:authorization",
+        "//remoting/base:logging",
         "//remoting/host",
+        "//remoting/host:resources",
         "//remoting/host/it2me:common",
         "//remoting/host/native_messaging",
       ]
@@ -140,7 +143,10 @@ if (enable_remoting_host && !is_android && !is_chromeos_ash &&
 
     sources = [ "it2me_standalone_host_main.cc" ]
 
-    deps = [ ":it2me_standalone_host" ]
+    deps = [
+      ":it2me_standalone_host",
+      "//remoting/host:resources",
+    ]
 
     if (is_linux || is_chromeos_lacros) {
       deps += [
@@ -167,7 +173,7 @@ if (enable_remoting_host && !is_android && !is_chromeos_ash &&
 
     deps = [
       "//base",
-      "//remoting/host:base",
+      "//remoting/host/base",
     ]
   }
 }
@@ -185,6 +191,7 @@ executable("ftl_services_playground") {
     "//mojo/core/embedder",
     "//remoting/base",
     "//remoting/base:authorization",
+    "//remoting/base:logging",
     "//remoting/proto/ftl/v1:ftl_messages",
     "//remoting/signaling",
     "//services/network:network_service",
@@ -205,6 +212,7 @@ executable("ftl_signaling_playground") {
     "//mojo/core/embedder",
     "//remoting/base",
     "//remoting/base:authorization",
+    "//remoting/base:logging",
     "//remoting/signaling",
     "//services/network:network_service",
   ]

@@ -32,7 +32,7 @@ class CONTENT_EXPORT ComputePressureHost
     : public blink::mojom::ComputePressureHost {
  public:
   static constexpr base::TimeDelta kDefaultVisibleObserverRateLimit =
-      base::TimeDelta::FromSeconds(1);
+      base::Seconds(1);
 
   // `did_connection_change` is called on changes to the mojo connections
   // handled by this host are changed. The callback will not be Run() after
@@ -67,10 +67,10 @@ class CONTENT_EXPORT ComputePressureHost
   }
 
   void BindReceiver(
-      GlobalFrameRoutingId frame_id,
+      GlobalRenderFrameHostId frame_id,
       mojo::PendingReceiver<blink::mojom::ComputePressureHost> receiver);
 
-  // blink.mojom.ComputePressureManager implementation.
+  // blink::mojom::ComputePressureHost implementation.
   void AddObserver(
       mojo::PendingRemote<blink::mojom::ComputePressureObserver> observer,
       blink::mojom::ComputePressureQuantizationPtr quantization,
@@ -103,7 +103,7 @@ class CONTENT_EXPORT ComputePressureHost
   const base::TimeDelta visible_observer_rate_limit_;
 
   // Keeps track of the frame associated with each receiver.
-  mojo::ReceiverSet<blink::mojom::ComputePressureHost, GlobalFrameRoutingId>
+  mojo::ReceiverSet<blink::mojom::ComputePressureHost, GlobalRenderFrameHostId>
       receivers_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Called to inform the owner when the set of receivers or remotes changes.
@@ -120,11 +120,11 @@ class CONTENT_EXPORT ComputePressureHost
   // Keeps track of the frame associated with each observer.
   //
   // Used to determine the rate-limiting appropriate for each observer.
-  std::map<mojo::RemoteSetElementId, GlobalFrameRoutingId> observer_contexts_
+  std::map<mojo::RemoteSetElementId, GlobalRenderFrameHostId> observer_contexts_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Implements the quantizing scheme used for all the origin's observers.
-  ComputePressureQuantizer quantizer_;
+  ComputePressureQuantizer quantizer_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // The (quantized) sample that was last reported to this origin's observers.
   //
@@ -142,4 +142,4 @@ class CONTENT_EXPORT ComputePressureHost
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_COMPUTE_PRESSURE_COMPUTE_PRESSURE_QUANTIZER_H_
+#endif  // CONTENT_BROWSER_COMPUTE_PRESSURE_COMPUTE_PRESSURE_HOST_H_

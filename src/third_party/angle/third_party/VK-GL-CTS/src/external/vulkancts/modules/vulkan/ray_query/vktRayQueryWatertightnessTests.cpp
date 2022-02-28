@@ -88,8 +88,8 @@ typedef const std::string (*ShaderBodyTextFunc)(const TestParams& testParams);
 class PipelineConfiguration
 {
 public:
-					PipelineConfiguration	()	{};
-	virtual			~PipelineConfiguration	()	{};
+					PipelineConfiguration	()	{}
+	virtual			~PipelineConfiguration	()	{}
 
 	virtual void	initConfiguration	(Context&							context,
 										 TestParams&						testParams) = 0;
@@ -338,7 +338,7 @@ public:
 															 const TestParams&					testParams);
 
 									GraphicsConfiguration	();
-	virtual							~GraphicsConfiguration	() {};
+	virtual							~GraphicsConfiguration	() {}
 
 	void							initVertexBuffer		(Context&							context,
 															 TestParams&						testParams);
@@ -407,29 +407,27 @@ void GraphicsConfiguration::checkSupport (Context&			context,
 {
 	switch (testParams.stage)
 	{
-		case VK_SHADER_STAGE_VERTEX_BIT:
-			break;
+	case VK_SHADER_STAGE_VERTEX_BIT:
+	case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT:
+	case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
+	case VK_SHADER_STAGE_GEOMETRY_BIT:
+		context.requireDeviceCoreFeature(DEVICE_CORE_FEATURE_VERTEX_PIPELINE_STORES_AND_ATOMICS);
+		break;
+	default:
+		break;
+	}
 
-		case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT:
-		case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
-		{
-			context.requireDeviceCoreFeature(DEVICE_CORE_FEATURE_TESSELLATION_SHADER);
-
-			break;
-		}
-
-		case VK_SHADER_STAGE_GEOMETRY_BIT:
-		{
-			context.requireDeviceCoreFeature(DEVICE_CORE_FEATURE_GEOMETRY_SHADER);
-
-			break;
-		}
-
-		case VK_SHADER_STAGE_FRAGMENT_BIT:
-			break;
-
-		default:
-			TCU_THROW(InternalError, "Unknown stage");
+	switch (testParams.stage)
+	{
+	case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT:
+	case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
+		context.requireDeviceCoreFeature(DEVICE_CORE_FEATURE_TESSELLATION_SHADER);
+		break;
+	case VK_SHADER_STAGE_GEOMETRY_BIT:
+		context.requireDeviceCoreFeature(DEVICE_CORE_FEATURE_GEOMETRY_SHADER);
+		break;
+	default:
+		break;
 	}
 }
 
@@ -927,7 +925,7 @@ class ComputeConfiguration : public PipelineConfiguration
 {
 public:
 								ComputeConfiguration	();
-	virtual						~ComputeConfiguration	() {};
+	virtual						~ComputeConfiguration	() {}
 
 	static void					checkSupport			(Context&							context,
 														 const TestParams&					testParams);
@@ -1064,7 +1062,7 @@ class RayTracingConfiguration : public PipelineConfiguration
 {
 public:
 													RayTracingConfiguration				();
-	virtual											~RayTracingConfiguration			() {};
+	virtual											~RayTracingConfiguration			() {}
 
 	static void										checkSupport						(Context&							context,
 																						 const TestParams&					testParams);
@@ -2208,8 +2206,8 @@ static inline ShaderBodyTextFunc getShaderBodyTextFunc (const TestType testType)
 {
 	switch (testType)
 	{
-		case TEST_TYPE_NO_MISS:		return getShaderBodyText;	break;
-		case TEST_TYPE_SINGLE_HIT:	return getShaderBodyText;	break;
+		case TEST_TYPE_NO_MISS:		return getShaderBodyText;
+		case TEST_TYPE_SINGLE_HIT:	return getShaderBodyText;
 		default:					TCU_THROW(InternalError, "Unknown test type");
 	}
 }

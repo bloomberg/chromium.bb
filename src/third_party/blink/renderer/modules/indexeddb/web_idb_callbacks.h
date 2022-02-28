@@ -30,12 +30,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
-class WebIDBCursorImpl;
+class WebIDBCursor;
 
 class WebIDBCallbacks : public mojom::blink::IDBCallbacks {
  public:
@@ -44,7 +45,7 @@ class WebIDBCallbacks : public mojom::blink::IDBCallbacks {
       Vector<std::unique_ptr<IDBKey>> primary_keys,
       Vector<std::unique_ptr<IDBValue>> values) = 0;
   virtual void DetachRequestFromCallback() = 0;
-  virtual void SetState(base::WeakPtr<WebIDBCursorImpl> cursor,
+  virtual void SetState(base::WeakPtr<WebIDBCursor> cursor,
                         int64_t transaction_id) = 0;
   virtual void SuccessCursor(
       mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> cursor_info,

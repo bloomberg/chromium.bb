@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no_underscored_properties */
-
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -22,7 +20,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
 let workerMainImplInstance: WorkerMainImpl;
 
-export class WorkerMainImpl extends Common.ObjectWrapper.ObjectWrapper implements Common.Runnable.Runnable {
+export class WorkerMainImpl implements Common.Runnable.Runnable {
   static instance(opts: {
     forceNew: boolean|null,
   } = {forceNew: null}): WorkerMainImpl {
@@ -36,8 +34,11 @@ export class WorkerMainImpl extends Common.ObjectWrapper.ObjectWrapper implement
 
   async run(): Promise<void> {
     SDK.Connections.initMainConnection(async () => {
-      SDK.SDKModel.TargetManager.instance().createTarget(
-          'main', i18nString(UIStrings.main), SDK.SDKModel.Type.ServiceWorker, null);
+      if (await SDK.TargetManager.TargetManager.instance().maybeAttachInitialTarget()) {
+        return;
+      }
+      SDK.TargetManager.TargetManager.instance().createTarget(
+          'main', i18nString(UIStrings.main), SDK.Target.Type.ServiceWorker, null);
     }, Components.TargetDetachedDialog.TargetDetachedDialog.webSocketConnectionLost);
     new MobileThrottling.NetworkPanelIndicator.NetworkPanelIndicator();
   }
@@ -47,7 +48,7 @@ Common.Runnable.registerEarlyInitializationRunnable(WorkerMainImpl.instance);
 
 SDK.ChildTargetManager.ChildTargetManager.install(async ({target, waitingForDebugger}) => {
   // Only pause the new worker if debugging SW - we are going through the pause on start checkbox.
-  if (target.parentTarget() || target.type() !== SDK.SDKModel.Type.ServiceWorker || !waitingForDebugger) {
+  if (target.parentTarget() || target.type() !== SDK.Target.Type.ServiceWorker || !waitingForDebugger) {
     return;
   }
   const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);

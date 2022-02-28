@@ -5,16 +5,15 @@
  * found in the LICENSE file.
  */
 
+#include "src/gpu/effects/GrCoverageSetOpXP.h"
+
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrColor.h"
 #include "src/gpu/GrPipeline.h"
-#include "src/gpu/GrProcessor.h"
-#include "src/gpu/GrSurfaceDrawContext.h"
-#include "src/gpu/effects/GrCoverageSetOpXP.h"
+#include "src/gpu/GrXferProcessor.h"
 #include "src/gpu/glsl/GrGLSLBlend.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
-#include "src/gpu/glsl/GrGLSLXferProcessor.h"
 
 class CoverageSetOpXP : public GrXferProcessor {
 public:
@@ -25,13 +24,10 @@ public:
 
     const char* name() const override { return "Coverage Set Op"; }
 
-    GrGLSLXferProcessor* createGLSLInstance() const override;
-
-    bool invertCoverage() const { return fInvertCoverage; }
+    std::unique_ptr<ProgramImpl> makeProgramImpl() const override;
 
 private:
-
-    void onGetGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override;
+    void onAddToKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
 
     void onGetBlendInfo(GrXferProcessor::BlendInfo* blendInfo) const override;
 
@@ -47,47 +43,24 @@ private:
     using INHERITED = GrXferProcessor;
 };
 
-///////////////////////////////////////////////////////////////////////////////
-
-class GLCoverageSetOpXP : public GrGLSLXferProcessor {
-public:
-    GLCoverageSetOpXP(const GrProcessor&) {}
-
-    ~GLCoverageSetOpXP() override {}
-
-    static void GenKey(const GrProcessor& processor, const GrShaderCaps& caps,
-                       GrProcessorKeyBuilder* b) {
-        const CoverageSetOpXP& xp = processor.cast<CoverageSetOpXP>();
-        uint32_t key = xp.invertCoverage() ?  0x0 : 0x1;
-        b->add32(key);
-    }
-
-private:
-    void emitOutputsForBlendState(const EmitArgs& args) override {
-        const CoverageSetOpXP& xp = args.fXP.cast<CoverageSetOpXP>();
-        GrGLSLXPFragmentBuilder* fragBuilder = args.fXPFragBuilder;
-
-        if (xp.invertCoverage()) {
-            fragBuilder->codeAppendf("%s = 1.0 - %s;", args.fOutputPrimary, args.fInputCoverage);
-        } else {
-            fragBuilder->codeAppendf("%s = %s;", args.fOutputPrimary, args.fInputCoverage);
-        }
-    }
-
-    void onSetData(const GrGLSLProgramDataManager&, const GrXferProcessor&) override {}
-
-    using INHERITED = GrGLSLXferProcessor;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-void CoverageSetOpXP::onGetGLSLProcessorKey(const GrShaderCaps& caps,
-                                            GrProcessorKeyBuilder* b) const {
-    GLCoverageSetOpXP::GenKey(*this, caps, b);
+void CoverageSetOpXP::onAddToKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const {
+    b->addBool(fInvertCoverage, "invert coverage");
 }
 
-GrGLSLXferProcessor* CoverageSetOpXP::createGLSLInstance() const {
-    return new GLCoverageSetOpXP(*this);
+std::unique_ptr<GrXferProcessor::ProgramImpl> CoverageSetOpXP::makeProgramImpl() const {
+    class Impl : public ProgramImpl {
+    private:
+        void emitOutputsForBlendState(const EmitArgs& args) override {
+            const CoverageSetOpXP& xp = args.fXP.cast<CoverageSetOpXP>();
+            GrGLSLXPFragmentBuilder* fb = args.fXPFragBuilder;
+            if (xp.fInvertCoverage) {
+                fb->codeAppendf("%s = 1.0 - %s;", args.fOutputPrimary, args.fInputCoverage);
+            } else {
+                fb->codeAppendf("%s = %s;", args.fOutputPrimary, args.fInputCoverage);
+            }
+        }
+    };
+    return std::make_unique<Impl>();
 }
 
 void CoverageSetOpXP::onGetBlendInfo(GrXferProcessor::BlendInfo* blendInfo) const {

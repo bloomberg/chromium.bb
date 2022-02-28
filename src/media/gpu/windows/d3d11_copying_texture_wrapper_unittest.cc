@@ -27,7 +27,7 @@ class MockVideoProcessorProxy : public VideoProcessorProxy {
  public:
   MockVideoProcessorProxy() : VideoProcessorProxy(nullptr, nullptr) {}
 
-  Status Init(uint32_t width, uint32_t height) override {
+  D3D11Status Init(uint32_t width, uint32_t height) override {
     return MockInit(width, height);
   }
 
@@ -70,7 +70,7 @@ class MockVideoProcessorProxy : public VideoProcessorProxy {
     return MockVideoProcessorBlt();
   }
 
-  MOCK_METHOD2(MockInit, Status(uint32_t, uint32_t));
+  MOCK_METHOD2(MockInit, D3D11Status(uint32_t, uint32_t));
   MOCK_METHOD0(MockCreateVideoProcessorOutputView, HRESULT());
   MOCK_METHOD0(MockCreateVideoProcessorInputView, HRESULT());
   MOCK_METHOD0(MockVideoProcessorBlt, HRESULT());
@@ -89,25 +89,30 @@ class MockTexture2DWrapper : public Texture2DWrapper {
  public:
   MockTexture2DWrapper() {}
 
-  Status ProcessTexture(const gfx::ColorSpace& input_color_space,
-                        MailboxHolderArray* mailbox_dest,
-                        gfx::ColorSpace* output_color_space) override {
+  D3D11Status ProcessTexture(const gfx::ColorSpace& input_color_space,
+                             MailboxHolderArray* mailbox_dest,
+                             gfx::ColorSpace* output_color_space) override {
     // Pretend we created an arbitrary color space, so that we're sure that it
     // is returned from the copying wrapper.
     *output_color_space = gfx::ColorSpace::CreateHDR10();
     return MockProcessTexture();
   }
 
-  Status Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-              GetCommandBufferHelperCB get_helper_cb,
-              ComD3D11Texture2D in_texture,
-              size_t array_slice) override {
+  D3D11Status Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+                   GetCommandBufferHelperCB get_helper_cb,
+                   ComD3D11Texture2D in_texture,
+                   size_t array_slice) override {
     gpu_task_runner_ = std::move(gpu_task_runner);
     return MockInit();
   }
 
-  MOCK_METHOD0(MockInit, Status());
-  MOCK_METHOD0(MockProcessTexture, Status());
+  D3D11Status AcquireKeyedMutexIfNeeded() override {
+    return MockAcquireKeyedMutexIfNeeded();
+  }
+
+  MOCK_METHOD0(MockInit, D3D11Status());
+  MOCK_METHOD0(MockAcquireKeyedMutexIfNeeded, D3D11Status());
+  MOCK_METHOD0(MockProcessTexture, D3D11Status());
   MOCK_METHOD1(SetStreamHDRMetadata,
                void(const gfx::HDRMetadata& stream_metadata));
   MOCK_METHOD1(SetDisplayHDRMetadata,
@@ -122,7 +127,7 @@ CommandBufferHelperPtr UselessHelper() {
 
 class D3D11CopyingTexture2DWrapperTest
     : public ::testing::TestWithParam<
-          std::tuple<HRESULT, HRESULT, HRESULT, bool, bool, bool, bool>> {
+          std::tuple<HRESULT, HRESULT, HRESULT, bool, bool, bool, bool, bool>> {
  public:
 #define FIELD(TYPE, NAME, INDEX) \
   TYPE Get##NAME() { return std::get<INDEX>(GetParam()); }
@@ -133,6 +138,7 @@ class D3D11CopyingTexture2DWrapperTest
   FIELD(bool, TextureWrapperInit, 4)
   FIELD(bool, ProcessTexture, 5)
   FIELD(bool, PassthroughColorSpace, 6)
+  FIELD(bool, AcquireKeyedMutexIfNeeded, 7)
 #undef FIELD
 
   void SetUp() override {
@@ -143,8 +149,8 @@ class D3D11CopyingTexture2DWrapperTest
     auto result = base::MakeRefCounted<MockVideoProcessorProxy>();
     ON_CALL(*result.get(), MockInit(_, _))
         .WillByDefault(Return(GetProcessorProxyInit()
-                                  ? StatusCode::kOk
-                                  : StatusCode::kCodeOnlyForTesting));
+                                  ? D3D11Status::Codes::kOk
+                                  : D3D11Status::Codes::kCodeOnlyForTesting));
 
     ON_CALL(*result.get(), MockCreateVideoProcessorOutputView())
         .WillByDefault(Return(GetCreateVideoProcessorOutputView()));
@@ -163,13 +169,18 @@ class D3D11CopyingTexture2DWrapperTest
 
     ON_CALL(*result.get(), MockInit())
         .WillByDefault(Return(GetTextureWrapperInit()
-                                  ? StatusCode::kOk
-                                  : StatusCode::kCodeOnlyForTesting));
+                                  ? D3D11Status::Codes::kOk
+                                  : D3D11Status::Codes::kCodeOnlyForTesting));
+
+    ON_CALL(*result.get(), MockAcquireKeyedMutexIfNeeded())
+        .WillByDefault(Return(GetAcquireKeyedMutexIfNeeded()
+                                  ? D3D11Status::Codes::kOk
+                                  : D3D11Status::Codes::kCodeOnlyForTesting));
 
     ON_CALL(*result.get(), MockProcessTexture())
         .WillByDefault(Return(GetProcessTexture()
-                                  ? StatusCode::kOk
-                                  : StatusCode::kCodeOnlyForTesting));
+                                  ? D3D11Status::Codes::kOk
+                                  : D3D11Status::Codes::kCodeOnlyForTesting));
 
     return result;
   }
@@ -183,7 +194,7 @@ class D3D11CopyingTexture2DWrapperTest
   }
 
   bool ProcessTextureSucceeds() {
-    return GetProcessTexture() &&
+    return GetAcquireKeyedMutexIfNeeded() && GetProcessTexture() &&
            SUCCEEDED(GetCreateVideoProcessorOutputView()) &&
            SUCCEEDED(GetCreateVideoProcessorInputView()) &&
            SUCCEEDED(GetVideoProcessorBlt());
@@ -198,6 +209,7 @@ INSTANTIATE_TEST_CASE_P(CopyingTexture2DWrapperTest,
                         Combine(Values(S_OK, E_FAIL),
                                 Values(S_OK, E_FAIL),
                                 Values(S_OK, E_FAIL),
+                                Bool(),
                                 Bool(),
                                 Bool(),
                                 Bool(),
@@ -259,16 +271,16 @@ TEST_P(D3D11CopyingTexture2DWrapperTest,
 
 TEST_P(D3D11CopyingTexture2DWrapperTest, HDRMetadataIsSentToVideoProcessor) {
   gfx::HDRMetadata metadata;
-  metadata.mastering_metadata.primary_r =
-      gfx::MasteringMetadata::Chromaticity(0.1, 0.2);
-  metadata.mastering_metadata.primary_g =
-      gfx::MasteringMetadata::Chromaticity(0.3, 0.4);
-  metadata.mastering_metadata.primary_b =
-      gfx::MasteringMetadata::Chromaticity(0.5, 0.6);
-  metadata.mastering_metadata.white_point =
-      gfx::MasteringMetadata::Chromaticity(0.7, 0.8);
-  metadata.mastering_metadata.luminance_max = 0.9;
-  metadata.mastering_metadata.luminance_min = 0.05;
+  metadata.color_volume_metadata.primary_r =
+      gfx::ColorVolumeMetadata::Chromaticity(0.1, 0.2);
+  metadata.color_volume_metadata.primary_g =
+      gfx::ColorVolumeMetadata::Chromaticity(0.3, 0.4);
+  metadata.color_volume_metadata.primary_b =
+      gfx::ColorVolumeMetadata::Chromaticity(0.5, 0.6);
+  metadata.color_volume_metadata.white_point =
+      gfx::ColorVolumeMetadata::Chromaticity(0.7, 0.8);
+  metadata.color_volume_metadata.luminance_max = 0.9;
+  metadata.color_volume_metadata.luminance_min = 0.05;
   metadata.max_content_light_level = 1000;
   metadata.max_frame_average_light_level = 10000;
 

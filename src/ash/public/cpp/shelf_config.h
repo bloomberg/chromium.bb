@@ -13,12 +13,16 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/wm/overview/overview_observer.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/animation/tween.h"
+
+namespace base {
+class TimeDelta;
+}
 
 namespace session_manager {
 enum class SessionState;
@@ -42,6 +46,10 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   };
 
   ShelfConfig();
+
+  ShelfConfig(const ShelfConfig&) = delete;
+  ShelfConfig& operator=(const ShelfConfig&) = delete;
+
   ~ShelfConfig() override;
 
   static ShelfConfig* Get();
@@ -338,9 +346,10 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // config.
   std::unique_ptr<ShelfAccessibilityObserver> accessibility_observer_;
 
-  base::ObserverList<Observer> observers_;
+  // Receive callbacks from DisplayObserver.
+  absl::optional<display::ScopedDisplayObserver> display_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShelfConfig);
+  base::ObserverList<Observer> observers_;
 };
 
 }  // namespace ash

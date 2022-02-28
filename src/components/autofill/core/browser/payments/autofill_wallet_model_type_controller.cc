@@ -65,13 +65,13 @@ void AutofillWalletModelTypeController::Stop(
     StopCallback callback) {
   DCHECK(CalledOnValidThread());
   switch (shutdown_reason) {
-    case syncer::STOP_SYNC:
+    case syncer::ShutdownReason::STOP_SYNC_AND_KEEP_DATA:
       // Special case: For Wallet-related data types, we want to clear all data
       // even when Sync is stopped temporarily.
-      shutdown_reason = syncer::DISABLE_SYNC;
+      shutdown_reason = syncer::ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA;
       break;
-    case syncer::DISABLE_SYNC:
-    case syncer::BROWSER_SHUTDOWN:
+    case syncer::ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA:
+    case syncer::ShutdownReason::BROWSER_SHUTDOWN_AND_KEEP_DATA:
       break;
   }
   ModelTypeController::Stop(shutdown_reason, std::move(callback));
@@ -85,16 +85,6 @@ AutofillWalletModelTypeController::GetPreconditionState() const {
           autofill::prefs::kAutofillWalletImportEnabled) &&
       pref_service_->GetBoolean(autofill::prefs::kAutofillCreditCardEnabled) &&
       !sync_service_->GetAuthError().IsPersistentError();
-#if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kWalletRequiresFirstSyncSetupComplete)) {
-    // On Android, it's also required that the initial Sync setup is complete
-    // (i.e. the user has previously opted in to Sync-the-feature, even if it's
-    // not enabled right now).
-    preconditions_met &=
-        sync_service_->GetUserSettings()->IsFirstSetupComplete();
-  }
-#endif
   return preconditions_met ? PreconditionState::kPreconditionsMet
                            : PreconditionState::kMustStopAndClearData;
 }

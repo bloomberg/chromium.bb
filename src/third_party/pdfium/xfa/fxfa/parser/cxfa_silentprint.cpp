@@ -12,8 +12,8 @@
 namespace {
 
 const CXFA_Node::PropertyData kSilentPrintPropertyData[] = {
-    {XFA_Element::AddSilentPrint, 1, 0},
-    {XFA_Element::PrinterName, 1, 0},
+    {XFA_Element::AddSilentPrint, 1, {}},
+    {XFA_Element::PrinterName, 1, {}},
 };
 
 const CXFA_Node::AttributeData kSilentPrintAttributeData[] = {
@@ -26,7 +26,7 @@ const CXFA_Node::AttributeData kSilentPrintAttributeData[] = {
 CXFA_SilentPrint::CXFA_SilentPrint(CXFA_Document* doc, XFA_PacketType packet)
     : CXFA_Node(doc,
                 packet,
-                XFA_XDPPACKET_Config,
+                XFA_XDPPACKET::kConfig,
                 XFA_ObjectType::Node,
                 XFA_Element::SilentPrint,
                 kSilentPrintPropertyData,

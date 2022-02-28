@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/upgrade_detector/get_installed_version.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class BuildState;
 class InstalledVersionMonitor;
@@ -41,7 +40,7 @@ class InstalledVersionPoller {
   // A type of callback that is run (in the background) to get the currently
   // installed version of the browser.
   using GetInstalledVersionCallback =
-      base::RepeatingCallback<InstalledAndCriticalVersion()>;
+      base::RepeatingCallback<void(InstalledVersionCallback)>;
 
   // A constructor for tests that provide a mock source of time and a mock
   // version getter.

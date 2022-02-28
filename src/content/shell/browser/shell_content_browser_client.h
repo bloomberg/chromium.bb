@@ -9,12 +9,14 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/shell/browser/shell_speech_recognition_manager_delegate.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
+
+class PrefService;
 
 namespace device {
 class FakeGeolocationManager;
@@ -45,7 +47,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 
   // ContentBrowserClient overrides.
   std::unique_ptr<BrowserMainParts> CreateBrowserMainParts(
-      const MainFunctionParams& parameters) override;
+      MainFunctionParams parameters) override;
   bool IsHandledURL(const GURL& url) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
@@ -95,6 +97,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   base::DictionaryValue GetNetLogConstants() override;
   base::FilePath GetSandboxedStorageServiceDataDirectory() override;
   std::string GetUserAgent() override;
+  std::string GetReducedUserAgent() override;
   blink::UserAgentMetadata GetUserAgentMetadata() override;
   void OverrideURLLoaderFactoryParams(
       BrowserContext* browser_context,
@@ -120,6 +123,10 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   void GetHyphenationDictionary(
       base::OnceCallback<void(const base::FilePath&)>) override;
   bool HasErrorPage(int http_status_code) override;
+  void OnNetworkServiceCreated(
+      network::mojom::NetworkService* network_service) override;
+
+  void CreateFeatureListAndFieldTrials();
 
   ShellBrowserContext* browser_context();
   ShellBrowserContext* off_the_record_browser_context();
@@ -128,13 +135,20 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   }
 
   // Used for content_browsertests.
+  using SelectClientCertificateCallback = base::OnceCallback<base::OnceClosure(
+      content::WebContents* web_contents,
+      net::SSLCertRequestInfo* cert_request_info,
+      net::ClientCertIdentityList client_certs,
+      std::unique_ptr<content::ClientCertificateDelegate> delegate)>;
+
   void set_select_client_certificate_callback(
-      base::OnceClosure select_client_certificate_callback) {
+      SelectClientCertificateCallback select_client_certificate_callback) {
     select_client_certificate_callback_ =
         std::move(select_client_certificate_callback);
   }
   void set_login_request_callback(
-      base::OnceCallback<void(bool is_main_frame)> login_request_callback) {
+      base::OnceCallback<void(bool is_primary_main_frame)>
+          login_request_callback) {
     login_request_callback_ = std::move(login_request_callback);
   }
   void set_url_loader_factory_params_callback(
@@ -180,9 +194,15 @@ class ShellContentBrowserClient : public ContentBrowserClient {
           cert_verifier_creation_params);
 
  private:
+  class ShellFieldTrials;
+
+  std::unique_ptr<PrefService> CreateLocalState();
+  // Needed so that content_shell can use fieldtrial_testing_config.
+  void SetUpFieldTrials();
+
   static bool allow_any_cors_exempt_header_for_browser_;
 
-  base::OnceClosure select_client_certificate_callback_;
+  SelectClientCertificateCallback select_client_certificate_callback_;
   base::OnceCallback<void(bool is_main_frame)> login_request_callback_;
   base::RepeatingCallback<void(const network::mojom::URLLoaderFactoryParams*,
                                const url::Origin&,
@@ -198,12 +218,15 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 #endif
 
   // Owned by content::BrowserMainLoop.
-  ShellBrowserMainParts* shell_browser_main_parts_ = nullptr;
+  raw_ptr<ShellBrowserMainParts> shell_browser_main_parts_ = nullptr;
+
+  std::unique_ptr<PrefService> local_state_;
+  std::unique_ptr<ShellFieldTrials> field_trials_;
 };
 
 // The delay for sending reports when running with --run-web-tests
 constexpr base::TimeDelta kReportingDeliveryIntervalTimeForWebTests =
-    base::TimeDelta::FromMilliseconds(100);
+    base::Milliseconds(100);
 
 }  // namespace content
 

@@ -26,16 +26,24 @@ namespace dawn_native { namespace vulkan {
 
     class ComputePipeline final : public ComputePipelineBase {
       public:
-        static ResultOrError<Ref<ComputePipeline>> Create(
+        static Ref<ComputePipeline> CreateUninitialized(
             Device* device,
             const ComputePipelineDescriptor* descriptor);
+        static void InitializeAsync(Ref<ComputePipelineBase> computePipeline,
+                                    WGPUCreateComputePipelineAsyncCallback callback,
+                                    void* userdata);
 
         VkPipeline GetHandle() const;
 
+        MaybeError Initialize() override;
+
+        // Dawn API
+        void SetLabelImpl() override;
+
       private:
         ~ComputePipeline() override;
+        void DestroyImpl() override;
         using ComputePipelineBase::ComputePipelineBase;
-        MaybeError Initialize(const ComputePipelineDescriptor* descriptor);
 
         VkPipeline mHandle = VK_NULL_HANDLE;
     };

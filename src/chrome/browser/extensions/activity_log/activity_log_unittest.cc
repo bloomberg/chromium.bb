@@ -10,8 +10,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
-#include "chrome/browser/prefetch/no_state_prefetch/prerender_test_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -104,6 +104,12 @@ class InterceptingRendererStartupHelper : public RendererStartupHelper,
   void TransferBlobs(TransferBlobsCallback callback) override {
     std::move(callback).Run();
   }
+  void UpdatePermissions(const std::string& extension_id,
+                         PermissionSet active_permissions,
+                         PermissionSet withheld_permissions,
+                         URLPatternSet policy_blocked_hosts,
+                         URLPatternSet policy_allowed_hosts,
+                         bool uses_default_policy_host_restrictions) override {}
   void UpdateDefaultPolicyHostRestrictions(
       URLPatternSet default_policy_blocked_hosts,
       URLPatternSet default_policy_allowed_hosts) override {}
@@ -218,7 +224,6 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
   static void RetrieveActions_ArgUrlExtraction(
       std::unique_ptr<std::vector<scoped_refptr<Action>>> i) {
     const base::DictionaryValue* other = NULL;
-    int dom_verb = -1;
 
     ASSERT_EQ(4U, i->size());
     scoped_refptr<Action> action = i->at(0);
@@ -231,8 +236,8 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     // so just test once.
     other = action->other();
     ASSERT_TRUE(other);
-    ASSERT_TRUE(other->GetInteger(activity_log_constants::kActionDomVerb,
-                                  &dom_verb));
+    absl::optional<int> dom_verb =
+        other->FindIntKey(activity_log_constants::kActionDomVerb);
     ASSERT_EQ(DomActionType::XHR, dom_verb);
 
     action = i->at(1);
@@ -258,7 +263,6 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
       std::unique_ptr<std::vector<scoped_refptr<Action>>> actions) {
     size_t api_calls_size = base::size(kUrlApiCalls);
     const base::DictionaryValue* other = NULL;
-    int dom_verb = -1;
 
     ASSERT_EQ(api_calls_size, actions->size());
 
@@ -272,13 +276,13 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
       ASSERT_EQ("http://www.google.co.uk/", action->arg_url().spec());
       other = action->other();
       ASSERT_TRUE(other);
-      ASSERT_TRUE(
-          other->GetInteger(activity_log_constants::kActionDomVerb, &dom_verb));
+      absl::optional<int> dom_verb =
+          other->FindIntKey(activity_log_constants::kActionDomVerb);
       ASSERT_EQ(DomActionType::SETTER, dom_verb);
     }
   }
 
-  ExtensionService* extension_service_;
+  raw_ptr<ExtensionService> extension_service_;
 };
 
 TEST_F(ActivityLogTest, Construct) {
@@ -328,7 +332,7 @@ TEST_F(ActivityLogTest, LogPrerender) {
 
   const gfx::Size kSize(640, 480);
   std::unique_ptr<prerender::NoStatePrefetchHandle> no_state_prefetch_handle(
-      no_state_prefetch_manager->AddPrerenderFromOmnibox(
+      no_state_prefetch_manager->StartPrefetchingFromOmnibox(
           url,
           web_contents()->GetController().GetDefaultSessionStorageNamespace(),
           kSize));
@@ -337,7 +341,7 @@ TEST_F(ActivityLogTest, LogPrerender) {
       no_state_prefetch_manager->GetAllNoStatePrefetchingContentsForTesting();
   ASSERT_EQ(1U, contentses.size());
   content::WebContents *contents = contentses[0];
-  ASSERT_TRUE(no_state_prefetch_manager->IsWebContentsPrerendering(contents));
+  ASSERT_TRUE(no_state_prefetch_manager->IsWebContentsPrefetching(contents));
 
   activity_log->OnScriptsExecuted(contents, {{extension->id(), {"script"}}},
                                   url);
@@ -361,42 +365,36 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
                                             Action::ACTION_DOM_ACCESS,
                                             "XMLHttpRequest.open");
   action->set_page_url(GURL("http://www.google.com/"));
-  action->mutable_args()->AppendString("POST");
-  action->mutable_args()->AppendString("http://api.google.com/");
+  action->mutable_args()->Append("POST");
+  action->mutable_args()->Append("http://api.google.com/");
   action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
                                       DomActionType::METHOD);
   activity_log->LogAction(action);
 
   // Submit a DOM API call with a relative URL in the argument, which should be
   // resolved relative to the page URL.
-  action = new Action(kExtensionId,
-                      now - base::TimeDelta::FromSeconds(1),
-                      Action::ACTION_DOM_ACCESS,
-                      "XMLHttpRequest.open");
+  action = new Action(kExtensionId, now - base::Seconds(1),
+                      Action::ACTION_DOM_ACCESS, "XMLHttpRequest.open");
   action->set_page_url(GURL("http://www.google.com/"));
-  action->mutable_args()->AppendString("POST");
-  action->mutable_args()->AppendString("/api/");
+  action->mutable_args()->Append("POST");
+  action->mutable_args()->Append("/api/");
   action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
                                       DomActionType::METHOD);
   activity_log->LogAction(action);
 
   // Submit a DOM API call with a relative URL but no base page URL against
   // which to resolve.
-  action = new Action(kExtensionId,
-                      now - base::TimeDelta::FromSeconds(2),
-                      Action::ACTION_DOM_ACCESS,
-                      "XMLHttpRequest.open");
-  action->mutable_args()->AppendString("POST");
-  action->mutable_args()->AppendString("/api/");
+  action = new Action(kExtensionId, now - base::Seconds(2),
+                      Action::ACTION_DOM_ACCESS, "XMLHttpRequest.open");
+  action->mutable_args()->Append("POST");
+  action->mutable_args()->Append("/api/");
   action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
                                       DomActionType::METHOD);
   activity_log->LogAction(action);
 
   // Submit an API call with an embedded URL.
-  action = new Action(kExtensionId,
-                      now - base::TimeDelta::FromSeconds(3),
-                      Action::ACTION_API_CALL,
-                      "windows.create");
+  action = new Action(kExtensionId, now - base::Seconds(3),
+                      Action::ACTION_API_CALL, "windows.create");
   action->set_args(
       ListBuilder()
           .Append(
@@ -448,11 +446,9 @@ TEST_F(ActivityLogTest, ArgUrlApiCalls) {
   scoped_refptr<Action> action;
 
   for (int i = 0; i < api_calls_size; i++) {
-    action = new Action(kExtensionId,
-                        now - base::TimeDelta::FromSeconds(i),
-                        Action::ACTION_DOM_ACCESS,
-                        kUrlApiCalls[i]);
-    action->mutable_args()->AppendString("http://www.google.co.uk");
+    action = new Action(kExtensionId, now - base::Seconds(i),
+                        Action::ACTION_DOM_ACCESS, kUrlApiCalls[i]);
+    action->mutable_args()->Append("http://www.google.co.uk");
     action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
                                         DomActionType::SETTER);
     activity_log->LogAction(action);

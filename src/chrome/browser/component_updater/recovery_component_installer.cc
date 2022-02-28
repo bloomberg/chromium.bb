@@ -15,16 +15,17 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -158,7 +159,7 @@ std::unique_ptr<base::DictionaryValue> ReadManifest(
 
 void WaitForElevatedInstallToComplete(base::Process process) {
   int installer_exit_code = 0;
-  const base::TimeDelta kMaxWaitTime = base::TimeDelta::FromSeconds(600);
+  const base::TimeDelta kMaxWaitTime = base::Seconds(600);
   if (process.WaitForExitWithTimeout(kMaxWaitTime, &installer_exit_code)) {
     if (installer_exit_code == EXIT_CODE_RECOVERY_SUCCEEDED) {
       RecordRecoveryComponentUMAEvent(RCE_ELEVATED_SUCCEEDED);
@@ -289,7 +290,7 @@ class RecoveryComponentInstaller : public update_client::CrxInstaller {
                          const base::FilePath& installer_folder) const;
 
   base::Version current_version_;
-  PrefService* prefs_;
+  raw_ptr<PrefService> prefs_;
 };
 
 void SimulateElevatedRecoveryHelper(PrefService* prefs) {
@@ -303,18 +304,13 @@ void RecoveryRegisterHelper(ComponentUpdateService* cus, PrefService* prefs) {
     NOTREACHED();
     return;
   }
-  update_client::CrxComponent recovery;
-  recovery.name = "recovery";
-  recovery.installer = new RecoveryComponentInstaller(version, prefs);
-  recovery.version = version;
-  recovery.pk_hash.assign(kRecoverySha2Hash,
-                          &kRecoverySha2Hash[sizeof(kRecoverySha2Hash)]);
-  recovery.app_id = update_client::GetCrxIdFromPublicKeyHash(recovery.pk_hash);
-  recovery.supports_group_policy_enable_component_updates = true;
-  recovery.requires_network_encryption = false;
-  recovery.crx_format_requirement =
-      crx_file::VerifierFormat::CRX3_WITH_PUBLISHER_PROOF;
-  if (!cus->RegisterComponent(recovery)) {
+  std::vector<uint8_t> public_key_hash;
+  public_key_hash.assign(std::begin(kRecoverySha2Hash),
+                         std::end(kRecoverySha2Hash));
+  if (!cus->RegisterComponent(ComponentRegistration(
+          update_client::GetCrxIdFromPublicKeyHash(public_key_hash), "recovery",
+          public_key_hash, version, {}, {}, nullptr,
+          new RecoveryComponentInstaller(version, prefs), false, true))) {
     NOTREACHED() << "Recovery component registration failed.";
   }
 }
@@ -347,7 +343,7 @@ void WaitForInstallToComplete(base::Process process,
                               const base::FilePath& installer_folder,
                               PrefService* prefs) {
   int installer_exit_code = 0;
-  const base::TimeDelta kMaxWaitTime = base::TimeDelta::FromSeconds(600);
+  const base::TimeDelta kMaxWaitTime = base::Seconds(600);
   if (process.WaitForExitWithTimeout(kMaxWaitTime, &installer_exit_code)) {
     if (installer_exit_code == EXIT_CODE_ELEVATION_NEEDED) {
       RecordRecoveryComponentUMAEvent(RCE_ELEVATION_NEEDED);
@@ -512,7 +508,7 @@ void RegisterRecoveryComponent(ComponentUpdateService* cus,
   // the critical path during browser startup.
   content::GetUIThreadTaskRunner({})->PostDelayedTask(
       FROM_HERE, base::BindOnce(&RecoveryRegisterHelper, cus, prefs),
-      base::TimeDelta::FromSeconds(6));
+      base::Seconds(6));
 #endif
 #endif
 }

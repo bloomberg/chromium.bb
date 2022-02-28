@@ -7,6 +7,8 @@
 #ifndef FPDFSDK_CPDFSDK_FORMFILLENVIRONMENT_H_
 #define FPDFSDK_CPDFSDK_FORMFILLENVIRONMENT_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <memory>
 #include <vector>
@@ -15,14 +17,17 @@
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fxcrt/cfx_timer.h"
+#include "core/fxcrt/mask.h"
 #include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/cpdfsdk_annot.h"
+#include "fpdfsdk/formfiller/cffl_interactiveformfiller.h"
+#include "fpdfsdk/pwl/cpwl_wnd.h"
 #include "fpdfsdk/pwl/ipwl_systemhandler.h"
 #include "public/fpdf_formfill.h"
+#include "third_party/base/span.h"
 
-class CFFL_InteractiveFormFiller;
 class CPDFSDK_ActionHandler;
 class CPDFSDK_AnnotHandlerMgr;
 class CPDFSDK_InteractiveForm;
@@ -44,8 +49,10 @@ FPDF_WIDESTRING AsFPDFWideString(ByteString* bsUTF16LE);
 // hierarcy back to the form fill environment itself, so as to flag any
 // lingering lifetime issues via the memory tools.
 
-class CPDFSDK_FormFillEnvironment final : public CFX_Timer::HandlerIface,
-                                          public IPWL_SystemHandler {
+class CPDFSDK_FormFillEnvironment final
+    : public CFX_Timer::HandlerIface,
+      public IPWL_SystemHandler,
+      public CFFL_InteractiveFormFiller::CallbackIface {
  public:
   CPDFSDK_FormFillEnvironment(
       CPDF_Document* pDoc,
@@ -61,27 +68,33 @@ class CPDFSDK_FormFillEnvironment final : public CFX_Timer::HandlerIface,
   // IPWL_SystemHandler:
   void InvalidateRect(PerWindowData* pWidgetData,
                       const CFX_FloatRect& rect) override;
-  void OutputSelectedRect(CFFL_FormFiller* pFormFiller,
+  void OutputSelectedRect(PerWindowData* pWidgetData,
                           const CFX_FloatRect& rect) override;
   bool IsSelectionImplemented() const override;
   void SetCursor(CursorStyle nCursorType) override;
 
-  CPDFSDK_PageView* GetPageView(IPDF_Page* pUnderlyingPage, bool renew);
+  // CFFL_InteractiveFormFiller::CallbackIface:
+  void OnSetFieldInputFocus(const WideString& text) override;
+  void OnCalculate(ObservedPtr<CPDFSDK_Annot>& pAnnot) override;
+  void OnFormat(ObservedPtr<CPDFSDK_Annot>& pAnnot) override;
+  void Invalidate(IPDF_Page* page, const FX_RECT& rect) override;
+  CPDFSDK_PageView* GetOrCreatePageView(IPDF_Page* pUnderlyingPage) override;
+  CPDFSDK_PageView* GetPageView(IPDF_Page* pUnderlyingPage) override;
+  CFX_Timer::HandlerIface* GetTimerHandler() override;
+  IPWL_SystemHandler* GetSysHandler() override;
+  CPDFSDK_Annot* GetFocusAnnot() const override;
+  bool SetFocusAnnot(ObservedPtr<CPDFSDK_Annot>& pAnnot) override;
+  bool HasPermissions(uint32_t flags) const override;
+  void OnChange() override;
+
   CPDFSDK_PageView* GetPageViewAtIndex(int nIndex);
-
   void RemovePageView(IPDF_Page* pUnderlyingPage);
-  void UpdateAllViews(CPDFSDK_PageView* pSender, CPDFSDK_Annot* pAnnot);
+  void UpdateAllViews(CPDFSDK_Annot* pAnnot);
 
-  CPDFSDK_Annot* GetFocusAnnot() const { return m_pFocusAnnot.Get(); }
-  bool SetFocusAnnot(ObservedPtr<CPDFSDK_Annot>* pAnnot);
-  bool KillFocusAnnot(uint32_t nFlag);
+  bool KillFocusAnnot(Mask<FWL_EVENTFLAG> nFlag);
   void ClearAllFocusedAnnots();
 
   int GetPageCount() const;
-
-  // See PDF Reference 1.7, table 3.20 for the permission bits. Returns true if
-  // any bit in |flags| is set.
-  bool HasPermissions(uint32_t flags) const;
 
   bool GetChangeMark() const { return m_bChangeMask; }
   void SetChangeMark() { m_bChangeMask = true; }
@@ -89,14 +102,9 @@ class CPDFSDK_FormFillEnvironment final : public CFX_Timer::HandlerIface,
 
   void ProcJavascriptAction();
   bool ProcOpenAction();
-  void Invalidate(IPDF_Page* page, const FX_RECT& rect);
 
-  void OnChange();
-  void ExecuteNamedAction(const char* namedAction);
-  void OnSetFieldInputFocus(FPDF_WIDESTRING focusText,
-                            FPDF_DWORD nTextLen,
-                            bool bFocus);
-  void DoURIAction(const char* bsURI, uint32_t modifiers);
+  void ExecuteNamedAction(const ByteString& namedAction);
+  void DoURIAction(const ByteString& bsURI, Mask<FWL_EVENTFLAG> modifiers);
   void DoGoToAction(int nPageIndex,
                     int zoomMode,
                     float* fPosArray,
@@ -128,12 +136,10 @@ class CPDFSDK_FormFillEnvironment final : public CFX_Timer::HandlerIface,
                      const WideString& Default,
                      const WideString& cLabel,
                      FPDF_BOOL bPassword,
-                     void* response,
-                     int length);
+                     pdfium::span<uint8_t> response);
   void JS_appBeep(int nType);
   WideString JS_fieldBrowse();
-  void JS_docmailForm(void* mailData,
-                      int length,
+  void JS_docmailForm(pdfium::span<uint8_t> mailData,
                       FPDF_BOOL bUI,
                       const WideString& To,
                       const WideString& Subject,
@@ -196,8 +202,6 @@ class CPDFSDK_FormFillEnvironment final : public CFX_Timer::HandlerIface,
 
   WideString GetFilePath() const;
   ByteString GetAppName() const { return ByteString(); }
-  CFX_Timer::HandlerIface* GetTimerHandler() { return this; }
-  IPWL_SystemHandler* GetSysHandler() { return this; }
   FPDF_FORMFILLINFO* GetFormFillInfo() const { return m_pInfo; }
   void SubmitForm(pdfium::span<uint8_t> form_data, const WideString& URL);
 
@@ -211,15 +215,19 @@ class CPDFSDK_FormFillEnvironment final : public CFX_Timer::HandlerIface,
     return m_FocusableAnnotTypes;
   }
 
-  // Creates if not present.
-  CFFL_InteractiveFormFiller* GetInteractiveFormFiller();
+  // Never returns null.
+  CFFL_InteractiveFormFiller* GetInteractiveFormFiller() {
+    return m_pInteractiveFormFiller.get();
+  }
+
   IJS_Runtime* GetIJSRuntime();                   // Creates if not present.
   CPDFSDK_ActionHandler* GetActionHandler();      // Creates if not present.
   CPDFSDK_InteractiveForm* GetInteractiveForm();  // Creates if not present.
 
  private:
-  IPDF_Page* GetPage(int nIndex);
-  void SendOnFocusChange(ObservedPtr<CPDFSDK_Annot>* pAnnot);
+  IPDF_Page* GetPage(int nIndex) const;
+  void OnSetFieldInputFocusInternal(const WideString& text, bool bFocus);
+  void SendOnFocusChange(ObservedPtr<CPDFSDK_Annot>& pAnnot);
 
   UnownedPtr<FPDF_FORMFILLINFO> const m_pInfo;
   std::unique_ptr<CPDFSDK_ActionHandler> m_pActionHandler;
@@ -229,7 +237,7 @@ class CPDFSDK_FormFillEnvironment final : public CFX_Timer::HandlerIface,
   ObservedPtr<CPDFSDK_Annot> m_pFocusAnnot;
   UnownedPtr<CPDF_Document> const m_pCPDFDoc;
   std::unique_ptr<CPDFSDK_AnnotHandlerMgr> m_pAnnotHandlerMgr;
-  std::unique_ptr<CFFL_InteractiveFormFiller> m_pFormFiller;
+  std::unique_ptr<CFFL_InteractiveFormFiller> m_pInteractiveFormFiller;
   bool m_bChangeMask = false;
   bool m_bBeingDestroyed = false;
 

@@ -10,10 +10,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/views/hover_button.h"
-#include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/metadata/view_factory.h"
 #include "url/gurl.h"
 
 namespace ui {
@@ -28,6 +31,8 @@ class WebAppProvider;
 // title and a subtitle.
 class WebAppHoverButton : public HoverButton {
  public:
+  METADATA_HEADER(WebAppHoverButton);
+
   // Creates a hoverable button with the given elements, like so:
   //
   // +-------------------------------------------------------------------+
@@ -39,14 +44,17 @@ class WebAppHoverButton : public HoverButton {
   WebAppHoverButton(views::Button::PressedCallback callback,
                     const web_app::AppId& app_id,
                     web_app::WebAppProvider* provider,
-                    const std::string& display_name,
+                    const std::u16string& display_name,
                     const GURL& url);
+  WebAppHoverButton(views::Button::PressedCallback callback,
+                    const gfx::ImageSkia& icon,
+                    const std::u16string& display_name);
   WebAppHoverButton(const WebAppHoverButton&) = delete;
   WebAppHoverButton& operator=(const WebAppHoverButton&) = delete;
   ~WebAppHoverButton() override;
 
-  void MarkAsUnselected(const ui::Event* event);
-  void MarkAsSelected(const ui::Event* event);
+  virtual void MarkAsUnselected(const ui::Event* event);
+  virtual void MarkAsSelected(const ui::Event* event);
 
   const web_app::AppId& app_id() const { return app_id_; }
 
@@ -56,5 +64,10 @@ class WebAppHoverButton : public HoverButton {
   const web_app::AppId app_id_;
   base::WeakPtrFactory<WebAppHoverButton> weak_ptr_factory_{this};
 };
+
+BEGIN_VIEW_BUILDER(, WebAppHoverButton, HoverButton)
+END_VIEW_BUILDER
+
+DEFINE_VIEW_BUILDER(, WebAppHoverButton)
 
 #endif  // CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_HOVER_BUTTON_H_

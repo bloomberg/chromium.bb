@@ -20,6 +20,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -39,21 +40,25 @@ namespace {
 // there are no concurrent accesses to instance variables. Also this object
 // is refcounted in the various callbacks, and is destroyed when all callbacks
 // are destroyed at the end of DoneOnUIThread.
-class GetOriginsTask : public base::RefCountedThreadSafe<GetOriginsTask> {
+class GetStorageKeysTask
+    : public base::RefCountedThreadSafe<GetStorageKeysTask> {
  public:
-  GetOriginsTask(AwQuotaManagerBridge::GetOriginsCallback callback,
-                 QuotaManager* quota_manager);
+  GetStorageKeysTask(AwQuotaManagerBridge::GetOriginsCallback callback,
+                     QuotaManager* quota_manager);
+
+  GetStorageKeysTask(const GetStorageKeysTask&) = delete;
+  GetStorageKeysTask& operator=(const GetStorageKeysTask&) = delete;
 
   void Run();
 
  private:
-  friend class base::RefCountedThreadSafe<GetOriginsTask>;
-  ~GetOriginsTask();
+  friend class base::RefCountedThreadSafe<GetStorageKeysTask>;
+  ~GetStorageKeysTask();
 
-  void OnOriginsObtained(const std::set<url::Origin>& origins,
-                         blink::mojom::StorageType type);
+  void OnStorageKeysObtained(blink::mojom::StorageType type,
+                             const std::set<blink::StorageKey>& storage_keys);
 
-  void OnUsageAndQuotaObtained(const url::Origin& origin,
+  void OnUsageAndQuotaObtained(const blink::StorageKey& storage_key,
                                blink::mojom::QuotaStatusCode status_code,
                                int64_t usage,
                                int64_t quota);
@@ -70,53 +75,53 @@ class GetOriginsTask : public base::RefCountedThreadSafe<GetOriginsTask> {
 
   size_t num_callbacks_to_wait_;
   size_t num_callbacks_received_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetOriginsTask);
 };
 
-GetOriginsTask::GetOriginsTask(
+GetStorageKeysTask::GetStorageKeysTask(
     AwQuotaManagerBridge::GetOriginsCallback callback,
     QuotaManager* quota_manager)
     : ui_callback_(std::move(callback)), quota_manager_(quota_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-GetOriginsTask::~GetOriginsTask() {}
+GetStorageKeysTask::~GetStorageKeysTask() {}
 
-void GetOriginsTask::Run() {
+void GetStorageKeysTask::Run() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(&QuotaManager::GetOriginsModifiedBetween, quota_manager_,
-                     blink::mojom::StorageType::kTemporary,
-                     base::Time() /* Since beginning of time. */,
-                     base::Time::Max() /* Until the end of times */,
-                     base::BindOnce(&GetOriginsTask::OnOriginsObtained, this)));
+      base::BindOnce(
+          &QuotaManager::GetStorageKeysForType, quota_manager_,
+          blink::mojom::StorageType::kTemporary,
+          base::BindOnce(&GetStorageKeysTask::OnStorageKeysObtained, this,
+                         blink::mojom::StorageType::kTemporary)));
 }
 
-void GetOriginsTask::OnOriginsObtained(const std::set<url::Origin>& origins,
-                                       blink::mojom::StorageType type) {
+void GetStorageKeysTask::OnStorageKeysObtained(
+    blink::mojom::StorageType type,
+    const std::set<blink::StorageKey>& storage_keys) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  num_callbacks_to_wait_ = origins.size();
+  num_callbacks_to_wait_ = storage_keys.size();
   num_callbacks_received_ = 0u;
 
-  for (const url::Origin& origin : origins) {
+  for (const blink::StorageKey& storage_key : storage_keys) {
     quota_manager_->GetUsageAndQuota(
-        origin, type,
-        base::BindOnce(&GetOriginsTask::OnUsageAndQuotaObtained, this, origin));
+        storage_key, type,
+        base::BindOnce(&GetStorageKeysTask::OnUsageAndQuotaObtained, this,
+                       storage_key));
   }
 
   CheckDone();
 }
 
-void GetOriginsTask::OnUsageAndQuotaObtained(
-    const url::Origin& origin,
+void GetStorageKeysTask::OnUsageAndQuotaObtained(
+    const blink::StorageKey& storage_key,
     blink::mojom::QuotaStatusCode status_code,
     int64_t usage,
     int64_t quota) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (status_code == blink::mojom::QuotaStatusCode::kOk) {
-    origin_.push_back(origin.GetURL().spec());
+    origin_.push_back(storage_key.origin().GetURL().spec());
     usage_.push_back(usage);
     quota_.push_back(quota);
   }
@@ -125,18 +130,18 @@ void GetOriginsTask::OnUsageAndQuotaObtained(
   CheckDone();
 }
 
-void GetOriginsTask::CheckDone() {
+void GetStorageKeysTask::CheckDone() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (num_callbacks_received_ == num_callbacks_to_wait_) {
     content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(&GetOriginsTask::DoneOnUIThread, this));
+        FROM_HERE, base::BindOnce(&GetStorageKeysTask::DoneOnUIThread, this));
   } else if (num_callbacks_received_ > num_callbacks_to_wait_) {
     NOTREACHED();
   }
 }
 
 // This method is to avoid copying the 3 vector arguments into a bound callback.
-void GetOriginsTask::DoneOnUIThread() {
+void GetStorageKeysTask::DoneOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::move(ui_callback_).Run(origin_, usage_, quota_);
 }
@@ -195,8 +200,7 @@ void AwQuotaManagerBridge::DeleteAllDataOnUiThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GetStoragePartition()->ClearData(
       // Clear all web storage data except cookies.
-      StoragePartition::REMOVE_DATA_MASK_APPCACHE |
-          StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
+      StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
           StoragePartition::REMOVE_DATA_MASK_INDEXEDDB |
           StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE |
           StoragePartition::REMOVE_DATA_MASK_WEBSQL,
@@ -219,11 +223,11 @@ void AwQuotaManagerBridge::DeleteOriginOnUiThread(
   StoragePartition* storage_partition = GetStoragePartition();
   storage_partition->ClearDataForOrigin(
       // All (temporary) QuotaClient types.
-      StoragePartition::REMOVE_DATA_MASK_APPCACHE |
-          StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
+      StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
           StoragePartition::REMOVE_DATA_MASK_INDEXEDDB |
           StoragePartition::REMOVE_DATA_MASK_WEBSQL,
-      StoragePartition::QUOTA_MANAGED_STORAGE_MASK_TEMPORARY, GURL(origin));
+      StoragePartition::QUOTA_MANAGED_STORAGE_MASK_TEMPORARY, GURL(origin),
+      base::DoNothing());
 }
 
 void AwQuotaManagerBridge::GetOrigins(JNIEnv* env,
@@ -239,8 +243,8 @@ void AwQuotaManagerBridge::GetOriginsOnUiThread(jint callback_id) {
   GetOriginsCallback ui_callback =
       base::BindOnce(&AwQuotaManagerBridge::GetOriginsCallbackImpl,
                      weak_factory_.GetWeakPtr(), callback_id);
-  base::MakeRefCounted<GetOriginsTask>(std::move(ui_callback),
-                                       GetQuotaManager())
+  base::MakeRefCounted<GetStorageKeysTask>(std::move(ui_callback),
+                                           GetQuotaManager())
       ->Run();
 }
 
@@ -306,7 +310,7 @@ void AwQuotaManagerBridge::GetUsageAndQuotaForOriginOnUiThread(
       FROM_HERE,
       base::BindOnce(
           &QuotaManager::GetUsageAndQuota, GetQuotaManager(),
-          url::Origin::Create(GURL(origin)),
+          blink::StorageKey(url::Origin::Create(GURL(origin))),
           blink::mojom::StorageType::kTemporary,
           base::BindOnce(&OnUsageAndQuotaObtained, std::move(ui_callback))));
 }

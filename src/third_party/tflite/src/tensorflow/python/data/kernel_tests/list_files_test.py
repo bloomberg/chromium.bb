@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for `tf.data.Dataset.list_files()`."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from os import path
 import shutil
 import tempfile
@@ -113,7 +109,7 @@ class ListFilesTest(test_base.DatasetTestBase, parameterized.TestCase):
 
     # Each run should produce the same set of filenames, which may be
     # different from the order of `expected_filenames`.
-    self.assertItemsEqual(expected_filenames, all_actual_filenames[0])
+    self.assertCountEqual(expected_filenames, all_actual_filenames[0])
     # However, the different runs should produce filenames in the same order
     # as each other.
     self.assertEqual(all_actual_filenames[0], all_actual_filenames[1])
@@ -199,7 +195,7 @@ class ListFilesTest(test_base.DatasetTestBase, parameterized.TestCase):
       actual_filenames.append(compat.as_bytes(self.evaluate(next_element())))
     with self.assertRaises(errors.OutOfRangeError):
       self.evaluate(next_element())
-    self.assertItemsEqual(expected_filenames, actual_filenames)
+    self.assertCountEqual(expected_filenames, actual_filenames)
     self.assertEqual(actual_filenames[:len(filenames)],
                      actual_filenames[len(filenames):])
 
@@ -232,7 +228,6 @@ class ListFilesTest(test_base.DatasetTestBase, parameterized.TestCase):
             for filename in filenames[:-1]
         ],
         assert_items_equal=True)
-
 
 
 if __name__ == '__main__':

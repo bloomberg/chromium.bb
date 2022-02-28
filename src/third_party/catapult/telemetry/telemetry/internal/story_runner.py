@@ -12,6 +12,10 @@ import os
 import re
 import sys
 import time
+try:
+  import psutil
+except ImportError:
+  psutil = None
 
 import py_utils
 from py_utils import cloud_storage  # pylint: disable=import-error
@@ -127,6 +131,7 @@ def _RunStoryAndProcessErrorIfNeeded(
 
   with CaptureLogsAsArtifacts(results):
     try:
+      has_existing_exception = False
       if isinstance(test, story_test.StoryTest):
         test.WillRunStory(state.platform, story)
       state.WillRunStory(story)
@@ -149,15 +154,19 @@ def _RunStoryAndProcessErrorIfNeeded(
         test.Measure(state.platform, results)
 
     except page_action.PageActionNotSupported as exc:
+      has_existing_exception = True
       results.Skip('Unsupported page action: %s' % exc)
     except (legacy_page_test.Failure, exceptions.TimeoutException,
             exceptions.LoginException, py_utils.TimeoutException):
+      has_existing_exception = True
       ProcessError(log_message='Handleable error')
     except _UNHANDLEABLE_ERRORS:
+      has_existing_exception = True
       ProcessError(log_message=('Unhandleable error. '
                                 'Benchmark run will be interrupted'))
       raise
     except Exception:  # pylint: disable=broad-except
+      has_existing_exception = True
       ProcessError(log_message=('Possibly handleable error. '
                                 'Will try to restart shared state'))
       # The caller, RunStorySet, will catch this exception, destory and
@@ -166,7 +175,6 @@ def _RunStoryAndProcessErrorIfNeeded(
     finally:
       if finder_options.periodic_screenshot_frequency_ms:
         state.browser.StopCollectingPeriodicScreenshots()
-      has_existing_exception = (sys.exc_info() != (None, None, None))
       try:
         if hasattr(state, 'browser') and state.browser:
           try:
@@ -246,6 +254,7 @@ def RunStorySet(test, story_set, finder_options, results,
       possible_browser.target_os == "android"):
     raise ValueError("Periodic screenshots are not compatible with Android!")
 
+  logging.info('Running in Python version: %s' % str(sys.version_info))
   platform_tags = possible_browser.GetTypExpectationsTags()
   logging.info('The following expectations condition tags were generated %s',
                str(platform_tags))
@@ -257,7 +266,9 @@ def RunStorySet(test, story_set, finder_options, results,
   # Sort the stories based on the archive name, to minimize how often the
   # network replay-server needs to be restarted.
   if wpr_archive_info:
-    stories = sorted(stories, key=wpr_archive_info.WprFilePathForStory)
+    stories = sorted(
+        stories,
+        key=lambda story: wpr_archive_info.WprFilePathForStory(story) or '')
 
   if finder_options.print_only:
     if finder_options.print_only == 'tags':
@@ -293,6 +304,11 @@ def RunStorySet(test, story_set, finder_options, results,
   if not stories:
     return
 
+  if psutil:
+    # Log available disk space before running the benchmark.
+    logging.info(
+        'Disk usage before running tests: %s.' % str(psutil.disk_usage('.')))
+
   # Effective max failures gives priority to command-line flag value.
   effective_max_failures = finder_options.max_failures
   if effective_max_failures is None:
@@ -302,6 +318,7 @@ def RunStorySet(test, story_set, finder_options, results,
   # TODO(crbug.com/866458): unwind the nested blocks
   # pylint: disable=too-many-nested-blocks
   try:
+    has_existing_exception = False
     pageset_repeat = finder_options.pageset_repeat
     for storyset_repeat_counter in range(pageset_repeat):
       for story in stories:
@@ -332,12 +349,14 @@ def RunStorySet(test, story_set, finder_options, results,
             _RunStoryAndProcessErrorIfNeeded(story, results, state, test,
                                              finder_options)
           except _UNHANDLEABLE_ERRORS as exc:
+            has_existing_exception = True
             interruption = (
                 'Benchmark execution interrupted by a fatal exception: %r' %
                 exc)
             results.InterruptBenchmark(interruption)
             exception_formatter.PrintFormattedException()
           except Exception:  # pylint: disable=broad-except
+            has_existing_exception = True
             logging.exception('Exception raised during story run.')
             results.Fail(sys.exc_info())
             # For all other errors, try to give the rest of stories a chance
@@ -367,7 +386,6 @@ def RunStorySet(test, story_set, finder_options, results,
           results.InterruptBenchmark(interruption)
   finally:
     if state:
-      has_existing_exception = sys.exc_info() != (None, None, None)
       try:
         state.TearDownState()
       except Exception: # pylint: disable=broad-except

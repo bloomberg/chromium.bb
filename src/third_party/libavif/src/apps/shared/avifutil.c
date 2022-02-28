@@ -38,7 +38,7 @@ static void printClapFraction(const char * name, int32_t n, int32_t d)
     printf(", ");
 }
 
-static void avifImageDumpInternal(const avifImage * avif, uint32_t gridCols, uint32_t gridRows, avifBool alphaPresent)
+static void avifImageDumpInternal(const avifImage * avif, uint32_t gridCols, uint32_t gridRows, avifBool alphaPresent, avifProgressiveState progressiveState)
 {
     uint32_t width = avif->width;
     uint32_t height = avif->height;
@@ -105,17 +105,18 @@ static void avifImageDumpInternal(const avifImage * avif, uint32_t gridCols, uin
             printf("    * imir (Mirror)        : Mode %u (%s)\n", avif->imir.mode, (avif->imir.mode == 0) ? "top-to-bottom" : "left-to-right");
         }
     }
+    printf(" * Progressive    : %s\n", avifProgressiveStateToString(progressiveState));
 }
 
-void avifImageDump(avifImage * avif, uint32_t gridCols, uint32_t gridRows)
+void avifImageDump(avifImage * avif, uint32_t gridCols, uint32_t gridRows, avifProgressiveState progressiveState)
 {
     const avifBool alphaPresent = avif->alphaPlane && (avif->alphaRowBytes > 0);
-    avifImageDumpInternal(avif, gridCols, gridRows, alphaPresent);
+    avifImageDumpInternal(avif, gridCols, gridRows, alphaPresent, progressiveState);
 }
 
 void avifContainerDump(avifDecoder * decoder)
 {
-    avifImageDumpInternal(decoder->image, 0, 0, decoder->alphaPresent);
+    avifImageDumpInternal(decoder->image, 0, 0, decoder->alphaPresent, decoder->progressiveState);
 }
 
 void avifPrintVersions(void)
@@ -220,3 +221,72 @@ void avifDumpDiagnostics(const avifDiagnostics * diag)
     printf("Diagnostics:\n");
     printf(" * %s\n", diag->error);
 }
+
+// ---------------------------------------------------------------------------
+// avifQueryCPUCount (separated into OS implementations)
+
+#if defined(_WIN32)
+
+// Windows
+
+#include <windows.h>
+
+int avifQueryCPUCount(void)
+{
+    int numCPU;
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo(&sysinfo);
+    numCPU = sysinfo.dwNumberOfProcessors;
+    return numCPU;
+}
+
+#elif defined(__APPLE__)
+
+// Apple
+
+#include <sys/sysctl.h>
+
+int avifQueryCPUCount()
+{
+    int mib[4];
+    int numCPU;
+    size_t len = sizeof(numCPU);
+
+    /* set the mib for hw.ncpu */
+    mib[0] = CTL_HW;
+    mib[1] = HW_AVAILCPU; // alternatively, try HW_NCPU;
+
+    /* get the number of CPUs from the system */
+    sysctl(mib, 2, &numCPU, &len, NULL, 0);
+
+    if (numCPU < 1) {
+        mib[1] = HW_NCPU;
+        sysctl(mib, 2, &numCPU, &len, NULL, 0);
+        if (numCPU < 1)
+            numCPU = 1;
+    }
+    return numCPU;
+}
+
+#elif defined(__EMSCRIPTEN__)
+
+// Emscripten
+
+int avifQueryCPUCount()
+{
+    return 1;
+}
+
+#else
+
+// POSIX
+
+#include <unistd.h>
+
+int avifQueryCPUCount()
+{
+    int numCPU = (int)sysconf(_SC_NPROCESSORS_ONLN);
+    return (numCPU > 0) ? numCPU : 1;
+}
+
+#endif

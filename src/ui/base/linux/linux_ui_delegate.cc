@@ -27,7 +27,7 @@ LinuxUiDelegate::~LinuxUiDelegate() {
   instance_ = nullptr;
 }
 
-bool LinuxUiDelegate::SetWidgetTransientFor(
+bool LinuxUiDelegate::ExportWindowHandle(
     uint32_t parent_widget,
     base::OnceCallback<void(const std::string&)> callback) {
   // This function should not be called when using a platform that doesn't
@@ -36,11 +36,12 @@ bool LinuxUiDelegate::SetWidgetTransientFor(
   return false;
 }
 
-int LinuxUiDelegate::GetKeyState() {
+void LinuxUiDelegate::SetTransientWindowForParent(
+    gfx::AcceleratedWidget parent,
+    gfx::AcceleratedWidget transient) {
   // This function should not be called when using a platform that doesn't
   // implement it.
   NOTREACHED();
-  return 0;
 }
 
 }  // namespace ui

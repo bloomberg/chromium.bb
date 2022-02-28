@@ -2,29 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {assertArrayEquals,assertEquals, assertFalse, assertTrue} from 'chrome://test/chai_assert.js';
 
-import {MockVolumeManager} from '../../../background/js/mock_volume_manager.m.js';
-import {EntryList} from '../../../common/js/files_app_entry_types.m.js';
-import {metrics} from '../../../common/js/metrics.m.js';
-import {installMockChrome, MockCommandLinePrivate} from '../../../common/js/mock_chrome.m.js';
-import {MockDirectoryEntry} from '../../../common/js/mock_entry.m.js';
-import {reportPromise, waitUntil} from '../../../common/js/test_error_reporting.m.js';
-import {str} from '../../../common/js/util.m.js';
-import {VolumeManagerCommon} from '../../../common/js/volume_manager_types.m.js';
-import {FileOperationManager} from '../../../externs/background/file_operation_manager.m.js';
-import {DirectoryModel} from '../directory_model.m.js';
-import {createFakeAndroidAppListModel} from '../fake_android_app_list_model.m.js';
-import {MetadataModel} from '../metadata/metadata_model.m.js';
-import {createFakeDirectoryModel} from '../mock_directory_model.m.js';
-import {MockFolderShortcutDataModel} from '../mock_folder_shortcut_data_model.m.js';
-import {MockNavigationListModel} from '../mock_navigation_list_model.m.js';
-import {NavigationListModel, NavigationModelFakeItem, NavigationModelItemType, NavigationSection} from '../navigation_list_model.m.js';
+import {MockVolumeManager} from '../../../background/js/mock_volume_manager.js';
+import {EntryList} from '../../../common/js/files_app_entry_types.js';
+import {metrics} from '../../../common/js/metrics.js';
+import {installMockChrome, MockCommandLinePrivate} from '../../../common/js/mock_chrome.js';
+import {MockDirectoryEntry} from '../../../common/js/mock_entry.js';
+import {reportPromise, waitUntil} from '../../../common/js/test_error_reporting.js';
+import {str} from '../../../common/js/util.js';
+import {VolumeManagerCommon} from '../../../common/js/volume_manager_types.js';
+import {FileOperationManager} from '../../../externs/background/file_operation_manager.js';
+import {DirectoryModel} from '../directory_model.js';
+import {createFakeAndroidAppListModel} from '../fake_android_app_list_model.js';
+import {MetadataModel} from '../metadata/metadata_model.js';
+import {createFakeDirectoryModel} from '../mock_directory_model.js';
+import {MockFolderShortcutDataModel} from '../mock_folder_shortcut_data_model.js';
+import {MockNavigationListModel} from '../mock_navigation_list_model.js';
+import {NavigationListModel, NavigationModelFakeItem, NavigationModelItemType, NavigationSection} from '../navigation_list_model.js';
 
-import {DirectoryTree, EntryListItem} from './directory_tree.m.js';
-// clang-format on
+import {DirectoryTree, EntryListItem} from './directory_tree.js';
 
 /** @type {!MockVolumeManager} */
 let volumeManager;
@@ -72,8 +70,7 @@ let mockChrome;
 export function setUp() {
   // Mock LoadTimeData strings.
   window.loadTimeData.getString = id => id;
-  window.loadTimeData.resetForTesting();
-  window.loadTimeData.overrideValues({
+  window.loadTimeData.resetForTesting({
     FILES_TRASH_ENABLED: false,
     UNIFIED_MEDIA_VIEW_ENABLED: false,
   });

@@ -13,6 +13,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/auto_reset.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
@@ -96,10 +97,12 @@ void BeginFrameObserverBase::OnBeginFrame(const BeginFrameArgs& args) {
 }
 
 void BeginFrameObserverBase::AsProtozeroInto(
+    perfetto::EventContext& ctx,
     perfetto::protos::pbzero::BeginFrameObserverState* state) const {
   state->set_dropped_begin_frame_args(dropped_begin_frame_args_);
 
-  last_begin_frame_args_.AsProtozeroInto(state->set_last_begin_frame_args());
+  last_begin_frame_args_.AsProtozeroInto(ctx,
+                                         state->set_last_begin_frame_args());
 }
 
 BeginFrameArgs
@@ -112,6 +115,17 @@ BeginFrameSource::BeginFrameArgsGenerator::GenerateBeginFrameArgs(
       next_sequence_number_ +
       EstimateTickCountsBetween(frame_time, next_expected_frame_time_,
                                 vsync_interval);
+  // This is utilized by ExternalBeginFrameSourceAndroid,
+  // GpuVSyncBeginFrameSource, and DelayBasedBeginFrameSource. Which covers the
+  // main Viz use cases. BackToBackBeginFrameSource is not relevenant. We also
+  // are not looking to adjust ExternalBeginFrameSourceMojo which is used in
+  // headless.
+  if (dynamic_begin_frame_deadline_offset_source_) {
+    base::TimeDelta deadline_offset =
+        dynamic_begin_frame_deadline_offset_source_->GetDeadlineOffset(
+            vsync_interval);
+    next_frame_time -= deadline_offset;
+  }
   next_expected_frame_time_ = next_frame_time;
   next_sequence_number_ = sequence_number + 1;
   return BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, source_id,
@@ -185,18 +199,19 @@ bool BeginFrameSource::RequestCallbackOnGpuAvailable() {
 }
 
 void BeginFrameSource::AsProtozeroInto(
+    perfetto::EventContext&,
     perfetto::protos::pbzero::BeginFrameSourceState* state) const {
   // The lower 32 bits of source_id are the interesting piece of |source_id_|.
   state->set_source_id(static_cast<uint32_t>(source_id_));
 }
 
+void BeginFrameSource::SetDynamicBeginFrameDeadlineOffsetSource(
+    DynamicBeginFrameDeadlineOffsetSource*
+        dynamic_begin_frame_deadline_offset_source) {}
+
 // StubBeginFrameSource ---------------------------------------------------
 StubBeginFrameSource::StubBeginFrameSource()
     : BeginFrameSource(kNotRestartableId) {}
-
-bool StubBeginFrameSource::IsThrottled() const {
-  return true;
-}
 
 // SyntheticBeginFrameSource ----------------------------------------------
 SyntheticBeginFrameSource::SyntheticBeginFrameSource(uint32_t restart_id)
@@ -221,10 +236,16 @@ BackToBackBeginFrameSource::~BackToBackBeginFrameSource() = default;
 void BackToBackBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
   DCHECK(!base::Contains(observers_, obs));
+  bool first_observer = observers_.empty();
   observers_.insert(obs);
   pending_begin_frame_observers_.insert(obs);
   obs->OnBeginFrameSourcePausedChanged(false);
   time_source_->SetActive(true);
+  if (first_observer) {
+    base::flat_set<BeginFrameSourceObserver*> state_observers(state_observers_);
+    for (auto* state_observer : state_observers)
+      state_observer->BeginFrameRequestedChanged(true);
+  }
 }
 
 void BackToBackBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
@@ -232,8 +253,26 @@ void BackToBackBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
   DCHECK(base::Contains(observers_, obs));
   observers_.erase(obs);
   pending_begin_frame_observers_.erase(obs);
-  if (pending_begin_frame_observers_.empty())
+  if (pending_begin_frame_observers_.empty()) {
     time_source_->SetActive(false);
+    base::flat_set<BeginFrameSourceObserver*> state_observers(state_observers_);
+    for (auto* state_observer : state_observers)
+      state_observer->BeginFrameRequestedChanged(false);
+  }
+}
+
+void BackToBackBeginFrameSource::AddStateObserver(
+    BeginFrameSourceObserver* obs) {
+  DCHECK(obs);
+  DCHECK(!base::Contains(state_observers_, obs));
+  state_observers_.insert(obs);
+}
+
+void BackToBackBeginFrameSource::RemoveStateObserver(
+    BeginFrameSourceObserver* obs) {
+  DCHECK(obs);
+  DCHECK(base::Contains(state_observers_, obs));
+  state_observers_.erase(obs);
 }
 
 void BackToBackBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs) {
@@ -241,10 +280,6 @@ void BackToBackBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs) {
     pending_begin_frame_observers_.insert(obs);
     time_source_->SetActive(true);
   }
-}
-
-bool BackToBackBeginFrameSource::IsThrottled() const {
-  return false;
 }
 
 void BackToBackBeginFrameSource::OnGpuNoLongerBusy() {
@@ -307,7 +342,7 @@ void DelayBasedBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
 
   observers_.insert(obs);
   obs->OnBeginFrameSourcePausedChanged(false);
-  time_source_->SetActive(true);
+  SetActive(true);
 
   // Missed args should correspond to |last_begin_frame_args_| (particularly,
   // have the same sequence number) if |last_begin_frame_args_| still correspond
@@ -334,15 +369,32 @@ void DelayBasedBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
 
   observers_.erase(obs);
   if (observers_.empty())
-    time_source_->SetActive(false);
+    SetActive(false);
 }
 
-bool DelayBasedBeginFrameSource::IsThrottled() const {
-  return true;
+void DelayBasedBeginFrameSource::AddStateObserver(
+    BeginFrameSourceObserver* obs) {
+  DCHECK(obs);
+  DCHECK(!base::Contains(state_observers_, obs));
+  state_observers_.insert(obs);
+}
+
+void DelayBasedBeginFrameSource::RemoveStateObserver(
+    BeginFrameSourceObserver* obs) {
+  DCHECK(obs);
+  DCHECK(base::Contains(state_observers_, obs));
+  state_observers_.erase(obs);
 }
 
 void DelayBasedBeginFrameSource::OnGpuNoLongerBusy() {
   OnTimerTick();
+}
+
+void DelayBasedBeginFrameSource::SetDynamicBeginFrameDeadlineOffsetSource(
+    DynamicBeginFrameDeadlineOffsetSource*
+        dynamic_begin_frame_deadline_offset_source) {
+  begin_frame_args_generator_.set_dynamic_begin_frame_deadline_offset_source(
+      dynamic_begin_frame_deadline_offset_source);
 }
 
 void DelayBasedBeginFrameSource::OnTimerTick() {
@@ -373,6 +425,15 @@ void DelayBasedBeginFrameSource::IssueBeginFrameToObserver(
   }
 }
 
+void DelayBasedBeginFrameSource::SetActive(bool active) {
+  if (time_source_->Active() == active)
+    return;
+  time_source_->SetActive(active);
+  base::flat_set<BeginFrameSourceObserver*> state_observers(state_observers_);
+  for (auto* state_observer : state_observers)
+    state_observer->BeginFrameRequestedChanged(active);
+}
+
 // ExternalBeginFrameSource -----------------------------------------------
 ExternalBeginFrameSource::ExternalBeginFrameSource(
     ExternalBeginFrameSourceClient* client,
@@ -386,20 +447,26 @@ ExternalBeginFrameSource::~ExternalBeginFrameSource() {
 }
 
 void ExternalBeginFrameSource::AsProtozeroInto(
+    perfetto::EventContext& ctx,
     perfetto::protos::pbzero::BeginFrameSourceState* state) const {
-  BeginFrameSource::AsProtozeroInto(state);
+  BeginFrameSource::AsProtozeroInto(ctx, state);
 
   state->set_paused(paused_);
   state->set_num_observers(observers_.size());
-  last_begin_frame_args_.AsProtozeroInto(state->set_last_begin_frame_args());
+  last_begin_frame_args_.AsProtozeroInto(ctx,
+                                         state->set_last_begin_frame_args());
 }
 
 void ExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
   DCHECK(!base::Contains(observers_, obs));
 
-  if (observers_.empty())
+  if (observers_.empty()) {
     client_->OnNeedsBeginFrames(true);
+    base::flat_set<BeginFrameSourceObserver*> state_observers(state_observers_);
+    for (auto* state_observer : state_observers)
+      state_observer->BeginFrameRequestedChanged(true);
+  }
 
   observers_.insert(obs);
   obs->OnBeginFrameSourcePausedChanged(paused_);
@@ -417,12 +484,25 @@ void ExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
   DCHECK(base::Contains(observers_, obs));
 
   observers_.erase(obs);
-  if (observers_.empty())
+  if (observers_.empty()) {
     client_->OnNeedsBeginFrames(false);
+    base::flat_set<BeginFrameSourceObserver*> state_observers(state_observers_);
+    for (auto* state_observer : state_observers)
+      state_observer->BeginFrameRequestedChanged(false);
+  }
 }
 
-bool ExternalBeginFrameSource::IsThrottled() const {
-  return true;
+void ExternalBeginFrameSource::AddStateObserver(BeginFrameSourceObserver* obs) {
+  DCHECK(obs);
+  DCHECK(!base::Contains(state_observers_, obs));
+  state_observers_.insert(obs);
+}
+
+void ExternalBeginFrameSource::RemoveStateObserver(
+    BeginFrameSourceObserver* obs) {
+  DCHECK(obs);
+  DCHECK(base::Contains(state_observers_, obs));
+  state_observers_.erase(obs);
 }
 
 void ExternalBeginFrameSource::OnGpuNoLongerBusy() {

@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_SERIALIZED_SCRIPT_VALUE_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_SERIALIZED_SCRIPT_VALUE_FACTORY_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -16,6 +15,10 @@ class CORE_EXPORT SerializedScriptValueFactory {
   USING_FAST_MALLOC(SerializedScriptValueFactory);
 
  public:
+  SerializedScriptValueFactory(const SerializedScriptValueFactory&) = delete;
+  SerializedScriptValueFactory& operator=(const SerializedScriptValueFactory&) =
+      delete;
+
   // SerializedScriptValueFactory::initialize() should be invoked when Blink is
   // initialized, i.e. initialize() in WebKit.cpp.
   static void Initialize(SerializedScriptValueFactory* new_factory) {
@@ -65,8 +68,6 @@ class CORE_EXPORT SerializedScriptValueFactory {
   }
 
   static SerializedScriptValueFactory* instance_;
-
-  DISALLOW_COPY_AND_ASSIGN(SerializedScriptValueFactory);
 };
 
 }  // namespace blink

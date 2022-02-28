@@ -7,11 +7,10 @@
 
 #include <iosfwd>
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/state_machines/text_segmentation_machine_state.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_uchar.h"
 
 namespace blink {
 
@@ -20,6 +19,8 @@ class CORE_EXPORT BackspaceStateMachine {
 
  public:
   BackspaceStateMachine();
+  BackspaceStateMachine(const BackspaceStateMachine&) = delete;
+  BackspaceStateMachine& operator=(const BackspaceStateMachine&) = delete;
 
   // Prepares by feeding preceding text.
   // This method must not be called after feedFollowingCodeUnit().
@@ -63,8 +64,6 @@ class CORE_EXPORT BackspaceStateMachine {
 
   // The internal state.
   BackspaceState state_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackspaceStateMachine);
 };
 
 }  // namespace blink

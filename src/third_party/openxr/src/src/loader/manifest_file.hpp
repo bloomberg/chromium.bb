@@ -2,21 +2,9 @@
 // Copyright (c) 2017 Valve Corporation
 // Copyright (c) 2017 LunarG, Inc.
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.0 OR MIT
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// Author: Mark Young <marky@lunarg.com>
+// Initial Author: Mark Young <marky@lunarg.com>
 //
 
 #pragma once
@@ -48,7 +36,6 @@ struct JsonVersion {
 struct ExtensionListing {
     std::string name;
     uint32_t extension_version;
-    std::vector<std::string> entrypoints;
 };
 
 // ManifestFile class -
@@ -63,7 +50,6 @@ class ManifestFile {
     const std::string &Filename() const { return _filename; }
     const std::string &LibraryPath() const { return _library_path; }
     void GetInstanceExtensionProperties(std::vector<XrExtensionProperties> &props);
-    void GetDeviceExtensionProperties(std::vector<XrExtensionProperties> &props);
     const std::string &GetFunctionName(const std::string &func_name) const;
 
    protected:
@@ -76,7 +62,6 @@ class ManifestFile {
     ManifestFileType _type;
     std::string _library_path;
     std::vector<ExtensionListing> _instance_extensions;
-    std::vector<ExtensionListing> _device_extensions;
     std::unordered_map<std::string, std::string> _functions_renamed;
 };
 
@@ -85,7 +70,7 @@ class ManifestFile {
 class RuntimeManifestFile : public ManifestFile {
    public:
     // Factory method
-    static XrResult FindManifestFiles(ManifestFileType type, std::vector<std::unique_ptr<RuntimeManifestFile>> &manifest_files);
+    static XrResult FindManifestFiles(std::vector<std::unique_ptr<RuntimeManifestFile>> &manifest_files);
 
    private:
     RuntimeManifestFile(const std::string &filename, const std::string &library_path);

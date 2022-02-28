@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_ICE_CANDIDATE_PLATFORM_H_
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -54,6 +54,8 @@ class PLATFORM_EXPORT RTCIceCandidatePlatform final
                           String sdp_mid,
                           absl::optional<uint16_t> sdp_m_line_index,
                           String username_fragment);
+  RTCIceCandidatePlatform(const RTCIceCandidatePlatform&) = delete;
+  RTCIceCandidatePlatform& operator=(const RTCIceCandidatePlatform&) = delete;
   ~RTCIceCandidatePlatform() = default;
 
   const String& Candidate() const { return candidate_; }
@@ -92,8 +94,6 @@ class PLATFORM_EXPORT RTCIceCandidatePlatform final
   String related_address_;
   absl::optional<uint16_t> related_port_;
   String username_fragment_;
-
-  DISALLOW_COPY_AND_ASSIGN(RTCIceCandidatePlatform);
 };
 
 }  // namespace blink

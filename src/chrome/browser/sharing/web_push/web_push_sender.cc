@@ -18,6 +18,7 @@
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace {
@@ -29,7 +30,7 @@ const char kFCMServerAudience[] = "https://fcm.googleapis.com";
 const char kClaimsKeyExpirationTime[] = "exp";
 // It's 12 hours rather than 24 hours to avoid any issues with clock differences
 // between the sending application and the push service.
-constexpr base::TimeDelta kClaimsValidPeriod = base::TimeDelta::FromHours(12);
+constexpr base::TimeDelta kClaimsValidPeriod = base::Hours(12);
 
 const char kAuthorizationRequestHeaderFormat[] = "vapid t=%s, k=%s";
 

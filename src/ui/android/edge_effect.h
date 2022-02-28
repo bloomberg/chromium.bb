@@ -5,15 +5,14 @@
 #ifndef UI_ANDROID_EDGE_EFFECT_H_
 #define UI_ANDROID_EDGE_EFFECT_H_
 
-
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "ui/android/ui_android_export.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace cc {
 class Layer;
@@ -40,6 +39,10 @@ class UI_ANDROID_EXPORT EdgeEffect {
   enum Edge { EDGE_TOP, EDGE_LEFT, EDGE_BOTTOM, EDGE_RIGHT, EDGE_COUNT };
 
   explicit EdgeEffect(ui::ResourceManager* resource_manager);
+
+  EdgeEffect(const EdgeEffect&) = delete;
+  EdgeEffect& operator=(const EdgeEffect&) = delete;
+
   ~EdgeEffect();
 
   void Pull(base::TimeTicks current_time,
@@ -57,7 +60,7 @@ class UI_ANDROID_EXPORT EdgeEffect {
   void SetParent(cc::Layer* parent);
 
  private:
-  ui::ResourceManager* const resource_manager_;
+  const raw_ptr<ui::ResourceManager> resource_manager_;
 
   scoped_refptr<cc::UIResourceLayer> glow_;
 
@@ -80,8 +83,6 @@ class UI_ANDROID_EXPORT EdgeEffect {
   State state_;
 
   float pull_distance_;
-
-  DISALLOW_COPY_AND_ASSIGN(EdgeEffect);
 };
 
 }  // namespace ui

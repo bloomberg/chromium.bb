@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/sw_reporter_invocation_win.h"
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"
@@ -19,7 +19,7 @@
 class PrefRegistrySimple;
 
 namespace base {
-class DictionaryValue;
+class Value;
 class FilePath;
 class Version;
 }
@@ -52,20 +52,25 @@ using OnComponentReadyCallback = base::RepeatingCallback<void(
 class SwReporterInstallerPolicy : public ComponentInstallerPolicy {
  public:
   explicit SwReporterInstallerPolicy(OnComponentReadyCallback callback);
+
+  SwReporterInstallerPolicy(const SwReporterInstallerPolicy&) = delete;
+  SwReporterInstallerPolicy& operator=(const SwReporterInstallerPolicy&) =
+      delete;
+
   ~SwReporterInstallerPolicy() override;
 
   // ComponentInstallerPolicy implementation.
-  bool VerifyInstallation(const base::DictionaryValue& manifest,
+  bool VerifyInstallation(const base::Value& manifest,
                           const base::FilePath& dir) const override;
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
   update_client::CrxInstaller::Result OnCustomInstall(
-      const base::DictionaryValue& manifest,
+      const base::Value& manifest,
       const base::FilePath& install_dir) override;
   void OnCustomUninstall() override;
   void ComponentReady(const base::Version& version,
                       const base::FilePath& install_dir,
-                      std::unique_ptr<base::DictionaryValue> manifest) override;
+                      base::Value manifest) override;
   base::FilePath GetRelativeInstallDir() const override;
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
@@ -75,8 +80,6 @@ class SwReporterInstallerPolicy : public ComponentInstallerPolicy {
   friend class SwReporterInstallerTest;
 
   OnComponentReadyCallback on_component_ready_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SwReporterInstallerPolicy);
 };
 
 // Forces an update of the reporter component.
@@ -89,6 +92,11 @@ class SwReporterOnDemandFetcher : public ServiceObserver {
  public:
   SwReporterOnDemandFetcher(ComponentUpdateService* cus,
                             base::OnceClosure on_error_callback);
+
+  SwReporterOnDemandFetcher(const SwReporterOnDemandFetcher&) = delete;
+  SwReporterOnDemandFetcher& operator=(const SwReporterOnDemandFetcher&) =
+      delete;
+
   ~SwReporterOnDemandFetcher() override;
 
   // ServiceObserver implementation.
@@ -96,10 +104,8 @@ class SwReporterOnDemandFetcher : public ServiceObserver {
 
  private:
   // Will outlive this object.
-  ComponentUpdateService* cus_;
+  raw_ptr<ComponentUpdateService> cus_;
   base::OnceClosure on_error_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SwReporterOnDemandFetcher);
 };
 
 // Call once during startup to make the component update service aware of the

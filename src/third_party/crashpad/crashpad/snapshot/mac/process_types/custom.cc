@@ -23,9 +23,9 @@
 #include <type_traits>
 
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "snapshot/mac/process_types/internal.h"
 #include "util/mac/mac_util.h"
@@ -147,6 +147,7 @@ size_t dyld_all_image_infos<Traits>::ExpectedSizeForVersion(
       std::numeric_limits<size_t>::max(),  // 15, see below
       offsetof(dyld_all_image_infos<Traits>, end_v16),  // 16
       sizeof(dyld_all_image_infos<Traits>),  // 17
+      sizeof(dyld_all_image_infos<Traits>),  // 18
   };
 
   if (version >= base::size(kSizeForVersion)) {

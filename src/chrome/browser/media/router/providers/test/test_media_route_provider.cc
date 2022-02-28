@@ -14,11 +14,10 @@
 #include "base/run_loop.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "chrome/browser/extensions/api/tab_capture/offscreen_tabs_owner.h"
-#include "chrome/browser/media/offscreen_tab.h"
 #include "components/media_router/common/media_source.h"
 #include "components/media_router/common/mojom/media_router.mojom.h"
 #include "components/media_router/common/route_request_result.h"
+#include "components/media_router/common/test/test_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -43,8 +42,8 @@ bool Is1UAPresentationSource(const std::string& source_urn) {
 
 }  // namespace
 
-const MediaRouteProviderId TestMediaRouteProvider::kProviderId =
-    MediaRouteProviderId::TEST;
+const mojom::MediaRouteProviderId TestMediaRouteProvider::kProviderId =
+    mojom::MediaRouteProviderId::TEST;
 
 TestMediaRouteProvider::TestMediaRouteProvider(
     mojo::PendingReceiver<mojom::MediaRouteProvider> receiver,
@@ -52,8 +51,6 @@ TestMediaRouteProvider::TestMediaRouteProvider(
     : receiver_(this, std::move(receiver)),
       media_router_(std::move(media_router)) {
   SetSinks();
-  media_router_->OnSinkAvailabilityUpdated(
-      kProviderId, mojom::MediaRouter::SinkAvailability::PER_SOURCE);
 }
 
 TestMediaRouteProvider::~TestMediaRouteProvider() = default;
@@ -61,8 +58,8 @@ TestMediaRouteProvider::~TestMediaRouteProvider() = default;
 void TestMediaRouteProvider::SetSinks() {
   MediaSinkInternal sink_internal_1;
   MediaSinkInternal sink_internal_2;
-  MediaSink sink1("id1", "test-sink-1", SinkIconType::CAST);
-  MediaSink sink2("id2", "test-sink-2", SinkIconType::CAST);
+  MediaSink sink1{CreateCastSink("id1", "test-sink-1")};
+  MediaSink sink2{CreateCastSink("id2", "test-sink-2")};
   sink1.set_provider_id(kProviderId);
   sink2.set_provider_id(kProviderId);
   sink_internal_1.set_sink(sink1);
@@ -82,8 +79,8 @@ void TestMediaRouteProvider::CreateRoute(const std::string& media_source,
     std::move(callback).Run(absl::nullopt, nullptr, route_error_message_,
                             RouteRequestResult::ResultCode::UNKNOWN_ERROR);
   } else if (!delay_.is_zero()) {
-    base::ThreadPool::PostDelayedTask(
-        FROM_HERE, {base::TaskPriority::HIGHEST},
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
         base::BindOnce(&TestMediaRouteProvider::CreateRouteTimeOut,
                        GetWeakPtr(), std::move(callback)),
         delay_);
@@ -147,34 +144,6 @@ void TestMediaRouteProvider::JoinRoute(const std::string& media_source,
     MediaRoute& existing_route = pos->second;
     std::move(callback).Run(existing_route, nullptr,
                             std::string("Successfully joined session"),
-                            RouteRequestResult::ResultCode::OK);
-  }
-}
-
-void TestMediaRouteProvider::ConnectRouteByRouteId(
-    const std::string& media_source,
-    const std::string& route_id,
-    const std::string& presentation_id,
-    const url::Origin& origin,
-    int32_t tab_id,
-    base::TimeDelta timeout,
-    bool incognito,
-    ConnectRouteByRouteIdCallback callback) {
-  if (!IsValidSource(media_source)) {
-    std::move(callback).Run(absl::nullopt, nullptr,
-                            std::string("The media source is invalid."),
-                            RouteRequestResult::UNKNOWN_ERROR);
-    return;
-  }
-  auto pos = routes_.find(route_id);
-  if (pos == presentation_ids_to_routes_.end()) {
-    std::move(callback).Run(absl::nullopt, nullptr,
-                            std::string("Presentation does not exist."),
-                            RouteRequestResult::UNKNOWN_ERROR);
-  } else {
-    MediaRoute& existing_route = pos->second;
-    std::move(callback).Run(existing_route, nullptr,
-                            std::string("Connect route by route ID"),
                             RouteRequestResult::ResultCode::OK);
   }
 }
@@ -283,8 +252,21 @@ void TestMediaRouteProvider::CaptureOffScreenTab(
     content::WebContents* web_contents,
     GURL source_urn,
     std::string& presentation_id) {
-  extensions::OffscreenTabsOwner::Get(web_contents)
-      ->OpenNewTab(source_urn, gfx::Size(180, 180), presentation_id);
+  offscreen_tab_ =
+      std::make_unique<OffscreenTab>(this, web_contents->GetBrowserContext());
+  offscreen_tab_->Start(source_urn, gfx::Size(180, 180), presentation_id);
+}
+
+void TestMediaRouteProvider::TearDown() {
+  // An OffscreenTab observes its Profile*, and must be destroyed before
+  // Profiles.
+  if (offscreen_tab_)
+    offscreen_tab_.reset();
+}
+
+void TestMediaRouteProvider::DestroyTab(OffscreenTab* tab) {
+  if (offscreen_tab_ && offscreen_tab_.get() == tab)
+    offscreen_tab_.reset();
 }
 
 }  // namespace media_router

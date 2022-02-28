@@ -8,9 +8,8 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/stl_util.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/future.h"
 
@@ -53,6 +52,7 @@ constexpr const char* kAtomsToCache[] = {
     "Enabled",
     "FAKE_SELECTION",
     "Full aspect",
+    "_GTK_FRAME_EXTENTS",
     "INCR",
     "KEYBOARD",
     "LOCK",
@@ -104,7 +104,6 @@ constexpr const char* kAtomsToCache[] = {
     "_MOTIF_WM_HINTS",
     "_NETSCAPE_URL",
     "_NET_ACTIVE_WINDOW",
-    "_NET_CLIENT_LIST_STACKING",
     "_NET_CURRENT_DESKTOP",
     "_NET_FRAME_EXTENTS",
     "_NET_SUPPORTED",
@@ -118,6 +117,7 @@ constexpr const char* kAtomsToCache[] = {
     "_NET_WM_ICON",
     "_NET_WM_MOVERESIZE",
     "_NET_WM_NAME",
+    "_NET_WM_OPAQUE_REGION",
     "_NET_WM_PID",
     "_NET_WM_PING",
     "_NET_WM_STATE",
@@ -216,12 +216,6 @@ Atom X11AtomCache::GetAtom(const std::string& name) const {
         << " Use x11::Atom::" << name << " instead of x11::GetAtom(\"" << name
         << "\")";
     cached_atoms_.emplace(name, atom);
-  } else {
-    static int error_count = 0;
-    ++error_count;
-    // TODO(https://crbug.com/1000919): Evaluate and remove UMA metrics after
-    // enough data is gathered.
-    base::UmaHistogramCounts100("X11.XInternAtomFailure", error_count);
   }
   return atom;
 }

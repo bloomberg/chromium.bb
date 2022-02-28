@@ -185,15 +185,11 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   // This will work on inlines to return the bounding box of all of the lines'
   // border boxes.
-  virtual IntRect BorderBoundingBox() const = 0;
+  virtual gfx::Rect BorderBoundingBox() const = 0;
 
   virtual PhysicalRect PhysicalVisualOverflowRect() const = 0;
 
   bool UsesCompositedScrolling() const;
-
-  // Returns which layers backgrounds should be painted into for a overflow
-  // scrolling box if it uses composited scrolling.
-  BackgroundPaintLocation ComputeBackgroundPaintLocationIfComposited() const;
 
   // These return the CSS computed padding values.
   LayoutUnit ComputedCSSPaddingTop() const {
@@ -397,7 +393,12 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
     return StyleRef().IsHorizontalWritingMode() ? BorderLeft() + PaddingLeft()
                                                 : BorderTop() + PaddingTop();
   }
-
+  DISABLE_CFI_PERF LayoutUnit BorderAndPaddingLogicalRight() const {
+    NOT_DESTROYED();
+    return StyleRef().IsHorizontalWritingMode()
+               ? BorderRight() + PaddingRight()
+               : BorderBottom() + PaddingBottom();
+  }
   LayoutUnit BorderLogicalLeft() const {
     NOT_DESTROYED();
     return LayoutUnit(StyleRef().IsHorizontalWritingMode() ? BorderLeft()
@@ -509,8 +510,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
       bool first_line,
       LineDirectionMode,
       LinePositionMode = kPositionOnContainingLine) const = 0;
-
-  void ContentChanged(ContentChangeType);
 
   // Returns true if the background is painted opaque in the given rect.
   // The query rect is given in local coordinate system.

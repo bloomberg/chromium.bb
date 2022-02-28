@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_MEDIA_FLINGING_RENDERER_H_
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "content/common/content_export.h"
 #include "media/base/flinging_controller.h"
 #include "media/base/media_resource.h"
@@ -40,6 +41,9 @@ class CONTENT_EXPORT FlingingRenderer : public media::Renderer,
       RenderFrameHost* render_frame_host,
       const std::string& presentation_id,
       mojo::PendingRemote<ClientExtension> client_extension);
+
+  FlingingRenderer(const FlingingRenderer&) = delete;
+  FlingingRenderer& operator=(const FlingingRenderer&) = delete;
 
   ~FlingingRenderer() override;
 
@@ -79,13 +83,11 @@ class CONTENT_EXPORT FlingingRenderer : public media::Renderer,
   // Only updated when |play_state_is_stable_| is true.
   PlayState last_play_state_received_ = PlayState::UNKNOWN;
 
-  media::RendererClient* client_;
+  raw_ptr<media::RendererClient> client_;
 
   mojo::Remote<ClientExtension> client_extension_;
 
   std::unique_ptr<media::FlingingController> controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(FlingingRenderer);
 };
 
 }  // namespace content

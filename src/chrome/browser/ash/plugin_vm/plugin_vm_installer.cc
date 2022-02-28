@@ -25,12 +25,12 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/background_download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
+#include "components/download/public/background_service/background_download_service.h"
 #include "components/download/public/background_service/download_metadata.h"
-#include "components/download/public/background_service/download_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -107,8 +107,8 @@ PluginVmSetupResult BucketForCancelledInstall(
 
 PluginVmInstaller::PluginVmInstaller(Profile* profile)
     : profile_(profile),
-      download_service_(
-          DownloadServiceFactory::GetForKey(profile->GetProfileKey())) {}
+      download_service_(BackgroundDownloadServiceFactory::GetForKey(
+          profile->GetProfileKey())) {}
 
 absl::optional<PluginVmInstaller::FailureReason> PluginVmInstaller::Start() {
   LOG_FUNCTION_CALL();
@@ -206,6 +206,17 @@ void PluginVmInstaller::OnDownloadStarted() {}
 void PluginVmInstaller::OnDownloadProgressUpdated(uint64_t bytes_downloaded,
                                                   int64_t content_length) {
   DCHECK_EQ(installing_state_, InstallingState::kDownloadingImage);
+
+  if (expected_image_size_ == kImageSizeUnknown) {
+    if (content_length > 0) {
+      expected_image_size_ = content_length;
+    }
+  } else if (expected_image_size_ > 0) {
+    if (content_length != expected_image_size_) {
+      expected_image_size_ = kImageSizeError;
+    }
+  }
+
   if (observer_)
     observer_->OnDownloadProgressUpdated(bytes_downloaded, content_length);
 
@@ -226,7 +237,14 @@ void PluginVmInstaller::OnDownloadCompleted(
     downloaded_image_ = downloaded_image_for_testing_.value();
 
   if (!VerifyDownload(info.hash256)) {
-    OnDownloadFailed(FailureReason::HASH_MISMATCH);
+    LOG(ERROR) << "Expected image size: " << expected_image_size_
+               << ", downloaded image size: " << downloaded_image_size_;
+    if (expected_image_size_ == kImageSizeUnknown ||
+        expected_image_size_ == downloaded_image_size_) {
+      OnDownloadFailed(FailureReason::HASH_MISMATCH);
+    } else {
+      OnDownloadFailed(FailureReason::DOWNLOAD_SIZE_MISMATCH);
+    }
     return;
   }
 
@@ -312,7 +330,7 @@ int64_t PluginVmInstaller::RequiredFreeDiskSpace() {
 }
 
 void PluginVmInstaller::SetDownloadServiceForTesting(
-    download::DownloadService* download_service) {
+    download::BackgroundDownloadService* download_service) {
   download_service_ = download_service;
 }
 
@@ -331,9 +349,7 @@ PluginVmInstaller::~PluginVmInstaller() = default;
 void PluginVmInstaller::CheckLicense() {
   UpdateInstallingState(InstallingState::kCheckingLicense);
 
-  // If the server has provided a license key, responsibility of validating is
-  // passed to the Plugin VM application.
-  if (!GetPluginVmLicenseKey().empty()) {
+  if (skip_license_check_for_testing_) {
     OnLicenseChecked(true);
     return;
   }
@@ -555,6 +571,8 @@ void PluginVmInstaller::StartDownload() {
     return;
   }
 
+  expected_image_size_ = kImageSizeUnknown;
+  downloaded_image_size_ = kImageSizeUnknown;
   absl::optional<std::string> drive_id = GetIdFromDriveUrl(url);
   using_drive_download_service_ = drive_id.has_value();
 
@@ -647,7 +665,7 @@ void PluginVmInstaller::OnFDPrepared(absl::optional<base::ScopedFD> maybeFd) {
     vm_tools::concierge::CreateDiskImageRequest request;
     request.set_cryptohome_id(
         chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_));
-    request.set_disk_path(kPluginVmName);
+    request.set_vm_name(kPluginVmName);
     request.set_storage_location(
         vm_tools::concierge::STORAGE_CRYPTOHOME_PLUGINVM);
     request.set_source_size(downloaded_image_size_);
@@ -663,7 +681,7 @@ void PluginVmInstaller::OnFDPrepared(absl::optional<base::ScopedFD> maybeFd) {
     vm_tools::concierge::ImportDiskImageRequest request;
     request.set_cryptohome_id(
         chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_));
-    request.set_disk_path(kPluginVmName);
+    request.set_vm_name(kPluginVmName);
     request.set_storage_location(
         vm_tools::concierge::STORAGE_CRYPTOHOME_PLUGINVM);
     request.set_source_size(downloaded_image_size_);
@@ -995,7 +1013,6 @@ void PluginVmInstaller::OnTemporaryImageRemoved(bool success) {
                << downloaded_image_.value() << " failed to be deleted";
     return;
   }
-  downloaded_image_size_ = -1;
   downloaded_image_.clear();
   creating_new_vm_ = false;
 }

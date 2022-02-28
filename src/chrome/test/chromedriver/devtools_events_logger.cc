@@ -9,19 +9,14 @@
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 
-DevToolsEventsLogger::DevToolsEventsLogger(Log* log,
-                                           const base::ListValue* prefs)
-    : log_(log),
-      prefs_(prefs) {}
+DevToolsEventsLogger::DevToolsEventsLogger(Log* log, const base::Value& prefs)
+    : log_(log), prefs_(prefs) {}
 
 inline DevToolsEventsLogger::~DevToolsEventsLogger() {}
 
 Status DevToolsEventsLogger::OnConnected(DevToolsClient* client) {
-  for (const auto& entry : prefs_->GetList()) {
-    std::string event;
-    entry.GetAsString(&event);
-    events_.insert(event);
-  }
+  for (const auto& entry : prefs_.GetList())
+    events_.insert(entry.is_string() ? entry.GetString() : std::string());
   return Status(kOk);
 }
 

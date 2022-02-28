@@ -35,7 +35,7 @@ void RecordOriginStorageAccess(const url::Origin& origin,
           Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   if (access_context_audit_service)
     access_context_audit_service->RecordStorageAPIAccess(
-        origin, type, url::Origin::Create(web_contents->GetLastCommittedURL()));
+        origin, type, web_contents->GetMainFrame()->GetLastCommittedOrigin());
 }
 
 }  // namespace
@@ -205,7 +205,7 @@ void PageSpecificContentSettingsDelegate::OnCookieAccessAllowed(
   if (cookie_access_helper_) {
     cookie_access_helper_->RecordCookieAccess(
         accessed_cookies,
-        url::Origin::Create(web_contents()->GetLastCommittedURL()));
+        web_contents()->GetMainFrame()->GetLastCommittedOrigin());
   }
 }
 
@@ -244,14 +244,8 @@ void PageSpecificContentSettingsDelegate::OnWebDatabaseAccessAllowed(
       web_contents());
 }
 
-void PageSpecificContentSettingsDelegate::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      !navigation_handle->HasCommitted() ||
-      navigation_handle->IsSameDocument()) {
-    return;
-  }
-
+void PageSpecificContentSettingsDelegate::PrimaryPageChanged(
+    content::Page& page) {
   ClearPendingProtocolHandler();
 
   if (web_contents()->GetVisibleURL().SchemeIsHTTPOrHTTPS()) {

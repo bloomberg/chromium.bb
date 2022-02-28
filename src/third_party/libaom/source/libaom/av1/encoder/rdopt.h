@@ -163,44 +163,6 @@ void av1_rd_pick_inter_mode_sb_seg_skip(
     struct macroblock *x, int mi_row, int mi_col, struct RD_STATS *rd_cost,
     BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx, int64_t best_rd_so_far);
 
-// TODO(any): The defs below could potentially be moved to rdopt_utils.h instead
-// because they are not the main rdopt functions.
-/*!\cond */
-// The best edge strength seen in the block, as well as the best x and y
-// components of edge strength seen.
-typedef struct {
-  uint16_t magnitude;
-  uint16_t x;
-  uint16_t y;
-} EdgeInfo;
-/*!\endcond */
-
-/** Returns an integer indicating the strength of the edge.
- * 0 means no edge found, 556 is the strength of a solid black/white edge,
- * and the number may range higher if the signal is even stronger (e.g., on a
- * corner). high_bd is a bool indicating the source should be treated
- * as a 16-bit array. bd is the bit depth.
- */
-EdgeInfo av1_edge_exists(const uint8_t *src, int src_stride, int w, int h,
-                         bool high_bd, int bd);
-
-/** Applies a Gaussian blur with sigma = 1.3. Used by av1_edge_exists and
- * tests.
- */
-void av1_gaussian_blur(const uint8_t *src, int src_stride, int w, int h,
-                       uint8_t *dst, bool high_bd, int bd);
-
-/*!\cond */
-/* Applies standard 3x3 Sobel matrix. */
-typedef struct {
-  int16_t x;
-  int16_t y;
-} sobel_xy;
-/*!\endcond */
-
-sobel_xy av1_sobel(const uint8_t *input, int stride, int i, int j,
-                   bool high_bd);
-
 void av1_inter_mode_data_init(struct TileDataEnc *tile_data);
 void av1_inter_mode_data_fit(TileDataEnc *tile_data, int rdmult);
 

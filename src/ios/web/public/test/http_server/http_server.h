@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #import "ios/web/public/test/http_server/response_provider.h"
@@ -69,6 +68,9 @@ class HttpServer : public base::RefCountedThreadSafe<HttpServer> {
   // main thread.
   static HttpServer& GetSharedInstanceWithResponseProviders(
       ProviderList response_providers);
+
+  HttpServer(const HttpServer&) = delete;
+  HttpServer& operator=(const HttpServer&) = delete;
 
   // A convenience method for the longer form of
   // |web::test::HttpServer::GetSharedInstance().MakeUrlForHttpServer|
@@ -143,7 +145,6 @@ class HttpServer : public base::RefCountedThreadSafe<HttpServer> {
       const net::test_server::HttpRequest& request);
   // Status tracking if the server is hung.
   bool isSuspended;
-  DISALLOW_COPY_AND_ASSIGN(HttpServer);
 };
 
 }  // namespace test

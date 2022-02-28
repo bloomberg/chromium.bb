@@ -21,7 +21,6 @@
 
 #include "aom_ports/mem.h"
 #include "test/acm_random.h"
-#include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "test/function_equivalence_test.h"
@@ -50,10 +49,7 @@ class SumSSETest : public ::testing::TestWithParam<TestFuncs> {
     ASSERT_TRUE(src_ != NULL);
   }
 
-  virtual void TearDown() {
-    libaom_test::ClearSystemState();
-    aom_free(src_);
-  }
+  virtual void TearDown() { aom_free(src_); }
   void RunTest(int isRandom);
   void RunSpeedTest();
 
